@@ -3,7 +3,7 @@ from sqlalchemy.engine import Engine
 from sqlalchemy.exc import SQLAlchemyError
 
 
-SCHEMA_REVISION = "0002_legacy_index"
+SCHEMA_REVISION = "0003_legacy_observation"
 
 
 def require_schema(engine: Engine) -> None:
@@ -12,7 +12,7 @@ def require_schema(engine: Engine) -> None:
             revision = connection.scalar(text("SELECT version_num FROM alembic_version"))
             if revision != SCHEMA_REVISION:
                 raise RuntimeError("Migración incompatible: ejecutar alembic upgrade head.")
-            for table in ("simulations", "legacy_sources", "legacy_runs", "legacy_artifacts"):
+            for table in ("simulations", "legacy_sources", "legacy_runs", "legacy_artifacts", "legacy_events"):
                 connection.execute(text(f"SELECT * FROM {table} LIMIT 0"))
     except SQLAlchemyError as error:
         raise RuntimeError("Base SQLite no preparada; ejecutar uv run --frozen alembic upgrade head.") from error

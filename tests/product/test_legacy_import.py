@@ -184,14 +184,15 @@ def test_unreadable_file_and_symlinks_are_local_diagnostics(importer, tmp_path, 
     service, _ = importer
     root = synthetic_copy(tmp_path, "accepted")
     task = next(root.rglob("task.json"))
-    read_bytes = Path.read_bytes
+    from harness_local.adapters import legacy
+    read_bytes = legacy.read_raw
 
-    def deny_task(path):
-        if path == task:
+    def deny_task(root_path, relative):
+        if root_path / relative == task:
             raise PermissionError("Denegación sintética")
-        return read_bytes(path)
+        return read_bytes(root_path, relative)
 
-    monkeypatch.setattr(Path, "read_bytes", deny_task)
+    monkeypatch.setattr(legacy, "read_raw", deny_task)
     run = task.parent
     (run / "outside.json").symlink_to(tmp_path / "never-read.json")
     (run / "outside-directory").symlink_to(tmp_path, target_is_directory=True)

@@ -4,6 +4,75 @@
  */
 
 export interface paths {
+    "/api/legacy/updates": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Updates */
+        get: operations["legacy_updates"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/legacy/events": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Events */
+        get: operations["legacy_events"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/legacy/projects/{project_id}/observation": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Observation Status */
+        get: operations["legacy_observation"];
+        /** Set Observation */
+        put: operations["legacy_set_observation"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/legacy/projects/{project_id}/artifacts/{artifact_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Artifact Metadata */
+        get: operations["legacy_artifact"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/legacy/projects": {
         parameters: {
             query?: never;
@@ -305,6 +374,26 @@ export interface components {
             /** Diagnostic */
             diagnostic: string | null;
         };
+        /** LegacyEventRead */
+        LegacyEventRead: {
+            /** Id */
+            id: number;
+            /** Project Id */
+            project_id: string;
+            /** Root */
+            root: string;
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "index_updated" | "watch_changed" | "observation_error";
+            /** Observed At */
+            observed_at: string;
+            /** Payload */
+            payload: {
+                [key: string]: unknown;
+            };
+        };
         /** LegacyPhaseRead */
         LegacyPhaseRead: {
             /** Identity */
@@ -358,6 +447,27 @@ export interface components {
              * @constant
              */
             origin: "run_directory";
+        };
+        /** LegacyUpdatesRead */
+        LegacyUpdatesRead: {
+            /** Items */
+            items: components["schemas"]["LegacyEventRead"][];
+            /** Cursor */
+            cursor: number;
+            /** Has More */
+            has_more: boolean;
+        };
+        /** ObservationRead */
+        ObservationRead: {
+            /** Enabled */
+            enabled: boolean;
+            /** Diagnostic */
+            diagnostic: string | null;
+        };
+        /** ObservationUpdate */
+        ObservationUpdate: {
+            /** Enabled */
+            enabled: boolean;
         };
         /** Page[LegacyArtifactRead] */
         Page_LegacyArtifactRead_: {
@@ -464,6 +574,169 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
+    legacy_updates: {
+        parameters: {
+            query?: {
+                after?: number;
+                limit?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LegacyUpdatesRead"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    legacy_events: {
+        parameters: {
+            query?: {
+                after?: number;
+            };
+            header?: {
+                "last-event-id"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description SSE legacy_update: LegacyEventRead; id creciente. reset exige snapshot. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "text/event-stream": string;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    legacy_observation: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                project_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ObservationRead"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    legacy_set_observation: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                project_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ObservationUpdate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ObservationRead"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    legacy_artifact: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                project_id: string;
+                artifact_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LegacyArtifactRead"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     legacy_projects: {
         parameters: {
             query?: {

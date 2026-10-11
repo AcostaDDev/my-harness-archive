@@ -221,3 +221,30 @@ sin juicios sobre el agente. Renderiza texto plano, nunca ejecuta históricos; n
 agrega copias de consumo ni deduce factura/cuota de coste equivalente API. Reimportar
 continúa siendo explícito por CLI. Watcher/SSE pertenecen a H1.3, no a esta entrega.
 [Entrega y verificaciones](discovery/H1.2_NAVIGATION.md).
+
+## D014 — Observación opt-in y feed persistido del índice
+
+Estado: implementado y comprobado en H1.3 el 2026-10-11.
+
+Conservar importación explícita H1.1 y permitir activar/detener observación por origen
+ya importado. Un observador por polling en el servicio local agrupa cambios cada 0,5 s,
+cachea archivos disponibles por metadatos, relee pendientes/errores y reconcilia los
+activados al iniciar y cada 30 s. Un solo proceso Uvicorn; no añade jobs ni supervisor
+del motor. Archivos originales son autoridad; última observación por ruta y runs
+históricos se conservan. Una raíz inaccesible conserva el índice con diagnóstico local.
+
+Migración `0003_legacy_observation`: control por origen y eventos de invalidación en
+SQLite. Un cambio del índice y su evento se confirman juntos; comparaciones serializadas
+por la primera escritura SQLite evitan eventos duplicados en importaciones idénticas.
+No se abren transacciones escritoras durante lecturas del filesystem. Releer sin cambios
+no genera actividad. El feed tiene IDs globales crecientes, sin purga en esta entrega;
+no es event sourcing ni una copia de cada versión del archivo.
+
+JSON paginado y SSE entregan filas confirmadas. Last-Event-ID prevalece sobre el cursor
+inicial; el cliente deduplica y conserva cursor local, con recarga del índice al abrir
+y ante cursores adelantados. Conexiones SSE acotadas a 15 s permiten drenaje de apagado
+con reconexión por ID. La UI conserva identidades y reinicia tramos en la versión actual,
+ocultando respuestas cuyo hash difiera de sus metadatos. No interpreta diagnósticos como
+fallos de agente, ni ACCEPT/READY como aceptación/commit/cierre. Lecturas de evidencias
+por descriptores, solo archivos regulares y máximo 64 MiB. Límites y verificaciones en
+[H1.3_OBSERVATION.md](discovery/H1.3_OBSERVATION.md).

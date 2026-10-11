@@ -1,13 +1,19 @@
 from typing import Annotated
 
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, Header, HTTPException, Query, Request
+from fastapi.responses import StreamingResponse
+from sqlalchemy.orm import Session
+
+from harness_local.api.events import event_frames
+from harness_local.storage.observation import SQLiteObservationRepository
 
 from harness_local.adapters.evidence import read_content
 from harness_local.api.schemas import (
     EvidenceContentRead, EvidenceEntriesRead, LegacyArtifactRead, LegacyPhaseRead,
     LegacyProjectRead, LegacyRunRead, LegacyTaskRead, Page,
+    ObservationUpdate, ObservationRead, LegacyUpdatesRead,
 )
-from harness_local.storage.navigation import SQLiteLegacyNavigation
+from harness_local.storage.navigation import SQLiteLegacyNavigation, identifier
 
 
 Offset = Annotated[int, Query(ge=0, le=2**53 - 1)]
@@ -19,12 +25,58 @@ Identity = Annotated[str | None, Query(max_length=120)]
 def legacy_router(engine):
     router = APIRouter(prefix="/api/legacy")
     navigation = SQLiteLegacyNavigation(engine)
+    observation = SQLiteObservationRepository(engine)
 
     def lookup(operation, *args):
         try:
             return operation(*args)
         except LookupError as error:
             raise HTTPException(404, str(error)) from error
+
+    def root(project_id):
+        with Session(engine) as session:
+            return lookup(navigation.root, session, project_id)
+
+    @router.get("/updates", response_model=LegacyUpdatesRead, operation_id="legacy_updates")
+    def updates(after: Offset = 0, limit: Limit = 100):
+        try:
+            return observation.events(after, limit)
+        except ValueError as error:
+            raise HTTPException(409, str(error)) from error
+
+    @router.get("/events", operation_id="legacy_events", response_class=StreamingResponse,
+                responses={200: {"content": {"text/event-stream": {"schema": {"type": "string"}}},
+                                 "description": "SSE legacy_update: LegacyEventRead; id creciente. reset exige snapshot."}})
+    def events(request: Request, after: Offset = 0,
+               last_event_id: Annotated[str | None, Header(max_length=20)] = None):
+        cursor = after
+        if last_event_id is not None:
+            if not last_event_id.isascii() or not last_event_id.isdecimal() or int(last_event_id) > 2**53 - 1:
+                raise HTTPException(422, "Last-Event-ID debe ser un cursor entero no negativo.")
+            cursor = int(last_event_id)
+        updates(cursor, 1)  # Validate before sending headers; Last-Event-ID wins on reconnect.
+        return StreamingResponse(event_frames(observation, cursor, request.is_disconnected),
+            media_type="text/event-stream", headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"})
+
+    @router.get("/projects/{project_id}/observation", response_model=ObservationRead,
+                operation_id="legacy_observation")
+    def observation_status(project_id: str):
+        return lookup(observation.status, root(project_id))
+
+    @router.put("/projects/{project_id}/observation", response_model=ObservationRead,
+                operation_id="legacy_set_observation")
+    def set_observation(project_id: str, body: ObservationUpdate):
+        try:
+            return lookup(observation.set_watch, root(project_id), body.enabled)
+        except ValueError as error:
+            raise HTTPException(409, str(error)) from error
+
+    @router.get("/projects/{project_id}/artifacts/{artifact_id}", response_model=LegacyArtifactRead,
+                operation_id="legacy_artifact")
+    def artifact_metadata(project_id: str, artifact_id: str):
+        _, artifact = lookup(navigation.artifact, project_id, artifact_id)
+        return {"id": identifier(artifact.path), "run_id": identifier(artifact.run_path) if artifact.run_path else None,
+                **{name: getattr(artifact, name) for name in ("path", "kind", "format", "status", "sha256", "size_bytes", "diagnostic")}}
 
     @router.get("/projects", response_model=Page[LegacyProjectRead], operation_id="legacy_projects")
     def projects(offset: Offset = 0, limit: Limit = 30):

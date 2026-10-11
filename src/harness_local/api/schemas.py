@@ -107,3 +107,28 @@ class EvidenceContentRead(BaseModel):
     next_offset: int | None
     text: str | None
     diagnostic: str | None
+
+
+class ObservationUpdate(BaseModel):
+    model_config = ConfigDict(extra="forbid", strict=True)
+    enabled: bool
+
+
+class ObservationRead(BaseModel):
+    enabled: bool
+    diagnostic: str | None
+
+
+class LegacyEventRead(BaseModel):
+    id: int
+    project_id: str
+    root: str
+    kind: Literal["index_updated", "watch_changed", "observation_error"]
+    observed_at: str
+    payload: dict[str, Any]
+
+
+class LegacyUpdatesRead(BaseModel):
+    items: list[LegacyEventRead]
+    cursor: int
+    has_more: bool

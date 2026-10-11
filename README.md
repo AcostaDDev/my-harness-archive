@@ -84,7 +84,7 @@ UV_CACHE_DIR=.local/uv-cache uv run --frozen --offline alembic current
 UV_CACHE_DIR=.local/uv-cache uv run --frozen --offline alembic check
 ```
 
-59 pruebas (12 anteriores, 14 de H0.3, 14 de H1.1 y 19 de H1.2). El adaptador falso no lanza procesos,
+80 pruebas (12 anteriores, 14 de H0.3, 14 de H1.1, 19 de H1.2 y 21 de H1.3). El adaptador falso no lanza procesos,
 no escribe proyectos y no certifica revisión, aceptación ni commit.
 
 ## Comprobación offline disponible
@@ -99,13 +99,13 @@ Doce checks ligeros: cuatro de fixtures H0.1 y ocho de streams H0.2; no ejecutan
 el harness ni proveedores. Este comando sigue sin necesitar dependencias del
 producto. H0.3 ya verifica instalación y ejecución del esqueleto; las CLI
 reales por suscripción continúan sin integrar.
-La siguiente tarea es H1.3, actualización incremental (watcher/SSE), todavía pendiente.
+La siguiente tarea es H2.1, extracción del motor, todavía pendiente.
 
 
 ## Importación legacy de lectura
 
 Migrar con el servicio detenido antes de importar; el esquema actual es
-`0002_legacy_index`. Comandos comprobados desde la raíz, con datos sintéticos:
+`0003_legacy_observation`. Comandos comprobados desde la raíz, con datos sintéticos:
 
 ```sh
 UV_CACHE_DIR=.local/uv-cache uv run --frozen --offline alembic upgrade head
@@ -127,4 +127,17 @@ archivados. Las listas y el contenido se paginan; cada tramo comprueba el hash
 indexado antes de mostrar bytes del origen. Si cambia/desaparece el archivo,
 se muestra un diagnóstico; reimportar y recargar actualiza la observación.
 Ausencias/JSON parciales siguen visibles. ACCEPT/READY no certifican commit/cierre.
-«Simulaciones H0.3» conserva el recorrido anterior. No hay observación automática.
+«Simulaciones H0.3» conserva el recorrido anterior.
+
+Tras seleccionar un proyecto, «Activar observación» habilita relectura incremental
+por polling (0,5 s), reconciliación al iniciar/cada 30 s y actualización UI por SSE.
+«Detener observación» conserva el índice y permite seguir releyendo explícitamente
+por CLI. La decisión persiste tras reiniciar. «Actividad persistida del índice»
+recupera cambios paginados; cerrar el navegador no detiene la observación.
+Los eventos y cambios se guardan juntos; cursor local y Last-Event-ID permiten
+reconectar sin añadir actividad duplicada. Un hash nuevo reinicia los tramos desde
+cero; respuestas de otra versión se ocultan. Archivos especiales/enlaces no se leen;
+lectura máxima 64 MiB por evidencia. No certifica un snapshot entre archivos ni
+captura todas las versiones sobrescritas entre ciclos. Detalles y límites en
+[H1.3_OBSERVATION.md](docs/discovery/H1.3_OBSERVATION.md).
+Migrar explícitamente con el servicio detenido antes de arrancar esta versión.

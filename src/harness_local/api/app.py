@@ -1,3 +1,4 @@
+import asyncio
 from contextlib import asynccontextmanager
 from pathlib import Path
 from uuid import UUID
@@ -13,17 +14,26 @@ from harness_local.core.simulation import SimulationService
 from harness_local.storage.database import database_url, make_engine
 from harness_local.storage.repository import SQLiteSimulationRepository
 from harness_local.storage.schema import require_schema
+from harness_local.services.observation import LegacyObserver
 
 
 def create_app(url: str | None = None, ui_dir: Path | None = None) -> FastAPI:
     engine = make_engine(url or database_url())
     service = SimulationService(SQLiteSimulationRepository(engine), FakeSimulationAdapter())
 
+    observer = LegacyObserver(engine)
+
     @asynccontextmanager
     async def lifespan(app: FastAPI):
         try:
             require_schema(engine)
-            yield
+            await asyncio.to_thread(observer.scan, True)
+            task = asyncio.create_task(observer.run())
+            try:
+                yield
+            finally:
+                observer.stop()
+                await task
         finally:
             engine.dispose()
 

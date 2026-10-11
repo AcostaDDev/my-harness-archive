@@ -1,4 +1,4 @@
-from sqlalchemy import JSON, ForeignKey, ForeignKeyConstraint, Integer, String, Text
+from sqlalchemy import Boolean, JSON, ForeignKey, ForeignKeyConstraint, Integer, String, Text
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 
 
@@ -21,6 +21,8 @@ class LegacySourceRow(Base):
 
     root: Mapped[str] = mapped_column(String, primary_key=True)
     observed_at: Mapped[str] = mapped_column(String(40))
+    watch_enabled: Mapped[bool] = mapped_column(Boolean, server_default="0")
+    diagnostic: Mapped[str | None] = mapped_column(Text, nullable=True)
 
 
 class LegacyRunRow(Base):
@@ -47,3 +49,14 @@ class LegacyArtifactRow(Base):
     size_bytes: Mapped[int | None] = mapped_column(Integer, nullable=True)
     payload: Mapped[object] = mapped_column(JSON(none_as_null=True), nullable=True)
     diagnostic: Mapped[str | None] = mapped_column(Text, nullable=True)
+
+
+class LegacyEventRow(Base):
+    __tablename__ = "legacy_events"
+    __table_args__ = {"sqlite_autoincrement": True}
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    root: Mapped[str] = mapped_column(ForeignKey("legacy_sources.root", ondelete="CASCADE"))
+    kind: Mapped[str] = mapped_column(String(40))
+    observed_at: Mapped[str] = mapped_column(String(40))
+    payload: Mapped[dict] = mapped_column(JSON)

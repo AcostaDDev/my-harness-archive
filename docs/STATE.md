@@ -35,7 +35,7 @@ Actualizado: 2026-10-11.
 - Dependencias reales instaladas en `.venv` / `frontend/node_modules`, locks
   `uv.lock` / `frontend/package-lock.json`. Pins H0.2 usados conservados;
   backend de paquete `uv_build==0.12.19`. Comandos comprobados en README/AGENTS.
-- 47 casos de producto en `tests/product/`; pytest ejecuta 59 pruebas en total.
+- 68 casos de producto en `tests/product/`; pytest ejecuta 80 pruebas en total.
   La comprobación ligera anterior conserva sus 12 checks sin dependencias.
 - H1.1 completado: [importación legacy y verificaciones](discovery/H1.1_IMPORT.md),
   [alcance original](discovery/H1.1_SCOPE.md). Lector local explícito de
@@ -62,18 +62,28 @@ Actualizado: 2026-10-11.
   Documentos de estado y archivo de fases accesibles sin certificar cierre/Git.
   Esquema `0002_legacy_index` conservado; no hay migración nueva ni entidades gestionadas.
 
+- H1.3 completado: [observación y verificaciones](discovery/H1.3_OBSERVATION.md),
+  [alcance original](discovery/H1.3_SCOPE.md). Observación opt-in persistida por origen;
+  polling agrupado, lecturas incrementales y reconciliación al iniciar/periódica.
+- Migración `0003_legacy_observation`: control/diagnóstico por origen y feed de
+  actualización atómico con el índice. JSON paginado/SSE con cursor estable,
+  Last-Event-ID, deduplicación y recuperación tras reinicio; sin event sourcing del motor.
+- UI actualiza listas y detalle seleccionado, conserva identidades, recupera actividad
+  con navegador cerrado y reinicia tramos al actualizar, ocultando hashes diferentes.
+  Lecturas de evidencias regulares por descriptores, sin enlaces/FIFO y máximo 64 MiB.
+
 ## Todavía no existe
 
 Intentos gestionados, motor, supervisor, cola, bloqueo por checkout,
-adaptadores reales, permisos interactivos, chat, observador automático,
-SSE ni distribución. La navegación H1.2 muestra evidencia legacy;
+adaptadores reales, permisos interactivos, chat ni distribución.
+La navegación H1.2 muestra evidencia legacy;
 el recorrido H0.3 solo guarda simulaciones, que no representan intentos reales
 ni aceptación de tareas. Ninguna integración
 con proveedores se ha ejecutado.
 
 ## Trabajo activo
 
-H0, H1.1 y H1.2 completados. Próxima tarea: H1.3,
+H0 y H1 completados. Próxima tarea: H2.1,
 detallada en `NEXT_STEPS.md`, pendiente de una nueva sesión dirigida por el usuario.
 
 ## Verificación de H0.1
@@ -184,6 +194,33 @@ detallada en `NEXT_STEPS.md`, pendiente de una nueva sesión dirigida por el usu
   escritores concurrentes, pruebas de carga, otros sistemas ni proveedor real.
   Verificar cada tramo relee el archivo para su hash (máximo 64 MiB); no hay cache,
   watcher/SSE ni actualización automática. H1.3 no iniciado.
+
+## Verificación de H1.3
+
+- `uv run --frozen --offline pytest -q`: 80 pruebas y 121 subtests correctos;
+  21 casos nuevos y regresión completa. Los 12 checks de biblioteca estándar,
+  frontera de imports, OpenAPI/tipos, TypeScript y build Vite correctos.
+- Cinco escenarios, lectura incremental sin releer disponibles idénticos,
+  JSON/JSONL parcial/completado, cambios durante lectura, agrupación, desaparición,
+  reaparición, raíz ausente/enlace, FIFO y diagnóstico local sin resultados inferidos.
+- Persistencia opt-in, desactivación durante lectura, reconciliación antes de servir,
+  actualización sin navegador y reinicio idempotente comprobados. Eventos e índice
+  revierten juntos ante fallo; importaciones concurrentes idénticas publican una vez.
+- Migración ida/vuelta con H1.2 y checks existentes conservan índice/simulaciones;
+  `alembic check` correcto. SSE valida cursores/Last-Event-ID y recupera 10.000 filas
+  por lotes sin huecos/duplicados; espera de cambio en vivo y cierre acotado correctos.
+- Chrome con copias/base sintéticas en :8014: activar, partial → available sin recargar,
+  selección conservada, hash nuevo en log desde byte 8192 reiniciado a byte 0,
+  cerrar/abrir con actividad IDs 1–10 únicos y reconexión tras reinicio.
+  Captura inspeccionada; apagado normal SIGTERM con SSE abierto y servicio detenido.
+  :8013 ocupado no se tocó. Ctrl+C del ejecutor produjo cancelación, no certificó apagado.
+- Diff/whitespace revisados; decisión D014. Sin agentes, harness, proveedores,
+  runs reales, ReferenceProject ni configuración global. Consulta pública de documentación
+  SSE; verificaciones offline. uv ignora el entorno externo; aviso HTTPX/Starlette sigue.
+- Límites: macOS actual/un proceso, polling sin snapshot de varios archivos ni garantía
+  de capturar versiones sobrescritas entre ciclos. Cache JSON/JSONL y feed sin retención;
+  sin medición de memoria/latencia bajo carga. Restauraciones que reutilicen IDs exigen
+  limpiar cursor local. No hay motor/entidades gestionadas; H2.1 no iniciado.
 
 ## Coordinación
 

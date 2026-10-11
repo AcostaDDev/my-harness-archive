@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { createContext, useContext, useEffect, useState } from "react";
 import type { ReactNode } from "react";
 import type { components } from "./api.generated";
 import { request } from "./api";
@@ -11,22 +11,81 @@ type Artifact = components["schemas"]["LegacyArtifactRead"];
 type Entry = components["schemas"]["EvidenceEntryRead"];
 type Entries = components["schemas"]["EvidenceEntriesRead"];
 type Content = components["schemas"]["EvidenceContentRead"];
+type Observation = components["schemas"]["ObservationRead"];
+type Update = components["schemas"]["LegacyEventRead"];
+type Updates = components["schemas"]["LegacyUpdatesRead"];
+const LiveRevision = createContext(0);
+const cursorKey = "harness-local.legacy-cursor.v1";
+
+function readCursor() {
+  try {
+    const cursor = Number(localStorage.getItem(cursorKey) ?? 0);
+    return Number.isSafeInteger(cursor) && cursor >= 0 ? cursor : 0;
+  } catch { return 0; }
+}
+
+function useUpdates() {
+  const [revision, setRevision] = useState(0);
+  const [connected, setConnected] = useState(false);
+  useEffect(() => {
+    let active = true;
+    let source: EventSource | undefined;
+    let cursor = readCursor();
+    const save = () => { try { localStorage.setItem(cursorKey, String(cursor)); } catch { /* Replay remains safe without storage. */ } };
+    let refreshTimer: ReturnType<typeof setTimeout> | undefined;
+    const refresh = () => {
+      if (refreshTimer !== undefined) return;
+      refreshTimer = setTimeout(() => { refreshTimer = undefined; if (active) setRevision((n) => n + 1); }, 100);
+    };
+    const connect = async () => {
+      // A database reset/restore may put a saved cursor ahead of retained activity.
+      const response = await fetch(`/api/legacy/updates?after=${cursor}&limit=1`).catch(() => undefined);
+      if (!active) return;
+      if (response?.status === 409) { cursor = 0; save(); refresh(); }
+      source = new EventSource(`/api/legacy/events?after=${cursor}`);
+      source.onopen = () => { if (active) { setConnected(true); refresh(); } };
+      source.addEventListener("legacy_update", (message) => {
+        if (!active) return;
+        const update = JSON.parse((message as MessageEvent<string>).data) as Update;
+        if (update.id <= cursor) return;
+        // Invalidate first; persisted cursor only describes notifications, not a cached snapshot.
+        refresh(); cursor = update.id; save();
+      });
+      source.addEventListener("reset", () => {
+        source?.close(); cursor = 0; save(); refresh(); void connect().catch(() => setConnected(false));
+      });
+      source.onerror = () => {
+        if (!active) return;
+        setConnected(false);
+        // EventSource handles ordinary reconnects with Last-Event-ID.
+        void fetch(`/api/legacy/updates?after=${cursor}&limit=1`).then((r) => {
+          if (active && r.status === 409) { source?.close(); cursor = 0; save(); refresh(); void connect().catch(() => setConnected(false)); }
+        }).catch(() => {});
+      };
+    };
+    void connect().catch(() => { if (active) setConnected(false); });
+    return () => { active = false; source?.close(); clearTimeout(refreshTimer); };
+  }, []);
+  return { revision, connected };
+}
+
 type Field = components["schemas"]["FieldRead"];
 type Page<T> = Omit<components["schemas"]["Page_LegacyProjectRead_"], "items"> & { items: T[] };
 
 function useRead<T>(url: string) {
-  const [state, setState] = useState<{ url: string; data?: T; error?: string }>();
+  const liveRevision = useContext(LiveRevision);
+  const [state, setState] = useState<{ url: string; liveRevision: number; data?: T; error?: string }>();
   const [revision, setRevision] = useState(0);
   useEffect(() => {
     let active = true;
     setState(undefined);
-    request<T>(url).then((data) => { if (active) setState({ url, data }); })
+    request<T>(url).then((data) => { if (active) setState({ url, liveRevision, data }); })
       .catch((error: unknown) => {
-        if (active) setState({ url, error: error instanceof Error ? error.message : "Error de lectura local." });
+        if (active) setState({ url, liveRevision, error: error instanceof Error ? error.message : "Error de lectura local." });
       });
     return () => { active = false; };
-  }, [url, revision]);
-  return { ...(state?.url === url ? state : {}), retry: () => setRevision((n) => n + 1) };
+  }, [url, revision, liveRevision]);
+  return { ...(state?.url === url && state.liveRevision === liveRevision ? state : {}), retry: () => setRevision((n) => n + 1) };
 }
 
 function Pagination({ offset, next, previous }: { offset: number; next: number | null; previous: (n: number) => void }) {
@@ -52,18 +111,21 @@ function RemoteList<T>({ url, children }: { url: string; children: (item: T) => 
 
 export function LegacyBrowser() {
   const [project, setProject] = useState<Project>();
-  return <section className="legacy" aria-label="Navegación legacy">
-    <div className="intro"><p className="eyebrow">LECTURA LOCAL · H1.2</p>
+  const live = useUpdates();
+  return <LiveRevision.Provider value={live.revision}><section className="legacy" aria-label="Navegación legacy">
+    <div className="intro"><p className="eyebrow">LECTURA LOCAL · H1.3</p>
       <h1>Evidencias de tus proyectos.</h1>
-      <p>El índice muestra la última importación explícita. Los originales son autoridad; los diagnósticos locales y pendientes no acreditan fallos de agente.</p>
+      <p>El índice muestra la última lectura; puedes activar observación para cada origen importado. Los originales son autoridad; los diagnósticos locales y pendientes no acreditan fallos de agente.</p>
     </div>
+    <p role="status">{live.connected ? "Actualizaciones conectadas." : "Reconectando actualizaciones; el índice sigue disponible."}</p>
+    <Activity />
     <h2>Proyectos / orígenes</h2>
     <RemoteList<Project> url="/api/legacy/projects">{(item) => <button className="choice" aria-pressed={project?.id === item.id} onClick={() => setProject(item)}>
       <strong>{item.name}</strong><small>{item.root}</small><small>Indexado: {item.observed_at}</small>
     </button>}</RemoteList>
-    <p className="hint">Importa una raíz con <code>python -m harness_local.cli legacy-import &lt;raíz&gt;</code>. Repite el comando para actualizar el índice.</p>
+    <p className="hint">Importa una raíz con <code>python -m harness_local.cli legacy-import &lt;raíz&gt;</code>. Activa observación al seleccionar el proyecto, o repite el comando para releerlo.</p>
     {project && <ProjectView key={project.id} project={project} />}
-  </section>;
+  </section></LiveRevision.Provider>;
 }
 
 function ProjectView({ project }: { project: Project }) {
@@ -78,6 +140,7 @@ function ProjectView({ project }: { project: Project }) {
   const runUrl = `${base}/runs?${filters}`;
   return <div className="project-detail">
     <h2>{project.name} · Observación</h2>
+    <WatchControl base={base} />
     <p className="hint">Identidades del directorio o declaradas por los artefactos. ACCEPT y READY son veredictos históricos; aceptación aplicada, commit y cierre no se certifican aquí.</p>
     <h3>Fases</h3>
     <button onClick={() => { setPhase(undefined); setTask(undefined); setRun(undefined); }}>Todas las fases</button>
@@ -114,8 +177,52 @@ function ArtifactList({ base, run }: { base: string; run?: Run }) {
       <strong>{kindLabels[item.kind] ?? item.kind} · {item.status}</strong><small>{item.path}</small>
       {item.diagnostic && <small>{item.diagnostic}</small>}
     </button>}</RemoteList>
-    {artifact && <ArtifactView key={artifact.id} base={base} artifact={artifact} />}
+    {artifact && <SelectedArtifact key={artifact.id} base={base} artifactId={artifact.id} />}
   </section>;
+}
+
+const updateLabels: Record<Update["kind"], string> = { index_updated: "Índice actualizado", watch_changed: "Observación configurada", observation_error: "Diagnóstico de lectura local" };
+
+function Activity() {
+  const [after, setAfter] = useState(0);
+  const { data, error, retry } = useRead<Updates>(`/api/legacy/updates?after=${after}&limit=20`);
+  return <details><summary>Actividad persistida del índice</summary>
+    <p className="hint">Cambios de observación, sin inferir intentos ni resultados del agente.</p>
+    {error && <p role="alert">{error} <button onClick={retry}>Reintentar</button></p>}
+    {data && <ol>{data.items.map((item) => <li key={item.id}>#{item.id} · {updateLabels[item.kind]} · {item.observed_at}<small>Origen: {item.root}</small>
+      {typeof item.payload.changed_records === "number" && <p>{item.payload.changed_records} registros modificados.</p>}
+      {typeof item.payload.enabled === "boolean" && <p>{item.payload.enabled ? "Observación activada." : "Observación detenida."}</p>}
+      {item.payload.recovered === true && <p>Lectura del origen recuperada.</p>}
+      {typeof item.payload.diagnostic === "string" && <p className="error">{item.payload.diagnostic}</p>}
+    </li>)}</ol>}
+    <button disabled={after === 0} onClick={() => setAfter(0)}>Inicio</button>
+    <button disabled={!data?.has_more} onClick={() => { if (data) setAfter(data.cursor); }}>Más actividad</button>
+  </details>;
+}
+
+function WatchControl({ base }: { base: string }) {
+  const { data, error, retry } = useRead<Observation>(`${base}/observation`);
+  const [saving, setSaving] = useState(false);
+  const [failure, setFailure] = useState<string>();
+  async function toggle() {
+    if (!data) return;
+    setSaving(true); setFailure(undefined);
+    try {
+      await request<Observation>(`${base}/observation`, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ enabled: !data.enabled }) });
+      retry();
+    } catch (e) { setFailure(e instanceof Error ? e.message : "Error local de observación."); }
+    finally { setSaving(false); }
+  }
+  return <div><p>{data?.enabled ? "Observación activa: relectura automática y reconciliación al iniciar." : "Observación detenida: relectura explícita por CLI."}</p>
+    <button disabled={!data || saving} onClick={() => void toggle()}>{data?.enabled ? "Detener observación" : "Activar observación"}</button>
+    {(error || failure || data?.diagnostic) && <p role="alert" className="error">Diagnóstico local: {error || failure || data?.diagnostic}</p>}
+  </div>;
+}
+
+function SelectedArtifact({ base, artifactId }: { base: string; artifactId: string }) {
+  const { data, error, retry } = useRead<Artifact>(`${base}/artifacts/${artifactId}`);
+  return error ? <p role="alert">{error} <button onClick={retry}>Reintentar lectura</button></p> :
+    data ? <ArtifactView key={`${data.id}:${data.sha256}:${data.status}:${data.diagnostic}`} base={base} artifact={data} /> : <p role="status">Actualizando evidencia seleccionada…</p>;
 }
 
 const fieldLabels: Record<string, string> = {
@@ -146,13 +253,15 @@ function ArtifactView({ base, artifact }: { base: string; artifact: Artifact }) 
   const url = `${base}/artifacts/${artifact.id}`;
   const entries = useRead<Entries>(`${url}/entries?offset=${offset}&limit=20`);
   const content = useRead<Content>(`${url}/content?offset=${contentOffset}&limit=8192`);
+  const entriesMatch = entries.data?.sha256 === artifact.sha256;
+  const contentMatch = content.data?.indexed_sha256 === artifact.sha256;
   return <article className="evidence-detail" aria-label="Detalle de evidencia">
     <h3>{kindLabels[artifact.kind] ?? artifact.kind}</h3><p><code>{artifact.path}</code></p>
     <p className="hint">Estado indexado: {artifact.status} · SHA-256: <code>{artifact.sha256 ?? "no registrado"}</code> · Bytes: {artifact.size_bytes ?? "no registrado"}</p>
     {artifact.diagnostic && <p className="error">Diagnóstico local: {artifact.diagnostic}</p>}
     <p className="hint">Los campos siguientes proceden del payload indexado. SHA-256 de esa proyección: <code>{entries.data?.sha256 ?? "no registrado"}</code>. Coste equivalente API no es factura ni porcentaje de cuota. No se suman copias de consumo del mismo resultado.</p>
     {((entries.data && entries.data.sha256 !== artifact.sha256) || (content.data && content.data.indexed_sha256 !== artifact.sha256)) &&
-      <p className="error">El índice se ha reimportado desde que abriste la lista. Recarga la página para volver a seleccionar la evidencia. Cada respuesta conserva su propio hash.</p>}
+      <p className="error">El índice cambió durante la consulta. Los datos de otra versión se ocultan. Vuelve a seleccionar la evidencia para leer desde el inicio.</p>}
     {content.error && <p className="error" role="alert">{content.error} <button onClick={content.retry}>Reintentar</button></p>}
     {!content.data && !content.error && <p role="status">Comprobando contenido del origen…</p>}
     {content.data && <p className={content.data.status === "verified" ? "verified" : "error"} role="status">
@@ -160,19 +269,19 @@ function ArtifactView({ base, artifact }: { base: string; artifact: Artifact }) 
       {content.data.status === "changed" && <> · Hash observado: <code>{content.data.observed_sha256}</code>. La proyección inferior sigue siendo la lectura anterior del índice.</>}
     </p>}
     {entries.error ? <p className="error" role="alert">{entries.error} <button onClick={entries.retry}>Reintentar</button></p> :
-      !entries.data ? <p role="status">Cargando campos…</p> : <>
+      !entries.data ? <p role="status">Cargando campos…</p> : !entriesMatch ? <p>Proyección de otra versión oculta.</p> : <>
         <ul className="entry-list">{entries.data.items.map((entry) => <EntryView key={entry.pointer} entry={entry} />)}</ul>
         {!entries.data.items.length && <p>No hay campos estructurados disponibles. Consulta los bytes originales o el diagnóstico.</p>}
         <Pagination offset={offset} next={entries.data.next_offset} previous={setOffset} />
       </>}
     <h4>Contenido original · logs / diff / JSON / documentos</h4>
     <p className="hint">Texto plano verificado; tramo máximo 8192 bytes más el final UTF-8. No se ejecutan prompts, comandos ni HTML histórico.</p>
-    {content.data?.text != null && <pre className="raw-content">{content.data.text || "(archivo vacío)"}</pre>}
+    {contentMatch && content.data?.text != null && <pre className="raw-content">{content.data.text || "(archivo vacío)"}</pre>}
     <div className="pagination">
       <button disabled={!previousOffsets.length} onClick={() => {
         setContentOffset(previousOffsets.at(-1) ?? 0); setPreviousOffsets((items) => items.slice(0, -1));
       }}>Tramo anterior</button><span>Byte {contentOffset}</span>
-      <button disabled={content.data?.next_offset == null} onClick={() => {
+      <button disabled={!contentMatch || content.data?.next_offset == null} onClick={() => {
         if (content.data?.next_offset != null) { setPreviousOffsets((items) => [...items, contentOffset]); setContentOffset(content.data.next_offset); }
       }}>Tramo siguiente</button><button onClick={content.retry}>Comprobar de nuevo</button>
     </div>

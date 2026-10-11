@@ -5,6 +5,7 @@ import json
 import os
 from pathlib import Path
 import re
+import stat
 
 from harness_local.core.legacy import LegacyArtifact, LegacyInventory, LegacyRun
 
@@ -45,6 +46,43 @@ def reject_constant(value):
     raise ValueError(f"Constante JSON no válida: {value}")
 
 
+class ChangingEvidence(ValueError):
+    pass
+
+
+def read_raw(root: Path, path: str) -> bytes:
+    """Bounded regular-file read, without following any path component."""
+    descriptors = []
+    try:
+        fd = os.open("/", os.O_RDONLY | os.O_DIRECTORY)
+        descriptors.append(fd)
+        parts = (root / path).parts[1:]
+        for part in parts[:-1]:
+            fd = os.open(part, os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW, dir_fd=fd)
+            descriptors.append(fd)
+        fd = os.open(parts[-1], os.O_RDONLY | os.O_NOFOLLOW | os.O_NONBLOCK, dir_fd=fd)
+        descriptors.append(fd)
+        before = os.fstat(fd)
+        if not stat.S_ISREG(before.st_mode):
+            raise ValueError("La evidencia no es un archivo regular.")
+        maximum = 64 * 1024 * 1024
+        if before.st_size > maximum:
+            raise ValueError("Lectura limitada a 64 MiB por evidencia.")
+        raw = bytearray()
+        while chunk := os.read(fd, 65536):
+            raw.extend(chunk)
+            if len(raw) > maximum:
+                raise ValueError("Archivo creció sobre el límite de lectura de 64 MiB.")
+        after = os.fstat(fd)
+        if (before.st_size, before.st_mtime_ns, before.st_ctime_ns) != (
+                after.st_size, after.st_mtime_ns, after.st_ctime_ns):
+            raise ChangingEvidence("Archivo cambió durante la lectura; pendiente de relectura.")
+        return bytes(raw)
+    finally:
+        for fd in reversed(descriptors):
+            os.close(fd)
+
+
 def read_artifact(root: Path, path: str, run_path: str | None) -> LegacyArtifact:
     artifact = LegacyArtifact(path, run_path, artifact_kind(path), artifact_format(path), "available")
     try:
@@ -52,7 +90,7 @@ def read_artifact(root: Path, path: str, run_path: str | None) -> LegacyArtifact
         file = root / path
         if any(parent.is_symlink() for parent in (file, *file.parents) if parent != root):
             raise ValueError("Enlace simbólico no leído.")
-        raw = file.read_bytes()
+        raw = read_raw(root, path)
         artifact = replace(artifact, sha256=hashlib.sha256(raw).hexdigest(), size_bytes=len(raw))
         if artifact.format == "text":
             return artifact
@@ -75,23 +113,45 @@ def read_artifact(root: Path, path: str, run_path: str | None) -> LegacyArtifact
                 return replace(artifact, status="pending", payload=payload,
                                diagnostic=f"JSONL pendiente de relectura, línea {number}: {error}")
         return replace(artifact, payload=payload)
-    except (json.JSONDecodeError, UnicodeDecodeError, RecursionError) as error:
+    except (json.JSONDecodeError, UnicodeDecodeError, RecursionError, ChangingEvidence) as error:
         return replace(artifact, status="pending", diagnostic=f"Pendiente de relectura: {error}")
     except (OSError, ValueError) as error:
         return replace(artifact, status="error", diagnostic=str(error))
 
 
 class LocalLegacyReader:
+    def __init__(self, incremental: bool = False):
+        self.incremental = incremental
+        self.cache = {}
+
+    def clear(self):
+        self.cache.clear()
+
     def read(self, root: str) -> LegacyInventory:
         checkout = Path(root).expanduser().resolve(strict=True)
         if not checkout.is_dir():
             raise ValueError("La raíz de origen debe ser un directorio.")
+        if any(parent.is_symlink() for parent in (Path(root), *Path(root).parents)):
+            raise ValueError("Raíz o componente del origen convertido en enlace; lectura detenida.")
         artifacts: dict[str, LegacyArtifact] = {}
         runs: dict[str, LegacyRun] = {}
 
         def record(path: Path, run_path: str | None):
             relative = path.relative_to(checkout).as_posix()
-            artifacts[relative] = read_artifact(checkout, relative, run_path)
+            key = (str(checkout), relative)
+            signature = None
+            try:
+                info = path.lstat()
+                signature = (info.st_dev, info.st_ino, info.st_mode, info.st_size, info.st_mtime_ns, info.st_ctime_ns)
+            except OSError:
+                pass
+            cached = self.cache.get(key)
+            if self.incremental and cached and signature is not None and cached[0] == signature and cached[1].status == "available":
+                artifacts[relative] = cached[1]
+            else:
+                artifacts[relative] = read_artifact(checkout, relative, run_path)
+                if self.incremental:
+                    self.cache[key] = (signature, artifacts[relative])
 
         def walk(directory: Path, run_path: str | None):
             if directory.is_symlink():
@@ -167,5 +227,8 @@ class LocalLegacyReader:
             if path not in artifacts:
                 artifacts[path] = LegacyArtifact(path, run_path, artifact_kind(path), artifact_format(path),
                                                  "missing", diagnostic="Archivo no observado; no acredita fallo.")
+        if self.incremental:
+            self.cache = {key: value for key, value in self.cache.items()
+                          if key[0] == str(checkout) and key[1] in artifacts}
         return LegacyInventory(str(checkout), tuple(runs[key] for key in sorted(runs)),
                                tuple(artifacts[key] for key in sorted(artifacts)))
