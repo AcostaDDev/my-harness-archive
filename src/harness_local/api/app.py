@@ -5,13 +5,13 @@ from uuid import UUID
 from fastapi import FastAPI, HTTPException
 from fastapi.staticfiles import StaticFiles
 from sqlalchemy import text
-from sqlalchemy.exc import SQLAlchemyError
 
 from harness_local.adapters.fake import FakeSimulationAdapter
 from harness_local.api.schemas import HealthRead, SimulationCreate, SimulationRead
 from harness_local.core.simulation import SimulationService
 from harness_local.storage.database import database_url, make_engine
 from harness_local.storage.repository import SQLiteSimulationRepository
+from harness_local.storage.schema import require_schema
 
 
 def create_app(url: str | None = None, ui_dir: Path | None = None) -> FastAPI:
@@ -21,16 +21,7 @@ def create_app(url: str | None = None, ui_dir: Path | None = None) -> FastAPI:
     @asynccontextmanager
     async def lifespan(app: FastAPI):
         try:
-            try:
-                with engine.connect() as connection:
-                    revision = connection.scalar(text("SELECT version_num FROM alembic_version"))
-                    if revision != "0001_simulations":
-                        raise RuntimeError("Migración incompatible: ejecutar alembic upgrade head.")
-                    connection.execute(text("SELECT id FROM simulations LIMIT 1"))
-            except SQLAlchemyError as error:
-                raise RuntimeError(
-                    "Base SQLite no preparada; ejecutar uv run --frozen alembic upgrade head."
-                ) from error
+            require_schema(engine)
             yield
         finally:
             engine.dispose()

@@ -50,7 +50,8 @@ Antes de dar una tarea por terminada: verificar criterios, ejecutar checks dispo
 
 ## Comandos actuales
 
-H0 completado: inventario, compatibilidad, fixtures y esqueleto simulado local.
+H0 y H1.1 completados: inventario, compatibilidad, fixtures, esqueleto simulado
+e importación legacy local de lectura.
 Comprobación offline ligera, solo biblioteca estándar, desde la raíz:
 
 ```sh
@@ -67,6 +68,8 @@ UV_CACHE_DIR=.local/uv-cache uv sync --frozen --no-python-downloads
 npm --prefix frontend ci --ignore-scripts --cache .local/npm-cache
 UV_CACHE_DIR=.local/uv-cache uv run --frozen --offline alembic upgrade head
 UV_CACHE_DIR=.local/uv-cache uv run --frozen --offline pytest -q
+UV_CACHE_DIR=.local/uv-cache uv run --frozen --offline python -m harness_local.cli legacy-import tests/fixtures/legacy/accepted
+UV_CACHE_DIR=.local/uv-cache uv run --frozen --offline python -m harness_local.cli legacy-summary tests/fixtures/legacy/accepted
 UV_CACHE_DIR=.local/uv-cache uv run --frozen --offline alembic current
 UV_CACHE_DIR=.local/uv-cache uv run --frozen --offline alembic check
 UV_CACHE_DIR=.local/uv-cache uv run --frozen --offline python scripts/export_openapi.py
@@ -78,8 +81,10 @@ npm --prefix frontend run dev
 ```
 
 Las primeras instalaciones necesitan red; después los checks son offline.
-No usar `uv --active` con entornos de otros proyectos. 26 pruebas pytest
-(12 anteriores + 14 H0.3). API/UI compilada en 127.0.0.1:8013; Vite en :5173
+No usar `uv --active` con entornos de otros proyectos. 40 pruebas pytest
+(12 anteriores + 14 H0.3 + 14 H1.1). API/UI compilada en 127.0.0.1:8013; Vite en :5173
 en otra terminal. SQLite local ignorada en `.local/harness.sqlite3`; migración
 explícita antes de arrancar. Ver README y `docs/discovery/H0.3_SKELETON.md`.
-Estos comandos ejecutan solo el esqueleto simulado, nunca agentes ni el motor.
+Estos comandos verifican el esqueleto simulado y el índice legacy de lectura,
+nunca agentes ni el motor. Esquema actual `0002_legacy_index`; SQLite debe estar
+fuera del checkout que se importa. Ver `docs/discovery/H1.1_IMPORT.md`.

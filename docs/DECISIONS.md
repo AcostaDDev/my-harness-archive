@@ -159,3 +159,29 @@ artefactos, comprobar su sincronización y no mantener copias manuales de los
 contratos en React. Uvicorn sirve assets compilados; Vite usa proxy `/api` en
 desarrollo, con ambos servicios enlazados a loopback. Comandos verificados en
 README/AGENTS; H0.3 no habilita SDK, proveedores ni distribución.
+
+## D012 — Índice legacy por evidencia, con relectura explícita
+
+Estado: implementado y comprobado en H1.1 el 2026-10-11.
+
+En observación, SQLite guarda la última lectura por raíz canónica y ruta relativa,
+identidad de directorio de run, SHA-256/tamaño, objetos JSON completos y diagnóstico
+local. Unicidad por ruta evita duplicados; un cambio de hash reemplaza la observación
+actual. Los originales son autoridad y mantienen el historial; el índice se puede
+reconstruir. Las simulaciones H0.3 siguen en una tabla separada. No crear intentos de
+agente a partir de índices de review/validación, ni estados de aceptación/commit/cierre
+por interpretar ACCEPT o READY. Identidades de tarea/fase se conservan en los payloads.
+
+Campos ausentes y null se etiquetan «no registrado» con procedencia distinta; cero
+reportado sigue siendo cero. JSON/UTF-8 inválido queda pendiente de relectura; errores
+locales se diagnostican por archivo y no abortan el resto ni declaran fallo del agente.
+Las ausencias de compañeros de evidencia son observaciones, no requisitos incumplidos.
+Un archivo desaparecido pierde el payload actual del índice. Enlaces no se siguen;
+texto/logs/diffs se referencian por ruta/hash sin copiar sus cuerpos. La CLI rechaza
+SQLite dentro del checkout de origen antes de conectar para mantener lectura de origen.
+
+`legacy-import` y `legacy-summary` son entradas explícitas locales, sin watcher ni
+navegación web. Consulta no relee archivos; reconstrucción/relectura requiere importar.
+H1.3 resolverá actualización incremental; H1.2 resolverá navegación sobre evidencias.
+No se acredita consistencia frente a escritores concurrentes ni transición a modo
+gestionado. [Entrega y verificaciones](discovery/H1.1_IMPORT.md).

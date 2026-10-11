@@ -1,8 +1,9 @@
 # my_harness — Harness Local
 
 Aplicación local para configurar, ejecutar y observar un harness modular de desarrollo con agentes.
-Estado actual: H0 completado. Esqueleto Python/API/UI con una simulación local
-persistida en SQLite; el motor y los adaptadores reales siguen pendientes.
+Estado actual: H0 y H1.1 completados. Esqueleto Python/API/UI con simulaciones
+persistidas e importación legacy de lectura mediante CLI. El motor y los
+adaptadores reales siguen pendientes.
 
 ## Documentación
 
@@ -17,6 +18,7 @@ persistida en SQLite; el motor y los adaptadores reales siguen pendientes.
 - [Versiones, capacidades y autenticación](docs/discovery/H0.2_COMPATIBILITY.md).
 - [Streams sintéticos y sonda offline](tests/fixtures/streams/README.md).
 - [Entrega y verificaciones H0.3](docs/discovery/H0.3_SKELETON.md).
+- [Importación de lectura H1.1](docs/discovery/H1.1_IMPORT.md).
 
 `AGENTS.md` contiene las instrucciones de Codex; `CLAUDE.md` remite al mismo contrato para Claude Code. El desarrollo es manual y no utiliza el harness como orquestador.
 
@@ -81,7 +83,7 @@ UV_CACHE_DIR=.local/uv-cache uv run --frozen --offline alembic current
 UV_CACHE_DIR=.local/uv-cache uv run --frozen --offline alembic check
 ```
 
-26 pruebas (12 anteriores y 14 de H0.3). El adaptador falso no lanza procesos,
+40 pruebas (12 anteriores, 14 de H0.3 y 14 de H1.1). El adaptador falso no lanza procesos,
 no escribe proyectos y no certifica revisión, aceptación ni commit.
 
 ## Comprobación offline disponible
@@ -96,4 +98,26 @@ Doce checks ligeros: cuatro de fixtures H0.1 y ocho de streams H0.2; no ejecutan
 el harness ni proveedores. Este comando sigue sin necesitar dependencias del
 producto. H0.3 ya verifica instalación y ejecución del esqueleto; las CLI
 reales por suscripción continúan sin integrar.
-La siguiente tarea es H1.1, importación legacy, todavía pendiente.
+La siguiente tarea es H1.2, navegación y evidencias, todavía pendiente.
+
+
+## Importación legacy de lectura
+
+Migrar con el servicio detenido antes de importar; el esquema actual es
+`0002_legacy_index`. Comandos comprobados desde la raíz, con datos sintéticos:
+
+```sh
+UV_CACHE_DIR=.local/uv-cache uv run --frozen --offline alembic upgrade head
+UV_CACHE_DIR=.local/uv-cache uv run --frozen --offline python -m harness_local.cli legacy-import tests/fixtures/legacy/accepted
+UV_CACHE_DIR=.local/uv-cache uv run --frozen --offline python -m harness_local.cli legacy-summary tests/fixtures/legacy/accepted
+```
+
+Cada argumento identifica una raíz de checkout con `.harness/runs`. Repetir
+`legacy-import` relee explícitamente sin duplicar registros; `legacy-summary`
+consulta solo SQLite e imprime JSON con procedencia, evidencias y diagnósticos.
+Usa la misma `HARNESS_DATABASE_URL` al migrar, importar y consultar. La base
+**debe quedar fuera del checkout de origen**; los archivos originales siguen
+siendo autoridad. Los JSON parciales quedan pendientes y no indican fallo de agente.
+Los campos ausentes/null aparecen como «no registrado», conservando su diferencia;
+los valores cero se muestran como registrados. No ejecuta los comandos históricos.
+H1.1 no incorpora todavía navegación web ni observación automática.

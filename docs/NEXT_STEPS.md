@@ -1,48 +1,53 @@
-# Siguiente tarea — H1.1 (pendiente)
+# Siguiente tarea — H1.2 (pendiente)
 
-H0.3 completado el 2026-10-11. [Alcance y criterios originales](discovery/H0.3_SCOPE.md)
-conservados para revisión; [entrega y verificaciones](discovery/H0.3_SKELETON.md).
-H0 está completado. Esta entrega no inicia H1.1.
+H1.1 completado el 2026-10-11. [Alcance y criterios originales](discovery/H1.1_SCOPE.md)
+conservados para revisión; [entrega y verificaciones](discovery/H1.1_IMPORT.md).
+Esta entrega no inicia H1.2.
 
 ## Objetivo
 
-Implementar importación legacy de lectura, idempotente y tolerante a archivos
-parciales, usando los fixtures sintéticos de H0.1. SQLite será un índice
-reconstruible en modo observación; los archivos de origen seguirán siendo autoridad.
+Implementar navegación de lectura por proyectos, fases, tareas y evidencias de
+runs legacy importados. Desde una tarea se debe poder llegar a la ejecución
+observada, revisión y evidencia que explican su resultado, sin inferir invocaciones
+ni aceptación aplicada a partir de índices o veredictos legacy.
 
 ## Alcance de la siguiente sesión
 
-1. Revisar `discovery/LEGACY_FORMATS.md`, `discovery/BASELINE.md`, decisiones
-   D006/D009/D010 y fixtures `tests/fixtures/legacy`. Usar únicamente datos
-   sintéticos; no leer/copiar runs reales ni ejecutar el harness de referencia.
-2. Leer `task.json`, resultados, reviews, validaciones, stops y metadatos de fases.
-   Conservar campos desconocidos relevantes y distinguir ausencia, null y cero;
-   no inferir invocaciones, aceptación o commits de iteraciones/estados legacy.
-3. Añadir el modelo mínimo de importación/índice y su migración. Identificar
-   procedencia por ruta, identidad y hash; reimportar no debe duplicar registros.
-   Mantener las simulaciones H0.3 separadas de los intentos importados.
-4. Registrar errores por archivo sin abortar el inventario completo. Un JSON
-   parcial puede quedar pendiente de relectura; un archivo ausente no acredita
-   fallo ni consumo cero. Incorporar una entrada local explícita para importar
-   y consultar el resumen; no implementar aún navegación H1.2 ni observador H1.3.
-5. Ejecutar checks offline de importación, migración y regresión pertinentes.
-   Actualizar comandos comprobados, STATE/NEXT_STEPS y decisiones duraderas.
+1. Revisar H1.2 del backlog, la especificación de observación, D006/D010/D012,
+   `discovery/LEGACY_FORMATS.md` y el índice H1.1. Usar fixtures sintéticos;
+   no leer/copiar runs reales ni ejecutar el harness de referencia.
+2. Añadir consultas y contratos HTTP de lectura para listar proyectos/orígenes,
+   fases y tareas, con acceso a runs y evidencia de ejecución observada. Conservar
+   procedencia y límites de identidad del legacy; review/validation no generan
+   por sí solos nuevos intentos de agente ni aceptación/commits.
+3. Incorporar navegación UI y timeline de evidencias, hallazgos de revisión,
+   bloqueos, diffs y logs paginados. Lectura de artefactos desde el origen debe
+   comprobar ruta/hash y mostrar ausencias o cambios sin presentar bytes nuevos
+   como la versión indexada. No ejecutar contenido histórico.
+4. Mostrar duración por comando y consumo con origen identificado; conservar
+   «no registrado», null y cero, selección solicitada frente a datos reportados,
+   y coste equivalente API frente a factura/cuota. Mostrar diagnósticos locales
+   y pendientes sin equipararlos a errores de agente.
+5. Generar OpenAPI/tipos desde los contratos del límite HTTP, ejecutar checks
+   offline pertinentes y verificar el recorrido con los cinco escenarios.
+   Mantener importación H1.1/simulaciones H0.3, actualizar STATE/NEXT_STEPS y
+   registrar decisiones duraderas.
 
 ## Criterios de aceptación
 
-- Los cinco escenarios sintéticos se importan con sus evidencias y ausencias;
-  la segunda importación no duplica registros.
-- Ausencia de consumo o duración se conserva como «no registrado», sin
-  convertirla en cero o una estimación; null y cero observado siguen distinguibles.
-- Un archivo inválido/parcial genera diagnóstico local y permite importar el
-  resto; una relectura explícita puede incorporar una versión completa.
-- No se modifica el origen ni se ejecutan agentes. Migración y checks offline
-  pasan, y el recorrido simulado H0.3 sigue funcionando.
+- Desde una tarea importada se llega a su run/evidencia de ejecución, revisión
+  y artefactos que explican los datos mostrados; historial REVISE se conserva.
+- Los cinco escenarios se pueden inspeccionar sin inventar invocaciones,
+  aceptación, commit ni cierre, y sin ocultar ausencias o revisión parcial.
+- Timeline/hallazgos/bloqueos y logs/diffs paginados conservan procedencia;
+  contenido ausente o con hash cambiado se presenta explícitamente.
+- Duración/consumo muestran origen y campos no registrados sin defaults/cero
+  ficticios. Contratos/tipos, checks offline y build pasan; H1.1/H0.3 siguen funcionando.
 
 ## Fuera de alcance
 
-H1.2 navegación/timeline, H1.3 observador/SSE, extracción del motor H2,
-adaptadores reales, chat, permisos interactivos, SDKs y distribución.
+H1.3 observador/SSE/reconciliación automática, extracción del motor H2,
+modo gestionado, adaptadores reales, chat, permisos interactivos, SDKs y distribución.
 No ejecutar harness, agentes, tests/instalaciones en ReferenceProject ni modificar
 configuración global. Cualquier smoke real con proveedores exige autorización
 explícita de consumo en una tarea posterior.

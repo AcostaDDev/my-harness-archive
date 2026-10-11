@@ -35,20 +35,32 @@ Actualizado: 2026-10-11.
 - Dependencias reales instaladas en `.venv` / `frontend/node_modules`, locks
   `uv.lock` / `frontend/package-lock.json`. Pins H0.2 usados conservados;
   backend de paquete `uv_build==0.12.19`. Comandos comprobados en README/AGENTS.
-- 14 casos de producto en `tests/product/`; pytest ejecuta 26 pruebas en total.
+- 28 casos de producto en `tests/product/`; pytest ejecuta 40 pruebas en total.
   La comprobación ligera anterior conserva sus 12 checks sin dependencias.
+- H1.1 completado: [importación legacy y verificaciones](discovery/H1.1_IMPORT.md),
+  [alcance original](discovery/H1.1_SCOPE.md). Lector local explícito de
+  `.harness/runs`, documentos de estado/fase y archivo documental de fases;
+  núcleo de biblioteca estándar y CLI `python -m harness_local.cli`.
+- Índice SQLite de observación reconstruible: `legacy_sources`, `legacy_runs`,
+  `legacy_artifacts`, migración `0002_legacy_index`. Unicidad por raíz canónica
+  y ruta; identidad del run y SHA-256 de bytes leídos, sin crear intentos inferidos.
+  Conserva JSON/campos desconocidos, ausencias, null, cero y diagnósticos locales.
+- Importación y consulta de resumen por CLI, sin observador ni navegación web.
+  Relectura explícita actualiza parciales/cambios; evidencia desaparecida queda
+  ausente sin payload obsoleto. Los originales son autoridad y no se modifican.
+  Texto/logs/diffs se indexan por ruta/hash/tamaño, sin duplicar sus cuerpos.
 
 ## Todavía no existe
 
-Importador legacy, navegación de proyectos/tareas/intentos, motor, supervisor,
+Navegación de proyectos/tareas/intentos, motor, supervisor,
 cola, bloqueo por checkout, adaptadores reales, permisos interactivos, chat,
-SSE ni distribución. La base y el recorrido H0.3 solo guardan simulaciones;
+SSE ni distribución. El recorrido H0.3 solo guarda simulaciones;
 no representan intentos reales ni aceptación de tareas. Ninguna integración
 con proveedores se ha ejecutado.
 
 ## Trabajo activo
 
-H0 — Contratos y prueba de viabilidad completado. Próxima tarea: H1.1,
+H0 y H1.1 completados. Próxima tarea: H1.2,
 detallada en `NEXT_STEPS.md`, pendiente de una nueva sesión dirigida por el usuario.
 
 ## Verificación de H0.1
@@ -102,6 +114,32 @@ detallada en `NEXT_STEPS.md`, pendiente de una nueva sesión dirigida por el usu
   ignoradas; no se tocó el entorno activo externo que uv ignoró.
 - Límites: no se probaron concurrencia, intentos reales, cancelación, cuota,
   otros sistemas, importador ni motor. H1.1 queda pendiente.
+
+## Verificación de H1.1
+
+- `uv run --frozen --offline pytest -q`: 40 pruebas y 121 subtests correctos;
+  14 casos nuevos de importación/CLI/migración y regresión completa de H0.
+  Los 12 checks de biblioteca estándar continúan pasando. El nuevo núcleo
+  se importa con `python -S` y conserva la frontera de dependencias.
+- Cinco fixtures importados dos veces mediante CLI en SQLite sintética local:
+  5 orígenes, 7 runs y 105 entradas (89 disponibles, 1 pendiente, 15 ausentes).
+  Resumen idéntico tras reimportar/consultar.
+- Comprobados hashes/payloads y mtime/bytes de origen sin cambios, ausencia/null/
+  cero, campos futuros, JSON/UTF-8 inválidos, JSONL parcial, errores de lectura,
+  enlaces no seguidos, desaparición de archivo y relectura tras completar JSON.
+  La consulta no relee el origen ni oculta el carácter pendiente del índice.
+- Upgrade/downgrade a H0.3/upgrade, reconstrucción de índice y `alembic check`
+  correctos; claves foráneas/WAL y simulaciones conservadas. CLI exige migración
+  explícita y rechaza SQLite dentro del checkout de origen antes de conectar.
+- TypeScript y build Vite correctos; OpenAPI sigue sincronizado por la prueba
+  existente. Regresión de API/UI estática y persistencia tras reinicio correctas
+  mediante TestClient, sin arrancar servidores ni repetir el recorrido en navegador.
+- Diff/whitespace revisados; decisión D012. Sin red, proveedores, agentes, harness,
+  runs reales, acceso a ReferenceProject ni configuración global. Se usa `.venv` local;
+  uv ignora el entorno activo externo. Persiste el aviso upstream HTTPX/Starlette.
+- Límites: no hay watcher/SSE, navegación H1.2, entidades gestionadas, certificación
+  de aceptación/commit, migración a modo gestionado ni prueba de escritores
+  concurrentes. Solo fixtures sintéticos y relecturas manuales; H1.2 no iniciado.
 
 ## Coordinación
 
