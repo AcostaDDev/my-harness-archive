@@ -1,0 +1,2 @@
+{"type": "system", "subtype": "init", "model": "claude-sonnet-5-5"}
+{"type": "result", "subtype": "error_synthetic", "is_error": true, "result": "Error operativo ficticio."}

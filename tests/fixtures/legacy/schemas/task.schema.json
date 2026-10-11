@@ -1,0 +1,130 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ReferenceProjectImplementationTask",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "task_id": {
+      "type": "string",
+      "pattern": "^P[0-9]{3}-T[0-9]{3}$"
+    },
+    "phase_id": {
+      "type": "string",
+      "pattern": "^P[0-9]{3}$"
+    },
+    "title": {
+      "type": "string",
+      "minLength": 1
+    },
+    "objective": {
+      "type": "string",
+      "minLength": 1
+    },
+    "business_context": {
+      "type": "string"
+    },
+    "documentation_refs": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "allowed_paths": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "forbidden_paths": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "implementation_constraints": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "acceptance_criteria": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string"
+      }
+    },
+    "validation_commands": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "deliverables": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "risk_notes": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "executor_prompt": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Standalone prompt for a fresh Claude Code session."
+    },
+    "executor_selection": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "model": {
+          "type": "string",
+          "enum": [
+            "claude-sonnet-5-5",
+            "claude-opus-5-5"
+          ]
+        },
+        "effort": {
+          "type": "string",
+          "enum": [
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ]
+        },
+        "reason": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "model",
+        "effort",
+        "reason"
+      ]
+    }
+  },
+  "required": [
+    "task_id",
+    "phase_id",
+    "title",
+    "objective",
+    "business_context",
+    "documentation_refs",
+    "allowed_paths",
+    "forbidden_paths",
+    "implementation_constraints",
+    "acceptance_criteria",
+    "validation_commands",
+    "deliverables",
+    "risk_notes",
+    "executor_prompt",
+    "executor_selection"
+  ]
+}

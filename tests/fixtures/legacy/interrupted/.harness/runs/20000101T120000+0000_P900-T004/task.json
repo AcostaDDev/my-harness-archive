@@ -1,0 +1,36 @@
+{
+  "task_id": "P900-T004",
+  "phase_id": "P900",
+  "title": "Ejercicio Demo sintético",
+  "objective": "Añadir una función ficticia que devuelve un saludo.",
+  "business_context": "Proyecto imaginario, sin datos de aplicación.",
+  "documentation_refs": [
+    "docs/NEXT_STEPS.md"
+  ],
+  "allowed_paths": [
+    "src/demo.py"
+  ],
+  "forbidden_paths": [
+    "docs/**",
+    ".harness/**"
+  ],
+  "implementation_constraints": [
+    "Sin red ni datos reales."
+  ],
+  "acceptance_criteria": [
+    "La función devuelve el saludo esperado."
+  ],
+  "validation_commands": [
+    "python synthetic_check.py"
+  ],
+  "deliverables": [
+    "src/demo.py"
+  ],
+  "risk_notes": [],
+  "executor_prompt": "Implementa el saludo del proyecto imaginario Demo dentro del alcance sintético.",
+  "executor_selection": {
+    "model": "claude-sonnet-5-5",
+    "effort": "medium",
+    "reason": "Ejercicio sintético acotado."
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "iteration": 0,
+  "all_passed": true,
+  "commands": [
+    {
+      "command": "python synthetic_check.py",
+      "passed": true,
+      "exit_code": 0,
+      "stdout_file": ".harness/runs/20000101T120000+0000_P900-CLOSE/validation-00/01.stdout.log",
+      "stderr_file": ".harness/runs/20000101T120000+0000_P900-CLOSE/validation-00/01.stderr.log",
+      "error": "",
+      "duration_seconds": 0.004
+    }
+  ],
+  "policy": {
+    "hard_failure": false,
+    "note": "phase-check baseline on the committed tree"
+  },
+  "note": ""
+}

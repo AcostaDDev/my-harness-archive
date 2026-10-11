@@ -1,0 +1,6 @@
+{
+  "type": "result",
+  "subtype": "error_synthetic",
+  "is_error": true,
+  "result": "Error operativo ficticio."
+}

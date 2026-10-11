@@ -1,0 +1,16 @@
+{
+  "iteration": 0,
+  "changed_paths_before_enforcement": [
+    "src/demo.py"
+  ],
+  "forbidden_attempts": [],
+  "restored_forbidden_paths": [],
+  "sensitive_paths_detected": [],
+  "restored_sensitive_paths": [],
+  "changed_paths_after_enforcement": [
+    "src/demo.py"
+  ],
+  "remaining_forbidden_paths": [],
+  "remaining_sensitive_paths": [],
+  "hard_failure": false
+}

@@ -1,0 +1,32 @@
+{
+  "iteration": 0,
+  "all_passed": true,
+  "commands": [
+    {
+      "command": "python synthetic_check.py",
+      "passed": true,
+      "exit_code": 0,
+      "stdout_file": ".harness/runs/20000101T120000+0000_P900-T001/validation-00/01.stdout.log",
+      "stderr_file": ".harness/runs/20000101T120000+0000_P900-T001/validation-00/01.stderr.log",
+      "error": "",
+      "duration_seconds": 0.004
+    }
+  ],
+  "policy": {
+    "iteration": 0,
+    "changed_paths_before_enforcement": [
+      "src/demo.py"
+    ],
+    "forbidden_attempts": [],
+    "restored_forbidden_paths": [],
+    "sensitive_paths_detected": [],
+    "restored_sensitive_paths": [],
+    "changed_paths_after_enforcement": [
+      "src/demo.py"
+    ],
+    "remaining_forbidden_paths": [],
+    "remaining_sensitive_paths": [],
+    "hard_failure": false
+  },
+  "note": ""
+}

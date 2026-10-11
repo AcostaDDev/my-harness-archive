@@ -1,0 +1,479 @@
+{
+  "synthetic": true,
+  "description": "Historias ficticias del proyecto Demo; los esquemas son snapshots del origen.",
+  "cases": {
+    "accepted": {
+      "description": "ACCEPT con validación y telemetría reportada; estado documental de aceptación. El SHA es ficción en extracto Git auxiliar.",
+      "runs": [
+        "accepted/.harness/runs/20000101T120000+0000_P900-T001"
+      ],
+      "absent_files": []
+    },
+    "revise": {
+      "description": "Iteración 00 REVISE por fallo de comprobación; intento 01 con validación correcta y ACCEPT. Se conservan ambos.",
+      "runs": [
+        "revise/.harness/runs/20000101T120000+0000_P900-T002"
+      ],
+      "absent_files": []
+    },
+    "blocked": {
+      "description": "Review BLOCKED por decisión humana; después un reintento explícito falla operativamente y genera stop, no otra review. Contrato legacy sin elección registrada.",
+      "runs": [
+        "blocked/.harness/runs/20000101T120000+0000_P900-T003"
+      ],
+      "absent_files": [
+        "blocked/.harness/runs/20000101T120000+0000_P900-T003/review-01.json",
+        "blocked/.harness/runs/20000101T120000+0000_P900-T003/validation-01.json"
+      ]
+    },
+    "interrupted": {
+      "description": "Dos runs alternativos de la misma tarea: executor interrumpido sin final; reviewer interrumpido con JSON parcial. No se inventa stop ni veredicto.",
+      "runs": [
+        "interrupted/.harness/runs/20000101T120000+0000_P900-T004",
+        "interrupted/.harness/runs/20000101T130000+0000_P900-T004"
+      ],
+      "absent_files": [
+        "interrupted/.harness/runs/20000101T120000+0000_P900-T004/claude-00.result.json",
+        "interrupted/.harness/runs/20000101T120000+0000_P900-T004/claude-00.result.usage.json",
+        "interrupted/.harness/runs/20000101T120000+0000_P900-T004/review-00.json",
+        "interrupted/.harness/runs/20000101T120000+0000_P900-T004/stop-00.json",
+        "interrupted/.harness/runs/20000101T120000+0000_P900-T004/validation-00.json",
+        "interrupted/.harness/runs/20000101T130000+0000_P900-T004/stop-00.json"
+      ]
+    },
+    "closed-phase": {
+      "description": "READY sobre HEAD ficticio y documentos posteriores al cierre con fase siguiente. Reconciliación anterior sin preguntas. El extracto Git auxiliar es ficticio.",
+      "runs": [
+        "closed-phase/.harness/runs/20000101T110000+0000_P900-RECONCILE",
+        "closed-phase/.harness/runs/20000101T120000+0000_P900-CLOSE"
+      ],
+      "absent_files": []
+    }
+  },
+  "artifacts": [
+    {
+      "path": "accepted/.harness/runs/20000101T120000+0000_P900-T001/task.json",
+      "format": "json",
+      "schema": "task"
+    },
+    {
+      "path": "accepted/.harness/runs/20000101T120000+0000_P900-T001/claude-00.prompt.md",
+      "format": "text"
+    },
+    {
+      "path": "accepted/.harness/runs/20000101T120000+0000_P900-T001/claude-00.result.request.json",
+      "format": "json"
+    },
+    {
+      "path": "accepted/.harness/runs/20000101T120000+0000_P900-T001/claude-00.stderr.log",
+      "format": "text"
+    },
+    {
+      "path": "accepted/.harness/runs/20000101T120000+0000_P900-T001/claude-00.result.json",
+      "format": "json"
+    },
+    {
+      "path": "accepted/.harness/runs/20000101T120000+0000_P900-T001/claude-00.result.events.jsonl",
+      "format": "jsonl"
+    },
+    {
+      "path": "accepted/.harness/runs/20000101T120000+0000_P900-T001/claude-00.result.usage.json",
+      "format": "json"
+    },
+    {
+      "path": "accepted/.harness/runs/20000101T120000+0000_P900-T001/policy-00.json",
+      "format": "json"
+    },
+    {
+      "path": "accepted/.harness/runs/20000101T120000+0000_P900-T001/validation-00.json",
+      "format": "json"
+    },
+    {
+      "path": "accepted/.harness/runs/20000101T120000+0000_P900-T001/validation-00/01.stdout.log",
+      "format": "text"
+    },
+    {
+      "path": "accepted/.harness/runs/20000101T120000+0000_P900-T001/validation-00/01.stderr.log",
+      "format": "text"
+    },
+    {
+      "path": "accepted/.harness/runs/20000101T120000+0000_P900-T001/diff-00.patch",
+      "format": "text"
+    },
+    {
+      "path": "accepted/.harness/runs/20000101T120000+0000_P900-T001/review-00.json",
+      "format": "json",
+      "schema": "review"
+    },
+    {
+      "path": "accepted/docs/STATE.md",
+      "format": "text"
+    },
+    {
+      "path": "accepted/synthetic-git-log.txt",
+      "format": "text"
+    },
+    {
+      "path": "revise/.harness/runs/20000101T120000+0000_P900-T002/task.json",
+      "format": "json",
+      "schema": "task"
+    },
+    {
+      "path": "revise/.harness/runs/20000101T120000+0000_P900-T002/claude-00.prompt.md",
+      "format": "text"
+    },
+    {
+      "path": "revise/.harness/runs/20000101T120000+0000_P900-T002/claude-00.result.request.json",
+      "format": "json"
+    },
+    {
+      "path": "revise/.harness/runs/20000101T120000+0000_P900-T002/claude-00.stderr.log",
+      "format": "text"
+    },
+    {
+      "path": "revise/.harness/runs/20000101T120000+0000_P900-T002/claude-00.result.json",
+      "format": "json"
+    },
+    {
+      "path": "revise/.harness/runs/20000101T120000+0000_P900-T002/claude-00.result.events.jsonl",
+      "format": "jsonl"
+    },
+    {
+      "path": "revise/.harness/runs/20000101T120000+0000_P900-T002/claude-00.result.usage.json",
+      "format": "json"
+    },
+    {
+      "path": "revise/.harness/runs/20000101T120000+0000_P900-T002/policy-00.json",
+      "format": "json"
+    },
+    {
+      "path": "revise/.harness/runs/20000101T120000+0000_P900-T002/validation-00.json",
+      "format": "json"
+    },
+    {
+      "path": "revise/.harness/runs/20000101T120000+0000_P900-T002/validation-00/01.stdout.log",
+      "format": "text"
+    },
+    {
+      "path": "revise/.harness/runs/20000101T120000+0000_P900-T002/validation-00/01.stderr.log",
+      "format": "text"
+    },
+    {
+      "path": "revise/.harness/runs/20000101T120000+0000_P900-T002/diff-00.patch",
+      "format": "text"
+    },
+    {
+      "path": "revise/.harness/runs/20000101T120000+0000_P900-T002/review-00.json",
+      "format": "json",
+      "schema": "review"
+    },
+    {
+      "path": "revise/.harness/runs/20000101T120000+0000_P900-T002/claude-01.prompt.md",
+      "format": "text"
+    },
+    {
+      "path": "revise/.harness/runs/20000101T120000+0000_P900-T002/claude-01.result.request.json",
+      "format": "json"
+    },
+    {
+      "path": "revise/.harness/runs/20000101T120000+0000_P900-T002/claude-01.stderr.log",
+      "format": "text"
+    },
+    {
+      "path": "revise/.harness/runs/20000101T120000+0000_P900-T002/claude-01.result.json",
+      "format": "json"
+    },
+    {
+      "path": "revise/.harness/runs/20000101T120000+0000_P900-T002/claude-01.result.events.jsonl",
+      "format": "jsonl"
+    },
+    {
+      "path": "revise/.harness/runs/20000101T120000+0000_P900-T002/claude-01.result.usage.json",
+      "format": "json"
+    },
+    {
+      "path": "revise/.harness/runs/20000101T120000+0000_P900-T002/policy-01.json",
+      "format": "json"
+    },
+    {
+      "path": "revise/.harness/runs/20000101T120000+0000_P900-T002/validation-01.json",
+      "format": "json"
+    },
+    {
+      "path": "revise/.harness/runs/20000101T120000+0000_P900-T002/validation-01/01.stdout.log",
+      "format": "text"
+    },
+    {
+      "path": "revise/.harness/runs/20000101T120000+0000_P900-T002/validation-01/01.stderr.log",
+      "format": "text"
+    },
+    {
+      "path": "revise/.harness/runs/20000101T120000+0000_P900-T002/diff-01.patch",
+      "format": "text"
+    },
+    {
+      "path": "revise/.harness/runs/20000101T120000+0000_P900-T002/review-01.json",
+      "format": "json",
+      "schema": "review"
+    },
+    {
+      "path": "blocked/.harness/runs/20000101T120000+0000_P900-T003/task.json",
+      "format": "json",
+      "schema": "task",
+      "absent_fields": [
+        "executor_selection"
+      ]
+    },
+    {
+      "path": "blocked/.harness/runs/20000101T120000+0000_P900-T003/claude-00.prompt.md",
+      "format": "text"
+    },
+    {
+      "path": "blocked/.harness/runs/20000101T120000+0000_P900-T003/claude-00.result.request.json",
+      "format": "json"
+    },
+    {
+      "path": "blocked/.harness/runs/20000101T120000+0000_P900-T003/claude-00.stderr.log",
+      "format": "text"
+    },
+    {
+      "path": "blocked/.harness/runs/20000101T120000+0000_P900-T003/claude-00.result.json",
+      "format": "json",
+      "absent_fields": [
+        "usage",
+        "modelUsage",
+        "num_turns",
+        "duration_ms",
+        "total_cost_usd"
+      ]
+    },
+    {
+      "path": "blocked/.harness/runs/20000101T120000+0000_P900-T003/claude-00.result.events.jsonl",
+      "format": "jsonl"
+    },
+    {
+      "path": "blocked/.harness/runs/20000101T120000+0000_P900-T003/claude-00.result.usage.json",
+      "format": "json",
+      "null_fields": [
+        "usage",
+        "model_usage",
+        "num_turns",
+        "duration_ms",
+        "api_equivalent_cost_usd"
+      ]
+    },
+    {
+      "path": "blocked/.harness/runs/20000101T120000+0000_P900-T003/policy-00.json",
+      "format": "json"
+    },
+    {
+      "path": "blocked/.harness/runs/20000101T120000+0000_P900-T003/validation-00.json",
+      "format": "json"
+    },
+    {
+      "path": "blocked/.harness/runs/20000101T120000+0000_P900-T003/validation-00/01.stdout.log",
+      "format": "text"
+    },
+    {
+      "path": "blocked/.harness/runs/20000101T120000+0000_P900-T003/validation-00/01.stderr.log",
+      "format": "text"
+    },
+    {
+      "path": "blocked/.harness/runs/20000101T120000+0000_P900-T003/diff-00.patch",
+      "format": "text"
+    },
+    {
+      "path": "blocked/.harness/runs/20000101T120000+0000_P900-T003/review-00.json",
+      "format": "json",
+      "schema": "review"
+    },
+    {
+      "path": "blocked/.harness/runs/20000101T120000+0000_P900-T003/resume-01.json",
+      "format": "json"
+    },
+    {
+      "path": "blocked/.harness/runs/20000101T120000+0000_P900-T003/claude-01.prompt.md",
+      "format": "text"
+    },
+    {
+      "path": "blocked/.harness/runs/20000101T120000+0000_P900-T003/claude-01.result.request.json",
+      "format": "json"
+    },
+    {
+      "path": "blocked/.harness/runs/20000101T120000+0000_P900-T003/claude-01.stderr.log",
+      "format": "text"
+    },
+    {
+      "path": "blocked/.harness/runs/20000101T120000+0000_P900-T003/claude-01.result.json",
+      "format": "json",
+      "absent_fields": [
+        "usage",
+        "modelUsage",
+        "num_turns",
+        "duration_ms",
+        "total_cost_usd"
+      ]
+    },
+    {
+      "path": "blocked/.harness/runs/20000101T120000+0000_P900-T003/claude-01.result.events.jsonl",
+      "format": "jsonl"
+    },
+    {
+      "path": "blocked/.harness/runs/20000101T120000+0000_P900-T003/claude-01.result.usage.json",
+      "format": "json",
+      "null_fields": [
+        "usage",
+        "model_usage",
+        "num_turns",
+        "duration_ms",
+        "api_equivalent_cost_usd"
+      ]
+    },
+    {
+      "path": "blocked/.harness/runs/20000101T120000+0000_P900-T003/stop-01.json",
+      "format": "json"
+    },
+    {
+      "path": "interrupted/.harness/runs/20000101T120000+0000_P900-T004/task.json",
+      "format": "json",
+      "schema": "task"
+    },
+    {
+      "path": "interrupted/.harness/runs/20000101T120000+0000_P900-T004/claude-00.prompt.md",
+      "format": "text"
+    },
+    {
+      "path": "interrupted/.harness/runs/20000101T120000+0000_P900-T004/claude-00.result.request.json",
+      "format": "json"
+    },
+    {
+      "path": "interrupted/.harness/runs/20000101T120000+0000_P900-T004/claude-00.result.events.jsonl",
+      "format": "jsonl"
+    },
+    {
+      "path": "interrupted/.harness/runs/20000101T130000+0000_P900-T004/task.json",
+      "format": "json",
+      "schema": "task"
+    },
+    {
+      "path": "interrupted/.harness/runs/20000101T130000+0000_P900-T004/claude-00.prompt.md",
+      "format": "text"
+    },
+    {
+      "path": "interrupted/.harness/runs/20000101T130000+0000_P900-T004/claude-00.result.request.json",
+      "format": "json"
+    },
+    {
+      "path": "interrupted/.harness/runs/20000101T130000+0000_P900-T004/claude-00.stderr.log",
+      "format": "text"
+    },
+    {
+      "path": "interrupted/.harness/runs/20000101T130000+0000_P900-T004/claude-00.result.json",
+      "format": "json",
+      "absent_fields": [
+        "usage",
+        "modelUsage",
+        "num_turns",
+        "duration_ms",
+        "total_cost_usd"
+      ]
+    },
+    {
+      "path": "interrupted/.harness/runs/20000101T130000+0000_P900-T004/claude-00.result.events.jsonl",
+      "format": "jsonl"
+    },
+    {
+      "path": "interrupted/.harness/runs/20000101T130000+0000_P900-T004/claude-00.result.usage.json",
+      "format": "json",
+      "null_fields": [
+        "usage",
+        "model_usage",
+        "num_turns",
+        "duration_ms",
+        "api_equivalent_cost_usd"
+      ]
+    },
+    {
+      "path": "interrupted/.harness/runs/20000101T130000+0000_P900-T004/policy-00.json",
+      "format": "json"
+    },
+    {
+      "path": "interrupted/.harness/runs/20000101T130000+0000_P900-T004/validation-00.json",
+      "format": "json"
+    },
+    {
+      "path": "interrupted/.harness/runs/20000101T130000+0000_P900-T004/validation-00/01.stdout.log",
+      "format": "text"
+    },
+    {
+      "path": "interrupted/.harness/runs/20000101T130000+0000_P900-T004/validation-00/01.stderr.log",
+      "format": "text"
+    },
+    {
+      "path": "interrupted/.harness/runs/20000101T130000+0000_P900-T004/diff-00.patch",
+      "format": "text"
+    },
+    {
+      "path": "interrupted/.harness/runs/20000101T130000+0000_P900-T004/review-00.prompt.md",
+      "format": "text"
+    },
+    {
+      "path": "interrupted/.harness/runs/20000101T130000+0000_P900-T004/review-00.json",
+      "format": "partial_json"
+    },
+    {
+      "path": "closed-phase/.harness/runs/20000101T120000+0000_P900-CLOSE/validation-00.json",
+      "format": "json"
+    },
+    {
+      "path": "closed-phase/.harness/runs/20000101T120000+0000_P900-CLOSE/validation-00/01.stdout.log",
+      "format": "text"
+    },
+    {
+      "path": "closed-phase/.harness/runs/20000101T120000+0000_P900-CLOSE/validation-00/01.stderr.log",
+      "format": "text"
+    },
+    {
+      "path": "closed-phase/.harness/runs/20000101T120000+0000_P900-CLOSE/phase-review.json",
+      "format": "json",
+      "schema": "phase"
+    },
+    {
+      "path": "closed-phase/.harness/runs/20000101T120000+0000_P900-CLOSE/phase-review.meta.json",
+      "format": "json"
+    },
+    {
+      "path": "closed-phase/.harness/runs/20000101T110000+0000_P900-RECONCILE/reconcile.json",
+      "format": "json",
+      "schema": "reconcile"
+    },
+    {
+      "path": "closed-phase/docs/archive/phase-900/SUMMARY.md",
+      "format": "text"
+    },
+    {
+      "path": "closed-phase/docs/archive/phase-900/REVIEW.md",
+      "format": "text"
+    },
+    {
+      "path": "closed-phase/docs/archive/phase-900/NEXT_STEPS.md",
+      "format": "text"
+    },
+    {
+      "path": "closed-phase/docs/STATE.md",
+      "format": "text"
+    },
+    {
+      "path": "closed-phase/docs/ROADMAP.md",
+      "format": "text"
+    },
+    {
+      "path": "closed-phase/docs/NEXT_STEPS.md",
+      "format": "text"
+    },
+    {
+      "path": "closed-phase/synthetic-git-log.txt",
+      "format": "text"
+    }
+  ]
+}

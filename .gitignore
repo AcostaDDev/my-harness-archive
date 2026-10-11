@@ -1,0 +1,30 @@
+# Entornos y dependencias
+.venv/
+node_modules/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Build y resultados locales
+dist/
+build/
+*.egg-info/
+coverage/
+.coverage
+htmlcov/
+playwright-report/
+test-results/
+
+# Secretos y estado local
+.env
+.env.*
+!.env.example
+*.sqlite3
+*.sqlite3-wal
+*.sqlite3-shm
+.harness/runs/
+.local/
+work/
+.DS_Store

@@ -1,0 +1,6 @@
+{
+  "task_id": "P900-T003",
+  "verdict": "BLOCKED",
+  "reason": "Error de ejecución sintético; sin reintento automático.",
+  "stage": "executor"
+}

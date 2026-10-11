@@ -1,0 +1,16 @@
+{
+  "requested": {
+    "model": "claude-sonnet-5-5",
+    "effort": "medium",
+    "reason": "Ejercicio sintético acotado."
+  },
+  "actual_models": [],
+  "usage": null,
+  "model_usage": null,
+  "num_turns": null,
+  "duration_ms": null,
+  "api_equivalent_cost_usd": null,
+  "is_error": false,
+  "subtype": "success",
+  "exit_code": 0
+}

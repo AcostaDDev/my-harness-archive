@@ -1,0 +1,27 @@
+{
+  "requested": {
+    "model": "claude-sonnet-5-5",
+    "effort": "medium",
+    "reason": "Ejercicio sintético acotado."
+  },
+  "actual_models": [
+    "claude-sonnet-5-5"
+  ],
+  "usage": {
+    "input_tokens": 120,
+    "output_tokens": 20
+  },
+  "model_usage": {
+    "claude-sonnet-5-5": {
+      "inputTokens": 120,
+      "outputTokens": 20,
+      "costUSD": 0.0006
+    }
+  },
+  "num_turns": 1,
+  "duration_ms": 80,
+  "api_equivalent_cost_usd": 0.0006,
+  "is_error": false,
+  "subtype": "success",
+  "exit_code": 0
+}

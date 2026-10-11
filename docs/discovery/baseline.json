@@ -1,0 +1,143 @@
+{
+  "source_repository": "$HOME/Documents/projects/reference_project",
+  "reference_commit": "5be3b8a1328f7725a0f81c98af4f365e3528a767",
+  "captured_on": "2026-10-11",
+  "git_status_short": [
+    " M src/apps/billing/delinquency_selectors.py",
+    " M src/apps/billing/tests/test_delinquency_selectors.py",
+    " M src/apps/staff/templatetags/staff_navigation.py",
+    " M src/config/settings/base.py",
+    " M src/config/urls.py",
+    " M src/templates/backoffice/includes/navigation.html",
+    "?? src/apps/analytics/",
+    "?? src/templates/analytics/"
+  ],
+  "files": [
+    {
+      "path": ".harness/.gitignore",
+      "sha256": "670eb88f324c3030e46eb13d450d910c0292ad5f05db40c4de6c28a78050693b",
+      "head_sha256": "670eb88f324c3030e46eb13d450d910c0292ad5f05db40c4de6c28a78050693b",
+      "matches_head": true
+    },
+    {
+      "path": ".harness/MODEL_POLICY.md",
+      "sha256": "d65153882729068b1031a27481e4da70e1dfde78944e2788872157923ce421e1",
+      "head_sha256": "d65153882729068b1031a27481e4da70e1dfde78944e2788872157923ce421e1",
+      "matches_head": true
+    },
+    {
+      "path": ".harness/README.md",
+      "sha256": "4fd40cd6110ec758a1cbdfebb5f8f24a10d36d085f67a81f29afe4c0ecb01c2d",
+      "head_sha256": "4fd40cd6110ec758a1cbdfebb5f8f24a10d36d085f67a81f29afe4c0ecb01c2d",
+      "matches_head": true
+    },
+    {
+      "path": ".harness/config.yaml",
+      "sha256": "15bf279a00187803d2be8aeb7fd7a5e6acc30d059af805553450c6dbf35b9e92",
+      "head_sha256": "15bf279a00187803d2be8aeb7fd7a5e6acc30d059af805553450c6dbf35b9e92",
+      "matches_head": true
+    },
+    {
+      "path": ".harness/harness.py",
+      "sha256": "5e9d33c7de429da9cd9738f371ee32efd629ff2716e983166017d02270ae2080",
+      "head_sha256": "5e9d33c7de429da9cd9738f371ee32efd629ff2716e983166017d02270ae2080",
+      "matches_head": true
+    },
+    {
+      "path": ".harness/prompts/bootstrap-project.md",
+      "sha256": "5038b0c8ed1719c2a5c8dbdb0b376764693b68d37f9368e60ec46f90af1638ab",
+      "head_sha256": "5038b0c8ed1719c2a5c8dbdb0b376764693b68d37f9368e60ec46f90af1638ab",
+      "matches_head": true
+    },
+    {
+      "path": ".harness/prompts/close-phase.md",
+      "sha256": "b6c6715fbac9bcf991bab0e47dd24b3c6a23a9c68e602465b04ffd7c92d4f4c1",
+      "head_sha256": "b6c6715fbac9bcf991bab0e47dd24b3c6a23a9c68e602465b04ffd7c92d4f4c1",
+      "matches_head": true
+    },
+    {
+      "path": ".harness/prompts/executor-routing.md",
+      "sha256": "6540185ec465e4015c909753745648947b2eceb17ab7c1856c42f860477e8a29",
+      "head_sha256": "6540185ec465e4015c909753745648947b2eceb17ab7c1856c42f860477e8a29",
+      "matches_head": true
+    },
+    {
+      "path": ".harness/prompts/plan-task.md",
+      "sha256": "c4af5ca4ee233dc9ba7dfbc787ab7b173aebff13c6dd8827cce1edf31526f8b5",
+      "head_sha256": "c4af5ca4ee233dc9ba7dfbc787ab7b173aebff13c6dd8827cce1edf31526f8b5",
+      "matches_head": true
+    },
+    {
+      "path": ".harness/prompts/reconcile-phase.md",
+      "sha256": "e3abadb52978be4f3738aaeaedea65b741470954c06b7952b4051f2e164e3e3e",
+      "head_sha256": "e3abadb52978be4f3738aaeaedea65b741470954c06b7952b4051f2e164e3e3e",
+      "matches_head": true
+    },
+    {
+      "path": ".harness/prompts/review-task.md",
+      "sha256": "fc10fb2edbc0e60d5b6b8603e4173e5e7537a82861a1cb7c7ae127ed7f80f829",
+      "head_sha256": "fc10fb2edbc0e60d5b6b8603e4173e5e7537a82861a1cb7c7ae127ed7f80f829",
+      "matches_head": true
+    },
+    {
+      "path": ".harness/prompts/revise-task.md",
+      "sha256": "467ff3032fc61eea9a10f9fb6d5d7d05d88b40f6a7f01838d69942b4171e77eb",
+      "head_sha256": "467ff3032fc61eea9a10f9fb6d5d7d05d88b40f6a7f01838d69942b4171e77eb",
+      "matches_head": true
+    },
+    {
+      "path": ".harness/requirements.txt",
+      "sha256": "b4603b9468ade4d639d2c6f73b89d50e1fa5d227c73ab15be0382cca478513e6",
+      "head_sha256": "b4603b9468ade4d639d2c6f73b89d50e1fa5d227c73ab15be0382cca478513e6",
+      "matches_head": true
+    },
+    {
+      "path": ".harness/schemas/phase.schema.json",
+      "sha256": "a7319000e378067966ecdaa30a5ebca29314a1e3163b8f4c533abc6be673e2ed",
+      "head_sha256": "a7319000e378067966ecdaa30a5ebca29314a1e3163b8f4c533abc6be673e2ed",
+      "matches_head": true
+    },
+    {
+      "path": ".harness/schemas/reconcile.schema.json",
+      "sha256": "957bb7568a76282cb7482a9139499ca050e97384730a618098c3cc0b0bc86e45",
+      "head_sha256": "957bb7568a76282cb7482a9139499ca050e97384730a618098c3cc0b0bc86e45",
+      "matches_head": true
+    },
+    {
+      "path": ".harness/schemas/review.schema.json",
+      "sha256": "8cb4056dc3563749dbd3c4ed746147ac561cd0bfac6a9fd734ef9388ca9acd4a",
+      "head_sha256": "8cb4056dc3563749dbd3c4ed746147ac561cd0bfac6a9fd734ef9388ca9acd4a",
+      "matches_head": true
+    },
+    {
+      "path": ".harness/schemas/task.schema.json",
+      "sha256": "330820ccf165c00c0c373d1a76784f0d7e413776c95982c89c97814270ea2aa8",
+      "head_sha256": "330820ccf165c00c0c373d1a76784f0d7e413776c95982c89c97814270ea2aa8",
+      "matches_head": true
+    },
+    {
+      "path": ".harness/scripts/dev_tools.py",
+      "sha256": "2cb8caf61efa77ab138f51a11e8df0ad761869ad4b01394eb93ddfe34152192b",
+      "head_sha256": "2cb8caf61efa77ab138f51a11e8df0ad761869ad4b01394eb93ddfe34152192b",
+      "matches_head": true
+    },
+    {
+      "path": ".harness/scripts/doctor.sh",
+      "sha256": "4f75a2955fc3535f7da9669ec6cc23b242c300dc374cb8df1cd92efce73e5590",
+      "head_sha256": "4f75a2955fc3535f7da9669ec6cc23b242c300dc374cb8df1cd92efce73e5590",
+      "matches_head": true
+    },
+    {
+      "path": ".harness/tests/test_workflow.py",
+      "sha256": "a008b389c38a775047c02ae125f1c38407c0436b061ca9dccc19c97d38b8e83b",
+      "head_sha256": "a008b389c38a775047c02ae125f1c38407c0436b061ca9dccc19c97d38b8e83b",
+      "matches_head": true
+    },
+    {
+      "path": "AGENTS.md",
+      "sha256": "2dc075e0d4f6e5f72168ba4ac1ddc90a1bdee3734ac16158a070238fbef0cebc",
+      "head_sha256": "2dc075e0d4f6e5f72168ba4ac1ddc90a1bdee3734ac16158a070238fbef0cebc",
+      "matches_head": true
+    }
+  ]
+}

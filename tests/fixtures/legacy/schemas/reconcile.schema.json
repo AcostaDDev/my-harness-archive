@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ReferenceProjectPhaseReconciliation",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "phase_id": {
+      "type": "string",
+      "pattern": "^P[0-9]{3}$"
+    },
+    "summary": {
+      "type": "string"
+    },
+    "files_changed": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "blocking_questions": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  },
+  "required": [
+    "phase_id",
+    "summary",
+    "files_changed",
+    "blocking_questions"
+  ]
+}

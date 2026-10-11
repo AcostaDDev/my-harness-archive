@@ -1,0 +1,21 @@
+{
+  "task_id": "P900-T003",
+  "verdict": "BLOCKED",
+  "summary": "Evaluación sintética del ejercicio Demo.",
+  "acceptance_criteria_results": [
+    {
+      "criterion": "La función devuelve el saludo esperado.",
+      "passed": false,
+      "evidence": "Comprobación sintética."
+    }
+  ],
+  "findings": [],
+  "validation_assessment": "Comprobación ficticia correcta.",
+  "documentation_proposals": [],
+  "blocking_questions": [
+    "¿Debe usarse el saludo breve o el largo en el proyecto imaginario?"
+  ],
+  "next_prompt": "",
+  "executor_selection": null,
+  "scope_grants": []
+}

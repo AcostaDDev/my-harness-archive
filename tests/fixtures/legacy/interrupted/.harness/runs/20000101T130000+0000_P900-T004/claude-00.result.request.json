@@ -1,0 +1,6 @@
+{
+  "model": "claude-sonnet-5-5",
+  "effort": "medium",
+  "reason": "Ejercicio sintético acotado.",
+  "max_turns": 100
+}

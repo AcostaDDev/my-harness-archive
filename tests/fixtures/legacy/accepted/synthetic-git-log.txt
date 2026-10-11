@@ -1,0 +1,2 @@
+EXTRACTO AUXILIAR FICTICIO: no es un artefacto generado por harness.py.
+aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa harness: accept P900-T001 - Ejercicio Demo sintético

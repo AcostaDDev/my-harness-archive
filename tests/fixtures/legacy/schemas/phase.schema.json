@@ -1,0 +1,90 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ReferenceProjectPhaseReview",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "phase_id": {
+      "type": "string",
+      "pattern": "^P[0-9]{3}$"
+    },
+    "phase_name": {
+      "type": "string"
+    },
+    "verdict": {
+      "type": "string",
+      "enum": [
+        "READY",
+        "REVISE",
+        "BLOCKED"
+      ]
+    },
+    "summary": {
+      "type": "string"
+    },
+    "exit_criteria_results": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "criterion": {
+            "type": "string"
+          },
+          "passed": {
+            "type": "boolean"
+          },
+          "evidence": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "criterion",
+          "passed",
+          "evidence"
+        ]
+      }
+    },
+    "required_actions": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "blocking_questions": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "archive_summary_markdown": {
+      "type": "string"
+    },
+    "archive_review_markdown": {
+      "type": "string"
+    },
+    "next_phase_id": {
+      "type": "string"
+    },
+    "next_phase_name": {
+      "type": "string"
+    },
+    "next_steps_markdown": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "phase_id",
+    "phase_name",
+    "verdict",
+    "summary",
+    "exit_criteria_results",
+    "required_actions",
+    "blocking_questions",
+    "archive_summary_markdown",
+    "archive_review_markdown",
+    "next_phase_id",
+    "next_phase_name",
+    "next_steps_markdown"
+  ]
+}

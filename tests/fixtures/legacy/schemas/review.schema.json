@@ -1,0 +1,205 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ReferenceProjectTaskReview",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "task_id": {
+      "type": "string",
+      "pattern": "^P[0-9]{3}-T[0-9]{3}$"
+    },
+    "verdict": {
+      "type": "string",
+      "enum": [
+        "ACCEPT",
+        "REVISE",
+        "BLOCKED"
+      ]
+    },
+    "summary": {
+      "type": "string"
+    },
+    "acceptance_criteria_results": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "criterion": {
+            "type": "string"
+          },
+          "passed": {
+            "type": "boolean"
+          },
+          "evidence": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "criterion",
+          "passed",
+          "evidence"
+        ]
+      }
+    },
+    "findings": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "severity": {
+            "type": "string",
+            "enum": [
+              "critical",
+              "high",
+              "medium",
+              "low",
+              "info"
+            ]
+          },
+          "category": {
+            "type": "string",
+            "enum": [
+              "correctness",
+              "business_rule",
+              "security",
+              "authorization",
+              "data_integrity",
+              "architecture",
+              "migration",
+              "testing",
+              "scope",
+              "maintainability",
+              "performance",
+              "other"
+            ]
+          },
+          "file": {
+            "type": "string"
+          },
+          "line": {
+            "type": "string"
+          },
+          "problem": {
+            "type": "string"
+          },
+          "evidence": {
+            "type": "string"
+          },
+          "required_fix": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "severity",
+          "category",
+          "file",
+          "line",
+          "problem",
+          "evidence",
+          "required_fix"
+        ]
+      }
+    },
+    "validation_assessment": {
+      "type": "string"
+    },
+    "documentation_proposals": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "blocking_questions": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "next_prompt": {
+      "type": "string",
+      "description": "Standalone revision prompt. Empty when verdict is ACCEPT or BLOCKED."
+    },
+    "executor_selection": {
+      "anyOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "model": {
+              "type": "string",
+              "enum": [
+                "claude-sonnet-5-5",
+                "claude-opus-5-5"
+              ]
+            },
+            "effort": {
+              "type": "string",
+              "enum": [
+                "low",
+                "medium",
+                "high",
+                "xhigh",
+                "max"
+              ]
+            },
+            "reason": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "required": [
+            "model",
+            "effort",
+            "reason"
+          ]
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "description": "Required model/effort/rationale for REVISE; null for ACCEPT or BLOCKED."
+    },
+    "scope_grants": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "path": {
+            "type": "string",
+            "minLength": 1
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 1
+          },
+          "constraint": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "required": [
+          "path",
+          "reason",
+          "constraint"
+        ]
+      },
+      "description": "Bounded low-risk existing source-file scope extensions; REVISE only. Empty otherwise."
+    }
+  },
+  "required": [
+    "task_id",
+    "verdict",
+    "summary",
+    "acceptance_criteria_results",
+    "findings",
+    "validation_assessment",
+    "documentation_proposals",
+    "blocking_questions",
+    "next_prompt",
+    "executor_selection",
+    "scope_grants"
+  ]
+}
