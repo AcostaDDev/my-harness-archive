@@ -1,38 +1,44 @@
-# Siguiente tarea — H0.2 (pendiente)
+# Siguiente tarea — H0.3 (pendiente)
 
-H0.1 completado el 2026-10-11. [Alcance y criterios originales](discovery/H0.1_SCOPE.md)
-conservados para revisión. Evidencias en [BASELINE.md](discovery/BASELINE.md),
-[LEGACY_FORMATS.md](discovery/LEGACY_FORMATS.md) y los
-[fixtures](../tests/fixtures/legacy/README.md). Esta entrega no inicia H0.2 ni H0.3.
+H0.2 completado el 2026-10-11. [Alcance y criterios originales](discovery/H0.2_SCOPE.md)
+conservados para revisión. Evidencias en
+[compatibilidad y autenticación](discovery/H0.2_COMPATIBILITY.md),
+[snapshot de versiones/resolución](discovery/h0.2-version-metadata.json) y
+[streams sintéticos](../tests/fixtures/streams/README.md).
+Esta entrega no inicia H0.3.
 
 ## Objetivo
 
-Resolver versiones, capacidades y autenticación de las interfaces previstas antes
-de crear el esqueleto. Usar el inventario de H0.1 como referencia histórica;
-no asumir que su configuración o esquemas prueban compatibilidad actual.
+Crear el esqueleto mínimo y verificar los límites del núcleo con una ejecución
+simulada local, sin acceso a modelos ni adaptadores reales.
 
 ## Alcance de la siguiente sesión
 
-1. Fijar versiones compatibles de Python, dependencias y herramientas frontend,
-   verificando disponibilidad y documentación oficial; no anunciar scripts inexistentes.
-2. Comprobar versiones e interfaces de salida de Codex/Claude instalados sin lanzar
-   agentes ni el harness. Documentar capacidades CLI y las dudas de App Server/SDK.
-3. Documentar modos de autenticación y cuentas previstas sin extraer credenciales.
-   Solicitar al usuario solo la información que no pueda comprobarse en lectura.
-4. Añadir muestras y checks offline pequeños de streams truncados, errores y campos
-   desconocidos. Conservar ausencia de telemetría; evitar una suite costosa.
-5. Registrar decisiones y actualizar STATE/NEXT_STEPS al completar esa tarea.
+1. Crear paquete de núcleo Python independiente de API, proveedores y perfiles;
+   API FastAPI mínima y UI React/TypeScript/Vite.
+2. Incorporar las dependencias necesarias con los pins de H0.2 y generar locks
+   reales mediante uv/npm. Verificar instalación, arranque y build; los pins
+   de tests futuros no obligan a añadir suites o dependencias sin uso ahora.
+3. Añadir persistencia mínima SQLite/SQLAlchemy/Alembic y adaptadores falsos
+   suficientes para mostrar una ejecución simulada. No portar aún el motor.
+4. Definir modelos Pydantic y contratos HTTP; generar tipos frontend desde
+   OpenAPI al introducir el cliente, sin duplicar contratos manualmente.
+5. Documentar únicamente comandos comprobados en README/AGENTS; actualizar
+   STATE/NEXT_STEPS y registrar decisiones duraderas al terminar.
 
 ## Criterios de aceptación
 
-- Matriz de versiones/capacidades documentada con fuentes y límites de comprobación.
-- Autenticación por adaptador aclarada sin secretos en repositorio/logs/fixtures.
-- No presentar permiso interactivo donde solo existe denegación (`dontAsk`).
-- Parsers offline verifican muestras truncadas, errores y campos desconocidos sin
-  llamadas reales ni reintentos/fallback silenciosos.
+- Aplicación arranca localmente y muestra una ejecución simulada sin modelos.
+- Núcleo no importa FastAPI, SDKs ni reglas específicas de proyectos.
+- Persistencia y migración mínimas funcionan con datos sintéticos locales.
+- Locks, comandos de arranque/build y checks pertinentes se han comprobado;
+  distinguir instalación/ejecución del producto de la resolución de H0.2.
 
 ## Fuera de alcance
 
-API/UI, base de datos y esqueleto H0.3; portar el motor; ejecutar el harness o
-tests/instalaciones en ReferenceProject. Cualquier smoke real con proveedores requiere
-autorización explícita de consumo en una tarea posterior.
+Importación legacy H1, extracción del motor H2, adaptadores reales, chat,
+permisos interactivos, SDKs y distribución. No ejecutar harness, agentes,
+tests/instalaciones en ReferenceProject ni modificar configuración global.
+Las cuentas previstas siguen siendo suscripciones propias mediante CLI;
+cualquier smoke real con proveedores exige autorización explícita de consumo
+en una tarea posterior.

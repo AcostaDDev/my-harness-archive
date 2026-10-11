@@ -50,12 +50,14 @@ Antes de dar una tarea por terminada: verificar criterios, ejecutar checks dispo
 
 ## Comandos actuales
 
-H0.1 completado: inventario y fixtures sintéticos. Comprobación offline ligera,
-solo biblioteca estándar, desde la raíz:
+H0.1 y H0.2 completados: inventario, compatibilidad y fixtures sintéticos.
+Comprobación offline ligera, solo biblioteca estándar, desde la raíz:
 
 ```sh
 python3 -m unittest discover -s tests -p 'test_*.py' -v
 ```
 
-Todavía no hay aplicación, dependencias del producto ni comandos de build.
+Doce checks (cuatro legacy y ocho de contratos de streams), sin agentes ni red.
+Todavía no hay aplicación, dependencias del producto instaladas ni comandos de build.
+Versiones seleccionadas para H0.3 en `docs/discovery/H0.2_COMPATIBILITY.md`.
 Al incorporar código ejecutable del producto, añadir aquí y al README los comandos comprobados.

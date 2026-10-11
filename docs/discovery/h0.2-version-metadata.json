@@ -1,0 +1,382 @@
+{
+  "checked_on": "2026-10-11",
+  "scope": "Selected direct pins, registry constraints and joint resolution; no package install, application or build",
+  "packages": [
+    {
+      "ecosystem": "python",
+      "name": "fastapi",
+      "version": "0.143.0",
+      "source": "https://pypi.org/pypi/fastapi/0.143.0/json",
+      "requires_python": ">=3.10",
+      "requires_dist": [
+        "starlette>=0.46.0",
+        "pydantic>=2.9.0",
+        "typing-extensions>=4.8.0",
+        "typing-inspection>=0.4.2",
+        "annotated-doc>=0.0.2",
+        "opentelemetry-api>=1.44.0"
+      ],
+      "yanked": false
+    },
+    {
+      "ecosystem": "python",
+      "name": "pydantic",
+      "version": "2.14.0",
+      "source": "https://pypi.org/pypi/pydantic/2.14.0/json",
+      "requires_python": ">=3.10",
+      "requires_dist": [
+        "annotated-types>=0.6.0",
+        "pydantic-core==2.50.0",
+        "typing-extensions>=4.16.0",
+        "typing-inspection>=0.4.4"
+      ],
+      "yanked": false
+    },
+    {
+      "ecosystem": "python",
+      "name": "uvicorn",
+      "version": "0.54.0",
+      "source": "https://pypi.org/pypi/uvicorn/0.54.0/json",
+      "requires_python": ">=3.10",
+      "requires_dist": [
+        "click>=7.0",
+        "h11>=0.8",
+        "typing-extensions>=4.0; python_version < \"3.11\""
+      ],
+      "yanked": false
+    },
+    {
+      "ecosystem": "python",
+      "name": "sqlalchemy",
+      "version": "2.1.4",
+      "source": "https://pypi.org/pypi/sqlalchemy/2.1.4/json",
+      "requires_python": ">=3.11",
+      "requires_dist": [
+        "typing-extensions>=4.6.0"
+      ],
+      "yanked": false
+    },
+    {
+      "ecosystem": "python",
+      "name": "alembic",
+      "version": "1.20.0",
+      "source": "https://pypi.org/pypi/alembic/1.20.0/json",
+      "requires_python": ">=3.10",
+      "requires_dist": [
+        "SQLAlchemy>=2.0",
+        "Mako",
+        "typing-extensions>=4.12",
+        "tomli; python_version < \"3.11\""
+      ],
+      "yanked": false
+    },
+    {
+      "ecosystem": "python",
+      "name": "pyyaml",
+      "version": "6.0.3",
+      "source": "https://pypi.org/pypi/pyyaml/6.0.3/json",
+      "requires_python": ">=3.8",
+      "requires_dist": [],
+      "yanked": false
+    },
+    {
+      "ecosystem": "python",
+      "name": "pytest",
+      "version": "9.1.1",
+      "source": "https://pypi.org/pypi/pytest/9.1.1/json",
+      "requires_python": ">=3.10",
+      "requires_dist": [
+        "colorama>=0.4; sys_platform == \"win32\"",
+        "exceptiongroup>=1; python_version < \"3.11\"",
+        "iniconfig>=1.0.1",
+        "packaging>=22",
+        "pluggy<2,>=1.5",
+        "pygments>=2.7.2",
+        "tomli>=1; python_version < \"3.11\""
+      ],
+      "yanked": false
+    },
+    {
+      "ecosystem": "python",
+      "name": "httpx",
+      "version": "0.28.1",
+      "source": "https://pypi.org/pypi/httpx/0.28.1/json",
+      "requires_python": ">=3.8",
+      "requires_dist": [
+        "anyio",
+        "certifi",
+        "httpcore==1.*",
+        "idna"
+      ],
+      "yanked": false
+    },
+    {
+      "ecosystem": "node",
+      "name": "react",
+      "version": "19.3.0",
+      "source": "https://registry.npmjs.org/react/19.3.0",
+      "engines": {
+        "node": ">=0.10.0"
+      },
+      "peer_dependencies": {},
+      "optional_peers": {}
+    },
+    {
+      "ecosystem": "node",
+      "name": "react-dom",
+      "version": "19.3.0",
+      "source": "https://registry.npmjs.org/react-dom/19.3.0",
+      "engines": {},
+      "peer_dependencies": {
+        "react": "^19.3.0"
+      },
+      "optional_peers": {}
+    },
+    {
+      "ecosystem": "node",
+      "name": "typescript",
+      "version": "5.9.3",
+      "source": "https://registry.npmjs.org/typescript/5.9.3",
+      "engines": {
+        "node": ">=14.17"
+      },
+      "peer_dependencies": {},
+      "optional_peers": {}
+    },
+    {
+      "ecosystem": "node",
+      "name": "vite",
+      "version": "8.3.4",
+      "source": "https://registry.npmjs.org/vite/8.3.4",
+      "engines": {
+        "node": "^20.19.0 || >=22.12.0"
+      },
+      "peer_dependencies": {
+        "tsx": "^4.8.1",
+        "jiti": ">=1.21.0",
+        "less": "^4.0.0",
+        "sass": "^1.70.0",
+        "yaml": "^2.4.2",
+        "stylus": ">=0.54.8",
+        "terser": "^5.16.0",
+        "esbuild": "^0.27.0 || ^0.28.0",
+        "sugarss": "^5.0.0",
+        "@types/node": "^20.19.0 || >=22.12.0",
+        "sass-embedded": "^1.70.0",
+        "@vitejs/devtools": "^0.7.1"
+      },
+      "optional_peers": {
+        "tsx": {
+          "optional": true
+        },
+        "jiti": {
+          "optional": true
+        },
+        "less": {
+          "optional": true
+        },
+        "sass": {
+          "optional": true
+        },
+        "yaml": {
+          "optional": true
+        },
+        "stylus": {
+          "optional": true
+        },
+        "terser": {
+          "optional": true
+        },
+        "esbuild": {
+          "optional": true
+        },
+        "sugarss": {
+          "optional": true
+        },
+        "@types/node": {
+          "optional": true
+        },
+        "sass-embedded": {
+          "optional": true
+        },
+        "@vitejs/devtools": {
+          "optional": true
+        }
+      }
+    },
+    {
+      "ecosystem": "node",
+      "name": "@vitejs/plugin-react",
+      "version": "6.1.2",
+      "source": "https://registry.npmjs.org/@vitejs%2fplugin-react/6.1.2",
+      "engines": {
+        "node": "^20.19.0 || >=22.12.0"
+      },
+      "peer_dependencies": {
+        "vite": "^8.0.0",
+        "oxc-transform-react": "^0.152.0",
+        "@rolldown/plugin-babel": "^0.1.7 || ^0.2.0",
+        "babel-plugin-react-compiler": "^1.0.0"
+      },
+      "optional_peers": {
+        "oxc-transform-react": {
+          "optional": true
+        },
+        "@rolldown/plugin-babel": {
+          "optional": true
+        },
+        "babel-plugin-react-compiler": {
+          "optional": true
+        }
+      }
+    },
+    {
+      "ecosystem": "node",
+      "name": "@types/react",
+      "version": "19.3.0",
+      "source": "https://registry.npmjs.org/@types%2freact/19.3.0",
+      "engines": {},
+      "peer_dependencies": {},
+      "optional_peers": {}
+    },
+    {
+      "ecosystem": "node",
+      "name": "@types/react-dom",
+      "version": "19.3.0",
+      "source": "https://registry.npmjs.org/@types%2freact-dom/19.3.0",
+      "engines": {},
+      "peer_dependencies": {
+        "@types/react": "^19.3.0"
+      },
+      "optional_peers": {}
+    },
+    {
+      "ecosystem": "node",
+      "name": "vitest",
+      "version": "5.0.3",
+      "source": "https://registry.npmjs.org/vitest/5.0.3",
+      "engines": {
+        "node": "^22.12.0 || ^24.0.0 || >=26.0.0"
+      },
+      "peer_dependencies": {
+        "vite": "^6.4.0 || ^7.0.0 || ^8.0.0",
+        "jsdom": "*",
+        "happy-dom": "*",
+        "@vitest/ui": "5.0.3",
+        "@types/node": "^22.0.0 || >=24.0.0",
+        "@edge-runtime/vm": "*",
+        "@opentelemetry/api": "^1.9.0",
+        "@vitest/coverage-v8": "5.0.3",
+        "@vitest/browser-preview": "5.0.3",
+        "@vitest/coverage-istanbul": "5.0.3",
+        "@vitest/browser-playwright": "5.0.3",
+        "@vitest/browser-webdriverio": "^5.0.0-beta.5 || >=5.0.0"
+      },
+      "optional_peers": {
+        "vite": {
+          "optional": false
+        },
+        "jsdom": {
+          "optional": true
+        },
+        "happy-dom": {
+          "optional": true
+        },
+        "@vitest/ui": {
+          "optional": true
+        },
+        "@types/node": {
+          "optional": true
+        },
+        "@edge-runtime/vm": {
+          "optional": true
+        },
+        "@opentelemetry/api": {
+          "optional": true
+        },
+        "@vitest/coverage-v8": {
+          "optional": true
+        },
+        "@vitest/browser-preview": {
+          "optional": true
+        },
+        "@vitest/coverage-istanbul": {
+          "optional": true
+        },
+        "@vitest/browser-playwright": {
+          "optional": true
+        },
+        "@vitest/browser-webdriverio": {
+          "optional": true
+        }
+      }
+    },
+    {
+      "ecosystem": "node",
+      "name": "@playwright/test",
+      "version": "1.64.0",
+      "source": "https://registry.npmjs.org/@playwright%2ftest/1.64.0",
+      "engines": {
+        "node": ">=20"
+      },
+      "peer_dependencies": {},
+      "optional_peers": {}
+    },
+    {
+      "ecosystem": "node",
+      "name": "openapi-typescript",
+      "version": "7.13.0",
+      "source": "https://registry.npmjs.org/openapi-typescript/7.13.0",
+      "engines": {},
+      "peer_dependencies": {
+        "typescript": "^5.x"
+      },
+      "optional_peers": {}
+    }
+  ],
+  "python_resolution": {
+    "target": "CPython 3.14.4 / aarch64-apple-darwin",
+    "only_binary": true,
+    "installed": false,
+    "exit_code": 0,
+    "requirements": [
+      "alembic==1.20.0",
+      "annotated-doc==0.0.5",
+      "annotated-types==0.8.0",
+      "anyio==4.15.1",
+      "certifi==2026.7.22",
+      "click==8.5.0",
+      "fastapi==0.143.0",
+      "h11==0.16.0",
+      "httpcore==1.0.9",
+      "httpx==0.28.1",
+      "idna==3.20",
+      "iniconfig==2.3.1",
+      "mako==1.4.3",
+      "markupsafe==3.0.4",
+      "opentelemetry-api==1.45.1",
+      "packaging==26.3",
+      "pluggy==1.6.0",
+      "pydantic==2.14.0",
+      "pydantic-core==2.50.0",
+      "pygments==2.21.0",
+      "pytest==9.1.1",
+      "pyyaml==6.0.3",
+      "sqlalchemy==2.1.4",
+      "starlette==1.7.0",
+      "typing-extensions==4.16.0",
+      "typing-inspection==0.4.4",
+      "uvicorn==0.54.0"
+    ]
+  },
+  "node_resolution": {
+    "node": "24.15.0",
+    "npm": "11.12.1",
+    "strict_peer_deps": true,
+    "engine_strict": true,
+    "installed": false,
+    "scripts_executed": false,
+    "exit_code": 0,
+    "package_count": 102
+  }
+}

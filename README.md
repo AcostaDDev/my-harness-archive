@@ -1,7 +1,8 @@
 # my_harness — Harness Local
 
 Aplicación local para configurar, ejecutar y observar un harness modular de desarrollo con agentes.
-Estado actual: H0.1 completado (inventario y fixtures); implementación del producto pendiente.
+Estado actual: H0.1 y H0.2 completados (inventario, compatibilidad y parsers offline);
+implementación del producto pendiente.
 
 ## Documentación
 
@@ -13,6 +14,8 @@ Estado actual: H0.1 completado (inventario y fixtures); implementación del prod
 - [Instrucción inicial ampliada](docs/03-instruccion-inicial-para-codex-y-claude.md).
 - [Inventario de referencia](docs/discovery/BASELINE.md) y [formatos legacy](docs/discovery/LEGACY_FORMATS.md).
 - [Fixtures sintéticos y límites de verificación](tests/fixtures/legacy/README.md).
+- [Versiones, capacidades y autenticación](docs/discovery/H0.2_COMPATIBILITY.md).
+- [Streams sintéticos y sonda offline](tests/fixtures/streams/README.md).
 
 `AGENTS.md` contiene las instrucciones de Codex; `CLAUDE.md` remite al mismo contrato para Claude Code. El desarrollo es manual y no utiliza el harness como orquestador.
 
@@ -28,5 +31,8 @@ Desde la raíz, con Python y su biblioteca estándar, sin instalar dependencias:
 python3 -m unittest discover -s tests -p 'test_*.py' -v
 ```
 
-Cuatro checks ligeros de los fixtures H0.1; no ejecutan el harness ni proveedores.
-La siguiente tarea es H0.2, todavía pendiente.
+Doce checks ligeros: cuatro de fixtures H0.1 y ocho de streams H0.2; no ejecutan
+el harness ni proveedores. Las versiones están seleccionadas y su resolución
+comprobada, sin instalar dependencias del producto. Se usarán las suscripciones
+de los usuarios mediante las CLI locales autenticadas.
+La siguiente tarea es H0.3, todavía pendiente.
