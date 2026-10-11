@@ -1,46 +1,62 @@
-# Siguiente acción — H2.3: corregir configuración Codex offline
+# Siguiente acción — H2.3: nuevo smoke preparado, pendiente de autorización
 
-H0, H1, H2.1 y H2.2 completados. H2.3 implementado y caracterizado offline;
-smoke autorizado ejecutado el 2026-10-11 y detenido al primer error.
-[Resultado y evidencias](discovery/H2.3_SMOKE.md): Codex 0.162.1 rechaza los
-overrides `model_providers.openai` porque `openai` es un proveedor integrado
-reservado. No se lanzaron Claude ni el revisor, ni se relanzó el planificador.
+La corrección de configuración Codex está implementada y verificada offline:
+[entrega](discovery/H2.3_CONFIG_FIX.md), D019. Adaptador `cli-2`, 209 pruebas y
+121 subtests correctos, 12 checks ligeros correctos. El smoke previo D018
+conserva su [fallo y evidencias](discovery/H2.3_SMOKE.md); no se ha relanzado.
 H2.4 no iniciado.
 
 ## Objetivo pendiente
 
-Corregir y caracterizar offline la configuración del adaptador Codex antes
-de proponer otra verificación real. El preflight de versión/help y los fakes
-no detectaron el rechazo semántico de la configuración; no acreditan acceso
-a modelos, cuota, autenticación ni comportamiento frente a proveedores.
+Verificar el transporte CLI real con la configuración corregida, sin presentar
+los procesos sintéticos como proveedores reales. Codex conserva el proveedor
+integrado OpenAI; sus retries internos se declaran `built-in-defaults/unknown`.
+No se promete cero retries internos ni una sola inferencia por invocación CLI.
+
+## Propuesta concreta
+
+- Codex 0.162.1: `gpt-6-luna`, esfuerzo `low`, planificador y revisor.
+- Claude Code 2.1.295: `claude-sonnet-4-6`, esfuerzo `low`, ejecutor.
+- Una ejecución de `scripts/smoke_cli.py`, hasta tres invocaciones CLI, timeout
+  de 60 s por invocación, suscripciones propias y entorno sin API keys aportadas.
+- Checkout Git nuevo bajo `/private/tmp`; SQLite y capturas en el área nueva,
+  fuera de ese checkout y del desarrollo. No reutilizar el área del smoke fallido.
+- Herramientas concedidas vacías; Codex read-only/approval never y Claude dontAsk.
+  Sin cambios/commits/aceptación de tarea inferidos ni aislamiento total certificado.
+- Detención al primer fallo, sin relanzar, fallback ni sustitución de selecciones.
 
 ## Acción acotada
 
-1. Revisar el stderr conservado, el argv congelado y la configuración admitida
-   por Codex 0.162.1. Resolver cómo solicitar cero retries HTTP/stream sin
-   sobrescribir IDs reservados ni cambiar silenciosamente de proveedor.
-2. Añadir una regresión offline que cubra el rechazo observado; ajustar los
-   procesos sintéticos para no aceptar indiscriminadamente ese argv inválido.
-   Mantener versión, sesión nueva, selección explícita y ausencia de fallback.
-3. Ejecutar checks offline pertinentes, revisar diff y actualizar
-   STATE/NEXT_STEPS/DECISIONS. No lanzar proveedores durante esta corrección.
-4. Preparar una nueva propuesta concreta de smoke solo después de los checks.
-   La autorización D018 se aplicó a una ejecución detenida al primer error;
-   no habilita relanzamientos automáticos tras corregir el adaptador.
+1. Revisar D019, script y propuesta. Confirmar la versión instalada por help/version
+   y congelar `cli-2` con las selecciones antes de cualquier inferencia.
+2. Solicitar autorización específica para esta nueva ejecución con sus límites.
+   La D018 finalizó al primer error; instrucciones de corrección, tests, commit o
+   continuación no autorizan por sí solas una nueva ejecución con proveedores.
+3. Solo con autorización, ejecutar una vez:
+
+   ```sh
+   UV_CACHE_DIR=.local/uv-cache uv run --frozen --offline python scripts/smoke_cli.py --authorize-consumption --codex-model gpt-6-luna --codex-effort low --claude-model claude-sonnet-4-6 --claude-effort low --output-parent /private/tmp
+   ```
+
+   `--offline` limita uv, no la red/consumo de las CLI. No extraer credenciales.
+4. Conservar evidencia/terminales/errores/telemetría y registrar lo no demostrado.
+   Ante fallo, detenerse sin corregir y relanzar dentro de esta verificación.
+5. Actualizar STATE/NEXT_STEPS/DECISIONS. Sin autorización mantenerla pendiente;
+   no interpretar fakes/preflight/catálogos locales como éxito real.
 
 ## Criterios de aceptación
 
-- Configuración Codex compatible y caracterizada sin overrides reservados,
-  con límites de retries explícitos y sin inferir garantías no comprobadas.
-- Regresión que detecte el fallo real observado y conserve las garantías H2.3
-  de captura, cancelación, persistencia y parada sin fallback.
-- Evidencias del smoke fallido conservadas; resultado real separado de fakes.
-- Sin nuevas invocaciones reales ni avance a H2.4 en esta corrección.
+- Consentimiento específico y selecciones congeladas antes de consumo.
+- Máximo tres invocaciones con timeout, cero fallback/reintento del adaptador;
+  límite explícito de retries internos desconocidos.
+- Evidencias independientes, datos sintéticos, resultado real separado del offline.
+- Parada al primer error sin llamadas posteriores; ausencia/null/cero conservados.
+- No certificar aceptación/commit de producto ni avanzar a H2.4.
 
 ## Fuera de alcance
 
-H2.4 worktrees/captura Git completa/commit de producto, H2.5 migración de
-proyectos, entradas gestionadas API/CLI/UI, permisos vivos, chat, SDKs, cierre
-de fase y distribución. No ejecutar el harness para desarrollar, lanzar otros
-agentes automáticamente, usar runs de usuario, extraer credenciales, modificar
-configuración global ni ejecutar tests/instalaciones en ReferenceProject.
+Correcciones adicionales del adaptador tras fallo, H2.4 captura Git/worktrees/commit
+de producto, H2.5 migración gestionada, entradas API/CLI/UI, permisos vivos, chat,
+SDKs y distribución. No ejecutar el harness para desarrollar, lanzar agentes de
+colaboración automáticamente, usar datos de proyectos del usuario, extraer
+credenciales, modificar configuración global ni acceder a ReferenceProject.

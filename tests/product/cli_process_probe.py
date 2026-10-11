@@ -6,6 +6,7 @@ import signal
 import subprocess
 import sys
 import time
+import tomllib
 
 provider, mode = sys.argv[1:3]
 if '--version' in sys.argv:
@@ -24,6 +25,17 @@ if record:
     with open(record, 'a') as log:
         log.write(json.dumps({'argv': sys.argv[3:], 'cwd': os.getcwd(), 'prompt': prompt,
                               'explicit': os.environ.get('PROBE_EXPLICIT'), 'pid': os.getpid()}) + '\n')
+if provider == 'codex':
+    # Characterize CLI configuration semantics independently of the adapter.
+    # Help/version do not certify the validity of an invocation's overrides.
+    args = sys.argv[3:]
+    overrides = [args[index + 1] for index, value in enumerate(args) if value == '-c']
+    config = tomllib.loads('\n'.join(overrides))
+    reserved = {'openai', 'ollama', 'lmstudio'} & config.get('model_providers', {}).keys()
+    if reserved:
+        print('Synthetic config error: model_providers contains reserved built-in provider IDs: '
+              + ', '.join(sorted(reserved)), file=sys.stderr)
+        sys.exit(1)
 if mode == 'invalid':
     print('invalid JSONL', flush=True)
 elif mode == 'utf8':

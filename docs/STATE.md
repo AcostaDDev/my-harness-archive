@@ -35,7 +35,7 @@ Actualizado: 2026-10-11.
 - Dependencias reales instaladas en `.venv` / `frontend/node_modules`, locks
   `uv.lock` / `frontend/package-lock.json`. Pins H0.2 usados conservados;
   backend de paquete `uv_build==0.12.19`. Comandos comprobados en README/AGENTS.
-- 192 casos de producto en `tests/product/`; pytest ejecuta 204 pruebas en total.
+- 197 casos de producto en `tests/product/`; pytest ejecuta 209 pruebas en total.
   La comprobación ligera anterior conserva sus 12 checks sin dependencias.
 - H1.1 completado: [importación legacy y verificaciones](discovery/H1.1_IMPORT.md),
   [alcance original](discovery/H1.1_SCOPE.md). Lector local explícito de
@@ -116,6 +116,10 @@ Actualizado: 2026-10-11.
   vacías y checkout desechable. **Smoke autorizado ejecutado: primera CLI Codex
   fallida por configuración reservada; Claude/revisor no lanzados (D018).**
   [Resultado real y evidencias](discovery/H2.3_SMOKE.md); sin relanzamiento.
+- Corrección H2.3 verificada offline: adaptador `cli-2` elimina los overrides
+  reservados y conserva el proveedor integrado OpenAI; límites de retries internos
+  registrados como desconocidos. Fakes rechazan el argv antiguo, y jobs `cli-1`
+  no ejecutan silenciosamente el nuevo comportamiento. [Entrega](discovery/H2.3_CONFIG_FIX.md).
 
 ## Todavía no existe
 
@@ -131,9 +135,10 @@ Claude no se invocó.
 ## Trabajo activo
 
 H0, H1, H2.1 y H2.2 completados. H2.3 implementado y verificado offline;
-siguiente acción acotada: corregir offline la configuración Codex incompatible,
-según `NEXT_STEPS.md`. La verificación real autorizada el 2026-10-11 (D018)
-terminó con fallo del planificador y evidencias conservadas; no se relanza.
+siguiente acción acotada: decidir sobre el nuevo smoke preparado con `cli-2`,
+según `NEXT_STEPS.md`. La corrección está verificada offline (D019), sin nuevas
+invocaciones reales. El primer smoke D018 conserva su resultado fallido y evidencias;
+la propuesta nueva requiere autorización específica, sin relanzamiento automático.
 H2.4 no iniciado.
 
 ## Verificación de H0.1
@@ -388,6 +393,36 @@ H2.4 no iniciado.
   no presentada como integración exitosa.
 - Diff y whitespace revisados; 60 enlaces locales de documentación comprobados.
   Commit documental solicitado por el usuario, sin cambios de implementación.
+
+## Corrección offline H2.3 — 2026-10-11
+
+- Git inicial limpio en `61ddf42`. Eliminados `model_providers.openai.*`,
+  conservando `model_provider="openai"`, versiones/modelos explícitos y sesión nueva.
+  No se sustituye el proveedor para obtener controles de retries personalizados.
+- Capabilities y spec persistida declaran `built-in-defaults/unknown` para Codex.
+  No hay control cero verificado en este camino; el adaptador conserva una sola
+  invocación por intento y ausencia de fallback/reintento propio. D019.
+- Versión `cli-2` impide ejecutar jobs `cli-1` con el comportamiento nuevo;
+  resultados/historial/evidencias antiguos y esquema 0005 conservados.
+- Cinco casos nuevos: cada override anterior en ambas versiones Codex sintéticas
+  falla una vez, conserva stderr/hash, resultado FAILED e historial tras reiniciar;
+  la versión antigua del adaptador no lanza procesos. Los fakes parsean TOML y
+  rechazan IDs reservados independientemente del código del adaptador.
+- 51 pruebas de adaptadores correctas; regresión completa: 209 pruebas y 121
+  subtests correctos. Los 12 checks ligeros pasan. Incluye migraciones, arquitectura
+  del núcleo, OpenAPI y recuperación/cancelación de procesos sintéticos existentes.
+- Referencia/esquema oficiales y help local consultados. `debug models --bundled`
+  se exploró sin refresh/inferencia: no valida los overrides ni admite strict-config;
+  su éxito no se usa como prueba de configuración válida. No se lanzó `codex exec`
+  real, Claude ni el smoke; no se extrajeron credenciales ni se modificó configuración
+  global. Persiste el aviso conocido Starlette/HTTPX; uv ignora el entorno externo.
+- Evidencias D018 conservadas. Nuevo smoke concreto preparado en NEXT_STEPS, sin
+  ejecutarlo ni avanzar a H2.4. Compatibilidad real exitosa, consumo/auth/cuota y
+  retries efectivos siguen pendientes; no se repitieron frontend/build ni navegador
+  porque no cambia API/UI. Detalles y límites en [H2.3_CONFIG_FIX.md](discovery/H2.3_CONFIG_FIX.md).
+- Diff/whitespace revisados y 67 enlaces locales de documentación correctos.
+  Hashes de stdout/stderr/prompt del smoke D018 conservados. Commit al terminar
+  conforme a la instrucción del usuario; sin push.
 
 ## Coordinación
 

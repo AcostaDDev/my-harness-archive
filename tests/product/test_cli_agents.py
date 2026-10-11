@@ -71,7 +71,9 @@ def test_explicit_fresh_argv_preflight_and_configuration(tmp_path,context,reposi
     assert ('--ephemeral' if provider=='codex' else '--no-session-persistence') in args
     if provider=='codex':
         assert 'model_reasoning_effort="medium"' in args
-        assert 'model_providers.openai.request_max_retries=0' in args
+        assert 'model_provider="openai"' in args
+        assert not any(value.startswith('model_providers.') for value in args)
+        assert port.capabilities()['cli_internal_retries']['codex']=='built-in-defaults/unknown'
     else:
         assert args[args.index('--session-id')+1]==request.id
         assert args[args.index('--permission-mode')+1]=='dontAsk'
@@ -82,7 +84,63 @@ def test_explicit_fresh_argv_preflight_and_configuration(tmp_path,context,reposi
         assert info['size']==len(raw) and info['sha256']==hashlib.sha256(raw).hexdigest()
     assert Path(metadata['artifacts']['stderr']['path']).read_bytes().endswith(b'\xff\n')
     assert repository.processes(job.id)[0]['status']=='STOPPED'
+    spec=repository.processes(job.id)[0]['spec']
+    assert spec['cli_internal_retries']==port.capabilities()['cli_internal_retries'][provider]
+    assert spec['adapter_version']=='cli-2'
     repository.close_owner(claim)
+
+
+@pytest.mark.parametrize('version',['0.161.0','0.162.1'])
+@pytest.mark.parametrize('retry_key',['request_max_retries','stream_max_retries'])
+def test_reserved_provider_overrides_fail_once_with_preserved_evidence(
+        tmp_path,context,repository,monkeypatch,version,retry_key):
+    # Reintroduce the previously generated invalid configuration. The independent
+    # executable must reject it instead of falsely certifying a successful stream.
+    from harness_local.adapters import cli_agents
+    ctx=replace(context,policy=replace(context.policy,planning_mode='agent'))
+    port=adapter(tmp_path,'version_new' if version=='0.162.1' else 'success')
+    port=CLIProcessAdapter((replace(port.configs['codex'],cli_version=version),
+                            port.configs['claude']),port.artifact_root)
+    original=cli_agents.argv_for
+    monkeypatch.setattr(cli_agents,'argv_for',lambda config,ctx,request:
+                        original(config,ctx,request)+('-c',f'model_providers.openai.{retry_key}=0'))
+    assert port.preflight()['codex']['available'] is True
+    job=repository.submit(ctx,'P001-T001','P001',PLAN,{**VERSIONS,**port.frozen_versions()},key='reserved')
+    def factory(ctx,versions):
+        return port,ScriptedCommandRunner([]),SyntheticWorkspace(ctx,('app/main.txt',))
+    supervisor=LocalSupervisor(repository,factory)
+    assert supervisor.run_once().status=='DONE'
+    history=repository.get_run(job.run_id).history
+    assert history.status=='stopped' and len(history.attempts)==1
+    attempt=history.attempts[0]
+    assert attempt.request.role=='planner' and attempt.result.status=='failed'
+    assert attempt.result.exit_code==1 and not attempt.result.terminal_observed
+    assert attempt.result.payload_json is None
+    metadata=json.loads(attempt.result.metadata_json)
+    assert metadata['observed']=={} and metadata['group_state']=='dead'
+    assert Path(metadata['artifacts']['stdout']['path']).read_bytes()==b''
+    stderr=Path(metadata['artifacts']['stderr']['path']).read_bytes()
+    assert b'reserved built-in provider IDs: openai' in stderr
+    assert metadata['artifacts']['stderr']['sha256']==hashlib.sha256(stderr).hexdigest()
+    assert repository.processes(job.id)[0]['capture']['status']=='failed'
+    assert len((tmp_path/'launches.jsonl').read_text().splitlines())==1
+    assert supervisor.run_once() is None
+    with Session(repository.engine) as session:
+        row=session.scalar(select(ManagedAttemptRow).where(ManagedAttemptRow.run_id==job.run_id))
+        assert row.status=='FAILED'
+    restarted=SQLiteManagedRepository(make_engine(str(repository.engine.url)))
+    assert restarted.get_run(job.run_id).history==history
+
+
+def test_previous_adapter_version_cannot_execute_new_configuration(tmp_path,context,repository):
+    from threading import Event
+    port=adapter(tmp_path)
+    versions={**VERSIONS,**port.frozen_versions(),'agent_adapter':'cli-1'}
+    repository.submit(context,'P001-T001','P001',PLAN,versions,key='old-adapter')
+    claim=repository.claim()
+    with pytest.raises(JournalError,match='configuration differs'):
+        port.bind_process_journal(_Journal(repository,claim,Event()))
+    assert not (tmp_path/'launches.jsonl').exists()
 
 
 @pytest.mark.parametrize('mode,status', [('invalid','invalid'),('utf8','partial'),('partial','partial'),

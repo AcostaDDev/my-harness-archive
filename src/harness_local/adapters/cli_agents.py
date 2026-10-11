@@ -23,7 +23,7 @@ from harness_local.core.engine.contracts import AgentResult, freeze
 from harness_local.core.engine.journal import JournalError
 
 
-VERSION = "cli-1"
+VERSION = "cli-2"
 SUPPORTED = {"codex": ("0.161.0", "0.162.1"), "claude": ("2.1.295",)}
 
 
@@ -69,8 +69,8 @@ def argv_for(config, context, request):
             "exec", "--strict-config", "--ignore-user-config", "--ignore-rules", "--ephemeral", "--json",
             "--model", model, "--sandbox", "read-only", "--color", "never",
             "-c", 'approval_policy="never"', "-c", f"model_reasoning_effort={json.dumps(effort)}",
-            "-c", 'model_provider="openai"', "-c", "model_providers.openai.request_max_retries=0",
-            "-c", "model_providers.openai.stream_max_retries=0", "-c", 'web_search="disabled"',
+            # Built-in provider IDs are reserved; nested retry overrides are rejected.
+            "-c", 'model_provider="openai"', "-c", 'web_search="disabled"',
             "--cd", str(context.root), "-")
     if request.role != "executor" or effort not in {"low", "medium", "high", "xhigh", "max"}:
         raise ValueError("Unsupported Claude role/effort")
@@ -104,7 +104,7 @@ class CLIProcessAdapter:
         return {"version": VERSION, "streaming": True, "cancellation": "posix-process-group",
                 "fresh_sessions": True, "interactive_approvals": False,
                 "observed_metadata": "only-if-reported", "automatic_retry": False,
-                "cli_internal_retries": {"codex": "requested-zero", "claude": "not-controllable/unknown"}}
+                "cli_internal_retries": {"codex": "built-in-defaults/unknown", "claude": "not-controllable/unknown"}}
 
     def preflight(self):
         """Read-only version/help, no login/status, provider or auth extraction."""
@@ -196,6 +196,7 @@ class CLIProcessAdapter:
                 "environment_sha256": hashlib.sha256(freeze(dict(config.environment)).encode()).hexdigest(),
                 "timeout_seconds": config.timeout_seconds, "cli_version": config.cli_version,
                 "adapter_version": VERSION, "provider": config.provider,
+                "cli_internal_retries": self.capabilities()["cli_internal_retries"][config.provider],
                 "preflight_observed": self.availability[config.provider], "artifacts": str(directory),
                 "requested": {"model": request.selection.model, "effort": request.selection.effort,
                               "fresh_session": True}}

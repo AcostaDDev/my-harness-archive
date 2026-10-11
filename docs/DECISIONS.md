@@ -341,10 +341,10 @@ No se señalizan PIDs recuperados automáticamente: la identidad no basta para
 certificar que aún corresponden al mismo proceso. La garantía cubre grupos POSIX
 cooperativos locales, no hijos escapados ni aislamiento físico de Claude.
 
-El adaptador nunca relanza/fallback ante fallo. Codex solicita retries HTTP/stream
-cero, pero D018 registra que 0.162.1 rechaza la configuración actual por ID
-reservado; la corrección está pendiente. Claude carece de control equivalente
-verificado. No prometer cero retries
+El adaptador nunca relanza/fallback ante fallo. `cli-1` solicitaba retries HTTP/stream
+cero mediante overrides reservados, rechazados en D018. `cli-2` elimina esos
+overrides y declara los retries internos de Codex desconocidos (D019).
+Claude carece de control equivalente verificado. No prometer cero retries
 internos o una inferencia por invocación CLI sin medirlo con una cuenta real.
 `dontAsk` sigue siendo denegación; conceder herramientas configura un intento
 posterior, no responde a una operación viva. Capturas no son commits/aceptación.
@@ -375,3 +375,29 @@ no se ejecuta en esta entrega ni se repite el smoke automáticamente.
 La autorización acotada concluyó al primer error. No se acredita acceso al modelo,
 autenticación/cuota, inferencia, retries internos ni aislamiento total.
 Resultado, procedencia y límites en [H2.3_SMOKE.md](discovery/H2.3_SMOKE.md).
+La corrección posterior offline se registra en D019, sin repetir esta ejecución.
+
+## D019 — Proveedor integrado conservado y retries internos desconocidos
+
+Estado: implementado y verificado offline el 2026-10-11; nuevo smoke no ejecutado.
+
+La [referencia oficial](https://learn.chatgpt.com/docs/config-file/config-reference)
+reserva los IDs de proveedores integrados y documenta `request_max_retries` /
+`stream_max_retries` en definiciones de proveedores personalizados. No se encontró
+un override compatible para exigir cero retries del integrado en las CLI fijadas.
+Eliminar los dos overrides de `model_providers.openai`, conservando
+`model_provider="openai"`, autenticación propia de la CLI y selección por intento.
+No inventar claves ni renombrar el proveedor para cambiar de ruta de autenticación.
+
+Capabilities y spec persistida declaran `built-in-defaults/unknown` para Codex;
+los defaults documentados no son mediciones ni límites efectivos certificados.
+El adaptador no relanza ni hace fallback: una invocación CLI puede tener retries
+internos del proveedor que no se han medido. Esta distinción ya aplicaba a Claude;
+ahora no se presenta tampoco una solicitud inválida de cero como garantía Codex.
+
+El cambio de argv/capabilities eleva la versión del adaptador a `cli-2`.
+La comparación previa al lanzamiento rechaza jobs congelados `cli-1`, sin
+reescribirlos ni actualizar selecciones automáticamente. No hay migración de
+esquema, cambio de codec ni alteración del resultado/evidencias de D018.
+La siguiente verificación real se propone con sus límites explícitos, sin
+ejecutarla dentro de la corrección offline. [Entrega](discovery/H2.3_CONFIG_FIX.md).
