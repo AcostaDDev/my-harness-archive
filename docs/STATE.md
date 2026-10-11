@@ -19,7 +19,7 @@ Actualizado: 2026-10-11.
   con [snapshot de restricciones y resolución](discovery/h0.2-version-metadata.json).
   Python 3.14.4, uv 0.12.19, Node 24.15.0 y npm 11.12.1; pins directos
   documentados, TypeScript 5.9.3 por compatibilidad con openapi-typescript.
-- CLI instaladas verificadas por versión/help: Codex 0.161.0 y Claude Code 2.1.295.
+- CLI instaladas verificadas en H0.2 por versión/help: Codex 0.161.0 y Claude Code 2.1.295.
   Usuario confirma suscripciones propias mediante CLI ya autenticadas; Codex
   reporta ChatGPT. El status de Claude en sandbox no acredita sesión: no se
   interpreta como ausencia de login en el Mac. App Server/SDK no integrados.
@@ -35,7 +35,7 @@ Actualizado: 2026-10-11.
 - Dependencias reales instaladas en `.venv` / `frontend/node_modules`, locks
   `uv.lock` / `frontend/package-lock.json`. Pins H0.2 usados conservados;
   backend de paquete `uv_build==0.12.19`. Comandos comprobados en README/AGENTS.
-- 146 casos de producto en `tests/product/`; pytest ejecuta 158 pruebas en total.
+- 192 casos de producto en `tests/product/`; pytest ejecuta 204 pruebas en total.
   La comprobación ligera anterior conserva sus 12 checks sin dependencias.
 - H1.1 completado: [importación legacy y verificaciones](discovery/H1.1_IMPORT.md),
   [alcance original](discovery/H1.1_SCOPE.md). Lector local explícito de
@@ -98,9 +98,26 @@ Actualizado: 2026-10-11.
 - API/CLI/UI conservan H0/H1; ninguna entrada gestionada ni arranque automático.
   No se activan proyectos legacy gestionados ni commits de producto.
 
+- H2.3 implementado y verificado offline: [adaptadores, procesos y límites](discovery/H2.3_CLI.md),
+  [alcance original](discovery/H2.3_SCOPE.md). Codex planificador/revisor y Claude
+  ejecutor por inyección explícita, versiones/help comprobados en lectura.
+- Historial CLI en codec formato 2; formato 1 H2.2 sigue leyéndose sin reemplazar
+  sus resultados anteriores. Configuración congelada por hash, argv/cwd/entorno/timeout y selección explícitos;
+  sesiones nuevas y permisos de próximo intento. Sin fallback/reinvocación del adaptador.
+- JSONL incremental y bytes stdout/stderr con fsync/hash/rango en artefactos externos;
+  eventos futuros y datos ausentes/null/cero conservados. Resultados completos,
+  parciales, inválidos, fallidos, timeout y cancelados persistidos.
+- Migración `0005_cli_processes`: propietario del supervisor y grupos por intento.
+  Gate de lanzamiento exige identidad confirmada antes de ejecutar la CLI.
+  Cancelación TERM/KILL y liberación condicionada a liveness local conservadora;
+  PID/grupo vivo, host distinto o permiso denegado mantienen el checkout bloqueado.
+- `scripts/smoke_cli.py` preparado, con guardia explícita de consumo, modelos y
+  esfuerzos obligatorios; hasta tres invocaciones, 60 s cada una, herramientas
+  vacías y checkout desechable. **No ejecutado: falta autorización de consumo.**
+
 ## Todavía no existe
 
-Motor conectado a ejecución real, supervisor de procesos CLI, adaptadores reales,
+Ejecución CLI real verificada con proveedores ni entradas gestionadas API/CLI/UI,
 captura Git completa/worktrees/commit de producto, activación/migración de proyectos
 gestionados, interfaz gestionada, permisos interactivos, chat ni distribución.
 La navegación H1.2 muestra evidencia legacy;
@@ -110,8 +127,10 @@ con proveedores se ha ejecutado.
 
 ## Trabajo activo
 
-H0, H1, H2.1 y H2.2 completados. Próxima tarea: H2.3,
-detallada en `NEXT_STEPS.md`, pendiente de una nueva sesión dirigida por el usuario.
+H0, H1, H2.1 y H2.2 completados. H2.3 implementado y verificado offline;
+siguiente acción acotada: decidir y autorizar el smoke H2.3 preparado, según
+`NEXT_STEPS.md`. Sin autorización recibida, queda expresamente pendiente.
+H2.4 no iniciado.
 
 ## Verificación de H0.1
 
@@ -302,6 +321,42 @@ detallada en `NEXT_STEPS.md`, pendiente de una nueva sesión dirigida por el usu
   escritores externos/otra base/raíces anidadas. `confirm_stopped` registra evidencia
   del llamante, sin detectar procesos reales. No hay UI/CLI gestionada, blobs pesados,
   cancelación real, worktrees/commit ni exactamente una vez externa. H2.3 sin iniciar.
+
+## Verificación de H2.3
+
+- `UV_CACHE_DIR=.local/uv-cache uv run --frozen --offline pytest -q`: 204 pruebas
+  y 121 subtests correctos; 46 casos nuevos y regresión completa. Los 12 checks
+  ligeros pasan; núcleo con `python -S` y frontera de imports conservados.
+- Procesos Python sintéticos prueban argv/cwd/entorno, sesiones frescas, splits
+  JSON/UTF-8, finales/errores/cuota sintéticos, eventos futuros, salida inválida,
+  terminal ausente, timeout, cancelación y conservación exacta de stdout/stderr.
+- Captura disponible antes del exit; eventos por rango/hash y archivos fsync.
+  Errores detienen el flujo sin reviewer ni llamada adicional. Recorridos completos
+  documental/agente falso, historial tras reinicio y presupuesto con retry explícito.
+- Cancelación del grupo con hijo resistente; caída real de supervisor sintético y
+  reapertura SQLite conservan bytes/lock. Ni lease vencido ni muerte del propietario
+  liberan una CLI falsa viva. Host/liveness inciertos bloquean; gate sin registro
+  no ejecuta efectos. Fallos de persistencia detienen y conservan intención.
+- Migración 0005/check/ida-vuelta a 0004 preserva historial previo. Regresión de
+  migraciones completas, legacy/simulaciones y OpenAPI correcta. OpenAPI/tipos
+  regenerados sin diferencias; TypeScript y build Vite correctos. Diff revisado.
+- Preflight local final: Codex 0.162.1 y Claude Code 2.1.295, sin autenticación,
+  credenciales ni inferencia. Fuentes oficiales consultadas para configuración/
+  streaming. 0.161.0 permanece soportada explícitamente como baseline histórica;
+  la versión instalada 0.162.1 se selecciona/valida sin sustitución automática.
+  `ps` restringido por sandbox requirió permiso de lectura; la solución
+  usa liveness por señal 0, sin dependencia de ps ni señales a PIDs recuperados.
+- Sin agentes/proveedores, smoke real, harness de desarrollo, acceso a ReferenceProject,
+  instalaciones/red de dependencias, servicios nuevos, push o cambios globales.
+  uv ignora el entorno externo; persiste el aviso conocido Starlette/HTTPX.
+- Límites: POSIX/macOS local, una base cooperativa, procesos que permanezcan en su
+  grupo. PID reutilizado se considera vivo conservadoramente; procesos escapados,
+  permisos de SO externos y aislamiento de Claude no quedan certificados. Codex
+  solicita retries HTTP/stream cero; retries internos Claude no controlables ni
+  caracterizados con cuenta real. Artefactos sin retención/GC ni UI de contenido.
+- Smoke real preparado **pendiente de autorización explícita y selecciones**;
+  no se presentan los procesos sintéticos como CLI real ni se inicia H2.4.
+  Decisión D017. Commit de esta entrega solicitado por el usuario.
 
 ## Coordinación
 

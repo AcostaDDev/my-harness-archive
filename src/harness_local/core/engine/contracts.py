@@ -82,6 +82,8 @@ class AgentResult:
     exit_code: int | None = None
     raw_output: str = ""
     error: str | None = None
+    status: str | None = None  # None preserves historical/fake adapter semantics.
+    metadata_json: str | None = None
 
 
 class AgentAdapter(Protocol):
@@ -139,6 +141,9 @@ def invoke_agent(context: ProjectContext, history: RunHistory, adapter: AgentAda
     try:
         result = adapter.invoke(context, request)
     except Exception as exc:
+        from harness_local.core.engine.journal import JournalError
+        if isinstance(exc, JournalError):
+            raise
         result = AgentResult(None, False, None, error=f"{type(exc).__name__}: {exc}")
     history = replace(history, attempts=history.attempts + (Attempt(request, result),))
     if journal:

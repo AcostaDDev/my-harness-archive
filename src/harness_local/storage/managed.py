@@ -22,7 +22,7 @@ from harness_local.core.engine.contracts import (
 from harness_local.core.engine.serialization import dump_history, load_history, restore_request
 from harness_local.storage.models import (
     CheckoutLockRow as Lock, ManagedAttemptRow as AttemptRow, ManagedEventRow as Event,
-    ManagedJobRow as Job, ManagedRunRow as Run,
+    ManagedJobRow as Job, ManagedRunRow as Run, ManagedProcessRow as Process,
 )
 from harness_local.storage.schema import require_schema
 
@@ -251,10 +251,10 @@ class SQLiteManagedRepository:
                     or row.request_json != freeze(asdict(attempt.request))):
                 raise Conflict("Attempt requires a previously persisted invocation intent")
             result = freeze(asdict(attempt.result))
-            if row.result_json is not None and row.result_json != result:
+            if row.result_json is not None and freeze(asdict(AgentResult(**json.loads(row.result_json)))) != result:
                 raise Conflict("Frozen attempt result changed")
             if row.result_json is None:
-                row.result_json, row.status, row.finished_at = result, "COMPLETED", self._now()
+                row.result_json, row.status, row.finished_at = result, (attempt.result.status or "COMPLETED").upper(), self._now()
                 completed.append(row.id)
         run.history_json = dump_history(history)
         run.revisions = history.revisions
@@ -307,6 +307,7 @@ class SQLiteManagedRepository:
             if session.scalar(select(AttemptRow.id).where(AttemptRow.run_id == run.id,
                     AttemptRow.result_json.is_(None))) is not None:
                 raise Conflict("Cannot finish with an unknown invocation outcome")
+            self._processes_stopped(session, job)
             run.status = history.status.upper()
             run.stage = history.stop.stage if history.stop else "finished"
             job.status, job.finished_at = "DONE", self._now()
@@ -349,6 +350,7 @@ class SQLiteManagedRepository:
             run = session.get(Run, job.run_id)
             if run.version != expected_version:
                 raise Conflict("Run changed; reload before reconciling")
+            self._processes_stopped(session, job, recovering=True)
             history = load_history(run.history_json)
             pending = session.scalars(select(AttemptRow).where(AttemptRow.run_id == run.id,
                                       AttemptRow.result_json.is_(None)).order_by(AttemptRow.number)).all()
@@ -362,3 +364,68 @@ class SQLiteManagedRepository:
             job.status, job.finished_at, job.diagnostic = "INTERRUPTED", self._now(), reason
             session.delete(session.get(Lock, run.root))
             self._event(session, run, "writer_stopped_confirmed", {"job_id": job.id, "owner_token": owner_token, "reason": reason})
+
+
+    def register_owner(self, claim, identity):
+        with self._write() as session:
+            job, run = self._owned(session, claim)
+            if job.process_owner is not None:
+                raise Conflict("Process owner already registered")
+            job.process_owner = identity
+            self._event(session, run, "process_owner_registered", {"job_id": job.id, "identity": identity})
+
+    def close_owner(self, claim):
+        # Closing the scope forbids future launches; may run after lease loss.
+        with self._write() as session:
+            job = session.get(Job, claim.id)
+            if job is None or job.owner_token != claim.owner_token:
+                raise OwnershipLost("Different process owner")
+            job.owner_closed = True
+            run = session.get(Run, job.run_id)
+            self._event(session, run, "process_owner_closed", {"job_id": job.id})
+
+    def process_intent(self, claim, attempt_id, spec):
+        with self._write() as session:
+            job, run = self._owned(session, claim)
+            attempt = session.get(AttemptRow, attempt_id)
+            if (not attempt or attempt.run_id != run.id or attempt.result_json is not None
+                    or job.process_owner is None or job.owner_closed):
+                raise Conflict("Live owner and pending invocation required")
+            if session.get(Process, attempt_id):
+                raise Conflict("One launch per attempt; no retry")
+            session.add(Process(attempt_id=attempt_id, job_id=job.id, spec=spec, status="PENDING"))
+            self._event(session, run, "process_intent", {"job_id": job.id, "attempt_id": attempt_id, "spec": spec})
+
+    def process_update(self, claim, attempt_id, kind, payload):
+        with self._write() as session:
+            job, run = self._owned(session, claim)
+            row = session.get(Process, attempt_id)
+            if row is None or row.job_id != job.id:
+                raise Conflict("Unknown process intent")
+            if kind == "process_spawned":
+                if job.owner_closed or row.identity is not None:
+                    raise Conflict("Process identity cannot change")
+                row.identity, row.status = payload, "RUNNING"
+            elif kind == "process_finished":
+                row.status = "STOPPED" if payload["group_state"] == "dead" else "UNCERTAIN"
+                row.capture = payload
+            self._event(session, run, kind, {"job_id": job.id, "attempt_id": attempt_id, **payload})
+
+    def processes(self, job_id):
+        with Session(self.engine) as session:
+            return [{"attempt_id": row.attempt_id, "spec": row.spec, "identity": row.identity,
+                     "status": row.status, "capture": row.capture}
+                    for row in session.scalars(select(Process).where(Process.job_id == job_id))]
+
+    def _processes_stopped(self, session, job, *, recovering=False):
+        from harness_local.adapters.processes import liveness
+        if recovering and job.process_owner and not job.owner_closed:
+            if liveness(job.process_owner) != "dead":
+                raise Conflict("Previous owner may still launch effects; cannot unlock")
+        for row in session.scalars(select(Process).where(Process.job_id == job.id)):
+            if row.identity is None:
+                # Gate cannot execute without a durable identity. Owner must first stop.
+                if not recovering or (not job.owner_closed and liveness(job.process_owner) != "dead"):
+                    raise Conflict("Pending spawn requires stopped owner")
+            elif liveness(row.identity, group=True) != "dead":
+                raise Conflict("Previous process group is alive or uncertain; cannot unlock")

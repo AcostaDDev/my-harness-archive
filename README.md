@@ -1,10 +1,11 @@
 # my_harness — Harness Local
 
 Aplicación local para configurar, ejecutar y observar un harness modular de desarrollo con agentes.
-Estado actual: H0, H1 y H2.1 completados. Esqueleto Python/API/UI con simulaciones
-persistidas, importación/observación legacy y navegación por evidencias. Motor
-extraído aislado con contexto explícito y adaptadores falsos; ejecución gestionada
-y adaptadores reales pendientes.
+Estado actual: H0, H1, H2.1 y H2.2 completados; H2.3 implementado y verificado
+offline, con smoke real pendiente de autorización. Esqueleto Python/API/UI con
+simulaciones persistidas, observación legacy y motor con persistencia/cola.
+Adaptadores CLI y grupos de procesos por inyección explícita; sin entradas
+gestionadas API/CLI/UI ni ejecución automática de proveedores.
 
 ## Documentación
 
@@ -23,6 +24,8 @@ y adaptadores reales pendientes.
 - [Navegación y evidencias H1.2](docs/discovery/H1.2_NAVIGATION.md).
 - [Observación y SSE H1.3](docs/discovery/H1.3_OBSERVATION.md).
 - [Motor aislado H2.1 y límites](docs/discovery/H2.1_ENGINE.md).
+- [Persistencia/cola H2.2](docs/discovery/H2.2_PERSISTENCE.md).
+- [Adaptadores CLI/procesos H2.3 y smoke pendiente](docs/discovery/H2.3_CLI.md).
 
 `AGENTS.md` contiene las instrucciones de Codex; `CLAUDE.md` remite al mismo contrato para Claude Code. El desarrollo es manual y no utiliza el harness como orquestador.
 
@@ -87,10 +90,11 @@ UV_CACHE_DIR=.local/uv-cache uv run --frozen --offline alembic current
 UV_CACHE_DIR=.local/uv-cache uv run --frozen --offline alembic check
 ```
 
-128 pruebas (12 anteriores, 14 de H0.3, 14 de H1.1, 19 de H1.2, 21 de H1.3 y
-48 de H2.1). Los adaptadores falsos no lanzan procesos ni proveedores. H2.1 solo
-caracteriza el motor en checkouts sintéticos temporales; no certifica commits
-ni introduce ejecución gestionada desde API/CLI.
+204 pruebas (158 anteriores y 46 de H2.3). Se usan checkouts, SQLite y
+procesos Python sintéticos, sin CLI de proveedores ni consumo de suscripciones.
+Se verifican captura incremental, cancelación de grupos y recuperación tras
+caída del supervisor. No certifica commits ni introduce ejecución gestionada
+desde API/CLI. Los 12 checks ligeros siguen sin lanzar procesos.
 
 ## Comprobación offline disponible
 
@@ -103,17 +107,16 @@ python3 -m unittest discover -s tests -p 'test_*.py' -v
 Doce checks ligeros: cuatro de fixtures H0.1 y ocho de streams H0.2; no ejecutan
 el harness ni proveedores. Este comando sigue sin necesitar dependencias del
 producto. H0.3 ya verifica instalación y ejecución del esqueleto; las CLI
-reales por suscripción continúan sin integrar.
-H2.2 completó persistencia gestionada, cola y exclusión con puertos falsos;
-ver [entrega y límites](docs/discovery/H2.2_PERSISTENCE.md). El supervisor se
-invoca explícitamente, sin entrada API/CLI ni agentes reales. La siguiente tarea
-es H2.3, adaptadores CLI, todavía pendiente.
+reales por suscripción tienen adaptadores H2.3 todavía sin smoke autorizado.
+El supervisor se invoca explícitamente, sin entrada API/CLI ni arranque automático.
+El siguiente paso es decidir y autorizar el smoke H2.3 preparado; no se ha
+iniciado H2.4. Ver [entrega y límites](docs/discovery/H2.3_CLI.md).
 
 
 ## Importación legacy de lectura
 
 Migrar con el servicio detenido antes de importar; el esquema actual es
-`0004_managed_queue`. Comandos comprobados desde la raíz, con datos sintéticos:
+`0005_cli_processes`. Comandos comprobados desde la raíz, con datos sintéticos:
 
 ```sh
 UV_CACHE_DIR=.local/uv-cache uv run --frozen --offline alembic upgrade head

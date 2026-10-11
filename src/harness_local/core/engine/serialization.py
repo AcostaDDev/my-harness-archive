@@ -43,12 +43,20 @@ def _evidence(data: dict) -> ContentEvidence:
 
 
 def dump_history(history: RunHistory) -> str:
-    return freeze({"format": 1, "history": asdict(history)})
+    data = asdict(history)
+    version = 2 if any(attempt.result.status is not None or attempt.result.metadata_json is not None
+                       for attempt in history.attempts) else 1
+    if version == 1:
+        # Preserve the exact H2.2 shape for existing/fake results.
+        for attempt in data["attempts"]:
+            attempt["result"].pop("status")
+            attempt["result"].pop("metadata_json")
+    return freeze({"format": version, "history": data})
 
 
 def load_history(snapshot: str) -> RunHistory:
     value = json.loads(snapshot)
-    if value["format"] != 1:
+    if value["format"] not in {1, 2}:
         raise ValueError("Unknown managed history format")
     data = value["history"]
     data["attempts"] = tuple(Attempt(restore_request(item["request"]), AgentResult(**item["result"]))

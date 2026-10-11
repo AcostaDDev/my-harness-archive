@@ -96,6 +96,8 @@ class ManagedJobRow(Base):
     created_at: Mapped[str] = mapped_column(String(40))
     finished_at: Mapped[str | None] = mapped_column(String(40), nullable=True)
     diagnostic: Mapped[str | None] = mapped_column(Text, nullable=True)
+    process_owner: Mapped[dict | None] = mapped_column(JSON, nullable=True)
+    owner_closed: Mapped[bool] = mapped_column(Boolean, server_default="0")
 
 
 class CheckoutLockRow(Base):
@@ -130,3 +132,14 @@ class ManagedEventRow(Base):
     kind: Mapped[str] = mapped_column(String(40))
     recorded_at: Mapped[str] = mapped_column(String(40))
     payload: Mapped[dict] = mapped_column(JSON)
+
+
+class ManagedProcessRow(Base):
+    __tablename__ = "managed_processes"
+
+    attempt_id: Mapped[str] = mapped_column(ForeignKey("managed_attempts.id"), primary_key=True)
+    job_id: Mapped[int] = mapped_column(ForeignKey("managed_jobs.id"))
+    spec: Mapped[dict] = mapped_column(JSON)
+    identity: Mapped[dict | None] = mapped_column(JSON, nullable=True)
+    status: Mapped[str] = mapped_column(String(40))
+    capture: Mapped[dict | None] = mapped_column(JSON, nullable=True)

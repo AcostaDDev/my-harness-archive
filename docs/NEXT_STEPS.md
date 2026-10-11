@@ -1,54 +1,47 @@
-# Siguiente tarea — H2.3 (pendiente)
+# Siguiente acción — H2.3: smoke real pendiente de autorización
 
-H0, H1, H2.1 y H2.2 completados el 2026-10-11.
-[Alcance original de H2.2](discovery/H2.2_SCOPE.md) y
-[entrega/verificaciones](discovery/H2.2_PERSISTENCE.md) conservados para revisión.
-Esta entrega no inicia H2.3.
+H0, H1, H2.1 y H2.2 completados. H2.3 implementado y caracterizado offline
+el 2026-10-11: [alcance original](discovery/H2.3_SCOPE.md) y
+[entrega/verificaciones](discovery/H2.3_CLI.md). 204 pruebas pytest y 121 subtests,
+12 checks ligeros, migraciones, OpenAPI/tipos, TypeScript y build correctos.
+No se ha ejecutado ningún proveedor ni iniciado H2.4.
 
-## Objetivo
+## Objetivo pendiente
 
-Añadir adaptadores CLI de Codex como planificador/revisor y Claude Code como
-ejecutor, con sesiones nuevas, captura incremental y cancelación de grupos
-de procesos. Conectar el flujo a las garantías persistidas H2.2 sin fallback
-ni reintento oculto. Caracterizar primero con procesos falsos offline.
+Resolver la verificación real H2.3 con autorización específica de consumo.
+La entrega offline satisface los criterios de implementación/procesos; no
+acredita acceso a modelos, cuota, autenticación real, comportamiento de flags ni
+retries internos de las CLI frente a los proveedores.
 
-## Alcance de la siguiente sesión
+## Acción acotada
 
-1. Revisar H2.3 del backlog, adaptadores/recuperación/seguridad de la especificación,
-   D007–D009/D015–D016 y la matriz H0.2. Comprobar versión/help local de las CLI;
-   no trasladar flags antiguos ni cambiar autenticación/configuración global.
-2. Implementar adaptadores con argv/cwd/entorno/timeout explícitos, sesiones
-   frescas, modelo/esfuerzo seleccionados y capacidades declaradas. Conservar
-   solicitudes y metadatos observados separados; sin fallback ante fallos.
-3. Capturar streams incrementales, bytes/eventos parciales y resultado terminal
-   conocido/exit code. Probar timeout, UTF-8/JSON cortados, salida inválida,
-   errores/cuota y ausencia de resultado final mediante procesos falsos.
-4. Implementar cancelación y seguimiento de grupos de procesos. Conciliar
-   propietario persistido con liveness antes de confirmar parada/liberar checkout;
-   lease vencido por sí solo sigue sin demostrar muerte. No repetir efectos inciertos.
-5. Mantener H0/H1/H2.1/H2.2, ejecutar checks offline pertinentes, revisar diff y
-   actualizar STATE/NEXT_STEPS/DECISIONS con límites de CLI/autenticación/procesos.
-6. Solo después de la caracterización offline, preparar un smoke real acotado en
-   repositorio desechable. Solicitar autorización explícita de consumo antes de
-   ejecutarlo; la autorización de implementación no autoriza proveedores reales.
+1. Revisar `scripts/smoke_cli.py`, D017 y los límites de la entrega. Confirmar
+   modelos/esfuerzos de Codex y Claude y directorio de salida fuera del checkout.
+2. **Solicitar autorización explícita de consumo antes de ejecutarlo.** La pregunta
+   ya se planteó al entregar la implementación; no se ha recibido autorización.
+   No inferirla de instrucciones de implementación, tests, commit o tiempo transcurrido.
+3. Con autorización y selecciones, usar el script con `--authorize-consumption`:
+   hasta tres invocaciones CLI de 60 s cada una, herramientas vacías, suscripciones
+   propias y checkout desechable. No pasar API keys ni activar fallback/resume.
+4. Conservar evidencia y registrar comportamiento real, terminales/errores,
+   telemetría ausente/observada y límites de permisos/cancelación/retries. Ante fallo,
+   detenerse sin relanzar ni sustituir selección/proveedor. Un smoke no demuestra
+   cero retries internos ni aislamiento total.
+5. Actualizar STATE/NEXT_STEPS/DECISIONS según el resultado. Si no hay autorización,
+   conservar esta verificación pendiente; no presentar los fakes como CLI real.
 
-## Criterios de aceptación
+## Criterios de aceptación de esta verificación
 
-- Adaptadores seleccionan explícitamente CLI/modelo/esfuerzo y sesión nueva;
-  un error conserva evidencia y detiene el run sin fallback ni reintento oculto.
-- Captura incremental y estados persistidos distinguen resultado parcial,
-  completo, inválido, timeout y cancelación, sin éxito/telemetría inventados.
-- Procesos falsos comprueban cancelación/grupos y recuperación conservadora:
-  ningún segundo escritor arranca mientras el anterior pueda seguir vivo.
-- Historial/snapshots/presupuesto/cola/exclusión H2.2 y contratos H0/H1 siguen
-  pasando, con migraciones, checks de contratos y build pertinentes.
-- El smoke real solo se ejecuta con autorización de consumo posterior; si falta,
-  registrar expresamente esa verificación pendiente, sin presentar fakes como CLI real.
+- Consentimiento y modelos/esfuerzos explícitos antes de consumo.
+- Repositorio desechable y evidencias independientes de los datos del usuario.
+- Máximo tres invocaciones CLI, timeout/cancelación y cero fallback del adaptador.
+- Resultados reales separados de caracterización offline, sin aceptación/commit
+  de producto inferidos. Registrar expresamente lo no demostrado.
 
 ## Fuera de alcance
 
-H2.4 worktrees/captura Git completa/commit de producto, H2.5 migración de proyectos,
-chat, SDKs, permisos interactivos vivos, cierre de fase y distribución.
-No ejecutar el harness para desarrollar ni lanzar sesiones de otros agentes.
-No usar runs reales, acceder a credenciales, ejecutar tests/instalaciones en
-ReferenceProject ni modificar configuración global. No avanzar a H2.4.
+No implementar H2.4: worktrees/captura Git completa/commit de producto. Tampoco
+H2.5 migración de proyectos, entradas gestionadas API/CLI/UI, permisos vivos,
+chat, SDKs, cierre de fase ni distribución. No ejecutar el harness para desarrollar,
+lanzar otros agentes automáticamente, usar runs reales, acceder a credenciales,
+modificar configuración global ni ejecutar tests/instalaciones en ReferenceProject.

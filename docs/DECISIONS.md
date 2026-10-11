@@ -308,3 +308,41 @@ DONE indica fin de acción del job; ACCEPTANCE_READY conserva la elegibilidad
 offline, sin certificar commit/cierre. Exclusión cooperativa local, sin promesa
 de exactamente una vez ni protección contra escritores externos/otra base.
 [Entrega y pruebas](discovery/H2.2_PERSISTENCE.md).
+
+## D017 — Adaptadores CLI opt-in y grupos persistidos
+
+Estado: implementado y caracterizado offline en H2.3 el 2026-10-11;
+smoke real pendiente de autorización de consumo y selecciones explícitas.
+
+Codex planificador/revisor y Claude ejecutor usan CLI fijadas y nuevas sesiones.
+El preflight final observa Codex 0.162.1 (H0.2 registró 0.161.0) y Claude
+2.1.295. Ambas versiones Codex se admiten por selección explícita, con checks
+de help y caracterización offline; nunca se cambia automáticamente una CLI
+congelada al detectar otra versión. La factory debe aportar configuración cuyo
+hash/versiones coincidan con el job
+congelado; preflight comprueba versión/help sin acceder a autenticación. Entorno
+completo y permisos explícitos por intento, sin herencia silenciosa. El prompt
+transmitido y spec quedan vinculados a hashes/artefactos fuera del checkout.
+No se activa ejecución gestionada desde API/CLI/UI ni proveedores automáticamente.
+
+Migración `0005_cli_processes` conserva un propietario del supervisor y grupos por
+intento. Gate por pipe: la CLI no ejecuta antes de que su identidad esté confirmada.
+Intención antes de efectos, captura fsync antes de evento por rango/hash y resultado
+atómico H2.2; un fallo conserva bytes e incertidumbre. Historial CLI en formato
+2; lectura de formato 1 y comparación de resultados antiguos preservadas sin
+reescribirlos. Cancelación TERM/KILL del
+grupo, sin considerar muerte del líder prueba de muerte de sus hijos.
+
+La confirmación explícita de parada exige comprobar ausencia de grupos y de un
+propietario cuyo ámbito siga abierto. Lease vencido no libera checkout. Permiso
+denegado, host distinto y PID reutilizado vivo mantienen bloqueo conservador.
+No se señalizan PIDs recuperados automáticamente: la identidad no basta para
+certificar que aún corresponden al mismo proceso. La garantía cubre grupos POSIX
+cooperativos locales, no hijos escapados ni aislamiento físico de Claude.
+
+El adaptador nunca relanza/fallback ante fallo. Codex solicita retries HTTP/stream
+cero; Claude carece de control equivalente verificado. No prometer cero retries
+internos o una inferencia por invocación CLI sin medirlo con una cuenta real.
+`dontAsk` sigue siendo denegación; conceder herramientas configura un intento
+posterior, no responde a una operación viva. Capturas no son commits/aceptación.
+Ver [entrega, fuentes y límites](discovery/H2.3_CLI.md).

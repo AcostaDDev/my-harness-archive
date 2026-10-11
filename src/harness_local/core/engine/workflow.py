@@ -19,7 +19,7 @@ from harness_local.core.engine.validation import CommandRunner, run_command, run
 
 
 class OfflineEngine:
-    """Puertos inyectados; H2.1/H2.2 proporcionan solo adaptadores falsos."""
+    """Puertos inyectados; ninguna CLI se activa desde el núcleo."""
 
     def __init__(self, agents: AgentAdapter, commands: CommandRunner, evidence: EvidenceCapture,
                  journal: EngineJournal | None = None):

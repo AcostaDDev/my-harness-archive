@@ -1,4 +1,4 @@
-"""Supervisor local explícito H2.2, sin entradas HTTP/CLI ni proveedores reales.
+"""Supervisor local explícito H2.2/H2.3, sin entradas HTTP/CLI gestionadas.
 
 Cada run_once reclama como máximo un job. Varias llamadas pueden trabajar en
 checkouts diferentes; la base decide idempotencia y exclusión. Solo el heartbeat
@@ -35,6 +35,12 @@ class _Journal:
     def agent_started(self, history, request):
         self._call(self.repository.agent_started, history, request)
 
+    def process_intent(self, attempt_id, spec):
+        self._call(self.repository.process_intent, attempt_id, spec)
+
+    def process_update(self, attempt_id, kind, payload):
+        self._call(self.repository.process_update, attempt_id, kind, payload)
+
     def command_started(self, command):
         identity = str(uuid4())
         self._call(self.repository.effect, "command_started", {"command_id": identity, "command": asdict(command)})
@@ -48,9 +54,9 @@ class LocalSupervisor:
     def __init__(self, repository, ports_factory, *, lease_seconds=30):
         """factory(context, frozen_versions) devuelve agentes, comandos y evidencia.
 
-        H2.2 proporciona solo puertos falsos. La selección/versiones es explícita;
+        Los puertos CLI H2.3 se conectan solo por inyección explícita. La selección/versiones es explícita;
         la factory debe rechazarlas si no dispone de la implementación congelada.
-        No es un servicio autoarrancado ni un adaptador de procesos.
+        No es un servicio autoarrancado.
         """
         self.repository = repository
         self.ports_factory = ports_factory
@@ -73,11 +79,17 @@ class LocalSupervisor:
 
         thread = Thread(target=heartbeat, name=f"managed-heartbeat-{claim.id}", daemon=True)
         thread.start()
+        agents = None
+        owner_closed = False
         try:
+            from harness_local.adapters.processes import identity
+            self.repository.register_owner(claim, identity())
             record = self.repository.get_run(claim.run_id)
             context = restore_context(record.history.context_json)
             agents, commands, evidence = self.ports_factory(context, json.loads(record.versions_json))
             journal = _Journal(self.repository, claim, heartbeat_failed)
+            if hasattr(agents, "bind_process_journal"):
+                agents.bind_process_journal(journal)
             engine = OfflineEngine(agents, commands, evidence, journal)
             request = json.loads(claim.request_json)
             if request["action"] == "start":
@@ -85,6 +97,8 @@ class LocalSupervisor:
                                        history=record.history)
             else:
                 history = engine.resume(context, record.history, retry_executor=request["action"] == "retry")
+            self.repository.close_owner(claim)
+            owner_closed = True
             journal._call(self.repository.finish, history)
             return replace(claim, status="DONE")
         except Exception as exc:
@@ -92,5 +106,9 @@ class LocalSupervisor:
             self.repository.quarantine(claim, f"{type(exc).__name__}: {exc}")
             raise
         finally:
+            if agents is not None and hasattr(agents, "close"):
+                agents.close()
             stopped.set()
             thread.join()
+            if not owner_closed:
+                self.repository.close_owner(claim)
