@@ -1,9 +1,9 @@
 # my_harness — Harness Local
 
 Aplicación local para configurar, ejecutar y observar un harness modular de desarrollo con agentes.
-Estado actual: H0 y H1.1 completados. Esqueleto Python/API/UI con simulaciones
-persistidas e importación legacy de lectura mediante CLI. El motor y los
-adaptadores reales siguen pendientes.
+Estado actual: H0, H1.1 y H1.2 completados. Esqueleto Python/API/UI con simulaciones
+persistidas, importación legacy de lectura mediante CLI y navegación por evidencias.
+El motor y los adaptadores reales siguen pendientes.
 
 ## Documentación
 
@@ -19,6 +19,7 @@ adaptadores reales siguen pendientes.
 - [Streams sintéticos y sonda offline](tests/fixtures/streams/README.md).
 - [Entrega y verificaciones H0.3](docs/discovery/H0.3_SKELETON.md).
 - [Importación de lectura H1.1](docs/discovery/H1.1_IMPORT.md).
+- [Navegación y evidencias H1.2](docs/discovery/H1.2_NAVIGATION.md).
 
 `AGENTS.md` contiene las instrucciones de Codex; `CLAUDE.md` remite al mismo contrato para Claude Code. El desarrollo es manual y no utiliza el harness como orquestador.
 
@@ -83,7 +84,7 @@ UV_CACHE_DIR=.local/uv-cache uv run --frozen --offline alembic current
 UV_CACHE_DIR=.local/uv-cache uv run --frozen --offline alembic check
 ```
 
-40 pruebas (12 anteriores, 14 de H0.3 y 14 de H1.1). El adaptador falso no lanza procesos,
+59 pruebas (12 anteriores, 14 de H0.3, 14 de H1.1 y 19 de H1.2). El adaptador falso no lanza procesos,
 no escribe proyectos y no certifica revisión, aceptación ni commit.
 
 ## Comprobación offline disponible
@@ -98,7 +99,7 @@ Doce checks ligeros: cuatro de fixtures H0.1 y ocho de streams H0.2; no ejecutan
 el harness ni proveedores. Este comando sigue sin necesitar dependencias del
 producto. H0.3 ya verifica instalación y ejecución del esqueleto; las CLI
 reales por suscripción continúan sin integrar.
-La siguiente tarea es H1.2, navegación y evidencias, todavía pendiente.
+La siguiente tarea es H1.3, actualización incremental (watcher/SSE), todavía pendiente.
 
 
 ## Importación legacy de lectura
@@ -120,4 +121,10 @@ Usa la misma `HARNESS_DATABASE_URL` al migrar, importar y consultar. La base
 siendo autoridad. Los JSON parciales quedan pendientes y no indican fallo de agente.
 Los campos ausentes/null aparecen como «no registrado», conservando su diferencia;
 los valores cero se muestran como registrados. No ejecuta los comandos históricos.
-H1.1 no incorpora todavía navegación web ni observación automática.
+La UI H1.2 abre «Proyectos importados» y permite seleccionar fase/tarea/run,
+inspeccionar revisiones, preguntas, consumo, validaciones, logs/diffs y documentos
+archivados. Las listas y el contenido se paginan; cada tramo comprueba el hash
+indexado antes de mostrar bytes del origen. Si cambia/desaparece el archivo,
+se muestra un diagnóstico; reimportar y recargar actualiza la observación.
+Ausencias/JSON parciales siguen visibles. ACCEPT/READY no certifican commit/cierre.
+«Simulaciones H0.3» conserva el recorrido anterior. No hay observación automática.

@@ -7,6 +7,7 @@ from fastapi.staticfiles import StaticFiles
 from sqlalchemy import text
 
 from harness_local.adapters.fake import FakeSimulationAdapter
+from harness_local.api.legacy import legacy_router
 from harness_local.api.schemas import HealthRead, SimulationCreate, SimulationRead
 from harness_local.core.simulation import SimulationService
 from harness_local.storage.database import database_url, make_engine
@@ -28,6 +29,7 @@ def create_app(url: str | None = None, ui_dir: Path | None = None) -> FastAPI:
 
     app = FastAPI(title="Harness Local", version="0.1.0", lifespan=lifespan,
                   docs_url=None, redoc_url=None)
+    app.include_router(legacy_router(engine))
 
     @app.get("/api/health", response_model=HealthRead, operation_id="health")
     def health():

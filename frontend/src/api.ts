@@ -4,7 +4,7 @@ export type Simulation = components["schemas"]["SimulationRead"];
 type SimulationCreate = operations["create_simulation"]["requestBody"]["content"]["application/json"];
 type SimulationList = operations["list_simulations"]["responses"][200]["content"]["application/json"];
 
-async function request<T>(path: string, options?: RequestInit): Promise<T> {
+export async function request<T>(path: string, options?: RequestInit): Promise<T> {
   const response = await fetch(path, options);
   if (!response.ok) {
     throw new Error(`La solicitud falló (${response.status}). Comprueba que el servicio esté disponible.`);

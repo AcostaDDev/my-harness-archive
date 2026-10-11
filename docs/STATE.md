@@ -35,7 +35,7 @@ Actualizado: 2026-10-11.
 - Dependencias reales instaladas en `.venv` / `frontend/node_modules`, locks
   `uv.lock` / `frontend/package-lock.json`. Pins H0.2 usados conservados;
   backend de paquete `uv_build==0.12.19`. Comandos comprobados en README/AGENTS.
-- 28 casos de producto en `tests/product/`; pytest ejecuta 40 pruebas en total.
+- 47 casos de producto en `tests/product/`; pytest ejecuta 59 pruebas en total.
   La comprobación ligera anterior conserva sus 12 checks sin dependencias.
 - H1.1 completado: [importación legacy y verificaciones](discovery/H1.1_IMPORT.md),
   [alcance original](discovery/H1.1_SCOPE.md). Lector local explícito de
@@ -49,18 +49,31 @@ Actualizado: 2026-10-11.
   Relectura explícita actualiza parciales/cambios; evidencia desaparecida queda
   ausente sin payload obsoleto. Los originales son autoridad y no se modifican.
   Texto/logs/diffs se indexan por ruta/hash/tamaño, sin duplicar sus cuerpos.
+- H1.2 completado: [navegación y verificaciones](discovery/H1.2_NAVIGATION.md),
+  [alcance original](discovery/H1.2_SCOPE.md). Consultas HTTP de lectura y UI
+  por proyecto/origen, fase, tarea y run observado, con timeline de metadatos,
+  revisiones/hallazgos/preguntas, bloqueos operativos, comandos y telemetría.
+- Listas y entradas estructuradas paginadas, con ruta/hash/JSON pointer y
+  distinción ausencia/null/cero. Selección solicitada separada de modelos/consumo
+  reportados; coste equivalente API separado de factura/cuota, sin sumar wrappers.
+- Contenido original servido como texto plano por tramos UTF-8, previa comprobación
+  de ruta, archivo regular y SHA-256/tamaño. Cambios, ausencias, enlaces, errores
+  locales y límites explícitos no sirven bytes nuevos como versión indexada.
+  Documentos de estado y archivo de fases accesibles sin certificar cierre/Git.
+  Esquema `0002_legacy_index` conservado; no hay migración nueva ni entidades gestionadas.
 
 ## Todavía no existe
 
-Navegación de proyectos/tareas/intentos, motor, supervisor,
-cola, bloqueo por checkout, adaptadores reales, permisos interactivos, chat,
-SSE ni distribución. El recorrido H0.3 solo guarda simulaciones;
-no representan intentos reales ni aceptación de tareas. Ninguna integración
+Intentos gestionados, motor, supervisor, cola, bloqueo por checkout,
+adaptadores reales, permisos interactivos, chat, observador automático,
+SSE ni distribución. La navegación H1.2 muestra evidencia legacy;
+el recorrido H0.3 solo guarda simulaciones, que no representan intentos reales
+ni aceptación de tareas. Ninguna integración
 con proveedores se ha ejecutado.
 
 ## Trabajo activo
 
-H0 y H1.1 completados. Próxima tarea: H1.2,
+H0, H1.1 y H1.2 completados. Próxima tarea: H1.3,
 detallada en `NEXT_STEPS.md`, pendiente de una nueva sesión dirigida por el usuario.
 
 ## Verificación de H0.1
@@ -140,6 +153,37 @@ detallada en `NEXT_STEPS.md`, pendiente de una nueva sesión dirigida por el usu
 - Límites: no hay watcher/SSE, navegación H1.2, entidades gestionadas, certificación
   de aceptación/commit, migración a modo gestionado ni prueba de escritores
   concurrentes. Solo fixtures sintéticos y relecturas manuales; H1.2 no iniciado.
+
+## Verificación de H1.2
+
+- `uv run --frozen --offline pytest -q`: 59 pruebas y 121 subtests correctos;
+  19 casos nuevos, regresión completa H0/H1.1, núcleo con `python -S`, frontera
+  de imports, OpenAPI sincronizado y checks de migración existentes correctos.
+  Los 12 checks de biblioteca estándar continúan pasando sin dependencias.
+- Cinco escenarios recorridos por HTTP: proyecto/fase/tarea/run/artefacto,
+  paginación sin pérdidas ni duplicados, hash/contenido/mtime de copias sintéticas
+  conservados. REVISE → ACCEPT, hallazgos, preguntas, stop operativo, revisión
+  parcial y resultados ausentes se mantienen separados; READY no acredita cierre.
+- Comprobados ausencia/null/cero, selección antigua ausente frente a request
+  posterior, modelos reportados, duración al nivel del comando, logs/diffs UTF-8
+  por tramos y archivo vacío. Truncamiento estructurado y límite de verificación
+  explícitos; rutas desconocidas y parámetros fuera de límites rechazados.
+- Cambios antes/durante lectura, desaparición, enlaces de archivo/directorio/raíz,
+  FIFO y denegación local no sirven contenido nuevo ni cambian el juicio del agente.
+  Consulta no reimporta; metadata/texto/JSONL no cargan cuerpos del índice al listar
+  o servir bytes. Los payloads JSON estructurados se cargan por artefacto.
+- OpenAPI/tipos regenerados, TypeScript y build Vite correctos. Chrome sobre UI
+  compilada con SQLite/copias locales sintéticas: cinco escenarios, historial,
+  revisión parcial, preguntas, telemetría, duración, documentos archivados,
+  paginación de artefactos/log UTF-8 y cambio de hash visible sin bytes nuevos.
+  Captura de UI inspeccionada; simulación H0.3 creada correctamente. Servicio detenido.
+- Diff/whitespace revisados; decisión D013. Sin red externa, proveedores, agentes,
+  harness, runs reales, acceso a ReferenceProject ni configuración global. uv sigue
+  ignorando el entorno activo externo; persiste el aviso upstream HTTPX/Starlette.
+- Límites: solo macOS actual y fixtures sintéticos; sin certificación frente a
+  escritores concurrentes, pruebas de carga, otros sistemas ni proveedor real.
+  Verificar cada tramo relee el archivo para su hash (máximo 64 MiB); no hay cache,
+  watcher/SSE ni actualización automática. H1.3 no iniciado.
 
 ## Coordinación
 

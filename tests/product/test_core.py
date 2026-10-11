@@ -23,7 +23,8 @@ def test_core_imports_with_standard_library_only():
         sys.executable, "-S", "-c",
         "import sys; sys.path.insert(0, sys.argv[1]); "
         "from harness_local.core.simulation import SimulationService; "
-        "from harness_local.core.legacy import LegacyImportService",
+        "from harness_local.core.legacy import LegacyImportService; "
+        "from harness_local.core.evidence import evidence_entries",
         str(source),
     ], capture_output=True, text=True)
     assert result.returncode == 0, result.stderr

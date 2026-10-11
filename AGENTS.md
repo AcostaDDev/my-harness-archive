@@ -50,8 +50,8 @@ Antes de dar una tarea por terminada: verificar criterios, ejecutar checks dispo
 
 ## Comandos actuales
 
-H0 y H1.1 completados: inventario, compatibilidad, fixtures, esqueleto simulado
-e importación legacy local de lectura.
+H0, H1.1 y H1.2 completados: inventario, compatibilidad, fixtures, esqueleto simulado,
+importación legacy local de lectura y navegación web por evidencias.
 Comprobación offline ligera, solo biblioteca estándar, desde la raíz:
 
 ```sh
@@ -81,10 +81,11 @@ npm --prefix frontend run dev
 ```
 
 Las primeras instalaciones necesitan red; después los checks son offline.
-No usar `uv --active` con entornos de otros proyectos. 40 pruebas pytest
-(12 anteriores + 14 H0.3 + 14 H1.1). API/UI compilada en 127.0.0.1:8013; Vite en :5173
+No usar `uv --active` con entornos de otros proyectos. 59 pruebas pytest
+(12 anteriores + 14 H0.3 + 14 H1.1 + 19 H1.2). API/UI compilada en 127.0.0.1:8013; Vite en :5173
 en otra terminal. SQLite local ignorada en `.local/harness.sqlite3`; migración
 explícita antes de arrancar. Ver README y `docs/discovery/H0.3_SKELETON.md`.
-Estos comandos verifican el esqueleto simulado y el índice legacy de lectura,
+Estos comandos verifican el esqueleto simulado, el índice legacy y su navegación,
 nunca agentes ni el motor. Esquema actual `0002_legacy_index`; SQLite debe estar
-fuera del checkout que se importa. Ver `docs/discovery/H1.1_IMPORT.md`.
+fuera del checkout que se importa. Ver `docs/discovery/H1.1_IMPORT.md` y
+`docs/discovery/H1.2_NAVIGATION.md`. H1.3 (watcher/SSE) sigue pendiente.

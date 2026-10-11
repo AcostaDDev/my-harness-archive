@@ -4,6 +4,125 @@
  */
 
 export interface paths {
+    "/api/legacy/projects": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Projects */
+        get: operations["legacy_projects"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/legacy/projects/{project_id}/phases": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Phases */
+        get: operations["legacy_phases"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/legacy/projects/{project_id}/tasks": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Tasks */
+        get: operations["legacy_tasks"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/legacy/projects/{project_id}/runs": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Runs */
+        get: operations["legacy_runs"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/legacy/projects/{project_id}/artifacts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Artifacts */
+        get: operations["legacy_artifacts"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/legacy/projects/{project_id}/artifacts/{artifact_id}/entries": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Entries */
+        get: operations["legacy_entries"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/legacy/projects/{project_id}/artifacts/{artifact_id}/content": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Content */
+        get: operations["legacy_content"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/health": {
         parameters: {
             query?: never;
@@ -60,6 +179,88 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        /** EvidenceContentRead */
+        EvidenceContentRead: {
+            /** Path */
+            path: string;
+            /** Indexed Sha256 */
+            indexed_sha256: string | null;
+            /** Observed Sha256 */
+            observed_sha256: string | null;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "verified" | "changed" | "missing" | "unindexed" | "unsafe" | "unreadable" | "too_large" | "invalid_utf8";
+            /** Offset */
+            offset: number;
+            /** Next Offset */
+            next_offset: number | null;
+            /** Text */
+            text: string | null;
+            /** Diagnostic */
+            diagnostic: string | null;
+        };
+        /** EvidenceEntriesRead */
+        EvidenceEntriesRead: {
+            /** Items */
+            items: components["schemas"]["EvidenceEntryRead"][];
+            /** Offset */
+            offset: number;
+            /** Next Offset */
+            next_offset: number | null;
+            /** Path */
+            path: string;
+            /** Sha256 */
+            sha256: string | null;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "available" | "pending" | "missing" | "error";
+            /** Diagnostic */
+            diagnostic: string | null;
+            /**
+             * Origin
+             * @constant
+             */
+            origin: "indexed_payload";
+        };
+        /** EvidenceEntryRead */
+        EvidenceEntryRead: {
+            /** Kind */
+            kind: string;
+            /** Pointer */
+            pointer: string;
+            /** Fields */
+            fields?: {
+                [key: string]: components["schemas"]["FieldRead"];
+            };
+            /** Value */
+            value?: unknown;
+            /**
+             * Truncated
+             * @default false
+             */
+            truncated: boolean;
+        };
+        /** FieldRead */
+        FieldRead: {
+            /**
+             * State
+             * @enum {string}
+             */
+            state: "absent" | "null" | "recorded";
+            /** Label */
+            label?: string | null;
+            /** Value */
+            value?: unknown;
+            /**
+             * Truncated
+             * @default false
+             */
+            truncated: boolean;
+        };
         /** HTTPValidationError */
         HTTPValidationError: {
             /** Detail */
@@ -79,6 +280,136 @@ export interface components {
              * @constant
              */
             mode: "simulation";
+        };
+        /** LegacyArtifactRead */
+        LegacyArtifactRead: {
+            /** Id */
+            id: string;
+            /** Path */
+            path: string;
+            /** Run Id */
+            run_id: string | null;
+            /** Kind */
+            kind: string;
+            /** Format */
+            format: string;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "available" | "pending" | "missing" | "error";
+            /** Sha256 */
+            sha256: string | null;
+            /** Size Bytes */
+            size_bytes: number | null;
+            /** Diagnostic */
+            diagnostic: string | null;
+        };
+        /** LegacyPhaseRead */
+        LegacyPhaseRead: {
+            /** Identity */
+            identity: string;
+            /** Provenance */
+            provenance: components["schemas"]["ProvenanceRead"][];
+            /** More Provenance */
+            more_provenance: boolean;
+        };
+        /** LegacyProjectRead */
+        LegacyProjectRead: {
+            /** Id */
+            id: string;
+            /** Name */
+            name: string;
+            /** Root */
+            root: string;
+            /** Observed At */
+            observed_at: string;
+            /**
+             * Mode
+             * @constant
+             */
+            mode: "observation";
+            /**
+             * Authority
+             * @constant
+             */
+            authority: "source_files";
+        };
+        /** LegacyRunRead */
+        LegacyRunRead: {
+            /** Identity */
+            identity: string;
+            /**
+             * Origin
+             * @constant
+             */
+            origin: "run_directory";
+            /** Id */
+            id: string;
+            /** Path */
+            path: string;
+        };
+        /** LegacyTaskRead */
+        LegacyTaskRead: {
+            /** Identity */
+            identity: string;
+            /**
+             * Origin
+             * @constant
+             */
+            origin: "run_directory";
+        };
+        /** Page[LegacyArtifactRead] */
+        Page_LegacyArtifactRead_: {
+            /** Items */
+            items: components["schemas"]["LegacyArtifactRead"][];
+            /** Offset */
+            offset: number;
+            /** Next Offset */
+            next_offset: number | null;
+        };
+        /** Page[LegacyPhaseRead] */
+        Page_LegacyPhaseRead_: {
+            /** Items */
+            items: components["schemas"]["LegacyPhaseRead"][];
+            /** Offset */
+            offset: number;
+            /** Next Offset */
+            next_offset: number | null;
+        };
+        /** Page[LegacyProjectRead] */
+        Page_LegacyProjectRead_: {
+            /** Items */
+            items: components["schemas"]["LegacyProjectRead"][];
+            /** Offset */
+            offset: number;
+            /** Next Offset */
+            next_offset: number | null;
+        };
+        /** Page[LegacyRunRead] */
+        Page_LegacyRunRead_: {
+            /** Items */
+            items: components["schemas"]["LegacyRunRead"][];
+            /** Offset */
+            offset: number;
+            /** Next Offset */
+            next_offset: number | null;
+        };
+        /** Page[LegacyTaskRead] */
+        Page_LegacyTaskRead_: {
+            /** Items */
+            items: components["schemas"]["LegacyTaskRead"][];
+            /** Offset */
+            offset: number;
+            /** Next Offset */
+            next_offset: number | null;
+        };
+        /** ProvenanceRead */
+        ProvenanceRead: {
+            /** Path */
+            path: string;
+            /** Origin */
+            origin: string;
         };
         /** SimulationCreate */
         SimulationCreate: {
@@ -133,6 +464,248 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
+    legacy_projects: {
+        parameters: {
+            query?: {
+                offset?: number;
+                limit?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Page_LegacyProjectRead_"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    legacy_phases: {
+        parameters: {
+            query?: {
+                offset?: number;
+                limit?: number;
+            };
+            header?: never;
+            path: {
+                project_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Page_LegacyPhaseRead_"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    legacy_tasks: {
+        parameters: {
+            query?: {
+                phase?: string | null;
+                offset?: number;
+                limit?: number;
+            };
+            header?: never;
+            path: {
+                project_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Page_LegacyTaskRead_"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    legacy_runs: {
+        parameters: {
+            query?: {
+                phase?: string | null;
+                task?: string | null;
+                offset?: number;
+                limit?: number;
+            };
+            header?: never;
+            path: {
+                project_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Page_LegacyRunRead_"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    legacy_artifacts: {
+        parameters: {
+            query?: {
+                run_id?: string | null;
+                offset?: number;
+                limit?: number;
+            };
+            header?: never;
+            path: {
+                project_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Page_LegacyArtifactRead_"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    legacy_entries: {
+        parameters: {
+            query?: {
+                offset?: number;
+                limit?: number;
+            };
+            header?: never;
+            path: {
+                project_id: string;
+                artifact_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EvidenceEntriesRead"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    legacy_content: {
+        parameters: {
+            query?: {
+                offset?: number;
+                limit?: number;
+            };
+            header?: never;
+            path: {
+                project_id: string;
+                artifact_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EvidenceContentRead"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     health: {
         parameters: {
             query?: never;

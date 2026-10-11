@@ -1,53 +1,49 @@
-# Siguiente tarea — H1.2 (pendiente)
+# Siguiente tarea — H1.3 (pendiente)
 
-H1.1 completado el 2026-10-11. [Alcance y criterios originales](discovery/H1.1_SCOPE.md)
-conservados para revisión; [entrega y verificaciones](discovery/H1.1_IMPORT.md).
-Esta entrega no inicia H1.2.
+H1.2 completado el 2026-10-11. [Alcance y criterios originales](discovery/H1.2_SCOPE.md)
+conservados para revisión; [entrega y verificaciones](discovery/H1.2_NAVIGATION.md).
+Esta entrega no inicia H1.3.
 
 ## Objetivo
 
-Implementar navegación de lectura por proyectos, fases, tareas y evidencias de
-runs legacy importados. Desde una tarea se debe poder llegar a la ejecución
-observada, revisión y evidencia que explican su resultado, sin inferir invocaciones
-ni aceptación aplicada a partir de índices o veredictos legacy.
+Añadir actualización incremental de observación: watcher con relectura controlada,
+reconciliación al iniciar y eventos SSE persistidos con reconexión por cursor.
+Cerrar y abrir el navegador debe recuperar actividad sin pérdidas ni duplicados,
+sin presentar un archivo parcial como fallo del agente.
 
 ## Alcance de la siguiente sesión
 
-1. Revisar H1.2 del backlog, la especificación de observación, D006/D010/D012,
-   `discovery/LEGACY_FORMATS.md` y el índice H1.1. Usar fixtures sintéticos;
-   no leer/copiar runs reales ni ejecutar el harness de referencia.
-2. Añadir consultas y contratos HTTP de lectura para listar proyectos/orígenes,
-   fases y tareas, con acceso a runs y evidencia de ejecución observada. Conservar
-   procedencia y límites de identidad del legacy; review/validation no generan
-   por sí solos nuevos intentos de agente ni aceptación/commits.
-3. Incorporar navegación UI y timeline de evidencias, hallazgos de revisión,
-   bloqueos, diffs y logs paginados. Lectura de artefactos desde el origen debe
-   comprobar ruta/hash y mostrar ausencias o cambios sin presentar bytes nuevos
-   como la versión indexada. No ejecutar contenido histórico.
-4. Mostrar duración por comando y consumo con origen identificado; conservar
-   «no registrado», null y cero, selección solicitada frente a datos reportados,
-   y coste equivalente API frente a factura/cuota. Mostrar diagnósticos locales
-   y pendientes sin equipararlos a errores de agente.
-5. Generar OpenAPI/tipos desde los contratos del límite HTTP, ejecutar checks
-   offline pertinentes y verificar el recorrido con los cinco escenarios.
-   Mantener importación H1.1/simulaciones H0.3, actualizar STATE/NEXT_STEPS y
-   registrar decisiones duraderas.
+1. Revisar H1.3 del backlog, observación/persistencia de la especificación y
+   D012/D013. Usar fixtures/copias sintéticas; conservar autoridad del origen,
+   importación explícita H1.1 y navegación H1.2, sin iniciar motor ni agentes.
+2. Implementar observación local controlada por proyecto, agrupación de cambios y
+   relectura de evidencias. Reconciliar al iniciar y preservar identidad/idempotencia,
+   ausencias y archivos parciales pendientes de relectura. Cambios no convierten
+   review/validación en intentos ni ACCEPT/READY en aceptación/commit/cierre.
+3. Persistir eventos de actualización del índice y servir SSE con cursor estable.
+   Resolver consistencia entre transacción del índice/evento, reconexión, orden,
+   duplicación y recuperación tras reinicio; no implementar event sourcing del motor.
+4. Actualizar listas/detalles de la UI por eventos, manteniendo selección coherente,
+   procedencia y hashes. Un tramo previamente abierto no se mezcla con contenido
+   de un hash nuevo; separar error local de lectura y evidencia de fallo del agente.
+5. Generar contratos/tipos y comprobar offline los cinco escenarios, escrituras
+   parciales que se completan, cambios/desapariciones, reconexión y reinicio.
+   Mantener H0.3/H1.1/H1.2, actualizar STATE/NEXT_STEPS y registrar decisiones.
 
 ## Criterios de aceptación
 
-- Desde una tarea importada se llega a su run/evidencia de ejecución, revisión
-  y artefactos que explican los datos mostrados; historial REVISE se conserva.
-- Los cinco escenarios se pueden inspeccionar sin inventar invocaciones,
-  aceptación, commit ni cierre, y sin ocultar ausencias o revisión parcial.
-- Timeline/hallazgos/bloqueos y logs/diffs paginados conservan procedencia;
-  contenido ausente o con hash cambiado se presenta explícitamente.
-- Duración/consumo muestran origen y campos no registrados sin defaults/cero
-  ficticios. Contratos/tipos, checks offline y build pasan; H1.1/H0.3 siguen funcionando.
+- Cambios sintéticos se reflejan tras relectura controlada, sin duplicar runs ni
+  perder historial/evidencia disponible; archivos parciales permanecen pendientes.
+- Reiniciar el servicio reconcilia el origen; cerrar/abrir el navegador o reconectar
+  por cursor recupera actividad sin pérdidas ni duplicados.
+- UI conserva identidades/procedencia, muestra cambios/ausencias y evita mezclar
+  bytes de versiones diferentes. Diagnósticos de lectura no declaran fallo de agente.
+- Contratos/tipos, checks offline y build pasan; H0.3/H1.1/H1.2 siguen funcionando.
 
 ## Fuera de alcance
 
-H1.3 observador/SSE/reconciliación automática, extracción del motor H2,
-modo gestionado, adaptadores reales, chat, permisos interactivos, SDKs y distribución.
-No ejecutar harness, agentes, tests/instalaciones en ReferenceProject ni modificar
-configuración global. Cualquier smoke real con proveedores exige autorización
-explícita de consumo en una tarea posterior.
+H2 motor/supervisor/cola/bloqueo escritor, modo gestionado, adaptadores reales,
+chat, permisos interactivos, SDKs y distribución. No ejecutar harness/agentes,
+tests/instalaciones en ReferenceProject ni modificar configuración global. No usar runs
+reales; cualquier smoke con proveedores exige autorización explícita de consumo
+en una tarea posterior.

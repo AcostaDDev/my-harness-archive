@@ -3,9 +3,11 @@ import type { FormEvent } from "react";
 import { createRoot } from "react-dom/client";
 import { api } from "./api";
 import type { Simulation } from "./api";
+import { LegacyBrowser } from "./legacy";
 import "./styles.css";
 
 function App() {
+  const [view, setView] = useState<"legacy" | "simulation">("legacy");
   const [simulations, setSimulations] = useState<Simulation[]>([]);
   const [selectedId, setSelectedId] = useState<string>();
   const [title, setTitle] = useState("Primera simulación local");
@@ -47,8 +49,13 @@ function App() {
     <main>
       <header>
         <div className="brand"><span className="brand-icon" aria-hidden="true">H</span> Harness Local</div>
-        <span className="mode"><span aria-hidden="true">●</span> Modo simulado</span>
+        <span className="mode"><span aria-hidden="true">●</span> {view === "legacy" ? "Observación legacy" : "Modo simulado"}</span>
       </header>
+      <nav className="view-tabs" aria-label="Modo de consulta">
+        <button aria-pressed={view === "legacy"} onClick={() => setView("legacy")}>Proyectos importados</button>
+        <button aria-pressed={view === "simulation"} onClick={() => setView("simulation")}>Simulaciones H0.3</button>
+      </nav>
+      {view === "legacy" ? <LegacyBrowser /> : <>
       <section className="intro">
         <p className="eyebrow">ENTORNO LOCAL · H0.3</p>
         <h1>Una ejecución, de principio a fin.</h1>
@@ -98,6 +105,7 @@ function App() {
         </article>
       </section>
       <footer>Datos sintéticos · Sin agentes reales · Una simulación no acredita aceptación ni commit.</footer>
+      </>}
     </main>
   );
 }

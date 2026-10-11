@@ -185,3 +185,39 @@ navegación web. Consulta no relee archivos; reconstrucción/relectura requiere 
 H1.3 resolverá actualización incremental; H1.2 resolverá navegación sobre evidencias.
 No se acredita consistencia frente a escritores concurrentes ni transición a modo
 gestionado. [Entrega y verificaciones](discovery/H1.1_IMPORT.md).
+
+## D013 — Navegación de observación y contenido vinculado al hash
+
+Estado: implementado y comprobado en H1.2 el 2026-10-11.
+
+La navegación usa el índice H1.1 sin añadir entidades gestionadas ni modificar su
+esquema. Cada raíz canónica importada es un proyecto/origen; tareas se agrupan por
+identidad del directorio, conservando todos sus runs. La identidad declarada en
+task.json se muestra como evidencia independiente, sin resolver discrepancias por
+inferencia. Fases proceden de directorios de run/archivo y campos phase_id o
+next_phase_id del JSON observado; se ofrece una ruta de muestra por tipo de origen.
+STATE/NEXT_STEPS/ROADMAP siguen accesibles como documentos, sin interpretar sus
+textos como nuevas invocaciones o certificados operativos. Una tarea futura solo
+documentada no aparece como tarea con ejecución observada.
+
+Los IDs HTTP son codificaciones reversibles de raíz/ruta, acotadas al proyecto e
+índice, no identidades nuevas de intentos ni secretos de autorización. Los listados
+se paginan por offset en orden estable de ruta/identidad; la timeline declara ese
+orden, sin timestamps de agente inferidos. JSON pointers, ruta/hash y estado local
+identifican la proyección del payload indexado. Las entradas grandes se truncan
+explícitamente; campos desconocidos siguen accesibles en el original por tramos.
+
+Para servir contenido se exige una ruta indexada, se abren todos los componentes
+con descriptores/O_NOFOLLOW y solo archivos regulares, y se calcula SHA-256/tamaño
+por bloques antes de devolver el tramo capturado. Cambios, enlaces, desapariciones,
+errores y límites devuelven diagnóstico sin texto. UTF-8 no se sustituye por bytes
+ficticios. La verificación tiene un máximo de 64 MiB por petición; cada tramo relee
+el archivo, sin cache de contenido. No es una certificación de snapshot entre varios
+archivos ni frente a escritores concurrentes.
+
+La UI identifica campos del índice y contenido del origen por sus propios hashes,
+avisa si se reimportó desde que se abrió la lista y muestra diagnósticos/pendientes
+sin juicios sobre el agente. Renderiza texto plano, nunca ejecuta históricos; no
+agrega copias de consumo ni deduce factura/cuota de coste equivalente API. Reimportar
+continúa siendo explícito por CLI. Watcher/SSE pertenecen a H1.3, no a esta entrega.
+[Entrega y verificaciones](discovery/H1.2_NAVIGATION.md).
