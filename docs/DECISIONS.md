@@ -248,3 +248,31 @@ ocultando respuestas cuyo hash difiera de sus metadatos. No interpreta diagnóst
 fallos de agente, ni ACCEPT/READY como aceptación/commit/cierre. Lecturas de evidencias
 por descriptores, solo archivos regulares y máximo 64 MiB. Límites y verificaciones en
 [H1.3_OBSERVATION.md](discovery/H1.3_OBSERVATION.md).
+
+## D015 — Motor extraído aislado y recuperación explícita
+
+Estado: implementado y caracterizado offline en H2.1 el 2026-10-11.
+
+`ProjectContext` fija raíz canónica, rutas relativas, perfil y política. El núcleo
+`core/engine` solo usa biblioteca estándar y puertos de agente, comandos y evidencia.
+El perfil ReferenceProject contiene las reglas de stack, sin imports condicionales del
+núcleo. No se conecta este motor a API/CLI ni a la autoridad SQLite de observación.
+
+H2.1 conserva historial como valores inmutables y snapshots JSON por petición en
+memoria. Cada invocación exige identidad/sesión nueva; no expone resume de conversación.
+Revalidar conserva trabajo y solo valida/revisa; reintentar ejecución es explícito
+y consume el presupuesto previo, incluso tras fallo. No cambia modelo ni repite
+llamadas tras errores. H2.2 deberá persistir estas garantías atómicamente.
+
+El contrato no se amplía ni se restauran cambios automáticamente: scope grants y
+preguntas detienen el flujo para una decisión posterior. Este límite aplica las
+invariantes aceptadas de contratos congelados y preservación de cambios, en lugar
+de trasladar la mutación/restore del legacy. La planificación `auto` llama al
+planificador solo ante contrato documental incompleto; una selección inválida o
+error de proveedor detiene el flujo.
+
+`acceptance_ready` es una decisión offline condicionada a review ACCEPT, validación,
+política y evidencia vigente, nunca un commit ni estado de tarea gestionada. La
+captura sintética no certifica Git; H2.4 añadirá captura completa/worktree/commit
+idempotente. El formatter/helpers son declaraciones del perfil aún sin adaptador
+real. [Entrega, trazabilidad y límites](discovery/H2.1_ENGINE.md).

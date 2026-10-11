@@ -24,11 +24,12 @@ def test_core_imports_with_standard_library_only():
         "import sys; sys.path.insert(0, sys.argv[1]); "
         "from harness_local.core.simulation import SimulationService; "
         "from harness_local.core.legacy import LegacyImportService; "
-        "from harness_local.core.evidence import evidence_entries",
+        "from harness_local.core.evidence import evidence_entries; "
+        "from harness_local.core.engine.workflow import OfflineEngine",
         str(source),
     ], capture_output=True, text=True)
     assert result.returncode == 0, result.stderr
-    for path in (source / "harness_local/core").glob("*.py"):
+    for path in (source / "harness_local/core").rglob("*.py"):
         for node in ast.walk(ast.parse(path.read_text())):
             if isinstance(node, ast.Import):
                 modules = [alias.name for alias in node.names]

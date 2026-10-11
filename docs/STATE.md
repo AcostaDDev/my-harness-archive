@@ -35,7 +35,7 @@ Actualizado: 2026-10-11.
 - Dependencias reales instaladas en `.venv` / `frontend/node_modules`, locks
   `uv.lock` / `frontend/package-lock.json`. Pins H0.2 usados conservados;
   backend de paquete `uv_build==0.12.19`. Comandos comprobados en README/AGENTS.
-- 68 casos de producto en `tests/product/`; pytest ejecuta 80 pruebas en total.
+- 116 casos de producto en `tests/product/`; pytest ejecuta 128 pruebas en total.
   La comprobación ligera anterior conserva sus 12 checks sin dependencias.
 - H1.1 completado: [importación legacy y verificaciones](discovery/H1.1_IMPORT.md),
   [alcance original](discovery/H1.1_SCOPE.md). Lector local explícito de
@@ -72,9 +72,20 @@ Actualizado: 2026-10-11.
   con navegador cerrado y reinicia tramos al actualizar, ocultando hashes diferentes.
   Lecturas de evidencias regulares por descriptores, sin enlaces/FIFO y máximo 64 MiB.
 
+- H2.1 completado: [extracción aislada y verificaciones](discovery/H2.1_ENGINE.md),
+  [alcance original](discovery/H2.1_SCOPE.md). `core/engine` contiene contexto explícito,
+  planificación, evidencia/política, validación, review, aceptación y flujo offline.
+- `ProjectContext` y puertos de biblioteca estándar independientes de web, SQLite,
+  proveedores y stack. Perfil ReferenceProject declarativo separado; solo adaptadores falsos.
+- Historial/snapshots inmutables en memoria, sesiones nuevas por invocación y
+  presupuesto de correcciones conservado al revalidar/reintentar. Stops separados
+  de veredictos; errores sin fallback. ACCEPT no supera política/tests/evidencia.
+- Extracción sin entrada API/CLI, escritores Git ni persistencia gestionada:
+  `acceptance_ready` solo indica elegibilidad offline. Esquema H1.3 conservado.
+
 ## Todavía no existe
 
-Intentos gestionados, motor, supervisor, cola, bloqueo por checkout,
+Intentos gestionados, motor conectado a ejecución real, supervisor, cola, bloqueo por checkout,
 adaptadores reales, permisos interactivos, chat ni distribución.
 La navegación H1.2 muestra evidencia legacy;
 el recorrido H0.3 solo guarda simulaciones, que no representan intentos reales
@@ -83,7 +94,7 @@ con proveedores se ha ejecutado.
 
 ## Trabajo activo
 
-H0 y H1 completados. Próxima tarea: H2.1,
+H0, H1 y H2.1 completados. Próxima tarea: H2.2,
 detallada en `NEXT_STEPS.md`, pendiente de una nueva sesión dirigida por el usuario.
 
 ## Verificación de H0.1
@@ -221,6 +232,32 @@ detallada en `NEXT_STEPS.md`, pendiente de una nueva sesión dirigida por el usu
   de capturar versiones sobrescritas entre ciclos. Cache JSON/JSONL y feed sin retención;
   sin medición de memoria/latencia bajo carga. Restauraciones que reutilicen IDs exigen
   limpiar cursor local. No hay motor/entidades gestionadas; H2.1 no iniciado.
+
+## Verificación de H2.1
+
+- `uv run --frozen --offline pytest -q`: 128 pruebas y 121 subtests correctos;
+  48 casos nuevos de caracterización en repositorios Git temporales y regresión
+  completa H0/H1. Los 12 checks de biblioteca estándar continúan pasando.
+- Núcleo importado con `python -S` y frontera de imports ampliada recursivamente.
+  OpenAPI sincronizado; migraciones ida/vuelta y `alembic check` existentes correctos.
+  TypeScript y build Vite correctos, sin cambios en API/UI/esquema.
+- Planificación documental/agente, selección explícita por corrección, peticiones
+  frescas, snapshots independientes, historial conservado y límite de correcciones
+  al revalidar/reintentar. Errores/parciales no generan fallback/review posterior.
+- Caracterizados stops de entorno/permisos y ciclos sin progreso, con preguntas
+  y reviews separadas. ACCEPT inelegible ante tests/política fallidos, preguntas,
+  grants o cambios de evidencia; no restaura archivos ni prepara commits.
+- Preparación/baseline ReferenceProject solo mediante runner falso; perfil genérico usa
+  el mismo núcleo. Comandos argv/cwd/entorno/timeout, deduplicación y duración
+  ausente conservados. No se infiere confianza ni permiso real de sus prefijos.
+- Referencia leída estáticamente, sin importar/ejecutar; hashes de motor/config,
+  workflow tests y helper coinciden con H0.1. Diff/whitespace revisados; decisión D015.
+  Sin agentes, harness, proveedores/red, runs reales, servicios nuevos ni cambios
+  globales. uv ignora el entorno externo; persiste el aviso HTTPX/Starlette.
+- Límites: solo adaptadores falsos, historial en memoria y rutas sintéticas
+  explícitas, sin captura Git completa ni snapshot atómico. Formatter/helpers
+  declarados sin ejecución real; no hay cola, exclusión, cancelación, permisos
+  interactivos, commits o fases gestionadas. H2.2 pendiente, sin iniciar.
 
 ## Coordinación
 

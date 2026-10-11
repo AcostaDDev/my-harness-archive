@@ -1,9 +1,10 @@
 # my_harness — Harness Local
 
 Aplicación local para configurar, ejecutar y observar un harness modular de desarrollo con agentes.
-Estado actual: H0, H1.1 y H1.2 completados. Esqueleto Python/API/UI con simulaciones
-persistidas, importación legacy de lectura mediante CLI y navegación por evidencias.
-El motor y los adaptadores reales siguen pendientes.
+Estado actual: H0, H1 y H2.1 completados. Esqueleto Python/API/UI con simulaciones
+persistidas, importación/observación legacy y navegación por evidencias. Motor
+extraído aislado con contexto explícito y adaptadores falsos; ejecución gestionada
+y adaptadores reales pendientes.
 
 ## Documentación
 
@@ -20,6 +21,8 @@ El motor y los adaptadores reales siguen pendientes.
 - [Entrega y verificaciones H0.3](docs/discovery/H0.3_SKELETON.md).
 - [Importación de lectura H1.1](docs/discovery/H1.1_IMPORT.md).
 - [Navegación y evidencias H1.2](docs/discovery/H1.2_NAVIGATION.md).
+- [Observación y SSE H1.3](docs/discovery/H1.3_OBSERVATION.md).
+- [Motor aislado H2.1 y límites](docs/discovery/H2.1_ENGINE.md).
 
 `AGENTS.md` contiene las instrucciones de Codex; `CLAUDE.md` remite al mismo contrato para Claude Code. El desarrollo es manual y no utiliza el harness como orquestador.
 
@@ -84,8 +87,10 @@ UV_CACHE_DIR=.local/uv-cache uv run --frozen --offline alembic current
 UV_CACHE_DIR=.local/uv-cache uv run --frozen --offline alembic check
 ```
 
-80 pruebas (12 anteriores, 14 de H0.3, 14 de H1.1, 19 de H1.2 y 21 de H1.3). El adaptador falso no lanza procesos,
-no escribe proyectos y no certifica revisión, aceptación ni commit.
+128 pruebas (12 anteriores, 14 de H0.3, 14 de H1.1, 19 de H1.2, 21 de H1.3 y
+48 de H2.1). Los adaptadores falsos no lanzan procesos ni proveedores. H2.1 solo
+caracteriza el motor en checkouts sintéticos temporales; no certifica commits
+ni introduce ejecución gestionada desde API/CLI.
 
 ## Comprobación offline disponible
 
@@ -99,7 +104,7 @@ Doce checks ligeros: cuatro de fixtures H0.1 y ocho de streams H0.2; no ejecutan
 el harness ni proveedores. Este comando sigue sin necesitar dependencias del
 producto. H0.3 ya verifica instalación y ejecución del esqueleto; las CLI
 reales por suscripción continúan sin integrar.
-La siguiente tarea es H2.1, extracción del motor, todavía pendiente.
+La siguiente tarea es H2.2, persistencia, cola y exclusión, todavía pendiente.
 
 
 ## Importación legacy de lectura
