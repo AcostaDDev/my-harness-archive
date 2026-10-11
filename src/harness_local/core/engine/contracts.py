@@ -8,6 +8,7 @@ from uuid import uuid4
 from harness_local.core.engine.context import ProjectContext, relative_path
 
 if TYPE_CHECKING:
+    from harness_local.core.engine.journal import EngineJournal
     from harness_local.core.engine.acceptance import AcceptanceDecision
     from harness_local.core.engine.review import ReviewCycle
 
@@ -130,13 +131,18 @@ def stop_history(history: RunHistory, stage: str, reason: str) -> RunHistory:
 
 
 def invoke_agent(context: ProjectContext, history: RunHistory, adapter: AgentAdapter,
-                 role: str, selection: Selection, prompt: str) -> tuple[RunHistory, dict | None]:
+                 role: str, selection: Selection, prompt: str,
+                 journal: "EngineJournal | None" = None) -> tuple[RunHistory, dict | None]:
     request = AgentRequest(str(uuid4()), role, selection, prompt, history.task_json, history.context_json)
+    if journal:
+        journal.agent_started(history, request)
     try:
         result = adapter.invoke(context, request)
     except Exception as exc:
         result = AgentResult(None, False, None, error=f"{type(exc).__name__}: {exc}")
     history = replace(history, attempts=history.attempts + (Attempt(request, result),))
+    if journal:
+        journal.checkpoint(history, role)
     try:
         if (result.error or result.terminal_observed is not True
                 or type(result.exit_code) is not int or result.exit_code != 0):

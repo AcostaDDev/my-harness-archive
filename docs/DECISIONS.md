@@ -276,3 +276,35 @@ política y evidencia vigente, nunca un commit ni estado de tarea gestionada. La
 captura sintética no certifica Git; H2.4 añadirá captura completa/worktree/commit
 idempotente. El formatter/helpers son declaraciones del perfil aún sin adaptador
 real. [Entrega, trazabilidad y límites](discovery/H2.1_ENGINE.md).
+
+## D016 — Autoridad gestionada y recuperación conservadora de jobs
+
+Estado: implementado y comprobado offline en H2.2 el 2026-10-11.
+
+Tablas `managed_*` y `checkout_locks` separadas de simulaciones/observación,
+migración explícita `0004_managed_queue`. El motor admite un journal opcional
+de biblioteca estándar. Intención antes de cada invocación/comando, resultado
+y evento atómicos después; snapshots/contexto/contrato/versiones y presupuesto
+conservados. Versiones declaradas separadas de datos observados; null no se
+convierte en versión CLI ni telemetría ficticia. No activa modo gestionado
+de proyectos legacy ni añade ejecución HTTP/CLI.
+
+Idempotencia por clave de acción y payload congelado; clave repetida devuelve
+el mismo job, contenido distinto da conflicto. FIFO entre jobs elegibles y un
+escritor por raíz canónica dentro de la misma base; otras raíces pueden avanzar
+mediante llamadas explícitas concurrentes al supervisor. Transacciones cortas
+y ningún lock SQL abierto durante el motor; heartbeat con token y lease UTC.
+
+Un lease vencido/fallo de persistencia deja RECOVERY_REQUIRED y mantiene el
+bloqueo. No demuestra que terminó el escritor. Confirmar su parada exige
+conciliación previa, job/token, versión esperada y evidencia registrada; entonces
+se marcan intentos pendientes de resultado desconocido y se libera la raíz.
+La detección/cancelación de procesos reales pertenece a H2.3. Revalidar o
+reintentar requiere un job nuevo explícito; una corrección iniciada consume
+presupuesto aunque caiga antes de guardar resultado. No se repite conversación,
+planificación ni efecto de resultado incierto automáticamente.
+
+DONE indica fin de acción del job; ACCEPTANCE_READY conserva la elegibilidad
+offline, sin certificar commit/cierre. Exclusión cooperativa local, sin promesa
+de exactamente una vez ni protección contra escritores externos/otra base.
+[Entrega y pruebas](discovery/H2.2_PERSISTENCE.md).

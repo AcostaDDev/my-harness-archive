@@ -104,13 +104,16 @@ Doce checks ligeros: cuatro de fixtures H0.1 y ocho de streams H0.2; no ejecutan
 el harness ni proveedores. Este comando sigue sin necesitar dependencias del
 producto. H0.3 ya verifica instalación y ejecución del esqueleto; las CLI
 reales por suscripción continúan sin integrar.
-La siguiente tarea es H2.2, persistencia, cola y exclusión, todavía pendiente.
+H2.2 completó persistencia gestionada, cola y exclusión con puertos falsos;
+ver [entrega y límites](docs/discovery/H2.2_PERSISTENCE.md). El supervisor se
+invoca explícitamente, sin entrada API/CLI ni agentes reales. La siguiente tarea
+es H2.3, adaptadores CLI, todavía pendiente.
 
 
 ## Importación legacy de lectura
 
 Migrar con el servicio detenido antes de importar; el esquema actual es
-`0003_legacy_observation`. Comandos comprobados desde la raíz, con datos sintéticos:
+`0004_managed_queue`. Comandos comprobados desde la raíz, con datos sintéticos:
 
 ```sh
 UV_CACHE_DIR=.local/uv-cache uv run --frozen --offline alembic upgrade head

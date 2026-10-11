@@ -6,6 +6,7 @@ from typing import Protocol
 
 from harness_local.core.engine.context import Command, ProjectContext
 from harness_local.core.engine.evidence import ContentEvidence
+from harness_local.core.engine.journal import EngineJournal
 
 
 @dataclass(frozen=True)
@@ -43,16 +44,21 @@ class ValidationReport:
         return all(entry.result.passed for entry in self.entries)
 
 
-def run_command(context: ProjectContext, runner: CommandRunner, command: Command) -> CommandResult:
+def run_command(context: ProjectContext, runner: CommandRunner, command: Command,
+                journal: EngineJournal | None = None) -> CommandResult:
+    identity = journal.command_started(command) if journal else None
     try:
         context.path(command.cwd)
-        return runner.run(context, command)
+        result = runner.run(context, command)
     except Exception as exc:
-        return CommandResult(None, error=f"{type(exc).__name__}: {exc}")
+        result = CommandResult(None, error=f"{type(exc).__name__}: {exc}")
+    if journal:
+        journal.command_finished(identity, result)
+    return result
 
 
 def run_validations(context: ProjectContext, task: dict, evidence: ContentEvidence,
-                    runner: CommandRunner) -> ValidationReport:
+                    runner: CommandRunner, journal: EngineJournal | None = None) -> ValidationReport:
     # El baseline del perfil es configuración confiable; el contrato no autoriza shell.
     commands: list[tuple[str, Command | None, str | None]] = []
     seen: set[Command] = set()
@@ -73,6 +79,6 @@ def run_validations(context: ProjectContext, task: dict, evidence: ContentEviden
             seen.add(command)
             commands.append((shlex.join(command.argv), command, None))
     entries = tuple(ValidationEntry(command, text,
-                    CommandResult(None, error=error) if error else run_command(context, runner, command))
+                    CommandResult(None, error=error) if error else run_command(context, runner, command, journal))
                     for text, command, error in commands)
     return ValidationReport(evidence, entries)

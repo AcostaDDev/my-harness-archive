@@ -1,48 +1,54 @@
-# Siguiente tarea — H2.2 (pendiente)
+# Siguiente tarea — H2.3 (pendiente)
 
-H0, H1 y H2.1 completados el 2026-10-11. [Alcance original de H2.1](discovery/H2.1_SCOPE.md)
-y [entrega/verificaciones](discovery/H2.1_ENGINE.md) conservados para revisión.
-Esta entrega no inicia H2.2.
+H0, H1, H2.1 y H2.2 completados el 2026-10-11.
+[Alcance original de H2.2](discovery/H2.2_SCOPE.md) y
+[entrega/verificaciones](discovery/H2.2_PERSISTENCE.md) conservados para revisión.
+Esta entrega no inicia H2.3.
 
 ## Objetivo
 
-Añadir persistencia gestionada, cola local y exclusión por checkout al motor
-extraído, con estados/eventos atómicos, jobs idempotentes y snapshots congelados
-por intento. Mantener la autoridad de observación separada.
+Añadir adaptadores CLI de Codex como planificador/revisor y Claude Code como
+ejecutor, con sesiones nuevas, captura incremental y cancelación de grupos
+de procesos. Conectar el flujo a las garantías persistidas H2.2 sin fallback
+ni reintento oculto. Caracterizar primero con procesos falsos offline.
 
 ## Alcance de la siguiente sesión
 
-1. Revisar H2.2 del backlog, estados/persistencia/seguridad de la especificación
-   y D003/D010/D012–D015. Delimitar entidades gestionadas y su autoridad antes
-   de añadir migraciones; no convertir simulaciones o evidencia legacy en intentos.
-2. Persistir runs/intentos, estados, resultados y eventos mediante transacciones
-   cortas. Congelar contrato, contexto, políticas, prompts y versiones por intento;
-   conservar los anteriores y el presupuesto de correcciones al recuperar.
-3. Implementar jobs locales idempotentes y cola, con lease/heartbeat y exclusión
-   por raíz canónica del checkout. No mantener una transacción SQLite abierta
-   mientras un trabajo se ejecuta. Recuperar paradas/reinicios sin llamadas ocultas.
-4. Comprobar concurrencia, claves repetidas y fallos entre transiciones con
-   adaptadores falsos y repositorios/bases sintéticos. Un solo escritor por checkout;
-   checkouts distintos pueden progresar según la política explícita de cola.
-5. Mantener H0/H1/H2.1, ejecutar checks pertinentes, revisar diff, actualizar
-   STATE/NEXT_STEPS y registrar decisiones duraderas. Documentar límites de la
-   recuperación/exclusión sin presentar adaptadores falsos como ejecución real.
+1. Revisar H2.3 del backlog, adaptadores/recuperación/seguridad de la especificación,
+   D007–D009/D015–D016 y la matriz H0.2. Comprobar versión/help local de las CLI;
+   no trasladar flags antiguos ni cambiar autenticación/configuración global.
+2. Implementar adaptadores con argv/cwd/entorno/timeout explícitos, sesiones
+   frescas, modelo/esfuerzo seleccionados y capacidades declaradas. Conservar
+   solicitudes y metadatos observados separados; sin fallback ante fallos.
+3. Capturar streams incrementales, bytes/eventos parciales y resultado terminal
+   conocido/exit code. Probar timeout, UTF-8/JSON cortados, salida inválida,
+   errores/cuota y ausencia de resultado final mediante procesos falsos.
+4. Implementar cancelación y seguimiento de grupos de procesos. Conciliar
+   propietario persistido con liveness antes de confirmar parada/liberar checkout;
+   lease vencido por sí solo sigue sin demostrar muerte. No repetir efectos inciertos.
+5. Mantener H0/H1/H2.1/H2.2, ejecutar checks offline pertinentes, revisar diff y
+   actualizar STATE/NEXT_STEPS/DECISIONS con límites de CLI/autenticación/procesos.
+6. Solo después de la caracterización offline, preparar un smoke real acotado en
+   repositorio desechable. Solicitar autorización explícita de consumo antes de
+   ejecutarlo; la autorización de implementación no autoriza proveedores reales.
 
 ## Criterios de aceptación
 
-- Estados, resultados y eventos gestionados se guardan atómicamente; historial,
-  snapshots y presupuesto persisten tras reiniciar.
-- Doble solicitud y solicitudes concurrentes para el mismo trabajo lanzan una
-  sola ejecución falsa; raíces equivalentes comparten el bloqueo escritor.
-- Cola/lease/exclusión no dependen de transacciones largas; fallos y recuperación
-  tienen semántica explícita y no duplican ejecuciones silenciosamente.
-- Observación legacy y simulaciones conservan su autoridad/contratos; regresión,
-  migraciones, checks de contratos y build pasan.
+- Adaptadores seleccionan explícitamente CLI/modelo/esfuerzo y sesión nueva;
+  un error conserva evidencia y detiene el run sin fallback ni reintento oculto.
+- Captura incremental y estados persistidos distinguen resultado parcial,
+  completo, inválido, timeout y cancelación, sin éxito/telemetría inventados.
+- Procesos falsos comprueban cancelación/grupos y recuperación conservadora:
+  ningún segundo escritor arranca mientras el anterior pueda seguir vivo.
+- Historial/snapshots/presupuesto/cola/exclusión H2.2 y contratos H0/H1 siguen
+  pasando, con migraciones, checks de contratos y build pertinentes.
+- El smoke real solo se ejecuta con autorización de consumo posterior; si falta,
+  registrar expresamente esa verificación pendiente, sin presentar fakes como CLI real.
 
 ## Fuera de alcance
 
-H2.3 adaptadores CLI reales/smoke, H2.4 worktrees/captura Git completa/commit,
-H2.5 migración de proyectos a gestionado, chat, permisos interactivos, SDKs,
-cierre de fase y distribución. No ejecutar harness/agentes, tests/instalaciones
-en ReferenceProject ni modificar configuración global. No usar runs reales; cualquier
-smoke con proveedores requiere autorización explícita de consumo posterior.
+H2.4 worktrees/captura Git completa/commit de producto, H2.5 migración de proyectos,
+chat, SDKs, permisos interactivos vivos, cierre de fase y distribución.
+No ejecutar el harness para desarrollar ni lanzar sesiones de otros agentes.
+No usar runs reales, acceder a credenciales, ejecutar tests/instalaciones en
+ReferenceProject ni modificar configuración global. No avanzar a H2.4.

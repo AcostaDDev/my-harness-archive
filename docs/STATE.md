@@ -35,7 +35,7 @@ Actualizado: 2026-10-11.
 - Dependencias reales instaladas en `.venv` / `frontend/node_modules`, locks
   `uv.lock` / `frontend/package-lock.json`. Pins H0.2 usados conservados;
   backend de paquete `uv_build==0.12.19`. Comandos comprobados en README/AGENTS.
-- 116 casos de producto en `tests/product/`; pytest ejecuta 128 pruebas en total.
+- 146 casos de producto en `tests/product/`; pytest ejecuta 158 pruebas en total.
   La comprobación ligera anterior conserva sus 12 checks sin dependencias.
 - H1.1 completado: [importación legacy y verificaciones](discovery/H1.1_IMPORT.md),
   [alcance original](discovery/H1.1_SCOPE.md). Lector local explícito de
@@ -83,10 +83,26 @@ Actualizado: 2026-10-11.
 - Extracción sin entrada API/CLI, escritores Git ni persistencia gestionada:
   `acceptance_ready` solo indica elegibilidad offline. Esquema H1.3 conservado.
 
+- H2.2 completado: [persistencia, cola y verificaciones](discovery/H2.2_PERSISTENCE.md),
+  [alcance original](discovery/H2.2_SCOPE.md). Migración `0004_managed_queue`:
+  autoridad gestionada en tablas propias de runs/intentos/jobs/eventos/locks.
+- Journal opcional del motor y codec JSON versionado; intención previa a efectos,
+  estados/historial/resultados/eventos atómicos, snapshots congelados y presupuesto
+  conservado tras reiniciar. Versiones declaradas y datos ausentes diferenciados.
+- Jobs idempotentes por clave/payload, FIFO entre elegibles y exclusión por raíz
+  canónica; checkouts distintos pueden ejecutar concurrentemente. Supervisor
+  explícito `run_once`, heartbeat/lease y transacciones cortas, solo puertos falsos.
+- Lease vencido/fallo conserva lock y recuperación pendiente. Confirmación explícita
+  del escritor detenido, con job/token/versión/evidencia, libera atómicamente;
+  intentos inciertos quedan interrumpidos y reservan presupuesto. Sin llamadas ocultas.
+- API/CLI/UI conservan H0/H1; ninguna entrada gestionada ni arranque automático.
+  No se activan proyectos legacy gestionados ni commits de producto.
+
 ## Todavía no existe
 
-Intentos gestionados, motor conectado a ejecución real, supervisor, cola, bloqueo por checkout,
-adaptadores reales, permisos interactivos, chat ni distribución.
+Motor conectado a ejecución real, supervisor de procesos CLI, adaptadores reales,
+captura Git completa/worktrees/commit de producto, activación/migración de proyectos
+gestionados, interfaz gestionada, permisos interactivos, chat ni distribución.
 La navegación H1.2 muestra evidencia legacy;
 el recorrido H0.3 solo guarda simulaciones, que no representan intentos reales
 ni aceptación de tareas. Ninguna integración
@@ -94,7 +110,7 @@ con proveedores se ha ejecutado.
 
 ## Trabajo activo
 
-H0, H1 y H2.1 completados. Próxima tarea: H2.2,
+H0, H1, H2.1 y H2.2 completados. Próxima tarea: H2.3,
 detallada en `NEXT_STEPS.md`, pendiente de una nueva sesión dirigida por el usuario.
 
 ## Verificación de H0.1
@@ -258,6 +274,34 @@ detallada en `NEXT_STEPS.md`, pendiente de una nueva sesión dirigida por el usu
   explícitas, sin captura Git completa ni snapshot atómico. Formatter/helpers
   declarados sin ejecución real; no hay cola, exclusión, cancelación, permisos
   interactivos, commits o fases gestionadas. H2.2 pendiente, sin iniciar.
+
+## Verificación de H2.2
+
+- `UV_CACHE_DIR=.local/uv-cache uv run --frozen --offline pytest -q`: 158 pruebas
+  y 121 subtests correctos; 30 casos H2.2 y regresión completa. Los 12 checks
+  ligeros de biblioteca estándar, núcleo con `python -S` y frontera de imports pasan.
+- Reinicio sobre la misma SQLite conserva historial, contratos/contexto/prompts/
+  versiones, resultados, eventos y presupuesto. Revalidar conserva trabajo;
+  reintentar usa intento fresco y presupuesto anterior, también ante fallo/caída.
+- Ocho solicitudes/hilos concurrentes y seis procesos Python sintéticos independientes
+  producen un run/job y una sola ejecución falsa. Alias comparten lock; checkouts
+  distintos ejecutan simultáneamente mientras una segunda acción de la misma raíz espera.
+- Escritura SQLite y heartbeat completados mientras un adaptador espera: sin
+  transacción SQL larga. Expiración/fallo de heartbeat, tokens/lecturas obsoletos y
+  confirmaciones duplicadas no duplican efectos ni liberan locks silenciosamente.
+- Fallos inyectados en cola/claim/intención/resultado/comandos/finalización prueban
+  rollback atómico y conservación de intención desconocida. Corrección interrumpida
+  preserva archivos y reserva presupuesto; recuperación exige conciliación explícita.
+- Migración/check/ida-vuelta H1.3 conservan índice legacy/simulaciones. OpenAPI/tipos
+  regenerados sin diferencias; TypeScript y build Vite correctos. Diff/whitespace revisados;
+  decisión D016. Commit solicitado por el usuario al terminar esta entrega.
+- Sin red, agentes/proveedores, harness de desarrollo, servicios/navegador nuevos,
+  datos reales, ReferenceProject ni cambios globales. uv ignora su entorno externo;
+  se conserva el aviso conocido Starlette/HTTPX.
+- Límites: exclusión cooperativa de raíces canónicas en una base local; no cubre
+  escritores externos/otra base/raíces anidadas. `confirm_stopped` registra evidencia
+  del llamante, sin detectar procesos reales. No hay UI/CLI gestionada, blobs pesados,
+  cancelación real, worktrees/commit ni exactamente una vez externa. H2.3 sin iniciar.
 
 ## Coordinación
 
