@@ -64,7 +64,8 @@ pendientes de H0.2.
 
 ## D007 — Baseline de versiones H0.2
 
-Estado: seleccionado y resuelto el 2026-10-11; instalación pendiente de H0.3.
+Estado: seleccionado y resuelto el 2026-10-11; instalación del subconjunto usado
+comprobada en H0.3 (D011).
 
 Usar CPython 3.14.4 estándar, uv 0.12.19, Node 24.15.0 y npm 11.12.1 en el
 Mac actual. Pins directos y fuentes en
@@ -74,9 +75,10 @@ TypeScript queda en 5.9.3 porque openapi-typescript 7.13.0 requiere `^5.x`.
 Codex 0.161.0 y Claude Code 2.1.295 son el baseline observado; versiones nuevas
 exigirán comprobar capacidades, no trasladar flags legacy por suposición.
 
-La resolución temporal sin instalación comprueba disponibilidad y restricciones,
-no ejecución del stack. Crear locks y verificar instalación/arranque/build al
-introducir el esqueleto. Los parsers H0.2 siguen usando biblioteca estándar.
+La resolución temporal sin instalación de H0.2 comprueba disponibilidad y
+restricciones, no ejecución del stack. H0.3 creó locks y verificó instalación,
+arranque y build al introducir el esqueleto; [evidencias](discovery/H0.3_SKELETON.md).
+Los parsers H0.2 siguen usando biblioteca estándar.
 
 ## D008 — Suscripciones propias mediante CLI
 
@@ -121,3 +123,39 @@ No demuestra ausencia de reintentos internos de las CLI; caracterizarlos en H2.3
 En CLI inicial, conceder permisos afecta un intento posterior explícito. SDK
 puede tener callback condicionado por política, pero no está integrado ni
 habilitado. Fuentes y límites en la matriz H0.2; [política oficial](https://code.claude.com/docs/en/agent-sdk/permissions).
+
+## D010 — Simulación H0.3 separada del motor y del legacy
+
+Estado: implementado y comprobado el 2026-10-11.
+
+H0.3 usa un caso de uso síncrono e inmediato con adaptador determinista sin
+procesos/red/checkouts. La tabla `simulations` guarda un resultado completo y
+sus mensajes atómicamente; `completed` significa solo fin de simulación.
+No introduce estados de intentos, aceptación, commits, modelos o consumo
+ficticios. El motor, jobs persistidos y exclusión por checkout se implementarán
+en H2; no usar este endpoint como mecanismo para ejecutar agentes en background.
+
+El núcleo contiene dataclasses, protocolos y casos de uso de biblioteca estándar;
+Pydantic/FastAPI, SQLAlchemy y adaptadores quedan fuera. El futuro importador
+H1.1 mantiene su índice de observación separado de los resultados simulados,
+sin convertir estos en intentos ni crear doble autoridad. Migraciones explícitas
+con el servicio detenido; el arranque no usa `create_all` y rechaza esquemas
+no preparados. [Alcance y evidencia](discovery/H0.3_SKELETON.md).
+
+## D011 — Instalación y fuente de contratos del esqueleto
+
+Estado: implementado y comprobado el 2026-10-11.
+
+`src/harness_local` se instala como paquete mediante `uv_build==0.12.19`;
+locks uv/npm versionados y dependencias locales aisladas. Se conservan pins H0.2
+solo para componentes usados: no añadir PyYAML, Vitest o Playwright sin uso.
+pytest/HTTPX se usan para las comprobaciones de API y persistencia. El aviso de
+deprecación de Starlette sobre HTTPX queda visible; revisar al modificar de
+nuevo esas pruebas, sin cambiar el baseline silenciosamente.
+
+Los esquemas Pydantic del límite HTTP son la fuente de OpenAPI. Exportar sin
+servicio/SQLite y generar los tipos con openapi-typescript; versionar ambos
+artefactos, comprobar su sincronización y no mantener copias manuales de los
+contratos en React. Uvicorn sirve assets compilados; Vite usa proxy `/api` en
+desarrollo, con ambos servicios enlazados a loopback. Comandos verificados en
+README/AGENTS; H0.3 no habilita SDK, proveedores ni distribución.

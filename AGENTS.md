@@ -50,7 +50,7 @@ Antes de dar una tarea por terminada: verificar criterios, ejecutar checks dispo
 
 ## Comandos actuales
 
-H0.1 y H0.2 completados: inventario, compatibilidad y fixtures sintéticos.
+H0 completado: inventario, compatibilidad, fixtures y esqueleto simulado local.
 Comprobación offline ligera, solo biblioteca estándar, desde la raíz:
 
 ```sh
@@ -58,6 +58,28 @@ python3 -m unittest discover -s tests -p 'test_*.py' -v
 ```
 
 Doce checks (cuatro legacy y ocho de contratos de streams), sin agentes ni red.
-Todavía no hay aplicación, dependencias del producto instaladas ni comandos de build.
-Versiones seleccionadas para H0.3 en `docs/discovery/H0.2_COMPATIBILITY.md`.
-Al incorporar código ejecutable del producto, añadir aquí y al README los comandos comprobados.
+El producto tiene dependencias instaladas localmente y locks `uv.lock` /
+`frontend/package-lock.json`; pins de H0.2 conservados. Comandos comprobados
+desde la raíz, usando Python 3.14.4, uv 0.12.19, Node 24.15.0, npm 11.12.1:
+
+```sh
+UV_CACHE_DIR=.local/uv-cache uv sync --frozen --no-python-downloads
+npm --prefix frontend ci --ignore-scripts --cache .local/npm-cache
+UV_CACHE_DIR=.local/uv-cache uv run --frozen --offline alembic upgrade head
+UV_CACHE_DIR=.local/uv-cache uv run --frozen --offline pytest -q
+UV_CACHE_DIR=.local/uv-cache uv run --frozen --offline alembic current
+UV_CACHE_DIR=.local/uv-cache uv run --frozen --offline alembic check
+UV_CACHE_DIR=.local/uv-cache uv run --frozen --offline python scripts/export_openapi.py
+npm --prefix frontend run generate:types
+npm --prefix frontend run check
+npm --prefix frontend run build
+UV_CACHE_DIR=.local/uv-cache uv run --frozen --offline uvicorn harness_local.api.app:create_app --factory --host 127.0.0.1 --port 8013 --workers 1
+npm --prefix frontend run dev
+```
+
+Las primeras instalaciones necesitan red; después los checks son offline.
+No usar `uv --active` con entornos de otros proyectos. 26 pruebas pytest
+(12 anteriores + 14 H0.3). API/UI compilada en 127.0.0.1:8013; Vite en :5173
+en otra terminal. SQLite local ignorada en `.local/harness.sqlite3`; migración
+explícita antes de arrancar. Ver README y `docs/discovery/H0.3_SKELETON.md`.
+Estos comandos ejecutan solo el esqueleto simulado, nunca agentes ni el motor.

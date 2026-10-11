@@ -25,17 +25,30 @@ Actualizado: 2026-10-11.
   interpreta como ausencia de login en el Mac. App Server/SDK no integrados.
 - Ocho [muestras de streams sintéticos](../tests/fixtures/streams/README.md),
   sonda incremental bajo `tests/stream_probe.py` y ocho checks nuevos offline
-  en `tests/test_stream_contracts.py`; sin código ejecutable del producto.
+  en `tests/test_stream_contracts.py`; esa entrega no incorporó código del producto.
+- H0.3 completado: [esqueleto y verificaciones](discovery/H0.3_SKELETON.md),
+  [alcance original](discovery/H0.3_SCOPE.md). Paquete Python bajo `src/harness_local`:
+  núcleo de biblioteca estándar, adaptador falso, API FastAPI/Pydantic y
+  persistencia SQLAlchemy/SQLite con migración Alembic `0001_simulations`.
+- UI React/TypeScript/Vite que crea y consulta simulaciones sintéticas persistidas.
+  Tipos del cliente generados desde OpenAPI y versionados, sin contratos manuales duplicados.
+- Dependencias reales instaladas en `.venv` / `frontend/node_modules`, locks
+  `uv.lock` / `frontend/package-lock.json`. Pins H0.2 usados conservados;
+  backend de paquete `uv_build==0.12.19`. Comandos comprobados en README/AGENTS.
+- 14 casos de producto en `tests/product/`; pytest ejecuta 26 pruebas en total.
+  La comprobación ligera anterior conserva sus 12 checks sin dependencias.
 
 ## Todavía no existe
 
-Código del producto, importador, API, UI, base de datos, adaptadores ni infraestructura
-instalada para el producto. H0.3 no se ha iniciado; ninguna integración real
-se ha ejecutado. La resolución de versiones no prueba arranque ni build.
+Importador legacy, navegación de proyectos/tareas/intentos, motor, supervisor,
+cola, bloqueo por checkout, adaptadores reales, permisos interactivos, chat,
+SSE ni distribución. La base y el recorrido H0.3 solo guardan simulaciones;
+no representan intentos reales ni aceptación de tareas. Ninguna integración
+con proveedores se ha ejecutado.
 
 ## Trabajo activo
 
-H0 — Contratos y prueba de viabilidad. H0.1 y H0.2 terminados. Próxima tarea: H0.3,
+H0 — Contratos y prueba de viabilidad completado. Próxima tarea: H1.1,
 detallada en `NEXT_STEPS.md`, pendiente de una nueva sesión dirigida por el usuario.
 
 ## Verificación de H0.1
@@ -67,6 +80,28 @@ detallada en `NEXT_STEPS.md`, pendiente de una nueva sesión dirigida por el usu
 - Revisados diff y whitespace. Sin agentes, harness, proveedores, tests de
   ReferenceProject ni SDK. Límites: no se probaron cuota/modelos, reintentos internos
   de CLI, cancelación, permisos vivos, aplicación ni dependencias importadas.
+
+## Verificación de H0.3
+
+- `uv run --frozen --offline pytest -q`: 26 pruebas y 121 subtests correctos,
+  12 casos anteriores y 14 H0.3. Núcleo importado con `python -S`, frontera de
+  imports, errores sin reintentos, validación HTTP y persistencia tras reinicio.
+- Los 12 checks de biblioteca estándar continúan pasando sin dependencias.
+  Upgrade/downgrade/upgrade y `alembic check` correctos en SQLite sintética;
+  WAL, foreign keys y revisión de esquema comprobados.
+- Instalación local con locks, regeneración OpenAPI/tipos, TypeScript y build
+  Vite comprobados. Uvicorn/API/UI compilada probados desde Chrome: crear
+  simulación, leer sus tres eventos, reiniciar el servicio y recuperar el mismo ID.
+- Vite arrancado en :5173, con solicitudes de historial al proxy/API respondidas
+  200. Comprobación del contenido por accesibilidad sobre la UI compilada;
+  la captura de pantalla falló por ScreenCaptureKit. Servicios de prueba detenidos.
+- Aviso upstream: Starlette 1.7.0 depreca TestClient con HTTPX 0.28.1 y recomienda
+  HTTPX2; se conserva el pin H0.2 y el aviso visible, sin fallos de pruebas.
+- Diff/whitespace revisados; decisiones D010–D011. Sin commits, agentes,
+  harness, proveedores, importación real ni cambios globales. Bases/cachés locales
+  ignoradas; no se tocó el entorno activo externo que uv ignoró.
+- Límites: no se probaron concurrencia, intentos reales, cancelación, cuota,
+  otros sistemas, importador ni motor. H1.1 queda pendiente.
 
 ## Coordinación
 

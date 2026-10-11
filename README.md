@@ -1,8 +1,8 @@
 # my_harness — Harness Local
 
 Aplicación local para configurar, ejecutar y observar un harness modular de desarrollo con agentes.
-Estado actual: H0.1 y H0.2 completados (inventario, compatibilidad y parsers offline);
-implementación del producto pendiente.
+Estado actual: H0 completado. Esqueleto Python/API/UI con una simulación local
+persistida en SQLite; el motor y los adaptadores reales siguen pendientes.
 
 ## Documentación
 
@@ -16,12 +16,73 @@ implementación del producto pendiente.
 - [Fixtures sintéticos y límites de verificación](tests/fixtures/legacy/README.md).
 - [Versiones, capacidades y autenticación](docs/discovery/H0.2_COMPATIBILITY.md).
 - [Streams sintéticos y sonda offline](tests/fixtures/streams/README.md).
+- [Entrega y verificaciones H0.3](docs/discovery/H0.3_SKELETON.md).
 
 `AGENTS.md` contiene las instrucciones de Codex; `CLAUDE.md` remite al mismo contrato para Claude Code. El desarrollo es manual y no utiliza el harness como orquestador.
 
-## Ejecución prevista
+## Arranque local comprobado
 
-Servicio Python nativo en el Mac, UI web y almacenamiento SQLite local. Sin Celery ni Docker obligatorio en el MVP. Docker podrá usarse en perfiles de proyectos que lo necesiten. Todavía no hay comandos de aplicación o build.
+Requisitos comprobados en macOS ARM64: Python 3.14.4, uv 0.12.19,
+Node 24.15.0 y npm 11.12.1. Desde la raíz, instalar en `.venv` y
+`frontend/node_modules` con los locks versionados:
+
+```sh
+UV_CACHE_DIR=.local/uv-cache uv sync --frozen --no-python-downloads
+npm --prefix frontend ci --ignore-scripts --cache .local/npm-cache
+```
+
+Las descargas iniciales necesitan red; no acceden a modelos ni cuentas CLI.
+Las cachés quedan dentro del repositorio. uv ignora un `VIRTUAL_ENV` de otro
+proyecto: no usar `--active` para estos comandos.
+
+Migrar explícitamente y compilar la UI:
+
+```sh
+UV_CACHE_DIR=.local/uv-cache uv run --frozen --offline alembic upgrade head
+npm --prefix frontend run build
+UV_CACHE_DIR=.local/uv-cache uv run --frozen --offline uvicorn harness_local.api.app:create_app --factory --host 127.0.0.1 --port 8013 --workers 1
+```
+
+Abrir `http://127.0.0.1:8013`. El servicio sirve la UI compilada y su API.
+«Ejecutar simulación» guarda un resultado sintético; recargar o reiniciar
+conserva el historial. Detener con Ctrl+C. Ejecutar desde la raíz y con un
+único proceso; el arranque exige la migración y no crea tablas automáticamente.
+
+Para desarrollo, mantener la API anterior en una terminal y usar otra:
+
+```sh
+npm --prefix frontend run dev
+```
+
+Abrir `http://127.0.0.1:5173`; Vite dirige `/api` al servicio en el puerto 8013.
+SQLite usa por defecto `.local/harness.sqlite3`, WAL y transacciones cortas.
+`HARNESS_DATABASE_URL=sqlite:////ruta/absoluta/demo.sqlite3` permite otro archivo
+local; usar el mismo valor al migrar y arrancar. Sin Celery ni Docker obligatorio.
+
+## Contratos y verificaciones
+
+Los esquemas Pydantic generan OpenAPI y los tipos consumidos por la UI.
+Tras cambiar un contrato, regenerar desde la raíz:
+
+```sh
+UV_CACHE_DIR=.local/uv-cache uv run --frozen --offline python scripts/export_openapi.py
+npm --prefix frontend run generate:types
+npm --prefix frontend run check
+```
+
+La exportación no inicia el servicio ni abre SQLite. Versionar `frontend/openapi.json`
+y `frontend/src/api.generated.ts`; no editar los tipos generados a mano.
+
+Checks del producto y de los fixtures, con dependencias ya instaladas, sin red:
+
+```sh
+UV_CACHE_DIR=.local/uv-cache uv run --frozen --offline pytest -q
+UV_CACHE_DIR=.local/uv-cache uv run --frozen --offline alembic current
+UV_CACHE_DIR=.local/uv-cache uv run --frozen --offline alembic check
+```
+
+26 pruebas (12 anteriores y 14 de H0.3). El adaptador falso no lanza procesos,
+no escribe proyectos y no certifica revisión, aceptación ni commit.
 
 ## Comprobación offline disponible
 
@@ -32,7 +93,7 @@ python3 -m unittest discover -s tests -p 'test_*.py' -v
 ```
 
 Doce checks ligeros: cuatro de fixtures H0.1 y ocho de streams H0.2; no ejecutan
-el harness ni proveedores. Las versiones están seleccionadas y su resolución
-comprobada, sin instalar dependencias del producto. Se usarán las suscripciones
-de los usuarios mediante las CLI locales autenticadas.
-La siguiente tarea es H0.3, todavía pendiente.
+el harness ni proveedores. Este comando sigue sin necesitar dependencias del
+producto. H0.3 ya verifica instalación y ejecución del esqueleto; las CLI
+reales por suscripción continúan sin integrar.
+La siguiente tarea es H1.1, importación legacy, todavía pendiente.
