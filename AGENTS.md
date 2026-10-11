@@ -54,7 +54,8 @@ H0, H1, H2.1 y H2.2 completados: inventario, compatibilidad, fixtures, esqueleto
 importación legacy local de lectura, navegación web, observación incremental/SSE
 y extracción del motor con contexto explícito, persistencia/cola/exclusión.
 H2.3 implementado y verificado offline: adaptadores CLI por inyección explícita,
-captura incremental/cancelación y recuperación; smoke real pendiente de autorización.
+captura incremental/cancelación y recuperación; smoke real autorizado detenido
+por configuración Codex incompatible, sin relanzar.
 Comprobación offline ligera, solo biblioteca estándar, desde la raíz:
 
 ```sh
@@ -94,7 +95,9 @@ Esquema actual `0005_cli_processes`; SQLite debe estar
 fuera del checkout que se importa. Ver `docs/discovery/H1.1_IMPORT.md` y
 `docs/discovery/H1.2_NAVIGATION.md`. Ver `docs/discovery/H1.3_OBSERVATION.md`
 y `docs/discovery/H2.1_ENGINE.md` y `docs/discovery/H2.2_PERSISTENCE.md`.
-Ver `docs/discovery/H2.3_CLI.md`. El smoke real H2.3 requiere autorización
-explícita de consumo y modelos/esfuerzos; no lo ejecutan los checks. El supervisor
+Ver `docs/discovery/H2.3_CLI.md` y `docs/discovery/H2.3_SMOKE.md`. El smoke real
+H2.3 autorizado lanzó solo Codex y falló al cargar `model_providers.openai`;
+la siguiente tarea es corregirlo offline, sin repetir el smoke automáticamente.
+Los checks no consumen proveedores. El supervisor
 solo se invoca explícitamente, sin entradas API/CLI gestionadas ni autoarranque.
 H2.4 no iniciado.

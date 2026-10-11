@@ -312,7 +312,8 @@ de exactamente una vez ni protección contra escritores externos/otra base.
 ## D017 — Adaptadores CLI opt-in y grupos persistidos
 
 Estado: implementado y caracterizado offline en H2.3 el 2026-10-11;
-smoke real pendiente de autorización de consumo y selecciones explícitas.
+smoke real autorizado ejecutado con fallo de configuración el 2026-10-11
+(D018); integración exitosa con proveedores pendiente.
 
 Codex planificador/revisor y Claude ejecutor usan CLI fijadas y nuevas sesiones.
 El preflight final observa Codex 0.162.1 (H0.2 registró 0.161.0) y Claude
@@ -341,8 +342,36 @@ certificar que aún corresponden al mismo proceso. La garantía cubre grupos POS
 cooperativos locales, no hijos escapados ni aislamiento físico de Claude.
 
 El adaptador nunca relanza/fallback ante fallo. Codex solicita retries HTTP/stream
-cero; Claude carece de control equivalente verificado. No prometer cero retries
+cero, pero D018 registra que 0.162.1 rechaza la configuración actual por ID
+reservado; la corrección está pendiente. Claude carece de control equivalente
+verificado. No prometer cero retries
 internos o una inferencia por invocación CLI sin medirlo con una cuenta real.
 `dontAsk` sigue siendo denegación; conceder herramientas configura un intento
 posterior, no responde a una operación viva. Capturas no son commits/aceptación.
 Ver [entrega, fuentes y límites](discovery/H2.3_CLI.md).
+
+## D018 — Smoke H2.3 autorizado, selección delegada y parada al primer fallo
+
+Estado: verificación real ejecutada el 2026-10-11; fallo conservado sin relanzar.
+
+El usuario respondió «Si, autorizo» a la propuesta de hasta tres invocaciones
+reales de 60 s, Codex planificador/revisor y Claude ejecutor, suscripciones propias,
+checkout nuevo bajo `/private/tmp`, sin herramientas concedidas y detención al
+primer error. Después delegó la elección de modelos/esfuerzos («decídelo tú»).
+Se fijaron antes de lanzar: Codex `gpt-6-luna`/`low` y Claude
+`claude-sonnet-4-6`/`low`. Esta delegación permite seleccionar para este smoke;
+no convierte fallos en permiso para cambiar proveedor/modelo o relanzar.
+
+Una ejecución de `scripts/smoke_cli.py` lanzó solo el planificador Codex 0.162.1.
+La CLI rechazó los overrides `model_providers.openai` por ID integrado reservado;
+exit 1, stdout vacío, sin terminal ni telemetría observada. El adaptador preservó
+stderr, hashes/eventos y resultado FAILED; el script conservó job/run en
+RECOVERY_REQUIRED, ámbito cerrado y lock retenido. Claude y revisor no se lanzaron.
+
+El preflight versión/help sigue siendo una comprobación local limitada: este
+fallo demuestra que no certifica la validez semántica de todos los argumentos.
+Corregir esa configuración y añadir regresión offline es la próxima tarea;
+no se ejecuta en esta entrega ni se repite el smoke automáticamente.
+La autorización acotada concluyó al primer error. No se acredita acceso al modelo,
+autenticación/cuota, inferencia, retries internos ni aislamiento total.
+Resultado, procedencia y límites en [H2.3_SMOKE.md](discovery/H2.3_SMOKE.md).

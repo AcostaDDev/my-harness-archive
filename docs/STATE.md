@@ -113,23 +113,27 @@ Actualizado: 2026-10-11.
   PID/grupo vivo, host distinto o permiso denegado mantienen el checkout bloqueado.
 - `scripts/smoke_cli.py` preparado, con guardia explícita de consumo, modelos y
   esfuerzos obligatorios; hasta tres invocaciones, 60 s cada una, herramientas
-  vacías y checkout desechable. **No ejecutado: falta autorización de consumo.**
+  vacías y checkout desechable. **Smoke autorizado ejecutado: primera CLI Codex
+  fallida por configuración reservada; Claude/revisor no lanzados (D018).**
+  [Resultado real y evidencias](discovery/H2.3_SMOKE.md); sin relanzamiento.
 
 ## Todavía no existe
 
-Ejecución CLI real verificada con proveedores ni entradas gestionadas API/CLI/UI,
+Ejecución CLI real exitosa con proveedores ni entradas gestionadas API/CLI/UI,
 captura Git completa/worktrees/commit de producto, activación/migración de proyectos
 gestionados, interfaz gestionada, permisos interactivos, chat ni distribución.
 La navegación H1.2 muestra evidencia legacy;
 el recorrido H0.3 solo guarda simulaciones, que no representan intentos reales
-ni aceptación de tareas. Ninguna integración
-con proveedores se ha ejecutado.
+ni aceptación de tareas. El primer smoke real lanzó Codex y falló al cargar
+configuración; no acredita inferencia, autenticación, cuota ni acceso al modelo.
+Claude no se invocó.
 
 ## Trabajo activo
 
 H0, H1, H2.1 y H2.2 completados. H2.3 implementado y verificado offline;
-siguiente acción acotada: decidir y autorizar el smoke H2.3 preparado, según
-`NEXT_STEPS.md`. Sin autorización recibida, queda expresamente pendiente.
+siguiente acción acotada: corregir offline la configuración Codex incompatible,
+según `NEXT_STEPS.md`. La verificación real autorizada el 2026-10-11 (D018)
+terminó con fallo del planificador y evidencias conservadas; no se relanza.
 H2.4 no iniciado.
 
 ## Verificación de H0.1
@@ -354,9 +358,36 @@ H2.4 no iniciado.
   permisos de SO externos y aislamiento de Claude no quedan certificados. Codex
   solicita retries HTTP/stream cero; retries internos Claude no controlables ni
   caracterizados con cuenta real. Artefactos sin retención/GC ni UI de contenido.
-- Smoke real preparado **pendiente de autorización explícita y selecciones**;
+- Al cerrar la entrega offline, smoke preparado **pendiente de autorización
+  explícita y selecciones** (ejecutado posteriormente: sección siguiente);
   no se presentan los procesos sintéticos como CLI real ni se inicia H2.4.
   Decisión D017. Commit de esta entrega solicitado por el usuario.
+
+## Verificación real H2.3 — 2026-10-11
+
+- Git inicial limpio en `7a805c0`; script, D017 y criterios revisados.
+  Autorización explícita recibida y selección delegada por el usuario (D018):
+  Codex `gpt-6-luna`/`low`, Claude `claude-sonnet-4-6`/`low`, fijados antes de lanzar.
+- Preflight solo versión/help correcto: Codex 0.162.1 y Claude Code 2.1.295;
+  hashes del help coinciden con la entrega. Ayuda/guardia del smoke comprobadas.
+- Regresión offline: 204 pruebas pytest y 121 subtests, 12 checks ligeros correctos.
+  Persiste el aviso Starlette/HTTPX; uv ignora el entorno externo sin usarlo.
+- Una invocación CLI real Codex, exit 1 por rechazo de `model_providers.openai`;
+  stdout vacío, stderr 217 bytes, sin terminal ni telemetría observada.
+  Adaptador sin fallback/reintentos: Claude y reviewer no lanzados.
+- SQLite conserva intento FAILED, run/job RECOVERY_REQUIRED, propietario cerrado
+  y lock retenido. Once eventos consecutivos; hashes/rangos de bytes y prompt
+  comprobados, grupo muerto y checkout desechable intacto. Evidencias externas y
+  límites en [H2.3_SMOKE.md](discovery/H2.3_SMOKE.md).
+- No se verificó inferencia exitosa, autenticación/cuota/acceso al modelo, stream
+  real del proveedor, esfuerzo efectivo ni retries internos. Timeout/cancelación
+  siguen caracterizados solo offline. No hubo pruebas nuevas de API/UI/build,
+  cambios de código, relanzamiento, push, harness de desarrollo ni avance a H2.4.
+- Próxima tarea: corregir configuración Codex y añadir regresión offline; no
+  ejecutada en esta entrega. Verificación real concluida con resultado fallido,
+  no presentada como integración exitosa.
+- Diff y whitespace revisados; 60 enlaces locales de documentación comprobados.
+  Commit documental solicitado por el usuario, sin cambios de implementación.
 
 ## Coordinación
 

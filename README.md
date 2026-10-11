@@ -2,7 +2,8 @@
 
 Aplicación local para configurar, ejecutar y observar un harness modular de desarrollo con agentes.
 Estado actual: H0, H1, H2.1 y H2.2 completados; H2.3 implementado y verificado
-offline, con smoke real pendiente de autorización. Esqueleto Python/API/UI con
+offline, con smoke real autorizado detenido por configuración Codex incompatible.
+Esqueleto Python/API/UI con
 simulaciones persistidas, observación legacy y motor con persistencia/cola.
 Adaptadores CLI y grupos de procesos por inyección explícita; sin entradas
 gestionadas API/CLI/UI ni ejecución automática de proveedores.
@@ -25,7 +26,8 @@ gestionadas API/CLI/UI ni ejecución automática de proveedores.
 - [Observación y SSE H1.3](docs/discovery/H1.3_OBSERVATION.md).
 - [Motor aislado H2.1 y límites](docs/discovery/H2.1_ENGINE.md).
 - [Persistencia/cola H2.2](docs/discovery/H2.2_PERSISTENCE.md).
-- [Adaptadores CLI/procesos H2.3 y smoke pendiente](docs/discovery/H2.3_CLI.md).
+- [Adaptadores CLI/procesos H2.3](docs/discovery/H2.3_CLI.md) y
+  [resultado del smoke autorizado](docs/discovery/H2.3_SMOKE.md).
 
 `AGENTS.md` contiene las instrucciones de Codex; `CLAUDE.md` remite al mismo contrato para Claude Code. El desarrollo es manual y no utiliza el harness como orquestador.
 
@@ -107,10 +109,11 @@ python3 -m unittest discover -s tests -p 'test_*.py' -v
 Doce checks ligeros: cuatro de fixtures H0.1 y ocho de streams H0.2; no ejecutan
 el harness ni proveedores. Este comando sigue sin necesitar dependencias del
 producto. H0.3 ya verifica instalación y ejecución del esqueleto; las CLI
-reales por suscripción tienen adaptadores H2.3 todavía sin smoke autorizado.
+reales por suscripción tienen adaptadores H2.3; el smoke autorizado falló al
+cargar configuración Codex, sin acreditar acceso a modelos ni inferencia.
 El supervisor se invoca explícitamente, sin entrada API/CLI ni arranque automático.
-El siguiente paso es decidir y autorizar el smoke H2.3 preparado; no se ha
-iniciado H2.4. Ver [entrega y límites](docs/discovery/H2.3_CLI.md).
+El siguiente paso es corregir esa configuración y añadir una regresión offline;
+no se ha iniciado H2.4. Ver [resultado y límites](docs/discovery/H2.3_SMOKE.md).
 
 
 ## Importación legacy de lectura
