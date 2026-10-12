@@ -101,8 +101,8 @@ UV_CACHE_DIR=.local/uv-cache uv run --frozen --offline alembic current
 UV_CACHE_DIR=.local/uv-cache uv run --frozen --offline alembic check
 ```
 
-306 pruebas (158 anteriores, 53 de H2.3, 8 del entorno del smoke, 34 de H2.4, 35 de
-H2.5 y 18 de la API gestionada). Se usan checkouts Git, SQLite y procesos Python
+308 pruebas (158 anteriores, 53 de H2.3, 8 del entorno del smoke, 34 de H2.4, 35 de
+H2.5, 18 de la API gestionada y 2 de la demo UI). Se usan checkouts Git, SQLite y procesos Python
 sintéticos, sin CLI de proveedores ni consumo de suscripciones. Se verifican
 captura incremental, cancelación de grupos, recuperación tras caída del supervisor
 y el recorrido HTTP con fakes hasta COMMITTED. No certifica commits con proveedores.
@@ -132,13 +132,14 @@ offline del smoke ya valida USER contra el UID local, sin heredar credenciales.
 El smoke posterior autorizado con USER completó planificador Codex, ejecutor Claude
 y revisor Codex: terminal/exit 0/JSON en los tres, sin herramientas ni cambios.
 H2.4 (Git, worktree por tarea y commit determinista conciliable) está completado
-offline: ver [entrega y límites](docs/discovery/H2.4_GIT.md); sin entrada API/CLI.
+offline: ver [entrega y límites](docs/discovery/H2.4_GIT.md); API/UI añadidas en la salida H2, sin CLI.
 H2.5 (vista previa, copia consistente, activación reanudable, exclusión por marcador
 y reversión) está completado offline: ver [entrega y límites](docs/discovery/H2.5_MIGRATION.md).
 La API gestionada local (proyectos registrados en el servidor, supervisor opt-in,
 idempotencia, versiones y guardia Host/Origin/CSRF) está completada offline: ver
-[entrega y límites](docs/discovery/H2_EXIT_API.md). Siguiente tarea: UI gestionada
-local, sin iniciar. Ver [corrección y límites](docs/discovery/H2.3_MCP_FIX.md)
+[entrega y límites](docs/discovery/H2_EXIT_API.md). La UI gestionada local está
+completada offline; [demo, verificación y límites](docs/discovery/H2_EXIT_UI.md).
+Siguiente tarea: H3.1 (prompts versionados), sin iniciar. Ver [corrección y límites](docs/discovery/H2.3_MCP_FIX.md)
 y [resultado real cli-3](docs/discovery/H2.3_SMOKE_CLI3.md). El consentimiento
 terminó al fallo; otro smoke requiere propuesta y autorización específicas.
 Ver [corrección del entorno](docs/discovery/H2.3_ENV_FIX.md) y
@@ -187,3 +188,22 @@ lectura máxima 64 MiB por evidencia. No certifica un snapshot entre archivos ni
 captura todas las versiones sobrescritas entre ciclos. Detalles y límites en
 [H1.3_OBSERVATION.md](docs/discovery/H1.3_OBSERVATION.md).
 Migrar explícitamente con el servicio detenido antes de arrancar esta versión.
+
+
+## UI gestionada y demo offline
+
+«Proyectos gestionados» muestra los proyectos registrados por el servidor y el
+supervisor; permite migrar, encolar contratos, consultar diff/tests/review,
+confirmar commits y recuperar jobs en cuarentena con evidencia explícita.
+Sin configuración del servidor no hay proyectos ni proveedores activos.
+
+La [guía de demo sintética](docs/discovery/H2_EXIT_UI.md) prepara Git/SQLite
+independientes con `examples.managed_demo:build` y permite recorrer COMMITTED,
+reinicio, cuarentena y migración. No requiere modelos ni suscripciones.
+La UI conserva envíos inciertos en la pestaña y solo los repite por acción
+explícita; un 409 muestra diagnóstico y recarga el estado. Las evidencias del run
+proceden del historial congelado, no de una recaptura del checkout.
+
+Regresión del cliente: `node --test frontend/tests/managed-api.test.mjs`.
+Sesión local y guardia H0/H1 siguen pendientes; Host/Origin/CSRF se aplican a la
+API gestionada. COMMITTED es un checkpoint, no integración ni cierre de fase.

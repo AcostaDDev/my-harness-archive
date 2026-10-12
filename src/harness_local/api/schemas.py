@@ -272,6 +272,10 @@ class StopRead(BaseModel):
 
 
 class CycleRead(BaseModel):
+    diff: str
+    provenance: dict[str, Any] | None
+    validation: dict[str, Any]
+    review: dict[str, Any] | None
     number: int
     verdict: str | None
     fingerprint: str

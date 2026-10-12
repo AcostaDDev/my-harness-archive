@@ -649,6 +649,20 @@ export interface components {
         };
         /** CycleRead */
         CycleRead: {
+            /** Diff */
+            diff: string;
+            /** Provenance */
+            provenance: {
+                [key: string]: unknown;
+            } | null;
+            /** Validation */
+            validation: {
+                [key: string]: unknown;
+            };
+            /** Review */
+            review: {
+                [key: string]: unknown;
+            } | null;
             /** Number */
             number: number;
             /** Verdict */

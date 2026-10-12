@@ -3022,6 +3022,39 @@
       },
       "CycleRead": {
         "properties": {
+          "diff": {
+            "type": "string",
+            "title": "Diff"
+          },
+          "provenance": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Provenance"
+          },
+          "validation": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Validation"
+          },
+          "review": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Review"
+          },
           "number": {
             "type": "integer",
             "title": "Number"
@@ -3051,6 +3084,10 @@
         },
         "type": "object",
         "required": [
+          "diff",
+          "provenance",
+          "validation",
+          "review",
           "number",
           "verdict",
           "fingerprint",

@@ -1,76 +1,50 @@
-# Siguiente tarea — Salida del hito 2, parte 2: UI gestionada local
+# Siguiente tarea — H3.1: prompts versionados
 
-Parte 1 completada y verificada offline el 2026-10-12 (D028): API `/api/managed`
-con proyectos registrados en el servidor, supervisor opt-in en el proceso Uvicorn,
-`Idempotency-Key`/`expected_version`, 409 con diagnóstico y guardia Host/Origin/CSRF.
-[Informe](discovery/H2_EXIT_API.md), [alcance completado](discovery/H2_EXIT_API_SCOPE.md).
-306 pruebas y 121 subtests, 12 checks ligeros correctos. Sin proveedores ni smoke.
+Salida del hito 2, parte 2, completada offline el 2026-10-12 (D029):
+[UI gestionada local](discovery/H2_EXIT_UI.md),
+[alcance completado](discovery/H2_EXIT_UI_SCOPE.md).
+308 pruebas pytest y 121 subtests, 3 pruebas Node, 12 checks ligeros, TypeScript
+/build y recorrido Chrome con Git/SQLite/fakes correctos. COMMITTED, reinicio,
+doble clic, cuarentena/revalidación y migración verificados sin proveedores.
 
-**No iniciada.** Cierra la salida del hito 2: «una tarea puede ejecutarse,
-revisarse y completarse desde la UI con recuperación verificable». Esta tarea es
-offline; los consentimientos de smokes anteriores están agotados.
+**H3.1 no iniciado.** No se ha implementado ni diseñado en detalle esta tarea.
+Los consentimientos de smokes anteriores permanecen agotados.
 
-## Objetivo
+## Objetivo y alcance siguiente
 
-UI React que consuma solo los tipos generados de `/api/managed` para:
+Completar H3.1 del backlog, en una entrega offline acotada:
 
-- consultar el modo del proyecto y migrarlo;
-- encolar una tarea;
-- seguir su ejecución;
-- revisar el resultado;
-- confirmar el commit;
-- recuperar un job en cuarentena.
-
-Todo ello sin lógica de motor en el cliente.
-
-## Alcance acotado
-
-1. Revisar D011, D013/D014, D027, D028 y la §12 de la especificación (experiencia
-   de usuario). Señalar contradicciones materiales antes de cambiar diseño.
-2. Seguridad del cliente:
-   - enviar `X-Harness-Local: 1` en las mutaciones gestionadas;
-   - decidir y documentar si la guardia Host/Origin/CSRF se extiende a las
-     mutaciones H0/H1 (simulación y observación);
-   - decidir si la sesión local se implementa ahora o queda explícitamente
-     pendiente.
-3. Pantallas:
-   - proyectos registrados, modo y estado del supervisor;
-   - vista previa, activación y reversión con confirmaciones explícitas;
-   - encolar tarea con clave de idempotencia generada en el cliente y conservada
-     ante reintentos de red;
-   - run con historial, intentos, aceptación y commit;
-   - eventos paginados por cursor, con sondeo o SSE (decidir; si se añade SSE
-     gestionado, solo filas confirmadas, con id creciente y reconexión);
-   - acciones revalidar, reintentar, commit y confirmar escritor detenido, con
-     `expected_version` de la pantalla y recarga ante 409.
-4. Configuración local de desarrollo para probar la UI con puertos falsos, mediante
-   un módulo de ejemplo para `HARNESS_MANAGED_CONFIG` con datos sintéticos, sin
-   proveedores. Documentar cómo se configurarían los adaptadores CLI H2.3 y Git H2.4
-   sin activarlos.
-5. Regresión offline: pruebas API existentes, TypeScript y build. Recorrido en
-   navegador sobre la UI compilada con SQLite/Git sintéticos y fakes:
-   - encolar y ver ACCEPTANCE_READY;
-   - commit hasta COMMITTED;
-   - doble clic sin duplicados;
-   - reinicio del servicio con la página abierta;
-   - cuarentena, confirmación y revalidación.
-6. Ejecutar checks pertinentes, revisar diff y actualizar STATE, NEXT_STEPS,
-   DECISIONS e informe.
+1. Revisar especificación §9, backlog H3.1, prompts actuales del motor y referencia
+   legacy en lectura; identificar los siete prompts anteriores sin trasladar
+   acoplamientos de stack al núcleo. Señalar contradicciones antes de cambiar diseño.
+2. Definir e implementar versiones inmutables de prompts, variables permitidas,
+   borrador/activación y rollback como nueva versión, con persistencia/migración
+   explícita cuando corresponda. No alterar snapshots de intentos previos.
+3. Externalizar `execute-task.md` y conservar los siete prompts anteriores;
+   distinguir plantillas del núcleo, perfil y proyecto. No ejecutar ni modificar
+   el harness de referencia ni copiar runs privados a fixtures.
+4. Añadir editor, validación de variables y diff de versiones por API/UI con los
+   tipos generados, errores visibles y confirmación de activación. Mantener las
+   guardias locales y controles de versión de las mutaciones gestionadas.
+5. Congelar la versión/renderizado al crear cada intento, antes de efectos.
+   Caracterizar offline activación concurrente, reinicio y rollback con fakes.
+6. Verificar criterios, ejecutar checks pertinentes, revisar diff y actualizar
+   STATE, NEXT_STEPS, DECISIONS e informe. No avanzar a H3.2.
 
 ## Criterios de aceptación
 
-- Desde la UI, una tarea con fakes recorre ejecución, revisión y COMMITTED con
-  eventos visibles y sin duplicados ante doble envío o reinicio.
-- La recuperación de un job en RECOVERY_REQUIRED se completa desde la UI con
-  confirmación explícita y sin repetir efectos.
-- Los rechazos de modo y los conflictos de versión se muestran con su diagnóstico,
-  sin estado optimista que los oculte.
-- Ningún proveedor se invoca; tipos generados sin contratos duplicados a mano.
+- Activar una versión no altera prompts, contratos o resultados de intentos previos.
+- Variables inválidas bloquean la llamada al agente antes de cualquier efecto.
+- Borrador, diff, activación y rollback como versión nueva son verificables desde UI.
+- Los prompts externalizados conservan su comportamiento caracterizado mediante
+  fixtures sintéticos; versiones y procedencia quedan visibles sin datos inferidos.
+- Regresión API, tipos generados, TypeScript/build y checks offline pertinentes pasan.
 
 ## Fuera de alcance
 
-Proveedores reales u otro smoke (requiere propuesta y consentimiento propios),
-login/refresh, secretos, recuperación de D020/D022, integración en rama destino,
-push/publicación, H3 (prompts versionados, permisos interactivos, fases), chat,
-SDK, distribución. No modificar ReferenceProject, configuración global ni lanzar agentes
-de colaboración.
+Proveedores reales, smokes, login/refresh, secretos, recuperación de D020/D022,
+H3.2 (permisos interactivos), H3.3 (fases), integración de rama, push/publicación,
+chat, SDK y distribución. No lanzar agentes de colaboración ni usar el harness
+para desarrollar este repositorio. Sesión local, guardia H0/H1, SSE gestionado y
+registro de proyectos por HTTP permanecen pendientes; no ampliarlos de forma
+implícita dentro de H3.1.

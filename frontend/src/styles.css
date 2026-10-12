@@ -87,3 +87,9 @@ details > summary { cursor: pointer; margin-top: 24px; }
   .field { grid-template-columns: 1fr; gap: 6px; }
   .project-detail, .artifact-panel, .evidence-detail { padding: 14px; }
 }
+.managed textarea { display: block; width: 100%; padding: 12px; font: inherit; border: 1px solid #cad4de; border-radius: 7px; }
+.managed label { margin-top: 14px; }
+.managed .check { display: flex; align-items: center; gap: 10px; font-size: 14px; font-weight: 400; }
+.managed .check input { width: auto; }
+.managed .form-row label { flex: 1; }
+.managed details { margin-bottom: 16px; }

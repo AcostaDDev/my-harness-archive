@@ -4,6 +4,7 @@ La autoridad sigue en `SQLiteManagedRepository`; estas consultas solo proyectan
 filas confirmadas. Ausencia y null se conservan: nada se rellena con defaults.
 """
 
+from dataclasses import asdict
 import json
 
 from sqlalchemy import select
@@ -47,7 +48,9 @@ def _history_view(history_json: str) -> dict:
         "stops": [{"stage": stop.stage, "reason": stop.reason} for stop in history.stops],
         "attempts": len(history.attempts),
         "cycles": [{"number": cycle.number, "verdict": cycle.verdict, "fingerprint": cycle.evidence.fingerprint,
-                    "changed_paths": list(cycle.evidence.changed_paths)} for cycle in history.cycles],
+                    "changed_paths": list(cycle.evidence.changed_paths), "diff": cycle.evidence.diff,
+                    "provenance": _loads(cycle.evidence.provenance_json),
+                    "validation": asdict(cycle.validation), "review": _loads(cycle.review_json)} for cycle in history.cycles],
         "acceptance": None if acceptance is None else {
             "eligible": acceptance.eligible, "reasons": list(acceptance.reasons),
             "base_revision": acceptance.evidence.base_revision, "fingerprint": acceptance.evidence.fingerprint,

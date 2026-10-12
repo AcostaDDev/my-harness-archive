@@ -35,7 +35,7 @@ Actualizado: 2026-10-12.
 - Dependencias reales instaladas en `.venv` / `frontend/node_modules`, locks
   `uv.lock` / `frontend/package-lock.json`. Pins H0.2 usados conservados;
   backend de paquete `uv_build==0.12.19`. Comandos comprobados en README/AGENTS.
-- 294 casos de producto en `tests/product/`; pytest ejecuta 306 pruebas en total.
+- 296 casos de producto en `tests/product/`; pytest ejecuta 308 pruebas en total.
   La comprobación ligera anterior conserva sus 12 checks sin dependencias.
 - H1.1 completado: [importación legacy y verificaciones](discovery/H1.1_IMPORT.md),
   [alcance original](discovery/H1.1_SCOPE.md). Lector local explícito de
@@ -199,18 +199,31 @@ Actualizado: 2026-10-12.
   de activación, este último atómico en `take_over`/`begin_revert`.
 - 409 con `{code, diagnostic}`. Guardia Host/Origin y cabecera CSRF
   `X-Harness-Local` solo en `/api/managed`.
-- OpenAPI y tipos regenerados; la UI gestionada no existe todavía.
+- OpenAPI y tipos regenerados; UI gestionada añadida en la parte 2 siguiente.
+
+- Salida del hito 2, parte 2, completada offline: [UI gestionada local](discovery/H2_EXIT_UI.md),
+  [alcance original](discovery/H2_EXIT_UI_SCOPE.md), D029. Proyectos/modo/supervisor,
+  vista previa y transiciones de migración con confirmación, tareas, runs, intentos,
+  diff/tests/review congelados, aceptación, commit y recuperación explícita.
+- Sondeo con eventos paginados por cursor/deduplicación; reconexión al reiniciar
+  conservando selección y evidencias. Envíos con UUID/cuerpo conservados en
+  sessionStorage ante red fallida y doble clic; 409 visible y recarga de versión.
+- Ampliación aditiva de CycleRead con evidencia ya persistida; tipos generados,
+  sin codec/migración ni lógica de motor en React. Guardia gestionada conservada.
+- Demo opt-in `examples.managed_demo:build`, con preparador que exige directorio
+  nuevo, worktree Git, legacy sintético y cuarentena reproducible sin proveedores.
+  Tres regresiones de cliente Node sin dependencias nuevas.
 
 ## Todavía no existe
 
-Recorrido de tarea real del motor con proveedores, interfaz gestionada (UI) ni
-entrada CLI gestionada; la API gestionada existe y solo se ha verificado con fakes.
+Recorrido de tarea real del motor con proveedores ni entrada CLI gestionada;
+API/UI gestionadas existen y se han verificado con fakes y Git/SQLite sintéticos.
 Tampoco existen sesión local, guardia Host/Origin/CSRF en rutas H0/H1, registro de
 proyectos por HTTP, SSE gestionado, pausa o cancelación por HTTP, integración del
 commit en la rama de destino, retirada de worktrees, abandono manual de una
 intención ambigua, exportación mecánica de STATE/NEXT_STEPS, permisos
-interactivos, chat ni distribución. La salida del hito 2 (ejecutar, revisar y
-completar una tarea desde la UI) sigue pendiente de la parte 2.
+interactivos, chat ni distribución. La salida del hito 2 está verificada offline desde la UI hasta COMMITTED,
+con recuperación explícita y sin integración en la rama destino.
 La navegación H1.2 muestra evidencia legacy;
 el recorrido H0.3 solo guarda simulaciones, que no representan intentos reales
 ni aceptación de tareas. El primer smoke real lanzó Codex y falló al cargar
@@ -224,12 +237,11 @@ Git y el commit únicamente con agentes falsos y repositorios sintéticos.
 
 ## Trabajo activo
 
-H0, H1, H2.1–H2.5 y la parte 1 de la salida del hito 2 completados. H2.3 conserva
-su smoke real D025 (una ejecución, autorización agotada). La API gestionada local
-está implementada y verificada offline con TestClient, Git/SQLite sintéticos,
-fixtures legacy y fakes, más un arranque breve de Uvicorn real sin configuración.
-[Informe](discovery/H2_EXIT_API.md), D028. Siguiente tarea: salida del hito 2,
-parte 2 (UI gestionada local) según NEXT_STEPS, sin iniciarla.
+H0, H1, H2.1–H2.5 y las dos partes de la salida del hito 2 completados.
+UI gestionada verificada con navegador, Git/SQLite sintéticos y fakes hasta
+COMMITTED, reinicio y recuperación sin repetir ejecutor. [Informe](discovery/H2_EXIT_UI.md),
+D029. H2.3 conserva su smoke real D025, con autorización agotada. Siguiente tarea:
+H3.1 (prompts versionados) según NEXT_STEPS, sin iniciarla. Sin proveedores nuevos.
 
 ## Verificación de H0.1
 
@@ -829,6 +841,28 @@ parte 2 (UI gestionada local) según NEXT_STEPS, sin iniciarla.
   - sesión local, guardia en H0/H1, SSE gestionado y UI pendientes;
   - fakes no acreditan proveedores.
 - Parte 2 no iniciada. Commit solicitado por el usuario.
+
+## Verificación de la salida del hito 2, parte 2
+
+- Git inicial limpio en `main`, `1f5a8df`. Alcance conservado y D029 registrada.
+- 308 pruebas pytest y 121 subtests correctos (306 anteriores + 2 de demo);
+  20 casos de API gestionada, incluyendo evidencia congelada en la proyección.
+  Tres pruebas Node de claves/solicitud incierta/CSRF/409; 12 checks ligeros.
+  OpenAPI/tipos regenerados, TypeScript y build correctos. Esquema 0007 conservado.
+- Chrome sobre build compilado en :8015: doble clic → un run ACCEPTANCE_READY,
+  diff/tests/review visibles, commit → COMMITTED. Reinicio con página abierta
+  conserva selección, commit y 24 eventos, muestra desconexión y reconecta.
+- Cuarentena de revisión → confirmación explícita → revalidación → COMMITTED,
+  un ejecutor y dos revisores (anterior INTERRUPTED); 36 eventos. Activación y
+  reversión legacy comprobadas, diagnóstico 409 mode_refused visible sin run nuevo.
+- SQLite/auditoría sintéticas: dos commits, cinco jobs, cero locks, activación
+  REVERTED; sin invocaciones extra al reiniciar. Captura visual inspeccionada.
+- Servicio y pestaña temporales cerrados; diff/whitespace revisados. Sin proveedores,
+  smoke, colaboración automática, harness de desarrollo, ReferenceProject, red externa,
+  configuración global ni push. Aviso conocido Starlette/HTTPX conservado.
+- Límites: sesión local/guardia H0/H1/SSE gestionado pendientes, sin benchmark de
+  historiales grandes ni carrera de versión inyectada en Chrome (cubierta en API
+  y cliente). Fakes no acreditan proveedores. H3.1 no iniciado; commit solicitado.
 
 ## Coordinación
 

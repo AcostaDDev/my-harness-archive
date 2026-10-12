@@ -74,7 +74,9 @@ Ver `docs/discovery/H2.5_MIGRATION.md`.
 Salida del hito 2, parte 1, completada offline: API `/api/managed` sobre la
 autoridad H2.2–H2.5, proyectos registrados en el servidor y supervisor opt-in en
 Uvicorn (D028). Ver `docs/discovery/H2_EXIT_API.md`.
-Siguiente tarea: salida del hito 2, parte 2 (UI gestionada local), sin iniciarla.
+Salida del hito 2, parte 2, completada offline: UI gestionada local con sondeo,
+confirmaciones, claves conservadas, diff/tests/review y demo sintética. D029;
+ver `docs/discovery/H2_EXIT_UI.md`. Siguiente tarea: H3.1, sin iniciarla.
 Comprobación offline ligera, solo biblioteca estándar, desde la raíz:
 
 ```sh
@@ -104,8 +106,8 @@ npm --prefix frontend run dev
 ```
 
 Las primeras instalaciones necesitan red; después los checks son offline.
-No usar `uv --active` con entornos de otros proyectos. 306 pruebas pytest
-(158 anteriores + 53 H2.3 + 8 entorno smoke + 34 H2.4 + 35 H2.5 + 18 API gestionada,
+No usar `uv --active` con entornos de otros proyectos. 308 pruebas pytest
+(158 anteriores + 53 H2.3 + 8 entorno smoke + 34 H2.4 + 35 H2.5 + 18 API gestionada + 2 demo UI,
 con Git temporal).
 API/UI compilada en 127.0.0.1:8013; Vite en :5173
 en otra terminal. SQLite local ignorada en `.local/harness.sqlite3`; migración
@@ -137,12 +139,23 @@ run STOPPED por fin deliberado del smoke, owner cerrado, grupos STOPPED/dead y
 lock nuevo liberado por finalización normal. D020/D022 y sus locks conservados.
 Ver `docs/discovery/H2.3_ENV_SMOKE.md`. Sin aceptación/commit de producto ni
 cuota/retries certificados. Consentimiento satisfecho por una ejecución;
-no hacer login, consumir ni relanzar automáticamente. Siguiente tarea: UI gestionada offline.
+no hacer login, consumir ni relanzar automáticamente. Siguiente tarea: H3.1, prompts versionados, sin iniciar.
 Los checks no consumen proveedores. Sin configuración gestionada, la API
 `/api/managed` no tiene proyectos, puertos ni supervisor y solo lee.
 `HARNESS_MANAGED_CONFIG=módulo:atributo` (o `create_app(managed=...)`) registra
 proyectos y puertos explícitos; el supervisor solo arranca con `supervisor=True`.
 Las mutaciones gestionadas exigen la cabecera `X-Harness-Local: 1` y Host/Origin
 de loopback. El commit se encola como acción `commit` por inyección de `commit_factory`.
-La migración H2.5 se expone por `/api/managed` sobre `MigrationService`, sin CLI/UI;
+La migración H2.5 se expone por `/api/managed` y la UI sobre `MigrationService`, sin CLI;
 sus copias y exportaciones viven en `migrations/` junto a la SQLite local.
+
+Regresión del cliente gestionado, sin dependencias adicionales ni navegador:
+
+```sh
+node --test frontend/tests/managed-api.test.mjs
+```
+
+Tres pruebas Node. Demo offline opt-in: `examples.managed_demo:build`, preparación
+y comandos en `docs/discovery/H2_EXIT_UI.md`. Nunca apuntar la demo a un checkout
+real. Sesión local y guardia Host/Origin/CSRF H0/H1 siguen pendientes; la guardia
+se aplica solo a `/api/managed`. La UI no activa proveedores automáticamente.

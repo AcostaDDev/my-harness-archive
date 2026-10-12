@@ -242,6 +242,12 @@ def test_http_flow_executes_reviews_and_commits_once_across_double_submit_and_re
         assert run["history"]["acceptance"]["eligible"] is True
         assert run["history"]["acceptance"]["changed_paths"] == ["app/main.txt"]
         assert run["versions"] == VERSIONS and run["locked_by_job"] is None
+        cycle = run["history"]["cycles"][0]
+        assert "-baseline" in cycle["diff"] and "+implemented" in cycle["diff"]
+        assert cycle["review"] == review()
+        assert cycle["provenance"] is not None
+        assert cycle["validation"]["evidence"]["fingerprint"] == cycle["fingerprint"]
+        assert cycle["validation"]["entries"][0]["result"]["exit_code"] == 0
         attempts = http.get(f"/api/managed/runs/{job['run_id']}/attempts").json()
         assert [(a["number"], a["role"], a["status"], a["fresh_session"]) for a in attempts["items"]] == [
             (1, "executor", "COMPLETED", True), (2, "reviewer", "COMPLETED", True)]
@@ -588,3 +594,51 @@ def test_configuration_is_loaded_explicitly_from_the_environment(tmp_path, monke
         with pytest.raises((ValueError, TypeError)):
             load_config(spec)
     sys.modules.pop("synthetic_managed_config", None)
+
+
+def demo_module():
+    import runpy
+    return runpy.run_path(str(Path(__file__).resolve().parents[2] / "examples/managed_demo.py"))
+
+
+def test_ui_demo_preparation_is_explicit_and_never_replaces_existing_data(tmp_path, monkeypatch):
+    demo = demo_module()
+    area = demo["prepare"](tmp_path / "demo")
+    before = tree(area / "source")
+    with pytest.raises(FileExistsError):
+        demo["prepare"](area)
+    monkeypatch.setenv("HARNESS_DEMO_ROOT", str(area))
+    configured = demo["build"]()
+    assert [p.id for p in configured.projects] == ["task", "recovery", "legacy"]
+    assert tree(area / "source") == before
+    assert not (area / "calls.jsonl").exists()  # loading alone never invokes anything
+    (area / "demo-marker").write_text("not a prepared fixture")
+    with pytest.raises(ValueError, match="Not a prepared"):
+        demo["build"]()
+
+
+def test_ui_demo_recovers_after_service_restart_without_repeating_executor(tmp_path, url, monkeypatch):
+    import json
+    demo = demo_module()
+    area = demo["prepare"](tmp_path / "demo")
+    monkeypatch.setenv("HARNESS_DEMO_ROOT", str(area))
+    with client(url, tmp_path, demo["build"]()) as http:
+        job = submit(http, project="recovery", body={**RUN, "text": demo["PLAN"]}).json()
+        stopped = settle(http, job["run_id"])
+        assert stopped["status"] == "RECOVERY_REQUIRED"
+    with client(url, tmp_path, demo["build"]()) as http:
+        held = http.get(f"/api/managed/jobs/{job['id']}").json()
+        confirmation = http.post(f"/api/managed/jobs/{job['id']}/confirm-stopped", json={
+            "owner_token": held["owner_token"], "expected_version": stopped["version"],
+            "reason": "Synthetic failure returned; closed owner and no process"})
+        assert confirmation.status_code == 200
+        resumed = action(http, job["run_id"], "revalidate", confirmation.json()["version"], "demo-revalidate")
+        assert resumed.status_code == 202
+        ready = settle(http, job["run_id"])
+        assert ready["status"] == "ACCEPTANCE_READY"
+        assert action(http, job["run_id"], "commit", ready["version"], "demo-commit").status_code == 202
+        assert settle(http, job["run_id"])["status"] == "COMMITTED"
+    calls = [json.loads(line) for line in (area / "calls.jsonl").read_text().splitlines()]
+    assert [item["role"] for item in calls] == ["executor", "reviewer", "reviewer"]
+    assert git(area / "recovery", "rev-list", "--count", "HEAD") == "2"
+    assert git(area / "source", "status", "--porcelain") == ""

@@ -692,3 +692,52 @@ La sesión local frente a otros usuarios del sistema operativo y la extensión d
 guardia a las rutas H0/H1 quedan pendientes y no se presentan como implementadas.
 UI gestionada, SSE gestionado, registro de proyectos por HTTP, pausa o cancelación
 y actualizaciones mecánicas por HTTP quedan fuera de esta parte.
+
+## D029 — UI gestionada por sondeo, envíos conservados y evidencia congelada
+
+Estado: implementado y verificado offline el 2026-10-12.
+[Entrega y reproducción](discovery/H2_EXIT_UI.md).
+
+La UI consume los contratos generados de `/api/managed`; no decide aceptación,
+recuperación ni ejecución. Proyectos/selecciones/comandos permanecen configurados
+en el servidor. La proyección de cada ciclo se amplía con diff, procedencia,
+validación y review ya persistidos, para poder revisar el contenido antes de
+confirmar el commit. No recaptura el checkout ni inventa evidencia actual.
+OpenAPI/Pydantic siguen siendo la fuente; no hay migración SQLite ni codec nuevo.
+
+Se elige sondeo de detalle/estado cada 1,5 s y supervisor cada 2 s, con eventos
+confirmados paginados por cursor (50 por página) y deduplicación por secuencia.
+Las páginas pendientes se drenan antes del siguiente intervalo; el cursor solo
+avanza con una respuesta aceptada del run seleccionado. Desmontar una pantalla
+invalida sus respuestas pendientes. Reiniciar el servicio conserva selección y
+evidencias, muestra desconexión y recupera lecturas sin ejecutar nuevas acciones.
+SSE gestionado queda pendiente; H1 conserva su SSE independiente.
+
+Cada envío de job congela ruta, cuerpo y UUID en `sessionStorage` antes de enviarse.
+Un fallo de red/5xx conserva esa solicitud para repetición explícita; no hay
+reenvío automático. La última solicitud idéntica consecutiva conserva su clave
+aun después de una respuesta rápida y al recargar la pestaña. Cambiar cuerpo o
+versión crea una acción nueva. Un 4xx definitivo retira el envío pendiente; el
+409 muestra código/diagnóstico y recarga lecturas sin sustituir silenciosamente
+la versión en la acción rechazada. La persistencia es por pestaña y origen, no
+una deduplicación entre navegadores ni ante borrar almacenamiento/restaurar DB.
+
+Activar/revertir requiere motivo y confirmación explícita; commit, evidencia
+revisada de la versión mostrada; confirmar escritor detenido, motivo, token y
+versión observados. Los consentimientos se limpian cuando cambia la versión.
+Revalidar y reintentar son acciones distintas; la segunda advierte del consumo
+del presupuesto y de posibles cambios. COMMITTED sigue siendo un checkpoint,
+sin integración/cierre de fase.
+
+Todas las mutaciones gestionadas envían `X-Harness-Local: 1`. Se conserva la
+guardia Host/Origin/CSRF de D028 solo en `/api/managed`; extenderla a H0/H1 queda
+pendiente para abordar también los clientes existentes y sus pruebas. La sesión
+local frente a otros usuarios del SO continúa pendiente: la cabecera no es una
+credencial ni autenticación. Esta entrega no presenta cumplida toda la §10.
+
+`examples/managed_demo.py` prepara exclusivamente un directorio nuevo con Git,
+fixtures legacy y puertos sintéticos. Cargar su configuración no crea repos ni
+invoca proveedores. Un fallo sintético de review, registrado fuera del checkout,
+permite verificar cuarentena y recuperación incluso al reiniciar el servicio.
+Ninguna configuración CLI real se activa en esta entrega. H3.1 queda siguiente,
+sin iniciarlo; los consentimientos de smokes anteriores siguen agotados.
