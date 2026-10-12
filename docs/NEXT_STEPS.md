@@ -1,61 +1,69 @@
-# Siguiente tarea — H2.3: corrección offline del entorno explícito del smoke
+# Siguiente tarea — H2.3: verificar transporte real con USER comprobado
 
-Diagnóstico de autenticación Claude completado en lectura el 2026-10-12,
-D023. Fuera del sandbox, Claude Code 2.1.295 reconoce sesión `claude.ai` con
-USER presente; el entorno mínimo HOME/PATH/TMPDIR/LANG no la reconoce.
-Añadir solo USER la restaura, retirarlo del entorno de la sesión la impide;
-LOGNAME no basta. Sin login, inferencia ni corrección. Status no admite los
-flags de fuentes aisladas; transporte completo sigue pendiente.
-[Informe y reproducción](discovery/H2.3_AUTH_DIAGNOSIS.md),
-[alcance completado](discovery/H2.3_AUTH_DIAGNOSIS_SCOPE.md).
-Doce checks ligeros correctos; D020/D022 conservan capturas/hash, resultados,
-24/31 eventos y locks. D018 ya ausente según informes anteriores. H2.4 no iniciado.
+Corrección offline del entorno completada el 2026-10-12 (D024): USER explícito
+validado contra el UID local antes de efectos, HOME/PATH/TMPDIR/LANG conservados,
+sin credenciales heredadas. Adaptador `cli-3` conservado; hash de CLIConfig
+nuevo bloquea jobs/configuraciones anteriores sin reescritura.
+[Informe](discovery/H2.3_ENV_FIX.md), [alcance completado](discovery/H2.3_ENV_FIX_SCOPE.md).
+219 pruebas y 121 subtests, 12 checks ligeros correctos; regresión independiente
+reproduce el defecto previo y el recorrido sintético corregido.
+D020/D022 conservan doce capturas/prompts, SQLite, 24/31 eventos y locks;
+D018 sigue ausente. El transporte real completo continúa pendiente. H2.4 no iniciado.
 
-## Objetivo
+## Objetivo y consentimiento pendiente
 
-Corregir offline la construcción del entorno explícito del smoke para que
-Claude reciba USER correspondiente al usuario local, conservando autenticación
-propia de las CLI, fuentes/tools/MCP aislados y configuración congelada.
-No modificar el adaptador para heredar automáticamente el entorno del supervisor.
+Verificar una vez el transporte de las tres CLI en checkout desechable con el
+entorno corregido. [Propuesta concreta separada](discovery/H2.3_ENV_SMOKE_PROPOSAL.md):
+Codex 0.162.1 `gpt-6-luna`/`low` para planificador/revisor y Claude 2.1.295
+`claude-sonnet-4-6`/`low` para ejecutor; hasta tres invocaciones, 60 s cada una,
+red/suscripciones propias y parada al primer fallo, sin fallback ni relanzamiento.
+Retries internos desconocidos y posible consumo aunque falle.
+
+**No ejecutado ni autorizado en la corrección offline.** D022 agotó su
+consentimiento al fallo; diagnóstico D023, corrección D024 y commit no permiten
+inferencias nuevas. Antes de lanzar, presentar esta propuesta y obtener
+consentimiento específico. Si no llega, dejar esta tarea pendiente sin consumo.
 
 ## Alcance acotado
 
-1. Revisar D008/D017/D022/D023, script del smoke y contrato de CLIConfig.
-   Conservar resultados/specs/historial/locks anteriores sin recuperación.
-2. Incluir USER explícito y comprobado contra el usuario local en la construcción
-   del entorno del smoke; resolver ausencia/discrepancia antes de consumo con
-   diagnóstico concreto. No copiar variables de credenciales ni ampliar fuentes.
-3. Añadir regresión offline independiente con proceso sintético que distinga
-   USER ausente/presente, pruebe entorno completo sin herencia silenciosa y
-   conservación de HOME/PATH/TMPDIR/LANG y permisos/selecciones existentes.
-   No usar status real ni inferencia como test automatizado.
-4. Congelar la configuración nueva con hash distinto. Probar que un job con
-   configuración anterior no se ejecuta silenciosamente con la nueva, sin
-   reescribir historia/resultados. Si cambia el comportamiento del adaptador,
-   elevar su versión; no versionarlo por mera edición documental.
-5. Ejecutar checks offline pertinentes y actualizar STATE/NEXT_STEPS/DECISIONS
-   e informe. Preparar por separado una propuesta de verificación real con
-   sus límites, sin ejecutar otro smoke dentro de esta corrección.
+1. Revisar D008/D017/D022/D023/D024, informes, script y propuesta; conservar
+   históricos, evidencias y locks previos sin recuperación/liberación.
+2. Antes del consumo, comprobar USER local y entorno explícito, ayuda/guardia
+   del smoke y preflight versión/help. No extraer auth ni usar status o fakes
+   como certificado de inferencia; repetir tests solo si cambia código/contexto
+   o aparece una incertidumbre que lo justifique.
+3. Obtener consentimiento específico para la propuesta. Ejecutar solo una vez
+   el comando documentado, fuera del sandbox para auth propia de las CLI,
+   con nuevo checkout/SQLite/artefactos bajo `/private/tmp`. Configuración y
+   selección congeladas antes de consumo; no reutilizar jobs D020/D022.
+4. Conservar specs/hash de entorno/prompt, stdout/stderr, terminales, selección,
+   metadatos y eventos. Detener al primer resultado distinto de complete;
+   sin login, corrección ni invocación adicional dentro de esta tarea.
+5. Reabrir SQLite en lectura y verificar hashes/rangos/capturas/prompts,
+   resultados/estados, owner/grupos y checkout intacto. Registrar datos ausentes,
+   null y ceros sin inferir cuota/factura o esfuerzo efectivo.
+6. Actualizar STATE/NEXT_STEPS/DECISIONS e informe según rama de éxito/error,
+   sin avanzar a H2.4. Un fallo concluye esta verificación con resultado fallido
+   y requiere una tarea separada, no una reparación o reejecución automática.
 
 ## Criterios de aceptación
 
-- USER válido transmitido explícitamente y sin credenciales heredadas; ausencia
-  o discrepancia resuelta antes de cualquier llamada a proveedor.
-- Regresión sintética demuestra el defecto previo y el comportamiento corregido,
-  sin requerir sesión real, secretos ni red.
-- Configuración/hash nuevos congelados y selección de modelos/esfuerzos conservada;
-  jobs antiguos bloqueados ante incompatibilidad, sin sustituir specs/resultados.
-- Fuentes/settings/hooks, herramientas/MCP vacíos, sesiones frescas y ausencia
-  de fallback/reinvocación automática conservados.
-- Evidencias disponibles D020/D022 y lock anterior preservados; históricos
-  documentales D018/D020/D022 intactos, sin reconstruir el área D018 ausente.
-- Checks/diff/documentación revisados; no presentar pruebas offline o status
-  como éxito real completo ni como prueba de acceso al modelo, inferencia o cuota.
+- Consentimiento específico previo y una única ejecución con los límites fijados.
+- USER validado y entorno/settings/hooks/tools/MCP explícitos, sesiones nuevas,
+  modelos/esfuerzos congelados; sin credenciales heredadas ni fallback.
+- Éxito: tres resultados complete, terminales, exit 0 y JSON conservados;
+  certificar únicamente el transporte observado, sin aceptación/commit de tarea.
+- Error: resultados/evidencias preservados, roles restantes no lanzados,
+  run/job RECOVERY_REQUIRED, owner cerrado y lock retenido; sin recuperar.
+- Persistencia/hashes/eventos revisados; checkout sintético intacto y ausencia
+  de herramientas en los eventos capturados. D020/D022 e informes intactos.
+- Evidencia real separada de tests offline; no certificar retries internos,
+  cuota/factura, aislamiento físico ni cancelación/timeout reales no observados.
 
 ## Fuera de alcance
 
-La autorización D022 terminó al fallo. Diagnóstico D023 y su commit no autorizan
-consumo. Sin otro smoke, login/logout/refresh, lectura de secretos/keychain,
-API keys, cambios globales, fallback, recuperación/liberación automática,
-SDK/MCP/herramientas activos, H2.4/H2.5, entradas gestionadas API/CLI/UI,
-permisos vivos, chat, publicación o push.
+Sin login/logout/refresh, lectura de secretos/keychain, API keys, cambios
+globales, ampliación de fuentes/tools/MCP, corrección de código en la rama
+de error, fallback, reintento, recuperación/liberación automática, SDK,
+entradas gestionadas API/CLI/UI, permisos vivos, chat, H2.4/H2.5,
+publicación o push. No reconstruir el área D018 ausente.

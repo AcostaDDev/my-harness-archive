@@ -96,7 +96,7 @@ UV_CACHE_DIR=.local/uv-cache uv run --frozen --offline alembic current
 UV_CACHE_DIR=.local/uv-cache uv run --frozen --offline alembic check
 ```
 
-211 pruebas (158 anteriores y 53 de H2.3). Se usan checkouts, SQLite y
+219 pruebas (158 anteriores, 53 de H2.3 y 8 del entorno del smoke). Se usan checkouts, SQLite y
 procesos Python sintéticos, sin CLI de proveedores ni consumo de suscripciones.
 Se verifican captura incremental, cancelación de grupos y recuperación tras
 caída del supervisor. No certifica commits ni introduce ejecución gestionada
@@ -120,10 +120,14 @@ El supervisor se invoca explícitamente, sin entrada API/CLI ni arranque automá
 La configuración se corrigió offline, con regresión y retries internos declarados
 desconocidos. La corrección MCP Claude `cli-3` está verificada offline y el smoke
 posterior acepta MCP vacío, pero se detiene en autenticación Claude con terminal
-de error. Siguiente tarea: diagnóstico de auth en lectura, sin login automático.
+de error. El diagnóstico en lectura observó la dependencia de USER; la corrección
+offline del smoke ya valida USER contra el UID local, sin heredar credenciales.
+Siguiente tarea: verificación real propuesta, pendiente de consentimiento específico.
 No se ha iniciado H2.4. Ver [corrección y límites](docs/discovery/H2.3_MCP_FIX.md)
 y [resultado real cli-3](docs/discovery/H2.3_SMOKE_CLI3.md). El consentimiento
 terminó al fallo; otro smoke requiere propuesta y autorización específicas.
+Ver [corrección del entorno](docs/discovery/H2.3_ENV_FIX.md) y
+[propuesta posterior](docs/discovery/H2.3_ENV_SMOKE_PROPOSAL.md), sin ejecutar.
 
 
 ## Importación legacy de lectura

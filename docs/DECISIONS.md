@@ -509,3 +509,31 @@ retenido; no reanudar ni recuperar automáticamente. Otro smoke requerirá
 propuesta/consentimiento específico después de la corrección. Sin API keys,
 login propio, refresh ni cambios globales. Status no prueba cuota/modelos.
 H2.4 no iniciado.
+
+## D024 — Entorno del smoke validado por UID y hash de configuración nuevo
+
+Estado: implementado y verificado offline el 2026-10-12.
+[Informe y alcance](discovery/H2.3_ENV_FIX.md).
+
+El constructor de `scripts/smoke_cli.py` transmite USER explícitamente junto a
+HOME/PATH/TMPDIR/LANG. USER debe ser no vacío y coincidir con el nombre local
+obtenido mediante `pwd.getpwuid(os.getuid())`; no se confía en LOGNAME ni se
+rellena automáticamente. Ausencia/discrepancia o UID no resoluble terminan
+con diagnóstico antes de crear área, resolver CLI, preflight o consumir.
+No se heredan credenciales, selectores ni fuentes de configuración.
+
+El adaptador mantiene el mapping completo recibido y no incorpora variables
+del supervisor. Su comportamiento/argv permanecen `cli-3`; el hash congelado
+de CLIConfig cambia por USER. La comparación existente bloquea configuraciones
+anteriores antes del preflight sin migración ni reescritura. Regresión con
+proceso independiente reproduce el fallo previo, permite el recorrido sintético
+corregido y verifica filas SQL exactas, specs, resultados y capturas antiguas.
+Permisos, sesiones nuevas, selecciones y ausencia de fallback conservados.
+
+D020/D022 y locks conservados; D018 ausente no reconstruido. D023 acredita
+una dependencia local en status, no el mecanismo de auth ni inferencia aislada.
+La corrección offline tampoco prueba auth/cuota/modelo ni éxito completo H2.3.
+Sin status, login, secretos, CLI reales, recuperación o cambios globales.
+[Propuesta posterior separada](discovery/H2.3_ENV_SMOKE_PROPOSAL.md) pendiente
+de consentimiento específico; no ejecutar por la corrección o su commit.
+H2.4 no iniciado.

@@ -9,6 +9,7 @@ from dataclasses import replace
 import json
 import os
 from pathlib import Path
+import pwd
 import shutil
 import subprocess
 from tempfile import mkdtemp
@@ -27,6 +28,22 @@ from harness_local.storage.database import make_engine
 from harness_local.storage.managed import SQLiteManagedRepository
 
 
+def smoke_environment():
+    """Freeze the allowlisted environment after checking USER against the local UID."""
+    user = os.environ.get('USER')
+    if not user or '\0' in user:
+        raise ValueError('Smoke requires a nonempty valid USER; set USER to the local UID account before consumption')
+    try:
+        local_user = pwd.getpwuid(os.getuid()).pw_name
+    except KeyError as exc:
+        raise ValueError('Cannot resolve the local UID account; no provider processes launched') from exc
+    if user != local_user:
+        raise ValueError('USER differs from the local UID account; correct USER before consumption')
+    # No credentials, provider selectors or configuration sources are inherited.
+    return tuple((key, os.environ[key]) for key in ('HOME', 'PATH', 'TMPDIR', 'LANG', 'USER')
+                 if key in os.environ)
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--authorize-consumption', action='store_true', help='Explicitly authorize up to three provider CLI calls')
@@ -38,14 +55,16 @@ def main():
     args = parser.parse_args()
     if not args.authorize_consumption:
         parser.error('Provider consumption is not authorized; no processes launched')
+    try:
+        env = smoke_environment()
+    except ValueError as exc:
+        parser.error(str(exc))
     args.output_parent.mkdir(parents=True, exist_ok=True)
     area = Path(mkdtemp(prefix='h2.3-smoke-', dir=args.output_parent)).resolve()
     root = area / 'checkout'
     root.mkdir()
     subprocess.run(('git', 'init', '-q', str(root)), check=True)
     (root / 'README.md').write_text('Disposable synthetic H2.3 smoke. No secrets.\n')
-    # Complete environment deliberately excludes API keys/cloud credentials.
-    env = tuple((key, os.environ[key]) for key in ('HOME', 'PATH', 'TMPDIR', 'LANG') if key in os.environ)
     configs = []
     for provider, version in (('codex', '0.162.1'), ('claude', '2.1.295')):
         executable = shutil.which(provider)

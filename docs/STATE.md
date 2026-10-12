@@ -35,7 +35,7 @@ Actualizado: 2026-10-12.
 - Dependencias reales instaladas en `.venv` / `frontend/node_modules`, locks
   `uv.lock` / `frontend/package-lock.json`. Pins H0.2 usados conservados;
   backend de paquete `uv_build==0.12.19`. Comandos comprobados en README/AGENTS.
-- 199 casos de producto en `tests/product/`; pytest ejecuta 211 pruebas en total.
+- 207 casos de producto en `tests/product/`; pytest ejecuta 219 pruebas en total.
   La comprobación ligera anterior conserva sus 12 checks sin dependencias.
 - H1.1 completado: [importación legacy y verificaciones](discovery/H1.1_IMPORT.md),
   [alcance original](discovery/H1.1_SCOPE.md). Lector local explícito de
@@ -138,6 +138,12 @@ Actualizado: 2026-10-12.
   al omitir USER y la reconoce al añadir solo USER. LOGNAME no basta. Sin login,
   inferencia ni corrección; flags de aislamiento no admitidos por auth status.
   [Evidencia reproducible y límites](discovery/H2.3_AUTH_DIAGNOSIS.md), D023.
+- Corrección offline del entorno del smoke completada: USER explícito comprobado
+  contra el UID local antes de efectos; ausencia/discrepancia detienen con diagnóstico.
+  HOME/PATH/TMPDIR/LANG conservados, sin credenciales ni fuentes heredadas.
+  Adaptador `cli-3` conservado; hash de configuración distinto bloquea jobs antiguos
+  antes del preflight, sin reescribir resultados/specs/historial/locks.
+  [Informe y regresión sintética](discovery/H2.3_ENV_FIX.md), D024.
 
 ## Todavía no existe
 
@@ -159,11 +165,14 @@ Smoke `cli-3` D022 concluido conforme a la rama de error: planificador Codex
 COMPLETE; ejecutor Claude FAILED por autenticación, MCP vacío aceptado;
 revisor no lanzado. [Informe](discovery/H2.3_SMOKE_CLI3.md).
 Históricos D018/D019/D020/D021 y preflight conservados. Consentimiento D022
-agotado al fallo; sin login, corrección ni nueva inferencia autorizados.
+agotado al fallo; sin login ni nueva inferencia autorizados.
 Diagnóstico de autenticación concluido en lectura (D023): omisión de USER
 reproduce la falta de sesión en status fuera del sandbox; sesión local reconocida.
-Siguiente tarea acotada: corrección offline del entorno explícito del smoke y
-regresión, según NEXT_STEPS, sin iniciarla. Transporte real completo sigue pendiente.
+Corrección offline del entorno explícito del smoke completada (D024), con ocho
+casos nuevos y hash congelado distinto; sin modificar el adaptador ni ejecutar
+CLI reales. Propuesta de verificación real posterior preparada por separado,
+pendiente de consentimiento específico según NEXT_STEPS, sin iniciarla.
+Transporte real completo sigue pendiente.
 H2.4 no iniciado.
 
 ## Verificación de H0.1
@@ -580,6 +589,42 @@ H2.4 no iniciado.
   Causa comprobada para status en este Mac, mecanismo interno no auditado;
   sin inferencia, cuota/modelo certificados, otro smoke ni éxito completo H2.3.
   Próxima corrección offline del entorno propuesta, sin ejecutarla. H2.4 no iniciado.
+
+## Corrección offline del entorno del smoke — 2026-10-12
+
+- Git inicialmente limpio en `main`, `92af0f0`, un commit por delante de origin.
+  AGENTS/STATE/NEXT_STEPS/DECISIONS y criterios H2.3 revisados; alcance conservado
+  en [H2.3_ENV_FIX_SCOPE.md](discovery/H2.3_ENV_FIX_SCOPE.md). D024.
+- Constructor del smoke transmite USER validado contra el usuario local del UID,
+  junto a HOME/PATH/TMPDIR/LANG. Ausencia, vacío, discrepancia o UID no resoluble
+  detienen antes de directorios, checkout, preflight y consumo; sin login ni
+  sustitución por LOGNAME. No se amplía el entorno heredado del adaptador.
+- Ocho casos nuevos independientes: rechazos previos a efectos; defecto anterior
+  con fallo sintético de Claude, parada sin revisor/reintento y lock retenido;
+  recorrido sintético completo con USER. Selecciones, sesiones, permisos, MCP/
+  fuentes/hooks, entorno completo y hashes congelados comprobados tras reabrir.
+- Hash de CLIConfig distinto con USER; `cli-3` conservado porque cambia solo
+  configuración del script. Un job anterior se rechaza antes del preflight;
+  filas SQL exactas, resultados, historial, specs, eventos y capturas intactos.
+  Sin migración ni codec nuevo. [Informe y hashes](discovery/H2.3_ENV_FIX.md).
+- Suite completa offline: 219 pruebas y 121 subtests correctos; 12 checks ligeros
+  correctos. Pase inicial en sandbox falla en liveness de un proceso sintético
+  del test existente de recuperación; suite fuera del sandbox con aprobación
+  correcta. Aviso conocido Starlette/HTTPX. Refuerzo final de comparación SQL
+  exacta: los ocho casos nuevos vuelven a pasar.
+- D020/D022: doce capturas/prompts coinciden con sus informes; archivos disponibles
+  y SQLite/WAL sin cambios, integridad/foreign keys correctas, 24/31 eventos,
+  RECOVERY_REQUIRED, owner cerrado, procesos STOPPED y locks retenidos.
+  Sin recuperación/liberación. D018 ausente, sin reconstruir; informes históricos
+  D018/D020/D021/D022/D023 intactos. Diff/whitespace y enlaces locales revisados.
+- Sin CLI reales, status, inferencia/smoke, credenciales/keychain, login/refresh,
+  instalaciones, cambios globales, harness de desarrollo, colaboración automática,
+  ReferenceProject ni push. API/UI/build no repetidos porque no cambian esas fronteras.
+  Commit solicitado por el usuario; pruebas offline no certifican auth/cuota/modelos.
+- [Propuesta separada](discovery/H2.3_ENV_SMOKE_PROPOSAL.md) y NEXT_STEPS definen
+  la verificación posterior, pendiente de consentimiento, sin ejecutarla.
+  Transporte real completo, inferencia Claude/revisor y retries efectivos siguen
+  pendientes. D022 continúa fallido; H2.4 no iniciado.
 
 ## Coordinación
 

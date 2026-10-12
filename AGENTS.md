@@ -61,7 +61,9 @@ Corrección MCP verificada offline en `cli-3`; smoke autorizado posterior comple
 Codex y falla en autenticación Claude, con MCP vacío aceptado y sin revisor.
 Diagnóstico de auth completado en lectura: entorno mínimo omite USER;
 status fuera del sandbox reconoce sesión al añadir solo USER, sin login.
-Siguiente tarea: corrección offline del entorno del smoke; sin relanzamiento.
+Corrección offline del entorno del smoke completada: USER validado contra UID
+local, hash distinto y regresión sintética; adaptador cli-3 conservado.
+Siguiente tarea: verificación real propuesta, pendiente de consentimiento; sin relanzamiento.
 Comprobación offline ligera, solo biblioteca estándar, desde la raíz:
 
 ```sh
@@ -91,8 +93,9 @@ npm --prefix frontend run dev
 ```
 
 Las primeras instalaciones necesitan red; después los checks son offline.
-No usar `uv --active` con entornos de otros proyectos. 211 pruebas pytest
-(158 anteriores + 53 H2.3). API/UI compilada en 127.0.0.1:8013; Vite en :5173
+No usar `uv --active` con entornos de otros proyectos. 219 pruebas pytest
+(158 anteriores + 53 H2.3 + 8 entorno smoke).
+API/UI compilada en 127.0.0.1:8013; Vite en :5173
 en otra terminal. SQLite local ignorada en `.local/harness.sqlite3`; migración
 explícita antes de arrancar. Ver README y `docs/discovery/H0.3_SKELETON.md`.
 Estos comandos verifican el esqueleto simulado, el índice legacy, su navegación/observación/SSE
@@ -112,9 +115,12 @@ Codex y falla con `authentication_failed` en Claude; MCP vacío aceptado,
 terminal de error, revisor no lanzado. Ver `docs/discovery/H2.3_SMOKE_CLI3.md`.
 Diagnóstico de autenticación Claude completado en lectura (D023): dependencia
 de USER observada con status, sin inferencia ni corrección. Ver
-`docs/discovery/H2.3_AUTH_DIAGNOSIS.md`. Siguiente tarea: corregir offline el
-entorno explícito del smoke con regresión y hash congelado nuevo. El consentimiento
-D022 terminó al fallo; no hacer login, consumir ni relanzar automáticamente.
+`docs/discovery/H2.3_AUTH_DIAGNOSIS.md`. Corrección offline del entorno completada
+(D024): USER explícito comprobado contra el UID local, sin credenciales heredadas;
+hash congelado distinto bloquea configuraciones anteriores, cli-3 conservado.
+Ver `docs/discovery/H2.3_ENV_FIX.md`. Siguiente tarea: verificar transporte real
+según `docs/discovery/H2.3_ENV_SMOKE_PROPOSAL.md`, pendiente de consentimiento.
+El consentimiento D022 terminó al fallo; no hacer login, consumir ni relanzar automáticamente.
 Los checks no consumen proveedores. El supervisor
 solo se invoca explícitamente, sin entradas API/CLI gestionadas ni autoarranque.
 H2.4 no iniciado.
