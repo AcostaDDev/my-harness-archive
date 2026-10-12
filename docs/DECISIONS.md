@@ -452,3 +452,33 @@ Documentación y fakes no equivalen a validación real completa del proveedor.
 D020 conserva su resultado/evidencia; su autorización concluyó al fallo.
 NEXT_STEPS prepara una propuesta nueva, sin ejecutarla ni consumir proveedores
 dentro de esta entrega. [Contrato, fuentes y límites](discovery/H2.3_MCP_FIX.md).
+
+## D022 — Smoke cli-3 autorizado y fallo de autenticación Claude
+
+Estado: verificación real ejecutada el 2026-10-12; rama de error concluida,
+sin login, corrección ni relanzamiento. [Informe](discovery/H2.3_SMOKE_CLI3.md).
+
+El usuario respondió «Doy consentimiento para el smoke» tras la propuesta y
+preflight offline: una ejecución, hasta tres invocaciones de 60 s, Codex
+`gpt-6-luna`/`low` y Claude `claude-sonnet-4-6`/`low`, suscripciones propias,
+checkout nuevo, herramientas/MCP vacíos y parada al primer fallo. Retries
+internos desconocidos. Consentimiento agotado con el fallo; no habilita otro smoke.
+
+Planificador Codex COMPLETE, terminal/exit 0/JSON y uso reportado. Claude
+acepta MCP `{"mcpServers":{}}` y emite init con tools/mcp_servers vacíos y
+dontAsk. Falla con `authentication_failed` y «Not logged in · Please run /login».
+Terminal `result` con subtype success, pero `is_error=true` y exit 1;
+FAILED/payload null persistidos correctamente. Revisor no lanzado. Ceros de
+tokens/coste reportados no certifican cuota/factura ni ausencia de consumo.
+
+Run/job RECOVERY_REQUIRED, propietario cerrado, procesos STOPPED y lock retenido;
+31 eventos consecutivos, hashes/rangos/prompts y resultados comprobados tras
+reabrir SQLite. Grupos muertos, checkout sintético intacto. Históricos separados.
+No hay aceptación/commit de producto ni éxito real completo H2.3. H2.4 no iniciado.
+
+El fallo de auth acredita el proceso/entorno explícito de este smoke fuera del
+sandbox; no demuestra ausencia de login en otras sesiones del Mac ni establece
+causa raíz. Siguiente tarea: diagnóstico local/documental de autenticación en
+lectura, con salida filtrada y sin secretos, inferencia o login automático.
+Una posible corrección o intervención del usuario se propondrá por separado;
+no ampliar silenciosamente entorno, proveedor, permisos ni ruta de autenticación.

@@ -2,9 +2,9 @@
 
 Aplicación local para configurar, ejecutar y observar un harness modular de desarrollo con agentes.
 Estado actual: H0, H1, H2.1 y H2.2 completados; H2.3 implementado y verificado
-offline; nuevo smoke autorizado `cli-2` completa Codex y falla en configuración
-MCP de Claude, sin revisor ni relanzamiento. Corrección MCP posterior `cli-3`
-verificada offline, sin smoke nuevo. Esqueleto Python/API/UI con simulaciones
+offline; smoke autorizado `cli-3` completa Codex y supera el rechazo MCP previo,
+pero falla en autenticación Claude, sin revisor ni relanzamiento. Siguiente tarea:
+diagnóstico de autenticación en lectura. Esqueleto Python/API/UI con simulaciones
 persistidas, observación legacy y motor con persistencia/cola.
 Adaptadores CLI y grupos de procesos por inyección explícita; sin entradas
 gestionadas API/CLI/UI ni ejecución automática de proveedores.
@@ -31,6 +31,7 @@ gestionadas API/CLI/UI ni ejecución automática de proveedores.
   [resultado del smoke autorizado](docs/discovery/H2.3_SMOKE.md).
 - [Corrección offline de configuración Codex](docs/discovery/H2.3_CONFIG_FIX.md).
 - [Nuevo smoke autorizado: Codex completo, fallo MCP Claude](docs/discovery/H2.3_SMOKE_RETRY.md).
+- [Smoke cli-3: MCP aceptado, fallo de autenticación Claude](docs/discovery/H2.3_SMOKE_CLI3.md).
 
 `AGENTS.md` contiene las instrucciones de Codex; `CLAUDE.md` remite al mismo contrato para Claude Code. El desarrollo es manual y no utiliza el harness como orquestador.
 
@@ -95,7 +96,7 @@ UV_CACHE_DIR=.local/uv-cache uv run --frozen --offline alembic current
 UV_CACHE_DIR=.local/uv-cache uv run --frozen --offline alembic check
 ```
 
-209 pruebas (158 anteriores y 51 de H2.3). Se usan checkouts, SQLite y
+211 pruebas (158 anteriores y 53 de H2.3). Se usan checkouts, SQLite y
 procesos Python sintéticos, sin CLI de proveedores ni consumo de suscripciones.
 Se verifican captura incremental, cancelación de grupos y recuperación tras
 caída del supervisor. No certifica commits ni introduce ejecución gestionada
@@ -117,10 +118,12 @@ configuración Codex; el nuevo smoke autorizado `cli-2` completa el planificador
 Codex y se detiene ante configuración MCP inválida de Claude, sin revisor.
 El supervisor se invoca explícitamente, sin entrada API/CLI ni arranque automático.
 La configuración se corrigió offline, con regresión y retries internos declarados
-desconocidos. La corrección MCP Claude `cli-3` también está verificada offline;
-el siguiente paso es proponer otro smoke con consentimiento específico.
+desconocidos. La corrección MCP Claude `cli-3` está verificada offline y el smoke
+posterior acepta MCP vacío, pero se detiene en autenticación Claude con terminal
+de error. Siguiente tarea: diagnóstico de auth en lectura, sin login automático.
 No se ha iniciado H2.4. Ver [corrección y límites](docs/discovery/H2.3_MCP_FIX.md)
-y [resultado real previo](docs/discovery/H2.3_SMOKE_RETRY.md).
+y [resultado real cli-3](docs/discovery/H2.3_SMOKE_CLI3.md). El consentimiento
+terminó al fallo; otro smoke requiere propuesta y autorización específicas.
 
 
 ## Importación legacy de lectura

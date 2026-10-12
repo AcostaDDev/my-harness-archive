@@ -128,7 +128,11 @@ Actualizado: 2026-10-12.
   con modo estricto y conserva permisos/configuración aislados. Regresión
   independiente reproduce el rechazo de `{}` antes de inferencia simulada;
   jobs congelados `cli-2`/`cli-1` bloqueados sin reescribir historial anterior.
-  [Contrato y verificaciones](discovery/H2.3_MCP_FIX.md), D021. Sin smoke nuevo.
+  [Contrato y verificaciones](discovery/H2.3_MCP_FIX.md), D021. Esa entrega no ejecutó smoke.
+- Smoke `cli-3` autorizado y ejecutado: planificador Codex COMPLETE con terminal/JSON;
+  Claude acepta MCP vacío, pero FAILED por `authentication_failed`, con terminal
+  de error y exit 1. Revisor no lanzado, sin login/corrección/relanzamiento.
+  [Resultado y evidencias](discovery/H2.3_SMOKE_CLI3.md), D022.
 
 ## Todavía no existe
 
@@ -139,24 +143,21 @@ La navegación H1.2 muestra evidencia legacy;
 el recorrido H0.3 solo guarda simulaciones, que no representan intentos reales
 ni aceptación de tareas. El primer smoke real lanzó Codex y falló al cargar
 configuración; no acredita inferencia, autenticación, cuota ni acceso al modelo.
-El nuevo smoke sí completa el transporte del planificador Codex; Claude se invoca
-y falla al validar MCP, sin terminal/inferencia acreditada. Revisor no probado.
+Los nuevos smokes completan el transporte del planificador Codex. D020 falló al
+validar MCP; D022 supera ese rechazo y falla en autenticación Claude con terminal
+de error, sin inferencia acreditada. Revisor no probado.
 
 ## Trabajo activo
 
-H0, H1, H2.1 y H2.2 completados. H2.3 implementado y verificado offline;
-corrección MCP vacía de Claude completada como `cli-3` (D021). Siguiente tarea
-acotada: propuesta de un nuevo smoke real, pendiente de consentimiento específico
-según `NEXT_STEPS.md`; no ejecutado en esta entrega. D020 concluyó con fallo de
-Claude tras completar Codex, sin revisor ni relanzamiento. D018/D019/D020 y sus
-informes históricos conservados. Su autorización terminó al primer error.
+H0, H1, H2.1 y H2.2 completados. H2.3 implementado y verificado offline.
+Smoke `cli-3` D022 concluido conforme a la rama de error: planificador Codex
+COMPLETE; ejecutor Claude FAILED por autenticación, MCP vacío aceptado;
+revisor no lanzado. [Informe](discovery/H2.3_SMOKE_CLI3.md).
+Históricos D018/D019/D020/D021 y preflight conservados. Consentimiento D022
+agotado al fallo; sin login, corrección ni nueva inferencia autorizados.
+Siguiente tarea acotada: diagnóstico de autenticación Claude en lectura según
+NEXT_STEPS, sin iniciarlo. Transporte real completo sigue pendiente.
 H2.4 no iniciado.
-
-Preparación de la propuesta `cli-3` comprobada offline sobre `725e65f`:
-versiones/help compatibles, script/argv revisados y checks correctos.
-[Informe de preflight](discovery/H2.3_SMOKE_CLI3_PREFLIGHT.md).
-Ejecución real y criterios de evidencia aún pendientes de consentimiento
-específico; esta preparación no completa el smoke ni habilita la tarea siguiente.
 
 ## Verificación de H0.1
 
@@ -517,6 +518,36 @@ específico; esta preparación no completa el smoke ni habilita la tarea siguien
   colaboración automática, ReferenceProject ni push. API/UI/build no repetidos.
 - Diff/whitespace revisados y 36 enlaces locales correctos; commit documental
   solicitado por el usuario. Sin decisión nueva que sustituya D021.
+
+## Smoke cli-3 autorizado — 2026-10-12
+
+- Git inicialmente limpio en `main`, `039a01e`. El usuario responde «Doy
+  consentimiento para el smoke» a la propuesta preparada. Alcance activo en
+  [H2.3_SMOKE_CLI3_SCOPE.md](discovery/H2.3_SMOKE_CLI3_SCOPE.md), D022.
+- Preflight versión/help y hash del script repetidos: Codex 0.162.1, Claude
+  2.1.295 y `cli-3` compatibles. La preparación previa conserva sus 211 pruebas,
+  121 subtests y 12 checks ligeros; no se repite suite sin cambio de código.
+- Una ejecución, dos invocaciones: Codex COMPLETE (exit 0, terminal/JSON);
+  Claude FAILED (exit 1, terminal `is_error=true`) por `authentication_failed`.
+  MCP explícito vacío aceptado; init reporta herramientas/servidores vacíos y
+  dontAsk. Sin revisor, fallback, login, corrección ni relanzamiento.
+- SQLite reabierta conserva resultados/historia/versiones exactos, integridad y
+  foreign keys correctas; run/job RECOVERY_REQUIRED, propietario cerrado,
+  procesos STOPPED, lock retenido. 31 eventos consecutivos, dos intents/spawns,
+  rangos/hashes/capturas/prompts comprobados. Ambos grupos muertos y README
+  intacto, sin HEAD ni cambios de agentes. Sin recuperación automática.
+- [Informe independiente y artefactos externos](discovery/H2.3_SMOKE_CLI3.md).
+  Selecciones solicitadas separadas de metadatos reportados. Claude informa
+  ceros de tokens/coste y modelo de mensaje sintético, sin inferencia acreditada;
+  no prueba consumo cero ni falta de login en otras sesiones del Mac.
+- Rama de error completada, sin éxito completo H2.3. Siguiente diagnóstico de
+  autenticación definido sin iniciarlo; autorización D022 agotada al fallo.
+  Retries internos, timeout/cancelación reales, inferencia Claude y revisor
+  pendientes. Sin cambios globales, colaboración automática, harness de
+  desarrollo, ReferenceProject ni push; API/UI/build/navegador no repetidos.
+- Sin invocaciones de herramientas en los eventos capturados. Informes D018/
+  D020/D021 intactos; diff/whitespace revisados, 85 enlaces locales correctos
+  en los ocho documentos. Commit documental solicitado por el usuario.
 
 ## Coordinación
 

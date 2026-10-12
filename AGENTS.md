@@ -57,7 +57,9 @@ H2.3 implementado y verificado offline: adaptadores CLI por inyección explícit
 captura incremental/cancelación y recuperación. Smoke real previo detenido por
 configuración Codex incompatible; corregida offline en `cli-2`. Nuevo smoke
 autorizado: Codex completo, Claude falla por configuración MCP; sin revisor ni relanzar.
-Corrección MCP verificada offline en `cli-3`; nuevo smoke pendiente de consentimiento.
+Corrección MCP verificada offline en `cli-3`; smoke autorizado posterior completa
+Codex y falla en autenticación Claude, con MCP vacío aceptado y sin revisor.
+Siguiente tarea: diagnóstico de auth en lectura; sin login ni relanzamiento.
 Comprobación offline ligera, solo biblioteca estándar, desde la raíz:
 
 ```sh
@@ -103,8 +105,11 @@ la corrección offline `cli-2` elimina los overrides reservados y declara retrie
 internos desconocidos. Ver `docs/discovery/H2.3_CONFIG_FIX.md`. El nuevo smoke
 autorizado D020 completó Codex y se detuvo en Claude por `mcpServers` ausente;
 ver `docs/discovery/H2.3_SMOKE_RETRY.md`. Corrección offline MCP completada en
-`cli-3`; ver `docs/discovery/H2.3_MCP_FIX.md`. Siguiente tarea: propuesta de
-nuevo smoke pendiente de consentimiento; no consumir ni relanzar automáticamente.
+`cli-3`; ver `docs/discovery/H2.3_MCP_FIX.md`. Smoke autorizado D022 completa
+Codex y falla con `authentication_failed` en Claude; MCP vacío aceptado,
+terminal de error, revisor no lanzado. Ver `docs/discovery/H2.3_SMOKE_CLI3.md`.
+Siguiente tarea: diagnóstico de autenticación Claude en lectura. Su consentimiento
+terminó al fallo; no hacer login, consumir ni relanzar automáticamente.
 Los checks no consumen proveedores. El supervisor
 solo se invoca explícitamente, sin entradas API/CLI gestionadas ni autoarranque.
 H2.4 no iniciado.
