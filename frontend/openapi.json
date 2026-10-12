@@ -770,6 +770,1915 @@
         }
       }
     },
+    "/api/managed/supervisor": {
+      "get": {
+        "summary": "Supervisor",
+        "operationId": "managed_supervisor",
+        "parameters": [
+          {
+            "name": "x-harness-local",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Obligatoria con valor 1 en mutaciones (protección CSRF).",
+              "title": "X-Harness-Local"
+            },
+            "description": "Obligatoria con valor 1 en mutaciones (protección CSRF)."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SupervisorRead"
+                }
+              }
+            }
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          }
+        }
+      }
+    },
+    "/api/managed/projects": {
+      "get": {
+        "summary": "Projects",
+        "operationId": "managed_projects",
+        "parameters": [
+          {
+            "name": "x-harness-local",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Obligatoria con valor 1 en mutaciones (protección CSRF).",
+              "title": "X-Harness-Local"
+            },
+            "description": "Obligatoria con valor 1 en mutaciones (protección CSRF)."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ManagedProjectRead"
+                  },
+                  "title": "Response Managed Projects"
+                }
+              }
+            }
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          }
+        }
+      }
+    },
+    "/api/managed/projects/{project_id}": {
+      "get": {
+        "summary": "Project Detail",
+        "operationId": "managed_project",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          },
+          {
+            "name": "x-harness-local",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Obligatoria con valor 1 en mutaciones (protección CSRF).",
+              "title": "X-Harness-Local"
+            },
+            "description": "Obligatoria con valor 1 en mutaciones (protección CSRF)."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ManagedProjectRead"
+                }
+              }
+            }
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          }
+        }
+      }
+    },
+    "/api/managed/projects/{project_id}/mode": {
+      "get": {
+        "summary": "Mode",
+        "operationId": "managed_mode",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          },
+          {
+            "name": "x-harness-local",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Obligatoria con valor 1 en mutaciones (protección CSRF).",
+              "title": "X-Harness-Local"
+            },
+            "description": "Obligatoria con valor 1 en mutaciones (protección CSRF)."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ModeRead"
+                }
+              }
+            }
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          }
+        }
+      }
+    },
+    "/api/managed/projects/{project_id}/migration/preview": {
+      "get": {
+        "summary": "Preview",
+        "operationId": "managed_migration_preview",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          },
+          {
+            "name": "x-harness-local",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Obligatoria con valor 1 en mutaciones (protección CSRF).",
+              "title": "X-Harness-Local"
+            },
+            "description": "Obligatoria con valor 1 en mutaciones (protección CSRF)."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MigrationPreviewRead"
+                }
+              }
+            }
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          }
+        }
+      }
+    },
+    "/api/managed/projects/{project_id}/migration/activations": {
+      "post": {
+        "summary": "Activate",
+        "description": "Idempotente por hash de vista previa: repetir devuelve la activación ACTIVE ya completada.",
+        "operationId": "managed_activate",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          },
+          {
+            "name": "x-harness-local",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Obligatoria con valor 1 en mutaciones (protección CSRF).",
+              "title": "X-Harness-Local"
+            },
+            "description": "Obligatoria con valor 1 en mutaciones (protección CSRF)."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ActivationCreate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ActivationRead"
+                }
+              }
+            }
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          }
+        }
+      }
+    },
+    "/api/managed/activations/{activation_id}": {
+      "get": {
+        "summary": "Activation",
+        "operationId": "managed_activation",
+        "parameters": [
+          {
+            "name": "activation_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Activation Id"
+            }
+          },
+          {
+            "name": "x-harness-local",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Obligatoria con valor 1 en mutaciones (protección CSRF).",
+              "title": "X-Harness-Local"
+            },
+            "description": "Obligatoria con valor 1 en mutaciones (protección CSRF)."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ActivationRead"
+                }
+              }
+            }
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          }
+        }
+      }
+    },
+    "/api/managed/activations/{activation_id}/resume": {
+      "post": {
+        "summary": "Resume Activation",
+        "operationId": "managed_resume_activation",
+        "parameters": [
+          {
+            "name": "activation_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Activation Id"
+            }
+          },
+          {
+            "name": "x-harness-local",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Obligatoria con valor 1 en mutaciones (protección CSRF).",
+              "title": "X-Harness-Local"
+            },
+            "description": "Obligatoria con valor 1 en mutaciones (protección CSRF)."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ActivationTransition"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ActivationRead"
+                }
+              }
+            }
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          }
+        }
+      }
+    },
+    "/api/managed/activations/{activation_id}/abandon": {
+      "post": {
+        "summary": "Abandon Activation",
+        "operationId": "managed_abandon_activation",
+        "parameters": [
+          {
+            "name": "activation_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Activation Id"
+            }
+          },
+          {
+            "name": "x-harness-local",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Obligatoria con valor 1 en mutaciones (protección CSRF).",
+              "title": "X-Harness-Local"
+            },
+            "description": "Obligatoria con valor 1 en mutaciones (protección CSRF)."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ActivationTransition"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ActivationRead"
+                }
+              }
+            }
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          }
+        }
+      }
+    },
+    "/api/managed/activations/{activation_id}/revert": {
+      "post": {
+        "summary": "Revert",
+        "operationId": "managed_revert",
+        "parameters": [
+          {
+            "name": "activation_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Activation Id"
+            }
+          },
+          {
+            "name": "x-harness-local",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Obligatoria con valor 1 en mutaciones (protección CSRF).",
+              "title": "X-Harness-Local"
+            },
+            "description": "Obligatoria con valor 1 en mutaciones (protección CSRF)."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ActivationTransition"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ActivationRead"
+                }
+              }
+            }
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          }
+        }
+      }
+    },
+    "/api/managed/activations/{activation_id}/resume-revert": {
+      "post": {
+        "summary": "Resume Revert",
+        "operationId": "managed_resume_revert",
+        "parameters": [
+          {
+            "name": "activation_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Activation Id"
+            }
+          },
+          {
+            "name": "x-harness-local",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Obligatoria con valor 1 en mutaciones (protección CSRF).",
+              "title": "X-Harness-Local"
+            },
+            "description": "Obligatoria con valor 1 en mutaciones (protección CSRF)."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ActivationTransition"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ActivationRead"
+                }
+              }
+            }
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          }
+        }
+      }
+    },
+    "/api/managed/projects/{project_id}/runs": {
+      "get": {
+        "summary": "Runs",
+        "operationId": "managed_runs",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 9007199254740991,
+              "minimum": 0,
+              "default": 0,
+              "title": "Offset"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 100,
+              "minimum": 1,
+              "default": 30,
+              "title": "Limit"
+            }
+          },
+          {
+            "name": "x-harness-local",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Obligatoria con valor 1 en mutaciones (protección CSRF).",
+              "title": "X-Harness-Local"
+            },
+            "description": "Obligatoria con valor 1 en mutaciones (protección CSRF)."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Page_ManagedRunSummaryRead_"
+                }
+              }
+            }
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          }
+        }
+      },
+      "post": {
+        "summary": "Submit Run",
+        "operationId": "managed_submit_run",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200,
+              "description": "Misma clave y misma acción devuelven el mismo job.",
+              "title": "Idempotency-Key"
+            },
+            "description": "Misma clave y misma acción devuelven el mismo job."
+          },
+          {
+            "name": "x-harness-local",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Obligatoria con valor 1 en mutaciones (protección CSRF).",
+              "title": "X-Harness-Local"
+            },
+            "description": "Obligatoria con valor 1 en mutaciones (protección CSRF)."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RunCreate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ManagedJobRead"
+                }
+              }
+            }
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          }
+        }
+      }
+    },
+    "/api/managed/runs/{run_id}": {
+      "get": {
+        "summary": "Run",
+        "operationId": "managed_run",
+        "parameters": [
+          {
+            "name": "run_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Run Id"
+            }
+          },
+          {
+            "name": "x-harness-local",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Obligatoria con valor 1 en mutaciones (protección CSRF).",
+              "title": "X-Harness-Local"
+            },
+            "description": "Obligatoria con valor 1 en mutaciones (protección CSRF)."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ManagedRunRead"
+                }
+              }
+            }
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          }
+        }
+      }
+    },
+    "/api/managed/runs/{run_id}/jobs": {
+      "get": {
+        "summary": "Run Jobs",
+        "operationId": "managed_run_jobs",
+        "parameters": [
+          {
+            "name": "run_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Run Id"
+            }
+          },
+          {
+            "name": "x-harness-local",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Obligatoria con valor 1 en mutaciones (protección CSRF).",
+              "title": "X-Harness-Local"
+            },
+            "description": "Obligatoria con valor 1 en mutaciones (protección CSRF)."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ManagedJobRead"
+                  },
+                  "title": "Response Managed Run Jobs"
+                }
+              }
+            }
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          }
+        }
+      }
+    },
+    "/api/managed/runs/{run_id}/attempts": {
+      "get": {
+        "summary": "Attempts",
+        "operationId": "managed_run_attempts",
+        "parameters": [
+          {
+            "name": "run_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Run Id"
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 9007199254740991,
+              "minimum": 0,
+              "default": 0,
+              "title": "Offset"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 100,
+              "minimum": 1,
+              "default": 30,
+              "title": "Limit"
+            }
+          },
+          {
+            "name": "x-harness-local",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Obligatoria con valor 1 en mutaciones (protección CSRF).",
+              "title": "X-Harness-Local"
+            },
+            "description": "Obligatoria con valor 1 en mutaciones (protección CSRF)."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Page_ManagedAttemptRead_"
+                }
+              }
+            }
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          }
+        }
+      }
+    },
+    "/api/managed/runs/{run_id}/events": {
+      "get": {
+        "summary": "Events",
+        "description": "Solo eventos confirmados, por secuencia del run; `cursor` es el `after` de la página siguiente.",
+        "operationId": "managed_run_events",
+        "parameters": [
+          {
+            "name": "run_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Run Id"
+            }
+          },
+          {
+            "name": "after",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 9007199254740991,
+              "minimum": 0,
+              "default": 0,
+              "title": "After"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 100,
+              "minimum": 1,
+              "default": 100,
+              "title": "Limit"
+            }
+          },
+          {
+            "name": "x-harness-local",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Obligatoria con valor 1 en mutaciones (protección CSRF).",
+              "title": "X-Harness-Local"
+            },
+            "description": "Obligatoria con valor 1 en mutaciones (protección CSRF)."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ManagedEventsRead"
+                }
+              }
+            }
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          }
+        }
+      }
+    },
+    "/api/managed/runs/{run_id}/actions": {
+      "post": {
+        "summary": "Run Action",
+        "operationId": "managed_run_action",
+        "parameters": [
+          {
+            "name": "run_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Run Id"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200,
+              "description": "Misma clave y misma acción devuelven el mismo job.",
+              "title": "Idempotency-Key"
+            },
+            "description": "Misma clave y misma acción devuelven el mismo job."
+          },
+          {
+            "name": "x-harness-local",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Obligatoria con valor 1 en mutaciones (protección CSRF).",
+              "title": "X-Harness-Local"
+            },
+            "description": "Obligatoria con valor 1 en mutaciones (protección CSRF)."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RunActionCreate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ManagedJobRead"
+                }
+              }
+            }
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          }
+        }
+      }
+    },
+    "/api/managed/jobs/{job_id}": {
+      "get": {
+        "summary": "Job",
+        "operationId": "managed_job",
+        "parameters": [
+          {
+            "name": "job_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Job Id"
+            }
+          },
+          {
+            "name": "x-harness-local",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Obligatoria con valor 1 en mutaciones (protección CSRF).",
+              "title": "X-Harness-Local"
+            },
+            "description": "Obligatoria con valor 1 en mutaciones (protección CSRF)."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ManagedJobRead"
+                }
+              }
+            }
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          }
+        }
+      }
+    },
+    "/api/managed/jobs/{job_id}/confirm-stopped": {
+      "post": {
+        "summary": "Confirm Stopped",
+        "description": "Afirmación del usuario tras descartar al escritor anterior; la autoridad comprueba procesos.",
+        "operationId": "managed_confirm_stopped",
+        "parameters": [
+          {
+            "name": "job_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Job Id"
+            }
+          },
+          {
+            "name": "x-harness-local",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Obligatoria con valor 1 en mutaciones (protección CSRF).",
+              "title": "X-Harness-Local"
+            },
+            "description": "Obligatoria con valor 1 en mutaciones (protección CSRF)."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ConfirmStoppedCreate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ManagedRunRead"
+                }
+              }
+            }
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          }
+        }
+      }
+    },
     "/api/health": {
       "get": {
         "summary": "Health",
@@ -889,6 +2798,266 @@
   },
   "components": {
     "schemas": {
+      "AcceptanceRead": {
+        "properties": {
+          "eligible": {
+            "type": "boolean",
+            "title": "Eligible"
+          },
+          "reasons": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Reasons"
+          },
+          "base_revision": {
+            "type": "string",
+            "title": "Base Revision"
+          },
+          "fingerprint": {
+            "type": "string",
+            "title": "Fingerprint"
+          },
+          "changed_paths": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Changed Paths"
+          }
+        },
+        "type": "object",
+        "required": [
+          "eligible",
+          "reasons",
+          "base_revision",
+          "fingerprint",
+          "changed_paths"
+        ],
+        "title": "AcceptanceRead"
+      },
+      "ActivationCreate": {
+        "properties": {
+          "preview_sha256": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$",
+            "title": "Preview Sha256"
+          },
+          "legacy_stopped": {
+            "type": "string",
+            "maxLength": 2000,
+            "minLength": 1,
+            "title": "Legacy Stopped"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "preview_sha256",
+          "legacy_stopped"
+        ],
+        "title": "ActivationCreate"
+      },
+      "ActivationRead": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "root": {
+            "type": "string",
+            "title": "Root"
+          },
+          "repository_key": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Repository Key"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "PREPARING",
+              "ACTIVE",
+              "FAILED",
+              "REVERTING",
+              "REVERTED"
+            ],
+            "title": "Status"
+          },
+          "preview_sha256": {
+            "type": "string",
+            "title": "Preview Sha256"
+          },
+          "marker_sha256": {
+            "type": "string",
+            "title": "Marker Sha256"
+          },
+          "snapshot_root": {
+            "type": "string",
+            "title": "Snapshot Root"
+          },
+          "manifest_sha256": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Manifest Sha256"
+          },
+          "version": {
+            "type": "integer",
+            "title": "Version"
+          },
+          "diagnostic": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Diagnostic"
+          },
+          "export_path": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Export Path"
+          },
+          "export_sha256": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Export Sha256"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "root",
+          "repository_key",
+          "status",
+          "preview_sha256",
+          "marker_sha256",
+          "snapshot_root",
+          "manifest_sha256",
+          "version",
+          "diagnostic",
+          "export_path",
+          "export_sha256"
+        ],
+        "title": "ActivationRead"
+      },
+      "ActivationTransition": {
+        "properties": {
+          "expected_version": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Expected Version"
+          },
+          "reason": {
+            "type": "string",
+            "maxLength": 2000,
+            "minLength": 1,
+            "title": "Reason"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "expected_version",
+          "reason"
+        ],
+        "title": "ActivationTransition"
+      },
+      "ConfirmStoppedCreate": {
+        "properties": {
+          "owner_token": {
+            "type": "string",
+            "maxLength": 64,
+            "minLength": 1,
+            "title": "Owner Token"
+          },
+          "expected_version": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Expected Version"
+          },
+          "reason": {
+            "type": "string",
+            "maxLength": 2000,
+            "minLength": 1,
+            "title": "Reason"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "owner_token",
+          "expected_version",
+          "reason"
+        ],
+        "title": "ConfirmStoppedCreate"
+      },
+      "CycleRead": {
+        "properties": {
+          "number": {
+            "type": "integer",
+            "title": "Number"
+          },
+          "verdict": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Verdict"
+          },
+          "fingerprint": {
+            "type": "string",
+            "title": "Fingerprint"
+          },
+          "changed_paths": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Changed Paths"
+          }
+        },
+        "type": "object",
+        "required": [
+          "number",
+          "verdict",
+          "fingerprint",
+          "changed_paths"
+        ],
+        "title": "CycleRead"
+      },
       "EvidenceContentRead": {
         "properties": {
           "path": {
@@ -1433,6 +3602,827 @@
         ],
         "title": "LegacyUpdatesRead"
       },
+      "ManagedAttemptRead": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "number": {
+            "type": "integer",
+            "title": "Number"
+          },
+          "role": {
+            "type": "string",
+            "title": "Role"
+          },
+          "selection": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Selection"
+          },
+          "fresh_session": {
+            "type": "boolean",
+            "title": "Fresh Session"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "versions": {
+            "additionalProperties": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "type": "object",
+            "title": "Versions"
+          },
+          "result": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Result"
+          },
+          "started_at": {
+            "type": "string",
+            "title": "Started At"
+          },
+          "finished_at": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Finished At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "number",
+          "role",
+          "selection",
+          "fresh_session",
+          "status",
+          "versions",
+          "result",
+          "started_at",
+          "finished_at"
+        ],
+        "title": "ManagedAttemptRead"
+      },
+      "ManagedCommitRead": {
+        "properties": {
+          "operation_id": {
+            "type": "string",
+            "title": "Operation Id"
+          },
+          "job_id": {
+            "type": "integer",
+            "title": "Job Id"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "INTENT",
+              "COMMITTED",
+              "INVALIDATED"
+            ],
+            "title": "Status"
+          },
+          "base_revision": {
+            "type": "string",
+            "title": "Base Revision"
+          },
+          "reviewed_fingerprint": {
+            "type": "string",
+            "title": "Reviewed Fingerprint"
+          },
+          "expected_tree": {
+            "type": "string",
+            "title": "Expected Tree"
+          },
+          "expected_commit": {
+            "type": "string",
+            "title": "Expected Commit"
+          },
+          "commit": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Commit"
+          },
+          "result": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Result"
+          },
+          "created_at": {
+            "type": "string",
+            "title": "Created At"
+          },
+          "finished_at": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Finished At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "operation_id",
+          "job_id",
+          "status",
+          "base_revision",
+          "reviewed_fingerprint",
+          "expected_tree",
+          "expected_commit",
+          "commit",
+          "result",
+          "created_at",
+          "finished_at"
+        ],
+        "title": "ManagedCommitRead"
+      },
+      "ManagedEventRead": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "sequence": {
+            "type": "integer",
+            "title": "Sequence"
+          },
+          "kind": {
+            "type": "string",
+            "title": "Kind"
+          },
+          "recorded_at": {
+            "type": "string",
+            "title": "Recorded At"
+          },
+          "payload": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Payload"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "sequence",
+          "kind",
+          "recorded_at",
+          "payload"
+        ],
+        "title": "ManagedEventRead"
+      },
+      "ManagedEventsRead": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/ManagedEventRead"
+            },
+            "type": "array",
+            "title": "Items"
+          },
+          "cursor": {
+            "type": "integer",
+            "title": "Cursor"
+          },
+          "has_more": {
+            "type": "boolean",
+            "title": "Has More"
+          }
+        },
+        "type": "object",
+        "required": [
+          "items",
+          "cursor",
+          "has_more"
+        ],
+        "title": "ManagedEventsRead"
+      },
+      "ManagedHistoryRead": {
+        "properties": {
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "task": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Task"
+          },
+          "stop": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/StopRead"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "stops": {
+            "items": {
+              "$ref": "#/components/schemas/StopRead"
+            },
+            "type": "array",
+            "title": "Stops"
+          },
+          "attempts": {
+            "type": "integer",
+            "title": "Attempts"
+          },
+          "cycles": {
+            "items": {
+              "$ref": "#/components/schemas/CycleRead"
+            },
+            "type": "array",
+            "title": "Cycles"
+          },
+          "acceptance": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AcceptanceRead"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "status",
+          "task",
+          "stop",
+          "stops",
+          "attempts",
+          "cycles",
+          "acceptance"
+        ],
+        "title": "ManagedHistoryRead"
+      },
+      "ManagedJobRead": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "run_id": {
+            "type": "string",
+            "title": "Run Id"
+          },
+          "action": {
+            "type": "string",
+            "title": "Action"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "idempotency_key": {
+            "type": "string",
+            "title": "Idempotency Key"
+          },
+          "owner_token": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Owner Token"
+          },
+          "lease_until": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Lease Until"
+          },
+          "created_at": {
+            "type": "string",
+            "title": "Created At"
+          },
+          "finished_at": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Finished At"
+          },
+          "diagnostic": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Diagnostic"
+          },
+          "activation_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Activation Id"
+          },
+          "owner_closed": {
+            "type": "boolean",
+            "title": "Owner Closed"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "run_id",
+          "action",
+          "status",
+          "idempotency_key",
+          "owner_token",
+          "lease_until",
+          "created_at",
+          "finished_at",
+          "diagnostic",
+          "activation_id",
+          "owner_closed"
+        ],
+        "title": "ManagedJobRead"
+      },
+      "ManagedProjectRead": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "root": {
+            "type": "string",
+            "title": "Root"
+          },
+          "profile": {
+            "type": "string",
+            "title": "Profile"
+          },
+          "versions": {
+            "additionalProperties": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "type": "object",
+            "title": "Versions"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "root",
+          "profile",
+          "versions"
+        ],
+        "title": "ManagedProjectRead"
+      },
+      "ManagedRunRead": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "project_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Project Id"
+          },
+          "root": {
+            "type": "string",
+            "title": "Root"
+          },
+          "task_id": {
+            "type": "string",
+            "title": "Task Id"
+          },
+          "phase_id": {
+            "type": "string",
+            "title": "Phase Id"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "stage": {
+            "type": "string",
+            "title": "Stage"
+          },
+          "version": {
+            "type": "integer",
+            "title": "Version"
+          },
+          "revisions": {
+            "type": "integer",
+            "title": "Revisions"
+          },
+          "revision_limit": {
+            "type": "integer",
+            "title": "Revision Limit"
+          },
+          "created_at": {
+            "type": "string",
+            "title": "Created At"
+          },
+          "updated_at": {
+            "type": "string",
+            "title": "Updated At"
+          },
+          "versions": {
+            "additionalProperties": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "type": "object",
+            "title": "Versions"
+          },
+          "history": {
+            "$ref": "#/components/schemas/ManagedHistoryRead"
+          },
+          "commit": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ManagedCommitRead"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "locked_by_job": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Locked By Job"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "project_id",
+          "root",
+          "task_id",
+          "phase_id",
+          "status",
+          "stage",
+          "version",
+          "revisions",
+          "revision_limit",
+          "created_at",
+          "updated_at",
+          "versions",
+          "history",
+          "commit",
+          "locked_by_job"
+        ],
+        "title": "ManagedRunRead"
+      },
+      "ManagedRunSummaryRead": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "project_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Project Id"
+          },
+          "root": {
+            "type": "string",
+            "title": "Root"
+          },
+          "task_id": {
+            "type": "string",
+            "title": "Task Id"
+          },
+          "phase_id": {
+            "type": "string",
+            "title": "Phase Id"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "stage": {
+            "type": "string",
+            "title": "Stage"
+          },
+          "version": {
+            "type": "integer",
+            "title": "Version"
+          },
+          "revisions": {
+            "type": "integer",
+            "title": "Revisions"
+          },
+          "revision_limit": {
+            "type": "integer",
+            "title": "Revision Limit"
+          },
+          "created_at": {
+            "type": "string",
+            "title": "Created At"
+          },
+          "updated_at": {
+            "type": "string",
+            "title": "Updated At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "project_id",
+          "root",
+          "task_id",
+          "phase_id",
+          "status",
+          "stage",
+          "version",
+          "revisions",
+          "revision_limit",
+          "created_at",
+          "updated_at"
+        ],
+        "title": "ManagedRunSummaryRead"
+      },
+      "MigrationPreviewRead": {
+        "properties": {
+          "format": {
+            "type": "string",
+            "title": "Format"
+          },
+          "root": {
+            "type": "string",
+            "title": "Root"
+          },
+          "repository_key": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Repository Key"
+          },
+          "inventory_sha256": {
+            "type": "string",
+            "title": "Inventory Sha256"
+          },
+          "counts": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "type": "object",
+            "title": "Counts"
+          },
+          "read_only_history": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "type": "array",
+            "title": "Read Only History"
+          },
+          "identities": {
+            "additionalProperties": {
+              "items": {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              "type": "array"
+            },
+            "type": "object",
+            "title": "Identities"
+          },
+          "documents": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "type": "array",
+            "title": "Documents"
+          },
+          "uncertainties": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "type": "array",
+            "title": "Uncertainties"
+          },
+          "activation": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Activation"
+          },
+          "blockers": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "type": "array",
+            "title": "Blockers"
+          },
+          "ready": {
+            "type": "boolean",
+            "title": "Ready"
+          }
+        },
+        "type": "object",
+        "required": [
+          "format",
+          "root",
+          "repository_key",
+          "inventory_sha256",
+          "counts",
+          "read_only_history",
+          "identities",
+          "documents",
+          "uncertainties",
+          "activation",
+          "blockers",
+          "ready"
+        ],
+        "title": "MigrationPreviewRead"
+      },
+      "ModeRead": {
+        "properties": {
+          "project_id": {
+            "type": "string",
+            "title": "Project Id"
+          },
+          "root": {
+            "type": "string",
+            "title": "Root"
+          },
+          "refusal": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Refusal"
+          },
+          "activation": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ActivationRead"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "drift": {
+            "anyOf": [
+              {
+                "additionalProperties": {
+                  "items": {
+                    "type": "string"
+                  },
+                  "type": "array"
+                },
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Drift"
+          },
+          "documents": {
+            "anyOf": [
+              {
+                "items": {
+                  "additionalProperties": true,
+                  "type": "object"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Documents"
+          },
+          "activations": {
+            "items": {
+              "$ref": "#/components/schemas/ActivationRead"
+            },
+            "type": "array",
+            "title": "Activations"
+          }
+        },
+        "type": "object",
+        "required": [
+          "project_id",
+          "root",
+          "refusal",
+          "activation",
+          "drift",
+          "documents",
+          "activations"
+        ],
+        "title": "ModeRead"
+      },
       "ObservationRead": {
         "properties": {
           "enabled": {
@@ -1637,6 +4627,102 @@
         ],
         "title": "Page[LegacyTaskRead]"
       },
+      "Page_ManagedAttemptRead_": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/ManagedAttemptRead"
+            },
+            "type": "array",
+            "title": "Items"
+          },
+          "offset": {
+            "type": "integer",
+            "title": "Offset"
+          },
+          "next_offset": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Next Offset"
+          }
+        },
+        "type": "object",
+        "required": [
+          "items",
+          "offset",
+          "next_offset"
+        ],
+        "title": "Page[ManagedAttemptRead]"
+      },
+      "Page_ManagedRunSummaryRead_": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/ManagedRunSummaryRead"
+            },
+            "type": "array",
+            "title": "Items"
+          },
+          "offset": {
+            "type": "integer",
+            "title": "Offset"
+          },
+          "next_offset": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Next Offset"
+          }
+        },
+        "type": "object",
+        "required": [
+          "items",
+          "offset",
+          "next_offset"
+        ],
+        "title": "Page[ManagedRunSummaryRead]"
+      },
+      "ProblemRead": {
+        "properties": {
+          "code": {
+            "type": "string",
+            "title": "Code"
+          },
+          "diagnostic": {
+            "type": "string",
+            "title": "Diagnostic"
+          }
+        },
+        "type": "object",
+        "required": [
+          "code",
+          "diagnostic"
+        ],
+        "title": "ProblemRead"
+      },
+      "ProblemResponse": {
+        "properties": {
+          "detail": {
+            "$ref": "#/components/schemas/ProblemRead"
+          }
+        },
+        "type": "object",
+        "required": [
+          "detail"
+        ],
+        "title": "ProblemResponse"
+      },
       "ProvenanceRead": {
         "properties": {
           "path": {
@@ -1654,6 +4740,61 @@
           "origin"
         ],
         "title": "ProvenanceRead"
+      },
+      "RunActionCreate": {
+        "properties": {
+          "action": {
+            "type": "string",
+            "enum": [
+              "revalidate",
+              "retry_executor",
+              "commit"
+            ],
+            "title": "Action"
+          },
+          "expected_version": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Expected Version"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "action",
+          "expected_version"
+        ],
+        "title": "RunActionCreate"
+      },
+      "RunCreate": {
+        "properties": {
+          "task_id": {
+            "type": "string",
+            "maxLength": 120,
+            "minLength": 1,
+            "title": "Task Id"
+          },
+          "phase_id": {
+            "type": "string",
+            "maxLength": 120,
+            "minLength": 1,
+            "title": "Phase Id"
+          },
+          "text": {
+            "type": "string",
+            "maxLength": 200000,
+            "minLength": 1,
+            "title": "Text"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "task_id",
+          "phase_id",
+          "text"
+        ],
+        "title": "RunCreate"
       },
       "SimulationCreate": {
         "properties": {
@@ -1714,6 +4855,64 @@
           "events"
         ],
         "title": "SimulationRead"
+      },
+      "StopRead": {
+        "properties": {
+          "stage": {
+            "type": "string",
+            "title": "Stage"
+          },
+          "reason": {
+            "type": "string",
+            "title": "Reason"
+          }
+        },
+        "type": "object",
+        "required": [
+          "stage",
+          "reason"
+        ],
+        "title": "StopRead"
+      },
+      "SupervisorRead": {
+        "properties": {
+          "enabled": {
+            "type": "boolean",
+            "title": "Enabled"
+          },
+          "alive": {
+            "type": "boolean",
+            "title": "Alive"
+          },
+          "last_error": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Error"
+          },
+          "ports_configured": {
+            "type": "boolean",
+            "title": "Ports Configured"
+          },
+          "commit_writer_configured": {
+            "type": "boolean",
+            "title": "Commit Writer Configured"
+          }
+        },
+        "type": "object",
+        "required": [
+          "enabled",
+          "alive",
+          "last_error",
+          "ports_configured",
+          "commit_writer_configured"
+        ],
+        "title": "SupervisorRead"
       },
       "ValidationError": {
         "properties": {

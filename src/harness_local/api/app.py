@@ -9,37 +9,47 @@ from sqlalchemy import text
 
 from harness_local.adapters.fake import FakeSimulationAdapter
 from harness_local.api.legacy import legacy_router
+from harness_local.api.managed import managed_router
 from harness_local.api.schemas import HealthRead, SimulationCreate, SimulationRead
 from harness_local.core.simulation import SimulationService
 from harness_local.storage.database import database_url, make_engine
 from harness_local.storage.repository import SQLiteSimulationRepository
 from harness_local.storage.schema import require_schema
+from harness_local.services.managed_runtime import ManagedConfig, ManagedRuntime
 from harness_local.services.observation import LegacyObserver
 
 
-def create_app(url: str | None = None, ui_dir: Path | None = None) -> FastAPI:
+def create_app(url: str | None = None, ui_dir: Path | None = None,
+               managed: ManagedConfig | None = None) -> FastAPI:
+    """`managed` explícito o HARNESS_MANAGED_CONFIG al arrancar; sin ninguno, la API gestionada solo lee."""
     engine = make_engine(url or database_url())
     service = SimulationService(SQLiteSimulationRepository(engine), FakeSimulationAdapter())
 
     observer = LegacyObserver(engine)
+    runtime = ManagedRuntime(engine, managed)
 
     @asynccontextmanager
     async def lifespan(app: FastAPI):
         try:
             require_schema(engine)
-            await asyncio.to_thread(observer.scan, True)
-            task = asyncio.create_task(observer.run())
+            await asyncio.to_thread(runtime.start)
             try:
-                yield
+                await asyncio.to_thread(observer.scan, True)
+                task = asyncio.create_task(observer.run())
+                try:
+                    yield
+                finally:
+                    observer.stop()
+                    await task
             finally:
-                observer.stop()
-                await task
+                await asyncio.to_thread(runtime.stop)
         finally:
             engine.dispose()
 
     app = FastAPI(title="Harness Local", version="0.1.0", lifespan=lifespan,
                   docs_url=None, redoc_url=None)
     app.include_router(legacy_router(engine))
+    app.include_router(managed_router(runtime))
 
     @app.get("/api/health", response_model=HealthRead, operation_id="health")
     def health():

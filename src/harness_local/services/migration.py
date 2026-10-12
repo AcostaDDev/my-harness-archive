@@ -107,8 +107,9 @@ class MigrationService:
         self.hook("activation_prepared", activation_id=record.id)
         return self._complete(record)
 
-    def resume_activation(self, activation_id: str, *, reason: str):
-        return self._complete(self.repository.take_over(activation_id, "PREPARING", reason))
+    def resume_activation(self, activation_id: str, *, reason: str, expected_version: int | None = None):
+        return self._complete(self.repository.take_over(activation_id, "PREPARING", reason,
+                                                        expected_version=expected_version))
 
     def _complete(self, record):
         token = record.owner_token
@@ -156,24 +157,27 @@ class MigrationService:
         manifest = build_manifest(record.id, facts, record.snapshot_root, inventory, mtimes)
         return self.repository.finalize_activation(record.id, token, manifest, snapshot)
 
-    def abandon_activation(self, activation_id: str, *, reason: str) -> None:
+    def abandon_activation(self, activation_id: str, *, reason: str, expected_version: int | None = None) -> None:
         """PREPARING → FAILED retirando el marcador propio; en FAILED solo retira un marcador residual."""
         record = self.repository.get(activation_id)
         if record.status == "FAILED":
+            if expected_version is not None and record.version != expected_version:
+                raise ModeConflict(f"La activación cambió (versión {record.version}); recargar antes de repetir.")
             filesystem.remove_marker(record.root, record.marker)
             return
-        record = self.repository.take_over(activation_id, "PREPARING", reason)
+        record = self.repository.take_over(activation_id, "PREPARING", reason, expected_version=expected_version)
         filesystem.remove_marker(record.root, record.marker)
         self.repository.abandon(record.id, record.owner_token, reason)
 
-    def revert(self, activation_id: str, *, reason: str):
+    def revert(self, activation_id: str, *, reason: str, expected_version: int | None = None):
         """Exporta y comprueba el estado gestionado, retira el marcador y devuelve el checkout a legacy."""
-        record = self.repository.begin_revert(activation_id, reason)
+        record = self.repository.begin_revert(activation_id, reason, expected_version=expected_version)
         self.hook("revert_prepared", activation_id=record.id)
         return self._complete_revert(record)
 
-    def resume_revert(self, activation_id: str, *, reason: str):
-        return self._complete_revert(self.repository.take_over(activation_id, "REVERTING", reason))
+    def resume_revert(self, activation_id: str, *, reason: str, expected_version: int | None = None):
+        return self._complete_revert(self.repository.take_over(activation_id, "REVERTING", reason,
+                                                               expected_version=expected_version))
 
     def _complete_revert(self, record):
         state = self.repository.export_state(record.id)

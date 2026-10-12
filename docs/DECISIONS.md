@@ -643,3 +643,52 @@ vuelve a ser legacy y el histórico copiado sigue accesible.
 Quedan fuera: entradas API/CLI/UI de migración o ejecución gestionada, exportación
 mecánica de STATE/NEXT_STEPS, conversión de runs gestionados a legacy, retención
 de copias `staging-*` y detección entre comprobaciones o en otros worktrees.
+
+## D028 — API gestionada local: proyectos del servidor y supervisor opt-in
+
+Estado: implementado y verificado offline el 2026-10-12.
+[Entrega, contratos y límites](discovery/H2_EXIT_API.md).
+
+Los proyectos gestionados se registran en el servidor (`ManagedConfig`, pasado a
+`create_app` o cargado al arrancar desde `HARNESS_MANAGED_CONFIG=módulo:atributo`).
+El cliente HTTP los nombra por identificador y nunca aporta raíces, comandos,
+perfiles, políticas ni selecciones. Así se evita que una petición defina qué se
+ejecuta (§14). Las versiones congeladas también vienen de esa configuración.
+`POST /projects` de la §13 queda pendiente; no se implementa un registro
+persistido. Sin configuración no hay proyectos, puertos ni supervisor: la API
+gestionada solo lee y ningún endpoint invoca proveedores.
+
+Los jobs se ejecutan con un supervisor opt-in: un único hilo del proceso Uvicorn
+que llama a `LocalSupervisor.run_once`, despertado al encolar o confirmar. Se
+descarta la acción «ejecutar siguiente job» porque mantendría abierta una petición
+HTTP durante una invocación CLI que puede ser larga. Este modelo coincide con la
+§5: el supervisor comparte servicio con la API y es el único propietario de la
+cola. La cola, la exclusión, el lease y la cuarentena siguen en SQLite, sin
+cambios. Un fallo deja el job en RECOVERY_REQUIRED y el hilo continúa con otros
+checkouts. El apagado espera como máximo un lease y no libera un job a medias. Los
+puertos CLI H2.3 y Git H2.4 solo intervienen si se inyectan en la configuración.
+
+Contratos (Pydantic como fuente de OpenAPI y tipos):
+
+- `Idempotency-Key` obligatorio al crear jobs (encolar tarea, revalidar,
+  reintentar, commit).
+- `expected_version` obligatorio al cambiar un recurso existente: acciones de run,
+  confirmación de escritor detenido y transiciones de activación. Esta última
+  comprobación se añade dentro de la transacción de `take_over` y `begin_revert`.
+- La activación es idempotente por el hash de la vista previa.
+- 409 con `{code, diagnostic}` distingue `mode_refused`, `conflict`,
+  `migration_conflict`, `migration_refused`, `ownership_lost`,
+  `checkout_unreadable` y `commit_writer_unavailable`.
+- Las acciones solo operan sobre checkouts registrados.
+- El commit por HTTP no admite actualizaciones mecánicas.
+
+Seguridad local (§10), solo en `/api/managed`:
+
+- `Host` de loopback en toda ruta.
+- `Origin` de loopback si existe y cabecera `X-Harness-Local: 1` en mutaciones.
+- Sin CORS.
+
+La sesión local frente a otros usuarios del sistema operativo y la extensión de la
+guardia a las rutas H0/H1 quedan pendientes y no se presentan como implementadas.
+UI gestionada, SSE gestionado, registro de proyectos por HTTP, pausa o cancelación
+y actualizaciones mecánicas por HTTP quedan fuera de esta parte.

@@ -235,7 +235,14 @@ class SQLiteMigrationRepository:
                 raise ModeConflict("Otra activación viva ocupa esta raíz o repositorio.") from exc
             return _record(row), True
 
-    def take_over(self, activation_id: str, status: str, reason: str) -> ActivationRecord:
+    @staticmethod
+    def _expected(row: Activation, expected_version: int | None) -> None:
+        """Pantalla obsoleta: la versión vista por el llamante se comprueba en la misma transacción."""
+        if expected_version is not None and row.version != expected_version:
+            raise ModeConflict(f"La activación cambió (versión {row.version}); recargar antes de repetir.")
+
+    def take_over(self, activation_id: str, status: str, reason: str, *,
+                  expected_version: int | None = None) -> ActivationRecord:
         """Reanudación explícita: el llamante afirma que el proceso anterior terminó."""
         if not isinstance(reason, str) or not reason.strip():
             raise ValueError("Explicit confirmation that the previous process stopped is required")
@@ -243,6 +250,7 @@ class SQLiteMigrationRepository:
             row = session.get(Activation, activation_id)
             if row is None:
                 raise LookupError("Unknown activation")
+            self._expected(row, expected_version)
             if row.status != status:
                 raise ModeConflict(f"La activación está en {row.status}, no en {status}.")
             row.owner_token, row.version = str(uuid4()), row.version + 1
@@ -288,13 +296,15 @@ class SQLiteMigrationRepository:
 
     # --- reversión ----------------------------------------------------------------
 
-    def begin_revert(self, activation_id: str, reason: str) -> ActivationRecord:
+    def begin_revert(self, activation_id: str, reason: str, *,
+                     expected_version: int | None = None) -> ActivationRecord:
         if not isinstance(reason, str) or not reason.strip():
             raise ValueError("Explicit revert reason required")
         with self._write() as session:
             row = session.get(Activation, activation_id)
             if row is None:
                 raise LookupError("Unknown activation")
+            self._expected(row, expected_version)
             if row.status != "ACTIVE":
                 raise ModeConflict(f"Solo una activación ACTIVE puede revertirse (estado {row.status}).")
             busy = session.scalar(select(Job.id).join(Run, Run.id == Job.run_id).where(

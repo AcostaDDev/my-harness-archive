@@ -35,7 +35,7 @@ Actualizado: 2026-10-12.
 - Dependencias reales instaladas en `.venv` / `frontend/node_modules`, locks
   `uv.lock` / `frontend/package-lock.json`. Pins H0.2 usados conservados;
   backend de paquete `uv_build==0.12.19`. Comandos comprobados en README/AGENTS.
-- 276 casos de producto en `tests/product/`; pytest ejecuta 288 pruebas en total.
+- 294 casos de producto en `tests/product/`; pytest ejecuta 306 pruebas en total.
   La comprobación ligera anterior conserva sus 12 checks sin dependencias.
 - H1.1 completado: [importación legacy y verificaciones](discovery/H1.1_IMPORT.md),
   [alcance original](discovery/H1.1_SCOPE.md). Lector local explícito de
@@ -183,14 +183,34 @@ Actualizado: 2026-10-12.
   vuelta a legacy; histórico copiado accesible. Migración `0007_managed_activation`
   (`managed_activations`, `managed_jobs.activation_id`). Solo entrada de biblioteca.
 
+- Salida del hito 2, parte 1, completada offline: [API gestionada local](discovery/H2_EXIT_API.md),
+  [alcance original](discovery/H2_EXIT_API_SCOPE.md). Router `/api/managed` que
+  delega en repositorio, supervisor y migración sin lógica nueva de motor. D028.
+- Proyectos registrados en el servidor (`ManagedConfig` en `create_app` o
+  `HARNESS_MANAGED_CONFIG`); el cliente solo nombra identificadores. Sin
+  configuración: sin proyectos, puertos ni supervisor, y la API solo lee.
+- Supervisor opt-in: un hilo del proceso Uvicorn sobre `LocalSupervisor.run_once`;
+  la cola, la exclusión y la cuarentena siguen en SQLite. Puertos CLI/Git solo
+  por inyección.
+- Endpoints de migración (vista previa, activar, reanudar, abandonar, revertir y
+  modo) y gestionados (encolar, runs/jobs/intentos/eventos paginados, revalidar,
+  reintentar, commit y confirmar escritor detenido).
+- `Idempotency-Key` al crear jobs; `expected_version` en acciones y transiciones
+  de activación, este último atómico en `take_over`/`begin_revert`.
+- 409 con `{code, diagnostic}`. Guardia Host/Origin y cabecera CSRF
+  `X-Harness-Local` solo en `/api/managed`.
+- OpenAPI y tipos regenerados; la UI gestionada no existe todavía.
+
 ## Todavía no existe
 
-Recorrido de tarea real del motor con proveedores ni entradas gestionadas API/CLI/UI
-(tampoco para vista previa/activación/reversión H2.5), integración del commit en la
-rama de destino, retirada de worktrees, abandono manual de una intención ambigua,
-exportación mecánica de STATE/NEXT_STEPS, interfaz gestionada, permisos
+Recorrido de tarea real del motor con proveedores, interfaz gestionada (UI) ni
+entrada CLI gestionada; la API gestionada existe y solo se ha verificado con fakes.
+Tampoco existen sesión local, guardia Host/Origin/CSRF en rutas H0/H1, registro de
+proyectos por HTTP, SSE gestionado, pausa o cancelación por HTTP, integración del
+commit en la rama de destino, retirada de worktrees, abandono manual de una
+intención ambigua, exportación mecánica de STATE/NEXT_STEPS, permisos
 interactivos, chat ni distribución. La salida del hito 2 (ejecutar, revisar y
-completar una tarea desde la UI) sigue pendiente.
+completar una tarea desde la UI) sigue pendiente de la parte 2.
 La navegación H1.2 muestra evidencia legacy;
 el recorrido H0.3 solo guarda simulaciones, que no representan intentos reales
 ni aceptación de tareas. El primer smoke real lanzó Codex y falló al cargar
@@ -204,12 +224,12 @@ Git y el commit únicamente con agentes falsos y repositorios sintéticos.
 
 ## Trabajo activo
 
-H0, H1 y H2.1–H2.5 completados. H2.3 conserva su smoke real D025 (una ejecución,
-autorización agotada). H2.5 implementado y verificado offline con Git/SQLite
-sintéticos, fixtures legacy y agentes falsos: vista previa, copia consistente,
-activación reanudable, exclusión por marcador/deriva y reversión.
-[Informe](discovery/H2.5_MIGRATION.md), D027. Siguiente tarea: salida del hito 2
-(entrada gestionada mínima API/UI) según NEXT_STEPS, sin iniciarla.
+H0, H1, H2.1–H2.5 y la parte 1 de la salida del hito 2 completados. H2.3 conserva
+su smoke real D025 (una ejecución, autorización agotada). La API gestionada local
+está implementada y verificada offline con TestClient, Git/SQLite sintéticos,
+fixtures legacy y fakes, más un arranque breve de Uvicorn real sin configuración.
+[Informe](discovery/H2_EXIT_API.md), D028. Siguiente tarea: salida del hito 2,
+parte 2 (UI gestionada local) según NEXT_STEPS, sin iniciarla.
 
 ## Verificación de H0.1
 
@@ -765,6 +785,50 @@ activación reanudable, exclusión por marcador/deriva y reversión.
   checkout principal, `.harness/runs` versionado tratado como legacy en worktrees,
   copias `staging-*` sin retención. Sin entradas API/CLI/UI ni exportación mecánica
   de documentos. Salida del hito 2 no iniciada. Commit solicitado por el usuario.
+
+## Verificación de la salida del hito 2, parte 1
+
+- Git inicialmente limpio en `main`, `f8d6bb7`. AGENTS, STATE, NEXT_STEPS y
+  DECISIONS revisados; también especificación §5/§10/§13/§14, D010/D011,
+  D016/D017, D026/D027 y el código H2.2–H2.5. La sesión empezó en Sonnet 5.5,
+  se detuvo sin cambios para pasar a Opus 5.5 a petición del usuario y continuó.
+- Sin contradicciones materiales. Huecos resueltos con criterio reversible y
+  documentados (D028):
+  - proyectos registrados en el servidor en lugar de `POST /projects`;
+  - supervisor opt-in en lugar de una acción «ejecutar siguiente job»;
+  - sesión local pendiente.
+- `UV_CACHE_DIR=.local/uv-cache uv run --frozen --offline pytest -q`: 306 pruebas
+  y 121 subtests correctos (288 anteriores + 18 nuevas). 12 checks ligeros
+  correctos. `alembic upgrade head`/`check`/`current` en SQLite temporal:
+  `0007_managed_activation`, sin migración nueva.
+- Recorrido HTTP con Git real hasta COMMITTED. Doble envío y reinicio no duplican
+  jobs, invocaciones, eventos ni commits. El checkout principal no cambia y los
+  eventos son contiguos y estables entre páginas.
+- Job en cola sobrevive al reinicio y se ejecuta una sola vez. La recuperación
+  completa (cuarentena, 409 previos, confirmación, revalidar y commit) no repite
+  el ejecutor y deja el revisor incierto INTERRUPTED.
+- Rechazos de modo y conflictos de versión o idempotencia devuelven 409 con
+  diagnóstico; las peticiones inválidas, 422. En ambos casos tablas y checkout
+  quedan idénticos.
+- Migración por HTTP: vista previa sin escrituras, activación idempotente,
+  reversión con versión y exportación verificada, y reanudar o abandonar una
+  activación interrumpida.
+- Guardia Host/Origin/CSRF comprobada, y servicio por defecto sin procesos.
+- Ocho mutaciones temporales de las protecciones detectadas y el código restaurado.
+- OpenAPI y tipos regenerados con rutas y esquemas anteriores idénticos.
+  TypeScript y build Vite correctos.
+- Uvicorn real en `127.0.0.1:8015` con base temporal: guardia y 404 de proyecto
+  comprobados, apagado limpio. `:8013` no se tocó.
+- Diff y whitespace revisados. Sin proveedores, CLI de agente, smoke, red, harness
+  de desarrollo, ReferenceProject, configuración global ni push. Persiste el aviso
+  conocido Starlette/HTTPX.
+- Límites:
+  - un solo hilo supervisor por base, que procesa toda su cola;
+  - apagado acotado a un lease, con recuperación explícita después;
+  - activación síncrona dentro de la petición;
+  - sesión local, guardia en H0/H1, SSE gestionado y UI pendientes;
+  - fakes no acreditan proveedores.
+- Parte 2 no iniciada. Commit solicitado por el usuario.
 
 ## Coordinación
 

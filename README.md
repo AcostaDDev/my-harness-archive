@@ -1,14 +1,15 @@
 # my_harness — Harness Local
 
 Aplicación local para configurar, ejecutar y observar un harness modular de desarrollo con agentes.
-Estado actual: H0, H1 y H2.1–H2.5 completados. H2.3 conserva un smoke real
-autorizado con las tres CLI (D025); H2.4 añade Git por árboles, worktree por tarea
-y commit determinista conciliable; H2.5, la migración controlada de un checkout
-legacy a modo gestionado (D027), verificados offline. Siguiente tarea: API
-gestionada local (salida del hito 2, parte 1). Esqueleto Python/API/UI con simulaciones
-persistidas, observación legacy y motor con persistencia/cola.
-Adaptadores CLI y grupos de procesos por inyección explícita; sin entradas
-gestionadas API/CLI/UI ni ejecución automática de proveedores.
+Estado actual: H0, H1, H2.1–H2.5 y la parte 1 de la salida del hito 2 completados.
+H2.3 conserva un smoke real autorizado con las tres CLI (D025); H2.4 añade Git por
+árboles, worktree por tarea y commit determinista conciliable; H2.5, la migración
+controlada de un checkout legacy a modo gestionado (D027); la parte 1, la API
+gestionada local `/api/managed` (D028), todo verificado offline. Siguiente tarea:
+UI gestionada local (salida del hito 2, parte 2). Esqueleto Python/API/UI con
+simulaciones persistidas, observación legacy y motor con persistencia/cola.
+Adaptadores CLI y grupos de procesos por inyección explícita; sin UI/CLI gestionada
+ni ejecución automática de proveedores.
 
 ## Documentación
 
@@ -34,6 +35,8 @@ gestionadas API/CLI/UI ni ejecución automática de proveedores.
 - [Nuevo smoke autorizado: Codex completo, fallo MCP Claude](docs/discovery/H2.3_SMOKE_RETRY.md).
 - [Smoke cli-3: MCP aceptado, fallo de autenticación Claude](docs/discovery/H2.3_SMOKE_CLI3.md).
 - [Git, worktree y commit acotado H2.4](docs/discovery/H2.4_GIT.md).
+- [Migración a modo gestionado H2.5](docs/discovery/H2.5_MIGRATION.md).
+- [API gestionada local, salida del hito 2 parte 1](docs/discovery/H2_EXIT_API.md).
 
 `AGENTS.md` contiene las instrucciones de Codex; `CLAUDE.md` remite al mismo contrato para Claude Code. El desarrollo es manual y no utiliza el harness como orquestador.
 
@@ -98,11 +101,12 @@ UV_CACHE_DIR=.local/uv-cache uv run --frozen --offline alembic current
 UV_CACHE_DIR=.local/uv-cache uv run --frozen --offline alembic check
 ```
 
-288 pruebas (158 anteriores, 53 de H2.3, 8 del entorno del smoke, 34 de H2.4 y 35 de H2.5). Se usan checkouts Git, SQLite y
-procesos Python sintéticos, sin CLI de proveedores ni consumo de suscripciones.
-Se verifican captura incremental, cancelación de grupos y recuperación tras
-caída del supervisor. No certifica commits ni introduce ejecución gestionada
-desde API/CLI. Los 12 checks ligeros siguen sin lanzar procesos.
+306 pruebas (158 anteriores, 53 de H2.3, 8 del entorno del smoke, 34 de H2.4, 35 de
+H2.5 y 18 de la API gestionada). Se usan checkouts Git, SQLite y procesos Python
+sintéticos, sin CLI de proveedores ni consumo de suscripciones. Se verifican
+captura incremental, cancelación de grupos, recuperación tras caída del supervisor
+y el recorrido HTTP con fakes hasta COMMITTED. No certifica commits con proveedores.
+Los 12 checks ligeros siguen sin lanzar procesos.
 
 ## Comprobación offline disponible
 
@@ -118,7 +122,8 @@ producto. H0.3 ya verifica instalación y ejecución del esqueleto; las CLI
 reales por suscripción tienen adaptadores H2.3. El primer smoke falló al cargar
 configuración Codex; el nuevo smoke autorizado `cli-2` completa el planificador
 Codex y se detiene ante configuración MCP inválida de Claude, sin revisor.
-El supervisor se invoca explícitamente, sin entrada API/CLI ni arranque automático.
+El supervisor solo arranca dentro del servicio si la configuración gestionada lo pide
+(`supervisor=True`); sin configuración, `/api/managed` no tiene proyectos ni puertos.
 La configuración se corrigió offline, con regresión y retries internos declarados
 desconocidos. La corrección MCP Claude `cli-3` está verificada offline y el smoke
 posterior acepta MCP vacío, pero se detiene en autenticación Claude con terminal
@@ -130,7 +135,10 @@ H2.4 (Git, worktree por tarea y commit determinista conciliable) está completad
 offline: ver [entrega y límites](docs/discovery/H2.4_GIT.md); sin entrada API/CLI.
 H2.5 (vista previa, copia consistente, activación reanudable, exclusión por marcador
 y reversión) está completado offline: ver [entrega y límites](docs/discovery/H2.5_MIGRATION.md).
-Siguiente tarea: API gestionada local, sin iniciar. Ver [corrección y límites](docs/discovery/H2.3_MCP_FIX.md)
+La API gestionada local (proyectos registrados en el servidor, supervisor opt-in,
+idempotencia, versiones y guardia Host/Origin/CSRF) está completada offline: ver
+[entrega y límites](docs/discovery/H2_EXIT_API.md). Siguiente tarea: UI gestionada
+local, sin iniciar. Ver [corrección y límites](docs/discovery/H2.3_MCP_FIX.md)
 y [resultado real cli-3](docs/discovery/H2.3_SMOKE_CLI3.md). El consentimiento
 terminó al fallo; otro smoke requiere propuesta y autorización específicas.
 Ver [corrección del entorno](docs/discovery/H2.3_ENV_FIX.md) y
