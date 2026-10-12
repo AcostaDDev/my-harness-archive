@@ -57,6 +57,7 @@ H2.3 implementado y verificado offline: adaptadores CLI por inyección explícit
 captura incremental/cancelación y recuperación. Smoke real previo detenido por
 configuración Codex incompatible; corregida offline en `cli-2`. Nuevo smoke
 autorizado: Codex completo, Claude falla por configuración MCP; sin revisor ni relanzar.
+Corrección MCP verificada offline en `cli-3`; nuevo smoke pendiente de consentimiento.
 Comprobación offline ligera, solo biblioteca estándar, desde la raíz:
 
 ```sh
@@ -86,8 +87,8 @@ npm --prefix frontend run dev
 ```
 
 Las primeras instalaciones necesitan red; después los checks son offline.
-No usar `uv --active` con entornos de otros proyectos. 209 pruebas pytest
-(158 anteriores + 51 H2.3). API/UI compilada en 127.0.0.1:8013; Vite en :5173
+No usar `uv --active` con entornos de otros proyectos. 211 pruebas pytest
+(158 anteriores + 53 H2.3). API/UI compilada en 127.0.0.1:8013; Vite en :5173
 en otra terminal. SQLite local ignorada en `.local/harness.sqlite3`; migración
 explícita antes de arrancar. Ver README y `docs/discovery/H0.3_SKELETON.md`.
 Estos comandos verifican el esqueleto simulado, el índice legacy, su navegación/observación/SSE
@@ -101,8 +102,9 @@ H2.3 autorizado lanzó solo Codex y falló al cargar `model_providers.openai`;
 la corrección offline `cli-2` elimina los overrides reservados y declara retries
 internos desconocidos. Ver `docs/discovery/H2.3_CONFIG_FIX.md`. El nuevo smoke
 autorizado D020 completó Codex y se detuvo en Claude por `mcpServers` ausente;
-ver `docs/discovery/H2.3_SMOKE_RETRY.md`. La siguiente tarea es corregir esa
-configuración offline; no consumir proveedores ni relanzar automáticamente.
+ver `docs/discovery/H2.3_SMOKE_RETRY.md`. Corrección offline MCP completada en
+`cli-3`; ver `docs/discovery/H2.3_MCP_FIX.md`. Siguiente tarea: propuesta de
+nuevo smoke pendiente de consentimiento; no consumir ni relanzar automáticamente.
 Los checks no consumen proveedores. El supervisor
 solo se invoca explícitamente, sin entradas API/CLI gestionadas ni autoarranque.
 H2.4 no iniciado.

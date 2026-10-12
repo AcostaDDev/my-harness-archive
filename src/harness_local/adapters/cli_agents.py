@@ -23,7 +23,7 @@ from harness_local.core.engine.contracts import AgentResult, freeze
 from harness_local.core.engine.journal import JournalError
 
 
-VERSION = "cli-2"
+VERSION = "cli-3"
 SUPPORTED = {"codex": ("0.161.0", "0.162.1"), "claude": ("2.1.295",)}
 
 
@@ -78,7 +78,7 @@ def argv_for(config, context, request):
         "--print", "--output-format", "stream-json", "--verbose", "--include-partial-messages",
         "--no-session-persistence", "--session-id", request.id, "--model", model, "--effort", effort,
         "--permission-mode", "dontAsk", "--permission-prompts", "none", "--tools", ",".join(config.tools),
-        "--allowedTools", ",".join(config.allowed_tools), "--strict-mcp-config", "--mcp-config", "{}",
+        "--allowedTools", ",".join(config.allowed_tools), "--strict-mcp-config", "--mcp-config", '{"mcpServers":{}}',
         "--setting-sources", "", "--settings", '{"disableAllHooks":true}',
         "--disable-slash-commands", "--no-chrome")
 

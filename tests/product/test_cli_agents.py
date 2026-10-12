@@ -77,7 +77,15 @@ def test_explicit_fresh_argv_preflight_and_configuration(tmp_path,context,reposi
     else:
         assert args[args.index('--session-id')+1]==request.id
         assert args[args.index('--permission-mode')+1]=='dontAsk'
+        assert args[args.index('--permission-prompts')+1]=='none'
+        assert args[args.index('--tools')+1]==args[args.index('--allowedTools')+1]==''
+        assert '--strict-mcp-config' in args
+        assert json.loads(args[args.index('--mcp-config')+1])=={'mcpServers':{}}
+        assert args[args.index('--setting-sources')+1]==''
+        assert json.loads(args[args.index('--settings')+1])=={'disableAllHooks':True}
+        assert '--disable-slash-commands' in args and '--no-chrome' in args
         assert metadata['observed']['usage'] is None and metadata['observed']['duration_ms']==0
+    assert launches[0]['explicit']=='selected'
     assert 'effort' not in metadata['observed']
     for info in metadata['artifacts'].values():
         raw=Path(info['path']).read_bytes()
@@ -86,7 +94,11 @@ def test_explicit_fresh_argv_preflight_and_configuration(tmp_path,context,reposi
     assert repository.processes(job.id)[0]['status']=='STOPPED'
     spec=repository.processes(job.id)[0]['spec']
     assert spec['cli_internal_retries']==port.capabilities()['cli_internal_retries'][provider]
-    assert spec['adapter_version']=='cli-2'
+    assert spec['adapter_version']=='cli-3'
+    prompt=Path(spec['prompt_path']).read_bytes()
+    assert prompt.decode()==launches[0]['prompt']
+    assert spec['prompt_sha256']==hashlib.sha256(prompt).hexdigest()
+    assert spec['environment_keys']==sorted(dict(port.configs[provider].environment))
     repository.close_owner(claim)
 
 
@@ -132,15 +144,78 @@ def test_reserved_provider_overrides_fail_once_with_preserved_evidence(
     assert restarted.get_run(job.run_id).history==history
 
 
-def test_previous_adapter_version_cannot_execute_new_configuration(tmp_path,context,repository):
+@pytest.mark.parametrize('version',['cli-1','cli-2'])
+def test_previous_adapter_version_cannot_execute_new_configuration(tmp_path,context,repository,version):
     from threading import Event
     port=adapter(tmp_path)
-    versions={**VERSIONS,**port.frozen_versions(),'agent_adapter':'cli-1'}
-    repository.submit(context,'P001-T001','P001',PLAN,versions,key='old-adapter')
+    versions={**VERSIONS,**port.frozen_versions(),'agent_adapter':version}
+    job=repository.submit(context,'P001-T001','P001',PLAN,versions,key='old-adapter')
     claim=repository.claim()
+    before=repository.get_run(job.run_id)
     with pytest.raises(JournalError,match='configuration differs'):
         port.bind_process_journal(_Journal(repository,claim,Event()))
     assert not (tmp_path/'launches.jsonl').exists()
+    assert repository.get_run(job.run_id)==before
+    assert repository.processes(job.id)==[]
+
+
+def test_empty_mcp_wrapper_fails_after_planner_without_review_or_retry(
+        tmp_path,context,repository,monkeypatch):
+    from harness_local.adapters import cli_agents
+    ctx=replace(context,policy=replace(context.policy,planning_mode='agent'))
+    port=adapter(tmp_path,'flow')
+    original=cli_agents.argv_for
+    def old_argv(config,ctx,request):
+        args=list(original(config,ctx,request))
+        if config.provider=='claude':
+            args[args.index('--mcp-config')+1]='{}'
+        return tuple(args)
+    monkeypatch.setattr(cli_agents,'argv_for',old_argv)
+    monkeypatch.setattr(cli_agents,'VERSION','cli-2')
+    # Version/help pass although the invocation's JSON is semantically invalid.
+    assert all(report['available'] for report in port.preflight().values())
+    job=repository.submit(ctx,'P001-T001','P001',PLAN,{**VERSIONS,**port.frozen_versions()},key='empty-mcp')
+    def factory(ctx,versions):
+        return port,ScriptedCommandRunner([]),SyntheticWorkspace(ctx,('app/main.txt',))
+    supervisor=LocalSupervisor(repository,factory)
+    assert supervisor.run_once().status=='DONE'
+    history=repository.get_run(job.run_id).history
+    assert history.status=='stopped'
+    assert [a.request.role for a in history.attempts]==['planner','executor']
+    assert history.attempts[0].result.status=='complete'
+    result=history.attempts[1].result
+    assert result.status=='failed' and result.exit_code==1
+    assert not result.terminal_observed and result.payload_json is None
+    metadata=json.loads(result.metadata_json)
+    assert metadata['observed']=={} and metadata['group_state']=='dead'
+    assert Path(metadata['artifacts']['stdout']['path']).read_bytes()==b''
+    stderr=Path(metadata['artifacts']['stderr']['path']).read_bytes()
+    assert b'mcpServers: expected record' in stderr
+    assert metadata['artifacts']['stderr']['size']==len(stderr)
+    assert metadata['artifacts']['stderr']['sha256']==hashlib.sha256(stderr).hexdigest()
+    processes=repository.processes(job.id)
+    assert len(processes)==2 and all(p['status']=='STOPPED' for p in processes)
+    assert processes[1]['capture']['status']=='failed'
+    assert processes[1]['spec']['adapter_version']=='cli-2'
+    with Session(repository.engine) as session:
+        rows=session.scalars(select(ManagedAttemptRow).where(
+            ManagedAttemptRow.run_id==job.run_id).order_by(ManagedAttemptRow.number)).all()
+        assert [row.status for row in rows]==['COMPLETE','FAILED']
+        results_before=[row.result_json for row in rows]
+    assert supervisor.run_once() is None
+    assert len((tmp_path/'launches.jsonl').read_text().splitlines())==2
+    # Loading historical cli-2 evidence with cli-3 never rewrites it.
+    monkeypatch.setattr(cli_agents,'VERSION','cli-3')
+    restarted=SQLiteManagedRepository(make_engine(str(repository.engine.url)))
+    try:
+        assert restarted.get_run(job.run_id).history==history
+        assert restarted.processes(job.id)==processes
+        with Session(restarted.engine) as session:
+            rows=session.scalars(select(ManagedAttemptRow).where(
+                ManagedAttemptRow.run_id==job.run_id).order_by(ManagedAttemptRow.number)).all()
+            assert [row.result_json for row in rows]==results_before
+    finally:
+        restarted.engine.dispose()
 
 
 @pytest.mark.parametrize('mode,status', [('invalid','invalid'),('utf8','partial'),('partial','partial'),

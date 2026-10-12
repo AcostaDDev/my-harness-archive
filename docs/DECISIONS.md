@@ -429,3 +429,26 @@ No se concluye éxito completo H2.3, aceptación/commit de producto, acceso/auth
 Claude, ausencia de retries internos ni consumo de cuota cero a partir del fallo.
 El historial D018/D019 se conserva sin convertir esta ejecución en reintento
 automático. H2.4 no iniciado.
+
+## D021 — MCP vacío explícito y versión congelada cli-3
+
+Estado: implementado y verificado offline el 2026-10-12; smoke nuevo no ejecutado.
+
+Claude Code 2.1.295 requiere el mapa `mcpServers` en el JSON MCP; `{}` fue
+rechazado en D020. Help local y documentación oficial describen JSON inline,
+el wrapper y el modo estricto. Usar `--strict-mcp-config` junto a
+`--mcp-config '{"mcpServers":{}}'`: cero servidores declarados, conservando herramientas,
+settings y hooks aislados por las opciones H2.3 existentes. No cambia auth,
+modelos/esfuerzos, permisos, sesiones ni controles de retries.
+
+El cambio de argv eleva el adaptador a `cli-3`: jobs congelados `cli-2` o
+`cli-1` se bloquean antes de efectos sin reescribir historial/specs/resultados.
+No hay migración ni cambio de codec. El executable sintético exige el mapa
+independientemente del adaptador: help/version pasan con el JSON inválido,
+pero la ejecución falla antes de emitir inferencia simulada. Parada tras Claude
+sin revisor ni relanzamiento y preservación de resultados antiguos verificadas.
+
+Documentación y fakes no equivalen a validación real completa del proveedor.
+D020 conserva su resultado/evidencia; su autorización concluyó al fallo.
+NEXT_STEPS prepara una propuesta nueva, sin ejecutarla ni consumir proveedores
+dentro de esta entrega. [Contrato, fuentes y límites](discovery/H2.3_MCP_FIX.md).

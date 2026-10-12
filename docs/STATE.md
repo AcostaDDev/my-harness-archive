@@ -35,7 +35,7 @@ Actualizado: 2026-10-12.
 - Dependencias reales instaladas en `.venv` / `frontend/node_modules`, locks
   `uv.lock` / `frontend/package-lock.json`. Pins H0.2 usados conservados;
   backend de paquete `uv_build==0.12.19`. Comandos comprobados en README/AGENTS.
-- 197 casos de producto en `tests/product/`; pytest ejecuta 209 pruebas en total.
+- 199 casos de producto en `tests/product/`; pytest ejecuta 211 pruebas en total.
   La comprobación ligera anterior conserva sus 12 checks sin dependencias.
 - H1.1 completado: [importación legacy y verificaciones](discovery/H1.1_IMPORT.md),
   [alcance original](discovery/H1.1_SCOPE.md). Lector local explícito de
@@ -124,6 +124,11 @@ Actualizado: 2026-10-12.
   COMPLETE con terminal/uso, Claude FAILED por configuración MCP inválida;
   revisor no lanzado. Parada conservada, sin relanzar ni corregir en esta entrega.
   [Resultado y evidencias](discovery/H2.3_SMOKE_RETRY.md), D020.
+- Corrección MCP Claude verificada offline: `cli-3` usa `{"mcpServers":{}}`
+  con modo estricto y conserva permisos/configuración aislados. Regresión
+  independiente reproduce el rechazo de `{}` antes de inferencia simulada;
+  jobs congelados `cli-2`/`cli-1` bloqueados sin reescribir historial anterior.
+  [Contrato y verificaciones](discovery/H2.3_MCP_FIX.md), D021. Sin smoke nuevo.
 
 ## Todavía no existe
 
@@ -140,11 +145,12 @@ y falla al validar MCP, sin terminal/inferencia acreditada. Revisor no probado.
 ## Trabajo activo
 
 H0, H1, H2.1 y H2.2 completados. H2.3 implementado y verificado offline;
-siguiente tarea acotada: corregir offline la configuración MCP vacía de Claude,
-según `NEXT_STEPS.md`. El nuevo smoke autorizado D020 concluyó con fallo de
-Claude tras completar Codex, sin revisor ni relanzamiento. D018/D019 y sus
-evidencias conservados. La autorización D020 terminó al primer error;
-otro smoke requerirá consentimiento específico. H2.4 no iniciado.
+corrección MCP vacía de Claude completada como `cli-3` (D021). Siguiente tarea
+acotada: propuesta de un nuevo smoke real, pendiente de consentimiento específico
+según `NEXT_STEPS.md`; no ejecutado en esta entrega. D020 concluyó con fallo de
+Claude tras completar Codex, sin revisor ni relanzamiento. D018/D019/D020 y sus
+informes históricos conservados. Su autorización terminó al primer error.
+H2.4 no iniciado.
 
 ## Verificación de H0.1
 
@@ -456,6 +462,38 @@ otro smoke requerirá consentimiento específico. H2.4 no iniciado.
 - Diff/whitespace revisados y 76 enlaces locales correctos en los ocho documentos
   de la entrega. Commit solicitado por el usuario; solo documentación, sin
   corrección MCP ni avance a la siguiente tarea.
+
+## Corrección MCP offline H2.3 — 2026-10-12
+
+- Git inicialmente limpio en `2f92914`, rama `main`. Alcance activo conservado
+  en [H2.3_MCP_FIX_SCOPE.md](discovery/H2.3_MCP_FIX_SCOPE.md). D021.
+- Claude Code 2.1.295 y help consultados localmente en lectura, documentación
+  oficial consultada. `cli-3` sustituye `{}` por `{"mcpServers":{}}`; modo
+  estricto, herramientas vacías, dontAsk, prompts none, fuentes/settings/hooks,
+  sesiones, selección, auth y entorno explícitos conservados. No hay print real.
+- Regresión independiente reproduce planificador completo → ejecutor FAILED
+  antes de emitir inferencia simulada, con preflight correcto. Conserva stderr/
+  hash, stdout vacío, payload null, terminal ausente y telemetría ausente;
+  parada sin revisor/reintento. Historial/specs/capturas y JSON exacto de resultados
+  sintéticos `cli-2` preservados tras reabrir SQLite con `cli-3`.
+- Jobs `cli-2`/`cli-1` bloqueados antes de efectos sin mutación del run. Ninguna
+  migración/codec nuevo. Los casos de éxito validan el JSON corregido, MCP vacío,
+  aislamiento por flags, prompts/hashes y distinción ausencia/null/cero.
+- 53 pruebas de adaptadores correctas; suite completa: 211 pruebas y 121 subtests
+  correctos, incluidos checks existentes de migraciones, OpenAPI, arquitectura,
+  captura/cancelación/recuperación. Los 12 checks ligeros pasan. Aviso conocido
+  Starlette/HTTPX conservado, uv ignora el entorno externo.
+- Informes históricos D018/D020 intactos. Capturas temporales D018 ya ausentes
+  en su ruta documentada; no se reconstruyen ni se certifica su retención.
+  Las seis capturas/prompts D020 disponibles coinciden con sus hashes documentados.
+  No se copian runs reales a fixtures. Detalles en [H2.3_MCP_FIX.md](discovery/H2.3_MCP_FIX.md).
+- Diff/whitespace y enlaces locales revisados. Sin inferencia/smoke, fallback,
+  relanzamiento, credenciales, configuración global, harness de desarrollo,
+  colaboración automática, ReferenceProject ni push. API/UI/build/navegador no repetidos
+  porque no cambian esas fronteras. Commit solicitado por el usuario.
+- Siguiente propuesta real preparada en NEXT_STEPS, sin ejecutarla: transporte
+  completo, Claude auth/cuota/modelo, revisor y retries efectivos siguen pendientes.
+  H2.4 no iniciado.
 
 ## Coordinación
 

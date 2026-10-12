@@ -3,8 +3,9 @@
 Aplicación local para configurar, ejecutar y observar un harness modular de desarrollo con agentes.
 Estado actual: H0, H1, H2.1 y H2.2 completados; H2.3 implementado y verificado
 offline; nuevo smoke autorizado `cli-2` completa Codex y falla en configuración
-MCP de Claude, sin revisor ni relanzamiento. Esqueleto Python/API/UI con
-simulaciones persistidas, observación legacy y motor con persistencia/cola.
+MCP de Claude, sin revisor ni relanzamiento. Corrección MCP posterior `cli-3`
+verificada offline, sin smoke nuevo. Esqueleto Python/API/UI con simulaciones
+persistidas, observación legacy y motor con persistencia/cola.
 Adaptadores CLI y grupos de procesos por inyección explícita; sin entradas
 gestionadas API/CLI/UI ni ejecución automática de proveedores.
 
@@ -116,8 +117,10 @@ configuración Codex; el nuevo smoke autorizado `cli-2` completa el planificador
 Codex y se detiene ante configuración MCP inválida de Claude, sin revisor.
 El supervisor se invoca explícitamente, sin entrada API/CLI ni arranque automático.
 La configuración se corrigió offline, con regresión y retries internos declarados
-desconocidos. El siguiente paso es corregir offline la configuración MCP Claude;
-no se ha iniciado H2.4. Ver [resultado y límites](docs/discovery/H2.3_SMOKE_RETRY.md).
+desconocidos. La corrección MCP Claude `cli-3` también está verificada offline;
+el siguiente paso es proponer otro smoke con consentimiento específico.
+No se ha iniciado H2.4. Ver [corrección y límites](docs/discovery/H2.3_MCP_FIX.md)
+y [resultado real previo](docs/discovery/H2.3_SMOKE_RETRY.md).
 
 
 ## Importación legacy de lectura

@@ -36,6 +36,14 @@ if provider == 'codex':
         print('Synthetic config error: model_providers contains reserved built-in provider IDs: '
               + ', '.join(sorted(reserved)), file=sys.stderr)
         sys.exit(1)
+else:
+    # Independent contract: the CLI requires a wrapper containing a server map,
+    # not an empty top-level object. Reject before emitting simulated inference.
+    args = sys.argv[3:]
+    config = json.loads(args[args.index('--mcp-config') + 1])
+    if not isinstance(config, dict) or not isinstance(config.get('mcpServers'), dict):
+        print('Synthetic config error: mcpServers: expected record', file=sys.stderr)
+        sys.exit(1)
 if mode == 'invalid':
     print('invalid JSONL', flush=True)
 elif mode == 'utf8':
