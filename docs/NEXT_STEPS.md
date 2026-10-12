@@ -1,69 +1,63 @@
-# Siguiente tarea — H2.3: verificar transporte real con USER comprobado
+# Siguiente tarea — H2.4: Git y aceptación offline
 
-Corrección offline del entorno completada el 2026-10-12 (D024): USER explícito
-validado contra el UID local antes de efectos, HOME/PATH/TMPDIR/LANG conservados,
-sin credenciales heredadas. Adaptador `cli-3` conservado; hash de CLIConfig
-nuevo bloquea jobs/configuraciones anteriores sin reescritura.
-[Informe](discovery/H2.3_ENV_FIX.md), [alcance completado](discovery/H2.3_ENV_FIX_SCOPE.md).
-219 pruebas y 121 subtests, 12 checks ligeros correctos; regresión independiente
-reproduce el defecto previo y el recorrido sintético corregido.
-D020/D022 conservan doce capturas/prompts, SQLite, 24/31 eventos y locks;
-D018 sigue ausente. El transporte real completo continúa pendiente. H2.4 no iniciado.
+H2.3 verificado offline y smoke real completo el 2026-10-12 (D025), autorizado
+por «Procede con el smoke»: planificador Codex, ejecutor Claude y revisor Codex
+COMPLETE, terminal/exit 0/JSON `smoke-ok`, con USER validado. Sin herramientas
+ni cambios de checkout. [Informe](discovery/H2.3_ENV_SMOKE.md),
+[alcance completado](discovery/H2.3_ENV_SMOKE_SCOPE.md).
+57 eventos, configuración/capturas/hashes exactos tras reabrir SQLite, job DONE,
+run STOPPED por fin deliberado del smoke, owner cerrado y procesos STOPPED/dead;
+lock nuevo liberado por finalización normal. D020/D022 y sus locks intactos.
+Doce checks ligeros correctos; suite previa del mismo código: 219 pruebas y
+121 subtests. Transporte real acreditado, sin aceptación/commit de tarea real.
 
-## Objetivo y consentimiento pendiente
+**H2.4 no iniciado.** La autorización del smoke se satisfizo con una ejecución;
+no permite otro consumo, login o recuperación de históricos.
 
-Verificar una vez el transporte de las tres CLI en checkout desechable con el
-entorno corregido. [Propuesta concreta separada](discovery/H2.3_ENV_SMOKE_PROPOSAL.md):
-Codex 0.162.1 `gpt-6-luna`/`low` para planificador/revisor y Claude 2.1.295
-`claude-sonnet-4-6`/`low` para ejecutor; hasta tres invocaciones, 60 s cada una,
-red/suscripciones propias y parada al primer fallo, sin fallback ni relanzamiento.
-Retries internos desconocidos y posible consumo aunque falle.
+## Objetivo
 
-**No ejecutado ni autorizado en la corrección offline.** D022 agotó su
-consentimiento al fallo; diagnóstico D023, corrección D024 y commit no permiten
-inferencias nuevas. Antes de lanzar, presentar esta propuesta y obtener
-consentimiento específico. Si no llega, dejar esta tarea pendiente sin consumo.
+Implementar Git y aceptación según el backlog H2.4 y la especificación:
+worktree por tarea, baseline/fingerprint del contenido completo y commit
+limitado a lo validado/revisado, con recuperación idempotente tras caída.
+Trabajo local offline con repositorios temporales sintéticos, sin proveedores.
 
 ## Alcance acotado
 
-1. Revisar D008/D017/D022/D023/D024, informes, script y propuesta; conservar
-   históricos, evidencias y locks previos sin recuperación/liberación.
-2. Antes del consumo, comprobar USER local y entorno explícito, ayuda/guardia
-   del smoke y preflight versión/help. No extraer auth ni usar status o fakes
-   como certificado de inferencia; repetir tests solo si cambia código/contexto
-   o aparece una incertidumbre que lo justifique.
-3. Obtener consentimiento específico para la propuesta. Ejecutar solo una vez
-   el comando documentado, fuera del sandbox para auth propia de las CLI,
-   con nuevo checkout/SQLite/artefactos bajo `/private/tmp`. Configuración y
-   selección congeladas antes de consumo; no reutilizar jobs D020/D022.
-4. Conservar specs/hash de entorno/prompt, stdout/stderr, terminales, selección,
-   metadatos y eventos. Detener al primer resultado distinto de complete;
-   sin login, corrección ni invocación adicional dentro de esta tarea.
-5. Reabrir SQLite en lectura y verificar hashes/rangos/capturas/prompts,
-   resultados/estados, owner/grupos y checkout intacto. Registrar datos ausentes,
-   null y ceros sin inferir cuota/factura o esfuerzo efectivo.
-6. Actualizar STATE/NEXT_STEPS/DECISIONS e informe según rama de éxito/error,
-   sin avanzar a H2.4. Un fallo concluye esta verificación con resultado fallido
-   y requiere una tarea separada, no una reparación o reejecución automática.
+1. Revisar especificación (consistencia frente a caídas y Git), backlog H2.4,
+   D015–D017/D025 y puertos del motor, aceptación, journal y persistencia.
+   Señalar contradicciones materiales antes de cambiar diseño.
+2. Implementar captura Git real: base SHA, contenido/diff completo, staged,
+   unstaged, untracked y borrados relevantes. Vincular validación/review al
+   contenido exacto; no certificar Git mediante SyntheticWorkspace.
+3. Preparar worktree por tarea y conservarlo durante revisiones; preservar
+   cambios ajenos y mantener la exclusión de escritor. Integrar en la rama de
+   destino sigue siendo una acción separada, fuera de esta entrega.
+4. Crear commit solo del conjunto revisado/autorizado y actualizaciones
+   mecánicas identificadas. Persistir intención/evidencia antes del efecto y
+   resultado después; conciliar commit creado antes de guardar resultado sin
+   repetirlo tras reinicio ni aceptar contenido modificado externamente.
+5. Añadir regresión offline con Git/SQLite y agentes falsos: invalidación tras
+   modificación externa, staged/untracked, límites del commit, preservación de
+   cambios ajenos y caída antes/después de crear commit. No usar runs privados.
+6. Ejecutar checks pertinentes, revisar diff y actualizar STATE/NEXT_STEPS/
+   DECISIONS e informe. Conservar H0/H1/H2 y locks/artefactos históricos.
 
 ## Criterios de aceptación
 
-- Consentimiento específico previo y una única ejecución con los límites fijados.
-- USER validado y entorno/settings/hooks/tools/MCP explícitos, sesiones nuevas,
-  modelos/esfuerzos congelados; sin credenciales heredadas ni fallback.
-- Éxito: tres resultados complete, terminales, exit 0 y JSON conservados;
-  certificar únicamente el transporte observado, sin aceptación/commit de tarea.
-- Error: resultados/evidencias preservados, roles restantes no lanzados,
-  run/job RECOVERY_REQUIRED, owner cerrado y lock retenido; sin recuperar.
-- Persistencia/hashes/eventos revisados; checkout sintético intacto y ausencia
-  de herramientas en los eventos capturados. D020/D022 e informes intactos.
-- Evidencia real separada de tests offline; no certificar retries internos,
-  cuota/factura, aislamiento físico ni cancelación/timeout reales no observados.
+- Una modificación externa posterior a validación/review invalida aceptación;
+  no se crea un commit de contenido distinto del revisado.
+- Fingerprint/diff incluye archivos nuevos, staged y cambios pertinentes;
+  baseline y evidencia conservados con procedencia y hash.
+- Worktree aislado por tarea y conservado durante revisiones, sin limpiar
+  modificaciones desconocidas ni tratarlo como sandbox de seguridad.
+- Commit acotado a lo revisado; una caída después del efecto Git y antes del
+  resultado SQLite se recupera sin duplicar commits ni reescribir historial.
+- Tests offline pertinentes pasan y contratos/versiones/migraciones necesarios
+  documentados; no presentar diseño como implementación.
 
 ## Fuera de alcance
 
-Sin login/logout/refresh, lectura de secretos/keychain, API keys, cambios
-globales, ampliación de fuentes/tools/MCP, corrección de código en la rama
-de error, fallback, reintento, recuperación/liberación automática, SDK,
-entradas gestionadas API/CLI/UI, permisos vivos, chat, H2.4/H2.5,
-publicación o push. No reconstruir el área D018 ausente.
+Sin proveedores reales ni otro smoke, login/refresh, secretos, recuperación de
+D020/D022, integración automática en rama destino, push/publicación, H2.5,
+entradas gestionadas API/CLI/UI, permisos vivos, SDK, chat o distribución.
+No modificar ReferenceProject, configuración global ni lanzar agentes de colaboración.

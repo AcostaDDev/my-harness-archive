@@ -144,10 +144,16 @@ Actualizado: 2026-10-12.
   Adaptador `cli-3` conservado; hash de configuración distinto bloquea jobs antiguos
   antes del preflight, sin reescribir resultados/specs/historial/locks.
   [Informe y regresión sintética](discovery/H2.3_ENV_FIX.md), D024.
+- Smoke con USER validado autorizado y completo: planificador Codex, ejecutor
+  Claude y revisor Codex COMPLETE, terminal/exit 0/JSON `smoke-ok` en los tres.
+  Configuración congelada, sesiones frescas, herramientas/MCP vacíos y checkout
+  intacto. Job DONE, run STOPPED por fin deliberado del smoke, owner cerrado,
+  grupos STOPPED/dead y lock nuevo liberado por finalización normal.
+  [Informe y evidencias independientes](discovery/H2.3_ENV_SMOKE.md), D025.
 
 ## Todavía no existe
 
-Recorrido CLI real completo exitoso con ambos proveedores ni entradas gestionadas API/CLI/UI,
+Recorrido de tarea real del motor con proveedores ni entradas gestionadas API/CLI/UI,
 captura Git completa/worktrees/commit de producto, activación/migración de proyectos
 gestionados, interfaz gestionada, permisos interactivos, chat ni distribución.
 La navegación H1.2 muestra evidencia legacy;
@@ -156,24 +162,20 @@ ni aceptación de tareas. El primer smoke real lanzó Codex y falló al cargar
 configuración; no acredita inferencia, autenticación, cuota ni acceso al modelo.
 Los nuevos smokes completan el transporte del planificador Codex. D020 falló al
 validar MCP; D022 supera ese rechazo y falla en autenticación Claude con terminal
-de error, sin inferencia acreditada. Revisor no probado.
+de error, sin inferencia acreditada en D022. El smoke D025 completa transporte
+de ambos proveedores y revisor con USER validado; no ejecuta una tarea real ni
+certifica validación/review ACCEPT/commit de producto.
 
 ## Trabajo activo
 
-H0, H1, H2.1 y H2.2 completados. H2.3 implementado y verificado offline.
-Smoke `cli-3` D022 concluido conforme a la rama de error: planificador Codex
-COMPLETE; ejecutor Claude FAILED por autenticación, MCP vacío aceptado;
-revisor no lanzado. [Informe](discovery/H2.3_SMOKE_CLI3.md).
-Históricos D018/D019/D020/D021 y preflight conservados. Consentimiento D022
-agotado al fallo; sin login ni nueva inferencia autorizados.
-Diagnóstico de autenticación concluido en lectura (D023): omisión de USER
-reproduce la falta de sesión en status fuera del sandbox; sesión local reconocida.
-Corrección offline del entorno explícito del smoke completada (D024), con ocho
-casos nuevos y hash congelado distinto; sin modificar el adaptador ni ejecutar
-CLI reales. Propuesta de verificación real posterior preparada por separado,
-pendiente de consentimiento específico según NEXT_STEPS, sin iniciarla.
-Transporte real completo sigue pendiente.
-H2.4 no iniciado.
+H0, H1, H2.1 y H2.2 completados. H2.3 implementado, verificado offline y
+smoke real completo D025 tras autorización «Procede con el smoke».
+Planificador Codex, ejecutor Claude y revisor Codex COMPLETE, sin herramientas
+ni cambios de checkout. [Informe](discovery/H2.3_ENV_SMOKE.md).
+Diagnóstico D023 y corrección D024 conservados; entorno USER validado y hash
+congelado distintos de D022. Históricos fallidos D020/D022 y sus locks intactos.
+La autorización D025 cubrió una ejecución y terminó; no habilita otro smoke.
+Siguiente tarea: H2.4 Git y aceptación offline según NEXT_STEPS, sin iniciarla.
 
 ## Verificación de H0.1
 
@@ -625,6 +627,35 @@ H2.4 no iniciado.
   la verificación posterior, pendiente de consentimiento, sin ejecutarla.
   Transporte real completo, inferencia Claude/revisor y retries efectivos siguen
   pendientes. D022 continúa fallido; H2.4 no iniciado.
+
+## Smoke real con USER validado — 2026-10-12
+
+- Git inicialmente limpio en `main`, `d970e15`; usuario autoriza «Procede con
+  el smoke» sobre la propuesta D024. [Alcance](discovery/H2.3_ENV_SMOKE_SCOPE.md), D025.
+- USER comprobado, entorno de cinco variables explícito, ayuda/guardia correctas;
+  preflight Codex 0.162.1 y Claude 2.1.295 con hashes de help conservados.
+  Una ejecución fuera del sandbox, tres CLI de menos de 60 s cada una:
+  planificador/ejecutor/revisor COMPLETE, terminal/exit 0/JSON `smoke-ok`.
+- SQLite en lectura: integridad/foreign keys correctas, resultados/requests e
+  historial exactos tras reabrir; 57 eventos consecutivos, tres intents/spawns,
+  hashes/rangos/capturas/prompts, selección y configuración comprobados.
+  Job DONE, run STOPPED por stop deliberado `smoke`, owner cerrado y procesos
+  STOPPED/dead; lock de esta área liberado por fin normal, sin recuperación.
+- Checkout sintético intacto, sin HEAD ni herramientas observadas. Claude
+  informa modelo `claude-sonnet-4-6`, uso y coste de lista, sin inferir factura/
+  cuota. Esfuerzo efectivo ausente; Codex no reporta modelo/coste/duración de
+  proveedor. [Evidencia y límites](discovery/H2.3_ENV_SMOKE.md).
+- D020/D022 conservan archivos/SQLite/WAL/capturas y locks, sin reanudar;
+  informes anteriores intactos. D018 ausente no reconstruido.
+  Doce checks ligeros correctos. Suite previa del mismo código: 219 pruebas y
+  121 subtests; pytest completo/API/UI/build no repetidos por cambio documental.
+- Sin código modificado, login/refresh, secretos, cambios globales, fallback,
+  relanzamiento, harness de desarrollo, colaboración automática, ReferenceProject o
+  push. Diff/whitespace y enlaces locales revisados; commit solicitado en sesión.
+- Transporte completo acreditado en este contexto, sin tarea real ni aceptación/
+  commit de producto. Retries internos, cuota, permisos vivos, aislamiento físico
+  y cancelación/timeout reales no certificados. H2.4 documentado como siguiente
+  tarea offline, sin iniciarlo; consentimiento consumido para esta ejecución.
 
 ## Coordinación
 

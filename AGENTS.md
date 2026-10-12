@@ -63,7 +63,9 @@ Diagnóstico de auth completado en lectura: entorno mínimo omite USER;
 status fuera del sandbox reconoce sesión al añadir solo USER, sin login.
 Corrección offline del entorno del smoke completada: USER validado contra UID
 local, hash distinto y regresión sintética; adaptador cli-3 conservado.
-Siguiente tarea: verificación real propuesta, pendiente de consentimiento; sin relanzamiento.
+Smoke posterior autorizado completó las tres CLI con USER validado: transporte
+completo, sin herramientas ni cambios de checkout. Ver D025.
+Siguiente tarea: H2.4 Git y aceptación offline, sin iniciarlo aquí.
 Comprobación offline ligera, solo biblioteca estándar, desde la raíz:
 
 ```sh
@@ -118,9 +120,13 @@ de USER observada con status, sin inferencia ni corrección. Ver
 `docs/discovery/H2.3_AUTH_DIAGNOSIS.md`. Corrección offline del entorno completada
 (D024): USER explícito comprobado contra el UID local, sin credenciales heredadas;
 hash congelado distinto bloquea configuraciones anteriores, cli-3 conservado.
-Ver `docs/discovery/H2.3_ENV_FIX.md`. Siguiente tarea: verificar transporte real
-según `docs/discovery/H2.3_ENV_SMOKE_PROPOSAL.md`, pendiente de consentimiento.
-El consentimiento D022 terminó al fallo; no hacer login, consumir ni relanzar automáticamente.
+Ver `docs/discovery/H2.3_ENV_FIX.md`. Smoke D025 autorizado y completo con USER:
+planificador/ejecutor/revisor COMPLETE, exit 0/terminal/JSON; 57 eventos, job DONE,
+run STOPPED por fin deliberado del smoke, owner cerrado, grupos STOPPED/dead y
+lock nuevo liberado por finalización normal. D020/D022 y sus locks conservados.
+Ver `docs/discovery/H2.3_ENV_SMOKE.md`. Sin aceptación/commit de producto ni
+cuota/retries certificados. Consentimiento satisfecho por una ejecución;
+no hacer login, consumir ni relanzar automáticamente. Siguiente tarea: H2.4 offline.
 Los checks no consumen proveedores. El supervisor
 solo se invoca explícitamente, sin entradas API/CLI gestionadas ni autoarranque.
 H2.4 no iniciado.

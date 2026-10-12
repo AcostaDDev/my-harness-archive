@@ -122,12 +122,17 @@ desconocidos. La corrección MCP Claude `cli-3` está verificada offline y el sm
 posterior acepta MCP vacío, pero se detiene en autenticación Claude con terminal
 de error. El diagnóstico en lectura observó la dependencia de USER; la corrección
 offline del smoke ya valida USER contra el UID local, sin heredar credenciales.
-Siguiente tarea: verificación real propuesta, pendiente de consentimiento específico.
+El smoke posterior autorizado con USER completó planificador Codex, ejecutor Claude
+y revisor Codex: terminal/exit 0/JSON en los tres, sin herramientas ni cambios.
+Siguiente tarea: H2.4 Git y aceptación offline.
 No se ha iniciado H2.4. Ver [corrección y límites](docs/discovery/H2.3_MCP_FIX.md)
 y [resultado real cli-3](docs/discovery/H2.3_SMOKE_CLI3.md). El consentimiento
 terminó al fallo; otro smoke requiere propuesta y autorización específicas.
 Ver [corrección del entorno](docs/discovery/H2.3_ENV_FIX.md) y
-[propuesta posterior](docs/discovery/H2.3_ENV_SMOKE_PROPOSAL.md), sin ejecutar.
+[propuesta conservada](docs/discovery/H2.3_ENV_SMOKE_PROPOSAL.md) y
+[resultado completo](docs/discovery/H2.3_ENV_SMOKE.md). Este éxito acredita el
+transporte, sin aceptación/commit de producto; los locks de smokes anteriores
+siguen conservados. La autorización cubrió una ejecución, sin relanzamiento.
 
 
 ## Importación legacy de lectura

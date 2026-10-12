@@ -537,3 +537,31 @@ Sin status, login, secretos, CLI reales, recuperación o cambios globales.
 [Propuesta posterior separada](discovery/H2.3_ENV_SMOKE_PROPOSAL.md) pendiente
 de consentimiento específico; no ejecutar por la corrección o su commit.
 H2.4 no iniciado.
+
+## D025 — Smoke autorizado con USER: tres transportes completos
+
+Estado: verificación real completada el 2026-10-12.
+[Resultado y evidencias](discovery/H2.3_ENV_SMOKE.md).
+
+El usuario indicó «Procede con el smoke» para la propuesta D024: una ejecución,
+hasta tres invocaciones de 60 s, Codex `gpt-6-luna`/`low` como planificador/revisor
+y Claude `claude-sonnet-4-6`/`low` como ejecutor, suscripciones propias y checkout
+nuevo. USER comprobado contra UID local; resto del entorno, MCP/tools vacíos,
+fuentes/hooks aislados y sesiones nuevas conservados. Retries internos desconocidos.
+
+Las tres invocaciones completaron terminal, exit 0 y JSON `smoke-ok`; Claude
+supera el fallo de auth D022 en este proceso/entorno y reporta respuesta/modelo/
+uso/coste de lista. Esos datos no certifican factura/cuota ni esfuerzo efectivo.
+Codex no reporta modelo efectivo/coste; no se sustituyen datos ausentes.
+
+SQLite conserva 57 eventos, resultados/requests/specs/hash exactos tras reabrir,
+owner cerrado y procesos STOPPED/dead. Job DONE y run STOPPED por fin deliberado
+del smoke, sin aceptación. Lock nuevo liberado por finalización normal;
+D020/D022 y sus locks/archivos permanecen intactos. Sin herramientas ni cambios
+de checkout, sin fallback, login, relanzamiento o recuperación de históricos.
+
+H2.3 acredita transporte real de tres roles en este contexto, no tarea real,
+review ACCEPT, validación Git ni commit de producto. Autorización satisfecha por
+esta única ejecución; otro consumo requerirá consentimiento propio. No se
+certifican retries internos, aislamiento físico, cuota, permisos vivos ni
+cancelación/timeout reales. Siguiente tarea H2.4 offline definida, sin iniciarla.
