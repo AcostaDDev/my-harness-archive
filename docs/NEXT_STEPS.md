@@ -8,6 +8,12 @@ bloqueados antes de efectos; historial anterior conservado. D021,
 [alcance completado](discovery/H2.3_MCP_FIX_SCOPE.md).
 211 pruebas y 121 subtests, 12 checks ligeros correctos. H2.4 no iniciado.
 
+Preflight de esta propuesta comprobado el 2026-10-12 sobre `725e65f`:
+ambas versiones/help compatibles, argv `cli-3` revisado, 211 pruebas/121 subtests
+y 12 checks ligeros correctos. [Informe y comando exacto](discovery/H2.3_SMOKE_CLI3_PREFLIGHT.md).
+Preparación offline terminada; ejecución real y sus criterios de evidencia
+siguen pendientes del consentimiento específico. La tarea activa se conserva.
+
 ## Propuesta concreta pendiente de consentimiento
 
 Una ejecución nueva de `scripts/smoke_cli.py`, hasta tres invocaciones de 60 s

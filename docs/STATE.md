@@ -152,6 +152,12 @@ Claude tras completar Codex, sin revisor ni relanzamiento. D018/D019/D020 y sus
 informes históricos conservados. Su autorización terminó al primer error.
 H2.4 no iniciado.
 
+Preparación de la propuesta `cli-3` comprobada offline sobre `725e65f`:
+versiones/help compatibles, script/argv revisados y checks correctos.
+[Informe de preflight](discovery/H2.3_SMOKE_CLI3_PREFLIGHT.md).
+Ejecución real y criterios de evidencia aún pendientes de consentimiento
+específico; esta preparación no completa el smoke ni habilita la tarea siguiente.
+
 ## Verificación de H0.1
 
 - `python3 -m unittest discover -s tests -p 'test_*.py' -v`: 4 checks correctos,
@@ -494,6 +500,23 @@ H2.4 no iniciado.
 - Siguiente propuesta real preparada en NEXT_STEPS, sin ejecutarla: transporte
   completo, Claude auth/cuota/modelo, revisor y retries efectivos siguen pendientes.
   H2.4 no iniciado.
+
+## Preparación del smoke cli-3 — 2026-10-12
+
+- Git inicialmente limpio en `main`, `725e65f`; AGENTS, STATE, NEXT_STEPS,
+  DECISIONS, alcance H2.3 y script revisados. Tarea activa conservada.
+- 211 pruebas pytest y 121 subtests correctos, 12 checks ligeros correctos;
+  ayuda/guardia del script y preflight de Codex 0.162.1/Claude 2.1.295 correctos.
+  Aviso conocido Starlette/HTTPX; sin cambios de código/dependencias.
+- Argv `cli-3`, MCP vacío/estricto, permisos y selecciones revisados;
+  [comando exacto, hashes y límites](discovery/H2.3_SMOKE_CLI3_PREFLIGHT.md).
+- Consentimiento específico solicitado conforme a NEXT_STEPS. Sin ejecución
+  real ni nuevo checkout/run/job; no se acreditan sus criterios de éxito/error.
+  La tarea permanece pendiente; no se avanza a H2.4.
+- Sin proveedores, credenciales, configuración global, harness de desarrollo,
+  colaboración automática, ReferenceProject ni push. API/UI/build no repetidos.
+- Diff/whitespace revisados y 36 enlaces locales correctos; commit documental
+  solicitado por el usuario. Sin decisión nueva que sustituya D021.
 
 ## Coordinación
 
