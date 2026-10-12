@@ -401,3 +401,31 @@ reescribirlos ni actualizar selecciones automáticamente. No hay migración de
 esquema, cambio de codec ni alteración del resultado/evidencias de D018.
 La siguiente verificación real se propone con sus límites explícitos, sin
 ejecutarla dentro de la corrección offline. [Entrega](discovery/H2.3_CONFIG_FIX.md).
+
+## D020 — Nuevo smoke autorizado y parada ante configuración MCP de Claude
+
+Estado: verificación real ejecutada el 2026-10-12; fallo conservado sin corregir
+ni relanzar. [Resultado y evidencias](discovery/H2.3_SMOKE_RETRY.md).
+
+Tras revisar la propuesta y preflight offline, el usuario respondió «Sí, autorizo
+esta ejecución»: una ejecución `cli-2`, hasta tres CLI de 60 s, modelos/esfuerzos
+fijos Codex `gpt-6-luna`/`low` y Claude `claude-sonnet-4-6`/`low`, red/suscripciones
+propias, checkout nuevo, herramientas vacías y parada al primer fallo. Se
+explicitaron retries internos desconocidos. La autorización concluyó al error.
+
+Codex planificador completó el transporte con terminal, exit 0, JSON y uso
+reportado; no reportó modelo/esfuerzo efectivo ni coste. Claude salió con exit 1
+al validar `--mcp-config '{}'`: falta `mcpServers`. Sin terminal/payload/uso Claude.
+Revisor no lanzado. Run/job RECOVERY_REQUIRED, propietario cerrado, grupos
+STOPPED y lock conservado; capturas/eventos/hashes y checkout intacto verificados.
+
+Help/version no certifican semántica del argumento MCP, igual que no detectaron
+los overrides Codex de D018. La siguiente tarea corrige y caracteriza offline
+solo esa configuración, preservando cero servidores/herramientas y aislamiento
+de fuentes/hooks. Deberá versionar el cambio para no sustituir jobs congelados
+`cli-2`. No se implementa en esta verificación ni se autoriza inferencia nueva.
+
+No se concluye éxito completo H2.3, aceptación/commit de producto, acceso/auth
+Claude, ausencia de retries internos ni consumo de cuota cero a partir del fallo.
+El historial D018/D019 se conserva sin convertir esta ejecución en reintento
+automático. H2.4 no iniciado.

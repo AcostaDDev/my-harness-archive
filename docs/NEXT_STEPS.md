@@ -1,62 +1,53 @@
-# Siguiente acción — H2.3: nuevo smoke preparado, pendiente de autorización
+# Siguiente tarea — H2.3: corregir configuración MCP de Claude offline
 
-La corrección de configuración Codex está implementada y verificada offline:
-[entrega](discovery/H2.3_CONFIG_FIX.md), D019. Adaptador `cli-2`, 209 pruebas y
-121 subtests correctos, 12 checks ligeros correctos. El smoke previo D018
-conserva su [fallo y evidencias](discovery/H2.3_SMOKE.md); no se ha relanzado.
-H2.4 no iniciado.
+El nuevo smoke autorizado con `cli-2` terminó el 2026-10-12: Codex planificador
+COMPLETE (exit 0, terminal y uso reportado); Claude FAILED (exit 1) por
+configuración MCP inválida. Revisor no lanzado, sin fallback ni relanzamiento.
+[Resultado y evidencias](discovery/H2.3_SMOKE_RETRY.md), D020. El primer
+[smoke D018](discovery/H2.3_SMOKE.md) queda separado e intacto.
+209 pruebas y 121 subtests, 12 checks ligeros correctos. H2.4 no iniciado.
 
-## Objetivo pendiente
+## Objetivo
 
-Verificar el transporte CLI real con la configuración corregida, sin presentar
-los procesos sintéticos como proveedores reales. Codex conserva el proveedor
-integrado OpenAI; sus retries internos se declaran `built-in-defaults/unknown`.
-No se promete cero retries internos ni una sola inferencia por invocación CLI.
+Corregir exclusivamente el argumento MCP vacío de Claude Code 2.1.295 sin
+activar servidores/configuración del usuario, manteniendo herramientas vacías,
+sesiones nuevas, selección explícita y denegación dontAsk. La spec real conserva
+`--strict-mcp-config --mcp-config '{}'`; la CLI exige el campo `mcpServers`.
+Comprobar el formato válido con help/documentación o validación local sin
+inferencia. No presentar preflight/fakes como éxito real del proveedor.
 
-## Propuesta concreta
+## Alcance acotado
 
-- Codex 0.162.1: `gpt-6-luna`, esfuerzo `low`, planificador y revisor.
-- Claude Code 2.1.295: `claude-sonnet-4-6`, esfuerzo `low`, ejecutor.
-- Una ejecución de `scripts/smoke_cli.py`, hasta tres invocaciones CLI, timeout
-  de 60 s por invocación, suscripciones propias y entorno sin API keys aportadas.
-- Checkout Git nuevo bajo `/private/tmp`; SQLite y capturas en el área nueva,
-  fuera de ese checkout y del desarrollo. No reutilizar el área del smoke fallido.
-- Herramientas concedidas vacías; Codex read-only/approval never y Claude dontAsk.
-  Sin cambios/commits/aceptación de tarea inferidos ni aislamiento total certificado.
-- Detención al primer fallo, sin relanzar, fallback ni sustitución de selecciones.
-
-## Acción acotada
-
-1. Revisar D019, script y propuesta. Confirmar la versión instalada por help/version
-   y congelar `cli-2` con las selecciones antes de cualquier inferencia.
-2. Solicitar autorización específica para esta nueva ejecución con sus límites.
-   La D018 finalizó al primer error; instrucciones de corrección, tests, commit o
-   continuación no autorizan por sí solas una nueva ejecución con proveedores.
-3. Solo con autorización, ejecutar una vez:
-
-   ```sh
-   UV_CACHE_DIR=.local/uv-cache uv run --frozen --offline python scripts/smoke_cli.py --authorize-consumption --codex-model gpt-6-luna --codex-effort low --claude-model claude-sonnet-4-6 --claude-effort low --output-parent /private/tmp
-   ```
-
-   `--offline` limita uv, no la red/consumo de las CLI. No extraer credenciales.
-4. Conservar evidencia/terminales/errores/telemetría y registrar lo no demostrado.
-   Ante fallo, detenerse sin corregir y relanzar dentro de esta verificación.
-5. Actualizar STATE/NEXT_STEPS/DECISIONS. Sin autorización mantenerla pendiente;
-   no interpretar fakes/preflight/catálogos locales como éxito real.
+1. Leer D020 y el informe real. Conservar sus evidencias y resultados anteriores.
+2. Confirmar el contrato de `--mcp-config` para la versión fijada y sustituir el
+   argumento inválido por una configuración explícita de cero servidores.
+   No eliminar el modo estricto ni heredar fuentes de configuración del usuario.
+3. Añadir una regresión sintética que rechace el formato observado antes de
+   simular inferencia, independientemente del código del adaptador. Caracterizar
+   que versión/help pueden pasar aunque el argumento sea inválido.
+4. Verificar argv corregido, herramientas vacías, prompts/hooks/configuración
+   aislados, captura de fallo y parada sin revisor ni llamadas adicionales.
+5. Versionar el cambio del adaptador/configuración; jobs congelados `cli-2` no
+   deben ejecutar silenciosamente un argv diferente. Preservar historial previo.
+6. Ejecutar checks offline pertinentes, revisar diff, actualizar STATE/NEXT_STEPS/
+   DECISIONS y preparar la siguiente propuesta real sin ejecutarla.
 
 ## Criterios de aceptación
 
-- Consentimiento específico y selecciones congeladas antes de consumo.
-- Máximo tres invocaciones con timeout, cero fallback/reintento del adaptador;
-  límite explícito de retries internos desconocidos.
-- Evidencias independientes, datos sintéticos, resultado real separado del offline.
-- Parada al primer error sin llamadas posteriores; ausencia/null/cero conservados.
-- No certificar aceptación/commit de producto ni avanzar a H2.4.
+- Configuración MCP vacía válida para Claude 2.1.295, sin servidores heredados.
+- Regresión independiente reproduce el rechazo antiguo y permite el argv
+  corregido; preflight no se presenta como validación semántica completa.
+- Herramientas/autenticación/selecciones/permisos y demás garantías H2.3
+  conservados; ausencia/null/cero y resultados anteriores preservados.
+- Versiones congeladas impiden sustitución silenciosa del comportamiento.
+- Checks offline pasan, evidencia real separada y límites pendientes explícitos.
+- Ninguna nueva inferencia, fallback, relanzamiento ni avance a H2.4.
 
 ## Fuera de alcance
 
-Correcciones adicionales del adaptador tras fallo, H2.4 captura Git/worktrees/commit
-de producto, H2.5 migración gestionada, entradas API/CLI/UI, permisos vivos, chat,
-SDKs y distribución. No ejecutar el harness para desarrollar, lanzar agentes de
-colaboración automáticamente, usar datos de proyectos del usuario, extraer
-credenciales, modificar configuración global ni acceder a ReferenceProject.
+La autorización D020 concluyó al primer fallo. Corrección, tests, commit o
+continuación no autorizan otro smoke: requerirá propuesta y consentimiento
+específicos. No consumir proveedores, extraer credenciales, alterar configuración
+global, activar SDK/MCP/herramientas ni lanzar agentes de colaboración.
+H2.4 Git/worktrees/commit de producto, H2.5, entradas gestionadas API/CLI/UI,
+permisos vivos, chat y distribución quedan fuera de esta tarea.

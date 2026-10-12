@@ -55,7 +55,8 @@ importación legacy local de lectura, navegación web, observación incremental/
 y extracción del motor con contexto explícito, persistencia/cola/exclusión.
 H2.3 implementado y verificado offline: adaptadores CLI por inyección explícita,
 captura incremental/cancelación y recuperación. Smoke real previo detenido por
-configuración Codex incompatible; corregida offline en `cli-2`, sin relanzar.
+configuración Codex incompatible; corregida offline en `cli-2`. Nuevo smoke
+autorizado: Codex completo, Claude falla por configuración MCP; sin revisor ni relanzar.
 Comprobación offline ligera, solo biblioteca estándar, desde la raíz:
 
 ```sh
@@ -98,8 +99,10 @@ y `docs/discovery/H2.1_ENGINE.md` y `docs/discovery/H2.2_PERSISTENCE.md`.
 Ver `docs/discovery/H2.3_CLI.md` y `docs/discovery/H2.3_SMOKE.md`. El smoke real
 H2.3 autorizado lanzó solo Codex y falló al cargar `model_providers.openai`;
 la corrección offline `cli-2` elimina los overrides reservados y declara retries
-internos desconocidos. Ver `docs/discovery/H2.3_CONFIG_FIX.md`. La siguiente tarea
-es decidir sobre el nuevo smoke preparado, sin ejecutarlo automáticamente.
+internos desconocidos. Ver `docs/discovery/H2.3_CONFIG_FIX.md`. El nuevo smoke
+autorizado D020 completó Codex y se detuvo en Claude por `mcpServers` ausente;
+ver `docs/discovery/H2.3_SMOKE_RETRY.md`. La siguiente tarea es corregir esa
+configuración offline; no consumir proveedores ni relanzar automáticamente.
 Los checks no consumen proveedores. El supervisor
 solo se invoca explícitamente, sin entradas API/CLI gestionadas ni autoarranque.
 H2.4 no iniciado.

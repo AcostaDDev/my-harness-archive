@@ -2,8 +2,8 @@
 
 Aplicación local para configurar, ejecutar y observar un harness modular de desarrollo con agentes.
 Estado actual: H0, H1, H2.1 y H2.2 completados; H2.3 implementado y verificado
-offline; fallo de configuración del primer smoke corregido offline en `cli-2`,
-sin relanzarlo. Esqueleto Python/API/UI con
+offline; nuevo smoke autorizado `cli-2` completa Codex y falla en configuración
+MCP de Claude, sin revisor ni relanzamiento. Esqueleto Python/API/UI con
 simulaciones persistidas, observación legacy y motor con persistencia/cola.
 Adaptadores CLI y grupos de procesos por inyección explícita; sin entradas
 gestionadas API/CLI/UI ni ejecución automática de proveedores.
@@ -29,6 +29,7 @@ gestionadas API/CLI/UI ni ejecución automática de proveedores.
 - [Adaptadores CLI/procesos H2.3](docs/discovery/H2.3_CLI.md) y
   [resultado del smoke autorizado](docs/discovery/H2.3_SMOKE.md).
 - [Corrección offline de configuración Codex](docs/discovery/H2.3_CONFIG_FIX.md).
+- [Nuevo smoke autorizado: Codex completo, fallo MCP Claude](docs/discovery/H2.3_SMOKE_RETRY.md).
 
 `AGENTS.md` contiene las instrucciones de Codex; `CLAUDE.md` remite al mismo contrato para Claude Code. El desarrollo es manual y no utiliza el harness como orquestador.
 
@@ -110,12 +111,13 @@ python3 -m unittest discover -s tests -p 'test_*.py' -v
 Doce checks ligeros: cuatro de fixtures H0.1 y ocho de streams H0.2; no ejecutan
 el harness ni proveedores. Este comando sigue sin necesitar dependencias del
 producto. H0.3 ya verifica instalación y ejecución del esqueleto; las CLI
-reales por suscripción tienen adaptadores H2.3; el smoke autorizado falló al
-cargar configuración Codex, sin acreditar acceso a modelos ni inferencia.
+reales por suscripción tienen adaptadores H2.3. El primer smoke falló al cargar
+configuración Codex; el nuevo smoke autorizado `cli-2` completa el planificador
+Codex y se detiene ante configuración MCP inválida de Claude, sin revisor.
 El supervisor se invoca explícitamente, sin entrada API/CLI ni arranque automático.
 La configuración se corrigió offline, con regresión y retries internos declarados
-desconocidos. El siguiente paso es decidir sobre el nuevo smoke preparado;
-no se ha iniciado H2.4. Ver [corrección y límites](docs/discovery/H2.3_CONFIG_FIX.md).
+desconocidos. El siguiente paso es corregir offline la configuración MCP Claude;
+no se ha iniciado H2.4. Ver [resultado y límites](docs/discovery/H2.3_SMOKE_RETRY.md).
 
 
 ## Importación legacy de lectura

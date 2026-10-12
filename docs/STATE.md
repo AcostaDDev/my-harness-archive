@@ -1,6 +1,6 @@
 # Estado de desarrollo
 
-Actualizado: 2026-10-11.
+Actualizado: 2026-10-12.
 
 ## Existe
 
@@ -120,26 +120,31 @@ Actualizado: 2026-10-11.
   reservados y conserva el proveedor integrado OpenAI; límites de retries internos
   registrados como desconocidos. Fakes rechazan el argv antiguo, y jobs `cli-1`
   no ejecutan silenciosamente el nuevo comportamiento. [Entrega](discovery/H2.3_CONFIG_FIX.md).
+- Nuevo smoke `cli-2` autorizado y ejecutado el 2026-10-12: Codex planificador
+  COMPLETE con terminal/uso, Claude FAILED por configuración MCP inválida;
+  revisor no lanzado. Parada conservada, sin relanzar ni corregir en esta entrega.
+  [Resultado y evidencias](discovery/H2.3_SMOKE_RETRY.md), D020.
 
 ## Todavía no existe
 
-Ejecución CLI real exitosa con proveedores ni entradas gestionadas API/CLI/UI,
+Recorrido CLI real completo exitoso con ambos proveedores ni entradas gestionadas API/CLI/UI,
 captura Git completa/worktrees/commit de producto, activación/migración de proyectos
 gestionados, interfaz gestionada, permisos interactivos, chat ni distribución.
 La navegación H1.2 muestra evidencia legacy;
 el recorrido H0.3 solo guarda simulaciones, que no representan intentos reales
 ni aceptación de tareas. El primer smoke real lanzó Codex y falló al cargar
 configuración; no acredita inferencia, autenticación, cuota ni acceso al modelo.
-Claude no se invocó.
+El nuevo smoke sí completa el transporte del planificador Codex; Claude se invoca
+y falla al validar MCP, sin terminal/inferencia acreditada. Revisor no probado.
 
 ## Trabajo activo
 
 H0, H1, H2.1 y H2.2 completados. H2.3 implementado y verificado offline;
-siguiente acción acotada: decidir sobre el nuevo smoke preparado con `cli-2`,
-según `NEXT_STEPS.md`. La corrección está verificada offline (D019), sin nuevas
-invocaciones reales. El primer smoke D018 conserva su resultado fallido y evidencias;
-la propuesta nueva requiere autorización específica, sin relanzamiento automático.
-H2.4 no iniciado.
+siguiente tarea acotada: corregir offline la configuración MCP vacía de Claude,
+según `NEXT_STEPS.md`. El nuevo smoke autorizado D020 concluyó con fallo de
+Claude tras completar Codex, sin revisor ni relanzamiento. D018/D019 y sus
+evidencias conservados. La autorización D020 terminó al primer error;
+otro smoke requerirá consentimiento específico. H2.4 no iniciado.
 
 ## Verificación de H0.1
 
@@ -423,6 +428,34 @@ H2.4 no iniciado.
 - Diff/whitespace revisados y 67 enlaces locales de documentación correctos.
   Hashes de stdout/stderr/prompt del smoke D018 conservados. Commit al terminar
   conforme a la instrucción del usuario; sin push.
+
+## Nuevo smoke real H2.3 — 2026-10-12
+
+- Git inicialmente limpio en `c9cbd2f`. Script/criterios/D019 revisados;
+  usuario autoriza explícitamente una nueva ejecución con las selecciones
+  Codex `gpt-6-luna`/`low` y Claude `claude-sonnet-4-6`/`low`. D020.
+- 209 pruebas pytest y 121 subtests correctos, 12 checks ligeros correctos;
+  ayuda/guardia del script y preflight de Codex 0.162.1/Claude 2.1.295 correctos.
+  Aviso conocido Starlette/HTTPX conservado, sin instalaciones ni cambios de código.
+- Una ejecución, dos invocaciones: planificador Codex COMPLETE (exit 0, terminal,
+  objeto JSON y uso reportado); ejecutor Claude FAILED (exit 1) por `mcpServers`
+  ausente en `--mcp-config '{}'`, sin stdout/terminal/payload ni telemetría.
+  Revisor no lanzado, sin fallback, cambios de selección ni relanzamiento.
+- SQLite reabierta conserva ambas respuestas, run/job RECOVERY_REQUIRED,
+  propietario cerrado, grupos STOPPED y lock retenido. 24 eventos consecutivos,
+  hashes/rangos completos de streams, prompts, `cli-2` y selecciones comprobados.
+  Ambos grupos muertos; README sintético intacto, sin HEAD ni cambios de agentes.
+- [Informe y evidencias temporales externas](discovery/H2.3_SMOKE_RETRY.md).
+  Modelo/esfuerzo efectivo y coste Codex ausentes; uso observado no certifica
+  factura/cuota. No se acredita inferencia/auth/acceso al modelo Claude.
+- Transporte completo fallido; tarea de verificación concluida conforme a su
+  rama de error. Corrección MCP es la siguiente tarea, sin iniciarla. Retries
+  internos, permisos vivos y cancelación/timeout reales siguen sin medir.
+  API/UI/build/navegador no repetidos por entrega documental. Sin harness de
+  desarrollo, colaboración automática, push, ReferenceProject ni cambios globales.
+- Diff/whitespace revisados y 76 enlaces locales correctos en los ocho documentos
+  de la entrega. Commit solicitado por el usuario; solo documentación, sin
+  corrección MCP ni avance a la siguiente tarea.
 
 ## Coordinación
 
