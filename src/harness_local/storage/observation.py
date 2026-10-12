@@ -5,6 +5,7 @@ from pathlib import Path
 from sqlalchemy import func, select, text
 from sqlalchemy.orm import Session
 
+from harness_local.storage.legacy import refuse_managed_origin
 from harness_local.storage.models import LegacySourceRow as Source, LegacyEventRow as Event
 from harness_local.storage.navigation import identifier
 
@@ -26,6 +27,8 @@ class SQLiteObservationRepository:
             if enabled and self.engine.url.database and Path(
                     self.engine.url.database).resolve().is_relative_to(Path(root)):
                 raise ValueError("El índice SQLite debe estar fuera del checkout de origen.")
+            if enabled:
+                refuse_managed_origin(session, root)
             if source.watch_enabled != enabled:
                 source.watch_enabled = enabled
                 session.add(Event(root=root, kind="watch_changed", observed_at=datetime.now(timezone.utc).isoformat(),

@@ -1,10 +1,11 @@
 # my_harness — Harness Local
 
 Aplicación local para configurar, ejecutar y observar un harness modular de desarrollo con agentes.
-Estado actual: H0, H1, H2.1, H2.2, H2.3 y H2.4 completados. H2.3 conserva un smoke
-real autorizado con las tres CLI (D025); H2.4 añade Git por árboles, worktree por
-tarea y commit determinista conciliable, verificados offline. Siguiente tarea:
-H2.5 migración a modo gestionado. Esqueleto Python/API/UI con simulaciones
+Estado actual: H0, H1 y H2.1–H2.5 completados. H2.3 conserva un smoke real
+autorizado con las tres CLI (D025); H2.4 añade Git por árboles, worktree por tarea
+y commit determinista conciliable; H2.5, la migración controlada de un checkout
+legacy a modo gestionado (D027), verificados offline. Siguiente tarea: API
+gestionada local (salida del hito 2, parte 1). Esqueleto Python/API/UI con simulaciones
 persistidas, observación legacy y motor con persistencia/cola.
 Adaptadores CLI y grupos de procesos por inyección explícita; sin entradas
 gestionadas API/CLI/UI ni ejecución automática de proveedores.
@@ -97,7 +98,7 @@ UV_CACHE_DIR=.local/uv-cache uv run --frozen --offline alembic current
 UV_CACHE_DIR=.local/uv-cache uv run --frozen --offline alembic check
 ```
 
-253 pruebas (158 anteriores, 53 de H2.3, 8 del entorno del smoke y 34 de H2.4). Se usan checkouts Git, SQLite y
+288 pruebas (158 anteriores, 53 de H2.3, 8 del entorno del smoke, 34 de H2.4 y 35 de H2.5). Se usan checkouts Git, SQLite y
 procesos Python sintéticos, sin CLI de proveedores ni consumo de suscripciones.
 Se verifican captura incremental, cancelación de grupos y recuperación tras
 caída del supervisor. No certifica commits ni introduce ejecución gestionada
@@ -127,7 +128,9 @@ El smoke posterior autorizado con USER completó planificador Codex, ejecutor Cl
 y revisor Codex: terminal/exit 0/JSON en los tres, sin herramientas ni cambios.
 H2.4 (Git, worktree por tarea y commit determinista conciliable) está completado
 offline: ver [entrega y límites](docs/discovery/H2.4_GIT.md); sin entrada API/CLI.
-Siguiente tarea: H2.5 migración a modo gestionado, sin iniciar. Ver [corrección y límites](docs/discovery/H2.3_MCP_FIX.md)
+H2.5 (vista previa, copia consistente, activación reanudable, exclusión por marcador
+y reversión) está completado offline: ver [entrega y límites](docs/discovery/H2.5_MIGRATION.md).
+Siguiente tarea: API gestionada local, sin iniciar. Ver [corrección y límites](docs/discovery/H2.3_MCP_FIX.md)
 y [resultado real cli-3](docs/discovery/H2.3_SMOKE_CLI3.md). El consentimiento
 terminó al fallo; otro smoke requiere propuesta y autorización específicas.
 Ver [corrección del entorno](docs/discovery/H2.3_ENV_FIX.md) y
@@ -140,7 +143,7 @@ siguen conservados. La autorización cubrió una ejecución, sin relanzamiento.
 ## Importación legacy de lectura
 
 Migrar con el servicio detenido antes de importar; el esquema actual es
-`0006_git_commits`. Comandos comprobados desde la raíz, con datos sintéticos:
+`0007_managed_activation`. Comandos comprobados desde la raíz, con datos sintéticos:
 
 ```sh
 UV_CACHE_DIR=.local/uv-cache uv run --frozen --offline alembic upgrade head

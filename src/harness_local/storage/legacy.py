@@ -6,7 +6,19 @@ from sqlalchemy.engine import Engine
 from sqlalchemy.orm import Session
 
 from harness_local.core.legacy import LegacyArtifact, LegacyInventory, LegacyRun
-from harness_local.storage.models import LegacyArtifactRow, LegacyRunRow, LegacySourceRow, LegacyEventRow
+from harness_local.core.migration import LIVE_STATUSES
+from harness_local.storage.models import (
+    LegacyArtifactRow, LegacyRunRow, LegacySourceRow, LegacyEventRow, ManagedActivationRow,
+)
+
+
+def refuse_managed_origin(session, root: str) -> None:
+    """Un origen en modo gestionado no se reimporta: su histórico vive en la copia (H2.5)."""
+    live = session.scalar(select(ManagedActivationRow).where(
+        ManagedActivationRow.root == root, ManagedActivationRow.status.in_(LIVE_STATUSES)))
+    if live is not None:
+        raise ValueError(f"Checkout en modo gestionado (activación {live.id}, {live.status}); "
+                         f"el histórico importado se consulta en {live.snapshot_root}.")
 
 
 class SQLiteLegacyRepository:
@@ -24,40 +36,48 @@ class SQLiteLegacyRepository:
             source = session.get(LegacySourceRow, root)
             if watched and (source is None or not source.watch_enabled):
                 return
-            created = source is None
-            if created:
-                source = LegacySourceRow(root=root)
-                session.add(source)
-            now = datetime.now(timezone.utc).isoformat()
-            source.observed_at = source.observed_at or now
-            session.flush()
-            changed = 0
-            for run in inventory.runs:
-                row = session.get(LegacyRunRow, (root, run.path))
-                if row is None or row.identity != run.identity:
-                    session.merge(LegacyRunRow(root=root, path=run.path, identity=run.identity))
-                    changed += 1
-            session.flush()
-            observed_paths = {artifact.path for artifact in inventory.artifacts}
-            for row in session.scalars(select(LegacyArtifactRow).where(LegacyArtifactRow.root == root)):
-                if row.path not in observed_paths and row.status != "missing":
-                    row.status = "missing"
-                    row.payload = row.sha256 = row.size_bytes = None
-                    row.diagnostic = "Archivo anteriormente observado, ahora ausente."
-                    changed += 1
-            fields = ("run_path", "kind", "format", "status", "sha256", "size_bytes", "payload", "diagnostic")
-            for artifact in inventory.artifacts:
-                row = session.get(LegacyArtifactRow, (root, artifact.path))
-                values = {name: getattr(artifact, name) for name in fields}
-                if row is None or any(getattr(row, name) != value for name, value in values.items()):
-                    session.merge(LegacyArtifactRow(root=root, path=artifact.path, **values))
-                    changed += 1
-            recovered = source.diagnostic is not None
-            source.diagnostic = None
-            if created or changed or recovered:
-                source.observed_at = now
-                session.add(LegacyEventRow(root=root, kind="index_updated", observed_at=now,
-                    payload={"changed_records": changed, "recovered": recovered}))
+            refuse_managed_origin(session, root)
+            self.apply(session, inventory)
+
+    @staticmethod
+    def apply(session, inventory: LegacyInventory) -> None:
+        """Escritura del índice en la transacción del llamante (también la activación H2.5)."""
+        root = inventory.root
+        source = session.get(LegacySourceRow, root)
+        created = source is None
+        if created:
+            source = LegacySourceRow(root=root)
+            session.add(source)
+        now = datetime.now(timezone.utc).isoformat()
+        source.observed_at = source.observed_at or now
+        session.flush()
+        changed = 0
+        for run in inventory.runs:
+            row = session.get(LegacyRunRow, (root, run.path))
+            if row is None or row.identity != run.identity:
+                session.merge(LegacyRunRow(root=root, path=run.path, identity=run.identity))
+                changed += 1
+        session.flush()
+        observed_paths = {artifact.path for artifact in inventory.artifacts}
+        for row in session.scalars(select(LegacyArtifactRow).where(LegacyArtifactRow.root == root)):
+            if row.path not in observed_paths and row.status != "missing":
+                row.status = "missing"
+                row.payload = row.sha256 = row.size_bytes = None
+                row.diagnostic = "Archivo anteriormente observado, ahora ausente."
+                changed += 1
+        fields = ("run_path", "kind", "format", "status", "sha256", "size_bytes", "payload", "diagnostic")
+        for artifact in inventory.artifacts:
+            row = session.get(LegacyArtifactRow, (root, artifact.path))
+            values = {name: getattr(artifact, name) for name in fields}
+            if row is None or any(getattr(row, name) != value for name, value in values.items()):
+                session.merge(LegacyArtifactRow(root=root, path=artifact.path, **values))
+                changed += 1
+        recovered = source.diagnostic is not None
+        source.diagnostic = None
+        if created or changed or recovered:
+            source.observed_at = now
+            session.add(LegacyEventRow(root=root, kind="index_updated", observed_at=now,
+                payload={"changed_records": changed, "recovered": recovered}))
 
     def get(self, root: str) -> LegacyInventory | None:
         root = str(Path(root).expanduser().resolve())

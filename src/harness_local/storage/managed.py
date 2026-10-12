@@ -28,6 +28,7 @@ from harness_local.storage.models import (
     ManagedJobRow as Job, ManagedRunRow as Run, ManagedProcessRow as Process,
     ManagedCommitRow as Commit,
 )
+from harness_local.storage.migration import ModeConflict, ModeGuard
 from harness_local.storage.schema import require_schema
 
 
@@ -88,10 +89,12 @@ def _lease(seconds: float) -> None:
 
 
 class SQLiteManagedRepository:
-    def __init__(self, engine, *, clock=None):
+    def __init__(self, engine, *, clock=None, mode_probe=None):
         require_schema(engine)
         self.engine = engine
         self.clock = clock or (lambda: datetime.now(timezone.utc))
+        # H2.5: exclusión legacy/gestionado. Checkouts sin estado legacy no cambian de comportamiento.
+        self.guard = ModeGuard(engine, mode_probe)
 
     def _now(self) -> str:
         value = self.clock()
@@ -112,6 +115,54 @@ class SQLiteManagedRepository:
         session.add(Event(run_id=run.id, sequence=run.version, kind=kind, recorded_at=run.updated_at,
                           payload={**payload, "status": run.status, "stage": run.stage,
                                    "revisions": run.revisions}))
+
+    def _admit(self, session, assessment) -> str | None:
+        try:
+            return ModeGuard.enforce(session, assessment)
+        except ModeConflict as exc:
+            raise Conflict(str(exc)) from exc
+
+    def _run_root(self, run_id: str) -> str | None:
+        with Session(self.engine) as session:
+            return session.scalar(select(Run.root).where(Run.id == run_id))
+
+    def mode_refusal(self, claim: JobRecord) -> str | None:
+        """Lectura de disco fuera de transacción: el modo del checkout sigue admitiendo este job."""
+        with Session(self.engine) as session:
+            job = session.get(Job, claim.id)
+            if job is None:
+                raise LookupError("Unknown managed job")
+            root, admitted = session.get(Run, job.run_id).root, job.activation_id
+        assessment = self.guard.assess(root)
+        if assessment.refusal is not None:
+            return assessment.refusal
+        current = assessment.activation.id if assessment.activation else None
+        if current != admitted:
+            return "El modo del checkout cambió desde que se admitió el job; no se ejecuta."
+        return None
+
+    def _require_mode(self, claim: JobRecord) -> None:
+        refusal = self.mode_refusal(claim)
+        if refusal is not None:
+            raise Conflict(refusal)
+
+    def refuse(self, claim: JobRecord, diagnostic: str) -> None:
+        """Job reclamado que no llegó a registrar propietario ni efectos: se cierra y libera el lock."""
+        _nonempty(diagnostic, "refusal diagnostic")
+        with self._write() as session:
+            job, run = self._owned(session, claim)
+            if job.process_owner is not None:
+                raise Conflict("The job already registered a process owner; quarantine instead")
+            history = load_history(run.history_json)
+            job.status, job.finished_at, job.diagnostic = "REFUSED", self._now(), diagnostic
+            run.status = (history.status.upper()
+                          if history.status in {"stopped", "blocked", "revision_limit", "acceptance_ready"}
+                          else "REFUSED")
+            if self._live_commit(session, run.id, ("COMMITTED",)) is not None:
+                run.status = "COMMITTED"
+            run.stage = "mode_guard"
+            session.delete(session.get(Lock, run.root))
+            self._event(session, run, "job_refused", {"job_id": job.id, "diagnostic": diagnostic})
 
     def _existing(self, session, key, request):
         _nonempty(key, "idempotency key")
@@ -137,10 +188,12 @@ class SQLiteManagedRepository:
         frozen_versions = freeze(versions)
         request = freeze({"action": "start", "context_json": snapshot, "versions_json": frozen_versions,
                           "task_id": task_id, "phase_id": phase_id, "text": text})
+        assessment = self.guard.assess(context.root)
         with self._write() as session:
             existing = self._existing(session, key, request)
             if existing:
                 return _job(existing)
+            activation_id = self._admit(session, assessment)
             history = RunHistory(str(uuid4()), snapshot)
             now = self._now()
             run = Run(id=history.id, root=str(context.root), task_id=task_id, phase_id=phase_id,
@@ -149,7 +202,8 @@ class SQLiteManagedRepository:
                       revision_limit=context.policy.max_revision_cycles, version=0, created_at=now, updated_at=now)
             session.add(run)
             session.flush()
-            job = Job(idempotency_key=key, run_id=run.id, request_json=request, status="QUEUED", created_at=now)
+            job = Job(idempotency_key=key, run_id=run.id, request_json=request, status="QUEUED", created_at=now,
+                      activation_id=activation_id)
             session.add(job)
             session.flush()
             self._event(session, run, "job_queued", {"job_id": job.id, "action": "start"})
@@ -160,6 +214,8 @@ class SQLiteManagedRepository:
             raise ValueError("Explicit resource version and boolean retry required")
         request = freeze({"action": "retry" if retry_executor else "revalidate", "run_id": run_id,
                           "expected_version": expected_version})
+        root = self._run_root(run_id)
+        assessment = self.guard.assess(root) if root is not None else None
         with self._write() as session:
             existing = self._existing(session, key, request)
             if existing:
@@ -180,7 +236,9 @@ class SQLiteManagedRepository:
                 raise Conflict("Only a stopped run with a frozen contract can resume")
             if retry_executor and not json.loads(history.task_json)["allowed_paths"]:
                 raise Conflict("Read-only tasks cannot retry implementation")
-            job = Job(idempotency_key=key, run_id=run_id, request_json=request, status="QUEUED", created_at=self._now())
+            activation_id = self._admit(session, assessment)
+            job = Job(idempotency_key=key, run_id=run_id, request_json=request, status="QUEUED", created_at=self._now(),
+                      activation_id=activation_id)
             session.add(job)
             session.flush()
             run.status, run.stage = "QUEUED", json.loads(request)["action"]
@@ -293,6 +351,7 @@ class SQLiteManagedRepository:
                                                     "completed_attempts": completed})
 
     def agent_started(self, claim: JobRecord, history: RunHistory, request: AgentRequest) -> None:
+        self._require_mode(claim)
         with self._write() as session:
             job, run = self._owned(session, claim)
             self._history(session, run, history)
@@ -404,6 +463,8 @@ class SQLiteManagedRepository:
         updates = tuple(mechanical)
         request = freeze({"action": "commit", "run_id": run_id, "expected_version": expected_version,
                           "mechanical": [asdict(item) for item in updates]})
+        root = self._run_root(run_id)
+        assessment = self.guard.assess(root) if root is not None else None
         with self._write() as session:
             existing = self._existing(session, key, request)
             if existing:
@@ -433,8 +494,9 @@ class SQLiteManagedRepository:
                                                 history.acceptance.evidence.changed_paths, updates)
                 except (CommitError, ValueError) as exc:
                     raise Conflict(str(exc)) from exc
+            activation_id = self._admit(session, assessment)
             job = Job(idempotency_key=key, run_id=run_id, request_json=request, status="QUEUED",
-                      created_at=self._now())
+                      created_at=self._now(), activation_id=activation_id)
             session.add(job)
             session.flush()
             run.status, run.stage = "QUEUED", "commit"
@@ -457,6 +519,7 @@ class SQLiteManagedRepository:
 
     def commit_intent(self, claim: JobRecord, intent: CommitIntent) -> None:
         """Intención durable ANTES de mover la referencia; transacción propia y corta."""
+        self._require_mode(claim)
         with self._write() as session:
             job, run = self._owned(session, claim)
             history = load_history(run.history_json)

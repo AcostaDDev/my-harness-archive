@@ -82,6 +82,11 @@ class LocalSupervisor:
         claim = self.repository.claim(lease_seconds=self.lease_seconds)
         if claim is None:
             return None
+        # H2.5: antes de cualquier efecto. Escritor legacy, marcador o modo cambiado → REFUSED.
+        refusal = self.repository.mode_refusal(claim)
+        if refusal is not None:
+            self.repository.refuse(claim, refusal)
+            return replace(claim, status="REFUSED")
         stopped, heartbeat_failed = Event(), Event()
 
         def heartbeat():

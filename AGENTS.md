@@ -68,7 +68,10 @@ completo, sin herramientas ni cambios de checkout. Ver D025.
 H2.4 completado offline: captura Git por árboles, worktree por tarea y commit
 determinista conciliable tras caídas (D026); sin proveedores. Ver
 `docs/discovery/H2.4_GIT.md`.
-Siguiente tarea: H2.5 migración a modo gestionado, sin iniciarlo aquí.
+H2.5 completado offline: vista previa, copia consistente, activación reanudable,
+exclusión legacy/gestionado por marcador y deriva, y reversión verificada (D027).
+Ver `docs/discovery/H2.5_MIGRATION.md`.
+Siguiente tarea: salida del hito 2, parte 1 (API gestionada local), sin iniciarla.
 Comprobación offline ligera, solo biblioteca estándar, desde la raíz:
 
 ```sh
@@ -98,19 +101,19 @@ npm --prefix frontend run dev
 ```
 
 Las primeras instalaciones necesitan red; después los checks son offline.
-No usar `uv --active` con entornos de otros proyectos. 253 pruebas pytest
-(158 anteriores + 53 H2.3 + 8 entorno smoke + 34 H2.4 con Git temporal).
+No usar `uv --active` con entornos de otros proyectos. 288 pruebas pytest
+(158 anteriores + 53 H2.3 + 8 entorno smoke + 34 H2.4 + 35 H2.5 con Git temporal).
 API/UI compilada en 127.0.0.1:8013; Vite en :5173
 en otra terminal. SQLite local ignorada en `.local/harness.sqlite3`; migración
 explícita antes de arrancar. Ver README y `docs/discovery/H0.3_SKELETON.md`.
 Estos comandos verifican el esqueleto simulado, el índice legacy, su navegación/observación/SSE
 y el motor/persistencia/cola/procesos sintéticos; nunca agentes reales.
-Esquema actual `0006_git_commits`; SQLite debe estar
+Esquema actual `0007_managed_activation`; SQLite debe estar
 fuera del checkout que se importa. Ver `docs/discovery/H1.1_IMPORT.md` y
 `docs/discovery/H1.2_NAVIGATION.md`. Ver `docs/discovery/H1.3_OBSERVATION.md`
 y `docs/discovery/H2.1_ENGINE.md` y `docs/discovery/H2.2_PERSISTENCE.md`.
 Ver `docs/discovery/H2.3_CLI.md`, `docs/discovery/H2.3_SMOKE.md` y
-`docs/discovery/H2.4_GIT.md`. El smoke real
+`docs/discovery/H2.4_GIT.md` y `docs/discovery/H2.5_MIGRATION.md`. El smoke real
 H2.3 autorizado lanzó solo Codex y falló al cargar `model_providers.openai`;
 la corrección offline `cli-2` elimina los overrides reservados y declara retries
 internos desconocidos. Ver `docs/discovery/H2.3_CONFIG_FIX.md`. El nuevo smoke
@@ -130,8 +133,9 @@ run STOPPED por fin deliberado del smoke, owner cerrado, grupos STOPPED/dead y
 lock nuevo liberado por finalización normal. D020/D022 y sus locks conservados.
 Ver `docs/discovery/H2.3_ENV_SMOKE.md`. Sin aceptación/commit de producto ni
 cuota/retries certificados. Consentimiento satisfecho por una ejecución;
-no hacer login, consumir ni relanzar automáticamente. Siguiente tarea: H2.5 offline.
+no hacer login, consumir ni relanzar automáticamente. Siguiente tarea: API gestionada offline.
 Los checks no consumen proveedores. El supervisor
 solo se invoca explícitamente, sin entradas API/CLI gestionadas ni autoarranque.
 El commit se encola como acción `commit` por inyección de `commit_factory`.
-H2.5 no iniciado.
+La migración H2.5 es entrada de biblioteca (`MigrationService`), sin API/CLI/UI;
+sus copias y exportaciones viven en `migrations/` junto a la SQLite local.

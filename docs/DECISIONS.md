@@ -599,3 +599,47 @@ sandbox de seguridad.
 Quedan fuera y sin implementar: integración en rama destino, push, retirada de
 worktrees, entradas API/CLI/UI gestionadas, abandono explícito de una intención
 ambigua y formateador real. H2.5 no iniciado.
+
+## D027 — Modo gestionado por activación, marcador y copia inmutable
+
+Estado: implementado y verificado offline el 2026-10-12.
+[Entrega, protocolo y límites](discovery/H2.5_MIGRATION.md).
+
+Contradicción señalada antes de implementar: la especificación pide deshabilitar
+el arranque del motor legacy, el alcance pedía no modificar el origen y el motor
+legacy no tiene lock ni lee nada nuestro. El usuario aceptó un marcador
+`.harness/managed-mode.json` en el checkout (única escritura en el origen, con
+creación exclusiva; se retira solo si coincide byte a byte), dejó la autoridad a
+criterio de la entrega e incluyó la reversión. La exclusión frente al motor legacy
+es cooperativa y detectada: nunca se presenta como impedida.
+
+Autoridad: SQLite para el estado operativo y para el modo (`managed_activations`,
+migración `0007_managed_activation`); el marcador es su proyección y una
+discrepancia rechaza. El histórico legacy importado vive en una copia inmutable
+fuera del checkout, con hash por archivo en un manifiesto cuyo hash se guarda en
+SQLite, indexada como origen H1 de solo lectura. Ningún run legacy se convierte en
+intento, aceptación ni commit; las identidades observadas se conservan con su
+procedencia. Tras activar, `.harness/runs` del checkout no es autoridad: entradas
+nuevas o modificadas son actividad legacy. Los documentos siguen siendo producto
+en Git; sus cambios por hash son propuestas, nunca mezcla silenciosa. El índice
+previo del origen queda congelado, sin observación ni reimportación.
+
+Exclusión por raíz canónica y por common dir Git (índices únicos parciales). El
+motor gestionado exige activación ACTIVE, marcador idéntico y ausencia de deriva;
+un checkout con `.harness/runs` (propio o del checkout principal) sin activación,
+o un marcador sin activación viva en esta base, rechaza. Se comprueba al admitir
+cada job (con reverificación en la transacción), al reclamarlo (rechazo `REFUSED`
+sin efectos, lock liberado) y antes de cada invocación de agente e intención de
+commit (cuarentena H2.2 si ocurre a mitad de run).
+
+Activación: PREPARING con token → inventario igual a la vista previa → copia
+verificada → inventario igual tras copiar → publicación atómica → marcador → una
+transacción ACTIVE con índice y manifiesto. Un fallo antes del marcador deja
+FAILED sin nada activo; una caída deja PREPARING, que solo se reanuda o abandona
+explícitamente. Reversión: REVERTING → exportación verificada del estado
+gestionado admitido bajo la activación → marcador retirado → REVERTED; el checkout
+vuelve a ser legacy y el histórico copiado sigue accesible.
+
+Quedan fuera: entradas API/CLI/UI de migración o ejecución gestionada, exportación
+mecánica de STATE/NEXT_STEPS, conversión de runs gestionados a legacy, retención
+de copias `staging-*` y detección entre comprobaciones o en otros worktrees.

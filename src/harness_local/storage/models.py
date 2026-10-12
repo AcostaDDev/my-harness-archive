@@ -81,6 +81,42 @@ class ManagedRunRow(Base):
     updated_at: Mapped[str] = mapped_column(String(40))
 
 
+_LIVE_ACTIVATION = text("status IN ('PREPARING', 'ACTIVE', 'REVERTING')")
+
+
+class ManagedActivationRow(Base):
+    """Modo gestionado de un checkout legacy H2.5: autoridad del modo y procedencia del histórico."""
+
+    __tablename__ = "managed_activations"
+    __table_args__ = (
+        Index("uq_managed_activations_live_root", "root", unique=True, sqlite_where=_LIVE_ACTIVATION),
+        Index("uq_managed_activations_live_repository", "repository_key", unique=True,
+              sqlite_where=_LIVE_ACTIVATION),
+    )
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True)
+    root: Mapped[str] = mapped_column(String)
+    repository_key: Mapped[str | None] = mapped_column(String, nullable=True)
+    status: Mapped[str] = mapped_column(String(20))
+    preview_sha256: Mapped[str] = mapped_column(String(64))
+    legacy_stopped: Mapped[str] = mapped_column(Text)
+    rules_json: Mapped[str] = mapped_column(Text)
+    marker: Mapped[str] = mapped_column(Text)
+    marker_sha256: Mapped[str] = mapped_column(String(64))
+    snapshot_root: Mapped[str] = mapped_column(String)
+    manifest_json: Mapped[str | None] = mapped_column(Text, nullable=True)
+    manifest_sha256: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    owner_token: Mapped[str | None] = mapped_column(String(36), nullable=True)
+    version: Mapped[int] = mapped_column(Integer)
+    created_at: Mapped[str] = mapped_column(String(40))
+    activated_at: Mapped[str | None] = mapped_column(String(40), nullable=True)
+    finished_at: Mapped[str | None] = mapped_column(String(40), nullable=True)
+    diagnostic: Mapped[str | None] = mapped_column(Text, nullable=True)
+    revert_reason: Mapped[str | None] = mapped_column(Text, nullable=True)
+    export_path: Mapped[str | None] = mapped_column(String, nullable=True)
+    export_sha256: Mapped[str | None] = mapped_column(String(64), nullable=True)
+
+
 class ManagedJobRow(Base):
     __tablename__ = "managed_jobs"
     __table_args__ = {"sqlite_autoincrement": True}
@@ -98,6 +134,8 @@ class ManagedJobRow(Base):
     diagnostic: Mapped[str | None] = mapped_column(Text, nullable=True)
     process_owner: Mapped[dict | None] = mapped_column(JSON, nullable=True)
     owner_closed: Mapped[bool] = mapped_column(Boolean, server_default="0")
+    # Activación H2.5 bajo la que se admitió el job; null en checkouts sin estado legacy.
+    activation_id: Mapped[str | None] = mapped_column(ForeignKey("managed_activations.id"), nullable=True)
 
 
 class CheckoutLockRow(Base):
