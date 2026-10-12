@@ -482,3 +482,30 @@ causa raíz. Siguiente tarea: diagnóstico local/documental de autenticación en
 lectura, con salida filtrada y sin secretos, inferencia o login automático.
 Una posible corrección o intervención del usuario se propondrá por separado;
 no ampliar silenciosamente entorno, proveedor, permisos ni ruta de autenticación.
+
+## D023 — USER explícito: dependencia de auth observada, corrección separada
+
+Estado: diagnóstico en lectura completado el 2026-10-12; corrección no implementada.
+[Informe y reproducción](discovery/H2.3_AUTH_DIAGNOSIS.md).
+
+Claude 2.1.295 reconoce la sesión `claude.ai` fuera del sandbox en el contexto
+de esta sesión, pero no con el entorno mínimo HOME/PATH/TMPDIR/LANG del smoke.
+Añadir únicamente USER restaura status; retirarlo del entorno de la sesión
+lo impide. LOGNAME no basta, cwd no explica la diferencia. La omisión de USER
+es una causa reproducible local; no acredita el mecanismo interno de acceso
+al llavero ni éxito del argv de inferencia. Status no admite los flags de
+fuentes aisladas. El hash actual de las cuatro variables difiere del D022 y
+sus valores históricos no están persistidos: no afirmar reproducción exacta.
+
+No solicitar login como solución al estado observado: hay sesión reconocida.
+Proponer corrección offline del constructor del entorno explícito del smoke,
+transmitiendo USER del usuario local sin heredar credenciales ni fuentes de
+settings. Nueva configuración/hash congelados y regresión sintética; cambios
+de comportamiento del adaptador exigirán su versión nueva. Jobs/specs antiguos
+se conservan y no se ejecutan con la configuración nueva silenciosamente.
+
+Diagnóstico y commit no autorizan inferencia. D022 continúa fallido, con lock
+retenido; no reanudar ni recuperar automáticamente. Otro smoke requerirá
+propuesta/consentimiento específico después de la corrección. Sin API keys,
+login propio, refresh ni cambios globales. Status no prueba cuota/modelos.
+H2.4 no iniciado.

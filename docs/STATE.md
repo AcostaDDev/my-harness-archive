@@ -133,6 +133,11 @@ Actualizado: 2026-10-12.
   Claude acepta MCP vacío, pero FAILED por `authentication_failed`, con terminal
   de error y exit 1. Revisor no lanzado, sin login/corrección/relanzamiento.
   [Resultado y evidencias](discovery/H2.3_SMOKE_CLI3.md), D022.
+- Diagnóstico de autenticación Claude completado en lectura: fuera del sandbox,
+  status reconoce `claude.ai` en la sesión local; el entorno mínimo pierde auth
+  al omitir USER y la reconoce al añadir solo USER. LOGNAME no basta. Sin login,
+  inferencia ni corrección; flags de aislamiento no admitidos por auth status.
+  [Evidencia reproducible y límites](discovery/H2.3_AUTH_DIAGNOSIS.md), D023.
 
 ## Todavía no existe
 
@@ -155,8 +160,10 @@ COMPLETE; ejecutor Claude FAILED por autenticación, MCP vacío aceptado;
 revisor no lanzado. [Informe](discovery/H2.3_SMOKE_CLI3.md).
 Históricos D018/D019/D020/D021 y preflight conservados. Consentimiento D022
 agotado al fallo; sin login, corrección ni nueva inferencia autorizados.
-Siguiente tarea acotada: diagnóstico de autenticación Claude en lectura según
-NEXT_STEPS, sin iniciarlo. Transporte real completo sigue pendiente.
+Diagnóstico de autenticación concluido en lectura (D023): omisión de USER
+reproduce la falta de sesión en status fuera del sandbox; sesión local reconocida.
+Siguiente tarea acotada: corrección offline del entorno explícito del smoke y
+regresión, según NEXT_STEPS, sin iniciarla. Transporte real completo sigue pendiente.
 H2.4 no iniciado.
 
 ## Verificación de H0.1
@@ -548,6 +555,31 @@ H2.4 no iniciado.
 - Sin invocaciones de herramientas en los eventos capturados. Informes D018/
   D020/D021 intactos; diff/whitespace revisados, 85 enlaces locales correctos
   en los ocho documentos. Commit documental solicitado por el usuario.
+
+## Diagnóstico de autenticación Claude — 2026-10-12
+
+- Git inicialmente limpio en `main`, `0386629`. Alcance original conservado
+  en [H2.3_AUTH_DIAGNOSIS_SCOPE.md](discovery/H2.3_AUTH_DIAGNOSIS_SCOPE.md).
+  D008/D017/D022, spec persistida, script/help y fuentes oficiales revisados.
+- Consultas de status filtradas en memoria, dentro/fuera del sandbox con
+  aprobación de lectura. Fuera: entorno de esta sesión reconoce `claude.ai`,
+  mínimo HOME/PATH/TMPDIR/LANG no; añadir solo USER lo restaura y retirarlo del
+  entorno de la sesión lo impide. LOGNAME no basta; cambiar cwd no lo explica.
+- Sin login ni acceso directo a secretos. Metadatos de configuración global
+  sin cambios. Status no admite `--setting-sources`: sus rechazos no son
+  observaciones de auth ni pruebas del argv de inferencia aislado. Hash actual
+  de entorno mínimo distinto al D022; valores históricos no persistidos.
+- D020/D022: doce capturas/prompts coinciden con hashes documentados, archivos
+  disponibles/SQLite/WAL sin cambios. Integridad y foreign keys correctas;
+  24/31 eventos, jobs RECOVERY_REQUIRED, propietarios cerrados, procesos STOPPED
+  y locks retenidos. D018 ya ausente; informes históricos intactos.
+- Doce checks ligeros correctos; diff/whitespace y enlaces locales revisados.
+  Sin cambios de implementación: pytest completo, migraciones, API/UI/build
+  no repetidos. Commit documental solicitado por el usuario, sin push.
+- [Informe, reproducción y límites](discovery/H2.3_AUTH_DIAGNOSIS.md), D023.
+  Causa comprobada para status en este Mac, mecanismo interno no auditado;
+  sin inferencia, cuota/modelo certificados, otro smoke ni éxito completo H2.3.
+  Próxima corrección offline del entorno propuesta, sin ejecutarla. H2.4 no iniciado.
 
 ## Coordinación
 

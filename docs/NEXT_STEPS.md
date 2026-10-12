@@ -1,59 +1,61 @@
-# Siguiente tarea — H2.3: diagnóstico de autenticación Claude en lectura
+# Siguiente tarea — H2.3: corrección offline del entorno explícito del smoke
 
-Smoke `cli-3` autorizado y ejecutado el 2026-10-12 sobre `039a01e`: Codex
-planificador COMPLETE (exit 0, terminal/JSON); Claude FAILED (exit 1, terminal
-de error) por `authentication_failed` y «Not logged in · Please run /login».
-MCP vacío aceptado; herramientas y servidores vacíos observados. Revisor no
-lanzado, sin corrección, login ni relanzamiento. D022,
-[resultado y evidencias](discovery/H2.3_SMOKE_CLI3.md),
-[alcance completado](discovery/H2.3_SMOKE_CLI3_SCOPE.md).
-211 pruebas/121 subtests y 12 checks ligeros correctos en preparación;
-persistencia, 31 eventos/hashes/rangos, grupos muertos y checkout intacto
-comprobados después. H2.4 no iniciado.
+Diagnóstico de autenticación Claude completado en lectura el 2026-10-12,
+D023. Fuera del sandbox, Claude Code 2.1.295 reconoce sesión `claude.ai` con
+USER presente; el entorno mínimo HOME/PATH/TMPDIR/LANG no la reconoce.
+Añadir solo USER la restaura, retirarlo del entorno de la sesión la impide;
+LOGNAME no basta. Sin login, inferencia ni corrección. Status no admite los
+flags de fuentes aisladas; transporte completo sigue pendiente.
+[Informe y reproducción](discovery/H2.3_AUTH_DIAGNOSIS.md),
+[alcance completado](discovery/H2.3_AUTH_DIAGNOSIS_SCOPE.md).
+Doce checks ligeros correctos; D020/D022 conservan capturas/hash, resultados,
+24/31 eventos y locks. D018 ya ausente según informes anteriores. H2.4 no iniciado.
 
 ## Objetivo
 
-Determinar por qué Claude Code 2.1.295 no dispone de autenticación en el entorno
-explícito del smoke, conservando las suscripciones/auth propias de las CLI.
-El fallo acredita este contexto, no ausencia de login en todo el Mac. Separar
-diagnóstico observado, hipótesis y causa comprobada. No extraer credenciales ni
-usar inferencia para probar autenticación.
+Corregir offline la construcción del entorno explícito del smoke para que
+Claude reciba USER correspondiente al usuario local, conservando autenticación
+propia de las CLI, fuentes/tools/MCP aislados y configuración congelada.
+No modificar el adaptador para heredar automáticamente el entorno del supervisor.
 
 ## Alcance acotado
 
-1. Revisar D008/D017/D022, informe y spec del smoke. Conservar resultados,
-   capturas y bloqueo anteriores sin reanudar ni recuperar automáticamente.
-2. Consultar help/documentación oficial y mecanismos locales de estado de auth
-   en lectura, sin ejecutar print/agentes/modelos. Filtrar la salida en memoria:
-   solo estado/método de auth y diagnósticos necesarios, sin correo, IDs de cuenta,
-   tokens, cookies, contenido de almacenes de credenciales ni dumps del entorno.
-3. Comparar el contexto explícito `HOME`, `PATH`, `TMPDIR`, `LANG`, ejecutable,
-   fuentes de settings aisladas y restricciones del proceso con la sesión propia
-   del usuario. Inspeccionar solo metadatos/configuración no secreta pertinentes;
-   no ampliar el entorno ni heredar variables de credenciales automáticamente.
-4. Si el diagnóstico exige login o intervención del usuario, documentar el
-   paso concreto para su sesión sin hacerlo automáticamente. Si revela un cambio
-   necesario del adaptador, proponer una tarea offline separada con regresión y
-   versión congelada; no mezclar esa implementación con el diagnóstico.
-5. Actualizar STATE/NEXT_STEPS/DECISIONS e informe con evidencia saneada y límites.
-   No ejecutar otro smoke ni iniciar H2.4.
+1. Revisar D008/D017/D022/D023, script del smoke y contrato de CLIConfig.
+   Conservar resultados/specs/historial/locks anteriores sin recuperación.
+2. Incluir USER explícito y comprobado contra el usuario local en la construcción
+   del entorno del smoke; resolver ausencia/discrepancia antes de consumo con
+   diagnóstico concreto. No copiar variables de credenciales ni ampliar fuentes.
+3. Añadir regresión offline independiente con proceso sintético que distinga
+   USER ausente/presente, pruebe entorno completo sin herencia silenciosa y
+   conservación de HOME/PATH/TMPDIR/LANG y permisos/selecciones existentes.
+   No usar status real ni inferencia como test automatizado.
+4. Congelar la configuración nueva con hash distinto. Probar que un job con
+   configuración anterior no se ejecuta silenciosamente con la nueva, sin
+   reescribir historia/resultados. Si cambia el comportamiento del adaptador,
+   elevar su versión; no versionarlo por mera edición documental.
+5. Ejecutar checks offline pertinentes y actualizar STATE/NEXT_STEPS/DECISIONS
+   e informe. Preparar por separado una propuesta de verificación real con
+   sus límites, sin ejecutar otro smoke dentro de esta corrección.
 
 ## Criterios de aceptación
 
-- Diagnóstico en lectura reproducible y limitado al contexto observado, o
-  incertidumbre pendiente explícita con la comprobación/intervención necesaria.
-- Estado de auth observado separado de acceso al modelo, inferencia y cuota;
-  no deducirlos de help/status o de los ceros reportados en el fallo.
-- Sin extracción/exposición de secretos ni modificación global/login automática.
-- Modelo/proveedor/suscripción, aislamiento de herramientas/MCP y configuración
-  congelada conservados; no sustitución por API keys ni ampliación silenciosa.
-- Resultados/capturas de D018/D020/D022 y lock anterior preservados;
-  documentación/checks proporcionales revisados, sin nuevas invocaciones de agente.
+- USER válido transmitido explícitamente y sin credenciales heredadas; ausencia
+  o discrepancia resuelta antes de cualquier llamada a proveedor.
+- Regresión sintética demuestra el defecto previo y el comportamiento corregido,
+  sin requerir sesión real, secretos ni red.
+- Configuración/hash nuevos congelados y selección de modelos/esfuerzos conservada;
+  jobs antiguos bloqueados ante incompatibilidad, sin sustituir specs/resultados.
+- Fuentes/settings/hooks, herramientas/MCP vacíos, sesiones frescas y ausencia
+  de fallback/reinvocación automática conservados.
+- Evidencias disponibles D020/D022 y lock anterior preservados; históricos
+  documentales D018/D020/D022 intactos, sin reconstruir el área D018 ausente.
+- Checks/diff/documentación revisados; no presentar pruebas offline o status
+  como éxito real completo ni como prueba de acceso al modelo, inferencia o cuota.
 
 ## Fuera de alcance
 
-La autorización D022 terminó al primer fallo. Otro smoke requiere propuesta
-y consentimiento específicos; este diagnóstico o su commit no autorizan consumo.
-Sin login/logout/refresh, lectura de secretos/keychain, fallback, relanzamiento,
-corrección del adaptador, SDK/MCP/herramientas activos, cambios globales,
-H2.4/H2.5, entradas gestionadas API/CLI/UI, permisos vivos, chat, publicación o push.
+La autorización D022 terminó al fallo. Diagnóstico D023 y su commit no autorizan
+consumo. Sin otro smoke, login/logout/refresh, lectura de secretos/keychain,
+API keys, cambios globales, fallback, recuperación/liberación automática,
+SDK/MCP/herramientas activos, H2.4/H2.5, entradas gestionadas API/CLI/UI,
+permisos vivos, chat, publicación o push.
