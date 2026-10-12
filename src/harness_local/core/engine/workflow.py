@@ -11,7 +11,9 @@ from harness_local.core.engine.contracts import (
     Selection, context_snapshot, executor_selection, freeze, invoke_agent, task_contract,
     stop_history as stopped,
 )
-from harness_local.core.engine.evidence import ContentEvidence, EvidenceCapture, check_paths
+from harness_local.core.engine.evidence import (
+    ContentEvidence, EvidenceCapture, check_paths, strip_empty_provenance,
+)
 from harness_local.core.engine.journal import EngineJournal, JournalError
 from harness_local.core.engine.planning import deterministic_task, section
 from harness_local.core.engine.review import ReviewCycle, review_contract, stalled_review_signature
@@ -150,8 +152,8 @@ class OfflineEngine:
                 return stopped(history, "evidence", str(exc))
             self._checkpoint(history, "reviewer")
             prompt = "Review independently the frozen task and supplied evidence; ACCEPT, REVISE or BLOCKED.\n" + freeze({
-                "task": task, "evidence": asdict(evidence), "policy": asdict(policy),
-                "validation": asdict(validation),
+                "task": task, "evidence": strip_empty_provenance(asdict(evidence)), "policy": asdict(policy),
+                "validation": strip_empty_provenance(asdict(validation)),
             })
             selection = Selection(context.policy.reviewer_model, context.policy.reviewer_effort, "Explicit independent review policy")
             history, data = invoke_agent(context, history, self.agents, "reviewer", selection, prompt, self.journal)

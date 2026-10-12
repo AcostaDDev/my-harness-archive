@@ -9,7 +9,7 @@ from harness_local.core.engine.context import Command, EnginePolicy, ProjectCont
 from harness_local.core.engine.contracts import (
     AgentRequest, AgentResult, Attempt, OperationalStop, RunHistory, Selection, freeze,
 )
-from harness_local.core.engine.evidence import ContentEvidence, PathPolicyResult
+from harness_local.core.engine.evidence import ContentEvidence, PathPolicyResult, strip_empty_provenance
 from harness_local.core.engine.review import ReviewCycle
 from harness_local.core.engine.validation import CommandResult, ValidationEntry, ValidationReport
 
@@ -42,12 +42,22 @@ def _evidence(data: dict) -> ContentEvidence:
     return ContentEvidence(**{**data, "changed_paths": tuple(data["changed_paths"])})
 
 
+def _has_provenance(history: RunHistory) -> bool:
+    evidence = [cycle.evidence for cycle in history.cycles]
+    evidence += [cycle.validation.evidence for cycle in history.cycles]
+    evidence += [cycle.before_execution for cycle in history.cycles if cycle.before_execution]
+    if history.acceptance:
+        evidence.append(history.acceptance.evidence)
+    return any(item.provenance_json is not None for item in evidence)
+
+
 def dump_history(history: RunHistory) -> str:
-    data = asdict(history)
-    version = 2 if any(attempt.result.status is not None or attempt.result.metadata_json is not None
-                       for attempt in history.attempts) else 1
-    if version == 1:
-        # Preserve the exact H2.2 shape for existing/fake results.
+    # Sin procedencia ni datos CLI se conserva la forma exacta del formato 1 (H2.2).
+    data = strip_empty_provenance(asdict(history))
+    has_cli = any(attempt.result.status is not None or attempt.result.metadata_json is not None
+                  for attempt in history.attempts)
+    version = 3 if _has_provenance(history) else 2 if has_cli else 1
+    if not has_cli:
         for attempt in data["attempts"]:
             attempt["result"].pop("status")
             attempt["result"].pop("metadata_json")
@@ -56,7 +66,7 @@ def dump_history(history: RunHistory) -> str:
 
 def load_history(snapshot: str) -> RunHistory:
     value = json.loads(snapshot)
-    if value["format"] not in {1, 2}:
+    if value["format"] not in {1, 2, 3}:
         raise ValueError("Unknown managed history format")
     data = value["history"]
     data["attempts"] = tuple(Attempt(restore_request(item["request"]), AgentResult(**item["result"]))

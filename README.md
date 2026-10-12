@@ -1,10 +1,10 @@
 # my_harness — Harness Local
 
 Aplicación local para configurar, ejecutar y observar un harness modular de desarrollo con agentes.
-Estado actual: H0, H1, H2.1 y H2.2 completados; H2.3 implementado y verificado
-offline; smoke autorizado `cli-3` completa Codex y supera el rechazo MCP previo,
-pero falla en autenticación Claude, sin revisor ni relanzamiento. Siguiente tarea:
-diagnóstico de autenticación en lectura. Esqueleto Python/API/UI con simulaciones
+Estado actual: H0, H1, H2.1, H2.2, H2.3 y H2.4 completados. H2.3 conserva un smoke
+real autorizado con las tres CLI (D025); H2.4 añade Git por árboles, worktree por
+tarea y commit determinista conciliable, verificados offline. Siguiente tarea:
+H2.5 migración a modo gestionado. Esqueleto Python/API/UI con simulaciones
 persistidas, observación legacy y motor con persistencia/cola.
 Adaptadores CLI y grupos de procesos por inyección explícita; sin entradas
 gestionadas API/CLI/UI ni ejecución automática de proveedores.
@@ -32,6 +32,7 @@ gestionadas API/CLI/UI ni ejecución automática de proveedores.
 - [Corrección offline de configuración Codex](docs/discovery/H2.3_CONFIG_FIX.md).
 - [Nuevo smoke autorizado: Codex completo, fallo MCP Claude](docs/discovery/H2.3_SMOKE_RETRY.md).
 - [Smoke cli-3: MCP aceptado, fallo de autenticación Claude](docs/discovery/H2.3_SMOKE_CLI3.md).
+- [Git, worktree y commit acotado H2.4](docs/discovery/H2.4_GIT.md).
 
 `AGENTS.md` contiene las instrucciones de Codex; `CLAUDE.md` remite al mismo contrato para Claude Code. El desarrollo es manual y no utiliza el harness como orquestador.
 
@@ -96,7 +97,7 @@ UV_CACHE_DIR=.local/uv-cache uv run --frozen --offline alembic current
 UV_CACHE_DIR=.local/uv-cache uv run --frozen --offline alembic check
 ```
 
-219 pruebas (158 anteriores, 53 de H2.3 y 8 del entorno del smoke). Se usan checkouts, SQLite y
+253 pruebas (158 anteriores, 53 de H2.3, 8 del entorno del smoke y 34 de H2.4). Se usan checkouts Git, SQLite y
 procesos Python sintéticos, sin CLI de proveedores ni consumo de suscripciones.
 Se verifican captura incremental, cancelación de grupos y recuperación tras
 caída del supervisor. No certifica commits ni introduce ejecución gestionada
@@ -124,8 +125,9 @@ de error. El diagnóstico en lectura observó la dependencia de USER; la correcc
 offline del smoke ya valida USER contra el UID local, sin heredar credenciales.
 El smoke posterior autorizado con USER completó planificador Codex, ejecutor Claude
 y revisor Codex: terminal/exit 0/JSON en los tres, sin herramientas ni cambios.
-Siguiente tarea: H2.4 Git y aceptación offline.
-No se ha iniciado H2.4. Ver [corrección y límites](docs/discovery/H2.3_MCP_FIX.md)
+H2.4 (Git, worktree por tarea y commit determinista conciliable) está completado
+offline: ver [entrega y límites](docs/discovery/H2.4_GIT.md); sin entrada API/CLI.
+Siguiente tarea: H2.5 migración a modo gestionado, sin iniciar. Ver [corrección y límites](docs/discovery/H2.3_MCP_FIX.md)
 y [resultado real cli-3](docs/discovery/H2.3_SMOKE_CLI3.md). El consentimiento
 terminó al fallo; otro smoke requiere propuesta y autorización específicas.
 Ver [corrección del entorno](docs/discovery/H2.3_ENV_FIX.md) y
@@ -138,7 +140,7 @@ siguen conservados. La autorización cubrió una ejecución, sin relanzamiento.
 ## Importación legacy de lectura
 
 Migrar con el servicio detenido antes de importar; el esquema actual es
-`0005_cli_processes`. Comandos comprobados desde la raíz, con datos sintéticos:
+`0006_git_commits`. Comandos comprobados desde la raíz, con datos sintéticos:
 
 ```sh
 UV_CACHE_DIR=.local/uv-cache uv run --frozen --offline alembic upgrade head

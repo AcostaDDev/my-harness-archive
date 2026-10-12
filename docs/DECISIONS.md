@@ -565,3 +565,37 @@ review ACCEPT, validación Git ni commit de producto. Autorización satisfecha p
 esta única ejecución; otro consumo requerirá consentimiento propio. No se
 certifican retries internos, aislamiento físico, cuota, permisos vivos ni
 cancelación/timeout reales. Siguiente tarea H2.4 offline definida, sin iniciarla.
+
+## D026 — Evidencia Git por árboles y commit determinista conciliable
+
+Estado: implementado y verificado offline el 2026-10-12.
+[Entrega, protocolo y límites](discovery/H2.4_GIT.md).
+
+La evidencia de contenido de un checkout Git se define por identificadores de
+árbol: base (`HEAD`), `worktree_tree` (lo que `git add -A` registraría, copia
+temporal del índice) e `index_tree` (índice real). El fingerprint vincula los tres;
+el staging forma parte de lo revisado y cambiarlo invalida la aceptación. El parche
+completo y su SHA-256 se guardan en la evidencia; no se trunca (fallo de evidencia
+si supera el límite). Gitlinks, índices con conflictos y rutas no UTF-8 detienen el
+flujo. `SyntheticWorkspace` no certifica Git ni puede respaldar un commit.
+
+El commit no usa `git add -A`/`git commit`: se construye desde el árbol revisado
+(más actualizaciones mecánicas declaradas, validadas y selladas en la intención),
+con identidad y marca de tiempo explícitas, de modo que su id es determinista y
+se persiste antes del efecto. Reconciliar es comprobar ese id: ya alcanzable →
+`reconciled`, nunca otro commit; HEAD movido sin commit propio → invalidar si el
+objeto no existe, recuperación manual con evidencia si existe sin ser alcanzable.
+La referencia se mueve con compare-and-swap. Hooks, firma y configuración global
+no intervienen; no se descarta staging posterior ni ediciones sin revisar.
+
+El commit se encola como acción `commit` bajo el lock de checkout existente y se
+registra en `managed_commits` (migración `0006_git_commits`). `COMMITTED` es un
+checkpoint en el worktree de la tarea: no equivale a integración en la rama de
+destino ni a COMPLETED/cierre. Un run con operación pendiente/registrada no se
+reanuda con `resume`. El worktree por tarea (`GitWorktrees`) es idempotente,
+conservador y fuera del checkout de origen, sin remove/clean/reset; no es un
+sandbox de seguridad.
+
+Quedan fuera y sin implementar: integración en rama destino, push, retirada de
+worktrees, entradas API/CLI/UI gestionadas, abandono explícito de una intención
+ambigua y formateador real. H2.5 no iniciado.

@@ -13,6 +13,19 @@ class ContentEvidence:
     fingerprint: str
     changed_paths: tuple[str, ...]
     diff: str
+    # Procedencia congelada del capturador (p. ej. árboles Git). None: evidencia
+    # sintética o legacy, nunca certificable como contenido de un commit.
+    provenance_json: str | None = None
+
+
+def strip_empty_provenance(value):
+    """Conserva la forma serializada/prompt anterior cuando no hay procedencia."""
+    if isinstance(value, dict):
+        return {key: strip_empty_provenance(item) for key, item in value.items()
+                if not (key == "provenance_json" and item is None)}
+    if isinstance(value, (list, tuple)):
+        return [strip_empty_provenance(item) for item in value]
+    return value
 
 
 class EvidenceCapture(Protocol):

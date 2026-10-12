@@ -35,7 +35,7 @@ Actualizado: 2026-10-12.
 - Dependencias reales instaladas en `.venv` / `frontend/node_modules`, locks
   `uv.lock` / `frontend/package-lock.json`. Pins H0.2 usados conservados;
   backend de paquete `uv_build==0.12.19`. Comandos comprobados en README/AGENTS.
-- 207 casos de producto en `tests/product/`; pytest ejecuta 219 pruebas en total.
+- 241 casos de producto en `tests/product/`; pytest ejecuta 253 pruebas en total.
   La comprobación ligera anterior conserva sus 12 checks sin dependencias.
 - H1.1 completado: [importación legacy y verificaciones](discovery/H1.1_IMPORT.md),
   [alcance original](discovery/H1.1_SCOPE.md). Lector local explícito de
@@ -151,11 +151,28 @@ Actualizado: 2026-10-12.
   grupos STOPPED/dead y lock nuevo liberado por finalización normal.
   [Informe y evidencias independientes](discovery/H2.3_ENV_SMOKE.md), D025.
 
+- H2.4 completado offline: [Git, worktree y commit acotado](discovery/H2.4_GIT.md),
+  [alcance original](discovery/H2.4_SCOPE.md). `GitWorkspace` captura base, árbol
+  del worktree (staged, no staged, nuevos, borrados, modos) y árbol del índice real
+  sin tocar HEAD/índice/archivos; fingerprint y parche completo con procedencia y
+  SHA-256. Fallos seguros ante gitlinks, conflictos, rutas no UTF-8 o parche enorme.
+- `GitWorktrees`: un worktree por tarea fuera del checkout de origen, idempotente y
+  conservador; el checkout principal queda idéntico. Sin remove/clean/reset.
+- Commit acotado y determinista: construido desde el árbol revisado (más
+  actualizaciones mecánicas declaradas), con id esperado persistido antes del efecto,
+  compare-and-swap de la referencia y reconciliación tras caída sin duplicar ni
+  reescribir historial. Modificación externa posterior a validación/review (contenido,
+  staging o base) invalida la aceptación antes de cualquier commit. D026.
+- Migración `0006_git_commits`: `managed_commits` (INTENT/COMMITTED/INVALIDATED),
+  acción de job `commit` bajo el lock de checkout y estados COMMITTING/COMMITTED.
+  `COMMITTED` es un checkpoint del worktree, no integración en rama destino.
+
 ## Todavía no existe
 
 Recorrido de tarea real del motor con proveedores ni entradas gestionadas API/CLI/UI,
-captura Git completa/worktrees/commit de producto, activación/migración de proyectos
-gestionados, interfaz gestionada, permisos interactivos, chat ni distribución.
+integración del commit en la rama de destino, retirada de worktrees, abandono manual
+de una intención ambigua, activación/migración de proyectos gestionados (H2.5),
+interfaz gestionada, permisos interactivos, chat ni distribución.
 La navegación H1.2 muestra evidencia legacy;
 el recorrido H0.3 solo guarda simulaciones, que no representan intentos reales
 ni aceptación de tareas. El primer smoke real lanzó Codex y falló al cargar
@@ -164,18 +181,16 @@ Los nuevos smokes completan el transporte del planificador Codex. D020 falló al
 validar MCP; D022 supera ese rechazo y falla en autenticación Claude con terminal
 de error, sin inferencia acreditada en D022. El smoke D025 completa transporte
 de ambos proveedores y revisor con USER validado; no ejecuta una tarea real ni
-certifica validación/review ACCEPT/commit de producto.
+certifica validación/review ACCEPT/commit de producto con proveedores. H2.4 verifica
+Git y el commit únicamente con agentes falsos y repositorios sintéticos.
 
 ## Trabajo activo
 
-H0, H1, H2.1 y H2.2 completados. H2.3 implementado, verificado offline y
-smoke real completo D025 tras autorización «Procede con el smoke».
-Planificador Codex, ejecutor Claude y revisor Codex COMPLETE, sin herramientas
-ni cambios de checkout. [Informe](discovery/H2.3_ENV_SMOKE.md).
-Diagnóstico D023 y corrección D024 conservados; entorno USER validado y hash
-congelado distintos de D022. Históricos fallidos D020/D022 y sus locks intactos.
-La autorización D025 cubrió una ejecución y terminó; no habilita otro smoke.
-Siguiente tarea: H2.4 Git y aceptación offline según NEXT_STEPS, sin iniciarla.
+H0, H1, H2.1, H2.2, H2.3 y H2.4 completados. H2.3 conserva su smoke real D025
+(una ejecución, autorización agotada). H2.4 implementado y verificado offline
+con Git/SQLite sintéticos y agentes falsos: captura por árboles, worktree por
+tarea y commit determinista conciliable. [Informe](discovery/H2.4_GIT.md), D026.
+Siguiente tarea: H2.5 migración a modo gestionado según NEXT_STEPS, sin iniciarla.
 
 ## Verificación de H0.1
 
@@ -656,6 +671,44 @@ Siguiente tarea: H2.4 Git y aceptación offline según NEXT_STEPS, sin iniciarla
   commit de producto. Retries internos, cuota, permisos vivos, aislamiento físico
   y cancelación/timeout reales no certificados. H2.4 documentado como siguiente
   tarea offline, sin iniciarlo; consentimiento consumido para esta ejecución.
+
+## Verificación de H2.4
+
+- Git inicialmente limpio en `main`, `c62905d`. AGENTS/STATE/NEXT_STEPS/DECISIONS,
+  puertos del motor, journal y persistencia revisados; sin contradicciones materiales
+  (la especificación ya fija base SHA/árbol/operación y evidencia con staged/untracked).
+  `COMMITTED` se mantiene distinto de COMPLETED: la integración es una acción aparte.
+- `UV_CACHE_DIR=.local/uv-cache uv run --frozen --offline pytest -q`: 253 pruebas
+  y 121 subtests correctos (219 anteriores + 34 H2.4); 12 checks ligeros
+  correctos. Núcleo con `python -S`, frontera de imports y OpenAPI sincronizado.
+- Git real en repositorios temporales (Git 2.50.1): captura de staged/unstaged/
+  untracked/borrados/modo, ignorados fuera, determinismo y ausencia de efectos
+  (HEAD, índice y archivos idénticos); rechazo de gitlinks, conflictos, raíz que no
+  es nivel superior, no UTF-8 y parche sobre el límite.
+- Worktree por tarea idempotente; checkout principal con cambios ajenos staged/
+  unstaged/untracked idéntico tras todo el flujo. Rechazos de ruta interior, ruta
+  ocupada, rama existente o distinta sin sobrescribir nada.
+- Commit: contenido exacto revisado (árbol idéntico, padre = base, solo rutas
+  revisadas, trailers, identidad), índice refrescado, ignorados no incluidos,
+  hooks del repositorio nunca ejecutados. Invalidación por contenido, untracked,
+  borrado, staging y base movida; revalidar produce evidencia y commit nuevos.
+- Caídas inyectadas: antes del objeto, antes de mover la referencia, después de
+  mover la referencia (con y sin trabajo posterior del usuario) y tras escribir
+  mecánicas: un solo commit, mismo id, historial intacto. HEAD movido invalida si
+  no hay objeto y entra en cuarentena con evidencia si existe sin ser alcanzable.
+  Carrera de HEAD durante el efecto detectada por compare-and-swap.
+- Migración `0006` ida/vuelta con `alembic check` correcto; runs previos conservados.
+  Mutaciones temporales (omitir fingerprint al ejecutar o al preparar, ignorar HEAD
+  esperado, quitar CAS) detectadas y código restaurado.
+- Diff/whitespace revisados. Sin proveedores, CLI de agente, red, harness de
+  desarrollo, ReferenceProject, configuración global ni push. uv ignora el entorno
+  externo; persiste el aviso conocido Starlette/HTTPX. Frontend/build/navegador no
+  repetidos: no cambian API/UI/OpenAPI.
+- Límites: macOS/un host, una base cooperativa; escritores Git externos solo por
+  comparación; configuración local del repo (filtros `clean`) respetada;
+  sin integración en rama destino, push, retirada de worktrees, entradas
+  API/CLI/UI ni abandono manual de intenciones ambiguas. H2.5 no iniciado.
+  Commit solicitado por el usuario.
 
 ## Coordinación
 

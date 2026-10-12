@@ -1,0 +1,395 @@
+"""Adaptadores Git H2.4: captura completa, worktrees por tarea y commit idempotente.
+
+Todo comando usa un entorno explícito y mínimo: sin configuración global/de
+sistema, sin hooks, sin fsmonitor ni mantenimiento automático. La captura trabaja
+con copias temporales del índice y no modifica HEAD, índice real ni archivos.
+Solo se escriben objetos Git (blobs/árboles). No hay filtros definidos fuera del
+repositorio ni sandbox: un worktree separa trabajo, no aísla seguridad.
+"""
+
+from dataclasses import dataclass
+import hashlib
+import json
+import os
+from pathlib import Path
+import shutil
+import subprocess
+import tempfile
+
+from harness_local.core.engine.commit import (
+    CommitError, CommitIntent, CommitOutcome, CommitPlan, CommitUncertain, GIT_FORMAT, GitIdentity,
+)
+from harness_local.core.engine.context import ProjectContext
+from harness_local.core.engine.contracts import freeze
+from harness_local.core.engine.evidence import ContentEvidence
+
+MAX_DIFF_BYTES = 4 * 1024 * 1024
+_CONFIG = ("-c", "core.hooksPath=/dev/null", "-c", "core.fsmonitor=false", "-c", "core.quotePath=false",
+           "-c", "core.excludesFile=/dev/null", "-c", "gc.auto=0", "-c", "maintenance.auto=false",
+           "-c", "advice.detachedHead=false")
+
+
+class GitError(RuntimeError):
+    def __init__(self, message: str, *, argv: tuple[str, ...] = (), returncode: int | None = None,
+                 stderr: str = ""):
+        super().__init__(message)
+        self.argv, self.returncode, self.stderr = argv, returncode, stderr
+
+
+class EvidenceCaptureError(RuntimeError):
+    """El contenido no puede capturarse completo; el motor se detiene sin juzgar."""
+
+
+class Git:
+    """Invoca el ejecutable Git con entorno controlado; nunca usa shell."""
+
+    def __init__(self, cwd: Path, *, executable: str = "git", timeout: float = 120.0):
+        self.cwd = Path(cwd)
+        self.executable = executable
+        self.timeout = timeout
+
+    def _environment(self, extra: dict[str, str] | None) -> dict[str, str]:
+        env = {"PATH": os.environ.get("PATH", "/usr/bin:/bin"), "LC_ALL": "C", "GIT_CONFIG_NOSYSTEM": "1",
+               "GIT_CONFIG_GLOBAL": os.devnull, "GIT_ATTR_NOSYSTEM": "1", "GIT_TERMINAL_PROMPT": "0",
+               "GIT_OPTIONAL_LOCKS": "0"}
+        if os.environ.get("DEVELOPER_DIR"):
+            env["DEVELOPER_DIR"] = os.environ["DEVELOPER_DIR"]
+        env.update(extra or {})
+        return env
+
+    def run(self, *args: str, input: bytes | None = None, env: dict[str, str] | None = None,
+            ok: tuple[int, ...] = (0,)) -> bytes:
+        argv = (self.executable, *_CONFIG, *args)
+        try:
+            completed = subprocess.run(argv, cwd=self.cwd, input=input, capture_output=True,
+                                       env=self._environment(env), timeout=self.timeout, check=False)
+        except (OSError, subprocess.TimeoutExpired) as exc:
+            raise GitError(f"git {args[0] if args else ''} could not run: {exc}", argv=argv) from exc
+        if completed.returncode not in ok:
+            stderr = completed.stderr.decode("utf-8", "replace").strip()
+            raise GitError(f"git {args[0] if args else ''} failed with exit {completed.returncode}: {stderr[:500]}",
+                           argv=argv, returncode=completed.returncode, stderr=stderr)
+        return completed.stdout
+
+    def code(self, *args: str, env: dict[str, str] | None = None) -> int:
+        """Código de salida sin interpretar; permite preguntas booleanas (is-ancestor)."""
+        argv = (self.executable, *_CONFIG, *args)
+        try:
+            return subprocess.run(argv, cwd=self.cwd, capture_output=True, env=self._environment(env),
+                                  timeout=self.timeout, check=False).returncode
+        except (OSError, subprocess.TimeoutExpired) as exc:
+            raise GitError(f"git {args[0] if args else ''} could not run: {exc}", argv=argv) from exc
+
+    def text(self, *args: str, input: bytes | None = None, env: dict[str, str] | None = None) -> str:
+        try:
+            return self.run(*args, input=input, env=env).decode("utf-8").strip()
+        except UnicodeDecodeError as exc:
+            raise GitError(f"git {args[0] if args else ''} produced non-UTF-8 output") from exc
+
+
+def _split0(data: bytes) -> list[str]:
+    try:
+        return [item.decode("utf-8") for item in data.split(b"\0") if item]
+    except UnicodeDecodeError as exc:
+        raise EvidenceCaptureError("Non-UTF-8 paths cannot be recorded as evidence") from exc
+
+
+def _raw_entries(data: bytes) -> list[tuple[str, str, str, str]]:
+    """`diff-tree --raw -z` sin renombrados: (estado, modo anterior, modo nuevo, ruta)."""
+    tokens = data.split(b"\0")
+    entries, index = [], 0
+    while index < len(tokens) and tokens[index]:
+        meta = tokens[index].decode("ascii").lstrip(":").split(" ")
+        try:
+            path = tokens[index + 1].decode("utf-8")
+        except (IndexError, UnicodeDecodeError) as exc:
+            raise EvidenceCaptureError("Non-UTF-8 or malformed path in Git diff") from exc
+        entries.append((meta[4][0], meta[0], meta[1], path))
+        index += 2
+    return entries
+
+
+class GitWorkspace:
+    """Captura Git completa y escritor de commit; puede reemplazar a SyntheticWorkspace."""
+
+    def __init__(self, identity: GitIdentity, *, max_diff_bytes: int = MAX_DIFF_BYTES,
+                 executable: str = "git", timeout: float = 120.0):
+        if not isinstance(identity, GitIdentity) or max_diff_bytes <= 0:
+            raise ValueError("Explicit GitIdentity and positive diff limit required")
+        self.identity = identity
+        self.max_diff_bytes = max_diff_bytes
+        self.executable = executable
+        self.timeout = timeout
+
+    def _git(self, root: Path) -> Git:
+        return Git(root, executable=self.executable, timeout=self.timeout)
+
+    def _require_root(self, git: Git, root: Path) -> None:
+        try:
+            top = Path(git.text("rev-parse", "--show-toplevel")).resolve()
+        except GitError as exc:
+            raise EvidenceCaptureError(f"Not a Git checkout: {exc}") from exc
+        if top != root:
+            raise EvidenceCaptureError("Project root must be the top level of its Git checkout")
+
+    def _index_path(self, git: Git) -> Path:
+        return Path(git.text("rev-parse", "--path-format=absolute", "--git-path", "index"))
+
+    def _scratch_index(self, git: Git, target: Path) -> dict[str, str]:
+        """Copia del índice real; no se escribe nunca en el índice del usuario."""
+        real = self._index_path(git)
+        env = {"GIT_INDEX_FILE": str(target)}
+        if real.is_file():
+            shutil.copy2(real, target)
+        else:
+            git.run("read-tree", "--empty", env=env)
+        return env
+
+    def _index_tree(self, git: Git) -> str:
+        with tempfile.TemporaryDirectory(prefix="harness-git-") as scratch:
+            env = self._scratch_index(git, Path(scratch) / "index")
+            return git.text("write-tree", env=env)
+
+    def capture(self, context: ProjectContext) -> ContentEvidence:
+        root = context.root
+        git = self._git(root)
+        self._require_root(git, root)
+        try:
+            head = git.text("rev-parse", "--verify", "HEAD^{commit}")
+            base_tree = git.text("rev-parse", "--verify", f"{head}^{{tree}}")
+            ref = git.run("symbolic-ref", "-q", "HEAD", ok=(0, 1)).decode("utf-8").strip() or None
+            with tempfile.TemporaryDirectory(prefix="harness-git-") as scratch:
+                staged_env = self._scratch_index(git, Path(scratch) / "staged")
+                work_env = self._scratch_index(git, Path(scratch) / "work")
+                # Un índice con conflictos falla aquí: nunca se resuelve implícitamente.
+                index_tree = git.text("write-tree", env=staged_env)
+                untracked = sorted(_split0(git.run("ls-files", "--others", "--exclude-standard", "-z",
+                                                   env=staged_env)))
+                git.run("add", "-A", "--", ".", env=work_env)
+                worktree_tree = git.text("write-tree", env=work_env)
+            diff_args = ("diff-tree", "-r", "--no-renames", "--no-ext-diff", "--no-textconv", "--no-color")
+            raw = _raw_entries(git.run(*diff_args, "-z", "--raw", "--full-index", base_tree, worktree_tree))
+            staged = _raw_entries(git.run(*diff_args, "-z", "--raw", "--full-index", base_tree, index_tree))
+            patch = git.run(*diff_args, "-p", "--binary", "--full-index", base_tree, worktree_tree)
+        except GitError as exc:
+            raise EvidenceCaptureError(f"Git evidence could not be captured: {exc}") from exc
+        if any("160000" in (old, new) for _, old, new, _ in raw + staged):
+            raise EvidenceCaptureError("Submodule/gitlink changes are not supported as reviewable evidence")
+        if len(patch) > self.max_diff_bytes:
+            raise EvidenceCaptureError(f"Diff exceeds the {self.max_diff_bytes}-byte review limit; "
+                                       "it is not truncated silently")
+        changed = tuple(sorted({path for _, _, _, path in raw}))
+        provenance = freeze({
+            "format": GIT_FORMAT, "head_ref": ref, "base_tree": base_tree, "worktree_tree": worktree_tree,
+            "index_tree": index_tree, "staged_paths": sorted({path for _, _, _, path in staged}),
+            "untracked_paths": untracked, "deleted_paths": sorted(path for status, _, _, path in raw if status == "D"),
+            "diff_sha256": hashlib.sha256(patch).hexdigest(), "diff_bytes": len(patch),
+            "git_version": git.text("--version"),
+        })
+        fingerprint = hashlib.sha256(freeze({
+            "format": GIT_FORMAT, "base_revision": head, "worktree_tree": worktree_tree,
+            "index_tree": index_tree}).encode("utf-8")).hexdigest()
+        return ContentEvidence(head, fingerprint, changed, patch.decode("utf-8", "replace"), provenance)
+
+    # --- commit -----------------------------------------------------------------
+
+    @staticmethod
+    def _commit_text(tree: str, base: str, message: str, name: str, email: str, timestamp: int) -> bytes:
+        who = f"{name} <{email}> {timestamp} +0000"
+        return (f"tree {tree}\nparent {base}\nauthor {who}\ncommitter {who}\n\n{message}").encode("utf-8")
+
+    def _tree_with(self, git: Git, tree: str, plan_updates) -> str:
+        with tempfile.TemporaryDirectory(prefix="harness-git-") as scratch:
+            env = {"GIT_INDEX_FILE": str(Path(scratch) / "index")}
+            git.run("read-tree", tree, env=env)
+            for update in sorted(plan_updates, key=lambda item: item.path):
+                listing = git.run("ls-tree", "-z", tree, "--", update.path).split(b"\0")[0]
+                mode = listing.split(b" ", 1)[0].decode() if listing else "100644"
+                if mode not in {"100644", "100755"}:
+                    raise CommitError("Mechanical update target is not a regular file")
+                blob = git.text("hash-object", "-w", f"--path={update.path}", "--stdin",
+                                input=update.content.encode("utf-8"))
+                git.run("update-index", "--add", "--cacheinfo", f"{mode},{blob},{update.path}", env=env)
+            return git.text("write-tree", env=env)
+
+    def seal(self, context: ProjectContext, plan: CommitPlan) -> tuple[str, str]:
+        git = self._git(context.root)
+        try:
+            tree = self._tree_with(git, plan.reviewed_tree, plan.mechanical) if plan.mechanical else plan.reviewed_tree
+            git.run("cat-file", "-e", f"{tree}^{{tree}}")
+            text = self._commit_text(tree, plan.base_revision, plan.message, plan.author_name,
+                                     plan.author_email, plan.committed_at)
+            # Sin -w: solo calcula el identificador determinista del commit.
+            commit = git.text("hash-object", "-t", "commit", "--stdin", input=text)
+        except GitError as exc:
+            raise CommitError(f"Commit could not be sealed: {exc}") from exc
+        return tree, commit
+
+    def _write_mechanical(self, context: ProjectContext, intent: CommitIntent) -> None:
+        # Todos los destinos se validan antes de escribir ninguno: sin estado parcial propio.
+        targets = []
+        for update in intent.mechanical:
+            target = context.path(update.path)
+            if target.exists() and (target.is_symlink() or not target.is_file()):
+                raise CommitError("Mechanical update target is not a regular file")
+            targets.append((update, target))
+        for update, target in targets:
+            target.parent.mkdir(parents=True, exist_ok=True)
+            mode = target.stat().st_mode & 0o777 if target.exists() else 0o644
+            temporary = target.with_name(f".{target.name}.{intent.operation_id}.tmp")
+            temporary.write_bytes(update.content.encode("utf-8"))
+            os.chmod(temporary, mode)
+            os.replace(temporary, target)
+
+    def _reachable(self, git: Git, intent: CommitIntent, head: str) -> bool:
+        if head == intent.expected_commit:
+            return True
+        if git.code("cat-file", "-e", f"{intent.expected_commit}^{{commit}}") != 0:
+            return False
+        code = git.code("merge-base", "--is-ancestor", intent.expected_commit, head)
+        if code not in (0, 1):
+            raise CommitUncertain("Ancestry of the expected commit could not be determined")
+        return code == 0
+
+    def _refresh_index(self, git: Git, intent: CommitIntent) -> str:
+        current = self._index_tree(git)
+        if current == intent.expected_tree:
+            return "already_current"
+        if current != intent.reviewed_index_tree:
+            return "left_untouched"  # contenido staged posterior a la revisión: no se descarta
+        git.run("read-tree", intent.expected_tree)
+        git.run("update-index", "-q", "--refresh", ok=(0, 1))
+        return "refreshed"
+
+    def _reconciled(self, git: Git, intent: CommitIntent, head: str, *, status: str) -> CommitOutcome:
+        expected = self._commit_text(intent.expected_tree, intent.base_revision, intent.message,
+                                     intent.author_name, intent.author_email, intent.committed_at)
+        if git.run("cat-file", "commit", intent.expected_commit) != expected:
+            raise CommitUncertain("Commit object with the expected id has unexpected content")
+        return CommitOutcome(status, intent.operation_id, commit=intent.expected_commit,
+                             tree=intent.expected_tree, head=head, index=self._refresh_index(git, intent))
+
+    def execute(self, context: ProjectContext, intent: CommitIntent) -> CommitOutcome:
+        git = self._git(context.root)
+        self._require_root(git, context.root)
+        text = self._commit_text(intent.expected_tree, intent.base_revision, intent.message,
+                                 intent.author_name, intent.author_email, intent.committed_at)
+        try:
+            if git.text("hash-object", "-t", "commit", "--stdin", input=text) != intent.expected_commit:
+                raise CommitError("Persisted commit intent is internally inconsistent")
+            head = git.text("rev-parse", "--verify", "HEAD^{commit}")
+            if self._reachable(git, intent, head):
+                return self._reconciled(git, intent, head, status="reconciled")
+            if head != intent.base_revision:
+                if git.code("cat-file", "-e", f"{intent.expected_commit}^{{commit}}") == 0:
+                    raise CommitUncertain(
+                        f"HEAD moved from {intent.base_revision} to {head}; the expected commit object exists "
+                        "but is not reachable. Recover manually with the recorded evidence")
+                return CommitOutcome(
+                    "invalidated", intent.operation_id, head=head,
+                    diagnostic=f"HEAD moved from reviewed base {intent.base_revision} to {head} and no commit "
+                               f"of operation {intent.operation_id} exists; revalidate")
+            observed = self.capture(context)
+            tree = json.loads(observed.provenance_json)
+            if observed.fingerprint != intent.reviewed_fingerprint:
+                already = (intent.mechanical and tree["worktree_tree"] == intent.expected_tree
+                           and tree["index_tree"] == intent.reviewed_index_tree)
+                if not already:
+                    return CommitOutcome(
+                        "invalidated", intent.operation_id, head=head,
+                        observed_fingerprint=observed.fingerprint,
+                        diagnostic=f"Content changed after review; reviewed fingerprint "
+                                   f"{intent.reviewed_fingerprint}, observed {observed.fingerprint}")
+            elif intent.mechanical:
+                self._write_mechanical(context, intent)
+                observed = self.capture(context)
+                tree = json.loads(observed.provenance_json)
+                if tree["worktree_tree"] != intent.expected_tree or tree["index_tree"] != intent.reviewed_index_tree:
+                    return CommitOutcome(
+                        "invalidated", intent.operation_id, head=head, observed_fingerprint=observed.fingerprint,
+                        diagnostic="Mechanical updates did not produce the sealed tree; content changed concurrently")
+            if tree["worktree_tree"] != intent.expected_tree:
+                raise CommitError("Verified content does not match the sealed tree")
+            written = git.text("hash-object", "-t", "commit", "-w", "--stdin", input=text)
+            if written != intent.expected_commit:
+                raise CommitError("Written commit id differs from the sealed id")
+            update = ("update-ref", "-m", f"harness: commit {intent.operation_id}", "HEAD",
+                      intent.expected_commit, intent.base_revision)
+            try:
+                git.run(*update)
+            except GitError:
+                # Un CAS fallido no demuestra por sí mismo qué ocurrió: se vuelve a observar.
+                head = git.text("rev-parse", "--verify", "HEAD^{commit}")
+                if self._reachable(git, intent, head):
+                    return self._reconciled(git, intent, head, status="reconciled")
+                if head != intent.base_revision:
+                    return CommitOutcome(
+                        "invalidated", intent.operation_id, head=head,
+                        diagnostic=f"HEAD moved to {head} before the commit could be recorded; revalidate")
+                raise
+            return self._reconciled(git, intent, intent.expected_commit, status="committed")
+        except GitError as exc:
+            raise CommitUncertain(f"Git state could not be reconciled: {exc}") from exc
+
+
+@dataclass(frozen=True)
+class WorktreeInfo:
+    path: Path
+    branch: str
+    base_revision: str
+    head: str
+    created: bool
+
+
+class GitWorktrees:
+    """Un worktree por tarea, conservado entre revisiones; nunca se limpia ni elimina."""
+
+    def __init__(self, *, executable: str = "git", timeout: float = 120.0):
+        self.executable = executable
+        self.timeout = timeout
+
+    def _registered(self, git: Git) -> dict[Path, dict[str, str]]:
+        found: dict[Path, dict[str, str]] = {}
+        current: dict[str, str] | None = None
+        for line in git.run("worktree", "list", "--porcelain", "-z").decode("utf-8").split("\0"):
+            key, _, value = line.partition(" ")
+            if key == "worktree":
+                current = {}
+                found[Path(value).resolve()] = current
+            elif current is not None and key:
+                current[key] = value
+        return found
+
+    def prepare(self, repository: Path, destination: Path, *, branch: str, base: str = "HEAD") -> WorktreeInfo:
+        repository, destination = Path(repository).resolve(strict=True), Path(destination)
+        git = Git(repository, executable=self.executable, timeout=self.timeout)
+        if not destination.is_absolute() or not destination.parent.is_dir():
+            raise GitError("Worktree destination must be absolute with an existing parent")
+        destination = destination.parent.resolve() / destination.name
+        if destination == repository or destination.is_relative_to(repository):
+            raise GitError("Worktree must live outside the checkout it derives from")
+        if branch.startswith("-") or base.startswith("-"):
+            raise GitError("Branch and base revision must not look like options")
+        git.run("check-ref-format", "--branch", branch)
+        base_sha = git.text("rev-parse", "--verify", f"{base}^{{commit}}")
+        existing = self._registered(git).get(destination)
+        if existing is not None:
+            if existing.get("branch") != f"refs/heads/{branch}":
+                raise GitError("A different branch is already checked out at this worktree path")
+            head = existing["HEAD"]
+            if git.code("merge-base", "--is-ancestor", base_sha, head) != 0:
+                raise GitError("Existing task worktree does not descend from the requested base")
+            return WorktreeInfo(destination, branch, base_sha, head, created=False)
+        if destination.exists() or destination.is_symlink():
+            raise GitError("Worktree path exists and is not a registered worktree; nothing is overwritten")
+        if git.code("show-ref", "--verify", "--quiet", f"refs/heads/{branch}") == 0:
+            raise GitError("Task branch already exists outside this worktree; refusing to reuse silently")
+        try:
+            git.run("worktree", "add", "--quiet", "-b", branch, str(destination), base_sha)
+        except GitError:
+            # Una carrera con otra preparación idéntica es idempotente; otro fallo se propaga.
+            raced = self._registered(git).get(destination)
+            if raced is not None and raced.get("branch") == f"refs/heads/{branch}":
+                return WorktreeInfo(destination, branch, base_sha, raced["HEAD"], created=False)
+            raise
+        return WorktreeInfo(destination, branch, base_sha, base_sha, created=True)

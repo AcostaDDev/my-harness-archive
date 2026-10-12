@@ -1,4 +1,4 @@
-from sqlalchemy import Boolean, JSON, ForeignKey, ForeignKeyConstraint, Integer, String, Text, UniqueConstraint
+from sqlalchemy import Boolean, Index, JSON, ForeignKey, ForeignKeyConstraint, Integer, String, Text, UniqueConstraint, text
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 
 
@@ -143,3 +143,25 @@ class ManagedProcessRow(Base):
     identity: Mapped[dict | None] = mapped_column(JSON, nullable=True)
     status: Mapped[str] = mapped_column(String(40))
     capture: Mapped[dict | None] = mapped_column(JSON, nullable=True)
+
+
+class ManagedCommitRow(Base):
+    """Intención y resultado del commit aceptado; fuente de la conciliación H2.4."""
+
+    __tablename__ = "managed_commits"
+    __table_args__ = (Index("uq_managed_commits_live", "run_id", unique=True,
+                            sqlite_where=text("status IN ('INTENT', 'COMMITTED')")),)
+
+    operation_id: Mapped[str] = mapped_column(String(36), primary_key=True)
+    run_id: Mapped[str] = mapped_column(ForeignKey("managed_runs.id"))
+    job_id: Mapped[int] = mapped_column(ForeignKey("managed_jobs.id"))
+    status: Mapped[str] = mapped_column(String(40))
+    base_revision: Mapped[str] = mapped_column(String(64))
+    reviewed_fingerprint: Mapped[str] = mapped_column(String(64))
+    expected_tree: Mapped[str] = mapped_column(String(64))
+    expected_commit: Mapped[str] = mapped_column(String(64))
+    intent_json: Mapped[str] = mapped_column(Text)
+    result_json: Mapped[str | None] = mapped_column(Text, nullable=True)
+    commit_sha: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    created_at: Mapped[str] = mapped_column(String(40))
+    finished_at: Mapped[str | None] = mapped_column(String(40), nullable=True)

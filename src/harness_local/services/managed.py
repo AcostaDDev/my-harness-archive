@@ -10,6 +10,7 @@ import json
 from threading import Event, Thread
 from uuid import uuid4
 
+from harness_local.core.engine.commit import MechanicalUpdate, commit_accepted
 from harness_local.core.engine.journal import JournalError
 from harness_local.core.engine.serialization import restore_context
 from harness_local.core.engine.workflow import OfflineEngine
@@ -41,6 +42,18 @@ class _Journal:
     def process_update(self, attempt_id, kind, payload):
         self._call(self.repository.process_update, attempt_id, kind, payload)
 
+    def pending_commit(self):
+        return self._call(self.repository.pending_commit)
+
+    def commit_intent(self, intent):
+        self._call(self.repository.commit_intent, intent)
+
+    def commit_result(self, outcome):
+        self._call(self.repository.commit_result, outcome)
+
+    def commit_invalidated(self, outcome):
+        self._call(self.repository.commit_invalidated, outcome)
+
     def command_started(self, command):
         identity = str(uuid4())
         self._call(self.repository.effect, "command_started", {"command_id": identity, "command": asdict(command)})
@@ -51,15 +64,17 @@ class _Journal:
 
 
 class LocalSupervisor:
-    def __init__(self, repository, ports_factory, *, lease_seconds=30):
+    def __init__(self, repository, ports_factory, *, lease_seconds=30, commit_factory=None):
         """factory(context, frozen_versions) devuelve agentes, comandos y evidencia.
 
         Los puertos CLI H2.3 se conectan solo por inyección explícita. La selección/versiones es explícita;
         la factory debe rechazarlas si no dispone de la implementación congelada.
-        No es un servicio autoarrancado.
+        No es un servicio autoarrancado. `commit_factory(context, frozen_versions)` aporta el
+        escritor Git (captura + commit idempotente) solo para jobs de acción `commit`.
         """
         self.repository = repository
         self.ports_factory = ports_factory
+        self.commit_factory = commit_factory
         self.lease_seconds = lease_seconds
 
     def run_once(self):
@@ -86,17 +101,26 @@ class LocalSupervisor:
             self.repository.register_owner(claim, identity())
             record = self.repository.get_run(claim.run_id)
             context = restore_context(record.history.context_json)
-            agents, commands, evidence = self.ports_factory(context, json.loads(record.versions_json))
             journal = _Journal(self.repository, claim, heartbeat_failed)
-            if hasattr(agents, "bind_process_journal"):
-                agents.bind_process_journal(journal)
-            engine = OfflineEngine(agents, commands, evidence, journal)
             request = json.loads(claim.request_json)
-            if request["action"] == "start":
-                history = engine.start(context, request["task_id"], request["phase_id"], request["text"],
-                                       history=record.history)
+            versions = json.loads(record.versions_json)
+            if request["action"] == "commit":
+                if self.commit_factory is None:
+                    raise RuntimeError("No commit writer configured for a commit job")
+                writer = self.commit_factory(context, versions)
+                updates = tuple(MechanicalUpdate(**item) for item in request["mechanical"])
+                history, _ = commit_accepted(context, record.history, writer, journal, mechanical=updates,
+                                             now=self.repository.clock)
             else:
-                history = engine.resume(context, record.history, retry_executor=request["action"] == "retry")
+                agents, commands, evidence = self.ports_factory(context, versions)
+                if hasattr(agents, "bind_process_journal"):
+                    agents.bind_process_journal(journal)
+                engine = OfflineEngine(agents, commands, evidence, journal)
+                if request["action"] == "start":
+                    history = engine.start(context, request["task_id"], request["phase_id"], request["text"],
+                                           history=record.history)
+                else:
+                    history = engine.resume(context, record.history, retry_executor=request["action"] == "retry")
             self.repository.close_owner(claim)
             owner_closed = True
             journal._call(self.repository.finish, history)
