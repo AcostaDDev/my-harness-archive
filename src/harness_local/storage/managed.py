@@ -88,6 +88,9 @@ def _operation_module(run):
     if run.purpose == "chat":
         from harness_local.storage import chat
         return chat
+    if run.purpose == "document_export":
+        from harness_local.storage import document_export
+        return document_export
     from harness_local.storage import phases
     return phases
 
@@ -231,6 +234,9 @@ class SQLiteManagedRepository:
     def _phase_open(session, root, code):
         """H3.3/H3.4: una fase cerrada, cerrándose o abandonada no acepta tareas, reanudaciones ni commits."""
         from harness_local.storage.models import PhaseRow
+        from harness_local.storage.document_export import unresolved
+        if unresolved(session, root):
+            raise Conflict('A document export intent awaits reconciliation; recover it first')
         if session.scalar(select(PhaseRow.id).where(PhaseRow.root == root, PhaseRow.code == code,
                                                     PhaseRow.status.in_(("CLOSED", "CLOSING", "ABANDONED")))):
             raise Conflict("The phase is closed, closing or abandoned in this checkout; it does not advance")
@@ -620,6 +626,17 @@ class SQLiteManagedRepository:
             from harness_local.storage.phases import record_tag_intent
             record_tag_intent(self, session, run, intent)
             self._event(session, run, "phase_tag_intent", {"job_id": job.id, **intent})
+
+    def export_intent(self, claim: JobRecord, intent: CommitIntent) -> None:
+        """Intención de exportación confirmada, persistida antes de escribir documentos o Git."""
+        self._require_mode(claim)
+        with self._write() as session:
+            _, run = self._owned(session, claim)
+            from harness_local.storage.document_export import record_intent
+            record_intent(self, session, run, intent)
+            self._event(session, run, 'document_export_intent', {
+                'operation_id': intent.operation_id, 'expected_commit': intent.expected_commit,
+                'expected_tree': intent.expected_tree})
 
     def register_owner(self, claim, identity):
         with self._write() as session:

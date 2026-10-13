@@ -240,6 +240,9 @@ class PhaseRepository:
             raise LookupError('Phase belongs to another checkout')
         if type(expected) is not int or phase.version != expected:
             raise Conflict('Phase changed; reload before acting')
+        from harness_local.storage.document_export import unresolved
+        if unresolved(session, phase.root):
+            raise Conflict('A document export intent awaits reconciliation; recover it first')
         return phase
 
     @staticmethod
@@ -316,6 +319,9 @@ class PhaseRepository:
                     actions.append('batch_next')  # lote manual H3.3; el desatendido lo conduce el supervisor
             if phase.status in AMENDABLE and not pending:
                 actions += ['amend', 'abandon']
+            from harness_local.storage.document_export import unresolved
+            if unresolved(session, phase.root):
+                actions = []
             return {
                 'id': phase.id, 'root': phase.root, 'code': phase.code, 'definition': phase.definition,
                 'definition_sha256': phase.definition_sha256, 'definition_number': phase.definition_number,
@@ -380,6 +386,9 @@ class PhaseRepository:
         documents = document_hashes(context, definition['documents'])
         with self.managed._write() as session:
             root = str(context.root)
+            from harness_local.storage.document_export import unresolved
+            if self._root_pending(session, root) or unresolved(session, root):
+                raise Conflict('Checkout has unfinished work; finish or reconcile it before creating a phase')
             if session.scalar(select(Phase.id).where(Phase.root == root, Phase.code == definition['code'])):
                 raise Conflict('Phase code already exists in this checkout')
             if session.scalar(select(Phase.id).where(Phase.root == root, Phase.status.notin_(TERMINAL))):

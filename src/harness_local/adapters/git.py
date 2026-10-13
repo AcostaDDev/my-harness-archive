@@ -7,7 +7,7 @@ Solo se escriben objetos Git (blobs/árboles). No hay filtros definidos fuera de
 repositorio ni sandbox: un worktree separa trabajo, no aísla seguridad.
 """
 
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 import hashlib
 import json
 import os
@@ -330,6 +330,47 @@ class GitWorkspace:
             return self._reconciled(git, intent, intent.expected_commit, status="committed")
         except GitError as exc:
             raise CommitUncertain(f"Git state could not be reconciled: {exc}") from exc
+
+    def execute_export(self, context: ProjectContext, intent: CommitIntent, documents: list[dict]) -> CommitOutcome:
+        """H2.4 con recuperación de una escritura parcial de documentos por hashes antiguo/nuevo.
+
+        Nunca adopta bytes externos. Incluso tras una caída, el árbol al completar los dos
+        bloques debe ser exactamente el árbol sellado y el índice debe seguir intacto.
+        """
+        git = self._git(context.root)
+        head = git.text("rev-parse", "--verify", "HEAD^{commit}")
+        if self._reachable(git, intent, head):
+            return self.execute(context, intent)
+        if head != intent.base_revision:
+            return self.execute(context, intent)
+        for doc in documents:
+            target = context.path(doc['path'])
+            if not target.is_file() or target.is_symlink():
+                return CommitOutcome('invalidated', intent.operation_id, diagnostic='Export document is no longer regular')
+            sha = hashlib.sha256(target.read_bytes()).hexdigest()
+            if sha not in (doc['before_sha256'], doc['after_sha256']):
+                return CommitOutcome('invalidated', intent.operation_id,
+                                     diagnostic='Document changed externally after export preview: ' + doc['path'])
+        observed = self.capture(context)
+        provenance = json.loads(observed.provenance_json)
+        plan = CommitPlan(intent.base_revision, provenance['worktree_tree'], intent.mechanical, intent.message,
+                          intent.author_name, intent.author_email, intent.committed_at)
+        tree, commit = self.seal(context, plan)
+        if (tree != intent.expected_tree or commit != intent.expected_commit
+                or provenance['index_tree'] != intent.reviewed_index_tree):
+            return CommitOutcome('invalidated', intent.operation_id, diagnostic='Checkout changed outside export blocks')
+        # Cada reemplazo es atómico. Tras una caída entre documentos, se aceptan solo hashes
+        # originales o sellados; no se genera otra intención/identidad de commit.
+        for update in intent.mechanical:
+            doc = next(d for d in documents if d['path'] == update.path)
+            target = context.path(update.path)
+            sha = hashlib.sha256(target.read_bytes()).hexdigest()
+            if sha == doc['after_sha256']:
+                continue
+            if sha != doc['before_sha256']:
+                return CommitOutcome('invalidated', intent.operation_id, diagnostic='Document changed during export')
+            self._write_mechanical(context, replace(intent, mechanical=(update,)))
+        return self.execute(context, intent)
 
     # --- H3.3: puertas y tag de fase ----------------------------------------------
 

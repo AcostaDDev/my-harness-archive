@@ -57,6 +57,9 @@ class _Journal:
     def tag_intent(self, intent):
         self._call(self.repository.tag_intent, intent)
 
+    def export_intent(self, intent):
+        self._call(self.repository.export_intent, intent)
+
     def command_started(self, command):
         identity = str(uuid4())
         self._call(self.repository.effect, "command_started", {"command_id": identity, "command": asdict(command)})
@@ -116,7 +119,17 @@ class LocalSupervisor:
             request = json.loads(claim.request_json)
             versions = json.loads(record.versions_json)
             outcome = None
-            if request["action"] == "chat_turn":
+            if request["action"] == "document_export":
+                from harness_local.core.engine.document_export import execute
+                from harness_local.storage.document_export import DocumentExportRepository
+                if self.commit_factory is None:
+                    raise RuntimeError('Document export requires the configured Git writer')
+                writer = self.commit_factory(context, versions)
+                frozen = DocumentExportRepository(self.repository).request(claim.run_id)
+                # En reanudación la intención ya existe; la guardia vuelve a comprobarse antes del efecto.
+                self.repository._require_mode(claim)
+                history, outcome = execute(context, record.history, frozen, writer, journal, self.repository.clock)
+            elif request["action"] == "chat_turn":
                 # H4.1: turno de solo lectura con la petición congelada al encolarlo; sin escritor Git.
                 from harness_local.core.engine.chat import chat_turn
                 from harness_local.storage.chat import ChatRepository

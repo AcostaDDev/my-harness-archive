@@ -896,6 +896,24 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/managed/phases/{phase_id}/export": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Export Preview */
+        get: operations["managed_document_export_preview"];
+        put?: never;
+        /** Export Documents */
+        post: operations["managed_document_export"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/managed/projects/{project_id}/conversations": {
         parameters: {
             query?: never;
@@ -1346,6 +1364,57 @@ export interface components {
             /** Changed Paths */
             changed_paths: string[];
         };
+        /** DocumentExportCreate */
+        DocumentExportCreate: {
+            /** Expected Version */
+            expected_version: number;
+            /** Preview Sha256 */
+            preview_sha256: string;
+            /** Resume Operation Id */
+            resume_operation_id?: string | null;
+            /** Reason */
+            reason: string;
+            /**
+             * Confirmed
+             * @constant
+             */
+            confirmed: true;
+        };
+        /** DocumentExportPreviewRead */
+        DocumentExportPreviewRead: {
+            /** Expected Version */
+            expected_version: number;
+            /** Resume Operation Id */
+            resume_operation_id: string | null;
+            /** Preview Sha256 */
+            preview_sha256: string;
+            /** Snapshot */
+            snapshot: {
+                [key: string]: unknown;
+            };
+            /** Baseline */
+            baseline: {
+                [key: string]: string | null;
+            };
+            /** Head */
+            head: string;
+            /** Fingerprint */
+            fingerprint: string;
+            /** Tree */
+            tree: string;
+            /** Index Tree */
+            index_tree: string;
+            /** Documents */
+            documents: {
+                [key: string]: unknown;
+            }[];
+            /** Mechanical */
+            mechanical: {
+                [key: string]: string;
+            }[];
+            /** Diff */
+            diff: string;
+        };
         /** EvidenceContentRead */
         EvidenceContentRead: {
             /** Path */
@@ -1740,7 +1809,7 @@ export interface components {
              * Purpose
              * @enum {string}
              */
-            purpose: "task" | "phase_check" | "phase_close" | "chat";
+            purpose: "task" | "phase_check" | "phase_close" | "chat" | "document_export";
             /** Actions */
             actions: ("revalidate" | "retry_executor" | "commit" | "permissions")[];
             /** Versions */
@@ -1782,7 +1851,7 @@ export interface components {
              * Purpose
              * @enum {string}
              */
-            purpose: "task" | "phase_check" | "phase_close" | "chat";
+            purpose: "task" | "phase_check" | "phase_close" | "chat" | "document_export";
         };
         /** MigrationPreviewRead */
         MigrationPreviewRead: {
@@ -2226,7 +2295,7 @@ export interface components {
              * Kind
              * @enum {string}
              */
-            kind: "check" | "close" | "reconcile" | "reconcile_task" | "amend" | "abandon";
+            kind: "check" | "close" | "reconcile" | "reconcile_task" | "amend" | "abandon" | "document_export";
             /** Run Id */
             run_id: string | null;
             /** Status */
@@ -5713,6 +5782,134 @@ export interface operations {
         requestBody: {
             content: {
                 "application/json": components["schemas"]["PhaseReconcileTaskCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ManagedJobRead"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+        };
+    };
+    managed_document_export_preview: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Obligatoria con valor 1 en mutaciones (protección CSRF). */
+                "x-harness-local"?: string | null;
+            };
+            path: {
+                phase_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DocumentExportPreviewRead"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+        };
+    };
+    managed_document_export: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Misma clave y misma acción devuelven el mismo job. */
+                "Idempotency-Key": string;
+                /** @description Obligatoria con valor 1 en mutaciones (protección CSRF). */
+                "x-harness-local"?: string | null;
+            };
+            path: {
+                phase_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DocumentExportCreate"];
             };
         };
         responses: {

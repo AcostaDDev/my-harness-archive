@@ -1,15 +1,14 @@
 # my_harness — Harness Local
 
 Aplicación local para configurar, ejecutar y observar un harness modular de desarrollo con agentes.
-Estado actual: H0, H1, H2.1–H2.5 y la parte 1 de la salida del hito 2 completados.
-H2.3 conserva un smoke real autorizado con las tres CLI (D025); H2.4 añade Git por
-árboles, worktree por tarea y commit determinista conciliable; H2.5, la migración
-controlada de un checkout legacy a modo gestionado (D027); la parte 1, la API
-gestionada local `/api/managed` (D028), todo verificado offline. Siguiente tarea:
-UI gestionada local (salida del hito 2, parte 2). Esqueleto Python/API/UI con
-simulaciones persistidas, observación legacy y motor con persistencia/cola.
-Adaptadores CLI y grupos de procesos por inyección explícita; sin UI/CLI gestionada
-ni ejecución automática de proveedores.
+Estado actual: H0, H1, H2.1–H2.5, salida del hito 2, H3.1–H3.4,
+H4.1 y exportación mecánica de STATE/NEXT_STEPS completados offline.
+Python/API/UI con simulaciones, observación legacy y motor con cola/persistencia;
+Git, migración gestionada, prompts/permisos, fases/lotes y chat contextual.
+La exportación usa diff confirmado, commit conciliable y adopción de hashes (D036).
+H2.3 conserva el smoke real de transporte D025; el resto está verificado con
+Git/SQLite sintéticos y fakes. Proveedores opt-in por inyección explícita, sin
+entrada CLI gestionada. Siguiente tarea: H4.2 bootstrap guiado, sin iniciar.
 
 ## Documentación
 
@@ -37,6 +36,7 @@ ni ejecución automática de proveedores.
 - [Fases, preguntas, cierre y tags H3.3, verificados offline](docs/discovery/H3.3_PHASES.md).
 - [Ajustes de fases, lote desatendido y guardia H0/H1 H3.4, verificados offline](docs/discovery/H3.4_PHASE_ADJUSTMENTS.md).
 - [Chat contextual H4.1, verificado offline](docs/discovery/H4.1_CHAT.md).
+- [Exportación mecánica de STATE/NEXT_STEPS, verificada offline](docs/discovery/STATE_EXPORT.md).
 - [Smoke cli-3: MCP aceptado, fallo de autenticación Claude](docs/discovery/H2.3_SMOKE_CLI3.md).
 - [Git, worktree y commit acotado H2.4](docs/discovery/H2.4_GIT.md).
 - [Migración a modo gestionado H2.5](docs/discovery/H2.5_MIGRATION.md).
@@ -143,7 +143,7 @@ La API gestionada local (proyectos registrados en el servidor, supervisor opt-in
 idempotencia, versiones y guardia Host/Origin/CSRF) está completada offline: ver
 [entrega y límites](docs/discovery/H2_EXIT_API.md). La UI gestionada local está
 completada offline; [demo, verificación y límites](docs/discovery/H2_EXIT_UI.md).
-H4.1 completado offline (D035); siguiente tarea: exportación mecánica de STATE/NEXT_STEPS, sin iniciar. Ver [corrección y límites](docs/discovery/H2.3_MCP_FIX.md)
+H4.1 y exportación mecánica completados offline (D035/D036); siguiente tarea: H4.2 bootstrap guiado, sin iniciar. Ver [corrección y límites](docs/discovery/H2.3_MCP_FIX.md)
 y [resultado real cli-3](docs/discovery/H2.3_SMOKE_CLI3.md). El consentimiento
 terminó al fallo; otro smoke requiere propuesta y autorización específicas.
 Ver [corrección del entorno](docs/discovery/H2.3_ENV_FIX.md) y
@@ -253,3 +253,11 @@ H4.1 añade el chat contextual. Cada mensaje es un turno nuevo de solo lectura (
 turnos anteriores. La salida tiene un esquema fijo, sin fallback ni reintento. Una
 propuesta solo crea una tarea normal (planificador, ejecutor, revisión y commit)
 tras una confirmación explícita del hash mostrado. [Contrato y límites](docs/discovery/H4.1_CHAT.md).
+
+La exportación mecánica (D036) se previsualiza en Documentos de la fase y se
+confirma por el diff exacto. Genera bloques delimitados en STATE/NEXT_STEPS desde
+SQLite, conserva la prosa, detecta deriva externa y crea un commit Git conciliable
+antes de adoptar los hashes. El cierre sigue separado; exportar no mueve tags.
+Ante una caída, confirmar primero el escritor detenido y volver a previsualizar
+la fase permite conciliar la misma intención, sin duplicar commits ni invocar
+agentes. [Protocolo, API y límites](docs/discovery/STATE_EXPORT.md).

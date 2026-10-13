@@ -454,6 +454,30 @@ def managed_router(runtime: ManagedRuntime):
                    key=idempotency_key, versions=frozen_versions(item))
         return queued(job)
 
+    # --- Exportación mecánica confirmada de documentos -----------------------------------------
+    from harness_local.api.schemas import DocumentExportCreate, DocumentExportPreviewRead
+    from harness_local.storage.document_export import DocumentExportRepository
+
+    def export_writer(item):
+        if runtime.config.commit_factory is None:
+            raise problem(409, 'commit_writer_unavailable', 'La exportación requiere un escritor Git configurado.')
+        return runtime.config.commit_factory(item.context, frozen_versions(item))
+
+    @router.get('/phases/{phase_id}/export', response_model=DocumentExportPreviewRead,
+                operation_id='managed_document_export_preview')
+    def export_preview(phase_id: str):
+        item, _ = registered_phase(phase_id)
+        return call(DocumentExportRepository(runtime.repository).preview, item.context, phase_id, export_writer(item))
+
+    @router.post('/phases/{phase_id}/export', response_model=ManagedJobRead, status_code=202,
+                 operation_id='managed_document_export')
+    def export_documents(phase_id: str, body: DocumentExportCreate, idempotency_key: IdempotencyKey):
+        item, _ = registered_phase(phase_id)
+        job = call(DocumentExportRepository(runtime.repository).submit, item.context, phase_id, body.expected_version,
+                   key=idempotency_key, versions=frozen_versions(item), git=export_writer(item),
+                   **body.model_dump(exclude={'expected_version'}))
+        return queued(job)
+
     # --- H4.1: chat contextual -----------------------------------------------------------------
 
     from harness_local.api.schemas import (

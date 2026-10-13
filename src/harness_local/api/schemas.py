@@ -265,7 +265,7 @@ class ManagedRunSummaryRead(BaseModel):
     revision_limit: int
     created_at: str
     updated_at: str
-    purpose: Literal['task', 'phase_check', 'phase_close', 'chat']
+    purpose: Literal['task', 'phase_check', 'phase_close', 'chat', 'document_export']
 
 
 class StopRead(BaseModel):
@@ -503,7 +503,7 @@ class PhaseQuestionRead(BaseModel):
 
 class PhaseOperationRead(BaseModel):
     id: str
-    kind: Literal['check', 'close', 'reconcile', 'reconcile_task', 'amend', 'abandon']
+    kind: Literal['check', 'close', 'reconcile', 'reconcile_task', 'amend', 'abandon', 'document_export']
     run_id: str | None
     status: str
     previous_status: str
@@ -632,6 +632,28 @@ class PhaseAbandonCreate(PhaseVersioned):
 
 class PhaseReconcileTaskCreate(PhaseVersioned):
     pass
+
+
+class DocumentExportPreviewRead(BaseModel):
+    expected_version: int
+    resume_operation_id: str | None
+    preview_sha256: str
+    snapshot: dict[str, Any]
+    baseline: dict[str, str | None]
+    head: str
+    fingerprint: str
+    tree: str
+    index_tree: str
+    documents: list[dict[str, Any]]
+    mechanical: list[dict[str, str]]
+    diff: str
+
+
+class DocumentExportCreate(PhaseVersioned):
+    preview_sha256: str = Field(pattern=r'^[0-9a-f]{64}$')
+    resume_operation_id: str | None = Field(default=None, max_length=36)
+    reason: str = Field(min_length=1, max_length=2000)
+    confirmed: Literal[True]
 
 
 class PhaseRevokeCreate(PhaseVersioned):

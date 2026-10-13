@@ -171,27 +171,28 @@ function Run({ id, refresh, busy, operate, send }: { id: string; refresh: number
     <h2>{run.task_id} · {run.status}</h2><p>Etapa: {run.stage} · Versión observada: {run.version}</p>
     {error && <p role="status" className="error">{error}</p>}
     {run.history.stop && <p className="error">Bloqueo: {run.history.stop.reason}</p>}
-    <p>{run.status === "COMMITTED" ? "Contenido revisado guardado en el commit indicado." : run.history.acceptance?.eligible ? "Contenido aceptado y elegible para commit." : "Sin aceptación vigente para commit."}</p>
+    {run.purpose === "document_export" ? <p>Exportación documental confirmada por su diff. El resultado y el commit se consultan en el historial de la fase.</p>
+      : <p>{run.status === "COMMITTED" ? "Contenido revisado guardado en el commit indicado." : run.history.acceptance?.eligible ? "Contenido aceptado y elegible para commit." : "Sin aceptación vigente para commit."}</p>}
     {run.commit && <p>Commit: {run.commit.status} · <code>{run.commit.commit ?? run.commit.expected_commit}</code></p>}
-    <p className="hint">COMMITTED conserva un checkpoint del trabajo revisado; la integración en la rama destino queda pendiente.</p>
+    {run.purpose !== "document_export" && <p className="hint">COMMITTED conserva un checkpoint del trabajo revisado; la integración en la rama destino queda pendiente.</p>}
     {run.history.cycles.map(c => <div key={c.number}><h3>Revisión {c.number} · {c.verdict ?? "sin veredicto"}</h3>
       <details><summary>Diff revisado</summary><pre>{c.diff}</pre></details>
       <Evidence title="Tests y evidencia validada" value={c.validation} /><Evidence title="Hallazgos y revisión" value={c.review} />
     </div>)}
     <Evidence title="Contrato, revisiones y aceptación" value={run.history} />
     <Evidence title="Evidencia de commit y versiones" value={{ commit: run.commit, versions: run.versions }} />
-    <div className="pagination">
+    {run.purpose !== "document_export" && <><div className="pagination">
       <button disabled={busy || locked || !!error || !run.actions.includes("revalidate")} onClick={() => action("revalidate")}>Revalidar y revisar</button>
       <button disabled={busy || locked || !!error || !run.actions.includes("retry_executor")} onClick={() => { if (window.confirm("¿Reintentar el ejecutor? Consume el presupuesto de correcciones y puede modificar el trabajo.")) action("retry_executor"); }}>Reintentar ejecutor</button>
     </div>
     <label className="check"><input type="checkbox" checked={commitConfirmed} onChange={e => setCommitConfirmed(e.target.checked)} />He revisado la evidencia de esta versión y confirmo el commit.</label>
     <button disabled={busy || locked || !!error || !commitConfirmed || !run.actions.includes("commit")} onClick={() => action("commit")}>Confirmar commit</button>
-    <Permissions run={run} busy={busy || !!error} refresh={refresh} operate={operate} />
+    <Permissions run={run} busy={busy || !!error} refresh={refresh} operate={operate} /></>}
     <h3>Jobs y recuperación</h3>
     {jobs.map(job => <div key={job.id} className="entry"><strong>Job {job.id} · {job.action} · {job.status}</strong>
       {job.diagnostic && <p>{job.diagnostic}</p>}
       {job.status === "RECOVERY_REQUIRED" && <>
-        <p>El lease vencido no prueba que el escritor terminó. Comprueba su parada antes de liberar el checkout; después podrás revalidar sin repetir el ejecutor.</p>
+        <p>El lease vencido no prueba que el escritor terminó. Comprueba su parada antes de liberar el checkout; {run.purpose === "document_export" ? "después previsualiza la exportación en la fase para conciliar la intención conservada." : "después podrás revalidar sin repetir el ejecutor."}</p>
         <label>Evidencia de parada<input value={reason} onChange={e => setReason(e.target.value)} maxLength={2000} /></label>
         <label className="check"><input type="checkbox" checked={confirmed} onChange={e => setConfirmed(e.target.checked)} />Confirmo explícitamente que el escritor anterior está detenido.</label>
         <button disabled={busy || !!error || !confirmed || !reason.trim() || !job.owner_token} onClick={() => void operate(async () => {

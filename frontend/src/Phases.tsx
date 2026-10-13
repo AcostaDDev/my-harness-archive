@@ -89,6 +89,9 @@ function Phase({ id, busy, refresh, operate, send }: Omit<Props, "project"> & { 
   const [amendConfirmed, setAmendConfirmed] = useState(false);
   const [abandonReason, setAbandonReason] = useState("");
   const [abandonConfirmed, setAbandonConfirmed] = useState(false);
+  const [exportPreview, setExportPreview] = useState<S["DocumentExportPreviewRead"]>();
+  const [exportReason, setExportReason] = useState("");
+  const [exportConfirmed, setExportConfirmed] = useState(false);
   useEffect(() => {
     let active = true;
     let timer: ReturnType<typeof setTimeout>;
@@ -102,6 +105,7 @@ function Phase({ id, busy, refresh, operate, send }: Omit<Props, "project"> & { 
   // Las confirmaciones solo valen para la versión y la evidencia que se mostraron.
   useEffect(() => { setAnswerConfirmed(false); setReconcileConfirmed(false); setCloseConfirmed(false); setBatchConfirmed(false); setAmendConfirmed(false); setAbandonConfirmed(false); },
     [phase?.version, phase?.ready?.binding_sha256, phase?.documents.current_sha256]);
+  useEffect(() => { setExportConfirmed(false); setExportPreview(undefined); }, [phase?.version, phase?.documents.current_sha256]);
   // El formulario de enmienda parte de la definición vigente; cambia solo al cambiar de versión de definición.
   useEffect(() => {
     if (!phase) return;
@@ -133,6 +137,26 @@ function Phase({ id, busy, refresh, operate, send }: Omit<Props, "project"> & { 
     })}>Adoptar documentos actuales</button>
       <button disabled={!can("reconcile_task")} onClick={() => void operate(() => send(jobRequest(`/phases/${id}/reconcile-task`, { expected_version: v })))}>Reconciliar con agente</button></div>
     <p>Reconciliar con agente crea una tarea normal con contrato determinista (plantilla reconcile-phase) limitada a estos documentos: se ejecuta, se revisa y su commit se confirma en la sección de runs. Después adopta aquí los documentos por hash.</p>
+
+    <div className="entry"><h4>Exportar estado gestionado</h4>
+      <p>Previsualiza los bloques mecánicos de STATE y NEXT_STEPS a partir de SQLite. Conserva la prosa exterior. Confirmar crea un commit del diff exacto y adopta los hashes; el cierre de fase sigue siendo una acción separada.</p>
+      <button disabled={busy || !!error} onClick={() => void operate(async () => {
+        const preview = await managed<S["DocumentExportPreviewRead"]>(`/phases/${id}/export`);
+        setExportConfirmed(false); setExportPreview(preview);
+      })}>Previsualizar exportación</button>
+      {exportPreview && <>
+        <p>Base <code>{exportPreview.head}</code> · contenido <code>{exportPreview.preview_sha256}</code></p>
+        {exportPreview.resume_operation_id && <p>Conciliación de la intención conservada {exportPreview.resume_operation_id}. Reutiliza el mismo commit después de confirmar que el escritor anterior se detuvo.</p>}
+        <pre className="diff">{exportPreview.diff || "Los bloques ya coinciden con SQLite."}</pre>
+        <label>Motivo de la exportación<input value={exportReason} maxLength={2000} onChange={e => { setExportReason(e.target.value); setExportConfirmed(false); }} /></label>
+        <label className="check"><input type="checkbox" checked={exportConfirmed} onChange={e => setExportConfirmed(e.target.checked)} />He revisado este diff y confirmo su commit y la adopción de estos documentos.</label>
+        <button disabled={busy || !!error || !exportConfirmed || !exportReason.trim() || !exportPreview.mechanical.length || exportPreview.expected_version !== v}
+          onClick={() => void operate(() => send(jobRequest(`/phases/${id}/export`, {
+            expected_version: exportPreview.expected_version, preview_sha256: exportPreview.preview_sha256,
+            resume_operation_id: exportPreview.resume_operation_id, reason: exportReason, confirmed: true,
+          } satisfies S["DocumentExportCreate"])))}>Confirmar exportación y commit</button>
+      </>}
+    </div>
 
     <h4>Preguntas bloqueantes ({open.length} pendientes)</h4>
     {phase.questions.map(q => <div className="entry" key={q.id}><strong>{q.status === "OPEN" ? "Pendiente" : "Respondida"} · {q.text}</strong>

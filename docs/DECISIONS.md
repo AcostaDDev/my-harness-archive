@@ -972,3 +972,58 @@ autorizado; queda para cuando se decida explícitamente.
 siendo válidos al reanudar (`ADDED_LATER`), sin reescritura. Siguiente tarea:
 exportación mecánica de STATE/NEXT_STEPS (D033 punto 1), sin iniciar; los smokes
 anteriores siguen sin autorización.
+
+## D036 — Exportación documental separada, diff confirmado e intención de commit conciliable
+
+Estado: implementado y verificado offline el 2026-10-13 (punto 1 de D033).
+[Entrega y límites](discovery/STATE_EXPORT.md).
+
+El cierre sigue siendo D032: CLOSED + tag, sin invocar la exportación. Exportar es
+una acción propia, también disponible para la última fase cerrada o abandonada,
+hasta crear otra fase. Así el tag conserva el HEAD evaluado; exportar después no
+lo mueve. Una exportación previa a cerrar vuelve obsoleto el vínculo READY por
+sus documentos/HEAD: se exige un check nuevo. La evaluación histórica se conserva.
+
+STATE y NEXT_STEPS usan las rutas del contexto del servidor, distintas y presentes
+en la base documental adoptada. Los documentos regulares UTF-8 se acotan a 512 KiB.
+Se añade o reemplaza únicamente el bloque entre
+`<!-- harness-local:managed-state:start -->` y
+`<!-- harness-local:managed-state:end -->`. La prosa exterior y sus terminaciones
+de línea se conservan; marcadores parciales, repetidos o mal colocados se rechazan.
+El bloque contiene JSON estable, con fase/estado, tareas/aceptación/commit,
+preguntas abiertas, último check (incluida validación) y lotes registrados.
+NEXT_STEPS proyecta tareas sin commit. null conserva datos ausentes. Se escapan
+valores libres para que no inyecten HTML, fences ni marcadores. No se incluye el
+reloj actual, las versiones/eventos de exportación ni su propio commit, evitando
+un ciclo de actualizaciones del documento sobre sí mismo.
+
+La revisión de contenido exacto es humana: GET previsualiza el diff y POST exige
+su SHA-256, versión de fase, motivo, confirmación e Idempotency-Key. La API no
+acepta contenidos o rutas arbitrarios. El checkout/índice deben estar limpios,
+todos los documentos deben coincidir con sus hashes adoptados y se debe revocar
+un lote activo antes de exportar. Deriva externa → conflicto y reconciliación
+por hash existente; nunca mezcla silenciosa. Las rutas usan la guardia local.
+
+Un run `document_export` reutiliza jobs, lock, lease, propietarios, cuarentena,
+operaciones y eventos de fase. No invoca agentes. La operación conserva snapshot,
+bytes/diff, hashes revisados y el CommitIntent H2.4, fijando árbol, mensaje,
+identidad, fecha e id del commit antes de escribir. El escritor Git utiliza CAS.
+La conciliación tras confirmar el escritor detenido y volver a confirmar el diff
+reutiliza la misma operación/run/intención; no crea otro commit. Una escritura
+parcial solo admite cada documento con su hash anterior o sellado y exige que
+completar los bloques produzca exactamente el árbol sellado con índice intacto.
+Cualquier byte ajeno o cambio del checkout invalida sin sobrescribirlo.
+
+La adopción de hashes, resultado y evento ocurre atómicamente al terminar el job,
+después de verificar el commit y todos los documentos. Una caída antes de esa
+transacción conserva la intención. Las mutaciones de fase y nuevas tareas quedan
+bloqueadas mientras una intención incierta exige conciliación. La autoridad se
+almacena en `phase_operations`, no en `managed_commits`, que sigue certificando
+aceptaciones de tareas. No se añade migración ni codec; esquema `0012_chat`.
+
+La exclusión frente a escritores externos sigue siendo cooperativa: se comprueban
+hashes/árboles entre efectos, sin prometer atomicidad de dos archivos ni aislamiento
+físico. Si cambian documentos después de un commit incierto, hay que restaurar
+manualmente el contenido sellado para conciliar/adoptar; no se revierte ni fusiona
+por el motor. Abandonar una intención ambigua y retener temporales siguen fuera.
+H4.2 es la siguiente tarea, sin iniciarla. Los smokes siguen sin autorización.

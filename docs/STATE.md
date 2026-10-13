@@ -35,7 +35,7 @@ Actualizado: 2026-10-13.
 - Dependencias reales instaladas en `.venv` / `frontend/node_modules`, locks
   `uv.lock` / `frontend/package-lock.json`. Pins H0.2 usados conservados;
   backend de paquete `uv_build==0.12.19`. Comandos comprobados en README/AGENTS.
-- 418 casos de producto en `tests/product/`; pytest ejecuta 430 pruebas en total.
+- 450 casos de producto en `tests/product/`; pytest ejecuta 462 pruebas en total.
   La comprobación ligera anterior conserva sus 12 checks sin dependencias.
 - H1.1 completado: [importación legacy y verificaciones](discovery/H1.1_IMPORT.md),
   [alcance original](discovery/H1.1_SCOPE.md). Lector local explícito de
@@ -300,6 +300,19 @@ Actualizado: 2026-10-13.
 - API/UI bajo la guardia local con idempotencia y confirmaciones; demo con roles
   `chat`/`planner` sintéticos. 21 casos H4.1 y recorrido Chrome sintético.
 
+- Exportación mecánica completada offline: [entrega](discovery/STATE_EXPORT.md),
+  D036. STATE/NEXT_STEPS se generan desde SQLite en bloques delimitados, con bytes
+  deterministas y prosa exterior conservada. Preview por diff, versión, hash y
+  confirmación humana; deriva externa exige reconciliación, sin sobrescritura.
+- Run/job `document_export` con lock y operación de fase existentes; sin agentes.
+  CommitIntent H2.4 persistido antes de escribir, CAS y conciliación de escrituras
+  parciales o commit incierto con el mismo id. Adopción de hashes después de
+  verificar el commit, atómica con resultado/evento/fin del job. Esquema 0012 sin
+  migración nueva. API/UI con guardia local e idempotencia; 32 casos nuevos.
+- Exportar sigue separado del cierre, también para la última fase CLOSED/ABANDONED
+  antes de definir otra; nunca mueve tags. READY previo queda obsoleto y requiere
+  un check nuevo. Sin exportación automática ni bootstrap.
+
 ## Todavía no existe
 
 Recorrido de tarea real del motor con proveedores ni entrada CLI gestionada;
@@ -307,7 +320,7 @@ API/UI gestionadas existen y se han verificado con fakes y Git/SQLite sintético
 Tampoco existen sesión local, guardia en lecturas H0/H1 (las mutaciones ya la tienen), registro de
 proyectos por HTTP, SSE gestionado, pausa o cancelación por HTTP, integración del
 commit en la rama de destino, retirada de worktrees, abandono manual de una
-intención ambigua, exportación mecánica de STATE/NEXT_STEPS, permisos
+intención ambigua, permisos
 interactivos, App Server/SDK para el chat ni distribución. En fases faltan archivo/commit de cierre,
 instalación de la fase siguiente y cancelación de una tarea de reconciliación. La
 evaluación de fase, la reconciliación y el chat con CLI real no se han ejecutado. La salida del hito 2 está verificada offline desde la UI hasta COMMITTED,
@@ -337,8 +350,8 @@ H3.4 completado offline: guardia H0/H1, lote desatendido con commits,
 enmienda/abandono, tags anotados y reconciliación con agente (D034).
 H4.1 completado offline: chat por turnos nuevos de solo lectura y propuestas
 confirmadas como tareas normales (D035).
-Siguiente tarea: exportación mecánica de STATE/NEXT_STEPS (D033 punto 1), sin
-iniciarla. Sin proveedores nuevos.
+Exportación mecánica de STATE/NEXT_STEPS completada offline (D036).
+Siguiente tarea: H4.2 bootstrap guiado, sin iniciarla. Sin proveedores nuevos.
 
 ## Verificación de H0.1
 
@@ -1125,6 +1138,39 @@ iniciarla. Sin proveedores nuevos.
   en la vista del run.
 
   La exportación mecánica de STATE/NEXT_STEPS no se ha iniciado.
+
+## Verificación de la exportación mecánica
+
+- Git inicial limpio en `main`, `233cb51`. AGENTS/STATE/NEXT_STEPS/DECISIONS,
+  especificación §7, backlog H4 y contratos de fases/Git/cola revisados. Sin
+  contradicciones materiales. D036 conserva el cierre separado de la exportación.
+- 462 pruebas pytest y 121 subtests; 430 anteriores y 32 de exportación. También
+  12 checks ligeros, 4 pruebas Node, OpenAPI/tipos regenerados, TypeScript/build y
+  `alembic check` sin operaciones nuevas en SQLite temporal. Esquema 0012 y locks
+  de dependencias conservados; aviso Starlette/HTTPX conocido.
+- Git/SQLite temporales: determinismo, conservación de prosa/CRLF, marcadores
+  inválidos, rutas/archivos protegidos o no regulares, staging, deriva externa en
+  todos los documentos, snapshot/versiones/hash obsoletos, confirmación, guardias
+  HTTP, idempotencia/concurrencia y reinicio. Lote activo rechazado; READY obsoleto
+  no cierra; fase CLOSED exportada sin mover el tag; fase antigua rechazada.
+- Caídas antes de escribir, entre documentos, tras el commit y dentro de la
+  transacción de adopción: cuarentena y confirmación explícita, mismo run,
+  operación/intención/id de commit; sin duplicación ni agentes. Los bytes ajenos
+  posteriores a una caída permanecen intactos.
+- Chrome en checkout/base sintéticos nuevos bajo `/private/tmp`, :8021: preview
+  visible, commit deshabilitado sin confirmación, confirmar → COMMITTED → preview
+  vacío, prosa/base documental conservadas y recarga con resultado persistido.
+  Sin errores de consola; servidor y pestaña temporales cerrados.
+- Diff/whitespace revisados. Sin proveedores/smokes, login, red externa,
+  ReferenceProject, configuración global, colaboración automática, harness de desarrollo
+  ni push. No se migró la SQLite de trabajo del usuario. Commit solicitado.
+- Límites: exclusión frente a escritores externos cooperativa; dos reemplazos
+  individuales, sin atomicidad conjunta. Cambios externos tras commit incierto
+  requieren restauración manual del contenido sellado antes de adoptar. Sin
+  limpieza automática de temporales ni benchmark de grandes históricos; solo la
+  última fase y documentos existentes UTF-8 de hasta 512 KiB.
+
+  H4.2 no se ha iniciado.
 
 ## Coordinación
 

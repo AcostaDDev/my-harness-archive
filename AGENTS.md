@@ -90,7 +90,9 @@ abandono, tags anotados y reconciliación con agente (D034); ver
 H4.1 completado offline: chat por turnos nuevos de solo lectura con contexto
 congelado y propuestas confirmadas como tareas normales (D035); ver
 `docs/discovery/H4.1_CHAT.md`.
-Siguiente tarea: exportación mecánica de STATE/NEXT_STEPS (D033 punto 1), sin iniciarla.
+Exportación mecánica completada offline (D036): preview/diff confirmado, commit H2.4
+conciliable y adopción de hashes, con bloques delimitados y prosa conservada.
+Ver `docs/discovery/STATE_EXPORT.md`. Siguiente tarea: H4.2 bootstrap guiado, sin iniciarla.
 Comprobación offline ligera, solo biblioteca estándar, desde la raíz:
 
 ```sh
@@ -120,9 +122,9 @@ npm --prefix frontend run dev
 ```
 
 Las primeras instalaciones necesitan red; después los checks son offline.
-No usar `uv --active` con entornos de otros proyectos. 430 pruebas pytest
+No usar `uv --active` con entornos de otros proyectos. 462 pruebas pytest
 (158 anteriores + 53 H2.3 + 8 entorno smoke + 34 H2.4 + 35 H2.5 + 18 API gestionada + 2 demo UI + 23 H3.1,
-+ 30 H3.2 + 29 H3.3 + 18 H3.4 + 22 H4.1, con Git temporal).
++ 30 H3.2 + 29 H3.3 + 18 H3.4 + 22 H4.1 + 32 exportación, con Git temporal).
 API/UI compilada en 127.0.0.1:8013; Vite en :5173
 en otra terminal. SQLite local ignorada en `.local/harness.sqlite3`; migración
 explícita antes de arrancar. Ver README y `docs/discovery/H0.3_SKELETON.md`.
@@ -153,7 +155,7 @@ run STOPPED por fin deliberado del smoke, owner cerrado, grupos STOPPED/dead y
 lock nuevo liberado por finalización normal. D020/D022 y sus locks conservados.
 Ver `docs/discovery/H2.3_ENV_SMOKE.md`. Sin aceptación/commit de producto ni
 cuota/retries certificados. Consentimiento satisfecho por una ejecución;
-no hacer login, consumir ni relanzar automáticamente. Siguiente tarea: exportación mecánica de STATE/NEXT_STEPS, sin iniciar (D033/D035).
+no hacer login, consumir ni relanzar automáticamente. Siguiente tarea: H4.2 bootstrap guiado, sin iniciar (D036).
 Los checks no consumen proveedores. Sin configuración gestionada, la API
 `/api/managed` no tiene proyectos, puertos ni supervisor y solo lee.
 `HARNESS_MANAGED_CONFIG=módulo:atributo` (o `create_app(managed=...)`) registra
