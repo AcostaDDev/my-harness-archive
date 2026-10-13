@@ -1378,3 +1378,19 @@ Concluye el último incremento offline previsto del hito 5, sin certificar un
 recorrido real de proveedores ni todos los límites del MVP. Siguiente paso:
 revisar el cierre y acordar nuevo alcance con el usuario, sin implementar otra
 tarea ni consumir proveedores. D033.8 y los consentimientos agotados se conservan.
+
+## D046 — Revisión del cierre offline y separación de la preparación para uso real
+
+Estado: revisión documental/estática completada el 2026-10-13; próximo incremento
+pendiente de elección del usuario. [Dictamen](discovery/H5_CLOSURE_REVIEW.md).
+
+La evidencia H5.7 satisface el criterio de instalación/flujo/restauración para
+puertos sintéticos. No certifica el MVP completo, QA visual reciente ni un piloto
+con proveedores. Se hace explícita la ausencia del ejecutor de validaciones de
+producto ya delimitada en D038: existen protocolo/inyección y runner real de
+tests, pero no un adaptador de comandos del servicio con recuperación verificada.
+
+Se recomienda concretar ese incremento offline antes de operar sobre proyectos
+reales. Prioridad consultada al usuario junto a QA visual y preparación de smoke;
+no se registra ninguna opción como elegida sin respuesta. Sin cambio de diseño,
+implementación adicional ni consumo; D033.8 conserva su autorización específica.

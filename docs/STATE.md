@@ -422,7 +422,9 @@ Actualizado: 2026-10-13.
 
 ## Todavía no existe
 
-Recorrido de tarea real del motor con proveedores ni entrada CLI gestionada;
+Ejecutor de comandos de validación de producto: el runner real TypeScript es
+un puerto de pruebas, no un adaptador del servicio (D038). Tampoco existe
+recorrido de tarea real del motor con proveedores ni entrada CLI gestionada;
 API/UI gestionadas existen y se han verificado con fakes y Git/SQLite sintéticos.
 Tampoco existen registro de
 proyectos por HTTP, SSE gestionado, pausa o cancelación por HTTP, integración del
@@ -469,7 +471,8 @@ H5.4 diagnósticos locales de compatibilidad completado offline (D042).
 H5.5 assets y entrada local completados offline (D043).
 H5.6 sesión local y protección uniforme completados offline (D044).
 H5.7 recorridos E2E completados offline (D045).
-Siguiente paso: revisar cierre del hito 5 y acordar nuevo alcance, sin iniciarlo.
+Revisión de cierre del hito 5 completada: alcance offline cubierto;
+siguiente incremento pendiente de elección. Ver [revisión](discovery/H5_CLOSURE_REVIEW.md).
 QA visual H5.7 bloqueada por herramienta; sin proveedores nuevos.
 
 ## Verificación de H0.1
@@ -1603,6 +1606,22 @@ QA visual H5.7 bloqueada por herramienta; sin proveedores nuevos.
 - Siguiente paso: revisión del cierre del hito 5 y elección de nuevo alcance,
   sin iniciar tarea adicional. QA visual y recorrido de proveedores pendientes;
   D033.8 requiere autorización específica para este último.
+
+## Revisión de cierre del hito 5
+
+- Git inicial limpio en `65aac62`. Contrastados backlog H5, especificación §14–16,
+  entregas y evidencia H5.7 con los puertos y composición existentes. Resultado
+  y límites en [H5_CLOSURE_REVIEW.md](discovery/H5_CLOSURE_REVIEW.md).
+- Alcance offline cubierto; no se declara MVP completo ni uso real certificado.
+  Falta un ejecutor de validaciones de producto: el protocolo y la inyección
+  existen, pero los comandos TypeScript reales solo usan un runner de tests.
+  QA visual reciente, composición real y smoke completo siguen pendientes.
+- README actualizado: conservaba H5.7 como pendiente y el recuento anterior.
+  Documentación, enlaces y diff comprobados; sin cambios de código ni nuevas
+  ejecuciones de tests/proveedores. Se conserva la evidencia previa de H5.7.
+- Siguiente alcance recomendado: concretar ejecutor real de validaciones con
+  recuperación y pruebas offline; elección consultada al usuario, sin implementar.
+  No se inicia piloto, smoke, publicación ni push.
 
 ## Coordinación
 

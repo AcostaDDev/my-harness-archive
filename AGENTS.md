@@ -117,7 +117,8 @@ H5.6 completado offline: sesión efímera, guardia uniforme API/streams y UI (D0
 Ver `docs/discovery/H5.6_SESSION.md`.
 H5.7 completado offline: seis recorridos API/sesión y flujo gestionado del wheel
 con restauración de evidencia (D045). Ver `docs/discovery/H5.7_E2E.md`.
-Siguiente paso: revisar cierre del hito 5 y acordar nuevo alcance, sin iniciarlo.
+Revisión de cierre offline completada; siguiente incremento pendiente de elección.
+Ver `docs/discovery/H5_CLOSURE_REVIEW.md`; falta ejecutor de validaciones de producto.
 Comprobación offline ligera, solo biblioteca estándar, desde la raíz:
 
 ```sh
@@ -180,7 +181,7 @@ run STOPPED por fin deliberado del smoke, owner cerrado, grupos STOPPED/dead y
 lock nuevo liberado por finalización normal. D020/D022 y sus locks conservados.
 Ver `docs/discovery/H2.3_ENV_SMOKE.md`. Sin aceptación/commit de producto ni
 cuota/retries certificados. Consentimiento satisfecho por una ejecución;
-no hacer login, consumir ni relanzar automáticamente. H5.7 completado offline (D045); siguiente revisión de cierre, sin iniciar.
+no hacer login, consumir ni relanzar automáticamente. H5.7 completado offline (D045); revisión de cierre offline completada; siguiente alcance pendiente.
 Los checks no consumen proveedores. Sin configuración gestionada, la API
 `/api/managed` no tiene proyectos, puertos ni supervisor y solo lee.
 `HARNESS_MANAGED_CONFIG=módulo:atributo` (o `create_app(managed=...)`) registra

@@ -1,4 +1,4 @@
-# Siguiente paso — Revisar cierre del hito 5 y acordar nuevo alcance
+# Siguiente paso — Elegir el incremento posterior al hito 5
 
 H5.7 recorridos E2E offline completado el 2026-10-13 (D045).
 Ver [entrega, matriz y reproducción](discovery/H5.7_E2E.md) y
@@ -16,14 +16,22 @@ Ver [entrega, matriz y reproducción](discovery/H5.7_E2E.md) y
   pendiente de un navegador que permita acceder. HTTP no equivale a QA visual.
 
 Esquema `0013_bootstrap`, codec 6, adaptador `cli-4` y locks conservados.
-No hay siguiente incremento de implementación definido ni iniciado.
+Revisión de cierre offline completada: [dictamen y brechas](discovery/H5_CLOSURE_REVIEW.md).
+No hay siguiente incremento de implementación acordado ni iniciado.
 
-## Próxima tarea concreta, sin iniciar
+## Propuesta concreta, pendiente de elección del usuario
 
-Revisar con el usuario el cierre del hito 5 a partir de la matriz y los límites
-de H5.7, y elegir el siguiente alcance acotado. Si se prioriza QA visual, repetir
-los recorridos de sesión/confirmaciones/recuperación sobre fixture sintética en
-un navegador accesible. No ampliar producto ni iniciar un piloto automáticamente.
+Preparar el alcance de un ejecutor de comandos de validación de producto,
+con pruebas offline. Hoy existe `CommandRunner` como protocolo y un runner real
+solo en tests; la demo del servicio usa validadores falsos. Antes de un piloto
+real hay que resolver ejecución, captura acotada, propiedad/recuperación de
+procesos y configuración congelada, preservando el lock y la evidencia exacta.
+Los criterios propuestos están en la revisión de cierre; no están implementados.
+
+Se consultó al usuario la prioridad entre este incremento (recomendado), retomar
+QA visual o preparar una propuesta de smoke sin ejecutarlo. **Elección pendiente**;
+no interpretar la ausencia de respuesta como selección ni iniciar una de ellas
+por defecto. La QA visual exige un navegador que permita acceder a loopback.
 
 Los recorridos con proveedores siguen sin verificar. Un eventual smoke completo
 (tarea → commit → check → cierre, D033.8) requiere propuesta y autorización

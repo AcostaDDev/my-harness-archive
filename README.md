@@ -2,7 +2,7 @@
 
 Aplicación local para configurar, ejecutar y observar un harness modular de desarrollo con agentes.
 Estado actual: H0, H1, H2.1–H2.5, salida del hito 2, H3.1–H3.4,
-H4.1–H4.3, H5.1–H5.6 y exportación mecánica de STATE/NEXT_STEPS completados offline.
+H4.1–H4.3, H5.1–H5.7 y exportación mecánica de STATE/NEXT_STEPS completados offline.
 Python/API/UI con simulaciones, observación legacy y motor con cola/persistencia;
 Git, migración gestionada, prompts/permisos, fases/lotes, chat contextual y bootstrap guiado.
 La exportación usa diff confirmado, commit conciliable y adopción de hashes (D036).
@@ -11,13 +11,15 @@ Git/SQLite sintéticos y fakes. Proveedores opt-in por inyección explícita, si
 entrada CLI gestionada. Reportes JUnit congelados por validación y detalle API/UI.
 Backup/restauración local con manifiesto y guardia de consulta, sin reanudar procesos.
 Retención explícita de originales stdout/stderr con preview, auditoría y consulta.
-Siguiente tarea: H5.7 recorridos E2E offline, sin iniciar.
+Hito 5 revisado en su alcance offline; siguiente incremento pendiente de elección.
+Ver [revisión de cierre y brechas para uso real](docs/discovery/H5_CLOSURE_REVIEW.md).
 
 ## Documentación
 
 - [Especificación](docs/01-especificacion-harness-local.md).
 - [Backlog](docs/02-backlog-y-plan-de-desarrollo.md).
 - [Decisiones, Celery y Docker](docs/DECISIONS.md).
+- [Recorridos E2E offline H5.7 y límites](docs/discovery/H5.7_E2E.md).
 - [Estado real](docs/STATE.md) y [siguiente tarea](docs/NEXT_STEPS.md).
 - [Guía de inicio con Codex](docs/START_HERE.md).
 - [Instrucción inicial ampliada](docs/03-instruccion-inicial-para-codex-y-claude.md).
@@ -134,7 +136,7 @@ UV_CACHE_DIR=.local/uv-cache uv run --frozen --offline alembic current
 UV_CACHE_DIR=.local/uv-cache uv run --frozen --offline alembic check
 ```
 
-765 pruebas, incluidas 45 de sesión local H5.6. Se usan checkouts Git, SQLite y procesos Python
+771 pruebas, incluidas 45 de sesión local H5.6 y seis recorridos H5.7. Se usan checkouts Git, SQLite y procesos Python
 sintéticos, sin CLI de proveedores ni consumo de suscripciones. Se verifican
 captura incremental, cancelación de grupos, recuperación tras caída del supervisor
 y el recorrido HTTP con fakes hasta COMMITTED. No certifica commits con proveedores.
@@ -171,7 +173,7 @@ La API gestionada local (proyectos registrados en el servidor, supervisor opt-in
 idempotencia, versiones y guardia Host/Origin/CSRF) está completada offline: ver
 [entrega y límites](docs/discovery/H2_EXIT_API.md). La UI gestionada local está
 completada offline; [demo, verificación y límites](docs/discovery/H2_EXIT_UI.md).
-H4.1–H4.3, H5.1–H5.6 y exportación mecánica completados offline (D035–D044); siguiente tarea: H5.7 recorridos E2E offline, sin iniciar. Ver [corrección y límites](docs/discovery/H2.3_MCP_FIX.md)
+H4.1–H4.3, H5.1–H5.7 y exportación mecánica completados offline (D035–D045); revisión de cierre offline completada, siguiente alcance pendiente de elección. Ver [corrección y límites](docs/discovery/H2.3_MCP_FIX.md)
 y [resultado real cli-3](docs/discovery/H2.3_SMOKE_CLI3.md). El consentimiento
 terminó al fallo; otro smoke requiere propuesta y autorización específicas.
 Ver [corrección del entorno](docs/discovery/H2.3_ENV_FIX.md) y
