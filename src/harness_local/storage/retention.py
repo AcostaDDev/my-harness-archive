@@ -207,6 +207,10 @@ def _stopped(db, writers_stopped):
         if liveness(json.loads(row[0]), group=True) != 'dead':
             raise ValueError('Grupo vivo o incierto; no purgar.')
 
+    from harness_local.storage.command_processes import persisted_identities
+    if any(liveness(value, group=True) != 'dead' for value in persisted_identities(db)):
+        raise ValueError('Grupo de validación vivo o incierto; no purgar.')
+
 
 def _unlink_verified(source, ref):
     """Keep parent descriptors open through verification/unlink; never follow links."""

@@ -699,11 +699,55 @@ class SQLiteManagedRepository:
                      "status": row.status, "capture": row.capture}
                     for row in session.scalars(select(Process).where(Process.job_id == job_id))]
 
+    def command_process_event(self, claim, command_id, kind, payload):
+        from harness_local.storage.command_processes import PREFIX, for_job
+        self._require_mode(claim)
+        with self._write() as session:
+            job, run = self._owned(session, claim)
+            if job.process_owner is None or job.owner_closed:
+                raise Conflict("Live command owner required")
+            row = next((r for r in for_job(session, job) if r['command_id'] == command_id), None)
+            if kind == 'intent':
+                started = session.scalars(select(Event).where(Event.run_id == run.id,
+                    Event.kind == 'command_started')).all()
+                if row or not any(e.payload.get('command_id') == command_id
+                                  and e.payload.get('job_id') == job.id for e in started):
+                    raise Conflict("One process intent per started command")
+            elif row is None or row['capture'] is not None:
+                raise Conflict("Pending command process required")
+            elif kind == 'spawned':
+                if row['identity'] is not None:
+                    raise Conflict("Command process identity cannot change")
+            elif kind == 'bytes':
+                if row['identity'] is None:
+                    raise Conflict("Command has not spawned")
+            elif kind != 'finished':
+                raise Conflict("Unknown command process event")
+            self._event(session, run, PREFIX + kind,
+                        {**payload, 'job_id': job.id, 'command_id': command_id})
+
+    def command_processes(self, job_id):
+        from harness_local.storage.command_processes import for_job
+        with Session(self.engine) as session:
+            job = session.get(Job, job_id)
+            if job is None:
+                raise Conflict("Unknown job")
+            return for_job(session, job)
+
     def _processes_stopped(self, session, job, *, recovering=False):
         from harness_local.adapters.processes import liveness
         if recovering and job.process_owner and not job.owner_closed:
             if liveness(job.process_owner) != "dead":
                 raise Conflict("Previous owner may still launch effects; cannot unlock")
+        from harness_local.storage.command_processes import for_job
+        for command in for_job(session, job):
+            if command['identity'] is None:
+                if command['status'] == 'STOPPED':
+                    continue  # Observed failure before spawn, no target executed.
+                if not recovering or (not job.owner_closed and liveness(job.process_owner) != 'dead'):
+                    raise Conflict("Pending command spawn requires stopped owner")
+            elif liveness(command['identity'], group=True) != 'dead':
+                raise Conflict("Previous command group is alive or uncertain; cannot unlock")
         for row in session.scalars(select(Process).where(Process.job_id == job.id)):
             if row.identity is None:
                 # Gate cannot execute without a durable identity. Owner must first stop.

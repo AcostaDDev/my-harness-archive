@@ -35,7 +35,7 @@ Actualizado: 2026-10-13.
 - Dependencias reales instaladas en `.venv` / `frontend/node_modules`, locks
   `uv.lock` / `frontend/package-lock.json`. Pins H0.2 usados conservados;
   backend de paquete `uv_build==0.12.19`. Comandos comprobados en README/AGENTS.
-- 759 casos de producto en `tests/product/`; pytest ejecuta 771 pruebas en total.
+- 798 casos de producto en `tests/product/`; pytest ejecuta 810 pruebas en total.
   La comprobación ligera anterior conserva sus 12 checks sin dependencias.
 - H1.1 completado: [importación legacy y verificaciones](discovery/H1.1_IMPORT.md),
   [alcance original](discovery/H1.1_SCOPE.md). Lector local explícito de
@@ -420,10 +420,19 @@ Actualizado: 2026-10-13.
   771 pruebas y 121 subtests correctos; Chrome vuelve a bloquear la URL local,
   sin QA visual acreditada. No cambia el producto ni se inicia otro incremento.
 
+- Ejecutor de validaciones de producto implementado offline (D047):
+  [entrega/composición/límites](discovery/COMMAND_RUNNER.md),
+  [alcance previo](discovery/COMMAND_RUNNER_SCOPE.md). `commands-1`, configuración
+  congelada y autorización exacta separadas de confianza/permisos de agentes;
+  captura acotada en SQLite, intención/gate/grupos y recuperación conservadora.
+- Reutiliza cola/lease/lock/journal; caída con grupo vivo no libera ni relanza.
+  Preparación/validación/JUnit/commit TypeScript comprobados offline con agentes
+  falsos y temporales. Codec 7 para captura nativa, formatos 1–6 compatibles;
+  sin esquema/CLI/UI/dependencias nuevas ni activación predeterminada.
+
 ## Todavía no existe
 
-Ejecutor de comandos de validación de producto: el runner real TypeScript es
-un puerto de pruebas, no un adaptador del servicio (D038). Tampoco existe
+Composición completa para operar proyectos reales con proveedores ni
 recorrido de tarea real del motor con proveedores ni entrada CLI gestionada;
 API/UI gestionadas existen y se han verificado con fakes y Git/SQLite sintéticos.
 Tampoco existen registro de
@@ -471,8 +480,11 @@ H5.4 diagnósticos locales de compatibilidad completado offline (D042).
 H5.5 assets y entrada local completados offline (D043).
 H5.6 sesión local y protección uniforme completados offline (D044).
 H5.7 recorridos E2E completados offline (D045).
-Revisión de cierre del hito 5 completada: alcance offline cubierto;
-siguiente incremento pendiente de elección. Ver [revisión](discovery/H5_CLOSURE_REVIEW.md).
+Revisión de cierre del hito 5 completada: alcance offline cubierto.
+La elección se resolvió por instrucción explícita del usuario: ejecutor de
+validaciones implementado offline (D047). Ver [entrega](discovery/COMMAND_RUNNER.md)
+y [revisión anterior](discovery/H5_CLOSURE_REVIEW.md). Siguiente tarea propuesta:
+revisión independiente del incremento, no iniciada.
 QA visual H5.7 bloqueada por herramienta; sin proveedores nuevos.
 
 ## Verificación de H0.1
@@ -1622,6 +1634,46 @@ QA visual H5.7 bloqueada por herramienta; sin proveedores nuevos.
 - Siguiente alcance recomendado: concretar ejecutor real de validaciones con
   recuperación y pruebas offline; elección consultada al usuario, sin implementar.
   No se inicia piloto, smoke, publicación ni push.
+
+
+## Verificación del ejecutor de comandos de producto
+
+- Git inicial limpio en `main`, `3bb9541`. Leídos AGENTS, STATE, NEXT_STEPS,
+  DECISIONS y revisión de cierre; contrastados protocolo, validación/JUnit,
+  supervisor, persistencia y grupos existentes. Elección explícita del usuario;
+  [alcance y criterios](discovery/COMMAND_RUNNER_SCOPE.md) escritos antes del código.
+- 39 casos nuevos de comandos nativos: éxito/exit no cero/ejecutable ausente,
+  argv literal, entorno/cwd, timeout, exceso en ambos streams, bytes no UTF-8,
+  configuración congelada y autorización exacta. Hijos supervivientes con pipes
+  abiertos/cerrados, fallo del journal en cuatro etapas, grupo desconocido,
+  propietario abierto y rechazo de command_id repetido.
+- Proceso separado del supervisor cae realmente después de persistir bytes;
+  el validador sigue vivo tras expirar lease y reiniciar. Lock y evidencia parcial
+  conservados; confirmación rechazada hasta observar grupo ausente. La prueba
+  detiene solo su grupo sintético; producto no señaliza PIDs recuperados ni relanza.
+- Cuatro recorridos TypeScript con el runner de producto: Node/npm/tsc reales
+  offline, Git/worktree/SQLite temporales, agentes falsos y JUnit original con
+  hash. Éxito hasta commit y restauración; tests/tipos fallidos y deriva posterior
+  impiden commit. Snapshots, eventos, capturas e historial exactos tras reinicio
+  y backup/restauración de consulta; runner de tests no ejecuta esos comandos.
+- Regresión completa final: **810 pruebas pytest y 121 subtests correctos**.
+  Primer pase detectó un `capture_json=null` adicional en prompts antiguos;
+  corregido con serialización omisiva y segundo pase completo correcto.
+  Aviso Starlette/HTTPX conocido, sin cambios de dependencias. Checks de esquema
+  y OpenAPI incluidos; esquema `0013_bootstrap`, cli-4 y locks conservados.
+- **12 checks ligeros y 6 pruebas Node correctos**. 196 enlaces documentales
+  locales y diff/whitespace revisados. Codec 7 para captura nativa, formatos 1–6
+  compatibles; no hace falta regenerar API/tipos ni migrar SQLite.
+- Sin proveedores/smokes/login, instalaciones con red, publicación/push, UI nueva,
+  configuración global, ReferenceProject, subagentes ni harness de desarrollo.
+  SQLite real de trabajo intacta. Sin nueva QA visual, build del frontend ni
+  verificación del wheel instalado: no se han cambiado UI o empaquetado.
+- Límites: POSIX cooperativo, sin hijos escapados/daemonización ni aislamiento
+  físico; autorización/configuración manual del servidor, sin composición
+  completa de proveedores, benchmark ni retención de capturas SQLite.
+- Commit solicitado por el usuario. Siguiente tarea propuesta: revisión
+  independiente del incremento y su recuperación, coordinada por el usuario;
+  no iniciada. [Entrega y operación](discovery/COMMAND_RUNNER.md), D047.
 
 ## Coordinación
 

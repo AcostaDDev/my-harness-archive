@@ -1382,7 +1382,8 @@ tarea ni consumir proveedores. D033.8 y los consentimientos agotados se conserva
 ## D046 — Revisión del cierre offline y separación de la preparación para uso real
 
 Estado: revisión documental/estática completada el 2026-10-13; próximo incremento
-pendiente de elección del usuario. [Dictamen](discovery/H5_CLOSURE_REVIEW.md).
+pendiente de elección del usuario en esa revisión. [Dictamen](discovery/H5_CLOSURE_REVIEW.md).
+Elección resuelta e incremento implementado posteriormente en D047.
 
 La evidencia H5.7 satisface el criterio de instalación/flujo/restauración para
 puertos sintéticos. No certifica el MVP completo, QA visual reciente ni un piloto
@@ -1394,3 +1395,51 @@ Se recomienda concretar ese incremento offline antes de operar sobre proyectos
 reales. Prioridad consultada al usuario junto a QA visual y preparación de smoke;
 no se registra ninguna opción como elegida sin respuesta. Sin cambio de diseño,
 implementación adicional ni consumo; D033.8 conserva su autorización específica.
+
+## D047 — Validadores nativos opt-in con captura acotada y recuperación conservadora
+
+Estado: implementado y verificado offline el 2026-10-13.
+[Entrega y límites](discovery/COMMAND_RUNNER.md), según el
+[alcance escrito antes de implementar](discovery/COMMAND_RUNNER_SCOPE.md).
+El usuario eligió explícitamente este incremento y autorizó commit; resuelta la
+prioridad pendiente de D046. No autoriza proveedores, smokes ni piloto.
+
+`ManagedCommandRunner`/`CommandConfig` (`commands-1`) se inyectan por la factory
+del servidor, con journal ligado al job. Checkout confiable explícito,
+autorización por Command completo, ejecutables absolutos, entorno sin herencia y
+límites congelados por hash en versiones. Configuración ausente/anterior/distinta
+no ejecuta silenciosamente el nuevo adaptador. No reescribe contexto, contratos,
+prompts, permisos ni snapshots anteriores. Los prefijos del perfil siguen siendo
+política, no permisos de agentes ni aislamiento físico de scripts o red.
+
+Se reutilizan cola, propietario/lease, lock, gate y grupos POSIX H2.2/H2.3.
+Intención e identidad confirmadas antes de GO; journal propio por command_id en
+`managed_events`, sin tabla/migración/cola nueva ni intentos de agente ficticios.
+Captura incremental exacta en fragmentos base64 con offsets/hashes dentro de
+SQLite; 64 KiB predeterminados y máximo 1 MiB por stream. Al exceder el límite,
+termina el grupo propio y marca truncamiento; captura incompleta no acredita
+éxito. Exit nullable observado, duración, timeout, errores, bytes leídos/guardados,
+EOF y estado del grupo separados de JUnit/review. Sin retry/fallback del runner.
+
+Los fallos de persistencia y grupos inciertos abortan el motor sin más efectos.
+Un líder muerto no acredita muerte de hijos. Caída o lease vencido conservan
+exclusión y recuperación pendiente; la confirmación existente exige propietario
+cerrado/ausente y grupos ausentes, incluidos validadores. No envía señales a PIDs
+recuperados ni relanza/adopta resultados parciales. Revalidación exige una acción
+explícita posterior. Garantía cooperativa POSIX: código confiable sin daemonizar,
+escapar del grupo o delegar procesos a servicios externos; no sandbox físico,
+cuotas de recursos/red ni defensa frente al dueño/root.
+
+Preparación, validación y check de fase conservan sus puertas. JUnit y aceptación
+siguen vinculados al contenido exacto; un ACCEPT no supera fallos ni deriva Git.
+Codec 7 solo cuando hay captura nativa; lectura/roundtrip de formatos 1–6 sin
+campos nuevos en resultados antiguos. Esquema `0013_bootstrap`, cli-4 y dependencias
+sin cambios. Backup conserva los bytes en SQLite; backup/retención consideran
+estos grupos al exigir parada. Restaurar sigue siendo de consulta, sin reactivar.
+
+Pruebas sintéticas de procesos y caída real del supervisor, Git/SQLite temporales,
+Node/npm/TypeScript offline y agentes falsos hasta commit y restauración. Ningún
+proveedor, red, configuración global, ReferenceProject ni harness de desarrollo.
+Composición completa para uso real, piloto, aislamiento físico, otras plataformas,
+QA visual y retención de capturas SQLite quedan fuera. Siguiente tarea propuesta:
+revisión independiente del incremento y su recuperación, sin iniciarla.

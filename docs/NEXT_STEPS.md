@@ -1,40 +1,32 @@
-# Siguiente paso — Elegir el incremento posterior al hito 5
+# Siguiente paso — Revisión del ejecutor de validaciones
 
-H5.7 recorridos E2E offline completado el 2026-10-13 (D045).
-Ver [entrega, matriz y reproducción](discovery/H5.7_E2E.md) y
-[alcance original](discovery/H5.7_SCOPE.md).
+Ejecutor nativo de comandos de producto implementado y verificado offline el
+2026-10-13 (D047). El usuario eligió este incremento expresamente, resolviendo
+la elección pendiente tras H5.7/D046. Ver [entrega](discovery/COMMAND_RUNNER.md)
+y [alcance previo](discovery/COMMAND_RUNNER_SCOPE.md).
 
-- Crear, importar, ejecutar, bloquear, denegar, reintentar y recuperar comprobados
-  con sesión real, API, Git/SQLite temporales y puertos falsos.
-- Reinicio, idempotencia, evidencia exacta, confirmaciones y commit verificados;
-  ninguna denegación, pérdida de sesión o recuperación reenvía acciones por sí sola.
-- Wheel instalado aislado: bootstrap → primera tarea → commit → reinicio →
-  backup/restauración de consulta, sin depender del checkout de desarrollo.
-- 771 pruebas pytest y 121 subtests, 12 checks ligeros, 6 pruebas Node,
-  TypeScript/build y verificador del paquete correctos.
-- Chrome bloqueó el acceso con `ERR_BLOCKED_BY_CLIENT`: QA visual de H5.7
-  pendiente de un navegador que permita acceder. HTTP no equivale a QA visual.
+- Composición explícita `ManagedCommandRunner`, configuración/hash congelados,
+  confianza/autorización/política separadas, argv sin shell y entorno completo.
+- Captura acotada y resultados observados; journal/gate/grupos/lock reutilizados.
+- Caída/reinicio con validador vivo conserva exclusión; recuperación explícita
+  sin señalar PIDs recuperados, repetir ejecución ni adoptar evidencia parcial.
+- Preparación/validaciones TypeScript reales offline, JUnit, agentes falsos,
+  aceptación/commit exactos y backup/restauración comprobados en temporales.
+- Esquema `0013_bootstrap`, cli-4 y dependencias conservados; codec 7 para capturas
+  nativas, formatos anteriores compatibles. Sin nueva UI ni proveedores.
 
-Esquema `0013_bootstrap`, codec 6, adaptador `cli-4` y locks conservados.
-Revisión de cierre offline completada: [dictamen y brechas](discovery/H5_CLOSURE_REVIEW.md).
-No hay siguiente incremento de implementación acordado ni iniciado.
+## Tarea concreta propuesta, no iniciada
 
-## Propuesta concreta, pendiente de elección del usuario
+Revisión independiente del ejecutor de validaciones y su recuperación: contrastar
+D047, implementación y pruebas con los criterios del alcance, especialmente la
+ventana intención/identidad/GO, conservación de exclusión y compatibilidad de
+historiales. El usuario coordina la herramienta revisora; no lanzar subagentes.
+Resolver los hallazgos acotados que se acuerden antes de elegir composición de
+uso real o piloto. Este documento no autoriza iniciar otra implementación.
 
-Preparar el alcance de un ejecutor de comandos de validación de producto,
-con pruebas offline. Hoy existe `CommandRunner` como protocolo y un runner real
-solo en tests; la demo del servicio usa validadores falsos. Antes de un piloto
-real hay que resolver ejecución, captura acotada, propiedad/recuperación de
-procesos y configuración congelada, preservando el lock y la evidencia exacta.
-Los criterios propuestos están en la revisión de cierre; no están implementados.
-
-Se consultó al usuario la prioridad entre este incremento (recomendado), retomar
-QA visual o preparar una propuesta de smoke sin ejecutarlo. **Elección pendiente**;
-no interpretar la ausencia de respuesta como selección ni iniciar una de ellas
-por defecto. La QA visual exige un navegador que permita acceder a loopback.
-
-Los recorridos con proveedores siguen sin verificar. Un eventual smoke completo
-(tarea → commit → check → cierre, D033.8) requiere propuesta y autorización
-específica, checkout desechable y modelos/esfuerzos fijados por el usuario.
-Los consentimientos previos están agotados. Sin push, publicación, colaboración
-automática ni uso del harness para desarrollar este repositorio.
+QA visual reciente sigue pendiente del navegador que permita loopback.
+La composición completa con proveedores y un eventual smoke (tarea → commit →
+check → cierre, D033.8) requieren propuesta y autorización específica, checkout
+desechable y modelos/esfuerzos elegidos por el usuario. Consentimientos anteriores
+agotados. Sin proveedores/login, instalaciones con red, publicación, push ni
+uso del harness para desarrollar este repositorio.

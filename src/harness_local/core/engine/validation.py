@@ -1,13 +1,14 @@
 """Comandos estructurados y resultados separados del juicio del revisor."""
 
 from dataclasses import asdict, dataclass
+import json
 import shlex
 from typing import Protocol
 from uuid import uuid4
 
 from harness_local.core.engine.context import Command, ProjectContext
 from harness_local.core.engine.evidence import ContentEvidence
-from harness_local.core.engine.journal import EngineJournal
+from harness_local.core.engine.journal import EngineJournal, JournalError
 from harness_local.core.engine.junit import JUnitReport, capture_junit, observe_report
 
 
@@ -19,10 +20,26 @@ class CommandResult:
     duration_seconds: float | None = None
     error: str | None = None
     timed_out: bool = False
+    capture_json: str | None = None
 
     @property
     def passed(self) -> bool:
+        if self.capture_json is not None:
+            try:
+                capture = json.loads(self.capture_json)
+                if capture['group_state'] != 'dead' or any(
+                        capture['streams'][name]['complete'] is not True for name in ('stdout', 'stderr')):
+                    return False
+            except (ValueError, KeyError, TypeError):
+                return False
         return type(self.exit_code) is int and self.exit_code == 0 and not self.error and not self.timed_out
+
+
+def command_result_payload(result: CommandResult) -> dict:
+    data = asdict(result)
+    if result.capture_json is None:
+        data.pop('capture_json')
+    return data
 
 
 class CommandRunner(Protocol):
@@ -58,6 +75,8 @@ class ValidationReport:
 def validation_payload(report: ValidationReport, *, include_cases: bool = True) -> dict:
     """El original binario solo se entrega por descarga, nunca en prompts/sondeo."""
     data = asdict(report)
+    for entry, source in zip(data['entries'], report.entries):
+        entry['result'] = command_result_payload(source.result)
     if include_cases and not any(entry.reports for entry in report.entries):
         data.pop('run_id')
         data.pop('source_attempt_id')
@@ -83,7 +102,14 @@ def _run_command(context, runner, command, journal):
     identity = journal.command_started(command) if journal else str(uuid4())
     try:
         context.path(command.cwd)
-        result = runner.run(context, command)
+        if hasattr(runner, 'run_managed'):
+            if journal is None:
+                raise JournalError("Managed commands require a durable journal")
+            result = runner.run_managed(context, command, identity)
+        else:
+            result = runner.run(context, command)
+    except JournalError:
+        raise
     except Exception as exc:
         result = CommandResult(None, error=f"{type(exc).__name__}: {exc}")
     if journal:

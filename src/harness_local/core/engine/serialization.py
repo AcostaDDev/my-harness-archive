@@ -83,6 +83,16 @@ def dump_history(history: RunHistory) -> str:
             for entry in cycle['validation']['entries']:
                 entry.pop('reports', None)
                 entry.pop('command_id', None)
+    has_capture = any(entry.result.capture_json is not None
+                      for cycle in history.cycles for entry in cycle.validation.entries)
+    has_capture |= any(json.loads(item).get('result', {}).get('capture_json') is not None
+                       for item in history.preparation_json)
+    if has_capture:
+        version = 7
+    for cycle in data['cycles']:
+        for entry in cycle['validation']['entries']:
+            if entry['result']['capture_json'] is None:
+                entry['result'].pop('capture_json')
     if not has_cli:
         for attempt in data["attempts"]:
             attempt["result"].pop("status")
@@ -92,7 +102,7 @@ def dump_history(history: RunHistory) -> str:
 
 def load_history(snapshot: str) -> RunHistory:
     value = json.loads(snapshot)
-    if value["format"] not in {1, 2, 3, 4, 5, 6}:
+    if value["format"] not in {1, 2, 3, 4, 5, 6, 7}:
         raise ValueError("Unknown managed history format")
     data = value["history"]
     data["attempts"] = tuple(Attempt(restore_request(item["request"]), AgentResult(**item["result"]))

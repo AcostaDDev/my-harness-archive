@@ -42,6 +42,9 @@ class _Journal:
     def process_update(self, attempt_id, kind, payload):
         self._call(self.repository.process_update, attempt_id, kind, payload)
 
+    def command_process_event(self, command_id, kind, payload):
+        self._call(self.repository.command_process_event, command_id, kind, payload)
+
     def pending_commit(self):
         return self._call(self.repository.pending_commit)
 
@@ -66,7 +69,8 @@ class _Journal:
         return identity
 
     def command_finished(self, identity, result):
-        self._call(self.repository.effect, "command_finished", {"command_id": identity, "result": asdict(result)})
+        from harness_local.core.engine.validation import command_result_payload
+        self._call(self.repository.effect, "command_finished", {"command_id": identity, "result": command_result_payload(result)})
 
 
 class LocalSupervisor:
@@ -173,6 +177,8 @@ class LocalSupervisor:
                                                    now=self.repository.clock)
                 else:
                     agents, commands, _ = self.ports_factory(context, versions)
+                    if hasattr(commands, "bind_process_journal"):
+                        commands.bind_process_journal(journal)
                     if hasattr(agents, "bind_process_journal"):
                         agents.bind_process_journal(journal)
                     from harness_local.storage.prompts import PromptRepository
@@ -187,6 +193,8 @@ class LocalSupervisor:
                                              now=self.repository.clock)
             else:
                 agents, commands, evidence = self.ports_factory(context, versions)
+                if hasattr(commands, "bind_process_journal"):
+                    commands.bind_process_journal(journal)
                 if hasattr(agents, "bind_process_journal"):
                     agents.bind_process_journal(journal)
                 from harness_local.storage.prompts import PromptRepository

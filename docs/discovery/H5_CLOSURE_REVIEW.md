@@ -3,6 +3,10 @@
 Revisión documental y estática del 2026-10-13 sobre `65aac62`, con Git limpio.
 Continúa la tarea de NEXT_STEPS; no implementa otro incremento.
 
+Actualización posterior: el usuario eligió el ejecutor de validaciones y se
+implementó en D047. Ver [entrega](COMMAND_RUNNER.md). El dictamen siguiente
+conserva el estado observado antes de ese incremento.
+
 ## Dictamen
 
 Los incrementos H5.1–H5.7 cumplen su alcance offline documentado. El criterio

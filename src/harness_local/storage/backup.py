@@ -257,6 +257,9 @@ def _create_backup(database, destination, *, artifact_roots=(), writers_stopped=
             for row in lock.execute('SELECT identity FROM managed_processes WHERE identity IS NOT NULL'):
                 if liveness(json.loads(row['identity']), group=True) == 'alive':
                     raise BackupError('Grupo de procesos vivo; detener escritores antes de copiar.')
+            from harness_local.storage.command_processes import persisted_identities
+            if any(liveness(value, group=True) == 'alive' for value in persisted_identities(lock)):
+                raise BackupError('Grupo de validación vivo; detener escritores antes de copiar.')
             checkouts = {Path(r[0]) for r in lock.execute('SELECT root FROM managed_runs UNION SELECT root FROM managed_activations UNION SELECT root FROM managed_phases')}
             if any(destination.is_relative_to(r) or any(root.is_relative_to(r) or r.is_relative_to(root) for root in roots) for r in checkouts):
                 raise BackupError('Backup/artefactos deben estar fuera de los checkouts.')

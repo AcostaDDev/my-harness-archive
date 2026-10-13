@@ -18,7 +18,7 @@ from harness_local.core.engine.journal import EngineJournal, JournalError
 from harness_local.core.engine.prompts import builtin_catalog, dump_catalog, load_catalog, render_attempt
 from harness_local.core.engine.planning import deterministic_task, section
 from harness_local.core.engine.review import ReviewCycle, review_contract, stalled_review_signature
-from harness_local.core.engine.validation import CommandRunner, run_command, run_validations, validation_payload
+from harness_local.core.engine.validation import CommandRunner, command_result_payload, run_command, run_validations, validation_payload
 
 
 class OfflineEngine:
@@ -60,7 +60,7 @@ class OfflineEngine:
         self._checkpoint(history, "preparation")
         for command in context.profile.preparation:
             result = run_command(context, self.commands, command, self.journal)
-            entry = freeze({"command": asdict(command), "result": asdict(result)})
+            entry = freeze({"command": asdict(command), "result": command_result_payload(result)})
             history = replace(history, preparation_json=history.preparation_json + (entry,))
             self._checkpoint(history, "preparation")
             if not result.passed:
