@@ -1760,11 +1760,14 @@ mensaje de permisos verá Codex. No autoriza otra matriz con proveedores.
 
 ## D060 — Propuesta acotada de las combinaciones 2–4 con paquete `cli-7`
 
-Estado: preparada y verificada offline el 2026-10-13; **sin consentimiento ni
-ejecución con proveedores**. [Propuesta y órdenes](discovery/PROVIDER_MATRIX_CLI7_PROPOSAL.md),
+Estado: preparada y verificada offline el 2026-10-13; **ejecutada una vez con
+consentimiento específico el mismo día y cerrada con parada preventiva (D061)**.
+[Resultado](discovery/PROVIDER_MATRIX_CLI7_RUN.md).
+[Propuesta y órdenes](discovery/PROVIDER_MATRIX_CLI7_PROPOSAL.md),
 [manifiesto de paquete/configuración y ensayo sintético](discovery/PROVIDER_MATRIX_CLI7_PREPARATION.json).
-Petición del usuario: completar únicamente la tarea activa de NEXT_STEPS y
-realizar commit. No autoriza el paso posterior de ejecución.
+Petición inicial del usuario: completar únicamente la preparación activa de
+NEXT_STEPS y realizar commit, sin autorizar entonces la ejecución. Autorización
+posterior específica y resultado registrados en D061.
 
 Se propone conservar las selecciones, herramientas, entorno y recorrido de
 D055/D057 para 2 Codex→Codex, 3 Claude→Claude y 4 Claude→Codex, en ese orden.
@@ -1793,3 +1796,30 @@ acotada. Revisar entre combinaciones: fallos detienen su par; auth/cuota/preflig
 omiten pares pendientes que usan el proveedor afectado; efectos fuera del área,
 servicio no detenible o plazo total agotado paran todo. Sin reutilizar los
 consentimientos agotados D050/D055/D057 ni avanzar a H6.2.
+
+## D061 — Ejecución de D060: Codex escritor real y parada por cambio global
+
+Estado: ejecutada una vez y cerrada con parada preventiva el 2026-10-13.
+[Resultado y límites](discovery/PROVIDER_MATRIX_CLI7_RUN.md),
+[manifiesto](discovery/PROVIDER_MATRIX_CLI7_RESULT.json). El usuario autorizó
+D060 («Autorizo») después de revisar propuesta, selecciones y límites.
+Consentimiento agotado; no se reutiliza para continuar las combinaciones.
+
+Solo la 2 Codex→Codex se ejecutó: tres invocaciones COMPLETE, edición real
+acotada, check/test/build y JUnit correctos, review ACCEPT y commit por
+contenido exacto (`585a35c`). Valida la escritura de Codex con D059 en este
+ensayo; no demuestra la causa de la negativa de D057. Jobs DONE, propietarios
+cerrados, procesos muertos, cero locks y servicio detenido con clave retirada.
+
+La comprobación entre combinaciones detecta cambio de hash en
+`~/.codex/config.toml`. mtime coincide con el inicio del escritor y se observa
+una entrada de confianza para su checkout. La línea base solo contiene hashes:
+delta exacto y atribución a la CLI quedan sin demostrar. Se aplica la condición
+de parada global de D060 preventivamente; 3/4 no se lanzan y conservan estado
+vacío. No se restaura ni edita directamente la configuración global.
+No es una auditoría exhaustiva; se distingue observación de inferencia.
+
+Sin cambios de diseño, producto o versiones. Claude real con D058 continúa
+pendiente. Siguiente tarea: diagnóstico offline del cambio global, separado
+de esta ejecución y sin nuevas invocaciones. Cualquier matriz posterior exige
+propuesta y consentimiento nuevos; H6.2 no se inicia.

@@ -146,6 +146,11 @@ negativa del modelo sin intentar herramientas; origen en raíces temporales sigu
 como hipótesis. `cli-7` declara checkout canónico en `writable_roots`, excluye
 `/tmp` automático y aclara el acceso solicitado en la entrada del escritor.
 Ver `docs/discovery/CODEX_WRITER_ROOTS.md`. Cuarentena de jobs `cli-6`; sin sesiones reales.
+D060 ejecutada una vez y cerrada con parada preventiva (D061): Codex→Codex
+COMMITTED con edición real; cambio de hash de `~/.codex/config.toml` detectado
+entre combinaciones, atribución pendiente. Claude→Claude y Claude→Codex no
+lanzadas. Consentimiento agotado; siguiente diagnóstico offline, sin inferencia.
+Ver `docs/discovery/PROVIDER_MATRIX_CLI7_RUN.md`.
 Comprobación offline ligera, solo biblioteca estándar, desde la raíz:
 
 ```sh

@@ -1,0 +1,301 @@
+{
+  "decision": "D061",
+  "proposal": "D060",
+  "source_commit": "42971ef507459e0018829c49105ed4842f140987",
+  "area": "/private/tmp/harness-provider-matrix-3",
+  "started_utc": "2026-10-13T17:42:10.165328+00:00",
+  "verified_utc": "2026-10-13T17:46:30.481615+00:00",
+  "matrix_status": "STOPPED_GLOBAL_CONFIG_CHANGE",
+  "provider_invocations": {
+    "codex": 3,
+    "claude": 0
+  },
+  "completed_pair": {
+    "pair": "codex-codex",
+    "run_id": "58119c8c-314f-49dd-b1b4-9256cd680d46",
+    "run_status": "COMMITTED",
+    "stage": "committed",
+    "stop": null,
+    "job": "DONE",
+    "commit_job": "DONE",
+    "commit": "585a35c009a4e68d9d90eb4f9af981afffd9e8f2",
+    "deadline_exceeded": false,
+    "events": 120,
+    "attempts": [
+      {
+        "role": "planner",
+        "status": "COMPLETE",
+        "selection": {
+          "effort": "medium",
+          "model": "gpt-6-luna",
+          "reason": "Explicit planner policy"
+        }
+      },
+      {
+        "role": "executor",
+        "status": "COMPLETE",
+        "selection": {
+          "effort": "low",
+          "model": "gpt-6-luna",
+          "reason": "El cambio está acotado a una constante en una función pequeña; el executor de baja latencia indicado para este smoke de matriz basta."
+        }
+      },
+      {
+        "role": "reviewer",
+        "status": "COMPLETE",
+        "selection": {
+          "effort": "medium",
+          "model": "gpt-6-luna",
+          "reason": "Explicit independent review policy"
+        }
+      }
+    ]
+  },
+  "omitted_pairs": [
+    "claude-claude",
+    "claude-codex"
+  ],
+  "attempts": [
+    {
+      "id": "a72438f4-fdb3-41d9-981f-0b629e84455f",
+      "role": "planner",
+      "requested": {
+        "effort": "medium",
+        "model": "gpt-6-luna",
+        "reason": "Explicit planner policy"
+      },
+      "duration_seconds": 11.676086000006762,
+      "observed": {
+        "usage": {
+          "input_tokens": 23915,
+          "cached_input_tokens": 19968,
+          "cache_write_input_tokens": 0,
+          "output_tokens": 581,
+          "reasoning_output_tokens": 195
+        }
+      },
+      "prompt_sha256": "f4084c92b2dbae4f434c79ad269b535d89615448dda899b265b1b559f4569430",
+      "artifacts": {
+        "stdout": {
+          "path": "/private/tmp/harness-provider-matrix-3/codex-codex/state/artifacts/matrix-codex-codex/a72438f4-fdb3-41d9-981f-0b629e84455f/stdout.bin",
+          "size": 2597,
+          "sha256": "6726411dc8f9a52489c02b18fd963034b54e8c07766c26ba5b9347629cda40f1"
+        },
+        "stderr": {
+          "path": "/private/tmp/harness-provider-matrix-3/codex-codex/state/artifacts/matrix-codex-codex/a72438f4-fdb3-41d9-981f-0b629e84455f/stderr.bin",
+          "size": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      },
+      "file_changes": [],
+      "exit_code": 0
+    },
+    {
+      "id": "4b799b76-8bcf-4abb-a663-19c985196db7",
+      "role": "executor",
+      "requested": {
+        "effort": "low",
+        "model": "gpt-6-luna",
+        "reason": "El cambio está acotado a una constante en una función pequeña; el executor de baja latencia indicado para este smoke de matriz basta."
+      },
+      "duration_seconds": 9.35884754199651,
+      "observed": {
+        "usage": {
+          "input_tokens": 48900,
+          "cached_input_tokens": 36864,
+          "cache_write_input_tokens": 0,
+          "output_tokens": 292,
+          "reasoning_output_tokens": 0
+        }
+      },
+      "prompt_sha256": "fa58d6eac316fbcfdad08c326a93ef9356acb5c5a7f35b16543c411a1fe7da87",
+      "artifacts": {
+        "stdout": {
+          "path": "/private/tmp/harness-provider-matrix-3/codex-codex/state/artifacts/matrix-codex-codex/4b799b76-8bcf-4abb-a663-19c985196db7/stdout.bin",
+          "size": 2559,
+          "sha256": "6ab1a0f0f52ee52aa9ec97a5d57649128ebc35bf558d0f8c28a2922b8612233c"
+        },
+        "stderr": {
+          "path": "/private/tmp/harness-provider-matrix-3/codex-codex/state/artifacts/matrix-codex-codex/4b799b76-8bcf-4abb-a663-19c985196db7/stderr.bin",
+          "size": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      },
+      "file_changes": [
+        [
+          {
+            "path": "/private/tmp/harness-provider-matrix-3/codex-codex/web/src/estimate.ts",
+            "kind": "update"
+          }
+        ]
+      ],
+      "exit_code": 0
+    },
+    {
+      "id": "e64d77ff-99c8-47a8-bad6-f65df46fd001",
+      "role": "reviewer",
+      "requested": {
+        "effort": "medium",
+        "model": "gpt-6-luna",
+        "reason": "Explicit independent review policy"
+      },
+      "duration_seconds": 4.303146292004385,
+      "observed": {
+        "usage": {
+          "input_tokens": 14243,
+          "cached_input_tokens": 8960,
+          "cache_write_input_tokens": 0,
+          "output_tokens": 95,
+          "reasoning_output_tokens": 53
+        }
+      },
+      "prompt_sha256": "7d6a7236ffb5d0e9139b9406e0ecbc9ac6228b2078af9a438d876dcee8c14f91",
+      "artifacts": {
+        "stdout": {
+          "path": "/private/tmp/harness-provider-matrix-3/codex-codex/state/artifacts/matrix-codex-codex/e64d77ff-99c8-47a8-bad6-f65df46fd001/stdout.bin",
+          "size": 505,
+          "sha256": "0f263122b536de5b9ed0325ffed23d0cba2bf45027ef72a9bb7d564880aef613"
+        },
+        "stderr": {
+          "path": "/private/tmp/harness-provider-matrix-3/codex-codex/state/artifacts/matrix-codex-codex/e64d77ff-99c8-47a8-bad6-f65df46fd001/stderr.bin",
+          "size": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      },
+      "file_changes": [],
+      "exit_code": 0
+    }
+  ],
+  "commands": [
+    {
+      "argv": [
+        "node",
+        "--version"
+      ],
+      "exit_code": 0,
+      "duration_seconds": 0.022682041992084123,
+      "stage": "preparation"
+    },
+    {
+      "argv": [
+        "npm",
+        "--version"
+      ],
+      "exit_code": 0,
+      "duration_seconds": 0.08273270798963495,
+      "stage": "preparation"
+    },
+    {
+      "argv": [
+        "npm",
+        "ci",
+        "--offline",
+        "--ignore-scripts",
+        "--no-audit",
+        "--no-fund"
+      ],
+      "exit_code": 0,
+      "duration_seconds": 0.32045520799874794,
+      "stage": "preparation"
+    },
+    {
+      "argv": [
+        "npm",
+        "run",
+        "check"
+      ],
+      "exit_code": 0,
+      "duration_seconds": 0.5997936659987317,
+      "stage": "validation"
+    },
+    {
+      "argv": [
+        "npm",
+        "run",
+        "test"
+      ],
+      "exit_code": 0,
+      "duration_seconds": 0.45318929199129343,
+      "stage": "validation"
+    },
+    {
+      "argv": [
+        "npm",
+        "run",
+        "build"
+      ],
+      "exit_code": 0,
+      "duration_seconds": 0.40512408400536515,
+      "stage": "validation"
+    }
+  ],
+  "junit": [
+    {
+      "path": ".local/junit.xml",
+      "sha256": "08b513db4bdf77cafb7337ec8bd9ba5521dd1d4b291ccb58f01430f5500c2afb",
+      "cases_passed": 3
+    }
+  ],
+  "reviewed_fingerprint": "c1d3f9a7ab546ce0ac22ee563e6559dee00e0df520be4ed1f0b4374251b66b14",
+  "before_tree": "76e4c34eba260689af49364b3aabd4118943cc8d",
+  "reviewed_tree": "008b8ced2a260c82ea33d827068d9fe239f3cca0",
+  "global_observation": {
+    "changes": [
+      {
+        "path": ".codex/config.toml",
+        "before_sha256": "d8ebfad0d22c39330ea177413b2e512105364312cccfac00a67145d5a3e4d978",
+        "after_sha256": "f8b81fb360dcfccf36d3aefdc7d7ebdbbbe21d756e844c3e80221c855acd8ab4"
+      }
+    ],
+    "config_mtime_utc": "2026-10-13T17:42:30.103366+00:00",
+    "observed_project_entry": {
+      "trust_level": "trusted"
+    },
+    "baseline_has_section_content": false,
+    "attribution": "not_conclusive; mtime coincides with executor launch; no global file restored",
+    "claude_project_entries_added": []
+  },
+  "checks": {
+    "package_scripts_toml_hashes": true,
+    "sqlite_integrity_fk": true,
+    "exact_validation_review_commit": true,
+    "sealed_artifact_hashes": true,
+    "global_configuration_unchanged": false,
+    "docs_unchanged": true,
+    "omitted_pairs_empty": true,
+    "jobs_done_owners_closed": true,
+    "zero_locks": true,
+    "processes_dead": true,
+    "service_shutdown_key_removed": true
+  },
+  "evidence_hashes": {
+    "attempts.json": "796b1384dc70bc4c2f46eef95467728a9ad1a3ff4d1818baec588113a40ca686",
+    "events.json": "4352deb2732ac0227a9af75dfe7ee3473b14305be7a44772e132f1677588b3ef",
+    "global-observation.json": "b7e22bd3799b3ea8d3fc9eec4f50cbe607edeafa0c04d80c7aeeced37d26f3f5",
+    "job-commit.json": "700ca52c26a6471560dc59b2659b0eb22842ff200501dd8a6cf7b0484821d683",
+    "job-run.json": "660cf4663b547c1d50e3edf55dc1d5f3c59056c075fc2fdac638a2f548a6d0db",
+    "jobs.json": "b45f023343496e4a64d16545cc63406e3ce934535957deb2a6b93a8db26ba689",
+    "logs.json": "d0058fdee7fb9fcf82d9889cc3e1bf6e2cad6775bc229f843cd30637e27df31c",
+    "outcome.json": "9e2a2113610759b293874b8b385383d9c90ca733bb85b64aa76ecad98c30ab92",
+    "phase.json": "08b84c79814b366c4f09803306aba427989f14521ceb27cc424c14cd48525512",
+    "process-specs.json": "6dc73c6858031d690b90716607d946a492a3d5afec38c2bb0662fed4845273f7",
+    "project.json": "bd89b2221a4a57ac38e3d4169876881ba6ffaf503839ce1fd046163e7ba8c97d",
+    "run.json": "5c4a9298c5bc8e2985663a8dec1d87aa8888999ea61dbc977e50a142d81e9391",
+    "sqlite-history.json": "493d5874ac628c5b2dc0ad26089a1fc3d6b12d17a13fe3f9a2aa4ba5de6a0765",
+    "supervisor.json": "1eb3386db9665a597ca343cbc6ded49635f6966c23435a4b16ec8a3580a0cf45"
+  },
+  "verification": {
+    "path": "/private/tmp/harness-provider-matrix-3/codex-codex/evidence/verification.json",
+    "sha256": "5cd1d20008664503aa8c20ee1729abada30187ec2dee72155312b399ca85e531",
+    "script_path": "/private/tmp/h61_verify.py",
+    "script_sha256": "90720d79c1e3d2142f074291c6284c0276682af38e795fb327e37ea97c03432b",
+    "baseline_path": "/private/tmp/harness-provider-matrix-3/execution-baseline.json",
+    "baseline_sha256": "c2152b25575490e3de96cd8af0693e1a78389762b39bbc377fb39dddbf6e4fa4"
+  },
+  "limitations": [
+    "Global baseline contains hashes, not section contents: exact delta and CLI attribution remain unproven.",
+    "Only selected global configuration files and Claude project directory names were compared; no exhaustive filesystem audit.",
+    "Codex does not report its effective model/effort; CLI internal retries and subscription quota remain unknown.",
+    "No real Claude preflight or inference occurred: D058 remains verified offline only."
+  ]
+}

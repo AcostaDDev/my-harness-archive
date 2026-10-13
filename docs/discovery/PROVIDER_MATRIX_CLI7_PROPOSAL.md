@@ -1,9 +1,12 @@
 # Propuesta de matriz D052, combinaciones 2–4 con `cli-7` (D060)
 
 Preparada y ensayada offline el 2026-10-13 sobre `5db4da2` (D059), con Git
-inicialmente limpio en `main`. **No ejecutada con proveedores ni autorizada.**
-La tarea de esta entrega termina con la preparación; ejecutar es una tarea
-separada y exige consentimiento específico nuevo. D050, D055 y D057 están
+inicialmente limpio en `main`. **Ejecutada una vez tras autorización específica
+el mismo día y cerrada con parada preventiva (D061):** 2 COMMITTED, 3/4 no
+lanzadas por cambio de configuración global observado.
+[Resultado](PROVIDER_MATRIX_CLI7_RUN.md). Consentimiento D060 agotado.
+La entrega original terminó con la preparación; ejecutar fue una tarea
+separada con consentimiento específico nuevo. D050, D055 y D057 siguen
 agotados. [Manifiesto de preparación y evidencia sintética](PROVIDER_MATRIX_CLI7_PREPARATION.json).
 
 ## Alcance y selecciones propuestas

@@ -1,53 +1,59 @@
-# Siguiente paso — ejecución separada de la propuesta D060
+# Siguiente paso — diagnóstico offline del cambio de configuración global
 
 Estado al 2026-10-13:
 
-- **Preparación de las combinaciones 2–4 completada offline (D060).**
-  [Propuesta, órdenes y criterios](discovery/PROVIDER_MATRIX_CLI7_PROPOSAL.md),
-  [manifiesto de hashes y ensayo sintético](discovery/PROVIDER_MATRIX_CLI7_PREPARATION.json).
-- Área nueva `/private/tmp/harness-provider-matrix-3`: wheel/sdist `cli-7`,
-  venv instalado offline por hashes, tres TOML privados con `check-config`
-  válido y checkouts desechables limpios con la regresión. Estado vacío, sin
-  SQLite, jobs, intentos ni servicio. **CLI reales y preflight real no ejecutados.**
-- Ensayo separado con CLI sintéticas y servicio instalado: Codex→Codex,
-  Claude→Claude y Claude→Codex COMMITTED con un commit nuevo solo en
-  `src/estimate.ts`; salida inválida detiene planner sin otros roles ni commit.
-  Paquete verificado; 82 pytest focales y 12 checks ligeros correctos.
-- D058 conserva el esquema tipado de Claude lector y D059 las raíces
-  explícitas/aclaración de transporte del escritor Codex (`cli-7`). Las
-  pruebas sintéticas **no certifican** su comportamiento con proveedores.
-- Matriz D057 cerrada: 1 COMMITTED, 2 REVISION_LIMIT, 3 STOPPED en planner,
-  4 no lanzada. Sus áreas/evidencias se conservan. Consentimientos agotados.
+- **D060 ejecutada una vez y cerrada con parada preventiva (D061).**
+  [Resultado y límites](discovery/PROVIDER_MATRIX_CLI7_RUN.md),
+  [manifiesto de resultado/verificaciones](discovery/PROVIDER_MATRIX_CLI7_RESULT.json).
+  Autorización específica del usuario recibida; consentimiento agotado.
+- Combinación 2 Codex→Codex `COMMITTED` (`585a35c`): tres intentos completos,
+  edición real solo de `src/estimate.ts`, check/test/build correctos, JUnit
+  con tres casos aprobados, ACCEPT y commit por contenido exacto. Jobs DONE,
+  propietarios cerrados, procesos muertos, cero locks y servicio detenido.
+- La comprobación entre combinaciones detectó un cambio de hash en
+  `~/.codex/config.toml`. mtime coincide con el inicio del escritor y se
+  observa una entrada `trust_level = "trusted"` para el checkout de la 2.
+  La línea base solo conserva hashes: delta exacto y atribución a la CLI
+  siguen sin demostrarse. Configuración global conservada sin restaurar.
+- Combinaciones 3 Claude→Claude y 4 Claude→Codex **no lanzadas**: parada por
+  condición global de D060. Sus áreas siguen vacías y limpias, sin SQLite,
+  jobs ni intentos. Tres invocaciones Codex y cero Claude; sin retries.
+- Paquete/scripts/TOML coinciden con D060. D059 acredita escritura real en
+  este ensayo; Claude real con esquema tipado D058 sigue pendiente. D057
+  conserva su combinación 1 COMMITTED y el resto de su evidencia anterior.
 
 ## Tarea concreta propuesta, no iniciada
 
-**Ejecutar la propuesta D060 una sola vez, únicamente después de
-consentimiento específico nuevo del usuario.** Sin consentimiento, no lanzar
-ninguna combinación ni crear jobs.
+**Diagnosticar offline el cambio observado en la configuración global de
+Codex antes de preparar otra ejecución.** Sin inferencia ni consumo.
 
-1. Revisar propuesta y manifiesto con el usuario. Selecciones propuestas:
-   Codex `gpt-6-luna`, Claude `claude-sonnet-4-6`; revisor medium, catálogo
-   del ejecutor low, `planning_mode = "agent"`, cero correcciones. Máximo
-   nueve invocaciones para 2–4, límite operativo total de 90 minutos.
-2. Con consentimiento: comprobar hashes del paquete/scripts/TOML, estado
-   vacío y puerto :8013 libre; preflight de las versiones fijadas desde el
-   wheel instalado. Ejecutar una orden por combinación, en orden 2 → 3 → 4,
-   revisando evidencia y parada entre ellas. Sin reconstruir el paquete,
-   actualizar CLI ni reutilizar áreas antiguas o del ensayo.
-3. Acreditar edición real de Codex dentro del contrato (2/4), listas/objetos
-   tipados del lector Claude (3/4), validación/JUnit/review/commit por
-   contenido exacto en cada combinación. Conservar originales, hashes y
-   diferencia entre solicitado/reportado/ausente.
-4. Fallos detienen su combinación sin retries ni fallback; auth/cuota/preflight
-   omiten pares pendientes que usan ese proveedor. Parar todo ante efectos
-   fuera de BASE, servicio no detenible o plazo total agotado. No recuperar
-   jobs ni liberar locks. Registrar resultado y actualizar STATE/NEXT_STEPS.
+1. Leer D061, línea base, resultado, specs y originales conservados en
+   `/private/tmp/harness-provider-matrix-3`. Separar el cambio de hash
+   observado de la hipótesis sobre el escritor; no deducir el delta completo
+   desde el estado posterior ni inventar una copia previa.
+2. Inspeccionar en lectura el comportamiento de la CLI fijada 0.162.1 y
+   las rutas de configuración/confianza usadas con `--ignore-user-config`,
+   `--ignore-rules`, `--strict-config` y `--ephemeral`. Comprobar qué puede
+   acreditarse sin lanzar sesiones ni tocar el HOME real.
+3. Si se identifica una corrección compatible, documentar el alcance y
+   probarla offline con HOME/fixtures sintéticos y sin credenciales. Conservar
+   autenticación D024, permisos, contratos y versiones congeladas; un cambio
+   de transporte exige versión y cuarentena correspondientes. Si implica
+   una contradicción material de diseño o no puede verificarse offline,
+   registrar el límite antes de implementar.
+4. Verificar el diff y los checks pertinentes, actualizar STATE/NEXT_STEPS
+   y DECISIONS con causa acreditada, hipótesis pendientes y siguiente paso.
+   No restaurar ni borrar configuración global o evidencias previas.
+
+Criterios de aceptación: diagnóstico trazable que distingue observado,
+inferido y ausente; efectos globales y aislamiento efectivo descritos;
+corrección solo si está justificada y verificable offline, sin reescribir
+historiales ni silencios de fallback. Esta tarea no incluye otra matriz,
+preflight real, login, nuevas invocaciones, recuperación o liberación de
+locks. Una ejecución futura de 3/4 necesita propuesta/consentimiento nuevos.
 
 Después, y aparte: hito de interfaz de producto (D054, H6.2). Alternativas
 pendientes: `forbidden_paths` frente a prosa; instalación de operación
 reutilizable (D051); `memory/` vacío de Claude; endurecimientos de D048.
-
-Esta entrega solo ha preparado D060 y no ha avanzado a su ejecución. Este
-documento no concede consentimiento. D050, D055 y D057 siguen agotados. Sin
-proveedores/login, instalaciones con red, publicación, push ni uso del
-harness para desarrollar este repositorio.
+Ninguna iniciada en D061. Sin publicación, push ni uso del harness para
+desarrollar este repositorio. D050, D055, D057 y D060 están agotados.

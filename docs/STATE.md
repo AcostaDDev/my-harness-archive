@@ -497,10 +497,14 @@ Revisor/ejecutor con proveedor elegido implementado y verificado offline (D052,
 la combinación 1 COMMITTED y fallos en 2/3; 4 no lanzada. D058 tipa Claude
 lector y D059 declara raíces del escritor Codex (`cli-7`), verificados offline.
 Propuesta de combinaciones 2–4 preparada y ensayada offline (D060,
-[órdenes y criterios](discovery/PROVIDER_MATRIX_CLI7_PROPOSAL.md)); ejecución
-separada pendiente de consentimiento nuevo, sin iniciarla. Después, hito de
-interfaz de producto con alta de proyectos en SQLite (D054); no iniciado.
-QA visual H5.7 bloqueada por herramienta; sin proveedores nuevos.
+[órdenes y criterios](discovery/PROVIDER_MATRIX_CLI7_PROPOSAL.md)); ejecutada
+una vez con consentimiento específico y cerrada con parada preventiva (D061,
+[resultado](discovery/PROVIDER_MATRIX_CLI7_RUN.md)). La 2 Codex→Codex llega a
+COMMITTED con edición real; la comprobación posterior detecta cambio de hash
+de configuración global y no se lanzan 3/4. Consentimiento agotado.
+Siguiente: diagnóstico offline del cambio global, sin iniciar. Después,
+hito de interfaz de producto con alta de proyectos en SQLite (D054); no iniciado.
+QA visual H5.7 bloqueada por herramienta; Claude real con D058 sigue pendiente.
 
 ## Verificación de H0.1
 
@@ -2128,6 +2132,50 @@ QA visual H5.7 bloqueada por herramienta; sin proveedores nuevos.
 - No acreditado: edición real de Codex, mensaje interno de permisos ni Claude
   real con esquema tipado. Siguiente tarea: ejecutar D060 una sola vez solo con
   consentimiento nuevo; **no iniciada**. H6.2 tampoco. Commit solicitado.
+
+## Ejecución acotada de D060 y parada global (D061)
+
+- Autorización del usuario: «Autorizo», tras revisión de propuesta, selecciones
+  y límites. Git inicialmente limpio en `main`, `42971ef`.
+  [Resultado](discovery/PROVIDER_MATRIX_CLI7_RUN.md),
+  [manifiesto y verificaciones](discovery/PROVIDER_MATRIX_CLI7_RESULT.json).
+- Hashes de paquete/scripts/tres TOML coincidentes con D060; wheel y venv
+  conservados, sin reconstrucción o instalación. Estado de los tres pares
+  inicialmente vacío y Git limpio. Preflight de ambos agentes de la 2
+  `version_help_match` con Codex 0.162.1; Claude no invocado, ni version/help.
+- **2 Codex→Codex COMMITTED**, run `58119c8c-314f-49dd-b1b4-9256cd680d46`,
+  commit `585a35c009a4e68d9d90eb4f9af981afffd9e8f2`. Planner/executor/reviewer
+  COMPLETE, exit 0, stderr vacío; `gpt-6-luna` medium/low/medium solicitado.
+  Escritura real observada como `file_change` y diff solo de `src/estimate.ts`;
+  raíces D059 y prompt de transporte verificados. No prueba la causa de D057.
+- Seis comandos de preparación/validación exit 0; check/test/build correctos,
+  JUnit original completo y tres casos aprobados. Review ACCEPT y aceptación
+  elegible ligadas a la misma huella/árbol del commit. Documentos intactos,
+  único commit nuevo acotado y checkout limpio. Hashes de artefactos/prompts,
+  snapshots y versiones contrastados; originales conservados bajo BASE.
+- **Parada preventiva:** cambia el hash de `~/.codex/config.toml`; mtime
+  coincide con el lanzamiento del escritor y se observa `trust_level = "trusted"`
+  para su checkout. La línea base solo registra hashes: delta exacto y
+  atribución a la CLI no demostrados. No se editó directamente ni restauró
+  configuración global; el cambio observado se conserva.
+  Los otros tres archivos muestreados mantienen hashes y no hay entradas
+  nuevas de proyectos Claude; no es auditoría exhaustiva del filesystem.
+- **3/4 no lanzadas**, sin SQLite/jobs/intentos/evidencia; state/cli-tmp
+  vacíos y HEAD/documentos conservados. Tres invocaciones Codex, cero Claude,
+  sin reintentos, fallback, login, recuperación o liberación manual de locks.
+  No se agotó el plazo de 90 minutos. Consentimiento D060 agotado.
+- SQLite reabierta: integridad/FK correctas, ambos jobs DONE con propietarios
+  cerrados, procesos STOPPED, cero locks. Identidades de CLI/comandos/servicio
+  observadas muertas, apagado completo, clave retirada y puerto sin listener.
+- Verificación proporcional: recorrido real, hashes, contenido exacto,
+  cierres y documentación/diff/enlaces. Sin nuevos tests de producto,
+  pytest, build del producto, cliente Node separado o QA visual: no cambia
+  código/UI/esquema/codec/dependencias. Las validaciones del checkout
+  desechable sí se ejecutaron. Sin push, publicación, ReferenceProject, subagentes
+  de desarrollo o harness de desarrollo. Commit solicitado por el usuario.
+- Siguiente: diagnóstico offline del cambio global; no iniciado. Claude real
+  con D058 sigue pendiente y cualquier ejecución posterior requiere nueva
+  propuesta/consentimiento. H6.2 tampoco se inició.
 
 ## Coordinación
 
