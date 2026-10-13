@@ -4,6 +4,7 @@ import { Phases } from "./Phases";
 import { Bootstrap } from "./Bootstrap";
 import { Chat } from "./Chat";
 import { Tests } from "./Tests";
+import { Logs } from "./Logs";
 import { useEffect, useRef, useState } from "react";
 import { managed, managedApi, ManagedError, readPending, savePending, jobRequest } from "./managed-api";
 import type { Pending, S } from "./managed-api";
@@ -207,6 +208,7 @@ function Run({ id, refresh, busy, operate, send }: { id: string; refresh: number
     </div>)}
     <h3>Intentos</h3>
     {attempts?.items.map(a => <div className="entry" key={a.id}><strong>{a.number} · {a.role} · {a.status}</strong>
+      <Logs runId={id} attemptId={a.id} />
       <Evidence title="Selección, resultado, revisión y consumo reportado" value={a} /></div>)}
     <div className="pagination"><button disabled={!offset} onClick={() => setOffset(Math.max(0, offset - 30))}>Intentos anteriores</button>
       <button disabled={attempts?.next_offset == null} onClick={() => setOffset(attempts!.next_offset!)}>Más intentos</button></div>

@@ -15,7 +15,7 @@ from fastapi.responses import Response
 from pydantic import Field
 
 from harness_local.api.schemas import (
-    JUnitCasesRead,
+    JUnitCasesRead, ManagedLogRead,
     PromptScope, PromptDetailRead, PromptVersionRead, PromptDraftCreate, PromptActivateCreate,
     PromptValidateCreate, PromptValidationRead, PromptDiffRead,
     ActivationCreate, ActivationRead, ActivationTransition, ConfirmStoppedCreate, ManagedAttemptRead,
@@ -276,6 +276,18 @@ def managed_router(runtime: ManagedRuntime):
     def attempts(run_id: str, offset: Offset = 0, limit: Limit = 30):
         runtime.ready()
         return call(runtime.views.attempts, run_id, offset, limit)
+
+    @router.get('/runs/{run_id}/attempts/{attempt_id}/logs', response_model=list[ManagedLogRead],
+                operation_id='managed_attempt_logs')
+    def attempt_logs(run_id: str, attempt_id: str):
+        runtime.ready()
+        from sqlalchemy import text
+        from harness_local.storage.retention import inspect_logs
+        with runtime.repository.engine.connect() as db:
+            owner = db.scalar(text('SELECT run_id FROM managed_attempts WHERE id=:id'), {'id': attempt_id})
+        if owner != run_id:
+            raise problem(404, 'not_found', 'Intento desconocido para este run.')
+        return call(inspect_logs, runtime.repository.engine.url.database, attempt_id)
 
     @router.get("/runs/{run_id}/events", response_model=ManagedEventsRead, operation_id="managed_run_events")
     def events(run_id: str, after: Offset = 0, limit: Limit = 100):

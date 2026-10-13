@@ -537,6 +537,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/managed/runs/{run_id}/attempts/{attempt_id}/logs": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Attempt Logs */
+        get: operations["managed_attempt_logs"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/managed/runs/{run_id}/events": {
         parameters: {
             query?: never;
@@ -2127,6 +2144,28 @@ export interface components {
             activation_id: string | null;
             /** Owner Closed */
             owner_closed: boolean;
+        };
+        /** ManagedLogRead */
+        ManagedLogRead: {
+            /** Stream */
+            stream: string;
+            /** Source */
+            source: string;
+            /** Sha256 */
+            sha256: string;
+            /** Size Bytes */
+            size_bytes: number;
+            /**
+             * State
+             * @enum {string}
+             */
+            state: "retained" | "purged" | "pending" | "missing" | "unverified";
+            /** Diagnostic */
+            diagnostic: string | null;
+            /** Authorization */
+            authorization: {
+                [key: string]: unknown;
+            } | null;
         };
         /** ManagedProjectRead */
         ManagedProjectRead: {
@@ -4828,6 +4867,68 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["Page_ManagedAttemptRead_"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+        };
+    };
+    managed_attempt_logs: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Obligatoria con valor 1 en mutaciones (protección CSRF). */
+                "x-harness-local"?: string | null;
+            };
+            path: {
+                run_id: string;
+                attempt_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ManagedLogRead"][];
                 };
             };
             /** @description Forbidden */

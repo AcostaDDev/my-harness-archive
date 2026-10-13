@@ -35,7 +35,7 @@ Actualizado: 2026-10-13.
 - Dependencias reales instaladas en `.venv` / `frontend/node_modules`, locks
   `uv.lock` / `frontend/package-lock.json`. Pins H0.2 usados conservados;
   backend de paquete `uv_build==0.12.19`. Comandos comprobados en README/AGENTS.
-- 600 casos de producto en `tests/product/`; pytest ejecuta 612 pruebas en total.
+- 643 casos de producto en `tests/product/`; pytest ejecuta 655 pruebas en total.
   La comprobación ligera anterior conserva sus 12 checks sin dependencias.
 - H1.1 completado: [importación legacy y verificaciones](discovery/H1.1_IMPORT.md),
   [alcance original](discovery/H1.1_SCOPE.md). Lector local explícito de
@@ -366,6 +366,20 @@ Actualizado: 2026-10-13.
   43 casos nuevos y recorrido CLI/HTTP sintético; sin reactivación operativa,
   retención/GC ni backup de checkouts/objetos Git/fuentes legacy externas.
 
+- H5.3 completado offline: [retención local de logs](discovery/H5.3_RETENTION.md),
+  [alcance original](discovery/H5.3_SCOPE.md), D041. Política por corte UTC/tamaño,
+  preview con hash y aplicación CLI explícita con servicio/escritores detenidos.
+- Retira solo originales externos stdout/stderr de intentos CLI terminados y
+  sellados; conserva contratos/snapshots/permisos/aprobaciones/veredictos/resultados
+  y hashes/rangos. Excluye locks, trabajos activos/inciertos y referencias compartidas.
+- Intención antes de unlink y resultado auditados en eventos/versiones del run;
+  caída → pendiente → nueva preview/reconfirmación, con bytes observados null si
+  no se observó su retirada. Esquema `0013_bootstrap` y codec 6 conservados.
+- Consulta CLI/API/UI distingue retenido, purgado, pendiente, perdido y no
+  verificado. Backup/restauración conserva ausencias autorizadas en `absent_purged`,
+  acepta bundles anteriores y mantiene la guardia de consulta. 43 casos nuevos,
+  solo capturas temporales sintéticas; sin rotación, GC ni retención de SQLite.
+
 ## Todavía no existe
 
 Recorrido de tarea real del motor con proveedores ni entrada CLI gestionada;
@@ -374,7 +388,8 @@ Tampoco existen sesión local, guardia en lecturas H0/H1 (las mutaciones ya la t
 proyectos por HTTP, SSE gestionado, pausa o cancelación por HTTP, integración del
 commit en la rama de destino, retirada de worktrees, abandono manual de una
 intención ambigua, permisos
-interactivos, App Server/SDK para el chat, retención/GC ni distribución. Tampoco
+interactivos, App Server/SDK para el chat, rotación de logs, retención de payloads
+SQLite/legacy/JUnit, GC ni distribución. Tampoco
 reactivación operativa de una copia/restauración. En fases faltan archivo/commit de cierre,
 instalación de la fase siguiente y cancelación de una tarea de reconciliación. La
 evaluación de fase, la reconciliación y el chat con CLI real no se han ejecutado. La salida del hito 2 está verificada offline desde la UI hasta COMMITTED,
@@ -409,7 +424,8 @@ H4.2 bootstrap guiado completado offline (D037).
 H4.3 segundo perfil TypeScript web completado offline (D038).
 H5.1 importación JUnit y detalle de tests completado offline (D039).
 H5.2 backup/restauración local completado offline (D040).
-Siguiente tarea: H5.3 retención local de logs, sin iniciarla.
+H5.3 retención local de logs completado offline (D041).
+Siguiente tarea: H5.4 diagnósticos locales de compatibilidad, sin iniciarla.
 Sin proveedores nuevos.
 
 ## Verificación de H0.1
@@ -1375,6 +1391,43 @@ Sin proveedores nuevos.
   Parciales permanecen para inspección, sin limpieza o reutilización automática.
 
   H5.3 retención local de logs queda siguiente, sin iniciar.
+
+## Verificación de H5.3
+
+- Git inicial limpio en `main`, `120f315`. Leídos AGENTS, STATE, NEXT_STEPS,
+  DECISIONS, especificación §14 y backlog H5. Alcance original conservado;
+  D041 fija política, autoridad y recuperación. No se inició otro incremento.
+- 43 casos nuevos de retención en SQLite/capturas sintéticas temporales:
+  política, preview determinista sin efectos, hashes obsoletos/confirmación,
+  conservación de historial/filas/prompts/resultados, intentos activos/inciertos,
+  locks, propietarios/grupos, pérdida/corrupción/enlaces/FIFO, rangos, referencias
+  compartidas, límites y exclusión de escritor SQLite concurrente.
+- Caídas antes/después de unlink dejan intenciones pendientes, bloquean backup y
+  exigen preview/reconfirmación explícita. La conciliación conserva la intención
+  y distingue bytes observados de retirados; cambios ajenos no se eliminan.
+  Purga repetida con preview nueva no añade efectos; secuencias/versiones correctas.
+- CLI y HTTP distinguen retenido/purgado/pendiente/perdido/no verificado, hash exacto,
+  pertenencia de intento y guardia Host. Backup/restauración con ausencias autorizadas
+  y originales restantes; bundles anteriores intactos, corrupción de auditoría y
+  reaparición del original purgado rechazadas. Consulta restaurada independiente
+  de originales; marca de archivo de consulta impide purgar una restauración.
+- Regresión completa: 654 pruebas y 121 subtests correctos. Tras reforzar el hash
+  de referencias/rangos y añadir su caso de corrupción, regresión final de 86
+  pruebas H5.2/H5.3 correcta (43 + 43); 655 casos disponibles en total.
+  12 checks ligeros, cuatro pruebas Node, OpenAPI/tipos
+  regenerados, TypeScript/build y comprobaciones existentes de esquema. Esquema,
+  codec y locks de dependencias conservados. Aviso Starlette/HTTPX conocido.
+- Diff/whitespace y 163 enlaces locales revisados. No se copió, purgó ni migró almacenamiento real del
+  usuario; solo artefactos temporales sintéticos. Sin proveedores/smokes/login,
+  red externa, ReferenceProject, configuración global, colaboración automática, harness
+  de desarrollo ni push. HTTP por TestClient y UI compilada; sin navegador vivo.
+  Commit solicitado por el usuario.
+- Límites: parada/exclusión externa cooperativas, sin atomicidad SQLite/unlink,
+  256 MiB por fichero, 2 GiB por aplicación, 10.000 referencias; sin benchmark,
+  rotación/cap nuevo de captura, GC, purga de SQLite/legacy/JUnit ni abandono de
+  intención pendiente. No se elimina ni adopta un original purgado reaparecido.
+
+  H5.4 diagnósticos locales de compatibilidad queda siguiente, sin iniciar.
 
 ## Coordinación
 

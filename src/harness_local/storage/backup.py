@@ -274,6 +274,8 @@ def _create_backup(database, destination, *, artifact_roots=(), writers_stopped=
             if hook:
                 hook('database_copied')
             refs = _references(lock)
+            from harness_local.storage.retention import authorized_absences
+            purged = authorized_absences(lock, refs)
             files, absent, total = [], [], 0
             if len(refs) > MAX_FILES:
                 raise BackupError('Demasiadas referencias de artefactos.')
@@ -281,6 +283,10 @@ def _create_backup(database, destination, *, artifact_roots=(), writers_stopped=
                 path = Path(source)
                 if not any(path.is_relative_to(root) for root in roots):
                     raise BackupError(f'Referencia fuera de --artifact-root: {source}')
+                if source in purged:
+                    if os.path.lexists(path):
+                        raise BackupError('Reapareció un original purgado; no adoptar otros bytes.')
+                    continue
                 try:
                     raw = _read(path)
                 except FileNotFoundError:
@@ -304,6 +310,8 @@ def _create_backup(database, destination, *, artifact_roots=(), writers_stopped=
                     raise BackupError('Artefactos cambiaron durante la copia.')
             if any(os.path.lexists(path) for path in absent):
                 raise BackupError('Apareció un artefacto durante la copia.')
+            if any(os.path.lexists(path) for path in purged):
+                raise BackupError('Reapareció un original purgado durante la copia.')
             after = database.stat()
             if (before.st_dev, before.st_ino) != (after.st_dev, after.st_ino):
                 raise BackupError('La SQLite de origen fue reemplazada durante la copia.')
@@ -311,7 +319,7 @@ def _create_backup(database, destination, *, artifact_roots=(), writers_stopped=
             manifest = {'format': FORMAT, 'kind': 'backup', 'schema': SCHEMA_REVISION,
                         'consistency': 'service-and-writers-stopped/sqlite-backup/write-lock',
                         'database': {'path': 'state.sqlite3', 'sha256': _hash(raw_db), 'size_bytes': len(raw_db)},
-                        'files': files, 'absent_optional': absent,
+                        'files': files, 'absent_optional': absent, 'absent_purged': purged,
                         'external_legacy_sources': [r[0] for r in lock.execute('SELECT root FROM legacy_sources ORDER BY root') if r[0] not in {r[0] for r in lock.execute('SELECT snapshot_root FROM managed_activations')}],
                         'runs': [dict(r) for r in lock.execute('SELECT id,root,status,purpose FROM managed_runs ORDER BY id')],
                         'execution_authorized': False}
@@ -357,6 +365,10 @@ def verify_bundle(bundle):
         with closing(_connect(bundle / 'state.sqlite3')) as db:
             _integrity(db, restored=True)
             refs = _references(db)
+            from harness_local.storage.retention import authorized_absences
+            purged = authorized_absences(db, refs)
+            if manifest.get('absent_purged', {}) != purged:
+                raise BackupError('Ausencias purgadas distintas de la auditoría SQLite.')
             runs = [dict(r) for r in db.execute('SELECT id,root,status,purpose FROM managed_runs ORDER BY id')]
             if manifest['runs'] != runs:
                 raise BackupError('Inventario de runs distinto de la autoridad SQLite.')
@@ -376,7 +388,9 @@ def verify_bundle(bundle):
             sources.add(source)
             paths.add(relative)
         absent = manifest['absent_optional']
-        if len(set(absent)) != len(absent) or sources & set(absent) or set(refs) != sources | set(absent) or any(not refs[s]['optional'] for s in absent):
+        if (len(set(absent)) != len(absent) or sources & set(absent) or
+                (sources | set(absent)) & set(purged) or set(refs) != sources | set(absent) | set(purged) or
+                any(not refs[s]['optional'] for s in absent)):
             raise BackupError('Referencias ausentes en el backup.')
         return manifest
     except (OSError, sqlite3.Error, KeyError, TypeError, ValueError, RecursionError) as exc:

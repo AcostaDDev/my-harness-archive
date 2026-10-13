@@ -2,7 +2,7 @@
 
 Aplicación local para configurar, ejecutar y observar un harness modular de desarrollo con agentes.
 Estado actual: H0, H1, H2.1–H2.5, salida del hito 2, H3.1–H3.4,
-H4.1–H4.3, H5.1–H5.2 y exportación mecánica de STATE/NEXT_STEPS completados offline.
+H4.1–H4.3, H5.1–H5.3 y exportación mecánica de STATE/NEXT_STEPS completados offline.
 Python/API/UI con simulaciones, observación legacy y motor con cola/persistencia;
 Git, migración gestionada, prompts/permisos, fases/lotes, chat contextual y bootstrap guiado.
 La exportación usa diff confirmado, commit conciliable y adopción de hashes (D036).
@@ -10,7 +10,8 @@ H2.3 conserva el smoke real de transporte D025; el resto está verificado con
 Git/SQLite sintéticos y fakes. Proveedores opt-in por inyección explícita, sin
 entrada CLI gestionada. Reportes JUnit congelados por validación y detalle API/UI.
 Backup/restauración local con manifiesto y guardia de consulta, sin reanudar procesos.
-Siguiente tarea: H5.3 retención local de logs, sin iniciar.
+Retención explícita de originales stdout/stderr con preview, auditoría y consulta.
+Siguiente tarea: H5.4 diagnósticos locales de compatibilidad, sin iniciar.
 
 ## Documentación
 
@@ -43,6 +44,7 @@ Siguiente tarea: H5.3 retención local de logs, sin iniciar.
 - [Segundo perfil TypeScript web H4.3: comandos reales y límites](docs/discovery/H4.3_TYPESCRIPT_PROFILE.md).
 - [Reportes JUnit H5.1: configuración, consulta y límites](docs/discovery/H5.1_JUNIT.md).
 - [Backup/restauración local H5.2: procedimiento, consistencia y límites](docs/discovery/H5.2_BACKUP.md).
+- [Retención local de logs H5.3: política, comandos y recuperación](docs/discovery/H5.3_RETENTION.md).
 - [Smoke cli-3: MCP aceptado, fallo de autenticación Claude](docs/discovery/H2.3_SMOKE_CLI3.md).
 - [Git, worktree y commit acotado H2.4](docs/discovery/H2.4_GIT.md).
 - [Migración a modo gestionado H2.5](docs/discovery/H2.5_MIGRATION.md).
@@ -111,7 +113,7 @@ UV_CACHE_DIR=.local/uv-cache uv run --frozen --offline alembic current
 UV_CACHE_DIR=.local/uv-cache uv run --frozen --offline alembic check
 ```
 
-612 pruebas, incluidas 43 de backup/restauración H5.2. Se usan checkouts Git, SQLite y procesos Python
+655 pruebas, incluidas 43 de backup/restauración H5.2 y 43 de retención H5.3. Se usan checkouts Git, SQLite y procesos Python
 sintéticos, sin CLI de proveedores ni consumo de suscripciones. Se verifican
 captura incremental, cancelación de grupos, recuperación tras caída del supervisor
 y el recorrido HTTP con fakes hasta COMMITTED. No certifica commits con proveedores.
@@ -148,7 +150,7 @@ La API gestionada local (proyectos registrados en el servidor, supervisor opt-in
 idempotencia, versiones y guardia Host/Origin/CSRF) está completada offline: ver
 [entrega y límites](docs/discovery/H2_EXIT_API.md). La UI gestionada local está
 completada offline; [demo, verificación y límites](docs/discovery/H2_EXIT_UI.md).
-H4.1–H4.3, H5.1–H5.2 y exportación mecánica completados offline (D035–D040); siguiente tarea: H5.3 retención local de logs, sin iniciar. Ver [corrección y límites](docs/discovery/H2.3_MCP_FIX.md)
+H4.1–H4.3, H5.1–H5.3 y exportación mecánica completados offline (D035–D041); siguiente tarea: H5.4 diagnósticos locales de compatibilidad, sin iniciar. Ver [corrección y límites](docs/discovery/H2.3_MCP_FIX.md)
 y [resultado real cli-3](docs/discovery/H2.3_SMOKE_CLI3.md). El consentimiento
 terminó al fallo; otro smoke requiere propuesta y autorización específicas.
 Ver [corrección del entorno](docs/discovery/H2.3_ENV_FIX.md) y

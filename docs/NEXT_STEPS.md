@@ -1,55 +1,47 @@
-# Siguiente tarea — H5.3 Retención local de logs
+# Siguiente tarea — H5.4 Diagnósticos locales de compatibilidad
 
-H5.2 backup/restauración local se completó offline el 2026-10-13 (D040).
-Copia con servicio/escritores detenidos y mecanismo de backup SQLite; manifiesto,
-hashes/referencias verificadas, restauración a destino nuevo y guardia persistente
-de solo lectura. No se reanudan procesos ni se repiten efectos al abrir una copia.
-Ver [procedimiento y límites](discovery/H5.2_BACKUP.md) y
-[alcance original](discovery/H5.2_SCOPE.md).
+H5.3 retención local de logs se completó offline el 2026-10-13 (D041).
+Política explícita por corte UTC/tamaño, preview sellada, aplicación confirmada
+con escritores detenidos, intenciones/resultados auditados y conciliación tras
+caída. Solo retira originales externos stdout/stderr de intentos sellados;
+historial/contratos/permisos/aprobaciones/veredictos/hashes quedan conservados.
+Consulta CLI/API/UI distingue purga autorizada, pendiente, pérdida y corrupción.
+Backup/restauración representa las ausencias autorizadas, acepta bundles anteriores
+y mantiene su guardia de consulta. Ver [entrega y límites](discovery/H5.3_RETENTION.md)
+y [alcance original](discovery/H5.3_SCOPE.md).
 
-Estado verificado:
-
-- esquema `0013_bootstrap` y codec 6 conservados; historial 1–6 compatible;
-- 612 pruebas pytest y 121 subtests, con 43 casos nuevos de backup/restauración;
-- WAL real, historial/snapshots/JUnit/eventos y filas operativas conservados;
-- prompts/streams CLI, rangos y colas inciertas, snapshots/exportación H2.5;
-- consultas HTTP y artefactos restaurados independientes de sus originales;
-- guardia SQLite/API, sin cargar configuración ni iniciar supervisor/observador;
-- corrupción/ausencia/versiones/rutas/enlaces/límites/concurrencia rechazados;
-- 12 checks ligeros, cuatro pruebas Node, TypeScript/build y checks de esquema/OpenAPI.
-
-No se copió ni migró la SQLite de trabajo, no se usaron proveedores ni smokes.
-No se implementaron GC, distribución ni reactivación operativa de una copia.
-**H5.3 no está iniciado.** Los consentimientos de smokes siguen agotados.
+Esquema `0013_bootstrap` y codec 6 conservados. Pruebas offline sintéticas de
+retención/recuperación/CLI/HTTP y regresión completa de backup; checks ligeros,
+Node, OpenAPI/tipos y TypeScript/build. Evidencias y recuentos en STATE.
+No se purgaron archivos reales ni se migró la SQLite de trabajo. No se usaron
+proveedores ni smokes. Rotación, GC y abandono de intención pendiente quedan fuera.
+**H5.4 no está iniciado.** Los consentimientos de smokes siguen agotados.
 
 ## Objetivo y alcance (siguiente incremento del hito 5)
 
-1. Definir una política local explícita de retención de logs voluminosos y sus
-   límites; separar originales purgables de contratos, snapshots, permisos,
-   aprobaciones y veredictos que deben conservarse.
-2. Diseñar e implementar vista previa y aplicación explícita de la política sobre
-   artefactos gestionados, con diagnóstico/auditoría de bytes retirados y
-   referencias ausentes deliberadamente diferenciadas de pérdida/corrupción.
-3. Mantener backup/restauración compatibles con la evidencia retenida y probar
-   offline sobre datos sintéticos. No purgar archivos reales del usuario.
+1. Ofrecer diagnósticos locales explícitos de las capacidades/versiones CLI y
+   configuración necesarias para los adaptadores existentes, reutilizando su
+   preflight en lectura y separando datos solicitados de observados/ausentes.
+2. Mostrar incompatibilidades y pasos concretos de corrección sin iniciar jobs,
+   agentes, login, instalaciones, cambios globales, fallback ni llamadas de consumo.
+3. Verificar offline con ejecutables/configuraciones sintéticos y documentar
+   alcance, comandos disponibles y límites de lo que un preflight certifica.
 
 ## Criterios de aceptación
 
-- La política y sus efectos son visibles antes de eliminar bytes; no hay purga
-  automática ni eliminación de artefactos de intentos activos/inciertos.
-- Historial, contratos, decisiones, aprobación/veredicto y procedencia exacta se
-  conservan; retirar un log no certifica éxito ni borra sus hashes observados.
-- La consulta distingue purga autorizada de archivo perdido y no sirve otra
-  versión de bytes como si fuera la registrada.
-- Backup/restauración conserva lo retenido y representa las ausencias autorizadas
-  sin admitir corrupción silenciosa. Las copias existentes permanecen intactas.
-- Regresiones offline pertinentes correctas y documentación actualizada.
+- El diagnóstico es opt-in y no ejecuta inferencia ni efectos de checkout.
+- Versiones/capacidades incompatibles o desconocidas no aparecen como compatibles;
+  help/version no se presentan como prueba de autenticación, cuota o argv completo.
+- No revela credenciales ni modifica configuraciones o snapshots congelados.
+- Errores, timeout y salida inesperada producen diagnóstico acotado, sin fallback
+  ni reintento silencioso; una corrección pertenece a una acción posterior explícita.
+- Pruebas offline pertinentes y documentación actualizada.
 
 ## Fuera de alcance
 
-- Distribución/assets/comando único de inicio, diagnósticos CLI/SDK y otros
-  incrementos de H5; reactivación operativa de restauraciones y backup de Git.
-- Proveedores reales/smokes: autorización específica (D033 punto 8).
-- App Server/SDK, sesión local, SSE gestionado, push y publicación.
+- Distribución/assets/comando único de inicio, sesión local, SSE gestionado,
+  App Server/SDK, reactivación de restauraciones, backup Git, push y publicación.
+- Proveedores/smokes y diagnóstico real de autenticación: autorización específica
+  antes de consumir o acceder a la sesión del usuario (D033 punto 8).
 
 No lanzar colaboración automática ni usar el harness para desarrollar el repo.

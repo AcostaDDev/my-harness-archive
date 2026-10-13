@@ -1199,3 +1199,50 @@ cooperativas; no se promete defensa frente a manipulación del propietario.
 Límites explícitos: SQLite/fichero hasta 256 MiB, artefactos hasta 2 GiB, 10.000
 referencias, manifiesto hasta 4 MiB; sin benchmark, retención/GC o distribución.
 H5.3 retención local de logs queda siguiente, sin iniciar. Smokes agotados.
+
+## D041 — Retención explícita de streams sellados con intención previa y ausencias auditadas
+
+Estado: implementado y verificado offline el 2026-10-13.
+[Procedimiento y límites](discovery/H5.3_RETENTION.md).
+
+La política local formato 1 tiene corte UTC obligatorio y umbral de tamaño
+configurable (1 MiB predeterminado); sin invocación explícita se conserva todo.
+Solo afecta stdout/stderr externos de CLI gestionadas terminadas y selladas,
+sin locks/trabajo pendiente en el checkout ni resultados/grupos inciertos.
+No elimina prompts, contratos, snapshots, permisos, aprobaciones, veredictos,
+JUnit, migraciones, resultados o hashes/rangos históricos. Retirar bytes no cambia
+el juicio ni el estado operativo del run.
+
+El mantenimiento se hace por CLI/biblioteca, con servicio/escritores detenidos,
+raíces explícitas fuera de checkouts y confirmación del hash de la vista previa,
+motivo y UID local. Se reutiliza `managed_events` para intenciones/resultados y
+sus versiones/secuencias: no hay una segunda autoridad, migración ni codec nuevo.
+`BEGIN IMMEDIATE` protege las decisiones DB; intención confirmada antes de unlink,
+reverificación de elegibilidad/bytes y descriptores sin enlaces antes de retirar.
+La intención sella también las referencias con rangos/hashes parciales, para
+detectar su corrupción posterior aunque el original ya esté retirado.
+
+Una caída deja intención pendiente y exige preview y confirmación nuevas, con
+evento de reconfirmación; no se repite automáticamente. Ausencia tras intención
+puede conciliarse explícitamente, con bytes retirados observados null cuando no
+se observó el unlink. Los contenidos ajenos no se eliminan y requieren recuperar
+manualmente el original sellado para conciliar. No existe abandono de intención
+pendiente. La parada y exclusión frente a escritores externos son cooperativas,
+sin atomicidad DB/filesystem ni promesa de defensa ante manipulación del dueño.
+
+Consulta explícita CLI/API/UI diferencia retenido verificado, purgado, pendiente,
+perdido y no verificado, manteniendo hash/procedencia. No sirve cuerpos distintos
+ni relee grandes logs en cada sondeo. Un original reaparecido tras purga no se
+adopta ni vuelve a eliminar por esta política.
+
+El bundle H5.2 formato 1 añade `absent_purged` contrastado con el journal y las
+referencias selladas; pérdidas, pruebas inválidas, corrupción o purgas pendientes
+impiden publicar un backup. Los bundles anteriores sin purgas siguen verificando
+sin ese campo; las copias existentes permanecen intactas. Restauraciones conservan
+ausencias autorizadas y guardia de consulta; no pueden purgarse ni reactivarse.
+
+Se limita a 256 MiB por fichero, 2 GiB por operación y 10.000 referencias. No
+implementa rotación/caps nuevos de captura, retención de SQLite/legacy/JUnit,
+GC de temporales ni benchmark. Solo se eliminaron capturas sintéticas temporales.
+H5.4 diagnósticos locales de compatibilidad queda siguiente, sin iniciar.
+Smokes/proveedores siguen sin autorización disponible.

@@ -399,6 +399,16 @@ class ManagedEventRead(BaseModel):
     payload: dict[str, Any]
 
 
+class ManagedLogRead(BaseModel):
+    stream: str
+    source: str
+    sha256: str
+    size_bytes: int
+    state: Literal['retained', 'purged', 'pending', 'missing', 'unverified']
+    diagnostic: str | None
+    authorization: dict[str, Any] | None
+
+
 class ManagedEventsRead(BaseModel):
     items: list[ManagedEventRead]
     cursor: int

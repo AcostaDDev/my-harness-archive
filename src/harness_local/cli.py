@@ -1,4 +1,4 @@
-"""Entradas locales de índice y backup, sin servicio, motor ni proveedores."""
+"""Entradas locales de índice, backup y retención; sin motor ni proveedores."""
 import argparse
 import json
 from pathlib import Path
@@ -13,10 +13,11 @@ from harness_local.storage.database import database_url, make_engine
 from harness_local.storage.legacy import SQLiteLegacyRepository
 from harness_local.storage.schema import require_schema
 from harness_local.storage.backup import create_backup, restore_backup, verify_bundle
+from harness_local.storage.retention import preview_retention, apply_retention, inspect_logs
 
 
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description="Índice legacy y backup local")
+    parser = argparse.ArgumentParser(description="Índice legacy, backup y retención local")
     operations = parser.add_subparsers(dest='operation', required=True)
     for name in ('legacy-import', 'legacy-summary'):
         command = operations.add_parser(name)
@@ -31,9 +32,36 @@ def main(argv: list[str] | None = None) -> int:
     command = operations.add_parser('backup-restore', help='Destino nuevo; restauración solo de consulta')
     command.add_argument('bundle')
     command.add_argument('destination')
+    for name in ('logs-preview', 'logs-apply'):
+        command = operations.add_parser(name, help='Retención explícita de stdout/stderr CLI sellados')
+        command.add_argument('database')
+        command.add_argument('--artifact-root', action='append', required=True)
+        command.add_argument('--before', required=True, help='Fecha de corte ISO-8601 UTC, exclusiva')
+        command.add_argument('--min-bytes', type=int, default=1024 * 1024)
+        if name == 'logs-apply':
+            command.add_argument('--preview-sha256', required=True)
+            command.add_argument('--reason', required=True)
+            command.add_argument('--confirmed', action='store_true')
+            command.add_argument('--writers-stopped', action='store_true')
+    command = operations.add_parser('logs-inspect', help='Distinguir retenido, purgado, pendiente, perdido y no verificado')
+    command.add_argument('database')
+    command.add_argument('attempt_id')
     args = parser.parse_args(argv)
     engine = None
     try:
+        if args.operation.startswith('logs-'):
+            if args.operation == 'logs-inspect':
+                result = inspect_logs(args.database, args.attempt_id)
+            else:
+                kwargs = dict(artifact_roots=args.artifact_root, before=args.before, min_bytes=args.min_bytes)
+                if args.operation == 'logs-apply':
+                    kwargs.update(preview_sha256=args.preview_sha256, reason=args.reason,
+                                  confirmed=args.confirmed, writers_stopped=args.writers_stopped)
+                    result = apply_retention(args.database, **kwargs)
+                else:
+                    result = preview_retention(args.database, **kwargs)
+            print(json.dumps(result, ensure_ascii=False, indent=2))
+            return 0
         if args.operation.startswith('backup-'):
             if args.operation == 'backup-create':
                 manifest = create_backup(args.database, args.destination, artifact_roots=args.artifact_root,
@@ -58,7 +86,7 @@ def main(argv: list[str] | None = None) -> int:
             raise ValueError("Origen no importado; ejecutar legacy-import explícitamente.")
         print(json.dumps(summary, ensure_ascii=False, indent=2))
         return 0
-    except (OSError, RuntimeError, ValueError, SQLAlchemyError, sqlite3.Error) as error:
+    except (OSError, RuntimeError, ValueError, LookupError, SQLAlchemyError, sqlite3.Error) as error:
         print(str(error), file=sys.stderr)
         return 1
     finally:
