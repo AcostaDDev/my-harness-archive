@@ -279,8 +279,9 @@ fases usa `close-phase` desde H3.3. [Contrato, pruebas y límites](docs/discover
 H3.2 incorpora solicitudes de permisos por categoría con caducidad, huella y
 auditoría en la UI gestionada. Conceder no lanza trabajo: se aplica al siguiente
 intento explícito dentro de la autoridad congelada del servidor. Revalidar no
-repite el ejecutor, tampoco ante REVISE. El adaptador actual es `cli-5` (D052: revisor y
-ejecutor Codex o Claude, [entrega](docs/discovery/AGENT_ROLES.md)); el éxito
+repite el ejecutor, tampoco ante REVISE. El adaptador actual es `cli-6` (D052: revisor y
+ejecutor Codex o Claude, [entrega](docs/discovery/AGENT_ROLES.md); D058: `--json-schema`
+tipado del lector Claude, [entrega](docs/discovery/TYPED_JSON_SCHEMA.md)); el éxito
 del smoke D025 sigue siendo evidencia histórica de `cli-3`, sin autorizar consumo
 nuevo. Alcance y configuración en [H3.2](docs/discovery/H3.2_PERMISSIONS.md).
 

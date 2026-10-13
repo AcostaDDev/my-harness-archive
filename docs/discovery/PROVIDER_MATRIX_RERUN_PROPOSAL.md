@@ -1,8 +1,9 @@
 # Propuesta de nueva ejecución de la matriz D052 (D057)
 
 Preparada el 2026-10-13 sobre `7d00240` (D056), con Git limpio salvo los dos
-scripts nuevos de esta propuesta. **No ejecutada ni autorizada.** Ejecutarla
-exige un consentimiento específico y explícito del usuario. D055 y los
+scripts nuevos de esta propuesta. **Ejecutada y cerrada el mismo día; ver [resultado](PROVIDER_MATRIX_RERUN.md).**
+Cuando se preparó, no estaba ejecutada ni autorizada. Ejecutarla
+exigía un consentimiento específico y explícito del usuario. D055 y los
 consentimientos anteriores están agotados y no se trasladan.
 
 Repite la [propuesta D055](PROVIDER_MATRIX_PROPOSAL.md) después de la

@@ -1,5 +1,5 @@
 #!/bin/sh
-# Preparación del smoke de la matriz D052 (cli-5, local-config-2). Sin proveedores ni red.
+# Preparación del smoke de la matriz D052 (local-config-2; cli-5 en D055/D057, cli-6 desde D058). Sin proveedores ni red.
 # Uso: sh prepare.sh BASE   (BASE no debe existir; ruta absoluta canónica)
 # Crea BASE/<revisor>-<ejecutor> para las cuatro combinaciones, cada una con su
 # checkout desechable, su TOML 0600, su estado y sus áreas privadas.

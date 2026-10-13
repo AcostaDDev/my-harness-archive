@@ -23,9 +23,10 @@ from harness_local.adapters.processes import CancellationResult, identity, liven
 from harness_local.adapters.streams import AgentStream
 from harness_local.core.engine.contracts import AgentResult, freeze
 from harness_local.core.engine.journal import JournalError
+from harness_local.core.engine.prompts import digest, output_schema
 
 
-VERSION = "cli-5"
+VERSION = "cli-6"
 # Version/help characterization (D052): Claude 2.1.295 and 2.1.296 share the same help.
 SUPPORTED = {"codex": ("0.161.0", "0.162.1"), "claude": ("2.1.295", "2.1.296")}
 # Codex workspace-write was characterized on 0.162.1 only.
@@ -61,10 +62,22 @@ SHAPES = {
         "objective": "objective", "scope": "scope in words", "acceptance_criteria": ["criterion"],
         "validation": ["validation"], "rationale": "rationale"}]},
 }
-# Claude --json-schema for read-only roles: only the identity of each result; the
-# engine contracts keep validating the full shape.
-REQUIRED = {"bootstrap": ("summary",), "planner": tuple(SHAPES["planner"]), "reviewer": ("task_id", "verdict"),
-            "phase": ("phase_id", "verdict"), "chat": ("answer",)}
+
+
+def reader_schema(request):
+    """cli-6 (D058): Claude --json-schema for read-only roles is the typed engine schema of the attempt.
+
+    The schema frozen in the prompt snapshot, as the agent reads it; the fixed
+    engine schema of the role only for requests without a snapshot. A cli-5
+    schema declared `required` without types and the CLI returned lists as JSON text.
+    """
+    if request.prompt_snapshot_json is None:
+        return output_schema(request.role)
+    snapshot = json.loads(request.prompt_snapshot_json)
+    schema = snapshot.get("output_schema")
+    if not isinstance(schema, dict) or digest(freeze(schema)) != snapshot.get("schema_sha256"):
+        raise ValueError("Prompt snapshot without a consistent output schema")
+    return schema
 
 
 @dataclass(frozen=True)
@@ -151,7 +164,7 @@ def argv_for(config, context, request):
     if access == "read":
         tools = allowed = READ_TOOLS
         # Read-only reviewer: file tools confined to the checkout, structured result.
-        tail = ("--restricted", "--json-schema", freeze({"type": "object", "required": list(REQUIRED[request.role])}))
+        tail = ("--restricted", "--json-schema", freeze(reader_schema(request)))
     else:
         # Tools declared grantable are absent from the inventory until this attempt
         # has an explicit matching baseline rule or a persisted grant.

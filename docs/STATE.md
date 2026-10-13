@@ -1991,6 +1991,59 @@ QA visual H5.7 bloqueada por herramienta; sin proveedores nuevos.
   configuración global ni ReferenceProject.
 - Siguiente: ejecutar D057 solo con consentimiento específico; no iniciada.
 
+## Ejecución de la nueva matriz (D057)
+
+- El usuario pidió «comienza la preparación» y lanzó con `!` cada combinación.
+  Git limpio en `2c375bc`. [Resultado](discovery/PROVIDER_MATRIX_RERUN.md).
+- Preparación: área `/private/tmp/harness-provider-matrix-2`, wheel D056
+  `fec3333e…`, venv offline y preflight `version_help_match` en los ocho agentes.
+- Resultados:
+  - **1 Codex→Claude: `COMMITTED`** (`79853bf`). Planificador Codex con
+    `validation_commands: []` y selección del catálogo; ejecutor Claude 2.1.296
+    con un solo archivo; review ACCEPT.
+  - **2 Codex→Codex: `REVISION_LIMIT`.** El escritor Codex (`workspace-write`
+    sin red, `low`) no intentó editar: creyó que el checkout bajo `/private/tmp`
+    no era escribible. Test 1 y REVISE.
+  - **3 Claude→Claude: `STOPPED` en `planner`.** El lector Claude terminó
+    `complete` con `--restricted` y `--json-schema`, pero serializó listas y
+    objetos como cadenas JSON, porque el `--json-schema` de `cli-5` no tipa las
+    propiedades.
+  - **4 Claude→Codex: no lanzada** por decisión del usuario; repetiría la 3.
+- Siete invocaciones; sin reintentos. Sin procesos residuales; repositorio,
+  fixture y configuración global intactos. Observación: prosa en
+  `forbidden_paths` del planificador Codex, sin efecto. Solo documentos.
+- Siguiente: tipar el `--json-schema` del lector Claude (`cli-6`) y diagnosticar
+  el escritor Codex; no iniciadas.
+
+## `--json-schema` tipado para el lector Claude (D058, `cli-6`)
+
+- Petición del usuario: completar la tarea activa (`cli-6`) y hacer commit.
+  [Entrega](discovery/TYPED_JSON_SCHEMA.md).
+- Adaptador `cli-6`: el `--json-schema` del lector Claude es el `output_schema`
+  del motor congelado en la instantánea del prompt del intento, comprobado
+  contra su hash; sin instantánea, el esquema fijo del rol. Resto del argv,
+  escritor y Codex sin cambios; tabla `REQUIRED` eliminada.
+- Decisiones: `additionalProperties: true` como en el prompt; el motor **no**
+  normaliza listas u objetos serializados como texto (siguen rechazándose).
+- Jobs pendientes congelados con `cli-5` entran en cuarentena al actualizar.
+  Preflight, esquema `0013_bootstrap`, codec 7, OpenAPI, UI y `local-config-2`
+  sin cambios funcionales (solo comentarios).
+- Lectura de cadenas del binario de Claude 2.1.296, sin ejecutarlo: el esquema
+  es el `input_schema` de `StructuredOutput`, con raíz objeto; admite tipos en
+  lista; detecta esquemas insatisfacibles. El del motor los cumple.
+- CLI sintética: como lector Claude exige propiedades tipadas; con
+  `PROBE_UNTYPED=text` reproduce la salida de D057.
+- Verificado: 6 pruebas nuevas (`test_typed_json_schema.py`), entre ellas la
+  reproducción de D057 por el adaptador real (para en `planner` con
+  `Invalid task allowed_paths`) y el recorrido Claude → Claude tipado hasta
+  `ACCEPTANCE_READY`. Regresión: 911 pytest y 121 subtests, 12 checks
+  ligeros, 6 Node, `tsc`, build y `alembic check`; OpenAPI y tipos generados
+  sin cambios.
+- No acreditado: el comportamiento de Claude real con el esquema tipado; exige
+  consentimiento nuevo. Sin proveedores, red, push, configuración global ni
+  ReferenceProject.
+- Siguiente: diagnóstico del escritor Codex, sin consumo; no iniciado.
+
 ## Coordinación
 
 Desarrollo manual con el usuario. Una única sesión implementadora sobre los mismos archivos a la vez. La otra herramienta puede revisar una entrega terminada.

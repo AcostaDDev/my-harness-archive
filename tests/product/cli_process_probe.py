@@ -56,9 +56,16 @@ else:
         sys.exit(1)
     # D052: a reader has a JSON schema and only the fixed read tools, confined by --restricted.
     writer = '--json-schema' not in args
+    schema = {} if writer else json.loads(args[args.index('--json-schema') + 1])
     if not writer and (args[args.index('--tools') + 1] != 'Read,Glob,Grep' or '--restricted' not in args
-                       or json.loads(args[args.index('--json-schema') + 1]).get('type') != 'object'):
+                       or schema.get('type') != 'object'):
         print('Synthetic contract: invalid read-only reviewer invocation', file=sys.stderr)
+        sys.exit(1)
+    # cli-6 (D058): every required property is typed. PROBE_UNTYPED=text reproduces D057 instead:
+    # without declared types the real CLI returned lists and objects as JSON text.
+    typed = {key for key, value in schema.get('properties', {}).items() if isinstance(value, dict) and 'type' in value}
+    if not writer and not set(schema.get('required', ())) <= typed and os.environ.get('PROBE_UNTYPED') != 'text':
+        print('Synthetic contract: untyped --json-schema properties', file=sys.stderr)
         sys.exit(1)
 if mode == 'web':
     # Local-config journey: synthetic edit by the writer (either provider) in its checkout cwd.
@@ -107,6 +114,8 @@ if mode == 'flow' and not writer:
                   {'type':'turn.completed'}]
     else:
         # Claude reader: --json-schema result arrives as structured_output.
+        payload = {key: value if key in typed or isinstance(value, str) else json.dumps(value)
+                   for key, value in payload.items()}
         events = [{'type':'system','subtype':'init','session_id':'synthetic'},
                   {'type':'result','subtype':'success','is_error':False,'result':'',
                    'structured_output':payload,'usage':None,'duration_ms':0}]

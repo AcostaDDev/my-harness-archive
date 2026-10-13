@@ -13,7 +13,7 @@ from harness_local.adapters.cli_agents import CLIConfig, argv_for
 from harness_local.core.engine.chat import validate_chat_result
 from harness_local.core.engine.contracts import AgentRequest, AgentResult, ContractError, Selection, freeze
 from harness_local.core.engine.journal import JournalError
-from harness_local.core.engine.prompts import builtin_catalog, dump_catalog, load_catalog
+from harness_local.core.engine.prompts import builtin_catalog, dump_catalog, load_catalog, output_schema
 from harness_local.storage.chat import ChatRepository
 from harness_local.storage.managed import Conflict
 from harness_local.storage.models import ChatTurnRow, ManagedAttemptRow, ManagedJobRow, PermissionRequestRow
@@ -351,7 +351,8 @@ def test_cli_reviewer_handles_chat_role_read_only_with_either_provider(tmp_path)
     # D052: a Claude reviewer chats with the fixed read-only inventory and a JSON schema.
     argv = argv_for(CLIConfig('claude', ('/synthetic/claude',), '2.1.295', (), 1), context, request)
     assert argv[argv.index('--tools') + 1] == 'Read,Glob,Grep' and '--restricted' in argv
-    assert json.loads(argv[argv.index('--json-schema') + 1]) == {'type': 'object', 'required': ['answer']}
+    # D058 (cli-6): the typed engine schema, not only the required fields.
+    assert json.loads(argv[argv.index('--json-schema') + 1]) == output_schema('chat')
 
 
 def test_migration_roundtrip_and_downgrade_refused_with_chat_runs(migrated_database, world, chat):

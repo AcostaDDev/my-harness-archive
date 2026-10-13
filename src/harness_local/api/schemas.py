@@ -156,7 +156,7 @@ class SupervisorRead(BaseModel):
 
 class ReviewerAgentRead(BaseModel):
     """D052: el revisor planifica, revisa, evalúa fases, conversa y propone el bootstrap (solo lectura)."""
-    provider: str | None  # null fuera de una composición cli-5 (demo o adaptador inyectado)
+    provider: str | None  # null fuera de una composición CLI local-config-2 (demo o adaptador inyectado)
     model: str
     effort: str
 

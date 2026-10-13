@@ -47,7 +47,7 @@ class ManagedProject:
 
 
 def agents_view(project: ManagedProject) -> dict:
-    """D052: provider, model and effort of each agent; provider None outside a cli-5 composition."""
+    """D052: provider, model and effort of each agent; provider None outside a CLI composition (cli-5+)."""
     policy, versions = project.context.policy, project.versions
     return {'planning_mode': policy.planning_mode,
             'reviewer': {'provider': versions.get('reviewer_provider'), 'model': policy.reviewer_model,

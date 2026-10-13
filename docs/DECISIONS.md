@@ -1673,8 +1673,17 @@ ejecución con proveedores.
 
 ## D057 — Nueva ejecución de la matriz D052 tras D056
 
-Estado: propuesta preparada y ensayada offline el 2026-10-13; **no ejecutada ni
-autorizada**. [Propuesta](discovery/PROVIDER_MATRIX_RERUN_PROPOSAL.md).
+Estado: propuesta preparada y ensayada offline el 2026-10-13. **Ejecutada el
+mismo día y cerrada** ([resultado](discovery/PROVIDER_MATRIX_RERUN.md)):
+
+- 1 (Codex→Claude) `COMMITTED`.
+- 2 (Codex→Codex) `REVISION_LIMIT`, porque el escritor Codex no editó.
+- 3 (Claude→Claude) `STOPPED` en `planner`: el `--json-schema` sin tipos hizo
+  que Claude serializara listas como texto.
+- 4 no lanzada por decisión del usuario.
+
+Siete invocaciones de proveedor. Consentimiento agotado.
+[Propuesta](discovery/PROVIDER_MATRIX_RERUN_PROPOSAL.md).
 
 Repite D055 sin cambiar selecciones, límites ni criterios, con lo siguiente:
 
@@ -1691,3 +1700,26 @@ Repite D055 sin cambiar selecciones, límites ni criterios, con lo siguiente:
 Ejecutarla requiere consentimiento específico del usuario. Cualquier cambio de
 selecciones, límites o entorno exige actualizarla antes (solo `BASE` puede
 cambiar si ya existe, y se registra). Sin cambios de código del producto.
+
+## D058 — `--json-schema` tipado para el lector Claude (`cli-6`)
+
+Estado: decidido con criterio, implementado y verificado offline el 2026-10-13.
+[Entrega](discovery/TYPED_JSON_SCHEMA.md). Origen: en la combinación 3 de D057,
+el lector Claude devolvió listas y objetos como cadenas JSON porque el
+`--json-schema` de `cli-5` solo declaraba `required`.
+
+- **Adaptador `cli-6`.** El `--json-schema` del lector Claude es el
+  `output_schema` del motor congelado en la instantánea del prompt del intento
+  (comprobado contra su hash), el mismo que lee el agente. Sin instantánea, el
+  esquema fijo del rol. El resto del argv, el escritor y Codex no cambian.
+- **`additionalProperties: true`**, como en el prompt: un único contrato. Los
+  validadores del motor siguen siendo la autoridad.
+- **Sin normalización** de listas u objetos serializados como texto: se siguen
+  rechazando. La causa se corrige en el transporte; una cadena JSON es un
+  error de tipo, no una forma equivalente como el argv de D056, y las rutas
+  delimitan permisos.
+- Los jobs pendientes congelados con `cli-5` entran en cuarentena al actualizar,
+  como en D052. Preflight, esquema, codec, OpenAPI, UI y `local-config-2` sin
+  cambios. Historiales y congelados no se reescriben.
+
+No autoriza ninguna ejecución con proveedores.

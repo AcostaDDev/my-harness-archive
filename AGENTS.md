@@ -136,8 +136,11 @@ Matriz D055 ejecutada y detenida: la combinación 1 falló en el planificador po
 (`docs/discovery/PROVIDER_MATRIX_RUN.md`, `examples/provider_matrix/prepare.sh`).
 Formas de salida alineadas con el motor (D056, `docs/discovery/CONTRACT_SHAPES.md`): esquema tipado,
 plantilla `plan-task` aclarada y argv de `validation_commands` normalizado; offline.
-Nueva ejecución de la matriz preparada y ensayada con CLI sintéticas, sin ejecutar (D057,
-`docs/discovery/PROVIDER_MATRIX_RERUN_PROPOSAL.md`, `examples/provider_matrix/run_pairing.sh`).
+Matriz D057 ejecutada y cerrada: Codex→Claude `COMMITTED`; Codex escritor no editó;
+lector Claude devolvió listas como texto por `--json-schema` sin tipos; 4 no lanzada
+(`docs/discovery/PROVIDER_MATRIX_RERUN.md`, `examples/provider_matrix/run_pairing.sh`).
+`--json-schema` tipado del lector Claude como adaptador `cli-6` (D058,
+`docs/discovery/TYPED_JSON_SCHEMA.md`): esquema congelado del motor, sin normalizar texto; offline.
 Comprobación offline ligera, solo biblioteca estándar, desde la raíz:
 
 ```sh
@@ -167,9 +170,9 @@ npm --prefix frontend run dev
 ```
 
 Las primeras instalaciones necesitan red; después los checks son offline.
-No usar `uv --active` con entornos de otros proyectos. 905 pruebas pytest
+No usar `uv --active` con entornos de otros proyectos. 911 pruebas pytest
 (158 anteriores + 53 H2.3 + 8 entorno smoke + 34 H2.4 + 35 H2.5 + 18 API gestionada + 2 demo UI + 23 H3.1,
-+ 30 H3.2 + 29 H3.3 + 18 H3.4 + 22 H4.1 + 32 exportación + 48 H4.2 + 16 H4.3 + 43 H5.1 + 43 H5.2 + 43 H5.3 + 52 H5.4 + 13 H5.5 + 45 H5.6 + 6 H5.7 + 40 ejecutor de comandos + 35 configuración local + 11 comando de desarrollo + 32 agentes D052 + 16 formas de contrato D056, con Git temporal).
++ 30 H3.2 + 29 H3.3 + 18 H3.4 + 22 H4.1 + 32 exportación + 48 H4.2 + 16 H4.3 + 43 H5.1 + 43 H5.2 + 43 H5.3 + 52 H5.4 + 13 H5.5 + 45 H5.6 + 6 H5.7 + 40 ejecutor de comandos + 35 configuración local + 11 comando de desarrollo + 32 agentes D052 + 16 formas de contrato D056 + 6 esquema tipado D058, con Git temporal).
 Paquete H5.5: UI/API en 127.0.0.1:8013; en desarrollo API en :8013 y Vite en :5173
 en otra terminal. SQLite local ignorada en `.local/harness.sqlite3`; migración
 explícita antes de arrancar. Ver README y `docs/discovery/H0.3_SKELETON.md`.

@@ -222,7 +222,7 @@ function Run({ id, refresh, busy, operate, send }: { id: string; refresh: number
 const SELECTION_MODES = { catalog: "catálogo", open: "libre" } as const;
 const PLANNING_MODES = { auto: "automática", agent: "por el revisor", deterministic: "determinista" } as const;
 
-/** D052: proveedor, modelo y esfuerzo de cada agente; sin proveedor fuera de una composición cli-5. */
+/** D052: proveedor, modelo y esfuerzo de cada agente; sin proveedor fuera de una composición CLI local-config-2. */
 function AgentsSummary({ agents }: { agents: S["ProjectAgentsRead"] }) {
   const { reviewer, planner, executor } = agents;
   const provider = (value: string | null) => value ?? "proveedor no declarado";
