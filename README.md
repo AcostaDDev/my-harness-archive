@@ -16,7 +16,8 @@ congelados, captura acotada y recuperación que conserva el lock ante procesos
 vivos o inciertos. Activación solo por composición del servidor, sin proveedores
 por defecto. [Composición, verificaciones y límites](docs/discovery/COMMAND_RUNNER.md).
 Hito 5 revisado en su alcance offline; ejecutor revisado con un hallazgo corregido
-([dictamen](docs/discovery/COMMAND_RUNNER_REVIEW.md), D048). La [revisión de cierre](docs/discovery/H5_CLOSURE_REVIEW.md) conserva
+([dictamen](docs/discovery/COMMAND_RUNNER_REVIEW.md), D048). Composición de uso real
+por TOML local del operador (D049), perfil TypeScript web; ver más abajo. La [revisión de cierre](docs/discovery/H5_CLOSURE_REVIEW.md) conserva
 el diagnóstico anterior a D047.
 
 ## Documentación
@@ -78,6 +79,13 @@ privado con la clave de acceso: copiarla en la UI para iniciar sesión. La sesi�
 dura ocho horas; «Cerrar sesión» y reiniciar el servicio la invalidan.
 [Operación, clientes HTTP y límites de seguridad H5.6](docs/discovery/H5.6_SESSION.md).
 No incluir la clave en URLs ni comandos. El cierre no cancela trabajos autorizados.
+
+Uso real con proyectos (D049): copiar [la plantilla TOML](examples/local_config.example.toml)
+fuera de todo checkout, `chmod 600`, validarla con
+`harness-local check-config /ruta/harness-local.toml [--preflight]` y arrancar con
+`harness-local serve --database /ruta/harness.sqlite3 --config /ruta/harness-local.toml`.
+Con `supervisor = true` el servicio invoca las CLI configuradas y consume la
+suscripción. [Esquema, congelación y límites](docs/discovery/LOCAL_CONFIG.md).
 
 ## Entorno de desarrollo comprobado
 
@@ -141,7 +149,7 @@ UV_CACHE_DIR=.local/uv-cache uv run --frozen --offline alembic current
 UV_CACHE_DIR=.local/uv-cache uv run --frozen --offline alembic check
 ```
 
-811 pruebas, incluidas 40 del ejecutor de comandos, 45 de sesión local H5.6 y seis recorridos H5.7. Se usan checkouts Git, SQLite y procesos Python
+846 pruebas, incluidas 35 de configuración local, 40 del ejecutor de comandos, 45 de sesión local H5.6 y seis recorridos H5.7. Se usan checkouts Git, SQLite y procesos Python
 sintéticos, sin CLI de proveedores ni consumo de suscripciones. Se verifican
 captura incremental, cancelación de grupos, recuperación tras caída del supervisor
 y el recorrido HTTP con fakes hasta COMMITTED. No certifica commits con proveedores.
@@ -178,7 +186,7 @@ La API gestionada local (proyectos registrados en el servidor, supervisor opt-in
 idempotencia, versiones y guardia Host/Origin/CSRF) está completada offline: ver
 [entrega y límites](docs/discovery/H2_EXIT_API.md). La UI gestionada local está
 completada offline; [demo, verificación y límites](docs/discovery/H2_EXIT_UI.md).
-H4.1–H4.3, H5.1–H5.7 y exportación mecánica completados offline (D035–D045); revisión de cierre y ejecutor de validaciones offline completados (D047) y revisados (D048). Ver [corrección y límites](docs/discovery/H2.3_MCP_FIX.md)
+H4.1–H4.3, H5.1–H5.7 y exportación mecánica completados offline (D035–D045); revisión de cierre y ejecutor de validaciones offline completados (D047) y revisados (D048); configuración local TOML (D049). Ver [corrección y límites](docs/discovery/H2.3_MCP_FIX.md)
 y [resultado real cli-3](docs/discovery/H2.3_SMOKE_CLI3.md). El consentimiento
 terminó al fallo; otro smoke requiere propuesta y autorización específicas.
 Ver [corrección del entorno](docs/discovery/H2.3_ENV_FIX.md) y

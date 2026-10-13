@@ -44,6 +44,12 @@ else:
     if not isinstance(config, dict) or not isinstance(config.get('mcpServers'), dict):
         print('Synthetic config error: mcpServers: expected record', file=sys.stderr)
         sys.exit(1)
+if mode == 'web':
+    # Local-config journey: synthetic executor edit in its checkout cwd; no provider.
+    if provider == 'claude':
+        path = Path('src/estimate.ts')
+        path.write_text(path.read_text().replace('tasks * 45', 'tasks * 30'))
+    mode = 'flow'
 if mode == 'invalid':
     print('invalid JSONL', flush=True)
 elif mode == 'utf8':

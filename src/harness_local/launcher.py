@@ -1,4 +1,5 @@
 """Entrada instalada: SQLite explícita, preparación separada y loopback fijo."""
+import os
 from pathlib import Path
 
 from alembic import command
@@ -34,10 +35,13 @@ def initialize(value: str) -> None:
     command.upgrade(config, 'head')
 
 
-def serve(value: str, port: int) -> None:
+def serve(value: str, port: int, config: str | None = None) -> None:
     import uvicorn
     from harness_local.api.app import create_app
+    from harness_local.services.managed_runtime import CONFIG_ENV
 
+    if config is not None and os.environ.get(CONFIG_ENV):
+        raise ValueError(f'--config y {CONFIG_ENV} son incompatibles; elegir una sola composición.')
     path, url = local_database(value)
     if not 1 <= port <= 65535:
         raise ValueError('El puerto debe estar entre 1 y 65535.')
@@ -54,6 +58,11 @@ def serve(value: str, port: int) -> None:
                            'migrar explícitamente con la versión compatible. init-db no actualiza bases existentes.') from error
     finally:
         engine.dispose()
+    managed = None
+    if config is not None:
+        from harness_local.services.local_config import load_local_config
+        # Solo lectura del TOML: ningún proceso de proveedor, comando ni Git antes de servir.
+        managed = load_local_config(config)
     # El lifespan conserva validación de configuración, restauraciones y opt-in.
-    uvicorn.run(create_app(url=url), host='127.0.0.1', port=port, workers=1,
+    uvicorn.run(create_app(url=url, managed=managed), host='127.0.0.1', port=port, workers=1,
                 proxy_headers=False, access_log=False)

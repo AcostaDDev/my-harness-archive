@@ -80,6 +80,15 @@ def load_config(spec: str | None = None) -> ManagedConfig:
 
 
 def _validate(config: ManagedConfig, database: Path, migrations_dir: Path) -> None:
+    validate_projects(config)
+    for project in config.projects:
+        for path, name in ((database, "La base SQLite"), (migrations_dir, "El directorio de migraciones")):
+            if path.is_relative_to(project.context.root) or project.context.root.is_relative_to(path):
+                raise ValueError(f"{name} debe estar fuera del checkout de {project.id}")
+
+
+def validate_projects(config: ManagedConfig) -> None:
+    """Comprobaciones sin base ni servicio; también las usa la configuración local TOML."""
     ids, roots = set(), set()
     for project in config.projects:
         if not isinstance(project.id, str) or not PROJECT_ID.fullmatch(project.id):
@@ -106,9 +115,6 @@ def _validate(config: ManagedConfig, database: Path, migrations_dir: Path) -> No
                 or any(not isinstance(targets, (list, tuple)) or not all(isinstance(t, str) and t.strip() for t in targets)
                        for targets in values.values()) for values in authority.values()):
                 raise ValueError('Explicit global/project/contract/provider permission ceilings required')
-        for path, name in ((database, "La base SQLite"), (migrations_dir, "El directorio de migraciones")):
-            if path.is_relative_to(project.context.root) or project.context.root.is_relative_to(path):
-                raise ValueError(f"{name} debe estar fuera del checkout de {project.id}")
     if config.supervisor and config.ports_factory is None:
         raise ValueError("El supervisor exige una ports_factory explícita")
 

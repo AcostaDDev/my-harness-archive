@@ -1462,3 +1462,29 @@ compatibilidad de historiales. Se registran como límites conocidos la liveness
 por PGID sin instante de arranque y la continuación de un validador silencioso
 tras fallar el heartbeat; no se cambia el diseño. Esquema, codec, cli-4,
 OpenAPI, UI y dependencias sin cambios.
+
+## D049 — Composición de uso real por TOML local del operador
+
+Estado: implementado y verificado offline el 2026-10-13.
+[Entrega y operación](discovery/LOCAL_CONFIG.md), según el
+[alcance escrito antes de implementar](discovery/LOCAL_CONFIG_SCOPE.md).
+Decisiones del usuario: TOML fuera del checkout leído con `tomllib`, sin
+dependencias nuevas, y perfil TypeScript web como primera composición.
+No autoriza proveedores, smokes ni piloto; D033.8 conserva su autorización.
+
+`local-config-1` es la autoridad local del operador para proyectos, confianza,
+ejecutables, entornos, CLI, modelos/esfuerzos, autorizaciones exactas de comandos
+y Git. Archivo privado, sin enlaces y fuera de todo checkout; no contiene
+secretos. Nada se lee del repositorio gestionado; el `project.yaml` portable de
+la especificación queda como trabajo posterior y nunca concedería confianza.
+Sin valores implícitos para lo que concede efectos; claves desconocidas se
+rechazan. Cargar no lanza procesos.
+
+Cada job compone adaptadores nuevos (cli-4, commands-1, Git). Las versiones
+congeladas incluyen hashes de adaptadores y de la composición del proyecto; si
+difieren al ejecutar o hacer commit, el job entra en cuarentena antes de
+efectos. Cambiar la composición exige terminar o detener antes los jobs.
+`USER` del entorno CLI se comprueba contra el UID local (D024). Entrada por
+`serve --config`, incompatible con `HARNESS_MANAGED_CONFIG`, y `check-config`
+con preflight opcional de version/help. Esquema, codec, cli-4, OpenAPI y UI sin
+cambios; la validación de proyectos del runtime se reutiliza sin alterarla.

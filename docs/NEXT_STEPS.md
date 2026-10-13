@@ -1,34 +1,31 @@
-# Siguiente paso — Elección del nuevo alcance tras revisar el ejecutor
+# Siguiente paso — Propuesta de primer uso real con la configuración local
 
-Revisión independiente del ejecutor de validaciones (D047) completada el
-2026-10-13 (D048). Ver [dictamen](discovery/COMMAND_RUNNER_REVIEW.md),
-[entrega](discovery/COMMAND_RUNNER.md) y [alcance](discovery/COMMAND_RUNNER_SCOPE.md).
+Composición de uso real por TOML local implementada y verificada offline el
+2026-10-13 (D049). Ver [entrega](discovery/LOCAL_CONFIG.md),
+[alcance](discovery/LOCAL_CONFIG_SCOPE.md) y [plantilla](../examples/local_config.example.toml).
 
-- Hallazgo medio corregido: un run con `command_config_sha256` congelado ya no
-  puede ejecutarse con otro runner; el supervisor aborta antes de efectos con
-  cuarentena. Prueba de regresión nueva.
-- Sin hallazgos en ventana intención/identidad/GO, exclusión, captura ni
-  compatibilidad de historiales. Límites conocidos registrados sin cambio de
-  diseño: liveness por PGID sin instante de arranque y validador silencioso
-  que continúa hasta su timeout tras fallar el heartbeat.
-- 811 pruebas pytest y 121 subtests, 12 checks ligeros y 6 pruebas Node
+- `local-config-1`: archivo privado del operador fuera de los checkouts, esquema
+  estricto, perfil `typescript-web`, CLI cli-4, comandos commands-1 y Git con
+  identidad explícita; adaptadores nuevos por job.
+- Versiones con hash de composición: un TOML cambiado con jobs pendientes los
+  pone en cuarentena antes de efectos.
+- `harness-local check-config RUTA [--preflight]` y `serve --config RUTA`.
+- 846 pruebas pytest y 121 subtests, 12 checks ligeros y 6 pruebas Node
   correctos. Esquema, codec, cli-4, OpenAPI, UI y dependencias sin cambios.
 
 ## Tarea concreta propuesta, no iniciada
 
-Pedir al usuario el siguiente alcance entre:
+Preparar, sin ejecutarla, la propuesta de primer uso real (D033.8): checkout
+TypeScript desechable, TOML concreto con rutas reales, modelos/esfuerzos y
+herramientas del ejecutor elegidos por el usuario, recorrido tarea → commit →
+check → cierre, límites de consumo y criterios de parada. Ejecutarla requiere
+autorización específica y explícita del usuario.
 
-1. **Composición de uso real** (recomendada): configuración explícita del
-   servidor que componga agentes CLI, `ManagedCommandRunner` y Git para un
-   checkout desechable, con alcance y criterios escritos antes del código y
-   verificación offline. No incluye ejecutar proveedores.
-2. QA visual reciente, pendiente de un navegador que permita loopback.
-3. Propuesta de smoke completo (tarea → commit → check → cierre, D033.8), que
-   requiere autorización específica, checkout desechable y modelos/esfuerzos
-   elegidos por el usuario.
+Alternativas: QA visual pendiente de un navegador que permita loopback;
+verificar `serve --config` con el wheel instalado; endurecimientos de D048
+(heartbeat y PGID). Fuera sin nueva decisión: otros perfiles, `.harness/project.yaml`,
+UI de configuración y recarga en caliente.
 
-Opcionalmente, endurecimientos derivados de la revisión (cancelar validadores
-al fallar el heartbeat; identidad con instante de arranque) como tarea acotada.
 Consentimientos anteriores agotados. Sin proveedores/login, instalaciones con
 red, publicación, push ni uso del harness para desarrollar este repositorio.
 Este documento no autoriza iniciar otra implementación.

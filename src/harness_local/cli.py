@@ -48,11 +48,15 @@ def main(argv: list[str] | None = None) -> int:
     command.add_argument('attempt_id')
     command = operations.add_parser('diagnose-cli', help='Version/help explícitos, sin autenticación ni inferencia')
     command.add_argument('configuration', help='JSON de una CLIConfig con entorno explícito; ejecutable de confianza')
+    command = operations.add_parser('check-config', help='Validar el TOML local de uso real, sin ejecutar nada')
+    command.add_argument('configuration', help='Ruta absoluta del TOML local, fuera de los checkouts')
+    command.add_argument('--preflight', action='store_true', help='Además, version/help explícitos de ambas CLI')
     for name in ('init-db', 'serve'):
         command = operations.add_parser(name, help='SQLite nueva explícita' if name == 'init-db' else 'UI/API en 127.0.0.1')
         command.add_argument('--database', required=True, help='Ruta absoluta SQLite; no usa HARNESS_DATABASE_URL')
         if name == 'serve':
             command.add_argument('--port', type=int, default=8013)
+            command.add_argument('--config', help='TOML local de uso real (local-config-1); por defecto, sin proyectos')
     args = parser.parse_args(argv)
     engine = None
     try:
@@ -61,8 +65,18 @@ def main(argv: list[str] | None = None) -> int:
             if args.operation == 'init-db':
                 initialize(args.database)
             else:
-                serve(args.database, args.port)
+                serve(args.database, args.port, args.config)
             return 0
+        if args.operation == 'check-config':
+            from harness_local.services.local_config import inspect_local_config, summary
+            config, clis = inspect_local_config(args.configuration)
+            result = summary(config)
+            if args.preflight:
+                from harness_local.adapters.cli_diagnostics import preflight_config
+                # Mismo CLIConfig validado para todos los proyectos; solo version/help.
+                result['preflight'] = {cli.provider: preflight_config(cli) for cli in clis}
+            print(json.dumps(result, ensure_ascii=False, indent=2))
+            return 0 if not args.preflight or all(r['available'] for r in result['preflight'].values()) else 1
         if args.operation == 'diagnose-cli':
             from harness_local.adapters.cli_diagnostics import diagnose_file
             result = diagnose_file(args.configuration)
