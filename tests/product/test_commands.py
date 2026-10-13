@@ -429,3 +429,17 @@ def test_old_command_history_roundtrips_without_new_fields(repository, context):
     old = dump_history(repository.get_run(job.run_id).history)
     assert json.loads(old)['format'] < 7 and 'capture_json' not in old
     assert dump_history(load_history(old)) == old
+
+
+def test_frozen_native_configuration_never_runs_with_another_runner(repository, context):
+    from harness_local.adapters.engine_fake import ScriptedCommandRunner
+    command = Command(('python', '-c', 'pass'))
+    context = replace(context, profile=replace(context.profile, preparation=(command,)))
+    versions = {**VERSIONS, **ManagedCommandRunner(configuration(context, command)).frozen_versions()}
+    job = repository.submit(context, 'P001-T001', 'P001', PLAN, versions, key='swapped')
+    agents, runner = ScriptedAgentAdapter([]), ScriptedCommandRunner(())
+    supervisor = LocalSupervisor(repository, lambda *_: (agents, runner, SyntheticWorkspace(context, ())))
+    with pytest.raises(JournalError, match='frozen native'):
+        supervisor.run_once()
+    assert repository.get_run(job.run_id).status == 'RECOVERY_REQUIRED'
+    assert not runner.calls and not agents.requests and not repository.command_processes(job.id)

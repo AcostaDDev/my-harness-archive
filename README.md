@@ -15,8 +15,8 @@ Ejecutor de validaciones nativas implementado offline (D047): argv/configuració
 congelados, captura acotada y recuperación que conserva el lock ante procesos
 vivos o inciertos. Activación solo por composición del servidor, sin proveedores
 por defecto. [Composición, verificaciones y límites](docs/discovery/COMMAND_RUNNER.md).
-Hito 5 revisado en su alcance offline; siguiente tarea propuesta: revisión independiente
-del ejecutor. La [revisión de cierre](docs/discovery/H5_CLOSURE_REVIEW.md) conserva
+Hito 5 revisado en su alcance offline; ejecutor revisado con un hallazgo corregido
+([dictamen](docs/discovery/COMMAND_RUNNER_REVIEW.md), D048). La [revisión de cierre](docs/discovery/H5_CLOSURE_REVIEW.md) conserva
 el diagnóstico anterior a D047.
 
 ## Documentación
@@ -141,7 +141,7 @@ UV_CACHE_DIR=.local/uv-cache uv run --frozen --offline alembic current
 UV_CACHE_DIR=.local/uv-cache uv run --frozen --offline alembic check
 ```
 
-810 pruebas, incluidas 39 del ejecutor de comandos, 45 de sesión local H5.6 y seis recorridos H5.7. Se usan checkouts Git, SQLite y procesos Python
+811 pruebas, incluidas 40 del ejecutor de comandos, 45 de sesión local H5.6 y seis recorridos H5.7. Se usan checkouts Git, SQLite y procesos Python
 sintéticos, sin CLI de proveedores ni consumo de suscripciones. Se verifican
 captura incremental, cancelación de grupos, recuperación tras caída del supervisor
 y el recorrido HTTP con fakes hasta COMMITTED. No certifica commits con proveedores.
@@ -178,7 +178,7 @@ La API gestionada local (proyectos registrados en el servidor, supervisor opt-in
 idempotencia, versiones y guardia Host/Origin/CSRF) está completada offline: ver
 [entrega y límites](docs/discovery/H2_EXIT_API.md). La UI gestionada local está
 completada offline; [demo, verificación y límites](docs/discovery/H2_EXIT_UI.md).
-H4.1–H4.3, H5.1–H5.7 y exportación mecánica completados offline (D035–D045); revisión de cierre y ejecutor de validaciones offline completados (D047), revisión independiente propuesta. Ver [corrección y límites](docs/discovery/H2.3_MCP_FIX.md)
+H4.1–H4.3, H5.1–H5.7 y exportación mecánica completados offline (D035–D045); revisión de cierre y ejecutor de validaciones offline completados (D047) y revisados (D048). Ver [corrección y límites](docs/discovery/H2.3_MCP_FIX.md)
 y [resultado real cli-3](docs/discovery/H2.3_SMOKE_CLI3.md). El consentimiento
 terminó al fallo; otro smoke requiere propuesta y autorización específicas.
 Ver [corrección del entorno](docs/discovery/H2.3_ENV_FIX.md) y

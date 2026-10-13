@@ -73,6 +73,14 @@ class _Journal:
         self._call(self.repository.effect, "command_finished", {"command_id": identity, "result": command_result_payload(result)})
 
 
+def _bind_commands(commands, journal, versions):
+    """A run frozen for native validators never executes through another runner."""
+    if hasattr(commands, "bind_process_journal"):
+        commands.bind_process_journal(journal)
+    elif "command_config_sha256" in versions:
+        raise JournalError("Run has a frozen native command configuration; its managed runner is required")
+
+
 class LocalSupervisor:
     def __init__(self, repository, ports_factory, *, lease_seconds=30, commit_factory=None):
         """factory(context, frozen_versions) devuelve agentes, comandos y evidencia.
@@ -177,8 +185,7 @@ class LocalSupervisor:
                                                    now=self.repository.clock)
                 else:
                     agents, commands, _ = self.ports_factory(context, versions)
-                    if hasattr(commands, "bind_process_journal"):
-                        commands.bind_process_journal(journal)
+                    _bind_commands(commands, journal, versions)
                     if hasattr(agents, "bind_process_journal"):
                         agents.bind_process_journal(journal)
                     from harness_local.storage.prompts import PromptRepository
@@ -193,8 +200,7 @@ class LocalSupervisor:
                                              now=self.repository.clock)
             else:
                 agents, commands, evidence = self.ports_factory(context, versions)
-                if hasattr(commands, "bind_process_journal"):
-                    commands.bind_process_journal(journal)
+                _bind_commands(commands, journal, versions)
                 if hasattr(agents, "bind_process_journal"):
                     agents.bind_process_journal(journal)
                 from harness_local.storage.prompts import PromptRepository

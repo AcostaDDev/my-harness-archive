@@ -1,32 +1,34 @@
-# Siguiente paso — Revisión del ejecutor de validaciones
+# Siguiente paso — Elección del nuevo alcance tras revisar el ejecutor
 
-Ejecutor nativo de comandos de producto implementado y verificado offline el
-2026-10-13 (D047). El usuario eligió este incremento expresamente, resolviendo
-la elección pendiente tras H5.7/D046. Ver [entrega](discovery/COMMAND_RUNNER.md)
-y [alcance previo](discovery/COMMAND_RUNNER_SCOPE.md).
+Revisión independiente del ejecutor de validaciones (D047) completada el
+2026-10-13 (D048). Ver [dictamen](discovery/COMMAND_RUNNER_REVIEW.md),
+[entrega](discovery/COMMAND_RUNNER.md) y [alcance](discovery/COMMAND_RUNNER_SCOPE.md).
 
-- Composición explícita `ManagedCommandRunner`, configuración/hash congelados,
-  confianza/autorización/política separadas, argv sin shell y entorno completo.
-- Captura acotada y resultados observados; journal/gate/grupos/lock reutilizados.
-- Caída/reinicio con validador vivo conserva exclusión; recuperación explícita
-  sin señalar PIDs recuperados, repetir ejecución ni adoptar evidencia parcial.
-- Preparación/validaciones TypeScript reales offline, JUnit, agentes falsos,
-  aceptación/commit exactos y backup/restauración comprobados en temporales.
-- Esquema `0013_bootstrap`, cli-4 y dependencias conservados; codec 7 para capturas
-  nativas, formatos anteriores compatibles. Sin nueva UI ni proveedores.
+- Hallazgo medio corregido: un run con `command_config_sha256` congelado ya no
+  puede ejecutarse con otro runner; el supervisor aborta antes de efectos con
+  cuarentena. Prueba de regresión nueva.
+- Sin hallazgos en ventana intención/identidad/GO, exclusión, captura ni
+  compatibilidad de historiales. Límites conocidos registrados sin cambio de
+  diseño: liveness por PGID sin instante de arranque y validador silencioso
+  que continúa hasta su timeout tras fallar el heartbeat.
+- 811 pruebas pytest y 121 subtests, 12 checks ligeros y 6 pruebas Node
+  correctos. Esquema, codec, cli-4, OpenAPI, UI y dependencias sin cambios.
 
 ## Tarea concreta propuesta, no iniciada
 
-Revisión independiente del ejecutor de validaciones y su recuperación: contrastar
-D047, implementación y pruebas con los criterios del alcance, especialmente la
-ventana intención/identidad/GO, conservación de exclusión y compatibilidad de
-historiales. El usuario coordina la herramienta revisora; no lanzar subagentes.
-Resolver los hallazgos acotados que se acuerden antes de elegir composición de
-uso real o piloto. Este documento no autoriza iniciar otra implementación.
+Pedir al usuario el siguiente alcance entre:
 
-QA visual reciente sigue pendiente del navegador que permita loopback.
-La composición completa con proveedores y un eventual smoke (tarea → commit →
-check → cierre, D033.8) requieren propuesta y autorización específica, checkout
-desechable y modelos/esfuerzos elegidos por el usuario. Consentimientos anteriores
-agotados. Sin proveedores/login, instalaciones con red, publicación, push ni
-uso del harness para desarrollar este repositorio.
+1. **Composición de uso real** (recomendada): configuración explícita del
+   servidor que componga agentes CLI, `ManagedCommandRunner` y Git para un
+   checkout desechable, con alcance y criterios escritos antes del código y
+   verificación offline. No incluye ejecutar proveedores.
+2. QA visual reciente, pendiente de un navegador que permita loopback.
+3. Propuesta de smoke completo (tarea → commit → check → cierre, D033.8), que
+   requiere autorización específica, checkout desechable y modelos/esfuerzos
+   elegidos por el usuario.
+
+Opcionalmente, endurecimientos derivados de la revisión (cancelar validadores
+al fallar el heartbeat; identidad con instante de arranque) como tarea acotada.
+Consentimientos anteriores agotados. Sin proveedores/login, instalaciones con
+red, publicación, push ni uso del harness para desarrollar este repositorio.
+Este documento no autoriza iniciar otra implementación.

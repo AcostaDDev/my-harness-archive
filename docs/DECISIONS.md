@@ -1403,6 +1403,7 @@ Estado: implementado y verificado offline el 2026-10-13.
 [alcance escrito antes de implementar](discovery/COMMAND_RUNNER_SCOPE.md).
 El usuario eligió explícitamente este incremento y autorizó commit; resuelta la
 prioridad pendiente de D046. No autoriza proveedores, smokes ni piloto.
+Revisión independiente completada en D048, con un hallazgo corregido.
 
 `ManagedCommandRunner`/`CommandConfig` (`commands-1`) se inyectan por la factory
 del servidor, con journal ligado al job. Checkout confiable explícito,
@@ -1443,3 +1444,21 @@ proveedor, red, configuración global, ReferenceProject ni harness de desarrollo
 Composición completa para uso real, piloto, aislamiento físico, otras plataformas,
 QA visual y retención de capturas SQLite quedan fuera. Siguiente tarea propuesta:
 revisión independiente del incremento y su recuperación, sin iniciarla.
+
+## D048 — Revisión del ejecutor de validaciones: runner congelado obligatorio
+
+Estado: revisión completada y hallazgo corregido offline el 2026-10-13.
+[Dictamen](discovery/COMMAND_RUNNER_REVIEW.md) sobre D047, pedido por el usuario
+en sesión manual. No autoriza proveedores, smokes, piloto ni composición real.
+
+Un run cuyas versiones congeladas incluyen `command_config_sha256` solo ejecuta
+comandos mediante un runner que se enlace al journal y verifique esa
+configuración. Si la composición devuelve otro runner, el supervisor aborta
+antes de efectos con cuarentena y confirmación explícita existente; no degrada
+al runner disponible ni reescribe versiones. Runs sin esa clave no cambian.
+
+Sin hallazgos en la ventana intención/identidad/GO, exclusión, captura ni
+compatibilidad de historiales. Se registran como límites conocidos la liveness
+por PGID sin instante de arranque y la continuación de un validador silencioso
+tras fallar el heartbeat; no se cambia el diseño. Esquema, codec, cli-4,
+OpenAPI, UI y dependencias sin cambios.

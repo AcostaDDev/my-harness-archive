@@ -35,7 +35,7 @@ Actualizado: 2026-10-13.
 - Dependencias reales instaladas en `.venv` / `frontend/node_modules`, locks
   `uv.lock` / `frontend/package-lock.json`. Pins H0.2 usados conservados;
   backend de paquete `uv_build==0.12.19`. Comandos comprobados en README/AGENTS.
-- 798 casos de producto en `tests/product/`; pytest ejecuta 810 pruebas en total.
+- 799 casos de producto en `tests/product/`; pytest ejecuta 811 pruebas en total.
   La comprobación ligera anterior conserva sus 12 checks sin dependencias.
 - H1.1 completado: [importación legacy y verificaciones](discovery/H1.1_IMPORT.md),
   [alcance original](discovery/H1.1_SCOPE.md). Lector local explícito de
@@ -483,8 +483,10 @@ H5.7 recorridos E2E completados offline (D045).
 Revisión de cierre del hito 5 completada: alcance offline cubierto.
 La elección se resolvió por instrucción explícita del usuario: ejecutor de
 validaciones implementado offline (D047). Ver [entrega](discovery/COMMAND_RUNNER.md)
-y [revisión anterior](discovery/H5_CLOSURE_REVIEW.md). Siguiente tarea propuesta:
-revisión independiente del incremento, no iniciada.
+y [revisión anterior](discovery/H5_CLOSURE_REVIEW.md). Revisión independiente
+completada con un hallazgo corregido (D048, [dictamen](discovery/COMMAND_RUNNER_REVIEW.md)).
+Siguiente: elección del usuario entre composición de uso real, QA visual o
+propuesta de smoke; no iniciada.
 QA visual H5.7 bloqueada por herramienta; sin proveedores nuevos.
 
 ## Verificación de H0.1
@@ -1674,6 +1676,25 @@ QA visual H5.7 bloqueada por herramienta; sin proveedores nuevos.
 - Commit solicitado por el usuario. Siguiente tarea propuesta: revisión
   independiente del incremento y su recuperación, coordinada por el usuario;
   no iniciada. [Entrega y operación](discovery/COMMAND_RUNNER.md), D047.
+
+## Revisión independiente del ejecutor de comandos
+
+- Git inicial limpio en `main`, `c3f941b`. Leídos AGENTS, STATE, NEXT_STEPS y
+  DECISIONS; contrastados D047, entrega, alcance, adaptador, gate, supervisor,
+  repositorio, codec, backup/retención y pruebas. Sin subagentes.
+- Hallazgo medio corregido: un run congelado con `command_config_sha256` podía
+  ejecutarse con otro runner devuelto por la composición. `_bind_commands`
+  aborta antes de efectos con cuarentena; prueba nueva falló antes y pasa ahora.
+- Ventana intención/identidad/GO, exclusión, captura y compatibilidad 1–6 sin
+  hallazgos; descartado un falso positivo del codec 7 sin JUnit. Límites
+  conocidos (PGID sin arranque, heartbeat con validador silencioso) registrados.
+- Regresión completa: **811 pruebas pytest y 121 subtests correctos**, aviso
+  Starlette/HTTPX conocido; **12 checks ligeros y 6 pruebas Node correctos**.
+  Esquema/codec/cli-4/OpenAPI/UI/dependencias sin cambios; sin wheel ni QA visual.
+- Sin proveedores, smokes, red, configuración global, ReferenceProject ni harness de
+  desarrollo. Commit solicitado por el usuario. D048,
+  [dictamen](discovery/COMMAND_RUNNER_REVIEW.md).
+- Siguiente: elección del usuario de nuevo alcance; no iniciada.
 
 ## Coordinación
 

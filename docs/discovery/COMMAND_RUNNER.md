@@ -2,6 +2,8 @@
 
 Incremento elegido por el usuario el 2026-10-13. [Alcance previo y criterios](COMMAND_RUNNER_SCOPE.md).
 D047. Implementación POSIX `commands-1`, activada exclusivamente por composición.
+[Revisión independiente](COMMAND_RUNNER_REVIEW.md) (D048): un run congelado con esta
+configuración no se ejecuta con otro runner.
 
 ## Composición y autoridad
 

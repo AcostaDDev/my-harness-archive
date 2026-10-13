@@ -121,8 +121,9 @@ Revisión de cierre offline completada. Ejecutor de validaciones de producto
 implementado offline (D047): `commands-1`, configuración explícita congelada,
 captura acotada en SQLite, gate/grupos y recuperación bajo el lock existente.
 Codec 7 con formatos 1–6 compatibles; esquema `0013_bootstrap` conservado.
-Ver `docs/discovery/COMMAND_RUNNER.md`. Siguiente: revisión independiente del
-incremento, coordinada por el usuario; no iniciar otra tarea automáticamente.
+Ver `docs/discovery/COMMAND_RUNNER.md`. Revisión independiente completada (D048):
+runner congelado obligatorio; ver `docs/discovery/COMMAND_RUNNER_REVIEW.md`.
+Siguiente alcance pendiente de elección del usuario; no iniciar otra tarea.
 Comprobación offline ligera, solo biblioteca estándar, desde la raíz:
 
 ```sh
@@ -152,9 +153,9 @@ npm --prefix frontend run dev
 ```
 
 Las primeras instalaciones necesitan red; después los checks son offline.
-No usar `uv --active` con entornos de otros proyectos. 810 pruebas pytest
+No usar `uv --active` con entornos de otros proyectos. 811 pruebas pytest
 (158 anteriores + 53 H2.3 + 8 entorno smoke + 34 H2.4 + 35 H2.5 + 18 API gestionada + 2 demo UI + 23 H3.1,
-+ 30 H3.2 + 29 H3.3 + 18 H3.4 + 22 H4.1 + 32 exportación + 48 H4.2 + 16 H4.3 + 43 H5.1 + 43 H5.2 + 43 H5.3 + 52 H5.4 + 13 H5.5 + 45 H5.6 + 6 H5.7 + 39 ejecutor de comandos, con Git temporal).
++ 30 H3.2 + 29 H3.3 + 18 H3.4 + 22 H4.1 + 32 exportación + 48 H4.2 + 16 H4.3 + 43 H5.1 + 43 H5.2 + 43 H5.3 + 52 H5.4 + 13 H5.5 + 45 H5.6 + 6 H5.7 + 40 ejecutor de comandos, con Git temporal).
 Paquete H5.5: UI/API en 127.0.0.1:8013; en desarrollo API en :8013 y Vite en :5173
 en otra terminal. SQLite local ignorada en `.local/harness.sqlite3`; migración
 explícita antes de arrancar. Ver README y `docs/discovery/H0.3_SKELETON.md`.
@@ -185,7 +186,7 @@ run STOPPED por fin deliberado del smoke, owner cerrado, grupos STOPPED/dead y
 lock nuevo liberado por finalización normal. D020/D022 y sus locks conservados.
 Ver `docs/discovery/H2.3_ENV_SMOKE.md`. Sin aceptación/commit de producto ni
 cuota/retries certificados. Consentimiento satisfecho por una ejecución;
-no hacer login, consumir ni relanzar automáticamente. H5.7 completado offline (D045); ejecutor de comandos completado offline (D047); revisión independiente propuesta.
+no hacer login, consumir ni relanzar automáticamente. H5.7 completado offline (D045); ejecutor de comandos completado offline (D047) y revisado (D048).
 Los checks no consumen proveedores. Sin configuración gestionada, la API
 `/api/managed` no tiene proyectos, puertos ni supervisor y solo lee.
 `HARNESS_MANAGED_CONFIG=módulo:atributo` (o `create_app(managed=...)`) registra
