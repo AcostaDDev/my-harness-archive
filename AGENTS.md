@@ -129,7 +129,8 @@ check-config RUTA [--preflight]` y `serve --database RUTA --config RUTA`; ver
 completo (`docs/discovery/FIRST_USE_RUN.md`). Uso real desde el wheel instalado
 en un venv propio, no desde este checkout (D051). Consentimiento agotado.
 Desarrollo local con un solo comando: `scripts/dev` (D053, `docs/discovery/DEV_COMMAND.md`).
-No iniciar otra tarea.
+Decidido, no implementado: revisor/ejecutor con proveedor elegido (D052,
+`docs/discovery/AGENT_ROLES_SCOPE.md`). No iniciar otra tarea.
 Comprobación offline ligera, solo biblioteca estándar, desde la raíz:
 
 ```sh

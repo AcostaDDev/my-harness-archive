@@ -1534,6 +1534,28 @@ incluye la versión del paquete), por lo que el TOML y sus hashes no cambian.
 La entrada `HARNESS_MANAGED_CONFIG` + uvicorn sigue siendo solo de desarrollo.
 Sin cambios de código, esquema, codec, cli-4, OpenAPI ni UI.
 
+## D052 — Revisor y ejecutor con proveedor, modelo y esfuerzo elegidos por el usuario
+
+Estado: decidido por el usuario el 2026-10-13; **no implementado**.
+[Alcance](discovery/AGENT_ROLES_SCOPE.md). Sustituye la asignación fija
+«Codex planifica y revisa, Claude ejecuta» de la especificación (§1, F05 y la
+tabla de prompts) y de los adaptadores `cli-1`…`cli-4`.
+
+Dos agentes: revisor (planificación, revisión, fase, chat y bootstrap; solo
+lectura) y ejecutor (único escritor). Cada uno puede ser Codex o Claude, en
+cualquier combinación. El usuario fija proveedor, modelo y esfuerzo del
+revisor. El revisor fija modelo y esfuerzo del ejecutor en cada tarea y en cada
+revisión, en uno de dos modos configurables por proyecto: catálogo acotado por
+el usuario, o libre. Toda tarea pasa por el revisor y, por ahora, el revisor
+siempre planifica. La decisión de planificar o despachar directamente
+(«JEV», término del usuario) queda para el futuro. La planificación
+determinista se mantiene como ajuste del usuario: con ella, el ejecutor recibe
+el contrato y la selección directamente de NEXT_STEPS, sin planificación del
+revisor, que sigue revisando el resultado.
+
+No se reescriben historiales ni versiones congeladas anteriores. Sin cambios
+hasta implementar el alcance.
+
 ## D053 — Comando único de desarrollo con migración y backup previo
 
 Estado: implementado y verificado offline el 2026-10-13.

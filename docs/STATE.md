@@ -492,7 +492,8 @@ offline con selecciones del usuario (D050, [propuesta](discovery/FIRST_USE_PROPO
 ejecutada una vez con autorización y completa: COMMITTED, fase CLOSED y tag
 ([resultado](discovery/FIRST_USE_RUN.md)); operación desde el wheel instalado (D051).
 Comando único de desarrollo `scripts/dev` implementado (D053, [entrega](discovery/DEV_COMMAND.md)).
-Siguiente: elección del usuario de nuevo incremento; no iniciada.
+Decidido y no implementado: revisor/ejecutor con proveedor elegido (D052,
+[alcance](discovery/AGENT_ROLES_SCOPE.md)). Siguiente: implementar D052 offline; no iniciada.
 QA visual H5.7 bloqueada por herramienta; sin proveedores nuevos.
 
 ## Verificación de H0.1
@@ -1808,6 +1809,20 @@ QA visual H5.7 bloqueada por herramienta; sin proveedores nuevos.
   y `build_distribution.py` a un directorio temporal. Aviso Starlette/HTTPX
   conocido. Sin QA visual con navegador. Sin proveedores, red, push,
   configuración global ni ReferenceProject. Commit por bloque solicitado por el usuario.
+
+## Decisión de agentes revisor y ejecutor (D052)
+
+- Petición del usuario: proveedor elegible para revisor y ejecutor (Codex o
+  Claude). Contradicción material con la especificación (asignación fija)
+  señalada y resuelta por el usuario. Respuestas: selección del ejecutor en
+  modo catálogo o libre; el revisor siempre planifica por ahora («JEV» futuro);
+  la planificación determinista se mantiene como ajuste por proyecto
+  (`agent` | `deterministic`).
+- Inventario del acoplamiento actual: `invoke`/`argv_for`, concesiones H3.2
+  solo para Claude, tablas fijas de `local-config-1`, `EnginePolicy` y textos.
+  La interpretación de streams ya es por proveedor, no por rol.
+- [Alcance](discovery/AGENT_ROLES_SCOPE.md) `cli-5`/`local-config-2`; sin
+  código. Commit por bloque solicitado por el usuario.
 
 ## Coordinación
 
