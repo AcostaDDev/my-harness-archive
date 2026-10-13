@@ -151,6 +151,11 @@ COMMITTED con edición real; cambio de hash de `~/.codex/config.toml` detectado
 entre combinaciones, atribución pendiente. Claude→Claude y Claude→Codex no
 lanzadas. Consentimiento agotado; siguiente diagnóstico offline, sin inferencia.
 Ver `docs/discovery/PROVIDER_MATRIX_CLI7_RUN.md`.
+Diagnóstico D062 completado offline: delta de confianza de 93 bytes acreditado
+por hash inverso; vía interna de persistencia de Codex identificada, atribución
+original inferida. Sin corrección de transporte: contención/auth por concretar.
+Ver `docs/discovery/CODEX_GLOBAL_CONFIG_DIAGNOSIS.md`. `cli-7` conservado;
+sin CLI reales ni nuevos consentimientos.
 Comprobación offline ligera, solo biblioteca estándar, desde la raíz:
 
 ```sh

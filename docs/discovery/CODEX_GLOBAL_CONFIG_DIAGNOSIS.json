@@ -1,0 +1,65 @@
+{
+  "decision": "D062",
+  "source_commit": "f930dc52a49787936fa0f7ecfada1329681bfb4a",
+  "provider_invocations": 0,
+  "real_cli_processes": 0,
+  "binary": {
+    "path": "$HOME/.nvm/versions/node/v24.15.0/lib/node_modules/@openai/codex/node_modules/@openai/codex-darwin-arm64/vendor/aarch64-apple-darwin/bin/codex",
+    "sha256": "74c6a6d263f40d65f99c27a815275f5b4ed0bcc2baecc396b4cf3255498bdfc0",
+    "size": 246642624
+  },
+  "d061_manifest_sha256": "fab9dbcbf8e3dbcacb55dff4d3664bffbc10b1937794aa59a9f9ec69ca4e074d",
+  "baseline_sha256": "c2152b25575490e3de96cd8af0693e1a78389762b39bbc377fb39dddbf6e4fa4",
+  "verified_delta": {
+    "before_sha256": "d8ebfad0d22c39330ea177413b2e512105364312cccfac00a67145d5a3e4d978",
+    "after_sha256": "f8b81fb360dcfccf36d3aefdc7d7ebdbbbe21d756e844c3e80221c855acd8ab4",
+    "removed_section_sha256": "cd6b9416e00778c364a8b7094db8d800aa356b14256eaf76dd62a9e6c9d76faa",
+    "observed_section_start": 3094,
+    "observed_section_size": 93,
+    "verified_inverse_sha256": "d8ebfad0d22c39330ea177413b2e512105364312cccfac00a67145d5a3e4d978",
+    "project": "/private/tmp/harness-provider-matrix-3/codex-codex/web",
+    "added_trust_level": "trusted",
+    "original_baseline_contents_saved": false,
+    "inverse_contents_saved": false,
+    "config_written": false
+  },
+  "binary_evidence": {
+    "direct_call_to_trust_writer": "0x101876bb8 -> 0x1053feb34",
+    "direct_call_to_config_file_edit": "0x1053febd0 -> 0x10595f740",
+    "config_literal_file_offset": 188751713,
+    "auth_literal_file_offset": 189224334,
+    "diagnostic_literal_file_offset": 185608673,
+    "flag_description_offsets": {
+      "strict_config": 187280195,
+      "ephemeral": 188854925,
+      "ignore_user_config": 188855005,
+      "ignore_rules": 188855114
+    }
+  },
+  "d061_recorded_timeline": {
+    "thread_started_recorded_at": "2026-10-13T17:42:30.138617+00:00",
+    "first_command_recorded_at": "2026-10-13T17:42:34.296534+00:00",
+    "config_mtime_utc": "2026-10-13T17:42:30.103366+00:00"
+  },
+  "checks": {
+    "five_synthetic_digest_cases": true,
+    "d061_evidence_unchanged": true,
+    "binary_matches_d059": true,
+    "frozen_codex_home_absent": true,
+    "global_config_unchanged_during_diagnosis": true
+  },
+  "attribution": "Exact added section proven by SHA-256 inverse. CLI persistence route exists; original process attribution is a strong inference, not a syscall audit.",
+  "correction": {
+    "implemented": false,
+    "reason": "No state/auth separation or persistence suppression verified offline for the pinned CLI."
+  },
+  "artifacts": {
+    "trust-caller.txt": "2f132a12d00b149d433eecb01c032f47ce64dba2c07d9fffea0bd933aea19021",
+    "trust-write.txt": "2c93287f1ad913b79910ec924f264b34da94d002701d14b0f2cfba5632b6c6e6",
+    "auth-path.txt": "1f713c6a50250709c5529fc22f2546243dde54b4bad4cd3543a8257c6ec4c93e"
+  },
+  "verifier": {
+    "path": "/private/tmp/h62_codex_diagnosis-20261013/verify.py",
+    "sha256": "dbf8727f727f28049d427c20310f1bc272138d6979381286b281f1b46ae18d45"
+  }
+}

@@ -502,7 +502,12 @@ una vez con consentimiento específico y cerrada con parada preventiva (D061,
 [resultado](discovery/PROVIDER_MATRIX_CLI7_RUN.md)). La 2 Codex→Codex llega a
 COMMITTED con edición real; la comprobación posterior detecta cambio de hash
 de configuración global y no se lanzan 3/4. Consentimiento agotado.
-Siguiente: diagnóstico offline del cambio global, sin iniciar. Después,
+Diagnóstico offline del cambio global completado (D062,
+[evidencia y límites](discovery/CODEX_GLOBAL_CONFIG_DIAGNOSIS.md)): adición
+exacta de confianza acreditada por hash inverso y vía de persistencia interna
+identificada en el binario. Atribución original inferida; contención compatible
+con auth sin verificar, sin corregir el transporte. Siguiente: concretar
+propuesta de contención del proceso Codex, sin iniciar. Después,
 hito de interfaz de producto con alta de proyectos en SQLite (D054); no iniciado.
 QA visual H5.7 bloqueada por herramienta; Claude real con D058 sigue pendiente.
 
@@ -2176,6 +2181,42 @@ QA visual H5.7 bloqueada por herramienta; Claude real con D058 sigue pendiente.
 - Siguiente: diagnóstico offline del cambio global; no iniciado. Claude real
   con D058 sigue pendiente y cualquier ejecución posterior requiere nueva
   propuesta/consentimiento. H6.2 tampoco se inició.
+
+## Diagnóstico offline del cambio global (D062)
+
+- Petición del usuario: «continúa», aplicada solo a la tarea activa de
+  diagnóstico offline. Git inicialmente limpio en `main`, `f930dc5`.
+  [Diagnóstico y opciones](discovery/CODEX_GLOBAL_CONFIG_DIAGNOSIS.md),
+  [manifiesto de lectura/verificaciones](discovery/CODEX_GLOBAL_CONFIG_DIAGNOSIS.json).
+- Delta exacto D061 acreditado sin copia previa: quitar en memoria la sección
+  observada de 93 bytes reproduce el SHA-256 previo. La entrada de confianza
+  del checkout de la 2 fue añadida, sin otros cambios de bytes entre los
+  hashes registrados. No se guardó la inversa ni contenido global completo;
+  no se restauró configuración o evidencia.
+- Codex nativo 0.162.1 idéntico a D059 leído por bytes/símbolos/desensamblado:
+  ruta interna de App Server llama a `set_project_trust_level`, que une
+  `config.toml` y aplica cambios al archivo. Los flags de omisión de carga,
+  reglas y archivos de sesión no prometen impedir persistencia de confianza.
+  Specs D061 sin CODEX_HOME y con HOME real; D024 conservado.
+- mtime antes del registro de thread.started y del primer comando visible;
+  efecto de arranque de la CLI muy probable. Sin auditoría de syscalls, la
+  atribución al proceso original sigue inferida, no certificada. El cambio
+  no aparece entre las herramientas visibles del modelo.
+- **Corrección no implementada:** un override de trust no prueba supresión
+  de persistencia; un CODEX_HOME privado desplaza auth también. No se copian
+  credenciales ni cambian HOME/almacén/versiones para fingir aislamiento.
+  Límite registrado antes de cambiar diseño; `cli-7` y congelados intactos.
+- Cinco casos sintéticos de prueba de delta, desensamblados acotados y hashes
+  correctos. Manifiesto/línea base D061, 14 snapshots y prompts conservados;
+  SQLite solo lectura. Configuración global sin cambios durante el diagnóstico.
+  Documentación/JSON/enlaces y diff verificados. Sin pytest/build/Node/QA
+  visual nuevos: no cambia código/UI/esquema/codec/dependencias/locks.
+- Cero procesos CLI reales/invocaciones; sin preflight, login, auth status,
+  red, instalaciones, subagentes, harness de desarrollo o push. Consentimientos
+  agotados conservados. Commit solicitado en el flujo de esta sesión.
+- Siguiente: concretar propuesta de contención del proceso Codex compatible
+  con autenticación existente, con alcance/criterios antes de implementar;
+  no iniciada. Matriz pendiente y H6.2 tampoco se inician.
 
 ## Coordinación
 

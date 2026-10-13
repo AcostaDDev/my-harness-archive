@@ -1823,3 +1823,32 @@ Sin cambios de diseño, producto o versiones. Claude real con D058 continúa
 pendiente. Siguiente tarea: diagnóstico offline del cambio global, separado
 de esta ejecución y sin nuevas invocaciones. Cualquier matriz posterior exige
 propuesta y consentimiento nuevos; H6.2 no se inicia.
+
+## D062 — Delta de confianza acreditado y límite de contención de la CLI
+
+Estado: diagnóstico offline completado el 2026-10-13; **sin corrección de
+transporte implementada**. [Evidencia y opciones](discovery/CODEX_GLOBAL_CONFIG_DIAGNOSIS.md),
+[manifiesto](discovery/CODEX_GLOBAL_CONFIG_DIAGNOSIS.json). Petición del
+usuario: «continúa», sobre el diagnóstico activo, sin consumo nuevo.
+
+Se acredita el delta D061 por SHA-256: la inversa en memoria que quita solo
+la sección observada de 93 bytes coincide con la línea base previa. La entrada
+de confianza del checkout de la 2 fue añadida y es todo el delta de bytes;
+no se guardan/copían contenidos completos ni se restaura el archivo global.
+
+La CLI fijada contiene una vía interna de thread/start que llama a
+`set_project_trust_level` y aplica cambios a `config.toml`. Omisión de carga
+de config/reglas y no persistencia de sesiones no son una frontera de escritura
+para el proceso CLI. Delta, vía estática y tiempos apuntan al arranque de
+Codex; atribución al proceso original inferida sin auditoría de syscalls.
+
+No se añade un override de confianza sin demostrar que evite persistencia,
+ni se cambia CODEX_HOME/HOME/almacén de auth sin comprobar autenticación
+existente. `FileAuthStorage` usa auth.json y la ayuda liga auth a CODEX_HOME;
+redirigir estado puede perder la sesión. No se copian/enlazan credenciales,
+restauran ajustes globales ni amplían permisos para pasar un ensayo.
+
+Límite registrado antes de modificar diseño. Siguiente: concretar propuesta
+de contención del proceso Codex compatible con auth, antes de implementación.
+Sin cambios de producto, `cli-7`, esquema, codec o congelados. Sin CLI reales,
+red, proveedores o avance a la matriz/H6.2; consentimientos siguen agotados.

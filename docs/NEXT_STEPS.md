@@ -1,59 +1,61 @@
-# Siguiente paso — diagnóstico offline del cambio de configuración global
+# Siguiente paso — propuesta de contención del proceso Codex
 
 Estado al 2026-10-13:
 
-- **D060 ejecutada una vez y cerrada con parada preventiva (D061).**
-  [Resultado y límites](discovery/PROVIDER_MATRIX_CLI7_RUN.md),
-  [manifiesto de resultado/verificaciones](discovery/PROVIDER_MATRIX_CLI7_RESULT.json).
-  Autorización específica del usuario recibida; consentimiento agotado.
-- Combinación 2 Codex→Codex `COMMITTED` (`585a35c`): tres intentos completos,
-  edición real solo de `src/estimate.ts`, check/test/build correctos, JUnit
-  con tres casos aprobados, ACCEPT y commit por contenido exacto. Jobs DONE,
-  propietarios cerrados, procesos muertos, cero locks y servicio detenido.
-- La comprobación entre combinaciones detectó un cambio de hash en
-  `~/.codex/config.toml`. mtime coincide con el inicio del escritor y se
-  observa una entrada `trust_level = "trusted"` para el checkout de la 2.
-  La línea base solo conserva hashes: delta exacto y atribución a la CLI
-  siguen sin demostrarse. Configuración global conservada sin restaurar.
-- Combinaciones 3 Claude→Claude y 4 Claude→Codex **no lanzadas**: parada por
-  condición global de D060. Sus áreas siguen vacías y limpias, sin SQLite,
-  jobs ni intentos. Tres invocaciones Codex y cero Claude; sin retries.
-- Paquete/scripts/TOML coinciden con D060. D059 acredita escritura real en
-  este ensayo; Claude real con esquema tipado D058 sigue pendiente. D057
-  conserva su combinación 1 COMMITTED y el resto de su evidencia anterior.
+- **Diagnóstico offline del cambio global completado (D062).**
+  [Evidencia, conclusión y opciones](discovery/CODEX_GLOBAL_CONFIG_DIAGNOSIS.md),
+  [manifiesto de verificaciones](discovery/CODEX_GLOBAL_CONFIG_DIAGNOSIS.json).
+- Delta D061 acreditado: una sección de confianza de 93 bytes para el
+  checkout Codex→Codex. Quitarla solo en memoria reproduce el SHA-256 previo;
+  entrada añadida y ningún otro cambio de bytes entre los hashes registrados.
+  Configuración global conservada, sin copiarla o restaurarla.
+- La CLI 0.162.1 contiene una ruta interna de persistencia de confianza en
+  config.toml. Flags de omisión de carga/reglas y sesión efímera no establecen
+  contención del proceso. La atribución al arranque de Codex es muy probable,
+  pero sigue inferida sin auditoría del proceso original.
+- **Corrección de transporte no implementada:** override de trust sin garantía
+  de supresión; CODEX_HOME privado desplaza auth también. HOME/USER, almacén,
+  credenciales y `cli-7` conservados. Cinco casos sintéticos y hashes correctos;
+  cero CLI de proveedores, sesiones, preflight o inferencia en D062.
+- D060 cerrada con parada preventiva (D061): 2 Codex→Codex COMMITTED
+  (`585a35c`), 3/4 no lanzadas con estado vacío. Consentimiento agotado.
+  Claude real con esquema tipado D058 continúa pendiente. Evidencias D057/D061
+  conservadas; la 1 D057 ya completa no necesita repetirse.
 
 ## Tarea concreta propuesta, no iniciada
 
-**Diagnosticar offline el cambio observado en la configuración global de
-Codex antes de preparar otra ejecución.** Sin inferencia ni consumo.
+**Concretar una propuesta de contención del proceso CLI de Codex que preserve
+la autenticación existente, con alcance y criterios antes de implementar.**
 
-1. Leer D061, línea base, resultado, specs y originales conservados en
-   `/private/tmp/harness-provider-matrix-3`. Separar el cambio de hash
-   observado de la hipótesis sobre el escritor; no deducir el delta completo
-   desde el estado posterior ni inventar una copia previa.
-2. Inspeccionar en lectura el comportamiento de la CLI fijada 0.162.1 y
-   las rutas de configuración/confianza usadas con `--ignore-user-config`,
-   `--ignore-rules`, `--strict-config` y `--ephemeral`. Comprobar qué puede
-   acreditarse sin lanzar sesiones ni tocar el HOME real.
-3. Si se identifica una corrección compatible, documentar el alcance y
-   probarla offline con HOME/fixtures sintéticos y sin credenciales. Conservar
-   autenticación D024, permisos, contratos y versiones congeladas; un cambio
-   de transporte exige versión y cuarentena correspondientes. Si implica
-   una contradicción material de diseño o no puede verificarse offline,
-   registrar el límite antes de implementar.
-4. Verificar el diff y los checks pertinentes, actualizar STATE/NEXT_STEPS
-   y DECISIONS con causa acreditada, hipótesis pendientes y siguiente paso.
-   No restaurar ni borrar configuración global o evidencias previas.
+1. Leer D062, D024/D049 y las fronteras actuales: entorno congelado,
+   sandbox de herramientas, configuración privada y autenticación de la CLI.
+   Separar qué protege al modelo de qué puede escribir el propio proceso.
+2. Comparar las opciones viables para la versión fijada: contención externa
+   del proceso y separación de estado/auth si la CLI la admite. Concretar
+   fuentes de auth, efectos auxiliares/refresh, errores observables,
+   portabilidad y límites. No suponer que una raíz privada mantenga login.
+3. Preparar alcance y verificaciones con HOME, credenciales ficticias y
+   procesos sintéticos. Deben acreditar lectura de auth ficticia sin alterar
+   originales, contención de configuración/temporales y fallo explícito sin
+   retries/fallback. Estas pruebas no certifican una sesión del proveedor.
+4. Documentar la opción sustentada o el límite, el impacto en permisos,
+   versiones/cuarentena y el consentimiento que exigiría una comprobación
+   real. Señalar contradicciones materiales antes de cambiar diseño.
+   Actualizar STATE/NEXT_STEPS/DECISIONS; dejar la implementación separada.
 
-Criterios de aceptación: diagnóstico trazable que distingue observado,
-inferido y ausente; efectos globales y aislamiento efectivo descritos;
-corrección solo si está justificada y verificable offline, sin reescribir
-historiales ni silencios de fallback. Esta tarea no incluye otra matriz,
-preflight real, login, nuevas invocaciones, recuperación o liberación de
-locks. Una ejecución futura de 3/4 necesita propuesta/consentimiento nuevos.
+Criterios de aceptación: propuesta concreta y revisable que identifica auth y
+estado, evidencia offline, efectos permitidos/impedidos y límites; conserva
+contratos/historiales, D024/D059 y configuración global. Sin copiar/enlazar
+credenciales reales, hacer login/refresh, invocar CLI de proveedores o alterar
+baseline/modelos/permisos. Si no hay opción verificable, registrar exactamente
+qué falta en vez de declarar aislamiento implementado.
+
+No iniciar otro smoke/matriz, preflight real, jobs, recuperación, liberación
+de locks o H6.2. Una comprobación real futura y las combinaciones pendientes
+requieren propuesta y consentimiento específicos nuevos. D050, D055, D057 y
+D060 siguen agotados. Sin publicación, push ni harness de desarrollo.
 
 Después, y aparte: hito de interfaz de producto (D054, H6.2). Alternativas
 pendientes: `forbidden_paths` frente a prosa; instalación de operación
 reutilizable (D051); `memory/` vacío de Claude; endurecimientos de D048.
-Ninguna iniciada en D061. Sin publicación, push ni uso del harness para
-desarrollar este repositorio. D050, D055, D057 y D060 están agotados.
+Ninguna iniciada en D062.
