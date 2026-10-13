@@ -63,8 +63,24 @@ class DemoAgent:
                        "exit_criteria_results": [{"criterion": c, "passed": True, "evidence": "synthetic"}
                                                  for c in phase["exit_criteria"]],
                        "required_actions": [], "blocking_questions": []}
+        elif request.role == "chat":
+            # H4.1: respuesta sintética de solo lectura con una propuesta derivada del mensaje.
+            text = request.prompt.split("User message:\n", 1)[1].split("\nReturn exactly one JSON object", 1)[0].strip()
+            payload = {"answer": f"Synthetic read-only answer; no provider. Message: {text}",
+                       "references": ["app/main.txt"],
+                       "proposals": [{"title": "Adjust app/main.txt", "objective": f"Apply the request: {text}",
+                                      "scope": "Only app/main.txt", "acceptance_criteria": ["app/main.txt reflects the request"],
+                                      "validation": ["test-runner check"], "rationale": "Synthetic chat proposal"}]}
+        elif request.role == "planner":
+            # H4.1: solo para tareas creadas desde una propuesta confirmada; contrato dentro de la política.
+            data = json.loads(next(line for line in request.prompt.splitlines() if line.startswith('{"phase_id"')))
+            payload = {"task_id": data["task_id"], "phase_id": data["phase_id"], "title": "Synthetic chat task",
+                       "objective": "Apply the confirmed chat proposal", "executor_prompt": "Change app/main.txt",
+                       "allowed_paths": ["app/**"], "forbidden_paths": [], "acceptance_criteria": ["app/main.txt changed"],
+                       "validation_commands": [], "executor_selection": {"model": "synthetic-executor", "effort": "medium",
+                                                                         "reason": "Synthetic planner selection"}}
         else:
-            raise ValueError("Demo requires the complete documented task contract; no planner configured")
+            raise ValueError(f"Unsupported synthetic role {request.role}")
         return AgentResult(freeze(payload), terminal_observed=True, exit_code=0)
 
 

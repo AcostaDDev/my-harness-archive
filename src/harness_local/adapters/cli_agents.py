@@ -87,8 +87,8 @@ def argv_for(config, context, request):
     if not model or model.startswith("-") or not effort or effort.startswith("-"):
         raise ValueError("Explicit model/effort required")
     if config.provider == "codex":
-        if request.role not in {"planner", "reviewer", "phase"}:
-            raise ValueError("Codex handles planner/reviewer/phase review only")
+        if request.role not in {"planner", "reviewer", "phase", "chat"}:
+            raise ValueError("Codex handles planner/reviewer/phase review/chat only")
         return config.executable + (
             "exec", "--strict-config", "--ignore-user-config", "--ignore-rules", "--ephemeral", "--json",
             "--model", model, "--sandbox", "read-only", "--color", "never",
@@ -208,6 +208,10 @@ class CLIProcessAdapter:
             "phase": {"phase_id": "requested phase id", "verdict": "READY or REVISE or BLOCKED", "summary": "summary",
                 "exit_criteria_results": [{"criterion": "frozen criterion", "passed": True, "evidence": "evidence"}],
                 "required_actions": [], "blocking_questions": []},
+            # H4.1, aditivo: turno de chat de solo lectura con propuestas estructuradas que no ejecutan nada.
+            "chat": {"answer": "answer", "references": ["path or run id"], "proposals": [{"title": "title",
+                "objective": "objective", "scope": "scope in words", "acceptance_criteria": ["criterion"],
+                "validation": ["validation"], "rationale": "rationale"}]},
         }
         prompt = request.prompt + "\n\nReturn exactly one JSON object, without Markdown fences. Shape:\n" + freeze(shapes[request.role])
         if request.role in {"planner", "reviewer"}:

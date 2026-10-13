@@ -896,6 +896,101 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/managed/projects/{project_id}/conversations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Conversations */
+        get: operations["managed_conversations"];
+        put?: never;
+        /**
+         * Create Conversation
+         * @description Conversación separada del flujo de ejecución; no encola nada.
+         */
+        post: operations["managed_create_conversation"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/managed/conversations/{conversation_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Conversation */
+        get: operations["managed_conversation"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/managed/conversations/{conversation_id}/messages": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Chat Message
+         * @description Turno nuevo de solo lectura: mensaje y contexto se congelan al encolar; sin sesión del proveedor.
+         */
+        post: operations["managed_chat_message"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/managed/conversations/{conversation_id}/proposals/{proposal_id}/accept": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Accept Proposal
+         * @description Confirmación explícita del hash mostrado → tarea normal vinculada (planificar, ejecutar, revisar).
+         */
+        post: operations["managed_chat_accept"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/managed/conversations/{conversation_id}/proposals/{proposal_id}/dismiss": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Dismiss Proposal */
+        post: operations["managed_chat_dismiss"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/health": {
         parameters: {
             query?: never;
@@ -1008,6 +1103,214 @@ export interface components {
             expected_version: number;
             /** Reason */
             reason: string;
+        };
+        /** ChatConversationCreate */
+        ChatConversationCreate: {
+            /** Title */
+            title: string;
+            /**
+             * Phase Id
+             * @description Fase gestionada de este proyecto cuyo contexto se ofrece por defecto.
+             */
+            phase_id?: string | null;
+        };
+        /** ChatConversationRead */
+        ChatConversationRead: {
+            /** Id */
+            id: string;
+            /** Project Id */
+            project_id: string | null;
+            /** Root */
+            root: string;
+            /** Title */
+            title: string;
+            phase: components["schemas"]["ChatPhaseRead"] | null;
+            /** Actor */
+            actor: {
+                [key: string]: unknown;
+            };
+            /** Version */
+            version: number;
+            /** Created At */
+            created_at: string;
+            /** Updated At */
+            updated_at: string;
+            /** Turns */
+            turns: components["schemas"]["ChatTurnRead"][];
+            /** Proposals */
+            proposals: components["schemas"]["ChatProposalRead"][];
+            /** Actions */
+            actions: "message"[];
+        };
+        /** ChatConversationSummaryRead */
+        ChatConversationSummaryRead: {
+            /** Id */
+            id: string;
+            /** Title */
+            title: string;
+            /** Phase Id */
+            phase_id: string | null;
+            /** Phase Code */
+            phase_code: string | null;
+            /** Turns */
+            turns: number;
+            /** Version */
+            version: number;
+            /** Created At */
+            created_at: string;
+            /** Updated At */
+            updated_at: string;
+        };
+        /** ChatDocumentRead */
+        ChatDocumentRead: {
+            /** Path */
+            path: string;
+            /**
+             * Sha256
+             * @description null: el documento no existía al congelar el turno.
+             */
+            sha256: string | null;
+            /** Size */
+            size: number | null;
+            /** Truncated */
+            truncated: boolean;
+        };
+        /** ChatMessageCreate */
+        ChatMessageCreate: {
+            /** Expected Version */
+            expected_version: number;
+            /** Text */
+            text: string;
+            /**
+             * Documents
+             * @description Documentos del checkout que se congelan como contexto; null: los de la fase o STATE y NEXT_STEPS.
+             */
+            documents?: string[] | null;
+            /**
+             * Run Ids
+             * @description Runs de este checkout cuya evidencia se congela como contexto.
+             */
+            run_ids?: string[];
+        };
+        /** ChatPhaseRead */
+        ChatPhaseRead: {
+            /** Id */
+            id: string;
+            /** Code */
+            code: string;
+            /** Status */
+            status: string;
+        };
+        /** ChatProposalAcceptCreate */
+        ChatProposalAcceptCreate: {
+            /** Expected Version */
+            expected_version: number;
+            /** Proposal Sha256 */
+            proposal_sha256: string;
+            /** Task Id */
+            task_id: string;
+            /** Phase Id */
+            phase_id: string;
+            /**
+             * Confirmed
+             * @constant
+             */
+            confirmed: true;
+        };
+        /** ChatProposalDismissCreate */
+        ChatProposalDismissCreate: {
+            /** Expected Version */
+            expected_version: number;
+            /** Reason */
+            reason: string;
+        };
+        /** ChatProposalRead */
+        ChatProposalRead: {
+            /** Id */
+            id: string;
+            /** Number */
+            number: number;
+            /** Turn Id */
+            turn_id: string;
+            /** Turn Number */
+            turn_number: number;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "PROPOSED" | "ACCEPTED" | "DISMISSED";
+            /** Proposal */
+            proposal: {
+                [key: string]: unknown;
+            };
+            /** Proposal Sha256 */
+            proposal_sha256: string;
+            /** Run Id */
+            run_id: string | null;
+            run: components["schemas"]["ChatProposalRunRead"] | null;
+            /** Decision */
+            decision: {
+                [key: string]: unknown;
+            } | null;
+            /** Version */
+            version: number;
+            /** Created At */
+            created_at: string;
+            /** Actions */
+            actions: ("accept" | "dismiss")[];
+        };
+        /** ChatProposalRunRead */
+        ChatProposalRunRead: {
+            /** Task Id */
+            task_id: string;
+            /** Phase Id */
+            phase_id: string;
+            /** Status */
+            status: string;
+            /** Commit */
+            commit: string | null;
+        };
+        /** ChatTurnRead */
+        ChatTurnRead: {
+            /** Id */
+            id: string;
+            /** Number */
+            number: number;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "QUEUED" | "ANSWERED" | "FAILED" | "UNKNOWN" | "REFUSED";
+            /** Run Id */
+            run_id: string;
+            /** Run Status */
+            run_status: string;
+            /** Message */
+            message: string;
+            /** Documents */
+            documents: components["schemas"]["ChatDocumentRead"][];
+            /** Run Ids */
+            run_ids: string[];
+            /** Phase Code */
+            phase_code: string | null;
+            /** Previous Turns */
+            previous_turns: number;
+            /** Context Sha256 */
+            context_sha256: string;
+            /** Request Sha256 */
+            request_sha256: string;
+            /** Result */
+            result: {
+                [key: string]: unknown;
+            } | null;
+            /** Actor */
+            actor: {
+                [key: string]: unknown;
+            };
+            /** Created At */
+            created_at: string;
+            /** Finished At */
+            finished_at: string | null;
         };
         /** ConfirmStoppedCreate */
         ConfirmStoppedCreate: {
@@ -1437,7 +1740,7 @@ export interface components {
              * Purpose
              * @enum {string}
              */
-            purpose: "task" | "phase_check" | "phase_close";
+            purpose: "task" | "phase_check" | "phase_close" | "chat";
             /** Actions */
             actions: ("revalidate" | "retry_executor" | "commit" | "permissions")[];
             /** Versions */
@@ -1479,7 +1782,7 @@ export interface components {
              * Purpose
              * @enum {string}
              */
-            purpose: "task" | "phase_check" | "phase_close";
+            purpose: "task" | "phase_check" | "phase_close" | "chat";
         };
         /** MigrationPreviewRead */
         MigrationPreviewRead: {
@@ -5420,6 +5723,394 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ManagedJobRead"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+        };
+    };
+    managed_conversations: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Obligatoria con valor 1 en mutaciones (protección CSRF). */
+                "x-harness-local"?: string | null;
+            };
+            path: {
+                project_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ChatConversationSummaryRead"][];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+        };
+    };
+    managed_create_conversation: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Obligatoria con valor 1 en mutaciones (protección CSRF). */
+                "x-harness-local"?: string | null;
+            };
+            path: {
+                project_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ChatConversationCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ChatConversationRead"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+        };
+    };
+    managed_conversation: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Obligatoria con valor 1 en mutaciones (protección CSRF). */
+                "x-harness-local"?: string | null;
+            };
+            path: {
+                conversation_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ChatConversationRead"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+        };
+    };
+    managed_chat_message: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Misma clave y misma acción devuelven el mismo job. */
+                "Idempotency-Key": string;
+                /** @description Obligatoria con valor 1 en mutaciones (protección CSRF). */
+                "x-harness-local"?: string | null;
+            };
+            path: {
+                conversation_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ChatMessageCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ManagedJobRead"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+        };
+    };
+    managed_chat_accept: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Misma clave y misma acción devuelven el mismo job. */
+                "Idempotency-Key": string;
+                /** @description Obligatoria con valor 1 en mutaciones (protección CSRF). */
+                "x-harness-local"?: string | null;
+            };
+            path: {
+                conversation_id: string;
+                proposal_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ChatProposalAcceptCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ManagedJobRead"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+        };
+    };
+    managed_chat_dismiss: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Obligatoria con valor 1 en mutaciones (protección CSRF). */
+                "x-harness-local"?: string | null;
+            };
+            path: {
+                conversation_id: string;
+                proposal_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ChatProposalDismissCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ChatConversationRead"];
                 };
             };
             /** @description Forbidden */

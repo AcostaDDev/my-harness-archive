@@ -265,7 +265,7 @@ class ManagedRunSummaryRead(BaseModel):
     revision_limit: int
     created_at: str
     updated_at: str
-    purpose: Literal['task', 'phase_check', 'phase_close']
+    purpose: Literal['task', 'phase_check', 'phase_close', 'chat']
 
 
 class StopRead(BaseModel):
@@ -641,3 +641,121 @@ class PhaseRevokeCreate(PhaseVersioned):
 class PhaseBatchNextCreate(PhaseVersioned):
     authorization_id: str = Field(min_length=1, max_length=36)
     text: str = Field(min_length=1, max_length=200_000)
+
+
+# --- H4.1: chat contextual -------------------------------------------------------------------
+
+ChatTurnStatus = Literal['QUEUED', 'ANSWERED', 'FAILED', 'UNKNOWN', 'REFUSED']
+
+
+class ChatConversationCreate(BaseModel):
+    model_config = ConfigDict(extra='forbid', strict=True)
+    title: str = Field(min_length=1, max_length=200)
+    phase_id: str | None = Field(default=None, max_length=36,
+                                 description='Fase gestionada de este proyecto cuyo contexto se ofrece por defecto.')
+
+
+class ChatConversationSummaryRead(BaseModel):
+    id: str
+    title: str
+    phase_id: str | None
+    phase_code: str | None
+    turns: int
+    version: int
+    created_at: str
+    updated_at: str
+
+
+class ChatDocumentRead(BaseModel):
+    path: str
+    sha256: str | None = Field(description='null: el documento no existía al congelar el turno.')
+    size: int | None
+    truncated: bool
+
+
+class ChatTurnRead(BaseModel):
+    id: str
+    number: int
+    status: ChatTurnStatus
+    run_id: str
+    run_status: str
+    message: str
+    documents: list[ChatDocumentRead]
+    run_ids: list[str]
+    phase_code: str | None
+    previous_turns: int
+    context_sha256: str
+    request_sha256: str
+    result: dict[str, Any] | None
+    actor: dict[str, Any]
+    created_at: str
+    finished_at: str | None
+
+
+class ChatProposalRunRead(BaseModel):
+    task_id: str
+    phase_id: str
+    status: str
+    commit: str | None
+
+
+class ChatProposalRead(BaseModel):
+    id: str
+    number: int
+    turn_id: str
+    turn_number: int
+    status: Literal['PROPOSED', 'ACCEPTED', 'DISMISSED']
+    proposal: dict[str, Any]
+    proposal_sha256: str
+    run_id: str | None
+    run: ChatProposalRunRead | None
+    decision: dict[str, Any] | None
+    version: int
+    created_at: str
+    actions: list[Literal['accept', 'dismiss']]
+
+
+class ChatPhaseRead(BaseModel):
+    id: str
+    code: str
+    status: str
+
+
+class ChatConversationRead(BaseModel):
+    id: str
+    project_id: str | None
+    root: str
+    title: str
+    phase: ChatPhaseRead | None
+    actor: dict[str, Any]
+    version: int
+    created_at: str
+    updated_at: str
+    turns: list[ChatTurnRead]
+    proposals: list[ChatProposalRead]
+    actions: list[Literal['message']]
+
+
+class ChatMessageCreate(BaseModel):
+    model_config = ConfigDict(extra='forbid', strict=True)
+    expected_version: int = Field(ge=0)
+    text: str = Field(min_length=1, max_length=20_000)
+    documents: list[str] | None = Field(default=None, max_length=8, description=(
+        'Documentos del checkout que se congelan como contexto; null: los de la fase o STATE y NEXT_STEPS.'))
+    run_ids: list[str] = Field(default_factory=list, max_length=10,
+                               description='Runs de este checkout cuya evidencia se congela como contexto.')
+
+
+class ChatProposalAcceptCreate(BaseModel):
+    model_config = ConfigDict(extra='forbid', strict=True)
+    expected_version: int = Field(ge=0)
+    proposal_sha256: str = Field(pattern=r'^[0-9a-f]{64}$')
+    task_id: str = Field(min_length=1, max_length=120)
+    phase_id: str = Field(min_length=1, max_length=120)
+    confirmed: Literal[True]
+
+
+class ChatProposalDismissCreate(BaseModel):
+    model_config = ConfigDict(extra='forbid', strict=True)
+    expected_version: int = Field(ge=0)
+    reason: str = Field(min_length=1, max_length=2000)

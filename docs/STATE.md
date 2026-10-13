@@ -35,7 +35,7 @@ Actualizado: 2026-10-13.
 - Dependencias reales instaladas en `.venv` / `frontend/node_modules`, locks
   `uv.lock` / `frontend/package-lock.json`. Pins H0.2 usados conservados;
   backend de paquete `uv_build==0.12.19`. Comandos comprobados en README/AGENTS.
-- 378 casos de producto en `tests/product/`; pytest ejecuta 390 pruebas en total.
+- 418 casos de producto en `tests/product/`; pytest ejecuta 430 pruebas en total.
   La comprobación ligera anterior conserva sus 12 checks sin dependencias.
 - H1.1 completado: [importación legacy y verificaciones](discovery/H1.1_IMPORT.md),
   [alcance original](discovery/H1.1_SCOPE.md). Lector local explícito de
@@ -283,6 +283,23 @@ Actualizado: 2026-10-13.
 - API/UI: enmendar, abandonar, reconciliar con agente, lote desatendido, versiones
   de la definición y tipo de tag. 18 casos H3.4 y recorrido Chrome sintético.
 
+- H4.1 completado offline: [chat contextual](discovery/H4.1_CHAT.md), D035.
+  Migración `0012_chat`: conversaciones (fase opcional), turnos con petición
+  congelada y propuestas, separadas del flujo de ejecución.
+- Cada mensaje congela, al encolarse, el proyecto, la fase, los documentos
+  (contenido acotado y hash), la evidencia de runs y los turnos anteriores. El
+  turno es un run `chat` bajo el lock del checkout: invocación nueva del rol `chat`
+  (Codex `--ephemeral --sandbox read-only`) con la plantilla versionada
+  `chat-turn`, prompt persistido antes del efecto y esquema fijo. Una salida
+  inválida o un fallo → `FAILED`, sin fallback ni reintento; una caída → `UNKNOWN`
+  tras confirmar el escritor detenido. Un cambio en el checkout descarta el turno.
+- Las propuestas solo se convierten en una tarea normal tras confirmación, versión
+  y hash exacto. El planificador fija el contrato con la política; después siguen
+  ejecutor, revisión y commit explícito. El chat no concede permisos ni fija
+  contratos. La conversación enlaza propuesta → tarea → run → commit.
+- API/UI bajo la guardia local con idempotencia y confirmaciones; demo con roles
+  `chat`/`planner` sintéticos. 21 casos H4.1 y recorrido Chrome sintético.
+
 ## Todavía no existe
 
 Recorrido de tarea real del motor con proveedores ni entrada CLI gestionada;
@@ -291,9 +308,9 @@ Tampoco existen sesión local, guardia en lecturas H0/H1 (las mutaciones ya la t
 proyectos por HTTP, SSE gestionado, pausa o cancelación por HTTP, integración del
 commit en la rama de destino, retirada de worktrees, abandono manual de una
 intención ambigua, exportación mecánica de STATE/NEXT_STEPS, permisos
-interactivos, chat ni distribución. En fases faltan archivo/commit de cierre,
+interactivos, App Server/SDK para el chat ni distribución. En fases faltan archivo/commit de cierre,
 instalación de la fase siguiente y cancelación de una tarea de reconciliación. La
-evaluación de fase y la reconciliación con CLI real no se han ejecutado. La salida del hito 2 está verificada offline desde la UI hasta COMMITTED,
+evaluación de fase, la reconciliación y el chat con CLI real no se han ejecutado. La salida del hito 2 está verificada offline desde la UI hasta COMMITTED,
 con recuperación explícita y sin integración en la rama destino.
 La navegación H1.2 muestra evidencia legacy;
 el recorrido H0.3 solo guarda simulaciones, que no representan intentos reales
@@ -318,8 +335,10 @@ H3.3 completado offline con fases, READY por contenido exacto, cierre/tag y
 autorizaciones separadas (D032). Decisiones posteriores del usuario en D033.
 H3.4 completado offline: guardia H0/H1, lote desatendido con commits,
 enmienda/abandono, tags anotados y reconciliación con agente (D034).
-Siguiente tarea: H4.1 (chat por turnos nuevos de la CLI Codex), sin iniciarla.
-Sin proveedores nuevos.
+H4.1 completado offline: chat por turnos nuevos de solo lectura y propuestas
+confirmadas como tareas normales (D035).
+Siguiente tarea: exportación mecánica de STATE/NEXT_STEPS (D033 punto 1), sin
+iniciarla. Sin proveedores nuevos.
 
 ## Verificación de H0.1
 
@@ -1072,6 +1091,40 @@ Sin proveedores nuevos.
   - la evaluación y la reconciliación no se han ejecutado con CLI real.
 
   H4.1 no se ha iniciado.
+
+## Verificación de H4.1
+
+- Git inicial limpio en `main`, `d489544`. Revisados AGENTS, STATE, NEXT_STEPS,
+  DECISIONS (D033/D034), los informes H3.3/H3.4, el motor, el supervisor, la
+  autoridad gestionada, el adaptador CLI, la API y la UI.
+- 430 pruebas pytest y 121 subtests: 408 anteriores, 21 de H4.1 y un caso
+  parametrizado nuevo de plantilla. Se ajustaron la revisión de esquema esperada y
+  el número de plantillas (9). 12 checks ligeros y 4 pruebas Node. OpenAPI y tipos
+  regenerados; TypeScript y build correctos; `alembic check` sin cambios
+  pendientes. Se conserva el aviso Starlette/HTTPX.
+- Git y SQLite temporales con fakes: contexto congelado ante cambios posteriores,
+  turnos nuevos con historial explícito, selección validada, seis salidas
+  inválidas sin reintento, turno que escribe descartado, aceptación sin
+  confirmación o con evidencia obsoleta sin encolar nada, propuesta → planificador
+  → ejecutor → revisor → commit con vínculo e idempotencia, sin permisos ni
+  acciones de tarea en runs de chat, un turno pendiente, caída → `UNKNOWN` sin
+  repetir, FIFO bajo el lock, catálogos antiguos, rol CLI de solo lectura,
+  migración ida y vuelta con bajada rechazada y HTTP completo.
+- Chrome sobre una demo sintética nueva (scratchpad, `127.0.0.1:8020`): crear
+  conversación → mensaje → turno respondido con propuesta → botón deshabilitado sin
+  fase ni confirmación → confirmar → `CHAT-T001` en `ACCEPTANCE_READY` → commit →
+  `COMMITTED`, visible en la propuesta. Llamadas sintéticas `chat`, `planner`,
+  `executor` y `reviewer`. Sin 4xx/5xx de la API ni errores de consola. El servicio
+  se detuvo y la pestaña se cerró.
+- No se migró la SQLite de trabajo del usuario. Sin proveedores, smokes, login,
+  secretos, ReferenceProject, configuración global, colaboración automática, harness de
+  desarrollo ni push. Commit solicitado por el usuario.
+- Límites: sin CLI real ni App Server/SDK. La detección de escritura cubre el
+  checkout por evidencia Git. El turno espera el lock. No hay encolado automático
+  en un modo autorizado, cancelación o borrado de conversaciones ni vínculo inverso
+  en la vista del run.
+
+  La exportación mecánica de STATE/NEXT_STEPS no se ha iniciado.
 
 ## Coordinación
 

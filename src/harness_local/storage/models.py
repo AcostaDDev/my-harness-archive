@@ -345,3 +345,55 @@ class PhaseEventRow(Base):
     kind: Mapped[str] = mapped_column(String(40))
     recorded_at: Mapped[str] = mapped_column(String(40))
     payload: Mapped[dict] = mapped_column(JSON)
+
+
+class ChatConversationRow(Base):
+    """H4.1: conversación separada del flujo de ejecución; opcionalmente ligada a una fase."""
+    __tablename__ = 'chat_conversations'
+    id: Mapped[str] = mapped_column(String(36), primary_key=True)
+    root: Mapped[str] = mapped_column(String)
+    title: Mapped[str] = mapped_column(String(200))
+    phase_id: Mapped[str | None] = mapped_column(ForeignKey('managed_phases.id'), nullable=True)
+    actor: Mapped[dict] = mapped_column(JSON)
+    version: Mapped[int] = mapped_column(Integer)
+    created_at: Mapped[str] = mapped_column(String(40))
+    updated_at: Mapped[str] = mapped_column(String(40))
+
+
+class ChatTurnRow(Base):
+    """Petición congelada (mensaje y contexto explícito) antes de encolar; un turno pendiente por conversación."""
+    __tablename__ = 'chat_turns'
+    __table_args__ = (UniqueConstraint('conversation_id', 'number'),
+                      Index('uq_chat_turns_pending', 'conversation_id', unique=True,
+                            sqlite_where=text("status = 'QUEUED'")))
+    id: Mapped[str] = mapped_column(String(36), primary_key=True)
+    conversation_id: Mapped[str] = mapped_column(ForeignKey('chat_conversations.id'))
+    number: Mapped[int] = mapped_column(Integer)
+    run_id: Mapped[str] = mapped_column(ForeignKey('managed_runs.id'), unique=True)
+    # QUEUED | ANSWERED | FAILED | UNKNOWN (caída confirmada, sin reintento) | REFUSED
+    status: Mapped[str] = mapped_column(String(20))
+    message: Mapped[str] = mapped_column(Text)
+    request: Mapped[dict] = mapped_column(JSON)
+    request_sha256: Mapped[str] = mapped_column(String(64))
+    result: Mapped[dict | None] = mapped_column(JSON, nullable=True)
+    actor: Mapped[dict] = mapped_column(JSON)
+    created_at: Mapped[str] = mapped_column(String(40))
+    finished_at: Mapped[str | None] = mapped_column(String(40), nullable=True)
+
+
+class ChatProposalRow(Base):
+    """Propuesta estructurada de un turno; solo una confirmación explícita crea su tarea vinculada."""
+    __tablename__ = 'chat_proposals'
+    __table_args__ = (UniqueConstraint('conversation_id', 'number'),)
+    id: Mapped[str] = mapped_column(String(36), primary_key=True)
+    conversation_id: Mapped[str] = mapped_column(ForeignKey('chat_conversations.id'))
+    turn_id: Mapped[str] = mapped_column(ForeignKey('chat_turns.id'))
+    number: Mapped[int] = mapped_column(Integer)
+    # PROPOSED | ACCEPTED | DISMISSED
+    status: Mapped[str] = mapped_column(String(20))
+    proposal: Mapped[dict] = mapped_column(JSON)
+    proposal_sha256: Mapped[str] = mapped_column(String(64))
+    run_id: Mapped[str | None] = mapped_column(ForeignKey('managed_runs.id'), nullable=True, unique=True)
+    decision: Mapped[dict | None] = mapped_column(JSON, nullable=True)
+    version: Mapped[int] = mapped_column(Integer)
+    created_at: Mapped[str] = mapped_column(String(40))

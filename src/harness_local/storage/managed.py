@@ -83,6 +83,15 @@ def _nonempty(value: str, name: str) -> None:
         raise ValueError(f"Explicit {name} required")
 
 
+def _operation_module(run):
+    """Autoridad del resultado de un run que no es de tarea: fase (H3.3) o turno de chat (H4.1)."""
+    if run.purpose == "chat":
+        from harness_local.storage import chat
+        return chat
+    from harness_local.storage import phases
+    return phases
+
+
 def _lease(seconds: float) -> None:
     if not isinstance(seconds, (int, float)) or not math.isfinite(seconds) or seconds <= 0:
         raise ValueError("Lease must be positive and finite")
@@ -164,8 +173,7 @@ class SQLiteManagedRepository:
             session.delete(session.get(Lock, run.root))
             self._event(session, run, "job_refused", {"job_id": job.id, "diagnostic": diagnostic})
             if run.purpose != "task":
-                from harness_local.storage.phases import abort
-                abort(self, session, run, "REFUSED", diagnostic)
+                _operation_module(run).abort(self, session, run, "REFUSED", diagnostic)
 
     def _existing(self, session, key, request):
         _nonempty(key, "idempotency key")
@@ -392,7 +400,7 @@ class SQLiteManagedRepository:
                                   status="ACTIVE", started_at=self._now()))
             run.stage = request.role
             run.status = {"planner": "PLANNING", "executor": "EXECUTING", "reviewer": "REVIEWING",
-                          "phase": "CHECKING"}[request.role]
+                          "phase": "CHECKING", "chat": "ANSWERING"}[request.role]
             self._event(session, run, "attempt_started", {"job_id": job.id, "attempt_id": request.id,
                                                         "number": len(attempts) + 1, "role": request.role})
             return request
@@ -402,13 +410,14 @@ class SQLiteManagedRepository:
             job, run = self._owned(session, claim)
             self._event(session, run, kind, {**payload, "job_id": job.id})
 
-    def finish(self, claim: JobRecord, history: RunHistory, phase: dict | None = None) -> None:
-        """`phase`: resultado de una operación de fase, aplicado en la misma transacción (H3.3)."""
+    def finish(self, claim: JobRecord, history: RunHistory, outcome: dict | None = None) -> None:
+        """`outcome`: resultado de una operación de fase (H3.3) o de un turno de chat (H4.1), aplicado en
+        la misma transacción."""
         with self._write() as session:
             job, run = self._owned(session, claim)
             terminal = {"stopped", "completed"} if run.purpose != "task" else {
                 "stopped", "blocked", "revision_limit", "acceptance_ready"}
-            if history.status not in terminal or (phase is None) != (run.purpose == "task"):
+            if history.status not in terminal or (outcome is None) != (run.purpose == "task"):
                 raise Conflict("Only a terminal engine action can finish a job")
             self._history(session, run, history)
             if session.scalar(select(AttemptRow.id).where(AttemptRow.run_id == run.id,
@@ -419,9 +428,8 @@ class SQLiteManagedRepository:
             run.stage = history.stop.stage if history.stop else "finished"
             if self._live_commit(session, run.id, ("COMMITTED",)) is not None:
                 run.status, run.stage = "COMMITTED", "committed"
-            if phase is not None:
-                from harness_local.storage.phases import settle
-                settle(self, session, run, phase)
+            if outcome is not None:
+                _operation_module(run).settle(self, session, run, outcome)
             job.status, job.finished_at = "DONE", self._now()
             session.delete(session.get(Lock, run.root))
             self._event(session, run, "job_finished", {"job_id": job.id, "history_status": history.status})
@@ -477,8 +485,7 @@ class SQLiteManagedRepository:
             session.delete(session.get(Lock, run.root))
             self._event(session, run, "writer_stopped_confirmed", {"job_id": job.id, "owner_token": owner_token, "reason": reason})
             if run.purpose != "task":
-                from harness_local.storage.phases import abort
-                abort(self, session, run, "INTERRUPTED", reason)
+                _operation_module(run).abort(self, session, run, "INTERRUPTED", reason)
 
 
     # --- H2.4: commit aceptado ----------------------------------------------------

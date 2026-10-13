@@ -454,4 +454,72 @@ def managed_router(runtime: ManagedRuntime):
                    key=idempotency_key, versions=frozen_versions(item))
         return queued(job)
 
+    # --- H4.1: chat contextual -----------------------------------------------------------------
+
+    from harness_local.api.schemas import (
+        ChatConversationCreate, ChatConversationRead, ChatConversationSummaryRead, ChatMessageCreate,
+        ChatProposalAcceptCreate, ChatProposalDismissCreate,
+    )
+
+    def conversation_read(conversation_id: str):
+        runtime.ready()
+        detail = call(runtime.chat.get, conversation_id)
+        project_id = runtime.project_id(detail["root"])
+        actions = detail["actions"] if project_id is not None else []
+        proposals = [{**item, "actions": item["actions"] if project_id is not None else []}
+                     for item in detail["proposals"]]
+        return {**detail, "project_id": project_id, "actions": actions, "proposals": proposals}
+
+    def registered_conversation(conversation_id: str):
+        runtime.ready()
+        project_id = runtime.project_id(call(runtime.chat.root, conversation_id))
+        if project_id is None:
+            raise problem(404, "not_found", "La conversación pertenece a un checkout no registrado en este servicio.")
+        return runtime.projects[project_id]
+
+    @router.get("/projects/{project_id}/conversations", response_model=list[ChatConversationSummaryRead],
+                operation_id="managed_conversations")
+    def conversations(project_id: str):
+        return call(runtime.chat.list, str(project(project_id).context.root))
+
+    @router.post("/projects/{project_id}/conversations", response_model=ChatConversationRead, status_code=201,
+                 operation_id="managed_create_conversation")
+    def create_conversation(project_id: str, body: ChatConversationCreate):
+        """Conversación separada del flujo de ejecución; no encola nada."""
+        context = project(project_id).context
+        return conversation_read(call(runtime.chat.create, context, title=body.title, phase_id=body.phase_id))
+
+    @router.get("/conversations/{conversation_id}", response_model=ChatConversationRead,
+                operation_id="managed_conversation")
+    def conversation(conversation_id: str):
+        return conversation_read(conversation_id)
+
+    @router.post("/conversations/{conversation_id}/messages", response_model=ManagedJobRead, status_code=202,
+                 operation_id="managed_chat_message")
+    def chat_message(conversation_id: str, body: ChatMessageCreate, idempotency_key: IdempotencyKey):
+        """Turno nuevo de solo lectura: mensaje y contexto se congelan al encolar; sin sesión del proveedor."""
+        item = registered_conversation(conversation_id)
+        job = call(runtime.chat.submit_message, item.context, conversation_id, body.expected_version,
+                   key=idempotency_key, versions=frozen_versions(item), text=body.text, documents=body.documents,
+                   run_ids=body.run_ids)
+        return queued(job)
+
+    @router.post("/conversations/{conversation_id}/proposals/{proposal_id}/accept", response_model=ManagedJobRead,
+                 status_code=202, operation_id="managed_chat_accept")
+    def accept_proposal(conversation_id: str, proposal_id: str, body: ChatProposalAcceptCreate,
+                        idempotency_key: IdempotencyKey):
+        """Confirmación explícita del hash mostrado → tarea normal vinculada (planificar, ejecutar, revisar)."""
+        item = registered_conversation(conversation_id)
+        job = call(runtime.chat.accept, item.context, conversation_id, proposal_id, body.expected_version,
+                   key=idempotency_key, versions=frozen_versions(item), proposal_sha256=body.proposal_sha256,
+                   task_id=body.task_id, phase_id=body.phase_id, confirmed=body.confirmed)
+        return queued(job)
+
+    @router.post("/conversations/{conversation_id}/proposals/{proposal_id}/dismiss",
+                 response_model=ChatConversationRead, operation_id="managed_chat_dismiss")
+    def dismiss_proposal(conversation_id: str, proposal_id: str, body: ChatProposalDismissCreate):
+        registered_conversation(conversation_id)
+        call(runtime.chat.dismiss, conversation_id, proposal_id, body.expected_version, reason=body.reason)
+        return conversation_read(conversation_id)
+
     return router

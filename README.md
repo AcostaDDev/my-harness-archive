@@ -36,6 +36,7 @@ ni ejecución automática de proveedores.
 - [Permisos y recuperación H3.2, verificados offline](docs/discovery/H3.2_PERMISSIONS.md).
 - [Fases, preguntas, cierre y tags H3.3, verificados offline](docs/discovery/H3.3_PHASES.md).
 - [Ajustes de fases, lote desatendido y guardia H0/H1 H3.4, verificados offline](docs/discovery/H3.4_PHASE_ADJUSTMENTS.md).
+- [Chat contextual H4.1, verificado offline](docs/discovery/H4.1_CHAT.md).
 - [Smoke cli-3: MCP aceptado, fallo de autenticación Claude](docs/discovery/H2.3_SMOKE_CLI3.md).
 - [Git, worktree y commit acotado H2.4](docs/discovery/H2.4_GIT.md).
 - [Migración a modo gestionado H2.5](docs/discovery/H2.5_MIGRATION.md).
@@ -142,7 +143,7 @@ La API gestionada local (proyectos registrados en el servidor, supervisor opt-in
 idempotencia, versiones y guardia Host/Origin/CSRF) está completada offline: ver
 [entrega y límites](docs/discovery/H2_EXIT_API.md). La UI gestionada local está
 completada offline; [demo, verificación y límites](docs/discovery/H2_EXIT_UI.md).
-H3.4 completado offline (D034); siguiente tarea H4.1, sin iniciar. Ver [corrección y límites](docs/discovery/H2.3_MCP_FIX.md)
+H4.1 completado offline (D035); siguiente tarea: exportación mecánica de STATE/NEXT_STEPS, sin iniciar. Ver [corrección y límites](docs/discovery/H2.3_MCP_FIX.md)
 y [resultado real cli-3](docs/discovery/H2.3_SMOKE_CLI3.md). El consentimiento
 terminó al fallo; otro smoke requiere propuesta y autorización específicas.
 Ver [corrección del entorno](docs/discovery/H2.3_ENV_FIX.md) y
@@ -155,7 +156,7 @@ siguen conservados. La autorización cubrió una ejecución, sin relanzamiento.
 ## Importación legacy de lectura
 
 Migrar con el servicio detenido antes de importar; el esquema actual es
-`0011_phase_amendments`. Comandos comprobados desde la raíz, con datos sintéticos:
+`0012_chat`. Comandos comprobados desde la raíz, con datos sintéticos:
 
 ```sh
 UV_CACHE_DIR=.local/uv-cache uv run --frozen --offline alembic upgrade head
@@ -246,3 +247,9 @@ la definición y abandono explícito. El tag de cierre puede ser anotado
 (`ManagedProject.tag_kind`) con id determinista. La reconciliación con agente es
 una tarea normal limitada a los documentos de la fase, que se adoptan por hash tras
 su commit. [Contrato y límites](docs/discovery/H3.4_PHASE_ADJUSTMENTS.md).
+
+H4.1 añade el chat contextual. Cada mensaje es un turno nuevo de solo lectura (rol
+`chat`, Codex) con el contexto congelado al encolarlo: fase, documentos, runs y
+turnos anteriores. La salida tiene un esquema fijo, sin fallback ni reintento. Una
+propuesta solo crea una tarea normal (planificador, ejecutor, revisión y commit)
+tras una confirmación explícita del hash mostrado. [Contrato y límites](docs/discovery/H4.1_CHAT.md).

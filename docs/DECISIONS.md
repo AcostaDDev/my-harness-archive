@@ -933,3 +933,42 @@ bajo contrato, lo que cambia su id base.
 
 H4.1 queda como siguiente tarea, sin iniciar. Los smokes anteriores siguen sin
 autorización disponible.
+
+## D035 — Chat por turnos nuevos de solo lectura con contexto congelado y propuestas confirmadas
+
+Estado: implementado y verificado offline el 2026-10-13 (punto 2 de D033).
+[Entrega y límites](discovery/H4.1_CHAT.md).
+
+La conversación es autoridad SQLite separada del flujo de ejecución (`0012_chat`):
+conversaciones, turnos y propuestas. Cada turno es un run `chat` con job bajo el
+lock del checkout. Se reutilizan el supervisor, la guardia de modo, la cuarentena y
+el journal de intentos; no se crea otra cola ni otro ejecutor. Se descarta ejecutar
+el turno dentro de la petición HTTP (D028) o en un hilo aparte, porque duplicaría
+la propiedad de procesos y la recuperación. Esperar el lock tiene un coste (un
+turno espera a la tarea en curso), pero cumple la §13: los mensajes recibidos
+durante un intento se encolan.
+
+El contexto explícito se congela en la transacción que encola el turno: proyecto,
+fase, documentos acotados con hash, evidencias de runs y turnos anteriores. Así
+refleja lo que el usuario seleccionó y no cambia si los archivos cambian antes de
+ejecutarse. El prompt renderizado (plantilla `chat-turn` versionada y editable) se
+persiste como intención antes de invocar. Cada turno es una invocación nueva del
+rol `chat`, con Codex en solo lectura, sesión efímera y la selección del
+planificador. App Server/SDK quedan para un incremento posterior. La salida tiene
+un esquema fijo y estricto: un fallo o una salida inválida detienen el turno sin
+fallback ni reintento, y una caída lo deja `UNKNOWN` tras la confirmación
+explícita. Además del sandbox de la CLI, se compara la evidencia del checkout antes
+y después: un cambio invalida el turno y sus propuestas.
+
+Una propuesta no ejecuta nada. Aceptarla exige confirmación, versión y hash exacto,
+y encola una tarea normal con una sección de plan y su origen. Deliberadamente, la
+sección no lleva rutas permitidas ni ejecutor legibles por máquina: el planificador
+fija el contrato con la política del proyecto, y después siguen ejecución, revisión
+y commit H2.4 explícito. El chat no concede permisos, no fija ni amplía contratos y
+no tiene ruta lateral de escritura. No hay encolado automático dentro de un modo
+autorizado; queda para cuando se decida explícitamente.
+
+`chat-turn` se añade al catálogo. Los catálogos congelados antes de H4.1 siguen
+siendo válidos al reanudar (`ADDED_LATER`), sin reescritura. Siguiente tarea:
+exportación mecánica de STATE/NEXT_STEPS (D033 punto 1), sin iniciar; los smokes
+anteriores siguen sin autorización.

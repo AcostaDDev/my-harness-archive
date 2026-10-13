@@ -176,6 +176,8 @@ class ManagedRuntime:
         self.permissions = PermissionRepository(self.repository)
         from harness_local.storage.phases import PhaseRepository
         self.phases = PhaseRepository(self.repository)
+        from harness_local.storage.chat import ChatRepository
+        self.chat = ChatRepository(self.repository)
         self.projects = {project.id: project for project in config.projects}
         if config.supervisor:
             supervisor = LocalSupervisor(self.repository, config.ports_factory, lease_seconds=config.lease_seconds,

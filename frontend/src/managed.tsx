@@ -1,6 +1,7 @@
 import { Permissions } from "./Permissions";
 import { Prompts } from "./Prompts";
 import { Phases } from "./Phases";
+import { Chat } from "./Chat";
 import { useEffect, useRef, useState } from "react";
 import { managed, managedApi, ManagedError, readPending, savePending, jobRequest } from "./managed-api";
 import type { Pending, S } from "./managed-api";
@@ -114,6 +115,7 @@ function Project({ id }: { id: string }) {
       </div>
     </details>
     <Phases project={id} busy={busy || !!pending} refresh={refresh} operate={operate} send={send} />
+    <Chat project={id} busy={busy || !!pending} refresh={refresh} operate={operate} send={send} />
     <h3>Encolar tarea</h3>
     <form onSubmit={e => { e.preventDefault(); if (!pendingRef.current) void operate(() => send(jobRequest(`/projects/${id}/runs`, { task_id: task, phase_id: phase, text }))); }}>
       <div className="form-row"><label>Tarea<input value={task} onChange={e => setTask(e.target.value)} required maxLength={120} /></label>

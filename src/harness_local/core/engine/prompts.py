@@ -16,9 +16,13 @@ VARIABLES = {
     'revise-task': ('INSTRUCTIONS', 'TASK_JSON', 'REVIEW_JSON', 'PROFILE_INSTRUCTIONS'),
     'reconcile-phase': ('PHASE_ID', 'REVIEW_JSON'),
     'close-phase': ('PHASE_ID', 'EVIDENCE_JSON'),
+    'chat-turn': ('CONTEXT_JSON', 'MESSAGE'),
 }
 ROLES = {'plan-task': 'planner', 'review-task': 'reviewer', 'execute-task': 'executor', 'revise-task': 'executor',
-         'close-phase': 'phase'}
+         'close-phase': 'phase', 'chat-turn': 'chat'}
+# H4.1: plantillas añadidas después de H3.1. Los catálogos congelados en runs anteriores no las
+# contienen y siguen siendo válidos al reanudar; los catálogos nuevos siempre las incluyen.
+ADDED_LATER = frozenset({'chat-turn'})
 TOKEN = re.compile(r'{{([A-Z][A-Z0-9_]*)}}')
 
 
@@ -67,7 +71,7 @@ def builtin_catalog() -> dict[str, Template]:
 
 
 def dump_catalog(catalog: dict[str, Template]) -> str:
-    if set(catalog) != set(VARIABLES):
+    if not set(VARIABLES) - ADDED_LATER <= set(catalog) <= set(VARIABLES):
         raise ContractError('Incomplete prompt catalog')
     for name, template in catalog.items():
         template.check()
@@ -99,6 +103,7 @@ def output_schema(role: str) -> dict:
         'executor': {'result': 'string'},
         'phase': {'phase_id': 'string', 'verdict': 'string', 'summary': 'string', 'exit_criteria_results': 'array',
                   'required_actions': 'array', 'blocking_questions': 'array'},
+        'chat': {'answer': 'string', 'references': 'array', 'proposals': 'array'},
     }
     if role not in fields:
         raise ContractError('No output schema for role')
