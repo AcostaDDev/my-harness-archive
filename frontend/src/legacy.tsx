@@ -1,7 +1,7 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import type { ReactNode } from "react";
 import type { components } from "./api.generated";
-import { request } from "./api";
+import { api, request } from "./api";
 
 type Project = components["schemas"]["LegacyProjectRead"];
 type Phase = components["schemas"]["LegacyPhaseRead"];
@@ -208,7 +208,7 @@ function WatchControl({ base }: { base: string }) {
     if (!data) return;
     setSaving(true); setFailure(undefined);
     try {
-      await request<Observation>(`${base}/observation`, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ enabled: !data.enabled }) });
+      await api.setObservation(base, !data.enabled);
       retry();
     } catch (e) { setFailure(e instanceof Error ? e.message : "Error local de observación."); }
     finally { setSaving(false); }

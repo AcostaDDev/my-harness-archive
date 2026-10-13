@@ -1,59 +1,60 @@
-# Siguiente tarea — H3.4: ajustes de fases, lote desatendido y guardia H0/H1
+# Siguiente tarea — H4.1: chat contextual por turnos nuevos de la CLI Codex
 
-H3.3 completado offline el 2026-10-13 (D032):
-[fases, preguntas, cierre y tags](discovery/H3.3_PHASES.md).
-Migración `0010_phases`. 390 pruebas pytest (29 H3.3), 121 subtests, 12 checks
-ligeros, 3 pruebas Node, OpenAPI/tipos/TypeScript/build y recorrido Chrome
-sintético verificados. Sin proveedores ni migración de la SQLite de trabajo.
+H3.4 completado offline el 2026-10-13 (D034). Incluye la guardia H0/H1, el lote
+desatendido con commits, la enmienda y el abandono de fases, los tags anotados y
+la reconciliación con agente. Ver el
+[informe](discovery/H3.4_PHASE_ADJUSTMENTS.md).
 
-El usuario fijó el orden y el alcance en **D033**: H3.4 → H4.1 (chat por CLI,
-turnos nuevos) → exportación mecánica de STATE/NEXT_STEPS → H4.2.
+Estado verificado:
 
-**H3.4 no iniciado.** Los consentimientos de smokes anteriores siguen agotados.
+- migración `0011_phase_amendments`;
+- 408 pruebas pytest (18 de H3.4) y 121 subtests;
+- 12 checks ligeros y 4 pruebas Node;
+- OpenAPI, tipos, TypeScript y build;
+- recorrido en Chrome sobre la demo sintética.
 
-## Objetivo y alcance
+No se usaron proveedores ni se migró la SQLite de trabajo.
 
-Una entrega acotada con los puntos 3–7 de D033, sin iniciar H4.1:
+El orden de D033 sigue siendo: H4.1 → exportación mecánica de STATE/NEXT_STEPS →
+H4.2. **H4.1 no está iniciado.** Los consentimientos de smokes anteriores siguen
+agotados.
 
-1. **Guardia H0/H1:** aplicar Host de loopback, Origin y `X-Harness-Local` a las
-   mutaciones de simulaciones y observación legacy; actualizar cliente y pruebas.
-   La sesión local queda para el hito 5.
-2. **Lote desatendido con commit:** la autorización de lote congela tareas, texto
-   del plan y el alcance explícito «encadenar y confirmar commits». El supervisor
-   encola el commit de cada aceptación elegible y la siguiente tarea tras
-   COMMITTED; se detiene en el primer bloqueo, pregunta, caducidad, revocación o
-   evidencia invalidada. Nunca comprueba ni cierra la fase. Caídas: recuperación
-   H2 explícita, sin repetir efectos inciertos.
-3. **Enmienda y abandono de fase:** nueva versión de definición con motivo y
-   confirmación, conservando la anterior e invalidando READY y lotes; abandono
-   explícito con estado terminal y auditoría.
-4. **Tags configurables:** tipo por proyecto, ligero por defecto. Anotado con
-   mensaje, identidad y fecha fijados en la intención, id determinista y
-   conciliación sin mover ni sobrescribir.
-5. **Reconciliación con agente:** acción que genera una tarea con contrato
-   determinista limitado a los documentos de la fase (plantilla `reconcile-phase`),
-   ejecutada, revisada y confirmada por el flujo normal; la base se adopta después
-   por hash.
-6. Exponer API/UI con versiones, confirmaciones y acciones del servidor.
-7. Caracterizar offline con fakes y Git/SQLite temporales; checks pertinentes,
-   revisión del diff y actualización de STATE/NEXT_STEPS, DECISIONS e informe.
+## Objetivo y alcance (D033 punto 2, backlog H4.1)
+
+1. Conversación separada del flujo de ejecución. Cada turno es una invocación nueva
+   de la CLI de Codex en solo lectura, con contexto explícito: proyecto, fase,
+   documentos y evidencias seleccionadas. La salida es estructurada y tiene un
+   esquema fijo. No se reanudan sesiones del proveedor. App Server/SDK quedan para
+   un incremento posterior.
+2. Persistencia en SQLite de conversaciones, turnos y peticiones congeladas antes
+   del efecto (prompt, contexto, versiones y hashes). Una caída deja el turno con
+   resultado desconocido y no se reintenta solo.
+3. Herramientas solo de lectura y propuestas estructuradas. Una propuesta del tipo
+   «Ajusta X» se convierte, con confirmación explícita, en una tarea vinculada que
+   ejecuta el motor normal (contrato, revisión, commit). El chat nunca modifica la
+   aplicación por una ruta lateral ni concede permisos.
+4. API y UI bajo la guardia local, con versiones, confirmaciones e idempotencia.
+5. Caracterización offline con fakes y SQLite/Git temporales, más los checks
+   pertinentes. Antes de terminar: revisión del diff y actualización de
+   STATE/NEXT_STEPS, DECISIONS e informe.
 
 ## Criterios de aceptación
 
-- Las mutaciones H0/H1 rechazan Host/Origin ajenos y peticiones sin cabecera.
-- Un lote autorizado recorre tarea → aceptación → commit → siguiente tarea sin
-  intervención y se detiene en el primer bloqueo; nunca comprueba ni cierra.
-- Enmendar una definición invalida READY y lotes y conserva la versión anterior.
-- Tags ligeros y anotados se crean una vez, se concilian tras caída y no se mueven.
-- La reconciliación con agente no escribe fuera de los documentos de la fase y
-  pasa por revisión y commit de contenido exacto.
-- Pruebas offline, API/tipos/TypeScript/build pertinentes pasan.
+- Un turno usa una invocación nueva de solo lectura, con contexto y petición
+  congelados antes de invocar. Una salida inválida se detiene sin fallback.
+- Una propuesta confirmada genera una tarea vinculada que ejecuta y revisa el
+  motor. Sin confirmación no se encola nada.
+- El chat no escribe en el checkout ni amplía permisos o contratos.
+- Pasan las pruebas offline y los checks de API, tipos, TypeScript y build
+  pertinentes.
 
 ## Fuera de alcance
 
-Proveedores reales o smokes (D033 punto 8: solo un recorrido completo futuro y
-autorizado), chat H4.1, exportación mecánica de STATE/NEXT_STEPS, bootstrap H4.2,
-segundo perfil H4.3, sesión local, SSE gestionado, políticas editables, registro de
-proyectos por HTTP, integración de rama, push/publicación (lo hace el usuario) y
-distribución. No lanzar colaboración automática ni usar el harness para
-desarrollar el repo.
+- Proveedores reales o smokes: requieren autorización específica. Según D033
+  punto 8, habrá un único recorrido completo futuro.
+- App Server/SDK.
+- Exportación mecánica de STATE/NEXT_STEPS y bootstrap H4.2.
+- Sesión local, SSE gestionado y guardia de lecturas H0/H1.
+- Push y publicación: los hace el usuario.
+
+No lanzar colaboración automática ni usar el harness para desarrollar el repo.

@@ -40,6 +40,8 @@ class ManagedProject:
     context: ProjectContext
     versions: Mapping[str, str | None]
     permission_authority: Mapping | None = None
+    # H3.4: tipo del tag de cierre de fase; ligero por defecto, anotado con intención determinista.
+    tag_kind: str = "lightweight"
 
 
 @dataclass(frozen=True)
@@ -86,6 +88,8 @@ def _validate(config: ManagedConfig, database: Path, migrations_dir: Path) -> No
             raise ValueError(f"Dos proyectos comparten la raíz {project.context.root}")
         ids.add(project.id)
         roots.add(project.context.root)
+        if project.tag_kind not in ("lightweight", "annotated"):
+            raise ValueError(f"Tipo de tag de fase inválido para {project.id}: {project.tag_kind!r}")
         if not isinstance(project.versions, Mapping) or not REQUIRED_VERSIONS <= project.versions.keys():
             raise ValueError(f"Versiones explícitas incompletas para {project.id}; desconocidas como null")
         if project.permission_authority is not None:

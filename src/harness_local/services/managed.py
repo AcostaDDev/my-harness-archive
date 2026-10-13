@@ -82,6 +82,9 @@ class LocalSupervisor:
 
     def run_once(self):
         self.repository.recover_expired()
+        # H3.4: el lote desatendido encola su siguiente paso antes de reclamar; nunca comprueba ni cierra.
+        from harness_local.storage.phases import advance_batches
+        advance_batches(self.repository)
         claim = self.repository.claim(lease_seconds=self.lease_seconds)
         if claim is None:
             return None
@@ -122,7 +125,8 @@ class LocalSupervisor:
                 git = self.commit_factory(context, versions)
                 snapshot = PhaseRepository(self.repository).snapshot(claim.run_id)
                 if request["action"] == "phase_close":
-                    history, phase = close_phase(context, record.history, snapshot, git, journal)
+                    history, phase = close_phase(context, record.history, snapshot, git, journal,
+                                                 now=self.repository.clock)
                 else:
                     agents, commands, _ = self.ports_factory(context, versions)
                     if hasattr(agents, "bind_process_journal"):
@@ -146,7 +150,7 @@ class LocalSupervisor:
                                        prompts=PromptRepository(self.repository.engine).catalog)
                 if request["action"] == "start":
                     history = engine.start(context, request["task_id"], request["phase_id"], request["text"],
-                                           history=record.history)
+                                           history=record.history, contract=request.get("contract_json"))
                 else:
                     history = engine.resume(context, record.history, retry_executor=request["action"] == "retry")
             self.repository.close_owner(claim)

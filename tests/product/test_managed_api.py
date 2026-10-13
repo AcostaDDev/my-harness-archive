@@ -227,7 +227,8 @@ def test_http_flow_executes_reviews_and_commits_once_across_double_submit_and_re
     ports = Ports([edit, review()])
     with client(url, tmp_path, config(task, ports)) as http:
         assert http.get("/api/managed/projects").json() == [{
-            "id": "synthetic", "root": str(task.root), "profile": "synthetic", "versions": VERSIONS}]
+            "id": "synthetic", "root": str(task.root), "profile": "synthetic", "versions": VERSIONS,
+            "tag_kind": "lightweight"}]
         assert http.get("/api/managed/supervisor").json() == {
             "enabled": True, "alive": True, "last_error": None, "ports_configured": True,
             "commit_writer_configured": True}

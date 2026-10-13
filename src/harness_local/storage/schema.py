@@ -3,7 +3,7 @@ from sqlalchemy.engine import Engine
 from sqlalchemy.exc import SQLAlchemyError
 
 
-SCHEMA_REVISION = "0010_phases"
+SCHEMA_REVISION = "0011_phase_amendments"
 
 
 def require_schema(engine: Engine) -> None:

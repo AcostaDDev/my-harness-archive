@@ -1,16 +1,17 @@
 from typing import Annotated
 
-from fastapi import APIRouter, Header, HTTPException, Query, Request
+from fastapi import APIRouter, Depends, Header, HTTPException, Query, Request
 from fastapi.responses import StreamingResponse
 from sqlalchemy.orm import Session
 
 from harness_local.api.events import event_frames
+from harness_local.api.security import local_request
 from harness_local.storage.observation import SQLiteObservationRepository
 
 from harness_local.adapters.evidence import read_content
 from harness_local.api.schemas import (
     EvidenceContentRead, EvidenceEntriesRead, LegacyArtifactRead, LegacyPhaseRead,
-    LegacyProjectRead, LegacyRunRead, LegacyTaskRead, Page,
+    LegacyProjectRead, LegacyRunRead, LegacyTaskRead, Page, ProblemResponse,
     ObservationUpdate, ObservationRead, LegacyUpdatesRead,
 )
 from harness_local.storage.navigation import SQLiteLegacyNavigation, identifier
@@ -64,7 +65,8 @@ def legacy_router(engine):
         return lookup(observation.status, root(project_id))
 
     @router.put("/projects/{project_id}/observation", response_model=ObservationRead,
-                operation_id="legacy_set_observation")
+                operation_id="legacy_set_observation", dependencies=[Depends(local_request)],
+                responses={403: {"model": ProblemResponse}})
     def set_observation(project_id: str, body: ObservationUpdate):
         try:
             return lookup(observation.set_watch, root(project_id), body.enabled)

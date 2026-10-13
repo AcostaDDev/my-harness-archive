@@ -260,7 +260,8 @@ class PhaseRow(Base):
     """Autoridad H3.3 de una fase: definición congelada, base documental adoptada y estado."""
     __tablename__ = 'managed_phases'
     __table_args__ = (UniqueConstraint('root', 'code'),
-                      Index('uq_managed_phases_open_root', 'root', unique=True, sqlite_where=text("status != 'CLOSED'")))
+                      Index('uq_managed_phases_open_root', 'root', unique=True,
+                            sqlite_where=text("status NOT IN ('CLOSED', 'ABANDONED')")))
     id: Mapped[str] = mapped_column(String(36), primary_key=True)
     root: Mapped[str] = mapped_column(String)
     code: Mapped[str] = mapped_column(String(120))
@@ -271,6 +272,24 @@ class PhaseRow(Base):
     version: Mapped[int] = mapped_column(Integer)
     created_at: Mapped[str] = mapped_column(String(40))
     updated_at: Mapped[str] = mapped_column(String(40))
+    definition_number: Mapped[int] = mapped_column(Integer, server_default='1')
+
+
+class PhaseDefinitionRow(Base):
+    """H3.4: cada versión de la definición se conserva; una enmienda nunca reescribe la anterior."""
+    __tablename__ = 'phase_definitions'
+    __table_args__ = (UniqueConstraint('phase_id', 'number'),)
+    id: Mapped[str] = mapped_column(String(36), primary_key=True)
+    phase_id: Mapped[str] = mapped_column(ForeignKey('managed_phases.id'))
+    number: Mapped[int] = mapped_column(Integer)
+    definition: Mapped[dict] = mapped_column(JSON)
+    definition_sha256: Mapped[str] = mapped_column(String(64))
+    documents: Mapped[dict] = mapped_column(JSON)
+    # created | amended | migrated (fila previa a H3.4: sin motivo ni identidad registrados).
+    origin: Mapped[str] = mapped_column(String(20))
+    reason: Mapped[str | None] = mapped_column(Text, nullable=True)
+    actor: Mapped[dict | None] = mapped_column(JSON, nullable=True)
+    created_at: Mapped[str] = mapped_column(String(40))
 
 
 class PhaseQuestionRow(Base):

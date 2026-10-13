@@ -3,14 +3,15 @@ from contextlib import asynccontextmanager
 from pathlib import Path
 from uuid import UUID
 
-from fastapi import FastAPI, HTTPException
+from fastapi import Depends, FastAPI, HTTPException
 from fastapi.staticfiles import StaticFiles
 from sqlalchemy import text
 
 from harness_local.adapters.fake import FakeSimulationAdapter
 from harness_local.api.legacy import legacy_router
 from harness_local.api.managed import managed_router
-from harness_local.api.schemas import HealthRead, SimulationCreate, SimulationRead
+from harness_local.api.schemas import HealthRead, ProblemResponse, SimulationCreate, SimulationRead
+from harness_local.api.security import local_request
 from harness_local.core.simulation import SimulationService
 from harness_local.storage.database import database_url, make_engine
 from harness_local.storage.repository import SQLiteSimulationRepository
@@ -61,8 +62,10 @@ def create_app(url: str | None = None, ui_dir: Path | None = None,
     def list_simulations():
         return service.list()
 
+    # H3.4 (D033): las mutaciones H0/H1 comparten la guardia local de /api/managed.
     @app.post("/api/simulations", response_model=SimulationRead, status_code=201,
-              operation_id="create_simulation")
+              operation_id="create_simulation", dependencies=[Depends(local_request)],
+              responses={403: {"model": ProblemResponse}})
     def create_simulation(request: SimulationCreate):
         return service.create(request.title)
 

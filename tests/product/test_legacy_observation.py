@@ -25,6 +25,9 @@ from harness_local.storage.observation import SQLiteObservationRepository
 FIXTURES = Path(__file__).resolve().parents[1] / "fixtures/legacy"
 
 
+LOCAL = {"base_url": "http://127.0.0.1:8013", "headers": {"X-Harness-Local": "1"}}  # guardia local D033
+
+
 @pytest.fixture
 def observation(migrated_database, tmp_path):
     url, config = migrated_database
@@ -254,7 +257,7 @@ def test_concurrent_identical_imports_publish_once(observation):
 def test_api_controls_cursor_validation_and_metadata(observation, tmp_path):
     root, _, _, _, url, _ = observation
     base = f"/api/legacy/projects/{identifier(str(root))}"
-    with TestClient(create_app(url, tmp_path)) as client:
+    with TestClient(create_app(url, tmp_path), **LOCAL) as client:
         assert client.get(base + "/observation").json() == {"enabled": False, "diagnostic": None}
         assert client.put(base + "/observation", json={"enabled": True}).json()["enabled"] is True
         assert client.put(base + "/observation", json={"enabled": "yes"}).status_code == 422

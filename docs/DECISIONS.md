@@ -883,3 +883,53 @@ nada de lo siguiente está implementado salvo lo que ya recoge D032.
 9. **Push:** lo hace el usuario; las sesiones no publican.
 10. **Orden:** H3.4 (puntos 3–7) → H4.1 (punto 2) → exportación mecánica de
     STATE/NEXT_STEPS (punto 1) → H4.2.
+
+## D034 — Lote desatendido derivado del estado, definiciones versionadas y tags anotados deterministas
+
+Estado: implementado y verificado offline el 2026-10-13 (puntos 3–7 de D033).
+[Entrega y límites](discovery/H3.4_PHASE_ADJUSTMENTS.md).
+
+La guardia local (Host de loopback, Origin local y `X-Harness-Local: 1`) se comparte
+desde `api/security.py` y se aplica a las mutaciones H0/H1 (simulaciones y
+observación legacy). La guardia se ejecuta antes de buscar el recurso. Las lecturas
+H0/H1 quedan fuera de este alcance y la sesión local sigue pendiente (hito 5).
+
+El lote desatendido es una autorización con el alcance explícito
+`chain_commits`. Congela tareas, plan, definición, contexto y versiones. El
+supervisor lo conduce en `run_once`, antes de reclamar, con un paso por tick. Cada
+paso se deriva del estado SQLite y usa claves idempotentes deterministas
+(`batch:{auth}:start|commit:…`). No se usa ningún hilo ni cola nueva. Se descarta
+encadenar dentro de `finish`, porque mezclaría lecturas de modo en disco con la
+transacción de cierre del job.
+
+El lote se detiene en el primer bloqueo, pregunta, caducidad, revocación, cambio de
+definición, fase no `ACTIVE`, cuarentena o commit no completado. No adopta runs
+iniciados fuera de él y nunca comprueba ni cierra la fase. Su excepción a D026 se
+limita a encolar el commit H2.4 de una aceptación elegible que el propio lote
+inició; el commit sigue revalidando el contenido exacto.
+
+La definición de fase se versiona en `phase_definitions` (migración 0011). Una
+enmienda crea una versión nueva y conserva la anterior. Mantiene el código, exige
+motivo y confirmación, invalida READY y los lotes activos, y adopta con su hash
+actual los documentos añadidos, que quedan auditados. `ABANDONED` es un estado
+terminal explícito y auditado que libera el checkout. Las filas anteriores se
+marcan como `migrated`, sin inferir motivo ni identidad.
+
+El tipo de tag es configuración del proyecto en el servidor (`ManagedProject.tag_kind`,
+ligero por defecto) y queda congelado en la autorización de cierre. Un tag anotado
+fija en la intención mensaje, identidad del escritor Git y fecha, junto con el id
+del objeto calculado antes del efecto. El mensaje no incluye el id de la
+operación. Un cierre explícito posterior reutiliza la intención incierta del mismo
+READY, así que obtiene el mismo objeto y concilia. Nunca se mueve ni se sobrescribe
+un tag, tampoco uno ligero existente.
+
+La reconciliación con agente es una tarea normal (`<fase>-RECONCILE-<n>`) con un
+contrato determinista del servidor, sin planificador. El contrato limita
+`allowed_paths` a los documentos de la fase y usa como instrucciones la plantilla
+`reconcile-phase` renderizada, con su id y hash registrados. Hay una tarea abierta
+como máximo. La base se adopta por hash solo después de su commit `COMMITTED`, y
+el origen queda registrado. La plantilla se reescribe para describir la ejecución
+bajo contrato, lo que cambia su id base.
+
+H4.1 queda como siguiente tarea, sin iniciar. Los smokes anteriores siguen sin
+autorización disponible.

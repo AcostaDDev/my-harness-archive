@@ -796,7 +796,7 @@ export interface paths {
         put?: never;
         /**
          * Authorize Batch
-         * @description Solo lote: nunca autoriza check ni cierre.
+         * @description Solo lote: nunca autoriza check ni cierre. Con `chain_commits`, el supervisor encadena tareas y commits.
          */
         post: operations["managed_phase_authorize_batch"];
         delete?: never;
@@ -833,6 +833,63 @@ export interface paths {
         put?: never;
         /** Batch Next */
         post: operations["managed_phase_batch_next"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/managed/phases/{phase_id}/amend": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Amend Phase
+         * @description Nueva versión de la definición (la anterior se conserva); invalida READY y lotes vigentes.
+         */
+        post: operations["managed_phase_amend"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/managed/phases/{phase_id}/abandon": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Abandon Phase */
+        post: operations["managed_phase_abandon"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/managed/phases/{phase_id}/reconcile-task": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Reconcile Task
+         * @description Tarea normal con contrato determinista limitado a los documentos; sin adopción automática.
+         */
+        post: operations["managed_phase_reconcile_task"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1344,6 +1401,11 @@ export interface components {
             versions: {
                 [key: string]: string | null;
             };
+            /**
+             * Tag Kind
+             * @enum {string}
+             */
+            tag_kind: "lightweight" | "annotated";
         };
         /** ManagedRunRead */
         ManagedRunRead: {
@@ -1638,6 +1700,40 @@ export interface components {
             /** Supersedes */
             supersedes: string | null;
         };
+        /** PhaseAbandonCreate */
+        PhaseAbandonCreate: {
+            /** Expected Version */
+            expected_version: number;
+            /** Reason */
+            reason: string;
+            /**
+             * Confirmed
+             * @constant
+             */
+            confirmed: true;
+        };
+        /** PhaseAmendCreate */
+        PhaseAmendCreate: {
+            /** Expected Version */
+            expected_version: number;
+            /** Objective */
+            objective: string;
+            /** Exit Criteria */
+            exit_criteria: string[];
+            /** Tasks */
+            tasks: string[];
+            /** Documents */
+            documents: string[];
+            /** Tag */
+            tag?: string | null;
+            /** Reason */
+            reason: string;
+            /**
+             * Confirmed
+             * @constant
+             */
+            confirmed: true;
+        };
         /** PhaseAnswerCreate */
         PhaseAnswerCreate: {
             /** Expected Version */
@@ -1703,6 +1799,17 @@ export interface components {
              * @constant
              */
             confirmed: true;
+            /**
+             * Chain Commits
+             * @description Alcance explícito «encadenar tareas y confirmar commits»: el supervisor encola cada tarea, el commit de cada aceptación elegible y la siguiente tarea; se detiene en el primer bloqueo. Nunca comprueba ni cierra.
+             * @default false
+             */
+            chain_commits: boolean;
+            /**
+             * Text
+             * @description Texto del plan congelado; obligatorio solo con chain_commits.
+             */
+            text?: string | null;
         };
         /** PhaseBatchNextCreate */
         PhaseBatchNextCreate: {
@@ -1765,6 +1872,34 @@ export interface components {
             /** Tag */
             tag?: string | null;
         };
+        /** PhaseDefinitionRead */
+        PhaseDefinitionRead: {
+            /** Number */
+            number: number;
+            /** Definition */
+            definition: {
+                [key: string]: unknown;
+            };
+            /** Definition Sha256 */
+            definition_sha256: string;
+            /** Documents */
+            documents: {
+                [key: string]: string | null;
+            };
+            /**
+             * Origin
+             * @enum {string}
+             */
+            origin: "created" | "amended" | "migrated";
+            /** Reason */
+            reason: string | null;
+            /** Actor */
+            actor: {
+                [key: string]: unknown;
+            } | null;
+            /** Created At */
+            created_at: string;
+        };
         /** PhaseDocumentsRead */
         PhaseDocumentsRead: {
             /** Baseline */
@@ -1788,7 +1923,7 @@ export interface components {
              * Kind
              * @enum {string}
              */
-            kind: "check" | "close" | "reconcile";
+            kind: "check" | "close" | "reconcile" | "reconcile_task" | "amend" | "abandon";
             /** Run Id */
             run_id: string | null;
             /** Status */
@@ -1855,11 +1990,20 @@ export interface components {
             };
             /** Definition Sha256 */
             definition_sha256: string;
+            /** Definition Number */
+            definition_number: number;
+            /** Definitions */
+            definitions: components["schemas"]["PhaseDefinitionRead"][];
+            /**
+             * Tag Kind
+             * @description Tipo de tag que fijará el cierre según el proyecto registrado; null si no está registrado.
+             */
+            tag_kind: ("lightweight" | "annotated") | null;
             /**
              * Status
              * @enum {string}
              */
-            status: "ACTIVE" | "CHECKING" | "READY_TO_CLOSE" | "NEEDS_RECONCILIATION" | "BLOCKED" | "CLOSING" | "CLOSED";
+            status: "ACTIVE" | "CHECKING" | "READY_TO_CLOSE" | "NEEDS_RECONCILIATION" | "BLOCKED" | "CLOSING" | "CLOSED" | "ABANDONED";
             /** Version */
             version: number;
             /** Created At */
@@ -1881,7 +2025,7 @@ export interface components {
             authorizations: components["schemas"]["PhaseAuthorizationRead"][];
             ready: components["schemas"]["PhaseReadyRead"] | null;
             /** Actions */
-            actions: ("check" | "reconcile" | "close" | "question" | "authorize_batch" | "batch_next")[];
+            actions: ("check" | "reconcile" | "reconcile_task" | "close" | "question" | "authorize_batch" | "batch_next" | "amend" | "abandon")[];
         };
         /** PhaseReadyRead */
         PhaseReadyRead: {
@@ -1910,6 +2054,11 @@ export interface components {
              */
             confirmed: true;
         };
+        /** PhaseReconcileTaskCreate */
+        PhaseReconcileTaskCreate: {
+            /** Expected Version */
+            expected_version: number;
+        };
         /** PhaseRevokeCreate */
         PhaseRevokeCreate: {
             /** Expected Version */
@@ -1929,7 +2078,7 @@ export interface components {
              * Status
              * @enum {string}
              */
-            status: "ACTIVE" | "CHECKING" | "READY_TO_CLOSE" | "NEEDS_RECONCILIATION" | "BLOCKED" | "CLOSING" | "CLOSED";
+            status: "ACTIVE" | "CHECKING" | "READY_TO_CLOSE" | "NEEDS_RECONCILIATION" | "BLOCKED" | "CLOSING" | "CLOSED" | "ABANDONED";
             /** Version */
             version: number;
             /** Created At */
@@ -2237,7 +2386,10 @@ export interface operations {
     legacy_set_observation: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Obligatoria con valor 1 en mutaciones (protección CSRF). */
+                "x-harness-local"?: string | null;
+            };
             path: {
                 project_id: string;
             };
@@ -2256,6 +2408,15 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ObservationRead"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
                 };
             };
             /** @description Validation Error */
@@ -5102,6 +5263,203 @@ export interface operations {
             };
         };
     };
+    managed_phase_amend: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Obligatoria con valor 1 en mutaciones (protección CSRF). */
+                "x-harness-local"?: string | null;
+            };
+            path: {
+                phase_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PhaseAmendCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PhaseRead"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+        };
+    };
+    managed_phase_abandon: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Obligatoria con valor 1 en mutaciones (protección CSRF). */
+                "x-harness-local"?: string | null;
+            };
+            path: {
+                phase_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PhaseAbandonCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PhaseRead"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+        };
+    };
+    managed_phase_reconcile_task: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Misma clave y misma acción devuelven el mismo job. */
+                "Idempotency-Key": string;
+                /** @description Obligatoria con valor 1 en mutaciones (protección CSRF). */
+                "x-harness-local"?: string | null;
+            };
+            path: {
+                phase_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PhaseReconcileTaskCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ManagedJobRead"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+        };
+    };
     health: {
         parameters: {
             query?: never;
@@ -5145,7 +5503,10 @@ export interface operations {
     create_simulation: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Obligatoria con valor 1 en mutaciones (protección CSRF). */
+                "x-harness-local"?: string | null;
+            };
             path?: never;
             cookie?: never;
         };
@@ -5162,6 +5523,15 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["SimulationRead"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
                 };
             };
             /** @description Validation Error */

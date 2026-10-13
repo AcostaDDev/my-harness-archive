@@ -159,6 +159,7 @@ class ManagedProjectRead(BaseModel):
     root: str
     profile: str
     versions: dict[str, str | None]
+    tag_kind: Literal["lightweight", "annotated"]
 
 
 ActivationStatus = Literal["PREPARING", "ACTIVE", "FAILED", "REVERTING", "REVERTED"]
@@ -456,8 +457,10 @@ class PermissionRequestRead(BaseModel):
     supersedes: str | None
 
 
-PhaseStatus = Literal['ACTIVE', 'CHECKING', 'READY_TO_CLOSE', 'NEEDS_RECONCILIATION', 'BLOCKED', 'CLOSING', 'CLOSED']
-PhaseAction = Literal['check', 'reconcile', 'close', 'question', 'authorize_batch', 'batch_next']
+PhaseStatus = Literal['ACTIVE', 'CHECKING', 'READY_TO_CLOSE', 'NEEDS_RECONCILIATION', 'BLOCKED', 'CLOSING', 'CLOSED',
+                      'ABANDONED']
+PhaseAction = Literal['check', 'reconcile', 'reconcile_task', 'close', 'question', 'authorize_batch', 'batch_next',
+                      'amend', 'abandon']
 
 
 class PhaseCreate(BaseModel):
@@ -500,7 +503,7 @@ class PhaseQuestionRead(BaseModel):
 
 class PhaseOperationRead(BaseModel):
     id: str
-    kind: Literal['check', 'close', 'reconcile']
+    kind: Literal['check', 'close', 'reconcile', 'reconcile_task', 'amend', 'abandon']
     run_id: str | None
     status: str
     previous_status: str
@@ -532,6 +535,17 @@ class PhaseReadyRead(BaseModel):
     stale_reasons: list[str]
 
 
+class PhaseDefinitionRead(BaseModel):
+    number: int
+    definition: dict[str, Any]
+    definition_sha256: str
+    documents: dict[str, str | None]
+    origin: Literal['created', 'amended', 'migrated']
+    reason: str | None
+    actor: dict[str, Any] | None
+    created_at: str
+
+
 class PhaseRead(BaseModel):
     id: str
     project_id: str | None
@@ -539,6 +553,10 @@ class PhaseRead(BaseModel):
     code: str
     definition: dict[str, Any]
     definition_sha256: str
+    definition_number: int
+    definitions: list[PhaseDefinitionRead]
+    tag_kind: Literal['lightweight', 'annotated'] | None = Field(
+        description='Tipo de tag que fijará el cierre según el proyecto registrado; null si no está registrado.')
     status: PhaseStatus
     version: int
     created_at: str
@@ -590,6 +608,30 @@ class PhaseBatchCreate(PhaseVersioned):
     ttl_seconds: int = Field(ge=1, le=86400)
     reason: str = Field(min_length=1, max_length=2000)
     confirmed: Literal[True]
+    chain_commits: bool = Field(default=False, description=(
+        'Alcance explícito «encadenar tareas y confirmar commits»: el supervisor encola cada tarea, el commit de '
+        'cada aceptación elegible y la siguiente tarea; se detiene en el primer bloqueo. Nunca comprueba ni cierra.'))
+    text: str | None = Field(default=None, min_length=1, max_length=200_000,
+                             description='Texto del plan congelado; obligatorio solo con chain_commits.')
+
+
+class PhaseAmendCreate(PhaseVersioned):
+    objective: str = Field(min_length=1, max_length=4000)
+    exit_criteria: list[str] = Field(min_length=1, max_length=100)
+    tasks: list[str] = Field(max_length=200)
+    documents: list[str] = Field(min_length=1, max_length=50)
+    tag: str | None = Field(default=None, max_length=100)
+    reason: str = Field(min_length=1, max_length=2000)
+    confirmed: Literal[True]
+
+
+class PhaseAbandonCreate(PhaseVersioned):
+    reason: str = Field(min_length=1, max_length=2000)
+    confirmed: Literal[True]
+
+
+class PhaseReconcileTaskCreate(PhaseVersioned):
+    pass
 
 
 class PhaseRevokeCreate(PhaseVersioned):

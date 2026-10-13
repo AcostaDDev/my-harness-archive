@@ -11,6 +11,9 @@ from harness_local.api.app import create_app
 from harness_local.storage.database import make_engine
 
 
+LOCAL = {"base_url": "http://127.0.0.1:8013", "headers": {"X-Harness-Local": "1"}}  # guardia local D033
+
+
 def test_migration_wal_and_round_trip(migrated_database):
     url, config = migrated_database
     engine = make_engine(url)
@@ -18,7 +21,7 @@ def test_migration_wal_and_round_trip(migrated_database):
         with engine.connect() as connection:
             assert connection.scalar(text("PRAGMA journal_mode")) == "wal"
             assert connection.scalar(text("PRAGMA foreign_keys")) == 1
-            assert connection.scalar(text("SELECT version_num FROM alembic_version")) == "0010_phases"
+            assert connection.scalar(text("SELECT version_num FROM alembic_version")) == "0011_phase_amendments"
         command.check(config)
         command.downgrade(config, "base")
         assert "simulations" not in inspect(engine).get_table_names()
@@ -30,7 +33,7 @@ def test_migration_wal_and_round_trip(migrated_database):
 
 def test_simulation_survives_application_restart(migrated_database, tmp_path):
     url, _ = migrated_database
-    with TestClient(create_app(url, tmp_path)) as client:
+    with TestClient(create_app(url, tmp_path), **LOCAL) as client:
         assert client.get("/api/health").json() == {"status": "ok", "mode": "simulation"}
         assert client.get("/api/simulations").json() == []
         response = client.post("/api/simulations", json={"title": "  Recorrido sintético  "})
@@ -41,7 +44,7 @@ def test_simulation_survives_application_restart(migrated_database, tmp_path):
         assert created["title"] == "Recorrido sintético"
         assert len(created["events"]) == 3
         assert "tokens" not in created and "cost" not in created and "model" not in created
-    with TestClient(create_app(url, tmp_path)) as restarted:
+    with TestClient(create_app(url, tmp_path), **LOCAL) as restarted:
         assert restarted.get(f"/api/simulations/{created['id']}").json() == created
         assert restarted.get("/api/simulations").json() == [created]
 
@@ -52,7 +55,7 @@ def test_simulation_survives_application_restart(migrated_database, tmp_path):
 ])
 def test_invalid_requests_do_not_create_rows(migrated_database, tmp_path, payload):
     url, _ = migrated_database
-    with TestClient(create_app(url, tmp_path)) as client:
+    with TestClient(create_app(url, tmp_path), **LOCAL) as client:
         assert client.post("/api/simulations", json=payload).status_code == 422
         assert client.get("/api/simulations").json() == []
         assert client.get(f"/api/simulations/{uuid4()}").status_code == 404
@@ -62,7 +65,7 @@ def test_invalid_requests_do_not_create_rows(migrated_database, tmp_path, payloa
 def test_startup_requires_explicit_migration(tmp_path):
     url = f"sqlite:///{tmp_path / 'unmigrated.sqlite3'}"
     with pytest.raises(RuntimeError, match="alembic upgrade head"):
-        with TestClient(create_app(url, tmp_path)):
+        with TestClient(create_app(url, tmp_path), **LOCAL):
             pass
     engine = make_engine(url)
     try:
@@ -82,7 +85,7 @@ def test_exported_openapi_matches_runtime_without_database_side_effects(tmp_path
 def test_serves_local_ui_without_masking_api_routes(migrated_database, tmp_path):
     url, _ = migrated_database
     (tmp_path / "index.html").write_text("<!doctype html><title>UI sintética</title>")
-    with TestClient(create_app(url, tmp_path)) as client:
+    with TestClient(create_app(url, tmp_path), **LOCAL) as client:
         assert "UI sintética" in client.get("/").text
         assert client.get("/api/simulations").json() == []
         assert client.get("/api/nonexistent").status_code == 404

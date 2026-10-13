@@ -68,7 +68,8 @@ class OfflineEngine:
         return history
 
     def start(self, context: ProjectContext, task_id: str, phase_id: str, text: str,
-              *, history: RunHistory | None = None) -> RunHistory:
+              *, history: RunHistory | None = None, contract: str | None = None) -> RunHistory:
+        """`contract`: contrato determinista ya congelado por el servidor (H3.4); no se llama al planificador."""
         self.resuming = False
         history = history or RunHistory(str(uuid4()), context_snapshot(context))
         if (history.context_json != context_snapshot(context) or history.task_json is not None
@@ -80,7 +81,11 @@ class OfflineEngine:
             return history
         self._checkpoint(history, "planner")
         try:
-            if context.policy.planning_mode != "agent":
+            if contract is not None:
+                if task_contract(context, json.loads(contract), task_id, phase_id) != contract:
+                    raise ContractError("Server contract must be frozen canonical JSON")
+                history = replace(history, task_json=contract)
+            elif context.policy.planning_mode != "agent":
                 try:
                     contract = deterministic_task(context, task_id, phase_id, text)
                 except IncompleteContract:

@@ -9,9 +9,8 @@ diagnóstico; la biblioteca garantiza que no quedan efectos parciales.
 """
 
 from typing import Annotated
-from urllib.parse import urlsplit
 
-from fastapi import APIRouter, Depends, Header, HTTPException, Query, Request
+from fastapi import APIRouter, Depends, Header, Query
 from pydantic import Field
 
 from harness_local.api.schemas import (
@@ -21,46 +20,17 @@ from harness_local.api.schemas import (
     ManagedEventsRead, ManagedJobRead, ManagedProjectRead, ManagedRunRead, ManagedRunSummaryRead,
     MigrationPreviewRead, ModeRead, Page, ProblemResponse, RunActionCreate, RunCreate, SupervisorRead,
 )
+from harness_local.api.security import local_request, problem
 from harness_local.core.migration import MigrationError
 from harness_local.services.managed_runtime import ManagedRuntime
 from harness_local.storage.managed import Conflict, OwnershipLost
 from harness_local.storage.migration import ModeConflict
-
-LOOPBACK_HOSTS = frozenset({"127.0.0.1", "localhost", "::1"})
-SAFE_METHODS = frozenset({"GET", "HEAD", "OPTIONS"})
 
 Offset = Annotated[int, Query(ge=0, le=2**53 - 1)]
 Limit = Annotated[int, Query(ge=1, le=100)]
 IdempotencyKey = Annotated[str, Header(alias="Idempotency-Key", min_length=1, max_length=200,
                                        description="Misma clave y misma acción devuelven el mismo job.")]
 ERRORS = {status: {"model": ProblemResponse} for status in (403, 404, 409, 422)}
-
-
-def problem(status: int, code: str, diagnostic: str) -> HTTPException:
-    return HTTPException(status, {"code": code, "diagnostic": diagnostic})
-
-
-def _hostname(value: str | None) -> str | None:
-    try:
-        return urlsplit(f"//{value}").hostname if value else None
-    except ValueError:
-        return None
-
-
-def local_request(request: Request, x_harness_local: Annotated[str | None, Header(
-        description="Obligatoria con valor 1 en mutaciones (protección CSRF).")] = None) -> None:
-    """Rechaza DNS rebinding (Host), peticiones cruzadas (Origin) y formularios ajenos (cabecera propia)."""
-    if _hostname(request.headers.get("host")) not in LOOPBACK_HOSTS:
-        raise problem(403, "host_rejected", "El servicio gestionado solo atiende nombres de loopback.")
-    if request.method in SAFE_METHODS:
-        return
-    origin = request.headers.get("origin")
-    if origin is not None:
-        parsed = urlsplit(origin)
-        if parsed.scheme not in {"http", "https"} or _hostname(parsed.netloc) not in LOOPBACK_HOSTS:
-            raise problem(403, "origin_rejected", "Origen no local para una mutación gestionada.")
-    if x_harness_local != "1":
-        raise problem(403, "csrf_header_required", "Las mutaciones exigen la cabecera X-Harness-Local: 1.")
 
 
 def call(operation, /, *args, **kwargs):
@@ -95,7 +65,7 @@ def managed_router(runtime: ManagedRuntime):
 
     def project_read(project):
         return {"id": project.id, "root": str(project.context.root), "profile": project.context.profile.name,
-                "versions": dict(project.versions)}
+                "versions": dict(project.versions), "tag_kind": project.tag_kind}
 
     def project(project_id: str):
         return call(runtime.project, project_id)
@@ -332,8 +302,9 @@ def managed_router(runtime: ManagedRuntime):
     # --- H3.3: fases ----------------------------------------------------------------
 
     from harness_local.api.schemas import (
-        PhaseAnswerCreate, PhaseBatchCreate, PhaseBatchNextCreate, PhaseCheckCreate, PhaseCloseCreate, PhaseCreate,
-        PhaseQuestionCreate, PhaseRead, PhaseReconcileCreate, PhaseRevokeCreate, PhaseSummaryRead,
+        PhaseAbandonCreate, PhaseAmendCreate, PhaseAnswerCreate, PhaseBatchCreate, PhaseBatchNextCreate,
+        PhaseCheckCreate, PhaseCloseCreate, PhaseCreate, PhaseQuestionCreate, PhaseRead, PhaseReconcileCreate,
+        PhaseReconcileTaskCreate, PhaseRevokeCreate, PhaseSummaryRead,
     )
     from harness_local.core.engine.phases import document_hashes
 
@@ -353,8 +324,9 @@ def managed_router(runtime: ManagedRuntime):
         if current is None:
             actions = [a for a in actions if a != "reconcile"]
         if runtime.config.commit_factory is None:
-            actions = [a for a in actions if a not in ("check", "close")]
-        return {**detail, "project_id": project_id, "actions": actions}
+            actions = [a for a in actions if a not in ("check", "close", "reconcile_task")]
+        tag_kind = runtime.projects[project_id].tag_kind if project_id is not None else None
+        return {**detail, "project_id": project_id, "actions": actions, "tag_kind": tag_kind}
 
     def registered_phase(phase_id: str):
         detail = phase_read(phase_id)
@@ -399,7 +371,7 @@ def managed_router(runtime: ManagedRuntime):
         else:
             job = call(runtime.phases.submit_close, item.context, phase_id, body.expected_version,
                        key=idempotency_key, versions=frozen_versions(item), binding_sha256=body.binding_sha256,
-                       reason=body.reason, ttl_seconds=body.ttl_seconds)
+                       reason=body.reason, ttl_seconds=body.ttl_seconds, tag_kind=item.tag_kind)
         return queued(job)
 
     @router.post("/phases/{phase_id}/reconcile", response_model=PhaseRead, operation_id="managed_phase_reconcile")
@@ -427,10 +399,15 @@ def managed_router(runtime: ManagedRuntime):
     @router.post("/phases/{phase_id}/authorizations", response_model=PhaseRead, status_code=201,
                  operation_id="managed_phase_authorize_batch")
     def authorize_batch(phase_id: str, body: PhaseBatchCreate):
-        """Solo lote: nunca autoriza check ni cierre."""
-        registered_phase(phase_id)
+        """Solo lote: nunca autoriza check ni cierre. Con `chain_commits`, el supervisor encadena tareas y commits."""
+        item, _ = registered_phase(phase_id)
+        if body.chain_commits and runtime.config.commit_factory is None:
+            raise problem(409, "commit_writer_unavailable",
+                          "Este servicio no tiene escritor Git configurado; un lote con commits no se autoriza.")
         call(runtime.phases.authorize_batch, phase_id, body.expected_version, tasks=body.tasks,
-             ttl_seconds=body.ttl_seconds, reason=body.reason)
+             ttl_seconds=body.ttl_seconds, reason=body.reason, chain_commits=body.chain_commits, text=body.text,
+             context=item.context, versions=frozen_versions(item))
+        runtime.notify()
         return phase_read(phase_id)
 
     @router.post("/phases/{phase_id}/authorizations/{authorization_id}/revoke", response_model=PhaseRead,
@@ -446,6 +423,35 @@ def managed_router(runtime: ManagedRuntime):
         item, _ = registered_phase(phase_id)
         job = call(runtime.phases.batch_next, item.context, phase_id, body.expected_version, key=idempotency_key,
                    versions=frozen_versions(item), authorization_id=body.authorization_id, text=body.text)
+        return queued(job)
+
+    # --- H3.4: enmienda, abandono y reconciliación con agente ---------------------------
+
+    @router.post("/phases/{phase_id}/amend", response_model=PhaseRead, operation_id="managed_phase_amend")
+    def amend_phase(phase_id: str, body: PhaseAmendCreate):
+        """Nueva versión de la definición (la anterior se conserva); invalida READY y lotes vigentes."""
+        item, _ = registered_phase(phase_id)
+        data = body.model_dump(exclude={"expected_version", "reason", "confirmed"})
+        call(runtime.phases.amend, item.context, phase_id, body.expected_version, data=data, reason=body.reason)
+        return phase_read(phase_id)
+
+    @router.post("/phases/{phase_id}/abandon", response_model=PhaseRead, operation_id="managed_phase_abandon")
+    def abandon_phase(phase_id: str, body: PhaseAbandonCreate):
+        item, _ = registered_phase(phase_id)
+        call(runtime.phases.abandon, phase_id, body.expected_version, reason=body.reason, context=item.context)
+        return phase_read(phase_id)
+
+    @router.post("/phases/{phase_id}/reconcile-task", response_model=ManagedJobRead, status_code=202,
+                 operation_id="managed_phase_reconcile_task")
+    def reconcile_task(phase_id: str, body: PhaseReconcileTaskCreate, idempotency_key: IdempotencyKey):
+        """Tarea normal con contrato determinista limitado a los documentos; sin adopción automática."""
+        item, _ = registered_phase(phase_id)
+        if runtime.config.commit_factory is None:
+            raise problem(409, "commit_writer_unavailable",
+                          "Este servicio no tiene escritor Git configurado; la reconciliación con agente no podría "
+                          "confirmarse y no se encola.")
+        job = call(runtime.phases.submit_reconcile_task, item.context, phase_id, body.expected_version,
+                   key=idempotency_key, versions=frozen_versions(item))
         return queued(job)
 
     return router

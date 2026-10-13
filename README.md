@@ -35,6 +35,7 @@ ni ejecución automática de proveedores.
 - [Nuevo smoke autorizado: Codex completo, fallo MCP Claude](docs/discovery/H2.3_SMOKE_RETRY.md).
 - [Permisos y recuperación H3.2, verificados offline](docs/discovery/H3.2_PERMISSIONS.md).
 - [Fases, preguntas, cierre y tags H3.3, verificados offline](docs/discovery/H3.3_PHASES.md).
+- [Ajustes de fases, lote desatendido y guardia H0/H1 H3.4, verificados offline](docs/discovery/H3.4_PHASE_ADJUSTMENTS.md).
 - [Smoke cli-3: MCP aceptado, fallo de autenticación Claude](docs/discovery/H2.3_SMOKE_CLI3.md).
 - [Git, worktree y commit acotado H2.4](docs/discovery/H2.4_GIT.md).
 - [Migración a modo gestionado H2.5](docs/discovery/H2.5_MIGRATION.md).
@@ -141,7 +142,7 @@ La API gestionada local (proyectos registrados en el servidor, supervisor opt-in
 idempotencia, versiones y guardia Host/Origin/CSRF) está completada offline: ver
 [entrega y límites](docs/discovery/H2_EXIT_API.md). La UI gestionada local está
 completada offline; [demo, verificación y límites](docs/discovery/H2_EXIT_UI.md).
-H3.3 completado offline; siguiente tarea H3.4 (D033), sin iniciar. Ver [corrección y límites](docs/discovery/H2.3_MCP_FIX.md)
+H3.4 completado offline (D034); siguiente tarea H4.1, sin iniciar. Ver [corrección y límites](docs/discovery/H2.3_MCP_FIX.md)
 y [resultado real cli-3](docs/discovery/H2.3_SMOKE_CLI3.md). El consentimiento
 terminó al fallo; otro smoke requiere propuesta y autorización específicas.
 Ver [corrección del entorno](docs/discovery/H2.3_ENV_FIX.md) y
@@ -154,7 +155,7 @@ siguen conservados. La autorización cubrió una ejecución, sin relanzamiento.
 ## Importación legacy de lectura
 
 Migrar con el servicio detenido antes de importar; el esquema actual es
-`0010_phases`. Comandos comprobados desde la raíz, con datos sintéticos:
+`0011_phase_amendments`. Comandos comprobados desde la raíz, con datos sintéticos:
 
 ```sh
 UV_CACHE_DIR=.local/uv-cache uv run --frozen --offline alembic upgrade head
@@ -207,8 +208,8 @@ explícita; un 409 muestra diagnóstico y recarga el estado. Las evidencias del 
 proceden del historial congelado, no de una recaptura del checkout.
 
 Regresión del cliente: `node --test frontend/tests/managed-api.test.mjs`.
-Sesión local y guardia H0/H1 siguen pendientes; Host/Origin/CSRF se aplican a la
-API gestionada. COMMITTED es un checkpoint, no integración ni cierre de fase.
+La sesión local sigue pendiente; Host/Origin/CSRF se aplican a la API gestionada
+y a las mutaciones H0/H1 (no a sus lecturas). COMMITTED es un checkpoint, no integración ni cierre de fase.
 
 ## Prompts versionados (H3.1)
 
@@ -237,3 +238,11 @@ ligado al contenido exacto, reconciliación de documentos por hash y cierre con
 autorización propia que solo crea un tag ligero declarado, sin editar documentos.
 El lote es una autorización distinta que no comprueba ni cierra. Las operaciones
 de fase exigen escritor Git configurado. [Contrato y límites](docs/discovery/H3.3_PHASES.md).
+
+H3.4 añade el lote desatendido. Con autorización explícita, el supervisor encadena
+tarea → commit de contenido exacto → siguiente tarea y se detiene en el primer
+bloqueo. Nunca comprueba ni cierra la fase. También añade enmiendas versionadas de
+la definición y abandono explícito. El tag de cierre puede ser anotado
+(`ManagedProject.tag_kind`) con id determinista. La reconciliación con agente es
+una tarea normal limitada a los documentos de la fase, que se adoptan por hash tras
+su commit. [Contrato y límites](docs/discovery/H3.4_PHASE_ADJUSTMENTS.md).

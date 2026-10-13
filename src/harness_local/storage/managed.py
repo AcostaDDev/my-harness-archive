@@ -221,11 +221,11 @@ class SQLiteManagedRepository:
 
     @staticmethod
     def _phase_open(session, root, code):
-        """H3.3: una fase cerrada (o cerrándose) no acepta tareas, reanudaciones ni commits nuevos."""
+        """H3.3/H3.4: una fase cerrada, cerrándose o abandonada no acepta tareas, reanudaciones ni commits."""
         from harness_local.storage.models import PhaseRow
         if session.scalar(select(PhaseRow.id).where(PhaseRow.root == root, PhaseRow.code == code,
-                                                    PhaseRow.status.in_(("CLOSED", "CLOSING")))):
-            raise Conflict("The phase is closed or closing in this checkout; it does not advance")
+                                                    PhaseRow.status.in_(("CLOSED", "CLOSING", "ABANDONED")))):
+            raise Conflict("The phase is closed, closing or abandoned in this checkout; it does not advance")
 
     def resume(self, run_id: str, *, key: str, expected_version: int, retry_executor=False) -> JobRecord:
         if type(expected_version) is not int or type(retry_executor) is not bool:
@@ -506,35 +506,40 @@ class SQLiteManagedRepository:
                 raise LookupError("Unknown managed run")
             if run.version != expected_version:
                 raise Conflict("Run changed; reload before committing")
-            if session.scalar(select(Job.id).where(Job.run_id == run_id,
-                    Job.status.in_(("QUEUED", "ACTIVE", "RECOVERY_REQUIRED")))) is not None:
-                raise Conflict("Run already has unfinished work")
-            live = self._live_commit(session, run_id)
-            if live is not None and live.status == "COMMITTED":
-                raise Conflict("Run already has a recorded commit")
-            self._phase_open(session, run.root, run.phase_id)
-            history = load_history(run.history_json)
-            if live is not None:
-                if updates and updates != CommitIntent.from_json(live.intent_json).mechanical:
-                    raise Conflict("A pending commit operation fixed different mechanical updates")
-            else:
-                if (history.status != "acceptance_ready" or history.acceptance is None
-                        or not history.acceptance.eligible):
-                    raise Conflict("Only an eligible acceptance_ready run can be committed")
-                try:
-                    git_provenance(history.acceptance.evidence)
-                    validate_mechanical_updates(restore_context(run.context_json),
-                                                history.acceptance.evidence.changed_paths, updates)
-                except (CommitError, ValueError) as exc:
-                    raise Conflict(str(exc)) from exc
-            activation_id = self._admit(session, assessment)
-            job = Job(idempotency_key=key, run_id=run_id, request_json=request, status="QUEUED",
-                      created_at=self._now(), activation_id=activation_id)
-            session.add(job)
-            session.flush()
-            run.status, run.stage = "QUEUED", "commit"
-            self._event(session, run, "job_queued", {"job_id": job.id, "action": "commit"})
-            return _job(job)
+            return self._queue_commit(session, run, key, request, updates, assessment)
+
+    def _queue_commit(self, session, run, key, request, updates, assessment) -> JobRecord:
+        """Comprobaciones y job de commit en la transacción del llamante (acción propia o lote H3.4)."""
+        run_id = run.id
+        if session.scalar(select(Job.id).where(Job.run_id == run_id,
+                Job.status.in_(("QUEUED", "ACTIVE", "RECOVERY_REQUIRED")))) is not None:
+            raise Conflict("Run already has unfinished work")
+        live = self._live_commit(session, run_id)
+        if live is not None and live.status == "COMMITTED":
+            raise Conflict("Run already has a recorded commit")
+        self._phase_open(session, run.root, run.phase_id)
+        history = load_history(run.history_json)
+        if live is not None:
+            if updates and updates != CommitIntent.from_json(live.intent_json).mechanical:
+                raise Conflict("A pending commit operation fixed different mechanical updates")
+        else:
+            if (history.status != "acceptance_ready" or history.acceptance is None
+                    or not history.acceptance.eligible):
+                raise Conflict("Only an eligible acceptance_ready run can be committed")
+            try:
+                git_provenance(history.acceptance.evidence)
+                validate_mechanical_updates(restore_context(run.context_json),
+                                            history.acceptance.evidence.changed_paths, updates)
+            except (CommitError, ValueError) as exc:
+                raise Conflict(str(exc)) from exc
+        activation_id = self._admit(session, assessment)
+        job = Job(idempotency_key=key, run_id=run_id, request_json=request, status="QUEUED",
+                  created_at=self._now(), activation_id=activation_id)
+        session.add(job)
+        session.flush()
+        run.status, run.stage = "QUEUED", "commit"
+        self._event(session, run, "job_queued", {"job_id": job.id, "action": "commit"})
+        return _job(job)
 
     def commit_record(self, run_id: str) -> CommitRecord | None:
         with Session(self.engine) as session:

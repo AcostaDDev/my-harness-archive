@@ -168,6 +168,24 @@
               "type": "string",
               "title": "Project Id"
             }
+          },
+          {
+            "name": "x-harness-local",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Obligatoria con valor 1 en mutaciones (protección CSRF).",
+              "title": "X-Harness-Local"
+            },
+            "description": "Obligatoria con valor 1 en mutaciones (protección CSRF)."
           }
         ],
         "requestBody": {
@@ -190,6 +208,16 @@
                 }
               }
             }
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
           },
           "422": {
             "description": "Validation Error",
@@ -4463,7 +4491,7 @@
     "/api/managed/phases/{phase_id}/authorizations": {
       "post": {
         "summary": "Authorize Batch",
-        "description": "Solo lote: nunca autoriza check ni cierre.",
+        "description": "Solo lote: nunca autoriza check ni cierre. Con `chain_commits`, el supervisor encadena tareas y commits.",
         "operationId": "managed_phase_authorize_batch",
         "parameters": [
           {
@@ -4774,6 +4802,312 @@
         }
       }
     },
+    "/api/managed/phases/{phase_id}/amend": {
+      "post": {
+        "summary": "Amend Phase",
+        "description": "Nueva versión de la definición (la anterior se conserva); invalida READY y lotes vigentes.",
+        "operationId": "managed_phase_amend",
+        "parameters": [
+          {
+            "name": "phase_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Phase Id"
+            }
+          },
+          {
+            "name": "x-harness-local",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Obligatoria con valor 1 en mutaciones (protección CSRF).",
+              "title": "X-Harness-Local"
+            },
+            "description": "Obligatoria con valor 1 en mutaciones (protección CSRF)."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PhaseAmendCreate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PhaseRead"
+                }
+              }
+            }
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          }
+        }
+      }
+    },
+    "/api/managed/phases/{phase_id}/abandon": {
+      "post": {
+        "summary": "Abandon Phase",
+        "operationId": "managed_phase_abandon",
+        "parameters": [
+          {
+            "name": "phase_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Phase Id"
+            }
+          },
+          {
+            "name": "x-harness-local",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Obligatoria con valor 1 en mutaciones (protección CSRF).",
+              "title": "X-Harness-Local"
+            },
+            "description": "Obligatoria con valor 1 en mutaciones (protección CSRF)."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PhaseAbandonCreate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PhaseRead"
+                }
+              }
+            }
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          }
+        }
+      }
+    },
+    "/api/managed/phases/{phase_id}/reconcile-task": {
+      "post": {
+        "summary": "Reconcile Task",
+        "description": "Tarea normal con contrato determinista limitado a los documentos; sin adopción automática.",
+        "operationId": "managed_phase_reconcile_task",
+        "parameters": [
+          {
+            "name": "phase_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Phase Id"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200,
+              "description": "Misma clave y misma acción devuelven el mismo job.",
+              "title": "Idempotency-Key"
+            },
+            "description": "Misma clave y misma acción devuelven el mismo job."
+          },
+          {
+            "name": "x-harness-local",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Obligatoria con valor 1 en mutaciones (protección CSRF).",
+              "title": "X-Harness-Local"
+            },
+            "description": "Obligatoria con valor 1 en mutaciones (protección CSRF)."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PhaseReconcileTaskCreate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ManagedJobRead"
+                }
+              }
+            }
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          }
+        }
+      }
+    },
     "/api/health": {
       "get": {
         "summary": "Health",
@@ -4802,10 +5136,10 @@
             "content": {
               "application/json": {
                 "schema": {
+                  "type": "array",
                   "items": {
                     "$ref": "#/components/schemas/SimulationRead"
                   },
-                  "type": "array",
                   "title": "Response List Simulations"
                 }
               }
@@ -4816,15 +5150,35 @@
       "post": {
         "summary": "Create Simulation",
         "operationId": "create_simulation",
+        "parameters": [
+          {
+            "name": "x-harness-local",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Obligatoria con valor 1 en mutaciones (protección CSRF).",
+              "title": "X-Harness-Local"
+            },
+            "description": "Obligatoria con valor 1 en mutaciones (protección CSRF)."
+          }
+        ],
         "requestBody": {
+          "required": true,
           "content": {
             "application/json": {
               "schema": {
                 "$ref": "#/components/schemas/SimulationCreate"
               }
             }
-          },
-          "required": true
+          }
         },
         "responses": {
           "201": {
@@ -4836,6 +5190,16 @@
                 }
               }
             }
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
           },
           "422": {
             "description": "Validation Error",
@@ -6197,6 +6561,14 @@
             },
             "type": "object",
             "title": "Versions"
+          },
+          "tag_kind": {
+            "type": "string",
+            "enum": [
+              "lightweight",
+              "annotated"
+            ],
+            "title": "Tag Kind"
           }
         },
         "type": "object",
@@ -6204,7 +6576,8 @@
           "id",
           "root",
           "profile",
-          "versions"
+          "versions",
+          "tag_kind"
         ],
         "title": "ManagedProjectRead"
       },
@@ -7122,6 +7495,110 @@
         ],
         "title": "PermissionRequestRead"
       },
+      "PhaseAbandonCreate": {
+        "properties": {
+          "expected_version": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Expected Version"
+          },
+          "reason": {
+            "type": "string",
+            "maxLength": 2000,
+            "minLength": 1,
+            "title": "Reason"
+          },
+          "confirmed": {
+            "type": "boolean",
+            "const": true,
+            "title": "Confirmed"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "expected_version",
+          "reason",
+          "confirmed"
+        ],
+        "title": "PhaseAbandonCreate"
+      },
+      "PhaseAmendCreate": {
+        "properties": {
+          "expected_version": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Expected Version"
+          },
+          "objective": {
+            "type": "string",
+            "maxLength": 4000,
+            "minLength": 1,
+            "title": "Objective"
+          },
+          "exit_criteria": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "maxItems": 100,
+            "minItems": 1,
+            "title": "Exit Criteria"
+          },
+          "tasks": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "maxItems": 200,
+            "title": "Tasks"
+          },
+          "documents": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "maxItems": 50,
+            "minItems": 1,
+            "title": "Documents"
+          },
+          "tag": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 100
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Tag"
+          },
+          "reason": {
+            "type": "string",
+            "maxLength": 2000,
+            "minLength": 1,
+            "title": "Reason"
+          },
+          "confirmed": {
+            "type": "boolean",
+            "const": true,
+            "title": "Confirmed"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "expected_version",
+          "objective",
+          "exit_criteria",
+          "tasks",
+          "documents",
+          "reason",
+          "confirmed"
+        ],
+        "title": "PhaseAmendCreate"
+      },
       "PhaseAnswerCreate": {
         "properties": {
           "expected_version": {
@@ -7270,6 +7747,26 @@
             "type": "boolean",
             "const": true,
             "title": "Confirmed"
+          },
+          "chain_commits": {
+            "type": "boolean",
+            "title": "Chain Commits",
+            "description": "Alcance explícito «encadenar tareas y confirmar commits»: el supervisor encola cada tarea, el commit de cada aceptación elegible y la siguiente tarea; se detiene en el primer bloqueo. Nunca comprueba ni cierra.",
+            "default": false
+          },
+          "text": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 200000,
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Text",
+            "description": "Texto del plan congelado; obligatorio solo con chain_commits."
           }
         },
         "additionalProperties": false,
@@ -7450,6 +7947,85 @@
         ],
         "title": "PhaseCreate"
       },
+      "PhaseDefinitionRead": {
+        "properties": {
+          "number": {
+            "type": "integer",
+            "title": "Number"
+          },
+          "definition": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Definition"
+          },
+          "definition_sha256": {
+            "type": "string",
+            "title": "Definition Sha256"
+          },
+          "documents": {
+            "additionalProperties": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "type": "object",
+            "title": "Documents"
+          },
+          "origin": {
+            "type": "string",
+            "enum": [
+              "created",
+              "amended",
+              "migrated"
+            ],
+            "title": "Origin"
+          },
+          "reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reason"
+          },
+          "actor": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Actor"
+          },
+          "created_at": {
+            "type": "string",
+            "title": "Created At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "number",
+          "definition",
+          "definition_sha256",
+          "documents",
+          "origin",
+          "reason",
+          "actor",
+          "created_at"
+        ],
+        "title": "PhaseDefinitionRead"
+      },
       "PhaseDocumentsRead": {
         "properties": {
           "baseline": {
@@ -7533,7 +8109,10 @@
             "enum": [
               "check",
               "close",
-              "reconcile"
+              "reconcile",
+              "reconcile_task",
+              "amend",
+              "abandon"
             ],
             "title": "Kind"
           },
@@ -7715,6 +8294,33 @@
             "type": "string",
             "title": "Definition Sha256"
           },
+          "definition_number": {
+            "type": "integer",
+            "title": "Definition Number"
+          },
+          "definitions": {
+            "items": {
+              "$ref": "#/components/schemas/PhaseDefinitionRead"
+            },
+            "type": "array",
+            "title": "Definitions"
+          },
+          "tag_kind": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "lightweight",
+                  "annotated"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Tag Kind",
+            "description": "Tipo de tag que fijará el cierre según el proyecto registrado; null si no está registrado."
+          },
           "status": {
             "type": "string",
             "enum": [
@@ -7724,7 +8330,8 @@
               "NEEDS_RECONCILIATION",
               "BLOCKED",
               "CLOSING",
-              "CLOSED"
+              "CLOSED",
+              "ABANDONED"
             ],
             "title": "Status"
           },
@@ -7797,10 +8404,13 @@
               "enum": [
                 "check",
                 "reconcile",
+                "reconcile_task",
                 "close",
                 "question",
                 "authorize_batch",
-                "batch_next"
+                "batch_next",
+                "amend",
+                "abandon"
               ]
             },
             "type": "array",
@@ -7815,6 +8425,9 @@
           "code",
           "definition",
           "definition_sha256",
+          "definition_number",
+          "definitions",
+          "tag_kind",
           "status",
           "version",
           "created_at",
@@ -7895,6 +8508,21 @@
         ],
         "title": "PhaseReconcileCreate"
       },
+      "PhaseReconcileTaskCreate": {
+        "properties": {
+          "expected_version": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Expected Version"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "expected_version"
+        ],
+        "title": "PhaseReconcileTaskCreate"
+      },
       "PhaseRevokeCreate": {
         "properties": {
           "expected_version": {
@@ -7940,7 +8568,8 @@
               "NEEDS_RECONCILIATION",
               "BLOCKED",
               "CLOSING",
-              "CLOSED"
+              "CLOSED",
+              "ABANDONED"
             ],
             "title": "Status"
           },

@@ -346,15 +346,46 @@ class GitWorkspace:
             raise EvidenceCaptureError("Ancestry of an accepted task commit could not be determined")
         return code == 0
 
-    def tag(self, context: ProjectContext, intent: dict) -> dict:
-        """Tag ligero determinista: crear solo si no existe (CAS); nunca mover ni sobrescribir."""
+    @staticmethod
+    def _tag_text(intent: dict) -> bytes:
+        """Objeto tag anotado: mensaje, identidad y fecha fijados en la intención → id determinista."""
+        GitIdentity(intent["tagger_name"], intent["tagger_email"])  # sin marcado ni saltos de línea
+        if type(intent["tagged_at"]) is not int or not isinstance(intent["message"], str) or "\0" in intent["message"]:
+            raise ValueError("Annotated tag intent requires an integer date and a NUL-free message")
+        name = intent["ref"][len("refs/tags/"):]
+        who = f"{intent['tagger_name']} <{intent['tagger_email']}> {intent['tagged_at']} +0000"
+        return (f"object {intent['target']}\ntype commit\ntag {name}\ntagger {who}\n\n{intent['message']}").encode("utf-8")
+
+    def _tag_git(self, context: ProjectContext, intent: dict) -> Git:
         ref, target = intent["ref"], intent["target"]
         if not ref.startswith("refs/tags/") or not _OBJECT_ID.fullmatch(target):
             raise ValueError("Phase tag intent must name refs/tags/<name> and a full commit id")
+        if intent.get("kind", "lightweight") not in ("lightweight", "annotated"):
+            raise ValueError("Unknown tag kind")
         git = self._git(context.root)
         self._require_root(git, context.root)
         if git.code("check-ref-format", ref) != 0:
             raise ValueError("Invalid tag name")
+        return git
+
+    def seal_tag(self, context: ProjectContext, intent: dict) -> str:
+        """Solo calcula el id del objeto anotado (sin -w); ningún efecto antes de la intención."""
+        git = self._tag_git(context, intent)
+        try:
+            git.run("cat-file", "-e", f"{intent['target']}^{{commit}}")
+            return git.text("hash-object", "-t", "tag", "--stdin", input=self._tag_text(intent))
+        except GitError as exc:
+            raise CommitError(f"Phase tag could not be sealed: {exc}") from exc
+
+    def tag(self, context: ProjectContext, intent: dict) -> dict:
+        """Tag ligero o anotado determinista: crear solo si no existe (CAS); nunca mover ni sobrescribir."""
+        git = self._tag_git(context, intent)
+        ref, target = intent["ref"], intent["target"]
+        annotated = intent.get("kind", "lightweight") == "annotated"
+        # Valor esperado de la referencia: el commit (ligero) o el objeto tag sellado (anotado).
+        expected = intent["object"] if annotated else target
+        if annotated and not _OBJECT_ID.fullmatch(expected or ""):
+            raise ValueError("Annotated tag intent requires its sealed object id")
 
         def observed():
             return git.run("rev-parse", "-q", "--verify", ref, ok=(0, 1)).decode("utf-8").strip() or None
@@ -364,21 +395,26 @@ class GitWorkspace:
 
         try:
             existing = observed()
-            if existing == target:
-                return outcome("reconciled")
+            if existing == expected:
+                return outcome("reconciled", **({"object": expected} if annotated else {}))
             if existing is not None:
+                wanted = f"the sealed annotated tag {expected} for {target}" if annotated else f"the READY commit {target}"
                 return outcome("conflict", observed=existing, diagnostic=(
-                    f"{ref} already points to {existing}, not to the READY commit {target}; "
+                    f"{ref} already points to {existing}, not to {wanted}; "
                     "it is never moved automatically. Recover manually with the recorded evidence"))
+            if annotated:
+                written = git.text("hash-object", "-t", "tag", "-w", "--stdin", input=self._tag_text(intent))
+                if written != expected:
+                    raise CommitError("Annotated tag object differs from the sealed intent; nothing was referenced")
             try:
-                git.run("update-ref", "-m", f"harness: close phase {intent['operation_id']}", ref, target,
-                        "0" * len(target))
+                git.run("update-ref", "-m", f"harness: close phase {intent['operation_id']}", ref, expected,
+                        "0" * len(expected))
             except GitError:
                 # Un CAS fallido no demuestra qué ocurrió: se vuelve a observar.
-                if observed() == target:
-                    return outcome("reconciled")
+                if observed() == expected:
+                    return outcome("reconciled", **({"object": expected} if annotated else {}))
                 raise
-            return outcome("created")
+            return outcome("created", **({"object": expected} if annotated else {}))
         except GitError as exc:
             raise CommitUncertain(f"Phase tag state could not be reconciled: {exc}") from exc
 

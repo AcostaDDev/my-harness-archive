@@ -158,7 +158,7 @@ def test_ready_close_tags_the_reviewed_head_without_editing_documents(world):
     auth = closed['authorizations'][-1]
     assert auth['kind'] == 'close' and auth['status'] == 'CONSUMED' and auth['actor']['user']
     assert auth['scope'] == {'check_operation_id': check['id'], 'binding_sha256': ready['ready']['binding_sha256'],
-                             'tag': 'phase-P001-complete'}
+                             'tag': 'phase-P001-complete', 'tag_kind': 'lightweight'}
     assert {p: world.context.path(p).read_bytes() for p in docs} == docs
     assert git(world.context.root, 'status', '--porcelain') == ''
     assert world.ports.roles() == ['executor', 'reviewer', 'phase']
@@ -252,7 +252,7 @@ def test_stale_binding_or_authority_change_is_refused_before_queueing(world):
     world.phases.raise_question(pid, ready['version'], text='Is the archive wording approved?')
     blocked = world.get(pid)
     assert blocked['status'] == 'BLOCKED' and blocked['ready'] is None
-    assert blocked['actions'] == ['reconcile', 'question']
+    assert blocked['actions'] == ['reconcile', 'reconcile_task', 'question', 'amend', 'abandon']
     with pytest.raises(Conflict):
         world.phases.submit_close(world.context, pid, blocked['version'], key='z', versions=VERSIONS,
                                   binding_sha256=ready['ready']['binding_sha256'], reason='r', ttl_seconds=60)
@@ -394,7 +394,7 @@ def test_batch_and_close_authorizations_are_distinct_explicit_and_audited(world)
     detail = world.get(pid)
     batch = detail['authorizations'][0]
     assert batch['kind'] == 'batch' and batch['effective_status'] == 'ACTIVE' and batch['actor']['uid']
-    assert detail['actions'][-1] == 'batch_next'
+    assert 'batch_next' in detail['actions'] and 'authorize_batch' not in detail['actions']
 
     def change(text):
         def call(context, request):
@@ -679,6 +679,10 @@ def test_http_without_git_writer_reads_but_does_not_queue_phase_operations(tmp_p
             'code': 'P001', 'objective': 'o', 'exit_criteria': ['c'], 'tasks': [], 'documents': ['docs/STATE.md'],
             'tag': None}).json()
         assert 'check' not in phase['actions'] and 'reconcile' in phase['actions']
+        assert 'reconcile_task' not in phase['actions']
+        refused_task = http.post(f"/api/managed/phases/{phase['id']}/reconcile-task", json={
+            'expected_version': phase['version']}, headers={'Idempotency-Key': 'r'})
+        assert refused_task.status_code == 409 and refused_task.json()['detail']['code'] == 'commit_writer_unavailable'
         refused = http.post(f"/api/managed/phases/{phase['id']}/actions", json={'action': 'check', 'expected_version':
                             phase['version']}, headers={'Idempotency-Key': 'k'})
         assert refused.status_code == 409 and refused.json()['detail']['code'] == 'commit_writer_unavailable'

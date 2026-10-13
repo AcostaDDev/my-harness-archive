@@ -261,18 +261,39 @@ Actualizado: 2026-10-13.
 - API/UI con acciones del servidor, confirmaciones y guardia gestionada; demo
   sintética con rol `phase`. 29 casos H3.3 y recorrido Chrome sintético.
 
+- H3.4 completado offline: [ajustes de fases](discovery/H3.4_PHASE_ADJUSTMENTS.md), D034.
+  La guardia Host/Origin/`X-Harness-Local` (`api/security.py`) cubre también las
+  mutaciones H0/H1 (simulaciones y observación legacy). Los clientes envían la
+  cabecera.
+- Lote desatendido (`chain_commits`): congela tareas, plan, definición, contexto y
+  versiones. El supervisor lo conduce antes de reclamar, con claves deterministas:
+  tarea → commit H2.4 de la aceptación elegible → siguiente tarea → `COMPLETED`. Se
+  detiene en el primer bloqueo, pregunta, caducidad, revocación, cuarentena,
+  evidencia invalidada o run ajeno. Nunca comprueba ni cierra la fase.
+- Migración `0011_phase_amendments`. Las enmiendas crean versiones nuevas en
+  `phase_definitions` y conservan las anteriores; invalidan READY y lotes. El
+  abandono es un estado terminal `ABANDONED` auditado y libera el checkout.
+- Tag por proyecto (`tag_kind`), ligero por defecto. El anotado fija en la
+  intención mensaje, identidad, fecha e id del objeto. Concilia tras una caída con
+  el mismo objeto y nunca se mueve.
+- La reconciliación con agente es una tarea normal con contrato determinista
+  (`reconcile-phase`, sin planificador), limitada a los documentos. Se revisa y
+  confirma por el flujo normal y después la base se adopta por hash, con el origen
+  registrado.
+- API/UI: enmendar, abandonar, reconciliar con agente, lote desatendido, versiones
+  de la definición y tipo de tag. 18 casos H3.4 y recorrido Chrome sintético.
+
 ## Todavía no existe
 
 Recorrido de tarea real del motor con proveedores ni entrada CLI gestionada;
 API/UI gestionadas existen y se han verificado con fakes y Git/SQLite sintéticos.
-Tampoco existen sesión local, guardia Host/Origin/CSRF en rutas H0/H1, registro de
+Tampoco existen sesión local, guardia en lecturas H0/H1 (las mutaciones ya la tienen), registro de
 proyectos por HTTP, SSE gestionado, pausa o cancelación por HTTP, integración del
 commit en la rama de destino, retirada de worktrees, abandono manual de una
 intención ambigua, exportación mecánica de STATE/NEXT_STEPS, permisos
-interactivos, chat ni distribución. En fases faltan reconciliación documental con
-agente, archivo/commit de cierre, instalación de la fase siguiente, edición de la
-definición, encadenado automático del lote y tags anotadas; la evaluación de fase
-con CLI real no se ha ejecutado. La salida del hito 2 está verificada offline desde la UI hasta COMMITTED,
+interactivos, chat ni distribución. En fases faltan archivo/commit de cierre,
+instalación de la fase siguiente y cancelación de una tarea de reconciliación. La
+evaluación de fase y la reconciliación con CLI real no se han ejecutado. La salida del hito 2 está verificada offline desde la UI hasta COMMITTED,
 con recuperación explícita y sin integración en la rama destino.
 La navegación H1.2 muestra evidencia legacy;
 el recorrido H0.3 solo guarda simulaciones, que no representan intentos reales
@@ -295,8 +316,10 @@ H3.1 completado con editor y snapshots por intento (D030). Siguiente tarea:
 H3.2 completado offline con ledger/API/UI/snapshots y recuperación (D031).
 H3.3 completado offline con fases, READY por contenido exacto, cierre/tag y
 autorizaciones separadas (D032). Decisiones posteriores del usuario en D033.
-Siguiente tarea: H3.4 (ajustes de fases, lote y guardia H0/H1), sin iniciarla;
-después H4.1. Sin proveedores nuevos.
+H3.4 completado offline: guardia H0/H1, lote desatendido con commits,
+enmienda/abandono, tags anotados y reconciliación con agente (D034).
+Siguiente tarea: H4.1 (chat por turnos nuevos de la CLI Codex), sin iniciarla.
+Sin proveedores nuevos.
 
 ## Verificación de H0.1
 
@@ -1006,6 +1029,49 @@ después H4.1. Sin proveedores nuevos.
   fase siguiente, edición de definición, auto-encadenado de lote, tags anotadas,
   integración de ramas ni sesión local. Exclusión frente a escritores externos
   cooperativa. H3.4 no iniciado (D033).
+
+## Verificación de H3.4
+
+- Git inicial limpio en `main`, `ef126cb`. Revisados AGENTS, STATE, NEXT_STEPS,
+  DECISIONS (D032/D033), el informe H3.3, el código de fases, la API y la UI.
+- 408 pruebas pytest y 121 subtests: 390 anteriores y 18 de H3.4. Se ajustaron
+  las pruebas H0/H1 y H3.3 al cambio de guardia, acciones, `tag_kind` y alcance de
+  cierre. 12 checks ligeros y 4 pruebas Node (nueva: cabecera en mutaciones
+  H0/H1). OpenAPI y tipos regenerados; TypeScript y build correctos. Se conserva el
+  aviso Starlette/HTTPX.
+- Git y SQLite temporales con fakes:
+  - guardia H0/H1 (Host, Origin, cabecera; 403 antes del 404);
+  - lote de dos tareas: cuatro jobs y `COMPLETED`, sin check ni cierre;
+  - paradas por bloqueo, pregunta, caducidad, revocación, evidencia invalidada,
+    cuarentena (sin repetir) y run ajeno;
+  - enmienda (versiones, READY, lotes, documento nuevo, código, sin cambios) y
+    abandono;
+  - tag anotado (id determinista, conciliación tras caída con otra fecha, tag
+    ligero previo intacto);
+  - reconciliación con agente (sin planificador, contrato limitado, adopción solo
+    tras el commit, escritura fuera de documentos no elegible);
+  - migración 0011 (relleno `migrated`, bajada rechazada con fases abandonadas) y
+    `alembic check`;
+  - HTTP con un proyecto anotado.
+- Chrome sobre una demo sintética nueva (scratchpad, `127.0.0.1:8019`):
+  - crear la fase;
+  - lote desatendido → tarea `COMMITTED` y lote `COMPLETED` sin intervención;
+  - comprobar → READY;
+  - enmendar → `ACTIVE` sin READY, con la v1 conservada;
+  - abandonar → `Abandonada`.
+
+  Sin 403/500 ni errores de consola. El servicio se detuvo y la pestaña se cerró.
+- No se migró la SQLite de trabajo del usuario. Sin proveedores, smokes, login,
+  secretos, ReferenceProject, configuración global, colaboración automática, harness de
+  desarrollo ni push. Commit solicitado por el usuario.
+- Límites:
+  - lecturas H0/H1 y SSE legacy sin guardia; la sesión local sigue pendiente;
+  - revocar no cancela un job ya encolado;
+  - el lote no continúa tras una recuperación sin otra autorización;
+  - no hay cancelación de la reconciliación ni enmienda del código;
+  - la evaluación y la reconciliación no se han ejecutado con CLI real.
+
+  H4.1 no se ha iniciado.
 
 ## Coordinación
 

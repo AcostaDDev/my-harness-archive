@@ -2,11 +2,13 @@
 
 READY se vincula a contenido exacto: definición, HEAD/fingerprint Git limpio, documentos
 adoptados, commits de tareas aceptadas y preguntas. El cierre vuelve a observar ese
-contenido antes de cualquier efecto Git; el único efecto es un tag ligero opcional,
-creado con compare-and-swap y conciliable. Ninguna puerta edita documentos.
+contenido antes de cualquier efecto Git; el único efecto es un tag opcional, ligero
+o anotado según el proyecto (H3.4), creado con compare-and-swap y conciliable.
+Ninguna puerta edita documentos.
 """
 
 from dataclasses import asdict, replace
+from datetime import datetime, timezone
 import hashlib
 import re
 from typing import Protocol
@@ -23,6 +25,7 @@ from harness_local.core.engine.validation import run_validations
 PHASE_CODE = re.compile(r"[A-Za-z0-9][A-Za-z0-9._-]{0,119}")
 TAG_NAME = re.compile(r"[A-Za-z0-9][A-Za-z0-9_-]*(?:\.[A-Za-z0-9_-]+)*")
 VERDICTS = ("READY", "REVISE", "BLOCKED")
+TAG_KINDS = ("lightweight", "annotated")
 # Resultado de check → estado de fase. FAILED vuelve al estado anterior al check.
 CHECK_STATUS = {"READY": "READY_TO_CLOSE", "REVISE": "NEEDS_RECONCILIATION", "BLOCKED": "BLOCKED",
                 "NEEDS_RECONCILIATION": "NEEDS_RECONCILIATION", "NOT_READY": "ACTIVE"}
@@ -73,7 +76,39 @@ def document_hashes(context: ProjectContext, paths) -> dict[str, str | None]:
 class PhaseGit(Protocol):
     def capture(self, context: ProjectContext) -> ContentEvidence: ...
     def contains(self, context: ProjectContext, commit: str) -> bool: ...
+    def seal_tag(self, context: ProjectContext, intent: dict) -> str: ...
     def tag(self, context: ProjectContext, intent: dict) -> dict: ...
+
+
+def tag_message(definition: dict, binding_sha256: str) -> str:
+    """Sin identificador de operación: un cierre posterior que concilia produce el mismo objeto."""
+    return (f"Phase {definition['code']} closed\n\nHarness-Phase: {definition['code']}\n"
+            f"Harness-Ready-Binding: {binding_sha256}\n")
+
+
+def tag_intent(snapshot: dict, git: PhaseGit, context: ProjectContext, now=None) -> dict:
+    """Intención completa antes del efecto. Un tag anotado fija mensaje, identidad y fecha, y con
+    ellos su id; si un cierre anterior dejó una intención incierta para el mismo READY, se reutiliza."""
+    ready, name = snapshot["ready"], snapshot["definition"]["tag"]
+    kind = snapshot.get("tag_kind", "lightweight")
+    if kind not in TAG_KINDS:
+        raise ValueError("Unknown tag kind")
+    intent = {"operation_id": snapshot["operation_id"], "ref": f"refs/tags/{name}", "kind": kind,
+              "target": ready["binding"]["head"], "binding_sha256": ready["binding_sha256"]}
+    if kind == "annotated":
+        previous = snapshot.get("previous_tag_intent") or {}
+        if all(previous.get(key) == intent[key] for key in ("ref", "kind", "target", "binding_sha256")):
+            fixed = {key: previous[key] for key in ("message", "tagger_name", "tagger_email", "tagged_at")}
+        else:
+            instant = (now or (lambda: datetime.now(timezone.utc)))()
+            if instant.tzinfo is None:
+                raise ValueError("Clock must return an aware time")
+            fixed = {"message": tag_message(snapshot["definition"], ready["binding_sha256"]),
+                     "tagger_name": git.identity.name, "tagger_email": git.identity.email,
+                     "tagged_at": int(instant.timestamp())}
+        intent.update(fixed)
+        intent["object"] = git.seal_tag(context, intent)
+    return intent
 
 
 def binding(snapshot: dict, evidence: ContentEvidence, documents: dict) -> dict:
@@ -197,7 +232,7 @@ def check_phase(context: ProjectContext, history: RunHistory, snapshot: dict, ag
 
 
 def close_phase(context: ProjectContext, history: RunHistory, snapshot: dict, git: PhaseGit,
-                journal) -> tuple[RunHistory, dict]:
+                journal, now=None) -> tuple[RunHistory, dict]:
     """Reobserva el contenido READY y solo entonces crea el tag declarado (intención antes del efecto)."""
     ready = snapshot["ready"]
     done = replace(history, status="completed", stop=None)
@@ -214,10 +249,8 @@ def close_phase(context: ProjectContext, history: RunHistory, snapshot: dict, gi
     if reasons:
         return done, {"status": "STALE", "reasons": reasons, "observed_sha256": digest(current)}
     tag = None
-    name = snapshot["definition"]["tag"]
-    if name is not None:
-        intent = {"operation_id": snapshot["operation_id"], "ref": f"refs/tags/{name}",
-                  "target": ready["binding"]["head"], "binding_sha256": ready["binding_sha256"]}
+    if snapshot["definition"]["tag"] is not None:
+        intent = tag_intent(snapshot, git, context, now)
         journal.tag_intent(intent)
         tag = git.tag(context, intent)
         if tag["status"] == "conflict":

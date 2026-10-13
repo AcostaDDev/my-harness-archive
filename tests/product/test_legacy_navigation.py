@@ -17,6 +17,9 @@ from harness_local.storage.legacy import SQLiteLegacyRepository
 from harness_local.storage.navigation import identifier
 
 
+LOCAL = {"base_url": "http://127.0.0.1:8013", "headers": {"X-Harness-Local": "1"}}  # guardia local D033
+
+
 FIXTURES = Path(__file__).resolve().parents[1] / "fixtures/legacy"
 CASES = ("accepted", "revise", "blocked", "interrupted", "closed-phase")
 
@@ -31,7 +34,7 @@ def navigation(migrated_database, tmp_path):
         roots[case] = tmp_path / case
         shutil.copytree(FIXTURES / case, roots[case])
         service.import_checkout(str(roots[case]))
-    with TestClient(create_app(url, tmp_path / "ui")) as client:
+    with TestClient(create_app(url, tmp_path / "ui"), **LOCAL) as client:
         yield client, roots, service
     engine.dispose()
 
