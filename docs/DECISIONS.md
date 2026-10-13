@@ -1077,3 +1077,34 @@ La UI conserva los envíos con su clave y muestra el estado de la primera tarea
 tras reiniciar. Exclusión externa cooperativa; sin atomicidad del conjunto de
 archivos, abandono automático de intención ni limpieza de temporales. CLI real y
 preparación de un stack no verificadas. H4.3 siguiente, sin iniciar; smokes agotados.
+
+## D038 — Segundo perfil declarativo con validaciones TypeScript reales por los puertos existentes
+
+Estado: implementado y verificado offline el 2026-10-13.
+[Entrega, comandos y límites](discovery/H4.3_TYPESCRIPT_PROFILE.md).
+
+`typescript-web` demuestra una web estática de otro stack sin modificar el núcleo:
+preparación con Node/npm e instalación offline desde lock; validaciones de tipos,
+tests y build; prefijos de comandos, rutas protegidas/sensibles e instrucciones.
+Se configura en `ProjectContext` por el servidor y se congela con el run. Las
+reglas del perfil no conceden herramientas/red ni superan permisos del contrato.
+
+Fixture sintética con Node 24.15.0, npm 11.12.1 y TypeScript 5.9.3 (única dependencia,
+lock propio). Usa tsc, tests Node y módulos web estáticos, sin framework adicional.
+Scripts, tests, configuración del compilador y lock quedan protegidos. La caché
+se inyecta explícitamente; falta de paquete, engines incompatibles o lock
+inconsistente detienen antes del agente, sin instalación online ni corrección
+silenciosa. Los artefactos/dependencias ignorados no cambian la evidencia Git.
+
+Pruebas por `CommandRunner` existente con subprocess real y entorno explícito
+temporal para fixture confiable; agentes falsos y Git/SQLite temporales hasta
+commit H2.4 en worktree, conservando snapshots, permisos y contenido exacto.
+ACCEPT no supera tests/tipos/build/política fallidos. No se añade un adaptador de
+comandos de producto, cola, servicio, proceso automático o cambio de esquema/codec.
+Recuperación de validadores de producto, permisos de CLI real y aislamiento físico
+no certificados; interacción con DOM mínimo sin navegador. ReferenceProject no ejecutado.
+
+La plantilla de bootstrap H4.2 sigue siendo documental: declarar el segundo
+perfil no genera ni instala una app desde el brief. No se modifica esa decisión.
+H5.1 importación JUnit y detalle de tests es la siguiente tarea, sin iniciarla;
+proveedores y smokes siguen sin autorización disponible.

@@ -35,7 +35,7 @@ Actualizado: 2026-10-13.
 - Dependencias reales instaladas en `.venv` / `frontend/node_modules`, locks
   `uv.lock` / `frontend/package-lock.json`. Pins H0.2 usados conservados;
   backend de paquete `uv_build==0.12.19`. Comandos comprobados en README/AGENTS.
-- 498 casos de producto en `tests/product/`; pytest ejecuta 510 pruebas en total.
+- 514 casos de producto en `tests/product/`; pytest ejecuta 526 pruebas en total.
   La comprobación ligera anterior conserva sus 12 checks sin dependencias.
 - H1.1 completado: [importación legacy y verificaciones](discovery/H1.1_IMPORT.md),
   [alcance original](discovery/H1.1_SCOPE.md). Lector local explícito de
@@ -328,6 +328,16 @@ Actualizado: 2026-10-13.
   API/UI con guardia local, tipos generados y demo exclusivamente sintética.
   No añade otro perfil ni instala/genera una aplicación desde el brief.
 
+- H4.3 completado offline: [segundo perfil TypeScript web](discovery/H4.3_TYPESCRIPT_PROFILE.md),
+  D038. Perfil declarativo con preparación npm offline desde lock, typecheck,
+  tres tests Node y build estático, reglas de rutas/comandos e instrucciones.
+  Node 24.15.0, npm 11.12.1 y TypeScript 5.9.3 en fixture con lock propio.
+- 16 casos nuevos con comandos reales por el puerto de prueba, agentes falsos,
+  Git/SQLite temporales y worktree hasta COMMITTED. Conserva contexto, contrato,
+  prompts, permisos y evidencia exacta; tests/tipos/build/política fallidos impiden
+  commit. Sin cambios del núcleo, API/UI, esquema ni codec; no añade un ejecutor
+  de comandos al servicio ni modifica la plantilla documental de bootstrap.
+
 ## Todavía no existe
 
 Recorrido de tarea real del motor con proveedores ni entrada CLI gestionada;
@@ -367,7 +377,9 @@ H4.1 completado offline: chat por turnos nuevos de solo lectura y propuestas
 confirmadas como tareas normales (D035).
 Exportación mecánica de STATE/NEXT_STEPS completada offline (D036).
 H4.2 bootstrap guiado completado offline (D037).
-Siguiente tarea: H4.3 segundo perfil, sin iniciarla. Sin proveedores nuevos.
+H4.3 segundo perfil TypeScript web completado offline (D038).
+Siguiente tarea: H5.1 importación JUnit y detalle de tests, sin iniciarla.
+Sin proveedores nuevos.
 
 ## Verificación de H0.1
 
@@ -1230,6 +1242,37 @@ Siguiente tarea: H4.3 segundo perfil, sin iniciarla. Sin proveedores nuevos.
   manual; sin abandono ni limpieza automática de bootstrap incierto.
 
   H4.3 no se ha iniciado.
+
+## Verificación de H4.3
+
+- Git inicial limpio en `main`, `2b73f50`. Leídos AGENTS, STATE, NEXT_STEPS,
+  DECISIONS, especificación §9–11 y backlog H4.3. Sin contradicciones materiales.
+- 526 pruebas pytest y 121 subtests: 510 anteriores y 16 nuevas H4.3. También
+  12 checks ligeros, cuatro tests del cliente Node y check TypeScript del frontend.
+  La suite conserva los checks de migraciones y sincronización OpenAPI; no hay
+  migración, cambio del codec o contratos HTTP que regenerar. Aviso conocido
+  Starlette/HTTPX conservado.
+- Node/npm/tsc reales en checkouts sintéticos: preparación offline, check, tres
+  tests Node y build; se comprueban salida/duración y árbol Git intacto pese a
+  dependencias y artefactos ignorados. Lock separado con TypeScript 5.9.3.
+- Regresión introducida solo en copia → corrección falsa → validaciones reales
+  → ACCEPT falso → ACCEPTANCE_READY → commit H2.4 limitado a `src/estimate.ts`.
+  Lectura posterior conserva snapshots/historial/resultados; origen del worktree
+  intacto. Seis comandos con eventos de inicio/fin y evidencia Git compartida por
+  tests/review/aceptación.
+- Tests, tipos y build fallidos; modificación de tests protegidos aunque pasen
+  validaciones; caché vacía, lock inconsistente y engines incompatibles;
+  comandos fuera de prefijos; denegación once consumida sin invocar al ejecutor;
+  bytes externos después de validar conservados sin intención de commit.
+- Diff/whitespace revisados. Sin proveedores/smokes/login, red externa, ReferenceProject,
+  configuración global, colaboración automática, harness de desarrollo o push.
+  No se migró la SQLite de trabajo. Commit solicitado por el usuario.
+- Límites: runner de comandos real solo de prueba para fixture confiable, sin
+  recuperación/cancelación de validadores de producto. Interacción con DOM mínimo,
+  sin navegador ni servidor web. Sin JUnit/cobertura, formatter o nueva plantilla
+  de bootstrap; la plantilla H4.2 sigue siendo documental.
+
+  H5.1 importación JUnit queda siguiente, sin iniciar.
 
 ## Coordinación
 

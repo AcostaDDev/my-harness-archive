@@ -1,46 +1,53 @@
-# Siguiente tarea — H4.3 Segundo perfil
+# Siguiente tarea — H5.1 Importación JUnit y detalle de tests
 
-H4.2 bootstrap guiado se completó offline el 2026-10-13 (D037).
-Desde una carpeta vacía autorizada por el servidor recoge brief y decisiones,
-ofrece una propuesta Codex opcional de solo lectura, previsualiza documentos y
-crea un commit inicial conciliable, primera fase y tarea documental acotada.
-Una carpeta no vacía conduce a importación, conservando sus bytes.
-Ver [entrega y límites](discovery/H4.2_BOOTSTRAP.md).
+H4.3 segundo perfil se completó offline el 2026-10-13 (D038).
+`typescript-web` declara preparación npm offline desde lock, tipos, tests y build
+estático, comandos y reglas. Fixture con Node 24.15.0, npm 11.12.1 y TypeScript
+5.9.3; procesos reales por el puerto de prueba, agentes falsos y Git/SQLite
+temporales hasta COMMITTED. Sin condiciones de stack nuevas en el núcleo.
+Ver [entrega y límites](discovery/H4.3_TYPESCRIPT_PROFILE.md).
 
 Estado verificado:
 
-- migración `0013_bootstrap`; codec anterior conservado;
-- 510 pruebas pytest y 121 subtests (48 nuevas de H4.2);
+- esquema `0013_bootstrap` y codec conservados;
+- 526 pruebas pytest y 121 subtests (16 nuevas de H4.3);
 - 12 checks ligeros y 4 pruebas Node;
-- OpenAPI/tipos, TypeScript/build, `alembic check` en SQLite temporal;
-- recorrido Chrome sintético: brief → propuesta → decisiones → preview → crear
-  → fase ACTIVE → primera tarea → ACCEPTANCE_READY → commit → COMMITTED;
-- reinicio/recarga con resultado conservado, y destino no vacío derivado a
-  importación sin sobrescribir.
+- check TypeScript del frontend; checks existentes de esquema/OpenAPI;
+- preparación → tipos → tres tests Node → build con evidencia Git intacta;
+- tarea corregida en worktree → ACCEPTANCE_READY → commit exacto → COMMITTED;
+- fallos de tests/tipos/build/política, caché, engines y lock impiden continuar;
+  permisos y snapshots conservados, cambios externos bloquean commit.
 
-No se usaron proveedores ni se migró la SQLite de trabajo. La plantilla inicial
-es documental, conserva el perfil configurado y no prepara ni instala un stack.
-**H4.3 no está iniciado.** Los consentimientos de smokes siguen agotados.
+No se usaron proveedores ni se migró la SQLite de trabajo. El runner real es de
+prueba para fixture confiable; no añade un ejecutor de comandos al servicio. La
+plantilla de bootstrap H4.2 sigue siendo documental. **H5.1 no está iniciado.**
+Los consentimientos de smokes siguen agotados.
 
-## Objetivo y alcance (backlog H4.3)
+## Objetivo y alcance (primer incremento del hito 5)
 
-1. Añadir un stack distinto del Django original, preferentemente un proyecto web
-   TypeScript sencillo.
-2. Declarar preparación, validaciones, comandos y reglas en un perfil separado.
-3. Verificar preparación y tests con fixtures/checkouts sintéticos por los puertos
-   existentes, sin condicionales específicos nuevos en el núcleo.
-4. Documentar comandos reales, dependencias/locks y límites de la verificación.
+1. Importar reportes JUnit XML de validaciones y conservar el original con hash y
+   procedencia vinculados al comando, intento y evidencia de contenido exacto.
+2. Exponer detalle por test (id/suite/resultado/duración/error), distinguiendo
+   datos observados, ausentes y parciales; no sumar duraciones como tiempo real.
+3. Declarar rutas de reportes y cobertura de validación por perfil, sin introducir
+   condiciones específicas de frameworks en el núcleo.
+4. Incorporar consulta API/UI y pruebas offline con reportes sintéticos válidos,
+   parciales e inválidos. Acotar el incremento a JUnit; otros trabajos del hito 5
+   permanecen pendientes.
 
 ## Criterios de aceptación
 
-- Preparación y tests funcionan mediante el nuevo perfil.
-- El núcleo no incorpora condiciones específicas del stack.
-- Se conservan contratos, permisos, snapshots y evidencias del flujo gestionado.
-- Pasan las comprobaciones offline pertinentes y se actualiza la documentación.
+- Un run conserva el reporte original y muestra detalle por test con procedencia
+  y cobertura declarada; no presenta datos ausentes como éxitos o ceros.
+- Reporte inválido/ausente/parcial produce diagnóstico explícito, sin fabricar
+  casos ni reemplazar resultados observados del comando.
+- El parser no lee rutas externas ni ejecuta contenido XML. Tests y review siguen
+  vinculados al contenido exacto, sin aceptar ni hacer commit por el reporte solo.
+- Pasan las regresiones offline pertinentes y se actualiza la documentación.
 
 ## Fuera de alcance
 
-- Hito 5 y tareas posteriores.
+- Backup/restore, retención, empaquetado/distribución y demás incrementos de H5.
 - Proveedores reales/smokes: autorización específica (D033 punto 8).
 - App Server/SDK, sesión local, SSE gestionado, push y publicación.
 
