@@ -77,3 +77,35 @@ test('401 notifies the session gate once and never retries a mutation or changes
     assert.equal(events.length, 2);
   } finally { delete globalThis.window; }
 });
+
+test('lost acknowledgement then expired session keeps one identity until explicit authenticated resend', async () => {
+  const pending = jobRequest('/runs/r/actions', {action:'commit', expected_version:17});
+  savePending(pending);
+  const calls = [];
+  const jobs = new Map();
+  let authenticated = true;
+  globalThis.fetch = async (path, options) => {
+    calls.push({path, options});
+    if (!authenticated) return Response.json({detail:{code:'session_required'}}, {status:401});
+    const key = options.headers['Idempotency-Key'];
+    if (!jobs.has(key)) {
+      jobs.set(key, {id:42}); // server admitted the action; its response was lost
+      throw new TypeError('Lost acknowledgement');
+    }
+    return Response.json(jobs.get(key));
+  };
+  await assert.rejects(managed(pending.path, pending.body, pending.key));
+  authenticated = false;
+  const restored = readPending();
+  await assert.rejects(managed(restored.path, restored.body, restored.key), e => e.status === 401);
+  authenticated = true; // logging in does not call managed or discard pending state
+  await new Promise(resolve => setImmediate(resolve));
+  assert.equal(calls.length, 2);
+  assert.deepEqual(readPending(), pending);
+  assert.deepEqual(await managed(restored.path, restored.body, restored.key), {id:42});
+  savePending(); // explicit resend acknowledged
+  assert.equal(readPending(), undefined);
+  assert.equal(jobs.size, 1);
+  assert.deepEqual(calls[0], calls[1]);
+  assert.deepEqual(calls[1], calls[2]);
+});

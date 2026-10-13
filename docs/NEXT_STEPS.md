@@ -1,45 +1,32 @@
-# Siguiente tarea — H5.7 Recorridos E2E offline
+# Siguiente paso — Revisar cierre del hito 5 y acordar nuevo alcance
 
-H5.6 sesión local y protección de endpoints completado offline el 2026-10-13
-(D044). Sesión efímera con clave en archivo privado, cookie HttpOnly, caducidad y
-cierre; guardia uniforme de datos/acciones/streams, UI sin reenvíos automáticos y
-paquete/restauración de consulta verificados con sesión.
-Ver [entrega y límites](discovery/H5.6_SESSION.md) y
-[alcance original](discovery/H5.6_SCOPE.md).
+H5.7 recorridos E2E offline completado el 2026-10-13 (D045).
+Ver [entrega, matriz y reproducción](discovery/H5.7_E2E.md) y
+[alcance original](discovery/H5.7_SCOPE.md).
+
+- Crear, importar, ejecutar, bloquear, denegar, reintentar y recuperar comprobados
+  con sesión real, API, Git/SQLite temporales y puertos falsos.
+- Reinicio, idempotencia, evidencia exacta, confirmaciones y commit verificados;
+  ninguna denegación, pérdida de sesión o recuperación reenvía acciones por sí sola.
+- Wheel instalado aislado: bootstrap → primera tarea → commit → reinicio →
+  backup/restauración de consulta, sin depender del checkout de desarrollo.
+- 771 pruebas pytest y 121 subtests, 12 checks ligeros, 6 pruebas Node,
+  TypeScript/build y verificador del paquete correctos.
+- Chrome bloqueó el acceso con `ERR_BLOCKED_BY_CLIENT`: QA visual de H5.7
+  pendiente de un navegador que permita acceder. HTTP no equivale a QA visual.
 
 Esquema `0013_bootstrap`, codec 6, adaptador `cli-4` y locks conservados.
-Navegador bloqueó la URL de comprobación visual con `ERR_BLOCKED_BY_CLIENT`;
-pruebas HTTP/cliente y paquete verificadas. **H5.7 no está iniciado.**
-Los consentimientos de proveedores/smokes siguen agotados.
+No hay siguiente incremento de implementación definido ni iniciado.
 
-## Objetivo y alcance (último incremento previsto del hito 5)
+## Próxima tarea concreta, sin iniciar
 
-1. Consolidar recorridos reproducibles de crear, importar, ejecutar, bloquear,
-   denegar, reintentar y recuperar, usando proyectos sintéticos y puertos falsos.
-2. Ejercitar la sesión local y las confirmaciones desde UI/API, con historial,
-   idempotencia, evidencias y recuperación coherentes tras reiniciar.
-3. Verificar el recorrido disponible en paquete instalado y restauración de
-   consulta sin depender del checkout de desarrollo; documentar los límites.
+Revisar con el usuario el cierre del hito 5 a partir de la matriz y los límites
+de H5.7, y elegir el siguiente alcance acotado. Si se prioriza QA visual, repetir
+los recorridos de sesión/confirmaciones/recuperación sobre fixture sintética en
+un navegador accesible. No ampliar producto ni iniciar un piloto automáticamente.
 
-## Criterios de aceptación
-
-- Los recorridos cubren los escenarios del backlog H5 y distinguen fakes de
-  transporte/proveedores reales; no consumen modelos ni amplían permisos.
-- Un rechazo, pérdida de sesión o caída no reenvía acciones automáticamente ni
-  pierde su identidad/evidencia; reintentos y recuperación siguen explícitos.
-- Aceptación/commit se vinculan al contenido exacto; tests, permisos o revisión
-  fallidos impiden avanzar. No integrar ramas ni cerrar fases por inferencia.
-- Inicio desde instalación aislada, operación sintética y consulta de backup
-  restaurado comprobados; la restauración no reanuda trabajos.
-- Verificar UI si el navegador permite acceso; registrar con precisión cualquier
-  bloqueo de herramienta y no presentar pruebas HTTP como QA visual.
-- Checks offline pertinentes, diff y documentación de estado actualizados.
-
-## Fuera de alcance
-
-- Smokes/inferencia reales (D033 punto 8 exige autorización específica), acceso
-  remoto/multiusuario, OAuth, App Server/SDK, SSE gestionado y publicación.
-- Reactivación de restauraciones, actualización instalada de bases existentes,
-  integración de ramas, GC y ampliaciones de producto no necesarias al recorrido.
-
-No lanzar colaboración automática ni usar el harness para desarrollar el repo.
+Los recorridos con proveedores siguen sin verificar. Un eventual smoke completo
+(tarea → commit → check → cierre, D033.8) requiere propuesta y autorización
+específica, checkout desechable y modelos/esfuerzos fijados por el usuario.
+Los consentimientos previos están agotados. Sin push, publicación, colaboración
+automática ni uso del harness para desarrollar este repositorio.

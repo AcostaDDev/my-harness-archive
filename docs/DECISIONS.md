@@ -1352,3 +1352,29 @@ Paquete instalado comprobado offline con sesión, simulación/reinicio y restaur
 de consulta. Navegador bloqueó la URL sintética (`ERR_BLOCKED_BY_CLIENT`), sin
 acreditar QA visual. H5.7 recorridos E2E offline es la siguiente tarea, sin iniciar;
 consentimientos de proveedores/smokes agotados. No hay publicación ni push.
+
+## D045 — Recorridos offline consolidados y cierre acotado del hito 5
+
+Estado: implementado y verificado offline el 2026-10-13.
+[Recorridos, matriz de cobertura y límites](discovery/H5.7_E2E.md).
+
+H5.7 conecta las fronteras existentes mediante seis pruebas de API/sesión,
+Git/SQLite y puertos de agente/comandos falsos. Reutiliza la regresión anterior
+para caídas de procesos sintéticos, streams, conciliación Git, expiración de
+permisos, SSE y segundo perfil. Sin cambios del producto, esquema, codec o locks.
+
+El verificador de distribución incorpora bootstrap/primera tarea/commit/reinicio
+y comparación de evidencia restaurada. La factory sintética autónoma se copia a
+un directorio temporal, no se empaqueta ni importa código del checkout durante
+el servicio instalado. Git es real, los agentes falsos y la red solo loopback.
+Restauración de consulta sin checkout original, supervisor ni mutaciones.
+
+Chrome rechaza la URL local con ERR_BLOCKED_BY_CLIENT: no se acredita QA visual
+ni recorrido por clic en H5.7. El criterio condicional de NEXT_STEPS permite
+registrar ese bloqueo; las pruebas HTTP/cliente quedan identificadas como tales.
+No se altera la protección del navegador ni se interpreta como fallo del producto.
+
+Concluye el último incremento offline previsto del hito 5, sin certificar un
+recorrido real de proveedores ni todos los límites del MVP. Siguiente paso:
+revisar el cierre y acordar nuevo alcance con el usuario, sin implementar otra
+tarea ni consumir proveedores. D033.8 y los consentimientos agotados se conservan.

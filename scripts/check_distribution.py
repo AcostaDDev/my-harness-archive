@@ -6,6 +6,7 @@ from http.cookiejar import CookieJar
 from pathlib import Path
 import re
 import socket
+import shutil
 import subprocess
 import tempfile
 import time
@@ -39,6 +40,8 @@ def main():
         subprocess.run(['uv', 'pip', 'install', '--offline', '--no-deps', '--python', str(python),
                         str(distribution / 'harness_local-0.1.0-py3-none-any.whl')], check=True)
         cli = venv / 'bin/harness-local'
+        # Git is the only extra executable exposed to the managed synthetic journey.
+        (venv / 'bin/git').symlink_to(shutil.which('git'))
         # PATH sin Node, sin PYTHONPATH, sin configuración ambiental de producto.
         env = {'PATH': str(venv / 'bin'), 'LANG': 'en_US.UTF-8', 'PYTHONNOUSERSITE': '1'}
 
@@ -131,6 +134,73 @@ def main():
             simulation = json.loads(body)
         with server(db) as base:
             assert request(base, '/api/simulations/' + simulation['id'])[0] == 200
+        # H5.7: actual managed bootstrap -> task -> exact-content commit, all via HTTP.
+        # Only the standalone synthetic port module is copied; installed code has no
+        # development checkout on sys.path, and no provider executable is on PATH.
+        shutil.copy2(ROOT / 'tests/fixtures/e2e/installed_config.py', work / 'installed_config.py')
+        area = work / 'offline'
+        area.mkdir()
+        (area / 'project').mkdir()
+        (area / 'marker').write_text('offline-installed-v1\n')
+        fixture_env = {'PYTHONPATH': str(work), 'HARNESS_E2E_ROOT': str(area),
+                       'HARNESS_MANAGED_CONFIG': 'installed_config:build'}
+        headers = {'X-Harness-Local': '1'}
+        def post(base, path, data, key=None, expected=202):
+            status, body = request(base, path, data, headers | ({'Idempotency-Key': key} if key else {}))
+            assert status == expected, (status, body)
+            return json.loads(body)
+        def read(base, path):
+            status, body = request(base, path)
+            assert status == 200, (status, body)
+            return json.loads(body)
+        def settled(base, run_id):
+            for _ in range(200):
+                jobs = read(base, f'/api/managed/runs/{run_id}/jobs')
+                if jobs and all(j['status'] not in ('QUEUED', 'ACTIVE') for j in jobs):
+                    return read(base, f'/api/managed/runs/{run_id}')
+                time.sleep(.05)
+            raise AssertionError('Installed managed job did not settle')
+        path = '/api/managed/projects/offline/bootstrap'
+        data = {'brief': {'problem': 'Synthetic local workflow', 'users': 'Offline operator',
+                         'minimum_features': 'One observable task', 'constraints': 'Offline only',
+                         'delivery_goal': 'Reviewed documentary task'},
+                'decisions': {'scope': 'One task', 'architecture': 'Registered synthetic profile',
+                              'out_of_scope': 'Providers, network and publication'}}
+        with server(db, fixture_env) as base:
+            preview = post(base, path + '/preview', data, expected=200)
+            body = {'input': data, 'preview_sha256': preview['preview_sha256'],
+                    'reason': 'Reviewed installed preview', 'confirmed': True}
+            post(base, path, {**body, 'confirmed': False}, 'create', expected=422)
+            assert not list((area / 'project').iterdir())
+            created = post(base, path, body, 'create')
+            settled(base, created['run_id'])
+            assert read(base, path)['operation']['status'] == 'COMPLETED'
+            assert not (area / 'calls.jsonl').exists()
+        with server(db, fixture_env) as base:
+            assert post(base, path, body, 'create')['id'] == created['id']
+            task_body = {'task_id': 'P001-T001', 'phase_id': 'P001', 'text': preview['task_text']}
+            task = post(base, '/api/managed/projects/offline/runs', task_body, 'first-task')
+            ready = settled(base, task['run_id'])
+            assert ready['status'] == 'ACCEPTANCE_READY'
+            assert ready['history']['acceptance']['changed_paths'] == ['docs/DELIVERY_CHECKLIST.md']
+            action_path = f"/api/managed/runs/{task['run_id']}/actions"
+            action_body = {'action': 'commit', 'expected_version': ready['version']}
+            checkpoint = post(base, action_path, action_body, 'checkpoint')
+            committed = settled(base, task['run_id'])
+            assert committed['status'] == 'COMMITTED'
+            assert committed['commit']['commit'] == committed['commit']['expected_commit']
+            assert post(base, action_path, action_body, 'checkpoint')['id'] == checkpoint['id']
+            historical_attempts = read(base, f"/api/managed/runs/{task['run_id']}/attempts")
+            historical_events = read(base, f"/api/managed/runs/{task['run_id']}/events?limit=100")
+        calls = (area / 'calls.jsonl').read_bytes()
+        assert [json.loads(line)['role'] for line in calls.splitlines()] == ['executor', 'reviewer']
+        with server(db, fixture_env) as base:
+            assert read(base, f"/api/managed/runs/{task['run_id']}") == committed
+            assert post(base, '/api/managed/projects/offline/runs', task_body, 'first-task')['id'] == task['id']
+            assert post(base, action_path, action_body, 'checkpoint')['id'] == checkpoint['id']
+            time.sleep(.1)
+            assert (area / 'calls.jsonl').read_bytes() == calls
+
         # Configuración incompatible: fallo visible, sin corregir ni activar nada.
         result = run('serve', '--database', db, ok=False, extra={'HARNESS_MANAGED_CONFIG': 'invalid'})
         assert 'módulo:atributo' in result.stderr
@@ -143,11 +213,21 @@ def main():
         run('backup-verify', bundle)
         run('backup-restore', bundle, restored)
         restored_db = restored / 'state.sqlite3'
+        # The restored evidence must be readable with its original Git checkout absent.
+        (area / 'project').rename(work / 'unavailable-project')
         with server(restored_db, {'HARNESS_MANAGED_CONFIG': 'invalid'}) as base:
             assert request(base, '/')[0] == 200
             assert request(base, '/api/simulations/' + simulation['id'])[0] == 200
             assert request(base, '/api/simulations', {'title': 'forbidden'}, {'X-Harness-Local': '1'})[0] == 409
-        print('Wheel aislado: UI/assets/API, simulación/reinicio, errores, backup/restauración de consulta correctos.')
+            archived = read(base, f"/api/managed/runs/{task['run_id']}")
+            assert archived['history'] == committed['history']
+            assert archived['commit'] == committed['commit']
+            assert read(base, f"/api/managed/runs/{task['run_id']}/attempts") == historical_attempts
+            assert read(base, f"/api/managed/runs/{task['run_id']}/events?limit=100") == historical_events
+            assert read(base, '/api/managed/supervisor')['enabled'] is False
+            assert request(base, action_path, action_body, headers | {'Idempotency-Key': 'archive-refused'})[0] == 409
+            assert (area / 'calls.jsonl').read_bytes() == calls
+        print('Wheel aislado: UI/assets/API, sesión, bootstrap/tarea/commit/reinicio, errores y evidencia restaurada correctos.')
 
 
 if __name__ == '__main__':

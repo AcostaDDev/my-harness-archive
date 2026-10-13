@@ -35,7 +35,7 @@ Actualizado: 2026-10-13.
 - Dependencias reales instaladas en `.venv` / `frontend/node_modules`, locks
   `uv.lock` / `frontend/package-lock.json`. Pins H0.2 usados conservados;
   backend de paquete `uv_build==0.12.19`. Comandos comprobados en README/AGENTS.
-- 753 casos de producto en `tests/product/`; pytest ejecuta 765 pruebas en total.
+- 759 casos de producto en `tests/product/`; pytest ejecuta 771 pruebas en total.
   La comprobación ligera anterior conserva sus 12 checks sin dependencias.
 - H1.1 completado: [importación legacy y verificaciones](discovery/H1.1_IMPORT.md),
   [alcance original](discovery/H1.1_SCOPE.md). Lector local explícito de
@@ -410,6 +410,16 @@ Actualizado: 2026-10-13.
   bloqueada por el navegador. Límites frente a otros usuarios/servicios locales
   y cookies compartidas por hostname documentados.
 
+- H5.7 completado offline: [recorridos, matriz y verificaciones](discovery/H5.7_E2E.md),
+  [alcance original](discovery/H5.7_SCOPE.md), D045. Seis recorridos nuevos de
+  crear/importar/ejecutar/bloquear/denegar/reintentar/recuperar con sesión real,
+  API, Git/SQLite temporales y puertos falsos; reinicio e idempotencia conservados.
+- Wheel aislado recorre bootstrap → tarea → commit → reinicio → backup/restauración
+  con historial, intentos, eventos y commit exactos, sin checkout original ni
+  reactivación. Cliente Node conserva identidad tras respuesta perdida y 401.
+  771 pruebas y 121 subtests correctos; Chrome vuelve a bloquear la URL local,
+  sin QA visual acreditada. No cambia el producto ni se inicia otro incremento.
+
 ## Todavía no existe
 
 Recorrido de tarea real del motor con proveedores ni entrada CLI gestionada;
@@ -458,8 +468,9 @@ H5.3 retención local de logs completado offline (D041).
 H5.4 diagnósticos locales de compatibilidad completado offline (D042).
 H5.5 assets y entrada local completados offline (D043).
 H5.6 sesión local y protección uniforme completados offline (D044).
-Siguiente tarea: H5.7 recorridos E2E offline, sin iniciarla.
-Sin proveedores nuevos.
+H5.7 recorridos E2E completados offline (D045).
+Siguiente paso: revisar cierre del hito 5 y acordar nuevo alcance, sin iniciarlo.
+QA visual H5.7 bloqueada por herramienta; sin proveedores nuevos.
 
 ## Verificación de H0.1
 
@@ -1561,6 +1572,37 @@ Sin proveedores nuevos.
   Commit solicitado por el usuario.
 
   Siguiente tarea: H5.7 recorridos E2E offline, sin iniciar.
+
+## Verificación de H5.7
+
+- Git inicial limpio en `main`, `189aa10`. Leídos AGENTS, STATE, NEXT_STEPS,
+  DECISIONS y secciones pertinentes de especificación/backlog. Alcance preservado;
+  D045 y matriz de trazabilidad en [H5.7_E2E.md](discovery/H5.7_E2E.md).
+- Seis pruebas nuevas conectan sesión/API, confirmación, importación/bootstrap,
+  denegación/sustitución, fallos de tests/review, cuarentena, reinicio, evidencia
+  exacta y commit; Git/SQLite reales temporales, agentes/comandos falsos.
+  Se mantiene fase ACTIVE y checkout principal intacto, sin integrar ramas.
+- Regresión completa: **771 pruebas y 121 subtests correctos** (765 + 6),
+  incluidos migraciones y OpenAPI. **12 checks ligeros y 6 pruebas Node**;
+  respuesta perdida/401 conserva el mismo sobre hasta reenvío humano. Persiste
+  el aviso Starlette/HTTPX conocido, sin cambiar dependencias.
+- Build sdist/wheel offline con TypeScript/Vite correcto. Instalación en venv
+  nuevo con hashes, cwd/PYTHONPATH temporal sin código de desarrollo y PATH sin
+  Node/proveedores (Git explícito). HTTP real: bootstrap, tarea, único commit,
+  doble envío/reinicio y exactamente un ejecutor/revisor falsos auditados.
+- Backup y restauración por CLI, servidores detenidos; checkout original movido
+  fuera de su ruta. Historial/commit/intentos/eventos restaurados idénticos;
+  supervisor deshabilitado, factory ambiental ignorada y mutaciones 409.
+- Chrome sobre fixture temporal :8027 rechazó `ERR_BLOCKED_BY_CLIENT` antes de
+  mostrar UI. Sin QA visual ni clics acreditados; no se eludió el bloqueo.
+  Uvicorn detenido limpiamente y clave retirada; bind/TERM fuera del sandbox
+  autorizados. SQLite de trabajo y configuración global intactas.
+- Diff/whitespace y enlaces documentales revisados. Sin proveedores/smokes,
+  ReferenceProject, colaboración automática, harness de desarrollo, publicación ni
+  push. Commit solicitado por el usuario. Esquema/codec/cli-4/locks conservados.
+- Siguiente paso: revisión del cierre del hito 5 y elección de nuevo alcance,
+  sin iniciar tarea adicional. QA visual y recorrido de proveedores pendientes;
+  D033.8 requiere autorización específica para este último.
 
 ## Coordinación
 

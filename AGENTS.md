@@ -115,7 +115,9 @@ H5.5 completado offline: wheel/sdist con UI/migraciones y entrada local (D043).
 Ver `docs/discovery/H5.5_DISTRIBUTION.md`.
 H5.6 completado offline: sesión efímera, guardia uniforme API/streams y UI (D044).
 Ver `docs/discovery/H5.6_SESSION.md`.
-Siguiente tarea: H5.7 recorridos E2E offline, sin iniciarla.
+H5.7 completado offline: seis recorridos API/sesión y flujo gestionado del wheel
+con restauración de evidencia (D045). Ver `docs/discovery/H5.7_E2E.md`.
+Siguiente paso: revisar cierre del hito 5 y acordar nuevo alcance, sin iniciarlo.
 Comprobación offline ligera, solo biblioteca estándar, desde la raíz:
 
 ```sh
@@ -145,9 +147,9 @@ npm --prefix frontend run dev
 ```
 
 Las primeras instalaciones necesitan red; después los checks son offline.
-No usar `uv --active` con entornos de otros proyectos. 765 pruebas pytest
+No usar `uv --active` con entornos de otros proyectos. 771 pruebas pytest
 (158 anteriores + 53 H2.3 + 8 entorno smoke + 34 H2.4 + 35 H2.5 + 18 API gestionada + 2 demo UI + 23 H3.1,
-+ 30 H3.2 + 29 H3.3 + 18 H3.4 + 22 H4.1 + 32 exportación + 48 H4.2 + 16 H4.3 + 43 H5.1 + 43 H5.2 + 43 H5.3 + 52 H5.4 + 13 H5.5 + 45 H5.6, con Git temporal).
++ 30 H3.2 + 29 H3.3 + 18 H3.4 + 22 H4.1 + 32 exportación + 48 H4.2 + 16 H4.3 + 43 H5.1 + 43 H5.2 + 43 H5.3 + 52 H5.4 + 13 H5.5 + 45 H5.6 + 6 H5.7, con Git temporal).
 Paquete H5.5: UI/API en 127.0.0.1:8013; en desarrollo API en :8013 y Vite en :5173
 en otra terminal. SQLite local ignorada en `.local/harness.sqlite3`; migración
 explícita antes de arrancar. Ver README y `docs/discovery/H0.3_SKELETON.md`.
@@ -178,7 +180,7 @@ run STOPPED por fin deliberado del smoke, owner cerrado, grupos STOPPED/dead y
 lock nuevo liberado por finalización normal. D020/D022 y sus locks conservados.
 Ver `docs/discovery/H2.3_ENV_SMOKE.md`. Sin aceptación/commit de producto ni
 cuota/retries certificados. Consentimiento satisfecho por una ejecución;
-no hacer login, consumir ni relanzar automáticamente. Siguiente tarea: H5.7 recorridos E2E offline, sin iniciar (D044).
+no hacer login, consumir ni relanzar automáticamente. H5.7 completado offline (D045); siguiente revisión de cierre, sin iniciar.
 Los checks no consumen proveedores. Sin configuración gestionada, la API
 `/api/managed` no tiene proyectos, puertos ni supervisor y solo lee.
 `HARNESS_MANAGED_CONFIG=módulo:atributo` (o `create_app(managed=...)`) registra
@@ -194,7 +196,7 @@ Regresión del cliente gestionado, sin dependencias adicionales ni navegador:
 node --test frontend/tests/managed-api.test.mjs
 ```
 
-Cinco pruebas Node. Demo offline opt-in: `examples.managed_demo:build`, preparación
+Seis pruebas Node. Demo offline opt-in: `examples.managed_demo:build`, preparación
 y comandos en `docs/discovery/H2_EXIT_UI.md`. Nunca apuntar la demo a un checkout
 real. Toda API (lecturas, evidencias, health/OpenAPI y streams incluidos) exige
 sesión local. Al arrancar se anuncia solo la ruta de la clave en un archivo
