@@ -15,6 +15,7 @@ from harness_local.core.engine.evidence import (
     ContentEvidence, EvidenceCapture, check_paths, strip_empty_provenance,
 )
 from harness_local.core.engine.journal import EngineJournal, JournalError
+from harness_local.core.engine.prompts import builtin_catalog, dump_catalog, load_catalog, render_attempt
 from harness_local.core.engine.planning import deterministic_task, section
 from harness_local.core.engine.review import ReviewCycle, review_contract, stalled_review_signature
 from harness_local.core.engine.validation import CommandRunner, run_command, run_validations
@@ -24,17 +25,38 @@ class OfflineEngine:
     """Puertos inyectados; ninguna CLI se activa desde el núcleo."""
 
     def __init__(self, agents: AgentAdapter, commands: CommandRunner, evidence: EvidenceCapture,
-                 journal: EngineJournal | None = None):
+                 journal: EngineJournal | None = None, prompts=None):
         self.agents = agents
         self.commands = commands
         self.evidence = evidence
         self.journal = journal
+        self.prompts = prompts or (lambda context: builtin_catalog())
+        self.resuming = False
 
     def _checkpoint(self, history: RunHistory, stage: str) -> None:
         if self.journal:
             self.journal.checkpoint(history, stage)
 
+    def _catalog(self, context, history):
+        if self.resuming and history.prompt_catalog_json is not None:
+            return load_catalog(history.prompt_catalog_json)
+        return self.prompts(context)
+
+    def _invoke(self, context, history, role, selection, name, values):
+        try:
+            catalog = self._catalog(context, history)
+            history = replace(history, prompt_catalog_json=dump_catalog(catalog))
+            prompt, snapshot = render_attempt(catalog, name, values, context)
+        except (ValueError, KeyError, TypeError) as exc:
+            return stopped(history, "prompts", str(exc)), None
+        return invoke_agent(context, history, self.agents, role, selection, prompt, self.journal,
+                            prompt_snapshot_json=snapshot)
+
     def _prepare(self, context: ProjectContext, history: RunHistory) -> RunHistory:
+        try:
+            history = replace(history, prompt_catalog_json=dump_catalog(self._catalog(context, history)))
+        except (ValueError, KeyError, TypeError) as exc:
+            return stopped(history, "prompts", str(exc))
         self._checkpoint(history, "preparation")
         for command in context.profile.preparation:
             result = run_command(context, self.commands, command, self.journal)
@@ -47,6 +69,7 @@ class OfflineEngine:
 
     def start(self, context: ProjectContext, task_id: str, phase_id: str, text: str,
               *, history: RunHistory | None = None) -> RunHistory:
+        self.resuming = False
         history = history or RunHistory(str(uuid4()), context_snapshot(context))
         if (history.context_json != context_snapshot(context) or history.task_json is not None
                 or history.attempts or history.cycles or history.stops or history.preparation_json
@@ -66,13 +89,13 @@ class OfflineEngine:
                 else:
                     history = replace(history, task_json=contract)
             if history.task_json is None:
-                prompt = "Plan exactly the requested task with an explicit executor selection.\n" + freeze({
+                prompt = freeze({
                     "task_id": task_id, "phase_id": phase_id,
                     "task_section": section(text, rf"^##\s+{task_id}\s+[—-].*$"),
                     "shared_constraints": section(text, r"^##\s+Shared\b.*$"),
                 })
                 selection = Selection(context.policy.planner_model, context.policy.planner_effort, "Explicit planner policy")
-                history, data = invoke_agent(context, history, self.agents, "planner", selection, prompt, self.journal)
+                history, data = self._invoke(context, history, "planner", selection, "plan-task", {"INPUT_JSON": prompt})
                 if data is None:
                     return history
                 history = replace(history, task_json=task_contract(context, data, task_id, phase_id))
@@ -84,6 +107,7 @@ class OfflineEngine:
 
     def resume(self, context: ProjectContext, history: RunHistory, *, retry_executor: bool = False) -> RunHistory:
         """Revalidar conserva trabajo; reintento explícito consume el presupuesto previo."""
+        self.resuming = True
         if context_snapshot(context) != history.context_json:
             raise ContractError("Resume requires the original frozen context/policy")
         if history.status not in {"stopped", "blocked", "revision_limit"} or history.task_json is None:
@@ -123,9 +147,9 @@ class OfflineEngine:
         except Exception as exc:
             return stopped(history, "evidence", str(exc))
         # No path/tool/network grant is inferred from prompt text.
-        prompt += "\n\nFrozen task contract:\n" + history.task_json
-        prompt += "\n\nProfile instructions:\n" + context.profile.executor_instructions
-        history, payload = invoke_agent(context, history, self.agents, "executor", selection, prompt, self.journal)
+        history, payload = self._invoke(context, history, "executor", selection, "execute-task", {
+            "INSTRUCTIONS": prompt, "TASK_JSON": history.task_json,
+            "PROFILE_INSTRUCTIONS": context.profile.executor_instructions})
         if payload is None:
             return history
         denials = payload.get("permission_denials", [])
@@ -151,12 +175,12 @@ class OfflineEngine:
             except Exception as exc:
                 return stopped(history, "evidence", str(exc))
             self._checkpoint(history, "reviewer")
-            prompt = "Review independently the frozen task and supplied evidence; ACCEPT, REVISE or BLOCKED.\n" + freeze({
+            prompt = freeze({
                 "task": task, "evidence": strip_empty_provenance(asdict(evidence)), "policy": asdict(policy),
                 "validation": strip_empty_provenance(asdict(validation)),
             })
             selection = Selection(context.policy.reviewer_model, context.policy.reviewer_effort, "Explicit independent review policy")
-            history, data = invoke_agent(context, history, self.agents, "reviewer", selection, prompt, self.journal)
+            history, data = self._invoke(context, history, "reviewer", selection, "review-task", {"INPUT_JSON": prompt})
             if data is None:
                 return history
             # Incluso una review inválida queda conservada para diagnóstico.
@@ -196,10 +220,9 @@ class OfflineEngine:
                 before = self.evidence.capture(context)
             except Exception as exc:
                 return stopped(history, "evidence", str(exc))
-            prompt += "\n\nFrozen task contract:\n" + history.task_json
-            prompt += "\n\nIndependent review to address:\n" + cycle.review_json
-            prompt += "\n\nProfile instructions:\n" + context.profile.executor_instructions
-            history, payload = invoke_agent(context, history, self.agents, "executor", selection, prompt, self.journal)
+            history, payload = self._invoke(context, history, "executor", selection, "revise-task", {
+                "INSTRUCTIONS": prompt, "TASK_JSON": history.task_json, "REVIEW_JSON": cycle.review_json,
+                "PROFILE_INSTRUCTIONS": context.profile.executor_instructions})
             if payload is None:
                 return history
             denials = payload.get("permission_denials", [])

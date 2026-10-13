@@ -22,6 +22,7 @@ from harness_local.core.engine.context import ProjectContext
 from harness_local.services.managed import LocalSupervisor
 from harness_local.services.migration import MigrationService
 from harness_local.storage.managed import SQLiteManagedRepository
+from harness_local.storage.prompts import PromptRepository
 from harness_local.storage.managed_views import SQLiteManagedViews
 
 logger = logging.getLogger(__name__)
@@ -157,6 +158,7 @@ class ManagedRuntime:
         self.config, self.migration = config, migration
         self.repository = SQLiteManagedRepository(self.engine)
         self.views = SQLiteManagedViews(self.engine)
+        self.prompts = PromptRepository(self.engine)
         self.projects = {project.id: project for project in config.projects}
         if config.supervisor:
             supervisor = LocalSupervisor(self.repository, config.ports_factory, lease_seconds=config.lease_seconds,

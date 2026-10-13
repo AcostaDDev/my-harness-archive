@@ -14,6 +14,8 @@ from urllib.parse import urlsplit
 from fastapi import APIRouter, Depends, Header, HTTPException, Query, Request
 
 from harness_local.api.schemas import (
+    PromptScope, PromptDetailRead, PromptVersionRead, PromptDraftCreate, PromptActivateCreate,
+    PromptValidateCreate, PromptValidationRead, PromptDiffRead,
     ActivationCreate, ActivationRead, ActivationTransition, ConfirmStoppedCreate, ManagedAttemptRead,
     ManagedEventsRead, ManagedJobRead, ManagedProjectRead, ManagedRunRead, ManagedRunSummaryRead,
     MigrationPreviewRead, ModeRead, Page, ProblemResponse, RunActionCreate, RunCreate, SupervisorRead,
@@ -259,5 +261,36 @@ def managed_router(runtime: ManagedRuntime):
              expected_version=body.expected_version, reason=body.reason)
         runtime.notify()
         return registered_run(detail["run_id"])
+
+    @router.get("/projects/{project_id}/prompts", response_model=list[PromptDetailRead])
+    def prompts(project_id: str, scope: PromptScope = "project"):
+        from harness_local.core.engine.prompts import VARIABLES
+        context = project(project_id).context
+        return [call(runtime.prompts.detail, context, scope, name) for name in VARIABLES]
+
+    @router.get("/projects/{project_id}/prompts/{name}", response_model=PromptDetailRead)
+    def prompt_detail(project_id: str, name: str, scope: PromptScope = "project"):
+        return call(runtime.prompts.detail, project(project_id).context, scope, name)
+
+    @router.post("/projects/{project_id}/prompts/{name}/validate", response_model=PromptValidationRead)
+    def validate_prompt(project_id: str, name: str, body: PromptValidateCreate):
+        from harness_local.core.engine.prompts import validate
+        project(project_id)
+        return {"variables": call(validate, name, body.template)}
+
+    @router.post("/projects/{project_id}/prompts/{name}/versions", response_model=PromptVersionRead, status_code=201)
+    def draft_prompt(project_id: str, name: str, body: PromptDraftCreate, scope: PromptScope = "project"):
+        return call(runtime.prompts.draft, project(project_id).context, scope, name, body.expected_version,
+                    text=body.template, from_version=body.from_version)
+
+    @router.post("/projects/{project_id}/prompts/{name}/activate", response_model=PromptDetailRead)
+    def activate_prompt(project_id: str, name: str, body: PromptActivateCreate, scope: PromptScope = "project"):
+        context = project(project_id).context
+        call(runtime.prompts.activate, context, scope, name, body.expected_version, body.version_id, body.reason)
+        return call(runtime.prompts.detail, context, scope, name)
+
+    @router.get("/projects/{project_id}/prompts/{name}/diff", response_model=PromptDiffRead)
+    def prompt_diff(project_id: str, name: str, before: str, after: str):
+        return {"diff": call(runtime.prompts.diff, project(project_id).context, name, before, after)}
 
     return router

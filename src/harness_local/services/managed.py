@@ -120,7 +120,9 @@ class LocalSupervisor:
                 agents, commands, evidence = self.ports_factory(context, versions)
                 if hasattr(agents, "bind_process_journal"):
                     agents.bind_process_journal(journal)
-                engine = OfflineEngine(agents, commands, evidence, journal)
+                from harness_local.storage.prompts import PromptRepository
+                engine = OfflineEngine(agents, commands, evidence, journal,
+                                       prompts=PromptRepository(self.repository.engine).catalog)
                 if request["action"] == "start":
                     history = engine.start(context, request["task_id"], request["phase_id"], request["text"],
                                            history=record.history)

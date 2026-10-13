@@ -741,3 +741,38 @@ invoca proveedores. Un fallo sintético de review, registrado fuera del checkout
 permite verificar cuarentena y recuperación incluso al reiniciar el servicio.
 Ninguna configuración CLI real se activa en esta entrega. H3.1 queda siguiente,
 sin iniciarlo; los consentimientos de smokes anteriores siguen agotados.
+
+## D030 — Catálogo de prompts por ámbito y snapshot por intento
+
+Estado: implementado y verificado offline el 2026-10-13.
+[Entrega, procedencia y límites](discovery/H3.1_PROMPTS.md).
+
+Ocho recursos Markdown (los siete nombres legacy y `execute-task`) adaptados al
+contrato H2, sin modelos o stack fijos en el núcleo. Reemplazo completo por
+jerarquía base → core global → perfil por nombre → proyecto por raíz canónica.
+Instrucciones específicas siguen en el perfil. Las plantillas de bootstrap y
+fases no autorizan ni implementan esos flujos.
+
+SQLite gestiona versiones insertadas, punteros/generaciones y auditoría de
+activación (`0008_prompt_versions`). Guardar crea UUID/hash nuevos; rollback
+crea otro borrador con referencia al origen. Activar requiere versión esperada,
+motivo y confirmación HTTP; compare-and-swap transaccional, sin reenvíos
+silenciosos. API/UI bajo la guardia gestionada D028, tipos generados.
+
+Variables fijas obligatorias por plantilla, interpolación en una pasada y
+validación de hashes antes de invocar. Esquemas de salida fijos del motor,
+fuera del editor. Cada intento conserva plantilla/versiones/procedencia,
+variables, renderizado, referencias y hashes antes del efecto. La activación
+no muta contratos, resultados ni peticiones anteriores. Routing se compone en
+planificación/review sin otra llamada. Ningún prompt concede permisos.
+
+Codec 4 conserva catálogo para recuperación y snapshot por petición. Formatos
+1–3 siguen legibles sin metadatos inferidos ni reescritura de filas de intentos.
+Runs en curso resuelven activaciones antes del siguiente intento; runs detenidos
+conservan el último catálogo confirmado al reanudar. Aplicar versiones nuevas a
+un run detenido exigiría una acción explícita auditada; esa acción no se expone
+en H3.1. Para runs anteriores sin catálogo, la primera acción nueva lo captura,
+sin atribuirlo retrospectivamente. El adaptador cli-3 y su captura del envoltorio
+de transporte se conservan, sin cambiar permisos ni autenticación.
+
+H3.2 queda siguiente sin iniciarse; consentimientos de smokes agotados.

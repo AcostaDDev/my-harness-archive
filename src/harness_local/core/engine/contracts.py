@@ -73,6 +73,7 @@ class AgentRequest:
     context_json: str
     # No conversation/session handle: cada petición exige una sesión nueva.
     fresh_session: bool = True
+    prompt_snapshot_json: str | None = None
 
 
 @dataclass(frozen=True)
@@ -115,6 +116,7 @@ class RunHistory:
     stop: OperationalStop | None = None
     stops: tuple[OperationalStop, ...] = ()
     acceptance: "AcceptanceDecision | None" = None
+    prompt_catalog_json: str | None = None
 
     @property
     def revisions(self) -> int:
@@ -134,8 +136,9 @@ def stop_history(history: RunHistory, stage: str, reason: str) -> RunHistory:
 
 def invoke_agent(context: ProjectContext, history: RunHistory, adapter: AgentAdapter,
                  role: str, selection: Selection, prompt: str,
-                 journal: "EngineJournal | None" = None) -> tuple[RunHistory, dict | None]:
-    request = AgentRequest(str(uuid4()), role, selection, prompt, history.task_json, history.context_json)
+                 journal: "EngineJournal | None" = None, *, prompt_snapshot_json: str | None = None) -> tuple[RunHistory, dict | None]:
+    request = AgentRequest(str(uuid4()), role, selection, prompt, history.task_json, history.context_json,
+                           prompt_snapshot_json=prompt_snapshot_json)
     if journal:
         journal.agent_started(history, request)
     try:

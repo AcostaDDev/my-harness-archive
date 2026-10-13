@@ -328,7 +328,7 @@ class SQLiteManagedRepository:
         for number, attempt in enumerate(history.attempts, start=1):
             row = session.get(AttemptRow, attempt.request.id)
             if (row is None or row.run_id != run.id or row.number != number
-                    or row.request_json != freeze(asdict(attempt.request))):
+                    or restore_request(json.loads(row.request_json)) != attempt.request):
                 raise Conflict("Attempt requires a previously persisted invocation intent")
             result = freeze(asdict(attempt.result))
             if row.result_json is not None and freeze(asdict(AgentResult(**json.loads(row.result_json)))) != result:

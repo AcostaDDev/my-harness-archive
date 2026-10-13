@@ -117,6 +117,7 @@ class SQLiteManagedViews:
                 request = json.loads(row.request_json)
                 items.append({"id": row.id, "number": row.number, "role": request["role"],
                               "selection": request["selection"], "fresh_session": request["fresh_session"],
+                              "prompt": request["prompt"], "prompt_snapshot": _loads(request.get("prompt_snapshot_json")),
                               "status": row.status, "versions": json.loads(row.versions_json),
                               "result": _loads(row.result_json), "started_at": row.started_at,
                               "finished_at": row.finished_at})

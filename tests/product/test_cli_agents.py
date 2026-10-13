@@ -600,7 +600,17 @@ def test_pre_h23_result_json_and_history_can_resume_without_rewriting_results(co
         row.result_json=legacy_result
         run=session.get(ManagedRunRow,job.run_id)
         serialized=json.loads(run.history_json)
-        assert serialized['format']==1 and 'status' not in serialized['history']['attempts'][0]['result']
+        # Construct the historical format explicitly; current engines emit format 4.
+        serialized['format'] = 1
+        serialized['history'].pop('prompt_catalog_json')
+        for attempt in serialized['history']['attempts']:
+            attempt['request'].pop('prompt_snapshot_json')
+        request = json.loads(row.request_json)
+        request.pop('prompt_snapshot_json')
+        row.request_json = freeze(request)
+        legacy_request = row.request_json
+        run.history_json = freeze(serialized)
+        assert 'status' not in serialized['history']['attempts'][0]['result']
         assert load_history(run.history_json).attempts[0].result.status is None
     before=repository.get_run(job.run_id)
     repository.resume(job.run_id,key='legacy-revalidate',expected_version=before.version)
@@ -610,3 +620,4 @@ def test_pre_h23_result_json_and_history_can_resume_without_rewriting_results(co
     with Session(repository.engine) as session:
         row=session.scalar(select(ManagedAttemptRow).where(ManagedAttemptRow.run_id==job.run_id).order_by(ManagedAttemptRow.number))
         assert row.result_json==legacy_result
+        assert row.request_json==legacy_request

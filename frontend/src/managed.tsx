@@ -1,3 +1,4 @@
+import { Prompts } from "./Prompts";
 import { useEffect, useRef, useState } from "react";
 import { managed, managedApi, ManagedError, readPending, savePending, jobRequest } from "./managed-api";
 import type { Pending, S } from "./managed-api";
@@ -89,7 +90,7 @@ function Project({ id }: { id: string }) {
   const activation = mode?.activation;
   useEffect(() => { setConfirmed(false); }, [activation?.id, activation?.version]);
   return <div className="project-detail">
-    <h2>{id}</h2><p>Modo: {activation?.status ?? "sin activación gestionada"}</p>
+    <h2>{id}</h2><Prompts project={id} /><p>Modo: {activation?.status ?? "sin activación gestionada"}</p>
     {mode?.refusal && <p className="error">{mode.refusal}</p>}
     {connection && <p role="status" className="error">{connection}</p>}
     {error && <p role="alert" className="error">{error}</p>}

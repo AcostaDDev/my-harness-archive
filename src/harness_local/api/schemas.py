@@ -322,6 +322,8 @@ class ManagedRunRead(ManagedRunSummaryRead):
 
 
 class ManagedAttemptRead(BaseModel):
+    prompt: str
+    prompt_snapshot: dict[str, Any] | None
     id: str
     number: int
     role: str
@@ -346,3 +348,64 @@ class ManagedEventsRead(BaseModel):
     items: list[ManagedEventRead]
     cursor: int
     has_more: bool
+
+
+PromptScope = Literal['core', 'profile', 'project']
+
+
+class PromptVersionRead(BaseModel):
+    name: str
+    id: str
+    scope: str
+    owner: str
+    template: str
+    sha256: str
+    source: str
+
+
+class PromptActivationRead(BaseModel):
+    previous_id: str | None
+    version_id: str
+    reason: str
+    generation: int
+    created_at: str
+
+
+class PromptDetailRead(BaseModel):
+    name: str
+    scope: PromptScope
+    owner: str
+    generation: int
+    active_id: str | None
+    effective: PromptVersionRead
+    variables: list[str]
+    versions: list[PromptVersionRead]
+    activations: list[PromptActivationRead]
+
+
+class PromptDraftCreate(BaseModel):
+    model_config = ConfigDict(extra='forbid', strict=True)
+    expected_version: int = Field(ge=0)
+    template: str | None = Field(default=None, max_length=100000)
+    from_version: str | None = Field(default=None, max_length=200)
+
+
+class PromptActivateCreate(BaseModel):
+    model_config = ConfigDict(extra='forbid', strict=True)
+    expected_version: int = Field(ge=0)
+    version_id: str = Field(min_length=1, max_length=200)
+    reason: str = Field(min_length=1, max_length=2000)
+    confirmed: Literal[True]
+
+
+class PromptValidateCreate(BaseModel):
+    model_config = ConfigDict(extra='forbid', strict=True)
+    template: str = Field(max_length=100000)
+
+
+class PromptValidationRead(BaseModel):
+    variables: list[str]
+
+
+class PromptDiffRead(BaseModel):
+    diff: str

@@ -1,6 +1,6 @@
 # Estado de desarrollo
 
-Actualizado: 2026-10-12.
+Actualizado: 2026-10-13.
 
 ## Existe
 
@@ -35,7 +35,7 @@ Actualizado: 2026-10-12.
 - Dependencias reales instaladas en `.venv` / `frontend/node_modules`, locks
   `uv.lock` / `frontend/package-lock.json`. Pins H0.2 usados conservados;
   backend de paquete `uv_build==0.12.19`. Comandos comprobados en README/AGENTS.
-- 296 casos de producto en `tests/product/`; pytest ejecuta 308 pruebas en total.
+- 319 casos de producto en `tests/product/`; pytest ejecuta 331 pruebas en total.
   La comprobación ligera anterior conserva sus 12 checks sin dependencias.
 - H1.1 completado: [importación legacy y verificaciones](discovery/H1.1_IMPORT.md),
   [alcance original](discovery/H1.1_SCOPE.md). Lector local explícito de
@@ -214,6 +214,19 @@ Actualizado: 2026-10-12.
   nuevo, worktree Git, legacy sintético y cuarentena reproducible sin proveedores.
   Tres regresiones de cliente Node sin dependencias nuevas.
 
+- H3.1 completado offline: [prompts versionados](discovery/H3.1_PROMPTS.md),
+  [alcance original](discovery/H3.1_SCOPE.md), D030. Ocho recursos Markdown,
+  resolución base/perfil/proyecto, versiones inmutables, borrador, validación,
+  diff, activación con motivo/confirmación y rollback como versión nueva por API/UI.
+- Migración `0008_prompt_versions`: versiones, punteros con generación y auditoría.
+  Variables fijas obligatorias, interpolación de una pasada y rechazo antes del
+  agente. Catálogo y snapshots por intento en codec 4; formatos 1–3 compatibles.
+- Plantilla/procedencia/variables/esquema/renderizado/hashes congelados antes del
+  efecto. Activaciones concurrentes no cambian peticiones anteriores; reanudar
+  conserva el catálogo del run detenido. Routing no añade invocaciones.
+- 23 pruebas H3.1 y recorrido Chrome del editor con SQLite/demo sintética.
+  Bootstrap/reconciliación/cierre solo conservan plantillas, sin ejecutar flujos.
+
 ## Todavía no existe
 
 Recorrido de tarea real del motor con proveedores ni entrada CLI gestionada;
@@ -241,7 +254,8 @@ H0, H1, H2.1–H2.5 y las dos partes de la salida del hito 2 completados.
 UI gestionada verificada con navegador, Git/SQLite sintéticos y fakes hasta
 COMMITTED, reinicio y recuperación sin repetir ejecutor. [Informe](discovery/H2_EXIT_UI.md),
 D029. H2.3 conserva su smoke real D025, con autorización agotada. Siguiente tarea:
-H3.1 (prompts versionados) según NEXT_STEPS, sin iniciarla. Sin proveedores nuevos.
+H3.1 completado con editor y snapshots por intento (D030). Siguiente tarea:
+H3.2 (permisos y acciones de recuperación), sin iniciarla. Sin proveedores nuevos.
 
 ## Verificación de H0.1
 
@@ -863,6 +877,31 @@ H3.1 (prompts versionados) según NEXT_STEPS, sin iniciarla. Sin proveedores nue
 - Límites: sesión local/guardia H0/H1/SSE gestionado pendientes, sin benchmark de
   historiales grandes ni carrera de versión inyectada en Chrome (cubierta en API
   y cliente). Fakes no acreditan proveedores. H3.1 no iniciado; commit solicitado.
+
+## Verificación de H3.1
+
+- Git inicial limpio en `main`, `7606cfe`. Instrucciones, estado, siguiente tarea,
+  decisiones, especificación §9, backlog y referencia estática de prompts revisados.
+- 331 pruebas pytest y 121 subtests pasan: 308 anteriores y 23 casos nuevos.
+  12 checks ligeros, 3 pruebas Node, OpenAPI/tipos, TypeScript y build correctos.
+  Aviso conocido Starlette/HTTPX conservado.
+- Migración 0008 con upgrade/downgrade/upgrade y `alembic check` en base temporal;
+  un run previo sobrevive. Ninguna base de trabajo del usuario se migró.
+- Concurrencia de activación con dos hilos, rollback/reinicio, guardias HTTP,
+  409/422/404 y aislamiento de versiones de proyecto verificados. Petición
+  confirmada en SQLite antes del agente falso, conservada byte a byte tras
+  activar otra versión. Históricos de formato 1 reanudables sin reescribir filas.
+- Chrome en demo nueva `/private/tmp/h31-ui-demo-1013`, puerto 8016: variable
+  inválida visible, guardar sin activar, diff, confirmación, activar, rollback
+  con UUID nuevo, auditoría de dos activaciones y persistencia tras recarga.
+  Formulario/auditoría inspeccionados visualmente; sin encolar proveedores.
+- Límites: plantillas de fases/bootstrap sin flujos, sin aplicación de nuevos
+  prompts a runs detenidos, importación/exportación de overrides ni edición de
+  esquemas. Catálogo sin paginación/benchmark de históricos grandes. Fakes no
+  certifican respuestas de modelos. H3.2 no iniciado.
+- Diff/whitespace revisados; sin proveedores, smoke, colaboración automática,
+  ejecución de harness para desarrollo, cambios en ReferenceProject, configuración
+  global ni push. Commit solicitado por el usuario.
 
 ## Coordinación
 

@@ -203,3 +203,37 @@ class ManagedCommitRow(Base):
     commit_sha: Mapped[str | None] = mapped_column(String(64), nullable=True)
     created_at: Mapped[str] = mapped_column(String(40))
     finished_at: Mapped[str | None] = mapped_column(String(40), nullable=True)
+
+
+class PromptHeadRow(Base):
+    __tablename__ = 'prompt_heads'
+    scope: Mapped[str] = mapped_column(String, primary_key=True)
+    owner: Mapped[str] = mapped_column(String, primary_key=True)
+    name: Mapped[str] = mapped_column(String, primary_key=True)
+    generation: Mapped[int] = mapped_column(Integer)
+    active_id: Mapped[str | None] = mapped_column(String, nullable=True)
+
+
+class PromptVersionRow(Base):
+    __tablename__ = 'prompt_versions'
+    id: Mapped[str] = mapped_column(String, primary_key=True)
+    scope: Mapped[str] = mapped_column(String)
+    owner: Mapped[str] = mapped_column(String)
+    name: Mapped[str] = mapped_column(String)
+    template: Mapped[str] = mapped_column(Text)
+    sha256: Mapped[str] = mapped_column(String(64))
+    source: Mapped[str] = mapped_column(Text)
+    created_at: Mapped[str] = mapped_column(String(40))
+
+
+class PromptActivationRow(Base):
+    __tablename__ = 'prompt_activations'
+    id: Mapped[str] = mapped_column(String, primary_key=True)
+    scope: Mapped[str] = mapped_column(String)
+    owner: Mapped[str] = mapped_column(String)
+    name: Mapped[str] = mapped_column(String)
+    previous_id: Mapped[str | None] = mapped_column(String, nullable=True)
+    version_id: Mapped[str] = mapped_column(ForeignKey('prompt_versions.id'))
+    generation: Mapped[int] = mapped_column(Integer)
+    reason: Mapped[str] = mapped_column(Text)
+    created_at: Mapped[str] = mapped_column(String(40))

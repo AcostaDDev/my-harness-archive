@@ -114,7 +114,7 @@ def test_flow_is_offline_with_fresh_independent_requests(context, monkeypatch):
     assert all(item.task_json == result.task_json and item.context_json == result.context_json for item in agents.requests)
     assert len(runner.calls) == 1  # task/baseline deduplicados
     assert runner.calls[0][0].root == context.root
-    prompt = json.loads(agents.requests[-1].prompt.split("\n", 1)[1])
+    prompt = json.loads(json.loads(agents.requests[-1].prompt_snapshot_json)["parts"][0]["variables"]["INPUT_JSON"])
     assert prompt["evidence"]["fingerprint"] == result.cycles[0].evidence.fingerprint
     assert prompt["validation"]["entries"][0]["result"]["exit_code"] == 0
     assert not hasattr(result.acceptance, "commit")

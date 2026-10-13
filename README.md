@@ -101,8 +101,8 @@ UV_CACHE_DIR=.local/uv-cache uv run --frozen --offline alembic current
 UV_CACHE_DIR=.local/uv-cache uv run --frozen --offline alembic check
 ```
 
-308 pruebas (158 anteriores, 53 de H2.3, 8 del entorno del smoke, 34 de H2.4, 35 de
-H2.5, 18 de la API gestionada y 2 de la demo UI). Se usan checkouts Git, SQLite y procesos Python
+331 pruebas (158 anteriores, 53 de H2.3, 8 del entorno del smoke, 34 de H2.4, 35 de
+H2.5, 18 de la API gestionada, 2 de la demo UI y 23 de H3.1). Se usan checkouts Git, SQLite y procesos Python
 sintéticos, sin CLI de proveedores ni consumo de suscripciones. Se verifican
 captura incremental, cancelación de grupos, recuperación tras caída del supervisor
 y el recorrido HTTP con fakes hasta COMMITTED. No certifica commits con proveedores.
@@ -139,7 +139,7 @@ La API gestionada local (proyectos registrados en el servidor, supervisor opt-in
 idempotencia, versiones y guardia Host/Origin/CSRF) está completada offline: ver
 [entrega y límites](docs/discovery/H2_EXIT_API.md). La UI gestionada local está
 completada offline; [demo, verificación y límites](docs/discovery/H2_EXIT_UI.md).
-Siguiente tarea: H3.1 (prompts versionados), sin iniciar. Ver [corrección y límites](docs/discovery/H2.3_MCP_FIX.md)
+H3.1 completado offline; siguiente tarea H3.2 (permisos y recuperación), sin iniciar. Ver [corrección y límites](docs/discovery/H2.3_MCP_FIX.md)
 y [resultado real cli-3](docs/discovery/H2.3_SMOKE_CLI3.md). El consentimiento
 terminó al fallo; otro smoke requiere propuesta y autorización específicas.
 Ver [corrección del entorno](docs/discovery/H2.3_ENV_FIX.md) y
@@ -152,7 +152,7 @@ siguen conservados. La autorización cubrió una ejecución, sin relanzamiento.
 ## Importación legacy de lectura
 
 Migrar con el servicio detenido antes de importar; el esquema actual es
-`0007_managed_activation`. Comandos comprobados desde la raíz, con datos sintéticos:
+`0008_prompt_versions`. Comandos comprobados desde la raíz, con datos sintéticos:
 
 ```sh
 UV_CACHE_DIR=.local/uv-cache uv run --frozen --offline alembic upgrade head
@@ -207,3 +207,17 @@ proceden del historial congelado, no de una recaptura del checkout.
 Regresión del cliente: `node --test frontend/tests/managed-api.test.mjs`.
 Sesión local y guardia H0/H1 siguen pendientes; Host/Origin/CSRF se aplican a la
 API gestionada. COMMITTED es un checkpoint, no integración ni cierre de fase.
+
+## Prompts versionados (H3.1)
+
+Tras migrar con el servicio detenido (`alembic upgrade head`), abrir un proyecto
+registrado en **Proyectos gestionados → Prompts versionados**. Elegir ámbito y
+plantilla, validar variables y guardar una nueva versión borrador. Comparar las
+versiones antes de activar con motivo y confirmación. Rollback copia la versión
+seleccionada a otro borrador; exige activación separada. Perfil/base pueden afectar
+a otros proyectos que los hereden; el override de proyecto prevalece.
+
+Las activaciones afectan a intentos posteriores, conservando las peticiones y
+resultados previos. Al reanudar un run detenido se conserva su catálogo congelado.
+El editor no concede permisos. Los flujos de bootstrap y fases aún no están
+implementados. [Contrato, pruebas y límites](docs/discovery/H3.1_PROMPTS.md).
