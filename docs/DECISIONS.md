@@ -1246,3 +1246,33 @@ implementa rotación/caps nuevos de captura, retención de SQLite/legacy/JUnit,
 GC de temporales ni benchmark. Solo se eliminaron capturas sintéticas temporales.
 H5.4 diagnósticos locales de compatibilidad queda siguiente, sin iniciar.
 Smokes/proveedores siguen sin autorización disponible.
+
+## D042 — Diagnóstico CLI explícito, preflight compartido y resultados acotados
+
+Estado: implementado y verificado offline el 2026-10-13.
+[Uso, verificaciones y límites](discovery/H5.4_DIAGNOSTICS.md).
+
+`diagnose-cli` recibe un JSON explícito de una CLIConfig, sin importar factories,
+abrir SQLite, crear jobs ni acceder al estado de autenticación. La configuración
+se valida estructuralmente; no se revelan sus valores, rutas, argv ni errores
+libres. `diagnose(config)` reutiliza la misma comprobación de biblioteca.
+
+El adaptador comparte el preflight: version/help con stdin cerrado, entorno
+completo explícito, cwd temporal, máximo 10 segundos y 256 KiB de salida combinada
+por comando. Fallos/timeout/salida inesperada se representan como desconocidos;
+versión distinta o flags ausentes como incompatibles. Se detiene la secuencia de
+sondas de ese proveedor al primer fallo, sin reintento/fallback/corrección.
+Se termina únicamente el grupo POSIX propio, también ante pipes de hijos.
+
+Versión solicitada y observada separadas; flags requeridos/ausentes y pasos de
+corrección estáticos. `version_help_match` es coincidencia local limitada, nunca
+certificación de autenticación/cuota/modelos, semántica del argv, permisos o
+retries internos. El ejecutable debe ser de confianza: esto no es un sandbox
+físico ni garantiza ausencia de efectos internos de un binario arbitrario.
+
+Se conserva cli-4 porque no cambia el argv de inferencia, permisos, capacidades
+ni hash de configuración; el preflight es más estricto y sus nuevos campos son
+aditivos. No se modifica ningún snapshot congelado o resultado previo. Sin
+migración/codec/dependencias/API/UI nuevos. Configuración global, autenticación
+real y smokes quedan fuera; consentimientos anteriores agotados.
+Siguiente tarea H5.5: assets web empaquetados y comando único de inicio, sin iniciar.

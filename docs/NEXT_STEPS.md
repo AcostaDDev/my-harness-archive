@@ -1,47 +1,43 @@
-# Siguiente tarea — H5.4 Diagnósticos locales de compatibilidad
+# Siguiente tarea — H5.5 Assets web empaquetados y comando único de inicio
 
-H5.3 retención local de logs se completó offline el 2026-10-13 (D041).
-Política explícita por corte UTC/tamaño, preview sellada, aplicación confirmada
-con escritores detenidos, intenciones/resultados auditados y conciliación tras
-caída. Solo retira originales externos stdout/stderr de intentos sellados;
-historial/contratos/permisos/aprobaciones/veredictos/hashes quedan conservados.
-Consulta CLI/API/UI distingue purga autorizada, pendiente, pérdida y corrupción.
-Backup/restauración representa las ausencias autorizadas, acepta bundles anteriores
-y mantiene su guardia de consulta. Ver [entrega y límites](discovery/H5.3_RETENTION.md)
-y [alcance original](discovery/H5.3_SCOPE.md).
+H5.4 diagnósticos locales de compatibilidad se completó offline el 2026-10-13
+(D042). CLI explícita `diagnose-cli` y biblioteca, compartiendo preflight con el
+adaptador: versión/help acotados, entorno explícito, resultados desconocidos o
+incompatibles con pasos de corrección. No revela salidas libres ni credenciales;
+no consulta autenticación ni inicia inferencia. Ver [entrega y límites](discovery/H5.4_DIAGNOSTICS.md)
+y [alcance original](discovery/H5.4_SCOPE.md).
 
-Esquema `0013_bootstrap` y codec 6 conservados. Pruebas offline sintéticas de
-retención/recuperación/CLI/HTTP y regresión completa de backup; checks ligeros,
-Node, OpenAPI/tipos y TypeScript/build. Evidencias y recuentos en STATE.
-No se purgaron archivos reales ni se migró la SQLite de trabajo. No se usaron
-proveedores ni smokes. Rotación, GC y abandono de intención pendiente quedan fuera.
-**H5.4 no está iniciado.** Los consentimientos de smokes siguen agotados.
+Esquema `0013_bootstrap`, codec 6, adaptador `cli-4` y locks conservados.
+Pruebas offline sintéticas y regresión en STATE. Sin CLI reales, proveedores,
+smokes, cambios globales ni SQLite de trabajo. **H5.5 no está iniciado.**
+Los consentimientos de smokes siguen agotados.
 
 ## Objetivo y alcance (siguiente incremento del hito 5)
 
-1. Ofrecer diagnósticos locales explícitos de las capacidades/versiones CLI y
-   configuración necesarias para los adaptadores existentes, reutilizando su
-   preflight en lectura y separando datos solicitados de observados/ausentes.
-2. Mostrar incompatibilidades y pasos concretos de corrección sin iniciar jobs,
-   agentes, login, instalaciones, cambios globales, fallback ni llamadas de consumo.
-3. Verificar offline con ejecutables/configuraciones sintéticos y documentar
-   alcance, comandos disponibles y límites de lo que un preflight certifica.
+1. Empaquetar los assets web compilados con el producto para servirlos sin el
+   checkout de desarrollo ni Node en ejecución.
+2. Ofrecer una entrada local única de inicio, reutilizando FastAPI/Uvicorn,
+   configuración explícita, guardias y comportamiento opt-in existentes.
+3. Documentar instalación reproducible y arranque, verificando un paquete en un
+   entorno temporal limpio con datos sintéticos y sin proveedores.
 
 ## Criterios de aceptación
 
-- El diagnóstico es opt-in y no ejecuta inferencia ni efectos de checkout.
-- Versiones/capacidades incompatibles o desconocidas no aparecen como compatibles;
-  help/version no se presentan como prueba de autenticación, cuota o argv completo.
-- No revela credenciales ni modifica configuraciones o snapshots congelados.
-- Errores, timeout y salida inesperada producen diagnóstico acotado, sin fallback
-  ni reintento silencioso; una corrección pertenece a una acción posterior explícita.
-- Pruebas offline pertinentes y documentación actualizada.
+- El paquete contiene los assets necesarios y sirve la UI y API desde loopback
+  sin depender del cwd ni del checkout de desarrollo.
+- Un comando documentado inicia el servicio; configuración/errores de esquema
+  tienen diagnóstico claro, sin migraciones destructivas o correcciones silenciosas.
+- No se activan proveedores, proyectos, observadores ni supervisor sin opt-in;
+  restauraciones conservan la guardia de consulta.
+- Locks y versiones explícitos; construcción e instalación temporal verificadas,
+  sin cambios globales, publicación ni uso de datos privados.
+- Pruebas pertinentes y documentación de requisitos y límites actualizada.
 
 ## Fuera de alcance
 
-- Distribución/assets/comando único de inicio, sesión local, SSE gestionado,
-  App Server/SDK, reactivación de restauraciones, backup Git, push y publicación.
-- Proveedores/smokes y diagnóstico real de autenticación: autorización específica
-  antes de consumir o acceder a la sesión del usuario (D033 punto 8).
+- Sesión local (incremento posterior del hito 5), SSE gestionado, App Server/SDK,
+  reactivación de restauraciones, backup Git, push y publicación.
+- Proveedores/smokes y diagnóstico real de autenticación: requieren autorización
+  específica (D033 punto 8). No incorporar una instalación global automática.
 
 No lanzar colaboración automática ni usar el harness para desarrollar el repo.

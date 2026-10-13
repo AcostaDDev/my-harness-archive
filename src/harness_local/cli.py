@@ -1,4 +1,4 @@
-"""Entradas locales de índice, backup y retención; sin motor ni proveedores."""
+"""Índice, backup, retención y version/help explícitos; sin inferencia."""
 import argparse
 import json
 from pathlib import Path
@@ -17,7 +17,7 @@ from harness_local.storage.retention import preview_retention, apply_retention, 
 
 
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description="Índice legacy, backup y retención local")
+    parser = argparse.ArgumentParser(description="Índice legacy, backup, retención y diagnóstico local")
     operations = parser.add_subparsers(dest='operation', required=True)
     for name in ('legacy-import', 'legacy-summary'):
         command = operations.add_parser(name)
@@ -46,9 +46,16 @@ def main(argv: list[str] | None = None) -> int:
     command = operations.add_parser('logs-inspect', help='Distinguir retenido, purgado, pendiente, perdido y no verificado')
     command.add_argument('database')
     command.add_argument('attempt_id')
+    command = operations.add_parser('diagnose-cli', help='Version/help explícitos, sin autenticación ni inferencia')
+    command.add_argument('configuration', help='JSON de una CLIConfig con entorno explícito; ejecutable de confianza')
     args = parser.parse_args(argv)
     engine = None
     try:
+        if args.operation == 'diagnose-cli':
+            from harness_local.adapters.cli_diagnostics import diagnose_file
+            result = diagnose_file(args.configuration)
+            print(json.dumps(result, ensure_ascii=False, indent=2))
+            return 0 if (result.get('preflight') or {}).get('available') else 1
         if args.operation.startswith('logs-'):
             if args.operation == 'logs-inspect':
                 result = inspect_logs(args.database, args.attempt_id)

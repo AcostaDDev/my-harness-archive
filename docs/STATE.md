@@ -35,7 +35,7 @@ Actualizado: 2026-10-13.
 - Dependencias reales instaladas en `.venv` / `frontend/node_modules`, locks
   `uv.lock` / `frontend/package-lock.json`. Pins H0.2 usados conservados;
   backend de paquete `uv_build==0.12.19`. Comandos comprobados en README/AGENTS.
-- 643 casos de producto en `tests/product/`; pytest ejecuta 655 pruebas en total.
+- 695 casos de producto en `tests/product/`; pytest ejecuta 707 pruebas en total.
   La comprobación ligera anterior conserva sus 12 checks sin dependencias.
 - H1.1 completado: [importación legacy y verificaciones](discovery/H1.1_IMPORT.md),
   [alcance original](discovery/H1.1_SCOPE.md). Lector local explícito de
@@ -380,6 +380,16 @@ Actualizado: 2026-10-13.
   acepta bundles anteriores y mantiene la guardia de consulta. 43 casos nuevos,
   solo capturas temporales sintéticas; sin rotación, GC ni retención de SQLite.
 
+- H5.4 completado offline: [diagnóstico local de CLI](discovery/H5.4_DIAGNOSTICS.md),
+  [alcance original](discovery/H5.4_SCOPE.md), D042. Comando `diagnose-cli` y
+  biblioteca con configuración explícita, validación estructural y preflight
+  versión/help compartido con el adaptador. Sin SQLite/jobs/agentes/auth status.
+- Salida acotada, timeout/grupo POSIX, sin herencia de entorno, sin revelar valores
+  ni salidas libres. Versión solicitada/observada, flags ausentes y correcciones;
+  coincidencia local nunca certifica autenticación/cuota/argv completo.
+- 52 casos nuevos sintéticos. Esquema, codec, cli-4 y hashes congelados conservados;
+  no hay actualización de versiones, fallback, reintento ni reparación automática.
+
 ## Todavía no existe
 
 Recorrido de tarea real del motor con proveedores ni entrada CLI gestionada;
@@ -425,7 +435,8 @@ H4.3 segundo perfil TypeScript web completado offline (D038).
 H5.1 importación JUnit y detalle de tests completado offline (D039).
 H5.2 backup/restauración local completado offline (D040).
 H5.3 retención local de logs completado offline (D041).
-Siguiente tarea: H5.4 diagnósticos locales de compatibilidad, sin iniciarla.
+H5.4 diagnósticos locales de compatibilidad completado offline (D042).
+Siguiente tarea: H5.5 assets web empaquetados y comando único de inicio, sin iniciarla.
 Sin proveedores nuevos.
 
 ## Verificación de H0.1
@@ -1428,6 +1439,36 @@ Sin proveedores nuevos.
   intención pendiente. No se elimina ni adopta un original purgado reaparecido.
 
   H5.4 diagnósticos locales de compatibilidad queda siguiente, sin iniciar.
+
+## Verificación de H5.4
+
+- Git inicial limpio en `main`, `5a44926`. Leídos AGENTS, STATE, NEXT_STEPS,
+  DECISIONS, especificación §14 y backlog H5. Alcance original conservado;
+  D042 fija preflight compartido y límites. No se inició H5.5.
+- 52 casos nuevos: ambos proveedores sintéticos, versiones inesperadas/distintas,
+  flags con prefijos, UTF-8/salidas inválidas, exit no cero, flood stdout/stderr,
+  timeout con pipes cerrados o heredados por hijos y limpieza incierta.
+- Configuración JSON acotada: campos/tipos/baseline inválidos, duplicados, anidado
+  profundo, archivo ausente/grande/enlazado/FIFO, rutas no codificables y fallo
+  de recursos. Sin herencia del entorno, valores secretos ni salidas libres en
+  informes; snapshots/hash del adaptador y archivos de configuración intactos.
+- Regresión completa final: 707 pruebas pytest y 121 subtests correctos,
+  incluidos checks existentes de migraciones/OpenAPI; aviso Starlette/HTTPX
+  conocido. Regresión focal de 113 casos diagnóstico/adaptadores/entorno correcta;
+  12 checks ligeros y cuatro pruebas Node correctos. CLI `python -m ... diagnose-cli`
+  verificada también como proceso con ambos ejecutables sintéticos y exit 0.
+  La comprobación de hijos con `ps` requirió salir del sandbox, con autorización.
+- 166 enlaces documentales locales y diff/whitespace revisados. No hay cambios
+  HTTP/frontend, esquema, codec o locks; no se regeneraron tipos/OpenAPI ni se
+  arrancó servidor/navegador. Sin CLI reales, proveedores/smokes/auth status,
+  instalación, configuración global, ReferenceProject, colaboración automática,
+  harness como orquestador de desarrollo ni push. SQLite de trabajo intacta.
+- Límites: coincidencia versión/help no certifica auth/cuota/modelos/argv completo,
+  permisos efectivos ni retries internos. Ejecutables de confianza, sin sandbox
+  físico; configuración estructural, no reparación automática. Máximos: JSON
+  64 KiB, salida combinada 256 KiB y 10 s por sonda más hasta 1 s de recogida.
+
+  Siguiente tarea: H5.5 assets web empaquetados y comando único de inicio, sin iniciar.
 
 ## Coordinación
 

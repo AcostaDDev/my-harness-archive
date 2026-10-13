@@ -11,7 +11,6 @@ import math
 import os
 from pathlib import Path
 import selectors
-import re
 import subprocess
 import sys
 from threading import Event, Lock, Thread
@@ -132,28 +131,8 @@ class CLIProcessAdapter:
 
     def preflight(self):
         """Read-only version/help, no login/status, provider or auth extraction."""
-        reports = {}
-        for provider, config in self.configs.items():
-            version = subprocess.run(config.executable + ("--version",), env=dict(config.environment), cwd=Path.cwd(),
-                                     capture_output=True, timeout=10)
-            help_args = ("exec", "--help") if provider == "codex" else ("--help",)
-            help_result = subprocess.run(config.executable + help_args, env=dict(config.environment), cwd=Path.cwd(),
-                                         capture_output=True, timeout=10)
-            version_text = version.stdout.decode("utf-8", errors="replace").strip()
-            reported_version = re.search(r"\b(\d+\.\d+\.\d+)\b", version_text)
-            required = ("--json", "--model", "--sandbox", "--ephemeral", "--ignore-user-config", "--ignore-rules", "--strict-config") if provider == "codex" else (
-                "--print", "--output-format", "--verbose", "--include-partial-messages", "--no-session-persistence",
-                "--session-id", "--model", "--effort", "--permission-mode", "--permission-prompts", "--tools",
-                "--allowedTools", "--strict-mcp-config", "--mcp-config", "--setting-sources", "--settings",
-                "--disable-slash-commands", "--no-chrome")
-            help_text = help_result.stdout.decode("utf-8", errors="replace")
-            missing_flags = [flag for flag in required if flag not in help_text]
-            reports[provider] = {"available": version.returncode == help_result.returncode == 0
-                                and reported_version is not None and reported_version[1] == config.cli_version
-                                and not missing_flags, "missing_flags": missing_flags,
-                                "version_output": version_text,
-                                "help_sha256": hashlib.sha256(help_result.stdout).hexdigest()}
-        return reports
+        from harness_local.adapters.cli_diagnostics import preflight_config
+        return {provider: preflight_config(config) for provider, config in self.configs.items()}
 
     def bind_process_journal(self, journal):
         if self.journal is not None:

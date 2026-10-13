@@ -300,3 +300,12 @@ HARNESS_BOOTSTRAP_DEMO_ROOT=/private/tmp/NEW-bootstrap-demo HARNESS_MANAGED_CONF
 El directorio debe ser nuevo. Los tres comandos se verificaron con una raíz temporal
 nueva equivalente. La SQLite y el registro de llamadas falsas están fuera de ambos
 destinos. La demo nunca conecta proveedores ni admite un checkout real existente.
+
+## Diagnóstico local de CLI (H5.4)
+
+`python -m harness_local.cli diagnose-cli /ruta/configuracion.json` comprueba
+explícitamente versión/help de una CLIConfig en JSON con entorno completo y
+ruta absoluta del ejecutable de confianza. Devuelve JSON y exit 0 solo si coincide
+con el baseline; errores e incompatibilidades incluyen pasos de corrección.
+No abre SQLite ni inicia agentes, login o correcciones. Help/version no prueban
+autenticación, cuota ni validez del argv completo. [Formato, uso y límites](docs/discovery/H5.4_DIAGNOSTICS.md).
