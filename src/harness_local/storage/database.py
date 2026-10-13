@@ -27,7 +27,16 @@ def make_engine(url: str) -> Engine:
         cursor = connection.cursor()
         try:
             cursor.execute("PRAGMA foreign_keys=ON")
-            cursor.execute("PRAGMA journal_mode=WAL")
+            from harness_local.storage.backup import RESTORED_USER_VERSION
+            cursor.execute("PRAGMA user_version")
+            version = cursor.fetchone()[0]
+            if version not in (0, RESTORED_USER_VERSION):
+                raise RuntimeError('Versión de restauración SQLite incompatible; no se abre para escritura.')
+            restored = version == RESTORED_USER_VERSION
+            if restored:
+                cursor.execute("PRAGMA query_only=ON")
+            else:
+                cursor.execute("PRAGMA journal_mode=WAL")
             cursor.execute("PRAGMA busy_timeout=5000")
         finally:
             cursor.close()

@@ -170,7 +170,12 @@ class ManagedRuntime:
         self.projects: dict[str, ManagedProject] = {}
 
     def start(self) -> None:
-        config = self._explicit if self._explicit is not None else load_config()
+        from harness_local.storage.backup import is_read_only_archive
+        # Ni importar configuración del usuario: una factory puede tener efectos al cargar.
+        if is_read_only_archive(self.engine):
+            config = ManagedConfig()
+        else:
+            config = self._explicit if self._explicit is not None else load_config()
         database = Path(self.engine.url.database).resolve()
         migration = MigrationService(self.engine, migrations_dir=config.migrations_dir)
         _validate(config, database, migration.migrations_dir)

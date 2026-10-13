@@ -1149,3 +1149,53 @@ base64; React muestra errores como texto. Ausencias permanecen null, cero es cer
 y las duraciones individuales nunca se suman como tiempo real. No hay importación
 de XML legacy, medición de cobertura de código ni retención/backup en esta entrega.
 H5.2 backup/restauración local queda siguiente, sin iniciar. Smokes agotados.
+
+## D040 — Backup local con servicio detenido, referencias verificadas y restauración de consulta
+
+Estado: implementado y verificado offline el 2026-10-13.
+[Procedimiento y límites](discovery/H5.2_BACKUP.md).
+
+La consistencia del conjunto exige detener servicio, observadores y escritores,
+con declaración `--writers-stopped`. Se rechazan propietarios abiertos/grupos
+conocidos vivos; una identidad desconocida no se interpreta como parada. El
+operador debe comprobarla. `BEGIN IMMEDIATE` bloquea escrituras DB mientras una
+segunda conexión usa el mecanismo de backup SQLite y se copian/verifican los
+artefactos. Se descarta una copia online que pudiera mezclar el historial con
+streams en progreso sin un protocolo de pausa de escritores de archivos.
+No se copia únicamente el fichero principal cuando hay WAL.
+
+Bundle local formato 1 con SQLite íntegra, hashes por archivo, procedencia y mapeo
+de referencias históricas. Incluye prompts/streams CLI (rangos y colas inciertas),
+snapshots legacy H2.5 y exportación de reversión; JUnit y snapshots restantes ya
+viven en SQLite. Solo se leen ubicaciones conocidas dentro de raíces permitidas
+explícitas. Los originales externos del índice H1 y el código/objetos Git requieren
+su propia copia; sus referencias se conservan y el límite se declara. Ningún
+contrato, raíz o resultado congelado se reescribe para cambiar de ubicación.
+
+La creación reclama un destino inexistente, fuera de los checkouts y los
+originales, con escrituras exclusivas y fsync. Se publica `COMPLETE` con hash del
+manifiesto al finalizar; errores dejan un parcial no reutilizable, sin GC.
+Verificación de hashes, referencias completas, esquema, integridad/FK, historial
+1–6 y originales JUnit; un WAL/journal no vacío en el bundle se rechaza. Una
+restauración valida primero y vuelve a verificar en otro destino nuevo; no
+migra, sobrescribe ni repara originales. Las rutas históricas no se consultan al
+verificar/restaurar, de modo que el bundle no depende de su existencia actual.
+
+Copias y restauraciones tienen marca persistente `PRAGMA user_version=0x483532`.
+No cambia filas operativas ni revisión Alembic `0013_bootstrap`. `make_engine`
+activa `query_only=ON`, incluso si se mueve solo el fichero; marca desconocida
+rechaza apertura. La API verifica el bundle al iniciar, omite configuración
+ambiental/puertos/supervisor/observador y bloquea mutaciones con 409. Lecturas por
+ID de run y de JUnit siguen disponibles; el contenido legacy copiado usa el mapeo
+y su hash indexado. No registra proyectos gestionables ni toca checkouts.
+
+Esta guardia evita que abrir una copia dispare jobs/lotes históricos. Una
+restauración no certifica muerte de procesos, libera locks, revive concesiones ni
+repite efectos. La reactivación operativa necesita un procedimiento separado,
+fuera de H5.2; no hay acción automática para retirar la marca. La exclusión
+frente a escritores externos y la comprobación de parada siguen siendo
+cooperativas; no se promete defensa frente a manipulación del propietario.
+
+Límites explícitos: SQLite/fichero hasta 256 MiB, artefactos hasta 2 GiB, 10.000
+referencias, manifiesto hasta 4 MiB; sin benchmark, retención/GC o distribución.
+H5.3 retención local de logs queda siguiente, sin iniciar. Smokes agotados.

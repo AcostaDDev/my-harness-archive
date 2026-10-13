@@ -1,4 +1,6 @@
 from typing import Annotated
+from dataclasses import replace
+from pathlib import Path
 
 from fastapi import APIRouter, Depends, Header, HTTPException, Query, Request
 from fastapi.responses import StreamingResponse
@@ -111,6 +113,19 @@ def legacy_router(engine):
                 response_model=EvidenceContentRead, operation_id="legacy_content")
     def content(project_id: str, artifact_id: str, offset: Offset = 0, limit: ContentLimit = 8192):
         root, artifact = lookup(navigation.artifact, project_id, artifact_id)
+        from harness_local.storage.backup import is_read_only_archive, restored_artifact
+        if is_read_only_archive(engine):
+            try:
+                mapped = restored_artifact(engine, Path(root) / artifact.path)
+                if mapped is None:
+                    return {**read_content(root, replace(artifact, sha256=None), offset, limit),
+                            'indexed_sha256': artifact.sha256, 'status': 'missing' if artifact.sha256 else 'unindexed',
+                            'diagnostic': 'Original externo no incluido en la copia gestionada; no se relee el origen.'}
+                bundle = Path(engine.url.database).resolve().parent
+                result = read_content(str(bundle), replace(artifact, path=mapped.relative_to(bundle).as_posix()), offset, limit)
+                return {**result, 'path': artifact.path}
+            except (OSError, ValueError) as exc:
+                raise HTTPException(409, str(exc)) from exc
         return read_content(root, artifact, offset, limit)
 
     return router

@@ -102,7 +102,10 @@ del núcleo. Ver `docs/discovery/H4.3_TYPESCRIPT_PROFILE.md`.
 H5.1 completado offline: reportes JUnit declarados por comando/perfil, original
 con hash en historial codec 6, parser acotado, procedencia exacta y consulta API/UI.
 Ver `docs/discovery/H5.1_JUNIT.md` (D039).
-Siguiente tarea: H5.2 backup/restauración local, sin iniciarla.
+H5.2 completado offline: backup SQLite/artefactos con servicio detenido,
+manifiesto/hashes e integridad; restauración nueva de consulta con guardia
+persistente, sin reanudar procesos. Ver `docs/discovery/H5.2_BACKUP.md` (D040).
+Siguiente tarea: H5.3 retención local de logs, sin iniciarla.
 Comprobación offline ligera, solo biblioteca estándar, desde la raíz:
 
 ```sh
@@ -132,9 +135,9 @@ npm --prefix frontend run dev
 ```
 
 Las primeras instalaciones necesitan red; después los checks son offline.
-No usar `uv --active` con entornos de otros proyectos. 569 pruebas pytest
+No usar `uv --active` con entornos de otros proyectos. 612 pruebas pytest
 (158 anteriores + 53 H2.3 + 8 entorno smoke + 34 H2.4 + 35 H2.5 + 18 API gestionada + 2 demo UI + 23 H3.1,
-+ 30 H3.2 + 29 H3.3 + 18 H3.4 + 22 H4.1 + 32 exportación + 48 H4.2 + 16 H4.3 + 43 H5.1, con Git temporal).
++ 30 H3.2 + 29 H3.3 + 18 H3.4 + 22 H4.1 + 32 exportación + 48 H4.2 + 16 H4.3 + 43 H5.1 + 43 H5.2, con Git temporal).
 API/UI compilada en 127.0.0.1:8013; Vite en :5173
 en otra terminal. SQLite local ignorada en `.local/harness.sqlite3`; migración
 explícita antes de arrancar. Ver README y `docs/discovery/H0.3_SKELETON.md`.
@@ -165,7 +168,7 @@ run STOPPED por fin deliberado del smoke, owner cerrado, grupos STOPPED/dead y
 lock nuevo liberado por finalización normal. D020/D022 y sus locks conservados.
 Ver `docs/discovery/H2.3_ENV_SMOKE.md`. Sin aceptación/commit de producto ni
 cuota/retries certificados. Consentimiento satisfecho por una ejecución;
-no hacer login, consumir ni relanzar automáticamente. Siguiente tarea: H5.2 backup/restauración local, sin iniciar (D039).
+no hacer login, consumir ni relanzar automáticamente. Siguiente tarea: H5.3 retención local de logs, sin iniciar (D040).
 Los checks no consumen proveedores. Sin configuración gestionada, la API
 `/api/managed` no tiene proyectos, puertos ni supervisor y solo lee.
 `HARNESS_MANAGED_CONFIG=módulo:atributo` (o `create_app(managed=...)`) registra

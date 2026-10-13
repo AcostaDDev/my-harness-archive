@@ -35,7 +35,7 @@ Actualizado: 2026-10-13.
 - Dependencias reales instaladas en `.venv` / `frontend/node_modules`, locks
   `uv.lock` / `frontend/package-lock.json`. Pins H0.2 usados conservados;
   backend de paquete `uv_build==0.12.19`. Comandos comprobados en README/AGENTS.
-- 557 casos de producto en `tests/product/`; pytest ejecuta 569 pruebas en total.
+- 600 casos de producto en `tests/product/`; pytest ejecuta 612 pruebas en total.
   La comprobación ligera anterior conserva sus 12 checks sin dependencias.
 - H1.1 completado: [importación legacy y verificaciones](discovery/H1.1_IMPORT.md),
   [alcance original](discovery/H1.1_SCOPE.md). Lector local explícito de
@@ -353,6 +353,19 @@ Actualizado: 2026-10-13.
   tareas/revalidaciones y checks de fase. `typescript-web`/fixture generan JUnit
   Node junto a TAP sin dependencias nuevas; 43 casos nuevos y Chrome sintético.
 
+- H5.2 completado offline: [backup/restauración local](discovery/H5.2_BACKUP.md),
+  [alcance original](discovery/H5.2_SCOPE.md), D040. CLI y biblioteca con servicio/
+  escritores detenidos, bloqueo escritor y mecanismo de backup SQLite (incluye WAL).
+- Bundle con SQLite, prompts/streams CLI, snapshots/exportación H2.5 y JUnit
+  embebido; manifiesto/hashes/mapeo de referencias, integridad/FK/esquema/codec
+  comprobados. Lecturas seguras acotadas y destino nuevo, sin sobrescribir originales.
+- Copia/restauración protegidas por marca interna y `query_only=ON`; API de
+  consulta sin cargar configuración, supervisor u observador, mutaciones 409.
+  Jobs/locks/estados inciertos y snapshots conservados, sin reanudar procesos.
+  Consultas por ID, JUnit y contenido legacy mapeado independientes del origen.
+  43 casos nuevos y recorrido CLI/HTTP sintético; sin reactivación operativa,
+  retención/GC ni backup de checkouts/objetos Git/fuentes legacy externas.
+
 ## Todavía no existe
 
 Recorrido de tarea real del motor con proveedores ni entrada CLI gestionada;
@@ -361,7 +374,8 @@ Tampoco existen sesión local, guardia en lecturas H0/H1 (las mutaciones ya la t
 proyectos por HTTP, SSE gestionado, pausa o cancelación por HTTP, integración del
 commit en la rama de destino, retirada de worktrees, abandono manual de una
 intención ambigua, permisos
-interactivos, App Server/SDK para el chat ni distribución. En fases faltan archivo/commit de cierre,
+interactivos, App Server/SDK para el chat, retención/GC ni distribución. Tampoco
+reactivación operativa de una copia/restauración. En fases faltan archivo/commit de cierre,
 instalación de la fase siguiente y cancelación de una tarea de reconciliación. La
 evaluación de fase, la reconciliación y el chat con CLI real no se han ejecutado. La salida del hito 2 está verificada offline desde la UI hasta COMMITTED,
 con recuperación explícita y sin integración en la rama destino.
@@ -394,7 +408,8 @@ Exportación mecánica de STATE/NEXT_STEPS completada offline (D036).
 H4.2 bootstrap guiado completado offline (D037).
 H4.3 segundo perfil TypeScript web completado offline (D038).
 H5.1 importación JUnit y detalle de tests completado offline (D039).
-Siguiente tarea: H5.2 backup/restauración local, sin iniciarla.
+H5.2 backup/restauración local completado offline (D040).
+Siguiente tarea: H5.3 retención local de logs, sin iniciarla.
 Sin proveedores nuevos.
 
 ## Verificación de H0.1
@@ -1323,6 +1338,43 @@ Sin proveedores nuevos.
   revalidación explícita; no se atribuye el archivo anterior automáticamente.
 
   H5.2 backup/restauración local no se ha iniciado.
+
+## Verificación de H5.2
+
+- Git inicial limpio en `main`, `16c41f7`. Leídos AGENTS, STATE, NEXT_STEPS,
+  DECISIONS, especificación §14 y backlog H5. Alcance original conservado;
+  no se inició otro incremento de H5. D040 fija consistencia y guardia de consulta.
+- 43 casos nuevos con SQLite/WAL, Git y artefactos sintéticos: copia →
+  verificación → restauración → consultas CLI/HTTP; filas operativas, snapshots,
+  contextos, historial/JUnit y eventos exactos. Copias H2.5/exportación conservadas
+  y contenido legacy servido desde el mapeo tras borrar su original.
+- Capturas de procesos Python sintéticos: prompts/streams finales, rangos/hash,
+  colas sin checkpoint y streams aún ausentes. Intentos pendientes, jobs
+  RECOVERY_REQUIRED/QUEUED y locks no se convierten en efectos ni estados terminados.
+- Guardia persistente en SQLite, incluso al mover solo el fichero; API consulta
+  sin cargar configuración ambiental o puertos opt-in. Supervisor/observador
+  omitidos; mutaciones 409 y escrituras de biblioteca rechazadas antes de efectos.
+- Integridad/FK, versión futura, codec/original JUnit, hashes, artefactos ausentes,
+  enlaces simbólicos/duros/FIFO, límites, rutas inseguras y referencias omitidas/
+  repetidas comprobados. WAL ajeno no sellado rechazado. Escritor DB concurrente
+  bloqueado; cambios durante copia/restauración invalidan sin publicar COMPLETE;
+  destinos ocupados y checkouts conservados. Originales históricos inexistentes
+  o convertidos en enlaces no afectan la verificación del bundle.
+- Regresión final: 612 pruebas pytest y 121 subtests; 569 anteriores + 43 H5.2.
+  12 checks ligeros, cuatro pruebas Node, TypeScript/build y checks existentes de
+  migraciones/OpenAPI correctos. Esquema `0013_bootstrap`, codec/locks/contratos
+  HTTP conservados; sin regeneración necesaria. Aviso Starlette/HTTPX conocido.
+- Diff/whitespace revisados. Sin proveedores/smokes/login, red externa, ReferenceProject,
+  configuración global, colaboración automática, harness de desarrollo ni push.
+  No se copió ni migró la SQLite de trabajo. Verificación HTTP con TestClient;
+  no se arrancó servidor/navegador. Commit solicitado por el usuario.
+- Límites: parada y exclusión de escritores externos cooperativas; 256 MiB por
+  fichero/SQLite, 2 GiB de artefactos, 10.000 referencias y manifiesto de 4 MiB,
+  sin benchmark. Se restaura evidencia de consulta, sin reactivar ejecución,
+  registrar proyectos gestionables, respaldar Git/fuentes externas, GC ni cifrado.
+  Parciales permanecen para inspección, sin limpieza o reutilización automática.
+
+  H5.3 retención local de logs queda siguiente, sin iniciar.
 
 ## Coordinación
 

@@ -1,51 +1,54 @@
-# Siguiente tarea — H5.2 Backup y restauración local
+# Siguiente tarea — H5.3 Retención local de logs
 
-H5.1 importación JUnit y detalle de tests se completó offline el 2026-10-13
-(D039). Original/hash y casos conservados en el historial, declaraciones por
-comando/perfil, captura/parser acotados, procedencia de run/intento/comando/Git,
-consulta paginada y descarga API/UI. TypeScript genera JUnit con el reporter Node.
-Ver [entrega y límites](discovery/H5.1_JUNIT.md) y
-[alcance original](discovery/H5.1_SCOPE.md).
+H5.2 backup/restauración local se completó offline el 2026-10-13 (D040).
+Copia con servicio/escritores detenidos y mecanismo de backup SQLite; manifiesto,
+hashes/referencias verificadas, restauración a destino nuevo y guardia persistente
+de solo lectura. No se reanudan procesos ni se repiten efectos al abrir una copia.
+Ver [procedimiento y límites](discovery/H5.2_BACKUP.md) y
+[alcance original](discovery/H5.2_SCOPE.md).
 
 Estado verificado:
 
-- esquema `0013_bootstrap` sin migración nueva; codec 6 y formatos 1–5 compatibles;
-- 569 pruebas pytest y 121 subtests; checks de esquema/OpenAPI existentes;
-- 43 casos JUnit nuevos y reporter Node real con tres casos/duraciones;
-- 12 checks ligeros, cuatro pruebas del cliente Node y TypeScript/build;
-- reportes válidos, truncados, inválidos, ausentes y anteriores con diagnósticos;
-- XML activo, rutas externas/enlazadas, archivos especiales y límites rechazados;
-- original persistido después de reiniciar y de editar/eliminar su fuente;
-- revalidación y check de fase, comandos/intentos/evidencia exacta conservados;
-- paginación HTTP, errores como texto en Chrome y commit exacto/invalidez por deriva.
+- esquema `0013_bootstrap` y codec 6 conservados; historial 1–6 compatible;
+- 612 pruebas pytest y 121 subtests, con 43 casos nuevos de backup/restauración;
+- WAL real, historial/snapshots/JUnit/eventos y filas operativas conservados;
+- prompts/streams CLI, rangos y colas inciertas, snapshots/exportación H2.5;
+- consultas HTTP y artefactos restaurados independientes de sus originales;
+- guardia SQLite/API, sin cargar configuración ni iniciar supervisor/observador;
+- corrupción/ausencia/versiones/rutas/enlaces/límites/concurrencia rechazados;
+- 12 checks ligeros, cuatro pruebas Node, TypeScript/build y checks de esquema/OpenAPI.
 
-No se usaron proveedores ni se migró la SQLite de trabajo. No se incorporó
-retención, backup ni distribución. **H5.2 no está iniciado.** Los consentimientos
-de smokes siguen agotados.
+No se copió ni migró la SQLite de trabajo, no se usaron proveedores ni smokes.
+No se implementaron GC, distribución ni reactivación operativa de una copia.
+**H5.3 no está iniciado.** Los consentimientos de smokes siguen agotados.
 
-## Objetivo y alcance (segundo incremento del hito 5)
+## Objetivo y alcance (siguiente incremento del hito 5)
 
-1. Definir y realizar una copia local consistente de la SQLite y de los artefactos
-   gestionados necesarios para recuperar su historial y referencias.
-2. Restaurar explícitamente en un destino nuevo, con manifiesto, hashes y
-   comprobación de compatibilidad/integridad; conservar los originales.
-3. Verificar offline con bases/checkouts/artefactos sintéticos y documentar el
-   procedimiento y sus límites. Una restauración no autoriza a reanudar procesos.
+1. Definir una política local explícita de retención de logs voluminosos y sus
+   límites; separar originales purgables de contratos, snapshots, permisos,
+   aprobaciones y veredictos que deben conservarse.
+2. Diseñar e implementar vista previa y aplicación explícita de la política sobre
+   artefactos gestionados, con diagnóstico/auditoría de bytes retirados y
+   referencias ausentes deliberadamente diferenciadas de pérdida/corrupción.
+3. Mantener backup/restauración compatibles con la evidencia retenida y probar
+   offline sobre datos sintéticos. No purgar archivos reales del usuario.
 
 ## Criterios de aceptación
 
-- La copia conserva historial, snapshots, reportes y referencias de artefactos
-  con una política explícita de consistencia frente a actividad del servicio.
-- Restaurar en un destino vacío produce una autoridad SQLite íntegra y artefactos
-  verificables; corrupción, ausencia o versión incompatible producen diagnóstico.
-- No sobrescribe el estado de trabajo ni supone que procesos inciertos terminaron;
-  no ejecuta agentes ni repite efectos al restaurar.
-- Pasa el recorrido offline copia → restauración → consultas con datos sintéticos,
-  las regresiones pertinentes y se actualiza la documentación.
+- La política y sus efectos son visibles antes de eliminar bytes; no hay purga
+  automática ni eliminación de artefactos de intentos activos/inciertos.
+- Historial, contratos, decisiones, aprobación/veredicto y procedencia exacta se
+  conservan; retirar un log no certifica éxito ni borra sus hashes observados.
+- La consulta distingue purga autorizada de archivo perdido y no sirve otra
+  versión de bytes como si fuera la registrada.
+- Backup/restauración conserva lo retenido y representa las ausencias autorizadas
+  sin admitir corrupción silenciosa. Las copias existentes permanecen intactas.
+- Regresiones offline pertinentes correctas y documentación actualizada.
 
 ## Fuera de alcance
 
-- Retención/GC, empaquetado/distribución y demás incrementos de H5.
+- Distribución/assets/comando único de inicio, diagnósticos CLI/SDK y otros
+  incrementos de H5; reactivación operativa de restauraciones y backup de Git.
 - Proveedores reales/smokes: autorización específica (D033 punto 8).
 - App Server/SDK, sesión local, SSE gestionado, push y publicación.
 
