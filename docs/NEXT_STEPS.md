@@ -1,45 +1,45 @@
-# Siguiente tarea — H5.6 Sesión local y protección de endpoints
+# Siguiente tarea — H5.7 Recorridos E2E offline
 
-H5.5 assets web empaquetados y comando único de inicio completado offline el
-2026-10-13 (D043). Wheel/sdist con UI y migraciones, instalación aislada con pins
-y hashes, `init-db` explícito sobre destino nuevo y `serve` en loopback.
-Ver [entrega y límites](discovery/H5.5_DISTRIBUTION.md) y
-[alcance original](discovery/H5.5_SCOPE.md).
+H5.6 sesión local y protección de endpoints completado offline el 2026-10-13
+(D044). Sesión efímera con clave en archivo privado, cookie HttpOnly, caducidad y
+cierre; guardia uniforme de datos/acciones/streams, UI sin reenvíos automáticos y
+paquete/restauración de consulta verificados con sesión.
+Ver [entrega y límites](discovery/H5.6_SESSION.md) y
+[alcance original](discovery/H5.6_SCOPE.md).
 
 Esquema `0013_bootstrap`, codec 6, adaptador `cli-4` y locks conservados.
-Verificado paquete instalado fuera del checkout, HTTP, simulación/reinicio y
-backup/restauración de consulta con datos sintéticos. **H5.6 no está iniciado.**
+Navegador bloqueó la URL de comprobación visual con `ERR_BLOCKED_BY_CLIENT`;
+pruebas HTTP/cliente y paquete verificadas. **H5.7 no está iniciado.**
 Los consentimientos de proveedores/smokes siguen agotados.
 
-## Objetivo y alcance (siguiente incremento del hito 5)
+## Objetivo y alcance (último incremento previsto del hito 5)
 
-1. Incorporar sesión local para el navegador según especificación §10 y D033,
-   sin convertir la cabecera X-Harness-Local en una credencial.
-2. Proteger lecturas y mutaciones del producto de forma coherente, incluidas
-   lecturas H0/H1, recursos de evidencias y streams; preservar Host/Origin/CSRF.
-3. Integrar inicio, expiración/cierre y errores de sesión en UI/entrada instalada,
-   manteniendo restauraciones en consulta y proveedores opt-in.
+1. Consolidar recorridos reproducibles de crear, importar, ejecutar, bloquear,
+   denegar, reintentar y recuperar, usando proyectos sintéticos y puertos falsos.
+2. Ejercitar la sesión local y las confirmaciones desde UI/API, con historial,
+   idempotencia, evidencias y recuperación coherentes tras reiniciar.
+3. Verificar el recorrido disponible en paquete instalado y restauración de
+   consulta sin depender del checkout de desarrollo; documentar los límites.
 
 ## Criterios de aceptación
 
-- Acceso a datos y acciones exige sesión local válida; loopback o una cabecera
-  pública por sí solos no autorizan. Definir amenazas y límites frente a otros
-  usuarios del SO, sin prometer aislamiento frente al propietario del proceso.
-- Credenciales de sesión no aparecen en logs, evidencias, historial, enlaces
-  persistentes ni respuestas ajenas al flujo de establecimiento autorizado.
-- UI y clientes manejan ausencia/caducidad/cierre sin ejecutar ni repetir acciones
-  automáticamente; guardias de Host/Origin/CSRF conservadas.
-- Rutas y renderizado de logs/evidencias siguen siendo seguros y acotados;
-  errores y pruebas negativas cubren acceso sin sesión y orígenes ajenos.
-- Paquete instalado y restauración de consulta funcionan con sesión; no activa
-  proyectos, observación ni proveedores ni migra datos silenciosamente.
-- Tests offline pertinentes y documentación de operación/límites actualizada.
+- Los recorridos cubren los escenarios del backlog H5 y distinguen fakes de
+  transporte/proveedores reales; no consumen modelos ni amplían permisos.
+- Un rechazo, pérdida de sesión o caída no reenvía acciones automáticamente ni
+  pierde su identidad/evidencia; reintentos y recuperación siguen explícitos.
+- Aceptación/commit se vinculan al contenido exacto; tests, permisos o revisión
+  fallidos impiden avanzar. No integrar ramas ni cerrar fases por inferencia.
+- Inicio desde instalación aislada, operación sintética y consulta de backup
+  restaurado comprobados; la restauración no reanuda trabajos.
+- Verificar UI si el navegador permite acceso; registrar con precisión cualquier
+  bloqueo de herramienta y no presentar pruebas HTTP como QA visual.
+- Checks offline pertinentes, diff y documentación de estado actualizados.
 
 ## Fuera de alcance
 
-- Acceso remoto/multiusuario, OAuth externo, App Server/SDK, SSE gestionado,
-  reactivación de restauraciones y publicación.
-- Proveedores/smokes: requieren autorización específica (D033 punto 8).
-- Recorridos E2E amplios restantes del hito 5, aparte de verificar la sesión.
+- Smokes/inferencia reales (D033 punto 8 exige autorización específica), acceso
+  remoto/multiusuario, OAuth, App Server/SDK, SSE gestionado y publicación.
+- Reactivación de restauraciones, actualización instalada de bases existentes,
+  integración de ramas, GC y ampliaciones de producto no necesarias al recorrido.
 
 No lanzar colaboración automática ni usar el harness para desarrollar el repo.

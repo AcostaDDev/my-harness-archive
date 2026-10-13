@@ -58,7 +58,10 @@ def legacy_router(engine):
                 raise HTTPException(422, "Last-Event-ID debe ser un cursor entero no negativo.")
             cursor = int(last_event_id)
         updates(cursor, 1)  # Validate before sending headers; Last-Event-ID wins on reconnect.
-        return StreamingResponse(event_frames(observation, cursor, request.is_disconnected),
+        async def disconnected():
+            return (not request.app.state.sessions.remaining(
+                request.cookies.get(request.app.state.sessions.cookie)) or await request.is_disconnected())
+        return StreamingResponse(event_frames(observation, cursor, disconnected),
             media_type="text/event-stream", headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"})
 
     @router.get("/projects/{project_id}/observation", response_model=ObservationRead,

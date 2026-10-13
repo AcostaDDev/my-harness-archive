@@ -113,7 +113,9 @@ compartido, acotado y sin secretos, sin autenticación ni inferencia (D042).
 Ver `docs/discovery/H5.4_DIAGNOSTICS.md`.
 H5.5 completado offline: wheel/sdist con UI/migraciones y entrada local (D043).
 Ver `docs/discovery/H5.5_DISTRIBUTION.md`.
-Siguiente tarea: H5.6 sesión local y protección de endpoints, sin iniciarla.
+H5.6 completado offline: sesión efímera, guardia uniforme API/streams y UI (D044).
+Ver `docs/discovery/H5.6_SESSION.md`.
+Siguiente tarea: H5.7 recorridos E2E offline, sin iniciarla.
 Comprobación offline ligera, solo biblioteca estándar, desde la raíz:
 
 ```sh
@@ -138,14 +140,14 @@ UV_CACHE_DIR=.local/uv-cache uv run --frozen --offline python scripts/export_ope
 npm --prefix frontend run generate:types
 npm --prefix frontend run check
 npm --prefix frontend run build
-UV_CACHE_DIR=.local/uv-cache uv run --frozen --offline uvicorn harness_local.api.app:create_app --factory --host 127.0.0.1 --port 8013 --workers 1
+UV_CACHE_DIR=.local/uv-cache uv run --frozen --offline uvicorn harness_local.api.app:create_app --factory --host 127.0.0.1 --port 8013 --workers 1 --no-proxy-headers --no-access-log
 npm --prefix frontend run dev
 ```
 
 Las primeras instalaciones necesitan red; después los checks son offline.
-No usar `uv --active` con entornos de otros proyectos. 720 pruebas pytest
+No usar `uv --active` con entornos de otros proyectos. 765 pruebas pytest
 (158 anteriores + 53 H2.3 + 8 entorno smoke + 34 H2.4 + 35 H2.5 + 18 API gestionada + 2 demo UI + 23 H3.1,
-+ 30 H3.2 + 29 H3.3 + 18 H3.4 + 22 H4.1 + 32 exportación + 48 H4.2 + 16 H4.3 + 43 H5.1 + 43 H5.2 + 43 H5.3 + 52 H5.4 + 13 H5.5, con Git temporal).
++ 30 H3.2 + 29 H3.3 + 18 H3.4 + 22 H4.1 + 32 exportación + 48 H4.2 + 16 H4.3 + 43 H5.1 + 43 H5.2 + 43 H5.3 + 52 H5.4 + 13 H5.5 + 45 H5.6, con Git temporal).
 Paquete H5.5: UI/API en 127.0.0.1:8013; en desarrollo API en :8013 y Vite en :5173
 en otra terminal. SQLite local ignorada en `.local/harness.sqlite3`; migración
 explícita antes de arrancar. Ver README y `docs/discovery/H0.3_SKELETON.md`.
@@ -176,13 +178,13 @@ run STOPPED por fin deliberado del smoke, owner cerrado, grupos STOPPED/dead y
 lock nuevo liberado por finalización normal. D020/D022 y sus locks conservados.
 Ver `docs/discovery/H2.3_ENV_SMOKE.md`. Sin aceptación/commit de producto ni
 cuota/retries certificados. Consentimiento satisfecho por una ejecución;
-no hacer login, consumir ni relanzar automáticamente. Siguiente tarea: H5.6 sesión local y protección de endpoints, sin iniciar (D043).
+no hacer login, consumir ni relanzar automáticamente. Siguiente tarea: H5.7 recorridos E2E offline, sin iniciar (D044).
 Los checks no consumen proveedores. Sin configuración gestionada, la API
 `/api/managed` no tiene proyectos, puertos ni supervisor y solo lee.
 `HARNESS_MANAGED_CONFIG=módulo:atributo` (o `create_app(managed=...)`) registra
 proyectos y puertos explícitos; el supervisor solo arranca con `supervisor=True`.
-Las mutaciones gestionadas y H0/H1 exigen la cabecera `X-Harness-Local: 1` y
-Host/Origin de loopback. El commit se encola como acción `commit` por inyección de `commit_factory`.
+La API exige sesión y Host loopback; Origin, si existe, debe coincidir con el
+servicio. Mutaciones exigen además la cabecera CSRF `X-Harness-Local: 1`. El commit se encola como acción `commit` por inyección de `commit_factory`.
 La migración H2.5 se expone por `/api/managed` y la UI sobre `MigrationService`, sin CLI;
 sus copias y exportaciones viven en `migrations/` junto a la SQLite local.
 
@@ -192,7 +194,10 @@ Regresión del cliente gestionado, sin dependencias adicionales ni navegador:
 node --test frontend/tests/managed-api.test.mjs
 ```
 
-Cuatro pruebas Node. Demo offline opt-in: `examples.managed_demo:build`, preparación
+Cinco pruebas Node. Demo offline opt-in: `examples.managed_demo:build`, preparación
 y comandos en `docs/discovery/H2_EXIT_UI.md`. Nunca apuntar la demo a un checkout
-real. La sesión local sigue pendiente; la guardia cubre `/api/managed` y las
-mutaciones H0/H1, no las lecturas H0/H1. La UI no activa proveedores automáticamente.
+real. Toda API (lecturas, evidencias, health/OpenAPI y streams incluidos) exige
+sesión local. Al arrancar se anuncia solo la ruta de la clave en un archivo
+privado temporal; copiarla en la UI. Caduca a las ocho horas; cierre/reinicio la
+invalidan. Host loopback, Origin exacto y CSRF siguen siendo obligatorios.
+La UI no activa proveedores ni repite acciones al iniciar sesión.

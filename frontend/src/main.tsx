@@ -6,6 +6,7 @@ import type { Simulation } from "./api";
 import { LegacyBrowser } from "./legacy";
 import { ManagedBrowser } from "./managed";
 import "./styles.css";
+import { SessionGate } from "./SessionGate";
 
 function App() {
   const [view, setView] = useState<"managed" | "legacy" | "simulation">("managed");
@@ -112,4 +113,4 @@ function App() {
   );
 }
 
-createRoot(document.getElementById("root")!).render(<StrictMode><App /></StrictMode>);
+createRoot(document.getElementById("root")!).render(<StrictMode><SessionGate><App /></SessionGate></StrictMode>);

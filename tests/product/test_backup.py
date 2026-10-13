@@ -7,7 +7,7 @@ import os
 from pathlib import Path
 import sqlite3
 
-from fastapi.testclient import TestClient
+from session_client import TestClient
 import pytest
 from sqlalchemy import text
 from sqlalchemy.exc import OperationalError

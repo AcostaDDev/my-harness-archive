@@ -18,6 +18,8 @@ async def event_frames(repository, after, disconnected, interval=0.5, duration=1
             yield f"event: reset\ndata: {json.dumps({'diagnostic': str(error)})}\n\n"
             return
         for item in batch["items"]:
+            if await disconnected():
+                return
             event = LegacyEventRead.model_validate(item)
             yield f"id: {event.id}\nevent: legacy_update\ndata: {event.model_dump_json()}\n\n"
             after = event.id

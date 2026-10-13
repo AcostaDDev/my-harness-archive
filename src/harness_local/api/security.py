@@ -1,10 +1,4 @@
-"""Guardia local compartida (§10): Host de loopback, Origin local y cabecera propia en mutaciones.
-
-La cabecera `X-Harness-Local: 1` no es una credencial: una página ajena no puede
-añadirla sin preflight CORS y el servicio no habilita CORS. La sesión local frente
-a otros usuarios del sistema operativo sigue pendiente (hito 5).
-"""
-
+"""Host loopback, Origin exacto y cabecera CSRF; ninguno sustituye la sesión."""
 from typing import Annotated
 from urllib.parse import urlsplit
 
@@ -20,7 +14,14 @@ def problem(status: int, code: str, diagnostic: str) -> HTTPException:
 
 def _hostname(value: str | None) -> str | None:
     try:
-        return urlsplit(f"//{value}").hostname if value else None
+        if not value:
+            return None
+        parsed = urlsplit(f"//{value}")
+        if parsed.netloc != value or parsed.username or parsed.password or parsed.path or parsed.query or parsed.fragment:
+            return None
+        if parsed.port is not None and not 1 <= parsed.port <= 65535:
+            return None
+        return parsed.hostname
     except ValueError:
         return None
 
@@ -30,12 +31,20 @@ def local_request(request: Request, x_harness_local: Annotated[str | None, Heade
     """Rechaza DNS rebinding (Host), peticiones cruzadas (Origin) y formularios ajenos (cabecera propia)."""
     if _hostname(request.headers.get("host")) not in LOOPBACK_HOSTS:
         raise problem(403, "host_rejected", "El servicio local solo atiende nombres de loopback.")
-    if request.method in SAFE_METHODS:
-        return
     origin = request.headers.get("origin")
     if origin is not None:
-        parsed = urlsplit(origin)
-        if parsed.scheme not in {"http", "https"} or _hostname(parsed.netloc) not in LOOPBACK_HOSTS:
-            raise problem(403, "origin_rejected", "Origen no local para una mutación.")
+        try:
+            parsed = urlsplit(origin)
+            expected = urlsplit(str(request.base_url))
+            valid = (parsed.scheme, parsed.hostname, parsed.port) == (expected.scheme, expected.hostname, expected.port)
+            valid = valid and not parsed.username and not parsed.password and not parsed.path and not parsed.query and not parsed.fragment
+        except ValueError:
+            valid = False
+        if not valid:
+            raise problem(403, "origin_rejected", "Origen distinto del servicio local.")
+    if request.headers.get("sec-fetch-site") == "cross-site":
+        raise problem(403, "origin_rejected", "Petición de un sitio ajeno.")
+    if request.method in SAFE_METHODS:
+        return
     if x_harness_local != "1":
         raise problem(403, "csrf_header_required", "Las mutaciones exigen la cabecera X-Harness-Local: 1.")

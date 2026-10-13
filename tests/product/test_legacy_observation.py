@@ -7,7 +7,7 @@ import shutil
 import time
 
 from alembic import command
-from fastapi.testclient import TestClient
+from session_client import TestClient
 import pytest
 from sqlalchemy import event, func, select
 from sqlalchemy.orm import Session
@@ -288,7 +288,7 @@ def test_sse_http_last_event_id_precedence_and_wire_format(observation, tmp_path
         async def disconnected_once():
             nonlocal iterations
             iterations += 1
-            return iterations > 1
+            return iterations > 1 + head
 
         async for frame in event_frames(repository, after, disconnected_once, interval=0):
             yield frame
@@ -298,7 +298,7 @@ def test_sse_http_last_event_id_precedence_and_wire_format(observation, tmp_path
         response = client.get("/api/legacy/events?after=9999", headers={"Last-Event-ID": "0"})
         assert response.status_code == 200
         assert response.headers["content-type"].startswith("text/event-stream")
-        assert response.headers["cache-control"] == "no-cache"
+        assert response.headers["cache-control"] == "no-store"
         assert f"id: {head}\nevent: legacy_update\ndata: " in response.text
         item = json.loads(response.text.split("data: ")[1].split("\n\n")[0])
         assert item["id"] == head and item["kind"] == "index_updated"

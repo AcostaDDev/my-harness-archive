@@ -57,7 +57,7 @@ def test_invalid_port_has_no_effects(tmp_path, port):
 
 
 def test_api_assets_ignore_cwd(migrated_database, tmp_path, monkeypatch):
-    from fastapi.testclient import TestClient
+    from session_client import TestClient
     from harness_local.api.app import create_app
     rogue = tmp_path / 'frontend/dist'
     rogue.mkdir(parents=True)
@@ -70,7 +70,7 @@ def test_api_assets_ignore_cwd(migrated_database, tmp_path, monkeypatch):
 
 
 def test_explicit_development_assets(migrated_database, tmp_path):
-    from fastapi.testclient import TestClient
+    from session_client import TestClient
     from harness_local.api.app import create_app
     (tmp_path / 'index.html').write_text('<html>explicit</html>')
     with TestClient(create_app(migrated_database[0], ui_dir=tmp_path)) as client:

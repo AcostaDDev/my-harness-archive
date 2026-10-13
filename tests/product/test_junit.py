@@ -7,7 +7,7 @@ import json
 import os
 from pathlib import Path
 
-from fastapi.testclient import TestClient
+from session_client import TestClient
 import pytest
 
 from harness_local.adapters.engine_fake import ScriptedAgentAdapter, ScriptedCommandRunner, SyntheticWorkspace

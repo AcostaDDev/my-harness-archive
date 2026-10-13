@@ -1,3 +1,4 @@
+import { sessionResponse } from "./session.ts";
 import type { components } from "./api.generated";
 export type S = components["schemas"];
 export class ManagedError extends Error {
@@ -9,6 +10,7 @@ export async function managed<T>(path: string, body?: unknown, key?: string): Pr
     method: "POST", headers: { "Content-Type": "application/json", "X-Harness-Local": "1",
       ...(key ? { "Idempotency-Key": key } : {}) }, body: JSON.stringify(body),
   });
+  sessionResponse(response);
   if (!response.ok) {
     const data = await response.json().catch(() => null);
     throw new ManagedError(response.status, `${response.status} · ${data?.detail?.code ?? "request_failed"}: ${data?.detail?.diagnostic ?? JSON.stringify(data?.detail ?? "Servicio no disponible")}`);

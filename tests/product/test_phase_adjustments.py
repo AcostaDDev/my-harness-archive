@@ -4,7 +4,7 @@ from datetime import timedelta
 import json
 
 from alembic import command
-from fastapi.testclient import TestClient
+from session_client import TestClient
 import pytest
 from sqlalchemy import select, text
 from sqlalchemy.orm import Session
@@ -59,12 +59,12 @@ def batch(detail, auth_id):
 def test_h0_h1_mutations_reject_foreign_host_origin_and_missing_header(migrated_database, tmp_path):
     url, _ = migrated_database
     body = {'title': 'Simulación sintética'}
-    with TestClient(create_app(url, tmp_path)) as foreign:  # Host: testserver
+    with TestClient(create_app(url, tmp_path), base_url="http://testserver") as foreign:  # Host: testserver
         rejected = foreign.post('/api/simulations', json=body, headers={'X-Harness-Local': '1'})
         assert rejected.status_code == 403 and rejected.json()['detail']['code'] == 'host_rejected'
         assert foreign.put('/api/legacy/projects/x/observation', json={'enabled': True},
                            headers={'X-Harness-Local': '1'}).json()['detail']['code'] == 'host_rejected'
-        assert foreign.get('/api/simulations').status_code == 200  # alcance: mutaciones H0/H1
+        assert foreign.get('/api/simulations').status_code == 403  # H5.6 cubre también lecturas
     with TestClient(create_app(url, tmp_path), base_url=LOCAL) as local:
         missing = local.post('/api/simulations', json=body)
         assert missing.status_code == 403 and missing.json()['detail']['code'] == 'csrf_header_required'
@@ -75,10 +75,10 @@ def test_h0_h1_mutations_reject_foreign_host_origin_and_missing_header(migrated_
         assert put.status_code == 403 and put.json()['detail']['code'] == 'csrf_header_required'
         # La guardia precede a la búsqueda: con cabecera, el proyecto desconocido da 404.
         assert local.put('/api/legacy/projects/x/observation', json={'enabled': True},
-                         headers={'X-Harness-Local': '1', 'Origin': 'http://127.0.0.1:5173'}).status_code == 404
+                         headers={'X-Harness-Local': '1', 'Origin': LOCAL}).status_code == 404
         assert local.get('/api/simulations').json() == []  # ningún rechazo creó filas
         created = local.post('/api/simulations', json=body, headers={'X-Harness-Local': '1',
-                                                                     'Origin': 'http://localhost:5173'})
+                                                                     'Origin': LOCAL})
         assert created.status_code == 201
 
 

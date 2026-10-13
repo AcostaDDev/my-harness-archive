@@ -1,3 +1,4 @@
+import { sessionResponse } from "./session.ts";
 import type { components, operations } from "./api.generated";
 
 export type Simulation = components["schemas"]["SimulationRead"];
@@ -12,6 +13,7 @@ export async function request<T>(path: string, options?: RequestInit): Promise<T
   const method = (options?.method ?? "GET").toUpperCase();
   const init = SAFE.has(method) ? options : { ...options, headers: { ...(options?.headers as Record<string, string> | undefined), "X-Harness-Local": "1" } };
   const response = await fetch(path, init);
+  sessionResponse(response);
   if (!response.ok) {
     throw new Error(`La solicitud falló (${response.status}). Comprueba que el servicio esté disponible.`);
   }

@@ -1310,3 +1310,45 @@ otras plataformas, identidad binaria del build, navegador ni recorrido de agente
 Sesión local, actualización instalada de bases existentes, publicación y E2E
 amplios siguen fuera. H5.6 sesión local y protección de endpoints queda siguiente,
 sin iniciar; consentimientos de proveedores/smokes siguen agotados.
+
+## D044 — Sesión efímera local y guardia uniforme antes del acceso al producto
+
+Estado: implementado y verificado offline el 2026-10-13.
+[Operación, amenazas, pruebas y límites](discovery/H5.6_SESSION.md).
+
+Clave aleatoria por proceso en archivo temporal exclusivo 0600/directorio 0700,
+fuera de proyectos/SQLite. Arranque anuncia solo su ruta. Sirve como capacidad
+de establecimiento durante ese proceso; no crea una contraseña permanente ni
+toca las credenciales/almacenes de proveedores. Sesiones con tokens independientes,
+hashes en memoria, cookie HttpOnly/SameSite=Strict/Path=/api, ocho horas absolutas,
+32 sesiones máximas y diez intentos de acceso por minuto. Reinicio invalida todas;
+apagado normal retira el archivo. Caída puede dejar un secreto privado ya inválido.
+
+La guardia HTTP compartida precede a validación/lectura/escritura: Host loopback,
+Origin exacto (esquema/host/puerto) incluso en GET, rechazo cross-site y cabecera
+CSRF en mutaciones. Loopback/X-Harness-Local nunca son credenciales. Solo assets
+estáticos y POST de establecimiento son públicos; toda API, OpenAPI, evidencias,
+health y SSE requieren sesión. Respuestas no-store/no-referrer/nosniff/DENY.
+Entrada de login acotada y errores sin eco de credenciales. Solo Set-Cookie del
+intercambio autorizado entrega el token al navegador; no hay URLs con tokens.
+
+Caducidad/cierre impiden peticiones nuevas y terminan streams antes de eventos
+posteriores. No cancelan acciones admitidas ni trabajos/lotes autorizados. UI
+retira datos al perder sesión, permite acceso/cierre explícitos y conserva los
+sobres pendientes para repetición humana, sin reenvío automático. Restauraciones
+permiten sesión en memoria y mantienen las restricciones H5.2 del producto.
+No cambia esquema/codec/adaptador/locks, identidad auditada ni opt-in de runtime.
+
+Frontera: permisos POSIX frente a lectores de otros UID y páginas web ajenas;
+no aislamiento contra propietario/root, navegador/extensiones comprometidos,
+lectura del perfil/portapapeles o código ejecutado con el UID. HTTP loopback sin
+TLS ni Secure; las cookies no aíslan puertos. Un servidor local hostil visitado
+en el mismo hostname puede recibirlas en una ruta /api: ese escenario queda
+fuera de protección. No se promete seguridad multiusuario endurecida, bloqueo
+de DoS ni soporte de otras plataformas. Los secretos persistentes de proveedores
+siguen en sus almacenes existentes; no se añade un almacén persistente de login.
+
+Paquete instalado comprobado offline con sesión, simulación/reinicio y restauración
+de consulta. Navegador bloqueó la URL sintética (`ERR_BLOCKED_BY_CLIENT`), sin
+acreditar QA visual. H5.7 recorridos E2E offline es la siguiente tarea, sin iniciar;
+consentimientos de proveedores/smokes agotados. No hay publicación ni push.

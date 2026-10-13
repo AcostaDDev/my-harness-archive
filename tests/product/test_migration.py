@@ -14,7 +14,7 @@ import subprocess
 from threading import Barrier
 
 from alembic import command
-from fastapi.testclient import TestClient
+from session_client import TestClient
 import pytest
 from sqlalchemy import func, inspect, select, text
 from sqlalchemy.orm import Session

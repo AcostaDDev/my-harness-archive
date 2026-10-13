@@ -58,3 +58,22 @@ test('H0/H1 mutations carry the local CSRF header; reads do not need it', async 
   assert.equal(calls[2].options.headers['X-Harness-Local'], '1');
   assert.deepEqual(JSON.parse(calls[2].options.body), {enabled: true});
 });
+
+test('401 notifies the session gate once and never retries a mutation or changes its envelope', async () => {
+  const events = [];
+  globalThis.window = {dispatchEvent: event => events.push(event.type)};
+  const pending = jobRequest('/projects/demo/runs', {task_id:'T',phase_id:'P',text:'synthetic'});
+  savePending(pending);
+  let calls = 0;
+  globalThis.fetch = async () => { calls++; return Response.json({detail:{code:'session_required',diagnostic:'Expired'}}, {status:401}); };
+  try {
+    await assert.rejects(managed(pending.path, pending.body, pending.key), e => e instanceof ManagedError && e.status === 401);
+    assert.equal(calls, 1);
+    assert.deepEqual(readPending(), pending);
+    assert.deepEqual(events, ['harness-session-required']);
+    const {api} = await import('../src/api.ts');
+    await assert.rejects(api.create({title:'synthetic'}));
+    assert.equal(calls, 2);
+    assert.equal(events.length, 2);
+  } finally { delete globalThis.window; }
+});

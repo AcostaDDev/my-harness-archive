@@ -11,7 +11,7 @@ import subprocess
 import sys
 import time
 
-from fastapi.testclient import TestClient
+from session_client import TestClient
 import pytest
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
@@ -544,7 +544,7 @@ def test_host_origin_and_csrf_header_are_enforced_without_effects(tmp_path, url,
         assert table_counts(engine) == counts
         assert http.get("/api/managed/projects").status_code == 200  # lecturas sin cabecera propia
         local = http.post("/api/managed/projects/synthetic/runs", json=RUN, headers={
-            "Idempotency-Key": "k", "X-Harness-Local": "1", "Origin": "http://localhost:5173"})
+            "Idempotency-Key": "k", "X-Harness-Local": "1", "Origin": LOCAL})
         assert local.status_code == 202
 
 

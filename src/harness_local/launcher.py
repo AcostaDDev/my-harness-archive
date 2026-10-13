@@ -56,4 +56,4 @@ def serve(value: str, port: int) -> None:
         engine.dispose()
     # El lifespan conserva validación de configuración, restauraciones y opt-in.
     uvicorn.run(create_app(url=url), host='127.0.0.1', port=port, workers=1,
-                proxy_headers=False)
+                proxy_headers=False, access_log=False)

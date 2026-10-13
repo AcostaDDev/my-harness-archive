@@ -35,7 +35,7 @@ Actualizado: 2026-10-13.
 - Dependencias reales instaladas en `.venv` / `frontend/node_modules`, locks
   `uv.lock` / `frontend/package-lock.json`. Pins H0.2 usados conservados;
   backend de paquete `uv_build==0.12.19`. Comandos comprobados en README/AGENTS.
-- 708 casos de producto en `tests/product/`; pytest ejecuta 720 pruebas en total.
+- 753 casos de producto en `tests/product/`; pytest ejecuta 765 pruebas en total.
   La comprobación ligera anterior conserva sus 12 checks sin dependencias.
 - H1.1 completado: [importación legacy y verificaciones](discovery/H1.1_IMPORT.md),
   [alcance original](discovery/H1.1_SCOPE.md). Lector local explícito de
@@ -399,11 +399,22 @@ Actualizado: 2026-10-13.
 - 13 casos nuevos y recorrido HTTP de wheel instalado con simulación, reinicio,
   diagnósticos, backup/restauración de consulta. Sin publicación ni proveedores.
 
+- H5.6 completado offline: [sesión local y endpoints](discovery/H5.6_SESSION.md),
+  [alcance original](discovery/H5.6_SCOPE.md), D044. Clave efímera en archivo privado,
+  sesiones HttpOnly de ocho horas, cierre/reinicio invalidantes y guardia uniforme.
+- Host/Origin exacto/CSRF conservados y extendidos a todas las lecturas, evidencias,
+  health/OpenAPI y SSE. UI de acceso/cierre y caducidad sin repetir acciones;
+  sobres pendientes conservados ante 401. Esquema/codec/cli-4/locks intactos.
+- Paquete instalado y restauración de consulta funcionan con sesión sin habilitar
+  proveedores. 45 casos nuevos, cliente Node y HTTP reales offline; QA visual
+  bloqueada por el navegador. Límites frente a otros usuarios/servicios locales
+  y cookies compartidas por hostname documentados.
+
 ## Todavía no existe
 
 Recorrido de tarea real del motor con proveedores ni entrada CLI gestionada;
 API/UI gestionadas existen y se han verificado con fakes y Git/SQLite sintéticos.
-Tampoco existen sesión local, guardia en lecturas H0/H1 (las mutaciones ya la tienen), registro de
+Tampoco existen registro de
 proyectos por HTTP, SSE gestionado, pausa o cancelación por HTTP, integración del
 commit en la rama de destino, retirada de worktrees, abandono manual de una
 intención ambigua, permisos
@@ -446,7 +457,8 @@ H5.2 backup/restauración local completado offline (D040).
 H5.3 retención local de logs completado offline (D041).
 H5.4 diagnósticos locales de compatibilidad completado offline (D042).
 H5.5 assets y entrada local completados offline (D043).
-Siguiente tarea: H5.6 sesión local y protección de endpoints, sin iniciarla.
+H5.6 sesión local y protección uniforme completados offline (D044).
+Siguiente tarea: H5.7 recorridos E2E offline, sin iniciarla.
 Sin proveedores nuevos.
 
 ## Verificación de H0.1
@@ -1514,6 +1526,41 @@ Sin proveedores nuevos.
   existentes o flujo de agentes reales. Sesión local pendiente. Commit solicitado.
 
   Siguiente tarea: H5.6 sesión local y protección de endpoints, sin iniciar.
+
+## Verificación de H5.6
+
+- Git inicial limpio en `main`, `0413d78`. Leídos AGENTS, STATE, NEXT_STEPS,
+  DECISIONS, especificación §10 y backlog H5. Alcance original conservado;
+  D044 fija sesión efímera, amenazas y límites. H5.7 no se inició.
+- 45 casos nuevos: acceso anónimo a rutas/acciones/streams, sin efectos; permisos
+  del archivo privado, cookie, caducidad, cierre, rotación, reinicio y limpieza;
+  Host/Origin/CSRF, claves inválidas sin eco, límites, proxy Vite con Host
+  conservado y stream revocado. Pruebas anteriores autentican por login real;
+  no existe bypass de autenticación de producto para tests.
+- Regresión final: **765 pruebas pytest y 121 subtests correctos**, incluidos
+  migraciones, OpenAPI, contenido/evidencias seguros y restauraciones. Se conserva
+  el aviso Starlette/HTTPX. Pase previo detectó restricciones de ps del sandbox
+  en dos tests existentes y regeneración concurrente de OpenAPI; suite final
+  con fuentes sincronizadas fuera del sandbox autorizada, sin fallos.
+- **12 checks ligeros y 5 pruebas Node correctos**; 401 notifica ausencia de sesión
+  sin repetir acciones ni cambiar su sobre pendiente. OpenAPI/tipos regenerados,
+  TypeScript y build Vite correctos. Esquema/codec/cli-4/locks sin cambios.
+- Sdist/wheel construidos offline y wheel instalado en venv nuevo con hashes,
+  cwd ajeno y PATH sin Node. Recursos exactos, login/cierre, UI/assets/API,
+  simulación/reinicio, 401 sin sesión y backup/restauración de consulta con
+  mutaciones 409 verificados por HTTP real. Clave ausente de logs de proceso.
+- Intento de UI en Chrome sobre servidor sintético :8026 bloqueado por el cliente
+  (`ERR_BLOCKED_BY_CLIENT`); no se acredita QA visual ni recorrido E2E amplio.
+  Servidor temporal detenido con limpieza de la clave. Bind y cierre requirieron
+  aprobación fuera del sandbox. Límites de cookies por hostname/puerto y HTTP
+  local documentados, sin promesa de aislamiento frente a dueño/root o servicios
+  locales hostiles visitados por el usuario.
+- Diff/whitespace y enlaces documentales locales revisados. Sin proveedores,
+  smokes, auth de CLI, cambios globales, ReferenceProject, colaboración automática,
+  harness como orquestador de desarrollo ni push. SQLite de trabajo intacta.
+  Commit solicitado por el usuario.
+
+  Siguiente tarea: H5.7 recorridos E2E offline, sin iniciar.
 
 ## Coordinación
 

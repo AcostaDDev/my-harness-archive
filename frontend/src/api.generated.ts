@@ -4,6 +4,25 @@
  */
 
 export interface paths {
+    "/api/session": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Status */
+        get: operations["read_session"];
+        put?: never;
+        /** Login */
+        post: operations["start_session"];
+        /** Logout */
+        delete: operations["close_session"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/legacy/updates": {
         parameters: {
             query?: never;
@@ -2992,6 +3011,11 @@ export interface components {
             /** Text */
             text: string;
         };
+        /** SessionRead */
+        SessionRead: {
+            /** Expires In */
+            expires_in: number;
+        };
         /** SimulationCreate */
         SimulationCreate: {
             /** Title */
@@ -3095,6 +3119,74 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
+    read_session: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SessionRead"];
+                };
+            };
+        };
+    };
+    start_session: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    /**
+                     * Key
+                     * Format: password
+                     */
+                    key: string;
+                };
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SessionRead"];
+                };
+            };
+        };
+    };
+    close_session: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
     legacy_updates: {
         parameters: {
             query?: {

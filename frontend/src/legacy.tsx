@@ -1,3 +1,4 @@
+import { sessionResponse } from "./session";
 import { createContext, useContext, useEffect, useState } from "react";
 import type { ReactNode } from "react";
 import type { components } from "./api.generated";
@@ -39,8 +40,8 @@ function useUpdates() {
     };
     const connect = async () => {
       // A database reset/restore may put a saved cursor ahead of retained activity.
-      const response = await fetch(`/api/legacy/updates?after=${cursor}&limit=1`).catch(() => undefined);
-      if (!active) return;
+      const response = await fetch(`/api/legacy/updates?after=${cursor}&limit=1`).then(sessionResponse).catch(() => undefined);
+      if (!active || response?.status === 401) return;
       if (response?.status === 409) { cursor = 0; save(); refresh(); }
       source = new EventSource(`/api/legacy/events?after=${cursor}`);
       source.onopen = () => { if (active) { setConnected(true); refresh(); } };
@@ -58,7 +59,8 @@ function useUpdates() {
         if (!active) return;
         setConnected(false);
         // EventSource handles ordinary reconnects with Last-Event-ID.
-        void fetch(`/api/legacy/updates?after=${cursor}&limit=1`).then((r) => {
+        void fetch(`/api/legacy/updates?after=${cursor}&limit=1`).then(sessionResponse).then((r) => {
+          if (r.status === 401) { source?.close(); return; }
           if (active && r.status === 409) { source?.close(); cursor = 0; save(); refresh(); void connect().catch(() => setConnected(false)); }
         }).catch(() => {});
       };

@@ -13,6 +13,7 @@ from harness_local.api.legacy import legacy_router
 from harness_local.api.managed import managed_router
 from harness_local.api.schemas import HealthRead, ProblemResponse, SimulationCreate, SimulationRead
 from harness_local.api.security import local_request
+from harness_local.api.session import LocalSessions, session_router
 from harness_local.core.simulation import SimulationService
 from harness_local.storage.database import database_url, make_engine
 from harness_local.storage.repository import SQLiteSimulationRepository
@@ -28,6 +29,7 @@ def create_app(url: str | None = None, ui_dir: Path | None = None,
     engine = make_engine(url or database_url())
     service = SimulationService(SQLiteSimulationRepository(engine), FakeSimulationAdapter())
 
+    sessions = LocalSessions()
     observer = LegacyObserver(engine)
     runtime = ManagedRuntime(engine, managed)
 
@@ -38,6 +40,7 @@ def create_app(url: str | None = None, ui_dir: Path | None = None,
             restored = is_read_only_archive(engine)
             if restored:
                 verify_bundle(Path(engine.url.database).resolve().parent)
+            sessions.start()
             await asyncio.to_thread(runtime.start)
             try:
                 if not restored:
@@ -52,19 +55,40 @@ def create_app(url: str | None = None, ui_dir: Path | None = None,
             finally:
                 await asyncio.to_thread(runtime.stop)
         finally:
+            sessions.stop()
             engine.dispose()
 
     app = FastAPI(title="Harness Local", version="0.1.0", lifespan=lifespan,
                   docs_url=None, redoc_url=None)
+    app.state.sessions = sessions
+    app.include_router(session_router(sessions))
     app.include_router(legacy_router(engine))
     app.include_router(managed_router(runtime))
 
     @app.middleware('http')
     async def restored_read_only(request, call_next):
-        if request.method not in ('GET', 'HEAD', 'OPTIONS') and is_read_only_archive(engine):
+        if request.url.path != '/api/session' and request.method not in ('GET', 'HEAD', 'OPTIONS') and is_read_only_archive(engine):
             return JSONResponse(status_code=409, content={'code': 'restored_read_only',
                 'diagnostic': 'Restauración de consulta; no autoriza escritores ni reanudar procesos.'})
         return await call_next(request)
+
+    @app.middleware('http')
+    async def session_guard(request, call_next):
+        try:
+            local_request(request, request.headers.get('x-harness-local'))
+            # Only the static login shell and the credential exchange are public.
+            # Unknown API routes and OpenAPI also pass the guard.
+            if (request.url.path.startswith('/api') or request.url.path == '/openapi.json') and not (
+                    request.url.path == '/api/session' and request.method == 'POST'):
+                sessions.require(request)
+            response = await call_next(request)
+        except HTTPException as error:
+            response = JSONResponse(status_code=error.status_code, content={'detail': error.detail})
+        response.headers['Cache-Control'] = 'no-store'
+        response.headers['Referrer-Policy'] = 'no-referrer'
+        response.headers['X-Content-Type-Options'] = 'nosniff'
+        response.headers['X-Frame-Options'] = 'DENY'
+        return response
 
     @app.get("/api/health", response_model=HealthRead, operation_id="health")
     def health():

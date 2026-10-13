@@ -2,6 +2,7 @@
 import argparse
 from contextlib import contextmanager
 import json
+from http.cookiejar import CookieJar
 from pathlib import Path
 import re
 import socket
@@ -10,7 +11,7 @@ import tempfile
 import time
 import zipfile
 from urllib.error import HTTPError, URLError
-from urllib.request import Request, urlopen
+from urllib.request import Request, build_opener, HTTPCookieProcessor
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -47,17 +48,21 @@ def main():
             assert (result.returncode == 0) == ok, result.stderr
             return result
 
-        def request(base, path, data=None, headers=None):
+        opener = build_opener(HTTPCookieProcessor(CookieJar()))
+
+        def request(base, path, data=None, headers=None, method=None):
             body = json.dumps(data).encode() if data is not None else None
-            req = Request(base + path, body, headers={'Content-Type': 'application/json'} | (headers or {}))
+            req = Request(base + path, body, headers={'Content-Type': 'application/json'} | (headers or {}), method=method)
             try:
-                with urlopen(req, timeout=2) as response:
+                with opener.open(req, timeout=2) as response:
                     return response.status, response.read()
             except HTTPError as error:
                 return error.code, error.read()
 
         @contextmanager
         def server(database, extra=None):
+            nonlocal opener
+            opener = build_opener(HTTPCookieProcessor(CookieJar()))
             with socket.socket() as bound:
                 bound.bind(('127.0.0.1', 0))
                 port = bound.getsockname()[1]
@@ -71,14 +76,26 @@ def main():
                             log.seek(0)
                             raise AssertionError(log.read())
                         try:
-                            if request(base, '/api/health')[0] == 200:
+                            if request(base, '/api/health')[0] == 401:
                                 break
                         except (URLError, TimeoutError):
                             pass
                         time.sleep(.1)
                     else:
                         raise AssertionError('El servidor no arrancó en 15 s')
+                    assert request(base, '/api/managed/projects')[0] == 401
+                    log.flush()
+                    log.seek(0)
+                    key_path = Path(re.search(r'clave de acceso en (.+)', log.read())[1])
+                    key = key_path.read_text()
+                    assert request(base, '/api/session', {'key': key}, {'X-Harness-Local': '1'})[0] == 200
+                    assert request(base, '/api/health')[0] == 200
                     yield base
+                    assert request(base, '/api/session', headers={'X-Harness-Local': '1'}, method='DELETE')[0] == 204
+                    assert request(base, '/api/simulations')[0] == 401
+                    log.seek(0)
+                    assert key not in log.read()
+
                 finally:
                     if process.poll() is None:
                         process.terminate()

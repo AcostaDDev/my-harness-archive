@@ -2,7 +2,7 @@
 
 Aplicación local para configurar, ejecutar y observar un harness modular de desarrollo con agentes.
 Estado actual: H0, H1, H2.1–H2.5, salida del hito 2, H3.1–H3.4,
-H4.1–H4.3, H5.1–H5.5 y exportación mecánica de STATE/NEXT_STEPS completados offline.
+H4.1–H4.3, H5.1–H5.6 y exportación mecánica de STATE/NEXT_STEPS completados offline.
 Python/API/UI con simulaciones, observación legacy y motor con cola/persistencia;
 Git, migración gestionada, prompts/permisos, fases/lotes, chat contextual y bootstrap guiado.
 La exportación usa diff confirmado, commit conciliable y adopción de hashes (D036).
@@ -11,7 +11,7 @@ Git/SQLite sintéticos y fakes. Proveedores opt-in por inyección explícita, si
 entrada CLI gestionada. Reportes JUnit congelados por validación y detalle API/UI.
 Backup/restauración local con manifiesto y guardia de consulta, sin reanudar procesos.
 Retención explícita de originales stdout/stderr con preview, auditoría y consulta.
-Siguiente tarea: H5.6 sesión local y protección de endpoints, sin iniciar.
+Siguiente tarea: H5.7 recorridos E2E offline, sin iniciar.
 
 ## Documentación
 
@@ -66,7 +66,11 @@ Preparar una SQLite nueva es una acción separada:
 
 Abrir `http://127.0.0.1:8013`; detener con Ctrl+C. `serve` no crea ni migra bases,
 no registra proyectos ni activa proveedores. La configuración gestionada y la
-observación siguen siendo opt-in. La sesión local queda pendiente de H5.6.
+observación siguen siendo opt-in. El arranque anuncia la ruta de un archivo
+privado con la clave de acceso: copiarla en la UI para iniciar sesión. La sesión
+dura ocho horas; «Cerrar sesión» y reiniciar el servicio la invalidan.
+[Operación, clientes HTTP y límites de seguridad H5.6](docs/discovery/H5.6_SESSION.md).
+No incluir la clave en URLs ni comandos. El cierre no cancela trabajos autorizados.
 
 ## Entorno de desarrollo comprobado
 
@@ -88,7 +92,7 @@ Migrar explícitamente y compilar la UI:
 ```sh
 UV_CACHE_DIR=.local/uv-cache uv run --frozen --offline alembic upgrade head
 npm --prefix frontend run build
-UV_CACHE_DIR=.local/uv-cache uv run --frozen --offline uvicorn harness_local.api.app:create_app --factory --host 127.0.0.1 --port 8013 --workers 1
+UV_CACHE_DIR=.local/uv-cache uv run --frozen --offline uvicorn harness_local.api.app:create_app --factory --host 127.0.0.1 --port 8013 --workers 1 --no-proxy-headers --no-access-log
 ```
 
 La API de desarrollo escucha en `http://127.0.0.1:8013`. Usar Vite para la UI;
@@ -130,7 +134,7 @@ UV_CACHE_DIR=.local/uv-cache uv run --frozen --offline alembic current
 UV_CACHE_DIR=.local/uv-cache uv run --frozen --offline alembic check
 ```
 
-655 pruebas, incluidas 43 de backup/restauración H5.2 y 43 de retención H5.3. Se usan checkouts Git, SQLite y procesos Python
+765 pruebas, incluidas 45 de sesión local H5.6. Se usan checkouts Git, SQLite y procesos Python
 sintéticos, sin CLI de proveedores ni consumo de suscripciones. Se verifican
 captura incremental, cancelación de grupos, recuperación tras caída del supervisor
 y el recorrido HTTP con fakes hasta COMMITTED. No certifica commits con proveedores.
@@ -167,7 +171,7 @@ La API gestionada local (proyectos registrados en el servidor, supervisor opt-in
 idempotencia, versiones y guardia Host/Origin/CSRF) está completada offline: ver
 [entrega y límites](docs/discovery/H2_EXIT_API.md). La UI gestionada local está
 completada offline; [demo, verificación y límites](docs/discovery/H2_EXIT_UI.md).
-H4.1–H4.3, H5.1–H5.5 y exportación mecánica completados offline (D035–D043); siguiente tarea: H5.6 sesión local y protección de endpoints, sin iniciar. Ver [corrección y límites](docs/discovery/H2.3_MCP_FIX.md)
+H4.1–H4.3, H5.1–H5.6 y exportación mecánica completados offline (D035–D044); siguiente tarea: H5.7 recorridos E2E offline, sin iniciar. Ver [corrección y límites](docs/discovery/H2.3_MCP_FIX.md)
 y [resultado real cli-3](docs/discovery/H2.3_SMOKE_CLI3.md). El consentimiento
 terminó al fallo; otro smoke requiere propuesta y autorización específicas.
 Ver [corrección del entorno](docs/discovery/H2.3_ENV_FIX.md) y
@@ -233,8 +237,8 @@ explícita; un 409 muestra diagnóstico y recarga el estado. Las evidencias del 
 proceden del historial congelado, no de una recaptura del checkout.
 
 Regresión del cliente: `node --test frontend/tests/managed-api.test.mjs`.
-La sesión local sigue pendiente; Host/Origin/CSRF se aplican a la API gestionada
-y a las mutaciones H0/H1 (no a sus lecturas). COMMITTED es un checkpoint, no integración ni cierre de fase.
+La sesión local H5.6 y Host/Origin protegen toda la API, incluidas lecturas y
+streams. CSRF se exige además en mutaciones. COMMITTED es un checkpoint, no integración ni cierre de fase.
 
 ## Prompts versionados (H3.1)
 

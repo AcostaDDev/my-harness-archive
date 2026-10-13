@@ -3,7 +3,7 @@ from pathlib import Path
 from uuid import uuid4
 
 from alembic import command
-from fastapi.testclient import TestClient
+from session_client import TestClient
 from sqlalchemy import inspect, text
 import pytest
 

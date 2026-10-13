@@ -89,7 +89,7 @@ function Project({ id }: { id: string }) {
       remember(); setRunId(job.run_id);
     } catch (e) {
       // Definitive rejection permits a new explicit action after reloading the current version.
-      if (e instanceof ManagedError && e.status >= 400 && e.status < 500) remember();
+      if (e instanceof ManagedError && e.status >= 400 && e.status < 500 && e.status !== 401) remember();
       throw e;
     }
   }

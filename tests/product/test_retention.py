@@ -7,7 +7,7 @@ import os
 from pathlib import Path
 import sqlite3
 
-from fastapi.testclient import TestClient
+from session_client import TestClient
 import pytest
 
 from harness_local.api.app import create_app

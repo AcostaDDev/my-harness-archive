@@ -5,6 +5,74 @@
     "version": "0.1.0"
   },
   "paths": {
+    "/api/session": {
+      "get": {
+        "summary": "Status",
+        "operationId": "read_session",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SessionRead"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Login",
+        "operationId": "start_session",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "key": {
+                    "type": "string",
+                    "maxLength": 128,
+                    "minLength": 1,
+                    "format": "password",
+                    "title": "Key",
+                    "writeOnly": true
+                  }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "required": [
+                  "key"
+                ],
+                "title": "SessionCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SessionRead"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "summary": "Logout",
+        "operationId": "close_session",
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          }
+        }
+      }
+    },
     "/api/legacy/updates": {
       "get": {
         "summary": "Updates",
@@ -12291,6 +12359,19 @@
           "text"
         ],
         "title": "RunCreate"
+      },
+      "SessionRead": {
+        "properties": {
+          "expires_in": {
+            "type": "integer",
+            "title": "Expires In"
+          }
+        },
+        "type": "object",
+        "required": [
+          "expires_in"
+        ],
+        "title": "SessionRead"
       },
       "SimulationCreate": {
         "properties": {
