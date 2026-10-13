@@ -850,3 +850,36 @@ confirma commits; el cierre está ligado al READY mostrado y no encola tareas. L
 concesiones H3.2 no deciden producto ni cierre. Rol `phase` añadido al transporte
 Codex de solo lectura de forma aditiva, sin cambiar `cli-4` para roles existentes.
 H4.1 queda siguiente sin iniciarse; smokes anteriores siguen sin autorización.
+
+## D033 — Decisiones del usuario tras H3.3 y orden de trabajo
+
+Estado: decidido por el usuario el 2026-10-13 en un flujo de preguntas explícito;
+nada de lo siguiente está implementado salvo lo que ya recoge D032.
+
+1. **Cierre de fase:** se mantiene D032 (transición CLOSED + tag, sin editar
+   documentos). La exportación mecánica de STATE/NEXT_STEPS será una tarea propia
+   después de H4.1 y antes de H4.2; hasta entonces el cierre no escribe documentos.
+2. **Chat H4.1:** turnos nuevos por la CLI de Codex en solo lectura, con contexto
+   explícito y salida estructurada; App Server/SDK en un incremento posterior.
+3. **Seguridad:** extender ya la guardia Host/Origin/`X-Harness-Local` a las rutas
+   H0/H1; la sesión local frente a otros usuarios del SO queda para el hito 5.
+4. **Lote desatendido con commit:** la autorización de lote incluye, de forma
+   explícita, encadenar tareas y confirmar el commit de cada aceptación elegible por
+   contenido exacto (H2.4); se detiene en el primer bloqueo, pregunta, caducidad o
+   revocación. Nunca comprueba ni cierra la fase. Excepción acotada a D026, que
+   sigue exigiendo acción propia fuera de un lote autorizado.
+5. **Reconciliación con agente:** genera una tarea con contrato determinista
+   limitado a los documentos de la fase (plantilla `reconcile-phase`), ejecutada,
+   revisada y confirmada por el flujo normal; después se adopta la base por hash.
+6. **Tags:** tipo configurable por proyecto; por defecto ligero. Un tag anotado
+   fija mensaje, identidad y fecha en la intención para que su id sea determinista
+   y conciliable; nunca se mueve ni sobrescribe.
+7. **Definición de fase:** enmienda versionada con motivo, confirmación y
+   auditoría, que conserva la anterior e invalida READY y autorizaciones de lote;
+   se añade abandono explícito de fase.
+8. **Consumo real:** sin smoke de la evaluación de fase por ahora. Más adelante, un
+   smoke autorizado de recorrido completo (tarea → commit → check → cierre) en
+   checkout desechable, con modelos/esfuerzos fijados por el usuario.
+9. **Push:** lo hace el usuario; las sesiones no publican.
+10. **Orden:** H3.4 (puntos 3–7) → H4.1 (punto 2) → exportación mecánica de
+    STATE/NEXT_STEPS (punto 1) → H4.2.

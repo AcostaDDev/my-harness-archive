@@ -141,7 +141,7 @@ La API gestionada local (proyectos registrados en el servidor, supervisor opt-in
 idempotencia, versiones y guardia Host/Origin/CSRF) está completada offline: ver
 [entrega y límites](docs/discovery/H2_EXIT_API.md). La UI gestionada local está
 completada offline; [demo, verificación y límites](docs/discovery/H2_EXIT_UI.md).
-H3.3 completado offline; siguiente tarea H4.1 (chat contextual), sin iniciar. Ver [corrección y límites](docs/discovery/H2.3_MCP_FIX.md)
+H3.3 completado offline; siguiente tarea H3.4 (D033), sin iniciar. Ver [corrección y límites](docs/discovery/H2.3_MCP_FIX.md)
 y [resultado real cli-3](docs/discovery/H2.3_SMOKE_CLI3.md). El consentimiento
 terminó al fallo; otro smoke requiere propuesta y autorización específicas.
 Ver [corrección del entorno](docs/discovery/H2.3_ENV_FIX.md) y

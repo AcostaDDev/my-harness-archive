@@ -83,7 +83,8 @@ consumo once/task y snapshots, CLI cli-4 y API/UI (D031); revalidar REVISE exige
 reintento explícito. Ver `docs/discovery/H3.2_PERMISSIONS.md`.
 H3.3 completado offline: fases en SQLite, check/cierre como jobs, READY por
 contenido exacto, tag ligero por CAS y autorizaciones de lote/cierre separadas
-(D032). Ver `docs/discovery/H3.3_PHASES.md`. Siguiente tarea: H4.1, sin iniciarla.
+(D032). Ver `docs/discovery/H3.3_PHASES.md`. Decisiones del usuario en D033.
+Siguiente tarea: H3.4 (ajustes de fases, lote y guardia H0/H1), sin iniciarla.
 Comprobación offline ligera, solo biblioteca estándar, desde la raíz:
 
 ```sh
@@ -146,7 +147,7 @@ run STOPPED por fin deliberado del smoke, owner cerrado, grupos STOPPED/dead y
 lock nuevo liberado por finalización normal. D020/D022 y sus locks conservados.
 Ver `docs/discovery/H2.3_ENV_SMOKE.md`. Sin aceptación/commit de producto ni
 cuota/retries certificados. Consentimiento satisfecho por una ejecución;
-no hacer login, consumir ni relanzar automáticamente. Siguiente tarea: H4.1, chat contextual, sin iniciar.
+no hacer login, consumir ni relanzar automáticamente. Siguiente tarea: H3.4, sin iniciar (D033).
 Los checks no consumen proveedores. Sin configuración gestionada, la API
 `/api/managed` no tiene proyectos, puertos ni supervisor y solo lee.
 `HARNESS_MANAGED_CONFIG=módulo:atributo` (o `create_app(managed=...)`) registra

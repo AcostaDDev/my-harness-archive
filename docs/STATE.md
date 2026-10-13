@@ -294,8 +294,9 @@ D029. H2.3 conserva su smoke real D025, con autorización agotada. Siguiente tar
 H3.1 completado con editor y snapshots por intento (D030). Siguiente tarea:
 H3.2 completado offline con ledger/API/UI/snapshots y recuperación (D031).
 H3.3 completado offline con fases, READY por contenido exacto, cierre/tag y
-autorizaciones separadas (D032). Siguiente tarea: H4.1 (chat contextual), sin
-iniciarla. Sin proveedores nuevos.
+autorizaciones separadas (D032). Decisiones posteriores del usuario en D033.
+Siguiente tarea: H3.4 (ajustes de fases, lote y guardia H0/H1), sin iniciarla;
+después H4.1. Sin proveedores nuevos.
 
 ## Verificación de H0.1
 
@@ -1004,7 +1005,7 @@ iniciarla. Sin proveedores nuevos.
   agente, exportación mecánica de STATE/NEXT_STEPS, archivo/commit de cierre,
   fase siguiente, edición de definición, auto-encadenado de lote, tags anotadas,
   integración de ramas ni sesión local. Exclusión frente a escritores externos
-  cooperativa. H4.1 no iniciado.
+  cooperativa. H3.4 no iniciado (D033).
 
 ## Coordinación
 
