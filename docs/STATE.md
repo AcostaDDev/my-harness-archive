@@ -487,7 +487,9 @@ y [revisión anterior](discovery/H5_CLOSURE_REVIEW.md). Revisión independiente
 completada con un hallazgo corregido (D048, [dictamen](discovery/COMMAND_RUNNER_REVIEW.md)).
 Composición de uso real por TOML local implementada offline (D049,
 [entrega](discovery/LOCAL_CONFIG.md)): perfil TypeScript web, `serve --config`
-y `check-config`. Siguiente: propuesta de primer uso real/smoke, no iniciada.
+y `check-config`. Propuesta de primer uso real (D033.8) preparada y ensayada
+offline con selecciones del usuario (D050, [propuesta](discovery/FIRST_USE_PROPOSAL.md));
+no ejecutada. Siguiente: ejecutarla solo con consentimiento específico.
 QA visual H5.7 bloqueada por herramienta; sin proveedores nuevos.
 
 ## Verificación de H0.1
@@ -1717,9 +1719,40 @@ QA visual H5.7 bloqueada por herramienta; sin proveedores nuevos.
   Esquema/codec/cli-4/OpenAPI/UI/dependencias sin cambios; sin wheel, QA visual
   ni build del frontend (no cambian UI ni empaquetado).
 - Sin proveedores reales, login, smokes, red, configuración global, ReferenceProject
-  ni harness de desarrollo. Commit pendiente de petición del usuario.
+  ni harness de desarrollo. Commit solicitado por el usuario (`8c0e169`).
 - Siguiente: propuesta de primer uso real (smoke D033.8) sobre checkout
   desechable con este TOML, que requiere autorización específica; no iniciada.
+
+## Preparación de la propuesta de primer uso real
+
+- Git inicial limpio en `main`, `8c0e169` (un commit por delante de origin).
+  Leídos AGENTS, STATE, NEXT_STEPS y DECISIONS; contrastados D033.8, D049,
+  la composición local, el perfil TypeScript, fases y la propuesta D024/D025.
+- Selecciones elegidas por el usuario en esta sesión: ejecutor
+  `claude-sonnet-4-6`/`low` con `Read`, `Edit`, `Write`, `Glob`, `Grep`;
+  revisor y evaluación de fase `gpt-6-luna`/`medium`; planificador
+  `gpt-6-luna`/`low` no invocado por planificación determinista;
+  `max_revision_cycles = 0`. D050, [propuesta](discovery/FIRST_USE_PROPOSAL.md).
+- Hallazgos: el enlace `claude` del usuario apunta a 2.1.296, no admitido por
+  `cli-4`; se fija el binario versionado 2.1.295 con `DISABLE_AUTOUPDATER=1`.
+  `codex` necesita Node en `PATH`. Los tags de fase no admiten `/`.
+- [`examples/first_use/prepare.sh`](../examples/first_use/prepare.sh): checkout
+  desechable desde la fixture con regresión deliberada, documentos de fase,
+  TOML concreto 0600 y áreas privadas; falla si `BASE` existe.
+- Ensayo offline en el scratchpad: preparación; `check-config` sin preflight
+  válido (cli-4, 0.162.1, 2.1.295, commands-1); `init-db`; admisión en proceso
+  con supervisor forzado a `false`: contrato determinista, fase `P001` y job
+  `QUEUED`, sin procesos; comandos del perfil con el entorno exacto del TOML:
+  `npm ci --offline`/check/build 0 y test 1 (2 de 3 fallan por la regresión).
+  TOML documentado idéntico al generado (comparado por diff).
+- **12 checks ligeros y 35 pruebas de `test_local_config.py` correctos**;
+  sintaxis `sh -n`, enlaces locales y whitespace revisados. Sin regresión
+  pytest completa ni pruebas Node: solo cambian documentos y un script de ejemplo.
+- Sin CLI de proveedores (ni version/help), `serve`, red, consumo, login,
+  configuración global, ReferenceProject ni harness de desarrollo. Sin cambios de
+  código, esquema, codec, cli-4, OpenAPI ni UI. Commit solicitado por el usuario.
+- Siguiente: ejecutar la propuesta D050 solo con consentimiento específico; no
+  iniciada.
 
 ## Coordinación
 

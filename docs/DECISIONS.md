@@ -1488,3 +1488,26 @@ efectos. Cambiar la composición exige terminar o detener antes los jobs.
 `serve --config`, incompatible con `HARNESS_MANAGED_CONFIG`, y `check-config`
 con preflight opcional de version/help. Esquema, codec, cli-4, OpenAPI y UI sin
 cambios; la validación de proyectos del runtime se reutiliza sin alterarla.
+
+## D050 — Propuesta de primer uso real: selecciones del usuario y límites
+
+Estado: propuesta preparada y ensayada offline el 2026-10-13; **no ejecutada ni
+autorizada**. [Propuesta](discovery/FIRST_USE_PROPOSAL.md). Concreta D033.8.
+
+Selecciones elegidas por el usuario en esta sesión: ejecutor Claude
+`claude-sonnet-4-6`/`low` con herramientas `Read`, `Edit`, `Write`, `Glob`,
+`Grep` (sin `Bash` ni concesiones); revisor y evaluación de fase Codex
+`gpt-6-luna`/`medium`; planificador `gpt-6-luna`/`low` declarado pero no
+invocado (`planning_mode = "deterministic"`). `max_revision_cycles = 0`: como
+máximo tres invocaciones de proveedor, sin reintentos ni correcciones.
+
+Checkout desechable fuera del repositorio desde la fixture `typescript_web` con
+una regresión deliberada, preparado por `examples/first_use/prepare.sh`. Claude
+se fija al binario versionado 2.1.295 porque el enlace del usuario ya apunta a
+2.1.296, que `cli-4` no admite; no se amplía el baseline ni se sustituye la
+versión. Los tags de fase son nombres simples (`first-use-p001`).
+
+Ejecutar requiere consentimiento específico del usuario para esta propuesta;
+cualquier cambio de modelo, esfuerzo, herramientas, límites o entorno exige
+actualizarla antes (solo `BASE` puede cambiar si ya existe, registrándolo). Sin cambios de diseño, código, esquema,
+codec, cli-4, OpenAPI ni UI.
