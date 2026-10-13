@@ -87,8 +87,8 @@ def argv_for(config, context, request):
     if not model or model.startswith("-") or not effort or effort.startswith("-"):
         raise ValueError("Explicit model/effort required")
     if config.provider == "codex":
-        if request.role not in {"planner", "reviewer", "phase", "chat"}:
-            raise ValueError("Codex handles planner/reviewer/phase review/chat only")
+        if request.role not in {"planner", "reviewer", "phase", "chat", "bootstrap"}:
+            raise ValueError("Codex handles planner/reviewer/phase review/chat/bootstrap only")
         return config.executable + (
             "exec", "--strict-config", "--ignore-user-config", "--ignore-rules", "--ephemeral", "--json",
             "--model", model, "--sandbox", "read-only", "--color", "never",
@@ -194,6 +194,8 @@ class CLIProcessAdapter:
         UUID(request.id)
         directory.mkdir(mode=0o700)
         shapes = {
+            "bootstrap": {"summary": "proposal summary", "requirements": ["proposed requirement"],
+                "alternatives": ["architecture alternative and tradeoffs"], "pending_decisions": ["user decision needed"]},
             "planner": {"task_id": "requested task id", "phase_id": "requested phase id",
                 "title": "title", "objective": "objective", "executor_prompt": "instructions",
                 "allowed_paths": [], "forbidden_paths": [], "acceptance_criteria": ["criterion"],

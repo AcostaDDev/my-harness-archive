@@ -228,6 +228,23 @@ def record_tag_intent(managed, session, run, intent):
     _event(managed, session, phase, 'phase_tag_intent', {'operation_id': op.id, **intent})
 
 
+def insert_phase(managed, session, root, definition, documents, source=None):
+    """Inserción compartida: creación normal y adopción bootstrap en la transacción del job."""
+    now = managed._now()
+    phase = Phase(id=str(uuid4()), root=root, code=definition['code'], definition=definition,
+                  definition_sha256=digest(definition), documents=documents, status='ACTIVE', version=0,
+                  created_at=now, updated_at=now, definition_number=1)
+    session.add(phase)
+    session.flush()
+    session.add(Definition(id=str(uuid4()), phase_id=phase.id, number=1, definition=definition,
+                           definition_sha256=phase.definition_sha256, documents=documents, origin='created',
+                           reason=None, actor=actor(), created_at=now))
+    _event(managed, session, phase, 'phase_created', {
+        'definition_sha256': phase.definition_sha256, 'documents': documents, 'actor': actor(),
+        **({'source': source} if source else {})})
+    return phase.id
+
+
 class PhaseRepository:
     def __init__(self, managed):
         self.managed = managed
@@ -387,24 +404,14 @@ class PhaseRepository:
         with self.managed._write() as session:
             root = str(context.root)
             from harness_local.storage.document_export import unresolved
-            if self._root_pending(session, root) or unresolved(session, root):
+            from harness_local.storage.bootstrap import unresolved as bootstrap_unresolved
+            if self._root_pending(session, root) or unresolved(session, root) or bootstrap_unresolved(session, root):
                 raise Conflict('Checkout has unfinished work; finish or reconcile it before creating a phase')
             if session.scalar(select(Phase.id).where(Phase.root == root, Phase.code == definition['code'])):
                 raise Conflict('Phase code already exists in this checkout')
             if session.scalar(select(Phase.id).where(Phase.root == root, Phase.status.notin_(TERMINAL))):
                 raise Conflict('Close or abandon the open phase of this checkout before creating another')
-            now = self.managed._now()
-            phase = Phase(id=str(uuid4()), root=root, code=definition['code'], definition=definition,
-                          definition_sha256=digest(definition), documents=documents, status='ACTIVE', version=0,
-                          created_at=now, updated_at=now, definition_number=1)
-            session.add(phase)
-            session.flush()
-            session.add(Definition(id=str(uuid4()), phase_id=phase.id, number=1, definition=definition,
-                                   definition_sha256=phase.definition_sha256, documents=documents, origin='created',
-                                   reason=None, actor=actor(), created_at=now))
-            _event(self.managed, session, phase, 'phase_created', {
-                'definition_sha256': phase.definition_sha256, 'documents': documents, 'actor': actor()})
-            return phase.id
+            return insert_phase(self.managed, session, root, definition, documents)
 
     def reconcile(self, context, phase_id, expected, *, documents_sha256, reason):
         """Adopción explícita de documentos cambiados (propuesta por hash), nunca mezcla silenciosa."""

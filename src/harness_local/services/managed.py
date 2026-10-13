@@ -119,7 +119,27 @@ class LocalSupervisor:
             request = json.loads(claim.request_json)
             versions = json.loads(record.versions_json)
             outcome = None
-            if request["action"] == "document_export":
+            if request["action"] == "bootstrap_discovery":
+                from harness_local.core.engine.bootstrap_discovery import execute
+                from harness_local.storage.bootstrap_discovery import DiscoveryRepository
+                if self.commit_factory is None:
+                    raise RuntimeError('Bootstrap discovery requires the configured Git reader')
+                writer = self.commit_factory(context, versions)
+                agents, _, _ = self.ports_factory(context, versions)
+                if hasattr(agents, 'bind_process_journal'):
+                    agents.bind_process_journal(journal)
+                history, outcome = execute(context, record.history,
+                    DiscoveryRepository(self.repository).request(claim.run_id), agents, writer, journal)
+            elif request["action"] == "bootstrap":
+                from harness_local.core.engine.bootstrap import execute
+                from harness_local.storage.bootstrap import BootstrapRepository
+                if self.commit_factory is None:
+                    raise RuntimeError('Bootstrap requires the configured Git writer')
+                writer = self.commit_factory(context, versions)
+                self.repository._require_mode(claim)
+                history, outcome = execute(context, record.history,
+                    BootstrapRepository(self.repository).request(claim.run_id), writer, journal)
+            elif request["action"] == "document_export":
                 from harness_local.core.engine.document_export import execute
                 from harness_local.storage.document_export import DocumentExportRepository
                 if self.commit_factory is None:

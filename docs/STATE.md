@@ -35,7 +35,7 @@ Actualizado: 2026-10-13.
 - Dependencias reales instaladas en `.venv` / `frontend/node_modules`, locks
   `uv.lock` / `frontend/package-lock.json`. Pins H0.2 usados conservados;
   backend de paquete `uv_build==0.12.19`. Comandos comprobados en README/AGENTS.
-- 450 casos de producto en `tests/product/`; pytest ejecuta 462 pruebas en total.
+- 498 casos de producto en `tests/product/`; pytest ejecuta 510 pruebas en total.
   La comprobación ligera anterior conserva sus 12 checks sin dependencias.
 - H1.1 completado: [importación legacy y verificaciones](discovery/H1.1_IMPORT.md),
   [alcance original](discovery/H1.1_SCOPE.md). Lector local explícito de
@@ -311,7 +311,22 @@ Actualizado: 2026-10-13.
   migración nueva. API/UI con guardia local e idempotencia; 32 casos nuevos.
 - Exportar sigue separado del cierre, también para la última fase CLOSED/ABANDONED
   antes de definir otra; nunca mueve tags. READY previo queda obsoleto y requiere
-  un check nuevo. Sin exportación automática ni bootstrap.
+  un check nuevo. Sin exportación automática; el bootstrap se describe a continuación.
+
+- H4.2 completado offline: [bootstrap guiado y recuperación](discovery/H4.2_BOOTSTRAP.md),
+  D037. Destinos vacíos autorizados por el servidor, brief/decisiones, propuesta
+  Codex opcional de solo lectura y plantilla documental `project-foundation` v1/hash.
+  Preview de documentos/fase/contrato, perfil y comandos declarados; confirmación
+  humana del contenido exacto antes de encolar y sin preparación automática.
+- Migración `0013_bootstrap`: operación, preview/bytes, decisión, intención del
+  commit raíz y resultado. Runs/jobs/locks/leases/propietarios existentes, CAS y
+  conciliación con el mismo run/intención/commit tras confirmar escritor detenido.
+  Fase/definición/base documental adoptadas junto al fin del job en SQLite.
+- Primera fase `P001` y tarea `P001-T001` limitada a `docs/DELIVERY_CHECKLIST.md`,
+  con criterios verificables y ejecución/revisión/commit por acción propia.
+  Carpetas con contenido o dentro de otro Git → importación sin sobrescribir.
+  API/UI con guardia local, tipos generados y demo exclusivamente sintética.
+  No añade otro perfil ni instala/genera una aplicación desde el brief.
 
 ## Todavía no existe
 
@@ -351,7 +366,8 @@ enmienda/abandono, tags anotados y reconciliación con agente (D034).
 H4.1 completado offline: chat por turnos nuevos de solo lectura y propuestas
 confirmadas como tareas normales (D035).
 Exportación mecánica de STATE/NEXT_STEPS completada offline (D036).
-Siguiente tarea: H4.2 bootstrap guiado, sin iniciarla. Sin proveedores nuevos.
+H4.2 bootstrap guiado completado offline (D037).
+Siguiente tarea: H4.3 segundo perfil, sin iniciarla. Sin proveedores nuevos.
 
 ## Verificación de H0.1
 
@@ -1171,6 +1187,49 @@ Siguiente tarea: H4.2 bootstrap guiado, sin iniciarla. Sin proveedores nuevos.
   última fase y documentos existentes UTF-8 de hasta 512 KiB.
 
   H4.2 no se ha iniciado.
+
+## Verificación de H4.2
+
+- Git inicial limpio en `main`, `d371710`. Leídos AGENTS, STATE, NEXT_STEPS,
+  DECISIONS y especificación/backlog H4.2; contratos de prompts/permisos,
+  cola/recuperación, fases y Git revisados. D037 delimita la plantilla inicial.
+- 510 pruebas pytest y 121 subtests: 462 anteriores y 48 nuevas H4.2. 12 checks
+  ligeros y 4 pruebas Node. OpenAPI/tipos regenerados, TypeScript/build y diff
+  correctos. Ninguna ruta previa cambió; solo dos purpose nuevos en los esquemas
+  de runs. Migración 0013 ida/vuelta y `alembic check` en SQLite temporal;
+  bajada con historial rechazada. Codec y locks de dependencias conservados.
+  Aviso conocido Starlette/HTTPX conservado.
+- Git/SQLite temporales: preview determinista/sin efectos, contrato acotado,
+  confirmación, carpetas no vacías/ocultas/enlazadas/Git, destinos reemplazados,
+  hashes/versiones/identidad/política cambiados, guardias HTTP, cuatro creaciones
+  concurrentes y recuperación idempotente tras reinicio.
+- Caídas antes de escritura, entre documentos, después del commit y en adopción:
+  cuarentena sin repetir, confirmación explícita, mismo run/intención/commit y una
+  fase. Cambios externos en bytes, modos, symlinks, HEAD, refs e índice se conservan.
+  Las pruebas detectaron una lectura de índice que actualizaba su cache-tree;
+  corregida para usar la copia temporal H2.4 y conservar los bytes originales.
+- Propuestas falsas con brief/prompt congelados, activación posterior sin mutar el
+  intento, salida inválida descartada, escritor rechazado sin descartar sus bytes,
+  pendiente excluyente y caída → UNKNOWN sin otra llamada. Rol CLI `bootstrap`
+  caracterizado offline con sandbox read-only y sesión nueva.
+- Chrome en demo nueva bajo `/private/tmp`, :8022: brief → propuesta falsa →
+  decisiones → preview/confirmación → commit raíz/fase ACTIVE → primera tarea
+  ACCEPTANCE_READY → diff limitado al checklist → commit explícito → COMMITTED.
+  Reinicio/recarga conserva resultado y deshabilita encolado duplicado desde el
+  asistente. Destino no vacío conduce a importación y conserva su README.
+  Roles auditados `bootstrap`, `executor`, `reviewer`, todos falsos; sin errores de
+  consola. Servicio y pestaña temporales cerrados.
+- Sin proveedores/smokes/login, red externa, ReferenceProject, configuración global,
+  colaboración automática, harness de desarrollo ni push. No se migró la SQLite
+  de trabajo. Commit solicitado por el usuario.
+- Límites: primera plantilla documental, sin generación/instalación de un stack
+  ni preparación automática; Git/política comprobados, herramientas externas y
+  CLI real no verificadas. Destinos existentes registrados por el servidor;
+  sin registro/selector de carpetas HTTP. Exclusión externa cooperativa, sin
+  atomicidad del conjunto de archivos. Marca Git ausente/dañada exige recuperación
+  manual; sin abandono ni limpieza automática de bootstrap incierto.
+
+  H4.3 no se ha iniciado.
 
 ## Coordinación
 

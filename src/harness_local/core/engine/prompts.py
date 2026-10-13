@@ -18,7 +18,7 @@ VARIABLES = {
     'close-phase': ('PHASE_ID', 'EVIDENCE_JSON'),
     'chat-turn': ('CONTEXT_JSON', 'MESSAGE'),
 }
-ROLES = {'plan-task': 'planner', 'review-task': 'reviewer', 'execute-task': 'executor', 'revise-task': 'executor',
+ROLES = {'bootstrap-project': 'bootstrap', 'plan-task': 'planner', 'review-task': 'reviewer', 'execute-task': 'executor', 'revise-task': 'executor',
          'close-phase': 'phase', 'chat-turn': 'chat'}
 # H4.1: plantillas añadidas después de H3.1. Los catálogos congelados en runs anteriores no las
 # contienen y siguen siendo válidos al reanudar; los catálogos nuevos siempre las incluyen.
@@ -104,6 +104,7 @@ def output_schema(role: str) -> dict:
         'phase': {'phase_id': 'string', 'verdict': 'string', 'summary': 'string', 'exit_criteria_results': 'array',
                   'required_actions': 'array', 'blocking_questions': 'array'},
         'chat': {'answer': 'string', 'references': 'array', 'proposals': 'array'},
+        'bootstrap': {'summary': 'string', 'requirements': 'array', 'alternatives': 'array', 'pending_decisions': 'array'},
     }
     if role not in fields:
         raise ContractError('No output schema for role')

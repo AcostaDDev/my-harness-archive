@@ -1,0 +1,161 @@
+"""H4.2: bootstrap como run/job existente; la fase se adopta junto al fin del job."""
+from uuid import uuid4
+
+from sqlalchemy import select
+from sqlalchemy.orm import Session
+
+from harness_local.core.engine.bootstrap import accepted_input, proposal
+from harness_local.core.engine.contracts import context_snapshot, freeze
+from harness_local.core.engine.phases import digest
+from harness_local.storage.managed import Conflict, _job
+from harness_local.storage.models import (
+    ProjectBootstrapRow as Bootstrap, ManagedRunRow as Run, ManagedJobRow as Job,
+    PhaseRow as Phase, ManagedActivationRow as Activation,
+)
+from harness_local.storage.permissions import actor
+
+
+def unresolved(session, root):
+    return session.scalar(select(Bootstrap.id).where(Bootstrap.root == root, Bootstrap.status != 'COMPLETED')) is not None
+
+
+def _operation(session, run):
+    op = session.scalar(select(Bootstrap).where(Bootstrap.run_id == run.id))
+    if op is None:
+        raise Conflict('Bootstrap run lacks its operation')
+    return op
+
+
+def settle(managed, session, run, outcome):
+    from harness_local.storage.phases import insert_phase
+    op = _operation(session, run)
+    if op.status != 'QUEUED' or outcome != {'commit': op.intent['commit'], 'tree': op.intent['tree'],
+            'documents': {d['path']: d['sha256'] for d in op.preview['documents']}}:
+        raise Conflict('Bootstrap result must match its sealed intent')
+    pid = insert_phase(managed, session, op.root, op.preview['phase'], outcome['documents'],
+                       source={'bootstrap_id': op.id, 'run_id': run.id, 'commit': outcome['commit']})
+    op.phase_id, op.status, op.result, op.finished_at = pid, 'COMPLETED', outcome, managed._now()
+    managed._event(session, run, 'bootstrap_completed', {'operation_id': op.id, 'phase_id': pid, **outcome})
+
+
+def abort(managed, session, run, status, reason):
+    op = _operation(session, run)
+    op.status, op.finished_at = 'INTERRUPTED', managed._now()
+    op.result = {'reason': reason, 'effect': 'uncertain', 'job_status': status}
+    managed._event(session, run, 'bootstrap_interrupted', {'operation_id': op.id, 'reason': reason})
+
+
+class BootstrapRepository:
+    def __init__(self, managed):
+        self.managed = managed
+
+    def get(self, root):
+        with Session(self.managed.engine) as session:
+            op = session.scalar(select(Bootstrap).where(Bootstrap.root == str(root)))
+            if op is None:
+                return None
+            run = session.get(Run, op.run_id)
+            task = session.scalar(select(Run).where(Run.root == op.root, Run.purpose == 'task',
+                Run.phase_id == op.preview['phase']['code'], Run.task_id == op.preview['first_task']['task_id'])
+                .order_by(Run.created_at.desc(), Run.id.desc()).limit(1))
+            return {**{key: getattr(op, key) for key in ('id', 'root', 'run_id', 'phase_id', 'status', 'preview',
+                'intent', 'decision', 'result', 'created_at', 'finished_at')},
+                'expected_version': run.version, 'run_status': run.status,
+                'first_task_run': None if task is None else {'run_id': task.id, 'status': task.status}}
+
+    def request(self, run_id):
+        with Session(self.managed.engine) as session:
+            op = _operation(session, session.get(Run, run_id))
+            return {'preview': op.preview, 'intent': op.intent}
+
+    @staticmethod
+    def _empty_authority(session, root):
+        if (session.scalar(select(Run.id).where(Run.root == root, Run.purpose != 'bootstrap_discovery'))
+                or session.scalar(select(Job.id).join(Run, Run.id == Job.run_id).where(Run.root == root,
+                                      Job.status.in_(('QUEUED', 'ACTIVE', 'RECOVERY_REQUIRED'))))
+                or session.scalar(select(Phase.id).where(Phase.root == root))
+                or session.scalar(select(Activation.id).where(Activation.root == root,
+                                      Activation.status.in_(('PREPARING', 'ACTIVE', 'REVERTING'))))):
+            raise Conflict('Target has managed history; use import or recovery instead of bootstrap')
+
+    def preview(self, context, data, versions, writer):
+        saved = self.get(context.root)
+        if saved is not None:
+            if saved['status'] == 'INTERRUPTED':
+                return {**saved['preview'], 'resume_operation_id': saved['id'],
+                        'expected_version': saved['expected_version']}
+            raise Conflict('Bootstrap already exists; inspect its operation')
+        with Session(self.managed.engine) as session:
+            self._empty_authority(session, str(context.root))
+        target = writer.inspect_bootstrap(context)
+        shown = {**proposal(context, data), 'versions': versions, 'target': target,
+                 'author': {'name': writer.identity.name, 'email': writer.identity.email},
+                 'git': {'branch': 'main', 'message': 'Initialize project from confirmed bootstrap',
+                         'timestamp': 'fixed at confirmation'},
+                 'ready': not target['import_required']}
+        shown['preview_sha256'] = digest(shown)
+        return {**shown, 'resume_operation_id': None, 'expected_version': None}
+
+    def submit(self, context, data, versions, writer, *, key, preview_sha256, confirmed, reason,
+               resume_operation_id=None, expected_version=None):
+        if confirmed is not True or not isinstance(reason, str) or not reason.strip():
+            raise ValueError('Explicit confirmation of brief, decisions and exact preview required')
+        marker = freeze({'action': 'bootstrap', 'root': str(context.root), 'input': data,
+                         'preview_sha256': preview_sha256, 'confirmed': confirmed, 'reason': reason,
+                         'resume_operation_id': resume_operation_id, 'expected_version': expected_version})
+        with Session(self.managed.engine) as session:
+            existing = self.managed._existing(session, key, marker)
+            if existing:
+                return _job(existing)
+        try:
+            shown = self.preview(context, data, versions, writer)
+        except Conflict:
+            with Session(self.managed.engine) as session:
+                existing = self.managed._existing(session, key, marker)
+                if existing:
+                    return _job(existing)
+            raise
+        if (not shown['ready'] or shown['preview_sha256'] != preview_sha256
+                or shown['resume_operation_id'] != resume_operation_id
+                or shown['expected_version'] != expected_version
+                or accepted_input(data) != shown['input']):
+            raise Conflict('Preview changed or import required; review the exact result again')
+        operation_id = resume_operation_id or str(uuid4())
+        intent = None if resume_operation_id else writer.seal_bootstrap(
+            shown, operation_id, int(self.managed.clock().timestamp()))
+        assessment = self.managed.guard.assess(context.root)
+        with self.managed._write() as session:
+            existing = self.managed._existing(session, key, marker)
+            if existing:
+                return _job(existing)
+            if resume_operation_id:
+                op = session.get(Bootstrap, resume_operation_id)
+                if op is None or op.root != str(context.root) or op.status != 'INTERRUPTED':
+                    raise Conflict('Only the exact interrupted bootstrap can resume')
+                run = session.get(Run, op.run_id)
+                if (run.version != expected_version or run.context_json != context_snapshot(context)
+                        or run.versions_json != freeze(versions) or op.preview['author'] != {
+                            'name': writer.identity.name, 'email': writer.identity.email}):
+                    raise Conflict('Frozen bootstrap version/context/writer changed; restore before resuming')
+                if session.scalar(select(Job.id).where(Job.run_id == run.id,
+                                    Job.status.in_(('QUEUED', 'ACTIVE', 'RECOVERY_REQUIRED')))):
+                    raise Conflict('Confirm the stopped bootstrap writer before resuming')
+                job = Job(idempotency_key=key, run_id=run.id, request_json=marker, status='QUEUED',
+                          created_at=self.managed._now(), activation_id=self.managed._admit(session, assessment))
+                session.add(job)
+                session.flush()
+                run.status, run.stage, op.status, op.finished_at = 'QUEUED', 'bootstrap', 'QUEUED', None
+                self.managed._event(session, run, 'bootstrap_resume_confirmed', {
+                    'operation_id': op.id, 'job_id': job.id, 'reason': reason, 'actor': actor()})
+                return _job(job)
+            self._empty_authority(session, str(context.root))
+            job = self.managed._queue_new_run(session, assessment, context, versions, 'P001-BOOTSTRAP',
+                                             'P001', key, marker, purpose='bootstrap')
+            session.add(Bootstrap(id=operation_id, root=str(context.root), run_id=job.run_id, status='QUEUED',
+                phase_id=None, preview={k: v for k, v in shown.items() if k not in ('expected_version', 'resume_operation_id')},
+                intent=intent, decision={'actor': actor(), 'reason': reason, 'confirmed': True},
+                created_at=self.managed._now()))
+            self.managed._event(session, session.get(Run, job.run_id), 'bootstrap_confirmed', {
+                'operation_id': operation_id, 'preview_sha256': preview_sha256, 'intent': intent,
+                'reason': reason, 'actor': actor()})
+            return job

@@ -1,6 +1,7 @@
-Human-directed project discovery; not part of the task loop. Read existing repository context.
-Identify contradictions and ask only material questions about domain, permissions, history, security,
-architecture or scope. Separate current MVP, accepted future direction and speculation.
-Only update canonical documents after explicit authorization. Do not begin implementation.
+Read-only discovery for an empty project destination. Work only from the supplied brief.
+Propose minimal requirements, architecture alternatives with tradeoffs and material pending decisions.
+Separate accepted facts from recommendations. Do not write files, run preparation, implement an
+application, grant permissions or treat recommendations as user decisions. A human must confirm
+scope, architecture and the exact maintained document preview in a separate bootstrap action.
 Product brief:
 {{BRIEF}}

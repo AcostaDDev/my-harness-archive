@@ -4,11 +4,11 @@ Aplicación local para configurar, ejecutar y observar un harness modular de des
 Estado actual: H0, H1, H2.1–H2.5, salida del hito 2, H3.1–H3.4,
 H4.1 y exportación mecánica de STATE/NEXT_STEPS completados offline.
 Python/API/UI con simulaciones, observación legacy y motor con cola/persistencia;
-Git, migración gestionada, prompts/permisos, fases/lotes y chat contextual.
+Git, migración gestionada, prompts/permisos, fases/lotes, chat contextual y bootstrap guiado.
 La exportación usa diff confirmado, commit conciliable y adopción de hashes (D036).
 H2.3 conserva el smoke real de transporte D025; el resto está verificado con
 Git/SQLite sintéticos y fakes. Proveedores opt-in por inyección explícita, sin
-entrada CLI gestionada. Siguiente tarea: H4.2 bootstrap guiado, sin iniciar.
+entrada CLI gestionada. Siguiente tarea: H4.3 segundo perfil, sin iniciar.
 
 ## Documentación
 
@@ -37,6 +37,7 @@ entrada CLI gestionada. Siguiente tarea: H4.2 bootstrap guiado, sin iniciar.
 - [Ajustes de fases, lote desatendido y guardia H0/H1 H3.4, verificados offline](docs/discovery/H3.4_PHASE_ADJUSTMENTS.md).
 - [Chat contextual H4.1, verificado offline](docs/discovery/H4.1_CHAT.md).
 - [Exportación mecánica de STATE/NEXT_STEPS, verificada offline](docs/discovery/STATE_EXPORT.md).
+- [Bootstrap guiado H4.2 y demo offline](docs/discovery/H4.2_BOOTSTRAP.md).
 - [Smoke cli-3: MCP aceptado, fallo de autenticación Claude](docs/discovery/H2.3_SMOKE_CLI3.md).
 - [Git, worktree y commit acotado H2.4](docs/discovery/H2.4_GIT.md).
 - [Migración a modo gestionado H2.5](docs/discovery/H2.5_MIGRATION.md).
@@ -143,7 +144,7 @@ La API gestionada local (proyectos registrados en el servidor, supervisor opt-in
 idempotencia, versiones y guardia Host/Origin/CSRF) está completada offline: ver
 [entrega y límites](docs/discovery/H2_EXIT_API.md). La UI gestionada local está
 completada offline; [demo, verificación y límites](docs/discovery/H2_EXIT_UI.md).
-H4.1 y exportación mecánica completados offline (D035/D036); siguiente tarea: H4.2 bootstrap guiado, sin iniciar. Ver [corrección y límites](docs/discovery/H2.3_MCP_FIX.md)
+H4.1, exportación mecánica y H4.2 completados offline (D035–D037); siguiente tarea: H4.3 segundo perfil, sin iniciar. Ver [corrección y límites](docs/discovery/H2.3_MCP_FIX.md)
 y [resultado real cli-3](docs/discovery/H2.3_SMOKE_CLI3.md). El consentimiento
 terminó al fallo; otro smoke requiere propuesta y autorización específicas.
 Ver [corrección del entorno](docs/discovery/H2.3_ENV_FIX.md) y
@@ -156,7 +157,7 @@ siguen conservados. La autorización cubrió una ejecución, sin relanzamiento.
 ## Importación legacy de lectura
 
 Migrar con el servicio detenido antes de importar; el esquema actual es
-`0012_chat`. Comandos comprobados desde la raíz, con datos sintéticos:
+`0013_bootstrap`. Comandos comprobados desde la raíz, con datos sintéticos:
 
 ```sh
 UV_CACHE_DIR=.local/uv-cache uv run --frozen --offline alembic upgrade head
@@ -223,8 +224,9 @@ a otros proyectos que los hereden; el override de proyecto prevalece.
 
 Las activaciones afectan a intentos posteriores, conservando las peticiones y
 resultados previos. Al reanudar un run detenido se conserva su catálogo congelado.
-El editor no concede permisos. El flujo de bootstrap aún no está implementado;
-la evaluación de fases usa `close-phase` desde H3.3. [Contrato, pruebas y límites](docs/discovery/H3.1_PROMPTS.md).
+El editor no concede permisos. El descubrimiento de bootstrap usa `bootstrap-project`
+desde H4.2; la plantilla documental se versiona con el paquete. La evaluación de
+fases usa `close-phase` desde H3.3. [Contrato, pruebas y límites](docs/discovery/H3.1_PROMPTS.md).
 
 H3.2 incorpora solicitudes de permisos por categoría con caducidad, huella y
 auditoría en la UI gestionada. Conceder no lanza trabajo: se aplica al siguiente
@@ -261,3 +263,34 @@ antes de adoptar los hashes. El cierre sigue separado; exportar no mueve tags.
 Ante una caída, confirmar primero el escritor detenido y volver a previsualizar
 la fase permite conciliar la misma intención, sin duplicar commits ni invocar
 agentes. [Protocolo, API y límites](docs/discovery/STATE_EXPORT.md).
+
+## Bootstrap guiado (H4.2)
+
+Migrar con el servicio detenido a `0013_bootstrap`. Registrar en el servidor una
+carpeta **existente y vacía**, con su `ProjectContext`, versiones, perfil/política y
+`ManagedProject(..., bootstrap_enabled=True)`. Se exige una `commit_factory` con
+`GitWorkspace`; los puertos de agentes solo son necesarios para la propuesta
+opcional y para ejecutar después la primera tarea. No hay rutas arbitrarias del
+cliente ni efectos al cargar la configuración.
+
+En **Proyectos gestionados → Crear proyecto desde cero**: completar el brief,
+solicitar si se desea una propuesta Codex de solo lectura, registrar las decisiones
+de alcance/arquitectura y revisar los documentos/fase/tarea. Confirmar el preview
+con motivo crea un job y commit raíz, y adopta la primera fase en SQLite. La primera
+tarea documental se encola por una acción propia y sigue el motor/revisión/commit
+normales. Carpeta con contenido → flujo de importación, sin sobrescribir.
+Ante caída, confirmar el escritor detenido en sus jobs y reconfirmar el preview
+para conciliar el mismo run/commit. No ejecuta preparación ni instala un stack.
+[Contrato, verificaciones y límites](docs/discovery/H4.2_BOOTSTRAP.md).
+
+Demo opt-in, exclusivamente sintética, con dos destinos (`empty` y `existing`):
+
+```sh
+UV_CACHE_DIR=.local/uv-cache uv run --frozen --offline python -m examples.bootstrap_demo /private/tmp/NEW-bootstrap-demo
+HARNESS_DATABASE_URL=sqlite:////private/tmp/NEW-bootstrap-demo/index.sqlite3 UV_CACHE_DIR=.local/uv-cache uv run --frozen --offline alembic upgrade head
+HARNESS_BOOTSTRAP_DEMO_ROOT=/private/tmp/NEW-bootstrap-demo HARNESS_MANAGED_CONFIG=examples.bootstrap_demo:build HARNESS_DATABASE_URL=sqlite:////private/tmp/NEW-bootstrap-demo/index.sqlite3 UV_CACHE_DIR=.local/uv-cache uv run --frozen --offline uvicorn harness_local.api.app:create_app --factory --host 127.0.0.1 --port 8022 --workers 1
+```
+
+El directorio debe ser nuevo. Los tres comandos se verificaron con una raíz temporal
+nueva equivalente. La SQLite y el registro de llamadas falsas están fuera de ambos
+destinos. La demo nunca conecta proveedores ni admite un checkout real existente.

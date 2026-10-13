@@ -382,6 +382,58 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/managed/projects/{project_id}/bootstrap": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Bootstrap Status */
+        get: operations["managed_bootstrap_status"];
+        put?: never;
+        /** Bootstrap Create */
+        post: operations["managed_bootstrap_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/managed/projects/{project_id}/bootstrap/discovery": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Bootstrap Discovery */
+        post: operations["managed_bootstrap_discovery"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/managed/projects/{project_id}/bootstrap/preview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Bootstrap Preview */
+        post: operations["managed_bootstrap_preview"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/managed/projects/{project_id}/runs": {
         parameters: {
             query?: never;
@@ -1122,6 +1174,217 @@ export interface components {
             /** Reason */
             reason: string;
         };
+        /** BootstrapBrief */
+        BootstrapBrief: {
+            /** Problem */
+            problem: string;
+            /** Users */
+            users: string;
+            /** Minimum Features */
+            minimum_features: string;
+            /** Constraints */
+            constraints: string;
+            /** Delivery Goal */
+            delivery_goal: string;
+        };
+        /** BootstrapCreate */
+        BootstrapCreate: {
+            input: components["schemas"]["BootstrapInput"];
+            /** Preview Sha256 */
+            preview_sha256: string;
+            /**
+             * Confirmed
+             * @constant
+             */
+            confirmed: true;
+            /** Reason */
+            reason: string;
+            /** Resume Operation Id */
+            resume_operation_id?: string | null;
+            /** Expected Version */
+            expected_version?: number | null;
+        };
+        /** BootstrapDecisions */
+        BootstrapDecisions: {
+            /** Scope */
+            scope: string;
+            /** Architecture */
+            architecture: string;
+            /** Out Of Scope */
+            out_of_scope: string;
+        };
+        /** BootstrapDiscoveryCreate */
+        BootstrapDiscoveryCreate: {
+            brief: components["schemas"]["BootstrapBrief"];
+            /**
+             * Confirmed
+             * @constant
+             */
+            confirmed: true;
+        };
+        /** BootstrapDiscoveryOutcomeRead */
+        BootstrapDiscoveryOutcomeRead: {
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "PROPOSED" | "FAILED" | "UNKNOWN";
+            result: components["schemas"]["BootstrapDiscoveryResultRead"] | null;
+            /** Reason */
+            reason: string | null;
+        };
+        /** BootstrapDiscoveryRead */
+        BootstrapDiscoveryRead: {
+            /** Run Id */
+            run_id: string;
+            /** Run Status */
+            run_status: string;
+            brief: components["schemas"]["BootstrapBrief"];
+            outcome: components["schemas"]["BootstrapDiscoveryOutcomeRead"] | null;
+        };
+        /** BootstrapDiscoveryResultRead */
+        BootstrapDiscoveryResultRead: {
+            /** Summary */
+            summary: string;
+            /** Requirements */
+            requirements: string[];
+            /** Alternatives */
+            alternatives: string[];
+            /** Pending Decisions */
+            pending_decisions: string[];
+        };
+        /** BootstrapDocumentRead */
+        BootstrapDocumentRead: {
+            /** Path */
+            path: string;
+            /** Content */
+            content: string;
+            /** Sha256 */
+            sha256: string;
+        };
+        /** BootstrapInput */
+        BootstrapInput: {
+            brief: components["schemas"]["BootstrapBrief"];
+            decisions: components["schemas"]["BootstrapDecisions"];
+        };
+        /** BootstrapOperationRead */
+        BootstrapOperationRead: {
+            /** Id */
+            id: string;
+            /** Root */
+            root: string;
+            /** Run Id */
+            run_id: string;
+            /** Phase Id */
+            phase_id: string | null;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "QUEUED" | "COMPLETED" | "INTERRUPTED";
+            preview: components["schemas"]["BootstrapPreviewRead"];
+            /** Intent */
+            intent: {
+                [key: string]: unknown;
+            };
+            /** Decision */
+            decision: {
+                [key: string]: unknown;
+            };
+            /** Result */
+            result: {
+                [key: string]: unknown;
+            } | null;
+            /** Created At */
+            created_at: string;
+            /** Finished At */
+            finished_at: string | null;
+            /** Expected Version */
+            expected_version: number;
+            /** Run Status */
+            run_status: string;
+            /** First Task Run */
+            first_task_run: {
+                [key: string]: string;
+            } | null;
+        };
+        /** BootstrapPreviewRead */
+        BootstrapPreviewRead: {
+            /** Template */
+            template: {
+                [key: string]: string;
+            };
+            input: components["schemas"]["BootstrapInput"];
+            /** Context Sha256 */
+            context_sha256: string;
+            /** Documents */
+            documents: components["schemas"]["BootstrapDocumentRead"][];
+            /** Phase */
+            phase: {
+                [key: string]: unknown;
+            };
+            /** First Task */
+            first_task: {
+                [key: string]: unknown;
+            };
+            /** Task Text */
+            task_text: string;
+            /** Preparation */
+            preparation: {
+                [key: string]: unknown;
+            }[];
+            /** Validations */
+            validations: {
+                [key: string]: unknown;
+            }[];
+            /** Policy */
+            policy: {
+                [key: string]: unknown;
+            };
+            /** Profile */
+            profile: string;
+            /** Versions */
+            versions: {
+                [key: string]: string | null;
+            };
+            /** Target */
+            target: {
+                [key: string]: unknown;
+            };
+            /** Author */
+            author: {
+                [key: string]: string;
+            };
+            /** Git */
+            git: {
+                [key: string]: string;
+            };
+            /** Ready */
+            ready: boolean;
+            /** Preview Sha256 */
+            preview_sha256: string;
+            /** Resume Operation Id */
+            resume_operation_id?: string | null;
+            /** Expected Version */
+            expected_version?: number | null;
+        };
+        /** BootstrapStatusRead */
+        BootstrapStatusRead: {
+            /** Enabled */
+            enabled: boolean;
+            /** Import Required */
+            import_required: boolean;
+            /** Diagnostic */
+            diagnostic: string | null;
+            operation: components["schemas"]["BootstrapOperationRead"] | null;
+            discovery: components["schemas"]["BootstrapDiscoveryRead"] | null;
+            /** Discovery Available */
+            discovery_available: boolean;
+            /** Discovery Selection */
+            discovery_selection: {
+                [key: string]: string;
+            };
+        };
         /** ChatConversationCreate */
         ChatConversationCreate: {
             /** Title */
@@ -1809,7 +2072,7 @@ export interface components {
              * Purpose
              * @enum {string}
              */
-            purpose: "task" | "phase_check" | "phase_close" | "chat" | "document_export";
+            purpose: "task" | "phase_check" | "phase_close" | "chat" | "document_export" | "bootstrap" | "bootstrap_discovery";
             /** Actions */
             actions: ("revalidate" | "retry_executor" | "commit" | "permissions")[];
             /** Versions */
@@ -1851,7 +2114,7 @@ export interface components {
              * Purpose
              * @enum {string}
              */
-            purpose: "task" | "phase_check" | "phase_close" | "chat" | "document_export";
+            purpose: "task" | "phase_check" | "phase_close" | "chat" | "document_export" | "bootstrap" | "bootstrap_discovery";
         };
         /** MigrationPreviewRead */
         MigrationPreviewRead: {
@@ -3723,6 +3986,266 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ActivationRead"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+        };
+    };
+    managed_bootstrap_status: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Obligatoria con valor 1 en mutaciones (protección CSRF). */
+                "x-harness-local"?: string | null;
+            };
+            path: {
+                project_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BootstrapStatusRead"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+        };
+    };
+    managed_bootstrap_create: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Misma clave y misma acción devuelven el mismo job. */
+                "Idempotency-Key": string;
+                /** @description Obligatoria con valor 1 en mutaciones (protección CSRF). */
+                "x-harness-local"?: string | null;
+            };
+            path: {
+                project_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BootstrapCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ManagedJobRead"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+        };
+    };
+    managed_bootstrap_discovery: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Misma clave y misma acción devuelven el mismo job. */
+                "Idempotency-Key": string;
+                /** @description Obligatoria con valor 1 en mutaciones (protección CSRF). */
+                "x-harness-local"?: string | null;
+            };
+            path: {
+                project_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BootstrapDiscoveryCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ManagedJobRead"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+        };
+    };
+    managed_bootstrap_preview: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Obligatoria con valor 1 en mutaciones (protección CSRF). */
+                "x-harness-local"?: string | null;
+            };
+            path: {
+                project_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BootstrapInput"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BootstrapPreviewRead"];
                 };
             };
             /** @description Forbidden */

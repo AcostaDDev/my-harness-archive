@@ -42,6 +42,8 @@ class ManagedProject:
     permission_authority: Mapping | None = None
     # H3.4: tipo del tag de cierre de fase; ligero por defecto, anotado con intención determinista.
     tag_kind: str = "lightweight"
+    # H4.2: capacidad opt-in para crear exclusivamente en este destino vacío.
+    bootstrap_enabled: bool = False
 
 
 @dataclass(frozen=True)
@@ -88,6 +90,10 @@ def _validate(config: ManagedConfig, database: Path, migrations_dir: Path) -> No
             raise ValueError(f"Dos proyectos comparten la raíz {project.context.root}")
         ids.add(project.id)
         roots.add(project.context.root)
+        if type(project.bootstrap_enabled) is not bool:
+            raise ValueError('bootstrap_enabled must be an explicit boolean')
+        if project.bootstrap_enabled and config.commit_factory is None:
+            raise ValueError('Bootstrap requires an explicit Git writer')
         if project.tag_kind not in ("lightweight", "annotated"):
             raise ValueError(f"Tipo de tag de fase inválido para {project.id}: {project.tag_kind!r}")
         if not isinstance(project.versions, Mapping) or not REQUIRED_VERSIONS <= project.versions.keys():

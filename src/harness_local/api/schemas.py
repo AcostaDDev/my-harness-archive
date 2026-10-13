@@ -265,7 +265,7 @@ class ManagedRunSummaryRead(BaseModel):
     revision_limit: int
     created_at: str
     updated_at: str
-    purpose: Literal['task', 'phase_check', 'phase_close', 'chat', 'document_export']
+    purpose: Literal['task', 'phase_check', 'phase_close', 'chat', 'document_export', 'bootstrap', 'bootstrap_discovery']
 
 
 class StopRead(BaseModel):
@@ -781,3 +781,117 @@ class ChatProposalDismissCreate(BaseModel):
     model_config = ConfigDict(extra='forbid', strict=True)
     expected_version: int = Field(ge=0)
     reason: str = Field(min_length=1, max_length=2000)
+
+
+# --- H4.2: bootstrap guiado ------------------------------------------------------------------
+class BootstrapBrief(BaseModel):
+    model_config = ConfigDict(extra='forbid', strict=True)
+    problem: str = Field(min_length=1, max_length=4000)
+    users: str = Field(min_length=1, max_length=4000)
+    minimum_features: str = Field(min_length=1, max_length=4000)
+    constraints: str = Field(min_length=1, max_length=4000)
+    delivery_goal: str = Field(min_length=1, max_length=4000)
+
+
+class BootstrapDecisions(BaseModel):
+    model_config = ConfigDict(extra='forbid', strict=True)
+    scope: str = Field(min_length=1, max_length=4000)
+    architecture: str = Field(min_length=1, max_length=4000)
+    out_of_scope: str = Field(min_length=1, max_length=4000)
+
+
+class BootstrapInput(BaseModel):
+    model_config = ConfigDict(extra='forbid', strict=True)
+    brief: BootstrapBrief
+    decisions: BootstrapDecisions
+
+
+class BootstrapDocumentRead(BaseModel):
+    path: str
+    content: str
+    sha256: str
+
+
+class BootstrapPreviewRead(BaseModel):
+    template: dict[str, str]
+    input: BootstrapInput
+    context_sha256: str
+    documents: list[BootstrapDocumentRead]
+    phase: dict[str, Any]
+    first_task: dict[str, Any]
+    task_text: str
+    preparation: list[dict[str, Any]]
+    validations: list[dict[str, Any]]
+    policy: dict[str, Any]
+    profile: str
+    versions: dict[str, str | None]
+    target: dict[str, Any]
+    author: dict[str, str]
+    git: dict[str, str]
+    ready: bool
+    preview_sha256: str
+    resume_operation_id: str | None = None
+    expected_version: int | None = None
+
+
+class BootstrapCreate(BaseModel):
+    model_config = ConfigDict(extra='forbid', strict=True)
+    input: BootstrapInput
+    preview_sha256: str = Field(pattern=r'^[0-9a-f]{64}$')
+    confirmed: Literal[True]
+    reason: str = Field(min_length=1, max_length=2000)
+    resume_operation_id: str | None = Field(default=None, max_length=36)
+    expected_version: int | None = Field(default=None, ge=0)
+
+
+class BootstrapOperationRead(BaseModel):
+    id: str
+    root: str
+    run_id: str
+    phase_id: str | None
+    status: Literal['QUEUED', 'COMPLETED', 'INTERRUPTED']
+    preview: BootstrapPreviewRead
+    intent: dict[str, Any]
+    decision: dict[str, Any]
+    result: dict[str, Any] | None
+    created_at: str
+    finished_at: str | None
+    expected_version: int
+    run_status: str
+    first_task_run: dict[str, str] | None
+
+
+class BootstrapDiscoveryCreate(BaseModel):
+    model_config = ConfigDict(extra='forbid', strict=True)
+    brief: BootstrapBrief
+    confirmed: Literal[True]
+
+
+class BootstrapDiscoveryResultRead(BaseModel):
+    summary: str
+    requirements: list[str]
+    alternatives: list[str]
+    pending_decisions: list[str]
+
+
+class BootstrapDiscoveryOutcomeRead(BaseModel):
+    status: Literal['PROPOSED', 'FAILED', 'UNKNOWN']
+    result: BootstrapDiscoveryResultRead | None
+    reason: str | None
+
+
+class BootstrapDiscoveryRead(BaseModel):
+    run_id: str
+    run_status: str
+    brief: BootstrapBrief
+    outcome: BootstrapDiscoveryOutcomeRead | None
+
+
+class BootstrapStatusRead(BaseModel):
+    enabled: bool
+    import_required: bool
+    diagnostic: str | None
+    operation: BootstrapOperationRead | None
+    discovery: BootstrapDiscoveryRead | None
+    discovery_available: bool
+    discovery_selection: dict[str, str]

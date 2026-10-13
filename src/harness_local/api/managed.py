@@ -167,6 +167,58 @@ def managed_router(runtime: ManagedRuntime):
         return _activation(call(runtime.migration.resume_revert, activation_id, reason=body.reason,
                                 expected_version=body.expected_version))
 
+    # --- bootstrap H4.2: solo destinos autorizados por el servidor ---------------------
+    from harness_local.api.schemas import (
+        BootstrapInput, BootstrapCreate, BootstrapPreviewRead, BootstrapStatusRead, BootstrapDiscoveryCreate,
+    )
+    from harness_local.storage.bootstrap import BootstrapRepository
+
+    def bootstrap_writer(item):
+        if not item.bootstrap_enabled:
+            raise problem(409, 'bootstrap_disabled', 'Este destino no autoriza bootstrap en el servidor.')
+        return call(runtime.config.commit_factory, item.context, frozen_versions(item))
+
+    @router.get('/projects/{project_id}/bootstrap', response_model=BootstrapStatusRead,
+                operation_id='managed_bootstrap_status')
+    def bootstrap_status(project_id: str):
+        item = project(project_id)
+        operation = call(BootstrapRepository(runtime.repository).get, item.context.root)
+        target = call(bootstrap_writer(item).inspect_bootstrap, item.context) if item.bootstrap_enabled and not operation else None
+        return {'enabled': item.bootstrap_enabled, 'import_required': bool(target and target['import_required']),
+                'diagnostic': target['diagnostic'] if target else None, 'operation': operation,
+                'discovery': call(DiscoveryRepository(runtime.repository).latest, item.context.root),
+                'discovery_available': item.bootstrap_enabled and runtime.config.ports_factory is not None,
+                'discovery_selection': {'model': item.context.policy.planner_model,
+                                        'effort': item.context.policy.planner_effort}}
+
+    from harness_local.storage.bootstrap_discovery import DiscoveryRepository
+
+    @router.post('/projects/{project_id}/bootstrap/discovery', response_model=ManagedJobRead, status_code=202,
+                 operation_id='managed_bootstrap_discovery')
+    def bootstrap_discovery(project_id: str, body: BootstrapDiscoveryCreate, idempotency_key: IdempotencyKey):
+        item = project(project_id)
+        if runtime.config.ports_factory is None:
+            raise problem(409, 'ports_unconfigured', 'No hay puertos de agente configurados para proponer requisitos.')
+        job = call(DiscoveryRepository(runtime.repository).submit, item.context, body.brief.model_dump(),
+                   frozen_versions(item), bootstrap_writer(item), key=idempotency_key, confirmed=body.confirmed)
+        return queued(job)
+
+    @router.post('/projects/{project_id}/bootstrap/preview', response_model=BootstrapPreviewRead,
+                 operation_id='managed_bootstrap_preview')
+    def bootstrap_preview(project_id: str, body: BootstrapInput):
+        item = project(project_id)
+        return call(BootstrapRepository(runtime.repository).preview, item.context, body.model_dump(),
+                    frozen_versions(item), bootstrap_writer(item))
+
+    @router.post('/projects/{project_id}/bootstrap', response_model=ManagedJobRead, status_code=202,
+                 operation_id='managed_bootstrap_create')
+    def bootstrap_create(project_id: str, body: BootstrapCreate, idempotency_key: IdempotencyKey):
+        item = project(project_id)
+        job = call(BootstrapRepository(runtime.repository).submit, item.context, body.input.model_dump(),
+                   frozen_versions(item), bootstrap_writer(item), key=idempotency_key,
+                   **body.model_dump(exclude={'input'}))
+        return queued(job)
+
     # --- runs, jobs, intentos y eventos ---------------------------------------------
 
     @router.get("/projects/{project_id}/runs", response_model=Page[ManagedRunSummaryRead],

@@ -269,6 +269,22 @@ class GitWorkspace:
         return CommitOutcome(status, intent.operation_id, commit=intent.expected_commit,
                              tree=intent.expected_tree, head=head, index=self._refresh_index(git, intent))
 
+    def inspect_bootstrap(self, context):
+        from harness_local.adapters.bootstrap import inspect_target
+        try:
+            self._git(context.root).text('version')  # entorno Git comprobado en lectura
+            return inspect_target(context, self._git(context.root))
+        except GitError as exc:
+            raise ValueError(f'Bootstrap Git environment unavailable: {exc}') from exc
+
+    def seal_bootstrap(self, shown, operation_id, committed_at):
+        from harness_local.adapters.bootstrap import seal
+        return seal(self, shown, operation_id, committed_at)
+
+    def execute_bootstrap(self, context, shown, intent):
+        from harness_local.adapters.bootstrap import execute
+        return execute(self, context, shown, intent)
+
     def execute(self, context: ProjectContext, intent: CommitIntent) -> CommitOutcome:
         git = self._git(context.root)
         self._require_root(git, context.root)

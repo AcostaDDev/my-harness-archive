@@ -397,3 +397,19 @@ class ChatProposalRow(Base):
     decision: Mapped[dict | None] = mapped_column(JSON, nullable=True)
     version: Mapped[int] = mapped_column(Integer)
     created_at: Mapped[str] = mapped_column(String(40))
+
+
+class ProjectBootstrapRow(Base):
+    """H4.2: un bootstrap por destino autorizado; bytes e intención conservados antes de escribir."""
+    __tablename__ = 'project_bootstraps'
+    id: Mapped[str] = mapped_column(String(36), primary_key=True)
+    root: Mapped[str] = mapped_column(String, unique=True)
+    run_id: Mapped[str] = mapped_column(ForeignKey('managed_runs.id'), unique=True)
+    phase_id: Mapped[str | None] = mapped_column(ForeignKey('managed_phases.id'), nullable=True)
+    status: Mapped[str] = mapped_column(String(20))
+    preview: Mapped[dict] = mapped_column(JSON)
+    intent: Mapped[dict] = mapped_column(JSON)
+    decision: Mapped[dict] = mapped_column(JSON)
+    result: Mapped[dict | None] = mapped_column(JSON, nullable=True)
+    created_at: Mapped[str] = mapped_column(String(40))
+    finished_at: Mapped[str | None] = mapped_column(String(40), nullable=True)

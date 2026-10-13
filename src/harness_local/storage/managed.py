@@ -85,6 +85,12 @@ def _nonempty(value: str, name: str) -> None:
 
 def _operation_module(run):
     """Autoridad del resultado de un run que no es de tarea: fase (H3.3) o turno de chat (H4.1)."""
+    if run.purpose == "bootstrap_discovery":
+        from harness_local.storage import bootstrap_discovery
+        return bootstrap_discovery
+    if run.purpose == "bootstrap":
+        from harness_local.storage import bootstrap
+        return bootstrap
     if run.purpose == "chat":
         from harness_local.storage import chat
         return chat
@@ -210,6 +216,10 @@ class SQLiteManagedRepository:
     def _queue_new_run(self, session, assessment, context, versions, task_id, phase_id, key, request,
                        purpose="task"):
         """Run nuevo y su primer job en la transacción del llamante (tareas y operaciones de fase H3.3)."""
+        if purpose != "bootstrap":
+            from harness_local.storage.bootstrap import unresolved
+            if unresolved(session, str(context.root)):
+                raise Conflict('Bootstrap awaits completion or explicit recovery')
         if purpose == "task":
             self._phase_open(session, str(context.root), phase_id)
         activation_id = self._admit(session, assessment)
@@ -406,7 +416,7 @@ class SQLiteManagedRepository:
                                   status="ACTIVE", started_at=self._now()))
             run.stage = request.role
             run.status = {"planner": "PLANNING", "executor": "EXECUTING", "reviewer": "REVIEWING",
-                          "phase": "CHECKING", "chat": "ANSWERING"}[request.role]
+                          "phase": "CHECKING", "chat": "ANSWERING", "bootstrap": "DISCOVERING"}[request.role]
             self._event(session, run, "attempt_started", {"job_id": job.id, "attempt_id": request.id,
                                                         "number": len(attempts) + 1, "role": request.role})
             return request

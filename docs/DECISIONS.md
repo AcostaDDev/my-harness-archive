@@ -1027,3 +1027,53 @@ físico. Si cambian documentos después de un commit incierto, hay que restaurar
 manualmente el contenido sellado para conciliar/adoptar; no se revierte ni fusiona
 por el motor. Abandonar una intención ambigua y retener temporales siguen fuera.
 H4.2 es la siguiente tarea, sin iniciarla. Los smokes siguen sin autorización.
+
+## D037 — Bootstrap documental confirmado, descubrimiento opcional y commit raíz conciliable
+
+Estado: implementado y verificado offline el 2026-10-13.
+[Entrega, uso y límites](discovery/H4.2_BOOTSTRAP.md).
+
+Una carpeta existente registrada por el servidor necesita `bootstrap_enabled=True`
+y escritor Git explícito. El cliente solo nombra su identificador; perfil,
+selecciones, rutas canónicas, versiones y permisos siguen siendo autoridad del
+servidor. No se habilita registro HTTP de proyectos ni selector arbitrario de
+rutas. Carpeta no vacía, oculta, enlazada o dentro de otro Git → flujo de
+importación existente, nunca sobrescritura ni suposición de importabilidad.
+
+La plantilla mantenida `project-foundation` v1/hash genera seis documentos de
+fundamentos: brief, decisiones, perfil/política, README, STATE y NEXT_STEPS. Su
+primera fase `P001` y tarea `P001-T001` concretan un escenario de entrega
+verificable; la tarea solo permite `docs/DELIVERY_CHECKLIST.md`. No introduce otro
+stack/perfil ni genera todo el producto desde un brief. La plantilla documental
+se versiona con el paquete y el prompt de descubrimiento se edita con H3.1.
+
+Codex puede proponer requisitos, alternativas y decisiones pendientes mediante
+una acción propia (`bootstrap_discovery`), sesión nueva de solo lectura y selección
+del planificador. Brief y prompt versionado quedan congelados al encolar; ningún
+mensaje decide producto, concede permisos ni escribe documentos. Salida inválida
+se descarta sin fallback/reintento; cambios del destino invalidan la propuesta y
+se conservan. Una caída deja `UNKNOWN` tras confirmar escritor detenido. El
+usuario puede aportar decisiones completas sin invocar al agente.
+
+Preview determinista con archivos íntegros, contrato/fase, política/perfil y
+comandos declarados. Confirmación humana del hash exacto, motivo y clave encola
+`bootstrap`, sin agentes. No ejecuta preparación ni instala dependencias; comprueba
+Git, destino y compatibilidad del contrato/política. La primera tarea se encola por
+acción separada y sigue ejecución/validación/revisión/commit existentes.
+
+Ambos flujos reutilizan jobs, lock, leases, propietarios y cuarentena; ninguna
+cola o hilo adicional. `0013_bootstrap` guarda preview/decisión/intención/resultado
+y vínculo de fase; el codec se conserva. La intención del commit raíz (sin padre)
+fija bytes/árbol, identidad, mensaje, fecha e id antes del efecto. Usa el entorno
+Git, captura e índices temporales H2.4; no fabrica aceptación ni `managed_commits`.
+Archivos nuevos exclusivos, marca propia dentro de `.git`, índice/refs conservados
+y CAS permiten conciliar tras reconfirmación explícita con el mismo run/intención/
+commit. Solo el job de conciliación es nuevo. Sin marca fiable exige recuperación
+manual. Datos externos jamás se restauran, fusionan ni descartan.
+
+La fase/versiones/base documental se insertan junto al resultado/fin del job en
+una transacción. Trabajo nuevo queda bloqueado mientras el bootstrap es incierto.
+La UI conserva los envíos con su clave y muestra el estado de la primera tarea
+tras reiniciar. Exclusión externa cooperativa; sin atomicidad del conjunto de
+archivos, abandono automático de intención ni limpieza de temporales. CLI real y
+preparación de un stack no verificadas. H4.3 siguiente, sin iniciar; smokes agotados.
