@@ -1670,3 +1670,24 @@ Se aplican las dos medidas, porque la plantilla es editable por el usuario
 Sin cambios de argv (`cli-5`), esquema, codec, OpenAPI ni UI. Los historiales,
 contratos y catálogos congelados no se reescriben. No autoriza ninguna
 ejecución con proveedores.
+
+## D057 — Nueva ejecución de la matriz D052 tras D056
+
+Estado: propuesta preparada y ensayada offline el 2026-10-13; **no ejecutada ni
+autorizada**. [Propuesta](discovery/PROVIDER_MATRIX_RERUN_PROPOSAL.md).
+
+Repite D055 sin cambiar selecciones, límites ni criterios, con lo siguiente:
+
+- Área nueva `/private/tmp/harness-provider-matrix-2`.
+- Wheel con D056.
+- Scripts versionados en `examples/provider_matrix/`: `run_pairing.sh` y
+  `drive.py`. Este espera hasta el final real del job y guarda la instantánea
+  completa.
+- Reparto de la ejecución:
+  - Claude Code prepara, verifica y revisa la evidencia entre combinaciones.
+  - El usuario lanza con `!` cada orden que arranca agentes, porque el
+    clasificador de permisos de Claude Code las bloquea.
+
+Ejecutarla requiere consentimiento específico del usuario. Cualquier cambio de
+selecciones, límites o entorno exige actualizarla antes (solo `BASE` puede
+cambiar si ya existe, y se registra). Sin cambios de código del producto.

@@ -136,6 +136,8 @@ Matriz D055 ejecutada y detenida: la combinación 1 falló en el planificador po
 (`docs/discovery/PROVIDER_MATRIX_RUN.md`, `examples/provider_matrix/prepare.sh`).
 Formas de salida alineadas con el motor (D056, `docs/discovery/CONTRACT_SHAPES.md`): esquema tipado,
 plantilla `plan-task` aclarada y argv de `validation_commands` normalizado; offline.
+Nueva ejecución de la matriz preparada y ensayada con CLI sintéticas, sin ejecutar (D057,
+`docs/discovery/PROVIDER_MATRIX_RERUN_PROPOSAL.md`, `examples/provider_matrix/run_pairing.sh`).
 Comprobación offline ligera, solo biblioteca estándar, desde la raíz:
 
 ```sh

@@ -1967,6 +1967,30 @@ QA visual H5.7 bloqueada por herramienta; sin proveedores nuevos.
 - Siguiente: preparar la nueva ejecución de la matriz (área nueva y script de
   recorrido corregido); su ejecución exige consentimiento nuevo. No iniciada.
 
+## Propuesta de nueva ejecución de la matriz (D057)
+
+- Petición del usuario: commit de D056 (`7d00240`) y preparar la nueva
+  ejecución. Se conservan las selecciones, límites y criterios de D055.
+  [Propuesta](discovery/PROVIDER_MATRIX_RERUN_PROPOSAL.md).
+- Scripts versionados:
+  - `examples/provider_matrix/run_pairing.sh`: preflight comprobado,
+    `init-db`, `serve`, recorrido y TERM.
+  - `examples/provider_matrix/drive.py`: espera hasta `finished_at` o
+    `RECOVERY_REQUIRED`, instantánea completa y `outcome.json`.
+  - El usuario lanza con `!` las órdenes que arrancan agentes.
+- Ensayo offline en el scratchpad con wheel D056 y CLI sintéticas por el
+  servicio real:
+  - Las cuatro combinaciones llegan a `COMMITTED`, cada una con un commit solo
+    en `src/estimate.ts`.
+  - Contrato `["npm run test"]` desde argv; variante de 1800 s con exit 0.
+  - Argv de lector y escritor por proceso correctos.
+  - Rama de fallo (`[[]]`): `STOPPED` en `planner`, sin commit, salida 1 e
+    instantánea guardada.
+- Sintaxis de los scripts comprobada (`sh -n`, `py_compile`). Sin regresión
+  pytest: no cambia el código del producto. Sin proveedores, red, push,
+  configuración global ni ReferenceProject.
+- Siguiente: ejecutar D057 solo con consentimiento específico; no iniciada.
+
 ## Coordinación
 
 Desarrollo manual con el usuario. Una única sesión implementadora sobre los mismos archivos a la vez. La otra herramienta puede revisar una entrega terminada.
