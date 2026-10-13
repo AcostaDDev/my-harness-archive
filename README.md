@@ -124,7 +124,7 @@ Hace, en orden y sin red (D053):
 5. Ctrl+C detiene ambos; si uno termina, detiene el otro.
 
 Opciones: `--database /ruta/absoluta.sqlite3` y `--config /ruta/harness-local.toml`
-(composición local-config-1; sin ella la API gestionada solo lee). Abrir
+(composición `local-config-2` o `local-config-1`; sin ella la API gestionada solo lee). Abrir
 `http://127.0.0.1:5173` y pegar la clave. Los puertos son fijos; si están
 ocupados, el comando no arranca. Sin Celery ni Docker obligatorio.
 
@@ -279,7 +279,8 @@ fases usa `close-phase` desde H3.3. [Contrato, pruebas y límites](docs/discover
 H3.2 incorpora solicitudes de permisos por categoría con caducidad, huella y
 auditoría en la UI gestionada. Conceder no lanza trabajo: se aplica al siguiente
 intento explícito dentro de la autoridad congelada del servidor. Revalidar no
-repite el ejecutor, tampoco ante REVISE. El adaptador actual es `cli-4`; el éxito
+repite el ejecutor, tampoco ante REVISE. El adaptador actual es `cli-5` (D052: revisor y
+ejecutor Codex o Claude, [entrega](docs/discovery/AGENT_ROLES.md)); el éxito
 del smoke D025 sigue siendo evidencia histórica de `cli-3`, sin autorizar consumo
 nuevo. Alcance y configuración en [H3.2](docs/discovery/H3.2_PERMISSIONS.md).
 

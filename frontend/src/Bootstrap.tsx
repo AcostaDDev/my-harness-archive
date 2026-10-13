@@ -56,9 +56,9 @@ export function Bootstrap({ project, busy, refresh, operate, send }: {
           <textarea rows={2} maxLength={4000} value={input.decisions[key]} onChange={e => edit({ ...data, decisions: { ...data.decisions, [key]: e.target.value } })} /></label>)}
       </fieldset>
       {!op && <>
-        <p>Propuesta opcional de solo lectura: Codex {status.discovery_selection.model} / {status.discovery_selection.effort}.</p>
+        <p>Propuesta opcional de solo lectura del revisor{status.discovery_selection.provider ? ` (${status.discovery_selection.provider})` : ""}: {status.discovery_selection.model} / {status.discovery_selection.effort}.</p>
         <button disabled={busy || discoveryPending || !status.discovery_available || !Object.values(input.brief).every(v => v.trim())}
-          onClick={() => void operate(() => send(jobRequest(`/projects/${project}/bootstrap/discovery`, { brief: input.brief, confirmed: true })))}>Solicitar propuesta Codex</button>
+          onClick={() => void operate(() => send(jobRequest(`/projects/${project}/bootstrap/discovery`, { brief: input.brief, confirmed: true })))}>Solicitar propuesta del revisor</button>
         {discovery && <><p role="status">Propuesta: {discovery.outcome ? String(discovery.outcome.status) : discovery.run_status}.</p>
           {discovery.outcome?.reason && <p className="error">{discovery.outcome.reason}</p>}
           {discovery.outcome?.result && <><p>{discovery.outcome.result.summary}</p>

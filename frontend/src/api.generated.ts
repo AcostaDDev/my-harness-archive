@@ -1810,6 +1810,25 @@ export interface components {
              */
             truncated: boolean;
         };
+        /**
+         * ExecutorAgentRead
+         * @description Único escritor; el revisor fija su modelo y esfuerzo en cada tarea y revisión.
+         */
+        ExecutorAgentRead: {
+            /** Provider */
+            provider: string | null;
+            /**
+             * Selection Mode
+             * @enum {string}
+             */
+            selection_mode: "catalog" | "open";
+            /** Models */
+            models: string[];
+            /** Efforts */
+            efforts: string[];
+            /** Effort Vocabulary */
+            effort_vocabulary: string[];
+        };
         /** FieldRead */
         FieldRead: {
             /**
@@ -2203,6 +2222,7 @@ export interface components {
              * @enum {string}
              */
             tag_kind: "lightweight" | "annotated";
+            agents: components["schemas"]["ProjectAgentsRead"];
         };
         /** ManagedRunRead */
         ManagedRunRead: {
@@ -2894,6 +2914,17 @@ export interface components {
         ProblemResponse: {
             detail: components["schemas"]["ProblemRead"];
         };
+        /** ProjectAgentsRead */
+        ProjectAgentsRead: {
+            /**
+             * Planning Mode
+             * @enum {string}
+             */
+            planning_mode: "auto" | "agent" | "deterministic";
+            reviewer: components["schemas"]["ReviewerAgentRead"];
+            planner: components["schemas"]["SelectionRead"];
+            executor: components["schemas"]["ExecutorAgentRead"];
+        };
         /** PromptActivateCreate */
         PromptActivateCreate: {
             /** Expected Version */
@@ -2992,6 +3023,18 @@ export interface components {
             /** Origin */
             origin: string;
         };
+        /**
+         * ReviewerAgentRead
+         * @description D052: el revisor planifica, revisa, evalúa fases, conversa y propone el bootstrap (solo lectura).
+         */
+        ReviewerAgentRead: {
+            /** Provider */
+            provider: string | null;
+            /** Model */
+            model: string;
+            /** Effort */
+            effort: string;
+        };
         /** RunActionCreate */
         RunActionCreate: {
             /**
@@ -3010,6 +3053,13 @@ export interface components {
             phase_id: string;
             /** Text */
             text: string;
+        };
+        /** SelectionRead */
+        SelectionRead: {
+            /** Model */
+            model: string;
+            /** Effort */
+            effort: string;
         };
         /** SessionRead */
         SessionRead: {

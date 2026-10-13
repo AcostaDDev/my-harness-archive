@@ -1,9 +1,10 @@
-# Harness Local — configuración de uso real (local-config-1). Plantilla, no válida tal cual.
+# Harness Local — configuración de uso real (local-config-2, D052). Plantilla, no válida tal cual.
 # Guardar FUERA de cualquier checkout, propietario el usuario del servicio, chmod 600.
 # Sin secretos: la autenticación sigue en cada CLI. Rutas absolutas canónicas.
+# local-config-1 ([providers.codex]/[providers.claude]) se sigue leyendo como revisor Codex + ejecutor Claude.
 # Validar:  harness-local check-config /ruta/harness-local.toml [--preflight]
 # Arrancar: harness-local serve --database /ruta/state/harness.sqlite3 --config /ruta/harness-local.toml
-format = "local-config-1"
+format = "local-config-2"
 
 [service]
 state_dir = "/RUTA/ABSOLUTA/harness-state"   # artefactos CLI y migraciones; fuera de los checkouts
@@ -16,37 +17,38 @@ executable = "/usr/bin/git"
 author_name = "Nombre Autor"
 author_email = "autor@example.invalid"
 
-[providers.codex]                             # planificador/revisor, solo lectura
+[agents.reviewer]                             # planifica, revisa, evalúa fases, chat y bootstrap; solo lectura
+provider = "codex"                            # "codex" o "claude"
+model = "MODELO-REVISOR"                      # el usuario fija modelo y esfuerzo del revisor
+effort = "high"                               # vocabulario del proveedor (codex: minimal…ultra; claude: low…max)
 executable = ["/RUTA/ABSOLUTA/codex"]
 cli_version = "0.162.1"                       # baseline caracterizado; otra versión se rechaza
 timeout_seconds = 1800
 environment = { HOME = "/Users/USUARIO", USER = "USUARIO", PATH = "/usr/bin:/bin", LANG = "C.UTF-8" }
 
-[providers.claude]                            # ejecutor
+[agents.executor]                             # único escritor; el revisor fija su modelo y esfuerzo
+provider = "claude"                           # "claude" o "codex" (Codex: workspace-write sin red, 0.162.1)
 executable = ["/RUTA/ABSOLUTA/claude"]
-cli_version = "2.1.295"
+cli_version = "2.1.296"                       # 2.1.295 o 2.1.296
 timeout_seconds = 3600
 environment = { HOME = "/Users/USUARIO", USER = "USUARIO", PATH = "/usr/bin:/bin", LANG = "C.UTF-8" }
-tools = ["Read", "Edit", "Write", "Glob", "Grep"]
-allowed_tools = ["Read", "Edit", "Write", "Glob", "Grep"]
-# grantable_tools = []                        # herramientas concedibles por H3.2
+tools = ["Read", "Edit", "Write", "Glob", "Grep"]            # solo Claude
+allowed_tools = ["Read", "Edit", "Write", "Glob", "Grep"]    # solo Claude
+# grantable_tools = []                        # solo Claude: herramientas concedibles por H3.2
 
 [[projects]]
 id = "mi-web"
 root = "/RUTA/ABSOLUTA/checkout-desechable"   # worktree/checkout Git; mejor desechable al empezar
 repository_trusted = true                     # confianza en scripts/configuración del repositorio
-profile = "typescript-web"                    # único perfil admitido en local-config-1
+profile = "typescript-web"                    # único perfil admitido
 # tag_kind = "lightweight"                    # o "annotated"
 
 [projects.policy]                             # elección explícita del usuario; sin valores por defecto
-executor_models = ["MODELO-CLAUDE"]
-executor_efforts = ["medium"]
-planner_model = "MODELO-CODEX"
-planner_effort = "medium"
-reviewer_model = "MODELO-CODEX"
-reviewer_effort = "high"
+planning_mode = "agent"                       # "agent": el revisor planifica; "deterministic": contrato de NEXT_STEPS
+executor_mode = "catalog"                     # "catalog": solo este catálogo; "open": cualquier modelo de la CLI
+executor_models = ["MODELO-EJECUTOR"]         # en "open", selección de referencia (contratos del servidor)
+executor_efforts = ["medium"]                 # dentro del vocabulario del proveedor ejecutor
 # max_revision_cycles = 3
-# planning_mode = "auto"
 
 [projects.commands]                           # ManagedCommandRunner (D047): argv sin shell, sin herencia
 authorize_profile_commands = true             # autoriza exactamente preparación y validaciones del perfil

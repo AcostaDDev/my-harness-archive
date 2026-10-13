@@ -46,6 +46,18 @@ class ManagedProject:
     bootstrap_enabled: bool = False
 
 
+def agents_view(project: ManagedProject) -> dict:
+    """D052: provider, model and effort of each agent; provider None outside a cli-5 composition."""
+    policy, versions = project.context.policy, project.versions
+    return {'planning_mode': policy.planning_mode,
+            'reviewer': {'provider': versions.get('reviewer_provider'), 'model': policy.reviewer_model,
+                         'effort': policy.reviewer_effort},
+            'planner': {'model': policy.planner_model, 'effort': policy.planner_effort},
+            'executor': {'provider': versions.get('executor_provider'), 'selection_mode': policy.executor_mode,
+                         'models': list(policy.executor_models), 'efforts': list(policy.executor_efforts),
+                         'effort_vocabulary': list(policy.executor_effort_vocabulary)}}
+
+
 @dataclass(frozen=True)
 class ManagedConfig:
     """`ports_factory(context, versions)` y `commit_factory(context, versions)` como en `LocalSupervisor`.

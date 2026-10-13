@@ -492,9 +492,10 @@ offline con selecciones del usuario (D050, [propuesta](discovery/FIRST_USE_PROPO
 ejecutada una vez con autorización y completa: COMMITTED, fase CLOSED y tag
 ([resultado](discovery/FIRST_USE_RUN.md)); operación desde el wheel instalado (D051).
 Comando único de desarrollo `scripts/dev` implementado (D053, [entrega](discovery/DEV_COMMAND.md)).
-Decidido y no implementado: revisor/ejecutor con proveedor elegido (D052,
-[alcance](discovery/AGENT_ROLES_SCOPE.md)). Siguiente: implementar D052 offline; después,
-hito de interfaz de producto con alta de proyectos en SQLite (D054); no iniciados.
+Revisor/ejecutor con proveedor elegido implementado y verificado offline (D052,
+`cli-5`/`local-config-2`, [entrega](discovery/AGENT_ROLES.md)); smoke con
+proveedores pendiente de propuesta y autorización. Después, hito de interfaz de
+producto con alta de proyectos en SQLite (D054); no iniciado.
 QA visual H5.7 bloqueada por herramienta; sin proveedores nuevos.
 
 ## Verificación de H0.1
@@ -1824,6 +1825,41 @@ QA visual H5.7 bloqueada por herramienta; sin proveedores nuevos.
   La interpretación de streams ya es por proveedor, no por rol.
 - [Alcance](discovery/AGENT_ROLES_SCOPE.md) `cli-5`/`local-config-2`; sin
   código. Commit por bloque solicitado por el usuario.
+
+## Implementación de agentes revisor y ejecutor (D052, H6.1)
+
+- Caracterización por version/help, sin consumo:
+  - Codex 0.162.1 tiene `workspace-write` y la clave
+    `sandbox_workspace_write.network_access`. Sus eventos `item.*`/`file_change`
+    y los esfuerzos `minimal`…`ultra` salen de las cadenas del binario.
+  - La ayuda de Claude 2.1.295 y 2.1.296 es idéntica (`--json-schema`,
+    `--restricted`, esfuerzos `low`…`max`), así que entra 2.1.296.
+- `cli-5`:
+  - Agentes `reviewer`/`executor` con cualquier proveedor.
+  - argv por (proveedor, acceso): Codex escritor en `workspace-write` sin red;
+    Claude lector con `Read,Glob,Grep`, `--restricted` y `--json-schema`.
+  - Vocabulario de esfuerzo por proveedor.
+  - Concesiones H3.2 por proveedor: Codex rechaza las de herramientas.
+  - Reparto incluido en las versiones congeladas y preflight por agente y acceso.
+- `EnginePolicy` gana `executor_mode` (`catalog` | `open`) y el vocabulario del
+  ejecutor. Se omiten del snapshot cuando tienen su valor por defecto, así que
+  los snapshots anteriores conservan su forma.
+- `local-config-2`:
+  - `[agents.reviewer]` con proveedor, modelo y esfuerzo fijados por el usuario;
+    `[agents.executor]` con su proveedor.
+  - `planning_mode` (`agent` | `deterministic`) y `executor_mode` explícitos.
+  - El revisor planifica con su propia selección.
+  - `local-config-1` se sigue leyendo como Codex + Claude.
+- API/UI: `agents` en `ManagedProjectRead`, la línea de agentes en el listado de
+  proyectos y el proveedor del revisor en el bootstrap. Textos neutros.
+- 32 casos nuevos: `test_agent_roles.py` (31, con la matriz de cuatro
+  combinaciones por el adaptador real) y uno en `test_permissions.py`. Pruebas
+  existentes adaptadas al reparto por agente.
+- **Regresión: 889 pytest y 121 subtests, 12 checks ligeros, 6 Node, `tsc`,
+  build de Vite y `alembic check`**; OpenAPI y tipos regenerados. Esquema
+  `0013_bootstrap`, codec 7 y locks sin cambios.
+- Sin proveedores, red, QA visual, push, configuración global ni ReferenceProject.
+  Commit solicitado por el usuario.
 
 ## Plan de interfaz de producto (D054)
 

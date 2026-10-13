@@ -1,6 +1,7 @@
 # Agentes revisor y ejecutor con proveedor elegido por el usuario — alcance
 
-Escrito el 2026-10-13 antes de cualquier código. D052. **No implementado.**
+Escrito el 2026-10-13 antes de cualquier código. D052. **Implementado y verificado offline
+el mismo día**: ver [entrega](AGENT_ROLES.md).
 Sustituye la asignación fija de la especificación (§1 «Codex planifica… Claude
 Code ejecuta… Codex revisa», F05 y la tabla de prompts): contradicción material
 señalada y resuelta por el usuario.

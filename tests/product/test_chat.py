@@ -343,13 +343,15 @@ def test_catalogs_frozen_before_the_chat_template_remain_loadable():
         dump_catalog({name: item for name, item in old.items() if name != 'close-phase'})
 
 
-def test_cli_codex_handles_chat_role_read_only(tmp_path):
+def test_cli_reviewer_handles_chat_role_read_only_with_either_provider(tmp_path):
     context = make_context(tmp_path)
     request = AgentRequest('00000000-0000-4000-8000-000000000002', 'chat', Selection('m', 'low', 'r'), 'p', None, '{}')
     argv = argv_for(CLIConfig('codex', ('/synthetic/codex',), '0.162.1', (), 1), context, request)
     assert argv[argv.index('--sandbox') + 1] == 'read-only' and '--ephemeral' in argv
-    with pytest.raises(ValueError):
-        argv_for(CLIConfig('claude', ('/synthetic/claude',), '2.1.295', (), 1), context, request)
+    # D052: a Claude reviewer chats with the fixed read-only inventory and a JSON schema.
+    argv = argv_for(CLIConfig('claude', ('/synthetic/claude',), '2.1.295', (), 1), context, request)
+    assert argv[argv.index('--tools') + 1] == 'Read,Glob,Grep' and '--restricted' in argv
+    assert json.loads(argv[argv.index('--json-schema') + 1]) == {'type': 'object', 'required': ['answer']}
 
 
 def test_migration_roundtrip_and_downgrade_refused_with_chat_runs(migrated_database, world, chat):

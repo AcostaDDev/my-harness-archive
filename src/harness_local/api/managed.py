@@ -24,7 +24,7 @@ from harness_local.api.schemas import (
 )
 from harness_local.api.security import local_request, problem
 from harness_local.core.migration import MigrationError
-from harness_local.services.managed_runtime import ManagedRuntime
+from harness_local.services.managed_runtime import ManagedRuntime, agents_view
 from harness_local.storage.managed import Conflict, OwnershipLost
 from harness_local.storage.migration import ModeConflict
 
@@ -67,7 +67,7 @@ def managed_router(runtime: ManagedRuntime):
 
     def project_read(project):
         return {"id": project.id, "root": str(project.context.root), "profile": project.context.profile.name,
-                "versions": dict(project.versions), "tag_kind": project.tag_kind}
+                "versions": dict(project.versions), "tag_kind": project.tag_kind, "agents": agents_view(project)}
 
     def project(project_id: str):
         return call(runtime.project, project_id)
@@ -191,7 +191,9 @@ def managed_router(runtime: ManagedRuntime):
                 'discovery': call(DiscoveryRepository(runtime.repository).latest, item.context.root),
                 'discovery_available': item.bootstrap_enabled and runtime.config.ports_factory is not None,
                 'discovery_selection': {'model': item.context.policy.planner_model,
-                                        'effort': item.context.policy.planner_effort}}
+                                        'effort': item.context.policy.planner_effort,
+                                        **({'provider': item.versions['reviewer_provider']}
+                                           if item.versions.get('reviewer_provider') else {})}}
 
     from harness_local.storage.bootstrap_discovery import DiscoveryRepository
 

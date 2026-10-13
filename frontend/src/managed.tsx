@@ -38,7 +38,8 @@ export function ManagedBrowser() {
       Puertos: {supervisor?.ports_configured ? "configurados" : "no configurados"} · Git: {supervisor?.commit_writer_configured ? "configurado" : "no configurado"}</p>
     {supervisor?.last_error && <p className="error">Último diagnóstico del supervisor: {supervisor.last_error}</p>}
     <ul className="legacy-list">{projects.map(p => <li key={p.id}><button className="choice" aria-pressed={project === p.id} onClick={() => setProject(p.id)}>
-      <strong>{p.id}</strong><small>{p.root}</small><small>Perfil: {p.profile}</small></button></li>)}</ul>
+      <strong>{p.id}</strong><small>{p.root}</small><small>Perfil: {p.profile}</small>
+      <AgentsSummary agents={p.agents} /></button></li>)}</ul>
     {!projects.length && !error && <p>No hay proyectos registrados. Configura los proyectos en el servidor local.</p>}
     {project && <Project key={project} id={project} />}
   </section>;
@@ -215,4 +216,21 @@ function Run({ id, refresh, busy, operate, send }: { id: string; refresh: number
     <h3>Eventos confirmados ({events.length})</h3>
     <ol>{events.map(e => <li key={e.sequence}><strong>{e.sequence} · {e.kind}</strong><time>{e.recorded_at}</time><Evidence title="Evidencia del evento" value={e.payload} /></li>)}</ol>
   </section>;
+}
+
+
+const SELECTION_MODES = { catalog: "catálogo", open: "libre" } as const;
+const PLANNING_MODES = { auto: "automática", agent: "por el revisor", deterministic: "determinista" } as const;
+
+/** D052: proveedor, modelo y esfuerzo de cada agente; sin proveedor fuera de una composición cli-5. */
+function AgentsSummary({ agents }: { agents: S["ProjectAgentsRead"] }) {
+  const { reviewer, planner, executor } = agents;
+  const provider = (value: string | null) => value ?? "proveedor no declarado";
+  const separatePlanner = planner.model !== reviewer.model || planner.effort !== reviewer.effort;
+  return <>
+    <small>Revisor: {provider(reviewer.provider)} · {reviewer.model} / {reviewer.effort}</small>
+    {separatePlanner && <small>Planificación del revisor: {planner.model} / {planner.effort}</small>}
+    <small>Ejecutor: {provider(executor.provider)} · selección {SELECTION_MODES[executor.selection_mode]} ({executor.selection_mode === "open" ? "referencia " : ""}{executor.models.join(", ")} / {executor.efforts.join(", ")})</small>
+    <small>Planificación: {PLANNING_MODES[agents.planning_mode]}</small>
+  </>;
 }

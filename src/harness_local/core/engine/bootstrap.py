@@ -5,6 +5,7 @@ from importlib.resources import files
 import json
 from pathlib import PurePosixPath
 
+from harness_local.core.engine.context import policy_payload
 from harness_local.core.engine.contracts import context_snapshot
 from harness_local.core.engine.evidence import ContentEvidence, check_paths
 from harness_local.core.engine.phases import phase_definition
@@ -63,7 +64,7 @@ def proposal(context, data):
         'docs/BRIEF.md': '# Brief aceptado\n\n' + fenced(data['brief']),
         'docs/DECISIONS.md': '# Decisiones aceptadas\n\n' + fenced(data['decisions']),
         'docs/PROJECT_PROFILE.md': '# Perfil y política del servidor\n\n' + fenced({
-            'profile': asdict(context.profile), 'policy': asdict(context.policy), 'template': tid}) +
+            'profile': asdict(context.profile), 'policy': policy_payload(context.policy), 'template': tid}) +
             '\nComandos declarados; el bootstrap no los ejecuta ni concede permisos.\n',
         context.state_file: '# Estado\n\nBase documental creada. Primera fase P001 activa; '
                             'primera tarea P001-T001 pendiente de ejecución, revisión y commit.\n',
@@ -91,7 +92,7 @@ def proposal(context, data):
             'phase': definition, 'first_task': json.loads(contract), 'task_text': plan,
             'preparation': [asdict(c) for c in context.profile.preparation],
             'validations': [asdict(c) for c in context.profile.validations],
-            'policy': asdict(context.policy), 'profile': context.profile.name}
+            'policy': policy_payload(context.policy), 'profile': context.profile.name}
 
 
 def execute(context, history, saved, git, journal):

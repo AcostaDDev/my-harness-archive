@@ -31,8 +31,9 @@ def restore_context(snapshot: str) -> ProjectContext:
     for key in ("protected_paths", "sensitive_paths", "sensitive_allowlist", "formatter_argv", "formatter_paths"):
         profile[key] = tuple(profile[key])
     policy = data["policy"]
-    for key in ("executor_models", "executor_efforts"):
-        policy[key] = tuple(policy[key])
+    for key in ("executor_models", "executor_efforts", "executor_effort_vocabulary"):
+        if key in policy:
+            policy[key] = tuple(policy[key])
     return ProjectContext(Path(data["root"]), ProjectProfile(**profile), EnginePolicy(**policy),
                           data["next_steps_file"], data["state_file"])
 

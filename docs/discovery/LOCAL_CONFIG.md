@@ -1,5 +1,9 @@
 # Composición de uso real por configuración local TOML
 
+> Actualización D052: el formato vigente es `local-config-2`, con `[agents.reviewer]`,
+> `[agents.executor]` y adaptador `cli-5`. `local-config-1` se sigue leyendo como
+> revisor Codex y ejecutor Claude. Ver [AGENT_ROLES.md](AGENT_ROLES.md).
+
 Incremento elegido por el usuario el 2026-10-13 tras D048. [Alcance previo y
 criterios](LOCAL_CONFIG_SCOPE.md). D049. Formato `local-config-1`, perfil
 `typescript-web`. Verificado offline; no se ha ejecutado ningún proveedor.

@@ -1,8 +1,11 @@
-"""Codex planner/reviewer and Claude executor, explicit opt-in CLI invocations.
+"""Reviewer and executor agents, each Codex or Claude, explicit opt-in CLI invocations (D052).
 
-No entry point enables this adapter automatically. Environment is passed as a
-complete mapping, never silently inherited. Auth stays with each installed CLI.
+The reviewer (planner, reviewer, phase, chat, bootstrap roles) is read-only;
+the executor is the only writer. No entry point enables this adapter
+automatically. Environment is passed as a complete mapping, never silently
+inherited. Auth stays with each installed CLI.
 """
+from collections.abc import Mapping
 from dataclasses import asdict, dataclass
 from datetime import datetime, timezone
 import hashlib
@@ -22,8 +25,46 @@ from harness_local.core.engine.contracts import AgentResult, freeze
 from harness_local.core.engine.journal import JournalError
 
 
-VERSION = "cli-4"
-SUPPORTED = {"codex": ("0.161.0", "0.162.1"), "claude": ("2.1.295",)}
+VERSION = "cli-5"
+# Version/help characterization (D052): Claude 2.1.295 and 2.1.296 share the same help.
+SUPPORTED = {"codex": ("0.161.0", "0.162.1"), "claude": ("2.1.295", "2.1.296")}
+# Codex workspace-write was characterized on 0.162.1 only.
+WRITE_SUPPORTED = {"codex": ("0.162.1",), "claude": SUPPORTED["claude"]}
+# Claude: --help. Codex 0.162.1: reasoning-effort variants in the binary (help lists none).
+EFFORTS = {"codex": ("minimal", "low", "medium", "high", "xhigh", "max", "ultra"),
+           "claude": ("low", "medium", "high", "xhigh", "max")}
+# H3.2 grant kinds each provider can enforce before launch; anything else is refused.
+GRANTS = {"codex": (), "claude": ("tools",)}
+AGENTS = ("reviewer", "executor")
+ROLES = {"executor": "executor", "planner": "reviewer", "reviewer": "reviewer", "phase": "reviewer",
+         "chat": "reviewer", "bootstrap": "reviewer"}
+READ_TOOLS = ("Read", "Glob", "Grep")
+SHAPES = {
+    "bootstrap": {"summary": "proposal summary", "requirements": ["proposed requirement"],
+        "alternatives": ["architecture alternative and tradeoffs"], "pending_decisions": ["user decision needed"]},
+    "planner": {"task_id": "requested task id", "phase_id": "requested phase id",
+        "title": "title", "objective": "objective", "executor_prompt": "instructions",
+        "allowed_paths": [], "forbidden_paths": [], "acceptance_criteria": ["criterion"],
+        "validation_commands": [], "executor_selection": {"model": "allowed model",
+            "effort": "allowed effort", "reason": "selection reason"}},
+    "reviewer": {"task_id": "requested task id", "verdict": "ACCEPT or REVISE or BLOCKED",
+        "findings": [], "blocking_questions": [], "scope_grants": [],
+        "next_prompt": "required for REVISE", "executor_selection": {"model": "allowed model",
+            "effort": "allowed effort", "reason": "required for REVISE"}},
+    "executor": {"result": "implementation summary"},
+    # H3.3, aditivo: la evaluación de fase usa el mismo transporte de solo lectura del revisor.
+    "phase": {"phase_id": "requested phase id", "verdict": "READY or REVISE or BLOCKED", "summary": "summary",
+        "exit_criteria_results": [{"criterion": "frozen criterion", "passed": True, "evidence": "evidence"}],
+        "required_actions": [], "blocking_questions": []},
+    # H4.1, aditivo: turno de chat de solo lectura con propuestas estructuradas que no ejecutan nada.
+    "chat": {"answer": "answer", "references": ["path or run id"], "proposals": [{"title": "title",
+        "objective": "objective", "scope": "scope in words", "acceptance_criteria": ["criterion"],
+        "validation": ["validation"], "rationale": "rationale"}]},
+}
+# Claude --json-schema for read-only roles: only the identity of each result; the
+# engine contracts keep validating the full shape.
+REQUIRED = {"bootstrap": ("summary",), "planner": tuple(SHAPES["planner"]), "reviewer": ("task_id", "verdict"),
+            "phase": ("phase_id", "verdict"), "chat": ("answer",)}
 
 
 @dataclass(frozen=True)
@@ -54,11 +95,21 @@ class CLIConfig:
         for tool in self.tools + self.allowed_tools + self.grantable_tools:
             if not tool or tool.startswith("-") or "\0" in tool:
                 raise ValueError("Invalid explicit tool permission")
+        if self.provider == "codex" and (self.tools or self.allowed_tools or self.grantable_tools):
+            raise ValueError("Codex has no explicit tool inventory; tool lists are Claude-only")
+
+
+def access_for(role):
+    """Read for every reviewer role, write only for the executor."""
+    if role not in ROLES:
+        raise ValueError("Unknown agent role")
+    return "write" if role == "executor" else "read"
 
 
 def argv_for(config, context, request):
     if not request.fresh_session or request.context_json is None:
         raise ValueError("Fresh frozen request required")
+    access = access_for(request.role)
     from harness_local.core.engine.permissions import snapshot_payload
     permissions = snapshot_payload(request)
     if permissions.get('denials'):
@@ -73,44 +124,73 @@ def argv_for(config, context, request):
             raise ValueError('This CLI cannot enforce scoped network grants')
         if scope['kind'] == 'tools':
             rule = scope['target']
-            if (config.provider != 'claude' or request.role != 'executor'
-                    or rule not in config.grantable_tools or rule.split('(', 1)[0] not in config.tools):
+            if 'tools' not in GRANTS[config.provider]:
+                raise ValueError(f'{config.provider} cannot enforce scoped tool grants; launch refused')
+            if (access != 'write' or rule not in config.grantable_tools
+                    or rule.split('(', 1)[0] not in config.tools):
                 raise ValueError('Tool grant exceeds explicit CLI capabilities/configuration')
             extra_tools.append(rule)
-    # Tools declared grantable are absent from the inventory until this attempt
-    # has an explicit matching baseline rule or a persisted grant.
-    gated = {rule.split('(', 1)[0] for rule in config.grantable_tools}
-    enabled = {rule.split('(', 1)[0] for rule in tuple(config.allowed_tools) + tuple(extra_tools)}
-    tools = tuple(tool for tool in config.tools if tool not in gated or tool in enabled)
     model, effort = request.selection.model, request.selection.effort
     if not model or model.startswith("-") or not effort or effort.startswith("-"):
         raise ValueError("Explicit model/effort required")
+    if effort not in EFFORTS[config.provider]:
+        raise ValueError(f"Effort outside the {config.provider} CLI vocabulary")
     if config.provider == "codex":
-        if request.role not in {"planner", "reviewer", "phase", "chat", "bootstrap"}:
-            raise ValueError("Codex handles planner/reviewer/phase review/chat/bootstrap only")
+        if access == "write" and config.cli_version not in WRITE_SUPPORTED["codex"]:
+            raise ValueError("Codex workspace-write is characterized on 0.162.1 only")
+        # Writer: workspace sandbox without network; reader: read-only sandbox.
+        sandbox = ("workspace-write", "-c", "sandbox_workspace_write.network_access=false") \
+            if access == "write" else ("read-only",)
         return config.executable + (
             "exec", "--strict-config", "--ignore-user-config", "--ignore-rules", "--ephemeral", "--json",
-            "--model", model, "--sandbox", "read-only", "--color", "never",
+            "--model", model, "--sandbox", *sandbox, "--color", "never",
             "-c", 'approval_policy="never"', "-c", f"model_reasoning_effort={json.dumps(effort)}",
             # Built-in provider IDs are reserved; nested retry overrides are rejected.
             "-c", 'model_provider="openai"', "-c", 'web_search="disabled"',
             "--cd", str(context.root), "-")
-    if request.role != "executor" or effort not in {"low", "medium", "high", "xhigh", "max"}:
-        raise ValueError("Unsupported Claude role/effort")
+    if access == "read":
+        tools = allowed = READ_TOOLS
+        # Read-only reviewer: file tools confined to the checkout, structured result.
+        tail = ("--restricted", "--json-schema", freeze({"type": "object", "required": list(REQUIRED[request.role])}))
+    else:
+        # Tools declared grantable are absent from the inventory until this attempt
+        # has an explicit matching baseline rule or a persisted grant.
+        gated = {rule.split('(', 1)[0] for rule in config.grantable_tools}
+        enabled = {rule.split('(', 1)[0] for rule in tuple(config.allowed_tools) + tuple(extra_tools)}
+        tools = tuple(tool for tool in config.tools if tool not in gated or tool in enabled)
+        allowed = tuple(dict.fromkeys(tuple(config.allowed_tools) + tuple(extra_tools)))
+        tail = ()
     return config.executable + (
         "--print", "--output-format", "stream-json", "--verbose", "--include-partial-messages",
         "--no-session-persistence", "--session-id", request.id, "--model", model, "--effort", effort,
         "--permission-mode", "dontAsk", "--permission-prompts", "none", "--tools", ",".join(tools),
-        "--allowedTools", ",".join(dict.fromkeys(tuple(config.allowed_tools) + tuple(extra_tools))), "--strict-mcp-config", "--mcp-config", '{"mcpServers":{}}',
+        "--allowedTools", ",".join(allowed), "--strict-mcp-config", "--mcp-config", '{"mcpServers":{}}',
         "--setting-sources", "", "--settings", '{"disableAllHooks":true}',
-        "--disable-slash-commands", "--no-chrome")
+        "--disable-slash-commands", "--no-chrome") + tail
 
 
 class CLIProcessAdapter:
-    def __init__(self, configs, artifact_root):
-        self.configs = {config.provider: config for config in configs}
-        if set(self.configs) != {"codex", "claude"}:
-            raise ValueError("Both providers must be explicitly configured")
+    """`agents`: {"reviewer": CLIConfig, "executor": CLIConfig}, any provider pairing.
+
+    A two-provider sequence keeps the `local-config-1`/`cli-4` reading: Codex
+    reviewer and Claude executor.
+    """
+
+    def __init__(self, agents, artifact_root):
+        if not isinstance(agents, Mapping):
+            agents = tuple(agents)
+            configs = {config.provider: config for config in agents}
+            if len(configs) != len(agents) or set(configs) != {"codex", "claude"}:
+                raise ValueError("Both providers must be explicitly configured")
+            agents = {"reviewer": configs["codex"], "executor": configs["claude"]}
+        if set(agents) != set(AGENTS) or not all(isinstance(item, CLIConfig) for item in agents.values()):
+            raise ValueError("Reviewer and executor agents must be explicitly configured")
+        if agents["reviewer"].tools or agents["reviewer"].allowed_tools or agents["reviewer"].grantable_tools:
+            raise ValueError("The read-only reviewer has a fixed tool inventory")
+        executor = agents["executor"]
+        if executor.cli_version not in WRITE_SUPPORTED[executor.provider]:
+            raise ValueError("Executor CLI write access is not characterized for this version")
+        self.agents = dict(agents)
         self.artifact_root = Path(artifact_root).absolute()
         self.journal = None
         self.availability = None
@@ -118,21 +198,27 @@ class CLIProcessAdapter:
         self.lock = Lock()
 
     def frozen_versions(self):
-        return {"agent_adapter": VERSION, "codex_cli": self.configs["codex"].cli_version,
-                "claude_cli": self.configs["claude"].cli_version,
-                "cli_config_sha256": hashlib.sha256(freeze({"configs": {key: asdict(value)
-                    for key, value in self.configs.items()}, "artifact_root": str(self.artifact_root)}).encode()).hexdigest()}
+        # The agent → provider assignment is part of the frozen identity.
+        return {"agent_adapter": VERSION,
+                **{f"{agent}_{key}": value for agent, config in self.agents.items()
+                   for key, value in (("provider", config.provider), ("cli", config.cli_version))},
+                "cli_config_sha256": hashlib.sha256(freeze({"agents": {key: asdict(value)
+                    for key, value in self.agents.items()}, "artifact_root": str(self.artifact_root)}).encode()).hexdigest()}
 
     def capabilities(self):
         return {"version": VERSION, "streaming": True, "cancellation": "posix-process-group",
                 "fresh_sessions": True, "interactive_approvals": False,
                 "observed_metadata": "only-if-reported", "automatic_retry": False,
+                "agents": {agent: {"provider": config.provider, "access": access_for(agent),
+                                   "grants": list(GRANTS[config.provider]) if agent == "executor" else []}
+                           for agent, config in self.agents.items()},
                 "cli_internal_retries": {"codex": "built-in-defaults/unknown", "claude": "not-controllable/unknown"}}
 
     def preflight(self):
-        """Read-only version/help, no login/status, provider or auth extraction."""
+        """Read-only version/help per agent, no login/status, provider or auth extraction."""
         from harness_local.adapters.cli_diagnostics import preflight_config
-        return {provider: preflight_config(config) for provider, config in self.configs.items()}
+        return {agent: preflight_config(config, access=access_for(agent))
+                for agent, config in self.agents.items()}
 
     def bind_process_journal(self, journal):
         if self.journal is not None:
@@ -162,7 +248,10 @@ class CLIProcessAdapter:
     def invoke(self, context, request):
         if self.journal is None:
             raise JournalError("CLI execution requires a managed process journal")
-        config = self.configs["claude" if request.role == "executor" else "codex"]
+        agent = ROLES.get(request.role)
+        if agent is None:
+            raise ValueError("Unknown agent role")
+        config = self.agents[agent]
         argv = argv_for(config, context, request)
         if self.artifact_root.is_relative_to(context.root) or self.artifact_root.resolve() != self.artifact_root:
             raise ValueError("Artifacts must be outside checkout without symlinks")
@@ -172,32 +261,18 @@ class CLIProcessAdapter:
         from uuid import UUID
         UUID(request.id)
         directory.mkdir(mode=0o700)
-        shapes = {
-            "bootstrap": {"summary": "proposal summary", "requirements": ["proposed requirement"],
-                "alternatives": ["architecture alternative and tradeoffs"], "pending_decisions": ["user decision needed"]},
-            "planner": {"task_id": "requested task id", "phase_id": "requested phase id",
-                "title": "title", "objective": "objective", "executor_prompt": "instructions",
-                "allowed_paths": [], "forbidden_paths": [], "acceptance_criteria": ["criterion"],
-                "validation_commands": [], "executor_selection": {"model": "allowed model",
-                    "effort": "allowed effort", "reason": "selection reason"}},
-            "reviewer": {"task_id": "requested task id", "verdict": "ACCEPT or REVISE or BLOCKED",
-                "findings": [], "blocking_questions": [], "scope_grants": [],
-                "next_prompt": "required for REVISE", "executor_selection": {"model": "allowed model",
-                    "effort": "allowed effort", "reason": "required for REVISE"}},
-            "executor": {"result": "implementation summary"},
-            # H3.3, aditivo: la evaluación de fase usa el mismo transporte Codex de solo lectura.
-            "phase": {"phase_id": "requested phase id", "verdict": "READY or REVISE or BLOCKED", "summary": "summary",
-                "exit_criteria_results": [{"criterion": "frozen criterion", "passed": True, "evidence": "evidence"}],
-                "required_actions": [], "blocking_questions": []},
-            # H4.1, aditivo: turno de chat de solo lectura con propuestas estructuradas que no ejecutan nada.
-            "chat": {"answer": "answer", "references": ["path or run id"], "proposals": [{"title": "title",
-                "objective": "objective", "scope": "scope in words", "acceptance_criteria": ["criterion"],
-                "validation": ["validation"], "rationale": "rationale"}]},
-        }
-        prompt = request.prompt + "\n\nReturn exactly one JSON object, without Markdown fences. Shape:\n" + freeze(shapes[request.role])
+        prompt = request.prompt + "\n\nReturn exactly one JSON object, without Markdown fences. Shape:\n" + freeze(SHAPES[request.role])
         if request.role in {"planner", "reviewer"}:
-            prompt += "\nAllowed executor selection policy:\n" + freeze({
-                "models": context.policy.executor_models, "efforts": context.policy.executor_efforts})
+            policy = context.policy
+            if policy.executor_mode == "open":
+                prompt += "\nExecutor selection policy (open):\n" + freeze({
+                    "provider": self.agents["executor"].provider,
+                    "models": "any model accepted by the executor CLI",
+                    "efforts": policy.executor_effort_vocabulary,
+                    "reference": {"models": policy.executor_models, "efforts": policy.executor_efforts}})
+            else:
+                prompt += "\nAllowed executor selection policy:\n" + freeze({
+                    "models": policy.executor_models, "efforts": policy.executor_efforts})
         prompt_bytes = prompt.encode("utf-8")
         prompt_path = directory / "prompt.txt"
         with prompt_path.open("xb") as file:
@@ -210,7 +285,7 @@ class CLIProcessAdapter:
                 "timeout_seconds": config.timeout_seconds, "cli_version": config.cli_version,
                 "adapter_version": VERSION, "provider": config.provider,
                 "cli_internal_retries": self.capabilities()["cli_internal_retries"][config.provider],
-                "preflight_observed": self.availability[config.provider], "artifacts": str(directory),
+                "preflight_observed": self.availability[agent], "artifacts": str(directory), "agent": agent,
                 "requested": {"model": request.selection.model, "effort": request.selection.effort,
                               "fresh_session": True}}
         self.journal.process_intent(request.id, spec)

@@ -149,6 +149,8 @@ Añadido el 2026-10-13 por decisión del usuario (D052, D054). Orden: H6.1 antes
 
 ### H6.1 Revisor y ejecutor con proveedor elegible (D052)
 
+Completado offline el 2026-10-13 (`cli-5`, `local-config-2`); smoke con proveedores pendiente de autorización.
+
 - Revisor y ejecutor Codex o Claude, en cualquier combinación. El usuario fija el revisor; el revisor fija modelo y esfuerzo del ejecutor (catálogo o libre).
 - Planificación `agent` | `deterministic` como ajuste por proyecto.
 - Criterio: matriz de las cuatro combinaciones verificada offline por el adaptador real, con historiales anteriores legibles.

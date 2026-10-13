@@ -2,10 +2,11 @@
 
 from dataclasses import asdict, dataclass, replace
 import json
+import re
 from typing import Protocol, TYPE_CHECKING
 from uuid import uuid4
 
-from harness_local.core.engine.context import ProjectContext, relative_path
+from harness_local.core.engine.context import ProjectContext, policy_payload, relative_path
 
 if TYPE_CHECKING:
     from harness_local.core.engine.journal import EngineJournal
@@ -15,6 +16,9 @@ if TYPE_CHECKING:
 
 def freeze(value: object) -> str:
     return json.dumps(value, ensure_ascii=False, sort_keys=True, separators=(",", ":"), allow_nan=False)
+
+
+MODEL_FORM = re.compile(r"[A-Za-z0-9][A-Za-z0-9._:@\[\]-]{0,127}")
 
 
 class ContractError(ValueError):
@@ -35,9 +39,14 @@ class Selection:
 def executor_selection(context: ProjectContext, data: object) -> Selection:
     if not isinstance(data, dict) or set(data) != {"model", "effort", "reason"}:
         raise ContractError("Executor selection requires model, effort and reason")
-    if (data["model"] not in context.policy.executor_models
-            or data["effort"] not in context.policy.executor_efforts
-            or not isinstance(data["reason"], str) or not data["reason"].strip()):
+    policy = context.policy
+    if policy.executor_mode == "open":
+        # Modo libre (D052): solo forma del modelo y vocabulario del proveedor ejecutor.
+        allowed = (isinstance(data["model"], str) and MODEL_FORM.fullmatch(data["model"]) is not None
+                   and data["effort"] in policy.executor_effort_vocabulary)
+    else:
+        allowed = data["model"] in policy.executor_models and data["effort"] in policy.executor_efforts
+    if not allowed or not isinstance(data["reason"], str) or not data["reason"].strip():
         raise ContractError("Executor selection outside explicit policy")
     return Selection(**data)
 
@@ -129,7 +138,7 @@ def context_snapshot(context: ProjectContext) -> str:
     if not profile['junit_reports']:
         profile.pop('junit_reports')  # Preserva snapshots anteriores sin reportes.
     return freeze({"root": str(context.root), "profile": profile,
-                   "policy": asdict(context.policy), "next_steps_file": context.next_steps_file,
+                   "policy": policy_payload(context.policy), "next_steps_file": context.next_steps_file,
                    "state_file": context.state_file})
 
 

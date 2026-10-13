@@ -1,6 +1,6 @@
 """H4.1: turno de chat contextual. Biblioteca estándar; la autoridad vive en SQLite.
 
-Cada turno es una invocación nueva, de solo lectura, del rol `chat` (Codex) con el contexto
+Cada turno es una invocación nueva, de solo lectura, del rol `chat` (agente revisor, Codex o Claude) con el contexto
 explícito congelado al encolarlo: proyecto, fase, documentos y evidencias seleccionadas, más los
 turnos anteriores. No hay sesión del proveedor que reanudar. La salida tiene un esquema fijo; una
 salida inválida detiene el turno sin fallback ni reintento. El turno no escribe: la evidencia del

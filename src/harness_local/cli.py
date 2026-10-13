@@ -50,7 +50,7 @@ def main(argv: list[str] | None = None) -> int:
     command.add_argument('configuration', help='JSON de una CLIConfig con entorno explícito; ejecutable de confianza')
     command = operations.add_parser('check-config', help='Validar el TOML local de uso real, sin ejecutar nada')
     command.add_argument('configuration', help='Ruta absoluta del TOML local, fuera de los checkouts')
-    command.add_argument('--preflight', action='store_true', help='Además, version/help explícitos de ambas CLI')
+    command.add_argument('--preflight', action='store_true', help='Además, version/help explícitos de la CLI de cada agente')
     for name in ('init-db', 'serve'):
         command = operations.add_parser(name, help='SQLite nueva explícita' if name == 'init-db' else 'UI/API en 127.0.0.1')
         command.add_argument('--database', required=True, help='Ruta absoluta SQLite; no usa HARNESS_DATABASE_URL')
@@ -69,12 +69,14 @@ def main(argv: list[str] | None = None) -> int:
             return 0
         if args.operation == 'check-config':
             from harness_local.services.local_config import inspect_local_config, summary
-            config, clis = inspect_local_config(args.configuration)
+            config, agents = inspect_local_config(args.configuration)
             result = summary(config)
             if args.preflight:
+                from harness_local.adapters.cli_agents import access_for
                 from harness_local.adapters.cli_diagnostics import preflight_config
-                # Mismo CLIConfig validado para todos los proyectos; solo version/help.
-                result['preflight'] = {cli.provider: preflight_config(cli) for cli in clis}
+                # Mismo CLIConfig validado por agente para todos los proyectos; solo version/help.
+                result['preflight'] = {agent: preflight_config(cli, access=access_for(agent))
+                                       for agent, cli in agents.items()}
             print(json.dumps(result, ensure_ascii=False, indent=2))
             return 0 if not args.preflight or all(r['available'] for r in result['preflight'].values()) else 1
         if args.operation == 'diagnose-cli':

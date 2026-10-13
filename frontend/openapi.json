@@ -8782,6 +8782,60 @@
         ],
         "title": "EvidenceEntryRead"
       },
+      "ExecutorAgentRead": {
+        "properties": {
+          "provider": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Provider"
+          },
+          "selection_mode": {
+            "type": "string",
+            "enum": [
+              "catalog",
+              "open"
+            ],
+            "title": "Selection Mode"
+          },
+          "models": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Models"
+          },
+          "efforts": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Efforts"
+          },
+          "effort_vocabulary": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Effort Vocabulary"
+          }
+        },
+        "type": "object",
+        "required": [
+          "provider",
+          "selection_mode",
+          "models",
+          "efforts",
+          "effort_vocabulary"
+        ],
+        "title": "ExecutorAgentRead",
+        "description": "Único escritor; el revisor fija su modelo y esfuerzo en cada tarea y revisión."
+      },
       "FieldRead": {
         "properties": {
           "state": {
@@ -9945,6 +9999,9 @@
               "annotated"
             ],
             "title": "Tag Kind"
+          },
+          "agents": {
+            "$ref": "#/components/schemas/ProjectAgentsRead"
           }
         },
         "type": "object",
@@ -9953,7 +10010,8 @@
           "root",
           "profile",
           "versions",
-          "tag_kind"
+          "tag_kind",
+          "agents"
         ],
         "title": "ManagedProjectRead"
       },
@@ -12013,6 +12071,36 @@
         ],
         "title": "ProblemResponse"
       },
+      "ProjectAgentsRead": {
+        "properties": {
+          "planning_mode": {
+            "type": "string",
+            "enum": [
+              "auto",
+              "agent",
+              "deterministic"
+            ],
+            "title": "Planning Mode"
+          },
+          "reviewer": {
+            "$ref": "#/components/schemas/ReviewerAgentRead"
+          },
+          "planner": {
+            "$ref": "#/components/schemas/SelectionRead"
+          },
+          "executor": {
+            "$ref": "#/components/schemas/ExecutorAgentRead"
+          }
+        },
+        "type": "object",
+        "required": [
+          "planning_mode",
+          "reviewer",
+          "planner",
+          "executor"
+        ],
+        "title": "ProjectAgentsRead"
+      },
       "PromptActivateCreate": {
         "properties": {
           "expected_version": {
@@ -12305,6 +12393,37 @@
         ],
         "title": "ProvenanceRead"
       },
+      "ReviewerAgentRead": {
+        "properties": {
+          "provider": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Provider"
+          },
+          "model": {
+            "type": "string",
+            "title": "Model"
+          },
+          "effort": {
+            "type": "string",
+            "title": "Effort"
+          }
+        },
+        "type": "object",
+        "required": [
+          "provider",
+          "model",
+          "effort"
+        ],
+        "title": "ReviewerAgentRead",
+        "description": "D052: el revisor planifica, revisa, evalúa fases, conversa y propone el bootstrap (solo lectura)."
+      },
       "RunActionCreate": {
         "properties": {
           "action": {
@@ -12359,6 +12478,24 @@
           "text"
         ],
         "title": "RunCreate"
+      },
+      "SelectionRead": {
+        "properties": {
+          "model": {
+            "type": "string",
+            "title": "Model"
+          },
+          "effort": {
+            "type": "string",
+            "title": "Effort"
+          }
+        },
+        "type": "object",
+        "required": [
+          "model",
+          "effort"
+        ],
+        "title": "SelectionRead"
       },
       "SessionRead": {
         "properties": {

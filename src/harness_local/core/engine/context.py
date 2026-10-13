@@ -1,6 +1,6 @@
 """Contexto explícito; ninguna ruta deriva de la ubicación del motor."""
 
-from dataclasses import dataclass
+from dataclasses import asdict, dataclass
 from pathlib import Path, PurePosixPath
 
 
@@ -70,6 +70,11 @@ class EnginePolicy:
     reviewer_effort: str
     max_revision_cycles: int = 3
     planning_mode: str = "auto"
+    # D052: `catalog` limita al catálogo; `open` admite cualquier modelo con forma
+    # válida y un esfuerzo del vocabulario del proveedor ejecutor. En `open` el
+    # catálogo queda como selección de referencia para contratos del servidor.
+    executor_mode: str = "catalog"
+    executor_effort_vocabulary: tuple[str, ...] = ()
 
     def __post_init__(self):
         if self.max_revision_cycles < 0 or self.planning_mode not in {"auto", "deterministic", "agent"}:
@@ -78,6 +83,23 @@ class EnginePolicy:
             raise ValueError("Explicit executor selections required")
         if not all((self.planner_model, self.planner_effort, self.reviewer_model, self.reviewer_effort)):
             raise ValueError("Explicit planner/reviewer selections required")
+        if self.executor_mode not in {"catalog", "open"}:
+            raise ValueError("Executor selection mode must be catalog or open")
+        if self.executor_mode == "open" and not self.executor_effort_vocabulary:
+            raise ValueError("Open executor selection requires the provider effort vocabulary")
+        vocabulary = self.executor_effort_vocabulary
+        if vocabulary and not set(self.executor_efforts) <= set(vocabulary):
+            raise ValueError("Executor efforts outside the provider vocabulary")
+
+
+def policy_payload(policy: EnginePolicy) -> dict:
+    """Forma congelada; omite los ajustes D052 por defecto para conservar snapshots anteriores."""
+    data = asdict(policy)
+    if data["executor_mode"] == "catalog":
+        data.pop("executor_mode")
+    if not data["executor_effort_vocabulary"]:
+        data.pop("executor_effort_vocabulary")
+    return data
 
 
 @dataclass(frozen=True)

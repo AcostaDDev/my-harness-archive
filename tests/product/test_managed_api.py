@@ -228,7 +228,15 @@ def test_http_flow_executes_reviews_and_commits_once_across_double_submit_and_re
     with client(url, tmp_path, config(task, ports)) as http:
         assert http.get("/api/managed/projects").json() == [{
             "id": "synthetic", "root": str(task.root), "profile": "synthetic", "versions": VERSIONS,
-            "tag_kind": "lightweight"}]
+            "tag_kind": "lightweight", "agents": {
+                # Injected synthetic ports: no cli-5 composition, so providers stay undeclared.
+                "planning_mode": task.policy.planning_mode,
+                "reviewer": {"provider": None, "model": task.policy.reviewer_model,
+                             "effort": task.policy.reviewer_effort},
+                "planner": {"model": task.policy.planner_model, "effort": task.policy.planner_effort},
+                "executor": {"provider": None, "selection_mode": "catalog",
+                             "models": list(task.policy.executor_models),
+                             "efforts": list(task.policy.executor_efforts), "effort_vocabulary": []}}}]
         assert http.get("/api/managed/supervisor").json() == {
             "enabled": True, "alive": True, "last_error": None, "ports_configured": True,
             "commit_writer_configured": True}

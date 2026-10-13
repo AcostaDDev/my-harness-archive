@@ -1,4 +1,4 @@
-"""Propuesta de requisitos/alternativas por Codex; una invocación nueva de solo lectura."""
+"""Propuesta de requisitos/alternativas del agente revisor (Codex o Claude); una invocación nueva de solo lectura."""
 from dataclasses import replace
 
 from harness_local.core.engine.bootstrap import accepted_input

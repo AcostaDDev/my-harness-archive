@@ -1536,7 +1536,8 @@ Sin cambios de código, esquema, codec, cli-4, OpenAPI ni UI.
 
 ## D052 — Revisor y ejecutor con proveedor, modelo y esfuerzo elegidos por el usuario
 
-Estado: decidido por el usuario el 2026-10-13; **no implementado**.
+Estado: decidido por el usuario el 2026-10-13; **implementado y verificado offline**
+el mismo día como `cli-5` / `local-config-2` ([entrega](discovery/AGENT_ROLES.md)).
 [Alcance](discovery/AGENT_ROLES_SCOPE.md). Sustituye la asignación fija
 «Codex planifica y revisa, Claude ejecuta» de la especificación (§1, F05 y la
 tabla de prompts) y de los adaptadores `cli-1`…`cli-4`.
@@ -1553,8 +1554,22 @@ determinista se mantiene como ajuste del usuario: con ella, el ejecutor recibe
 el contrato y la selección directamente de NEXT_STEPS, sin planificación del
 revisor, que sigue revisando el resultado.
 
-No se reescriben historiales ni versiones congeladas anteriores. Sin cambios
-hasta implementar el alcance.
+No se reescriben historiales ni versiones congeladas anteriores.
+
+Detalles de la implementación, resueltos con criterio y sin cambiar el diseño:
+
+- Claude 2.1.296 entra en el baseline porque su ayuda es idéntica a la de 2.1.295.
+- La escritura con Codex exige 0.162.1, la única versión caracterizada.
+- El vocabulario de esfuerzo de Codex se toma de las cadenas del binario, porque
+  la ayuda no lo enumera.
+- El lector Claude añade `--restricted` y `--json-schema`.
+- En modo libre, el catálogo queda como selección de referencia para los
+  contratos del servidor.
+- `local-config-1` se sigue leyendo con su política, planificador separado incluido.
+- Los jobs pendientes congelados con `cli-4` entran en cuarentena al actualizar.
+
+Esquema, codec y locks sin cambios; OpenAPI y UI añaden `agents` al proyecto. No
+autoriza el smoke con proveedores.
 
 ## D053 — Comando único de desarrollo con migración y backup previo
 

@@ -223,6 +223,18 @@ def test_cli_scoped_tool_rule_only_changes_next_argv(setup):
         argv_for(config, setup[-1], replace(current, id='another-attempt'))
 
 
+def test_codex_executor_refuses_tool_grant_before_launch(setup):
+    # D052: Codex has no tool inventory to scope; the grant is refused, never ignored.
+    row = request(setup); decide(setup, row)
+    previous = setup[0].get_run(setup[2]).history.attempts[0].request
+    current = resume(setup).history.attempts[-1].request
+    config = CLIConfig('codex', ('/synthetic/codex',), '0.162.1', (), 1)
+    argv = argv_for(config, setup[-1], previous)
+    assert argv[argv.index('--sandbox') + 1] == 'workspace-write'
+    with pytest.raises(ValueError, match='cannot enforce scoped tool grants'):
+        argv_for(config, setup[-1], current)
+
+
 def test_network_grant_refused_by_cli_before_launch(setup):
     row = request(setup, 'network'); decide(setup, row)
     current = resume(setup).history.attempts[-1].request
@@ -321,11 +333,11 @@ def test_file_ceiling_cannot_expand_contract_or_escape_checkout(setup):
 def test_cli_grant_launch_uses_persisted_snapshot_and_exact_rule(repository, context, tmp_path):
     from test_cli_agents import adapter
     port = adapter(tmp_path, mode='exit_error')
-    port.configs['claude'] = replace(port.configs['claude'], tools=('Bash',), grantable_tools=(TARGETS['tools'],))
+    port.agents['executor'] = replace(port.agents['executor'], tools=('Bash',), grantable_tools=(TARGETS['tools'],))
     authority = {layer: {'tools': [TARGETS['tools']]} for layer in LAYERS}
     versions = {**VERSIONS, **port.frozen_versions(), 'permission_authority': freeze(authority)}
     workspace = SyntheticWorkspace(context, ('app/main.txt',))
-    configs = tuple(port.configs.values())
+    configs = dict(port.agents)
     from harness_local.adapters.cli_agents import CLIProcessAdapter
     worker = LocalSupervisor(repository, lambda c, v: (CLIProcessAdapter(configs, port.artifact_root),
                                                       ScriptedCommandRunner([]), workspace))

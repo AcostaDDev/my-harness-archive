@@ -129,8 +129,8 @@ check-config RUTA [--preflight]` y `serve --database RUTA --config RUTA`; ver
 completo (`docs/discovery/FIRST_USE_RUN.md`). Uso real desde el wheel instalado
 en un venv propio, no desde este checkout (D051). Consentimiento agotado.
 Desarrollo local con un solo comando: `scripts/dev` (D053, `docs/discovery/DEV_COMMAND.md`).
-Decidido, no implementado: revisor/ejecutor con proveedor elegido (D052,
-`docs/discovery/AGENT_ROLES_SCOPE.md`). No iniciar otra tarea.
+Revisor/ejecutor con proveedor elegido implementado offline (D052, `cli-5`,
+`local-config-2`; `docs/discovery/AGENT_ROLES.md`). Smoke con proveedores no autorizado.
 Comprobación offline ligera, solo biblioteca estándar, desde la raíz:
 
 ```sh
@@ -160,9 +160,9 @@ npm --prefix frontend run dev
 ```
 
 Las primeras instalaciones necesitan red; después los checks son offline.
-No usar `uv --active` con entornos de otros proyectos. 857 pruebas pytest
+No usar `uv --active` con entornos de otros proyectos. 889 pruebas pytest
 (158 anteriores + 53 H2.3 + 8 entorno smoke + 34 H2.4 + 35 H2.5 + 18 API gestionada + 2 demo UI + 23 H3.1,
-+ 30 H3.2 + 29 H3.3 + 18 H3.4 + 22 H4.1 + 32 exportación + 48 H4.2 + 16 H4.3 + 43 H5.1 + 43 H5.2 + 43 H5.3 + 52 H5.4 + 13 H5.5 + 45 H5.6 + 6 H5.7 + 40 ejecutor de comandos + 35 configuración local + 11 comando de desarrollo, con Git temporal).
++ 30 H3.2 + 29 H3.3 + 18 H3.4 + 22 H4.1 + 32 exportación + 48 H4.2 + 16 H4.3 + 43 H5.1 + 43 H5.2 + 43 H5.3 + 52 H5.4 + 13 H5.5 + 45 H5.6 + 6 H5.7 + 40 ejecutor de comandos + 35 configuración local + 11 comando de desarrollo + 32 agentes D052, con Git temporal).
 Paquete H5.5: UI/API en 127.0.0.1:8013; en desarrollo API en :8013 y Vite en :5173
 en otra terminal. SQLite local ignorada en `.local/harness.sqlite3`; migración
 explícita antes de arrancar. Ver README y `docs/discovery/H0.3_SKELETON.md`.

@@ -154,12 +154,41 @@ class SupervisorRead(BaseModel):
     commit_writer_configured: bool
 
 
+class ReviewerAgentRead(BaseModel):
+    """D052: el revisor planifica, revisa, evalúa fases, conversa y propone el bootstrap (solo lectura)."""
+    provider: str | None  # null fuera de una composición cli-5 (demo o adaptador inyectado)
+    model: str
+    effort: str
+
+
+class SelectionRead(BaseModel):
+    model: str
+    effort: str
+
+
+class ExecutorAgentRead(BaseModel):
+    """Único escritor; el revisor fija su modelo y esfuerzo en cada tarea y revisión."""
+    provider: str | None
+    selection_mode: Literal["catalog", "open"]
+    models: list[str]
+    efforts: list[str]
+    effort_vocabulary: list[str]
+
+
+class ProjectAgentsRead(BaseModel):
+    planning_mode: Literal["auto", "agent", "deterministic"]
+    reviewer: ReviewerAgentRead
+    planner: SelectionRead
+    executor: ExecutorAgentRead
+
+
 class ManagedProjectRead(BaseModel):
     id: str
     root: str
     profile: str
     versions: dict[str, str | None]
     tag_kind: Literal["lightweight", "annotated"]
+    agents: ProjectAgentsRead
 
 
 ActivationStatus = Literal["PREPARING", "ACTIVE", "FAILED", "REVERTING", "REVERTED"]

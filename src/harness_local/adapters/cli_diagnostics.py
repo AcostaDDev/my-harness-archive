@@ -27,6 +27,8 @@ REQUIRED = {
                '--strict-mcp-config', '--mcp-config', '--setting-sources', '--settings',
                '--disable-slash-commands', '--no-chrome'),
 }
+# cli-5 (D052): flags needed only by one access mode of a provider.
+ACCESS_REQUIRED = {('claude', 'read'): ('--restricted', '--json-schema')}
 PATTERNS = {
     'codex': r'codex-cli ([0-9]{1,6}\.[0-9]{1,6}\.[0-9]{1,6})',
     'claude': r'([0-9]{1,6}\.[0-9]{1,6}\.[0-9]{1,6}) \(Claude Code\)',
@@ -103,13 +105,19 @@ def _probe(argv, environment, cwd, timeout):
     return result, bytes(output) if result['status'] == 'ok' else b''
 
 
-def preflight_config(config, *, timeout=TIMEOUT):
-    """Observe one validated CLIConfig, without touching its frozen values."""
+def preflight_config(config, *, timeout=TIMEOUT, access=None):
+    """Observe one validated CLIConfig, without touching its frozen values.
+
+    `access` ('read' | 'write') adds the flags that agent access mode needs.
+    """
     if not math.isfinite(timeout) or not 0 < timeout <= TIMEOUT:
         raise ValueError('Probe timeout must be positive and at most ten seconds')
+    if access not in (None, 'read', 'write'):
+        raise ValueError('Unknown agent access mode')
+    required = REQUIRED[config.provider] + ACCESS_REQUIRED.get((config.provider, access), ())
     report = {'available': False, 'status': 'unknown', 'requested_version': config.cli_version,
               'observed_version': None, 'version_output': None, 'help_sha256': None,
-              'required_flags': list(REQUIRED[config.provider]),
+              'required_flags': list(required),
               'missing_flags': None, 'probes': {}, 'diagnostics': []}
 
     def fail(code, status='unknown'):
@@ -149,7 +157,7 @@ def preflight_config(config, *, timeout=TIMEOUT):
             report['help_sha256'] = hashlib.sha256(raw).hexdigest()
             # --model-extra must not satisfy --model.
             flags = set(re.findall(r'(?<![\w-])--[A-Za-z][A-Za-z0-9-]*(?![\w-])', text))
-            report['missing_flags'] = [flag for flag in REQUIRED[config.provider] if flag not in flags]
+            report['missing_flags'] = [flag for flag in required if flag not in flags]
             if report['missing_flags']:
                 return fail('missing_flags', 'incompatible')
     except OSError:

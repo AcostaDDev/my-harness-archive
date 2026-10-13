@@ -94,11 +94,11 @@ def test_explicit_fresh_argv_preflight_and_configuration(tmp_path,context,reposi
     assert repository.processes(job.id)[0]['status']=='STOPPED'
     spec=repository.processes(job.id)[0]['spec']
     assert spec['cli_internal_retries']==port.capabilities()['cli_internal_retries'][provider]
-    assert spec['adapter_version']=='cli-4'
+    assert spec['adapter_version']=='cli-5' and spec['agent']==('executor' if role=='executor' else 'reviewer')
     prompt=Path(spec['prompt_path']).read_bytes()
     assert prompt.decode()==launches[0]['prompt']
     assert spec['prompt_sha256']==hashlib.sha256(prompt).hexdigest()
-    assert spec['environment_keys']==sorted(dict(port.configs[provider].environment))
+    assert spec['environment_keys']==sorted(dict(port.agents[spec['agent']].environment))
     repository.close_owner(claim)
 
 
@@ -111,12 +111,12 @@ def test_reserved_provider_overrides_fail_once_with_preserved_evidence(
     from harness_local.adapters import cli_agents
     ctx=replace(context,policy=replace(context.policy,planning_mode='agent'))
     port=adapter(tmp_path,'version_new' if version=='0.162.1' else 'success')
-    port=CLIProcessAdapter((replace(port.configs['codex'],cli_version=version),
-                            port.configs['claude']),port.artifact_root)
+    port=CLIProcessAdapter((replace(port.agents['reviewer'],cli_version=version),
+                            port.agents['executor']),port.artifact_root)
     original=cli_agents.argv_for
     monkeypatch.setattr(cli_agents,'argv_for',lambda config,ctx,request:
                         original(config,ctx,request)+('-c',f'model_providers.openai.{retry_key}=0'))
-    assert port.preflight()['codex']['available'] is True
+    assert port.preflight()['reviewer']['available'] is True
     job=repository.submit(ctx,'P001-T001','P001',PLAN,{**VERSIONS,**port.frozen_versions()},key='reserved')
     def factory(ctx,versions):
         return port,ScriptedCommandRunner([]),SyntheticWorkspace(ctx,('app/main.txt',))
@@ -384,7 +384,7 @@ def test_actual_owner_crash_restart_retains_group_lock_and_bytes(tmp_path,contex
     job=repository.submit(context,'P001-T001','P001',PLAN,{**VERSIONS,**port.frozen_versions()},key='crash')
     second=repository.submit(context,'P001-T001','P001',PLAN,{**VERSIONS,**port.frozen_versions()},key='after-crash')
     specification=tmp_path/'owner.json'
-    specification.write_text(json.dumps({'configs':[asdict(config) for config in port.configs.values()],
+    specification.write_text(json.dumps({'configs':[asdict(config) for config in port.agents.values()],
                                          'context':context_snapshot(context),'artifacts':str(port.artifact_root)}))
     worker=subprocess.Popen((sys.executable,str(Path(__file__).with_name('cli_owner_probe.py')),
                              str(repository.engine.url),str(specification)),stdout=subprocess.PIPE,stderr=subprocess.PIPE)
@@ -473,7 +473,7 @@ def test_no_process_launch_without_managed_journal(tmp_path,context):
 def test_bad_config_rejected_without_execution(tmp_path,change):
     port=adapter(tmp_path)
     with pytest.raises(ValueError):
-        replace(port.configs['claude'],**change)
+        replace(port.agents['executor'],**change)
 
 
 def test_smoke_requires_explicit_consumption_before_side_effects(tmp_path):
@@ -573,9 +573,9 @@ def test_same_version_without_required_help_capabilities_blocks_execution(tmp_pa
 
 def test_new_installed_codex_version_requires_explicit_frozen_selection(tmp_path,context,repository):
     port=adapter(tmp_path,'version_new')
-    assert port.preflight()['codex']['available'] is False  # no automatic version substitution
-    updated=replace(port.configs['codex'],cli_version='0.162.1')
-    port=CLIProcessAdapter((updated,port.configs['claude']),port.artifact_root)
+    assert port.preflight()['reviewer']['available'] is False  # no automatic version substitution
+    updated=replace(port.agents['reviewer'],cli_version='0.162.1')
+    port=CLIProcessAdapter((updated,port.agents['executor']),port.artifact_root)
     job,claim,request=setup_invocation(repository,context,port,role='reviewer')
     result=port.invoke(context,request)
     assert result.status=='complete'

@@ -9,26 +9,32 @@ import time
 import tomllib
 
 provider, mode = sys.argv[1:3]
+if '--version' in sys.argv and os.environ.get('PROBE_VERSION'):
+    version = os.environ['PROBE_VERSION']
+    print(f'codex-cli {version}' if provider == 'codex' else f'{version} (Claude Code)')
+    sys.exit(0)
 if '--version' in sys.argv:
-    print(('codex-cli 0.162.1' if mode == 'version_new' else 'codex-cli 0.161.0') if provider == 'codex' else '2.1.295 (Claude Code)')
+    print(('codex-cli 0.162.1' if mode == 'version_new' else 'codex-cli 0.161.0') if provider == 'codex'
+          else ('2.1.296' if mode == 'claude_new' else '2.1.295') + ' (Claude Code)')
     sys.exit(0)
 if '--help' in sys.argv:
     print('synthetic help' if mode == 'incompatible_help' else
           '--json --model --sandbox --ephemeral --ignore-user-config --ignore-rules --strict-config '
           '--print --output-format --verbose --include-partial-messages --no-session-persistence '
           '--session-id --effort --permission-mode --permission-prompts --tools --allowedTools '
-          '--strict-mcp-config --mcp-config --setting-sources --settings --disable-slash-commands --no-chrome')
+          '--strict-mcp-config --mcp-config --setting-sources --settings --disable-slash-commands --no-chrome'
+          + ('' if mode == 'no_read_flags' else ' --restricted --json-schema'))
     sys.exit(0)
 prompt = sys.stdin.read()
 record = os.environ.get('PROBE_RECORD')
 if record:
     with open(record, 'a') as log:
-        log.write(json.dumps({'argv': sys.argv[3:], 'cwd': os.getcwd(), 'prompt': prompt,
+        log.write(json.dumps({'argv': sys.argv[3:], 'cwd': os.getcwd(), 'prompt': prompt, 'provider': provider,
                               'explicit': os.environ.get('PROBE_EXPLICIT'), 'pid': os.getpid()}) + '\n')
+args = sys.argv[3:]
 if provider == 'codex':
     # Characterize CLI configuration semantics independently of the adapter.
     # Help/version do not certify the validity of an invocation's overrides.
-    args = sys.argv[3:]
     overrides = [args[index + 1] for index, value in enumerate(args) if value == '-c']
     config = tomllib.loads('\n'.join(overrides))
     reserved = {'openai', 'ollama', 'lmstudio'} & config.get('model_providers', {}).keys()
@@ -36,17 +42,27 @@ if provider == 'codex':
         print('Synthetic config error: model_providers contains reserved built-in provider IDs: '
               + ', '.join(sorted(reserved)), file=sys.stderr)
         sys.exit(1)
+    # D052: the writer is the workspace-write sandbox, never with network.
+    writer = args[args.index('--sandbox') + 1] == 'workspace-write'
+    if writer and config.get('sandbox_workspace_write', {}).get('network_access') is not False:
+        print('Synthetic contract: writer requires explicit network_access=false', file=sys.stderr)
+        sys.exit(1)
 else:
     # Independent contract: the CLI requires a wrapper containing a server map,
     # not an empty top-level object. Reject before emitting simulated inference.
-    args = sys.argv[3:]
     config = json.loads(args[args.index('--mcp-config') + 1])
     if not isinstance(config, dict) or not isinstance(config.get('mcpServers'), dict):
         print('Synthetic config error: mcpServers: expected record', file=sys.stderr)
         sys.exit(1)
+    # D052: a reader has a JSON schema and only the fixed read tools, confined by --restricted.
+    writer = '--json-schema' not in args
+    if not writer and (args[args.index('--tools') + 1] != 'Read,Glob,Grep' or '--restricted' not in args
+                       or json.loads(args[args.index('--json-schema') + 1]).get('type') != 'object'):
+        print('Synthetic contract: invalid read-only reviewer invocation', file=sys.stderr)
+        sys.exit(1)
 if mode == 'web':
-    # Local-config journey: synthetic executor edit in its checkout cwd; no provider.
-    if provider == 'claude':
+    # Local-config journey: synthetic edit by the writer (either provider) in its checkout cwd.
+    if writer:
         path = Path('src/estimate.ts')
         path.write_text(path.read_text().replace('tasks * 45', 'tasks * 30'))
     mode = 'flow'
@@ -74,17 +90,26 @@ elif mode == 'hang' or mode == 'child':
     print('{"type":"stream_event","event":{"delta":{"text":"partial"}}}', flush=True)
     time.sleep(60)
     sys.exit(0)
-if mode == 'flow' and provider == 'codex':
+if mode == 'flow' and not writer:
+    selection = json.loads(os.environ.get('PROBE_SELECTION', '{"model":"synthetic-executor","effort":"medium"}'))
     if prompt.startswith('Plan exactly'):
         payload = {'task_id':'P001-T001','phase_id':'P001','title':'Synthetic task',
             'objective':'Preserve synthetic content','executor_prompt':'Return synthetic summary',
-            'allowed_paths':['app/**'],'forbidden_paths':[], 'acceptance_criteria':['Content remains valid'],
-            'validation_commands':['test-runner check'], 'executor_selection':{
-                'model':'synthetic-executor','effort':'medium','reason':'Explicit synthetic policy'}}
+            'allowed_paths':[os.environ.get('PROBE_ALLOWED', 'app/**')],'forbidden_paths':[],
+            'acceptance_criteria':['Content remains valid'],
+            'validation_commands':json.loads(os.environ.get('PROBE_VALIDATION', '["test-runner check"]')),
+            'executor_selection':{
+                **selection,'reason':'Explicit synthetic policy'}}
     else:
         payload = {'task_id':'P001-T001','verdict':'ACCEPT','findings':[], 'blocking_questions':[], 'scope_grants':[]}
-    events = [{'type':'item.completed','item':{'type':'agent_message','text':json.dumps(payload)}},
-              {'type':'turn.completed'}]
+    if provider == 'codex':
+        events = [{'type':'item.completed','item':{'type':'agent_message','text':json.dumps(payload)}},
+                  {'type':'turn.completed'}]
+    else:
+        # Claude reader: --json-schema result arrives as structured_output.
+        events = [{'type':'system','subtype':'init','session_id':'synthetic'},
+                  {'type':'result','subtype':'success','is_error':False,'result':'',
+                   'structured_output':payload,'usage':None,'duration_ms':0}]
 elif provider == 'codex':
     events = [ {'type':'thread.started', 'thread_id':'synthetic', 'future':None},
               {'type':'item.completed','item':{'type':'agent_message','text':json.dumps({'result':'ñ'})}},

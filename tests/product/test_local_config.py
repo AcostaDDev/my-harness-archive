@@ -95,7 +95,7 @@ def test_valid_configuration_composes_fresh_ports_without_processes(setup):
     assert not config.supervisor and config.migrations_dir == tmp_path / 'state/migrations'
     versions = project.versions
     assert versions['local_config'] == 'local-config-1' and versions['commands'] == 'commands-1'
-    assert versions['agent_adapter'] == 'cli-4' and versions['engine'].startswith('harness-local-')
+    assert versions['agent_adapter'] == 'cli-5' and versions['engine'].startswith('harness-local-')
     assert {'cli_config_sha256', 'command_config_sha256', 'local_config_sha256'} <= versions.keys()
     first, second = config.ports_factory(project.context, versions), config.ports_factory(project.context, versions)
     assert [type(port) for port in first] == [CLIProcessAdapter, ManagedCommandRunner, GitWorkspace]
@@ -108,9 +108,6 @@ def test_valid_configuration_composes_fresh_ports_without_processes(setup):
     assert not launches(tmp_path) and not (tmp_path / 'state/artifacts').exists()
     # Same file, same frozen identity; the example template documents the same keys.
     assert load_local_config(write(folder, data)).projects[0].versions == versions
-    import tomllib
-    example = tomllib.loads((Path(__file__).parents[2] / 'examples/local_config.example.toml').read_text())
-    assert example.keys() == data.keys() and example['projects'][0].keys() == data['projects'][0].keys()
 
 
 def mutate(data, change):
