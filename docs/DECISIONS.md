@@ -1491,8 +1491,9 @@ cambios; la validación de proyectos del runtime se reutiliza sin alterarla.
 
 ## D050 — Propuesta de primer uso real: selecciones del usuario y límites
 
-Estado: propuesta preparada y ensayada offline el 2026-10-13; **no ejecutada ni
-autorizada**. [Propuesta](discovery/FIRST_USE_PROPOSAL.md). Concreta D033.8.
+Estado: propuesta preparada y ensayada offline el 2026-10-13; **ejecutada una vez
+con autorización del usuario el mismo día** y completa ([resultado](discovery/FIRST_USE_RUN.md),
+D051). Consentimiento agotado. [Propuesta](discovery/FIRST_USE_PROPOSAL.md). Concreta D033.8.
 
 Selecciones elegidas por el usuario en esta sesión: ejecutor Claude
 `claude-sonnet-4-6`/`low` con herramientas `Read`, `Edit`, `Write`, `Glob`,
@@ -1511,3 +1512,24 @@ Ejecutar requiere consentimiento específico del usuario para esta propuesta;
 cualquier cambio de modelo, esfuerzo, herramientas, límites o entorno exige
 actualizarla antes (solo `BASE` puede cambiar si ya existe, registrándolo). Sin cambios de diseño, código, esquema,
 codec, cli-4, OpenAPI ni UI.
+
+## D051 — Operación real desde el wheel instalado, no desde el checkout de desarrollo
+
+Estado: decidido y aplicado el 2026-10-13 durante la ejecución D050, tras
+consultar al usuario («la opción más mantenible… modular y reutilizable»).
+[Resultado](discovery/FIRST_USE_RUN.md).
+
+`harness-local serve` exige los assets web empaquetados (D043), que la
+instalación editable de desarrollo no tiene. No se añade un modo de desarrollo
+ni se sirve con uvicorn directo para uso real. El uso real se opera desde un
+paquete construido y verificado con el procedimiento existente: primero
+`build_distribution.py --out-dir` en un directorio propio de la operación,
+después `check_distribution.py --dist` sobre ese paquete, y por último un venv
+nuevo con instalación offline por hashes. `check-config` y `serve --config` se
+ejecutan con el binario instalado, fuera del checkout del producto. El `dist/`
+del repositorio no es autoridad: puede estar desactualizado.
+
+Las versiones congeladas no dependen de la vía de instalación (`engine`
+incluye la versión del paquete), por lo que el TOML y sus hashes no cambian.
+La entrada `HARNESS_MANAGED_CONFIG` + uvicorn sigue siendo solo de desarrollo.
+Sin cambios de código, esquema, codec, cli-4, OpenAPI ni UI.

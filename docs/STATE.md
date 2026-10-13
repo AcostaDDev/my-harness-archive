@@ -488,8 +488,10 @@ completada con un hallazgo corregido (D048, [dictamen](discovery/COMMAND_RUNNER_
 Composición de uso real por TOML local implementada offline (D049,
 [entrega](discovery/LOCAL_CONFIG.md)): perfil TypeScript web, `serve --config`
 y `check-config`. Propuesta de primer uso real (D033.8) preparada y ensayada
-offline con selecciones del usuario (D050, [propuesta](discovery/FIRST_USE_PROPOSAL.md));
-no ejecutada. Siguiente: ejecutarla solo con consentimiento específico.
+offline con selecciones del usuario (D050, [propuesta](discovery/FIRST_USE_PROPOSAL.md)),
+ejecutada una vez con autorización y completa: COMMITTED, fase CLOSED y tag
+([resultado](discovery/FIRST_USE_RUN.md)); operación desde el wheel instalado (D051).
+Siguiente: elección del usuario de nuevo incremento; no iniciada.
 QA visual H5.7 bloqueada por herramienta; sin proveedores nuevos.
 
 ## Verificación de H0.1
@@ -1753,6 +1755,36 @@ QA visual H5.7 bloqueada por herramienta; sin proveedores nuevos.
   código, esquema, codec, cli-4, OpenAPI ni UI. Commit solicitado por el usuario.
 - Siguiente: ejecutar la propuesta D050 solo con consentimiento específico; no
   iniciada.
+
+## Ejecución autorizada del primer uso real (D050)
+
+- Autorización del usuario: «Autorizo ejecutar la propuesta D050 una vez».
+  Git limpio en `main`, `0e39364`. Binario Claude 2.1.295 presente y `BASE`
+  libre. Preparación con el script (TOML idéntico a la propuesta) y preflight
+  `version_help_match` en ambas CLI.
+- `serve` desde la instalación editable falló antes de servir porque faltaban
+  los assets web. Sin consumo. Consultado el usuario, se aplicó D051: wheel
+  actual construido en el área, `check_distribution.py` correcto, venv nuevo
+  instalado offline con hashes y `serve --config` desde ese venv, con las
+  mismas versiones congeladas.
+- Recorrido por HTTP: fase P001, run `abcc508f-…` → `ACCEPTANCE_READY`
+  (ejecutor 8,1 s, Read + Edit, `tasks * 30`; review ACCEPT) → commit
+  `8999af8` → check READY (evaluación de fase con los tres criterios
+  superados) → cierre `CLOSED` y tag ligero `first-use-p001` en HEAD.
+- Tres invocaciones de proveedor `complete`, exit 0 y stderr vacío. Nueve
+  comandos con exit 0 bajo la configuración congelada y JUnit `complete`. Jobs
+  `DONE` con propietario cerrado y sin locks. Uso reportado registrado aparte
+  de lo solicitado; Codex no reporta el modelo.
+- Servicio detenido con TERM y clave retirada. SQLite reabierta desde el
+  paquete instalado: `history`/`versions` idénticos a la instantánea de la API.
+  Checkout desechable limpio; repositorio, fixture y `dist/` intactos.
+- Observado: la CLI de Claude creó un `memory/` vacío en
+  `~/.claude/projects/-private-tmp-harness-first-use-web`. No se toca.
+- Sin tests nuevos: solo documentación (resultado, D050 actualizado, D051).
+  Sin cambios de código, esquema, codec, cli-4, OpenAPI ni UI. Sin push,
+  publicación ni ReferenceProject. Consentimiento D050 agotado.
+- Siguiente: elección del usuario; se propone una instalación de operación
+  reutilizable que encapsule D051. No iniciada.
 
 ## Coordinación
 

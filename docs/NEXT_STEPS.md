@@ -1,39 +1,41 @@
-# Siguiente paso — Ejecutar el primer uso real, solo con consentimiento específico
+# Siguiente paso — Elegir el incremento posterior al primer uso real
 
-Propuesta de primer uso real (D033.8) preparada y ensayada offline el
-2026-10-13 (D050). Ver [propuesta](discovery/FIRST_USE_PROPOSAL.md) y
-[script de preparación](../examples/first_use/prepare.sh). **No ejecutada.**
+Primer uso real D050 ejecutado una vez y completo el 2026-10-13
+([resultado](discovery/FIRST_USE_RUN.md), D050/D051). Consentimiento agotado.
 
-- Selecciones del usuario: ejecutor `claude-sonnet-4-6`/`low` con `Read`,
-  `Edit`, `Write`, `Glob`, `Grep`; revisor y evaluación de fase
-  `gpt-6-luna`/`medium`; planificación determinista (planificador no invocado).
-- Checkout desechable desde la fixture `typescript_web` con regresión
-  deliberada; TOML concreto con rutas reales bajo `/private/tmp/harness-first-use`.
-- Claude fijado al binario versionado 2.1.295 (el enlace del usuario apunta a
-  2.1.296, no admitido por `cli-4`).
-- Ensayo offline: preparación, `check-config` sin preflight, `init-db`,
-  admisión en proceso sin supervisor (contrato, fase y job `QUEUED`) y comandos
-  del perfil con el entorno exacto (`test` falla por la regresión). Sin CLI de
-  proveedores, `serve`, red ni consumo.
+- Recorrido tarea → commit → check → cierre sobre un checkout desechable:
+  `COMMITTED` (`8999af8`), fase `CLOSED` y tag ligero `first-use-p001`.
+- Tres invocaciones de proveedor, todas `complete`: ejecutor
+  `claude-sonnet-4-6`/`low` (Read + Edit), revisor y evaluación de fase
+  `gpt-6-luna`/`medium`. Nueve comandos `commands-1` con exit 0. Historial
+  idéntico tras reabrir SQLite.
+- D051: el uso real se opera desde el wheel construido, verificado e instalado
+  en un venv propio. `serve` desde el checkout de desarrollo no tiene assets.
 
 ## Tarea concreta propuesta, no iniciada
 
-Ejecutar una sola vez la propuesta D050 tal como está escrita: preparación,
-preflight, servicio con `--config`, fase P001, tarea P001-T001 → commit →
-check → cierre con tag `first-use-p001`; como máximo tres invocaciones de
-proveedor y parada al primer resultado inesperado. Requiere que el usuario
-autorice explícitamente esa ejecución y su consumo; se hace fuera del sandbox.
+**Instalación de operación reutilizable (D051).** Encapsular en una entrada
+única y probada offline la construcción con `--out-dir`, la verificación
+`check_distribution.py`, la creación del venv nuevo con hashes y la comprobación
+de `check-config` con el binario instalado. Debe fallar sin efectos si el destino
+existe o las herramientas no coinciden, y no tocar `dist/` ni la configuración
+global. Reutilizarla en la próxima propuesta de uso real en lugar de los pasos
+manuales de esta ejecución. Elección y alcance pendientes del usuario.
 
-Antes de ejecutar: comprobar que `~/.local/share/claude/versions/2.1.295` sigue
-existiendo y que la ruta `BASE` no existe. Cualquier cambio de modelos,
-esfuerzos, herramientas, límites o entorno exige actualizar antes la propuesta.
+Alternativas:
 
-Alternativas: QA visual pendiente de un navegador que permita loopback;
-admitir Claude 2.1.296 en el baseline como tarea propia (caracterización y
-`cli-5`); verificar `serve --config` con el wheel instalado; endurecimientos de
-D048 (heartbeat y PGID). Fuera sin nueva decisión: otros perfiles,
-`.harness/project.yaml`, UI de configuración y recarga en caliente.
+- caracterizar Claude 2.1.296 y abrir `cli-5`, porque el enlace del usuario ya
+  no es 2.1.295;
+- estudiar el directorio vacío `~/.claude/projects/<checkout>/memory` que crea
+  la CLI pese a `--no-session-persistence`;
+- propuesta autorizable de ramas REVISE/BLOCKED con proveedores;
+- QA visual pendiente de un navegador que permita loopback;
+- endurecimientos de D048 (heartbeat y PGID).
 
-Consentimientos anteriores agotados. Sin proveedores/login, instalaciones con
-red, publicación, push ni uso del harness para desarrollar este repositorio.
-Este documento no autoriza ejecutar la propuesta ni iniciar otra implementación.
+Fuera sin nueva decisión: otros perfiles, `.harness/project.yaml`, UI de
+configuración y recarga en caliente.
+
+Consentimientos anteriores agotados, incluido D050. Sin proveedores/login,
+instalaciones con red, publicación, push ni uso del harness para desarrollar
+este repositorio. Este documento no autoriza iniciar otra implementación ni
+otra ejecución con proveedores.

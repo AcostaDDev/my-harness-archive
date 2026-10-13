@@ -1,7 +1,9 @@
 # Propuesta de primer uso real con la configuración local (D033.8)
 
 Preparada el 2026-10-13 sobre `8c0e169`, Git limpio en `main`. D050.
-**No ejecutada ni autorizada por esta entrega.** Ejecutarla requiere un
+**Ejecutada una vez el mismo día con autorización del usuario; ver
+[resultado](FIRST_USE_RUN.md).** El paso 3 se ejecutó desde el wheel instalado (D051).
+Cuando se preparó, esta propuesta no estaba ejecutada ni autorizada. Ejecutarla requiere un
 consentimiento específico y explícito del usuario para esta propuesta; D025 y
 los consentimientos anteriores están agotados y no se trasladan.
 

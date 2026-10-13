@@ -125,9 +125,10 @@ Ver `docs/discovery/COMMAND_RUNNER.md`. Revisión independiente completada (D048
 runner congelado obligatorio; ver `docs/discovery/COMMAND_RUNNER_REVIEW.md`.
 Composición de uso real por TOML local completada offline (D049): `harness-local
 check-config RUTA [--preflight]` y `serve --database RUTA --config RUTA`; ver
-`docs/discovery/LOCAL_CONFIG.md`. Propuesta de primer uso real preparada y
-ensayada offline, no ejecutada (D050): `docs/discovery/FIRST_USE_PROPOSAL.md`.
-Ejecutarla exige consentimiento específico; no iniciar otra tarea.
+`docs/discovery/LOCAL_CONFIG.md`. Primer uso real D050 ejecutado una vez y
+completo (`docs/discovery/FIRST_USE_RUN.md`). Uso real desde el wheel instalado
+en un venv propio, no desde este checkout (D051). Consentimiento agotado; no
+iniciar otra tarea.
 Comprobación offline ligera, solo biblioteca estándar, desde la raíz:
 
 ```sh
