@@ -1574,3 +1574,21 @@ Corregido de paso el proxy de Vite (forma objeto con `changeOrigin: false`):
 la abreviatura de cadena reescribía Host y rompía el login de la UI de
 desarrollo frente a la guardia H5.6. Sin cambios de esquema, codec, cli-4,
 OpenAPI ni dependencias.
+
+## D054 — Hito de UI de producto después de D052 y registro de proyectos en SQLite
+
+Estado: decidido por el usuario el 2026-10-13; **no implementado**. Backlog,
+hito 6 (H6.1 = D052, H6.2 = UI).
+
+La UI actual es una superficie funcional construida hito a hito para verificar
+entregas. No sigue un sistema de diseño ni las convenciones de un dashboard, y
+nunca tuvo QA visual con navegador. Se planifica un hito de interfaz de producto
+**después** del backend de D052, para no rediseñar dos veces la configuración
+de agentes.
+
+Alta de proyectos desde la UI: registro en SQLite con confirmación explícita de
+confianza, ruta canónica y perfil, auditable y versionado. Esto relaja la regla
+de D028/D049, según la cual solo el servidor registra proyectos. Los ejecutables
+y entornos de los agentes no se conceden por HTTP sin validación; su forma
+exacta (archivo del operador o ajustes globales validados) se concreta en el
+alcance de H6.2, igual que la convivencia con el TOML `local-config`.

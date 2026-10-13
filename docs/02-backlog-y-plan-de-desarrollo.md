@@ -143,6 +143,23 @@ No se estima un plazo en semanas hasta completar el primer recorrido de integrac
 - Recorridos E2E: crear, importar, ejecutar, bloquear, denegar, reintentar y recuperar.
 - Criterio: instalar en entorno limpio, completar un flujo y restaurar backup sin depender del checkout de desarrollo.
 
+## Hito 6 — Agentes configurables e interfaz de producto
+
+Añadido el 2026-10-13 por decisión del usuario (D052, D054). Orden: H6.1 antes que la UI.
+
+### H6.1 Revisor y ejecutor con proveedor elegible (D052)
+
+- Revisor y ejecutor Codex o Claude, en cualquier combinación. El usuario fija el revisor; el revisor fija modelo y esfuerzo del ejecutor (catálogo o libre).
+- Planificación `agent` | `deterministic` como ajuste por proyecto.
+- Criterio: matriz de las cuatro combinaciones verificada offline por el adaptador real, con historiales anteriores legibles.
+
+### H6.2 Interfaz de producto (D054)
+
+- Arquitectura de información y sistema de diseño de dashboard: navegación, cabecera con sesión, estados vacíos útiles, tablas y estados consistentes.
+- Alta de proyectos desde la UI con registro en SQLite y confirmación explícita de confianza; el bootstrap de proyectos nuevos, accesible desde el inicio.
+- Configuración de agentes (H6.1) y chat accesibles desde la UI.
+- Criterio: QA visual con navegador sobre `scripts/dev` y recorridos de alta → tarea → revisión → commit sin editar archivos a mano.
+
 ## Matriz de pruebas prioritarias
 
 | Situación | Evidencia exigida |

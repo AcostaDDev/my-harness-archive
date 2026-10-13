@@ -493,7 +493,8 @@ ejecutada una vez con autorización y completa: COMMITTED, fase CLOSED y tag
 ([resultado](discovery/FIRST_USE_RUN.md)); operación desde el wheel instalado (D051).
 Comando único de desarrollo `scripts/dev` implementado (D053, [entrega](discovery/DEV_COMMAND.md)).
 Decidido y no implementado: revisor/ejecutor con proveedor elegido (D052,
-[alcance](discovery/AGENT_ROLES_SCOPE.md)). Siguiente: implementar D052 offline; no iniciada.
+[alcance](discovery/AGENT_ROLES_SCOPE.md)). Siguiente: implementar D052 offline; después,
+hito de interfaz de producto con alta de proyectos en SQLite (D054); no iniciados.
 QA visual H5.7 bloqueada por herramienta; sin proveedores nuevos.
 
 ## Verificación de H0.1
@@ -1823,6 +1824,16 @@ QA visual H5.7 bloqueada por herramienta; sin proveedores nuevos.
   La interpretación de streams ya es por proveedor, no por rol.
 - [Alcance](discovery/AGENT_ROLES_SCOPE.md) `cli-5`/`local-config-2`; sin
   código. Commit por bloque solicitado por el usuario.
+
+## Plan de interfaz de producto (D054)
+
+- El usuario señaló que la UI de `scripts/dev` no permite crear proyectos ni
+  muestra el chat, y que no sigue estándares de dashboard. Diagnóstico: la UI
+  es una superficie funcional por hitos, nunca diseñada como producto ni
+  revisada visualmente. El alta de proyectos estaba excluida a propósito
+  (D028/D049) y el chat y el bootstrap solo aparecen dentro de un proyecto.
+- Decisión del usuario: D052 primero; después, hito de UI (backlog H6.2) con
+  alta de proyectos por registro en SQLite y confianza explícita. Sin código.
 
 ## Coordinación
 

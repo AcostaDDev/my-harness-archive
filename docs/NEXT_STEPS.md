@@ -28,9 +28,14 @@ Estado al 2026-10-13:
 
 Después, y aparte: propuesta autorizable de smoke de la matriz con proveedores.
 
+A continuación de D052 (D054, backlog H6.2): **hito de interfaz de producto**.
+Incluye sistema de diseño de dashboard, alta de proyectos desde la UI con
+registro en SQLite y confianza explícita, configuración de agentes, chat y
+bootstrap accesibles, y QA visual con navegador. Su primera tarea será escribir
+el alcance.
+
 Alternativas: instalación de operación reutilizable (D051); estudiar el
-`memory/` vacío que crea la CLI de Claude; QA visual (ahora con `scripts/dev`);
-endurecimientos de D048.
+`memory/` vacío que crea la CLI de Claude; endurecimientos de D048.
 
 Consentimientos anteriores agotados, incluido D050. Sin proveedores/login,
 instalaciones con red, publicación, push ni uso del harness para desarrollar
