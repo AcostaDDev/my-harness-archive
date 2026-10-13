@@ -3,6 +3,7 @@
 from dataclasses import asdict, dataclass, replace
 import json
 import re
+import shlex
 from typing import Protocol, TYPE_CHECKING
 from uuid import uuid4
 
@@ -51,9 +52,19 @@ def executor_selection(context: ProjectContext, data: object) -> Selection:
     return Selection(**data)
 
 
+def command_text(item: object) -> object:
+    """D056: an argv array becomes the equivalent shell-free string; validation splits it back unchanged."""
+    if isinstance(item, list) and item and all(isinstance(arg, str) and arg for arg in item):
+        return shlex.join(item)
+    return item
+
+
 def task_contract(context: ProjectContext, data: object, task_id: str, phase_id: str) -> str:
     if not isinstance(data, dict) or data.get("task_id") != task_id or data.get("phase_id") != phase_id:
         raise ContractError("Task/phase identity mismatch")
+    if isinstance(data.get("validation_commands"), list):
+        # The frozen contract keeps strings; the agent's original output stays in its attempt.
+        data = {**data, "validation_commands": [command_text(item) for item in data["validation_commands"]]}
     for field in ("title", "objective", "executor_prompt"):
         if not isinstance(data.get(field), str) or not data[field].strip():
             raise ContractError(f"Missing task {field}")

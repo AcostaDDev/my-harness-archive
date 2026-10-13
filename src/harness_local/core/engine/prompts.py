@@ -94,22 +94,45 @@ def render(template: Template, values: dict[str, str]) -> str:
     return TOKEN.sub(lambda match: values[match[1]], template.template)
 
 
+TEXTS = {'type': 'array', 'items': {'type': 'string'}}
+
+
+def _object(fields: dict, required=None) -> dict:
+    return {'type': 'object', 'properties': {key: {'type': value} if isinstance(value, str) else value
+                                             for key, value in fields.items()},
+            'required': list(fields if required is None else required)}
+
+
 def output_schema(role: str) -> dict:
+    # D056: element types match the engine validators; a real planner read "argv commands" as argv arrays.
+    selection = _object({'model': 'string', 'effort': 'string', 'reason': 'string'})
     fields = {
         'planner': {'task_id': 'string', 'phase_id': 'string', 'title': 'string', 'objective': 'string',
-                    'executor_prompt': 'string', 'allowed_paths': 'array', 'forbidden_paths': 'array',
-                    'acceptance_criteria': 'array', 'validation_commands': 'array', 'executor_selection': 'object'},
+                    'executor_prompt': 'string', 'allowed_paths': TEXTS, 'forbidden_paths': TEXTS,
+                    'acceptance_criteria': TEXTS,
+                    'validation_commands': {**TEXTS, 'description': 'One shell-free command string per command, '
+                                            'e.g. "npm run test"; [] when the profile validations suffice'},
+                    'executor_selection': selection},
         'reviewer': {'task_id': 'string', 'verdict': 'string'},
         'executor': {'result': 'string'},
-        'phase': {'phase_id': 'string', 'verdict': 'string', 'summary': 'string', 'exit_criteria_results': 'array',
-                  'required_actions': 'array', 'blocking_questions': 'array'},
-        'chat': {'answer': 'string', 'references': 'array', 'proposals': 'array'},
-        'bootstrap': {'summary': 'string', 'requirements': 'array', 'alternatives': 'array', 'pending_decisions': 'array'},
+        'phase': {'phase_id': 'string', 'verdict': 'string', 'summary': 'string',
+                  'exit_criteria_results': {'type': 'array', 'items': _object(
+                      {'criterion': 'string', 'passed': 'boolean', 'evidence': 'string'})},
+                  'required_actions': TEXTS, 'blocking_questions': TEXTS},
+        'chat': {'answer': 'string', 'references': TEXTS, 'proposals': {'type': 'array', 'items': _object(
+            {'title': 'string', 'objective': 'string', 'scope': 'string', 'acceptance_criteria': TEXTS,
+             'validation': TEXTS, 'rationale': 'string'})}},
+        'bootstrap': {'summary': 'string', 'requirements': TEXTS, 'alternatives': TEXTS, 'pending_decisions': TEXTS},
     }
+    # Optional review fields: typed so findings are objects, never bare texts.
+    optional = {'reviewer': {'findings': {'type': 'array', 'items': _object(
+                    {'severity': 'string', 'category': 'string', 'file': 'string', 'problem': 'string'})},
+                'blocking_questions': TEXTS, 'scope_grants': {'type': 'array'}, 'next_prompt': 'string',
+                'executor_selection': {**selection, 'type': ['object', 'null']}}}
     if role not in fields:
         raise ContractError('No output schema for role')
-    return {'type': 'object', 'properties': {key: {'type': value} for key, value in fields[role].items()},
-            'required': list(fields[role]), 'additionalProperties': True}
+    schema = _object({**fields[role], **optional.get(role, {})}, required=fields[role])
+    return {**schema, 'additionalProperties': True}
 
 
 def render_attempt(catalog, name, values, context):

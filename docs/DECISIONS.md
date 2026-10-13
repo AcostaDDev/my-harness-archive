@@ -1647,3 +1647,26 @@ Cualquier cambio de combinación, modelo, esfuerzo, modo, herramientas, límites
 o entorno exige actualizarla antes. Solo `BASE` puede cambiar si ya existe, y
 el cambio se registra. Sin cambios de código, esquema, codec, `cli-5`,
 OpenAPI ni UI.
+
+## D056 — Formas de salida de los agentes alineadas con los validadores del motor
+
+Estado: decidido con criterio, implementado y verificado offline el 2026-10-13.
+[Entrega](discovery/CONTRACT_SHAPES.md). Origen: el smoke D055 se detuvo porque
+un planificador real devolvió `validation_commands` como listas de argv.
+
+Se aplican las dos medidas, porque la plantilla es editable por el usuario
+(H3.1) y el modelo puede volver a interpretarla así:
+
+- **Aclarar.** La plantilla integrada `plan-task` pide una cadena sin shell por
+  comando, y `[]` cuando bastan las validaciones del perfil. El esquema fijo del
+  motor tipa los elementos de toda lista. El revisor declara como opcionales sus
+  campos y la forma de `findings`. Los campos obligatorios no cambian.
+- **Normalizar.** `task_contract` convierte una lista de argv de
+  `validation_commands` en `shlex.join(argv)`, que es equivalente y vuelve al
+  mismo argv. Las demás formas se siguen rechazando.
+  - Contrato congelado en cadenas; salida original conservada en el intento.
+  - Los contratos del servidor deben ser canónicos.
+
+Sin cambios de argv (`cli-5`), esquema, codec, OpenAPI ni UI. Los historiales,
+contratos y catálogos congelados no se reescriben. No autoriza ninguna
+ejecución con proveedores.

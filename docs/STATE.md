@@ -1941,6 +1941,32 @@ QA visual H5.7 bloqueada por herramienta; sin proveedores nuevos.
   configuración global intactos. Sin cambios de código: solo documentos.
 - Siguiente: corrección offline del contrato de `validation_commands`; no iniciada.
 
+## Formas de salida de los agentes (D056)
+
+- Petición del usuario: commit del registro D055 (`519ab4e`) y empezar la
+  tarea de corrección. [Entrega](discovery/CONTRACT_SHAPES.md).
+- Revisión de roles:
+  - Además de `validation_commands`, la review tenía el mismo hueco: `findings`
+    exige objetos y ni el esquema ni la forma de ejemplo lo decían.
+  - Chat y bootstrap ya mostraban cadenas en su forma de ejemplo.
+- Cambios:
+  - `output_schema` tipa los elementos de todas las listas; el revisor declara
+    sus campos opcionales y la forma de `findings`.
+  - La plantilla `plan-task` pide cadenas sin shell y `[]` si bastan las
+    validaciones del perfil.
+  - `task_contract` normaliza listas de argv con `shlex.join`.
+  - Obligatorios, `cli-5`, esquema, codec, OpenAPI y UI sin cambios.
+- 16 casos nuevos en `tests/product/test_contract_shapes.py`, entre ellos la
+  regresión D055 por el adaptador real (revisor Claude, ejecutor Codex,
+  `ACCEPTANCE_READY`). La mutación sin normalización hace fallar 7.
+- **Regresión: 905 pytest y 121 subtests, 12 checks ligeros y 6 Node**; aviso
+  Starlette/HTTPX conocido; OpenAPI sin cambios. Sin `tsc` ni build: la UI no
+  cambia.
+- Sin proveedores, red, push, configuración global ni ReferenceProject.
+- Script de recorrido: se versionará al preparar la nueva ejecución.
+- Siguiente: preparar la nueva ejecución de la matriz (área nueva y script de
+  recorrido corregido); su ejecución exige consentimiento nuevo. No iniciada.
+
 ## Coordinación
 
 Desarrollo manual con el usuario. Una única sesión implementadora sobre los mismos archivos a la vez. La otra herramienta puede revisar una entrega terminada.
