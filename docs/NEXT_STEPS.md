@@ -11,6 +11,8 @@ Primer uso real D050 ejecutado una vez y completo el 2026-10-13
   idéntico tras reabrir SQLite.
 - D051: el uso real se opera desde el wheel construido, verificado e instalado
   en un venv propio. `serve` desde el checkout de desarrollo no tiene assets.
+- Desarrollo local con un solo comando: `scripts/dev` (D053,
+  [entrega](discovery/DEV_COMMAND.md)); migración con instantánea previa.
 
 ## Tarea concreta propuesta, no iniciada
 

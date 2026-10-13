@@ -1533,3 +1533,22 @@ Las versiones congeladas no dependen de la vía de instalación (`engine`
 incluye la versión del paquete), por lo que el TOML y sus hashes no cambian.
 La entrada `HARNESS_MANAGED_CONFIG` + uvicorn sigue siendo solo de desarrollo.
 Sin cambios de código, esquema, codec, cli-4, OpenAPI ni UI.
+
+## D053 — Comando único de desarrollo con migración y backup previo
+
+Estado: implementado y verificado offline el 2026-10-13.
+[Entrega](discovery/DEV_COMMAND.md). Decisiones del usuario: modo desarrollo
+(API + Vite) y migración automática con backup.
+
+`scripts/dev` sincroniza Python por `uv run --frozen`, reinstala el frontend
+solo si cambió su lock, prepara la SQLite con `storage/migrate.py` y supervisa
+API (:8013) y Vite (:5173) como grupos propios que se detienen juntos. Antes de
+migrar, una instantánea SQLite verificada (`premigration-1`) sustituye al
+bundle H5.2, que exige el esquema actual. Se rechazan una revisión desconocida,
+una restauración de consulta, una base sin Alembic y un servicio vivo. Un fallo
+no restaura automáticamente. `serve`/`init-db` del paquete conservan D043.
+
+Corregido de paso el proxy de Vite (forma objeto con `changeOrigin: false`):
+la abreviatura de cadena reescribía Host y rompía el login de la UI de
+desarrollo frente a la guardia H5.6. Sin cambios de esquema, codec, cli-4,
+OpenAPI ni dependencias.

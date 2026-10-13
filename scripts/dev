@@ -1,0 +1,4 @@
+#!/bin/sh
+# Desarrollo local con un solo comando; ver scripts/dev.py. Offline: usa las cachés de .local/.
+cd "$(dirname "$0")/.." || exit 1
+exec env UV_CACHE_DIR=.local/uv-cache uv run --frozen --offline python scripts/dev.py "$@"

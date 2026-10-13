@@ -102,30 +102,36 @@ Las descargas iniciales necesitan red; no acceden a modelos ni cuentas CLI.
 Las cachés quedan dentro del repositorio. uv ignora un `VIRTUAL_ENV` de otro
 proyecto: no usar `--active` para estos comandos.
 
-Migrar explícitamente y compilar la UI:
+Arrancar en desarrollo con **un solo comando**, desde la raíz:
 
 ```sh
-UV_CACHE_DIR=.local/uv-cache uv run --frozen --offline alembic upgrade head
-npm --prefix frontend run build
-UV_CACHE_DIR=.local/uv-cache uv run --frozen --offline uvicorn harness_local.api.app:create_app --factory --host 127.0.0.1 --port 8013 --workers 1 --no-proxy-headers --no-access-log
+scripts/dev
 ```
 
-La API de desarrollo escucha en `http://127.0.0.1:8013`. Usar Vite para la UI;
-los assets empaquetados se prueban con la instalación H5.5.
-«Ejecutar simulación» guarda un resultado sintético; recargar o reiniciar
-conserva el historial. Detener con Ctrl+C. Ejecutar desde la raíz y con un
-único proceso; el arranque exige la migración y no crea tablas automáticamente.
+Hace, en orden y sin red (D053):
 
-Para desarrollo, mantener la API anterior en una terminal y usar otra:
+1. Comprueba Node 24.15.0, npm 11.12.1 y uv 0.12.19. `uv run --frozen` sincroniza
+   `.venv` con `uv.lock`.
+2. Reinstala `frontend/node_modules` con `npm ci --offline` solo si cambió
+   `frontend/package-lock.json` (sello en `.local/dev/`).
+3. Prepara la SQLite (`.local/harness.sqlite3` por defecto). Si no existe, la
+   crea; si hay migraciones pendientes, primero guarda una instantánea verificada
+   en `.local/backups/` (copia SQLite, `integrity_check`, SHA-256 y manifiesto) y
+   después aplica `upgrade head`. Rechaza, sin tocar nada, una base de revisión
+   desconocida, una restauración de consulta H5.2 o una con un servicio vivo.
+4. Arranca la API en `http://127.0.0.1:8013` y Vite en `http://127.0.0.1:5173`
+   (proxy `/api` que conserva Host). Muestra la ruta de la clave de sesión.
+5. Ctrl+C detiene ambos; si uno termina, detiene el otro.
 
-```sh
-npm --prefix frontend run dev
-```
+Opciones: `--database /ruta/absoluta.sqlite3` y `--config /ruta/harness-local.toml`
+(composición local-config-1; sin ella la API gestionada solo lee). Abrir
+`http://127.0.0.1:5173` y pegar la clave. Los puertos son fijos; si están
+ocupados, el comando no arranca. Sin Celery ni Docker obligatorio.
 
-Abrir `http://127.0.0.1:5173`; Vite dirige `/api` al servicio en el puerto 8013.
-SQLite usa por defecto `.local/harness.sqlite3`, WAL y transacciones cortas.
-`HARNESS_DATABASE_URL=sqlite:////ruta/absoluta/demo.sqlite3` permite otro archivo
-local; usar el mismo valor al migrar y arrancar. Sin Celery ni Docker obligatorio.
+Para uso real no se usa este comando: se instala el wheel en un venv propio
+(D051, sección «Paquete local con UI»). Migración manual equivalente, si se
+necesita: `UV_CACHE_DIR=.local/uv-cache uv run --frozen --offline alembic upgrade head`
+con el servicio detenido y un backup previo.
 
 ## Contratos y verificaciones
 

@@ -491,6 +491,7 @@ y `check-config`. Propuesta de primer uso real (D033.8) preparada y ensayada
 offline con selecciones del usuario (D050, [propuesta](discovery/FIRST_USE_PROPOSAL.md)),
 ejecutada una vez con autorización y completa: COMMITTED, fase CLOSED y tag
 ([resultado](discovery/FIRST_USE_RUN.md)); operación desde el wheel instalado (D051).
+Comando único de desarrollo `scripts/dev` implementado (D053, [entrega](discovery/DEV_COMMAND.md)).
 Siguiente: elección del usuario de nuevo incremento; no iniciada.
 QA visual H5.7 bloqueada por herramienta; sin proveedores nuevos.
 
@@ -1785,6 +1786,28 @@ QA visual H5.7 bloqueada por herramienta; sin proveedores nuevos.
   publicación ni ReferenceProject. Consentimiento D050 agotado.
 - Siguiente: elección del usuario; se propone una instalación de operación
   reutilizable que encapsule D051. No iniciada.
+
+## Comando único de desarrollo (D053)
+
+- Petición del usuario: un solo comando que levante API y frontend
+  actualizados, con migraciones. Respuestas: modo desarrollo y migración
+  automática con backup.
+- `scripts/dev` + `scripts/dev.py`, `scripts/toolchain.py` (compartido con
+  `build_distribution.py`) y `storage/migrate.py` (instantánea `premigration-1`
+  y `upgrade head`). El bundle H5.2 no sirve antes de migrar porque exige el
+  esquema actual; se usa una copia SQLite verificada.
+- Hallazgo y corrección: la abreviatura de proxy de Vite implicaba
+  `changeOrigin: true` y el login de la UI de desarrollo daba 403
+  `origin_rejected`. `vite.config.ts` usa ahora la forma objeto con
+  `changeOrigin: false`.
+- 11 casos nuevos en `tests/product/test_dev_command.py`. Ejecución real del
+  comando: base `current`, API y Vite arriba, login/health/proyectos 200 por el
+  proxy tras la corrección, y SIGINT con cierre limpio (exit 0, puertos libres,
+  clave retirada, sin huérfanos).
+- **Regresión: 857 pytest y 121 subtests, 12 checks ligeros, 6 Node, `tsc`**
+  y `build_distribution.py` a un directorio temporal. Aviso Starlette/HTTPX
+  conocido. Sin QA visual con navegador. Sin proveedores, red, push,
+  configuración global ni ReferenceProject. Commit por bloque solicitado por el usuario.
 
 ## Coordinación
 

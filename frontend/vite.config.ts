@@ -3,5 +3,7 @@ import react from "@vitejs/plugin-react";
 
 export default defineConfig({
   plugins: [react()],
-  server: { proxy: { "/api": "http://127.0.0.1:8013" } },
+  // Forma objeto obligatoria: la abreviatura de cadena implica changeOrigin: true, que
+  // reescribe Host y hace que la guardia rechace el Origin de la UI (H5.6).
+  server: { proxy: { "/api": { target: "http://127.0.0.1:8013", changeOrigin: false } } },
 });

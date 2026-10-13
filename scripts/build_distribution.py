@@ -5,6 +5,8 @@ import shutil
 import subprocess
 import tempfile
 
+from toolchain import check_tools
+
 ROOT = Path(__file__).resolve().parents[1]
 
 
@@ -14,10 +16,7 @@ def main():
     args = parser.parse_args()
     output = args.out_dir.resolve()
     output.mkdir(parents=True, exist_ok=True)
-    for executable, expected in (('node', 'v24.15.0'), ('npm', '11.12.1'), ('uv', 'uv 0.12.19')):
-        observed = subprocess.check_output([executable, '--version'], text=True).strip()
-        if (observed.split(' (', 1)[0] if executable == 'uv' else observed) != expected:
-            raise SystemExit(f'{executable}: se requiere {expected}; observado {observed}')
+    check_tools()
     subprocess.run(['npm', 'ci', '--offline', '--ignore-scripts', '--cache', str(ROOT / '.local/npm-cache')],
                    cwd=ROOT / 'frontend', check=True)
     subprocess.run(['npm', 'run', 'build'], cwd=ROOT / 'frontend', check=True)
