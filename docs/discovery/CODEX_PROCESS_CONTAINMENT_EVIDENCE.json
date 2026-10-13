@@ -1,0 +1,75 @@
+{
+  "decision": "D063",
+  "source_commit": "9db047ac24f3269e4202a12d66318e8e9a1e288c",
+  "platform": "macOS-26.4.1-arm64-arm-64bit-Mach-O",
+  "provider_invocations": 0,
+  "real_cli_processes": 0,
+  "product_containment_implemented": false,
+  "real_authentication_verified": false,
+  "real_credentials_read": false,
+  "global_configuration_read_or_written": false,
+  "files_sha256": {
+    "docs/discovery/CODEX_GLOBAL_CONFIG_DIAGNOSIS.md": "efdd81919d6e71cb101ec1365e9d83a5dd4c461162fffe53a274834928d9b257",
+    "docs/discovery/CODEX_GLOBAL_CONFIG_DIAGNOSIS.json": "9f454ab1171d4331452f87d93c5a2c9f9d72237fa21735e0045e9b0fc6b15f03",
+    "src/harness_local/adapters/cli_agents.py": "5bd25714efcd73f2edb42b3bce56962168352894fcad978f652b3860aa633cdc",
+    "/private/tmp/h63-containment/probe.py": "1d5335bcb2c7d10719c3e86b1282d3d6500280dff308627691bea51a052aa81d",
+    "docs/discovery/CODEX_PROCESS_CONTAINMENT_PROBE.py": "2d0f64ffa0d162432252cc1cbeaad5175fc43d9c007652fb1d2a5b60f9e4660c"
+  },
+  "binary_sha256": "74c6a6d263f40d65f99c27a815275f5b4ed0bcc2baecc396b4cf3255498bdfc0",
+  "binary_string_offsets": {
+    "CODEX_HOME": 185631641,
+    "cli_auth_credentials_store": 186882337,
+    "FileAuthStorage": 189189961,
+    "KeyringAuthStorage": 189227214,
+    "EphemeralAuthStorage": 189227153,
+    "refresh_token": 186523074
+  },
+  "static_evidence_limit": "String presence does not establish active auth backend, precedence, refresh behavior or a separate auth path.",
+  "experiments": [
+    {
+      "root": "/private/tmp/h63-containment/synthetic-n7re2pa3",
+      "launches": 1,
+      "returncode": 71,
+      "stdout": "",
+      "stderr": "sandbox-exec: sandbox_apply: Operation not permitted",
+      "originals_unchanged": true,
+      "profile": "(version 1)\n(allow default)\n(deny network*)\n(deny file-write*)\n(allow file-write* (subpath \"/private/tmp/h63-containment/synthetic-n7re2pa3/allowed\") (subpath \"/private/tmp/h63-containment/synthetic-n7re2pa3/checkout\"))\n",
+      "python": "/opt/homebrew/opt/python@3.14/bin/python3.14",
+      "result_sha256": "1cfe870818dabb37a74efde1ac5099093152867c2a3f0b6908ab3c7858c32638",
+      "checks": null
+    },
+    {
+      "root": "/private/tmp/h63-containment/synthetic-7ao3pr5r",
+      "launches": 1,
+      "returncode": 23,
+      "stderr": "",
+      "originals_unchanged": true,
+      "profile": "(version 1)\n(allow default)\n(deny network*)\n(deny file-write*)\n(allow file-write* (subpath \"/private/tmp/h63-containment/synthetic-7ao3pr5r/allowed\") (subpath \"/private/tmp/h63-containment/synthetic-7ao3pr5r/checkout\"))\n",
+      "python": "/opt/homebrew/opt/python@3.14/bin/python3.14",
+      "result_sha256": "b47e736714a4a15426ff7a1bdb91c766f07769161c93e5d740ea74120bef698e",
+      "checks": {
+        "read_fake_auth": true,
+        "config_write": "denied",
+        "auth_refresh_write": "denied",
+        "auth_unlink": "denied",
+        "auth_chmod": "denied",
+        "global_create": "denied",
+        "outside_temp": "denied",
+        "symlink_escape": "denied",
+        "atomic_replace": "denied",
+        "allowed_writes": true,
+        "descendant_denied": true
+      }
+    }
+  ],
+  "retained_probe_changes": "Versioned copy adds a docstring and creates the scratch parent if absent; executed probe retained separately with its hash.",
+  "pending": [
+    "nested tool sandbox",
+    "keyring/IPC delegation",
+    "remote refresh and local save failure behavior",
+    "required auxiliary state",
+    "inherited descriptors and wider path attacks",
+    "product gate/cancellation/version integration",
+    "other platforms"
+  ]
+}

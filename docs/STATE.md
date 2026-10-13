@@ -506,8 +506,12 @@ Diagnóstico offline del cambio global completado (D062,
 [evidencia y límites](discovery/CODEX_GLOBAL_CONFIG_DIAGNOSIS.md)): adición
 exacta de confianza acreditada por hash inverso y vía de persistencia interna
 identificada en el binario. Atribución original inferida; contención compatible
-con auth sin verificar, sin corregir el transporte. Siguiente: concretar
-propuesta de contención del proceso Codex, sin iniciar. Después,
+con auth sin verificar, sin corregir el transporte. Propuesta de contención
+completada (D063, [alcance y límites](discovery/CODEX_PROCESS_CONTAINMENT_PROPOSAL.md)):
+frontera externa macOS candidata, lectura de auth ficticia y denegaciones de
+escritura verificadas con procesos sintéticos. Compatibilidad de auth/refresh,
+IPC y sandbox anidado pendientes; sin integración de producto. Siguiente:
+calificación offline acotada del candidato, sin iniciar. Después,
 hito de interfaz de producto con alta de proyectos en SQLite (D054); no iniciado.
 QA visual H5.7 bloqueada por herramienta; Claude real con D058 sigue pendiente.
 
@@ -2217,6 +2221,37 @@ QA visual H5.7 bloqueada por herramienta; Claude real con D058 sigue pendiente.
 - Siguiente: concretar propuesta de contención del proceso Codex compatible
   con autenticación existente, con alcance/criterios antes de implementar;
   no iniciada. Matriz pendiente y H6.2 tampoco se inician.
+
+## Propuesta de contención del proceso Codex (D063)
+
+- Petición del usuario: completar solo la tarea activa y realizar commit.
+  Git inicialmente limpio en `main`, `9db047a`. [Propuesta y aceptación](discovery/CODEX_PROCESS_CONTAINMENT_PROPOSAL.md),
+  [manifiesto](discovery/CODEX_PROCESS_CONTAINMENT_EVIDENCE.json) y
+  [sonda independiente](discovery/CODEX_PROCESS_CONTAINMENT_PROBE.py).
+- Comparadas contención externa y separación de estado/auth para 0.162.1.
+  Candidata para calificación: frontera de escritura macOS conservando HOME,
+  USER y auth en origen, sin duplicar secretos. CODEX_HOME privado no acredita
+  conservar sesión; símbolos de almacenes no prueban selección ni precedencia.
+- Hash del nativo coincide con D062, lectura estática sin invocarlo. No se
+  abrió configuración global, auth real ni llavero. Se documenta el límite:
+  bloquear save local no impide refresh remoto ni garantiza sesión funcional.
+- Experimento con HOME/token ficticios: sandbox anidado de desarrollo impide
+  aplicar el perfil (exit 71); ensayo nuevo fuera autorizado, exit 23 esperado.
+  Lectura auth correcta, ocho escrituras denegadas, checkout/temporal permitidos
+  e hijo contenido; originales ficticios conservan hash/modo/mtime.
+  La salida terminal es del fake, no un comportamiento acreditado de Codex.
+- Propuesta fija efectos, límites, portabilidad, criterios offline siguientes,
+  impacto futuro en versiones/cuarentena y puerta de consentimiento real.
+  IPC, sandbox interno, auxiliares y refresh quedan pendientes explícitos.
+  Sin transporte implementado, ni nueva versión aplicada; cli-7, local-config-2,
+  esquema, codec, permisos D024/D059, contratos e historiales conservados.
+- Sonda OS, JSON, sintaxis Python, enlaces y diff comprobados; sin pytest/build/
+  Node/QA visual nuevos porque no cambia producto/UI. Cero CLI de proveedores,
+  preflight real, login/refresh, red externa, instalaciones, subagentes,
+  harness de desarrollo, cambios globales, ReferenceProject o push.
+- Siguiente tarea separada: calificación offline del contenedor macOS con la
+  matriz sintética de D063; no iniciada. Matriz real y H6.2 tampoco iniciadas;
+  consentimientos D050/D055/D057/D060 agotados. Commit solicitado.
 
 ## Coordinación
 

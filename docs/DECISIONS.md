@@ -1852,3 +1852,37 @@ Límite registrado antes de modificar diseño. Siguiente: concretar propuesta
 de contención del proceso Codex compatible con auth, antes de implementación.
 Sin cambios de producto, `cli-7`, esquema, codec o congelados. Sin CLI reales,
 red, proveedores o avance a la matriz/H6.2; consentimientos siguen agotados.
+
+## D063 — Propuesta de frontera externa de escritura; auth compatible aún no certificada
+
+Estado: propuesta concretada y experimento sintético completado el 2026-10-13;
+**sin implementación en producto**. [Alcance, alternativas y criterios](discovery/CODEX_PROCESS_CONTAINMENT_PROPOSAL.md),
+[evidencia](discovery/CODEX_PROCESS_CONTAINMENT_EVIDENCE.json).
+
+Se elige como candidata para calificación offline una frontera externa macOS
+que conserve HOME/USER y lectura de auth en origen, denegando escrituras fuera
+de checkout/TMPDIR explícitos. No se adopta CODEX_HOME privado sin una vía de
+auth separada acreditada para 0.162.1; símbolos de file/keyring/ephemeral no
+prueban compatibilidad ni el almacén efectivo. No copiar/enlazar credenciales,
+cambiar login/almacén, restaurar configuración ni precrear confianza.
+
+Experimento independiente de producto: sandbox-exec con HOME y token ficticios
+permite lectura y escrituras en raíces de ensayo, deniega ocho operaciones
+fuera de ellas y una escritura de hijo; originales conservados. El primer
+intento dentro del sandbox de desarrollo no pudo aplicar el perfil; el ensayo
+fuera fue autorizado. No se equipara esto al sandbox interno de Codex ni al
+comportamiento real de auth. Perfil experimental permite lecturas/IPC generales;
+no acredita aislamiento contra delegación a servicios o exposición de secretos.
+
+Límite material registrado antes de implementar: denegar persistencia local no
+impide refresh remoto ni garantiza continuidad de sesión. Compatibilidad de
+sandbox anidado, auxiliares, fuente de auth y efectos de refresh requieren
+calificación; si no se puede garantizar ausencia de refresh, no se consume sin
+una decisión específica sobre ese riesgo. No se relaja la prohibición global.
+
+La propuesta detalla errores sin retries/fallback del harness, futura versión
+cli-8/configuración versionada y cuarentena antes de efectos, solo si se integra
+tras calificación. No se cambia cli-7, local-config-2, D024/D059, esquema, codec,
+permisos o congelados. Siguiente tarea: calificación offline sintética acotada,
+sin CLI real. Otra prueba real necesita propuesta y consentimiento específicos;
+D050/D055/D057/D060 agotados, matriz y H6.2 sin iniciar.
