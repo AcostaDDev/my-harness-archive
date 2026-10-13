@@ -35,7 +35,7 @@ Actualizado: 2026-10-13.
 - Dependencias reales instaladas en `.venv` / `frontend/node_modules`, locks
   `uv.lock` / `frontend/package-lock.json`. Pins H0.2 usados conservados;
   backend de paquete `uv_build==0.12.19`. Comandos comprobados en README/AGENTS.
-- 695 casos de producto en `tests/product/`; pytest ejecuta 707 pruebas en total.
+- 708 casos de producto en `tests/product/`; pytest ejecuta 720 pruebas en total.
   La comprobación ligera anterior conserva sus 12 checks sin dependencias.
 - H1.1 completado: [importación legacy y verificaciones](discovery/H1.1_IMPORT.md),
   [alcance original](discovery/H1.1_SCOPE.md). Lector local explícito de
@@ -390,6 +390,15 @@ Actualizado: 2026-10-13.
 - 52 casos nuevos sintéticos. Esquema, codec, cli-4 y hashes congelados conservados;
   no hay actualización de versiones, fallback, reintento ni reparación automática.
 
+- H5.5 completado offline: [distribución y arranque](discovery/H5.5_DISTRIBUTION.md),
+  [alcance original](discovery/H5.5_SCOPE.md), D043. Sdist/wheel con UI, plantillas
+  y migraciones; instalación aislada con pins/hashes desde locks conservados.
+- `harness-local init-db` prepara solo destinos nuevos; `serve --database` exige
+  ruta absoluta/esquema y sirve UI/API desde loopback sin cwd/checkout/Node.
+  Configuración/observación opt-in y guardia de restauraciones conservadas.
+- 13 casos nuevos y recorrido HTTP de wheel instalado con simulación, reinicio,
+  diagnósticos, backup/restauración de consulta. Sin publicación ni proveedores.
+
 ## Todavía no existe
 
 Recorrido de tarea real del motor con proveedores ni entrada CLI gestionada;
@@ -399,7 +408,7 @@ proyectos por HTTP, SSE gestionado, pausa o cancelación por HTTP, integración 
 commit en la rama de destino, retirada de worktrees, abandono manual de una
 intención ambigua, permisos
 interactivos, App Server/SDK para el chat, rotación de logs, retención de payloads
-SQLite/legacy/JUnit, GC ni distribución. Tampoco
+SQLite/legacy/JUnit, GC ni publicación. Tampoco
 reactivación operativa de una copia/restauración. En fases faltan archivo/commit de cierre,
 instalación de la fase siguiente y cancelación de una tarea de reconciliación. La
 evaluación de fase, la reconciliación y el chat con CLI real no se han ejecutado. La salida del hito 2 está verificada offline desde la UI hasta COMMITTED,
@@ -436,7 +445,8 @@ H5.1 importación JUnit y detalle de tests completado offline (D039).
 H5.2 backup/restauración local completado offline (D040).
 H5.3 retención local de logs completado offline (D041).
 H5.4 diagnósticos locales de compatibilidad completado offline (D042).
-Siguiente tarea: H5.5 assets web empaquetados y comando único de inicio, sin iniciarla.
+H5.5 assets y entrada local completados offline (D043).
+Siguiente tarea: H5.6 sesión local y protección de endpoints, sin iniciarla.
 Sin proveedores nuevos.
 
 ## Verificación de H0.1
@@ -1469,6 +1479,41 @@ Sin proveedores nuevos.
   64 KiB, salida combinada 256 KiB y 10 s por sonda más hasta 1 s de recogida.
 
   Siguiente tarea: H5.5 assets web empaquetados y comando único de inicio, sin iniciar.
+
+## Verificación de H5.5
+
+- Git inicial limpio en `main`, `58ce0e3`. Leídos AGENTS, STATE, NEXT_STEPS,
+  DECISIONS, especificación §14/§10 y backlog H5. Alcance original conservado;
+  D043 documenta distribución/arranque y límites. No se inició H5.6.
+- Sdist y wheel construidos offline desde staging, con UI compilada desde npm
+  lock; Node/npm/uv explícitos. Los 13 scripts de revisión y plantilla Alembic
+  conservan bytes; env.py añade URL explícita. Locks sin cambios, uv lock --check
+  correcto; esquema `0013_bootstrap`, codec 6 y cli-4 conservados.
+- 13 casos focales finales correctos: base nueva fuera de cwd y del entorno,
+  rechazo de destinos existentes/enlaces/directorios y auxiliares SQLite,
+  rutas/puertos inválidos sin creación, assets independientes del cwd,
+  override explícito y API 404. Regresión completa previa a los tres últimos
+  casos: 717 pruebas y 121 subtests correctos; total disponible final 720.
+  Aviso de deprecación Starlette/HTTPX conocido. Checks existentes de
+  esquema/OpenAPI incluidos en la regresión; sin cambios HTTP ni tipos nuevos.
+- 12 checks ligeros y cuatro pruebas Node correctos; TypeScript/build correctos.
+  Wheel instalado offline en venv nuevo con 18 dependencias de producción
+  fijadas y hashes, sin dependencia del checkout en sys.path ni Node en PATH.
+  Bytes de código/plantillas/migraciones/assets contrastados con originales.
+- HTTP real en loopback desde cwd temporal: HTML/JS/CSS, health, ausencia de
+  proyectos, mutación sin cabecera denegada, simulación/reinicio, configuración
+  inválida y esquema sin preparar. Backup/verificación/restauración por CLI;
+  lectura del histórico, UI disponible y mutación 409, ignorando configuración
+  ambiental inválida de una copia. Procesos detenidos al terminar.
+- Sandbox bloqueó bind de loopback; verificación realizada fuera con aprobación.
+  Se corrigió la ruta temporal del verificador a canónica para respetar la
+  guardia H5.2. No se relajó esa guardia. 167 enlaces locales y diff revisados.
+- Sin proveedores/smokes/auth, publicación/push, configuración global, datos
+  privados, SQLite de trabajo, ReferenceProject ni colaboración automática. Sin
+  navegador visual, otras plataformas, actualización instalada de bases
+  existentes o flujo de agentes reales. Sesión local pendiente. Commit solicitado.
+
+  Siguiente tarea: H5.6 sesión local y protección de endpoints, sin iniciar.
 
 ## Coordinación
 

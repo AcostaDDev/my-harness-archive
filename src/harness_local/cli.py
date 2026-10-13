@@ -48,9 +48,21 @@ def main(argv: list[str] | None = None) -> int:
     command.add_argument('attempt_id')
     command = operations.add_parser('diagnose-cli', help='Version/help explícitos, sin autenticación ni inferencia')
     command.add_argument('configuration', help='JSON de una CLIConfig con entorno explícito; ejecutable de confianza')
+    for name in ('init-db', 'serve'):
+        command = operations.add_parser(name, help='SQLite nueva explícita' if name == 'init-db' else 'UI/API en 127.0.0.1')
+        command.add_argument('--database', required=True, help='Ruta absoluta SQLite; no usa HARNESS_DATABASE_URL')
+        if name == 'serve':
+            command.add_argument('--port', type=int, default=8013)
     args = parser.parse_args(argv)
     engine = None
     try:
+        if args.operation in ('init-db', 'serve'):
+            from harness_local.launcher import initialize, serve
+            if args.operation == 'init-db':
+                initialize(args.database)
+            else:
+                serve(args.database, args.port)
+            return 0
         if args.operation == 'diagnose-cli':
             from harness_local.adapters.cli_diagnostics import diagnose_file
             result = diagnose_file(args.configuration)

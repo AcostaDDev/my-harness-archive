@@ -1276,3 +1276,37 @@ aditivos. No se modifica ningún snapshot congelado o resultado previo. Sin
 migración/codec/dependencias/API/UI nuevos. Configuración global, autenticación
 real y smokes quedan fuera; consentimientos anteriores agotados.
 Siguiente tarea H5.5: assets web empaquetados y comando único de inicio, sin iniciar.
+
+## D043 — Distribución local con assets y migraciones, arranque explícito en loopback
+
+Estado: implementado y verificado offline el 2026-10-13.
+[Construcción, instalación y límites](discovery/H5.5_DISTRIBUTION.md).
+
+Pipeline explícito `scripts/build_distribution.py`: npm ci offline desde lock,
+comprobación de versiones/tipos/build, staging temporal y sdist/wheel con UI,
+plantillas y migraciones. Dependencias de producción exportadas desde uv.lock con
+pins/hashes. No se versionan assets generados ni se publica; el build de desarrollo
+mediante uv directo no es un paquete de distribución con UI. No cambia el baseline.
+
+Las migraciones canónicas se trasladan al paquete sin cambiar sus revisiones ni
+operaciones; alembic.ini de desarrollo apunta allí. `harness-local init-db` reclama
+una SQLite nueva por ruta absoluta y ejecuta esas migraciones. Rechaza destinos
+existentes/auxiliares huérfanos y conserva parciales; no es un actualizador.
+`harness-local serve --database RUTA` exige esquema y assets preparados y sirve
+UI/API por Uvicorn en 127.0.0.1, un worker, sin reload ni proxy headers. No crea
+ni migra bases al iniciar, no necesita Node/cwd/checkout y diagnostica fallos.
+
+Assets predeterminados relativos al paquete; `create_app(ui_dir=...)` conserva
+el override explícito de biblioteca y Vite sigue siendo la UI de desarrollo.
+La nueva entrada requiere SQLite explícita e ignora HARNESS_DATABASE_URL; las
+entradas anteriores conservan su contrato. HARNESS_MANAGED_CONFIG y observación
+persistida mantienen opt-in; no se auto descubren proyectos ni CLI. Restauraciones
+conservan verificación de bundle y guardia de consulta, sin cargar configuración.
+
+Verificación de wheel en venv limpio offline, dependencias con hashes, cwd ajeno y
+PATH sin Node: recursos exactos, HTTP loopback, simulación/reinicio, diagnósticos,
+backup y restauración de consulta. Solo datos temporales sintéticos. No certifica
+otras plataformas, identidad binaria del build, navegador ni recorrido de agentes.
+Sesión local, actualización instalada de bases existentes, publicación y E2E
+amplios siguen fuera. H5.6 sesión local y protección de endpoints queda siguiente,
+sin iniciar; consentimientos de proveedores/smokes siguen agotados.

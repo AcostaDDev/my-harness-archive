@@ -91,7 +91,7 @@ def create_app(url: str | None = None, ui_dir: Path | None = None,
             raise HTTPException(404, "Simulación no encontrada.")
         return simulation
 
-    assets = ui_dir if ui_dir is not None else Path.cwd() / "frontend/dist"
+    assets = ui_dir if ui_dir is not None else Path(__file__).resolve().parents[1] / "web"
     if (assets / "index.html").is_file():
         app.mount("/", StaticFiles(directory=assets, html=True), name="ui")
     return app

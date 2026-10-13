@@ -1,43 +1,45 @@
-# Siguiente tarea — H5.5 Assets web empaquetados y comando único de inicio
+# Siguiente tarea — H5.6 Sesión local y protección de endpoints
 
-H5.4 diagnósticos locales de compatibilidad se completó offline el 2026-10-13
-(D042). CLI explícita `diagnose-cli` y biblioteca, compartiendo preflight con el
-adaptador: versión/help acotados, entorno explícito, resultados desconocidos o
-incompatibles con pasos de corrección. No revela salidas libres ni credenciales;
-no consulta autenticación ni inicia inferencia. Ver [entrega y límites](discovery/H5.4_DIAGNOSTICS.md)
-y [alcance original](discovery/H5.4_SCOPE.md).
+H5.5 assets web empaquetados y comando único de inicio completado offline el
+2026-10-13 (D043). Wheel/sdist con UI y migraciones, instalación aislada con pins
+y hashes, `init-db` explícito sobre destino nuevo y `serve` en loopback.
+Ver [entrega y límites](discovery/H5.5_DISTRIBUTION.md) y
+[alcance original](discovery/H5.5_SCOPE.md).
 
 Esquema `0013_bootstrap`, codec 6, adaptador `cli-4` y locks conservados.
-Pruebas offline sintéticas y regresión en STATE. Sin CLI reales, proveedores,
-smokes, cambios globales ni SQLite de trabajo. **H5.5 no está iniciado.**
-Los consentimientos de smokes siguen agotados.
+Verificado paquete instalado fuera del checkout, HTTP, simulación/reinicio y
+backup/restauración de consulta con datos sintéticos. **H5.6 no está iniciado.**
+Los consentimientos de proveedores/smokes siguen agotados.
 
 ## Objetivo y alcance (siguiente incremento del hito 5)
 
-1. Empaquetar los assets web compilados con el producto para servirlos sin el
-   checkout de desarrollo ni Node en ejecución.
-2. Ofrecer una entrada local única de inicio, reutilizando FastAPI/Uvicorn,
-   configuración explícita, guardias y comportamiento opt-in existentes.
-3. Documentar instalación reproducible y arranque, verificando un paquete en un
-   entorno temporal limpio con datos sintéticos y sin proveedores.
+1. Incorporar sesión local para el navegador según especificación §10 y D033,
+   sin convertir la cabecera X-Harness-Local en una credencial.
+2. Proteger lecturas y mutaciones del producto de forma coherente, incluidas
+   lecturas H0/H1, recursos de evidencias y streams; preservar Host/Origin/CSRF.
+3. Integrar inicio, expiración/cierre y errores de sesión en UI/entrada instalada,
+   manteniendo restauraciones en consulta y proveedores opt-in.
 
 ## Criterios de aceptación
 
-- El paquete contiene los assets necesarios y sirve la UI y API desde loopback
-  sin depender del cwd ni del checkout de desarrollo.
-- Un comando documentado inicia el servicio; configuración/errores de esquema
-  tienen diagnóstico claro, sin migraciones destructivas o correcciones silenciosas.
-- No se activan proveedores, proyectos, observadores ni supervisor sin opt-in;
-  restauraciones conservan la guardia de consulta.
-- Locks y versiones explícitos; construcción e instalación temporal verificadas,
-  sin cambios globales, publicación ni uso de datos privados.
-- Pruebas pertinentes y documentación de requisitos y límites actualizada.
+- Acceso a datos y acciones exige sesión local válida; loopback o una cabecera
+  pública por sí solos no autorizan. Definir amenazas y límites frente a otros
+  usuarios del SO, sin prometer aislamiento frente al propietario del proceso.
+- Credenciales de sesión no aparecen en logs, evidencias, historial, enlaces
+  persistentes ni respuestas ajenas al flujo de establecimiento autorizado.
+- UI y clientes manejan ausencia/caducidad/cierre sin ejecutar ni repetir acciones
+  automáticamente; guardias de Host/Origin/CSRF conservadas.
+- Rutas y renderizado de logs/evidencias siguen siendo seguros y acotados;
+  errores y pruebas negativas cubren acceso sin sesión y orígenes ajenos.
+- Paquete instalado y restauración de consulta funcionan con sesión; no activa
+  proyectos, observación ni proveedores ni migra datos silenciosamente.
+- Tests offline pertinentes y documentación de operación/límites actualizada.
 
 ## Fuera de alcance
 
-- Sesión local (incremento posterior del hito 5), SSE gestionado, App Server/SDK,
-  reactivación de restauraciones, backup Git, push y publicación.
-- Proveedores/smokes y diagnóstico real de autenticación: requieren autorización
-  específica (D033 punto 8). No incorporar una instalación global automática.
+- Acceso remoto/multiusuario, OAuth externo, App Server/SDK, SSE gestionado,
+  reactivación de restauraciones y publicación.
+- Proveedores/smokes: requieren autorización específica (D033 punto 8).
+- Recorridos E2E amplios restantes del hito 5, aparte de verificar la sesión.
 
 No lanzar colaboración automática ni usar el harness para desarrollar el repo.

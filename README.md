@@ -2,7 +2,7 @@
 
 Aplicación local para configurar, ejecutar y observar un harness modular de desarrollo con agentes.
 Estado actual: H0, H1, H2.1–H2.5, salida del hito 2, H3.1–H3.4,
-H4.1–H4.3, H5.1–H5.3 y exportación mecánica de STATE/NEXT_STEPS completados offline.
+H4.1–H4.3, H5.1–H5.5 y exportación mecánica de STATE/NEXT_STEPS completados offline.
 Python/API/UI con simulaciones, observación legacy y motor con cola/persistencia;
 Git, migración gestionada, prompts/permisos, fases/lotes, chat contextual y bootstrap guiado.
 La exportación usa diff confirmado, commit conciliable y adopción de hashes (D036).
@@ -11,7 +11,7 @@ Git/SQLite sintéticos y fakes. Proveedores opt-in por inyección explícita, si
 entrada CLI gestionada. Reportes JUnit congelados por validación y detalle API/UI.
 Backup/restauración local con manifiesto y guardia de consulta, sin reanudar procesos.
 Retención explícita de originales stdout/stderr con preview, auditoría y consulta.
-Siguiente tarea: H5.4 diagnósticos locales de compatibilidad, sin iniciar.
+Siguiente tarea: H5.6 sesión local y protección de endpoints, sin iniciar.
 
 ## Documentación
 
@@ -52,7 +52,23 @@ Siguiente tarea: H5.4 diagnósticos locales de compatibilidad, sin iniciar.
 
 `AGENTS.md` contiene las instrucciones de Codex; `CLAUDE.md` remite al mismo contrato para Claude Code. El desarrollo es manual y no utiliza el harness como orquestador.
 
-## Arranque local comprobado
+## Paquete local con UI (H5.5)
+
+Construcción, instalación aislada y arranque con un comando en la
+[guía H5.5](docs/discovery/H5.5_DISTRIBUTION.md). El wheel incluye UI, plantillas
+y migraciones; el servicio instalado no necesita Node ni el checkout.
+Preparar una SQLite nueva es una acción separada:
+
+```sh
+/ruta/venv/bin/harness-local init-db --database /ruta/absoluta/nueva.sqlite3
+/ruta/venv/bin/harness-local serve --database /ruta/absoluta/nueva.sqlite3
+```
+
+Abrir `http://127.0.0.1:8013`; detener con Ctrl+C. `serve` no crea ni migra bases,
+no registra proyectos ni activa proveedores. La configuración gestionada y la
+observación siguen siendo opt-in. La sesión local queda pendiente de H5.6.
+
+## Entorno de desarrollo comprobado
 
 Requisitos comprobados en macOS ARM64: Python 3.14.4, uv 0.12.19,
 Node 24.15.0 y npm 11.12.1. Desde la raíz, instalar en `.venv` y
@@ -75,7 +91,8 @@ npm --prefix frontend run build
 UV_CACHE_DIR=.local/uv-cache uv run --frozen --offline uvicorn harness_local.api.app:create_app --factory --host 127.0.0.1 --port 8013 --workers 1
 ```
 
-Abrir `http://127.0.0.1:8013`. El servicio sirve la UI compilada y su API.
+La API de desarrollo escucha en `http://127.0.0.1:8013`. Usar Vite para la UI;
+los assets empaquetados se prueban con la instalación H5.5.
 «Ejecutar simulación» guarda un resultado sintético; recargar o reiniciar
 conserva el historial. Detener con Ctrl+C. Ejecutar desde la raíz y con un
 único proceso; el arranque exige la migración y no crea tablas automáticamente.
@@ -150,7 +167,7 @@ La API gestionada local (proyectos registrados en el servidor, supervisor opt-in
 idempotencia, versiones y guardia Host/Origin/CSRF) está completada offline: ver
 [entrega y límites](docs/discovery/H2_EXIT_API.md). La UI gestionada local está
 completada offline; [demo, verificación y límites](docs/discovery/H2_EXIT_UI.md).
-H4.1–H4.3, H5.1–H5.3 y exportación mecánica completados offline (D035–D041); siguiente tarea: H5.4 diagnósticos locales de compatibilidad, sin iniciar. Ver [corrección y límites](docs/discovery/H2.3_MCP_FIX.md)
+H4.1–H4.3, H5.1–H5.5 y exportación mecánica completados offline (D035–D043); siguiente tarea: H5.6 sesión local y protección de endpoints, sin iniciar. Ver [corrección y límites](docs/discovery/H2.3_MCP_FIX.md)
 y [resultado real cli-3](docs/discovery/H2.3_SMOKE_CLI3.md). El consentimiento
 terminó al fallo; otro smoke requiere propuesta y autorización específicas.
 Ver [corrección del entorno](docs/discovery/H2.3_ENV_FIX.md) y
