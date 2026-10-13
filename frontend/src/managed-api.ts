@@ -16,7 +16,7 @@ export async function managed<T>(path: string, body?: unknown, key?: string): Pr
   return response.json() as Promise<T>;
 }
 // Keep the exact request and key until an acknowledged response, including across reloads.
-export type Pending = { path: string; body: S["RunCreate"] | S["RunActionCreate"]; key: string };
+export type Pending = { path: string; body: S["RunCreate"] | S["RunActionCreate"] | S["PhaseCheckCreate"] | S["PhaseCloseCreate"] | S["PhaseBatchNextCreate"]; key: string };
 const storageKey = "harness-managed-pending-v1";
 export function readPending(): Pending | undefined {
   try { return JSON.parse(sessionStorage.getItem(storageKey) ?? "null") ?? undefined; } catch { return undefined; }

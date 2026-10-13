@@ -1,54 +1,55 @@
-# Siguiente tarea — H3.3: fases
+# Siguiente tarea — H4.1: chat contextual
 
-H3.2 completado offline el 2026-10-13 (D031):
-[permisos y recuperación](discovery/H3.2_PERMISSIONS.md).
-Ledger por categoría, huella/caducidad/versiones, conceder/denegar/sustituir,
-identidad local del servicio y auditoría; snapshots y consumo por intento,
-CLI `cli-4`, API/UI y acciones habilitadas en el servidor. Revalidar ante REVISE
-se detiene para exigir reintento explícito, sin repetir el ejecutor.
-Migración `0009_permissions`, codec 5 compatible con formatos 1–4.
-361 pruebas pytest (30 H3.2), 121 subtests, 12 checks ligeros, 3 pruebas Node,
-OpenAPI/tipos/TypeScript/build y recorrido Chrome sintético verificados.
-No se han usado proveedores ni migrado la SQLite de trabajo del usuario.
+H3.3 completado offline el 2026-10-13 (D032):
+[fases, preguntas, cierre y tags](discovery/H3.3_PHASES.md).
+Fases en SQLite con definición congelada y base documental por hash; check y
+cierre como jobs bajo el lock del checkout; READY ligado a HEAD/fingerprint,
+documentos, commits de tareas y preguntas; cierre que reobserva y solo crea un
+tag ligero por CAS; autorizaciones de lote y de cierre distintas y auditadas.
+Migración `0010_phases`. 390 pruebas pytest (29 H3.3), 121 subtests, 12 checks
+ligeros, 3 pruebas Node, OpenAPI/tipos/TypeScript/build y recorrido Chrome
+sintético verificados. Sin proveedores ni migración de la SQLite de trabajo.
 
-**H3.3 no iniciado.** Los consentimientos de smokes anteriores siguen agotados.
+**H4.1 no iniciado.** Los consentimientos de smokes anteriores siguen agotados.
 
 ## Objetivo y alcance siguiente
 
-Completar H3.3 del backlog en una entrega acotada, sin iniciar H4:
+Completar H4.1 del backlog en una entrega acotada, sin iniciar H4.2:
 
-1. Revisar especificación de fases (§8), backlog H3.3 y contratos H2/H3.1/H3.2.
-   Definir autoridad y evidencia de fase sobre SQLite; señalar contradicciones
-   materiales antes de cambiar diseño. COMMITTED sigue siendo checkpoint, sin
-   integración automática en la rama de destino.
-2. Implementar checks y reconciliación documental, con preguntas bloqueantes,
-   evidencias/versiones y estados ACTIVE/CHECKING/READY_TO_CLOSE/CLOSED,
-   NEEDS_RECONCILIATION/BLOCKED según alcance aceptado.
-3. Vincular READY y autorización de cierre al contenido exacto y tareas aceptadas;
-   invalidar evidencia obsoleta. Separar autorización de ejecución por lote y
-   cierre de fase; las concesiones operativas no deciden producto ni cierre.
-4. Exponer las acciones pertinentes por API/UI con versiones, confirmaciones,
-   auditoría y guardias locales. Documentar semántica de cierre/tags y recuperación
-   conservadora antes de efectos Git; no inventar cierre a partir del legacy.
-5. Caracterizar offline preguntas pendientes, deriva documental, READY obsoleto,
-   reinicio, concurrencia e historial mediante fakes y Git/SQLite temporales.
-6. Ejecutar checks pertinentes, revisar diff y actualizar STATE/NEXT_STEPS,
+1. Revisar especificación §6 (chat y permisos interactivos), §12 («Ajusta X»),
+   §13 (`/chat/messages`, `/proposals/{id}/accept`), backlog H4.1 y contratos
+   H2/H3. Señalar contradicciones materiales antes de cambiar el diseño.
+2. Decidir el transporte: App Server/SDK solo tras comprobar compatibilidad y
+   autenticación en lectura (D007–D009); si no es viable, turnos nuevos con
+   contexto explícito por la CLI existente. No consumir proveedores sin
+   autorización explícita del usuario para un smoke concreto.
+3. Persistir conversación, mensajes y propuestas estructuradas en SQLite, separadas
+   del flujo de ejecución; herramientas de solo lectura con referencias exactas.
+4. Aceptar una propuesta crea o actualiza una tarea mediante decisión explícita,
+   con `Idempotency-Key`, versión y auditoría; la ejecución sigue pasando por el
+   motor (contrato, revisión, commit H2.4) y por las fases H3.3.
+5. Exponer API/UI con guardias locales, tipos generados y confirmaciones.
+6. Caracterizar offline con fakes: propuesta duplicada, aceptación concurrente,
+   reinicio, rechazo y ausencia de rutas laterales que modifiquen la aplicación.
+7. Ejecutar checks pertinentes, revisar diff y actualizar STATE/NEXT_STEPS,
    DECISIONS e informe antes de completar la tarea.
 
 ## Criterios de aceptación
 
-- Una revisión READY obsoleta no permite cerrar la fase.
-- Preguntas bloqueantes pendientes impiden avanzar/cerrar.
-- Lote y cierre exigen autorizaciones distintas, explícitas y auditadas.
-- Checks/reconciliación y evidencias sobreviven al reinicio sin borrar históricos
-  ni repetir efectos inciertos automáticamente.
-- Exclusión de checkout, contratos/snapshots y aceptación por contenido exacto
-  se conservan. Pruebas offline, API/tipos/TypeScript/build pertinentes pasan.
+- «Ajusta X» genera una propuesta vinculada; aceptarla crea una tarea que ejecuta
+  el motor y su resultado queda enlazado al mensaje de origen.
+- El chat no modifica archivos, documentos, permisos ni fases por una ruta lateral.
+- Una propuesta se acepta una sola vez; reinicios y reenvíos no duplican tareas.
+- Conversación y propuestas sobreviven al reinicio sin reescribir históricos.
+- Pruebas offline, API/tipos/TypeScript/build pertinentes pasan.
 
 ## Fuera de alcance
 
-Proveedores reales, smokes, login/refresh, secretos, recuperación de D020/D022,
-SDK/permisos vivos, integración de rama, push/publicación, chat/bootstrap H4 y
-distribución. No lanzar colaboración automática ni usar el harness para desarrollar
-el repo. Sesión local, guardia H0/H1, SSE gestionado, políticas editables y registro
-de proyectos por HTTP permanecen pendientes, sin ampliación implícita.
+Proveedores reales o smokes sin autorización explícita, login/refresh, secretos,
+recuperación de D020/D022, permisos vivos, bootstrap H4.2, segundo perfil H4.3,
+integración de rama, push/publicación y distribución. No lanzar colaboración
+automática ni usar el harness para desarrollar el repo. Pendientes sin ampliación
+implícita: sesión local, guardia H0/H1, SSE gestionado, políticas editables,
+registro de proyectos por HTTP, exportación mecánica de STATE/NEXT_STEPS,
+reconciliación documental con agente, edición de definiciones de fase y
+encadenado automático del lote.

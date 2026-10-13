@@ -264,6 +264,7 @@ class ManagedRunSummaryRead(BaseModel):
     revision_limit: int
     created_at: str
     updated_at: str
+    purpose: Literal['task', 'phase_check', 'phase_close']
 
 
 class StopRead(BaseModel):
@@ -453,3 +454,148 @@ class PermissionRequestRead(BaseModel):
     decision: dict[str, Any] | None
     consumed_by: str | None
     supersedes: str | None
+
+
+PhaseStatus = Literal['ACTIVE', 'CHECKING', 'READY_TO_CLOSE', 'NEEDS_RECONCILIATION', 'BLOCKED', 'CLOSING', 'CLOSED']
+PhaseAction = Literal['check', 'reconcile', 'close', 'question', 'authorize_batch', 'batch_next']
+
+
+class PhaseCreate(BaseModel):
+    model_config = ConfigDict(extra='forbid', strict=True)
+    code: str = Field(min_length=1, max_length=120)
+    objective: str = Field(min_length=1, max_length=4000)
+    exit_criteria: list[str] = Field(min_length=1, max_length=100)
+    tasks: list[str] = Field(max_length=200)
+    documents: list[str] | None = Field(default=None, max_length=50,
+                                        description='Rutas del checkout; por defecto STATE y NEXT_STEPS del proyecto.')
+    tag: str | None = Field(default=None, max_length=100)
+
+
+class PhaseSummaryRead(BaseModel):
+    id: str
+    code: str
+    objective: str
+    status: PhaseStatus
+    version: int
+    created_at: str
+    updated_at: str
+
+
+class PhaseDocumentsRead(BaseModel):
+    baseline: dict[str, str | None]
+    current: dict[str, str | None] | None
+    drift: list[str] | None
+    current_sha256: str | None
+
+
+class PhaseQuestionRead(BaseModel):
+    id: str
+    text: str
+    source: dict[str, Any]
+    status: Literal['OPEN', 'ANSWERED']
+    answer: dict[str, Any] | None
+    version: int
+    created_at: str
+
+
+class PhaseOperationRead(BaseModel):
+    id: str
+    kind: Literal['check', 'close', 'reconcile']
+    run_id: str | None
+    status: str
+    previous_status: str
+    request: dict[str, Any]
+    result: dict[str, Any] | None
+    created_at: str
+    finished_at: str | None
+
+
+class PhaseAuthorizationRead(BaseModel):
+    id: str
+    kind: Literal['batch', 'close']
+    status: str
+    effective_status: str
+    scope: dict[str, Any]
+    fingerprint: str
+    actor: dict[str, Any]
+    reason: str
+    expires_at: str
+    created_at: str
+    closed: dict[str, Any] | None
+    version: int
+
+
+class PhaseReadyRead(BaseModel):
+    operation_id: str
+    binding: dict[str, Any]
+    binding_sha256: str
+    stale_reasons: list[str]
+
+
+class PhaseRead(BaseModel):
+    id: str
+    project_id: str | None
+    root: str
+    code: str
+    definition: dict[str, Any]
+    definition_sha256: str
+    status: PhaseStatus
+    version: int
+    created_at: str
+    updated_at: str
+    documents: PhaseDocumentsRead
+    tasks: dict[str, dict[str, str] | None]
+    questions: list[PhaseQuestionRead]
+    operations: list[PhaseOperationRead]
+    authorizations: list[PhaseAuthorizationRead]
+    ready: PhaseReadyRead | None
+    actions: list[PhaseAction]
+
+
+class PhaseVersioned(BaseModel):
+    model_config = ConfigDict(extra='forbid', strict=True)
+    expected_version: int = Field(ge=0)
+
+
+class PhaseCheckCreate(PhaseVersioned):
+    action: Literal['check']
+
+
+class PhaseCloseCreate(PhaseVersioned):
+    action: Literal['close']
+    binding_sha256: str = Field(pattern=r'^[0-9a-f]{64}$')
+    reason: str = Field(min_length=1, max_length=2000)
+    ttl_seconds: int = Field(default=3600, ge=1, le=86400)
+    confirmed: Literal[True]
+
+
+class PhaseReconcileCreate(PhaseVersioned):
+    documents_sha256: str = Field(pattern=r'^[0-9a-f]{64}$')
+    reason: str = Field(min_length=1, max_length=2000)
+    confirmed: Literal[True]
+
+
+class PhaseQuestionCreate(PhaseVersioned):
+    text: str = Field(min_length=1, max_length=4000)
+
+
+class PhaseAnswerCreate(PhaseVersioned):
+    expected_question_version: int = Field(ge=1)
+    answer: str = Field(min_length=1, max_length=4000)
+    confirmed: Literal[True]
+
+
+class PhaseBatchCreate(PhaseVersioned):
+    tasks: list[str] = Field(min_length=1, max_length=200)
+    ttl_seconds: int = Field(ge=1, le=86400)
+    reason: str = Field(min_length=1, max_length=2000)
+    confirmed: Literal[True]
+
+
+class PhaseRevokeCreate(PhaseVersioned):
+    reason: str = Field(min_length=1, max_length=2000)
+
+
+class PhaseBatchNextCreate(PhaseVersioned):
+    authorization_id: str = Field(min_length=1, max_length=36)
+    text: str = Field(min_length=1, max_length=200_000)

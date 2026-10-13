@@ -79,6 +79,8 @@ class ManagedRunRow(Base):
     version: Mapped[int] = mapped_column(Integer)
     created_at: Mapped[str] = mapped_column(String(40))
     updated_at: Mapped[str] = mapped_column(String(40))
+    # H3.3: 'task', o una operación de fase sin contrato de tarea ('phase_check', 'phase_close').
+    purpose: Mapped[str] = mapped_column(String(20), server_default='task')
 
 
 _LIVE_ACTIVATION = text("status IN ('PREPARING', 'ACTIVE', 'REVERTING')")
@@ -252,3 +254,75 @@ class PermissionRequestRow(Base):
     decision: Mapped[dict | None] = mapped_column(JSON, nullable=True)
     consumed_by: Mapped[str | None] = mapped_column(String(36), nullable=True)
     supersedes: Mapped[str | None] = mapped_column(ForeignKey('permission_requests.id'), nullable=True)
+
+
+class PhaseRow(Base):
+    """Autoridad H3.3 de una fase: definición congelada, base documental adoptada y estado."""
+    __tablename__ = 'managed_phases'
+    __table_args__ = (UniqueConstraint('root', 'code'),
+                      Index('uq_managed_phases_open_root', 'root', unique=True, sqlite_where=text("status != 'CLOSED'")))
+    id: Mapped[str] = mapped_column(String(36), primary_key=True)
+    root: Mapped[str] = mapped_column(String)
+    code: Mapped[str] = mapped_column(String(120))
+    definition: Mapped[dict] = mapped_column(JSON)
+    definition_sha256: Mapped[str] = mapped_column(String(64))
+    documents: Mapped[dict] = mapped_column(JSON)
+    status: Mapped[str] = mapped_column(String(40))
+    version: Mapped[int] = mapped_column(Integer)
+    created_at: Mapped[str] = mapped_column(String(40))
+    updated_at: Mapped[str] = mapped_column(String(40))
+
+
+class PhaseQuestionRow(Base):
+    __tablename__ = 'phase_questions'
+    id: Mapped[str] = mapped_column(String(36), primary_key=True)
+    phase_id: Mapped[str] = mapped_column(ForeignKey('managed_phases.id'))
+    text: Mapped[str] = mapped_column(Text)
+    source: Mapped[dict] = mapped_column(JSON)
+    status: Mapped[str] = mapped_column(String(20))
+    answer: Mapped[dict | None] = mapped_column(JSON, nullable=True)
+    version: Mapped[int] = mapped_column(Integer)
+    created_at: Mapped[str] = mapped_column(String(40))
+
+
+class PhaseOperationRow(Base):
+    """Check, cierre o reconciliación; nunca se sobrescribe un resultado anterior."""
+    __tablename__ = 'phase_operations'
+    id: Mapped[str] = mapped_column(String(36), primary_key=True)
+    phase_id: Mapped[str] = mapped_column(ForeignKey('managed_phases.id'))
+    kind: Mapped[str] = mapped_column(String(20))
+    run_id: Mapped[str | None] = mapped_column(ForeignKey('managed_runs.id'), nullable=True)
+    status: Mapped[str] = mapped_column(String(40))
+    previous_status: Mapped[str] = mapped_column(String(40))
+    request: Mapped[dict] = mapped_column(JSON)
+    result: Mapped[dict | None] = mapped_column(JSON, nullable=True)
+    created_at: Mapped[str] = mapped_column(String(40))
+    finished_at: Mapped[str | None] = mapped_column(String(40), nullable=True)
+
+
+class PhaseAuthorizationRow(Base):
+    """Autorización de lote o de cierre: distintas, explícitas y auditadas."""
+    __tablename__ = 'phase_authorizations'
+    id: Mapped[str] = mapped_column(String(36), primary_key=True)
+    phase_id: Mapped[str] = mapped_column(ForeignKey('managed_phases.id'))
+    kind: Mapped[str] = mapped_column(String(20))
+    status: Mapped[str] = mapped_column(String(20))
+    scope: Mapped[dict] = mapped_column(JSON)
+    fingerprint: Mapped[str] = mapped_column(String(64))
+    actor: Mapped[dict] = mapped_column(JSON)
+    reason: Mapped[str] = mapped_column(Text)
+    expires_at: Mapped[str] = mapped_column(String(40))
+    created_at: Mapped[str] = mapped_column(String(40))
+    closed: Mapped[dict | None] = mapped_column(JSON, nullable=True)
+    version: Mapped[int] = mapped_column(Integer)
+
+
+class PhaseEventRow(Base):
+    __tablename__ = 'phase_events'
+    __table_args__ = (UniqueConstraint('phase_id', 'sequence'), {'sqlite_autoincrement': True})
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    phase_id: Mapped[str] = mapped_column(ForeignKey('managed_phases.id'))
+    sequence: Mapped[int] = mapped_column(Integer)
+    kind: Mapped[str] = mapped_column(String(40))
+    recorded_at: Mapped[str] = mapped_column(String(40))
+    payload: Mapped[dict] = mapped_column(JSON)

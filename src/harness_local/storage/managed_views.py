@@ -66,7 +66,8 @@ class SQLiteManagedViews:
     def _summary(row: Run) -> dict:
         return {"id": row.id, "root": row.root, "task_id": row.task_id, "phase_id": row.phase_id,
                 "status": row.status, "stage": row.stage, "version": row.version, "revisions": row.revisions,
-                "revision_limit": row.revision_limit, "created_at": row.created_at, "updated_at": row.updated_at}
+                "revision_limit": row.revision_limit, "created_at": row.created_at, "updated_at": row.updated_at,
+                "purpose": row.purpose}
 
     def runs(self, root: str, offset: int, limit: int) -> dict:
         with Session(self.engine) as session:
@@ -99,7 +100,7 @@ class SQLiteManagedViews:
                         actions.append('retry_executor')
                 if (live is not None and live.status == 'INTENT') or (live is None and history.acceptance and history.acceptance.eligible):
                     actions.append('commit')
-            if not root_pending and row.status in ('STOPPED', 'BLOCKED', 'REVISION_LIMIT', 'INTERRUPTED'):
+            if not root_pending and row.purpose == 'task' and row.status in ('STOPPED', 'BLOCKED', 'REVISION_LIMIT', 'INTERRUPTED'):
                 actions.append('permissions')
             return {**self._summary(row), "actions": actions, "versions": json.loads(row.versions_json),
                     "history": _history_view(row.history_json), "commit": _commit_view(latest),

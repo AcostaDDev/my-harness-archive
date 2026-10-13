@@ -17,7 +17,8 @@ VARIABLES = {
     'reconcile-phase': ('PHASE_ID', 'REVIEW_JSON'),
     'close-phase': ('PHASE_ID', 'EVIDENCE_JSON'),
 }
-ROLES = {'plan-task': 'planner', 'review-task': 'reviewer', 'execute-task': 'executor', 'revise-task': 'executor'}
+ROLES = {'plan-task': 'planner', 'review-task': 'reviewer', 'execute-task': 'executor', 'revise-task': 'executor',
+         'close-phase': 'phase'}
 TOKEN = re.compile(r'{{([A-Z][A-Z0-9_]*)}}')
 
 
@@ -96,6 +97,8 @@ def output_schema(role: str) -> dict:
                     'acceptance_criteria': 'array', 'validation_commands': 'array', 'executor_selection': 'object'},
         'reviewer': {'task_id': 'string', 'verdict': 'string'},
         'executor': {'result': 'string'},
+        'phase': {'phase_id': 'string', 'verdict': 'string', 'summary': 'string', 'exit_criteria_results': 'array',
+                  'required_actions': 'array', 'blocking_questions': 'array'},
     }
     if role not in fields:
         raise ContractError('No output schema for role')

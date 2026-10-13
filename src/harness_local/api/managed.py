@@ -12,6 +12,7 @@ from typing import Annotated
 from urllib.parse import urlsplit
 
 from fastapi import APIRouter, Depends, Header, HTTPException, Query, Request
+from pydantic import Field
 
 from harness_local.api.schemas import (
     PromptScope, PromptDetailRead, PromptVersionRead, PromptDraftCreate, PromptActivateCreate,
@@ -204,16 +205,19 @@ def managed_router(runtime: ManagedRuntime):
         page = runtime.views.runs(str(project(project_id).context.root), offset, limit)
         return {**page, "items": [{**item, "project_id": project_id} for item in page["items"]]}
 
-    @router.post("/projects/{project_id}/runs", response_model=ManagedJobRead, status_code=202,
-                 operation_id="managed_submit_run")
-    def submit_run(project_id: str, body: RunCreate, idempotency_key: IdempotencyKey):
-        item = project(project_id)
+    def frozen_versions(item):
         from harness_local.core.engine.contracts import freeze
         versions = dict(item.versions)
         if item.permission_authority is not None:
             versions['permission_authority'] = freeze(item.permission_authority)
+        return versions
+
+    @router.post("/projects/{project_id}/runs", response_model=ManagedJobRead, status_code=202,
+                 operation_id="managed_submit_run")
+    def submit_run(project_id: str, body: RunCreate, idempotency_key: IdempotencyKey):
+        item = project(project_id)
         job = call(runtime.repository.submit, item.context, body.task_id, body.phase_id, body.text,
-                   versions, key=idempotency_key)
+                   frozen_versions(item), key=idempotency_key)
         return queued(job)
 
     @router.get("/runs/{run_id}", response_model=ManagedRunRead, operation_id="managed_run")
@@ -324,5 +328,124 @@ def managed_router(runtime: ManagedRuntime):
         values = body.model_dump(exclude={'confirmed'})
         expected = values.pop('expected_version')
         return call(runtime.permissions.decide, run_id, permission_id, expected, **values)
+
+    # --- H3.3: fases ----------------------------------------------------------------
+
+    from harness_local.api.schemas import (
+        PhaseAnswerCreate, PhaseBatchCreate, PhaseBatchNextCreate, PhaseCheckCreate, PhaseCloseCreate, PhaseCreate,
+        PhaseQuestionCreate, PhaseRead, PhaseReconcileCreate, PhaseRevokeCreate, PhaseSummaryRead,
+    )
+    from harness_local.core.engine.phases import document_hashes
+
+    def phase_read(phase_id: str):
+        """Lectura con documentos actuales (disco) y acciones calculadas por el servidor."""
+        runtime.ready()
+        root, definition = call(runtime.phases.definition, phase_id)
+        project_id = runtime.project_id(root)
+        current = None
+        if project_id is not None:
+            try:
+                current = document_hashes(runtime.projects[project_id].context, definition["documents"])
+            except (OSError, ValueError):
+                current = None
+        detail = call(runtime.phases.get, phase_id, current)
+        actions = detail["actions"] if project_id is not None else []
+        if current is None:
+            actions = [a for a in actions if a != "reconcile"]
+        if runtime.config.commit_factory is None:
+            actions = [a for a in actions if a not in ("check", "close")]
+        return {**detail, "project_id": project_id, "actions": actions}
+
+    def registered_phase(phase_id: str):
+        detail = phase_read(phase_id)
+        if detail["project_id"] is None:
+            raise problem(404, "not_found", "La fase pertenece a un checkout no registrado en este servicio.")
+        return runtime.projects[detail["project_id"]], detail
+
+    @router.get("/projects/{project_id}/phases", response_model=list[PhaseSummaryRead], operation_id="managed_phases")
+    def phases(project_id: str):
+        return call(runtime.phases.list, str(project(project_id).context.root))
+
+    @router.post("/projects/{project_id}/phases", response_model=PhaseRead, status_code=201,
+                 operation_id="managed_create_phase")
+    def create_phase(project_id: str, body: PhaseCreate):
+        context = project(project_id).context
+        data = body.model_dump()
+        if data["documents"] is None:
+            data["documents"] = [context.state_file, context.next_steps_file]
+        return phase_read(call(runtime.phases.create, context, data))
+
+    @router.get("/phases/{phase_id}", response_model=PhaseRead, operation_id="managed_phase")
+    def phase(phase_id: str):
+        return phase_read(phase_id)
+
+    @router.get("/phases/{phase_id}/events", response_model=ManagedEventsRead, operation_id="managed_phase_events")
+    def phase_events(phase_id: str, after: Offset = 0, limit: Limit = 100):
+        runtime.ready()
+        return call(runtime.phases.events, phase_id, after, limit)
+
+    @router.post("/phases/{phase_id}/actions", response_model=ManagedJobRead, status_code=202,
+                 operation_id="managed_phase_action")
+    def phase_action(phase_id: str, body: Annotated[PhaseCheckCreate | PhaseCloseCreate, Field(discriminator="action")],
+                     idempotency_key: IdempotencyKey):
+        """check y close son jobs bajo el lock del checkout; el cierre exige su propia autorización."""
+        item, _ = registered_phase(phase_id)
+        if runtime.config.commit_factory is None:
+            raise problem(409, "commit_writer_unavailable",
+                          "Este servicio no tiene escritor Git configurado; las operaciones de fase no se encolan.")
+        if body.action == "check":
+            job = call(runtime.phases.submit_check, item.context, phase_id, body.expected_version,
+                       key=idempotency_key, versions=frozen_versions(item))
+        else:
+            job = call(runtime.phases.submit_close, item.context, phase_id, body.expected_version,
+                       key=idempotency_key, versions=frozen_versions(item), binding_sha256=body.binding_sha256,
+                       reason=body.reason, ttl_seconds=body.ttl_seconds)
+        return queued(job)
+
+    @router.post("/phases/{phase_id}/reconcile", response_model=PhaseRead, operation_id="managed_phase_reconcile")
+    def reconcile_phase(phase_id: str, body: PhaseReconcileCreate):
+        item, _ = registered_phase(phase_id)
+        call(runtime.phases.reconcile, item.context, phase_id, body.expected_version,
+             documents_sha256=body.documents_sha256, reason=body.reason)
+        return phase_read(phase_id)
+
+    @router.post("/phases/{phase_id}/questions", response_model=PhaseRead, status_code=201,
+                 operation_id="managed_phase_question")
+    def raise_question(phase_id: str, body: PhaseQuestionCreate):
+        registered_phase(phase_id)
+        call(runtime.phases.raise_question, phase_id, body.expected_version, text=body.text)
+        return phase_read(phase_id)
+
+    @router.post("/phases/{phase_id}/questions/{question_id}/answer", response_model=PhaseRead,
+                 operation_id="managed_phase_answer")
+    def answer_question(phase_id: str, question_id: str, body: PhaseAnswerCreate):
+        registered_phase(phase_id)
+        call(runtime.phases.answer, phase_id, question_id, body.expected_version,
+             expected_question_version=body.expected_question_version, answer=body.answer)
+        return phase_read(phase_id)
+
+    @router.post("/phases/{phase_id}/authorizations", response_model=PhaseRead, status_code=201,
+                 operation_id="managed_phase_authorize_batch")
+    def authorize_batch(phase_id: str, body: PhaseBatchCreate):
+        """Solo lote: nunca autoriza check ni cierre."""
+        registered_phase(phase_id)
+        call(runtime.phases.authorize_batch, phase_id, body.expected_version, tasks=body.tasks,
+             ttl_seconds=body.ttl_seconds, reason=body.reason)
+        return phase_read(phase_id)
+
+    @router.post("/phases/{phase_id}/authorizations/{authorization_id}/revoke", response_model=PhaseRead,
+                 operation_id="managed_phase_revoke")
+    def revoke_batch(phase_id: str, authorization_id: str, body: PhaseRevokeCreate):
+        registered_phase(phase_id)
+        call(runtime.phases.revoke, phase_id, authorization_id, body.expected_version, reason=body.reason)
+        return phase_read(phase_id)
+
+    @router.post("/phases/{phase_id}/batch/next", response_model=ManagedJobRead, status_code=202,
+                 operation_id="managed_phase_batch_next")
+    def batch_next(phase_id: str, body: PhaseBatchNextCreate, idempotency_key: IdempotencyKey):
+        item, _ = registered_phase(phase_id)
+        job = call(runtime.phases.batch_next, item.context, phase_id, body.expected_version, key=idempotency_key,
+                   versions=frozen_versions(item), authorization_id=body.authorization_id, text=body.text)
+        return queued(job)
 
     return router

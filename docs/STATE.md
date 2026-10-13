@@ -35,7 +35,7 @@ Actualizado: 2026-10-13.
 - Dependencias reales instaladas en `.venv` / `frontend/node_modules`, locks
   `uv.lock` / `frontend/package-lock.json`. Pins H0.2 usados conservados;
   backend de paquete `uv_build==0.12.19`. Comandos comprobados en README/AGENTS.
-- 349 casos de producto en `tests/product/`; pytest ejecuta 361 pruebas en total.
+- 378 casos de producto en `tests/product/`; pytest ejecuta 390 pruebas en total.
   La comprobación ligera anterior conserva sus 12 checks sin dependencias.
 - H1.1 completado: [importación legacy y verificaciones](discovery/H1.1_IMPORT.md),
   [alcance original](discovery/H1.1_SCOPE.md). Lector local explícito de
@@ -243,6 +243,24 @@ Actualizado: 2026-10-13.
   para exigir reintento explícito. Retry mantiene el presupuesto acumulado.
   30 casos H3.2 y comprobación Chrome con SQLite/checkout sintéticos.
 
+- H3.3 completado offline: [fases, preguntas, cierre y tags](discovery/H3.3_PHASES.md),
+  D032. Migración `0010_phases`: fases con definición congelada creada por el
+  usuario, base documental por hash, preguntas, operaciones, autorizaciones y
+  eventos atómicos; `managed_runs.purpose` para runs de check y cierre.
+- Check como job bajo el lock del checkout: preguntas, deriva documental, árbol
+  Git limpio, commits de tareas alcanzables y validación base antes de la
+  evaluación Codex `close-phase` (rol `phase`, solo lectura, esquema fijo).
+  READY ligado a definición, HEAD/fingerprint, documentos, tareas y preguntas.
+- Cierre con autorización propia sobre el READY mostrado: reobserva el vínculo;
+  obsoleto → `NEEDS_RECONCILIATION` sin efectos. Único efecto Git: tag ligero
+  declarado, intención previa, CAS y conciliación; nunca se mueve. Sin edición
+  documental, commit de cierre ni fase siguiente.
+- Lote como autorización distinta (tareas exactas, vigencia, revocable) que encola
+  de una en una sin comprobar, cerrar ni confirmar commits. Reconciliar = adoptar
+  documentos por hash revisado. Fases cerradas no aceptan tareas/commits nuevos.
+- API/UI con acciones del servidor, confirmaciones y guardia gestionada; demo
+  sintética con rol `phase`. 29 casos H3.3 y recorrido Chrome sintético.
+
 ## Todavía no existe
 
 Recorrido de tarea real del motor con proveedores ni entrada CLI gestionada;
@@ -251,7 +269,10 @@ Tampoco existen sesión local, guardia Host/Origin/CSRF en rutas H0/H1, registro
 proyectos por HTTP, SSE gestionado, pausa o cancelación por HTTP, integración del
 commit en la rama de destino, retirada de worktrees, abandono manual de una
 intención ambigua, exportación mecánica de STATE/NEXT_STEPS, permisos
-interactivos, chat ni distribución. La salida del hito 2 está verificada offline desde la UI hasta COMMITTED,
+interactivos, chat ni distribución. En fases faltan reconciliación documental con
+agente, archivo/commit de cierre, instalación de la fase siguiente, edición de la
+definición, encadenado automático del lote y tags anotadas; la evaluación de fase
+con CLI real no se ha ejecutado. La salida del hito 2 está verificada offline desde la UI hasta COMMITTED,
 con recuperación explícita y sin integración en la rama destino.
 La navegación H1.2 muestra evidencia legacy;
 el recorrido H0.3 solo guarda simulaciones, que no representan intentos reales
@@ -272,7 +293,9 @@ COMMITTED, reinicio y recuperación sin repetir ejecutor. [Informe](discovery/H2
 D029. H2.3 conserva su smoke real D025, con autorización agotada. Siguiente tarea:
 H3.1 completado con editor y snapshots por intento (D030). Siguiente tarea:
 H3.2 completado offline con ledger/API/UI/snapshots y recuperación (D031).
-Siguiente tarea: H3.3 (fases), sin iniciarla. Sin proveedores nuevos.
+H3.3 completado offline con fases, READY por contenido exacto, cierre/tag y
+autorizaciones separadas (D032). Siguiente tarea: H4.1 (chat contextual), sin
+iniciarla. Sin proveedores nuevos.
 
 ## Verificación de H0.1
 
@@ -952,6 +975,36 @@ Siguiente tarea: H3.3 (fases), sin iniciarla. Sin proveedores nuevos.
   grants fuera del contrato, políticas editables, permisos vivos/SDK, resolución
   automática de producto o cierre. Sesión local/guardia H0/H1/SSE siguen pendientes.
   Ledger sin paginación ni benchmark de grandes históricos. H3.3 no iniciado.
+
+## Verificación de H3.3
+
+- Git inicial limpio en `main`, `84d3426`. AGENTS/STATE/NEXT_STEPS/DECISIONS,
+  especificación §3/§7/§8/§10/§13, backlog H3.3 y contratos H2/H3 revisados;
+  `phase_check`/`reconcile_phase`/`apply_phase_close` legacy leídos estáticamente.
+- 390 pruebas pytest y 121 subtests: 361 anteriores y 29 H3.3. 12 checks
+  ligeros, 3 pruebas Node, OpenAPI (cambio aditivo comprobado estructuralmente)/
+  tipos, TypeScript/build y diff/whitespace. Aviso Starlette/HTTPX conservado.
+- Git/SQLite temporales y fakes: cierre con tag en el HEAD revisado y documentos
+  intactos; READY obsoleto por commit, árbol sucio o documento sin tag; rechazo
+  previo por evidencia, versión y preguntas; cambio de autoridad durante el check;
+  puertas sin llamada; REVISE → reconciliación ligada al hash revisado; salidas
+  inválidas sin reintento; lote/cierre distintos, caducidad y revocación.
+- Reinicio sin repetir efectos; caída durante el check y tras la intención de tag
+  con recuperación explícita y conciliación; tag ajeno intacto; cuatro cierres
+  concurrentes, un job. Migración 0010 ida/vuelta y `alembic check` en base temporal.
+- Chrome en demo sintética nueva del scratchpad, `127.0.0.1:8018`: crear fase,
+  READY, commit externo → `STALE` sin tag, nuevo READY con confirmación limpiada,
+  `CLOSED` con tag en HEAD; reinicio y recarga con historial completo, sin errores
+  de consola. Detectó que la lista de fases no se refrescaba; corregido con sondeo.
+  Servicio detenido y pestaña cerrada.
+- No se migró la SQLite de trabajo del usuario. Sin proveedores/smokes/login,
+  secretos, ReferenceProject (solo lectura estática), configuración global,
+  colaboración automática, harness de desarrollo ni push. Commit solicitado.
+- Límites: evaluación de fase con CLI real no ejecutada; sin reconciliación con
+  agente, exportación mecánica de STATE/NEXT_STEPS, archivo/commit de cierre,
+  fase siguiente, edición de definición, auto-encadenado de lote, tags anotadas,
+  integración de ramas ni sesión local. Exclusión frente a escritores externos
+  cooperativa. H4.1 no iniciado.
 
 ## Coordinación
 

@@ -17,7 +17,7 @@ import subprocess
 import tempfile
 
 from harness_local.core.engine.commit import (
-    CommitError, CommitIntent, CommitOutcome, CommitPlan, CommitUncertain, GIT_FORMAT, GitIdentity,
+    CommitError, CommitIntent, CommitOutcome, CommitPlan, CommitUncertain, GIT_FORMAT, GitIdentity, _OBJECT_ID,
 )
 from harness_local.core.engine.context import ProjectContext
 from harness_local.core.engine.contracts import freeze
@@ -330,6 +330,57 @@ class GitWorkspace:
             return self._reconciled(git, intent, intent.expected_commit, status="committed")
         except GitError as exc:
             raise CommitUncertain(f"Git state could not be reconciled: {exc}") from exc
+
+    # --- H3.3: puertas y tag de fase ----------------------------------------------
+
+    def contains(self, context: ProjectContext, commit: str) -> bool:
+        """¿El commit aceptado es alcanzable desde HEAD? Solo lecturas."""
+        if not isinstance(commit, str) or not _OBJECT_ID.fullmatch(commit):
+            raise ValueError("Expected a full Git object id")
+        git = self._git(context.root)
+        self._require_root(git, context.root)
+        if git.code("cat-file", "-e", f"{commit}^{{commit}}") != 0:
+            return False
+        code = git.code("merge-base", "--is-ancestor", commit, "HEAD")
+        if code not in (0, 1):
+            raise EvidenceCaptureError("Ancestry of an accepted task commit could not be determined")
+        return code == 0
+
+    def tag(self, context: ProjectContext, intent: dict) -> dict:
+        """Tag ligero determinista: crear solo si no existe (CAS); nunca mover ni sobrescribir."""
+        ref, target = intent["ref"], intent["target"]
+        if not ref.startswith("refs/tags/") or not _OBJECT_ID.fullmatch(target):
+            raise ValueError("Phase tag intent must name refs/tags/<name> and a full commit id")
+        git = self._git(context.root)
+        self._require_root(git, context.root)
+        if git.code("check-ref-format", ref) != 0:
+            raise ValueError("Invalid tag name")
+
+        def observed():
+            return git.run("rev-parse", "-q", "--verify", ref, ok=(0, 1)).decode("utf-8").strip() or None
+
+        def outcome(status, **extra):
+            return {"status": status, "ref": ref, "target": target, **extra}
+
+        try:
+            existing = observed()
+            if existing == target:
+                return outcome("reconciled")
+            if existing is not None:
+                return outcome("conflict", observed=existing, diagnostic=(
+                    f"{ref} already points to {existing}, not to the READY commit {target}; "
+                    "it is never moved automatically. Recover manually with the recorded evidence"))
+            try:
+                git.run("update-ref", "-m", f"harness: close phase {intent['operation_id']}", ref, target,
+                        "0" * len(target))
+            except GitError:
+                # Un CAS fallido no demuestra qué ocurrió: se vuelve a observar.
+                if observed() == target:
+                    return outcome("reconciled")
+                raise
+            return outcome("created")
+        except GitError as exc:
+            raise CommitUncertain(f"Phase tag state could not be reconciled: {exc}") from exc
 
 
 @dataclass(frozen=True)

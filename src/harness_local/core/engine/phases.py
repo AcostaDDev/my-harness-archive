@@ -1,0 +1,225 @@
+"""H3.3: puertas de fase con puertos explícitos. Biblioteca estándar; la autoridad vive en SQLite.
+
+READY se vincula a contenido exacto: definición, HEAD/fingerprint Git limpio, documentos
+adoptados, commits de tareas aceptadas y preguntas. El cierre vuelve a observar ese
+contenido antes de cualquier efecto Git; el único efecto es un tag ligero opcional,
+creado con compare-and-swap y conciliable. Ninguna puerta edita documentos.
+"""
+
+from dataclasses import asdict, replace
+import hashlib
+import re
+from typing import Protocol
+
+from harness_local.core.engine.commit import CommitError, git_provenance
+from harness_local.core.engine.context import ProjectContext, relative_path
+from harness_local.core.engine.contracts import (
+    ContractError, RunHistory, Selection, freeze, invoke_agent, stop_history,
+)
+from harness_local.core.engine.evidence import ContentEvidence, strip_empty_provenance
+from harness_local.core.engine.prompts import dump_catalog, render_attempt
+from harness_local.core.engine.validation import run_validations
+
+PHASE_CODE = re.compile(r"[A-Za-z0-9][A-Za-z0-9._-]{0,119}")
+TAG_NAME = re.compile(r"[A-Za-z0-9][A-Za-z0-9_-]*(?:\.[A-Za-z0-9_-]+)*")
+VERDICTS = ("READY", "REVISE", "BLOCKED")
+# Resultado de check → estado de fase. FAILED vuelve al estado anterior al check.
+CHECK_STATUS = {"READY": "READY_TO_CLOSE", "REVISE": "NEEDS_RECONCILIATION", "BLOCKED": "BLOCKED",
+                "NEEDS_RECONCILIATION": "NEEDS_RECONCILIATION", "NOT_READY": "ACTIVE"}
+
+
+def digest(value) -> str:
+    return hashlib.sha256(freeze(value).encode("utf-8")).hexdigest()
+
+
+def _texts(value, name, *, empty=False) -> list[str]:
+    if (not isinstance(value, list) or not all(isinstance(item, str) and item.strip() for item in value)
+            or (not empty and not value) or len(set(value)) != len(value)):
+        raise ContractError(f"Phase {name} must be a list of distinct, non-empty texts")
+    return [item.strip() for item in value]
+
+
+def phase_definition(context: ProjectContext, data: dict) -> dict:
+    """Definición congelada por quien crea la fase; nunca la amplía un agente."""
+    if not isinstance(data, dict) or set(data) != {"code", "objective", "exit_criteria", "tasks", "documents", "tag"}:
+        raise ContractError("Phase requires code, objective, exit_criteria, tasks, documents and tag")
+    code, objective, tag = data["code"], data["objective"], data["tag"]
+    if not isinstance(code, str) or not PHASE_CODE.fullmatch(code):
+        raise ContractError("Phase code must be 1–120 letters, digits, '.', '_' or '-'")
+    if not isinstance(objective, str) or not objective.strip():
+        raise ContractError("Phase objective required")
+    documents = _texts(data["documents"], "documents")
+    for path in documents:
+        relative_path(path)
+        context.path(path)
+    if tag is not None and (not isinstance(tag, str) or len(tag) > 100 or not TAG_NAME.fullmatch(tag)
+                            or tag.endswith(".lock")):
+        raise ContractError("Tag must be null or a simple tag name (letters, digits, '.', '_', '-')")
+    return {"code": code, "objective": objective.strip(), "exit_criteria": _texts(data["exit_criteria"], "exit criteria"),
+            "tasks": _texts(data["tasks"], "tasks", empty=True), "documents": documents, "tag": tag}
+
+
+def document_hashes(context: ProjectContext, paths) -> dict[str, str | None]:
+    """SHA-256 de archivos regulares sin enlaces; None si no existen (ausencia explícita)."""
+    result = {}
+    for path in paths:
+        item = context.path(path)
+        if item.is_symlink() or (item.exists() and not item.is_file()):
+            raise ValueError(f"Phase document {path} must be a regular file")
+        result[path] = hashlib.sha256(item.read_bytes()).hexdigest() if item.exists() else None
+    return result
+
+
+class PhaseGit(Protocol):
+    def capture(self, context: ProjectContext) -> ContentEvidence: ...
+    def contains(self, context: ProjectContext, commit: str) -> bool: ...
+    def tag(self, context: ProjectContext, intent: dict) -> dict: ...
+
+
+def binding(snapshot: dict, evidence: ContentEvidence, documents: dict) -> dict:
+    return {"definition_sha256": snapshot["definition_sha256"], "head": evidence.base_revision,
+            "fingerprint": evidence.fingerprint, "documents": documents,
+            "tasks": {task: (None if item is None else {"run_id": item["run_id"], "commit": item["commit"]})
+                      for task, item in snapshot["tasks"].items()},
+            "questions_sha256": snapshot["questions_sha256"]}
+
+
+def observe(context: ProjectContext, snapshot: dict, git: PhaseGit):
+    """Contenido actual y motivos por los que no puede estar listo; solo lecturas."""
+    definition = snapshot["definition"]
+    documents = document_hashes(context, definition["documents"])
+    drift = sorted(path for path, value in documents.items() if snapshot["documents"].get(path) != value)
+    evidence = git.capture(context)
+    reasons = []
+    try:
+        git_provenance(evidence)
+    except CommitError as exc:
+        reasons.append(f"Phase gates require Git evidence: {exc}")
+    if evidence.changed_paths:
+        reasons.append("Uncommitted changes in the checkout: " + ", ".join(evidence.changed_paths[:20]))
+    for task in definition["tasks"]:
+        item = snapshot["tasks"].get(task)
+        if item is None:
+            reasons.append(f"Task {task} has no committed acceptance")
+        elif not git.contains(context, item["commit"]):
+            reasons.append(f"Task {task} commit {item['commit']} is not reachable from HEAD")
+    return evidence, documents, drift, reasons
+
+
+def validate_phase_result(definition: dict, data: dict) -> dict:
+    if data.get("phase_id") != definition["code"] or data.get("verdict") not in VERDICTS:
+        raise ContractError("Phase review must name this phase and READY, REVISE or BLOCKED")
+    if not isinstance(data.get("summary"), str):
+        raise ContractError("Phase review summary required")
+    for key in ("required_actions", "blocking_questions"):
+        value = data.get(key)
+        if not isinstance(value, list) or not all(isinstance(item, str) and item.strip() for item in value):
+            raise ContractError(f"Phase review {key} must be a list of texts")
+    results = data.get("exit_criteria_results")
+    if (not isinstance(results, list) or not all(
+            isinstance(item, dict) and isinstance(item.get("criterion"), str) and type(item.get("passed")) is bool
+            and isinstance(item.get("evidence"), str) for item in results)
+            or sorted(item["criterion"] for item in results) != sorted(definition["exit_criteria"])):
+        raise ContractError("Phase review must evaluate each frozen exit criterion exactly once")
+    if data["verdict"] == "READY" and (not all(item["passed"] for item in results)
+                                       or data["required_actions"] or data["blocking_questions"]):
+        raise ContractError("READY requires every exit criterion passed, no actions and no questions")
+    if data["verdict"] == "REVISE" and not data["required_actions"]:
+        raise ContractError("REVISE requires concrete required actions")
+    return data
+
+
+def check_phase(context: ProjectContext, history: RunHistory, snapshot: dict, agents, commands, git: PhaseGit,
+                journal, catalog) -> tuple[RunHistory, dict]:
+    """Puertas deterministas antes de gastar una llamada; el agente solo evalúa."""
+    definition = snapshot["definition"]
+
+    def outcome(verdict, reasons, *, bound=None, result=None, validation=None, questions=()):
+        return {"verdict": verdict, "reasons": list(reasons), "binding": bound,
+                "binding_sha256": digest(bound) if bound else None, "result": result,
+                "validation": validation, "questions": list(questions)}
+
+    def done(history, value):
+        return replace(history, status="completed", stop=None), value
+
+    if snapshot["open_questions"]:
+        return done(history, outcome("BLOCKED", ["Pending blocking questions must be answered first"]))
+    journal.checkpoint(history, "phase")
+    try:
+        evidence, documents, drift, reasons = observe(context, snapshot, git)
+    except Exception as exc:
+        return done(stop_history(history, "evidence", f"{type(exc).__name__}: {exc}"),
+                    outcome("FAILED", [f"Evidence could not be captured: {exc}"]))
+    if drift:
+        return done(history, outcome("NEEDS_RECONCILIATION",
+                                     ["Documents changed since the adopted baseline: " + ", ".join(drift)]))
+    if reasons:
+        return done(history, outcome("NOT_READY", reasons))
+    bound = binding(snapshot, evidence, documents)
+    journal.checkpoint(history, "validation")
+    report = run_validations(context, {"validation_commands": []}, evidence, commands, journal)
+    validation = strip_empty_provenance(asdict(report))
+    if not report.all_passed:
+        return done(history, outcome("NOT_READY", ["Baseline validation failed"], validation=validation))
+    try:
+        catalog_json = dump_catalog(catalog)
+        payload = {"phase": definition, "head": evidence.base_revision, "fingerprint": evidence.fingerprint,
+                   "documents": documents, "tasks": snapshot["task_evidence"], "validation": validation,
+                   "answered_questions": snapshot["answered_questions"]}
+        prompt, prompt_snapshot = render_attempt(catalog, "close-phase", {
+            "PHASE_ID": definition["code"], "EVIDENCE_JSON": freeze(payload)}, context)
+    except (ValueError, KeyError, TypeError) as exc:
+        return done(stop_history(history, "prompts", str(exc)), outcome("FAILED", [str(exc)], validation=validation))
+    history = replace(history, prompt_catalog_json=catalog_json)
+    selection = Selection(context.policy.reviewer_model, context.policy.reviewer_effort,
+                          "Explicit independent phase review policy")
+    history, data = invoke_agent(context, history, agents, "phase", selection, prompt, journal,
+                                 prompt_snapshot_json=prompt_snapshot)
+    if data is None:
+        return done(history, outcome("FAILED", [history.stop.reason], validation=validation))
+    try:
+        validate_phase_result(definition, data)
+    except ContractError as exc:
+        return done(stop_history(history, "phase", str(exc)),
+                    outcome("FAILED", [str(exc)], result=data, validation=validation))
+    try:
+        after = observe(context, snapshot, git)
+    except Exception as exc:
+        return done(stop_history(history, "evidence", f"{type(exc).__name__}: {exc}"),
+                    outcome("FAILED", [f"Evidence could not be re-captured: {exc}"], result=data))
+    if after[0] != evidence or after[1] != documents:
+        return done(history, outcome("NOT_READY", ["Content changed during the phase check; check again"],
+                                     result=data, validation=validation))
+    verdict = data["verdict"]
+    reasons = [] if verdict == "READY" else (data["required_actions"] or [data["summary"]])
+    return done(history, outcome(verdict, reasons, bound=bound if verdict == "READY" else None, result=data,
+                                 validation=validation, questions=data["blocking_questions"]))
+
+
+def close_phase(context: ProjectContext, history: RunHistory, snapshot: dict, git: PhaseGit,
+                journal) -> tuple[RunHistory, dict]:
+    """Reobserva el contenido READY y solo entonces crea el tag declarado (intención antes del efecto)."""
+    ready = snapshot["ready"]
+    done = replace(history, status="completed", stop=None)
+    if not snapshot["authorization"]["usable"]:
+        return done, {"status": "EXPIRED", "reasons": ["Close authorization expired before the job ran"]}
+    journal.checkpoint(history, "phase")
+    evidence, documents, drift, reasons = observe(context, snapshot, git)
+    current = binding(snapshot, evidence, documents)
+    if drift:
+        reasons.append("Documents changed since READY: " + ", ".join(drift))
+    changed = sorted(key for key in current if current[key] != ready["binding"].get(key))
+    if changed:
+        reasons.append("READY evidence is stale: " + ", ".join(changed) + " changed")
+    if reasons:
+        return done, {"status": "STALE", "reasons": reasons, "observed_sha256": digest(current)}
+    tag = None
+    name = snapshot["definition"]["tag"]
+    if name is not None:
+        intent = {"operation_id": snapshot["operation_id"], "ref": f"refs/tags/{name}",
+                  "target": ready["binding"]["head"], "binding_sha256": ready["binding_sha256"]}
+        journal.tag_intent(intent)
+        tag = git.tag(context, intent)
+        if tag["status"] == "conflict":
+            return done, {"status": "FAILED", "reasons": [tag["diagnostic"]], "tag": tag}
+    return done, {"status": "CLOSED", "reasons": [], "tag": tag, "binding_sha256": ready["binding_sha256"]}

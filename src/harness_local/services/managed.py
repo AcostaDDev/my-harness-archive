@@ -54,6 +54,9 @@ class _Journal:
     def commit_invalidated(self, outcome):
         self._call(self.repository.commit_invalidated, outcome)
 
+    def tag_intent(self, intent):
+        self._call(self.repository.tag_intent, intent)
+
     def command_started(self, command):
         identity = str(uuid4())
         self._call(self.repository.effect, "command_started", {"command_id": identity, "command": asdict(command)})
@@ -109,7 +112,25 @@ class LocalSupervisor:
             journal = _Journal(self.repository, claim, heartbeat_failed)
             request = json.loads(claim.request_json)
             versions = json.loads(record.versions_json)
-            if request["action"] == "commit":
+            phase = None
+            if request["action"] in ("phase_check", "phase_close"):
+                # H3.3: puertas de fase con el escritor Git configurado; nunca editan documentos.
+                if self.commit_factory is None:
+                    raise RuntimeError("Phase operations require the configured Git writer")
+                from harness_local.core.engine.phases import check_phase, close_phase
+                from harness_local.storage.phases import PhaseRepository
+                git = self.commit_factory(context, versions)
+                snapshot = PhaseRepository(self.repository).snapshot(claim.run_id)
+                if request["action"] == "phase_close":
+                    history, phase = close_phase(context, record.history, snapshot, git, journal)
+                else:
+                    agents, commands, _ = self.ports_factory(context, versions)
+                    if hasattr(agents, "bind_process_journal"):
+                        agents.bind_process_journal(journal)
+                    from harness_local.storage.prompts import PromptRepository
+                    history, phase = check_phase(context, record.history, snapshot, agents, commands, git, journal,
+                                                 PromptRepository(self.repository.engine).catalog(context))
+            elif request["action"] == "commit":
                 if self.commit_factory is None:
                     raise RuntimeError("No commit writer configured for a commit job")
                 writer = self.commit_factory(context, versions)
@@ -130,7 +151,7 @@ class LocalSupervisor:
                     history = engine.resume(context, record.history, retry_executor=request["action"] == "retry")
             self.repository.close_owner(claim)
             owner_closed = True
-            journal._call(self.repository.finish, history)
+            journal._call(self.repository.finish, history, phase)
             return replace(claim, status="DONE")
         except Exception as exc:
             # También un error de persistencia deja intención y lock para conciliación.

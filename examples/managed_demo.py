@@ -55,6 +55,14 @@ class DemoAgent:
                 marker.write_text("one synthetic failure, retained across restarts\n")
                 raise JournalError("Synthetic UI quarantine after executor; no live process")
             payload = {"task_id": task["task_id"], "verdict": "ACCEPT", "findings": [], "blocking_questions": [], "scope_grants": []}
+        elif request.role == "phase":
+            # H3.3: evaluación sintética READY de los criterios congelados que recibe como evidencia.
+            evidence = json.loads(request.prompt.split("Evidence:\n", 1)[1].split("\nReturn exactly one JSON object", 1)[0])
+            phase = evidence["phase"]
+            payload = {"phase_id": phase["code"], "verdict": "READY", "summary": "Synthetic phase review; no provider",
+                       "exit_criteria_results": [{"criterion": c, "passed": True, "evidence": "synthetic"}
+                                                 for c in phase["exit_criteria"]],
+                       "required_actions": [], "blocking_questions": []}
         else:
             raise ValueError("Demo requires the complete documented task contract; no planner configured")
         return AgentResult(freeze(payload), terminal_observed=True, exit_code=0)

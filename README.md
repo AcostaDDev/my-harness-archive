@@ -34,6 +34,7 @@ ni ejecución automática de proveedores.
 - [Corrección offline de configuración Codex](docs/discovery/H2.3_CONFIG_FIX.md).
 - [Nuevo smoke autorizado: Codex completo, fallo MCP Claude](docs/discovery/H2.3_SMOKE_RETRY.md).
 - [Permisos y recuperación H3.2, verificados offline](docs/discovery/H3.2_PERMISSIONS.md).
+- [Fases, preguntas, cierre y tags H3.3, verificados offline](docs/discovery/H3.3_PHASES.md).
 - [Smoke cli-3: MCP aceptado, fallo de autenticación Claude](docs/discovery/H2.3_SMOKE_CLI3.md).
 - [Git, worktree y commit acotado H2.4](docs/discovery/H2.4_GIT.md).
 - [Migración a modo gestionado H2.5](docs/discovery/H2.5_MIGRATION.md).
@@ -140,7 +141,7 @@ La API gestionada local (proyectos registrados en el servidor, supervisor opt-in
 idempotencia, versiones y guardia Host/Origin/CSRF) está completada offline: ver
 [entrega y límites](docs/discovery/H2_EXIT_API.md). La UI gestionada local está
 completada offline; [demo, verificación y límites](docs/discovery/H2_EXIT_UI.md).
-H3.1 completado offline; siguiente tarea H3.2 (permisos y recuperación), sin iniciar. Ver [corrección y límites](docs/discovery/H2.3_MCP_FIX.md)
+H3.3 completado offline; siguiente tarea H4.1 (chat contextual), sin iniciar. Ver [corrección y límites](docs/discovery/H2.3_MCP_FIX.md)
 y [resultado real cli-3](docs/discovery/H2.3_SMOKE_CLI3.md). El consentimiento
 terminó al fallo; otro smoke requiere propuesta y autorización específicas.
 Ver [corrección del entorno](docs/discovery/H2.3_ENV_FIX.md) y
@@ -153,7 +154,7 @@ siguen conservados. La autorización cubrió una ejecución, sin relanzamiento.
 ## Importación legacy de lectura
 
 Migrar con el servicio detenido antes de importar; el esquema actual es
-`0009_permissions`. Comandos comprobados desde la raíz, con datos sintéticos:
+`0010_phases`. Comandos comprobados desde la raíz, con datos sintéticos:
 
 ```sh
 UV_CACHE_DIR=.local/uv-cache uv run --frozen --offline alembic upgrade head
@@ -220,8 +221,8 @@ a otros proyectos que los hereden; el override de proyecto prevalece.
 
 Las activaciones afectan a intentos posteriores, conservando las peticiones y
 resultados previos. Al reanudar un run detenido se conserva su catálogo congelado.
-El editor no concede permisos. Los flujos de bootstrap y fases aún no están
-implementados. [Contrato, pruebas y límites](docs/discovery/H3.1_PROMPTS.md).
+El editor no concede permisos. El flujo de bootstrap aún no está implementado;
+la evaluación de fases usa `close-phase` desde H3.3. [Contrato, pruebas y límites](docs/discovery/H3.1_PROMPTS.md).
 
 H3.2 incorpora solicitudes de permisos por categoría con caducidad, huella y
 auditoría en la UI gestionada. Conceder no lanza trabajo: se aplica al siguiente
@@ -229,3 +230,10 @@ intento explícito dentro de la autoridad congelada del servidor. Revalidar no
 repite el ejecutor, tampoco ante REVISE. El adaptador actual es `cli-4`; el éxito
 del smoke D025 sigue siendo evidencia histórica de `cli-3`, sin autorizar consumo
 nuevo. Alcance y configuración en [H3.2](docs/discovery/H3.2_PERMISSIONS.md).
+
+H3.3 añade fases a la UI gestionada: definición congelada, preguntas bloqueantes,
+comprobación como job (puertas deterministas y evaluación `close-phase`), READY
+ligado al contenido exacto, reconciliación de documentos por hash y cierre con
+autorización propia que solo crea un tag ligero declarado, sin editar documentos.
+El lote es una autorización distinta que no comprueba ni cierra. Las operaciones
+de fase exigen escritor Git configurado. [Contrato y límites](docs/discovery/H3.3_PHASES.md).

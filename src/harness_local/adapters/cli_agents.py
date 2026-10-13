@@ -87,8 +87,8 @@ def argv_for(config, context, request):
     if not model or model.startswith("-") or not effort or effort.startswith("-"):
         raise ValueError("Explicit model/effort required")
     if config.provider == "codex":
-        if request.role not in {"planner", "reviewer"}:
-            raise ValueError("Codex handles planner/reviewer only")
+        if request.role not in {"planner", "reviewer", "phase"}:
+            raise ValueError("Codex handles planner/reviewer/phase review only")
         return config.executable + (
             "exec", "--strict-config", "--ignore-user-config", "--ignore-rules", "--ephemeral", "--json",
             "--model", model, "--sandbox", "read-only", "--color", "never",
@@ -204,6 +204,10 @@ class CLIProcessAdapter:
                 "next_prompt": "required for REVISE", "executor_selection": {"model": "allowed model",
                     "effort": "allowed effort", "reason": "required for REVISE"}},
             "executor": {"result": "implementation summary"},
+            # H3.3, aditivo: la evaluación de fase usa el mismo transporte Codex de solo lectura.
+            "phase": {"phase_id": "requested phase id", "verdict": "READY or REVISE or BLOCKED", "summary": "summary",
+                "exit_criteria_results": [{"criterion": "frozen criterion", "passed": True, "evidence": "evidence"}],
+                "required_actions": [], "blocking_questions": []},
         }
         prompt = request.prompt + "\n\nReturn exactly one JSON object, without Markdown fences. Shape:\n" + freeze(shapes[request.role])
         if request.role in {"planner", "reviewer"}:

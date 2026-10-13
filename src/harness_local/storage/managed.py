@@ -163,6 +163,9 @@ class SQLiteManagedRepository:
             run.stage = "mode_guard"
             session.delete(session.get(Lock, run.root))
             self._event(session, run, "job_refused", {"job_id": job.id, "diagnostic": diagnostic})
+            if run.purpose != "task":
+                from harness_local.storage.phases import abort
+                abort(self, session, run, "REFUSED", diagnostic)
 
     def _existing(self, session, key, request):
         _nonempty(key, "idempotency key")
@@ -184,30 +187,45 @@ class SQLiteManagedRepository:
             raise ValueError("Explicit component versions required; unknown values use null")
         if Path(self.engine.url.database).resolve().is_relative_to(context.root):
             raise ValueError("Managed SQLite must be outside the agent checkout")
-        snapshot = context_snapshot(context)
-        frozen_versions = freeze(versions)
-        request = freeze({"action": "start", "context_json": snapshot, "versions_json": frozen_versions,
-                          "task_id": task_id, "phase_id": phase_id, "text": text})
+        request = freeze({"action": "start", "context_json": context_snapshot(context),
+                          "versions_json": freeze(versions), "task_id": task_id, "phase_id": phase_id, "text": text})
         assessment = self.guard.assess(context.root)
         with self._write() as session:
             existing = self._existing(session, key, request)
             if existing:
                 return _job(existing)
-            activation_id = self._admit(session, assessment)
-            history = RunHistory(str(uuid4()), snapshot)
-            now = self._now()
-            run = Run(id=history.id, root=str(context.root), task_id=task_id, phase_id=phase_id,
-                      context_json=snapshot, versions_json=frozen_versions, history_json=dump_history(history),
-                      status="QUEUED", stage="start", revisions=0,
-                      revision_limit=context.policy.max_revision_cycles, version=0, created_at=now, updated_at=now)
-            session.add(run)
-            session.flush()
-            job = Job(idempotency_key=key, run_id=run.id, request_json=request, status="QUEUED", created_at=now,
-                      activation_id=activation_id)
-            session.add(job)
-            session.flush()
-            self._event(session, run, "job_queued", {"job_id": job.id, "action": "start"})
-            return _job(job)
+            return self._queue_new_run(session, assessment, context, versions, task_id, phase_id, key, request)
+
+    def _queue_new_run(self, session, assessment, context, versions, task_id, phase_id, key, request,
+                       purpose="task"):
+        """Run nuevo y su primer job en la transacción del llamante (tareas y operaciones de fase H3.3)."""
+        if purpose == "task":
+            self._phase_open(session, str(context.root), phase_id)
+        activation_id = self._admit(session, assessment)
+        snapshot = context_snapshot(context)
+        history = RunHistory(str(uuid4()), snapshot)
+        now = self._now()
+        action = json.loads(request)["action"]
+        run = Run(id=history.id, root=str(context.root), task_id=task_id, phase_id=phase_id,
+                  context_json=snapshot, versions_json=freeze(versions), history_json=dump_history(history),
+                  status="QUEUED", stage=action, revisions=0, purpose=purpose,
+                  revision_limit=context.policy.max_revision_cycles, version=0, created_at=now, updated_at=now)
+        session.add(run)
+        session.flush()
+        job = Job(idempotency_key=key, run_id=run.id, request_json=request, status="QUEUED", created_at=now,
+                  activation_id=activation_id)
+        session.add(job)
+        session.flush()
+        self._event(session, run, "job_queued", {"job_id": job.id, "action": action})
+        return _job(job)
+
+    @staticmethod
+    def _phase_open(session, root, code):
+        """H3.3: una fase cerrada (o cerrándose) no acepta tareas, reanudaciones ni commits nuevos."""
+        from harness_local.storage.models import PhaseRow
+        if session.scalar(select(PhaseRow.id).where(PhaseRow.root == root, PhaseRow.code == code,
+                                                    PhaseRow.status.in_(("CLOSED", "CLOSING")))):
+            raise Conflict("The phase is closed or closing in this checkout; it does not advance")
 
     def resume(self, run_id: str, *, key: str, expected_version: int, retry_executor=False) -> JobRecord:
         if type(expected_version) is not int or type(retry_executor) is not bool:
@@ -236,6 +254,7 @@ class SQLiteManagedRepository:
                 raise Conflict("Only a stopped run with a frozen contract can resume")
             if retry_executor and not json.loads(history.task_json)["allowed_paths"]:
                 raise Conflict("Read-only tasks cannot retry implementation")
+            self._phase_open(session, run.root, run.phase_id)
             activation_id = self._admit(session, assessment)
             job = Job(idempotency_key=key, run_id=run_id, request_json=request, status="QUEUED", created_at=self._now(),
                       activation_id=activation_id)
@@ -372,7 +391,8 @@ class SQLiteManagedRepository:
                                   request_json=freeze(asdict(request)), versions_json=run.versions_json,
                                   status="ACTIVE", started_at=self._now()))
             run.stage = request.role
-            run.status = {"planner": "PLANNING", "executor": "EXECUTING", "reviewer": "REVIEWING"}[request.role]
+            run.status = {"planner": "PLANNING", "executor": "EXECUTING", "reviewer": "REVIEWING",
+                          "phase": "CHECKING"}[request.role]
             self._event(session, run, "attempt_started", {"job_id": job.id, "attempt_id": request.id,
                                                         "number": len(attempts) + 1, "role": request.role})
             return request
@@ -382,10 +402,13 @@ class SQLiteManagedRepository:
             job, run = self._owned(session, claim)
             self._event(session, run, kind, {**payload, "job_id": job.id})
 
-    def finish(self, claim: JobRecord, history: RunHistory) -> None:
+    def finish(self, claim: JobRecord, history: RunHistory, phase: dict | None = None) -> None:
+        """`phase`: resultado de una operación de fase, aplicado en la misma transacción (H3.3)."""
         with self._write() as session:
             job, run = self._owned(session, claim)
-            if history.status not in {"stopped", "blocked", "revision_limit", "acceptance_ready"}:
+            terminal = {"stopped", "completed"} if run.purpose != "task" else {
+                "stopped", "blocked", "revision_limit", "acceptance_ready"}
+            if history.status not in terminal or (phase is None) != (run.purpose == "task"):
                 raise Conflict("Only a terminal engine action can finish a job")
             self._history(session, run, history)
             if session.scalar(select(AttemptRow.id).where(AttemptRow.run_id == run.id,
@@ -396,6 +419,9 @@ class SQLiteManagedRepository:
             run.stage = history.stop.stage if history.stop else "finished"
             if self._live_commit(session, run.id, ("COMMITTED",)) is not None:
                 run.status, run.stage = "COMMITTED", "committed"
+            if phase is not None:
+                from harness_local.storage.phases import settle
+                settle(self, session, run, phase)
             job.status, job.finished_at = "DONE", self._now()
             session.delete(session.get(Lock, run.root))
             self._event(session, run, "job_finished", {"job_id": job.id, "history_status": history.status})
@@ -450,6 +476,9 @@ class SQLiteManagedRepository:
             job.status, job.finished_at, job.diagnostic = "INTERRUPTED", self._now(), reason
             session.delete(session.get(Lock, run.root))
             self._event(session, run, "writer_stopped_confirmed", {"job_id": job.id, "owner_token": owner_token, "reason": reason})
+            if run.purpose != "task":
+                from harness_local.storage.phases import abort
+                abort(self, session, run, "INTERRUPTED", reason)
 
 
     # --- H2.4: commit aceptado ----------------------------------------------------
@@ -483,6 +512,7 @@ class SQLiteManagedRepository:
             live = self._live_commit(session, run_id)
             if live is not None and live.status == "COMMITTED":
                 raise Conflict("Run already has a recorded commit")
+            self._phase_open(session, run.root, run.phase_id)
             history = load_history(run.history_json)
             if live is not None:
                 if updates and updates != CommitIntent.from_json(live.intent_json).mechanical:
@@ -532,6 +562,7 @@ class SQLiteManagedRepository:
                 raise Conflict("Commit intent must name this run's reviewed acceptance evidence")
             if self._live_commit(session, run.id) is not None:
                 raise Conflict("Run already has a live commit operation")
+            self._phase_open(session, run.root, run.phase_id)
             session.add(Commit(operation_id=intent.operation_id, run_id=run.id, job_id=job.id, status="INTENT",
                                base_revision=intent.base_revision, reviewed_fingerprint=intent.reviewed_fingerprint,
                                expected_tree=intent.expected_tree, expected_commit=intent.expected_commit,
@@ -568,6 +599,15 @@ class SQLiteManagedRepository:
         self.effect(claim, "commit_invalidated", {
             "operation_id": None, "diagnostic": outcome.diagnostic,
             "observed_fingerprint": outcome.observed_fingerprint, "head": outcome.head})
+
+    def tag_intent(self, claim: JobRecord, intent: dict) -> None:
+        """H3.3: intención del tag de cierre ANTES de crear la referencia; transacción propia y corta."""
+        self._require_mode(claim)
+        with self._write() as session:
+            job, run = self._owned(session, claim)
+            from harness_local.storage.phases import record_tag_intent
+            record_tag_intent(self, session, run, intent)
+            self._event(session, run, "phase_tag_intent", {"job_id": job.id, **intent})
 
     def register_owner(self, claim, identity):
         with self._write() as session:

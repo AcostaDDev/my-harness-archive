@@ -817,3 +817,36 @@ automáticas de una acción de ejecución conservan su política/presupuesto exi
 API/UI exponen ledger, decisiones, snapshots y acciones calculadas por el servidor,
 con versiones, confirmación y guardia gestionada. H3.3 siguiente, sin iniciarse;
 smokes anteriores siguen sin autorización disponible.
+
+## D032 — Fases en SQLite, READY por contenido exacto y cierre sin edición documental
+
+Estado: implementado y verificado offline el 2026-10-13.
+[Entrega y límites](discovery/H3.3_PHASES.md).
+
+La fase es autoridad SQLite (`0010_phases`): definición congelada creada por el
+usuario (criterios, tareas, documentos, tag opcional), base documental adoptada
+por hash, preguntas, operaciones, autorizaciones y eventos atómicos. No se infiere
+ninguna fase ni cierre del legacy. Check y cierre son runs (`purpose`) con job bajo
+el lock del checkout, reutilizando supervisor, guardia de modo, cuarentena y
+persistencia de intentos; no se crea otra cola.
+
+READY se vincula a definición, HEAD, fingerprint Git limpio, documentos, commits
+alcanzables de las tareas aceptadas y preguntas/respuestas. El cierre vuelve a
+observar ese vínculo antes de cualquier efecto: un READY obsoleto nunca cierra y
+pasa a `NEEDS_RECONCILIATION`. Preguntas pendientes impiden check, cierre y lote.
+
+Diferencia deliberada con el legacy, sin trasladar sus reglas: el cierre no edita
+documentos, no archiva planes, no instala la fase siguiente ni hace commit; la
+exportación mecánica de STATE/NEXT_STEPS sigue pendiente (§7). Su único efecto Git
+es un tag ligero declarado, con intención previa y creación por CAS: se concilia si
+ya apunta al READY y nunca se mueve. «Reconciliar» es adoptar explícitamente
+documentos cambiados por hash revisado; las ediciones se hacen como tareas
+revisadas y confirmadas. La plantilla `reconcile-phase` con agente queda sin
+ejecutar.
+
+Lote y cierre son autorizaciones distintas, explícitas, con vigencia e identidad
+del servicio: el lote encola de una en una tareas exactas y no comprueba, cierra ni
+confirma commits; el cierre está ligado al READY mostrado y no encola tareas. Las
+concesiones H3.2 no deciden producto ni cierre. Rol `phase` añadido al transporte
+Codex de solo lectura de forma aditiva, sin cambiar `cli-4` para roles existentes.
+H4.1 queda siguiente sin iniciarse; smokes anteriores siguen sin autorización.
