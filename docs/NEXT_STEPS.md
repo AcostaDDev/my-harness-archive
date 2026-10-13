@@ -1,53 +1,51 @@
-# Siguiente tarea — H5.1 Importación JUnit y detalle de tests
+# Siguiente tarea — H5.2 Backup y restauración local
 
-H4.3 segundo perfil se completó offline el 2026-10-13 (D038).
-`typescript-web` declara preparación npm offline desde lock, tipos, tests y build
-estático, comandos y reglas. Fixture con Node 24.15.0, npm 11.12.1 y TypeScript
-5.9.3; procesos reales por el puerto de prueba, agentes falsos y Git/SQLite
-temporales hasta COMMITTED. Sin condiciones de stack nuevas en el núcleo.
-Ver [entrega y límites](discovery/H4.3_TYPESCRIPT_PROFILE.md).
+H5.1 importación JUnit y detalle de tests se completó offline el 2026-10-13
+(D039). Original/hash y casos conservados en el historial, declaraciones por
+comando/perfil, captura/parser acotados, procedencia de run/intento/comando/Git,
+consulta paginada y descarga API/UI. TypeScript genera JUnit con el reporter Node.
+Ver [entrega y límites](discovery/H5.1_JUNIT.md) y
+[alcance original](discovery/H5.1_SCOPE.md).
 
 Estado verificado:
 
-- esquema `0013_bootstrap` y codec conservados;
-- 526 pruebas pytest y 121 subtests (16 nuevas de H4.3);
-- 12 checks ligeros y 4 pruebas Node;
-- check TypeScript del frontend; checks existentes de esquema/OpenAPI;
-- preparación → tipos → tres tests Node → build con evidencia Git intacta;
-- tarea corregida en worktree → ACCEPTANCE_READY → commit exacto → COMMITTED;
-- fallos de tests/tipos/build/política, caché, engines y lock impiden continuar;
-  permisos y snapshots conservados, cambios externos bloquean commit.
+- esquema `0013_bootstrap` sin migración nueva; codec 6 y formatos 1–5 compatibles;
+- 569 pruebas pytest y 121 subtests; checks de esquema/OpenAPI existentes;
+- 43 casos JUnit nuevos y reporter Node real con tres casos/duraciones;
+- 12 checks ligeros, cuatro pruebas del cliente Node y TypeScript/build;
+- reportes válidos, truncados, inválidos, ausentes y anteriores con diagnósticos;
+- XML activo, rutas externas/enlazadas, archivos especiales y límites rechazados;
+- original persistido después de reiniciar y de editar/eliminar su fuente;
+- revalidación y check de fase, comandos/intentos/evidencia exacta conservados;
+- paginación HTTP, errores como texto en Chrome y commit exacto/invalidez por deriva.
 
-No se usaron proveedores ni se migró la SQLite de trabajo. El runner real es de
-prueba para fixture confiable; no añade un ejecutor de comandos al servicio. La
-plantilla de bootstrap H4.2 sigue siendo documental. **H5.1 no está iniciado.**
-Los consentimientos de smokes siguen agotados.
+No se usaron proveedores ni se migró la SQLite de trabajo. No se incorporó
+retención, backup ni distribución. **H5.2 no está iniciado.** Los consentimientos
+de smokes siguen agotados.
 
-## Objetivo y alcance (primer incremento del hito 5)
+## Objetivo y alcance (segundo incremento del hito 5)
 
-1. Importar reportes JUnit XML de validaciones y conservar el original con hash y
-   procedencia vinculados al comando, intento y evidencia de contenido exacto.
-2. Exponer detalle por test (id/suite/resultado/duración/error), distinguiendo
-   datos observados, ausentes y parciales; no sumar duraciones como tiempo real.
-3. Declarar rutas de reportes y cobertura de validación por perfil, sin introducir
-   condiciones específicas de frameworks en el núcleo.
-4. Incorporar consulta API/UI y pruebas offline con reportes sintéticos válidos,
-   parciales e inválidos. Acotar el incremento a JUnit; otros trabajos del hito 5
-   permanecen pendientes.
+1. Definir y realizar una copia local consistente de la SQLite y de los artefactos
+   gestionados necesarios para recuperar su historial y referencias.
+2. Restaurar explícitamente en un destino nuevo, con manifiesto, hashes y
+   comprobación de compatibilidad/integridad; conservar los originales.
+3. Verificar offline con bases/checkouts/artefactos sintéticos y documentar el
+   procedimiento y sus límites. Una restauración no autoriza a reanudar procesos.
 
 ## Criterios de aceptación
 
-- Un run conserva el reporte original y muestra detalle por test con procedencia
-  y cobertura declarada; no presenta datos ausentes como éxitos o ceros.
-- Reporte inválido/ausente/parcial produce diagnóstico explícito, sin fabricar
-  casos ni reemplazar resultados observados del comando.
-- El parser no lee rutas externas ni ejecuta contenido XML. Tests y review siguen
-  vinculados al contenido exacto, sin aceptar ni hacer commit por el reporte solo.
-- Pasan las regresiones offline pertinentes y se actualiza la documentación.
+- La copia conserva historial, snapshots, reportes y referencias de artefactos
+  con una política explícita de consistencia frente a actividad del servicio.
+- Restaurar en un destino vacío produce una autoridad SQLite íntegra y artefactos
+  verificables; corrupción, ausencia o versión incompatible producen diagnóstico.
+- No sobrescribe el estado de trabajo ni supone que procesos inciertos terminaron;
+  no ejecuta agentes ni repite efectos al restaurar.
+- Pasa el recorrido offline copia → restauración → consultas con datos sintéticos,
+  las regresiones pertinentes y se actualiza la documentación.
 
 ## Fuera de alcance
 
-- Backup/restore, retención, empaquetado/distribución y demás incrementos de H5.
+- Retención/GC, empaquetado/distribución y demás incrementos de H5.
 - Proveedores reales/smokes: autorización específica (D033 punto 8).
 - App Server/SDK, sesión local, SSE gestionado, push y publicación.
 

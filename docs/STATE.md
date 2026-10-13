@@ -35,7 +35,7 @@ Actualizado: 2026-10-13.
 - Dependencias reales instaladas en `.venv` / `frontend/node_modules`, locks
   `uv.lock` / `frontend/package-lock.json`. Pins H0.2 usados conservados;
   backend de paquete `uv_build==0.12.19`. Comandos comprobados en README/AGENTS.
-- 514 casos de producto en `tests/product/`; pytest ejecuta 526 pruebas en total.
+- 557 casos de producto en `tests/product/`; pytest ejecuta 569 pruebas en total.
   La comprobación ligera anterior conserva sus 12 checks sin dependencias.
 - H1.1 completado: [importación legacy y verificaciones](discovery/H1.1_IMPORT.md),
   [alcance original](discovery/H1.1_SCOPE.md). Lector local explícito de
@@ -338,6 +338,21 @@ Actualizado: 2026-10-13.
   commit. Sin cambios del núcleo, API/UI, esquema ni codec; no añade un ejecutor
   de comandos al servicio ni modifica la plantilla documental de bootstrap.
 
+- H5.1 completado offline: [reportes JUnit y detalle de tests](discovery/H5.1_JUNIT.md),
+  [alcance original](discovery/H5.1_SCOPE.md), D039. Declaraciones por comando
+  exacto/ruta/selección en perfil congelado, captura segura antes/después y original
+  completo con SHA-256 en el historial SQLite. Codec 6; formatos 1–5 conservados,
+  esquema `0013_bootstrap` sin migración.
+- Parser de biblioteca estándar acotado, sin DTD/entidades ni lectura de rutas XML.
+  Casos/suites/resultados/duraciones/errores observados; datos ausentes, parcialidad,
+  XML inválido/ausente/obsoleto y límites explícitos. No suma duración de casos.
+  Fallos nuevos observados añaden una puerta de aceptación; nunca sustituyen los
+  resultados del comando ni la review/política/evidencia exacta.
+- API de casos paginados y descarga del original persistido; UI con tabla,
+  cobertura declarada, procedencia, diagnósticos y errores como texto. Reportes en
+  tareas/revalidaciones y checks de fase. `typescript-web`/fixture generan JUnit
+  Node junto a TAP sin dependencias nuevas; 43 casos nuevos y Chrome sintético.
+
 ## Todavía no existe
 
 Recorrido de tarea real del motor con proveedores ni entrada CLI gestionada;
@@ -378,7 +393,8 @@ confirmadas como tareas normales (D035).
 Exportación mecánica de STATE/NEXT_STEPS completada offline (D036).
 H4.2 bootstrap guiado completado offline (D037).
 H4.3 segundo perfil TypeScript web completado offline (D038).
-Siguiente tarea: H5.1 importación JUnit y detalle de tests, sin iniciarla.
+H5.1 importación JUnit y detalle de tests completado offline (D039).
+Siguiente tarea: H5.2 backup/restauración local, sin iniciarla.
 Sin proveedores nuevos.
 
 ## Verificación de H0.1
@@ -1273,6 +1289,40 @@ Sin proveedores nuevos.
   de bootstrap; la plantilla H4.2 sigue siendo documental.
 
   H5.1 importación JUnit queda siguiente, sin iniciar.
+
+## Verificación de H5.1
+
+- Git inicial limpio en `main`, `95f543a`. Leídos AGENTS, STATE, NEXT_STEPS,
+  DECISIONS, especificación §9–11 y backlog H5. Alcance original conservado;
+  no se implementó otro incremento de H5.
+- 43 casos nuevos JUnit y comprobación de los tres casos del reporter Node real
+  en el recorrido H4.3. Parsers/rutas, límites, ausencias/null/cero, XML parcial,
+  inválido, DTD/entidades UTF-8/UTF-16, contadores/identidades/estados incoherentes,
+  reportes obsoletos y cambios durante captura comprobados offline.
+- Git/SQLite temporales: comandos/intentos/evidencia congelada, codec 6 y formatos
+  anteriores, revalidación conservando originales, check de fase, reinicio,
+  paginación y descarga después de editar/eliminar el origen. Fallos del comando
+  o JUnit con exit 0, review inválida y cambios externos de código impiden
+  aceptación/commit; commit exitoso limitado al contenido revisado.
+- 569 pruebas pytest y 121 subtests correctos (526 anteriores + 43 JUnit), con
+  checks existentes de esquema y sincronización OpenAPI. Checks ligeros (12),
+  cliente Node (4), OpenAPI/tipos generados y TypeScript/build correctos.
+  Sin migración nueva ni cambios de locks; aviso conocido Starlette/HTTPX.
+- Chrome con UI compilada y checkout/SQLite sintéticos bajo `/private/tmp`,
+  `127.0.0.1:8023`, sin supervisor activo: tabla de éxito/fallo/error/omisión,
+  duraciones cero/ausentes, error con `<script>` mostrado como texto,
+  cobertura/hash/original y commit deshabilitado. Sin errores de consola.
+  Servicio y pestaña de prueba cerrados.
+- Sin proveedores, smokes, login, cambios globales, ReferenceProject, colaboración
+  automática, harness como orquestador de desarrollo ni push. No se migró la
+  SQLite de trabajo. Commit solicitado por el usuario.
+- Límites: captura/frescura cooperativa frente a escritores externos, XML hasta
+  2 MiB/2.000 casos, originales en historial sin retención/GC o benchmark de gran
+  volumen. Sin importación JUnit legacy ni medición de cobertura de código.
+  Una caída antes del checkpoint conserva los eventos del comando y requiere
+  revalidación explícita; no se atribuye el archivo anterior automáticamente.
+
+  H5.2 backup/restauración local no se ha iniciado.
 
 ## Coordinación
 

@@ -19,6 +19,18 @@ class Command:
         relative_path(self.cwd)
 
 
+@dataclass(frozen=True)
+class JUnitDeclaration:
+    command: Command
+    path: str
+    coverage: str
+
+    def __post_init__(self):
+        path = relative_path(self.path)
+        if path == PurePosixPath('.') or '.git' in path.parts or not self.coverage.strip():
+            raise ValueError('JUnit requires a report file and declared test coverage')
+
+
 def relative_path(value: str) -> PurePosixPath:
     path = PurePosixPath(value)
     if not value or path.is_absolute() or ".." in path.parts or "\\" in value:
@@ -39,6 +51,13 @@ class ProjectProfile:
     # Declaración para el futuro adaptador de preparación; no ejecutada en H2.1.
     formatter_argv: tuple[str, ...] = ()
     formatter_paths: tuple[str, ...] = ()
+    junit_reports: tuple[JUnitDeclaration, ...] = ()
+
+    def __post_init__(self):
+        if len(self.junit_reports) > 8:
+            raise ValueError('At most eight JUnit reports per profile')
+        if len({item.path for item in self.junit_reports}) != len(self.junit_reports):
+            raise ValueError('JUnit report paths must be unique per profile')
 
 
 @dataclass(frozen=True)

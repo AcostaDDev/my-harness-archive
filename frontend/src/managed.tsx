@@ -3,6 +3,7 @@ import { Prompts } from "./Prompts";
 import { Phases } from "./Phases";
 import { Bootstrap } from "./Bootstrap";
 import { Chat } from "./Chat";
+import { Tests } from "./Tests";
 import { useEffect, useRef, useState } from "react";
 import { managed, managedApi, ManagedError, readPending, savePending, jobRequest } from "./managed-api";
 import type { Pending, S } from "./managed-api";
@@ -179,6 +180,7 @@ function Run({ id, refresh, busy, operate, send }: { id: string; refresh: number
     {run.purpose !== "document_export" && run.purpose !== "bootstrap" && <p className="hint">COMMITTED conserva un checkpoint del trabajo revisado; la integración en la rama destino queda pendiente.</p>}
     {run.history.cycles.map(c => <div key={c.number}><h3>Revisión {c.number} · {c.verdict ?? "sin veredicto"}</h3>
       <details><summary>Diff revisado</summary><pre>{c.diff}</pre></details>
+      <Tests runId={id} cycle={c.number} validation={c.validation} />
       <Evidence title="Tests y evidencia validada" value={c.validation} /><Evidence title="Hallazgos y revisión" value={c.review} />
     </div>)}
     <Evidence title="Contrato, revisiones y aceptación" value={run.history} />

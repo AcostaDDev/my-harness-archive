@@ -486,6 +486,40 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/managed/runs/{run_id}/cycles/{cycle}/validations/{entry}/reports/{report}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Junit Cases */
+        get: operations["managed_junit_cases"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/managed/runs/{run_id}/cycles/{cycle}/validations/{entry}/reports/{report}/original": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Junit Original */
+        get: operations["managed_junit_original"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/managed/runs/{run_id}/attempts": {
         parameters: {
             query?: never;
@@ -1610,10 +1644,7 @@ export interface components {
             provenance: {
                 [key: string]: unknown;
             } | null;
-            /** Validation */
-            validation: {
-                [key: string]: unknown;
-            };
+            validation: components["schemas"]["ValidationRead"];
             /** Review */
             review: {
                 [key: string]: unknown;
@@ -1779,6 +1810,79 @@ export interface components {
              * @constant
              */
             mode: "simulation";
+        };
+        /** JUnitCaseRead */
+        JUnitCaseRead: {
+            /** Id */
+            id: string;
+            /** Reported Id */
+            reported_id: string | null;
+            /** Name */
+            name: string | null;
+            /** Classname */
+            classname: string | null;
+            /** Suite */
+            suite: (string | null)[];
+            /**
+             * Result
+             * @enum {string}
+             */
+            result: "passed" | "failed" | "error" | "skipped" | "unknown";
+            /** Duration Seconds */
+            duration_seconds: number | null;
+            /** Message */
+            message: string | null;
+            /** Error Type */
+            error_type: string | null;
+            /** Error */
+            error: string | null;
+        };
+        /** JUnitCasesRead */
+        JUnitCasesRead: {
+            report: components["schemas"]["JUnitReportRead"];
+            /** Run Id */
+            run_id: string | null;
+            /** Source Attempt Id */
+            source_attempt_id: string | null;
+            /** Command Id */
+            command_id: string | null;
+            /** Evidence */
+            evidence: {
+                [key: string]: unknown;
+            };
+            /** Items */
+            items: components["schemas"]["JUnitCaseRead"][];
+            /** Offset */
+            offset: number;
+            /** Next Offset */
+            next_offset: number | null;
+        };
+        /** JUnitReportRead */
+        JUnitReportRead: {
+            /** Path */
+            path: string;
+            /** Coverage */
+            coverage: string;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "complete" | "partial" | "invalid" | "missing" | "unreadable" | "limit" | "stale";
+            /** Diagnostics */
+            diagnostics: string[];
+            /** Sha256 */
+            sha256: string | null;
+            /** Size Bytes */
+            size_bytes: number | null;
+            /**
+             * Freshness
+             * @enum {string}
+             */
+            freshness: "unknown" | "created" | "changed" | "unchanged";
+            /** Case Count */
+            case_count: number;
+            /** Original Available */
+            original_available: boolean;
         };
         /** LegacyArtifactRead */
         LegacyArtifactRead: {
@@ -2900,6 +3004,23 @@ export interface components {
             /** Commit Writer Configured */
             commit_writer_configured: boolean;
         };
+        /** ValidationEntryRead */
+        ValidationEntryRead: {
+            /** Command */
+            command: {
+                [key: string]: unknown;
+            } | null;
+            /** Requested */
+            requested: string;
+            /** Result */
+            result: {
+                [key: string]: unknown;
+            };
+            /** Command Id */
+            command_id: string | null;
+            /** Reports */
+            reports: components["schemas"]["JUnitReportRead"][];
+        };
         /** ValidationError */
         ValidationError: {
             /** Location */
@@ -2912,6 +3033,19 @@ export interface components {
             input?: unknown;
             /** Context */
             ctx?: Record<string, never>;
+        };
+        /** ValidationRead */
+        ValidationRead: {
+            /** Evidence */
+            evidence: {
+                [key: string]: unknown;
+            };
+            /** Entries */
+            entries: components["schemas"]["ValidationEntryRead"][];
+            /** Run Id */
+            run_id: string | null;
+            /** Source Attempt Id */
+            source_attempt_id: string | null;
         };
     };
     responses: never;
@@ -4499,6 +4633,137 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ManagedJobRead"][];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+        };
+    };
+    managed_junit_cases: {
+        parameters: {
+            query?: {
+                offset?: number;
+                limit?: number;
+            };
+            header?: {
+                /** @description Obligatoria con valor 1 en mutaciones (protección CSRF). */
+                "x-harness-local"?: string | null;
+            };
+            path: {
+                run_id: string;
+                cycle: number;
+                entry: number;
+                report: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["JUnitCasesRead"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+        };
+    };
+    managed_junit_original: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Obligatoria con valor 1 en mutaciones (protección CSRF). */
+                "x-harness-local"?: string | null;
+            };
+            path: {
+                run_id: string;
+                cycle: number;
+                entry: number;
+                report: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/octet-stream": string;
                 };
             };
             /** @description Forbidden */

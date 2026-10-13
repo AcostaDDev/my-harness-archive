@@ -273,10 +273,61 @@ class StopRead(BaseModel):
     reason: str
 
 
+class JUnitCaseRead(BaseModel):
+    id: str
+    reported_id: str | None
+    name: str | None
+    classname: str | None
+    suite: list[str | None]
+    result: Literal['passed', 'failed', 'error', 'skipped', 'unknown']
+    duration_seconds: float | None
+    message: str | None
+    error_type: str | None
+    error: str | None
+
+
+class JUnitReportRead(BaseModel):
+    path: str
+    coverage: str
+    status: Literal['complete', 'partial', 'invalid', 'missing', 'unreadable', 'limit', 'stale']
+    diagnostics: list[str]
+    sha256: str | None
+    size_bytes: int | None
+    freshness: Literal['unknown', 'created', 'changed', 'unchanged']
+    case_count: int
+    original_available: bool
+
+
+class ValidationEntryRead(BaseModel):
+    command: dict[str, Any] | None
+    requested: str
+    result: dict[str, Any]
+    command_id: str | None
+    reports: list[JUnitReportRead]
+
+
+class ValidationRead(BaseModel):
+    evidence: dict[str, Any]
+    entries: list[ValidationEntryRead]
+    run_id: str | None
+    source_attempt_id: str | None
+
+
+class JUnitCasesRead(BaseModel):
+    report: JUnitReportRead
+    run_id: str | None
+    source_attempt_id: str | None
+    command_id: str | None
+    evidence: dict[str, Any]
+    items: list[JUnitCaseRead]
+    offset: int
+    next_offset: int | None
+
+
 class CycleRead(BaseModel):
     diff: str
     provenance: dict[str, Any] | None
-    validation: dict[str, Any]
+    validation: ValidationRead
     review: dict[str, Any] | None
     number: int
     verdict: str | None

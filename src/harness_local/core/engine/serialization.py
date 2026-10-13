@@ -5,13 +5,14 @@ import json
 from pathlib import Path
 
 from harness_local.core.engine.acceptance import AcceptanceDecision
-from harness_local.core.engine.context import Command, EnginePolicy, ProjectContext, ProjectProfile
+from harness_local.core.engine.context import Command, EnginePolicy, JUnitDeclaration, ProjectContext, ProjectProfile
 from harness_local.core.engine.contracts import (
     AgentRequest, AgentResult, Attempt, OperationalStop, RunHistory, Selection, freeze,
 )
 from harness_local.core.engine.evidence import ContentEvidence, PathPolicyResult, strip_empty_provenance
 from harness_local.core.engine.review import ReviewCycle
 from harness_local.core.engine.validation import CommandResult, ValidationEntry, ValidationReport
+from harness_local.core.engine.junit import JUnitReport, TestCase
 
 
 def restore_command(data: dict) -> Command:
@@ -24,6 +25,8 @@ def restore_context(snapshot: str) -> ProjectContext:
     profile = data["profile"]
     for key in ("preparation", "validations"):
         profile[key] = tuple(restore_command(item) for item in profile[key])
+    profile['junit_reports'] = tuple(JUnitDeclaration(restore_command(item['command']), item['path'], item['coverage'])
+                                     for item in profile.get('junit_reports', []))
     profile["allowed_command_prefixes"] = tuple(tuple(item) for item in profile["allowed_command_prefixes"])
     for key in ("protected_paths", "sensitive_paths", "sensitive_allowlist", "formatter_argv", "formatter_paths"):
         profile[key] = tuple(profile[key])
@@ -70,6 +73,16 @@ def dump_history(history: RunHistory) -> str:
     else:
         for attempt in data['attempts']:
             attempt['request'].pop('permission_snapshot_json', None)
+    has_reports = any(entry.reports for cycle in history.cycles for entry in cycle.validation.entries)
+    if has_reports:
+        version = 6
+    else:
+        for cycle in data['cycles']:
+            cycle['validation'].pop('run_id', None)
+            cycle['validation'].pop('source_attempt_id', None)
+            for entry in cycle['validation']['entries']:
+                entry.pop('reports', None)
+                entry.pop('command_id', None)
     if not has_cli:
         for attempt in data["attempts"]:
             attempt["result"].pop("status")
@@ -79,7 +92,7 @@ def dump_history(history: RunHistory) -> str:
 
 def load_history(snapshot: str) -> RunHistory:
     value = json.loads(snapshot)
-    if value["format"] not in {1, 2, 3, 4, 5}:
+    if value["format"] not in {1, 2, 3, 4, 5, 6}:
         raise ValueError("Unknown managed history format")
     data = value["history"]
     data["attempts"] = tuple(Attempt(restore_request(item["request"]), AgentResult(**item["result"]))
@@ -87,12 +100,17 @@ def load_history(snapshot: str) -> RunHistory:
     cycles = []
     for item in data["cycles"]:
         report = item["validation"]
+        def restore_report(data):
+            cases = tuple(TestCase(**{**case, 'suite': tuple(case['suite'])}) for case in data['cases'])
+            return JUnitReport(**{**data, 'cases': cases, 'diagnostics': tuple(data['diagnostics'])})
         entries = tuple(ValidationEntry(restore_command(entry["command"]) if entry["command"] else None,
-                                       entry["requested"], CommandResult(**entry["result"]))
+                                       entry["requested"], CommandResult(**entry["result"]), entry.get('command_id'),
+                                       tuple(restore_report(r) for r in entry.get('reports', [])))
                         for entry in report["entries"])
         cycles.append(ReviewCycle(item["number"], _evidence(item["evidence"]),
                                   PathPolicyResult(tuple(item["policy"]["violations"])),
-                                  ValidationReport(_evidence(report["evidence"]), entries), item["review_json"],
+                                  ValidationReport(_evidence(report["evidence"]), entries, report.get('run_id'),
+                                                   report.get('source_attempt_id')), item["review_json"],
                                   _evidence(item["before_execution"]) if item["before_execution"] else None,
                                   item["permission_denials_json"]))
     data["cycles"] = tuple(cycles)

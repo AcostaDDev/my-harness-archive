@@ -11,9 +11,11 @@ diagnóstico; la biblioteca garantiza que no quedan efectos parciales.
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, Header, Query
+from fastapi.responses import Response
 from pydantic import Field
 
 from harness_local.api.schemas import (
+    JUnitCasesRead,
     PromptScope, PromptDetailRead, PromptVersionRead, PromptDraftCreate, PromptActivateCreate,
     PromptValidateCreate, PromptValidationRead, PromptDiffRead,
     ActivationCreate, ActivationRead, ActivationTransition, ConfirmStoppedCreate, ManagedAttemptRead,
@@ -252,6 +254,22 @@ def managed_router(runtime: ManagedRuntime):
     def run_jobs(run_id: str):
         runtime.ready()
         return call(runtime.views.jobs, run_id)
+
+    @router.get('/runs/{run_id}/cycles/{cycle}/validations/{entry}/reports/{report}',
+                response_model=JUnitCasesRead, operation_id='managed_junit_cases')
+    def junit_cases(run_id: str, cycle: int, entry: int, report: int, offset: Offset = 0, limit: Limit = 50):
+        runtime.ready()
+        return call(runtime.views.test_cases, run_id, cycle, entry, report, offset, limit)
+
+    @router.get('/runs/{run_id}/cycles/{cycle}/validations/{entry}/reports/{report}/original',
+                response_class=Response, operation_id='managed_junit_original',
+                responses={200: {'content': {'application/octet-stream': {'schema': {'type': 'string', 'format': 'binary'}}}}})
+    def junit_original(run_id: str, cycle: int, entry: int, report: int):
+        runtime.ready()
+        data, sha256 = call(runtime.views.test_original, run_id, cycle, entry, report)
+        return Response(data, media_type='application/octet-stream', headers={
+            'Content-Disposition': 'attachment; filename="junit.xml"', 'ETag': f'"{sha256}"',
+            'X-Content-Type-Options': 'nosniff'})
 
     @router.get("/runs/{run_id}/attempts", response_model=Page[ManagedAttemptRead],
                 operation_id="managed_run_attempts")

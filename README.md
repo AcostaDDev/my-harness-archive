@@ -2,13 +2,14 @@
 
 Aplicación local para configurar, ejecutar y observar un harness modular de desarrollo con agentes.
 Estado actual: H0, H1, H2.1–H2.5, salida del hito 2, H3.1–H3.4,
-H4.1–H4.3 y exportación mecánica de STATE/NEXT_STEPS completados offline.
+H4.1–H4.3, H5.1 y exportación mecánica de STATE/NEXT_STEPS completados offline.
 Python/API/UI con simulaciones, observación legacy y motor con cola/persistencia;
 Git, migración gestionada, prompts/permisos, fases/lotes, chat contextual y bootstrap guiado.
 La exportación usa diff confirmado, commit conciliable y adopción de hashes (D036).
 H2.3 conserva el smoke real de transporte D025; el resto está verificado con
 Git/SQLite sintéticos y fakes. Proveedores opt-in por inyección explícita, sin
-entrada CLI gestionada. Siguiente tarea: H5.1 importación JUnit, sin iniciar.
+entrada CLI gestionada. Reportes JUnit congelados por validación y detalle API/UI.
+Siguiente tarea: H5.2 backup/restauración local, sin iniciar.
 
 ## Documentación
 
@@ -39,6 +40,7 @@ entrada CLI gestionada. Siguiente tarea: H5.1 importación JUnit, sin iniciar.
 - [Exportación mecánica de STATE/NEXT_STEPS, verificada offline](docs/discovery/STATE_EXPORT.md).
 - [Bootstrap guiado H4.2 y demo offline](docs/discovery/H4.2_BOOTSTRAP.md).
 - [Segundo perfil TypeScript web H4.3: comandos reales y límites](docs/discovery/H4.3_TYPESCRIPT_PROFILE.md).
+- [Reportes JUnit H5.1: configuración, consulta y límites](docs/discovery/H5.1_JUNIT.md).
 - [Smoke cli-3: MCP aceptado, fallo de autenticación Claude](docs/discovery/H2.3_SMOKE_CLI3.md).
 - [Git, worktree y commit acotado H2.4](docs/discovery/H2.4_GIT.md).
 - [Migración a modo gestionado H2.5](docs/discovery/H2.5_MIGRATION.md).
@@ -145,7 +147,7 @@ La API gestionada local (proyectos registrados en el servidor, supervisor opt-in
 idempotencia, versiones y guardia Host/Origin/CSRF) está completada offline: ver
 [entrega y límites](docs/discovery/H2_EXIT_API.md). La UI gestionada local está
 completada offline; [demo, verificación y límites](docs/discovery/H2_EXIT_UI.md).
-H4.1–H4.3 y exportación mecánica completados offline (D035–D038); siguiente tarea: H5.1 importación JUnit, sin iniciar. Ver [corrección y límites](docs/discovery/H2.3_MCP_FIX.md)
+H4.1–H4.3, H5.1 y exportación mecánica completados offline (D035–D039); siguiente tarea: H5.2 backup/restauración local, sin iniciar. Ver [corrección y límites](docs/discovery/H2.3_MCP_FIX.md)
 y [resultado real cli-3](docs/discovery/H2.3_SMOKE_CLI3.md). El consentimiento
 terminó al fallo; otro smoke requiere propuesta y autorización específicas.
 Ver [corrección del entorno](docs/discovery/H2.3_ENV_FIX.md) y

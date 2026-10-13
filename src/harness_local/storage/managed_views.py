@@ -5,12 +5,15 @@ filas confirmadas. Ausencia y null se conservan: nada se rellena con defaults.
 """
 
 from dataclasses import asdict
+import base64
+import hashlib
 import json
 
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from harness_local.core.engine.serialization import load_history
+from harness_local.core.engine.validation import validation_payload
 from harness_local.storage.models import (
     CheckoutLockRow as Lock, ManagedAttemptRow as AttemptRow, ManagedCommitRow as Commit,
     ManagedEventRow as Event, ManagedJobRow as Job, ManagedRunRow as Run,
@@ -50,7 +53,8 @@ def _history_view(history_json: str) -> dict:
         "cycles": [{"number": cycle.number, "verdict": cycle.verdict, "fingerprint": cycle.evidence.fingerprint,
                     "changed_paths": list(cycle.evidence.changed_paths), "diff": cycle.evidence.diff,
                     "provenance": _loads(cycle.evidence.provenance_json),
-                    "validation": asdict(cycle.validation), "review": _loads(cycle.review_json)} for cycle in history.cycles],
+                    "validation": validation_payload(cycle.validation, include_cases=False),
+                    "review": _loads(cycle.review_json)} for cycle in history.cycles],
         "acceptance": None if acceptance is None else {
             "eligible": acceptance.eligible, "reasons": list(acceptance.reasons),
             "base_revision": acceptance.evidence.base_revision, "fingerprint": acceptance.evidence.fingerprint,
@@ -110,6 +114,39 @@ class SQLiteManagedViews:
         with Session(self.engine) as session:
             if session.get(Run, run_id) is None:
                 raise LookupError("Run gestionado desconocido.")
+
+    def _report(self, run_id: str, cycle: int, entry: int, report: int):
+        if min(cycle, entry, report) < 0:
+            raise LookupError('Reporte JUnit desconocido.')
+        with Session(self.engine) as session:
+            row = session.get(Run, run_id)
+            if row is None:
+                raise LookupError('Run gestionado desconocido.')
+            history = load_history(row.history_json)
+            try:
+                validation = history.cycles[cycle].validation
+                command = validation.entries[entry]
+                return validation, command, command.reports[report]
+            except IndexError as exc:
+                raise LookupError('Reporte JUnit desconocido.') from exc
+
+    def test_cases(self, run_id, cycle, entry, report, offset, limit):
+        validation, command, imported = self._report(run_id, cycle, entry, report)
+        summary = validation_payload(validation, include_cases=False)['entries'][entry]['reports'][report]
+        cases = imported.cases[offset:offset + limit]
+        return {'report': summary, 'run_id': validation.run_id, 'source_attempt_id': validation.source_attempt_id,
+                'command_id': command.command_id, 'evidence': asdict(validation.evidence),
+                'items': [asdict(case) for case in cases], 'offset': offset,
+                'next_offset': offset + limit if offset + limit < len(imported.cases) else None}
+
+    def test_original(self, run_id, cycle, entry, report):
+        _, _, imported = self._report(run_id, cycle, entry, report)
+        if imported.original_base64 is None:
+            raise LookupError('Original JUnit ausente: consulta el diagnóstico del reporte.')
+        data = base64.b64decode(imported.original_base64, validate=True)
+        if hashlib.sha256(data).hexdigest() != imported.sha256 or len(data) != imported.size_bytes:
+            raise ValueError('Persisted JUnit original hash/size mismatch')
+        return data, imported.sha256
 
     def jobs(self, run_id: str) -> list[dict]:
         self.exists(run_id)

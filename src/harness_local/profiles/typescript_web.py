@@ -1,6 +1,6 @@
 """Perfil opt-in para una web TypeScript estática; sin ejecución al importar."""
 
-from harness_local.core.engine.context import Command, ProjectProfile
+from harness_local.core.engine.context import Command, JUnitDeclaration, ProjectProfile
 
 
 def typescript_web_profile() -> ProjectProfile:
@@ -16,6 +16,8 @@ def typescript_web_profile() -> ProjectProfile:
                           for script in ("check", "test", "build")),
         allowed_command_prefixes=(("npm", "run", "check"), ("npm", "run", "test"),
                                   ("npm", "run", "build")),
+        junit_reports=(JUnitDeclaration(Command(('npm', 'run', 'test'), timeout_seconds=120),
+                                        '.local/junit.xml', 'Tests Node de tests/*.test.mjs; no cobertura de código'),),
         protected_paths=("docs/**", ".harness/**", ".codex/**", ".claude/**", "AGENTS.md", "CLAUDE.md",
                          "package.json", "package-lock.json", "tsconfig.json", "scripts/**", "tests/**", ".gitignore"),
         sensitive_paths=(".env", ".env.*", "**/.env", "**/.env.*", "*.pem", "*.key", "*.p12", "*.pfx", "id_rsa*"),

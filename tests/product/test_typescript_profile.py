@@ -161,6 +161,10 @@ def test_real_preparation_typecheck_node_tests_and_build_preserve_git(web):
     assert report.all_passed, report
     assert all(entry.result.duration_seconds > 0 for entry in report.entries)
     assert "pass 3" in report.entries[1].result.stdout
+    junit = report.entries[1].reports[0]
+    assert junit.status == 'complete' and junit.freshness == 'created'
+    assert len(junit.cases) == 3 and all(case.result == 'passed' for case in junit.cases)
+    assert all(case.duration_seconds is not None for case in junit.cases)
     assert context.path("dist/main.js").is_file()
     assert 'src="./main.js"' in context.path("dist/index.html").read_text()
     assert json.loads(context.path("node_modules/typescript/package.json").read_text())["version"] == "5.9.3"

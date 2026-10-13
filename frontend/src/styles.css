@@ -93,3 +93,9 @@ details > summary { cursor: pointer; margin-top: 24px; }
 .managed .check input { width: auto; }
 .managed .form-row label { flex: 1; }
 .managed details { margin-bottom: 16px; }
+.test-table-scroll { width: 100%; overflow-x: auto; }
+.test-table { width: 100%; min-width: 42rem; border-collapse: collapse; table-layout: fixed; }
+.test-table th, .test-table td { padding: 12px; text-align: left; vertical-align: top; border-bottom: 1px solid #dee4eb; overflow-wrap: anywhere; }
+.test-table th { color: #496077; font-size: 13px; }
+.test-table th:first-child, .test-table th:last-child { width: 30%; }
+.test-table details > summary { margin-top: 12px; }

@@ -1108,3 +1108,44 @@ La plantilla de bootstrap H4.2 sigue siendo documental: declarar el segundo
 perfil no genera ni instala una app desde el brief. No se modifica esa decisión.
 H5.1 importación JUnit y detalle de tests es la siguiente tarea, sin iniciarla;
 proveedores y smokes siguen sin autorización disponible.
+
+## D039 — JUnit observado por comando exacto y original congelado en el historial
+
+Estado: implementado y verificado offline el 2026-10-13.
+[Entrega y límites](discovery/H5.1_JUNIT.md).
+
+El perfil del servidor declara comando completo, ruta de reporte relativa al
+checkout y cobertura de tests como selección textual. No es cobertura de código
+medida ni una concesión de herramientas. Se congela con el contexto; una ruta XML
+o petición HTTP no añade reportes ni comandos. TypeScript genera JUnit Node junto
+a TAP; ReferenceProject no declara un original inexistente.
+
+La captura compara archivo/hash antes y después del comando sin eliminar reportes
+anteriores. Frescura significa cambio local observado, no certificación frente a
+escritores externos. Sin cambio se etiqueta `stale`, con diagnóstico; ausencia,
+errores y límites no se convierten en éxito. Descriptores/O_NOFOLLOW, archivos
+regulares sin enlaces duros y límites explícitos evitan rutas externas y bloqueo
+por archivos especiales. El parser rechaza DTD/entidades, preserva únicamente
+casos completos en XML truncado y no ejecuta ni sigue contenido XML.
+
+Original exacto en base64/hash/tamaño y casos en `managed_runs.history_json`, codec
+6 sin migración; formatos 1–5 y snapshots sin declaraciones conservados. Se elige
+el historial acotado existente para conservar atómicamente reportes y ciclos,
+sin introducir un almacén de blobs, doble autoridad ni reglas de retención en
+H5.1. Vincula run/ciclo/command_id de eventos/intento ejecutor/evidencia Git. Checks
+de fase también guardan reportes en su run, con ejecutor null. Una caída antes del
+checkpoint no certifica importación; recuperar exige revalidar explícitamente.
+
+El reporte nunca sustituye exit/stdout/stderr/timeout/duración observados. Un
+comando fallido sigue impidiendo aceptación aunque el XML muestre éxitos. Fallos
+observados de casos en un reporte nuevo añaden una puerta de aceptación/READY,
+incluido exit 0; no atribuye fallos del archivo anterior a la ejecución actual.
+Sin reporte compatible sigue siendo necesaria la validación por comando. Review,
+política y contenido exacto continúan siendo puertas independientes.
+
+API/UI leen historial, con casos paginados y descarga binaria del original con
+hash comprobado, attachment/nosniff. Los resúmenes de sondeo y los prompts omiten
+base64; React muestra errores como texto. Ausencias permanecen null, cero es cero
+y las duraciones individuales nunca se suman como tiempo real. No hay importación
+de XML legacy, medición de cobertura de código ni retención/backup en esta entrega.
+H5.2 backup/restauración local queda siguiente, sin iniciar. Smokes agotados.

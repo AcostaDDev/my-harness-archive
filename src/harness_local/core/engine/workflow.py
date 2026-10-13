@@ -18,7 +18,7 @@ from harness_local.core.engine.journal import EngineJournal, JournalError
 from harness_local.core.engine.prompts import builtin_catalog, dump_catalog, load_catalog, render_attempt
 from harness_local.core.engine.planning import deterministic_task, section
 from harness_local.core.engine.review import ReviewCycle, review_contract, stalled_review_signature
-from harness_local.core.engine.validation import CommandRunner, run_command, run_validations
+from harness_local.core.engine.validation import CommandRunner, run_command, run_validations, validation_payload
 
 
 class OfflineEngine:
@@ -170,7 +170,9 @@ class OfflineEngine:
             try:
                 evidence = self.evidence.capture(context)
                 policy = check_paths(context, task, evidence)
-                validation = run_validations(context, task, evidence, self.commands, self.journal)
+                source = next((a.request.id for a in reversed(history.attempts) if a.request.role == 'executor'), None)
+                validation = run_validations(context, task, evidence, self.commands, self.journal,
+                                             run_id=history.id, source_attempt_id=source)
                 cycle = ReviewCycle(len(history.cycles), evidence, policy, validation, None, before, freeze(denials))
                 history = replace(history, cycles=history.cycles + (cycle,))
                 if self.evidence.capture(context) != evidence:
@@ -182,7 +184,7 @@ class OfflineEngine:
             self._checkpoint(history, "reviewer")
             prompt = freeze({
                 "task": task, "evidence": strip_empty_provenance(asdict(evidence)), "policy": asdict(policy),
-                "validation": strip_empty_provenance(asdict(validation)),
+                "validation": strip_empty_provenance(validation_payload(validation)),
             })
             selection = Selection(context.policy.reviewer_model, context.policy.reviewer_effort, "Explicit independent review policy")
             history, data = self._invoke(context, history, "reviewer", selection, "review-task", {"INPUT_JSON": prompt})

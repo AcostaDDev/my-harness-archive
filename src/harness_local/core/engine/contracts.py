@@ -125,7 +125,10 @@ class RunHistory:
 
 
 def context_snapshot(context: ProjectContext) -> str:
-    return freeze({"root": str(context.root), "profile": asdict(context.profile),
+    profile = asdict(context.profile)
+    if not profile['junit_reports']:
+        profile.pop('junit_reports')  # Preserva snapshots anteriores sin reportes.
+    return freeze({"root": str(context.root), "profile": profile,
                    "policy": asdict(context.policy), "next_steps_file": context.next_steps_file,
                    "state_file": context.state_file})
 

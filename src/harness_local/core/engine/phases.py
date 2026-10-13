@@ -18,9 +18,10 @@ from harness_local.core.engine.context import ProjectContext, relative_path
 from harness_local.core.engine.contracts import (
     ContractError, RunHistory, Selection, freeze, invoke_agent, stop_history,
 )
-from harness_local.core.engine.evidence import ContentEvidence, strip_empty_provenance
+from harness_local.core.engine.evidence import ContentEvidence, PathPolicyResult, strip_empty_provenance
 from harness_local.core.engine.prompts import dump_catalog, render_attempt
-from harness_local.core.engine.validation import run_validations
+from harness_local.core.engine.validation import run_validations, validation_payload
+from harness_local.core.engine.review import ReviewCycle
 
 PHASE_CODE = re.compile(r"[A-Za-z0-9][A-Za-z0-9._-]{0,119}")
 TAG_NAME = re.compile(r"[A-Za-z0-9][A-Za-z0-9_-]*(?:\.[A-Za-z0-9_-]+)*")
@@ -192,8 +193,12 @@ def check_phase(context: ProjectContext, history: RunHistory, snapshot: dict, ag
         return done(history, outcome("NOT_READY", reasons))
     bound = binding(snapshot, evidence, documents)
     journal.checkpoint(history, "validation")
-    report = run_validations(context, {"validation_commands": []}, evidence, commands, journal)
-    validation = strip_empty_provenance(asdict(report))
+    report = run_validations(context, {"validation_commands": []}, evidence, commands, journal, run_id=history.id)
+    if any(entry.reports for entry in report.entries):
+        history = replace(history, cycles=history.cycles + (
+            ReviewCycle(len(history.cycles), evidence, PathPolicyResult(()), report, None, None),))
+        journal.checkpoint(history, 'validation')
+    validation = strip_empty_provenance(validation_payload(report, include_cases=False))
     if not report.all_passed:
         return done(history, outcome("NOT_READY", ["Baseline validation failed"], validation=validation))
     try:
