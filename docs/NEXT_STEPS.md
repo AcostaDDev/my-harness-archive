@@ -1,48 +1,51 @@
-# Siguiente paso — Ejecutar el smoke de la matriz D052 (D055), solo con consentimiento
+# Siguiente paso — Corregir el contrato de `validation_commands` del planificador
 
 Estado al 2026-10-13:
 
 - D052 implementado y verificado offline (`cli-5`, `local-config-2`,
   [entrega](discovery/AGENT_ROLES.md)).
-- **Propuesta del smoke de la matriz preparada y ensayada offline** (D055,
-  [propuesta](discovery/PROVIDER_MATRIX_PROPOSAL.md),
-  [`prepare.sh`](../examples/provider_matrix/prepare.sh)):
-  - Cuatro combinaciones revisor → ejecutor: Codex→Claude, Codex→Codex,
-    Claude→Claude y Claude→Codex.
-  - El revisor planifica, el ejecutor edita y el revisor revisa; después,
-    commit. Modo catálogo y `max_revision_cycles = 0`.
-  - Codex `gpt-6-luna` y Claude `claude-sonnet-4-6` (2.1.296). Revisor
-    `medium`; ejecutor `low`.
-  - Como máximo 3 invocaciones por combinación y 12 en total. 30 min por
-    combinación y 2 h para la matriz.
-  - Un fallo detiene solo su combinación, sin reintento. Los fallos de
-    autenticación, cuota o preflight omiten las pendientes que usan ese proveedor.
-- **No ejecutada ni autorizada.**
+- **Smoke de la matriz D055 ejecutado y detenido**
+  ([resultado](discovery/PROVIDER_MATRIX_RUN.md)):
+  - La combinación 1 (Codex→Claude) falló en el planificador:
+    `Invalid task validation_commands`.
+  - El planificador real devolvió `[["npm","run","check"], …]`: la plantilla
+    `plan-task` pide «argv commands», el esquema solo dice `array` y el motor
+    exige cadenas.
+  - El usuario decidió parar y corregir; combinaciones 2–4 no lanzadas.
+  - Consentimiento agotado.
 
 ## Tarea concreta propuesta, no iniciada
 
-**Ejecutar la propuesta D055 una vez**, únicamente si el usuario da un
-consentimiento específico y explícito para ella. Se siguen sus pasos, límites
-y criterios tal como están escritos:
+**Corregir offline el contrato de `validation_commands` del planificador**
+para que un planificador real y el motor coincidan. Debe:
 
-- Fuera del sandbox, desde el wheel instalado en `BASE/venv`.
-- Preflight por combinación.
-- Resultado por combinación: completa, fallida (con su etapa) o no lanzada
-  (con su motivo).
-- Registrar el resultado en `docs/discovery/PROVIDER_MATRIX_RUN.md` y en D055.
+1. **Elegir y registrar la forma.** Opciones:
+   - Aclarar la plantilla y el esquema: cadenas sin shell, con `items` de tipo
+     `string` y un ejemplo.
+   - Aceptar además listas de argv, normalizándolas con `shlex.join` antes de
+     congelar el contrato.
+   - Ambas cosas.
 
-Cualquier cambio de combinación, modelo, esfuerzo, modo, herramientas, límites
-o entorno exige actualizar antes la propuesta. Solo `BASE` puede cambiar si ya
-existe, y se registra.
+   Los contratos y catálogos congelados anteriores no se reescriben.
+2. **Revisar los demás campos.** Ver si `allowed_paths`, `forbidden_paths`,
+   `acceptance_criteria` y la review tienen la misma ambigüedad entre plantilla,
+   esquema y validación.
+3. **Pruebas offline.** Una CLI sintética que devuelva la forma observada (y su
+   regresión); el lector Claude con `--json-schema` incluye la identidad
+   corregida del rol.
+4. **Script de recorrido de la próxima ejecución.** Esperar hasta `finished_at`
+   o `RECOVERY_REQUIRED`, no solo hasta salir de `QUEUED`/`RUNNING`. Valorar
+   versionarlo en `examples/provider_matrix/`.
 
-Después, y aparte: el **hito de interfaz de producto** (D054, backlog H6.2),
-cuya primera tarea es escribir el alcance.
+Después, y aparte: preparar una nueva ejecución de la matriz (área nueva,
+mismas selecciones u otras elegidas por el usuario), que exige consentimiento
+nuevo. A continuación, el hito de interfaz de producto (D054, H6.2).
 
-Alternativas: empezar H6.2 antes del smoke si el usuario lo prefiere;
-instalación de operación reutilizable (D051); estudiar el `memory/` vacío que
-crea la CLI de Claude; endurecimientos de D048.
+Alternativas: empezar H6.2 antes; instalación de operación reutilizable
+(D051); estudiar el `memory/` vacío que crea la CLI de Claude; endurecimientos
+de D048.
 
-Consentimientos anteriores agotados, incluido D050. Sin proveedores/login,
-instalaciones con red, publicación, push ni uso del harness para desarrollar
-este repositorio. Este documento no autoriza ejecutar el smoke ni iniciar otra
-implementación.
+Consentimientos anteriores agotados, incluidos D050 y D055. Sin proveedores/
+login, instalaciones con red, publicación, push ni uso del harness para
+desarrollar este repositorio. Este documento no autoriza otra ejecución con
+proveedores.

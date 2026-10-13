@@ -1,7 +1,10 @@
 # Propuesta del smoke de la matriz D052 con proveedores
 
 Preparada el 2026-10-13 sobre `1eb5847`, con Git limpio en `main`. D055.
-**No ejecutada ni autorizada.** Ejecutarla exige un consentimiento específico y
+**Ejecutada y detenida el mismo día con autorización del usuario; ver
+[resultado](PROVIDER_MATRIX_RUN.md).** La combinación 1 falló en el
+planificador y las combinaciones 2–4 no se lanzaron. Cuando se preparó, no
+estaba ejecutada ni autorizada. Ejecutarla exigía un consentimiento específico y
 explícito del usuario para esta propuesta. D025, D050 y los consentimientos
 anteriores están agotados y no se trasladan.
 

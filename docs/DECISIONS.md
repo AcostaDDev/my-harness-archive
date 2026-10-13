@@ -1610,8 +1610,15 @@ alcance de H6.2, igual que la convivencia con el TOML `local-config`.
 
 ## D055 — Propuesta del smoke de la matriz D052: selecciones del usuario y límites
 
-Estado: propuesta preparada y ensayada offline el 2026-10-13; **no ejecutada ni
-autorizada**. [Propuesta](discovery/PROVIDER_MATRIX_PROPOSAL.md).
+Estado: propuesta preparada y ensayada offline el 2026-10-13. **Ejecutada con
+autorización del usuario el mismo día y detenida**
+([resultado](discovery/PROVIDER_MATRIX_RUN.md)). La combinación 1 falló en el
+planificador por un contrato ambiguo de `validation_commands`; el usuario
+decidió parar y corregir, así que 2–4 no se lanzaron. Una sola invocación de
+proveedor. Consentimiento agotado. [Propuesta](discovery/PROVIDER_MATRIX_PROPOSAL.md).
+
+Los comandos que lanzan agentes los ejecutó el usuario con `!`, porque el
+clasificador de permisos de Claude Code bloqueó el script de recorrido.
 
 Selecciones del usuario en esta sesión:
 

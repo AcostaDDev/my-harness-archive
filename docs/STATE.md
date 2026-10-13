@@ -1913,6 +1913,34 @@ QA visual H5.7 bloqueada por herramienta; sin proveedores nuevos.
 - Siguiente: ejecutar la propuesta D055 solo con consentimiento específico; no
   iniciada.
 
+## Ejecución autorizada del smoke de la matriz (D055)
+
+- Autorización del usuario: «Ejecútala». Git limpio en `main`, `6c1c245`.
+  [Resultado](discovery/PROVIDER_MATRIX_RUN.md).
+- El clasificador de permisos de Claude Code bloqueó el script que lanza los
+  agentes. El usuario lanzó con `!` la corrección del script y la orquestación;
+  Claude Code hizo la preparación, el wheel, el venv y el preflight, que no
+  lanzan agentes.
+- Preflight `version_help_match` en los ocho agentes. TOML de la combinación 4
+  idéntico al de la propuesta.
+- Combinación 1 (Codex→Claude):
+  - Preparación correcta y planificador Codex `complete` (11,9 s, exit 0).
+  - Contrato rechazado: `Invalid task validation_commands`, porque el
+    planificador devolvió listas de argv.
+  - Run `STOPPED` en `planner`; sin ejecutor, revisor ni commit.
+- **Hallazgo.** La plantilla pide «argv commands», el esquema solo dice `array`
+  y el motor exige cadenas. Afecta a toda planificación por agente; la CLI
+  sintética offline devuelve `[]` y no lo detectaba.
+- Incidencia del script de recorrido: trataba `ACTIVE` como terminal y mandó
+  TERM al servicio al inicio. El supervisor esperó y el job terminó solo; la
+  parada no se debe a la cancelación. La evidencia está completa en SQLite y
+  en los artefactos.
+- Decisión del usuario: parar y corregir. Combinaciones 2–4 no lanzadas. Una
+  sola invocación de proveedor; consentimiento agotado.
+- Sin procesos residuales, Claude no invocado y repositorio, fixture y
+  configuración global intactos. Sin cambios de código: solo documentos.
+- Siguiente: corrección offline del contrato de `validation_commands`; no iniciada.
+
 ## Coordinación
 
 Desarrollo manual con el usuario. Una única sesión implementadora sobre los mismos archivos a la vez. La otra herramienta puede revisar una entrega terminada.
