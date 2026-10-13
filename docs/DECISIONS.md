@@ -1757,3 +1757,39 @@ OpenAPI, UI y dependencias sin cambios.
 Pruebas de argv/TOML, CLI sintética, recorridos de ambos revisores con Codex
 ejecutor y cuarentena. La mitigación no certifica una escritura real ni qué
 mensaje de permisos verá Codex. No autoriza otra matriz con proveedores.
+
+## D060 — Propuesta acotada de las combinaciones 2–4 con paquete `cli-7`
+
+Estado: preparada y verificada offline el 2026-10-13; **sin consentimiento ni
+ejecución con proveedores**. [Propuesta y órdenes](discovery/PROVIDER_MATRIX_CLI7_PROPOSAL.md),
+[manifiesto de paquete/configuración y ensayo sintético](discovery/PROVIDER_MATRIX_CLI7_PREPARATION.json).
+Petición del usuario: completar únicamente la tarea activa de NEXT_STEPS y
+realizar commit. No autoriza el paso posterior de ejecución.
+
+Se propone conservar las selecciones, herramientas, entorno y recorrido de
+D055/D057 para 2 Codex→Codex, 3 Claude→Claude y 4 Claude→Codex, en ese orden.
+La combinación 1 ya completa no se repite. Codex `gpt-6-luna`, Claude
+`claude-sonnet-4-6`; revisor medium, catálogo del ejecutor low, planificación
+agent, cero ciclos de corrección. Máximo nueve invocaciones (cinco Codex y
+cuatro Claude), con timeouts 600/900 s; límite operativo total propuesto de
+90 minutos. Sin retry, fallback, check/cierre ni otros flujos.
+
+Área nueva `/private/tmp/harness-provider-matrix-3`: tres TOML privados,
+checkouts desechables, wheel/sdist `cli-7` y venv instalado offline por hashes
+(D051). `prepare.sh` admite pares explícitos y conserva las cuatro
+combinaciones por defecto. Incluye las modificaciones de transporte
+D058/D059 sin alterar historiales anteriores. El manifiesto fija los hashes
+del paquete y de las configuraciones. Estado vacío y check-config válido;
+preflight real pendiente, no se ejecutaron las CLI reales ni version/help.
+
+Ensayo separado con CLI sintéticas por el servicio instalado: tres COMMITTED
+con commit único acotado, validaciones/JUnit y evidencias congeladas;
+salida inválida detiene planner sin ejecutor/revisor/commit. No acredita la
+escritura real de Codex, el mensaje interno de permisos ni Claude real con el
+esquema tipado. Áreas D055/D057 conservadas.
+
+Ejecutar D060 requiere consentimiento específico nuevo para una sola matriz
+acotada. Revisar entre combinaciones: fallos detienen su par; auth/cuota/preflight
+omiten pares pendientes que usan el proveedor afectado; efectos fuera del área,
+servicio no detenible o plazo total agotado paran todo. Sin reutilizar los
+consentimientos agotados D050/D055/D057 ni avanzar a H6.2.

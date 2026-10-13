@@ -1,52 +1,53 @@
-# Siguiente paso — nueva propuesta de la matriz D052
+# Siguiente paso — ejecución separada de la propuesta D060
 
 Estado al 2026-10-13:
 
-- **Diagnóstico del escritor Codex completado y mitigación `cli-7`
-  implementada offline (D059,
-  [entrega](discovery/CODEX_WRITER_ROOTS.md)).** D057 muestra una negativa del
-  modelo sin intentar herramientas, no una denegación real de escritura.
-  El origen en la descripción de raíces temporales sigue como hipótesis,
-  porque no se conservó el mensaje interno de permisos de Codex.
-- Codex ejecutor recibe checkout canónico explícito en `writable_roots`,
-  `exclude_slash_tmp=true` y una aclaración del acceso solicitado. Mantiene
-  TMPDIR explícito, contrato/política y respeto a denegaciones reales. Jobs
-  `cli-6` quedan en cuarentena sin reescribir historias anteriores.
-- **`cli-6` completado offline (D058,
-  [entrega](discovery/TYPED_JSON_SCHEMA.md)).** El lector Claude recibe el
-  esquema tipado del motor. Falta comprobarlo con Claude real.
-- **Matriz D057 cerrada** ([resultado](discovery/PROVIDER_MATRIX_RERUN.md)):
-  1 Codex→Claude `COMMITTED`; 2 Codex→Codex `REVISION_LIMIT`; 3 Claude→Claude
-  `STOPPED` en planner; 4 no lanzada. Sus áreas y evidencias se conservan.
+- **Preparación de las combinaciones 2–4 completada offline (D060).**
+  [Propuesta, órdenes y criterios](discovery/PROVIDER_MATRIX_CLI7_PROPOSAL.md),
+  [manifiesto de hashes y ensayo sintético](discovery/PROVIDER_MATRIX_CLI7_PREPARATION.json).
+- Área nueva `/private/tmp/harness-provider-matrix-3`: wheel/sdist `cli-7`,
+  venv instalado offline por hashes, tres TOML privados con `check-config`
+  válido y checkouts desechables limpios con la regresión. Estado vacío, sin
+  SQLite, jobs, intentos ni servicio. **CLI reales y preflight real no ejecutados.**
+- Ensayo separado con CLI sintéticas y servicio instalado: Codex→Codex,
+  Claude→Claude y Claude→Codex COMMITTED con un commit nuevo solo en
+  `src/estimate.ts`; salida inválida detiene planner sin otros roles ni commit.
+  Paquete verificado; 82 pytest focales y 12 checks ligeros correctos.
+- D058 conserva el esquema tipado de Claude lector y D059 las raíces
+  explícitas/aclaración de transporte del escritor Codex (`cli-7`). Las
+  pruebas sintéticas **no certifican** su comportamiento con proveedores.
+- Matriz D057 cerrada: 1 COMMITTED, 2 REVISION_LIMIT, 3 STOPPED en planner,
+  4 no lanzada. Sus áreas/evidencias se conservan. Consentimientos agotados.
 
 ## Tarea concreta propuesta, no iniciada
 
-**Preparar una nueva propuesta acotada para las combinaciones 2–4 de la
-matriz**, con el paquete `cli-7` y un área nueva, sin consumo durante la
-preparación:
+**Ejecutar la propuesta D060 una sola vez, únicamente después de
+consentimiento específico nuevo del usuario.** Sin consentimiento, no lanzar
+ninguna combinación ni crear jobs.
 
-1. Concretar selecciones, herramientas, límites, entorno y criterios sobre
-   D055/D057, haciendo explícitas las modificaciones D058/D059. No reutilizar
-   como autorización los consentimientos anteriores.
-2. Preparar y verificar offline el wheel instalado y el recorrido con CLI
-   sintéticas. Conservar las áreas anteriores y no modificar ajustes globales.
-3. Dejar una orden y propuesta revisables para pedir consentimiento específico
-   antes de ejecutar proveedores. La ejecución real es un paso separado.
+1. Revisar propuesta y manifiesto con el usuario. Selecciones propuestas:
+   Codex `gpt-6-luna`, Claude `claude-sonnet-4-6`; revisor medium, catálogo
+   del ejecutor low, `planning_mode = "agent"`, cero correcciones. Máximo
+   nueve invocaciones para 2–4, límite operativo total de 90 minutos.
+2. Con consentimiento: comprobar hashes del paquete/scripts/TOML, estado
+   vacío y puerto :8013 libre; preflight de las versiones fijadas desde el
+   wheel instalado. Ejecutar una orden por combinación, en orden 2 → 3 → 4,
+   revisando evidencia y parada entre ellas. Sin reconstruir el paquete,
+   actualizar CLI ni reutilizar áreas antiguas o del ensayo.
+3. Acreditar edición real de Codex dentro del contrato (2/4), listas/objetos
+   tipados del lector Claude (3/4), validación/JUnit/review/commit por
+   contenido exacto en cada combinación. Conservar originales, hashes y
+   diferencia entre solicitado/reportado/ausente.
+4. Fallos detienen su combinación sin retries ni fallback; auth/cuota/preflight
+   omiten pares pendientes que usan ese proveedor. Parar todo ante efectos
+   fuera de BASE, servicio no detenible o plazo total agotado. No recuperar
+   jobs ni liberar locks. Registrar resultado y actualizar STATE/NEXT_STEPS.
 
-La futura comprobación real debe acreditar edición de Codex dentro del
-contrato, listas/objetos tipados de Claude lector y validación/revisión/commit
-por combinación. Fallos detienen su combinación sin retries ni fallback;
-no marcar la mitigación del escritor como verificada con proveedor por las
-pruebas sintéticas.
+Después, y aparte: hito de interfaz de producto (D054, H6.2). Alternativas
+pendientes: `forbidden_paths` frente a prosa; instalación de operación
+reutilizable (D051); `memory/` vacío de Claude; endurecimientos de D048.
 
-Después, y aparte: ejecutar la propuesta con consentimiento nuevo y, tras la
-matriz, el hito de interfaz de producto (D054, H6.2).
-
-Alternativas: endurecer `forbidden_paths` frente a prosa (observado en D057);
-instalación de operación reutilizable (D051); estudiar el `memory/` vacío que
-crea la CLI de Claude; endurecimientos de D048.
-
-Consentimientos anteriores agotados, incluidos D050, D055 y D057. Sin
-proveedores/login, instalaciones con red, publicación, push ni uso del harness
-para desarrollar este repositorio. Este documento no autoriza ejecuciones con
-proveedores. No se ha avanzado a esta nueva tarea.
+Esta entrega solo ha preparado D060 y no ha avanzado a su ejecución. Este
+documento no concede consentimiento. D050, D055 y D057 siguen agotados. Sin
+proveedores/login, instalaciones con red, publicación, push ni uso del
+harness para desarrollar este repositorio.

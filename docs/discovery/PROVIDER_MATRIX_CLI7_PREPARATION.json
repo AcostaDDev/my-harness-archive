@@ -1,0 +1,454 @@
+{
+  "decision": "D060",
+  "source_commit": "5db4da2",
+  "adapter": "cli-7",
+  "prepared_area": "/private/tmp/harness-provider-matrix-3",
+  "provider_invocations": 0,
+  "provider_preflight": "not_run",
+  "package": {
+    ".gitignore": "684888c0ebb17f374298b65ee2807526c066094c701bcc7ebbe1c1095f494fc1",
+    "harness_local-0.1.0-py3-none-any.whl": "79ac961dfc90f82c4b0a1437df222d93b33f1fb343e6e3f22e4437862dabe9e0",
+    "harness_local-0.1.0.tar.gz": "af56cef42b5764f2c640be209e602b65b210330e206fb8ac8721b6e4dd699710",
+    "requirements.txt": "ce4cc327ffb8c512322f0455a64d76a9712dac6ac06e66061cbe9bcbd7de7e90"
+  },
+  "scripts": {
+    "examples/provider_matrix/prepare.sh": "e6aeed74161ada659c07e97b810acf98422383a80fa9c617a3182e13e4836f1d",
+    "examples/provider_matrix/run_pairing.sh": "b38bed4bf5f7a60ff2e3aa098738206d84af905dd03cec52bb198a11492abca3",
+    "examples/provider_matrix/drive.py": "c85f73fc2be91b7ada757982e7d619bd34aa9dd34a824bafce28de76446bc7c5"
+  },
+  "rehearsal_script": {
+    "path": "/private/tmp/h60_rehearsal.py",
+    "sha256": "89299bff28fd15cd96cc8c39e6370ee3cf3812fa4e845733203cb461a1a264a8"
+  },
+  "prepared": [
+    {
+      "pair": "codex-codex",
+      "config_file_sha256": "87a319fbbf8ab9010812154212834d9abbfcbee9e9ac33c488637f74ebe671f5",
+      "versions": {
+        "engine": "harness-local-0.1.0",
+        "evidence": "git-1",
+        "provider_cli": null,
+        "local_config": "local-config-2",
+        "profile": "typescript-web",
+        "local_config_sha256": "f276340e96fe49f3946ee91dabbc40299f903fc50b46992f752e45986d7daa7e",
+        "agent_adapter": "cli-7",
+        "reviewer_provider": "codex",
+        "reviewer_cli": "0.162.1",
+        "executor_provider": "codex",
+        "executor_cli": "0.162.1",
+        "cli_config_sha256": "ad756c1ba420c0a445405fbc7e5bc885134434078a4db2cf72e8cb5a124c2d1e",
+        "commands": "commands-1",
+        "command_config_sha256": "ac9a0347f413f4163564bb86c20c2373f9468f8b8925f9da80e0957ee91cf695"
+      },
+      "agents": {
+        "planning_mode": "agent",
+        "reviewer": {
+          "provider": "codex",
+          "model": "gpt-6-luna",
+          "effort": "medium"
+        },
+        "planner": {
+          "model": "gpt-6-luna",
+          "effort": "medium"
+        },
+        "executor": {
+          "provider": "codex",
+          "selection_mode": "catalog",
+          "models": [
+            "gpt-6-luna"
+          ],
+          "efforts": [
+            "low"
+          ],
+          "effort_vocabulary": [
+            "minimal",
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max",
+            "ultra"
+          ]
+        }
+      }
+    },
+    {
+      "pair": "claude-claude",
+      "config_file_sha256": "d0e3596e4d0c86da6771ce274eb4a4a5075c430de637881f298f2a0b5d8f83ce",
+      "versions": {
+        "engine": "harness-local-0.1.0",
+        "evidence": "git-1",
+        "provider_cli": null,
+        "local_config": "local-config-2",
+        "profile": "typescript-web",
+        "local_config_sha256": "9575bfc42e77092b8493d840e9037994f635b62fd5ce22aadfc38eabf87c0192",
+        "agent_adapter": "cli-7",
+        "reviewer_provider": "claude",
+        "reviewer_cli": "2.1.296",
+        "executor_provider": "claude",
+        "executor_cli": "2.1.296",
+        "cli_config_sha256": "29169eb80cfc428139d0d5173443ece386cf1a006c2cf94ddfd3293e68b2396e",
+        "commands": "commands-1",
+        "command_config_sha256": "7269296f448e73cdd3f77b5c34a83599103266e8f0fd24c4b437f21c58e02155"
+      },
+      "agents": {
+        "planning_mode": "agent",
+        "reviewer": {
+          "provider": "claude",
+          "model": "claude-sonnet-4-6",
+          "effort": "medium"
+        },
+        "planner": {
+          "model": "claude-sonnet-4-6",
+          "effort": "medium"
+        },
+        "executor": {
+          "provider": "claude",
+          "selection_mode": "catalog",
+          "models": [
+            "claude-sonnet-4-6"
+          ],
+          "efforts": [
+            "low"
+          ],
+          "effort_vocabulary": [
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ]
+        }
+      }
+    },
+    {
+      "pair": "claude-codex",
+      "config_file_sha256": "d532bec73ec19b99a011250b8d395eeb21f3f486cde5e187a4984b0014524dd0",
+      "versions": {
+        "engine": "harness-local-0.1.0",
+        "evidence": "git-1",
+        "provider_cli": null,
+        "local_config": "local-config-2",
+        "profile": "typescript-web",
+        "local_config_sha256": "c6f0a748e4962fec02da1f12d932b5028c925f23c8504f619a9f3129a7acc673",
+        "agent_adapter": "cli-7",
+        "reviewer_provider": "claude",
+        "reviewer_cli": "2.1.296",
+        "executor_provider": "codex",
+        "executor_cli": "0.162.1",
+        "cli_config_sha256": "f9f3caea2dbd2b827565b217b3acc73020ccbc49d345cbf5db23c3a6cc268d2d",
+        "commands": "commands-1",
+        "command_config_sha256": "a1d4c02e7ba74c8da326a351af7ec5073bd70bfa3f0bf76f086e8747cbbd60cb"
+      },
+      "agents": {
+        "planning_mode": "agent",
+        "reviewer": {
+          "provider": "claude",
+          "model": "claude-sonnet-4-6",
+          "effort": "medium"
+        },
+        "planner": {
+          "model": "claude-sonnet-4-6",
+          "effort": "medium"
+        },
+        "executor": {
+          "provider": "codex",
+          "selection_mode": "catalog",
+          "models": [
+            "gpt-6-luna"
+          ],
+          "efforts": [
+            "low"
+          ],
+          "effort_vocabulary": [
+            "minimal",
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max",
+            "ultra"
+          ]
+        }
+      }
+    }
+  ],
+  "offline": [
+    {
+      "area": "/private/tmp/harness-provider-matrix-cli7-offline-20261013/codex-codex",
+      "outcome": {
+        "pair": "codex-codex",
+        "run_id": "165715e7-0e82-4b0f-8801-8b889e49ee6f",
+        "run_status": "COMMITTED",
+        "stage": "committed",
+        "stop": null,
+        "job": "DONE",
+        "commit_job": "DONE",
+        "commit": "afbc4b69040748dfc74427ed970b3c663e607861",
+        "deadline_exceeded": false,
+        "events": 105,
+        "attempts": [
+          {
+            "role": "planner",
+            "status": "COMPLETE",
+            "selection": {
+              "effort": "medium",
+              "model": "gpt-6-luna",
+              "reason": "Explicit planner policy"
+            }
+          },
+          {
+            "role": "executor",
+            "status": "COMPLETE",
+            "selection": {
+              "effort": "low",
+              "model": "gpt-6-luna",
+              "reason": "Explicit synthetic policy"
+            }
+          },
+          {
+            "role": "reviewer",
+            "status": "COMPLETE",
+            "selection": {
+              "effort": "medium",
+              "model": "gpt-6-luna",
+              "reason": "Explicit independent review policy"
+            }
+          }
+        ]
+      },
+      "validation_commands": [
+        [
+          "npm",
+          "run",
+          "test"
+        ],
+        [
+          "npm",
+          "run",
+          "check"
+        ],
+        [
+          "npm",
+          "run",
+          "test"
+        ],
+        [
+          "npm",
+          "run",
+          "build"
+        ]
+      ],
+      "junit_reports": 1,
+      "evidence_hashes": {
+        "attempts.json": "488d2dd5c4cf5d0d2da4fe2dade13783c89245a4d7b0ecde10e9131b70ed3775",
+        "events.json": "e1974350541eda0d875fc2c68747b004cbdb7c438bb839283ef3f95b90f215ae",
+        "job-commit.json": "22b1676bb73457f57abdc845de05bcf96313432d9d300af469d6b4ee48e32055",
+        "job-run.json": "f90b1150d7541247887acc1ccfdf6d33591bc567fcd9135c68e8530f0ddea39f",
+        "jobs.json": "250d2133ce78adedde83d43ebabb9a64fa5fdf1081248579756e680eebed8fd2",
+        "logs.json": "808835725158b3520e513b14231f23e391daea3c19c3912d059ed0c5b3775959",
+        "outcome.json": "761262e95ff161024a5b0adce9aa94fea916c29dab96ee9eff1ad7b1ab6fbaae",
+        "phase.json": "5f14f769a075c6a4609f558219319ed4ddd55064202a81c1f764f5bb06f22f56",
+        "process-specs.json": "7df50bc51297916c26d77c7d60a94772b7a2ac20a3d7e6dfbeb28a0492bba8a0",
+        "project.json": "16e1db1b63d3ae184914f46f0f4b7dab06a11f6b2951c7baae7bee00b5061695",
+        "run.json": "78bbe89810ed61c82c151d63a6717a3aca4f1e9b725d8ec1c66de18c7eea9662",
+        "sqlite-history.json": "cb1d119c71c8f1ec90f2ecd51f18db5e95f775ed854691b3868bd24a987cd8c3",
+        "supervisor.json": "1eb3386db9665a597ca343cbc6ded49635f6966c23435a4b16ec8a3580a0cf45"
+      }
+    },
+    {
+      "area": "/private/tmp/harness-provider-matrix-cli7-offline-20261013/claude-claude",
+      "outcome": {
+        "pair": "claude-claude",
+        "run_id": "d10c626b-bf45-42df-9e79-355d3316ac0e",
+        "run_status": "COMMITTED",
+        "stage": "committed",
+        "stop": null,
+        "job": "DONE",
+        "commit_job": "DONE",
+        "commit": "e969b7489662cace6c92bbc55d27dc3fe045d832",
+        "deadline_exceeded": false,
+        "events": 106,
+        "attempts": [
+          {
+            "role": "planner",
+            "status": "COMPLETE",
+            "selection": {
+              "effort": "medium",
+              "model": "claude-sonnet-4-6",
+              "reason": "Explicit planner policy"
+            }
+          },
+          {
+            "role": "executor",
+            "status": "COMPLETE",
+            "selection": {
+              "effort": "low",
+              "model": "claude-sonnet-4-6",
+              "reason": "Explicit synthetic policy"
+            }
+          },
+          {
+            "role": "reviewer",
+            "status": "COMPLETE",
+            "selection": {
+              "effort": "medium",
+              "model": "claude-sonnet-4-6",
+              "reason": "Explicit independent review policy"
+            }
+          }
+        ]
+      },
+      "validation_commands": [
+        [
+          "npm",
+          "run",
+          "test"
+        ],
+        [
+          "npm",
+          "run",
+          "check"
+        ],
+        [
+          "npm",
+          "run",
+          "test"
+        ],
+        [
+          "npm",
+          "run",
+          "build"
+        ]
+      ],
+      "junit_reports": 1,
+      "evidence_hashes": {
+        "attempts.json": "79d2d559e21b3bd64b55008dab08f4f1adb2b81d0e72e1e821ab2e8b9236c8f8",
+        "events.json": "ee2874915e987c9f136c78cc000e6b902562d333650359182efec66240e9a61d",
+        "job-commit.json": "2ea36f52fdc24ef8846f2cd1a05143578ede059696c7191684d22f6cd055e8e0",
+        "job-run.json": "0d329632f1ec7e1e3ce01c9b08188afe359bba8545cadb4fa175745a9e6231b8",
+        "jobs.json": "b625bc0bbba68fd3909c9f419043d0b8fceff9b19d10ee8b94d52f4ac785abd9",
+        "logs.json": "288c0537eba0f83a0768ae6834cf7d2f1b15335a54eaded7ec332b3a14c80ce3",
+        "outcome.json": "c25b431352a4ae4e23044e15807ea0a97cfef327064430fe6efa512d433e4bd0",
+        "phase.json": "8e9ff8871d52490602dcb5189d9a28ed5309aee71c3652e6b4b3e04872f84820",
+        "process-specs.json": "ec8e7e51be74404cf646572a73a64436204f73fb682ba5d83a2c93d38b1204a6",
+        "project.json": "66f781e59dc4c22f75c3052d77fabe44e25f747f15f6546dfb279bded8306ff1",
+        "run.json": "e34831ba9915493acc7df6d54e572fa7bb8b0185bd010550c62f9aaa30c786b7",
+        "sqlite-history.json": "2a711c191d52606fdb0e96e66d7437f88453d4569cc4d0edbb75e7680b9905e1",
+        "supervisor.json": "1eb3386db9665a597ca343cbc6ded49635f6966c23435a4b16ec8a3580a0cf45"
+      }
+    },
+    {
+      "area": "/private/tmp/harness-provider-matrix-cli7-offline-20261013/claude-codex",
+      "outcome": {
+        "pair": "claude-codex",
+        "run_id": "dca12ce2-8ca2-4e00-898e-5b2337adf933",
+        "run_status": "COMMITTED",
+        "stage": "committed",
+        "stop": null,
+        "job": "DONE",
+        "commit_job": "DONE",
+        "commit": "b4e7edc10280266c51d9aeacee1998e7c45bbd5d",
+        "deadline_exceeded": false,
+        "events": 105,
+        "attempts": [
+          {
+            "role": "planner",
+            "status": "COMPLETE",
+            "selection": {
+              "effort": "medium",
+              "model": "claude-sonnet-4-6",
+              "reason": "Explicit planner policy"
+            }
+          },
+          {
+            "role": "executor",
+            "status": "COMPLETE",
+            "selection": {
+              "effort": "low",
+              "model": "gpt-6-luna",
+              "reason": "Explicit synthetic policy"
+            }
+          },
+          {
+            "role": "reviewer",
+            "status": "COMPLETE",
+            "selection": {
+              "effort": "medium",
+              "model": "claude-sonnet-4-6",
+              "reason": "Explicit independent review policy"
+            }
+          }
+        ]
+      },
+      "validation_commands": [
+        [
+          "npm",
+          "run",
+          "test"
+        ],
+        [
+          "npm",
+          "run",
+          "check"
+        ],
+        [
+          "npm",
+          "run",
+          "test"
+        ],
+        [
+          "npm",
+          "run",
+          "build"
+        ]
+      ],
+      "junit_reports": 1,
+      "evidence_hashes": {
+        "attempts.json": "e7f9c6c8264ff97e61e0c73399fbc3bcdc6e7c4321c8e4141ce15fe49cf86208",
+        "events.json": "7e8e17a9d270b744f405a6905c6c547db5a9350702f7397993e487d763d042ac",
+        "job-commit.json": "add5f6de20763f062e7594ac525a7177fd500fd7fab156f8b269273c8c13b78e",
+        "job-run.json": "366b1845c1cbb48eeb7d028dd5313c629f37ff3c29013cc6a8752350859cb1c3",
+        "jobs.json": "e826b652713158ef78d655c0c8694e81ee5754b77d04920524d09d22c136bbe6",
+        "logs.json": "3aeb8e18bacd735dc583ce71bfb568fbfc3d0829e0c443d03642e87ec4e10b21",
+        "outcome.json": "54814d32c4d5d77c8ce8ee82ee751168cb5bc06d56626b5df9d0458a5ebca5de",
+        "phase.json": "d84d718efe7b0bd13b2bd11a8d3a6415fe120aea7321e1c8b508d66c83876a53",
+        "process-specs.json": "157c0ffeab5c31796d825f95dc75ce143a565f7eb72210cc5e59a1e641bcbac5",
+        "project.json": "e167524b472f9b1346dc90f22ad318e3141f593d904c086a19d0de0086275c89",
+        "run.json": "e9664eae1104ae0286cbfcaab776ae33a5e14927aacb16ad2104fc5a33f2f62e",
+        "sqlite-history.json": "a73ca076f956b44323f970415faaaa75bd816dc0ad4a62aec2285523cfe9189e",
+        "supervisor.json": "1eb3386db9665a597ca343cbc6ded49635f6966c23435a4b16ec8a3580a0cf45"
+      }
+    }
+  ],
+  "offline_failure": {
+    "path": "/private/tmp/harness-provider-matrix-cli7-invalid-20261013/codex-codex/evidence/outcome.json",
+    "sha256": "bf7d6f7c82c3a1c0deffdb188786f7ccf1868790979d299bcedfa6aa7b62a374",
+    "outcome": {
+      "pair": "codex-codex",
+      "run_id": "e752d30f-37b3-427b-9b52-21fdd47142b4",
+      "run_status": "STOPPED",
+      "stage": "planner",
+      "stop": {
+        "stage": "planner",
+        "reason": "Invalid task validation_commands"
+      },
+      "job": "DONE",
+      "commit_job": null,
+      "commit": null,
+      "deadline_exceeded": false,
+      "events": 38,
+      "attempts": [
+        {
+          "role": "planner",
+          "status": "COMPLETE",
+          "selection": {
+            "effort": "medium",
+            "model": "gpt-6-luna",
+            "reason": "Explicit planner policy"
+          }
+        }
+      ]
+    }
+  }
+}

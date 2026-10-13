@@ -1,10 +1,21 @@
 #!/bin/sh
-# Preparación del smoke de la matriz D052 (local-config-2; cli-5 en D055/D057, cli-6 desde D058). Sin proveedores ni red.
-# Uso: sh prepare.sh BASE   (BASE no debe existir; ruta absoluta canónica)
-# Crea BASE/<revisor>-<ejecutor> para las cuatro combinaciones, cada una con su
+# Preparación del smoke de la matriz D052 (local-config-2; cli-7 desde D059). Sin proveedores ni red.
+# Uso: sh prepare.sh BASE [PAR ...]   (BASE no debe existir; ruta absoluta canónica)
+# Sin PAR prepara las cuatro combinaciones; D060 selecciona solo las 2–4.
+# Crea BASE/<revisor>-<ejecutor> para las combinaciones seleccionadas, cada una con su
 # checkout desechable, su TOML 0600, su estado y sus áreas privadas.
 set -eu
-BASE="$1"
+BASE="${1:?Uso: prepare.sh BASE [PAR ...]}"
+shift
+if [ "$#" -eq 0 ]; then
+  set -- codex-claude codex-codex claude-claude claude-codex
+fi
+for pair in "$@"; do
+  case "$pair" in
+    codex-claude|codex-codex|claude-claude|claude-codex) ;;
+    *) echo "Combinación desconocida: $pair" >&2; exit 2 ;;
+  esac
+done
 REPO=$HOME/Documents/projects/my_harness
 NODE_BIN=$HOME/.nvm/versions/node/v24.15.0/bin
 CODEX="$NODE_BIN/codex"
@@ -147,7 +158,6 @@ EOF
 }
 
 # Orden de novedad creciente: planificador Codex, escritor Codex, lector Claude, ambos.
-prepare codex claude
-prepare codex codex
-prepare claude claude
-prepare claude codex
+for pair in "$@"; do
+  prepare "${pair%-*}" "${pair#*-}"
+done

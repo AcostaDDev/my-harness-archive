@@ -493,9 +493,13 @@ ejecutada una vez con autorización y completa: COMMITTED, fase CLOSED y tag
 ([resultado](discovery/FIRST_USE_RUN.md)); operación desde el wheel instalado (D051).
 Comando único de desarrollo `scripts/dev` implementado (D053, [entrega](discovery/DEV_COMMAND.md)).
 Revisor/ejecutor con proveedor elegido implementado y verificado offline (D052,
-`cli-5`/`local-config-2`, [entrega](discovery/AGENT_ROLES.md)); smoke con
-proveedores pendiente de propuesta y autorización. Después, hito de interfaz de
-producto con alta de proyectos en SQLite (D054); no iniciado.
+`local-config-2`, [entrega](discovery/AGENT_ROLES.md)). D057 cerró la matriz con
+la combinación 1 COMMITTED y fallos en 2/3; 4 no lanzada. D058 tipa Claude
+lector y D059 declara raíces del escritor Codex (`cli-7`), verificados offline.
+Propuesta de combinaciones 2–4 preparada y ensayada offline (D060,
+[órdenes y criterios](discovery/PROVIDER_MATRIX_CLI7_PROPOSAL.md)); ejecución
+separada pendiente de consentimiento nuevo, sin iniciarla. Después, hito de
+interfaz de producto con alta de proyectos en SQLite (D054); no iniciado.
 QA visual H5.7 bloqueada por herramienta; sin proveedores nuevos.
 
 ## Verificación de H0.1
@@ -2079,6 +2083,51 @@ QA visual H5.7 bloqueada por herramienta; sin proveedores nuevos.
   configuración global, instalaciones, push ni cambios de evidencia D057.
 - Siguiente tarea concreta: preparar una propuesta de nueva matriz para las
   combinaciones 2–4 con `cli-7`; no iniciada. Ejecutarla exige consentimiento nuevo.
+
+## Preparación de la matriz 2–4 con `cli-7` (D060)
+
+- Petición del usuario: leer el contexto, comprobar Git, completar solo la
+  tarea activa, actualizar documentación y realizar commit. Git inicialmente
+  limpio en `main`, `5db4da2`. Sin contradicciones materiales con D055–D059.
+- [Propuesta](discovery/PROVIDER_MATRIX_CLI7_PROPOSAL.md): Codex→Codex,
+  Claude→Claude y Claude→Codex, mismas selecciones/herramientas de D055/D057,
+  cambios D058/D059 explícitos. Máximo nueve invocaciones, cero correcciones,
+  límite operativo total propuesto de 90 minutos. Órdenes por combinación y
+  revisión entre ellas; ejecución real requiere consentimiento específico nuevo.
+- `prepare.sh BASE [PAR ...]` selecciona combinaciones; por defecto mantiene
+  las cuatro. Preparadas solo 2–4 en `/private/tmp/harness-provider-matrix-3`:
+  TOML 0600, dos commits por checkout, regresión deliberada y estado vacío.
+  Sin SQLite, jobs, intentos ni servicio en el área destinada a proveedores.
+- Wheel/sdist construidos offline con TypeScript/Vite correcto, verificados
+  mediante `check_distribution.py` e instalados en venv propio con pins/hashes
+  (D051). Verificador: assets/API, sesión, bootstrap/tarea/commit/reinicio y
+  restauración de consulta con agentes falsos. Bind bloqueado en sandbox;
+  comprobación completada fuera con permiso. No se modifica `dist/` del repo.
+- `check-config` del wheel, sin preflight, válido en los tres TOML reales:
+  `cli-7`, `local-config-2`, `commands-1`, selección y reparto esperados.
+  [Manifiesto](discovery/PROVIDER_MATRIX_CLI7_PREPARATION.json) registra hashes
+  de paquete, scripts, archivos TOML, versiones y evidencia sintética.
+- Ensayo separado en `/private/tmp/harness-provider-matrix-cli7-offline-20261013`
+  con CLI sintéticas por `run_pairing.sh`/`drive.py` y el servicio instalado:
+  tres COMMITTED, tres intentos COMPLETE por par, un commit nuevo limitado a
+  `src/estimate.ts`, documentos intactos, contrato normalizado `["npm run test"]`,
+  cuatro validaciones exit 0 y JUnit complete. Specs/prompts/hashes comprueban
+  D058/D059. SQLite reabierta: integridad/FK, jobs DONE, propietarios cerrados,
+  procesos STOPPED y cero locks.
+- Rama `[[]]` en área distinta: STOPPED en planner, un intento, sin otros roles
+  ni commit, salida 1 y evidencia conservada. Servicios terminados con TERM,
+  apagado completo, clave retirada y puerto disponible. Verificador local
+  ajustado para el exit 143 de TERM y TIME_WAIT, sin repetir combinaciones.
+- **82 pytest focales y 12 checks ligeros correctos**; sintaxis shell,
+  rechazo de par desconocido antes de crear área y diff/whitespace/enlaces
+  revisados. Sin suite pytest completa, cliente Node separado ni QA visual:
+  no cambia código de producto, UI, esquema, codec, dependencias o locks.
+- Áreas D055/D057 conservadas; capturas D057 del escritor Codex coinciden con
+  hashes documentados. Sin proveedores, version/help reales, login, red externa,
+  configuración global, ReferenceProject, subagentes, push ni harness de desarrollo.
+- No acreditado: edición real de Codex, mensaje interno de permisos ni Claude
+  real con esquema tipado. Siguiente tarea: ejecutar D060 una sola vez solo con
+  consentimiento nuevo; **no iniciada**. H6.2 tampoco. Commit solicitado.
 
 ## Coordinación
 
