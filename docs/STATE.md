@@ -35,7 +35,7 @@ Actualizado: 2026-10-13.
 - Dependencias reales instaladas en `.venv` / `frontend/node_modules`, locks
   `uv.lock` / `frontend/package-lock.json`. Pins H0.2 usados conservados;
   backend de paquete `uv_build==0.12.19`. Comandos comprobados en README/AGENTS.
-- 834 casos de producto en `tests/product/`; pytest ejecuta 846 pruebas en total.
+- 909 casos de producto en `tests/product/`; pytest ejecuta 921 pruebas en total.
   La comprobación ligera anterior conserva sus 12 checks sin dependencias.
 - H1.1 completado: [importación legacy y verificaciones](discovery/H1.1_IMPORT.md),
   [alcance original](discovery/H1.1_SCOPE.md). Lector local explícito de
@@ -2043,6 +2043,42 @@ QA visual H5.7 bloqueada por herramienta; sin proveedores nuevos.
   consentimiento nuevo. Sin proveedores, red, push, configuración global ni
   ReferenceProject.
 - Siguiente: diagnóstico del escritor Codex, sin consumo; no iniciado.
+
+## Diagnóstico del escritor Codex y raíces explícitas (D059, `cli-7`)
+
+- Petición del usuario: leer el contexto, completar solo la tarea activa sin
+  lanzar sesiones y realizar commit. Git limpio al empezar.
+  [Diagnóstico, evidencia y límites](discovery/CODEX_WRITER_ROOTS.md).
+- Codex 0.162.1 leído por bytes/símbolos y version/help. Plantilla
+  `workspace-write`: cwd y writable_roots escribibles; vías cwd, `/tmp` y
+  TMPDIR presentes. `/tmp` resuelve a `/private/tmp` en este Mac.
+- Evidencia D057 conservada y hashes comprobados: prompt del harness, stdout,
+  stderr e intención de proceso del ejecutor. Negativa del modelo sin intentar
+  herramientas, con terminal completo y stderr vacío. La interpretación del
+  alcance de escritura fue incorrecta; no se observó una denegación real.
+  El mensaje interno de permisos no se conservó: la relación causal con la
+  descripción de raíces temporales permanece como hipótesis.
+- Mitigación `cli-7` solo para Codex ejecutor: checkout canónico explícito en
+  `sandbox_workspace_write.writable_roots`, `exclude_slash_tmp=true` y
+  aclaración de acceso solicitado/descendientes en la entrada de transporte.
+  TMPDIR explícito conserva el comportamiento predeterminado de la CLI;
+  contrato/política y denegaciones reales siguen delimitando los efectos.
+- Texto añadido persistido con hash en la intención, sin reescribir peticiones,
+  prompts, permisos, contratos ni historiales congelados. Cuarentena de jobs
+  `cli-6` antes de preflight/efectos. Lectores/Claude, esquema `0013_bootstrap`,
+  codec 7, local-config, OpenAPI, UI y dependencias sin cambios.
+- Verificado: 10 pruebas nuevas, también con checkouts bajo `/private/tmp`:
+  TOML/rutas especiales, rechazo sintético de raíces ausentes/amplias,
+  recorridos con ambos revisores y Codex ejecutor hasta `ACCEPTANCE_READY`,
+  persistencia del prompt y cuarentena sin cambios del historial.
+  Regresión: 921 pytest y 121 subtests, 12 checks ligeros y 6 Node correctos;
+  diff revisado y `git diff --check` limpio. Sin cambios de UI/esquema: no se
+  repitieron build/tsc ni regeneración OpenAPI/tipos en esta entrega.
+- No acreditado: escritura por Codex real ni su mensaje interno de permisos;
+  Claude real con D058 sigue pendiente. Sin sesiones/proveedores, login, red,
+  configuración global, instalaciones, push ni cambios de evidencia D057.
+- Siguiente tarea concreta: preparar una propuesta de nueva matriz para las
+  combinaciones 2–4 con `cli-7`; no iniciada. Ejecutarla exige consentimiento nuevo.
 
 ## Coordinación
 

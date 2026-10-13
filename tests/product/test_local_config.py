@@ -95,7 +95,7 @@ def test_valid_configuration_composes_fresh_ports_without_processes(setup):
     assert not config.supervisor and config.migrations_dir == tmp_path / 'state/migrations'
     versions = project.versions
     assert versions['local_config'] == 'local-config-1' and versions['commands'] == 'commands-1'
-    assert versions['agent_adapter'] == 'cli-6' and versions['engine'].startswith('harness-local-')
+    assert versions['agent_adapter'] == 'cli-7' and versions['engine'].startswith('harness-local-')
     assert {'cli_config_sha256', 'command_config_sha256', 'local_config_sha256'} <= versions.keys()
     first, second = config.ports_factory(project.context, versions), config.ports_factory(project.context, versions)
     assert [type(port) for port in first] == [CLIProcessAdapter, ManagedCommandRunner, GitWorkspace]

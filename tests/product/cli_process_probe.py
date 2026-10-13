@@ -47,6 +47,14 @@ if provider == 'codex':
     if writer and config.get('sandbox_workspace_write', {}).get('network_access') is not False:
         print('Synthetic contract: writer requires explicit network_access=false', file=sys.stderr)
         sys.exit(1)
+    # D059: independent transport contract, not an emulation of Codex's model
+    # or OS sandbox. A writer must explicitly name its checkout and omit /tmp.
+    workspace = config.get('sandbox_workspace_write', {})
+    if writer and (workspace.get('writable_roots') != [str(Path.cwd())]
+                   or workspace.get('exclude_slash_tmp') is not True):
+        print('Synthetic contract: writer requires explicit checkout root and exclude_slash_tmp=true',
+              file=sys.stderr)
+        sys.exit(1)
 else:
     # Independent contract: the CLI requires a wrapper containing a server map,
     # not an empty top-level object. Reject before emitting simulated inference.

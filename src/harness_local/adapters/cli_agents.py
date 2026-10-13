@@ -26,7 +26,7 @@ from harness_local.core.engine.journal import JournalError
 from harness_local.core.engine.prompts import digest, output_schema
 
 
-VERSION = "cli-6"
+VERSION = "cli-7"
 # Version/help characterization (D052): Claude 2.1.295 and 2.1.296 share the same help.
 SUPPORTED = {"codex": ("0.161.0", "0.162.1"), "claude": ("2.1.295", "2.1.296")}
 # Codex workspace-write was characterized on 0.162.1 only.
@@ -151,8 +151,13 @@ def argv_for(config, context, request):
     if config.provider == "codex":
         if access == "write" and config.cli_version not in WRITE_SUPPORTED["codex"]:
             raise ValueError("Codex workspace-write is characterized on 0.162.1 only")
-        # Writer: workspace sandbox without network; reader: read-only sandbox.
-        sandbox = ("workspace-write", "-c", "sandbox_workspace_write.network_access=false") \
+        # D059: name the canonical checkout and omit the broad /tmp grant. On
+        # macOS /tmp aliases /private/tmp and can obscure a checkout beneath it
+        # in the permissions description. The explicitly configured TMPDIR
+        # keeps its CLI default; file scope remains the frozen engine contract.
+        sandbox = ("workspace-write", "-c", "sandbox_workspace_write.network_access=false",
+                   "-c", "sandbox_workspace_write.writable_roots=" + json.dumps([str(context.root)], ensure_ascii=False),
+                   "-c", "sandbox_workspace_write.exclude_slash_tmp=true") \
             if access == "write" else ("read-only",)
         return config.executable + (
             "exec", "--strict-config", "--ignore-user-config", "--ignore-rules", "--ephemeral", "--json",
@@ -275,6 +280,14 @@ class CLIProcessAdapter:
         UUID(request.id)
         directory.mkdir(mode=0o700)
         prompt = request.prompt + "\n\nReturn exactly one JSON object, without Markdown fences. Shape:\n" + freeze(SHAPES[request.role])
+        if config.provider == "codex" and request.role == "executor":
+            prompt += ("\n\nRequested executor filesystem access:\n"
+                       "The CLI is invoked with workspace-write and the following canonical checkout "
+                       "as both cwd and an explicit writable root:\n" + freeze({"checkout_root": str(context.root)}) +
+                       "\nWorkspace write access includes files in its subdirectories. Task paths are relative to "
+                       "this checkout; edit only paths permitted by the frozen contract and project policy. "
+                       "Temporary directories do not define the task scope. This describes requested access; "
+                       "actual tool denials must still be respected and reported.\n")
         if request.role in {"planner", "reviewer"}:
             policy = context.policy
             if policy.executor_mode == "open":

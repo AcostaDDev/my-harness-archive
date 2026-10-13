@@ -1723,3 +1723,37 @@ el lector Claude devolvió listas y objetos como cadenas JSON porque el
   cambios. Historiales y congelados no se reescriben.
 
 No autoriza ninguna ejecución con proveedores.
+
+## D059 — Diagnóstico del escritor Codex y raíces explícitas (`cli-7`)
+
+Estado: diagnóstico completado y mitigación implementada offline el 2026-10-13.
+[Evidencia, medidas y límites](discovery/CODEX_WRITER_ROOTS.md). Petición del
+usuario: completar esta tarea sin lanzar sesiones y realizar commit.
+
+La causa inmediata observada en D057 es una interpretación incorrecta del
+modelo: negó que el checkout fuese escribible sin intentar herramientas, aunque
+el archivo estaba dentro de la raíz `/private/tmp` que mencionaba. No hay
+denegación real de escritura observada. La lectura de Codex 0.162.1 identifica
+la plantilla que permite editar cwd y writable_roots, la descripción de raíces
+y las vías cwd, `/tmp` y TMPDIR. La lista generada internamente no se conservó;
+el origen de la confusión en las raíces temporales sigue siendo una hipótesis.
+
+Se eligen dos medidas complementarias solo para Codex ejecutor: declarar
+`sandbox_workspace_write.writable_roots` con el checkout canónico y
+`sandbox_workspace_write.exclude_slash_tmp=true`, y aclarar en la entrada de
+transporte que el acceso solicitado incluye sus subdirectorios. Se conserva
+TMPDIR del entorno explícito con el comportamiento predeterminado de la CLI.
+El contrato y la política siguen delimitando qué editar; las denegaciones
+reales deben respetarse. Sin ampliar red/aprobaciones ni modificar ajustes
+globales. No se mueve el checkout del smoke: esa medida solo cubriría el ensayo.
+
+El cambio de argv y entrada de transporte exige `cli-7`. El texto añadido queda
+persistido por hash en la intención de proceso, sin reescribir prompts,
+contratos, permisos o historiales congelados. Jobs `cli-6` quedan en cuarentena
+antes del preflight/efectos por la comparación existente de versiones.
+Lectores y Claude conservan su transporte. Esquema, codec, local-config,
+OpenAPI, UI y dependencias sin cambios.
+
+Pruebas de argv/TOML, CLI sintética, recorridos de ambos revisores con Codex
+ejecutor y cuarentena. La mitigación no certifica una escritura real ni qué
+mensaje de permisos verá Codex. No autoriza otra matriz con proveedores.
