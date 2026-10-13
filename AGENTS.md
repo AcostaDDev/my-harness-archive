@@ -131,6 +131,8 @@ en un venv propio, no desde este checkout (D051). Consentimiento agotado.
 Desarrollo local con un solo comando: `scripts/dev` (D053, `docs/discovery/DEV_COMMAND.md`).
 Revisor/ejecutor con proveedor elegido implementado offline (D052, `cli-5`,
 `local-config-2`; `docs/discovery/AGENT_ROLES.md`). Smoke con proveedores no autorizado.
+Propuesta de la matriz de cuatro combinaciones preparada y ensayada offline, sin ejecutar
+(D055, `docs/discovery/PROVIDER_MATRIX_PROPOSAL.md`, `examples/provider_matrix/prepare.sh`).
 Comprobación offline ligera, solo biblioteca estándar, desde la raíz:
 
 ```sh

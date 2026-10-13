@@ -1871,6 +1871,48 @@ QA visual H5.7 bloqueada por herramienta; sin proveedores nuevos.
 - Decisión del usuario: D052 primero; después, hito de UI (backlog H6.2) con
   alta de proyectos por registro en SQLite y confianza explícita. Sin código.
 
+## Propuesta del smoke de la matriz D052 (D055)
+
+- Git inicial limpio en `main`, `1eb5847`. Leídos AGENTS, STATE, NEXT_STEPS y
+  DECISIONS. Se contrastaron D050–D054, la entrega D052, `local-config-2`, el
+  adaptador `cli-5` y el tratamiento de las validaciones del planificador.
+- Selecciones del usuario:
+  - Las cuatro combinaciones.
+  - Planificación por el revisor, ejecución y revisión, más commit; 3
+    invocaciones por combinación y 12 en total.
+  - Modelos de D050: revisor `medium`, catálogo del ejecutor `low`.
+  - Un fallo aísla su combinación; las demás continúan.
+- [Propuesta](discovery/PROVIDER_MATRIX_PROPOSAL.md) y
+  [`examples/provider_matrix/prepare.sh`](../examples/provider_matrix/prepare.sh):
+  una área por combinación con checkout desechable (regresión deliberada), TOML
+  `local-config-2` 0600, estado y caché propios. Claude 2.1.296 por ruta
+  versionada; modo catálogo.
+- Hallazgo: el planificador puede proponer `npm run check|test|build` como
+  `validation_commands`. Ese argv da `Command` con 1800 s, que no coincide con
+  la variante autorizada del perfil (120 s), y su validación fallaría. El TOML
+  autoriza esas tres variantes exactas y `max_timeout_seconds = 1800`.
+- Ensayo offline en el scratchpad:
+  - `prepare.sh` completo.
+  - Wheel construido y verificado con `check_distribution.py`; venv nuevo
+    instalado offline por hashes (D051).
+  - `check-config` válido en las cuatro (`cli-5`, `local-config-2`, reparto y
+    vocabulario correctos).
+  - `--preflight` con `version_help_match` en los ocho agentes (Codex 0.162.1,
+    Claude 2.1.296), sin flags ausentes. Solo versión y ayuda.
+  - Admisión en proceso sin supervisor: fase `P001`, job y run `QUEUED`, sin
+    intentos ni procesos, y variantes del planificador autorizadas.
+  - Comandos del perfil con `env -i`: `npm ci`, check y build dan 0; test da 1
+    por la regresión.
+  - TOML documentado idéntico al generado (diff).
+- **12 checks ligeros y 66 pytest de `test_agent_roles.py` y
+  `test_local_config.py` correctos**; sintaxis del script con `sh -n`. Sin
+  regresión pytest completa ni Node: solo cambian documentos y un script de
+  ejemplo. Sin `serve`, consumo, login, red,
+  configuración global, ReferenceProject ni harness de desarrollo. Commit solicitado
+  por el usuario.
+- Siguiente: ejecutar la propuesta D055 solo con consentimiento específico; no
+  iniciada.
+
 ## Coordinación
 
 Desarrollo manual con el usuario. Una única sesión implementadora sobre los mismos archivos a la vez. La otra herramienta puede revisar una entrega terminada.

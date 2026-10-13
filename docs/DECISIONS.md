@@ -1607,3 +1607,36 @@ de D028/D049, según la cual solo el servidor registra proyectos. Los ejecutable
 y entornos de los agentes no se conceden por HTTP sin validación; su forma
 exacta (archivo del operador o ajustes globales validados) se concreta en el
 alcance de H6.2, igual que la convivencia con el TOML `local-config`.
+
+## D055 — Propuesta del smoke de la matriz D052: selecciones del usuario y límites
+
+Estado: propuesta preparada y ensayada offline el 2026-10-13; **no ejecutada ni
+autorizada**. [Propuesta](discovery/PROVIDER_MATRIX_PROPOSAL.md).
+
+Selecciones del usuario en esta sesión:
+
+- Las cuatro combinaciones revisor → ejecutor.
+- `planning_mode = "agent"`: el revisor planifica, el ejecutor edita y el
+  revisor revisa; después, commit sin proveedor. Sin check ni cierre de fase.
+- Modelos de D050: Codex `gpt-6-luna` y Claude `claude-sonnet-4-6`. Revisor
+  `medium`; catálogo del ejecutor `low`.
+- Un fallo detiene solo su combinación, sin reintento; las demás continúan.
+
+Concretado con criterio:
+
+- `executor_mode = "catalog"` con un solo modelo y un solo esfuerzo, y
+  `max_revision_cycles = 0`. Como máximo tres invocaciones por combinación y
+  doce en total.
+- Claude 2.1.296 por ruta versionada, con `DISABLE_AUTOUPDATER=1`.
+- Un área, un TOML `local-config-2` y un servicio por combinación, operados
+  desde un único wheel instalado (D051).
+- Autorizadas exactamente las variantes `npm run check|test|build` de 1800 s
+  que el planificador puede proponer.
+- Si un fallo es de autenticación, cuota o preflight de un proveedor, las
+  combinaciones pendientes que lo usan no se lanzan.
+
+Ejecutar requiere consentimiento específico del usuario para esta propuesta.
+Cualquier cambio de combinación, modelo, esfuerzo, modo, herramientas, límites
+o entorno exige actualizarla antes. Solo `BASE` puede cambiar si ya existe, y
+el cambio se registra. Sin cambios de código, esquema, codec, `cli-5`,
+OpenAPI ni UI.
