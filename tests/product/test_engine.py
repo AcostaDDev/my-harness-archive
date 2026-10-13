@@ -290,15 +290,20 @@ def test_incidental_denial_does_not_override_accept_review(context):
     assert result.revisions == 0 and len(agents.requests) == 2
 
 
-def test_revalidation_after_malformed_review_retains_error_and_can_correct(context):
+def test_revalidation_after_malformed_review_requires_explicit_correction(context):
     engine, agents, _, _ = harness(context, [edit(), {"task_id": TASK_ID}, review("REVISE"), edit("corrected"), review()])
     initial = start(engine, context)
     assert initial.stop.stage == "reviewer" and initial.cycles[0].verdict is None
     resumed = engine.resume(context, initial)
-    assert resumed.status == "acceptance_ready" and resumed.revisions == 1
+    assert resumed.status == 'stopped' and resumed.revisions == 0
+    assert resumed.stop.stage == 'revision'
     assert resumed.cycles[0] == initial.cycles[0]
     assert resumed.attempts[:2] == initial.attempts
-    assert resumed.stops == (initial.stop,)
+    assert resumed.stops[0] == initial.stop
+    assert len(agents.requests) == 3
+    corrected = engine.resume(context, resumed, retry_executor=True)
+    assert corrected.status == 'acceptance_ready' and corrected.revisions == 1
+    assert corrected.attempts[:3] == resumed.attempts
     assert len(agents.requests) == 5
 
 

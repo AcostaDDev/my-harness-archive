@@ -39,6 +39,7 @@ class ManagedProject:
     id: str
     context: ProjectContext
     versions: Mapping[str, str | None]
+    permission_authority: Mapping | None = None
 
 
 @dataclass(frozen=True)
@@ -87,6 +88,14 @@ def _validate(config: ManagedConfig, database: Path, migrations_dir: Path) -> No
         roots.add(project.context.root)
         if not isinstance(project.versions, Mapping) or not REQUIRED_VERSIONS <= project.versions.keys():
             raise ValueError(f"Versiones explícitas incompletas para {project.id}; desconocidas como null")
+        if project.permission_authority is not None:
+            from harness_local.core.engine.permissions import KINDS, LAYERS
+            authority = project.permission_authority
+            if set(authority) != set(LAYERS) or any(
+                not isinstance(values, Mapping) or not set(values) <= set(KINDS)
+                or any(not isinstance(targets, (list, tuple)) or not all(isinstance(t, str) and t.strip() for t in targets)
+                       for targets in values.values()) for values in authority.values()):
+                raise ValueError('Explicit global/project/contract/provider permission ceilings required')
         for path, name in ((database, "La base SQLite"), (migrations_dir, "El directorio de migraciones")):
             if path.is_relative_to(project.context.root) or project.context.root.is_relative_to(path):
                 raise ValueError(f"{name} debe estar fuera del checkout de {project.id}")
@@ -159,6 +168,8 @@ class ManagedRuntime:
         self.repository = SQLiteManagedRepository(self.engine)
         self.views = SQLiteManagedViews(self.engine)
         self.prompts = PromptRepository(self.engine)
+        from harness_local.storage.permissions import PermissionRepository
+        self.permissions = PermissionRepository(self.repository)
         self.projects = {project.id: project for project in config.projects}
         if config.supervisor:
             supervisor = LocalSupervisor(self.repository, config.ports_factory, lease_seconds=config.lease_seconds,

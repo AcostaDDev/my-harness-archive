@@ -64,6 +64,12 @@ def dump_history(history: RunHistory) -> str:
         data.pop("prompt_catalog_json")
         for attempt in data["attempts"]:
             attempt["request"].pop("prompt_snapshot_json", None)
+    has_permissions = any(a.request.permission_snapshot_json is not None for a in history.attempts)
+    if has_permissions:
+        version = 5
+    else:
+        for attempt in data['attempts']:
+            attempt['request'].pop('permission_snapshot_json', None)
     if not has_cli:
         for attempt in data["attempts"]:
             attempt["result"].pop("status")
@@ -73,7 +79,7 @@ def dump_history(history: RunHistory) -> str:
 
 def load_history(snapshot: str) -> RunHistory:
     value = json.loads(snapshot)
-    if value["format"] not in {1, 2, 3, 4}:
+    if value["format"] not in {1, 2, 3, 4, 5}:
         raise ValueError("Unknown managed history format")
     data = value["history"]
     data["attempts"] = tuple(Attempt(restore_request(item["request"]), AgentResult(**item["result"]))

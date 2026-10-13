@@ -34,7 +34,7 @@ class _Journal:
         self._call(self.repository.checkpoint, history, stage)
 
     def agent_started(self, history, request):
-        self._call(self.repository.agent_started, history, request)
+        return self._call(self.repository.agent_started, history, request)
 
     def process_intent(self, attempt_id, spec):
         self._call(self.repository.process_intent, attempt_id, spec)

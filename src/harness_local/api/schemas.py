@@ -315,6 +315,7 @@ class ManagedCommitRead(BaseModel):
 
 
 class ManagedRunRead(ManagedRunSummaryRead):
+    actions: list[Literal['revalidate', 'retry_executor', 'commit', 'permissions']]
     versions: dict[str, str | None]
     history: ManagedHistoryRead
     commit: ManagedCommitRead | None
@@ -323,6 +324,7 @@ class ManagedRunRead(ManagedRunSummaryRead):
 
 class ManagedAttemptRead(BaseModel):
     prompt: str
+    permission_snapshot: dict[str, Any] | None = None
     prompt_snapshot: dict[str, Any] | None
     id: str
     number: int
@@ -409,3 +411,45 @@ class PromptValidationRead(BaseModel):
 
 class PromptDiffRead(BaseModel):
     diff: str
+
+
+PermissionKind = Literal['files', 'tools', 'network', 'product', 'acceptance']
+
+
+class PermissionCreate(BaseModel):
+    model_config = ConfigDict(extra='forbid', str_strip_whitespace=True)
+    expected_version: int = Field(ge=0)
+    kind: PermissionKind
+    target: str = Field(min_length=1, max_length=2000)
+    operation: str = Field(min_length=1, max_length=120)
+    arguments: list[str] = Field(max_length=100)
+    requested_by: str = Field(min_length=1, max_length=120)
+    source_attempt_id: str = Field(min_length=1, max_length=36)
+    reason: str = Field(min_length=1, max_length=2000)
+    ttl_seconds: int = Field(ge=1, le=86400)
+    supersedes: str | None = None
+
+
+class PermissionDecisionCreate(BaseModel):
+    model_config = ConfigDict(extra='forbid', str_strip_whitespace=True)
+    expected_version: int = Field(ge=0)
+    expected_request_version: int = Field(ge=1)
+    fingerprint: str = Field(pattern=r'^[a-f0-9]{64}$')
+    decision: Literal['grant', 'deny']
+    scope: Literal['once', 'task']
+    reason: str = Field(min_length=1, max_length=2000)
+    confirmed: Literal[True]
+
+
+class PermissionRequestRead(BaseModel):
+    id: str
+    run_id: str
+    version: int
+    status: str
+    effective_status: str
+    request: dict[str, Any]
+    fingerprint: str
+    expires_at: str
+    decision: dict[str, Any] | None
+    consumed_by: str | None
+    supersedes: str | None

@@ -776,3 +776,44 @@ sin atribuirlo retrospectivamente. El adaptador cli-3 y su captura del envoltori
 de transporte se conservan, sin cambiar permisos ni autenticación.
 
 H3.2 queda siguiente sin iniciarse; consentimientos de smokes agotados.
+
+## D031 — Permisos por petición exacta y efecto en un intento posterior
+
+Estado: implementado y verificado offline el 2026-10-13.
+[Entrega y límites](discovery/H3.2_PERMISSIONS.md).
+
+Ledger `permission_requests` (0009) separado por ficheros, herramientas, red,
+producto y aceptación. UUID/huella, contexto/contrato/versiones, solicitante,
+intento de procedencia, operación/objetivo, motivo y caducidad explícitos.
+Conceder/denegar exige versiones observadas y huella vigente; sustituir conserva
+la decisión anterior y la invalida. Transacciones serializadas con la cola:
+ninguna modificación con jobs pendientes del checkout ni permisos a llamadas vivas.
+
+La autoridad es una intersección de objetivos exactos en cuatro techos del servidor:
+global/proyecto/contrato/proveedor, congelados en versiones al crear el run.
+Una ausencia deniega; ficheros también respetan el contrato y rutas del perfil.
+No se amplían contratos por grants/reviews/prompts. Producto y aceptación quedan
+auditoría separada, sin resolver preguntas ni producir aceptación/cierre/commit.
+Identidad auditada: UID/nombre del usuario local del servicio; no autentica al
+humano del navegador. La sesión local sigue pendiente, sin inventar identidad.
+
+Snapshot con hash e identidad del intento persistido junto a la intención (codec
+5, formatos 1–4 legibles). `once` consume al guardar intención, aun ante caída o
+rechazo antes de lanzar; `task` sirve solo para ese run, hasta caducidad/sustitución.
+Una denegación operativa vigente impide invocar el ejecutor y conserva la parada y
+el presupuesto; una denegación once también se consume en ese intento. Confirmar
+escritor detenido no recupera concesiones consumidas. Conceder no encola trabajo.
+
+CLI `cli-4`: reglas concedibles declaradas/hash congelado, inventario cerrado para
+esas herramientas hasta concesión/baseline explícito, adición de la regla exacta
+solo al argv del intento. Conserva dontAsk, MCP/settings aislados y sesiones nuevas.
+Ficheros no conceden tools; red por dominio no soportada se rechaza antes de lanzar.
+No se presenta esto como sandbox físico ni se certifican permisos vivos de CLI
+real mediante fakes. Configuraciones/versiones anteriores se rechazan sin reescritura.
+
+Revalidar no llama al ejecutor, tampoco tras una review REVISE: se detiene y exige
+reintento explícito. Se corrige esa rama previa para cumplir §8 y D015; las revisiones
+automáticas de una acción de ejecución conservan su política/presupuesto existente.
+API/UI exponen ledger, decisiones, snapshots y acciones calculadas por el servidor,
+con versiones, confirmación y guardia gestionada. H3.3 siguiente, sin iniciarse;
+smokes anteriores siguen sin autorización disponible.

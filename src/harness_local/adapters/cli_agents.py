@@ -23,7 +23,7 @@ from harness_local.core.engine.contracts import AgentResult, freeze
 from harness_local.core.engine.journal import JournalError
 
 
-VERSION = "cli-3"
+VERSION = "cli-4"
 SUPPORTED = {"codex": ("0.161.0", "0.162.1"), "claude": ("2.1.295",)}
 
 
@@ -37,6 +37,7 @@ class CLIConfig:
     # Explicit tool permissions for the next attempt; not a file/network sandbox.
     tools: tuple[str, ...] = ()
     allowed_tools: tuple[str, ...] = ()
+    grantable_tools: tuple[str, ...] = ()
 
     def __post_init__(self):
         if self.provider not in SUPPORTED or self.cli_version not in SUPPORTED[self.provider]:
@@ -51,7 +52,7 @@ class CLIConfig:
         for key, value in self.environment:
             if not key or "=" in key or "\0" in key or "\0" in value:
                 raise ValueError("Invalid environment")
-        for tool in self.tools + self.allowed_tools:
+        for tool in self.tools + self.allowed_tools + self.grantable_tools:
             if not tool or tool.startswith("-") or "\0" in tool:
                 raise ValueError("Invalid explicit tool permission")
 
@@ -59,6 +60,29 @@ class CLIConfig:
 def argv_for(config, context, request):
     if not request.fresh_session or request.context_json is None:
         raise ValueError("Fresh frozen request required")
+    from harness_local.core.engine.permissions import snapshot_payload
+    permissions = snapshot_payload(request)
+    if permissions.get('denials'):
+        raise ValueError('Explicit permission denial; CLI launch refused')
+    grants = permissions['grants']
+    if any(grant['expires_at'] <= datetime.now(timezone.utc).isoformat(timespec='microseconds') for grant in grants):
+        raise ValueError('Permission expired before CLI launch')
+    extra_tools = []
+    for grant in grants:
+        scope = grant['request']
+        if scope['kind'] == 'network':
+            raise ValueError('This CLI cannot enforce scoped network grants')
+        if scope['kind'] == 'tools':
+            rule = scope['target']
+            if (config.provider != 'claude' or request.role != 'executor'
+                    or rule not in config.grantable_tools or rule.split('(', 1)[0] not in config.tools):
+                raise ValueError('Tool grant exceeds explicit CLI capabilities/configuration')
+            extra_tools.append(rule)
+    # Tools declared grantable are absent from the inventory until this attempt
+    # has an explicit matching baseline rule or a persisted grant.
+    gated = {rule.split('(', 1)[0] for rule in config.grantable_tools}
+    enabled = {rule.split('(', 1)[0] for rule in tuple(config.allowed_tools) + tuple(extra_tools)}
+    tools = tuple(tool for tool in config.tools if tool not in gated or tool in enabled)
     model, effort = request.selection.model, request.selection.effort
     if not model or model.startswith("-") or not effort or effort.startswith("-"):
         raise ValueError("Explicit model/effort required")
@@ -77,8 +101,8 @@ def argv_for(config, context, request):
     return config.executable + (
         "--print", "--output-format", "stream-json", "--verbose", "--include-partial-messages",
         "--no-session-persistence", "--session-id", request.id, "--model", model, "--effort", effort,
-        "--permission-mode", "dontAsk", "--permission-prompts", "none", "--tools", ",".join(config.tools),
-        "--allowedTools", ",".join(config.allowed_tools), "--strict-mcp-config", "--mcp-config", '{"mcpServers":{}}',
+        "--permission-mode", "dontAsk", "--permission-prompts", "none", "--tools", ",".join(tools),
+        "--allowedTools", ",".join(dict.fromkeys(tuple(config.allowed_tools) + tuple(extra_tools))), "--strict-mcp-config", "--mcp-config", '{"mcpServers":{}}',
         "--setting-sources", "", "--settings", '{"disableAllHooks":true}',
         "--disable-slash-commands", "--no-chrome")
 

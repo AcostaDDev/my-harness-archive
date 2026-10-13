@@ -627,6 +627,41 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/managed/runs/{run_id}/permissions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Permissions */
+        get: operations["permissions_api_managed_runs__run_id__permissions_get"];
+        put?: never;
+        /** Request Permission */
+        post: operations["request_permission_api_managed_runs__run_id__permissions_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/managed/runs/{run_id}/permissions/{permission_id}/decision": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Decide Permission */
+        post: operations["decide_permission_api_managed_runs__run_id__permissions__permission_id__decision_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/health": {
         parameters: {
             query?: never;
@@ -987,6 +1022,10 @@ export interface components {
         ManagedAttemptRead: {
             /** Prompt */
             prompt: string;
+            /** Permission Snapshot */
+            permission_snapshot?: {
+                [key: string]: unknown;
+            } | null;
             /** Prompt Snapshot */
             prompt_snapshot: {
                 [key: string]: unknown;
@@ -1155,6 +1194,8 @@ export interface components {
             created_at: string;
             /** Updated At */
             updated_at: string;
+            /** Actions */
+            actions: ("revalidate" | "retry_executor" | "commit" | "permissions")[];
             /** Versions */
             versions: {
                 [key: string]: string | null;
@@ -1328,6 +1369,87 @@ export interface components {
             offset: number;
             /** Next Offset */
             next_offset: number | null;
+        };
+        /** PermissionCreate */
+        PermissionCreate: {
+            /** Expected Version */
+            expected_version: number;
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "files" | "tools" | "network" | "product" | "acceptance";
+            /** Target */
+            target: string;
+            /** Operation */
+            operation: string;
+            /** Arguments */
+            arguments: string[];
+            /** Requested By */
+            requested_by: string;
+            /** Source Attempt Id */
+            source_attempt_id: string;
+            /** Reason */
+            reason: string;
+            /** Ttl Seconds */
+            ttl_seconds: number;
+            /** Supersedes */
+            supersedes?: string | null;
+        };
+        /** PermissionDecisionCreate */
+        PermissionDecisionCreate: {
+            /** Expected Version */
+            expected_version: number;
+            /** Expected Request Version */
+            expected_request_version: number;
+            /** Fingerprint */
+            fingerprint: string;
+            /**
+             * Decision
+             * @enum {string}
+             */
+            decision: "grant" | "deny";
+            /**
+             * Scope
+             * @enum {string}
+             */
+            scope: "once" | "task";
+            /** Reason */
+            reason: string;
+            /**
+             * Confirmed
+             * @constant
+             */
+            confirmed: true;
+        };
+        /** PermissionRequestRead */
+        PermissionRequestRead: {
+            /** Id */
+            id: string;
+            /** Run Id */
+            run_id: string;
+            /** Version */
+            version: number;
+            /** Status */
+            status: string;
+            /** Effective Status */
+            effective_status: string;
+            /** Request */
+            request: {
+                [key: string]: unknown;
+            };
+            /** Fingerprint */
+            fingerprint: string;
+            /** Expires At */
+            expires_at: string;
+            /** Decision */
+            decision: {
+                [key: string]: unknown;
+            } | null;
+            /** Consumed By */
+            consumed_by: string | null;
+            /** Supersedes */
+            supersedes: string | null;
         };
         /** ProblemRead */
         ProblemRead: {
@@ -3550,6 +3672,198 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["PromptDiffRead"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+        };
+    };
+    permissions_api_managed_runs__run_id__permissions_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Obligatoria con valor 1 en mutaciones (protección CSRF). */
+                "x-harness-local"?: string | null;
+            };
+            path: {
+                run_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PermissionRequestRead"][];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+        };
+    };
+    request_permission_api_managed_runs__run_id__permissions_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Obligatoria con valor 1 en mutaciones (protección CSRF). */
+                "x-harness-local"?: string | null;
+            };
+            path: {
+                run_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PermissionCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PermissionRequestRead"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+        };
+    };
+    decide_permission_api_managed_runs__run_id__permissions__permission_id__decision_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Obligatoria con valor 1 en mutaciones (protección CSRF). */
+                "x-harness-local"?: string | null;
+            };
+            path: {
+                run_id: string;
+                permission_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PermissionDecisionCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PermissionRequestRead"];
                 };
             };
             /** @description Forbidden */

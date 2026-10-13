@@ -1,3 +1,4 @@
+import { Permissions } from "./Permissions";
 import { Prompts } from "./Prompts";
 import { useEffect, useRef, useState } from "react";
 import { managed, managedApi, ManagedError, readPending, savePending, jobRequest } from "./managed-api";
@@ -176,11 +177,12 @@ function Run({ id, refresh, busy, operate, send }: { id: string; refresh: number
     <Evidence title="Contrato, revisiones y aceptación" value={run.history} />
     <Evidence title="Evidencia de commit y versiones" value={{ commit: run.commit, versions: run.versions }} />
     <div className="pagination">
-      <button disabled={busy || locked || !!error || run.status === "COMMITTED"} onClick={() => action("revalidate")}>Revalidar y revisar</button>
-      <button disabled={busy || locked || !!error || run.status === "COMMITTED"} onClick={() => { if (window.confirm("¿Reintentar el ejecutor? Consume el presupuesto de correcciones y puede modificar el trabajo.")) action("retry_executor"); }}>Reintentar ejecutor</button>
+      <button disabled={busy || locked || !!error || !run.actions.includes("revalidate")} onClick={() => action("revalidate")}>Revalidar y revisar</button>
+      <button disabled={busy || locked || !!error || !run.actions.includes("retry_executor")} onClick={() => { if (window.confirm("¿Reintentar el ejecutor? Consume el presupuesto de correcciones y puede modificar el trabajo.")) action("retry_executor"); }}>Reintentar ejecutor</button>
     </div>
     <label className="check"><input type="checkbox" checked={commitConfirmed} onChange={e => setCommitConfirmed(e.target.checked)} />He revisado la evidencia de esta versión y confirmo el commit.</label>
-    <button disabled={busy || locked || !!error || !commitConfirmed || run.status !== "ACCEPTANCE_READY"} onClick={() => action("commit")}>Confirmar commit</button>
+    <button disabled={busy || locked || !!error || !commitConfirmed || !run.actions.includes("commit")} onClick={() => action("commit")}>Confirmar commit</button>
+    <Permissions run={run} busy={busy || !!error} refresh={refresh} operate={operate} />
     <h3>Jobs y recuperación</h3>
     {jobs.map(job => <div key={job.id} className="entry"><strong>Job {job.id} · {job.action} · {job.status}</strong>
       {job.diagnostic && <p>{job.diagnostic}</p>}

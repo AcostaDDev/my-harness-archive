@@ -62,7 +62,7 @@ def local_request(request: Request, x_harness_local: Annotated[str | None, Heade
         raise problem(403, "csrf_header_required", "Las mutaciones exigen la cabecera X-Harness-Local: 1.")
 
 
-def call(operation, *args, **kwargs):
+def call(operation, /, *args, **kwargs):
     """Traduce los errores de la autoridad a HTTP. El orden importa: todos derivan de ValueError."""
     try:
         return operation(*args, **kwargs)
@@ -99,13 +99,20 @@ def managed_router(runtime: ManagedRuntime):
     def project(project_id: str):
         return call(runtime.project, project_id)
 
+    def configured_actions(detail):
+        if runtime.project_id(detail['root']) is None:
+            return {**detail, 'actions': []}
+        if runtime.config.commit_factory is None:
+            return {**detail, 'actions': [a for a in detail['actions'] if a != 'commit']}
+        return detail
+
     def registered_run(run_id: str):
         """Las acciones solo operan sobre checkouts registrados en este servicio."""
         run = call(runtime.views.run, run_id)
         project_id = runtime.project_id(run["root"])
         if project_id is None:
             raise problem(404, "not_found", "El run pertenece a un checkout no registrado en este servicio.")
-        return {**run, "project_id": project_id}
+        return configured_actions({**run, "project_id": project_id})
 
     def registered_activation(activation_id: str):
         runtime.ready()
@@ -201,15 +208,19 @@ def managed_router(runtime: ManagedRuntime):
                  operation_id="managed_submit_run")
     def submit_run(project_id: str, body: RunCreate, idempotency_key: IdempotencyKey):
         item = project(project_id)
+        from harness_local.core.engine.contracts import freeze
+        versions = dict(item.versions)
+        if item.permission_authority is not None:
+            versions['permission_authority'] = freeze(item.permission_authority)
         job = call(runtime.repository.submit, item.context, body.task_id, body.phase_id, body.text,
-                   dict(item.versions), key=idempotency_key)
+                   versions, key=idempotency_key)
         return queued(job)
 
     @router.get("/runs/{run_id}", response_model=ManagedRunRead, operation_id="managed_run")
     def run(run_id: str):
         runtime.ready()
         detail = call(runtime.views.run, run_id)
-        return {**detail, "project_id": runtime.project_id(detail["root"])}
+        return configured_actions({**detail, "project_id": runtime.project_id(detail["root"])})
 
     @router.get("/runs/{run_id}/jobs", response_model=list[ManagedJobRead], operation_id="managed_run_jobs")
     def run_jobs(run_id: str):
@@ -292,5 +303,26 @@ def managed_router(runtime: ManagedRuntime):
     @router.get("/projects/{project_id}/prompts/{name}/diff", response_model=PromptDiffRead)
     def prompt_diff(project_id: str, name: str, before: str, after: str):
         return {"diff": call(runtime.prompts.diff, project(project_id).context, name, before, after)}
+
+    from harness_local.api.schemas import PermissionCreate, PermissionDecisionCreate, PermissionRequestRead
+
+    @router.get('/runs/{run_id}/permissions', response_model=list[PermissionRequestRead])
+    def permissions(run_id: str):
+        registered_run(run_id)
+        return call(runtime.permissions.list, run_id)
+
+    @router.post('/runs/{run_id}/permissions', response_model=PermissionRequestRead, status_code=201)
+    def request_permission(run_id: str, body: PermissionCreate):
+        registered_run(run_id)
+        values = body.model_dump()
+        expected = values.pop('expected_version')
+        return call(runtime.permissions.create, run_id, expected, **values)
+
+    @router.post('/runs/{run_id}/permissions/{permission_id}/decision', response_model=PermissionRequestRead)
+    def decide_permission(run_id: str, permission_id: str, body: PermissionDecisionCreate):
+        registered_run(run_id)
+        values = body.model_dump(exclude={'confirmed'})
+        expected = values.pop('expected_version')
+        return call(runtime.permissions.decide, run_id, permission_id, expected, **values)
 
     return router

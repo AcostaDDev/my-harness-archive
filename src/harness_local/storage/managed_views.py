@@ -85,7 +85,23 @@ class SQLiteManagedViews:
             latest = live or session.scalar(select(Commit).where(Commit.run_id == run_id)
                                             .order_by(Commit.created_at.desc()).limit(1))
             lock = session.scalar(select(Lock).join(Job, Job.id == Lock.job_id).where(Job.run_id == run_id))
-            return {**self._summary(row), "versions": json.loads(row.versions_json),
+            history = load_history(row.history_json)
+            pending = session.scalar(select(Job.id).where(Job.run_id == run_id,
+                Job.status.in_(('QUEUED', 'ACTIVE', 'RECOVERY_REQUIRED')))) is not None
+            root_pending = session.scalar(select(Job.id).join(Run, Run.id == Job.run_id).where(
+                Run.root == row.root, Job.status.in_(('QUEUED', 'ACTIVE', 'RECOVERY_REQUIRED')))) is not None
+            actions = []
+            if not pending and not lock:
+                if live is None and history.task_json is not None and history.status in ('stopped', 'blocked', 'revision_limit'):
+                    actions.append('revalidate')
+                    executions = sum(a.request.role == 'executor' for a in history.attempts)
+                    if json.loads(history.task_json)['allowed_paths'] and (not executions or history.revisions < row.revision_limit):
+                        actions.append('retry_executor')
+                if (live is not None and live.status == 'INTENT') or (live is None and history.acceptance and history.acceptance.eligible):
+                    actions.append('commit')
+            if not root_pending and row.status in ('STOPPED', 'BLOCKED', 'REVISION_LIMIT', 'INTERRUPTED'):
+                actions.append('permissions')
+            return {**self._summary(row), "actions": actions, "versions": json.loads(row.versions_json),
                     "history": _history_view(row.history_json), "commit": _commit_view(latest),
                     "locked_by_job": lock.job_id if lock else None}
 
@@ -117,7 +133,7 @@ class SQLiteManagedViews:
                 request = json.loads(row.request_json)
                 items.append({"id": row.id, "number": row.number, "role": request["role"],
                               "selection": request["selection"], "fresh_session": request["fresh_session"],
-                              "prompt": request["prompt"], "prompt_snapshot": _loads(request.get("prompt_snapshot_json")),
+                              "prompt": request["prompt"], "permission_snapshot": _loads(request.get("permission_snapshot_json")), "prompt_snapshot": _loads(request.get("prompt_snapshot_json")),
                               "status": row.status, "versions": json.loads(row.versions_json),
                               "result": _loads(row.result_json), "started_at": row.started_at,
                               "finished_at": row.finished_at})

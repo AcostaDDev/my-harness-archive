@@ -350,7 +350,7 @@ class SQLiteManagedRepository:
             self._event(session, run, "checkpoint", {"job_id": job.id, "history_status": history.status,
                                                     "completed_attempts": completed})
 
-    def agent_started(self, claim: JobRecord, history: RunHistory, request: AgentRequest) -> None:
+    def agent_started(self, claim: JobRecord, history: RunHistory, request: AgentRequest) -> AgentRequest:
         self._require_mode(claim)
         with self._write() as session:
             job, run = self._owned(session, claim)
@@ -366,6 +366,8 @@ class SQLiteManagedRepository:
                 run.revisions = max(0, executions)
                 if run.revisions > run.revision_limit:
                     raise Conflict("Persisted correction budget exhausted")
+            from harness_local.storage.permissions import authorize
+            request = authorize(session, self, run, request)
             session.add(AttemptRow(id=request.id, run_id=run.id, number=len(attempts) + 1,
                                   request_json=freeze(asdict(request)), versions_json=run.versions_json,
                                   status="ACTIVE", started_at=self._now()))
@@ -373,6 +375,7 @@ class SQLiteManagedRepository:
             run.status = {"planner": "PLANNING", "executor": "EXECUTING", "reviewer": "REVIEWING"}[request.role]
             self._event(session, run, "attempt_started", {"job_id": job.id, "attempt_id": request.id,
                                                         "number": len(attempts) + 1, "role": request.role})
+            return request
 
     def effect(self, claim: JobRecord, kind: str, payload: dict) -> None:
         with self._write() as session:

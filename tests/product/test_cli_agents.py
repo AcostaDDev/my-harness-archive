@@ -47,7 +47,7 @@ def setup_invocation(repository, context, adapter, role='executor'):
     repository.register_owner(claim,identity())
     request = AgentRequest(str(uuid4()),role,Selection('synthetic-executor','medium','test'),
                            'Return a synthetic JSON object',None,context_snapshot(context))
-    repository.agent_started(claim,repository.get_run(job.run_id).history,request)
+    request = repository.agent_started(claim,repository.get_run(job.run_id).history,request)
     journal = _Journal(repository,claim,Event())
     adapter.bind_process_journal(journal)
     return job,claim,request
@@ -94,7 +94,7 @@ def test_explicit_fresh_argv_preflight_and_configuration(tmp_path,context,reposi
     assert repository.processes(job.id)[0]['status']=='STOPPED'
     spec=repository.processes(job.id)[0]['spec']
     assert spec['cli_internal_retries']==port.capabilities()['cli_internal_retries'][provider]
-    assert spec['adapter_version']=='cli-3'
+    assert spec['adapter_version']=='cli-4'
     prompt=Path(spec['prompt_path']).read_bytes()
     assert prompt.decode()==launches[0]['prompt']
     assert spec['prompt_sha256']==hashlib.sha256(prompt).hexdigest()

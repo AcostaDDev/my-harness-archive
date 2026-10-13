@@ -35,7 +35,7 @@ Actualizado: 2026-10-13.
 - Dependencias reales instaladas en `.venv` / `frontend/node_modules`, locks
   `uv.lock` / `frontend/package-lock.json`. Pins H0.2 usados conservados;
   backend de paquete `uv_build==0.12.19`. Comandos comprobados en README/AGENTS.
-- 319 casos de producto en `tests/product/`; pytest ejecuta 331 pruebas en total.
+- 349 casos de producto en `tests/product/`; pytest ejecuta 361 pruebas en total.
   La comprobación ligera anterior conserva sus 12 checks sin dependencias.
 - H1.1 completado: [importación legacy y verificaciones](discovery/H1.1_IMPORT.md),
   [alcance original](discovery/H1.1_SCOPE.md). Lector local explícito de
@@ -227,6 +227,22 @@ Actualizado: 2026-10-13.
 - 23 pruebas H3.1 y recorrido Chrome del editor con SQLite/demo sintética.
   Bootstrap/reconciliación/cierre solo conservan plantillas, sin ejecutar flujos.
 
+- H3.2 completado offline: [permisos y recuperación](discovery/H3.2_PERMISSIONS.md),
+  D031. Ledger por categoría, petición exacta/versiones/huella/caducidad,
+  concesión/denegación con identidad local del servicio y motivo; sustitución
+  conservando decisiones anteriores. Techos global/proyecto/contrato/proveedor
+  congelados en versiones; nunca se amplía el contrato por prompts o reviews.
+- Migración `0009_permissions` y codec 5, formatos 1–4 legibles. Snapshot y consumo
+  once/task persistidos con la intención; caídas no restituyen concesiones once.
+  Denegaciones operativas bloquean antes del adaptador. API/UI con confirmación,
+  versiones y acciones habilitadas calculadas por servidor; sin ejecución al conceder.
+- CLI `cli-4`: reglas concedibles declaradas y congeladas; inventario/regla solo
+  para el intento autorizado, sin permisos vivos ni configuración mutada. Red por
+  dominio rechazada por falta de soporte; ficheros no conceden herramientas.
+- Revalidar conserva trabajo y solo prepara/valida/revisa; REVISE ahora se detiene
+  para exigir reintento explícito. Retry mantiene el presupuesto acumulado.
+  30 casos H3.2 y comprobación Chrome con SQLite/checkout sintéticos.
+
 ## Todavía no existe
 
 Recorrido de tarea real del motor con proveedores ni entrada CLI gestionada;
@@ -255,7 +271,8 @@ UI gestionada verificada con navegador, Git/SQLite sintéticos y fakes hasta
 COMMITTED, reinicio y recuperación sin repetir ejecutor. [Informe](discovery/H2_EXIT_UI.md),
 D029. H2.3 conserva su smoke real D025, con autorización agotada. Siguiente tarea:
 H3.1 completado con editor y snapshots por intento (D030). Siguiente tarea:
-H3.2 (permisos y acciones de recuperación), sin iniciarla. Sin proveedores nuevos.
+H3.2 completado offline con ledger/API/UI/snapshots y recuperación (D031).
+Siguiente tarea: H3.3 (fases), sin iniciarla. Sin proveedores nuevos.
 
 ## Verificación de H0.1
 
@@ -902,6 +919,39 @@ H3.2 (permisos y acciones de recuperación), sin iniciarla. Sin proveedores nuev
 - Diff/whitespace revisados; sin proveedores, smoke, colaboración automática,
   ejecución de harness para desarrollo, cambios en ReferenceProject, configuración
   global ni push. Commit solicitado por el usuario.
+
+## Verificación de H3.2
+
+- Git inicial limpio en `main`, `755e205`. AGENTS/STATE/NEXT_STEPS/DECISIONS,
+  especificación §8/§10, backlog H3.2 y contratos H2 revisados.
+- 361 pruebas pytest y 121 subtests: 331 anteriores y 30 H3.2. 12 checks
+  ligeros, 3 pruebas Node, OpenAPI/tipos, TypeScript/build y diff/whitespace.
+  Aviso conocido Starlette/HTTPX conservado, sin cambiar dependencias.
+- SQLite/Git/procesos sintéticos: caducidad al decidir/al lanzar, request alterada,
+  sustitución, aislamiento de categorías/techos, denegación antes del agente,
+  versión y concurrencia, exclusión de checkout, reinicio, once/task y caída
+  después de intención; historial y presupuesto preservados. Formatos 1–4
+  compatibles; upgrade/downgrade/upgrade y `alembic check` en base temporal.
+- API: crear/sustituir/conceder/denegar, acciones habilitadas del servidor,
+  confirmación/huella/versiones y 403/409/422; conceder no invoca agentes.
+  Regresión del campo `operation` tras fallo detectado en Chrome.
+- Revalidar ante REVISE no llama al ejecutor ni consume concesiones; un reintento
+  explícito posterior conserva el presupuesto. Se actualizó una prueba H2 que
+  caracterizaba la rama anterior, contraria al efecto documentado de revalidar.
+- CLI sintética independiente acredita argv nuevo con regla exacta, petición
+  persistida antes de efecto, inventario anterior cerrado y configuración intacta;
+  red no soportada, permisos fuera del techo y snapshots inválidos rechazados.
+- Chrome en `/private/tmp/h32-ui-session`, `127.0.0.1:8017`, sin puertos/supervisor:
+  conceder, inspeccionar auditoría, reiniciar servicio/recargar, sustituir y
+  denegar. Versiones 11→14, único intento y job DONE conservados; estados/formulario
+  inspeccionados visualmente. Servicio y pestaña de prueba cerrados.
+- No se migró la SQLite de trabajo del usuario. Sin proveedores/smokes/login,
+  secretos, recuperación D020/D022, ReferenceProject, configuración global, colaboración
+  automática, harness de desarrollo ni push. Commit solicitado por el usuario.
+- Límites: reglas de CLI real no certificadas por fakes; no sandbox físico,
+  grants fuera del contrato, políticas editables, permisos vivos/SDK, resolución
+  automática de producto o cierre. Sesión local/guardia H0/H1/SSE siguen pendientes.
+  Ledger sin paginación ni benchmark de grandes históricos. H3.3 no iniciado.
 
 ## Coordinación
 

@@ -1,49 +1,54 @@
-# Siguiente tarea — H3.2: permisos y acciones de recuperación
+# Siguiente tarea — H3.3: fases
 
-H3.1 completado offline el 2026-10-13 (D030):
-[prompts versionados](discovery/H3.1_PROMPTS.md),
-[alcance completado](discovery/H3.1_SCOPE.md).
-Catálogo por ámbito, editor, variables, diff, borradores, activación y rollback
-como versión nueva; snapshots persistidos antes de cada invocación, con lectura
-de históricos y conservación de versiones al reanudar. Migración 0008.
-331 pruebas pytest (23 H3.1), 121 subtests, 12 checks ligeros, 3 pruebas Node,
-tipos/TypeScript/build y recorrido Chrome con
-SQLite/demo sintética correctos. No se han usado proveedores.
+H3.2 completado offline el 2026-10-13 (D031):
+[permisos y recuperación](discovery/H3.2_PERMISSIONS.md).
+Ledger por categoría, huella/caducidad/versiones, conceder/denegar/sustituir,
+identidad local del servicio y auditoría; snapshots y consumo por intento,
+CLI `cli-4`, API/UI y acciones habilitadas en el servidor. Revalidar ante REVISE
+se detiene para exigir reintento explícito, sin repetir el ejecutor.
+Migración `0009_permissions`, codec 5 compatible con formatos 1–4.
+361 pruebas pytest (30 H3.2), 121 subtests, 12 checks ligeros, 3 pruebas Node,
+OpenAPI/tipos/TypeScript/build y recorrido Chrome sintético verificados.
+No se han usado proveedores ni migrado la SQLite de trabajo del usuario.
 
-**H3.2 no iniciado.** Los consentimientos de smokes anteriores siguen agotados.
+**H3.3 no iniciado.** Los consentimientos de smokes anteriores siguen agotados.
 
 ## Objetivo y alcance siguiente
 
-Completar H3.2 del backlog en una entrega acotada, sin iniciar H3.3:
+Completar H3.3 del backlog en una entrega acotada, sin iniciar H4:
 
-1. Revisar especificación de permisos/recuperación, backlog H3.2 y los contratos
-   H2 existentes. Separar ficheros, herramientas, red y decisiones de producto;
-   señalar contradicciones materiales antes de cambiar diseño.
-2. Implementar solicitudes/concesiones/denegaciones con vigencia, identidad,
-   contexto exacto y auditoría. No inferir autorizaciones de prompts ni reviews.
-3. En CLI, aplicar permisos solo al siguiente intento autorizado; no conceder
-   operaciones a una llamada viva ni habilitar SDK automáticamente.
-4. Exponer las acciones pertinentes por API/UI, con controles de versión,
-   confirmaciones y guardias locales; mantener revalidar y reintentar separados.
-5. Caracterizar offline caducidad, modificación de solicitudes, concurrencia,
-   reinicio y conservación de históricos con fakes y SQLite temporal.
-6. Ejecutar verificaciones pertinentes, revisar diff y actualizar STATE,
-   NEXT_STEPS, DECISIONS e informe.
+1. Revisar especificación de fases (§8), backlog H3.3 y contratos H2/H3.1/H3.2.
+   Definir autoridad y evidencia de fase sobre SQLite; señalar contradicciones
+   materiales antes de cambiar diseño. COMMITTED sigue siendo checkpoint, sin
+   integración automática en la rama de destino.
+2. Implementar checks y reconciliación documental, con preguntas bloqueantes,
+   evidencias/versiones y estados ACTIVE/CHECKING/READY_TO_CLOSE/CLOSED,
+   NEEDS_RECONCILIATION/BLOCKED según alcance aceptado.
+3. Vincular READY y autorización de cierre al contenido exacto y tareas aceptadas;
+   invalidar evidencia obsoleta. Separar autorización de ejecución por lote y
+   cierre de fase; las concesiones operativas no deciden producto ni cierre.
+4. Exponer las acciones pertinentes por API/UI con versiones, confirmaciones,
+   auditoría y guardias locales. Documentar semántica de cierre/tags y recuperación
+   conservadora antes de efectos Git; no inventar cierre a partir del legacy.
+5. Caracterizar offline preguntas pendientes, deriva documental, READY obsoleto,
+   reinicio, concurrencia e historial mediante fakes y Git/SQLite temporales.
+6. Ejecutar checks pertinentes, revisar diff y actualizar STATE/NEXT_STEPS,
+   DECISIONS e informe antes de completar la tarea.
 
 ## Criterios de aceptación
 
-- Una solicitud caducada o modificada no acepta una autorización anterior.
-- Conceder/denegar registra identidad, alcance, vigencia y motivo verificables.
-- Ficheros, herramientas, red y decisiones de producto no se autorizan entre sí.
-- Revalidar y reintentar conservan efectos distintos y visibles; no hay fallback
-  ni llamadas adicionales silenciosas.
-- Historial, exclusión de checkout, snapshots y aceptación por contenido exacto
-  siguen intactos. Pruebas offline y API/tipos/TypeScript/build pertinentes pasan.
+- Una revisión READY obsoleta no permite cerrar la fase.
+- Preguntas bloqueantes pendientes impiden avanzar/cerrar.
+- Lote y cierre exigen autorizaciones distintas, explícitas y auditadas.
+- Checks/reconciliación y evidencias sobreviven al reinicio sin borrar históricos
+  ni repetir efectos inciertos automáticamente.
+- Exclusión de checkout, contratos/snapshots y aceptación por contenido exacto
+  se conservan. Pruebas offline, API/tipos/TypeScript/build pertinentes pasan.
 
 ## Fuera de alcance
 
 Proveedores reales, smokes, login/refresh, secretos, recuperación de D020/D022,
-SDK/permisos interactivos vivos, fases H3.3, integración de rama, push/publicación,
-chat y distribución. No lanzar agentes de colaboración ni usar el harness para
-desarrollar este repositorio. Sesión local, guardia H0/H1, SSE gestionado y
-registro de proyectos por HTTP permanecen pendientes, sin ampliación implícita.
+SDK/permisos vivos, integración de rama, push/publicación, chat/bootstrap H4 y
+distribución. No lanzar colaboración automática ni usar el harness para desarrollar
+el repo. Sesión local, guardia H0/H1, SSE gestionado, políticas editables y registro
+de proyectos por HTTP permanecen pendientes, sin ampliación implícita.

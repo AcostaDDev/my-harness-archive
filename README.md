@@ -33,6 +33,7 @@ ni ejecución automática de proveedores.
   [resultado del smoke autorizado](docs/discovery/H2.3_SMOKE.md).
 - [Corrección offline de configuración Codex](docs/discovery/H2.3_CONFIG_FIX.md).
 - [Nuevo smoke autorizado: Codex completo, fallo MCP Claude](docs/discovery/H2.3_SMOKE_RETRY.md).
+- [Permisos y recuperación H3.2, verificados offline](docs/discovery/H3.2_PERMISSIONS.md).
 - [Smoke cli-3: MCP aceptado, fallo de autenticación Claude](docs/discovery/H2.3_SMOKE_CLI3.md).
 - [Git, worktree y commit acotado H2.4](docs/discovery/H2.4_GIT.md).
 - [Migración a modo gestionado H2.5](docs/discovery/H2.5_MIGRATION.md).
@@ -152,7 +153,7 @@ siguen conservados. La autorización cubrió una ejecución, sin relanzamiento.
 ## Importación legacy de lectura
 
 Migrar con el servicio detenido antes de importar; el esquema actual es
-`0008_prompt_versions`. Comandos comprobados desde la raíz, con datos sintéticos:
+`0009_permissions`. Comandos comprobados desde la raíz, con datos sintéticos:
 
 ```sh
 UV_CACHE_DIR=.local/uv-cache uv run --frozen --offline alembic upgrade head
@@ -221,3 +222,10 @@ Las activaciones afectan a intentos posteriores, conservando las peticiones y
 resultados previos. Al reanudar un run detenido se conserva su catálogo congelado.
 El editor no concede permisos. Los flujos de bootstrap y fases aún no están
 implementados. [Contrato, pruebas y límites](docs/discovery/H3.1_PROMPTS.md).
+
+H3.2 incorpora solicitudes de permisos por categoría con caducidad, huella y
+auditoría en la UI gestionada. Conceder no lanza trabajo: se aplica al siguiente
+intento explícito dentro de la autoridad congelada del servidor. Revalidar no
+repite el ejecutor, tampoco ante REVISE. El adaptador actual es `cli-4`; el éxito
+del smoke D025 sigue siendo evidencia histórica de `cli-3`, sin autorizar consumo
+nuevo. Alcance y configuración en [H3.2](docs/discovery/H3.2_PERMISSIONS.md).

@@ -100,7 +100,7 @@ def main():
                 'Do not call tools or change files. This is a synthetic CLI transport test. '
                 'Return a JSON object with result="smoke-ok". No implementation or review is required.',
                 None, context_snapshot(context))
-            repository.agent_started(claim, history, request)
+            request = repository.agent_started(claim, history, request)
             result = port.invoke(context, request)
             history = replace(history, attempts=history.attempts + (Attempt(request, result),))
             repository.checkpoint(claim, history, role)

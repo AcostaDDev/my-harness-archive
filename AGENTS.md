@@ -78,7 +78,10 @@ Salida del hito 2, parte 2, completada offline: UI gestionada local con sondeo,
 confirmaciones, claves conservadas, diff/tests/review y demo sintética. D029;
 ver `docs/discovery/H2_EXIT_UI.md`. H3.1 completado offline: catálogo de prompts,
 editor API/UI, activación/rollback y snapshots por intento (D030); ver
-`docs/discovery/H3.1_PROMPTS.md`. Siguiente tarea: H3.2, sin iniciarla.
+`docs/discovery/H3.1_PROMPTS.md`. H3.2 completado offline: permisos por petición exacta, conceder/denegar/sustituir,
+consumo once/task y snapshots, CLI cli-4 y API/UI (D031); revalidar REVISE exige
+reintento explícito. Ver `docs/discovery/H3.2_PERMISSIONS.md`.
+Siguiente tarea: H3.3, sin iniciarla.
 Comprobación offline ligera, solo biblioteca estándar, desde la raíz:
 
 ```sh
@@ -108,15 +111,15 @@ npm --prefix frontend run dev
 ```
 
 Las primeras instalaciones necesitan red; después los checks son offline.
-No usar `uv --active` con entornos de otros proyectos. 331 pruebas pytest
+No usar `uv --active` con entornos de otros proyectos. 361 pruebas pytest
 (158 anteriores + 53 H2.3 + 8 entorno smoke + 34 H2.4 + 35 H2.5 + 18 API gestionada + 2 demo UI + 23 H3.1,
-con Git temporal).
++ 30 H3.2, con Git temporal).
 API/UI compilada en 127.0.0.1:8013; Vite en :5173
 en otra terminal. SQLite local ignorada en `.local/harness.sqlite3`; migración
 explícita antes de arrancar. Ver README y `docs/discovery/H0.3_SKELETON.md`.
 Estos comandos verifican el esqueleto simulado, el índice legacy, su navegación/observación/SSE
 y el motor/persistencia/cola/procesos sintéticos; nunca agentes reales.
-Esquema actual `0008_prompt_versions`; SQLite debe estar
+Esquema actual `0009_permissions`; SQLite debe estar
 fuera del checkout que se importa. Ver `docs/discovery/H1.1_IMPORT.md` y
 `docs/discovery/H1.2_NAVIGATION.md`. Ver `docs/discovery/H1.3_OBSERVATION.md`
 y `docs/discovery/H2.1_ENGINE.md` y `docs/discovery/H2.2_PERSISTENCE.md`.
@@ -141,7 +144,7 @@ run STOPPED por fin deliberado del smoke, owner cerrado, grupos STOPPED/dead y
 lock nuevo liberado por finalización normal. D020/D022 y sus locks conservados.
 Ver `docs/discovery/H2.3_ENV_SMOKE.md`. Sin aceptación/commit de producto ni
 cuota/retries certificados. Consentimiento satisfecho por una ejecución;
-no hacer login, consumir ni relanzar automáticamente. Siguiente tarea: H3.2, permisos y acciones de recuperación, sin iniciar.
+no hacer login, consumir ni relanzar automáticamente. Siguiente tarea: H3.3, fases, sin iniciar.
 Los checks no consumen proveedores. Sin configuración gestionada, la API
 `/api/managed` no tiene proyectos, puertos ni supervisor y solo lee.
 `HARNESS_MANAGED_CONFIG=módulo:atributo` (o `create_app(managed=...)`) registra

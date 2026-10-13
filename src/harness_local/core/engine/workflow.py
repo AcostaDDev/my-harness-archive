@@ -138,7 +138,7 @@ class OfflineEngine:
             latest_review = history.cycles[-1].review_json if history.cycles else None
             prompt += "\nHistorical review (does not change scope):\n" + (latest_review or "No review recorded")
             return self._execute(context, history, selection, prompt)
-        return self._review_loop(context, history, None, [])
+        return self._review_loop(context, history, None, [], allow_revision=False)
 
     def _execute(self, context: ProjectContext, history: RunHistory, selection: Selection, prompt: str) -> RunHistory:
         self._checkpoint(history, "executor")
@@ -158,7 +158,7 @@ class OfflineEngine:
         return self._review_loop(context, history, before, denials)
 
     def _review_loop(self, context: ProjectContext, history: RunHistory,
-                     before: ContentEvidence | None, denials: list) -> RunHistory:
+                     before: ContentEvidence | None, denials: list, *, allow_revision: bool = True) -> RunHistory:
         task = json.loads(history.task_json)
         while True:
             self._checkpoint(history, "validation")
@@ -214,6 +214,8 @@ class OfflineEngine:
                 return stopped(history, "permissions", "Required operations denied; no automatic retry")
             if history.revisions >= context.policy.max_revision_cycles:
                 return replace(history, status="revision_limit", stop=None)
+            if not allow_revision:
+                return stopped(history, 'revision', 'Review requests changes; retry executor explicitly')
             selection = executor_selection(context, data["executor_selection"])
             prompt = data["next_prompt"]
             try:

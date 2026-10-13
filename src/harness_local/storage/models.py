@@ -237,3 +237,18 @@ class PromptActivationRow(Base):
     generation: Mapped[int] = mapped_column(Integer)
     reason: Mapped[str] = mapped_column(Text)
     created_at: Mapped[str] = mapped_column(String(40))
+
+
+class PermissionRequestRow(Base):
+    __tablename__ = 'permission_requests'
+    id: Mapped[str] = mapped_column(String(36), primary_key=True)
+    run_id: Mapped[str] = mapped_column(ForeignKey('managed_runs.id'))
+    version: Mapped[int] = mapped_column(Integer)
+    status: Mapped[str] = mapped_column(String(40))
+    request: Mapped[dict] = mapped_column(JSON)
+    fingerprint: Mapped[str] = mapped_column(String(64))
+    expires_at: Mapped[str] = mapped_column(String(40))
+    created_at: Mapped[str] = mapped_column(String(40))
+    decision: Mapped[dict | None] = mapped_column(JSON, nullable=True)
+    consumed_by: Mapped[str | None] = mapped_column(String(36), nullable=True)
+    supersedes: Mapped[str | None] = mapped_column(ForeignKey('permission_requests.id'), nullable=True)

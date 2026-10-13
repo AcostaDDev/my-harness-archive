@@ -74,6 +74,7 @@ class AgentRequest:
     # No conversation/session handle: cada petición exige una sesión nueva.
     fresh_session: bool = True
     prompt_snapshot_json: str | None = None
+    permission_snapshot_json: str | None = None
 
 
 @dataclass(frozen=True)
@@ -140,8 +141,11 @@ def invoke_agent(context: ProjectContext, history: RunHistory, adapter: AgentAda
     request = AgentRequest(str(uuid4()), role, selection, prompt, history.task_json, history.context_json,
                            prompt_snapshot_json=prompt_snapshot_json)
     if journal:
-        journal.agent_started(history, request)
+        request = journal.agent_started(history, request) or request
     try:
+        from harness_local.core.engine.permissions import snapshot_payload
+        if snapshot_payload(request).get('denials'):
+            raise ContractError('An explicit permission denial blocks this executor attempt; replace the request or wait for expiry')
         result = adapter.invoke(context, request)
     except Exception as exc:
         from harness_local.core.engine.journal import JournalError

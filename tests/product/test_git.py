@@ -730,7 +730,7 @@ def test_history_round_trip_preserves_provenance_and_old_shape(task, repository)
     context, _ = task
     _, record = accept(repository, context)
     dumped = dump_history(record.history)
-    assert json.loads(dumped)["format"] == 4
+    assert json.loads(dumped)["format"] == 5
     assert load_history(dumped) == record.history
     bare = replace(record.history, cycles=(), acceptance=None, attempts=(), prompt_catalog_json=None)
     assert json.loads(dump_history(bare))["format"] == 1
