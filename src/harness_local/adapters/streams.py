@@ -3,6 +3,7 @@ import json
 import hashlib
 
 from harness_local.core.engine.contracts import freeze
+from harness_local.core.engine.metrics import TERMINAL_FIELDS, TERMINAL_FIELDS_2, StreamMetrics
 
 
 def strict_json(value):
@@ -22,6 +23,8 @@ class AgentStream:
         self.observed = {}
         self.records = 0
         self.offset = 0
+        # H6.4: contadores derivados de la misma lectura (normalización terminal-2).
+        self.metrics = StreamMetrics(provider)
 
     def feed(self, chunk):
         self.tail += chunk
@@ -82,10 +85,12 @@ class AgentStream:
                 self.failed = True
             payload = event.get("structured_output", event.get("result"))
             self.payload = freeze(payload) if isinstance(payload, dict) else payload
-        if self.terminals and self.terminals[-1] is event:
-            for key in ("usage", "modelUsage", "duration_ms", "total_cost_usd", "permission_denials"):
+        terminal = bool(self.terminals) and self.terminals[-1] is event
+        if terminal:
+            for key in TERMINAL_FIELDS + TERMINAL_FIELDS_2:
                 if key in event:
                     self.observed[key] = event[key]
+        self.metrics.event(event, terminal=terminal)
 
     def finish(self, exit_code):
         partial = False

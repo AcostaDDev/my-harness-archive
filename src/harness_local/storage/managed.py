@@ -29,6 +29,7 @@ from harness_local.storage.models import (
     ManagedCommitRow as Commit,
 )
 from harness_local.storage.migration import ModeConflict, ModeGuard
+from harness_local.storage.metrics import executor_round, record as record_metrics
 from harness_local.storage.schema import require_schema
 
 
@@ -374,6 +375,7 @@ class SQLiteManagedRepository:
             if old != new and (old.review_json is not None or replace(new, review_json=None) != old):
                 raise Conflict("Recorded validation/review cannot change")
         completed = []
+        roles = [attempt.request.role for attempt in history.attempts]
         for number, attempt in enumerate(history.attempts, start=1):
             row = session.get(AttemptRow, attempt.request.id)
             if (row is None or row.run_id != run.id or row.number != number
@@ -385,6 +387,8 @@ class SQLiteManagedRepository:
             if row.result_json is None:
                 row.result_json, row.status, row.finished_at = result, (attempt.result.status or "COMPLETED").upper(), self._now()
                 completed.append(row.id)
+                # H6.4: métricas materializadas en la misma transacción que el resultado del intento.
+                record_metrics(session, run, row, executor_round=executor_round(roles, number), recorded_at=row.finished_at)
         run.history_json = dump_history(history)
         run.revisions = history.revisions
         return completed
@@ -500,6 +504,8 @@ class SQLiteManagedRepository:
                 result = AgentResult(None, error="Interrupted invocation; outcome unknown, no automatic retry")
                 row.status, row.result_json, row.finished_at = "INTERRUPTED", freeze(asdict(result)), self._now()
                 history = replace(history, attempts=history.attempts + (Attempt(restore_request(json.loads(row.request_json)), result),))
+                record_metrics(session, run, row, recorded_at=row.finished_at, executor_round=executor_round(
+                    [attempt.request.role for attempt in history.attempts], row.number))
             history = stop_history(history, run.stage, reason)
             self._history(session, run, history)
             run.status = "COMMITTED" if self._live_commit(session, run.id, ("COMMITTED",)) else "INTERRUPTED"

@@ -1,4 +1,4 @@
-from sqlalchemy import Boolean, Index, JSON, ForeignKey, ForeignKeyConstraint, Integer, String, Text, UniqueConstraint, text
+from sqlalchemy import Boolean, Float, Index, JSON, ForeignKey, ForeignKeyConstraint, Integer, String, Text, UniqueConstraint, text
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 
 
@@ -413,3 +413,73 @@ class ProjectBootstrapRow(Base):
     result: Mapped[dict | None] = mapped_column(JSON, nullable=True)
     created_at: Mapped[str] = mapped_column(String(40))
     finished_at: Mapped[str | None] = mapped_column(String(40), nullable=True)
+
+
+
+class AttemptMetricRow(Base):
+    """H6.4: métricas de un intento resuelto, materializadas con su resultado; procedencia por campo.
+
+    Null es ausencia, nunca cero. Sobreviven a la retención de streams (H5.3): no dependen de artefactos."""
+    __tablename__ = 'attempt_metrics'
+    __table_args__ = (Index('ix_attempt_metrics_scope', 'root', 'phase_code', 'task_id'),
+                      Index('ix_attempt_metrics_run', 'run_id', 'number', unique=True))
+    attempt_id: Mapped[str] = mapped_column(ForeignKey('managed_attempts.id'), primary_key=True)
+    run_id: Mapped[str] = mapped_column(ForeignKey('managed_runs.id'))
+    number: Mapped[int] = mapped_column(Integer)
+    root: Mapped[str] = mapped_column(String)
+    phase_code: Mapped[str] = mapped_column(String)
+    task_id: Mapped[str] = mapped_column(String)
+    purpose: Mapped[str] = mapped_column(String(20))
+    role: Mapped[str] = mapped_column(String(20))
+    provider: Mapped[str | None] = mapped_column(String(20), nullable=True)
+    adapter_version: Mapped[str | None] = mapped_column(String(40), nullable=True)
+    cli_version: Mapped[str | None] = mapped_column(String(80), nullable=True)
+    requested_model: Mapped[str | None] = mapped_column(String(200), nullable=True)
+    requested_effort: Mapped[str | None] = mapped_column(String(40), nullable=True)
+    reported_models: Mapped[list | None] = mapped_column(JSON, nullable=True)
+    reported_effort: Mapped[str | None] = mapped_column(String(40), nullable=True)
+    status: Mapped[str] = mapped_column(String(40))
+    error: Mapped[str | None] = mapped_column(Text, nullable=True)
+    verdict: Mapped[str | None] = mapped_column(String(40), nullable=True)
+    # Ejecuciones del run hasta este intento: 0 planificación, n ejecución n y su revisión.
+    executor_round: Mapped[int] = mapped_column(Integer)
+    accounting: Mapped[str | None] = mapped_column(String(20), nullable=True)
+    input_semantics: Mapped[str | None] = mapped_column(String(30), nullable=True)
+    input_tokens: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    cache_read_tokens: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    cache_write_tokens: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    output_tokens: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    reasoning_tokens: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    uncached_input_tokens: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    # Derivado sin doble conteo (ver `storage/metrics._total`); null si la semántica no es segura.
+    total_tokens: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    turns: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    tool_calls: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    tools: Mapped[dict | None] = mapped_column(JSON, nullable=True)
+    permission_denials: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    wall_ms: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    duration_ms: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    api_duration_ms: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    cost_usd: Mapped[float | None] = mapped_column(Float, nullable=True)
+    started_at: Mapped[str] = mapped_column(String(40))
+    finished_at: Mapped[str | None] = mapped_column(String(40), nullable=True)
+    day: Mapped[str] = mapped_column(String(10))
+    source: Mapped[str] = mapped_column(String(20))
+    normalization: Mapped[str | None] = mapped_column(String(20), nullable=True)
+    catalog: Mapped[str] = mapped_column(String(20))
+    provenance: Mapped[dict] = mapped_column(JSON)
+    diagnostics: Mapped[list] = mapped_column(JSON)
+    recorded_at: Mapped[str] = mapped_column(String(40))
+
+
+class AttemptModelMetricRow(Base):
+    """H6.4: consumo reportado por modelo dentro de un intento (Claude `modelUsage`)."""
+    __tablename__ = 'attempt_model_metrics'
+    attempt_id: Mapped[str] = mapped_column(ForeignKey('attempt_metrics.attempt_id'), primary_key=True)
+    model: Mapped[str] = mapped_column(String(200), primary_key=True)
+    input_tokens: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    cache_read_tokens: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    cache_write_tokens: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    output_tokens: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    reasoning_tokens: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    cost_usd: Mapped[float | None] = mapped_column(Float, nullable=True)

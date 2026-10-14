@@ -97,6 +97,49 @@ if mode == 'web':
         path = Path('src/estimate.ts')
         path.write_text(path.read_text().replace('tasks * 45', 'tasks * 30'))
     mode = 'flow'
+def usage_events(provider):
+    """H6.4: forma de uso caracterizada en D071 con valores sintéticos. Claude repite el mismo mensaje en
+    eventos `assistant` con una salida parcial; el total de cada mensaje llega en `message_delta`."""
+    if provider == 'codex':
+        command = {'id': 'item_0', 'type': 'command_execution', 'command': 'synthetic', 'aggregated_output': '',
+                   'exit_code': 0, 'status': 'completed'}
+        return [{'type': 'item.started', 'item': {**command, 'exit_code': None, 'status': 'in_progress'}},
+                {'type': 'item.completed', 'item': command}, {'type': 'item.completed', 'item': command},
+                {'type': 'item.completed', 'item': {'id': 'item_1', 'type': 'file_change', 'changes': [],
+                                                    'status': 'completed'}}]
+    def message(ident, model, cache_read, cache_write, content):
+        usage = lambda output: {'input_tokens': 3, 'cache_read_input_tokens': cache_read,
+                                'cache_creation_input_tokens': cache_write, 'output_tokens': output}
+        assistant = {'type': 'assistant', 'message': {'id': ident, 'model': model, 'content': content,
+                                                      'usage': usage(1)}}
+        return [{'type': 'stream_event', 'event': {'type': 'message_start', 'message': {'id': ident, 'usage': usage(1)}}},
+                assistant, assistant,
+                {'type': 'stream_event', 'event': {'type': 'message_delta', 'usage': usage(30 if ident == 'msg_1' else 40)}}]
+    tool = [{'type': 'tool_use', 'id': 'toolu_1', 'name': 'Read', 'input': {}}]
+    return ([{'type': 'system', 'subtype': 'init', 'session_id': 'synthetic', 'model': 'claude-synthetic-a'}]
+            + message('msg_1', 'claude-synthetic-a', 100, 400, tool)
+            + message('msg_2', 'claude-synthetic-b', 200, 0, [{'type': 'text', 'text': 'synthetic'}])
+            + [{'type': 'rate_limit_event', 'rate_limit_info': {'status': 'allowed', 'resetsAt': 0}},
+               {'type': 'system', 'subtype': 'thinking_tokens', 'estimated_tokens': 999}])
+
+
+def with_usage(provider, terminal):
+    if provider == 'codex':
+        if terminal['type'] != 'turn.completed':
+            return terminal  # Un turn.failed de Codex no informa uso: queda ausente, no cero.
+        return {**terminal, 'usage': {'input_tokens': 1000, 'cached_input_tokens': 600, 'cache_write_input_tokens': 0,
+                                      'output_tokens': 50, 'reasoning_output_tokens': 10}}
+    per_model = lambda cache_read, cache_write, output, thinking, cost: {
+        'inputTokens': 3, 'outputTokens': output, 'cacheReadInputTokens': cache_read,
+        'cacheCreationInputTokens': cache_write, 'thinkingTokens': thinking, 'costUSD': cost}
+    return {**terminal, 'num_turns': 2, 'duration_ms': 900, 'duration_api_ms': 800, 'total_cost_usd': 0.0125,
+            'permission_denials': [],
+            'usage': {'input_tokens': 6, 'cache_read_input_tokens': 300, 'cache_creation_input_tokens': 400,
+                      'output_tokens': 70, 'output_tokens_details': {'thinking_tokens': 12}},
+            'modelUsage': {'claude-synthetic-a': per_model(100, 400, 30, 12, 0.01),
+                           'claude-synthetic-b': per_model(200, 0, 40, 0, 0.0025)}}
+
+
 if mode == 'invalid':
     print('invalid JSONL', flush=True)
 elif mode == 'utf8':
@@ -107,6 +150,12 @@ elif mode == 'partial':
     sys.exit(0)
 elif mode == 'no_terminal':
     print('{"type":"future.event","unknown":null}', flush=True)
+    sys.exit(0)
+elif (mode == 'hang' or mode == 'child') and os.environ.get('PROBE_USAGE') == '1' and provider == 'claude':
+    # H6.4: un mensaje completo y otro empezado antes de colgarse; sin terminal no hay total reportado.
+    for event in usage_events(provider)[:6]:
+        print(json.dumps(event), flush=True)
+    time.sleep(60)
     sys.exit(0)
 elif mode == 'hang' or mode == 'child':
     if mode == 'child':
@@ -155,6 +204,8 @@ else:
               {'type':'result','subtype':'error_during_execution' if mode=='error' else 'success',
                'is_error':mode=='error', 'result': 'not structured' if mode=='bad_payload' else
                   json.dumps({'result':'ñ'}), 'usage':None,'duration_ms':0} ]
+if os.environ.get('PROBE_USAGE') == '1':
+    events = events[:-1] + usage_events(provider) + [with_usage(provider, events[-1])]
 if mode == 'double_terminal':
     events.append(events[-1])
 for event in events:

@@ -647,6 +647,59 @@ def managed_router(runtime: ManagedRuntime):
                    resume_operation_id=body.resume_operation_id)
         return queued(job)
 
+    # --- H6.4: métricas por intento y agregados (solo lectura) ----------------------------------------
+    from harness_local.api.schemas import (
+        AttemptMetricRead, MetricDimension, MetricGroupsRead, MetricOrder, MetricsSummaryRead, ModelMetricGroupsRead,
+        TaskMetricsRead,
+    )
+    from harness_local.storage.metrics import MetricsViews
+
+    Scoped = Annotated[str | None, Query(min_length=1, max_length=200)]
+
+    def metrics_scope(project_id, phase, task):
+        """Sin proyecto: global, todos los proyectos de esta SQLite. Fase y tarea exigen proyecto."""
+        runtime.ready()
+        if project_id is None:
+            if phase is not None or task is not None:
+                raise problem(422, 'invalid_request', 'Fase y tarea requieren project_id.')
+            return {'root': None, 'phase': None, 'task': None}
+        return {'root': str(project(project_id).context.root), 'phase': phase, 'task': task}
+
+    def metrics():
+        return MetricsViews(runtime.repository.engine)
+
+    @router.get('/metrics/summary', response_model=MetricsSummaryRead, operation_id='managed_metrics_summary')
+    def metrics_summary(project_id: Scoped = None, phase: Scoped = None, task: Scoped = None):
+        """Consumo, calidad de las tareas, tests OK/KO de su última validación y paradas por motivo."""
+        return call(metrics().summary, metrics_scope(project_id, phase, task))
+
+    @router.get('/metrics/attempts', response_model=Page[AttemptMetricRead], operation_id='managed_metrics_attempts')
+    def metrics_attempts(project_id: Scoped = None, phase: Scoped = None, task: Scoped = None, run_id: Scoped = None,
+                         offset: Offset = 0, limit: Limit = 30):
+        """Filas materializadas por intento, con procedencia por campo; null es ausencia, no cero."""
+        return call(metrics().attempts, metrics_scope(project_id, phase, task), offset, limit, run_id=run_id)
+
+    @router.get('/metrics/groups', response_model=MetricGroupsRead, operation_id='managed_metrics_groups')
+    def metrics_groups(dimension: MetricDimension, project_id: Scoped = None, phase: Scoped = None,
+                       task: Scoped = None, role: Scoped = None, order: MetricOrder = 'attempts',
+                       offset: Offset = 0, limit: Limit = 30):
+        """Consumo agrupado; con `role` y `order` da los modelos y esfuerzos favoritos por frecuencia o tokens."""
+        return call(metrics().groups, metrics_scope(project_id, phase, task), dimension, offset, limit,
+                    role=role, order=order)
+
+    @router.get('/metrics/models', response_model=ModelMetricGroupsRead, operation_id='managed_metrics_models')
+    def metrics_models(project_id: Scoped = None, phase: Scoped = None, task: Scoped = None, role: Scoped = None,
+                       order: MetricOrder = 'attempts', offset: Offset = 0, limit: Limit = 30):
+        """Consumo por modelo reportado (Claude `modelUsage`); Codex no informa modelo."""
+        return call(metrics().groups, metrics_scope(project_id, phase, task), 'reported_model', offset, limit,
+                    role=role, order=order)
+
+    @router.get('/metrics/tasks', response_model=Page[TaskMetricsRead], operation_id='managed_metrics_tasks')
+    def metrics_tasks(project_id: Scoped = None, phase: Scoped = None, task: Scoped = None,
+                      offset: Offset = 0, limit: Limit = 30):
+        """Por tarea: agentes, intentos por rol, correcciones, aceptación a la primera, tiempos, tests y consumo."""
+        return call(metrics().tasks, metrics_scope(project_id, phase, task), offset, limit)
+
     # --- H4.1: chat contextual -----------------------------------------------------------------
 
     from harness_local.api.schemas import (

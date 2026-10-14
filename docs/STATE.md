@@ -35,7 +35,7 @@ Actualizado: 2026-10-14.
 - Dependencias reales instaladas en `.venv` / `frontend/node_modules`, locks
   `uv.lock` / `frontend/package-lock.json`. Pins H0.2 usados conservados;
   backend de paquete `uv_build==0.12.19`. Comandos comprobados en README/AGENTS.
-- 973 casos de producto en `tests/product/`; 985 pytest y 121 subtests aprobados.
+- 999 casos de producto en `tests/product/`; 1011 pytest y 121 subtests aprobados.
   La comprobación ligera anterior conserva sus 12 checks sin dependencias.
 - H1.1 completado: [importación legacy y verificaciones](discovery/H1.1_IMPORT.md),
   [alcance original](discovery/H1.1_SCOPE.md). Lector local explícito de
@@ -542,8 +542,10 @@ tipado D058 ya comprobado en D071. Organización documental por fase y estructur
 de producto diseñadas (D072, [diseño](discovery/DOCUMENT_ORGANIZATION.md)) y
 confirmadas por el usuario (D073). H6.3 implementado offline: contrato documental
 v2 opt-in, bloques regenerados por commit, transición de fase y edición confirmada
-([entrega](discovery/H6.3_DOCUMENT_CONTRACT.md)). Siguiente tarea propuesta: H6.4
-(métricas), sin iniciar. UI H6.2 sin iniciar; será una tarea aparte.
+([entrega](discovery/H6.3_DOCUMENT_CONTRACT.md)). H6.4 implementado offline (D074):
+métricas por intento materializadas con procedencia, relleno explícito, agregados por API y tokens/turnos
+en el SUMMARY ([entrega](discovery/H6.4_METRICS.md)). Siguiente tarea propuesta: H6.5 (creación y
+planificación conversacionales), sin iniciar. UI H6.2 sin iniciar; será una tarea aparte.
 
 ## Verificación de H0.1
 
@@ -2556,7 +2558,43 @@ v2 opt-in, bloques regenerados por commit, transición de fase y edición confir
 - Límites: bootstrap D037 sigue con la plantilla v1 (creación v2 en H6.5); sin
   `handoff_notes`; métricas de tokens/turnos pendientes (H6.4); avisos de tamaño
   fuera del check; exclusión frente a escritores externos cooperativa; ningún
-  recorrido con CLI real. Sin commit, push ni proveedores. Siguiente: H6.4.
+  recorrido con CLI real. Sin push ni proveedores. Commiteado por separado (`cea745a`) al empezar
+  H6.4, tras repetir la suite completa sobre ese árbol (985 pytest + 121 subtests).
+
+## Implementación de H6.4: métricas por intento y estadísticas (D074)
+
+- Tarea activa de NEXT_STEPS, pedida por el usuario el 2026-10-14. Git inicial en `main`, `0e18ad1`, con
+  H6.3 sin commit: se verificó y commiteó aparte (`cea745a`) antes de empezar.
+  [Entrega, catálogo y límites](discovery/H6.4_METRICS.md).
+- Caracterización offline de los doce stdout de D071 (sin modificarlos, 12/12 verificados por SHA-256)
+  con un script de biblioteca estándar independiente de la implementación; solo nombres, tipos y
+  comprobaciones ([script](discovery/H6.4_STREAM_CATALOG.py), [salida](discovery/H6.4_STREAM_CATALOG.json)).
+  Claude: total del `result` = suma de `message_delta`; eventos `assistant` repetidos y con salida
+  parcial. Codex: un `turn.completed`, caché leída ⊆ entrada, sin modelo/esfuerzo/coste/duración/turnos.
+  `rate_limit_event` y los tokens estimados quedan fuera: no se deduce cuota.
+- `core/engine/metrics.py`: catálogo `metrics-1`, acumulador de stream y fila por intento con procedencia
+  `requested`/`reported`/`derived`/`measured`/`absent`. `AgentStream` captura `terminal-2` (turnos,
+  duración de API, contadores derivados) sin cambiar argv ni la versión `cli-9`.
+- Migración `0014_attempt_metrics` (`attempt_metrics`, `attempt_model_metrics`). La fila se inserta en la
+  transacción del resultado (`_history`) o de la interrupción (`confirm_stopped`); si falla, el resultado
+  tampoco se registra. Sobrevive a la retención H5.3; el backup la verifica con el esquema.
+- Relleno `harness-local metrics-backfill --database RUTA [--artifact-root RAÍZ]`: idempotente, desde
+  `result_json` y, bajo raíces autorizadas, stdout sellado verificado por hash y sin purga. Probado además
+  sobre copias migradas de las cuatro SQLite de D071: 12 filas, 12 streams verificados.
+- API de solo lectura `/api/managed/metrics/{summary,attempts,groups,models,tasks}`: consumo por rol,
+  proveedor, modelo, esfuerzo, día, fase y tarea; favoritos; aceptación a la primera, correcciones,
+  tiempos, tests OK/KO y paradas por motivo; global o por proyecto. OpenAPI y tipos regenerados.
+- SUMMARY de las fases que se archiven: tokens y turnos por tarea y consumo por rol con cobertura, sin chat.
+  Una transición revisada antes de migrar se ejecuta tal como se revisó.
+- Verificación: 26 casos nuevos en `tests/product/test_metrics.py` (probe sintético con la forma de D071,
+  valores inventados). Suite completa **1011 pytest + 121 subtests** (390,11 s); 12 checks estándar;
+  6 pruebas Node; `tsc` y build de la UI; `alembic upgrade`/`check`/`current` en SQLite temporal
+  (`0014_attempt_metrics`); `legacy-import` y `metrics-backfill` por CLI. Tres hallazgos corregidos durante
+  la entrega: los agregados sumaban la entrada cruda con semánticas distintas por proveedor; la tabla de
+  consumo del SUMMARY no mostraba la cobertura de cada suma; y una transición revisada antes de migrar
+  habría acabado en recuperación. Los tres con prueba.
+- Límites: semánticas de Codex coherentes con 6 muestras, no certificadas; turnos de Codex derivados; sin UI,
+  sin relleno automático y sin métricas en los bloques de STATE/NEXT_STEPS; ningún recorrido con CLI real.
 
 ## Coordinación
 

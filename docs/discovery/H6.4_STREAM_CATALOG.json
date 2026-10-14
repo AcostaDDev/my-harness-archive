@@ -1,0 +1,492 @@
+{
+ "area": "D071 matrix-6 (ruta local, sin contenidos)",
+ "catalog": {
+  "claude:rate_limit_event": {
+   "rate_limit_info": "object (no se conserva)"
+  },
+  "claude:result": {
+   "api_error_status": "NoneType",
+   "duration_api_ms": "int",
+   "duration_ms": "int",
+   "fast_mode_disabled_reason": "str",
+   "fast_mode_state": "str",
+   "first_content_frame_ms": "int",
+   "is_error": "bool",
+   "modelUsage": {
+    "claude-sonnet-4-6": {
+     "cacheCreationInputTokens": "int",
+     "cacheReadInputTokens": "int",
+     "canonicalModel": "str",
+     "contextWindow": "int",
+     "costBasis": "str",
+     "costUSD": "float",
+     "inputTokens": "int",
+     "maxOutputTokens": "int",
+     "outputTokens": "int",
+     "provider": "str",
+     "thinkingTokens": "int",
+     "webSearchRequests": "int"
+    }
+   },
+   "num_turns": "int",
+   "permission_denials": "list",
+   "queued_turn_count": "int",
+   "result": "str",
+   "result_index": "int",
+   "safety_stops": "int",
+   "session_id": "str",
+   "stop_reason": "str",
+   "structured_output": {
+    "acceptance_criteria": "list",
+    "allowed_paths": "list",
+    "blocking_questions": "list",
+    "executor_prompt": "str",
+    "executor_selection": {
+     "effort": "str",
+     "model": "str",
+     "reason": "str"
+    },
+    "findings": "list",
+    "forbidden_paths": "list",
+    "next_prompt": "str",
+    "objective": "str",
+    "phase_id": "str",
+    "task_id": "str",
+    "title": "str",
+    "validation_commands": "list",
+    "verdict": "str"
+   },
+   "subagent_stats": {
+    "by_type": {},
+    "completed": "int",
+    "failed": "int",
+    "killed": {
+     "parent": "int",
+     "system": "int",
+     "user": "int"
+    },
+    "max_depth": "int",
+    "refused": {
+     "budget": "int",
+     "concurrency_limit": "int",
+     "depth_limit": "int"
+    },
+    "requested": {
+     "background": "int",
+     "foreground": "int",
+     "unset": "int"
+    },
+    "spawned": "int",
+    "spawned_by_subagents": "int",
+    "started_in_background": "int"
+   },
+   "subtype": "str",
+   "terminal_reason": "str",
+   "time_to_request_ms": "int",
+   "total_cost_usd": "float",
+   "ttft_ms": "int",
+   "ttft_stream_ms": "int",
+   "type": "str",
+   "usage": {
+    "cache_creation": {
+     "ephemeral_1h_input_tokens": "int",
+     "ephemeral_5m_input_tokens": "int"
+    },
+    "cache_creation_input_tokens": "int",
+    "cache_read_input_tokens": "int",
+    "fallback_credit": "NoneType",
+    "inference_geo": "str",
+    "input_tokens": "int",
+    "iterations": "list",
+    "output_tokens": "int",
+    "output_tokens_details": {
+     "thinking_tokens": "int"
+    },
+    "server_tool_use": {
+     "web_fetch_requests": "int",
+     "web_search_requests": "int"
+    },
+    "service_tier": "str",
+    "speed": "str"
+   },
+   "uuid": "str"
+  },
+  "codex:turn.completed": {
+   "type": "str",
+   "usage": {
+    "cache_write_input_tokens": "int",
+    "cached_input_tokens": "int",
+    "input_tokens": "int",
+    "output_tokens": "int",
+    "reasoning_output_tokens": "int"
+   }
+  }
+ },
+ "streams": [
+  {
+   "attempt": 1,
+   "checks": {
+    "assistant_events": 5,
+    "assistant_message_repeated": true,
+    "assistant_messages": 2,
+    "assistant_output_is_partial_snapshot": true,
+    "duration_api_ms_present": true,
+    "effort_reported": false,
+    "message_start_events": 2,
+    "model_usage_sum_equals_usage": true,
+    "models_reported": 1,
+    "num_turns_present": true,
+    "permission_denials_list": true,
+    "subagent_messages": false,
+    "terminal_events": 1,
+    "terminal_usage_equals_sum_of_message_deltas": true,
+    "thinking_le_output": true,
+    "tool_use_ids_unique": true,
+    "tool_uses": 2,
+    "total_cost_usd_present": true
+   },
+   "event_types": {
+    "assistant": 5,
+    "rate_limit_event": 1,
+    "result/success": 1,
+    "stream_event": 128,
+    "system/init": 1,
+    "system/status": 2,
+    "user": 2
+   },
+   "pairing": "claude-claude",
+   "provider": "claude",
+   "role": "planner",
+   "sha256_verified": true
+  },
+  {
+   "attempt": 2,
+   "checks": {
+    "assistant_events": 4,
+    "assistant_message_repeated": true,
+    "assistant_messages": 3,
+    "assistant_output_is_partial_snapshot": true,
+    "duration_api_ms_present": true,
+    "effort_reported": false,
+    "message_start_events": 3,
+    "model_usage_sum_equals_usage": true,
+    "models_reported": 1,
+    "num_turns_present": true,
+    "permission_denials_list": true,
+    "subagent_messages": false,
+    "terminal_events": 1,
+    "terminal_usage_equals_sum_of_message_deltas": true,
+    "thinking_le_output": true,
+    "tool_use_ids_unique": true,
+    "tool_uses": 2,
+    "total_cost_usd_present": true
+   },
+   "event_types": {
+    "assistant": 4,
+    "rate_limit_event": 1,
+    "result/success": 1,
+    "stream_event": 47,
+    "system/init": 1,
+    "system/status": 3,
+    "user": 2
+   },
+   "pairing": "claude-claude",
+   "provider": "claude",
+   "role": "executor",
+   "sha256_verified": true
+  },
+  {
+   "attempt": 3,
+   "checks": {
+    "assistant_events": 2,
+    "assistant_message_repeated": true,
+    "assistant_messages": 1,
+    "assistant_output_is_partial_snapshot": true,
+    "duration_api_ms_present": true,
+    "effort_reported": false,
+    "message_start_events": 1,
+    "model_usage_sum_equals_usage": true,
+    "models_reported": 1,
+    "num_turns_present": true,
+    "permission_denials_list": true,
+    "subagent_messages": false,
+    "terminal_events": 1,
+    "terminal_usage_equals_sum_of_message_deltas": true,
+    "thinking_le_output": true,
+    "tool_use_ids_unique": true,
+    "tool_uses": 1,
+    "total_cost_usd_present": true
+   },
+   "event_types": {
+    "assistant": 2,
+    "rate_limit_event": 1,
+    "result/success": 1,
+    "stream_event": 23,
+    "system/init": 1,
+    "system/status": 1,
+    "system/thinking_tokens": 3,
+    "user": 1
+   },
+   "pairing": "claude-claude",
+   "provider": "claude",
+   "role": "reviewer",
+   "sha256_verified": true
+  },
+  {
+   "attempt": 1,
+   "checks": {
+    "assistant_events": 5,
+    "assistant_message_repeated": true,
+    "assistant_messages": 2,
+    "assistant_output_is_partial_snapshot": true,
+    "duration_api_ms_present": true,
+    "effort_reported": false,
+    "message_start_events": 2,
+    "model_usage_sum_equals_usage": true,
+    "models_reported": 1,
+    "num_turns_present": true,
+    "permission_denials_list": true,
+    "subagent_messages": false,
+    "terminal_events": 1,
+    "terminal_usage_equals_sum_of_message_deltas": true,
+    "thinking_le_output": true,
+    "tool_use_ids_unique": true,
+    "tool_uses": 2,
+    "total_cost_usd_present": true
+   },
+   "event_types": {
+    "assistant": 5,
+    "rate_limit_event": 1,
+    "result/success": 1,
+    "stream_event": 128,
+    "system/init": 1,
+    "system/status": 2,
+    "user": 2
+   },
+   "pairing": "claude-codex",
+   "provider": "claude",
+   "role": "planner",
+   "sha256_verified": true
+  },
+  {
+   "attempt": 2,
+   "checks": {
+    "cache_write_zero": true,
+    "cached_le_input": true,
+    "item_types": {
+     "agent_message": 2,
+     "command_execution": 3
+    },
+    "model_effort_cost_duration_reported": false,
+    "reasoning_le_output": true,
+    "terminal_events": 1
+   },
+   "event_types": {
+    "item.completed": 5,
+    "item.started": 3,
+    "thread.started": 1,
+    "turn.completed": 1,
+    "turn.started": 1
+   },
+   "pairing": "claude-codex",
+   "provider": "codex",
+   "role": "executor",
+   "sha256_verified": true
+  },
+  {
+   "attempt": 3,
+   "checks": {
+    "assistant_events": 2,
+    "assistant_message_repeated": true,
+    "assistant_messages": 1,
+    "assistant_output_is_partial_snapshot": true,
+    "duration_api_ms_present": true,
+    "effort_reported": false,
+    "message_start_events": 1,
+    "model_usage_sum_equals_usage": true,
+    "models_reported": 1,
+    "num_turns_present": true,
+    "permission_denials_list": true,
+    "subagent_messages": false,
+    "terminal_events": 1,
+    "terminal_usage_equals_sum_of_message_deltas": true,
+    "thinking_le_output": true,
+    "tool_use_ids_unique": true,
+    "tool_uses": 1,
+    "total_cost_usd_present": true
+   },
+   "event_types": {
+    "assistant": 2,
+    "rate_limit_event": 1,
+    "result/success": 1,
+    "stream_event": 24,
+    "system/init": 1,
+    "system/status": 1,
+    "system/thinking_tokens": 4,
+    "user": 1
+   },
+   "pairing": "claude-codex",
+   "provider": "claude",
+   "role": "reviewer",
+   "sha256_verified": true
+  },
+  {
+   "attempt": 1,
+   "checks": {
+    "cache_write_zero": true,
+    "cached_le_input": true,
+    "item_types": {
+     "agent_message": 1,
+     "command_execution": 1
+    },
+    "model_effort_cost_duration_reported": false,
+    "reasoning_le_output": true,
+    "terminal_events": 1
+   },
+   "event_types": {
+    "item.completed": 2,
+    "item.started": 1,
+    "thread.started": 1,
+    "turn.completed": 1,
+    "turn.started": 1
+   },
+   "pairing": "codex-claude",
+   "provider": "codex",
+   "role": "planner",
+   "sha256_verified": true
+  },
+  {
+   "attempt": 2,
+   "checks": {
+    "assistant_events": 4,
+    "assistant_message_repeated": true,
+    "assistant_messages": 3,
+    "assistant_output_is_partial_snapshot": true,
+    "duration_api_ms_present": true,
+    "effort_reported": false,
+    "message_start_events": 3,
+    "model_usage_sum_equals_usage": true,
+    "models_reported": 1,
+    "num_turns_present": true,
+    "permission_denials_list": true,
+    "subagent_messages": false,
+    "terminal_events": 1,
+    "terminal_usage_equals_sum_of_message_deltas": true,
+    "thinking_le_output": true,
+    "tool_use_ids_unique": true,
+    "tool_uses": 2,
+    "total_cost_usd_present": true
+   },
+   "event_types": {
+    "assistant": 4,
+    "rate_limit_event": 2,
+    "result/success": 1,
+    "stream_event": 53,
+    "system/init": 1,
+    "system/status": 3,
+    "user": 2
+   },
+   "pairing": "codex-claude",
+   "provider": "claude",
+   "role": "executor",
+   "sha256_verified": true
+  },
+  {
+   "attempt": 3,
+   "checks": {
+    "cache_write_zero": true,
+    "cached_le_input": true,
+    "item_types": {
+     "agent_message": 1
+    },
+    "model_effort_cost_duration_reported": false,
+    "reasoning_le_output": true,
+    "terminal_events": 1
+   },
+   "event_types": {
+    "item.completed": 1,
+    "thread.started": 1,
+    "turn.completed": 1,
+    "turn.started": 1
+   },
+   "pairing": "codex-claude",
+   "provider": "codex",
+   "role": "reviewer",
+   "sha256_verified": true
+  },
+  {
+   "attempt": 1,
+   "checks": {
+    "cache_write_zero": true,
+    "cached_le_input": true,
+    "item_types": {
+     "agent_message": 1,
+     "command_execution": 1
+    },
+    "model_effort_cost_duration_reported": false,
+    "reasoning_le_output": true,
+    "terminal_events": 1
+   },
+   "event_types": {
+    "item.completed": 2,
+    "item.started": 1,
+    "thread.started": 1,
+    "turn.completed": 1,
+    "turn.started": 1
+   },
+   "pairing": "codex-codex",
+   "provider": "codex",
+   "role": "planner",
+   "sha256_verified": true
+  },
+  {
+   "attempt": 2,
+   "checks": {
+    "cache_write_zero": true,
+    "cached_le_input": true,
+    "item_types": {
+     "agent_message": 3,
+     "command_execution": 4,
+     "file_change": 1
+    },
+    "model_effort_cost_duration_reported": false,
+    "reasoning_le_output": true,
+    "terminal_events": 1
+   },
+   "event_types": {
+    "item.completed": 8,
+    "item.started": 5,
+    "thread.started": 1,
+    "turn.completed": 1,
+    "turn.started": 1
+   },
+   "pairing": "codex-codex",
+   "provider": "codex",
+   "role": "executor",
+   "sha256_verified": true
+  },
+  {
+   "attempt": 3,
+   "checks": {
+    "cache_write_zero": true,
+    "cached_le_input": true,
+    "item_types": {
+     "agent_message": 1
+    },
+    "model_effort_cost_duration_reported": false,
+    "reasoning_le_output": true,
+    "terminal_events": 1
+   },
+   "event_types": {
+    "item.completed": 1,
+    "thread.started": 1,
+    "turn.completed": 1,
+    "turn.started": 1
+   },
+   "pairing": "codex-codex",
+   "provider": "codex",
+   "role": "reviewer",
+   "sha256_verified": true
+  }
+ ]
+}

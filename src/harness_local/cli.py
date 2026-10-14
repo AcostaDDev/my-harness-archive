@@ -1,4 +1,4 @@
-"""Índice, backup, retención y version/help explícitos; sin inferencia."""
+"""Índice, backup, retención, relleno de métricas y version/help explícitos; sin inferencia."""
 import argparse
 import json
 from pathlib import Path
@@ -51,6 +51,10 @@ def main(argv: list[str] | None = None) -> int:
     command = operations.add_parser('check-config', help='Validar el TOML local de uso real, sin ejecutar nada')
     command.add_argument('configuration', help='Ruta absoluta del TOML local, fuera de los checkouts')
     command.add_argument('--preflight', action='store_true', help='Además, version/help explícitos de la CLI de cada agente')
+    command = operations.add_parser('metrics-backfill', help='Relleno explícito e idempotente de métricas por intento (H6.4)')
+    command.add_argument('--database', required=True, help='Ruta absoluta SQLite existente; no usa HARNESS_DATABASE_URL')
+    command.add_argument('--artifact-root', action='append', default=[],
+                         help='Raíz autorizada de streams sellados, verificados por SHA-256; repetible. Sin ella, solo result_json')
     for name in ('init-db', 'serve'):
         command = operations.add_parser(name, help='SQLite nueva explícita' if name == 'init-db' else 'UI/API en 127.0.0.1')
         command.add_argument('--database', required=True, help='Ruta absoluta SQLite; no usa HARNESS_DATABASE_URL')
@@ -66,6 +70,16 @@ def main(argv: list[str] | None = None) -> int:
                 initialize(args.database)
             else:
                 serve(args.database, args.port, args.config)
+            return 0
+        if args.operation == 'metrics-backfill':
+            from harness_local.launcher import local_database
+            from harness_local.storage.metrics import backfill
+            path, url = local_database(args.database)
+            if not path.is_file():
+                raise ValueError('SQLite inexistente; el relleno no crea bases.')
+            engine = make_engine(url)
+            require_schema(engine)
+            print(json.dumps(backfill(engine, artifact_roots=args.artifact_root), ensure_ascii=False, indent=2))
             return 0
         if args.operation == 'check-config':
             from harness_local.services.local_config import inspect_local_config, summary

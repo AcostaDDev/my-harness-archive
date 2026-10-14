@@ -23,6 +23,7 @@ from harness_local.adapters.processes import CancellationResult, identity, liven
 from harness_local.adapters.streams import AgentStream
 from harness_local.core.engine.contracts import AgentResult, freeze
 from harness_local.core.engine.journal import JournalError
+from harness_local.core.engine.metrics import CAPTURE as METRICS_CAPTURE
 from harness_local.core.engine.prompts import digest, output_schema
 
 
@@ -420,6 +421,7 @@ class CLIProcessAdapter:
                 status, payload = "failed", None
             metadata = {"status": status, "started_at": started_at,
                         "wall_duration_seconds": time.monotonic() - started, "observed": parser.observed,
+                        "normalization": METRICS_CAPTURE, "stream_metrics": parser.metrics.summary(),
                         "artifacts": {name: {"path": str(directory / f"{name}.bin"), "size": sizes[name],
                                              "sha256": hashes[name].hexdigest()} for name in sizes},
                         "exit_code": process.returncode, "group_state": group_state}

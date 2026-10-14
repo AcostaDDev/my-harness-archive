@@ -11,6 +11,7 @@ Git/SQLite sintéticos y fakes. Proveedores opt-in por inyección explícita, si
 entrada CLI gestionada. Reportes JUnit congelados por validación y detalle API/UI.
 Backup/restauración local con manifiesto y guardia de consulta, sin reanudar procesos.
 Retención explícita de originales stdout/stderr con preview, auditoría y consulta.
+Métricas por intento materializadas con procedencia y agregados de solo lectura (H6.4, D074).
 Ejecutor de validaciones nativas implementado offline (D047): argv/configuración
 congelados, captura acotada y recuperación que conserva el lock ante procesos
 vivos o inciertos. Activación solo por composición del servidor, sin proveedores
@@ -53,6 +54,7 @@ el diagnóstico anterior a D047.
 - [Reportes JUnit H5.1: configuración, consulta y límites](docs/discovery/H5.1_JUNIT.md).
 - [Backup/restauración local H5.2: procedimiento, consistencia y límites](docs/discovery/H5.2_BACKUP.md).
 - [Retención local de logs H5.3: política, comandos y recuperación](docs/discovery/H5.3_RETENTION.md).
+- [Métricas por intento y estadísticas H6.4: catálogo, relleno y API](docs/discovery/H6.4_METRICS.md).
 - [Smoke cli-3: MCP aceptado, fallo de autenticación Claude](docs/discovery/H2.3_SMOKE_CLI3.md).
 - [Git, worktree y commit acotado H2.4](docs/discovery/H2.4_GIT.md).
 - [Migración a modo gestionado H2.5](docs/discovery/H2.5_MIGRATION.md).
@@ -205,7 +207,7 @@ siguen conservados. La autorización cubrió una ejecución, sin relanzamiento.
 ## Importación legacy de lectura
 
 Migrar con el servicio detenido antes de importar; el esquema actual es
-`0013_bootstrap`. Comandos comprobados desde la raíz, con datos sintéticos:
+`0014_attempt_metrics`. Comandos comprobados desde la raíz, con datos sintéticos:
 
 ```sh
 UV_CACHE_DIR=.local/uv-cache uv run --frozen --offline alembic upgrade head
@@ -330,9 +332,24 @@ commit conciliable. Las ediciones del usuario, desde la API o desde su editor,
 entran por un commit con diff confirmado. Sin cambios de UI todavía.
 [Contrato, API y límites](docs/discovery/H6.3_DOCUMENT_CONTRACT.md).
 
+Cada intento resuelto deja sus métricas en SQLite (H6.4, D074) en la misma transacción que su resultado:
+tokens por tipo y por modelo, turnos, herramientas, duraciones, coste «equivalente API» y resultado, con la
+procedencia de cada campo (solicitado, reportado, derivado, medido o ausente). Null no es cero, nada se
+cuenta dos veces y no se deduce cuota. Los intentos anteriores a `0014_attempt_metrics` se rellenan con un
+comando explícito e idempotente, con el servicio arrancado o detenido:
+
+```sh
+harness-local metrics-backfill --database /ruta/absoluta/harness.sqlite3 --artifact-root /ruta/de/capturas
+```
+
+Sin `--artifact-root` solo usa `result_json`; con él relee los stdout sellados verificados por SHA-256 y sin
+purga autorizada. Los agregados se consultan en `/api/managed/metrics/{summary,attempts,groups,models,tasks}`
+(global o por proyecto, fase y tarea). Sin UI todavía.
+[Catálogo, relleno, API y límites](docs/discovery/H6.4_METRICS.md).
+
 ## Bootstrap guiado (H4.2)
 
-Migrar con el servicio detenido a `0013_bootstrap`. Registrar en el servidor una
+Migrar con el servicio detenido a `0014_attempt_metrics`. Registrar en el servidor una
 carpeta **existente y vacía**, con su `ProjectContext`, versiones, perfil/política y
 `ManagedProject(..., bootstrap_enabled=True)`. Se exige una `commit_factory` con
 `GitWorkspace`; los puertos de agentes solo son necesarios para la propuesta

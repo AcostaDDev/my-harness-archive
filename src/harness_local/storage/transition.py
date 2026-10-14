@@ -38,6 +38,15 @@ def snapshot(session, phase) -> dict:
             'summary': summary_snapshot(session, phase), 'existing_codes': codes}
 
 
+def reviewed(session, phase, stored) -> bool:
+    """¿Sigue vigente la autoridad revisada? Una vista previa anterior a H6.4 no congeló el consumo: se compara
+    sin él y se escribe exactamente lo que se revisó."""
+    current = snapshot(session, phase)
+    if 'consumption' not in stored['summary']:
+        current = {**current, 'summary': {k: v for k, v in current['summary'].items() if k != 'consumption'}}
+    return current == stored
+
+
 def _phase(session, context, phase_id, expected=None):
     phase = session.get(Phase, phase_id)
     if phase is None or phase.root != str(context.root):
@@ -130,7 +139,7 @@ class TransitionRepository:
             op, phase = _operation(session, session.get(Run, run_id))
             if op.kind != 'transition' or op.status != 'QUEUED':
                 raise Conflict('Transition requires its queued operation')
-            if not op.request.get('commit_intent') and snapshot(session, phase) != op.request['preview']['snapshot']:
+            if not op.request.get('commit_intent') and not reviewed(session, phase, op.request['preview']['snapshot']):
                 raise Conflict('SQLite authority changed after the transition was reviewed')
             return {**op.request, 'operation_id': op.id}
 
@@ -139,7 +148,7 @@ class TransitionRepository:
 def record_intent(managed, session, run, intent):
     def matches(session, phase):
         op, _ = _operation(session, run)
-        return snapshot(session, phase) == op.request['preview']['snapshot']
+        return reviewed(session, phase, op.request['preview']['snapshot'])
     record_operation_intent(managed, session, run, intent, 'transition', matches)
 
 

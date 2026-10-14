@@ -2,7 +2,8 @@
 
 Tarea de diseño del 2026-10-14 (D072). Puntos de §12 confirmados por el usuario (D073).
 **H6.3 implementado offline** con las diferencias recogidas en su
-[entrega](H6.3_DOCUMENT_CONTRACT.md); H6.4, H6.5 y la UI siguen sin implementar.
+[entrega](H6.3_DOCUMENT_CONTRACT.md); **H6.4 implementado offline** ([entrega](H6.4_METRICS.md),
+D074); H6.5 y la UI siguen sin implementar.
 Base: tarea propuesta en NEXT_STEPS, petición del usuario del mismo día, D032,
 D034–D037, D052, D054, D066 y especificación §7, §11 y §12. Referencia en lectura:
 `reference_project/docs` (ROADMAP, NEXT_STEPS, STATE y `archive/phase-NNN/` con

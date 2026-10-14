@@ -472,16 +472,22 @@ def render_summary(summary: dict) -> str:
              + f" · **Definición:** versión {phase['definition_number']}",
              f"**Objetivo:** {inline(phase['objective'])}", '', '**Criterios de salida:**']
     lines += [f'- {inline(item)}' for item in phase['exit_criteria']]
+    # H6.4: las fases archivadas después de 0014 añaden tokens y turnos; las anteriores conservan su forma.
+    consumption = summary.get('consumption')
+    usage = (consumption or {}).get('by_task') or {}
     lines += ['', '## Tareas', '',
-              '| Tarea | Estado | Revisión | Intentos por rol | Correcciones | Commit | Tests |',
-              '|---|---|---|---|---|---|---|']
+              '| Tarea | Estado | Revisión | Intentos por rol | Correcciones | Commit | Tests |'
+              + (' Tokens | Turnos |' if consumption is not None else ''),
+              '|---|---|---|---|---|---|---|' + ('---|---|' if consumption is not None else '')]
     for task in summary['tasks']:
         attempts = ', '.join(f'{role} {count}' for role, count in sorted((task.get('attempts') or {}).items())) or '—'
         lines.append(f"| {inline(task['task_id'])} | {inline(task.get('status') or 'sin run')} | {inline(task.get('verdict'))} "
                      f"| {inline(attempts)} | {inline(task.get('revisions'))} | {_code(task.get('commit'))} "
-                     f"| {inline(tests_label(task.get('tests')))} |")
+                     f"| {inline(tests_label(task.get('tests')))} |"
+                     + (f" {inline(tokens_label(usage.get(task['task_id'])))} "
+                        f"| {inline(turns_label(usage.get(task['task_id'])))} |" if consumption is not None else ''))
     if not summary['tasks']:
-        lines.append('| — | sin tareas | — | — | — | — | — |')
+        lines.append('| — | sin tareas | — | — | — | — | — |' + (' — | — |' if consumption is not None else ''))
     extra = summary.get('extra_tasks') or []
     if extra:
         lines += ['', '## Tareas añadidas fuera del plan', '']
@@ -494,8 +500,46 @@ def render_summary(summary: dict) -> str:
     lines += ['', '## Definición y enmiendas', '']
     lines += [f"- Versión {item['number']} ({inline(item['origin'])})" + (f": {inline(item['reason'])}" if item.get('reason') else '')
               for item in summary.get('definitions') or []]
+    if consumption is not None:
+        lines += ['', '## Consumo', '',
+                  'Tokens reportados por el proveedor o derivados del uso por mensaje, sin sumar acumulados con '
+                  'incrementales; «—» es ausencia, no cero. Turnos reportados (Claude) y derivados (elementos de '
+                  'Codex) por separado. Coste equivalente API reportado: no es factura ni cuota. Excluye el chat.', '',
+                  '| Rol | Intentos | Entrada sin caché | Caché leída | Caché escrita | Salida | Total | Turnos '
+                  '| Coste equivalente API (USD) |', '|---|---|---|---|---|---|---|---|---|']
+        rows = sorted((consumption.get('by_role') or {}).items()) + [('total', consumption['total'])]
+        for role, entry in rows:
+            cost = entry['cost_usd']['sum']
+            lines.append(f"| {inline(role)} | {entry['attempts']} "
+                         + ''.join(f"| {_measure(entry[name], entry['attempts'])} " for name in (
+                             'uncached_input_tokens', 'cache_read_tokens', 'cache_write_tokens', 'output_tokens',
+                             'total_tokens'))
+                         + f"| {inline(turns_label(entry))} | {'—' if cost is None else f'{cost:.4f}'} |")
     lines += ['', 'Evaluación de cierre: [REVIEW.md](REVIEW.md).']
     return '\n'.join(lines) + '\n'
+
+
+def _measure(value, attempts) -> str:
+    """Suma con su cobertura: «—» si ningún intento la aporta (ausencia, no cero); «n (k/m)» si solo algunos."""
+    if not value or value['sum'] is None:
+        return '—'
+    return f"{value['sum']}" + (f" ({value['attempts']}/{attempts})" if value['attempts'] != attempts else '')
+
+
+def tokens_label(entry) -> str:
+    if not entry or entry['total_tokens']['sum'] is None:
+        return '—'
+    covered, attempts = entry['total_tokens']['attempts'], entry['attempts']
+    return f"{entry['total_tokens']['sum']}" + (f' ({covered}/{attempts} intentos)' if covered != attempts else '')
+
+
+def turns_label(entry) -> str:
+    if not entry:
+        return '—'
+    parts = [f"{entry[key]['sum']} {label}" for key, label in (('turns_reported', 'reportados'),
+                                                              ('turns_derived', 'derivados'))
+             if entry[key]['sum'] is not None]
+    return ' · '.join(parts) or '—'
 
 
 # --- plantilla documental v2 -------------------------------------------------------------------

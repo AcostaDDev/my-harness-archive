@@ -2160,7 +2160,7 @@ push/publicación, nuevo smoke, recuperación o modificaciones de ReferenceProje
 ## D072 — Organización documental por fase y estructura de producto
 
 Estado: diseño completado el 2026-10-14; puntos confirmados por el usuario en D073;
-H6.3 implementado offline (D073). H6.4, H6.5 y la UI siguen pendientes.
+H6.3 implementado offline (D073) y H6.4 implementado offline (D074). H6.5 y la UI siguen pendientes.
 [Diseño, diferencias e incrementos](discovery/DOCUMENT_ORGANIZATION.md).
 
 Requisitos del usuario: creación desde un brief en Markdown seguida de una
@@ -2250,3 +2250,46 @@ criterio:
 No se añaden migración ni codec: las operaciones nuevas usan `phase_operations`, runs y
 jobs existentes (`purpose` `document_edit` y `phase_transition`). No hay cambios de UI,
 dependencias ni proveedores. Siguiente: H6.4 (métricas), sin iniciar.
+
+## D074 — Métricas por intento materializadas con procedencia y agregados sin doble conteo (H6.4)
+
+Estado: implementado y verificado offline el 2026-10-14. [Catálogo, entrega y límites](discovery/H6.4_METRICS.md),
+[caracterización reproducible](discovery/H6.4_STREAM_CATALOG.py) y [su salida](discovery/H6.4_STREAM_CATALOG.json).
+H6.3 (D072/D073), que estaba sin commit en el árbol, se commiteó por separado antes de empezar.
+
+Caracterización offline de los doce stdout conservados de D071, leídos sin modificarlos y verificados por
+SHA-256 contra su captura sellada; solo se publican nombres de campo, tipos y comprobaciones. En Claude el
+`usage` del `result` es exactamente la suma por mensaje de `message_start` + `message_delta`; los eventos
+`assistant` repiten el mismo mensaje con una salida parcial y no sirven para contar; `modelUsage` suma el
+total; el razonamiento es parte de la salida. Codex emite un único `turn.completed` cuyo uso incluye la caché
+leída (caché ≤ entrada en las seis muestras) y no informa modelo, esfuerzo, coste, duración ni turnos.
+`rate_limit_event` y el recuento estimado de razonamiento no entran en el catálogo: la cuota no se deduce.
+
+Decisiones tomadas con criterio:
+
+- Catálogo `metrics-1` con procedencia por campo (`requested`, `reported`, `derived`, `measured`, `absent`).
+  Null nunca es cero. Turnos: `num_turns` reportado en Claude; en Codex, elementos completados únicos,
+  marcados como derivados y nunca sumados con los reportados.
+- Contabilidad única por intento: el total del terminal; sin terminal, en Claude, el uso por mensaje
+  deduplicado (`messages`, derivado y parcial). Dos terminales cuentan el último. Los agregados no suman la
+  entrada cruda (semántica distinta por proveedor) sino la entrada sin caché derivada; un total de Codex con
+  escritura de caché distinta de cero queda ausente.
+- Captura `terminal-2`: el mismo acumulador lee el stream y sella `num_turns`, `duration_api_ms` y los
+  contadores derivados en los metadatos del intento. Sin cambios de argv ni de versión de adaptador
+  (`cli-9`): los jobs congelados no se ponen en cuarentena.
+- Migración `0014_attempt_metrics` (`attempt_metrics`, `attempt_model_metrics`). La fila se inserta en la
+  transacción que registra el resultado o la interrupción del intento; no se reescribe y sobrevive a la
+  retención H5.3. Downgrade permitido salvo con filas rellenadas desde un stream verificado.
+- Relleno explícito e idempotente (`harness-local metrics-backfill`), no automático al arrancar. Usa
+  `result_json` y, bajo raíces autorizadas, el stdout sellado verificado por tamaño y SHA-256 que no tenga
+  purga autorizada ni pendiente. Solo completa lo que el sello no tenía.
+- Agregados de solo lectura en `/api/managed/metrics/*`: resumen, intentos, grupos (rol, proveedor,
+  modelo/esfuerzo solicitados, día, fase, tarea…; favoritos por frecuencia o tokens y rol), modelos
+  reportados y tareas (agentes, correcciones, aceptación a la primera, tiempos, tests OK/KO, paradas,
+  consumo con fallos). Global sin proyecto; fase y tarea exigen proyecto.
+- El SUMMARY de las fases archivadas añade tokens y turnos por tarea y una tabla de consumo por rol, sin el
+  chat y con la cobertura de cada suma. Una transición revisada antes de migrar se ejecuta tal como se
+  revisó.
+
+Sin UI, proveedores, CLI reales ni cambios de dependencias. Siguiente: H6.5 (creación y planificación
+conversacionales), sin iniciar.

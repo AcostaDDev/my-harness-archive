@@ -178,12 +178,14 @@ Completado offline el 2026-10-14, opt-in con `documents = "v2"`.
 - Regeneración mecánica de bloques en cada commit de tarea; `phase_transition` (archivo `phase-NNN`, STATE/NEXT_STEPS frescos, fase siguiente en un commit conciliable); `document_edit` con CAS y deriva.
 - Criterio: con fixtures sintéticos, una sesión nueva reconstruye la siguiente tarea solo desde los documentos y el archivo es idéntico al HEAD cerrado.
 
-### H6.4 Métricas por intento y estadísticas (D072, siguiente)
+### H6.4 Métricas por intento y estadísticas (D072, D074)
+
+Completado offline el 2026-10-14. [Catálogo, entrega y límites](discovery/H6.4_METRICS.md).
 
 - `attempt_metrics` materializada con procedencia por campo, captura de turnos, relleno idempotente y agregados por tarea, fase, proyecto y global; tests OK/KO.
 - Criterio: sin doble conteo, null distinto de cero y métricas conservadas tras la retención de logs.
 
-### H6.5 Creación y planificación conversacionales (D072, pendiente)
+### H6.5 Creación y planificación conversacionales (D072, siguiente)
 
 - Conversaciones `definition` y `phase_planning` del revisor, borradores en disco con CAS, aceptación hacia bootstrap v2 o transición.
 - Criterio: de carpeta vacía a commit raíz con P001 y `phase-000`, sin que el agente escriba ni se admitan archivos ajenos.

@@ -1116,3 +1116,228 @@ class BootstrapStatusRead(BaseModel):
     discovery: BootstrapDiscoveryRead | None
     discovery_available: bool
     discovery_selection: dict[str, str]
+
+
+# --- H6.4: métricas por intento y agregados (D072 §9) -------------------------------------------------
+
+class MetricSumRead(BaseModel):
+    sum: int | None = Field(description='Suma de los intentos que aportan el campo; null si ninguno lo aporta (no es cero).')
+    attempts: int = Field(description='Intentos que aportan un valor al campo.')
+
+
+class MetricAmountRead(BaseModel):
+    sum: float | None
+    attempts: int
+    basis: Literal['api_equivalent_reported'] = Field(
+        description='Coste equivalente API reportado por el proveedor; no es factura ni cuota.')
+
+
+class MetricAccountingRead(BaseModel):
+    terminal: int = Field(description='Intentos con el total acumulado del terminal (reportado).')
+    messages: int = Field(description='Intentos sin terminal con uso por mensaje deduplicado (derivado, parcial).')
+    absent: int
+
+
+class ConsumptionRead(BaseModel):
+    attempts: int
+    accounting: MetricAccountingRead
+    tokens: dict[str, MetricSumRead] = Field(description='uncached_input/cache_read/cache_write/output/reasoning '
+                                                         '(⊆ output)/total, cada uno sumado por separado. La entrada '
+                                                         'cruda no se agrega: su semántica depende del proveedor.')
+    cost_usd: MetricAmountRead
+    turns_reported: MetricSumRead = Field(description='num_turns de Claude.')
+    turns_derived: MetricSumRead = Field(description='Elementos completados del stream de Codex.')
+    tool_calls: MetricSumRead
+    permission_denials: MetricSumRead
+    attempt_wall_ms: MetricSumRead = Field(description='Suma de duraciones por intento: tiempo de agente, no transcurrido.')
+    reported_duration_ms: MetricSumRead
+    api_duration_ms: MetricSumRead
+
+
+class ModelUsageRead(BaseModel):
+    model: str
+    input_tokens: int | None
+    cache_read_tokens: int | None
+    cache_write_tokens: int | None
+    output_tokens: int | None
+    reasoning_tokens: int | None
+    cost_usd: float | None
+
+
+class AttemptMetricRead(BaseModel):
+    attempt_id: str
+    run_id: str
+    number: int
+    root: str
+    phase_code: str
+    task_id: str
+    purpose: str
+    role: str
+    provider: str | None
+    adapter_version: str | None
+    cli_version: str | None
+    requested_model: str | None
+    requested_effort: str | None
+    reported_models: list[str] | None
+    reported_effort: str | None
+    status: str
+    error: str | None
+    verdict: str | None
+    executor_round: int
+    accounting: Literal['terminal', 'messages'] | None
+    input_semantics: Literal['excludes_cache', 'includes_cache_read'] | None
+    input_tokens: int | None
+    cache_read_tokens: int | None
+    cache_write_tokens: int | None
+    output_tokens: int | None
+    reasoning_tokens: int | None
+    uncached_input_tokens: int | None
+    total_tokens: int | None
+    turns: int | None
+    tool_calls: int | None
+    tools: dict[str, int] | None
+    permission_denials: int | None
+    wall_ms: int | None
+    duration_ms: int | None
+    api_duration_ms: int | None
+    cost_usd: float | None
+    started_at: str
+    finished_at: str | None
+    day: str
+    source: Literal['capture', 'backfill']
+    normalization: str | None
+    catalog: str
+    provenance: dict[str, str] = Field(description='requested | reported | derived | measured | absent, por campo.')
+    diagnostics: list[str]
+    recorded_at: str
+    models: list[ModelUsageRead]
+
+
+MetricDimension = Literal['role', 'provider', 'requested_model', 'requested_effort', 'day', 'phase', 'task', 'status',
+                          'purpose', 'root']
+MetricOrder = Literal['attempts', 'tokens']
+
+
+class MetricGroupRead(ConsumptionRead):
+    key: str | None
+
+
+class MetricGroupsRead(BaseModel):
+    dimension: MetricDimension
+    order: MetricOrder
+    role: str | None
+    items: list[MetricGroupRead]
+    offset: int
+    next_offset: int | None
+
+
+class ModelMetricGroupRead(BaseModel):
+    key: str
+    attempts: int
+    tokens: dict[str, MetricSumRead]
+    cost_usd: MetricAmountRead
+
+
+class ModelMetricGroupsRead(BaseModel):
+    dimension: Literal['reported_model']
+    order: MetricOrder
+    role: str | None
+    items: list[ModelMetricGroupRead]
+    offset: int
+    next_offset: int | None
+
+
+class TaskAgentRead(BaseModel):
+    role: str
+    provider: str | None
+    requested_model: str | None
+    requested_effort: str | None
+    attempts: int
+
+
+class ValidationCountsRead(BaseModel):
+    commands_passed: int
+    commands_failed: int
+    cases: dict[str, int] | None = Field(description='JUnit: passed, failed, error, skipped; null sin reportes legibles.')
+
+
+class StopRead(BaseModel):
+    stage: str
+    reason: str
+
+
+class TaskMetricsRead(BaseModel):
+    root: str
+    phase_code: str
+    task_id: str
+    runs: int
+    status: str | None
+    agents: list[TaskAgentRead]
+    attempts_by_role: dict[str, int]
+    executions: int
+    corrections: int | None
+    first_verdict: str | None
+    accepted_first_time: bool | None
+    started_at: str | None
+    accepted_at: str | None
+    committed_at: str | None
+    seconds_to_accept: float | None
+    seconds_to_commit: float | None
+    tests: ValidationCountsRead | None = Field(description='Última validación de la tarea.')
+    stops: list[StopRead]
+    consumption: ConsumptionRead
+
+
+class MetricsScopeRead(BaseModel):
+    root: str | None
+    phase: str | None
+    task: str | None
+
+
+class CountSumRead(BaseModel):
+    sum: int
+    tasks: int
+
+
+class DurationSumRead(BaseModel):
+    sum: float
+    tasks: int
+    max: float
+
+
+class TaskQualityRead(BaseModel):
+    count: int
+    reviewed: int
+    accepted_first_time: int
+    committed: int
+    corrections: CountSumRead | None
+    seconds_to_commit: DurationSumRead | None
+
+
+class ValidationTotalsRead(BaseModel):
+    tasks_with_validation: int
+    commands_passed: int
+    commands_failed: int
+    cases: dict[str, int] | None
+
+
+class StopCountRead(BaseModel):
+    purpose: str
+    stage: str
+    reason: str
+    count: int
+
+
+class StopsRead(BaseModel):
+    distinct: int
+    items: list[StopCountRead]
+
+
+class MetricsSummaryRead(BaseModel):
+    scope: MetricsScopeRead
+    catalog: str
+    consumption: ConsumptionRead
+    attempts_without_metrics: int = Field(description='Intentos resueltos sin fila: relleno explícito pendiente.')
+    tasks: TaskQualityRead
+    tests: ValidationTotalsRead
+    stops: StopsRead

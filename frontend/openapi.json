@@ -6728,6 +6728,870 @@
         }
       }
     },
+    "/api/managed/metrics/summary": {
+      "get": {
+        "summary": "Metrics Summary",
+        "description": "Consumo, calidad de las tareas, tests OK/KO de su última validación y paradas por motivo.",
+        "operationId": "managed_metrics_summary",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 200
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Project Id"
+            }
+          },
+          {
+            "name": "phase",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 200
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Phase"
+            }
+          },
+          {
+            "name": "task",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 200
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Task"
+            }
+          },
+          {
+            "name": "x-harness-local",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Obligatoria con valor 1 en mutaciones (protección CSRF).",
+              "title": "X-Harness-Local"
+            },
+            "description": "Obligatoria con valor 1 en mutaciones (protección CSRF)."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MetricsSummaryRead"
+                }
+              }
+            }
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          }
+        }
+      }
+    },
+    "/api/managed/metrics/attempts": {
+      "get": {
+        "summary": "Metrics Attempts",
+        "description": "Filas materializadas por intento, con procedencia por campo; null es ausencia, no cero.",
+        "operationId": "managed_metrics_attempts",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 200
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Project Id"
+            }
+          },
+          {
+            "name": "phase",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 200
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Phase"
+            }
+          },
+          {
+            "name": "task",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 200
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Task"
+            }
+          },
+          {
+            "name": "run_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 200
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Run Id"
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 9007199254740991,
+              "minimum": 0,
+              "default": 0,
+              "title": "Offset"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 100,
+              "minimum": 1,
+              "default": 30,
+              "title": "Limit"
+            }
+          },
+          {
+            "name": "x-harness-local",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Obligatoria con valor 1 en mutaciones (protección CSRF).",
+              "title": "X-Harness-Local"
+            },
+            "description": "Obligatoria con valor 1 en mutaciones (protección CSRF)."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Page_AttemptMetricRead_"
+                }
+              }
+            }
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          }
+        }
+      }
+    },
+    "/api/managed/metrics/groups": {
+      "get": {
+        "summary": "Metrics Groups",
+        "description": "Consumo agrupado; con `role` y `order` da los modelos y esfuerzos favoritos por frecuencia o tokens.",
+        "operationId": "managed_metrics_groups",
+        "parameters": [
+          {
+            "name": "dimension",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "enum": [
+                "role",
+                "provider",
+                "requested_model",
+                "requested_effort",
+                "day",
+                "phase",
+                "task",
+                "status",
+                "purpose",
+                "root"
+              ],
+              "type": "string",
+              "title": "Dimension"
+            }
+          },
+          {
+            "name": "project_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 200
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Project Id"
+            }
+          },
+          {
+            "name": "phase",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 200
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Phase"
+            }
+          },
+          {
+            "name": "task",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 200
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Task"
+            }
+          },
+          {
+            "name": "role",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 200
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Role"
+            }
+          },
+          {
+            "name": "order",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "enum": [
+                "attempts",
+                "tokens"
+              ],
+              "type": "string",
+              "default": "attempts",
+              "title": "Order"
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 9007199254740991,
+              "minimum": 0,
+              "default": 0,
+              "title": "Offset"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 100,
+              "minimum": 1,
+              "default": 30,
+              "title": "Limit"
+            }
+          },
+          {
+            "name": "x-harness-local",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Obligatoria con valor 1 en mutaciones (protección CSRF).",
+              "title": "X-Harness-Local"
+            },
+            "description": "Obligatoria con valor 1 en mutaciones (protección CSRF)."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MetricGroupsRead"
+                }
+              }
+            }
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          }
+        }
+      }
+    },
+    "/api/managed/metrics/models": {
+      "get": {
+        "summary": "Metrics Models",
+        "description": "Consumo por modelo reportado (Claude `modelUsage`); Codex no informa modelo.",
+        "operationId": "managed_metrics_models",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 200
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Project Id"
+            }
+          },
+          {
+            "name": "phase",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 200
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Phase"
+            }
+          },
+          {
+            "name": "task",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 200
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Task"
+            }
+          },
+          {
+            "name": "role",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 200
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Role"
+            }
+          },
+          {
+            "name": "order",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "enum": [
+                "attempts",
+                "tokens"
+              ],
+              "type": "string",
+              "default": "attempts",
+              "title": "Order"
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 9007199254740991,
+              "minimum": 0,
+              "default": 0,
+              "title": "Offset"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 100,
+              "minimum": 1,
+              "default": 30,
+              "title": "Limit"
+            }
+          },
+          {
+            "name": "x-harness-local",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Obligatoria con valor 1 en mutaciones (protección CSRF).",
+              "title": "X-Harness-Local"
+            },
+            "description": "Obligatoria con valor 1 en mutaciones (protección CSRF)."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ModelMetricGroupsRead"
+                }
+              }
+            }
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          }
+        }
+      }
+    },
+    "/api/managed/metrics/tasks": {
+      "get": {
+        "summary": "Metrics Tasks",
+        "description": "Por tarea: agentes, intentos por rol, correcciones, aceptación a la primera, tiempos, tests y consumo.",
+        "operationId": "managed_metrics_tasks",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 200
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Project Id"
+            }
+          },
+          {
+            "name": "phase",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 200
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Phase"
+            }
+          },
+          {
+            "name": "task",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 200
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Task"
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 9007199254740991,
+              "minimum": 0,
+              "default": 0,
+              "title": "Offset"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 100,
+              "minimum": 1,
+              "default": 30,
+              "title": "Limit"
+            }
+          },
+          {
+            "name": "x-harness-local",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Obligatoria con valor 1 en mutaciones (protección CSRF).",
+              "title": "X-Harness-Local"
+            },
+            "description": "Obligatoria con valor 1 en mutaciones (protección CSRF)."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Page_TaskMetricsRead_"
+                }
+              }
+            }
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          }
+        }
+      }
+    },
     "/api/managed/projects/{project_id}/conversations": {
       "get": {
         "summary": "Conversations",
@@ -7701,6 +8565,468 @@
           "files"
         ],
         "title": "ArchivedPhaseRead"
+      },
+      "AttemptMetricRead": {
+        "properties": {
+          "attempt_id": {
+            "type": "string",
+            "title": "Attempt Id"
+          },
+          "run_id": {
+            "type": "string",
+            "title": "Run Id"
+          },
+          "number": {
+            "type": "integer",
+            "title": "Number"
+          },
+          "root": {
+            "type": "string",
+            "title": "Root"
+          },
+          "phase_code": {
+            "type": "string",
+            "title": "Phase Code"
+          },
+          "task_id": {
+            "type": "string",
+            "title": "Task Id"
+          },
+          "purpose": {
+            "type": "string",
+            "title": "Purpose"
+          },
+          "role": {
+            "type": "string",
+            "title": "Role"
+          },
+          "provider": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Provider"
+          },
+          "adapter_version": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Adapter Version"
+          },
+          "cli_version": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cli Version"
+          },
+          "requested_model": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Requested Model"
+          },
+          "requested_effort": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Requested Effort"
+          },
+          "reported_models": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reported Models"
+          },
+          "reported_effort": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reported Effort"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "error": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error"
+          },
+          "verdict": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Verdict"
+          },
+          "executor_round": {
+            "type": "integer",
+            "title": "Executor Round"
+          },
+          "accounting": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "terminal",
+                  "messages"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Accounting"
+          },
+          "input_semantics": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "excludes_cache",
+                  "includes_cache_read"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Input Semantics"
+          },
+          "input_tokens": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Input Tokens"
+          },
+          "cache_read_tokens": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cache Read Tokens"
+          },
+          "cache_write_tokens": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cache Write Tokens"
+          },
+          "output_tokens": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Output Tokens"
+          },
+          "reasoning_tokens": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reasoning Tokens"
+          },
+          "uncached_input_tokens": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Uncached Input Tokens"
+          },
+          "total_tokens": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Total Tokens"
+          },
+          "turns": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Turns"
+          },
+          "tool_calls": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Tool Calls"
+          },
+          "tools": {
+            "anyOf": [
+              {
+                "additionalProperties": {
+                  "type": "integer"
+                },
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Tools"
+          },
+          "permission_denials": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Permission Denials"
+          },
+          "wall_ms": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Wall Ms"
+          },
+          "duration_ms": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Duration Ms"
+          },
+          "api_duration_ms": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Api Duration Ms"
+          },
+          "cost_usd": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cost Usd"
+          },
+          "started_at": {
+            "type": "string",
+            "title": "Started At"
+          },
+          "finished_at": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Finished At"
+          },
+          "day": {
+            "type": "string",
+            "title": "Day"
+          },
+          "source": {
+            "type": "string",
+            "enum": [
+              "capture",
+              "backfill"
+            ],
+            "title": "Source"
+          },
+          "normalization": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Normalization"
+          },
+          "catalog": {
+            "type": "string",
+            "title": "Catalog"
+          },
+          "provenance": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "type": "object",
+            "title": "Provenance",
+            "description": "requested | reported | derived | measured | absent, por campo."
+          },
+          "diagnostics": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Diagnostics"
+          },
+          "recorded_at": {
+            "type": "string",
+            "title": "Recorded At"
+          },
+          "models": {
+            "items": {
+              "$ref": "#/components/schemas/ModelUsageRead"
+            },
+            "type": "array",
+            "title": "Models"
+          }
+        },
+        "type": "object",
+        "required": [
+          "attempt_id",
+          "run_id",
+          "number",
+          "root",
+          "phase_code",
+          "task_id",
+          "purpose",
+          "role",
+          "provider",
+          "adapter_version",
+          "cli_version",
+          "requested_model",
+          "requested_effort",
+          "reported_models",
+          "reported_effort",
+          "status",
+          "error",
+          "verdict",
+          "executor_round",
+          "accounting",
+          "input_semantics",
+          "input_tokens",
+          "cache_read_tokens",
+          "cache_write_tokens",
+          "output_tokens",
+          "reasoning_tokens",
+          "uncached_input_tokens",
+          "total_tokens",
+          "turns",
+          "tool_calls",
+          "tools",
+          "permission_denials",
+          "wall_ms",
+          "duration_ms",
+          "api_duration_ms",
+          "cost_usd",
+          "started_at",
+          "finished_at",
+          "day",
+          "source",
+          "normalization",
+          "catalog",
+          "provenance",
+          "diagnostics",
+          "recorded_at",
+          "models"
+        ],
+        "title": "AttemptMetricRead"
       },
       "BootstrapBrief": {
         "properties": {
@@ -8985,6 +10311,85 @@
         ],
         "title": "ConfirmStoppedCreate"
       },
+      "ConsumptionRead": {
+        "properties": {
+          "attempts": {
+            "type": "integer",
+            "title": "Attempts"
+          },
+          "accounting": {
+            "$ref": "#/components/schemas/MetricAccountingRead"
+          },
+          "tokens": {
+            "additionalProperties": {
+              "$ref": "#/components/schemas/MetricSumRead"
+            },
+            "type": "object",
+            "title": "Tokens",
+            "description": "uncached_input/cache_read/cache_write/output/reasoning (⊆ output)/total, cada uno sumado por separado. La entrada cruda no se agrega: su semántica depende del proveedor."
+          },
+          "cost_usd": {
+            "$ref": "#/components/schemas/MetricAmountRead"
+          },
+          "turns_reported": {
+            "$ref": "#/components/schemas/MetricSumRead",
+            "description": "num_turns de Claude."
+          },
+          "turns_derived": {
+            "$ref": "#/components/schemas/MetricSumRead",
+            "description": "Elementos completados del stream de Codex."
+          },
+          "tool_calls": {
+            "$ref": "#/components/schemas/MetricSumRead"
+          },
+          "permission_denials": {
+            "$ref": "#/components/schemas/MetricSumRead"
+          },
+          "attempt_wall_ms": {
+            "$ref": "#/components/schemas/MetricSumRead",
+            "description": "Suma de duraciones por intento: tiempo de agente, no transcurrido."
+          },
+          "reported_duration_ms": {
+            "$ref": "#/components/schemas/MetricSumRead"
+          },
+          "api_duration_ms": {
+            "$ref": "#/components/schemas/MetricSumRead"
+          }
+        },
+        "type": "object",
+        "required": [
+          "attempts",
+          "accounting",
+          "tokens",
+          "cost_usd",
+          "turns_reported",
+          "turns_derived",
+          "tool_calls",
+          "permission_denials",
+          "attempt_wall_ms",
+          "reported_duration_ms",
+          "api_duration_ms"
+        ],
+        "title": "ConsumptionRead"
+      },
+      "CountSumRead": {
+        "properties": {
+          "sum": {
+            "type": "integer",
+            "title": "Sum"
+          },
+          "tasks": {
+            "type": "integer",
+            "title": "Tasks"
+          }
+        },
+        "type": "object",
+        "required": [
+          "sum",
+          "tasks"
+        ],
+        "title": "CountSumRead"
+      },
       "CycleRead": {
         "properties": {
           "diff": {
@@ -9761,6 +11166,29 @@
           "git_error"
         ],
         "title": "DocumentsStatusRead"
+      },
+      "DurationSumRead": {
+        "properties": {
+          "sum": {
+            "type": "number",
+            "title": "Sum"
+          },
+          "tasks": {
+            "type": "integer",
+            "title": "Tasks"
+          },
+          "max": {
+            "type": "number",
+            "title": "Max"
+          }
+        },
+        "type": "object",
+        "required": [
+          "sum",
+          "tasks",
+          "max"
+        ],
+        "title": "DurationSumRead"
       },
       "EvidenceContentRead": {
         "properties": {
@@ -11451,6 +12879,317 @@
         ],
         "title": "ManagedRunSummaryRead"
       },
+      "MetricAccountingRead": {
+        "properties": {
+          "terminal": {
+            "type": "integer",
+            "title": "Terminal",
+            "description": "Intentos con el total acumulado del terminal (reportado)."
+          },
+          "messages": {
+            "type": "integer",
+            "title": "Messages",
+            "description": "Intentos sin terminal con uso por mensaje deduplicado (derivado, parcial)."
+          },
+          "absent": {
+            "type": "integer",
+            "title": "Absent"
+          }
+        },
+        "type": "object",
+        "required": [
+          "terminal",
+          "messages",
+          "absent"
+        ],
+        "title": "MetricAccountingRead"
+      },
+      "MetricAmountRead": {
+        "properties": {
+          "sum": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Sum"
+          },
+          "attempts": {
+            "type": "integer",
+            "title": "Attempts"
+          },
+          "basis": {
+            "type": "string",
+            "const": "api_equivalent_reported",
+            "title": "Basis",
+            "description": "Coste equivalente API reportado por el proveedor; no es factura ni cuota."
+          }
+        },
+        "type": "object",
+        "required": [
+          "sum",
+          "attempts",
+          "basis"
+        ],
+        "title": "MetricAmountRead"
+      },
+      "MetricGroupRead": {
+        "properties": {
+          "attempts": {
+            "type": "integer",
+            "title": "Attempts"
+          },
+          "accounting": {
+            "$ref": "#/components/schemas/MetricAccountingRead"
+          },
+          "tokens": {
+            "additionalProperties": {
+              "$ref": "#/components/schemas/MetricSumRead"
+            },
+            "type": "object",
+            "title": "Tokens",
+            "description": "uncached_input/cache_read/cache_write/output/reasoning (⊆ output)/total, cada uno sumado por separado. La entrada cruda no se agrega: su semántica depende del proveedor."
+          },
+          "cost_usd": {
+            "$ref": "#/components/schemas/MetricAmountRead"
+          },
+          "turns_reported": {
+            "$ref": "#/components/schemas/MetricSumRead",
+            "description": "num_turns de Claude."
+          },
+          "turns_derived": {
+            "$ref": "#/components/schemas/MetricSumRead",
+            "description": "Elementos completados del stream de Codex."
+          },
+          "tool_calls": {
+            "$ref": "#/components/schemas/MetricSumRead"
+          },
+          "permission_denials": {
+            "$ref": "#/components/schemas/MetricSumRead"
+          },
+          "attempt_wall_ms": {
+            "$ref": "#/components/schemas/MetricSumRead",
+            "description": "Suma de duraciones por intento: tiempo de agente, no transcurrido."
+          },
+          "reported_duration_ms": {
+            "$ref": "#/components/schemas/MetricSumRead"
+          },
+          "api_duration_ms": {
+            "$ref": "#/components/schemas/MetricSumRead"
+          },
+          "key": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Key"
+          }
+        },
+        "type": "object",
+        "required": [
+          "attempts",
+          "accounting",
+          "tokens",
+          "cost_usd",
+          "turns_reported",
+          "turns_derived",
+          "tool_calls",
+          "permission_denials",
+          "attempt_wall_ms",
+          "reported_duration_ms",
+          "api_duration_ms",
+          "key"
+        ],
+        "title": "MetricGroupRead"
+      },
+      "MetricGroupsRead": {
+        "properties": {
+          "dimension": {
+            "type": "string",
+            "enum": [
+              "role",
+              "provider",
+              "requested_model",
+              "requested_effort",
+              "day",
+              "phase",
+              "task",
+              "status",
+              "purpose",
+              "root"
+            ],
+            "title": "Dimension"
+          },
+          "order": {
+            "type": "string",
+            "enum": [
+              "attempts",
+              "tokens"
+            ],
+            "title": "Order"
+          },
+          "role": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Role"
+          },
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/MetricGroupRead"
+            },
+            "type": "array",
+            "title": "Items"
+          },
+          "offset": {
+            "type": "integer",
+            "title": "Offset"
+          },
+          "next_offset": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Next Offset"
+          }
+        },
+        "type": "object",
+        "required": [
+          "dimension",
+          "order",
+          "role",
+          "items",
+          "offset",
+          "next_offset"
+        ],
+        "title": "MetricGroupsRead"
+      },
+      "MetricSumRead": {
+        "properties": {
+          "sum": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Sum",
+            "description": "Suma de los intentos que aportan el campo; null si ninguno lo aporta (no es cero)."
+          },
+          "attempts": {
+            "type": "integer",
+            "title": "Attempts",
+            "description": "Intentos que aportan un valor al campo."
+          }
+        },
+        "type": "object",
+        "required": [
+          "sum",
+          "attempts"
+        ],
+        "title": "MetricSumRead"
+      },
+      "MetricsScopeRead": {
+        "properties": {
+          "root": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Root"
+          },
+          "phase": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Phase"
+          },
+          "task": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Task"
+          }
+        },
+        "type": "object",
+        "required": [
+          "root",
+          "phase",
+          "task"
+        ],
+        "title": "MetricsScopeRead"
+      },
+      "MetricsSummaryRead": {
+        "properties": {
+          "scope": {
+            "$ref": "#/components/schemas/MetricsScopeRead"
+          },
+          "catalog": {
+            "type": "string",
+            "title": "Catalog"
+          },
+          "consumption": {
+            "$ref": "#/components/schemas/ConsumptionRead"
+          },
+          "attempts_without_metrics": {
+            "type": "integer",
+            "title": "Attempts Without Metrics",
+            "description": "Intentos resueltos sin fila: relleno explícito pendiente."
+          },
+          "tasks": {
+            "$ref": "#/components/schemas/TaskQualityRead"
+          },
+          "tests": {
+            "$ref": "#/components/schemas/ValidationTotalsRead"
+          },
+          "stops": {
+            "$ref": "#/components/schemas/StopsRead"
+          }
+        },
+        "type": "object",
+        "required": [
+          "scope",
+          "catalog",
+          "consumption",
+          "attempts_without_metrics",
+          "tasks",
+          "tests",
+          "stops"
+        ],
+        "title": "MetricsSummaryRead"
+      },
       "MigrationPreviewRead": {
         "properties": {
           "format": {
@@ -11636,6 +13375,181 @@
         ],
         "title": "ModeRead"
       },
+      "ModelMetricGroupRead": {
+        "properties": {
+          "key": {
+            "type": "string",
+            "title": "Key"
+          },
+          "attempts": {
+            "type": "integer",
+            "title": "Attempts"
+          },
+          "tokens": {
+            "additionalProperties": {
+              "$ref": "#/components/schemas/MetricSumRead"
+            },
+            "type": "object",
+            "title": "Tokens"
+          },
+          "cost_usd": {
+            "$ref": "#/components/schemas/MetricAmountRead"
+          }
+        },
+        "type": "object",
+        "required": [
+          "key",
+          "attempts",
+          "tokens",
+          "cost_usd"
+        ],
+        "title": "ModelMetricGroupRead"
+      },
+      "ModelMetricGroupsRead": {
+        "properties": {
+          "dimension": {
+            "type": "string",
+            "const": "reported_model",
+            "title": "Dimension"
+          },
+          "order": {
+            "type": "string",
+            "enum": [
+              "attempts",
+              "tokens"
+            ],
+            "title": "Order"
+          },
+          "role": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Role"
+          },
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/ModelMetricGroupRead"
+            },
+            "type": "array",
+            "title": "Items"
+          },
+          "offset": {
+            "type": "integer",
+            "title": "Offset"
+          },
+          "next_offset": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Next Offset"
+          }
+        },
+        "type": "object",
+        "required": [
+          "dimension",
+          "order",
+          "role",
+          "items",
+          "offset",
+          "next_offset"
+        ],
+        "title": "ModelMetricGroupsRead"
+      },
+      "ModelUsageRead": {
+        "properties": {
+          "model": {
+            "type": "string",
+            "title": "Model"
+          },
+          "input_tokens": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Input Tokens"
+          },
+          "cache_read_tokens": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cache Read Tokens"
+          },
+          "cache_write_tokens": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cache Write Tokens"
+          },
+          "output_tokens": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Output Tokens"
+          },
+          "reasoning_tokens": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reasoning Tokens"
+          },
+          "cost_usd": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cost Usd"
+          }
+        },
+        "type": "object",
+        "required": [
+          "model",
+          "input_tokens",
+          "cache_read_tokens",
+          "cache_write_tokens",
+          "output_tokens",
+          "reasoning_tokens",
+          "cost_usd"
+        ],
+        "title": "ModelUsageRead"
+      },
       "ObservationRead": {
         "properties": {
           "enabled": {
@@ -11674,6 +13588,39 @@
           "enabled"
         ],
         "title": "ObservationUpdate"
+      },
+      "Page_AttemptMetricRead_": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/AttemptMetricRead"
+            },
+            "type": "array",
+            "title": "Items"
+          },
+          "offset": {
+            "type": "integer",
+            "title": "Offset"
+          },
+          "next_offset": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Next Offset"
+          }
+        },
+        "type": "object",
+        "required": [
+          "items",
+          "offset",
+          "next_offset"
+        ],
+        "title": "Page[AttemptMetricRead]"
       },
       "Page_LegacyArtifactRead_": {
         "properties": {
@@ -11905,6 +13852,39 @@
           "next_offset"
         ],
         "title": "Page[ManagedRunSummaryRead]"
+      },
+      "Page_TaskMetricsRead_": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/TaskMetricsRead"
+            },
+            "type": "array",
+            "title": "Items"
+          },
+          "offset": {
+            "type": "integer",
+            "title": "Offset"
+          },
+          "next_offset": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Next Offset"
+          }
+        },
+        "type": "object",
+        "required": [
+          "items",
+          "offset",
+          "next_offset"
+        ],
+        "title": "Page[TaskMetricsRead]"
       },
       "PermissionCreate": {
         "properties": {
@@ -13973,6 +15953,34 @@
         ],
         "title": "SimulationRead"
       },
+      "StopCountRead": {
+        "properties": {
+          "purpose": {
+            "type": "string",
+            "title": "Purpose"
+          },
+          "stage": {
+            "type": "string",
+            "title": "Stage"
+          },
+          "reason": {
+            "type": "string",
+            "title": "Reason"
+          },
+          "count": {
+            "type": "integer",
+            "title": "Count"
+          }
+        },
+        "type": "object",
+        "required": [
+          "purpose",
+          "stage",
+          "reason",
+          "count"
+        ],
+        "title": "StopCountRead"
+      },
       "StopRead": {
         "properties": {
           "stage": {
@@ -13990,6 +15998,27 @@
           "reason"
         ],
         "title": "StopRead"
+      },
+      "StopsRead": {
+        "properties": {
+          "distinct": {
+            "type": "integer",
+            "title": "Distinct"
+          },
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/StopCountRead"
+            },
+            "type": "array",
+            "title": "Items"
+          }
+        },
+        "type": "object",
+        "required": [
+          "distinct",
+          "items"
+        ],
+        "title": "StopsRead"
       },
       "SupervisorRead": {
         "properties": {
@@ -14030,6 +16059,325 @@
           "commit_writer_configured"
         ],
         "title": "SupervisorRead"
+      },
+      "TaskAgentRead": {
+        "properties": {
+          "role": {
+            "type": "string",
+            "title": "Role"
+          },
+          "provider": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Provider"
+          },
+          "requested_model": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Requested Model"
+          },
+          "requested_effort": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Requested Effort"
+          },
+          "attempts": {
+            "type": "integer",
+            "title": "Attempts"
+          }
+        },
+        "type": "object",
+        "required": [
+          "role",
+          "provider",
+          "requested_model",
+          "requested_effort",
+          "attempts"
+        ],
+        "title": "TaskAgentRead"
+      },
+      "TaskMetricsRead": {
+        "properties": {
+          "root": {
+            "type": "string",
+            "title": "Root"
+          },
+          "phase_code": {
+            "type": "string",
+            "title": "Phase Code"
+          },
+          "task_id": {
+            "type": "string",
+            "title": "Task Id"
+          },
+          "runs": {
+            "type": "integer",
+            "title": "Runs"
+          },
+          "status": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Status"
+          },
+          "agents": {
+            "items": {
+              "$ref": "#/components/schemas/TaskAgentRead"
+            },
+            "type": "array",
+            "title": "Agents"
+          },
+          "attempts_by_role": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "type": "object",
+            "title": "Attempts By Role"
+          },
+          "executions": {
+            "type": "integer",
+            "title": "Executions"
+          },
+          "corrections": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Corrections"
+          },
+          "first_verdict": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "First Verdict"
+          },
+          "accepted_first_time": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Accepted First Time"
+          },
+          "started_at": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Started At"
+          },
+          "accepted_at": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Accepted At"
+          },
+          "committed_at": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Committed At"
+          },
+          "seconds_to_accept": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Seconds To Accept"
+          },
+          "seconds_to_commit": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Seconds To Commit"
+          },
+          "tests": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ValidationCountsRead"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Última validación de la tarea."
+          },
+          "stops": {
+            "items": {
+              "$ref": "#/components/schemas/StopRead"
+            },
+            "type": "array",
+            "title": "Stops"
+          },
+          "consumption": {
+            "$ref": "#/components/schemas/ConsumptionRead"
+          }
+        },
+        "type": "object",
+        "required": [
+          "root",
+          "phase_code",
+          "task_id",
+          "runs",
+          "status",
+          "agents",
+          "attempts_by_role",
+          "executions",
+          "corrections",
+          "first_verdict",
+          "accepted_first_time",
+          "started_at",
+          "accepted_at",
+          "committed_at",
+          "seconds_to_accept",
+          "seconds_to_commit",
+          "tests",
+          "stops",
+          "consumption"
+        ],
+        "title": "TaskMetricsRead"
+      },
+      "TaskQualityRead": {
+        "properties": {
+          "count": {
+            "type": "integer",
+            "title": "Count"
+          },
+          "reviewed": {
+            "type": "integer",
+            "title": "Reviewed"
+          },
+          "accepted_first_time": {
+            "type": "integer",
+            "title": "Accepted First Time"
+          },
+          "committed": {
+            "type": "integer",
+            "title": "Committed"
+          },
+          "corrections": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/CountSumRead"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "seconds_to_commit": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/DurationSumRead"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "count",
+          "reviewed",
+          "accepted_first_time",
+          "committed",
+          "corrections",
+          "seconds_to_commit"
+        ],
+        "title": "TaskQualityRead"
+      },
+      "ValidationCountsRead": {
+        "properties": {
+          "commands_passed": {
+            "type": "integer",
+            "title": "Commands Passed"
+          },
+          "commands_failed": {
+            "type": "integer",
+            "title": "Commands Failed"
+          },
+          "cases": {
+            "anyOf": [
+              {
+                "additionalProperties": {
+                  "type": "integer"
+                },
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cases",
+            "description": "JUnit: passed, failed, error, skipped; null sin reportes legibles."
+          }
+        },
+        "type": "object",
+        "required": [
+          "commands_passed",
+          "commands_failed",
+          "cases"
+        ],
+        "title": "ValidationCountsRead"
       },
       "ValidationEntryRead": {
         "properties": {
@@ -14168,6 +16516,44 @@
           "source_attempt_id"
         ],
         "title": "ValidationRead"
+      },
+      "ValidationTotalsRead": {
+        "properties": {
+          "tasks_with_validation": {
+            "type": "integer",
+            "title": "Tasks With Validation"
+          },
+          "commands_passed": {
+            "type": "integer",
+            "title": "Commands Passed"
+          },
+          "commands_failed": {
+            "type": "integer",
+            "title": "Commands Failed"
+          },
+          "cases": {
+            "anyOf": [
+              {
+                "additionalProperties": {
+                  "type": "integer"
+                },
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cases"
+          }
+        },
+        "type": "object",
+        "required": [
+          "tasks_with_validation",
+          "commands_passed",
+          "commands_failed",
+          "cases"
+        ],
+        "title": "ValidationTotalsRead"
       }
     }
   }

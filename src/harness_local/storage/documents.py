@@ -23,6 +23,7 @@ from harness_local.core.engine.documents import (
 from harness_local.core.engine.phases import document_hashes
 from harness_local.core.engine.serialization import load_history, restore_context
 from harness_local.storage.managed import Conflict, _job
+from harness_local.storage.metrics import phase_consumption
 from harness_local.storage.models import (
     ManagedCommitRow as Commit, ManagedJobRow as Job, ManagedRunRow as Run, PhaseAuthorizationRow as Authorization,
     PhaseDefinitionRow as Definition, PhaseOperationRow as Operation, PhaseRow as Phase,
@@ -107,7 +108,8 @@ def summary_snapshot(session, phase) -> dict:
             'tasks': [task for task in state['tasks'] if task['planned']],
             'extra_tasks': [task for task in state['tasks'] if not task['planned']],
             'questions': questions,
-            'definitions': [{'number': row.number, 'origin': row.origin, 'reason': row.reason} for row in definitions]}
+            'definitions': [{'number': row.number, 'origin': row.origin, 'reason': row.reason} for row in definitions],
+            'consumption': phase_consumption(session, phase.root, phase.code)}
 
 
 def latest_phase(session, root):

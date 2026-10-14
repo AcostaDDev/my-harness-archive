@@ -1147,6 +1147,106 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/managed/metrics/summary": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Metrics Summary
+         * @description Consumo, calidad de las tareas, tests OK/KO de su última validación y paradas por motivo.
+         */
+        get: operations["managed_metrics_summary"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/managed/metrics/attempts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Metrics Attempts
+         * @description Filas materializadas por intento, con procedencia por campo; null es ausencia, no cero.
+         */
+        get: operations["managed_metrics_attempts"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/managed/metrics/groups": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Metrics Groups
+         * @description Consumo agrupado; con `role` y `order` da los modelos y esfuerzos favoritos por frecuencia o tokens.
+         */
+        get: operations["managed_metrics_groups"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/managed/metrics/models": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Metrics Models
+         * @description Consumo por modelo reportado (Claude `modelUsage`); Codex no informa modelo.
+         */
+        get: operations["managed_metrics_models"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/managed/metrics/tasks": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Metrics Tasks
+         * @description Por tarea: agentes, intentos por rol, correcciones, aceptación a la primera, tiempos, tests y consumo.
+         */
+        get: operations["managed_metrics_tasks"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/managed/projects/{project_id}/conversations": {
         parameters: {
             query?: never;
@@ -1361,6 +1461,111 @@ export interface components {
             path: string;
             /** Files */
             files: string[];
+        };
+        /** AttemptMetricRead */
+        AttemptMetricRead: {
+            /** Attempt Id */
+            attempt_id: string;
+            /** Run Id */
+            run_id: string;
+            /** Number */
+            number: number;
+            /** Root */
+            root: string;
+            /** Phase Code */
+            phase_code: string;
+            /** Task Id */
+            task_id: string;
+            /** Purpose */
+            purpose: string;
+            /** Role */
+            role: string;
+            /** Provider */
+            provider: string | null;
+            /** Adapter Version */
+            adapter_version: string | null;
+            /** Cli Version */
+            cli_version: string | null;
+            /** Requested Model */
+            requested_model: string | null;
+            /** Requested Effort */
+            requested_effort: string | null;
+            /** Reported Models */
+            reported_models: string[] | null;
+            /** Reported Effort */
+            reported_effort: string | null;
+            /** Status */
+            status: string;
+            /** Error */
+            error: string | null;
+            /** Verdict */
+            verdict: string | null;
+            /** Executor Round */
+            executor_round: number;
+            /** Accounting */
+            accounting: ("terminal" | "messages") | null;
+            /** Input Semantics */
+            input_semantics: ("excludes_cache" | "includes_cache_read") | null;
+            /** Input Tokens */
+            input_tokens: number | null;
+            /** Cache Read Tokens */
+            cache_read_tokens: number | null;
+            /** Cache Write Tokens */
+            cache_write_tokens: number | null;
+            /** Output Tokens */
+            output_tokens: number | null;
+            /** Reasoning Tokens */
+            reasoning_tokens: number | null;
+            /** Uncached Input Tokens */
+            uncached_input_tokens: number | null;
+            /** Total Tokens */
+            total_tokens: number | null;
+            /** Turns */
+            turns: number | null;
+            /** Tool Calls */
+            tool_calls: number | null;
+            /** Tools */
+            tools: {
+                [key: string]: number;
+            } | null;
+            /** Permission Denials */
+            permission_denials: number | null;
+            /** Wall Ms */
+            wall_ms: number | null;
+            /** Duration Ms */
+            duration_ms: number | null;
+            /** Api Duration Ms */
+            api_duration_ms: number | null;
+            /** Cost Usd */
+            cost_usd: number | null;
+            /** Started At */
+            started_at: string;
+            /** Finished At */
+            finished_at: string | null;
+            /** Day */
+            day: string;
+            /**
+             * Source
+             * @enum {string}
+             */
+            source: "capture" | "backfill";
+            /** Normalization */
+            normalization: string | null;
+            /** Catalog */
+            catalog: string;
+            /**
+             * Provenance
+             * @description requested | reported | derived | measured | absent, por campo.
+             */
+            provenance: {
+                [key: string]: string;
+            };
+            /** Diagnostics */
+            diagnostics: string[];
+            /** Recorded At */
+            recorded_at: string;
+            /** Models */
+            models: components["schemas"]["ModelUsageRead"][];
         };
         /** BootstrapBrief */
         BootstrapBrief: {
@@ -1790,6 +1995,37 @@ export interface components {
             /** Reason */
             reason: string;
         };
+        /** ConsumptionRead */
+        ConsumptionRead: {
+            /** Attempts */
+            attempts: number;
+            accounting: components["schemas"]["MetricAccountingRead"];
+            /**
+             * Tokens
+             * @description uncached_input/cache_read/cache_write/output/reasoning (⊆ output)/total, cada uno sumado por separado. La entrada cruda no se agrega: su semántica depende del proveedor.
+             */
+            tokens: {
+                [key: string]: components["schemas"]["MetricSumRead"];
+            };
+            cost_usd: components["schemas"]["MetricAmountRead"];
+            /** @description num_turns de Claude. */
+            turns_reported: components["schemas"]["MetricSumRead"];
+            /** @description Elementos completados del stream de Codex. */
+            turns_derived: components["schemas"]["MetricSumRead"];
+            tool_calls: components["schemas"]["MetricSumRead"];
+            permission_denials: components["schemas"]["MetricSumRead"];
+            /** @description Suma de duraciones por intento: tiempo de agente, no transcurrido. */
+            attempt_wall_ms: components["schemas"]["MetricSumRead"];
+            reported_duration_ms: components["schemas"]["MetricSumRead"];
+            api_duration_ms: components["schemas"]["MetricSumRead"];
+        };
+        /** CountSumRead */
+        CountSumRead: {
+            /** Sum */
+            sum: number;
+            /** Tasks */
+            tasks: number;
+        };
         /** CycleRead */
         CycleRead: {
             /** Diff */
@@ -2043,6 +2279,15 @@ export interface components {
             unresolved_intent: boolean;
             /** Git Error */
             git_error: string | null;
+        };
+        /** DurationSumRead */
+        DurationSumRead: {
+            /** Sum */
+            sum: number;
+            /** Tasks */
+            tasks: number;
+            /** Max */
+            max: number;
         };
         /** EvidenceContentRead */
         EvidenceContentRead: {
@@ -2602,6 +2847,118 @@ export interface components {
              */
             purpose: "task" | "phase_check" | "phase_close" | "chat" | "document_export" | "bootstrap" | "bootstrap_discovery" | "document_edit" | "phase_transition";
         };
+        /** MetricAccountingRead */
+        MetricAccountingRead: {
+            /**
+             * Terminal
+             * @description Intentos con el total acumulado del terminal (reportado).
+             */
+            terminal: number;
+            /**
+             * Messages
+             * @description Intentos sin terminal con uso por mensaje deduplicado (derivado, parcial).
+             */
+            messages: number;
+            /** Absent */
+            absent: number;
+        };
+        /** MetricAmountRead */
+        MetricAmountRead: {
+            /** Sum */
+            sum: number | null;
+            /** Attempts */
+            attempts: number;
+            /**
+             * Basis
+             * @description Coste equivalente API reportado por el proveedor; no es factura ni cuota.
+             * @constant
+             */
+            basis: "api_equivalent_reported";
+        };
+        /** MetricGroupRead */
+        MetricGroupRead: {
+            /** Attempts */
+            attempts: number;
+            accounting: components["schemas"]["MetricAccountingRead"];
+            /**
+             * Tokens
+             * @description uncached_input/cache_read/cache_write/output/reasoning (⊆ output)/total, cada uno sumado por separado. La entrada cruda no se agrega: su semántica depende del proveedor.
+             */
+            tokens: {
+                [key: string]: components["schemas"]["MetricSumRead"];
+            };
+            cost_usd: components["schemas"]["MetricAmountRead"];
+            /** @description num_turns de Claude. */
+            turns_reported: components["schemas"]["MetricSumRead"];
+            /** @description Elementos completados del stream de Codex. */
+            turns_derived: components["schemas"]["MetricSumRead"];
+            tool_calls: components["schemas"]["MetricSumRead"];
+            permission_denials: components["schemas"]["MetricSumRead"];
+            /** @description Suma de duraciones por intento: tiempo de agente, no transcurrido. */
+            attempt_wall_ms: components["schemas"]["MetricSumRead"];
+            reported_duration_ms: components["schemas"]["MetricSumRead"];
+            api_duration_ms: components["schemas"]["MetricSumRead"];
+            /** Key */
+            key: string | null;
+        };
+        /** MetricGroupsRead */
+        MetricGroupsRead: {
+            /**
+             * Dimension
+             * @enum {string}
+             */
+            dimension: "role" | "provider" | "requested_model" | "requested_effort" | "day" | "phase" | "task" | "status" | "purpose" | "root";
+            /**
+             * Order
+             * @enum {string}
+             */
+            order: "attempts" | "tokens";
+            /** Role */
+            role: string | null;
+            /** Items */
+            items: components["schemas"]["MetricGroupRead"][];
+            /** Offset */
+            offset: number;
+            /** Next Offset */
+            next_offset: number | null;
+        };
+        /** MetricSumRead */
+        MetricSumRead: {
+            /**
+             * Sum
+             * @description Suma de los intentos que aportan el campo; null si ninguno lo aporta (no es cero).
+             */
+            sum: number | null;
+            /**
+             * Attempts
+             * @description Intentos que aportan un valor al campo.
+             */
+            attempts: number;
+        };
+        /** MetricsScopeRead */
+        MetricsScopeRead: {
+            /** Root */
+            root: string | null;
+            /** Phase */
+            phase: string | null;
+            /** Task */
+            task: string | null;
+        };
+        /** MetricsSummaryRead */
+        MetricsSummaryRead: {
+            scope: components["schemas"]["MetricsScopeRead"];
+            /** Catalog */
+            catalog: string;
+            consumption: components["schemas"]["ConsumptionRead"];
+            /**
+             * Attempts Without Metrics
+             * @description Intentos resueltos sin fila: relleno explícito pendiente.
+             */
+            attempts_without_metrics: number;
+            tasks: components["schemas"]["TaskQualityRead"];
+            tests: components["schemas"]["ValidationTotalsRead"];
+            stops: components["schemas"]["StopsRead"];
+        };
         /** MigrationPreviewRead */
         MigrationPreviewRead: {
             /** Format */
@@ -2665,6 +3022,56 @@ export interface components {
             /** Activations */
             activations: components["schemas"]["ActivationRead"][];
         };
+        /** ModelMetricGroupRead */
+        ModelMetricGroupRead: {
+            /** Key */
+            key: string;
+            /** Attempts */
+            attempts: number;
+            /** Tokens */
+            tokens: {
+                [key: string]: components["schemas"]["MetricSumRead"];
+            };
+            cost_usd: components["schemas"]["MetricAmountRead"];
+        };
+        /** ModelMetricGroupsRead */
+        ModelMetricGroupsRead: {
+            /**
+             * Dimension
+             * @constant
+             */
+            dimension: "reported_model";
+            /**
+             * Order
+             * @enum {string}
+             */
+            order: "attempts" | "tokens";
+            /** Role */
+            role: string | null;
+            /** Items */
+            items: components["schemas"]["ModelMetricGroupRead"][];
+            /** Offset */
+            offset: number;
+            /** Next Offset */
+            next_offset: number | null;
+        };
+        /** ModelUsageRead */
+        ModelUsageRead: {
+            /** Model */
+            model: string;
+            /** Input Tokens */
+            input_tokens: number | null;
+            /** Cache Read Tokens */
+            cache_read_tokens: number | null;
+            /** Cache Write Tokens */
+            cache_write_tokens: number | null;
+            /** Output Tokens */
+            output_tokens: number | null;
+            /** Reasoning Tokens */
+            reasoning_tokens: number | null;
+            /** Cost Usd */
+            cost_usd: number | null;
+        };
         /** ObservationRead */
         ObservationRead: {
             /** Enabled */
@@ -2676,6 +3083,15 @@ export interface components {
         ObservationUpdate: {
             /** Enabled */
             enabled: boolean;
+        };
+        /** Page[AttemptMetricRead] */
+        Page_AttemptMetricRead_: {
+            /** Items */
+            items: components["schemas"]["AttemptMetricRead"][];
+            /** Offset */
+            offset: number;
+            /** Next Offset */
+            next_offset: number | null;
         };
         /** Page[LegacyArtifactRead] */
         Page_LegacyArtifactRead_: {
@@ -2735,6 +3151,15 @@ export interface components {
         Page_ManagedRunSummaryRead_: {
             /** Items */
             items: components["schemas"]["ManagedRunSummaryRead"][];
+            /** Offset */
+            offset: number;
+            /** Next Offset */
+            next_offset: number | null;
+        };
+        /** Page[TaskMetricsRead] */
+        Page_TaskMetricsRead_: {
+            /** Items */
+            items: components["schemas"]["TaskMetricsRead"][];
             /** Offset */
             offset: number;
             /** Next Offset */
@@ -3471,12 +3896,30 @@ export interface components {
              */
             status: "completed";
         };
+        /** StopCountRead */
+        StopCountRead: {
+            /** Purpose */
+            purpose: string;
+            /** Stage */
+            stage: string;
+            /** Reason */
+            reason: string;
+            /** Count */
+            count: number;
+        };
         /** StopRead */
         StopRead: {
             /** Stage */
             stage: string;
             /** Reason */
             reason: string;
+        };
+        /** StopsRead */
+        StopsRead: {
+            /** Distinct */
+            distinct: number;
+            /** Items */
+            items: components["schemas"]["StopCountRead"][];
         };
         /** SupervisorRead */
         SupervisorRead: {
@@ -3490,6 +3933,88 @@ export interface components {
             ports_configured: boolean;
             /** Commit Writer Configured */
             commit_writer_configured: boolean;
+        };
+        /** TaskAgentRead */
+        TaskAgentRead: {
+            /** Role */
+            role: string;
+            /** Provider */
+            provider: string | null;
+            /** Requested Model */
+            requested_model: string | null;
+            /** Requested Effort */
+            requested_effort: string | null;
+            /** Attempts */
+            attempts: number;
+        };
+        /** TaskMetricsRead */
+        TaskMetricsRead: {
+            /** Root */
+            root: string;
+            /** Phase Code */
+            phase_code: string;
+            /** Task Id */
+            task_id: string;
+            /** Runs */
+            runs: number;
+            /** Status */
+            status: string | null;
+            /** Agents */
+            agents: components["schemas"]["TaskAgentRead"][];
+            /** Attempts By Role */
+            attempts_by_role: {
+                [key: string]: number;
+            };
+            /** Executions */
+            executions: number;
+            /** Corrections */
+            corrections: number | null;
+            /** First Verdict */
+            first_verdict: string | null;
+            /** Accepted First Time */
+            accepted_first_time: boolean | null;
+            /** Started At */
+            started_at: string | null;
+            /** Accepted At */
+            accepted_at: string | null;
+            /** Committed At */
+            committed_at: string | null;
+            /** Seconds To Accept */
+            seconds_to_accept: number | null;
+            /** Seconds To Commit */
+            seconds_to_commit: number | null;
+            /** @description Última validación de la tarea. */
+            tests: components["schemas"]["ValidationCountsRead"] | null;
+            /** Stops */
+            stops: components["schemas"]["StopRead"][];
+            consumption: components["schemas"]["ConsumptionRead"];
+        };
+        /** TaskQualityRead */
+        TaskQualityRead: {
+            /** Count */
+            count: number;
+            /** Reviewed */
+            reviewed: number;
+            /** Accepted First Time */
+            accepted_first_time: number;
+            /** Committed */
+            committed: number;
+            corrections: components["schemas"]["CountSumRead"] | null;
+            seconds_to_commit: components["schemas"]["DurationSumRead"] | null;
+        };
+        /** ValidationCountsRead */
+        ValidationCountsRead: {
+            /** Commands Passed */
+            commands_passed: number;
+            /** Commands Failed */
+            commands_failed: number;
+            /**
+             * Cases
+             * @description JUnit: passed, failed, error, skipped; null sin reportes legibles.
+             */
+            cases: {
+                [key: string]: number;
+            } | null;
         };
         /** ValidationEntryRead */
         ValidationEntryRead: {
@@ -3533,6 +4058,19 @@ export interface components {
             run_id: string | null;
             /** Source Attempt Id */
             source_attempt_id: string | null;
+        };
+        /** ValidationTotalsRead */
+        ValidationTotalsRead: {
+            /** Tasks With Validation */
+            tasks_with_validation: number;
+            /** Commands Passed */
+            commands_passed: number;
+            /** Commands Failed */
+            commands_failed: number;
+            /** Cases */
+            cases: {
+                [key: string]: number;
+            } | null;
         };
     };
     responses: never;
@@ -7713,6 +8251,335 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ManagedJobRead"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+        };
+    };
+    managed_metrics_summary: {
+        parameters: {
+            query?: {
+                project_id?: string | null;
+                phase?: string | null;
+                task?: string | null;
+            };
+            header?: {
+                /** @description Obligatoria con valor 1 en mutaciones (protección CSRF). */
+                "x-harness-local"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MetricsSummaryRead"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+        };
+    };
+    managed_metrics_attempts: {
+        parameters: {
+            query?: {
+                project_id?: string | null;
+                phase?: string | null;
+                task?: string | null;
+                run_id?: string | null;
+                offset?: number;
+                limit?: number;
+            };
+            header?: {
+                /** @description Obligatoria con valor 1 en mutaciones (protección CSRF). */
+                "x-harness-local"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Page_AttemptMetricRead_"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+        };
+    };
+    managed_metrics_groups: {
+        parameters: {
+            query: {
+                dimension: "role" | "provider" | "requested_model" | "requested_effort" | "day" | "phase" | "task" | "status" | "purpose" | "root";
+                project_id?: string | null;
+                phase?: string | null;
+                task?: string | null;
+                role?: string | null;
+                order?: "attempts" | "tokens";
+                offset?: number;
+                limit?: number;
+            };
+            header?: {
+                /** @description Obligatoria con valor 1 en mutaciones (protección CSRF). */
+                "x-harness-local"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MetricGroupsRead"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+        };
+    };
+    managed_metrics_models: {
+        parameters: {
+            query?: {
+                project_id?: string | null;
+                phase?: string | null;
+                task?: string | null;
+                role?: string | null;
+                order?: "attempts" | "tokens";
+                offset?: number;
+                limit?: number;
+            };
+            header?: {
+                /** @description Obligatoria con valor 1 en mutaciones (protección CSRF). */
+                "x-harness-local"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ModelMetricGroupsRead"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+        };
+    };
+    managed_metrics_tasks: {
+        parameters: {
+            query?: {
+                project_id?: string | null;
+                phase?: string | null;
+                task?: string | null;
+                offset?: number;
+                limit?: number;
+            };
+            header?: {
+                /** @description Obligatoria con valor 1 en mutaciones (protección CSRF). */
+                "x-harness-local"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Page_TaskMetricsRead_"];
                 };
             };
             /** @description Forbidden */
