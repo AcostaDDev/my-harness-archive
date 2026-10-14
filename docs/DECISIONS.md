@@ -1592,7 +1592,7 @@ OpenAPI ni dependencias.
 
 ## D054 — Hito de UI de producto después de D052 y registro de proyectos en SQLite
 
-Estado: decidido por el usuario el 2026-10-13; **no implementado**. Backlog,
+Estado: decidido por el usuario el 2026-10-13; **no implementado**; forma concretada en D076. Backlog,
 hito 6 (H6.1 = D052, H6.2 = UI).
 
 La UI actual es una superficie funcional construida hito a hito para verificar
@@ -2336,3 +2336,29 @@ como D037. Sin v2 nada cambia. Decisiones tomadas con criterio:
 
 Sin UI, proveedores, CLI reales ni dependencias nuevas. El TOML local no expone todavía `bootstrap_enabled`.
 Siguiente: H6.2 (UI de producto), tarea completamente distinta (D073), sin iniciar.
+
+## D076 — Alcance de H6.2: registro híbrido, Markdown seguro, chat sin lock y entregas
+
+Estado: decidido por el usuario el 2026-10-14; **no implementado**.
+[Alcance, entregas y criterios](discovery/H6.2_SCOPE.md).
+
+Decisiones del usuario, todas por la opción recomendada:
+
+1. **Registro de proyectos híbrido (concreta D054).** El TOML del operador sigue siendo la autoridad de
+   agentes, Git, ejecutables y entornos, y agrupa los comandos en composiciones con nombre
+   (`local-config-3`, con `bootstrap_enabled` y raíces autorizadas para el registro). La UI registra
+   proyectos en SQLite, versionados y auditados: raíz canónica, confianza explícita, perfil, `documents`,
+   bootstrap, política y composición elegida. Nada ejecutable se concede por HTTP. Los `[[projects]]` del
+   TOML siguen siendo válidos y no se editan desde la UI.
+2. **`markdown-it` (`html: false`) y Mermaid (`securityLevel: "strict"`) con carga diferida**, con versiones
+   fijadas, como únicas dependencias nuevas del cliente.
+3. **El chat global entra en H6.2 en una entrega propia.** Primero el backend de turnos sobre una
+   instantánea de solo lectura del HEAD, sin lock (D073 punto 5; cambia D035 al implementarse), y los
+   comandos deterministas de D072 §8. Después la UI.
+4. **Enrutador mínimo propio sobre History API y CSS propio con tokens** y modo oscuro, sin dependencias.
+   Fallback a `index.html` solo fuera de `/api/`.
+
+Entregas en orden, cada una como tarea aparte: E1 shell y sistema de diseño, E2 registro, E3 documentación,
+E4 creación y planificación, E5 chat global y E6 estadísticas. La legacy H1 se conserva en `/legacy` y las
+simulaciones H0.3 salen de la navegación. Fuera de alcance: proveedores reales, `project.yaml`, multiusuario,
+edición del TOML desde la UI e historial Git de documentos. Siguiente: E1, sin iniciar.

@@ -159,6 +159,9 @@ real de las cuatro combinaciones completada el 2026-10-14 (`cli-9`, D071).
 
 ### H6.2 Interfaz de producto (D054)
 
+Alcance fijado el 2026-10-14 (D076): seis entregas E1–E6, sin iniciar.
+[Alcance y criterios](discovery/H6.2_SCOPE.md).
+
 - Arquitectura de información y sistema de diseño de dashboard: navegación, cabecera con sesión, estados vacíos útiles, tablas y estados consistentes.
 - Alta de proyectos desde la UI con registro en SQLite y confirmación explícita de confianza; el bootstrap de proyectos nuevos, accesible desde el inicio.
 - Configuración de agentes (H6.1) y chat accesibles desde la UI.

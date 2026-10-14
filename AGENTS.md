@@ -182,7 +182,8 @@ métricas por intento en `0014_attempt_metrics`, captura `terminal-2`, relleno e
 H6.5 implementado offline (D075): conversaciones `definition` y `phase_planning` en `0015_planning`,
 borradores en la carpeta destino con CAS escritos solo al aplicar propuestas confirmadas, aceptación →
 bootstrap D037 con plantilla v2 y `phase-000`, y `plan_proposal` en la transición
-(`docs/discovery/H6.5_CONVERSATIONAL_CREATION.md`). Siguiente: H6.2 (UI de producto), tarea aparte.
+(`docs/discovery/H6.5_CONVERSATIONAL_CREATION.md`). Alcance de H6.2 fijado (D076,
+`docs/discovery/H6.2_SCOPE.md`): seis entregas; siguiente E1 (shell y diseño), sin iniciar.
 Comprobación offline ligera, solo biblioteca estándar, desde la raíz:
 
 ```sh

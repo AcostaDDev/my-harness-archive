@@ -2634,6 +2634,22 @@ tarea propuesta: UI H6.2, sin iniciar; será una tarea aparte.
   cooperativa; 2 MiB de borradores por turno; `research/` solo con README durante la definición; el chat
   sigue esperando el lock (D073 punto 5). Sin push ni proveedores.
 
+## Alcance de H6.2: UI de producto (D076)
+
+- Tarea activa de NEXT_STEPS, pedida por el usuario el 2026-10-14. Git inicial limpio en `main`, `7b2c2eb`.
+  [Alcance, entregas y criterios](discovery/H6.2_SCOPE.md).
+- Decisiones del usuario: registro de proyectos híbrido (el TOML `local-config-3` es la autoridad de lo que
+  ejecuta, con composiciones con nombre; SQLite guarda los proyectos registrados desde la UI, versionados y
+  auditados, sin conceder ejecutables por HTTP); `markdown-it` sin HTML y Mermaid estricto con carga
+  diferida; chat global en H6.2 con backend de turnos sin lock sobre una instantánea de HEAD y comandos
+  deterministas; enrutador y CSS propios.
+- Seis entregas en orden (E1 shell y diseño, E2 registro, E3 documentación, E4 creación y planificación,
+  E5 chat global, E6 estadísticas), con criterios por entrega y del hito, y lo que queda fuera de alcance.
+- Comprobaciones de lectura: rutas actuales de `/api/managed` (sin alta de proyectos ni lectura por código
+  de fase), montaje `StaticFiles(html=True)` sin fallback de SPA, TOML `local-config-2` sin
+  `bootstrap_enabled` y UI sin enrutador. Solo cambia la documentación: sin código, esquema, API, UI,
+  dependencias ni proveedores, así que no se ejecutó la suite.
+
 ## Coordinación
 
 Desarrollo manual con el usuario. Una única sesión implementadora sobre los mismos archivos a la vez. La otra herramienta puede revisar una entrega terminada.
