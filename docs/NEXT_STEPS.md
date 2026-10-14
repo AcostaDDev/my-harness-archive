@@ -1,57 +1,64 @@
-# Siguiente paso — elegir alcance tras el dictamen de contención
+# Siguiente paso — preparar diagnóstico de la persistencia de confianza Codex
 
 Estado al 2026-10-14:
 
-- **Diagnóstico offline y frontera revisada D065 completados.**
-  [Dictamen y criterios verificables](discovery/CODEX_CONTAINMENT_REVISION.md),
-  [evidencia](discovery/CODEX_CONTAINMENT_REVISION.json) y
-  [sonda reproducible](discovery/CODEX_CONTAINMENT_REVISION.py).
-- **Candidata sin calificación para integrar.** Perfiles sintéticos iguales
-  componen manteniendo ambas capas y prohibición de escritura global; los pares
-  ensayados con restricciones distintas se rechazan en la segunda aplicación.
-  Comentarios/reordenación/deny redundante no causan el rechazo. No se prueba
-  el perfil exacto de Codex ni se atribuye una causa interna sin evidencia.
-- Cerrar fd/pipe corta las vías heredadas ensayadas; stdout capturado como
-  bytes no delega. Hardlink introducido después de admisión/readiness modifica
-  un sacrificial exterior. Prechecks/lock cooperativo no certifican ausencia
-  de carreras. IPC general, auxiliares/auth reales y refresh siguen pendientes.
-- 32 escenarios finales completos (22 anidados, doce rechazos esperados),
-  14 pytest focales correctos. Auth/config ficticios conservados. Solo tres
-  sacrificiales explícitos cambian; errores sin fallback. Sin CLI real, red
-  externa, integración en producto ni cambios globales.
-- cli-7/local-config-2, núcleo, TOML operativo, jobs, modelos/permisos D024/D059
-  y congelados conservados. D063/D064 permanecen como evidencia histórica.
-- D060 cerrada con parada preventiva D061: 2 Codex→Codex COMMITTED (`585a35c`),
-  3/4 no lanzadas. La 1 D057 ya completa; Claude real con esquema tipado D058
-  sigue pendiente. D062 acreditó el delta de confianza de 93 bytes.
+- **D066 implementado y verificado offline:** controles explícitos de memoria
+  automática en todos los roles como `cli-8`.
+  [Entrega y límites](discovery/AGENT_PERSISTENCE.md),
+  [inventario estático](discovery/AGENT_PERSISTENCE_INVENTORY.py) y
+  [evidencia](discovery/AGENT_PERSISTENCE.json).
+- Codex solicita memories desactivadas, sin generación/inyección ni historial;
+  Claude autoMemoryEnabled=false, además de sesiones nuevas sin persistencia.
+  Un override ambiental Claude conflictivo rechaza antes de efectos.
+  HOME/USER/auth conservados. Jobs cli-7 bloqueados antes de preflight/efectos.
+- 20 casos nuevos, 215 pytest pertinentes correctos y 941 recolectados. Las
+  cuatro combinaciones pasan con CLI sintéticas que exigen esos controles.
+  Sin CLI real, version/help, login, credenciales reales o inferencia.
+- **Persistencia externa completa sin certificar.** Confianza Codex D061/D062,
+  estado auxiliar, carga implícita de instrucciones y auth/refresh pendientes.
+  No se borran memorias existentes ni cambian configuraciones personales.
+- D065 conserva su dictamen: candidata de contención externa sin calificación
+  para integrar. No hay nuevo backend OS ni local-config-3. El núcleo, esquemas,
+  codec, permisos/modelos y congelados se conservan.
+- El usuario exige contexto duradero en los Markdown de docs/, historial por
+  fase y STATE/NEXT_STEPS frescos. La desactivación de auto memory no acredita
+  todavía continuidad/archivado documental real; no se cambia SQLite como
+  autoridad operativa del harness.
+- Flujos reales: Codex→Claude D057 y Codex→Codex D061 llegaron a COMMITTED;
+  este último causó parada por cambio global. Claude→Claude falló antes de
+  D058; corrección tipada real pendiente. Claude→Codex nunca lanzada.
 
-## Siguiente tarea pendiente de elección, no iniciada
+## Tarea concreta propuesta, no iniciada
 
-**Elegir con el usuario un alcance después de la incompatibilidad D065.**
+**Preparar un diagnóstico de arranque Codex sin inferencia, con HOME/auth
+ficticios y red denegada, para observar la persistencia de confianza.**
 
-Opciones delimitadas en el dictamen:
+1. Fijar binario/hash, comandos/argv y parámetros de memoria de cli-8, raíces
+   sacrificiales, entorno completo, aislamiento y artefactos. No reutilizar
+   CODEX_HOME/HOME reales ni copiar/enlazar credenciales.
+2. Definir controles que impidan lectura de auth/config/llavero reales y
+   efectos remotos; no basta cambiar HOME o confiar en una ausencia de tokens.
+   Mantener las limitaciones D065 y rechazar una vía no calificada.
+3. Delimitar comparación sin override y, si hay base suficiente, confianza
+   solo en memoria en el transporte. No precrear/restaurar confianza global.
+   Si el fake auth impide alcanzar thread/start, registrar ese límite: no
+   serviría como prueba de que la ruta observada en D061 no persiste.
+4. Concretar número de procesos, timeouts, salida filtrada/capturas, originales
+   protegidos y sacrificiales, comprobación de parada, errores sin fallback y
+   criterios que distingan sintaxis, arranque y efectos observados.
+5. Entregar propuesta reviewable y ensayar su controlador únicamente con
+   procesos sintéticos. No ejecutar la CLI real durante la preparación ni
+   certificar autenticación o refresh por ese ensayo.
 
-1. Investigar una capacidad soportada de separación de estado/auth o una
-   frontera externa distinta que conserve ambas capas y excluya aliases/IPC
-   con autoridad exterior. Requiere alcance acotado y evidencia nueva; no se
-   presume disponible para Codex 0.162.1 ni se inicia automáticamente.
-2. Mantener suspendida esa integración y el consumo pendiente con Codex.
-3. Revisar explícitamente el modelo de aislamiento/auth/efectos aceptados.
-   Garantía cooperativa frente a terceros del mismo UID, cambio de cuenta/
-   almacén o aceptación de refresh remoto serían cambios materiales pendientes
-   del usuario, no decisiones tomadas por esta entrega.
+Criterios: propuesta acotada con objetivo útil y límites explícitos, o dictamen
+preciso si el diagnóstico no puede alcanzar esa ruta con seguridad. Ningún
+proveedor/modelo, cambio global, secretos reales, modificación del sandbox
+interno, ampliación de raíces, redirección/copia de auth ni fallback. Actualizar
+STATE/NEXT_STEPS/DECISIONS antes de darla por terminada.
 
-La elección deberá concretar objetivo, amenaza cubierta, efectos admitidos y
-criterios antes de implementar. No basta cerrar fd y escanear enlaces. Ninguna
-opción autoriza copiar/enlazar credenciales, eliminar sandbox interno, ampliar
-raíces, escribir ajustes globales o restaurarlos después.
-
-Una integración será otra tarea tras una calificación suficiente. Comprobación
-real requiere propuesta/consentimiento específicos nuevos con el límite de
-refresh resuelto. No iniciar otro smoke/matriz, CLI real (ni version/help),
-jobs, recuperación/liberación de locks, publicación, push o H6.2.
-D050/D055/D057/D060 siguen agotados. No se ha avanzado a esta tarea siguiente.
-
-Después, y aparte: interfaz de producto D054/H6.2. Alternativas pendientes:
-`forbidden_paths` frente a prosa, instalación de operación reutilizable D051,
-`memory/` vacío de Claude y endurecimientos D048. Ninguna iniciada en D065.
+La ejecución real, incluso sin inferencia, necesita una autorización nueva
+para la propuesta concreta y controles suficientes. No la autoriza D066 ni
+se reutilizan D050/D055/D057/D060, agotados. No preparar o ejecutar otra matriz,
+recuperar jobs/liberar locks, publicar/push o iniciar H6.2. La fase de
+comprobaciones sigue abierta. Archivado/continuidad documental y los flujos
+Claude pendientes son tareas separadas posteriores; ninguna iniciada aquí.

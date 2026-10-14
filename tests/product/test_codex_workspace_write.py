@@ -84,7 +84,7 @@ def test_codex_writer_journey_freezes_requested_access_without_changing_contract
                for line in launches(tmp_path)[0::2])
     spec = repository.processes(job.id)[1]['spec']
     prompt = Path(spec['prompt_path']).read_bytes()
-    assert spec['adapter_version'] == 'cli-7' and prompt.decode() == launch['prompt']
+    assert spec['adapter_version'] == 'cli-8' and prompt.decode() == launch['prompt']
     assert spec['prompt_sha256'] == hashlib.sha256(prompt).hexdigest()
     assert 'tasks * 30' in context.path('src/estimate.ts').read_text()
 

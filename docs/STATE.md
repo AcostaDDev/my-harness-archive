@@ -35,7 +35,7 @@ Actualizado: 2026-10-14.
 - Dependencias reales instaladas en `.venv` / `frontend/node_modules`, locks
   `uv.lock` / `frontend/package-lock.json`. Pins H0.2 usados conservados;
   backend de paquete `uv_build==0.12.19`. Comandos comprobados en README/AGENTS.
-- 909 casos de producto en `tests/product/`; pytest ejecuta 921 pruebas en total.
+- 929 casos de producto en `tests/product/`; pytest recolecta 941 pruebas en total.
   La comprobación ligera anterior conserva sus 12 checks sin dependencias.
 - H1.1 completado: [importación legacy y verificaciones](discovery/H1.1_IMPORT.md),
   [alcance original](discovery/H1.1_SCOPE.md). Lector local explícito de
@@ -520,8 +520,12 @@ frontera revisada completados offline (D065,
 componen, restricciones distintas ensayadas se rechazan antes del objetivo.
 Cierre de fd/pipe demostrado; hardlink posterior a admisión modifica un
 sacrificial exterior. No hay frontera calificada para integrar ni auth/refresh
-real certificados. Siguiente: elegir con el usuario el alcance tras esta
-incompatibilidad, sin nueva investigación o implementación iniciada. Después,
+real certificados. El usuario exige memoria/contexto en `docs/` y pide avanzar
+en la persistencia de proyecto. D066 implementa controles explícitos de memoria
+automática (`cli-8`, [alcance](discovery/AGENT_PERSISTENCE.md)), con 215 pruebas
+offline correctas. No resuelve la escritura de confianza Codex ni certifica
+ausencia de estado auxiliar externo. Siguiente: preparar diagnóstico de arranque
+Codex con HOME/auth ficticios y sin inferencia, sin ejecutarlo. Después,
 hito de interfaz de producto con alta de proyectos en SQLite (D054); no iniciado.
 QA visual H5.7 bloqueada por herramienta; Claude real con D058 sigue pendiente.
 
@@ -2337,6 +2341,43 @@ QA visual H5.7 bloqueada por herramienta; Claude real con D058 sigue pendiente.
   integración, o decidir explícitamente cambios materiales de aislamiento/auth/
   efectos. No se adopta una relajación ni se autoriza consumo. Matriz 3/4 y H6.2
   sin iniciar; D050/D055/D057/D060 agotados. Commit solicitado para esta entrega.
+
+## Persistencia de proyecto y memoria automática (D066)
+
+- Petición del usuario: contexto duradero en Markdown bajo `docs/`, historial
+  por fase y STATE/NEXT_STEPS frescos; continuar con la persistencia de las CLI.
+  Git inicialmente limpio en `7cd3503`. [Entrega y límites](discovery/AGENT_PERSISTENCE.md),
+  [inventario estático](discovery/AGENT_PERSISTENCE_INVENTORY.py) y
+  [evidencia](discovery/AGENT_PERSISTENCE.json).
+- `cli-8`: todos los roles Codex solicitan features.memories=false,
+  memories.generate_memories=false, memories.use_memories=false e historial
+  none, conservando ephemeral. Claude recibe autoMemoryEnabled=false además
+  de no-session-persistence; CLIConfig rechaza override ambiental conflictivo.
+  Configuración personal, HOME/USER y autenticación no se intervienen.
+- Comparación existente bloquea jobs `cli-7` antes de preflight/efectos sin
+  reescribir solicitudes/resultados/versiones. No se integra la candidata
+  D063–D065; cli-8 identifica memoria, no contención. local-config-2 (lectura
+  local-config-1), esquema/codec/API/UI/dependencias/modelos/permisos conservados.
+- Fuente oficial contrastada con lectura estática/hash de Codex 0.162.1 y
+  Claude 2.1.295/2.1.296. Consulta documental web; sin red de proveedor ni
+  inferencia. Codex 0.161.0 solo probado sintéticamente para estos controles.
+  No se leen auth/config/settings/llavero ni memoria reales o ejecutan CLI reales.
+- **20 tests nuevos, 215 pertinentes passed**, con cuatro combinaciones
+  sintéticas que exigen controles de memoria. 941 tests recolectados; no suite
+  completa/build/QA visual. Primer pase: dos denegaciones de /bin/ps por sandbox
+  y una fixture nueva ausente. Fixture corregida; repetición exterior autorizada
+  pasa sin ocultar el límite de entorno. JSON/hashes/sintaxis/enlaces/diff verificados.
+- Control de memoria implementado; **prohibición completa de persistencia
+  externa sin certificar**. Confianza Codex D061/D062, archivos auxiliares,
+  carga implícita de instrucciones, fuente auth y refresh siguen pendientes.
+  No se aplica un override de confianza sin prueba ni se redirige el almacén.
+  Temporales originales D062/matriz no disponibles; informes versionados
+  conservados, sin reconstrucción de observaciones.
+- Próximo: preparar diagnóstico del arranque Codex sin inferencia, con HOME/
+  auth ficticios y red denegada, sin ejecutarlo; fijar exclusión de lectura de
+  secretos/globales, argv/aislamiento/límites y criterios antes de pedir una
+  autorización específica. No se prepara aquí otra matriz ni se implementa
+  archivado documental. D050/D055/D057/D060 agotados; H6.2 sin iniciar.
 
 ## Coordinación
 

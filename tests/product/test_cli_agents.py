@@ -82,7 +82,7 @@ def test_explicit_fresh_argv_preflight_and_configuration(tmp_path,context,reposi
         assert '--strict-mcp-config' in args
         assert json.loads(args[args.index('--mcp-config')+1])=={'mcpServers':{}}
         assert args[args.index('--setting-sources')+1]==''
-        assert json.loads(args[args.index('--settings')+1])=={'disableAllHooks':True}
+        assert json.loads(args[args.index('--settings')+1])=={'disableAllHooks':True,'autoMemoryEnabled':False}
         assert '--disable-slash-commands' in args and '--no-chrome' in args
         assert metadata['observed']['usage'] is None and metadata['observed']['duration_ms']==0
     assert launches[0]['explicit']=='selected'
@@ -94,7 +94,7 @@ def test_explicit_fresh_argv_preflight_and_configuration(tmp_path,context,reposi
     assert repository.processes(job.id)[0]['status']=='STOPPED'
     spec=repository.processes(job.id)[0]['spec']
     assert spec['cli_internal_retries']==port.capabilities()['cli_internal_retries'][provider]
-    assert spec['adapter_version']=='cli-7' and spec['agent']==('executor' if role=='executor' else 'reviewer')
+    assert spec['adapter_version']=='cli-8' and spec['agent']==('executor' if role=='executor' else 'reviewer')
     prompt=Path(spec['prompt_path']).read_bytes()
     assert prompt.decode()==launches[0]['prompt']
     assert spec['prompt_sha256']==hashlib.sha256(prompt).hexdigest()

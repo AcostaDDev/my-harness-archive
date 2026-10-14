@@ -37,6 +37,12 @@ if provider == 'codex':
     # Help/version do not certify the validity of an invocation's overrides.
     overrides = [args[index + 1] for index, value in enumerate(args) if value == '-c']
     config = tomllib.loads('\n'.join(overrides))
+    if os.environ.get('PROBE_MEMORY_REQUIRED') == '1' and (
+            config.get('features', {}).get('memories') is not False
+            or config.get('memories') != {'generate_memories': False, 'use_memories': False}
+            or config.get('history', {}).get('persistence') != 'none' or '--ephemeral' not in args):
+        print('Synthetic contract: automatic memory must be disabled', file=sys.stderr)
+        sys.exit(1)
     reserved = {'openai', 'ollama', 'lmstudio'} & config.get('model_providers', {}).keys()
     if reserved:
         print('Synthetic config error: model_providers contains reserved built-in provider IDs: '
@@ -56,6 +62,12 @@ if provider == 'codex':
               file=sys.stderr)
         sys.exit(1)
 else:
+    if os.environ.get('PROBE_MEMORY_REQUIRED') == '1' and (
+            json.loads(args[args.index('--settings') + 1]).get('autoMemoryEnabled') is not False
+            or '--no-session-persistence' not in args
+            or os.environ.get('CLAUDE_CODE_DISABLE_AUTO_MEMORY', '1') != '1'):
+        print('Synthetic contract: automatic memory must be disabled', file=sys.stderr)
+        sys.exit(1)
     # Independent contract: the CLI requires a wrapper containing a server map,
     # not an empty top-level object. Reject before emitting simulated inference.
     config = json.loads(args[args.index('--mcp-config') + 1])

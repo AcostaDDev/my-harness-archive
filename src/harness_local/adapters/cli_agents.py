@@ -26,7 +26,7 @@ from harness_local.core.engine.journal import JournalError
 from harness_local.core.engine.prompts import digest, output_schema
 
 
-VERSION = "cli-7"
+VERSION = "cli-8"
 # Version/help characterization (D052): Claude 2.1.295 and 2.1.296 share the same help.
 SUPPORTED = {"codex": ("0.161.0", "0.162.1"), "claude": ("2.1.295", "2.1.296")}
 # Codex workspace-write was characterized on 0.162.1 only.
@@ -105,6 +105,11 @@ class CLIConfig:
         for key, value in self.environment:
             if not key or "=" in key or "\0" in key or "\0" in value:
                 raise ValueError("Invalid environment")
+        # This environment switch can force memory on despite the inline setting.
+        # Refuse conflicting operator input; never inherit or rewrite auth/env.
+        if (self.provider == "claude"
+                and dict(self.environment).get("CLAUDE_CODE_DISABLE_AUTO_MEMORY", "1") != "1"):
+            raise ValueError("Claude automatic memory must remain disabled")
         for tool in self.tools + self.allowed_tools + self.grantable_tools:
             if not tool or tool.startswith("-") or "\0" in tool:
                 raise ValueError("Invalid explicit tool permission")
@@ -165,6 +170,10 @@ def argv_for(config, context, request):
             "-c", 'approval_policy="never"', "-c", f"model_reasoning_effort={json.dumps(effort)}",
             # Built-in provider IDs are reserved; nested retry overrides are rejected.
             "-c", 'model_provider="openai"', "-c", 'web_search="disabled"',
+            # D066: disable both memory inputs and injection explicitly, including
+            # the feature gate and command history. Ephemeral alone is not enough.
+            "-c", 'features.memories=false', "-c", 'memories.generate_memories=false',
+            "-c", 'memories.use_memories=false', "-c", 'history.persistence="none"',
             "--cd", str(context.root), "-")
     if access == "read":
         tools = allowed = READ_TOOLS
@@ -183,7 +192,7 @@ def argv_for(config, context, request):
         "--no-session-persistence", "--session-id", request.id, "--model", model, "--effort", effort,
         "--permission-mode", "dontAsk", "--permission-prompts", "none", "--tools", ",".join(tools),
         "--allowedTools", ",".join(allowed), "--strict-mcp-config", "--mcp-config", '{"mcpServers":{}}',
-        "--setting-sources", "", "--settings", '{"disableAllHooks":true}',
+        "--setting-sources", "", "--settings", '{"disableAllHooks":true,"autoMemoryEnabled":false}',
         "--disable-slash-commands", "--no-chrome") + tail
 
 

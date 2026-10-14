@@ -1966,3 +1966,52 @@ cambiar cuenta/almacén o aceptar refresh remoto son decisiones materiales
 pendientes, no concesiones implícitas. También se puede suspender la integración.
 No se implementan cli-8/local-config-3 ni se autoriza consumo. Matriz 3/4 y H6.2
 sin iniciar; consentimientos D050/D055/D057/D060 siguen agotados.
+
+## D066 — Memoria de trabajo documental y controles explícitos de auto memory (`cli-8`)
+
+Estado: controles de transporte implementados y verificados offline el
+2026-10-14; **persistencia externa completa sin resolver**.
+[Entrega, inventario y límites](discovery/AGENT_PERSISTENCE.md),
+[evidencia](discovery/AGENT_PERSISTENCE.json).
+
+El usuario requiere que los modelos no conserven estado/memoria global de
+proyecto: el contexto duradero se mantiene en Markdown organizado en `docs/`,
+historial por fase y STATE/NEXT_STEPS frescos. Después pide continuar con la
+persistencia de las CLI. Se concreta la opción de capacidades soportadas de
+D065, sin aceptar cambios globales, otro almacén ni aislamiento relajado.
+SQLite conserva la autoridad operativa del harness; archivado/continuidad
+documental real son otro alcance y no se declaran implementados.
+
+Se desactivan explícitamente generación/inyección de memorias y la función
+memories de Codex, además de history.persistence=none y ephemeral. Claude
+recibe autoMemoryEnabled=false en settings inline, conservando no-session-
+persistence. Un override ambiental CLAUDE_CODE_DISABLE_AUTO_MEMORY distinto
+de 1, si se declara, rechaza CLIConfig antes de efectos: 0 puede reactivar la
+memoria pese al setting. No se añaden variables al entorno completo recibido,
+se cambian HOME/USER/auth, copian/enlazan credenciales o borran memorias existentes.
+
+El cambio de argv exige cli-8; jobs cli-7 quedan en cuarentena antes del
+preflight/efectos, sin reescribir congelados. Esta versión identifica controles
+de memoria, no la integración hipotética de contención D063, que sigue sin
+calificación. local-config-2 (y lectura 1), esquema/codec/API/UI/dependencias,
+modelos, permisos y sandbox de herramientas conservados.
+
+Documentación oficial actual contrastada con literales/hashes de Codex 0.162.1
+y Claude 2.1.295/2.1.296, sin ejecutar esos binarios ni leer auth/config reales.
+Codex 0.161.0 no disponible para lectura; baseline conservado, controles nuevos
+solo probados sintéticamente para ese lector. 20 casos nuevos y 215 pertinentes
+correctos, incluidas las cuatro combinaciones sintéticas. Consulta web solo
+documental; ninguna inferencia, auth real o prueba de ausencia de archivos.
+
+No se equipara memoria automática con confianza, logs/cachés/SQLite de CLI,
+instrucciones estáticas o contención física. D061/D062 sigue pendiente: la CLI
+puede persistir confianza al arrancar el escritor; apagar memories no acredita
+supresión de esa ruta. Auth/refresh y otros auxiliares tampoco certificados.
+La prohibición global y los dictámenes D064/D065 se mantienen.
+
+Siguiente tarea separada: preparar diagnóstico de arranque Codex sin inferencia,
+HOME/auth ficticios y red denegada, con controles contra lectura de secretos/
+globales y límites congelados. No se ejecuta ni se da por autorizado un proceso
+CLI real por esta entrega; ejecución requiere propuesta y consentimiento
+específicos nuevos. Matriz 3/4 y H6.2 sin iniciar; fase de comprobaciones sin
+cerrar y consentimientos D050/D055/D057/D060 agotados.

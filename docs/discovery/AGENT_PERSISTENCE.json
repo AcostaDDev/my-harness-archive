@@ -1,0 +1,127 @@
+{
+  "decision": "D066",
+  "inventory_kind": "static literal presence, not runtime semantics",
+  "provider_invocations": 0,
+  "real_cli_processes": 0,
+  "auth_files_read": false,
+  "user_config_read": false,
+  "global_writes": false,
+  "script_sha256": "f9f3dd9ea7f1abc1e27d6e377f112bc168bf653e7c697f63e4454ad4591838f1",
+  "binaries": [
+    {
+      "provider": "codex",
+      "version_from_prior_baseline": "0.162.1",
+      "path": "$HOME/.nvm/versions/node/v24.15.0/lib/node_modules/@openai/codex/node_modules/@openai/codex-darwin-arm64/vendor/aarch64-apple-darwin/bin/codex",
+      "size": 246642624,
+      "sha256": "74c6a6d263f40d65f99c27a815275f5b4ed0bcc2baecc396b4cf3255498bdfc0",
+      "literal_offsets": {
+        "MemoriesToml": 187035938,
+        "generate_memories": 187035994,
+        "use_memories": 187036011,
+        "HistoryPersistence": 187036870,
+        "save-all": 186882681,
+        "memory_tool": 186992047,
+        "set_project_trust_level": 239613010,
+        "sqlite_home": 185754786,
+        "log_dir": 186981487,
+        "cli_auth_credentials_store": 186882337
+      }
+    },
+    {
+      "provider": "claude",
+      "version_from_prior_baseline": "2.1.295",
+      "path": "$HOME/.local/share/claude/versions/2.1.295",
+      "size": 239695888,
+      "sha256": "0116ee2e0a513900b633d9951367f18747686478e2b462805b8c31609f047f70",
+      "literal_offsets": {
+        "autoMemoryEnabled": 72443844,
+        "CLAUDE_CODE_DISABLE_AUTO_MEMORY": 80180224,
+        "disabled_by_setting": 79497220,
+        "disabled_by_env_var": 80180264,
+        "autoMemoryDirectory": 74537560,
+        "CLAUDE_CONFIG_DIR": 72390712,
+        "--no-session-persistence": 72427668
+      }
+    },
+    {
+      "provider": "claude",
+      "version_from_prior_baseline": "2.1.296",
+      "path": "$HOME/.local/share/claude/versions/2.1.296",
+      "size": 240664432,
+      "sha256": "c9b5341637becbd423ddffc5b254afb645682a3868cb708bbc6cc0e7bb419937",
+      "literal_offsets": {
+        "autoMemoryEnabled": 72459040,
+        "CLAUDE_CODE_DISABLE_AUTO_MEMORY": 80185400,
+        "disabled_by_setting": 79498800,
+        "disabled_by_env_var": 80185440,
+        "autoMemoryDirectory": 74547204,
+        "CLAUDE_CONFIG_DIR": 72396672,
+        "--no-session-persistence": 72438788
+      }
+    }
+  ],
+  "completed": true,
+  "source_commit": "7cd3503",
+  "documentation_consulted_at": "2026-10-14",
+  "official_sources": [
+    {
+      "url": "https://learn.chatgpt.com/docs/config-file/config-reference",
+      "scope": "Codex memory feature, generation/injection and command history; current docs do not certify pinned runtime effects"
+    },
+    {
+      "url": "https://code.claude.com/docs/en/memory",
+      "scope": "autoMemoryEnabled and project memory directory"
+    },
+    {
+      "url": "https://code.claude.com/docs/en/env-vars",
+      "scope": "CLAUDE_CODE_DISABLE_AUTO_MEMORY=0 can force enablement despite setting"
+    }
+  ],
+  "transport_controls": {
+    "adapter": "cli-8",
+    "codex": {
+      "features.memories": false,
+      "memories.generate_memories": false,
+      "memories.use_memories": false,
+      "history.persistence": "none",
+      "ephemeral": true
+    },
+    "claude": {
+      "autoMemoryEnabled": false,
+      "no_session_persistence": true,
+      "conflicting_environment": "reject before effects"
+    },
+    "auth_environment_redirected": false,
+    "os_containment_integrated": false
+  },
+  "verification": {
+    "command": "UV_CACHE_DIR=.local/uv-cache uv run --frozen --offline pytest -q tests/product/test_cli_memory.py tests/product/test_cli_agents.py tests/product/test_agent_roles.py tests/product/test_codex_workspace_write.py tests/product/test_typed_json_schema.py tests/product/test_local_config.py tests/product/test_smoke_environment.py tests/product/test_cli_diagnostics.py",
+    "passed": 215,
+    "seconds": 54.67,
+    "execution": "outside development sandbox with explicit tool approval; synthetic CLI only",
+    "new_cases": 20,
+    "total_collected": 941,
+    "first_run": {
+      "passed": 212,
+      "failed": 2,
+      "errors": 1,
+      "causes": [
+        "development sandbox denies /bin/ps in two pre-existing diagnostics tests",
+        "missing web fixture in new quarantine test, corrected"
+      ]
+    }
+  },
+  "limits": [
+    "No real CLI/version/help or authentication executed",
+    "No dynamic certification of memory suppression or absence of auxiliary directories",
+    "Codex project trust persistence D061/D062 remains unresolved",
+    "No authenticated state/auth separation or remote refresh guarantee",
+    "Codex 0.161.0 binary unavailable to this inventory; unchanged baseline, new controls only tested synthetically for this reader version",
+    "Earlier temporary D062/matrix artifacts are unavailable here; versioned evidence remains unchanged"
+  ],
+  "changed_source_sha256": {
+    "src/harness_local/adapters/cli_agents.py": "a652c87a9f1efae95e967035d9c8a8e60aaaaa1b1bc22c53568d012c7794fcbc",
+    "tests/product/cli_process_probe.py": "0151b57e91799eb8856407f32877513d5c7bb3b72a9b59cf505ecb5f2869d146",
+    "tests/product/test_cli_memory.py": "e1058100337cb7971642c62237cc7d563838b5dd39f1aa81faaa676456caf438"
+  }
+}
