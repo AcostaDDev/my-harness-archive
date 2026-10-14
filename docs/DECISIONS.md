@@ -2383,3 +2383,29 @@ Decisiones tomadas con criterio dentro de D076:
   hallazgo para el usuario.
 
 Sin migración, codec ni dependencias. Siguiente: E2 (registro de proyectos), sin iniciar.
+
+## D078 — H6.2 E2: `local-config-3` y registro de proyectos desde la UI
+
+Estado: implementado y verificado offline el 2026-10-14. [Entrega, API y límites](discovery/H6.2_E2_REGISTRY.md).
+
+Decisiones tomadas con criterio dentro de D054/D076:
+
+- `[registration]` lleva `roots` y `bootstrap_enabled`, que es un techo: la UI solo activa bootstrap en un proyecto
+  registrado si el operador lo autoriza. Las composiciones fijan el perfil; el proyecto (del TOML o registrado) solo
+  nombra una. `[[projects]]` pasa a ser opcional en `local-config-3`.
+- `local-config-1` y `-2` conservan su hash congelado y no admiten registro. Las filas registradas que no componen con
+  el TOML actual quedan no disponibles con su motivo; el servicio arranca igual.
+- La confirmación se liga a `preview_sha256` (acción, versión esperada, filas antes y después y versiones congeladas,
+  que incluyen la composición). La confianza se confirma aparte con la raíz canónica exacta. Repetir una confirmación
+  aplicada devuelve el resultado sin otra versión.
+- La raíz no cambia tras el alta. Raíces iguales o anidadas con otro proyecto se rechazan, igual que las que contienen
+  el estado del servicio o tienen un enlace en cualquier componente. El id `new` queda reservado por `/projects/new`.
+- Baja lógica: el id queda reservado y su historial se conserva; la raíz queda libre para otro id, que hereda la
+  lectura de los runs de ese checkout.
+- La versión y el hash de la fila del registro entran en `local_config_sha256` y en `project_registry`. Cambio o baja
+  con trabajos sin terminar se rechazan en la transacción; el resto lo cubre la cuarentena existente.
+- «Quién» es `actor()`, la identidad del servicio, como en las demás auditorías: la sesión local no identifica
+  personas.
+
+Migración `0016_project_registry`; sin codec ni dependencias. Siguiente: E3 (documentación), sin iniciar.
+

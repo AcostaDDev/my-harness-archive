@@ -151,7 +151,7 @@ def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument('--database', type=Path, default=ROOT / '.local/harness.sqlite3',
                         help='SQLite de desarrollo (por defecto .local/harness.sqlite3)')
-    parser.add_argument('--config', type=Path, help='TOML local-config-1 opcional; sin él, la API gestionada solo lee')
+    parser.add_argument('--config', type=Path, help='TOML local-config-1/2/3 opcional; sin él, la API gestionada solo lee')
     args = parser.parse_args(argv)
     database = args.database.expanduser().absolute()
     config = args.config.expanduser().absolute() if args.config else None

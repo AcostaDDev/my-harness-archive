@@ -35,7 +35,7 @@ Actualizado: 2026-10-14.
 - Dependencias reales instaladas en `.venv` / `frontend/node_modules`, locks
   `uv.lock` / `frontend/package-lock.json`. Pins H0.2 usados conservados;
   backend de paquete `uv_build==0.12.19`. Comandos comprobados en README/AGENTS.
-- Casos de producto en `tests/product/`: 1065 pytest y 121 subtests aprobados (H6.2 E1).
+- Casos de producto en `tests/product/`: 1075 pytest y 121 subtests (H6.2 E2; ver su sección).
   La comprobación ligera anterior conserva sus 12 checks sin dependencias.
 - H1.1 completado: [importación legacy y verificaciones](discovery/H1.1_IMPORT.md),
   [alcance original](discovery/H1.1_SCOPE.md). Lector local explícito de
@@ -2668,6 +2668,31 @@ tarea propuesta: UI H6.2, sin iniciar; será una tarea aparte.
   386 px, y recorridos de commit, recuperación → revalidar → commit y encolar → run, sin trabajos duplicados.
 - Hallazgo sin resolver: la guardia H5.6 rechaza la carga de la página con `Sec-Fetch-Site: cross-site`, así que un
   enlace desde otro sitio no abre la URL. Escribirla, un marcador o recargar sí funcionan. Pendiente de decisión.
+
+## H6.2 E2: registro de proyectos (D078)
+
+- Tarea activa de NEXT_STEPS, pedida por el usuario el 2026-10-14. Al empezar, la entrega E1 seguía sin commit en el
+  checkout; se verificó (suite completa en verde) y se commiteó aparte como `df362f9`. E2 parte de ahí.
+  [Entrega, API y límites](discovery/H6.2_E2_REGISTRY.md).
+- `local-config-3`: `[registration]` (raíces y techo de bootstrap), `[compositions.NOMBRE]` con perfil y comandos, y
+  `[[projects]]` opcional que nombra una composición. `LocalComposer` compone proyectos del TOML y registrados.
+  `local-config-1`/`-2` intactos (mismo hash congelado). Plantilla `examples/local_config.example.toml` en v3.
+- Migración `0016_project_registry`: proyectos registrados versionados con baja lógica y auditoría por versión.
+- API `/api/managed/registry` (opciones, detalle, vista previa y confirmación ligada a hash y versión, confianza aparte,
+  repetición idempotente) y `ManagedProjectRead` con `source`, `registry_version` y `bootstrap_enabled`. El runtime
+  incorpora, cambia y retira proyectos sin reiniciar; la versión del registro entra en el hash congelado y los
+  cambios con trabajos sin terminar se rechazan.
+- UI: `/projects/new`, registro en Ajustes (versión, auditoría, cambio y baja), columna Origen en Proyectos.
+- Verificación: 10 pytest nuevos (`test_project_registry.py`), +1 ruta en `test_ui_routes.py` y 1 prueba Node. Suite
+  completa: 1073 + 121 subtests en verde y un fallo esperado de igualdad exacta de `ManagedProjectRead`, corregido y
+  repasado con los módulos afectados (94); total 1075. 13 pruebas Node, `tsc`, build, 12 checks estándar, y Alembic
+  upgrade/check/current/downgrade sobre una SQLite temporal.
+- QA con Chrome sobre `scripts/dev` y un TOML `local-config-3` sintético con supervisor y CLIs sintéticas: rechazo de
+  una raíz con enlace, alta con confianza aparte → primera tarea → «Aceptado, falta el commit» sin reiniciar ni editar
+  archivos; cambio de versión con auditoría; baja. Claro, oscuro y 386 px sin desbordamiento. La sesión la inició el
+  usuario (se denegó leer el archivo de clave).
+- Límites: la raíz no cambia; un id dado de baja no se reactiva; un cambio del registro deja en cuarentena el commit de
+  runs aceptados con la versión anterior. Sigue pendiente la decisión sobre `Sec-Fetch-Site: cross-site` (E1).
 
 ## Coordinación
 

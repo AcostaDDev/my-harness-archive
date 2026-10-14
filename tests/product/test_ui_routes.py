@@ -14,7 +14,7 @@ def ui(tmp_path):
     return assets
 
 
-@pytest.mark.parametrize('path', ['/', '/projects/demo', '/projects/demo/phases/P001/tasks/P001-T001',
+@pytest.mark.parametrize('path', ['/', '/projects/new', '/projects/demo', '/projects/demo/phases/P001/tasks/P001-T001',
                                   '/projects/demo/phases/v1.2', '/legacy', '/ruta/desconocida'])
 def test_ui_routes_receive_the_shell_on_direct_load(migrated_database, ui, path):
     from session_client import TestClient

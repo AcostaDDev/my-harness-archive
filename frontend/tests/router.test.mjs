@@ -5,6 +5,7 @@ import { parse, href, trail, runRoute, projectOf } from '../src/router.ts';
 const valid = [
   ['/', { name: 'home' }],
   ['/legacy', { name: 'legacy' }],
+  ['/projects/new', { name: 'project-new' }],
   ['/projects/mi-web', { name: 'project', project: 'mi-web' }],
   ['/projects/mi-web/phases', { name: 'phases', project: 'mi-web' }],
   ['/projects/mi-web/phases/P001', { name: 'phase', project: 'mi-web', phase: 'P001' }],
@@ -59,4 +60,10 @@ test('run reads map to their canonical URL; runs outside a registered project ha
   assert.equal(runRoute({ id: 'r', project_id: null, phase_id: 'P001', task_id: 'T' }), undefined);
   assert.equal(projectOf(parse('/projects/p/settings')), 'p');
   assert.equal(projectOf(parse('/legacy')), undefined);
+});
+
+test('the registration page is not a project and keeps its own trail', () => {
+  assert.equal(projectOf(parse('/projects/new')), undefined);
+  assert.deepEqual(trail({ name: 'project-new' }).map(item => item.label), ['Proyectos', 'Registrar proyecto']);
+  assert.deepEqual(parse('/projects/new/settings'), { name: 'settings', project: 'new' });
 });

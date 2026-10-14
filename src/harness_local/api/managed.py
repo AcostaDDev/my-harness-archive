@@ -68,7 +68,10 @@ def managed_router(runtime: ManagedRuntime):
     def project_read(project):
         return {"id": project.id, "root": str(project.context.root), "profile": project.context.profile.name,
                 "versions": dict(project.versions), "tag_kind": project.tag_kind, "agents": agents_view(project),
-                "documents": project.context.documents}
+                "documents": project.context.documents, "bootstrap_enabled": project.bootstrap_enabled,
+                "source": "registry" if "project_registry" in project.versions else "operator",
+                "registry_version": int(project.versions["project_registry"])
+                if "project_registry" in project.versions else None}
 
     def project(project_id: str):
         return call(runtime.project, project_id)
@@ -111,6 +114,51 @@ def managed_router(runtime: ManagedRuntime):
     @router.get("/projects/{project_id}", response_model=ManagedProjectRead, operation_id="managed_project")
     def project_detail(project_id: str):
         return project_read(project(project_id))
+
+    # --- registro de proyectos H6.2 E2 (D054/D076) -------------------------------------
+    from harness_local.api.schemas import (
+        RegisteredProjectRead, RegistryApplyCreate, RegistryApplyRead, RegistryChangeInput, RegistryPreviewRead,
+        RegistryRead,
+    )
+    from harness_local.services.project_registry import RegistryError
+
+    def registry(operation, /, *args, **kwargs):
+        def guarded():
+            try:
+                return operation(*args, **kwargs)
+            except RegistryError as error:  # antes que ValueError en `call`: códigos propios del registro
+                raise problem(error.status, error.code, str(error)) from error
+        return call(guarded)
+
+    def change(body: RegistryChangeInput) -> dict:
+        data = body.model_dump()
+        if body.policy is not None:
+            data['policy'] = body.policy.model_dump(exclude_none=True)
+        return data
+
+    @router.get("/registry", response_model=RegistryRead, operation_id="managed_registry")
+    def registry_options():
+        runtime.ready()
+        return runtime.registry.options()
+
+    @router.get("/registry/projects/{project_id}", response_model=RegisteredProjectRead,
+                operation_id="managed_registered_project")
+    def registered_project(project_id: str):
+        runtime.ready()
+        return registry(runtime.registry.read, project_id)
+
+    @router.post("/registry/preview", response_model=RegistryPreviewRead, operation_id="managed_registry_preview")
+    def registry_preview(body: RegistryChangeInput):
+        """Sin efectos: fila resultante, cambios, versiones congeladas y hash que liga la confirmación."""
+        runtime.ready()
+        return registry(runtime.registry.preview, change(body))
+
+    @router.post("/registry/apply", response_model=RegistryApplyRead, operation_id="managed_registry_apply")
+    def registry_apply(body: RegistryApplyCreate):
+        """Repetir la misma confirmación devuelve el resultado ya aplicado, sin otra versión."""
+        runtime.ready()
+        return registry(runtime.registry.apply, change(body.change), preview_sha256=body.preview_sha256,
+                        trust_root=body.trust_root, reason=body.reason)
 
     # --- migración H2.5 ---------------------------------------------------------------
 

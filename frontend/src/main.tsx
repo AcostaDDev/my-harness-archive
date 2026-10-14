@@ -6,6 +6,7 @@ import { Link, usePath } from "./navigation";
 import { Home } from "./pages/Home";
 import { PhaseListPage, PhasePage } from "./pages/Phases";
 import { ProjectPage } from "./pages/Project";
+import { RegisterPage } from "./pages/Registry";
 import { RunPage, RunRedirect } from "./pages/Run";
 import { SettingsPage } from "./pages/Settings";
 import { TaskPage } from "./pages/Task";
@@ -21,6 +22,7 @@ function Page({ route }: { route: Route }) {
   switch (route.name) {
     case "home": return <Home />;
     case "legacy": return <LegacyBrowser />;
+    case "project-new": return <RegisterPage />;
     case "run-short": return <RunRedirect run={route.run} />;
     case "not-found": return <>
       <PageHeader title="Esta página no existe" />
@@ -31,7 +33,7 @@ function Page({ route }: { route: Route }) {
   return <ProjectWorkspace key={route.project} project={route.project}><ProjectPageFor route={route} /></ProjectWorkspace>;
 }
 
-function ProjectPageFor({ route }: { route: Exclude<Route, { name: "home" | "legacy" | "run-short" | "not-found" }> }) {
+function ProjectPageFor({ route }: { route: Exclude<Route, { name: "home" | "legacy" | "project-new" | "run-short" | "not-found" }> }) {
   switch (route.name) {
     case "project": return <ProjectPage />;
     case "phases": return <PhaseListPage />;

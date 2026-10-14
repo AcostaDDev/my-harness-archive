@@ -1113,6 +1113,349 @@
         }
       }
     },
+    "/api/managed/registry": {
+      "get": {
+        "summary": "Registry Options",
+        "operationId": "managed_registry",
+        "parameters": [
+          {
+            "name": "x-harness-local",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Obligatoria con valor 1 en mutaciones (protección CSRF).",
+              "title": "X-Harness-Local"
+            },
+            "description": "Obligatoria con valor 1 en mutaciones (protección CSRF)."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RegistryRead"
+                }
+              }
+            }
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          }
+        }
+      }
+    },
+    "/api/managed/registry/projects/{project_id}": {
+      "get": {
+        "summary": "Registered Project",
+        "operationId": "managed_registered_project",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          },
+          {
+            "name": "x-harness-local",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Obligatoria con valor 1 en mutaciones (protección CSRF).",
+              "title": "X-Harness-Local"
+            },
+            "description": "Obligatoria con valor 1 en mutaciones (protección CSRF)."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RegisteredProjectRead"
+                }
+              }
+            }
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          }
+        }
+      }
+    },
+    "/api/managed/registry/preview": {
+      "post": {
+        "summary": "Registry Preview",
+        "description": "Sin efectos: fila resultante, cambios, versiones congeladas y hash que liga la confirmación.",
+        "operationId": "managed_registry_preview",
+        "parameters": [
+          {
+            "name": "x-harness-local",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Obligatoria con valor 1 en mutaciones (protección CSRF).",
+              "title": "X-Harness-Local"
+            },
+            "description": "Obligatoria con valor 1 en mutaciones (protección CSRF)."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegistryChangeInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RegistryPreviewRead"
+                }
+              }
+            }
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          }
+        }
+      }
+    },
+    "/api/managed/registry/apply": {
+      "post": {
+        "summary": "Registry Apply",
+        "description": "Repetir la misma confirmación devuelve el resultado ya aplicado, sin otra versión.",
+        "operationId": "managed_registry_apply",
+        "parameters": [
+          {
+            "name": "x-harness-local",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Obligatoria con valor 1 en mutaciones (protección CSRF).",
+              "title": "X-Harness-Local"
+            },
+            "description": "Obligatoria con valor 1 en mutaciones (protección CSRF)."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegistryApplyCreate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RegistryApplyRead"
+                }
+              }
+            }
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          }
+        }
+      }
+    },
     "/api/managed/projects/{project_id}/mode": {
       "get": {
         "summary": "Mode",
@@ -14560,6 +14903,33 @@
             ],
             "title": "Documents",
             "description": "Contrato documental D072; null: anterior."
+          },
+          "source": {
+            "type": "string",
+            "enum": [
+              "operator",
+              "registry"
+            ],
+            "title": "Source",
+            "description": "D076: declarado en el TOML del operador o registrado desde la UI.",
+            "default": "operator"
+          },
+          "registry_version": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Registry Version",
+            "description": "Versión del registro congelada en sus jobs."
+          },
+          "bootstrap_enabled": {
+            "type": "boolean",
+            "title": "Bootstrap Enabled",
+            "default": false
           }
         },
         "type": "object",
@@ -18699,6 +19069,822 @@
           "origin"
         ],
         "title": "ProvenanceRead"
+      },
+      "RegisteredProjectRead": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "version": {
+            "type": "integer",
+            "title": "Version"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "ACTIVE",
+              "RETIRED"
+            ],
+            "title": "Status"
+          },
+          "root": {
+            "type": "string",
+            "title": "Root"
+          },
+          "composition": {
+            "type": "string",
+            "title": "Composition"
+          },
+          "profile": {
+            "type": "string",
+            "title": "Profile"
+          },
+          "row_sha256": {
+            "type": "string",
+            "title": "Row Sha256"
+          },
+          "created_at": {
+            "type": "string",
+            "title": "Created At"
+          },
+          "updated_at": {
+            "type": "string",
+            "title": "Updated At"
+          },
+          "available": {
+            "type": "boolean",
+            "title": "Available"
+          },
+          "diagnostic": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Diagnostic",
+            "description": "Por qué una fila activa no se compone con el TOML actual."
+          },
+          "row": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Row"
+          },
+          "trust": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Trust"
+          },
+          "unfinished_jobs": {
+            "items": {
+              "type": "integer"
+            },
+            "type": "array",
+            "title": "Unfinished Jobs"
+          },
+          "history": {
+            "items": {
+              "$ref": "#/components/schemas/RegistryEventRead"
+            },
+            "type": "array",
+            "title": "History"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "version",
+          "status",
+          "root",
+          "composition",
+          "profile",
+          "row_sha256",
+          "created_at",
+          "updated_at",
+          "available",
+          "diagnostic",
+          "row",
+          "trust",
+          "unfinished_jobs",
+          "history"
+        ],
+        "title": "RegisteredProjectRead"
+      },
+      "RegisteredProjectSummaryRead": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "version": {
+            "type": "integer",
+            "title": "Version"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "ACTIVE",
+              "RETIRED"
+            ],
+            "title": "Status"
+          },
+          "root": {
+            "type": "string",
+            "title": "Root"
+          },
+          "composition": {
+            "type": "string",
+            "title": "Composition"
+          },
+          "profile": {
+            "type": "string",
+            "title": "Profile"
+          },
+          "row_sha256": {
+            "type": "string",
+            "title": "Row Sha256"
+          },
+          "created_at": {
+            "type": "string",
+            "title": "Created At"
+          },
+          "updated_at": {
+            "type": "string",
+            "title": "Updated At"
+          },
+          "available": {
+            "type": "boolean",
+            "title": "Available"
+          },
+          "diagnostic": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Diagnostic",
+            "description": "Por qué una fila activa no se compone con el TOML actual."
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "version",
+          "status",
+          "root",
+          "composition",
+          "profile",
+          "row_sha256",
+          "created_at",
+          "updated_at",
+          "available",
+          "diagnostic"
+        ],
+        "title": "RegisteredProjectSummaryRead"
+      },
+      "RegistryApplyCreate": {
+        "properties": {
+          "change": {
+            "$ref": "#/components/schemas/RegistryChangeInput"
+          },
+          "preview_sha256": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$",
+            "title": "Preview Sha256"
+          },
+          "trust_root": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 4096
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Trust Root",
+            "description": "Confirmación aparte de la confianza: la raíz canónica exacta."
+          },
+          "reason": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 2000
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reason"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "change",
+          "preview_sha256"
+        ],
+        "title": "RegistryApplyCreate"
+      },
+      "RegistryApplyRead": {
+        "properties": {
+          "project": {
+            "$ref": "#/components/schemas/RegisteredProjectSummaryRead"
+          },
+          "replayed": {
+            "type": "boolean",
+            "title": "Replayed",
+            "description": "La misma confirmación ya estaba aplicada; no hay otra versión."
+          }
+        },
+        "type": "object",
+        "required": [
+          "project",
+          "replayed"
+        ],
+        "title": "RegistryApplyRead"
+      },
+      "RegistryChangeInput": {
+        "properties": {
+          "action": {
+            "type": "string",
+            "enum": [
+              "register",
+              "update",
+              "retire"
+            ],
+            "title": "Action"
+          },
+          "project_id": {
+            "type": "string",
+            "maxLength": 64,
+            "minLength": 1,
+            "title": "Project Id"
+          },
+          "expected_version": {
+            "type": "integer",
+            "maximum": 2147483648.0,
+            "minimum": 0.0,
+            "title": "Expected Version",
+            "description": "0 en el alta; la versión leída en un cambio o baja."
+          },
+          "root": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 4096
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Root",
+            "description": "Solo en el alta; la raíz no cambia después."
+          },
+          "composition": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 64
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Composition"
+          },
+          "policy": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/RegistryPolicyInput"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "tag_kind": {
+            "type": "string",
+            "enum": [
+              "lightweight",
+              "annotated"
+            ],
+            "title": "Tag Kind",
+            "default": "lightweight"
+          },
+          "documents": {
+            "anyOf": [
+              {
+                "type": "string",
+                "const": "v2"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Documents",
+            "default": "v2"
+          },
+          "bootstrap_enabled": {
+            "type": "boolean",
+            "title": "Bootstrap Enabled",
+            "default": false
+          },
+          "permission_authority": {
+            "anyOf": [
+              {
+                "additionalProperties": {
+                  "additionalProperties": {
+                    "items": {
+                      "type": "string",
+                      "maxLength": 200,
+                      "minLength": 1
+                    },
+                    "type": "array"
+                  },
+                  "propertyNames": {
+                    "enum": [
+                      "files",
+                      "tools",
+                      "network",
+                      "product",
+                      "acceptance"
+                    ]
+                  },
+                  "type": "object"
+                },
+                "propertyNames": {
+                  "enum": [
+                    "global",
+                    "project",
+                    "contract",
+                    "provider"
+                  ]
+                },
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Permission Authority",
+            "description": "Techo de permisos por capa; null: sin techo explícito."
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "action",
+          "project_id",
+          "expected_version"
+        ],
+        "title": "RegistryChangeInput",
+        "description": "Alta (`register`), cambio (`update`) o baja lógica (`retire`); la composición se nombra, no se define."
+      },
+      "RegistryCompositionRead": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "profile": {
+            "type": "string",
+            "title": "Profile"
+          },
+          "executables": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Executables",
+            "description": "Solo los nombres; las rutas quedan en el TOML."
+          },
+          "environment_keys": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Environment Keys",
+            "description": "Solo las claves; los valores nunca salen del TOML."
+          },
+          "authorize_profile_commands": {
+            "type": "boolean",
+            "title": "Authorize Profile Commands"
+          },
+          "extra_commands": {
+            "items": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "type": "array",
+            "title": "Extra Commands"
+          }
+        },
+        "type": "object",
+        "required": [
+          "name",
+          "profile",
+          "executables",
+          "environment_keys",
+          "authorize_profile_commands",
+          "extra_commands"
+        ],
+        "title": "RegistryCompositionRead"
+      },
+      "RegistryEventRead": {
+        "properties": {
+          "version": {
+            "type": "integer",
+            "title": "Version"
+          },
+          "action": {
+            "type": "string",
+            "enum": [
+              "register",
+              "update",
+              "retire"
+            ],
+            "title": "Action"
+          },
+          "row": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Row"
+          },
+          "row_sha256": {
+            "type": "string",
+            "title": "Row Sha256"
+          },
+          "previous_sha256": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Previous Sha256"
+          },
+          "preview_sha256": {
+            "type": "string",
+            "title": "Preview Sha256"
+          },
+          "actor": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Actor"
+          },
+          "reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reason"
+          },
+          "recorded_at": {
+            "type": "string",
+            "title": "Recorded At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "version",
+          "action",
+          "row",
+          "row_sha256",
+          "previous_sha256",
+          "preview_sha256",
+          "actor",
+          "reason",
+          "recorded_at"
+        ],
+        "title": "RegistryEventRead"
+      },
+      "RegistryFieldChangeRead": {
+        "properties": {
+          "field": {
+            "type": "string",
+            "title": "Field"
+          },
+          "before": {
+            "title": "Before"
+          },
+          "after": {
+            "title": "After"
+          }
+        },
+        "type": "object",
+        "required": [
+          "field",
+          "before",
+          "after"
+        ],
+        "title": "RegistryFieldChangeRead"
+      },
+      "RegistryPolicyInput": {
+        "properties": {
+          "planning_mode": {
+            "type": "string",
+            "enum": [
+              "agent",
+              "deterministic"
+            ],
+            "title": "Planning Mode"
+          },
+          "executor_mode": {
+            "type": "string",
+            "enum": [
+              "catalog",
+              "open"
+            ],
+            "title": "Executor Mode"
+          },
+          "executor_models": {
+            "items": {
+              "type": "string",
+              "maxLength": 200,
+              "minLength": 1
+            },
+            "type": "array",
+            "maxItems": 20,
+            "minItems": 1,
+            "title": "Executor Models"
+          },
+          "executor_efforts": {
+            "items": {
+              "type": "string",
+              "maxLength": 200,
+              "minLength": 1
+            },
+            "type": "array",
+            "maxItems": 10,
+            "minItems": 1,
+            "title": "Executor Efforts"
+          },
+          "max_revision_cycles": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "maximum": 20.0,
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Max Revision Cycles"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "planning_mode",
+          "executor_mode",
+          "executor_models",
+          "executor_efforts"
+        ],
+        "title": "RegistryPolicyInput",
+        "description": "Política D052 del proyecto: selecciones, nunca ejecutables ni entornos."
+      },
+      "RegistryPreviewRead": {
+        "properties": {
+          "action": {
+            "type": "string",
+            "enum": [
+              "register",
+              "update",
+              "retire"
+            ],
+            "title": "Action"
+          },
+          "project_id": {
+            "type": "string",
+            "title": "Project Id"
+          },
+          "expected_version": {
+            "type": "integer",
+            "title": "Expected Version"
+          },
+          "version": {
+            "type": "integer",
+            "title": "Version"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "ACTIVE",
+              "RETIRED"
+            ],
+            "title": "Status"
+          },
+          "row": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Row"
+          },
+          "row_sha256": {
+            "type": "string",
+            "title": "Row Sha256"
+          },
+          "changes": {
+            "items": {
+              "$ref": "#/components/schemas/RegistryFieldChangeRead"
+            },
+            "type": "array",
+            "title": "Changes"
+          },
+          "versions": {
+            "anyOf": [
+              {
+                "additionalProperties": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Versions",
+            "description": "Versiones que congelarán sus jobs; null en la baja."
+          },
+          "profile": {
+            "type": "string",
+            "title": "Profile"
+          },
+          "trust_required": {
+            "type": "boolean",
+            "title": "Trust Required"
+          },
+          "trust_statement": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Trust Statement"
+          },
+          "unfinished_jobs": {
+            "items": {
+              "type": "integer"
+            },
+            "type": "array",
+            "title": "Unfinished Jobs",
+            "description": "Trabajos sin terminar del checkout: bloquean la confirmación."
+          },
+          "preview_sha256": {
+            "type": "string",
+            "title": "Preview Sha256"
+          }
+        },
+        "type": "object",
+        "required": [
+          "action",
+          "project_id",
+          "expected_version",
+          "version",
+          "status",
+          "row",
+          "row_sha256",
+          "changes",
+          "versions",
+          "profile",
+          "trust_required",
+          "trust_statement",
+          "unfinished_jobs",
+          "preview_sha256"
+        ],
+        "title": "RegistryPreviewRead"
+      },
+      "RegistryRead": {
+        "properties": {
+          "available": {
+            "type": "boolean",
+            "title": "Available"
+          },
+          "format": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Format"
+          },
+          "roots": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Roots"
+          },
+          "bootstrap_enabled": {
+            "type": "boolean",
+            "title": "Bootstrap Enabled"
+          },
+          "compositions": {
+            "items": {
+              "$ref": "#/components/schemas/RegistryCompositionRead"
+            },
+            "type": "array",
+            "title": "Compositions"
+          },
+          "executor_provider": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Executor Provider"
+          },
+          "reviewer_provider": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reviewer Provider"
+          },
+          "executor_effort_vocabulary": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Executor Effort Vocabulary"
+          },
+          "reserved_ids": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Reserved Ids"
+          },
+          "operator_projects": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Operator Projects"
+          },
+          "projects": {
+            "items": {
+              "$ref": "#/components/schemas/RegisteredProjectSummaryRead"
+            },
+            "type": "array",
+            "title": "Projects"
+          },
+          "trust_statement": {
+            "type": "string",
+            "title": "Trust Statement"
+          }
+        },
+        "type": "object",
+        "required": [
+          "available",
+          "format",
+          "roots",
+          "bootstrap_enabled",
+          "compositions",
+          "executor_provider",
+          "reviewer_provider",
+          "executor_effort_vocabulary",
+          "reserved_ids",
+          "operator_projects",
+          "projects",
+          "trust_statement"
+        ],
+        "title": "RegistryRead"
       },
       "ReviewerAgentRead": {
         "properties": {

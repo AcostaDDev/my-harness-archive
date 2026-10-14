@@ -552,3 +552,41 @@ class AttemptModelMetricRow(Base):
     output_tokens: Mapped[int | None] = mapped_column(Integer, nullable=True)
     reasoning_tokens: Mapped[int | None] = mapped_column(Integer, nullable=True)
     cost_usd: Mapped[float | None] = mapped_column(Float, nullable=True)
+
+
+class RegisteredProjectRow(Base):
+    """H6.2 E2 (D054/D076): proyecto registrado desde la UI; versión optimista y baja lógica.
+
+    Solo datos no ejecutables: la composición se nombra y la resuelve el TOML del operador."""
+    __tablename__ = 'registered_projects'
+    __table_args__ = (Index('uq_registered_projects_active_root', 'root', unique=True,
+                            sqlite_where=text("status = 'ACTIVE'")),)
+    id: Mapped[str] = mapped_column(String(64), primary_key=True)
+    version: Mapped[int] = mapped_column(Integer)
+    status: Mapped[str] = mapped_column(String(20))
+    root: Mapped[str] = mapped_column(String)
+    composition: Mapped[str] = mapped_column(String(64))
+    profile: Mapped[str] = mapped_column(String(64))
+    # Fila canónica completa (lo que se compone) y su hash; la confianza se confirma aparte.
+    row: Mapped[dict] = mapped_column(JSON)
+    row_sha256: Mapped[str] = mapped_column(String(64))
+    trust: Mapped[dict] = mapped_column(JSON)
+    created_at: Mapped[str] = mapped_column(String(40))
+    updated_at: Mapped[str] = mapped_column(String(40))
+
+
+class RegisteredProjectEventRow(Base):
+    """Auditoría del registro: una fila por versión, nunca reescrita (quién, cuándo, antes y después)."""
+    __tablename__ = 'registered_project_events'
+    __table_args__ = (UniqueConstraint('project_id', 'version'), {'sqlite_autoincrement': True})
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    project_id: Mapped[str] = mapped_column(ForeignKey('registered_projects.id'))
+    version: Mapped[int] = mapped_column(Integer)
+    action: Mapped[str] = mapped_column(String(20))
+    row: Mapped[dict] = mapped_column(JSON)
+    row_sha256: Mapped[str] = mapped_column(String(64))
+    previous_sha256: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    preview_sha256: Mapped[str] = mapped_column(String(64))
+    actor: Mapped[dict] = mapped_column(JSON)
+    reason: Mapped[str | None] = mapped_column(Text, nullable=True)
+    recorded_at: Mapped[str] = mapped_column(String(40))

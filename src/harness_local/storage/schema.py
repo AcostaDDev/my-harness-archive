@@ -3,7 +3,7 @@ from sqlalchemy.engine import Engine
 from sqlalchemy.exc import SQLAlchemyError
 
 
-SCHEMA_REVISION = "0015_planning"
+SCHEMA_REVISION = "0016_project_registry"
 
 
 def require_schema(engine: Engine) -> None:

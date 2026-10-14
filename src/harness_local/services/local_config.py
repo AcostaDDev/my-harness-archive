@@ -1,8 +1,13 @@
-"""Operator TOML outside managed checkouts → explicit ManagedConfig (`local-config-2`).
+"""Operator TOML outside managed checkouts → explicit ManagedConfig (`local-config-3`).
 
+`local-config-3` (D076) keeps the `local-config-2` agents and groups the profile
+commands in named `[compositions.NAME]`; `[registration]` lists the canonical
+roots under which the UI may register projects (SQLite, D054) and whether those
+may enable bootstrap. `[[projects]]` is optional and names a composition.
 `local-config-2` (D052) declares `[agents.reviewer]` and `[agents.executor]`,
 each Codex or Claude. `local-config-1` is still read as Codex reviewer and
-Claude executor with its own policy (separate planner selection).
+Claude executor with its own policy (separate planner selection). Neither of
+them can register projects from the UI.
 
 Loading never launches processes or reads managed repositories. Trust,
 executables, environment, models and command authorizations come only from
@@ -17,6 +22,7 @@ import os
 from pathlib import Path
 import pwd
 import stat
+from threading import Lock
 import tomllib
 
 from harness_local.adapters.cli_agents import EFFORTS, CLIConfig, CLIProcessAdapter
@@ -30,8 +36,8 @@ from harness_local.profiles.typescript_web import typescript_web_profile
 from harness_local.services.managed_runtime import (PROJECT_ID, ManagedConfig, ManagedProject, agents_view,
                                                     validate_projects)
 
-VERSION = 'local-config-2'
-FORMATS = ('local-config-1', VERSION)
+VERSION = 'local-config-3'
+FORMATS = ('local-config-1', 'local-config-2', VERSION)
 CLI_KEYS = ('executable', 'cli_version', 'timeout_seconds', 'environment')
 TOOL_KEYS = ('tools', 'allowed_tools', 'grantable_tools')
 CONFIG_ENV = 'HARNESS_LOCAL_CONFIG'
@@ -238,12 +244,158 @@ def _outside(path, root):
     return not (path.is_relative_to(root) or root.is_relative_to(path))
 
 
+def _composition(value, where, state):
+    """`local-config-3`: commands of a profile under a name, independent of any checkout (D076)."""
+    if not isinstance(value, dict):
+        raise LocalConfigError(f'{where}: se esperaba una tabla')
+    if _text(value.get('profile'), f'{where}.profile') not in PROFILES:
+        raise LocalConfigError(f'{where}.profile: perfiles admitidos {sorted(PROFILES)}')
+    commands = {key: item for key, item in value.items() if key != 'profile'}
+    # The state directory stands in for a checkout: only the table itself is validated here.
+    _commands(commands, where, state, PROFILES[value['profile']]())
+    return value['profile'], commands
+
+
+class LocalComposer:
+    """Operator authority shared by every project: agents, Git, state and named compositions.
+
+    Composes TOML projects at load and registered projects (D076) at any time; the
+    ports and the writer find each checkout's live composition under a lock, so a
+    job frozen with another composition or registry version is refused before effects.
+    """
+
+    PROJECT_KEYS = ('id', 'root', 'repository_trusted', 'policy')
+    OPTIONAL_KEYS = ('tag_kind', 'permission_authority', 'documents')
+
+    def __init__(self, fmt, data, source, state, agents, reviewer, identity, git_executable, engine,
+                 compositions, registration):
+        self.format, self.source, self.state = fmt, source, state
+        self.agents_key = 'providers' if fmt == 'local-config-1' else 'agents'
+        self._authority = {self.agents_key: data[self.agents_key], 'git': data['git'], 'state_dir': str(state)}
+        self.agents, self.reviewer = agents, reviewer
+        self.identity, self.git_executable, self.engine = identity, git_executable, engine
+        self.compositions = compositions  # name → (profile, raw command table); empty before v3
+        # v3 only: canonical roots under which the UI may register, and the bootstrap ceiling.
+        self.roots, self.bootstrap_enabled = registration
+        self._lock = Lock()
+        self._live = {}
+
+    @property
+    def registrable(self):
+        return self.format == VERSION
+
+    def compose(self, item, where, *, registry=None):
+        """Validated `ManagedProject` and its composition, without installing it.
+
+        `registry` is `(version, row_sha256)` of a registered row: it enters the frozen
+        hash, so a newer registry version quarantines jobs admitted under the older one.
+        """
+        if self.registrable:
+            required, optional = (*self.PROJECT_KEYS, 'composition'), (*self.OPTIONAL_KEYS, 'bootstrap_enabled')
+        else:
+            required, optional = (*self.PROJECT_KEYS, 'profile', 'commands'), self.OPTIONAL_KEYS
+        item = _fields(item, where, required, optional)
+        if item.get('documents', 'v2') != 'v2':
+            raise LocalConfigError(f'{where}.documents: solo se admite "v2" (contrato documental D072)')
+        if _flag(item['repository_trusted'], f'{where}.repository_trusted') is not True:
+            raise LocalConfigError(f'{where}: sin confianza explícita el proyecto no se registra')
+        root = _path(item['root'], f'{where}.root', kind='directory')
+        if not (_outside(self.state, root) and _outside(self.source, root)):
+            raise LocalConfigError(f'{where}: configuración y estado deben quedar fuera del checkout')
+        authority = dict(self._authority)
+        if self.registrable:
+            name = _text(item['composition'], f'{where}.composition')
+            if name not in self.compositions:
+                raise LocalConfigError(f'{where}.composition: composiciones declaradas {sorted(self.compositions)}')
+            profile_name, table = self.compositions[name]
+            authority['composition'] = {name: {'profile': profile_name, **table}}
+        else:
+            profile_name, table = _text(item['profile'], f'{where}.profile'), item['commands']
+            if profile_name not in PROFILES:
+                raise LocalConfigError(f'{where}.profile: perfiles admitidos {sorted(PROFILES)}')
+        profile = PROFILES[profile_name]()
+        bootstrap = _flag(item.get('bootstrap_enabled', False), f'{where}.bootstrap_enabled')
+        engine_policy = _policy(item['policy'], f'{where}.policy', self.reviewer, self.agents['executor'].provider)
+        commands = _commands(table, f'{where}.commands', root, profile)
+        identifier = _text(item['id'], f'{where}.id')
+        if not PROJECT_ID.fullmatch(identifier):
+            raise LocalConfigError(f'{where}.id: [a-z0-9][a-z0-9._-]{{0,63}} requerido')
+        artifacts = self.state / 'artifacts' / identifier
+        try:
+            cli = CLIProcessAdapter(self.agents, artifacts)
+        except ValueError as exc:
+            raise LocalConfigError(f'{self.agents_key}: {exc}') from None
+        runner = ManagedCommandRunner(commands)
+        frozen = {'project': item, **authority}
+        if registry is not None:
+            frozen['registry'] = {'version': registry[0], 'row_sha256': registry[1]}
+        try:
+            digest = hashlib.sha256(freeze(frozen).encode()).hexdigest()
+        except (TypeError, ValueError):
+            raise LocalConfigError(f'{where}: valores TOML no admitidos (fechas u objetos)') from None
+        versions = {'engine': f'harness-local-{self.engine}', 'evidence': 'git-1', 'provider_cli': None,
+                    'local_config': self.format, 'profile': profile.name, 'local_config_sha256': digest,
+                    **({'project_registry': str(registry[0])} if registry is not None else {}),
+                    **cli.frozen_versions(), **runner.frozen_versions()}
+        context = ProjectContext(root, profile, engine_policy, documents=item.get('documents'))
+        project = ManagedProject(identifier, context, versions, item.get('permission_authority'),
+                                 item.get('tag_kind', 'lightweight'), bootstrap)
+        return project, (identifier, versions, commands, artifacts)
+
+    def install(self, composed):
+        project, composition = composed
+        with self._lock:
+            self._live[project.context.root] = composition
+        return project
+
+    def forget(self, root):
+        with self._lock:
+            self._live.pop(root, None)
+
+    def _composed(self, context, versions):
+        with self._lock:
+            current = self._live.get(context.root)
+        if current is None:
+            raise JournalError('Checkout sin composición local registrada')
+        identifier, frozen, commands, artifacts = current
+        if any(versions.get(key) != value for key, value in frozen.items()):
+            raise JournalError(f'Composición local de {identifier} distinta de la congelada; no se ejecuta')
+        return commands, artifacts
+
+    def ports(self, context, versions):
+        commands, artifacts = self._composed(context, versions)
+        return (CLIProcessAdapter(self.agents, artifacts), ManagedCommandRunner(commands),
+                GitWorkspace(self.identity, executable=self.git_executable))
+
+    def writer(self, context, versions):
+        self._composed(context, versions)
+        return GitWorkspace(self.identity, executable=self.git_executable)
+
+    def options(self):
+        """What the UI may choose; executables and environment values never leave the file."""
+        return {'format': self.format, 'roots': [str(root) for root in self.roots],
+                'bootstrap_enabled': self.bootstrap_enabled,
+                'executor_provider': self.agents['executor'].provider,
+                'reviewer_provider': self.agents['reviewer'].provider,
+                'executor_effort_vocabulary': list(EFFORTS[self.agents['executor'].provider]),
+                'compositions': [{'name': name, 'profile': profile,
+                                  'executables': sorted(table['executables']),
+                                  'environment_keys': sorted(table['environment']),
+                                  'authorize_profile_commands': table['authorize_profile_commands'],
+                                  'extra_commands': [list(item['argv']) for item in table.get('authorized', [])]}
+                                 for name, (profile, table) in sorted(self.compositions.items())]}
+
+
 def _build(data, source):
     if not isinstance(data, dict) or data.get('format') not in FORMATS:
         raise LocalConfigError(f'format debe ser uno de {list(FORMATS)}')
     fmt = data['format']
     agents_key = 'providers' if fmt == 'local-config-1' else 'agents'
-    data = _fields(data, 'raíz', ('format', 'service', 'git', agents_key, 'projects'))
+    if fmt == VERSION:
+        data = _fields(data, 'raíz', ('format', 'service', 'git', 'agents', 'registration', 'compositions'),
+                       ('projects',))
+    else:
+        data = _fields(data, 'raíz', ('format', 'service', 'git', agents_key, 'projects'))
     service = _fields(data['service'], 'service', ('state_dir', 'supervisor'), ('lease_seconds', 'poll_seconds'))
     state = _path(service['state_dir'], 'service.state_dir', kind='directory')
     git = _fields(data['git'], 'git', ('executable', 'author_name', 'author_email'))
@@ -259,78 +411,42 @@ def _build(data, source):
         reviewer = None
     else:
         agents, reviewer = _agents(data['agents'])
-    if not isinstance(data['projects'], list) or not data['projects']:
+    compositions, registration = {}, ((), False)
+    if fmt == VERSION:
+        if not isinstance(data['compositions'], dict) or not data['compositions']:
+            raise LocalConfigError('compositions: al menos una [compositions.NOMBRE] requerida')
+        for name, value in data['compositions'].items():
+            if not PROJECT_ID.fullmatch(name):
+                raise LocalConfigError(f'compositions.{name}: nombre [a-z0-9][a-z0-9._-]{{0,63}} requerido')
+            compositions[name] = _composition(value, f'compositions.{name}', state)
+        table = _fields(data['registration'], 'registration', ('roots', 'bootstrap_enabled'))
+        roots = tuple(_path(item, 'registration.roots', kind='directory')
+                      for item in _texts(table['roots'], 'registration.roots', empty=True))
+        if len(set(roots)) != len(roots):
+            raise LocalConfigError('registration.roots: raíces repetidas')
+        registration = (roots, _flag(table['bootstrap_enabled'], 'registration.bootstrap_enabled'))
+    items = data.get('projects', [])
+    if not isinstance(items, list) or (not items and fmt != VERSION):
         raise LocalConfigError('projects: al menos un [[projects]] requerido')
     try:
         engine = importlib.metadata.version('harness-local')
     except importlib.metadata.PackageNotFoundError:
         raise LocalConfigError('Versión del paquete harness-local no disponible') from None
 
-    projects, compositions = [], {}
-    for index, item in enumerate(data['projects']):
-        where = f'projects[{index}]'
-        item = _fields(item, where, ('id', 'root', 'repository_trusted', 'profile', 'policy', 'commands'),
-                       ('tag_kind', 'permission_authority', 'documents'))
-        if item.get('documents', 'v2') != 'v2':
-            raise LocalConfigError(f'{where}.documents: solo se admite "v2" (contrato documental D072)')
-        if _flag(item['repository_trusted'], f'{where}.repository_trusted') is not True:
-            raise LocalConfigError(f'{where}: sin confianza explícita el proyecto no se registra')
-        root = _path(item['root'], f'{where}.root', kind='directory')
-        if not (_outside(state, root) and _outside(source, root)):
-            raise LocalConfigError(f'{where}: configuración y estado deben quedar fuera del checkout')
-        if _text(item['profile'], f'{where}.profile') not in PROFILES:
-            raise LocalConfigError(f'{where}.profile: perfiles admitidos {sorted(PROFILES)}')
-        profile = PROFILES[item['profile']]()
-        engine_policy = _policy(item['policy'], f'{where}.policy', reviewer, agents['executor'].provider)
-        commands = _commands(item['commands'], f'{where}.commands', root, profile)
-        identifier = _text(item['id'], f'{where}.id')
-        if not PROJECT_ID.fullmatch(identifier):
-            raise LocalConfigError(f'{where}.id: [a-z0-9][a-z0-9._-]{{0,63}} requerido')
-        artifacts = state / 'artifacts' / identifier
-        try:
-            cli = CLIProcessAdapter(agents, artifacts)
-        except ValueError as exc:
-            raise LocalConfigError(f'agents: {exc}') from None
-        runner = ManagedCommandRunner(commands)
-        if identifier in {p.id for p in projects} or root in compositions:
-            raise LocalConfigError(f'{where}: id o raíz duplicados')
-        try:
-            digest = hashlib.sha256(freeze({'project': item, agents_key: data[agents_key], 'git': git,
-                                            'state_dir': str(state)}).encode()).hexdigest()
-        except (TypeError, ValueError):
-            raise LocalConfigError(f'{where}: valores TOML no admitidos (fechas u objetos)') from None
-        versions = {'engine': f'harness-local-{engine}', 'evidence': 'git-1', 'provider_cli': None,
-                    'local_config': fmt, 'profile': profile.name,
-                    'local_config_sha256': digest,
-                    **cli.frozen_versions(), **runner.frozen_versions()}
-        context = ProjectContext(root, profile, engine_policy, documents=item.get('documents'))
-        projects.append(ManagedProject(identifier, context, versions, item.get('permission_authority'),
-                                       item.get('tag_kind', 'lightweight')))
-        compositions[root] = (identifier, versions, commands, artifacts)
+    composer = LocalComposer(fmt, data, source, state, agents, reviewer, identity, git_executable, engine,
+                             compositions, registration)
+    projects = []
+    for index, item in enumerate(items):
+        project, composition = composer.compose(item, f'projects[{index}]')
+        if project.id in {p.id for p in projects} or project.context.root in {p.context.root for p in projects}:
+            raise LocalConfigError(f'projects[{index}]: id o raíz duplicados')
+        projects.append(composer.install((project, composition)))
 
-    def composed(context, versions):
-        try:
-            identifier, current, commands, artifacts = compositions[context.root]
-        except KeyError:
-            raise JournalError('Checkout sin composición local registrada') from None
-        if any(versions.get(key) != value for key, value in current.items()):
-            raise JournalError(f'Composición local de {identifier} distinta de la congelada; no se ejecuta')
-        return commands, artifacts
-
-    def ports(context, versions):
-        commands, artifacts = composed(context, versions)
-        return (CLIProcessAdapter(agents, artifacts), ManagedCommandRunner(commands),
-                GitWorkspace(identity, executable=git_executable))
-
-    def writer(context, versions):
-        composed(context, versions)
-        return GitWorkspace(identity, executable=git_executable)
-
-    config = ManagedConfig(tuple(projects), ports_factory=ports, commit_factory=writer,
+    config = ManagedConfig(tuple(projects), ports_factory=composer.ports, commit_factory=composer.writer,
                            supervisor=_flag(service['supervisor'], 'service.supervisor'),
                            lease_seconds=_number(service.get('lease_seconds', 30.0), 'service.lease_seconds'),
                            poll_seconds=_number(service.get('poll_seconds', 0.5), 'service.poll_seconds'),
-                           migrations_dir=state / 'migrations')
+                           migrations_dir=state / 'migrations', registrar=composer)
     try:
         validate_projects(config)
     except ValueError as exc:
@@ -363,9 +479,11 @@ def from_environment() -> ManagedConfig:
 
 def summary(config: ManagedConfig) -> dict:
     """Identifiers, roots and frozen versions only: environment values never leave the file."""
-    return {'format': config.projects[0].versions['local_config'], 'supervisor': config.supervisor,
+    registrar = config.registrar
+    return {'format': registrar.format, 'supervisor': config.supervisor,
+            'registration': registrar.options() if registrar.registrable else None,
             'projects': [{'id': p.id, 'root': str(p.context.root), 'profile': p.context.profile.name,
                           'policy': asdict(p.context.policy), 'agents': agents_view(p), 'versions': dict(p.versions),
                           'tag_kind': p.tag_kind, 'permission_authority': p.permission_authority is not None,
-                          'documents': p.context.documents}
+                          'documents': p.context.documents, 'bootstrap_enabled': p.bootstrap_enabled}
                          for p in config.projects]}

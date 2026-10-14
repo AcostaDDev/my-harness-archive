@@ -74,6 +74,8 @@ class ManagedConfig:
     lease_seconds: float = 30.0
     poll_seconds: float = 0.5
     migrations_dir: Path | None = None
+    # D076: autoridad del operador que compone proyectos registrados desde la UI (`local-config-3`).
+    registrar: object | None = None
 
 
 def load_config(spec: str | None = None) -> ManagedConfig:
@@ -184,8 +186,10 @@ class ManagedRuntime:
         self.engine = engine
         self._explicit = config
         self.config: ManagedConfig | None = None
-        self.repository = self.migration = self.views = self.worker = None
+        self.repository = self.migration = self.views = self.worker = self.registry = None
+        self.database: Path | None = None
         self.projects: dict[str, ManagedProject] = {}
+        self._projects_lock = Lock()
 
     def start(self) -> None:
         from harness_local.storage.backup import is_read_only_archive
@@ -208,6 +212,10 @@ class ManagedRuntime:
         from harness_local.storage.chat import ChatRepository
         self.chat = ChatRepository(self.repository)
         self.projects = {project.id: project for project in config.projects}
+        self.database = database
+        from harness_local.services.project_registry import ProjectRegistry
+        self.registry = ProjectRegistry(self)
+        self.registry.load()
         if config.supervisor:
             supervisor = LocalSupervisor(self.repository, config.ports_factory, lease_seconds=config.lease_seconds,
                                          commit_factory=config.commit_factory)
@@ -228,6 +236,15 @@ class ManagedRuntime:
             return self.projects[project_id]
         except KeyError:
             raise LookupError("Proyecto gestionado no registrado en este servicio.") from None
+
+    def install(self, project: ManagedProject) -> None:
+        """D076: alta o cambio en caliente; copia nueva del mapa para los lectores de otros hilos."""
+        with self._projects_lock:
+            self.projects = {**self.projects, project.id: project}
+
+    def uninstall(self, project_id: str) -> None:
+        with self._projects_lock:
+            self.projects = {key: value for key, value in self.projects.items() if key != project_id}
 
     def project_id(self, root: str) -> str | None:
         return next((p.id for p in self.projects.values() if str(p.context.root) == root), None)

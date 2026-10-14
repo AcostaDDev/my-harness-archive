@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Any, Generic, Literal, TypeVar
+from typing import Annotated, Any, Generic, Literal, TypeVar
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -190,6 +190,10 @@ class ManagedProjectRead(BaseModel):
     tag_kind: Literal["lightweight", "annotated"]
     agents: ProjectAgentsRead
     documents: Literal["v2"] | None = Field(default=None, description="Contrato documental D072; null: anterior.")
+    source: Literal["operator", "registry"] = Field(
+        default="operator", description="D076: declarado en el TOML del operador o registrado desde la UI.")
+    registry_version: int | None = Field(default=None, description="Versión del registro congelada en sus jobs.")
+    bootstrap_enabled: bool = False
 
 
 ActivationStatus = Literal["PREPARING", "ACTIVE", "FAILED", "REVERTING", "REVERTED"]
@@ -1576,6 +1580,133 @@ class MetricsSummaryRead(BaseModel):
     tasks: TaskQualityRead
     tests: ValidationTotalsRead
     stops: StopsRead
+
+
+# --- H6.2 E2: registro de proyectos (D054/D076) ------------------------------------------
+
+PermissionLayer = Literal['global', 'project', 'contract', 'provider']
+PermissionKind = Literal['files', 'tools', 'network', 'product', 'acceptance']
+ShortText = Annotated[str, Field(min_length=1, max_length=200)]
+
+
+class RegistryPolicyInput(BaseModel):
+    """Política D052 del proyecto: selecciones, nunca ejecutables ni entornos."""
+    model_config = ConfigDict(extra='forbid', strict=True)
+    planning_mode: Literal['agent', 'deterministic']
+    executor_mode: Literal['catalog', 'open']
+    executor_models: list[ShortText] = Field(min_length=1, max_length=20)
+    executor_efforts: list[ShortText] = Field(min_length=1, max_length=10)
+    max_revision_cycles: int | None = Field(default=None, ge=0, le=20)
+
+
+class RegistryChangeInput(BaseModel):
+    """Alta (`register`), cambio (`update`) o baja lógica (`retire`); la composición se nombra, no se define."""
+    model_config = ConfigDict(extra='forbid', strict=True)
+    action: Literal['register', 'update', 'retire']
+    project_id: str = Field(min_length=1, max_length=64)
+    expected_version: int = Field(ge=0, le=2**31, description='0 en el alta; la versión leída en un cambio o baja.')
+    root: str | None = Field(default=None, max_length=4096, description='Solo en el alta; la raíz no cambia después.')
+    composition: str | None = Field(default=None, max_length=64)
+    policy: RegistryPolicyInput | None = None
+    tag_kind: Literal['lightweight', 'annotated'] = 'lightweight'
+    documents: Literal['v2'] | None = 'v2'
+    bootstrap_enabled: bool = False
+    permission_authority: dict[PermissionLayer, dict[PermissionKind, list[ShortText]]] | None = Field(
+        default=None, description='Techo de permisos por capa; null: sin techo explícito.')
+
+
+class RegistryApplyCreate(BaseModel):
+    model_config = ConfigDict(extra='forbid', strict=True)
+    change: RegistryChangeInput
+    preview_sha256: str = Field(pattern=r'^[0-9a-f]{64}$')
+    trust_root: str | None = Field(default=None, max_length=4096,
+                                   description='Confirmación aparte de la confianza: la raíz canónica exacta.')
+    reason: str | None = Field(default=None, max_length=2000)
+
+
+class RegistryCompositionRead(BaseModel):
+    name: str
+    profile: str
+    executables: list[str] = Field(description='Solo los nombres; las rutas quedan en el TOML.')
+    environment_keys: list[str] = Field(description='Solo las claves; los valores nunca salen del TOML.')
+    authorize_profile_commands: bool
+    extra_commands: list[list[str]]
+
+
+class RegisteredProjectSummaryRead(BaseModel):
+    id: str
+    version: int
+    status: Literal['ACTIVE', 'RETIRED']
+    root: str
+    composition: str
+    profile: str
+    row_sha256: str
+    created_at: str
+    updated_at: str
+    available: bool
+    diagnostic: str | None = Field(description='Por qué una fila activa no se compone con el TOML actual.')
+
+
+class RegistryRead(BaseModel):
+    available: bool
+    format: str | None
+    roots: list[str]
+    bootstrap_enabled: bool
+    compositions: list[RegistryCompositionRead]
+    executor_provider: str | None
+    reviewer_provider: str | None
+    executor_effort_vocabulary: list[str]
+    reserved_ids: list[str]
+    operator_projects: list[str]
+    projects: list[RegisteredProjectSummaryRead]
+    trust_statement: str
+
+
+class RegistryEventRead(BaseModel):
+    version: int
+    action: Literal['register', 'update', 'retire']
+    row: dict[str, Any]
+    row_sha256: str
+    previous_sha256: str | None
+    preview_sha256: str
+    actor: dict[str, Any]
+    reason: str | None
+    recorded_at: str
+
+
+class RegisteredProjectRead(RegisteredProjectSummaryRead):
+    row: dict[str, Any]
+    trust: dict[str, Any]
+    unfinished_jobs: list[int]
+    history: list[RegistryEventRead]
+
+
+class RegistryFieldChangeRead(BaseModel):
+    field: str
+    before: Any
+    after: Any
+
+
+class RegistryPreviewRead(BaseModel):
+    action: Literal['register', 'update', 'retire']
+    project_id: str
+    expected_version: int
+    version: int
+    status: Literal['ACTIVE', 'RETIRED']
+    row: dict[str, Any]
+    row_sha256: str
+    changes: list[RegistryFieldChangeRead]
+    versions: dict[str, str | None] | None = Field(description='Versiones que congelarán sus jobs; null en la baja.')
+    profile: str
+    trust_required: bool
+    trust_statement: str | None
+    unfinished_jobs: list[int] = Field(description='Trabajos sin terminar del checkout: bloquean la confirmación.')
+    preview_sha256: str
+
+
+class RegistryApplyRead(BaseModel):
+    project: RegisteredProjectSummaryRead
+    replayed: bool = Field(description='La misma confirmación ya estaba aplicada; no hay otra versión.')
 
 
 # H6.5: referencias adelantadas de la transición a la propuesta de plan.

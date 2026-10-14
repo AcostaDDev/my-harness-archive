@@ -190,6 +190,8 @@ legend, .legend { font-weight: 650; font-size: 13px; padding: 0 6px; margin: 14p
 .chip { display: inline-block; background: var(--code-bg); border-radius: 4px; padding: 1px 6px; margin: 2px 6px 2px 0; font-size: 12.5px; }
 .hash { color: var(--muted); font-size: 12.5px; }
 .path { font-size: 13px; overflow-wrap: anywhere; }
+/* En una tabla, una ruta larga ocupa una línea y se trunca; el title conserva la completa. */
+.table td code.path { display: inline-block; max-width: 36ch; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; vertical-align: bottom; }
 .table-scroll { width: 100%; overflow-x: auto; }
 .table { width: 100%; border-collapse: collapse; font-size: 14px; }
 .table th { text-align: left; font-size: 12.5px; font-weight: 600; color: var(--muted); padding: 8px 12px; border-bottom: 1px solid var(--line-strong); white-space: nowrap; }
@@ -326,3 +328,20 @@ button[aria-pressed="true"] { border-color: var(--accent) !important; box-shadow
 @media (prefers-reduced-motion: reduce) {
   * { transition: none !important; scroll-behavior: auto !important; }
 }
+
+/* Registro de proyectos (H6.2 E2): alta, cambio y baja con vista previa. */
+.button-link { display: inline-block; font-size: 14px; font-weight: 600; border-radius: 6px; padding: 8px 14px; white-space: nowrap;
+  border: 1px solid var(--accent); background: var(--accent); color: var(--accent-ink); text-decoration: none; }
+.button-link:hover { background: var(--accent-hover); border-color: var(--accent-hover); }
+.inline-json { margin: 0; font: 12.5px/1.45 var(--font-mono); white-space: pre-wrap; overflow-wrap: anywhere; }
+.effort-list { display: flex; flex-wrap: wrap; gap: 0 20px; }
+.effort-list .check { margin: 6px 0; }
+fieldset.trust { background: var(--surface); }
+.registry-edit { margin-top: 20px; border-top: 1px solid var(--line); }
+.registry-edit > summary { list-style: none; cursor: pointer; padding: 14px 0 4px; display: flex; align-items: center; gap: 12px; }
+.registry-edit > summary::-webkit-details-marker { display: none; }
+.registry-edit > summary::before { content: ""; width: 7px; height: 7px; border-right: 2px solid var(--muted); border-bottom: 2px solid var(--muted); transform: rotate(-45deg); transition: transform .15s ease; flex: none; }
+.registry-edit[open] > summary::before { transform: rotate(45deg); }
+.registry-edit > summary h3 { margin: 0; }
+.state-attention .state-title { margin: 0 0 4px; font-weight: 650; }
+.state-attention ul { margin: 4px 0 0; padding-left: 20px; }

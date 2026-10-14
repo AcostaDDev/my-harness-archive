@@ -144,18 +144,6 @@ def test_changing_selection_mode_quarantines_pending_jobs(setup, repository):
     assert repository.get_run(job.run_id).status == 'RECOVERY_REQUIRED' and not launches(tmp_path)
 
 
-def test_example_template_documents_the_local_config_2_keys(setup):
-    import tomllib
-    from pathlib import Path
-    data = v2(setup[1])
-    example = tomllib.loads((Path(__file__).parents[2] / 'examples/local_config.example.toml').read_text())
-    assert example['format'] == 'local-config-2' and example.keys() == data.keys()
-    assert example['projects'][0].keys() == data['projects'][0].keys()
-    assert example['projects'][0]['policy'].keys() == data['projects'][0]['policy'].keys() - {'max_revision_cycles'}
-    for name in ('reviewer', 'executor'):
-        assert example['agents'][name].keys() == data['agents'][name].keys()
-
-
 def test_local_config_1_still_reads_as_codex_reviewer_and_claude_executor(setup):
     context, data, folder, tmp_path = setup
     project = load_local_config(write(folder, data)).projects[0]

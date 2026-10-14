@@ -1,19 +1,18 @@
-# Siguiente paso: H6.2 E2, registro de proyectos (D076)
+# Siguiente paso: H6.2 E3, documentación (D076)
 
 Estado al 2026-10-14:
 
-- **H6.2 E1 implementada y verificada offline (D077).** [Entrega, diseño y límites](discovery/H6.2_E1_SHELL.md).
+- **H6.2 E2 implementada y verificada offline (D078).** [Entrega, API y límites](discovery/H6.2_E2_REGISTRY.md).
   Incluye:
-  - Enrutador propio con las URLs de D072 §7 y enlace corto `/runs/:id`.
-  - Fallback de la UI en el servidor del wheel.
-  - Lecturas por código de fase y resumen de tareas por fase.
-  - Shell con migas, supervisor, tema y sesión.
-  - Sistema de diseño claro y oscuro con el raíl del ciclo de vida de la fase.
-  - Las pantallas anteriores repartidas por URL.
+  - `local-config-3` con raíces de registro, techo de bootstrap y composiciones con nombre; v1/v2 intactos.
+  - Registro en SQLite (`0016_project_registry`), versionado, auditado y con baja lógica.
+  - API de vista previa y confirmación ligada a hash y versión, con la confianza aparte.
+  - Incorporación en caliente con la versión del registro en el hash congelado.
+  - UI en `/projects/new` y en los ajustes del proyecto.
 
-  QA con Chrome sobre la demo sintética, en el build y en Vite.
-- [Alcance de H6.2](discovery/H6.2_SCOPE.md): E2 registro → E3 documentación → E4 creación y planificación → E5
-  chat global → E6 estadísticas.
+  QA con Chrome sobre `scripts/dev` con datos sintéticos: alta → primera tarea → aceptada, cambio y baja.
+- [Alcance de H6.2](discovery/H6.2_SCOPE.md): E3 documentación → E4 creación y planificación → E5 chat global → E6
+  estadísticas.
 
 ## Decisión pendiente del usuario (hallazgo de E1)
 
@@ -29,23 +28,21 @@ No se ha cambiado nada.
 
 ## Tarea concreta propuesta, no iniciada
 
-**H6.2 E2 — Registro de proyectos** ([alcance §E2](discovery/H6.2_SCOPE.md#e2--registro-de-proyectos-d054)).
+**H6.2 E3 — Documentación** ([alcance §E3](discovery/H6.2_SCOPE.md#e3--documentación)).
 
-1. Formato `local-config-3`: composiciones con nombre (ejecutables, entorno, límites y comandos autorizados del
-   perfil), raíces bajo las que la UI puede registrar y `bootstrap_enabled`. `local-config-1` y `-2` se siguen
-   leyendo; sus `[[projects]]` no se editan desde la UI.
-2. Migración nueva: registro de proyectos versionado y auditado, con baja lógica.
-3. API de alta, cambio y baja con vista previa y confirmación ligadas a hash y versión, y la confianza como
-   confirmación aparte. Sin ids repetidos con el TOML; raíz canónica bajo una raíz autorizada, sin enlaces y fuera
-   del estado del servicio.
-4. El hash de la composición congelada incluye la versión del registro; cambiar un proyecto con jobs pendientes se
-   rechaza. El runtime incorpora el proyecto sin reiniciar, sin romper la congelación por job ni la exclusión de un
-   escritor por checkout.
-5. UI en `/projects/new` y en ajustes del proyecto.
+1. Dependencias nuevas fijadas: `markdown-it` (`html: false`) y `mermaid` (`securityLevel: "strict"`, carga diferida
+   solo en la documentación), con versiones de al menos dos semanas. La instalación necesita red una vez y actualiza
+   `package-lock.json`; medir el bundle con la carga diferida.
+2. Árbol `/projects/:p/docs/*path` y visor. Enlaces solo relativos y `http(s)`; imágenes del repositorio servidas por la
+   API, nunca hacia fuera.
+3. Editor con hash base, vista previa del diff y confirmación de `document_edit`: conflictos de CAS, deriva («cambios
+   locales sin confirmar»: confirmar o regenerar), bloques gestionados bloqueados, `archive/**` en solo lectura y los
+   bloqueos que provoca la deriva.
+4. Ruta nueva en el enrutador y en la navegación del proyecto.
 
-Criterios: registro de una carpeta sintética desde la UI hasta su primera tarea sin editar archivos; rechazos
-probados (raíz fuera de las autorizadas, enlace, id duplicado, confianza sin confirmar, versión obsoleta);
-configuraciones anteriores intactas; QA con navegador. Actualizar STATE, NEXT_STEPS y DECISIONS al terminar.
+Criterios: Markdown sin HTML ejecutable, probado con casos hostiles (`<script>`, `javascript:`, `on*=`, SVG/Mermaid
+con HTML incrustado) con `node --test`; edición confirmada sin repetir efectos al recargar; QA con navegador en claro,
+oscuro y estrecho. Actualizar STATE, NEXT_STEPS y DECISIONS al terminar.
 
 D071 y los consentimientos anteriores siguen agotados. Cualquier prueba real requiere una propuesta y un
 consentimiento nuevos. Sin push ni publicación.

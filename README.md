@@ -90,6 +90,10 @@ fuera de todo checkout, `chmod 600`, validarla con
 `harness-local serve --database /ruta/harness.sqlite3 --config /ruta/harness-local.toml`.
 Con `supervisor = true` el servicio invoca las CLI configuradas y consume la
 suscripción. [Esquema, congelación y límites](docs/discovery/LOCAL_CONFIG.md).
+La plantilla es `local-config-3`: los comandos van en composiciones con nombre y
+`[registration]` fija las raíces bajo las que la UI puede registrar proyectos
+(`/projects/new`). `local-config-1` y `-2` se siguen leyendo sin registro desde la UI.
+[Registro de proyectos](docs/discovery/H6.2_E2_REGISTRY.md).
 
 ## Entorno de desarrollo comprobado
 

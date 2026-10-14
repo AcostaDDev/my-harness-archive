@@ -262,6 +262,80 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/managed/registry": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Registry Options */
+        get: operations["managed_registry"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/managed/registry/projects/{project_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Registered Project */
+        get: operations["managed_registered_project"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/managed/registry/preview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Registry Preview
+         * @description Sin efectos: fila resultante, cambios, versiones congeladas y hash que liga la confirmación.
+         */
+        post: operations["managed_registry_preview"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/managed/registry/apply": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Registry Apply
+         * @description Repetir la misma confirmación devuelve el resultado ya aplicado, sin otra versión.
+         */
+        post: operations["managed_registry_apply"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/managed/projects/{project_id}/mode": {
         parameters: {
             query?: never;
@@ -3160,6 +3234,23 @@ export interface components {
              * @description Contrato documental D072; null: anterior.
              */
             documents?: "v2" | null;
+            /**
+             * Source
+             * @description D076: declarado en el TOML del operador o registrado desde la UI.
+             * @default operator
+             * @enum {string}
+             */
+            source: "operator" | "registry";
+            /**
+             * Registry Version
+             * @description Versión del registro congelada en sus jobs.
+             */
+            registry_version?: number | null;
+            /**
+             * Bootstrap Enabled
+             * @default false
+             */
+            bootstrap_enabled: boolean;
         };
         /** ManagedRunRead */
         ManagedRunRead: {
@@ -4558,6 +4649,307 @@ export interface components {
             /** Origin */
             origin: string;
         };
+        /** RegisteredProjectRead */
+        RegisteredProjectRead: {
+            /** Id */
+            id: string;
+            /** Version */
+            version: number;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "ACTIVE" | "RETIRED";
+            /** Root */
+            root: string;
+            /** Composition */
+            composition: string;
+            /** Profile */
+            profile: string;
+            /** Row Sha256 */
+            row_sha256: string;
+            /** Created At */
+            created_at: string;
+            /** Updated At */
+            updated_at: string;
+            /** Available */
+            available: boolean;
+            /**
+             * Diagnostic
+             * @description Por qué una fila activa no se compone con el TOML actual.
+             */
+            diagnostic: string | null;
+            /** Row */
+            row: {
+                [key: string]: unknown;
+            };
+            /** Trust */
+            trust: {
+                [key: string]: unknown;
+            };
+            /** Unfinished Jobs */
+            unfinished_jobs: number[];
+            /** History */
+            history: components["schemas"]["RegistryEventRead"][];
+        };
+        /** RegisteredProjectSummaryRead */
+        RegisteredProjectSummaryRead: {
+            /** Id */
+            id: string;
+            /** Version */
+            version: number;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "ACTIVE" | "RETIRED";
+            /** Root */
+            root: string;
+            /** Composition */
+            composition: string;
+            /** Profile */
+            profile: string;
+            /** Row Sha256 */
+            row_sha256: string;
+            /** Created At */
+            created_at: string;
+            /** Updated At */
+            updated_at: string;
+            /** Available */
+            available: boolean;
+            /**
+             * Diagnostic
+             * @description Por qué una fila activa no se compone con el TOML actual.
+             */
+            diagnostic: string | null;
+        };
+        /** RegistryApplyCreate */
+        RegistryApplyCreate: {
+            change: components["schemas"]["RegistryChangeInput"];
+            /** Preview Sha256 */
+            preview_sha256: string;
+            /**
+             * Trust Root
+             * @description Confirmación aparte de la confianza: la raíz canónica exacta.
+             */
+            trust_root?: string | null;
+            /** Reason */
+            reason?: string | null;
+        };
+        /** RegistryApplyRead */
+        RegistryApplyRead: {
+            project: components["schemas"]["RegisteredProjectSummaryRead"];
+            /**
+             * Replayed
+             * @description La misma confirmación ya estaba aplicada; no hay otra versión.
+             */
+            replayed: boolean;
+        };
+        /**
+         * RegistryChangeInput
+         * @description Alta (`register`), cambio (`update`) o baja lógica (`retire`); la composición se nombra, no se define.
+         */
+        RegistryChangeInput: {
+            /**
+             * Action
+             * @enum {string}
+             */
+            action: "register" | "update" | "retire";
+            /** Project Id */
+            project_id: string;
+            /**
+             * Expected Version
+             * @description 0 en el alta; la versión leída en un cambio o baja.
+             */
+            expected_version: number;
+            /**
+             * Root
+             * @description Solo en el alta; la raíz no cambia después.
+             */
+            root?: string | null;
+            /** Composition */
+            composition?: string | null;
+            policy?: components["schemas"]["RegistryPolicyInput"] | null;
+            /**
+             * Tag Kind
+             * @default lightweight
+             * @enum {string}
+             */
+            tag_kind: "lightweight" | "annotated";
+            /**
+             * Documents
+             * @default v2
+             */
+            documents: "v2" | null;
+            /**
+             * Bootstrap Enabled
+             * @default false
+             */
+            bootstrap_enabled: boolean;
+            /**
+             * Permission Authority
+             * @description Techo de permisos por capa; null: sin techo explícito.
+             */
+            permission_authority?: {
+                [key: string]: {
+                    [key: string]: string[];
+                };
+            } | null;
+        };
+        /** RegistryCompositionRead */
+        RegistryCompositionRead: {
+            /** Name */
+            name: string;
+            /** Profile */
+            profile: string;
+            /**
+             * Executables
+             * @description Solo los nombres; las rutas quedan en el TOML.
+             */
+            executables: string[];
+            /**
+             * Environment Keys
+             * @description Solo las claves; los valores nunca salen del TOML.
+             */
+            environment_keys: string[];
+            /** Authorize Profile Commands */
+            authorize_profile_commands: boolean;
+            /** Extra Commands */
+            extra_commands: string[][];
+        };
+        /** RegistryEventRead */
+        RegistryEventRead: {
+            /** Version */
+            version: number;
+            /**
+             * Action
+             * @enum {string}
+             */
+            action: "register" | "update" | "retire";
+            /** Row */
+            row: {
+                [key: string]: unknown;
+            };
+            /** Row Sha256 */
+            row_sha256: string;
+            /** Previous Sha256 */
+            previous_sha256: string | null;
+            /** Preview Sha256 */
+            preview_sha256: string;
+            /** Actor */
+            actor: {
+                [key: string]: unknown;
+            };
+            /** Reason */
+            reason: string | null;
+            /** Recorded At */
+            recorded_at: string;
+        };
+        /** RegistryFieldChangeRead */
+        RegistryFieldChangeRead: {
+            /** Field */
+            field: string;
+            /** Before */
+            before: unknown;
+            /** After */
+            after: unknown;
+        };
+        /**
+         * RegistryPolicyInput
+         * @description Política D052 del proyecto: selecciones, nunca ejecutables ni entornos.
+         */
+        RegistryPolicyInput: {
+            /**
+             * Planning Mode
+             * @enum {string}
+             */
+            planning_mode: "agent" | "deterministic";
+            /**
+             * Executor Mode
+             * @enum {string}
+             */
+            executor_mode: "catalog" | "open";
+            /** Executor Models */
+            executor_models: string[];
+            /** Executor Efforts */
+            executor_efforts: string[];
+            /** Max Revision Cycles */
+            max_revision_cycles?: number | null;
+        };
+        /** RegistryPreviewRead */
+        RegistryPreviewRead: {
+            /**
+             * Action
+             * @enum {string}
+             */
+            action: "register" | "update" | "retire";
+            /** Project Id */
+            project_id: string;
+            /** Expected Version */
+            expected_version: number;
+            /** Version */
+            version: number;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "ACTIVE" | "RETIRED";
+            /** Row */
+            row: {
+                [key: string]: unknown;
+            };
+            /** Row Sha256 */
+            row_sha256: string;
+            /** Changes */
+            changes: components["schemas"]["RegistryFieldChangeRead"][];
+            /**
+             * Versions
+             * @description Versiones que congelarán sus jobs; null en la baja.
+             */
+            versions: {
+                [key: string]: string | null;
+            } | null;
+            /** Profile */
+            profile: string;
+            /** Trust Required */
+            trust_required: boolean;
+            /** Trust Statement */
+            trust_statement: string | null;
+            /**
+             * Unfinished Jobs
+             * @description Trabajos sin terminar del checkout: bloquean la confirmación.
+             */
+            unfinished_jobs: number[];
+            /** Preview Sha256 */
+            preview_sha256: string;
+        };
+        /** RegistryRead */
+        RegistryRead: {
+            /** Available */
+            available: boolean;
+            /** Format */
+            format: string | null;
+            /** Roots */
+            roots: string[];
+            /** Bootstrap Enabled */
+            bootstrap_enabled: boolean;
+            /** Compositions */
+            compositions: components["schemas"]["RegistryCompositionRead"][];
+            /** Executor Provider */
+            executor_provider: string | null;
+            /** Reviewer Provider */
+            reviewer_provider: string | null;
+            /** Executor Effort Vocabulary */
+            executor_effort_vocabulary: string[];
+            /** Reserved Ids */
+            reserved_ids: string[];
+            /** Operator Projects */
+            operator_projects: string[];
+            /** Projects */
+            projects: components["schemas"]["RegisteredProjectSummaryRead"][];
+            /** Trust Statement */
+            trust_statement: string;
+        };
         /**
          * ReviewerAgentRead
          * @description D052: el revisor planifica, revisa, evalúa fases, conversa y propone el bootstrap (solo lectura).
@@ -5441,6 +5833,252 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ManagedProjectRead"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+        };
+    };
+    managed_registry: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Obligatoria con valor 1 en mutaciones (protección CSRF). */
+                "x-harness-local"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RegistryRead"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+        };
+    };
+    managed_registered_project: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Obligatoria con valor 1 en mutaciones (protección CSRF). */
+                "x-harness-local"?: string | null;
+            };
+            path: {
+                project_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RegisteredProjectRead"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+        };
+    };
+    managed_registry_preview: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Obligatoria con valor 1 en mutaciones (protección CSRF). */
+                "x-harness-local"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RegistryChangeInput"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RegistryPreviewRead"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+        };
+    };
+    managed_registry_apply: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Obligatoria con valor 1 en mutaciones (protección CSRF). */
+                "x-harness-local"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RegistryApplyCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RegistryApplyRead"];
                 };
             };
             /** @description Forbidden */

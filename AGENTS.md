@@ -184,7 +184,9 @@ borradores en la carpeta destino con CAS escritos solo al aplicar propuestas con
 bootstrap D037 con plantilla v2 y `phase-000`, y `plan_proposal` en la transición
 (`docs/discovery/H6.5_CONVERSATIONAL_CREATION.md`). Alcance de H6.2 fijado (D076,
 `docs/discovery/H6.2_SCOPE.md`). E1 completada offline (D077, `docs/discovery/H6.2_E1_SHELL.md`):
-enrutador propio, shell, lecturas por código y sistema de diseño. Siguiente: E2 (registro), sin iniciar.
+enrutador propio, shell, lecturas por código y sistema de diseño. E2 completada offline (D078,
+`docs/discovery/H6.2_E2_REGISTRY.md`): `local-config-3` con composiciones y raíces de registro, registro de
+proyectos `0016_project_registry`, `/api/managed/registry` y `/projects/new`. Siguiente: E3 (documentación), sin iniciar.
 Comprobación offline ligera, solo biblioteca estándar, desde la raíz:
 
 ```sh
@@ -214,16 +216,16 @@ npm --prefix frontend run dev
 ```
 
 Las primeras instalaciones necesitan red; después los checks son offline.
-No usar `uv --active` con entornos de otros proyectos. 1065 pruebas pytest
+No usar `uv --active` con entornos de otros proyectos. 1075 pruebas pytest
 (158 anteriores + 53 H2.3 + 8 entorno smoke + 34 H2.4 + 35 H2.5 + 18 API gestionada + 2 demo UI + 23 H3.1,
-+ 30 H3.2 + 29 H3.3 + 18 H3.4 + 22 H4.1 + 32 exportación + 48 H4.2 + 16 H4.3 + 43 H5.1 + 43 H5.2 + 43 H5.3 + 52 H5.4 + 13 H5.5 + 45 H5.6 + 6 H5.7 + 40 ejecutor de comandos + 35 configuración local + 11 comando de desarrollo + 32 agentes D052 + 16 formas de contrato D056 + 6 esquema tipado D058 + 10 raíces Codex D059 + 20 memoria CLI D066 + 2 confianza CLI D068 + 5 contradicción de ámbito D069 + 37 contrato documental H6.3 + 26 métricas H6.4 + 44 creación/planificación H6.5 + 2 plantillas H6.5 + 8 rutas de UI H6.2 E1,
++ 30 H3.2 + 29 H3.3 + 18 H3.4 + 22 H4.1 + 32 exportación + 48 H4.2 + 16 H4.3 + 43 H5.1 + 43 H5.2 + 43 H5.3 + 52 H5.4 + 13 H5.5 + 45 H5.6 + 6 H5.7 + 40 ejecutor de comandos + 35 configuración local + 11 comando de desarrollo + 32 agentes D052 + 16 formas de contrato D056 + 6 esquema tipado D058 + 10 raíces Codex D059 + 20 memoria CLI D066 + 2 confianza CLI D068 + 5 contradicción de ámbito D069 + 37 contrato documental H6.3 + 26 métricas H6.4 + 44 creación/planificación H6.5 + 2 plantillas H6.5 + 8 rutas de UI H6.2 E1 + 10 registro H6.2 E2 + 1 ruta E2 − 1 plantilla v2 sustituida,
 con Git temporal).
 Paquete H5.5: UI/API en 127.0.0.1:8013; en desarrollo API en :8013 y Vite en :5173
 en otra terminal. SQLite local ignorada en `.local/harness.sqlite3`; migración
 explícita antes de arrancar. Ver README y `docs/discovery/H0.3_SKELETON.md`.
 Estos comandos verifican el esqueleto simulado, el índice legacy, su navegación/observación/SSE
 y el motor/persistencia/cola/procesos sintéticos; nunca agentes reales.
-Esquema actual `0015_planning`; SQLite debe estar
+Esquema actual `0016_project_registry`; SQLite debe estar
 fuera del checkout que se importa. Ver `docs/discovery/H1.1_IMPORT.md` y
 `docs/discovery/H1.2_NAVIGATION.md`. Ver `docs/discovery/H1.3_OBSERVATION.md`
 y `docs/discovery/H2.1_ENGINE.md` y `docs/discovery/H2.2_PERSISTENCE.md`.
@@ -264,7 +266,7 @@ Regresión del cliente gestionado, sin dependencias adicionales ni navegador:
 node --test frontend/tests/*.test.mjs
 ```
 
-Doce pruebas Node (cliente y enrutador; `node --test frontend/tests/*.test.mjs`). Demo offline opt-in: `examples.managed_demo:build`, preparación
+Trece pruebas Node (cliente y enrutador; `node --test frontend/tests/*.test.mjs`). Demo offline opt-in: `examples.managed_demo:build`, preparación
 y comandos en `docs/discovery/H2_EXIT_UI.md`. Nunca apuntar la demo a un checkout
 real. Toda API (lecturas, evidencias, health/OpenAPI y streams incluidos) exige
 sesión local. Al arrancar se anuncia solo la ruta de la clave en un archivo

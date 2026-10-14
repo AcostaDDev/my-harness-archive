@@ -4,6 +4,7 @@
 export type Route =
   | { name: "home" }
   | { name: "legacy" }
+  | { name: "project-new" }
   | { name: "project"; project: string }
   | { name: "phases"; project: string }
   | { name: "phase"; project: string; phase: string }
@@ -35,7 +36,8 @@ export function parse(pathname: string): Route {
   if (a === "runs" && n === 2) return { name: "run-short", run: b };
   if (a !== "projects" || n < 2) return { name: "not-found", path: pathname };
   const project = b;
-  if (n === 2) return { name: "project", project };
+  // `new` está reservado: el servidor nunca registra un proyecto con ese id (D076).
+  if (n === 2) return project === "new" ? { name: "project-new" } : { name: "project", project };
   if (c === "settings" && n === 3) return { name: "settings", project };
   if (c === "chat" && n <= 4) return n === 3 ? { name: "chat", project } : { name: "chat", project, conversation: d };
   if (c !== "phases") return { name: "not-found", path: pathname };
@@ -51,6 +53,7 @@ export function href(route: Route): string {
   switch (route.name) {
     case "home": return "/";
     case "legacy": return "/legacy";
+    case "project-new": return "/projects/new";
     case "project": return `/projects/${e(route.project)}`;
     case "phases": return `/projects/${e(route.project)}/phases`;
     case "phase": return `/projects/${e(route.project)}/phases/${e(route.phase)}`;
@@ -77,6 +80,7 @@ export function runRoute(run: { id: string; project_id: string | null; phase_id:
 export function trail(route: Route): { label: string; to: Route }[] {
   const items: { label: string; to: Route }[] = [{ label: "Proyectos", to: { name: "home" } }];
   if (route.name === "legacy") items.push({ label: "Importados", to: route });
+  if (route.name === "project-new") items.push({ label: "Registrar proyecto", to: route });
   if (route.name === "run-short") items.push({ label: route.run, to: route });
   if (route.name === "not-found") items.push({ label: "Página no encontrada", to: route });
   if (!("project" in route)) return items;
