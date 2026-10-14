@@ -26,7 +26,7 @@ from harness_local.core.engine.journal import JournalError
 from harness_local.core.engine.prompts import digest, output_schema
 
 
-VERSION = "cli-8"
+VERSION = "cli-9"
 # Version/help characterization (D052): Claude 2.1.295 and 2.1.296 share the same help.
 SUPPORTED = {"codex": ("0.161.0", "0.162.1"), "claude": ("2.1.295", "2.1.296")}
 # Codex workspace-write was characterized on 0.162.1 only.
@@ -162,7 +162,14 @@ def argv_for(config, context, request):
         # keeps its CLI default; file scope remains the frozen engine contract.
         sandbox = ("workspace-write", "-c", "sandbox_workspace_write.network_access=false",
                    "-c", "sandbox_workspace_write.writable_roots=" + json.dumps([str(context.root)], ensure_ascii=False),
-                   "-c", "sandbox_workspace_write.exclude_slash_tmp=true") \
+                   "-c", "sandbox_workspace_write.exclude_slash_tmp=true",
+                   # The pinned 0.162.1 thread/start persists trust only when
+                   # active_project.trust_level is absent. An explicit untrusted
+                   # entry skips that write and keeps project config/hooks disabled.
+                   # Override the whole table: the CLI splits dotted keys literally,
+                   # so quoting a pathname in a dotted key would not work.
+                   "-c", "projects={" + json.dumps(str(context.root), ensure_ascii=False)
+                   + '={trust_level="untrusted"}}') \
             if access == "write" else ("read-only",)
         return config.executable + (
             "exec", "--strict-config", "--ignore-user-config", "--ignore-rules", "--ephemeral", "--json",

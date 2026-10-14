@@ -35,7 +35,7 @@ Actualizado: 2026-10-14.
 - Dependencias reales instaladas en `.venv` / `frontend/node_modules`, locks
   `uv.lock` / `frontend/package-lock.json`. Pins H0.2 usados conservados;
   backend de paquete `uv_build==0.12.19`. Comandos comprobados en README/AGENTS.
-- 929 casos de producto en `tests/product/`; pytest recolecta 941 pruebas en total.
+- 936 casos de producto en `tests/product/`; 948 pytest y 121 subtests aprobados.
   La comprobación ligera anterior conserva sus 12 checks sin dependencias.
 - H1.1 completado: [importación legacy y verificaciones](discovery/H1.1_IMPORT.md),
   [alcance original](discovery/H1.1_SCOPE.md). Lector local explícito de
@@ -527,11 +527,19 @@ offline correctas. No resuelve la escritura de confianza Codex ni certifica
 ausencia de estado auxiliar externo. Preparación de arranque completada D067
 ([dictamen](discovery/CODEX_STARTUP_PREPARATION.md)): perfil de denegación por
 defecto no permite un arranque útil del fake; propuesta no apta para CLI real.
-12 casos sintéticos y 14 pytest pertinentes correctos. Siguiente: verificar
-en fuente identificable del pin la condición de persistencia de confianza y
-una posible supresión en transporte, sin nueva prueba real. Después,
-hito de interfaz de producto con alta de proyectos en SQLite (D054); no iniciado.
-QA visual H5.7 bloqueada por herramienta; Claude real con D058 sigue pendiente.
+12 casos sintéticos y 14 pytest pertinentes correctos. D068 acredita después
+la fuente exacta de Codex 0.162.1 (commit embebido en el binario) y suprime
+específicamente la persistencia de confianza con projects inline untrusted
+en el escritor, conservando permisos/auth (`cli-9`, [corrección](discovery/CODEX_TRUST_SUPPRESSION.md)).
+D069/D070 se detienen por contrato contradictorio y timeouts, conservando
+originales; contrato/prompt corregidos antes del escritor. **D071 completa
+las cuatro combinaciones reales con COMMITTED**, [resultado](discovery/PROVIDER_MATRIX_CLI9_RUN.md).
+948 pytest y 121 subtests pasan; memoria automática desactivada y muestras
+globales intactas. Comprobación funcional cerrada, aislamiento externo completo
+no certificado. Siguiente tarea propuesta: concretar organización/continuidad
+documental por fase, sin iniciar; UI H6.2 tampoco iniciada. Archivado automático
+no implementado ni probado por esta matriz. QA visual H5.7 conserva su límite
+histórico; Claude real con esquema tipado D058 ya comprobado en D071.
 
 ## Verificación de H0.1
 
@@ -2424,6 +2432,61 @@ QA visual H5.7 bloqueada por herramienta; Claude real con D058 sigue pendiente.
   globales; registrar límites antes de implementar. No iniciada aquí. Fase de
   comprobaciones abierta; matrices 3/4, archivado documental y H6.2 sin iniciar.
   D050/D055/D057/D060 siguen agotados.
+
+## Cierre de la comprobación funcional de flujos de modelos (D068–D071)
+
+- Petición del usuario: comprobar el flujo hasta cerrarlo y continuar después
+  con el resto. Git inicialmente limpio en main, `1d2de43`; commit solicitado
+  dentro del flujo de esta sesión. [Fuente/cli-9](discovery/CODEX_TRUST_SUPPRESSION.md),
+  [ensayos detenidos](discovery/PROVIDER_MATRIX_CLI9_STOPS.md),
+  [cuatro resultados reales](discovery/PROVIDER_MATRIX_CLI9_RUN.md) y
+  [manifiesto final](discovery/PROVIDER_MATRIX_CLI9_RESULT.json).
+- Fuente pública rust-v0.162.1 → commit 092d3acd, presente en nativo/hash D062.
+  Arranque persiste confianza solo con cwd explícito/trust ausente/proyecto/
+  permisos de escritura. cli-9 pasa projects={<cwd>={trust_level="untrusted"}}
+  al escritor: evita esa ruta y config/hooks locales implícitas; mantiene
+  workspace-write/raíces/network false/approval never, HOME/USER/auth. Clave
+  completa inline por el parser dotted del pin. Jobs cli-8 anteriores quedan
+  en cuarentena antes de preflight sin reescribir congelados.
+- D069: tres COMPLETE Codex, edición/tests correctos pero planner permite
+  src/estimate.ts y prohíbe **. Revisor BLOCKED, sin commit. Se corrige prompt/
+  esquema y contrato para rechazar contradicciones acreditables antes del
+  escritor, sin borrar prohibiciones y conservando exclusiones parciales.
+  D070: una invocación planner, timeouts y eventos error de reconexión; aunque
+  después haya plan válido/terminal exit 0, CLI failed/STOPPED. Parser conservado.
+  Ambos ensayos cierran owners/servicio/procesos, cero locks y muestras intactas.
+- Usuario autoriza una matriz nueva: «Autorizar una nueva matriz», máximo
+  doce invocaciones/parada al primer fallo. D071 en matrix-6 con paquete
+  corregido instalado desde wheel fuera de este checkout, sin red de instalación.
+  Mismo modelo/esfuerzo y permisos; doce invocaciones COMPLETE, sin retry/fallback.
+  **Codex→Codex, Claude→Claude, Claude→Codex y Codex→Claude COMMITTED.**
+- Claude real devuelve listas/objetos tipados con D058; Codex escribe realmente
+  en ambos pares (file_change o comando Python acreditado). Solo src/estimate.ts
+  cambia; 24 comandos de preparación/validación, cuatro JUnit con tres casos,
+  ACCEPT y aceptación/commit del contenido exacto. El ejecutor no hace commit;
+  acepta el revisor y el harness realiza el commit mecánico. Docs intactos.
+- Commits de ensayo 75bef356, 293643f2, 347f4a7d, 584ed7e0; ocho jobs DONE/owners
+  cerrados, doce procesos y sus grupos ausentes, comandos muertos, cero locks,
+  servicios detenidos con TERM, claves retiradas y puerto libre. Sin recuperación
+  manual, tag/cierre de fases de ensayo, push o publicación.
+- Controles de auto memory presentes en todos los roles; muestras de archivos
+  de memoria y config/settings/gitconfig mantienen hashes. Confianza específica
+  resuelta con escritura real; no se afirma aislamiento físico, ausencia de
+  auxiliares/SQLite/logs/cachés de CLI, refresh/cuota/retries internos o que todo
+  contexto venga exclusivamente de Markdown. No se cambia configuración global,
+  auth/almacén/baseline o integra D063/D067. ReferenceProject no se toca.
+- **948 pytest + 121 subtests correctos** (319,43 s), 12 checks estándar,
+  217 de transporte y 155 de contratos/motor/permisos/prompts. Siete casos nuevos,
+  dos builds offline y verificaciones de wheel aislado. Asunción inicial del
+  verificador file_change ampliada al comando de edición acreditado, sin
+  repetir run; aserción vieja de esquema actualizada y suite completa repetida.
+  Hashes/SQL/FK/prompts/streams/JUnit/Git/diff revisados. Sin nueva QA visual;
+  UI/API/esquema/codec/dependencias no cambian.
+- **Comprobación funcional de modelos cerrada.** Consentimiento D071 satisfecho
+  y agotado; D069/D070 y anteriores también agotados. Organización/historial
+  por fase y continuidad documental real siguen separados y pendientes. Próxima
+  tarea propuesta en NEXT_STEPS: concretar ese contrato documental; no iniciada.
+  H6.2 tampoco se inicia. No se afirma que un diseño pendiente esté implementado.
 
 ## Coordinación
 

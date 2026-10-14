@@ -2059,3 +2059,100 @@ Sin integración del perfil D063/D067, actualización de baseline, cli-8/local-
 config-2, permisos, jobs/locks o congelados. Sin auth real, refresh, red externa,
 subagentes, harness de desarrollo o push. Matrices 3/4, archivado y H6.2 sin
 iniciar; fase de comprobaciones abierta. D050/D055/D057/D060 siguen agotados.
+
+## D068 — Condición de confianza del pin acreditada y supresión específica (`cli-9`)
+
+Estado: implementada/verificada el 2026-10-14. [Fuente, corrección y límites](discovery/CODEX_TRUST_SUPPRESSION.md),
+[procedencia](discovery/CODEX_TRUST_SUPPRESSION.json). El usuario pide comprobar
+el flujo hasta cerrarlo; se completa el prerrequisito activo D067 antes de consumir.
+
+Etiqueta pública Codex rust-v0.162.1 resuelta al commit
+092d3acd6bec3e3a14bdc7e7a2810ab628ab759d, también embebido en el nativo de
+hash D059/D062. No se afirma build reproducible ni firma de tag (unsigned).
+Fuente fija: thread/start persiste confianza si cwd explícito, trust ausente,
+proyecto no projectless y permisos efectivos que permiten escribir cwd.
+Ephemeral no forma parte de esa guardia. El writer puede evitarla con una
+entrada explícita de confianza para su cwd transmitida por CLI.
+
+Se elige untrusted solo en el transporte para no activar config/hooks locales;
+workspace-write/raíces D059/network false/approval never siguen explícitos.
+Tabla projects inline completa: el parser separa claves dotted por puntos sin
+interpretar quoting, por lo que una ruta entre comillas en una clave dotted
+sería incorrecta. No se edita/precrea/restaura config global ni cambia auth/HOME.
+Solo escritores Codex 0.162.1 reciben ese override. cli-9 pone jobs cli-8 y
+anteriores en cuarentena antes de preflight por la comparación existente,
+sin reescribir congelados. Lectores/Claude/local-config-2/API/UI/codec conservados.
+
+Fuente pública consultada en lectura, sin ejecutar código externo o actualizar
+CLI. 217 tests de transporte pasan, dos adicionales; build y wheel instalado
+offline verificados. La ausencia de toda persistencia auxiliar no se deduce:
+el pin inicializa SQLite auxiliar incluso para un thread efímero. No se
+integra contención D063/D067 ni se confunde memoria automática con logs/auth.
+Supresión dinámica específica verificada después en D069/D071.
+
+## D069 — Primer ensayo cli-9 detenido por contradicción del plan
+
+Estado: ejecutado una vez y cerrado el 2026-10-14. [Propuesta](discovery/PROVIDER_MATRIX_CLI9_PROPOSAL.md),
+[resultados D069/D070](discovery/PROVIDER_MATRIX_CLI9_STOPS.md) y
+[evidencia](discovery/PROVIDER_MATRIX_CLI9_STOPS.json). Solo Codex→Codex,
+tres COMPLETE y edición/validaciones correctas, sin cambio en muestras globales.
+El planner autoriza src/estimate.ts y prohíbe **; deny prevalece. Reviewer
+BLOCKED, sin aceptación/commit. Otros tres pares no lanzados. Cero locks,
+owners/procesos/servicio cerrados y evidencia conservada, sin recuperación.
+
+Se corrige el contrato antes del escritor: rechazar rutas concretas también
+prohibidas, deny universal y patrones idénticos. No se eliminan prohibiciones,
+ni se exige resolver toda intersección de globs; exclusiones parciales válidas
+se mantienen. Prompt/esquema aclarados, cinco regresiones nuevas. Originales
+y catálogo congelado del ensayo previo no se modifican. El usuario pide
+continuar el trabajo de cierre; nueva ejecución separada preparada en D070.
+
+## D070 — Matriz corregida detenida por errores de conexión del planificador
+
+Estado: ejecutada una vez y cerrada el 2026-10-14. [Propuesta nueva](discovery/PROVIDER_MATRIX_CLI9_CORRECTED_PROPOSAL.md),
+resultado/evidencias junto a D069. Solo planner Codex de Codex→Codex:
+timeouts de modelos/routing/MCP y tres eventos error de reconexión. Después
+JSON válido sin contradicción y turn.completed/exit 0, pero el adaptador
+existente rechaza cualquier evento error. STOPPED planner/CLI failed, ningún
+ejecutor/revisor/commit; no se ocultan errores porque después haya terminal.
+No se atribuye a cuota/auth ni a incapacidad del escritor. Git/docs/muestras
+globales intactos, owner cerrado, proceso/grupo muerto, cero locks y servicio
+detenido con clave retirada. Otros pares vacíos, sin retry/fallback.
+
+Se informa y pide autorización nueva para doce invocaciones como máximo en
+otra matriz con parada al primer fallo. Usuario: «Autorizar una nueva matriz».
+No cambia parser/permisos/modelos/auth para pasar; D071 queda separado.
+
+## D071 — Comprobación funcional real de las cuatro combinaciones completada
+
+Estado: completada el 2026-10-14. [Propuesta autorizada](discovery/PROVIDER_MATRIX_CLI9_FINAL_PROPOSAL.md),
+[resultado y límites](discovery/PROVIDER_MATRIX_CLI9_RUN.md),
+[manifiesto](discovery/PROVIDER_MATRIX_CLI9_RESULT.json). Nueva área matrix-6,
+mismo wheel corregido instalado offline, código contrastado byte a byte.
+Codex 0.162.1 gpt-6-luna, Claude 2.1.296 claude-sonnet-4-6; planner/reviewer
+medium y executor low. Doce COMPLETE, tres por combinación, sin retry/fallback
+del harness. Autorización satisfecha y agotada, no habilita más consumo.
+
+Codex→Codex, Claude→Claude, Claude→Codex y Codex→Claude COMMITTED con edición
+real solo en src/estimate.ts. Plans tipados, tests/check/build y cuatro JUnit
+de tres casos pasan, review ACCEPT y aceptación elegible por contenido exacto.
+Commits 75bef356, 293643f2, 347f4a7d y 584ed7e0 respectivamente, autor Harness
+Provider Matrix. El ejecutor escribe sin commit; el revisor acepta y el harness
+realiza el commit mecánico. Docs de fixture intactos. Ocho jobs DONE/owners
+cerrados, procesos/grupos muertos, cero locks y servicios/claves cerrados.
+
+La supresión específica de confianza mantiene config global muestreada sin
+cambios mientras Codex escribe. Controles D066 presentes en todos los roles;
+muestras de archivos de memoria automática/config/settings/gitconfig intactas.
+No se copian secretos/auth ni se restauran globales. No se afirma contención
+OS, ausencia de logs/cachés/SQLite auxiliares/refresh, cuota/factura o retries
+internos. D069/D070 originales conservados; ajustes de verificador no relanzan
+recorridos. Memoria de proyecto sigue documental; SQLite autoridad operativa.
+
+948 pytest + 121 subtests, 12 checks estándar, builds y wheel instalado
+correctos. Siete regresiones nuevas, diff/hashes/SQL/Git revisados. Se cierra
+la comprobación funcional de flujos de modelos, sin afirmar archivado ni
+continuidad documental por fase implementados/probados. La organización
+documental exigida por el usuario queda como tarea separada de NEXT_STEPS,
+antes del alcance UI H6.2; no se inicia aquí. Sin tag/cierre de fases de ensayo,
+push/publicación, nuevo smoke, recuperación o modificaciones de ReferenceProject.

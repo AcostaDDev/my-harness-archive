@@ -39,11 +39,14 @@ def test_writer_root_is_canonical_and_toml_escaped(context, tmp_path, name):
                          'exclude_slash_tmp': True}
     assert args[args.index('--cd') + 1] == str(ctx.root)
     assert 'approval_policy="never"' in args and 'web_search="disabled"' in args
+    assert overrides(args)['projects'] == {str(ctx.root): {'trust_level': 'untrusted'}}
+    assert all(not args[i + 1].startswith('projects.') for i, arg in enumerate(args) if arg == '-c')
     assert 'exclude_tmpdir_env_var' not in workspace  # CLI default for the explicit environment.
     for role in ('planner', 'reviewer', 'phase', 'chat', 'bootstrap'):
         reader = argv_for(config, ctx, request(role))
         assert reader[reader.index('--sandbox') + 1] == 'read-only'
         assert 'sandbox_workspace_write' not in overrides(reader)
+        assert 'projects' not in overrides(reader)
 
 
 @pytest.mark.parametrize('bad', ['cli-6', 'parent-root', 'extra-root', 'slash-tmp'])
@@ -84,7 +87,7 @@ def test_codex_writer_journey_freezes_requested_access_without_changing_contract
                for line in launches(tmp_path)[0::2])
     spec = repository.processes(job.id)[1]['spec']
     prompt = Path(spec['prompt_path']).read_bytes()
-    assert spec['adapter_version'] == 'cli-8' and prompt.decode() == launch['prompt']
+    assert spec['adapter_version'] == 'cli-9' and prompt.decode() == launch['prompt']
     assert spec['prompt_sha256'] == hashlib.sha256(prompt).hexdigest()
     assert 'tasks * 30' in context.path('src/estimate.ts').read_text()
 

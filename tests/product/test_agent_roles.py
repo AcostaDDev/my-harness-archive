@@ -39,6 +39,7 @@ def v2(data, reviewer='codex', executor='claude', *, mode='catalog', planning='a
     data = copy.deepcopy(data)
     base = data.pop('providers')['codex']
     environment = {'PROBE_ALLOWED': 'src/estimate.ts', 'PROBE_VALIDATION': '[]', 'PROBE_MEMORY_REQUIRED': '1',
+                   'PROBE_TRUST_REQUIRED': '1',
                    'PROBE_SELECTION': json.dumps(selection or {'model': 'synthetic-executor', 'effort': 'medium'})}
     data['format'] = 'local-config-2'
     data['agents'] = {'reviewer': agent(base, reviewer, reviewer=True, **environment),
@@ -63,7 +64,7 @@ def test_matrix_of_four_provider_pairings_through_the_real_adapter(setup, reposi
     config = load_local_config(write(folder, v2(data, reviewer, executor)))
     project = config.projects[0]
     versions = project.versions
-    assert versions['agent_adapter'] == 'cli-8' and versions['local_config'] == 'local-config-2'
+    assert versions['agent_adapter'] == 'cli-9' and versions['local_config'] == 'local-config-2'
     assert (versions['reviewer_provider'], versions['executor_provider']) == (reviewer, executor)
     # The reviewer always plans, with its own user-fixed selection.
     policy = project.context.policy

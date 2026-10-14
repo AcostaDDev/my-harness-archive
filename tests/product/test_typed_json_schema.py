@@ -46,7 +46,9 @@ def test_reader_schema_is_the_typed_engine_schema_of_each_role(setup):
         assert all('type' in schema['properties'][field] for field in schema['required'])
         assert '--json-schema' not in argv_for(codex, context, request(role))
     planner = output_schema('planner')['properties']
-    assert planner['allowed_paths'] == {'type': 'array', 'items': {'type': 'string'}}
+    assert planner['allowed_paths']['type'] == 'array'
+    assert planner['allowed_paths']['items'] == {'type': 'string'}
+    assert 'Complete allowlist' in planner['allowed_paths']['description']
     assert planner['executor_selection']['type'] == 'object'
     # The writer keeps the cli-5 argv: no schema, no restriction.
     writer = argv_for(CLIConfig('claude', ('/synthetic/claude',), '2.1.296', (), 1, tools=('Read', 'Edit'),
@@ -72,7 +74,7 @@ def test_reader_schema_comes_from_the_frozen_prompt_snapshot(setup):
 def test_claude_reader_journey_sends_the_attempt_schema_and_gets_typed_lists(setup, repository):
     context, data, folder, tmp_path = setup
     config = load_local_config(write(folder, v2(data, 'claude', 'claude')))
-    assert config.projects[0].versions['agent_adapter'] == 'cli-8'
+    assert config.projects[0].versions['agent_adapter'] == 'cli-9'
     job, record = journey(repository, config, 'typed')
     assert record.status == 'ACCEPTANCE_READY', record.history.stop
     readers = [json.loads(line) for line in launches(tmp_path)][0::2]

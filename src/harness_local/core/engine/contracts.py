@@ -1,6 +1,8 @@
 """Valores congelados y puertos; no hay estado operativo persistido."""
 
 from dataclasses import asdict, dataclass, replace
+from fnmatch import fnmatchcase
+from glob import has_magic
 import json
 import re
 import shlex
@@ -79,6 +81,14 @@ def task_contract(context: ProjectContext, data: object, task_id: str, phase_id:
             relative_path(path)
         except ValueError as exc:
             raise ContractError("Task file scope must stay inside checkout") from exc
+    # Denials take precedence in check_paths. Catch a contradictory concrete
+    # allowlist before invoking a writer; never silently remove a prohibition.
+    # Broad allow patterns may legitimately have narrower forbidden exceptions.
+    for allowed in data["allowed_paths"]:
+        if any(allowed == forbidden or forbidden in {"*", "**"}
+               or (not has_magic(allowed) and fnmatchcase(allowed, forbidden))
+               for forbidden in data["forbidden_paths"]):
+            raise ContractError(f"Task allowed path is also forbidden: {allowed}")
     executor_selection(context, data.get("executor_selection"))
     return freeze(data)
 

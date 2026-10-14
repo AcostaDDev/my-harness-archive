@@ -1,0 +1,436 @@
+{
+  "date": "2026-10-14",
+  "source_head": "1d2de43",
+  "runs": [
+    {
+      "decision": "D069",
+      "area": "/private/tmp/harness-provider-matrix-4",
+      "preparation": {
+        "decision": "D069",
+        "area": "/private/tmp/harness-provider-matrix-4",
+        "max_model_invocations": 12,
+        "retry": false,
+        "pair_order": [
+          "codex-codex",
+          "claude-claude",
+          "claude-codex",
+          "codex-claude"
+        ],
+        "protected": {
+          ".codex/config.toml": {
+            "sha256": "f8b81fb360dcfccf36d3aefdc7d7ebdbbbe21d756e844c3e80221c855acd8ab4",
+            "mode": 384
+          },
+          ".claude/settings.json": {
+            "sha256": "bcf404b147aa45a65e78522fc6d7f2c18251a84865e7ffeb8843b464681ae159",
+            "mode": 420
+          },
+          ".claude/settings.local.json": null,
+          ".gitconfig": {
+            "sha256": "6dfb592da022dafe3e40396b01a40abb7ab34ed3cb11be9454409030032cb29c",
+            "mode": 420
+          },
+          ".codex/memories (memory files)": {
+            "files": 0,
+            "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+          },
+          ".claude/projects (memory files)": {
+            "files": 7,
+            "sha256": "0b8568a6555ca4b7d969b2a763c709f82b7c8c9d86de119914dac004a6ba03b0"
+          }
+        },
+        "files": {
+          "$HOME/.nvm/versions/node/v24.15.0/lib/node_modules/@openai/codex/node_modules/@openai/codex-darwin-arm64/vendor/aarch64-apple-darwin/bin/codex": "74c6a6d263f40d65f99c27a815275f5b4ed0bcc2baecc396b4cf3255498bdfc0",
+          "$HOME/.local/share/claude/versions/2.1.296": "c9b5341637becbd423ddffc5b254afb645682a3868cb708bbc6cc0e7bb419937",
+          "/private/tmp/h69_flow_check.py": "3b0d7b2f48eada240041aef554cea04ae1cdd9a300c3beee589008d7c0bacf94",
+          "$HOME/Documents/projects/my_harness/src/harness_local/adapters/cli_agents.py": "3416ab1e870dd5161a19c0ff214102f79337ce50f310595cfaeb28be5f37d6fc",
+          "$HOME/Documents/projects/my_harness/examples/provider_matrix/run_pairing.sh": "b38bed4bf5f7a60ff2e3aa098738206d84af905dd03cec52bb198a11492abca3",
+          "$HOME/Documents/projects/my_harness/examples/provider_matrix/drive.py": "c85f73fc2be91b7ada757982e7d619bd34aa9dd34a824bafce28de76446bc7c5",
+          "/private/tmp/harness-provider-matrix-4-package/requirements.txt": "7bf01054cb45a568bb5d63bf57d50cf2ec6cae12923eb303ddae8a6be218ae95",
+          "/private/tmp/harness-provider-matrix-4-package/harness_local-0.1.0.tar.gz": "a5887e4a7c796df877ac3f1c5c7e4b4a2c34eb4514e165a1a290c57cb19f6877",
+          "/private/tmp/harness-provider-matrix-4-package/.gitignore": "684888c0ebb17f374298b65ee2807526c066094c701bcc7ebbe1c1095f494fc1",
+          "/private/tmp/harness-provider-matrix-4-package/harness_local-0.1.0-py3-none-any.whl": "9d179214f0e727e564d34d7a655fb602bf9887d23c9ef4e8bbc2884dd728388c",
+          "/private/tmp/harness-provider-matrix-4/codex-codex/operator/harness-local.toml": "f820148f45266177455ca50fff7f6a83878c46a517bdc32026edea508cd96969",
+          "/private/tmp/harness-provider-matrix-4/codex-codex/check-config.json": "d0be5305ab19f277572873bb2fcccd69f4776dcd503eee64d8b0f04ac980f502",
+          "/private/tmp/harness-provider-matrix-4/claude-claude/operator/harness-local.toml": "5149b57f7eccd2ee8650a2fe28ef9f548423f12b0f0ace957d78e7ff55f9aea2",
+          "/private/tmp/harness-provider-matrix-4/claude-claude/check-config.json": "1e976ae9223dfe1f75ec46e8d0fa1f96b32cfcec7784a3b92d18b47d96dca179",
+          "/private/tmp/harness-provider-matrix-4/claude-codex/operator/harness-local.toml": "156efa811f1bcc402440530b4907a60956b1f11cd200012a847b41a79ceedac9",
+          "/private/tmp/harness-provider-matrix-4/claude-codex/check-config.json": "0c7472449d53178ba5b6578b6e34c7b95c5fbce52f07f08f2f8b70226f324727",
+          "/private/tmp/harness-provider-matrix-4/codex-claude/operator/harness-local.toml": "4cf1a748df865e852884573f3c8b02ed295436683db8d157c0ac9bf0c0c1ae19",
+          "/private/tmp/harness-provider-matrix-4/codex-claude/check-config.json": "ce91d39a35b624efa1f631c02526806ed4a74431e812b013e0cee2cb945b6c95"
+        },
+        "pairs": {
+          "codex-codex": {
+            "head": "9b398855f271634b70732b7f8b846db16c282dd8",
+            "tree": "76e4c34eba260689af49364b3aabd4118943cc8d",
+            "docs": {
+              "NEXT_STEPS.md": "71c63e0ca8aa4f28b64acc166d8a961d2a3743a73f1a710e7a92097f96635ca6",
+              "STATE.md": "c1b8fe6471ad2b427dd949c557c9abbeb785e314d19ee0c81279bb708418cb41"
+            }
+          },
+          "claude-claude": {
+            "head": "1335bc5c3787cbe9cf6f53d500dbbabbe605f0bb",
+            "tree": "e91fcb33487920c9e2a20c24785c76dec62e7d85",
+            "docs": {
+              "NEXT_STEPS.md": "710736bfeb3c9d7b5547747862816b5713ebd13638b5e54e632e556ca621a7c1",
+              "STATE.md": "8403d743adc770bc2fce59297e47d2bc715cee07265f3b5277ee75cd3affd552"
+            }
+          },
+          "claude-codex": {
+            "head": "04be35211f29e78c6896680b6b69892827e73f46",
+            "tree": "130fdfd71027ce212c3f64276a57b7101ae8fcdc",
+            "docs": {
+              "NEXT_STEPS.md": "71c63e0ca8aa4f28b64acc166d8a961d2a3743a73f1a710e7a92097f96635ca6",
+              "STATE.md": "d255ca2dfbe181cf6ce5cf9fadae733c7cdd28742d088e7a7e27b4acf9dd3cba"
+            }
+          },
+          "codex-claude": {
+            "head": "7a71fcc72032455aeffd9f37eaf86a52adb479c1",
+            "tree": "376652b46d8533c5dbea575027e67cb6e3a0886f",
+            "docs": {
+              "NEXT_STEPS.md": "710736bfeb3c9d7b5547747862816b5713ebd13638b5e54e632e556ca621a7c1",
+              "STATE.md": "e8649f640f16c3962527ffdbcbd12447cb0e80c1b059a42319f3d139d29efd49"
+            }
+          }
+        },
+        "source_commit": "1d2de4327aafa72ec0d524b5b6382f5c2bc6e61e"
+      },
+      "pair": "codex-codex",
+      "run_id": "00659184-7044-4d10-85f6-a3020859251b",
+      "status": "BLOCKED",
+      "attempts": [
+        {
+          "id": "ce433581-0c2c-4c27-8475-f20e96039686",
+          "role": "planner",
+          "selection": {
+            "effort": "medium",
+            "model": "gpt-6-luna",
+            "reason": "Explicit planner policy"
+          },
+          "observed": {
+            "thread_id": "01a13997-70fd-7a71-bafa-c6570b1f7bac",
+            "usage": {
+              "cache_write_input_tokens": 0,
+              "cached_input_tokens": 4864,
+              "input_tokens": 11862,
+              "output_tokens": 252,
+              "reasoning_output_tokens": 0
+            }
+          },
+          "wall_duration_seconds": 7.176294666001013,
+          "payload": {
+            "acceptance_criteria": [
+              "estimateMinutes(3) devuelve 90 y estimateMinutes(0) devuelve 0.",
+              "Las entradas no enteras, no seguras o negativas siguen lanzando RangeError con el mensaje actual.",
+              "npm run check, npm run test y npm run build pasan sin cambiar tests, scripts, configuración ni lock."
+            ],
+            "allowed_paths": [
+              "src/estimate.ts"
+            ],
+            "executor_prompt": "Modifica únicamente src/estimate.ts para que estimateMinutes calcule treinta minutos por tarea. Conserva las validaciones actuales y el mensaje de RangeError. No cambies otros archivos. El perfil ejecutará check, test y build.",
+            "executor_selection": {
+              "effort": "low",
+              "model": "gpt-6-luna",
+              "reason": "La tarea está acotada a un cálculo y sus validaciones existentes; el perfil especifica gpt-6-luna / low para este smoke y es la única selección permitida."
+            },
+            "forbidden_paths": [
+              "**"
+            ],
+            "objective": "Restaurar el cálculo de treinta minutos por tarea en estimateMinutes, conservando las validaciones y el mensaje de error actuales.",
+            "phase_id": "P001",
+            "task_id": "P001-T001",
+            "title": "Restaurar treinta minutos por tarea",
+            "validation_commands": []
+          },
+          "artifacts": {
+            "stderr": {
+              "path": "/private/tmp/harness-provider-matrix-4/codex-codex/state/artifacts/matrix-codex-codex/ce433581-0c2c-4c27-8475-f20e96039686/stderr.bin",
+              "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+              "size": 0
+            },
+            "stdout": {
+              "path": "/private/tmp/harness-provider-matrix-4/codex-codex/state/artifacts/matrix-codex-codex/ce433581-0c2c-4c27-8475-f20e96039686/stdout.bin",
+              "sha256": "f6dad3ff92fde22ce96e52be071ce7150b6236e9f75bd02938aef4a95384fbff",
+              "size": 1487
+            }
+          }
+        },
+        {
+          "id": "e79bd887-19fc-4a56-9c4f-8d74d065a04e",
+          "role": "executor",
+          "selection": {
+            "effort": "low",
+            "model": "gpt-6-luna",
+            "reason": "La tarea está acotada a un cálculo y sus validaciones existentes; el perfil especifica gpt-6-luna / low para este smoke y es la única selección permitida."
+          },
+          "observed": {
+            "thread_id": "01a13997-8d3c-7c01-815b-05e4822e10ca",
+            "usage": {
+              "cache_write_input_tokens": 0,
+              "cached_input_tokens": 61952,
+              "input_tokens": 75183,
+              "output_tokens": 473,
+              "reasoning_output_tokens": 0
+            }
+          },
+          "wall_duration_seconds": 14.346377707999636,
+          "payload": {
+            "result": "Cambié únicamente `src/estimate.ts`: `estimateMinutes` ahora calcula 30 minutos por tarea y conserva las validaciones y el mensaje de `RangeError`. No ejecuté `check`, `test` ni `build`; el perfil los ejecutará."
+          },
+          "artifacts": {
+            "stderr": {
+              "path": "/private/tmp/harness-provider-matrix-4/codex-codex/state/artifacts/matrix-codex-codex/e79bd887-19fc-4a56-9c4f-8d74d065a04e/stderr.bin",
+              "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+              "size": 0
+            },
+            "stdout": {
+              "path": "/private/tmp/harness-provider-matrix-4/codex-codex/state/artifacts/matrix-codex-codex/e79bd887-19fc-4a56-9c4f-8d74d065a04e/stdout.bin",
+              "sha256": "a359722268fb86429d3d1627759040d1e6917f82275cdf3c01db8004614bd3a6",
+              "size": 6126
+            }
+          }
+        },
+        {
+          "id": "d8052ddb-b7f0-4e43-ba95-0d86bd75f710",
+          "role": "reviewer",
+          "selection": {
+            "effort": "medium",
+            "model": "gpt-6-luna",
+            "reason": "Explicit independent review policy"
+          },
+          "observed": {
+            "thread_id": "01a13997-cba9-71d0-b09a-a0088197e034",
+            "usage": {
+              "cache_write_input_tokens": 0,
+              "cached_input_tokens": 4864,
+              "input_tokens": 14187,
+              "output_tokens": 423,
+              "reasoning_output_tokens": 291
+            }
+          },
+          "wall_duration_seconds": 7.259547083000143,
+          "payload": {
+            "blocking_questions": [
+              "Resolve the path-policy conflict: src/estimate.ts is explicitly allowed, but forbidden_paths contains ** and the policy report flags src/estimate.ts. Is this path authorized for the task?"
+            ],
+            "executor_selection": null,
+            "findings": [
+              {
+                "category": "policy",
+                "file": "src/estimate.ts",
+                "problem": "The only changed file is listed in allowed_paths, but forbidden_paths contains ** and policy.violations flags the same file. This conflict prevents confirming the change is authorized.",
+                "severity": "blocking"
+              }
+            ],
+            "next_prompt": "",
+            "scope_grants": [],
+            "task_id": "P001-T001",
+            "verdict": "BLOCKED"
+          },
+          "artifacts": {
+            "stderr": {
+              "path": "/private/tmp/harness-provider-matrix-4/codex-codex/state/artifacts/matrix-codex-codex/d8052ddb-b7f0-4e43-ba95-0d86bd75f710/stderr.bin",
+              "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+              "size": 0
+            },
+            "stdout": {
+              "path": "/private/tmp/harness-provider-matrix-4/codex-codex/state/artifacts/matrix-codex-codex/d8052ddb-b7f0-4e43-ba95-0d86bd75f710/stdout.bin",
+              "sha256": "c0033123e921fcb838be21ee915cb8edbbde133549f28940b7f85c76436bdbb1",
+              "size": 980
+            }
+          }
+        }
+      ],
+      "review": {
+        "blocking_questions": [
+          "Resolve the path-policy conflict: src/estimate.ts is explicitly allowed, but forbidden_paths contains ** and the policy report flags src/estimate.ts. Is this path authorized for the task?"
+        ],
+        "executor_selection": null,
+        "findings": [
+          {
+            "category": "policy",
+            "file": "src/estimate.ts",
+            "problem": "The only changed file is listed in allowed_paths, but forbidden_paths contains ** and policy.violations flags the same file. This conflict prevents confirming the change is authorized.",
+            "severity": "blocking"
+          }
+        ],
+        "next_prompt": "",
+        "scope_grants": [],
+        "task_id": "P001-T001",
+        "verdict": "BLOCKED"
+      },
+      "stop": null,
+      "connection_errors": [],
+      "git_head": "9b398855f271634b70732b7f8b846db16c282dd8",
+      "globals_unchanged": true,
+      "locks": 0,
+      "service_dead": true,
+      "key_removed": true,
+      "commit_created": false,
+      "unlaunched_pairs": [
+        "claude-claude",
+        "claude-codex",
+        "codex-claude"
+      ],
+      "artifact_hashes": {
+        "/private/tmp/harness-provider-matrix-4/execution-preparation.json": "341480b5236fdb6a05fa169a14a2f28b2aa7ae210fc1324f532bcba68acbaea2",
+        "/private/tmp/harness-provider-matrix-4/codex-codex/verification.json": "5fd3c868ebd4c4762b99d84d868c6233a0556cb97f370b281fc02cfec0a4b141",
+        "/private/tmp/harness-provider-matrix-4/codex-codex/controller-result.json": "f2947cad89ed81cf0bf10e0f9101408b7533a46bd7a57083808d51a92dbff486",
+        "/private/tmp/harness-provider-matrix-4/codex-codex/orchestration.log": "68c606c7be5d1423f02439ed7331389d9f51108a7929a6c4be84ed4f2a128f56",
+        "/private/tmp/harness-provider-matrix-4/codex-codex/serve.log": "4060ce613f5f36d0506f097ab1692cca8c42e8458419b5b7d12087e6a446b576",
+        "/private/tmp/h69_flow_check.py": "3b0d7b2f48eada240041aef554cea04ae1cdd9a300c3beee589008d7c0bacf94",
+        "/private/tmp/h69_verify.py": "c68d91fef3c195d7a16c6d15e0614c3988613e07ca313cd67fa16eae5670e76d"
+      }
+    },
+    {
+      "decision": "D070",
+      "area": "/private/tmp/harness-provider-matrix-5",
+      "preparation": {
+        "decision": "D070",
+        "area": "/private/tmp/harness-provider-matrix-5",
+        "max_model_invocations": 12,
+        "retry": false,
+        "pair_order": [
+          "codex-codex",
+          "claude-claude",
+          "claude-codex",
+          "codex-claude"
+        ],
+        "protected": {
+          ".codex/config.toml": {
+            "sha256": "f8b81fb360dcfccf36d3aefdc7d7ebdbbbe21d756e844c3e80221c855acd8ab4",
+            "mode": 384
+          },
+          ".claude/settings.json": {
+            "sha256": "bcf404b147aa45a65e78522fc6d7f2c18251a84865e7ffeb8843b464681ae159",
+            "mode": 420
+          },
+          ".claude/settings.local.json": null,
+          ".gitconfig": {
+            "sha256": "6dfb592da022dafe3e40396b01a40abb7ab34ed3cb11be9454409030032cb29c",
+            "mode": 420
+          },
+          ".codex/memories (memory files)": {
+            "files": 0,
+            "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+          },
+          ".claude/projects (memory files)": {
+            "files": 7,
+            "sha256": "0b8568a6555ca4b7d969b2a763c709f82b7c8c9d86de119914dac004a6ba03b0"
+          }
+        },
+        "files": {
+          "$HOME/.nvm/versions/node/v24.15.0/lib/node_modules/@openai/codex/node_modules/@openai/codex-darwin-arm64/vendor/aarch64-apple-darwin/bin/codex": "74c6a6d263f40d65f99c27a815275f5b4ed0bcc2baecc396b4cf3255498bdfc0",
+          "$HOME/.local/share/claude/versions/2.1.296": "c9b5341637becbd423ddffc5b254afb645682a3868cb708bbc6cc0e7bb419937",
+          "/private/tmp/h70_flow_check.py": "114ca380dbcb5d63d9a250d9be56b0d64552477a5c032ce3e27a6521728c957a",
+          "$HOME/Documents/projects/my_harness/src/harness_local/adapters/cli_agents.py": "3416ab1e870dd5161a19c0ff214102f79337ce50f310595cfaeb28be5f37d6fc",
+          "$HOME/Documents/projects/my_harness/examples/provider_matrix/run_pairing.sh": "b38bed4bf5f7a60ff2e3aa098738206d84af905dd03cec52bb198a11492abca3",
+          "$HOME/Documents/projects/my_harness/examples/provider_matrix/drive.py": "c85f73fc2be91b7ada757982e7d619bd34aa9dd34a824bafce28de76446bc7c5",
+          "/private/tmp/harness-provider-matrix-5-package/requirements.txt": "9816f0567467c74edbe5082e5dfcd940837c225d6447373c2c558cdf2a8fce69",
+          "/private/tmp/harness-provider-matrix-5-package/harness_local-0.1.0.tar.gz": "d9b1d74b27304a63c3e011ab6bb1cccb9752e7201f7d30d16650f4d94b4685e5",
+          "/private/tmp/harness-provider-matrix-5-package/.gitignore": "684888c0ebb17f374298b65ee2807526c066094c701bcc7ebbe1c1095f494fc1",
+          "/private/tmp/harness-provider-matrix-5-package/harness_local-0.1.0-py3-none-any.whl": "4806b2ab1dd90178b68764ca08a4c858bae68c4f9925234047b478f261a3ca24",
+          "/private/tmp/harness-provider-matrix-5/codex-codex/operator/harness-local.toml": "58baf93ac48c80c99e3dd2472c7fd1e4a9177e17c988ce9e1a15c76e4e855536",
+          "/private/tmp/harness-provider-matrix-5/codex-codex/check-config.json": "5cb638870c0e90b49556a63a5dc9af5861b49ad590477d45c26bab654994782a",
+          "/private/tmp/harness-provider-matrix-5/claude-claude/operator/harness-local.toml": "4dc6c59a2549c6a976d4f7344b274e70e470e05e72296084c204c6235bc73ce0",
+          "/private/tmp/harness-provider-matrix-5/claude-claude/check-config.json": "54125b346b8f9ecded8b705714a49afcfe8325c6d1c1322632109ebfe49b9e60",
+          "/private/tmp/harness-provider-matrix-5/claude-codex/operator/harness-local.toml": "ec82779fa00edcd7d414ca27c5ac90e9185435a423ace2da356a56fdf3b84aeb",
+          "/private/tmp/harness-provider-matrix-5/claude-codex/check-config.json": "d26543ff8bc3eba6d3014a603461b76a57f3b44f7ee02d133e5613d6969f6f10",
+          "/private/tmp/harness-provider-matrix-5/codex-claude/operator/harness-local.toml": "8d816a79738ec1c0436542d34c1eb75d92c0af7b1aa880cd4117824f9d466b5e",
+          "/private/tmp/harness-provider-matrix-5/codex-claude/check-config.json": "e79028549336bf052909233aef1fc530fd3c2bcde2c7f60dd770ae1f92207ef0"
+        },
+        "pairs": {
+          "codex-codex": {
+            "head": "48ce01a415a5053d74306078abfd18c0dd3aa925",
+            "tree": "76e4c34eba260689af49364b3aabd4118943cc8d",
+            "docs": {
+              "NEXT_STEPS.md": "71c63e0ca8aa4f28b64acc166d8a961d2a3743a73f1a710e7a92097f96635ca6",
+              "STATE.md": "c1b8fe6471ad2b427dd949c557c9abbeb785e314d19ee0c81279bb708418cb41"
+            }
+          },
+          "claude-claude": {
+            "head": "ab82f2539f49e336784753ff36b2113b3033fe13",
+            "tree": "e91fcb33487920c9e2a20c24785c76dec62e7d85",
+            "docs": {
+              "NEXT_STEPS.md": "710736bfeb3c9d7b5547747862816b5713ebd13638b5e54e632e556ca621a7c1",
+              "STATE.md": "8403d743adc770bc2fce59297e47d2bc715cee07265f3b5277ee75cd3affd552"
+            }
+          },
+          "claude-codex": {
+            "head": "173c36773745e33998c2bbc1cdc4eab25ae53969",
+            "tree": "130fdfd71027ce212c3f64276a57b7101ae8fcdc",
+            "docs": {
+              "NEXT_STEPS.md": "71c63e0ca8aa4f28b64acc166d8a961d2a3743a73f1a710e7a92097f96635ca6",
+              "STATE.md": "d255ca2dfbe181cf6ce5cf9fadae733c7cdd28742d088e7a7e27b4acf9dd3cba"
+            }
+          },
+          "codex-claude": {
+            "head": "07f8126c316b073c13e223fc07ce793e5deb0bb8",
+            "tree": "376652b46d8533c5dbea575027e67cb6e3a0886f",
+            "docs": {
+              "NEXT_STEPS.md": "710736bfeb3c9d7b5547747862816b5713ebd13638b5e54e632e556ca621a7c1",
+              "STATE.md": "e8649f640f16c3962527ffdbcbd12447cb0e80c1b059a42319f3d139d29efd49"
+            }
+          }
+        },
+        "source_commit": "1d2de4327aafa72ec0d524b5b6382f5c2bc6e61e"
+      },
+      "pair": "codex-codex",
+      "run_id": "9dff069b-90e2-4292-8687-5414ef05aceb",
+      "status": "STOPPED",
+      "attempts": [
+        {
+          "id": "6dbaab39-e95d-418f-869e-9cc2c4c8e1d0",
+          "result": {
+            "error": "CLI failed",
+            "exit_code": 0,
+            "metadata_json": "{\"artifacts\":{\"stderr\":{\"path\":\"/private/tmp/harness-provider-matrix-5/codex-codex/state/artifacts/matrix-codex-codex/6dbaab39-e95d-418f-869e-9cc2c4c8e1d0/stderr.bin\",\"sha256\":\"44758738872d1080f5aee02617516d7b5a931f7bec867ab1ac78748b07a6de57\",\"size\":603},\"stdout\":{\"path\":\"/private/tmp/harness-provider-matrix-5/codex-codex/state/artifacts/matrix-codex-codex/6dbaab39-e95d-418f-869e-9cc2c4c8e1d0/stdout.bin\",\"sha256\":\"4808450943a5f7f5bb5da06b2732329fba2220cf9cf3bd17f33d1632af03038c\",\"size\":1772}},\"exit_code\":0,\"group_state\":\"dead\",\"observed\":{\"thread_id\":\"01a1399e-9dcd-7860-bb16-84ee92fcf8cd\",\"usage\":{\"cache_write_input_tokens\":0,\"cached_input_tokens\":4864,\"input_tokens\":11529,\"output_tokens\":233,\"reasoning_output_tokens\":0}},\"started_at\":\"2026-10-14T08:54:18.707295+00:00\",\"status\":\"failed\",\"wall_duration_seconds\":111.47442587499972}",
+            "payload_json": null,
+            "raw_output": "",
+            "status": "failed",
+            "terminal_observed": true
+          }
+        }
+      ],
+      "review": null,
+      "stop": {
+        "stage": "planner",
+        "reason": "CLI failed"
+      },
+      "connection_errors": [
+        {
+          "type": "error",
+          "message": "Reconnecting... 2/5 (workspace routing discovery timed out)"
+        },
+        {
+          "type": "error",
+          "message": "Reconnecting... 3/5 (workspace routing discovery timed out)"
+        },
+        {
+          "type": "error",
+          "message": "Reconnecting... 4/5 (workspace routing discovery timed out)"
+        }
+      ],
+      "git_head": null,
+      "globals_unchanged": true,
+      "locks": 0,
+      "service_dead": true,
+      "key_removed": true,
+      "commit_created": false,
+      "unlaunched_pairs": [
+        "claude-claude",
+        "claude-codex",
+        "codex-claude"
+      ],
+      "artifact_hashes": {
+        "/private/tmp/harness-provider-matrix-5/execution-preparation.json": "0735fcff6945b446fa4b36d7e235c2a02f42802dc652d0580822ee69b8de92ba",
+        "/private/tmp/harness-provider-matrix-5/codex-codex/verification.json": "5efb9cde5b1ee0885ff1cd08a8d1e33e85bc8e5ec1d04805735ce808300539b1",
+        "/private/tmp/harness-provider-matrix-5/codex-codex/controller-result.json": "749c70b2cc27bcc1e625d3d4f3691840975ea29176dbd3667d95b01203cee5a6",
+        "/private/tmp/harness-provider-matrix-5/codex-codex/orchestration.log": "3a7198add9ed194cde605ec0ea016e40ea470f95d2bfd06f3bf8c1ce893c8607",
+        "/private/tmp/harness-provider-matrix-5/codex-codex/serve.log": "72b5943baebd22791476196e8ea0e77abd2a0ff82d07d2b3c4469baccfbff738",
+        "/private/tmp/h70_flow_check.py": "114ca380dbcb5d63d9a250d9be56b0d64552477a5c032ce3e27a6521728c957a",
+        "/private/tmp/h70_failed_verify.py": "4474e9deb15feaaf8a051700784db429da99d1a30865894f8e531416ab106016"
+      }
+    }
+  ]
+}

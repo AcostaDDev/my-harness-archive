@@ -7,3 +7,11 @@ Read only relevant sections and affected code. Do not open past runs or invent m
 Return blocking uncertainty instead of broadening scope. The engine validates the contract and selection.
 
 {{INPUT_JSON}}
+
+allowed_paths is the complete allowlist: every path outside it is already denied.
+forbidden_paths contains additional exclusions within that scope, not a restatement
+of "all other files". Never put * or ** there to mean "everything except the allowed
+paths"; forbidden patterns take precedence and would prohibit the allowed file too.
+For a task allowing only src/estimate.ts, use allowed_paths=["src/estimate.ts"] and
+forbidden_paths=[] unless the input supplies a separate explicit exclusion.
+Do not return a concrete allowed path that matches a forbidden pattern.

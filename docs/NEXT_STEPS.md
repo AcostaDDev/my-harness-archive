@@ -1,58 +1,56 @@
-# Siguiente paso — verificar la condición de persistencia de confianza del pin Codex
+# Siguiente paso — concretar continuidad documental por fase
 
 Estado al 2026-10-14:
 
-- **D067 preparación completada con incompatibilidad.**
-  [Dictamen y borrador acotado](discovery/CODEX_STARTUP_PREPARATION.md),
-  [controlador solo sintético](discovery/CODEX_STARTUP_PREPARATION.py) y
-  [comandos proyectados/hashes/evidencia](discovery/CODEX_STARTUP_PREPARATION.json).
-- **Candidata no apta para CLI real:** la denegación por defecto que restringe
-  lecturas globales y no concede red/Mach no permite un arranque útil del fake
-  Python mínimo; SIGABRT antes del marcador, sin diagnóstico de causa interna.
-  No se amplían permisos para pasar ni se solicita ejecutarla.
-- Dos variantes de argv están proyectadas, con pin/hash, memoria cli-8,
-  HOME/CODEX_HOME/auth ficticios, sin/con override de confianza y límites de
-  procesos/tiempo/capturas. Ninguna ejecutada; el controlador no acepta CLI real.
-- 12 casos finales (diez de controlador independiente y dos OS), once grupos
-  observados ausentes. Originales ficticios protegidos conservados; dos configs
-  sacrificiales cambiadas intencionadamente. Auth antes del marcador es
-  inconclusa, no prueba de ausencia de persistencia. 14 pytest focales correctos.
-- D066 conserva controles de memoria automática en todos los roles, 215 pytest
-  pertinentes correctos y 941 recolectados. Ausencia de persistencia externa,
-  fuente auth, refresh y contexto exclusivamente documental sin certificar.
-- D064/D065 y D067 no califican un backend de contención para producto. cli-8/
-  local-config-2, núcleo, permisos/modelos, jobs/locks e historiales intactos.
-- Flujos reales: Codex→Claude D057 y Codex→Codex D061 COMMITTED; cambio global
-  en la segunda provoca parada. Claude→Claude con D058 pendiente de prueba
-  real; Claude→Codex nunca lanzada. La fase de comprobaciones sigue abierta.
+- **Comprobación funcional de flujos de modelos cerrada (D071).**
+  [Cuatro combinaciones reales](discovery/PROVIDER_MATRIX_CLI9_RUN.md),
+  [manifiesto y hashes](discovery/PROVIDER_MATRIX_CLI9_RESULT.json).
+- Codex→Codex, Codex→Claude, Claude→Claude y Claude→Codex completan
+  planificación, edición real, validaciones/JUnit, ACCEPT y commit exacto.
+  Doce invocaciones completas. El ejecutor no hace commit: acepta el revisor
+  y lo realiza mecánicamente el harness. Procesos/owners/servicios cerrados,
+  cero locks, claves retiradas y muestras de config/memorias intactas.
+- cli-9 suprime específicamente confianza persistida por el escritor Codex,
+  con projects inline untrusted acreditado en fuente del pin y prueba real;
+  mantiene workspace-write/raíces/auth. [D068](discovery/CODEX_TRUST_SUPPRESSION.md).
+  Controles de auto memory D066 conservados. Jobs anteriores en cuarentena
+  antes de preflight, sin reescribir historiales.
+- [D069/D070 conservados](discovery/PROVIDER_MATRIX_CLI9_STOPS.md): contrato
+  contradictorio y timeouts. Prompt/contrato corregidos para parar antes de
+  editar ante contradicciones. Errores de stream siguen rechazándose aunque
+  después exista terminal/exit 0. No retries/fallback silenciosos.
+- 948 pytest + 121 subtests y 12 checks estándar aprobados; builds y wheel
+  instalado offline verificados. Git/documentos/diff/hashes revisados.
+- El éxito funcional no certifica aislamiento físico, ausencia de auxiliares
+  de CLI/logs/cachés/SQLite/auth refresh, cuota o retries internos. Tampoco
+  acredita archivado ni continuidad documental por fase: docs del fixture
+  se preservaron, no se ejecutó ese recorrido. No se integra D063/D067.
 
 ## Tarea concreta propuesta, no iniciada
 
-**Verificar en fuente identificable de Codex 0.162.1 qué condición activa la
-persistencia de confianza y si un override de transporte evita escribir.**
+**Concretar la organización de Markdown por fase y la continuidad de trabajo
+con STATE/NEXT_STEPS frescos, antes de implementar el archivado.**
 
-1. Localizar fuente verificable correspondiente al nativo/pin o evidencia
-   estática suficiente para enlazar campos/condiciones; registrar versión/hash
-   y procedencia. Documentación actual, símbolos o tests falsos no bastan para
-   atribuir semántica exacta a ese binario.
-2. Delimitar la ruta ya localizada: permiso de escritura del cwd, estado de
-   confianza, overrides, destino config y efectos de thread/start. Separar lo
-   acreditado de inferencias y ramas no reconstruidas.
-3. Emitir dictamen: supresión específica acreditada, o límite preciso si no
-   puede demostrarse con esa evidencia. No cambiar el transporte por un supuesto
-   ni volver a preparar una ejecución con el perfil no apto de D067.
-4. Solo si hay evidencia suficiente, concretar como tarea posterior una
-   corrección acotada y regresión por versiones/congelados. Mantener separado
-   no generar/inyectar memorias de no escribir configuración global.
+1. Revisar el contrato existente de exportación documental y la referencia
+   ReferenceProject solo en lectura, sin sus runs/datos privados. Identificar qué
+   ya existe y qué exige la organización por fase pedida por el usuario.
+2. Proponer rutas, documentos activos/históricos, índice de entrada y reglas
+   de cierre/archivo. Mantener SQLite como autoridad operativa del harness;
+   Markdown como contexto duradero del proyecto, sin doble autoridad.
+3. Definir actualización/reconciliación por contenido exacto y quién escribe
+   cada documento. El ejecutor deja cambios para revisión; el commit sigue
+   condicionado a aceptación y validación. No diseñar memoria global del modelo.
+4. Delimitar una implementación posterior y criterios verificables con fixtures
+   sintéticos: nueva sesión reconstruye la tarea desde docs, archivo de fase
+   conserva historia y fase activa mantiene STATE/NEXT_STEPS actuales.
 
-Criterios: trazabilidad de fuente/pin y condición exacta o límite registrado,
-ninguna CLI real/version/help/inferencia, auth/secretos/configuración global,
-cambio de baseline/modelos/permisos/historiales o integración de otro sandbox.
-La consulta de fuente pública, si se necesita, debe ser solo lectura; no
-instalar/actualizar CLI ni ejecutar código externo. Actualizar STATE/NEXT_STEPS/
-DECISIONS antes de dar la tarea por terminada.
+Criterios de esta tarea de diseño: contrato concreto, diferencias frente a lo
+implementado explícitas, trazabilidad de decisiones y alcance posterior acotado.
+No marcar como implementado/probado lo que solo está definido. No modificar
+ReferenceProject, mover historias reales automáticamente, consumir proveedores ni
+iniciar UI H6.2/otra implementación aquí. Actualizar STATE/NEXT_STEPS/DECISIONS.
 
-Una prueba real posterior requiere propuesta suficiente y autorización nueva.
-D067 no está pendiente de consentimiento para ejecución: está descartada como
-candidata actual. D050/D055/D057/D060 siguen agotados. No otra matriz, recuperación
-o liberación de locks, publicación/push, archivado documental o H6.2 aquí.
+D071 satisfecha y agotada; D069/D070 y consentimientos anteriores también.
+Otra prueba real requiere propuesta y consentimiento nuevos. No quedan runs
+activos de esta matriz que recuperar. Sin push/publicación, relanzamiento o
+liberación manual de locks. La siguiente tarea no se inicia en la entrega actual.

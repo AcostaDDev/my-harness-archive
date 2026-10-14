@@ -108,7 +108,10 @@ def output_schema(role: str) -> dict:
     selection = _object({'model': 'string', 'effort': 'string', 'reason': 'string'})
     fields = {
         'planner': {'task_id': 'string', 'phase_id': 'string', 'title': 'string', 'objective': 'string',
-                    'executor_prompt': 'string', 'allowed_paths': TEXTS, 'forbidden_paths': TEXTS,
+                    'executor_prompt': 'string',
+                    'allowed_paths': {**TEXTS, 'description': 'Complete allowlist; paths outside it are already denied'},
+                    'forbidden_paths': {**TEXTS, 'description': 'Additional exclusions, taking precedence over allowed_paths; '
+                                        'never use * or ** to mean all other files; [] if none'},
                     'acceptance_criteria': TEXTS,
                     'validation_commands': {**TEXTS, 'description': 'One shell-free command string per command, '
                                             'e.g. "npm run test"; [] when the profile validations suffice'},

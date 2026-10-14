@@ -1,5 +1,5 @@
 #!/bin/sh
-# Preparación del smoke de la matriz D052 (local-config-2; cli-7 desde D059). Sin proveedores ni red.
+# Preparación del smoke de la matriz D052 (local-config-2; transporte del wheel instalado). Sin proveedores ni red.
 # Uso: sh prepare.sh BASE [PAR ...]   (BASE no debe existir; ruta absoluta canónica)
 # Sin PAR prepara las cuatro combinaciones; D060 selecciona solo las 2–4.
 # Crea BASE/<revisor>-<ejecutor> para las combinaciones seleccionadas, cada una con su

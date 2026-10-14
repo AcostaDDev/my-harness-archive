@@ -162,7 +162,16 @@ historial; Claude recibe autoMemoryEnabled=false y rechaza un override ambiental
 conflictivo. HOME/USER/auth conservados, sin contención OS integrada. La
 persistencia de confianza Codex y otros auxiliares sigue pendiente; no se
 certifica ausencia de memoria/estado externo con CLI real. Ver
-`docs/discovery/AGENT_PERSISTENCE.md`. Matrices reales no autorizadas.
+`docs/discovery/AGENT_PERSISTENCE.md`. Actualización D068–D071: `cli-9` evita
+específicamente persistencia de confianza en el escritor con una tabla projects
+inline untrusted, acreditada en fuente/pin y con escritura real. D069/D070
+detenidas por contrato contradictorio y timeouts; contrato/prompt corregidos.
+D071 autorizada expresamente y completa las cuatro combinaciones COMMITTED,
+con controles de memoria actuales y muestras globales intactas. Ver
+`docs/discovery/CODEX_TRUST_SUPPRESSION.md` y
+`docs/discovery/PROVIDER_MATRIX_CLI9_RUN.md`. Comprobación funcional cerrada;
+aislamiento auxiliar total y continuidad documental por fase no certificados.
+Autorización satisfecha/agotada: ninguna matriz nueva o relanzamiento implícitos.
 Comprobación offline ligera, solo biblioteca estándar, desde la raíz:
 
 ```sh
@@ -192,9 +201,9 @@ npm --prefix frontend run dev
 ```
 
 Las primeras instalaciones necesitan red; después los checks son offline.
-No usar `uv --active` con entornos de otros proyectos. 941 pruebas pytest
+No usar `uv --active` con entornos de otros proyectos. 948 pruebas pytest
 (158 anteriores + 53 H2.3 + 8 entorno smoke + 34 H2.4 + 35 H2.5 + 18 API gestionada + 2 demo UI + 23 H3.1,
-+ 30 H3.2 + 29 H3.3 + 18 H3.4 + 22 H4.1 + 32 exportación + 48 H4.2 + 16 H4.3 + 43 H5.1 + 43 H5.2 + 43 H5.3 + 52 H5.4 + 13 H5.5 + 45 H5.6 + 6 H5.7 + 40 ejecutor de comandos + 35 configuración local + 11 comando de desarrollo + 32 agentes D052 + 16 formas de contrato D056 + 6 esquema tipado D058 + 10 raíces Codex D059 + 20 memoria CLI D066, con Git temporal).
++ 30 H3.2 + 29 H3.3 + 18 H3.4 + 22 H4.1 + 32 exportación + 48 H4.2 + 16 H4.3 + 43 H5.1 + 43 H5.2 + 43 H5.3 + 52 H5.4 + 13 H5.5 + 45 H5.6 + 6 H5.7 + 40 ejecutor de comandos + 35 configuración local + 11 comando de desarrollo + 32 agentes D052 + 16 formas de contrato D056 + 6 esquema tipado D058 + 10 raíces Codex D059 + 20 memoria CLI D066 + 2 confianza CLI D068 + 5 contradicción de ámbito D069, con Git temporal).
 Paquete H5.5: UI/API en 127.0.0.1:8013; en desarrollo API en :8013 y Vite en :5173
 en otra terminal. SQLite local ignorada en `.local/harness.sqlite3`; migración
 explícita antes de arrancar. Ver README y `docs/discovery/H0.3_SKELETON.md`.

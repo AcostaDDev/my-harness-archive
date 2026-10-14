@@ -1,0 +1,85 @@
+{
+  "decision": "D068",
+  "version": "0.162.1",
+  "tag": "rust-v0.162.1",
+  "tag_object": "7a078f6bb4ce0dc2a81408b334ce52979d92c603",
+  "source_commit": "092d3acd6bec3e3a14bdc7e7a2810ab628ab759d",
+  "tag_signed": false,
+  "binary": {
+    "path": "$HOME/.nvm/versions/node/v24.15.0/lib/node_modules/@openai/codex/node_modules/@openai/codex-darwin-arm64/vendor/aarch64-apple-darwin/bin/codex",
+    "sha256": "74c6a6d263f40d65f99c27a815275f5b4ed0bcc2baecc396b4cf3255498bdfc0",
+    "embedded_source_commit_offset": 187264787
+  },
+  "public_sources": [
+    {
+      "path": "codex-rs/app-server/src/request_processors/thread_processor.rs",
+      "url": "https://raw.githubusercontent.com/openai/codex/092d3acd6bec3e3a14bdc7e7a2810ab628ab759d/codex-rs/app-server/src/request_processors/thread_processor.rs",
+      "local_evidence": "/private/tmp/codex-01621-processor.rs",
+      "sha256": "2c40a6db590c9823a6775b28c2e125544583246318ce038166d28fb57a10ab29",
+      "bytes": 252303
+    },
+    {
+      "path": "codex-rs/core/src/config/mod.rs",
+      "url": "https://raw.githubusercontent.com/openai/codex/092d3acd6bec3e3a14bdc7e7a2810ab628ab759d/codex-rs/core/src/config/mod.rs",
+      "local_evidence": "/private/tmp/codex-01621-config.rs",
+      "sha256": "32babb117ff4bf0dc08050c4a755f5996f57f51fcebb82595c81648420394259",
+      "bytes": 202569
+    },
+    {
+      "path": "codex-rs/exec/src/lib.rs",
+      "url": "https://raw.githubusercontent.com/openai/codex/092d3acd6bec3e3a14bdc7e7a2810ab628ab759d/codex-rs/exec/src/lib.rs",
+      "local_evidence": "/private/tmp/codex-01621-exec.rs",
+      "sha256": "51b62cef4893c6d07b51753fc2716fc05985cdc9de6673f2fa2d974779454d4b",
+      "bytes": 89346
+    },
+    {
+      "path": "codex-rs/config/src/loader/mod.rs",
+      "url": "https://raw.githubusercontent.com/openai/codex/092d3acd6bec3e3a14bdc7e7a2810ab628ab759d/codex-rs/config/src/loader/mod.rs",
+      "local_evidence": "/private/tmp/codex-01621-loader.rs",
+      "sha256": "1d02081520b4164aba4b6928844a2b0ae12d3fae3540b0c4cee3c3de541a64c9",
+      "bytes": 74505
+    },
+    {
+      "path": "codex-rs/config/src/overrides.rs",
+      "url": "https://raw.githubusercontent.com/openai/codex/092d3acd6bec3e3a14bdc7e7a2810ab628ab759d/codex-rs/config/src/overrides.rs",
+      "local_evidence": "/private/tmp/codex-01621-overrides.rs",
+      "sha256": "dbac7a6f68de31e74c11e9671fe0b1f68f8783c68cff5a9ba26348e0b5f86c0a",
+      "bytes": 3970
+    },
+    {
+      "path": "codex-rs/utils/cli/src/config_override.rs",
+      "url": "https://raw.githubusercontent.com/openai/codex/092d3acd6bec3e3a14bdc7e7a2810ab628ab759d/codex-rs/utils/cli/src/config_override.rs",
+      "local_evidence": "/private/tmp/codex-01621-common-overrides.rs",
+      "sha256": "7edda8533dd3395b22214f140eb2c93a45b7dad2595635f57691099d408ce071",
+      "bytes": 6022
+    },
+    {
+      "path": "codex-rs/config/src/config_toml.rs",
+      "url": "https://raw.githubusercontent.com/openai/codex/092d3acd6bec3e3a14bdc7e7a2810ab628ab759d/codex-rs/config/src/config_toml.rs",
+      "local_evidence": "/private/tmp/codex-01621-toml.rs",
+      "sha256": "aaf8e8e8531f9ef6d854c99af8cd690227ff353f4c930cc64e22ddf5e20f7d84",
+      "bytes": 43485
+    },
+    {
+      "path": "codex-rs/rollout/src/state_db.rs",
+      "url": "https://raw.githubusercontent.com/openai/codex/092d3acd6bec3e3a14bdc7e7a2810ab628ab759d/codex-rs/rollout/src/state_db.rs",
+      "local_evidence": "/private/tmp/codex-01621-rollout-state.rs",
+      "sha256": "22bb1352fffb26b1ca2e2183a7521b7aa1bc458d4fa8054dfa94f385c91a6ad5",
+      "bytes": 24777
+    }
+  ],
+  "static_invocations": 0,
+  "implementation": {
+    "adapter": "cli-9",
+    "writer_override": "projects={<canonical checkout>={trust_level=\"untrusted\"}}",
+    "readers_changed": false,
+    "auth_environment_changed": false
+  },
+  "checks": {
+    "targeted_pytest": 217,
+    "new_cases": 2,
+    "distribution": "installed wheel verified offline with synthetic providers",
+    "frontend_build": "passed",
+    "global_persistence_claim": "specific trust branch suppression; no general OS isolation"
+  }
+}

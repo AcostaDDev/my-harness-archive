@@ -50,6 +50,10 @@ if provider == 'codex':
         sys.exit(1)
     # D052: the writer is the workspace-write sandbox, never with network.
     writer = args[args.index('--sandbox') + 1] == 'workspace-write'
+    if writer and os.environ.get('PROBE_TRUST_REQUIRED') == '1' and (
+            config.get('projects') != {str(Path.cwd()): {'trust_level': 'untrusted'}}):
+        print('Synthetic contract: writer requires explicit untrusted checkout', file=sys.stderr)
+        sys.exit(1)
     if writer and config.get('sandbox_workspace_write', {}).get('network_access') is not False:
         print('Synthetic contract: writer requires explicit network_access=false', file=sys.stderr)
         sys.exit(1)

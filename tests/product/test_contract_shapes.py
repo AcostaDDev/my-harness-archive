@@ -10,7 +10,7 @@ import shlex
 
 import pytest
 
-from harness_local.core.engine.contracts import command_text, freeze
+from harness_local.core.engine.contracts import command_text, freeze, task_contract
 from harness_local.core.engine.planning import deterministic_task
 from harness_local.core.engine.prompts import builtin_catalog, output_schema, render_attempt
 from harness_local.services.local_config import load_local_config
@@ -100,6 +100,26 @@ def test_rendered_planner_prompt_asks_for_command_strings(context):
     assert "one shell-free string per command (never argv arrays)" in text
     assert '"validation_commands":{"description":' in text and '"items":{"type":"string"}' in text
     assert json.loads(snapshot)["output_schema"] == output_schema("planner")
+
+
+@pytest.mark.parametrize('forbidden', ['**', '*', 'src/**', 'src/estimate.ts'])
+def test_contradictory_planner_scope_stops_before_writer_or_validation(context, forbidden):
+    context = replace(context, policy=replace(context.policy, planning_mode='agent'))
+    plan = {**agent_plan(context, []), 'allowed_paths': ['src/estimate.ts'], 'forbidden_paths': [forbidden]}
+    engine, agents, runner, _ = harness(context, [plan])
+    result = engine.start(context, TASK_ID, PHASE_ID, PLAN)
+    assert result.status == 'stopped' and result.stop.stage == 'planner'
+    assert result.stop.reason == 'Task allowed path is also forbidden: src/estimate.ts'
+    assert len(result.attempts) == len(agents.requests) == 1 and not runner.calls and not result.cycles
+    assert json.loads(result.attempts[0].result.payload_json)['forbidden_paths'] == [forbidden]
+
+
+def test_scope_exceptions_remain_valid_and_planner_prompt_explains_precedence(context):
+    plan = {**agent_plan(context, []), 'allowed_paths': ['src/**'], 'forbidden_paths': ['src/private/**']}
+    assert json.loads(task_contract(context, plan, TASK_ID, PHASE_ID))['forbidden_paths'] == ['src/private/**']
+    text, snapshot = render_attempt(builtin_catalog(), 'plan-task', {'INPUT_JSON': '{}'}, context)
+    assert 'forbidden patterns take precedence' in text
+    assert 'never use * or **' in json.loads(snapshot)['output_schema']['properties']['forbidden_paths']['description']
 
 
 def test_claude_planner_returning_argv_arrays_reaches_acceptance_through_the_real_adapter(setup, repository):
