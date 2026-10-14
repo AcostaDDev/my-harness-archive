@@ -1036,6 +1036,117 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/managed/projects/{project_id}/documents": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Documents Status
+         * @description Documentos, deriva frente a la base adoptada, cambios locales, avisos, decisiones y archivo.
+         */
+        get: operations["managed_documents"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/managed/projects/{project_id}/documents/content": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Document Content */
+        get: operations["managed_document"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/managed/projects/{project_id}/documents/edit/preview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Document Edit Preview
+         * @description Diff exacto sin efectos; los bloques gestionados y el archivo de fases no se editan.
+         */
+        post: operations["managed_document_edit_preview"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/managed/projects/{project_id}/documents/edit": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Document Edit */
+        post: operations["managed_document_edit"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/managed/phases/{phase_id}/transition/preview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Transition Preview
+         * @description Archivo de la fase terminada, STATE/NEXT_STEPS frescos y fase siguiente del ROADMAP, sin efectos.
+         */
+        post: operations["managed_phase_transition_preview"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/managed/phases/{phase_id}/transition": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Transition */
+        post: operations["managed_phase_transition"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/managed/projects/{project_id}/conversations": {
         parameters: {
             query?: never;
@@ -1243,6 +1354,13 @@ export interface components {
             expected_version: number;
             /** Reason */
             reason: string;
+        };
+        /** ArchivedPhaseRead */
+        ArchivedPhaseRead: {
+            /** Path */
+            path: string;
+            /** Files */
+            files: string[];
         };
         /** BootstrapBrief */
         BootstrapBrief: {
@@ -1694,6 +1812,101 @@ export interface components {
             /** Changed Paths */
             changed_paths: string[];
         };
+        /** DecisionEntryRead */
+        DecisionEntryRead: {
+            /** Id */
+            id: string;
+            /** File */
+            file: string;
+            /** Title */
+            title: string | null;
+            /** Status */
+            status: string | null;
+            /** Date */
+            date: string | null;
+            /** Phase */
+            phase: string | null;
+        };
+        /** DocumentChange */
+        DocumentChange: {
+            /** Path */
+            path: string;
+            /** Content */
+            content: string;
+        };
+        /** DocumentChangeRead */
+        DocumentChangeRead: {
+            /** Path */
+            path: string;
+            /** Editable */
+            editable: boolean;
+        };
+        /** DocumentEditCreate */
+        DocumentEditCreate: {
+            /**
+             * Source
+             * @description content: documentos enviados sobre un checkout limpio; worktree: cambios locales del editor.
+             * @enum {string}
+             */
+            source: "content" | "worktree";
+            /** Changes */
+            changes?: components["schemas"]["DocumentChange"][] | null;
+            /** Preview Sha256 */
+            preview_sha256: string;
+            /** Resume Operation Id */
+            resume_operation_id?: string | null;
+            /** Reason */
+            reason: string;
+            /**
+             * Confirmed
+             * @constant
+             */
+            confirmed: true;
+        };
+        /** DocumentEditInput */
+        DocumentEditInput: {
+            /**
+             * Source
+             * @description content: documentos enviados sobre un checkout limpio; worktree: cambios locales del editor.
+             * @enum {string}
+             */
+            source: "content" | "worktree";
+            /** Changes */
+            changes?: components["schemas"]["DocumentChange"][] | null;
+        };
+        /** DocumentEditPreviewRead */
+        DocumentEditPreviewRead: {
+            /** Resume Operation Id */
+            resume_operation_id: string | null;
+            /** Preview Sha256 */
+            preview_sha256: string;
+            /**
+             * Operation
+             * @enum {string}
+             */
+            operation: "document_edit" | "phase_transition";
+            /** Head */
+            head: string;
+            /** Fingerprint */
+            fingerprint: string;
+            /** Tree */
+            tree: string;
+            /** Index Tree */
+            index_tree: string;
+            /** Documents */
+            documents: components["schemas"]["DocumentPreviewEntry"][];
+            /** Mechanical */
+            mechanical: {
+                [key: string]: string;
+            }[];
+            /** Diff */
+            diff: string;
+            /**
+             * Source
+             * @enum {string}
+             */
+            source: "content" | "worktree";
+        };
         /** DocumentExportCreate */
         DocumentExportCreate: {
             /** Expected Version */
@@ -1744,6 +1957,92 @@ export interface components {
             }[];
             /** Diff */
             diff: string;
+        };
+        /** DocumentFolderRead */
+        DocumentFolderRead: {
+            /** Path */
+            path: string;
+            /** Exists */
+            exists: boolean;
+        };
+        /** DocumentPreviewEntry */
+        DocumentPreviewEntry: {
+            /** Path */
+            path: string;
+            /** Before Sha256 */
+            before_sha256: string | null;
+            /** After Sha256 */
+            after_sha256: string;
+            /** Content */
+            content: string;
+        };
+        /** DocumentRead */
+        DocumentRead: {
+            /** Path */
+            path: string;
+            /** Content */
+            content: string;
+            /** Sha256 */
+            sha256: string;
+            /** Editable */
+            editable: boolean;
+            /** Archived */
+            archived: boolean;
+            /** Blocks */
+            blocks: string[];
+        };
+        /** DocumentStateRead */
+        DocumentStateRead: {
+            /** Path */
+            path: string;
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "phase" | "product";
+            /** Exists */
+            exists: boolean;
+            /** Sha256 */
+            sha256: string | null;
+            /** Adopted Sha256 */
+            adopted_sha256: string | null;
+            /** Drift */
+            drift: boolean;
+            /** Blocks */
+            blocks: string[];
+            /** Error */
+            error: string | null;
+        };
+        /** DocumentsStatusRead */
+        DocumentsStatusRead: {
+            /**
+             * Layout
+             * @constant
+             */
+            layout: "v2";
+            /** Phase */
+            phase: {
+                [key: string]: unknown;
+            } | null;
+            /** Documents */
+            documents: components["schemas"]["DocumentStateRead"][];
+            /** Folders */
+            folders: components["schemas"]["DocumentFolderRead"][];
+            /**
+             * Uncommitted
+             * @description Cambios locales del checkout; null si no hay escritor Git configurado.
+             */
+            uncommitted: components["schemas"]["DocumentChangeRead"][] | null;
+            /** Warnings */
+            warnings: string[];
+            /** Decisions */
+            decisions: components["schemas"]["DecisionEntryRead"][];
+            /** Archive */
+            archive: components["schemas"]["ArchivedPhaseRead"][];
+            /** Unresolved Intent */
+            unresolved_intent: boolean;
+            /** Git Error */
+            git_error: string | null;
         };
         /** EvidenceContentRead */
         EvidenceContentRead: {
@@ -2223,6 +2522,11 @@ export interface components {
              */
             tag_kind: "lightweight" | "annotated";
             agents: components["schemas"]["ProjectAgentsRead"];
+            /**
+             * Documents
+             * @description Contrato documental D072; null: anterior.
+             */
+            documents?: "v2" | null;
         };
         /** ManagedRunRead */
         ManagedRunRead: {
@@ -2254,7 +2558,7 @@ export interface components {
              * Purpose
              * @enum {string}
              */
-            purpose: "task" | "phase_check" | "phase_close" | "chat" | "document_export" | "bootstrap" | "bootstrap_discovery";
+            purpose: "task" | "phase_check" | "phase_close" | "chat" | "document_export" | "bootstrap" | "bootstrap_discovery" | "document_edit" | "phase_transition";
             /** Actions */
             actions: ("revalidate" | "retry_executor" | "commit" | "permissions")[];
             /** Versions */
@@ -2296,7 +2600,7 @@ export interface components {
              * Purpose
              * @enum {string}
              */
-            purpose: "task" | "phase_check" | "phase_close" | "chat" | "document_export" | "bootstrap" | "bootstrap_discovery";
+            purpose: "task" | "phase_check" | "phase_close" | "chat" | "document_export" | "bootstrap" | "bootstrap_discovery" | "document_edit" | "phase_transition";
         };
         /** MigrationPreviewRead */
         MigrationPreviewRead: {
@@ -2740,7 +3044,7 @@ export interface components {
              * Kind
              * @enum {string}
              */
-            kind: "check" | "close" | "reconcile" | "reconcile_task" | "amend" | "abandon" | "document_export";
+            kind: "check" | "close" | "reconcile" | "reconcile_task" | "amend" | "abandon" | "document_export" | "transition" | "document_edit";
             /** Run Id */
             run_id: string | null;
             /** Status */
@@ -2842,7 +3146,7 @@ export interface components {
             authorizations: components["schemas"]["PhaseAuthorizationRead"][];
             ready: components["schemas"]["PhaseReadyRead"] | null;
             /** Actions */
-            actions: ("check" | "reconcile" | "reconcile_task" | "close" | "question" | "authorize_batch" | "batch_next" | "amend" | "abandon")[];
+            actions: ("check" | "reconcile" | "reconcile_task" | "close" | "question" | "authorize_batch" | "batch_next" | "amend" | "abandon" | "transition")[];
         };
         /** PhaseReadyRead */
         PhaseReadyRead: {
@@ -2902,6 +3206,76 @@ export interface components {
             created_at: string;
             /** Updated At */
             updated_at: string;
+        };
+        /** PhaseTransitionCreate */
+        PhaseTransitionCreate: {
+            /** Expected Version */
+            expected_version: number;
+            /** Next Steps */
+            next_steps?: string | null;
+            /** Preview Sha256 */
+            preview_sha256: string;
+            /** Resume Operation Id */
+            resume_operation_id?: string | null;
+            /** Reason */
+            reason: string;
+            /**
+             * Confirmed
+             * @constant
+             */
+            confirmed: true;
+        };
+        /** PhaseTransitionInput */
+        PhaseTransitionInput: {
+            /**
+             * Next Steps
+             * @description Plan NEXT_STEPS de la fase siguiente del ROADMAP; null si no hay más fases.
+             */
+            next_steps?: string | null;
+        };
+        /** PhaseTransitionPreviewRead */
+        PhaseTransitionPreviewRead: {
+            /** Resume Operation Id */
+            resume_operation_id: string | null;
+            /** Preview Sha256 */
+            preview_sha256: string;
+            /**
+             * Operation
+             * @enum {string}
+             */
+            operation: "document_edit" | "phase_transition";
+            /** Head */
+            head: string;
+            /** Fingerprint */
+            fingerprint: string;
+            /** Tree */
+            tree: string;
+            /** Index Tree */
+            index_tree: string;
+            /** Documents */
+            documents: components["schemas"]["DocumentPreviewEntry"][];
+            /** Mechanical */
+            mechanical: {
+                [key: string]: string;
+            }[];
+            /** Diff */
+            diff: string;
+            /** Expected Version */
+            expected_version: number;
+            /** Snapshot */
+            snapshot: {
+                [key: string]: unknown;
+            };
+            /** Closed */
+            closed: string;
+            /** Archive */
+            archive: string;
+            /** Next */
+            next: {
+                [key: string]: unknown;
+            } | null;
+            /** Warnings */
+            warnings: string[];
         };
         /** ProblemRead */
         ProblemRead: {
@@ -6941,6 +7315,394 @@ export interface operations {
         requestBody: {
             content: {
                 "application/json": components["schemas"]["DocumentExportCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ManagedJobRead"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+        };
+    };
+    managed_documents: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Obligatoria con valor 1 en mutaciones (protección CSRF). */
+                "x-harness-local"?: string | null;
+            };
+            path: {
+                project_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DocumentsStatusRead"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+        };
+    };
+    managed_document: {
+        parameters: {
+            query: {
+                path: string;
+            };
+            header?: {
+                /** @description Obligatoria con valor 1 en mutaciones (protección CSRF). */
+                "x-harness-local"?: string | null;
+            };
+            path: {
+                project_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DocumentRead"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+        };
+    };
+    managed_document_edit_preview: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Obligatoria con valor 1 en mutaciones (protección CSRF). */
+                "x-harness-local"?: string | null;
+            };
+            path: {
+                project_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DocumentEditInput"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DocumentEditPreviewRead"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+        };
+    };
+    managed_document_edit: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Misma clave y misma acción devuelven el mismo job. */
+                "Idempotency-Key": string;
+                /** @description Obligatoria con valor 1 en mutaciones (protección CSRF). */
+                "x-harness-local"?: string | null;
+            };
+            path: {
+                project_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DocumentEditCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ManagedJobRead"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+        };
+    };
+    managed_phase_transition_preview: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Obligatoria con valor 1 en mutaciones (protección CSRF). */
+                "x-harness-local"?: string | null;
+            };
+            path: {
+                phase_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PhaseTransitionInput"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PhaseTransitionPreviewRead"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+        };
+    };
+    managed_phase_transition: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Misma clave y misma acción devuelven el mismo job. */
+                "Idempotency-Key": string;
+                /** @description Obligatoria con valor 1 en mutaciones (protección CSRF). */
+                "x-harness-local"?: string | null;
+            };
+            path: {
+                phase_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PhaseTransitionCreate"];
             };
         };
         responses: {

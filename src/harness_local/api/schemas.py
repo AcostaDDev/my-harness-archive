@@ -189,6 +189,7 @@ class ManagedProjectRead(BaseModel):
     versions: dict[str, str | None]
     tag_kind: Literal["lightweight", "annotated"]
     agents: ProjectAgentsRead
+    documents: Literal["v2"] | None = Field(default=None, description="Contrato documental D072; null: anterior.")
 
 
 ActivationStatus = Literal["PREPARING", "ACTIVE", "FAILED", "REVERTING", "REVERTED"]
@@ -294,7 +295,8 @@ class ManagedRunSummaryRead(BaseModel):
     revision_limit: int
     created_at: str
     updated_at: str
-    purpose: Literal['task', 'phase_check', 'phase_close', 'chat', 'document_export', 'bootstrap', 'bootstrap_discovery']
+    purpose: Literal['task', 'phase_check', 'phase_close', 'chat', 'document_export', 'bootstrap', 'bootstrap_discovery',
+                     'document_edit', 'phase_transition']
 
 
 class StopRead(BaseModel):
@@ -550,7 +552,7 @@ class PermissionRequestRead(BaseModel):
 PhaseStatus = Literal['ACTIVE', 'CHECKING', 'READY_TO_CLOSE', 'NEEDS_RECONCILIATION', 'BLOCKED', 'CLOSING', 'CLOSED',
                       'ABANDONED']
 PhaseAction = Literal['check', 'reconcile', 'reconcile_task', 'close', 'question', 'authorize_batch', 'batch_next',
-                      'amend', 'abandon']
+                      'amend', 'abandon', 'transition']
 
 
 class PhaseCreate(BaseModel):
@@ -593,7 +595,8 @@ class PhaseQuestionRead(BaseModel):
 
 class PhaseOperationRead(BaseModel):
     id: str
-    kind: Literal['check', 'close', 'reconcile', 'reconcile_task', 'amend', 'abandon', 'document_export']
+    kind: Literal['check', 'close', 'reconcile', 'reconcile_task', 'amend', 'abandon', 'document_export',
+                  'transition', 'document_edit']
     run_id: str | None
     status: str
     previous_status: str
@@ -740,6 +743,134 @@ class DocumentExportPreviewRead(BaseModel):
 
 
 class DocumentExportCreate(PhaseVersioned):
+    preview_sha256: str = Field(pattern=r'^[0-9a-f]{64}$')
+    resume_operation_id: str | None = Field(default=None, max_length=36)
+    reason: str = Field(min_length=1, max_length=2000)
+    confirmed: Literal[True]
+
+
+# --- D072/H6.3: contrato documental por fase -----------------------------------------------------
+
+
+class DocumentStateRead(BaseModel):
+    path: str
+    kind: Literal['phase', 'product']
+    exists: bool
+    sha256: str | None
+    adopted_sha256: str | None
+    drift: bool
+    blocks: list[str]
+    error: str | None
+
+
+class DocumentFolderRead(BaseModel):
+    path: str
+    exists: bool
+
+
+class DocumentChangeRead(BaseModel):
+    path: str
+    editable: bool
+
+
+class DecisionEntryRead(BaseModel):
+    id: str
+    file: str
+    title: str | None
+    status: str | None
+    date: str | None
+    phase: str | None
+
+
+class ArchivedPhaseRead(BaseModel):
+    path: str
+    files: list[str]
+
+
+class DocumentsStatusRead(BaseModel):
+    layout: Literal['v2']
+    phase: dict[str, Any] | None
+    documents: list[DocumentStateRead]
+    folders: list[DocumentFolderRead]
+    uncommitted: list[DocumentChangeRead] | None = Field(
+        description='Cambios locales del checkout; null si no hay escritor Git configurado.')
+    warnings: list[str]
+    decisions: list[DecisionEntryRead]
+    archive: list[ArchivedPhaseRead]
+    unresolved_intent: bool
+    git_error: str | None
+
+
+class DocumentRead(BaseModel):
+    path: str
+    content: str
+    sha256: str
+    editable: bool
+    archived: bool
+    blocks: list[str]
+
+
+class DocumentChange(BaseModel):
+    model_config = ConfigDict(extra='forbid', strict=True)
+    path: str = Field(min_length=1, max_length=500)
+    content: str = Field(max_length=512 * 1024)
+
+
+class DocumentEditInput(BaseModel):
+    model_config = ConfigDict(extra='forbid', strict=True)
+    source: Literal['content', 'worktree'] = Field(
+        description='content: documentos enviados sobre un checkout limpio; worktree: cambios locales del editor.')
+    changes: list[DocumentChange] | None = Field(default=None, max_length=50)
+
+
+class DocumentPreviewEntry(BaseModel):
+    path: str
+    before_sha256: str | None
+    after_sha256: str
+    content: str
+
+
+class DocumentOperationPreview(BaseModel):
+    resume_operation_id: str | None
+    preview_sha256: str
+    operation: Literal['document_edit', 'phase_transition']
+    head: str
+    fingerprint: str
+    tree: str
+    index_tree: str
+    documents: list[DocumentPreviewEntry]
+    mechanical: list[dict[str, str]]
+    diff: str
+
+
+class DocumentEditPreviewRead(DocumentOperationPreview):
+    source: Literal['content', 'worktree']
+
+
+class DocumentEditCreate(DocumentEditInput):
+    preview_sha256: str = Field(pattern=r'^[0-9a-f]{64}$')
+    resume_operation_id: str | None = Field(default=None, max_length=36)
+    reason: str = Field(min_length=1, max_length=2000)
+    confirmed: Literal[True]
+
+
+class PhaseTransitionInput(BaseModel):
+    model_config = ConfigDict(extra='forbid', strict=True)
+    next_steps: str | None = Field(default=None, max_length=512 * 1024,
+                                   description='Plan NEXT_STEPS de la fase siguiente del ROADMAP; null si no hay más fases.')
+
+
+class PhaseTransitionPreviewRead(DocumentOperationPreview):
+    expected_version: int
+    snapshot: dict[str, Any]
+    closed: str
+    archive: str
+    next: dict[str, Any] | None
+    warnings: list[str]
+
+
+class PhaseTransitionCreate(PhaseVersioned):
+    next_steps: str | None = Field(default=None, max_length=512 * 1024)
     preview_sha256: str = Field(pattern=r'^[0-9a-f]{64}$')
     resume_operation_id: str | None = Field(default=None, max_length=36)
     reason: str = Field(min_length=1, max_length=2000)

@@ -9,9 +9,9 @@ from harness_local.core.engine.commit import (
 )
 from harness_local.core.engine.phases import digest, document_hashes
 from harness_local.core.engine.evidence import matches
+from harness_local.core.engine import documents as layout_v2
 
-BEGIN = '<!-- harness-local:managed-state:start -->'
-END = '<!-- harness-local:managed-state:end -->'
+BEGIN, END = layout_v2.markers('state')
 MAX_DOCUMENT_BYTES = 512 * 1024
 
 
@@ -21,22 +21,7 @@ def text_hash(text):
 
 def replace_block(text, body):
     """No normaliza ni interpreta la prosa exterior, incluidas sus terminaciones de línea."""
-    block = BEGIN + '\n' + body + END
-    if BEGIN not in text and END not in text:
-        return text + ('\n' if text and not text.endswith('\n') else '') + block + '\n'
-    if text.count(BEGIN) != 1 or text.count(END) != 1:
-        raise ValueError('Mechanical markers must occur exactly once as a pair')
-    start, end = text.index(BEGIN), text.index(END)
-    if end < start or (start and text[start - 1] != '\n') or (
-            end + len(END) < len(text) and text[end + len(END)] not in '\r\n'):
-        raise ValueError('Mechanical markers must be ordered and occupy their own lines')
-    if not text[start + len(BEGIN):].startswith(('\r\n', '\n')) or (
-            end and text[end - 1] != '\n'):
-        raise ValueError('Mechanical markers must occupy their own lines')
-    suffix = text[end + len(END):]
-    if suffix and not suffix.startswith(('\r\n', '\n')):
-        raise ValueError('Mechanical markers must occupy their own lines')
-    return text[:start] + block + text[end + len(END):]
+    return layout_v2.replace_block(text, body, 'state')
 
 
 def render(snapshot, *, next_steps=False):
@@ -56,10 +41,24 @@ def render(snapshot, *, next_steps=False):
     return 'Estado gestionado por Harness Local (SQLite).\n\n```json\n' + pretty + '\n```\n'
 
 
+def _targets(context, snapshot, baseline):
+    """Rutas y cuerpos: D036 (JSON en STATE/NEXT_STEPS) o D072 (bloques legibles de los documentos de fase)."""
+    target = layout_v2.layout(context)
+    if target is None:
+        return [(context.state_file, 'state', render(snapshot)),
+                (context.next_steps_file, 'state', render(snapshot, next_steps=True))]
+    from harness_local.core.engine.document_ops import read_decisions, read_text
+    texts = {path: read_text(context, path) for path in target.phase_documents if path in baseline}
+    bodies = layout_v2.managed_bodies(target, snapshot['state'], snapshot['phases'], texts,
+                                      read_decisions(context, target))
+    return [(path, *bodies[path]) for path in target.phase_documents if path in bodies and path in baseline]
+
+
 def preview(context, snapshot, baseline, git):
     paths = (context.state_file, context.next_steps_file)
     if len(set(paths)) != 2 or not set(paths) <= baseline.keys():
         raise ValueError('STATE and NEXT_STEPS must be distinct adopted phase documents')
+    targets = _targets(context, snapshot, baseline)
     if document_hashes(context, baseline) != baseline:
         raise ValueError('Phase documents changed externally; review and reconcile the document hashes first')
     evidence = git.capture(context)
@@ -67,14 +66,14 @@ def preview(context, snapshot, baseline, git):
     if evidence.changed_paths or provenance.index_tree != provenance.base_tree:
         raise ValueError('Document export requires a clean checkout and index')
     documents, updates, diffs = [], [], []
-    for number, path in enumerate(paths):
+    for path, name, body in targets:
         target = context.path(path)
         if not target.is_file() or target.is_symlink() or target.stat().st_size > MAX_DOCUMENT_BYTES:
             raise ValueError('Export requires adopted regular UTF-8 documents of at most 512 KiB')
         old = target.read_bytes().decode('utf-8')
         if text_hash(old) != baseline[path]:
             raise ValueError(f'{path} changed externally; review and reconcile the document hashes first')
-        new = replace_block(old, render(snapshot, next_steps=number == 1))
+        new = layout_v2.replace_block(old, body, name)
         if len(new.encode('utf-8')) > MAX_DOCUMENT_BYTES:
             raise ValueError('Exported document exceeds 512 KiB')
         documents.append({'path': path, 'before_sha256': text_hash(old), 'after_sha256': text_hash(new),
@@ -86,7 +85,7 @@ def preview(context, snapshot, baseline, git):
         diffs.append(''.join(line if line.endswith('\n') else line + '\n\\ No newline at end of file\n'
                              for line in delta))
     validate_mechanical_updates(context, (), tuple(updates))
-    for path in paths:
+    for path, _, _ in targets:
         if matches(path, context.profile.protected_paths):
             raise ValueError('Document export targets a protected profile path')
     data = {'snapshot': snapshot, 'baseline': baseline, 'head': evidence.base_revision,
@@ -99,15 +98,16 @@ def execute(context, history, request, git, journal, now):
     """Sin agentes: confirmación humana del diff, intención previa y escritor H2.4."""
     shown = request['preview']
     raw = request.get('commit_intent')
-    unchanged = {p: sha for p, sha in shown['baseline'].items()
-                 if p not in (context.state_file, context.next_steps_file)}
+    exported = {document['path'] for document in shown['documents']}
+    unchanged = {p: sha for p, sha in shown['baseline'].items() if p not in exported}
     if document_hashes(context, unchanged) != unchanged:
         return replace(history, status='stopped'), {'status': 'INVALIDATED', 'diagnostic': 'Phase documents changed after preview'}
     if raw is None:
         if git.capture(context).fingerprint != shown['fingerprint']:
             return replace(history, status='stopped'), {'status': 'INVALIDATED', 'diagnostic': 'Checkout changed after preview'}
         updates = tuple(MechanicalUpdate(**u) for u in shown['mechanical'])
-        message = (f"harness: export phase {shown['snapshot']['phase']['code']} documents\n\n"
+        frozen = shown['snapshot'].get('state') if shown['snapshot'].get('layout') == 'v2' else shown['snapshot']
+        message = (f"harness: export phase {frozen['phase']['code']} documents\n\n"
                    f"Harness-Operation: {request['operation_id']}\nHarness-Preview: {shown['preview_sha256']}\n")
         plan = CommitPlan(shown['head'], shown['tree'], updates, message, git.identity.name, git.identity.email,
                           int(now().timestamp()))

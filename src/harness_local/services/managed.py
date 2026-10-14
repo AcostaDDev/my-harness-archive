@@ -11,6 +11,7 @@ from threading import Event, Thread
 from uuid import uuid4
 
 from harness_local.core.engine.commit import MechanicalUpdate, commit_accepted
+from harness_local.core.engine.contracts import stop_history
 from harness_local.core.engine.journal import JournalError
 from harness_local.core.engine.serialization import restore_context
 from harness_local.core.engine.workflow import OfflineEngine
@@ -63,6 +64,9 @@ class _Journal:
     def export_intent(self, intent):
         self._call(self.repository.export_intent, intent)
 
+    def document_intent(self, intent):
+        self._call(self.repository.document_intent, intent)
+
     def command_started(self, command):
         identity = str(uuid4())
         self._call(self.repository.effect, "command_started", {"command_id": identity, "command": asdict(command)})
@@ -71,6 +75,35 @@ class _Journal:
     def command_finished(self, identity, result):
         from harness_local.core.engine.validation import command_result_payload
         self._call(self.repository.effect, "command_finished", {"command_id": identity, "result": command_result_payload(result)})
+
+
+class _DocumentsJournal:
+    """D072: adopta los hashes de bloques gestionados en la misma transacción que registra el commit.
+
+    La intención (nueva o pendiente de conciliar) fija qué bloques escribió el harness; sus hashes
+    anteriores se leen de la revisión base, de modo que la reanudación adopta lo mismo."""
+
+    def __init__(self, journal, writer, context):
+        self.journal, self.writer, self.context = journal, writer, context
+        self.intent = None
+
+    def __getattr__(self, name):
+        return getattr(self.journal, name)
+
+    def pending_commit(self):
+        self.intent = self.journal.pending_commit()
+        return self.intent
+
+    def commit_intent(self, intent):
+        self.journal.commit_intent(intent)
+        self.intent = intent
+
+    def commit_result(self, outcome):
+        adopt = None
+        if outcome.status != "invalidated" and self.intent is not None:
+            from harness_local.storage.documents import block_adoption
+            adopt = block_adoption(self.context, self.intent, self.writer)
+        self.journal._call(self.journal.repository.commit_result, outcome, adopt)
 
 
 def _bind_commands(commands, journal, versions):
@@ -161,6 +194,24 @@ class LocalSupervisor:
                 # En reanudación la intención ya existe; la guardia vuelve a comprobarse antes del efecto.
                 self.repository._require_mode(claim)
                 history, outcome = execute(context, record.history, frozen, writer, journal, self.repository.clock)
+            elif request["action"] in ("document_edit", "phase_transition"):
+                # D072: edición confirmada o transición de fase; sin agentes, intención antes de escribir.
+                from harness_local.core.engine.document_ops import execute
+                if self.commit_factory is None:
+                    raise RuntimeError('Document operations require the configured Git writer')
+                writer = self.commit_factory(context, versions)
+                if request["action"] == "document_edit":
+                    from harness_local.storage.documents import DocumentsRepository
+                    frozen = DocumentsRepository(self.repository).request(claim.run_id)
+                    label = "confirm document edit"
+                else:
+                    from harness_local.storage.transition import TransitionRepository
+                    frozen = TransitionRepository(self.repository).request(claim.run_id)
+                    shown = frozen["preview"]
+                    label = f"archive {shown['closed']}" + (f" and open {shown['next']['code']}" if shown["next"] else "")
+                self.repository._require_mode(claim)
+                history, outcome = execute(context, record.history, frozen, writer, journal, self.repository.clock,
+                                           label=label)
             elif request["action"] == "chat_turn":
                 # H4.1: turno de solo lectura con la petición congelada al encolarlo; sin escritor Git.
                 from harness_local.core.engine.chat import chat_turn
@@ -196,8 +247,21 @@ class LocalSupervisor:
                     raise RuntimeError("No commit writer configured for a commit job")
                 writer = self.commit_factory(context, versions)
                 updates = tuple(MechanicalUpdate(**item) for item in request["mechanical"])
-                history, _ = commit_accepted(context, record.history, writer, journal, mechanical=updates,
-                                             now=self.repository.clock)
+                history, blocks, committer = None, frozenset(), journal
+                if context.documents is not None:
+                    # D072: bloques gestionados regenerados sobre lo revisado, en el mismo commit.
+                    committer = _DocumentsJournal(journal, writer, context)
+                    if journal.pending_commit() is None:
+                        from harness_local.storage.documents import task_commit_updates
+                        try:
+                            extra, blocks = task_commit_updates(self.repository, context, claim.run_id, record.history)
+                            updates += extra
+                        except (ValueError, OSError, UnicodeError) as exc:
+                            history = stop_history(record.history, "commit",
+                                                   f"Managed documentation blocks could not be regenerated: {exc}")
+                if history is None:
+                    history, _ = commit_accepted(context, record.history, writer, committer, mechanical=updates,
+                                                 now=self.repository.clock, block_paths=blocks)
             else:
                 agents, commands, evidence = self.ports_factory(context, versions)
                 _bind_commands(commands, journal, versions)

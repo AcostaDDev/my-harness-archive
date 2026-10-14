@@ -257,9 +257,9 @@ class PhaseRepository:
             raise LookupError('Phase belongs to another checkout')
         if type(expected) is not int or phase.version != expected:
             raise Conflict('Phase changed; reload before acting')
-        from harness_local.storage.document_export import unresolved
+        from harness_local.storage.documents import unresolved
         if unresolved(session, phase.root):
-            raise Conflict('A document export intent awaits reconciliation; recover it first')
+            raise Conflict('A document intent awaits reconciliation; recover it first')
         return phase
 
     @staticmethod
@@ -336,7 +336,7 @@ class PhaseRepository:
                     actions.append('batch_next')  # lote manual H3.3; el desatendido lo conduce el supervisor
             if phase.status in AMENDABLE and not pending:
                 actions += ['amend', 'abandon']
-            from harness_local.storage.document_export import unresolved
+            from harness_local.storage.documents import unresolved
             if unresolved(session, phase.root):
                 actions = []
             return {
@@ -403,7 +403,7 @@ class PhaseRepository:
         documents = document_hashes(context, definition['documents'])
         with self.managed._write() as session:
             root = str(context.root)
-            from harness_local.storage.document_export import unresolved
+            from harness_local.storage.documents import unresolved
             from harness_local.storage.bootstrap import unresolved as bootstrap_unresolved
             if self._root_pending(session, root) or unresolved(session, root) or bootstrap_unresolved(session, root):
                 raise Conflict('Checkout has unfinished work; finish or reconcile it before creating a phase')
@@ -791,15 +791,31 @@ class PhaseRepository:
             instructions = render(template, {'PHASE_ID': phase.code, 'REVIEW_JSON': freeze(evidence)})
             required = (check.result or {}).get('reasons', []) if check is not None and check.status == 'REVISE' else []
             policy = context.policy
+            from harness_local.core.engine.documents import BUDGETS, layout
+            target = layout(context)
+            allowed, constraints = list(documents), ['Documentation only: no code, tests, plans state, commits or tags.']
+            if target is not None:
+                # D072: la reconciliación compacta STATE y pone al día los documentos de producto y decisiones;
+                # el índice de decisiones y el archivo de fases siguen siendo del harness.
+                allowed = list(dict.fromkeys([path for path in documents if path != target.decisions]
+                                             + list(target.product_documents)
+                                             + [f'{folder}/**' for folder in target.folders]))
+                constraints += [
+                    'Never edit inside harness-local managed blocks; Harness Local regenerates them at commit.',
+                    f'Rewrite the "## Base acumulada" section of {target.state} as a compact description of what '
+                    f'exists and works, by area, within {BUDGETS["base"]} bytes, linking archived summaries.',
+                    f'Summarize the phase in the "## Fase activa" section of {target.state} and note what the next '
+                    'session must know.',
+                    'Record durable decisions as new files in the decisions folder; supersede, never delete.']
             contract = task_contract(context, {
                 'task_id': task_id, 'phase_id': phase.code, 'title': f'Reconcile phase {phase.code} documents',
                 'objective': f'Make the phase {phase.code} documents describe accepted reality.',
-                'business_context': '', 'allowed_paths': list(documents),
+                'business_context': '', 'allowed_paths': allowed,
                 'forbidden_paths': list(dict.fromkeys(protected)),
-                'acceptance_criteria': [f'Only these phase documents change: {", ".join(documents)}.',
+                'acceptance_criteria': [f'Only these {"phase " if target is None else ""}documents change: {", ".join(allowed)}.',
                                         *[f'Required by the phase review: {item}' for item in required],
                                         'Unresolved product decisions are recorded as questions, not invented.'],
-                'implementation_constraints': ['Documentation only: no code, tests, plans state, commits or tags.'],
+                'implementation_constraints': constraints,
                 'validation_commands': [], 'documentation_refs': list(documents), 'deliverables': list(documents),
                 'risk_notes': [], 'executor_prompt': instructions,
                 'executor_selection': {'model': policy.executor_models[0], 'effort': policy.executor_efforts[0],
@@ -816,7 +832,7 @@ class PhaseRepository:
             op = Operation(id=str(uuid4()), phase_id=phase.id, kind='reconcile_task', run_id=job.run_id,
                            status='QUEUED', previous_status=phase.status, created_at=self.managed._now(),
                            request={'job_id': job.id, 'actor': actor(), 'task_id': task_id,
-                                    'contract_sha256': text_digest(contract), 'allowed_paths': list(documents),
+                                    'contract_sha256': text_digest(contract), 'allowed_paths': allowed,
                                     'template': {'id': template.id, 'sha256': template.sha256}})
             session.add(op)
             _event(self.managed, session, phase, 'reconcile_task_queued', {

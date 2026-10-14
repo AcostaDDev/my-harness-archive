@@ -109,6 +109,8 @@ class ProjectContext:
     policy: EnginePolicy
     next_steps_file: str = "docs/NEXT_STEPS.md"
     state_file: str = "docs/STATE.md"
+    # D072/H6.3: contrato documental por fase. None conserva el comportamiento anterior.
+    documents: str | None = None
 
     def __post_init__(self):
         object.__setattr__(self, "root", self.root.resolve(strict=True))
@@ -116,6 +118,11 @@ class ProjectContext:
             raise ValueError("Project root must be a directory")
         relative_path(self.next_steps_file)
         relative_path(self.state_file)
+        if self.documents not in (None, "v2"):
+            raise ValueError("Unknown document layout")
+        if self.documents and (PurePosixPath(self.state_file).parent != PurePosixPath(self.next_steps_file).parent
+                               or PurePosixPath(self.state_file).parent == PurePosixPath(".")):
+            raise ValueError("Document layout v2 keeps STATE and NEXT_STEPS in one documentation directory")
 
     def path(self, relative: str) -> Path:
         candidate = self.root / relative_path(relative)

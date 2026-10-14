@@ -6126,6 +6126,608 @@
         }
       }
     },
+    "/api/managed/projects/{project_id}/documents": {
+      "get": {
+        "summary": "Documents Status",
+        "description": "Documentos, deriva frente a la base adoptada, cambios locales, avisos, decisiones y archivo.",
+        "operationId": "managed_documents",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          },
+          {
+            "name": "x-harness-local",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Obligatoria con valor 1 en mutaciones (protección CSRF).",
+              "title": "X-Harness-Local"
+            },
+            "description": "Obligatoria con valor 1 en mutaciones (protección CSRF)."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DocumentsStatusRead"
+                }
+              }
+            }
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          }
+        }
+      }
+    },
+    "/api/managed/projects/{project_id}/documents/content": {
+      "get": {
+        "summary": "Document Content",
+        "operationId": "managed_document",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          },
+          {
+            "name": "path",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 500,
+              "title": "Path"
+            }
+          },
+          {
+            "name": "x-harness-local",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Obligatoria con valor 1 en mutaciones (protección CSRF).",
+              "title": "X-Harness-Local"
+            },
+            "description": "Obligatoria con valor 1 en mutaciones (protección CSRF)."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DocumentRead"
+                }
+              }
+            }
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          }
+        }
+      }
+    },
+    "/api/managed/projects/{project_id}/documents/edit/preview": {
+      "post": {
+        "summary": "Document Edit Preview",
+        "description": "Diff exacto sin efectos; los bloques gestionados y el archivo de fases no se editan.",
+        "operationId": "managed_document_edit_preview",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          },
+          {
+            "name": "x-harness-local",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Obligatoria con valor 1 en mutaciones (protección CSRF).",
+              "title": "X-Harness-Local"
+            },
+            "description": "Obligatoria con valor 1 en mutaciones (protección CSRF)."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DocumentEditInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DocumentEditPreviewRead"
+                }
+              }
+            }
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          }
+        }
+      }
+    },
+    "/api/managed/projects/{project_id}/documents/edit": {
+      "post": {
+        "summary": "Document Edit",
+        "operationId": "managed_document_edit",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200,
+              "description": "Misma clave y misma acción devuelven el mismo job.",
+              "title": "Idempotency-Key"
+            },
+            "description": "Misma clave y misma acción devuelven el mismo job."
+          },
+          {
+            "name": "x-harness-local",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Obligatoria con valor 1 en mutaciones (protección CSRF).",
+              "title": "X-Harness-Local"
+            },
+            "description": "Obligatoria con valor 1 en mutaciones (protección CSRF)."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DocumentEditCreate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ManagedJobRead"
+                }
+              }
+            }
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          }
+        }
+      }
+    },
+    "/api/managed/phases/{phase_id}/transition/preview": {
+      "post": {
+        "summary": "Transition Preview",
+        "description": "Archivo de la fase terminada, STATE/NEXT_STEPS frescos y fase siguiente del ROADMAP, sin efectos.",
+        "operationId": "managed_phase_transition_preview",
+        "parameters": [
+          {
+            "name": "phase_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Phase Id"
+            }
+          },
+          {
+            "name": "x-harness-local",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Obligatoria con valor 1 en mutaciones (protección CSRF).",
+              "title": "X-Harness-Local"
+            },
+            "description": "Obligatoria con valor 1 en mutaciones (protección CSRF)."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PhaseTransitionInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PhaseTransitionPreviewRead"
+                }
+              }
+            }
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          }
+        }
+      }
+    },
+    "/api/managed/phases/{phase_id}/transition": {
+      "post": {
+        "summary": "Transition",
+        "operationId": "managed_phase_transition",
+        "parameters": [
+          {
+            "name": "phase_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Phase Id"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200,
+              "description": "Misma clave y misma acción devuelven el mismo job.",
+              "title": "Idempotency-Key"
+            },
+            "description": "Misma clave y misma acción devuelven el mismo job."
+          },
+          {
+            "name": "x-harness-local",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Obligatoria con valor 1 en mutaciones (protección CSRF).",
+              "title": "X-Harness-Local"
+            },
+            "description": "Obligatoria con valor 1 en mutaciones (protección CSRF)."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PhaseTransitionCreate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ManagedJobRead"
+                }
+              }
+            }
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          }
+        }
+      }
+    },
     "/api/managed/projects/{project_id}/conversations": {
       "get": {
         "summary": "Conversations",
@@ -7078,6 +7680,27 @@
           "reason"
         ],
         "title": "ActivationTransition"
+      },
+      "ArchivedPhaseRead": {
+        "properties": {
+          "path": {
+            "type": "string",
+            "title": "Path"
+          },
+          "files": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Files"
+          }
+        },
+        "type": "object",
+        "required": [
+          "path",
+          "files"
+        ],
+        "title": "ArchivedPhaseRead"
       },
       "BootstrapBrief": {
         "properties": {
@@ -8435,6 +9058,298 @@
         ],
         "title": "CycleRead"
       },
+      "DecisionEntryRead": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "file": {
+            "type": "string",
+            "title": "File"
+          },
+          "title": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Title"
+          },
+          "status": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Status"
+          },
+          "date": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Date"
+          },
+          "phase": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Phase"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "file",
+          "title",
+          "status",
+          "date",
+          "phase"
+        ],
+        "title": "DecisionEntryRead"
+      },
+      "DocumentChange": {
+        "properties": {
+          "path": {
+            "type": "string",
+            "maxLength": 500,
+            "minLength": 1,
+            "title": "Path"
+          },
+          "content": {
+            "type": "string",
+            "maxLength": 524288,
+            "title": "Content"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "path",
+          "content"
+        ],
+        "title": "DocumentChange"
+      },
+      "DocumentChangeRead": {
+        "properties": {
+          "path": {
+            "type": "string",
+            "title": "Path"
+          },
+          "editable": {
+            "type": "boolean",
+            "title": "Editable"
+          }
+        },
+        "type": "object",
+        "required": [
+          "path",
+          "editable"
+        ],
+        "title": "DocumentChangeRead"
+      },
+      "DocumentEditCreate": {
+        "properties": {
+          "source": {
+            "type": "string",
+            "enum": [
+              "content",
+              "worktree"
+            ],
+            "title": "Source",
+            "description": "content: documentos enviados sobre un checkout limpio; worktree: cambios locales del editor."
+          },
+          "changes": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/DocumentChange"
+                },
+                "type": "array",
+                "maxItems": 50
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Changes"
+          },
+          "preview_sha256": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$",
+            "title": "Preview Sha256"
+          },
+          "resume_operation_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 36
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Resume Operation Id"
+          },
+          "reason": {
+            "type": "string",
+            "maxLength": 2000,
+            "minLength": 1,
+            "title": "Reason"
+          },
+          "confirmed": {
+            "type": "boolean",
+            "const": true,
+            "title": "Confirmed"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "source",
+          "preview_sha256",
+          "reason",
+          "confirmed"
+        ],
+        "title": "DocumentEditCreate"
+      },
+      "DocumentEditInput": {
+        "properties": {
+          "source": {
+            "type": "string",
+            "enum": [
+              "content",
+              "worktree"
+            ],
+            "title": "Source",
+            "description": "content: documentos enviados sobre un checkout limpio; worktree: cambios locales del editor."
+          },
+          "changes": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/DocumentChange"
+                },
+                "type": "array",
+                "maxItems": 50
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Changes"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "source"
+        ],
+        "title": "DocumentEditInput"
+      },
+      "DocumentEditPreviewRead": {
+        "properties": {
+          "resume_operation_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Resume Operation Id"
+          },
+          "preview_sha256": {
+            "type": "string",
+            "title": "Preview Sha256"
+          },
+          "operation": {
+            "type": "string",
+            "enum": [
+              "document_edit",
+              "phase_transition"
+            ],
+            "title": "Operation"
+          },
+          "head": {
+            "type": "string",
+            "title": "Head"
+          },
+          "fingerprint": {
+            "type": "string",
+            "title": "Fingerprint"
+          },
+          "tree": {
+            "type": "string",
+            "title": "Tree"
+          },
+          "index_tree": {
+            "type": "string",
+            "title": "Index Tree"
+          },
+          "documents": {
+            "items": {
+              "$ref": "#/components/schemas/DocumentPreviewEntry"
+            },
+            "type": "array",
+            "title": "Documents"
+          },
+          "mechanical": {
+            "items": {
+              "additionalProperties": {
+                "type": "string"
+              },
+              "type": "object"
+            },
+            "type": "array",
+            "title": "Mechanical"
+          },
+          "diff": {
+            "type": "string",
+            "title": "Diff"
+          },
+          "source": {
+            "type": "string",
+            "enum": [
+              "content",
+              "worktree"
+            ],
+            "title": "Source"
+          }
+        },
+        "type": "object",
+        "required": [
+          "resume_operation_id",
+          "preview_sha256",
+          "operation",
+          "head",
+          "fingerprint",
+          "tree",
+          "index_tree",
+          "documents",
+          "mechanical",
+          "diff",
+          "source"
+        ],
+        "title": "DocumentEditPreviewRead"
+      },
       "DocumentExportCreate": {
         "properties": {
           "expected_version": {
@@ -8576,6 +9491,276 @@
           "diff"
         ],
         "title": "DocumentExportPreviewRead"
+      },
+      "DocumentFolderRead": {
+        "properties": {
+          "path": {
+            "type": "string",
+            "title": "Path"
+          },
+          "exists": {
+            "type": "boolean",
+            "title": "Exists"
+          }
+        },
+        "type": "object",
+        "required": [
+          "path",
+          "exists"
+        ],
+        "title": "DocumentFolderRead"
+      },
+      "DocumentPreviewEntry": {
+        "properties": {
+          "path": {
+            "type": "string",
+            "title": "Path"
+          },
+          "before_sha256": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Before Sha256"
+          },
+          "after_sha256": {
+            "type": "string",
+            "title": "After Sha256"
+          },
+          "content": {
+            "type": "string",
+            "title": "Content"
+          }
+        },
+        "type": "object",
+        "required": [
+          "path",
+          "before_sha256",
+          "after_sha256",
+          "content"
+        ],
+        "title": "DocumentPreviewEntry"
+      },
+      "DocumentRead": {
+        "properties": {
+          "path": {
+            "type": "string",
+            "title": "Path"
+          },
+          "content": {
+            "type": "string",
+            "title": "Content"
+          },
+          "sha256": {
+            "type": "string",
+            "title": "Sha256"
+          },
+          "editable": {
+            "type": "boolean",
+            "title": "Editable"
+          },
+          "archived": {
+            "type": "boolean",
+            "title": "Archived"
+          },
+          "blocks": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Blocks"
+          }
+        },
+        "type": "object",
+        "required": [
+          "path",
+          "content",
+          "sha256",
+          "editable",
+          "archived",
+          "blocks"
+        ],
+        "title": "DocumentRead"
+      },
+      "DocumentStateRead": {
+        "properties": {
+          "path": {
+            "type": "string",
+            "title": "Path"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "phase",
+              "product"
+            ],
+            "title": "Kind"
+          },
+          "exists": {
+            "type": "boolean",
+            "title": "Exists"
+          },
+          "sha256": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Sha256"
+          },
+          "adopted_sha256": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Adopted Sha256"
+          },
+          "drift": {
+            "type": "boolean",
+            "title": "Drift"
+          },
+          "blocks": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Blocks"
+          },
+          "error": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error"
+          }
+        },
+        "type": "object",
+        "required": [
+          "path",
+          "kind",
+          "exists",
+          "sha256",
+          "adopted_sha256",
+          "drift",
+          "blocks",
+          "error"
+        ],
+        "title": "DocumentStateRead"
+      },
+      "DocumentsStatusRead": {
+        "properties": {
+          "layout": {
+            "type": "string",
+            "const": "v2",
+            "title": "Layout"
+          },
+          "phase": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Phase"
+          },
+          "documents": {
+            "items": {
+              "$ref": "#/components/schemas/DocumentStateRead"
+            },
+            "type": "array",
+            "title": "Documents"
+          },
+          "folders": {
+            "items": {
+              "$ref": "#/components/schemas/DocumentFolderRead"
+            },
+            "type": "array",
+            "title": "Folders"
+          },
+          "uncommitted": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/DocumentChangeRead"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Uncommitted",
+            "description": "Cambios locales del checkout; null si no hay escritor Git configurado."
+          },
+          "warnings": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Warnings"
+          },
+          "decisions": {
+            "items": {
+              "$ref": "#/components/schemas/DecisionEntryRead"
+            },
+            "type": "array",
+            "title": "Decisions"
+          },
+          "archive": {
+            "items": {
+              "$ref": "#/components/schemas/ArchivedPhaseRead"
+            },
+            "type": "array",
+            "title": "Archive"
+          },
+          "unresolved_intent": {
+            "type": "boolean",
+            "title": "Unresolved Intent"
+          },
+          "git_error": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Git Error"
+          }
+        },
+        "type": "object",
+        "required": [
+          "layout",
+          "phase",
+          "documents",
+          "folders",
+          "uncommitted",
+          "warnings",
+          "decisions",
+          "archive",
+          "unresolved_intent",
+          "git_error"
+        ],
+        "title": "DocumentsStatusRead"
       },
       "EvidenceContentRead": {
         "properties": {
@@ -10002,6 +11187,19 @@
           },
           "agents": {
             "$ref": "#/components/schemas/ProjectAgentsRead"
+          },
+          "documents": {
+            "anyOf": [
+              {
+                "type": "string",
+                "const": "v2"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Documents",
+            "description": "Contrato documental D072; null: anterior."
           }
         },
         "type": "object",
@@ -10081,7 +11279,9 @@
               "chat",
               "document_export",
               "bootstrap",
-              "bootstrap_discovery"
+              "bootstrap_discovery",
+              "document_edit",
+              "phase_transition"
             ],
             "title": "Purpose"
           },
@@ -10226,7 +11426,9 @@
               "chat",
               "document_export",
               "bootstrap",
-              "bootstrap_discovery"
+              "bootstrap_discovery",
+              "document_edit",
+              "phase_transition"
             ],
             "title": "Purpose"
           }
@@ -11555,7 +12757,9 @@
               "reconcile_task",
               "amend",
               "abandon",
-              "document_export"
+              "document_export",
+              "transition",
+              "document_edit"
             ],
             "title": "Kind"
           },
@@ -11853,7 +13057,8 @@
                 "authorize_batch",
                 "batch_next",
                 "amend",
-                "abandon"
+                "abandon",
+                "transition"
               ]
             },
             "type": "array",
@@ -12040,6 +13245,204 @@
           "updated_at"
         ],
         "title": "PhaseSummaryRead"
+      },
+      "PhaseTransitionCreate": {
+        "properties": {
+          "expected_version": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Expected Version"
+          },
+          "next_steps": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 524288
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Next Steps"
+          },
+          "preview_sha256": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$",
+            "title": "Preview Sha256"
+          },
+          "resume_operation_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 36
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Resume Operation Id"
+          },
+          "reason": {
+            "type": "string",
+            "maxLength": 2000,
+            "minLength": 1,
+            "title": "Reason"
+          },
+          "confirmed": {
+            "type": "boolean",
+            "const": true,
+            "title": "Confirmed"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "expected_version",
+          "preview_sha256",
+          "reason",
+          "confirmed"
+        ],
+        "title": "PhaseTransitionCreate"
+      },
+      "PhaseTransitionInput": {
+        "properties": {
+          "next_steps": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 524288
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Next Steps",
+            "description": "Plan NEXT_STEPS de la fase siguiente del ROADMAP; null si no hay más fases."
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "PhaseTransitionInput"
+      },
+      "PhaseTransitionPreviewRead": {
+        "properties": {
+          "resume_operation_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Resume Operation Id"
+          },
+          "preview_sha256": {
+            "type": "string",
+            "title": "Preview Sha256"
+          },
+          "operation": {
+            "type": "string",
+            "enum": [
+              "document_edit",
+              "phase_transition"
+            ],
+            "title": "Operation"
+          },
+          "head": {
+            "type": "string",
+            "title": "Head"
+          },
+          "fingerprint": {
+            "type": "string",
+            "title": "Fingerprint"
+          },
+          "tree": {
+            "type": "string",
+            "title": "Tree"
+          },
+          "index_tree": {
+            "type": "string",
+            "title": "Index Tree"
+          },
+          "documents": {
+            "items": {
+              "$ref": "#/components/schemas/DocumentPreviewEntry"
+            },
+            "type": "array",
+            "title": "Documents"
+          },
+          "mechanical": {
+            "items": {
+              "additionalProperties": {
+                "type": "string"
+              },
+              "type": "object"
+            },
+            "type": "array",
+            "title": "Mechanical"
+          },
+          "diff": {
+            "type": "string",
+            "title": "Diff"
+          },
+          "expected_version": {
+            "type": "integer",
+            "title": "Expected Version"
+          },
+          "snapshot": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Snapshot"
+          },
+          "closed": {
+            "type": "string",
+            "title": "Closed"
+          },
+          "archive": {
+            "type": "string",
+            "title": "Archive"
+          },
+          "next": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Next"
+          },
+          "warnings": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Warnings"
+          }
+        },
+        "type": "object",
+        "required": [
+          "resume_operation_id",
+          "preview_sha256",
+          "operation",
+          "head",
+          "fingerprint",
+          "tree",
+          "index_tree",
+          "documents",
+          "mechanical",
+          "diff",
+          "expected_version",
+          "snapshot",
+          "closed",
+          "archive",
+          "next",
+          "warnings"
+        ],
+        "title": "PhaseTransitionPreviewRead"
       },
       "ProblemRead": {
         "properties": {

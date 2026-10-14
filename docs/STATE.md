@@ -35,7 +35,7 @@ Actualizado: 2026-10-14.
 - Dependencias reales instaladas en `.venv` / `frontend/node_modules`, locks
   `uv.lock` / `frontend/package-lock.json`. Pins H0.2 usados conservados;
   backend de paquete `uv_build==0.12.19`. Comandos comprobados en README/AGENTS.
-- 936 casos de producto en `tests/product/`; 948 pytest y 121 subtests aprobados.
+- 973 casos de producto en `tests/product/`; 985 pytest y 121 subtests aprobados.
   La comprobación ligera anterior conserva sus 12 checks sin dependencias.
 - H1.1 completado: [importación legacy y verificaciones](discovery/H1.1_IMPORT.md),
   [alcance original](discovery/H1.1_SCOPE.md). Lector local explícito de
@@ -536,10 +536,14 @@ originales; contrato/prompt corregidos antes del escritor. **D071 completa
 las cuatro combinaciones reales con COMMITTED**, [resultado](discovery/PROVIDER_MATRIX_CLI9_RUN.md).
 948 pytest y 121 subtests pasan; memoria automática desactivada y muestras
 globales intactas. Comprobación funcional cerrada, aislamiento externo completo
-no certificado. Siguiente tarea propuesta: concretar organización/continuidad
-documental por fase, sin iniciar; UI H6.2 tampoco iniciada. Archivado automático
-no implementado ni probado por esta matriz. QA visual H5.7 conserva su límite
-histórico; Claude real con esquema tipado D058 ya comprobado en D071.
+no certificado. Archivado automático no implementado ni probado por esta
+matriz. QA visual H5.7 conserva su límite histórico; Claude real con esquema
+tipado D058 ya comprobado en D071. Organización documental por fase y estructura
+de producto diseñadas (D072, [diseño](discovery/DOCUMENT_ORGANIZATION.md)) y
+confirmadas por el usuario (D073). H6.3 implementado offline: contrato documental
+v2 opt-in, bloques regenerados por commit, transición de fase y edición confirmada
+([entrega](discovery/H6.3_DOCUMENT_CONTRACT.md)). Siguiente tarea propuesta: H6.4
+(métricas), sin iniciar. UI H6.2 sin iniciar; será una tarea aparte.
 
 ## Verificación de H0.1
 
@@ -2487,6 +2491,72 @@ histórico; Claude real con esquema tipado D058 ya comprobado en D071.
   por fase y continuidad documental real siguen separados y pendientes. Próxima
   tarea propuesta en NEXT_STEPS: concretar ese contrato documental; no iniciada.
   H6.2 tampoco se inicia. No se afirma que un diseño pendiente esté implementado.
+
+## Organización documental por fase y estructura de producto (D072)
+
+- Tarea de diseño solicitada por el usuario el 2026-10-14. Nada implementado.
+  [Diseño completo](discovery/DOCUMENT_ORGANIZATION.md). Requisitos fijados por el
+  usuario: creación desde un brief con conversación del revisor; SPECIFICATION,
+  ARCHITECTURE, ROADMAP, STATE y NEXT_STEPS; `archive/phase-NNN/`; README para
+  personas; edición desde el editor y desde el sistema; URLs por proyecto, fase y
+  tarea; chat global; métricas por tarea; tests OK/KO; estadísticas.
+- Revisado lo implementado: bloques D036, bootstrap v1 D037, `PhaseCreate`
+  D032, reconciliación D034, chat D035, parser determinista de NEXT_STEPS,
+  `MechanicalUpdate` H2.4, captura terminal de `usage`/`modelUsage` sin
+  `num_turns` y lector legacy con `docs/archive`. ReferenceProject leído sin
+  modificarlo, sin sus runs.
+- Contrato propuesto:
+  - `decisions/` un archivo por decisión; `architecture/` y `research/`
+    opcionales; ninguna carpeta por tarea.
+  - Archivo de fase con STATE, NEXT_STEPS, REVIEW y SUMMARY; `phase-000` con
+    BRIEF y DEFINITION.
+  - STATE dividido en base acumulada y fase activa, con presupuestos.
+  - Bloques v2 regenerados en cada commit de tarea.
+  - `phase_transition` después del cierre D032.
+  - Ediciones humanas por `document_edit` con CAS.
+  - Creación v2 con borradores en disco.
+  - Comandos de chat deterministas.
+  - `attempt_metrics` materializada.
+- Diferencias frente a D032, D035, D036, D037 y D054 explícitas en el diseño.
+  Incrementos propuestos: H6.3, H6.4, H6.5 y H6.2 ampliada, con criterios
+  sintéticos. Siete puntos a confirmar en NEXT_STEPS. Sin cambios de código,
+  esquema, API, UI ni dependencias, sin proveedores; no se ejecutaron tests
+  porque no cambió el código.
+
+## Implementación de H6.3: contrato documental y transición (D073)
+
+- El usuario confirma los siete puntos de D072 (carpetas `decisions/`,
+  `architecture/` y `research/` creadas desde el principio; la UI, tarea aparte)
+  y pide empezar el desarrollo. Git inicial en `main`, `0e18ad1`, con la
+  documentación de D072 sin commit. [Entrega](discovery/H6.3_DOCUMENT_CONTRACT.md).
+- Opt-in por proyecto (`ProjectContext.documents` / TOML `documents = "v2"`);
+  snapshots, contratos y comportamiento anteriores intactos sin la clave.
+- `core/engine/documents.py`: layout v2, bloques con nombre, render legible con
+  escape en línea, parsers de ROADMAP/decisiones/base acumulada, presupuestos,
+  REVIEW/SUMMARY y plantilla base. Alias en español en el parser de NEXT_STEPS.
+- Contratos v2: el archivo siempre prohibido y los documentos del harness salvo
+  en la reconciliación, que compacta STATE y puede editar producto y carpetas.
+  Una tarea v2 no arranca con cambios locales sin confirmar.
+- Commit de tarea: bloques de STATE/NEXT_STEPS/ROADMAP/DECISIONS regenerados
+  como actualizaciones mecánicas; adopción de sus hashes en la transacción de
+  COMMITTED, leyendo el hash anterior en la revisión base.
+- `phase_transition` (después de CLOSED/ABANDONED) y `document_edit` (contenido
+  o cambios del editor) como operaciones de fase con intención conciliable, sin
+  migración ni codec nuevos. Exportación D036 en v2 con el mismo render.
+- API: estado y lectura de documentos, edición y transición con vista previa y
+  envío; OpenAPI y tipos regenerados. Sin cambios de UI.
+- Verificación: 37 casos nuevos en `tests/product/test_documents.py` (Git/SQLite
+  temporales, agentes falsos). Suite completa **985 pytest + 121 subtests**
+  (383,73 s); 12 checks estándar; 6 pruebas Node; `tsc` y build de la UI;
+  `alembic check` sin cambios en SQLite temporal. Una aserción exacta de
+  `ManagedProjectRead` se actualizó por el campo aditivo `documents`.
+- Hallazgos corregidos durante la entrega: el mensaje de commit de la exportación
+  v2 leía la forma v1 del snapshot, y la edición desde el editor de un archivo de
+  decisiones rechazaba el índice regenerado. Ambos con prueba de regresión.
+- Límites: bootstrap D037 sigue con la plantilla v1 (creación v2 en H6.5); sin
+  `handoff_notes`; métricas de tokens/turnos pendientes (H6.4); avisos de tamaño
+  fuera del check; exclusión frente a escritores externos cooperativa; ningún
+  recorrido con CLI real. Sin commit, push ni proveedores. Siguiente: H6.4.
 
 ## Coordinación
 

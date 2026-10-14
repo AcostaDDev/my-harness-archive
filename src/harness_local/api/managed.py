@@ -67,7 +67,8 @@ def managed_router(runtime: ManagedRuntime):
 
     def project_read(project):
         return {"id": project.id, "root": str(project.context.root), "profile": project.context.profile.name,
-                "versions": dict(project.versions), "tag_kind": project.tag_kind, "agents": agents_view(project)}
+                "versions": dict(project.versions), "tag_kind": project.tag_kind, "agents": agents_view(project),
+                "documents": project.context.documents}
 
     def project(project_id: str):
         return call(runtime.project, project_id)
@@ -410,6 +411,10 @@ def managed_router(runtime: ManagedRuntime):
         if runtime.config.commit_factory is None:
             actions = [a for a in actions if a not in ("check", "close", "reconcile_task")]
         tag_kind = runtime.projects[project_id].tag_kind if project_id is not None else None
+        if (project_id is not None and runtime.projects[project_id].context.documents is not None
+                and runtime.config.commit_factory is not None and detail["status"] in ("CLOSED", "ABANDONED")
+                and runtime.phases.list(root)[-1]["id"] == phase_id):
+            actions = [*actions, "transition"]  # D072: archivar y abrir la fase siguiente
         return {**detail, "project_id": project_id, "actions": actions, "tag_kind": tag_kind}
 
     def registered_phase(phase_id: str):
@@ -428,7 +433,10 @@ def managed_router(runtime: ManagedRuntime):
         context = project(project_id).context
         data = body.model_dump()
         if data["documents"] is None:
-            data["documents"] = [context.state_file, context.next_steps_file]
+            from harness_local.core.engine.documents import layout
+            target = layout(context)
+            data["documents"] = (list(target.phase_documents) if target is not None
+                                 else [context.state_file, context.next_steps_file])
         return phase_read(call(runtime.phases.create, context, data))
 
     @router.get("/phases/{phase_id}", response_model=PhaseRead, operation_id="managed_phase")
@@ -560,6 +568,83 @@ def managed_router(runtime: ManagedRuntime):
         job = call(DocumentExportRepository(runtime.repository).submit, item.context, phase_id, body.expected_version,
                    key=idempotency_key, versions=frozen_versions(item), git=export_writer(item),
                    **body.model_dump(exclude={'expected_version'}))
+        return queued(job)
+
+    # --- D072/H6.3: documentos del proyecto y transición de fase ---------------------------------------
+    from harness_local.api.schemas import (
+        DocumentEditCreate, DocumentEditInput, DocumentEditPreviewRead, DocumentRead, DocumentsStatusRead,
+        PhaseTransitionCreate, PhaseTransitionInput, PhaseTransitionPreviewRead,
+    )
+    from harness_local.storage.documents import DocumentsRepository
+    from harness_local.storage.transition import TransitionRepository
+
+    def documents_project(project_id: str):
+        item = project(project_id)
+        if item.context.documents is None:
+            raise problem(409, 'documents_layout', 'Este proyecto no usa el contrato documental D072 (documents = "v2").')
+        return item
+
+    def document_writer(item):
+        if runtime.config.commit_factory is None:
+            raise problem(409, 'commit_writer_unavailable', 'Las operaciones documentales requieren un escritor Git.')
+        return runtime.config.commit_factory(item.context, frozen_versions(item))
+
+    @router.get('/projects/{project_id}/documents', response_model=DocumentsStatusRead,
+                operation_id='managed_documents')
+    def documents_status(project_id: str):
+        """Documentos, deriva frente a la base adoptada, cambios locales, avisos, decisiones y archivo."""
+        item = documents_project(project_id)
+        git = runtime.config.commit_factory(item.context, frozen_versions(item)) if runtime.config.commit_factory else None
+        return call(DocumentsRepository(runtime.repository).status, item.context, git)
+
+    @router.get('/projects/{project_id}/documents/content', response_model=DocumentRead,
+                operation_id='managed_document')
+    def document_content(project_id: str, path: Annotated[str, Query(min_length=1, max_length=500)]):
+        return call(DocumentsRepository(runtime.repository).read, documents_project(project_id).context, path)
+
+    @router.post('/projects/{project_id}/documents/edit/preview', response_model=DocumentEditPreviewRead,
+                 operation_id='managed_document_edit_preview')
+    def document_edit_preview(project_id: str, body: DocumentEditInput):
+        """Diff exacto sin efectos; los bloques gestionados y el archivo de fases no se editan."""
+        item = documents_project(project_id)
+        return call(DocumentsRepository(runtime.repository).preview, item.context, document_writer(item),
+                    source=body.source, changes=_changes(body))
+
+    @router.post('/projects/{project_id}/documents/edit', response_model=ManagedJobRead, status_code=202,
+                 operation_id='managed_document_edit')
+    def document_edit(project_id: str, body: DocumentEditCreate, idempotency_key: IdempotencyKey):
+        item = documents_project(project_id)
+        job = call(DocumentsRepository(runtime.repository).submit, item.context, key=idempotency_key,
+                   versions=frozen_versions(item), preview_sha256=body.preview_sha256, reason=body.reason,
+                   confirmed=body.confirmed, git=document_writer(item), source=body.source, changes=_changes(body),
+                   resume_operation_id=body.resume_operation_id)
+        return queued(job)
+
+    def _changes(body):
+        return None if body.changes is None else [change.model_dump() for change in body.changes]
+
+    def transition_phase(phase_id: str):
+        item, _ = registered_phase(phase_id)
+        if item.context.documents is None:
+            raise problem(409, 'documents_layout', 'La transición requiere el contrato documental D072 (documents = "v2").')
+        return item
+
+    @router.post('/phases/{phase_id}/transition/preview', response_model=PhaseTransitionPreviewRead,
+                 operation_id='managed_phase_transition_preview')
+    def transition_preview(phase_id: str, body: PhaseTransitionInput):
+        """Archivo de la fase terminada, STATE/NEXT_STEPS frescos y fase siguiente del ROADMAP, sin efectos."""
+        item = transition_phase(phase_id)
+        return call(TransitionRepository(runtime.repository).preview, item.context, phase_id, document_writer(item),
+                    body.next_steps)
+
+    @router.post('/phases/{phase_id}/transition', response_model=ManagedJobRead, status_code=202,
+                 operation_id='managed_phase_transition')
+    def transition(phase_id: str, body: PhaseTransitionCreate, idempotency_key: IdempotencyKey):
+        item = transition_phase(phase_id)
+        job = call(TransitionRepository(runtime.repository).submit, item.context, phase_id, body.expected_version,
+                   key=idempotency_key, versions=frozen_versions(item), preview_sha256=body.preview_sha256,
+                   reason=body.reason, confirmed=body.confirmed, git=document_writer(item), next_steps=body.next_steps,
+                   resume_operation_id=body.resume_operation_id)
         return queued(job)
 
     # --- H4.1: chat contextual -----------------------------------------------------------------

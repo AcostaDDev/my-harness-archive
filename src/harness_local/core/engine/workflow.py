@@ -16,7 +16,7 @@ from harness_local.core.engine.evidence import (
 )
 from harness_local.core.engine.journal import EngineJournal, JournalError
 from harness_local.core.engine.prompts import builtin_catalog, dump_catalog, load_catalog, render_attempt
-from harness_local.core.engine.planning import deterministic_task, section
+from harness_local.core.engine.planning import SHARED_HEADING, deterministic_task, section
 from harness_local.core.engine.review import ReviewCycle, review_contract, stalled_review_signature
 from harness_local.core.engine.validation import CommandRunner, command_result_payload, run_command, run_validations, validation_payload
 
@@ -76,6 +76,16 @@ class OfflineEngine:
                 or history.attempts or history.cycles or history.stops or history.preparation_json
                 or history.status != "planned"):
             raise ContractError("Start requires a fresh history with the frozen context")
+        if context.documents is not None:
+            # D072: unos cambios locales previos se mezclarían con el diff del ejecutor.
+            try:
+                current = self.evidence.capture(context)
+            except Exception as exc:
+                return stopped(history, "evidence", str(exc))
+            if current.changed_paths:
+                return stopped(history, "start", "Uncommitted changes in the checkout ("
+                               + ", ".join(current.changed_paths[:20]) + "); confirm them as a document edit "
+                               "or remove them before starting a task")
         history = self._prepare(context, history)
         if history.stop:
             return history
@@ -97,7 +107,7 @@ class OfflineEngine:
                 prompt = freeze({
                     "task_id": task_id, "phase_id": phase_id,
                     "task_section": section(text, rf"^##\s+{task_id}\s+[—-].*$"),
-                    "shared_constraints": section(text, r"^##\s+Shared\b.*$"),
+                    "shared_constraints": section(text, SHARED_HEADING),
                 })
                 selection = Selection(context.policy.planner_model, context.policy.planner_effort, "Explicit planner policy")
                 history, data = self._invoke(context, history, "planner", selection, "plan-task", {"INPUT_JSON": prompt})

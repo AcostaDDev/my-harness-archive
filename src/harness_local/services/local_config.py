@@ -270,7 +270,9 @@ def _build(data, source):
     for index, item in enumerate(data['projects']):
         where = f'projects[{index}]'
         item = _fields(item, where, ('id', 'root', 'repository_trusted', 'profile', 'policy', 'commands'),
-                       ('tag_kind', 'permission_authority'))
+                       ('tag_kind', 'permission_authority', 'documents'))
+        if item.get('documents', 'v2') != 'v2':
+            raise LocalConfigError(f'{where}.documents: solo se admite "v2" (contrato documental D072)')
         if _flag(item['repository_trusted'], f'{where}.repository_trusted') is not True:
             raise LocalConfigError(f'{where}: sin confianza explícita el proyecto no se registra')
         root = _path(item['root'], f'{where}.root', kind='directory')
@@ -301,7 +303,7 @@ def _build(data, source):
                     'local_config': fmt, 'profile': profile.name,
                     'local_config_sha256': digest,
                     **cli.frozen_versions(), **runner.frozen_versions()}
-        context = ProjectContext(root, profile, engine_policy)
+        context = ProjectContext(root, profile, engine_policy, documents=item.get('documents'))
         projects.append(ManagedProject(identifier, context, versions, item.get('permission_authority'),
                                        item.get('tag_kind', 'lightweight')))
         compositions[root] = (identifier, versions, commands, artifacts)
@@ -364,5 +366,6 @@ def summary(config: ManagedConfig) -> dict:
     return {'format': config.projects[0].versions['local_config'], 'supervisor': config.supervisor,
             'projects': [{'id': p.id, 'root': str(p.context.root), 'profile': p.context.profile.name,
                           'policy': asdict(p.context.policy), 'agents': agents_view(p), 'versions': dict(p.versions),
-                          'tag_kind': p.tag_kind, 'permission_authority': p.permission_authority is not None}
+                          'tag_kind': p.tag_kind, 'permission_authority': p.permission_authority is not None,
+                          'documents': p.context.documents}
                          for p in config.projects]}

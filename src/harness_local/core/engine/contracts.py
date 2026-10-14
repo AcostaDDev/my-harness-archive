@@ -76,6 +76,7 @@ def task_contract(context: ProjectContext, data: object, task_id: str, phase_id:
             raise ContractError(f"Invalid task {field}")
     if not data["acceptance_criteria"]:
         raise ContractError("Task requires acceptance criteria")
+    data = harness_owned_paths(context, data, task_id)
     for path in data["allowed_paths"] + data["forbidden_paths"]:
         try:
             relative_path(path)
@@ -91,6 +92,24 @@ def task_contract(context: ProjectContext, data: object, task_id: str, phase_id:
             raise ContractError(f"Task allowed path is also forbidden: {allowed}")
     executor_selection(context, data.get("executor_selection"))
     return freeze(data)
+
+
+RECONCILE_TASK = re.compile(r".+-RECONCILE-\d+")
+
+
+def harness_owned_paths(context: ProjectContext, data: dict, task_id: str) -> dict:
+    """D072: con el layout v2 el archivo de fases nunca se edita y los documentos de seguimiento son del
+    harness; solo la reconciliación de fase (`<fase>-RECONCILE-<n>`, contrato del servidor) edita su prosa.
+
+    Se añaden como prohibiciones (nunca se retira ninguna); una ruta concreta permitida que las contradiga se
+    rechaza antes del escritor. Idempotente: un contrato ya congelado se reproduce igual."""
+    from harness_local.core.engine.documents import layout
+    target = layout(context)
+    if target is None:
+        return data
+    owned = [target.decisions] if RECONCILE_TASK.fullmatch(task_id) else list(target.harness_owned)
+    extra = [path for path in (target.archive_dir + "/**", *owned) if path not in data["forbidden_paths"]]
+    return {**data, "forbidden_paths": data["forbidden_paths"] + extra} if extra else data
 
 
 @dataclass(frozen=True)
@@ -158,9 +177,12 @@ def context_snapshot(context: ProjectContext) -> str:
     profile = asdict(context.profile)
     if not profile['junit_reports']:
         profile.pop('junit_reports')  # Preserva snapshots anteriores sin reportes.
-    return freeze({"root": str(context.root), "profile": profile,
-                   "policy": policy_payload(context.policy), "next_steps_file": context.next_steps_file,
-                   "state_file": context.state_file})
+    data = {"root": str(context.root), "profile": profile,
+            "policy": policy_payload(context.policy), "next_steps_file": context.next_steps_file,
+            "state_file": context.state_file}
+    if context.documents is not None:
+        data["documents"] = context.documents  # D072: ausente conserva snapshots anteriores.
+    return freeze(data)
 
 
 def stop_history(history: RunHistory, stage: str, reason: str) -> RunHistory:

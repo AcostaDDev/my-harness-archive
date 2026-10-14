@@ -97,6 +97,12 @@ def _operation_module(run):
     if run.purpose == "document_export":
         from harness_local.storage import document_export
         return document_export
+    if run.purpose == "document_edit":
+        from harness_local.storage import documents
+        return documents
+    if run.purpose == "phase_transition":
+        from harness_local.storage import transition
+        return transition
     from harness_local.storage import phases
     return phases
 
@@ -244,9 +250,9 @@ class SQLiteManagedRepository:
     def _phase_open(session, root, code):
         """H3.3/H3.4: una fase cerrada, cerrándose o abandonada no acepta tareas, reanudaciones ni commits."""
         from harness_local.storage.models import PhaseRow
-        from harness_local.storage.document_export import unresolved
+        from harness_local.storage.documents import unresolved
         if unresolved(session, root):
-            raise Conflict('A document export intent awaits reconciliation; recover it first')
+            raise Conflict('A document intent awaits reconciliation; recover it first')
         if session.scalar(select(PhaseRow.id).where(PhaseRow.root == root, PhaseRow.code == code,
                                                     PhaseRow.status.in_(("CLOSED", "CLOSING", "ABANDONED")))):
             raise Conflict("The phase is closed, closing or abandoned in this checkout; it does not advance")
@@ -601,7 +607,8 @@ class SQLiteManagedRepository:
                 "expected_tree": intent.expected_tree, "expected_commit": intent.expected_commit,
                 "reviewed_fingerprint": intent.reviewed_fingerprint})
 
-    def commit_result(self, claim: JobRecord, outcome: CommitOutcome) -> None:
+    def commit_result(self, claim: JobRecord, outcome: CommitOutcome, adopt: dict | None = None) -> None:
+        """`adopt` (D072): hashes de bloques gestionados que el propio commit regeneró, adoptados atómicamente."""
         with self._write() as session:
             job, run = self._owned(session, claim)
             row = session.get(Commit, outcome.operation_id) if outcome.operation_id else None
@@ -618,6 +625,9 @@ class SQLiteManagedRepository:
                 raise Conflict("Commit result differs from the persisted intent")
             row.status, row.commit_sha = "COMMITTED", outcome.commit
             run.status, run.stage = "COMMITTED", "committed"
+            if adopt:
+                from harness_local.storage.documents import adopt_blocks
+                adopt_blocks(self, session, run, adopt, outcome.commit)
             self._event(session, run, "commit_recorded", {
                 "job_id": job.id, "operation_id": row.operation_id, "commit": outcome.commit,
                 "tree": outcome.tree, "reconciled": outcome.status == "reconciled", "index": outcome.index})
@@ -647,6 +657,18 @@ class SQLiteManagedRepository:
             self._event(session, run, 'document_export_intent', {
                 'operation_id': intent.operation_id, 'expected_commit': intent.expected_commit,
                 'expected_tree': intent.expected_tree})
+
+    def document_intent(self, claim: JobRecord, intent: CommitIntent) -> None:
+        """D072: intención de transición o edición documental, persistida antes de escribir documentos o Git."""
+        self._require_mode(claim)
+        with self._write() as session:
+            _, run = self._owned(session, claim)
+            if run.purpose not in ("document_edit", "phase_transition"):
+                raise Conflict("Document intents belong to document operations")
+            _operation_module(run).record_intent(self, session, run, intent)
+            self._event(session, run, f"{run.purpose}_intent", {
+                "operation_id": intent.operation_id, "expected_commit": intent.expected_commit,
+                "expected_tree": intent.expected_tree})
 
     def register_owner(self, claim, identity):
         with self._write() as session:

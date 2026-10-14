@@ -2156,3 +2156,97 @@ continuidad documental por fase implementados/probados. La organización
 documental exigida por el usuario queda como tarea separada de NEXT_STEPS,
 antes del alcance UI H6.2; no se inicia aquí. Sin tag/cierre de fases de ensayo,
 push/publicación, nuevo smoke, recuperación o modificaciones de ReferenceProject.
+
+## D072 — Organización documental por fase y estructura de producto
+
+Estado: diseño completado el 2026-10-14; puntos confirmados por el usuario en D073;
+H6.3 implementado offline (D073). H6.4, H6.5 y la UI siguen pendientes.
+[Diseño, diferencias e incrementos](discovery/DOCUMENT_ORGANIZATION.md).
+
+Requisitos del usuario: creación desde un brief en Markdown seguida de una
+conversación con el revisor, que genera SPECIFICATION, ARCHITECTURE (con
+diagramas de datos si proceden), ROADMAP, STATE y NEXT_STEPS. El ROADMAP fija
+las fases y NEXT_STEPS las tareas de la fase activa. `docs/archive/phase-N/`
+guarda STATE y NEXT_STEPS de cada fase. El README lo lee el usuario. Los
+documentos se ven y editan desde el editor y desde el sistema. La creación
+termina al aceptar roadmap y documentación. Cada proyecto, fase y tarea tiene su
+URL, con carga limitada. Hay chat global, sección de documentación, métricas por
+tarea (agentes, tokens, turnos, modelo, esfuerzo), tests OK/KO y estadísticas
+por proyecto y globales.
+
+Contrato propuesto: SQLite manda en el estado operativo; Markdown, en la
+intención; los bloques gestionados son proyecciones que se comparan con su
+regeneración y nunca se vuelven a leer como fuente. Se añaden `decisions/` (un
+archivo por decisión con índice gestionado) y, opcionales, `architecture/`
+(Mermaid) y `research/`. No hay carpeta por tarea. El archivo de cada fase
+contiene STATE, NEXT_STEPS, REVIEW y SUMMARY; `phase-000` contiene BRIEF y
+DEFINITION. STATE separa la base acumulada (compactada en la reconciliación y
+trasladada literal) de la fase activa, con presupuestos de tamaño que generan
+avisos. Los ejecutores no editan STATE, NEXT_STEPS, ROADMAP, el índice ni el
+archivo. Cada commit de tarea regenera los bloques por `MechanicalUpdate`.
+
+Cierre D032 sin cambios. La operación nueva `phase_transition` archiva por bytes
+el HEAD cerrado, abre STATE y NEXT_STEPS frescos e instancia la fase siguiente
+desde ROADMAP en un único commit conciliable. Toda edición humana, desde la UI o
+el editor, entra por un job `document_edit` con diff confirmado y CAS. Con
+documentos sin confirmar se bloquean tarea, check, exportación y transición. La
+creación v2 sustituye para proyectos nuevos la plantilla v1 y el descubrimiento
+de un turno de D037: conversación `definition` y borradores en disco que el
+agente nunca escribe. El chat añade comandos deterministas con las mismas
+confirmaciones.
+
+Métricas: tabla `attempt_metrics` materializada al terminar cada intento, con
+procedencia por campo y relleno idempotente. No se suman acumulados con
+incrementales y no se deduce cuota. Hay que capturar `num_turns`, que hoy no se
+guarda, y caracterizar el catálogo con los streams de D071.
+
+Incrementos propuestos: H6.3 contrato documental y transición, H6.4 métricas,
+H6.5 creación y planificación conversacionales, y H6.2 UI ampliada al final.
+Puntos a confirmar: carpetas, contenido del archivo, autoría de STATE,
+borradores en disco, chat sin lock (cambia D035), orden e idioma. No se ha tocado
+código, esquema, API ni UI. ReferenceProject se leyó sin modificarlo y sin consumir
+proveedores.
+
+## D073 — Confirmación de D072 e implementación de H6.3
+
+Estado: decidido por el usuario el 2026-10-14 e **implementado y verificado offline**
+el mismo día. [Entrega, API y límites](discovery/H6.3_DOCUMENT_CONTRACT.md).
+
+Confirmaciones del usuario sobre D072 §12, aceptando las recomendaciones:
+
+1. `decisions/`, `architecture/` y `research/` se crean desde el principio; el agente
+   decide si las usa. Ninguna carpeta por tarea.
+2. Archivo por fase con STATE, NEXT_STEPS, REVIEW y SUMMARY; `phase-000` con BRIEF y
+   DEFINITION.
+3. Los ejecutores no editan STATE, NEXT_STEPS ni ROADMAP; el progreso es mecánico y la
+   prosa se escribe en la reconciliación.
+4. Borradores de creación en la carpeta destino antes del commit raíz (H6.5).
+5. Turnos de chat sobre una instantánea de HEAD, sin esperar al lock (cambia D035; no
+   implementado).
+6. Orden H6.3 → H6.4 → H6.5 → H6.2. La UI es una tarea completamente distinta, con su
+   plugin de diseño.
+7. Plantillas en español con alias en inglés en el parser.
+
+H6.3 se activa por proyecto (`documents = "v2"`); sin esa clave nada cambia y los
+snapshots anteriores conservan su forma. Decisiones de implementación tomadas con
+criterio:
+
+- Los documentos de fase son ROADMAP, DECISIONS, STATE y NEXT_STEPS. README,
+  SPECIFICATION y ARCHITECTURE no se ligan a READY para no exigir una adopción manual
+  tras cada tarea; la reconciliación v2 puede editarlos.
+- Los bloques pasan a Markdown legible con escape en línea; `managed-state` conserva los
+  marcadores de D036. La exportación D036 en v2 usa el mismo render.
+- Los contratos v2 añaden prohibiciones (archivo siempre; documentos del harness salvo en
+  `<fase>-RECONCILE-<n>`); nunca se retira una prohibición.
+- Cada commit de tarea regenera los bloques y adopta, en la transacción del resultado,
+  solo los de documentos no revisados cuya base coincidía con la revisión base.
+- La transición es una operación posterior al cierre (D032 intacto). Archiva por bytes,
+  abre documentos frescos y crea la fase siguiente en un único commit conciliable. El plan
+  de la fase siguiente lo aporta quien la confirma (H6.5 lo propondrá).
+- La edición confirmada se rechaza con trabajo pendiente en el checkout, en lugar de
+  esperar su turno. Con documentos sin confirmar no arranca ninguna tarea v2.
+- Los avisos de presupuesto se muestran sin afectar al check.
+
+No se añaden migración ni codec: las operaciones nuevas usan `phase_operations`, runs y
+jobs existentes (`purpose` `document_edit` y `phase_transition`). No hay cambios de UI,
+dependencias ni proveedores. Siguiente: H6.4 (métricas), sin iniciar.

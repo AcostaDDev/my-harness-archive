@@ -347,11 +347,28 @@ class GitWorkspace:
         except GitError as exc:
             raise CommitUncertain(f"Git state could not be reconciled: {exc}") from exc
 
-    def execute_export(self, context: ProjectContext, intent: CommitIntent, documents: list[dict]) -> CommitOutcome:
+    def read_blob(self, context: ProjectContext, revision: str, path: str) -> bytes | None:
+        """Bytes de un archivo en una revisión exacta; None si no existe en ella. Solo lecturas."""
+        from harness_local.core.engine.context import relative_path
+        relative_path(path)
+        if not _OBJECT_ID.fullmatch(revision):
+            raise ValueError("Expected a full Git object id")
+        git = self._git(context.root)
+        self._require_root(git, context.root)
+        spec = f"{revision}:{path}"
+        if git.code("cat-file", "-e", spec) != 0:
+            return None
+        if git.text("cat-file", "-t", spec) != "blob":
+            raise ValueError(f"{path} is not a regular file at {revision}")
+        return git.run("cat-file", "blob", spec)
+
+    def execute_documents(self, context: ProjectContext, intent: CommitIntent, documents: list[dict]) -> CommitOutcome:
         """H2.4 con recuperación de una escritura parcial de documentos por hashes antiguo/nuevo.
 
-        Nunca adopta bytes externos. Incluso tras una caída, el árbol al completar los dos
-        bloques debe ser exactamente el árbol sellado y el índice debe seguir intacto.
+        Nunca adopta bytes externos. Incluso tras una caída, el árbol al completar los
+        documentos debe ser exactamente el árbol sellado y el índice debe seguir intacto.
+        D072: un documento nuevo (archivo de fase) tiene hash anterior null y debe seguir ausente
+        o contener ya sus bytes sellados.
         """
         git = self._git(context.root)
         head = git.text("rev-parse", "--verify", "HEAD^{commit}")
@@ -360,10 +377,9 @@ class GitWorkspace:
         if head != intent.base_revision:
             return self.execute(context, intent)
         for doc in documents:
-            target = context.path(doc['path'])
-            if not target.is_file() or target.is_symlink():
+            sha = self._document_sha(context, doc)
+            if sha is False:
                 return CommitOutcome('invalidated', intent.operation_id, diagnostic='Export document is no longer regular')
-            sha = hashlib.sha256(target.read_bytes()).hexdigest()
             if sha not in (doc['before_sha256'], doc['after_sha256']):
                 return CommitOutcome('invalidated', intent.operation_id,
                                      diagnostic='Document changed externally after export preview: ' + doc['path'])
@@ -379,14 +395,25 @@ class GitWorkspace:
         # originales o sellados; no se genera otra intención/identidad de commit.
         for update in intent.mechanical:
             doc = next(d for d in documents if d['path'] == update.path)
-            target = context.path(update.path)
-            sha = hashlib.sha256(target.read_bytes()).hexdigest()
+            sha = self._document_sha(context, doc)
             if sha == doc['after_sha256']:
                 continue
-            if sha != doc['before_sha256']:
+            if sha is False or sha != doc['before_sha256']:
                 return CommitOutcome('invalidated', intent.operation_id, diagnostic='Document changed during export')
             self._write_mechanical(context, replace(intent, mechanical=(update,)))
         return self.execute(context, intent)
+
+    execute_export = execute_documents  # D036: nombre conservado
+
+    @staticmethod
+    def _document_sha(context: ProjectContext, doc: dict):
+        """Hash del documento; None si falta y era nuevo; False si no es un archivo regular admisible."""
+        target = context.path(doc['path'])
+        if doc['before_sha256'] is None and not target.exists() and not target.is_symlink():
+            return None
+        if not target.is_file() or target.is_symlink():
+            return False
+        return hashlib.sha256(target.read_bytes()).hexdigest()
 
     # --- H3.3: puertas y tag de fase ----------------------------------------------
 

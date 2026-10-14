@@ -319,6 +319,17 @@ Ante una caída, confirmar primero el escritor detenido y volver a previsualizar
 la fase permite conciliar la misma intención, sin duplicar commits ni invocar
 agentes. [Protocolo, API y límites](docs/discovery/STATE_EXPORT.md).
 
+El contrato documental por fase (D072, H6.3) se activa por proyecto con
+`documents = "v2"`. Organiza README, SPECIFICATION, ARCHITECTURE, ROADMAP,
+DECISIONS (con `decisions/`), STATE y NEXT_STEPS, más `architecture/`,
+`research/` y `archive/phase-NNN/`. Cada commit de tarea regenera los bloques
+legibles de STATE, NEXT_STEPS, ROADMAP y del índice de decisiones, y adopta sus
+hashes. Tras cerrar o abandonar una fase, la transición archiva sus documentos,
+abre STATE/NEXT_STEPS frescos e instala la fase siguiente del ROADMAP en un
+commit conciliable. Las ediciones del usuario, desde la API o desde su editor,
+entran por un commit con diff confirmado. Sin cambios de UI todavía.
+[Contrato, API y límites](docs/discovery/H6.3_DOCUMENT_CONTRACT.md).
+
 ## Bootstrap guiado (H4.2)
 
 Migrar con el servicio detenido a `0013_bootstrap`. Registrar en el servidor una

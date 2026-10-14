@@ -18,7 +18,12 @@ from harness_local.storage.phases import (
 from harness_local.core.engine.serialization import load_history
 
 
-def snapshot(session, phase):
+def snapshot(session, phase, context=None):
+    """Forma D036 (JSON) o, con el layout D072, la proyección legible de los bloques gestionados."""
+    from harness_local.core.engine.documents import layout
+    if context is not None and layout(context) is not None:
+        from harness_local.storage.documents import phases_snapshot, state_snapshot
+        return {'layout': 'v2', 'state': state_snapshot(session, phase), 'phases': phases_snapshot(session, phase.root)}
     tasks = {}
     committed = committed_tasks(session, phase)
     for task in sorted(phase.definition['tasks']):
@@ -68,11 +73,9 @@ def _pending(session, phase):
 
 
 def unresolved(session, root):
-    """Una intención incierta conserva su autoridad hasta conciliación; ninguna mutación la oculta."""
-    rows = session.scalars(select(Operation).join(Phase, Phase.id == Operation.phase_id).where(
-        Phase.root == root, Operation.kind == 'document_export',
-        Operation.status.in_(('QUEUED', 'INTENT', 'INTERRUPTED')))).all()
-    return any(op.request.get('commit_intent') for op in rows)
+    """Una intención incierta conserva su autoridad hasta conciliación; incluye las operaciones D072."""
+    from harness_local.storage.documents import unresolved as documents_unresolved
+    return documents_unresolved(session, root)
 
 
 class DocumentExportRepository:
@@ -85,7 +88,7 @@ class DocumentExportRepository:
             pending = _pending(session, phase)
             if pending is not None and pending.request.get('commit_intent'):
                 return {**pending.request['preview'], 'expected_version': phase.version, 'resume_operation_id': pending.id}
-            state, baseline, version = snapshot(session, phase), dict(phase.documents), phase.version
+            state, baseline, version = snapshot(session, phase, context), dict(phase.documents), phase.version
         try:
             shown = build_preview(context, state, baseline, git)
         except (ValueError, OSError, UnicodeError) as exc:
@@ -142,7 +145,7 @@ class DocumentExportRepository:
                 job = _job(job)
                 op.status, op.finished_at = 'QUEUED', None
             else:
-                if snapshot(session, phase) != shown['snapshot'] or phase.documents != shown['baseline']:
+                if snapshot(session, phase, context) != shown['snapshot'] or phase.documents != shown['baseline']:
                     raise Conflict('SQLite authority changed after preview')
                 job = self.managed._queue_new_run(session, assessment, context, versions, f'{phase.code}-EXPORT',
                                                   phase.code, key, marker, purpose='document_export')
@@ -164,7 +167,9 @@ class DocumentExportRepository:
             if op.kind != 'document_export' or op.status != 'QUEUED':
                 raise Conflict('Export requires its queued operation')
             # Before the first effect, all SQLite authority must still match the approved snapshot.
-            if not op.request.get('commit_intent') and snapshot(session, phase) != op.request['preview']['snapshot']:
+            from harness_local.core.engine.serialization import restore_context
+            frozen = restore_context(run.context_json)
+            if not op.request.get('commit_intent') and snapshot(session, phase, frozen) != op.request['preview']['snapshot']:
                 raise Conflict('SQLite authority changed after the export was reviewed')
             return {**op.request, 'operation_id': op.id}
 
@@ -172,8 +177,9 @@ class DocumentExportRepository:
 def record_intent(managed, session, run, intent):
     op, phase = _operation(session, run)
     shown = op.request['preview']
+    from harness_local.core.engine.serialization import restore_context
     if (op.kind != 'document_export' or op.status != 'QUEUED' or intent.operation_id != op.id
-            or intent.run_id != run.id or snapshot(session, phase) != shown['snapshot']):
+            or intent.run_id != run.id or snapshot(session, phase, restore_context(run.context_json)) != shown['snapshot']):
         raise Conflict('Export intent must match its exact reviewed SQLite snapshot')
     op.request = {**op.request, 'commit_intent': intent.to_json()}
     op.status = 'INTENT'

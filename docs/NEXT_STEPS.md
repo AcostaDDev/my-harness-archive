@@ -1,56 +1,47 @@
-# Siguiente paso — concretar continuidad documental por fase
+# Siguiente paso: H6.4, métricas por intento y estadísticas
 
 Estado al 2026-10-14:
 
-- **Comprobación funcional de flujos de modelos cerrada (D071).**
-  [Cuatro combinaciones reales](discovery/PROVIDER_MATRIX_CLI9_RUN.md),
-  [manifiesto y hashes](discovery/PROVIDER_MATRIX_CLI9_RESULT.json).
-- Codex→Codex, Codex→Claude, Claude→Claude y Claude→Codex completan
-  planificación, edición real, validaciones/JUnit, ACCEPT y commit exacto.
-  Doce invocaciones completas. El ejecutor no hace commit: acepta el revisor
-  y lo realiza mecánicamente el harness. Procesos/owners/servicios cerrados,
-  cero locks, claves retiradas y muestras de config/memorias intactas.
-- cli-9 suprime específicamente confianza persistida por el escritor Codex,
-  con projects inline untrusted acreditado en fuente del pin y prueba real;
-  mantiene workspace-write/raíces/auth. [D068](discovery/CODEX_TRUST_SUPPRESSION.md).
-  Controles de auto memory D066 conservados. Jobs anteriores en cuarentena
-  antes de preflight, sin reescribir historiales.
-- [D069/D070 conservados](discovery/PROVIDER_MATRIX_CLI9_STOPS.md): contrato
-  contradictorio y timeouts. Prompt/contrato corregidos para parar antes de
-  editar ante contradicciones. Errores de stream siguen rechazándose aunque
-  después exista terminal/exit 0. No retries/fallback silenciosos.
-- 948 pytest + 121 subtests y 12 checks estándar aprobados; builds y wheel
-  instalado offline verificados. Git/documentos/diff/hashes revisados.
-- El éxito funcional no certifica aislamiento físico, ausencia de auxiliares
-  de CLI/logs/cachés/SQLite/auth refresh, cuota o retries internos. Tampoco
-  acredita archivado ni continuidad documental por fase: docs del fixture
-  se preservaron, no se ejecutó ese recorrido. No se integra D063/D067.
+- **D072 confirmado por el usuario (D073) y H6.3 implementado offline.**
+  [Entrega, API y límites](discovery/H6.3_DOCUMENT_CONTRACT.md),
+  [diseño](discovery/DOCUMENT_ORGANIZATION.md).
+- Contrato documental v2 opt-in (`documents = "v2"`): layout con carpetas
+  `decisions/`, `architecture/`, `research/` y `archive/phase-NNN/`, bloques
+  legibles regenerados en cada commit de tarea con adopción de hashes,
+  contratos que protegen los documentos del harness, transición de fase
+  conciliable y edición documental confirmada (API y editor).
+- Sin cambios de UI (D073: tarea aparte), proveedores ni migraciones.
 
 ## Tarea concreta propuesta, no iniciada
 
-**Concretar la organización de Markdown por fase y la continuidad de trabajo
-con STATE/NEXT_STEPS frescos, antes de implementar el archivado.**
+**H6.4 — Métricas por intento y estadísticas, offline (D072 §9).**
 
-1. Revisar el contrato existente de exportación documental y la referencia
-   ReferenceProject solo en lectura, sin sus runs/datos privados. Identificar qué
-   ya existe y qué exige la organización por fase pedida por el usuario.
-2. Proponer rutas, documentos activos/históricos, índice de entrada y reglas
-   de cierre/archivo. Mantener SQLite como autoridad operativa del harness;
-   Markdown como contexto duradero del proyecto, sin doble autoridad.
-3. Definir actualización/reconciliación por contenido exacto y quién escribe
-   cada documento. El ejecutor deja cambios para revisión; el commit sigue
-   condicionado a aceptación y validación. No diseñar memoria global del modelo.
-4. Delimitar una implementación posterior y criterios verificables con fixtures
-   sintéticos: nueva sesión reconstruye la tarea desde docs, archivo de fase
-   conserva historia y fase activa mantiene STATE/NEXT_STEPS actuales.
+1. Caracterizar offline, sin ejecutar CLI, los campos de consumo que reportan
+   Codex y Claude en los streams reales conservados de D071 (usage, modelUsage,
+   num_turns, duraciones, coste, denegaciones) y fijar el catálogo con su
+   procedencia: solicitado, reportado, derivado o ausente.
+2. Migración `attempt_metrics` materializada en la transacción que registra el
+   resultado del intento: proyecto, fase, tarea, run, rol, proveedor, modelo y
+   esfuerzo solicitados y reportados, tokens por tipo y por modelo, incremental
+   o acumulado, turnos, herramientas, duraciones, coste «equivalente API» y
+   resultado. Null distinto de cero.
+3. Ampliar la captura del terminal (turnos, duración de API) con una versión
+   nueva de normalización. Relleno idempotente de los intentos anteriores desde
+   `result_json` y los streams conservados verificados por hash, con
+   procedencia `backfill`.
+4. Agregados paginados por tarea, fase, proyecto y global: consumo por rol,
+   proveedor, modelo y día; modelos y esfuerzos más usados; aceptación a la
+   primera; correcciones; duración por tarea; paradas por motivo; tests OK/KO.
+   Añadir tokens y turnos al SUMMARY de las fases que se archiven después.
 
-Criterios de esta tarea de diseño: contrato concreto, diferencias frente a lo
-implementado explícitas, trazabilidad de decisiones y alcance posterior acotado.
-No marcar como implementado/probado lo que solo está definido. No modificar
-ReferenceProject, mover historias reales automáticamente, consumir proveedores ni
-iniciar UI H6.2/otra implementación aquí. Actualizar STATE/NEXT_STEPS/DECISIONS.
+Criterios: streams sintéticos incrementales y acumulados, campos ausentes,
+varios modelos por intento, fallos y cancelaciones; relleno idempotente; la
+retención H5.3 no pierde métricas; nada se cuenta dos veces; no se deduce
+cuota; los historiales anteriores siguen legibles. Sin proveedores ni UI.
+Actualizar STATE, NEXT_STEPS y DECISIONS al terminar.
 
-D071 satisfecha y agotada; D069/D070 y consentimientos anteriores también.
-Otra prueba real requiere propuesta y consentimiento nuevos. No quedan runs
-activos de esta matriz que recuperar. Sin push/publicación, relanzamiento o
-liberación manual de locks. La siguiente tarea no se inicia en la entrega actual.
+Después: H6.5 (creación y planificación conversacionales, sobre la plantilla
+de H6.3) y, como tarea aparte, la UI H6.2.
+
+D071 y los consentimientos anteriores siguen agotados. Cualquier prueba real
+requiere una propuesta y un consentimiento nuevos. Sin push ni publicación.

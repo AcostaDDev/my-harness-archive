@@ -6,21 +6,24 @@ from harness_local.core.engine.context import ProjectContext
 from harness_local.core.engine.contracts import IncompleteContract, ContractError, task_contract
 
 
+# D072: «Restricciones compartidas» es el alias en español de la sección común.
+SHARED_HEADING = r"^##\s+(?:Shared|Restricciones compartidas)\b.*$"
 TASK_RE = re.compile(r"^##\s+(P\d{3}-T\d{3})\s+[—-]\s+(.+?)\s*$", re.MULTILINE)
 FIELD_RE = re.compile(r"^\*\*([^*\n]+?)(?::\*\*|\*\*:?)[ \t]*(.*)$")
 BULLET_RE = re.compile(r"^\s*(?:[-*]|\d+[.)])\s+(.*)$")
 EXECUTOR_RE = re.compile(r"^`?([a-z0-9.-]+)`?\s*/\s*`?([a-z]+)`?\s*(?:[—–-]+\s*(.*))?$", re.DOTALL)
+# D072: alias en español después de los ingleses; un plan en inglés se interpreta igual que antes.
 FIELD_NAMES = {
-    "objective": ("objective",), "business_context": ("business context",),
-    "scope": ("implementation scope / allowed scope", "implementation scope", "scope"),
-    "allowed_paths": ("allowed paths",), "forbidden_paths": ("forbidden paths",),
-    "forbidden_scope": ("forbidden scope", "out of scope"),
-    "acceptance_criteria": ("acceptance criteria",),
-    "constraints": ("implementation constraints", "known constraints", "constraints"),
-    "validation": ("validation",), "validation_commands": ("validation commands",),
-    "deliverables": ("deliverables", "expected deliverables"),
-    "references": ("references", "documentation references"),
-    "risk_notes": ("risk notes", "risks"), "executor": ("executor",),
+    "objective": ("objective", "objetivo"), "business_context": ("business context", "contexto de negocio"),
+    "scope": ("implementation scope / allowed scope", "implementation scope", "scope", "alcance"),
+    "allowed_paths": ("allowed paths", "rutas permitidas"), "forbidden_paths": ("forbidden paths", "rutas prohibidas"),
+    "forbidden_scope": ("forbidden scope", "out of scope", "fuera de alcance"),
+    "acceptance_criteria": ("acceptance criteria", "criterios de aceptación"),
+    "constraints": ("implementation constraints", "known constraints", "constraints", "restricciones"),
+    "validation": ("validation", "validación"), "validation_commands": ("validation commands", "comandos de validación"),
+    "deliverables": ("deliverables", "expected deliverables", "entregables"),
+    "references": ("references", "documentation references", "referencias"),
+    "risk_notes": ("risk notes", "risks", "riesgos"), "executor": ("executor", "ejecutor"),
 }
 
 
@@ -95,7 +98,7 @@ def deterministic_task(context: ProjectContext, task_id: str, phase_id: str, tex
     match = EXECUTOR_RE.match(collapse(fields["executor"]))
     if not match:
         raise IncompleteContract("Executor requires model / effort — reason")
-    shared = section(text, r"^##\s+Shared\b.*$")
+    shared = section(text, SHARED_HEADING)
     constraints = ["Shared constraints: " + shared] if shared else []
     for label, key in (("Scope", "scope"), ("Out of scope", "forbidden_scope"), ("Validation expectations", "validation")):
         if fields[key]:

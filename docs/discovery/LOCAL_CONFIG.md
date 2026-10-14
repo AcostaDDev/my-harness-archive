@@ -47,7 +47,8 @@ contener secretos: la autenticación sigue en cada CLI. `.harness/project.yaml`
 - `[[projects]]`: id, raíz canónica, `repository_trusted = true`, perfil
   `typescript-web`, política de modelos/esfuerzos sin valores por defecto,
   `tag_kind` y techo de permisos H3.2 opcionales (validación existente).
-  Bootstrap desactivado.
+  `documents = "v2"` opcional activa el contrato documental por fase (D072,
+  [H6.3](H6.3_DOCUMENT_CONTRACT.md)). Bootstrap desactivado.
 - `[projects.commands]`: ejecutables absolutos por nombre (sin PATH), entorno
   completo, límites D047 y `authorize_profile_commands`. Todos los comandos del
   perfil deben quedar autorizados exactamente; `[[projects.commands.authorized]]`

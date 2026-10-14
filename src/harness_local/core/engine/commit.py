@@ -166,8 +166,11 @@ class CommitJournal(Protocol):
 
 
 def validate_mechanical_updates(context: ProjectContext, reviewed_paths: tuple[str, ...],
-                                updates: tuple[MechanicalUpdate, ...]) -> None:
-    """Rutas propias del harness: nunca sensibles ni solapadas con lo revisado."""
+                                updates: tuple[MechanicalUpdate, ...], block_paths: frozenset[str] = frozenset()) -> None:
+    """Rutas propias del harness: nunca sensibles ni solapadas con lo revisado.
+
+    D072: `block_paths` son documentos revisados cuyo único cambio mecánico es regenerar un bloque
+    gestionado sobre el contenido revisado (reconciliación de fase); la prosa revisada se conserva."""
     seen: set[str] = set()
     for update in updates:
         if not isinstance(update, MechanicalUpdate):
@@ -175,7 +178,7 @@ def validate_mechanical_updates(context: ProjectContext, reviewed_paths: tuple[s
         if update.path in seen:
             raise CommitError("Duplicate mechanical update path")
         seen.add(update.path)
-        if update.path in reviewed_paths:
+        if update.path in reviewed_paths and update.path not in block_paths:
             raise CommitError("Mechanical update overlaps reviewed content; revalidate instead")
         profile = context.profile
         if matches(update.path, profile.sensitive_paths) and not matches(update.path, profile.sensitive_allowlist):
@@ -207,7 +210,8 @@ def _invalidated(reason: str, observed: ContentEvidence, expected_fingerprint: s
 def prepare_commit(context: ProjectContext, history: RunHistory, writer: CommitWriter, *,
                    mechanical: tuple[MechanicalUpdate, ...] = (), message_prefix: str = "harness",
                    now: Callable[[], datetime] | None = None,
-                   operation_id: str | None = None) -> CommitIntent | CommitOutcome:
+                   operation_id: str | None = None,
+                   block_paths: frozenset[str] = frozenset()) -> CommitIntent | CommitOutcome:
     """Comprueba aceptación vigente y fija la intención; sin efectos sobre refs ni archivos."""
     if (history.status != "acceptance_ready" or history.acceptance is None or not history.acceptance.eligible
             or not history.cycles or history.task_json is None):
@@ -222,7 +226,7 @@ def prepare_commit(context: ProjectContext, history: RunHistory, writer: CommitW
     if not decision.eligible:
         return _invalidated("; ".join(decision.reasons), current, reviewed.fingerprint)
     task = json.loads(history.task_json)
-    validate_mechanical_updates(context, reviewed.changed_paths, tuple(mechanical))
+    validate_mechanical_updates(context, reviewed.changed_paths, tuple(mechanical), block_paths)
     operation = operation_id or str(uuid4())
     message = commit_message(message_prefix, task, history.id, operation, reviewed.fingerprint,
                              provenance.worktree_tree, tuple(mechanical))
@@ -244,7 +248,8 @@ def prepare_commit(context: ProjectContext, history: RunHistory, writer: CommitW
 def commit_accepted(context: ProjectContext, history: RunHistory, writer: CommitWriter,
                     journal: CommitJournal, *, mechanical: tuple[MechanicalUpdate, ...] = (),
                     message_prefix: str = "harness", now: Callable[[], datetime] | None = None,
-                    operation_id: str | None = None) -> tuple[RunHistory, CommitOutcome]:
+                    operation_id: str | None = None,
+                    block_paths: frozenset[str] = frozenset()) -> tuple[RunHistory, CommitOutcome]:
     """Intención persistida antes del efecto, resultado después, reconciliando al reanudar."""
     intent = journal.pending_commit()
     if intent is not None:
@@ -252,7 +257,8 @@ def commit_accepted(context: ProjectContext, history: RunHistory, writer: Commit
             raise CommitError("Pending commit intent belongs to a different run")
     else:
         prepared = prepare_commit(context, history, writer, mechanical=mechanical,
-                                  message_prefix=message_prefix, now=now, operation_id=operation_id)
+                                  message_prefix=message_prefix, now=now, operation_id=operation_id,
+                                  block_paths=block_paths)
         if isinstance(prepared, CommitOutcome):
             # Sin intención ni efecto: se conserva el hecho y se exige revalidar.
             journal.commit_invalidated(prepared)

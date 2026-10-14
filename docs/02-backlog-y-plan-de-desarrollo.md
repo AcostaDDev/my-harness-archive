@@ -163,6 +163,30 @@ real de las cuatro combinaciones completada el 2026-10-14 (`cli-9`, D071).
 - Alta de proyectos desde la UI con registro en SQLite y confirmación explícita de confianza; el bootstrap de proyectos nuevos, accesible desde el inicio.
 - Configuración de agentes (H6.1) y chat accesibles desde la UI.
 - Criterio: QA visual con navegador sobre `scripts/dev` y recorridos de alta → tarea → revisión → commit sin editar archivos a mano.
+- Ampliado por D072 ([diseño §7–§9](discovery/DOCUMENT_ORGANIZATION.md)): URLs por
+  proyecto, fase, tarea y run con carga por recurso; editor de documentos; chat
+  global con comandos; métricas por tarea; tests OK/KO; estadísticas por proyecto
+  y globales; asistente de creación conversacional. Orden confirmado (D073): después de
+  H6.3–H6.5, como tarea completamente distinta.
+
+### H6.3 Contrato documental y transición de fase (D072, D073)
+
+Completado offline el 2026-10-14, opt-in con `documents = "v2"`.
+[Entrega y límites](discovery/H6.3_DOCUMENT_CONTRACT.md).
+
+- Plantilla documental v2, bloques gestionados v2, ROADMAP como fuente de las fases y alias en español del parser de NEXT_STEPS.
+- Regeneración mecánica de bloques en cada commit de tarea; `phase_transition` (archivo `phase-NNN`, STATE/NEXT_STEPS frescos, fase siguiente en un commit conciliable); `document_edit` con CAS y deriva.
+- Criterio: con fixtures sintéticos, una sesión nueva reconstruye la siguiente tarea solo desde los documentos y el archivo es idéntico al HEAD cerrado.
+
+### H6.4 Métricas por intento y estadísticas (D072, siguiente)
+
+- `attempt_metrics` materializada con procedencia por campo, captura de turnos, relleno idempotente y agregados por tarea, fase, proyecto y global; tests OK/KO.
+- Criterio: sin doble conteo, null distinto de cero y métricas conservadas tras la retención de logs.
+
+### H6.5 Creación y planificación conversacionales (D072, pendiente)
+
+- Conversaciones `definition` y `phase_planning` del revisor, borradores en disco con CAS, aceptación hacia bootstrap v2 o transición.
+- Criterio: de carpeta vacía a commit raíz con P001 y `phase-000`, sin que el agente escriba ni se admitan archivos ajenos.
 
 ## Matriz de pruebas prioritarias
 
