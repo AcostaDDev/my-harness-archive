@@ -1920,3 +1920,49 @@ continuidad de sesión. Ninguna CLI real, preflight, login, lectura/copia/enlace
 de credenciales reales, cambio global o red externa. Consumo futuro requiere
 propuesta/consentimiento nuevos con el límite de refresh resuelto. Matriz y
 H6.2 sin iniciar; D050/D055/D057/D060 siguen agotados.
+
+## D065 — Anidamiento condicionado por el perfil y frontera revisada no calificada
+
+Estado: diagnóstico y dictamen offline completados el 2026-10-14; **sin
+integración en producto**. [Resultados y criterios](discovery/CODEX_CONTAINMENT_REVISION.md),
+[evidencia](discovery/CODEX_CONTAINMENT_REVISION.json) y
+[sonda sintética](discovery/CODEX_CONTAINMENT_REVISION.py).
+Petición del usuario: completar solo la tarea activa y realizar commit.
+
+D064 no demuestra una imposibilidad general de anidar un lector. Perfiles
+sintéticos lector→lector y escritor→escritor funcionan con ambas capas y
+HOME/auth ficticios en origen. Composiciones ensayadas con restricciones
+distintas fallan en la segunda aplicación con exit 71 antes del objetivo;
+cwd, archivo/inline y programa objetivo no explican el rechazo. Comentarios,
+reordenación y deny redundante sí componen. Equivalencia de la representación
+compilada es hipótesis; no se inspecciona kernel ni ejecuta perfil real Codex.
+
+Cerrar fd no concedidos corta escritura por archivo y pipe heredados en los
+controles propios. Captura inerte no delega. Hardlink introducido por el padre
+propio después de la admisión y readiness modifica un sacrificial exterior:
+precheck, permisos del mismo UID y lock cooperativo no certifican exclusión
+frente a carreras. No se anuncia aislamiento general de IPC por denegar un
+socket propio; Mach/XPC, llavero y launch services no se contactan.
+
+La frontera revisada exige capas exactas compatibles, inventario/cierre de fd,
+exclusión efectiva de aliases durante toda la ejecución y canales sin receptores
+con autoridad exterior. No hay mecanismo calificado que cumpla el conjunto,
+ni fuente de auth/auxiliares reales o refresh resueltos. Dictamen: no integrar
+D063 o una variante basada solo en cerrar fd y prechecks; no demuestra que
+toda solución alternativa sea imposible. No eliminar sandbox interno, ampliar
+raíces ni conceder escrituras globales para hacer pasar los ensayos.
+
+32 casos finales y 14 pytest focales correctos. Auth/config ficticios mantienen
+bytes/modo/mtime; únicamente tres sacrificiales explícitos cambian. El sandbox
+de desarrollo rechaza aplicar la primera capa; ejecuciones exteriores autorizadas
+mediante permisos de herramienta. Errores sin fallback y evidencia preliminar
+con expectativa incorrecta conservada. Sin CLI real, red externa, credenciales
+reales, configuración global, cambios del adaptador/TOML/jobs o congelados.
+
+Siguiente: elegir el alcance con el usuario tras este dictamen, **sin iniciar**
+otra investigación o implementación. Una capacidad soportada de separación de
+estado/auth o frontera distinta requiere evidencia propia. Relajar aislamiento,
+cambiar cuenta/almacén o aceptar refresh remoto son decisiones materiales
+pendientes, no concesiones implícitas. También se puede suspender la integración.
+No se implementan cli-8/local-config-3 ni se autoriza consumo. Matriz 3/4 y H6.2
+sin iniciar; consentimientos D050/D055/D057/D060 siguen agotados.

@@ -514,8 +514,14 @@ IPC y sandbox anidado quedaron para calificación. D064 completada offline
 ([dictamen](discovery/CODEX_CONTAINMENT_QUALIFICATION.md)): 27 escenarios
 sintéticos; escrituras directas contenidas, escapes por fd/hardlink/delegación
 y rechazo del sandbox interno lector observados. Candidata no calificada
-para integración; cli-7 y auth real sin cambios. Siguiente: diagnóstico offline
-del anidamiento lector y propuesta de frontera revisada, sin iniciar. Después,
+para integración; cli-7 y auth real sin cambios. Diagnóstico del anidamiento y
+frontera revisada completados offline (D065,
+[dictamen](discovery/CODEX_CONTAINMENT_REVISION.md)): 32 casos; perfiles iguales
+componen, restricciones distintas ensayadas se rechazan antes del objetivo.
+Cierre de fd/pipe demostrado; hardlink posterior a admisión modifica un
+sacrificial exterior. No hay frontera calificada para integrar ni auth/refresh
+real certificados. Siguiente: elegir con el usuario el alcance tras esta
+incompatibilidad, sin nueva investigación o implementación iniciada. Después,
 hito de interfaz de producto con alta de proyectos en SQLite (D054); no iniciado.
 QA visual H5.7 bloqueada por herramienta; Claude real con D058 sigue pendiente.
 
@@ -2291,6 +2297,46 @@ QA visual H5.7 bloqueada por herramienta; Claude real con D058 sigue pendiente.
 - Siguiente: diagnóstico offline del rechazo del sandbox lector y propuesta
   de frontera revisada antes de integrar; **no iniciado**. Matriz y H6.2 tampoco;
   consentimientos D050/D055/D057/D060 siguen agotados. Commit solicitado.
+
+## Diagnóstico del anidamiento y frontera revisada (D065)
+
+- Petición del usuario: completar solo la tarea activa de NEXT_STEPS y hacer
+  commit. Git inicialmente limpio, `b73d9d4`.
+  [Dictamen y criterios revisados](discovery/CODEX_CONTAINMENT_REVISION.md),
+  [evidencia](discovery/CODEX_CONTAINMENT_REVISION.json) y
+  [sonda independiente reproducible](discovery/CODEX_CONTAINMENT_REVISION.py).
+- **Incompatibilidad de la candidata para integrar con la evidencia actual.**
+  Lector→lector y escritor→escritor sintéticos funcionan manteniendo ambas
+  capas, lectura auth ficticia y prohibición global de escritura. Los pares
+  ensayados con restricciones distintas salen 71 al aplicar la segunda capa.
+  Se descartan cwd, archivo/inline y arranque Python en los controles mínimos.
+  Comentarios, reordenación y deny redundante sí componen; representación
+  compilada equivalente es hipótesis, sin inspección del kernel/perfil real.
+- Fd y pipe heredados modifican sacrificiales exteriores; cierre sin pass_fds
+  devuelve EBADF y corta ambas vías. Captura stdout inerte no delega escritura.
+  Hardlink añadido después de admisión/readiness permite escribir el exterior:
+  un precheck o lock cooperativo no es una frontera contra carreras.
+- Criterios revisados concretos para capas exactas, fd, exclusión de aliases
+  durante la ejecución, receptores IPC sin autoridad exterior, auth y refresh.
+  Sin mecanismo calificado para carreras/IPC general ni compatibilidad de CLI
+  real. No se eliminan capas, amplían raíces o cambian almacenes para aprobar.
+- **32 escenarios finales completos**, 22 anidados y doce rechazos esperados.
+  Auth/config ficticios conservan bytes/modo/mtime; solo tres sacrificiales
+  explícitos cambian. Ensayo inicial rechazado por sandbox de desarrollo;
+  ejecuciones exteriores autorizadas por la herramienta. Ensayo exploratorio
+  con expectativa incorrecta de deny redundante conservado como tal.
+- **14 pytest focales passed**, 39 deseleccionados. Sintaxis Python, hashes/JSON,
+  enlaces y diff comprobados. Sin suite completa/build/Node/QA visual, producto
+  sin cambios. Sin proveedores, CLI real/version/help, red externa, login,
+  credenciales reales, ajustes globales, harness de desarrollo, subagentes o push.
+- cli-7, local-config-2, núcleo, TOML operativo, jobs, modelos/permisos y
+  congelados intactos. Auth efectiva, auxiliares, refresh remoto y servicios
+  Mach/XPC/llavero no certificados. Ninguna integración implementada.
+- Siguiente alcance **pendiente de elección con el usuario**, sin iniciar:
+  capacidad soportada de separación estado/auth o frontera distinta, suspender
+  integración, o decidir explícitamente cambios materiales de aislamiento/auth/
+  efectos. No se adopta una relajación ni se autoriza consumo. Matriz 3/4 y H6.2
+  sin iniciar; D050/D055/D057/D060 agotados. Commit solicitado para esta entrega.
 
 ## Coordinación
 

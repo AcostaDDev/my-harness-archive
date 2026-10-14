@@ -1,0 +1,1332 @@
+{
+  "decision": "D065",
+  "root": "/private/tmp/h65-synthetic-lprizorw",
+  "platform": "macOS-26.4.1-arm64-arm-64bit-Mach-O",
+  "python": "3.14.4 (main, Apr  7 2026, 13:13:20) [Clang 21.0.0 (clang-2100.0.123.102)]",
+  "probe_sha256": "46028a322dede27a82a04a777f49501feba904a42ebad3d0922c4df5da24be29",
+  "launcher_sha256": "d1ee30dbde955aaa75c7f801fdfea4df05b10129454d7982eb6453f771436d42",
+  "provider_invocations": 0,
+  "real_cli_processes": 0,
+  "product_integration": false,
+  "fallback_launches": 0,
+  "diagnosis_completed": true,
+  "results": [
+    {
+      "case": "single-writer",
+      "outer": "writer",
+      "inner": null,
+      "cwd": "checkout",
+      "inline": false,
+      "target": "worker",
+      "launches": 1,
+      "profiles": {
+        "outer": {
+          "mode": "writer",
+          "sha256": "a99f282bf95506107ec292cd4b7f2f78660c692f1ac35fb31eb317db1f6bee7d"
+        }
+      },
+      "exit": 0,
+      "stdout": "{\"target_started\": true, \"fake_auth_read\": true, \"checkout\": \"allowed\", \"tmp\": \"allowed\", \"outside\": \"denied\", \"home\": \"denied\"}",
+      "stderr": "",
+      "originals_before": {
+        "home/.codex/auth.json": {
+          "sha256": "46bf31e6a91111b09b7c3e790229b91fffbb1d1e4848dcdd2886dbf8be526889",
+          "mode": 33188,
+          "mtime_ns": 1791960949058945402
+        },
+        "home/.codex/config.toml": {
+          "sha256": "5728a2d3ee69fa5de54b9776f2f99a090caa67f57c438c5592690efe181a9196",
+          "mode": 33188,
+          "mtime_ns": 1791960949059009651
+        }
+      },
+      "originals_after": {
+        "home/.codex/auth.json": {
+          "sha256": "46bf31e6a91111b09b7c3e790229b91fffbb1d1e4848dcdd2886dbf8be526889",
+          "mode": 33188,
+          "mtime_ns": 1791960949058945402
+        },
+        "home/.codex/config.toml": {
+          "sha256": "5728a2d3ee69fa5de54b9776f2f99a090caa67f57c438c5592690efe181a9196",
+          "mode": 33188,
+          "mtime_ns": 1791960949059009651
+        }
+      },
+      "originals_unchanged": true
+    },
+    {
+      "case": "single-reader",
+      "outer": "reader",
+      "inner": null,
+      "cwd": "checkout",
+      "inline": false,
+      "target": "worker",
+      "launches": 1,
+      "profiles": {
+        "outer": {
+          "mode": "reader",
+          "sha256": "1db90f31d25029415f2f092fcbd09778a868b63182bde00e21cee9fb710503cd"
+        }
+      },
+      "exit": 0,
+      "stdout": "{\"target_started\": true, \"fake_auth_read\": true, \"checkout\": \"denied\", \"tmp\": \"allowed\", \"outside\": \"denied\", \"home\": \"denied\"}",
+      "stderr": "",
+      "originals_before": {
+        "home/.codex/auth.json": {
+          "sha256": "46bf31e6a91111b09b7c3e790229b91fffbb1d1e4848dcdd2886dbf8be526889",
+          "mode": 33188,
+          "mtime_ns": 1791960949095113827
+        },
+        "home/.codex/config.toml": {
+          "sha256": "5728a2d3ee69fa5de54b9776f2f99a090caa67f57c438c5592690efe181a9196",
+          "mode": 33188,
+          "mtime_ns": 1791960949095169202
+        }
+      },
+      "originals_after": {
+        "home/.codex/auth.json": {
+          "sha256": "46bf31e6a91111b09b7c3e790229b91fffbb1d1e4848dcdd2886dbf8be526889",
+          "mode": 33188,
+          "mtime_ns": 1791960949095113827
+        },
+        "home/.codex/config.toml": {
+          "sha256": "5728a2d3ee69fa5de54b9776f2f99a090caa67f57c438c5592690efe181a9196",
+          "mode": 33188,
+          "mtime_ns": 1791960949095169202
+        }
+      },
+      "originals_unchanged": true
+    },
+    {
+      "case": "single-no-writes",
+      "outer": "no-writes",
+      "inner": null,
+      "cwd": "checkout",
+      "inline": false,
+      "target": "worker",
+      "launches": 1,
+      "profiles": {
+        "outer": {
+          "mode": "no-writes",
+          "sha256": "d9a8bea93dac8e0bc3ab87c5d845ae03899f1e87b2f6e2498b3ca99a2fc961bc"
+        }
+      },
+      "exit": 0,
+      "stdout": "{\"target_started\": true, \"fake_auth_read\": true, \"checkout\": \"denied\", \"tmp\": \"denied\", \"outside\": \"denied\", \"home\": \"denied\"}",
+      "stderr": "",
+      "originals_before": {
+        "home/.codex/auth.json": {
+          "sha256": "46bf31e6a91111b09b7c3e790229b91fffbb1d1e4848dcdd2886dbf8be526889",
+          "mode": 33188,
+          "mtime_ns": 1791960949129092668
+        },
+        "home/.codex/config.toml": {
+          "sha256": "5728a2d3ee69fa5de54b9776f2f99a090caa67f57c438c5592690efe181a9196",
+          "mode": 33188,
+          "mtime_ns": 1791960949129154127
+        }
+      },
+      "originals_after": {
+        "home/.codex/auth.json": {
+          "sha256": "46bf31e6a91111b09b7c3e790229b91fffbb1d1e4848dcdd2886dbf8be526889",
+          "mode": 33188,
+          "mtime_ns": 1791960949129092668
+        },
+        "home/.codex/config.toml": {
+          "sha256": "5728a2d3ee69fa5de54b9776f2f99a090caa67f57c438c5592690efe181a9196",
+          "mode": 33188,
+          "mtime_ns": 1791960949129154127
+        }
+      },
+      "originals_unchanged": true
+    },
+    {
+      "case": "writer-writer",
+      "outer": "writer",
+      "inner": "writer",
+      "cwd": "checkout",
+      "inline": false,
+      "target": "worker",
+      "launches": 1,
+      "profiles": {
+        "inner": {
+          "mode": "writer",
+          "sha256": "edd85c3b9525507a4acb70ba747e7069ec338017874bbcdd6705d5dbbcc94f5e"
+        },
+        "outer": {
+          "mode": "writer",
+          "sha256": "edd85c3b9525507a4acb70ba747e7069ec338017874bbcdd6705d5dbbcc94f5e"
+        }
+      },
+      "exit": 0,
+      "stdout": "{\"target_started\": true, \"fake_auth_read\": true, \"checkout\": \"allowed\", \"tmp\": \"allowed\", \"outside\": \"denied\", \"home\": \"denied\"}",
+      "stderr": "",
+      "originals_before": {
+        "home/.codex/auth.json": {
+          "sha256": "46bf31e6a91111b09b7c3e790229b91fffbb1d1e4848dcdd2886dbf8be526889",
+          "mode": 33188,
+          "mtime_ns": 1791960949162896302
+        },
+        "home/.codex/config.toml": {
+          "sha256": "5728a2d3ee69fa5de54b9776f2f99a090caa67f57c438c5592690efe181a9196",
+          "mode": 33188,
+          "mtime_ns": 1791960949162962676
+        }
+      },
+      "originals_after": {
+        "home/.codex/auth.json": {
+          "sha256": "46bf31e6a91111b09b7c3e790229b91fffbb1d1e4848dcdd2886dbf8be526889",
+          "mode": 33188,
+          "mtime_ns": 1791960949162896302
+        },
+        "home/.codex/config.toml": {
+          "sha256": "5728a2d3ee69fa5de54b9776f2f99a090caa67f57c438c5592690efe181a9196",
+          "mode": 33188,
+          "mtime_ns": 1791960949162962676
+        }
+      },
+      "originals_unchanged": true
+    },
+    {
+      "case": "writer-reader",
+      "outer": "writer",
+      "inner": "reader",
+      "cwd": "checkout",
+      "inline": false,
+      "target": "worker",
+      "launches": 1,
+      "profiles": {
+        "inner": {
+          "mode": "reader",
+          "sha256": "090425121f3d7ed16aa0c4f79f38f018554829b75f13b8f23f6e26fbb532a884"
+        },
+        "outer": {
+          "mode": "writer",
+          "sha256": "307be7df788e82e31084c81036db01dad1579c996bbca48768251c4d181c6c0c"
+        }
+      },
+      "exit": 71,
+      "stdout": "",
+      "stderr": "sandbox-exec: sandbox_apply: Operation not permitted",
+      "originals_before": {
+        "home/.codex/auth.json": {
+          "sha256": "46bf31e6a91111b09b7c3e790229b91fffbb1d1e4848dcdd2886dbf8be526889",
+          "mode": 33188,
+          "mtime_ns": 1791960949203216936
+        },
+        "home/.codex/config.toml": {
+          "sha256": "5728a2d3ee69fa5de54b9776f2f99a090caa67f57c438c5592690efe181a9196",
+          "mode": 33188,
+          "mtime_ns": 1791960949203290145
+        }
+      },
+      "originals_after": {
+        "home/.codex/auth.json": {
+          "sha256": "46bf31e6a91111b09b7c3e790229b91fffbb1d1e4848dcdd2886dbf8be526889",
+          "mode": 33188,
+          "mtime_ns": 1791960949203216936
+        },
+        "home/.codex/config.toml": {
+          "sha256": "5728a2d3ee69fa5de54b9776f2f99a090caa67f57c438c5592690efe181a9196",
+          "mode": 33188,
+          "mtime_ns": 1791960949203290145
+        }
+      },
+      "originals_unchanged": true
+    },
+    {
+      "case": "writer-no-writes",
+      "outer": "writer",
+      "inner": "no-writes",
+      "cwd": "checkout",
+      "inline": false,
+      "target": "worker",
+      "launches": 1,
+      "profiles": {
+        "inner": {
+          "mode": "no-writes",
+          "sha256": "d9a8bea93dac8e0bc3ab87c5d845ae03899f1e87b2f6e2498b3ca99a2fc961bc"
+        },
+        "outer": {
+          "mode": "writer",
+          "sha256": "19cf9bc306474594f0fc036943133f4dd7c086c022196c7bc0e92f88fb693ec1"
+        }
+      },
+      "exit": 71,
+      "stdout": "",
+      "stderr": "sandbox-exec: sandbox_apply: Operation not permitted",
+      "originals_before": {
+        "home/.codex/auth.json": {
+          "sha256": "46bf31e6a91111b09b7c3e790229b91fffbb1d1e4848dcdd2886dbf8be526889",
+          "mode": 33188,
+          "mtime_ns": 1791960949214742856
+        },
+        "home/.codex/config.toml": {
+          "sha256": "5728a2d3ee69fa5de54b9776f2f99a090caa67f57c438c5592690efe181a9196",
+          "mode": 33188,
+          "mtime_ns": 1791960949214817731
+        }
+      },
+      "originals_after": {
+        "home/.codex/auth.json": {
+          "sha256": "46bf31e6a91111b09b7c3e790229b91fffbb1d1e4848dcdd2886dbf8be526889",
+          "mode": 33188,
+          "mtime_ns": 1791960949214742856
+        },
+        "home/.codex/config.toml": {
+          "sha256": "5728a2d3ee69fa5de54b9776f2f99a090caa67f57c438c5592690efe181a9196",
+          "mode": 33188,
+          "mtime_ns": 1791960949214817731
+        }
+      },
+      "originals_unchanged": true
+    },
+    {
+      "case": "writer-default",
+      "outer": "writer",
+      "inner": "default",
+      "cwd": "checkout",
+      "inline": false,
+      "target": "worker",
+      "launches": 1,
+      "profiles": {
+        "inner": {
+          "mode": "default",
+          "sha256": "5c358b8d847211333e7ba22df82d84f796b5f30a41a2682209a949d783adbd08"
+        },
+        "outer": {
+          "mode": "writer",
+          "sha256": "9e37776f8a7c8591533c92fe1eb47b6754724acd24c9c642078c0ec961f2bc7f"
+        }
+      },
+      "exit": 71,
+      "stdout": "",
+      "stderr": "sandbox-exec: sandbox_apply: Operation not permitted",
+      "originals_before": {
+        "home/.codex/auth.json": {
+          "sha256": "46bf31e6a91111b09b7c3e790229b91fffbb1d1e4848dcdd2886dbf8be526889",
+          "mode": 33188,
+          "mtime_ns": 1791960949225551858
+        },
+        "home/.codex/config.toml": {
+          "sha256": "5728a2d3ee69fa5de54b9776f2f99a090caa67f57c438c5592690efe181a9196",
+          "mode": 33188,
+          "mtime_ns": 1791960949225620733
+        }
+      },
+      "originals_after": {
+        "home/.codex/auth.json": {
+          "sha256": "46bf31e6a91111b09b7c3e790229b91fffbb1d1e4848dcdd2886dbf8be526889",
+          "mode": 33188,
+          "mtime_ns": 1791960949225551858
+        },
+        "home/.codex/config.toml": {
+          "sha256": "5728a2d3ee69fa5de54b9776f2f99a090caa67f57c438c5592690efe181a9196",
+          "mode": 33188,
+          "mtime_ns": 1791960949225620733
+        }
+      },
+      "originals_unchanged": true
+    },
+    {
+      "case": "reader-writer",
+      "outer": "reader",
+      "inner": "writer",
+      "cwd": "checkout",
+      "inline": false,
+      "target": "worker",
+      "launches": 1,
+      "profiles": {
+        "inner": {
+          "mode": "writer",
+          "sha256": "cd168234d5d8b3804339bcd96f0276f14ae8f16b475aa5ebda9e3a19add97866"
+        },
+        "outer": {
+          "mode": "reader",
+          "sha256": "f0f58dcce0c5e8366a45041839f6fc0483a5f5bfce5d2b4b25375080084ab7d7"
+        }
+      },
+      "exit": 71,
+      "stdout": "",
+      "stderr": "sandbox-exec: sandbox_apply: Operation not permitted",
+      "originals_before": {
+        "home/.codex/auth.json": {
+          "sha256": "46bf31e6a91111b09b7c3e790229b91fffbb1d1e4848dcdd2886dbf8be526889",
+          "mode": 33188,
+          "mtime_ns": 1791960949236311944
+        },
+        "home/.codex/config.toml": {
+          "sha256": "5728a2d3ee69fa5de54b9776f2f99a090caa67f57c438c5592690efe181a9196",
+          "mode": 33188,
+          "mtime_ns": 1791960949236378278
+        }
+      },
+      "originals_after": {
+        "home/.codex/auth.json": {
+          "sha256": "46bf31e6a91111b09b7c3e790229b91fffbb1d1e4848dcdd2886dbf8be526889",
+          "mode": 33188,
+          "mtime_ns": 1791960949236311944
+        },
+        "home/.codex/config.toml": {
+          "sha256": "5728a2d3ee69fa5de54b9776f2f99a090caa67f57c438c5592690efe181a9196",
+          "mode": 33188,
+          "mtime_ns": 1791960949236378278
+        }
+      },
+      "originals_unchanged": true
+    },
+    {
+      "case": "reader-reader",
+      "outer": "reader",
+      "inner": "reader",
+      "cwd": "checkout",
+      "inline": false,
+      "target": "worker",
+      "launches": 1,
+      "profiles": {
+        "inner": {
+          "mode": "reader",
+          "sha256": "d8bbb1bb8d4f883d6a792839d7ce4ecb052723d38d7291962cc129a224cb9e8c"
+        },
+        "outer": {
+          "mode": "reader",
+          "sha256": "d8bbb1bb8d4f883d6a792839d7ce4ecb052723d38d7291962cc129a224cb9e8c"
+        }
+      },
+      "exit": 0,
+      "stdout": "{\"target_started\": true, \"fake_auth_read\": true, \"checkout\": \"denied\", \"tmp\": \"allowed\", \"outside\": \"denied\", \"home\": \"denied\"}",
+      "stderr": "",
+      "originals_before": {
+        "home/.codex/auth.json": {
+          "sha256": "46bf31e6a91111b09b7c3e790229b91fffbb1d1e4848dcdd2886dbf8be526889",
+          "mode": 33188,
+          "mtime_ns": 1791960949246939822
+        },
+        "home/.codex/config.toml": {
+          "sha256": "5728a2d3ee69fa5de54b9776f2f99a090caa67f57c438c5592690efe181a9196",
+          "mode": 33188,
+          "mtime_ns": 1791960949247033238
+        }
+      },
+      "originals_after": {
+        "home/.codex/auth.json": {
+          "sha256": "46bf31e6a91111b09b7c3e790229b91fffbb1d1e4848dcdd2886dbf8be526889",
+          "mode": 33188,
+          "mtime_ns": 1791960949246939822
+        },
+        "home/.codex/config.toml": {
+          "sha256": "5728a2d3ee69fa5de54b9776f2f99a090caa67f57c438c5592690efe181a9196",
+          "mode": 33188,
+          "mtime_ns": 1791960949247033238
+        }
+      },
+      "originals_unchanged": true
+    },
+    {
+      "case": "reader-no-writes",
+      "outer": "reader",
+      "inner": "no-writes",
+      "cwd": "checkout",
+      "inline": false,
+      "target": "worker",
+      "launches": 1,
+      "profiles": {
+        "inner": {
+          "mode": "no-writes",
+          "sha256": "d9a8bea93dac8e0bc3ab87c5d845ae03899f1e87b2f6e2498b3ca99a2fc961bc"
+        },
+        "outer": {
+          "mode": "reader",
+          "sha256": "1985ca4d73fdf283619a2b78aa9b88359ce0b643604052170b8baceeffbcd2f7"
+        }
+      },
+      "exit": 71,
+      "stdout": "",
+      "stderr": "sandbox-exec: sandbox_apply: Operation not permitted",
+      "originals_before": {
+        "home/.codex/auth.json": {
+          "sha256": "46bf31e6a91111b09b7c3e790229b91fffbb1d1e4848dcdd2886dbf8be526889",
+          "mode": 33188,
+          "mtime_ns": 1791960949285127123
+        },
+        "home/.codex/config.toml": {
+          "sha256": "5728a2d3ee69fa5de54b9776f2f99a090caa67f57c438c5592690efe181a9196",
+          "mode": 33188,
+          "mtime_ns": 1791960949285188373
+        }
+      },
+      "originals_after": {
+        "home/.codex/auth.json": {
+          "sha256": "46bf31e6a91111b09b7c3e790229b91fffbb1d1e4848dcdd2886dbf8be526889",
+          "mode": 33188,
+          "mtime_ns": 1791960949285127123
+        },
+        "home/.codex/config.toml": {
+          "sha256": "5728a2d3ee69fa5de54b9776f2f99a090caa67f57c438c5592690efe181a9196",
+          "mode": 33188,
+          "mtime_ns": 1791960949285188373
+        }
+      },
+      "originals_unchanged": true
+    },
+    {
+      "case": "reader-default",
+      "outer": "reader",
+      "inner": "default",
+      "cwd": "checkout",
+      "inline": false,
+      "target": "worker",
+      "launches": 1,
+      "profiles": {
+        "inner": {
+          "mode": "default",
+          "sha256": "5c358b8d847211333e7ba22df82d84f796b5f30a41a2682209a949d783adbd08"
+        },
+        "outer": {
+          "mode": "reader",
+          "sha256": "8faa9a99c28fe411381a6d67620c18c407168d3eec27779198196ad25398ae66"
+        }
+      },
+      "exit": 71,
+      "stdout": "",
+      "stderr": "sandbox-exec: sandbox_apply: Operation not permitted",
+      "originals_before": {
+        "home/.codex/auth.json": {
+          "sha256": "46bf31e6a91111b09b7c3e790229b91fffbb1d1e4848dcdd2886dbf8be526889",
+          "mode": 33188,
+          "mtime_ns": 1791960949295895042
+        },
+        "home/.codex/config.toml": {
+          "sha256": "5728a2d3ee69fa5de54b9776f2f99a090caa67f57c438c5592690efe181a9196",
+          "mode": 33188,
+          "mtime_ns": 1791960949295963875
+        }
+      },
+      "originals_after": {
+        "home/.codex/auth.json": {
+          "sha256": "46bf31e6a91111b09b7c3e790229b91fffbb1d1e4848dcdd2886dbf8be526889",
+          "mode": 33188,
+          "mtime_ns": 1791960949295895042
+        },
+        "home/.codex/config.toml": {
+          "sha256": "5728a2d3ee69fa5de54b9776f2f99a090caa67f57c438c5592690efe181a9196",
+          "mode": 33188,
+          "mtime_ns": 1791960949295963875
+        }
+      },
+      "originals_unchanged": true
+    },
+    {
+      "case": "reader-cwd-tmp",
+      "outer": "writer",
+      "inner": "reader",
+      "cwd": "tmp space \"quote\"",
+      "inline": false,
+      "target": "worker",
+      "launches": 1,
+      "profiles": {
+        "inner": {
+          "mode": "reader",
+          "sha256": "70f0b6ee1a43976735d4217ada35f0a049a56678a44ed9070cfc1618f0947a09"
+        },
+        "outer": {
+          "mode": "writer",
+          "sha256": "5abbcdc028d8a10144d8cfd262f97d4cf63c6caf70f9102d1d77deace656e829"
+        }
+      },
+      "exit": 71,
+      "stdout": "",
+      "stderr": "sandbox-exec: sandbox_apply: Operation not permitted",
+      "originals_before": {
+        "home/.codex/auth.json": {
+          "sha256": "46bf31e6a91111b09b7c3e790229b91fffbb1d1e4848dcdd2886dbf8be526889",
+          "mode": 33188,
+          "mtime_ns": 1791960949306735920
+        },
+        "home/.codex/config.toml": {
+          "sha256": "5728a2d3ee69fa5de54b9776f2f99a090caa67f57c438c5592690efe181a9196",
+          "mode": 33188,
+          "mtime_ns": 1791960949306806170
+        }
+      },
+      "originals_after": {
+        "home/.codex/auth.json": {
+          "sha256": "46bf31e6a91111b09b7c3e790229b91fffbb1d1e4848dcdd2886dbf8be526889",
+          "mode": 33188,
+          "mtime_ns": 1791960949306735920
+        },
+        "home/.codex/config.toml": {
+          "sha256": "5728a2d3ee69fa5de54b9776f2f99a090caa67f57c438c5592690efe181a9196",
+          "mode": 33188,
+          "mtime_ns": 1791960949306806170
+        }
+      },
+      "originals_unchanged": true
+    },
+    {
+      "case": "reader-cwd-outside",
+      "outer": "writer",
+      "inner": "reader",
+      "cwd": "outside",
+      "inline": false,
+      "target": "worker",
+      "launches": 1,
+      "profiles": {
+        "inner": {
+          "mode": "reader",
+          "sha256": "35b65df779247e9fb5b572f9ad595b9771b52a0a36d47d3498e2bfa13709cf72"
+        },
+        "outer": {
+          "mode": "writer",
+          "sha256": "dcd237d63485305293d6b264bf94d2342ca202f51d1c012397bb3def9cc07202"
+        }
+      },
+      "exit": 71,
+      "stdout": "",
+      "stderr": "sandbox-exec: sandbox_apply: Operation not permitted",
+      "originals_before": {
+        "home/.codex/auth.json": {
+          "sha256": "46bf31e6a91111b09b7c3e790229b91fffbb1d1e4848dcdd2886dbf8be526889",
+          "mode": 33188,
+          "mtime_ns": 1791960949318364172
+        },
+        "home/.codex/config.toml": {
+          "sha256": "5728a2d3ee69fa5de54b9776f2f99a090caa67f57c438c5592690efe181a9196",
+          "mode": 33188,
+          "mtime_ns": 1791960949318441922
+        }
+      },
+      "originals_after": {
+        "home/.codex/auth.json": {
+          "sha256": "46bf31e6a91111b09b7c3e790229b91fffbb1d1e4848dcdd2886dbf8be526889",
+          "mode": 33188,
+          "mtime_ns": 1791960949318364172
+        },
+        "home/.codex/config.toml": {
+          "sha256": "5728a2d3ee69fa5de54b9776f2f99a090caa67f57c438c5592690efe181a9196",
+          "mode": 33188,
+          "mtime_ns": 1791960949318441922
+        }
+      },
+      "originals_unchanged": true
+    },
+    {
+      "case": "reader-inline",
+      "outer": "writer",
+      "inner": "reader",
+      "cwd": "checkout",
+      "inline": true,
+      "target": "worker",
+      "launches": 1,
+      "profiles": {
+        "inner": {
+          "mode": "reader",
+          "sha256": "680e4afb4fe0ad17e214b1de5d73cf38905b8c41a3fc63aeb4c57b43cd6f5af0"
+        },
+        "outer": {
+          "mode": "writer",
+          "sha256": "cfe8eb0777ec2ecd026e504a3c6b074f4de5217e5bc7fa2158a43c43f4d3d54b"
+        }
+      },
+      "exit": 71,
+      "stdout": "",
+      "stderr": "sandbox-exec: sandbox_apply: Operation not permitted",
+      "originals_before": {
+        "home/.codex/auth.json": {
+          "sha256": "46bf31e6a91111b09b7c3e790229b91fffbb1d1e4848dcdd2886dbf8be526889",
+          "mode": 33188,
+          "mtime_ns": 1791960949329086092
+        },
+        "home/.codex/config.toml": {
+          "sha256": "5728a2d3ee69fa5de54b9776f2f99a090caa67f57c438c5592690efe181a9196",
+          "mode": 33188,
+          "mtime_ns": 1791960949329151758
+        }
+      },
+      "originals_after": {
+        "home/.codex/auth.json": {
+          "sha256": "46bf31e6a91111b09b7c3e790229b91fffbb1d1e4848dcdd2886dbf8be526889",
+          "mode": 33188,
+          "mtime_ns": 1791960949329086092
+        },
+        "home/.codex/config.toml": {
+          "sha256": "5728a2d3ee69fa5de54b9776f2f99a090caa67f57c438c5592690efe181a9196",
+          "mode": 33188,
+          "mtime_ns": 1791960949329151758
+        }
+      },
+      "originals_unchanged": true
+    },
+    {
+      "case": "reader-true",
+      "outer": "writer",
+      "inner": "reader",
+      "cwd": "checkout",
+      "inline": false,
+      "target": "true",
+      "launches": 1,
+      "profiles": {
+        "inner": {
+          "mode": "reader",
+          "sha256": "c81618715cad77df709b8b87fa705486954b0d70258f13771442cdf48f936fb4"
+        },
+        "outer": {
+          "mode": "writer",
+          "sha256": "622fde859c8dac39ab2a03f1a3403f26d47ff5ab37144f77c4ae08d59b9b8d79"
+        }
+      },
+      "exit": 71,
+      "stdout": "",
+      "stderr": "sandbox-exec: sandbox_apply: Operation not permitted",
+      "originals_before": {
+        "home/.codex/auth.json": {
+          "sha256": "46bf31e6a91111b09b7c3e790229b91fffbb1d1e4848dcdd2886dbf8be526889",
+          "mode": 33188,
+          "mtime_ns": 1791960949339664761
+        },
+        "home/.codex/config.toml": {
+          "sha256": "5728a2d3ee69fa5de54b9776f2f99a090caa67f57c438c5592690efe181a9196",
+          "mode": 33188,
+          "mtime_ns": 1791960949339729261
+        }
+      },
+      "originals_after": {
+        "home/.codex/auth.json": {
+          "sha256": "46bf31e6a91111b09b7c3e790229b91fffbb1d1e4848dcdd2886dbf8be526889",
+          "mode": 33188,
+          "mtime_ns": 1791960949339664761
+        },
+        "home/.codex/config.toml": {
+          "sha256": "5728a2d3ee69fa5de54b9776f2f99a090caa67f57c438c5592690efe181a9196",
+          "mode": 33188,
+          "mtime_ns": 1791960949339729261
+        }
+      },
+      "originals_unchanged": true
+    },
+    {
+      "case": "reader-reader-inline",
+      "outer": "reader",
+      "inner": "reader",
+      "cwd": "checkout",
+      "inline": true,
+      "target": "worker",
+      "launches": 1,
+      "profiles": {
+        "inner": {
+          "mode": "reader",
+          "sha256": "f5086936efdf00f157d3706dd16202a71cec30eb4daec67b066696735aca0662"
+        },
+        "outer": {
+          "mode": "reader",
+          "sha256": "f5086936efdf00f157d3706dd16202a71cec30eb4daec67b066696735aca0662"
+        }
+      },
+      "exit": 0,
+      "stdout": "{\"target_started\": true, \"fake_auth_read\": true, \"checkout\": \"denied\", \"tmp\": \"allowed\", \"outside\": \"denied\", \"home\": \"denied\"}",
+      "stderr": "",
+      "originals_before": {
+        "home/.codex/auth.json": {
+          "sha256": "46bf31e6a91111b09b7c3e790229b91fffbb1d1e4848dcdd2886dbf8be526889",
+          "mode": 33188,
+          "mtime_ns": 1791960949350381555
+        },
+        "home/.codex/config.toml": {
+          "sha256": "5728a2d3ee69fa5de54b9776f2f99a090caa67f57c438c5592690efe181a9196",
+          "mode": 33188,
+          "mtime_ns": 1791960949350451888
+        }
+      },
+      "originals_after": {
+        "home/.codex/auth.json": {
+          "sha256": "46bf31e6a91111b09b7c3e790229b91fffbb1d1e4848dcdd2886dbf8be526889",
+          "mode": 33188,
+          "mtime_ns": 1791960949350381555
+        },
+        "home/.codex/config.toml": {
+          "sha256": "5728a2d3ee69fa5de54b9776f2f99a090caa67f57c438c5592690efe181a9196",
+          "mode": 33188,
+          "mtime_ns": 1791960949350451888
+        }
+      },
+      "originals_unchanged": true
+    },
+    {
+      "case": "no-writes-identical",
+      "outer": "no-writes",
+      "inner": "no-writes",
+      "cwd": "checkout",
+      "inline": false,
+      "target": "worker",
+      "launches": 1,
+      "profiles": {
+        "inner": {
+          "mode": "no-writes",
+          "sha256": "d9a8bea93dac8e0bc3ab87c5d845ae03899f1e87b2f6e2498b3ca99a2fc961bc"
+        },
+        "outer": {
+          "mode": "no-writes",
+          "sha256": "d9a8bea93dac8e0bc3ab87c5d845ae03899f1e87b2f6e2498b3ca99a2fc961bc"
+        }
+      },
+      "exit": 0,
+      "stdout": "{\"target_started\": true, \"fake_auth_read\": true, \"checkout\": \"denied\", \"tmp\": \"denied\", \"outside\": \"denied\", \"home\": \"denied\"}",
+      "stderr": "",
+      "originals_before": {
+        "home/.codex/auth.json": {
+          "sha256": "46bf31e6a91111b09b7c3e790229b91fffbb1d1e4848dcdd2886dbf8be526889",
+          "mode": 33188,
+          "mtime_ns": 1791960949390712315
+        },
+        "home/.codex/config.toml": {
+          "sha256": "5728a2d3ee69fa5de54b9776f2f99a090caa67f57c438c5592690efe181a9196",
+          "mode": 33188,
+          "mtime_ns": 1791960949390779898
+        }
+      },
+      "originals_after": {
+        "home/.codex/auth.json": {
+          "sha256": "46bf31e6a91111b09b7c3e790229b91fffbb1d1e4848dcdd2886dbf8be526889",
+          "mode": 33188,
+          "mtime_ns": 1791960949390712315
+        },
+        "home/.codex/config.toml": {
+          "sha256": "5728a2d3ee69fa5de54b9776f2f99a090caa67f57c438c5592690efe181a9196",
+          "mode": 33188,
+          "mtime_ns": 1791960949390779898
+        }
+      },
+      "originals_unchanged": true
+    },
+    {
+      "case": "default-identical",
+      "outer": "default",
+      "inner": "default",
+      "cwd": "checkout",
+      "inline": false,
+      "target": "true",
+      "launches": 1,
+      "profiles": {
+        "inner": {
+          "mode": "default",
+          "sha256": "5c358b8d847211333e7ba22df82d84f796b5f30a41a2682209a949d783adbd08"
+        },
+        "outer": {
+          "mode": "default",
+          "sha256": "5c358b8d847211333e7ba22df82d84f796b5f30a41a2682209a949d783adbd08"
+        }
+      },
+      "exit": 0,
+      "stdout": "",
+      "stderr": "",
+      "originals_before": {
+        "home/.codex/auth.json": {
+          "sha256": "46bf31e6a91111b09b7c3e790229b91fffbb1d1e4848dcdd2886dbf8be526889",
+          "mode": 33188,
+          "mtime_ns": 1791960949430539074
+        },
+        "home/.codex/config.toml": {
+          "sha256": "5728a2d3ee69fa5de54b9776f2f99a090caa67f57c438c5592690efe181a9196",
+          "mode": 33188,
+          "mtime_ns": 1791960949430614116
+        }
+      },
+      "originals_after": {
+        "home/.codex/auth.json": {
+          "sha256": "46bf31e6a91111b09b7c3e790229b91fffbb1d1e4848dcdd2886dbf8be526889",
+          "mode": 33188,
+          "mtime_ns": 1791960949430539074
+        },
+        "home/.codex/config.toml": {
+          "sha256": "5728a2d3ee69fa5de54b9776f2f99a090caa67f57c438c5592690efe181a9196",
+          "mode": 33188,
+          "mtime_ns": 1791960949430614116
+        }
+      },
+      "originals_unchanged": true
+    },
+    {
+      "case": "minimal-identical",
+      "outer": "minimal",
+      "inner": "minimal",
+      "cwd": "checkout",
+      "inline": false,
+      "target": "true",
+      "launches": 1,
+      "profiles": {
+        "inner": {
+          "mode": "minimal",
+          "sha256": "d130f968d5a3351927ae34b556c1e9821242ff5af875a761bffed57aa40e765c"
+        },
+        "outer": {
+          "mode": "minimal",
+          "sha256": "d130f968d5a3351927ae34b556c1e9821242ff5af875a761bffed57aa40e765c"
+        }
+      },
+      "exit": 0,
+      "stdout": "",
+      "stderr": "",
+      "originals_before": {
+        "home/.codex/auth.json": {
+          "sha256": "46bf31e6a91111b09b7c3e790229b91fffbb1d1e4848dcdd2886dbf8be526889",
+          "mode": 33188,
+          "mtime_ns": 1791960949442903036
+        },
+        "home/.codex/config.toml": {
+          "sha256": "5728a2d3ee69fa5de54b9776f2f99a090caa67f57c438c5592690efe181a9196",
+          "mode": 33188,
+          "mtime_ns": 1791960949442969036
+        }
+      },
+      "originals_after": {
+        "home/.codex/auth.json": {
+          "sha256": "46bf31e6a91111b09b7c3e790229b91fffbb1d1e4848dcdd2886dbf8be526889",
+          "mode": 33188,
+          "mtime_ns": 1791960949442903036
+        },
+        "home/.codex/config.toml": {
+          "sha256": "5728a2d3ee69fa5de54b9776f2f99a090caa67f57c438c5592690efe181a9196",
+          "mode": 33188,
+          "mtime_ns": 1791960949442969036
+        }
+      },
+      "originals_unchanged": true
+    },
+    {
+      "case": "default-writer",
+      "outer": "default",
+      "inner": "writer",
+      "cwd": "checkout",
+      "inline": false,
+      "target": "worker",
+      "launches": 1,
+      "profiles": {
+        "inner": {
+          "mode": "writer",
+          "sha256": "6c167d47c8aad7910919e184e8ea06689e4f4703181cf027a033749fcf8263d7"
+        },
+        "outer": {
+          "mode": "default",
+          "sha256": "5c358b8d847211333e7ba22df82d84f796b5f30a41a2682209a949d783adbd08"
+        }
+      },
+      "exit": 71,
+      "stdout": "",
+      "stderr": "sandbox-exec: sandbox_apply: Operation not permitted",
+      "originals_before": {
+        "home/.codex/auth.json": {
+          "sha256": "46bf31e6a91111b09b7c3e790229b91fffbb1d1e4848dcdd2886dbf8be526889",
+          "mode": 33188,
+          "mtime_ns": 1791960949454710705
+        },
+        "home/.codex/config.toml": {
+          "sha256": "5728a2d3ee69fa5de54b9776f2f99a090caa67f57c438c5592690efe181a9196",
+          "mode": 33188,
+          "mtime_ns": 1791960949454782414
+        }
+      },
+      "originals_after": {
+        "home/.codex/auth.json": {
+          "sha256": "46bf31e6a91111b09b7c3e790229b91fffbb1d1e4848dcdd2886dbf8be526889",
+          "mode": 33188,
+          "mtime_ns": 1791960949454710705
+        },
+        "home/.codex/config.toml": {
+          "sha256": "5728a2d3ee69fa5de54b9776f2f99a090caa67f57c438c5592690efe181a9196",
+          "mode": 33188,
+          "mtime_ns": 1791960949454782414
+        }
+      },
+      "originals_unchanged": true
+    },
+    {
+      "case": "reader-comment",
+      "outer": "reader",
+      "inner": "reader-comment",
+      "cwd": "checkout",
+      "inline": false,
+      "target": "worker",
+      "launches": 1,
+      "profiles": {
+        "inner": {
+          "mode": "reader-comment",
+          "sha256": "e6e492cf177fcd3abf633a32be69c23bfea64edf573988882bd2d113db663ab4"
+        },
+        "outer": {
+          "mode": "reader",
+          "sha256": "f56d7e15b9c28fd809c9c37ed80ed9d6566b99d8450884a859fba6c19f2d547f"
+        }
+      },
+      "exit": 0,
+      "stdout": "{\"target_started\": true, \"fake_auth_read\": true, \"checkout\": \"denied\", \"tmp\": \"allowed\", \"outside\": \"denied\", \"home\": \"denied\"}",
+      "stderr": "",
+      "originals_before": {
+        "home/.codex/auth.json": {
+          "sha256": "46bf31e6a91111b09b7c3e790229b91fffbb1d1e4848dcdd2886dbf8be526889",
+          "mode": 33188,
+          "mtime_ns": 1791960949465412500
+        },
+        "home/.codex/config.toml": {
+          "sha256": "5728a2d3ee69fa5de54b9776f2f99a090caa67f57c438c5592690efe181a9196",
+          "mode": 33188,
+          "mtime_ns": 1791960949465478708
+        }
+      },
+      "originals_after": {
+        "home/.codex/auth.json": {
+          "sha256": "46bf31e6a91111b09b7c3e790229b91fffbb1d1e4848dcdd2886dbf8be526889",
+          "mode": 33188,
+          "mtime_ns": 1791960949465412500
+        },
+        "home/.codex/config.toml": {
+          "sha256": "5728a2d3ee69fa5de54b9776f2f99a090caa67f57c438c5592690efe181a9196",
+          "mode": 33188,
+          "mtime_ns": 1791960949465478708
+        }
+      },
+      "originals_unchanged": true
+    },
+    {
+      "case": "reader-reordered",
+      "outer": "reader",
+      "inner": "reader-reordered",
+      "cwd": "checkout",
+      "inline": false,
+      "target": "worker",
+      "launches": 1,
+      "profiles": {
+        "inner": {
+          "mode": "reader-reordered",
+          "sha256": "d77902e1d037aa02d9b172b6e7afe88373d45812662c93d85a67de326afacac1"
+        },
+        "outer": {
+          "mode": "reader",
+          "sha256": "df3c8ffff8beb64ad644e16bb6c27a5a9287daea403a3fb073e2c4c6ca3d73b9"
+        }
+      },
+      "exit": 0,
+      "stdout": "{\"target_started\": true, \"fake_auth_read\": true, \"checkout\": \"denied\", \"tmp\": \"allowed\", \"outside\": \"denied\", \"home\": \"denied\"}",
+      "stderr": "",
+      "originals_before": {
+        "home/.codex/auth.json": {
+          "sha256": "46bf31e6a91111b09b7c3e790229b91fffbb1d1e4848dcdd2886dbf8be526889",
+          "mode": 33188,
+          "mtime_ns": 1791960949507039343
+        },
+        "home/.codex/config.toml": {
+          "sha256": "5728a2d3ee69fa5de54b9776f2f99a090caa67f57c438c5592690efe181a9196",
+          "mode": 33188,
+          "mtime_ns": 1791960949507099343
+        }
+      },
+      "originals_after": {
+        "home/.codex/auth.json": {
+          "sha256": "46bf31e6a91111b09b7c3e790229b91fffbb1d1e4848dcdd2886dbf8be526889",
+          "mode": 33188,
+          "mtime_ns": 1791960949507039343
+        },
+        "home/.codex/config.toml": {
+          "sha256": "5728a2d3ee69fa5de54b9776f2f99a090caa67f57c438c5592690efe181a9196",
+          "mode": 33188,
+          "mtime_ns": 1791960949507099343
+        }
+      },
+      "originals_unchanged": true
+    },
+    {
+      "case": "reader-redundant",
+      "outer": "reader",
+      "inner": "reader-redundant",
+      "cwd": "checkout",
+      "inline": false,
+      "target": "worker",
+      "launches": 1,
+      "profiles": {
+        "inner": {
+          "mode": "reader-redundant",
+          "sha256": "95f90c6f3461b8e3194a6eb60b2a11440dbc9afc9dcf9a86ae2b2e0a880954a1"
+        },
+        "outer": {
+          "mode": "reader",
+          "sha256": "aea19c10795388cd3bfea6b1eca26495c938309f459e76f1ef4dbf28ab460a32"
+        }
+      },
+      "exit": 0,
+      "stdout": "{\"target_started\": true, \"fake_auth_read\": true, \"checkout\": \"denied\", \"tmp\": \"allowed\", \"outside\": \"denied\", \"home\": \"denied\"}",
+      "stderr": "",
+      "originals_before": {
+        "home/.codex/auth.json": {
+          "sha256": "46bf31e6a91111b09b7c3e790229b91fffbb1d1e4848dcdd2886dbf8be526889",
+          "mode": 33188,
+          "mtime_ns": 1791960949548378270
+        },
+        "home/.codex/config.toml": {
+          "sha256": "5728a2d3ee69fa5de54b9776f2f99a090caa67f57c438c5592690efe181a9196",
+          "mode": 33188,
+          "mtime_ns": 1791960949548445436
+        }
+      },
+      "originals_after": {
+        "home/.codex/auth.json": {
+          "sha256": "46bf31e6a91111b09b7c3e790229b91fffbb1d1e4848dcdd2886dbf8be526889",
+          "mode": 33188,
+          "mtime_ns": 1791960949548378270
+        },
+        "home/.codex/config.toml": {
+          "sha256": "5728a2d3ee69fa5de54b9776f2f99a090caa67f57c438c5592690efe181a9196",
+          "mode": 33188,
+          "mtime_ns": 1791960949548445436
+        }
+      },
+      "originals_unchanged": true
+    },
+    {
+      "case": "reader-extra-deny",
+      "outer": "reader",
+      "inner": "reader-extra-deny",
+      "cwd": "checkout",
+      "inline": false,
+      "target": "worker",
+      "launches": 1,
+      "profiles": {
+        "inner": {
+          "mode": "reader-extra-deny",
+          "sha256": "ddb06c3266ca52a6b582d34c8f51dd85f17fff288cb606893f65716fd9068bec"
+        },
+        "outer": {
+          "mode": "reader",
+          "sha256": "afe9404d9e1947b6089ec765a8e4d775a37382b72bd57d29fe0736442edd9bde"
+        }
+      },
+      "exit": 71,
+      "stdout": "",
+      "stderr": "sandbox-exec: sandbox_apply: Operation not permitted",
+      "originals_before": {
+        "home/.codex/auth.json": {
+          "sha256": "46bf31e6a91111b09b7c3e790229b91fffbb1d1e4848dcdd2886dbf8be526889",
+          "mode": 33188,
+          "mtime_ns": 1791960949588066321
+        },
+        "home/.codex/config.toml": {
+          "sha256": "5728a2d3ee69fa5de54b9776f2f99a090caa67f57c438c5592690efe181a9196",
+          "mode": 33188,
+          "mtime_ns": 1791960949588130654
+        }
+      },
+      "originals_after": {
+        "home/.codex/auth.json": {
+          "sha256": "46bf31e6a91111b09b7c3e790229b91fffbb1d1e4848dcdd2886dbf8be526889",
+          "mode": 33188,
+          "mtime_ns": 1791960949588066321
+        },
+        "home/.codex/config.toml": {
+          "sha256": "5728a2d3ee69fa5de54b9776f2f99a090caa67f57c438c5592690efe181a9196",
+          "mode": 33188,
+          "mtime_ns": 1791960949588130654
+        }
+      },
+      "originals_unchanged": true
+    },
+    {
+      "case": "single-extra-deny",
+      "outer": "reader-extra-deny",
+      "inner": null,
+      "cwd": "checkout",
+      "inline": false,
+      "target": "worker",
+      "launches": 1,
+      "profiles": {
+        "outer": {
+          "mode": "reader-extra-deny",
+          "sha256": "df923c579f85b13b168aacf8df082dcd35d9e71c0ba15dbe96623a80838f7cfd"
+        }
+      },
+      "exit": 0,
+      "stdout": "{\"target_started\": true, \"fake_auth_read\": true, \"checkout\": \"denied\", \"tmp\": \"allowed\", \"outside\": \"denied\", \"home\": \"denied\"}",
+      "stderr": "",
+      "originals_before": {
+        "home/.codex/auth.json": {
+          "sha256": "46bf31e6a91111b09b7c3e790229b91fffbb1d1e4848dcdd2886dbf8be526889",
+          "mode": 33188,
+          "mtime_ns": 1791960949599068323
+        },
+        "home/.codex/config.toml": {
+          "sha256": "5728a2d3ee69fa5de54b9776f2f99a090caa67f57c438c5592690efe181a9196",
+          "mode": 33188,
+          "mtime_ns": 1791960949599128365
+        }
+      },
+      "originals_after": {
+        "home/.codex/auth.json": {
+          "sha256": "46bf31e6a91111b09b7c3e790229b91fffbb1d1e4848dcdd2886dbf8be526889",
+          "mode": 33188,
+          "mtime_ns": 1791960949599068323
+        },
+        "home/.codex/config.toml": {
+          "sha256": "5728a2d3ee69fa5de54b9776f2f99a090caa67f57c438c5592690efe181a9196",
+          "mode": 33188,
+          "mtime_ns": 1791960949599128365
+        }
+      },
+      "originals_unchanged": true
+    },
+    {
+      "case": "extra-deny-identical",
+      "outer": "reader-extra-deny",
+      "inner": "reader-extra-deny",
+      "cwd": "checkout",
+      "inline": false,
+      "target": "worker",
+      "launches": 1,
+      "profiles": {
+        "inner": {
+          "mode": "reader-extra-deny",
+          "sha256": "65b36bde1f3689ba39790808d8d71ac19ec69a02225fcde3f11d350aeb60725d"
+        },
+        "outer": {
+          "mode": "reader-extra-deny",
+          "sha256": "65b36bde1f3689ba39790808d8d71ac19ec69a02225fcde3f11d350aeb60725d"
+        }
+      },
+      "exit": 0,
+      "stdout": "{\"target_started\": true, \"fake_auth_read\": true, \"checkout\": \"denied\", \"tmp\": \"allowed\", \"outside\": \"denied\", \"home\": \"denied\"}",
+      "stderr": "",
+      "originals_before": {
+        "home/.codex/auth.json": {
+          "sha256": "46bf31e6a91111b09b7c3e790229b91fffbb1d1e4848dcdd2886dbf8be526889",
+          "mode": 33188,
+          "mtime_ns": 1791960949633030040
+        },
+        "home/.codex/config.toml": {
+          "sha256": "5728a2d3ee69fa5de54b9776f2f99a090caa67f57c438c5592690efe181a9196",
+          "mode": 33188,
+          "mtime_ns": 1791960949633088873
+        }
+      },
+      "originals_after": {
+        "home/.codex/auth.json": {
+          "sha256": "46bf31e6a91111b09b7c3e790229b91fffbb1d1e4848dcdd2886dbf8be526889",
+          "mode": 33188,
+          "mtime_ns": 1791960949633030040
+        },
+        "home/.codex/config.toml": {
+          "sha256": "5728a2d3ee69fa5de54b9776f2f99a090caa67f57c438c5592690efe181a9196",
+          "mode": 33188,
+          "mtime_ns": 1791960949633088873
+        }
+      },
+      "originals_unchanged": true
+    },
+    {
+      "case": "file-inherited",
+      "launches": 1,
+      "exit": 0,
+      "stdout": "{\"operation\": \"allowed\"}",
+      "stderr": "",
+      "profile_sha256": "148c00b7641fff869e4927909efa1fdc97674d4644d8d8064c71c5a8e4938ea3",
+      "sacrificial_changed": true,
+      "originals_unchanged": true
+    },
+    {
+      "case": "file-closed",
+      "launches": 1,
+      "exit": 0,
+      "stdout": "{\"operation\": \"errno:9\"}",
+      "stderr": "",
+      "profile_sha256": "70c3890f9d00986a43ec969b5c08368f021d932e4e835e15aeefe85d8d51586b",
+      "sacrificial_changed": false,
+      "originals_unchanged": true
+    },
+    {
+      "case": "pipe-inherited",
+      "launches": 1,
+      "exit": 0,
+      "stdout": "{\"operation\": \"allowed\"}",
+      "stderr": "",
+      "profile_sha256": "f0baf032bdacfa135b7afa6f617bf4f9ef521c6a6777156f295452b732b7be8d",
+      "sacrificial_changed": true,
+      "originals_unchanged": true
+    },
+    {
+      "case": "pipe-closed",
+      "launches": 1,
+      "exit": 0,
+      "stdout": "{\"operation\": \"errno:9\"}",
+      "stderr": "",
+      "profile_sha256": "5907c202bac97e07008f9773c9f1613e6775595b77dfdccbcd05b56d2e291f96",
+      "sacrificial_changed": false,
+      "originals_unchanged": true
+    },
+    {
+      "case": "hardlink-after-admission",
+      "launches": 1,
+      "exit": 0,
+      "admitted_without_alias": true,
+      "alias_introduced_after_readiness": true,
+      "stdout": "{\"operation\": \"allowed\"}",
+      "stderr": "",
+      "profile_sha256": "452c1afcac825de5091900efe32a4402f521c4b48f6cb37679f6e5ec4acf7dff",
+      "sacrificial_changed": true,
+      "originals_unchanged": true
+    },
+    {
+      "case": "stdout-inert-capture",
+      "launches": 1,
+      "exit": 0,
+      "stdout": "W{\"operation\": \"allowed\"}",
+      "stderr": "",
+      "profile_sha256": "6d65ba24e2e3e834621f22d0dbc401e22f1d8344b50841bb6e16de6104d0b9fb",
+      "sacrificial_changed": false,
+      "originals_unchanged": true
+    }
+  ],
+  "source_commit": "b73d9d4",
+  "evidence_origin": {
+    "path": "/private/tmp/h65-synthetic-lprizorw/result.json",
+    "sha256": "0b5b233ee986499403e4043c73536fede3d9e5613654a5ca7b9dde06dbf192f8",
+    "execution": "outside development sandbox, explicitly approved tool command"
+  },
+  "preliminary_runs": [
+    {
+      "path": "/private/tmp/h65-synthetic-2nhg7awn/result.json",
+      "sha256": "ca4648a7750882613d107af42597eaf529a4bf3615661b02ce627f465d816f4f",
+      "probe_sha256": "2cadf6ae840b3284aaacdd183cb051343d6bc7b59fbd8a7c07a175cb86d13d4c",
+      "cases": 1,
+      "completed": false,
+      "failure": "standalone sandbox rejected; no bare fallback: writer"
+    },
+    {
+      "path": "/private/tmp/h65-synthetic-ompv8ox0/result.json",
+      "sha256": "132baef954ca1eab5153644714469e1bcbe897ac325c7bc7aee737599eca4618",
+      "probe_sha256": "2cadf6ae840b3284aaacdd183cb051343d6bc7b59fbd8a7c07a175cb86d13d4c",
+      "cases": 15,
+      "completed": true,
+      "failure": null
+    },
+    {
+      "path": "/private/tmp/h65-synthetic-f5ryecrp/result.json",
+      "sha256": "e224a8871b79db0593994f9b8592df93806cb83b8a6bd340e6d4c2db832edb56",
+      "probe_sha256": "9ce0e23f4bfd56424317bbf4bf301970d2e8ccc0e8c232999621f621f257bb31",
+      "cases": 29,
+      "completed": false,
+      "failure": "unexpected composition: reader-redundant"
+    }
+  ],
+  "summary": {
+    "cases": 32,
+    "nested_cases": 22,
+    "apply_rejections": 12,
+    "all_protected_originals_unchanged": true,
+    "integration_verdict": "not qualified; differing tested policies reject nesting, alias race and general IPC remain unresolved",
+    "compiled_profile_equivalence": "hypothesis; not inspected",
+    "exact_codex_profile_tested": false,
+    "remote_refresh_resolved": false
+  },
+  "verification": {
+    "focused_pytest": {
+      "command": "UV_CACHE_DIR=.local/uv-cache uv run --frozen --offline pytest -q tests/product/test_cli_agents.py -k 'gate or cancel or timeout'",
+      "passed": 14,
+      "deselected": 39
+    }
+  }
+}
