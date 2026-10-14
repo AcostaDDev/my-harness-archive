@@ -1,6 +1,6 @@
 # Estado de desarrollo
 
-Actualizado: 2026-10-13.
+Actualizado: 2026-10-14.
 
 ## Existe
 
@@ -510,8 +510,12 @@ con auth sin verificar, sin corregir el transporte. Propuesta de contención
 completada (D063, [alcance y límites](discovery/CODEX_PROCESS_CONTAINMENT_PROPOSAL.md)):
 frontera externa macOS candidata, lectura de auth ficticia y denegaciones de
 escritura verificadas con procesos sintéticos. Compatibilidad de auth/refresh,
-IPC y sandbox anidado pendientes; sin integración de producto. Siguiente:
-calificación offline acotada del candidato, sin iniciar. Después,
+IPC y sandbox anidado quedaron para calificación. D064 completada offline
+([dictamen](discovery/CODEX_CONTAINMENT_QUALIFICATION.md)): 27 escenarios
+sintéticos; escrituras directas contenidas, escapes por fd/hardlink/delegación
+y rechazo del sandbox interno lector observados. Candidata no calificada
+para integración; cli-7 y auth real sin cambios. Siguiente: diagnóstico offline
+del anidamiento lector y propuesta de frontera revisada, sin iniciar. Después,
 hito de interfaz de producto con alta de proyectos en SQLite (D054); no iniciado.
 QA visual H5.7 bloqueada por herramienta; Claude real con D058 sigue pendiente.
 
@@ -2252,6 +2256,41 @@ QA visual H5.7 bloqueada por herramienta; Claude real con D058 sigue pendiente.
 - Siguiente tarea separada: calificación offline del contenedor macOS con la
   matriz sintética de D063; no iniciada. Matriz real y H6.2 tampoco iniciadas;
   consentimientos D050/D055/D057/D060 agotados. Commit solicitado.
+
+## Calificación offline de la contención candidata (D064)
+
+- Petición del usuario: completar solo la tarea activa y realizar commit.
+  Git inicialmente limpio en `main`, `aaccad0`. [Dictamen y matriz](discovery/CODEX_CONTAINMENT_QUALIFICATION.md),
+  [evidencia](discovery/CODEX_CONTAINMENT_QUALIFICATION.json) y
+  [sonda reproducible independiente](discovery/CODEX_CONTAINMENT_QUALIFICATION.py).
+- **Candidata no calificada para integrar tal como está.** Perfiles lector y
+  escritor contienen las escrituras directas ensayadas, incluidos auxiliares
+  de HOME, estado/artefactos, symlinks y creación de hardlinks. TMPDIR permite
+  rename, locks y SQLite WAL; checkout solo permite al escritor.
+- Escapes observados sobre fixtures sacrificiales: fd abierto heredado,
+  hardlink preexistente y petición por pipe a helper externo. Control cerrando
+  fd devuelve EBADF. Socket Unix propio denegado; no acredita IPC general.
+  Admisión canónica rechaza 17 casos, sin garantía contra carreras externas.
+- Sandbox anidado escritor funciona en la matriz sintética; lector rechazado
+  con exit 71 antes del objetivo interno. No se equipara al perfil real Codex.
+  Auth ausente/ilegible/refresh ficticio termina explícitamente sin fallback;
+  hash/modo/mtime de auth/config ficticios conservados, incluso tras cancelación.
+- Gate existente sobre procesos falsos: identidad fsync antes de GO; EOF,
+  byte inválido, fallo de identidad o cancelación previa sin objetivo.
+  Timeout/cancelación/KILL y ausencia de los ocho grupos propios comprobados.
+  Sin SQLite operativa, recuperación ni nueva autoridad de producto.
+- Primer ensayo bloqueado por sandbox de desarrollo (sin fallback). Ensayo
+  exterior autorizado: 24 casos; matriz final ampliada: **27 casos completos**.
+  **14 pytest focales correctos**, 39 deseleccionados. Sintaxis Python, JSON,
+  hashes, enlaces y diff/whitespace revisados. Sin suite completa/build/Node/QA
+  visual porque producto/UI/contratos/dependencias no cambian.
+- Sin CLI reales (ni version/help), red externa, login, secretos reales,
+  configuración global, subagentes, harness de desarrollo, ReferenceProject o push.
+  cli-7/local-config-2, D024/D059 y congelados intactos. Auth/refresh remoto,
+  auxiliares de CLI, servicios Mach/XPC y otras plataformas no certificados.
+- Siguiente: diagnóstico offline del rechazo del sandbox lector y propuesta
+  de frontera revisada antes de integrar; **no iniciado**. Matriz y H6.2 tampoco;
+  consentimientos D050/D055/D057/D060 siguen agotados. Commit solicitado.
 
 ## Coordinación
 

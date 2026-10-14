@@ -1886,3 +1886,37 @@ tras calificación. No se cambia cli-7, local-config-2, D024/D059, esquema, code
 permisos o congelados. Siguiente tarea: calificación offline sintética acotada,
 sin CLI real. Otra prueba real necesita propuesta y consentimiento específicos;
 D050/D055/D057/D060 agotados, matriz y H6.2 sin iniciar.
+
+## D064 — Contención sintética calificada con límites que impiden su integración
+
+Estado: calificación offline completada el 2026-10-14; **candidata no apta para
+integración tal como está**, sin cambios de producto. [Dictamen y reproducción](discovery/CODEX_CONTAINMENT_QUALIFICATION.md),
+[evidencia](discovery/CODEX_CONTAINMENT_QUALIFICATION.json).
+
+La matriz final de 27 casos con HOME/auth ficticios confirma denegación de
+escrituras directas y diferenciación lector/escritor/TMPDIR, auxiliares,
+descendientes, errores de auth ficticia, launcher/perfil y gate/cancelación.
+Auth/config ficticios conservan bytes, modo y mtime. El sandbox de desarrollo
+rechaza aplicar el perfil; los ensayos exteriores fueron autorizados mediante
+permisos de herramienta. Ningún rechazo provoca lanzamiento sin contención.
+
+Tres escapes observados en archivos sacrificiales separados: fd abierto antes
+del sandbox, hardlink preexistente y delegación por pipe a un helper externo.
+Cerrar fd evita el primero; admisión canónica y rechazo de aliases no prueban
+protección contra carreras. Socket Unix propio denegado no acredita Mach/XPC,
+llavero ni otros servicios, que no se tocaron. Anidamiento escritor sintético
+correcto; lector rechazado con exit 71 antes del objetivo. No se atribuye este
+resultado al perfil interno exacto de Codex ni se elimina ese sandbox.
+
+No integrar el perfil D063, ampliar raíces, permitir escrituras globales ni
+cambiar almacén para superar el ensayo. Antes de cualquier integración, tarea
+separada de diagnóstico del anidamiento lector y propuesta de frontera revisada
+con criterios para fd, aliases/carreras e IPC. Un cambio de auth/aislamiento o
+riesgo aceptado deberá exponerse como decisión de diseño pendiente del usuario.
+No se implementa cli-8 ni local-config-3; núcleo, permisos e historiales intactos.
+
+Refresh ficticio solo prueba save local denegado, no rotación remota ni
+continuidad de sesión. Ninguna CLI real, preflight, login, lectura/copia/enlace
+de credenciales reales, cambio global o red externa. Consumo futuro requiere
+propuesta/consentimiento nuevos con el límite de refresh resuelto. Matriz y
+H6.2 sin iniciar; D050/D055/D057/D060 siguen agotados.

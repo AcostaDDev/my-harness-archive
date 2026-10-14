@@ -1,0 +1,356 @@
+{
+  "decision": "D064",
+  "platform": "macOS-26.4.1-arm64-arm-64bit-Mach-O",
+  "python": "3.14.4 (main, Apr  7 2026, 13:13:20) [Clang 21.0.0 (clang-2100.0.123.102)]",
+  "root": "/private/tmp/h64-synthetic-jmkwq0q_",
+  "probe_sha256": "ccc637c5ef5d2c3aad11c686077207569d230782b3ea457d6653ed33621bba0c",
+  "provider_invocations": 0,
+  "real_cli_processes": 0,
+  "product_integration": false,
+  "qualification_completed": true,
+  "results": [
+    {
+      "case": "root-validation",
+      "rejected": 17,
+      "accepted": 1
+    },
+    {
+      "case": "reader",
+      "launches": 1,
+      "exit": 0,
+      "stdout": "{\"fake_auth_read\": true, \"user_matches_uid\": true, \"config_write\": \"denied\", \"refresh_save\": \"denied\", \"unlink\": \"denied\", \"chmod\": \"denied\", \"utime\": \"denied\", \"home_temp\": \"denied\", \"cache\": \"denied\", \"lock\": \"denied\", \"state_write\": \"denied\", \"artifact_write\": \"denied\", \"prefix_sibling\": \"denied\", \"dotdot\": \"denied\", \"symlink_escape\": \"denied\", \"atomic_replace\": \"denied\", \"hardlink_create\": \"denied\", \"fifo_outside\": \"denied\", \"checkout_write\": \"denied\", \"tmp_write\": \"allowed\", \"sqlite_home\": \"denied\", \"sqlite_wal\": \"wal\", \"auxiliary_tmp\": true, \"descendant\": {\"exit\": 0, \"result\": {\"auth_write\": \"denied\"}}}",
+      "stderr": "",
+      "originals_unchanged": true,
+      "profile_sha256": "9391fa206136cd58696d27ca417056c4b92e0f1d14fca036343d8f81ab7eacde"
+    },
+    {
+      "case": "writer",
+      "launches": 1,
+      "exit": 0,
+      "stdout": "{\"fake_auth_read\": true, \"user_matches_uid\": true, \"config_write\": \"denied\", \"refresh_save\": \"denied\", \"unlink\": \"denied\", \"chmod\": \"denied\", \"utime\": \"denied\", \"home_temp\": \"denied\", \"cache\": \"denied\", \"lock\": \"denied\", \"state_write\": \"denied\", \"artifact_write\": \"denied\", \"prefix_sibling\": \"denied\", \"dotdot\": \"denied\", \"symlink_escape\": \"denied\", \"atomic_replace\": \"denied\", \"hardlink_create\": \"denied\", \"fifo_outside\": \"denied\", \"checkout_write\": \"allowed\", \"tmp_write\": \"allowed\", \"sqlite_home\": \"denied\", \"sqlite_wal\": \"wal\", \"auxiliary_tmp\": true, \"descendant\": {\"exit\": 0, \"result\": {\"auth_write\": \"denied\"}}}",
+      "stderr": "",
+      "originals_unchanged": true,
+      "profile_sha256": "3a661aab1449a94dc5055d1957e263e40f34df41ebe6e9c20edd1a700c78f1a4"
+    },
+    {
+      "case": "auth_absent",
+      "launches": 1,
+      "exit": 23,
+      "stdout": "{\"diagnostic\": \"auth_absent\", \"fake_refresh_attempts\": 0, \"fallbacks\": 0}",
+      "stderr": "",
+      "originals_unchanged": true,
+      "profile_sha256": "96c0c1ac94c36b255f5a60ef333667f17c7b1fbd8672cd2cfcf12f2826526960"
+    },
+    {
+      "case": "auth_unreadable",
+      "launches": 1,
+      "exit": 23,
+      "stdout": "{\"diagnostic\": \"auth_unreadable\", \"fake_refresh_attempts\": 0, \"fallbacks\": 0}",
+      "stderr": "",
+      "originals_unchanged": true,
+      "profile_sha256": "30a13979705c3c6fcca65af1448f1017a5d81d5ead4954b12f38f86551e9cf0c"
+    },
+    {
+      "case": "auth_refresh",
+      "launches": 1,
+      "exit": 23,
+      "stdout": "{\"diagnostic\": \"refresh_persistence_denied\", \"fake_refresh_attempts\": 1, \"fallbacks\": 0}",
+      "stderr": "",
+      "originals_unchanged": true,
+      "profile_sha256": "b5c494a6d0fa302684e293257cf19e0a70de32b09b918d2f23411f7887bf7a06"
+    },
+    {
+      "case": "nested-reader",
+      "launches": 1,
+      "exit": 0,
+      "stdout": "{\"exit\": 71, \"stdout\": \"\", \"stderr\": \"sandbox-exec: sandbox_apply: Operation not permitted\"}",
+      "stderr": "",
+      "originals_unchanged": true,
+      "profile_sha256": "67eb8ccc0d1dc125311313123035a6b0f424bed0c532444ed2d59fddf1187f3e"
+    },
+    {
+      "case": "nested-writer",
+      "launches": 1,
+      "exit": 0,
+      "stdout": "{\"exit\": 0, \"stdout\": \"{\\\"checkout\\\": \\\"allowed\\\", \\\"tmp\\\": \\\"allowed\\\", \\\"outside\\\": \\\"denied\\\", \\\"home\\\": \\\"denied\\\"}\", \"stderr\": \"\"}",
+      "stderr": "",
+      "originals_unchanged": true,
+      "profile_sha256": "168106f85a52d25b6821a40ea84ca3e4a4e44b1fc7da177e59069e326e9258ac"
+    },
+    {
+      "case": "fd",
+      "launches": 1,
+      "exit": 0,
+      "stdout": "{\"inherited_file\": \"allowed\"}",
+      "stderr": "",
+      "originals_unchanged": true,
+      "profile_sha256": "8f6d60e20007cc36de97b8d464b9f4f9a23f04f93fb0187a47e135f8e5238523",
+      "sacrificial_changed": true
+    },
+    {
+      "case": "fd-closed",
+      "launches": 1,
+      "exit": 0,
+      "stdout": "{\"inherited_file\": \"errno:9\"}",
+      "stderr": "",
+      "originals_unchanged": true,
+      "profile_sha256": "c2b7a8aebaa03d241ab508cd52d7c1c925481863c03cb50d82827c9368ca6484",
+      "sacrificial_changed": false
+    },
+    {
+      "case": "hardlink",
+      "launches": 1,
+      "exit": 0,
+      "stdout": "{\"preexisting_hardlink\": \"allowed\"}",
+      "stderr": "",
+      "originals_unchanged": true,
+      "profile_sha256": "b6a671ca3e9563f7098c0ef7b2052694c0ee90115c6dcc1b58d7b28cd4504480",
+      "sacrificial_changed": true
+    },
+    {
+      "case": "ipc",
+      "launches": 1,
+      "exit": 0,
+      "stdout": "{\"inherited_pipe_request\": \"allowed\"}",
+      "stderr": "",
+      "originals_unchanged": true,
+      "profile_sha256": "03be3ecf1d6f3c3bfa1e027f9c742bdea4544232b9e8d6f0d685467b56459d66",
+      "sacrificial_changed": true
+    },
+    {
+      "case": "unix-service",
+      "launches": 1,
+      "exit": 0,
+      "stdout": "{\"unix_connect\": \"denied\"}",
+      "stderr": "",
+      "originals_unchanged": true,
+      "profile_sha256": "40ed830425172713972cba34b51a3eb6c899da4820e386df1fcc56a77218920a",
+      "service_received": false
+    },
+    {
+      "case": "launcher-missing",
+      "launches": 0,
+      "diagnostic": "launcher_missing",
+      "originals_unchanged": true,
+      "profile_sha256": "fb1e4001380c2739018530bd2b463097ab7b10091785b8f33950e5586575df8b"
+    },
+    {
+      "case": "launcher-invalid",
+      "launches": 0,
+      "diagnostic": "launcher_not_executable",
+      "originals_unchanged": true,
+      "profile_sha256": "9a433560f3984d42f16e5430b825611f09534ea42fa51f827113aa3b4e802898"
+    },
+    {
+      "case": "profile-invalid",
+      "launches": 1,
+      "exit": 65,
+      "stdout": "",
+      "stderr": "sandbox-exec: syntax error: expecting ')'",
+      "originals_unchanged": true,
+      "profile_sha256": "7d8991ed9aa45702e784df1d688d1f120cbd176809bb1edf36465035c83c12e3"
+    },
+    {
+      "case": "profile-missing",
+      "launches": 1,
+      "exit": 65,
+      "stderr": "sandbox-exec: /private/tmp/h64-synthetic-jmkwq0q_/profile-missing/absent.sb: No such file or directory",
+      "target_started": false
+    },
+    {
+      "case": "no_terminal",
+      "launches": 1,
+      "exit": 0,
+      "stdout": "",
+      "stderr": "",
+      "originals_unchanged": true,
+      "profile_sha256": "4eb0c1d9878cc4c4c9bd4abf0b6c5e044865b2c50dce72e551d6938db82c0a22",
+      "complete": false
+    },
+    {
+      "case": "signal",
+      "launches": 1,
+      "exit": -15,
+      "stdout": "",
+      "stderr": "",
+      "originals_unchanged": true,
+      "profile_sha256": "bc373e250eae549b8fce04a3b497267aa91cc4e9f5e8327b16c9d43ae33818b3",
+      "complete": false
+    },
+    {
+      "case": "gate-go",
+      "pid": 10346,
+      "pgid": 10346,
+      "gate_sha256": "a4514f940a6032c7e94649730b63bf779a96b8a623fd9d37088517a3e681f00a",
+      "identity_confirmed": true,
+      "launches": 1,
+      "exit": 0,
+      "target_marker": true,
+      "group_dead": true,
+      "ready": null,
+      "stderr": "",
+      "originals_unchanged": true,
+      "complete": true,
+      "stop_reason": null
+    },
+    {
+      "case": "gate-eof",
+      "pid": 10347,
+      "pgid": 10347,
+      "gate_sha256": "a4514f940a6032c7e94649730b63bf779a96b8a623fd9d37088517a3e681f00a",
+      "identity_confirmed": true,
+      "launches": 1,
+      "exit": 125,
+      "target_marker": false,
+      "group_dead": true,
+      "ready": null,
+      "stderr": "",
+      "originals_unchanged": true,
+      "complete": false,
+      "stop_reason": "eof"
+    },
+    {
+      "case": "gate-identity-failure",
+      "pid": 10348,
+      "pgid": 10348,
+      "gate_sha256": "a4514f940a6032c7e94649730b63bf779a96b8a623fd9d37088517a3e681f00a",
+      "identity_confirmed": false,
+      "launches": 1,
+      "exit": 125,
+      "target_marker": false,
+      "group_dead": true,
+      "ready": null,
+      "stderr": "",
+      "originals_unchanged": true,
+      "complete": false,
+      "stop_reason": "identity-failure"
+    },
+    {
+      "case": "gate-invalid",
+      "pid": 10349,
+      "pgid": 10349,
+      "gate_sha256": "a4514f940a6032c7e94649730b63bf779a96b8a623fd9d37088517a3e681f00a",
+      "identity_confirmed": true,
+      "launches": 1,
+      "exit": 125,
+      "target_marker": false,
+      "group_dead": true,
+      "ready": null,
+      "stderr": "",
+      "originals_unchanged": true,
+      "complete": false,
+      "stop_reason": "invalid"
+    },
+    {
+      "case": "gate-cancel-before-go",
+      "pid": 10350,
+      "pgid": 10350,
+      "gate_sha256": "a4514f940a6032c7e94649730b63bf779a96b8a623fd9d37088517a3e681f00a",
+      "identity_confirmed": true,
+      "launches": 1,
+      "exit": -15,
+      "target_marker": false,
+      "group_dead": true,
+      "ready": null,
+      "stderr": "",
+      "originals_unchanged": true,
+      "complete": false,
+      "stop_reason": "cancel-before-go"
+    },
+    {
+      "case": "gate-timeout",
+      "pid": 10351,
+      "pgid": 10351,
+      "gate_sha256": "a4514f940a6032c7e94649730b63bf779a96b8a623fd9d37088517a3e681f00a",
+      "identity_confirmed": true,
+      "launches": 1,
+      "exit": 0,
+      "target_marker": false,
+      "group_dead": true,
+      "ready": {
+        "ready": true,
+        "child_pid": 10352
+      },
+      "stderr": "",
+      "originals_unchanged": true,
+      "complete": false,
+      "stop_reason": "timeout"
+    },
+    {
+      "case": "gate-cancel",
+      "pid": 10353,
+      "pgid": 10353,
+      "gate_sha256": "a4514f940a6032c7e94649730b63bf779a96b8a623fd9d37088517a3e681f00a",
+      "identity_confirmed": true,
+      "launches": 1,
+      "exit": 0,
+      "target_marker": false,
+      "group_dead": true,
+      "ready": {
+        "ready": true,
+        "child_pid": 10354
+      },
+      "stderr": "",
+      "originals_unchanged": true,
+      "complete": false,
+      "stop_reason": "cancel"
+    },
+    {
+      "case": "gate-kill",
+      "pid": 10355,
+      "pgid": 10355,
+      "gate_sha256": "a4514f940a6032c7e94649730b63bf779a96b8a623fd9d37088517a3e681f00a",
+      "identity_confirmed": true,
+      "launches": 1,
+      "exit": -9,
+      "target_marker": false,
+      "group_dead": true,
+      "ready": {
+        "ready": true
+      },
+      "stderr": "",
+      "originals_unchanged": true,
+      "complete": false,
+      "stop_reason": "kill"
+    }
+  ],
+  "source_commit": "aaccad05122ac5be7eec2479fd057f32f9c25c45",
+  "verdict": "not_qualified_for_product_integration",
+  "scope": "synthetic macOS direct-write boundary; no real auth or provider CLI",
+  "prior_experiments": [
+    {
+      "result_path": "/private/tmp/h64-synthetic-3mb5o4h9/result.json",
+      "sha256": "76758cd73b823bcda126ea77ebf9a54808a16366ad85ef0221c83878fd121ceb",
+      "probe_sha256": "424e9d878f00f017e3d61a3c479a9136f595c89800b609dbcbd4eff0c4b6a291",
+      "completed": false,
+      "cases": 2,
+      "reason": "development sandbox rejected sandbox_apply; no fallback"
+    },
+    {
+      "result_path": "/private/tmp/h64-synthetic-ipawap6e/result.json",
+      "sha256": "2df703d4cef1f531bbac7351f0599e59d28d23d6fb640ae78faedfe433db00d7",
+      "probe_sha256": "424e9d878f00f017e3d61a3c479a9136f595c89800b609dbcbd4eff0c4b6a291",
+      "completed": true,
+      "cases": 24,
+      "reason": "initial 24-case qualification, before fd-close and identity-failure controls"
+    },
+    {
+      "result_path": "/private/tmp/h64-synthetic-nruz2_9v/result.json",
+      "sha256": "ab1f25cc627cb39fa72403dd6adeed0250f314b43a955c7bb0c76213310aae7b",
+      "probe_sha256": "840857ee4798cb61f4c7c8c28b92089a7b16ebc266a1d547eda5f9ed90afe3cb",
+      "completed": true,
+      "cases": 26,
+      "reason": "before additional non-executable launcher control"
+    }
+  ],
+  "verification": {
+    "focused_pytest": "14 passed, 39 deselected",
+    "command": "UV_CACHE_DIR=.local/uv-cache uv run --frozen --offline pytest -q tests/product/test_cli_agents.py -k 'gate or cancel or timeout'"
+  },
+  "files_sha256": {
+    "docs/discovery/CODEX_CONTAINMENT_QUALIFICATION.py": "ccc637c5ef5d2c3aad11c686077207569d230782b3ea457d6653ed33621bba0c",
+    "src/harness_local/adapters/process_gate.py": "a4514f940a6032c7e94649730b63bf779a96b8a623fd9d37088517a3e681f00a",
+    "src/harness_local/adapters/cli_agents.py": "5bd25714efcd73f2edb42b3bce56962168352894fcad978f652b3860aa633cdc"
+  },
+  "source_result_sha256": "ddb3091c4b92db42febccc7d477d9600fb436f6b97a2046b4d2f5c98c50b43f4"
+}
