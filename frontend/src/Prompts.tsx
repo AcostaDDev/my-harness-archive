@@ -18,16 +18,18 @@ export function Prompts({ project }: { project: string }) {
     }).catch(e => { if (active) setError(message(e)); });
     return () => { active = false; };
   }, [project]);
-  return <details className="prompt-editor"><summary>Prompts versionados</summary>
-    <p>Jerarquía: base → perfil → proyecto. Activar afecta a intentos futuros de runs en curso o nuevos.
+  return <section className="panel" aria-labelledby="prompts-title"><h2 id="prompts-title">Prompts versionados</h2>
+    <p className="hint">Jerarquía: base, perfil y proyecto; cada nivel sustituye al anterior. Activar afecta a intentos futuros de runs en curso o nuevos.
       Los runs detenidos conservan su catálogo al reanudar. Editar no concede permisos.</p>
-    {error && <p role="alert" className="error">{error}</p>}
+    {error && <p role="alert" className="state state-error">{error}</p>}
+    <div className="form-row">
     <label>Ámbito<select value={scope} onChange={e => setScope(e.target.value as Scope)}>
       <option value="project">Proyecto</option><option value="profile">Perfil compartido</option><option value="core">Base global</option>
     </select></label>
     <label>Plantilla<select value={name} onChange={e => setName(e.target.value)}>{names.map(n => <option key={n}>{n}</option>)}</select></label>
+    </div>
     <Editor key={`${project}:${scope}:${name}`} project={project} scope={scope} name={name} />
-  </details>;
+  </section>;
 }
 
 function Editor({ project, scope, name }: { project: string; scope: Scope; name: string }) {
@@ -77,8 +79,8 @@ function Editor({ project, scope, name }: { project: string; scope: Scope; name:
   return <section>
     {inactiveFlow && <p>Plantilla conservada para un flujo aún no implementado. Activarla no ejecuta bootstrap, reconciliación ni cierre.</p>}
     {scope !== "project" && <p>Este ámbito afecta a otros proyectos que hereden {scope === "core" ? "la base global" : "este perfil"}.</p>}
-    {error && <p role="alert" className="error">{error}</p>}
-    {status && <p role="status">{status}</p>}
+    {error && <p role="alert" className="state state-error">{error}</p>}
+    {status && <p role="status" className="state state-ok">{status}</p>}
     {detail && <>
       <p>Generación: {detail.generation} · Activa en este ámbito: {detail.active_id ?? "heredada"}</p>
       <p>Efectiva: {detail.effective.scope} · {detail.effective.id}</p>
@@ -88,7 +90,7 @@ function Editor({ project, scope, name }: { project: string; scope: Scope; name:
       }}>{detail.versions.map(v => <option key={v.id} value={v.id}>{v.scope} · {v.id === detail.active_id ? "activa · " : ""}{v.id}</option>)}</select></label>
       <p>Procedencia: {version?.source} · SHA-256: {version?.sha256}</p>
       <label>Contenido del borrador<textarea rows={16} disabled={busy} value={text} onChange={e => setText(e.target.value)} maxLength={100000} /></label>
-      <div className="pagination">
+      <div className="actions">
         <button disabled={busy} onClick={() => void operate(async () => {
           await managed<S["PromptValidationRead"]>(`${base}/validate`, { template: text } satisfies S["PromptValidateCreate"]);
           if (alive.current) setStatus("Variables válidas. No se ha guardado ni activado el contenido.");
@@ -104,17 +106,17 @@ function Editor({ project, scope, name }: { project: string; scope: Scope; name:
         const d = await managed<S["PromptDiffRead"]>(`${base}/diff?before=${encodeURIComponent(before)}&after=${encodeURIComponent(selected)}`);
         if (alive.current) setDiff(d.diff || "Sin diferencias de contenido.");
       })}>Comparar con versión seleccionada</button>
-      {diff && <pre aria-label="Diff de versiones">{diff}</pre>}
+      {diff && <pre className="diff" aria-label="Diff de versiones">{diff}</pre>}
       <label>Motivo de activación<input disabled={busy} value={reason} onChange={e => setReason(e.target.value)} maxLength={2000} /></label>
       <label className="check"><input type="checkbox" disabled={busy} checked={confirmed} onChange={e => setConfirmed(e.target.checked)} />
         Confirmo activar esta versión guardada en el ámbito {scope}.</label>
-      <button disabled={busy || !confirmed || !reason.trim() || version?.scope !== scope || version?.owner !== detail.owner || selected.startsWith("builtin-") || text !== version?.template}
+      <button className="button-primary" disabled={busy || !confirmed || !reason.trim() || version?.scope !== scope || version?.owner !== detail.owner || selected.startsWith("builtin-") || text !== version?.template}
         onClick={() => void operate(async () => {
           const body: S["PromptActivateCreate"] = { expected_version: detail.generation, version_id: selected, reason, confirmed: true };
           const d = await managed<Detail>(`${base}/activate?scope=${scope}`, body);
           if (alive.current) { setDetail(d); setConfirmed(false); setReason(""); }
         })}>Activar versión seleccionada</button>
-      <details><summary>Historial de activaciones de este ámbito</summary><pre>{JSON.stringify(detail.activations, null, 2)}</pre></details>
+      <details className="evidence"><summary>Historial de activaciones de este ámbito</summary><pre>{JSON.stringify(detail.activations, null, 2)}</pre></details>
     </>}
   </section>;
 }

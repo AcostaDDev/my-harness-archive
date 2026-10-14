@@ -17,14 +17,14 @@ export function Logs({ runId, attemptId }: { runId: string; attemptId: string })
       e => { if (active) { setLogs(undefined); setError(e instanceof Error ? e.message : String(e)); } });
     return () => { active = false; };
   }, [runId, attemptId, request]);
-  return <div>
-    <button onClick={() => { setLogs(undefined); setRequest(n => n + 1); }}>Comprobar originales de logs</button>
-    {error && <p role="alert">{error}</p>}
+  return <div className="logs">
+    <button className="button-quiet" onClick={() => { setLogs(undefined); setRequest(n => n + 1); }}>Comprobar originales de logs</button>
+    {error && <p role="alert" className="state state-error">{error}</p>}
     {logs?.length === 0 && <p>Sin captura CLI registrada.</p>}
     {logs?.map(log => <div key={log.stream}>
       <p>{log.stream}: {labels[log.state]} · {log.size_bytes} bytes registrados</p>
       {log.diagnostic && <p>{log.diagnostic}</p>}
-      <details><summary>Procedencia y autorización</summary><pre>{JSON.stringify(log, null, 2)}</pre></details>
+      <details className="evidence"><summary>Procedencia y autorización</summary><pre>{JSON.stringify(log, null, 2)}</pre></details>
     </div>)}
   </div>;
 }

@@ -1,8 +1,18 @@
-import { useEffect, useRef, useState } from "react";
+import { createContext, useContext, useEffect, useRef, useState } from "react";
 import type { FormEvent, ReactNode } from "react";
 import type { components, operations } from "./api.generated";
 
 type Session = components["schemas"]["SessionRead"];
+type SessionControls = { logout: () => Promise<void>; busy: boolean; notice: string; expiresAt: number };
+
+const SessionContext = createContext<SessionControls | null>(null);
+
+/** Controles de la sesión para la cabecera; solo existe dentro de una sesión iniciada. */
+export function useSession(): SessionControls {
+  const value = useContext(SessionContext);
+  if (!value) throw new Error("Sesión ausente");
+  return value;
+}
 
 export function SessionGate({ children }: { children: ReactNode }) {
   const epoch = useRef(0);
@@ -11,9 +21,13 @@ export function SessionGate({ children }: { children: ReactNode }) {
   const [key, setKey] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
+  const [expiresAt, setExpiresAt] = useState(0);
+  const known = useRef(false);
+  useEffect(() => { if (session) { known.current = true; setExpiresAt(Date.now() + session.expires_in * 1000); } }, [session]);
   useEffect(() => {
     let active = true;
-    const expired = () => { epoch.current++; setSession(undefined); setError("Sesión ausente, cerrada o caducada. Las acciones pendientes no se repiten automáticamente."); };
+    // Sin sesión previa en esta página no hay nada que avisar: es el acceso normal.
+    const expired = () => { epoch.current++; if (known.current) setError("Sesión cerrada o caducada. Las acciones pendientes no se repiten automáticamente."); known.current = false; setSession(undefined); };
     window.addEventListener("harness-session-required", expired);
     const check = async () => {
       const version = epoch.current;
@@ -61,9 +75,16 @@ export function SessionGate({ children }: { children: ReactNode }) {
     } catch { setError("No se pudo confirmar el cierre. Vuelve a intentarlo o detén el servicio."); }
     finally { epoch.current++; setBusy(false); }
   }
-  if (checking) return <main><p role="status">Comprobando sesión local…</p></main>;
-  if (session) return <><div className="session-bar"><button disabled={busy} onClick={() => void logout()}>Cerrar sesión</button>{error && <p role="alert">{error}</p>}</div>{children}</>;
-  return <main><h1>Acceso a Harness Local</h1><p>Abre el archivo privado indicado al iniciar el servicio y copia su clave aquí. La sesión dura ocho horas; reiniciar el servicio la cierra.</p>
-    <form onSubmit={login}><label htmlFor="login-key">Clave local</label><input id="login-key" type="password" autoComplete="off" value={key} onChange={e => setKey(e.target.value)} maxLength={128} required disabled={busy} />
-      <button disabled={busy || !key}>Iniciar sesión</button></form>{error && <p role="alert">{error}</p>}</main>;
+  if (checking) return <main className="gate"><p role="status" className="state state-loading">Comprobando sesión local…</p></main>;
+  if (session) return <SessionContext.Provider value={{ logout, busy, notice: error, expiresAt }}>{children}</SessionContext.Provider>;
+  return <main className="gate">
+    <div className="gate-card">
+      <p className="brand"><span className="brand-mark" aria-hidden="true" />Harness Local</p>
+      <h1>Iniciar sesión</h1>
+      <p>Abre el archivo privado que indicó el servicio al arrancar y copia aquí su clave. La sesión dura ocho horas; reiniciar el servicio la cierra.</p>
+      <form onSubmit={login}><label htmlFor="login-key">Clave local</label><input id="login-key" type="password" autoComplete="off" value={key} onChange={e => setKey(e.target.value)} maxLength={128} required disabled={busy} />
+        <button className="button-primary" disabled={busy || !key}>Iniciar sesión</button></form>
+      {error && <p role="alert" className="state state-error">{error}</p>}
+    </div>
+  </main>;
 }

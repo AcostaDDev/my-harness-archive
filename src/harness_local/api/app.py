@@ -1,10 +1,12 @@
 import asyncio
+import re
 from contextlib import asynccontextmanager
 from pathlib import Path
 from uuid import UUID
 
 from fastapi import Depends, FastAPI, HTTPException
 from fastapi.staticfiles import StaticFiles
+from starlette.exceptions import HTTPException as StarletteHTTPException
 from fastapi.responses import JSONResponse
 from sqlalchemy import text
 
@@ -117,5 +119,25 @@ def create_app(url: str | None = None, ui_dir: Path | None = None,
 
     assets = ui_dir if ui_dir is not None else Path(__file__).resolve().parents[1] / "web"
     if (assets / "index.html").is_file():
-        app.mount("/", StaticFiles(directory=assets, html=True), name="ui")
+        app.mount("/", SPAStaticFiles(directory=assets, html=True), name="ui")
     return app
+
+
+ASSET = re.compile(r"(^|/)assets/|\.(js|mjs|css|map|png|jpe?g|gif|svg|ico|webp|woff2?|ttf|json|txt|webmanifest)$")
+
+
+class SPAStaticFiles(StaticFiles):
+    """Rutas de la UI (D076): un GET sin archivo fuera de `/api/` recibe `index.html`.
+
+    Los 404 de la API siguen siendo JSON; un asset estático inexistente sigue siendo 404
+    para no servir HTML en su lugar. Los códigos de fase pueden contener puntos.
+    """
+
+    async def get_response(self, path: str, scope):
+        try:
+            return await super().get_response(path, scope)
+        except StarletteHTTPException as error:
+            if (error.status_code != 404 or scope["method"] not in ("GET", "HEAD")
+                    or path.split("/", 1)[0] == "api" or ASSET.search(path)):
+                raise
+            return await super().get_response("index.html", scope)

@@ -1,59 +1,58 @@
 import { useEffect, useState } from "react";
-import { managed, jobRequest } from "./managed-api";
-import type { Pending, S } from "./managed-api";
+import { managed, jobRequest, ManagedError } from "./managed-api";
+import type { S } from "./managed-api";
+import { Link, navigate } from "./navigation";
+import { Empty, Evidence, Loading, PageHeader, Stale, Status, message, usePoll } from "./ui";
+import { useWorkspace } from "./workspace";
 
-type Props = { project: string; busy: boolean; refresh: number; operate: (f: () => Promise<unknown>) => Promise<void>; send: (p: Pending) => Promise<void> };
 const lines = (value: string) => value.split("\n").map(item => item.trim()).filter(Boolean);
-const message = (e: unknown) => e instanceof Error ? e.message : String(e);
 const turnNames: Record<S["ChatTurnRead"]["status"], string> = {
   QUEUED: "En cola o en curso", ANSWERED: "Respondido", FAILED: "Fallido (sin reintento)", UNKNOWN: "Resultado desconocido (sin reintento)", REFUSED: "Rechazado por el modo del checkout",
 };
 const proposalNames: Record<S["ChatProposalRead"]["status"], string> = { PROPOSED: "Propuesta", ACCEPTED: "Aceptada", DISMISSED: "Descartada" };
 
-function Evidence({ title, value }: { title: string; value: unknown }) {
-  return <details><summary>{title}</summary><pre>{value === null ? "No registrado (null)" : JSON.stringify(value, null, 2)}</pre></details>;
-}
-
-export function Chat({ project, busy, refresh, operate, send }: Props) {
-  const [conversations, setConversations] = useState<S["ChatConversationSummaryRead"][]>([]);
-  const [phases, setPhases] = useState<S["PhaseSummaryRead"][]>([]);
-  const [selected, setSelected] = useState("");
+/** Chat contextual (D035) con la conversación elegida en la URL. */
+export function Chat({ conversation }: { conversation?: string }) {
+  const { project, busy, refresh, operate } = useWorkspace();
+  const conversations = usePoll<S["ChatConversationSummaryRead"][]>(`/projects/${project}/conversations`, 3000, refresh);
+  const phases = usePoll<S["PhaseSummaryRead"][]>(`/projects/${project}/phases`, 10000, refresh);
   const [title, setTitle] = useState("");
   const [phase, setPhase] = useState("");
-  const [error, setError] = useState("");
-  useEffect(() => {
-    let active = true;
-    let timer: ReturnType<typeof setTimeout>;
-    async function poll() {
-      try {
-        const [c, p] = await Promise.all([managed<S["ChatConversationSummaryRead"][]>(`/projects/${project}/conversations`),
-          managed<S["PhaseSummaryRead"][]>(`/projects/${project}/phases`)]);
-        if (active) { setConversations(c); setPhases(p); setError(""); }
-      } catch (e) { if (active) setError(`Sin actualizar: ${message(e)}`); }
-      if (active) timer = setTimeout(() => void poll(), 1500);
-    }
-    void poll(); return () => { active = false; clearTimeout(timer); };
-  }, [project, refresh]);
-  return <details open={conversations.length > 0}><summary>Chat contextual</summary>
-    <p>Cada mensaje es una invocación nueva de solo lectura con el contexto que se congela al enviarlo: proyecto, fase, documentos y runs seleccionados, más los turnos anteriores. El chat no escribe, no concede permisos ni cambia contratos.</p>
-    <p>Una propuesta no ejecuta nada. Solo al confirmarla se crea una tarea normal: el motor la planifica, la ejecuta y la revisa, y su commit se confirma aparte.</p>
-    {error && <p role="alert" className="error">{error}</p>}
-    <ul className="legacy-list">{conversations.map(c => <li key={c.id}><button className="choice" aria-pressed={selected === c.id} onClick={() => setSelected(c.id)}>
-      <strong>{c.title}</strong><small>{c.phase_code ? `Fase ${c.phase_code} · ` : ""}{c.turns} turnos</small></button></li>)}</ul>
-    <form onSubmit={e => { e.preventDefault(); void operate(async () => {
-      const created = await managed<S["ChatConversationRead"]>(`/projects/${project}/conversations`, { title, phase_id: phase || null } satisfies S["ChatConversationCreate"]);
-      setSelected(created.id); setTitle("");
-    }); }}>
-      <div className="form-row"><label>Nueva conversación<input value={title} maxLength={200} onChange={e => setTitle(e.target.value)} /></label>
-        <label>Fase de contexto (opcional)<select value={phase} onChange={e => setPhase(e.target.value)}>
-          <option value="">Sin fase</option>{phases.map(p => <option key={p.id} value={p.id}>{p.code} · {p.status}</option>)}</select></label></div>
-      <button disabled={busy || !title.trim()}>Crear conversación</button>
-    </form>
-    {selected && <Conversation key={selected} id={selected} busy={busy} refresh={refresh} operate={operate} send={send} />}
-  </details>;
+  return <>
+    <PageHeader title="Chat">
+      <p>Cada mensaje es una invocación nueva de solo lectura del revisor, con el contexto que se congela al enviarlo. El chat no escribe, no concede permisos ni cambia contratos. Una propuesta solo crea una tarea cuando la confirmas.</p>
+    </PageHeader>
+    <Stale error={conversations.data ? conversations.error : undefined} />
+    <div className="split">
+      <nav className="panel split-list" aria-label="Conversaciones">
+        <h2>Conversaciones</h2>
+        {!conversations.data ? <Loading /> : !conversations.data.length ? <p className="hint">Aún no hay conversaciones.</p>
+          : <ul className="link-list">{conversations.data.map(c => <li key={c.id}>
+            <Link to={{ name: "chat", project, conversation: c.id }} current={conversation === c.id}>
+              <span className="link-title">{c.title}</span>
+              <span className="link-meta">{c.phase_code ? <>Fase <code>{c.phase_code}</code>, </> : ""}{c.turns} turnos</span>
+            </Link></li>)}</ul>}
+        <form onSubmit={e => { e.preventDefault(); void operate(async () => {
+          const created = await managed<S["ChatConversationRead"]>(`/projects/${project}/conversations`, { title, phase_id: phase || null } satisfies S["ChatConversationCreate"]);
+          setTitle(""); navigate({ name: "chat", project, conversation: created.id });
+        }); }}>
+          <label>Nueva conversación<input value={title} maxLength={200} onChange={e => setTitle(e.target.value)} /></label>
+          <label>Fase de contexto (opcional)<select value={phase} onChange={e => setPhase(e.target.value)}>
+            <option value="">Sin fase</option>{phases.data?.map(p => <option key={p.id} value={p.id}>{p.code}</option>)}</select></label>
+          <button className="button-quiet" disabled={busy || !title.trim()}>Crear conversación</button>
+        </form>
+      </nav>
+      <div className="split-main">
+        {conversation ? <Conversation key={conversation} id={conversation} />
+          : <Empty title="Elige una conversación"><p>O crea una nueva con una fase como contexto por defecto.</p></Empty>}
+      </div>
+    </div>
+  </>;
 }
 
-function Conversation({ id, busy, refresh, operate, send }: Omit<Props, "project"> & { id: string }) {
+function Conversation({ id }: { id: string }) {
+  const { project, busy, refresh, operate, send } = useWorkspace();
+  const [missing, setMissing] = useState(false);
   const [conversation, setConversation] = useState<S["ChatConversationRead"]>();
   const [error, setError] = useState("");
   const [text, setText] = useState("");
@@ -67,46 +66,48 @@ function Conversation({ id, busy, refresh, operate, send }: Omit<Props, "project
     let active = true;
     let timer: ReturnType<typeof setTimeout>;
     async function poll() {
-      try { const c = await managed<S["ChatConversationRead"]>(`/conversations/${id}`); if (active) { setConversation(c); setError(""); } }
-      catch (e) { if (active) setError(`Sin actualizar: ${message(e)}`); }
+      try { const c = await managed<S["ChatConversationRead"]>(`/conversations/${encodeURIComponent(id)}`); if (active) { setConversation(c); setError(""); } }
+      catch (e) { if (active) { setError(message(e)); setMissing(e instanceof ManagedError && e.status === 404); } }
       if (active) timer = setTimeout(() => void poll(), 1500);
     }
     void poll(); return () => { active = false; clearTimeout(timer); };
   }, [id, refresh]);
   // Una confirmación solo vale para la versión y la propuesta exacta que se mostraron.
   useEffect(() => { setConfirmed({}); }, [conversation?.version]);
-  if (!conversation) return <p role="status">{error || "Cargando conversación…"}</p>;
+  if (!conversation) return missing ? <Empty title="No existe esa conversación"><p>Elige otra de la lista.</p></Empty>
+    : error ? <p role="alert" className="state state-error">{error}</p> : <Loading>Cargando conversación…</Loading>;
   const v = conversation.version;
   const canSend = !busy && !error && conversation.actions.includes("message");
-  return <section className="evidence-detail">
-    <h3>{conversation.title}</h3><p>{conversation.phase ? `Fase ${conversation.phase.code} (${conversation.phase.status})` : "Sin fase"} · Versión observada: {v}</p>
-    {error && <p role="status" className="error">{error}</p>}
+  return <section className="panel" aria-labelledby="conversation-title">
+    <h2 id="conversation-title">{conversation.title}</h2>
+    <p className="hint">{conversation.phase ? <>Contexto: fase <Link className="mono" to={{ name: "phase", project, phase: conversation.phase.code }}>{conversation.phase.code}</Link> <Status kind="phase" value={conversation.phase.status} /></> : "Sin fase de contexto"}. Versión observada {v}.</p>
+    <Stale error={error} />
     {conversation.turns.map(t => {
       const result = t.result?.result as { answer?: string; references?: string[] } | null | undefined;
-      return <div className="entry" key={t.id}><strong>Turno {t.number} · {turnNames[t.status]}</strong>
-        <p>{t.message}</p>
-        {t.status === "QUEUED" && t.run_status === "RECOVERY_REQUIRED" && <p className="error">El turno se interrumpió: su resultado es desconocido y no se reintenta. Confirma el escritor detenido en el run {t.run_id}.</p>}
-        {t.status === "ANSWERED" && result?.answer && <p>{result.answer}</p>}
-        {t.status === "ANSWERED" && !!result?.references?.length && <p><small>Referencias: {result.references.join(", ")}</small></p>}
-        {t.status !== "ANSWERED" && Array.isArray(t.result?.reasons) && <p className="error">{(t.result!.reasons as string[]).join("; ")}</p>}
-        <p><small>Run {t.run_id} · {t.run_status} · contexto <code>{t.context_sha256.slice(0, 12)}</code> · {t.documents.length} documentos · {t.run_ids.length} runs · {t.previous_turns} turnos previos</small></p>
+      return <div className="entry turn" key={t.id}><p className="turn-head"><strong>Turno {t.number}</strong> {turnNames[t.status]}</p>
+        <p className="turn-message">{t.message}</p>
+        {t.status === "QUEUED" && t.run_status === "RECOVERY_REQUIRED" && <p className="state state-attention">El turno se interrumpió: su resultado es desconocido y no se reintenta. Confirma el escritor detenido en el <Link to={{ name: "run-short", run: t.run_id }}>run {t.run_id.slice(0, 8)}</Link>.</p>}
+        {t.status === "ANSWERED" && result?.answer && <p className="turn-answer">{result.answer}</p>}
+        {t.status === "ANSWERED" && !!result?.references?.length && <p className="hint">Referencias: {result.references.map(r => <code key={r} className="chip">{r}</code>)}</p>}
+        {t.status !== "ANSWERED" && Array.isArray(t.result?.reasons) && <p className="state state-error">{(t.result!.reasons as string[]).join("; ")}</p>}
+        <p className="hint"><Link to={{ name: "run-short", run: t.run_id }}>Run {t.run_id.slice(0, 8)}</Link> <Status value={t.run_status} />, contexto <code className="hash">{t.context_sha256.slice(0, 12)}</code> con {t.documents.length} documentos, {t.run_ids.length} runs y {t.previous_turns} turnos previos.</p>
         <Evidence title="Contexto congelado, resultado y comprobación del checkout" value={t} /></div>;
     })}
 
-    <h4>Propuestas</h4>
-    {!conversation.proposals.length && <p>Sin propuestas.</p>}
+    <h3>Propuestas</h3>
+    {!conversation.proposals.length && <p className="hint">Sin propuestas.</p>}
     {conversation.proposals.map(p => {
       const data = p.proposal as { title: string; objective: string; scope: string; acceptance_criteria: string[]; validation: string[]; rationale: string };
       const task = tasks[p.id] ?? `CHAT-T${String(p.number).padStart(3, "0")}`;
       const phaseId = phaseIds[p.id] ?? conversation.phase?.code ?? "";
-      return <div className="entry" key={p.id}><strong>{p.number}. {data.title} · {proposalNames[p.status]}</strong>
+      return <div className={p.actions.includes("accept") ? "entry entry-open" : "entry"} key={p.id}><p><strong>{p.number}. {data.title}</strong> {proposalNames[p.status]}</p>
         <p>{data.objective}</p>
         {data.scope && <p>Alcance: {data.scope}</p>}
         <ul>{data.acceptance_criteria.map(c => <li key={c}>{c}</li>)}</ul>
         {data.validation.length > 0 && <p>Validación: {data.validation.join("; ")}</p>}
-        {data.rationale && <p><small>{data.rationale}</small></p>}
-        <p><small>Turno {p.turn_number} · propuesta <code>{p.proposal_sha256.slice(0, 12)}</code></small></p>
-        {p.run && <p>Tarea {p.run.task_id} (fase {p.run.phase_id}) · run {p.run_id} · {p.run.status}{p.run.commit ? ` · commit ${p.run.commit.slice(0, 12)}` : ""}</p>}
+        {data.rationale && <p className="hint">{data.rationale}</p>}
+        <p className="hint">Turno {p.turn_number}, propuesta <code className="hash">{p.proposal_sha256.slice(0, 12)}</code></p>
+        {p.run && <p>Tarea <Link className="mono" to={{ name: "task", project, phase: p.run.phase_id, task: p.run.task_id }}>{p.run.task_id}</Link> en {p.run_id ? <Link to={{ name: "run-short", run: p.run_id }}>su run</Link> : "su run"} <Status value={p.run.status} />{p.run.commit ? <> con commit <code className="hash">{p.run.commit.slice(0, 12)}</code></> : null}</p>}
         {p.actions.includes("accept") && <>
           <div className="form-row"><label>Tarea<input value={task} maxLength={120} onChange={e => setTasks({ ...tasks, [p.id]: e.target.value })} /></label>
             <label>Fase<input value={phaseId} maxLength={120} onChange={e => setPhaseIds({ ...phaseIds, [p.id]: e.target.value })} /></label></div>
@@ -121,7 +122,7 @@ function Conversation({ id, busy, refresh, operate, send }: Omit<Props, "project
         <Evidence title="Propuesta y decisión" value={p} /></div>;
     })}
 
-    <h4>Nuevo mensaje</h4>
+    <h3>Nuevo mensaje</h3>
     {!conversation.actions.includes("message") && <p>El turno anterior sigue pendiente; espera su resultado.</p>}
     <form onSubmit={e => { e.preventDefault(); if (canSend && text.trim()) void operate(async () => {
       await send(jobRequest(`/conversations/${id}/messages`, { expected_version: v, text, documents: lines(documents).length ? lines(documents) : null, run_ids: lines(runIds) }));

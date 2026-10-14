@@ -73,12 +73,36 @@ class SQLiteManagedViews:
                 "revision_limit": row.revision_limit, "created_at": row.created_at, "updated_at": row.updated_at,
                 "purpose": row.purpose}
 
-    def runs(self, root: str, offset: int, limit: int) -> dict:
+    def runs(self, root: str, offset: int, limit: int, phase: str | None = None, task: str | None = None) -> dict:
+        """Filtros exactos opcionales por código de fase y de tarea (URLs de la UI, D076)."""
         with Session(self.engine) as session:
-            rows = session.scalars(select(Run).where(Run.root == root)
-                                   .order_by(Run.created_at.desc(), Run.id).offset(offset).limit(limit + 1)).all()
+            query = select(Run).where(Run.root == root)
+            if phase is not None:
+                query = query.where(Run.phase_id == phase)
+            if task is not None:
+                query = query.where(Run.task_id == task)
+            rows = session.scalars(query.order_by(Run.created_at.desc(), Run.id).offset(offset).limit(limit + 1)).all()
             items = [self._summary(row) for row in rows[:limit]]
             return {"items": items, "offset": offset, "next_offset": offset + limit if len(rows) > limit else None}
+
+    def tasks(self, root: str, phase: str, planned: list[str], offset: int, limit: int) -> dict:
+        """Tareas de una fase: las de la definición en su orden y después las que solo tienen runs.
+
+        Solo cuenta runs de propósito `task`; el último run de cada tarea es el más reciente
+        por creación. Sin runs, `latest` es null y `runs` es 0: no se infiere ningún estado.
+        """
+        with Session(self.engine) as session:
+            rows = session.scalars(select(Run).where(Run.root == root, Run.phase_id == phase, Run.purpose == 'task')
+                                   .order_by(Run.created_at.desc(), Run.id)).all()
+        latest, counts = {}, {}
+        for row in rows:
+            latest.setdefault(row.task_id, row)
+            counts[row.task_id] = counts.get(row.task_id, 0) + 1
+        order = list(dict.fromkeys(planned)) + sorted(set(latest) - set(planned))
+        items = [{"task_id": task, "planned": task in planned, "runs": counts.get(task, 0),
+                  "latest": self._summary(latest[task]) if task in latest else None}
+                 for task in order[offset:offset + limit]]
+        return {"items": items, "offset": offset, "next_offset": offset + limit if len(order) > offset + limit else None}
 
     def run(self, run_id: str) -> dict:
         with Session(self.engine) as session:

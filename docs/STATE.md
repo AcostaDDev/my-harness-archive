@@ -35,7 +35,7 @@ Actualizado: 2026-10-14.
 - Dependencias reales instaladas en `.venv` / `frontend/node_modules`, locks
   `uv.lock` / `frontend/package-lock.json`. Pins H0.2 usados conservados;
   backend de paquete `uv_build==0.12.19`. Comandos comprobados en README/AGENTS.
-- 999 casos de producto en `tests/product/`; 1011 pytest y 121 subtests aprobados.
+- Casos de producto en `tests/product/`: 1065 pytest y 121 subtests aprobados (H6.2 E1).
   La comprobación ligera anterior conserva sus 12 checks sin dependencias.
 - H1.1 completado: [importación legacy y verificaciones](discovery/H1.1_IMPORT.md),
   [alcance original](discovery/H1.1_SCOPE.md). Lector local explícito de
@@ -2649,6 +2649,25 @@ tarea propuesta: UI H6.2, sin iniciar; será una tarea aparte.
   de fase), montaje `StaticFiles(html=True)` sin fallback de SPA, TOML `local-config-2` sin
   `bootstrap_enabled` y UI sin enrutador. Solo cambia la documentación: sin código, esquema, API, UI,
   dependencias ni proveedores, así que no se ejecutó la suite.
+
+## H6.2 E1: shell, navegación y sistema de diseño (D077)
+
+- Tarea activa de NEXT_STEPS, pedida por el usuario el 2026-10-14 sobre `e4352c3`, con Git limpio.
+  [Entrega, diseño y límites](discovery/H6.2_E1_SHELL.md).
+- Servidor: fallback de la UI fuera de `/api/` (`SPAStaticFiles`), `GET …/projects/{p}/phases/{code}`,
+  `…/phases/{code}/tasks` (`PhaseTaskRead`, también sin fase definida) y filtros `phase`/`task` en runs. OpenAPI y
+  tipos regenerados; esquema `0015_planning` sin cambios.
+- Cliente: enrutador propio (`router.ts`, `navigation.tsx`), shell con migas, supervisor, tema y sesión, espacio de
+  acciones por proyecto (`workspace.tsx`) y páginas en `frontend/src/pages/`. `managed.tsx` desaparece: su contenido
+  pasa a Resumen y Run. Legacy H1 en `/legacy`; simulaciones fuera de la navegación.
+- Sistema de diseño en `styles.css` con tokens, modo claro y oscuro, raíl del ciclo de vida de la fase y estados
+  explícitos, hecho con el plugin `frontend-design`.
+- Verificación: 8 pytest nuevos (`test_ui_routes.py`) y 6 pruebas Node nuevas (`router.test.mjs`); suite completa
+  **1065 pytest + 121 subtests** (696 s); 12 pruebas Node; `tsc` y build; 12 checks estándar; Alembic sobre una SQLite temporal. QA con Chrome sobre
+  la demo sintética, servida por la API como el wheel y por Vite: carga directa, recarga, Atrás, 404, claro, oscuro,
+  386 px, y recorridos de commit, recuperación → revalidar → commit y encolar → run, sin trabajos duplicados.
+- Hallazgo sin resolver: la guardia H5.6 rechaza la carga de la página con `Sec-Fetch-Site: cross-site`, así que un
+  enlace desde otro sitio no abre la URL. Escribirla, un marcador o recargar sí funcionan. Pendiente de decisión.
 
 ## Coordinación
 

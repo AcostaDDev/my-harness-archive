@@ -1,0 +1,48 @@
+import type { ReactNode } from "react";
+import type { S } from "../managed-api";
+import { Prompts } from "../Prompts";
+import { Fields, Loading, PageHeader, Stale, usePoll } from "../ui";
+import { useWorkspace } from "../workspace";
+
+const SELECTION = { catalog: "Solo el catálogo", open: "Libre (catálogo como referencia)" } as const;
+const PLANNING = { auto: "Automática", agent: "La hace el revisor", deterministic: "Determinista, desde NEXT_STEPS" } as const;
+
+/** Ajustes del proyecto: agentes en solo lectura (los fija la configuración local, D049/D052) y prompts. */
+export function SettingsPage() {
+  const { project } = useWorkspace();
+  const read = usePoll<S["ManagedProjectRead"]>(`/projects/${project}`, 15000);
+  const p = read.data;
+  return <>
+    <PageHeader title="Ajustes"><p>Los agentes, ejecutables y entornos los fija la configuración local del servicio. Aquí se consultan; los prompts versionados sí se editan.</p></PageHeader>
+    <Stale error={p ? read.error : undefined} />
+    {!p ? <Loading /> : <>
+      <section className="panel" aria-labelledby="settings-agents">
+        <h2 id="settings-agents">Agentes</h2>
+        <div className="agents">
+          <div><h3>Revisor</h3><Fields items={[
+            ["Proveedor", p.agents.reviewer.provider ?? "sin declarar"], ["Modelo", <code>{p.agents.reviewer.model}</code>], ["Esfuerzo", p.agents.reviewer.effort],
+            ...(p.agents.planner.model !== p.agents.reviewer.model || p.agents.planner.effort !== p.agents.reviewer.effort
+              ? [["Al planificar", <><code>{p.agents.planner.model}</code> con esfuerzo {p.agents.planner.effort}</>] as [string, ReactNode]] : []),
+          ]} /></div>
+          <div><h3>Ejecutor</h3><Fields items={[
+            ["Proveedor", p.agents.executor.provider ?? "sin declarar"], ["Selección", SELECTION[p.agents.executor.selection_mode]],
+            ["Modelos", p.agents.executor.models.map(m => <code key={m} className="chip">{m}</code>)], ["Esfuerzos", p.agents.executor.efforts.join(", ")],
+          ]} /></div>
+        </div>
+        <Fields items={[["Planificación", PLANNING[p.agents.planning_mode]]]} />
+      </section>
+      <section className="panel" aria-labelledby="settings-project">
+        <h2 id="settings-project">Proyecto</h2>
+        <p>Checkout <code className="path">{p.root}</code></p>
+        <Fields items={[
+          ["Perfil", p.profile],
+          ["Documentos", p.documents === "v2" ? "Por fase (contrato v2)" : "Contrato anterior"],
+          ["Tag al cerrar fases", p.tag_kind === "annotated" ? "Anotado" : "Ligero"],
+        ]} />
+        <h3>Versiones congeladas en cada trabajo</h3>
+        <Fields items={Object.entries(p.versions).map(([k, v]) => [k, v === null ? <span className="muted">no registrada</span> : <code>{v}</code>])} />
+      </section>
+      <Prompts project={project} />
+    </>}
+  </>;
+}

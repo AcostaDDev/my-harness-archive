@@ -35,11 +35,11 @@ export function Permissions({ run, busy, refresh, operate }: Props) {
       setConfirmed(false);
     });
   }
-  return <details><summary>Permisos y decisiones</summary>
+  return <details className="panel panel-collapsible"><summary><h2>Permisos y decisiones</h2></summary>
     <p>Conceder registra una autorización; después debes reintentar explícitamente. Revalidar conserva los cambios y ejecuta tests y revisión. Los permisos de ficheros, herramientas y red son independientes.</p>
     <p>Las decisiones de producto o aceptación quedan auditadas; resolver requisitos o confirmar un commit exige su acción propia. La CLI no admite concesiones de red por dominio. El alcance de ficheros conserva el contrato y las rutas protegidas.</p>
     <p>La auditoría registra el usuario del servicio local. El nombre del solicitante es declarado.</p>
-    {error && <p role="alert" className="error">{error}</p>}
+    {error && <p role="alert" className="state state-error">{error}</p>}
     <label>Motivo de la solicitud o decisión<input value={reason} maxLength={2000} onChange={e => setReason(e.target.value)} /></label>
     <form onSubmit={e => { e.preventDefault(); void operate(async () => {
       await managed(`/runs/${run.id}/permissions`, { expected_version: run.version, kind, target,
@@ -53,15 +53,15 @@ export function Permissions({ run, busy, refresh, operate }: Props) {
       <label>Solicitante declarado<input required value={requester} maxLength={120} onChange={e => setRequester(e.target.value)} /></label>
       <label>Vigencia en segundos (máximo 24 horas)<input type="number" required min={1} max={86400} value={ttl} onChange={e => setTtl(Number(e.target.value))} /></label>
       <label>Solicitud que se sustituye<select value={supersedes} onChange={e => setSupersedes(e.target.value)}><option value="">Nueva solicitud</option>{requests.filter(r => ['PENDING', 'GRANTED', 'DENIED'].includes(r.status)).map(r => <option value={r.id} key={r.id}>{r.id} · {String(r.request.target)}</option>)}</select></label>
-      <button disabled={!editable || !reason.trim()}>Registrar solicitud</button>
+      <button className="button-quiet" disabled={!editable || !reason.trim()}>Registrar solicitud</button>
     </form>
     <label>Duración de la concesión<select value={scope} onChange={e => setScope(e.target.value as typeof scope)}><option value="once">Una vez: próximo intento</option><option value="task">Esta tarea, hasta caducidad o sustitución</option></select></label>
     <label className="check"><input type="checkbox" checked={confirmed} onChange={e => setConfirmed(e.target.checked)} />He revisado el alcance, la vigencia y el motivo de la decisión seleccionada.</label>
-    {requests.map(r => <div className="entry" key={r.id}><strong>{names[r.request.kind as keyof typeof names]} · {r.effective_status}</strong>
-      <p>{String(r.request.operation)} · {String(r.request.target)} · Caduca: {r.expires_at}</p>
-      <details><summary>Solicitud exacta, huella y auditoría</summary><pre>{JSON.stringify(r, null, 2)}</pre></details>
+    {requests.map(r => <div className={r.effective_status === 'PENDING' ? "entry entry-open" : "entry"} key={r.id}><p><strong>{names[r.request.kind as keyof typeof names]}</strong> {r.effective_status}</p>
+      <p><code>{String(r.request.operation)}</code> sobre <code>{String(r.request.target)}</code>, caduca {r.expires_at}</p>
+      <details className="evidence"><summary>Solicitud exacta, huella y auditoría</summary><pre>{JSON.stringify(r, null, 2)}</pre></details>
       {r.effective_status === 'PENDING' && <><button disabled={!editable || !confirmed || !reason.trim()} onClick={() => decide(r, 'grant')}>Conceder</button>
-        <button disabled={!editable || !confirmed || !reason.trim()} onClick={() => decide(r, 'deny')}>Denegar</button></>}
+        <button className="button-danger" disabled={!editable || !confirmed || !reason.trim()} onClick={() => decide(r, 'deny')}>Denegar</button></>}
     </div>)}
   </details>;
 }

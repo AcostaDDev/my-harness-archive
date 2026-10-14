@@ -1,3 +1,4 @@
+import { PageHeader } from "./ui";
 import { sessionResponse } from "./session";
 import { createContext, useContext, useEffect, useState } from "react";
 import type { ReactNode } from "react";
@@ -102,7 +103,7 @@ function RemoteList<T>({ url, children }: { url: string; children: (item: T) => 
   const [offset, setOffset] = useState(0);
   const { data, error, retry } = useRead<Page<T>>(`${url}${url.includes("?") ? "&" : "?"}offset=${offset}&limit=20`);
   return <>
-    {error ? <p className="error" role="alert">{error} <button onClick={retry}>Reintentar lectura</button></p> :
+    {error ? <p className="state state-error" role="alert">{error} <button onClick={retry}>Reintentar lectura</button></p> :
       !data ? <p role="status">Cargando…</p> : <>
         {data.items.length ? <ul className="legacy-list">{data.items.map((item, i) => <li key={i}>{children(item)}</li>)}</ul> :
           <p>No hay registros para esta selección.</p>}
@@ -115,13 +116,12 @@ export function LegacyBrowser() {
   const [project, setProject] = useState<Project>();
   const live = useUpdates();
   return <LiveRevision.Provider value={live.revision}><section className="legacy" aria-label="Navegación legacy">
-    <div className="intro"><p className="eyebrow">LECTURA LOCAL · H1.3</p>
-      <h1>Evidencias de tus proyectos.</h1>
-      <p>El índice muestra la última lectura; puedes activar observación para cada origen importado. Los originales son autoridad; los diagnósticos locales y pendientes no acreditan fallos de agente.</p>
-    </div>
-    <p role="status">{live.connected ? "Actualizaciones conectadas." : "Reconectando actualizaciones; el índice sigue disponible."}</p>
+    <PageHeader title="Proyectos importados">
+      <p>Evidencias del harness anterior, de solo lectura. El índice muestra la última lectura y puedes activar la observación de cada origen. Los originales son la autoridad; los diagnósticos locales y pendientes no acreditan fallos de agente.</p>
+    </PageHeader>
+    <p role="status" className="hint">{live.connected ? "Actualizaciones conectadas." : "Reconectando actualizaciones; el índice sigue disponible."}</p>
     <Activity />
-    <h2>Proyectos / orígenes</h2>
+    <h2>Orígenes importados</h2>
     <RemoteList<Project> url="/api/legacy/projects">{(item) => <button className="choice" aria-pressed={project?.id === item.id} onClick={() => setProject(item)}>
       <strong>{item.name}</strong><small>{item.root}</small><small>Indexado: {item.observed_at}</small>
     </button>}</RemoteList>
@@ -195,7 +195,7 @@ function Activity() {
       {typeof item.payload.changed_records === "number" && <p>{item.payload.changed_records} registros modificados.</p>}
       {typeof item.payload.enabled === "boolean" && <p>{item.payload.enabled ? "Observación activada." : "Observación detenida."}</p>}
       {item.payload.recovered === true && <p>Lectura del origen recuperada.</p>}
-      {typeof item.payload.diagnostic === "string" && <p className="error">{item.payload.diagnostic}</p>}
+      {typeof item.payload.diagnostic === "string" && <p className="state state-error">{item.payload.diagnostic}</p>}
     </li>)}</ol>}
     <button disabled={after === 0} onClick={() => setAfter(0)}>Inicio</button>
     <button disabled={!data?.has_more} onClick={() => { if (data) setAfter(data.cursor); }}>Más actividad</button>
@@ -217,7 +217,7 @@ function WatchControl({ base }: { base: string }) {
   }
   return <div><p>{data?.enabled ? "Observación activa: relectura automática y reconciliación al iniciar." : "Observación detenida: relectura explícita por CLI."}</p>
     <button disabled={!data || saving} onClick={() => void toggle()}>{data?.enabled ? "Detener observación" : "Activar observación"}</button>
-    {(error || failure || data?.diagnostic) && <p role="alert" className="error">Diagnóstico local: {error || failure || data?.diagnostic}</p>}
+    {(error || failure || data?.diagnostic) && <p role="alert" className="state state-error">Diagnóstico local: {error || failure || data?.diagnostic}</p>}
   </div>;
 }
 
@@ -260,17 +260,17 @@ function ArtifactView({ base, artifact }: { base: string; artifact: Artifact }) 
   return <article className="evidence-detail" aria-label="Detalle de evidencia">
     <h3>{kindLabels[artifact.kind] ?? artifact.kind}</h3><p><code>{artifact.path}</code></p>
     <p className="hint">Estado indexado: {artifact.status} · SHA-256: <code>{artifact.sha256 ?? "no registrado"}</code> · Bytes: {artifact.size_bytes ?? "no registrado"}</p>
-    {artifact.diagnostic && <p className="error">Diagnóstico local: {artifact.diagnostic}</p>}
+    {artifact.diagnostic && <p className="state state-error">Diagnóstico local: {artifact.diagnostic}</p>}
     <p className="hint">Los campos siguientes proceden del payload indexado. SHA-256 de esa proyección: <code>{entries.data?.sha256 ?? "no registrado"}</code>. Coste equivalente API no es factura ni porcentaje de cuota. No se suman copias de consumo del mismo resultado.</p>
     {((entries.data && entries.data.sha256 !== artifact.sha256) || (content.data && content.data.indexed_sha256 !== artifact.sha256)) &&
-      <p className="error">El índice cambió durante la consulta. Los datos de otra versión se ocultan. Vuelve a seleccionar la evidencia para leer desde el inicio.</p>}
-    {content.error && <p className="error" role="alert">{content.error} <button onClick={content.retry}>Reintentar</button></p>}
+      <p className="state state-error">El índice cambió durante la consulta. Los datos de otra versión se ocultan. Vuelve a seleccionar la evidencia para leer desde el inicio.</p>}
+    {content.error && <p className="state state-error" role="alert">{content.error} <button onClick={content.retry}>Reintentar</button></p>}
     {!content.data && !content.error && <p role="status">Comprobando contenido del origen…</p>}
     {content.data && <p className={content.data.status === "verified" ? "verified" : "error"} role="status">
       Contenido: {content.data.status}{content.data.diagnostic && ` · ${content.data.diagnostic}`}
       {content.data.status === "changed" && <> · Hash observado: <code>{content.data.observed_sha256}</code>. La proyección inferior sigue siendo la lectura anterior del índice.</>}
     </p>}
-    {entries.error ? <p className="error" role="alert">{entries.error} <button onClick={entries.retry}>Reintentar</button></p> :
+    {entries.error ? <p className="state state-error" role="alert">{entries.error} <button onClick={entries.retry}>Reintentar</button></p> :
       !entries.data ? <p role="status">Cargando campos…</p> : !entriesMatch ? <p>Proyección de otra versión oculta.</p> : <>
         <ul className="entry-list">{entries.data.items.map((entry) => <EntryView key={entry.pointer} entry={entry} />)}</ul>
         {!entries.data.items.length && <p>No hay campos estructurados disponibles. Consulta los bytes originales o el diagnóstico.</p>}

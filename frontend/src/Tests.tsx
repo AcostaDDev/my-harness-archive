@@ -15,13 +15,13 @@ const freshness: Record<S['JUnitReportRead']['freshness'], string> = {
 };
 
 export function Tests({ runId, cycle, validation }: { runId: string; cycle: number; validation: S['ValidationRead'] }) {
-  return <section><h4>Validaciones y tests</h4>
+  return <section className="tests"><h4>Validaciones y tests</h4>
     <p>Intento de ejecución: {observed(validation.source_attempt_id)} · Base: {observed(validation.evidence.base_revision)} · Huella: {observed(validation.evidence.fingerprint)}</p>
     {validation.entries.map((entry, index) => <div className="entry" key={entry.command_id ?? index}>
       <strong><code>{entry.requested}</code></strong>
       <p>Salida del comando: {observed(entry.result.exit_code)} · Duración del comando: {entry.result.duration_seconds == null ? 'No observada' : `${entry.result.duration_seconds} s`}</p>
-      {entry.result.error != null && <p className="error">{String(entry.result.error)}</p>}
-      {entry.result.timed_out === true && <p className="error">Tiempo del comando agotado</p>}
+      {entry.result.error != null && <p className="state state-error">{String(entry.result.error)}</p>}
+      {entry.result.timed_out === true && <p className="state state-error">Tiempo del comando agotado</p>}
       {!entry.reports.length && <p>No hay reporte JUnit declarado para este comando. Sin detalle por test.</p>}
       {entry.reports.map((report, number) => <Report key={`${report.sha256}:${number}`} report={report}
         path={`/runs/${runId}/cycles/${cycle}/validations/${index}/reports/${number}`} />)}
@@ -47,12 +47,12 @@ function Report({ report, path }: { report: S['JUnitReportRead']; path: string }
     <p><code>{report.path}</code> · {statuses[report.status]} · {report.case_count} casos observados</p>
     <p>Cobertura declarada: {report.coverage}</p>
     <p>SHA-256: <code>{observed(report.sha256)}</code> · Bytes: {observed(report.size_bytes)} · Captura durante el comando: {freshness[report.freshness]}</p>
-    {report.diagnostics.map((diagnostic, index) => <p className="error" key={index}>{diagnostic}</p>)}
+    {report.diagnostics.map((diagnostic, index) => <p className="state state-error" key={index}>{diagnostic}</p>)}
     {report.original_available && <p><a href={`/api/managed${path}/original`} download="junit.xml">Descargar XML original conservado</a></p>}
-    <button aria-expanded={open} onClick={() => setOpen(!open)}>{open ? 'Ocultar tests' : 'Ver tests individuales'}</button>
+    <button className="button-quiet" aria-expanded={open} onClick={() => setOpen(!open)}>{open ? 'Ocultar tests' : 'Ver tests individuales'}</button>
     {open && <>
       <p>Duraciones observadas por test; no se suman como tiempo total. Los resultados pertenecen al reporte y a su estado de captura.</p>
-      {error && <p role="alert" className="error">{error}</p>}
+      {error && <p role="alert" className="state state-error">{error}</p>}
       {!page && !error && <p role="status">Cargando tests…</p>}
       {page && <>
         <p>Comando: {observed(page.command_id)}</p>
@@ -60,14 +60,14 @@ function Report({ report, path }: { report: S['JUnitReportRead']; path: string }
         <table className="test-table"><thead><tr><th>Suite / test</th><th>Resultado</th><th>Duración (s)</th><th>Error</th></tr></thead>
           <tbody>{page.items.map(test => <tr key={test.id}>
             <td>{test.suite.length ? test.suite.map(observed).join(' / ') : 'No observado'}<br />{observed(test.classname)} · {observed(test.name)}
-              <details><summary>Identificador</summary><p>Id del reporte: {observed(test.reported_id)}</p><code>{test.id}</code></details></td>
+              <details className="evidence"><summary>Identificador</summary><p>Id del reporte: {observed(test.reported_id)}</p><code>{test.id}</code></details></td>
             <td>{results[test.result]}</td><td>{observed(test.duration_seconds)}</td>
             <td>{test.message != null && <p>{test.message}</p>}{test.error_type != null && <p>{test.error_type}</p>}
               {test.error === null ? 'No observado' : <pre>{test.error}</pre>}</td>
           </tr>)}</tbody></table></div>
         {!page.items.length && <p>No hay casos observados en esta página.</p>}
-        <div className="pagination"><button disabled={!offset} onClick={() => setOffset(Math.max(0, offset - 50))}>Anterior</button>
-          <button disabled={page.next_offset === null} onClick={() => setOffset(page.next_offset!)}>Siguiente</button></div>
+        <div className="pagination"><button className="button-quiet" disabled={!offset} onClick={() => setOffset(Math.max(0, offset - 50))}>Anterior</button>
+          <button className="button-quiet" disabled={page.next_offset === null} onClick={() => setOffset(page.next_offset!)}>Siguiente</button></div>
       </>}
     </>}
   </div>;

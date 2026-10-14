@@ -802,6 +802,46 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/managed/projects/{project_id}/phases/{code}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Phase By Code
+         * @description Lectura por el código de la URL (`P001`), único por checkout (D076).
+         */
+        get: operations["managed_phase_by_code"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/managed/projects/{project_id}/phases/{code}/tasks": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Phase Tasks
+         * @description Sin fase definida (runs v1 o anteriores a la definición), solo las tareas con runs.
+         */
+        get: operations["managed_phase_tasks"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/managed/phases/{phase_id}": {
         parameters: {
             query?: never;
@@ -3504,6 +3544,15 @@ export interface components {
             /** Next Offset */
             next_offset: number | null;
         };
+        /** Page[PhaseTaskRead] */
+        Page_PhaseTaskRead_: {
+            /** Items */
+            items: components["schemas"]["PhaseTaskRead"][];
+            /** Offset */
+            offset: number;
+            /** Next Offset */
+            next_offset: number | null;
+        };
         /** Page[TaskMetricsRead] */
         Page_TaskMetricsRead_: {
             /** Items */
@@ -3979,6 +4028,25 @@ export interface components {
             created_at: string;
             /** Updated At */
             updated_at: string;
+        };
+        /**
+         * PhaseTaskRead
+         * @description Resumen de una tarea de la fase para su URL `PNNN-TNNN` (D076); sin runs, `latest` es null.
+         */
+        PhaseTaskRead: {
+            /** Task Id */
+            task_id: string;
+            /**
+             * Planned
+             * @description La tarea figura en la definición vigente de la fase.
+             */
+            planned: boolean;
+            /**
+             * Runs
+             * @description Runs de propósito task registrados para esta tarea.
+             */
+            runs: number;
+            latest: components["schemas"]["ManagedRunSummaryRead"] | null;
         };
         /** PhaseTransitionCreate */
         PhaseTransitionCreate: {
@@ -6186,6 +6254,8 @@ export interface operations {
             query?: {
                 offset?: number;
                 limit?: number;
+                phase?: string | null;
+                task?: string | null;
             };
             header?: {
                 /** @description Obligatoria con valor 1 en mutaciones (protección CSRF). */
@@ -7620,6 +7690,133 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["PhaseRead"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+        };
+    };
+    managed_phase_by_code: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Obligatoria con valor 1 en mutaciones (protección CSRF). */
+                "x-harness-local"?: string | null;
+            };
+            path: {
+                project_id: string;
+                code: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PhaseRead"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+        };
+    };
+    managed_phase_tasks: {
+        parameters: {
+            query?: {
+                offset?: number;
+                limit?: number;
+            };
+            header?: {
+                /** @description Obligatoria con valor 1 en mutaciones (protección CSRF). */
+                "x-harness-local"?: string | null;
+            };
+            path: {
+                project_id: string;
+                code: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Page_PhaseTaskRead_"];
                 };
             };
             /** @description Forbidden */

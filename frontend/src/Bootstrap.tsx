@@ -32,7 +32,7 @@ export function Bootstrap({ project, busy, refresh, operate, send }: {
     return () => { active = false; clearInterval(timer); };
   }, [project, refresh]);
   useEffect(() => { setConfirmed(false); }, [status?.operation?.expected_version]);
-  if (!status?.enabled) return error ? <p className="error" role="alert">{error}</p> : null;
+  if (!status?.enabled) return error ? <p className="state state-error" role="alert">{error}</p> : null;
   const op = status.operation;
   const discovery = status.discovery;
   const discoveryPending = !!discovery && (!discovery.outcome || discovery.run_status === 'RECOVERY_REQUIRED');
@@ -42,16 +42,16 @@ export function Bootstrap({ project, busy, refresh, operate, send }: {
   function edit(next: S["BootstrapInput"]) {
     generation.current += 1; setData(next); setPreview(undefined); setConfirmed(false);
   }
-  return <section className="evidence-detail">
-    <h3>Crear proyecto desde cero</h3>
-    <p>Plantilla documental de primera fase. Define el escenario de entrega antes de implementar la aplicación.</p>
-    {error && <p className="error" role="alert">{error}</p>}
-    {status.import_required ? <p role="status">{status.diagnostic} Abre «Migrar o revertir el proyecto» para revisar la importación.</p> : <>
+  return <section className="panel" aria-labelledby="bootstrap-title">
+    <h2 id="bootstrap-title">Crear proyecto desde cero</h2>
+    <p className="hint">Plantilla documental de primera fase. Define el escenario de entrega antes de implementar la aplicación.</p>
+    {error && <p className="state state-error" role="alert">{error}</p>}
+    {status.import_required ? <p role="status" className="state state-attention">{status.diagnostic} Abre «Modo gestionado y migración» para revisar la importación.</p> : <>
       <fieldset disabled={busy || !!op}>
         <legend>Brief</legend>
         {(Object.keys(briefLabels) as (keyof typeof briefLabels)[]).map(key => <label key={key}>{briefLabels[key]}
           <textarea rows={2} maxLength={4000} value={input.brief[key]} onChange={e => edit({ ...data, brief: { ...data.brief, [key]: e.target.value } })} /></label>)}
-        <p>Decisiones explícitas</p>
+        <p className="legend">Decisiones explícitas</p>
         {(Object.keys(decisionLabels) as (keyof typeof decisionLabels)[]).map(key => <label key={key}>{decisionLabels[key]}
           <textarea rows={2} maxLength={4000} value={input.decisions[key]} onChange={e => edit({ ...data, decisions: { ...data.decisions, [key]: e.target.value } })} /></label>)}
       </fieldset>
@@ -60,11 +60,11 @@ export function Bootstrap({ project, busy, refresh, operate, send }: {
         <button disabled={busy || discoveryPending || !status.discovery_available || !Object.values(input.brief).every(v => v.trim())}
           onClick={() => void operate(() => send(jobRequest(`/projects/${project}/bootstrap/discovery`, { brief: input.brief, confirmed: true })))}>Solicitar propuesta del revisor</button>
         {discovery && <><p role="status">Propuesta: {discovery.outcome ? String(discovery.outcome.status) : discovery.run_status}.</p>
-          {discovery.outcome?.reason && <p className="error">{discovery.outcome.reason}</p>}
+          {discovery.outcome?.reason && <p className="state state-error">{discovery.outcome.reason}</p>}
           {discovery.outcome?.result && <><p>{discovery.outcome.result.summary}</p>
-            <h4>Requisitos propuestos</h4><ul>{discovery.outcome.result.requirements.map((v, i) => <li key={i}>{v}</li>)}</ul>
-            <h4>Alternativas y costes</h4><ul>{discovery.outcome.result.alternatives.map((v, i) => <li key={i}>{v}</li>)}</ul>
-            <h4>Decisiones pendientes</h4><ul>{discovery.outcome.result.pending_decisions.map((v, i) => <li key={i}>{v}</li>)}</ul></>}
+            <h3>Requisitos propuestos</h3><ul>{discovery.outcome.result.requirements.map((v, i) => <li key={i}>{v}</li>)}</ul>
+            <h3>Alternativas y costes</h3><ul>{discovery.outcome.result.alternatives.map((v, i) => <li key={i}>{v}</li>)}</ul>
+            <h3>Decisiones pendientes</h3><ul>{discovery.outcome.result.pending_decisions.map((v, i) => <li key={i}>{v}</li>)}</ul></>}
           <p>Revisa los requisitos, alternativas y decisiones pendientes. Registra tu decisión en los campos de alcance y arquitectura antes de crear.</p></>}
       </>}
       {!op && <button disabled={busy || discoveryPending || !complete} onClick={() => void operate(async () => {
@@ -75,8 +75,8 @@ export function Bootstrap({ project, busy, refresh, operate, send }: {
       {shown && <>
         <p>Plantilla: {shown.template.name} · versión {shown.template.version} · perfil {shown.profile}</p>
         <p>Primera fase: {String(shown.phase.code)} · primera tarea: {String(shown.first_task.task_id)}.</p>
-        {shown.documents.map(doc => <details key={doc.path}><summary>{doc.path}</summary><pre>{doc.content}</pre></details>)}
-        <details><summary>Primera tarea, perfil, preparación y validación</summary><pre>{JSON.stringify({ task: shown.first_task, policy: shown.policy, preparation: shown.preparation, validations: shown.validations, git: shown.git, author: shown.author }, null, 2)}</pre></details>
+        {shown.documents.map(doc => <details className="evidence" key={doc.path}><summary>{doc.path}</summary><pre>{doc.content}</pre></details>)}
+        <details className="evidence"><summary>Primera tarea, perfil, preparación y validación</summary><pre>{JSON.stringify({ task: shown.first_task, policy: shown.policy, preparation: shown.preparation, validations: shown.validations, git: shown.git, author: shown.author }, null, 2)}</pre></details>
         <p>La creación guarda documentos y un commit inicial. La preparación y la primera tarea se ejecutan después por una acción propia.</p>
         {(!op || op.status === "INTERRUPTED") && <>
           <label>Motivo de la decisión<input value={reason} maxLength={2000} onChange={e => setReason(e.target.value)} /></label>

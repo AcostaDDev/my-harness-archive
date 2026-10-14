@@ -20,7 +20,7 @@ from harness_local.api.schemas import (
     PromptValidateCreate, PromptValidationRead, PromptDiffRead,
     ActivationCreate, ActivationRead, ActivationTransition, ConfirmStoppedCreate, ManagedAttemptRead,
     ManagedEventsRead, ManagedJobRead, ManagedProjectRead, ManagedRunRead, ManagedRunSummaryRead,
-    MigrationPreviewRead, ModeRead, Page, ProblemResponse, RunActionCreate, RunCreate, SupervisorRead,
+    MigrationPreviewRead, ModeRead, Page, PhaseTaskRead, ProblemResponse, RunActionCreate, RunCreate, SupervisorRead,
 )
 from harness_local.api.security import local_request, problem
 from harness_local.core.migration import MigrationError
@@ -238,8 +238,10 @@ def managed_router(runtime: ManagedRuntime):
 
     @router.get("/projects/{project_id}/runs", response_model=Page[ManagedRunSummaryRead],
                 operation_id="managed_runs")
-    def runs(project_id: str, offset: Offset = 0, limit: Limit = 30):
-        page = runtime.views.runs(str(project(project_id).context.root), offset, limit)
+    def runs(project_id: str, offset: Offset = 0, limit: Limit = 30,
+             phase: Annotated[str | None, Query(min_length=1, max_length=120)] = None,
+             task: Annotated[str | None, Query(min_length=1, max_length=120)] = None):
+        page = runtime.views.runs(str(project(project_id).context.root), offset, limit, phase, task)
         return {**page, "items": [{**item, "project_id": project_id} for item in page["items"]]}
 
     def frozen_versions(item):
@@ -436,6 +438,24 @@ def managed_router(runtime: ManagedRuntime):
     @router.get("/projects/{project_id}/phases", response_model=list[PhaseSummaryRead], operation_id="managed_phases")
     def phases(project_id: str):
         return call(runtime.phases.list, str(project(project_id).context.root))
+
+    @router.get("/projects/{project_id}/phases/{code}", response_model=PhaseRead, operation_id="managed_phase_by_code")
+    def phase_by_code(project_id: str, code: str):
+        """Lectura por el código de la URL (`P001`), único por checkout (D076)."""
+        return phase_read(call(runtime.phases.by_code, str(project(project_id).context.root), code))
+
+    @router.get("/projects/{project_id}/phases/{code}/tasks", response_model=Page[PhaseTaskRead],
+                operation_id="managed_phase_tasks")
+    def phase_tasks(project_id: str, code: str, offset: Offset = 0, limit: Limit = 30):
+        """Sin fase definida (runs v1 o anteriores a la definición), solo las tareas con runs."""
+        root = str(project(project_id).context.root)
+        try:
+            planned = list(runtime.phases.definition(runtime.phases.by_code(root, code))[1].get("tasks") or [])
+        except LookupError:
+            planned = []
+        page = runtime.views.tasks(root, code, planned, offset, limit)
+        return {**page, "items": [{**item, "latest": item["latest"] and {**item["latest"], "project_id": project_id}}
+                                  for item in page["items"]]}
 
     @router.post("/projects/{project_id}/phases", response_model=PhaseRead, status_code=201,
                  operation_id="managed_create_phase")

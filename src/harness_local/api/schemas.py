@@ -300,6 +300,15 @@ class ManagedRunSummaryRead(BaseModel):
                      'document_edit', 'phase_transition']
 
 
+
+class PhaseTaskRead(BaseModel):
+    """Resumen de una tarea de la fase para su URL `PNNN-TNNN` (D076); sin runs, `latest` es null."""
+    task_id: str
+    planned: bool = Field(description='La tarea figura en la definición vigente de la fase.')
+    runs: int = Field(description='Runs de propósito task registrados para esta tarea.')
+    latest: ManagedRunSummaryRead | None
+
+
 class StopRead(BaseModel):
     stage: str
     reason: str

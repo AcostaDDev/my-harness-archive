@@ -159,7 +159,8 @@ real de las cuatro combinaciones completada el 2026-10-14 (`cli-9`, D071).
 
 ### H6.2 Interfaz de producto (D054)
 
-Alcance fijado el 2026-10-14 (D076): seis entregas E1–E6, sin iniciar.
+Alcance fijado el 2026-10-14 (D076): seis entregas E1–E6. E1 (shell, navegación y diseño) completada offline
+(D077, [entrega](discovery/H6.2_E1_SHELL.md)); E2–E6 sin iniciar.
 [Alcance y criterios](discovery/H6.2_SCOPE.md).
 
 - Arquitectura de información y sistema de diseño de dashboard: navegación, cabecera con sesión, estados vacíos útiles, tablas y estados consistentes.

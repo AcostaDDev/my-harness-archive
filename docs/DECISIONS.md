@@ -2362,3 +2362,24 @@ Entregas en orden, cada una como tarea aparte: E1 shell y sistema de diseño, E2
 E4 creación y planificación, E5 chat global y E6 estadísticas. La legacy H1 se conserva en `/legacy` y las
 simulaciones H0.3 salen de la navegación. Fuera de alcance: proveedores reales, `project.yaml`, multiusuario,
 edición del TOML desde la UI e historial Git de documentos. Siguiente: E1, sin iniciar.
+
+## D077 — H6.2 E1: shell por URL, lecturas por código y sistema de diseño
+
+Estado: implementado y verificado offline el 2026-10-14. [Entrega, diseño y límites](discovery/H6.2_E1_SHELL.md).
+
+Decisiones tomadas con criterio dentro de D076:
+
+- El servidor del wheel entrega `index.html` solo en `GET`/`HEAD` fuera de `/api/` y nunca en lugar de un asset
+  estático. Los 404 de la API no cambian.
+- Las URLs usan códigos. El servidor añade lecturas por código de fase y un resumen de tareas por fase que también
+  funciona sin fase definida (runs v1 o demo), en lugar de traer listas completas al cliente.
+- `/runs/:id` es un enlace corto que se sustituye por la URL canónica; una URL con otra fase o tarea se corrige igual.
+- El envío idempotente y el pendiente (H2) pasan a un espacio de acciones por proyecto compartido entre páginas.
+  Solo las acciones que crean un run navegan a él.
+- Identidad visual: papel verde-gris, cobalto para acciones, códigos en monoespaciada como titulares y el raíl del
+  ciclo de vida de la fase como elemento distintivo. El ámbar se reserva a lo que espera una decisión ahora.
+  Fuentes del sistema, sin dependencias.
+- No se cambia la guardia H5.6. Que rechace la carga de la página con `Sec-Fetch-Site: cross-site` queda como
+  hallazgo para el usuario.
+
+Sin migración, codec ni dependencias. Siguiente: E2 (registro de proyectos), sin iniciar.

@@ -275,6 +275,14 @@ class PhaseRepository:
             return [{key: getattr(row, key) for key in ('id', 'code', 'status', 'version', 'created_at', 'updated_at')}
                     | {'objective': row.definition['objective']} for row in rows]
 
+    def by_code(self, root, code):
+        """Id de la fase con ese código en el checkout; el código es único por raíz."""
+        with Session(self.managed.engine) as session:
+            phase_id = session.scalar(select(Phase.id).where(Phase.root == root, Phase.code == code))
+        if phase_id is None:
+            raise LookupError('Unknown managed phase')
+        return phase_id
+
     def definition(self, phase_id):
         with Session(self.managed.engine) as session:
             phase = session.get(Phase, phase_id)
