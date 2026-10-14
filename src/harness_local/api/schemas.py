@@ -296,6 +296,7 @@ class ManagedRunSummaryRead(BaseModel):
     created_at: str
     updated_at: str
     purpose: Literal['task', 'phase_check', 'phase_close', 'chat', 'document_export', 'bootstrap', 'bootstrap_discovery',
+                     'definition', 'phase_planning',
                      'document_edit', 'phase_transition']
 
 
@@ -858,6 +859,8 @@ class PhaseTransitionInput(BaseModel):
     model_config = ConfigDict(extra='forbid', strict=True)
     next_steps: str | None = Field(default=None, max_length=512 * 1024,
                                    description='Plan NEXT_STEPS de la fase siguiente del ROADMAP; null si no hay más fases.')
+    plan_proposal: 'PlanProposalRef | None' = Field(default=None, description=(
+        'H6.5: plan propuesto en una conversación phase_planning, en lugar de next_steps.'))
 
 
 class PhaseTransitionPreviewRead(DocumentOperationPreview):
@@ -867,10 +870,12 @@ class PhaseTransitionPreviewRead(DocumentOperationPreview):
     archive: str
     next: dict[str, Any] | None
     warnings: list[str]
+    plan_origin: dict[str, Any] | None = None
 
 
 class PhaseTransitionCreate(PhaseVersioned):
     next_steps: str | None = Field(default=None, max_length=512 * 1024)
+    plan_proposal: 'PlanProposalRef | None' = None
     preview_sha256: str = Field(pattern=r'^[0-9a-f]{64}$')
     resume_operation_id: str | None = Field(default=None, max_length=36)
     reason: str = Field(min_length=1, max_length=2000)
@@ -1108,6 +1113,225 @@ class BootstrapDiscoveryRead(BaseModel):
     outcome: BootstrapDiscoveryOutcomeRead | None
 
 
+# --- H6.5: creación y planificación conversacionales -----------------------------------------------
+
+PlanningKind = Literal['definition', 'phase_planning']
+SHA256 = r'^[0-9a-f]{64}$'
+
+
+class DefinitionDocumentRead(BaseModel):
+    path: str
+    content: str
+    sha256: str
+    before_sha256: str | None = Field(description='Hash del borrador en disco que se sustituye; null si no existía.')
+    origin: Literal['draft', 'draft+blocks', 'template', 'archive']
+
+
+class DefinitionPreviewRead(BaseModel):
+    """Aceptación de la definición v2: bloqueos o los archivos íntegros del commit raíz (bootstrap D037)."""
+    template: dict[str, str]
+    input: dict[str, str]
+    definition: dict[str, Any]
+    context_sha256: str
+    documents: list[DefinitionDocumentRead]
+    phase: dict[str, Any] | None
+    first_task: dict[str, Any] | None
+    task_text: str | None
+    blockers: list[str]
+    warnings: list[str]
+    preparation: list[dict[str, Any]]
+    validations: list[dict[str, Any]]
+    policy: dict[str, Any]
+    profile: str
+    versions: dict[str, str | None]
+    target: dict[str, Any]
+    author: dict[str, str]
+    git: dict[str, str]
+    ready: bool
+    preview_sha256: str
+    resume_operation_id: str | None = None
+    expected_version: int | None = None
+
+
+class DefinitionOperationRead(BaseModel):
+    id: str
+    root: str
+    run_id: str
+    phase_id: str | None
+    status: Literal['QUEUED', 'COMPLETED', 'INTERRUPTED']
+    preview: DefinitionPreviewRead
+    intent: dict[str, Any]
+    decision: dict[str, Any]
+    result: dict[str, Any] | None
+    created_at: str
+    finished_at: str | None
+    expected_version: int
+    run_status: str
+    first_task_run: dict[str, str] | None
+
+
+class DefinitionAcceptCreate(BaseModel):
+    model_config = ConfigDict(extra='forbid', strict=True)
+    preview_sha256: str = Field(pattern=SHA256)
+    confirmed: Literal[True]
+    reason: str = Field(min_length=1, max_length=2000)
+    resume_operation_id: str | None = Field(default=None, max_length=36)
+    expected_version: int | None = Field(default=None, ge=0)
+
+
+class PlanningConversationCreate(BaseModel):
+    model_config = ConfigDict(extra='forbid', strict=True)
+    kind: PlanningKind
+    title: str = Field(min_length=1, max_length=200)
+    brief: str | None = Field(default=None, min_length=1, max_length=256 * 1024, description=(
+        'Brief Markdown (UTF-8, máximo 256 KiB) de una definición; null en la planificación de fase.'))
+    phase_id: str | None = Field(default=None, max_length=36,
+                                 description='Fase más reciente del checkout cuya siguiente se planifica.')
+
+
+class PlanningConversationSummaryRead(BaseModel):
+    id: str
+    kind: PlanningKind
+    title: str
+    phase_id: str | None
+    phase_code: str | None
+    turns: int
+    version: int
+    created_at: str
+    updated_at: str
+
+
+class PlanningTurnRead(BaseModel):
+    id: str
+    number: int
+    status: ChatTurnStatus
+    run_id: str
+    run_status: str
+    message: str
+    context_sha256: str
+    request_sha256: str
+    drafts: list[dict[str, Any]] = Field(description='Borradores congelados (ruta, hash, tamaño); solo definición.')
+    user_edits: list[dict[str, Any]] = Field(description='Ediciones del usuario detectadas por hash al congelar.')
+    documents: list[dict[str, Any]] = Field(description='Documentos congelados; solo planificación de fase.')
+    result: dict[str, Any] | None
+    actor: dict[str, Any]
+    created_at: str
+    finished_at: str | None
+
+
+class PlanningProposalRead(BaseModel):
+    id: str
+    number: int
+    turn_id: str
+    turn_number: int
+    kind: Literal['draft', 'plan']
+    path: str | None
+    content: str
+    reason: str
+    content_sha256: str
+    base_sha256: str | None = Field(description='CAS: hash del borrador que leyó el turno; null si no existía.')
+    proposal_sha256: str
+    status: Literal['PROPOSED', 'APPLIED', 'ACCEPTED', 'DISMISSED', 'SUPERSEDED']
+    decision: dict[str, Any] | None
+    version: int
+    created_at: str
+    actions: list[Literal['apply', 'dismiss']]
+
+
+class PlanningQuestionRead(BaseModel):
+    id: str
+    text: str
+    blocking: bool
+    deferred: dict[str, Any] | None
+
+
+class PlanningConversationRead(BaseModel):
+    id: str
+    project_id: str | None
+    root: str
+    kind: PlanningKind
+    title: str
+    phase: ChatPhaseRead | None
+    brief: dict[str, Any] | None
+    known: dict[str, str | None]
+    log: list[dict[str, Any]]
+    questions: list[PlanningQuestionRead]
+    pending: list[str]
+    actor: dict[str, Any]
+    version: int
+    created_at: str
+    updated_at: str
+    created: bool = Field(description='Definición ya convertida en proyecto por el bootstrap v2.')
+    turns: list[PlanningTurnRead]
+    proposals: list[PlanningProposalRead]
+    actions: list[Literal['message', 'edit_draft', 'defer_question', 'accept']]
+    operation: DefinitionOperationRead | None = None
+
+
+class PlanningMessageCreate(BaseModel):
+    model_config = ConfigDict(extra='forbid', strict=True)
+    expected_version: int = Field(ge=0)
+    text: str = Field(min_length=1, max_length=20_000)
+
+
+class PlanningApplyCreate(BaseModel):
+    model_config = ConfigDict(extra='forbid', strict=True)
+    expected_version: int = Field(ge=0)
+    proposal_sha256: str = Field(pattern=SHA256)
+    confirmed: Literal[True]
+
+
+class PlanningDismissCreate(BaseModel):
+    model_config = ConfigDict(extra='forbid', strict=True)
+    expected_version: int = Field(ge=0)
+    reason: str = Field(min_length=1, max_length=2000)
+
+
+class PlanningDeferCreate(BaseModel):
+    model_config = ConfigDict(extra='forbid', strict=True)
+    expected_version: int = Field(ge=0)
+    question_id: str = Field(pattern=SHA256)
+    reason: str = Field(min_length=1, max_length=2000)
+
+
+class PlanningDraftEdit(BaseModel):
+    model_config = ConfigDict(extra='forbid', strict=True)
+    expected_version: int = Field(ge=0)
+    path: str = Field(min_length=1, max_length=500)
+    content: str | None = Field(max_length=512 * 1024, description='Contenido completo; null borra el borrador.')
+    base_sha256: str | None = Field(pattern=SHA256, description='CAS: hash actual en disco; null si no existe.')
+
+
+class PlanningDraftStateRead(BaseModel):
+    path: str
+    sha256: str | None
+    known_sha256: str | None
+    user_edited: bool
+
+
+class PlanningDraftsRead(BaseModel):
+    created: bool
+    allowed: dict[str, list[str]]
+    drafts: list[PlanningDraftStateRead]
+    foreign: list[str]
+    foreign_truncated: bool
+    invalid: list[str]
+    import_required: bool
+
+
+class PlanningBriefRead(BaseModel):
+    content: str
+    sha256: str
+    size: int
+
+
+class PlanProposalRef(BaseModel):
+    model_config = ConfigDict(extra='forbid', strict=True)
+    conversation_id: str = Field(min_length=1, max_length=36)
+    proposal_id: str = Field(min_length=1, max_length=36)
+    proposal_sha256: str = Field(pattern=SHA256)
+
+
 class BootstrapStatusRead(BaseModel):
     enabled: bool
     import_required: bool
@@ -1116,6 +1340,8 @@ class BootstrapStatusRead(BaseModel):
     discovery: BootstrapDiscoveryRead | None
     discovery_available: bool
     discovery_selection: dict[str, str]
+    definition_operation: DefinitionOperationRead | None = Field(default=None, description=(
+        'H6.5: bootstrap v2 desde la conversación de definición; `operation` queda null en proyectos v2.'))
 
 
 # --- H6.4: métricas por intento y agregados (D072 §9) -------------------------------------------------
@@ -1341,3 +1567,8 @@ class MetricsSummaryRead(BaseModel):
     tasks: TaskQualityRead
     tests: ValidationTotalsRead
     stops: StopsRead
+
+
+# H6.5: referencias adelantadas de la transición a la propuesta de plan.
+PhaseTransitionInput.model_rebuild()
+PhaseTransitionCreate.model_rebuild()

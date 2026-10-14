@@ -2160,7 +2160,7 @@ push/publicación, nuevo smoke, recuperación o modificaciones de ReferenceProje
 ## D072 — Organización documental por fase y estructura de producto
 
 Estado: diseño completado el 2026-10-14; puntos confirmados por el usuario en D073;
-H6.3 implementado offline (D073) y H6.4 implementado offline (D074). H6.5 y la UI siguen pendientes.
+H6.3 (D073), H6.4 (D074) y H6.5 (D075) implementados offline. La UI (H6.2) sigue pendiente.
 [Diseño, diferencias e incrementos](discovery/DOCUMENT_ORGANIZATION.md).
 
 Requisitos del usuario: creación desde un brief en Markdown seguida de una
@@ -2293,3 +2293,46 @@ Decisiones tomadas con criterio:
 
 Sin UI, proveedores, CLI reales ni cambios de dependencias. Siguiente: H6.5 (creación y planificación
 conversacionales), sin iniciar.
+
+## D075 — Creación y planificación conversacionales con borradores en disco y CAS (H6.5)
+
+Estado: implementado y verificado offline el 2026-10-14.
+[Entrega, API y límites](discovery/H6.5_CONVERSATIONAL_CREATION.md).
+
+Base: D072 §5.1 y §11, D073 puntos 4 y 7. Dos conversaciones sobre la infraestructura del chat (D035):
+`definition` (proyecto v2 nuevo desde un brief Markdown) y `phase_planning` (plan NEXT_STEPS de la fase
+siguiente). Solo con `documents = "v2"`; la definición exige además `bootstrap_enabled` y el escritor Git,
+como D037. Sin v2 nada cambia. Decisiones tomadas con criterio:
+
+- Autoridad propia en `0015_planning` (`planning_conversations`, `planning_turns`, `planning_proposals`) en
+  lugar de ampliar las tablas del chat: el chat contextual no lista estas conversaciones y su contrato no
+  cambia. Se reutilizan cola, lock, supervisor, guardia de modo, cuarentena, journal de intentos y la regla de
+  un turno pendiente. Runs `definition`/`phase_planning`, acción `planning_turn`, sin codec nuevo.
+- Turnos nuevos, de solo lectura, del revisor (roles aditivos `definition` y `planning` en `cli-9`, sin cambiar
+  argv de los roles anteriores), con plantillas versionadas `define-project` y `plan-phase` y esquemas fijos.
+  Salida inválida o ruta no admitida → turno FAILED sin fallback ni reintento; caída → UNKNOWN.
+- El agente nunca escribe. Lo observado del destino se compara antes (definición: con lo congelado; si ya
+  cambió, no se invoca) y después de invocar; cualquier cambio descarta la respuesta y conserva los bytes.
+- Aplicar un borrador exige confirmación y el hash mostrado, y escribe con CAS sobre el hash que leyó el turno
+  (temporal propio + `os.replace`, segunda comprobación justo antes). La API de edición usa la misma CAS. Las
+  ediciones del usuario se detectan por hash frente al último turno **respondido** o a la última propuesta
+  aplicada: un turno fallido no las oculta al siguiente. Con turno pendiente no se aplica, edita ni acepta.
+- Rutas admitidas: plantilla v2, `decisions/*.md` y `architecture/*.md` de un nivel. `research/` solo con su
+  README, según el diseño. Lo demás (también ocultos, carpetas y enlaces) es ajeno y bloquea la aceptación.
+- Las preguntas bloqueantes se resuelven en un turno o se aplazan explícitamente con motivo; los pendientes del
+  revisor son avisos, no bloqueos.
+- La aceptación es la vista previa del bootstrap D037 con plantilla v2: regenera los bloques de STATE,
+  NEXT_STEPS, ROADMAP y DECISIONS para P001 ACTIVE, completa los README de carpeta y añade
+  `archive/phase-000/{BRIEF,DEFINITION}.md`. Como los bloques cambian los bytes de cuatro borradores, el
+  adaptador D037 se generaliza solo para documentos con `before_sha256`: acepta el borrador revisado o los
+  bytes sellados y los sustituye con CAS. La intención, el commit raíz y la recuperación son los de D037. La
+  fase adopta solo sus documentos de fase. El modo de planificación decide si la primera tarea debe ser
+  determinista.
+- Para no cambiar el tipo que consume la UI v1, `GET …/bootstrap` expone la operación v2 en
+  `definition_operation`. En un proyecto v2 el bootstrap v1 y su descubrimiento se rechazan.
+- La transición acepta `plan_proposal` (referencia exacta con hash) en lugar de `next_steps`; `plan_origin`
+  entra en el hash revisado solo cuando existe, y la propuesta pasa a ACCEPTED en la transacción que encola la
+  transición. El SUMMARY de fase excluye estas conversaciones, como el chat.
+
+Sin UI, proveedores, CLI reales ni dependencias nuevas. El TOML local no expone todavía `bootstrap_enabled`.
+Siguiente: H6.2 (UI de producto), tarea completamente distinta (D073), sin iniciar.

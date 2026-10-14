@@ -277,6 +277,19 @@ class GitWorkspace:
         except GitError as exc:
             raise ValueError(f'Bootstrap Git environment unavailable: {exc}') from exc
 
+    def inspect_definition(self, context, *, texts=False):
+        """H6.5: borradores, archivos ajenos e inválidos del destino de una definición v2."""
+        from harness_local.adapters.bootstrap import inspect_drafts
+        try:
+            self._git(context.root).text('version')
+            return inspect_drafts(context, self._git(context.root), texts=texts)
+        except GitError as exc:
+            raise ValueError(f'Bootstrap Git environment unavailable: {exc}') from exc
+
+    def write_draft(self, context, path, content, base_sha256):
+        from harness_local.adapters.bootstrap import write_draft
+        return write_draft(self, context, path, content, base_sha256)
+
     def seal_bootstrap(self, shown, operation_id, committed_at):
         from harness_local.adapters.bootstrap import seal
         return seal(self, shown, operation_id, committed_at)

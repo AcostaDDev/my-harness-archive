@@ -106,8 +106,11 @@ def _state_title(text: str) -> str:
     return first if first.startswith('# ') and 'harness-local:managed-' not in first else '# Estado'
 
 
-def preview_transition(context, snapshot: dict, git, next_steps: str | None) -> dict:
-    """Archivo por bytes de la fase terminada, documentos frescos y definición de la siguiente."""
+def preview_transition(context, snapshot: dict, git, next_steps: str | None, plan_origin: dict | None = None) -> dict:
+    """Archivo por bytes de la fase terminada, documentos frescos y definición de la siguiente.
+
+    `plan_origin` (H6.5): propuesta de la conversación `phase_planning` de la que sale el plan; entra en el
+    hash revisado. Sin ella, la vista previa conserva exactamente su forma anterior."""
     target = require_layout(context)
     closed = snapshot['phase']
     code, status = closed['code'], closed['status']
@@ -183,7 +186,8 @@ def preview_transition(context, snapshot: dict, git, next_steps: str | None) -> 
     after = {target.state: state, target.next_steps: plan, target.roadmap: roadmap, target.decisions: decisions}
     return _sealed_preview(context, evidence, provenance, provenance.worktree_tree, changes, TRANSITION_REASON, {
         'operation': 'phase_transition', 'snapshot': snapshot, 'closed': code, 'archive': archive,
-        'next': definition, 'warnings': budget_warnings(target, after)})
+        'next': definition, 'warnings': budget_warnings(target, after),
+        **({'plan_origin': plan_origin} if plan_origin is not None else {})})
 
 
 # --- edición documental ----------------------------------------------------------------------

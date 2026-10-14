@@ -544,8 +544,10 @@ confirmadas por el usuario (D073). H6.3 implementado offline: contrato documenta
 v2 opt-in, bloques regenerados por commit, transición de fase y edición confirmada
 ([entrega](discovery/H6.3_DOCUMENT_CONTRACT.md)). H6.4 implementado offline (D074):
 métricas por intento materializadas con procedencia, relleno explícito, agregados por API y tokens/turnos
-en el SUMMARY ([entrega](discovery/H6.4_METRICS.md)). Siguiente tarea propuesta: H6.5 (creación y
-planificación conversacionales), sin iniciar. UI H6.2 sin iniciar; será una tarea aparte.
+en el SUMMARY ([entrega](discovery/H6.4_METRICS.md)). H6.5 implementado offline (D075): creación v2
+conversacional con borradores en disco y CAS hasta el commit raíz con `phase-000` y P001, y planificación de
+la fase siguiente usada por la transición ([entrega](discovery/H6.5_CONVERSATIONAL_CREATION.md)). Siguiente
+tarea propuesta: UI H6.2, sin iniciar; será una tarea aparte.
 
 ## Verificación de H0.1
 
@@ -2595,6 +2597,42 @@ planificación conversacionales), sin iniciar. UI H6.2 sin iniciar; será una ta
   habría acabado en recuperación. Los tres con prueba.
 - Límites: semánticas de Codex coherentes con 6 muestras, no certificadas; turnos de Codex derivados; sin UI,
   sin relleno automático y sin métricas en los bloques de STATE/NEXT_STEPS; ningún recorrido con CLI real.
+
+## Implementación de H6.5: creación y planificación conversacionales (D075)
+
+- Tarea activa de NEXT_STEPS, pedida por el usuario el 2026-10-14. Git inicial limpio en `main`, `1e5d114`.
+  [Entrega, API y límites](discovery/H6.5_CONVERSATIONAL_CREATION.md).
+- `core/engine/definition.py`: brief (≤ 256 KiB), rutas de borrador admitidas, esquemas fijos de los turnos
+  `definition` y `phase_planning`, ejecución del turno con observación antes/después y vista previa
+  determinista de la aceptación (bloqueos o archivos íntegros, bloques regenerados, README de carpeta,
+  `archive/phase-000/{BRIEF,DEFINITION}.md`, P001 y primera tarea según el modo de planificación).
+- Migración `0015_planning` (`planning_conversations`, `planning_turns`, `planning_proposals`); runs
+  `definition`/`phase_planning`, acción `planning_turn`. Roles aditivos `definition`/`planning` en `cli-9` y
+  plantillas `define-project`/`plan-phase` (catálogo de 9 a 11, `ADDED_LATER`). SUMMARY de fase sin estas
+  conversaciones.
+- `adapters/bootstrap.py`: inspección de borradores (ajenos, inválidos, `.git`), escritura con CAS (temporal
+  propio + `os.replace`) y bootstrap D037 generalizado solo para documentos con `before_sha256`.
+  `storage/bootstrap.py` despacha la vista previa v2 y adopta solo los documentos de fase.
+- `storage/planning.py`: conversaciones, turnos congelados, propuestas con sustitución, aplicar/editar con
+  CAS, aplazar preguntas, descartar; hashes conocidos solo tras un turno respondido. La transición acepta
+  `plan_proposal` (con `plan_origin` en el hash solo cuando existe) y la marca ACCEPTED al encolarla.
+- API `/api/managed/projects/{id}/planning/...` (10 rutas), `plan_proposal` en la transición,
+  `definition_operation` en `GET …/bootstrap` (sin cambiar el tipo que usa la UI v1). OpenAPI y tipos
+  regenerados; la UI no cambia.
+- Verificación: 44 casos nuevos en `tests/product/test_definition.py` (carpeta vacía → commit raíz con
+  conversación sintética y ediciones en disco y por API; agente que escribe; ocho salidas inválidas; ediciones
+  concurrentes; siete archivos ajenos y `.git`; once bloqueos; modo determinista; aplazamiento; caídas del
+  bootstrap y del turno; v1/v2; migración; planificación → transición; HTTP). `test_prompts` actualizado al
+  catálogo de 11 (+2 casos parametrizados). Suite completa **1056 pytest + 121 subtests** (404 s) antes de
+  añadir el caso de borrador ejecutable, que pasa con los 44; total recogido 1057. 12 checks estándar;
+  6 pruebas Node; `tsc` y build de la UI; `alembic upgrade`/`check`/`current` (`0015_planning`) y bajada/subida
+  a `0014` en SQLite temporal.
+- Hallazgos corregidos durante la entrega, con prueba: un turno fallido ocultaba al siguiente las ediciones
+  del usuario; un borrador ejecutable solo fallaba después de confirmar; aceptar con un turno pendiente daba
+  un motivo engañoso; «proyecto ya creado» quedaba tapado por la petición de importación.
+- Límites: sin UI ni CLI real; el TOML local no expone `bootstrap_enabled`; exclusión frente al editor
+  cooperativa; 2 MiB de borradores por turno; `research/` solo con README durante la definición; el chat
+  sigue esperando el lock (D073 punto 5). Sin push ni proveedores.
 
 ## Coordinación
 

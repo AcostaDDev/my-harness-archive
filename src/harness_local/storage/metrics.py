@@ -28,6 +28,8 @@ from harness_local.storage.models import (
 # `input_tokens` crudo no se agrega: Claude excluye la caché y Codex la incluye. Sí lo hace su forma normalizada.
 SUMMED = ('uncached_input_tokens', 'cache_read_tokens', 'cache_write_tokens', 'output_tokens', 'reasoning_tokens',
           'total_tokens')
+# Conversaciones que no son trabajo de una fase: no entran en su SUMMARY (H6.4/H6.5).
+CONVERSATIONS = ('chat', 'definition', 'phase_planning')
 DIMENSIONS = {'role': Metric.role, 'provider': Metric.provider, 'requested_model': Metric.requested_model,
               'requested_effort': Metric.requested_effort, 'day': Metric.day, 'phase': Metric.phase_code,
               'task': Metric.task_id, 'status': Metric.status, 'purpose': Metric.purpose, 'root': Metric.root}
@@ -341,15 +343,17 @@ class MetricsViews:
 
 
 def phase_consumption(session, root, code) -> dict:
-    """D072: tokens y turnos de la fase para su SUMMARY. Excluye el chat: no es trabajo de la fase."""
-    query = select(*_sums()).where(Metric.root == root, Metric.phase_code == code, Metric.purpose != 'chat')
+    """D072: tokens y turnos de la fase para su SUMMARY. Excluye el chat y las conversaciones de definición y
+    planificación (H6.5): no son trabajo de la fase."""
+    query = select(*_sums()).where(Metric.root == root, Metric.phase_code == code, Metric.purpose.notin_(CONVERSATIONS))
     by_task = {}
     for row in session.execute(select(Metric.task_id, *_sums()).where(
             Metric.root == root, Metric.phase_code == code, Metric.purpose == 'task')
             .group_by(Metric.task_id).order_by(Metric.task_id)).all():
         by_task[row.task_id] = _brief(_consumption(row))
     by_role = {row.role: _brief(_consumption(row)) for row in session.execute(
-        select(Metric.role, *_sums()).where(Metric.root == root, Metric.phase_code == code, Metric.purpose != 'chat')
+        select(Metric.role, *_sums()).where(Metric.root == root, Metric.phase_code == code,
+                                            Metric.purpose.notin_(CONVERSATIONS))
         .group_by(Metric.role).order_by(Metric.role)).all()}
     return {'total': _brief(_consumption(session.execute(query).one())), 'by_role': by_role, 'by_task': by_task}
 

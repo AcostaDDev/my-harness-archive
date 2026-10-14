@@ -47,6 +47,9 @@ class DiscoveryRepository:
     def submit(self, context, brief, versions, writer, *, key, confirmed):
         if confirmed is not True:
             raise ValueError('Explicit discovery invocation required')
+        from harness_local.core.engine.documents import layout
+        if layout(context) is not None:
+            raise ValueError('Projects with documents = "v2" use the definition conversation (H6.5), not discovery')
         if not isinstance(key, str) or not key.strip() or len(key) > 200:
             raise ValueError('Discovery requires an idempotency key of 1–200 characters')
         brief = brief_input(brief)

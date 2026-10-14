@@ -1,6 +1,6 @@
 """Reviewer and executor agents, each Codex or Claude, explicit opt-in CLI invocations (D052).
 
-The reviewer (planner, reviewer, phase, chat, bootstrap roles) is read-only;
+The reviewer (planner, reviewer, phase, chat, bootstrap, definition, planning roles) is read-only;
 the executor is the only writer. No entry point enables this adapter
 automatically. Environment is passed as a complete mapping, never silently
 inherited. Auth stays with each installed CLI.
@@ -39,7 +39,7 @@ EFFORTS = {"codex": ("minimal", "low", "medium", "high", "xhigh", "max", "ultra"
 GRANTS = {"codex": (), "claude": ("tools",)}
 AGENTS = ("reviewer", "executor")
 ROLES = {"executor": "executor", "planner": "reviewer", "reviewer": "reviewer", "phase": "reviewer",
-         "chat": "reviewer", "bootstrap": "reviewer"}
+         "chat": "reviewer", "bootstrap": "reviewer", "definition": "reviewer", "planning": "reviewer"}
 READ_TOOLS = ("Read", "Glob", "Grep")
 SHAPES = {
     "bootstrap": {"summary": "proposal summary", "requirements": ["proposed requirement"],
@@ -62,6 +62,12 @@ SHAPES = {
     "chat": {"answer": "answer", "references": ["path or run id"], "proposals": [{"title": "title",
         "objective": "objective", "scope": "scope in words", "acceptance_criteria": ["criterion"],
         "validation": ["validation"], "rationale": "rationale"}]},
+    # H6.5, aditivo: conversaciones de definición y de planificación de fase, de solo lectura.
+    "definition": {"answer": "answer", "questions": [{"text": "question", "blocking": False}],
+        "drafts": [{"path": "allowed draft path", "content": "complete document", "reason": "reason"}],
+        "pending": ["missing before acceptance"]},
+    "planning": {"answer": "answer", "questions": [{"text": "question", "blocking": False}],
+        "plan": {"content": "complete NEXT_STEPS plan or null", "reason": "reason"}, "pending": ["pending item"]},
 }
 
 

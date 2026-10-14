@@ -399,6 +399,75 @@ class ChatProposalRow(Base):
     created_at: Mapped[str] = mapped_column(String(40))
 
 
+class PlanningConversationRow(Base):
+    """H6.5: conversación de definición (proyecto nuevo) o de planificación de la fase siguiente."""
+    __tablename__ = 'planning_conversations'
+    __table_args__ = (Index('uq_planning_definition', 'root', unique=True, sqlite_where=text("kind = 'definition'")),)
+    id: Mapped[str] = mapped_column(String(36), primary_key=True)
+    root: Mapped[str] = mapped_column(String)
+    # definition | phase_planning
+    kind: Mapped[str] = mapped_column(String(20))
+    phase_id: Mapped[str | None] = mapped_column(ForeignKey('managed_phases.id'), nullable=True)
+    title: Mapped[str] = mapped_column(String(200))
+    # Brief Markdown congelado con su hash (definición); null en la planificación.
+    brief: Mapped[dict | None] = mapped_column(JSON, nullable=True)
+    # Hashes de borradores que conoce el harness (último turno respondido o propuesta aplicada); el resto es del usuario.
+    known: Mapped[dict] = mapped_column(JSON)
+    # Preguntas bloqueantes aplazadas explícitamente, por id de pregunta.
+    deferred: Mapped[dict] = mapped_column(JSON)
+    # Escrituras de borradores del harness (propuestas aplicadas) y ediciones por API, con hashes.
+    log: Mapped[list] = mapped_column(JSON)
+    actor: Mapped[dict] = mapped_column(JSON)
+    version: Mapped[int] = mapped_column(Integer)
+    created_at: Mapped[str] = mapped_column(String(40))
+    updated_at: Mapped[str] = mapped_column(String(40))
+
+
+class PlanningTurnRow(Base):
+    """Petición congelada (mensaje, contexto y lo observado) antes de encolar; un turno pendiente por conversación."""
+    __tablename__ = 'planning_turns'
+    __table_args__ = (UniqueConstraint('conversation_id', 'number'),
+                      Index('uq_planning_turns_pending', 'conversation_id', unique=True,
+                            sqlite_where=text("status = 'QUEUED'")))
+    id: Mapped[str] = mapped_column(String(36), primary_key=True)
+    conversation_id: Mapped[str] = mapped_column(ForeignKey('planning_conversations.id'))
+    number: Mapped[int] = mapped_column(Integer)
+    run_id: Mapped[str] = mapped_column(ForeignKey('managed_runs.id'), unique=True)
+    # QUEUED | ANSWERED | FAILED | UNKNOWN (caída confirmada, sin reintento) | REFUSED
+    status: Mapped[str] = mapped_column(String(20))
+    message: Mapped[str] = mapped_column(Text)
+    request: Mapped[dict] = mapped_column(JSON)
+    request_sha256: Mapped[str] = mapped_column(String(64))
+    result: Mapped[dict | None] = mapped_column(JSON, nullable=True)
+    actor: Mapped[dict] = mapped_column(JSON)
+    created_at: Mapped[str] = mapped_column(String(40))
+    finished_at: Mapped[str | None] = mapped_column(String(40), nullable=True)
+
+
+class PlanningProposalRow(Base):
+    """Borrador de un documento (definición) o plan de la fase siguiente; nunca se aplica sin confirmación."""
+    __tablename__ = 'planning_proposals'
+    __table_args__ = (UniqueConstraint('conversation_id', 'number'),)
+    id: Mapped[str] = mapped_column(String(36), primary_key=True)
+    conversation_id: Mapped[str] = mapped_column(ForeignKey('planning_conversations.id'))
+    turn_id: Mapped[str] = mapped_column(ForeignKey('planning_turns.id'))
+    number: Mapped[int] = mapped_column(Integer)
+    # draft | plan
+    kind: Mapped[str] = mapped_column(String(20))
+    path: Mapped[str | None] = mapped_column(String, nullable=True)
+    content: Mapped[str] = mapped_column(Text)
+    reason: Mapped[str] = mapped_column(Text)
+    content_sha256: Mapped[str] = mapped_column(String(64))
+    # CAS: hash del borrador que leyó el turno (null: ausente). Solo borradores.
+    base_sha256: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    proposal_sha256: Mapped[str] = mapped_column(String(64))
+    # PROPOSED | APPLIED (borrador escrito) | ACCEPTED (plan usado en una transición) | DISMISSED | SUPERSEDED
+    status: Mapped[str] = mapped_column(String(20))
+    decision: Mapped[dict | None] = mapped_column(JSON, nullable=True)
+    version: Mapped[int] = mapped_column(Integer)
+    created_at: Mapped[str] = mapped_column(String(40))
+
+
 class ProjectBootstrapRow(Base):
     """H4.2: un bootstrap por destino autorizado; bytes e intención conservados antes de escribir."""
     __tablename__ = 'project_bootstraps'

@@ -35,6 +35,113 @@ def inspect_target(context, git):
                           if entries or nested else None}
 
 
+class DraftConflict(ValueError):
+    """El borrador en disco ya no tiene el hash esperado: nada se sobrescribe."""
+
+
+def inspect_drafts(context, git, *, texts=False):
+    """H6.5: lectura del destino de una definición v2; solo admite borradores de las rutas permitidas.
+
+    Cualquier otro archivo, carpeta o enlace es ajeno y bloquea la aceptación (flujo de importación).
+    Un `.git` propio o un repositorio que contenga la carpeta exigen importación."""
+    from harness_local.core.engine.definition import allowed_draft, definition_layout, draft_directories
+    from harness_local.core.engine.documents import MAX_DOCUMENT_BYTES
+    target = definition_layout(context)
+    identity = target_identity(context)
+    nested = git.code('rev-parse', '--is-inside-work-tree') == 0
+    folders = draft_directories(target)
+    drafts, contents, foreign, invalid = {}, {}, [], []
+
+    def visit(folder, prefix):
+        for item in sorted(folder.iterdir(), key=lambda entry: entry.name):
+            path = prefix + item.name
+            mode = item.lstat().st_mode
+            if stat.S_ISDIR(mode) and path in folders:
+                visit(item, path + '/')
+            elif stat.S_ISREG(mode) and allowed_draft(target, path):
+                data = item.read_bytes()
+                try:
+                    # Modo Git 100644: un borrador ejecutable no se puede sellar tal cual.
+                    if len(data) > MAX_DOCUMENT_BYTES or b'\0' in data or stat.S_IMODE(mode) & 0o111:
+                        raise ValueError(path)
+                    text = data.decode('utf-8')
+                except (ValueError, UnicodeError):
+                    invalid.append(path)
+                    continue
+                drafts[path] = sha256(data).hexdigest()
+                contents[path] = text
+            else:
+                foreign.append(path + ('/' if stat.S_ISDIR(mode) else ''))
+
+    visit(context.root, '')
+    result = {'identity': identity, 'drafts': drafts, 'foreign': foreign[:100],
+              'foreign_truncated': len(foreign) > 100, 'invalid': invalid,
+              'import_required': nested or (context.root / '.git').exists() or (context.root / '.git').is_symlink()}
+    return {**result, 'texts': contents} if texts else result
+
+
+def _current(path):
+    if path.is_symlink() or (path.exists() and not path.is_file()):
+        raise DraftConflict('The draft must be a regular file')
+    return sha256(path.read_bytes()).hexdigest() if path.exists() else None
+
+
+def write_draft(writer, context, path, content, base_sha256):
+    """Escribe (o borra con `content=None`) un borrador si su hash sigue siendo `base_sha256`.
+
+    Exclusión cooperativa como D036: la comprobación se repite justo antes de reemplazar, sin atomicidad
+    frente a un editor externo. Devuelve los hashes anterior y nuevo; el mismo contenido no se reescribe."""
+    from harness_local.core.engine.definition import allowed_draft, definition_layout, draft_directories
+    target = definition_layout(context)
+    if not allowed_draft(target, path):
+        raise ValueError(f'{path} is not an allowed definition draft')
+    if inspect_drafts(context, writer._git(context.root))['import_required']:
+        raise ValueError('The target belongs to a Git repository or contains .git: use the import flow')
+    folders = draft_directories(target)
+    parts = path.split('/')
+    for n in range(1, len(parts)):
+        folder = context.root.joinpath(*parts[:n])
+        if '/'.join(parts[:n]) not in folders or folder.is_symlink() or (folder.exists() and not folder.is_dir()):
+            raise ValueError(f'{path} is not inside an allowed draft folder')
+    item = context.path(path)
+    current = _current(item)
+    after = None if content is None else sha256(content.encode('utf-8')).hexdigest()
+    if current == after:
+        return {'before': current, 'after': after, 'written': False}
+    if current != base_sha256:
+        raise DraftConflict(f'{path} changed since it was read (expected {base_sha256}, found {current})')
+    if content is None:
+        item.unlink()
+    else:
+        item.parent.mkdir(parents=True, exist_ok=True)
+        _replace_file(item, content.encode('utf-8'), 'draft', lambda: _current(item) == base_sha256)
+    return {'before': current, 'after': after, 'written': True}
+
+
+def _temporary(path, token):
+    return path.with_name(f'.{path.name}.{token}.harness-tmp')
+
+
+def _replace_file(path, content, token, unchanged):
+    """Archivo temporal propio en la misma carpeta y `os.replace`; nunca deja un archivo a medias."""
+    temporary = _temporary(path, token)
+    if temporary.exists() or temporary.is_symlink():
+        temporary.unlink()
+    _new_file(temporary, content)
+    try:
+        if not unchanged():
+            raise DraftConflict(f'{path.name} changed while it was being replaced; nothing was overwritten')
+        os.replace(temporary, path)
+    finally:
+        if temporary.exists():
+            temporary.unlink()
+    fd = os.open(path.parent, os.O_RDONLY | os.O_DIRECTORY)
+    try:
+        os.fsync(fd)
+    finally:
+        os.close(fd)
+
+
 def _new_file(path, content):
     with path.open('xb') as stream:
         os.fchmod(stream.fileno(), 0o644)
@@ -87,6 +194,9 @@ def validate_partial(context, shown, intent):
         raise ValueError('Bootstrap target was replaced since preview')
     documents = {d['path']: d for d in shown['documents']}
     directories = _directories(shown['documents'])
+    # H6.5: el temporal propio de un reemplazo interrumpido se descarta antes de escribir.
+    temporaries = {_temporary(context.root / path, intent['operation_id']).relative_to(context.root).as_posix()
+                   for path, doc in documents.items() if 'before_sha256' in doc}
     for directory, dirs, names in os.walk(context.root, followlinks=False):
         for name in [*dirs, *names]:
             item = Path(directory) / name
@@ -102,9 +212,17 @@ def validate_partial(context, shown, intent):
                 continue
             if stat.S_ISDIR(mode) and path in directories:
                 continue
+            if path in temporaries and stat.S_ISREG(mode):
+                continue
             if path not in documents or not stat.S_ISREG(mode):
                 raise ValueError(f'Unexpected bootstrap path: {path}; preserved without overwriting')
             doc = documents[path]
+            if 'before_sha256' in doc:
+                # H6.5: el borrador revisado o los bytes sellados; sin bit de ejecución (modo Git 100644).
+                if (stat.S_IMODE(mode) & 0o111 or sha256(item.read_bytes()).hexdigest()
+                        not in (doc['sha256'], doc['before_sha256'])):
+                    raise ValueError(f'Bootstrap draft changed: {path}; preserved without overwriting')
+                continue
             if (item.stat().st_size != len(doc['content'].encode('utf-8'))
                     or sha256(item.read_bytes()).hexdigest() != doc['sha256']
                     or stat.S_IMODE(mode) != 0o644):
@@ -119,9 +237,10 @@ def marker_bytes(intent):
 def execute(writer, context, shown, intent):
     validate_partial(context, shown, intent)
     gitdir = context.root / '.git'
+    drafts = any('before_sha256' in doc for doc in shown['documents'])
     if not gitdir.exists():
-        # Empezar exige el mismo directorio vacío, también al reclamar el job.
-        if any(context.root.iterdir()):
+        # Empezar exige el mismo directorio vacío (o solo los borradores revisados, H6.5), también al reclamar.
+        if not drafts and any(context.root.iterdir()):
             raise ValueError('Target is no longer empty; import required')
         if writer._git(context.root).code('rev-parse', '--is-inside-work-tree') == 0:
             raise ValueError('Target now belongs to another Git checkout; import required')
@@ -155,8 +274,17 @@ def execute(writer, context, shown, intent):
         validate_partial(context, shown, intent)
         path = context.path(doc['path'])
         path.parent.mkdir(parents=True, exist_ok=True)
+        if 'before_sha256' in doc:
+            temporary = _temporary(path, intent['operation_id'])
+            if temporary.is_file() and not temporary.is_symlink():
+                temporary.unlink()
         if not path.exists():
             _new_file(path, doc['content'].encode('utf-8'))
+        elif 'before_sha256' in doc and sha256(path.read_bytes()).hexdigest() != doc['sha256']:
+            # Borrador revisado → bytes sellados (bloques regenerados); otro contenido ya se rechazó arriba.
+            before = doc['before_sha256']
+            _replace_file(path, doc['content'].encode('utf-8'), intent['operation_id'],
+                          lambda: sha256(path.read_bytes()).hexdigest() == before)
     validate_partial(context, shown, intent)
     if _tree(git, shown['documents']) != intent['tree']:
         raise ValueError('Bootstrap tree differs from sealed intent')

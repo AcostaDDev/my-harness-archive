@@ -1342,6 +1342,202 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/managed/projects/{project_id}/planning": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Planning List */
+        get: operations["managed_planning_conversations"];
+        put?: never;
+        /**
+         * Planning Create
+         * @description Definición (brief Markdown, destino vacío o con borradores) o planificación de la fase siguiente.
+         */
+        post: operations["managed_planning_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/managed/projects/{project_id}/planning/{conversation_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Planning Detail */
+        get: operations["managed_planning_conversation"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/managed/projects/{project_id}/planning/{conversation_id}/brief": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Planning Brief */
+        get: operations["managed_planning_brief"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/managed/projects/{project_id}/planning/{conversation_id}/messages": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Planning Message
+         * @description Turno nuevo de solo lectura del revisor con el contexto congelado al encolarlo.
+         */
+        post: operations["managed_planning_message"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/managed/projects/{project_id}/planning/{conversation_id}/drafts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Planning Drafts
+         * @description Borradores en disco frente a lo que conoce el harness; archivos ajenos e inválidos.
+         */
+        get: operations["managed_planning_drafts"];
+        /**
+         * Planning Draft Edit
+         * @description Edición del usuario con CAS sobre el hash en disco; nunca sobrescribe otro cambio.
+         */
+        put: operations["managed_planning_draft_edit"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/managed/projects/{project_id}/planning/{conversation_id}/proposals/{proposal_id}/apply": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Planning Apply
+         * @description El harness escribe el borrador confirmado si sigue siendo el que leyó el turno (CAS).
+         */
+        post: operations["managed_planning_apply"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/managed/projects/{project_id}/planning/{conversation_id}/proposals/{proposal_id}/dismiss": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Planning Dismiss */
+        post: operations["managed_planning_dismiss"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/managed/projects/{project_id}/planning/{conversation_id}/questions/defer": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Planning Defer
+         * @description Aplazamiento explícito de una pregunta bloqueante, con motivo; no la responde.
+         */
+        post: operations["managed_planning_defer"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/managed/projects/{project_id}/planning/{conversation_id}/accept/preview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Definition Accept Preview
+         * @description Archivos íntegros del commit raíz, archivo phase-000, bloques, P001, perfil y comandos; o bloqueos.
+         */
+        post: operations["managed_definition_accept_preview"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/managed/projects/{project_id}/planning/{conversation_id}/accept": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Definition Accept
+         * @description Confirma la vista previa exacta: bootstrap D037 con la plantilla v2 y P001 ACTIVE adoptada.
+         */
+        post: operations["managed_definition_accept"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/health": {
         parameters: {
             query?: never;
@@ -1777,6 +1973,8 @@ export interface components {
             discovery_selection: {
                 [key: string]: string;
             };
+            /** @description H6.5: bootstrap v2 desde la conversación de definición; `operation` queda null en proyectos v2. */
+            definition_operation?: components["schemas"]["DefinitionOperationRead"] | null;
         };
         /** ChatConversationCreate */
         ChatConversationCreate: {
@@ -2062,6 +2260,156 @@ export interface components {
             date: string | null;
             /** Phase */
             phase: string | null;
+        };
+        /** DefinitionAcceptCreate */
+        DefinitionAcceptCreate: {
+            /** Preview Sha256 */
+            preview_sha256: string;
+            /**
+             * Confirmed
+             * @constant
+             */
+            confirmed: true;
+            /** Reason */
+            reason: string;
+            /** Resume Operation Id */
+            resume_operation_id?: string | null;
+            /** Expected Version */
+            expected_version?: number | null;
+        };
+        /** DefinitionDocumentRead */
+        DefinitionDocumentRead: {
+            /** Path */
+            path: string;
+            /** Content */
+            content: string;
+            /** Sha256 */
+            sha256: string;
+            /**
+             * Before Sha256
+             * @description Hash del borrador en disco que se sustituye; null si no existía.
+             */
+            before_sha256: string | null;
+            /**
+             * Origin
+             * @enum {string}
+             */
+            origin: "draft" | "draft+blocks" | "template" | "archive";
+        };
+        /** DefinitionOperationRead */
+        DefinitionOperationRead: {
+            /** Id */
+            id: string;
+            /** Root */
+            root: string;
+            /** Run Id */
+            run_id: string;
+            /** Phase Id */
+            phase_id: string | null;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "QUEUED" | "COMPLETED" | "INTERRUPTED";
+            preview: components["schemas"]["DefinitionPreviewRead"];
+            /** Intent */
+            intent: {
+                [key: string]: unknown;
+            };
+            /** Decision */
+            decision: {
+                [key: string]: unknown;
+            };
+            /** Result */
+            result: {
+                [key: string]: unknown;
+            } | null;
+            /** Created At */
+            created_at: string;
+            /** Finished At */
+            finished_at: string | null;
+            /** Expected Version */
+            expected_version: number;
+            /** Run Status */
+            run_status: string;
+            /** First Task Run */
+            first_task_run: {
+                [key: string]: string;
+            } | null;
+        };
+        /**
+         * DefinitionPreviewRead
+         * @description Aceptación de la definición v2: bloqueos o los archivos íntegros del commit raíz (bootstrap D037).
+         */
+        DefinitionPreviewRead: {
+            /** Template */
+            template: {
+                [key: string]: string;
+            };
+            /** Input */
+            input: {
+                [key: string]: string;
+            };
+            /** Definition */
+            definition: {
+                [key: string]: unknown;
+            };
+            /** Context Sha256 */
+            context_sha256: string;
+            /** Documents */
+            documents: components["schemas"]["DefinitionDocumentRead"][];
+            /** Phase */
+            phase: {
+                [key: string]: unknown;
+            } | null;
+            /** First Task */
+            first_task: {
+                [key: string]: unknown;
+            } | null;
+            /** Task Text */
+            task_text: string | null;
+            /** Blockers */
+            blockers: string[];
+            /** Warnings */
+            warnings: string[];
+            /** Preparation */
+            preparation: {
+                [key: string]: unknown;
+            }[];
+            /** Validations */
+            validations: {
+                [key: string]: unknown;
+            }[];
+            /** Policy */
+            policy: {
+                [key: string]: unknown;
+            };
+            /** Profile */
+            profile: string;
+            /** Versions */
+            versions: {
+                [key: string]: string | null;
+            };
+            /** Target */
+            target: {
+                [key: string]: unknown;
+            };
+            /** Author */
+            author: {
+                [key: string]: string;
+            };
+            /** Git */
+            git: {
+                [key: string]: string;
+            };
+            /** Ready */
+            ready: boolean;
+            /** Preview Sha256 */
+            preview_sha256: string;
+            /** Resume Operation Id */
+            resume_operation_id?: string | null;
+            /** Expected Version */
+            expected_version?: number | null;
         };
         /** DocumentChange */
         DocumentChange: {
@@ -2803,7 +3151,7 @@ export interface components {
              * Purpose
              * @enum {string}
              */
-            purpose: "task" | "phase_check" | "phase_close" | "chat" | "document_export" | "bootstrap" | "bootstrap_discovery" | "document_edit" | "phase_transition";
+            purpose: "task" | "phase_check" | "phase_close" | "chat" | "document_export" | "bootstrap" | "bootstrap_discovery" | "definition" | "phase_planning" | "document_edit" | "phase_transition";
             /** Actions */
             actions: ("revalidate" | "retry_executor" | "commit" | "permissions")[];
             /** Versions */
@@ -2845,7 +3193,7 @@ export interface components {
              * Purpose
              * @enum {string}
              */
-            purpose: "task" | "phase_check" | "phase_close" | "chat" | "document_export" | "bootstrap" | "bootstrap_discovery" | "document_edit" | "phase_transition";
+            purpose: "task" | "phase_check" | "phase_close" | "chat" | "document_export" | "bootstrap" | "bootstrap_discovery" | "definition" | "phase_planning" | "document_edit" | "phase_transition";
         };
         /** MetricAccountingRead */
         MetricAccountingRead: {
@@ -3638,6 +3986,7 @@ export interface components {
             expected_version: number;
             /** Next Steps */
             next_steps?: string | null;
+            plan_proposal?: components["schemas"]["PlanProposalRef"] | null;
             /** Preview Sha256 */
             preview_sha256: string;
             /** Resume Operation Id */
@@ -3657,6 +4006,8 @@ export interface components {
              * @description Plan NEXT_STEPS de la fase siguiente del ROADMAP; null si no hay más fases.
              */
             next_steps?: string | null;
+            /** @description H6.5: plan propuesto en una conversación phase_planning, en lugar de next_steps. */
+            plan_proposal?: components["schemas"]["PlanProposalRef"] | null;
         };
         /** PhaseTransitionPreviewRead */
         PhaseTransitionPreviewRead: {
@@ -3701,6 +4052,323 @@ export interface components {
             } | null;
             /** Warnings */
             warnings: string[];
+            /** Plan Origin */
+            plan_origin?: {
+                [key: string]: unknown;
+            } | null;
+        };
+        /** PlanProposalRef */
+        PlanProposalRef: {
+            /** Conversation Id */
+            conversation_id: string;
+            /** Proposal Id */
+            proposal_id: string;
+            /** Proposal Sha256 */
+            proposal_sha256: string;
+        };
+        /** PlanningApplyCreate */
+        PlanningApplyCreate: {
+            /** Expected Version */
+            expected_version: number;
+            /** Proposal Sha256 */
+            proposal_sha256: string;
+            /**
+             * Confirmed
+             * @constant
+             */
+            confirmed: true;
+        };
+        /** PlanningBriefRead */
+        PlanningBriefRead: {
+            /** Content */
+            content: string;
+            /** Sha256 */
+            sha256: string;
+            /** Size */
+            size: number;
+        };
+        /** PlanningConversationCreate */
+        PlanningConversationCreate: {
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "definition" | "phase_planning";
+            /** Title */
+            title: string;
+            /**
+             * Brief
+             * @description Brief Markdown (UTF-8, máximo 256 KiB) de una definición; null en la planificación de fase.
+             */
+            brief?: string | null;
+            /**
+             * Phase Id
+             * @description Fase más reciente del checkout cuya siguiente se planifica.
+             */
+            phase_id?: string | null;
+        };
+        /** PlanningConversationRead */
+        PlanningConversationRead: {
+            /** Id */
+            id: string;
+            /** Project Id */
+            project_id: string | null;
+            /** Root */
+            root: string;
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "definition" | "phase_planning";
+            /** Title */
+            title: string;
+            phase: components["schemas"]["ChatPhaseRead"] | null;
+            /** Brief */
+            brief: {
+                [key: string]: unknown;
+            } | null;
+            /** Known */
+            known: {
+                [key: string]: string | null;
+            };
+            /** Log */
+            log: {
+                [key: string]: unknown;
+            }[];
+            /** Questions */
+            questions: components["schemas"]["PlanningQuestionRead"][];
+            /** Pending */
+            pending: string[];
+            /** Actor */
+            actor: {
+                [key: string]: unknown;
+            };
+            /** Version */
+            version: number;
+            /** Created At */
+            created_at: string;
+            /** Updated At */
+            updated_at: string;
+            /**
+             * Created
+             * @description Definición ya convertida en proyecto por el bootstrap v2.
+             */
+            created: boolean;
+            /** Turns */
+            turns: components["schemas"]["PlanningTurnRead"][];
+            /** Proposals */
+            proposals: components["schemas"]["PlanningProposalRead"][];
+            /** Actions */
+            actions: ("message" | "edit_draft" | "defer_question" | "accept")[];
+            operation?: components["schemas"]["DefinitionOperationRead"] | null;
+        };
+        /** PlanningConversationSummaryRead */
+        PlanningConversationSummaryRead: {
+            /** Id */
+            id: string;
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "definition" | "phase_planning";
+            /** Title */
+            title: string;
+            /** Phase Id */
+            phase_id: string | null;
+            /** Phase Code */
+            phase_code: string | null;
+            /** Turns */
+            turns: number;
+            /** Version */
+            version: number;
+            /** Created At */
+            created_at: string;
+            /** Updated At */
+            updated_at: string;
+        };
+        /** PlanningDeferCreate */
+        PlanningDeferCreate: {
+            /** Expected Version */
+            expected_version: number;
+            /** Question Id */
+            question_id: string;
+            /** Reason */
+            reason: string;
+        };
+        /** PlanningDismissCreate */
+        PlanningDismissCreate: {
+            /** Expected Version */
+            expected_version: number;
+            /** Reason */
+            reason: string;
+        };
+        /** PlanningDraftEdit */
+        PlanningDraftEdit: {
+            /** Expected Version */
+            expected_version: number;
+            /** Path */
+            path: string;
+            /**
+             * Content
+             * @description Contenido completo; null borra el borrador.
+             */
+            content: string | null;
+            /**
+             * Base Sha256
+             * @description CAS: hash actual en disco; null si no existe.
+             */
+            base_sha256: string | null;
+        };
+        /** PlanningDraftStateRead */
+        PlanningDraftStateRead: {
+            /** Path */
+            path: string;
+            /** Sha256 */
+            sha256: string | null;
+            /** Known Sha256 */
+            known_sha256: string | null;
+            /** User Edited */
+            user_edited: boolean;
+        };
+        /** PlanningDraftsRead */
+        PlanningDraftsRead: {
+            /** Created */
+            created: boolean;
+            /** Allowed */
+            allowed: {
+                [key: string]: string[];
+            };
+            /** Drafts */
+            drafts: components["schemas"]["PlanningDraftStateRead"][];
+            /** Foreign */
+            foreign: string[];
+            /** Foreign Truncated */
+            foreign_truncated: boolean;
+            /** Invalid */
+            invalid: string[];
+            /** Import Required */
+            import_required: boolean;
+        };
+        /** PlanningMessageCreate */
+        PlanningMessageCreate: {
+            /** Expected Version */
+            expected_version: number;
+            /** Text */
+            text: string;
+        };
+        /** PlanningProposalRead */
+        PlanningProposalRead: {
+            /** Id */
+            id: string;
+            /** Number */
+            number: number;
+            /** Turn Id */
+            turn_id: string;
+            /** Turn Number */
+            turn_number: number;
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "draft" | "plan";
+            /** Path */
+            path: string | null;
+            /** Content */
+            content: string;
+            /** Reason */
+            reason: string;
+            /** Content Sha256 */
+            content_sha256: string;
+            /**
+             * Base Sha256
+             * @description CAS: hash del borrador que leyó el turno; null si no existía.
+             */
+            base_sha256: string | null;
+            /** Proposal Sha256 */
+            proposal_sha256: string;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "PROPOSED" | "APPLIED" | "ACCEPTED" | "DISMISSED" | "SUPERSEDED";
+            /** Decision */
+            decision: {
+                [key: string]: unknown;
+            } | null;
+            /** Version */
+            version: number;
+            /** Created At */
+            created_at: string;
+            /** Actions */
+            actions: ("apply" | "dismiss")[];
+        };
+        /** PlanningQuestionRead */
+        PlanningQuestionRead: {
+            /** Id */
+            id: string;
+            /** Text */
+            text: string;
+            /** Blocking */
+            blocking: boolean;
+            /** Deferred */
+            deferred: {
+                [key: string]: unknown;
+            } | null;
+        };
+        /** PlanningTurnRead */
+        PlanningTurnRead: {
+            /** Id */
+            id: string;
+            /** Number */
+            number: number;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "QUEUED" | "ANSWERED" | "FAILED" | "UNKNOWN" | "REFUSED";
+            /** Run Id */
+            run_id: string;
+            /** Run Status */
+            run_status: string;
+            /** Message */
+            message: string;
+            /** Context Sha256 */
+            context_sha256: string;
+            /** Request Sha256 */
+            request_sha256: string;
+            /**
+             * Drafts
+             * @description Borradores congelados (ruta, hash, tamaño); solo definición.
+             */
+            drafts: {
+                [key: string]: unknown;
+            }[];
+            /**
+             * User Edits
+             * @description Ediciones del usuario detectadas por hash al congelar.
+             */
+            user_edits: {
+                [key: string]: unknown;
+            }[];
+            /**
+             * Documents
+             * @description Documentos congelados; solo planificación de fase.
+             */
+            documents: {
+                [key: string]: unknown;
+            }[];
+            /** Result */
+            result: {
+                [key: string]: unknown;
+            } | null;
+            /** Actor */
+            actor: {
+                [key: string]: unknown;
+            };
+            /** Created At */
+            created_at: string;
+            /** Finished At */
+            finished_at: string | null;
         };
         /** ProblemRead */
         ProblemRead: {
@@ -8968,6 +9636,782 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ChatConversationRead"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+        };
+    };
+    managed_planning_conversations: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Obligatoria con valor 1 en mutaciones (protección CSRF). */
+                "x-harness-local"?: string | null;
+            };
+            path: {
+                project_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PlanningConversationSummaryRead"][];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+        };
+    };
+    managed_planning_create: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Obligatoria con valor 1 en mutaciones (protección CSRF). */
+                "x-harness-local"?: string | null;
+            };
+            path: {
+                project_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PlanningConversationCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PlanningConversationRead"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+        };
+    };
+    managed_planning_conversation: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Obligatoria con valor 1 en mutaciones (protección CSRF). */
+                "x-harness-local"?: string | null;
+            };
+            path: {
+                project_id: string;
+                conversation_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PlanningConversationRead"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+        };
+    };
+    managed_planning_brief: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Obligatoria con valor 1 en mutaciones (protección CSRF). */
+                "x-harness-local"?: string | null;
+            };
+            path: {
+                project_id: string;
+                conversation_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PlanningBriefRead"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+        };
+    };
+    managed_planning_message: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Misma clave y misma acción devuelven el mismo job. */
+                "Idempotency-Key": string;
+                /** @description Obligatoria con valor 1 en mutaciones (protección CSRF). */
+                "x-harness-local"?: string | null;
+            };
+            path: {
+                project_id: string;
+                conversation_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PlanningMessageCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ManagedJobRead"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+        };
+    };
+    managed_planning_drafts: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Obligatoria con valor 1 en mutaciones (protección CSRF). */
+                "x-harness-local"?: string | null;
+            };
+            path: {
+                project_id: string;
+                conversation_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PlanningDraftsRead"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+        };
+    };
+    managed_planning_draft_edit: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Obligatoria con valor 1 en mutaciones (protección CSRF). */
+                "x-harness-local"?: string | null;
+            };
+            path: {
+                project_id: string;
+                conversation_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PlanningDraftEdit"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PlanningConversationRead"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+        };
+    };
+    managed_planning_apply: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Obligatoria con valor 1 en mutaciones (protección CSRF). */
+                "x-harness-local"?: string | null;
+            };
+            path: {
+                project_id: string;
+                conversation_id: string;
+                proposal_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PlanningApplyCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PlanningConversationRead"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+        };
+    };
+    managed_planning_dismiss: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Obligatoria con valor 1 en mutaciones (protección CSRF). */
+                "x-harness-local"?: string | null;
+            };
+            path: {
+                project_id: string;
+                conversation_id: string;
+                proposal_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PlanningDismissCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PlanningConversationRead"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+        };
+    };
+    managed_planning_defer: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Obligatoria con valor 1 en mutaciones (protección CSRF). */
+                "x-harness-local"?: string | null;
+            };
+            path: {
+                project_id: string;
+                conversation_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PlanningDeferCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PlanningConversationRead"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+        };
+    };
+    managed_definition_accept_preview: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Obligatoria con valor 1 en mutaciones (protección CSRF). */
+                "x-harness-local"?: string | null;
+            };
+            path: {
+                project_id: string;
+                conversation_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DefinitionPreviewRead"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+        };
+    };
+    managed_definition_accept: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Misma clave y misma acción devuelven el mismo job. */
+                "Idempotency-Key": string;
+                /** @description Obligatoria con valor 1 en mutaciones (protección CSRF). */
+                "x-harness-local"?: string | null;
+            };
+            path: {
+                project_id: string;
+                conversation_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DefinitionAcceptCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ManagedJobRead"];
                 };
             };
             /** @description Forbidden */

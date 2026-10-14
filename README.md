@@ -12,6 +12,7 @@ entrada CLI gestionada. Reportes JUnit congelados por validación y detalle API/
 Backup/restauración local con manifiesto y guardia de consulta, sin reanudar procesos.
 Retención explícita de originales stdout/stderr con preview, auditoría y consulta.
 Métricas por intento materializadas con procedencia y agregados de solo lectura (H6.4, D074).
+Creación v2 desde un brief y planificación de fase conversacionales, con borradores en disco y CAS (H6.5, D075).
 Ejecutor de validaciones nativas implementado offline (D047): argv/configuración
 congelados, captura acotada y recuperación que conserva el lock ante procesos
 vivos o inciertos. Activación solo por composición del servidor, sin proveedores
@@ -55,6 +56,7 @@ el diagnóstico anterior a D047.
 - [Backup/restauración local H5.2: procedimiento, consistencia y límites](docs/discovery/H5.2_BACKUP.md).
 - [Retención local de logs H5.3: política, comandos y recuperación](docs/discovery/H5.3_RETENTION.md).
 - [Métricas por intento y estadísticas H6.4: catálogo, relleno y API](docs/discovery/H6.4_METRICS.md).
+- [Creación y planificación conversacionales H6.5: borradores, aceptación y API](docs/discovery/H6.5_CONVERSATIONAL_CREATION.md).
 - [Smoke cli-3: MCP aceptado, fallo de autenticación Claude](docs/discovery/H2.3_SMOKE_CLI3.md).
 - [Git, worktree y commit acotado H2.4](docs/discovery/H2.4_GIT.md).
 - [Migración a modo gestionado H2.5](docs/discovery/H2.5_MIGRATION.md).
@@ -207,7 +209,7 @@ siguen conservados. La autorización cubrió una ejecución, sin relanzamiento.
 ## Importación legacy de lectura
 
 Migrar con el servicio detenido antes de importar; el esquema actual es
-`0014_attempt_metrics`. Comandos comprobados desde la raíz, con datos sintéticos:
+`0015_planning`. Comandos comprobados desde la raíz, con datos sintéticos:
 
 ```sh
 UV_CACHE_DIR=.local/uv-cache uv run --frozen --offline alembic upgrade head
@@ -347,9 +349,19 @@ purga autorizada. Los agregados se consultan en `/api/managed/metrics/{summary,a
 (global o por proyecto, fase y tarea). Sin UI todavía.
 [Catálogo, relleno, API y límites](docs/discovery/H6.4_METRICS.md).
 
+Un proyecto v2 nuevo se crea por conversación (H6.5, D075) bajo `/api/managed/projects/{id}/planning`:
+brief Markdown, turnos de solo lectura del revisor que proponen borradores completos por documento, y
+borradores que el harness escribe en la carpeta destino solo al aplicar una propuesta confirmada (CAS sobre
+el hash leído). El usuario puede editarlos en su editor o por API; el turno siguiente lo detecta. Cualquier
+archivo ajeno bloquea la aceptación. Aceptar muestra los archivos íntegros, `archive/phase-000/` y P001, y
+confirma el bootstrap D037 con la plantilla v2. La conversación `phase_planning` propone el plan de la fase
+siguiente, que la transición usa con `plan_proposal`. Requiere `documents = "v2"` y, para crear,
+`bootstrap_enabled`. Sin UI todavía.
+[Recorrido, API y límites](docs/discovery/H6.5_CONVERSATIONAL_CREATION.md).
+
 ## Bootstrap guiado (H4.2)
 
-Migrar con el servicio detenido a `0014_attempt_metrics`. Registrar en el servidor una
+Migrar con el servicio detenido a `0015_planning`. Registrar en el servidor una
 carpeta **existente y vacía**, con su `ProjectContext`, versiones, perfil/política y
 `ManagedProject(..., bootstrap_enabled=True)`. Se exige una `commit_factory` con
 `GitWorkspace`; los puertos de agentes solo son necesarios para la propuesta
@@ -361,7 +373,8 @@ solicitar si se desea una propuesta Codex de solo lectura, registrar las decisio
 de alcance/arquitectura y revisar los documentos/fase/tarea. Confirmar el preview
 con motivo crea un job y commit raíz, y adopta la primera fase en SQLite. La primera
 tarea documental se encola por una acción propia y sigue el motor/revisión/commit
-normales. Carpeta con contenido → flujo de importación, sin sobrescribir.
+normales. Carpeta con contenido → flujo de importación, sin sobrescribir. Con
+`documents = "v2"` este formulario no aplica: la creación es la conversación H6.5.
 Ante caída, confirmar el escritor detenido en sus jobs y reconfirmar el preview
 para conciliar el mismo run/commit. No ejecuta preparación ni instala un stack.
 [Contrato, verificaciones y límites](docs/discovery/H4.2_BOOTSTRAP.md).

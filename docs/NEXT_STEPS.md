@@ -1,45 +1,40 @@
-# Siguiente paso: H6.5, creación y planificación conversacionales
+# Siguiente paso: H6.2, UI de producto (tarea aparte, D073)
 
 Estado al 2026-10-14:
 
-- **H6.4 implementado offline (D074).** [Catálogo, entrega y límites](discovery/H6.4_METRICS.md),
-  [caracterización de D071](discovery/H6.4_STREAM_CATALOG.json).
-- Migración `0014_attempt_metrics`: una fila por intento resuelto, escrita en la transacción del resultado,
-  con procedencia por campo y null distinto de cero. Captura `terminal-2` (turnos, duración de API y
-  contadores derivados) sin cambiar el adaptador `cli-9`.
-- Relleno explícito e idempotente: `harness-local metrics-backfill --database RUTA [--artifact-root RAÍZ]`.
-- Agregados de solo lectura en `/api/managed/metrics/*` (resumen, intentos, grupos, modelos, tareas) y
-  tokens/turnos en el SUMMARY de las fases que se archiven. Sin UI ni proveedores.
-- H6.3 (D072/D073) commiteado por separado antes de H6.4.
+- **H6.5 implementado offline (D075).** [Entrega, API y límites](discovery/H6.5_CONVERSATIONAL_CREATION.md).
+- Migración `0015_planning`: conversaciones `definition` y `phase_planning`, turnos congelados y propuestas
+  (borradores por documento o plan de la fase siguiente). Roles aditivos `definition` y `planning` en `cli-9`
+  y plantillas versionadas `define-project` y `plan-phase`.
+- Borradores en la carpeta destino escritos solo por el harness al aplicar una propuesta confirmada, con CAS;
+  ediciones del usuario en disco o por API detectadas por hash; archivos ajenos bloquean la aceptación.
+- Aceptación → bootstrap D037 con plantilla v2: commit raíz, `archive/phase-000/{BRIEF,DEFINITION}.md`,
+  bloques regenerados y P001 ACTIVE adoptada. La transición acepta `plan_proposal`.
+- API bajo `/api/managed/projects/{id}/planning`; OpenAPI y tipos regenerados. Sin UI ni proveedores.
 
 ## Tarea concreta propuesta, no iniciada
 
-**H6.5 — Creación y planificación conversacionales, offline (D072 §5.1, §11; D073 puntos 4 y 7).**
+**H6.2 — UI de producto (D054, D072 §6–§9, D073 punto 6).** Tarea completamente distinta de las anteriores,
+con su plugin de diseño. Construye la interfaz una sola vez sobre los contratos ya estables (H6.3–H6.5).
 
-1. Conversación `definition` sobre la infraestructura de chat (D035): turnos nuevos del revisor en solo
-   lectura con contexto congelado (brief Markdown con hash, máximo 256 KiB; borradores actuales con su
-   hash; turnos anteriores). Salida estructurada: respuesta, preguntas abiertas, propuestas de borrador por
-   documento (contenido completo y motivo) y pendientes para aceptar. Salida inválida detiene el turno.
-2. Borradores en la carpeta destino, sin commit: aplicar una propuesta escribe con CAS sobre el hash
-   anterior; una edición del usuario entre medias es conflicto y no se sobrescribe. El turno siguiente
-   detecta por hash las ediciones del usuario. Solo rutas de la plantilla v2 (`skeleton`),
-   `architecture/*.md` y `decisions/*.md`; cualquier otro archivo bloquea la aceptación. El agente nunca
-   escribe.
-3. Aceptación con vista previa determinista: archivos íntegros, `archive/phase-000/{BRIEF,DEFINITION}.md`,
-   bloques, definición de P001 derivada del ROADMAP, perfil, política y comandos. Bloqueos: documentos
-   obligatorios ausentes, ROADMAP sin fases, P001 sin objetivo/criterios, NEXT_STEPS sin una tarea
-   P001-TNNN válida o preguntas bloqueantes abiertas. La confirmación lanza el bootstrap D037 con la
-   plantilla v2 (`documents = "v2"`), commit raíz con esos bytes y P001 ACTIVE adoptada.
-4. Conversación `phase_planning` con el mismo mecanismo para proponer el plan de la fase siguiente que
-   hoy aporta el usuario en `phase_transition`.
+Antes de implementar, fijar el alcance con el usuario y dividirlo en entregas verificables, por ejemplo:
 
-Criterios: de una carpeta vacía, con conversación sintética y ediciones en disco y por API, se llega al
-commit raíz con P001 y `phase-000`; las ediciones concurrentes se detectan; no se admite ningún archivo
-ajeno; el agente no escribe; bootstrap v1 y proyectos existentes siguen igual. Sin proveedores ni UI.
-Actualizar STATE, NEXT_STEPS y DECISIONS al terminar.
+1. Shell con enrutado por URL (§7: proyectos, fases `PNNN`, tareas `PNNN-TNNN`, runs) y carga limitada por
+   recurso; el servidor del wheel sirve `index.html` en rutas que no son de API.
+2. Documentación y chat: árbol y editor Markdown seguro con diff confirmado (`document_edit`), deriva y
+   bloques bloqueados; chat contextual existente.
+3. Creación: asistente sobre `/planning` (brief, turnos, aplicar/descartar borradores, edición con CAS,
+   aplazar preguntas, vista previa de aceptación con bloqueos) y planificación de fase → transición con
+   `plan_proposal`.
+4. Estadísticas: métricas por tarea, tests OK/KO y agregados globales y por proyecto (`/metrics/*`).
 
-Después: UI H6.2 como tarea completamente distinta (D073), con métricas y estadísticas sobre los
-endpoints de H6.4.
+Decisiones pendientes para el alcance: registro de proyectos desde la UI (D054, convivencia con el TOML
+`local-config`, que hoy no expone `bootstrap_enabled`), enrutador propio sin dependencia nueva y carga
+diferida de Mermaid. QA visual con navegador sobre `scripts/dev` y datos sintéticos.
+
+Criterios orientativos: cada URL se abre por enlace directo y recarga; ninguna acción repite efectos al
+reintentar; las confirmaciones se ligan a hash y versión; recorrido sintético completo de creación →
+primera tarea → cierre → transición con plan propuesto. Actualizar STATE, NEXT_STEPS y DECISIONS al terminar.
 
 D071 y los consentimientos anteriores siguen agotados. Cualquier prueba real requiere una propuesta y un
 consentimiento nuevos. Sin push ni publicación.

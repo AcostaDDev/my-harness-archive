@@ -66,7 +66,9 @@ class TransitionRepository:
     def __init__(self, managed):
         self.managed = managed
 
-    def preview(self, context, phase_id, git, next_steps=None):
+    def preview(self, context, phase_id, git, next_steps=None, plan_proposal=None):
+        """`plan_proposal` (H6.5): referencia exacta a un plan propuesto en `phase_planning`, en lugar del texto."""
+        origin = None
         with Session(self.managed.engine) as session:
             phase = _phase(session, context, phase_id)
             stored = pending(session, phase, 'transition')
@@ -75,26 +77,32 @@ class TransitionRepository:
                         'resume_operation_id': stored.id}
             if unresolved(session, phase.root):
                 raise Conflict('A document intent awaits reconciliation; recover it first')
+            if plan_proposal is not None:
+                if next_steps is not None:
+                    raise ValueError('Provide either the plan text or a plan proposal, not both')
+                from harness_local.storage.planning import PlanningRepository
+                next_steps, origin = PlanningRepository(self.managed).plan(session, context, phase.id, plan_proposal)
             state, version = snapshot(session, phase), phase.version
         try:
-            shown = preview_transition(context, state, git, next_steps)
+            shown = preview_transition(context, state, git, next_steps, origin)
         except (ValueError, OSError, UnicodeError, RuntimeError) as exc:  # RuntimeError: captura/sellado Git
             raise Conflict(str(exc)) from exc
         return {**shown, 'expected_version': version, 'resume_operation_id': None}
 
     def submit(self, context, phase_id, expected, *, key, versions, preview_sha256, reason, confirmed, git,
-               next_steps=None, resume_operation_id=None):
+               next_steps=None, resume_operation_id=None, plan_proposal=None):
         if confirmed is not True or not isinstance(reason, str) or not reason.strip():
             raise ValueError('Explicit confirmation of the exact diff and reason required')
         marker = freeze({'action': 'phase_transition', 'phase_id': phase_id, 'expected_version': expected,
                          'preview_sha256': preview_sha256, 'reason': reason, 'confirmed': confirmed,
-                         'resume_operation_id': resume_operation_id})
+                         'resume_operation_id': resume_operation_id,
+                         **({'plan_proposal': plan_proposal} if plan_proposal is not None else {})})
         with Session(self.managed.engine) as session:
             existing = self.managed._existing(session, key, marker)
             if existing:
                 return _job(existing)
         try:
-            shown = self.preview(context, phase_id, git, next_steps)
+            shown = self.preview(context, phase_id, git, next_steps, plan_proposal)
         except Conflict:
             with Session(self.managed.engine) as session:
                 existing = self.managed._existing(session, key, marker)
@@ -129,6 +137,10 @@ class TransitionRepository:
                                status='QUEUED', previous_status=phase.status, created_at=self.managed._now(),
                                request={'preview': saved, 'actor': actor(), 'reason': reason})
                 session.add(op)
+                if shown.get('plan_origin') is not None:
+                    # El plan propuesto queda aceptado con la transición que lo usa, en la misma transacción.
+                    from harness_local.storage.planning import PlanningRepository
+                    PlanningRepository(self.managed).mark_plan(session, shown['plan_origin'], job.run_id, job.id)
             _event(self.managed, session, phase, 'phase_transition_queued', {
                 'operation_id': op.id, 'run_id': job.run_id, 'job_id': job.id, 'preview_sha256': preview_sha256,
                 'next': (shown['next'] or {}).get('code'), 'actor': actor(), 'reason': reason})

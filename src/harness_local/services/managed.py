@@ -223,6 +223,28 @@ class LocalSupervisor:
                 history, outcome = chat_turn(context, record.history, ChatRepository(self.repository).snapshot(claim.run_id),
                                              agents, evidence, journal,
                                              PromptRepository(self.repository.engine).catalog(context))
+            elif request["action"] == "planning_turn":
+                # H6.5: turno de definición o de planificación de fase, de solo lectura y con petición congelada.
+                from harness_local.core.engine.definition import planning_turn
+                from harness_local.storage.planning import PlanningRepository
+                from harness_local.storage.prompts import PromptRepository
+                snapshot = PlanningRepository(self.repository).snapshot(claim.run_id)
+                agents, _, evidence = self.ports_factory(context, versions)
+                if hasattr(agents, "bind_process_journal"):
+                    agents.bind_process_journal(journal)
+                if snapshot["kind"] == "definition":
+                    if self.commit_factory is None:
+                        raise RuntimeError("Definition turns require the configured Git reader")
+                    reader = self.commit_factory(context, versions)
+
+                    def observe():
+                        return reader.inspect_definition(context)
+                else:
+                    def observe():
+                        captured = evidence.capture(context)
+                        return {"base_revision": captured.base_revision, "fingerprint": captured.fingerprint}
+                history, outcome = planning_turn(context, record.history, snapshot, agents, observe, journal,
+                                                 PromptRepository(self.repository.engine).catalog(context))
             elif request["action"] in ("phase_check", "phase_close"):
                 # H3.3: puertas de fase con el escritor Git configurado; nunca editan documentos.
                 if self.commit_factory is None:

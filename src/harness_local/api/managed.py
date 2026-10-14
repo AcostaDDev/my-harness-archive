@@ -186,11 +186,21 @@ def managed_router(runtime: ManagedRuntime):
     def bootstrap_status(project_id: str):
         item = project(project_id)
         operation = call(BootstrapRepository(runtime.repository).get, item.context.root)
-        target = call(bootstrap_writer(item).inspect_bootstrap, item.context) if item.bootstrap_enabled and not operation else None
+        v2 = item.context.documents is not None
+        if item.bootstrap_enabled and not operation:
+            writer = bootstrap_writer(item)
+            # H6.5: en v2 los borradores de la definición no exigen importación; solo `.git` o un repositorio padre.
+            target = call(writer.inspect_definition if v2 else writer.inspect_bootstrap, item.context)
+        else:
+            target = None
+        diagnostic = target.get('diagnostic') if target else None
+        if v2 and target and target['import_required']:
+            diagnostic = 'La carpeta pertenece a un repositorio o contiene .git: usa el flujo de importación.'
         return {'enabled': item.bootstrap_enabled, 'import_required': bool(target and target['import_required']),
-                'diagnostic': target['diagnostic'] if target else None, 'operation': operation,
+                'diagnostic': diagnostic, 'operation': None if v2 else operation,
+                'definition_operation': operation if v2 else None,
                 'discovery': call(DiscoveryRepository(runtime.repository).latest, item.context.root),
-                'discovery_available': item.bootstrap_enabled and runtime.config.ports_factory is not None,
+                'discovery_available': item.bootstrap_enabled and not v2 and runtime.config.ports_factory is not None,
                 'discovery_selection': {'model': item.context.policy.planner_model,
                                         'effort': item.context.policy.planner_effort,
                                         **({'provider': item.versions['reviewer_provider']}
@@ -635,7 +645,7 @@ def managed_router(runtime: ManagedRuntime):
         """Archivo de la fase terminada, STATE/NEXT_STEPS frescos y fase siguiente del ROADMAP, sin efectos."""
         item = transition_phase(phase_id)
         return call(TransitionRepository(runtime.repository).preview, item.context, phase_id, document_writer(item),
-                    body.next_steps)
+                    body.next_steps, _plan(body))
 
     @router.post('/phases/{phase_id}/transition', response_model=ManagedJobRead, status_code=202,
                  operation_id='managed_phase_transition')
@@ -644,8 +654,11 @@ def managed_router(runtime: ManagedRuntime):
         job = call(TransitionRepository(runtime.repository).submit, item.context, phase_id, body.expected_version,
                    key=idempotency_key, versions=frozen_versions(item), preview_sha256=body.preview_sha256,
                    reason=body.reason, confirmed=body.confirmed, git=document_writer(item), next_steps=body.next_steps,
-                   resume_operation_id=body.resume_operation_id)
+                   resume_operation_id=body.resume_operation_id, plan_proposal=_plan(body))
         return queued(job)
+
+    def _plan(body):
+        return None if body.plan_proposal is None else body.plan_proposal.model_dump()
 
     # --- H6.4: métricas por intento y agregados (solo lectura) ----------------------------------------
     from harness_local.api.schemas import (
@@ -767,5 +780,145 @@ def managed_router(runtime: ManagedRuntime):
         registered_conversation(conversation_id)
         call(runtime.chat.dismiss, conversation_id, proposal_id, body.expected_version, reason=body.reason)
         return conversation_read(conversation_id)
+
+    # --- H6.5: creación y planificación conversacionales -----------------------------------------
+    from harness_local.api.schemas import (
+        DefinitionAcceptCreate, DefinitionPreviewRead, PlanningApplyCreate, PlanningBriefRead,
+        PlanningConversationCreate, PlanningConversationRead, PlanningConversationSummaryRead, PlanningDeferCreate,
+        PlanningDismissCreate, PlanningDraftEdit, PlanningDraftsRead, PlanningMessageCreate,
+    )
+    from harness_local.storage.planning import PlanningRepository
+
+    def planning_repository():
+        return PlanningRepository(runtime.repository)
+
+    def planning_project(project_id: str):
+        item = project(project_id)
+        if item.context.documents is None:
+            raise problem(409, 'documents_layout', 'Las conversaciones de definición y planificación requieren '
+                                                  'el contrato documental D072 (documents = "v2").')
+        return item
+
+    def conversation_of(item, conversation_id: str):
+        root = call(planning_repository().root, conversation_id)
+        if root != str(item.context.root):
+            raise problem(404, 'not_found', 'La conversación pertenece a otro proyecto.')
+        return conversation_id
+
+    def definition_writer(item):
+        """Lectura y escritura de borradores: solo destinos con bootstrap autorizado por el servidor."""
+        return bootstrap_writer(item)
+
+    def planning_read(item, conversation_id):
+        detail = call(planning_repository().get, conversation_id)
+        operation = None
+        if detail['kind'] == 'definition':
+            operation = call(BootstrapRepository(runtime.repository).get, item.context.root)
+        return {**detail, 'project_id': item.id, 'operation': operation}
+
+    @router.get('/projects/{project_id}/planning', response_model=list[PlanningConversationSummaryRead],
+                operation_id='managed_planning_conversations')
+    def planning_list(project_id: str):
+        return call(planning_repository().list, planning_project(project_id).context.root)
+
+    @router.post('/projects/{project_id}/planning', response_model=PlanningConversationRead, status_code=201,
+                 operation_id='managed_planning_create')
+    def planning_create(project_id: str, body: PlanningConversationCreate):
+        """Definición (brief Markdown, destino vacío o con borradores) o planificación de la fase siguiente."""
+        item = planning_project(project_id)
+        writer = definition_writer(item) if body.kind == 'definition' else None
+        conversation_id = call(planning_repository().create, item.context, kind=body.kind, title=body.title, brief=body.brief,
+                               phase_id=body.phase_id, writer=writer)
+        return planning_read(item, conversation_id)
+
+    @router.get('/projects/{project_id}/planning/{conversation_id}', response_model=PlanningConversationRead,
+                operation_id='managed_planning_conversation')
+    def planning_detail(project_id: str, conversation_id: str):
+        item = planning_project(project_id)
+        return planning_read(item, conversation_of(item, conversation_id))
+
+    @router.get('/projects/{project_id}/planning/{conversation_id}/brief', response_model=PlanningBriefRead,
+                operation_id='managed_planning_brief')
+    def planning_brief(project_id: str, conversation_id: str):
+        item = planning_project(project_id)
+        return call(planning_repository().brief, conversation_of(item, conversation_id))
+
+    @router.post('/projects/{project_id}/planning/{conversation_id}/messages', response_model=ManagedJobRead,
+                 status_code=202, operation_id='managed_planning_message')
+    def planning_message(project_id: str, conversation_id: str, body: PlanningMessageCreate,
+                         idempotency_key: IdempotencyKey):
+        """Turno nuevo de solo lectura del revisor con el contexto congelado al encolarlo."""
+        item = planning_project(project_id)
+        conversation_of(item, conversation_id)
+        if runtime.config.ports_factory is None:
+            raise problem(409, 'ports_unconfigured', 'No hay puertos de agente configurados para la conversación.')
+        kind = call(planning_repository().get, conversation_id)['kind']
+        job = call(planning_repository().submit_message, item.context, conversation_id, body.expected_version,
+                   key=idempotency_key, versions=frozen_versions(item), text=body.text,
+                   writer=definition_writer(item) if kind == 'definition' else None)
+        return queued(job)
+
+    @router.get('/projects/{project_id}/planning/{conversation_id}/drafts', response_model=PlanningDraftsRead,
+                operation_id='managed_planning_drafts')
+    def planning_drafts(project_id: str, conversation_id: str):
+        """Borradores en disco frente a lo que conoce el harness; archivos ajenos e inválidos."""
+        item = planning_project(project_id)
+        return call(planning_repository().drafts, item.context, conversation_of(item, conversation_id), definition_writer(item))
+
+    @router.put('/projects/{project_id}/planning/{conversation_id}/drafts', response_model=PlanningConversationRead,
+                operation_id='managed_planning_draft_edit')
+    def planning_draft_edit(project_id: str, conversation_id: str, body: PlanningDraftEdit):
+        """Edición del usuario con CAS sobre el hash en disco; nunca sobrescribe otro cambio."""
+        item = planning_project(project_id)
+        call(planning_repository().edit_draft, item.context, conversation_of(item, conversation_id), body.expected_version,
+             path=body.path, content=body.content, base_sha256=body.base_sha256, writer=definition_writer(item))
+        return planning_read(item, conversation_id)
+
+    @router.post('/projects/{project_id}/planning/{conversation_id}/proposals/{proposal_id}/apply',
+                 response_model=PlanningConversationRead, operation_id='managed_planning_apply')
+    def planning_apply(project_id: str, conversation_id: str, proposal_id: str, body: PlanningApplyCreate):
+        """El harness escribe el borrador confirmado si sigue siendo el que leyó el turno (CAS)."""
+        item = planning_project(project_id)
+        call(planning_repository().apply, item.context, conversation_of(item, conversation_id), proposal_id,
+             body.expected_version, proposal_sha256=body.proposal_sha256, confirmed=body.confirmed,
+             writer=definition_writer(item))
+        return planning_read(item, conversation_id)
+
+    @router.post('/projects/{project_id}/planning/{conversation_id}/proposals/{proposal_id}/dismiss',
+                 response_model=PlanningConversationRead, operation_id='managed_planning_dismiss')
+    def planning_dismiss(project_id: str, conversation_id: str, proposal_id: str, body: PlanningDismissCreate):
+        item = planning_project(project_id)
+        call(planning_repository().dismiss, conversation_of(item, conversation_id), proposal_id, body.expected_version,
+             reason=body.reason)
+        return planning_read(item, conversation_id)
+
+    @router.post('/projects/{project_id}/planning/{conversation_id}/questions/defer',
+                 response_model=PlanningConversationRead, operation_id='managed_planning_defer')
+    def planning_defer(project_id: str, conversation_id: str, body: PlanningDeferCreate):
+        """Aplazamiento explícito de una pregunta bloqueante, con motivo; no la responde."""
+        item = planning_project(project_id)
+        call(planning_repository().defer, conversation_of(item, conversation_id), body.expected_version,
+             question_id=body.question_id, reason=body.reason)
+        return planning_read(item, conversation_id)
+
+    @router.post('/projects/{project_id}/planning/{conversation_id}/accept/preview',
+                 response_model=DefinitionPreviewRead, operation_id='managed_definition_accept_preview')
+    def definition_accept_preview(project_id: str, conversation_id: str):
+        """Archivos íntegros del commit raíz, archivo phase-000, bloques, P001, perfil y comandos; o bloqueos."""
+        item = planning_project(project_id)
+        return call(BootstrapRepository(runtime.repository).preview, item.context,
+                    {'conversation_id': conversation_of(item, conversation_id)}, frozen_versions(item),
+                    definition_writer(item))
+
+    @router.post('/projects/{project_id}/planning/{conversation_id}/accept', response_model=ManagedJobRead,
+                 status_code=202, operation_id='managed_definition_accept')
+    def definition_accept(project_id: str, conversation_id: str, body: DefinitionAcceptCreate,
+                          idempotency_key: IdempotencyKey):
+        """Confirma la vista previa exacta: bootstrap D037 con la plantilla v2 y P001 ACTIVE adoptada."""
+        item = planning_project(project_id)
+        job = call(BootstrapRepository(runtime.repository).submit, item.context,
+                   {'conversation_id': conversation_of(item, conversation_id)}, frozen_versions(item),
+                   definition_writer(item), key=idempotency_key, **body.model_dump())
+        return queued(job)
 
     return router

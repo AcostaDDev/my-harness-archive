@@ -104,6 +104,9 @@ def _operation_module(run):
     if run.purpose == "phase_transition":
         from harness_local.storage import transition
         return transition
+    if run.purpose in ("definition", "phase_planning"):
+        from harness_local.storage import planning
+        return planning
     from harness_local.storage import phases
     return phases
 
@@ -426,7 +429,8 @@ class SQLiteManagedRepository:
                                   status="ACTIVE", started_at=self._now()))
             run.stage = request.role
             run.status = {"planner": "PLANNING", "executor": "EXECUTING", "reviewer": "REVIEWING",
-                          "phase": "CHECKING", "chat": "ANSWERING", "bootstrap": "DISCOVERING"}[request.role]
+                          "phase": "CHECKING", "chat": "ANSWERING", "bootstrap": "DISCOVERING",
+                          "definition": "ANSWERING", "planning": "ANSWERING"}[request.role]
             self._event(session, run, "attempt_started", {"job_id": job.id, "attempt_id": request.id,
                                                         "number": len(attempts) + 1, "role": request.role})
             return request

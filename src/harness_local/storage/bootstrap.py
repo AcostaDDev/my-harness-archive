@@ -1,4 +1,7 @@
-"""H4.2: bootstrap como run/job existente; la fase se adopta junto al fin del job."""
+"""H4.2: bootstrap como run/job existente; la fase se adopta junto al fin del job.
+
+H6.5: con el layout v2 la vista previa sale de la conversación de definición y de los borradores del
+destino (`storage/planning.py`); la intención, el adaptador y la recuperación son los mismos."""
 from uuid import uuid4
 
 from sqlalchemy import select
@@ -6,6 +9,7 @@ from sqlalchemy.orm import Session
 
 from harness_local.core.engine.bootstrap import accepted_input, proposal
 from harness_local.core.engine.contracts import context_snapshot, freeze
+from harness_local.core.engine.documents import layout
 from harness_local.core.engine.phases import digest
 from harness_local.storage.managed import Conflict, _job
 from harness_local.storage.models import (
@@ -32,7 +36,9 @@ def settle(managed, session, run, outcome):
     if op.status != 'QUEUED' or outcome != {'commit': op.intent['commit'], 'tree': op.intent['tree'],
             'documents': {d['path']: d['sha256'] for d in op.preview['documents']}}:
         raise Conflict('Bootstrap result must match its sealed intent')
-    pid = insert_phase(managed, session, op.root, op.preview['phase'], outcome['documents'],
+    # La base adoptada son los documentos de la fase (v1: los seis; v2: ROADMAP, DECISIONS, STATE, NEXT_STEPS).
+    baseline = {path: outcome['documents'][path] for path in op.preview['phase']['documents']}
+    pid = insert_phase(managed, session, op.root, op.preview['phase'], baseline,
                        source={'bootstrap_id': op.id, 'run_id': run.id, 'commit': outcome['commit']})
     op.phase_id, op.status, op.result, op.finished_at = pid, 'COMPLETED', outcome, managed._now()
     managed._event(session, run, 'bootstrap_completed', {'operation_id': op.id, 'phase_id': pid, **outcome})
@@ -70,7 +76,11 @@ class BootstrapRepository:
 
     @staticmethod
     def _empty_authority(session, root):
-        if (session.scalar(select(Run.id).where(Run.root == root, Run.purpose != 'bootstrap_discovery'))
+        if session.scalar(select(Job.id).join(Run, Run.id == Job.run_id).where(
+                Run.root == root, Run.purpose == 'definition', Job.status.in_(('QUEUED', 'ACTIVE', 'RECOVERY_REQUIRED')))):
+            raise Conflict('A definition turn is pending; accept after it settles')
+        if (session.scalar(select(Run.id).where(Run.root == root,
+                                                Run.purpose.notin_(('bootstrap_discovery', 'definition'))))
                 or session.scalar(select(Job.id).join(Run, Run.id == Job.run_id).where(Run.root == root,
                                       Job.status.in_(('QUEUED', 'ACTIVE', 'RECOVERY_REQUIRED'))))
                 or session.scalar(select(Phase.id).where(Phase.root == root))
@@ -87,12 +97,16 @@ class BootstrapRepository:
             raise Conflict('Bootstrap already exists; inspect its operation')
         with Session(self.managed.engine) as session:
             self._empty_authority(session, str(context.root))
-        target = writer.inspect_bootstrap(context)
-        shown = {**proposal(context, data), 'versions': versions, 'target': target,
+        if layout(context) is not None:
+            from harness_local.storage.planning import definition_acceptance
+            content = definition_acceptance(self.managed, context, data, writer)
+        else:
+            target = writer.inspect_bootstrap(context)
+            content = {**proposal(context, data), 'target': target, 'ready': not target['import_required']}
+        shown = {**content, 'versions': versions,
                  'author': {'name': writer.identity.name, 'email': writer.identity.email},
                  'git': {'branch': 'main', 'message': 'Initialize project from confirmed bootstrap',
-                         'timestamp': 'fixed at confirmation'},
-                 'ready': not target['import_required']}
+                         'timestamp': 'fixed at confirmation'}}
         shown['preview_sha256'] = digest(shown)
         return {**shown, 'resume_operation_id': None, 'expected_version': None}
 
@@ -118,7 +132,7 @@ class BootstrapRepository:
         if (not shown['ready'] or shown['preview_sha256'] != preview_sha256
                 or shown['resume_operation_id'] != resume_operation_id
                 or shown['expected_version'] != expected_version
-                or accepted_input(data) != shown['input']):
+                or (accepted_input(data) if layout(context) is None else data) != shown['input']):
             raise Conflict('Preview changed or import required; review the exact result again')
         operation_id = resume_operation_id or str(uuid4())
         intent = None if resume_operation_id else writer.seal_bootstrap(
@@ -149,6 +163,9 @@ class BootstrapRepository:
                     'operation_id': op.id, 'job_id': job.id, 'reason': reason, 'actor': actor()})
                 return _job(job)
             self._empty_authority(session, str(context.root))
+            if layout(context) is not None:
+                from harness_local.storage.planning import lock_for_bootstrap
+                lock_for_bootstrap(session, shown)
             job = self.managed._queue_new_run(session, assessment, context, versions, 'P001-BOOTSTRAP',
                                              'P001', key, marker, purpose='bootstrap')
             session.add(Bootstrap(id=operation_id, root=str(context.root), run_id=job.run_id, status='QUEUED',

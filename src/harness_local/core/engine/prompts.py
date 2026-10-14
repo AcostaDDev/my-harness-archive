@@ -17,12 +17,14 @@ VARIABLES = {
     'reconcile-phase': ('PHASE_ID', 'REVIEW_JSON'),
     'close-phase': ('PHASE_ID', 'EVIDENCE_JSON'),
     'chat-turn': ('CONTEXT_JSON', 'MESSAGE'),
+    'define-project': ('CONTEXT_JSON', 'MESSAGE'),
+    'plan-phase': ('CONTEXT_JSON', 'MESSAGE'),
 }
 ROLES = {'bootstrap-project': 'bootstrap', 'plan-task': 'planner', 'review-task': 'reviewer', 'execute-task': 'executor', 'revise-task': 'executor',
-         'close-phase': 'phase', 'chat-turn': 'chat'}
-# H4.1: plantillas añadidas después de H3.1. Los catálogos congelados en runs anteriores no las
+         'close-phase': 'phase', 'chat-turn': 'chat', 'define-project': 'definition', 'plan-phase': 'planning'}
+# H4.1/H6.5: plantillas añadidas después de H3.1. Los catálogos congelados en runs anteriores no las
 # contienen y siguen siendo válidos al reanudar; los catálogos nuevos siempre las incluyen.
-ADDED_LATER = frozenset({'chat-turn'})
+ADDED_LATER = frozenset({'chat-turn', 'define-project', 'plan-phase'})
 TOKEN = re.compile(r'{{([A-Z][A-Z0-9_]*)}}')
 
 
@@ -103,6 +105,10 @@ def _object(fields: dict, required=None) -> dict:
             'required': list(fields if required is None else required)}
 
 
+QUESTIONS = {'type': 'array', 'items': {'type': 'object', 'properties': {
+    'text': {'type': 'string'}, 'blocking': {'type': 'boolean'}}, 'required': ['text', 'blocking']}}
+
+
 def output_schema(role: str) -> dict:
     # D056: element types match the engine validators; a real planner read "argv commands" as argv arrays.
     selection = _object({'model': 'string', 'effort': 'string', 'reason': 'string'})
@@ -126,6 +132,12 @@ def output_schema(role: str) -> dict:
             {'title': 'string', 'objective': 'string', 'scope': 'string', 'acceptance_criteria': TEXTS,
              'validation': TEXTS, 'rationale': 'string'})}},
         'bootstrap': {'summary': 'string', 'requirements': TEXTS, 'alternatives': TEXTS, 'pending_decisions': TEXTS},
+        # H6.5: conversaciones de definición y de planificación de fase; documentos completos, nunca efectos.
+        'definition': {'answer': 'string', 'questions': QUESTIONS, 'drafts': {'type': 'array', 'items': _object(
+            {'path': 'string', 'content': 'string', 'reason': 'string'})}, 'pending': TEXTS},
+        'planning': {'answer': 'string', 'questions': QUESTIONS,
+                     'plan': {**_object({'content': 'string', 'reason': 'string'}), 'type': ['object', 'null']},
+                     'pending': TEXTS},
     }
     # Optional review fields: typed so findings are objects, never bare texts.
     optional = {'reviewer': {'findings': {'type': 'array', 'items': _object(
