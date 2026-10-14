@@ -524,8 +524,12 @@ real certificados. El usuario exige memoria/contexto en `docs/` y pide avanzar
 en la persistencia de proyecto. D066 implementa controles explícitos de memoria
 automática (`cli-8`, [alcance](discovery/AGENT_PERSISTENCE.md)), con 215 pruebas
 offline correctas. No resuelve la escritura de confianza Codex ni certifica
-ausencia de estado auxiliar externo. Siguiente: preparar diagnóstico de arranque
-Codex con HOME/auth ficticios y sin inferencia, sin ejecutarlo. Después,
+ausencia de estado auxiliar externo. Preparación de arranque completada D067
+([dictamen](discovery/CODEX_STARTUP_PREPARATION.md)): perfil de denegación por
+defecto no permite un arranque útil del fake; propuesta no apta para CLI real.
+12 casos sintéticos y 14 pytest pertinentes correctos. Siguiente: verificar
+en fuente identificable del pin la condición de persistencia de confianza y
+una posible supresión en transporte, sin nueva prueba real. Después,
 hito de interfaz de producto con alta de proyectos en SQLite (D054); no iniciado.
 QA visual H5.7 bloqueada por herramienta; Claude real con D058 sigue pendiente.
 
@@ -2378,6 +2382,48 @@ QA visual H5.7 bloqueada por herramienta; Claude real con D058 sigue pendiente.
   secretos/globales, argv/aislamiento/límites y criterios antes de pedir una
   autorización específica. No se prepara aquí otra matriz ni se implementa
   archivado documental. D050/D055/D057/D060 agotados; H6.2 sin iniciar.
+
+## Preparación del diagnóstico de arranque Codex (D067)
+
+- Petición del usuario: seguir con el siguiente paso de NEXT_STEPS. Git
+  inicialmente limpio, `e2f272c`. [Propuesta y dictamen](discovery/CODEX_STARTUP_PREPARATION.md),
+  [controlador sintético](discovery/CODEX_STARTUP_PREPARATION.py) y
+  [manifiesto/evidencia](discovery/CODEX_STARTUP_PREPARATION.json).
+- **Preparación completada con incompatibilidad; no apta para ejecutar CLI real.**
+  Candidata deny default, lecturas públicas/ficticias acotadas, escrituras solo
+  en raíces ficticias y sin permisos de red/Mach: el Python mínimo termina
+  con SIGABRT antes del marcador, capturas vacías. Causa interna no acreditada;
+  no se atribuye a Codex/auth o una operación concreta ni se amplían permisos.
+- Borrador con nativo/hash D059/D062, dos variantes de argv (sin override y
+  confianza solo en transporte), memoria cli-8, writer gpt-6-luna/low conservado,
+  HOME/CODEX_HOME/auth ficticios, metadatos Git nuevos, dos procesos/10 s/16 KiB
+  por stream si alguna candidata posterior fuese calificada y autorizada.
+  Comandos solo proyectados; no existe modo que ejecute una CLI de proveedor.
+- Diez ensayos independientes de controlador usan Python fake fijo sin
+  contención OS acreditada; se etiquetan aparte. No relanzan el objetivo
+  filesystem rechazado sin sandbox. Distinguen persistencia, override ficticio
+  que no la evita, auth anterior al marcador, texto de marcador no válido,
+  fd cerrado, señal/timeout/exceso y launcher ausente. Perfil inválido OS distinto.
+- **12 casos finales completos** (diez controlador, dos OS), once grupos
+  observados ausentes y auth/canarios protegidos con bytes/modo/mtime conservados.
+  Config ficticia cambia en dos escenarios sacrificiales. Capturas incompletas
+  en timeout/exceso se marcan; no se acredita no persistencia por un auth error.
+- Primer ensayo dentro del sandbox de desarrollo falla al aplicar perfil,
+  exit 71; ensayos exteriores sintéticos autorizados por herramienta. Perfil
+  inválido exit 65 y SIGABRT posterior se distinguen. Versiones preliminares
+  conservadas con hashes, sin atribuirles el código final.
+- **14 pytest pertinentes passed**, 39 deseleccionados; sintaxis, TOML/JSON,
+  hashes, originales/capturas/perfiles, enlaces y diff verificados. Sin suite
+  completa/build/QA visual; producto y dependencias no cambian. Cero CLI real,
+  version/help, proveedor/modelo, auth real, red externa, subagentes o push.
+- No se solicita ejecutar la candidata. Frontera de lectura/globales, sandbox
+  interno, auth/refresh y persistencia Codex real sin calificar. cli-8/local-
+  config-2, núcleo, jobs/locks, baseline/permisos/modelos e historiales intactos.
+- Siguiente tarea separada: verificar la condición de persistencia de confianza
+  en fuente del pin, si está disponible, y supresión por transporte sin efectos
+  globales; registrar límites antes de implementar. No iniciada aquí. Fase de
+  comprobaciones abierta; matrices 3/4, archivado documental y H6.2 sin iniciar.
+  D050/D055/D057/D060 siguen agotados.
 
 ## Coordinación
 

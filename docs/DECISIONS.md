@@ -2015,3 +2015,47 @@ globales y límites congelados. No se ejecuta ni se da por autorizado un proceso
 CLI real por esta entrega; ejecución requiere propuesta y consentimiento
 específicos nuevos. Matriz 3/4 y H6.2 sin iniciar; fase de comprobaciones sin
 cerrar y consentimientos D050/D055/D057/D060 agotados.
+
+## D067 — Diagnóstico de arranque preparado con incompatibilidad, sin CLI real
+
+Estado: preparación y dictamen completados el 2026-10-14; **candidata no apta
+para ejecución real**. [Propuesta, controles y límites](discovery/CODEX_STARTUP_PREPARATION.md),
+[evidencia](discovery/CODEX_STARTUP_PREPARATION.json) y
+[controlador/ensayo](discovery/CODEX_STARTUP_PREPARATION.py).
+El usuario pide seguir con la preparación activa; no autoriza CLI real.
+
+Se concretan dos comandos proyectados, sin override y con confianza solo en
+el transporte, nativo/hash D059/D062, memoria cli-8, HOME/CODEX_HOME/auth
+ficticios, metadatos Git nuevos y límites de procesos/capturas/tiempo. El
+controlador no dispone de una vía que ejecute Codex u otro proveedor.
+No se restaura/precrea confianza real ni se copian/enlazan credenciales.
+
+Cambiar HOME no basta para impedir lectura de auth/config reales. La candidata
+deniega por defecto, permite solo lecturas públicas/ficticias y escrituras
+ficticias, sin conceder red o servicios Mach. El proceso Python mínimo aborta
+con SIGABRT antes de emitir marcador, stdout/stderr vacíos; no acredita la causa
+ni la compatibilidad de Codex. El primer contexto de desarrollo falla al aplicar
+perfil con exit 71; perfil inválido de control sale 65. No se equiparan errores
+ni se amplían permisos para pasar. Ejecuciones exteriores sintéticas autorizadas
+por el mecanismo de herramientas; ninguna CLI real.
+
+Diez casos de controlador independiente, con Python fake fijo, verifican
+persistencia observada incluso tras auth error, override que en el fake no
+la evita, ausencia de cambio tras marcador sintético, auth anterior inconclusa,
+evento estructurado frente a texto, fd cerrado, señal/timeout/exceso y launcher
+ausente. Se distinguen del backend OS; no son fallback del caso rechazado ni
+prueba de semántica del proveedor. Doce casos finales, once grupos ausentes,
+originales protegidos con bytes/modo/mtime conservados, solo dos configs
+sacrificiales cambian. 14 pytest focales correctos; producto sin cambios.
+
+Dictamen permitido por los criterios: preparación completada con incompatibilidad
+precisa de esta candidata. No ofrecerla para aprobación de ejecución; el siguiente
+alcance debe verificar en fuente identificable del pin la condición que persiste
+confianza y una posible supresión por transporte. Nombres de símbolos o docs
+actuales no acreditan esa supresión. Si falta evidencia, registrar límite antes
+de tocar transporte/auth/aislamiento. No se investiga ese alcance aquí.
+
+Sin integración del perfil D063/D067, actualización de baseline, cli-8/local-
+config-2, permisos, jobs/locks o congelados. Sin auth real, refresh, red externa,
+subagentes, harness de desarrollo o push. Matrices 3/4, archivado y H6.2 sin
+iniciar; fase de comprobaciones abierta. D050/D055/D057/D060 siguen agotados.

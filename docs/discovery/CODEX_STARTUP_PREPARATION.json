@@ -1,0 +1,954 @@
+{
+  "decision": "D067",
+  "root": "/private/tmp/h67-synthetic-a0aig4i2",
+  "platform": "macOS-26.4.1-arm64-arm-64bit-Mach-O",
+  "python": "3.14.4 (main, Apr  7 2026, 13:13:20) [Clang 21.0.0 (clang-2100.0.123.102)]",
+  "source_sha256": "715d09510cf641fca20fe593174d2d7da72e52123fcc89aacbcd111b957a5ca7",
+  "real_cli_processes": 0,
+  "provider_invocations": 0,
+  "fallback_launches": 0,
+  "execution_eligible": false,
+  "planned_only": {
+    "executable": "$HOME/.nvm/versions/node/v24.15.0/lib/node_modules/@openai/codex/node_modules/@openai/codex-darwin-arm64/vendor/aarch64-apple-darwin/bin/codex",
+    "sha256": "74c6a6d263f40d65f99c27a815275f5b4ed0bcc2baecc396b4cf3255498bdfc0",
+    "argv_without_override": [
+      "$HOME/.nvm/versions/node/v24.15.0/lib/node_modules/@openai/codex/node_modules/@openai/codex-darwin-arm64/vendor/aarch64-apple-darwin/bin/codex",
+      "exec",
+      "--strict-config",
+      "--ignore-user-config",
+      "--ignore-rules",
+      "--ephemeral",
+      "--json",
+      "--model",
+      "gpt-6-luna",
+      "--sandbox",
+      "workspace-write",
+      "--color",
+      "never",
+      "-c",
+      "approval_policy=\"never\"",
+      "-c",
+      "model_reasoning_effort=\"low\"",
+      "-c",
+      "model_provider=\"openai\"",
+      "-c",
+      "web_search=\"disabled\"",
+      "-c",
+      "features.memories=false",
+      "-c",
+      "memories.generate_memories=false",
+      "-c",
+      "memories.use_memories=false",
+      "-c",
+      "history.persistence=\"none\"",
+      "-c",
+      "sandbox_workspace_write.network_access=false",
+      "-c",
+      "sandbox_workspace_write.writable_roots=[\"/private/tmp/h67-synthetic-a0aig4i2/planned-only/checkout\"]",
+      "-c",
+      "sandbox_workspace_write.exclude_slash_tmp=true",
+      "--cd",
+      "/private/tmp/h67-synthetic-a0aig4i2/planned-only/checkout",
+      "-"
+    ],
+    "argv_trusted_override": [
+      "$HOME/.nvm/versions/node/v24.15.0/lib/node_modules/@openai/codex/node_modules/@openai/codex-darwin-arm64/vendor/aarch64-apple-darwin/bin/codex",
+      "exec",
+      "--strict-config",
+      "--ignore-user-config",
+      "--ignore-rules",
+      "--ephemeral",
+      "--json",
+      "--model",
+      "gpt-6-luna",
+      "--sandbox",
+      "workspace-write",
+      "--color",
+      "never",
+      "-c",
+      "approval_policy=\"never\"",
+      "-c",
+      "model_reasoning_effort=\"low\"",
+      "-c",
+      "model_provider=\"openai\"",
+      "-c",
+      "web_search=\"disabled\"",
+      "-c",
+      "features.memories=false",
+      "-c",
+      "memories.generate_memories=false",
+      "-c",
+      "memories.use_memories=false",
+      "-c",
+      "history.persistence=\"none\"",
+      "-c",
+      "sandbox_workspace_write.network_access=false",
+      "-c",
+      "sandbox_workspace_write.writable_roots=[\"/private/tmp/h67-synthetic-a0aig4i2/planned-only/checkout\"]",
+      "-c",
+      "sandbox_workspace_write.exclude_slash_tmp=true",
+      "-c",
+      "projects.\"/private/tmp/h67-synthetic-a0aig4i2/planned-only/checkout\".trust_level=\"trusted\"",
+      "--cd",
+      "/private/tmp/h67-synthetic-a0aig4i2/planned-only/checkout",
+      "-"
+    ],
+    "environment": {
+      "HOME": "/private/tmp/h67-synthetic-a0aig4i2/planned-only/home",
+      "CODEX_HOME": "/private/tmp/h67-synthetic-a0aig4i2/planned-only/home/.codex",
+      "USER": "acosta",
+      "PATH": "/usr/bin:/bin",
+      "TMPDIR": "/private/tmp/h67-synthetic-a0aig4i2/planned-only/temporary",
+      "LANG": "C",
+      "PYTHONDONTWRITEBYTECODE": "1"
+    },
+    "profile_sha256": "dd3bee6ef3cd0c6bfffa2c8461e719415f3f7e95e3e996b41dfd328ef3c64acb",
+    "maximum_real_processes_if_later_qualified": 2,
+    "timeout_seconds": 10,
+    "stream_limit_bytes": 16384,
+    "prompt": "Diagnostic startup only. Do not use tools or change files."
+  },
+  "boundary_worker_started": false,
+  "preparation_completed": true,
+  "verdict": "not eligible: minimal Python worker fails before marker under default-deny candidate",
+  "results": [
+    {
+      "case": "direct-boundary",
+      "status": "exited",
+      "launches": 1,
+      "backend": "OS-boundary-candidate",
+      "exit": -6,
+      "classification": "inconclusive_before_marker",
+      "synthetic_marker": false,
+      "config_changed": false,
+      "config_sha256_before": "03f99ecd69489abf90d3eab870ef0ff0bdda135638e37eb98aefb1f6dd97b280",
+      "config_sha256_after": "03f99ecd69489abf90d3eab870ef0ff0bdda135638e37eb98aefb1f6dd97b280",
+      "originals_before": {
+        "home/.codex/auth.json": {
+          "sha256": "a55665642eb63581ab890fdb1454764b4afaba1001853d6af332dc00d95bfedb",
+          "mode": 33152,
+          "mtime_ns": 1791964684038040917
+        },
+        "outside/auth-canary": {
+          "sha256": "4c15da7642a50d728cee879de86692a2ed3aa6a4795add341c48fd7e1aa83b9a",
+          "mode": 33152,
+          "mtime_ns": 1791964684038151918
+        },
+        "outside/config-canary": {
+          "sha256": "3dbe8cbb9f6a88413d9c7dc01da8010fa192ae474875eaf9da763681f757b3cd",
+          "mode": 33152,
+          "mtime_ns": 1791964684038337253
+        }
+      },
+      "originals_after": {
+        "home/.codex/auth.json": {
+          "sha256": "a55665642eb63581ab890fdb1454764b4afaba1001853d6af332dc00d95bfedb",
+          "mode": 33152,
+          "mtime_ns": 1791964684038040917
+        },
+        "outside/auth-canary": {
+          "sha256": "4c15da7642a50d728cee879de86692a2ed3aa6a4795add341c48fd7e1aa83b9a",
+          "mode": 33152,
+          "mtime_ns": 1791964684038151918
+        },
+        "outside/config-canary": {
+          "sha256": "3dbe8cbb9f6a88413d9c7dc01da8010fa192ae474875eaf9da763681f757b3cd",
+          "mode": 33152,
+          "mtime_ns": 1791964684038337253
+        }
+      },
+      "protected_originals_unchanged": true,
+      "group_dead": true,
+      "capture_complete": true,
+      "elapsed_seconds": 0.007,
+      "profile_sha256": "5da33794724103e280827cbf7a5d3a29d997f8140aa6d848afb874cd780dfdc5",
+      "streams": {
+        "stdout": {
+          "size": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "stderr": {
+          "size": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      },
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "case": "controller-persist",
+      "status": "exited",
+      "launches": 1,
+      "backend": "controller-synthetic",
+      "exit": 23,
+      "classification": "synthetic_persistence_observed",
+      "synthetic_marker": true,
+      "config_changed": true,
+      "config_sha256_before": "03f99ecd69489abf90d3eab870ef0ff0bdda135638e37eb98aefb1f6dd97b280",
+      "config_sha256_after": "004e3b037f5044f65f5e91698226952cefc27d9cb34bf12eaf4214b0a263204f",
+      "originals_before": {
+        "home/.codex/auth.json": {
+          "sha256": "a55665642eb63581ab890fdb1454764b4afaba1001853d6af332dc00d95bfedb",
+          "mode": 33152,
+          "mtime_ns": 1791964684046614264
+        },
+        "outside/auth-canary": {
+          "sha256": "4c15da7642a50d728cee879de86692a2ed3aa6a4795add341c48fd7e1aa83b9a",
+          "mode": 33152,
+          "mtime_ns": 1791964684046734557
+        },
+        "outside/config-canary": {
+          "sha256": "3dbe8cbb9f6a88413d9c7dc01da8010fa192ae474875eaf9da763681f757b3cd",
+          "mode": 33152,
+          "mtime_ns": 1791964684046789891
+        }
+      },
+      "originals_after": {
+        "home/.codex/auth.json": {
+          "sha256": "a55665642eb63581ab890fdb1454764b4afaba1001853d6af332dc00d95bfedb",
+          "mode": 33152,
+          "mtime_ns": 1791964684046614264
+        },
+        "outside/auth-canary": {
+          "sha256": "4c15da7642a50d728cee879de86692a2ed3aa6a4795add341c48fd7e1aa83b9a",
+          "mode": 33152,
+          "mtime_ns": 1791964684046734557
+        },
+        "outside/config-canary": {
+          "sha256": "3dbe8cbb9f6a88413d9c7dc01da8010fa192ae474875eaf9da763681f757b3cd",
+          "mode": 33152,
+          "mtime_ns": 1791964684046789891
+        }
+      },
+      "protected_originals_unchanged": true,
+      "group_dead": true,
+      "capture_complete": true,
+      "elapsed_seconds": 0.034,
+      "profile_sha256": "97a266cde189b1ec5fa2b7c473d0e497d0c0bf8b9265ae0d148af9c680a84713",
+      "streams": {
+        "stdout": {
+          "size": 70,
+          "sha256": "73432590d472b43f2e7b8384331496c52548c118f1571a35734f465129ca2bbc"
+        },
+        "stderr": {
+          "size": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      },
+      "stdout": "{\"type\": \"synthetic.thread.started\"}\n{\"type\": \"synthetic.auth_error\"}\n",
+      "stderr": ""
+    },
+    {
+      "case": "controller-override-persists",
+      "status": "exited",
+      "launches": 1,
+      "backend": "controller-synthetic",
+      "exit": 23,
+      "classification": "synthetic_persistence_observed",
+      "synthetic_marker": true,
+      "config_changed": true,
+      "config_sha256_before": "03f99ecd69489abf90d3eab870ef0ff0bdda135638e37eb98aefb1f6dd97b280",
+      "config_sha256_after": "004e3b037f5044f65f5e91698226952cefc27d9cb34bf12eaf4214b0a263204f",
+      "originals_before": {
+        "home/.codex/auth.json": {
+          "sha256": "a55665642eb63581ab890fdb1454764b4afaba1001853d6af332dc00d95bfedb",
+          "mode": 33152,
+          "mtime_ns": 1791964684081739953
+        },
+        "outside/auth-canary": {
+          "sha256": "4c15da7642a50d728cee879de86692a2ed3aa6a4795add341c48fd7e1aa83b9a",
+          "mode": 33152,
+          "mtime_ns": 1791964684081892204
+        },
+        "outside/config-canary": {
+          "sha256": "3dbe8cbb9f6a88413d9c7dc01da8010fa192ae474875eaf9da763681f757b3cd",
+          "mode": 33152,
+          "mtime_ns": 1791964684081956830
+        }
+      },
+      "originals_after": {
+        "home/.codex/auth.json": {
+          "sha256": "a55665642eb63581ab890fdb1454764b4afaba1001853d6af332dc00d95bfedb",
+          "mode": 33152,
+          "mtime_ns": 1791964684081739953
+        },
+        "outside/auth-canary": {
+          "sha256": "4c15da7642a50d728cee879de86692a2ed3aa6a4795add341c48fd7e1aa83b9a",
+          "mode": 33152,
+          "mtime_ns": 1791964684081892204
+        },
+        "outside/config-canary": {
+          "sha256": "3dbe8cbb9f6a88413d9c7dc01da8010fa192ae474875eaf9da763681f757b3cd",
+          "mode": 33152,
+          "mtime_ns": 1791964684081956830
+        }
+      },
+      "protected_originals_unchanged": true,
+      "group_dead": true,
+      "capture_complete": true,
+      "elapsed_seconds": 0.032,
+      "profile_sha256": "00bd533733b6894db5d2b1bb7435d034b8a6c542cde090f983ce27ad631d7f16",
+      "streams": {
+        "stdout": {
+          "size": 70,
+          "sha256": "73432590d472b43f2e7b8384331496c52548c118f1571a35734f465129ca2bbc"
+        },
+        "stderr": {
+          "size": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      },
+      "stdout": "{\"type\": \"synthetic.thread.started\"}\n{\"type\": \"synthetic.auth_error\"}\n",
+      "stderr": ""
+    },
+    {
+      "case": "controller-no-persist",
+      "status": "exited",
+      "launches": 1,
+      "backend": "controller-synthetic",
+      "exit": 23,
+      "classification": "synthetic_no_change_after_marker",
+      "synthetic_marker": true,
+      "config_changed": false,
+      "config_sha256_before": "03f99ecd69489abf90d3eab870ef0ff0bdda135638e37eb98aefb1f6dd97b280",
+      "config_sha256_after": "03f99ecd69489abf90d3eab870ef0ff0bdda135638e37eb98aefb1f6dd97b280",
+      "originals_before": {
+        "home/.codex/auth.json": {
+          "sha256": "a55665642eb63581ab890fdb1454764b4afaba1001853d6af332dc00d95bfedb",
+          "mode": 33152,
+          "mtime_ns": 1791964684115384000
+        },
+        "outside/auth-canary": {
+          "sha256": "4c15da7642a50d728cee879de86692a2ed3aa6a4795add341c48fd7e1aa83b9a",
+          "mode": 33152,
+          "mtime_ns": 1791964684115497501
+        },
+        "outside/config-canary": {
+          "sha256": "3dbe8cbb9f6a88413d9c7dc01da8010fa192ae474875eaf9da763681f757b3cd",
+          "mode": 33152,
+          "mtime_ns": 1791964684115558502
+        }
+      },
+      "originals_after": {
+        "home/.codex/auth.json": {
+          "sha256": "a55665642eb63581ab890fdb1454764b4afaba1001853d6af332dc00d95bfedb",
+          "mode": 33152,
+          "mtime_ns": 1791964684115384000
+        },
+        "outside/auth-canary": {
+          "sha256": "4c15da7642a50d728cee879de86692a2ed3aa6a4795add341c48fd7e1aa83b9a",
+          "mode": 33152,
+          "mtime_ns": 1791964684115497501
+        },
+        "outside/config-canary": {
+          "sha256": "3dbe8cbb9f6a88413d9c7dc01da8010fa192ae474875eaf9da763681f757b3cd",
+          "mode": 33152,
+          "mtime_ns": 1791964684115558502
+        }
+      },
+      "protected_originals_unchanged": true,
+      "group_dead": true,
+      "capture_complete": true,
+      "elapsed_seconds": 0.032,
+      "profile_sha256": "4438df19ce834a0bada904cfc63e3d2a990ccc3436b3d0f8673758818978705a",
+      "streams": {
+        "stdout": {
+          "size": 70,
+          "sha256": "73432590d472b43f2e7b8384331496c52548c118f1571a35734f465129ca2bbc"
+        },
+        "stderr": {
+          "size": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      },
+      "stdout": "{\"type\": \"synthetic.thread.started\"}\n{\"type\": \"synthetic.auth_error\"}\n",
+      "stderr": ""
+    },
+    {
+      "case": "controller-auth-before-thread",
+      "status": "exited",
+      "launches": 1,
+      "backend": "controller-synthetic",
+      "exit": 23,
+      "classification": "inconclusive_before_marker",
+      "synthetic_marker": false,
+      "config_changed": false,
+      "config_sha256_before": "03f99ecd69489abf90d3eab870ef0ff0bdda135638e37eb98aefb1f6dd97b280",
+      "config_sha256_after": "03f99ecd69489abf90d3eab870ef0ff0bdda135638e37eb98aefb1f6dd97b280",
+      "originals_before": {
+        "home/.codex/auth.json": {
+          "sha256": "a55665642eb63581ab890fdb1454764b4afaba1001853d6af332dc00d95bfedb",
+          "mode": 33152,
+          "mtime_ns": 1791964684149141382
+        },
+        "outside/auth-canary": {
+          "sha256": "4c15da7642a50d728cee879de86692a2ed3aa6a4795add341c48fd7e1aa83b9a",
+          "mode": 33152,
+          "mtime_ns": 1791964684149248842
+        },
+        "outside/config-canary": {
+          "sha256": "3dbe8cbb9f6a88413d9c7dc01da8010fa192ae474875eaf9da763681f757b3cd",
+          "mode": 33152,
+          "mtime_ns": 1791964684149300509
+        }
+      },
+      "originals_after": {
+        "home/.codex/auth.json": {
+          "sha256": "a55665642eb63581ab890fdb1454764b4afaba1001853d6af332dc00d95bfedb",
+          "mode": 33152,
+          "mtime_ns": 1791964684149141382
+        },
+        "outside/auth-canary": {
+          "sha256": "4c15da7642a50d728cee879de86692a2ed3aa6a4795add341c48fd7e1aa83b9a",
+          "mode": 33152,
+          "mtime_ns": 1791964684149248842
+        },
+        "outside/config-canary": {
+          "sha256": "3dbe8cbb9f6a88413d9c7dc01da8010fa192ae474875eaf9da763681f757b3cd",
+          "mode": 33152,
+          "mtime_ns": 1791964684149300509
+        }
+      },
+      "protected_originals_unchanged": true,
+      "group_dead": true,
+      "capture_complete": true,
+      "elapsed_seconds": 0.032,
+      "profile_sha256": "aaacaef18c7ba36beba6443b0082c34700dcf573d63738b4e5226e0680e97011",
+      "streams": {
+        "stdout": {
+          "size": 33,
+          "sha256": "5ea3066faf05b9edbf3a6897aa62ddbfd48e5c3a3d231ba61cc8797019fe0e89"
+        },
+        "stderr": {
+          "size": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      },
+      "stdout": "{\"type\": \"synthetic.auth_error\"}\n",
+      "stderr": ""
+    },
+    {
+      "case": "controller-forged-marker",
+      "status": "exited",
+      "launches": 1,
+      "backend": "controller-synthetic",
+      "exit": 23,
+      "classification": "inconclusive_before_marker",
+      "synthetic_marker": false,
+      "config_changed": false,
+      "config_sha256_before": "03f99ecd69489abf90d3eab870ef0ff0bdda135638e37eb98aefb1f6dd97b280",
+      "config_sha256_after": "03f99ecd69489abf90d3eab870ef0ff0bdda135638e37eb98aefb1f6dd97b280",
+      "originals_before": {
+        "home/.codex/auth.json": {
+          "sha256": "a55665642eb63581ab890fdb1454764b4afaba1001853d6af332dc00d95bfedb",
+          "mode": 33152,
+          "mtime_ns": 1791964684182137047
+        },
+        "outside/auth-canary": {
+          "sha256": "4c15da7642a50d728cee879de86692a2ed3aa6a4795add341c48fd7e1aa83b9a",
+          "mode": 33152,
+          "mtime_ns": 1791964684182241923
+        },
+        "outside/config-canary": {
+          "sha256": "3dbe8cbb9f6a88413d9c7dc01da8010fa192ae474875eaf9da763681f757b3cd",
+          "mode": 33152,
+          "mtime_ns": 1791964684182294674
+        }
+      },
+      "originals_after": {
+        "home/.codex/auth.json": {
+          "sha256": "a55665642eb63581ab890fdb1454764b4afaba1001853d6af332dc00d95bfedb",
+          "mode": 33152,
+          "mtime_ns": 1791964684182137047
+        },
+        "outside/auth-canary": {
+          "sha256": "4c15da7642a50d728cee879de86692a2ed3aa6a4795add341c48fd7e1aa83b9a",
+          "mode": 33152,
+          "mtime_ns": 1791964684182241923
+        },
+        "outside/config-canary": {
+          "sha256": "3dbe8cbb9f6a88413d9c7dc01da8010fa192ae474875eaf9da763681f757b3cd",
+          "mode": 33152,
+          "mtime_ns": 1791964684182294674
+        }
+      },
+      "protected_originals_unchanged": true,
+      "group_dead": true,
+      "capture_complete": true,
+      "elapsed_seconds": 0.032,
+      "profile_sha256": "62a5628bf62d689a50112681f8835616561e4ab84eb4362194b8824172754e60",
+      "streams": {
+        "stdout": {
+          "size": 66,
+          "sha256": "1621a07645da01de1782fca075e750e37cf2c24853fa77ba06c04c9f5f48f6e4"
+        },
+        "stderr": {
+          "size": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      },
+      "stdout": "{\"type\": \"synthetic.error\", \"detail\": \"synthetic.thread.started\"}\n",
+      "stderr": ""
+    },
+    {
+      "case": "controller-fd-closed",
+      "status": "exited",
+      "launches": 1,
+      "backend": "controller-synthetic",
+      "exit": 0,
+      "classification": "inconclusive_before_marker",
+      "synthetic_marker": false,
+      "config_changed": false,
+      "config_sha256_before": "03f99ecd69489abf90d3eab870ef0ff0bdda135638e37eb98aefb1f6dd97b280",
+      "config_sha256_after": "03f99ecd69489abf90d3eab870ef0ff0bdda135638e37eb98aefb1f6dd97b280",
+      "originals_before": {
+        "home/.codex/auth.json": {
+          "sha256": "a55665642eb63581ab890fdb1454764b4afaba1001853d6af332dc00d95bfedb",
+          "mode": 33152,
+          "mtime_ns": 1791964684215045544
+        },
+        "outside/auth-canary": {
+          "sha256": "4c15da7642a50d728cee879de86692a2ed3aa6a4795add341c48fd7e1aa83b9a",
+          "mode": 33152,
+          "mtime_ns": 1791964684215157587
+        },
+        "outside/config-canary": {
+          "sha256": "3dbe8cbb9f6a88413d9c7dc01da8010fa192ae474875eaf9da763681f757b3cd",
+          "mode": 33152,
+          "mtime_ns": 1791964684215213046
+        }
+      },
+      "originals_after": {
+        "home/.codex/auth.json": {
+          "sha256": "a55665642eb63581ab890fdb1454764b4afaba1001853d6af332dc00d95bfedb",
+          "mode": 33152,
+          "mtime_ns": 1791964684215045544
+        },
+        "outside/auth-canary": {
+          "sha256": "4c15da7642a50d728cee879de86692a2ed3aa6a4795add341c48fd7e1aa83b9a",
+          "mode": 33152,
+          "mtime_ns": 1791964684215157587
+        },
+        "outside/config-canary": {
+          "sha256": "3dbe8cbb9f6a88413d9c7dc01da8010fa192ae474875eaf9da763681f757b3cd",
+          "mode": 33152,
+          "mtime_ns": 1791964684215213046
+        }
+      },
+      "protected_originals_unchanged": true,
+      "group_dead": true,
+      "capture_complete": true,
+      "elapsed_seconds": 0.032,
+      "profile_sha256": "15bae74f8a0ad31797c875dac40377e5212259697e76a3020ae51e9933fa6045",
+      "streams": {
+        "stdout": {
+          "size": 28,
+          "sha256": "a7f1571e4507f80f4dfab6c4455d882aa685bad18871ad2bd6cda7177769b50e"
+        },
+        "stderr": {
+          "size": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      },
+      "stdout": "{\"inherited_fd\": \"errno:9\"}\n",
+      "stderr": ""
+    },
+    {
+      "case": "controller-signal",
+      "status": "exited",
+      "launches": 1,
+      "backend": "controller-synthetic",
+      "exit": -15,
+      "classification": "inconclusive_before_marker",
+      "synthetic_marker": false,
+      "config_changed": false,
+      "config_sha256_before": "03f99ecd69489abf90d3eab870ef0ff0bdda135638e37eb98aefb1f6dd97b280",
+      "config_sha256_after": "03f99ecd69489abf90d3eab870ef0ff0bdda135638e37eb98aefb1f6dd97b280",
+      "originals_before": {
+        "home/.codex/auth.json": {
+          "sha256": "a55665642eb63581ab890fdb1454764b4afaba1001853d6af332dc00d95bfedb",
+          "mode": 33152,
+          "mtime_ns": 1791964684247892874
+        },
+        "outside/auth-canary": {
+          "sha256": "4c15da7642a50d728cee879de86692a2ed3aa6a4795add341c48fd7e1aa83b9a",
+          "mode": 33152,
+          "mtime_ns": 1791964684248005709
+        },
+        "outside/config-canary": {
+          "sha256": "3dbe8cbb9f6a88413d9c7dc01da8010fa192ae474875eaf9da763681f757b3cd",
+          "mode": 33152,
+          "mtime_ns": 1791964684248058751
+        }
+      },
+      "originals_after": {
+        "home/.codex/auth.json": {
+          "sha256": "a55665642eb63581ab890fdb1454764b4afaba1001853d6af332dc00d95bfedb",
+          "mode": 33152,
+          "mtime_ns": 1791964684247892874
+        },
+        "outside/auth-canary": {
+          "sha256": "4c15da7642a50d728cee879de86692a2ed3aa6a4795add341c48fd7e1aa83b9a",
+          "mode": 33152,
+          "mtime_ns": 1791964684248005709
+        },
+        "outside/config-canary": {
+          "sha256": "3dbe8cbb9f6a88413d9c7dc01da8010fa192ae474875eaf9da763681f757b3cd",
+          "mode": 33152,
+          "mtime_ns": 1791964684248058751
+        }
+      },
+      "protected_originals_unchanged": true,
+      "group_dead": true,
+      "capture_complete": true,
+      "elapsed_seconds": 0.029,
+      "profile_sha256": "605a02c9731f1483ddaa77cd94687b87dd087da8e3df30bea41232b9c111edd5",
+      "streams": {
+        "stdout": {
+          "size": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "stderr": {
+          "size": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      },
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "case": "controller-timeout",
+      "status": "timeout",
+      "launches": 1,
+      "backend": "controller-synthetic",
+      "exit": -15,
+      "classification": "inconclusive_before_marker",
+      "synthetic_marker": false,
+      "config_changed": false,
+      "config_sha256_before": "03f99ecd69489abf90d3eab870ef0ff0bdda135638e37eb98aefb1f6dd97b280",
+      "config_sha256_after": "03f99ecd69489abf90d3eab870ef0ff0bdda135638e37eb98aefb1f6dd97b280",
+      "originals_before": {
+        "home/.codex/auth.json": {
+          "sha256": "a55665642eb63581ab890fdb1454764b4afaba1001853d6af332dc00d95bfedb",
+          "mode": 33152,
+          "mtime_ns": 1791964684277904547
+        },
+        "outside/auth-canary": {
+          "sha256": "4c15da7642a50d728cee879de86692a2ed3aa6a4795add341c48fd7e1aa83b9a",
+          "mode": 33152,
+          "mtime_ns": 1791964684278021174
+        },
+        "outside/config-canary": {
+          "sha256": "3dbe8cbb9f6a88413d9c7dc01da8010fa192ae474875eaf9da763681f757b3cd",
+          "mode": 33152,
+          "mtime_ns": 1791964684278073091
+        }
+      },
+      "originals_after": {
+        "home/.codex/auth.json": {
+          "sha256": "a55665642eb63581ab890fdb1454764b4afaba1001853d6af332dc00d95bfedb",
+          "mode": 33152,
+          "mtime_ns": 1791964684277904547
+        },
+        "outside/auth-canary": {
+          "sha256": "4c15da7642a50d728cee879de86692a2ed3aa6a4795add341c48fd7e1aa83b9a",
+          "mode": 33152,
+          "mtime_ns": 1791964684278021174
+        },
+        "outside/config-canary": {
+          "sha256": "3dbe8cbb9f6a88413d9c7dc01da8010fa192ae474875eaf9da763681f757b3cd",
+          "mode": 33152,
+          "mtime_ns": 1791964684278073091
+        }
+      },
+      "protected_originals_unchanged": true,
+      "group_dead": true,
+      "capture_complete": false,
+      "elapsed_seconds": 0.206,
+      "profile_sha256": "ae1103e50c51bfcf32e6ec84e6afcabe52b637b8f672adcfd0ba3fbb87e5a87a",
+      "streams": {
+        "stdout": {
+          "size": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "stderr": {
+          "size": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      },
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "case": "controller-flood",
+      "status": "output_limit",
+      "launches": 1,
+      "backend": "controller-synthetic",
+      "exit": -15,
+      "classification": "inconclusive_before_marker",
+      "synthetic_marker": false,
+      "config_changed": false,
+      "config_sha256_before": "03f99ecd69489abf90d3eab870ef0ff0bdda135638e37eb98aefb1f6dd97b280",
+      "config_sha256_after": "03f99ecd69489abf90d3eab870ef0ff0bdda135638e37eb98aefb1f6dd97b280",
+      "originals_before": {
+        "home/.codex/auth.json": {
+          "sha256": "a55665642eb63581ab890fdb1454764b4afaba1001853d6af332dc00d95bfedb",
+          "mode": 33152,
+          "mtime_ns": 1791964684485754940
+        },
+        "outside/auth-canary": {
+          "sha256": "4c15da7642a50d728cee879de86692a2ed3aa6a4795add341c48fd7e1aa83b9a",
+          "mode": 33152,
+          "mtime_ns": 1791964684485896234
+        },
+        "outside/config-canary": {
+          "sha256": "3dbe8cbb9f6a88413d9c7dc01da8010fa192ae474875eaf9da763681f757b3cd",
+          "mode": 33152,
+          "mtime_ns": 1791964684485965151
+        }
+      },
+      "originals_after": {
+        "home/.codex/auth.json": {
+          "sha256": "a55665642eb63581ab890fdb1454764b4afaba1001853d6af332dc00d95bfedb",
+          "mode": 33152,
+          "mtime_ns": 1791964684485754940
+        },
+        "outside/auth-canary": {
+          "sha256": "4c15da7642a50d728cee879de86692a2ed3aa6a4795add341c48fd7e1aa83b9a",
+          "mode": 33152,
+          "mtime_ns": 1791964684485896234
+        },
+        "outside/config-canary": {
+          "sha256": "3dbe8cbb9f6a88413d9c7dc01da8010fa192ae474875eaf9da763681f757b3cd",
+          "mode": 33152,
+          "mtime_ns": 1791964684485965151
+        }
+      },
+      "protected_originals_unchanged": true,
+      "group_dead": true,
+      "capture_complete": false,
+      "elapsed_seconds": 0.032,
+      "profile_sha256": "4df8b0d46b01f91479f02bc83cd00439a5d8a4999cc455ea67a303fae43996cb",
+      "streams": {
+        "stdout": {
+          "size": 16384,
+          "sha256": "1536c422c31cc98834759d7085cda394a3510a03d78188248986a6b1a7207d03"
+        },
+        "stderr": {
+          "size": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      },
+      "stdout": "<bounded synthetic flood>",
+      "stderr": ""
+    },
+    {
+      "case": "invalid-profile",
+      "status": "exited",
+      "launches": 1,
+      "backend": "OS-boundary-candidate",
+      "exit": 65,
+      "classification": "inconclusive_before_marker",
+      "synthetic_marker": false,
+      "config_changed": false,
+      "config_sha256_before": "03f99ecd69489abf90d3eab870ef0ff0bdda135638e37eb98aefb1f6dd97b280",
+      "config_sha256_after": "03f99ecd69489abf90d3eab870ef0ff0bdda135638e37eb98aefb1f6dd97b280",
+      "originals_before": {
+        "home/.codex/auth.json": {
+          "sha256": "a55665642eb63581ab890fdb1454764b4afaba1001853d6af332dc00d95bfedb",
+          "mode": 33152,
+          "mtime_ns": 1791964684519454030
+        },
+        "outside/auth-canary": {
+          "sha256": "4c15da7642a50d728cee879de86692a2ed3aa6a4795add341c48fd7e1aa83b9a",
+          "mode": 33152,
+          "mtime_ns": 1791964684519563531
+        },
+        "outside/config-canary": {
+          "sha256": "3dbe8cbb9f6a88413d9c7dc01da8010fa192ae474875eaf9da763681f757b3cd",
+          "mode": 33152,
+          "mtime_ns": 1791964684519620074
+        }
+      },
+      "originals_after": {
+        "home/.codex/auth.json": {
+          "sha256": "a55665642eb63581ab890fdb1454764b4afaba1001853d6af332dc00d95bfedb",
+          "mode": 33152,
+          "mtime_ns": 1791964684519454030
+        },
+        "outside/auth-canary": {
+          "sha256": "4c15da7642a50d728cee879de86692a2ed3aa6a4795add341c48fd7e1aa83b9a",
+          "mode": 33152,
+          "mtime_ns": 1791964684519563531
+        },
+        "outside/config-canary": {
+          "sha256": "3dbe8cbb9f6a88413d9c7dc01da8010fa192ae474875eaf9da763681f757b3cd",
+          "mode": 33152,
+          "mtime_ns": 1791964684519620074
+        }
+      },
+      "protected_originals_unchanged": true,
+      "group_dead": true,
+      "capture_complete": true,
+      "elapsed_seconds": 0.004,
+      "profile_sha256": "f9e655daee92860bf39d0e01f416d23501b92a5c17a570ed2be2c61992ba15ea",
+      "streams": {
+        "stdout": {
+          "size": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "stderr": {
+          "size": 43,
+          "sha256": "182c3db1ec0ee65dcc982dbdc43bd46deab16b831da86feb524e1dd4348ac2da"
+        }
+      },
+      "stdout": "",
+      "stderr": "sandbox-exec: syntax error: expecting ')'\n\n"
+    },
+    {
+      "case": "controller-launcher-missing",
+      "status": "launcher_missing",
+      "launches": 0,
+      "backend": "controller-synthetic",
+      "exit": null,
+      "classification": "inconclusive_before_marker",
+      "synthetic_marker": false,
+      "config_changed": false,
+      "config_sha256_before": "03f99ecd69489abf90d3eab870ef0ff0bdda135638e37eb98aefb1f6dd97b280",
+      "config_sha256_after": "03f99ecd69489abf90d3eab870ef0ff0bdda135638e37eb98aefb1f6dd97b280",
+      "originals_before": {
+        "home/.codex/auth.json": {
+          "sha256": "a55665642eb63581ab890fdb1454764b4afaba1001853d6af332dc00d95bfedb",
+          "mode": 33152,
+          "mtime_ns": 1791964684524962301
+        },
+        "outside/auth-canary": {
+          "sha256": "4c15da7642a50d728cee879de86692a2ed3aa6a4795add341c48fd7e1aa83b9a",
+          "mode": 33152,
+          "mtime_ns": 1791964684525094011
+        },
+        "outside/config-canary": {
+          "sha256": "3dbe8cbb9f6a88413d9c7dc01da8010fa192ae474875eaf9da763681f757b3cd",
+          "mode": 33152,
+          "mtime_ns": 1791964684525154845
+        }
+      },
+      "originals_after": {
+        "home/.codex/auth.json": {
+          "sha256": "a55665642eb63581ab890fdb1454764b4afaba1001853d6af332dc00d95bfedb",
+          "mode": 33152,
+          "mtime_ns": 1791964684524962301
+        },
+        "outside/auth-canary": {
+          "sha256": "4c15da7642a50d728cee879de86692a2ed3aa6a4795add341c48fd7e1aa83b9a",
+          "mode": 33152,
+          "mtime_ns": 1791964684525094011
+        },
+        "outside/config-canary": {
+          "sha256": "3dbe8cbb9f6a88413d9c7dc01da8010fa192ae474875eaf9da763681f757b3cd",
+          "mode": 33152,
+          "mtime_ns": 1791964684525154845
+        }
+      },
+      "protected_originals_unchanged": true,
+      "group_dead": null,
+      "capture_complete": false,
+      "elapsed_seconds": 0.001,
+      "profile_sha256": "69201eef83a1c358447bd70a3607dec3ec00e639bf3b7e4a7258a16c6b824177",
+      "streams": {
+        "stdout": {
+          "size": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "stderr": {
+          "size": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      },
+      "stdout": "",
+      "stderr": ""
+    }
+  ],
+  "source_commit": "e2f272c",
+  "evidence_origin": {
+    "path": "/private/tmp/h67-synthetic-a0aig4i2/result.json",
+    "sha256": "91ce14d5b2e5cc09a99d49f0ae69f0c44b58a0200c6405ea9ae63d2b8d83c843"
+  },
+  "preliminary_runs": [
+    {
+      "path": "/private/tmp/h67-synthetic-oyab992m/result.json",
+      "sha256": "eb1bc6639f30703bfb5d599bb0af527cb70918c494ff002bab2a9e1ab2dc3887",
+      "source_sha256": "08cf95b16ba700b6fb6e6875acc2023a50261e9a9d962e49b291c7924e004777",
+      "completed": false,
+      "failure": "outer sandbox unavailable; no bare fallback",
+      "cases": 1
+    },
+    {
+      "path": "/private/tmp/h67-synthetic-6rgp6340/result.json",
+      "sha256": "4aed0dc138e6866f21c8f95f9c114ea9e6400413279277c0e0e6b160c0a78555",
+      "source_sha256": "08cf95b16ba700b6fb6e6875acc2023a50261e9a9d962e49b291c7924e004777",
+      "completed": false,
+      "failure": "outer sandbox unavailable; no bare fallback",
+      "cases": 1
+    },
+    {
+      "path": "/private/tmp/h67-synthetic-_jz8l_43/result.json",
+      "sha256": "a17e977472dbbd28ef72829cfea92eb36d3ebf543a81fe906be839ca592d2781",
+      "source_sha256": "ca1f9ff6321a4df7d8737c53eaa08a7e2ab6badfbb6a3a15609ff7eda70ac0c3",
+      "completed": false,
+      "failure": "outer sandbox unavailable; no bare fallback",
+      "cases": 1
+    },
+    {
+      "path": "/private/tmp/h67-synthetic-kmv07g8i/result.json",
+      "sha256": "d9acabbd8df50c84e42fc6cd73440ca9ecf72432a43c0a8ef8c42adb74ac51c1",
+      "source_sha256": "1a5ae009a82b10835eae8958ba8367e27b8d308d69006207c1526dfe42bc8f21",
+      "completed": true,
+      "failure": null,
+      "cases": 11
+    },
+    {
+      "path": "/private/tmp/h67-synthetic-zvi9w51p/result.json",
+      "sha256": "611ccd802bc96d53b23bca461cad579a9a63d22a48345406ad7501fdaf8ed7d1",
+      "source_sha256": "0dba1671458a1275af02e67dee31c3f8cb1f8bd9b1ccc24e0ea3a39c6ae34e94",
+      "completed": true,
+      "failure": null,
+      "cases": 11
+    },
+    {
+      "path": "/private/tmp/h67-synthetic-0p2gwdwf/result.json",
+      "sha256": "b4a6ff960b3f2862c8a6b7064c8c5010280a8c21ccaf3ec1bea73f89c111a8ca",
+      "source_sha256": "d2f7e81f18721b8d2e3c4926fd29d1f67b1806765b4411bf8787e373607490de",
+      "completed": true,
+      "failure": null,
+      "cases": 11
+    },
+    {
+      "path": "/private/tmp/h67-synthetic-q56ybhv8/result.json",
+      "sha256": "119624337fec0f961e0dc6da61d66f99159bd43a7a37bfc7faa71af67f88b535",
+      "source_sha256": "faeafefc727880ac1e5b372bf9a94b2405c2755d7a62fd43565261854e9af5d0",
+      "completed": true,
+      "failure": null,
+      "cases": 12
+    }
+  ],
+  "summary": {
+    "cases": 12,
+    "boundary_cases": 2,
+    "controller_cases": 10,
+    "protected_originals_preserved": true,
+    "groups_observed_dead": 11,
+    "global_read_containment_qualified": false,
+    "nested_codex_sandbox_qualified": false,
+    "remote_refresh_tested": false,
+    "future_commands_executed": false
+  },
+  "verification": {
+    "focused_pytest": {
+      "passed": 14,
+      "deselected": 39,
+      "seconds": 2.97,
+      "command": "UV_CACHE_DIR=.local/uv-cache uv run --frozen --offline pytest -q tests/product/test_cli_agents.py -k 'gate or cancel or timeout'"
+    }
+  }
+}
