@@ -24,4 +24,4 @@ UV_CACHE_DIR=.local/uv-cache uv run --frozen --offline pytest -q tests/product/t
 Requiere la caché `.local/npm-cache` poblada por la instalación documentada del
 frontend (comparte el pin TypeScript 5.9.3). Una caché vacía provoca una parada
 `ENOTCACHED`; las pruebas no descargan paquetes. Ver
-[perfil, reproducción y límites](../../../docs/discovery/H4.3_TYPESCRIPT_PROFILE.md).
+[perfil, reproducción y límites](../../../docs/archive/phase-005/H4.3_TYPESCRIPT_PROFILE.md).

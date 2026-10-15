@@ -143,7 +143,7 @@ class LegacyFixturesTests(unittest.TestCase):
         self.assertEqual(statuses, ["Completed", "Active"])
 
     def test_schema_snapshot_provenance(self):
-        baseline = read_json(ROOT / "docs/discovery/baseline.json")
+        baseline = read_json(FIXTURES / "baseline.json")
         self.assertRegex(baseline["reference_commit"], r"^[0-9a-f]{40}$")
         indexed = {f["path"]: f for f in baseline["files"]}
         self.assertEqual(len(indexed), len(baseline["files"]))

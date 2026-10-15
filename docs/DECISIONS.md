@@ -1,4 +1,103 @@
-# Decisiones
+# Decisiones — my_harness
+
+Registro único de decisiones de arquitectura y de negocio (ADR), en orden. Cada entrada empieza por `## DNNN — Título`
+y una línea `Estado:` con fecha (y «sustituida por DMMM» cuando proceda), seguida de contexto, decisión y
+consecuencias. Las decisiones no se borran ni se reescriben: se sustituyen con una nueva (D088). Al trabajar en una
+tarea se leen solo las decisiones que cita; este índice sirve para buscar precedentes. La fase indica cuándo se tomó
+(P000 es la definición inicial; los hitos H0–H6 son P001–P007).
+
+## Índice
+
+| Decisión | Título | Fase |
+|---|---|---|
+| [D001](#d001--alcance-local-y-arquitectura-base) | Alcance local y arquitectura base | P000 |
+| [D002](#d002--desarrollo-manual) | Desarrollo manual | P000 |
+| [D003](#d003--cola-local-sin-celery) | Cola local sin Celery | P000 |
+| [D004](#d004--servicio-nativo-docker-por-perfil) | Servicio nativo, Docker por perfil | P000 |
+| [D005](#d005--comenzar-por-h01) | Comenzar por H0.1 | P000 |
+| [D006](#d006--evidencias-legacy-y-fixtures-de-h01) | Evidencias legacy y fixtures de H0.1 | P001 |
+| [D007](#d007--baseline-de-versiones-h02) | Baseline de versiones H0.2 | P001 |
+| [D008](#d008--suscripciones-propias-mediante-cli) | Suscripciones propias mediante CLI | P001 |
+| [D009](#d009--sonda-offline-de-streams-y-permisos) | Sonda offline de streams y permisos | P001 |
+| [D010](#d010--simulación-h03-separada-del-motor-y-del-legacy) | Simulación H0.3 separada del motor y del legacy | P001 |
+| [D011](#d011--instalación-y-fuente-de-contratos-del-esqueleto) | Instalación y fuente de contratos del esqueleto | P001 |
+| [D012](#d012--índice-legacy-por-evidencia-con-relectura-explícita) | Índice legacy por evidencia, con relectura explícita | P002 |
+| [D013](#d013--navegación-de-observación-y-contenido-vinculado-al-hash) | Navegación de observación y contenido vinculado al hash | P002 |
+| [D014](#d014--observación-opt-in-y-feed-persistido-del-índice) | Observación opt-in y feed persistido del índice | P002 |
+| [D015](#d015--motor-extraído-aislado-y-recuperación-explícita) | Motor extraído aislado y recuperación explícita | P003 |
+| [D016](#d016--autoridad-gestionada-y-recuperación-conservadora-de-jobs) | Autoridad gestionada y recuperación conservadora de jobs | P003 |
+| [D017](#d017--adaptadores-cli-opt-in-y-grupos-persistidos) | Adaptadores CLI opt-in y grupos persistidos | P003 |
+| [D018](#d018--smoke-h23-autorizado-selección-delegada-y-parada-al-primer-fallo) | Smoke H2.3 autorizado, selección delegada y parada al primer fallo | P003 |
+| [D019](#d019--proveedor-integrado-conservado-y-retries-internos-desconocidos) | Proveedor integrado conservado y retries internos desconocidos | P003 |
+| [D020](#d020--nuevo-smoke-autorizado-y-parada-ante-configuración-mcp-de-claude) | Nuevo smoke autorizado y parada ante configuración MCP de Claude | P003 |
+| [D021](#d021--mcp-vacío-explícito-y-versión-congelada-cli-3) | MCP vacío explícito y versión congelada cli-3 | P003 |
+| [D022](#d022--smoke-cli-3-autorizado-y-fallo-de-autenticación-claude) | Smoke cli-3 autorizado y fallo de autenticación Claude | P003 |
+| [D023](#d023--user-explícito-dependencia-de-auth-observada-corrección-separada) | USER explícito: dependencia de auth observada, corrección separada | P003 |
+| [D024](#d024--entorno-del-smoke-validado-por-uid-y-hash-de-configuración-nuevo) | Entorno del smoke validado por UID y hash de configuración nuevo | P003 |
+| [D025](#d025--smoke-autorizado-con-user-tres-transportes-completos) | Smoke autorizado con USER: tres transportes completos | P003 |
+| [D026](#d026--evidencia-git-por-árboles-y-commit-determinista-conciliable) | Evidencia Git por árboles y commit determinista conciliable | P003 |
+| [D027](#d027--modo-gestionado-por-activación-marcador-y-copia-inmutable) | Modo gestionado por activación, marcador y copia inmutable | P003 |
+| [D028](#d028--api-gestionada-local-proyectos-del-servidor-y-supervisor-opt-in) | API gestionada local: proyectos del servidor y supervisor opt-in | P003 |
+| [D029](#d029--ui-gestionada-por-sondeo-envíos-conservados-y-evidencia-congelada) | UI gestionada por sondeo, envíos conservados y evidencia congelada | P003 |
+| [D030](#d030--catálogo-de-prompts-por-ámbito-y-snapshot-por-intento) | Catálogo de prompts por ámbito y snapshot por intento | P004 |
+| [D031](#d031--permisos-por-petición-exacta-y-efecto-en-un-intento-posterior) | Permisos por petición exacta y efecto en un intento posterior | P004 |
+| [D032](#d032--fases-en-sqlite-ready-por-contenido-exacto-y-cierre-sin-edición-documental) | Fases en SQLite, READY por contenido exacto y cierre sin edición documental | P004 |
+| [D033](#d033--decisiones-del-usuario-tras-h33-y-orden-de-trabajo) | Decisiones del usuario tras H3.3 y orden de trabajo | P004 |
+| [D034](#d034--lote-desatendido-derivado-del-estado-definiciones-versionadas-y-tags-anotados-deterministas) | Lote desatendido derivado del estado, definiciones versionadas y tags anotados deterministas | P004 |
+| [D035](#d035--chat-por-turnos-nuevos-de-solo-lectura-con-contexto-congelado-y-propuestas-confirmadas) | Chat por turnos nuevos de solo lectura con contexto congelado y propuestas confirmadas | P005 |
+| [D036](#d036--exportación-documental-separada-diff-confirmado-e-intención-de-commit-conciliable) | Exportación documental separada, diff confirmado e intención de commit conciliable | P005 |
+| [D037](#d037--bootstrap-documental-confirmado-descubrimiento-opcional-y-commit-raíz-conciliable) | Bootstrap documental confirmado, descubrimiento opcional y commit raíz conciliable | P005 |
+| [D038](#d038--segundo-perfil-declarativo-con-validaciones-typescript-reales-por-los-puertos-existentes) | Segundo perfil declarativo con validaciones TypeScript reales por los puertos existentes | P005 |
+| [D039](#d039--junit-observado-por-comando-exacto-y-original-congelado-en-el-historial) | JUnit observado por comando exacto y original congelado en el historial | P006 |
+| [D040](#d040--backup-local-con-servicio-detenido-referencias-verificadas-y-restauración-de-consulta) | Backup local con servicio detenido, referencias verificadas y restauración de consulta | P006 |
+| [D041](#d041--retención-explícita-de-streams-sellados-con-intención-previa-y-ausencias-auditadas) | Retención explícita de streams sellados con intención previa y ausencias auditadas | P006 |
+| [D042](#d042--diagnóstico-cli-explícito-preflight-compartido-y-resultados-acotados) | Diagnóstico CLI explícito, preflight compartido y resultados acotados | P006 |
+| [D043](#d043--distribución-local-con-assets-y-migraciones-arranque-explícito-en-loopback) | Distribución local con assets y migraciones, arranque explícito en loopback | P006 |
+| [D044](#d044--sesión-efímera-local-y-guardia-uniforme-antes-del-acceso-al-producto) | Sesión efímera local y guardia uniforme antes del acceso al producto | P006 |
+| [D045](#d045--recorridos-offline-consolidados-y-cierre-acotado-del-hito-5) | Recorridos offline consolidados y cierre acotado del hito 5 | P006 |
+| [D046](#d046--revisión-del-cierre-offline-y-separación-de-la-preparación-para-uso-real) | Revisión del cierre offline y separación de la preparación para uso real | P006 |
+| [D047](#d047--validadores-nativos-opt-in-con-captura-acotada-y-recuperación-conservadora) | Validadores nativos opt-in con captura acotada y recuperación conservadora | P006 |
+| [D048](#d048--revisión-del-ejecutor-de-validaciones-runner-congelado-obligatorio) | Revisión del ejecutor de validaciones: runner congelado obligatorio | P006 |
+| [D049](#d049--composición-de-uso-real-por-toml-local-del-operador) | Composición de uso real por TOML local del operador | P006 |
+| [D050](#d050--propuesta-de-primer-uso-real-selecciones-del-usuario-y-límites) | Propuesta de primer uso real: selecciones del usuario y límites | P006 |
+| [D051](#d051--operación-real-desde-el-wheel-instalado-no-desde-el-checkout-de-desarrollo) | Operación real desde el wheel instalado, no desde el checkout de desarrollo | P006 |
+| [D052](#d052--revisor-y-ejecutor-con-proveedor-modelo-y-esfuerzo-elegidos-por-el-usuario) | Revisor y ejecutor con proveedor, modelo y esfuerzo elegidos por el usuario | P007 |
+| [D053](#d053--comando-único-de-desarrollo-con-migración-y-backup-previo) | Comando único de desarrollo con migración y backup previo | P006 |
+| [D054](#d054--hito-de-ui-de-producto-después-de-d052-y-registro-de-proyectos-en-sqlite) | Hito de UI de producto después de D052 y registro de proyectos en SQLite | P007 |
+| [D055](#d055--propuesta-del-smoke-de-la-matriz-d052-selecciones-del-usuario-y-límites) | Propuesta del smoke de la matriz D052: selecciones del usuario y límites | P007 |
+| [D056](#d056--formas-de-salida-de-los-agentes-alineadas-con-los-validadores-del-motor) | Formas de salida de los agentes alineadas con los validadores del motor | P007 |
+| [D057](#d057--nueva-ejecución-de-la-matriz-d052-tras-d056) | Nueva ejecución de la matriz D052 tras D056 | P007 |
+| [D058](#d058----json-schema-tipado-para-el-lector-claude-cli-6) | `--json-schema` tipado para el lector Claude (`cli-6`) | P007 |
+| [D059](#d059--diagnóstico-del-escritor-codex-y-raíces-explícitas-cli-7) | Diagnóstico del escritor Codex y raíces explícitas (`cli-7`) | P007 |
+| [D060](#d060--propuesta-acotada-de-las-combinaciones-24-con-paquete-cli-7) | Propuesta acotada de las combinaciones 2–4 con paquete `cli-7` | P007 |
+| [D061](#d061--ejecución-de-d060-codex-escritor-real-y-parada-por-cambio-global) | Ejecución de D060: Codex escritor real y parada por cambio global | P007 |
+| [D062](#d062--delta-de-confianza-acreditado-y-límite-de-contención-de-la-cli) | Delta de confianza acreditado y límite de contención de la CLI | P007 |
+| [D063](#d063--propuesta-de-frontera-externa-de-escritura-auth-compatible-aún-no-certificada) | Propuesta de frontera externa de escritura; auth compatible aún no certificada | P007 |
+| [D064](#d064--contención-sintética-calificada-con-límites-que-impiden-su-integración) | Contención sintética calificada con límites que impiden su integración | P007 |
+| [D065](#d065--anidamiento-condicionado-por-el-perfil-y-frontera-revisada-no-calificada) | Anidamiento condicionado por el perfil y frontera revisada no calificada | P007 |
+| [D066](#d066--memoria-de-trabajo-documental-y-controles-explícitos-de-auto-memory-cli-8) | Memoria de trabajo documental y controles explícitos de auto memory (`cli-8`) | P007 |
+| [D067](#d067--diagnóstico-de-arranque-preparado-con-incompatibilidad-sin-cli-real) | Diagnóstico de arranque preparado con incompatibilidad, sin CLI real | P007 |
+| [D068](#d068--condición-de-confianza-del-pin-acreditada-y-supresión-específica-cli-9) | Condición de confianza del pin acreditada y supresión específica (`cli-9`) | P007 |
+| [D069](#d069--primer-ensayo-cli-9-detenido-por-contradicción-del-plan) | Primer ensayo cli-9 detenido por contradicción del plan | P007 |
+| [D070](#d070--matriz-corregida-detenida-por-errores-de-conexión-del-planificador) | Matriz corregida detenida por errores de conexión del planificador | P007 |
+| [D071](#d071--comprobación-funcional-real-de-las-cuatro-combinaciones-completada) | Comprobación funcional real de las cuatro combinaciones completada | P007 |
+| [D072](#d072--organización-documental-por-fase-y-estructura-de-producto) | Organización documental por fase y estructura de producto | P007 |
+| [D073](#d073--confirmación-de-d072-e-implementación-de-h63) | Confirmación de D072 e implementación de H6.3 | P007 |
+| [D074](#d074--métricas-por-intento-materializadas-con-procedencia-y-agregados-sin-doble-conteo-h64) | Métricas por intento materializadas con procedencia y agregados sin doble conteo (H6.4) | P007 |
+| [D075](#d075--creación-y-planificación-conversacionales-con-borradores-en-disco-y-cas-h65) | Creación y planificación conversacionales con borradores en disco y CAS (H6.5) | P007 |
+| [D076](#d076--alcance-de-h62-registro-híbrido-markdown-seguro-chat-sin-lock-y-entregas) | Alcance de H6.2: registro híbrido, Markdown seguro, chat sin lock y entregas | P007 |
+| [D077](#d077--h62-e1-shell-por-url-lecturas-por-código-y-sistema-de-diseño) | H6.2 E1: shell por URL, lecturas por código y sistema de diseño | P007 |
+| [D078](#d078--h62-e2-local-config-3-y-registro-de-proyectos-desde-la-ui) | H6.2 E2: `local-config-3` y registro de proyectos desde la UI | P007 |
+| [D079](#d079--guardia-h56-sin-cambios-ante-navegaciones-cross-site-hallazgo-de-e1) | Guardia H5.6 sin cambios ante navegaciones cross-site (hallazgo de E1) | P007 |
+| [D080](#d080--h62-e3-visor-y-edición-de-documentos-con-cas-regeneración-de-bloques-y-markdown-aislado) | H6.2 E3: visor y edición de documentos con CAS, regeneración de bloques y Markdown aislado | P007 |
+| [D081](#d081--rutas-protegidas-del-perfil-límite-del-ejecutor-no-de-las-escrituras-documentales-confirmadas-v2) | Rutas protegidas del perfil: límite del ejecutor, no de las escrituras documentales confirmadas (v2) | P007 |
+| [D082](#d082--h62-e4-creación-y-planificación-de-fase-en-la-ui) | H6.2 E4: creación y planificación de fase en la UI | P007 |
+| [D083](#d083--h62-e5-chat-sobre-head-carril-independiente-y-comandos-deterministas) | H6.2 E5: chat sobre HEAD, carril independiente y comandos deterministas | P007 |
+| [D084](#d084--h62-e6-estadísticas-por-url-evolución-de-tests-por-fase-y-gráficos-svg-propios) | H6.2 E6: estadísticas por URL, evolución de tests por fase y gráficos SVG propios | P007 |
+| [D085](#d085--revisión-de-cierre-de-h62-criterios-cumplidos-salvo-la-paginación-de-diffs) | Revisión de cierre de H6.2: criterios cumplidos salvo la paginación de diffs | P007 |
+| [D086](#d086--hallazgos-de-d085-corregidos-diffs-paginados-conversaciones-idempotentes-y-fase-con-sucesora) | Hallazgos de D085 corregidos: diffs paginados, conversaciones idempotentes y fase con sucesora | P007 |
+| [D087](#d087--h62-y-el-hito-6-cerrados-por-decisión-del-usuario) | H6.2 y el Hito 6 cerrados por decisión del usuario | P007 |
+| [D088](#d088--contrato-documental-unificado-cierre-de-fase-automático-e-importación-de-proyectos-p008) | Contrato documental unificado, cierre de fase automático e importación de proyectos (P008) | P008 |
 
 ## D001 — Alcance local y arquitectura base
 
@@ -69,15 +168,15 @@ comprobada en H0.3 (D011).
 
 Usar CPython 3.14.4 estándar, uv 0.12.19, Node 24.15.0 y npm 11.12.1 en el
 Mac actual. Pins directos y fuentes en
-[H0.2_COMPATIBILITY.md](discovery/H0.2_COMPATIBILITY.md); restricciones y
-resolución conjunta en [snapshot](discovery/h0.2-version-metadata.json).
+[H0.2_COMPATIBILITY.md](archive/phase-001/H0.2_COMPATIBILITY.md); restricciones y
+resolución conjunta en [snapshot](archive/phase-001/h0.2-version-metadata.json).
 TypeScript queda en 5.9.3 porque openapi-typescript 7.13.0 requiere `^5.x`.
 Codex 0.161.0 y Claude Code 2.1.295 son el baseline observado; versiones nuevas
 exigirán comprobar capacidades, no trasladar flags legacy por suposición.
 
 La resolución temporal sin instalación de H0.2 comprueba disponibilidad y
 restricciones, no ejecución del stack. H0.3 creó locks y verificó instalación,
-arranque y build al introducir el esqueleto; [evidencias](discovery/H0.3_SKELETON.md).
+arranque y build al introducir el esqueleto; [evidencias](archive/phase-001/H0.3_SKELETON.md).
 Los parsers H0.2 siguen usando biblioteca estándar.
 
 ## D008 — Suscripciones propias mediante CLI
@@ -140,7 +239,7 @@ Pydantic/FastAPI, SQLAlchemy y adaptadores quedan fuera. El futuro importador
 H1.1 mantiene su índice de observación separado de los resultados simulados,
 sin convertir estos en intentos ni crear doble autoridad. Migraciones explícitas
 con el servicio detenido; el arranque no usa `create_all` y rechaza esquemas
-no preparados. [Alcance y evidencia](discovery/H0.3_SKELETON.md).
+no preparados. [Alcance y evidencia](archive/phase-001/H0.3_SKELETON.md).
 
 ## D011 — Instalación y fuente de contratos del esqueleto
 
@@ -184,7 +283,7 @@ SQLite dentro del checkout de origen antes de conectar para mantener lectura de 
 navegación web. Consulta no relee archivos; reconstrucción/relectura requiere importar.
 H1.3 resolverá actualización incremental; H1.2 resolverá navegación sobre evidencias.
 No se acredita consistencia frente a escritores concurrentes ni transición a modo
-gestionado. [Entrega y verificaciones](discovery/H1.1_IMPORT.md).
+gestionado. [Entrega y verificaciones](archive/phase-002/H1.1_IMPORT.md).
 
 ## D013 — Navegación de observación y contenido vinculado al hash
 
@@ -220,7 +319,7 @@ avisa si se reimportó desde que se abrió la lista y muestra diagnósticos/pend
 sin juicios sobre el agente. Renderiza texto plano, nunca ejecuta históricos; no
 agrega copias de consumo ni deduce factura/cuota de coste equivalente API. Reimportar
 continúa siendo explícito por CLI. Watcher/SSE pertenecen a H1.3, no a esta entrega.
-[Entrega y verificaciones](discovery/H1.2_NAVIGATION.md).
+[Entrega y verificaciones](archive/phase-002/H1.2_NAVIGATION.md).
 
 ## D014 — Observación opt-in y feed persistido del índice
 
@@ -247,7 +346,7 @@ con reconexión por ID. La UI conserva identidades y reinicia tramos en la versi
 ocultando respuestas cuyo hash difiera de sus metadatos. No interpreta diagnósticos como
 fallos de agente, ni ACCEPT/READY como aceptación/commit/cierre. Lecturas de evidencias
 por descriptores, solo archivos regulares y máximo 64 MiB. Límites y verificaciones en
-[H1.3_OBSERVATION.md](discovery/H1.3_OBSERVATION.md).
+[H1.3_OBSERVATION.md](archive/phase-002/H1.3_OBSERVATION.md).
 
 ## D015 — Motor extraído aislado y recuperación explícita
 
@@ -275,7 +374,7 @@ error de proveedor detiene el flujo.
 política y evidencia vigente, nunca un commit ni estado de tarea gestionada. La
 captura sintética no certifica Git; H2.4 añadirá captura completa/worktree/commit
 idempotente. El formatter/helpers son declaraciones del perfil aún sin adaptador
-real. [Entrega, trazabilidad y límites](discovery/H2.1_ENGINE.md).
+real. [Entrega, trazabilidad y límites](archive/phase-003/H2.1_ENGINE.md).
 
 ## D016 — Autoridad gestionada y recuperación conservadora de jobs
 
@@ -307,7 +406,7 @@ planificación ni efecto de resultado incierto automáticamente.
 DONE indica fin de acción del job; ACCEPTANCE_READY conserva la elegibilidad
 offline, sin certificar commit/cierre. Exclusión cooperativa local, sin promesa
 de exactamente una vez ni protección contra escritores externos/otra base.
-[Entrega y pruebas](discovery/H2.2_PERSISTENCE.md).
+[Entrega y pruebas](archive/phase-003/H2.2_PERSISTENCE.md).
 
 ## D017 — Adaptadores CLI opt-in y grupos persistidos
 
@@ -348,7 +447,7 @@ Claude carece de control equivalente verificado. No prometer cero retries
 internos o una inferencia por invocación CLI sin medirlo con una cuenta real.
 `dontAsk` sigue siendo denegación; conceder herramientas configura un intento
 posterior, no responde a una operación viva. Capturas no son commits/aceptación.
-Ver [entrega, fuentes y límites](discovery/H2.3_CLI.md).
+Ver [entrega, fuentes y límites](archive/phase-003/H2.3_CLI.md).
 
 ## D018 — Smoke H2.3 autorizado, selección delegada y parada al primer fallo
 
@@ -374,7 +473,7 @@ Corregir esa configuración y añadir regresión offline es la próxima tarea;
 no se ejecuta en esta entrega ni se repite el smoke automáticamente.
 La autorización acotada concluyó al primer error. No se acredita acceso al modelo,
 autenticación/cuota, inferencia, retries internos ni aislamiento total.
-Resultado, procedencia y límites en [H2.3_SMOKE.md](discovery/H2.3_SMOKE.md).
+Resultado, procedencia y límites en [H2.3_SMOKE.md](archive/phase-003/H2.3_SMOKE.md).
 La corrección posterior offline se registra en D019, sin repetir esta ejecución.
 
 ## D019 — Proveedor integrado conservado y retries internos desconocidos
@@ -400,12 +499,12 @@ La comparación previa al lanzamiento rechaza jobs congelados `cli-1`, sin
 reescribirlos ni actualizar selecciones automáticamente. No hay migración de
 esquema, cambio de codec ni alteración del resultado/evidencias de D018.
 La siguiente verificación real se propone con sus límites explícitos, sin
-ejecutarla dentro de la corrección offline. [Entrega](discovery/H2.3_CONFIG_FIX.md).
+ejecutarla dentro de la corrección offline. [Entrega](archive/phase-003/H2.3_CONFIG_FIX.md).
 
 ## D020 — Nuevo smoke autorizado y parada ante configuración MCP de Claude
 
 Estado: verificación real ejecutada el 2026-10-12; fallo conservado sin corregir
-ni relanzar. [Resultado y evidencias](discovery/H2.3_SMOKE_RETRY.md).
+ni relanzar. [Resultado y evidencias](archive/phase-003/H2.3_SMOKE_RETRY.md).
 
 Tras revisar la propuesta y preflight offline, el usuario respondió «Sí, autorizo
 esta ejecución»: una ejecución `cli-2`, hasta tres CLI de 60 s, modelos/esfuerzos
@@ -451,12 +550,12 @@ sin revisor ni relanzamiento y preservación de resultados antiguos verificadas.
 Documentación y fakes no equivalen a validación real completa del proveedor.
 D020 conserva su resultado/evidencia; su autorización concluyó al fallo.
 NEXT_STEPS prepara una propuesta nueva, sin ejecutarla ni consumir proveedores
-dentro de esta entrega. [Contrato, fuentes y límites](discovery/H2.3_MCP_FIX.md).
+dentro de esta entrega. [Contrato, fuentes y límites](archive/phase-003/H2.3_MCP_FIX.md).
 
 ## D022 — Smoke cli-3 autorizado y fallo de autenticación Claude
 
 Estado: verificación real ejecutada el 2026-10-12; rama de error concluida,
-sin login, corrección ni relanzamiento. [Informe](discovery/H2.3_SMOKE_CLI3.md).
+sin login, corrección ni relanzamiento. [Informe](archive/phase-003/H2.3_SMOKE_CLI3.md).
 
 El usuario respondió «Doy consentimiento para el smoke» tras la propuesta y
 preflight offline: una ejecución, hasta tres invocaciones de 60 s, Codex
@@ -486,7 +585,7 @@ no ampliar silenciosamente entorno, proveedor, permisos ni ruta de autenticació
 ## D023 — USER explícito: dependencia de auth observada, corrección separada
 
 Estado: diagnóstico en lectura completado el 2026-10-12; corrección no implementada.
-[Informe y reproducción](discovery/H2.3_AUTH_DIAGNOSIS.md).
+[Informe y reproducción](archive/phase-003/H2.3_AUTH_DIAGNOSIS.md).
 
 Claude 2.1.295 reconoce la sesión `claude.ai` fuera del sandbox en el contexto
 de esta sesión, pero no con el entorno mínimo HOME/PATH/TMPDIR/LANG del smoke.
@@ -513,7 +612,7 @@ H2.4 no iniciado.
 ## D024 — Entorno del smoke validado por UID y hash de configuración nuevo
 
 Estado: implementado y verificado offline el 2026-10-12.
-[Informe y alcance](discovery/H2.3_ENV_FIX.md).
+[Informe y alcance](archive/phase-003/H2.3_ENV_FIX.md).
 
 El constructor de `scripts/smoke_cli.py` transmite USER explícitamente junto a
 HOME/PATH/TMPDIR/LANG. USER debe ser no vacío y coincidir con el nombre local
@@ -534,14 +633,14 @@ D020/D022 y locks conservados; D018 ausente no reconstruido. D023 acredita
 una dependencia local en status, no el mecanismo de auth ni inferencia aislada.
 La corrección offline tampoco prueba auth/cuota/modelo ni éxito completo H2.3.
 Sin status, login, secretos, CLI reales, recuperación o cambios globales.
-[Propuesta posterior separada](discovery/H2.3_ENV_SMOKE_PROPOSAL.md) pendiente
+Propuesta posterior separada (archivo `docs/discovery/H2.3_ENV_SMOKE_PROPOSAL.md` retirado en P008-T001; recuperable con `git show 8622a43:docs/discovery/H2.3_ENV_SMOKE_PROPOSAL.md`) pendiente
 de consentimiento específico; no ejecutar por la corrección o su commit.
 H2.4 no iniciado.
 
 ## D025 — Smoke autorizado con USER: tres transportes completos
 
 Estado: verificación real completada el 2026-10-12.
-[Resultado y evidencias](discovery/H2.3_ENV_SMOKE.md).
+[Resultado y evidencias](archive/phase-003/H2.3_ENV_SMOKE.md).
 
 El usuario indicó «Procede con el smoke» para la propuesta D024: una ejecución,
 hasta tres invocaciones de 60 s, Codex `gpt-6-luna`/`low` como planificador/revisor
@@ -569,7 +668,7 @@ cancelación/timeout reales. Siguiente tarea H2.4 offline definida, sin iniciarl
 ## D026 — Evidencia Git por árboles y commit determinista conciliable
 
 Estado: implementado y verificado offline el 2026-10-12.
-[Entrega, protocolo y límites](discovery/H2.4_GIT.md).
+[Entrega, protocolo y límites](archive/phase-003/H2.4_GIT.md).
 
 La evidencia de contenido de un checkout Git se define por identificadores de
 árbol: base (`HEAD`), `worktree_tree` (lo que `git add -A` registraría, copia
@@ -603,7 +702,7 @@ ambigua y formateador real. H2.5 no iniciado.
 ## D027 — Modo gestionado por activación, marcador y copia inmutable
 
 Estado: implementado y verificado offline el 2026-10-12.
-[Entrega, protocolo y límites](discovery/H2.5_MIGRATION.md).
+[Entrega, protocolo y límites](archive/phase-003/H2.5_MIGRATION.md).
 
 Contradicción señalada antes de implementar: la especificación pide deshabilitar
 el arranque del motor legacy, el alcance pedía no modificar el origen y el motor
@@ -647,7 +746,7 @@ de copias `staging-*` y detección entre comprobaciones o en otros worktrees.
 ## D028 — API gestionada local: proyectos del servidor y supervisor opt-in
 
 Estado: implementado y verificado offline el 2026-10-12.
-[Entrega, contratos y límites](discovery/H2_EXIT_API.md).
+[Entrega, contratos y límites](archive/phase-003/H2_EXIT_API.md).
 
 Los proyectos gestionados se registran en el servidor (`ManagedConfig`, pasado a
 `create_app` o cargado al arrancar desde `HARNESS_MANAGED_CONFIG=módulo:atributo`).
@@ -696,7 +795,7 @@ y actualizaciones mecánicas por HTTP quedan fuera de esta parte.
 ## D029 — UI gestionada por sondeo, envíos conservados y evidencia congelada
 
 Estado: implementado y verificado offline el 2026-10-12.
-[Entrega y reproducción](discovery/H2_EXIT_UI.md).
+[Entrega y reproducción](archive/phase-003/H2_EXIT_UI.md).
 
 La UI consume los contratos generados de `/api/managed`; no decide aceptación,
 recuperación ni ejecución. Proyectos/selecciones/comandos permanecen configurados
@@ -745,7 +844,7 @@ sin iniciarlo; los consentimientos de smokes anteriores siguen agotados.
 ## D030 — Catálogo de prompts por ámbito y snapshot por intento
 
 Estado: implementado y verificado offline el 2026-10-13.
-[Entrega, procedencia y límites](discovery/H3.1_PROMPTS.md).
+[Entrega, procedencia y límites](archive/phase-004/H3.1_PROMPTS.md).
 
 Ocho recursos Markdown (los siete nombres legacy y `execute-task`) adaptados al
 contrato H2, sin modelos o stack fijos en el núcleo. Reemplazo completo por
@@ -780,7 +879,7 @@ H3.2 queda siguiente sin iniciarse; consentimientos de smokes agotados.
 ## D031 — Permisos por petición exacta y efecto en un intento posterior
 
 Estado: implementado y verificado offline el 2026-10-13.
-[Entrega y límites](discovery/H3.2_PERMISSIONS.md).
+[Entrega y límites](archive/phase-004/H3.2_PERMISSIONS.md).
 
 Ledger `permission_requests` (0009) separado por ficheros, herramientas, red,
 producto y aceptación. UUID/huella, contexto/contrato/versiones, solicitante,
@@ -821,7 +920,7 @@ smokes anteriores siguen sin autorización disponible.
 ## D032 — Fases en SQLite, READY por contenido exacto y cierre sin edición documental
 
 Estado: implementado y verificado offline el 2026-10-13.
-[Entrega y límites](discovery/H3.3_PHASES.md).
+[Entrega y límites](archive/phase-004/H3.3_PHASES.md).
 
 La fase es autoridad SQLite (`0010_phases`): definición congelada creada por el
 usuario (criterios, tareas, documentos, tag opcional), base documental adoptada
@@ -887,7 +986,7 @@ nada de lo siguiente está implementado salvo lo que ya recoge D032.
 ## D034 — Lote desatendido derivado del estado, definiciones versionadas y tags anotados deterministas
 
 Estado: implementado y verificado offline el 2026-10-13 (puntos 3–7 de D033).
-[Entrega y límites](discovery/H3.4_PHASE_ADJUSTMENTS.md).
+[Entrega y límites](archive/phase-004/H3.4_PHASE_ADJUSTMENTS.md).
 
 La guardia local (Host de loopback, Origin local y `X-Harness-Local: 1`) se comparte
 desde `api/security.py` y se aplica a las mutaciones H0/H1 (simulaciones y
@@ -937,7 +1036,7 @@ autorización disponible.
 ## D035 — Chat por turnos nuevos de solo lectura con contexto congelado y propuestas confirmadas
 
 Estado: implementado y verificado offline el 2026-10-13 (punto 2 de D033).
-[Entrega y límites](discovery/H4.1_CHAT.md).
+[Entrega y límites](archive/phase-005/H4.1_CHAT.md).
 
 La conversación es autoridad SQLite separada del flujo de ejecución (`0012_chat`):
 conversaciones, turnos y propuestas. Cada turno es un run `chat` con job bajo el
@@ -976,7 +1075,7 @@ anteriores siguen sin autorización.
 ## D036 — Exportación documental separada, diff confirmado e intención de commit conciliable
 
 Estado: implementado y verificado offline el 2026-10-13 (punto 1 de D033).
-[Entrega y límites](discovery/STATE_EXPORT.md).
+[Entrega y límites](archive/phase-005/STATE_EXPORT.md).
 
 El cierre sigue siendo D032: CLOSED + tag, sin invocar la exportación. Exportar es
 una acción propia, también disponible para la última fase cerrada o abandonada,
@@ -986,9 +1085,9 @@ sus documentos/HEAD: se exige un check nuevo. La evaluación histórica se conse
 
 STATE y NEXT_STEPS usan las rutas del contexto del servidor, distintas y presentes
 en la base documental adoptada. Los documentos regulares UTF-8 se acotan a 512 KiB.
-Se añade o reemplaza únicamente el bloque entre
-`<!-- harness-local:managed-state:start -->` y
-`<!-- harness-local:managed-state:end -->`. La prosa exterior y sus terminaciones
+Se añade o reemplaza únicamente el bloque entre los comentarios HTML
+`harness-local:managed-state:start` y
+`harness-local:managed-state:end`. La prosa exterior y sus terminaciones
 de línea se conservan; marcadores parciales, repetidos o mal colocados se rechazan.
 El bloque contiene JSON estable, con fase/estado, tareas/aceptación/commit,
 preguntas abiertas, último check (incluida validación) y lotes registrados.
@@ -1031,7 +1130,7 @@ H4.2 es la siguiente tarea, sin iniciarla. Los smokes siguen sin autorización.
 ## D037 — Bootstrap documental confirmado, descubrimiento opcional y commit raíz conciliable
 
 Estado: implementado y verificado offline el 2026-10-13.
-[Entrega, uso y límites](discovery/H4.2_BOOTSTRAP.md).
+[Entrega, uso y límites](archive/phase-005/H4.2_BOOTSTRAP.md).
 
 Una carpeta existente registrada por el servidor necesita `bootstrap_enabled=True`
 y escritor Git explícito. El cliente solo nombra su identificador; perfil,
@@ -1081,7 +1180,7 @@ preparación de un stack no verificadas. H4.3 siguiente, sin iniciar; smokes ago
 ## D038 — Segundo perfil declarativo con validaciones TypeScript reales por los puertos existentes
 
 Estado: implementado y verificado offline el 2026-10-13.
-[Entrega, comandos y límites](discovery/H4.3_TYPESCRIPT_PROFILE.md).
+[Entrega, comandos y límites](archive/phase-005/H4.3_TYPESCRIPT_PROFILE.md).
 
 `typescript-web` demuestra una web estática de otro stack sin modificar el núcleo:
 preparación con Node/npm e instalación offline desde lock; validaciones de tipos,
@@ -1112,7 +1211,7 @@ proveedores y smokes siguen sin autorización disponible.
 ## D039 — JUnit observado por comando exacto y original congelado en el historial
 
 Estado: implementado y verificado offline el 2026-10-13.
-[Entrega y límites](discovery/H5.1_JUNIT.md).
+[Entrega y límites](archive/phase-006/H5.1_JUNIT.md).
 
 El perfil del servidor declara comando completo, ruta de reporte relativa al
 checkout y cobertura de tests como selección textual. No es cobertura de código
@@ -1153,7 +1252,7 @@ H5.2 backup/restauración local queda siguiente, sin iniciar. Smokes agotados.
 ## D040 — Backup local con servicio detenido, referencias verificadas y restauración de consulta
 
 Estado: implementado y verificado offline el 2026-10-13.
-[Procedimiento y límites](discovery/H5.2_BACKUP.md).
+[Procedimiento y límites](archive/phase-006/H5.2_BACKUP.md).
 
 La consistencia del conjunto exige detener servicio, observadores y escritores,
 con declaración `--writers-stopped`. Se rechazan propietarios abiertos/grupos
@@ -1203,7 +1302,7 @@ H5.3 retención local de logs queda siguiente, sin iniciar. Smokes agotados.
 ## D041 — Retención explícita de streams sellados con intención previa y ausencias auditadas
 
 Estado: implementado y verificado offline el 2026-10-13.
-[Procedimiento y límites](discovery/H5.3_RETENTION.md).
+[Procedimiento y límites](archive/phase-006/H5.3_RETENTION.md).
 
 La política local formato 1 tiene corte UTC obligatorio y umbral de tamaño
 configurable (1 MiB predeterminado); sin invocación explícita se conserva todo.
@@ -1250,7 +1349,7 @@ Smokes/proveedores siguen sin autorización disponible.
 ## D042 — Diagnóstico CLI explícito, preflight compartido y resultados acotados
 
 Estado: implementado y verificado offline el 2026-10-13.
-[Uso, verificaciones y límites](discovery/H5.4_DIAGNOSTICS.md).
+[Uso, verificaciones y límites](archive/phase-006/H5.4_DIAGNOSTICS.md).
 
 `diagnose-cli` recibe un JSON explícito de una CLIConfig, sin importar factories,
 abrir SQLite, crear jobs ni acceder al estado de autenticación. La configuración
@@ -1280,7 +1379,7 @@ Siguiente tarea H5.5: assets web empaquetados y comando único de inicio, sin in
 ## D043 — Distribución local con assets y migraciones, arranque explícito en loopback
 
 Estado: implementado y verificado offline el 2026-10-13.
-[Construcción, instalación y límites](discovery/H5.5_DISTRIBUTION.md).
+[Construcción, instalación y límites](archive/phase-006/H5.5_DISTRIBUTION.md).
 
 Pipeline explícito `scripts/build_distribution.py`: npm ci offline desde lock,
 comprobación de versiones/tipos/build, staging temporal y sdist/wheel con UI,
@@ -1314,7 +1413,7 @@ sin iniciar; consentimientos de proveedores/smokes siguen agotados.
 ## D044 — Sesión efímera local y guardia uniforme antes del acceso al producto
 
 Estado: implementado y verificado offline el 2026-10-13.
-[Operación, amenazas, pruebas y límites](discovery/H5.6_SESSION.md).
+[Operación, amenazas, pruebas y límites](archive/phase-006/H5.6_SESSION.md).
 
 Clave aleatoria por proceso en archivo temporal exclusivo 0600/directorio 0700,
 fuera de proyectos/SQLite. Arranque anuncia solo su ruta. Sirve como capacidad
@@ -1356,7 +1455,7 @@ consentimientos de proveedores/smokes agotados. No hay publicación ni push.
 ## D045 — Recorridos offline consolidados y cierre acotado del hito 5
 
 Estado: implementado y verificado offline el 2026-10-13.
-[Recorridos, matriz de cobertura y límites](discovery/H5.7_E2E.md).
+[Recorridos, matriz de cobertura y límites](archive/phase-006/H5.7_E2E.md).
 
 H5.7 conecta las fronteras existentes mediante seis pruebas de API/sesión,
 Git/SQLite y puertos de agente/comandos falsos. Reutiliza la regresión anterior
@@ -1382,7 +1481,7 @@ tarea ni consumir proveedores. D033.8 y los consentimientos agotados se conserva
 ## D046 — Revisión del cierre offline y separación de la preparación para uso real
 
 Estado: revisión documental/estática completada el 2026-10-13; próximo incremento
-pendiente de elección del usuario en esa revisión. [Dictamen](discovery/H5_CLOSURE_REVIEW.md).
+pendiente de elección del usuario en esa revisión. [Dictamen](archive/phase-006/REVIEW.md).
 Elección resuelta e incremento implementado posteriormente en D047.
 
 La evidencia H5.7 satisface el criterio de instalación/flujo/restauración para
@@ -1399,8 +1498,8 @@ implementación adicional ni consumo; D033.8 conserva su autorización específi
 ## D047 — Validadores nativos opt-in con captura acotada y recuperación conservadora
 
 Estado: implementado y verificado offline el 2026-10-13.
-[Entrega y límites](discovery/COMMAND_RUNNER.md), según el
-[alcance escrito antes de implementar](discovery/COMMAND_RUNNER_SCOPE.md).
+[Entrega y límites](archive/phase-006/COMMAND_RUNNER.md), según el
+[alcance escrito antes de implementar](archive/phase-006/NEXT_STEPS.md).
 El usuario eligió explícitamente este incremento y autorizó commit; resuelta la
 prioridad pendiente de D046. No autoriza proveedores, smokes ni piloto.
 Revisión independiente completada en D048, con un hallazgo corregido.
@@ -1448,7 +1547,7 @@ revisión independiente del incremento y su recuperación, sin iniciarla.
 ## D048 — Revisión del ejecutor de validaciones: runner congelado obligatorio
 
 Estado: revisión completada y hallazgo corregido offline el 2026-10-13.
-[Dictamen](discovery/COMMAND_RUNNER_REVIEW.md) sobre D047, pedido por el usuario
+[Dictamen](archive/phase-006/COMMAND_RUNNER_REVIEW.md) sobre D047, pedido por el usuario
 en sesión manual. No autoriza proveedores, smokes, piloto ni composición real.
 
 Un run cuyas versiones congeladas incluyen `command_config_sha256` solo ejecuta
@@ -1466,8 +1565,8 @@ OpenAPI, UI y dependencias sin cambios.
 ## D049 — Composición de uso real por TOML local del operador
 
 Estado: implementado y verificado offline el 2026-10-13.
-[Entrega y operación](discovery/LOCAL_CONFIG.md), según el
-[alcance escrito antes de implementar](discovery/LOCAL_CONFIG_SCOPE.md).
+[Entrega y operación](archive/phase-006/LOCAL_CONFIG.md), según el
+[alcance escrito antes de implementar](archive/phase-006/NEXT_STEPS.md).
 Decisiones del usuario: TOML fuera del checkout leído con `tomllib`, sin
 dependencias nuevas, y perfil TypeScript web como primera composición.
 No autoriza proveedores, smokes ni piloto; D033.8 conserva su autorización.
@@ -1492,8 +1591,8 @@ cambios; la validación de proyectos del runtime se reutiliza sin alterarla.
 ## D050 — Propuesta de primer uso real: selecciones del usuario y límites
 
 Estado: propuesta preparada y ensayada offline el 2026-10-13; **ejecutada una vez
-con autorización del usuario el mismo día** y completa ([resultado](discovery/FIRST_USE_RUN.md),
-D051). Consentimiento agotado. [Propuesta](discovery/FIRST_USE_PROPOSAL.md). Concreta D033.8.
+con autorización del usuario el mismo día** y completa ([resultado](archive/phase-006/FIRST_USE_RUN.md),
+D051). Consentimiento agotado. Propuesta (archivo `docs/discovery/FIRST_USE_PROPOSAL.md` retirado en P008-T001; recuperable con `git show 8622a43:docs/discovery/FIRST_USE_PROPOSAL.md`). Concreta D033.8.
 
 Selecciones elegidas por el usuario en esta sesión: ejecutor Claude
 `claude-sonnet-4-6`/`low` con herramientas `Read`, `Edit`, `Write`, `Glob`,
@@ -1517,7 +1616,7 @@ codec, cli-4, OpenAPI ni UI.
 
 Estado: decidido y aplicado el 2026-10-13 durante la ejecución D050, tras
 consultar al usuario («la opción más mantenible… modular y reutilizable»).
-[Resultado](discovery/FIRST_USE_RUN.md).
+[Resultado](archive/phase-006/FIRST_USE_RUN.md).
 
 `harness-local serve` exige los assets web empaquetados (D043), que la
 instalación editable de desarrollo no tiene. No se añade un modo de desarrollo
@@ -1537,8 +1636,8 @@ Sin cambios de código, esquema, codec, cli-4, OpenAPI ni UI.
 ## D052 — Revisor y ejecutor con proveedor, modelo y esfuerzo elegidos por el usuario
 
 Estado: decidido por el usuario el 2026-10-13; **implementado y verificado offline**
-el mismo día como `cli-5` / `local-config-2` ([entrega](discovery/AGENT_ROLES.md)).
-[Alcance](discovery/AGENT_ROLES_SCOPE.md). Sustituye la asignación fija
+el mismo día como `cli-5` / `local-config-2` ([entrega](archive/phase-007/AGENT_ROLES.md)).
+[Alcance](archive/phase-007/NEXT_STEPS.md). Sustituye la asignación fija
 «Codex planifica y revisa, Claude ejecuta» de la especificación (§1, F05 y la
 tabla de prompts) y de los adaptadores `cli-1`…`cli-4`.
 
@@ -1574,7 +1673,7 @@ autoriza el smoke con proveedores.
 ## D053 — Comando único de desarrollo con migración y backup previo
 
 Estado: implementado y verificado offline el 2026-10-13.
-[Entrega](discovery/DEV_COMMAND.md). Decisiones del usuario: modo desarrollo
+[Entrega](archive/phase-006/DEV_COMMAND.md). Decisiones del usuario: modo desarrollo
 (API + Vite) y migración automática con backup.
 
 `scripts/dev` sincroniza Python por `uv run --frozen`, reinstala el frontend
@@ -1612,10 +1711,10 @@ alcance de H6.2, igual que la convivencia con el TOML `local-config`.
 
 Estado: propuesta preparada y ensayada offline el 2026-10-13. **Ejecutada con
 autorización del usuario el mismo día y detenida**
-([resultado](discovery/PROVIDER_MATRIX_RUN.md)). La combinación 1 falló en el
+([resultado](archive/phase-007/PROVIDER_MATRIX_RUN.md)). La combinación 1 falló en el
 planificador por un contrato ambiguo de `validation_commands`; el usuario
 decidió parar y corregir, así que 2–4 no se lanzaron. Una sola invocación de
-proveedor. Consentimiento agotado. [Propuesta](discovery/PROVIDER_MATRIX_PROPOSAL.md).
+proveedor. Consentimiento agotado. Propuesta (archivo `docs/discovery/PROVIDER_MATRIX_PROPOSAL.md` retirado en P008-T001; recuperable con `git show 8622a43:docs/discovery/PROVIDER_MATRIX_PROPOSAL.md`).
 
 Los comandos que lanzan agentes los ejecutó el usuario con `!`, porque el
 clasificador de permisos de Claude Code bloqueó el script de recorrido.
@@ -1651,7 +1750,7 @@ OpenAPI ni UI.
 ## D056 — Formas de salida de los agentes alineadas con los validadores del motor
 
 Estado: decidido con criterio, implementado y verificado offline el 2026-10-13.
-[Entrega](discovery/CONTRACT_SHAPES.md). Origen: el smoke D055 se detuvo porque
+[Entrega](archive/phase-007/CONTRACT_SHAPES.md). Origen: el smoke D055 se detuvo porque
 un planificador real devolvió `validation_commands` como listas de argv.
 
 Se aplican las dos medidas, porque la plantilla es editable por el usuario
@@ -1674,7 +1773,7 @@ ejecución con proveedores.
 ## D057 — Nueva ejecución de la matriz D052 tras D056
 
 Estado: propuesta preparada y ensayada offline el 2026-10-13. **Ejecutada el
-mismo día y cerrada** ([resultado](discovery/PROVIDER_MATRIX_RERUN.md)):
+mismo día y cerrada** ([resultado](archive/phase-007/PROVIDER_MATRIX_RERUN.md)):
 
 - 1 (Codex→Claude) `COMMITTED`.
 - 2 (Codex→Codex) `REVISION_LIMIT`, porque el escritor Codex no editó.
@@ -1683,7 +1782,7 @@ mismo día y cerrada** ([resultado](discovery/PROVIDER_MATRIX_RERUN.md)):
 - 4 no lanzada por decisión del usuario.
 
 Siete invocaciones de proveedor. Consentimiento agotado.
-[Propuesta](discovery/PROVIDER_MATRIX_RERUN_PROPOSAL.md).
+Propuesta (archivo `docs/discovery/PROVIDER_MATRIX_RERUN_PROPOSAL.md` retirado en P008-T001; recuperable con `git show 8622a43:docs/discovery/PROVIDER_MATRIX_RERUN_PROPOSAL.md`).
 
 Repite D055 sin cambiar selecciones, límites ni criterios, con lo siguiente:
 
@@ -1704,7 +1803,7 @@ cambiar si ya existe, y se registra). Sin cambios de código del producto.
 ## D058 — `--json-schema` tipado para el lector Claude (`cli-6`)
 
 Estado: decidido con criterio, implementado y verificado offline el 2026-10-13.
-[Entrega](discovery/TYPED_JSON_SCHEMA.md). Origen: en la combinación 3 de D057,
+[Entrega](archive/phase-007/TYPED_JSON_SCHEMA.md). Origen: en la combinación 3 de D057,
 el lector Claude devolvió listas y objetos como cadenas JSON porque el
 `--json-schema` de `cli-5` solo declaraba `required`.
 
@@ -1727,7 +1826,7 @@ No autoriza ninguna ejecución con proveedores.
 ## D059 — Diagnóstico del escritor Codex y raíces explícitas (`cli-7`)
 
 Estado: diagnóstico completado y mitigación implementada offline el 2026-10-13.
-[Evidencia, medidas y límites](discovery/CODEX_WRITER_ROOTS.md). Petición del
+[Evidencia, medidas y límites](archive/phase-007/CODEX_WRITER_ROOTS.md). Petición del
 usuario: completar esta tarea sin lanzar sesiones y realizar commit.
 
 La causa inmediata observada en D057 es una interpretación incorrecta del
@@ -1762,9 +1861,9 @@ mensaje de permisos verá Codex. No autoriza otra matriz con proveedores.
 
 Estado: preparada y verificada offline el 2026-10-13; **ejecutada una vez con
 consentimiento específico el mismo día y cerrada con parada preventiva (D061)**.
-[Resultado](discovery/PROVIDER_MATRIX_CLI7_RUN.md).
-[Propuesta y órdenes](discovery/PROVIDER_MATRIX_CLI7_PROPOSAL.md),
-[manifiesto de paquete/configuración y ensayo sintético](discovery/PROVIDER_MATRIX_CLI7_PREPARATION.json).
+[Resultado](archive/phase-007/PROVIDER_MATRIX_CLI7_RUN.md).
+Propuesta y órdenes (archivo `docs/discovery/PROVIDER_MATRIX_CLI7_PROPOSAL.md` retirado en P008-T001; recuperable con `git show 8622a43:docs/discovery/PROVIDER_MATRIX_CLI7_PROPOSAL.md`),
+[manifiesto de paquete/configuración y ensayo sintético](archive/phase-007/PROVIDER_MATRIX_CLI7_PREPARATION.json).
 Petición inicial del usuario: completar únicamente la preparación activa de
 NEXT_STEPS y realizar commit, sin autorizar entonces la ejecución. Autorización
 posterior específica y resultado registrados en D061.
@@ -1800,8 +1899,8 @@ consentimientos agotados D050/D055/D057 ni avanzar a H6.2.
 ## D061 — Ejecución de D060: Codex escritor real y parada por cambio global
 
 Estado: ejecutada una vez y cerrada con parada preventiva el 2026-10-13.
-[Resultado y límites](discovery/PROVIDER_MATRIX_CLI7_RUN.md),
-[manifiesto](discovery/PROVIDER_MATRIX_CLI7_RESULT.json). El usuario autorizó
+[Resultado y límites](archive/phase-007/PROVIDER_MATRIX_CLI7_RUN.md),
+[manifiesto](archive/phase-007/PROVIDER_MATRIX_CLI7_RESULT.json). El usuario autorizó
 D060 («Autorizo») después de revisar propuesta, selecciones y límites.
 Consentimiento agotado; no se reutiliza para continuar las combinaciones.
 
@@ -1827,8 +1926,8 @@ propuesta y consentimiento nuevos; H6.2 no se inicia.
 ## D062 — Delta de confianza acreditado y límite de contención de la CLI
 
 Estado: diagnóstico offline completado el 2026-10-13; **sin corrección de
-transporte implementada**. [Evidencia y opciones](discovery/CODEX_GLOBAL_CONFIG_DIAGNOSIS.md),
-[manifiesto](discovery/CODEX_GLOBAL_CONFIG_DIAGNOSIS.json). Petición del
+transporte implementada**. [Evidencia y opciones](archive/phase-007/CODEX_GLOBAL_CONFIG_DIAGNOSIS.md),
+[manifiesto](archive/phase-007/CODEX_GLOBAL_CONFIG_DIAGNOSIS.json). Petición del
 usuario: «continúa», sobre el diagnóstico activo, sin consumo nuevo.
 
 Se acredita el delta D061 por SHA-256: la inversa en memoria que quita solo
@@ -1856,8 +1955,8 @@ red, proveedores o avance a la matriz/H6.2; consentimientos siguen agotados.
 ## D063 — Propuesta de frontera externa de escritura; auth compatible aún no certificada
 
 Estado: propuesta concretada y experimento sintético completado el 2026-10-13;
-**sin implementación en producto**. [Alcance, alternativas y criterios](discovery/CODEX_PROCESS_CONTAINMENT_PROPOSAL.md),
-[evidencia](discovery/CODEX_PROCESS_CONTAINMENT_EVIDENCE.json).
+**sin implementación en producto**. [Alcance, alternativas y criterios](archive/phase-007/CODEX_PROCESS_CONTAINMENT_PROPOSAL.md),
+[evidencia](archive/phase-007/CODEX_PROCESS_CONTAINMENT_EVIDENCE.json).
 
 Se elige como candidata para calificación offline una frontera externa macOS
 que conserve HOME/USER y lectura de auth en origen, denegando escrituras fuera
@@ -1890,8 +1989,8 @@ D050/D055/D057/D060 agotados, matriz y H6.2 sin iniciar.
 ## D064 — Contención sintética calificada con límites que impiden su integración
 
 Estado: calificación offline completada el 2026-10-14; **candidata no apta para
-integración tal como está**, sin cambios de producto. [Dictamen y reproducción](discovery/CODEX_CONTAINMENT_QUALIFICATION.md),
-[evidencia](discovery/CODEX_CONTAINMENT_QUALIFICATION.json).
+integración tal como está**, sin cambios de producto. [Dictamen y reproducción](archive/phase-007/CODEX_CONTAINMENT_QUALIFICATION.md),
+[evidencia](archive/phase-007/CODEX_CONTAINMENT_QUALIFICATION.json).
 
 La matriz final de 27 casos con HOME/auth ficticios confirma denegación de
 escrituras directas y diferenciación lector/escritor/TMPDIR, auxiliares,
@@ -1924,9 +2023,9 @@ H6.2 sin iniciar; D050/D055/D057/D060 siguen agotados.
 ## D065 — Anidamiento condicionado por el perfil y frontera revisada no calificada
 
 Estado: diagnóstico y dictamen offline completados el 2026-10-14; **sin
-integración en producto**. [Resultados y criterios](discovery/CODEX_CONTAINMENT_REVISION.md),
-[evidencia](discovery/CODEX_CONTAINMENT_REVISION.json) y
-[sonda sintética](discovery/CODEX_CONTAINMENT_REVISION.py).
+integración en producto**. [Resultados y criterios](archive/phase-007/CODEX_CONTAINMENT_REVISION.md),
+[evidencia](archive/phase-007/CODEX_CONTAINMENT_REVISION.json) y
+[sonda sintética](archive/phase-007/CODEX_CONTAINMENT_REVISION.py).
 Petición del usuario: completar solo la tarea activa y realizar commit.
 
 D064 no demuestra una imposibilidad general de anidar un lector. Perfiles
@@ -1971,8 +2070,8 @@ sin iniciar; consentimientos D050/D055/D057/D060 siguen agotados.
 
 Estado: controles de transporte implementados y verificados offline el
 2026-10-14; **persistencia externa completa sin resolver**.
-[Entrega, inventario y límites](discovery/AGENT_PERSISTENCE.md),
-[evidencia](discovery/AGENT_PERSISTENCE.json).
+[Entrega, inventario y límites](archive/phase-007/AGENT_PERSISTENCE.md),
+[evidencia](archive/phase-007/AGENT_PERSISTENCE.json).
 
 El usuario requiere que los modelos no conserven estado/memoria global de
 proyecto: el contexto duradero se mantiene en Markdown organizado en `docs/`,
@@ -2019,9 +2118,9 @@ cerrar y consentimientos D050/D055/D057/D060 agotados.
 ## D067 — Diagnóstico de arranque preparado con incompatibilidad, sin CLI real
 
 Estado: preparación y dictamen completados el 2026-10-14; **candidata no apta
-para ejecución real**. [Propuesta, controles y límites](discovery/CODEX_STARTUP_PREPARATION.md),
-[evidencia](discovery/CODEX_STARTUP_PREPARATION.json) y
-[controlador/ensayo](discovery/CODEX_STARTUP_PREPARATION.py).
+para ejecución real**. [Propuesta, controles y límites](archive/phase-007/CODEX_STARTUP_PREPARATION.md),
+[evidencia](archive/phase-007/CODEX_STARTUP_PREPARATION.json) y
+[controlador/ensayo](archive/phase-007/CODEX_STARTUP_PREPARATION.py).
 El usuario pide seguir con la preparación activa; no autoriza CLI real.
 
 Se concretan dos comandos proyectados, sin override y con confianza solo en
@@ -2062,8 +2161,8 @@ iniciar; fase de comprobaciones abierta. D050/D055/D057/D060 siguen agotados.
 
 ## D068 — Condición de confianza del pin acreditada y supresión específica (`cli-9`)
 
-Estado: implementada/verificada el 2026-10-14. [Fuente, corrección y límites](discovery/CODEX_TRUST_SUPPRESSION.md),
-[procedencia](discovery/CODEX_TRUST_SUPPRESSION.json). El usuario pide comprobar
+Estado: implementada/verificada el 2026-10-14. [Fuente, corrección y límites](archive/phase-007/CODEX_TRUST_SUPPRESSION.md),
+[procedencia](archive/phase-007/CODEX_TRUST_SUPPRESSION.json). El usuario pide comprobar
 el flujo hasta cerrarlo; se completa el prerrequisito activo D067 antes de consumir.
 
 Etiqueta pública Codex rust-v0.162.1 resuelta al commit
@@ -2092,9 +2191,9 @@ Supresión dinámica específica verificada después en D069/D071.
 
 ## D069 — Primer ensayo cli-9 detenido por contradicción del plan
 
-Estado: ejecutado una vez y cerrado el 2026-10-14. [Propuesta](discovery/PROVIDER_MATRIX_CLI9_PROPOSAL.md),
-[resultados D069/D070](discovery/PROVIDER_MATRIX_CLI9_STOPS.md) y
-[evidencia](discovery/PROVIDER_MATRIX_CLI9_STOPS.json). Solo Codex→Codex,
+Estado: ejecutado una vez y cerrado el 2026-10-14. Propuesta (archivo `docs/discovery/PROVIDER_MATRIX_CLI9_PROPOSAL.md` retirado en P008-T001; recuperable con `git show 8622a43:docs/discovery/PROVIDER_MATRIX_CLI9_PROPOSAL.md`),
+[resultados D069/D070](archive/phase-007/PROVIDER_MATRIX_CLI9_STOPS.md) y
+[evidencia](archive/phase-007/PROVIDER_MATRIX_CLI9_STOPS.json). Solo Codex→Codex,
 tres COMPLETE y edición/validaciones correctas, sin cambio en muestras globales.
 El planner autoriza src/estimate.ts y prohíbe **; deny prevalece. Reviewer
 BLOCKED, sin aceptación/commit. Otros tres pares no lanzados. Cero locks,
@@ -2109,7 +2208,7 @@ continuar el trabajo de cierre; nueva ejecución separada preparada en D070.
 
 ## D070 — Matriz corregida detenida por errores de conexión del planificador
 
-Estado: ejecutada una vez y cerrada el 2026-10-14. [Propuesta nueva](discovery/PROVIDER_MATRIX_CLI9_CORRECTED_PROPOSAL.md),
+Estado: ejecutada una vez y cerrada el 2026-10-14. Propuesta nueva (archivo `docs/discovery/PROVIDER_MATRIX_CLI9_CORRECTED_PROPOSAL.md` retirado en P008-T001; recuperable con `git show 8622a43:docs/discovery/PROVIDER_MATRIX_CLI9_CORRECTED_PROPOSAL.md`),
 resultado/evidencias junto a D069. Solo planner Codex de Codex→Codex:
 timeouts de modelos/routing/MCP y tres eventos error de reconexión. Después
 JSON válido sin contradicción y turn.completed/exit 0, pero el adaptador
@@ -2125,9 +2224,9 @@ No cambia parser/permisos/modelos/auth para pasar; D071 queda separado.
 
 ## D071 — Comprobación funcional real de las cuatro combinaciones completada
 
-Estado: completada el 2026-10-14. [Propuesta autorizada](discovery/PROVIDER_MATRIX_CLI9_FINAL_PROPOSAL.md),
-[resultado y límites](discovery/PROVIDER_MATRIX_CLI9_RUN.md),
-[manifiesto](discovery/PROVIDER_MATRIX_CLI9_RESULT.json). Nueva área matrix-6,
+Estado: completada el 2026-10-14. Propuesta autorizada (archivo `docs/discovery/PROVIDER_MATRIX_CLI9_FINAL_PROPOSAL.md` retirado en P008-T001; recuperable con `git show 8622a43:docs/discovery/PROVIDER_MATRIX_CLI9_FINAL_PROPOSAL.md`),
+[resultado y límites](archive/phase-007/PROVIDER_MATRIX_CLI9_RUN.md),
+[manifiesto](archive/phase-007/PROVIDER_MATRIX_CLI9_RESULT.json). Nueva área matrix-6,
 mismo wheel corregido instalado offline, código contrastado byte a byte.
 Codex 0.162.1 gpt-6-luna, Claude 2.1.296 claude-sonnet-4-6; planner/reviewer
 medium y executor low. Doce COMPLETE, tres por combinación, sin retry/fallback
@@ -2161,7 +2260,7 @@ push/publicación, nuevo smoke, recuperación o modificaciones de ReferenceProje
 
 Estado: diseño completado el 2026-10-14; puntos confirmados por el usuario en D073;
 H6.3 (D073), H6.4 (D074) y H6.5 (D075) implementados offline. La UI (H6.2) sigue pendiente.
-[Diseño, diferencias e incrementos](discovery/DOCUMENT_ORGANIZATION.md).
+[Diseño, diferencias e incrementos](archive/phase-007/DOCUMENT_ORGANIZATION.md).
 
 Requisitos del usuario: creación desde un brief en Markdown seguida de una
 conversación con el revisor, que genera SPECIFICATION, ARCHITECTURE (con
@@ -2210,7 +2309,7 @@ proveedores.
 ## D073 — Confirmación de D072 e implementación de H6.3
 
 Estado: decidido por el usuario el 2026-10-14 e **implementado y verificado offline**
-el mismo día. [Entrega, API y límites](discovery/H6.3_DOCUMENT_CONTRACT.md).
+el mismo día. [Entrega, API y límites](archive/phase-007/H6.3_DOCUMENT_CONTRACT.md).
 
 Confirmaciones del usuario sobre D072 §12, aceptando las recomendaciones:
 
@@ -2253,8 +2352,8 @@ dependencias ni proveedores. Siguiente: H6.4 (métricas), sin iniciar.
 
 ## D074 — Métricas por intento materializadas con procedencia y agregados sin doble conteo (H6.4)
 
-Estado: implementado y verificado offline el 2026-10-14. [Catálogo, entrega y límites](discovery/H6.4_METRICS.md),
-[caracterización reproducible](discovery/H6.4_STREAM_CATALOG.py) y [su salida](discovery/H6.4_STREAM_CATALOG.json).
+Estado: implementado y verificado offline el 2026-10-14. [Catálogo, entrega y límites](archive/phase-007/H6.4_METRICS.md),
+[caracterización reproducible](archive/phase-007/H6.4_STREAM_CATALOG.py) y [su salida](archive/phase-007/H6.4_STREAM_CATALOG.json).
 H6.3 (D072/D073), que estaba sin commit en el árbol, se commiteó por separado antes de empezar.
 
 Caracterización offline de los doce stdout conservados de D071, leídos sin modificarlos y verificados por
@@ -2297,7 +2396,7 @@ conversacionales), sin iniciar.
 ## D075 — Creación y planificación conversacionales con borradores en disco y CAS (H6.5)
 
 Estado: implementado y verificado offline el 2026-10-14.
-[Entrega, API y límites](discovery/H6.5_CONVERSATIONAL_CREATION.md).
+[Entrega, API y límites](archive/phase-007/H6.5_CONVERSATIONAL_CREATION.md).
 
 Base: D072 §5.1 y §11, D073 puntos 4 y 7. Dos conversaciones sobre la infraestructura del chat (D035):
 `definition` (proyecto v2 nuevo desde un brief Markdown) y `phase_planning` (plan NEXT_STEPS de la fase
@@ -2340,7 +2439,7 @@ Siguiente: H6.2 (UI de producto), tarea completamente distinta (D073), sin inici
 ## D076 — Alcance de H6.2: registro híbrido, Markdown seguro, chat sin lock y entregas
 
 Estado: decidido por el usuario el 2026-10-14; **no implementado**.
-[Alcance, entregas y criterios](discovery/H6.2_SCOPE.md).
+[Alcance, entregas y criterios](archive/phase-007/NEXT_STEPS.md).
 
 Decisiones del usuario, todas por la opción recomendada:
 
@@ -2365,7 +2464,7 @@ edición del TOML desde la UI e historial Git de documentos. Siguiente: E1, sin 
 
 ## D077 — H6.2 E1: shell por URL, lecturas por código y sistema de diseño
 
-Estado: implementado y verificado offline el 2026-10-14. [Entrega, diseño y límites](discovery/H6.2_E1_SHELL.md).
+Estado: implementado y verificado offline el 2026-10-14. [Entrega, diseño y límites](archive/phase-007/H6.2_E1_SHELL.md).
 
 Decisiones tomadas con criterio dentro de D076:
 
@@ -2386,7 +2485,7 @@ Sin migración, codec ni dependencias. Siguiente: E2 (registro de proyectos), si
 
 ## D078 — H6.2 E2: `local-config-3` y registro de proyectos desde la UI
 
-Estado: implementado y verificado offline el 2026-10-14. [Entrega, API y límites](discovery/H6.2_E2_REGISTRY.md).
+Estado: implementado y verificado offline el 2026-10-14. [Entrega, API y límites](archive/phase-007/H6.2_E2_REGISTRY.md).
 
 Decisiones tomadas con criterio dentro de D054/D076:
 
@@ -2421,7 +2520,7 @@ navegaciones `GET` de documento; puede reconsiderarse con una decisión nueva. S
 
 ## D080 — H6.2 E3: visor y edición de documentos con CAS, regeneración de bloques y Markdown aislado
 
-Estado: implementado y verificado offline el 2026-10-15. [Entrega, verificación y límites](discovery/H6.2_E3_DOCS.md).
+Estado: implementado y verificado offline el 2026-10-15. [Entrega, verificación y límites](archive/phase-007/H6.2_E3_DOCS.md).
 
 Decisiones tomadas con criterio dentro de D072 §6 y D076:
 
@@ -2446,7 +2545,7 @@ Sin migración ni codec. Siguiente: E4 (creación y planificación de fase), sin
 ## D081 — Rutas protegidas del perfil: límite del ejecutor, no de las escrituras documentales confirmadas (v2)
 
 Estado: decidido por el usuario el 2026-10-15 (opción recomendada); implementado y verificado offline.
-[Hallazgo y verificación](discovery/H6.2_E4_SETUP.md#hallazgo-resuelto-antes-de-seguir-d081).
+[Hallazgo y verificación](archive/phase-007/H6.2_E4_SETUP.md#hallazgo-resuelto-antes-de-seguir-d081).
 
 Hallazgo de E4: `typescript-web`, único perfil de las composiciones de `local-config-3`, protege `docs/**`, y la
 exportación (D036), la edición y la transición (H6.3) y la aceptación de la definición (H6.5) rechazaban cualquier ruta
@@ -2465,7 +2564,7 @@ Sin cambios en los perfiles, el esquema ni el codec.
 
 ## D082 — H6.2 E4: creación y planificación de fase en la UI
 
-Estado: implementado y verificado offline el 2026-10-15. [Entrega, verificación y límites](discovery/H6.2_E4_SETUP.md).
+Estado: implementado y verificado offline el 2026-10-15. [Entrega, verificación y límites](archive/phase-007/H6.2_E4_SETUP.md).
 
 Decisiones tomadas con criterio dentro de D075/D076:
 
@@ -2487,7 +2586,7 @@ Sin migración, codec ni dependencias. Siguiente: E5 (chat global), sin iniciar.
 
 ## D083 — H6.2 E5: chat sobre HEAD, carril independiente y comandos deterministas
 
-Estado: implementado y verificado offline el 2026-10-15. [Entrega, verificación y límites](discovery/H6.2_E5_CHAT.md).
+Estado: implementado y verificado offline el 2026-10-15. [Entrega, verificación y límites](archive/phase-007/H6.2_E5_CHAT.md).
 
 Cambio deliberado de D035 previsto por D073/D076:
 
@@ -2509,7 +2608,7 @@ Siguiente: E6 (estadísticas y tests), sin iniciar. Los consentimientos previos 
 
 ## D084 — H6.2 E6: estadísticas por URL, evolución de tests por fase y gráficos SVG propios
 
-Estado: implementado y verificado offline el 2026-10-15. [Entrega, verificación y límites](discovery/H6.2_E6_STATS.md).
+Estado: implementado y verificado offline el 2026-10-15. [Entrega, verificación y límites](archive/phase-007/H6.2_E6_STATS.md).
 
 Decisiones tomadas con criterio dentro de D074/D076:
 
@@ -2533,7 +2632,7 @@ del hito, sin iniciar. Los consentimientos previos siguen agotados.
 ## D085 — Revisión de cierre de H6.2: criterios cumplidos salvo la paginación de diffs
 
 Estado: revisión completada el 2026-10-15 sobre `b04ed5d`; **el hito queda pendiente de la decisión del usuario sobre
-el hallazgo 1**. [Dictamen, evidencia y hallazgos](discovery/H6.2_CLOSURE_REVIEW.md).
+el hallazgo 1**. [Dictamen, evidencia y hallazgos](archive/phase-007/REVIEW.md).
 
 - Cumplidos con evidencia de esta sesión: recorrido sintético completo desde la UI (alta → creación → primera tarea →
   revisión → commit → cierre → transición con plan propuesto, más chat y estadísticas), URLs por carga directa y recarga
@@ -2553,7 +2652,7 @@ Sin cambios de código, esquema, API, UI ni dependencias. Los consentimientos pr
 ## D086 — Hallazgos de D085 corregidos: diffs paginados, conversaciones idempotentes y fase con sucesora
 
 Estado: implementado y verificado offline el 2026-10-15 sobre `22d592f`; **los siete criterios de H6.2 quedan
-cumplidos**. [Entrega, verificación y límites](discovery/H6.2_DIFF_PAGINATION.md).
+cumplidos**. [Entrega, verificación y límites](archive/phase-007/H6.2_DIFF_PAGINATION.md).
 
 Pedido por el usuario: el hallazgo 1 (obligatorio) y también el 2 y el 3. Decisiones tomadas con criterio:
 
@@ -2585,3 +2684,65 @@ Estado: decidido por el usuario el 2026-10-15, tras D086 (`01b4f6d`).
   `typescript-web` nuevo, hora de las validaciones, decodificación completa del historial por lectura, avisos *low* de
   KaTeX y ningún recorrido de producto con CLI reales.
 - La siguiente tarea la elige el usuario. Los consentimientos previos siguen agotados.
+
+## D088 — Contrato documental unificado, cierre de fase automático e importación de proyectos (P008)
+
+Estado: decidido por el usuario el 2026-10-15 tras el análisis de incongruencias de esa sesión; **P008-T001
+(migración documental de este repositorio) implementada el mismo día**; P008-T002–T015 pendientes. Fase: P008.
+Sustituye en parte D072/D073 (carpetas `decisions/`, `architecture/` y `research/`; layout v2 opcional), D032/D073
+(cierre y transición separados) y D037 (creación v1). Plan: [NEXT_STEPS](NEXT_STEPS.md).
+
+Decisiones del usuario:
+
+1. **Estructura obligatoria** para todo proyecto gestionado y para este repositorio. Raíz: `AGENTS.md` canónico
+   (≤60 líneas: orden de discovery, reglas inquebrantables, comandos de test y lint), `CLAUDE.md` y `GEMINI.md` como
+   envoltorios de ≤15 líneas que importan `AGENTS.md` (GEMINI se genera ya, sin proveedor todavía), y `README.md`
+   reducido para personas. `docs/`: SPECIFICATION, ARCHITECTURE, ROADMAP, STATE, NEXT_STEPS, DECISIONS,
+   DDBB-DIAGRAM (Mermaid `erDiagram`, o «Sin persistencia»), `flows/`, `phase/` y `archive/phase-NNN/`.
+2. **`DECISIONS.md` único** con índice; desaparecen `decisions/DNNN-*.md` y el presupuesto de 8 KiB. Los agentes
+   leen solo las ADR citadas por la tarea, o el índice para buscar precedentes. Añaden ADR la reconciliación, el
+   usuario y el revisor mediante propuestas aprobadas; el ejecutor las propone en su salida.
+3. **Archivo `phase-NNN`** con tres dígitos, como los códigos `PNNN`.
+4. **Cierre unificado.** Tras el check READY y la autorización de cierre, un único flujo y commit conciliable: tag
+   sobre el HEAD evaluado; `docs/archive/phase-NNN/` con STATE, NEXT_STEPS, REVIEW, SUMMARY y el contenido de
+   `docs/phase/`; STATE con la base acumulada compacta (≤12 KiB) y la fase N+1; NEXT_STEPS con el objetivo de N+1
+   tomado de ROADMAP, sin exigir su plan (se planifica después); `docs/phase/` vacía; ROADMAP con N completada y
+   enlace a su archivo.
+5. **`docs/phase/`** sustituye a `research/` como carpeta de trabajo efímera de la fase en curso.
+6. **Paridad diagramas‑código.** Perfiles, `protected_write` y `allowed_draft` permiten al ejecutor `docs/flows/**`,
+   `docs/DDBB-DIAGRAM.md`, `docs/ARCHITECTURE.md`, `docs/SPECIFICATION.md` y `docs/phase/**` cuando su contrato lo
+   incluya; STATE, NEXT_STEPS, ROADMAP, DECISIONS y `docs/archive/**` quedan para el harness. El revisor rechaza
+   cualquier cambio de modelos de datos o de flujos de negocio sin su diagrama actualizado.
+7. **v2 se modifica en su sitio** para adoptar esta estructura y pasa a ser obligatorio: no hay proyectos v2 reales
+   que conservar. Se retira la creación v1 (H4.2); el lector legacy y v1 quedan solo como entrada del Flujo A.
+8. **Archivos de instrucciones.** El harness puede crear y actualizar AGENTS, CLAUDE y GEMINI en la creación y la
+   importación. Como Claude se lanza con `--setting-sources ""` y Codex con `--ignore-rules`, `AGENTS.md` se inyecta
+   en el contexto congelado de cada intento (o se ajustan los flags solo si se verifica que es seguro).
+9. **`architecture/` y `research/`** salen del layout.
+10. **Flujo A** (harness anterior) acepta repositorios tipo ReferenceProject y proyectos v1/v2 de este harness, con una
+    normalización común.
+11. **Perfiles declarativos en el TOML local** (preparación, tests, lint y tipos detectados y confirmados por el
+    usuario), para el Flujo B y para proyectos nuevos de otros stacks; el primero, Python/Django con pytest, ruff y
+    mypy, que el usuario usará en su próximo proyecto.
+12. **Este repositorio.** Los hitos H0–H6 pasan a ser P001–P007 y la definición inicial, P000; este trabajo es P008.
+    Sin bloques gestionados por ahora, pero con el formato del parser para poder registrarlo más adelante. Se borran
+    los `*_SCOPE.md` (fusionados), las propuestas ya ejecutadas y `docs/discovery/`.
+
+Implementación de T001, sin cambios del motor:
+
+- `docs/discovery/` (131 archivos) se reparte en `docs/archive/phase-001…007/` con `git mv`: 71 Markdown y los 19
+  JSON y scripts de evidencia; 01, 02, 03 y START_HERE van a `phase-000/`; las revisiones de cierre de H5 y H6.2 pasan
+  a `REVIEW.md` de su fase. Los 31 `*_SCOPE.md` se fusionan con la sección del backlog en el `NEXT_STEPS.md` de su fase y
+  el `STATE.md` acumulado se reparte entre los `STATE.md` archivados, sin perder líneas. Se eliminan 9 propuestas ya
+  ejecutadas; sus enlaces pasan a texto con la orden `git show 8622a43:<ruta>`.
+- `baseline.json` pasa a `tests/fixtures/legacy/` (único cambio de código: la ruta en `tests/test_legacy_fixtures.py`;
+  además se actualizan dos docstrings que citaban la ruta antigua).
+- Enlaces relativos reescritos por script y comprobados; 14 enlaces que ya estaban rotos en los alcances quedan
+  corregidos. `DDBB-DIAGRAM.md` se genera desde el metadata SQLAlchemy y los 16 diagramas Mermaid se validan con el
+  parser de `mermaid` 11.17.2 del frontend, sin red.
+- Documentos activos nuevos: SPECIFICATION, ARCHITECTURE, ROADMAP, STATE, NEXT_STEPS, DDBB-DIAGRAM, seis flujos y
+  `SUMMARY.md` por fase archivada; AGENTS, CLAUDE y README reducidos y GEMINI añadido.
+
+Consecuencias: hasta T002 el motor sigue implementando el layout v2 de D072/D073; este repositorio no está registrado
+como proyecto gestionado, así que la diferencia no afecta a su desarrollo manual. Los consentimientos de proveedores
+siguen agotados.

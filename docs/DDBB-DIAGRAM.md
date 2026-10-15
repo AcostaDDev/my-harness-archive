@@ -1,0 +1,553 @@
+# Diagrama de datos — my_harness
+
+Esquema SQLite del servicio local (Alembic `0018_conversation_keys`, 34 tablas). Generado en P008-T001 desde el metadata de `src/harness_local/storage/models.py`; cualquier cambio de modelos o migraciones actualiza este documento en la misma tarea (regla de paridad, D088).
+
+Convenciones: `PK` clave primaria, `FK` clave ajena declarada, `UK` unicidad de columna; «null» marca columnas opcionales. Las unicidades compuestas y los índices únicos parciales se listan bajo cada diagrama. Las entidades de otro contexto aparecen solo con las columnas que relacionan. Los artefactos pesados (streams, capturas, copias) viven fuera de SQLite y se referencian por ruta y hash.
+
+## Observación legacy y simulaciones (P001–P002)
+
+Índice reconstruible de un harness anterior: los originales son la autoridad (D012–D014). `simulations` es el esqueleto H0.3.
+
+```mermaid
+erDiagram
+    simulations {
+        string id PK
+        string title
+        string created_at
+        json events
+    }
+    legacy_sources {
+        string root PK
+        string observed_at
+        boolean watch_enabled
+        text diagnostic "null"
+    }
+    legacy_runs {
+        string root PK, FK "→ legacy_sources.root"
+        string path PK
+        string identity
+    }
+    legacy_artifacts {
+        string root PK, FK "→ legacy_sources.root, legacy_runs.root"
+        string path PK
+        string run_path FK "null; → legacy_runs.path"
+        string kind
+        string format
+        string status
+        string sha256 "null"
+        integer size_bytes "null"
+        json payload "null"
+        text diagnostic "null"
+    }
+    legacy_events {
+        integer id PK
+        string root FK "→ legacy_sources.root"
+        string kind
+        string observed_at
+        json payload
+    }
+    legacy_sources ||--o{ legacy_runs : "root"
+    legacy_sources ||--o{ legacy_artifacts : "root"
+    legacy_runs |o--o{ legacy_artifacts : "root, run_path"
+    legacy_sources ||--o{ legacy_events : "root"
+```
+
+## Ejecución gestionada (P003)
+
+Autoridad operativa de runs, intentos, cola, exclusión por checkout, procesos y commits (D015–D027). `managed_runs.root` es la raíz canónica del checkout; no hay tabla de proyecto.
+
+```mermaid
+erDiagram
+    managed_runs {
+        string id PK
+        string root
+        string task_id
+        string phase_id "→ managed_phases.id (lógica, sin FK)"
+        text context_json
+        text versions_json
+        text history_json
+        string status
+        string stage
+        integer revisions
+        integer revision_limit
+        integer version
+        string created_at
+        string updated_at
+        string purpose
+    }
+    managed_attempts {
+        string id PK
+        string run_id FK "→ managed_runs.id"
+        integer number
+        text request_json
+        text versions_json
+        string status
+        text result_json "null"
+        string started_at
+        string finished_at "null"
+    }
+    managed_events {
+        integer id PK
+        string run_id FK "→ managed_runs.id"
+        integer sequence
+        string kind
+        string recorded_at
+        json payload
+    }
+    managed_jobs {
+        integer id PK
+        string idempotency_key UK
+        string run_id FK "→ managed_runs.id"
+        text request_json
+        string status
+        string owner_token "null"
+        string heartbeat_at "null"
+        string lease_until "null"
+        string created_at
+        string finished_at "null"
+        text diagnostic "null"
+        json process_owner "null"
+        boolean owner_closed
+        string activation_id FK "null; → managed_activations.id"
+    }
+    checkout_locks {
+        string root PK
+        integer job_id FK, UK "→ managed_jobs.id"
+    }
+    managed_processes {
+        string attempt_id PK, FK "→ managed_attempts.id"
+        integer job_id FK "→ managed_jobs.id"
+        json spec
+        json identity "null"
+        string status
+        json capture "null"
+    }
+    managed_commits {
+        string operation_id PK
+        string run_id FK "→ managed_runs.id"
+        integer job_id FK "→ managed_jobs.id"
+        string status
+        string base_revision
+        string reviewed_fingerprint
+        string expected_tree
+        string expected_commit
+        text intent_json
+        text result_json "null"
+        string commit_sha "null"
+        string created_at
+        string finished_at "null"
+    }
+    managed_activations {
+        string id PK
+        string root
+        string repository_key "null"
+        string status
+        string preview_sha256
+        text legacy_stopped
+        text rules_json
+        text marker
+        string marker_sha256
+        string snapshot_root
+        text manifest_json "null"
+        string manifest_sha256 "null"
+        string owner_token "null"
+        integer version
+        string created_at
+        string activated_at "null"
+        string finished_at "null"
+        text diagnostic "null"
+        text revert_reason "null"
+        string export_path "null"
+        string export_sha256 "null"
+    }
+    managed_runs ||--o{ managed_attempts : "run_id"
+    managed_runs ||--o{ managed_events : "run_id"
+    managed_runs ||--o{ managed_jobs : "run_id"
+    managed_activations |o--o{ managed_jobs : "activation_id"
+    managed_jobs ||--o{ checkout_locks : "job_id"
+    managed_attempts ||--o| managed_processes : "attempt_id"
+    managed_jobs ||--o{ managed_processes : "job_id"
+    managed_runs ||--o{ managed_commits : "run_id"
+    managed_jobs ||--o{ managed_commits : "job_id"
+```
+
+Unicidad: `managed_attempts` (run_id, number); `managed_events` (run_id, sequence); `uq_managed_commits_live` sobre `managed_commits` (run_id) donde status IN ('INTENT', 'COMMITTED'); `uq_managed_activations_live_root` sobre `managed_activations` (root) donde status IN ('PREPARING', 'ACTIVE', 'REVERTING'); `uq_managed_activations_live_repository` sobre `managed_activations` (repository_key) donde status IN ('PREPARING', 'ACTIVE', 'REVERTING').
+
+## Prompts y permisos (P004)
+
+Catálogo versionado por ámbito y peticiones de permiso exactas con su consumo (D030–D031).
+
+```mermaid
+erDiagram
+    prompt_heads {
+        string scope PK
+        string owner PK
+        string name PK
+        integer generation
+        string active_id "null"
+    }
+    prompt_versions {
+        string id PK
+        string scope
+        string owner
+        string name
+        text template
+        string sha256
+        text source
+        string created_at
+    }
+    prompt_activations {
+        string id PK
+        string scope
+        string owner
+        string name
+        string previous_id "null"
+        string version_id FK "→ prompt_versions.id"
+        integer generation
+        text reason
+        string created_at
+    }
+    permission_requests {
+        string id PK
+        string run_id FK "→ managed_runs.id"
+        integer version
+        string status
+        json request
+        string fingerprint
+        string expires_at
+        string created_at
+        json decision "null"
+        string consumed_by "null"
+        string supersedes FK "null; → permission_requests.id"
+    }
+    managed_runs {
+        string id PK
+    }
+    prompt_versions ||--o{ prompt_activations : "version_id"
+    managed_runs ||--o{ permission_requests : "run_id"
+    permission_requests |o--o{ permission_requests : "supersedes"
+```
+
+## Fases y creación (P004–P005)
+
+Fases con definición versionada, preguntas, operaciones (check, cierre, transición, edición documental), autorizaciones y eventos (D032–D037). `managed_runs.phase_id` es una referencia lógica sin FK.
+
+```mermaid
+erDiagram
+    managed_phases {
+        string id PK
+        string root
+        string code
+        json definition
+        string definition_sha256
+        json documents
+        string status
+        integer version
+        string created_at
+        string updated_at
+        integer definition_number
+    }
+    phase_definitions {
+        string id PK
+        string phase_id FK "→ managed_phases.id"
+        integer number
+        json definition
+        string definition_sha256
+        json documents
+        string origin
+        text reason "null"
+        json actor "null"
+        string created_at
+    }
+    phase_questions {
+        string id PK
+        string phase_id FK "→ managed_phases.id"
+        text text
+        json source
+        string status
+        json answer "null"
+        integer version
+        string created_at
+    }
+    phase_operations {
+        string id PK
+        string phase_id FK "→ managed_phases.id"
+        string kind
+        string run_id FK "null; → managed_runs.id"
+        string status
+        string previous_status
+        json request
+        json result "null"
+        string created_at
+        string finished_at "null"
+    }
+    phase_authorizations {
+        string id PK
+        string phase_id FK "→ managed_phases.id"
+        string kind
+        string status
+        json scope
+        string fingerprint
+        json actor
+        text reason
+        string expires_at
+        string created_at
+        json closed "null"
+        integer version
+    }
+    phase_events {
+        integer id PK
+        string phase_id FK "→ managed_phases.id"
+        integer sequence
+        string kind
+        string recorded_at
+        json payload
+    }
+    project_bootstraps {
+        string id PK
+        string root UK
+        string run_id FK, UK "→ managed_runs.id"
+        string phase_id FK "null; → managed_phases.id"
+        string status
+        json preview
+        json intent
+        json decision
+        json result "null"
+        string created_at
+        string finished_at "null"
+    }
+    managed_runs {
+        string id PK
+        string phase_id "→ managed_phases.id (lógica, sin FK)"
+    }
+    managed_phases |o..o{ managed_runs : "phase_id (lógica)"
+    managed_phases ||--o{ phase_definitions : "phase_id"
+    managed_phases ||--o{ phase_questions : "phase_id"
+    managed_phases ||--o{ phase_operations : "phase_id"
+    managed_runs |o--o{ phase_operations : "run_id"
+    managed_phases ||--o{ phase_authorizations : "phase_id"
+    managed_phases ||--o{ phase_events : "phase_id"
+    managed_runs ||--o{ project_bootstraps : "run_id"
+    managed_phases |o--o{ project_bootstraps : "phase_id"
+```
+
+Unicidad: `managed_phases` (root, code); `uq_managed_phases_open_root` sobre `managed_phases` (root) donde status NOT IN ('CLOSED', 'ABANDONED'); `phase_definitions` (phase_id, number); `phase_events` (phase_id, sequence).
+
+## Chat y planificación conversacional (P005, P007)
+
+Chat contextual (D035, D083) y conversaciones de definición y planificación de fase (D075, D086).
+
+```mermaid
+erDiagram
+    chat_conversations {
+        string id PK
+        string root
+        string title
+        string phase_id FK "null; → managed_phases.id"
+        string task_run_id FK "null; → managed_runs.id"
+        json actor
+        integer version
+        string created_at
+        string updated_at
+        string idempotency_key "null"
+        string request_sha256 "null"
+    }
+    chat_turns {
+        string id PK
+        string conversation_id FK "→ chat_conversations.id"
+        integer number
+        string run_id FK, UK "→ managed_runs.id"
+        string status
+        text message
+        json request
+        string request_sha256
+        json result "null"
+        json actor
+        string created_at
+        string finished_at "null"
+    }
+    chat_proposals {
+        string id PK
+        string conversation_id FK "→ chat_conversations.id"
+        string turn_id FK "→ chat_turns.id"
+        integer number
+        string status
+        json proposal
+        string proposal_sha256
+        string run_id FK, UK "null; → managed_runs.id"
+        json decision "null"
+        integer version
+        string created_at
+    }
+    planning_conversations {
+        string id PK
+        string root
+        string kind
+        string phase_id FK "null; → managed_phases.id"
+        string title
+        json brief "null"
+        json known
+        json deferred
+        json log
+        json actor
+        integer version
+        string created_at
+        string updated_at
+        string idempotency_key "null"
+        string request_sha256 "null"
+    }
+    planning_turns {
+        string id PK
+        string conversation_id FK "→ planning_conversations.id"
+        integer number
+        string run_id FK, UK "→ managed_runs.id"
+        string status
+        text message
+        json request
+        string request_sha256
+        json result "null"
+        json actor
+        string created_at
+        string finished_at "null"
+    }
+    planning_proposals {
+        string id PK
+        string conversation_id FK "→ planning_conversations.id"
+        string turn_id FK "→ planning_turns.id"
+        integer number
+        string kind
+        string path "null"
+        text content
+        text reason
+        string content_sha256
+        string base_sha256 "null"
+        string proposal_sha256
+        string status
+        json decision "null"
+        integer version
+        string created_at
+    }
+    managed_runs {
+        string id PK
+    }
+    managed_phases {
+        string id PK
+    }
+    managed_phases |o--o{ chat_conversations : "phase_id"
+    managed_runs |o--o{ chat_conversations : "task_run_id"
+    chat_conversations ||--o{ chat_turns : "conversation_id"
+    managed_runs ||--o{ chat_turns : "run_id"
+    chat_conversations ||--o{ chat_proposals : "conversation_id"
+    chat_turns ||--o{ chat_proposals : "turn_id"
+    managed_runs |o--o{ chat_proposals : "run_id"
+    managed_phases |o--o{ planning_conversations : "phase_id"
+    planning_conversations ||--o{ planning_turns : "conversation_id"
+    managed_runs ||--o{ planning_turns : "run_id"
+    planning_conversations ||--o{ planning_proposals : "conversation_id"
+    planning_turns ||--o{ planning_proposals : "turn_id"
+```
+
+Unicidad: `uq_chat_conversations_key` sobre `chat_conversations` (idempotency_key); `chat_turns` (conversation_id, number); `uq_chat_turns_pending` sobre `chat_turns` (conversation_id) donde status = 'QUEUED'; `chat_proposals` (conversation_id, number); `uq_planning_conversations_key` sobre `planning_conversations` (idempotency_key); `uq_planning_definition` sobre `planning_conversations` (root) donde kind = 'definition'; `planning_turns` (conversation_id, number); `uq_planning_turns_pending` sobre `planning_turns` (conversation_id) donde status = 'QUEUED'; `planning_proposals` (conversation_id, number).
+
+## Métricas y registro de proyectos (P007)
+
+Métricas por intento con procedencia (D074) y registro de proyectos desde la UI (D078).
+
+```mermaid
+erDiagram
+    attempt_metrics {
+        string attempt_id PK, FK "→ managed_attempts.id"
+        string run_id FK "→ managed_runs.id"
+        integer number
+        string root
+        string phase_code
+        string task_id
+        string purpose
+        string role
+        string provider "null"
+        string adapter_version "null"
+        string cli_version "null"
+        string requested_model "null"
+        string requested_effort "null"
+        json reported_models "null"
+        string reported_effort "null"
+        string status
+        text error "null"
+        string verdict "null"
+        integer executor_round
+        string accounting "null"
+        string input_semantics "null"
+        integer input_tokens "null"
+        integer cache_read_tokens "null"
+        integer cache_write_tokens "null"
+        integer output_tokens "null"
+        integer reasoning_tokens "null"
+        integer uncached_input_tokens "null"
+        integer total_tokens "null"
+        integer turns "null"
+        integer tool_calls "null"
+        json tools "null"
+        integer permission_denials "null"
+        integer wall_ms "null"
+        integer duration_ms "null"
+        integer api_duration_ms "null"
+        float cost_usd "null"
+        string started_at
+        string finished_at "null"
+        string day
+        string source
+        string normalization "null"
+        string catalog
+        json provenance
+        json diagnostics
+        string recorded_at
+    }
+    attempt_model_metrics {
+        string attempt_id PK, FK "→ attempt_metrics.attempt_id"
+        string model PK
+        integer input_tokens "null"
+        integer cache_read_tokens "null"
+        integer cache_write_tokens "null"
+        integer output_tokens "null"
+        integer reasoning_tokens "null"
+        float cost_usd "null"
+    }
+    registered_projects {
+        string id PK
+        integer version
+        string status
+        string root
+        string composition
+        string profile
+        json row
+        string row_sha256
+        json trust
+        string created_at
+        string updated_at
+    }
+    registered_project_events {
+        integer id PK
+        string project_id FK "→ registered_projects.id"
+        integer version
+        string action
+        json row
+        string row_sha256
+        string previous_sha256 "null"
+        string preview_sha256
+        json actor
+        text reason "null"
+        string recorded_at
+    }
+    managed_attempts {
+        string id PK
+    }
+    managed_runs {
+        string id PK
+    }
+    managed_attempts ||--o| attempt_metrics : "attempt_id"
+    managed_runs ||--o{ attempt_metrics : "run_id"
+    attempt_metrics ||--o{ attempt_model_metrics : "attempt_id"
+    registered_projects ||--o{ registered_project_events : "project_id"
+```
+
+Unicidad: `ix_attempt_metrics_run` sobre `attempt_metrics` (run_id, number); `uq_registered_projects_active_root` sobre `registered_projects` (root) donde status = 'ACTIVE'; `registered_project_events` (project_id, version).

@@ -4,7 +4,7 @@ Cinco escenarios independientes del proyecto **Demo**, escrito desde cero.
 IDs `P900`/`P901`, fechas de 2000, textos, mediciones y SHA ficticios no pertenecen
 a ejecuciones ni a datos de ReferenceProject. No se copió ningún run o transcripción.
 Los únicos archivos copiados son los cuatro esquemas estáticos en `schemas/`,
-vinculados por SHA-256 a [baseline.json](../../../docs/discovery/baseline.json).
+vinculados por SHA-256 a [baseline.json](baseline.json).
 Los nombres de modelos se conservan como valores del formato legacy; no son
 selecciones verificadas para el nuevo producto.
 
@@ -50,4 +50,4 @@ instalan dependencias. La comprobación de esquemas cubre campos superiores
 requeridos/adicionales, enums e identidad; **no** es un validador JSON Schema
 completo. No prueba el futuro importador ni parsers de streams truncados o CLI
 actuales: eso sigue en H0.2/H1.1. Formatos y límites en
-[LEGACY_FORMATS.md](../../../docs/discovery/LEGACY_FORMATS.md).
+[LEGACY_FORMATS.md](../../../docs/archive/phase-001/LEGACY_FORMATS.md).

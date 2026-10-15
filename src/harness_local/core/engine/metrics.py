@@ -1,7 +1,7 @@
 """H6.4 (D072 §9): métricas por intento con procedencia por campo. Biblioteca estándar, sin E/S.
 
 Catálogo `metrics-1`, caracterizado offline con los streams conservados de D071
-(`docs/discovery/H6.4_METRICS.md`). Procedencias: `requested` (selección congelada), `reported` (lo emite
+(`docs/archive/phase-007/H6.4_METRICS.md`). Procedencias: `requested` (selección congelada), `reported` (lo emite
 el proveedor), `derived` (calculado por el harness desde eventos reportados), `measured` (reloj del
 harness) y `absent`. Un null nunca es cero.
 

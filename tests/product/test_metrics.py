@@ -1,6 +1,6 @@
 """H6.4: métricas por intento y agregados con streams sintéticos, Git/SQLite temporales; sin proveedores.
 
-Los streams imitan la forma caracterizada en D071 (docs/discovery/H6.4_METRICS.md) con valores inventados.
+Los streams imitan la forma caracterizada en D071 (docs/archive/phase-007/H6.4_METRICS.md) con valores inventados.
 """
 from concurrent.futures import ThreadPoolExecutor
 from contextlib import closing

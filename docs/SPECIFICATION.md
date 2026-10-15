@@ -1,0 +1,203 @@
+# Especificación — Harness Local
+
+Requisitos funcionales y reglas de negocio vigentes. Consolida la especificación inicial
+([archivo](archive/phase-000/01-especificacion-harness-local.md)) con lo decidido en D001–D088. La columna «Estado» de
+cada requisito dice si está implementado (fase en la que se entregó) o pendiente; el detalle técnico está en
+[ARCHITECTURE](ARCHITECTURE.md) y el avance, en [ROADMAP](ROADMAP.md) y [STATE](STATE.md).
+
+## 1. Propósito y alcance
+
+Aplicación local para configurar, ejecutar, observar y controlar un harness de desarrollo asistido por agentes, sobre
+repositorios nuevos o existentes. Su objetivo es reducir el tiempo desde una idea hasta una versión verificable sin
+perder control: el harness facilita decisiones y muestra evidencias; el usuario acepta requisitos, arquitectura,
+permisos sensibles y resultados.
+
+- Individual, local y orientada inicialmente a macOS. UI en el navegador; un servicio local accede a los repositorios
+  y lanza las herramientas. Los modelos pueden requerir conexión: local no significa inferencia offline.
+- Las suscripciones del usuario se usan a través de las CLI de Codex y Claude Code (D008); no se presupone acceso API.
+- Fuera de alcance: multiusuario, nube, ejecución paralela de escritores sobre un mismo checkout, marketplace de
+  plugins, editor visual de flujos, terminal web genérica y despliegue automático (ver §10).
+
+## 2. Conceptos del dominio
+
+| Concepto | Significado |
+|---|---|
+| Proyecto | Checkout Git registrado con su perfil, política, composición y contrato documental |
+| Fase | Hito del ROADMAP (`PNNN`) con objetivo, criterios de salida y tareas; registro de SQLite |
+| Tarea | Unidad acotada (`PNNN-TNNN`) con contrato congelado: objetivo, rutas, criterios y validaciones |
+| Run | Seguimiento de una tarea u operación (check, cierre, transición, chat, definición, edición documental) |
+| Intento | Una invocación concreta de un agente; nunca se sobrescribe |
+| Revisión | Veredicto `ACCEPT`, `REVISE` o `BLOCKED` sobre una versión exacta del trabajo |
+| Validación | Comandos del perfil y de la tarea, con reportes JUnit cuando existen |
+| Permiso | Petición exacta por categoría (archivos, herramientas, red, producto, aceptación) y su resolución |
+| PromptVersion | Plantilla inmutable, resuelta por ámbito y congelada en cada intento |
+| Conversación | Chat del proyecto, definición de un proyecto nuevo o planificación de la fase siguiente |
+| Documento gestionado | Markdown del contrato documental (§6); sus bloques gestionados son proyecciones de SQLite |
+| Artefacto | Diff, stream, contrato, reporte o copia, referenciado por ruta y hash |
+
+Relaciones: proyecto → fases → tareas → runs → intentos. Revisiones, validaciones, permisos y artefactos se ligan al
+run y, cuando procede, al intento exacto.
+
+## 3. Roles
+
+- **Revisor** (Codex o Claude, elegido por el usuario): planifica tareas, revisa, evalúa fases, responde en el chat,
+  conduce la definición y la planificación de fase. Siempre en solo lectura (D052).
+- **Ejecutor** (Codex o Claude): único escritor del checkout. El revisor fija su modelo y esfuerzo por tarea, dentro
+  de un catálogo o en modo libre según el proyecto.
+- **Harness**: decide de forma determinista estados, puertas, commits, tags, archivado y bloques gestionados. Ningún
+  agente cambia estados mecánicos ni hace commits.
+- **Usuario**: acepta definición, planes, permisos, commits, cierres y ediciones documentales por su hash exacto.
+
+## 4. Requisitos funcionales
+
+| ID | Capacidad | Resultado observable | Estado |
+|---|---|---|---|
+| F01 | Registrar proyecto | Alta desde la UI con raíz canónica, confianza explícita, perfil y composición del TOML; o en `[[projects]]` del TOML | Implementado (P007, D078) |
+| F02 | Crear proyecto desde cero | Brief, conversación con el revisor, borradores en disco con CAS, aceptación y commit raíz con P001 | Implementado (P007, D075, D082); plantilla unificada pendiente (P008-T002, T005) |
+| F03 | Importar un proyecto de un harness anterior (Flujo A) | Inventario, normalización al layout unificado sin perder historial, documentos sincronizados | Pendiente (P008-T009–T012) |
+| F04 | Incorporar un repositorio sin harness (Flujo B) | Discovery por ingeniería inversa, documentos iniciales y archivos raíz mínimos | Pendiente (P008-T013–T015) |
+| F05 | Observar un harness anterior | Índice de lectura idempotente, navegación y actualización incremental | Implementado (P002) |
+| F06 | Navegar proyectos, fases, tareas y runs | URL propia por recurso, carga limitada y paginada | Implementado (P007, D077) |
+| F07 | Ejecutar una tarea | Planificación → ejecución → validación → revisión → aceptación o corrección → commit del harness | Implementado (P003) |
+| F08 | Gestionar prompts | Versiones, diff, variables validadas, activación y rollback; snapshot por intento | Implementado (P004) |
+| F09 | Resolver bloqueos y permisos | Motivo y evidencia; conceder o denegar una petición exacta; revalidar o reintentar | Implementado (P004) |
+| F10 | Controlar fases | Check, reconciliación, preguntas, lote desatendido, enmienda, abandono, cierre con tag | Implementado (P004) |
+| F11 | Cerrar y archivar una fase | Protocolo de §7 en un único flujo tras READY | Transición separada implementada (P007, H6.3); protocolo unificado pendiente (P008-T004) |
+| F12 | Ver y editar la documentación | Visor seguro y edición con diff confirmado y commit del harness | Implementado (P007, D080) |
+| F13 | Conversar con el revisor | Chat sobre HEAD sin esperar al ejecutor; propuestas → tareas confirmadas; comandos deterministas | Implementado (P005, P007) |
+| F14 | Inspeccionar tests | Suites y casos JUnit, OK/KO por tarea y evolución por fase | Implementado (P006, P007) |
+| F15 | Métricas y estadísticas | Tokens, turnos, modelos, esfuerzos, duraciones y coste equivalente con procedencia | Implementado (P007, D074, D084) |
+| F16 | Recuperar y conservar | Backup y restauración de consulta, retención explícita de logs, recuperación tras caída | Implementado (P003, P006) |
+| F17 | Distribución local | Wheel con UI y migraciones, `init-db`, `serve`, sesión local | Implementado (P006) |
+| F18 | Perfiles declarativos | Perfil de stack (preparación, tests, lint, tipos) declarado en el TOML local y confirmado por el usuario, incluido Python/Django (`pytest`, `ruff`, `mypy`) | Pendiente (P008-T008) |
+| F19 | Instrucciones del proyecto para los agentes | `AGENTS.md` incluido en el contexto congelado de cada intento | Pendiente (P008-T007) |
+
+Modos por checkout: **observación** (indexa un harness anterior) y **gestionado** (el motor nuevo controla). Nunca
+escriben dos motores sobre el mismo checkout.
+
+## 5. Reglas de negocio
+
+1. Una sola ejecución escritora por checkout; los turnos de chat leen una instantánea de HEAD sin tomar el lock.
+2. Contrato, contexto, prompts, políticas, perfil y versiones se congelan por intento; cada intento es una sesión nueva.
+   Reanudar trabajo no reanuda una conversación.
+3. Revisión, validación y aceptación se ligan al contenido exacto (base, árbol, diff, índice). Un cambio posterior
+   invalida la evidencia antes del commit; el commit contiene solo lo revisado más actualizaciones mecánicas declaradas.
+4. Sin fallback de modelo, reintento ni consumo adicional silencioso. Un error de autenticación, cuota o entorno detiene.
+5. Se distinguen datos solicitados, reportados, derivados, medidos y ausentes; null no es cero; no se suman acumulados
+   con incrementales ni se deduce cuota.
+6. Cinco decisiones separadas: alcance de archivos, herramientas, red, cambios de producto o arquitectura y aceptación.
+   Una concesión no amplía otra ni la conceden los prompts.
+7. Intención persistida antes de cada efecto externo y conciliación tras una caída. Un lease vencido no prueba la
+   muerte del proceso: liberar exige confirmar el escritor detenido.
+8. Toda escritura documental del harness (edición, exportación, creación, transición, importación) se confirma por el
+   hash de su vista previa y nunca sobrescribe bytes ajenos (CAS).
+9. Una fase cierra solo con check READY vigente y autorización propia; el lote desatendido nunca comprueba ni cierra.
+10. Servicio solo en loopback, con sesión local, Host/Origin exacto y CSRF; Markdown y logs sin HTML ejecutable.
+11. Los perfiles declaran comandos y rutas; un prefijo permitido no es una frontera de seguridad. La contención es
+    cooperativa: no hay aislamiento del sistema operativo.
+
+## 6. Contrato documental de los proyectos gestionados
+
+Estructura obligatoria para todo proyecto, también para este repositorio (D088). Hoy está implementada la variante v2
+opcional (D072/D073: `decisions/`, `architecture/`, `research/`); la estructura siguiente sustituye a v2 y se implementa
+en P008-T002–T007.
+
+| Ruta | Contenido | Autoría |
+|---|---|---|
+| `AGENTS.md` | Fuente canónica para agentes (≤60 líneas): orden de discovery, reglas inquebrantables, comandos base de test y lint | Creación, importación y usuario |
+| `CLAUDE.md`, `GEMINI.md` | Envoltorios (≤15 líneas) que importan `AGENTS.md` | Creación, importación y usuario |
+| `README.md` | Para personas: qué es, instalación, uso, tests, mapa de documentación | Tareas, reconciliación y usuario |
+| `docs/SPECIFICATION.md` | Requisitos funcionales y reglas de negocio | Creación, tareas autorizadas y usuario |
+| `docs/ARCHITECTURE.md` | Stack, patrones, módulos y convenciones | Creación, tareas autorizadas y usuario |
+| `docs/ROADMAP.md` | Fases `## PNNN — título` con objetivo y criterios de salida; estado y enlace al archivo de las cerradas | Creación, planificación, usuario; estado por el harness |
+| `docs/STATE.md` | Fotografía de la fase en curso: base acumulada (≤12 KiB) y fase activa (total ≤24 KiB) | Harness, reconciliación y usuario |
+| `docs/NEXT_STEPS.md` | Tareas `## PNNN-TNNN — título` de la fase activa (≤48 KiB) | Planificación de fase y usuario |
+| `docs/DECISIONS.md` | Registro único de ADRs `## DNNN — título`, con índice | Reconciliación, revisor (propuestas aprobadas) y usuario |
+| `docs/DDBB-DIAGRAM.md` | Esquema entidad-relación en Mermaid `erDiagram`, o «Sin persistencia» | Ejecutor (paridad) y usuario |
+| `docs/flows/*.md` | Diagramas Mermaid por módulo o feature (`stateDiagram-v2`, `sequenceDiagram`, `flowchart`) | Ejecutor (paridad) y usuario |
+| `docs/phase/` | Artefactos de trabajo de la fase en curso | Ejecutor y usuario |
+| `docs/archive/phase-NNN/` | Fase cerrada: STATE, NEXT_STEPS, REVIEW, SUMMARY y lo que hubiera en `docs/phase/` | Solo el harness |
+
+Reglas:
+
+- **Discovery.** Al empezar una sesión se lee `AGENTS.md`, después STATE, NEXT_STEPS, la sección de la fase activa de
+  ROADMAP y lo pertinente de SPECIFICATION y ARCHITECTURE. De DECISIONS solo las ADR citadas por la tarea, o el índice
+  para buscar precedentes. `DDBB-DIAGRAM.md` y `flows/` cuando la tarea toque datos o flujos. El archivo solo si se cita.
+- **Sin invención.** Nada fuera de la especificación; ante una incongruencia entre documentos o con el código, se
+  pregunta antes de decidir.
+- **Paridad diagramas‑código.** Un cambio de modelos de datos o de flujos de negocio actualiza `DDBB-DIAGRAM.md` o
+  `docs/flows/` en la misma tarea; el revisor rechaza la entrega que no lo haga.
+- **Decisiones.** El ejecutor no añade ADR: las propone en su salida y el revisor o la reconciliación las consolidan.
+- **Protegidos.** STATE, NEXT_STEPS, ROADMAP, DECISIONS y `docs/archive/**` quedan fuera de los contratos de ejecutor;
+  la reconciliación edita la prosa de STATE, NEXT_STEPS y ROADMAP.
+- **Bloques gestionados.** Los bloques entre comentarios `harness-local:managed-*` los escribe solo el harness; la
+  prosa exterior se conserva. Superar un presupuesto genera un aviso y una reconciliación, nunca un truncado.
+
+## 7. Cierre de fase
+
+Al superar el check READY y autorizar el cierre, en un único flujo determinista (pendiente: P008-T004):
+
+1. Tag sobre el HEAD evaluado (D032).
+2. `docs/archive/phase-NNN/` con la instantánea final de STATE y NEXT_STEPS, REVIEW y SUMMARY generados desde SQLite y
+   todo el contenido de `docs/phase/`.
+3. STATE reiniciado con la base acumulada compacta y la fase activa N+1; NEXT_STEPS con el objetivo de N+1 tomado de
+   ROADMAP y sin tareas hasta su planificación; `docs/phase/` vacía.
+4. ROADMAP marca N como completada con enlace a `archive/phase-NNN/`.
+
+Todo en un commit conciliable; si algo no cuadra (checkout sucio, documentos distintos de su base, archivo existente,
+trabajo pendiente), se rechaza antes de escribir. Si ROADMAP no tiene más fases, solo se archiva.
+
+## 8. Importación de proyectos existentes
+
+- **Flujo A — harness anterior.** Orígenes: repositorios tipo ReferenceProject (`.harness/`, `PROJECT.md`,
+  `REQUIREMENTS.md`, archivo por fase sin STATE) y proyectos v1/v2 de este harness. Audita la documentación,
+  reorganiza a `docs/flows/` y `docs/archive/phase-NNN/`, normaliza nombres (`SPECIFICATION`, `DECISIONS`,
+  `DDBB-DIAGRAM`; variantes como `DECISSONS.md`), adelgaza `CLAUDE.md` y `AGENTS.md` y deja STATE y NEXT_STEPS listos
+  para continuar sin perder historial. El historial de runs sigue la migración a gestionado existente (D027).
+- **Flujo B — repositorio sin harness.** Inventario determinista (stack, modelos de datos, rutas, tests) e ingeniería
+  inversa del revisor en solo lectura para generar ARCHITECTURE, DDBB-DIAGRAM (desde los modelos reales),
+  SPECIFICATION base, STATE actual y los archivos raíz mínimos, con un perfil declarativo confirmado por el usuario.
+
+En ambos: el agente no escribe; el harness aplica borradores confirmados con CAS; nada del código del proyecto se
+modifica ni se ejecuta sin autorización; el resultado entra en un único commit confirmado.
+
+## 9. Requisitos no funcionales
+
+- Navegar datos registrados no invoca modelos ni necesita red. El frontend no accede al disco ni lanza comandos.
+- Listados, logs y diffs paginados con límites explícitos; nada lee un historial completo para pintar una vista.
+- Instalación reproducible con lockfiles y versiones exactas; distribución como wheel con assets y migraciones; Node
+  solo para construir la UI.
+- Logs con retención explícita que conserva contratos, permisos, veredictos y métricas.
+- Backup consistente de SQLite y artefactos verificados por hash; restauración en directorio nuevo y solo de consulta.
+- Migraciones explícitas con backup previo; un adaptador de CLI con versión no caracterizada se bloquea con diagnóstico.
+- El historial es trazable a nivel de aplicación, no un registro inviolable frente al propietario del equipo.
+
+## 10. Criterios de aceptación globales
+
+1. Importar dos veces un historial no duplica entidades ni inventa datos ausentes.
+2. Una tarea recorre ejecución, fallo de test, corrección, revisión y commit con historial completo.
+3. Dos peticiones simultáneas no crean dos escritores sobre el mismo checkout; un reinicio con proceso vivo tampoco.
+4. Una denegación no ejecuta la herramienta; una aprobación caducada o doble no se reutiliza.
+5. Reiniciar el servicio durante una ejecución conserva evidencias y no repite efectos a ciegas; una caída tras el commit
+   lo concilia.
+6. Editar prompts no cambia la versión registrada en un intento pasado.
+7. Un cambio posterior al diff revisado invalida la aceptación antes del commit.
+8. El cierre de fase exige validación y autorización vigentes, y archiva la fase sin perder bytes (§7).
+9. Un perfil de stack distinto funciona sin cambios en el núcleo.
+10. Una petición del chat termina vinculada a una tarea y a su resultado.
+11. Crear un proyecto vacío produce documentos, estructura y primera tarea ejecutable; importar uno existente lo deja
+    bajo el contrato documental sin perder historial.
+12. Backup y restauración recuperan estados, referencias y evidencias verificadas por hash.
+13. Respuesta de agente fuera de esquema: run detenido con diagnóstico y salida conservada. Ciclos sin cambios: parada
+    con motivo. SSE reconecta sin huecos ni duplicados.
+
+Métricas de producto desde el primer piloto: tiempo de configuración, tiempo hasta la primera tarea aceptada,
+intervenciones manuales, errores recuperados, consumo por tarea incluidos los fallos y correcciones tras aceptar. Una
+mejora de velocidad sin calidad equivalente no demuestra un menor time to market.
+
+## 11. Fuera de alcance
+
+Multiusuario, nube, ejecución paralela de escritores en un proyecto, App Server o Agent SDK hasta verificar
+compatibilidad y autenticación, `project.yaml` portable, edición del TOML desde la UI, aislamiento físico del sistema
+operativo y publicación del paquete. Cualquier uso real de proveedores requiere una propuesta y un consentimiento
+específicos del usuario.
