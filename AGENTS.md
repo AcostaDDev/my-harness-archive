@@ -199,6 +199,7 @@ gráficos SVG propios. Revisión de cierre de H6.2 completada (D085, `docs/disco
 cumplidos salvo la paginación de diffs. Hallazgos corregidos offline (D086,
 `docs/discovery/H6.2_DIFF_PAGINATION.md`): diff por ciclo paginado, `/jobs` paginado, sondeo espaciado del run,
 conversaciones con `Idempotency-Key` (`0018_conversation_keys`) y fase con sucesora; criterios de H6.2 cumplidos.
+H6.2 y el Hito 6 cerrados por decisión del usuario (D087); siguiente tarea a elegir por el usuario.
 Comprobación offline ligera, solo biblioteca estándar, desde la raíz:
 
 ```sh

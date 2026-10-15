@@ -147,6 +147,8 @@ No se estima un plazo en semanas hasta completar el primer recorrido de integrac
 
 Añadido el 2026-10-13 por decisión del usuario (D052, D054). Orden: H6.1 antes que la UI.
 
+**Hito cerrado el 2026-10-15 (D087):** H6.1–H6.5 completados.
+
 ### H6.1 Revisor y ejecutor con proveedor elegible (D052)
 
 Completado offline el 2026-10-13 (`cli-5`, `local-config-2`); comprobación funcional
@@ -167,7 +169,7 @@ Alcance fijado el 2026-10-14 (D076): seis entregas E1–E6. E1 (shell, navegaci�
 [entrega](discovery/H6.2_E5_CHAT.md)); E6 (estadísticas y tests) completada offline (D084,
 [entrega](discovery/H6.2_E6_STATS.md)). Revisión de cierre (D085, [dictamen](discovery/H6.2_CLOSURE_REVIEW.md)): seis
 criterios cumplidos y diffs sin paginar; corregido con los hallazgos menores (D086,
-[entrega](discovery/H6.2_DIFF_PAGINATION.md)). Criterios cumplidos; cierre formal pendiente del usuario.
+[entrega](discovery/H6.2_DIFF_PAGINATION.md)). **Cerrado el 2026-10-15 por decisión del usuario (D087).**
 [Alcance y criterios](discovery/H6.2_SCOPE.md).
 
 - Arquitectura de información y sistema de diseño de dashboard: navegación, cabecera con sesión, estados vacíos útiles, tablas y estados consistentes.
@@ -196,7 +198,9 @@ Completado offline el 2026-10-14. [Catálogo, entrega y límites](discovery/H6.4
 - `attempt_metrics` materializada con procedencia por campo, captura de turnos, relleno idempotente y agregados por tarea, fase, proyecto y global; tests OK/KO.
 - Criterio: sin doble conteo, null distinto de cero y métricas conservadas tras la retención de logs.
 
-### H6.5 Creación y planificación conversacionales (D072, siguiente)
+### H6.5 Creación y planificación conversacionales (D072, D075)
+
+Completado offline el 2026-10-14. [Entrega y límites](discovery/H6.5_CONVERSATIONAL_CREATION.md).
 
 - Conversaciones `definition` y `phase_planning` del revisor, borradores en disco con CAS, aceptación hacia bootstrap v2 o transición.
 - Criterio: de carpeta vacía a commit raíz con P001 y `phase-000`, sin que el agente escriba ni se admitan archivos ajenos.

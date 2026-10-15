@@ -2842,6 +2842,13 @@ criterios cumplidos salvo la paginación de diffs, con una tarea correctiva prop
 - Límites: el servidor sigue decodificando el historial completo en cada lectura; sin «cargar todo»; ninguna CLI real.
   **Los siete criterios de H6.2 quedan cumplidos**; el cierre formal del hito es decisión del usuario.
 
+## Cierre de H6.2 y del Hito 6 (D087)
+
+- Decisión del usuario el 2026-10-15, tras D086 (`01b4f6d`): H6.2 cerrado con sus siete criterios cumplidos y, con él,
+  el Hito 6 (H6.1–H6.5). El backlog no define más hitos. Sin cambios de código.
+- Límites conservados como candidatos, sin iniciar: `package.json` de `typescript-web` nuevo, hora de las validaciones,
+  historial decodificado completo en cada lectura, avisos *low* de KaTeX y ningún recorrido de producto con CLI reales.
+
 ## Coordinación
 
 Desarrollo manual con el usuario. Una única sesión implementadora sobre los mismos archivos a la vez. La otra herramienta puede revisar una entrega terminada.

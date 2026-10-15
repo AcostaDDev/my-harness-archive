@@ -2574,3 +2574,14 @@ Cambio de contrato deliberado: `CycleRead.diff` desaparece y `/jobs` devuelve un
 consumidores del repositorio (UI, pruebas, `check_distribution.py`, `examples/provider_matrix/drive.py`, que ahora
 guarda los diffs por páginas). Sin codec ni dependencias nuevas. El cierre formal del hito queda a decisión del usuario.
 Los consentimientos previos siguen agotados.
+
+## D087 — H6.2 y el Hito 6 cerrados por decisión del usuario
+
+Estado: decidido por el usuario el 2026-10-15, tras D086 (`01b4f6d`).
+
+- H6.2 queda cerrado: los siete criterios de D076 están cumplidos (D085 + D086). Con él se cierra el Hito 6
+  (H6.1–H6.5); el backlog no tiene más hitos definidos.
+- Los límites abiertos no bloquean el cierre y se conservan como candidatos, sin iniciar: `package.json` de un proyecto
+  `typescript-web` nuevo, hora de las validaciones, decodificación completa del historial por lectura, avisos *low* de
+  KaTeX y ningún recorrido de producto con CLI reales.
+- La siguiente tarea la elige el usuario. Los consentimientos previos siguen agotados.
