@@ -16,7 +16,7 @@ from datetime import datetime, timedelta
 import json
 from uuid import uuid4
 
-from sqlalchemy import select
+from sqlalchemy import and_, or_, select
 from sqlalchemy.orm import Session
 
 from harness_local.core.engine.contracts import context_snapshot, freeze
@@ -347,6 +347,10 @@ class PhaseRepository:
             from harness_local.storage.documents import unresolved
             if unresolved(session, phase.root):
                 actions = []
+            # Mismo orden que `latest_phase`: creación y después id.
+            successor = session.scalar(select(Phase.code).where(Phase.root == phase.root, or_(
+                Phase.created_at > phase.created_at, and_(Phase.created_at == phase.created_at, Phase.id > phase.id)))
+                .order_by(Phase.created_at, Phase.id).limit(1))
             return {
                 'id': phase.id, 'root': phase.root, 'code': phase.code, 'definition': phase.definition,
                 'definition_sha256': phase.definition_sha256, 'definition_number': phase.definition_number,
@@ -357,7 +361,7 @@ class PhaseRepository:
                               'current_sha256': digest(current_documents) if current_documents is not None else None},
                 'tasks': parts['tasks'], 'questions': [question_view(q) for q in rows],
                 'operations': op_views, 'authorizations': auth_views,
-                'ready': ready_view, 'actions': actions}
+                'ready': ready_view, 'actions': actions, 'successor': successor}
 
     def events(self, phase_id, after=0, limit=100):
         if type(after) is not int or after < 0 or type(limit) is not int or not 1 <= limit <= 1000:

@@ -45,3 +45,24 @@ export function jobRequest(path: string, body: Pending["body"]): Pending {
   sessionStorage.setItem("harness-managed-last-request-v1", JSON.stringify(request));
   return request;
 }
+
+// Altas sin job (conversaciones, D085): la clave se conserva mientras el mismo cuerpo no tenga respuesta
+// confirmada, también al recargar; reenviar tras perder la respuesta devuelve la misma conversación.
+// Tras la respuesta o un rechazo definitivo, el envío siguiente lleva otra clave y crea otra.
+const creationKey = "harness-managed-creation-v1";
+export async function createOnce<T>(path: string, body: unknown): Promise<T> {
+  const text = JSON.stringify(body);
+  let saved: { path: string; body: string; key: string } | null = null;
+  try { saved = JSON.parse(sessionStorage.getItem(creationKey) ?? "null"); } catch { /* sin almacenamiento */ }
+  const key = saved?.path === path && saved.body === text ? saved.key : crypto.randomUUID();
+  const forget = () => { try { sessionStorage.removeItem(creationKey); } catch { /* sin almacenamiento */ } };
+  try { sessionStorage.setItem(creationKey, JSON.stringify({ path, body: text, key })); } catch { /* sin almacenamiento */ }
+  try {
+    const created = await managed<T>(path, body, key);
+    forget();
+    return created;
+  } catch (e) {
+    if (e instanceof ManagedError && e.status >= 400 && e.status < 500 && e.status !== 401) forget();
+    throw e;
+  }
+}

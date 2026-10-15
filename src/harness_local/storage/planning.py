@@ -29,7 +29,7 @@ from harness_local.core.engine.document_ops import read_text
 from harness_local.core.engine.documents import base_section, parse_roadmap, require_layout
 from harness_local.core.engine.serialization import load_history
 from harness_local.storage.chat import MAX_MESSAGE, MAX_PREVIOUS_TURNS, read_documents
-from harness_local.storage.managed import Conflict, _job
+from harness_local.storage.managed import Conflict, _job, existing_creation
 from harness_local.storage.models import (
     ManagedRunRow as Run, PhaseRow as Phase, PlanningConversationRow as Conversation,
     PlanningProposalRow as Proposal, PlanningTurnRow as Turn, ProjectBootstrapRow as Bootstrap,
@@ -300,7 +300,15 @@ class PlanningRepository:
 
     # --- conversación ------------------------------------------------------------------
 
-    def create(self, context, *, kind, title, brief=None, phase_id=None, writer=None):
+    def create(self, context, *, kind, title, brief=None, phase_id=None, writer=None, key=None):
+        """`key` (API): un reintento con la misma petición devuelve la misma conversación antes de reevaluar el
+        destino, que el alta original puede haber cambiado (proyecto ya creado, fase ya transicionada)."""
+        request = digest({'action': 'planning_conversation', 'root': str(context.root), 'kind': kind, 'title': title,
+                          'brief': brief, 'phase_id': phase_id})
+        if key is not None:
+            with Session(self.managed.engine) as session:
+                if found := existing_creation(session, Conversation, key, request):
+                    return found
         if kind not in KINDS:
             raise ValueError('Conversation kind must be definition or phase_planning')
         if not isinstance(title, str) or not title.strip() or len(title) > 200:
@@ -319,6 +327,8 @@ class PlanningRepository:
             frozen = None
         try:
             with self.managed._write() as session:
+                if key is not None and (found := existing_creation(session, Conversation, key, request)):
+                    return found
                 if kind == 'definition':
                     from harness_local.storage.bootstrap import BootstrapRepository
                     if _bootstrapped(session, str(context.root)):
@@ -334,7 +344,8 @@ class PlanningRepository:
                 now = self.managed._now()
                 row = Conversation(id=str(uuid4()), root=str(context.root), kind=kind, phase_id=phase_id,
                                    title=title.strip(), brief=frozen, known={}, deferred={}, log=[], actor=actor(),
-                                   version=0, created_at=now, updated_at=now)
+                                   version=0, created_at=now, updated_at=now, idempotency_key=key,
+                                   request_sha256=request if key is not None else None)
                 session.add(row)
                 session.flush()
                 return row.id

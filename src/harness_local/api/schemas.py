@@ -370,7 +370,9 @@ class JUnitCasesRead(BaseModel):
 
 
 class CycleRead(BaseModel):
-    diff: str
+    diff_sha256: str = Field(description='SHA-256 del diff revisado del ciclo (texto UTF-8 almacenado); su contenido se lee '
+                                         'paginado en `/runs/{id}/cycles/{n}/diff`.')
+    diff_bytes: int = Field(description='Tamaño en bytes UTF-8 del diff revisado del ciclo.')
     provenance: dict[str, Any] | None
     validation: ValidationRead
     review: dict[str, Any] | None
@@ -378,6 +380,17 @@ class CycleRead(BaseModel):
     verdict: str | None
     fingerprint: str
     changed_paths: list[str]
+
+
+class CycleDiffRead(BaseModel):
+    run_id: str
+    cycle: int
+    sha256: str
+    size_bytes: int
+    offset: int
+    next_offset: int | None = Field(description='Offset de la página siguiente; null en la última. Las páginas acaban en '
+                                                'fin de línea salvo una línea mayor que el límite, cortada en un límite UTF-8.')
+    text: str
 
 
 class AcceptanceRead(BaseModel):
@@ -418,6 +431,8 @@ class ManagedRunRead(ManagedRunSummaryRead):
     history: ManagedHistoryRead
     commit: ManagedCommitRead | None
     locked_by_job: int | None
+    active_job: int | None = Field(description='Job del run en cola, en curso o pendiente de recuperación; null si el run '
+                                               'no avanza sin una acción nueva.')
 
 
 class ManagedAttemptRead(BaseModel):
@@ -675,6 +690,8 @@ class PhaseRead(BaseModel):
     authorizations: list[PhaseAuthorizationRead]
     ready: PhaseReadyRead | None
     actions: list[PhaseAction]
+    successor: str | None = Field(description='Código de la fase posterior del checkout; null si esta es la última. Solo la '
+                                              'última exporta su estado y decide sobre sus documentos.')
 
 
 class PhaseVersioned(BaseModel):

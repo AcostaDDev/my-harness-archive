@@ -569,8 +569,32 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Run Jobs */
+        /**
+         * Run Jobs
+         * @description Del más reciente al más antiguo.
+         */
         get: operations["managed_run_jobs"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/managed/runs/{run_id}/cycles/{cycle}/diff": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Cycle Diff
+         * @description Diff revisado de un ciclo por páginas de bytes UTF-8 que acaban en fin de línea; `offset` es 0 o un
+         *     `next_offset` anterior. Con `sha256`, un diff distinto del pedido responde 409.
+         */
+        get: operations["managed_cycle_diff"];
         put?: never;
         post?: never;
         delete?: never;
@@ -1433,7 +1457,8 @@ export interface paths {
         put?: never;
         /**
          * Create Conversation
-         * @description Conversación separada del flujo de ejecución; no encola nada.
+         * @description Conversación separada del flujo de ejecución; no encola nada. Misma clave y misma petición devuelven la
+         *     misma conversación.
          */
         post: operations["managed_create_conversation"];
         delete?: never;
@@ -1545,7 +1570,8 @@ export interface paths {
         put?: never;
         /**
          * Planning Create
-         * @description Definición (brief Markdown, destino vacío o con borradores) o planificación de la fase siguiente.
+         * @description Definición (brief Markdown, destino vacío o con borradores) o planificación de la fase siguiente. Misma
+         *     clave y misma petición devuelven la misma conversación.
          */
         post: operations["managed_planning_create"];
         delete?: never;
@@ -2476,10 +2502,38 @@ export interface components {
             /** Tasks */
             tasks: number;
         };
+        /** CycleDiffRead */
+        CycleDiffRead: {
+            /** Run Id */
+            run_id: string;
+            /** Cycle */
+            cycle: number;
+            /** Sha256 */
+            sha256: string;
+            /** Size Bytes */
+            size_bytes: number;
+            /** Offset */
+            offset: number;
+            /**
+             * Next Offset
+             * @description Offset de la página siguiente; null en la última. Las páginas acaban en fin de línea salvo una línea mayor que el límite, cortada en un límite UTF-8.
+             */
+            next_offset: number | null;
+            /** Text */
+            text: string;
+        };
         /** CycleRead */
         CycleRead: {
-            /** Diff */
-            diff: string;
+            /**
+             * Diff Sha256
+             * @description SHA-256 del diff revisado del ciclo (texto UTF-8 almacenado); su contenido se lee paginado en `/runs/{id}/cycles/{n}/diff`.
+             */
+            diff_sha256: string;
+            /**
+             * Diff Bytes
+             * @description Tamaño en bytes UTF-8 del diff revisado del ciclo.
+             */
+            diff_bytes: number;
             /** Provenance */
             provenance: {
                 [key: string]: unknown;
@@ -3488,6 +3542,11 @@ export interface components {
             commit: components["schemas"]["ManagedCommitRead"] | null;
             /** Locked By Job */
             locked_by_job: number | null;
+            /**
+             * Active Job
+             * @description Job del run en cola, en curso o pendiente de recuperación; null si el run no avanza sin una acción nueva.
+             */
+            active_job: number | null;
         };
         /** ManagedRunSummaryRead */
         ManagedRunSummaryRead: {
@@ -3816,6 +3875,15 @@ export interface components {
         Page_ManagedAttemptRead_: {
             /** Items */
             items: components["schemas"]["ManagedAttemptRead"][];
+            /** Offset */
+            offset: number;
+            /** Next Offset */
+            next_offset: number | null;
+        };
+        /** Page[ManagedJobRead] */
+        Page_ManagedJobRead_: {
+            /** Items */
+            items: components["schemas"]["ManagedJobRead"][];
             /** Offset */
             offset: number;
             /** Next Offset */
@@ -4255,6 +4323,11 @@ export interface components {
             ready: components["schemas"]["PhaseReadyRead"] | null;
             /** Actions */
             actions: ("check" | "reconcile" | "reconcile_task" | "close" | "question" | "authorize_batch" | "batch_next" | "amend" | "abandon" | "transition")[];
+            /**
+             * Successor
+             * @description Código de la fase posterior del checkout; null si esta es la última. Solo la última exporta su estado y decide sobre sus documentos.
+             */
+            successor: string | null;
         };
         /** PhaseReadyRead */
         PhaseReadyRead: {
@@ -7354,7 +7427,10 @@ export interface operations {
     };
     managed_run_jobs: {
         parameters: {
-            query?: never;
+            query?: {
+                offset?: number;
+                limit?: number;
+            };
             header?: {
                 /** @description Obligatoria con valor 1 en mutaciones (protección CSRF). */
                 "x-harness-local"?: string | null;
@@ -7372,7 +7448,73 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["ManagedJobRead"][];
+                    "application/json": components["schemas"]["Page_ManagedJobRead_"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+        };
+    };
+    managed_cycle_diff: {
+        parameters: {
+            query?: {
+                offset?: number;
+                limit?: number;
+                sha256?: string | null;
+            };
+            header?: {
+                /** @description Obligatoria con valor 1 en mutaciones (protección CSRF). */
+                "x-harness-local"?: string | null;
+            };
+            path: {
+                run_id: string;
+                cycle: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CycleDiffRead"];
                 };
             };
             /** @description Forbidden */
@@ -10653,7 +10795,9 @@ export interface operations {
     managed_create_conversation: {
         parameters: {
             query?: never;
-            header?: {
+            header: {
+                /** @description Misma clave y misma acción devuelven el mismo job. */
+                "Idempotency-Key": string;
                 /** @description Obligatoria con valor 1 en mutaciones (protección CSRF). */
                 "x-harness-local"?: string | null;
             };
@@ -11106,7 +11250,9 @@ export interface operations {
     managed_planning_create: {
         parameters: {
             query?: never;
-            header?: {
+            header: {
+                /** @description Misma clave y misma acción devuelven el mismo job. */
+                "Idempotency-Key": string;
                 /** @description Obligatoria con valor 1 en mutaciones (protección CSRF). */
                 "x-harness-local"?: string | null;
             };

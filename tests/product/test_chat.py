@@ -391,10 +391,17 @@ def test_http_chat_flow_with_guard_confirmation_and_linked_task(tmp_path, migrat
         denied = http.post('/api/managed/projects/synthetic/conversations', json={'title': 'Chat'},
                            headers={'X-Harness-Local': '0'})
         assert denied.status_code == 403
-        created = http.post('/api/managed/projects/synthetic/conversations', json={'title': 'Chat'})
+        path = '/api/managed/projects/synthetic/conversations'
+        assert http.post(path, json={'title': 'Chat'}).status_code == 422  # sin Idempotency-Key
+        created = http.post(path, json={'title': 'Chat'}, headers={'Idempotency-Key': 'chat-1'})
         assert created.status_code == 201, created.text
         conversation = created.json()
         cid = conversation['id']
+        # Hallazgo 2 de D085: un reintento no crea otra conversación vacía; otra petición con la clave, 409.
+        retried = http.post(path, json={'title': 'Chat'}, headers={'Idempotency-Key': 'chat-1'})
+        assert retried.status_code == 201 and retried.json()['id'] == cid
+        assert http.post(path, json={'title': 'Otro'}, headers={'Idempotency-Key': 'chat-1'}).status_code == 409
+        assert len(http.get(path).json()) == 1
         assert conversation['project_id'] == 'synthetic' and conversation['actions'] == ['message']
         assert http.get('/api/managed/projects/synthetic/conversations').json()[0]['turns'] == 0
         body = {'expected_version': conversation['version'], 'text': 'Ajusta el texto'}

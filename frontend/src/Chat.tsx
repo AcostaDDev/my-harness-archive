@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { managed, jobRequest, ManagedError } from "./managed-api";
+import { createOnce, managed, jobRequest, ManagedError } from "./managed-api";
 import type { S } from "./managed-api";
 import { Link, navigate } from "./navigation";
 import { Empty, Evidence, Loading, PageHeader, Stale, Status, message, usePoll } from "./ui";
@@ -38,7 +38,7 @@ export function Chat({ conversation }: { conversation?: string }) {
               <span className="link-meta">{c.phase_code ? <>Fase <code>{c.phase_code}</code>, </> : ""}{c.turns} turnos</span>
             </Link></li>)}</ul>}
         <form onSubmit={e => { e.preventDefault(); void operate(async () => {
-          const created = await managed<S["ChatConversationRead"]>(`/projects/${project}/conversations`, { title, phase_id: phase || null, task_run_id: taskRun || null } satisfies S["ChatConversationCreate"]);
+          const created = await createOnce<S["ChatConversationRead"]>(`/projects/${project}/conversations`, { title, phase_id: phase || null, task_run_id: taskRun || null } satisfies S["ChatConversationCreate"]);
           setTitle(""); navigate({ name: "chat", project, conversation: created.id });
         }); }}>
           <label>Nueva conversación<input value={title} maxLength={200} onChange={e => setTitle(e.target.value)} /></label>

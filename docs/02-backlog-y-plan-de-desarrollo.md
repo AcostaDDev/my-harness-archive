@@ -165,7 +165,9 @@ Alcance fijado el 2026-10-14 (D076): seis entregas E1–E6. E1 (shell, navegaci�
 [entrega](discovery/H6.2_E3_DOCS.md)). E4 (creación y planificación) completada offline (D081–D082,
 [entrega](discovery/H6.2_E4_SETUP.md)); E5 (chat global) completada offline (D083,
 [entrega](discovery/H6.2_E5_CHAT.md)); E6 (estadísticas y tests) completada offline (D084,
-[entrega](discovery/H6.2_E6_STATS.md)). Las seis entregas están hechas; falta la revisión de los criterios del hito.
+[entrega](discovery/H6.2_E6_STATS.md)). Revisión de cierre (D085, [dictamen](discovery/H6.2_CLOSURE_REVIEW.md)): seis
+criterios cumplidos y diffs sin paginar; corregido con los hallazgos menores (D086,
+[entrega](discovery/H6.2_DIFF_PAGINATION.md)). Criterios cumplidos; cierre formal pendiente del usuario.
 [Alcance y criterios](discovery/H6.2_SCOPE.md).
 
 - Arquitectura de información y sistema de diseño de dashboard: navegación, cabecera con sesión, estados vacíos útiles, tablas y estados consistentes.

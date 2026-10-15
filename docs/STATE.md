@@ -35,7 +35,7 @@ Actualizado: 2026-10-15.
 - Dependencias reales instaladas en `.venv` / `frontend/node_modules`, locks
   `uv.lock` / `frontend/package-lock.json`. Pins H0.2 usados conservados;
   backend de paquete `uv_build==0.12.19`. Comandos comprobados en README/AGENTS.
-- Casos de producto en `tests/product/`: 1109 pytest y 121 subtests (H6.2 E5; ver su sección).
+- Casos de producto en `tests/product/`: 1120 pytest y 121 subtests (D086; ver su sección).
   La comprobación ligera anterior conserva sus 12 checks sin dependencias.
 - H1.1 completado: [importación legacy y verificaciones](discovery/H1.1_IMPORT.md),
   [alcance original](discovery/H1.1_SCOPE.md). Lector local explícito de
@@ -2817,6 +2817,30 @@ criterios cumplidos salvo la paginación de diffs, con una tarea correctiva prop
   scratchpad.
 - No cubierto aquí: CLI reales; cambio y baja del registro, edición con conflicto de CAS, lote y `/tarea` no se
   repitieron (los cubren E2–E5 y pytest).
+
+## Hallazgos de D085 corregidos (D086)
+
+- Tarea activa de NEXT_STEPS, pedida por el usuario el 2026-10-15 sobre `22d592f`, con Git limpio: hallazgo 1
+  obligatorio y, por petición del usuario, también el 2 y el 3. [Entrega, verificación y límites](discovery/H6.2_DIFF_PAGINATION.md).
+- **Diffs paginados.** `GET /runs/{id}` lleva de cada ciclo `diff_sha256` y `diff_bytes` (también en su evidencia
+  validada y en la de JUnit), sin texto. `GET /runs/{id}/cycles/{n}/diff` sirve páginas UTF-8 de 4–512 KiB terminadas en
+  fin de línea, con cursor exacto y `sha256` opcional (409 si difiere). `/runs/{id}/jobs` paginado del más reciente al
+  más antiguo; `ManagedRunRead.active_job`. La página del run sondea cada 1,5 s con job y cada 15 s sin él, y lee el
+  diff al abrirlo, página a página, en tramos memoizados que el sondeo no repinta.
+- **Conversaciones idempotentes.** Crear chat o planificación exige `Idempotency-Key`; reintento → misma conversación,
+  otra petición con la clave → 409, y la clave se resuelve antes de reevaluar el destino. Migración
+  `0018_conversation_keys`; el cliente conserva la clave hasta la respuesta (`createOnce`).
+- **Fase con sucesora.** `PhaseRead.successor`; la deriva de una fase con sucesora es una nota neutra, sin adopción y
+  con la exportación deshabilitada y explicada.
+- Verificación: **1120 pytest + 121 subtests** (416 s; 8 casos nuevos en `test_cycle_diff.py` y aserciones nuevas en
+  chat/definición), 72 Node (6 nuevas), 12 checks estándar, `tsc`, build (principal 368 kB), OpenAPI/tipos regenerados,
+  `alembic upgrade`/`check`/`current`/`downgrade 0017` y vuelta en SQLite temporal, wheel y `check_distribution.py`.
+- QA Chrome sobre `scripts/dev` con un diff sintético de 2,1 MiB: lectura del run de 3,6 KB, sondeo de ~16 s en reposo,
+  diff completo en 33 páginas con el SHA-256 del resumen, sin tareas largas al añadir páginas ni al sondear; fases con y
+  sin sucesora; conversación creada con clave y reintento sin duplicado. Claro, oscuro y 386 px sin desbordamiento.
+  Durante la QA se corrigió un repintado completo del diff en cada página y cada sondeo.
+- Límites: el servidor sigue decodificando el historial completo en cada lectura; sin «cargar todo»; ninguna CLI real.
+  **Los siete criterios de H6.2 quedan cumplidos**; el cierre formal del hito es decisión del usuario.
 
 ## Coordinación
 

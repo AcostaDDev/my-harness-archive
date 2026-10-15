@@ -84,6 +84,7 @@ export function PhaseDetail({ phase, stale, section }: { phase: S["PhaseRead"]; 
   const open = phase.questions.filter(q => q.status === "OPEN");
   const batch = phase.authorizations.find(a => a.kind === "batch" && a.effective_status === "ACTIVE");
   const criteria = phase.definition.exit_criteria as string[];
+  const superseded = phase.successor !== null;
   return <>
     {(!section || section === "phase-definition") && <section className="panel" aria-labelledby="phase-definition">
       <h2 id="phase-definition">Definición</h2>
@@ -120,10 +121,13 @@ export function PhaseDetail({ phase, stale, section }: { phase: S["PhaseRead"]; 
     {(!section || section === "phase-documents") && <section className="panel" aria-labelledby="phase-documents">
       <h2 id="phase-documents">Documentos</h2>
       {phase.documents.drift === null ? <p className="state state-error">No se pudieron leer los documentos actuales.</p>
-        : phase.documents.drift.length ? <p className="state state-attention">Cambiados desde la base adoptada: {phase.documents.drift.map(d => <code key={d} className="chip">{d}</code>)}</p>
+        : phase.documents.drift.length ? (superseded
+          // La sucesora (transición incluida) cambió los documentos: no hay nada que decidir en esta fase.
+          ? <p className="hint">La fase <code>{phase.successor}</code> ya sucede a esta y no hay nada que decidir aquí; la base adoptada se conserva como registro. Cambiados después: {phase.documents.drift.map(d => <code key={d} className="chip">{d}</code>)}</p>
+          : <p className="state state-attention">Cambiados desde la base adoptada: {phase.documents.drift.map(d => <code key={d} className="chip">{d}</code>)}</p>)
           : <p className="hint">Sin cambios respecto a la base adoptada.</p>}
       <Evidence title="Hashes adoptados y actuales" value={phase.documents} />
-      <div className="decision">
+      {!superseded && <div className="decision">
         <h3>Adoptar documentos actuales</h3>
         <label>Motivo de la reconciliación<input value={reason} maxLength={2000} onChange={e => setReason(e.target.value)} /></label>
         <label className="check"><input type="checkbox" checked={reconcileConfirmed} onChange={e => setReconcileConfirmed(e.target.checked)} />He revisado estos documentos y adopto su contenido actual como base de la fase.</label>
@@ -132,11 +136,12 @@ export function PhaseDetail({ phase, stale, section }: { phase: S["PhaseRead"]; 
         })}>Adoptar documentos actuales</button>
           <button className="button-quiet" disabled={!can("reconcile_task")} onClick={() => void operate(() => send(jobRequest(`/phases/${id}/reconcile-task`, { expected_version: v })))}>Reconciliar con agente</button></div>
         <p className="hint">Reconciliar con agente crea una tarea normal con contrato determinista (plantilla reconcile-phase) limitada a estos documentos: se ejecuta, se revisa y su commit se confirma en su run. Después adopta aquí los documentos por hash.</p>
-      </div>
+      </div>}
       <div className="decision">
         <h3>Exportar estado gestionado</h3>
-        <p className="hint">Previsualiza los bloques mecánicos de STATE y NEXT_STEPS a partir de SQLite y conserva la prosa exterior. Confirmar crea un commit del diff exacto y adopta los hashes; el cierre de fase es otra acción.</p>
-        <button className="button-quiet" disabled={busy || stale} onClick={() => void operate(async () => {
+        <p className="hint">{superseded ? <>Solo la última fase del checkout exporta su estado; exporta desde <code>{phase.successor}</code> o la fase más reciente.</>
+          : "Previsualiza los bloques mecánicos de STATE y NEXT_STEPS a partir de SQLite y conserva la prosa exterior. Confirmar crea un commit del diff exacto y adopta los hashes; el cierre de fase es otra acción."}</p>
+        <button className="button-quiet" disabled={busy || stale || superseded} onClick={() => void operate(async () => {
           const preview = await managed<S["DocumentExportPreviewRead"]>(`/phases/${id}/export`);
           setExportConfirmed(false); setExportPreview(preview);
         })}>Previsualizar exportación</button>

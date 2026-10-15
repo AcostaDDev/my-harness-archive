@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { unifiedDiff } from '../src/diff.ts';
+import { appendDiffPage, byteSize, unifiedDiff } from '../src/diff.ts';
 
 /** Aplica un diff unificado a `before`; prueba que el diff describe exactamente el cambio. */
 function apply(before, diff) {
@@ -66,4 +66,59 @@ test('documents too large to compare return null instead of an approximation', (
   const before = Array.from({ length: 2500 }, (_, i) => `a${i}`).join('\n');
   const after = Array.from({ length: 2500 }, (_, i) => `b${i}`).join('\n');
   assert.equal(unifiedDiff('big.md', before, after), null);
+});
+
+// --- diff de un ciclo por páginas (D085) ---
+
+const SHA = 'a'.repeat(64);
+const bytes = text => new TextEncoder().encode(text).length;
+function serve(text, limit) {
+  const pages = [];
+  let offset = 0;
+  const data = new TextEncoder().encode(text);
+  while (true) {
+    let end = Math.min(offset + limit, data.length);
+    const newline = data.subarray(offset, end).lastIndexOf(10);
+    if (end < data.length && newline >= 0) end = offset + newline + 1;
+    while (end < data.length && (data[end] & 0xc0) === 0x80) end++;
+    pages.push({ sha256: SHA, size_bytes: data.length, offset, next_offset: end < data.length ? end : null,
+      text: new TextDecoder().decode(data.subarray(offset, end)) });
+    if (end >= data.length) return pages;
+    offset = end;
+  }
+}
+
+test('cycle diff pages accumulate in order to the exact text', () => {
+  const text = Array.from({ length: 300 }, (_, i) => `+línea ${i} ñ €`).join('\n') + '\n';
+  for (const limit of [5, 64, 4096]) {
+    let loaded;
+    for (const page of serve(text, limit)) loaded = appendDiffPage(loaded, page);
+    assert.equal(loaded.text, text);
+    assert.equal(loaded.pages.join(''), text);
+    assert.equal(loaded.loaded, bytes(text));
+    assert.equal(loaded.next, null);
+  }
+});
+
+test('a page that does not continue the loaded diff is refused, never mixed', () => {
+  const [first, second] = serve('+a\n+b\n+c\n', 3);
+  const loaded = appendDiffPage(undefined, first);
+  assert.equal(appendDiffPage(undefined, second), null); // empieza en 0
+  assert.equal(appendDiffPage(loaded, first), null); // repetida
+  assert.equal(appendDiffPage(loaded, { ...second, sha256: 'b'.repeat(64) }), null);
+  assert.equal(appendDiffPage(loaded, { ...second, size_bytes: 99 }), null);
+  assert.equal(appendDiffPage(loaded, { ...second, text: '+b' }), null); // bytes que no llegan al cursor
+  assert.equal(appendDiffPage(loaded, second).text, '+a\n+b\n');
+});
+
+test('an empty diff is a single complete page', () => {
+  assert.deepEqual(appendDiffPage(undefined, { sha256: SHA, size_bytes: 0, offset: 0, next_offset: null, text: '' }),
+    { sha256: SHA, size: 0, text: '', pages: [''], loaded: 0, next: null });
+});
+
+test('byte sizes use binary units', () => {
+  assert.equal(byteSize(512), '512 B');
+  assert.equal(byteSize(64 * 1024), '64 KiB');
+  assert.equal(byteSize(4 * 1024 * 1024), '4 MiB');
+  assert.equal(byteSize(1536), '1,5 KiB');
 });

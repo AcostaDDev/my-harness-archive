@@ -6,7 +6,7 @@ import { blockBody, renderMarkdown, splitBlocks } from "../markdown.ts";
 import type { Segment } from "../markdown.ts";
 import { prefersDark, renderDiagram } from "../mermaid-view.ts";
 import { Link, navigate } from "../navigation";
-import { Alert, Empty, Fields, Hash, Loading, PageHeader, Stale, Status, message, usePoll } from "../ui";
+import { Alert, DiffBlock, Empty, Fields, Hash, Loading, PageHeader, Stale, Status, message, usePoll } from "../ui";
 import type { Poll } from "../ui";
 import { useWorkspace } from "../workspace";
 
@@ -247,14 +247,6 @@ function LocalChanges({ status, onQueued }: { status: DocsStatus; onQueued: (run
 }
 
 // --- confirmación común -------------------------------------------------------------------------
-
-export function DiffBlock({ diff, label }: { diff: string; label: string }) {
-  const lines = diff.replace(/\n$/, "").split("\n");
-  return <pre className="diff" aria-label={label}>{lines.map((line, index) => {
-    const kind = line.startsWith("+++") || line.startsWith("---") ? "file" : line.startsWith("@@") ? "hunk" : line.startsWith("+") ? "add" : line.startsWith("-") ? "del" : "";
-    return <span key={index} className={kind ? `diff-${kind}` : undefined}>{line}{"\n"}</span>;
-  })}</pre>;
-}
 
 /** Diff exacto, motivo y confirmación; encola `document_edit` con clave idempotente y sigue su run. */
 function EditReview({ body, preview, onCancel, onQueued, done }: {

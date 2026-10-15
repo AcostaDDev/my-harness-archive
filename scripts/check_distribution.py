@@ -155,7 +155,7 @@ def main():
             return json.loads(body)
         def settled(base, run_id):
             for _ in range(200):
-                jobs = read(base, f'/api/managed/runs/{run_id}/jobs')
+                jobs = read(base, f'/api/managed/runs/{run_id}/jobs?limit=100')['items']
                 if jobs and all(j['status'] not in ('QUEUED', 'ACTIVE') for j in jobs):
                     return read(base, f'/api/managed/runs/{run_id}')
                 time.sleep(.05)

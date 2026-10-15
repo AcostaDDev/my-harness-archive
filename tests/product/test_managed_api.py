@@ -123,7 +123,7 @@ def settle(http, run_id, timeout=20.0):
     """Espera hasta que ningún job del run esté en cola o activo; el supervisor corre en otro hilo."""
     deadline = time.monotonic() + timeout
     while time.monotonic() < deadline:
-        jobs = http.get(f"/api/managed/runs/{run_id}/jobs").json()
+        jobs = http.get(f"/api/managed/runs/{run_id}/jobs?limit=100").json()["items"]
         if jobs and all(job["status"] not in {"QUEUED", "ACTIVE"} for job in jobs):
             return http.get(f"/api/managed/runs/{run_id}").json()
         time.sleep(0.02)
@@ -254,7 +254,11 @@ def test_http_flow_executes_reviews_and_commits_once_across_double_submit_and_re
         assert run["history"]["acceptance"]["changed_paths"] == ["app/main.txt"]
         assert run["versions"] == VERSIONS and run["locked_by_job"] is None
         cycle = run["history"]["cycles"][0]
-        assert "-baseline" in cycle["diff"] and "+implemented" in cycle["diff"]
+        assert "diff" not in cycle  # D085: el run lleva el resumen; el contenido va paginado
+        page = http.get(f"/api/managed/runs/{job['run_id']}/cycles/0/diff",
+                        params={"sha256": cycle["diff_sha256"]}).json()
+        assert page["size_bytes"] == cycle["diff_bytes"] and page["next_offset"] is None
+        assert "-baseline" in page["text"] and "+implemented" in page["text"]
         assert cycle["review"] == review()
         assert cycle["provenance"] is not None
         assert cycle["validation"]["evidence"]["fingerprint"] == cycle["fingerprint"]
@@ -272,7 +276,9 @@ def test_http_flow_executes_reviews_and_commits_once_across_double_submit_and_re
         assert final["commit"]["status"] == "COMMITTED"
         assert final["commit"]["commit"] == final["commit"]["expected_commit"] == git(task.root, "rev-parse", "HEAD")
         assert git(task.root, "rev-list", "--count", f"{base}..HEAD") == "1"
-        assert [j["action"] for j in http.get(f"/api/managed/runs/{job['run_id']}/jobs").json()] == ["start", "commit"]
+        jobs = http.get(f"/api/managed/runs/{job['run_id']}/jobs").json()
+        assert [j["action"] for j in jobs["items"]] == ["commit", "start"] and jobs["next_offset"] is None
+        assert final["active_job"] is None
 
         events = all_events(http, job["run_id"])
         assert [event["sequence"] for event in events] == list(range(1, final["version"] + 1))

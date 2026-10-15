@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { memo, useEffect, useRef, useState } from "react";
 import type { ReactNode } from "react";
 import { managed, ManagedError } from "./managed-api";
 import type { S } from "./managed-api";
@@ -44,6 +44,25 @@ export function usePoll<T>(path: string | null, interval = 1500, refresh = 0): P
   }, [path, interval, refresh]);
   return state;
 }
+
+/** Diff unificado coloreado por tipo de línea; solo muestra, la autoridad es el hash que confirma el servidor. */
+export function DiffBlock({ diff, label }: { diff: string; label: string }) {
+  return <pre className="diff" aria-label={label}><DiffLines text={diff.endsWith("\n") ? diff : `${diff}\n`} /></pre>;
+}
+
+/**
+ * Líneas de un tramo de diff con su texto exacto: solo añade el salto que el tramo trae, así una línea larga
+ * partida entre dos páginas se lee seguida. Memoizado: un tramo ya pintado no se repinta al añadir otro.
+ */
+export const DiffLines = memo(function DiffLines({ text }: { text: string }) {
+  const lines = text.split("\n");
+  if (lines[lines.length - 1] === "") lines.pop();
+  const closed = text.endsWith("\n");
+  return <>{lines.map((line, index) => {
+    const kind = line.startsWith("+++") || line.startsWith("---") ? "file" : line.startsWith("@@") ? "hunk" : line.startsWith("+") ? "add" : line.startsWith("-") ? "del" : "";
+    return <span key={index} className={kind ? `diff-${kind}` : undefined}>{line}{index < lines.length - 1 || closed ? "\n" : ""}</span>;
+  })}</>;
+});
 
 export function Loading({ children = "Cargando…" }: { children?: ReactNode }) {
   return <p role="status" className="state state-loading">{children}</p>;

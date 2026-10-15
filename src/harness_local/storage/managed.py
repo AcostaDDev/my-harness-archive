@@ -84,6 +84,17 @@ def _nonempty(value: str, name: str) -> None:
         raise ValueError(f"Explicit {name} required")
 
 
+def existing_creation(session, row_type, key, request_sha256):
+    """Alta sin job (conversaciones, 0018): misma clave y misma petición devuelven el mismo id."""
+    _nonempty(key, "idempotency key")
+    if len(key) > 200:
+        raise ValueError("Idempotency key exceeds 200 characters")
+    row = session.scalar(select(row_type).where(row_type.idempotency_key == key))
+    if row is not None and row.request_sha256 != request_sha256:
+        raise Conflict("Idempotency key already names a different conversation")
+    return None if row is None else row.id
+
+
 def independent_chat(job):
     return json.loads(job.request_json).get('action') in ('chat_snapshot', 'chat_command')
 

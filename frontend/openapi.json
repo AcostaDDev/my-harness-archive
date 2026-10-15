@@ -2950,6 +2950,7 @@
     "/api/managed/runs/{run_id}/jobs": {
       "get": {
         "summary": "Run Jobs",
+        "description": "Del más reciente al más antiguo.",
         "operationId": "managed_run_jobs",
         "parameters": [
           {
@@ -2959,6 +2960,30 @@
             "schema": {
               "type": "string",
               "title": "Run Id"
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 9007199254740991,
+              "minimum": 0,
+              "default": 0,
+              "title": "Offset"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 100,
+              "minimum": 1,
+              "default": 30,
+              "title": "Limit"
             }
           },
           {
@@ -2986,11 +3011,145 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/ManagedJobRead"
-                  },
-                  "title": "Response Managed Run Jobs"
+                  "$ref": "#/components/schemas/Page_ManagedJobRead_"
+                }
+              }
+            }
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          }
+        }
+      }
+    },
+    "/api/managed/runs/{run_id}/cycles/{cycle}/diff": {
+      "get": {
+        "summary": "Cycle Diff",
+        "description": "Diff revisado de un ciclo por páginas de bytes UTF-8 que acaban en fin de línea; `offset` es 0 o un\n`next_offset` anterior. Con `sha256`, un diff distinto del pedido responde 409.",
+        "operationId": "managed_cycle_diff",
+        "parameters": [
+          {
+            "name": "run_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Run Id"
+            }
+          },
+          {
+            "name": "cycle",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Cycle"
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 9007199254740991,
+              "minimum": 0,
+              "default": 0,
+              "title": "Offset"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 524288,
+              "minimum": 4096,
+              "default": 65536,
+              "title": "Limit"
+            }
+          },
+          {
+            "name": "sha256",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "pattern": "^[0-9a-f]{64}$"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Sha256"
+            }
+          },
+          {
+            "name": "x-harness-local",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Obligatoria con valor 1 en mutaciones (protección CSRF).",
+              "title": "X-Harness-Local"
+            },
+            "description": "Obligatoria con valor 1 en mutaciones (protección CSRF)."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CycleDiffRead"
                 }
               }
             }
@@ -8643,7 +8802,7 @@
       },
       "post": {
         "summary": "Create Conversation",
-        "description": "Conversación separada del flujo de ejecución; no encola nada.",
+        "description": "Conversación separada del flujo de ejecución; no encola nada. Misma clave y misma petición devuelven la\nmisma conversación.",
         "operationId": "managed_create_conversation",
         "parameters": [
           {
@@ -8654,6 +8813,19 @@
               "type": "string",
               "title": "Project Id"
             }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200,
+              "description": "Misma clave y misma acción devuelven el mismo job.",
+              "title": "Idempotency-Key"
+            },
+            "description": "Misma clave y misma acción devuelven el mismo job."
           },
           {
             "name": "x-harness-local",
@@ -9351,7 +9523,7 @@
       },
       "post": {
         "summary": "Planning Create",
-        "description": "Definición (brief Markdown, destino vacío o con borradores) o planificación de la fase siguiente.",
+        "description": "Definición (brief Markdown, destino vacío o con borradores) o planificación de la fase siguiente. Misma\nclave y misma petición devuelven la misma conversación.",
         "operationId": "managed_planning_create",
         "parameters": [
           {
@@ -9362,6 +9534,19 @@
               "type": "string",
               "title": "Project Id"
             }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200,
+              "description": "Misma clave y misma acción devuelven el mismo job.",
+              "title": "Idempotency-Key"
+            },
+            "description": "Misma clave y misma acción devuelven el mismo job."
           },
           {
             "name": "x-harness-local",
@@ -12993,11 +13178,68 @@
         ],
         "title": "CountSumRead"
       },
+      "CycleDiffRead": {
+        "properties": {
+          "run_id": {
+            "type": "string",
+            "title": "Run Id"
+          },
+          "cycle": {
+            "type": "integer",
+            "title": "Cycle"
+          },
+          "sha256": {
+            "type": "string",
+            "title": "Sha256"
+          },
+          "size_bytes": {
+            "type": "integer",
+            "title": "Size Bytes"
+          },
+          "offset": {
+            "type": "integer",
+            "title": "Offset"
+          },
+          "next_offset": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Next Offset",
+            "description": "Offset de la página siguiente; null en la última. Las páginas acaban en fin de línea salvo una línea mayor que el límite, cortada en un límite UTF-8."
+          },
+          "text": {
+            "type": "string",
+            "title": "Text"
+          }
+        },
+        "type": "object",
+        "required": [
+          "run_id",
+          "cycle",
+          "sha256",
+          "size_bytes",
+          "offset",
+          "next_offset",
+          "text"
+        ],
+        "title": "CycleDiffRead"
+      },
       "CycleRead": {
         "properties": {
-          "diff": {
+          "diff_sha256": {
             "type": "string",
-            "title": "Diff"
+            "title": "Diff Sha256",
+            "description": "SHA-256 del diff revisado del ciclo (texto UTF-8 almacenado); su contenido se lee paginado en `/runs/{id}/cycles/{n}/diff`."
+          },
+          "diff_bytes": {
+            "type": "integer",
+            "title": "Diff Bytes",
+            "description": "Tamaño en bytes UTF-8 del diff revisado del ciclo."
           },
           "provenance": {
             "anyOf": [
@@ -13055,7 +13297,8 @@
         },
         "type": "object",
         "required": [
-          "diff",
+          "diff_sha256",
+          "diff_bytes",
           "provenance",
           "validation",
           "review",
@@ -15925,6 +16168,18 @@
               }
             ],
             "title": "Locked By Job"
+          },
+          "active_job": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Active Job",
+            "description": "Job del run en cola, en curso o pendiente de recuperación; null si el run no avanza sin una acción nueva."
           }
         },
         "type": "object",
@@ -15946,7 +16201,8 @@
           "versions",
           "history",
           "commit",
-          "locked_by_job"
+          "locked_by_job",
+          "active_job"
         ],
         "title": "ManagedRunRead"
       },
@@ -16985,6 +17241,39 @@
           "next_offset"
         ],
         "title": "Page[ManagedAttemptRead]"
+      },
+      "Page_ManagedJobRead_": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/ManagedJobRead"
+            },
+            "type": "array",
+            "title": "Items"
+          },
+          "offset": {
+            "type": "integer",
+            "title": "Offset"
+          },
+          "next_offset": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Next Offset"
+          }
+        },
+        "type": "object",
+        "required": [
+          "items",
+          "offset",
+          "next_offset"
+        ],
+        "title": "Page[ManagedJobRead]"
       },
       "Page_ManagedRunSummaryRead_": {
         "properties": {
@@ -18242,6 +18531,18 @@
             },
             "type": "array",
             "title": "Actions"
+          },
+          "successor": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Successor",
+            "description": "Código de la fase posterior del checkout; null si esta es la última. Solo la última exporta su estado y decide sobre sus documentos."
           }
         },
         "type": "object",
@@ -18265,7 +18566,8 @@
           "operations",
           "authorizations",
           "ready",
-          "actions"
+          "actions",
+          "successor"
         ],
         "title": "PhaseRead"
       },

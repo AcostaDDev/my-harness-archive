@@ -15,7 +15,7 @@ from fastapi.responses import Response
 from pydantic import Field
 
 from harness_local.api.schemas import (
-    JUnitCasesRead, ManagedLogRead,
+    CycleDiffRead, JUnitCasesRead, ManagedLogRead,
     PromptScope, PromptDetailRead, PromptVersionRead, PromptDraftCreate, PromptActivateCreate,
     PromptValidateCreate, PromptValidationRead, PromptDiffRead,
     ActivationCreate, ActivationRead, ActivationTransition, ConfirmStoppedCreate, ManagedAttemptRead,
@@ -32,6 +32,7 @@ from harness_local.storage.migration import ModeConflict
 
 Offset = Annotated[int, Query(ge=0, le=2**53 - 1)]
 Limit = Annotated[int, Query(ge=1, le=100)]
+DiffLimit = Annotated[int, Query(ge=4096, le=512 * 1024)]
 IdempotencyKey = Annotated[str, Header(alias="Idempotency-Key", min_length=1, max_length=200,
                                        description="Misma clave y misma acción devuelven el mismo job.")]
 ERRORS = {status: {"model": ProblemResponse} for status in (403, 404, 409, 422)}
@@ -316,10 +317,19 @@ def managed_router(runtime: ManagedRuntime):
         detail = call(runtime.views.run, run_id)
         return configured_actions({**detail, "project_id": runtime.project_id(detail["root"])})
 
-    @router.get("/runs/{run_id}/jobs", response_model=list[ManagedJobRead], operation_id="managed_run_jobs")
-    def run_jobs(run_id: str):
+    @router.get("/runs/{run_id}/jobs", response_model=Page[ManagedJobRead], operation_id="managed_run_jobs")
+    def run_jobs(run_id: str, offset: Offset = 0, limit: Limit = 30):
+        """Del más reciente al más antiguo."""
         runtime.ready()
-        return call(runtime.views.jobs, run_id)
+        return call(runtime.views.jobs, run_id, offset, limit)
+
+    @router.get("/runs/{run_id}/cycles/{cycle}/diff", response_model=CycleDiffRead, operation_id="managed_cycle_diff")
+    def cycle_diff(run_id: str, cycle: int, offset: Offset = 0, limit: DiffLimit = 64 * 1024,
+                   sha256: Annotated[str | None, Query(pattern=r'^[0-9a-f]{64}$')] = None):
+        """Diff revisado de un ciclo por páginas de bytes UTF-8 que acaban en fin de línea; `offset` es 0 o un
+        `next_offset` anterior. Con `sha256`, un diff distinto del pedido responde 409."""
+        runtime.ready()
+        return call(runtime.views.cycle_diff, run_id, cycle, offset, limit, sha256)
 
     @router.get('/runs/{run_id}/cycles/{cycle}/validations/{entry}/reports/{report}',
                 response_model=JUnitCasesRead, operation_id='managed_junit_cases')
@@ -838,10 +848,12 @@ def managed_router(runtime: ManagedRuntime):
 
     @router.post("/projects/{project_id}/conversations", response_model=ChatConversationRead, status_code=201,
                  operation_id="managed_create_conversation")
-    def create_conversation(project_id: str, body: ChatConversationCreate):
-        """Conversación separada del flujo de ejecución; no encola nada."""
+    def create_conversation(project_id: str, body: ChatConversationCreate, idempotency_key: IdempotencyKey):
+        """Conversación separada del flujo de ejecución; no encola nada. Misma clave y misma petición devuelven la
+        misma conversación."""
         context = project(project_id).context
-        return conversation_read(call(runtime.chat.create, context, title=body.title, phase_id=body.phase_id, task_run_id=body.task_run_id))
+        return conversation_read(call(runtime.chat.create, context, title=body.title, phase_id=body.phase_id,
+                                      task_run_id=body.task_run_id, key=idempotency_key))
 
     @router.get("/conversations/{conversation_id}", response_model=ChatConversationRead,
                 operation_id="managed_conversation")
@@ -927,12 +939,13 @@ def managed_router(runtime: ManagedRuntime):
 
     @router.post('/projects/{project_id}/planning', response_model=PlanningConversationRead, status_code=201,
                  operation_id='managed_planning_create')
-    def planning_create(project_id: str, body: PlanningConversationCreate):
-        """Definición (brief Markdown, destino vacío o con borradores) o planificación de la fase siguiente."""
+    def planning_create(project_id: str, body: PlanningConversationCreate, idempotency_key: IdempotencyKey):
+        """Definición (brief Markdown, destino vacío o con borradores) o planificación de la fase siguiente. Misma
+        clave y misma petición devuelven la misma conversación."""
         item = planning_project(project_id)
         writer = definition_writer(item) if body.kind == 'definition' else None
         conversation_id = call(planning_repository().create, item.context, kind=body.kind, title=body.title, brief=body.brief,
-                               phase_id=body.phase_id, writer=writer)
+                               phase_id=body.phase_id, writer=writer, key=idempotency_key)
         return planning_read(item, conversation_id)
 
     @router.get('/projects/{project_id}/planning/{conversation_id}', response_model=PlanningConversationRead,

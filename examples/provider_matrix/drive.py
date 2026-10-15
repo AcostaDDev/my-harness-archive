@@ -89,7 +89,18 @@ def snapshot(run_id):
     save('run', run)
     attempts, _ = pages(f'/api/managed/runs/{run_id}/attempts', 'offset')
     save('attempts', attempts)
-    save('jobs', call('GET', f'/api/managed/runs/{run_id}/jobs')[1])
+    save('jobs', pages(f'/api/managed/runs/{run_id}/jobs', 'offset')[0])
+    diffs = {}
+    for cycle in (run.get('history') or {}).get('cycles', []) if status == 200 else []:
+        text, offset = '', 0
+        while offset is not None:
+            page_status, page = call('GET', f'/api/managed/runs/{run_id}/cycles/{cycle["number"]}/diff'
+                                            f'?offset={offset}&limit=524288&sha256={cycle["diff_sha256"]}')
+            if page_status != 200:
+                break
+            text, offset = text + page['text'], page['next_offset']
+        diffs[cycle['number']] = text
+    save('diffs', diffs)
     events, _ = pages(f'/api/managed/runs/{run_id}/events', 'after')
     save('events', events)
     save('logs', {a['id']: call('GET', f'/api/managed/runs/{run_id}/attempts/{a["id"]}/logs')[1] for a in attempts})

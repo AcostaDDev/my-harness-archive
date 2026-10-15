@@ -74,3 +74,29 @@ export function unifiedDiff(path: string, before: string | null, after: string |
   }
   return out.join("\n") + "\n";
 }
+
+// --- diff revisado de un ciclo, leído por páginas (D085) ----------------------------------------
+
+export type DiffPage = { sha256: string; size_bytes: number; offset: number; next_offset: number | null; text: string };
+// `pages` conserva cada página tal como llegó, para pintarlas por separado sin repintar las anteriores.
+export type LoadedDiff = { sha256: string; size: number; text: string; pages: string[]; loaded: number; next: number | null };
+
+/**
+ * Añade la página siguiente a lo ya cargado. Devuelve null si no encaja (otro hash o tamaño, un cursor distinto
+ * del esperado o bytes que no llegan al `next_offset`): lo cargado no se mezcla con otro diff y se relee desde 0.
+ */
+export function appendDiffPage(loaded: LoadedDiff | undefined, page: DiffPage): LoadedDiff | null {
+  if (page.offset !== (loaded ? loaded.next : 0)) return null;
+  if (loaded && (loaded.sha256 !== page.sha256 || loaded.size !== page.size_bytes)) return null;
+  const end = page.offset + new TextEncoder().encode(page.text).length;
+  if (end !== (page.next_offset ?? page.size_bytes)) return null;
+  return { sha256: page.sha256, size: page.size_bytes, text: (loaded?.text ?? "") + page.text,
+    pages: [...(loaded?.pages ?? []), page.text], loaded: end, next: page.next_offset };
+}
+
+/** Tamaño legible en unidades binarias, como los límites del servidor (64 KiB, 4 MiB). */
+export function byteSize(value: number): string {
+  if (value < 1024) return `${value.toLocaleString("es-ES")} B`;
+  const [amount, unit] = value < 1024 * 1024 ? [value / 1024, "KiB"] : [value / (1024 * 1024), "MiB"];
+  return `${amount.toLocaleString("es-ES", { maximumFractionDigits: 1 })} ${unit}`;
+}

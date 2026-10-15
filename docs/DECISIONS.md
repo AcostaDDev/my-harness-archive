@@ -2549,3 +2549,28 @@ el hallazgo 1**. [Dictamen, evidencia y hallazgos](discovery/H6.2_CLOSURE_REVIEW
   como `cross-site` (D079); las cargas se hicieron como documentos completos del mismo origen.
 
 Sin cambios de código, esquema, API, UI ni dependencias. Los consentimientos previos siguen agotados.
+
+## D086 — Hallazgos de D085 corregidos: diffs paginados, conversaciones idempotentes y fase con sucesora
+
+Estado: implementado y verificado offline el 2026-10-15 sobre `22d592f`; **los siete criterios de H6.2 quedan
+cumplidos**. [Entrega, verificación y límites](discovery/H6.2_DIFF_PAGINATION.md).
+
+Pedido por el usuario: el hallazgo 1 (obligatorio) y también el 2 y el 3. Decisiones tomadas con criterio:
+
+- La lectura del run lleva de cada ciclo solo `diff_sha256` y `diff_bytes`, también en su evidencia validada y en la de
+  los casos JUnit. El diff se lee en `GET /runs/{id}/cycles/{n}/diff` por páginas de bytes UTF-8 terminadas en fin de
+  línea (4–512 KiB, 64 KiB por defecto), con cursor exacto y `sha256` opcional (409 si no coincide). El hash es el del
+  texto almacenado. El historial, los agentes y el resto de diffs (documentos, exportación, transición) no cambian.
+- `/runs/{id}/jobs` paginado, del más reciente al más antiguo. `ManagedRunRead.active_job` dice si el run avanza solo:
+  la UI sondea cada 1,5 s con job y cada 15 s sin él, y pide el diff al abrirlo, página a página, sin repintarlo con el
+  sondeo.
+- Crear conversaciones de chat o de planificación exige `Idempotency-Key`; misma clave y petición devuelven la misma
+  conversación, y la clave se resuelve antes de reevaluar el destino. Migración `0018_conversation_keys` (columnas
+  nullable; las conversaciones anteriores no tienen clave). El cliente conserva la clave hasta la respuesta.
+- `PhaseRead.successor` (código de la fase posterior, null en la última). Con sucesora, la deriva es una nota neutra,
+  sin adopción ni exportación habilitada: el ámbar queda para lo que espera una decisión.
+
+Cambio de contrato deliberado: `CycleRead.diff` desaparece y `/jobs` devuelve una página; se actualizaron los
+consumidores del repositorio (UI, pruebas, `check_distribution.py`, `examples/provider_matrix/drive.py`, que ahora
+guarda los diffs por páginas). Sin codec ni dependencias nuevas. El cierre formal del hito queda a decisión del usuario.
+Los consentimientos previos siguen agotados.

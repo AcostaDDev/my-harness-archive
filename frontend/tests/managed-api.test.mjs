@@ -1,6 +1,6 @@
 import { test, beforeEach } from 'node:test';
 import assert from 'node:assert/strict';
-import { managed, managedApi, ManagedError, jobRequest, savePending, readPending } from '../src/managed-api.ts';
+import { createOnce, managed, managedApi, ManagedError, jobRequest, savePending, readPending } from '../src/managed-api.ts';
 const values = new Map();
 globalThis.sessionStorage = { getItem: k => values.get(k) ?? null, setItem: (k,v) => values.set(k,v), removeItem: k => values.delete(k) };
 beforeEach(() => values.clear());
@@ -108,4 +108,37 @@ test('lost acknowledgement then expired session keeps one identity until explici
   assert.equal(jobs.size, 1);
   assert.deepEqual(calls[0], calls[1]);
   assert.deepEqual(calls[1], calls[2]);
+});
+
+test('conversation creation reuses its key until acknowledged, then starts another', async () => {
+  const keys = [];
+  let fail = true;
+  globalThis.fetch = async (path, options) => {
+    keys.push(options.headers['Idempotency-Key']);
+    if (fail) { fail = false; throw new TypeError('Failed to fetch'); }
+    return Response.json({ id: 'c1' }, { status: 201 });
+  };
+  const body = { title: 'Chat', phase_id: null, task_run_id: null };
+  await assert.rejects(createOnce('/projects/demo/conversations', body));
+  assert.deepEqual(await createOnce('/projects/demo/conversations', body), { id: 'c1' });
+  assert.equal(keys[0], keys[1]); // reintento tras perder la respuesta: misma clave
+  await createOnce('/projects/demo/conversations', body);
+  assert.notEqual(keys[2], keys[1]); // respuesta confirmada: otra conversación
+  fail = true;
+  await assert.rejects(createOnce('/projects/demo/conversations', body));
+  await createOnce('/projects/demo/conversations', { ...body, title: 'Otra' });
+  assert.notEqual(keys[4], keys[3]); // otro cuerpo, otra clave
+});
+
+test('a definitive rejection forgets the creation key', async () => {
+  const keys = [];
+  globalThis.fetch = async (path, options) => {
+    keys.push(options.headers['Idempotency-Key']);
+    return keys.length === 1 ? Response.json({ detail: { code: 'conflict', diagnostic: 'x' } }, { status: 409 })
+      : Response.json({ id: 'p1' }, { status: 201 });
+  };
+  const body = { kind: 'phase_planning', title: 'Plan', brief: null, phase_id: 'p' };
+  await assert.rejects(createOnce('/projects/demo/planning', body), /409/);
+  await createOnce('/projects/demo/planning', body);
+  assert.notEqual(keys[0], keys[1]);
 });

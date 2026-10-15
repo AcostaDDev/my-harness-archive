@@ -350,6 +350,7 @@ class PhaseEventRow(Base):
 class ChatConversationRow(Base):
     """H4.1: conversación separada del flujo de ejecución; opcionalmente ligada a una fase."""
     __tablename__ = 'chat_conversations'
+    __table_args__ = (Index('uq_chat_conversations_key', 'idempotency_key', unique=True),)
     id: Mapped[str] = mapped_column(String(36), primary_key=True)
     root: Mapped[str] = mapped_column(String)
     title: Mapped[str] = mapped_column(String(200))
@@ -359,6 +360,9 @@ class ChatConversationRow(Base):
     version: Mapped[int] = mapped_column(Integer)
     created_at: Mapped[str] = mapped_column(String(40))
     updated_at: Mapped[str] = mapped_column(String(40))
+    # 0018: misma clave y misma petición devuelven la misma conversación; null en altas anteriores o internas.
+    idempotency_key: Mapped[str | None] = mapped_column(String(200), nullable=True)
+    request_sha256: Mapped[str | None] = mapped_column(String(64), nullable=True)
 
 
 class ChatTurnRow(Base):
@@ -403,7 +407,8 @@ class ChatProposalRow(Base):
 class PlanningConversationRow(Base):
     """H6.5: conversación de definición (proyecto nuevo) o de planificación de la fase siguiente."""
     __tablename__ = 'planning_conversations'
-    __table_args__ = (Index('uq_planning_definition', 'root', unique=True, sqlite_where=text("kind = 'definition'")),)
+    __table_args__ = (Index('uq_planning_definition', 'root', unique=True, sqlite_where=text("kind = 'definition'")),
+                      Index('uq_planning_conversations_key', 'idempotency_key', unique=True))
     id: Mapped[str] = mapped_column(String(36), primary_key=True)
     root: Mapped[str] = mapped_column(String)
     # definition | phase_planning
@@ -422,6 +427,9 @@ class PlanningConversationRow(Base):
     version: Mapped[int] = mapped_column(Integer)
     created_at: Mapped[str] = mapped_column(String(40))
     updated_at: Mapped[str] = mapped_column(String(40))
+    # 0018: como en el chat.
+    idempotency_key: Mapped[str | None] = mapped_column(String(200), nullable=True)
+    request_sha256: Mapped[str | None] = mapped_column(String(64), nullable=True)
 
 
 class PlanningTurnRow(Base):

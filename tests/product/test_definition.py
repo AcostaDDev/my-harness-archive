@@ -586,7 +586,9 @@ def test_phase_planning_proposes_the_plan_used_by_the_transition(v2):  # noqa: F
     pid = v2.create_v2()
     v2.accept()
     planning = PlanningRepository(v2.repository)
-    cid = planning.create(v2.context, kind='phase_planning', title='Plan P002', phase_id=pid)
+    cid = planning.create(v2.context, kind='phase_planning', title='Plan P002', phase_id=pid, key='plan-conversation')
+    assert planning.create(v2.context, kind='phase_planning', title='Plan P002', phase_id=pid,
+                           key='plan-conversation') == cid
     v2.ports.agents.responses.append(planning_answer())
     job = planning.submit_message(v2.context, cid, planning.get(cid)['version'], key='plan-1', versions=VERSIONS,
                                   text='Propón el plan de P002')
@@ -623,6 +625,19 @@ def test_phase_planning_proposes_the_plan_used_by_the_transition(v2):  # noqa: F
         assert session.scalar(select(PhaseRow.status).where(PhaseRow.code == 'P002')) == 'ACTIVE'
         decision = session.scalar(select(PlanningProposalRow.decision))
         assert decision['run_id'] == job.run_id
+        following = session.scalar(select(PhaseRow.id).where(PhaseRow.code == 'P002'))
+    # Hallazgo 2 de D085: el reintento tras la transición devuelve la misma conversación, sin otra vacía;
+    # sin clave se reevalúa el destino y la misma clave con otra petición es un conflicto.
+    assert planning.create(v2.context, kind='phase_planning', title='Plan P002', phase_id=pid,
+                           key='plan-conversation') == cid
+    with pytest.raises(Conflict, match='latest phase'):
+        planning.create(v2.context, kind='phase_planning', title='Plan P002', phase_id=pid)
+    with pytest.raises(Conflict, match='different conversation'):
+        planning.create(v2.context, kind='phase_planning', title='Otro plan', phase_id=pid, key='plan-conversation')
+    assert [c['id'] for c in planning.list(v2.context.root) if c['kind'] == 'phase_planning'] == [cid]
+    # Hallazgo 3 de D085: la fase transicionada conoce su sucesora; la última no tiene.
+    phases = PhaseRepository(v2.repository)
+    assert phases.get(pid)['successor'] == 'P002' and phases.get(following)['successor'] is None
 
 
 @pytest.mark.parametrize('plan', ['# P002\n\n## P003-T001 — Otra\n\n**Objetivo:** o\n', '# P002\n\nSin tareas.\n'])
@@ -667,10 +682,18 @@ def test_http_definition_flow(migrated_database, tmp_path):
         status = http.get(base + '/bootstrap').json()
         assert status['enabled'] and not status['import_required'] and not status['discovery_available']
         assert http.post(base + '/bootstrap/preview', json={'brief': {}, 'decisions': {}}).status_code == 422
-        created = http.post(base + '/planning', json={'kind': 'definition', 'title': 'Sintético', 'brief': BRIEF})
+        definition = {'kind': 'definition', 'title': 'Sintético', 'brief': BRIEF}
+        assert http.post(base + '/planning', json=definition).status_code == 422  # sin Idempotency-Key
+        created = http.post(base + '/planning', json=definition, headers={'Idempotency-Key': 'definition'})
         assert created.status_code == 201, created.text
         cid = created.json()['id']
-        assert http.post(base + '/planning', json={'kind': 'definition', 'title': 'Otra', 'brief': BRIEF}).status_code == 409
+        retried = http.post(base + '/planning', json=definition, headers={'Idempotency-Key': 'definition'})
+        assert retried.status_code == 201 and retried.json()['id'] == cid
+        assert http.post(base + '/planning', json={**definition, 'title': 'Otra'},
+                         headers={'Idempotency-Key': 'definition'}).status_code == 409
+        assert http.post(base + '/planning', json={**definition, 'title': 'Otra'},
+                         headers={'Idempotency-Key': 'other'}).status_code == 409
+        assert [c['id'] for c in http.get(base + '/planning').json()] == [cid]
         assert http.get(base + f'/planning/{cid}/brief').json()['content'] == BRIEF
         message = http.post(base + f'/planning/{cid}/messages', json={'expected_version': 0, 'text': 'Propón'},
                             headers={'Idempotency-Key': 'm1'})

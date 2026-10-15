@@ -171,7 +171,8 @@ def test_codex_exported_chat_only_skips_git_discovery(tmp_path):
 def test_http_commands_have_no_effect_until_explicit_proposal_acceptance(tmp_path, migrated_database, checkout):
     ports = Ports()
     with client(migrated_database[0], tmp_path, config(checkout, ports)) as http:
-        cid = http.post('/api/managed/projects/synthetic/conversations', json={'title': 'Commands'}).json()['id']
+        cid = http.post('/api/managed/projects/synthetic/conversations', json={'title': 'Commands'},
+                        headers={'Idempotency-Key': 'commands'}).json()['id']
         for name in COMMANDS:
             text = '/' + name + (' Ajusta texto' if name == 'tarea' else '')
             preview = http.post(f'/api/managed/conversations/{cid}/commands/preview', json={'expected_version': 0, 'text': text})

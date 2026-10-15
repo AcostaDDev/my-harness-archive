@@ -24,7 +24,7 @@ from harness_local.core.engine.chat_commands import parse, proposal as command_p
 from harness_local.adapters.chat_snapshot import HeadSnapshot
 from harness_local.core.engine.contracts import context_snapshot, freeze
 from harness_local.core.engine.serialization import load_history
-from harness_local.storage.managed import Conflict, _job
+from harness_local.storage.managed import Conflict, _job, existing_creation
 from harness_local.storage.models import (
     ChatConversationRow as Conversation, ChatProposalRow as Proposal, ChatTurnRow as Turn,
     ManagedCommitRow as Commit, ManagedJobRow as Job, ManagedRunRow as Run, PhaseRow as Phase,
@@ -219,10 +219,19 @@ class ChatRepository:
 
     # --- conversación y turnos ---------------------------------------------------------
 
-    def create(self, context, *, title, phase_id=None, task_run_id=None):
+    def create(self, context, *, title, phase_id=None, task_run_id=None, key=None):
+        """`key` (API): un reintento con la misma petición devuelve la misma conversación, sin otra vacía."""
+        request = digest({'action': 'chat_conversation', 'root': str(context.root), 'title': title,
+                          'phase_id': phase_id, 'task_run_id': task_run_id})
+        if key is not None:
+            with Session(self.managed.engine) as session:
+                if found := existing_creation(session, Conversation, key, request):
+                    return found
         if not isinstance(title, str) or not title.strip() or len(title) > 200:
             raise ValueError('Conversation title must contain 1–200 characters')
         with self.managed._write() as session:
+            if key is not None and (found := existing_creation(session, Conversation, key, request)):
+                return found
             if phase_id is not None:
                 phase = session.get(Phase, phase_id)
                 if phase is None or phase.root != str(context.root):
@@ -238,7 +247,8 @@ class ChatRepository:
                         Phase.root == str(context.root), Phase.code == task.phase_id))
             now = self.managed._now()
             row = Conversation(id=str(uuid4()), root=str(context.root), title=title.strip(), phase_id=phase_id,
-                               actor=actor(), task_run_id=task_run_id, version=0, created_at=now, updated_at=now)
+                               actor=actor(), task_run_id=task_run_id, version=0, created_at=now, updated_at=now,
+                               idempotency_key=key, request_sha256=request if key is not None else None)
             session.add(row)
             return row.id
 

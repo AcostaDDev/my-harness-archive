@@ -1,4 +1,6 @@
-import { useEffect, useRef, useState } from "react";
+import { memo, useEffect, useRef, useState } from "react";
+import { appendDiffPage, byteSize } from "../diff.ts";
+import type { LoadedDiff } from "../diff.ts";
 import { Logs } from "../Logs";
 import { managed, managedApi, jobRequest, ManagedError } from "../managed-api";
 import type { S } from "../managed-api";
@@ -6,7 +8,7 @@ import { Link, navigate } from "../navigation";
 import { Permissions } from "../Permissions";
 import { href, runRoute } from "../router.ts";
 import { Tests } from "../Tests";
-import { Empty, Evidence, Fields, Hash, Loading, PageHeader, Pagination, Stale, Status, message, usePoll, when } from "../ui";
+import { DiffLines, Empty, Evidence, Fields, Hash, Loading, PageHeader, Pagination, Stale, Status, message, usePoll, when } from "../ui";
 import { useWorkspace } from "../workspace";
 
 /** `/runs/:id`: resuelve la URL canónica del run y la sustituye en el historial. */
@@ -21,10 +23,16 @@ export function RunRedirect({ run }: { run: string }) {
   return read.error ? <p role="alert" className="state state-error">{read.error}</p> : <Loading>Buscando el run…</Loading>;
 }
 
+// Con un job en cola, en curso o por recuperar el run cambia solo; sin él, solo cambia por una acción nueva
+// (de esta página, que relee al momento, o de otra pestaña), así que basta un sondeo espaciado.
+const ACTIVE_POLL = 1500;
+const SETTLED_POLL = 15000;
+
 export function RunPage({ phase, task, run: id }: { phase: string; task: string; run: string }) {
   const { project, busy, refresh, operate, send } = useWorkspace();
   const [run, setRun] = useState<S["ManagedRunRead"]>();
-  const [jobs, setJobs] = useState<S["ManagedJobRead"][]>([]);
+  const [jobs, setJobs] = useState<S["Page_ManagedJobRead_"]>();
+  const [jobOffset, setJobOffset] = useState(0);
   const [attempts, setAttempts] = useState<S["Page_ManagedAttemptRead_"]>();
   const [offset, setOffset] = useState(0);
   const [events, setEvents] = useState<S["ManagedEventRead"][]>([]);
@@ -40,12 +48,12 @@ export function RunPage({ phase, task, run: id }: { phase: string; task: string;
     let timer: ReturnType<typeof setTimeout>;
     async function poll() {
       try {
-        const [r, j, a, e] = await Promise.all([managed<S["ManagedRunRead"]>(path), managed<S["ManagedJobRead"][]>(`${path}/jobs`),
+        const [r, j, a, e] = await Promise.all([managed<S["ManagedRunRead"]>(path), managed<S["Page_ManagedJobRead_"]>(`${path}/jobs?offset=${jobOffset}`),
           managed<S["Page_ManagedAttemptRead_"]>(`${path}/attempts?offset=${offset}`), managed<S["ManagedEventsRead"]>(`${path}/events?after=${cursor.current}&limit=50`)]);
         if (active) {
           setRun(r); setJobs(j); setAttempts(a); setError(""); cursor.current = e.cursor;
           setEvents(previous => [...previous, ...e.items.filter(item => !previous.some(old => old.sequence === item.sequence))]);
-          timer = setTimeout(() => void poll(), e.has_more ? 0 : 1500);
+          timer = setTimeout(() => void poll(), e.has_more ? 0 : r.active_job === null ? SETTLED_POLL : ACTIVE_POLL);
         }
       } catch (e) {
         if (!active) return;
@@ -54,7 +62,7 @@ export function RunPage({ phase, task, run: id }: { phase: string; task: string;
       }
     }
     void poll(); return () => { active = false; clearTimeout(timer); };
-  }, [path, offset, refresh]);
+  }, [path, offset, jobOffset, refresh]);
   useEffect(() => { setCommitConfirmed(false); setConfirmed(false); }, [run?.version]);
   // Una URL con otra fase, tarea o proyecto se corrige a la canónica sin añadir historial.
   const canonical = run && runRoute(run);
@@ -107,7 +115,7 @@ export function RunPage({ phase, task, run: id }: { phase: string; task: string;
       <h2 id="run-cycles">Revisiones</h2>
       {run.history.cycles.map(c => <div className="entry" key={c.number}>
         <h3>Revisión {c.number}: {c.verdict ?? "sin veredicto"}</h3>
-        <details className="evidence"><summary>Diff revisado ({c.changed_paths.length} rutas)</summary><pre className="diff">{c.diff}</pre></details>
+        <CycleDiff runId={run.id} number={c.number} sha256={c.diff_sha256} bytes={c.diff_bytes} paths={c.changed_paths.length} />
         <Tests runId={run.id} cycle={c.number} validation={c.validation} />
         <Evidence title="Tests y evidencia validada" value={c.validation} /><Evidence title="Hallazgos y revisión" value={c.review} />
       </div>)}
@@ -117,8 +125,8 @@ export function RunPage({ phase, task, run: id }: { phase: string; task: string;
 
     <section className="panel" aria-labelledby="run-jobs">
       <h2 id="run-jobs">Trabajos y recuperación</h2>
-      {!jobs.length && <p className="hint">Sin trabajos registrados.</p>}
-      {jobs.map(job => <div key={job.id} className={job.status === "RECOVERY_REQUIRED" ? "entry entry-open" : "entry"}>
+      {!jobs?.items.length && <p className="hint">Sin trabajos registrados.</p>}
+      {jobs?.items.map(job => <div key={job.id} className={job.status === "RECOVERY_REQUIRED" ? "entry entry-open" : "entry"}>
         <p><strong>Trabajo {job.id}</strong> {job.action} <Status value={job.status} /></p>
         {job.diagnostic && <p>{job.diagnostic}</p>}
         {job.status === "RECOVERY_REQUIRED" && <div className="decision decision-attention">
@@ -131,6 +139,7 @@ export function RunPage({ phase, task, run: id }: { phase: string; task: string;
         </div>}
         <Evidence title={`Datos del trabajo ${job.id}`} value={job} />
       </div>)}
+      <Pagination offset={jobOffset} next={jobs?.next_offset} onChange={setJobOffset} label="Páginas de trabajos" />
     </section>
 
     <section className="panel" aria-labelledby="run-attempts">
@@ -149,3 +158,41 @@ export function RunPage({ phase, task, run: id }: { phase: string; task: string;
     </details>
   </>;
 }
+
+/**
+ * Diff revisado de un ciclo: se lee al abrirlo, por páginas de 64 KiB ligadas al hash del resumen del run, y no
+ * se vuelve a pedir en cada sondeo. Una página que no continúa lo mostrado lo descarta en lugar de mezclarlo.
+ * Props escalares y memo: el sondeo del run no repinta un diff de miles de líneas, y cada página es su tramo.
+ */
+const CycleDiff = memo(function CycleDiff({ runId, number, sha256, bytes, paths }: { runId: string; number: number; sha256: string; bytes: number; paths: number }) {
+  const [diff, setDiff] = useState<LoadedDiff>();
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const request = useRef(0);
+  useEffect(() => { request.current++; setDiff(undefined); setError(""); setLoading(false); }, [runId, number, sha256]);
+  async function more(current?: LoadedDiff) {
+    const id = ++request.current;
+    setLoading(true); setError("");
+    try {
+      const page = await managed<S["CycleDiffRead"]>(`/runs/${encodeURIComponent(runId)}/cycles/${number}/diff?offset=${current?.next ?? 0}&sha256=${sha256}`);
+      if (id !== request.current) return;
+      const next = appendDiffPage(current, page);
+      setDiff(next ?? undefined);
+      if (!next) setError("La página leída no continúa el diff mostrado. Vuelve a cargarlo.");
+    } catch (e) {
+      if (id === request.current) setError(message(e));
+    } finally {
+      if (id === request.current) setLoading(false);
+    }
+  }
+  return <details className="evidence" onToggle={e => { if (e.currentTarget.open && !diff && !loading) void more(); }}>
+    <summary>Diff revisado ({paths} rutas, {byteSize(bytes)})</summary>
+    {diff && (diff.size ? <pre className="diff" aria-label={`Diff revisado de la revisión ${number}`}>{diff.pages.map((page, index) => <DiffLines key={index} text={page} />)}</pre>
+      : <p className="hint">Sin cambios de contenido.</p>)}
+    {loading && <Loading>Cargando diff…</Loading>}
+    {error && <p role="alert" className="state state-error">{error}</p>}
+    {diff && diff.size > 0 && <p className="hint">{diff.next === null ? "Completo" : `${byteSize(diff.loaded)} de ${byteSize(diff.size)}`} · <Hash value={diff.sha256} /></p>}
+    {(diff?.next != null || (error && !loading)) && <button type="button" className="button-quiet" disabled={loading} onClick={() => void more(diff)}>
+      {diff ? "Cargar más" : "Cargar el diff"}</button>}
+  </details>;
+});

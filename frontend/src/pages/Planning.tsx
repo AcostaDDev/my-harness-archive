@@ -1,12 +1,12 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { ReactNode } from "react";
 import { unifiedDiff } from "../diff.ts";
-import { jobRequest, managed, ManagedError } from "../managed-api";
+import { createOnce, jobRequest, managed, ManagedError } from "../managed-api";
 import type { S } from "../managed-api";
 import { Link, navigate } from "../navigation";
-import { Alert, Empty, Evidence, Fields, Hash, Loading, PageHeader, Stale, Status, message, usePoll, when } from "../ui";
+import { Alert, DiffBlock, Empty, Evidence, Fields, Hash, Loading, PageHeader, Stale, Status, message, usePoll, when } from "../ui";
 import { useWorkspace } from "../workspace";
-import { DiffBlock, EditProgress, MarkdownView } from "./Docs";
+import { EditProgress, MarkdownView } from "./Docs";
 
 // Creación y planificación conversacionales en la UI (H6.2 E4) sobre la API de H6.5 (D075).
 // El agente nunca escribe: cada borrador se aplica o se edita con CAS sobre el hash mostrado, y la aceptación
@@ -153,7 +153,7 @@ function BriefForm({ status }: { status: S["BootstrapStatusRead"] }) {
       <h2 id="brief-title">Brief</h2>
       <p className="hint">Markdown libre, como máximo 256 KiB. Se congela al empezar y se archiva en <code>archive/phase-000/BRIEF.md</code>; no se edita después.</p>
       <form onSubmit={e => { e.preventDefault(); void operate(async () => {
-        await managed<Conversation>(`/projects/${project}/planning`, { kind: "definition", title: title.trim(), brief, phase_id: null } satisfies S["PlanningConversationCreate"]);
+        await createOnce<Conversation>(`/projects/${project}/planning`, { kind: "definition", title: title.trim(), brief, phase_id: null } satisfies S["PlanningConversationCreate"]);
         try { sessionStorage.removeItem(key); } catch { /* sin borrador */ }
       }); }}>
         <label>Nombre del proyecto<input value={title} maxLength={200} onChange={e => setTitle(e.target.value)} required /></label>
@@ -591,7 +591,7 @@ export function PlanPage({ phase, conversation }: { phase: string; conversation?
           <Link to={{ name: "plan", project, phase, conversation: c.id }} current={conversation === c.id}>
             <span className="link-title">{c.title}</span><span className="link-meta">{c.turns} turnos · {when(c.updated_at)}</span></Link></li>)}</ul>}
         <form onSubmit={e => { e.preventDefault(); void operate(async () => {
-          const created = await managed<Conversation>(`/projects/${project}/planning`, { kind: "phase_planning", title: title.trim(), brief: null, phase_id: data.id } satisfies S["PlanningConversationCreate"]);
+          const created = await createOnce<Conversation>(`/projects/${project}/planning`, { kind: "phase_planning", title: title.trim(), brief: null, phase_id: data.id } satisfies S["PlanningConversationCreate"]);
           setTitle(""); navigate({ name: "plan", project, phase, conversation: created.id });
         }); }}>
           <label>Nueva conversación<input value={title} maxLength={200} onChange={e => setTitle(e.target.value)} placeholder={`Plan de la fase siguiente a ${phase}`} /></label>
