@@ -434,3 +434,10 @@ pre.diff span { display: block; }
   .doc-prose { font-size: 15px; }
 }
 .doc-managed-empty { color: var(--muted); font-size: 14px; }
+
+/* E5: explicit command shortcuts wrap on narrow screens. */
+.command-list { display: flex; flex-wrap: wrap; gap: .4rem; margin-block: 1rem; }
+.command-list button { font-size: .8rem; padding: .35rem .6rem; }
+.chat-command, .chat-command-result { min-width: 0; }
+.chat-command .panel { box-shadow: none; }
+.chat-command .actions h3 { margin: 0; margin-right: auto; }

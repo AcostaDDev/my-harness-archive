@@ -115,7 +115,7 @@ def _bind_commands(commands, journal, versions):
 
 
 class LocalSupervisor:
-    def __init__(self, repository, ports_factory, *, lease_seconds=30, commit_factory=None):
+    def __init__(self, repository, ports_factory, *, lease_seconds=30, commit_factory=None, lane=None):
         """factory(context, frozen_versions) devuelve agentes, comandos y evidencia.
 
         Los puertos CLI H2.3 se conectan solo por inyección explícita. La selección/versiones es explícita;
@@ -123,6 +123,7 @@ class LocalSupervisor:
         No es un servicio autoarrancado. `commit_factory(context, frozen_versions)` aporta el
         escritor Git (captura + commit idempotente) solo para jobs de acción `commit`.
         """
+        self.lane = lane
         self.repository = repository
         self.ports_factory = ports_factory
         self.commit_factory = commit_factory
@@ -132,8 +133,9 @@ class LocalSupervisor:
         self.repository.recover_expired()
         # H3.4: el lote desatendido encola su siguiente paso antes de reclamar; nunca comprueba ni cierra.
         from harness_local.storage.phases import advance_batches
-        advance_batches(self.repository)
-        claim = self.repository.claim(lease_seconds=self.lease_seconds)
+        if self.lane != "chat":
+            advance_batches(self.repository)
+        claim = self.repository.claim(lease_seconds=self.lease_seconds, lane=self.lane)
         if claim is None:
             return None
         # H2.5: antes de cualquier efecto. Escritor legacy, marcador o modo cambiado → REFUSED.
@@ -212,17 +214,35 @@ class LocalSupervisor:
                 self.repository._require_mode(claim)
                 history, outcome = execute(context, record.history, frozen, writer, journal, self.repository.clock,
                                            label=label)
-            elif request["action"] == "chat_turn":
-                # H4.1: turno de solo lectura con la petición congelada al encolarlo; sin escritor Git.
+            elif request["action"] == "chat_command":
+                from harness_local.storage.chat import ChatRepository
+                frozen = ChatRepository(self.repository).snapshot(claim.run_id)
+                from harness_local.core.engine.chat import digest, validate_chat_result
+                if digest(frozen['context']) != frozen['context_sha256']:
+                    raise ValueError('Frozen deterministic command context changed')
+                result = validate_chat_result(frozen['context']['command_result'])
+                history = replace(record.history, status="completed", stop=None)
+                outcome = {"status": "ANSWERED", "reasons": [], "result": result,
+                           "checkout": None}
+            elif request["action"] in ("chat_turn", "chat_snapshot"):
+                # E5 exports HEAD for new turns; H4.1 jobs retain their original checkout semantics.
                 from harness_local.core.engine.chat import chat_turn
                 from harness_local.storage.chat import ChatRepository
                 from harness_local.storage.prompts import PromptRepository
                 agents, _, evidence = self.ports_factory(context, versions)
                 if hasattr(agents, "bind_process_journal"):
                     agents.bind_process_journal(journal)
-                history, outcome = chat_turn(context, record.history, ChatRepository(self.repository).snapshot(claim.run_id),
-                                             agents, evidence, journal,
-                                             PromptRepository(self.repository.engine).catalog(context))
+                frozen = ChatRepository(self.repository).snapshot(claim.run_id)
+                catalog = PromptRepository(self.repository.engine).catalog(context)
+                if request['action'] == 'chat_snapshot':
+                    from harness_local.adapters.chat_snapshot import HeadSnapshot, snapshot_path
+                    destination = snapshot_path(self.repository, claim)
+                    journal._call(self.repository.effect, 'chat_snapshot_intent', {
+                        'head': frozen['context']['head'], 'format': 'head-export-1', 'path': str(destination)})
+                    reader = HeadSnapshot(context.root, executable=getattr(evidence, 'executable', 'git'))
+                    evidence = reader.export(frozen['context']['head'], destination)
+                    context = replace(context, root=destination)
+                history, outcome = chat_turn(context, record.history, frozen, agents, evidence, journal, catalog)
             elif request["action"] == "planning_turn":
                 # H6.5: turno de definición o de planificación de fase, de solo lectura y con petición congelada.
                 from harness_local.core.engine.definition import planning_turn

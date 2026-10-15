@@ -806,7 +806,7 @@ def managed_router(runtime: ManagedRuntime):
 
     from harness_local.api.schemas import (
         ChatConversationCreate, ChatConversationRead, ChatConversationSummaryRead, ChatMessageCreate,
-        ChatProposalAcceptCreate, ChatProposalDismissCreate,
+        ChatProposalAcceptCreate, ChatProposalDismissCreate, ChatCommandCreate, ChatCommandRead,
     )
 
     def conversation_read(conversation_id: str):
@@ -835,7 +835,7 @@ def managed_router(runtime: ManagedRuntime):
     def create_conversation(project_id: str, body: ChatConversationCreate):
         """Conversación separada del flujo de ejecución; no encola nada."""
         context = project(project_id).context
-        return conversation_read(call(runtime.chat.create, context, title=body.title, phase_id=body.phase_id))
+        return conversation_read(call(runtime.chat.create, context, title=body.title, phase_id=body.phase_id, task_run_id=body.task_run_id))
 
     @router.get("/conversations/{conversation_id}", response_model=ChatConversationRead,
                 operation_id="managed_conversation")
@@ -847,10 +847,19 @@ def managed_router(runtime: ManagedRuntime):
     def chat_message(conversation_id: str, body: ChatMessageCreate, idempotency_key: IdempotencyKey):
         """Turno nuevo de solo lectura: mensaje y contexto se congelan al encolar; sin sesión del proveedor."""
         item = registered_conversation(conversation_id)
+        from harness_local.adapters.chat_snapshot import HeadSnapshot
+        writer = call(runtime.config.commit_factory, item.context, frozen_versions(item)) if runtime.config.commit_factory else None
+        reader = HeadSnapshot(item.context.root, executable=getattr(writer, 'executable', 'git'))
         job = call(runtime.chat.submit_message, item.context, conversation_id, body.expected_version,
                    key=idempotency_key, versions=frozen_versions(item), text=body.text, documents=body.documents,
-                   run_ids=body.run_ids)
+                   run_ids=body.run_ids, reader=reader)
         return queued(job)
+
+    @router.post("/conversations/{conversation_id}/commands/preview", response_model=ChatCommandRead,
+                 operation_id="managed_chat_command_preview")
+    def chat_command_preview(conversation_id: str, body: ChatCommandCreate):
+        item = registered_conversation(conversation_id)
+        return call(runtime.chat.command_preview, item.context, conversation_id, body.expected_version, body.text)
 
     @router.post("/conversations/{conversation_id}/proposals/{proposal_id}/accept", response_model=ManagedJobRead,
                  status_code=202, operation_id="managed_chat_accept")

@@ -35,7 +35,7 @@ Actualizado: 2026-10-15.
 - Dependencias reales instaladas en `.venv` / `frontend/node_modules`, locks
   `uv.lock` / `frontend/package-lock.json`. Pins H0.2 usados conservados;
   backend de paquete `uv_build==0.12.19`. Comandos comprobados en README/AGENTS.
-- Casos de producto en `tests/product/`: 1090 pytest y 121 subtests (H6.2 E4; ver su sección).
+- Casos de producto en `tests/product/`: 1109 pytest y 121 subtests (H6.2 E5; ver su sección).
   La comprobación ligera anterior conserva sus 12 checks sin dependencias.
 - H1.1 completado: [importación legacy y verificaciones](discovery/H1.1_IMPORT.md),
   [alcance original](discovery/H1.1_SCOPE.md). Lector local explícito de
@@ -2745,6 +2745,28 @@ tarea propuesta: UI H6.2, sin iniciar; será una tarea aparte.
 - Límites: un proyecto `typescript-web` recién creado no tiene `package.json` y el ejecutor no puede crearlo (ruta
   protegida), así que su preparación real fallaría; la conversación de planificación de una fase ya transicionada sigue
   admitiendo mensajes en la UI (el servidor los rechaza); borrador local por pestaña.
+
+## H6.2 E5 — Chat global completado offline (2026-10-15, D083)
+
+- [Entrega, verificación y límites](discovery/H6.2_E5_CHAT.md). Preguntas nuevas sobre HEAD congelado,
+  exportado sin worktree, con evidencia antes/después, propietario/lease y recuperación propia, sin lock del checkout.
+  El supervisor atiende escritor y chat en dos carriles. Los jobs antiguos conservan D035.
+- Comandos `/estado`, `/tests`, `/siguiente`, `/lote`, `/check`, `/cerrar`, `/exportar`, `/abrir-fase` y
+  `/tarea <texto>` deterministas, sin interpretación por modelo. Paneles existentes con sus CAS/confirmaciones;
+  `/tarea` propone sin agente y aceptar crea una tarea normal. Recargas sin efectos duplicados.
+- Varias conversaciones con contexto de fase o run de tarea; fase inferida cuando procede. Migración
+  `0017_chat_context`, API/OpenAPI/tipos actualizados; sin codec ni dependencias nuevas. Codex omite la comprobación
+  de repositorio solo para la exportación, conservando sandbox de lectura y controles de memoria.
+- Verificación dirigida: 17 casos nuevos de backend y 2 rutas; 35 pruebas de chat/rutas, 60 Node, 12 checks estándar,
+  `tsc`, build y migraciones sin deriva. Batería completa final: **1109 pytest + 121 subtests correctos** (759 s),
+  con el aviso preexistente de deprecación httpx/Starlette.
+  Primera batería: 1106 correctas, 121 subtests y un fallo de lease tras salto de reloj de 87 minutos durante un
+  comando de 1,37 s; módulo H4.3 repetido, 16/16 correctas.
+- QA Chrome con demo sintética: dos conversaciones, contexto de tarea, propuesta determinista → tarea → commit,
+  pregunta sobre HEAD congelado, comandos de consulta/preview, check → READY → cierre. Claro, oscuro y 386 px sin
+  desbordamiento, recargas sin duplicar los dos turnos ni la tarea; snapshots vacíos y cero locks al terminar.
+- Límites: solo archivos regulares de HEAD (sin cambios locales), tamaño acotado y permisos cooperativos; no se
+  certifica aislamiento OS ni CLI real. Ningún proveedor consumido. Próxima entrega E6, sin iniciar.
 
 ## Coordinación
 

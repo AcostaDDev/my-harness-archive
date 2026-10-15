@@ -188,6 +188,9 @@ def argv_for(config, context, request):
             # the feature gate and command history. Ephemeral alone is not enough.
             "-c", 'features.memories=false', "-c", 'memories.generate_memories=false',
             "-c", 'memories.use_memories=false', "-c", 'history.persistence="none"',
+            # E5: only exported chat trees lack a Git repository. Existing roles/turns keep argv.
+            *(("--skip-git-repo-check",) if request.role == "chat"
+              and json.loads(request.context_json).get("root", str(context.root)) != str(context.root) else ()),
             "--cd", str(context.root), "-")
     if access == "read":
         tools = allowed = READ_TOOLS

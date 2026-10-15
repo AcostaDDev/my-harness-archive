@@ -12,7 +12,7 @@ import math
 from pathlib import Path
 from uuid import uuid4
 
-from sqlalchemy import select, text
+from sqlalchemy import select, text, func, or_
 from sqlalchemy.orm import Session
 
 from harness_local.core.engine.commit import (
@@ -82,6 +82,10 @@ def _job(row: Job) -> JobRecord:
 def _nonempty(value: str, name: str) -> None:
     if not isinstance(value, str) or not value.strip():
         raise ValueError(f"Explicit {name} required")
+
+
+def independent_chat(job):
+    return json.loads(job.request_json).get('action') in ('chat_snapshot', 'chat_command')
 
 
 def _operation_module(run):
@@ -189,7 +193,7 @@ class SQLiteManagedRepository:
             if self._live_commit(session, run.id, ("COMMITTED",)) is not None:
                 run.status = "COMMITTED"
             run.stage = "mode_guard"
-            session.delete(session.get(Lock, run.root))
+            self._release(session, job, run)
             self._event(session, run, "job_refused", {"job_id": job.id, "diagnostic": diagnostic})
             if run.purpose != "task":
                 _operation_module(run).abort(self, session, run, "REFUSED", diagnostic)
@@ -322,13 +326,16 @@ class SQLiteManagedRepository:
             return [{"id": row.id, "sequence": row.sequence, "kind": row.kind,
                      "recorded_at": row.recorded_at, "payload": row.payload} for row in rows]
 
-    def claim(self, *, lease_seconds=30) -> JobRecord | None:
+    def claim(self, *, lease_seconds=30, lane=None) -> JobRecord | None:
         _lease(lease_seconds)
         with self._write() as session:
             # FIFO de trabajos elegibles: otro checkout puede avanzar mientras uno está bloqueado.
-            job = session.scalar(select(Job).join(Run, Run.id == Job.run_id)
-                                 .where(Job.status == "QUEUED", ~Run.root.in_(select(Lock.root)))
-                                 .order_by(Job.id).limit(1))
+            independent = func.json_extract(Job.request_json, '$.action').in_(['chat_snapshot', 'chat_command'])
+            query = select(Job).join(Run, Run.id == Job.run_id).where(
+                Job.status == "QUEUED", or_(independent, ~Run.root.in_(select(Lock.root))))
+            if lane is not None:
+                query = query.where(independent if lane == 'chat' else ~independent)
+            job = session.scalar(query.order_by(Job.id).limit(1))
             if job is None:
                 return None
             run = session.get(Run, job.run_id)
@@ -336,7 +343,8 @@ class SQLiteManagedRepository:
             job.status, job.owner_token = "ACTIVE", str(uuid4())
             job.heartbeat_at = now
             job.lease_until = (datetime.fromisoformat(now) + timedelta(seconds=lease_seconds)).isoformat(timespec="microseconds")
-            session.add(Lock(root=run.root, job_id=job.id))
+            if not independent_chat(job):
+                session.add(Lock(root=run.root, job_id=job.id))
             run.status, run.stage = "ACTIVE", json.loads(job.request_json)["action"]
             self._event(session, run, "job_claimed", {"job_id": job.id, "owner_token": job.owner_token})
             return _job(job)
@@ -348,9 +356,16 @@ class SQLiteManagedRepository:
             raise OwnershipLost("Job lease/ownership lost; reconciliation required")
         run = session.get(Run, job.run_id)
         lock = session.get(Lock, run.root)
-        if lock is None or lock.job_id != job.id:
+        if not independent_chat(job) and (lock is None or lock.job_id != job.id):
             raise OwnershipLost("Checkout writer lock lost")
         return job, run
+
+    def _release(self, session, job, run):
+        if independent_chat(job):
+            from harness_local.adapters.chat_snapshot import cleanup
+            cleanup(self, job)
+        else:
+            session.delete(session.get(Lock, run.root))
 
     def heartbeat(self, claim: JobRecord, *, lease_seconds=30) -> None:
         _lease(lease_seconds)
@@ -461,7 +476,7 @@ class SQLiteManagedRepository:
             if outcome is not None:
                 _operation_module(run).settle(self, session, run, outcome)
             job.status, job.finished_at = "DONE", self._now()
-            session.delete(session.get(Lock, run.root))
+            self._release(session, job, run)
             self._event(session, run, "job_finished", {"job_id": job.id, "history_status": history.status})
 
     def quarantine(self, claim: JobRecord, reason: str) -> None:
@@ -514,7 +529,7 @@ class SQLiteManagedRepository:
             self._history(session, run, history)
             run.status = "COMMITTED" if self._live_commit(session, run.id, ("COMMITTED",)) else "INTERRUPTED"
             job.status, job.finished_at, job.diagnostic = "INTERRUPTED", self._now(), reason
-            session.delete(session.get(Lock, run.root))
+            self._release(session, job, run)
             self._event(session, run, "writer_stopped_confirmed", {"job_id": job.id, "owner_token": owner_token, "reason": reason})
             if run.purpose != "task":
                 _operation_module(run).abort(self, session, run, "INTERRUPTED", reason)

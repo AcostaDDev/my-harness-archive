@@ -3,8 +3,9 @@
 La conversación vive separada del flujo de ejecución. Cada mensaje congela, en la transacción que
 encola su turno, el mensaje y el contexto explícito: proyecto, fase, documentos (contenido acotado
 con hash) y evidencias de runs seleccionadas, más los turnos anteriores. El turno es un run
-`chat` con job bajo el lock del checkout: reutiliza supervisor, guardia de modo, cuarentena y
-persistencia de intentos. Una caída deja el turno con resultado desconocido y nunca se reintenta.
+`chat` con job `chat_snapshot` sobre HEAD, sin lock del checkout (E5). Reutiliza supervisor,
+guardia de modo, cuarentena y persistencia de intentos. Los jobs antiguos `chat_turn` conservan
+el lock. Una caída deja el turno con resultado desconocido y nunca se reintenta.
 
 Las propuestas no ejecutan nada. Aceptar una exige confirmación explícita, la versión observada y
 el hash exacto mostrado, y encola una tarea normal (planificador, ejecutor, revisión y commit)
@@ -19,6 +20,8 @@ from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from harness_local.core.engine.chat import TASK_ID, digest, task_text
+from harness_local.core.engine.chat_commands import parse, proposal as command_proposal
+from harness_local.adapters.chat_snapshot import HeadSnapshot
 from harness_local.core.engine.contracts import context_snapshot, freeze
 from harness_local.core.engine.serialization import load_history
 from harness_local.storage.managed import Conflict, _job
@@ -157,7 +160,7 @@ class ChatRepository:
                 phase = session.get(Phase, row.phase_id) if row.phase_id else None
                 turns = session.scalar(select(func.count()).select_from(Turn).where(Turn.conversation_id == row.id))
                 result.append({'id': row.id, 'title': row.title, 'phase_id': row.phase_id,
-                               'phase_code': phase.code if phase else None, 'turns': turns, 'version': row.version,
+                               'phase_code': phase.code if phase else None, 'task_run_id': row.task_run_id, 'turns': turns, 'version': row.version,
                                'created_at': row.created_at, 'updated_at': row.updated_at})
             return result
 
@@ -180,7 +183,8 @@ class ChatRepository:
                                   for item in context['documents']],
                     'run_ids': [item['run_id'] for item in context['runs']],
                     'phase_code': context['phase']['code'] if context['phase'] else None,
-                    'previous_turns': len(context['previous_turns']),
+                    'previous_turns': len(context['previous_turns']), 'head': context.get('head'),
+                    'command': context.get('command'),
                     'context_sha256': turn.request['context_sha256'], 'request_sha256': turn.request_sha256,
                     'result': turn.result, 'actor': turn.actor, 'created_at': turn.created_at,
                     'finished_at': turn.finished_at})
@@ -197,7 +201,7 @@ class ChatRepository:
                     'decision': item.decision, 'version': item.version, 'created_at': item.created_at,
                     'actions': ['accept', 'dismiss'] if item.status == 'PROPOSED' else []})
             pending = any(turn.status == 'QUEUED' for turn in turns)
-            return {'id': row.id, 'root': row.root, 'title': row.title,
+            return {'id': row.id, 'root': row.root, 'title': row.title, 'task_run_id': row.task_run_id,
                     'phase': None if phase is None else {'id': phase.id, 'code': phase.code, 'status': phase.status},
                     'actor': row.actor, 'version': row.version, 'created_at': row.created_at,
                     'updated_at': row.updated_at, 'turns': turn_views, 'proposals': proposal_views,
@@ -215,7 +219,7 @@ class ChatRepository:
 
     # --- conversación y turnos ---------------------------------------------------------
 
-    def create(self, context, *, title, phase_id=None):
+    def create(self, context, *, title, phase_id=None, task_run_id=None):
         if not isinstance(title, str) or not title.strip() or len(title) > 200:
             raise ValueError('Conversation title must contain 1–200 characters')
         with self.managed._write() as session:
@@ -223,25 +227,44 @@ class ChatRepository:
                 phase = session.get(Phase, phase_id)
                 if phase is None or phase.root != str(context.root):
                     raise LookupError('Unknown phase of this checkout')
+            if task_run_id is not None:
+                task = session.get(Run, task_run_id)
+                if task is None or task.root != str(context.root) or task.purpose != 'task':
+                    raise LookupError('Unknown task run of this checkout')
+                if phase_id and phase.code != task.phase_id:
+                    raise ValueError('Task context must belong to the selected phase')
+                if phase_id is None:
+                    phase_id = session.scalar(select(Phase.id).where(
+                        Phase.root == str(context.root), Phase.code == task.phase_id))
             now = self.managed._now()
             row = Conversation(id=str(uuid4()), root=str(context.root), title=title.strip(), phase_id=phase_id,
-                               actor=actor(), version=0, created_at=now, updated_at=now)
+                               actor=actor(), task_run_id=task_run_id, version=0, created_at=now, updated_at=now)
             session.add(row)
             return row.id
 
-    def submit_message(self, context, conversation_id, expected, *, key, versions, text, documents=None, run_ids=None):
+    def submit_message(self, context, conversation_id, expected, *, key, versions, text, documents=None, run_ids=None, reader=None):
         """Congela mensaje y contexto explícito en la transacción que encola el turno."""
         if not isinstance(text, str) or not text.strip() or len(text) > MAX_MESSAGE:
             raise ValueError(f'Chat message must contain 1–{MAX_MESSAGE} characters')
+        command = parse(text)
+        if command and command['name'] != 'tarea':
+            raise ValueError('Use the deterministic command preview; no model was invoked')
         run_ids = _distinct([] if run_ids is None else run_ids, 'runs', MAX_RUNS)
-        request = freeze({'action': 'chat_turn', 'conversation_id': conversation_id, 'expected_version': expected,
+        request = freeze({'action': 'chat_command' if command else 'chat_snapshot', 'conversation_id': conversation_id, 'expected_version': expected,
                           'text': text, 'documents': documents, 'run_ids': run_ids})
         with Session(self.managed.engine) as session:
+            existing = self.managed._existing(session, key, request)
+            if existing:
+                return _job(existing)
             row = self._conversation(session, conversation_id, context=context)
+            if row.task_run_id and row.task_run_id not in run_ids:
+                run_ids = _distinct([row.task_run_id, *run_ids], 'runs', MAX_RUNS)
             phase = session.get(Phase, row.phase_id) if row.phase_id else None
             selected = documents if documents is not None else (
                 list(phase.definition['documents']) if phase else [context.state_file, context.next_steps_file])
-        observed = read_documents(context, _distinct(selected, 'documents', MAX_DOCUMENTS))
+        reader = reader or HeadSnapshot(context.root)
+        head = None if command else reader.head()
+        observed = [] if command else reader.documents(context, head, _distinct(selected, 'documents', MAX_DOCUMENTS))
         assessment = self.managed.guard.assess(context.root)
         with self.managed._write() as session:
             existing = self.managed._existing(session, key, request)
@@ -268,7 +291,9 @@ class ChatRepository:
                       'conversation': {'id': conversation.id, 'title': conversation.title, 'turn': number},
                       'phase': None if phase is None else _phase_context(session, phase),
                       'documents': observed, 'runs': [_run_evidence(session, conversation.root, r) for r in run_ids],
-                      'previous_turns': history}
+                      'previous_turns': history, 'head': head, 'snapshot_format': 'head-export-1',
+                      'command': command,
+                      **({'command_result': command_proposal(command['argument'])} if command else {})}
             job = self.managed._queue_new_run(session, assessment, context, versions,
                                               f'CHAT-{conversation.id[:8]}-{number}', phase.code if phase else 'CHAT',
                                               key, request, purpose='chat')
@@ -279,6 +304,28 @@ class ChatRepository:
                              result=None, actor=actor(), created_at=self.managed._now()))
             _touch(self.managed, conversation)
             return job
+
+    def command_preview(self, context, conversation_id, expected, text):
+        command = parse(text)
+        if command is None:
+            raise ValueError('Expected a slash command')
+        with Session(self.managed.engine) as session:
+            row = self._conversation(session, conversation_id, expected, context)
+            phase = session.get(Phase, row.phase_id) if row.phase_id else None
+            if phase is None:
+                phase = session.scalar(select(Phase).where(Phase.root == row.root)
+                                       .order_by(Phase.created_at.desc()).limit(1))
+            run = session.get(Run, row.task_run_id) if row.task_run_id else None
+            if run is None:
+                query = select(Run).where(Run.root == row.root, Run.purpose == 'task')
+                if phase:
+                    query = query.where(Run.phase_id == phase.code)
+                run = session.scalar(query.order_by(Run.created_at.desc()).limit(1))
+            result = {**command, 'conversation_version': row.version,
+                      'phase_code': phase.code if phase else None,
+                      'phase_version': phase.version if phase else None,
+                      'run_id': run.id if run else None, 'run_version': run.version if run else None}
+            return {**result, 'preview_sha256': digest(result)}
 
     # --- propuestas ------------------------------------------------------------------
 

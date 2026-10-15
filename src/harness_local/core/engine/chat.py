@@ -95,8 +95,13 @@ def chat_turn(context, history: RunHistory, snapshot: dict, agents, evidence, jo
     observed = {"base_revision": before.base_revision, "fingerprint": before.fingerprint}
     try:
         catalog_json = dump_catalog(catalog)
+        message = snapshot['message']
+        if snapshot['context'].get('head'):
+            message += ("\nThis turn inspects an exported, read-only tree of commit " + snapshot['context']['head']
+                        + ". The current directory is the snapshot; project.root identifies its source only. "
+                        "Do not read the live source checkout. Uncommitted changes are not part of this snapshot.")
         prompt, prompt_snapshot = render_attempt(catalog, "chat-turn", {
-            "CONTEXT_JSON": freeze(snapshot["context"]), "MESSAGE": snapshot["message"]}, context)
+            "CONTEXT_JSON": freeze(snapshot["context"]), "MESSAGE": message}, context)
     except (ValueError, KeyError, TypeError) as exc:
         return done(stop_history(history, "prompts", str(exc)), "FAILED", [str(exc)], checkout={"before": observed})
     history = replace(history, prompt_catalog_json=catalog_json)

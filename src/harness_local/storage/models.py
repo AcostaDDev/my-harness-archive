@@ -354,6 +354,7 @@ class ChatConversationRow(Base):
     root: Mapped[str] = mapped_column(String)
     title: Mapped[str] = mapped_column(String(200))
     phase_id: Mapped[str | None] = mapped_column(ForeignKey('managed_phases.id'), nullable=True)
+    task_run_id: Mapped[str | None] = mapped_column(ForeignKey('managed_runs.id'), nullable=True)
     actor: Mapped[dict] = mapped_column(JSON)
     version: Mapped[int] = mapped_column(Integer)
     created_at: Mapped[str] = mapped_column(String(40))

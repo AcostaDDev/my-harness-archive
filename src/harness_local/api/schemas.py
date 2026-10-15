@@ -938,6 +938,7 @@ ChatTurnStatus = Literal['QUEUED', 'ANSWERED', 'FAILED', 'UNKNOWN', 'REFUSED']
 
 class ChatConversationCreate(BaseModel):
     model_config = ConfigDict(extra='forbid', strict=True)
+    task_run_id: str | None = Field(default=None, max_length=36)
     title: str = Field(min_length=1, max_length=200)
     phase_id: str | None = Field(default=None, max_length=36,
                                  description='Fase gestionada de este proyecto cuyo contexto se ofrece por defecto.')
@@ -948,6 +949,7 @@ class ChatConversationSummaryRead(BaseModel):
     title: str
     phase_id: str | None
     phase_code: str | None
+    task_run_id: str | None
     turns: int
     version: int
     created_at: str
@@ -971,6 +973,8 @@ class ChatTurnRead(BaseModel):
     documents: list[ChatDocumentRead]
     run_ids: list[str]
     phase_code: str | None
+    head: str | None
+    command: dict[str, str] | None
     previous_turns: int
     context_sha256: str
     request_sha256: str
@@ -1015,6 +1019,7 @@ class ChatConversationRead(BaseModel):
     root: str
     title: str
     phase: ChatPhaseRead | None
+    task_run_id: str | None
     actor: dict[str, Any]
     version: int
     created_at: str
@@ -1047,6 +1052,23 @@ class ChatProposalDismissCreate(BaseModel):
     model_config = ConfigDict(extra='forbid', strict=True)
     expected_version: int = Field(ge=0)
     reason: str = Field(min_length=1, max_length=2000)
+
+
+class ChatCommandCreate(BaseModel):
+    model_config = ConfigDict(extra='forbid', strict=True)
+    expected_version: int = Field(ge=0)
+    text: str = Field(min_length=1, max_length=20_000)
+
+
+class ChatCommandRead(BaseModel):
+    name: Literal['estado', 'tests', 'siguiente', 'lote', 'check', 'cerrar', 'exportar', 'abrir-fase', 'tarea']
+    argument: str
+    conversation_version: int
+    phase_code: str | None
+    phase_version: int | None
+    run_id: str | None
+    run_version: int | None
+    preview_sha256: str
 
 
 # --- H4.2: bootstrap guiado ------------------------------------------------------------------

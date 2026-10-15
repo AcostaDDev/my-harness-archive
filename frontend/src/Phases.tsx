@@ -39,7 +39,7 @@ export function PhaseCreate() {
 }
 
 /** Operaciones de una fase sobre la lectura que muestra la página; cada confirmación vale para esa versión. */
-export function PhaseDetail({ phase, stale }: { phase: S["PhaseRead"]; stale: boolean }) {
+export function PhaseDetail({ phase, stale, section }: { phase: S["PhaseRead"]; stale: boolean; section?: string }) {
   const { busy, operate, send } = useWorkspace();
   const id = phase.id;
   const [reason, setReason] = useState("");
@@ -85,7 +85,7 @@ export function PhaseDetail({ phase, stale }: { phase: S["PhaseRead"]; stale: bo
   const batch = phase.authorizations.find(a => a.kind === "batch" && a.effective_status === "ACTIVE");
   const criteria = phase.definition.exit_criteria as string[];
   return <>
-    <section className="panel" aria-labelledby="phase-definition">
+    {(!section || section === "phase-definition") && <section className="panel" aria-labelledby="phase-definition">
       <h2 id="phase-definition">Definición</h2>
       <Fields items={[
         ["Versión de la definición", `${phase.definition_number}`],
@@ -97,9 +97,9 @@ export function PhaseDetail({ phase, stale }: { phase: S["PhaseRead"]; stale: bo
       <ul className="checklist">{criteria.map(c => <li key={c}>{c}</li>)}</ul>
       <Evidence title="Definición congelada y commits de tareas aceptadas" value={{ definition: phase.definition, tasks: phase.tasks }} />
       <Evidence title={`Versiones de la definición (${phase.definitions.length})`} value={phase.definitions} />
-    </section>
+    </section>}
 
-    <section className="panel" aria-labelledby="phase-questions">
+    {(!section || section === "phase-questions") && <section className="panel" aria-labelledby="phase-questions">
       <h2 id="phase-questions">Preguntas bloqueantes <span className="count">{open.length} pendientes</span></h2>
       {!phase.questions.length && <p className="hint">Sin preguntas registradas.</p>}
       {phase.questions.map(q => <div className={q.status === "OPEN" ? "entry entry-open" : "entry"} key={q.id}>
@@ -115,9 +115,9 @@ export function PhaseDetail({ phase, stale }: { phase: S["PhaseRead"]; stale: bo
         await managed(`/phases/${id}/questions`, { expected_version: v, text: question } satisfies S["PhaseQuestionCreate"]); setQuestion("");
       }); }}><div className="form-row"><label>Nueva pregunta bloqueante<input value={question} maxLength={4000} onChange={e => setQuestion(e.target.value)} /></label>
         <button className="button-quiet" disabled={!can("question") || !question.trim()}>Registrar pregunta</button></div></form>
-    </section>
+    </section>}
 
-    <section className="panel" aria-labelledby="phase-documents">
+    {(!section || section === "phase-documents") && <section className="panel" aria-labelledby="phase-documents">
       <h2 id="phase-documents">Documentos</h2>
       {phase.documents.drift === null ? <p className="state state-error">No se pudieron leer los documentos actuales.</p>
         : phase.documents.drift.length ? <p className="state state-attention">Cambiados desde la base adoptada: {phase.documents.drift.map(d => <code key={d} className="chip">{d}</code>)}</p>
@@ -153,9 +153,9 @@ export function PhaseDetail({ phase, stale }: { phase: S["PhaseRead"]; stale: bo
             } satisfies S["DocumentExportCreate"])))}>Confirmar exportación y commit</button>
         </>}
       </div>
-    </section>
+    </section>}
 
-    <section className="panel" aria-labelledby="phase-check">
+    {(!section || section === "phase-check") && <section className="panel" aria-labelledby="phase-check">
       <h2 id="phase-check">Comprobación y cierre</h2>
       <p className="hint">Las puertas deterministas (preguntas, documentos, árbol limpio, tareas alcanzables y validación base) se evalúan antes de la evaluación del agente. Comprobar no cierra la fase.</p>
       <button disabled={!can("check")} onClick={() => void operate(() => send(jobRequest(`/phases/${id}/actions`, { action: "check", expected_version: v })))}>Comprobar fase</button>
@@ -172,9 +172,9 @@ export function PhaseDetail({ phase, stale }: { phase: S["PhaseRead"]; stale: bo
           action: "close", expected_version: v, binding_sha256: phase.ready!.binding_sha256, reason: closeReason, ttl_seconds: 3600, confirmed: true,
         })))}>Cerrar fase</button>
       </div>
-    </section>
+    </section>}
 
-    <section className="panel" aria-labelledby="phase-batch">
+    {(!section || section === "phase-batch") && <section className="panel" aria-labelledby="phase-batch">
       <h2 id="phase-batch">Ejecución por lote</h2>
       <p className="hint">Manual: encola las tareas seleccionadas de una en una cuando lo pides, sin confirmar commits. Desatendido: el supervisor encadena tarea, aceptación, commit del contenido exacto y siguiente tarea, y se detiene en el primer bloqueo, pregunta, caducidad, revocación o evidencia invalidada. Ninguno comprueba ni cierra la fase.</p>
       <div className="decision">
@@ -198,9 +198,9 @@ export function PhaseDetail({ phase, stale }: { phase: S["PhaseRead"]; stale: bo
             setBatchTasks([]);
           })}>Autorizar lote</button></>}
       </div>
-    </section>
+    </section>}
 
-    <details className="panel panel-collapsible">
+    {!section && <details className="panel panel-collapsible">
       <summary><h2>Enmendar o abandonar</h2></summary>
       <div className="decision">
         <h3>Enmendar definición</h3>
@@ -227,15 +227,15 @@ export function PhaseDetail({ phase, stale }: { phase: S["PhaseRead"]; stale: bo
           await managed(`/phases/${id}/abandon`, { expected_version: v, reason: abandonReason, confirmed: true } satisfies S["PhaseAbandonCreate"]);
         })}>Abandonar fase</button>
       </div>
-    </details>
+    </details>}
 
-    <section className="panel" aria-labelledby="phase-history">
+    {(!section || section === "phase-history") && <section className="panel" aria-labelledby="phase-history">
       <h2 id="phase-history">Historial</h2>
       {!phase.operations.length && <p className="hint">Sin operaciones registradas.</p>}
       {phase.operations.map(o => <div className="entry" key={o.id}><p><strong>{o.kind}</strong> {o.status}</p>
         {Array.isArray(o.result?.reasons) && (o.result!.reasons as string[]).length > 0 && <p>{(o.result!.reasons as string[]).join("; ")}</p>}
         <Evidence title="Solicitud, resultado y evidencia" value={o} /></div>)}
       <Evidence title="Autorizaciones de lote y de cierre" value={phase.authorizations} />
-    </section>
+    </section>}
   </>;
 }

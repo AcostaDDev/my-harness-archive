@@ -2484,3 +2484,25 @@ Decisiones tomadas con criterio dentro de D075/D076:
   bootstrap lleva a `/setup`.
 
 Sin migración, codec ni dependencias. Siguiente: E5 (chat global), sin iniciar.
+
+## D083 — H6.2 E5: chat sobre HEAD, carril independiente y comandos deterministas
+
+Estado: implementado y verificado offline el 2026-10-15. [Entrega, verificación y límites](discovery/H6.2_E5_CHAT.md).
+
+Cambio deliberado de D035 previsto por D073/D076:
+
+- Las preguntas nuevas congelan HEAD y consultan un árbol exportado de solo lectura, con evidencia antes/después,
+  sin lock del checkout. El servicio tiene un carril escritor y uno de chat; las propuestas aceptadas siguen creando
+  tareas normales. Jobs `chat_turn` anteriores conservan sus reglas; nuevos `chat_snapshot` identifican la variante.
+- Exportación acotada sin `.git`, symlinks ni submódulos, en carpeta privada junto a SQLite. Intención persistida antes
+  de crearla, limpieza al finalizar o al confirmar procesos detenidos tras caída; nunca se registra un worktree.
+  Los permisos son cooperativos, no aislamiento OS. Sin HEAD, objetos ausentes o exceso de tamaño se falla sin fallback.
+- Los comandos slash usan una gramática cerrada y un preview sin efectos. La UI reutiliza los controles de fase y
+  sus confirmaciones/CAS; `/tarea` genera una propuesta literal sin agente y requiere la aceptación normal por hash
+  y versión. Comandos inválidos nunca se envían al modelo. `/check` solo usa revisor tras pulsar el control normal.
+- Contexto opcional de tarea por run (evidencia observada, no conversación reanudada), compatible con fase;
+  `0017_chat_context` añade una referencia nullable. No cambia el codec ni se añaden dependencias.
+- Codex recibe `--skip-git-repo-check` solo al consultar una exportación; opción acreditada por fuente del pin y
+  prueba de argv, conservando lectura y memoria de `cli-9`. No se ejecutaron proveedores reales.
+
+Siguiente: E6 (estadísticas y tests), sin iniciar. Los consentimientos previos siguen agotados.

@@ -8762,6 +8762,103 @@
         }
       }
     },
+    "/api/managed/conversations/{conversation_id}/commands/preview": {
+      "post": {
+        "summary": "Chat Command Preview",
+        "operationId": "managed_chat_command_preview",
+        "parameters": [
+          {
+            "name": "conversation_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Conversation Id"
+            }
+          },
+          {
+            "name": "x-harness-local",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Obligatoria con valor 1 en mutaciones (protección CSRF).",
+              "title": "X-Harness-Local"
+            },
+            "description": "Obligatoria con valor 1 en mutaciones (protección CSRF)."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChatCommandCreate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ChatCommandRead"
+                }
+              }
+            }
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          }
+        }
+      }
+    },
     "/api/managed/conversations/{conversation_id}/proposals/{proposal_id}/accept": {
       "post": {
         "summary": "Accept Proposal",
@@ -11817,8 +11914,129 @@
         ],
         "title": "BootstrapStatusRead"
       },
+      "ChatCommandCreate": {
+        "properties": {
+          "expected_version": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Expected Version"
+          },
+          "text": {
+            "type": "string",
+            "maxLength": 20000,
+            "minLength": 1,
+            "title": "Text"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "expected_version",
+          "text"
+        ],
+        "title": "ChatCommandCreate"
+      },
+      "ChatCommandRead": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "enum": [
+              "estado",
+              "tests",
+              "siguiente",
+              "lote",
+              "check",
+              "cerrar",
+              "exportar",
+              "abrir-fase",
+              "tarea"
+            ],
+            "title": "Name"
+          },
+          "argument": {
+            "type": "string",
+            "title": "Argument"
+          },
+          "conversation_version": {
+            "type": "integer",
+            "title": "Conversation Version"
+          },
+          "phase_code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Phase Code"
+          },
+          "phase_version": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Phase Version"
+          },
+          "run_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Run Id"
+          },
+          "run_version": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Run Version"
+          },
+          "preview_sha256": {
+            "type": "string",
+            "title": "Preview Sha256"
+          }
+        },
+        "type": "object",
+        "required": [
+          "name",
+          "argument",
+          "conversation_version",
+          "phase_code",
+          "phase_version",
+          "run_id",
+          "run_version",
+          "preview_sha256"
+        ],
+        "title": "ChatCommandRead"
+      },
       "ChatConversationCreate": {
         "properties": {
+          "task_run_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 36
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Task Run Id"
+          },
           "title": {
             "type": "string",
             "maxLength": 200,
@@ -11881,6 +12099,17 @@
               }
             ]
           },
+          "task_run_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Task Run Id"
+          },
           "actor": {
             "additionalProperties": true,
             "type": "object",
@@ -11928,6 +12157,7 @@
           "root",
           "title",
           "phase",
+          "task_run_id",
           "actor",
           "version",
           "created_at",
@@ -11970,6 +12200,17 @@
             ],
             "title": "Phase Code"
           },
+          "task_run_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Task Run Id"
+          },
           "turns": {
             "type": "integer",
             "title": "Turns"
@@ -11993,6 +12234,7 @@
           "title",
           "phase_id",
           "phase_code",
+          "task_run_id",
           "turns",
           "version",
           "created_at",
@@ -12376,6 +12618,31 @@
             ],
             "title": "Phase Code"
           },
+          "head": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Head"
+          },
+          "command": {
+            "anyOf": [
+              {
+                "additionalProperties": {
+                  "type": "string"
+                },
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Command"
+          },
           "previous_turns": {
             "type": "integer",
             "title": "Previous Turns"
@@ -12432,6 +12699,8 @@
           "documents",
           "run_ids",
           "phase_code",
+          "head",
+          "command",
           "previous_turns",
           "context_sha256",
           "request_sha256",

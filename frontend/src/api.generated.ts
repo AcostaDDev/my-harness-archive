@@ -1459,6 +1459,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/managed/conversations/{conversation_id}/commands/preview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Chat Command Preview */
+        post: operations["managed_chat_command_preview"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/managed/conversations/{conversation_id}/proposals/{proposal_id}/accept": {
         parameters: {
             query?: never;
@@ -2150,8 +2167,39 @@ export interface components {
             /** @description H6.5: bootstrap v2 desde la conversación de definición; `operation` queda null en proyectos v2. */
             definition_operation?: components["schemas"]["DefinitionOperationRead"] | null;
         };
+        /** ChatCommandCreate */
+        ChatCommandCreate: {
+            /** Expected Version */
+            expected_version: number;
+            /** Text */
+            text: string;
+        };
+        /** ChatCommandRead */
+        ChatCommandRead: {
+            /**
+             * Name
+             * @enum {string}
+             */
+            name: "estado" | "tests" | "siguiente" | "lote" | "check" | "cerrar" | "exportar" | "abrir-fase" | "tarea";
+            /** Argument */
+            argument: string;
+            /** Conversation Version */
+            conversation_version: number;
+            /** Phase Code */
+            phase_code: string | null;
+            /** Phase Version */
+            phase_version: number | null;
+            /** Run Id */
+            run_id: string | null;
+            /** Run Version */
+            run_version: number | null;
+            /** Preview Sha256 */
+            preview_sha256: string;
+        };
         /** ChatConversationCreate */
         ChatConversationCreate: {
+            /** Task Run Id */
+            task_run_id?: string | null;
             /** Title */
             title: string;
             /**
@@ -2171,6 +2219,8 @@ export interface components {
             /** Title */
             title: string;
             phase: components["schemas"]["ChatPhaseRead"] | null;
+            /** Task Run Id */
+            task_run_id: string | null;
             /** Actor */
             actor: {
                 [key: string]: unknown;
@@ -2198,6 +2248,8 @@ export interface components {
             phase_id: string | null;
             /** Phase Code */
             phase_code: string | null;
+            /** Task Run Id */
+            task_run_id: string | null;
             /** Turns */
             turns: number;
             /** Version */
@@ -2339,6 +2391,12 @@ export interface components {
             run_ids: string[];
             /** Phase Code */
             phase_code: string | null;
+            /** Head */
+            head: string | null;
+            /** Command */
+            command: {
+                [key: string]: string;
+            } | null;
             /** Previous Turns */
             previous_turns: number;
             /** Context Sha256 */
@@ -10612,6 +10670,71 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ManagedJobRead"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+        };
+    };
+    managed_chat_command_preview: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Obligatoria con valor 1 en mutaciones (protección CSRF). */
+                "x-harness-local"?: string | null;
+            };
+            path: {
+                conversation_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ChatCommandCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ChatCommandRead"];
                 };
             };
             /** @description Forbidden */

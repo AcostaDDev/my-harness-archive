@@ -3,8 +3,8 @@
 Sin configuración explícita no hay proyectos, puertos ni supervisor: la API
 gestionada solo lee. Los proyectos se registran en el servidor; el cliente HTTP
 los nombra por identificador y nunca aporta rutas, comandos ni selecciones.
-El supervisor es un único hilo del proceso Uvicorn que llama a
-`LocalSupervisor.run_once`; la cola, la exclusión y la recuperación siguen en
+El supervisor tiene un hilo escritor y uno de chat sobre instantáneas en el proceso Uvicorn,
+ambos con `LocalSupervisor.run_once`; la cola, la exclusión y la recuperación siguen en
 SQLite. Apagar el servicio no libera un job a medias: su lease vence y queda
 RECOVERY_REQUIRED hasta una confirmación explícita.
 """
@@ -134,27 +134,32 @@ def validate_projects(config: ManagedConfig) -> None:
 
 
 class SupervisorWorker:
-    """Un hilo, un job cada vez. Errores ya quedan en cuarentena por run_once; el bucle continúa."""
+    """Un job por carril (escritor/chat); errores quedan en cuarentena, sin reintento."""
 
     def __init__(self, supervisor: LocalSupervisor, poll_seconds: float):
         self.supervisor = supervisor
         self.poll_seconds = poll_seconds
         self.wake, self.stopping = Event(), Event()
         self.thread: Thread | None = None
+        self.chat_thread: Thread | None = None
         self.last_error: str | None = None
         self._lock = Lock()
 
     def start(self) -> None:
         self.thread = Thread(target=self._loop, name="managed-supervisor", daemon=True)
         self.thread.start()
+        self.chat_thread = Thread(target=self._loop, args=('chat',), name="managed-chat", daemon=True)
+        self.chat_thread.start()
 
     def notify(self) -> None:
         self.wake.set()
 
-    def _loop(self) -> None:
+    def _loop(self, lane='writer') -> None:
+        supervisor = LocalSupervisor(self.supervisor.repository, self.supervisor.ports_factory,
+            lease_seconds=self.supervisor.lease_seconds, commit_factory=self.supervisor.commit_factory, lane=lane)
         while not self.stopping.is_set():
             try:
-                claimed = self.supervisor.run_once()
+                claimed = supervisor.run_once()
             except Exception as exc:  # job en RECOVERY_REQUIRED o fallo local; nunca se reintenta solo
                 with self._lock:
                     self.last_error = f"{type(exc).__name__}: {exc}"
@@ -165,7 +170,7 @@ class SupervisorWorker:
                 self.wake.clear()
 
     def alive(self) -> bool:
-        return self.thread is not None and self.thread.is_alive()
+        return bool(self.thread and self.thread.is_alive() and self.chat_thread and self.chat_thread.is_alive())
 
     def stop(self, timeout: float) -> None:
         """Sin interrumpir el job en curso: si no termina a tiempo, su lease decidirá la recuperación."""
@@ -173,6 +178,8 @@ class SupervisorWorker:
         self.wake.set()
         if self.thread is not None:
             self.thread.join(timeout)
+        if self.chat_thread is not None:
+            self.chat_thread.join(timeout)
 
     def error(self) -> str | None:
         with self._lock:

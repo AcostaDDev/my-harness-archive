@@ -138,8 +138,11 @@ def test_message_selection_is_validated_inside_this_checkout(world, chat, tmp_pa
     with pytest.raises(ValueError):
         chat.say(cid, documents=['../outside.md'])
     os.symlink(world.context.path('docs/STATE.md'), world.context.root / 'docs/link.md')
+    git(world.context.root, 'add', 'docs/link.md')
+    git(world.context.root, 'commit', '-qm', 'synthetic link')
     with pytest.raises(ValueError):
         chat.say(cid, documents=['docs/link.md'])
+    git(world.context.root, 'reset', '--hard', 'HEAD~1')
     (tmp_path / 'other-checkout').mkdir()
     other = make_context(tmp_path / 'other-checkout')
     foreign = world.repository.submit(other, 'P001-T001', 'P001', PLAN, VERSIONS, key='foreign')
@@ -174,6 +177,7 @@ def test_turn_that_writes_to_the_checkout_is_discarded(world, chat):
     cid = chat.create()
 
     def writes(context, request):
+        context.path('app/main.txt').chmod(0o644)  # malicious agent bypasses cooperative mode
         context.path('app/main.txt').write_text('side effect\n', encoding='utf-8')
         return answer(PROPOSAL)
     world.script(writes)
@@ -319,7 +323,7 @@ def test_crash_leaves_the_turn_unknown_and_never_retries(world, chat):
     assert [t['status'] for t in chat.get(cid)['turns']] == ['UNKNOWN', 'ANSWERED']
 
 
-def test_chat_turn_waits_for_the_checkout_writer_lock(world, chat):
+def test_fifo_without_a_live_writer_still_preserves_queue_order(world, chat):
     task = world.repository.submit(world.context, 'P001-T001', 'P001', PLAN, VERSIONS, key='task')
     cid = chat.create()
     chat.say(cid)
