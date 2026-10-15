@@ -1510,7 +1510,7 @@ class AttemptMetricRead(BaseModel):
 
 MetricDimension = Literal['role', 'provider', 'requested_model', 'requested_effort', 'day', 'phase', 'task', 'status',
                           'purpose', 'root']
-MetricOrder = Literal['attempts', 'tokens']
+MetricOrder = Literal['attempts', 'tokens', 'key']
 
 
 class MetricGroupRead(ConsumptionRead):
@@ -1626,6 +1626,27 @@ class StopCountRead(BaseModel):
 class StopsRead(BaseModel):
     distinct: int
     items: list[StopCountRead]
+
+
+ValidationDimension = Literal['phase', 'task', 'root']
+
+
+class ValidationGroupRead(BaseModel):
+    key: str = Field(description='Fase, tarea o raíz. Los ciclos no guardan su hora: no hay agrupación por día.')
+    validations: int = Field(description='Ciclos de validación de tareas, incluidas las revalidaciones.')
+    passed: int = Field(description='Validaciones con todos los comandos correctos y sin fallos nuevos en JUnit.')
+    failed: int
+    commands_passed: int
+    commands_failed: int
+    cases: dict[str, int] | None = Field(description='JUnit: passed, failed, error, skipped; null sin reportes legibles.')
+    validations_with_cases: int
+
+
+class ValidationGroupsRead(BaseModel):
+    dimension: ValidationDimension
+    items: list[ValidationGroupRead]
+    offset: int
+    next_offset: int | None
 
 
 class MetricsSummaryRead(BaseModel):

@@ -7927,7 +7927,8 @@
             "schema": {
               "enum": [
                 "attempts",
-                "tokens"
+                "tokens",
+                "key"
               ],
               "type": "string",
               "default": "attempts",
@@ -8116,7 +8117,8 @@
             "schema": {
               "enum": [
                 "attempts",
-                "tokens"
+                "tokens",
+                "key"
               ],
               "type": "string",
               "default": "attempts",
@@ -8330,6 +8332,178 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Page_TaskMetricsRead_"
+                }
+              }
+            }
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          }
+        }
+      }
+    },
+    "/api/managed/metrics/validations": {
+      "get": {
+        "summary": "Metrics Validations",
+        "description": "H6.2 E6: evolución de los tests. Cada ciclo de validación de las tareas, OK/KO, por clave descendente.",
+        "operationId": "managed_metrics_validations",
+        "parameters": [
+          {
+            "name": "dimension",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "enum": [
+                "phase",
+                "task",
+                "root"
+              ],
+              "type": "string",
+              "default": "phase",
+              "title": "Dimension"
+            }
+          },
+          {
+            "name": "project_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 200
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Project Id"
+            }
+          },
+          {
+            "name": "phase",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 200
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Phase"
+            }
+          },
+          {
+            "name": "task",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 200
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Task"
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 9007199254740991,
+              "minimum": 0,
+              "default": 0,
+              "title": "Offset"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 100,
+              "minimum": 1,
+              "default": 30,
+              "title": "Limit"
+            }
+          },
+          {
+            "name": "x-harness-local",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Obligatoria con valor 1 en mutaciones (protección CSRF).",
+              "title": "X-Harness-Local"
+            },
+            "description": "Obligatoria con valor 1 en mutaciones (protección CSRF)."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationGroupsRead"
                 }
               }
             }
@@ -16021,7 +16195,8 @@
             "type": "string",
             "enum": [
               "attempts",
-              "tokens"
+              "tokens",
+              "key"
             ],
             "title": "Order"
           },
@@ -16406,7 +16581,8 @@
             "type": "string",
             "enum": [
               "attempts",
-              "tokens"
+              "tokens",
+              "key"
             ],
             "title": "Order"
           },
@@ -21325,6 +21501,111 @@
           "type"
         ],
         "title": "ValidationError"
+      },
+      "ValidationGroupRead": {
+        "properties": {
+          "key": {
+            "type": "string",
+            "title": "Key",
+            "description": "Fase, tarea o raíz. Los ciclos no guardan su hora: no hay agrupación por día."
+          },
+          "validations": {
+            "type": "integer",
+            "title": "Validations",
+            "description": "Ciclos de validación de tareas, incluidas las revalidaciones."
+          },
+          "passed": {
+            "type": "integer",
+            "title": "Passed",
+            "description": "Validaciones con todos los comandos correctos y sin fallos nuevos en JUnit."
+          },
+          "failed": {
+            "type": "integer",
+            "title": "Failed"
+          },
+          "commands_passed": {
+            "type": "integer",
+            "title": "Commands Passed"
+          },
+          "commands_failed": {
+            "type": "integer",
+            "title": "Commands Failed"
+          },
+          "cases": {
+            "anyOf": [
+              {
+                "additionalProperties": {
+                  "type": "integer"
+                },
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cases",
+            "description": "JUnit: passed, failed, error, skipped; null sin reportes legibles."
+          },
+          "validations_with_cases": {
+            "type": "integer",
+            "title": "Validations With Cases"
+          }
+        },
+        "type": "object",
+        "required": [
+          "key",
+          "validations",
+          "passed",
+          "failed",
+          "commands_passed",
+          "commands_failed",
+          "cases",
+          "validations_with_cases"
+        ],
+        "title": "ValidationGroupRead"
+      },
+      "ValidationGroupsRead": {
+        "properties": {
+          "dimension": {
+            "type": "string",
+            "enum": [
+              "phase",
+              "task",
+              "root"
+            ],
+            "title": "Dimension"
+          },
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationGroupRead"
+            },
+            "type": "array",
+            "title": "Items"
+          },
+          "offset": {
+            "type": "integer",
+            "title": "Offset"
+          },
+          "next_offset": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Next Offset"
+          }
+        },
+        "type": "object",
+        "required": [
+          "dimension",
+          "items",
+          "offset",
+          "next_offset"
+        ],
+        "title": "ValidationGroupsRead"
       },
       "ValidationRead": {
         "properties": {

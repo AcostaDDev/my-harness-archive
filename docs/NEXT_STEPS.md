@@ -1,31 +1,33 @@
-# Siguiente paso: H6.2 E6, estadísticas y tests (D076)
+# Siguiente paso: revisión de cierre de H6.2 (D076)
 
 Estado al 2026-10-15:
 
-- **H6.2 E5 implementada y verificada offline (D083).** [Entrega, verificación y límites](discovery/H6.2_E5_CHAT.md).
-  Preguntas sobre HEAD exportado, sin lock del checkout y con carril propio; recuperación sin worktrees huérfanos.
-  Comandos deterministas con los controles/confirmaciones existentes y conversaciones con contexto de fase o tarea.
-  QA sintética: propuesta → tarea → commit, pregunta sobre HEAD, check → READY → cierre; claro, oscuro y 386 px.
-- [Alcance de H6.2](discovery/H6.2_SCOPE.md): E1–E5 completadas; E6 sin iniciar.
-- Límites conocidos: 2 avisos *low* de KaTeX (dependencia de Mermaid) hasta poder fijar Mermaid 12 con dos semanas; un
-  proyecto `typescript-web` recién creado no tiene `package.json` y el ejecutor no puede crearlo (ruta protegida), así
-  que su preparación real fallaría. Esto último necesita una decisión aparte.
-- El chat consulta archivos regulares de HEAD, sin cambios locales; los permisos de la exportación no certifican
-  aislamiento OS. No se ha probado el nuevo recorrido con CLI reales.
+- **H6.2 E6 implementada y verificada offline (D084).** [Entrega, verificación y límites](discovery/H6.2_E6_STATS.md).
+  `/stats` y `/projects/:p/stats` sobre `/metrics/*`: resumen, consumo por fase/proyecto, día, rol, proveedor, modelo y
+  esfuerzo, favoritos por rol, calidad por tarea, evolución de tests OK/KO por fase (`/metrics/validations`), paradas e
+  intentos con procedencia. Métricas en la página de la tarea. Gráficos SVG propios, sin dependencias.
+  QA sintética con Chrome: claro, oscuro y 386 px.
+- [Alcance de H6.2](discovery/H6.2_SCOPE.md): **E1–E6 completadas**. Falta comprobar los criterios del hito en conjunto.
+- Límites conocidos: las validaciones no guardan su hora, así que la evolución de los tests es por fase y no por día;
+  2 avisos *low* de KaTeX (dependencia de Mermaid) hasta poder fijar Mermaid 12 con dos semanas; un proyecto
+  `typescript-web` recién creado no tiene `package.json` y el ejecutor no puede crearlo (ruta protegida), así que su
+  preparación real fallaría. Esto último necesita una decisión aparte.
+- Ningún recorrido de H6.2 se ha probado con CLI reales.
 
 ## Tarea concreta propuesta, no iniciada
 
-**H6.2 E6 — Estadísticas y tests** ([alcance §E6](discovery/H6.2_SCOPE.md#e6--estadísticas-y-tests)).
+**Revisión de cierre de H6.2** ([criterios del hito](discovery/H6.2_SCOPE.md#criterios-de-aceptación-del-hito)).
 
-1. `/stats` y `/projects/:p/stats` sobre `/metrics/*`: consumo por fase, día, rol, proveedor y modelo; favoritos por rol;
-   aceptación a la primera; revisiones; duraciones; paradas; tests OK/KO y su evolución.
-2. En la tarea: agentes, intentos, tokens (también de fallos), turnos y la última validación. Mostrar la procedencia,
-   nunca tratar null como cero y presentar el coste como «equivalente API».
-3. Gráficos sin dependencia nueva (SVG propio), salvo una decisión aparte.
+1. Recorrido sintético completo desde la UI, sin editar archivos a mano: alta → creación → primera tarea → revisión →
+   commit → cierre → transición con plan propuesto, y sus estadísticas.
+2. Cada URL por enlace directo y por recarga, en `scripts/dev` y desde el wheel instalado en un venv propio (D051).
+3. Repasar idempotencia y confirmaciones ligadas a hash y versión, carga por recurso y paginación, y los casos hostiles
+   de Markdown.
+4. Dictamen con lo cubierto, lo no cubierto y los hallazgos; corregir solo defectos acotados con prueba.
 
-Criterios: URLs directas y recarga en desarrollo y wheel; consultas por recurso y evidencia paginada; datos ausentes
-se distinguen de cero; QA sintética en claro, oscuro y estrecho. Mantener pytest, checks estándar, Node, `tsc`, build y
-`alembic check`. Actualizar STATE, NEXT_STEPS y DECISIONS al terminar. No iniciar otra entrega en la misma tarea.
+Criterios: dictamen escrito en `docs/discovery/`, pytest, checks estándar, Node, `tsc`, build y `alembic check` en verde;
+QA en claro, oscuro y estrecho. Actualizar STATE, NEXT_STEPS y DECISIONS al terminar. No iniciar otro hito en la misma
+tarea.
 
 D071 y los consentimientos anteriores siguen agotados. Cualquier prueba real requiere una propuesta y un
 consentimiento nuevos. Sin push ni publicación.

@@ -1401,6 +1401,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/managed/metrics/validations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Metrics Validations
+         * @description H6.2 E6: evolución de los tests. Cada ciclo de validación de las tareas, OK/KO, por clave descendente.
+         */
+        get: operations["managed_metrics_validations"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/managed/projects/{project_id}/conversations": {
         parameters: {
             query?: never;
@@ -3566,7 +3586,7 @@ export interface components {
              * Order
              * @enum {string}
              */
-            order: "attempts" | "tokens";
+            order: "attempts" | "tokens" | "key";
             /** Role */
             role: string | null;
             /** Items */
@@ -3699,7 +3719,7 @@ export interface components {
              * Order
              * @enum {string}
              */
-            order: "attempts" | "tokens";
+            order: "attempts" | "tokens" | "key";
             /** Role */
             role: string | null;
             /** Items */
@@ -5377,6 +5397,53 @@ export interface components {
             input?: unknown;
             /** Context */
             ctx?: Record<string, never>;
+        };
+        /** ValidationGroupRead */
+        ValidationGroupRead: {
+            /**
+             * Key
+             * @description Fase, tarea o raíz. Los ciclos no guardan su hora: no hay agrupación por día.
+             */
+            key: string;
+            /**
+             * Validations
+             * @description Ciclos de validación de tareas, incluidas las revalidaciones.
+             */
+            validations: number;
+            /**
+             * Passed
+             * @description Validaciones con todos los comandos correctos y sin fallos nuevos en JUnit.
+             */
+            passed: number;
+            /** Failed */
+            failed: number;
+            /** Commands Passed */
+            commands_passed: number;
+            /** Commands Failed */
+            commands_failed: number;
+            /**
+             * Cases
+             * @description JUnit: passed, failed, error, skipped; null sin reportes legibles.
+             */
+            cases: {
+                [key: string]: number;
+            } | null;
+            /** Validations With Cases */
+            validations_with_cases: number;
+        };
+        /** ValidationGroupsRead */
+        ValidationGroupsRead: {
+            /**
+             * Dimension
+             * @enum {string}
+             */
+            dimension: "phase" | "task" | "root";
+            /** Items */
+            items: components["schemas"]["ValidationGroupRead"][];
+            /** Offset */
+            offset: number;
+            /** Next Offset */
+            next_offset: number | null;
         };
         /** ValidationRead */
         ValidationRead: {
@@ -10264,7 +10331,7 @@ export interface operations {
                 phase?: string | null;
                 task?: string | null;
                 role?: string | null;
-                order?: "attempts" | "tokens";
+                order?: "attempts" | "tokens" | "key";
                 offset?: number;
                 limit?: number;
             };
@@ -10331,7 +10398,7 @@ export interface operations {
                 phase?: string | null;
                 task?: string | null;
                 role?: string | null;
-                order?: "attempts" | "tokens";
+                order?: "attempts" | "tokens" | "key";
                 offset?: number;
                 limit?: number;
             };
@@ -10416,6 +10483,72 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["Page_TaskMetricsRead_"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+        };
+    };
+    managed_metrics_validations: {
+        parameters: {
+            query?: {
+                dimension?: "phase" | "task" | "root";
+                project_id?: string | null;
+                phase?: string | null;
+                task?: string | null;
+                offset?: number;
+                limit?: number;
+            };
+            header?: {
+                /** @description Obligatoria con valor 1 en mutaciones (protección CSRF). */
+                "x-harness-local"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ValidationGroupsRead"];
                 };
             };
             /** @description Forbidden */

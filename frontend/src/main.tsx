@@ -15,7 +15,7 @@ import type { Route } from "./router.ts";
 import { SessionGate } from "./SessionGate";
 import { Shell } from "./Shell";
 import { Empty, Loading, PageHeader } from "./ui";
-import { ProjectWorkspace } from "./workspace";
+import { ProjectWorkspace, useWorkspace } from "./workspace";
 import "./styles.css";
 
 // La documentación (markdown-it y, al dibujar, Mermaid) se descarga solo al abrirla (H6.2 E3).
@@ -23,11 +23,14 @@ const DocsPage = lazy(() => import("./pages/Docs").then(module => ({ default: mo
 // Creación y planificación (H6.2 E4) comparten el visor de Markdown: mismo criterio de carga diferida.
 const SetupPage = lazy(() => import("./pages/Planning").then(module => ({ default: module.SetupPage })));
 const PlanPage = lazy(() => import("./pages/Planning").then(module => ({ default: module.PlanPage })));
+// Estadísticas (H6.2 E6): gráficos y tablas en su propio chunk.
+const StatsPage = lazy(() => import("./pages/Stats").then(module => ({ default: module.StatsPage })));
 
 function Page({ route }: { route: Route }) {
   switch (route.name) {
     case "home": return <Home />;
     case "legacy": return <LegacyBrowser />;
+    case "stats": return <Suspense fallback={<Loading />}><StatsPage /></Suspense>;
     case "project-new": return <RegisterPage />;
     case "run-short": return <RunRedirect run={route.run} />;
     case "not-found": return <>
@@ -39,7 +42,7 @@ function Page({ route }: { route: Route }) {
   return <ProjectWorkspace key={route.project} project={route.project}><ProjectPageFor route={route} /></ProjectWorkspace>;
 }
 
-function ProjectPageFor({ route }: { route: Exclude<Route, { name: "home" | "legacy" | "project-new" | "run-short" | "not-found" }> }) {
+function ProjectPageFor({ route }: { route: Exclude<Route, { name: "home" | "stats" | "legacy" | "project-new" | "run-short" | "not-found" }> }) {
   switch (route.name) {
     case "project": return <ProjectPage />;
     case "phases": return <PhaseListPage />;
@@ -48,10 +51,16 @@ function ProjectPageFor({ route }: { route: Exclude<Route, { name: "home" | "leg
     case "run": return <RunPage key={route.run} phase={route.phase} task={route.task} run={route.run} />;
     case "chat": return <Chat conversation={route.conversation} />;
     case "settings": return <SettingsPage />;
+    case "project-stats": return <Suspense fallback={<Loading />}><ProjectStats /></Suspense>;
     case "docs": return <Suspense fallback={<Loading />}><DocsPage path={route.path} /></Suspense>;
     case "setup": return <Suspense fallback={<Loading />}><SetupPage path={route.path} /></Suspense>;
     case "plan": return <Suspense fallback={<Loading />}><PlanPage key={route.phase} phase={route.phase} conversation={route.conversation} /></Suspense>;
   }
+}
+
+function ProjectStats() {
+  const { project, refresh } = useWorkspace();
+  return <StatsPage project={project} refresh={refresh} />;
 }
 
 function App() {

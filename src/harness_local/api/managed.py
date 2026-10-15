@@ -752,7 +752,7 @@ def managed_router(runtime: ManagedRuntime):
     # --- H6.4: métricas por intento y agregados (solo lectura) ----------------------------------------
     from harness_local.api.schemas import (
         AttemptMetricRead, MetricDimension, MetricGroupsRead, MetricOrder, MetricsSummaryRead, ModelMetricGroupsRead,
-        TaskMetricsRead,
+        TaskMetricsRead, ValidationDimension, ValidationGroupsRead,
     )
     from harness_local.storage.metrics import MetricsViews
 
@@ -801,6 +801,12 @@ def managed_router(runtime: ManagedRuntime):
                       offset: Offset = 0, limit: Limit = 30):
         """Por tarea: agentes, intentos por rol, correcciones, aceptación a la primera, tiempos, tests y consumo."""
         return call(metrics().tasks, metrics_scope(project_id, phase, task), offset, limit)
+
+    @router.get('/metrics/validations', response_model=ValidationGroupsRead, operation_id='managed_metrics_validations')
+    def metrics_validations(dimension: ValidationDimension = 'phase', project_id: Scoped = None, phase: Scoped = None,
+                            task: Scoped = None, offset: Offset = 0, limit: Limit = 30):
+        """H6.2 E6: evolución de los tests. Cada ciclo de validación de las tareas, OK/KO, por clave descendente."""
+        return call(metrics().validations, metrics_scope(project_id, phase, task), dimension, offset, limit)
 
     # --- H4.1: chat contextual -----------------------------------------------------------------
 

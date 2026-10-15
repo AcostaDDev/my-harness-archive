@@ -54,6 +54,7 @@ function ProjectNav({ route, project }: { route: Route; project: string }) {
     ["Fases", { name: "phases", project }, ["phases", "phase", "task", "run"].includes(route.name)],
     ["Documentación", { name: "docs", project }, route.name === "docs"],
     ["Chat", { name: "chat", project }, route.name === "chat"],
+    ["Estadísticas", { name: "project-stats", project }, route.name === "project-stats"],
     ["Ajustes", { name: "settings", project }, route.name === "settings"],
   ];
   return <div className="nav-group">
@@ -97,6 +98,7 @@ export function Shell({ route, children }: { route: Route; children: ReactNode }
         <ul>
           <li><Link to={{ name: "home" }} current={route.name === "home"}>Proyectos</Link></li>
           <li><Link to={{ name: "project-new" }} current={route.name === "project-new"}>Registrar proyecto</Link></li>
+          <li><Link to={{ name: "stats" }} current={route.name === "stats"}>Estadísticas</Link></li>
           <li><Link to={{ name: "legacy" }} current={route.name === "legacy"}>Importados</Link></li>
         </ul>
       </div>

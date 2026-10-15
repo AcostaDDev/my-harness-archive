@@ -3,6 +3,7 @@
 
 export type Route =
   | { name: "home" }
+  | { name: "stats" }
   | { name: "legacy" }
   | { name: "project-new" }
   | { name: "project"; project: string }
@@ -12,6 +13,7 @@ export type Route =
   | { name: "run"; project: string; phase: string; task: string; run: string }
   | { name: "chat"; project: string; conversation?: string }
   | { name: "settings"; project: string }
+  | { name: "project-stats"; project: string }
   | { name: "docs"; project: string; path?: string }
   | { name: "setup"; project: string; path?: string }
   | { name: "plan"; project: string; phase: string; conversation?: string }
@@ -36,12 +38,14 @@ export function parse(pathname: string): Route {
   const n = parts.length;
   if (n === 0) return { name: "home" };
   if (a === "legacy" && n === 1) return { name: "legacy" };
+  if (a === "stats" && n === 1) return { name: "stats" };
   if (a === "runs" && n === 2) return { name: "run-short", run: b };
   if (a !== "projects" || n < 2) return { name: "not-found", path: pathname };
   const project = b;
   // `new` está reservado: el servidor nunca registra un proyecto con ese id (D076).
   if (n === 2) return project === "new" ? { name: "project-new" } : { name: "project", project };
   if (c === "settings" && n === 3) return { name: "settings", project };
+  if (c === "stats" && n === 3) return { name: "project-stats", project };
   // Documentación (H6.2 E3): el resto de la URL es la ruta del documento en el checkout, segmento a segmento.
   if (c === "docs") {
     const rest = (parts as string[]).slice(3);
@@ -69,6 +73,7 @@ export function href(route: Route): string {
   switch (route.name) {
     case "home": return "/";
     case "legacy": return "/legacy";
+    case "stats": return "/stats";
     case "project-new": return "/projects/new";
     case "project": return `/projects/${e(route.project)}`;
     case "phases": return `/projects/${e(route.project)}/phases`;
@@ -77,6 +82,7 @@ export function href(route: Route): string {
     case "run": return `/projects/${e(route.project)}/phases/${e(route.phase)}/tasks/${e(route.task)}/runs/${e(route.run)}`;
     case "chat": return `/projects/${e(route.project)}/chat${route.conversation ? `/${e(route.conversation)}` : ""}`;
     case "settings": return `/projects/${e(route.project)}/settings`;
+    case "project-stats": return `/projects/${e(route.project)}/stats`;
     case "docs": return `/projects/${e(route.project)}/docs${route.path ? `/${route.path.split("/").map(e).join("/")}` : ""}`;
     case "setup": return `/projects/${e(route.project)}/setup${route.path ? `/${route.path.split("/").map(e).join("/")}` : ""}`;
     case "plan": return `/projects/${e(route.project)}/phases/${e(route.phase)}/plan${route.conversation ? `/${e(route.conversation)}` : ""}`;
@@ -99,6 +105,7 @@ export function runRoute(run: { id: string; project_id: string | null; phase_id:
 export function trail(route: Route): { label: string; to: Route }[] {
   const items: { label: string; to: Route }[] = [{ label: "Proyectos", to: { name: "home" } }];
   if (route.name === "legacy") items.push({ label: "Importados", to: route });
+  if (route.name === "stats") items.push({ label: "Estadísticas", to: route });
   if (route.name === "project-new") items.push({ label: "Registrar proyecto", to: route });
   if (route.name === "run-short") items.push({ label: route.run, to: route });
   if (route.name === "not-found") items.push({ label: "Página no encontrada", to: route });
@@ -106,6 +113,7 @@ export function trail(route: Route): { label: string; to: Route }[] {
   const { project } = route;
   items.push({ label: project, to: { name: "project", project } });
   if (route.name === "settings") items.push({ label: "Ajustes", to: route });
+  if (route.name === "project-stats") items.push({ label: "Estadísticas", to: route });
   if (route.name === "docs") {
     items.push({ label: "Documentación", to: { name: "docs", project } });
     if (route.path) items.push({ label: route.path.split("/").pop()!, to: route });

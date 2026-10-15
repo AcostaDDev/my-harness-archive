@@ -2506,3 +2506,26 @@ Cambio deliberado de D035 previsto por D073/D076:
   prueba de argv, conservando lectura y memoria de `cli-9`. No se ejecutaron proveedores reales.
 
 Siguiente: E6 (estadísticas y tests), sin iniciar. Los consentimientos previos siguen agotados.
+
+## D084 — H6.2 E6: estadísticas por URL, evolución de tests por fase y gráficos SVG propios
+
+Estado: implementado y verificado offline el 2026-10-15. [Entrega, verificación y límites](discovery/H6.2_E6_STATS.md).
+
+Decisiones tomadas con criterio dentro de D074/D076:
+
+- Lectura nueva `GET /metrics/validations` (por fase, tarea o raíz): cuenta cada ciclo de validación, revalidaciones
+  incluidas, con OK/KO, comandos y casos JUnit. Los ciclos no guardan su hora (`source_attempt_id` solo existe con
+  JUnit), así que **no se agrupa por día**: la evolución de los tests se lee por fase. Añadir la hora al ciclo cambiaría
+  el formato del historial y queda para una decisión aparte.
+- `order=key` en los grupos de consumo para la serie por día; ninguna otra lectura nueva. El resumen de un proyecto no
+  trae tareas: cada panel lee su recurso y las listas van paginadas.
+- Rutas `/stats` y `/projects/:p/stats` en un chunk diferido; panel de métricas en la página de la tarea. La vista global
+  agrupa por proyecto (raíz) donde la del proyecto agrupa por fase.
+- Null es «sin dato» también en los gráficos (marca propia, nunca longitud cero); una suma parcial lleva su cobertura;
+  turnos reportados y derivados nunca se suman; el coste es «equivalente API».
+- Gráficos SVG propios, sin dependencias. OK/KO no usan el verde/rojo de estado, que falla la separación para
+  daltonismo, sino tokens `--chart-ok`/`--chart-ko` validados en claro y oscuro, con leyenda y tabla equivalente.
+
+Sin migración, codec ni dependencias. Las seis entregas de H6.2 están completas; siguiente: revisión de los criterios
+del hito, sin iniciar. Los consentimientos previos siguen agotados.
+

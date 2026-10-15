@@ -537,6 +537,45 @@ def test_task_quality_tests_and_stops_without_reported_usage(world):
     assert views.summary({'root': root, 'phase': 'P001', 'task': 'P001-T002'})['tasks']['count'] == 1
 
 
+def test_validation_evolution_counts_every_cycle_by_phase_task_and_root(world):
+    """H6.2 E6: OK/KO de cada ciclo de validación (también las revalidaciones), por fase, tarea o raíz."""
+    from harness_local.core.engine.validation import CommandResult
+    from test_managed_api import PLAN as TASK_PLAN, review as accept
+    from test_phases import PLAN_2
+
+    def change(text):
+        def call(context, request):
+            context.path('app/main.txt').write_text(text, encoding='utf-8')
+            return {'result': 'synthetic'}
+        return call
+
+    world.ports.runner.responses.extend([CommandResult(1, stderr='synthetic failure'), CommandResult(0), CommandResult(0)])
+    for task, plan, responses in (('P001-T001', TASK_PLAN, (change('first\n'), revise(), change('second\n'), accept())),
+                                  ('P001-T002', PLAN_2, (change('third\n'), {**accept(), 'task_id': 'P001-T002'}))):
+        world.script(*responses)
+        world.repository.submit(world.context, task, 'P001', plan, VERSIONS_API, key=world.key())
+        world.run()
+    views = MetricsViews(world.repository.engine)
+    root = str(world.context.root)
+    scope = {'root': root, 'phase': None, 'task': None}
+    by_task = views.validations(scope, 'task', 0, 1)
+    assert [(i['key'], i['passed'], i['failed']) for i in by_task['items']] == [('P001-T002', 1, 0)]
+    assert views.validations(scope, 'task', 1, 1)['items'][0]['key'] == 'P001-T001'
+    by_phase, = views.validations(scope, 'phase', 0, 30)['items']
+    assert by_phase == {'key': 'P001', 'validations': 3, 'passed': 2, 'failed': 1, 'commands_passed': 2,
+                        'commands_failed': 1, 'cases': None, 'validations_with_cases': 0}
+    task, = views.validations({**scope, 'phase': 'P001', 'task': 'P001-T001'}, 'root', 0, 30)['items']
+    assert (task['key'], task['validations'], task['passed'], task['failed']) == (root, 2, 1, 1)
+    # La última validación de cada tarea (resumen) frente a la evolución completa (todas las validaciones).
+    assert views.summary(scope)['tests']['commands_failed'] == 0
+    assert views.validations(GLOBAL, 'phase', 1, 30) == {'dimension': 'phase', 'items': [], 'offset': 1,
+                                                         'next_offset': None}
+    with pytest.raises(ValueError):
+        views.validations(GLOBAL, 'day', 0, 30)
+    # Orden por clave descendente también en los grupos de consumo (series por día de la UI).
+    assert [item['key'] for item in views.groups(scope, 'task', 0, 10, order='key')['items']] == ['P001-T002', 'P001-T001']
+
+
 def test_groups_favorites_and_reported_models_paginate_without_double_counting(tmp_path, context, repository):
     flow(tmp_path / 'a', context, repository, key='a')[2].run_once()
     flow(tmp_path / 'b', context, repository, key='b', planning='deterministic')[2].run_once()
@@ -587,6 +626,13 @@ def test_http_metrics_are_read_only_paginated_and_scoped(tmp_path, context, repo
         assert http.get('/api/managed/metrics/summary', params={'project_id': 'other'}).status_code == 404
         assert http.get('/api/managed/metrics/groups', params={'dimension': 'quota'}).status_code == 422
         assert http.post('/api/managed/metrics/summary').status_code == 405
+        days = http.get('/api/managed/metrics/groups', params={'dimension': 'day', 'order': 'key', 'project_id': 'synthetic'})
+        assert days.status_code == 200 and days.json()['order'] == 'key'
+        evolution = http.get('/api/managed/metrics/validations', params={'project_id': 'synthetic', 'dimension': 'phase'})
+        assert evolution.status_code == 200, evolution.text
+        assert [(item['key'], item['validations']) for item in evolution.json()['items']] == [('P001', 1)]
+        assert http.get('/api/managed/metrics/validations', params={'dimension': 'day'}).status_code == 422
+        assert http.get('/api/managed/metrics/validations', params={'phase': 'P001'}).status_code == 422
 
 
 # --- SUMMARY de fase ---------------------------------------------------------------------------

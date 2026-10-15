@@ -1,9 +1,12 @@
-import { useState } from "react";
+import { lazy, Suspense, useState } from "react";
 import type { S } from "../managed-api";
 import { Link } from "../navigation";
 import { Empty, Loading, PageHeader, Pagination, Stale, Status, usePoll } from "../ui";
 import { useWorkspace } from "../workspace";
 import { RunTable, TaskForm } from "./shared";
+
+// Métricas de la tarea (H6.2 E6): mismo chunk diferido que las estadísticas.
+const TaskMetrics = lazy(() => import("./Stats").then(module => ({ default: module.TaskMetrics })));
 
 export function TaskPage({ phase, task }: { phase: string; task: string }) {
   const { project, refresh } = useWorkspace();
@@ -23,6 +26,7 @@ export function TaskPage({ phase, task }: { phase: string; task: string }) {
         : <RunTable runs={runs.data.items} project={project} show={[]} />}
       <Pagination offset={offset} next={runs.data?.next_offset} onChange={setOffset} label="Páginas de runs" />
     </section>
+    {latest && <Suspense fallback={<Loading />}><TaskMetrics project={project} phase={phase} task={task} refresh={refresh} /></Suspense>}
     <TaskForm phase={phase} task={task} title={latest ? "Encolar un run nuevo de esta tarea" : "Encolar esta tarea"} />
   </>;
 }

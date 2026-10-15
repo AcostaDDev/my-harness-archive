@@ -2768,6 +2768,29 @@ tarea propuesta: UI H6.2, sin iniciar; será una tarea aparte.
 - Límites: solo archivos regulares de HEAD (sin cambios locales), tamaño acotado y permisos cooperativos; no se
   certifica aislamiento OS ni CLI real. Ningún proveedor consumido. Próxima entrega E6, sin iniciar.
 
+## H6.2 E6 — Estadísticas y tests completado offline (2026-10-15, D084)
+
+- Tarea activa de NEXT_STEPS, pedida por el usuario el 2026-10-15 sobre `94577db`, con Git limpio.
+  [Entrega, verificación y límites](discovery/H6.2_E6_STATS.md).
+- Servidor: `GET /api/managed/metrics/validations` (cada ciclo de validación, revalidaciones incluidas, OK/KO, comandos
+  y casos JUnit, por fase, tarea o raíz) y `order=key` en `/metrics/groups` y `/metrics/models`. Los ciclos no guardan
+  su hora, así que la evolución de los tests es por fase, no por día. OpenAPI y tipos regenerados; esquema
+  `0017_chat_context`, codec y dependencias sin cambios.
+- Cliente: `/stats` y `/projects/:p/stats` (chunk diferido de 35 kB; principal 363 kB sin cambio), métricas en la página
+  de la tarea, `metrics.ts` (formato, cobertura, ejes) y `charts.tsx` (barras, columnas por día, OK/KO apilados, SVG
+  propio con lectura emergente y tabla). Null es «sin dato», las sumas parciales llevan cobertura y el coste es
+  «equivalente API». OK/KO con tokens propios validados para daltonismo (el verde/rojo de estado no pasaba).
+- Verificación: 1 caso nuevo y aserciones HTTP en `test_metrics.py`, 2 rutas en `test_ui_routes.py`; suite completa
+  **1112 pytest + 121 subtests** (397 s), con el aviso preexistente de deprecación httpx/Starlette. 66 pruebas Node (6 nuevas), 12 checks estándar, `tsc`, build y `alembic upgrade`/`check`/`current`
+  en SQLite temporal.
+- QA con Chrome sobre `scripts/dev` (sesión iniciada por el usuario) con datos sintéticos del scratchpad: flujos por el
+  adaptador CLI real con el probe (`PROBE_USAGE=1`) y runs con agentes falsos en tres fases y dos proyectos, en solo
+  lectura. Resumen, cada agrupación de consumo, tablas, lecturas emergentes, favoritos, tareas, evolución OK/KO,
+  paradas, intentos con procedencia, vista global y panel de la tarea; recarga y URL directa; claro, oscuro y 386 px
+  (iframe; ancho del documento 369 ≤ 384). Seis defectos corregidos durante la QA (ver el documento).
+- Límites: sin hora por validación; la vista global nombra los proyectos por su raíz registrada; ninguna CLI real.
+  Las seis entregas de H6.2 están completas; siguiente: revisión de los criterios del hito, sin iniciar.
+
 ## Coordinación
 
 Desarrollo manual con el usuario. Una única sesión implementadora sobre los mismos archivos a la vez. La otra herramienta puede revisar una entrega terminada.

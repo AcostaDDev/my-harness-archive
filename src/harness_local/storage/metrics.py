@@ -33,7 +33,9 @@ CONVERSATIONS = ('chat', 'definition', 'phase_planning')
 DIMENSIONS = {'role': Metric.role, 'provider': Metric.provider, 'requested_model': Metric.requested_model,
               'requested_effort': Metric.requested_effort, 'day': Metric.day, 'phase': Metric.phase_code,
               'task': Metric.task_id, 'status': Metric.status, 'purpose': Metric.purpose, 'root': Metric.root}
-ORDERS = ('attempts', 'tokens')
+# `key`: por clave descendente (días más recientes primero), para las series temporales de la UI (H6.2 E6).
+ORDERS = ('attempts', 'tokens', 'key')
+VALIDATION_DIMENSIONS = ('phase', 'task', 'root')
 STOP_LIMIT = 20
 
 
@@ -225,7 +227,8 @@ class MetricsViews:
             query = _scope(select(key.label('key'), *_sums()), Metric, scope)
             if role is not None:
                 query = query.where(Metric.role == role)
-            ranking = func.count(Metric.attempt_id) if order == 'attempts' else func.coalesce(func.sum(Metric.total_tokens), -1)
+            ranking = (key if order == 'key' else func.count(Metric.attempt_id) if order == 'attempts'
+                       else func.coalesce(func.sum(Metric.total_tokens), -1))
             rows = session.execute(query.group_by(key).order_by(ranking.desc(), key)
                                    .offset(offset).limit(limit + 1)).all()
             items = [{'key': row.key, **_consumption(row)} for row in rows[:limit]]
@@ -241,7 +244,7 @@ class MetricsViews:
         query = _scope(select(*columns).join(Metric, Metric.attempt_id == ModelMetric.attempt_id), Metric, scope)
         if role is not None:
             query = query.where(Metric.role == role)
-        ranking = (func.count(ModelMetric.attempt_id) if order == 'attempts'
+        ranking = (ModelMetric.model if order == 'key' else func.count(ModelMetric.attempt_id) if order == 'attempts'
                    else func.coalesce(func.sum(ModelMetric.output_tokens), -1))
         rows = session.execute(query.group_by(ModelMetric.model).order_by(ranking.desc(), ModelMetric.model)
                                .offset(offset).limit(limit + 1)).all()
@@ -298,6 +301,38 @@ class MetricsViews:
             keys = session.execute(self._task_keys(session, scope).offset(offset).limit(limit + 1)).all()
             items = [self._task(session, *key) for key in keys[:limit]]
             return {'items': items, 'offset': offset, 'next_offset': offset + limit if len(keys) > limit else None}
+
+    def validations(self, scope, dimension, offset, limit):
+        """Evolución de los tests (H6.2 E6): cada ciclo de validación de las tareas del ámbito, agrupado por fase,
+        tarea o raíz, con la clave descendente.
+
+        Los ciclos no guardan su hora (`source_attempt_id` solo existe con reportes JUnit), así que no se agrupan
+        por día: la fecha sería inferida. La fase es el eje de la evolución."""
+        if dimension not in VALIDATION_DIMENSIONS:
+            raise ValueError(f'Dimensión desconocida: {dimension}')
+        groups = {}
+        with Session(self.engine) as session:
+            for run in session.scalars(_scope(select(Run).where(Run.purpose == 'task'), Run, scope)):
+                key = {'phase': run.phase_id, 'task': run.task_id, 'root': run.root}[dimension]
+                for cycle in load_history(run.history_json).cycles:
+                    if cycle.validation is None:
+                        continue
+                    group = groups.setdefault(key, {'key': key, 'validations': 0, 'passed': 0, 'failed': 0,
+                                                    'commands_passed': 0, 'commands_failed': 0, 'cases': None,
+                                                    'validations_with_cases': 0})
+                    counts = validation_counts(cycle.validation)
+                    group['validations'] += 1
+                    group['passed' if cycle.validation.all_passed else 'failed'] += 1
+                    group['commands_passed'] += counts['commands_passed']
+                    group['commands_failed'] += counts['commands_failed']
+                    if counts['cases'] is not None:
+                        group['validations_with_cases'] += 1
+                        group['cases'] = group['cases'] or {'passed': 0, 'failed': 0, 'error': 0, 'skipped': 0}
+                        for name, value in counts['cases'].items():
+                            group['cases'][name] += value
+        ordered = sorted(groups.values(), key=lambda group: group['key'], reverse=True)
+        return {'dimension': dimension, 'items': ordered[offset:offset + limit], 'offset': offset,
+                'next_offset': offset + limit if len(ordered) > offset + limit else None}
 
     def summary(self, scope) -> dict:
         """Totales del ámbito, calidad de las tareas, tests de su última validación y paradas por motivo."""
