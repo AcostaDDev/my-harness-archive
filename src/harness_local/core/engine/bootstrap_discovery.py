@@ -1,15 +1,9 @@
-"""Propuesta de requisitos/alternativas del agente revisor (Codex o Claude); una invocación nueva de solo lectura."""
+"""Propuesta de requisitos/alternativas del agente revisor (Codex o Claude); una invocación nueva de solo lectura.
+
+D088: retirada con la creación v1; no se admiten runs nuevos y solo se ejecutan o concilian los ya registrados."""
 from dataclasses import replace
 
-from harness_local.core.engine.bootstrap import accepted_input
 from harness_local.core.engine.contracts import ContractError, Selection, invoke_agent, stop_history
-
-
-def brief_input(brief):
-    # Reutiliza el límite del brief sin inventar decisiones de producto.
-    return accepted_input({'brief': brief, 'decisions': {
-        'scope': 'Pending user decision', 'architecture': 'Pending user decision',
-        'out_of_scope': 'Pending user decision'}})['brief']
 
 
 def validate_result(data):

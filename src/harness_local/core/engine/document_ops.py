@@ -46,22 +46,6 @@ def read_text(context, path: str) -> str | None:
     return data.decode('utf-8')
 
 
-def read_decisions(context, target: Layout, overrides: dict[str, str | None] | None = None) -> dict[str, str]:
-    """Archivos de `decisions/` (sin subcarpetas), con el contenido propuesto superpuesto."""
-    folder = context.path(target.decisions_dir)
-    files = {}
-    if folder.is_symlink():
-        raise ValueError('The decisions folder must not be a symlink')
-    if folder.is_dir():
-        for item in sorted(folder.iterdir()):
-            if item.suffix == '.md' and not item.is_dir():
-                files[item.name] = read_text(context, f'{target.decisions_dir}/{item.name}')
-    for path, text in (overrides or {}).items():
-        if path.startswith(target.decisions_dir + '/') and '/' not in path[len(target.decisions_dir) + 1:]:
-            files[path[len(target.decisions_dir) + 1:]] = text
-    return {name: text for name, text in files.items() if text is not None}
-
-
 def diff(path: str, old: str | None, new: str) -> str:
     delta = difflib.unified_diff((old or '').splitlines(keepends=True), new.splitlines(keepends=True),
                                  fromfile='/dev/null' if old is None else 'a/' + path, tofile='b/' + path)
@@ -176,8 +160,8 @@ def preview_transition(context, snapshot: dict, git, next_steps: str | None, pla
         phases[following['code']] = {'status': 'ACTIVE', 'tag': following['tag']}
     rows = [{'code': entry['code'], 'title': entry['title'], **phases.get(entry['code'], {})} for entry in entries]
     roadmap = replace_block(texts[target.roadmap], render_roadmap(rows), 'roadmap')
-    decisions = replace_block(texts[target.decisions],
-                              render_decisions(decision_index(read_decisions(context, target))), 'decisions')
+    decisions = replace_block(texts[target.decisions], render_decisions(decision_index(texts[target.decisions])),
+                              'decisions')
     summary = {**snapshot['summary'], 'phase': {**snapshot['summary']['phase'], 'title': titles[code]}}
     changes = [(f'{archive}/STATE.md', None, texts[target.state]),
                (f'{archive}/NEXT_STEPS.md', None, texts[target.next_steps]),
@@ -284,14 +268,17 @@ def preview_edit(context, git, *, source: str, changes: list[dict] | None, regen
         raise ValueError('Unknown edit source')
     for path, content in proposed.items():
         _edit_checks(target, path, previous[path], content)
-    # Un cambio en decisions/ regenera el índice gestionado en el mismo commit.
-    if any(path.startswith(target.decisions_dir + '/') for path in proposed):
-        base = proposed.get(target.decisions)
-        if base is None:
-            previous[target.decisions] = read_text(context, target.decisions)
-            base = previous[target.decisions] or f'# Decisiones\n\n{markers("decisions")[0]}\n{markers("decisions")[1]}\n'
-        proposed[target.decisions] = replace_block(base, render_decisions(decision_index(
-            read_decisions(context, target, proposed))), 'decisions')
+    # D088: editar DECISIONS regenera su índice gestionado, desde sus encabezados, en el mismo commit.
+    if target.decisions in proposed:
+        try:
+            index = render_decisions(decision_index(proposed[target.decisions]))
+        except ValueError as exc:
+            raise ValueError(f'{target.decisions}: {exc}') from exc
+        regenerated = replace_block(proposed[target.decisions], index, 'decisions')
+        if source == 'worktree' and regenerated != proposed[target.decisions]:
+            # Como «regenerar»: el escritor admite los bytes locales exactos y la vista previa lista el cambio.
+            local.setdefault(target.decisions, proposed[target.decisions])
+        proposed[target.decisions] = regenerated
     _protected(context, proposed)
     changes_list = [(path, previous[path], proposed[path]) for path in sorted(proposed)]
     extra = {'operation': 'document_edit', 'source': source}

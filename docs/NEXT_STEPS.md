@@ -4,7 +4,7 @@ Objetivo y criterios de salida en [ROADMAP](ROADMAP.md#p008--contrato-documental
 Decisión de base: [D088](DECISIONS.md#d088--contrato-documental-unificado-cierre-de-fase-automático-e-importación-de-proyectos-p008).
 Análisis de incongruencias que originó la fase: [docs/phase](phase/P008-T001_MIGRACION_DOCUMENTAL.md).
 
-**Siguiente tarea:** P008-T002. Orden de ejecución: T002 → T007 (motor y contrato), T008 (perfiles, que el usuario
+**Siguiente tarea:** P008-T003. Orden de ejecución: T002 → T007 (motor y contrato), T008 (perfiles, que el usuario
 necesita para su próximo proyecto Django), T009–T012 (Flujo A) y T013–T015 (Flujo B).
 
 ## Restricciones compartidas
@@ -40,6 +40,10 @@ necesita para su próximo proyecto Django), T009–T012 (Flujo A) y T013–T015 
 ## P008-T002 — Layout unificado obligatorio y plantilla
 
 **Objetivo:** Sustituir el layout v2 opcional por la estructura de D088, obligatoria para todo proyecto gestionado.
+**Estado:** completada el 2026-10-15 ([D089](DECISIONS.md#d089--p008-t002-layout-unificado-obligatorio-y-plantilla)).
+Adelantos mínimos de otras tareas, registrados en D089: `protected_write` exime AGENTS/CLAUDE/GEMINI para la creación
+(T003), la reconciliación puede editar la prosa de DECISIONS y los borradores de definición admiten `docs/flows/*.md`
+(T005). La API conserva la forma del índice hasta T006.
 **Alcance:**
 - `Layout`: añadir `AGENTS.md`, `CLAUDE.md`, `GEMINI.md`, `docs/DDBB-DIAGRAM.md`, `docs/flows/` y `docs/phase/`;
   retirar `decisions/`, `architecture/` y `research/`. `archive(code)` conserva `phase-NNN`.

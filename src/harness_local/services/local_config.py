@@ -38,6 +38,8 @@ from harness_local.services.managed_runtime import (PROJECT_ID, ManagedConfig, M
 
 VERSION = 'local-config-3'
 FORMATS = ('local-config-1', 'local-config-2', VERSION)
+# D088: versión del layout documental unificado y obligatorio de los proyectos gestionados.
+DOCUMENT_LAYOUT = 'd088-1'
 CLI_KEYS = ('executable', 'cli_version', 'timeout_seconds', 'environment')
 TOOL_KEYS = ('tools', 'allowed_tools', 'grantable_tools')
 CONFIG_ENV = 'HARNESS_LOCAL_CONFIG'
@@ -296,7 +298,8 @@ class LocalComposer:
             required, optional = (*self.PROJECT_KEYS, 'profile', 'commands'), self.OPTIONAL_KEYS
         item = _fields(item, where, required, optional)
         if item.get('documents', 'v2') != 'v2':
-            raise LocalConfigError(f'{where}.documents: solo se admite "v2" (contrato documental D072)')
+            raise LocalConfigError(f'{where}.documents: solo se admite "v2" (contrato documental unificado D088; '
+                                   'omitirlo equivale a "v2")')
         if _flag(item['repository_trusted'], f'{where}.repository_trusted') is not True:
             raise LocalConfigError(f'{where}: sin confianza explícita el proyecto no se registra')
         root = _path(item['root'], f'{where}.root', kind='directory')
@@ -333,11 +336,14 @@ class LocalComposer:
             digest = hashlib.sha256(freeze(frozen).encode()).hexdigest()
         except (TypeError, ValueError):
             raise LocalConfigError(f'{where}: valores TOML no admitidos (fechas u objetos)') from None
+        # D088: el layout documental es obligatorio. Su versión entra en las congeladas, así que un job admitido
+        # antes (contrato opcional o sin contrato) queda en cuarentena en lugar de ejecutarse con otro layout.
         versions = {'engine': f'harness-local-{self.engine}', 'evidence': 'git-1', 'provider_cli': None,
                     'local_config': self.format, 'profile': profile.name, 'local_config_sha256': digest,
+                    'document_layout': DOCUMENT_LAYOUT,
                     **({'project_registry': str(registry[0])} if registry is not None else {}),
                     **cli.frozen_versions(), **runner.frozen_versions()}
-        context = ProjectContext(root, profile, engine_policy, documents=item.get('documents'))
+        context = ProjectContext(root, profile, engine_policy, documents='v2')
         project = ManagedProject(identifier, context, versions, item.get('permission_authority'),
                                  item.get('tag_kind', 'lightweight'), bootstrap)
         return project, (identifier, versions, commands, artifacts)

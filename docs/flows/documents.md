@@ -1,6 +1,7 @@
 # Flujo — documentos gestionados
 
-Tres vías escriben documentación en un proyecto v2 y todas terminan en un commit del harness (D036, D072, D080, D081).
+Tres vías escriben documentación en un proyecto con el contrato unificado y todas terminan en un commit del harness
+(D036, D072, D080, D081, D088).
 
 ```mermaid
 flowchart TD
@@ -15,6 +16,8 @@ flowchart TD
         E2 -- "sí" --> E4["Vista previa con diff y CAS sobre el hash base"]
         E3 --> E4
         E4 --> E5["Confirmación del hash"]
+        E4 --> E7["Si cambia DECISIONS: índice regenerado desde sus encabezados; numeración repetida se rechaza"]
+        E7 --> E5
         E5 --> E6["Job bajo el lock: intención sellada y commit"]
     end
     subgraph X["Exportación manual (D036)"]
@@ -27,12 +30,15 @@ Reglas comunes: solo el harness escribe los bloques `harness-local:managed-*`; `
 con documentos sin confirmar no arranca ninguna tarea, check, exportación ni transición; un cambio externo después de
 la vista previa invalida el job sin sobrescribir.
 
+El índice de DECISIONS (T002, D089) sale de los encabezados `## DNNN — título` del propio archivo y de la primera
+línea `Estado:` de cada sección; el bloque nunca se lee como fuente. La reconciliación de fase puede añadir decisiones
+a la prosa de DECISIONS; las tareas normales no.
+
 ## Cambios previstos en P008 (D088, sin implementar)
 
-- El índice de decisiones se genera desde los encabezados del propio `DECISIONS.md` (sin `decisions/`) (T002).
 - Los ejecutores pueden editar `docs/flows/**`, `docs/DDBB-DIAGRAM.md`, `docs/ARCHITECTURE.md`,
   `docs/SPECIFICATION.md` y `docs/phase/**` cuando su contrato lo incluya (T003).
-- `AGENTS.md`, `CLAUDE.md` y `GEMINI.md` pasan a ser documentos que el harness puede escribir (T002, T003).
+- Edición confirmada de `AGENTS.md`, `CLAUDE.md` y `GEMINI.md` (T003); hoy el harness solo los escribe en la creación.
 
 ## Fuente en el código
 

@@ -146,13 +146,16 @@ def test_tree_lists_markdown_without_links_hidden_folders_or_other_files(v2):
     (root / 'docs/.hidden').mkdir()
     (root / 'docs/.hidden/secret.md').write_text('# Oculto\n')
     (root / 'docs/img.png').write_bytes(PNG)
+    (root / 'docs/flows').mkdir()
+    (root / 'docs/flows/tareas.md').write_text('# Flujo de tareas\n')
     os.symlink(root / 'docs/STATE.md', root / 'docs/enlace.md')
     tree = editor(v2).tree(v2.context)
     paths = {item['path']: item for item in tree['files']}
     assert paths['README.md']['kind'] == 'product' and paths['docs/STATE.md']['kind'] == 'phase'
-    assert paths['docs/decisions/D001-usar-git.md'] == {
-        'path': 'docs/decisions/D001-usar-git.md', 'kind': 'other', 'editable': True, 'archived': False,
-        'bytes': len(text(v2, 'docs/decisions/D001-usar-git.md').encode())}
+    assert paths['docs/DDBB-DIAGRAM.md']['kind'] == 'product'  # D088
+    assert paths['docs/flows/tareas.md'] == {
+        'path': 'docs/flows/tareas.md', 'kind': 'other', 'editable': True, 'archived': False,
+        'bytes': len(text(v2, 'docs/flows/tareas.md').encode())}
     assert paths['docs/archive/phase-001/STATE.md']['kind'] == 'archive'
     assert paths['docs/archive/phase-001/STATE.md']['editable'] is False
     assert not {'docs/.hidden/secret.md', 'docs/img.png', 'docs/enlace.md'} & set(paths)

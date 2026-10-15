@@ -1,4 +1,4 @@
-"""D072/H6.3: contrato documental por fase (layout v2). Biblioteca estándar, sin efectos.
+"""D072/H6.3 y D088: contrato documental por fase (layout v2 unificado). Biblioteca estándar, sin efectos.
 
 SQLite manda en el estado operativo y Markdown en la intención. Los bloques gestionados son
 proyecciones deterministas de SQLite o de archivos: se regeneran y se comparan byte a byte,
@@ -9,6 +9,7 @@ que no pueden abrir encabezados, fences, HTML ni marcadores.
 from dataclasses import dataclass
 import re
 from pathlib import PurePosixPath
+import shlex
 
 from harness_local.core.engine.planning import FIELD_RE, TASK_RE, backticked, bullet_items, collapse
 
@@ -17,28 +18,36 @@ BLOCK_REASON = 'Managed documentation blocks (D072)'
 BLOCK_NAMES = ('state', 'roadmap', 'decisions')
 PHASE_CODE = re.compile(r'P\d{3}')
 PHASE_RE = re.compile(r'^##\s+(P\d{3})\s+[—-]\s+(.+?)\s*$', re.MULTILINE)
-DECISION_FILE = re.compile(r'D(\d{3,})-[a-z0-9][a-z0-9-]*\.md')
-DECISION_HEADING = re.compile(r'^#\s+(D\d{3,})\s+[—-]\s+(.+?)\s*$', re.MULTILINE)
+# D088: el índice de DECISIONS sale de sus propios encabezados y de la primera línea «Estado:» de cada uno.
+DECISION_HEADING = re.compile(r'^##\s+D(\d{3,})\s+[—-]\s+(.+?)\s*$', re.MULTILINE)
+DECISION_STATUS = re.compile(r'^(?:\*\*)?(?:Estado|Status)(?::\*\*|\*\*:|:)[ \t]*(.*)$', re.IGNORECASE)
 BASE_HEADING = re.compile(r'^##\s+(?:Base acumulada|Accumulated baseline)\s*$', re.MULTILINE)
 LEVEL_TWO = re.compile(r'^##\s', re.MULTILINE)
 ANY_MARKER = re.compile(r'<!--\s*harness-local:managed-')
 # Avisos, nunca truncado: un documento que los supera pide compactación en la reconciliación.
-BUDGETS = {'state': 24 * 1024, 'base': 12 * 1024, 'next_steps': 48 * 1024, 'decisions': 8 * 1024}
+BUDGETS = {'state': 24 * 1024, 'base': 12 * 1024, 'next_steps': 48 * 1024}
 SUMMARY_LIMIT = 600
 ROADMAP_FIELDS = {'objective': ('objetivo', 'objective'), 'exit_criteria': ('criterios de salida', 'exit criteria'),
                   'dependencies': ('dependencias', 'dependencies'), 'out_of_scope': ('fuera de alcance', 'out of scope'),
                   'tag': ('tag',)}
-DECISION_FIELDS = {'status': ('estado', 'status'), 'date': ('fecha', 'date'), 'phase': ('fase', 'phase')}
+# Límites de la plantilla de instrucciones (D088 punto 1), comprobados por test.
+MAX_AGENTS_LINES = 60
+MAX_WRAPPER_LINES = 15
+MAX_TEMPLATE_COMMANDS = 12
 
 
 @dataclass(frozen=True)
 class Layout:
-    """Rutas del layout v2: README en la raíz y el resto bajo el directorio de STATE/NEXT_STEPS."""
+    """Rutas del layout v2 unificado (D088): README y archivos de instrucciones en la raíz; el resto bajo el
+    directorio de STATE/NEXT_STEPS."""
 
     docs: str
     state: str
     next_steps: str
     readme: str = 'README.md'
+    agents: str = 'AGENTS.md'
+    claude: str = 'CLAUDE.md'
+    gemini: str = 'GEMINI.md'
 
     def doc(self, name: str) -> str:
         return f'{self.docs}/{name}'
@@ -60,16 +69,16 @@ class Layout:
         return self.doc('DECISIONS.md')
 
     @property
-    def decisions_dir(self):
-        return self.doc('decisions')
+    def ddbb_diagram(self):
+        return self.doc('DDBB-DIAGRAM.md')
 
     @property
-    def architecture_dir(self):
-        return self.doc('architecture')
+    def flows_dir(self):
+        return self.doc('flows')
 
     @property
-    def research_dir(self):
-        return self.doc('research')
+    def phase_dir(self):
+        return self.doc('phase')
 
     @property
     def archive_dir(self):
@@ -87,7 +96,12 @@ class Layout:
 
     @property
     def product_documents(self) -> tuple[str, ...]:
-        return (self.readme, self.specification, self.architecture)
+        return (self.readme, self.specification, self.architecture, self.ddbb_diagram)
+
+    @property
+    def instructions(self) -> tuple[str, ...]:
+        """Archivos de instrucciones para agentes: AGENTS canónico y envoltorios por proveedor."""
+        return (self.agents, self.claude, self.gemini)
 
     @property
     def harness_owned(self) -> tuple[str, ...]:
@@ -96,7 +110,7 @@ class Layout:
 
     @property
     def folders(self) -> tuple[str, ...]:
-        return (self.decisions_dir, self.architecture_dir, self.research_dir)
+        return (self.flows_dir, self.phase_dir)
 
     def archived(self, path: str) -> bool:
         return path == self.archive_dir or path.startswith(self.archive_dir + '/')
@@ -120,14 +134,17 @@ def protected_write(context, path: str) -> bool:
     """¿Rechaza el perfil que el harness escriba `path` en una operación documental confirmada?
 
     D081: las rutas protegidas del perfil limitan al ejecutor y a los permisos que se le conceden. En v2, el
-    contrato documental (README, Markdown de la documentación y el archivo de fases) se escribe solo con una
-    confirmación del usuario sobre el contenido exacto y tiene sus propias reglas, como la regeneración mecánica
-    de bloques en cada commit de tarea. Fuera de ese contrato, y en v1, la protección del perfil se mantiene."""
+    contrato documental (README, archivos de instrucciones de la raíz, Markdown de la documentación y el archivo
+    de fases) se escribe solo con una confirmación del usuario sobre el contenido exacto y tiene sus propias
+    reglas, como la regeneración mecánica de bloques en cada commit de tarea. Fuera de ese contrato, y en v1, la
+    protección del perfil se mantiene. D088: AGENTS, CLAUDE y GEMINI se escriben en la creación; su edición
+    confirmada (`Layout.editable`) llega con P008-T003."""
     from harness_local.core.engine.evidence import matches
     target = layout(context)
     pure = PurePosixPath(path)
     if (target is not None and '..' not in pure.parts
-            and (target.editable(path) or (target.archived(path) and pure.suffix == '.md'))):
+            and (target.editable(path) or path in target.instructions
+                 or (target.archived(path) and pure.suffix == '.md'))):
         return False
     return matches(path, context.profile.protected_paths)
 
@@ -320,14 +337,13 @@ def render_roadmap(phases: list[dict]) -> str:
     return '\n'.join(lines) + '\n'
 
 
-def render_decisions(entries: list[dict], decisions_dir_name: str = 'decisions') -> str:
-    lines = [f'Índice generado por Harness Local desde `{decisions_dir_name}/` (D072). No editar dentro de este bloque.',
-             '', '| Decisión | Título | Estado | Fase | Archivo |', '|---|---|---|---|---|']
+def render_decisions(entries: list[dict]) -> str:
+    lines = ['Índice generado por Harness Local desde los encabezados de este archivo (D088). '
+             'No editar dentro de este bloque.', '', '| Decisión | Título | Estado |', '|---|---|---|']
     for entry in entries:
-        lines.append(f"| {inline(entry['id'])} | {inline(entry['title'])} | {inline(entry['status'])} "
-                     f"| {inline(entry['phase'])} | [{entry['file']}]({decisions_dir_name}/{entry['file']}) |")
+        lines.append(f"| {inline(entry['id'])} | {inline(entry['title'])} | {inline(entry['status'], SUMMARY_LIMIT)} |")
     if not entries:
-        lines.append('| — | sin decisiones | — | — | — |')
+        lines.append('| — | sin decisiones | — |')
     return '\n'.join(lines) + '\n'
 
 
@@ -386,22 +402,26 @@ def plan_tasks(text: str, code: str | None = None) -> list[tuple[str, str]]:
     return tasks
 
 
-def parse_decision(name: str, text: str) -> dict | None:
-    match = DECISION_FILE.fullmatch(name)
-    if match is None:
-        return None
-    identity = 'D' + match.group(1)
-    heading = DECISION_HEADING.search(text)
-    raw = _fields(text)
-    title = heading.group(2) if heading and heading.group(1) == identity else None
-    # Solo la primera línea de cada campo: el índice no arrastra párrafos posteriores.
-    return {'id': identity, 'file': name, 'title': collapse(title) if title else None,
-            **{key: collapse(_first(raw, names).split('\n', 1)[0]) or None for key, names in DECISION_FIELDS.items()}}
-
-
-def decision_index(files: dict[str, str]) -> list[dict]:
-    entries = [entry for name, text in files.items() if (entry := parse_decision(name, text)) is not None]
-    return sorted(entries, key=lambda item: (int(item['id'][1:]), item['file']))
+def decision_index(text: str | None) -> list[dict]:
+    """D088: decisiones `## DNNN — título` de DECISIONS.md, con el estado de la primera línea `Estado:` de su
+    sección (solo esa línea). El bloque gestionado no se lee. Una numeración repetida, también con otro
+    relleno de ceros (D7 y D007), se rechaza: el índice no elige entre dos decisiones."""
+    source = without_blocks(text or '')
+    entries, seen = [], {}
+    for match in DECISION_HEADING.finditer(source):
+        number = int(match.group(1))
+        identity = 'D' + match.group(1)
+        if number in seen:
+            raise ValueError(f'Duplicate decision number in DECISIONS: {seen[number]} and {identity}')
+        seen[number] = identity
+        status = None
+        for line in _section_after(source, match.end()).splitlines():
+            found = DECISION_STATUS.match(line.strip())
+            if found:
+                status = collapse(found.group(1)) or None
+                break
+        entries.append({'id': identity, 'title': collapse(match.group(2)), 'status': status})
+    return sorted(entries, key=lambda item: int(item['id'][1:]))
 
 
 def base_section(text: str) -> str | None:
@@ -421,8 +441,8 @@ def phase_data(target: Layout, entry: dict, tasks: list[tuple[str, str]]) -> dic
             'tasks': [task for task, _ in tasks], 'documents': list(target.phase_documents), 'tag': entry['tag']}
 
 
-def managed_bodies(target: Layout, snapshot: dict, phases: dict, texts: dict[str, str | None],
-                   decision_files: dict[str, str]) -> dict[str, tuple[str, str]]:
+def managed_bodies(target: Layout, snapshot: dict, phases: dict,
+                   texts: dict[str, str | None]) -> dict[str, tuple[str, str]]:
     """Cuerpo de cada bloque gestionado: STATE/NEXT_STEPS desde SQLite; ROADMAP e índice, además, desde disco."""
     bodies = {target.state: ('state', render_state(snapshot)), target.next_steps: ('state', render_next_steps(snapshot))}
     if texts.get(target.roadmap) is not None:
@@ -430,14 +450,14 @@ def managed_bodies(target: Layout, snapshot: dict, phases: dict, texts: dict[str
                 for entry in parse_roadmap(texts[target.roadmap])]
         bodies[target.roadmap] = ('roadmap', render_roadmap(rows))
     if texts.get(target.decisions) is not None:
-        bodies[target.decisions] = ('decisions', render_decisions(decision_index(decision_files)))
+        bodies[target.decisions] = ('decisions', render_decisions(decision_index(texts[target.decisions])))
     return bodies
 
 
 def budget_warnings(target: Layout, texts: dict[str, str]) -> list[str]:
     warnings = []
-    limits = ((target.state, 'state', 'STATE'), (target.next_steps, 'next_steps', 'NEXT_STEPS'),
-              (target.decisions, 'decisions', 'DECISIONS'))
+    # D088: DECISIONS es un registro único sin presupuesto; los agentes leen solo las decisiones citadas.
+    limits = ((target.state, 'state', 'STATE'), (target.next_steps, 'next_steps', 'NEXT_STEPS'))
     for path, key, label in limits:
         text = texts.get(path)
         if text is not None and len(text.encode('utf-8')) > BUDGETS[key]:
@@ -558,42 +578,93 @@ def turns_label(entry) -> str:
     return ' · '.join(parts) or '—'
 
 
-# --- plantilla documental v2 -------------------------------------------------------------------
-
-FOLDER_READMES = {
-    'decisions': ('# Decisiones\n\nUna decisión por archivo: `DNNN-titulo-corto.md`, con `# DNNN — Título` y los campos '
-                  '**Estado** (propuesta | aceptada | sustituida por DMMM | rechazada), **Fecha**, **Fase**, '
-                  '**Contexto**, **Decisión** y **Consecuencias**. Las decisiones no se borran: se sustituyen. '
-                  'El índice de `../DECISIONS.md` lo genera Harness Local.\n'),
-    'architecture': ('# Arquitectura detallada\n\nDiagramas y detalle técnico enlazados desde `../ARCHITECTURE.md`. '
-                     'Diagramas en Mermaid (texto), por ejemplo `data-model.md` con un `erDiagram` por base de datos '
-                     'o contexto. Úsala solo si el proyecto lo necesita.\n'),
-    'research': ('# Investigación\n\nResultados duraderos de tareas de investigación (compatibilidades, spikes, '
-                 'comparativas), citados desde decisiones o tareas. Úsala solo si el proyecto lo necesita.\n'),
-}
+# --- plantilla documental v2 unificada (D088) -----------------------------------------------------
 
 
-def skeleton(target: Layout, title: str, phase_title: str = 'Primera fase') -> dict[str, str]:
-    """Documentos base v2 con bloques vacíos en su sitio; el contenido real lo fija la creación (H6.5)."""
+def _command_lines(commands) -> list[str]:
+    """Una línea por argv, sin saltos; un argv que podría cerrar el bloque de código no se transcribe."""
+    lines = []
+    for argv in list(commands)[:MAX_TEMPLATE_COMMANDS]:
+        line = ' '.join(shlex.join(list(argv)).split())
+        lines.append('# (comando omitido: contiene tres acentos graves seguidos; ver el perfil)' if '```' in line else line)
+    if len(commands) > MAX_TEMPLATE_COMMANDS:
+        lines.append(f'# … y {len(commands) - MAX_TEMPLATE_COMMANDS} más declarados en el perfil')
+    return lines
+
+
+def render_agents(target: Layout, name: str, preparation=(), validations=()) -> str:
+    """AGENTS.md canónico (≤60 líneas): discovery, reglas inquebrantables y comandos del perfil."""
+    lines = [f'# {name} — instrucciones para agentes', '',
+             f'Fuente canónica para agentes; `{target.claude}` y `{target.gemini}` la importan. Para personas, '
+             f'`{target.readme}`.', '',
+             '## Discovery al empezar una sesión', '',
+             f'1. `{target.state}`: base acumulada y fase activa.',
+             f'2. `{target.next_steps}`: tareas de la fase activa y siguiente tarea.',
+             f'3. `{target.roadmap}`: sección de la fase activa.',
+             f'4. `{target.specification}` y `{target.architecture}`: solo las secciones que afecten a la tarea.',
+             f'5. `{target.decisions}`: las decisiones que cite la tarea; el índice, para buscar precedentes.',
+             f'6. `{target.ddbb_diagram}` y `{target.flows_dir}/` si la tarea toca datos o flujos.',
+             f'7. `{target.archive_dir}/` solo cuando un documento lo cite.', '',
+             '## Reglas inquebrantables', '',
+             '- No inventar fuera de la especificación ni de lo decidido. Ante una incongruencia entre documentos, '
+             'o entre documentos y código, preguntar antes de decidir.',
+             f'- Paridad: un cambio de modelos de datos actualiza `{target.ddbb_diagram}`; un cambio de flujo, '
+             f'`{target.flows_dir}/`, en la misma tarea.',
+             f'- STATE, NEXT_STEPS, ROADMAP, DECISIONS y `{target.archive_dir}/` los mantiene Harness Local: una '
+             'tarea normal no los edita.',
+             '- Las decisiones nuevas se proponen en la salida de la tarea; no se escriben en DECISIONS.',
+             f'- Artefactos de trabajo de la fase en curso en `{target.phase_dir}/`.',
+             '- Ningún secreto, credencial ni dato privado en el repositorio.', '',
+             '## Comandos', '']
+    preparation, validations = _command_lines(preparation), _command_lines(validations)
+    if not preparation and not validations:
+        lines.append('Sin comandos declarados por el perfil del proyecto.')
+    for label, items in (('Preparación', preparation), ('Validación (tests, lint y tipos)', validations)):
+        if items:
+            lines += [f'{label}:', '', '```sh', *items, '```', '']
+    return '\n'.join(lines).rstrip('\n') + '\n'
+
+
+def render_wrapper(target: Layout, provider: str) -> str:
+    """Envoltorio de proveedor (≤15 líneas) que importa AGENTS.md."""
+    return (f'# {provider}\n\n@{target.agents}\n\nNotas para {provider}: ninguna todavía. Las instrucciones '
+            f'comunes viven en `{target.agents}`.\n')
+
+
+def skeleton(target: Layout, title: str, phase_title: str = 'Primera fase', *, preparation=(),
+             validations=()) -> dict[str, str]:
+    """Documentos base de D088 con bloques vacíos en su sitio; el contenido real lo fija la creación (H6.5).
+
+    `preparation` y `validations`: argv del perfil para la sección de comandos de AGENTS. `flows/` y `phase/`
+    no tienen archivo de plantilla."""
     name, first = inline(title), inline(phase_title)
     state_begin, state_end = markers('state')
     road_begin, road_end = markers('roadmap')
     dec_begin, dec_end = markers('decisions')
-    files = {
+    return {
+        target.agents: render_agents(target, name, preparation, validations),
+        target.claude: render_wrapper(target, 'Claude Code'),
+        target.gemini: render_wrapper(target, 'Gemini CLI'),
         target.readme: (f'# {name}\n\nQué es, para quién y qué problema resuelve.\n\n## Estado\n\n'
                         f'Fases y progreso en [ROADMAP]({target.roadmap}) y [STATE]({target.state}).\n\n'
                         '## Requisitos\n\n## Instalación\n\n## Uso\n\n## Tests\n\n## Documentación\n\n'
                         f'- [Especificación]({target.specification})\n- [Arquitectura]({target.architecture})\n'
-                        f'- [Decisiones]({target.decisions})\n'),
+                        f'- [Diagrama de datos]({target.ddbb_diagram})\n- [Decisiones]({target.decisions})\n'
+                        f'- Instrucciones para agentes: [AGENTS]({target.agents})\n'),
         target.specification: (f'# Especificación — {name}\n\n## Problema\n\n## Usuarios\n\n## Alcance\n\n'
-                               '## Requisitos\n\n## Fuera de alcance\n'),
+                               '## Requisitos\n\n## Reglas de negocio\n\n## Fuera de alcance\n'),
         target.architecture: (f'# Arquitectura — {name}\n\n## Stack\n\n## Componentes\n\n## Flujos\n\n'
-                              '## Persistencia\n\nDiagramas detallados en `architecture/`.\n\n## Límites\n'),
+                              'Diagramas por módulo o funcionalidad en `flows/`.\n\n## Persistencia\n\n'
+                              'Esquema en [DDBB-DIAGRAM](DDBB-DIAGRAM.md).\n\n## Límites\n'),
         target.roadmap: (f'# Roadmap — {name}\n\n{road_begin}\n{road_end}\n\n## P001 — {first}\n\n'
                          '**Objetivo:** Definir el objetivo verificable de la fase.\n**Criterios de salida:**\n'
                          '- Criterio observable de salida.\n'),
-        target.decisions: (f'# Decisiones — {name}\n\nRegistro en `decisions/`, un archivo por decisión.\n\n'
-                           f'{dec_begin}\n{dec_end}\n'),
+        target.decisions: (f'# Decisiones — {name}\n\nRegistro único: una sección por decisión con el encabezado '
+                           '`DNNN — título` de nivel 2 y una primera línea `Estado:` (propuesta, aceptada, '
+                           'sustituida por DMMM o rechazada). Las decisiones no se borran: se sustituyen. El índice '
+                           f'lo genera Harness Local.\n\n{dec_begin}\n{dec_end}\n'),
+        target.ddbb_diagram: (f'# Diagrama de datos — {name}\n\nSin persistencia.\n\nCuando el proyecto tenga '
+                              'modelos de datos, este documento recoge su esquema en Mermaid `erDiagram`.\n'),
         target.state: (f'# Estado — {name}\n\n{state_begin}\n{state_end}\n\n## Base acumulada\n\n'
                        'Todavía no hay trabajo aceptado.\n\n'
                        f'## Fase activa — P001 {first}\n\nSin notas todavía.\n'),
@@ -602,6 +673,3 @@ def skeleton(target: Layout, title: str, phase_title: str = 'Primera fase') -> d
                             '## P001-T001 — Primera tarea\n\n**Objetivo:** Describir el cambio acotado.\n'
                             '**Rutas permitidas:** `src/**`\n**Criterios de aceptación:**\n- Criterio verificable.\n'),
     }
-    for folder in ('decisions', 'architecture', 'research'):
-        files[target.doc(f'{folder}/README.md')] = FOLDER_READMES[folder]
-    return files

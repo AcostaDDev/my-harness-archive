@@ -61,7 +61,7 @@ root = "/RUTA/ABSOLUTA/checkout-desechable"   # worktree/checkout Git; mejor des
 repository_trusted = true                     # confianza en scripts/configuración del repositorio
 composition = "web"                           # composición de arriba; el perfil sale de ella
 # tag_kind = "lightweight"                    # o "annotated"
-# documents = "v2"                           # contrato documental por fase (D072/H6.3); omitir = anterior
+# documents = "v2"                           # contrato documental unificado (D088), obligatorio; omitir = "v2"
 # bootstrap_enabled = false                   # H4.2/H6.5: crear desde cero en este destino vacío
 
 [projects.policy]                             # elección explícita del usuario; sin valores por defecto

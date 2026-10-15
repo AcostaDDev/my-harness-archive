@@ -1,4 +1,4 @@
-"""D072/H6.3: contrato documental por fase con Git/SQLite temporales y agentes falsos; sin proveedores."""
+"""D072/H6.3 y D088: contrato documental por fase con Git/SQLite temporales y agentes falsos; sin proveedores."""
 from dataclasses import replace
 import json
 import re
@@ -64,7 +64,7 @@ Solo contenido sintético.
 ## P001-T001 — Cambio sintético
 
 **Objetivo:** Cambiar el contenido sintético.
-**Rutas permitidas:** `app/**` `docs/decisions/**`
+**Rutas permitidas:** `app/**` `docs/flows/**`
 **Criterios de aceptación:**
 - Synthetic behavior is present.
 **Comandos de validación:** `test-runner check`
@@ -97,15 +97,7 @@ STATE = f"""# Estado — Sintético
 Sin notas todavía.
 """
 
-DECISIONS = f"""# Decisiones — Sintético
-
-Registro en `decisions/`.
-
-{DEC_BEGIN}
-{DEC_END}
-"""
-
-D001 = """# D001 — Usar Git como historial
+D001 = """## D001 — Usar Git como historial
 
 **Estado:** aceptada
 Párrafo que no entra en el índice.
@@ -114,11 +106,20 @@ Párrafo que no entra en el índice.
 **Contexto:** sintético.
 """
 
+DECISIONS = f"""# Decisiones — Sintético
+
+Registro único con índice gestionado (D088).
+
+{DEC_BEGIN}
+{DEC_END}
+
+{D001}"""
+
 
 def v2_files(roadmap=ROADMAP):
     files = skeleton(LAYOUT, 'Sintético')
     files.update({'docs/ROADMAP.md': roadmap, 'docs/NEXT_STEPS.md': PLAN_P001, 'docs/STATE.md': STATE,
-                  'docs/DECISIONS.md': DECISIONS, 'docs/decisions/D001-usar-git.md': D001,
+                  'docs/DECISIONS.md': DECISIONS,
                   'app/main.txt': 'baseline\n'})
     return files
 
@@ -267,32 +268,65 @@ def test_roadmap_plan_decisions_and_base_are_read_structurally():
     assert plan_tasks(PLAN_P001, 'P001') == [('P001-T001', 'Cambio sintético')]
     with pytest.raises(ValueError, match='belong to phase'):
         plan_tasks(PLAN_P002, 'P001')
-    index = decision_index({'D010-z.md': '# D010 — Z\n', 'D001-usar-git.md': D001, 'README.md': '# x',
-                            'D002-mal.md': '# D003 — Otro\n'})
-    assert [(e['id'], e['title'], e['status'], e['date'], e['phase']) for e in index] == [
-        ('D001', 'Usar Git como historial', 'aceptada', '2026-10-14', 'P000'), ('D002', None, None, None, None),
-        ('D010', 'Z', None, None, None)]
+    plain = '## D010 — Z\n\nEstado: decidido por el usuario;\ncontinúa en otra línea.\n\n## D003 — Sin estado\n'
+    index = decision_index(DECISIONS + '# D002 — Nivel 1, ignorado\n\n' + plain)
+    assert index == [{'id': 'D001', 'title': 'Usar Git como historial', 'status': 'aceptada'},
+                     {'id': 'D003', 'title': 'Sin estado', 'status': None},
+                     {'id': 'D010', 'title': 'Z', 'status': 'decidido por el usuario;'}]
+    block = replace_block(DECISIONS, '| D099 | fila | — |\n## D098 — dentro del bloque\n', 'decisions')
+    assert [entry['id'] for entry in decision_index(block)] == ['D001']  # el bloque nunca se lee como fuente
+    for duplicate in ('## D001 — Otra vez\n', '## D0001 — Otro relleno\n'):
+        with pytest.raises(ValueError, match='Duplicate decision number'):
+            decision_index(DECISIONS + duplicate)
+    assert decision_index(None) == [] and decision_index('# Decisiones\n') == []
     assert base_section(STATE).startswith('## Base acumulada\n\n- Contenido') and 'Fase activa' not in base_section(STATE)
     assert budget_warnings(LAYOUT, {'docs/STATE.md': STATE}) == []
     huge = STATE.replace('Sin notas todavía.', 'x' * 30_000)
     assert len(budget_warnings(LAYOUT, {'docs/STATE.md': huge})) == 1
+    # D088: DECISIONS no tiene presupuesto.
+    assert budget_warnings(LAYOUT, {'docs/DECISIONS.md': DECISIONS + 'x' * 100_000}) == []
 
 
 def test_skeleton_is_a_valid_v2_document_set_with_spanish_deterministic_plan(tmp_path):
     files = skeleton(LAYOUT, 'Proyecto <nuevo>')
-    assert {'docs/decisions/README.md', 'docs/architecture/README.md', 'docs/research/README.md'} <= files.keys()
+    assert sorted(files) == ['AGENTS.md', 'CLAUDE.md', 'GEMINI.md', 'README.md', 'docs/ARCHITECTURE.md',
+                             'docs/DDBB-DIAGRAM.md', 'docs/DECISIONS.md', 'docs/NEXT_STEPS.md', 'docs/ROADMAP.md',
+                             'docs/SPECIFICATION.md', 'docs/STATE.md']
+    assert not any(part in path for path in files for part in ('decisions/', 'architecture/', 'research/'))
     assert '<nuevo>' not in files['README.md'] and '&lt;nuevo&gt;' in files['README.md']
+    assert 'Sin persistencia.' in files['docs/DDBB-DIAGRAM.md'] and decision_index(files['docs/DECISIONS.md']) == []
     for path in LAYOUT.phase_documents:
         blocks(files[path])
     assert parse_roadmap(files['docs/ROADMAP.md'])[0]['code'] == 'P001'
     assert plan_tasks(files['docs/NEXT_STEPS.md'], 'P001') == [('P001-T001', 'Primera tarea')]
     context = replace(make_context(tmp_path), documents='v2')
     contract = json.loads(deterministic_task(context, 'P001-T001', 'P001', PLAN_P001))
-    assert contract['allowed_paths'] == ['app/**', 'docs/decisions/**']
+    assert contract['allowed_paths'] == ['app/**', 'docs/flows/**']
     assert contract['implementation_constraints'][0].startswith('Shared constraints: ## Restricciones compartidas')
     assert contract['executor_selection']['reason'] == 'Selección explícita de prueba'
     assert {'docs/archive/**', 'docs/STATE.md', 'docs/NEXT_STEPS.md', 'docs/ROADMAP.md',
             'docs/DECISIONS.md'} <= set(contract['forbidden_paths'])
+
+
+def test_generated_instruction_files_respect_their_line_budgets_and_list_profile_commands():
+    """D088 punto 1: AGENTS ≤60 líneas con discovery, reglas y comandos; CLAUDE y GEMINI ≤15 que lo importan."""
+    from harness_local.core.engine.documents import MAX_AGENTS_LINES, MAX_WRAPPER_LINES
+    plain = skeleton(LAYOUT, 'Sintético')
+    assert 'Sin comandos declarados' in plain['AGENTS.md']
+    many = [('pytest', '-q', f'tests/test_{n}.py') for n in range(40)]
+    files = skeleton(LAYOUT, 'Sintético', preparation=[('uv', 'sync', '--frozen')],
+                     validations=[('ruff', 'check', 'src dir'), ('echo', 'a\n```\nb'), *many])
+    agents = files['AGENTS.md']
+    assert 0 < len(agents.splitlines()) <= MAX_AGENTS_LINES
+    assert len(plain['AGENTS.md'].splitlines()) <= MAX_AGENTS_LINES
+    for heading in ('## Discovery al empezar una sesión', '## Reglas inquebrantables', '## Comandos'):
+        assert heading in agents
+    assert 'uv sync --frozen' in agents and "ruff check 'src dir'" in agents and 'más declarados en el perfil' in agents
+    assert agents.count('```') == 4 and 'comando omitido' in agents  # ningún argv cierra el bloque de código
+    for name in ('CLAUDE.md', 'GEMINI.md'):
+        assert len(files[name].splitlines()) <= MAX_WRAPPER_LINES and '\n@AGENTS.md\n' in files[name]
+    worst = skeleton(LAYOUT, 'x' * 300, preparation=many, validations=many)['AGENTS.md']
+    assert len(worst.splitlines()) <= MAX_AGENTS_LINES  # ambos grupos recortados a la vez
 
 
 def test_context_snapshot_keeps_v1_shape_and_round_trips_v2(tmp_path):
@@ -318,8 +352,9 @@ def test_v2_contracts_forbid_harness_documents_except_reconcile_prose(tmp_path):
     with pytest.raises(ContractError, match='also forbidden'):
         task_contract(context, {**base, 'allowed_paths': ['docs/STATE.md']}, 'P001-T001', 'P001')
     reconcile = {**base, 'task_id': 'P001-RECONCILE-1', 'allowed_paths': ['docs/STATE.md', 'docs/ROADMAP.md']}
+    # D088: la reconciliación también edita la prosa de DECISIONS (registro único); el archivo sigue prohibido.
     assert json.loads(task_contract(context, reconcile, 'P001-RECONCILE-1', 'P001'))['forbidden_paths'] == [
-        'docs/archive/**', 'docs/DECISIONS.md']
+        'docs/archive/**']
     with pytest.raises(ContractError, match='also forbidden'):
         task_contract(context, {**reconcile, 'allowed_paths': ['docs/archive/phase-001/STATE.md']},
                       'P001-RECONCILE-1', 'P001')
@@ -339,14 +374,15 @@ def test_task_commit_regenerates_blocks_adopts_hashes_and_keeps_prose(v2):
 
     def change(context, request):
         context.path('app/main.txt').write_text('implemented\n', encoding='utf-8')
-        context.path('docs/decisions/D002-nueva.md').write_text('# D002 — Nueva decisión\n**Estado:** propuesta\n',
-                                                               encoding='utf-8')
+        context.path('docs/flows/tareas.md').parent.mkdir(exist_ok=True)
+        context.path('docs/flows/tareas.md').write_text('# Flujo\n\n```mermaid\nflowchart LR\n  a --> b\n```\n',
+                                                        encoding='utf-8')
         return {'result': 'Implementado | con <b>marcado</b>'}
     run_id = v2.accept(change=change)
     assert v2.ports.roles() == ['executor', 'reviewer']  # plan determinista con campos en español
     assert git(v2.context.root, 'rev-parse', 'HEAD^') == base and git(v2.context.root, 'status', '--porcelain') == ''
     changed = git(v2.context.root, 'diff', '--name-only', 'HEAD^', 'HEAD').splitlines()
-    assert set(changed) == {'app/main.txt', 'docs/decisions/D002-nueva.md', *LAYOUT.phase_documents}
+    assert set(changed) == {'app/main.txt', 'docs/flows/tareas.md', *LAYOUT.phase_documents}
     after = {path: text(v2, path) for path in LAYOUT.phase_documents}
     for path in LAYOUT.phase_documents:
         name = 'state' if path in (LAYOUT.state, LAYOUT.next_steps) else path.split('/')[-1][:-3].lower()
@@ -359,7 +395,7 @@ def test_task_commit_regenerates_blocks_adopts_hashes_and_keeps_prose(v2):
     assert '**Siguiente tarea:** ninguna' in blocks(after[LAYOUT.next_steps])['state']
     assert '| P001 | Fundamentos | activa | — |' in blocks(after[LAYOUT.roadmap])['roadmap']
     assert '| P002 | Ampliación | pendiente | — |' in blocks(after[LAYOUT.roadmap])['roadmap']
-    assert re.findall(r'^\| (D\d{3}) \|', blocks(after[LAYOUT.decisions])['decisions'], re.M) == ['D001', 'D002']
+    assert re.findall(r'^\| (D\d{3}) \|', blocks(after[LAYOUT.decisions])['decisions'], re.M) == ['D001']
     detail = v2.get(pid)
     assert detail['documents']['drift'] == []
     assert detail['documents']['baseline'] == {path: text_hash(after[path]) for path in LAYOUT.phase_documents}
@@ -393,8 +429,10 @@ def test_reconcile_task_rewrites_prose_and_harness_regenerates_only_the_block(v2
     v2.accept()
     job = v2.phases.submit_reconcile_task(v2.context, pid, v2.get(pid)['version'], key=v2.key(), versions=VERSIONS)
     contract = json.loads(json.loads(v2.repository.get_job(job.id).request_json)['contract_json'])
-    assert 'docs/DECISIONS.md' not in contract['allowed_paths'] and 'docs/SPECIFICATION.md' in contract['allowed_paths']
-    assert {'docs/archive/**', 'docs/DECISIONS.md'} <= set(contract['forbidden_paths'])
+    assert {'docs/DECISIONS.md', 'docs/SPECIFICATION.md', 'docs/DDBB-DIAGRAM.md', 'docs/flows/**',
+            'docs/phase/**'} <= set(contract['allowed_paths'])
+    assert 'docs/archive/**' in contract['forbidden_paths'] and 'docs/DECISIONS.md' not in contract['forbidden_paths']
+    assert any('"## DNNN — title" sections of docs/DECISIONS.md' in item for item in contract['implementation_constraints'])
     assert any('Base acumulada' in item for item in contract['implementation_constraints'])
 
     def compact(context, request):
@@ -402,6 +440,9 @@ def test_reconcile_task_rewrites_prose_and_harness_regenerates_only_the_block(v2
         context.path('docs/STATE.md').write_text(
             current.replace('- Contenido sintético base disponible.', '- Contenido sintético implementado (P001).'),
             encoding='utf-8')
+        decisions = context.path('docs/DECISIONS.md')
+        decisions.write_text(decisions.read_text(encoding='utf-8') + '\n## D002 — Decisión de la fase\n\n'
+                             'Estado: aceptada en la reconciliación\n', encoding='utf-8')
         return {'result': 'Base compactada'}
     v2.script(compact, {**review(), 'task_id': 'P001-RECONCILE-1'})
     v2.run()
@@ -412,8 +453,11 @@ def test_reconcile_task_rewrites_prose_and_harness_regenerates_only_the_block(v2
     state = text(v2, 'docs/STATE.md')
     assert '- Contenido sintético implementado (P001).' in state
     assert '| P001-RECONCILE-1 | COMMITTED |' in blocks(state)['state']
+    index = blocks(text(v2, 'docs/DECISIONS.md'))['decisions']
+    assert '| D002 | Decisión de la fase | aceptada en la reconciliación |' in index
     detail = v2.get(pid)
-    assert detail['documents']['drift'] == ['docs/STATE.md']  # prosa revisada: adopción explícita (D034)
+    # prosa revisada: adopción explícita (D034)
+    assert detail['documents']['drift'] == ['docs/DECISIONS.md', 'docs/STATE.md']
     v2.phases.reconcile(v2.context, pid, detail['version'], documents_sha256=detail['documents']['current_sha256'],
                         reason='Adopt reconciled synthetic STATE')
     assert v2.get(pid)['documents']['drift'] == []
@@ -622,12 +666,17 @@ def test_transition_crash_recovery_reuses_intent_and_creates_one_phase(v2, point
 def test_content_edit_commits_reviewed_bytes_regenerates_index_and_adopts(v2):
     pid = v2.create_v2()
     old = head(v2)
+    decisions = text(v2, 'docs/DECISIONS.md') + '\n## D003 — Otra\n\n**Estado:** aceptada\n'
+    duplicate = [{'path': 'docs/DECISIONS.md', 'content': decisions + '\n## D003 — Repetida\n'}]
+    with pytest.raises(ValueError, match='Duplicate decision number'):
+        edit_view(v2, changes=duplicate)
     changes = [{'path': 'docs/SPECIFICATION.md', 'content': '# Especificación\n\nNueva.\n'},
-               {'path': 'docs/decisions/D003-otra.md', 'content': '# D003 — Otra\n**Estado:** aceptada\n'}]
+               {'path': 'docs/DECISIONS.md', 'content': decisions}]
     a, b = edit_view(v2, changes=changes), edit_view(v2, changes=changes)
     assert a == b and head(v2) == old and text(v2, 'docs/SPECIFICATION.md') != changes[0]['content']
-    assert sorted(doc['path'] for doc in a['documents']) == ['docs/DECISIONS.md', 'docs/SPECIFICATION.md',
-                                                             'docs/decisions/D003-otra.md']
+    assert sorted(doc['path'] for doc in a['documents']) == ['docs/DECISIONS.md', 'docs/SPECIFICATION.md']
+    shown = next(doc['content'] for doc in a['documents'] if doc['path'] == 'docs/DECISIONS.md')
+    assert shown != decisions and shown.endswith('## D003 — Otra\n\n**Estado:** aceptada\n')
     job = queue_edit(v2, changes=changes, view=a, key='edit-once')
     assert queue_edit(v2, changes=changes, view=a, key='edit-once').id == job.id
     v2.run()
@@ -644,14 +693,15 @@ def test_worktree_edit_confirms_exact_local_document_changes(v2):
     pid = v2.create_v2()
     edited = STATE.replace('Sin notas todavía.', 'Nota escrita en el editor.')
     v2.context.path('docs/STATE.md').write_text(edited, encoding='utf-8')
-    v2.context.path('docs/research/spike.md').write_text('# Spike\n', encoding='utf-8')
+    v2.context.path('docs/phase').mkdir()
+    v2.context.path('docs/phase/spike.md').write_text('# Spike\n', encoding='utf-8')
     view = edit_view(v2, 'worktree')
-    assert [doc['path'] for doc in view['documents']] == ['docs/STATE.md', 'docs/research/spike.md']
+    assert [doc['path'] for doc in view['documents']] == ['docs/STATE.md', 'docs/phase/spike.md']
     assert view['documents'][0]['before_sha256'] == text_hash(STATE) and view['documents'][1]['before_sha256'] is None
     queue_edit(v2, 'worktree', view=view)
     v2.run()
     assert git(v2.context.root, 'status', '--porcelain') == '' and text(v2, 'docs/STATE.md') == edited
-    assert git(v2.context.root, 'show', 'HEAD:docs/research/spike.md') == '# Spike'
+    assert git(v2.context.root, 'show', 'HEAD:docs/phase/spike.md') == '# Spike'
     assert v2.get(pid)['documents']['drift'] == []
 
 
@@ -706,8 +756,9 @@ def test_documents_status_reports_drift_changes_warnings_and_archive(v2):
     pid = v2.create_v2()
     status = editor(v2).status(v2.context, v2.ports.writer(v2.context, VERSIONS))
     assert status['phase']['code'] == 'P001' and status['uncommitted'] == [] and status['warnings'] == []
-    assert [item['path'] for item in status['folders']] == ['docs/decisions', 'docs/architecture', 'docs/research']
-    assert all(item['exists'] for item in status['folders'])
+    # D088: `flows/` y `phase/` no tienen plantilla; existen cuando se usan.
+    assert status['folders'] == [{'path': 'docs/flows', 'exists': False}, {'path': 'docs/phase', 'exists': False}]
+    assert 'docs/DDBB-DIAGRAM.md' in [item['path'] for item in status['documents'] if item['kind'] == 'product']
     v2.context.path('docs/STATE.md').write_text(STATE.replace('Sin notas todavía.', 'x' * 30_000))
     v2.context.path('app/main.txt').write_text('code\n')
     status = editor(v2).status(v2.context, v2.ports.writer(v2.context, VERSIONS))
@@ -715,8 +766,9 @@ def test_documents_status_reports_drift_changes_warnings_and_archive(v2):
     assert state['drift'] is True and state['blocks'] == ['state'] and len(status['warnings']) == 1
     assert status['uncommitted'] == [{'path': 'app/main.txt', 'editable': False},
                                      {'path': 'docs/STATE.md', 'editable': True}]
-    assert status['decisions'][0]['id'] == 'D001'
-    assert editor(v2).read(v2.context, 'docs/decisions/D001-usar-git.md')['editable'] is True
+    assert status['decisions'] == [{'id': 'D001', 'title': 'Usar Git como historial', 'status': 'aceptada',
+                                    'file': 'DECISIONS.md', 'date': None, 'phase': None}]
+    assert editor(v2).read(v2.context, 'docs/DECISIONS.md')['editable'] is True
     with pytest.raises(LookupError):
         editor(v2).read(v2.context, 'app/main.txt')
     with pytest.raises(ValueError, match='v2'):
@@ -792,9 +844,11 @@ def test_v1_projects_keep_their_behavior(repository, tmp_path):  # noqa: F811
 
 def test_worktree_decision_edit_regenerates_index_in_the_same_commit(v2):
     pid = v2.create_v2()
-    v2.context.path('docs/decisions/D004-editor.md').write_text('# D004 — Desde el editor\n**Estado:** propuesta\n')
+    local = text(v2, 'docs/DECISIONS.md') + '\n## D004 — Desde el editor\n\n**Estado:** propuesta\n'
+    v2.context.path('docs/DECISIONS.md').write_text(local)
     view = edit_view(v2, 'worktree')
-    assert [doc['path'] for doc in view['documents']] == ['docs/DECISIONS.md', 'docs/decisions/D004-editor.md']
+    assert [doc['path'] for doc in view['documents']] == ['docs/DECISIONS.md']
+    assert [item['path'] for item in view['regenerated']] == ['docs/DECISIONS.md']  # índice sobre bytes locales
     queue_edit(v2, 'worktree', view=view)
     v2.run()
     assert git(v2.context.root, 'status', '--porcelain') == ''

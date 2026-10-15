@@ -98,9 +98,10 @@ escriben dos motores sobre el mismo checkout.
 
 ## 6. Contrato documental de los proyectos gestionados
 
-Estructura obligatoria para todo proyecto, también para este repositorio (D088). Hoy está implementada la variante v2
-opcional (D072/D073: `decisions/`, `architecture/`, `research/`); la estructura siguiente sustituye a v2 y se implementa
-en P008-T002–T007.
+Estructura obligatoria para todo proyecto, también para este repositorio (D088). Implementados (P008-T002, D089): el
+layout, la plantilla, el índice de DECISIONS desde sus encabezados y la obligatoriedad (sin `documents`, el proyecto usa
+esta estructura; la creación v1 se rechaza). Pendientes: rutas del ejecutor y paridad (T003), cierre (T004), prompts y
+definición (T005), API y UI (T006) e inyección de `AGENTS.md` (T007).
 
 | Ruta | Contenido | Autoría |
 |---|---|---|

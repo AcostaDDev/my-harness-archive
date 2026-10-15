@@ -1,13 +1,16 @@
 """H4.2: bootstrap como run/job existente; la fase se adopta junto al fin del job.
 
 H6.5: con el layout v2 la vista previa sale de la conversación de definición y de los borradores del
-destino (`storage/planning.py`); la intención, el adaptador y la recuperación son los mismos."""
+destino (`storage/planning.py`); la intención, el adaptador y la recuperación son los mismos.
+
+D088: la creación v1 (formulario, plantilla `project-foundation` y descubrimiento de un turno) está retirada;
+un contexto sin layout se rechaza antes de cualquier lectura o efecto. Las operaciones v1 ya registradas se
+siguen leyendo."""
 from uuid import uuid4
 
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from harness_local.core.engine.bootstrap import accepted_input, proposal
 from harness_local.core.engine.contracts import context_snapshot, freeze
 from harness_local.core.engine.documents import layout
 from harness_local.core.engine.phases import digest
@@ -17,6 +20,9 @@ from harness_local.storage.models import (
     PhaseRow as Phase, ManagedActivationRow as Activation,
 )
 from harness_local.storage.permissions import actor
+
+V1_RETIRED = ('D088: v1 project creation (H4.2 form, project-foundation template and one-turn discovery) is retired; '
+              'new projects use the unified document layout (documents = "v2") and the definition conversation')
 
 
 def unresolved(session, root):
@@ -89,6 +95,8 @@ class BootstrapRepository:
             raise Conflict('Target has managed history; use import or recovery instead of bootstrap')
 
     def preview(self, context, data, versions, writer):
+        if layout(context) is None:
+            raise ValueError(V1_RETIRED)
         saved = self.get(context.root)
         if saved is not None:
             if saved['status'] == 'INTERRUPTED':
@@ -97,12 +105,8 @@ class BootstrapRepository:
             raise Conflict('Bootstrap already exists; inspect its operation')
         with Session(self.managed.engine) as session:
             self._empty_authority(session, str(context.root))
-        if layout(context) is not None:
-            from harness_local.storage.planning import definition_acceptance
-            content = definition_acceptance(self.managed, context, data, writer)
-        else:
-            target = writer.inspect_bootstrap(context)
-            content = {**proposal(context, data), 'target': target, 'ready': not target['import_required']}
+        from harness_local.storage.planning import definition_acceptance
+        content = definition_acceptance(self.managed, context, data, writer)
         shown = {**content, 'versions': versions,
                  'author': {'name': writer.identity.name, 'email': writer.identity.email},
                  'git': {'branch': 'main', 'message': 'Initialize project from confirmed bootstrap',
@@ -132,7 +136,7 @@ class BootstrapRepository:
         if (not shown['ready'] or shown['preview_sha256'] != preview_sha256
                 or shown['resume_operation_id'] != resume_operation_id
                 or shown['expected_version'] != expected_version
-                or (accepted_input(data) if layout(context) is None else data) != shown['input']):
+                or data != shown['input']):
             raise Conflict('Preview changed or import required; review the exact result again')
         operation_id = resume_operation_id or str(uuid4())
         intent = None if resume_operation_id else writer.seal_bootstrap(
@@ -163,9 +167,8 @@ class BootstrapRepository:
                     'operation_id': op.id, 'job_id': job.id, 'reason': reason, 'actor': actor()})
                 return _job(job)
             self._empty_authority(session, str(context.root))
-            if layout(context) is not None:
-                from harness_local.storage.planning import lock_for_bootstrap
-                lock_for_bootstrap(session, shown)
+            from harness_local.storage.planning import lock_for_bootstrap
+            lock_for_bootstrap(session, shown)
             job = self.managed._queue_new_run(session, assessment, context, versions, 'P001-BOOTSTRAP',
                                              'P001', key, marker, purpose='bootstrap')
             session.add(Bootstrap(id=operation_id, root=str(context.root), run_id=job.run_id, status='QUEUED',

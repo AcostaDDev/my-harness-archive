@@ -1,16 +1,12 @@
-"""Propuesta bootstrap en la cola existente; no decide ni escribe documentos."""
+"""Propuesta bootstrap en la cola existente; no decide ni escribe documentos.
+
+D088: retirada con la creación v1; solo quedan la lectura de runs registrados y su conciliación."""
 import json
 
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from harness_local.core.engine.bootstrap_discovery import brief_input
-from harness_local.core.engine.contracts import freeze
-from harness_local.core.engine.prompts import render_attempt
-from harness_local.storage.bootstrap import BootstrapRepository
-from harness_local.storage.managed import Conflict, _job
 from harness_local.storage.models import ManagedRunRow as Run, ManagedJobRow as Job, ManagedEventRow as Event
-from harness_local.storage.prompts import PromptRepository
 
 
 def settle(managed, session, run, outcome):
@@ -45,38 +41,7 @@ class DiscoveryRepository:
             return json.loads(row.request_json)['snapshot']
 
     def submit(self, context, brief, versions, writer, *, key, confirmed):
-        if confirmed is not True:
-            raise ValueError('Explicit discovery invocation required')
-        from harness_local.core.engine.documents import layout
-        if layout(context) is not None:
-            raise ValueError('Projects with documents = "v2" use the definition conversation (H6.5), not discovery')
-        if not isinstance(key, str) or not key.strip() or len(key) > 200:
-            raise ValueError('Discovery requires an idempotency key of 1–200 characters')
-        brief = brief_input(brief)
-        marker = {'action': 'bootstrap_discovery', 'root': str(context.root), 'brief': brief, 'confirmed': True}
-        # Como el prompt y las activaciones pueden cambiar, la clave conserva el snapshot original.
-        with Session(self.managed.engine) as session:
-            row = session.scalar(select(Job).where(Job.idempotency_key == key))
-            if row is not None:
-                old = json.loads(row.request_json)
-                if {k: v for k, v in old.items() if k != 'snapshot'} != marker:
-                    raise Conflict('Idempotency key already has another discovery payload')
-                return _job(row)
-        target = writer.inspect_bootstrap(context)
-        if target['import_required']:
-            raise Conflict('Nonempty discovery target; import required')
-        catalog = PromptRepository(self.managed.engine).catalog(context)
-        prompt, prompt_snapshot = render_attempt(catalog, 'bootstrap-project', {'BRIEF': freeze(brief)}, context)
-        request = freeze({**marker, 'snapshot': {'brief': brief, 'target': target,
-                        'prompt': prompt, 'prompt_snapshot_json': prompt_snapshot}})
-        assessment = self.managed.guard.assess(context.root)
-        with self.managed._write() as session:
-            # Una activación concurrente no reemplaza el primer snapshot admitido con esta clave.
-            row = session.scalar(select(Job).where(Job.idempotency_key == key))
-            if row is not None:
-                if {k: v for k, v in json.loads(row.request_json).items() if k != 'snapshot'} != marker:
-                    raise Conflict('Idempotency key already has another discovery payload')
-                return _job(row)
-            BootstrapRepository._empty_authority(session, str(context.root))
-            return self.managed._queue_new_run(session, assessment, context, versions,
-                'P001-DISCOVERY', 'P001', key, request, purpose='bootstrap_discovery')
+        """D088: el descubrimiento de un turno solo servía a la creación v1, retirada. Los runs ya registrados
+        se siguen leyendo con `latest` y `request`; nunca se admite uno nuevo."""
+        from harness_local.storage.bootstrap import V1_RETIRED
+        raise ValueError(V1_RETIRED)

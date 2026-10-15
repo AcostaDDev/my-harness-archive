@@ -19,7 +19,7 @@ from sqlalchemy.orm import Session
 from harness_local.core.engine.commit import CommitIntent, MechanicalUpdate
 from harness_local.core.engine.context import relative_path
 from harness_local.core.engine.contracts import context_snapshot, freeze
-from harness_local.core.engine.document_ops import preview_edit, read_decisions, read_text, text_hash
+from harness_local.core.engine.document_ops import preview_edit, read_text, text_hash
 from harness_local.core.engine.documents import (
     BLOCK_REASON, blocks, budget_warnings, decision_index, layout, managed_bodies, replace_block, require_layout,
     validation_counts,
@@ -186,7 +186,7 @@ def task_commit_updates(managed, context, run_id, history):
         snap = state_snapshot(session, phase, committing_run_id=run_id)
         phases = phases_snapshot(session, run.root)
     texts = {path: read_text(context, path) for path in target.phase_documents}
-    bodies = managed_bodies(target, snap, phases, texts, read_decisions(context, target))
+    bodies = managed_bodies(target, snap, phases, texts)
     updates = []
     for path, (name, body) in bodies.items():
         if texts.get(path) is None:
@@ -295,9 +295,13 @@ class DocumentsRepository:
                 archive.append({'path': f'{target.archive_dir}/{phase_dir.name}',
                                 'files': sorted(item.name for item in phase_dir.iterdir() if item.is_file())})
         try:
-            decisions = decision_index(read_decisions(context, target))
+            decisions = decision_index(texts[target.decisions] if target.decisions in texts
+                                       else read_text(context, target.decisions))
         except (ValueError, OSError, UnicodeError):
             decisions = []
+        # D088: el esquema de la API conserva `file`, `date` y `phase` hasta P008-T006.
+        name = PurePosixPath(target.decisions).name
+        decisions = [{**entry, 'file': name, 'date': None, 'phase': None} for entry in decisions]
         return {'layout': context.documents, 'phase': phase_view, 'documents': documents,
                 'folders': [{'path': path, 'exists': context.path(path).is_dir()} for path in target.folders],
                 'uncommitted': uncommitted, 'warnings': budget_warnings(target, texts), 'decisions': decisions,

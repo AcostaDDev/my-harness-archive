@@ -210,35 +210,57 @@ def test_import_execute_block_revalidate_commit(tmp_path, url, failure):
 
 
 def test_create_confirm_restart_then_first_task_and_commit(tmp_path, url):
+    """D088: la creación v1 está retirada; se crea por la conversación de definición, con reinicio intermedio."""
+    from test_definition import BRIEF, answer
     root = tmp_path / 'empty'
     root.mkdir()
-    context = make_context(root)
-    def document(ctx, request):
-        ctx.path('docs/DELIVERY_CHECKLIST.md').write_text('# Synthetic delivery\n\nInput, success and failure observed.\n')
-        return {'result': 'synthetic documentary first task'}
-    ports = Ports([document, review()])
+    context = replace(make_context(root), documents='v2')
+    def implement(ctx, request):
+        ctx.path('app').mkdir(exist_ok=True)
+        ctx.path('app/main.txt').write_text('Synthetic first task implemented.\n')
+        return {'result': 'synthetic first task'}
+    ports = Ports([answer(), implement, review()])
     managed = replace(config(context, ports), projects=(ManagedProject('synthetic', context, VERSIONS, bootstrap_enabled=True),))
+    base = '/api/managed/projects/synthetic'
     with open_app(url, tmp_path, managed) as http:
         login(http)
-        path = '/api/managed/projects/synthetic/bootstrap'
-        shown = http.post(path + '/preview', json=DATA).json()
-        body = dict(input=DATA, preview_sha256=shown['preview_sha256'], reason='Reviewed exact preview', confirmed=True)
-        assert http.post(path, json={**body, 'confirmed': False}, headers={'Idempotency-Key': 'create'}).status_code == 422
-        assert not list(root.iterdir())
-        created = http.post(path, json=body, headers={'Idempotency-Key': 'create'})
-        assert created.status_code == 202, created.text
-        settle(http, created.json()['run_id'])
-        operation = http.get(path).json()['operation']
+        assert http.post(base + '/bootstrap/preview', json=DATA).status_code == 422
+        created = http.post(base + '/planning', json={'kind': 'definition', 'title': 'Sintético', 'brief': BRIEF},
+                            headers={'Idempotency-Key': 'definition'})
+        assert created.status_code == 201, created.text
+        cid = created.json()['id']
+        turn = http.post(base + f'/planning/{cid}/messages', json={'expected_version': 0, 'text': 'Propón'},
+                         headers={'Idempotency-Key': 'turn'})
+        assert turn.status_code == 202, turn.text
+        settle(http, turn.json()['run_id'])
+        for proposal in http.get(base + f'/planning/{cid}').json()['proposals']:
+            version = http.get(base + f'/planning/{cid}').json()['version']
+            applied = http.post(base + f"/planning/{cid}/proposals/{proposal['id']}/apply", json={
+                'expected_version': version, 'proposal_sha256': proposal['proposal_sha256'], 'confirmed': True})
+            assert applied.status_code == 200, applied.text
+        shown = http.post(base + f'/planning/{cid}/accept/preview').json()
+        assert shown['ready'], shown['blockers']
+        body = {'preview_sha256': shown['preview_sha256'], 'confirmed': True, 'reason': 'Reviewed exact preview',
+                'resume_operation_id': None, 'expected_version': None}
+        refused = http.post(base + f'/planning/{cid}/accept', json={**body, 'confirmed': False},
+                            headers={'Idempotency-Key': 'create'})
+        assert refused.status_code == 422 and not (root / '.git').exists()
+        accepted = http.post(base + f'/planning/{cid}/accept', json=body, headers={'Idempotency-Key': 'create'})
+        assert accepted.status_code == 202, accepted.text
+        settle(http, accepted.json()['run_id'])
+        operation = http.get(base + '/bootstrap').json()['definition_operation']
         assert operation['status'] == 'COMPLETED'
-        assert ports.roles() == []
+        assert ports.roles() == ['definition']
     with open_app(url, tmp_path, managed) as http:
         login(http)
-        assert http.post(path, json=body, headers={'Idempotency-Key': 'create'}).json()['id'] == created.json()['id']
-        assert ports.roles() == []
+        retried = http.post(base + f'/planning/{cid}/accept', json=body, headers={'Idempotency-Key': 'create'})
+        assert retried.json()['id'] == accepted.json()['id']
+        assert ports.roles() == ['definition']
         response = submit(http, 'first-task', body={**RUN, 'text': shown['task_text']})
         assert response.status_code == 202, response.text
         settle(http, response.json()['run_id'])
         final = commit(http, response.json()['run_id'])
-        assert final['history']['acceptance']['changed_paths'] == ['docs/DELIVERY_CHECKLIST.md']
+        assert final['history']['acceptance']['changed_paths'] == ['app/main.txt']
         assert git(root, 'rev-list', '--count', 'HEAD') == '2'
+        assert {'AGENTS.md', 'CLAUDE.md', 'GEMINI.md', 'docs/DDBB-DIAGRAM.md'} <= set(git(root, 'ls-files').splitlines())
         assert http.get('/api/managed/phases/' + operation['phase_id']).json()['status'] == 'ACTIVE'

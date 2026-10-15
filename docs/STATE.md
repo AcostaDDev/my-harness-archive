@@ -20,11 +20,11 @@ salvo donde se indica. Detalle por fase en `docs/archive/phase-NNN/SUMMARY.md`.
   de confianza del escritor Codex. Validaciones nativas `commands-1` con JUnit. Perfiles: `typescript-web` (componible
   desde el TOML) y `reference_project` (solo biblioteca).
 - **Fases y documentos** ([P004](archive/phase-004/SUMMARY.md), [P007](archive/phase-007/SUMMARY.md)): check READY,
-  reconciliación, preguntas, lote desatendido, enmiendas, abandono y cierre con tag. Contrato documental v2 opcional
-  (`documents = "v2"`, con `decisions/`, `architecture/` y `research/`): bloques regenerados en cada commit, edición
-  confirmada, exportación y transición separada que archiva en `archive/phase-NNN/`.
-- **Creación y chat** ([P005](archive/phase-005/SUMMARY.md), [P007](archive/phase-007/SUMMARY.md)): bootstrap v1 desde
-  carpeta vacía; creación v2 por conversación con borradores en disco y CAS; planificación de fase conversacional; chat
+  reconciliación, preguntas, lote desatendido, enmiendas, abandono y cierre con tag. Contrato documental unificado y
+  obligatorio de D088 desde P008-T002 (layout v2 modificado; DECISIONS único con índice): bloques regenerados en cada
+  commit, edición confirmada, exportación y transición separada que archiva en `archive/phase-NNN/`.
+- **Creación y chat** ([P005](archive/phase-005/SUMMARY.md), [P007](archive/phase-007/SUMMARY.md)): creación por
+  conversación con borradores en disco y CAS (la v1 se rechaza desde P008-T002); planificación de fase conversacional; chat
   sobre una instantánea de HEAD sin lock, con comandos deterministas y propuestas que crean tareas confirmadas.
 - **API y UI** ([P007](archive/phase-007/SUMMARY.md)): `/api/managed` con sesión local, Host/Origin y CSRF; UI por URL
   (registro, proyecto, documentación, creación, fases, tareas, runs con diff paginado, chat, estadísticas); métricas por
@@ -57,5 +57,24 @@ Objetivo y criterios en [ROADMAP](ROADMAP.md); plan en [NEXT_STEPS](NEXT_STEPS.m
   3,2 KiB) y NEXT_STEPS 22 KiB dentro de presupuesto. No se ejecutaron `alembic check` ni el build del frontend: no
   cambian modelos, migraciones ni UI.
 
-**Siguiente:** P008-T002 (layout unificado obligatorio y plantilla), sin iniciar. El motor sigue implementando el layout
-v2 de D072/D073 hasta T002–T007; este repositorio no está registrado, así que no le afecta.
+**P008-T002 completada** (layout unificado obligatorio y plantilla, [D089](DECISIONS.md#d089--p008-t002-layout-unificado-obligatorio-y-plantilla)):
+
+- `Layout` con AGENTS, CLAUDE, GEMINI, DDBB-DIAGRAM, `flows/` y `phase/`, sin `decisions/`, `architecture/` ni
+  `research/`; `skeleton()` genera exactamente la lista de D088 (AGENTS ≤60 líneas con los comandos del perfil,
+  CLAUDE/GEMINI ≤15).
+- Índice de DECISIONS desde sus encabezados `## DNNN — título` y la primera línea `Estado:`; numeración repetida
+  rechazada en commit de tarea, edición, transición y aceptación de la definición; sin presupuesto de 8 KiB. La
+  reconciliación puede añadir decisiones a la prosa de DECISIONS.
+- La configuración compone siempre `documents = "v2"` y congela `document_layout = "d088-1"` (jobs anteriores en
+  cuarentena). Creación v1 y descubrimiento rechazados con diagnóstico; plantilla `project-foundation` y
+  `examples/bootstrap_demo.py` eliminados. `protected_write` exime AGENTS/CLAUDE/GEMINI para la creación.
+- Verificación: 12 checks ligeros; pytest 1112 pruebas y 121 subtests (la suite completa dio 1111 OK y 1 fallo de
+  `test_document_viewer`, ruta antigua en la prueba, corregida y re-ejecutada en su archivo: 7 OK); `alembic check`
+  sobre una base temporal; 16
+  diagramas Mermaid válidos con el parser local; el DECISIONS de este repositorio indexa 89 decisiones sin duplicados.
+  No se ejecutaron pruebas Node ni el build: no cambian UI ni OpenAPI.
+- Pendiente hasta T003–T007: prompts, perfiles (`docs/**` protegido), cierre separado, API (forma del índice) y UI
+  siguen con el layout anterior.
+
+**Siguiente:** P008-T003 (rutas protegidas, paridad diagramas‑código y propuestas de ADR), sin iniciar. Este
+repositorio sigue sin registrarse en el harness.

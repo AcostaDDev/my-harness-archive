@@ -33,7 +33,8 @@ DRAFTS = {
     'README.md': '# Sintético\n\nHerramienta local sintética.\n',
     'docs/SPECIFICATION.md': '# Especificación — Sintético\n\n## Problema\n\nCoordinar un flujo sintético.\n',
     'docs/ARCHITECTURE.md': '# Arquitectura — Sintético\n\n## Stack\n\nPerfil registrado.\n',
-    'docs/architecture/data-model.md': '# Modelo de datos\n\n```mermaid\nerDiagram\n  ITEM ||--o{ STEP : has\n```\n',
+    'docs/DDBB-DIAGRAM.md': '# Modelo de datos\n\n```mermaid\nerDiagram\n  ITEM ||--o{ STEP : has\n```\n',
+    'docs/flows/flujo.md': '# Flujo sintético\n\n```mermaid\nflowchart LR\n  item --> step\n```\n',
     'docs/ROADMAP.md': f"""# Roadmap — Sintético
 
 {ROAD_BEGIN}
@@ -52,8 +53,8 @@ DRAFTS = {
 **Criterios de salida:**
 - Second behavior is accepted
 """,
-    'docs/DECISIONS.md': f'# Decisiones — Sintético\n\nRegistro en `decisions/`.\n\n{DEC_BEGIN}\n{DEC_END}\n',
-    'docs/decisions/D001-usar-perfil.md': ('# D001 — Usar el perfil registrado\n\n**Estado:** aceptada\n'
+    'docs/DECISIONS.md': (f'# Decisiones — Sintético\n\nRegistro único.\n\n{DEC_BEGIN}\n{DEC_END}\n\n'
+                          '## D001 — Usar el perfil registrado\n\n**Estado:** aceptada\n'
                                           '**Fecha:** 2026-10-14\n**Fase:** P000\n**Contexto:** sintético.\n'),
     'docs/STATE.md': (f'# Estado — Sintético\n\n{STATE_BEGIN}\n{STATE_END}\n\n## Base acumulada\n\n'
                       'Todavía no hay trabajo aceptado.\n\n## Fase activa — P001 Fundamentos\n\nSin notas todavía.\n'),
@@ -201,7 +202,13 @@ def test_empty_folder_to_root_commit_with_p001_and_phase_000(world):
     assert documents['docs/archive/phase-000/BRIEF.md']['content'] == BRIEF
     record = documents['docs/archive/phase-000/DEFINITION.md']['content']
     assert '| 2 | ANSWERED | No hace falta autenticación |' in record and 'edición del usuario por API' in record
-    assert documents['docs/research/README.md']['origin'] == 'template'
+    # D088: los archivos de instrucciones no redactados salen de la plantilla con el título y los comandos.
+    assert {path for path, doc in documents.items() if doc['origin'] == 'template'} == {
+        'AGENTS.md', 'CLAUDE.md', 'GEMINI.md'}
+    assert documents['AGENTS.md']['content'].startswith('# Sintético — instrucciones para agentes\n')
+    assert 'test-runner check' in documents['AGENTS.md']['content']
+    assert documents['docs/DDBB-DIAGRAM.md']['origin'] == documents['docs/flows/flujo.md']['origin'] == 'draft'
+    assert not any(part in path for path in documents for part in ('decisions/', 'architecture/', 'research/'))
     assert documents['docs/SPECIFICATION.md']['origin'] == 'draft'
     assert documents['docs/STATE.md']['origin'] == 'draft+blocks'
     assert '**Fase:** P001 · estado ACTIVE' in blocks(documents['docs/STATE.md']['content'])['state']
@@ -252,14 +259,16 @@ def test_profile_protection_limits_the_executor_not_confirmed_v2_document_writes
     from harness_local.profiles.typescript_web import typescript_web_profile
     from harness_local.storage.documents import DocumentsRepository
     world.context = replace(world.context, profile=typescript_web_profile())
-    contract = ('README.md', 'docs/STATE.md', 'docs/decisions/D001-x.md', 'docs/archive/phase-001/SUMMARY.md',
-                'docs/archive/phase-000/BRIEF.md')
+    contract = ('README.md', 'docs/STATE.md', 'docs/DDBB-DIAGRAM.md', 'docs/flows/x.md', 'docs/phase/x.md',
+                'docs/archive/phase-001/SUMMARY.md', 'docs/archive/phase-000/BRIEF.md',
+                'AGENTS.md', 'CLAUDE.md', 'GEMINI.md')  # D088: la creación escribe los archivos de instrucciones
     assert not any(protected_write(world.context, path) for path in contract)
     for path in ('package.json', 'docs/assets/logo.svg', 'docs/archive/phase-001/x.png', 'docs/../package.json',
                  'tests/a.test.mjs', '.claude/settings.json'):
         assert protected_write(world.context, path), path
     v1 = replace(world.context, documents=None)
     assert protected_write(v1, 'docs/STATE.md') and protected_write(v1, 'docs/archive/phase-001/SUMMARY.md')
+    assert protected_write(v1, 'AGENTS.md') and protected_write(v1, 'CLAUDE.md')
     cid = ready(world)
     shown = world.preview(cid)
     assert shown['ready'] and not any('protected' in item for item in shown['blockers']), shown['blockers']
@@ -358,7 +367,8 @@ def test_concurrent_edits_are_detected_and_never_overwritten(world):
 
 
 @pytest.mark.parametrize('foreign', ['notes.txt', '.DS_Store', 'docs/other.md', 'docs/research/spike.md',
-                                     'docs/decisions/sub/D002-x.md', 'app/main.py', 'link'])
+                                     'docs/decisions/D002-x.md', 'docs/architecture/data-model.md',
+                                     'docs/phase/notes.md', 'docs/flows/sub/x.md', 'app/main.py', 'link'])
 def test_foreign_files_block_acceptance_and_are_preserved(world, foreign, tmp_path):
     cid = ready(world)
     target = world.path(foreign)
@@ -401,6 +411,8 @@ BLOCKERS = {
     'partial_marker': ({'docs/STATE.md': f'# Estado\n\n{STATE_BEGIN}\n'}, 'docs/STATE.md:'),
     'invalid_utf8': ({'docs/SPECIFICATION.md': b'\xff\xfe'}, 'Drafts must be UTF-8'),
     'executable': ({'docs/SPECIFICATION.md': 0o755}, 'Drafts must be UTF-8'),
+    'duplicate_decision': ({'docs/DECISIONS.md': DRAFTS['docs/DECISIONS.md'] + '\n## D001 — Repetida\n'},
+                           'DECISIONS: Duplicate decision number'),
 }
 
 
@@ -546,15 +558,17 @@ def test_v1_flows_are_refused_for_v2_and_v2_flows_for_v1(world, tmp_path):
     from harness_local.storage.bootstrap_discovery import DiscoveryRepository
     with pytest.raises(ValueError, match='definition conversation'):
         world.bootstrap.preview(world.context, DATA, VERSIONS, world.writer)
-    with pytest.raises(ValueError, match='definition conversation'):
+    with pytest.raises(ValueError, match='D088: v1 project creation'):
         DiscoveryRepository(world.repo).submit(world.context, DATA['brief'], VERSIONS, world.writer, key='d',
                                                confirmed=True)
     v1 = tmp_path / 'v1-destination'
     v1.mkdir()
     with pytest.raises(ValueError, match='documents = "v2"'):
         world.planning.create(make_context(v1), kind='definition', title='x', brief=BRIEF, writer=world.writer)
-    shown = world.bootstrap.preview(make_context(v1), DATA, VERSIONS, world.writer)
-    assert shown['ready'] and len(shown['documents']) == 6 and 'definition' not in shown
+    # D088: la creación v1 (H4.2) está retirada; se rechaza con diagnóstico, sin leer ni escribir el destino.
+    with pytest.raises(ValueError, match='D088: v1 project creation .* is retired'):
+        world.bootstrap.preview(make_context(v1), DATA, VERSIONS, world.writer)
+    assert list(v1.iterdir()) == [] and world.bootstrap.get(v1) is None
     with pytest.raises(ValueError, match='256 KiB'):
         world.planning.create(world.context, kind='definition', title='x', brief='x' * (256 * 1024 + 1),
                               writer=world.writer)
@@ -716,14 +730,14 @@ def test_http_definition_flow(migrated_database, tmp_path):
         assert read == {'path': 'README.md', 'content': DRAFTS['README.md'],
                         'sha256': sha256(DRAFTS['README.md'].encode()).hexdigest(), 'known_sha256': read['sha256']}
         (root / 'notes.md').write_text('ajeno\n')
-        (root / 'docs/decisions/D002-exec.md').write_text('# D002\n')
-        (root / 'docs/decisions/D002-exec.md').chmod(0o755)
-        for path, code in (('notes.md', 404), ('docs/../README.md', 404), ('docs/architecture/missing.md', 404),
-                           ('docs/decisions/D002-exec.md', 409)):
+        (root / 'docs/flows/exec.md').write_text('# Flujo\n')
+        (root / 'docs/flows/exec.md').chmod(0o755)
+        for path, code in (('notes.md', 404), ('docs/../README.md', 404), ('docs/flows/missing.md', 404),
+                           ('docs/decisions/D001-x.md', 404), ('docs/flows/exec.md', 409)):
             response = http.get(base + f'/planning/{cid}/drafts/content', params={'path': path})
             assert response.status_code == code, (path, response.text)
         (root / 'notes.md').unlink()
-        (root / 'docs/decisions/D002-exec.md').unlink()
+        (root / 'docs/flows/exec.md').unlink()
         version = http.get(base + f'/planning/{cid}').json()['version']
         edit = http.put(base + f'/planning/{cid}/drafts', json={
             'expected_version': version, 'path': 'README.md', 'content': '# API\n',
@@ -756,5 +770,6 @@ def test_http_definition_flow(migrated_database, tmp_path):
                 '/api/managed/projects/{project_id}/planning/{conversation_id}/accept'} <= set(schema)
         engine.dispose()
     assert git(root, 'rev-list', '--count', 'HEAD') == '1'
-    assert decision_index({'D001-usar-perfil.md': DRAFTS['docs/decisions/D001-usar-perfil.md']})[0]['id'] == 'D001'
+    assert [entry['id'] for entry in decision_index((root / 'docs/DECISIONS.md').read_text())] == ['D001']
+    assert (root / 'AGENTS.md').is_file() and (root / 'CLAUDE.md').is_file() and (root / 'GEMINI.md').is_file()
     assert [entry['code'] for entry in parse_roadmap((root / 'docs/ROADMAP.md').read_text())] == ['P001', 'P002']

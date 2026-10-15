@@ -47,8 +47,8 @@ casos de uso. El supervisor es el único que lanza procesos y consume la cola; c
 | `core/engine/workflow.py`, `validation.py`, `review.py`, `acceptance.py`, `junit.py` | Bucle plan → ejecución → validación → revisión → aceptación |
 | `core/engine/commit.py`, `evidence.py`, `serialization.py` | Intención de commit, actualizaciones mecánicas, codec de historial (formatos 1–7) |
 | `core/engine/phases.py` | Definición de fase, check READY, cierre, tags, enmiendas |
-| `core/engine/documents.py`, `document_ops.py`, `document_export.py` | Contrato documental v2, bloques gestionados, transición, edición y exportación |
-| `core/engine/definition.py`, `bootstrap.py`, `bootstrap_discovery.py` | Definición conversacional (v2) y bootstrap D037 (v1) |
+| `core/engine/documents.py`, `document_ops.py`, `document_export.py` | Contrato documental unificado (D088), plantilla, bloques gestionados, transición, edición y exportación |
+| `core/engine/definition.py`, `bootstrap.py`, `bootstrap_discovery.py` | Definición conversacional (v2) y ejecución del bootstrap D037; el descubrimiento v1 solo concilia runs registrados |
 | `core/engine/chat.py`, `chat_commands.py` | Turnos de chat y gramática de comandos |
 | `core/engine/prompts.py`, `templates/*.md` | Catálogo de prompts versionados y variables |
 | `core/engine/permissions.py`, `metrics.py` | Permisos por categoría y capa; catálogo de métricas `metrics-1` |
@@ -171,4 +171,5 @@ Uso real (D051): construir y verificar el wheel (`scripts/build_distribution.py 
 - Las validaciones no guardan su hora; la lectura de un run decodifica su historial completo.
 - Un proyecto `typescript-web` nuevo no tiene `package.json` y el ejecutor no puede crearlo.
 - Dos avisos *low* de KaTeX en Mermaid 11.
-- El contrato documental vigente es v2 opcional; la estructura de D088 está pendiente (P008).
+- La estructura de D088 es obligatoria desde P008-T002, pero prompts, definición, protección de rutas, cierre, API y
+  UI siguen nombrando el layout anterior hasta T003–T007 (D089).

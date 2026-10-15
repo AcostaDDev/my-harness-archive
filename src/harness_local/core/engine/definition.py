@@ -11,6 +11,7 @@ La aceptación es una vista previa determinista que lleva al bootstrap D037 con 
 from dataclasses import asdict, replace
 import hashlib
 import json
+from pathlib import PurePosixPath
 import re
 
 from harness_local.core.engine.chat import _text, _texts, digest
@@ -35,7 +36,7 @@ MAX_QUESTIONS = 30
 MAX_PENDING = 30
 DRAFT_NAME = re.compile(r'[A-Za-z0-9][A-Za-z0-9._-]{0,99}\.md')
 KINDS = {'definition': ('define-project', 'definition'), 'phase_planning': ('plan-phase', 'planning')}
-TEMPLATE = {'name': 'project-definition', 'version': '2'}
+TEMPLATE = {'name': 'project-definition', 'version': '3'}  # 3: plantilla unificada D088
 
 
 def text_hash(text: str) -> str:
@@ -63,11 +64,13 @@ def definition_layout(context) -> Layout:
     target = require_layout(context)
     if target.docs in ('', '.') or target.docs.startswith('/'):
         raise ValueError('The definition requires STATE and NEXT_STEPS inside a documentation folder')
+    if '.git' in PurePosixPath(target.docs).parts:
+        raise ValueError('The documentation folder cannot be Git metadata')
     return target
 
 
 def fixed_drafts(target: Layout) -> tuple[str, ...]:
-    """Rutas de la plantilla v2 (`skeleton`); el título no cambia las rutas."""
+    """Rutas de la plantilla v2 de D088 (`skeleton`); ni el título ni los comandos cambian las rutas."""
     return tuple(sorted(skeleton(target, 'x')))
 
 
@@ -77,24 +80,21 @@ def required_documents(target: Layout) -> tuple[str, ...]:
 
 def draft_directories(target: Layout) -> frozenset[str]:
     parts = target.docs.split('/')
-    return frozenset(['/'.join(parts[:n]) for n in range(1, len(parts) + 1)] + list(target.folders))
+    return frozenset(['/'.join(parts[:n]) for n in range(1, len(parts) + 1)] + [target.flows_dir])
 
 
 def allowed_draft(target: Layout, path: str) -> bool:
-    """Solo la plantilla v2, `architecture/*.md` y `decisions/*.md`; cualquier otro archivo es ajeno."""
+    """Solo la plantilla de D088 y `flows/*.md`; cualquier otro archivo es ajeno."""
     if not isinstance(path, str):
         return False
     if path in fixed_drafts(target):
         return True
-    for folder in (target.decisions_dir, target.architecture_dir):
-        if path.startswith(folder + '/') and DRAFT_NAME.fullmatch(path[len(folder) + 1:]):
-            return True
-    return False
+    folder = target.flows_dir
+    return path.startswith(folder + '/') and DRAFT_NAME.fullmatch(path[len(folder) + 1:]) is not None
 
 
 def allowed_drafts_view(target: Layout) -> dict:
-    return {'fixed': list(fixed_drafts(target)),
-            'patterns': [f'{target.decisions_dir}/*.md', f'{target.architecture_dir}/*.md'],
+    return {'fixed': list(fixed_drafts(target)), 'patterns': [f'{target.flows_dir}/*.md'],
             'required': list(required_documents(target))}
 
 
@@ -320,6 +320,11 @@ def acceptance(context, conversation: dict, inspection: dict, texts: dict[str, s
             continue
         if names - _block_names(target, path):
             blockers.append(f'{path} contains managed blocks that belong to another document')
+    if target.decisions in texts:
+        try:
+            decision_index(texts[target.decisions])
+        except ValueError as exc:
+            blockers.append(f'DECISIONS: {exc}')
     entry, tasks = None, []
     if target.roadmap in texts:
         try:
@@ -388,16 +393,18 @@ def acceptance(context, conversation: dict, inspection: dict, texts: dict[str, s
     rows = [{'code': item['code'], 'title': item['title'],
              **({'status': 'ACTIVE', 'tag': item['tag']} if item['code'] == 'P001' else {})}
             for item in parse_roadmap(texts[target.roadmap])]
-    decision_texts = {path[len(target.decisions_dir) + 1:]: text for path, text in texts.items()
-                      if path.startswith(target.decisions_dir + '/')}
     regenerated = {
         target.state: replace_block(texts[target.state], render_state(fresh)),
         target.next_steps: replace_block(texts[target.next_steps], render_next_steps(fresh)),
         target.roadmap: replace_block(texts[target.roadmap], render_roadmap(rows), 'roadmap'),
-        target.decisions: replace_block(texts[target.decisions], render_decisions(decision_index(decision_texts)),
+        target.decisions: replace_block(texts[target.decisions], render_decisions(decision_index(texts[target.decisions])),
                                         'decisions'),
     }
-    template = skeleton(target, 'x')
+    # D088: AGENTS, CLAUDE, GEMINI y DDBB-DIAGRAM no redactados salen de la plantilla con el título y los
+    # comandos del perfil congelado.
+    template = skeleton(target, conversation['title'],
+                        preparation=[command.argv for command in context.profile.preparation],
+                        validations=[command.argv for command in context.profile.validations])
     documents = []
     for path in sorted({*texts, *(p for p in template if p not in required_documents(target))}):
         if path in texts:

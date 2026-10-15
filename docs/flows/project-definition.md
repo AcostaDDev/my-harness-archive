@@ -1,7 +1,9 @@
 # Flujo — creación de un proyecto (definición conversacional)
 
-Proyecto nuevo en una carpeta vacía con el contrato documental v2 (D072, D075, D082). El agente nunca escribe: el
-harness aplica borradores confirmados con CAS y el commit raíz sigue el bootstrap D037.
+Proyecto nuevo en una carpeta vacía con el contrato documental unificado (D072, D075, D082, D088). Es la única vía de
+creación: la v1 (formulario H4.2, plantilla `project-foundation` y descubrimiento de un turno) se rechaza con
+diagnóstico (D089). El agente nunca escribe: el harness aplica borradores confirmados con CAS y el commit raíz sigue
+el bootstrap D037.
 
 ```mermaid
 sequenceDiagram
@@ -31,13 +33,17 @@ sequenceDiagram
 ```
 
 Bloquean la aceptación: documentos obligatorios ausentes, ROADMAP sin fases, P001 sin objetivo y criterios,
-NEXT_STEPS sin una tarea P001-TNNN válida, preguntas bloqueantes abiertas sin aplazar o archivos ajenos a la plantilla.
+NEXT_STEPS sin una tarea P001-TNNN válida, DECISIONS con numeración repetida, preguntas bloqueantes abiertas sin
+aplazar o archivos ajenos a la plantilla.
+
+Borradores admitidos (T002): la plantilla de D088 (AGENTS, CLAUDE, GEMINI, README, SPECIFICATION, ARCHITECTURE,
+ROADMAP, STATE, NEXT_STEPS, DECISIONS y DDBB-DIAGRAM) y `docs/flows/*.md`. AGENTS, CLAUDE, GEMINI y DDBB-DIAGRAM no
+redactados salen de la plantilla, con el título de la conversación y los comandos del perfil congelado.
 
 ## Cambios previstos en P008 (D088, sin implementar)
 
-- La plantilla incorpora `AGENTS.md`, `CLAUDE.md`, `GEMINI.md`, `docs/DDBB-DIAGRAM.md` (o «Sin persistencia»),
-  `docs/flows/*.md` y `docs/phase/`; desaparecen `decisions/`, `architecture/` y `research/` (T002, T005).
-- La creación v1 (formulario D037/H4.2) se retira; solo queda esta conversación (T002, T006).
+- Prompts `define-project` y `plan-phase` y documentos obligatorios según D088 (T005); retirada de `Bootstrap.tsx`
+  y de los endpoints v1 (T006).
 - Un repositorio con contenido entra por los flujos de importación A o B (T009–T015).
 
 ## Fuente en el código

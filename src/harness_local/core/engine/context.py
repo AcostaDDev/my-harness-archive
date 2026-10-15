@@ -109,7 +109,8 @@ class ProjectContext:
     policy: EnginePolicy
     next_steps_file: str = "docs/NEXT_STEPS.md"
     state_file: str = "docs/STATE.md"
-    # D072/H6.3: contrato documental por fase. None conserva el comportamiento anterior.
+    # D072/H6.3 y D088: contrato documental por fase. La configuración local siempre compone "v2" (layout
+    # unificado obligatorio); None solo describe contextos congelados anteriores, que se siguen leyendo.
     documents: str | None = None
 
     def __post_init__(self):

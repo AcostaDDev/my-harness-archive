@@ -110,6 +110,28 @@ def test_valid_configuration_composes_fresh_ports_without_processes(setup):
     assert load_local_config(write(folder, data)).projects[0].versions == versions
 
 
+def test_projects_without_documents_use_the_mandatory_unified_layout_and_quarantine_older_jobs(setup):
+    """D088: omitir `documents` equivale a "v2"; la versión del layout entra en las congeladas, así que un job
+    admitido con la composición anterior no recibe puertos ni escritor (el supervisor lo deja en cuarentena)."""
+    context, data, folder, tmp_path = setup
+    (project,) = load_local_config(write(folder, data)).projects
+    assert 'documents' not in data['projects'][0] and project.context.documents == 'v2'
+    assert project.versions['document_layout'] == 'd088-1'
+    explicit = copy.deepcopy(data)
+    explicit['projects'][0]['documents'] = 'v2'
+    config = load_local_config(write(folder, explicit))
+    assert config.projects[0].context == project.context
+    older = {key: value for key, value in config.projects[0].versions.items() if key != 'document_layout'}
+    for factory in (config.ports_factory, config.commit_factory):
+        with pytest.raises(JournalError, match='distinta de la congelada'):
+            factory(project.context, older)
+    legacy = copy.deepcopy(data)
+    legacy['projects'][0]['documents'] = 'v1'
+    with pytest.raises(LocalConfigError, match='D088'):
+        load_local_config(write(folder, legacy))
+    assert not launches(tmp_path)
+
+
 def mutate(data, change):
     data = copy.deepcopy(data)
     project, codex = data['projects'][0], data['providers']['codex']

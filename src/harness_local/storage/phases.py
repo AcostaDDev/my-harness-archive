@@ -808,9 +808,8 @@ class PhaseRepository:
             allowed, constraints = list(documents), ['Documentation only: no code, tests, plans state, commits or tags.']
             if target is not None:
                 # D072: la reconciliación compacta STATE y pone al día los documentos de producto y decisiones;
-                # el índice de decisiones y el archivo de fases siguen siendo del harness.
-                allowed = list(dict.fromkeys([path for path in documents if path != target.decisions]
-                                             + list(target.product_documents)
+                # los bloques gestionados (también el índice de DECISIONS, D088) y el archivo siguen siendo del harness.
+                allowed = list(dict.fromkeys(list(documents) + list(target.product_documents)
                                              + [f'{folder}/**' for folder in target.folders]))
                 constraints += [
                     'Never edit inside harness-local managed blocks; Harness Local regenerates them at commit.',
@@ -818,7 +817,8 @@ class PhaseRepository:
                     f'exists and works, by area, within {BUDGETS["base"]} bytes, linking archived summaries.',
                     f'Summarize the phase in the "## Fase activa" section of {target.state} and note what the next '
                     'session must know.',
-                    'Record durable decisions as new files in the decisions folder; supersede, never delete.']
+                    f'Record durable decisions as new "## DNNN — title" sections of {target.decisions}, each with '
+                    'a first "Estado:" line and the next free number; supersede, never delete or renumber.']
             contract = task_contract(context, {
                 'task_id': task_id, 'phase_id': phase.code, 'title': f'Reconcile phase {phase.code} documents',
                 'objective': f'Make the phase {phase.code} documents describe accepted reality.',

@@ -46,10 +46,9 @@ def _targets(context, snapshot, baseline):
     if target is None:
         return [(context.state_file, 'state', render(snapshot)),
                 (context.next_steps_file, 'state', render(snapshot, next_steps=True))]
-    from harness_local.core.engine.document_ops import read_decisions, read_text
+    from harness_local.core.engine.document_ops import read_text
     texts = {path: read_text(context, path) for path in target.phase_documents if path in baseline}
-    bodies = layout_v2.managed_bodies(target, snapshot['state'], snapshot['phases'], texts,
-                                      read_decisions(context, target))
+    bodies = layout_v2.managed_bodies(target, snapshot['state'], snapshot['phases'], texts)
     return [(path, *bodies[path]) for path in target.phase_documents if path in bodies and path in baseline]
 
 

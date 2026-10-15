@@ -98,6 +98,7 @@ tarea se leen solo las decisiones que cita; este índice sirve para buscar prece
 | [D086](#d086--hallazgos-de-d085-corregidos-diffs-paginados-conversaciones-idempotentes-y-fase-con-sucesora) | Hallazgos de D085 corregidos: diffs paginados, conversaciones idempotentes y fase con sucesora | P007 |
 | [D087](#d087--h62-y-el-hito-6-cerrados-por-decisión-del-usuario) | H6.2 y el Hito 6 cerrados por decisión del usuario | P007 |
 | [D088](#d088--contrato-documental-unificado-cierre-de-fase-automático-e-importación-de-proyectos-p008) | Contrato documental unificado, cierre de fase automático e importación de proyectos (P008) | P008 |
+| [D089](#d089--p008-t002-layout-unificado-obligatorio-y-plantilla) | P008-T002: layout unificado obligatorio y plantilla | P008 |
 
 ## D001 — Alcance local y arquitectura base
 
@@ -2688,7 +2689,8 @@ Estado: decidido por el usuario el 2026-10-15, tras D086 (`01b4f6d`).
 ## D088 — Contrato documental unificado, cierre de fase automático e importación de proyectos (P008)
 
 Estado: decidido por el usuario el 2026-10-15 tras el análisis de incongruencias de esa sesión; **P008-T001
-(migración documental de este repositorio) implementada el mismo día**; P008-T002–T015 pendientes. Fase: P008.
+(migración documental de este repositorio) implementada el mismo día**; P008-T002 implementada (D089); P008-T003–T015
+pendientes. Fase: P008.
 Sustituye en parte D072/D073 (carpetas `decisions/`, `architecture/` y `research/`; layout v2 opcional), D032/D073
 (cierre y transición separados) y D037 (creación v1). Plan: [NEXT_STEPS](NEXT_STEPS.md).
 
@@ -2746,3 +2748,56 @@ Implementación de T001, sin cambios del motor:
 Consecuencias: hasta T002 el motor sigue implementando el layout v2 de D072/D073; este repositorio no está registrado
 como proyecto gestionado, así que la diferencia no afecta a su desarrollo manual. Los consentimientos de proveedores
 siguen agotados.
+
+## D089 — P008-T002: layout unificado obligatorio y plantilla
+
+Estado: implementada y verificada offline el 2026-10-15. Fase: P008. Aplica D088 puntos 1, 2, 5, 7 y 9; sustituye en
+parte D073 (carpetas `decisions/`, `architecture/` y `research/`; `documents = "v2"` opcional) y D037/H4.2 (creación
+v1).
+
+Implementado:
+
+- `Layout` (D088 punto 7, v2 modificado en su sitio): añade `AGENTS.md`, `CLAUDE.md` y `GEMINI.md` en la raíz,
+  `docs/DDBB-DIAGRAM.md` (documento de producto) y las carpetas `flows/` y `phase/`; retira `decisions/`,
+  `architecture/` y `research/`. `archive(code)` conserva `phase-NNN`.
+- `skeleton()` genera exactamente AGENTS, CLAUDE, GEMINI, README, SPECIFICATION, ARCHITECTURE, ROADMAP, STATE,
+  NEXT_STEPS, DECISIONS y DDBB-DIAGRAM («Sin persistencia»); `flows/` y `phase/` sin plantilla. AGENTS (≤60 líneas)
+  lleva discovery, reglas inquebrantables y los comandos de preparación y validación del perfil (como mucho 12 por
+  grupo; un argv con tres acentos graves no se transcribe); CLAUDE y GEMINI (≤15) importan `@AGENTS.md`. Los límites
+  se comprueban por test. La plantilla de la definición pasa a la versión 3.
+- `DECISIONS.md` único: el bloque `managed-decisions` indexa los encabezados `## DNNN — título` del propio archivo
+  (id, título y la primera línea `Estado:`, en negrita o no), sin leer el bloque. Una numeración repetida, también
+  con otro relleno de ceros, se rechaza en la regeneración del commit de tarea, en la edición confirmada, en la
+  transición y como bloqueo de la aceptación de la definición. Sin presupuesto de 8 KiB.
+- Obligatoriedad: la configuración local compone siempre `documents = "v2"`; omitir la clave equivale a "v2" y otro
+  valor se rechaza. Las versiones congeladas incluyen `document_layout = "d088-1"`, así que un job pendiente admitido
+  con la composición anterior no recibe puertos ni escritor y queda en cuarentena. `ProjectContext.documents = None`
+  solo describe contextos congelados anteriores, que se siguen leyendo sin cambios.
+- Creación v1 retirada en el backend: `BootstrapRepository.preview` (y con él `submit`) rechaza un contexto sin layout
+  y el descubrimiento de un turno rechaza cualquier petición nueva, con un diagnóstico «D088: v1 project creation …
+  is retired». Se eliminan la plantilla `bootstrap-foundation.json`, `proposal()` y la validación del formulario, y
+  `examples/bootstrap_demo.py`. Las operaciones v1 registradas se siguen leyendo; su ejecución y conciliación no cambian.
+
+Decisiones tomadas con criterio:
+
+- La obligatoriedad vive en la composición (TOML y registro), no en `ProjectContext`: así los contextos congelados sin
+  la clave conservan su lectura, como exige T002, y los contextos construidos a mano en pruebas siguen siendo
+  explícitos.
+- La reconciliación de fase puede editar la prosa de DECISIONS (ya no está prohibida en su contrato), porque D088
+  punto 2 le asigna añadir decisiones y ya no hay carpeta donde hacerlo; su restricción pide secciones
+  `## DNNN — title` con «Estado:» y el siguiente número libre. Las tareas normales siguen sin poder tocarlo.
+- `protected_write` exime AGENTS, CLAUDE y GEMINI del layout para que la creación pueda escribirlos aunque el perfil
+  los proteja frente al ejecutor (D081). Su edición confirmada (`Layout.editable`) y el resto de rutas del ejecutor
+  quedan para T003.
+- Los borradores de la definición admiten la plantilla y `docs/flows/*.md` (adelanto mínimo de T005, porque las
+  carpetas anteriores desaparecen); AGENTS, CLAUDE, GEMINI y DDBB-DIAGRAM no redactados salen de la plantilla con el
+  título de la conversación y los comandos del perfil congelado. La carpeta de documentación no puede estar en `.git`.
+- La API conserva la forma del índice (`file`, `date`, `phase`, con `file = "DECISIONS.md"` y los otros a null) hasta
+  T006, sin regenerar OpenAPI ni tocar la UI.
+- Las pruebas de la creación v1 se reescriben sobre una definición v2 lista para aceptar (misma intención, caídas,
+  conciliación y guardias) o pasan a comprobar el rechazo; el recorrido HTTP de extremo a extremo usa la conversación
+  de definición.
+
+Límites hasta T003–T007: los prompts (`define-project`, `plan-phase`, `reconcile-phase`, `review-task`,
+`execute-task`) siguen nombrando `decisions/` y `architecture/`; los perfiles protegen `docs/**`; el cierre y la
+transición siguen separados; la UI enlaza `decisions/DNNN`. Este repositorio sigue sin registrarse en el harness.
