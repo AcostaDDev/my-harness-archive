@@ -23,8 +23,10 @@ from harness_local.api.schemas import (
     MigrationPreviewRead, ModeRead, Page, PhaseTaskRead, ProblemResponse, RunActionCreate, RunCreate, SupervisorRead,
 )
 from harness_local.api.security import local_request, problem
+from harness_local.core.engine.document_ops import BaseChanged
 from harness_local.core.migration import MigrationError
 from harness_local.services.managed_runtime import ManagedRuntime, agents_view
+from harness_local.storage.documents import IMAGE_TYPES
 from harness_local.storage.managed import Conflict, OwnershipLost
 from harness_local.storage.migration import ModeConflict
 
@@ -42,7 +44,8 @@ def call(operation, /, *args, **kwargs):
     except LookupError as error:
         raise problem(404, "not_found", str(error)) from error
     except Conflict as error:
-        code = "mode_refused" if isinstance(error.__cause__, ModeConflict) else "conflict"
+        code = ("mode_refused" if isinstance(error.__cause__, ModeConflict)
+                else "document_changed" if isinstance(error.__cause__, BaseChanged) else "conflict")
         raise problem(409, code, str(error)) from error
     except ModeConflict as error:
         raise problem(409, "migration_conflict", str(error)) from error
@@ -651,7 +654,7 @@ def managed_router(runtime: ManagedRuntime):
     # --- D072/H6.3: documentos del proyecto y transición de fase ---------------------------------------
     from harness_local.api.schemas import (
         DocumentEditCreate, DocumentEditInput, DocumentEditPreviewRead, DocumentRead, DocumentsStatusRead,
-        PhaseTransitionCreate, PhaseTransitionInput, PhaseTransitionPreviewRead,
+        PhaseTransitionCreate, PhaseTransitionInput, PhaseTransitionPreviewRead, DocumentTreeRead,
     )
     from harness_local.storage.documents import DocumentsRepository
     from harness_local.storage.transition import TransitionRepository
@@ -680,13 +683,30 @@ def managed_router(runtime: ManagedRuntime):
     def document_content(project_id: str, path: Annotated[str, Query(min_length=1, max_length=500)]):
         return call(DocumentsRepository(runtime.repository).read, documents_project(project_id).context, path)
 
+    @router.get('/projects/{project_id}/documents/tree', response_model=DocumentTreeRead,
+                operation_id='managed_document_tree')
+    def document_tree(project_id: str):
+        """Markdown del README y de la documentación; sin enlaces, ocultos ni contenido."""
+        return call(DocumentsRepository(runtime.repository).tree, documents_project(project_id).context)
+
+    @router.get('/projects/{project_id}/documents/image', response_class=Response,
+                operation_id='managed_document_image',
+                responses={200: {'content': {kind: {} for kind in sorted(set(IMAGE_TYPES.values()))},
+                                 'description': 'Bytes de la imagen del checkout'}})
+    def document_image(project_id: str, path: Annotated[str, Query(min_length=1, max_length=500)]):
+        """Imagen del checkout para el visor (H6.2 E3). Sin scripts ni recursos externos aunque se abra sola."""
+        data, kind = call(DocumentsRepository(runtime.repository).image, documents_project(project_id).context, path)
+        return Response(data, media_type=kind, headers={
+            'Content-Security-Policy': "default-src 'none'; style-src 'unsafe-inline'; sandbox",
+            'X-Content-Type-Options': 'nosniff', 'Cache-Control': 'private, no-cache'})
+
     @router.post('/projects/{project_id}/documents/edit/preview', response_model=DocumentEditPreviewRead,
                  operation_id='managed_document_edit_preview')
     def document_edit_preview(project_id: str, body: DocumentEditInput):
         """Diff exacto sin efectos; los bloques gestionados y el archivo de fases no se editan."""
         item = documents_project(project_id)
         return call(DocumentsRepository(runtime.repository).preview, item.context, document_writer(item),
-                    source=body.source, changes=_changes(body))
+                    source=body.source, changes=_changes(body), regenerate_blocks=body.regenerate_blocks)
 
     @router.post('/projects/{project_id}/documents/edit', response_model=ManagedJobRead, status_code=202,
                  operation_id='managed_document_edit')
@@ -695,11 +715,12 @@ def managed_router(runtime: ManagedRuntime):
         job = call(DocumentsRepository(runtime.repository).submit, item.context, key=idempotency_key,
                    versions=frozen_versions(item), preview_sha256=body.preview_sha256, reason=body.reason,
                    confirmed=body.confirmed, git=document_writer(item), source=body.source, changes=_changes(body),
-                   resume_operation_id=body.resume_operation_id)
+                   resume_operation_id=body.resume_operation_id, regenerate_blocks=body.regenerate_blocks)
         return queued(job)
 
     def _changes(body):
-        return None if body.changes is None else [change.model_dump() for change in body.changes]
+        # Sin `base_sha256` no hay CAS; con null, el documento no debe existir.
+        return None if body.changes is None else [change.model_dump(exclude_unset=True) for change in body.changes]
 
     def transition_phase(phase_id: str):
         item, _ = registered_phase(phase_id)

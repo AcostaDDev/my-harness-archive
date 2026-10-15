@@ -1187,6 +1187,46 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/managed/projects/{project_id}/documents/tree": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Document Tree
+         * @description Markdown del README y de la documentación; sin enlaces, ocultos ni contenido.
+         */
+        get: operations["managed_document_tree"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/managed/projects/{project_id}/documents/image": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Document Image
+         * @description Imagen del checkout para el visor (H6.2 E3). Sin scripts ni recursos externos aunque se abra sola.
+         */
+        get: operations["managed_document_image"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/managed/projects/{project_id}/documents/edit/preview": {
         parameters: {
             query?: never;
@@ -2531,6 +2571,11 @@ export interface components {
             path: string;
             /** Content */
             content: string;
+            /**
+             * Base Sha256
+             * @description Hash con el que se abrió el documento en el editor (CAS); null: no debe existir. Sin el campo, no se compara.
+             */
+            base_sha256?: string | null;
         };
         /** DocumentChangeRead */
         DocumentChangeRead: {
@@ -2549,6 +2594,12 @@ export interface components {
             source: "content" | "worktree";
             /** Changes */
             changes?: components["schemas"]["DocumentChange"][] | null;
+            /**
+             * Regenerate Blocks
+             * @description Solo worktree: sustituye los bloques gestionados editados en local por los de la base (H6.2 E3).
+             * @default false
+             */
+            regenerate_blocks: boolean;
             /** Preview Sha256 */
             preview_sha256: string;
             /** Resume Operation Id */
@@ -2571,6 +2622,12 @@ export interface components {
             source: "content" | "worktree";
             /** Changes */
             changes?: components["schemas"]["DocumentChange"][] | null;
+            /**
+             * Regenerate Blocks
+             * @description Solo worktree: sustituye los bloques gestionados editados en local por los de la base (H6.2 E3).
+             * @default false
+             */
+            regenerate_blocks: boolean;
         };
         /** DocumentEditPreviewRead */
         DocumentEditPreviewRead: {
@@ -2604,6 +2661,11 @@ export interface components {
              * @enum {string}
              */
             source: "content" | "worktree";
+            /**
+             * Regenerated
+             * @default []
+             */
+            regenerated: components["schemas"]["RegeneratedDocumentRead"][];
         };
         /** DocumentExportCreate */
         DocumentExportCreate: {
@@ -2673,6 +2735,11 @@ export interface components {
             after_sha256: string;
             /** Content */
             content: string;
+            /**
+             * Disk Sha256
+             * @description Bytes locales que se sustituyen (bloques regenerados).
+             */
+            disk_sha256?: string | null;
         };
         /** DocumentRead */
         DocumentRead: {
@@ -2710,6 +2777,36 @@ export interface components {
             blocks: string[];
             /** Error */
             error: string | null;
+        };
+        /** DocumentTreeEntryRead */
+        DocumentTreeEntryRead: {
+            /** Path */
+            path: string;
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "phase" | "product" | "archive" | "other";
+            /** Editable */
+            editable: boolean;
+            /** Archived */
+            archived: boolean;
+            /** Bytes */
+            bytes: number;
+        };
+        /** DocumentTreeRead */
+        DocumentTreeRead: {
+            /** Docs */
+            docs: string;
+            /** Files */
+            files: components["schemas"]["DocumentTreeEntryRead"][];
+            /** Truncated */
+            truncated: boolean;
+            /**
+             * Skipped
+             * @description Enlaces simbólicos u objetos no regulares que no se listan.
+             */
+            skipped: string[];
         };
         /** DocumentsStatusRead */
         DocumentsStatusRead: {
@@ -4648,6 +4745,18 @@ export interface components {
             path: string;
             /** Origin */
             origin: string;
+        };
+        /** RegeneratedDocumentRead */
+        RegeneratedDocumentRead: {
+            /** Path */
+            path: string;
+            /** Local Sha256 */
+            local_sha256: string;
+            /**
+             * Diff
+             * @description Lo que se descarta de los bytes locales al regenerar los bloques.
+             */
+            diff: string;
         };
         /** RegisteredProjectRead */
         RegisteredProjectRead: {
@@ -9490,6 +9599,135 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["DocumentRead"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+        };
+    };
+    managed_document_tree: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Obligatoria con valor 1 en mutaciones (protección CSRF). */
+                "x-harness-local"?: string | null;
+            };
+            path: {
+                project_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DocumentTreeRead"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+        };
+    };
+    managed_document_image: {
+        parameters: {
+            query: {
+                path: string;
+            };
+            header?: {
+                /** @description Obligatoria con valor 1 en mutaciones (protección CSRF). */
+                "x-harness-local"?: string | null;
+            };
+            path: {
+                project_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Bytes de la imagen del checkout */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "image/avif": unknown;
+                    "image/gif": unknown;
+                    "image/jpeg": unknown;
+                    "image/png": unknown;
+                    "image/svg+xml": unknown;
+                    "image/webp": unknown;
                 };
             };
             /** @description Forbidden */

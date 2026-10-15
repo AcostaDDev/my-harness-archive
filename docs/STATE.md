@@ -1,6 +1,6 @@
 # Estado de desarrollo
 
-Actualizado: 2026-10-14.
+Actualizado: 2026-10-15.
 
 ## Existe
 
@@ -35,7 +35,7 @@ Actualizado: 2026-10-14.
 - Dependencias reales instaladas en `.venv` / `frontend/node_modules`, locks
   `uv.lock` / `frontend/package-lock.json`. Pins H0.2 usados conservados;
   backend de paquete `uv_build==0.12.19`. Comandos comprobados en README/AGENTS.
-- Casos de producto en `tests/product/`: 1075 pytest y 121 subtests (H6.2 E2; ver su sección).
+- Casos de producto en `tests/product/`: 1085 pytest y 121 subtests (H6.2 E3; ver su sección).
   La comprobación ligera anterior conserva sus 12 checks sin dependencias.
 - H1.1 completado: [importación legacy y verificaciones](discovery/H1.1_IMPORT.md),
   [alcance original](discovery/H1.1_SCOPE.md). Lector local explícito de
@@ -2666,8 +2666,8 @@ tarea propuesta: UI H6.2, sin iniciar; será una tarea aparte.
   **1065 pytest + 121 subtests** (696 s); 12 pruebas Node; `tsc` y build; 12 checks estándar; Alembic sobre una SQLite temporal. QA con Chrome sobre
   la demo sintética, servida por la API como el wheel y por Vite: carga directa, recarga, Atrás, 404, claro, oscuro,
   386 px, y recorridos de commit, recuperación → revalidar → commit y encolar → run, sin trabajos duplicados.
-- Hallazgo sin resolver: la guardia H5.6 rechaza la carga de la página con `Sec-Fetch-Site: cross-site`, así que un
-  enlace desde otro sitio no abre la URL. Escribirla, un marcador o recargar sí funcionan. Pendiente de decisión.
+- Hallazgo resuelto por el usuario en D079 (se mantiene): la guardia H5.6 rechaza la carga de la página con `Sec-Fetch-Site: cross-site`, así que un
+  enlace desde otro sitio no abre la URL. Escribirla, un marcador o recargar sí funcionan.
 
 ## H6.2 E2: registro de proyectos (D078)
 
@@ -2692,7 +2692,31 @@ tarea propuesta: UI H6.2, sin iniciar; será una tarea aparte.
   archivos; cambio de versión con auditoría; baja. Claro, oscuro y 386 px sin desbordamiento. La sesión la inició el
   usuario (se denegó leer el archivo de clave).
 - Límites: la raíz no cambia; un id dado de baja no se reactiva; un cambio del registro deja en cuarentena el commit de
-  runs aceptados con la versión anterior. Sigue pendiente la decisión sobre `Sec-Fetch-Site: cross-site` (E1).
+  runs aceptados con la versión anterior. La guardia ante `Sec-Fetch-Site: cross-site` (E1) se mantiene por decisión del usuario (D079).
+
+## H6.2 E3: documentación (D080)
+
+- Tarea activa de NEXT_STEPS, pedida por el usuario el 2026-10-15 sobre `9af7471`. Al empezar había cambios sin commit
+  de la decisión D079 del usuario (STATE, NEXT_STEPS, DECISIONS y H6.2_E1); se conservaron y entran en este commit.
+  [Entrega, verificación y límites](discovery/H6.2_E3_DOCS.md).
+- Dependencias fijadas: `markdown-it@15.0.2` y `mermaid@11.17.2` (con `--before` para las transitivas); lock sin cambios
+  en lo existente. `npm audit`: 2 avisos *low* de KaTeX vía Mermaid, sin arreglo con versiones de dos semanas.
+- Servidor: `…/documents/tree`, `…/documents/image` (sin enlaces ni ocultos, CSP `sandbox`), `base_sha256` por cambio con
+  409 `document_changed`, y `regenerate_blocks` en ediciones `worktree` (prosa local, bloques de la base, diff de lo
+  descartado y bytes locales exactos admitidos por el escritor). Fallback de la UI para URLs `.md`.
+- Cliente: ruta `/projects/:p/docs[/*path]`, `markdown.ts` (render seguro), `mermaid-view.ts` (diferido, `strict`, como
+  imagen desde un Blob) y `pages/Docs.tsx` (árbol, resumen, visor, editor con bloques bloqueados y borrador recuperable,
+  cambios locales, deriva). Página en un chunk diferido: principal 352 kB, documentación 132 kB, Mermaid aparte.
+  `usePoll` conserva la lectura al releer el mismo recurso.
+- Verificación: 7 pytest nuevos (`test_document_viewer.py`) y 3 rutas en `test_ui_routes.py`; suite completa **1085
+  pytest + 121 subtests** (722 s). 52 pruebas Node (39 nuevas, 27 casos hostiles contra una lista cerrada de etiquetas,
+  atributos y destinos). `tsc`, build, 12 checks estándar, `alembic upgrade`/`check`/`current` en SQLite temporal.
+- QA con Chrome sobre `scripts/dev` y un checkout v2 sintético (sesión iniciada por el usuario): documento hostil inerte
+  (interceptado y en carga directa), diagrama, imagen y enlaces; edición con recarga sin efectos repetidos; conflicto de
+  CAS; regeneración de un bloque forjado; claro, oscuro y 386 px. Corregido en la QA: relectura que desmontaba el panel
+  de cambios locales, resultado del commit que desaparecía y bloques vacíos sin explicar.
+- Límites: sin historial por documento; borrador por pestaña; cambios fuera de documentos editables y deriva commiteada
+  se resuelven fuera del editor; exclusión cooperativa frente a escritores externos.
 
 ## Coordinación
 

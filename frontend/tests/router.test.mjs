@@ -15,6 +15,9 @@ const valid = [
   ['/projects/mi-web/chat/c-1', { name: 'chat', project: 'mi-web', conversation: 'c-1' }],
   ['/projects/mi-web/settings', { name: 'settings', project: 'mi-web' }],
   ['/runs/abc', { name: 'run-short', run: 'abc' }],
+  ['/projects/mi-web/docs', { name: 'docs', project: 'mi-web' }],
+  ['/projects/mi-web/docs/README.md', { name: 'docs', project: 'mi-web', path: 'README.md' }],
+  ['/projects/mi-web/docs/docs/decisions/D001-usar-git.md', { name: 'docs', project: 'mi-web', path: 'docs/decisions/D001-usar-git.md' }],
 ];
 
 test('every route of D072 §7 parses and round-trips through href', () => {
@@ -66,4 +69,17 @@ test('the registration page is not a project and keeps its own trail', () => {
   assert.equal(projectOf(parse('/projects/new')), undefined);
   assert.deepEqual(trail({ name: 'project-new' }).map(item => item.label), ['Proyectos', 'Registrar proyecto']);
   assert.deepEqual(parse('/projects/new/settings'), { name: 'settings', project: 'new' });
+});
+
+test('document paths keep each segment exact and never climb out of the checkout', () => {
+  const route = { name: 'docs', project: 'mi web', path: 'docs/notas de diseño/a#b?.md' };
+  const path = href(route);
+  assert.equal(path, '/projects/mi%20web/docs/docs/notas%20de%20dise%C3%B1o/a%23b%3F.md');
+  assert.deepEqual(parse(path), route);
+  for (const bad of ['/projects/a/docs/%2E%2E/x.md', '/projects/a/docs/docs/./x.md', '/projects/a/docs/a%2Fb.md']) {
+    assert.equal(parse(bad).name, 'not-found', bad);
+  }
+  assert.deepEqual(trail(parse('/projects/p/docs/docs/STATE.md')).map(i => [i.label, href(i.to)]), [
+    ['Proyectos', '/'], ['p', '/projects/p'], ['Documentación', '/projects/p/docs'], ['STATE.md', '/projects/p/docs/docs/STATE.md']]);
+  assert.equal(projectOf(parse('/projects/p/docs')), 'p');
 });

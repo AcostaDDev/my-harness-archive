@@ -11,7 +11,7 @@ const decisionLabels = { scope: "Alcance aceptado", architecture: "Arquitectura 
 
 export function Bootstrap({ project, busy, refresh, operate, send }: {
   project: string; busy: boolean; refresh: number;
-  operate: (f: () => Promise<unknown>) => Promise<void>; send: (p: Pending) => Promise<void>;
+  operate: (f: () => Promise<unknown>) => Promise<void>; send: (p: Pending) => Promise<unknown>;
 }) {
   const [status, setStatus] = useState<S["BootstrapStatusRead"]>();
   const [data, setData] = useState(initial);

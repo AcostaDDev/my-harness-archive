@@ -21,8 +21,10 @@ export function usePoll<T>(path: string | null, interval = 1500, refresh = 0): P
   const [state, setState] = useState<Poll<T>>({ missing: false, loading: path !== null });
   const current = useRef(path);
   useEffect(() => {
+    // Releer el mismo recurso tras una acción conserva la lectura mostrada (y lo que cuelga de ella) hasta la nueva.
+    const same = current.current === path;
     current.current = path;
-    setState({ missing: false, loading: path !== null });
+    setState(previous => same && previous.data !== undefined ? { ...previous, loading: true } : { missing: false, loading: path !== null });
     if (path === null) return;
     let active = true;
     let timer: ReturnType<typeof setTimeout>;

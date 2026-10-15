@@ -6909,6 +6909,194 @@
         }
       }
     },
+    "/api/managed/projects/{project_id}/documents/tree": {
+      "get": {
+        "summary": "Document Tree",
+        "description": "Markdown del README y de la documentación; sin enlaces, ocultos ni contenido.",
+        "operationId": "managed_document_tree",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          },
+          {
+            "name": "x-harness-local",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Obligatoria con valor 1 en mutaciones (protección CSRF).",
+              "title": "X-Harness-Local"
+            },
+            "description": "Obligatoria con valor 1 en mutaciones (protección CSRF)."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DocumentTreeRead"
+                }
+              }
+            }
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          }
+        }
+      }
+    },
+    "/api/managed/projects/{project_id}/documents/image": {
+      "get": {
+        "summary": "Document Image",
+        "description": "Imagen del checkout para el visor (H6.2 E3). Sin scripts ni recursos externos aunque se abra sola.",
+        "operationId": "managed_document_image",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          },
+          {
+            "name": "path",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 500,
+              "title": "Path"
+            }
+          },
+          {
+            "name": "x-harness-local",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Obligatoria con valor 1 en mutaciones (protección CSRF).",
+              "title": "X-Harness-Local"
+            },
+            "description": "Obligatoria con valor 1 en mutaciones (protección CSRF)."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Bytes de la imagen del checkout",
+            "content": {
+              "image/avif": {},
+              "image/gif": {},
+              "image/jpeg": {},
+              "image/png": {},
+              "image/svg+xml": {},
+              "image/webp": {}
+            }
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          }
+        }
+      }
+    },
     "/api/managed/projects/{project_id}/documents/edit/preview": {
       "post": {
         "summary": "Document Edit Preview",
@@ -12816,6 +13004,19 @@
             "type": "string",
             "maxLength": 524288,
             "title": "Content"
+          },
+          "base_sha256": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^[0-9a-f]{64}$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Base Sha256",
+            "description": "Hash con el que se abrió el documento en el editor (CAS); null: no debe existir. Sin el campo, no se compara."
           }
         },
         "additionalProperties": false,
@@ -12869,6 +13070,12 @@
               }
             ],
             "title": "Changes"
+          },
+          "regenerate_blocks": {
+            "type": "boolean",
+            "title": "Regenerate Blocks",
+            "description": "Solo worktree: sustituye los bloques gestionados editados en local por los de la base (H6.2 E3).",
+            "default": false
           },
           "preview_sha256": {
             "type": "string",
@@ -12934,6 +13141,12 @@
               }
             ],
             "title": "Changes"
+          },
+          "regenerate_blocks": {
+            "type": "boolean",
+            "title": "Regenerate Blocks",
+            "description": "Solo worktree: sustituye los bloques gestionados editados en local por los de la base (H6.2 E3).",
+            "default": false
           }
         },
         "additionalProperties": false,
@@ -13012,6 +13225,14 @@
               "worktree"
             ],
             "title": "Source"
+          },
+          "regenerated": {
+            "items": {
+              "$ref": "#/components/schemas/RegeneratedDocumentRead"
+            },
+            "type": "array",
+            "title": "Regenerated",
+            "default": []
           }
         },
         "type": "object",
@@ -13214,6 +13435,18 @@
           "content": {
             "type": "string",
             "title": "Content"
+          },
+          "disk_sha256": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Disk Sha256",
+            "description": "Bytes locales que se sustituyen (bloques regenerados)."
           }
         },
         "type": "object",
@@ -13341,6 +13574,80 @@
           "error"
         ],
         "title": "DocumentStateRead"
+      },
+      "DocumentTreeEntryRead": {
+        "properties": {
+          "path": {
+            "type": "string",
+            "title": "Path"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "phase",
+              "product",
+              "archive",
+              "other"
+            ],
+            "title": "Kind"
+          },
+          "editable": {
+            "type": "boolean",
+            "title": "Editable"
+          },
+          "archived": {
+            "type": "boolean",
+            "title": "Archived"
+          },
+          "bytes": {
+            "type": "integer",
+            "title": "Bytes"
+          }
+        },
+        "type": "object",
+        "required": [
+          "path",
+          "kind",
+          "editable",
+          "archived",
+          "bytes"
+        ],
+        "title": "DocumentTreeEntryRead"
+      },
+      "DocumentTreeRead": {
+        "properties": {
+          "docs": {
+            "type": "string",
+            "title": "Docs"
+          },
+          "files": {
+            "items": {
+              "$ref": "#/components/schemas/DocumentTreeEntryRead"
+            },
+            "type": "array",
+            "title": "Files"
+          },
+          "truncated": {
+            "type": "boolean",
+            "title": "Truncated"
+          },
+          "skipped": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Skipped",
+            "description": "Enlaces simbólicos u objetos no regulares que no se listan."
+          }
+        },
+        "type": "object",
+        "required": [
+          "docs",
+          "files",
+          "truncated",
+          "skipped"
+        ],
+        "title": "DocumentTreeRead"
       },
       "DocumentsStatusRead": {
         "properties": {
@@ -19069,6 +19376,30 @@
           "origin"
         ],
         "title": "ProvenanceRead"
+      },
+      "RegeneratedDocumentRead": {
+        "properties": {
+          "path": {
+            "type": "string",
+            "title": "Path"
+          },
+          "local_sha256": {
+            "type": "string",
+            "title": "Local Sha256"
+          },
+          "diff": {
+            "type": "string",
+            "title": "Diff",
+            "description": "Lo que se descarta de los bytes locales al regenerar los bloques."
+          }
+        },
+        "type": "object",
+        "required": [
+          "path",
+          "local_sha256",
+          "diff"
+        ],
+        "title": "RegeneratedDocumentRead"
       },
       "RegisteredProjectRead": {
         "properties": {

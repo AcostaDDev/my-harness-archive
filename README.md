@@ -95,6 +95,9 @@ La plantilla es `local-config-3`: los comandos van en composiciones con nombre y
 (`/projects/new`). `local-config-1` y `-2` se siguen leyendo sin registro desde la UI.
 [Registro de proyectos](docs/discovery/H6.2_E2_REGISTRY.md).
 
+La documentación de un proyecto `documents = "v2"` se lee y se edita en `/projects/<id>/docs`: Markdown sin HTML,
+diagramas Mermaid aislados y commits del harness con el diff confirmado ([entrega](docs/discovery/H6.2_E3_DOCS.md)).
+
 ## Entorno de desarrollo comprobado
 
 Requisitos comprobados en macOS ARM64: Python 3.14.4, uv 0.12.19,

@@ -1,4 +1,4 @@
-import { StrictMode } from "react";
+import { lazy, StrictMode, Suspense } from "react";
 import { createRoot } from "react-dom/client";
 import { Chat } from "./Chat";
 import { LegacyBrowser } from "./legacy";
@@ -14,9 +14,12 @@ import { parse } from "./router.ts";
 import type { Route } from "./router.ts";
 import { SessionGate } from "./SessionGate";
 import { Shell } from "./Shell";
-import { Empty, PageHeader } from "./ui";
+import { Empty, Loading, PageHeader } from "./ui";
 import { ProjectWorkspace } from "./workspace";
 import "./styles.css";
+
+// La documentación (markdown-it y, al dibujar, Mermaid) se descarga solo al abrirla (H6.2 E3).
+const DocsPage = lazy(() => import("./pages/Docs").then(module => ({ default: module.DocsPage })));
 
 function Page({ route }: { route: Route }) {
   switch (route.name) {
@@ -42,6 +45,7 @@ function ProjectPageFor({ route }: { route: Exclude<Route, { name: "home" | "leg
     case "run": return <RunPage key={route.run} phase={route.phase} task={route.task} run={route.run} />;
     case "chat": return <Chat conversation={route.conversation} />;
     case "settings": return <SettingsPage />;
+    case "docs": return <Suspense fallback={<Loading />}><DocsPage path={route.path} /></Suspense>;
   }
 }
 

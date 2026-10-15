@@ -130,7 +130,8 @@ class SPAStaticFiles(StaticFiles):
     """Rutas de la UI (D076): un GET sin archivo fuera de `/api/` recibe `index.html`.
 
     Los 404 de la API siguen siendo JSON; un asset estático inexistente sigue siendo 404
-    para no servir HTML en su lugar. Los códigos de fase pueden contener puntos.
+    para no servir HTML en su lugar. Los códigos de fase pueden contener puntos. Una URL que acaba en `.md` es
+    un documento del visor (H6.2 E3), también bajo una carpeta `assets/` del checkout.
     """
 
     async def get_response(self, path: str, scope):
@@ -138,6 +139,6 @@ class SPAStaticFiles(StaticFiles):
             return await super().get_response(path, scope)
         except StarletteHTTPException as error:
             if (error.status_code != 404 or scope["method"] not in ("GET", "HEAD")
-                    or path.split("/", 1)[0] == "api" or ASSET.search(path)):
+                    or path.split("/", 1)[0] == "api" or (ASSET.search(path) and not path.endswith(".md"))):
                 raise
             return await super().get_response("index.html", scope)

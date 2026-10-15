@@ -52,6 +52,7 @@ function ProjectNav({ route, project }: { route: Route; project: string }) {
   const items: [string, Route, boolean][] = [
     ["Resumen", { name: "project", project }, route.name === "project"],
     ["Fases", { name: "phases", project }, ["phases", "phase", "task", "run"].includes(route.name)],
+    ["Documentación", { name: "docs", project }, route.name === "docs"],
     ["Chat", { name: "chat", project }, route.name === "chat"],
     ["Ajustes", { name: "settings", project }, route.name === "settings"],
   ];

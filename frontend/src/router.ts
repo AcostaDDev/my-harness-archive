@@ -12,6 +12,7 @@ export type Route =
   | { name: "run"; project: string; phase: string; task: string; run: string }
   | { name: "chat"; project: string; conversation?: string }
   | { name: "settings"; project: string }
+  | { name: "docs"; project: string; path?: string }
   | { name: "run-short"; run: string }
   | { name: "not-found"; path: string };
 
@@ -39,6 +40,12 @@ export function parse(pathname: string): Route {
   // `new` está reservado: el servidor nunca registra un proyecto con ese id (D076).
   if (n === 2) return project === "new" ? { name: "project-new" } : { name: "project", project };
   if (c === "settings" && n === 3) return { name: "settings", project };
+  // Documentación (H6.2 E3): el resto de la URL es la ruta del documento en el checkout, segmento a segmento.
+  if (c === "docs") {
+    const rest = (parts as string[]).slice(3);
+    if (rest.some(part => part === "." || part === "..")) return { name: "not-found", path: pathname };
+    return rest.length ? { name: "docs", project, path: rest.join("/") } : { name: "docs", project };
+  }
   if (c === "chat" && n <= 4) return n === 3 ? { name: "chat", project } : { name: "chat", project, conversation: d };
   if (c !== "phases") return { name: "not-found", path: pathname };
   if (n === 3) return { name: "phases", project };
@@ -61,6 +68,7 @@ export function href(route: Route): string {
     case "run": return `/projects/${e(route.project)}/phases/${e(route.phase)}/tasks/${e(route.task)}/runs/${e(route.run)}`;
     case "chat": return `/projects/${e(route.project)}/chat${route.conversation ? `/${e(route.conversation)}` : ""}`;
     case "settings": return `/projects/${e(route.project)}/settings`;
+    case "docs": return `/projects/${e(route.project)}/docs${route.path ? `/${route.path.split("/").map(e).join("/")}` : ""}`;
     case "run-short": return `/runs/${e(route.run)}`;
     case "not-found": return route.path;
   }
@@ -87,6 +95,10 @@ export function trail(route: Route): { label: string; to: Route }[] {
   const { project } = route;
   items.push({ label: project, to: { name: "project", project } });
   if (route.name === "settings") items.push({ label: "Ajustes", to: route });
+  if (route.name === "docs") {
+    items.push({ label: "Documentación", to: { name: "docs", project } });
+    if (route.path) items.push({ label: route.path.split("/").pop()!, to: route });
+  }
   if (route.name === "chat") {
     items.push({ label: "Chat", to: { name: "chat", project } });
     if (route.conversation) items.push({ label: "Conversación", to: route });

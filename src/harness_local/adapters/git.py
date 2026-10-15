@@ -393,7 +393,8 @@ class GitWorkspace:
             sha = self._document_sha(context, doc)
             if sha is False:
                 return CommitOutcome('invalidated', intent.operation_id, diagnostic='Export document is no longer regular')
-            if sha not in (doc['before_sha256'], doc['after_sha256']):
+            # `disk_sha256`: bytes locales que la vista previa confirmada sustituye (bloques regenerados, H6.2 E3).
+            if sha not in (doc['before_sha256'], doc['after_sha256'], doc.get('disk_sha256')):
                 return CommitOutcome('invalidated', intent.operation_id,
                                      diagnostic='Document changed externally after export preview: ' + doc['path'])
         observed = self.capture(context)
@@ -411,7 +412,7 @@ class GitWorkspace:
             sha = self._document_sha(context, doc)
             if sha == doc['after_sha256']:
                 continue
-            if sha is False or sha != doc['before_sha256']:
+            if sha is False or sha not in (doc['before_sha256'], doc.get('disk_sha256')):
                 return CommitOutcome('invalidated', intent.operation_id, diagnostic='Document changed during export')
             self._write_mechanical(context, replace(intent, mechanical=(update,)))
         return self.execute(context, intent)

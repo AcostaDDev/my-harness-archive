@@ -2409,3 +2409,36 @@ Decisiones tomadas con criterio dentro de D054/D076:
 
 Migración `0016_project_registry`; sin codec ni dependencias. Siguiente: E3 (documentación), sin iniciar.
 
+
+## D079 — Guardia H5.6 sin cambios ante navegaciones cross-site (hallazgo de E1)
+
+Estado: decidido por el usuario el 2026-10-15.
+
+La guardia de sesión (D044) sigue rechazando con `origin_rejected` toda petición con `Sec-Fetch-Site: cross-site`,
+también la carga de la propia página fuera de `/api/`. Un enlace al harness pulsado desde otro sitio (correo, chat)
+no abre la URL. Escribirla, usar un marcador o recargar siguen funcionando. Se descarta por ahora admitir
+navegaciones `GET` de documento; puede reconsiderarse con una decisión nueva. Sin cambios de código.
+
+## D080 — H6.2 E3: visor y edición de documentos con CAS, regeneración de bloques y Markdown aislado
+
+Estado: implementado y verificado offline el 2026-10-15. [Entrega, verificación y límites](discovery/H6.2_E3_DOCS.md).
+
+Decisiones tomadas con criterio dentro de D072 §6 y D076:
+
+- Versiones: `markdown-it@15.0.2` y `mermaid@11.17.2`, instaladas con `--before` dos semanas antes para que las
+  transitivas cumplan la misma regla. Se descarta Mermaid 12 (primera versión mayor y publicaciones recientes); sus
+  dos avisos *low* de KaTeX quedan anotados.
+- La URL usa la ruta del documento en el checkout (`/projects/p/docs/docs/STATE.md`): exacta y sin ambigüedad entre
+  el README de la raíz y los de las carpetas.
+- El hash base es un campo opcional de cada cambio (`base_sha256`; `null` = no debe existir), comprobado en la vista
+  previa con el código `document_changed`. Sin el campo, el contrato H6.3 no cambia.
+- «Regenerar» (D072 §6) es una variante explícita de la edición `worktree`: conserva la prosa local, devuelve cada
+  bloque gestionado a los bytes de la base y muestra lo que se descarta. El escritor admite esos bytes locales exactos
+  además de los de la base; la adopción sigue ligada al hash de la base. No se regenera con marcadores rotos.
+- Mermaid se dibuja con `securityLevel: "strict"` y el SVG resultante se muestra como `<img>` desde un Blob, de modo que
+  el diagrama no puede ejecutar nada aunque la sanitización de Mermaid fallara. Las imágenes del checkout salen por
+  la API con CSP `sandbox`; las externas no se cargan.
+- La página de documentación se carga de forma diferida (chunk propio) para no engordar el bundle principal.
+- `usePoll` conserva la última lectura al releer el mismo recurso: releer tras una acción ya no desmonta la página.
+
+Sin migración ni codec. Siguiente: E4 (creación y planificación de fase), sin iniciar.

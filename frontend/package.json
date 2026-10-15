@@ -11,6 +11,8 @@
     "build": "npm run check && vite build"
   },
   "dependencies": {
+    "markdown-it": "15.0.2",
+    "mermaid": "11.17.2",
     "react": "19.3.0",
     "react-dom": "19.3.0"
   },

@@ -8,18 +8,23 @@ transacciones y se comparan por hash; ningún byte ajeno se sobrescribe.
 
 import hashlib
 import json
+import os
+from pathlib import PurePosixPath
+import stat
 from uuid import uuid4
 
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from harness_local.core.engine.commit import CommitIntent, MechanicalUpdate
+from harness_local.core.engine.context import relative_path
 from harness_local.core.engine.contracts import context_snapshot, freeze
 from harness_local.core.engine.document_ops import preview_edit, read_decisions, read_text, text_hash
 from harness_local.core.engine.documents import (
     BLOCK_REASON, blocks, budget_warnings, decision_index, layout, managed_bodies, replace_block, require_layout,
     validation_counts,
 )
+from harness_local.core.engine.evidence import matches
 from harness_local.core.engine.phases import document_hashes
 from harness_local.core.engine.serialization import load_history, restore_context
 from harness_local.storage.managed import Conflict, _job
@@ -224,6 +229,12 @@ def adopt_blocks(managed, session, run, adopt, commit):
 
 # --- edición documental confirmada ----------------------------------------------------------------
 
+TREE_LIMIT = 2000
+MAX_IMAGE_BYTES = 8 * 1024 * 1024
+# El visor solo enlaza imágenes del checkout servidas por la API (H6.2 E3); nunca apunta fuera.
+IMAGE_TYPES = {'.png': 'image/png', '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg', '.gif': 'image/gif',
+               '.webp': 'image/webp', '.avif': 'image/avif', '.svg': 'image/svg+xml'}
+
 
 def _edit_phase(session, context, *, resume=False):
     root = str(context.root)
@@ -303,20 +314,101 @@ class DocumentsRepository:
         return {'path': path, 'content': text, 'sha256': text_hash(text), 'editable': target.editable(path),
                 'archived': archived, 'blocks': sorted(blocks(text))}
 
-    def preview(self, context, git, *, source, changes):
+    def tree(self, context) -> dict:
+        """Markdown del README y del directorio de documentación, sin seguir enlaces ni entrar en ocultos."""
+        target = require_layout(context)
+        files, skipped = [], []
+
+        def entry(path, size):
+            kind = ('phase' if path in target.phase_documents else 'product' if path in target.product_documents
+                    else 'archive' if target.archived(path) else 'other')
+            return {'path': path, 'kind': kind, 'editable': target.editable(path), 'archived': target.archived(path),
+                    'bytes': size}
+
+        def walk(relative):
+            try:
+                items = sorted(os.scandir(context.root / relative), key=lambda item: item.name)
+            except OSError:
+                skipped.append(relative)
+                return
+            for item in items:
+                path = f'{relative}/{item.name}'
+                if item.name.startswith('.'):
+                    continue
+                if item.is_symlink():
+                    skipped.append(path)
+                elif item.is_dir(follow_symlinks=False):
+                    walk(path)
+                elif item.name.endswith('.md'):
+                    if item.is_file(follow_symlinks=False):
+                        files.append(entry(path, item.stat(follow_symlinks=False).st_size))
+                    else:
+                        skipped.append(path)
+
+        readme = context.root / target.readme
+        if readme.is_symlink():
+            skipped.append(target.readme)
+        elif readme.is_file():
+            files.append(entry(target.readme, readme.stat().st_size))
+        docs = context.root / target.docs
+        if docs.is_symlink():
+            skipped.append(target.docs)
+        elif docs.is_dir():
+            walk(target.docs)
+        truncated = len(files) > TREE_LIMIT
+        return {'docs': target.docs, 'files': files[:TREE_LIMIT], 'truncated': truncated, 'skipped': skipped[:100]}
+
+    def image(self, context, path) -> tuple[bytes, str]:
+        """Imagen del checkout para el visor: regular, sin enlaces, fuera de ocultos y de rutas sensibles."""
+        require_layout(context)
+        parts = relative_path(path).parts
+        kind = IMAGE_TYPES.get(PurePosixPath(path).suffix.lower())
+        if (not parts or kind is None or any(part.startswith('.') for part in parts)
+                or matches('/'.join(parts), context.profile.sensitive_paths)):
+            raise LookupError('Unknown repository image')
+        descriptors = []
+        try:
+            directory = os.open(context.root, os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW)
+            descriptors.append(directory)
+            for part in parts[:-1]:
+                directory = os.open(part, os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW, dir_fd=directory)
+                descriptors.append(directory)
+            descriptor = os.open(parts[-1], os.O_RDONLY | os.O_NOFOLLOW | os.O_NONBLOCK, dir_fd=directory)
+            descriptors.append(descriptor)
+            info = os.fstat(descriptor)
+            if not stat.S_ISREG(info.st_mode) or info.st_nlink != 1:
+                raise LookupError('Repository images must be regular, unshared files')
+            if info.st_size > MAX_IMAGE_BYTES:
+                raise ValueError(f'Image exceeds {MAX_IMAGE_BYTES // (1024 * 1024)} MiB')
+            with os.fdopen(os.dup(descriptor), 'rb') as stream:
+                data = stream.read(MAX_IMAGE_BYTES + 1)
+        except FileNotFoundError as exc:
+            raise LookupError('Image does not exist in the checkout') from exc
+        except (NotADirectoryError, IsADirectoryError) as exc:
+            raise LookupError('Unknown repository image') from exc
+        except OSError as exc:  # ELOOP: un componente es un enlace
+            raise LookupError(f'Image is not readable without following links: {exc.strerror}') from exc
+        finally:
+            for item in reversed(descriptors):
+                os.close(item)
+        if len(data) > MAX_IMAGE_BYTES:
+            raise ValueError(f'Image exceeds {MAX_IMAGE_BYTES // (1024 * 1024)} MiB')
+        return data, kind
+
+    def preview(self, context, git, *, source, changes, regenerate_blocks=False):
         with Session(self.managed.engine) as session:
             phase = _edit_phase(session, context, resume=True)
             stored = pending(session, phase, 'document_edit')
             if stored is not None:
                 return {**stored.request['preview'], 'resume_operation_id': stored.id}
         try:
-            shown = preview_edit(context, git, source=source, changes=changes)
+            shown = preview_edit(context, git, source=source, changes=changes, regenerate_blocks=regenerate_blocks)
         except (ValueError, OSError, UnicodeError, RuntimeError) as exc:  # RuntimeError: captura/sellado Git
             raise Conflict(str(exc)) from exc
         return {**shown, 'resume_operation_id': None}
 
     def submit(self, context, *, key, versions, preview_sha256, reason, confirmed, git, source, changes,
-               resume_operation_id=None):
+               resume_operation_id=None, regenerate_blocks=False):
         if confirmed is not True or not isinstance(reason, str) or not reason.strip():
             raise ValueError('Explicit confirmation of the exact diff and reason required')
         marker = freeze({'action': 'document_edit', 'root': str(context.root), 'preview_sha256': preview_sha256,
@@ -326,7 +418,7 @@ class DocumentsRepository:
             if existing:
                 return _job(existing)
         try:
-            shown = self.preview(context, git, source=source, changes=changes)
+            shown = self.preview(context, git, source=source, changes=changes, regenerate_blocks=regenerate_blocks)
         except Conflict:
             with Session(self.managed.engine) as session:
                 existing = self.managed._existing(session, key, marker)

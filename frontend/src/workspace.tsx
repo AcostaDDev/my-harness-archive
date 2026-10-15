@@ -13,7 +13,7 @@ export type Workspace = {
   busy: boolean;
   refresh: number;
   operate: (action: () => Promise<unknown>) => Promise<void>;
-  send: (request: Pending) => Promise<void>;
+  send: (request: Pending) => Promise<S["ManagedJobRead"]>;
 };
 
 const Context = createContext<Workspace | null>(null);
@@ -47,6 +47,7 @@ export function ProjectWorkspace({ project, children }: { project: string; child
       const route = run && runRoute(run);
       // Las acciones sobre un run ya abierto no cambian de página; las que crean uno, sí.
       if (route && (request.path.endsWith("/runs") || request.path.endsWith("/batch/next"))) navigate(route);
+      return job;
     } catch (e) {
       // Un rechazo definitivo permite una acción nueva tras releer la versión actual.
       if (e instanceof ManagedError && e.status >= 400 && e.status < 500 && e.status !== 401) remember();

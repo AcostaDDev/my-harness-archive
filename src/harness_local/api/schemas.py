@@ -828,6 +828,8 @@ class DocumentChange(BaseModel):
     model_config = ConfigDict(extra='forbid', strict=True)
     path: str = Field(min_length=1, max_length=500)
     content: str = Field(max_length=512 * 1024)
+    base_sha256: Annotated[str, Field(pattern=r'^[0-9a-f]{64}$')] | None = Field(default=None, description=(
+        'Hash con el que se abrió el documento en el editor (CAS); null: no debe existir. Sin el campo, no se compara.'))
 
 
 class DocumentEditInput(BaseModel):
@@ -835,6 +837,8 @@ class DocumentEditInput(BaseModel):
     source: Literal['content', 'worktree'] = Field(
         description='content: documentos enviados sobre un checkout limpio; worktree: cambios locales del editor.')
     changes: list[DocumentChange] | None = Field(default=None, max_length=50)
+    regenerate_blocks: bool = Field(default=False, description=(
+        'Solo worktree: sustituye los bloques gestionados editados en local por los de la base (H6.2 E3).'))
 
 
 class DocumentPreviewEntry(BaseModel):
@@ -842,6 +846,28 @@ class DocumentPreviewEntry(BaseModel):
     before_sha256: str | None
     after_sha256: str
     content: str
+    disk_sha256: str | None = Field(default=None, description='Bytes locales que se sustituyen (bloques regenerados).')
+
+
+class RegeneratedDocumentRead(BaseModel):
+    path: str
+    local_sha256: str
+    diff: str = Field(description='Lo que se descarta de los bytes locales al regenerar los bloques.')
+
+
+class DocumentTreeEntryRead(BaseModel):
+    path: str
+    kind: Literal['phase', 'product', 'archive', 'other']
+    editable: bool
+    archived: bool
+    bytes: int
+
+
+class DocumentTreeRead(BaseModel):
+    docs: str
+    files: list[DocumentTreeEntryRead]
+    truncated: bool
+    skipped: list[str] = Field(description='Enlaces simbólicos u objetos no regulares que no se listan.')
 
 
 class DocumentOperationPreview(BaseModel):
@@ -859,6 +885,7 @@ class DocumentOperationPreview(BaseModel):
 
 class DocumentEditPreviewRead(DocumentOperationPreview):
     source: Literal['content', 'worktree']
+    regenerated: list[RegeneratedDocumentRead] = []
 
 
 class DocumentEditCreate(DocumentEditInput):

@@ -1,0 +1,203 @@
+"""H6.2 E3: lecturas del visor (árbol e imágenes), CAS del hash base y regeneración de bloques editados en local.
+
+Git/SQLite temporales y agentes falsos, sin proveedores. Se apoya en el mundo v2 de `test_documents`.
+"""
+import os
+
+import pytest
+
+from harness_local.core.engine.document_ops import BaseChanged, text_hash
+from harness_local.core.engine.journal import JournalError
+from harness_local.storage.managed import Conflict
+from test_documents import (  # noqa: F401  (fixtures)
+    PLAN_P001, STATE, STATE_BEGIN, STATE_END, confirm, edit_view, editor, queue_edit, text, v2, v2checkout,
+)
+from test_managed import repository  # noqa: F401  (fixture)
+from test_managed_api import VERSIONS, client, git
+from test_phases import head
+
+PNG = bytes.fromhex('89504e470d0a1a0a0000000d4948445200000001000000010806000000'
+                    '1f15c4890000000d49444154789c63000100000500010d0a2db40000000049454e44ae426082')
+
+
+def test_content_edit_compares_the_base_hash_the_editor_opened(v2):
+    v2.create_v2()
+    spec = text(v2, 'docs/SPECIFICATION.md')
+    change = {'path': 'docs/SPECIFICATION.md', 'content': '# Especificación\n\nEditada.\n', 'base_sha256': text_hash(spec)}
+    view = edit_view(v2, changes=[change])
+    assert [doc['before_sha256'] for doc in view['documents']] == [text_hash(spec)]
+    # Otro escritor cambia el documento y lo commitea: el editor ya no tiene la base.
+    v2.context.path('docs/SPECIFICATION.md').write_text('# Externa\n', encoding='utf-8')
+    git(v2.context.root, 'commit', '-qam', 'external edit')
+    with pytest.raises(Conflict, match='changed since it was opened') as caught:
+        edit_view(v2, changes=[change])
+    assert isinstance(caught.value.__cause__, BaseChanged)
+    before = head(v2)
+    with pytest.raises(Conflict, match='changed since it was opened'):
+        queue_edit(v2, changes=[change], view=view)
+    assert head(v2) == before and text(v2, 'docs/SPECIFICATION.md') == '# Externa\n'
+    # null: documento nuevo que no debe existir; sin el campo no se compara (contrato anterior).
+    new = {'path': 'docs/research/nota.md', 'content': '# Nota\n', 'base_sha256': None}
+    assert [doc['before_sha256'] for doc in edit_view(v2, changes=[new])['documents']] == [None]
+    with pytest.raises(Conflict, match='changed since it was opened'):
+        edit_view(v2, changes=[{**new, 'path': 'docs/ARCHITECTURE.md'}])
+    assert edit_view(v2, changes=[{key: change[key] for key in ('path', 'content')}])['documents']
+
+
+def forge_block(world, prose='Nota escrita en el editor.'):
+    local = STATE.replace('Sin notas todavía.', prose).replace(f'{STATE_BEGIN}\n', f'{STATE_BEGIN}\nforged\n')
+    world.context.path('docs/STATE.md').write_text(local, encoding='utf-8')
+    return local
+
+
+def test_regenerate_keeps_local_prose_restores_blocks_and_adopts(v2):
+    pid = v2.create_v2()
+    local = forge_block(v2)
+    with pytest.raises(Conflict, match='managed blocks are generated'):
+        edit_view(v2, 'worktree')
+    view = editor(v2).preview(v2.context, v2.ports.writer(v2.context, VERSIONS), source='worktree', changes=None,
+                              regenerate_blocks=True)
+    expected = STATE.replace('Sin notas todavía.', 'Nota escrita en el editor.')
+    [doc] = view['documents']
+    assert doc['content'] == expected and doc['before_sha256'] == text_hash(STATE)
+    assert doc['disk_sha256'] == text_hash(local)
+    [regenerated] = view['regenerated']
+    assert regenerated['path'] == 'docs/STATE.md' and '-forged' in regenerated['diff']
+    assert 'forged' not in view['diff'] and '+Nota escrita en el editor.' in view['diff']
+    assert text(v2, 'docs/STATE.md') == local  # la vista previa no escribe
+    job = editor(v2).submit(v2.context, key='regen', versions=VERSIONS, preview_sha256=view['preview_sha256'],
+                            reason='Regenerar bloques', confirmed=True, git=v2.ports.writer(v2.context, VERSIONS),
+                            source='worktree', changes=None, regenerate_blocks=True)
+    v2.run()
+    assert v2.repository.get_run(job.run_id).status == 'COMMITTED'
+    assert text(v2, 'docs/STATE.md') == expected and git(v2.context.root, 'status', '--porcelain') == ''
+    detail = v2.get(pid)
+    assert detail['documents']['drift'] == []
+    assert detail['operations'][-1]['result']['adopted'] == {'docs/STATE.md': text_hash(expected)}
+
+
+def test_regenerate_without_a_hash_mismatch_or_markers_is_refused(v2):
+    v2.create_v2()
+    writer = v2.ports.writer(v2.context, VERSIONS)
+    v2.context.path('docs/STATE.md').write_text(STATE.replace('Sin notas todavía.', 'Solo prosa.'), encoding='utf-8')
+    with pytest.raises(Conflict, match='No local change touches a managed block'):
+        editor(v2).preview(v2.context, writer, source='worktree', changes=None, regenerate_blocks=True)
+    v2.context.path('docs/STATE.md').write_text(STATE.replace(f'{STATE_END}\n', ''), encoding='utf-8')
+    with pytest.raises(Conflict, match='restore the markers by hand'):
+        editor(v2).preview(v2.context, writer, source='worktree', changes=None, regenerate_blocks=True)
+    with pytest.raises(Conflict, match='Only a worktree edit'):
+        editor(v2).preview(v2.context, writer, source='content', changes=[{'path': 'README.md', 'content': 'x'}],
+                           regenerate_blocks=True)
+
+
+def test_regenerate_never_overwrites_bytes_changed_after_the_preview(v2):
+    v2.create_v2()
+    forge_block(v2)
+    view = editor(v2).preview(v2.context, v2.ports.writer(v2.context, VERSIONS), source='worktree', changes=None,
+                              regenerate_blocks=True)
+    job = editor(v2).submit(v2.context, key='regen-late', versions=VERSIONS, preview_sha256=view['preview_sha256'],
+                            reason='Regenerar', confirmed=True, git=v2.ports.writer(v2.context, VERSIONS),
+                            source='worktree', changes=None, regenerate_blocks=True)
+    later = forge_block(v2, 'Otra nota posterior.')
+    before = head(v2)
+    v2.run()
+    assert v2.repository.get_run(job.run_id).status == 'STOPPED'
+    assert text(v2, 'docs/STATE.md') == later and head(v2) == before
+
+
+def test_regenerate_recovers_after_a_crash_between_document_write_and_commit(v2, monkeypatch):
+    from harness_local.adapters.git import GitWorkspace
+    v2.create_v2()
+    forge_block(v2)
+    view = editor(v2).preview(v2.context, v2.ports.writer(v2.context, VERSIONS), source='worktree', changes=None,
+                              regenerate_blocks=True)
+    job = editor(v2).submit(v2.context, key='regen-crash', versions=VERSIONS, preview_sha256=view['preview_sha256'],
+                            reason='Regenerar', confirmed=True, git=v2.ports.writer(v2.context, VERSIONS),
+                            source='worktree', changes=None, regenerate_blocks=True)
+    original = GitWorkspace.execute
+
+    def crash(self, context, intent):
+        raise RuntimeError('synthetic crash after writing documents')
+    monkeypatch.setattr(GitWorkspace, 'execute', crash)
+    with pytest.raises((RuntimeError, JournalError), match='synthetic'):
+        v2.run()
+    expected = view['documents'][0]['content']
+    assert text(v2, 'docs/STATE.md') == expected  # escrito, sin commit
+    monkeypatch.setattr(GitWorkspace, 'execute', original)
+    confirm(v2, job)
+    resumed = editor(v2).preview(v2.context, v2.ports.writer(v2.context, VERSIONS), source='worktree', changes=None,
+                                 regenerate_blocks=True)
+    assert resumed['resume_operation_id'] is not None and resumed['preview_sha256'] == view['preview_sha256']
+    again = editor(v2).submit(v2.context, key='regen-resume', versions=VERSIONS,
+                              preview_sha256=resumed['preview_sha256'], reason='Reanudar', confirmed=True,
+                              git=v2.ports.writer(v2.context, VERSIONS), source='worktree', changes=None,
+                              regenerate_blocks=True, resume_operation_id=resumed['resume_operation_id'])
+    assert again.run_id == job.run_id
+    v2.run()
+    assert v2.repository.get_run(again.run_id).status == 'COMMITTED'
+    assert text(v2, 'docs/STATE.md') == expected and git(v2.context.root, 'status', '--porcelain') == ''
+
+
+def test_tree_lists_markdown_without_links_hidden_folders_or_other_files(v2):
+    v2.create_v2()
+    root = v2.context.root
+    (root / 'docs/archive/phase-001').mkdir(parents=True)
+    (root / 'docs/archive/phase-001/STATE.md').write_text('# Archivado\n')
+    (root / 'docs/.hidden').mkdir()
+    (root / 'docs/.hidden/secret.md').write_text('# Oculto\n')
+    (root / 'docs/img.png').write_bytes(PNG)
+    os.symlink(root / 'docs/STATE.md', root / 'docs/enlace.md')
+    tree = editor(v2).tree(v2.context)
+    paths = {item['path']: item for item in tree['files']}
+    assert paths['README.md']['kind'] == 'product' and paths['docs/STATE.md']['kind'] == 'phase'
+    assert paths['docs/decisions/D001-usar-git.md'] == {
+        'path': 'docs/decisions/D001-usar-git.md', 'kind': 'other', 'editable': True, 'archived': False,
+        'bytes': len(text(v2, 'docs/decisions/D001-usar-git.md').encode())}
+    assert paths['docs/archive/phase-001/STATE.md']['kind'] == 'archive'
+    assert paths['docs/archive/phase-001/STATE.md']['editable'] is False
+    assert not {'docs/.hidden/secret.md', 'docs/img.png', 'docs/enlace.md'} & set(paths)
+    assert tree['skipped'] == ['docs/enlace.md'] and tree['truncated'] is False
+
+
+def test_http_tree_image_and_cas_conflict(v2, tmp_path):
+    from harness_local.services.managed_runtime import ManagedConfig, ManagedProject
+    v2.create_v2()
+    root = v2.context.root
+    (root / 'docs/img').mkdir()
+    (root / 'docs/img/uno.png').write_bytes(PNG)
+    (root / 'docs/img/hostil.svg').write_text('<svg xmlns="http://www.w3.org/2000/svg" onload="alert(1)"/>')
+    (root / 'docs/img/notas.txt').write_text('no es imagen')
+    (root / 'docs/img/enorme.png').write_bytes(b'\0' * (8 * 1024 * 1024 + 1))
+    os.symlink(root / 'docs/img/uno.png', root / 'docs/img/enlace.png')
+    (root / 'docs/img/dos.png').write_bytes(PNG)
+    os.link(root / 'docs/img/dos.png', root / 'docs/img/duro.png')
+    os.symlink(root / 'docs/img', root / 'docs/carpeta')
+    git(root, 'add', '-A')
+    git(root, 'commit', '-qm', 'images')
+    configuration = ManagedConfig((ManagedProject('synthetic', v2.context, VERSIONS),),
+                                  ports_factory=v2.ports, commit_factory=v2.ports.writer, supervisor=False)
+    with client(str(v2.repository.engine.url), tmp_path, configuration) as http:
+        base = '/api/managed/projects/synthetic/documents'
+        tree = http.get(f'{base}/tree')
+        assert tree.status_code == 200 and 'docs/carpeta' in tree.json()['skipped']
+        image = http.get(f'{base}/image', params={'path': 'docs/img/uno.png'})
+        assert image.status_code == 200 and image.content == PNG and image.headers['content-type'] == 'image/png'
+        assert 'sandbox' in image.headers['content-security-policy']
+        assert image.headers['x-content-type-options'] == 'nosniff'
+        svg = http.get(f'{base}/image', params={'path': 'docs/img/hostil.svg'})
+        assert svg.status_code == 200 and svg.headers['content-type'] == 'image/svg+xml'
+        assert "default-src 'none'" in svg.headers['content-security-policy']
+        for path, status in (('docs/img/notas.txt', 404), ('docs/img/enlace.png', 404), ('docs/carpeta/uno.png', 404),
+                             ('docs/img/duro.png', 404), ('.git/x.png', 404), ('docs/img/falta.png', 404),
+                             ('../fuera.png', 422), ('/etc/x.png', 422), ('docs/img/enorme.png', 422)):
+            assert http.get(f'{base}/image', params={'path': path}).status_code == status, path
+        spec = http.get(f'{base}/content', params={'path': 'docs/SPECIFICATION.md'}).json()
+        body = {'source': 'content', 'changes': [{'path': spec['path'], 'content': '# Nueva\n', 'base_sha256': '0' * 64}]}
+        conflict = http.post(f'{base}/edit/preview', json=body)
+        assert conflict.status_code == 409 and conflict.json()['detail']['code'] == 'document_changed'
+        body['changes'][0]['base_sha256'] = spec['sha256']
+        assert http.post(f'{base}/edit/preview', json=body).status_code == 200
+        bad = {**body, 'changes': [{**body['changes'][0], 'base_sha256': 'nope'}]}
+        assert http.post(f'{base}/edit/preview', json=bad).status_code == 422
+        regen = http.post(f'{base}/edit/preview', json={'source': 'worktree', 'regenerate_blocks': True})
+        assert regen.status_code == 409  # checkout limpio: nada que regenerar
