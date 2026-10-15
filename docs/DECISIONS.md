@@ -2529,3 +2529,23 @@ Decisiones tomadas con criterio dentro de D074/D076:
 Sin migración, codec ni dependencias. Las seis entregas de H6.2 están completas; siguiente: revisión de los criterios
 del hito, sin iniciar. Los consentimientos previos siguen agotados.
 
+
+## D085 — Revisión de cierre de H6.2: criterios cumplidos salvo la paginación de diffs
+
+Estado: revisión completada el 2026-10-15 sobre `b04ed5d`; **el hito queda pendiente de la decisión del usuario sobre
+el hallazgo 1**. [Dictamen, evidencia y hallazgos](discovery/H6.2_CLOSURE_REVIEW.md).
+
+- Cumplidos con evidencia de esta sesión: recorrido sintético completo desde la UI (alta → creación → primera tarea →
+  revisión → commit → cierre → transición con plan propuesto, más chat y estadísticas), URLs por carga directa y recarga
+  en `scripts/dev` y desde el wheel instalado en un venv propio, reintentos sin efectos repetidos, Markdown hostil
+  inerte, QA en claro, oscuro y 386 px, y checks en verde.
+- Parcial: «diffs paginados». `GET /runs/{id}` incluye el diff completo de cada ciclo y la página del run lo relee cada
+  1,5 s, también en runs terminales. Corregirlo cambia el contrato de la API y el cliente: no es un defecto acotado de
+  la revisión. Se propone como tarea correctiva, sin iniciar.
+- Hallazgos menores anotados, sin corregir: crear conversaciones de chat o de planificación de fase no es idempotente
+  (una conversación vacía de más tras un reintento); deriva en ámbar y exportación habilitada en una fase cerrada y ya
+  transicionada.
+- Método: con el servidor del wheel, el iframe no sirve (`X-Frame-Options: DENY`) y la navegación de la extensión llega
+  como `cross-site` (D079); las cargas se hicieron como documentos completos del mismo origen.
+
+Sin cambios de código, esquema, API, UI ni dependencias. Los consentimientos previos siguen agotados.

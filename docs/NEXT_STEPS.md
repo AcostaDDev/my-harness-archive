@@ -1,33 +1,31 @@
-# Siguiente paso: revisión de cierre de H6.2 (D076)
+# Siguiente paso: corrección de la paginación de diffs (hallazgo de D085)
 
 Estado al 2026-10-15:
 
-- **H6.2 E6 implementada y verificada offline (D084).** [Entrega, verificación y límites](discovery/H6.2_E6_STATS.md).
-  `/stats` y `/projects/:p/stats` sobre `/metrics/*`: resumen, consumo por fase/proyecto, día, rol, proveedor, modelo y
-  esfuerzo, favoritos por rol, calidad por tarea, evolución de tests OK/KO por fase (`/metrics/validations`), paradas e
-  intentos con procedencia. Métricas en la página de la tarea. Gráficos SVG propios, sin dependencias.
-  QA sintética con Chrome: claro, oscuro y 386 px.
-- [Alcance de H6.2](discovery/H6.2_SCOPE.md): **E1–E6 completadas**. Falta comprobar los criterios del hito en conjunto.
-- Límites conocidos: las validaciones no guardan su hora, así que la evolución de los tests es por fase y no por día;
-  2 avisos *low* de KaTeX (dependencia de Mermaid) hasta poder fijar Mermaid 12 con dos semanas; un proyecto
-  `typescript-web` recién creado no tiene `package.json` y el ejecutor no puede crearlo (ruta protegida), así que su
-  preparación real fallaría. Esto último necesita una decisión aparte.
-- Ningún recorrido de H6.2 se ha probado con CLI reales.
+- **Revisión de cierre de H6.2 completada (D085).** [Dictamen, evidencia y hallazgos](discovery/H6.2_CLOSURE_REVIEW.md).
+  Recorrido sintético completo desde la UI, URLs en `scripts/dev` y desde el wheel, reintentos sin efectos, Markdown
+  hostil inerte, QA en claro, oscuro y 386 px, y checks en verde. **Criterio parcial: los diffs no van paginados.**
+- El hito H6.2 queda pendiente de que el usuario elija: corregir el hallazgo 1 (propuesta de abajo) o aceptarlo como
+  límite y cerrar el hito.
+- Límites que siguen abiertos: un proyecto `typescript-web` recién creado no tiene `package.json` y el ejecutor no puede
+  crearlo (decisión aparte); las validaciones no guardan su hora; 2 avisos *low* de KaTeX; ningún recorrido de H6.2 con
+  CLI reales.
 
 ## Tarea concreta propuesta, no iniciada
 
-**Revisión de cierre de H6.2** ([criterios del hito](discovery/H6.2_SCOPE.md#criterios-de-aceptación-del-hito)).
+**Diffs paginados y sondeo acotado del run** (hallazgo 1 de D085; los hallazgos 2 y 3 son opcionales en la misma tarea).
 
-1. Recorrido sintético completo desde la UI, sin editar archivos a mano: alta → creación → primera tarea → revisión →
-   commit → cierre → transición con plan propuesto, y sus estadísticas.
-2. Cada URL por enlace directo y por recarga, en `scripts/dev` y desde el wheel instalado en un venv propio (D051).
-3. Repasar idempotencia y confirmaciones ligadas a hash y versión, carga por recurso y paginación, y los casos hostiles
-   de Markdown.
-4. Dictamen con lo cubierto, lo no cubierto y los hallazgos; corregir solo defectos acotados con prueba.
+1. Lectura del diff de un ciclo paginada por bytes o por líneas, con hash y tamaño. `ManagedRunRead` lleva solo el
+   resumen de cada ciclo (hash, bytes y rutas), sin romper a otros consumidores del diff (documentos, exportación,
+   transición).
+2. La página del run carga el diff al abrirlo, página a página, y deja de sondear, o sondea más espaciado, cuando el
+   run está en un estado terminal. `/runs/{id}/jobs` paginado o acotado.
+3. Opcional: clave idempotente al crear conversaciones de chat y de planificación de fase (requiere migración), y
+   deriva neutra sin exportación en una fase cerrada y transicionada.
 
-Criterios: dictamen escrito en `docs/discovery/`, pytest, checks estándar, Node, `tsc`, build y `alembic check` en verde;
-QA en claro, oscuro y estrecho. Actualizar STATE, NEXT_STEPS y DECISIONS al terminar. No iniciar otro hito en la misma
-tarea.
+Criterios: pytest de la nueva lectura (paginación, límites, hash), Node si hay lógica pura nueva, OpenAPI y tipos
+regenerados, checks estándar, `tsc`, build y `alembic check` en verde; QA del run con un diff grande en claro, oscuro y
+estrecho. Actualizar STATE, NEXT_STEPS y DECISIONS al terminar.
 
 D071 y los consentimientos anteriores siguen agotados. Cualquier prueba real requiere una propuesta y un
 consentimiento nuevos. Sin push ni publicación.

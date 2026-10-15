@@ -195,7 +195,8 @@ documentales confirmadas (D081). E5 completada offline (D083, `docs/discovery/H6
 carril de chat sin lock del checkout, comandos deterministas y contexto de tarea; esquema
 `0017_chat_context`. E6 completada offline (D084, `docs/discovery/H6.2_E6_STATS.md`): `/stats` y
 `/projects/:p/stats` sobre `/metrics/*`, evolución de tests por fase (`/metrics/validations`), métricas en la tarea y
-gráficos SVG propios. Siguiente: revisión de los criterios del hito H6.2, sin iniciar.
+gráficos SVG propios. Revisión de cierre de H6.2 completada (D085, `docs/discovery/H6.2_CLOSURE_REVIEW.md`): criterios
+cumplidos salvo la paginación de diffs; tarea correctiva propuesta, sin iniciar.
 Comprobación offline ligera, solo biblioteca estándar, desde la raíz:
 
 ```sh

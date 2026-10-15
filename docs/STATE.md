@@ -546,8 +546,9 @@ v2 opt-in, bloques regenerados por commit, transición de fase y edición confir
 métricas por intento materializadas con procedencia, relleno explícito, agregados por API y tokens/turnos
 en el SUMMARY ([entrega](discovery/H6.4_METRICS.md)). H6.5 implementado offline (D075): creación v2
 conversacional con borradores en disco y CAS hasta el commit raíz con `phase-000` y P001, y planificación de
-la fase siguiente usada por la transición ([entrega](discovery/H6.5_CONVERSATIONAL_CREATION.md)). Siguiente
-tarea propuesta: UI H6.2, sin iniciar; será una tarea aparte.
+la fase siguiente usada por la transición ([entrega](discovery/H6.5_CONVERSATIONAL_CREATION.md)). UI H6.2
+implementada en seis entregas (D077–D084) y revisada en conjunto (D085, [dictamen](discovery/H6.2_CLOSURE_REVIEW.md)):
+criterios cumplidos salvo la paginación de diffs, con una tarea correctiva propuesta y sin iniciar.
 
 ## Verificación de H0.1
 
@@ -2790,6 +2791,32 @@ tarea propuesta: UI H6.2, sin iniciar; será una tarea aparte.
   (iframe; ancho del documento 369 ≤ 384). Seis defectos corregidos durante la QA (ver el documento).
 - Límites: sin hora por validación; la vista global nombra los proyectos por su raíz registrada; ninguna CLI real.
   Las seis entregas de H6.2 están completas; siguiente: revisión de los criterios del hito, sin iniciar.
+
+## Revisión de cierre de H6.2 (D085)
+
+- Tarea activa de NEXT_STEPS, pedida por el usuario el 2026-10-15 sobre `b04ed5d`, con Git limpio.
+  [Dictamen, evidencia y hallazgos](discovery/H6.2_CLOSURE_REVIEW.md). Sin cambios de código, esquema, API, UI ni
+  dependencias.
+- Dictamen: seis criterios del hito cumplidos y uno parcial. **Los diffs no van paginados**: `GET /runs/{id}` incluye
+  el diff completo de cada ciclo (hasta 4 MiB cada uno) y la página del run lo relee cada 1,5 s, también en runs
+  terminales. Se propone como tarea correctiva porque cambia el contrato; el hito queda pendiente de esa decisión.
+- Recorrido sintético completo desde la UI con `scripts/dev`, un TOML `local-config-3` y una CLI Claude sintéticos
+  (sesión iniciada por el usuario): alta de una carpeta vacía → dos turnos de definición, 9 propuestas aplicadas →
+  commit raíz → primera tarea → ACCEPT → commit → READY → cierre (`p001`) → plan propuesto → transición → P002, más
+  chat sobre HEAD, `/estado` y estadísticas. Tres commits, árbol limpio, un run por acción y recargas sin duplicados.
+  Reintentos HTTP de commit, transición, planificación y aceptación: 409, sin runs nuevos.
+- URLs: 19 vistas en desarrollo y 23 desde el wheel instalado en un venv propio (Python 3.14.4, requisitos por hash),
+  cargadas y recargadas; fallback HTML fuera de `/api/` y 401 JSON dentro.
+- Markdown hostil (script, `on*=`, SVG, `javascript:`/`data:`, imagen externa, Mermaid con HTML y `init` en `loose`)
+  inerte desde la propuesta del revisor hasta el commit; 27 casos Node.
+- QA: 19 vistas × claro/oscuro a 386 px sin desbordamiento de página; tablas dentro de `.table-scroll`.
+- Hallazgos menores: crear conversaciones de chat o de planificación de fase no es idempotente; deriva en ámbar y
+  exportación habilitada en una fase cerrada y transicionada.
+- Verificación: **1112 pytest + 121 subtests** (407 s), 12 checks estándar, 66 Node, `tsc`, build y
+  `alembic upgrade`/`check`/`current` en SQLite temporal (`0017_chat_context`). Wheel y sdist construidos en el
+  scratchpad.
+- No cubierto aquí: CLI reales; cambio y baja del registro, edición con conflicto de CAS, lote y `/tarea` no se
+  repitieron (los cubren E2–E5 y pytest).
 
 ## Coordinación
 
