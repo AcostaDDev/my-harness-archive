@@ -252,8 +252,9 @@ def test_empty_folder_to_root_commit_with_p001_and_phase_000(world):
 
 
 def test_profile_protection_limits_the_executor_not_confirmed_v2_document_writes(world):
-    """D081: typescript-web protege `docs/**` frente al ejecutor; la creación y la edición confirmadas del contrato
-    v2 escriben ahí igualmente. Fuera del contrato, y en v1, la protección del perfil se mantiene."""
+    """D081: typescript-web protege los documentos de control frente al ejecutor (P008-T003); la creación y la
+    edición confirmadas del contrato v2 escriben ahí igualmente. Fuera del contrato, y en v1, la protección del
+    perfil se mantiene."""
     from harness_local.core.engine.documents import protected_write
     from harness_local.core.engine.evidence import check_paths
     from harness_local.profiles.typescript_web import typescript_web_profile
@@ -263,7 +264,7 @@ def test_profile_protection_limits_the_executor_not_confirmed_v2_document_writes
                 'docs/archive/phase-001/SUMMARY.md', 'docs/archive/phase-000/BRIEF.md',
                 'AGENTS.md', 'CLAUDE.md', 'GEMINI.md')  # D088: la creación escribe los archivos de instrucciones
     assert not any(protected_write(world.context, path) for path in contract)
-    for path in ('package.json', 'docs/assets/logo.svg', 'docs/archive/phase-001/x.png', 'docs/../package.json',
+    for path in ('package.json', 'docs/archive/phase-001/x.png', 'docs/../package.json',
                  'tests/a.test.mjs', '.claude/settings.json'):
         assert protected_write(world.context, path), path
     v1 = replace(world.context, documents=None)
@@ -280,10 +281,12 @@ def test_profile_protection_limits_the_executor_not_confirmed_v2_document_writes
         {'path': 'docs/SPECIFICATION.md', 'content': spec + '\nEditado y confirmado.\n',
          'base_sha256': sha256(spec.encode()).hexdigest()}])
     assert [d['path'] for d in edited['documents']] == ['docs/SPECIFICATION.md']
-    # El ejecutor sigue sin poder tocar la documentación aunque su contrato lo pidiera.
-    evidence = type('Evidence', (), {'changed_paths': ('docs/STATE.md', 'docs/SPECIFICATION.md', 'app/x.ts')})()
-    task = {'allowed_paths': ['**'], 'forbidden_paths': []}
-    assert check_paths(world.context, task, evidence).violations == ('docs/SPECIFICATION.md', 'docs/STATE.md')
+    # P008-T003: el ejecutor puede mantener la documentación de producto si su contrato la incluye, pero nunca los
+    # documentos de control ni las instrucciones, aunque su contrato los pidiera.
+    evidence = type('Evidence', (), {'changed_paths': ('docs/STATE.md', 'docs/SPECIFICATION.md', 'app/x.ts',
+                                                       'AGENTS.md')})()
+    task = {'task_id': 'P001-T001', 'allowed_paths': ['**'], 'forbidden_paths': []}
+    assert check_paths(world.context, task, evidence).violations == ('AGENTS.md', 'docs/STATE.md')
 
 
 def test_agent_writes_are_detected_and_discard_the_turn(world):

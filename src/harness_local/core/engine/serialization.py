@@ -30,6 +30,7 @@ def restore_context(snapshot: str) -> ProjectContext:
     profile["allowed_command_prefixes"] = tuple(tuple(item) for item in profile["allowed_command_prefixes"])
     for key in ("protected_paths", "sensitive_paths", "sensitive_allowlist", "formatter_argv", "formatter_paths"):
         profile[key] = tuple(profile[key])
+    profile["data_model_paths"] = tuple(profile.get("data_model_paths", ()))
     policy = data["policy"]
     for key in ("executor_models", "executor_efforts", "executor_effort_vocabulary"):
         if key in policy:

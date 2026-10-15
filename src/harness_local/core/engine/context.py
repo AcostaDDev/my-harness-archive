@@ -52,6 +52,9 @@ class ProjectProfile:
     formatter_argv: tuple[str, ...] = ()
     formatter_paths: tuple[str, ...] = ()
     junit_reports: tuple[JUnitDeclaration, ...] = ()
+    # D088 punto 6 (P008-T003): patrones de modelos de datos; un diff que los toca sin el diagrama de datos del
+    # layout no es aceptable. Vacío: el perfil no declara persistencia que vigilar.
+    data_model_paths: tuple[str, ...] = ()
 
     def __post_init__(self):
         if len(self.junit_reports) > 8:

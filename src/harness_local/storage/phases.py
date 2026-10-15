@@ -69,6 +69,20 @@ def committed_tasks(session, phase):
     return result
 
 
+def _decision_proposals(session, tasks):
+    """D088 punto 2 (P008-T003): propuestas de ADR del revisor en la última revisión de cada tarea COMMITTED,
+    para consolidarlas en la reconciliación. Nunca escriben DECISIONS por sí mismas."""
+    result = {}
+    for task, item in tasks.items():
+        if item is None:
+            continue
+        cycles = load_history(session.get(Run, item['run_id']).history_json).cycles
+        review = json.loads(cycles[-1].review_json) if cycles and cycles[-1].review_json else {}
+        if review.get('decision_proposals'):
+            result[task] = review['decision_proposals']
+    return result
+
+
 def authority(session, phase):
     """Partes del vínculo READY que viven en SQLite."""
     rows = _questions(session, phase.id)
@@ -768,7 +782,6 @@ class PhaseRepository:
 
         Se ejecuta, revisa y confirma por el flujo de tareas; después se adopta la base por hash."""
         from harness_local.core.engine.contracts import task_contract
-        from harness_local.core.engine.evidence import matches
         from harness_local.core.engine.prompts import digest as text_digest, render
         from harness_local.storage.prompts import PromptRepository
         template = PromptRepository(self.managed.engine).catalog(context)['reconcile-phase']
@@ -789,28 +802,35 @@ class PhaseRepository:
                 raise Conflict('A reconciliation task of this phase is in progress or awaits commit/adoption')
             documents = phase.definition['documents']
             protected = context.profile.protected_paths
-            if any(matches(path, protected) for path in documents):
-                raise Conflict('A phase document is protected by the profile; reconcile it by hand')
             number = 1 + len(session.scalars(select(Operation.id).where(
                 Operation.phase_id == phase.id, Operation.kind == 'reconcile_task')).all())
             task_id = f'{phase.code}-RECONCILE-{number}'
+            from harness_local.core.engine.documents import BUDGETS, executor_protected, layout
+            target = layout(context)
+            allowed = list(documents)
+            if target is not None:
+                allowed = list(dict.fromkeys(list(documents) + list(target.product_documents)
+                                             + [f'{folder}/**' for folder in target.folders]))
+            # P008-T003: en v2 los documentos del harness los gobierna el contrato documental, no el perfil.
+            if any(executor_protected(context, task_id, path) for path in allowed):
+                raise Conflict('A phase document is protected by the profile; reconcile it by hand')
+            tasks = committed_tasks(session, phase)
             check = _latest(session, phase.id, 'check')
             evidence = {'phase': phase.definition, 'definition_sha256': phase.definition_sha256,
-                        'baseline_documents': phase.documents, 'tasks': committed_tasks(session, phase),
+                        'baseline_documents': phase.documents, 'tasks': tasks,
                         'latest_check': None if check is None else {
                             'operation_id': check.id, 'status': check.status,
                             'reasons': (check.result or {}).get('reasons'), 'review': (check.result or {}).get('result')}}
+            proposals = _decision_proposals(session, tasks)
+            if proposals:
+                evidence['decision_proposals'] = proposals  # D088 punto 2: propuestas para consolidar
             instructions = render(template, {'PHASE_ID': phase.code, 'REVIEW_JSON': freeze(evidence)})
             required = (check.result or {}).get('reasons', []) if check is not None and check.status == 'REVISE' else []
             policy = context.policy
-            from harness_local.core.engine.documents import BUDGETS, layout
-            target = layout(context)
-            allowed, constraints = list(documents), ['Documentation only: no code, tests, plans state, commits or tags.']
+            constraints = ['Documentation only: no code, tests, plans state, commits or tags.']
             if target is not None:
                 # D072: la reconciliación compacta STATE y pone al día los documentos de producto y decisiones;
                 # los bloques gestionados (también el índice de DECISIONS, D088) y el archivo siguen siendo del harness.
-                allowed = list(dict.fromkeys(list(documents) + list(target.product_documents)
-                                             + [f'{folder}/**' for folder in target.folders]))
                 constraints += [
                     'Never edit inside harness-local managed blocks; Harness Local regenerates them at commit.',
                     f'Rewrite the "## Base acumulada" section of {target.state} as a compact description of what '
@@ -819,11 +839,16 @@ class PhaseRepository:
                     'session must know.',
                     f'Record durable decisions as new "## DNNN — title" sections of {target.decisions}, each with '
                     'a first "Estado:" line and the next free number; supersede, never delete or renumber.']
+                if proposals:
+                    constraints.append('Consolidate the reviewer decision_proposals of the evidence into '
+                                       f'{target.decisions} when they describe accepted reality; never invent or '
+                                       'adopt rejected ones.')
             contract = task_contract(context, {
                 'task_id': task_id, 'phase_id': phase.code, 'title': f'Reconcile phase {phase.code} documents',
                 'objective': f'Make the phase {phase.code} documents describe accepted reality.',
                 'business_context': '', 'allowed_paths': allowed,
-                'forbidden_paths': list(dict.fromkeys(protected)),
+                'forbidden_paths': list(dict.fromkeys(path for path in protected
+                                                      if target is None or path not in target.harness_owned)),
                 'acceptance_criteria': [f'Only these {"phase " if target is None else ""}documents change: {", ".join(allowed)}.',
                                         *[f'Required by the phase review: {item}' for item in required],
                                         'Unresolved product decisions are recorded as questions, not invented.'],

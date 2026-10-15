@@ -94,7 +94,7 @@ def test_explicit_fresh_argv_preflight_and_configuration(tmp_path,context,reposi
     assert repository.processes(job.id)[0]['status']=='STOPPED'
     spec=repository.processes(job.id)[0]['spec']
     assert spec['cli_internal_retries']==port.capabilities()['cli_internal_retries'][provider]
-    assert spec['adapter_version']=='cli-9' and spec['agent']==('executor' if role=='executor' else 'reviewer')
+    assert spec['adapter_version']=='cli-10' and spec['agent']==('executor' if role=='executor' else 'reviewer')
     prompt=Path(spec['prompt_path']).read_bytes()
     assert prompt.decode()==launches[0]['prompt']
     assert spec['prompt_sha256']==hashlib.sha256(prompt).hexdigest()

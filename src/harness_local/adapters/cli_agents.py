@@ -27,7 +27,7 @@ from harness_local.core.engine.metrics import CAPTURE as METRICS_CAPTURE
 from harness_local.core.engine.prompts import digest, output_schema
 
 
-VERSION = "cli-9"
+VERSION = "cli-10"
 # Version/help characterization (D052): Claude 2.1.295 and 2.1.296 share the same help.
 SUPPORTED = {"codex": ("0.161.0", "0.162.1"), "claude": ("2.1.295", "2.1.296")}
 # Codex workspace-write was characterized on 0.162.1 only.
@@ -49,11 +49,12 @@ SHAPES = {
         "allowed_paths": [], "forbidden_paths": [], "acceptance_criteria": ["criterion"],
         "validation_commands": [], "executor_selection": {"model": "allowed model",
             "effort": "allowed effort", "reason": "selection reason"}},
+    # cli-10 (P008-T003): propuestas de ADR opcionales del ejecutor y del revisor; nunca editan DECISIONS.
     "reviewer": {"task_id": "requested task id", "verdict": "ACCEPT or REVISE or BLOCKED",
         "findings": [], "blocking_questions": [], "scope_grants": [],
         "next_prompt": "required for REVISE", "executor_selection": {"model": "allowed model",
-            "effort": "allowed effort", "reason": "required for REVISE"}},
-    "executor": {"result": "implementation summary"},
+            "effort": "allowed effort", "reason": "required for REVISE"}, "decision_proposals": []},
+    "executor": {"result": "implementation summary", "decision_proposals": []},
     # H3.3, aditivo: la evaluación de fase usa el mismo transporte de solo lectura del revisor.
     "phase": {"phase_id": "requested phase id", "verdict": "READY or REVISE or BLOCKED", "summary": "summary",
         "exit_criteria_results": [{"criterion": "frozen criterion", "passed": True, "evidence": "evidence"}],

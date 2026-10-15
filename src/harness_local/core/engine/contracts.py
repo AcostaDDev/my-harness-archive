@@ -100,7 +100,9 @@ RECONCILE_TASK = re.compile(r".+-RECONCILE-\d+")
 def harness_owned_paths(context: ProjectContext, data: dict, task_id: str) -> dict:
     """D072: con el layout v2 el archivo de fases nunca se edita y los documentos de seguimiento son del
     harness; solo la reconciliación de fase (`<fase>-RECONCILE-<n>`, contrato del servidor) edita su prosa.
-    D088: también la de DECISIONS, ahora registro único donde la reconciliación añade decisiones.
+    D088: también la de DECISIONS, ahora registro único donde la reconciliación añade decisiones. Los archivos de
+    instrucciones de la raíz (AGENTS, CLAUDE, GEMINI) solo los escribe el harness, también frente a la
+    reconciliación (P008-T003).
 
     Se añaden como prohibiciones (nunca se retira ninguna); una ruta concreta permitida que las contradiga se
     rechaza antes del escritor. Idempotente: un contrato ya congelado se reproduce igual."""
@@ -109,7 +111,8 @@ def harness_owned_paths(context: ProjectContext, data: dict, task_id: str) -> di
     if target is None:
         return data
     owned = [] if RECONCILE_TASK.fullmatch(task_id) else list(target.harness_owned)
-    extra = [path for path in (target.archive_dir + "/**", *owned) if path not in data["forbidden_paths"]]
+    extra = [path for path in (target.archive_dir + "/**", *owned, *target.instructions)
+             if path not in data["forbidden_paths"]]
     return {**data, "forbidden_paths": data["forbidden_paths"] + extra} if extra else data
 
 
@@ -178,6 +181,8 @@ def context_snapshot(context: ProjectContext) -> str:
     profile = asdict(context.profile)
     if not profile['junit_reports']:
         profile.pop('junit_reports')  # Preserva snapshots anteriores sin reportes.
+    if not profile['data_model_paths']:
+        profile.pop('data_model_paths')  # P008-T003: ídem sin patrones de modelos de datos.
     data = {"root": str(context.root), "profile": profile,
             "policy": policy_payload(context.policy), "next_steps_file": context.next_steps_file,
             "state_file": context.state_file}

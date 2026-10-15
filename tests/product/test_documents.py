@@ -348,13 +348,14 @@ def test_v2_contracts_forbid_harness_documents_except_reconcile_prose(tmp_path):
                                                                'reason': 'r'}}
     frozen = task_contract(context, base, 'P001-T001', 'P001')
     assert task_contract(context, json.loads(frozen), 'P001-T001', 'P001') == frozen  # idempotente
-    assert json.loads(frozen)['forbidden_paths'] == ['docs/archive/**', *LAYOUT.harness_owned]
+    assert json.loads(frozen)['forbidden_paths'] == ['docs/archive/**', *LAYOUT.harness_owned, *LAYOUT.instructions]
     with pytest.raises(ContractError, match='also forbidden'):
         task_contract(context, {**base, 'allowed_paths': ['docs/STATE.md']}, 'P001-T001', 'P001')
     reconcile = {**base, 'task_id': 'P001-RECONCILE-1', 'allowed_paths': ['docs/STATE.md', 'docs/ROADMAP.md']}
-    # D088: la reconciliación también edita la prosa de DECISIONS (registro único); el archivo sigue prohibido.
+    # D088: la reconciliación también edita la prosa de DECISIONS (registro único); el archivo y las instrucciones
+    # siguen prohibidos (P008-T003).
     assert json.loads(task_contract(context, reconcile, 'P001-RECONCILE-1', 'P001'))['forbidden_paths'] == [
-        'docs/archive/**']
+        'docs/archive/**', *LAYOUT.instructions]
     with pytest.raises(ContractError, match='also forbidden'):
         task_contract(context, {**reconcile, 'allowed_paths': ['docs/archive/phase-001/STATE.md']},
                       'P001-RECONCILE-1', 'P001')

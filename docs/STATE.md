@@ -16,7 +16,7 @@ salvo donde se indica. Detalle por fase en `docs/archive/phase-NNN/SUMMARY.md`.
   cuarentena por versión y confirmación explícita del escritor detenido; backup y restauración de consulta; retención
   explícita de streams.
 - **Agentes** ([P007](archive/phase-007/SUMMARY.md)): revisor y ejecutor Codex o Claude en cualquier combinación
-  (`cli-9`, `local-config-2/3`), revisor en solo lectura con esquema tipado, memoria automática desactivada, supresión
+  (`cli-10`, `local-config-2/3`), revisor en solo lectura con esquema tipado, memoria automática desactivada, supresión
   de confianza del escritor Codex. Validaciones nativas `commands-1` con JUnit. Perfiles: `typescript-web` (componible
   desde el TOML) y `reference_project` (solo biblioteca).
 - **Fases y documentos** ([P004](archive/phase-004/SUMMARY.md), [P007](archive/phase-007/SUMMARY.md)): check READY,
@@ -73,8 +73,26 @@ Objetivo y criterios en [ROADMAP](ROADMAP.md); plan en [NEXT_STEPS](NEXT_STEPS.m
   sobre una base temporal; 16
   diagramas Mermaid válidos con el parser local; el DECISIONS de este repositorio indexa 89 decisiones sin duplicados.
   No se ejecutaron pruebas Node ni el build: no cambian UI ni OpenAPI.
-- Pendiente hasta T003–T007: prompts, perfiles (`docs/**` protegido), cierre separado, API (forma del índice) y UI
-  siguen con el layout anterior.
+- Pendiente hasta T004–T007: prompts, cierre separado, API (forma del índice) y UI siguen con el layout anterior.
 
-**Siguiente:** P008-T003 (rutas protegidas, paridad diagramas‑código y propuestas de ADR), sin iniciar. Este
-repositorio sigue sin registrarse en el harness.
+**P008-T003 completada** (rutas protegidas, paridad y propuestas de ADR,
+[D090](DECISIONS.md#d090--p008-t003-rutas-del-ejecutor-paridad-de-diagramas-y-propuestas-de-adr)):
+
+- `typescript-web` protege STATE, NEXT_STEPS, ROADMAP, DECISIONS, `docs/archive/**`, AGENTS, CLAUDE y GEMINI en lugar
+  de `docs/**`; `harness_owned_paths` prohíbe además siempre AGENTS, CLAUDE y GEMINI. `executor_protected` deja a la
+  reconciliación editar la prosa de los cuatro documentos de control aunque el perfil los proteja. AGENTS, CLAUDE y
+  GEMINI son editables por edición confirmada. `reference_project` conserva `docs/**`.
+- `ProjectProfile.data_model_paths`: con layout v2, un diff que toca modelos sin `DDBB-DIAGRAM.md` no es aceptable
+  (motivo determinista en `assess_acceptance`, también al preparar el commit). `review-task` nuevo recibe
+  `documentation` y exige los flujos.
+- `decision_proposals` (≤5, `title`/`decision`/`rationale`) en la salida del ejecutor y del revisor; mal formadas
+  detienen el run; se guardan con el intento y la revisión y llegan a la evidencia de la reconciliación sin escribir
+  DECISIONS. Adaptador `cli-10` y `document_layout = "d088-2"` (jobs pendientes anteriores en cuarentena).
+- Verificación: 12 checks ligeros; pytest 1122 pruebas y 121 subtests (un aviso de Starlette ajeno); tras dos
+  retoques posteriores (validación de propuestas al revalidar, ajuste de línea) se re-ejecutaron los archivos
+  afectados: 144 OK, incluidas 11 pruebas nuevas en `test_documentation_parity.py`. Enlaces relativos y anclas de los
+  Markdown editados correctos; el diagrama de secuencia modificado de `flows/task-run.md` pasa el parser Mermaid
+  local. Sin `alembic check`, pruebas Node ni build: no cambian modelos, migraciones, UI ni OpenAPI.
+
+**Siguiente:** P008-T004 (cierre de fase unificado), sin iniciar. Este repositorio sigue sin registrarse en el
+harness.

@@ -109,6 +109,12 @@ QUESTIONS = {'type': 'array', 'items': {'type': 'object', 'properties': {
     'text': {'type': 'string'}, 'blocking': {'type': 'boolean'}}, 'required': ['text', 'blocking']}}
 
 
+def _proposals(description: str) -> dict:
+    """D088 punto 2 (P008-T003): propuestas de ADR acotadas; la validación del motor está en `review.py`."""
+    return {'type': 'array', 'maxItems': 5, 'description': description,
+            'items': _object({'title': 'string', 'decision': 'string', 'rationale': 'string'})}
+
+
 def output_schema(role: str) -> dict:
     # D056: element types match the engine validators; a real planner read "argv commands" as argv arrays.
     selection = _object({'model': 'string', 'effort': 'string', 'reason': 'string'})
@@ -143,7 +149,11 @@ def output_schema(role: str) -> dict:
     optional = {'reviewer': {'findings': {'type': 'array', 'items': _object(
                     {'severity': 'string', 'category': 'string', 'file': 'string', 'problem': 'string'})},
                 'blocking_questions': TEXTS, 'scope_grants': {'type': 'array'}, 'next_prompt': 'string',
-                'executor_selection': {**selection, 'type': ['object', 'null']}}}
+                'executor_selection': {**selection, 'type': ['object', 'null']},
+                'decision_proposals': _proposals('Decisions you endorse for the project DECISIONS record, from the '
+                                                 'executor or your own; they never change the verdict; [] if none')},
+                'executor': {'decision_proposals': _proposals('Durable decisions to propose for the project '
+                                                              'DECISIONS record; never edit it yourself; [] if none')}}
     if role not in fields:
         raise ContractError('No output schema for role')
     schema = _object({**fields[role], **optional.get(role, {})}, required=fields[role])

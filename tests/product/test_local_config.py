@@ -95,7 +95,7 @@ def test_valid_configuration_composes_fresh_ports_without_processes(setup):
     assert not config.supervisor and config.migrations_dir == tmp_path / 'state/migrations'
     versions = project.versions
     assert versions['local_config'] == 'local-config-1' and versions['commands'] == 'commands-1'
-    assert versions['agent_adapter'] == 'cli-9' and versions['engine'].startswith('harness-local-')
+    assert versions['agent_adapter'] == 'cli-10' and versions['engine'].startswith('harness-local-')
     assert {'cli_config_sha256', 'command_config_sha256', 'local_config_sha256'} <= versions.keys()
     first, second = config.ports_factory(project.context, versions), config.ports_factory(project.context, versions)
     assert [type(port) for port in first] == [CLIProcessAdapter, ManagedCommandRunner, GitWorkspace]
@@ -116,7 +116,7 @@ def test_projects_without_documents_use_the_mandatory_unified_layout_and_quarant
     context, data, folder, tmp_path = setup
     (project,) = load_local_config(write(folder, data)).projects
     assert 'documents' not in data['projects'][0] and project.context.documents == 'v2'
-    assert project.versions['document_layout'] == 'd088-1'
+    assert project.versions['document_layout'] == 'd088-2'
     explicit = copy.deepcopy(data)
     explicit['projects'][0]['documents'] = 'v2'
     config = load_local_config(write(folder, explicit))

@@ -99,6 +99,7 @@ tarea se leen solo las decisiones que cita; este índice sirve para buscar prece
 | [D087](#d087--h62-y-el-hito-6-cerrados-por-decisión-del-usuario) | H6.2 y el Hito 6 cerrados por decisión del usuario | P007 |
 | [D088](#d088--contrato-documental-unificado-cierre-de-fase-automático-e-importación-de-proyectos-p008) | Contrato documental unificado, cierre de fase automático e importación de proyectos (P008) | P008 |
 | [D089](#d089--p008-t002-layout-unificado-obligatorio-y-plantilla) | P008-T002: layout unificado obligatorio y plantilla | P008 |
+| [D090](#d090--p008-t003-rutas-del-ejecutor-paridad-de-diagramas-y-propuestas-de-adr) | P008-T003: rutas del ejecutor, paridad de diagramas y propuestas de ADR | P008 |
 
 ## D001 — Alcance local y arquitectura base
 
@@ -2689,7 +2690,8 @@ Estado: decidido por el usuario el 2026-10-15, tras D086 (`01b4f6d`).
 ## D088 — Contrato documental unificado, cierre de fase automático e importación de proyectos (P008)
 
 Estado: decidido por el usuario el 2026-10-15 tras el análisis de incongruencias de esa sesión; **P008-T001
-(migración documental de este repositorio) implementada el mismo día**; P008-T002 implementada (D089); P008-T003–T015
+(migración documental de este repositorio) implementada el mismo día**; P008-T002 implementada (D089); P008-T003
+implementada (D090); P008-T004–T015
 pendientes. Fase: P008.
 Sustituye en parte D072/D073 (carpetas `decisions/`, `architecture/` y `research/`; layout v2 opcional), D032/D073
 (cierre y transición separados) y D037 (creación v1). Plan: [NEXT_STEPS](NEXT_STEPS.md).
@@ -2801,3 +2803,58 @@ Decisiones tomadas con criterio:
 Límites hasta T003–T007: los prompts (`define-project`, `plan-phase`, `reconcile-phase`, `review-task`,
 `execute-task`) siguen nombrando `decisions/` y `architecture/`; los perfiles protegen `docs/**`; el cierre y la
 transición siguen separados; la UI enlaza `decisions/DNNN`. Este repositorio sigue sin registrarse en el harness.
+
+## D090 — P008-T003: rutas del ejecutor, paridad de diagramas y propuestas de ADR
+
+Estado: implementada y verificada offline el 2026-10-15. Fase: P008. Aplica D088 puntos 2, 6 y 8; modifica D081 para
+la reconciliación de fase.
+
+Implementado:
+
+- **Perfil `typescript-web`.** La protección `docs/**` se sustituye por `docs/STATE.md`, `docs/NEXT_STEPS.md`,
+  `docs/ROADMAP.md`, `docs/DECISIONS.md`, `docs/archive/**`, `AGENTS.md`, `CLAUDE.md` y `GEMINI.md`; el resto de rutas
+  protegidas no cambia. Un contrato que permita `docs/flows/**`, `docs/DDBB-DIAGRAM.md`, ARCHITECTURE, SPECIFICATION o
+  `docs/phase/**` deja escribir al ejecutor.
+- **`harness_owned_paths`.** Además del archivo y de STATE, NEXT_STEPS, ROADMAP y DECISIONS (salvo en la
+  reconciliación), prohíbe siempre AGENTS, CLAUDE y GEMINI, también a la reconciliación.
+- **Un solo punto para el perfil frente al ejecutor**: `documents.executor_protected(context, task_id, path)`, usado
+  por `check_paths`, `permissions.allowed` y el contrato de reconciliación. En v2, los cuatro documentos de control los
+  gobierna el contrato documental: la reconciliación (`<fase>-RECONCILE-<n>`) edita su prosa aunque el perfil los
+  proteja (cambio respecto a D081, donde el perfil también limitaba la reconciliación). Fuera de v2 manda el perfil. Un
+  perfil que protege cualquier otra ruta permitida a la reconciliación (por ejemplo `docs/**`) sigue exigiendo
+  reconciliar a mano.
+- **Edición confirmada de las instrucciones.** `Layout.editable` incluye AGENTS, CLAUDE y GEMINI, así que la edición
+  confirmada, la lectura de documentos y `protected_write` los admiten. `protected_write` rechaza explícitamente
+  cualquier ruta con `..` (antes solo la rechazaba un perfil que protegía `docs/**`).
+- **Paridad de modelos de datos, determinista.** `ProjectProfile.data_model_paths` (patrones, vacío por defecto; el
+  snapshot del contexto omite la clave vacía para conservar los anteriores). Con el layout v2, si el diff del ciclo
+  toca esos patrones sin tocar `DDBB-DIAGRAM.md`, `assess_acceptance` (que ahora recibe el contexto) añade el motivo
+  «Data model changed without docs/DDBB-DIAGRAM.md (D088): …»: el run se detiene en `acceptance` y el commit se
+  rechaza, también al reevaluar en `prepare_commit`.
+- **Paridad de flujos, por el revisor.** `review-task` (versión nueva) recibe en su entrada `documentation` (patrones y
+  cambios de modelos, diagrama de datos, carpeta y cambios de flujos; solo con layout v2) y la regla: un cambio de
+  modelos sin diagrama no se acepta y un cambio de flujo de negocio sin su documento en `flows/` es un REVISE.
+- **Propuestas de ADR.** El ejecutor no edita DECISIONS (prohibido por contrato). Mecanismo de su salida: campo
+  opcional `decision_proposals` del JSON final del ejecutor (como `permission_denials`), lista de como mucho 5 objetos
+  `{title ≤200, decision ≤4000, rationale ≤4000}` sin otras claves; mal formada detiene el run en `executor`. El motor
+  la pasa al revisor como `executor_decision_proposals` y el revisor devuelve en `decision_proposals` (misma forma,
+  validada en `review_contract`; mal formada detiene en `reviewer`) las que respalda el trabajo. No cambian el
+  veredicto ni la aceptación. Quedan con el intento (salida del ejecutor y `review_json` del ciclo, visible en
+  `cycles[].review` de la API sin cambiar su esquema) y la reconciliación recibe en su evidencia las de la última
+  revisión de cada tarea COMMITTED, con la instrucción de consolidarlas en DECISIONS si describen la realidad aceptada.
+- **Versiones.** Adaptador `cli-10` (las formas de ejecutor y revisor que se añaden al prompt incluyen
+  `decision_proposals`) y `document_layout = "d088-2"`: los jobs pendientes admitidos antes quedan en cuarentena. Los
+  intentos anteriores conservan su catálogo de prompts y su esquema congelados.
+
+Decisiones tomadas con criterio:
+
+- El perfil `reference_project` (solo biblioteca, no componible desde el TOML) conserva `docs/**`: describe un repositorio
+  con el layout anterior hasta que el Flujo A lo normalice (T009–T012) y T008 traiga los perfiles declarativos.
+- `typescript-web` no declara `data_model_paths` (web estática sin persistencia); el primer perfil con patrones será
+  `python-django` (T008). La regla se prueba con perfiles sintéticos.
+- La paridad de modelos bloquea la aceptación aunque el revisor acepte, como pide T003; la de flujos depende del
+  juicio del revisor porque «flujo de negocio» no es deducible por rutas.
+- `execute-task` no cambia hasta T005: el ejecutor conoce el campo por el esquema JSON y la forma que acompañan al
+  prompt.
+
+Pendiente: prompts restantes (T005), API y UI de las propuestas y las clases de documento (T006).

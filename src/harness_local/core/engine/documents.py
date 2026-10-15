@@ -11,6 +11,7 @@ import re
 from pathlib import PurePosixPath
 import shlex
 
+from harness_local.core.engine.contracts import RECONCILE_TASK
 from harness_local.core.engine.planning import FIELD_RE, TASK_RE, backticked, bullet_items, collapse
 
 MAX_DOCUMENT_BYTES = 512 * 1024
@@ -116,9 +117,10 @@ class Layout:
         return path == self.archive_dir or path.startswith(self.archive_dir + '/')
 
     def editable(self, path: str) -> bool:
-        """Documentos editables por el usuario mediante una edición confirmada."""
+        """Documentos editables por el usuario mediante una edición confirmada: README, archivos de instrucciones
+        (D088 punto 8, P008-T003) y Markdown de la documentación fuera del archivo."""
         pure = PurePosixPath(path)
-        if path == self.readme:
+        if path == self.readme or path in self.instructions:
             return True
         return (pure.suffix == '.md' and path.startswith(self.docs + '/') and not self.archived(path)
                 and '..' not in pure.parts)
@@ -137,14 +139,27 @@ def protected_write(context, path: str) -> bool:
     contrato documental (README, archivos de instrucciones de la raíz, Markdown de la documentación y el archivo
     de fases) se escribe solo con una confirmación del usuario sobre el contenido exacto y tiene sus propias
     reglas, como la regeneración mecánica de bloques en cada commit de tarea. Fuera de ese contrato, y en v1, la
-    protección del perfil se mantiene. D088: AGENTS, CLAUDE y GEMINI se escriben en la creación; su edición
-    confirmada (`Layout.editable`) llega con P008-T003."""
+    protección del perfil se mantiene. D088 punto 8: AGENTS, CLAUDE y GEMINI son editables y se escriben en la
+    creación, la edición confirmada y la importación."""
     from harness_local.core.engine.evidence import matches
     target = layout(context)
     pure = PurePosixPath(path)
-    if (target is not None and '..' not in pure.parts
-            and (target.editable(path) or path in target.instructions
-                 or (target.archived(path) and pure.suffix == '.md'))):
+    if '..' in pure.parts:
+        return True  # Nunca una ruta del contrato; antes solo la rechazaba un perfil que protegía `docs/**`.
+    if target is not None and (target.editable(path) or (target.archived(path) and pure.suffix == '.md')):
+        return False
+    return matches(path, context.profile.protected_paths)
+
+
+def executor_protected(context, task_id: str, path: str) -> bool:
+    """¿Protege el perfil `path` frente al ejecutor de la tarea `task_id`?
+
+    D088 punto 6 (P008-T003): en v2, STATE, NEXT_STEPS, ROADMAP y DECISIONS los gobierna el contrato documental
+    (`harness_owned_paths`): ninguna tarea normal los edita y la reconciliación de fase edita su prosa aunque el
+    perfil también los proteja. Para el resto de rutas, y en v1, manda el perfil (D081)."""
+    from harness_local.core.engine.evidence import matches
+    target = layout(context)
+    if target is not None and RECONCILE_TASK.fullmatch(task_id) and path in target.harness_owned:
         return False
     return matches(path, context.profile.protected_paths)
 

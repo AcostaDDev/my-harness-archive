@@ -4,7 +4,7 @@ from dataclasses import asdict, replace
 import json
 from uuid import uuid4
 
-from harness_local.core.engine.acceptance import assess_acceptance
+from harness_local.core.engine.acceptance import assess_acceptance, documentation_parity
 from harness_local.core.engine.context import ProjectContext
 from harness_local.core.engine.contracts import (
     AgentAdapter, ContractError, IncompleteContract, RunHistory,
@@ -17,8 +17,32 @@ from harness_local.core.engine.evidence import (
 from harness_local.core.engine.journal import EngineJournal, JournalError
 from harness_local.core.engine.prompts import builtin_catalog, dump_catalog, load_catalog, render_attempt
 from harness_local.core.engine.planning import SHARED_HEADING, deterministic_task, section
-from harness_local.core.engine.review import ReviewCycle, review_contract, stalled_review_signature
+from harness_local.core.engine.review import ReviewCycle, decision_proposals, review_contract, stalled_review_signature
 from harness_local.core.engine.validation import CommandRunner, command_result_payload, run_command, run_validations, validation_payload
+
+
+def _executor_output(payload: dict) -> str | None:
+    """Motivo de parada si la salida del ejecutor trae denegaciones o propuestas de ADR mal formadas."""
+    if not isinstance(payload.get("permission_denials", []), list):
+        return "Malformed permission denials"
+    try:
+        decision_proposals(payload.get("decision_proposals", []))
+    except ContractError as exc:
+        return f"Malformed decision proposals: {exc}"
+    return None
+
+
+def _latest_executor_proposals(history: RunHistory) -> list:
+    """Propuestas de ADR válidas de la última salida del ejecutor (P008-T003). Una salida que se detuvo por
+    propuestas mal formadas no las aporta al revalidar."""
+    for attempt in reversed(history.attempts):
+        if attempt.request.role == "executor":
+            try:
+                payload = json.loads(attempt.result.payload_json or "")
+                return decision_proposals(payload.get("decision_proposals", []))
+            except (ValueError, AttributeError):  # ContractError es un ValueError
+                return []
+    return []
 
 
 class OfflineEngine:
@@ -167,10 +191,10 @@ class OfflineEngine:
             "PROFILE_INSTRUCTIONS": context.profile.executor_instructions})
         if payload is None:
             return history
-        denials = payload.get("permission_denials", [])
-        if not isinstance(denials, list):
-            return stopped(history, "executor", "Malformed permission denials")
-        return self._review_loop(context, history, before, denials)
+        malformed = _executor_output(payload)
+        if malformed:
+            return stopped(history, "executor", malformed)
+        return self._review_loop(context, history, before, payload.get("permission_denials", []))
 
     def _review_loop(self, context: ProjectContext, history: RunHistory,
                      before: ContentEvidence | None, denials: list, *, allow_revision: bool = True) -> RunHistory:
@@ -192,10 +216,18 @@ class OfflineEngine:
             except Exception as exc:
                 return stopped(history, "evidence", str(exc))
             self._checkpoint(history, "reviewer")
-            prompt = freeze({
+            review_input = {
                 "task": task, "evidence": strip_empty_provenance(asdict(evidence)), "policy": asdict(policy),
                 "validation": strip_empty_provenance(validation_payload(validation)),
-            })
+            }
+            # P008-T003: claves solo con el layout v2 o con propuestas, para conservar la entrada anterior.
+            parity = documentation_parity(context, evidence.changed_paths)
+            if parity is not None:
+                review_input["documentation"] = parity
+            proposals = _latest_executor_proposals(history)
+            if proposals:
+                review_input["executor_decision_proposals"] = proposals
+            prompt = freeze(review_input)
             selection = Selection(context.policy.reviewer_model, context.policy.reviewer_effort, "Explicit independent review policy")
             history, data = self._invoke(context, history, "reviewer", selection, "review-task", {"INPUT_JSON": prompt})
             if data is None:
@@ -211,7 +243,7 @@ class OfflineEngine:
             verdict = data["verdict"]
             if verdict == "ACCEPT":
                 try:
-                    decision = assess_acceptance(cycle, self.evidence.capture(context))
+                    decision = assess_acceptance(cycle, self.evidence.capture(context), context)
                 except Exception as exc:
                     return stopped(history, "evidence", str(exc))
                 history = replace(history, acceptance=decision)
@@ -244,6 +276,7 @@ class OfflineEngine:
                 "PROFILE_INSTRUCTIONS": context.profile.executor_instructions})
             if payload is None:
                 return history
+            malformed = _executor_output(payload)
+            if malformed:
+                return stopped(history, "executor", malformed)
             denials = payload.get("permission_denials", [])
-            if not isinstance(denials, list):
-                return stopped(history, "executor", "Malformed permission denials")

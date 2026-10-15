@@ -15,7 +15,7 @@ decisiones D001–D088 y la información técnica que antes estaba en README y A
 | Tipos del cliente | `openapi-typescript` 7.13.0 desde el OpenAPI exportado |
 | Herramientas | uv 0.12.19 y `uv.lock`; Node 24.15.0, npm 11.12.1 y `frontend/package-lock.json` |
 | Pruebas | `unittest` (12 checks sin dependencias), pytest 9.1.1 + httpx 0.28.1, `node --test` |
-| Agentes | CLI `codex` 0.161.0/0.162.1 (escritura solo 0.162.1) y `claude` 2.1.295/2.1.296, adaptador `cli-9` |
+| Agentes | CLI `codex` 0.161.0/0.162.1 (escritura solo 0.162.1) y `claude` 2.1.295/2.1.296, adaptador `cli-10` |
 
 Sin Celery, broker ni Docker para el servicio (D003, D004). Detalles de stack de cada proyecto gestionado (Django,
 Node…) pertenecen a perfiles, no al núcleo.
@@ -94,8 +94,8 @@ por su API y los artefactos referenciados; la restauración es de consulta (`que
 
 ## 6. Agentes y configuración
 
-- **Adaptador `cli-9`.** Sesión nueva por intento; argv, entorno (sin herencia, `USER` comprobado contra el UID) y
-  timeouts explícitos. Revisor en solo lectura (Codex `--sandbox read-only`; Claude `--restricted` y `--json-schema`
+- **Adaptador `cli-10`** (D090: propuestas de ADR en las formas de ejecutor y revisor). Sesión nueva por intento;
+  argv, entorno (sin herencia, `USER` comprobado contra el UID) y timeouts explícitos. Revisor en solo lectura (Codex `--sandbox read-only`; Claude `--restricted` y `--json-schema`
   tipado). Ejecutor Codex `workspace-write` con el checkout como única raíz escribible y confianza `untrusted` inline
   (D059, D068); Claude con herramientas declaradas y `dontAsk`. Memoria automática desactivada en ambos (D066).
   Claude se lanza con `--setting-sources ""`; si los archivos de instrucciones del checkout llegan al agente se
@@ -127,7 +127,9 @@ por su API y los artefactos referenciados; la restauración es de consulta (`que
 - Versiones exactas; ninguna dependencia nueva sin decisión registrada. No documentar scripts inexistentes.
 - Tipos del cliente siempre regenerados desde OpenAPI tras cambiar un contrato; nunca a mano.
 - Pruebas offline con Git/SQLite temporales, procesos y agentes falsos y datos sintéticos; nunca runs ni datos privados.
-- Paridad: un cambio de modelos o migraciones actualiza `DDBB-DIAGRAM.md`; un cambio de flujo, `docs/flows/`.
+- Paridad: un cambio de modelos o migraciones actualiza `DDBB-DIAGRAM.md`; un cambio de flujo, `docs/flows/`. En los
+  proyectos gestionados, `data_model_paths` del perfil bloquea la aceptación sin el diagrama y el revisor exige los
+  flujos (D090).
 
 ## 9. Desarrollo y operación
 

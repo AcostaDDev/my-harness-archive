@@ -28,11 +28,13 @@ sequenceDiagram
     loop hasta ACCEPT, BLOCKED o límite de revisiones
         E->>X: execute-task o revise-task (sesión nueva)
         X->>G: edita dentro de las rutas permitidas
+        X-->>E: resultado y propuestas de ADR opcionales
         E->>G: evidencia (árbol, diff, fingerprint)
         E->>E: rutas, validaciones del perfil y JUnit
-        E->>R: review-task con diff y validaciones
-        R-->>E: ACCEPT, REVISE o BLOCKED
+        E->>R: review-task con diff, validaciones, paridad y propuestas
+        R-->>E: ACCEPT, REVISE o BLOCKED y propuestas respaldadas
     end
+    E->>E: aceptación (paridad de modelos con DDBB-DIAGRAM)
     E->>DB: acceptance_ready, stopped, blocked o revision_limit
     S->>DB: job DONE y lock liberado
     U->>API: confirmar commit (hash mostrado)
@@ -76,3 +78,14 @@ intento sin resultado al confirmar la parada queda `INTERRUPTED` sin reintento a
 - `storage/managed.py` (cola, lease, lock, estados), `services/managed.py` (supervisor), `adapters/cli_agents.py`,
   `adapters/commands.py`, `adapters/git.py`.
 - Bloques gestionados en el commit: `core/engine/documents.py` (ver [documentos](documents.md)).
+
+## Rutas, paridad y propuestas (D090)
+
+- El ejecutor no escribe STATE, NEXT_STEPS, ROADMAP, DECISIONS, `docs/archive/**` ni AGENTS, CLAUDE y GEMINI
+  (`harness_owned_paths` y perfil, con `executor_protected`); la reconciliación `<fase>-RECONCILE-<n>` sí edita la prosa
+  de los cuatro primeros.
+- Con layout v2 la entrada del revisor lleva `documentation`. Si el perfil declara `data_model_paths` y el diff los
+  toca sin `DDBB-DIAGRAM.md`, la aceptación no es elegible aunque el revisor acepte; la paridad de flujos la juzga el
+  revisor.
+- `decision_proposals` del ejecutor llegan al revisor; las que este devuelve quedan en la revisión del ciclo y en la
+  evidencia de la reconciliación. Nunca escriben DECISIONS ni cambian el veredicto.

@@ -18,8 +18,12 @@ def typescript_web_profile() -> ProjectProfile:
                                   ("npm", "run", "build")),
         junit_reports=(JUnitDeclaration(Command(('npm', 'run', 'test'), timeout_seconds=120),
                                         '.local/junit.xml', 'Tests Node de tests/*.test.mjs; no cobertura de código'),),
-        protected_paths=("docs/**", ".harness/**", ".codex/**", ".claude/**", "AGENTS.md", "CLAUDE.md",
-                         "package.json", "package-lock.json", "tsconfig.json", "scripts/**", "tests/**", ".gitignore"),
+        # D088 punto 6 (P008-T003): el ejecutor puede mantener la documentación de producto, los diagramas,
+        # `docs/flows/` y `docs/phase/` si su contrato los incluye; los documentos de control son del harness.
+        protected_paths=("docs/STATE.md", "docs/NEXT_STEPS.md", "docs/ROADMAP.md", "docs/DECISIONS.md",
+                         "docs/archive/**", "AGENTS.md", "CLAUDE.md", "GEMINI.md",
+                         ".harness/**", ".codex/**", ".claude/**", "package.json", "package-lock.json",
+                         "tsconfig.json", "scripts/**", "tests/**", ".gitignore"),
         sensitive_paths=(".env", ".env.*", "**/.env", "**/.env.*", "*.pem", "*.key", "*.p12", "*.pfx", "id_rsa*"),
         sensitive_allowlist=(".env.example",),
         executor_instructions=(

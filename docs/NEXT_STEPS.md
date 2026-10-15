@@ -4,7 +4,7 @@ Objetivo y criterios de salida en [ROADMAP](ROADMAP.md#p008--contrato-documental
 Decisión de base: [D088](DECISIONS.md#d088--contrato-documental-unificado-cierre-de-fase-automático-e-importación-de-proyectos-p008).
 Análisis de incongruencias que originó la fase: [docs/phase](phase/P008-T001_MIGRACION_DOCUMENTAL.md).
 
-**Siguiente tarea:** P008-T003. Orden de ejecución: T002 → T007 (motor y contrato), T008 (perfiles, que el usuario
+**Siguiente tarea:** P008-T004. Orden de ejecución: T002 → T007 (motor y contrato), T008 (perfiles, que el usuario
 necesita para su próximo proyecto Django), T009–T012 (Flujo A) y T013–T015 (Flujo B).
 
 ## Restricciones compartidas
@@ -73,6 +73,9 @@ Adelantos mínimos de otras tareas, registrados en D089: `protected_write` exime
 
 **Objetivo:** Permitir que el ejecutor mantenga los diagramas y la documentación de producto, y reservar al harness los
 documentos de control.
+**Estado:** completada el 2026-10-15 ([D090](DECISIONS.md#d090--p008-t003-rutas-del-ejecutor-paridad-de-diagramas-y-propuestas-de-adr)).
+Mecanismo del ejecutor: campo opcional `decision_proposals` de su JSON final. `reference_project` conserva `docs/**` hasta el
+Flujo A; `typescript-web` no declara `data_model_paths`.
 **Alcance:**
 - Perfiles: sustituir la protección `docs/**` por `docs/STATE.md`, `docs/NEXT_STEPS.md`, `docs/ROADMAP.md`,
   `docs/DECISIONS.md`, `docs/archive/**`, `AGENTS.md`, `CLAUDE.md` y `GEMINI.md`. `harness_owned_paths` igual.

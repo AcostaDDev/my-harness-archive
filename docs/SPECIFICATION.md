@@ -100,8 +100,9 @@ escriben dos motores sobre el mismo checkout.
 
 Estructura obligatoria para todo proyecto, también para este repositorio (D088). Implementados (P008-T002, D089): el
 layout, la plantilla, el índice de DECISIONS desde sus encabezados y la obligatoriedad (sin `documents`, el proyecto usa
-esta estructura; la creación v1 se rechaza). Pendientes: rutas del ejecutor y paridad (T003), cierre (T004), prompts y
-definición (T005), API y UI (T006) e inyección de `AGENTS.md` (T007).
+esta estructura; la creación v1 se rechaza). P008-T003 (D090): rutas del ejecutor, paridad de modelos determinista y
+de flujos por el revisor, y propuestas de ADR. Pendientes: cierre (T004), prompts y definición (T005), API y UI (T006)
+e inyección de `AGENTS.md` (T007).
 
 | Ruta | Contenido | Autoría |
 |---|---|---|
@@ -127,10 +128,11 @@ Reglas:
 - **Sin invención.** Nada fuera de la especificación; ante una incongruencia entre documentos o con el código, se
   pregunta antes de decidir.
 - **Paridad diagramas‑código.** Un cambio de modelos de datos o de flujos de negocio actualiza `DDBB-DIAGRAM.md` o
-  `docs/flows/` en la misma tarea; el revisor rechaza la entrega que no lo haga.
+  `docs/flows/` en la misma tarea; el revisor rechaza la entrega que no lo haga. Si el perfil declara
+  `data_model_paths`, un diff que los toque sin el diagrama de datos no se acepta aunque el revisor acepte.
 - **Decisiones.** El ejecutor no añade ADR: las propone en su salida y el revisor o la reconciliación las consolidan.
-- **Protegidos.** STATE, NEXT_STEPS, ROADMAP, DECISIONS y `docs/archive/**` quedan fuera de los contratos de ejecutor;
-  la reconciliación edita la prosa de STATE, NEXT_STEPS y ROADMAP.
+- **Protegidos.** STATE, NEXT_STEPS, ROADMAP, DECISIONS, `docs/archive/**`, AGENTS, CLAUDE y GEMINI quedan fuera de
+  los contratos de ejecutor; la reconciliación edita la prosa de STATE, NEXT_STEPS, ROADMAP y DECISIONS.
 - **Bloques gestionados.** Los bloques entre comentarios `harness-local:managed-*` los escribe solo el harness; la
   prosa exterior se conserva. Superar un presupuesto genera un aviso y una reconciliación, nunca un truncado.
 

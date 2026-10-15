@@ -46,6 +46,7 @@ def matches(path: str, patterns: list[str] | tuple[str, ...]) -> bool:
 
 
 def check_paths(context: ProjectContext, task: dict, evidence: ContentEvidence) -> PathPolicyResult:
+    from harness_local.core.engine.documents import executor_protected
     violations = []
     for path in evidence.changed_paths:
         try:
@@ -56,7 +57,7 @@ def check_paths(context: ProjectContext, task: dict, evidence: ContentEvidence) 
             continue
         sensitive = (matches(path, context.profile.sensitive_paths)
                      and not matches(path, context.profile.sensitive_allowlist))
-        if (sensitive or matches(path, context.profile.protected_paths)
+        if (sensitive or executor_protected(context, task["task_id"], path)
                 or matches(path, task["forbidden_paths"]) or not matches(path, task["allowed_paths"])):
             violations.append(path)
     return PathPolicyResult(tuple(sorted(set(violations))))

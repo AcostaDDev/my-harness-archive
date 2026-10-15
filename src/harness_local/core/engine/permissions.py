@@ -27,6 +27,7 @@ def allowed(run, kind, target):
     if not all(target in authority.get(layer, {}).get(kind, []) for layer in LAYERS):
         return False
     if kind == 'files':
+        from harness_local.core.engine.documents import executor_protected
         from harness_local.core.engine.serialization import restore_context
         context = restore_context(run.context_json)
         task = json.loads(json.loads(run.history_json)['history']['task_json'])
@@ -35,7 +36,7 @@ def allowed(run, kind, target):
         except ValueError:
             return False
         if (not matches(target, task['allowed_paths']) or matches(target, task['forbidden_paths'])
-                or matches(target, context.profile.protected_paths)
+                or executor_protected(context, task['task_id'], target)
                 or (matches(target, context.profile.sensitive_paths)
                     and not matches(target, context.profile.sensitive_allowlist))):
             return False

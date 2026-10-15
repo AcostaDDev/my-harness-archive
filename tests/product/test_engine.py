@@ -386,7 +386,7 @@ def test_content_change_during_review_invalidates_acceptance(context):
     result = start(engine, context)
     assert result.stop.stage == "acceptance" and not result.acceptance.eligible
     assert "Content changed" in result.stop.reason
-    assert not assess_acceptance(result.cycles[0], workspace.capture(context)).eligible
+    assert not assess_acceptance(result.cycles[0], workspace.capture(context), context).eligible
 
 
 def test_validation_argv_order_dedup_errors_empty_and_missing_duration(context):

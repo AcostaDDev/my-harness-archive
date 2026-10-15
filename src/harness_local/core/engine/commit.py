@@ -222,7 +222,7 @@ def prepare_commit(context: ProjectContext, history: RunHistory, writer: CommitW
         raise CommitError("Acceptance evidence does not match the last reviewed cycle")
     provenance = git_provenance(reviewed)
     current = writer.capture(context)
-    decision = assess_acceptance(cycle, current)
+    decision = assess_acceptance(cycle, current, context)
     if not decision.eligible:
         return _invalidated("; ".join(decision.reasons), current, reviewed.fingerprint)
     task = json.loads(history.task_json)
