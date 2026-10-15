@@ -17,7 +17,7 @@ sequenceDiagram
     API->>DB: conversación definition con brief congelado por hash
     loop turnos
         U->>API: mensaje
-        API->>DB: turno QUEUED con contexto congelado (brief, borradores y hashes, ediciones del usuario)
+        API->>DB: turno QUEUED con contexto congelado (brief, borradores y hashes, ediciones y plantilla)
         DB->>R: define-project (sesión nueva)
         R-->>DB: respuesta, preguntas, borradores completos y pendientes
         U->>API: aplicar borrador (confirmación y hash)
@@ -36,14 +36,17 @@ Bloquean la aceptación: documentos obligatorios ausentes, ROADMAP sin fases, P0
 NEXT_STEPS sin una tarea P001-TNNN válida, DECISIONS con numeración repetida, preguntas bloqueantes abiertas sin
 aplazar o archivos ajenos a la plantilla.
 
-Borradores admitidos (T002): la plantilla de D088 (AGENTS, CLAUDE, GEMINI, README, SPECIFICATION, ARCHITECTURE,
+Borradores admitidos (T002/T005, D092): la plantilla de D088 (AGENTS, CLAUDE, GEMINI, README, SPECIFICATION, ARCHITECTURE,
 ROADMAP, STATE, NEXT_STEPS, DECISIONS y DDBB-DIAGRAM) y `docs/flows/*.md`. AGENTS, CLAUDE, GEMINI y DDBB-DIAGRAM no
-redactados salen de la plantilla, con el título de la conversación y los comandos del perfil congelado.
+redactados salen de la plantilla, con el título de la conversación y los comandos del perfil congelado. Esos valores
+por defecto se muestran al revisor en el contexto del turno; no sustituyen los borradores existentes. Los once
+documentos son obligatorios en el resultado aceptado. La vista previa bloquea AGENTS de más de 60 líneas y
+CLAUDE/GEMINI de más de 15. Los borradores de flujos admiten un solo nivel; ni los artefactos de `docs/phase/` ni
+archivos individuales de decisiones son borradores de definición.
 
 ## Cambios previstos en P008 (D088, sin implementar)
 
-- Prompts `define-project` y `plan-phase` y documentos obligatorios según D088 (T005); retirada de `Bootstrap.tsx`
-  y de los endpoints v1 (T006).
+- Retirada de `Bootstrap.tsx` y de los endpoints v1 (T006).
 - Un repositorio con contenido entra por los flujos de importación A o B (T009–T015).
 
 ## Fuente en el código

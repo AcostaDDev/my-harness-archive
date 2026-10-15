@@ -56,7 +56,9 @@ las subcarpetas de `docs/phase/`. REVIEW y SUMMARY se generan desde la instantá
 
 Las nuevas transiciones separadas H6.3 se rechazan. Sus intenciones ya selladas conservan la vía de recuperación;
 los endpoints se mantienen hasta su retirada de API/UI en T006. Nunca se recalcula una intención pendiente ni se
-reescriben sus snapshots. Prompts y UI de planificación quedan pendientes de T005/T006.
+reescriben sus snapshots. El prompt de planificación usa el destino exacto del contexto: la fase ACTIVE vacía, o la
+siguiente en conversaciones anteriores (T005, D092). Propone NEXT_STEPS y exige confirmación propia del plan; no
+autoriza otra transición. La adaptación de UI sigue pendiente de T006.
 
 ## Fuente en el código
 

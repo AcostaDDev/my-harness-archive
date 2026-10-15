@@ -477,13 +477,14 @@ class DocumentsRepository:
 
 
 def _resume_job(managed, session, op, context, versions, key, marker, assessment, stage):
+    from harness_local.core.engine.documents import DOCUMENT_LAYOUT
     run = session.get(Run, op.run_id)
     frozen_versions = json.loads(run.versions_json)
     comparable = dict(frozen_versions)
     if (op.kind == 'transition' and op.request.get('commit_intent')
-            and comparable.get('document_layout') in ('d088-1', 'd088-2')
-            and versions.get('document_layout') == 'd088-3'):
-        comparable['document_layout'] = 'd088-3'  # solo el escritor ya sellado, nunca agentes ni bytes nuevos
+            and comparable.get('document_layout') in ('d088-1', 'd088-2', 'd088-3')
+            and versions.get('document_layout') == DOCUMENT_LAYOUT):
+        comparable['document_layout'] = DOCUMENT_LAYOUT  # solo el escritor ya sellado, nunca agentes ni bytes nuevos
     if run.context_json != context_snapshot(context) or comparable != versions:
         raise Conflict('Frozen context/versions changed; restore the configured writer first')
     job = Job(idempotency_key=key, run_id=run.id, request_json=marker, status='QUEUED',

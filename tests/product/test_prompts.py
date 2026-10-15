@@ -48,6 +48,23 @@ def test_external_templates_keep_roles_and_interpolate_once(name):
     assert load_catalog(dump_catalog(builtin_catalog())) == builtin_catalog()
 
 
+def test_unified_prompts_retire_old_folders_without_rewriting_frozen_catalogs():
+    catalog = builtin_catalog()
+    assert all(old not in template.template for template in catalog.values()
+               for old in ('decisions/', 'architecture/', 'research/'))
+    names = ('define-project', 'plan-phase', 'reconcile-phase', 'close-phase', 'review-task',
+             'execute-task', 'revise-task')
+    for name in names:
+        assert all(term in catalog[name].template for term in ('AGENTS.md', 'DDBB-DIAGRAM', 'flows/', 'phase/',
+                                                              'DECISIONS.md', 'decision_proposals'))
+        # Catálogo sintético anterior: mismo esquema de variables, contenido e identidad inmutables.
+        old = catalog[name].template + '\nOld layout: decisions/ architecture/ research/\n'
+        catalog[name] = replace(catalog[name], template=old, sha256=digest(old), id='builtin-1:' + digest(old))
+    frozen = dump_catalog(catalog)
+    assert dump_catalog(load_catalog(frozen)) == frozen
+    assert all(catalog[name].id != builtin_catalog()[name].id for name in names)
+
+
 @pytest.mark.parametrize('text', ['{{UNKNOWN}}', '{{INSTRUCTIONS', '{{ instructions }}', 'no variables', ''])
 def test_invalid_variables_refuse_draft_atomically(prompts, context, text):
     with pytest.raises(ValueError):

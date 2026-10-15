@@ -107,7 +107,10 @@ por su API y los artefactos referenciados; la restauración es de consulta (`que
   SQLite, grupos POSIX.
 - **Prompts** (`templates/`): `plan-task`, `execute-task`, `revise-task`, `review-task`, `executor-routing`,
   `close-phase`, `reconcile-phase`, `chat-turn`, `define-project`, `plan-phase`, `bootstrap-project`. Jerarquía base →
-  perfil → proyecto; snapshot por intento.
+  perfil → proyecto; snapshot por intento. Prompts unificados y definición versión 4 (D092); `document_layout = "d088-4"`
+  congela las reglas nuevas y detiene jobs anteriores antes de efectos. Las transiciones ya selladas conservan su
+  conciliación con los bytes originales. La definición congela los valores por defecto; la planificación incluye
+  instrucciones y DDBB-DIAGRAM entre sus documentos de contexto.
 
 ## 7. API, UI y seguridad
 
@@ -174,4 +177,4 @@ Uso real (D051): construir y verificar el wheel (`scripts/build_distribution.py 
 - Un proyecto `typescript-web` nuevo no tiene `package.json` y el ejecutor no puede crearlo.
 - Dos avisos *low* de KaTeX en Mermaid 11.
 - La estructura de D088 es obligatoria desde P008-T002; rutas y paridad en T003, cierre y archivo unificados en
-  T004. Prompts/definición, adaptación de API/UI e inyección de AGENTS quedan para T005–T007 (D089–D091).
+  T004 y prompts/definición en T005. Adaptación de API/UI e inyección de AGENTS pendientes de T006/T007 (D089–D092).

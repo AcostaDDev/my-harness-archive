@@ -31,6 +31,7 @@ from harness_local.adapters.git import GitWorkspace
 from harness_local.core.engine.commit import GitIdentity
 from harness_local.core.engine.context import Command, EnginePolicy, ProjectContext
 from harness_local.core.engine.contracts import freeze
+from harness_local.core.engine.documents import DOCUMENT_LAYOUT
 from harness_local.core.engine.journal import JournalError
 from harness_local.profiles.typescript_web import typescript_web_profile
 from harness_local.services.managed_runtime import (PROJECT_ID, ManagedConfig, ManagedProject, agents_view,
@@ -38,8 +39,6 @@ from harness_local.services.managed_runtime import (PROJECT_ID, ManagedConfig, M
 
 VERSION = 'local-config-3'
 FORMATS = ('local-config-1', 'local-config-2', VERSION)
-# D088/P008-T004: cierre y archivo unificados, con sucesora ACTIVE sin plan.
-DOCUMENT_LAYOUT = 'd088-3'
 CLI_KEYS = ('executable', 'cli_version', 'timeout_seconds', 'environment')
 TOOL_KEYS = ('tools', 'allowed_tools', 'grantable_tools')
 CONFIG_ENV = 'HARNESS_LOCAL_CONFIG'

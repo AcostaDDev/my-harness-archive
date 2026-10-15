@@ -4,7 +4,7 @@ Objetivo y criterios de salida en [ROADMAP](ROADMAP.md#p008--contrato-documental
 Decisión de base: [D088](DECISIONS.md#d088--contrato-documental-unificado-cierre-de-fase-automático-e-importación-de-proyectos-p008).
 Análisis de incongruencias que originó la fase: [docs/phase](phase/P008-T001_MIGRACION_DOCUMENTAL.md).
 
-**Siguiente tarea:** P008-T005. Orden de ejecución: T002 → T007 (motor y contrato), T008 (perfiles, que el usuario
+**Siguiente tarea:** P008-T006. Orden de ejecución: T002 → T007 (motor y contrato), T008 (perfiles, que el usuario
 necesita para su próximo proyecto Django), T009–T012 (Flujo A) y T013–T015 (Flujo B).
 
 ## Restricciones compartidas
@@ -132,6 +132,8 @@ generados de los endpoints mínimos (D091).
 ## P008-T005 — Prompts, definición y reconciliación al nuevo layout
 
 **Objetivo:** Alinear plantillas de prompts y la conversación de definición con la estructura unificada.
+**Estado:** completada el 2026-10-15 ([D092](DECISIONS.md#d092--p008-t005-prompts-y-definición-bajo-el-contrato-unificado)).
+Se conserva el completado por plantilla de D089; el resultado aceptado exige los once documentos.
 **Alcance:**
 - Versiones nuevas de `define-project`, `plan-phase`, `reconcile-phase`, `close-phase`, `review-task` y `execute-task`:
   DDBB-DIAGRAM y `flows/` en lugar de `architecture/`; DECISIONS único; `docs/phase/` para artefactos; ADR solo como
@@ -139,7 +141,10 @@ generados de los endpoints mínimos (D091).
 - `definition.py`: borradores admitidos = plantilla + `docs/flows/*.md` + archivos raíz de instrucciones; documentos
   obligatorios según D088; la aceptación escribe AGENTS, CLAUDE y GEMINI.
 - `plan-phase` planifica la fase activa sin tareas que deja T004.
-**Rutas permitidas:** `src/harness_local/core/engine/**`, `src/harness_local/storage/**`, `tests/**`, `docs/**`
+**Rutas permitidas:** `src/harness_local/core/engine/**`, `src/harness_local/storage/**`, `tests/**`, `docs/**`.
+Extensión técnica: `services/local_config.py` y `services/managed.py` para congelar `document_layout = "d088-4"`
+y conservar la conciliación de transiciones ya selladas, sin invocar agentes. `revise-task` recibe las mismas reglas
+que `execute-task` para que las correcciones las conserven.
 **Criterios de aceptación:**
 - De una carpeta vacía a commit raíz con la estructura de D088 y P001, con conversación sintética.
 - Ningún prompt menciona `decisions/`, `architecture/` ni `research/`; los intentos anteriores conservan su versión.

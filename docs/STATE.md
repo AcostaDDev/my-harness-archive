@@ -73,7 +73,8 @@ Objetivo y criterios en [ROADMAP](ROADMAP.md); plan en [NEXT_STEPS](NEXT_STEPS.m
   sobre una base temporal; 16
   diagramas Mermaid válidos con el parser local; el DECISIONS de este repositorio indexa 89 decisiones sin duplicados.
   No se ejecutaron pruebas Node ni el build: no cambian UI ni OpenAPI.
-- Pendiente hasta T004–T007: prompts, cierre separado, API (forma del índice) y UI siguen con el layout anterior.
+- En esta entrega quedaban prompts, cierre, API y UI; cierre resuelto en T004 y prompts en T005. API/UI e inyección
+  de instrucciones siguen pendientes de T006/T007.
 
 **P008-T003 completada** (rutas protegidas, paridad y propuestas de ADR,
 [D090](DECISIONS.md#d090--p008-t003-rutas-del-ejecutor-paridad-de-diagramas-y-propuestas-de-adr)):
@@ -104,12 +105,26 @@ Objetivo y criterios en [ROADMAP](ROADMAP.md); plan en [NEXT_STEPS](NEXT_STEPS.m
   pendiente. Check bloqueado por STATE >24 KiB o base >12 KiB. Nuevas transiciones H6.3 retiradas, conservando la
   conciliación de sus intenciones selladas. `document_layout = "d088-3"`.
 - Plan posterior confirmado desde texto o `phase_planning`: commit documental y nueva versión de la definición;
-  endpoints mínimos y contratos generados actualizados. Prompts y UI completos pendientes de T005/T006.
+  endpoints mínimos y contratos generados actualizados. Prompts adaptados en T005; UI pendiente de T006.
 - Verificación: 12 checks ligeros; pytest completo con 1.142 OK y 121 subtests, dos fixtures históricos de métricas
   corregidos y su archivo re-ejecutado (27 OK); 113 pruebas afectadas tras los ajustes finales, incluidos los 22 casos
   nuevos de cierre. 72 pruebas Node y build (incluye tipos) correctos. Dos diagramas Mermaid y enlaces/anclas de los
   siete Markdown editados/nuevos válidos. Sin `alembic check` independiente (no cambian modelos ni migraciones),
   proveedores reales ni smokes. Detalle en [registro](phase/P008-T004_CIERRE_UNIFICADO.md).
 
-**Siguiente:** P008-T005 (prompts, definición y reconciliación al nuevo layout), sin iniciar. Este repositorio sigue
-sin registrarse en el harness.
+**P008-T005 completada** (prompts y definición unificados,
+[D092](DECISIONS.md#d092--p008-t005-prompts-y-definición-bajo-el-contrato-unificado)):
+
+- Siete prompts nuevos por hash, incluida la corrección `revise-task`: discovery de AGENTS, DECISIONS único,
+  DDBB-DIAGRAM, flujos, artefactos de fase y propuestas de ADR; la reconciliación puede consolidarlas bajo su contrato.
+- Definición versión 4: once documentos obligatorios al aceptar, con el completado por plantilla de D089 y sus valores
+  congelados en el turno. Se conservan instrucciones personalizadas; AGENTS >60 líneas o CLAUDE/GEMINI >15 bloquean.
+- Planificación sobre la fase ACTIVE vacía y confirmación propia del plan. Contexto con instrucciones y diagrama de
+  datos. `document_layout = "d088-4"`: jobs anteriores en cuarentena; recuperación de transiciones ya selladas sin
+  reescribir run ni intención. Sin cambios de modelo, migración, dependencias o esquema de salida.
+- Verificación: 12 checks ligeros; pytest completo con 1.158 pruebas y 121 subtests correctos (aviso conocido de
+  Starlette/httpx); primera pasada dirigida con 179 OK. Quince Markdown con enlaces/anclas válidos, tres diagramas
+  Mermaid válidos y diff revisado. Sin Node/build ni `alembic check` independiente: no cambian UI, OpenAPI ni esquema.
+  Sin proveedores reales ni smokes. Detalle en el [registro](phase/P008-T005_PROMPTS_DEFINICION.md).
+
+**Siguiente:** P008-T006 (API y UI mínimas), sin iniciar. Este repositorio sigue sin registrarse en el harness.

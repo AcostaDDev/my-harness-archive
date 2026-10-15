@@ -1,8 +1,8 @@
 """H6.5 (D072 §5.1, D073): creación y planificación conversacionales. Biblioteca estándar, sin efectos.
 
 Dos conversaciones sobre la infraestructura del chat (D035): `definition` (proyecto nuevo, desde un
-brief) y `phase_planning` (plan de la fase siguiente). Cada turno es una invocación nueva, de solo
-lectura, del revisor con el contexto congelado al encolarlo. La salida tiene un esquema fijo; una
+brief) y `phase_planning` (plan de la fase activa vacía o de la siguiente). Cada turno es una invocación
+nueva, de solo lectura, del revisor con el contexto congelado al encolarlo. La salida tiene un esquema fijo; una
 salida inválida detiene el turno sin fallback ni reintento. El agente nunca escribe: los borradores
 los escribe el harness al aplicar una propuesta confirmada, con CAS sobre el hash leído en el turno.
 La aceptación es una vista previa determinista que lleva al bootstrap D037 con la plantilla v2.
@@ -20,7 +20,8 @@ from harness_local.core.engine.contracts import (
     ContractError, IncompleteContract, Selection, context_snapshot, freeze, invoke_agent, stop_history,
 )
 from harness_local.core.engine.documents import (
-    ANY_MARKER, MAX_DOCUMENT_BYTES, Layout, _fields, _first, blocks, budget_warnings, decision_index, inline,
+    ANY_MARKER, MAX_DOCUMENT_BYTES, MAX_AGENTS_LINES, MAX_WRAPPER_LINES, Layout,
+    _fields, _first, blocks, budget_warnings, decision_index, inline,
     parse_roadmap, phase_data, plan_tasks, render_decisions, render_next_steps, render_roadmap, render_state,
     protected_write, replace_block, require_layout, skeleton,
 )
@@ -36,7 +37,7 @@ MAX_QUESTIONS = 30
 MAX_PENDING = 30
 DRAFT_NAME = re.compile(r'[A-Za-z0-9][A-Za-z0-9._-]{0,99}\.md')
 KINDS = {'definition': ('define-project', 'definition'), 'phase_planning': ('plan-phase', 'planning')}
-TEMPLATE = {'name': 'project-definition', 'version': '3'}  # 3: plantilla unificada D088
+TEMPLATE = {'name': 'project-definition', 'version': '4'}  # 4: documentos obligatorios y prompts D088
 
 
 def text_hash(text: str) -> str:
@@ -75,7 +76,13 @@ def fixed_drafts(target: Layout) -> tuple[str, ...]:
 
 
 def required_documents(target: Layout) -> tuple[str, ...]:
-    return (target.readme, target.specification, target.architecture, *target.phase_documents)
+    """Los once documentos del resultado aceptado, incluidos los completados por la plantilla (D089)."""
+    return (*target.instructions, *target.product_documents, *target.phase_documents)
+
+
+def default_documents(target: Layout) -> tuple[str, ...]:
+    """D089: solo instrucciones y diagrama sin persistencia tienen un contenido por defecto."""
+    return (*target.instructions, target.ddbb_diagram)
 
 
 def draft_directories(target: Layout) -> frozenset[str]:
@@ -309,9 +316,13 @@ def acceptance(context, conversation: dict, inspection: dict, texts: dict[str, s
     if inspection['invalid']:
         blockers.append('Drafts must be UTF-8, NUL-free, not executable and at most 512 KiB: '
                         + ', '.join(inspection['invalid']))
-    missing = [path for path in required_documents(target) if path not in texts]
+    missing = [path for path in required_documents(target) if path not in texts and path not in default_documents(target)]
     if missing:
         blockers.append('Required documents are missing: ' + ', '.join(missing))
+    for path, limit in ((target.agents, MAX_AGENTS_LINES), (target.claude, MAX_WRAPPER_LINES),
+                        (target.gemini, MAX_WRAPPER_LINES)):
+        if path in texts and len(texts[path].splitlines()) > limit:
+            blockers.append(f'{path} must contain at most {limit} lines (D088)')
     for path, text in sorted(texts.items()):
         try:
             names = set(blocks(text))
@@ -406,7 +417,7 @@ def acceptance(context, conversation: dict, inspection: dict, texts: dict[str, s
                         preparation=[command.argv for command in context.profile.preparation],
                         validations=[command.argv for command in context.profile.validations])
     documents = []
-    for path in sorted({*texts, *(p for p in template if p not in required_documents(target))}):
+    for path in sorted({*texts, *default_documents(target)}):
         if path in texts:
             content = regenerated.get(path, texts[path])
             origin = 'draft+blocks' if content != texts[path] else 'draft'

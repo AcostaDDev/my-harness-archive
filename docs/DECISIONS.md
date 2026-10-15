@@ -101,6 +101,7 @@ tarea se leen solo las decisiones que cita; este índice sirve para buscar prece
 | [D089](#d089--p008-t002-layout-unificado-obligatorio-y-plantilla) | P008-T002: layout unificado obligatorio y plantilla | P008 |
 | [D090](#d090--p008-t003-rutas-del-ejecutor-paridad-de-diagramas-y-propuestas-de-adr) | P008-T003: rutas del ejecutor, paridad de diagramas y propuestas de ADR | P008 |
 | [D091](#d091--p008-t004-cierre-y-archivo-unificados-con-planificación-posterior) | P008-T004: cierre y archivo unificados con planificación posterior | P008 |
+| [D092](#d092--p008-t005-prompts-y-definición-bajo-el-contrato-unificado) | P008-T005: prompts y definición bajo el contrato unificado | P008 |
 
 ## D001 — Alcance local y arquitectura base
 
@@ -2692,7 +2693,7 @@ Estado: decidido por el usuario el 2026-10-15, tras D086 (`01b4f6d`).
 
 Estado: decidido por el usuario el 2026-10-15 tras el análisis de incongruencias de esa sesión; **P008-T001
 (migración documental de este repositorio) implementada el mismo día**; P008-T002 implementada (D089); P008-T003
-implementada (D090); P008-T004 implementada (D091); P008-T005–T015 pendientes. Fase: P008.
+implementada (D090); P008-T004 implementada (D091); P008-T005 implementada (D092); P008-T006–T015 pendientes. Fase: P008.
 Sustituye en parte D072/D073 (carpetas `decisions/`, `architecture/` y `research/`; layout v2 opcional), D032/D073
 (cierre y transición separados) y D037 (creación v1). Plan: [NEXT_STEPS](NEXT_STEPS.md).
 
@@ -2902,3 +2903,35 @@ Conserva las definiciones versionadas de D034 y los historiales anteriores.
 
 Validación y límites concretos en el registro de trabajo. No se ejecutó el harness sobre este repositorio ni se
 invocaron proveedores reales.
+
+## D092 — P008-T005: prompts y definición bajo el contrato unificado
+
+Estado: implementada el 2026-10-15; verificación offline en el [registro de trabajo](phase/P008-T005_PROMPTS_DEFINICION.md).
+Fase: P008. Aplica D088 y conserva los valores por defecto de D089 y el plan posterior de D091.
+
+- Nuevas versiones por hash de `define-project`, `plan-phase`, `reconcile-phase`, `close-phase`, `review-task` y
+  `execute-task`, sin referencias a las carpetas retiradas. `revise-task` recibe las mismas reglas para conservarlas
+  en cada corrección: discovery desde AGENTS, DECISIONS único, diagramas de datos y flujos, artefactos de fase y ADRs
+  como propuestas. Solo la reconciliación autorizada consolida decisiones en la prosa de DECISIONS, conservando
+  numeración e historia. Ni el prompt de revisión ni el de ejecución prohíben esa excepción documentada.
+- La definición versión 4 declara obligatorios los once documentos del resultado aceptado. Se mantienen los siete
+  borradores obligatorios y el completado de AGENTS, CLAUDE, GEMINI y DDBB-DIAGRAM desde la plantilla de D089; nunca
+  sustituye un borrador existente. Los valores por defecto (título y comandos del perfil congelado) entran también
+  en el contexto del turno. AGENTS de más de 60 líneas y CLAUDE/GEMINI de más de 15 bloquean la aceptación.
+- Los únicos borradores variables siguen siendo `flows/*.md` de un nivel. No se admiten artefactos de fase,
+  archivos individuales de decisiones, carpetas antiguas ni flujos anidados como borradores de creación. La vista
+  previa y el commit raíz incluyen las instrucciones propuestas, o las de la plantilla cuando faltan.
+- `plan-phase` usa exactamente `context.next`: la fase ACTIVE sin tareas que deja el cierre, o la siguiente fase de
+  las conversaciones anteriores. La confirmación posterior instala el plan y versiona la definición; no pide otra
+  transición. Su contexto incluye DDBB-DIAGRAM y los archivos de instrucciones con las lecturas acotadas existentes.
+  El check de cierre no exige un plan de la sucesora para devolver READY.
+- `document_layout = "d088-4"`, definido en el núcleo documental y consumido por la composición, pone en cuarentena
+  los jobs pendientes anteriores antes de efectos. Extensión técnica mínima a las rutas de T005:
+  `services/local_config.py` importa la versión y `services/managed.py` conserva la recuperación D091 de transiciones
+  con intención ya sellada. Solo esa conciliación admite d088-1/2/3 → d088-4, si coinciden el resto de versiones y el
+  contexto, sin agentes ni recálculo de bytes; el run sigue guardando su versión original.
+- Los catálogos e intentos anteriores conservan identidad, contenido, esquema y snapshot; no hay cambio de codec,
+  adaptador CLI, modelos, migraciones, dependencias ni contrato de salida de los agentes. La inyección de AGENTS en
+  todos los roles y la verificación de los flags de las CLI siguen pendientes de T007.
+
+No se ejecutó el harness sobre este repositorio, ni proveedores reales, smokes, push o publicación.

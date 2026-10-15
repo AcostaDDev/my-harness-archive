@@ -251,6 +251,41 @@ def test_empty_folder_to_root_commit_with_p001_and_phase_000(world):
     assert world.ports.roles() == ['definition', 'definition', 'executor', 'reviewer']
 
 
+@pytest.mark.parametrize('custom_instructions', [False, True])
+def test_all_unified_documents_are_required_in_the_accepted_result(world, custom_instructions):
+    from harness_local.core.engine.definition import required_documents
+    cid = world.create()
+    drafts = {path: text for path, text in DRAFTS.items() if path != 'docs/DDBB-DIAGRAM.md'}
+    instructions = {'AGENTS.md': '# Reglas sintéticas\n\nUsar el perfil registrado.\n',
+                    'CLAUDE.md': '@AGENTS.md\n\nNota Claude sintética.\n',
+                    'GEMINI.md': '@AGENTS.md\n\nNota Gemini sintética.\n'}
+    if custom_instructions:
+        drafts.update(instructions)
+    job, turn = world.turn(cid, answer(drafts=drafts))
+    assert turn['status'] == 'ANSWERED'
+    frozen = world.planning.snapshot(job.run_id)['context']
+    assert set(frozen['allowed']['required']) == set(required_documents(LAYOUT))
+    assert len(frozen['allowed']['required']) == 11
+    assert 'test-runner check' in frozen['template_defaults']['AGENTS.md']
+    assert 'Sin persistencia' in frozen['template_defaults']['docs/DDBB-DIAGRAM.md']
+    world.apply_all(cid)
+    shown = world.preview(cid)
+    assert shown['ready'], shown['blockers']
+    docs = {doc['path']: doc for doc in shown['documents']}
+    assert set(required_documents(LAYOUT)) <= docs.keys()
+    assert docs['docs/DDBB-DIAGRAM.md']['origin'] == 'template'
+    if custom_instructions:
+        assert all(docs[path]['content'] == content and docs[path]['origin'] == 'draft'
+                   for path, content in instructions.items())
+    else:
+        assert all(docs[path]['content'] == frozen['template_defaults'][path] for path in instructions)
+    world.accept(cid, shown)
+    assert world.worker.run_once().status == 'DONE'
+    assert all(world.path(path).read_text() == docs[path]['content'] for path in required_documents(LAYOUT))
+    assert git(world.context.root, 'rev-list', '--count', 'HEAD') == '1'
+    assert git(world.context.root, 'status', '--porcelain') == ''
+
+
 def test_profile_protection_limits_the_executor_not_confirmed_v2_document_writes(world):
     """D081: typescript-web protege los documentos de control frente al ejecutor (P008-T003); la creación y la
     edición confirmadas del contrato v2 escriben ahí igualmente. Fuera del contrato, y en v1, la protección del
@@ -306,6 +341,10 @@ INVALID = {
     'outside': {'drafts': [{'path': 'src/app.py', 'content': 'x', 'reason': 'r'}]},
     'archive': {'drafts': [{'path': 'docs/archive/phase-000/BRIEF.md', 'content': 'x', 'reason': 'r'}]},
     'research': {'drafts': [{'path': 'docs/research/spike.md', 'content': 'x', 'reason': 'r'}]},
+    'architecture': {'drafts': [{'path': 'docs/architecture/data.md', 'content': 'x', 'reason': 'r'}]},
+    'decision_file': {'drafts': [{'path': 'docs/decisions/D001-test.md', 'content': 'x', 'reason': 'r'}]},
+    'artifact': {'drafts': [{'path': 'docs/phase/notes.md', 'content': 'x', 'reason': 'r'}]},
+    'nested_flow': {'drafts': [{'path': 'docs/flows/nested/flow.md', 'content': 'x', 'reason': 'r'}]},
     'escape': {'drafts': [{'path': 'docs/decisions/../x.md', 'content': 'x', 'reason': 'r'}]},
     'duplicate': {'drafts': [{'path': 'README.md', 'content': 'x', 'reason': 'r'}] * 2},
     'extra': {'extra': True},
@@ -400,6 +439,9 @@ def test_git_metadata_requires_import(world):
 
 BLOCKERS = {
     'missing': ({'docs/ARCHITECTURE.md': None}, 'Required documents are missing: docs/ARCHITECTURE.md'),
+    'long_agents': ({'AGENTS.md': 'line\n' * 61}, 'AGENTS.md must contain at most 60 lines'),
+    'long_claude': ({'CLAUDE.md': 'line\n' * 16}, 'CLAUDE.md must contain at most 15 lines'),
+    'long_gemini': ({'GEMINI.md': 'line\n' * 16}, 'GEMINI.md must contain at most 15 lines'),
     'no_phases': ({'docs/ROADMAP.md': f'# Roadmap\n\n{ROAD_BEGIN}\n{ROAD_END}\n'}, 'at least one phase'),
     'no_criteria': ({'docs/ROADMAP.md': '# Roadmap\n\n## P001 — Fundamentos\n\n**Objetivo:** algo.\n'},
                     'P001 needs an objective and at least one exit criterion'),

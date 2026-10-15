@@ -208,11 +208,12 @@ class LocalSupervisor:
                     label = "confirm document edit"
                 else:
                     from harness_local.storage.transition import TransitionRepository
+                    from harness_local.core.engine.documents import DOCUMENT_LAYOUT
                     frozen = TransitionRepository(self.repository).request(claim.run_id)
                     writer_versions = versions
                     if (frozen.get('commit_intent')
-                            and versions.get('document_layout') in ('d088-1', 'd088-2')):
-                        writer_versions = {**versions, 'document_layout': 'd088-3'}
+                            and versions.get('document_layout') in ('d088-1', 'd088-2', 'd088-3')):
+                        writer_versions = {**versions, 'document_layout': DOCUMENT_LAYOUT}
                     writer = self.commit_factory(context, writer_versions)
                     shown = frozen["preview"]
                     label = f"archive {shown['closed']}" + (f" and open {shown['next']['code']}" if shown["next"] else "")

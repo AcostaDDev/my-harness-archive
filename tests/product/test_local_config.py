@@ -116,15 +116,18 @@ def test_projects_without_documents_use_the_mandatory_unified_layout_and_quarant
     context, data, folder, tmp_path = setup
     (project,) = load_local_config(write(folder, data)).projects
     assert 'documents' not in data['projects'][0] and project.context.documents == 'v2'
-    assert project.versions['document_layout'] == 'd088-3'
+    assert project.versions['document_layout'] == 'd088-4'
     explicit = copy.deepcopy(data)
     explicit['projects'][0]['documents'] = 'v2'
     config = load_local_config(write(folder, explicit))
     assert config.projects[0].context == project.context
-    older = {key: value for key, value in config.projects[0].versions.items() if key != 'document_layout'}
-    for factory in (config.ports_factory, config.commit_factory):
-        with pytest.raises(JournalError, match='distinta de la congelada'):
-            factory(project.context, older)
+    for previous in (None, 'd088-1', 'd088-2', 'd088-3'):
+        older = {key: value for key, value in config.projects[0].versions.items() if key != 'document_layout'}
+        if previous is not None:
+            older['document_layout'] = previous
+        for factory in (config.ports_factory, config.commit_factory):
+            with pytest.raises(JournalError, match='distinta de la congelada'):
+                factory(project.context, older)
     legacy = copy.deepcopy(data)
     legacy['projects'][0]['documents'] = 'v1'
     with pytest.raises(LocalConfigError, match='D088'):
@@ -228,14 +231,20 @@ def test_configuration_file_must_be_private_local_authority(setup, problem):
         load_local_config(path)
 
 
-def test_changed_composition_after_admission_quarantines_before_effects(setup, repository):
+@pytest.mark.parametrize('change', ['composition', 'document_contract'])
+def test_changed_composition_after_admission_quarantines_before_effects(setup, repository, change):
     context, data, folder, tmp_path = setup
     admitted = load_local_config(write(folder, data))
     project = admitted.projects[0]
-    job = repository.submit(project.context, TASK, PHASE, PLAN, dict(project.versions), key='changed')
-    data['projects'][0]['commands']['environment']['CI'] = 'changed'
+    frozen_versions = dict(project.versions)
+    if change == 'document_contract':
+        frozen_versions['document_layout'] = 'd088-3'
+    job = repository.submit(project.context, TASK, PHASE, PLAN, frozen_versions, key='changed')
+    if change == 'composition':
+        data['projects'][0]['commands']['environment']['CI'] = 'changed'
     current = load_local_config(write(folder, data))
-    assert current.projects[0].versions['local_config_sha256'] != project.versions['local_config_sha256']
+    if change == 'composition':
+        assert current.projects[0].versions['local_config_sha256'] != project.versions['local_config_sha256']
     supervisor = LocalSupervisor(repository, current.ports_factory, commit_factory=current.commit_factory)
     with pytest.raises(JournalError, match='distinta de la congelada'):
         supervisor.run_once()

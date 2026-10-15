@@ -53,7 +53,7 @@ run y, cuando procede, al intento exacto.
 | ID | Capacidad | Resultado observable | Estado |
 |---|---|---|---|
 | F01 | Registrar proyecto | Alta desde la UI con raíz canónica, confianza explícita, perfil y composición del TOML; o en `[[projects]]` del TOML | Implementado (P007, D078) |
-| F02 | Crear proyecto desde cero | Brief, conversación con el revisor, borradores en disco con CAS, aceptación y commit raíz con P001 | Implementado (P007, D075, D082); plantilla unificada pendiente (P008-T002, T005) |
+| F02 | Crear proyecto desde cero | Brief, conversación con el revisor, borradores en disco con CAS, aceptación y commit raíz con P001 | Implementado (P007, D075, D082; P008-T002/T005, D092) |
 | F03 | Importar un proyecto de un harness anterior (Flujo A) | Inventario, normalización al layout unificado sin perder historial, documentos sincronizados | Pendiente (P008-T009–T012) |
 | F04 | Incorporar un repositorio sin harness (Flujo B) | Discovery por ingeniería inversa, documentos iniciales y archivos raíz mínimos | Pendiente (P008-T013–T015) |
 | F05 | Observar un harness anterior | Índice de lectura idempotente, navegación y actualización incremental | Implementado (P002) |
@@ -102,7 +102,9 @@ Estructura obligatoria para todo proyecto, también para este repositorio (D088)
 layout, la plantilla, el índice de DECISIONS desde sus encabezados y la obligatoriedad (sin `documents`, el proyecto usa
 esta estructura; la creación v1 se rechaza). P008-T003 (D090): rutas del ejecutor, paridad de modelos determinista y
 de flujos por el revisor, y propuestas de ADR. P008-T004 (D091): cierre y archivo unificados y plan posterior
-confirmado. Pendientes: prompts y definición (T005), adaptación de API y UI (T006) e inyección de `AGENTS.md` (T007).
+confirmado. P008-T005 (D092): prompts y definición alineados; once documentos obligatorios al aceptar, con
+instrucciones y DDBB-DIAGRAM por plantilla si no hay borrador (D089). Pendientes: API y UI (T006) e inyección de
+`AGENTS.md` en todos los roles (T007).
 
 | Ruta | Contenido | Autoría |
 |---|---|---|

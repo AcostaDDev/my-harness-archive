@@ -252,7 +252,8 @@ def test_http_closure_and_confirmed_plan_use_the_current_protocol(unified, tmp_p
         assert world.get(following)['definition']['tasks'] == ['P002-T001']
 
 
-def test_sealed_legacy_transition_recovers_with_layout_version_upgrade(unified, monkeypatch):
+@pytest.mark.parametrize('previous', ['d088-1', 'd088-2', 'd088-3'])
+def test_sealed_legacy_transition_recovers_with_layout_version_upgrade(unified, monkeypatch, previous):
     world = unified
     pid = ready(world)
     from harness_local.storage import closure
@@ -262,8 +263,8 @@ def test_sealed_legacy_transition_recovers_with_layout_version_upgrade(unified, 
         world.run()
     transitions = TransitionRepository(world.repository)
     writer = world.ports.writer(world.context, VERSIONS)
-    older = {**VERSIONS, 'document_layout': 'd088-2'}
-    current = {**VERSIONS, 'document_layout': 'd088-3'}
+    older = {**VERSIONS, 'document_layout': previous}
+    current = {**VERSIONS, 'document_layout': 'd088-4'}
     seen = []
     def factory(context, versions):
         seen.append(versions)
@@ -308,6 +309,13 @@ def test_active_empty_phase_accepts_its_conversation_plan(unified):
                                    versions=VERSIONS, text='Planifica la fase activa P002')
     world.run()
     assert planning.snapshot(turn.run_id)['context']['next']['code'] == 'P002'
+    frozen = planning.snapshot(turn.run_id)['context']
+    assert frozen['phase']['status'] == 'ACTIVE'
+    assert {'AGENTS.md', 'CLAUDE.md', 'GEMINI.md', 'docs/DDBB-DIAGRAM.md'} <= {
+        doc['path'] for doc in frozen['documents']}
+    request = world.repository.get_run(turn.run_id).history.attempts[-1].request
+    assert 'ACTIVE phase without tasks left by unified closure' in request.prompt
+    assert 'phase transition separately' not in request.prompt
     proposal = planning.get(cid)['proposals'][0]
     reference = {'conversation_id': cid, 'proposal_id': proposal['id'], 'proposal_sha256': proposal['proposal_sha256']}
     plans = PhasePlanRepository(world.repository, following, plan_proposal=reference)

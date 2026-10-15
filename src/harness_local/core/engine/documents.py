@@ -15,6 +15,8 @@ from harness_local.core.engine.contracts import RECONCILE_TASK
 from harness_local.core.engine.planning import FIELD_RE, TASK_RE, backticked, bullet_items, collapse
 
 MAX_DOCUMENT_BYTES = 512 * 1024
+# P008-T005: prompts y definición del contrato unificado; los jobs anteriores se detienen antes de efectos.
+DOCUMENT_LAYOUT = 'd088-4'
 BLOCK_REASON = 'Managed documentation blocks (D072)'
 BLOCK_NAMES = ('state', 'roadmap', 'decisions')
 PHASE_CODE = re.compile(r'P\d{3}')

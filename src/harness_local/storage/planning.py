@@ -11,7 +11,8 @@ turno; una edición del usuario entre medias es un conflicto y no se sobrescribe
 usuario (en disco o por API) se detectan por hash en el turno siguiente. La aceptación es la vista
 previa del bootstrap D037 con la plantilla v2 (`storage/bootstrap.py`).
 
-Planificación: propone el plan NEXT_STEPS de la fase siguiente; solo la transición confirmada lo usa.
+Planificación: propone NEXT_STEPS para la fase activa sin tareas (o la siguiente en conversaciones anteriores).
+La confirmación del plan escribe los documentos y versiona la definición; el agente nunca produce efectos.
 """
 
 from sqlalchemy import func, select
@@ -23,10 +24,10 @@ from harness_local.core.engine.chat import digest
 from harness_local.core.engine.contracts import freeze
 from harness_local.core.engine.definition import (
     MAX_CONTEXT_DRAFT_BYTES, acceptance, allowed_draft, allowed_drafts_view, brief as brief_payload,
-    definition_layout, text_hash,
+    default_documents, definition_layout, text_hash,
 )
 from harness_local.core.engine.document_ops import read_text
-from harness_local.core.engine.documents import base_section, parse_roadmap, require_layout
+from harness_local.core.engine.documents import base_section, parse_roadmap, require_layout, skeleton
 from harness_local.core.engine.serialization import load_history
 from harness_local.storage.chat import MAX_MESSAGE, MAX_PREVIOUS_TURNS, read_documents
 from harness_local.storage.managed import Conflict, _job, existing_creation
@@ -387,7 +388,8 @@ class PlanningRepository:
             target = require_layout(context)
             roadmap, state = read_text(context, target.roadmap), read_text(context, target.state)
             prepared = {'documents': read_documents(context, [target.roadmap, target.state, target.specification,
-                                                              target.architecture, target.decisions, target.next_steps]),
+                                                              target.architecture, target.decisions, target.next_steps,
+                                                              target.ddbb_diagram, *target.instructions]),
                         'entries': parse_roadmap(roadmap) if roadmap is not None else [],
                         'base': base_section(state) if state is not None else None}
         assessment = self.managed.guard.assess(context.root)
@@ -414,16 +416,22 @@ class PlanningRepository:
             frozen = {'kind': conversation.kind,
                       'project': {'root': str(context.root), 'profile': context.profile.name,
                                   'layout': {'docs': target.docs, 'state': target.state,
-                                             'next_steps': target.next_steps}},
+                                             'next_steps': target.next_steps, 'decisions': target.decisions,
+                                             'ddbb_diagram': target.ddbb_diagram, 'flows': target.flows_dir,
+                                             'phase': target.phase_dir}},
                       'conversation': {'id': conversation.id, 'title': conversation.title, 'turn': number},
                       'questions': questions, 'pending': pending, 'previous_turns': history}
             if conversation.kind == 'definition':
                 if _bootstrapped(session, conversation.root):
                     raise Conflict('The project was already created from this definition')
                 known, drafts = conversation.known, observed['drafts']
+                defaults = skeleton(target, conversation.title,
+                                    preparation=[command.argv for command in context.profile.preparation],
+                                    validations=[command.argv for command in context.profile.validations])
                 frozen.update(prepared, brief=conversation.brief, user_edits=[
                     {'path': path, 'before_sha256': known.get(path), 'after_sha256': drafts.get(path)}
-                    for path in sorted(set(known) | set(drafts)) if known.get(path) != drafts.get(path)])
+                    for path in sorted(set(known) | set(drafts)) if known.get(path) != drafts.get(path)],
+                    template_defaults={path: defaults[path] for path in default_documents(target)})
                 task_id, phase_code = f'DEF-{conversation.id[:8]}-{number}', 'P000'
             else:
                 from harness_local.storage.documents import latest_phase, summary_snapshot

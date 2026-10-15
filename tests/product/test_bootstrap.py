@@ -99,7 +99,7 @@ def test_preview_has_exact_documents_phase_contract_and_no_effects(world):
     shown = preview(world)
     assert shown == preview(world)
     assert shown['ready'] and shown['blockers'] == []
-    assert shown['template']['version'] == '3'
+    assert shown['template']['version'] == '4'
     assert sorted(d['path'] for d in shown['documents']) == sorted({
         *DRAFTS, 'AGENTS.md', 'CLAUDE.md', 'GEMINI.md', 'docs/archive/phase-000/BRIEF.md',
         'docs/archive/phase-000/DEFINITION.md'})
