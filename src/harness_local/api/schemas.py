@@ -1359,6 +1359,13 @@ class PlanningDraftsRead(BaseModel):
     import_required: bool
 
 
+class PlanningDraftContentRead(BaseModel):
+    path: str
+    content: str
+    sha256: str = Field(description='Hash en disco: la base de la CAS para editarlo.')
+    known_sha256: str | None = Field(description='Hash que conoce el harness (último turno respondido o propuesta aplicada).')
+
+
 class PlanningBriefRead(BaseModel):
     content: str
     sha256: str

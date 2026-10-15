@@ -18,6 +18,10 @@ const valid = [
   ['/projects/mi-web/docs', { name: 'docs', project: 'mi-web' }],
   ['/projects/mi-web/docs/README.md', { name: 'docs', project: 'mi-web', path: 'README.md' }],
   ['/projects/mi-web/docs/docs/decisions/D001-usar-git.md', { name: 'docs', project: 'mi-web', path: 'docs/decisions/D001-usar-git.md' }],
+  ['/projects/mi-web/setup', { name: 'setup', project: 'mi-web' }],
+  ['/projects/mi-web/setup/docs/ROADMAP.md', { name: 'setup', project: 'mi-web', path: 'docs/ROADMAP.md' }],
+  ['/projects/mi-web/phases/P001/plan', { name: 'plan', project: 'mi-web', phase: 'P001' }],
+  ['/projects/mi-web/phases/P001/plan/c-9', { name: 'plan', project: 'mi-web', phase: 'P001', conversation: 'c-9' }],
 ];
 
 test('every route of D072 §7 parses and round-trips through href', () => {
@@ -82,4 +86,17 @@ test('document paths keep each segment exact and never climb out of the checkout
   assert.deepEqual(trail(parse('/projects/p/docs/docs/STATE.md')).map(i => [i.label, href(i.to)]), [
     ['Proyectos', '/'], ['p', '/projects/p'], ['Documentación', '/projects/p/docs'], ['STATE.md', '/projects/p/docs/docs/STATE.md']]);
   assert.equal(projectOf(parse('/projects/p/docs')), 'p');
+});
+
+test('creation and phase planning routes (H6.2 E4) keep their trail and refuse ambiguous paths', () => {
+  assert.deepEqual(trail(parse('/projects/p/setup/docs/decisions/D001-x.md')).map(i => [i.label, href(i.to)]), [
+    ['Proyectos', '/'], ['p', '/projects/p'], ['Creación', '/projects/p/setup'], ['D001-x.md', '/projects/p/setup/docs/decisions/D001-x.md']]);
+  assert.deepEqual(trail(parse('/projects/p/phases/P001/plan/c-1')).map(i => [i.label, href(i.to)]), [
+    ['Proyectos', '/'], ['p', '/projects/p'], ['Fases', '/projects/p/phases'], ['P001', '/projects/p/phases/P001'],
+    ['Planificación', '/projects/p/phases/P001/plan'], ['Conversación', '/projects/p/phases/P001/plan/c-1']]);
+  for (const bad of ['/projects/a/setup/../x.md', '/projects/a/setup/docs/%2E%2E/x.md', '/projects/a/setup/a%2Fb.md',
+    '/projects/a/phases/P1/plan/c/extra', '/projects/a/phases/P1/plan/c%2Fd']) {
+    assert.equal(parse(bad).name, 'not-found', bad);
+  }
+  assert.equal(projectOf(parse('/projects/p/setup')), 'p');
 });

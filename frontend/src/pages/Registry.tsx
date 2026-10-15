@@ -194,7 +194,7 @@ function DraftFields({ draft, options, action, onChange }: {
 /** Formulario con vista previa: cualquier edición invalida la vista previa ya mostrada. */
 function RegistryForm({ options, action, initial, expected, onApplied }: {
   options: S["RegistryRead"]; action: "register" | "update"; initial: Draft; expected: number;
-  onApplied: (result: S["RegistryApplyRead"]) => void;
+  onApplied: (result: S["RegistryApplyRead"], change: Change) => void;
 }) {
   const [draft, setDraft] = useState(initial);
   const [preview, setPreview] = useState<{ change: Change; data: S["RegistryPreviewRead"] }>();
@@ -218,7 +218,7 @@ function RegistryForm({ options, action, initial, expected, onApplied }: {
       {preview ? "Volver a revisar" : action === "register" ? "Revisar alta" : "Revisar cambios"}</button></div>
     {preview && <Confirmation key={preview.data.preview_sha256} preview={preview.data} busy={op.busy} onConfirm={(trust, reason) => void op.run(async () => {
       onApplied(await managed<S["RegistryApplyRead"]>("/registry/apply", {
-        change: preview.change, preview_sha256: preview.data.preview_sha256, trust_root: trust, reason: reason || null }));
+        change: preview.change, preview_sha256: preview.data.preview_sha256, trust_root: trust, reason: reason || null }), preview.change);
       setPreview(undefined);
     })} />}
   </form>;
@@ -239,7 +239,9 @@ export function RegisterPage() {
       : !options.roots.length ? <Empty title="No hay raíces autorizadas"><p>Añade rutas a <code>[registration].roots</code> en el TOML del operador y reinicia el servicio.</p></Empty>
       : <section className="panel" aria-labelledby="register-form"><h2 id="register-form">Alta</h2>
         <RegistryForm options={options} action="register" initial={emptyDraft(options)} expected={0}
-          onApplied={result => navigate({ name: "project", project: result.project.id })} />
+          onApplied={(result, change) => navigate(change.documents === "v2" && change.bootstrap_enabled
+            // Un proyecto v2 con bootstrap se crea en su página (H6.2 E4); los demás van al resumen.
+            ? { name: "setup", project: result.project.id } : { name: "project", project: result.project.id })} />
       </section>}
   </>;
 }

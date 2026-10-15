@@ -116,6 +116,22 @@ def layout(context) -> Layout | None:
     return Layout(str(PurePosixPath(context.state_file).parent), context.state_file, context.next_steps_file)
 
 
+def protected_write(context, path: str) -> bool:
+    """¿Rechaza el perfil que el harness escriba `path` en una operación documental confirmada?
+
+    D081: las rutas protegidas del perfil limitan al ejecutor y a los permisos que se le conceden. En v2, el
+    contrato documental (README, Markdown de la documentación y el archivo de fases) se escribe solo con una
+    confirmación del usuario sobre el contenido exacto y tiene sus propias reglas, como la regeneración mecánica
+    de bloques en cada commit de tarea. Fuera de ese contrato, y en v1, la protección del perfil se mantiene."""
+    from harness_local.core.engine.evidence import matches
+    target = layout(context)
+    pure = PurePosixPath(path)
+    if (target is not None and '..' not in pure.parts
+            and (target.editable(path) or (target.archived(path) and pure.suffix == '.md'))):
+        return False
+    return matches(path, context.profile.protected_paths)
+
+
 def require_layout(context) -> Layout:
     value = layout(context)
     if value is None:

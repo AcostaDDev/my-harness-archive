@@ -16,9 +16,8 @@ from harness_local.core.engine.commit import (
 from harness_local.core.engine.documents import (
     MAX_DOCUMENT_BYTES, Layout, base_section, blocks, budget_warnings, decision_index, inline, markers,
     parse_roadmap, phase_data, plan_tasks, render_decisions, render_next_steps, render_review, render_roadmap,
-    render_state, render_summary, replace_block, require_layout, _span,
+    protected_write, render_state, render_summary, replace_block, require_layout, _span,
 )
-from harness_local.core.engine.evidence import matches
 from harness_local.core.engine.phases import digest, document_hashes, phase_definition
 
 EDIT_REASON = 'User-confirmed document edit (D072)'
@@ -100,7 +99,7 @@ def _sealed_preview(context, evidence, provenance, tree: str, changes: list[tupl
 
 def _protected(context, paths):
     for path in paths:
-        if matches(path, context.profile.protected_paths):
+        if protected_write(context, path):
             raise ValueError(f'{path} is protected by the project profile')
 
 

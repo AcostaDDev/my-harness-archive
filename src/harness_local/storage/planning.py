@@ -267,6 +267,26 @@ class PlanningRepository:
                 'foreign': inspection['foreign'], 'foreign_truncated': inspection['foreign_truncated'],
                 'invalid': inspection['invalid'], 'import_required': inspection['import_required']}
 
+    def draft(self, context, conversation_id, path, writer):
+        """H6.2 E4: contenido de un borrador por la misma inspección que usan el turno y la CAS."""
+        target = definition_layout(context)
+        if not allowed_draft(target, path):
+            raise LookupError(f'{path} is not an allowed definition draft')
+        with Session(self.managed.engine) as session:
+            row = self._conversation(session, conversation_id, context=context)
+            if row.kind != 'definition':
+                raise Conflict('Only a definition conversation has drafts on disk')
+            if _bootstrapped(session, row.root):
+                raise Conflict('The project was already created; read its documents instead')
+            known = row.known.get(path)
+        inspection = writer.inspect_definition(context, texts=True)
+        if path in inspection['invalid']:
+            raise Conflict(f'{path} is not a valid draft (UTF-8 without NUL, not executable, at most 512 KiB)')
+        if path not in inspection['texts']:
+            raise LookupError(f'{path} does not exist in the target folder')
+        return {'path': path, 'content': inspection['texts'][path], 'sha256': inspection['drafts'][path],
+                'known_sha256': known}
+
     def snapshot(self, run_id):
         """Petición congelada para el job del turno."""
         with Session(self.managed.engine) as session:

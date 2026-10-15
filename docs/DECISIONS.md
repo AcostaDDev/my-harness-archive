@@ -2442,3 +2442,45 @@ Decisiones tomadas con criterio dentro de D072 §6 y D076:
 - `usePoll` conserva la última lectura al releer el mismo recurso: releer tras una acción ya no desmonta la página.
 
 Sin migración ni codec. Siguiente: E4 (creación y planificación de fase), sin iniciar.
+
+## D081 — Rutas protegidas del perfil: límite del ejecutor, no de las escrituras documentales confirmadas (v2)
+
+Estado: decidido por el usuario el 2026-10-15 (opción recomendada); implementado y verificado offline.
+[Hallazgo y verificación](discovery/H6.2_E4_SETUP.md#hallazgo-resuelto-antes-de-seguir-d081).
+
+Hallazgo de E4: `typescript-web`, único perfil de las composiciones de `local-config-3`, protege `docs/**`, y la
+exportación (D036), la edición y la transición (H6.3) y la aceptación de la definición (H6.5) rechazaban cualquier ruta
+protegida. Un proyecto registrado con `documents = "v2"` no podía crearse, editarse ni pasar de fase, y D072 pedía
+proteger `docs/archive/**`, que la transición escribe.
+
+- En v2, las rutas protegidas del perfil siguen limitando al ejecutor (`check_paths`, `forbidden_paths` del contrato),
+  a los permisos concedibles y a la tarea de reconciliación con agente.
+- Las escrituras del harness confirmadas por el usuario sobre el contenido exacto del contrato documental (README,
+  Markdown editable de la documentación y Markdown del archivo de fases) no se rechazan por el perfil: el contrato tiene
+  sus propias reglas (rutas editables, archivo de solo lectura para ediciones, bloques gestionados, CAS). Es el criterio
+  que ya seguía la regeneración mecánica de bloques en cada commit de tarea.
+- Fuera del contrato y en v1 la protección del perfil no cambia. Un solo punto: `documents.protected_write`.
+
+Sin cambios en los perfiles, el esquema ni el codec.
+
+## D082 — H6.2 E4: creación y planificación de fase en la UI
+
+Estado: implementado y verificado offline el 2026-10-15. [Entrega, verificación y límites](discovery/H6.2_E4_SETUP.md).
+
+Decisiones tomadas con criterio dentro de D075/D076:
+
+- Rutas `/projects/:p/setup[/*ruta]` (la ruta es la del borrador en la carpeta, como en E3) y
+  `/projects/:p/phases/:code/plan[/:conversación]`. La transición vive en la página de la fase terminada, donde se
+  elige el plan: un plan propuesto, texto propio o ninguno.
+- Lectura nueva `GET …/planning/{c}/drafts/content` por la misma inspección que el turno y la CAS, en lugar de reutilizar
+  la lectura de documentos (que no conoce borradores inválidos ni la base de la CAS).
+- Se reutilizan el visor de Markdown, el diff coloreado y el seguimiento del run de E3. El editor de borradores es de
+  texto completo (los bloques se regeneran al aceptar) y guarda por `PUT …/drafts` con el hash con que se abrió; antes de
+  guardar relee el disco y avisa. Sin dependencias: un diff por líneas propio (`diff.ts`) que solo muestra.
+- Cada confirmación va ligada a su hash (propuesta, base del borrador, vista previa de la aceptación o de la transición) y
+  a la versión de la conversación o de la fase; mensajes, aceptación y transición usan clave idempotente y el envío
+  pendiente de H2. Las vistas previas se descartan si cambia la versión o los bytes en disco.
+- En proyectos v2 el resumen sustituye el formulario v1 de bootstrap por el acceso a la creación, y el alta v2 con
+  bootstrap lleva a `/setup`.
+
+Sin migración, codec ni dependencias. Siguiente: E5 (chat global), sin iniciar.

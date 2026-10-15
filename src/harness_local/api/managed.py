@@ -874,7 +874,7 @@ def managed_router(runtime: ManagedRuntime):
     from harness_local.api.schemas import (
         DefinitionAcceptCreate, DefinitionPreviewRead, PlanningApplyCreate, PlanningBriefRead,
         PlanningConversationCreate, PlanningConversationRead, PlanningConversationSummaryRead, PlanningDeferCreate,
-        PlanningDismissCreate, PlanningDraftEdit, PlanningDraftsRead, PlanningMessageCreate,
+        PlanningDismissCreate, PlanningDraftContentRead, PlanningDraftEdit, PlanningDraftsRead, PlanningMessageCreate,
     )
     from harness_local.storage.planning import PlanningRepository
 
@@ -953,6 +953,14 @@ def managed_router(runtime: ManagedRuntime):
         """Borradores en disco frente a lo que conoce el harness; archivos ajenos e inválidos."""
         item = planning_project(project_id)
         return call(planning_repository().drafts, item.context, conversation_of(item, conversation_id), definition_writer(item))
+
+    @router.get('/projects/{project_id}/planning/{conversation_id}/drafts/content', response_model=PlanningDraftContentRead,
+                operation_id='managed_planning_draft')
+    def planning_draft(project_id: str, conversation_id: str, path: Annotated[str, Query(min_length=1, max_length=500)]):
+        """H6.2 E4: un borrador admitido con su hash en disco, base de la CAS del editor."""
+        item = planning_project(project_id)
+        return call(planning_repository().draft, item.context, conversation_of(item, conversation_id), path,
+                    definition_writer(item))
 
     @router.put('/projects/{project_id}/planning/{conversation_id}/drafts', response_model=PlanningConversationRead,
                 operation_id='managed_planning_draft_edit')

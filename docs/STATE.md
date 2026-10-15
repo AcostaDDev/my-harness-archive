@@ -35,7 +35,7 @@ Actualizado: 2026-10-15.
 - Dependencias reales instaladas en `.venv` / `frontend/node_modules`, locks
   `uv.lock` / `frontend/package-lock.json`. Pins H0.2 usados conservados;
   backend de paquete `uv_build==0.12.19`. Comandos comprobados en README/AGENTS.
-- Casos de producto en `tests/product/`: 1085 pytest y 121 subtests (H6.2 E3; ver su sección).
+- Casos de producto en `tests/product/`: 1090 pytest y 121 subtests (H6.2 E4; ver su sección).
   La comprobación ligera anterior conserva sus 12 checks sin dependencias.
 - H1.1 completado: [importación legacy y verificaciones](discovery/H1.1_IMPORT.md),
   [alcance original](discovery/H1.1_SCOPE.md). Lector local explícito de
@@ -2717,6 +2717,34 @@ tarea propuesta: UI H6.2, sin iniciar; será una tarea aparte.
   de cambios locales, resultado del commit que desaparecía y bloques vacíos sin explicar.
 - Límites: sin historial por documento; borrador por pestaña; cambios fuera de documentos editables y deriva commiteada
   se resuelven fuera del editor; exclusión cooperativa frente a escritores externos.
+
+## H6.2 E4: creación y planificación de fase (D081–D082)
+
+- Tarea activa de NEXT_STEPS, pedida por el usuario el 2026-10-15 sobre `e87ae81`, con Git limpio.
+  [Entrega, verificación y límites](discovery/H6.2_E4_SETUP.md).
+- Hallazgo y decisión del usuario (D081): `typescript-web` protege `docs/**` y las escrituras documentales del harness
+  rechazaban rutas protegidas, así que ningún proyecto v2 de `local-config-3` podía crearse ni pasar de fase. En v2 las
+  rutas protegidas limitan al ejecutor y a los permisos, no a las escrituras confirmadas del contrato documental
+  (`documents.protected_write`, usado por exportación, edición, transición y aceptación). v1 sin cambios.
+- Servidor: `GET …/planning/{c}/drafts/content` (contenido y hash de la CAS por la misma inspección del turno). OpenAPI y
+  tipos regenerados; esquema `0016_project_registry` sin cambios.
+- Cliente: `/projects/:p/setup[/*ruta]` (brief, pasos, árbol de borradores, turnos, preguntas con aplazamiento,
+  propuestas con diff y aplicación con CAS, editor de borradores, aceptación con bloqueos y archivos del commit raíz,
+  operación y primera tarea), `/projects/:p/phases/:code/plan[/:c]` y panel de transición en la fase terminada con plan
+  propuesto, texto propio o ninguno. `diff.ts` sin dependencias. Chunk diferido `Planning` (50 kB); principal 355 kB.
+  Resumen v2 con acceso a la creación en lugar del bootstrap v1; el alta v2 con bootstrap lleva a `/setup`.
+- Verificación: 1 pytest nuevo (D081) y aserciones de la lectura de borradores en el recorrido HTTP de la definición,
+  4 rutas en `test_ui_routes.py`; suite completa **1090 pytest + 121 subtests** (707 s). 58 pruebas Node (6 nuevas: diff y rutas). `tsc`,
+  build, 12 checks estándar, `alembic upgrade`/`check`/`current` en SQLite temporal.
+- QA con Chrome sobre `scripts/dev` y un TOML `local-config-3` sintético (CLI Claude y `npm` sintéticos), con la sesión
+  iniciada con la clave que el usuario pidió imprimir: recorrido completo desde la UI, alta de carpeta vacía → creación
+  (dos turnos, ocho borradores aplicados, edición propia, propuesta descartada, pregunta resuelta) → commit raíz →
+  primera tarea → commit → READY → cierre → plan propuesto → transición → P002 activa, sin editar archivos del proyecto.
+  Recargas sin efectos repetidos, conflicto de CAS sin escritura, claro, oscuro y 386 px sin desbordamiento. Siete
+  defectos corregidos durante la QA (ver el documento).
+- Límites: un proyecto `typescript-web` recién creado no tiene `package.json` y el ejecutor no puede crearlo (ruta
+  protegida), así que su preparación real fallaría; la conversación de planificación de una fase ya transicionada sigue
+  admitiendo mensajes en la UI (el servidor los rechaza); borrador local por pestaña.
 
 ## Coordinación
 

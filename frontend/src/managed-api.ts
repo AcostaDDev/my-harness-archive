@@ -5,9 +5,9 @@ export class ManagedError extends Error {
   status: number;
   constructor(status: number, message: string) { super(message); this.status = status; }
 }
-export async function managed<T>(path: string, body?: unknown, key?: string): Promise<T> {
+export async function managed<T>(path: string, body?: unknown, key?: string, method = "POST"): Promise<T> {
   const response = await fetch(`/api/managed${path}`, body === undefined ? undefined : {
-    method: "POST", headers: { "Content-Type": "application/json", "X-Harness-Local": "1",
+    method, headers: { "Content-Type": "application/json", "X-Harness-Local": "1",
       ...(key ? { "Idempotency-Key": key } : {}) }, body: JSON.stringify(body),
   });
   sessionResponse(response);
@@ -20,7 +20,7 @@ export async function managed<T>(path: string, body?: unknown, key?: string): Pr
 // Keep the exact request and key until an acknowledged response, including across reloads.
 export type Pending = { path: string; body: S["RunCreate"] | S["RunActionCreate"] | S["PhaseCheckCreate"] | S["PhaseCloseCreate"] | S["PhaseBatchNextCreate"] | S["PhaseReconcileTaskCreate"]
   | S["ChatMessageCreate"] | S["ChatProposalAcceptCreate"] | S["DocumentExportCreate"] | S["BootstrapCreate"] | S["BootstrapDiscoveryCreate"]
-  | S["DocumentEditCreate"]; key: string };
+  | S["DocumentEditCreate"] | S["PlanningMessageCreate"] | S["DefinitionAcceptCreate"] | S["PhaseTransitionCreate"]; key: string };
 const storageKey = "harness-managed-pending-v1";
 export function readPending(): Pending | undefined {
   try { return JSON.parse(sessionStorage.getItem(storageKey) ?? "null") ?? undefined; } catch { return undefined; }

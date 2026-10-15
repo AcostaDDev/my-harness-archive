@@ -8,7 +8,6 @@ from harness_local.core.engine.commit import (
     CommitIntent, CommitPlan, MechanicalUpdate, git_provenance, validate_mechanical_updates,
 )
 from harness_local.core.engine.phases import digest, document_hashes
-from harness_local.core.engine.evidence import matches
 from harness_local.core.engine import documents as layout_v2
 
 BEGIN, END = layout_v2.markers('state')
@@ -86,7 +85,7 @@ def preview(context, snapshot, baseline, git):
                              for line in delta))
     validate_mechanical_updates(context, (), tuple(updates))
     for path, _, _ in targets:
-        if matches(path, context.profile.protected_paths):
+        if layout_v2.protected_write(context, path):
             raise ValueError('Document export targets a protected profile path')
     data = {'snapshot': snapshot, 'baseline': baseline, 'head': evidence.base_revision,
             'fingerprint': evidence.fingerprint, 'tree': provenance.worktree_tree, 'index_tree': provenance.index_tree,

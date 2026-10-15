@@ -248,7 +248,7 @@ function LocalChanges({ status, onQueued }: { status: DocsStatus; onQueued: (run
 
 // --- confirmación común -------------------------------------------------------------------------
 
-function DiffBlock({ diff, label }: { diff: string; label: string }) {
+export function DiffBlock({ diff, label }: { diff: string; label: string }) {
   const lines = diff.replace(/\n$/, "").split("\n");
   return <pre className="diff" aria-label={label}>{lines.map((line, index) => {
     const kind = line.startsWith("+++") || line.startsWith("---") ? "file" : line.startsWith("@@") ? "hunk" : line.startsWith("+") ? "add" : line.startsWith("-") ? "del" : "";
@@ -297,13 +297,13 @@ function EditReview({ body, preview, onCancel, onQueued, done }: {
 
 const FINAL = new Set(["COMMITTED", "STOPPED", "FAILED", "ABORTED", "INTERRUPTED", "RECOVERY_REQUIRED"]);
 
-function EditProgress({ run, done, onBack }: { run: string; done?: ReactNode; onBack?: () => void }) {
+export function EditProgress({ run, done, onBack, title = "Edición encolada" }: { run: string; done?: ReactNode; onBack?: () => void; title?: string }) {
   const read = usePoll<S["ManagedRunRead"]>(`/runs/${run}`, 1500);
   const r = read.data;
   const finished = r && FINAL.has(r.status);
   const route = r && r.project_id ? { name: "run" as const, project: r.project_id, phase: r.phase_id, task: r.task_id, run: r.id } : undefined;
   return <div className="docs-review" role="status">
-    <h3>Edición encolada</h3>
+    <h3>{title}</h3>
     <p>{r ? <Status value={r.status} /> : "Consultando…"} {route && <Link to={route} className="mono">Run {run.slice(0, 8)}</Link>}</p>
     {r?.status === "COMMITTED" && (done ?? <p>Commit hecho y hashes adoptados por la fase.</p>)}
     {finished && r?.status !== "COMMITTED" && <>

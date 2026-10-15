@@ -50,10 +50,29 @@ export function ProjectPage() {
       <Pagination offset={offset} next={runs.data?.next_offset} onChange={setOffset} size={10} label="Páginas de runs" />
     </section>
 
-    <TaskForm />
-    <Bootstrap project={project} busy={busy} refresh={refresh} operate={operate} send={send} />
+    {detail.data?.documents === "v2" ? <Creation /> : <TaskForm />}
+    {detail.data && detail.data.documents !== "v2" && <Bootstrap project={project} busy={busy} refresh={refresh} operate={operate} send={send} />}
     <Migration project={project} mode={mode.data} />
   </>;
+}
+
+/** Proyecto v2 (H6.5/H6.2 E4): se crea por la conversación de definición, en su propia página. */
+function Creation() {
+  const { project, refresh } = useWorkspace();
+  const status = usePoll<S["BootstrapStatusRead"]>(`/projects/${project}/bootstrap`, 5000, refresh);
+  const op = status.data?.definition_operation;
+  if (!status.data) return null;
+  if (op?.status === "COMPLETED") return op.first_task_run ? <TaskForm /> : <section className="decision decision-attention" aria-labelledby="creation-title">
+    <h2 id="creation-title">Proyecto creado: falta la primera tarea</h2>
+    <p>El commit raíz y la fase P001 están hechos. Encola la primera tarea desde la <Link to={{ name: "setup", project }}>creación</Link>, con el plan de NEXT_STEPS.</p>
+  </section>;
+  if (!status.data.enabled && !op) return <TaskForm />;
+  return <section className="decision decision-attention" aria-labelledby="creation-title">
+    <h2 id="creation-title">{op ? "Creación en curso" : "Este proyecto aún no está creado"}</h2>
+    {status.data.import_required ? <p>{status.data.diagnostic}</p>
+      : <p>Defínelo con el revisor a partir de un brief: los borradores se aplican en la carpeta con tu confirmación y, al aceptar, el harness hace el commit raíz con la fase P001.</p>}
+    <p><Link to={{ name: "setup", project }}>{op ? "Ver la creación" : "Ir a la creación"}</Link></p>
+  </section>;
 }
 
 function Migration({ project, mode }: { project: string; mode?: S["ModeRead"] }) {

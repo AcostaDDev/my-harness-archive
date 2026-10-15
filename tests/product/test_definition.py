@@ -244,6 +244,39 @@ def test_empty_folder_to_root_commit_with_p001_and_phase_000(world):
     assert world.ports.roles() == ['definition', 'definition', 'executor', 'reviewer']
 
 
+def test_profile_protection_limits_the_executor_not_confirmed_v2_document_writes(world):
+    """D081: typescript-web protege `docs/**` frente al ejecutor; la creación y la edición confirmadas del contrato
+    v2 escriben ahí igualmente. Fuera del contrato, y en v1, la protección del perfil se mantiene."""
+    from harness_local.core.engine.documents import protected_write
+    from harness_local.core.engine.evidence import check_paths
+    from harness_local.profiles.typescript_web import typescript_web_profile
+    from harness_local.storage.documents import DocumentsRepository
+    world.context = replace(world.context, profile=typescript_web_profile())
+    contract = ('README.md', 'docs/STATE.md', 'docs/decisions/D001-x.md', 'docs/archive/phase-001/SUMMARY.md',
+                'docs/archive/phase-000/BRIEF.md')
+    assert not any(protected_write(world.context, path) for path in contract)
+    for path in ('package.json', 'docs/assets/logo.svg', 'docs/archive/phase-001/x.png', 'docs/../package.json',
+                 'tests/a.test.mjs', '.claude/settings.json'):
+        assert protected_write(world.context, path), path
+    v1 = replace(world.context, documents=None)
+    assert protected_write(v1, 'docs/STATE.md') and protected_write(v1, 'docs/archive/phase-001/SUMMARY.md')
+    cid = ready(world)
+    shown = world.preview(cid)
+    assert shown['ready'] and not any('protected' in item for item in shown['blockers']), shown['blockers']
+    world.accept(cid, shown)
+    assert world.worker.run_once().status == 'DONE'
+    assert world.bootstrap.get(world.context.root)['status'] == 'COMPLETED'
+    spec = world.path('docs/SPECIFICATION.md').read_text()
+    edited = DocumentsRepository(world.repo).preview(world.context, world.writer, source='content', changes=[
+        {'path': 'docs/SPECIFICATION.md', 'content': spec + '\nEditado y confirmado.\n',
+         'base_sha256': sha256(spec.encode()).hexdigest()}])
+    assert [d['path'] for d in edited['documents']] == ['docs/SPECIFICATION.md']
+    # El ejecutor sigue sin poder tocar la documentación aunque su contrato lo pidiera.
+    evidence = type('Evidence', (), {'changed_paths': ('docs/STATE.md', 'docs/SPECIFICATION.md', 'app/x.ts')})()
+    task = {'allowed_paths': ['**'], 'forbidden_paths': []}
+    assert check_paths(world.context, task, evidence).violations == ('docs/SPECIFICATION.md', 'docs/STATE.md')
+
+
 def test_agent_writes_are_detected_and_discard_the_turn(world):
     cid = world.create()
 
@@ -655,6 +688,19 @@ def test_http_definition_flow(migrated_database, tmp_path):
             assert applied.status_code == 200, applied.text
         drafts = http.get(base + f'/planning/{cid}/drafts').json()
         assert not any(d['user_edited'] for d in drafts['drafts']) and drafts['foreign'] == []
+        # H6.2 E4: contenido de un borrador con el hash de la CAS; solo rutas admitidas y existentes.
+        read = http.get(base + f'/planning/{cid}/drafts/content', params={'path': 'README.md'}).json()
+        assert read == {'path': 'README.md', 'content': DRAFTS['README.md'],
+                        'sha256': sha256(DRAFTS['README.md'].encode()).hexdigest(), 'known_sha256': read['sha256']}
+        (root / 'notes.md').write_text('ajeno\n')
+        (root / 'docs/decisions/D002-exec.md').write_text('# D002\n')
+        (root / 'docs/decisions/D002-exec.md').chmod(0o755)
+        for path, code in (('notes.md', 404), ('docs/../README.md', 404), ('docs/architecture/missing.md', 404),
+                           ('docs/decisions/D002-exec.md', 409)):
+            response = http.get(base + f'/planning/{cid}/drafts/content', params={'path': path})
+            assert response.status_code == code, (path, response.text)
+        (root / 'notes.md').unlink()
+        (root / 'docs/decisions/D002-exec.md').unlink()
         version = http.get(base + f'/planning/{cid}').json()['version']
         edit = http.put(base + f'/planning/{cid}/drafts', json={
             'expected_version': version, 'path': 'README.md', 'content': '# API\n',
@@ -679,6 +725,7 @@ def test_http_definition_flow(migrated_database, tmp_path):
         assert status['operation'] is None and status['definition_operation']['status'] == 'COMPLETED'
         detail = http.get(base + f'/planning/{cid}').json()
         assert detail['created'] and detail['operation']['phase_id'] and detail['actions'] == []
+        assert http.get(base + f'/planning/{cid}/drafts/content', params={'path': 'README.md'}).status_code == 409
         assert http.get(f"/api/managed/runs/{detail['turns'][0]['run_id']}").json()['purpose'] == 'definition'
         assert [p['code'] for p in http.get(base + '/phases').json()] == ['P001']
         schema = http.app.openapi()['paths']

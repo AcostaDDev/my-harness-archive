@@ -9689,6 +9689,114 @@
         }
       }
     },
+    "/api/managed/projects/{project_id}/planning/{conversation_id}/drafts/content": {
+      "get": {
+        "summary": "Planning Draft",
+        "description": "H6.2 E4: un borrador admitido con su hash en disco, base de la CAS del editor.",
+        "operationId": "managed_planning_draft",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          },
+          {
+            "name": "conversation_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Conversation Id"
+            }
+          },
+          {
+            "name": "path",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 500,
+              "title": "Path"
+            }
+          },
+          {
+            "name": "x-harness-local",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Obligatoria con valor 1 en mutaciones (protección CSRF).",
+              "title": "X-Harness-Local"
+            },
+            "description": "Obligatoria con valor 1 en mutaciones (protección CSRF)."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlanningDraftContentRead"
+                }
+              }
+            }
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          }
+        }
+      }
+    },
     "/api/managed/projects/{project_id}/planning/{conversation_id}/proposals/{proposal_id}/apply": {
       "post": {
         "summary": "Planning Apply",
@@ -18566,6 +18674,43 @@
           "reason"
         ],
         "title": "PlanningDismissCreate"
+      },
+      "PlanningDraftContentRead": {
+        "properties": {
+          "path": {
+            "type": "string",
+            "title": "Path"
+          },
+          "content": {
+            "type": "string",
+            "title": "Content"
+          },
+          "sha256": {
+            "type": "string",
+            "title": "Sha256",
+            "description": "Hash en disco: la base de la CAS para editarlo."
+          },
+          "known_sha256": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Known Sha256",
+            "description": "Hash que conoce el harness (último turno respondido o propuesta aplicada)."
+          }
+        },
+        "type": "object",
+        "required": [
+          "path",
+          "content",
+          "sha256",
+          "known_sha256"
+        ],
+        "title": "PlanningDraftContentRead"
       },
       "PlanningDraftEdit": {
         "properties": {

@@ -1,10 +1,12 @@
-import { useState } from "react";
+import { lazy, Suspense, useState } from "react";
 import type { S } from "../managed-api";
 import { Link } from "../navigation";
 import { PhaseCreate, PhaseDetail } from "../Phases";
 import { Empty, Loading, PageHeader, Pagination, PhaseRail, Stale, Status, usePoll, when } from "../ui";
 import { useWorkspace } from "../workspace";
 import { TaskForm } from "./shared";
+
+const TransitionPanel = lazy(() => import("./Planning").then(module => ({ default: module.TransitionPanel })));
 
 export function PhaseListPage() {
   const { project, refresh } = useWorkspace();
@@ -36,7 +38,13 @@ export function PhasePage({ code }: { code: string }) {
   const base = `/projects/${project}/phases/${encodeURIComponent(code)}`;
   const phase = usePoll<S["PhaseRead"]>(base, 1500, refresh);
   const tasks = usePoll<S["Page_PhaseTaskRead_"]>(`${base}/tasks?offset=${offset}`, 2000, refresh);
+  const info = usePoll<S["ManagedProjectRead"]>(`/projects/${project}`, 0);
+  const phases = usePoll<S["PhaseSummaryRead"][]>(`/projects/${project}/phases`, 5000, refresh);
   const data = phase.data;
+  const v2 = info.data?.documents === "v2";
+  // La fase siguiente en el checkout (la lista va en orden de creación); null si esta es la última.
+  const index = phases.data?.findIndex(p => p.code === code) ?? -1;
+  const following = phases.data && index >= 0 ? phases.data[index + 1]?.code ?? null : undefined;
   const undefinedPhase = phase.missing && !!tasks.data;
   const open = data && !["CLOSED", "ABANDONED"].includes(data.status);
   if (phase.missing && tasks.data && !tasks.data.items.length && !offset) return <>
@@ -73,6 +81,9 @@ export function PhasePage({ code }: { code: string }) {
       <Pagination offset={offset} next={tasks.data?.next_offset} onChange={setOffset} label="Páginas de tareas" />
     </section>
     {(open || undefinedPhase) && <TaskForm phase={code} title="Encolar tarea en esta fase" />}
+    {data && v2 && following !== undefined && (["CLOSED", "ABANDONED"].includes(data.status) || following)
+      && <Suspense fallback={<Loading />}><TransitionPanel phase={data} following={following} /></Suspense>}
+    {data && v2 && !following && !["CLOSED", "ABANDONED"].includes(data.status) && <p className="hint">Al cerrar o abandonar la fase podrás pasar a la siguiente del ROADMAP. Puedes <Link to={{ name: "plan", project, phase: code }}>planificarla ya con el revisor</Link>.</p>}
     {data && <PhaseDetail phase={data} stale={!!phase.error} />}
   </>;
 }

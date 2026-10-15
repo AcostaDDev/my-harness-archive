@@ -20,6 +20,9 @@ import "./styles.css";
 
 // La documentación (markdown-it y, al dibujar, Mermaid) se descarga solo al abrirla (H6.2 E3).
 const DocsPage = lazy(() => import("./pages/Docs").then(module => ({ default: module.DocsPage })));
+// Creación y planificación (H6.2 E4) comparten el visor de Markdown: mismo criterio de carga diferida.
+const SetupPage = lazy(() => import("./pages/Planning").then(module => ({ default: module.SetupPage })));
+const PlanPage = lazy(() => import("./pages/Planning").then(module => ({ default: module.PlanPage })));
 
 function Page({ route }: { route: Route }) {
   switch (route.name) {
@@ -46,6 +49,8 @@ function ProjectPageFor({ route }: { route: Exclude<Route, { name: "home" | "leg
     case "chat": return <Chat conversation={route.conversation} />;
     case "settings": return <SettingsPage />;
     case "docs": return <Suspense fallback={<Loading />}><DocsPage path={route.path} /></Suspense>;
+    case "setup": return <Suspense fallback={<Loading />}><SetupPage path={route.path} /></Suspense>;
+    case "plan": return <Suspense fallback={<Loading />}><PlanPage key={route.phase} phase={route.phase} conversation={route.conversation} /></Suspense>;
   }
 }
 

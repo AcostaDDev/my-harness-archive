@@ -410,6 +410,7 @@ fieldset.trust { background: var(--surface); }
 /* Editor: prosa en textarea, bloques gestionados cerrados con candado, diff coloreado. */
 .docs-editor { margin-top: 16px; }
 .docs-editor-tabs { display: flex; gap: 6px; margin-bottom: 10px; }
+label + .docs-editor-tabs { margin-top: 12px; }
 .docs-editor-tabs button { padding: 6px 12px; }
 .docs-editor-prose { display: block; margin: 0; }
 .docs-editor-prose textarea { width: 100%; font-size: 13.5px; line-height: 1.6; background: var(--field); }

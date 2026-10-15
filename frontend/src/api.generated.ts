@@ -1595,6 +1595,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/managed/projects/{project_id}/planning/{conversation_id}/drafts/content": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Planning Draft
+         * @description H6.2 E4: un borrador admitido con su hash en disco, base de la CAS del editor.
+         */
+        get: operations["managed_planning_draft"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/managed/projects/{project_id}/planning/{conversation_id}/proposals/{proposal_id}/apply": {
         parameters: {
             query?: never;
@@ -4457,6 +4477,23 @@ export interface components {
             expected_version: number;
             /** Reason */
             reason: string;
+        };
+        /** PlanningDraftContentRead */
+        PlanningDraftContentRead: {
+            /** Path */
+            path: string;
+            /** Content */
+            content: string;
+            /**
+             * Sha256
+             * @description Hash en disco: la base de la CAS para editarlo.
+             */
+            sha256: string;
+            /**
+             * Known Sha256
+             * @description Hash que conoce el harness (último turno respondido o propuesta aplicada).
+             */
+            known_sha256: string | null;
         };
         /** PlanningDraftEdit */
         PlanningDraftEdit: {
@@ -11155,6 +11192,70 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["PlanningConversationRead"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+        };
+    };
+    managed_planning_draft: {
+        parameters: {
+            query: {
+                path: string;
+            };
+            header?: {
+                /** @description Obligatoria con valor 1 en mutaciones (protección CSRF). */
+                "x-harness-local"?: string | null;
+            };
+            path: {
+                project_id: string;
+                conversation_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PlanningDraftContentRead"];
                 };
             };
             /** @description Forbidden */

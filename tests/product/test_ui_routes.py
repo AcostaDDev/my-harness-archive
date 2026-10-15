@@ -16,7 +16,9 @@ def ui(tmp_path):
 
 @pytest.mark.parametrize('path', ['/', '/projects/new', '/projects/demo', '/projects/demo/phases/P001/tasks/P001-T001',
                                   '/projects/demo/phases/v1.2', '/legacy', '/ruta/desconocida', '/projects/demo/docs',
-                                  '/projects/demo/docs/docs/STATE.md', '/projects/demo/docs/docs/assets/guia.md'])
+                                  '/projects/demo/docs/docs/STATE.md', '/projects/demo/docs/docs/assets/guia.md',
+                                  '/projects/demo/setup', '/projects/demo/setup/docs/decisions/D001-x.md',
+                                  '/projects/demo/phases/P001/plan', '/projects/demo/phases/P001/plan/c-1'])
 def test_ui_routes_receive_the_shell_on_direct_load(migrated_database, ui, path):
     from session_client import TestClient
     from harness_local.api.app import create_app

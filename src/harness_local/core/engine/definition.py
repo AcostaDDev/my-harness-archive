@@ -21,9 +21,8 @@ from harness_local.core.engine.contracts import (
 from harness_local.core.engine.documents import (
     ANY_MARKER, MAX_DOCUMENT_BYTES, Layout, _fields, _first, blocks, budget_warnings, decision_index, inline,
     parse_roadmap, phase_data, plan_tasks, render_decisions, render_next_steps, render_roadmap, render_state,
-    replace_block, require_layout, skeleton,
+    protected_write, replace_block, require_layout, skeleton,
 )
-from harness_local.core.engine.evidence import matches
 from harness_local.core.engine.phases import phase_definition
 from harness_local.core.engine.planning import FIELD_NAMES, bullet_items, deterministic_task, section
 from harness_local.core.engine.prompts import dump_catalog, render_attempt
@@ -365,7 +364,7 @@ def acceptance(context, conversation: dict, inspection: dict, texts: dict[str, s
                         + '; '.join(q['text'] for q in open_blocking))
     paths = sorted({*texts, *fixed_drafts(target)} | {f'{target.archive("P000")}/{name}'
                                                       for name in ('BRIEF.md', 'DEFINITION.md')})
-    protected = [path for path in paths if matches(path, context.profile.protected_paths)]
+    protected = [path for path in paths if protected_write(context, path)]
     if protected:
         blockers.append('Paths protected by the project profile: ' + ', '.join(protected))
     warnings += [f'Pendiente declarado por el revisor: {item}' for item in conversation['pending']]
