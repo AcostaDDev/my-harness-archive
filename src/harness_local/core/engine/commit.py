@@ -7,6 +7,7 @@ de repetir. ACCEPT/acceptance_ready no equivalen a un commit existente.
 """
 
 from dataclasses import asdict, dataclass
+import base64
 from datetime import datetime, timezone
 import json
 import re
@@ -44,20 +45,31 @@ class GitIdentity:
 
 @dataclass(frozen=True)
 class MechanicalUpdate:
-    """Contenido de texto UTF-8 escrito por el harness, no por el agente."""
+    """Contenido escrito por el harness; UTF-8 por defecto, bytes base64 o borrado para el archivo D088."""
 
     path: str
-    content: str
+    content: str | None
     reason: str
+    encoding: str = 'utf-8'
 
     def __post_init__(self):
         relative_path(self.path)
         if self.path.startswith(".git/") or self.path == ".git":
             raise ValueError("Mechanical updates cannot target Git metadata")
-        if not isinstance(self.content, str) or "\0" in self.content:
+        if self.encoding not in ('utf-8', 'base64'):
+            raise ValueError('Unknown mechanical content encoding')
+        if self.content is not None and (not isinstance(self.content, str) or "\0" in self.content):
             raise ValueError("Mechanical content must be NUL-free UTF-8 text")
+        self.bytes()  # valida también el base64 antes de sellar la intención
         if not isinstance(self.reason, str) or not self.reason.strip():
             raise ValueError("Mechanical updates require an explicit reason")
+
+    def bytes(self) -> bytes | None:
+        """None elimina el archivo; base64 conserva artefactos de fase binarios por bytes."""
+        if self.content is None:
+            return None
+        return (base64.b64decode(self.content, validate=True) if self.encoding == 'base64'
+                else self.content.encode('utf-8'))
 
 
 @dataclass(frozen=True)

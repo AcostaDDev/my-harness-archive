@@ -482,11 +482,13 @@ def managed_router(runtime: ManagedRuntime):
         if current is None:
             actions = [a for a in actions if a != "reconcile"]
         if runtime.config.commit_factory is None:
-            actions = [a for a in actions if a not in ("check", "close", "reconcile_task")]
+            actions = [a for a in actions if a not in ("check", "close", "reconcile_task", "abandon")]
         tag_kind = runtime.projects[project_id].tag_kind if project_id is not None else None
         if (project_id is not None and runtime.projects[project_id].context.documents is not None
                 and runtime.config.commit_factory is not None and detail["status"] in ("CLOSED", "ABANDONED")
-                and runtime.phases.list(root)[-1]["id"] == phase_id):
+                and runtime.phases.list(root)[-1]["id"] == phase_id
+                and any(op['kind'] == 'transition' and op['status'] == 'INTERRUPTED'
+                        and op['request'].get('commit_intent') for op in detail['operations'])):
             actions = [*actions, "transition"]  # D072: archivar y abrir la fase siguiente
         return {**detail, "project_id": project_id, "actions": actions, "tag_kind": tag_kind}
 
@@ -554,7 +556,8 @@ def managed_router(runtime: ManagedRuntime):
         else:
             job = call(runtime.phases.submit_close, item.context, phase_id, body.expected_version,
                        key=idempotency_key, versions=frozen_versions(item), binding_sha256=body.binding_sha256,
-                       reason=body.reason, ttl_seconds=body.ttl_seconds, tag_kind=item.tag_kind)
+                       reason=body.reason, ttl_seconds=body.ttl_seconds, tag_kind=item.tag_kind,
+                       git=document_writer(item))
         return queued(job)
 
     @router.post("/phases/{phase_id}/reconcile", response_model=PhaseRead, operation_id="managed_phase_reconcile")
@@ -619,9 +622,11 @@ def managed_router(runtime: ManagedRuntime):
         return phase_read(phase_id)
 
     @router.post("/phases/{phase_id}/abandon", response_model=PhaseRead, operation_id="managed_phase_abandon")
-    def abandon_phase(phase_id: str, body: PhaseAbandonCreate):
+    def abandon_phase(phase_id: str, body: PhaseAbandonCreate, idempotency_key: IdempotencyKey):
         item, _ = registered_phase(phase_id)
-        call(runtime.phases.abandon, phase_id, body.expected_version, reason=body.reason, context=item.context)
+        job = call(runtime.phases.abandon, phase_id, body.expected_version, reason=body.reason, context=item.context,
+                   git=document_writer(item), key=idempotency_key, versions=frozen_versions(item))
+        queued(job)
         return phase_read(phase_id)
 
     @router.post("/phases/{phase_id}/reconcile-task", response_model=ManagedJobRead, status_code=202,
@@ -758,6 +763,26 @@ def managed_router(runtime: ManagedRuntime):
 
     def _plan(body):
         return None if body.plan_proposal is None else body.plan_proposal.model_dump()
+
+    from harness_local.api.schemas import PhasePlanCreate, PhasePlanInput, PhasePlanPreviewRead
+    from harness_local.storage.phase_plan import PhasePlanRepository
+
+    @router.post('/phases/{phase_id}/plan/preview', response_model=PhasePlanPreviewRead,
+                 operation_id='managed_phase_plan_preview')
+    def phase_plan_preview(phase_id: str, body: PhasePlanInput):
+        item, _ = registered_phase(phase_id)
+        plans = PhasePlanRepository(runtime.repository, phase_id, body.next_steps, _plan(body))
+        return call(plans.preview, item.context, document_writer(item))
+
+    @router.post('/phases/{phase_id}/plan', response_model=ManagedJobRead, status_code=202,
+                 operation_id='managed_phase_plan')
+    def phase_plan(phase_id: str, body: PhasePlanCreate, idempotency_key: IdempotencyKey):
+        item, _ = registered_phase(phase_id)
+        plans = PhasePlanRepository(runtime.repository, phase_id, body.next_steps, _plan(body))
+        return queued(call(plans.submit, item.context, key=idempotency_key, versions=frozen_versions(item),
+                           preview_sha256=body.preview_sha256, reason=body.reason, confirmed=body.confirmed,
+                           git=document_writer(item), source='content', changes=None,
+                           resume_operation_id=body.resume_operation_id))
 
     # --- H6.4: métricas por intento y agregados (solo lectura) ----------------------------------------
     from harness_local.api.schemas import (

@@ -685,7 +685,7 @@ def closed_v2(repository, tmp_path):
     return v2, pid
 
 
-def test_phase_transition_summary_includes_consumption(repository, tmp_path):  # noqa: F811
+def test_phase_transition_summary_includes_consumption(repository, tmp_path, _legacy_close):  # noqa: F811
     from test_documents import queue_transition
     v2, pid = closed_v2(repository, tmp_path)
     with closing(sqlite3.connect(repository.engine.url.database)) as db:
@@ -703,7 +703,7 @@ def test_phase_transition_summary_includes_consumption(repository, tmp_path):  #
     assert '| total | 3 | 10 (1/3) | 300 (1/3) | 100 (1/3) | 90 (1/3) | 500 (1/3) | 4 reportados | — |' in summary
 
 
-def test_transition_reviewed_before_metrics_runs_exactly_as_reviewed(repository, tmp_path):  # noqa: F811
+def test_transition_reviewed_before_metrics_runs_exactly_as_reviewed(repository, tmp_path, _legacy_close):  # noqa: F811
     from harness_local.storage.models import PhaseOperationRow
     from test_documents import queue_transition
     v2, pid = closed_v2(repository, tmp_path)

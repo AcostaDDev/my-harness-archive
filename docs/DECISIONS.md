@@ -100,6 +100,7 @@ tarea se leen solo las decisiones que cita; este índice sirve para buscar prece
 | [D088](#d088--contrato-documental-unificado-cierre-de-fase-automático-e-importación-de-proyectos-p008) | Contrato documental unificado, cierre de fase automático e importación de proyectos (P008) | P008 |
 | [D089](#d089--p008-t002-layout-unificado-obligatorio-y-plantilla) | P008-T002: layout unificado obligatorio y plantilla | P008 |
 | [D090](#d090--p008-t003-rutas-del-ejecutor-paridad-de-diagramas-y-propuestas-de-adr) | P008-T003: rutas del ejecutor, paridad de diagramas y propuestas de ADR | P008 |
+| [D091](#d091--p008-t004-cierre-y-archivo-unificados-con-planificación-posterior) | P008-T004: cierre y archivo unificados con planificación posterior | P008 |
 
 ## D001 — Alcance local y arquitectura base
 
@@ -2691,8 +2692,7 @@ Estado: decidido por el usuario el 2026-10-15, tras D086 (`01b4f6d`).
 
 Estado: decidido por el usuario el 2026-10-15 tras el análisis de incongruencias de esa sesión; **P008-T001
 (migración documental de este repositorio) implementada el mismo día**; P008-T002 implementada (D089); P008-T003
-implementada (D090); P008-T004–T015
-pendientes. Fase: P008.
+implementada (D090); P008-T004 implementada (D091); P008-T005–T015 pendientes. Fase: P008.
 Sustituye en parte D072/D073 (carpetas `decisions/`, `architecture/` y `research/`; layout v2 opcional), D032/D073
 (cierre y transición separados) y D037 (creación v1). Plan: [NEXT_STEPS](NEXT_STEPS.md).
 
@@ -2858,3 +2858,47 @@ Decisiones tomadas con criterio:
   prompt.
 
 Pendiente: prompts restantes (T005), API y UI de las propuestas y las clases de documento (T006).
+
+## D091 — P008-T004: cierre y archivo unificados con planificación posterior
+
+Estado: implementada el 2026-10-15; verificación offline en [registro de trabajo](phase/P008-T004_CIERRE_UNIFICADO.md).
+Fase: P008. Aplica D088 punto 4; sustituye el cierre sin edición de D032 y la nueva transición separada de D073.
+Conserva las definiciones versionadas de D034 y los historiales anteriores.
+
+- El cierre confirmado congela el archivo desde ROADMAP y SQLite, sin exigir un plan para N+1. Rechaza antes de
+  escribir checkout sucio, deriva documental, archivo existente, colisiones de nombres y trabajo pendiente. El job
+  vuelve a observar el vínculo READY bajo el lock, sella y persiste la intención del commit, después la del tag, crea
+  el tag sobre el HEAD evaluado y ejecuta un único commit de archivo. El tag sigue siendo opcional y conserva el
+  tipo declarado por el proyecto (D034).
+- STATE y NEXT_STEPS originales se archivan por bytes; REVIEW y SUMMARY salen de SQLite. Todo `docs/phase/**` se
+  mueve al archivo conservando sus bytes, incluidos binarios y CRLF. Las colisiones con STATE, NEXT_STEPS, REVIEW y
+  SUMMARY, los enlaces y los objetos no regulares se rechazan. Se mantiene el límite documental de 512 KiB por
+  archivo; no hay truncado. El escritor Git admite contenido base64 y borrados CAS para estos movimientos: es la
+  extensión técnica necesaria de `adapters/git.py` a las rutas de T004. Los campos anteriores de la intención se
+  siguen leyendo con UTF-8 por defecto.
+- El mismo commit deja STATE con la base acumulada, NEXT_STEPS con objetivo y criterios de N+1 sin tareas y ROADMAP
+  con N completada y columna Archivo. La transacción que registra el resultado cierra N y crea N+1 ACTIVE con sus
+  documentos adoptados. Sin sucesora no se crea fase. El check devuelve NEEDS_RECONCILIATION antes de invocar al
+  revisor cuando STATE supera 24 KiB o la sección Base acumulada supera 12 KiB; compactar sigue siendo explícito.
+- El abandono usa la misma operación `close` y run `phase_close`, con destino ABANDONED, sin READY ni tag. Invalida
+  lotes y conserva las preguntas en el archivo. La API conserva la lectura PhaseRead, exige Idempotency-Key y devuelve
+  CLOSING mientras se procesa el job; el cliente observa después ABANDONED. No se añade migración ni estado nuevo.
+- Tras una caída se confirma el escritor detenido y se pide explícitamente el cierre/abandono otra vez. Se reusa la
+  operación, el run y la intención sellada: incluso después del commit se concilia el mismo tag y commit y se crea
+  una sola sucesora. Finalizar una intención existente no vuelve a exigir el READY sobre los documentos ya escritos
+  ni recalcula su contenido por caducidad de la autorización inicial.
+- `PhasePlanRepository` permite confirmar después el texto del usuario o una propuesta de `phase_planning`, solo
+  sobre la última fase ACTIVE sin tareas. La vista previa incluye el plan y la definición; la confirmación por hash
+  reutiliza la edición documental conciliable. El commit escribe NEXT_STEPS y regenera STATE; al registrar su
+  resultado se añade una versión de la definición (D034). La conversación toma como destino la fase activa vacía.
+  Prompts y UI se adaptan en T005/T006; los endpoints mínimos de plan y sus contratos generados se incluyen aquí para
+  hacer operable esta tarea.
+- Nuevas transiciones separadas H6.3 rechazadas. Una intención de transición interrumpida mantiene su vista previa y
+  su recuperación; solo esa vía admite cambiar `document_layout` d088-1/2 → d088-3 al comprobar el escritor, si todo
+  el resto del contexto/versiones coincide. El run conserva sus versiones y bytes originales. No se invocan agentes.
+  Los endpoints antiguos se mantienen para recuperación hasta T006.
+- `document_layout = "d088-3"` congela el protocolo nuevo; los demás jobs pendientes de composiciones anteriores
+  se detienen por la guardia de versión habitual. No se cambian prompts, proveedores ni configuración global.
+
+Validación y límites concretos en el registro de trabajo. No se ejecutó el harness sobre este repositorio ni se
+invocaron proveedores reales.

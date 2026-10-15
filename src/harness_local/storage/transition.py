@@ -66,6 +66,9 @@ class TransitionRepository:
     def __init__(self, managed):
         self.managed = managed
 
+    def _retired(self):
+        raise Conflict('Separate phase transitions are retired (D088); only a pending intent can resume')
+
     def preview(self, context, phase_id, git, next_steps=None, plan_proposal=None):
         """`plan_proposal` (H6.5): referencia exacta a un plan propuesto en `phase_planning`, en lugar del texto."""
         origin = None
@@ -75,6 +78,7 @@ class TransitionRepository:
             if stored is not None:
                 return {**stored.request['preview'], 'expected_version': phase.version,
                         'resume_operation_id': stored.id}
+            self._retired()
             if unresolved(session, phase.root):
                 raise Conflict('A document intent awaits reconciliation; recover it first')
             if plan_proposal is not None:

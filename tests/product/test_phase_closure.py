@@ -1,0 +1,320 @@
+"""P008-T004: cierre unificado con repositorios, Git, SQLite y proveedores sintéticos."""
+from dataclasses import replace
+import json
+
+import pytest
+from sqlalchemy import select
+from sqlalchemy.orm import Session
+
+from harness_local.adapters.git import GitWorkspace
+from harness_local.core.engine.documents import base_section, blocks, plan_tasks
+from harness_local.storage.managed import Conflict
+from harness_local.storage.models import PhaseRow
+from harness_local.storage.phase_plan import PhasePlanRepository
+from harness_local.storage.transition import TransitionRepository
+from test_managed import repository  # noqa: F401
+from test_managed_api import VERSIONS, git, client
+from test_documents import V2World, v2checkout, STATE, PLAN_P002, confirm  # noqa: F401
+from harness_local.core.engine.journal import JournalError
+from test_phases import head, phase_review
+
+
+@pytest.fixture
+def unified(repository, v2checkout):
+    return V2World(repository, v2checkout)
+
+
+def queue(world, pid, key=None):
+    detail = world.get(pid)
+    return world.phases.submit_close(world.context, pid, detail['version'], key=key or world.key(), versions=VERSIONS,
+                                    binding_sha256=detail['ready']['binding_sha256'], reason='Synthetic closure',
+                                    ttl_seconds=3600, git=world.ports.writer(world.context, VERSIONS))
+
+
+def ready(world):
+    work = world.context.path('docs/phase/nested')
+    work.mkdir(parents=True)
+    (work / 'image.bin').write_bytes(bytes(range(256)))
+    world.context.path('docs/phase/notes.md').write_bytes(b'notes\r\nwithout final newline')
+    git(world.context.root, 'add', '-A')
+    git(world.context.root, 'commit', '-qm', 'synthetic artifacts')
+    pid = world.create_v2()
+    world.accept()
+    world.check(pid, phase_review())
+    return pid
+
+
+def test_unified_closure_exact_archive_and_successor_without_plan(unified):
+    world = unified
+    pid = ready(world)
+    previous = head(world)
+    original = {path: world.context.path(path).read_bytes() for path in (
+        'docs/STATE.md', 'docs/NEXT_STEPS.md', 'docs/phase/nested/image.bin', 'docs/phase/notes.md')}
+    job = queue(world, pid, 'close-once')
+    world.run()
+    assert git(world.context.root, 'rev-parse', 'HEAD^') == previous
+    assert git(world.context.root, 'rev-parse', 'refs/tags/p001') == previous
+    assert git(world.context.root, 'status', '--porcelain') == ''
+    for path, data in original.items():
+        name = path.removeprefix('docs/phase/') if '/phase/' in path else path.removeprefix('docs/')
+        assert world.context.path('docs/archive/phase-001/' + name).read_bytes() == data
+    assert list(world.context.path('docs/phase').iterdir()) == []
+    assert base_section(STATE).rstrip() in world.context.path('docs/STATE.md').read_text()
+    assert plan_tasks(world.context.path('docs/NEXT_STEPS.md').read_text()) == []
+    road = world.context.path('docs/ROADMAP.md').read_text()
+    assert '| Archivo |' in road and '[archivo](archive/phase-001/)' in road and 'completada' in road
+    with Session(world.repository.engine) as session:
+        following = session.scalar(select(PhaseRow).where(PhaseRow.code == 'P002'))
+        assert following.status == 'ACTIVE' and following.definition['tasks'] == []
+        assert following.definition['objective'] == 'Ampliar el comportamiento sintético.'
+    assert world.repository.get_run(job.run_id).status == 'COMMITTED'
+    assert world.get(pid)['operations'][-1]['result']['commit'] == head(world)
+    original = json.loads(job.request_json)
+    duplicate = world.phases.submit_close(world.context, pid, original['expected_version'], key='close-once',
+        versions=VERSIONS, binding_sha256=original['binding_sha256'], reason=original['reason'],
+        ttl_seconds=original['ttl_seconds'], git=world.ports.writer(world.context, VERSIONS))
+    assert duplicate.id == job.id and world.worker.run_once() is None
+    with pytest.raises(Conflict, match='latest phase'):
+        TransitionRepository(world.repository).preview(world.context, pid, world.ports.writer(world.context, VERSIONS))
+
+
+@pytest.mark.parametrize('case', ['dirty', 'index', 'drift', 'archive', 'pending', 'collision', 'symlink'])
+def test_closure_refuses_before_tag_or_writes(unified, case):
+    world = unified
+    pid = ready(world)
+    if case in ('dirty', 'index'):
+        world.context.path('app/main.txt').write_text('external\n')
+        if case == 'index':
+            git(world.context.root, 'add', 'app/main.txt')
+    elif case == 'drift':
+        world.context.path('docs/STATE.md').write_text('external\n')
+        git(world.context.root, 'commit', '-qam', 'drift')
+    elif case == 'archive':
+        world.context.path('docs/archive/phase-001').mkdir(parents=True)
+    elif case == 'pending':
+        world.repository.submit(world.context, 'P001-T002', 'P001', PLAN_P002.replace('P002', 'P001'),
+                                VERSIONS, key=world.key())
+    elif case == 'collision':
+        world.context.path('docs/phase/STATE.md').write_text('reserved')
+        git(world.context.root, 'add', '-A')
+        git(world.context.root, 'commit', '-qm', 'reserved')
+    else:
+        world.context.path('docs/phase/link').symlink_to(world.context.path('app/main.txt'))
+        git(world.context.root, 'add', '-A')
+        git(world.context.root, 'commit', '-qm', 'symlink')
+    before = head(world)
+    with pytest.raises(Conflict):
+        queue(world, pid)
+    assert head(world) == before and git(world.context.root, 'tag', '--list') == ''
+    assert not world.context.path('docs/archive/phase-001/STATE.md').exists()
+
+
+@pytest.mark.parametrize('point', ['tag', 'write', 'partial', 'delete', 'commit', 'record'])
+def test_closure_recovery_reuses_tag_commit_and_successor(unified, point, monkeypatch):
+    world = unified
+    pid = ready(world)
+    previous = head(world)
+    job = queue(world, pid)
+    once = [False]
+    def patch(owner, name, when='after'):
+        original = getattr(owner, name)
+        def failing(*args, **kwargs):
+            if point == 'delete' and not any(update.content is None for update in args[2].mechanical):
+                return original(*args, **kwargs)
+            if when == 'after':
+                result = original(*args, **kwargs)
+            if not once[0]:
+                once[0] = True
+                if point == 'partial':
+                    self, context, intent = args
+                    original(self, context, replace(intent, mechanical=intent.mechanical[:3]))
+                raise RuntimeError('synthetic crash')
+            return result if when == 'after' else original(*args, **kwargs)
+        monkeypatch.setattr(owner, name, failing)
+    if point == 'tag':
+        patch(GitWorkspace, 'tag')
+    elif point in ('write', 'partial', 'delete'):
+        patch(GitWorkspace, '_write_mechanical', 'after' if point == 'delete' else 'before')
+    elif point == 'commit':
+        patch(GitWorkspace, 'execute')
+    else:
+        import harness_local.storage.phases as module
+        patch(module, 'settle')
+    with pytest.raises((RuntimeError, JournalError), match='synthetic'):
+        world.run()
+    assert world.repository.get_job(job.id).status == 'RECOVERY_REQUIRED'
+    intent = world.get(pid)['operations'][-1]['request']['commit_intent']
+    confirm(world, job)
+    detail = world.get(pid)
+    resumed = world.phases.submit_close(world.context, pid, detail['version'], key=world.key(), versions=VERSIONS,
+        binding_sha256=detail['ready']['binding_sha256'], reason='Resume exact closure', ttl_seconds=3600,
+        git=world.ports.writer(world.context, VERSIONS))
+    world.run()
+    assert world.repository.get_run(resumed.run_id).status == 'COMMITTED'
+    assert head(world) == json.loads(intent)['expected_commit']
+    assert git(world.context.root, 'rev-list', '--count', previous + '..HEAD') == '1'
+    assert git(world.context.root, 'rev-parse', 'refs/tags/p001') == previous
+    assert world.get(pid)['operations'][-1]['request']['commit_intent'] == intent
+    with Session(world.repository.engine) as session:
+        assert len(session.scalars(select(PhaseRow).where(PhaseRow.code == 'P002')).all()) == 1
+
+
+@pytest.mark.parametrize('kind', ['state', 'base'])
+def test_state_budgets_require_reconciliation_without_agent(unified, kind):
+    world = unified
+    state = '# Estado\n\n## Base acumulada\n\n' + ('é' * 6200 if kind == 'base' else 'compacta')
+    state += '\n\n## Fase activa\n\n' + ('é' * 13000 if kind == 'state' else 'activa')
+    world.context.path('docs/STATE.md').write_text(state)
+    git(world.context.root, 'commit', '-qam', 'oversized STATE')
+    pid = world.create_v2()
+    world.accept()
+    before = list(world.ports.roles())
+    _, result = world.check(pid)
+    assert result['status'] == 'NEEDS_RECONCILIATION'
+    assert world.ports.roles() == before
+
+
+def test_plan_after_closure_is_confirmed_document_commit_and_definition_version(unified):
+    world = unified
+    pid = ready(world)
+    queue(world, pid)
+    world.run()
+    following = world.phases.by_code(str(world.context.root), 'P002')
+    plans = PhasePlanRepository(world.repository, following, PLAN_P002)
+    writer = world.ports.writer(world.context, VERSIONS)
+    shown = plans.preview(world.context, writer)
+    previous = head(world)
+    assert world.get(following)['definition']['tasks'] == []
+    job = plans.submit(world.context, key=world.key(), versions=VERSIONS, preview_sha256=shown['preview_sha256'],
+        reason='Confirmed synthetic plan', confirmed=True, git=writer, source='content', changes=None)
+    world.run()
+    detail = world.get(following)
+    assert world.repository.get_run(job.run_id).status == 'COMMITTED'
+    assert git(world.context.root, 'rev-parse', 'HEAD^') == previous
+    assert detail['definition']['tasks'] == ['P002-T001'] and detail['definition_number'] == 2
+    assert detail['documents']['drift'] == []
+    assert '| Archivo |' in world.context.path('docs/ROADMAP.md').read_text()
+
+
+def test_abandon_archives_without_ready_and_does_not_create_tag(unified):
+    world = unified
+    pid = world.create_v2()
+    job = world.phases.abandon(pid, world.get(pid)['version'], reason='Synthetic abandonment', context=world.context,
+                              git=world.ports.writer(world.context, VERSIONS), key=world.key(), versions=VERSIONS)
+    world.run()
+    assert world.get(pid)['status'] == 'ABANDONED'
+    assert world.repository.get_run(job.run_id).status == 'COMMITTED'
+    assert git(world.context.root, 'tag', '--list') == ''
+    assert 'ABANDONED' in world.context.path('docs/archive/phase-001/REVIEW.md').read_text()
+
+
+def test_final_phase_archives_without_creating_another_phase(unified):
+    world = unified
+    road = world.context.path('docs/ROADMAP.md')
+    road.write_text(road.read_text().split('## P002')[0])
+    git(world.context.root, 'commit', '-qam', 'final phase')
+    pid = ready(world)
+    detail = world.get(pid)
+    world.phases.submit_close(world.context, pid, detail['version'], key=world.key(), versions=VERSIONS,
+        binding_sha256=detail['ready']['binding_sha256'], reason='Final phase', ttl_seconds=3600,
+        git=world.ports.writer(world.context, VERSIONS), tag_kind='annotated')
+    world.run()
+    assert git(world.context.root, 'cat-file', '-t', 'refs/tags/p001') == 'tag'
+    assert world.context.path('docs/NEXT_STEPS.md').read_text().startswith('# Sin fase activa')
+    assert len(world.phases.list(str(world.context.root))) == 1
+    with pytest.raises(Conflict, match='retired'):
+        TransitionRepository(world.repository).preview(world.context, pid, world.ports.writer(world.context, VERSIONS))
+
+
+def test_http_closure_and_confirmed_plan_use_the_current_protocol(unified, tmp_path):
+    world = unified
+    pid = ready(world)
+    from test_managed_api import config
+    with client(str(world.repository.engine.url), tmp_path, config(world.context, world.ports, supervisor=False)) as http:
+        detail = world.get(pid)
+        body = {'action': 'close', 'expected_version': detail['version'],
+                'binding_sha256': detail['ready']['binding_sha256'], 'reason': 'HTTP closure', 'confirmed': True}
+        response = http.post(f'/api/managed/phases/{pid}/actions', json=body, headers={'Idempotency-Key': 'http-close'})
+        assert response.status_code == 202, response.text
+        # El runtime de esta prueba no arranca proveedores ni un supervisor de fondo.
+        world.run()
+        assert http.get(f'/api/managed/phases/{pid}').json()['status'] == 'CLOSED'
+        following = world.phases.by_code(str(world.context.root), 'P002')
+        body = {'next_steps': PLAN_P002}
+        shown = http.post(f'/api/managed/phases/{following}/plan/preview', json=body)
+        assert shown.status_code == 200, shown.text
+        proposal = {**body, 'preview_sha256': shown.json()['preview_sha256'], 'reason': 'HTTP plan', 'confirmed': True}
+        assert http.post(f'/api/managed/phases/{following}/plan', json=proposal).status_code == 422
+        created = http.post(f'/api/managed/phases/{following}/plan', json=proposal,
+                            headers={'Idempotency-Key': 'http-plan'})
+        assert created.status_code == 202, created.text
+        world.run()
+        assert world.get(following)['definition']['tasks'] == ['P002-T001']
+
+
+def test_sealed_legacy_transition_recovers_with_layout_version_upgrade(unified, monkeypatch):
+    world = unified
+    pid = ready(world)
+    from harness_local.storage import closure
+    with monkeypatch.context() as legacy:
+        legacy.setattr(closure, 'prepare', lambda *args: None)
+        queue(world, pid)
+        world.run()
+    transitions = TransitionRepository(world.repository)
+    writer = world.ports.writer(world.context, VERSIONS)
+    older = {**VERSIONS, 'document_layout': 'd088-2'}
+    current = {**VERSIONS, 'document_layout': 'd088-3'}
+    seen = []
+    def factory(context, versions):
+        seen.append(versions)
+        return writer
+    world.worker.commit_factory = factory
+    original = GitWorkspace._write_mechanical
+    with monkeypatch.context() as legacy:
+        legacy.setattr(TransitionRepository, '_retired', lambda self: None)
+        shown = transitions.preview(world.context, pid, writer, PLAN_P002)
+        job = transitions.submit(world.context, pid, shown['expected_version'], key=world.key(), versions=older,
+            preview_sha256=shown['preview_sha256'], reason='Frozen legacy transition', confirmed=True,
+            git=writer, next_steps=PLAN_P002)
+        def fail(*args):
+            raise RuntimeError('synthetic crash')
+        legacy.setattr(GitWorkspace, '_write_mechanical', fail)
+        with pytest.raises(RuntimeError, match='synthetic'):
+            world.run()
+    confirm(world, job)
+    assert GitWorkspace._write_mechanical is original
+    shown = transitions.preview(world.context, pid, writer)
+    resumed = transitions.submit(world.context, pid, shown['expected_version'], key=world.key(), versions=current,
+        preview_sha256=shown['preview_sha256'], reason='Resume frozen intent', confirmed=True,
+        git=writer, resume_operation_id=shown['resume_operation_id'])
+    world.run()
+    assert world.repository.get_run(resumed.run_id).status == 'COMMITTED'
+    assert json.loads(world.repository.get_run(resumed.run_id).versions_json) == older
+    assert seen[-1] == current
+
+
+def test_active_empty_phase_accepts_its_conversation_plan(unified):
+    world = unified
+    pid = ready(world)
+    queue(world, pid)
+    world.run()
+    following = world.phases.by_code(str(world.context.root), 'P002')
+    from harness_local.storage.planning import PlanningRepository
+    from test_definition import planning_answer
+    planning = PlanningRepository(world.repository)
+    cid = planning.create(world.context, kind='phase_planning', title='Plan active P002', phase_id=following)
+    world.script(planning_answer())
+    turn = planning.submit_message(world.context, cid, planning.get(cid)['version'], key=world.key(),
+                                   versions=VERSIONS, text='Planifica la fase activa P002')
+    world.run()
+    assert planning.snapshot(turn.run_id)['context']['next']['code'] == 'P002'
+    proposal = planning.get(cid)['proposals'][0]
+    reference = {'conversation_id': cid, 'proposal_id': proposal['id'], 'proposal_sha256': proposal['proposal_sha256']}
+    plans = PhasePlanRepository(world.repository, following, plan_proposal=reference)
+    writer = world.ports.writer(world.context, VERSIONS)
+    shown = plans.preview(world.context, writer)
+    plans.submit(world.context, key=world.key(), versions=VERSIONS, preview_sha256=shown['preview_sha256'],
+        reason='Confirm the exact conversation plan', confirmed=True, git=writer, source='content', changes=None)
+    assert planning.get(cid)['proposals'][0]['status'] == 'ACCEPTED'
+    world.run()
+    assert world.get(following)['definition']['tasks'] == ['P002-T001']

@@ -1,6 +1,7 @@
 """H3.4 (D033): guardia H0/H1, lote desatendido con commits, enmienda/abandono, tags configurables
 y reconciliación con agente. Git/SQLite temporales y agentes falsos; sin proveedores ni red."""
 from datetime import timedelta
+from dataclasses import replace
 import json
 
 from alembic import command
@@ -237,17 +238,18 @@ def test_abandonment_is_terminal_audited_and_frees_the_checkout(world):
     auth_id = world.phases.authorize_batch(pid, world.get(pid)['version'], tasks=['P001-T001'], ttl_seconds=60,
                                            reason='Manual batch')
     world.phases.raise_question(pid, world.get(pid)['version'], text='Still relevant?')
-    world.phases.abandon(pid, world.get(pid)['version'], reason='Scope dropped by the user')
+    world.abandon(pid, 'Scope dropped by the user')
     detail = world.get(pid)
     assert detail['status'] == 'ABANDONED' and detail['actions'] == []
     op = detail['operations'][-1]
-    assert op['kind'] == 'abandon' and op['request']['reason'] == 'Scope dropped by the user'
-    assert op['result']['invalidated_authorizations'] == [auth_id] and len(op['result']['open_questions']) == 1
+    assert op['kind'] == 'close' and op['request']['terminal'] == 'ABANDONED'
+    assert next(a for a in detail['authorizations'] if a['id'] == auth_id)['status'] == 'INVALIDATED'
+    assert len(detail['questions']) == 1 and op['result']['archive'] == 'docs/archive/phase-001'
     for call in (
             lambda: world.repository.submit(world.context, 'P001-T001', 'P001', PLAN, VERSIONS, key='late'),
             lambda: world.phases.submit_check(world.context, pid, detail['version'], key='c', versions=VERSIONS),
             lambda: world.phases.raise_question(pid, detail['version'], text='Late'),
-            lambda: world.phases.abandon(pid, detail['version'], reason='Again'),
+            lambda: world.abandon(pid, 'Again'),
             lambda: world.phases.amend(world.context, pid, detail['version'], data={
                 'objective': 'x', 'exit_criteria': ['c'], 'tasks': [], 'documents': ['docs/STATE.md'], 'tag': None},
                 reason='Late amendment')):
@@ -416,7 +418,7 @@ def test_migration_0011_backfills_definitions_and_refuses_lossy_downgrade(migrat
     with Session(world.repository.engine) as session:
         row = session.scalars(select(PhaseDefinitionRow).where(PhaseDefinitionRow.phase_id == pid)).one()
         assert row.origin == 'migrated' and row.reason is None and row.actor is None and row.number == 1
-    world.phases.abandon(pid, world.get(pid)['version'], reason='Abandon before downgrade')
+    world.abandon(pid, 'Abandon before downgrade')
     with pytest.raises(RuntimeError, match='Abandoned'):
         command.downgrade(migrated_database[1], '0010_phases')
 
@@ -424,6 +426,7 @@ def test_migration_0011_backfills_definitions_and_refuses_lossy_downgrade(migrat
 def test_http_h34_phase_actions_with_annotated_project_and_guards(tmp_path, migrated_database, checkout, monkeypatch):
     from harness_local.services.managed_runtime import CONFIG_ENV
     monkeypatch.delenv(CONFIG_ENV, raising=False)
+    checkout = replace(checkout, documents='v2')
     ports = Ports([change('one\n'), accept('P001-T001'), phase_review()])
     managed = ManagedConfig((ManagedProject('synthetic', checkout, VERSIONS, tag_kind='annotated'),),
                             ports_factory=ports, commit_factory=ports.writer, supervisor=True, poll_seconds=0.02)
@@ -471,6 +474,14 @@ def test_http_h34_phase_actions_with_annotated_project_and_guards(tmp_path, migr
         assert settle(http, task.json()['run_id'])['status'] == 'STOPPED'  # sin respuesta guionizada: se detiene
         current = http.get(f'/api/managed/phases/{pid}').json()
         abandoned = http.post(f'/api/managed/phases/{pid}/abandon', json={
-            'expected_version': current['version'], 'reason': 'HTTP abandonment', 'confirmed': True})
-        assert abandoned.status_code == 200 and abandoned.json()['status'] == 'ABANDONED'
-        assert abandoned.json()['actions'] == []
+            'expected_version': current['version'], 'reason': 'HTTP abandonment', 'confirmed': True},
+            headers={'Idempotency-Key': 'abandon'})
+        assert abandoned.status_code == 200, abandoned.text
+        import time
+        deadline = time.monotonic() + 20
+        while time.monotonic() < deadline:
+            final = http.get(f'/api/managed/phases/{pid}').json()
+            if final['status'] != 'CLOSING':
+                break
+            time.sleep(0.05)
+        assert final['status'] == 'ABANDONED' and final['actions'] == []

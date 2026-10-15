@@ -45,13 +45,16 @@ def definition(context, tasks=('P001-T001',), tag='phase-P001-complete', **overr
 
 
 @pytest.fixture
-def checkout(tmp_path):
+def checkout(tmp_path, _legacy_close):
     root = tmp_path / 'phase-checkout'
     (root / 'app').mkdir(parents=True)
     (root / 'docs').mkdir()
     (root / 'app/main.txt').write_text('baseline\n', encoding='utf-8')
     (root / 'docs/STATE.md').write_text('# State\n', encoding='utf-8')
     (root / 'docs/NEXT_STEPS.md').write_text('# Next\n', encoding='utf-8')
+    (root / 'docs/DECISIONS.md').write_text('# Decisions\n', encoding='utf-8')
+    (root / 'docs/ROADMAP.md').write_text('## P001 — Synthetic phase\n\n**Objetivo:** Synthetic phase\n'
+        '**Criterios de salida:**\n' + ''.join(f'- {item}\n' for item in CRITERIA), encoding='utf-8')
     git(root, 'init', '-q', '-b', 'main')
     git(root, 'add', '-A')
     git(root, 'commit', '-q', '-m', 'baseline')
@@ -113,6 +116,14 @@ class World:
                                        binding_sha256=binding, reason='Synthetic close decision', ttl_seconds=3600)
         self.run()
         return job, self.get(pid)
+
+    def abandon(self, pid, reason):
+        from dataclasses import replace
+        job = self.phases.abandon(pid, self.get(pid)['version'], reason=reason,
+                                  context=replace(self.context, documents='v2'),
+                                  git=self.ports.writer(self.context, VERSIONS), key=self.key(), versions=VERSIONS)
+        self.run()
+        return job
 
 
 @pytest.fixture
@@ -679,6 +690,7 @@ def test_http_without_git_writer_reads_but_does_not_queue_phase_operations(tmp_p
             'code': 'P001', 'objective': 'o', 'exit_criteria': ['c'], 'tasks': [], 'documents': ['docs/STATE.md'],
             'tag': None}).json()
         assert 'check' not in phase['actions'] and 'reconcile' in phase['actions']
+        assert 'abandon' not in phase['actions']
         assert 'reconcile_task' not in phase['actions']
         refused_task = http.post(f"/api/managed/phases/{phase['id']}/reconcile-task", json={
             'expected_version': phase['version']}, headers={'Idempotency-Key': 'r'})

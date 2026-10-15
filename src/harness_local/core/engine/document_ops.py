@@ -7,6 +7,7 @@ bytes ajenos: cada documento admite solo su hash anterior (o ausencia) o el sell
 """
 
 from dataclasses import asdict, replace
+import base64
 import difflib
 import hashlib
 
@@ -60,20 +61,26 @@ def _clean_capture(context, git):
     return evidence, provenance
 
 
-def _sealed_preview(context, evidence, provenance, tree: str, changes: list[tuple[str, str | None, str]],
+def _sealed_preview(context, evidence, provenance, tree: str,
+                    changes: list[tuple[str, str | bytes | None, str | bytes | None]],
                     reason: str, extra: dict, disk: dict[str, str] | None = None) -> dict:
     """`disk`: bytes locales que el commit sustituye además de los de la base (bloques regenerados)."""
     documents, updates, diffs = [], [], []
     for path, old, new in changes:
         if old == new:
             continue
-        if len(new.encode('utf-8')) > MAX_DOCUMENT_BYTES:
+        raw = new if isinstance(new, bytes) else (new.encode('utf-8') if new is not None else None)
+        before = old if isinstance(old, bytes) else (old.encode('utf-8') if old is not None else None)
+        if raw is not None and len(raw) > MAX_DOCUMENT_BYTES:
             raise ValueError(f'{path} would exceed 512 KiB')
-        documents.append({'path': path, 'before_sha256': None if old is None else text_hash(old),
-                          'after_sha256': text_hash(new), 'content': new,
+        binary = isinstance(new, bytes)
+        content = base64.b64encode(new).decode('ascii') if binary else new
+        documents.append({'path': path, 'before_sha256': None if before is None else hashlib.sha256(before).hexdigest(),
+                          'after_sha256': None if raw is None else hashlib.sha256(raw).hexdigest(), 'content': content,
+                          **({'encoding': 'base64'} if binary else {}),
                           **({'disk_sha256': text_hash(disk[path])} if disk and path in disk else {})})
-        updates.append(MechanicalUpdate(path, new, reason))
-        diffs.append(diff(path, old, new))
+        updates.append(MechanicalUpdate(path, content, reason, 'base64' if binary else 'utf-8'))
+        diffs.append(f'Archive bytes: {path}\n' if isinstance(old, bytes) or binary else diff(path, old, new or ''))
     validate_mechanical_updates(context, (), tuple(updates))
     data = {**extra, 'head': evidence.base_revision, 'fingerprint': evidence.fingerprint, 'tree': tree,
             'index_tree': provenance.index_tree, 'documents': documents,
@@ -95,7 +102,8 @@ def _state_title(text: str) -> str:
     return first if first.startswith('# ') and 'harness-local:managed-' not in first else '# Estado'
 
 
-def preview_transition(context, snapshot: dict, git, next_steps: str | None, plan_origin: dict | None = None) -> dict:
+def preview_transition(context, snapshot: dict, git, next_steps: str | None, plan_origin: dict | None = None,
+                       *, unified=False) -> dict:
     """Archivo por bytes de la fase terminada, documentos frescos y definición de la siguiente.
 
     `plan_origin` (H6.5): propuesta de la conversación `phase_planning` de la que sale el plan; entra en el
@@ -126,6 +134,11 @@ def preview_transition(context, snapshot: dict, git, next_steps: str | None, pla
     if following is not None:
         if following['code'] in snapshot['existing_codes']:
             raise ValueError(f"Phase {following['code']} already exists in this checkout")
+        if unified:
+            next_steps = (f"# {following['code']} — {inline(following['title'])}\n\n"
+                          f"**Objetivo:** {following['objective']}\n\n**Criterios de salida:**\n"
+                          + ''.join(f'- {item}\n' for item in following['exit_criteria'])
+                          + '\nPendiente de planificación confirmada.\n')
         if not isinstance(next_steps, str) or not next_steps.strip():
             raise ValueError(f"Provide the NEXT_STEPS plan of {following['code']}")
         if '\0' in next_steps:
@@ -133,7 +146,7 @@ def preview_transition(context, snapshot: dict, git, next_steps: str | None, pla
         if set(blocks(next_steps)) - {'state'}:
             raise ValueError('The plan may contain only the managed-state block of NEXT_STEPS')
         tasks = plan_tasks(next_steps, following['code'])
-        if not tasks:
+        if not tasks and not unified:
             raise ValueError(f"The plan of {following['code']} needs at least one task heading")
         definition = phase_definition(context, phase_data(target, following, tasks))
         plan = next_steps
@@ -156,6 +169,8 @@ def preview_transition(context, snapshot: dict, git, next_steps: str | None, pla
                           render_state(fresh))
     plan = replace_block(plan, render_next_steps(fresh))
     phases = {**snapshot['phases'], code: {'status': status, 'tag': closed['definition'].get('tag')}}
+    if unified:
+        phases[code]['archive'] = archive.removeprefix(target.docs + '/') + '/'
     if following is not None:
         phases[following['code']] = {'status': 'ACTIVE', 'tag': following['tag']}
     rows = [{'code': entry['code'], 'title': entry['title'], **phases.get(entry['code'], {})} for entry in entries]
@@ -171,10 +186,30 @@ def preview_transition(context, snapshot: dict, git, next_steps: str | None, pla
                (target.roadmap, texts[target.roadmap], roadmap), (target.decisions, texts[target.decisions], decisions)]
     for _, _, text in changes[4:]:
         blocks(text)  # ningún marcador inyectado ni parcial en los documentos frescos
+    if unified:
+        work = context.path(target.phase_dir)
+        if work.exists():
+            if not work.is_dir():
+                raise ValueError(f'{target.phase_dir} must be a directory')
+            reserved = {'STATE.md', 'NEXT_STEPS.md', 'REVIEW.md', 'SUMMARY.md'}
+            for path in sorted(work.rglob('*')):
+                relative = path.relative_to(work).as_posix()
+                source = f'{target.phase_dir}/{relative}'
+                safe = context.path(source)  # rechaza enlaces de archivos y directorios
+                if safe.is_dir():
+                    continue
+                if not safe.is_file():
+                    raise ValueError(f'{source} must be a regular file')
+                if relative.split('/')[0] in reserved:
+                    raise ValueError(f'{source} conflicts with the phase archive documents')
+                if safe.stat().st_size > MAX_DOCUMENT_BYTES:
+                    raise ValueError(f'{source} exceeds 512 KiB')
+                data = safe.read_bytes()
+                changes.extend([(f'{archive}/{relative}', None, data), (source, data, None)])
     _protected(context, [path for path, _, _ in changes])
     after = {target.state: state, target.next_steps: plan, target.roadmap: roadmap, target.decisions: decisions}
     return _sealed_preview(context, evidence, provenance, provenance.worktree_tree, changes, TRANSITION_REASON, {
-        'operation': 'phase_transition', 'snapshot': snapshot, 'closed': code, 'archive': archive,
+        'operation': 'phase_close' if unified else 'phase_transition', 'snapshot': snapshot, 'closed': code, 'archive': archive,
         'next': definition, 'warnings': budget_warnings(target, after),
         **({'plan_origin': plan_origin} if plan_origin is not None else {})})
 
@@ -306,26 +341,37 @@ def preview_edit(context, git, *, source: str, changes: list[dict] | None, regen
 # --- ejecución común -------------------------------------------------------------------------
 
 
-def execute(context, history, request, git, journal, now, *, label: str):
-    """Intención previa sellada y escritor H2.4; una intención existente solo se concilia."""
+def seal_operation(context, history, request, git, journal, now, *, label):
+    """Persiste la intención completa antes del primer efecto del cierre (incluido el tag)."""
     shown = request['preview']
     raw = request.get('commit_intent')
     if raw is None:
         if git.capture(context).fingerprint != shown['fingerprint']:
-            return replace(history, status='stopped'), {'status': 'INVALIDATED', 'diagnostic': 'Checkout changed after preview'}
+            raise BaseChanged('Checkout changed after preview')
         updates = tuple(MechanicalUpdate(**item) for item in shown['mechanical'])
         message = (f"harness: {label}\n\nHarness-Operation: {request['operation_id']}\n"
                    f"Harness-Preview: {shown['preview_sha256']}\n")
         plan = CommitPlan(shown['head'], shown['tree'], updates, message, git.identity.name, git.identity.email,
                           int(now().timestamp()))
         tree, commit = git.seal(context, plan)
-        kind = 'PHASE-TRANSITION' if shown['operation'] == 'phase_transition' else 'DOCUMENT-EDIT'
+        kind = {'phase_transition': 'PHASE-TRANSITION', 'phase_close': 'PHASE-CLOSE'}.get(
+            shown['operation'], 'DOCUMENT-EDIT')
         intent = CommitIntent(request['operation_id'], history.id, kind, shown['head'], shown['fingerprint'],
                               shown['tree'], shown['index_tree'], (), updates, tree, commit, message,
                               plan.author_name, plan.author_email, plan.committed_at)
         journal.document_intent(intent)
     else:
         intent = CommitIntent.from_json(raw)
+    return intent
+
+
+def execute(context, history, request, git, journal, now, *, label: str):
+    """Intención previa sellada y escritor H2.4; una intención existente solo se concilia."""
+    shown = request['preview']
+    try:
+        intent = seal_operation(context, history, request, git, journal, now, label=label)
+    except BaseChanged as exc:
+        return replace(history, status='stopped'), {'status': 'INVALIDATED', 'diagnostic': str(exc)}
     outcome = git.execute_documents(context, intent, shown['documents'])
     committed = outcome.status != 'invalidated'
     return replace(history, status='completed' if committed else 'stopped'), {

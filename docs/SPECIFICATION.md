@@ -62,7 +62,7 @@ run y, cuando procede, al intento exacto.
 | F08 | Gestionar prompts | Versiones, diff, variables validadas, activación y rollback; snapshot por intento | Implementado (P004) |
 | F09 | Resolver bloqueos y permisos | Motivo y evidencia; conceder o denegar una petición exacta; revalidar o reintentar | Implementado (P004) |
 | F10 | Controlar fases | Check, reconciliación, preguntas, lote desatendido, enmienda, abandono, cierre con tag | Implementado (P004) |
-| F11 | Cerrar y archivar una fase | Protocolo de §7 en un único flujo tras READY | Transición separada implementada (P007, H6.3); protocolo unificado pendiente (P008-T004) |
+| F11 | Cerrar y archivar una fase | Protocolo de §7 en un único flujo tras READY | Implementado (P008-T004, D091); adaptación de UI pendiente (T006) |
 | F12 | Ver y editar la documentación | Visor seguro y edición con diff confirmado y commit del harness | Implementado (P007, D080) |
 | F13 | Conversar con el revisor | Chat sobre HEAD sin esperar al ejecutor; propuestas → tareas confirmadas; comandos deterministas | Implementado (P005, P007) |
 | F14 | Inspeccionar tests | Suites y casos JUnit, OK/KO por tarea y evolución por fase | Implementado (P006, P007) |
@@ -101,8 +101,8 @@ escriben dos motores sobre el mismo checkout.
 Estructura obligatoria para todo proyecto, también para este repositorio (D088). Implementados (P008-T002, D089): el
 layout, la plantilla, el índice de DECISIONS desde sus encabezados y la obligatoriedad (sin `documents`, el proyecto usa
 esta estructura; la creación v1 se rechaza). P008-T003 (D090): rutas del ejecutor, paridad de modelos determinista y
-de flujos por el revisor, y propuestas de ADR. Pendientes: cierre (T004), prompts y definición (T005), API y UI (T006)
-e inyección de `AGENTS.md` (T007).
+de flujos por el revisor, y propuestas de ADR. P008-T004 (D091): cierre y archivo unificados y plan posterior
+confirmado. Pendientes: prompts y definición (T005), adaptación de API y UI (T006) e inyección de `AGENTS.md` (T007).
 
 | Ruta | Contenido | Autoría |
 |---|---|---|
@@ -138,7 +138,7 @@ Reglas:
 
 ## 7. Cierre de fase
 
-Al superar el check READY y autorizar el cierre, en un único flujo determinista (pendiente: P008-T004):
+Al superar el check READY y autorizar el cierre, en un único flujo determinista (implementado: P008-T004, D091):
 
 1. Tag sobre el HEAD evaluado (D032).
 2. `docs/archive/phase-NNN/` con la instantánea final de STATE y NEXT_STEPS, REVIEW y SUMMARY generados desde SQLite y
@@ -148,7 +148,10 @@ Al superar el check READY y autorizar el cierre, en un único flujo determinista
 4. ROADMAP marca N como completada con enlace a `archive/phase-NNN/`.
 
 Todo en un commit conciliable; si algo no cuadra (checkout sucio, documentos distintos de su base, archivo existente,
-trabajo pendiente), se rechaza antes de escribir. Si ROADMAP no tiene más fases, solo se archiva.
+trabajo pendiente), se rechaza antes de escribir. Si ROADMAP no tiene más fases, solo se archiva. El abandono usa
+el mismo archivo conciliable sin READY ni tag. Un check devuelve NEEDS_RECONCILIATION si STATE supera 24 KiB o
+su base acumulada supera 12 KiB. El plan posterior de N+1 se confirma por hash: escribe NEXT_STEPS, regenera los
+bloques de estado y crea una nueva versión de su definición, conservando la anterior (D034).
 
 ## 8. Importación de proyectos existentes
 

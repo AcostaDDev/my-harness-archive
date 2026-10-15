@@ -433,6 +433,8 @@ class PlanningRepository:
                 codes = [entry['code'] for entry in prepared['entries']]
                 following = (prepared['entries'][codes.index(phase.code) + 1]
                              if phase.code in codes and codes.index(phase.code) + 1 < len(codes) else None)
+                if phase.status == 'ACTIVE' and not phase.definition['tasks']:
+                    following = next((entry for entry in prepared['entries'] if entry['code'] == phase.code), None)
                 frozen.update(documents=prepared['documents'], base=prepared['base'], next=following,
                               phase={'id': phase.id, 'code': phase.code, 'status': phase.status,
                                      'summary': summary_snapshot(session, phase)})
@@ -560,11 +562,11 @@ class PlanningRepository:
         turn = session.get(Turn, proposal.turn_id)
         return proposal.content, {**reference, 'turn_number': turn.number, 'content_sha256': proposal.content_sha256}
 
-    def mark_plan(self, session, origin, run_id, job_id):
+    def mark_plan(self, session, origin, run_id, job_id, *, decision='transition'):
         proposal = session.get(Proposal, origin['proposal_id'])
         if proposal.status != 'PROPOSED' or proposal.proposal_sha256 != origin['proposal_sha256']:
             raise Conflict('The plan proposal changed since the preview; review it again')
         proposal.status, proposal.version = 'ACCEPTED', proposal.version + 1
-        proposal.decision = {'decision': 'transition', 'actor': actor(), 'at': self.managed._now(),
+        proposal.decision = {'decision': decision, 'actor': actor(), 'at': self.managed._now(),
                              'run_id': run_id, 'job_id': job_id}
         _touch(self.managed, session.get(Conversation, proposal.conversation_id))

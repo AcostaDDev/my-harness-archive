@@ -4,7 +4,7 @@ Objetivo y criterios de salida en [ROADMAP](ROADMAP.md#p008--contrato-documental
 Decisión de base: [D088](DECISIONS.md#d088--contrato-documental-unificado-cierre-de-fase-automático-e-importación-de-proyectos-p008).
 Análisis de incongruencias que originó la fase: [docs/phase](phase/P008-T001_MIGRACION_DOCUMENTAL.md).
 
-**Siguiente tarea:** P008-T004. Orden de ejecución: T002 → T007 (motor y contrato), T008 (perfiles, que el usuario
+**Siguiente tarea:** P008-T005. Orden de ejecución: T002 → T007 (motor y contrato), T008 (perfiles, que el usuario
 necesita para su próximo proyecto Django), T009–T012 (Flujo A) y T013–T015 (Flujo B).
 
 ## Restricciones compartidas
@@ -103,6 +103,7 @@ Flujo A; `typescript-web` no declara `data_model_paths`.
 
 **Objetivo:** Que cerrar una fase tras READY ejecute el protocolo de [SPECIFICATION §7](SPECIFICATION.md#7-cierre-de-fase)
 en un único flujo determinista.
+**Estado:** completada el 2026-10-15 ([D091](DECISIONS.md#d091--p008-t004-cierre-y-archivo-unificados-con-planificación-posterior)).
 **Alcance:**
 - La autorización de cierre lanza un job que, con intenciones conciliables, crea el tag sobre el HEAD evaluado y
   después un único commit de archivo: `docs/archive/phase-NNN/` con STATE y NEXT_STEPS por bytes, REVIEW, SUMMARY y
@@ -115,7 +116,9 @@ en un único flujo determinista.
 - El check devuelve `NEEDS_RECONCILIATION` si la base acumulada supera 12 KiB o STATE 24 KiB.
 - La transición separada de H6.3 se retira; las intenciones pendientes de esa operación se siguen conciliando.
 **Rutas permitidas:** `src/harness_local/core/engine/**`, `src/harness_local/storage/**`, `src/harness_local/services/**`,
-`src/harness_local/api/**`, `tests/**`, `docs/**`
+`src/harness_local/api/**`, `tests/**`, `docs/**`. Extensiones técnicas necesarias: `src/harness_local/adapters/git.py`
+para escritura binaria y borrado CAS; `frontend/openapi.json` y `frontend/src/api.generated.ts` para los contratos
+generados de los endpoints mínimos (D091).
 **Criterios de aceptación:**
 - Recorrido sintético: READY → cierre → un tag y un commit con el archivo exacto, documentos frescos y N+1 ACTIVE.
 - Caída en cada efecto (tag, escritura, commit, registro) concilia el mismo tag y commit sin duplicarlos.

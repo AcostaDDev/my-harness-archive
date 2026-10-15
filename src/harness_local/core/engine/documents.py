@@ -341,12 +341,18 @@ STATUS_LABELS = {None: 'pendiente', 'ACTIVE': 'activa', 'CLOSED': 'cerrada', 'AB
 
 
 def render_roadmap(phases: list[dict]) -> str:
+    archived = any(phase.get('archive') for phase in phases)
     lines = ['Estado de las fases gestionado por Harness Local desde SQLite (D072). No editar dentro de este bloque.',
-             '', '| Fase | Título | Estado | Tag |', '|---|---|---|---|']
+             '', '| Fase | Título | Estado | Tag |' + (' Archivo |' if archived else ''),
+             '|---|---|---|---|' + ('---|' if archived else '')]
     for phase in phases:
-        label = STATUS_LABELS.get(phase.get('status'), phase.get('status'))
+        label = ('completada' if archived and phase.get('status') == 'CLOSED'
+                 else STATUS_LABELS.get(phase.get('status'), phase.get('status')))
         tag = f"`{phase['tag']}`" if phase.get('tag') and phase.get('status') == 'CLOSED' else '—'
-        lines.append(f"| {inline(phase['code'])} | {inline(phase['title'])} | {inline(label)} | {tag} |")
+        archive = phase.get('archive')
+        link = f'[archivo]({archive})' if archive else '—'
+        lines.append(f"| {inline(phase['code'])} | {inline(phase['title'])} | {inline(label)} | {tag} |"
+                     + (f' {link} |' if archived else ''))
     if not phases:
         lines.append('| — | sin fases | — | — |')
     return '\n'.join(lines) + '\n'

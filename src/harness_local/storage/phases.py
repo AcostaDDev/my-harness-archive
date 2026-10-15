@@ -14,6 +14,7 @@ tarea normal con contrato determinista limitado a los documentos de la fase.
 
 from datetime import datetime, timedelta
 import json
+from types import SimpleNamespace
 from uuid import uuid4
 
 from sqlalchemy import and_, or_, select
@@ -196,17 +197,24 @@ def settle(managed, session, run, outcome):
                'binding_sha256': outcome['binding_sha256'], 'questions': outcome['questions']})
         return
     op.result, op.finished_at = outcome, now
-    if outcome['status'] == 'CLOSED':
+    if outcome['status'] in ('CLOSED', 'ABANDONED'):
         # Preguntas y commits están excluidos durante CLOSING; un cambio aquí exige recuperación manual.
         changed = stale_reasons(parts, op.request['binding'])
-        if changed or _open(rows):
+        if changed or (outcome['status'] == 'CLOSED' and _open(rows)):
             raise Conflict('Phase authority changed during close; recover manually with the recorded evidence')
         auth = session.get(Authorization, op.request['authorization_id'])
         auth.status, auth.version = 'CONSUMED', auth.version + 1
         auth.closed = {'at': now, 'operation_id': op.id, 'reason': 'Phase closed'}
-        op.status, phase.status = 'CLOSED', 'CLOSED'
-        _event(managed, session, phase, 'phase_closed', {'operation_id': op.id, 'run_id': run.id,
-               'tag': outcome['tag'], 'binding_sha256': outcome['binding_sha256']})
+        terminal = outcome['status']
+        if op.request.get('preview'):
+            from harness_local.storage.closure import adopt
+            outcome = adopt(managed, session, run, op, phase, outcome)
+            op.result = outcome
+        op.status, phase.status = terminal, terminal
+        _event(managed, session, phase, 'phase_abandoned' if terminal == 'ABANDONED' else 'phase_closed', {
+               'operation_id': op.id, 'run_id': run.id,
+               'tag': outcome['tag'], 'binding_sha256': outcome['binding_sha256'],
+               **({'archive': outcome['archive'], 'commit': outcome['commit']} if outcome.get('archive') else {})})
     elif outcome['status'] == 'STALE':
         _invalidate(managed, session, phase, op, 'INVALIDATED', 'READY evidence is stale')
         op.status, phase.status = 'STALE', 'NEEDS_RECONCILIATION'
@@ -235,11 +243,16 @@ def abort(managed, session, run, status, reason):
 
 def record_tag_intent(managed, session, run, intent):
     op, phase = _operation(session, run)
-    if op.kind != 'close' or op.status != 'QUEUED' or intent['operation_id'] != op.id:
+    if op.kind != 'close' or op.status not in ('QUEUED', 'INTENT') or intent['operation_id'] != op.id:
         raise Conflict('Tag intent requires its queued close operation')
     op.request = {**op.request, 'tag_intent': intent}
     op.status = 'INTENT'
     _event(managed, session, phase, 'phase_tag_intent', {'operation_id': op.id, **intent})
+
+
+def record_intent(managed, session, run, intent):
+    from harness_local.storage.documents import record_operation_intent
+    record_operation_intent(managed, session, run, intent, 'close', lambda session, phase: phase.status == 'CLOSING')
 
 
 def insert_phase(managed, session, root, definition, documents, source=None):
@@ -263,7 +276,7 @@ class PhaseRepository:
     def __init__(self, managed):
         self.managed = managed
 
-    def _phase(self, session, phase_id, expected, context=None):
+    def _phase(self, session, phase_id, expected, context=None, *, resume_close=False):
         phase = session.get(Phase, phase_id)
         if phase is None:
             raise LookupError('Unknown managed phase')
@@ -272,7 +285,7 @@ class PhaseRepository:
         if type(expected) is not int or phase.version != expected:
             raise Conflict('Phase changed; reload before acting')
         from harness_local.storage.documents import unresolved
-        if unresolved(session, phase.root):
+        if unresolved(session, phase.root) and not resume_close:
             raise Conflict('A document intent awaits reconciliation; recover it first')
         return phase
 
@@ -280,6 +293,11 @@ class PhaseRepository:
     def _root_pending(session, root):
         return session.scalar(select(Job.id).join(Run, Run.id == Job.run_id).where(
             Run.root == root, Job.status.in_(PENDING))) is not None
+
+    @staticmethod
+    def _closure_pending(session, root):
+        return (PhaseRepository._root_pending(session, root) or session.scalar(select(Run.id).where(
+            Run.root == root, Run.purpose == 'task', Run.status == 'ACCEPTANCE_READY')) is not None)
 
     # --- lecturas ---------------------------------------------------------------------
 
@@ -361,6 +379,10 @@ class PhaseRepository:
             from harness_local.storage.documents import unresolved
             if unresolved(session, phase.root):
                 actions = []
+                from harness_local.storage.documents import pending as interrupted_document
+                interrupted = interrupted_document(session, phase, 'close')
+                if interrupted is not None and not pending:
+                    actions = ['abandon' if interrupted.request.get('terminal') == 'ABANDONED' else 'close']
             # Mismo orden que `latest_phase`: creación y después id.
             successor = session.scalar(select(Phase.code).where(Phase.root == phase.root, or_(
                 Phase.created_at > phase.created_at, and_(Phase.created_at == phase.created_at, Phase.id > phase.id)))
@@ -420,6 +442,10 @@ class PhaseRepository:
                                                       and row.result.get('tag_effect') == 'uncertain'), None)
                 result['authorization'] = {'id': auth.id, 'status': auth.status, 'expires_at': auth.expires_at,
                                            'usable': auth.status == 'ACTIVE' and auth.expires_at > self.managed._now()}
+                if op.request.get('preview'):
+                    result['closure'] = {**op.request, 'operation_id': op.id}
+                    result['terminal'] = op.request.get('terminal', 'CLOSED')
+                    result['tag_intent'] = op.request.get('tag_intent')
             return result
 
     # --- definición y documentos ---------------------------------------------------------
@@ -542,7 +568,7 @@ class PhaseRepository:
             return job
 
     def submit_close(self, context, phase_id, expected, *, key, versions, binding_sha256, reason, ttl_seconds,
-                     tag_kind='lightweight'):
+                     tag_kind='lightweight', git=None, terminal='CLOSED'):
         """Autorización de cierre ligada al READY mostrado + job de cierre, en una transacción.
 
         `tag_kind` lo fija el proyecto en el servidor (H3.4) y queda congelado en la autorización."""
@@ -550,30 +576,80 @@ class PhaseRepository:
             raise ValueError('Explicit close reason required')
         if tag_kind not in TAG_KINDS:
             raise ValueError('Unknown tag kind')
+        if terminal not in TERMINAL:
+            raise ValueError('Closure must be CLOSED or ABANDONED')
         if type(ttl_seconds) is not int or not 1 <= ttl_seconds <= 86400:
             raise ValueError('Validity must be between 1 second and 24 hours')
         request = freeze({'action': 'phase_close', 'phase_id': phase_id, 'expected_version': expected,
-                          'binding_sha256': binding_sha256, 'reason': reason, 'ttl_seconds': ttl_seconds})
+                          'binding_sha256': binding_sha256, 'reason': reason, 'ttl_seconds': ttl_seconds,
+                          **({'terminal': terminal} if terminal != 'CLOSED' else {})})
+        from harness_local.storage.documents import pending, unresolved, _resume_job
+        from harness_local.storage.transition import snapshot as archive_snapshot
+        from harness_local.storage.closure import prepare
+        with Session(self.managed.engine) as session:
+            existing = self.managed._existing(session, key, request)
+            if existing:
+                return _job(existing)
+            phase = self._phase(session, phase_id, expected, context, resume_close=True)
+            interrupted = pending(session, phase, 'close')
+            frozen = None
+            if interrupted is None:
+                if terminal == 'CLOSED' and (phase.status != 'READY_TO_CLOSE' or _ready(session, phase) is None):
+                    raise Conflict('Only a READY_TO_CLOSE phase with a current READY check can be closed')
+                if terminal == 'ABANDONED' and phase.status not in AMENDABLE:
+                    raise Conflict('Only a phase without operations in progress that is not closed can be abandoned')
+                if self._closure_pending(session, phase.root) or unresolved(session, phase.root):
+                    raise Conflict('Checkout has unfinished work; finish or reconcile it before closing')
+                frozen = archive_snapshot(session, phase)
+                frozen['phase'] = {**frozen['phase'], 'status': terminal}
+                frozen['summary']['phase'] = {**frozen['summary']['phase'], 'status': terminal}
+        shown = prepare(context, frozen, git) if frozen is not None else None
         assessment = self.managed.guard.assess(context.root)
         with self.managed._write() as session:
             existing = self.managed._existing(session, key, request)
             if existing:
                 return _job(existing)
-            phase = self._phase(session, phase_id, expected, context)
+            phase = self._phase(session, phase_id, expected, context, resume_close=True)
+            interrupted = pending(session, phase, 'close')
+            if interrupted is not None:
+                if (interrupted.request.get('terminal', 'CLOSED') != terminal
+                        or (terminal == 'CLOSED' and interrupted.request['binding_sha256'] != binding_sha256)):
+                    raise Conflict('Resume requires the original READY binding')
+                if self._root_pending(session, phase.root):
+                    raise Conflict('Checkout has unfinished jobs; recover at a stopped boundary')
+                job = _resume_job(self.managed, session, interrupted, context, versions, key, request, assessment,
+                                  'phase_close')
+                phase.status = 'CLOSING'
+                _event(self.managed, session, phase, 'phase_close_resumed', {'operation_id': interrupted.id})
+                return job
             ready = _ready(session, phase)
-            if phase.status != 'READY_TO_CLOSE' or ready is None:
+            if terminal == 'ABANDONED' and phase.status not in AMENDABLE:
+                raise Conflict('Only a phase without operations in progress that is not closed can be abandoned')
+            if terminal == 'CLOSED' and (phase.status != 'READY_TO_CLOSE' or ready is None):
                 raise Conflict('Only a READY_TO_CLOSE phase with a current READY check can be closed')
-            if ready.result['binding_sha256'] != binding_sha256:
+            if terminal == 'CLOSED' and ready.result['binding_sha256'] != binding_sha256:
                 raise Conflict('Close authorization must name the current READY evidence')
             parts, rows = authority(session, phase)
-            if _open(rows):
+            if terminal == 'CLOSED' and _open(rows):
                 raise Conflict('Pending blocking questions prevent closing the phase')
             if session.scalar(select(Commit.operation_id).join(Run, Run.id == Commit.run_id).where(
                     Run.root == phase.root, Commit.status == 'INTENT')) is not None:
                 raise Conflict('A commit operation of this checkout awaits reconciliation; reconcile it first')
+            if self._closure_pending(session, phase.root) or unresolved(session, phase.root):
+                raise Conflict('Checkout has unfinished work; finish or reconcile it before closing')
+            if terminal == 'ABANDONED':
+                bound = {**parts, 'head': shown['head'], 'fingerprint': shown['fingerprint'],
+                         'documents': phase.documents}
+                binding_sha256 = digest(bound)
+                ready = SimpleNamespace(id=None, result={'binding': bound, 'binding_sha256': binding_sha256})
             stale = stale_reasons(parts, ready.result['binding'])
+            if terminal == 'CLOSED' and shown is not None:
+                stale += [f'{name} changed since READY' for name in ('head', 'fingerprint')
+                          if shown[name] != ready.result['binding'][name]]
             if stale:
                 raise Conflict('READY review is stale: ' + ', '.join(stale) + '; check the phase again')
+            if terminal == 'ABANDONED':
+                _invalidate_batches(self.managed, session, phase, 'Phase abandoned')
             now = self.managed._now()
             expires = (datetime.fromisoformat(now) + timedelta(seconds=ttl_seconds)).isoformat(timespec='microseconds')
             scope = {'check_operation_id': ready.id, 'binding_sha256': binding_sha256, 'tag': phase.definition['tag'],
@@ -589,7 +665,7 @@ class PhaseRepository:
                            previous_status=phase.status, created_at=now, request={
                                'job_id': job.id, 'authorization_id': auth.id, 'check_operation_id': ready.id,
                                'binding': ready.result['binding'], 'binding_sha256': binding_sha256,
-                               'tag_kind': tag_kind})
+                               'tag_kind': tag_kind, 'preview': shown, 'terminal': terminal})
             session.add(op)
             phase.status = 'CLOSING'
             _event(self.managed, session, phase, 'close_authorized', authorization_view(auth, now))
@@ -754,28 +830,10 @@ class PhaseRepository:
                 'operation_id': op.id, 'number': number, 'definition_sha256': sha, 'reason': reason.strip(),
                 'invalidated_authorizations': invalidated, 'actor': op.request['actor']})
 
-    def abandon(self, phase_id, expected, *, reason, context=None):
-        """Estado terminal explícito y auditado; no edita documentos ni toca Git."""
-        if not isinstance(reason, str) or not reason.strip():
-            raise ValueError('Explicit abandonment reason required')
-        with self.managed._write() as session:
-            phase = self._phase(session, phase_id, expected, context)
-            if phase.status not in AMENDABLE:
-                raise Conflict('Only a phase without operations in progress that is not closed can be abandoned')
-            if self._root_pending(session, phase.root):
-                raise Conflict('Checkout has unfinished jobs; abandon at a stopped boundary')
-            now = self.managed._now()
-            invalidated = _invalidate_batches(self.managed, session, phase, 'Phase abandoned')
-            op = Operation(id=str(uuid4()), phase_id=phase.id, kind='abandon', run_id=None, status='RECORDED',
-                           previous_status=phase.status, created_at=now, finished_at=now,
-                           request={'actor': actor(), 'reason': reason.strip()},
-                           result={'invalidated_authorizations': invalidated,
-                                   'open_questions': [q.id for q in _open(_questions(session, phase.id))]})
-            session.add(op)
-            phase.status = 'ABANDONED'
-            _event(self.managed, session, phase, 'phase_abandoned', {
-                'operation_id': op.id, 'reason': reason.strip(), 'invalidated_authorizations': invalidated,
-                'actor': op.request['actor']})
+    def abandon(self, phase_id, expected, *, reason, context, git, key, versions):
+        """Abandono confirmado: mismo archivo conciliable que el cierre, sin tag ni READY."""
+        return self.submit_close(context, phase_id, expected, reason=reason, git=git, key=key, versions=versions,
+                                 binding_sha256=None, ttl_seconds=3600, terminal='ABANDONED')
 
     def submit_reconcile_task(self, context, phase_id, expected, *, key, versions):
         """Tarea normal con contrato determinista (plantilla `reconcile-phase`) limitado a los documentos.

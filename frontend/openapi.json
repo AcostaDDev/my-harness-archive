@@ -6494,6 +6494,19 @@
             }
           },
           {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200,
+              "description": "Misma clave y misma acción devuelven el mismo job.",
+              "title": "Idempotency-Key"
+            },
+            "description": "Misma clave y misma acción devuelven el mismo job."
+          },
+          {
             "name": "x-harness-local",
             "in": "header",
             "required": false,
@@ -7614,6 +7627,213 @@
             "application/json": {
               "schema": {
                 "$ref": "#/components/schemas/PhaseTransitionCreate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ManagedJobRead"
+                }
+              }
+            }
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          }
+        }
+      }
+    },
+    "/api/managed/phases/{phase_id}/plan/preview": {
+      "post": {
+        "summary": "Phase Plan Preview",
+        "operationId": "managed_phase_plan_preview",
+        "parameters": [
+          {
+            "name": "phase_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Phase Id"
+            }
+          },
+          {
+            "name": "x-harness-local",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Obligatoria con valor 1 en mutaciones (protección CSRF).",
+              "title": "X-Harness-Local"
+            },
+            "description": "Obligatoria con valor 1 en mutaciones (protección CSRF)."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PhasePlanInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PhasePlanPreviewRead"
+                }
+              }
+            }
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          }
+        }
+      }
+    },
+    "/api/managed/phases/{phase_id}/plan": {
+      "post": {
+        "summary": "Phase Plan",
+        "operationId": "managed_phase_plan",
+        "parameters": [
+          {
+            "name": "phase_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Phase Id"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200,
+              "description": "Misma clave y misma acción devuelven el mismo job.",
+              "title": "Idempotency-Key"
+            },
+            "description": "Misma clave y misma acción devuelven el mismo job."
+          },
+          {
+            "name": "x-harness-local",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Obligatoria con valor 1 en mutaciones (protección CSRF).",
+              "title": "X-Harness-Local"
+            },
+            "description": "Obligatoria con valor 1 en mutaciones (protección CSRF)."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PhasePlanCreate"
               }
             }
           }
@@ -18296,6 +18516,198 @@
           "finished_at"
         ],
         "title": "PhaseOperationRead"
+      },
+      "PhasePlanCreate": {
+        "properties": {
+          "next_steps": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 524288
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Next Steps"
+          },
+          "plan_proposal": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PlanProposalRef"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "preview_sha256": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$",
+            "title": "Preview Sha256"
+          },
+          "resume_operation_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 36
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Resume Operation Id"
+          },
+          "reason": {
+            "type": "string",
+            "maxLength": 2000,
+            "minLength": 1,
+            "title": "Reason"
+          },
+          "confirmed": {
+            "type": "boolean",
+            "const": true,
+            "title": "Confirmed"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "preview_sha256",
+          "reason",
+          "confirmed"
+        ],
+        "title": "PhasePlanCreate"
+      },
+      "PhasePlanInput": {
+        "properties": {
+          "next_steps": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 524288
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Next Steps"
+          },
+          "plan_proposal": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PlanProposalRef"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "PhasePlanInput"
+      },
+      "PhasePlanPreviewRead": {
+        "properties": {
+          "resume_operation_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Resume Operation Id"
+          },
+          "preview_sha256": {
+            "type": "string",
+            "title": "Preview Sha256"
+          },
+          "operation": {
+            "type": "string",
+            "enum": [
+              "document_edit",
+              "phase_transition"
+            ],
+            "title": "Operation"
+          },
+          "head": {
+            "type": "string",
+            "title": "Head"
+          },
+          "fingerprint": {
+            "type": "string",
+            "title": "Fingerprint"
+          },
+          "tree": {
+            "type": "string",
+            "title": "Tree"
+          },
+          "index_tree": {
+            "type": "string",
+            "title": "Index Tree"
+          },
+          "documents": {
+            "items": {
+              "$ref": "#/components/schemas/DocumentPreviewEntry"
+            },
+            "type": "array",
+            "title": "Documents"
+          },
+          "mechanical": {
+            "items": {
+              "additionalProperties": {
+                "type": "string"
+              },
+              "type": "object"
+            },
+            "type": "array",
+            "title": "Mechanical"
+          },
+          "diff": {
+            "type": "string",
+            "title": "Diff"
+          },
+          "source": {
+            "type": "string",
+            "enum": [
+              "content",
+              "worktree"
+            ],
+            "title": "Source"
+          },
+          "regenerated": {
+            "items": {
+              "$ref": "#/components/schemas/RegeneratedDocumentRead"
+            },
+            "type": "array",
+            "title": "Regenerated",
+            "default": []
+          },
+          "phase_plan": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Phase Plan"
+          }
+        },
+        "type": "object",
+        "required": [
+          "resume_operation_id",
+          "preview_sha256",
+          "operation",
+          "head",
+          "fingerprint",
+          "tree",
+          "index_tree",
+          "documents",
+          "mechanical",
+          "diff",
+          "source",
+          "phase_plan"
+        ],
+        "title": "PhasePlanPreviewRead"
       },
       "PhaseQuestionCreate": {
         "properties": {

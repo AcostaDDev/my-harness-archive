@@ -38,9 +38,8 @@ from harness_local.services.managed_runtime import (PROJECT_ID, ManagedConfig, M
 
 VERSION = 'local-config-3'
 FORMATS = ('local-config-1', 'local-config-2', VERSION)
-# D088: versión del layout documental unificado y obligatorio de los proyectos gestionados. d088-2 (P008-T003):
-# rutas del harness y del ejecutor, paridad de diagramas y propuestas de ADR.
-DOCUMENT_LAYOUT = 'd088-2'
+# D088/P008-T004: cierre y archivo unificados, con sucesora ACTIVE sin plan.
+DOCUMENT_LAYOUT = 'd088-3'
 CLI_KEYS = ('executable', 'cli_version', 'timeout_seconds', 'environment')
 TOOL_KEYS = ('tools', 'allowed_tools', 'grantable_tools')
 CONFIG_ENV = 'HARNESS_LOCAL_CONFIG'

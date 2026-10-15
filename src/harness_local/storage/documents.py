@@ -36,7 +36,7 @@ from harness_local.storage.models import (
 from harness_local.storage.permissions import actor
 from harness_local.storage.phases import PhaseRepository, _event, _latest, _open, _operation, _questions
 
-DOCUMENT_KINDS = ('document_export', 'transition', 'document_edit')
+DOCUMENT_KINDS = ('document_export', 'transition', 'document_edit', 'close')
 
 
 # --- proyecciones de SQLite --------------------------------------------------------------------
@@ -97,7 +97,14 @@ def state_snapshot(session, phase, committing_run_id=None) -> dict:
 
 def phases_snapshot(session, root) -> dict:
     rows = session.scalars(select(Phase).where(Phase.root == root).order_by(Phase.created_at, Phase.id)).all()
-    return {row.code: {'status': row.status, 'tag': row.definition.get('tag')} for row in rows}
+    result = {row.code: {'status': row.status, 'tag': row.definition.get('tag')} for row in rows}
+    for row in rows:
+        close = _latest(session, row.id, 'close')
+        if close and close.result and close.result.get('archive'):
+            archive = close.result['archive']
+            result[row.code]['archive'] = archive.split('/archive/', 1)[-1]
+            result[row.code]['archive'] = 'archive/' + result[row.code]['archive'].rstrip('/') + '/'
+    return result
 
 
 def summary_snapshot(session, phase) -> dict:
@@ -450,6 +457,11 @@ class DocumentsRepository:
                                status='QUEUED', previous_status=phase.status, created_at=self.managed._now(),
                                request={'preview': saved, 'actor': actor(), 'reason': reason})
                 session.add(op)
+                origin = (saved.get('phase_plan') or {}).get('origin')
+                if origin:
+                    from harness_local.storage.planning import PlanningRepository
+                    PlanningRepository(self.managed).mark_plan(session, origin, job.run_id, job.id,
+                                                               decision='phase_plan')
             _event(self.managed, session, phase, 'document_edit_queued', {
                 'operation_id': op.id, 'run_id': job.run_id, 'job_id': job.id, 'preview_sha256': preview_sha256,
                 'paths': [doc['path'] for doc in shown['documents']], 'actor': actor(), 'reason': reason})
@@ -466,7 +478,13 @@ class DocumentsRepository:
 
 def _resume_job(managed, session, op, context, versions, key, marker, assessment, stage):
     run = session.get(Run, op.run_id)
-    if run.context_json != context_snapshot(context) or run.versions_json != freeze(versions):
+    frozen_versions = json.loads(run.versions_json)
+    comparable = dict(frozen_versions)
+    if (op.kind == 'transition' and op.request.get('commit_intent')
+            and comparable.get('document_layout') in ('d088-1', 'd088-2')
+            and versions.get('document_layout') == 'd088-3'):
+        comparable['document_layout'] = 'd088-3'  # solo el escritor ya sellado, nunca agentes ni bytes nuevos
+    if run.context_json != context_snapshot(context) or comparable != versions:
         raise Conflict('Frozen context/versions changed; restore the configured writer first')
     job = Job(idempotency_key=key, run_id=run.id, request_json=marker, status='QUEUED',
               created_at=managed._now(), activation_id=managed._admit(session, assessment))
@@ -479,7 +497,14 @@ def _resume_job(managed, session, op, context, versions, key, marker, assessment
 
 
 def record_intent(managed, session, run, intent):
-    record_operation_intent(managed, session, run, intent, 'document_edit', lambda session, phase: True)
+    def matches(session, phase):
+        op, _ = _operation(session, run)
+        data = op.request['preview'].get('phase_plan')
+        if data is None:
+            return True
+        from harness_local.storage.phase_plan import verify
+        return verify(session, phase, data)
+    record_operation_intent(managed, session, run, intent, 'document_edit', matches)
 
 
 def settle(managed, session, run, outcome):
@@ -496,6 +521,9 @@ def settle(managed, session, run, outcome):
                 documents[doc['path']] = adopted[doc['path']] = doc['after_sha256']
         if adopted:
             phase.documents = documents
+        if shown.get('phase_plan'):
+            from harness_local.storage.phase_plan import adopt
+            adopt(managed, session, phase, op, shown, documents, outcome)
         outcome = {**outcome, 'adopted': adopted}
         run.status, run.stage = 'COMMITTED', 'committed'
     op.status, op.result, op.finished_at = outcome['status'], outcome, managed._now()

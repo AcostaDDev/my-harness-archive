@@ -203,12 +203,15 @@ class GitWorkspace:
             env = {"GIT_INDEX_FILE": str(Path(scratch) / "index")}
             git.run("read-tree", tree, env=env)
             for update in sorted(plan_updates, key=lambda item: item.path):
+                if update.content is None:
+                    git.run('update-index', '--force-remove', '--', update.path, env=env)
+                    continue
                 listing = git.run("ls-tree", "-z", tree, "--", update.path).split(b"\0")[0]
                 mode = listing.split(b" ", 1)[0].decode() if listing else "100644"
                 if mode not in {"100644", "100755"}:
                     raise CommitError("Mechanical update target is not a regular file")
                 blob = git.text("hash-object", "-w", f"--path={update.path}", "--stdin",
-                                input=update.content.encode("utf-8"))
+                                input=update.bytes())
                 git.run("update-index", "--add", "--cacheinfo", f"{mode},{blob},{update.path}", env=env)
             return git.text("write-tree", env=env)
 
@@ -234,10 +237,13 @@ class GitWorkspace:
                 raise CommitError("Mechanical update target is not a regular file")
             targets.append((update, target))
         for update, target in targets:
+            if update.content is None:
+                target.unlink(missing_ok=True)
+                continue
             target.parent.mkdir(parents=True, exist_ok=True)
             mode = target.stat().st_mode & 0o777 if target.exists() else 0o644
             temporary = target.with_name(f".{target.name}.{intent.operation_id}.tmp")
-            temporary.write_bytes(update.content.encode("utf-8"))
+            temporary.write_bytes(update.bytes())
             os.chmod(temporary, mode)
             os.replace(temporary, target)
 
@@ -394,7 +400,10 @@ class GitWorkspace:
             if sha is False:
                 return CommitOutcome('invalidated', intent.operation_id, diagnostic='Export document is no longer regular')
             # `disk_sha256`: bytes locales que la vista previa confirmada sustituye (bloques regenerados, H6.2 E3).
-            if sha not in (doc['before_sha256'], doc['after_sha256'], doc.get('disk_sha256')):
+            allowed = {doc['before_sha256'], doc['after_sha256']}
+            if doc.get('disk_sha256') is not None:
+                allowed.add(doc['disk_sha256'])
+            if sha not in allowed:
                 return CommitOutcome('invalidated', intent.operation_id,
                                      diagnostic='Document changed externally after export preview: ' + doc['path'])
         observed = self.capture(context)
@@ -412,7 +421,10 @@ class GitWorkspace:
             sha = self._document_sha(context, doc)
             if sha == doc['after_sha256']:
                 continue
-            if sha is False or sha not in (doc['before_sha256'], doc.get('disk_sha256')):
+            allowed = {doc['before_sha256']}
+            if doc.get('disk_sha256') is not None:
+                allowed.add(doc['disk_sha256'])
+            if sha is False or sha not in allowed:
                 return CommitOutcome('invalidated', intent.operation_id, diagnostic='Document changed during export')
             self._write_mechanical(context, replace(intent, mechanical=(update,)))
         return self.execute(context, intent)
@@ -421,9 +433,9 @@ class GitWorkspace:
 
     @staticmethod
     def _document_sha(context: ProjectContext, doc: dict):
-        """Hash del documento; None si falta y era nuevo; False si no es un archivo regular admisible."""
+        """Hash del documento; None si falta (el CAS decide si se admite); False si no es regular."""
         target = context.path(doc['path'])
-        if doc['before_sha256'] is None and not target.exists() and not target.is_symlink():
+        if not target.exists() and not target.is_symlink():
             return None
         if not target.is_file() or target.is_symlink():
             return False

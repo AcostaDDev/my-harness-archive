@@ -22,7 +22,7 @@ salvo donde se indica. Detalle por fase en `docs/archive/phase-NNN/SUMMARY.md`.
 - **Fases y documentos** ([P004](archive/phase-004/SUMMARY.md), [P007](archive/phase-007/SUMMARY.md)): check READY,
   reconciliación, preguntas, lote desatendido, enmiendas, abandono y cierre con tag. Contrato documental unificado y
   obligatorio de D088 desde P008-T002 (layout v2 modificado; DECISIONS único con índice): bloques regenerados en cada
-  commit, edición confirmada, exportación y transición separada que archiva en `archive/phase-NNN/`.
+  commit, edición confirmada, exportación y cierre unificado que archiva en `archive/phase-NNN/` (P008-T004, D091).
 - **Creación y chat** ([P005](archive/phase-005/SUMMARY.md), [P007](archive/phase-007/SUMMARY.md)): creación por
   conversación con borradores en disco y CAS (la v1 se rechaza desde P008-T002); planificación de fase conversacional; chat
   sobre una instantánea de HEAD sin lock, con comandos deterministas y propuestas que crean tareas confirmadas.
@@ -94,5 +94,22 @@ Objetivo y criterios en [ROADMAP](ROADMAP.md); plan en [NEXT_STEPS](NEXT_STEPS.m
   Markdown editados correctos; el diagrama de secuencia modificado de `flows/task-run.md` pasa el parser Mermaid
   local. Sin `alembic check`, pruebas Node ni build: no cambian modelos, migraciones, UI ni OpenAPI.
 
-**Siguiente:** P008-T004 (cierre de fase unificado), sin iniciar. Este repositorio sigue sin registrarse en el
-harness.
+**P008-T004 completada** (cierre y archivo unificados,
+[D091](DECISIONS.md#d091--p008-t004-cierre-y-archivo-unificados-con-planificación-posterior)):
+
+- Cierre autorizado con tag sobre el HEAD evaluado y un commit de archivo conciliable: STATE/NEXT_STEPS por bytes,
+  REVIEW/SUMMARY desde SQLite y todo `docs/phase/`, incluidos binarios. STATE fresco con base, NEXT_STEPS con
+  objetivo/criterios de N+1 sin tareas, ROADMAP con enlace al archivo y sucesora ACTIVE adoptada atómicamente.
+- Abandono por la misma vía sin READY ni tag; rechazo previo de deriva, checkout sucio, archivo existente o trabajo
+  pendiente. Check bloqueado por STATE >24 KiB o base >12 KiB. Nuevas transiciones H6.3 retiradas, conservando la
+  conciliación de sus intenciones selladas. `document_layout = "d088-3"`.
+- Plan posterior confirmado desde texto o `phase_planning`: commit documental y nueva versión de la definición;
+  endpoints mínimos y contratos generados actualizados. Prompts y UI completos pendientes de T005/T006.
+- Verificación: 12 checks ligeros; pytest completo con 1.142 OK y 121 subtests, dos fixtures históricos de métricas
+  corregidos y su archivo re-ejecutado (27 OK); 113 pruebas afectadas tras los ajustes finales, incluidos los 22 casos
+  nuevos de cierre. 72 pruebas Node y build (incluye tipos) correctos. Dos diagramas Mermaid y enlaces/anclas de los
+  siete Markdown editados/nuevos válidos. Sin `alembic check` independiente (no cambian modelos ni migraciones),
+  proveedores reales ni smokes. Detalle en [registro](phase/P008-T004_CIERRE_UNIFICADO.md).
+
+**Siguiente:** P008-T005 (prompts, definición y reconciliación al nuevo layout), sin iniciar. Este repositorio sigue
+sin registrarse en el harness.

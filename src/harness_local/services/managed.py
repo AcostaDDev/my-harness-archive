@@ -201,14 +201,19 @@ class LocalSupervisor:
                 from harness_local.core.engine.document_ops import execute
                 if self.commit_factory is None:
                     raise RuntimeError('Document operations require the configured Git writer')
-                writer = self.commit_factory(context, versions)
                 if request["action"] == "document_edit":
+                    writer = self.commit_factory(context, versions)
                     from harness_local.storage.documents import DocumentsRepository
                     frozen = DocumentsRepository(self.repository).request(claim.run_id)
                     label = "confirm document edit"
                 else:
                     from harness_local.storage.transition import TransitionRepository
                     frozen = TransitionRepository(self.repository).request(claim.run_id)
+                    writer_versions = versions
+                    if (frozen.get('commit_intent')
+                            and versions.get('document_layout') in ('d088-1', 'd088-2')):
+                        writer_versions = {**versions, 'document_layout': 'd088-3'}
+                    writer = self.commit_factory(context, writer_versions)
                     shown = frozen["preview"]
                     label = f"archive {shown['closed']}" + (f" and open {shown['next']['code']}" if shown["next"] else "")
                 self.repository._require_mode(claim)
@@ -266,7 +271,7 @@ class LocalSupervisor:
                 history, outcome = planning_turn(context, record.history, snapshot, agents, observe, journal,
                                                  PromptRepository(self.repository.engine).catalog(context))
             elif request["action"] in ("phase_check", "phase_close"):
-                # H3.3: puertas de fase con el escritor Git configurado; nunca editan documentos.
+                # D088: check y cierre bajo el lock; el cierre incluye el archivo documental.
                 if self.commit_factory is None:
                     raise RuntimeError("Phase operations require the configured Git writer")
                 from harness_local.core.engine.phases import check_phase, close_phase

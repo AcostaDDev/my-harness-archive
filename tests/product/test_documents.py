@@ -164,7 +164,7 @@ class V2World(World):
 
 
 @pytest.fixture
-def v2(repository, v2checkout):  # noqa: F811
+def v2(repository, v2checkout, _legacy_close):  # noqa: F811
     return V2World(repository, v2checkout)
 
 
@@ -574,7 +574,7 @@ def test_transition_preview_fails_closed_without_effects(v2, case):
     assert head(v2) == before and not (v2.context.root / 'docs/archive/phase-001/STATE.md').exists()
 
 
-def test_transition_without_next_phase_only_archives(repository, tmp_path):  # noqa: F811
+def test_transition_without_next_phase_only_archives(repository, tmp_path, _legacy_close):  # noqa: F811
     root = tmp_path / 'single'
     for path, value in v2_files(ROADMAP.split('## P002')[0]).items():
         (root / path).parent.mkdir(parents=True, exist_ok=True)
@@ -584,7 +584,10 @@ def test_transition_without_next_phase_only_archives(repository, tmp_path):  # n
     git(root, 'commit', '-q', '-m', 'single phase')
     world = V2World(repository, replace(make_context(root), documents='v2'))
     pid = world.create_v2()
-    world.phases.abandon(pid, world.get(pid)['version'], reason='Synthetic abandonment', context=world.context)
+    # Fase terminal heredada, anterior al cierre documental unificado.
+    with Session(world.repository.engine) as session:
+        session.get(PhaseRow, pid).status = 'ABANDONED'
+        session.commit()
     with pytest.raises(Conflict, match='only archives'):
         transition_view(world, pid, PLAN_P002)
     view = transition_view(world, pid, None)
@@ -806,7 +809,7 @@ def test_http_documents_edit_and_transition(v2, tmp_path):
         v2.check(pid, phase_review())
         v2.close(pid)
         phase = http.get(f'/api/managed/phases/{pid}').json()
-        assert 'transition' in phase['actions']
+        assert 'transition' not in phase['actions']  # solo se anuncia la recuperación de intenciones antiguas
         preview = http.post(f'/api/managed/phases/{pid}/transition/preview', json={'next_steps': PLAN_P002})
         assert preview.status_code == 200, preview.text
         view = preview.json()

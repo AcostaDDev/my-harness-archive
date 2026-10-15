@@ -1325,6 +1325,40 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/managed/phases/{phase_id}/plan/preview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Phase Plan Preview */
+        post: operations["managed_phase_plan_preview"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/managed/phases/{phase_id}/plan": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Phase Plan */
+        post: operations["managed_phase_plan"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/managed/metrics/summary": {
         parameters: {
             query?: never;
@@ -4239,6 +4273,71 @@ export interface components {
             created_at: string;
             /** Finished At */
             finished_at: string | null;
+        };
+        /** PhasePlanCreate */
+        PhasePlanCreate: {
+            /** Next Steps */
+            next_steps?: string | null;
+            plan_proposal?: components["schemas"]["PlanProposalRef"] | null;
+            /** Preview Sha256 */
+            preview_sha256: string;
+            /** Resume Operation Id */
+            resume_operation_id?: string | null;
+            /** Reason */
+            reason: string;
+            /**
+             * Confirmed
+             * @constant
+             */
+            confirmed: true;
+        };
+        /** PhasePlanInput */
+        PhasePlanInput: {
+            /** Next Steps */
+            next_steps?: string | null;
+            plan_proposal?: components["schemas"]["PlanProposalRef"] | null;
+        };
+        /** PhasePlanPreviewRead */
+        PhasePlanPreviewRead: {
+            /** Resume Operation Id */
+            resume_operation_id: string | null;
+            /** Preview Sha256 */
+            preview_sha256: string;
+            /**
+             * Operation
+             * @enum {string}
+             */
+            operation: "document_edit" | "phase_transition";
+            /** Head */
+            head: string;
+            /** Fingerprint */
+            fingerprint: string;
+            /** Tree */
+            tree: string;
+            /** Index Tree */
+            index_tree: string;
+            /** Documents */
+            documents: components["schemas"]["DocumentPreviewEntry"][];
+            /** Mechanical */
+            mechanical: {
+                [key: string]: string;
+            }[];
+            /** Diff */
+            diff: string;
+            /**
+             * Source
+             * @enum {string}
+             */
+            source: "content" | "worktree";
+            /**
+             * Regenerated
+             * @default []
+             */
+            regenerated: components["schemas"]["RegeneratedDocumentRead"][];
+            /** Phase Plan */
+            phase_plan: {
+                [key: string]: unknown;
+            };
         };
         /** PhaseQuestionCreate */
         PhaseQuestionCreate: {
@@ -9562,7 +9661,9 @@ export interface operations {
     managed_phase_abandon: {
         parameters: {
             query?: never;
-            header?: {
+            header: {
+                /** @description Misma clave y misma acción devuelven el mismo job. */
+                "Idempotency-Key": string;
                 /** @description Obligatoria con valor 1 en mutaciones (protección CSRF). */
                 "x-harness-local"?: string | null;
             };
@@ -10286,6 +10387,138 @@ export interface operations {
         requestBody: {
             content: {
                 "application/json": components["schemas"]["PhaseTransitionCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ManagedJobRead"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+        };
+    };
+    managed_phase_plan_preview: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Obligatoria con valor 1 en mutaciones (protección CSRF). */
+                "x-harness-local"?: string | null;
+            };
+            path: {
+                phase_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PhasePlanInput"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PhasePlanPreviewRead"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+        };
+    };
+    managed_phase_plan: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Misma clave y misma acción devuelven el mismo job. */
+                "Idempotency-Key": string;
+                /** @description Obligatoria con valor 1 en mutaciones (protección CSRF). */
+                "x-harness-local"?: string | null;
+            };
+            path: {
+                phase_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PhasePlanCreate"];
             };
         };
         responses: {

@@ -46,8 +46,8 @@ casos de uso. El supervisor es el único que lanza procesos y consume la cola; c
 | `core/engine/contracts.py`, `planning.py` | Contrato de tarea, rutas protegidas, planificación determinista desde NEXT_STEPS |
 | `core/engine/workflow.py`, `validation.py`, `review.py`, `acceptance.py`, `junit.py` | Bucle plan → ejecución → validación → revisión → aceptación |
 | `core/engine/commit.py`, `evidence.py`, `serialization.py` | Intención de commit, actualizaciones mecánicas, codec de historial (formatos 1–7) |
-| `core/engine/phases.py` | Definición de fase, check READY, cierre, tags, enmiendas |
-| `core/engine/documents.py`, `document_ops.py`, `document_export.py` | Contrato documental unificado (D088), plantilla, bloques gestionados, transición, edición y exportación |
+| `core/engine/phases.py`, `storage/closure.py`, `storage/phase_plan.py` | Check READY, cierre y archivo unificados, tags, abandono y plan posterior confirmado (D091) |
+| `core/engine/documents.py`, `document_ops.py`, `document_export.py` | Contrato documental unificado (D088), plantilla, bloques gestionados, archivo, edición, exportación y conciliación de transiciones antiguas |
 | `core/engine/definition.py`, `bootstrap.py`, `bootstrap_discovery.py` | Definición conversacional (v2) y ejecución del bootstrap D037; el descubrimiento v1 solo concilia runs registrados |
 | `core/engine/chat.py`, `chat_commands.py` | Turnos de chat y gramática de comandos |
 | `core/engine/prompts.py`, `templates/*.md` | Catálogo de prompts versionados y variables |
@@ -173,5 +173,5 @@ Uso real (D051): construir y verificar el wheel (`scripts/build_distribution.py 
 - Las validaciones no guardan su hora; la lectura de un run decodifica su historial completo.
 - Un proyecto `typescript-web` nuevo no tiene `package.json` y el ejecutor no puede crearlo.
 - Dos avisos *low* de KaTeX en Mermaid 11.
-- La estructura de D088 es obligatoria desde P008-T002, pero prompts, definición, protección de rutas, cierre, API y
-  UI siguen nombrando el layout anterior hasta T003–T007 (D089).
+- La estructura de D088 es obligatoria desde P008-T002; rutas y paridad en T003, cierre y archivo unificados en
+  T004. Prompts/definición, adaptación de API/UI e inyección de AGENTS quedan para T005–T007 (D089–D091).

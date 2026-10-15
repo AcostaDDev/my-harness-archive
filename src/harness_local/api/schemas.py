@@ -920,6 +920,23 @@ class PhaseTransitionInput(BaseModel):
         'H6.5: plan propuesto en una conversación phase_planning, en lugar de next_steps.'))
 
 
+class PhasePlanInput(BaseModel):
+    model_config = ConfigDict(extra='forbid', strict=True)
+    next_steps: str | None = Field(default=None, max_length=512 * 1024)
+    plan_proposal: 'PlanProposalRef | None' = None
+
+
+class PhasePlanCreate(PhasePlanInput):
+    preview_sha256: str = Field(pattern=r'^[0-9a-f]{64}$')
+    resume_operation_id: str | None = Field(default=None, max_length=36)
+    reason: str = Field(min_length=1, max_length=2000)
+    confirmed: Literal[True]
+
+
+class PhasePlanPreviewRead(DocumentEditPreviewRead):
+    phase_plan: dict[str, Any]
+
+
 class PhaseTransitionPreviewRead(DocumentOperationPreview):
     expected_version: int
     snapshot: dict[str, Any]

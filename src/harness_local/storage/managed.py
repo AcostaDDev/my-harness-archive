@@ -699,7 +699,7 @@ class SQLiteManagedRepository:
         self._require_mode(claim)
         with self._write() as session:
             _, run = self._owned(session, claim)
-            if run.purpose not in ("document_edit", "phase_transition"):
+            if run.purpose not in ("document_edit", "phase_transition", "phase_close"):
                 raise Conflict("Document intents belong to document operations")
             _operation_module(run).record_intent(self, session, run, intent)
             self._event(session, run, f"{run.purpose}_intent", {

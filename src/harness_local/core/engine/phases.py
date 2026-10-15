@@ -2,9 +2,9 @@
 
 READY se vincula a contenido exacto: definición, HEAD/fingerprint Git limpio, documentos
 adoptados, commits de tareas aceptadas y preguntas. El cierre vuelve a observar ese
-contenido antes de cualquier efecto Git; el único efecto es un tag opcional, ligero
-o anotado según el proyecto (H3.4), creado con compare-and-swap y conciliable.
-Ninguna puerta edita documentos.
+contenido antes de cualquier efecto Git. D088: cierre y archivo en un solo flujo,
+con tag opcional sobre el HEAD evaluado y un commit documental conciliable.
+Los snapshots anteriores conservan el protocolo de cierre que congelaron.
 """
 
 from dataclasses import asdict, replace
@@ -133,7 +133,7 @@ def observe(context: ProjectContext, snapshot: dict, git: PhaseGit):
         reasons.append(f"Phase gates require Git evidence: {exc}")
     if evidence.changed_paths:
         reasons.append("Uncommitted changes in the checkout: " + ", ".join(evidence.changed_paths[:20]))
-    for task in definition["tasks"]:
+    for task in (() if snapshot.get('terminal') == 'ABANDONED' else definition["tasks"]):
         item = snapshot["tasks"].get(task)
         if item is None:
             reasons.append(f"Task {task} has no committed acceptance")
@@ -189,6 +189,15 @@ def check_phase(context: ProjectContext, history: RunHistory, snapshot: dict, ag
     if drift:
         return done(history, outcome("NEEDS_RECONCILIATION",
                                      ["Documents changed since the adopted baseline: " + ", ".join(drift)]))
+    from harness_local.core.engine.documents import BUDGETS, base_section
+    try:
+        state = context.path(context.state_file).read_bytes()
+        base = base_section(state.decode('utf-8')) or ''
+    except (ValueError, OSError, UnicodeError) as exc:
+        return done(history, outcome('FAILED', [f'STATE could not be read: {exc}']))
+    if len(state) > BUDGETS['state'] or len(base.encode('utf-8')) > BUDGETS['base']:
+        return done(history, outcome("NEEDS_RECONCILIATION", [
+            "Compact STATE (24 KiB) and its accumulated baseline (12 KiB) before checking the phase"]))
     if reasons:
         return done(history, outcome("NOT_READY", reasons))
     bound = binding(snapshot, evidence, documents)
@@ -238,26 +247,51 @@ def check_phase(context: ProjectContext, history: RunHistory, snapshot: dict, ag
 
 def close_phase(context: ProjectContext, history: RunHistory, snapshot: dict, git: PhaseGit,
                 journal, now=None) -> tuple[RunHistory, dict]:
-    """Reobserva el contenido READY y solo entonces crea el tag declarado (intención antes del efecto)."""
+    """Reobserva READY; sella, etiqueta y archiva. Una intención existente solo se concilia."""
     ready = snapshot["ready"]
     done = replace(history, status="completed", stop=None)
-    if not snapshot["authorization"]["usable"]:
+    closure = snapshot.get('closure')
+    continuing = closure and closure.get('commit_intent')
+    if not continuing and not snapshot["authorization"]["usable"]:
         return done, {"status": "EXPIRED", "reasons": ["Close authorization expired before the job ran"]}
     journal.checkpoint(history, "phase")
-    evidence, documents, drift, reasons = observe(context, snapshot, git)
-    current = binding(snapshot, evidence, documents)
-    if drift:
-        reasons.append("Documents changed since READY: " + ", ".join(drift))
-    changed = sorted(key for key in current if current[key] != ready["binding"].get(key))
-    if changed:
-        reasons.append("READY evidence is stale: " + ", ".join(changed) + " changed")
-    if reasons:
-        return done, {"status": "STALE", "reasons": reasons, "observed_sha256": digest(current)}
+    if not continuing:
+        evidence, documents, drift, reasons = observe(context, snapshot, git)
+        current = binding(snapshot, evidence, documents)
+        if drift:
+            reasons.append("Documents changed since READY: " + ", ".join(drift))
+        changed = sorted(key for key in current if current[key] != ready["binding"].get(key))
+        if changed:
+            reasons.append("READY evidence is stale: " + ", ".join(changed) + " changed")
+        if reasons:
+            return done, {"status": "STALE", "reasons": reasons, "observed_sha256": digest(current)}
+    if closure:
+        from harness_local.core.engine.document_ops import seal_operation, BaseChanged
+        try:
+            sealed = seal_operation(context, history, closure, git, journal, now,
+                                    label=f"archive {snapshot['definition']['code']}")
+        except BaseChanged as exc:
+            return done, {'status': 'STALE', 'reasons': [str(exc)]}
     tag = None
-    if snapshot["definition"]["tag"] is not None:
-        intent = tag_intent(snapshot, git, context, now)
-        journal.tag_intent(intent)
+    if snapshot["definition"]["tag"] is not None and snapshot.get('terminal', 'CLOSED') == 'CLOSED':
+        intent = snapshot.get('tag_intent') or tag_intent(snapshot, git, context, now)
+        if not snapshot.get('tag_intent'):
+            journal.tag_intent(intent)
         tag = git.tag(context, intent)
         if tag["status"] == "conflict":
             return done, {"status": "FAILED", "reasons": [tag["diagnostic"]], "tag": tag}
-    return done, {"status": "CLOSED", "reasons": [], "tag": tag, "binding_sha256": ready["binding_sha256"]}
+    result = {'status': snapshot.get('terminal', 'CLOSED'), 'reasons': [], 'tag': tag,
+              'binding_sha256': ready['binding_sha256']}
+    if closure:
+        outcome = git.execute_documents(context, sealed, closure['preview']['documents'])
+        if outcome.status == 'invalidated':
+            return done, {'status': 'STALE', 'reasons': [outcome.diagnostic], 'tag': tag}
+        result.update(commit=outcome.commit, tree=outcome.tree, archive=closure['preview']['archive'],
+                      reconciled=outcome.status == 'reconciled')
+        from harness_local.core.engine.documents import require_layout
+        work = context.path(require_layout(context).phase_dir)
+        if work.exists():
+            for folder in sorted(work.rglob('*'), key=lambda item: len(item.parts), reverse=True):
+                if folder.is_dir() and not folder.is_symlink():
+                    folder.rmdir()
+    return done, result
