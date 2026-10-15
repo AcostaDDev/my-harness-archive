@@ -2,8 +2,8 @@
 
 Proyecto nuevo en una carpeta vacía con el contrato documental unificado (D072, D075, D082, D088). Es la única vía de
 creación: la v1 (formulario H4.2, plantilla `project-foundation` y descubrimiento de un turno) se rechaza con
-diagnóstico (D089). El agente nunca escribe: el harness aplica borradores confirmados con CAS y el commit raíz sigue
-el bootstrap D037.
+diagnóstico en el motor (D089); sus endpoints y Bootstrap.tsx se retiraron de API/UI en T006 (D093). El agente nunca
+escribe: el harness aplica borradores confirmados con CAS y el commit raíz sigue el bootstrap D037.
 
 ```mermaid
 sequenceDiagram
@@ -46,7 +46,6 @@ archivos individuales de decisiones son borradores de definición.
 
 ## Cambios previstos en P008 (D088, sin implementar)
 
-- Retirada de `Bootstrap.tsx` y de los endpoints v1 (T006).
 - Un repositorio con contenido entra por los flujos de importación A o B (T009–T015).
 
 ## Fuente en el código

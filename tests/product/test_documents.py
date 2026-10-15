@@ -780,7 +780,7 @@ def test_documents_status_reports_drift_changes_warnings_and_archive(v2):
     assert pid
 
 
-def test_http_documents_edit_and_transition(v2, tmp_path):
+def test_http_documents_edit_without_retired_transition(v2, tmp_path):
     from harness_local.services.managed_runtime import ManagedConfig, ManagedProject
     pid = v2.create_v2()
     v2.accept()
@@ -810,22 +810,14 @@ def test_http_documents_edit_and_transition(v2, tmp_path):
         v2.close(pid)
         phase = http.get(f'/api/managed/phases/{pid}').json()
         assert 'transition' not in phase['actions']  # solo se anuncia la recuperación de intenciones antiguas
-        preview = http.post(f'/api/managed/phases/{pid}/transition/preview', json={'next_steps': PLAN_P002})
-        assert preview.status_code == 200, preview.text
-        view = preview.json()
-        create = {'expected_version': view['expected_version'], 'next_steps': PLAN_P002,
-                  'preview_sha256': view['preview_sha256'], 'resume_operation_id': None,
-                  'reason': 'HTTP transition', 'confirmed': True}
-        assert http.post(f'/api/managed/phases/{pid}/transition', json={**create, 'preview_sha256': '0' * 64},
-                         headers={'Idempotency-Key': 'bad-hash'}).status_code == 409
-        queued = http.post(f'/api/managed/phases/{pid}/transition', json=create,
-                           headers={'Idempotency-Key': 'http-transition'})
-        assert queued.status_code == 202, queued.text
-        v2.run()
-        assert [item['code'] for item in http.get('/api/managed/projects/synthetic/phases').json()] == ['P001', 'P002']
-        assert 'transition' not in http.get(f'/api/managed/phases/{pid}').json()['actions']
+        assert http.post(f'/api/managed/phases/{pid}/transition/preview', json={'next_steps': PLAN_P002}).status_code == 404
+        assert http.post(f'/api/managed/phases/{pid}/transition', json={},
+                         headers={'Idempotency-Key': 'retired'}).status_code == 404
         schema = http.app.openapi()['paths']
-        assert {'/api/managed/projects/{project_id}/documents', '/api/managed/phases/{phase_id}/transition'} <= set(schema)
+        assert '/api/managed/projects/{project_id}/documents' in schema
+        assert not any('/transition' in path for path in schema)
+        assert not any('/bootstrap/' in path for path in schema)
+        assert set(schema['/api/managed/projects/{project_id}/bootstrap']) == {'get'}
 
 
 def test_v1_projects_keep_their_behavior(repository, tmp_path):  # noqa: F811

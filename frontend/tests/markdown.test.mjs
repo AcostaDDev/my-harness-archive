@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { blockBody, classify, renderMarkdown, resolvePath, splitBlocks } from '../src/markdown.ts';
+import { blockBody, decisionHref, classify, renderMarkdown, resolvePath, splitBlocks } from '../src/markdown.ts';
 
 const ctx = { project: 'mi-web', path: 'docs/STATE.md' };
 const render = source => renderMarkdown(source, ctx).html;
@@ -82,11 +82,11 @@ test('blocked links keep their text but never navigate', () => {
 });
 
 test('relative Markdown links open in the viewer and keep their anchor', () => {
-  const html = render('[a](../README.md#Primeros-pasos) [b](decisions/D001-usar-git.md) [c](/docs/ROADMAP.md) [d](decisions/) [e](#Base-Acumulada)');
+  const html = render('[a](../README.md#Primeros-pasos) [b](DECISIONS.md#d001-usar-git) [c](/docs/ROADMAP.md) [d](flows/) [e](#Base-Acumulada)');
   assert.match(html, /href="\/projects\/mi-web\/docs\/README.md#doc-primeros-pasos" data-internal="true"/);
-  assert.match(html, /href="\/projects\/mi-web\/docs\/docs\/decisions\/D001-usar-git.md" data-internal="true"/);
+  assert.match(html, /href="\/projects\/mi-web\/docs\/docs\/DECISIONS.md#doc-d001-usar-git" data-internal="true"/);
   assert.match(html, /href="\/projects\/mi-web\/docs\/docs\/ROADMAP.md" data-internal="true"/);
-  assert.match(html, /href="\/projects\/mi-web\/docs\/docs\/decisions\/README.md" data-internal="true"/);
+  assert.match(html, /href="\/projects\/mi-web\/docs\/docs\/flows\/README.md" data-internal="true"/);
   assert.match(html, /href="#doc-base-acumulada"/);
 });
 
@@ -146,9 +146,18 @@ test('malformed or unknown markers are reported and the text stays prose', () =>
 
 test('paths resolve inside the checkout only', () => {
   assert.equal(resolvePath('docs/STATE.md', '../README.md'), 'README.md');
-  assert.equal(resolvePath('docs/STATE.md', './decisions/./D001.md'), 'docs/decisions/D001.md');
+  assert.equal(resolvePath('docs/STATE.md', './flows/./tareas.md'), 'docs/flows/tareas.md');
   assert.equal(resolvePath('README.md', '../x.md'), undefined);
   assert.equal(resolvePath('docs/a/b.md', '/docs/c.md'), 'docs/c.md');
   assert.deepEqual(classify('%E0%A4%A.md', ctx), { kind: 'blocked', reason: 'Ruta mal codificada' });
   assert.equal(classify('mailto:a@b.c', ctx).kind, 'blocked');
+});
+
+// El enlace del índice y el encabezado renderizado deben coincidir, también con acentos y Markdown.
+test('decision index links to the heading inside the single register', () => {
+  const title = 'Persistencia con **SQLite** y réplica';
+  const target = decisionHref('mi web', 'manual', 'D093', title);
+  assert.equal(target, '/projects/mi%20web/docs/manual/DECISIONS.md#doc-d093-persistencia-con-sqlite-y-replica');
+  const { html } = renderMarkdown(`## D093 — ${title}\n\nEstado: aceptada.`, { project: 'mi web', path: 'manual/DECISIONS.md' });
+  assert.ok(html.includes(`id="${target.split('#')[1]}"`));
 });

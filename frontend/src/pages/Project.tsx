@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import { Bootstrap } from "../Bootstrap";
 import { managed, managedApi } from "../managed-api";
 import type { S } from "../managed-api";
 import { Link } from "../navigation";
@@ -14,7 +13,7 @@ const ACTIVATION: Record<S["ActivationRead"]["status"], string> = {
 };
 
 export function ProjectPage() {
-  const { project, busy, refresh, operate, send } = useWorkspace();
+  const { project, refresh } = useWorkspace();
   const [offset, setOffset] = useState(0);
   const detail = usePoll<S["ManagedProjectRead"]>(`/projects/${project}`, 10000, refresh);
   const mode = usePoll<S["ModeRead"]>(`/projects/${project}/mode`, 3000, refresh);
@@ -51,7 +50,6 @@ export function ProjectPage() {
     </section>
 
     {detail.data?.documents === "v2" ? <Creation /> : <TaskForm />}
-    {detail.data && detail.data.documents !== "v2" && <Bootstrap project={project} busy={busy} refresh={refresh} operate={operate} send={send} />}
     <Migration project={project} mode={mode.data} />
   </>;
 }

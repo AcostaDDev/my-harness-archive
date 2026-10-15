@@ -115,8 +115,9 @@ por su API y los artefactos referenciados; la restauración es de consulta (`que
 ## 7. API, UI y seguridad
 
 - `/api/managed`: proyectos, registro, runs, jobs, intentos, diffs paginados, permisos, fases, documentos, chat,
-  planificación, métricas. `/api/legacy`: observación de solo lectura. Mutaciones con `Idempotency-Key` y versión
-  esperada; 409 con `{code, diagnostic}`; 422 ante contrato inválido.
+  planificación, métricas. Desde T006 no hay endpoints de creación v1 ni transición; el GET de estado de creación
+  acompaña a la definición conversacional y el plan confirmado usa la fase ACTIVE sin tareas. `/api/legacy`:
+  observación de solo lectura. Mutaciones con `Idempotency-Key` y versión esperada; 409 con `{code, diagnostic}`; 422 ante contrato inválido.
 - Rutas de la UI: `/`, `/stats`, `/projects/new`, `/projects/:p` con `setup`, `chat[/:c]`, `docs[/*ruta]`, `phases`,
   `phases/:code`, `phases/:code/plan[/:c]`, `phases/:code/tasks/:task[/runs/:run]`, `stats` y `settings`; `/runs/:id`
   como enlace corto; `/legacy` para la observación.
@@ -177,4 +178,4 @@ Uso real (D051): construir y verificar el wheel (`scripts/build_distribution.py 
 - Un proyecto `typescript-web` nuevo no tiene `package.json` y el ejecutor no puede crearlo.
 - Dos avisos *low* de KaTeX en Mermaid 11.
 - La estructura de D088 es obligatoria desde P008-T002; rutas y paridad en T003, cierre y archivo unificados en
-  T004 y prompts/definición en T005. Adaptación de API/UI e inyección de AGENTS pendientes de T006/T007 (D089–D092).
+  T004, prompts/definición en T005 y API/UI en T006 (D089–D093). Pendiente: inyección de AGENTS en T007.

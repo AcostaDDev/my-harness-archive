@@ -19,7 +19,7 @@ const valid = [
   ['/runs/abc', { name: 'run-short', run: 'abc' }],
   ['/projects/mi-web/docs', { name: 'docs', project: 'mi-web' }],
   ['/projects/mi-web/docs/README.md', { name: 'docs', project: 'mi-web', path: 'README.md' }],
-  ['/projects/mi-web/docs/docs/decisions/D001-usar-git.md', { name: 'docs', project: 'mi-web', path: 'docs/decisions/D001-usar-git.md' }],
+  ['/projects/mi-web/docs/docs/DECISIONS.md', { name: 'docs', project: 'mi-web', path: 'docs/DECISIONS.md' }],
   ['/projects/mi-web/setup', { name: 'setup', project: 'mi-web' }],
   ['/projects/mi-web/setup/docs/ROADMAP.md', { name: 'setup', project: 'mi-web', path: 'docs/ROADMAP.md' }],
   ['/projects/mi-web/phases/P001/plan', { name: 'plan', project: 'mi-web', phase: 'P001' }],
@@ -92,8 +92,8 @@ test('document paths keep each segment exact and never climb out of the checkout
 });
 
 test('creation and phase planning routes (H6.2 E4) keep their trail and refuse ambiguous paths', () => {
-  assert.deepEqual(trail(parse('/projects/p/setup/docs/decisions/D001-x.md')).map(i => [i.label, href(i.to)]), [
-    ['Proyectos', '/'], ['p', '/projects/p'], ['Creación', '/projects/p/setup'], ['D001-x.md', '/projects/p/setup/docs/decisions/D001-x.md']]);
+  assert.deepEqual(trail(parse('/projects/p/setup/docs/flows/tareas.md')).map(i => [i.label, href(i.to)]), [
+    ['Proyectos', '/'], ['p', '/projects/p'], ['Creación', '/projects/p/setup'], ['tareas.md', '/projects/p/setup/docs/flows/tareas.md']]);
   assert.deepEqual(trail(parse('/projects/p/phases/P001/plan/c-1')).map(i => [i.label, href(i.to)]), [
     ['Proyectos', '/'], ['p', '/projects/p'], ['Fases', '/projects/p/phases'], ['P001', '/projects/p/phases/P001'],
     ['Planificación', '/projects/p/phases/P001/plan'], ['Conversación', '/projects/p/phases/P001/plan/c-1']]);

@@ -127,4 +127,21 @@ Objetivo y criterios en [ROADMAP](ROADMAP.md); plan en [NEXT_STEPS](NEXT_STEPS.m
   Mermaid válidos y diff revisado. Sin Node/build ni `alembic check` independiente: no cambian UI, OpenAPI ni esquema.
   Sin proveedores reales ni smokes. Detalle en el [registro](phase/P008-T005_PROMPTS_DEFINICION.md).
 
-**Siguiente:** P008-T006 (API y UI mínimas), sin iniciar. Este repositorio sigue sin registrarse en el harness.
+**P008-T006 completada** (API y UI mínimas,
+[D093](DECISIONS.md#d093--p008-t006-api-y-ui-del-contrato-unificado)):
+
+- API con clases de instrucciones, diagrama de datos, flujos y trabajo de fase; instrucciones raíz en el árbol y el
+  estado sin cambiar la base adoptada. Índice de decisiones con id, título y estado desde DECISIONS, enlazado a sus
+  encabezados en el visor. OpenAPI y tipos regenerados.
+- Retirados los endpoints de creación v1 y transición, sus esquemas de entrada y Bootstrap.tsx. El GET de estado
+  conserva solo la definición conversacional. Las intenciones históricas siguen en el motor; no se reescriben.
+- UI de cierre y abandono explica el archivo unificado; el plan posterior se confirma por texto o propuesta en la
+  fase ACTIVE vacía, con diff, hash, motivo y clave idempotente. El registro usa siempre el contrato unificado.
+- Verificación: 12 checks ligeros, 73 pruebas Node y build correctos; pytest completo con 1.163 OK y 121 subtests
+  y un fallo de comparación de OpenAPI al regenerarlo durante la suite. Re-ejecutado el archivo de contratos en un
+  proceso nuevo: 10 OK, incluida la igualdad con OpenAPI. Ocho Markdown, 235 enlaces/anclas y tres diagramas válidos.
+  Sin `alembic check` independiente, comprobación visual, proveedores reales ni smokes. Detalle en el
+  [registro](phase/P008-T006_API_UI.md).
+
+**Siguiente:** P008-T007 (instrucciones en el contexto congelado), sin iniciar. Este repositorio sigue sin
+registrarse en el harness.

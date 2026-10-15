@@ -4,7 +4,7 @@ Objetivo y criterios de salida en [ROADMAP](ROADMAP.md#p008--contrato-documental
 Decisión de base: [D088](DECISIONS.md#d088--contrato-documental-unificado-cierre-de-fase-automático-e-importación-de-proyectos-p008).
 Análisis de incongruencias que originó la fase: [docs/phase](phase/P008-T001_MIGRACION_DOCUMENTAL.md).
 
-**Siguiente tarea:** P008-T006. Orden de ejecución: T002 → T007 (motor y contrato), T008 (perfiles, que el usuario
+**Siguiente tarea:** P008-T007. Orden de ejecución: T002 → T007 (motor y contrato), T008 (perfiles, que el usuario
 necesita para su próximo proyecto Django), T009–T012 (Flujo A) y T013–T015 (Flujo B).
 
 ## Restricciones compartidas
@@ -155,6 +155,9 @@ que `execute-task` para que las correcciones las conserven.
 ## P008-T006 — API y UI mínimas
 
 **Objetivo:** Que la API y la UI dejen de depender de rutas y conceptos retirados, sin rediseño visual.
+**Estado:** completada el 2026-10-15 ([D093](DECISIONS.md#d093--p008-t006-api-y-ui-del-contrato-unificado)).
+El estado de creación conserva solo su GET; las escrituras v1 y los endpoints de transición se retiran. El plan
+posterior usa la fase ACTIVE sin tareas de T004, por texto o propuesta confirmada.
 **Alcance:**
 - Esquemas: carpetas `flows/` y `phase/`, índice de decisiones desde DECISIONS, clases de documento para instrucciones,
   diagramas, flujos y trabajo de fase; acción de cierre unificada; sin endpoints de creación v1 ni de transición.

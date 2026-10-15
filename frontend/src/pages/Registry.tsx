@@ -15,7 +15,7 @@ type Change = Omit<S["RegistryChangeInput"], Defaulted> & Partial<Pick<S["Regist
 type Draft = {
   project_id: string; root: string; composition: string; planning_mode: "agent" | "deterministic";
   executor_mode: "catalog" | "open"; executor_models: string; executor_efforts: string[]; max_revision_cycles: string;
-  tag_kind: "lightweight" | "annotated"; v2: boolean; bootstrap_enabled: boolean; permission_authority: string;
+  tag_kind: "lightweight" | "annotated"; bootstrap_enabled: boolean; permission_authority: string;
 };
 
 const PLANNING = { agent: "La hace el revisor", deterministic: "Determinista, desde NEXT_STEPS" } as const;
@@ -30,7 +30,7 @@ const FIELDS: Record<string, string> = {
 function emptyDraft(options: S["RegistryRead"]): Draft {
   return { project_id: "", root: options.roots.length === 1 ? `${options.roots[0]}/` : "", composition: options.compositions[0]?.name ?? "",
     planning_mode: "agent", executor_mode: "catalog", executor_models: "", executor_efforts: [], max_revision_cycles: "",
-    tag_kind: "lightweight", v2: true, bootstrap_enabled: false, permission_authority: "" };
+    tag_kind: "lightweight", bootstrap_enabled: false, permission_authority: "" };
 }
 
 function draftOf(row: Record<string, unknown>): Draft {
@@ -41,7 +41,7 @@ function draftOf(row: Record<string, unknown>): Draft {
     executor_models: ((policy.executor_models ?? []) as string[]).join("\n"),
     executor_efforts: (policy.executor_efforts ?? []) as string[],
     max_revision_cycles: policy.max_revision_cycles == null ? "" : String(policy.max_revision_cycles),
-    tag_kind: row.tag_kind === "annotated" ? "annotated" : "lightweight", v2: row.documents === "v2",
+    tag_kind: row.tag_kind === "annotated" ? "annotated" : "lightweight",
     bootstrap_enabled: row.bootstrap_enabled === true,
     permission_authority: row.permission_authority ? JSON.stringify(row.permission_authority, null, 2) : "" };
 }
@@ -62,7 +62,7 @@ function changeOf(draft: Draft, action: Change["action"], expected: number): Cha
     policy: { planning_mode: draft.planning_mode, executor_mode: draft.executor_mode,
       executor_models: draft.executor_models.split(/[\n,]/).map(v => v.trim()).filter(Boolean),
       executor_efforts: draft.executor_efforts, ...(cycles ? { max_revision_cycles: Number(cycles) } : {}) },
-    tag_kind: draft.tag_kind, documents: draft.v2 ? "v2" : null, bootstrap_enabled: draft.bootstrap_enabled,
+    tag_kind: draft.tag_kind, documents: "v2", bootstrap_enabled: draft.bootstrap_enabled,
     permission_authority: authority,
   };
 }
@@ -179,8 +179,7 @@ function DraftFields({ draft, options, action, onChange }: {
         <label>Tag al cerrar fases<select value={draft.tag_kind} onChange={e => set("tag_kind", e.target.value as Draft["tag_kind"])}>
           <option value="lightweight">Ligero</option><option value="annotated">Anotado</option></select></label>
       </div>
-      <label className="check"><input type="checkbox" checked={draft.v2} onChange={e => set("v2", e.target.checked)} />
-        <span>Documentos por fase (contrato v2)</span></label>
+      <p className="hint">Todos los proyectos usan el contrato documental unificado: instrucciones, diagramas, flujos y archivo por fase.</p>
       <label className="check"><input type="checkbox" checked={draft.bootstrap_enabled} disabled={!options.bootstrap_enabled}
         onChange={e => set("bootstrap_enabled", e.target.checked)} />
         <span>Permitir crear el proyecto desde cero en esta carpeta{options.bootstrap_enabled ? "" : " (el operador no lo autoriza)"}</span></label>
@@ -239,8 +238,8 @@ export function RegisterPage() {
       : !options.roots.length ? <Empty title="No hay raíces autorizadas"><p>Añade rutas a <code>[registration].roots</code> en el TOML del operador y reinicia el servicio.</p></Empty>
       : <section className="panel" aria-labelledby="register-form"><h2 id="register-form">Alta</h2>
         <RegistryForm options={options} action="register" initial={emptyDraft(options)} expected={0}
-          onApplied={(result, change) => navigate(change.documents === "v2" && change.bootstrap_enabled
-            // Un proyecto v2 con bootstrap se crea en su página (H6.2 E4); los demás van al resumen.
+          onApplied={(result, change) => navigate(change.bootstrap_enabled
+            // Los destinos con creación habilitada abren la definición conversacional.
             ? { name: "setup", project: result.project.id } : { name: "project", project: result.project.id })} />
       </section>}
   </>;

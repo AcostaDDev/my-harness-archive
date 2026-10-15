@@ -103,7 +103,8 @@ layout, la plantilla, el índice de DECISIONS desde sus encabezados y la obligat
 esta estructura; la creación v1 se rechaza). P008-T003 (D090): rutas del ejecutor, paridad de modelos determinista y
 de flujos por el revisor, y propuestas de ADR. P008-T004 (D091): cierre y archivo unificados y plan posterior
 confirmado. P008-T005 (D092): prompts y definición alineados; once documentos obligatorios al aceptar, con
-instrucciones y DDBB-DIAGRAM por plantilla si no hay borrador (D089). Pendientes: API y UI (T006) e inyección de
+instrucciones y DDBB-DIAGRAM por plantilla si no hay borrador (D089). P008-T006 (D093): API y UI con índice de
+decisiones único, instrucciones/diagramas/flujos/trabajo de fase, cierre unificado y planificación posterior; retirados los endpoints de creación v1 y transición. Pendiente: inyección de
 `AGENTS.md` en todos los roles (T007).
 
 | Ruta | Contenido | Autoría |

@@ -170,9 +170,9 @@ export function PhaseDetail({ phase, stale, section }: { phase: S["PhaseRead"]; 
         <Evidence title="Evidencia READY vinculada" value={phase.ready} /></> : <p className="hint">Sin READY vigente.</p>}
       <div className="decision">
         <h3>Cerrar fase</h3>
-        <p className="hint">Autoriza solo este cierre: vuelve a observar el contenido y, si coincide con READY, registra la fase como {PHASE.CLOSED[0].toLowerCase()}{phase.definition.tag ? ` y crea el tag ${tagNames[phase.tag_kind ?? "lightweight"]} ${String(phase.definition.tag)} sin moverlo nunca` : ""}. No edita documentos ni integra ramas.</p>
+        <p className="hint">Autoriza solo este cierre: vuelve a observar el contenido y, si coincide con READY, registra la fase como {PHASE.CLOSED[0].toLowerCase()}{phase.definition.tag ? ` y crea el tag ${tagNames[phase.tag_kind ?? "lightweight"]} ${String(phase.definition.tag)} sin moverlo nunca` : ""}. Archiva STATE, NEXT_STEPS, REVIEW, SUMMARY y docs/phase/ en un commit, renueva los documentos y, si existe, abre la siguiente fase del ROADMAP activa y sin tareas para planificarla después.</p>
         <label>Motivo de la autorización de cierre<input value={closeReason} maxLength={2000} onChange={e => setCloseReason(e.target.value)} /></label>
-        <label className="check"><input type="checkbox" checked={closeConfirmed} onChange={e => setCloseConfirmed(e.target.checked)} />Autorizo cerrar la fase sobre la evidencia READY {phase.ready?.binding_sha256.slice(0, 12) ?? ""}.</label>
+        <label className="check"><input type="checkbox" checked={closeConfirmed} onChange={e => setCloseConfirmed(e.target.checked)} />Autorizo cerrar y archivar la fase sobre la evidencia READY {phase.ready?.binding_sha256.slice(0, 12) ?? ""}.</label>
         <button disabled={!can("close") || !closeConfirmed || !closeReason.trim() || !phase.ready} onClick={() => void operate(() => send(jobRequest(`/phases/${id}/actions`, {
           action: "close", expected_version: v, binding_sha256: phase.ready!.binding_sha256, reason: closeReason, ttl_seconds: 3600, confirmed: true,
         })))}>Cerrar fase</button>
@@ -225,7 +225,7 @@ export function PhaseDetail({ phase, stale, section }: { phase: S["PhaseRead"]; 
       </div>
       <div className="decision decision-danger">
         <h3>Abandonar fase</h3>
-        <p className="hint">Estado terminal y auditado: no edita documentos ni Git, invalida lotes activos y libera el checkout para otra fase.</p>
+        <p className="hint">Archiva la fase en un commit y, si existe, abre la siguiente del ROADMAP sin tareas, igual que el cierre, sin exigir READY ni crear tag. Invalida los lotes activos.</p>
         <label>Motivo del abandono<input value={abandonReason} maxLength={2000} onChange={e => setAbandonReason(e.target.value)} /></label>
         <label className="check"><input type="checkbox" checked={abandonConfirmed} onChange={e => setAbandonConfirmed(e.target.checked)} />Abandono esta fase de forma definitiva.</label>
         <button className="button-danger" disabled={!can("abandon") || !abandonConfirmed || !abandonReason.trim()} onClick={() => void operate(async () => {

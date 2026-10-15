@@ -79,6 +79,9 @@ export type LinkTarget =
 
 const e = encodeURIComponent;
 export const docHref = (project: string, path: string) => `/projects/${e(project)}/docs/${path.split("/").map(e).join("/")}`;
+/** Enlace a una sección del registro único; comparte el slug de los encabezados del visor. */
+export const decisionHref = (project: string, docs: string, id: string, title: string) =>
+  `${docHref(project, `${docs}/DECISIONS.md`)}#doc-${slug(`${id} — ${title}`)}`;
 export const imageSrc = (project: string, path: string) => `/api/managed/projects/${e(project)}/documents/image?path=${e(path)}`;
 
 /** Destino admitido de un enlace o una imagen; nada fuera de esta tabla llega al HTML. */

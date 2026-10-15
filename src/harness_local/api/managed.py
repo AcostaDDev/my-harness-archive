@@ -222,69 +222,26 @@ def managed_router(runtime: ManagedRuntime):
         return _activation(call(runtime.migration.resume_revert, activation_id, reason=body.reason,
                                 expected_version=body.expected_version))
 
-    # --- bootstrap H4.2: solo destinos autorizados por el servidor ---------------------
-    from harness_local.api.schemas import (
-        BootstrapInput, BootstrapCreate, BootstrapPreviewRead, BootstrapStatusRead, BootstrapDiscoveryCreate,
-    )
+    # --- estado de la creación conversacional (D088) ---------------------------------
+    from harness_local.api.schemas import BootstrapStatusRead
     from harness_local.storage.bootstrap import BootstrapRepository
 
     def bootstrap_writer(item):
         if not item.bootstrap_enabled:
-            raise problem(409, 'bootstrap_disabled', 'Este destino no autoriza bootstrap en el servidor.')
+            raise problem(409, 'bootstrap_disabled', 'Este destino no autoriza crear el proyecto en el servidor.')
         return call(runtime.config.commit_factory, item.context, frozen_versions(item))
 
     @router.get('/projects/{project_id}/bootstrap', response_model=BootstrapStatusRead,
                 operation_id='managed_bootstrap_status')
     def bootstrap_status(project_id: str):
+        """Estado de la definición y su commit raíz; la creación v1 ya no se expone."""
         item = project(project_id)
         operation = call(BootstrapRepository(runtime.repository).get, item.context.root)
-        v2 = item.context.documents is not None
-        if item.bootstrap_enabled and not operation:
-            writer = bootstrap_writer(item)
-            # H6.5: en v2 los borradores de la definición no exigen importación; solo `.git` o un repositorio padre.
-            target = call(writer.inspect_definition if v2 else writer.inspect_bootstrap, item.context)
-        else:
-            target = None
-        diagnostic = target.get('diagnostic') if target else None
-        if v2 and target and target['import_required']:
-            diagnostic = 'La carpeta pertenece a un repositorio o contiene .git: usa el flujo de importación.'
+        target = (call(bootstrap_writer(item).inspect_definition, item.context)
+                  if item.bootstrap_enabled and not operation else None)
         return {'enabled': item.bootstrap_enabled, 'import_required': bool(target and target['import_required']),
-                'diagnostic': diagnostic, 'operation': None if v2 else operation,
-                'definition_operation': operation if v2 else None,
-                'discovery': call(DiscoveryRepository(runtime.repository).latest, item.context.root),
-                'discovery_available': item.bootstrap_enabled and not v2 and runtime.config.ports_factory is not None,
-                'discovery_selection': {'model': item.context.policy.planner_model,
-                                        'effort': item.context.policy.planner_effort,
-                                        **({'provider': item.versions['reviewer_provider']}
-                                           if item.versions.get('reviewer_provider') else {})}}
-
-    from harness_local.storage.bootstrap_discovery import DiscoveryRepository
-
-    @router.post('/projects/{project_id}/bootstrap/discovery', response_model=ManagedJobRead, status_code=202,
-                 operation_id='managed_bootstrap_discovery')
-    def bootstrap_discovery(project_id: str, body: BootstrapDiscoveryCreate, idempotency_key: IdempotencyKey):
-        item = project(project_id)
-        if runtime.config.ports_factory is None:
-            raise problem(409, 'ports_unconfigured', 'No hay puertos de agente configurados para proponer requisitos.')
-        job = call(DiscoveryRepository(runtime.repository).submit, item.context, body.brief.model_dump(),
-                   frozen_versions(item), bootstrap_writer(item), key=idempotency_key, confirmed=body.confirmed)
-        return queued(job)
-
-    @router.post('/projects/{project_id}/bootstrap/preview', response_model=BootstrapPreviewRead,
-                 operation_id='managed_bootstrap_preview')
-    def bootstrap_preview(project_id: str, body: BootstrapInput):
-        item = project(project_id)
-        return call(BootstrapRepository(runtime.repository).preview, item.context, body.model_dump(),
-                    frozen_versions(item), bootstrap_writer(item))
-
-    @router.post('/projects/{project_id}/bootstrap', response_model=ManagedJobRead, status_code=202,
-                 operation_id='managed_bootstrap_create')
-    def bootstrap_create(project_id: str, body: BootstrapCreate, idempotency_key: IdempotencyKey):
-        item = project(project_id)
-        job = call(BootstrapRepository(runtime.repository).submit, item.context, body.input.model_dump(),
-                   frozen_versions(item), bootstrap_writer(item), key=idempotency_key,
-                   **body.model_dump(exclude={'input'}))
-        return queued(job)
+                'diagnostic': target.get('diagnostic') if target else None,
+                'definition_operation': operation if item.context.documents is not None else None}
 
     # --- runs, jobs, intentos y eventos ---------------------------------------------
 
@@ -484,12 +441,6 @@ def managed_router(runtime: ManagedRuntime):
         if runtime.config.commit_factory is None:
             actions = [a for a in actions if a not in ("check", "close", "reconcile_task", "abandon")]
         tag_kind = runtime.projects[project_id].tag_kind if project_id is not None else None
-        if (project_id is not None and runtime.projects[project_id].context.documents is not None
-                and runtime.config.commit_factory is not None and detail["status"] in ("CLOSED", "ABANDONED")
-                and runtime.phases.list(root)[-1]["id"] == phase_id
-                and any(op['kind'] == 'transition' and op['status'] == 'INTERRUPTED'
-                        and op['request'].get('commit_intent') for op in detail['operations'])):
-            actions = [*actions, "transition"]  # D072: archivar y abrir la fase siguiente
         return {**detail, "project_id": project_id, "actions": actions, "tag_kind": tag_kind}
 
     def registered_phase(phase_id: str):
@@ -666,18 +617,18 @@ def managed_router(runtime: ManagedRuntime):
                    **body.model_dump(exclude={'expected_version'}))
         return queued(job)
 
-    # --- D072/H6.3: documentos del proyecto y transición de fase ---------------------------------------
+    # --- D088: documentos del proyecto y plan de la fase activa ---------------------------------------
     from harness_local.api.schemas import (
         DocumentEditCreate, DocumentEditInput, DocumentEditPreviewRead, DocumentRead, DocumentsStatusRead,
-        PhaseTransitionCreate, PhaseTransitionInput, PhaseTransitionPreviewRead, DocumentTreeRead,
+        DocumentTreeRead,
     )
     from harness_local.storage.documents import DocumentsRepository
-    from harness_local.storage.transition import TransitionRepository
+    from harness_local.api.documents import document_status, document_tree as project_document_tree
 
     def documents_project(project_id: str):
         item = project(project_id)
         if item.context.documents is None:
-            raise problem(409, 'documents_layout', 'Este proyecto no usa el contrato documental D072 (documents = "v2").')
+            raise problem(409, 'documents_layout', 'Este proyecto requiere importar su documentación al contrato unificado D088.')
         return item
 
     def document_writer(item):
@@ -691,7 +642,7 @@ def managed_router(runtime: ManagedRuntime):
         """Documentos, deriva frente a la base adoptada, cambios locales, avisos, decisiones y archivo."""
         item = documents_project(project_id)
         git = runtime.config.commit_factory(item.context, frozen_versions(item)) if runtime.config.commit_factory else None
-        return call(DocumentsRepository(runtime.repository).status, item.context, git)
+        return call(document_status, DocumentsRepository(runtime.repository), item.context, git)
 
     @router.get('/projects/{project_id}/documents/content', response_model=DocumentRead,
                 operation_id='managed_document')
@@ -701,8 +652,8 @@ def managed_router(runtime: ManagedRuntime):
     @router.get('/projects/{project_id}/documents/tree', response_model=DocumentTreeRead,
                 operation_id='managed_document_tree')
     def document_tree(project_id: str):
-        """Markdown del README y de la documentación; sin enlaces, ocultos ni contenido."""
-        return call(DocumentsRepository(runtime.repository).tree, documents_project(project_id).context)
+        """Instrucciones y Markdown del contrato; sin enlaces simbólicos, ocultos ni contenido."""
+        return call(project_document_tree, DocumentsRepository(runtime.repository), documents_project(project_id).context)
 
     @router.get('/projects/{project_id}/documents/image', response_class=Response,
                 operation_id='managed_document_image',
@@ -736,30 +687,6 @@ def managed_router(runtime: ManagedRuntime):
     def _changes(body):
         # Sin `base_sha256` no hay CAS; con null, el documento no debe existir.
         return None if body.changes is None else [change.model_dump(exclude_unset=True) for change in body.changes]
-
-    def transition_phase(phase_id: str):
-        item, _ = registered_phase(phase_id)
-        if item.context.documents is None:
-            raise problem(409, 'documents_layout', 'La transición requiere el contrato documental D072 (documents = "v2").')
-        return item
-
-    @router.post('/phases/{phase_id}/transition/preview', response_model=PhaseTransitionPreviewRead,
-                 operation_id='managed_phase_transition_preview')
-    def transition_preview(phase_id: str, body: PhaseTransitionInput):
-        """Archivo de la fase terminada, STATE/NEXT_STEPS frescos y fase siguiente del ROADMAP, sin efectos."""
-        item = transition_phase(phase_id)
-        return call(TransitionRepository(runtime.repository).preview, item.context, phase_id, document_writer(item),
-                    body.next_steps, _plan(body))
-
-    @router.post('/phases/{phase_id}/transition', response_model=ManagedJobRead, status_code=202,
-                 operation_id='managed_phase_transition')
-    def transition(phase_id: str, body: PhaseTransitionCreate, idempotency_key: IdempotencyKey):
-        item = transition_phase(phase_id)
-        job = call(TransitionRepository(runtime.repository).submit, item.context, phase_id, body.expected_version,
-                   key=idempotency_key, versions=frozen_versions(item), preview_sha256=body.preview_sha256,
-                   reason=body.reason, confirmed=body.confirmed, git=document_writer(item), next_steps=body.next_steps,
-                   resume_operation_id=body.resume_operation_id, plan_proposal=_plan(body))
-        return queued(job)
 
     def _plan(body):
         return None if body.plan_proposal is None else body.plan_proposal.model_dump()
@@ -937,7 +864,7 @@ def managed_router(runtime: ManagedRuntime):
         item = project(project_id)
         if item.context.documents is None:
             raise problem(409, 'documents_layout', 'Las conversaciones de definición y planificación requieren '
-                                                  'el contrato documental D072 (documents = "v2").')
+                                                  'el contrato documental unificado D088.')
         return item
 
     def conversation_of(item, conversation_id: str):
@@ -965,7 +892,7 @@ def managed_router(runtime: ManagedRuntime):
     @router.post('/projects/{project_id}/planning', response_model=PlanningConversationRead, status_code=201,
                  operation_id='managed_planning_create')
     def planning_create(project_id: str, body: PlanningConversationCreate, idempotency_key: IdempotencyKey):
-        """Definición (brief Markdown, destino vacío o con borradores) o planificación de la fase siguiente. Misma
+        """Definición (brief Markdown, destino vacío o con borradores) o planificación de la fase activa sin tareas. Misma
         clave y misma petición devuelven la misma conversación."""
         item = planning_project(project_id)
         writer = definition_writer(item) if body.kind == 'definition' else None

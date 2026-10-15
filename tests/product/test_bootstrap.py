@@ -359,8 +359,8 @@ def test_modified_partial_file_is_preserved_after_recovery(world, monkeypatch):
     assert path.read_bytes() == b'foreign content'
 
 
-def test_http_v1_preview_is_refused_and_definition_creation_reloads(migrated_database, tmp_path):
-    """HTTP: el formulario v1 se rechaza (422) y la aceptación de la definición sobrevive a un reinicio."""
+def test_http_v1_routes_are_removed_and_definition_creation_reloads(migrated_database, tmp_path):
+    """HTTP: el formulario v1 ya no tiene rutas y la aceptación de la definición sobrevive a un reinicio."""
     from test_definition import BRIEF, answer
     root = tmp_path / 'http-empty'
     root.mkdir()
@@ -374,12 +374,13 @@ def test_http_v1_preview_is_refused_and_definition_creation_reloads(migrated_dat
     path = base + '/bootstrap'
     with client(url, tmp_path, config) as http:
         state = http.get(path).json()
-        assert state['enabled'] and not state['discovery_available']
+        assert state['enabled'] and set(state) == {'enabled', 'import_required', 'diagnostic', 'definition_operation'}
         refused = http.post(path + '/preview', json=DATA)
-        assert refused.status_code == 422 and not list(root.iterdir())
+        assert refused.status_code == 404 and not list(root.iterdir())
         discovery = http.post(path + '/discovery', json={'brief': DATA['brief'], 'confirmed': True},
                               headers={'Idempotency-Key': 'discovery'})
-        assert discovery.status_code == 422 and 'D088' in discovery.text
+        assert discovery.status_code == 404
+        assert http.post(path, json=DATA, headers={'Idempotency-Key': 'v1'}).status_code == 405
         cid = http.post(base + '/planning', json={'kind': 'definition', 'title': 'Sintético', 'brief': BRIEF},
                         headers={'Idempotency-Key': 'definition'}).json()['id']
         http.post(base + f'/planning/{cid}/messages', json={'expected_version': 0, 'text': 'Propón'},
@@ -420,12 +421,12 @@ def test_http_guard_and_server_authorized_destination(migrated_database, tmp_pat
     with client(migrated_database[0], tmp_path, config) as http:
         path = '/api/managed/projects/existing/bootstrap'
         assert http.get(path).json()['enabled'] is False
-        assert http.post(path + '/preview', json=DATA).status_code == 409
-        assert http.post(path + '/preview', json={**DATA, 'root': '/arbitrary'}).status_code == 422
-        assert http.post('/api/managed/projects/unknown/bootstrap/preview', json=DATA,
+        assert http.post(path + '/preview', json=DATA).status_code == 404
+        assert http.post(path + '/preview', json={**DATA, 'root': '/arbitrary'}).status_code == 404
+        assert http.post('/api/managed/projects/existing/planning', json={},
                          headers={'X-Harness-Local': ''}).status_code == 403
         assert http.get(path, headers={'Host': 'foreign.test'}).status_code == 403
-        assert http.post(path + '/preview', json=DATA, headers={'Origin': 'https://foreign.test'}).status_code == 403
+        assert http.post('/api/managed/projects/existing/planning', json={}, headers={'Origin': 'https://foreign.test'}).status_code == 403
     assert not list(root.iterdir())
 
 

@@ -38,7 +38,7 @@ export function SettingsPage() {
         <p className="hint">{p.source === "registry" ? `Registrado desde la interfaz; versión ${p.registry_version} del registro.` : "Declarado en el TOML del operador; no se edita desde la interfaz."}</p>
         <Fields items={[
           ["Perfil", p.profile],
-          ["Documentos", p.documents === "v2" ? "Por fase (contrato v2)" : "Contrato anterior"],
+          ["Documentos", p.documents === "v2" ? "Contrato unificado" : "Contrato anterior"],
           ["Tag al cerrar fases", p.tag_kind === "annotated" ? "Anotado" : "Ligero"],
           ["Bootstrap", p.bootstrap_enabled ? "Permitido en este destino" : "No"],
         ]} />

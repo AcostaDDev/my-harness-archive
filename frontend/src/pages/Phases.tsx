@@ -6,7 +6,7 @@ import { Empty, Loading, PageHeader, Pagination, PhaseRail, Stale, Status, usePo
 import { useWorkspace } from "../workspace";
 import { TaskForm } from "./shared";
 
-const TransitionPanel = lazy(() => import("./Planning").then(module => ({ default: module.TransitionPanel })));
+const PhasePlanPanel = lazy(() => import("./Planning").then(module => ({ default: module.PhasePlanPanel })));
 
 export function PhaseListPage() {
   const { project, refresh } = useWorkspace();
@@ -81,9 +81,9 @@ export function PhasePage({ code }: { code: string }) {
       <Pagination offset={offset} next={tasks.data?.next_offset} onChange={setOffset} label="Páginas de tareas" />
     </section>
     {(open || undefinedPhase) && <TaskForm phase={code} title="Encolar tarea en esta fase" />}
-    {data && v2 && following !== undefined && (["CLOSED", "ABANDONED"].includes(data.status) || following)
-      && <Suspense fallback={<Loading />}><TransitionPanel phase={data} following={following} /></Suspense>}
-    {data && v2 && !following && !["CLOSED", "ABANDONED"].includes(data.status) && <p className="hint">Al cerrar o abandonar la fase podrás pasar a la siguiente del ROADMAP. Puedes <Link to={{ name: "plan", project, phase: code }}>planificarla ya con el revisor</Link>.</p>}
+    {data && v2 && data.status === "ACTIVE" && !(data.definition.tasks as string[]).length
+      && <Suspense fallback={<Loading />}><PhasePlanPanel key={data.id} phase={data} stale={!!phase.error} /></Suspense>}
+    {data && following && <p className="hint">La fase siguiente es <Link to={{ name: "phase", project, phase: following }}>{following}</Link>; se planifica desde su propia página.</p>}
     {data && <PhaseDetail phase={data} stale={!!phase.error} />}
   </>;
 }

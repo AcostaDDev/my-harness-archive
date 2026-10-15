@@ -189,7 +189,7 @@ class ManagedProjectRead(BaseModel):
     versions: dict[str, str | None]
     tag_kind: Literal["lightweight", "annotated"]
     agents: ProjectAgentsRead
-    documents: Literal["v2"] | None = Field(default=None, description="Contrato documental D072; null: anterior.")
+    documents: Literal["v2"] | None = Field(default=None, description="Contrato documental unificado D088; null solo en lecturas de proyectos anteriores.")
     source: Literal["operator", "registry"] = Field(
         default="operator", description="D076: declarado en el TOML del operador o registrado desde la UI.")
     registry_version: int | None = Field(default=None, description="Versión del registro congelada en sus jobs.")
@@ -581,7 +581,7 @@ class PermissionRequestRead(BaseModel):
 PhaseStatus = Literal['ACTIVE', 'CHECKING', 'READY_TO_CLOSE', 'NEEDS_RECONCILIATION', 'BLOCKED', 'CLOSING', 'CLOSED',
                       'ABANDONED']
 PhaseAction = Literal['check', 'reconcile', 'reconcile_task', 'close', 'question', 'authorize_batch', 'batch_next',
-                      'amend', 'abandon', 'transition']
+                      'amend', 'abandon']
 
 
 class PhaseCreate(BaseModel):
@@ -783,9 +783,12 @@ class DocumentExportCreate(PhaseVersioned):
 # --- D072/H6.3: contrato documental por fase -----------------------------------------------------
 
 
+DocumentKind = Literal['phase', 'product', 'instructions', 'diagram', 'flow', 'phase_work', 'archive', 'other']
+
+
 class DocumentStateRead(BaseModel):
     path: str
-    kind: Literal['phase', 'product']
+    kind: DocumentKind
     exists: bool
     sha256: str | None
     adopted_sha256: str | None
@@ -806,11 +809,8 @@ class DocumentChangeRead(BaseModel):
 
 class DecisionEntryRead(BaseModel):
     id: str
-    file: str
-    title: str | None
+    title: str
     status: str | None
-    date: str | None
-    phase: str | None
 
 
 class ArchivedPhaseRead(BaseModel):
@@ -874,7 +874,7 @@ class RegeneratedDocumentRead(BaseModel):
 
 class DocumentTreeEntryRead(BaseModel):
     path: str
-    kind: Literal['phase', 'product', 'archive', 'other']
+    kind: DocumentKind
     editable: bool
     archived: bool
     bytes: int
@@ -890,7 +890,7 @@ class DocumentTreeRead(BaseModel):
 class DocumentOperationPreview(BaseModel):
     resume_operation_id: str | None
     preview_sha256: str
-    operation: Literal['document_edit', 'phase_transition']
+    operation: Literal['document_edit']
     head: str
     fingerprint: str
     tree: str
@@ -912,14 +912,6 @@ class DocumentEditCreate(DocumentEditInput):
     confirmed: Literal[True]
 
 
-class PhaseTransitionInput(BaseModel):
-    model_config = ConfigDict(extra='forbid', strict=True)
-    next_steps: str | None = Field(default=None, max_length=512 * 1024,
-                                   description='Plan NEXT_STEPS de la fase siguiente del ROADMAP; null si no hay más fases.')
-    plan_proposal: 'PlanProposalRef | None' = Field(default=None, description=(
-        'H6.5: plan propuesto en una conversación phase_planning, en lugar de next_steps.'))
-
-
 class PhasePlanInput(BaseModel):
     model_config = ConfigDict(extra='forbid', strict=True)
     next_steps: str | None = Field(default=None, max_length=512 * 1024)
@@ -935,25 +927,6 @@ class PhasePlanCreate(PhasePlanInput):
 
 class PhasePlanPreviewRead(DocumentEditPreviewRead):
     phase_plan: dict[str, Any]
-
-
-class PhaseTransitionPreviewRead(DocumentOperationPreview):
-    expected_version: int
-    snapshot: dict[str, Any]
-    closed: str
-    archive: str
-    next: dict[str, Any] | None
-    warnings: list[str]
-    plan_origin: dict[str, Any] | None = None
-
-
-class PhaseTransitionCreate(PhaseVersioned):
-    next_steps: str | None = Field(default=None, max_length=512 * 1024)
-    plan_proposal: 'PlanProposalRef | None' = None
-    preview_sha256: str = Field(pattern=r'^[0-9a-f]{64}$')
-    resume_operation_id: str | None = Field(default=None, max_length=36)
-    reason: str = Field(min_length=1, max_length=2000)
-    confirmed: Literal[True]
 
 
 class PhaseRevokeCreate(PhaseVersioned):
@@ -1105,110 +1078,6 @@ class ChatCommandRead(BaseModel):
     preview_sha256: str
 
 
-# --- H4.2: bootstrap guiado ------------------------------------------------------------------
-class BootstrapBrief(BaseModel):
-    model_config = ConfigDict(extra='forbid', strict=True)
-    problem: str = Field(min_length=1, max_length=4000)
-    users: str = Field(min_length=1, max_length=4000)
-    minimum_features: str = Field(min_length=1, max_length=4000)
-    constraints: str = Field(min_length=1, max_length=4000)
-    delivery_goal: str = Field(min_length=1, max_length=4000)
-
-
-class BootstrapDecisions(BaseModel):
-    model_config = ConfigDict(extra='forbid', strict=True)
-    scope: str = Field(min_length=1, max_length=4000)
-    architecture: str = Field(min_length=1, max_length=4000)
-    out_of_scope: str = Field(min_length=1, max_length=4000)
-
-
-class BootstrapInput(BaseModel):
-    model_config = ConfigDict(extra='forbid', strict=True)
-    brief: BootstrapBrief
-    decisions: BootstrapDecisions
-
-
-class BootstrapDocumentRead(BaseModel):
-    path: str
-    content: str
-    sha256: str
-
-
-class BootstrapPreviewRead(BaseModel):
-    template: dict[str, str]
-    input: BootstrapInput
-    context_sha256: str
-    documents: list[BootstrapDocumentRead]
-    phase: dict[str, Any]
-    first_task: dict[str, Any]
-    task_text: str
-    preparation: list[dict[str, Any]]
-    validations: list[dict[str, Any]]
-    policy: dict[str, Any]
-    profile: str
-    versions: dict[str, str | None]
-    target: dict[str, Any]
-    author: dict[str, str]
-    git: dict[str, str]
-    ready: bool
-    preview_sha256: str
-    resume_operation_id: str | None = None
-    expected_version: int | None = None
-
-
-class BootstrapCreate(BaseModel):
-    model_config = ConfigDict(extra='forbid', strict=True)
-    input: BootstrapInput
-    preview_sha256: str = Field(pattern=r'^[0-9a-f]{64}$')
-    confirmed: Literal[True]
-    reason: str = Field(min_length=1, max_length=2000)
-    resume_operation_id: str | None = Field(default=None, max_length=36)
-    expected_version: int | None = Field(default=None, ge=0)
-
-
-class BootstrapOperationRead(BaseModel):
-    id: str
-    root: str
-    run_id: str
-    phase_id: str | None
-    status: Literal['QUEUED', 'COMPLETED', 'INTERRUPTED']
-    preview: BootstrapPreviewRead
-    intent: dict[str, Any]
-    decision: dict[str, Any]
-    result: dict[str, Any] | None
-    created_at: str
-    finished_at: str | None
-    expected_version: int
-    run_status: str
-    first_task_run: dict[str, str] | None
-
-
-class BootstrapDiscoveryCreate(BaseModel):
-    model_config = ConfigDict(extra='forbid', strict=True)
-    brief: BootstrapBrief
-    confirmed: Literal[True]
-
-
-class BootstrapDiscoveryResultRead(BaseModel):
-    summary: str
-    requirements: list[str]
-    alternatives: list[str]
-    pending_decisions: list[str]
-
-
-class BootstrapDiscoveryOutcomeRead(BaseModel):
-    status: Literal['PROPOSED', 'FAILED', 'UNKNOWN']
-    result: BootstrapDiscoveryResultRead | None
-    reason: str | None
-
-
-class BootstrapDiscoveryRead(BaseModel):
-    run_id: str
-    run_status: str
-    brief: BootstrapBrief
-    outcome: BootstrapDiscoveryOutcomeRead | None
-
-
 # --- H6.5: creación y planificación conversacionales -----------------------------------------------
 
 PlanningKind = Literal['definition', 'phase_planning']
@@ -1282,7 +1151,7 @@ class PlanningConversationCreate(BaseModel):
     brief: str | None = Field(default=None, min_length=1, max_length=256 * 1024, description=(
         'Brief Markdown (UTF-8, máximo 256 KiB) de una definición; null en la planificación de fase.'))
     phase_id: str | None = Field(default=None, max_length=36,
-                                 description='Fase más reciente del checkout cuya siguiente se planifica.')
+                                 description='Fase ACTIVE sin tareas que se planifica; se conservan las conversaciones históricas anteriores.')
 
 
 class PlanningConversationSummaryRead(BaseModel):
@@ -1439,12 +1308,8 @@ class BootstrapStatusRead(BaseModel):
     enabled: bool
     import_required: bool
     diagnostic: str | None
-    operation: BootstrapOperationRead | None
-    discovery: BootstrapDiscoveryRead | None
-    discovery_available: bool
-    discovery_selection: dict[str, str]
     definition_operation: DefinitionOperationRead | None = Field(default=None, description=(
-        'H6.5: bootstrap v2 desde la conversación de definición; `operation` queda null en proyectos v2.'))
+        'Creación confirmada desde la conversación de definición, con el commit raíz y P001.'))
 
 
 # --- H6.4: métricas por intento y agregados (D072 §9) -------------------------------------------------
@@ -1818,8 +1683,3 @@ class RegistryPreviewRead(BaseModel):
 class RegistryApplyRead(BaseModel):
     project: RegisteredProjectSummaryRead
     replayed: bool = Field(description='La misma confirmación ya estaba aplicada; no hay otra versión.')
-
-
-# H6.5: referencias adelantadas de la transición a la propuesta de plan.
-PhaseTransitionInput.model_rebuild()
-PhaseTransitionCreate.model_rebuild()

@@ -482,45 +482,13 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Bootstrap Status */
+        /**
+         * Bootstrap Status
+         * @description Estado de la definición y su commit raíz; la creación v1 ya no se expone.
+         */
         get: operations["managed_bootstrap_status"];
         put?: never;
-        /** Bootstrap Create */
-        post: operations["managed_bootstrap_create"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/managed/projects/{project_id}/bootstrap/discovery": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** Bootstrap Discovery */
-        post: operations["managed_bootstrap_discovery"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/managed/projects/{project_id}/bootstrap/preview": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** Bootstrap Preview */
-        post: operations["managed_bootstrap_preview"];
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -1220,7 +1188,7 @@ export interface paths {
         };
         /**
          * Document Tree
-         * @description Markdown del README y de la documentación; sin enlaces, ocultos ni contenido.
+         * @description Instrucciones y Markdown del contrato; sin enlaces simbólicos, ocultos ni contenido.
          */
         get: operations["managed_document_tree"];
         put?: never;
@@ -1282,43 +1250,6 @@ export interface paths {
         put?: never;
         /** Document Edit */
         post: operations["managed_document_edit"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/managed/phases/{phase_id}/transition/preview": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /**
-         * Transition Preview
-         * @description Archivo de la fase terminada, STATE/NEXT_STEPS frescos y fase siguiente del ROADMAP, sin efectos.
-         */
-        post: operations["managed_phase_transition_preview"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/managed/phases/{phase_id}/transition": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** Transition */
-        post: operations["managed_phase_transition"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1604,7 +1535,7 @@ export interface paths {
         put?: never;
         /**
          * Planning Create
-         * @description Definición (brief Markdown, destino vacío o con borradores) o planificación de la fase siguiente. Misma
+         * @description Definición (brief Markdown, destino vacío o con borradores) o planificación de la fase activa sin tareas. Misma
          *     clave y misma petición devuelven la misma conversación.
          */
         post: operations["managed_planning_create"];
@@ -2034,200 +1965,6 @@ export interface components {
             /** Models */
             models: components["schemas"]["ModelUsageRead"][];
         };
-        /** BootstrapBrief */
-        BootstrapBrief: {
-            /** Problem */
-            problem: string;
-            /** Users */
-            users: string;
-            /** Minimum Features */
-            minimum_features: string;
-            /** Constraints */
-            constraints: string;
-            /** Delivery Goal */
-            delivery_goal: string;
-        };
-        /** BootstrapCreate */
-        BootstrapCreate: {
-            input: components["schemas"]["BootstrapInput"];
-            /** Preview Sha256 */
-            preview_sha256: string;
-            /**
-             * Confirmed
-             * @constant
-             */
-            confirmed: true;
-            /** Reason */
-            reason: string;
-            /** Resume Operation Id */
-            resume_operation_id?: string | null;
-            /** Expected Version */
-            expected_version?: number | null;
-        };
-        /** BootstrapDecisions */
-        BootstrapDecisions: {
-            /** Scope */
-            scope: string;
-            /** Architecture */
-            architecture: string;
-            /** Out Of Scope */
-            out_of_scope: string;
-        };
-        /** BootstrapDiscoveryCreate */
-        BootstrapDiscoveryCreate: {
-            brief: components["schemas"]["BootstrapBrief"];
-            /**
-             * Confirmed
-             * @constant
-             */
-            confirmed: true;
-        };
-        /** BootstrapDiscoveryOutcomeRead */
-        BootstrapDiscoveryOutcomeRead: {
-            /**
-             * Status
-             * @enum {string}
-             */
-            status: "PROPOSED" | "FAILED" | "UNKNOWN";
-            result: components["schemas"]["BootstrapDiscoveryResultRead"] | null;
-            /** Reason */
-            reason: string | null;
-        };
-        /** BootstrapDiscoveryRead */
-        BootstrapDiscoveryRead: {
-            /** Run Id */
-            run_id: string;
-            /** Run Status */
-            run_status: string;
-            brief: components["schemas"]["BootstrapBrief"];
-            outcome: components["schemas"]["BootstrapDiscoveryOutcomeRead"] | null;
-        };
-        /** BootstrapDiscoveryResultRead */
-        BootstrapDiscoveryResultRead: {
-            /** Summary */
-            summary: string;
-            /** Requirements */
-            requirements: string[];
-            /** Alternatives */
-            alternatives: string[];
-            /** Pending Decisions */
-            pending_decisions: string[];
-        };
-        /** BootstrapDocumentRead */
-        BootstrapDocumentRead: {
-            /** Path */
-            path: string;
-            /** Content */
-            content: string;
-            /** Sha256 */
-            sha256: string;
-        };
-        /** BootstrapInput */
-        BootstrapInput: {
-            brief: components["schemas"]["BootstrapBrief"];
-            decisions: components["schemas"]["BootstrapDecisions"];
-        };
-        /** BootstrapOperationRead */
-        BootstrapOperationRead: {
-            /** Id */
-            id: string;
-            /** Root */
-            root: string;
-            /** Run Id */
-            run_id: string;
-            /** Phase Id */
-            phase_id: string | null;
-            /**
-             * Status
-             * @enum {string}
-             */
-            status: "QUEUED" | "COMPLETED" | "INTERRUPTED";
-            preview: components["schemas"]["BootstrapPreviewRead"];
-            /** Intent */
-            intent: {
-                [key: string]: unknown;
-            };
-            /** Decision */
-            decision: {
-                [key: string]: unknown;
-            };
-            /** Result */
-            result: {
-                [key: string]: unknown;
-            } | null;
-            /** Created At */
-            created_at: string;
-            /** Finished At */
-            finished_at: string | null;
-            /** Expected Version */
-            expected_version: number;
-            /** Run Status */
-            run_status: string;
-            /** First Task Run */
-            first_task_run: {
-                [key: string]: string;
-            } | null;
-        };
-        /** BootstrapPreviewRead */
-        BootstrapPreviewRead: {
-            /** Template */
-            template: {
-                [key: string]: string;
-            };
-            input: components["schemas"]["BootstrapInput"];
-            /** Context Sha256 */
-            context_sha256: string;
-            /** Documents */
-            documents: components["schemas"]["BootstrapDocumentRead"][];
-            /** Phase */
-            phase: {
-                [key: string]: unknown;
-            };
-            /** First Task */
-            first_task: {
-                [key: string]: unknown;
-            };
-            /** Task Text */
-            task_text: string;
-            /** Preparation */
-            preparation: {
-                [key: string]: unknown;
-            }[];
-            /** Validations */
-            validations: {
-                [key: string]: unknown;
-            }[];
-            /** Policy */
-            policy: {
-                [key: string]: unknown;
-            };
-            /** Profile */
-            profile: string;
-            /** Versions */
-            versions: {
-                [key: string]: string | null;
-            };
-            /** Target */
-            target: {
-                [key: string]: unknown;
-            };
-            /** Author */
-            author: {
-                [key: string]: string;
-            };
-            /** Git */
-            git: {
-                [key: string]: string;
-            };
-            /** Ready */
-            ready: boolean;
-            /** Preview Sha256 */
-            preview_sha256: string;
-            /** Resume Operation Id */
-            resume_operation_id?: string | null;
-            /** Expected Version */
-            expected_version?: number | null;
-        };
         /** BootstrapStatusRead */
         BootstrapStatusRead: {
             /** Enabled */
@@ -2236,15 +1973,7 @@ export interface components {
             import_required: boolean;
             /** Diagnostic */
             diagnostic: string | null;
-            operation: components["schemas"]["BootstrapOperationRead"] | null;
-            discovery: components["schemas"]["BootstrapDiscoveryRead"] | null;
-            /** Discovery Available */
-            discovery_available: boolean;
-            /** Discovery Selection */
-            discovery_selection: {
-                [key: string]: string;
-            };
-            /** @description H6.5: bootstrap v2 desde la conversación de definición; `operation` queda null en proyectos v2. */
+            /** @description Creación confirmada desde la conversación de definición, con el commit raíz y P001. */
             definition_operation?: components["schemas"]["DefinitionOperationRead"] | null;
         };
         /** ChatCommandCreate */
@@ -2590,16 +2319,10 @@ export interface components {
         DecisionEntryRead: {
             /** Id */
             id: string;
-            /** File */
-            file: string;
             /** Title */
-            title: string | null;
+            title: string;
             /** Status */
             status: string | null;
-            /** Date */
-            date: string | null;
-            /** Phase */
-            phase: string | null;
         };
         /** DefinitionAcceptCreate */
         DefinitionAcceptCreate: {
@@ -2823,9 +2546,9 @@ export interface components {
             preview_sha256: string;
             /**
              * Operation
-             * @enum {string}
+             * @constant
              */
-            operation: "document_edit" | "phase_transition";
+            operation: "document_edit";
             /** Head */
             head: string;
             /** Fingerprint */
@@ -2950,7 +2673,7 @@ export interface components {
              * Kind
              * @enum {string}
              */
-            kind: "phase" | "product";
+            kind: "phase" | "product" | "instructions" | "diagram" | "flow" | "phase_work" | "archive" | "other";
             /** Exists */
             exists: boolean;
             /** Sha256 */
@@ -2972,7 +2695,7 @@ export interface components {
              * Kind
              * @enum {string}
              */
-            kind: "phase" | "product" | "archive" | "other";
+            kind: "phase" | "product" | "instructions" | "diagram" | "flow" | "phase_work" | "archive" | "other";
             /** Editable */
             editable: boolean;
             /** Archived */
@@ -3514,7 +3237,7 @@ export interface components {
             agents: components["schemas"]["ProjectAgentsRead"];
             /**
              * Documents
-             * @description Contrato documental D072; null: anterior.
+             * @description Contrato documental unificado D088; null solo en lecturas de proyectos anteriores.
              */
             documents?: "v2" | null;
             /**
@@ -4305,9 +4028,9 @@ export interface components {
             preview_sha256: string;
             /**
              * Operation
-             * @enum {string}
+             * @constant
              */
-            operation: "document_edit" | "phase_transition";
+            operation: "document_edit";
             /** Head */
             head: string;
             /** Fingerprint */
@@ -4421,7 +4144,7 @@ export interface components {
             authorizations: components["schemas"]["PhaseAuthorizationRead"][];
             ready: components["schemas"]["PhaseReadyRead"] | null;
             /** Actions */
-            actions: ("check" | "reconcile" | "reconcile_task" | "close" | "question" | "authorize_batch" | "batch_next" | "amend" | "abandon" | "transition")[];
+            actions: ("check" | "reconcile" | "reconcile_task" | "close" | "question" | "authorize_batch" | "batch_next" | "amend" | "abandon")[];
             /**
              * Successor
              * @description Código de la fase posterior del checkout; null si esta es la última. Solo la última exporta su estado y decide sobre sus documentos.
@@ -4506,83 +4229,6 @@ export interface components {
             runs: number;
             latest: components["schemas"]["ManagedRunSummaryRead"] | null;
         };
-        /** PhaseTransitionCreate */
-        PhaseTransitionCreate: {
-            /** Expected Version */
-            expected_version: number;
-            /** Next Steps */
-            next_steps?: string | null;
-            plan_proposal?: components["schemas"]["PlanProposalRef"] | null;
-            /** Preview Sha256 */
-            preview_sha256: string;
-            /** Resume Operation Id */
-            resume_operation_id?: string | null;
-            /** Reason */
-            reason: string;
-            /**
-             * Confirmed
-             * @constant
-             */
-            confirmed: true;
-        };
-        /** PhaseTransitionInput */
-        PhaseTransitionInput: {
-            /**
-             * Next Steps
-             * @description Plan NEXT_STEPS de la fase siguiente del ROADMAP; null si no hay más fases.
-             */
-            next_steps?: string | null;
-            /** @description H6.5: plan propuesto en una conversación phase_planning, en lugar de next_steps. */
-            plan_proposal?: components["schemas"]["PlanProposalRef"] | null;
-        };
-        /** PhaseTransitionPreviewRead */
-        PhaseTransitionPreviewRead: {
-            /** Resume Operation Id */
-            resume_operation_id: string | null;
-            /** Preview Sha256 */
-            preview_sha256: string;
-            /**
-             * Operation
-             * @enum {string}
-             */
-            operation: "document_edit" | "phase_transition";
-            /** Head */
-            head: string;
-            /** Fingerprint */
-            fingerprint: string;
-            /** Tree */
-            tree: string;
-            /** Index Tree */
-            index_tree: string;
-            /** Documents */
-            documents: components["schemas"]["DocumentPreviewEntry"][];
-            /** Mechanical */
-            mechanical: {
-                [key: string]: string;
-            }[];
-            /** Diff */
-            diff: string;
-            /** Expected Version */
-            expected_version: number;
-            /** Snapshot */
-            snapshot: {
-                [key: string]: unknown;
-            };
-            /** Closed */
-            closed: string;
-            /** Archive */
-            archive: string;
-            /** Next */
-            next: {
-                [key: string]: unknown;
-            } | null;
-            /** Warnings */
-            warnings: string[];
-            /** Plan Origin */
-            plan_origin?: {
-                [key: string]: unknown;
-            } | null;
-        };
         /** PlanProposalRef */
         PlanProposalRef: {
             /** Conversation Id */
@@ -4629,7 +4275,7 @@ export interface components {
             brief?: string | null;
             /**
              * Phase Id
-             * @description Fase más reciente del checkout cuya siguiente se planifica.
+             * @description Fase ACTIVE sin tareas que se planifica; se conservan las conversaciones históricas anteriores.
              */
             phase_id?: string | null;
         };
@@ -7091,205 +6737,6 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["BootstrapStatusRead"];
-                };
-            };
-            /** @description Forbidden */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ProblemResponse"];
-                };
-            };
-            /** @description Not Found */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ProblemResponse"];
-                };
-            };
-            /** @description Conflict */
-            409: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ProblemResponse"];
-                };
-            };
-            /** @description Unprocessable Content */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ProblemResponse"];
-                };
-            };
-        };
-    };
-    managed_bootstrap_create: {
-        parameters: {
-            query?: never;
-            header: {
-                /** @description Misma clave y misma acción devuelven el mismo job. */
-                "Idempotency-Key": string;
-                /** @description Obligatoria con valor 1 en mutaciones (protección CSRF). */
-                "x-harness-local"?: string | null;
-            };
-            path: {
-                project_id: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["BootstrapCreate"];
-            };
-        };
-        responses: {
-            /** @description Successful Response */
-            202: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ManagedJobRead"];
-                };
-            };
-            /** @description Forbidden */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ProblemResponse"];
-                };
-            };
-            /** @description Not Found */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ProblemResponse"];
-                };
-            };
-            /** @description Conflict */
-            409: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ProblemResponse"];
-                };
-            };
-            /** @description Unprocessable Content */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ProblemResponse"];
-                };
-            };
-        };
-    };
-    managed_bootstrap_discovery: {
-        parameters: {
-            query?: never;
-            header: {
-                /** @description Misma clave y misma acción devuelven el mismo job. */
-                "Idempotency-Key": string;
-                /** @description Obligatoria con valor 1 en mutaciones (protección CSRF). */
-                "x-harness-local"?: string | null;
-            };
-            path: {
-                project_id: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["BootstrapDiscoveryCreate"];
-            };
-        };
-        responses: {
-            /** @description Successful Response */
-            202: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ManagedJobRead"];
-                };
-            };
-            /** @description Forbidden */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ProblemResponse"];
-                };
-            };
-            /** @description Not Found */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ProblemResponse"];
-                };
-            };
-            /** @description Conflict */
-            409: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ProblemResponse"];
-                };
-            };
-            /** @description Unprocessable Content */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ProblemResponse"];
-                };
-            };
-        };
-    };
-    managed_bootstrap_preview: {
-        parameters: {
-            query?: never;
-            header?: {
-                /** @description Obligatoria con valor 1 en mutaciones (protección CSRF). */
-                "x-harness-local"?: string | null;
-            };
-            path: {
-                project_id: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["BootstrapInput"];
-            };
-        };
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["BootstrapPreviewRead"];
                 };
             };
             /** @description Forbidden */
@@ -10255,138 +9702,6 @@ export interface operations {
         requestBody: {
             content: {
                 "application/json": components["schemas"]["DocumentEditCreate"];
-            };
-        };
-        responses: {
-            /** @description Successful Response */
-            202: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ManagedJobRead"];
-                };
-            };
-            /** @description Forbidden */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ProblemResponse"];
-                };
-            };
-            /** @description Not Found */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ProblemResponse"];
-                };
-            };
-            /** @description Conflict */
-            409: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ProblemResponse"];
-                };
-            };
-            /** @description Unprocessable Content */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ProblemResponse"];
-                };
-            };
-        };
-    };
-    managed_phase_transition_preview: {
-        parameters: {
-            query?: never;
-            header?: {
-                /** @description Obligatoria con valor 1 en mutaciones (protección CSRF). */
-                "x-harness-local"?: string | null;
-            };
-            path: {
-                phase_id: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["PhaseTransitionInput"];
-            };
-        };
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["PhaseTransitionPreviewRead"];
-                };
-            };
-            /** @description Forbidden */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ProblemResponse"];
-                };
-            };
-            /** @description Not Found */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ProblemResponse"];
-                };
-            };
-            /** @description Conflict */
-            409: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ProblemResponse"];
-                };
-            };
-            /** @description Unprocessable Content */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ProblemResponse"];
-                };
-            };
-        };
-    };
-    managed_phase_transition: {
-        parameters: {
-            query?: never;
-            header: {
-                /** @description Misma clave y misma acción devuelven el mismo job. */
-                "Idempotency-Key": string;
-                /** @description Obligatoria con valor 1 en mutaciones (protección CSRF). */
-                "x-harness-local"?: string | null;
-            };
-            path: {
-                phase_id: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["PhaseTransitionCreate"];
             };
         };
         responses: {

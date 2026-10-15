@@ -10,7 +10,7 @@ import { EditProgress, MarkdownView } from "./Docs";
 
 // Creación y planificación conversacionales en la UI (H6.2 E4) sobre la API de H6.5 (D075).
 // El agente nunca escribe: cada borrador se aplica o se edita con CAS sobre el hash mostrado, y la aceptación
-// y la transición se confirman sobre la vista previa exacta. Nada se escribe al teclear ni al recargar.
+// y el plan se confirman sobre la vista previa exacta. Nada se escribe al teclear ni al recargar.
 
 type Conversation = S["PlanningConversationRead"];
 type Summary = S["PlanningConversationSummaryRead"];
@@ -29,11 +29,11 @@ const TURN: Record<Turn["status"], [string, "active" | "ok" | "danger" | "neutra
   UNKNOWN: ["Resultado desconocido, sin reintento", "attention"], REFUSED: ["Rechazado por el modo del checkout", "neutral"],
 };
 const PROPOSAL: Record<Proposal["status"], [string, "active" | "ok" | "danger" | "neutral" | "attention"]> = {
-  PROPOSED: ["Propuesta", "attention"], APPLIED: ["Aplicada", "ok"], ACCEPTED: ["Usada en la transición", "ok"],
+  PROPOSED: ["Propuesta", "attention"], APPLIED: ["Aplicada", "ok"], ACCEPTED: ["Plan confirmado", "ok"],
   DISMISSED: ["Descartada", "neutral"], SUPERSEDED: ["Sustituida", "neutral"],
 };
 const ORIGIN: Record<S["DefinitionDocumentRead"]["origin"], string> = {
-  draft: "Borrador tal cual", "draft+blocks": "Borrador con bloques regenerados", template: "Plantilla v2", archive: "Archivo de la definición",
+  draft: "Borrador tal cual", "draft+blocks": "Borrador con bloques regenerados", template: "Plantilla unificada", archive: "Archivo de la definición",
 };
 
 function Tone({ value }: { value: [string, string] }) {
@@ -65,7 +65,7 @@ function TurnList({ conversation }: { conversation: Conversation }) {
       {turn.status === "QUEUED" && turn.run_status === "RECOVERY_REQUIRED" && <p className="state state-attention">El turno se interrumpió: su resultado es desconocido y no se repite. Confirma el escritor detenido en el <Link to={{ name: "run-short", run: turn.run_id }}>run {turn.run_id.slice(0, 8)}</Link>.</p>}
       {result?.answer && <p className="turn-answer">{result.answer}</p>}
       {!!result?.drafts?.length && <p className="hint">Borradores propuestos: {result.drafts.map(d => <code key={d.path} className="chip">{d.path}</code>)}</p>}
-      {result && "plan" in result && <p className="hint">{result.plan ? "Propone un plan para la fase siguiente." : "Sin plan: el ROADMAP no tiene fase siguiente."}</p>}
+      {result && "plan" in result && <p className="hint">{result.plan ? "Propone un plan para la fase de destino." : "Sin plan propuesto."}</p>}
       {reasons.length > 0 && <p className="state state-error">{reasons.join("; ")}</p>}
       <p className="hint">
         <Link to={{ name: "run-short", run: turn.run_id }}>Run {turn.run_id.slice(0, 8)}</Link> <Status value={turn.run_status} />
@@ -119,7 +119,7 @@ export function SetupPage({ path }: { path?: string }) {
   if (!v2) return <>
     <PageHeader title="Creación del proyecto" />
     <Empty title="Este proyecto usa el contrato documental anterior">
-      <p>La creación conversacional necesita <code>documents = "v2"</code> (D072). Los proyectos v1 se crean desde el <Link to={{ name: "project", project }}>resumen</Link>.</p>
+      <p>La creación conversacional usa el contrato unificado D088. Los proyectos anteriores requieren importación; vuelve al <Link to={{ name: "project", project }}>resumen</Link>.</p>
     </Empty>
   </>;
   if (!status.data || !list.data) return status.error ?? list.error ? <Alert>{status.error ?? list.error}</Alert> : <Loading />;
@@ -145,7 +145,7 @@ function BriefForm({ status }: { status: S["BootstrapStatusRead"] }) {
   const bytes = new TextEncoder().encode(brief).length;
   return <>
     <PageHeader title="Crear el proyecto">
-      <p>Describe qué quieres construir. El revisor propone los documentos de la plantilla v2 en turnos de solo lectura; tú aplicas, editas o descartas cada borrador, y al aceptar el harness hace el commit raíz con la fase P001 activa.</p>
+      <p>Describe qué quieres construir. El revisor propone los documentos de la plantilla unificada en turnos de solo lectura; tú aplicas, editas o descartas cada borrador, y al aceptar el harness hace el commit raíz con la fase P001 activa.</p>
     </PageHeader>
     <Steps current={0} labels={["Brief", "Conversación y borradores", "Aceptación", "Primera tarea"]} />
     {status.import_required && <p role="alert" className="state state-attention">{status.diagnostic}</p>}
@@ -568,7 +568,7 @@ function OperationPanel({ conversation, op }: { conversation: Conversation; op: 
   </section>;
 }
 
-// --- planificación de la fase siguiente: /projects/:p/phases/:code/plan ---------------------------
+// --- planificación de la fase activa: /projects/:p/phases/:code/plan ---------------------------
 
 export function PlanPage({ phase, conversation }: { phase: string; conversation?: string }) {
   const { project, busy, refresh, operate } = useWorkspace();
@@ -579,9 +579,10 @@ export function PlanPage({ phase, conversation }: { phase: string; conversation?
   if (read.missing) return <Empty title={`No hay ninguna fase ${phase} definida`}><p>Vuelve a <Link to={{ name: "phases", project }}>Fases</Link>.</p></Empty>;
   if (!data || !list.data) return read.error ?? list.error ? <Alert>{read.error ?? list.error}</Alert> : <Loading />;
   const mine = list.data.filter(c => c.kind === "phase_planning" && c.phase_id === data.id);
+  const canPlan = data.status === "ACTIVE" && !(data.definition.tasks as string[]).length && !read.error;
   return <>
-    <PageHeader title={`Planificar tras ${phase}`}>
-      <p>El revisor propone el plan NEXT_STEPS de la fase siguiente del ROADMAP en turnos de solo lectura. El plan solo se usa si lo eliges en la <Link to={{ name: "phase", project, phase }}>transición de {phase}</Link>, sobre su vista previa exacta.</p>
+    <PageHeader title={`Planificar ${phase}`}>
+      <p>El revisor propone NEXT_STEPS para la fase activa sin tareas. Se confirma desde la <Link to={{ name: "phase", project, phase }}>página de {phase}</Link>, con el diff y el hash exactos.</p>
     </PageHeader>
     <Stale error={read.error ?? list.error} />
     <div className="split">
@@ -590,24 +591,24 @@ export function PlanPage({ phase, conversation }: { phase: string; conversation?
         {!mine.length ? <p className="hint">Aún no hay ninguna.</p> : <ul className="link-list">{mine.map(c => <li key={c.id}>
           <Link to={{ name: "plan", project, phase, conversation: c.id }} current={conversation === c.id}>
             <span className="link-title">{c.title}</span><span className="link-meta">{c.turns} turnos · {when(c.updated_at)}</span></Link></li>)}</ul>}
-        <form onSubmit={e => { e.preventDefault(); void operate(async () => {
+        <form onSubmit={e => { e.preventDefault(); if (!canPlan) return; void operate(async () => {
           const created = await createOnce<Conversation>(`/projects/${project}/planning`, { kind: "phase_planning", title: title.trim(), brief: null, phase_id: data.id } satisfies S["PlanningConversationCreate"]);
           setTitle(""); navigate({ name: "plan", project, phase, conversation: created.id });
         }); }}>
-          <label>Nueva conversación<input value={title} maxLength={200} onChange={e => setTitle(e.target.value)} placeholder={`Plan de la fase siguiente a ${phase}`} /></label>
-          <button className="button-quiet" disabled={busy || !title.trim()}>Crear conversación</button>
+          <label>Nueva conversación<input value={title} maxLength={200} onChange={e => setTitle(e.target.value)} placeholder={`Plan de ${phase}`} /></label>
+          <button className="button-quiet" disabled={busy || !title.trim() || !canPlan}>Crear conversación</button>
         </form>
-        {!["CLOSED", "ABANDONED"].includes(data.status) && <p className="hint">La fase sigue {data.status === "ACTIVE" ? "activa" : "abierta"}: puedes planificar ya, pero la transición exige cerrarla o abandonarla.</p>}
+        {(data.status !== "ACTIVE" || !!(data.definition.tasks as string[]).length) && <p className="hint">Solo se planifica la fase ACTIVE sin tareas. Las conversaciones anteriores conservan su historial.</p>}
       </nav>
       <div className="split-main">
-        {conversation ? <PlanConversation key={conversation} id={conversation} phase={phase} />
+        {conversation ? <PlanConversation key={conversation} id={conversation} phase={phase} writable={canPlan} />
           : <Empty title="Elige o crea una conversación"><p>Cada conversación conserva sus turnos y sus planes propuestos.</p></Empty>}
       </div>
     </div>
   </>;
 }
 
-function PlanConversation({ id, phase }: { id: string; phase: string }) {
+function PlanConversation({ id, phase, writable }: { id: string; phase: string; writable: boolean }) {
   const { project, refresh } = useWorkspace();
   const base = `/projects/${project}/planning/${id}`;
   const read = usePoll<Conversation>(base, 1500, refresh);
@@ -631,17 +632,17 @@ function PlanConversation({ id, phase }: { id: string; phase: string }) {
       <p>{p.reason}</p>
       <details><summary>Ver el plan</summary><article className="doc-reader"><MarkdownView source={p.content} path="docs/NEXT_STEPS.md" /></article>
         <details><summary>Texto exacto</summary><pre>{p.content}</pre></details></details>
-      {p.status === "PROPOSED" && <p><Link to={{ name: "phase", project, phase }}>Usarlo en la transición de {phase}</Link></p>}
+      {writable && p.status === "PROPOSED" && <p><Link to={{ name: "phase", project, phase }}>Confirmar el plan de {phase}</Link></p>}
       <Dismiss conversation={c} proposal={p} base={base} />
     </div>)}
-    <h3>Nuevo mensaje</h3>
-    <MessageForm conversation={c} path={`${base}/messages`} hint="El turno congela ROADMAP, STATE, SPECIFICATION, ARCHITECTURE, DECISIONS y NEXT_STEPS con su hash, el resumen de la fase y los turnos anteriores. Un plan nuevo sustituye al pendiente." />
+    {writable && <><h3>Nuevo mensaje</h3>
+      <MessageForm conversation={c} path={`${base}/messages`} hint="El turno congela los documentos del contrato unificado con su hash, el resumen de la fase y los turnos anteriores. Un plan nuevo sustituye al pendiente." /></>}
   </section>;
 }
 
-// --- transición de fase (en la página de la fase) ---------------------------------------------------
+// --- plan confirmado de la fase activa (en la página de la fase) ---------------------------------------------------
 
-type Source = { kind: "proposal"; conversation: string; proposal: Proposal; title: string } | { kind: "text" } | { kind: "none" };
+type Source = { kind: "proposal"; conversation: string; proposal: Proposal; title: string } | { kind: "text" };
 
 /** Planes propuestos (PROPOSED) de las conversaciones de planificación de esta fase. */
 function usePlans(project: string, phaseId: string, refresh: number) {
@@ -659,82 +660,69 @@ function usePlans(project: string, phaseId: string, refresh: number) {
   return { plans: list.data ? plans : undefined, error: list.error };
 }
 
-export function TransitionPanel({ phase, following }: { phase: S["PhaseRead"]; following?: string | null }) {
+/** Instala NEXT_STEPS por texto o propuesta en la fase ACTIVE vacía que deja el cierre. */
+export function PhasePlanPanel({ phase, stale = false }: { phase: S["PhaseRead"]; stale?: boolean }) {
   const { project, busy, refresh, operate, send } = useWorkspace();
   const { plans } = usePlans(project, phase.id, refresh);
-  const [choice, setChoice] = useState<string>("");
+  const [choice, setChoice] = useState("");
   const [text, setText] = useState("");
-  const [preview, setPreview] = useState<{ body: S["PhaseTransitionInput"]; shown: S["PhaseTransitionPreviewRead"] }>();
+  const [preview, setPreview] = useState<{ body: S["PhasePlanInput"]; shown: S["PhasePlanPreviewRead"] }>();
   const [reason, setReason] = useState("");
   const [confirmed, setConfirmed] = useState(false);
-  // Run encolado y fase siguiente confirmada: la vista previa se descarta al cambiar la versión de la fase.
-  const [run, setRun] = useState<{ id: string; next: string | null }>();
+  const [run, setRun] = useState<string>();
   const [refused, setRefused] = useState<string>();
-  const transition = [...phase.operations].reverse().find(o => o.kind === "transition");
-  useEffect(() => { setConfirmed(false); }, [preview?.shown.preview_sha256]);
-  useEffect(() => { setPreview(undefined); }, [phase.version, choice, text]);
-  // Sin elección explícita se propone el plan más reciente; nunca se envía nada sin la vista previa confirmada.
   const sources: [string, Source][] = [
     ...(plans ?? []).map(({ conversation, proposal }) => [`plan:${proposal.id}`, { kind: "proposal", conversation: conversation.id, proposal, title: conversation.title }] as [string, Source]),
-    ["text", { kind: "text" }], ["none", { kind: "none" }],
+    ["text", { kind: "text" }],
   ];
   const selected = choice || sources[0][0];
-  const source = sources.find(([k]) => k === selected)?.[1] ?? { kind: "text" };
-  const body: S["PhaseTransitionInput"] = source.kind === "proposal"
+  const source = sources.find(([key]) => key === selected)?.[1];
+  const body: S["PhasePlanInput"] = source?.kind === "proposal"
     ? { next_steps: null, plan_proposal: { conversation_id: source.conversation, proposal_id: source.proposal.id, proposal_sha256: source.proposal.proposal_sha256 } }
-    : source.kind === "text" ? { next_steps: text, plan_proposal: null } : { next_steps: null, plan_proposal: null };
-  const next = preview?.shown.next as { code?: string; objective?: string; exit_criteria?: string[]; tasks?: string[] } | null | undefined;
-  // Ya hay una fase posterior: la transición está hecha (o la fase se definió aparte) y no se repite.
-  if (following && !run) return <section className="panel" id="phase-transition" aria-labelledby="phase-transition-title">
-    <h2 id="phase-transition-title">Transición</h2>
-    <p>{transition?.status === "COMMITTED" ? <>Transición hecha: {phase.code} está archivada y </> : "Después de esta fase, "}la fase <Link className="mono" to={{ name: "phase", project, phase: following }}>{following}</Link> sigue el ciclo.</p>
-  </section>;
-  return <section className="panel" id="phase-transition" aria-labelledby="phase-transition-title">
-    <h2 id="phase-transition-title">Transición a la fase siguiente</h2>
-    <p className="hint">Archiva {phase.code} en <code>archive/</code> por bytes, abre STATE y NEXT_STEPS frescos e instala la fase siguiente del ROADMAP con el plan que elijas, en un único commit del harness.</p>
-    {transition && ["QUEUED", "INTENT", "INTERRUPTED"].includes(transition.status) && !run && <p className="state state-attention">{transition.status === "INTERRUPTED"
-      ? "Hay una transición interrumpida: si registró su intención, la vista previa muestra exactamente la misma para conciliarla con el mismo commit."
-      : <>Hay una transición en curso{transition.run_id ? <>: sigue su <Link to={{ name: "run-short", run: transition.run_id }}>run</Link></> : ""}.</>}</p>}
-    {run ? <EditProgress run={run.id} title="Transición encolada" done={<p>Transición hecha.{run.next ? <> La fase <Link className="mono" to={{ name: "phase", project, phase: run.next }}>{run.next}</Link> está activa.</> : " El ROADMAP no tiene más fases."}</p>} />
-      : <>
-        <fieldset disabled={busy}>
-          <legend>Plan NEXT_STEPS de la fase siguiente</legend>
-          {plans === undefined && <Loading>Buscando planes propuestos…</Loading>}
-          {sources.map(([value, s]) => <label key={value} className="check"><input type="radio" name="transition-source" checked={selected === value} onChange={() => setChoice(value)} />
-            {s.kind === "proposal" ? <span>Plan #{s.proposal.number} de «{s.title}» (turno {s.proposal.turn_number}, <Hash value={s.proposal.proposal_sha256} length={8} />)</span>
-              : s.kind === "text" ? "Escribir el plan aquí" : "Sin fase siguiente: el ROADMAP no tiene más fases y solo se archiva"}</label>)}
-          <p className="hint"><Link to={{ name: "plan", project, phase: phase.code }}>Planificar la fase siguiente con el revisor</Link></p>
-          {source.kind === "text" && <label>Plan (Markdown con tareas <code>## PNNN-TNNN — título</code>)<textarea rows={10} value={text} maxLength={512 * 1024} onChange={e => setText(e.target.value)} /></label>}
-          {source.kind === "proposal" && <details><summary>Ver el plan elegido</summary><article className="doc-reader"><MarkdownView source={source.proposal.content} path="docs/NEXT_STEPS.md" /></article></details>}
-        </fieldset>
-        <button type="button" disabled={busy || (source.kind === "text" && !text.trim())} onClick={() => void operate(async () => {
-          setRefused(undefined); setPreview(undefined);
-          try { setPreview({ body, shown: await managed<S["PhaseTransitionPreviewRead"]>(`/phases/${phase.id}/transition/preview`, body) }); }
-          catch (e) { const t = conflictText(e); if (t) setRefused(t); else throw e; }
-        })}>Revisar la transición</button>
-        {refused && <p role="alert" className="state state-error">{refused}</p>}
-        {preview && <div className="docs-review">
-          <h3>Revisa el commit</h3>
-          {preview.shown.resume_operation_id && <p className="state state-attention">Transición interrumpida ({preview.shown.resume_operation_id.slice(0, 8)}): se muestra y se concilia exactamente la que se confirmó.</p>}
-          {next ? <><p>Fase siguiente <span className="mono strong">{next.code}</span>: {next.objective}</p>
-            {next.exit_criteria && <ul className="checklist">{next.exit_criteria.map(c => <li key={c}>{c}</li>)}</ul>}
-            {next.tasks && <p className="hint">Tareas: {next.tasks.map(t => <code key={t} className="chip">{t}</code>)}</p>}</>
-            : <p>Sin fase siguiente: solo se archiva {phase.code}.</p>}
-          {preview.shown.plan_origin && <p className="hint">Plan de la conversación de planificación, propuesta <Hash value={String(preview.shown.plan_origin.proposal_sha256)} />.</p>}
-          {preview.shown.warnings.length > 0 && <div className="state state-attention"><p className="state-title">Avisos</p><ul>{preview.shown.warnings.map(w => <li key={w}>{w}</li>)}</ul></div>}
-          <ul className="docs-changes">{preview.shown.documents.map(d => <li key={d.path}><code className="path">{d.path}</code> <span className="muted">{d.before_sha256 === null ? "nuevo" : <>de <Hash value={d.before_sha256} length={8} /></>} a <Hash value={d.after_sha256} length={8} /></span></li>)}</ul>
-          <DiffBlock diff={preview.shown.diff} label="Diff de la transición" />
-          <Fields items={[["Base", <Hash value={preview.shown.head} />], ["Vista previa", <Hash value={preview.shown.preview_sha256} />], ["Versión de la fase", String(preview.shown.expected_version)]]} />
-          <label>Motivo<input value={reason} maxLength={2000} onChange={e => setReason(e.target.value)} placeholder="Por qué se pasa de fase con este plan" /></label>
-          <label className="check"><input type="checkbox" checked={confirmed} onChange={e => setConfirmed(e.target.checked)} />He revisado este diff exacto y confirmo archivar {phase.code}{next?.code ? ` y abrir ${next.code}` : ""}.</label>
-          <button type="button" disabled={busy || !confirmed || !reason.trim()} onClick={() => void operate(async () => {
-            const job = await send(jobRequest(`/phases/${phase.id}/transition`, {
-              ...preview.body, expected_version: preview.shown.expected_version, preview_sha256: preview.shown.preview_sha256,
-              resume_operation_id: preview.shown.resume_operation_id ?? null, reason, confirmed: true,
-            } satisfies S["PhaseTransitionCreate"]));
-            setRun({ id: job.run_id, next: next?.code ?? null });
-          })}>Confirmar la transición</button>
-        </div>}
-      </>}
+    : { next_steps: text, plan_proposal: null };
+  const signature = JSON.stringify(body);
+  useEffect(() => { setPreview(undefined); setConfirmed(false); }, [phase.version, signature]);
+  useEffect(() => { setConfirmed(false); }, [preview?.shown.preview_sha256]);
+  const pending = [...phase.operations].reverse().find(op => op.kind === "document_edit"
+    && ["QUEUED", "INTENT", "INTERRUPTED"].includes(op.status)
+    && (op.request.preview as { phase_plan?: unknown } | undefined)?.phase_plan);
+  if (phase.status !== "ACTIVE" || (phase.definition.tasks as string[]).length) return null;
+  return <section className="panel" id="phase-plan" aria-labelledby="phase-plan-title">
+    <h2 id="phase-plan-title">Planificar {phase.code}</h2>
+    <p className="hint">La fase está activa sin tareas. Confirmar el plan escribe NEXT_STEPS, actualiza STATE y crea una nueva versión de la definición en un commit.</p>
+    {pending && !run && <p className="state state-attention">Hay un plan {pending.status === "INTERRUPTED" ? "interrumpido: confirma el escritor detenido en su run y revisa la misma intención para conciliarla" : "en curso"}. {pending.run_id && <Link to={{ name: "run-short", run: pending.run_id }}>Ver run</Link>}.</p>}
+    {run ? <EditProgress run={run} title="Plan encolado" done={<p>Plan confirmado en {phase.code}. Las tareas ya figuran en su definición.</p>} /> : <>
+      <fieldset disabled={busy || stale}>
+        <legend>Plan NEXT_STEPS de {phase.code}</legend>
+        {plans === undefined && <Loading>Buscando planes propuestos…</Loading>}
+        {sources.map(([value, item]) => <label key={value} className="check"><input type="radio" name="plan-source" checked={selected === value} onChange={() => setChoice(value)} />
+          {item.kind === "proposal" ? <span>Plan #{item.proposal.number} de «{item.title}» (turno {item.proposal.turn_number}, <Hash value={item.proposal.proposal_sha256} length={8} />)</span> : "Escribir el plan aquí"}</label>)}
+        <p className="hint"><Link to={{ name: "plan", project, phase: phase.code }}>Planificar {phase.code} con el revisor</Link></p>
+        {source?.kind === "text" && <label>Plan (Markdown con tareas <code>## {phase.code}-TNNN — título</code>)<textarea rows={10} value={text} maxLength={512 * 1024} onChange={e => { setChoice("text"); setText(e.target.value); }} /></label>}
+        {source?.kind === "proposal" && <details><summary>Ver el plan elegido</summary><article className="doc-reader"><MarkdownView source={source.proposal.content} path="docs/NEXT_STEPS.md" /></article></details>}
+      </fieldset>
+      <button type="button" disabled={busy || stale || (!pending && (!source || (source.kind === "text" && !text.trim())))} onClick={() => void operate(async () => {
+        setRefused(undefined); setPreview(undefined);
+        try { setPreview({ body, shown: await managed<S["PhasePlanPreviewRead"]>(`/phases/${phase.id}/plan/preview`, body) }); }
+        catch (error) { const diagnostic = conflictText(error); if (diagnostic) setRefused(diagnostic); else throw error; }
+      })}>Revisar el plan</button>
+      {refused && <p role="alert" className="state state-error">{refused}</p>}
+      {preview && <div className="docs-review">
+        <h3>Revisa el commit del plan</h3>
+        {preview.shown.resume_operation_id && <p className="state state-attention">Se concilia exactamente el plan confirmado y su mismo commit.</p>}
+        <ul className="docs-changes">{preview.shown.documents.map(document => <li key={document.path}><code className="path">{document.path}</code> · <Hash value={document.after_sha256} /></li>)}</ul>
+        <DiffBlock diff={preview.shown.diff} label="Diff del plan" />
+        <Fields items={[["Base", <Hash value={preview.shown.head} />], ["Vista previa", <Hash value={preview.shown.preview_sha256} />]]} />
+        <label>Motivo<input value={reason} maxLength={2000} onChange={e => setReason(e.target.value)} /></label>
+        <label className="check"><input type="checkbox" checked={confirmed} onChange={e => setConfirmed(e.target.checked)} />He revisado este diff exacto y confirmo el plan de {phase.code}.</label>
+        <button type="button" disabled={busy || stale || !confirmed || !reason.trim()} onClick={() => void operate(async () => {
+          const job = await send(jobRequest(`/phases/${phase.id}/plan`, {
+            ...preview.body, preview_sha256: preview.shown.preview_sha256,
+            resume_operation_id: preview.shown.resume_operation_id ?? null, reason, confirmed: true,
+          } satisfies S["PhasePlanCreate"]));
+          setRun(job.run_id);
+        })}>Confirmar el plan y hacer commit</button>
+      </div>}
+    </>}
   </section>;
 }

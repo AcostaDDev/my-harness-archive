@@ -204,3 +204,87 @@ def test_http_tree_image_and_cas_conflict(v2, tmp_path):
         assert http.post(f'{base}/edit/preview', json=bad).status_code == 422
         regen = http.post(f'{base}/edit/preview', json={'source': 'worktree', 'regenerate_blocks': True})
         assert regen.status_code == 409  # checkout limpio: nada que regenerar
+
+
+@pytest.mark.parametrize('docs', ['docs', 'manual'])
+def test_http_unified_document_classes_instructions_and_decision_register(v2, tmp_path, docs):
+    """La API proyecta D088 también con una carpeta documental configurada distinta."""
+    from dataclasses import replace
+    from harness_local.services.managed_runtime import ManagedConfig, ManagedProject
+
+    root = v2.context.root
+    if docs != 'docs':
+        (root / 'docs').rename(root / docs)
+    context = replace(v2.context, state_file=f'{docs}/STATE.md', next_steps_file=f'{docs}/NEXT_STEPS.md')
+    for name in ('AGENTS.md', 'CLAUDE.md', 'GEMINI.md'):
+        (root / name).write_text('# Instrucciones sintéticas\n', encoding='utf-8')
+    for folder in ('flows', 'phase'):
+        (root / docs / folder).mkdir(exist_ok=True)
+        (root / docs / folder / 'tareas.md').write_text('# Tareas sintéticas\n', encoding='utf-8')
+    (root / docs / 'DECISIONS.md').write_text(
+        '# Decisiones\n\n## D007 — Persistencia sintética\n\nEstado: aceptada.\n', encoding='utf-8')
+    git(root, 'add', '-A')
+    git(root, 'commit', '-qm', 'synthetic document contract')
+    before = git(root, 'rev-parse', 'HEAD')
+    configuration = ManagedConfig((ManagedProject('synthetic', context, VERSIONS),),
+                                  commit_factory=v2.ports.writer, supervisor=False)
+    with client(str(v2.repository.engine.url), tmp_path, configuration) as http:
+        base = '/api/managed/projects/synthetic/documents'
+        response = http.get(base)
+        assert response.status_code == 200, response.text
+        status = response.json()
+        assert status['decisions'] == [{'id': 'D007', 'title': 'Persistencia sintética', 'status': 'aceptada.'}]
+        assert [folder['path'] for folder in status['folders']] == [f'{docs}/flows', f'{docs}/phase']
+        documents = {document['path']: document for document in status['documents']}
+        assert documents[f'{docs}/DDBB-DIAGRAM.md']['kind'] == 'diagram'
+        for path in ('AGENTS.md', 'CLAUDE.md', 'GEMINI.md'):
+            assert documents[path]['kind'] == 'instructions' and documents[path]['exists']
+            assert documents[path]['adopted_sha256'] is None and not documents[path]['drift']
+            assert http.get(base + '/content', params={'path': path}).json()['editable']
+        response = http.get(base + '/tree')
+        assert response.status_code == 200, response.text
+        tree = {document['path']: document for document in response.json()['files']}
+        assert tree[f'{docs}/flows/tareas.md']['kind'] == 'flow'
+        assert tree[f'{docs}/phase/tareas.md']['kind'] == 'phase_work'
+        assert tree[f'{docs}/DDBB-DIAGRAM.md']['kind'] == 'diagram'
+        assert tree['AGENTS.md']['kind'] == 'instructions'
+        # Ni lectura ni clasificación siguen enlaces en los archivos raíz de instrucciones.
+        (root / 'CLAUDE.md').unlink()
+        os.symlink(root / 'AGENTS.md', root / 'CLAUDE.md')
+        linked = http.get(base + '/tree').json()
+        assert 'CLAUDE.md' in linked['skipped']
+        assert 'CLAUDE.md' not in {entry['path'] for entry in linked['files']}
+        linked_status = http.get(base).json()
+        assert next(entry for entry in linked_status['documents'] if entry['path'] == 'CLAUDE.md')['error']
+        assert http.get(base + '/content', params={'path': 'CLAUDE.md'}).status_code == 422
+        (root / 'CLAUDE.md').unlink()
+        (root / 'CLAUDE.md').write_text('# Instrucciones sintéticas\n', encoding='utf-8')
+    assert git(root, 'rev-parse', 'HEAD') == before
+    assert git(root, 'status', '--porcelain') == ''
+
+
+@pytest.mark.parametrize('path', ['AGENTS.md', 'CLAUDE.md', 'GEMINI.md'])
+def test_http_instruction_edit_uses_confirmed_diff_and_cas(v2, tmp_path, path):
+    from harness_local.services.managed_runtime import ManagedConfig, ManagedProject
+
+    v2.context.path(path).write_text('# Instrucciones sintéticas\n', encoding='utf-8')
+    git(v2.context.root, 'add', '-A')
+    git(v2.context.root, 'commit', '-qm', 'synthetic instructions')
+    pid = v2.create_v2()
+    configuration = ManagedConfig((ManagedProject('synthetic', v2.context, VERSIONS),),
+                                  ports_factory=v2.ports, commit_factory=v2.ports.writer, supervisor=False)
+    with client(str(v2.repository.engine.url), tmp_path, configuration) as http:
+        base = '/api/managed/projects/synthetic/documents'
+        current = http.get(base + '/content', params={'path': path}).json()
+        body = {'source': 'content', 'changes': [{'path': path, 'content': current['content'] + '\nRegla confirmada.\n',
+                                                'base_sha256': current['sha256']}]}
+        shown = http.post(base + '/edit/preview', json=body)
+        assert shown.status_code == 200, shown.text
+        body.update(preview_sha256=shown.json()['preview_sha256'], confirmed=True, reason='Synthetic instruction edit')
+        queued = http.post(base + '/edit', json=body, headers={'Idempotency-Key': 'instruction-edit'})
+        assert queued.status_code == 202, queued.text
+        v2.run()
+        assert v2.repository.get_run(queued.json()['run_id']).status == 'COMMITTED'
+        assert text(v2, path).endswith('Regla confirmada.\n')
+        assert http.post(base + '/edit/preview', json={'source': 'content', 'changes': body['changes']}).status_code == 409
+        assert v2.get(pid)['documents']['drift'] == []

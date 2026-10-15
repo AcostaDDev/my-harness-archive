@@ -2206,6 +2206,7 @@
     "/api/managed/projects/{project_id}/bootstrap": {
       "get": {
         "summary": "Bootstrap Status",
+        "description": "Estado de la definición y su commit raíz; la creación v1 ya no se expone.",
         "operationId": "managed_bootstrap_status",
         "parameters": [
           {
@@ -2243,321 +2244,6 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/BootstrapStatusRead"
-                }
-              }
-            }
-          },
-          "403": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemResponse"
-                }
-              }
-            },
-            "description": "Forbidden"
-          },
-          "404": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemResponse"
-                }
-              }
-            },
-            "description": "Not Found"
-          },
-          "409": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemResponse"
-                }
-              }
-            },
-            "description": "Conflict"
-          },
-          "422": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemResponse"
-                }
-              }
-            },
-            "description": "Unprocessable Content"
-          }
-        }
-      },
-      "post": {
-        "summary": "Bootstrap Create",
-        "operationId": "managed_bootstrap_create",
-        "parameters": [
-          {
-            "name": "project_id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "title": "Project Id"
-            }
-          },
-          {
-            "name": "Idempotency-Key",
-            "in": "header",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "minLength": 1,
-              "maxLength": 200,
-              "description": "Misma clave y misma acción devuelven el mismo job.",
-              "title": "Idempotency-Key"
-            },
-            "description": "Misma clave y misma acción devuelven el mismo job."
-          },
-          {
-            "name": "x-harness-local",
-            "in": "header",
-            "required": false,
-            "schema": {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "description": "Obligatoria con valor 1 en mutaciones (protección CSRF).",
-              "title": "X-Harness-Local"
-            },
-            "description": "Obligatoria con valor 1 en mutaciones (protección CSRF)."
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/BootstrapCreate"
-              }
-            }
-          }
-        },
-        "responses": {
-          "202": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ManagedJobRead"
-                }
-              }
-            }
-          },
-          "403": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemResponse"
-                }
-              }
-            },
-            "description": "Forbidden"
-          },
-          "404": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemResponse"
-                }
-              }
-            },
-            "description": "Not Found"
-          },
-          "409": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemResponse"
-                }
-              }
-            },
-            "description": "Conflict"
-          },
-          "422": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemResponse"
-                }
-              }
-            },
-            "description": "Unprocessable Content"
-          }
-        }
-      }
-    },
-    "/api/managed/projects/{project_id}/bootstrap/discovery": {
-      "post": {
-        "summary": "Bootstrap Discovery",
-        "operationId": "managed_bootstrap_discovery",
-        "parameters": [
-          {
-            "name": "project_id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "title": "Project Id"
-            }
-          },
-          {
-            "name": "Idempotency-Key",
-            "in": "header",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "minLength": 1,
-              "maxLength": 200,
-              "description": "Misma clave y misma acción devuelven el mismo job.",
-              "title": "Idempotency-Key"
-            },
-            "description": "Misma clave y misma acción devuelven el mismo job."
-          },
-          {
-            "name": "x-harness-local",
-            "in": "header",
-            "required": false,
-            "schema": {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "description": "Obligatoria con valor 1 en mutaciones (protección CSRF).",
-              "title": "X-Harness-Local"
-            },
-            "description": "Obligatoria con valor 1 en mutaciones (protección CSRF)."
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/BootstrapDiscoveryCreate"
-              }
-            }
-          }
-        },
-        "responses": {
-          "202": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ManagedJobRead"
-                }
-              }
-            }
-          },
-          "403": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemResponse"
-                }
-              }
-            },
-            "description": "Forbidden"
-          },
-          "404": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemResponse"
-                }
-              }
-            },
-            "description": "Not Found"
-          },
-          "409": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemResponse"
-                }
-              }
-            },
-            "description": "Conflict"
-          },
-          "422": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemResponse"
-                }
-              }
-            },
-            "description": "Unprocessable Content"
-          }
-        }
-      }
-    },
-    "/api/managed/projects/{project_id}/bootstrap/preview": {
-      "post": {
-        "summary": "Bootstrap Preview",
-        "operationId": "managed_bootstrap_preview",
-        "parameters": [
-          {
-            "name": "project_id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "title": "Project Id"
-            }
-          },
-          {
-            "name": "x-harness-local",
-            "in": "header",
-            "required": false,
-            "schema": {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "description": "Obligatoria con valor 1 en mutaciones (protección CSRF).",
-              "title": "X-Harness-Local"
-            },
-            "description": "Obligatoria con valor 1 en mutaciones (protección CSRF)."
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/BootstrapInput"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/BootstrapPreviewRead"
                 }
               }
             }
@@ -7084,7 +6770,7 @@
     "/api/managed/projects/{project_id}/documents/tree": {
       "get": {
         "summary": "Document Tree",
-        "description": "Markdown del README y de la documentación; sin enlaces, ocultos ni contenido.",
+        "description": "Instrucciones y Markdown del contrato; sin enlaces simbólicos, ocultos ni contenido.",
         "operationId": "managed_document_tree",
         "parameters": [
           {
@@ -7419,214 +7105,6 @@
             "application/json": {
               "schema": {
                 "$ref": "#/components/schemas/DocumentEditCreate"
-              }
-            }
-          }
-        },
-        "responses": {
-          "202": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ManagedJobRead"
-                }
-              }
-            }
-          },
-          "403": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemResponse"
-                }
-              }
-            },
-            "description": "Forbidden"
-          },
-          "404": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemResponse"
-                }
-              }
-            },
-            "description": "Not Found"
-          },
-          "409": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemResponse"
-                }
-              }
-            },
-            "description": "Conflict"
-          },
-          "422": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemResponse"
-                }
-              }
-            },
-            "description": "Unprocessable Content"
-          }
-        }
-      }
-    },
-    "/api/managed/phases/{phase_id}/transition/preview": {
-      "post": {
-        "summary": "Transition Preview",
-        "description": "Archivo de la fase terminada, STATE/NEXT_STEPS frescos y fase siguiente del ROADMAP, sin efectos.",
-        "operationId": "managed_phase_transition_preview",
-        "parameters": [
-          {
-            "name": "phase_id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "title": "Phase Id"
-            }
-          },
-          {
-            "name": "x-harness-local",
-            "in": "header",
-            "required": false,
-            "schema": {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "description": "Obligatoria con valor 1 en mutaciones (protección CSRF).",
-              "title": "X-Harness-Local"
-            },
-            "description": "Obligatoria con valor 1 en mutaciones (protección CSRF)."
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/PhaseTransitionInput"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/PhaseTransitionPreviewRead"
-                }
-              }
-            }
-          },
-          "403": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemResponse"
-                }
-              }
-            },
-            "description": "Forbidden"
-          },
-          "404": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemResponse"
-                }
-              }
-            },
-            "description": "Not Found"
-          },
-          "409": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemResponse"
-                }
-              }
-            },
-            "description": "Conflict"
-          },
-          "422": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemResponse"
-                }
-              }
-            },
-            "description": "Unprocessable Content"
-          }
-        }
-      }
-    },
-    "/api/managed/phases/{phase_id}/transition": {
-      "post": {
-        "summary": "Transition",
-        "operationId": "managed_phase_transition",
-        "parameters": [
-          {
-            "name": "phase_id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "title": "Phase Id"
-            }
-          },
-          {
-            "name": "Idempotency-Key",
-            "in": "header",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "minLength": 1,
-              "maxLength": 200,
-              "description": "Misma clave y misma acción devuelven el mismo job.",
-              "title": "Idempotency-Key"
-            },
-            "description": "Misma clave y misma acción devuelven el mismo job."
-          },
-          {
-            "name": "x-harness-local",
-            "in": "header",
-            "required": false,
-            "schema": {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "description": "Obligatoria con valor 1 en mutaciones (protección CSRF).",
-              "title": "X-Harness-Local"
-            },
-            "description": "Obligatoria con valor 1 en mutaciones (protección CSRF)."
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/PhaseTransitionCreate"
               }
             }
           }
@@ -9743,7 +9221,7 @@
       },
       "post": {
         "summary": "Planning Create",
-        "description": "Definición (brief Markdown, destino vacío o con borradores) o planificación de la fase siguiente. Misma\nclave y misma petición devuelven la misma conversación.",
+        "description": "Definición (brief Markdown, destino vacío o con borradores) o planificación de la fase activa sin tareas. Misma\nclave y misma petición devuelven la misma conversación.",
         "operationId": "managed_planning_create",
         "parameters": [
           {
@@ -11853,570 +11331,6 @@
         ],
         "title": "AttemptMetricRead"
       },
-      "BootstrapBrief": {
-        "properties": {
-          "problem": {
-            "type": "string",
-            "maxLength": 4000,
-            "minLength": 1,
-            "title": "Problem"
-          },
-          "users": {
-            "type": "string",
-            "maxLength": 4000,
-            "minLength": 1,
-            "title": "Users"
-          },
-          "minimum_features": {
-            "type": "string",
-            "maxLength": 4000,
-            "minLength": 1,
-            "title": "Minimum Features"
-          },
-          "constraints": {
-            "type": "string",
-            "maxLength": 4000,
-            "minLength": 1,
-            "title": "Constraints"
-          },
-          "delivery_goal": {
-            "type": "string",
-            "maxLength": 4000,
-            "minLength": 1,
-            "title": "Delivery Goal"
-          }
-        },
-        "additionalProperties": false,
-        "type": "object",
-        "required": [
-          "problem",
-          "users",
-          "minimum_features",
-          "constraints",
-          "delivery_goal"
-        ],
-        "title": "BootstrapBrief"
-      },
-      "BootstrapCreate": {
-        "properties": {
-          "input": {
-            "$ref": "#/components/schemas/BootstrapInput"
-          },
-          "preview_sha256": {
-            "type": "string",
-            "pattern": "^[0-9a-f]{64}$",
-            "title": "Preview Sha256"
-          },
-          "confirmed": {
-            "type": "boolean",
-            "const": true,
-            "title": "Confirmed"
-          },
-          "reason": {
-            "type": "string",
-            "maxLength": 2000,
-            "minLength": 1,
-            "title": "Reason"
-          },
-          "resume_operation_id": {
-            "anyOf": [
-              {
-                "type": "string",
-                "maxLength": 36
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Resume Operation Id"
-          },
-          "expected_version": {
-            "anyOf": [
-              {
-                "type": "integer",
-                "minimum": 0.0
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Expected Version"
-          }
-        },
-        "additionalProperties": false,
-        "type": "object",
-        "required": [
-          "input",
-          "preview_sha256",
-          "confirmed",
-          "reason"
-        ],
-        "title": "BootstrapCreate"
-      },
-      "BootstrapDecisions": {
-        "properties": {
-          "scope": {
-            "type": "string",
-            "maxLength": 4000,
-            "minLength": 1,
-            "title": "Scope"
-          },
-          "architecture": {
-            "type": "string",
-            "maxLength": 4000,
-            "minLength": 1,
-            "title": "Architecture"
-          },
-          "out_of_scope": {
-            "type": "string",
-            "maxLength": 4000,
-            "minLength": 1,
-            "title": "Out Of Scope"
-          }
-        },
-        "additionalProperties": false,
-        "type": "object",
-        "required": [
-          "scope",
-          "architecture",
-          "out_of_scope"
-        ],
-        "title": "BootstrapDecisions"
-      },
-      "BootstrapDiscoveryCreate": {
-        "properties": {
-          "brief": {
-            "$ref": "#/components/schemas/BootstrapBrief"
-          },
-          "confirmed": {
-            "type": "boolean",
-            "const": true,
-            "title": "Confirmed"
-          }
-        },
-        "additionalProperties": false,
-        "type": "object",
-        "required": [
-          "brief",
-          "confirmed"
-        ],
-        "title": "BootstrapDiscoveryCreate"
-      },
-      "BootstrapDiscoveryOutcomeRead": {
-        "properties": {
-          "status": {
-            "type": "string",
-            "enum": [
-              "PROPOSED",
-              "FAILED",
-              "UNKNOWN"
-            ],
-            "title": "Status"
-          },
-          "result": {
-            "anyOf": [
-              {
-                "$ref": "#/components/schemas/BootstrapDiscoveryResultRead"
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
-          "reason": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Reason"
-          }
-        },
-        "type": "object",
-        "required": [
-          "status",
-          "result",
-          "reason"
-        ],
-        "title": "BootstrapDiscoveryOutcomeRead"
-      },
-      "BootstrapDiscoveryRead": {
-        "properties": {
-          "run_id": {
-            "type": "string",
-            "title": "Run Id"
-          },
-          "run_status": {
-            "type": "string",
-            "title": "Run Status"
-          },
-          "brief": {
-            "$ref": "#/components/schemas/BootstrapBrief"
-          },
-          "outcome": {
-            "anyOf": [
-              {
-                "$ref": "#/components/schemas/BootstrapDiscoveryOutcomeRead"
-              },
-              {
-                "type": "null"
-              }
-            ]
-          }
-        },
-        "type": "object",
-        "required": [
-          "run_id",
-          "run_status",
-          "brief",
-          "outcome"
-        ],
-        "title": "BootstrapDiscoveryRead"
-      },
-      "BootstrapDiscoveryResultRead": {
-        "properties": {
-          "summary": {
-            "type": "string",
-            "title": "Summary"
-          },
-          "requirements": {
-            "items": {
-              "type": "string"
-            },
-            "type": "array",
-            "title": "Requirements"
-          },
-          "alternatives": {
-            "items": {
-              "type": "string"
-            },
-            "type": "array",
-            "title": "Alternatives"
-          },
-          "pending_decisions": {
-            "items": {
-              "type": "string"
-            },
-            "type": "array",
-            "title": "Pending Decisions"
-          }
-        },
-        "type": "object",
-        "required": [
-          "summary",
-          "requirements",
-          "alternatives",
-          "pending_decisions"
-        ],
-        "title": "BootstrapDiscoveryResultRead"
-      },
-      "BootstrapDocumentRead": {
-        "properties": {
-          "path": {
-            "type": "string",
-            "title": "Path"
-          },
-          "content": {
-            "type": "string",
-            "title": "Content"
-          },
-          "sha256": {
-            "type": "string",
-            "title": "Sha256"
-          }
-        },
-        "type": "object",
-        "required": [
-          "path",
-          "content",
-          "sha256"
-        ],
-        "title": "BootstrapDocumentRead"
-      },
-      "BootstrapInput": {
-        "properties": {
-          "brief": {
-            "$ref": "#/components/schemas/BootstrapBrief"
-          },
-          "decisions": {
-            "$ref": "#/components/schemas/BootstrapDecisions"
-          }
-        },
-        "additionalProperties": false,
-        "type": "object",
-        "required": [
-          "brief",
-          "decisions"
-        ],
-        "title": "BootstrapInput"
-      },
-      "BootstrapOperationRead": {
-        "properties": {
-          "id": {
-            "type": "string",
-            "title": "Id"
-          },
-          "root": {
-            "type": "string",
-            "title": "Root"
-          },
-          "run_id": {
-            "type": "string",
-            "title": "Run Id"
-          },
-          "phase_id": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Phase Id"
-          },
-          "status": {
-            "type": "string",
-            "enum": [
-              "QUEUED",
-              "COMPLETED",
-              "INTERRUPTED"
-            ],
-            "title": "Status"
-          },
-          "preview": {
-            "$ref": "#/components/schemas/BootstrapPreviewRead"
-          },
-          "intent": {
-            "additionalProperties": true,
-            "type": "object",
-            "title": "Intent"
-          },
-          "decision": {
-            "additionalProperties": true,
-            "type": "object",
-            "title": "Decision"
-          },
-          "result": {
-            "anyOf": [
-              {
-                "additionalProperties": true,
-                "type": "object"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Result"
-          },
-          "created_at": {
-            "type": "string",
-            "title": "Created At"
-          },
-          "finished_at": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Finished At"
-          },
-          "expected_version": {
-            "type": "integer",
-            "title": "Expected Version"
-          },
-          "run_status": {
-            "type": "string",
-            "title": "Run Status"
-          },
-          "first_task_run": {
-            "anyOf": [
-              {
-                "additionalProperties": {
-                  "type": "string"
-                },
-                "type": "object"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "First Task Run"
-          }
-        },
-        "type": "object",
-        "required": [
-          "id",
-          "root",
-          "run_id",
-          "phase_id",
-          "status",
-          "preview",
-          "intent",
-          "decision",
-          "result",
-          "created_at",
-          "finished_at",
-          "expected_version",
-          "run_status",
-          "first_task_run"
-        ],
-        "title": "BootstrapOperationRead"
-      },
-      "BootstrapPreviewRead": {
-        "properties": {
-          "template": {
-            "additionalProperties": {
-              "type": "string"
-            },
-            "type": "object",
-            "title": "Template"
-          },
-          "input": {
-            "$ref": "#/components/schemas/BootstrapInput"
-          },
-          "context_sha256": {
-            "type": "string",
-            "title": "Context Sha256"
-          },
-          "documents": {
-            "items": {
-              "$ref": "#/components/schemas/BootstrapDocumentRead"
-            },
-            "type": "array",
-            "title": "Documents"
-          },
-          "phase": {
-            "additionalProperties": true,
-            "type": "object",
-            "title": "Phase"
-          },
-          "first_task": {
-            "additionalProperties": true,
-            "type": "object",
-            "title": "First Task"
-          },
-          "task_text": {
-            "type": "string",
-            "title": "Task Text"
-          },
-          "preparation": {
-            "items": {
-              "additionalProperties": true,
-              "type": "object"
-            },
-            "type": "array",
-            "title": "Preparation"
-          },
-          "validations": {
-            "items": {
-              "additionalProperties": true,
-              "type": "object"
-            },
-            "type": "array",
-            "title": "Validations"
-          },
-          "policy": {
-            "additionalProperties": true,
-            "type": "object",
-            "title": "Policy"
-          },
-          "profile": {
-            "type": "string",
-            "title": "Profile"
-          },
-          "versions": {
-            "additionalProperties": {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ]
-            },
-            "type": "object",
-            "title": "Versions"
-          },
-          "target": {
-            "additionalProperties": true,
-            "type": "object",
-            "title": "Target"
-          },
-          "author": {
-            "additionalProperties": {
-              "type": "string"
-            },
-            "type": "object",
-            "title": "Author"
-          },
-          "git": {
-            "additionalProperties": {
-              "type": "string"
-            },
-            "type": "object",
-            "title": "Git"
-          },
-          "ready": {
-            "type": "boolean",
-            "title": "Ready"
-          },
-          "preview_sha256": {
-            "type": "string",
-            "title": "Preview Sha256"
-          },
-          "resume_operation_id": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Resume Operation Id"
-          },
-          "expected_version": {
-            "anyOf": [
-              {
-                "type": "integer"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Expected Version"
-          }
-        },
-        "type": "object",
-        "required": [
-          "template",
-          "input",
-          "context_sha256",
-          "documents",
-          "phase",
-          "first_task",
-          "task_text",
-          "preparation",
-          "validations",
-          "policy",
-          "profile",
-          "versions",
-          "target",
-          "author",
-          "git",
-          "ready",
-          "preview_sha256"
-        ],
-        "title": "BootstrapPreviewRead"
-      },
       "BootstrapStatusRead": {
         "properties": {
           "enabled": {
@@ -12438,37 +11352,6 @@
             ],
             "title": "Diagnostic"
           },
-          "operation": {
-            "anyOf": [
-              {
-                "$ref": "#/components/schemas/BootstrapOperationRead"
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
-          "discovery": {
-            "anyOf": [
-              {
-                "$ref": "#/components/schemas/BootstrapDiscoveryRead"
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
-          "discovery_available": {
-            "type": "boolean",
-            "title": "Discovery Available"
-          },
-          "discovery_selection": {
-            "additionalProperties": {
-              "type": "string"
-            },
-            "type": "object",
-            "title": "Discovery Selection"
-          },
           "definition_operation": {
             "anyOf": [
               {
@@ -12478,18 +11361,14 @@
                 "type": "null"
               }
             ],
-            "description": "H6.5: bootstrap v2 desde la conversación de definición; `operation` queda null en proyectos v2."
+            "description": "Creación confirmada desde la conversación de definición, con el commit raíz y P001."
           }
         },
         "type": "object",
         "required": [
           "enabled",
           "import_required",
-          "diagnostic",
-          "operation",
-          "discovery",
-          "discovery_available",
-          "discovery_selection"
+          "diagnostic"
         ],
         "title": "BootstrapStatusRead"
       },
@@ -13535,19 +12414,8 @@
             "type": "string",
             "title": "Id"
           },
-          "file": {
-            "type": "string",
-            "title": "File"
-          },
           "title": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
+            "type": "string",
             "title": "Title"
           },
           "status": {
@@ -13560,38 +12428,13 @@
               }
             ],
             "title": "Status"
-          },
-          "date": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Date"
-          },
-          "phase": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Phase"
           }
         },
         "type": "object",
         "required": [
           "id",
-          "file",
           "title",
-          "status",
-          "date",
-          "phase"
+          "status"
         ],
         "title": "DecisionEntryRead"
       },
@@ -14189,10 +13032,7 @@
           },
           "operation": {
             "type": "string",
-            "enum": [
-              "document_edit",
-              "phase_transition"
-            ],
+            "const": "document_edit",
             "title": "Operation"
           },
           "head": {
@@ -14523,7 +13363,13 @@
             "type": "string",
             "enum": [
               "phase",
-              "product"
+              "product",
+              "instructions",
+              "diagram",
+              "flow",
+              "phase_work",
+              "archive",
+              "other"
             ],
             "title": "Kind"
           },
@@ -14600,6 +13446,10 @@
             "enum": [
               "phase",
               "product",
+              "instructions",
+              "diagram",
+              "flow",
+              "phase_work",
               "archive",
               "other"
             ],
@@ -16223,7 +15073,7 @@
               }
             ],
             "title": "Documents",
-            "description": "Contrato documental D072; null: anterior."
+            "description": "Contrato documental unificado D088; null solo en lecturas de proyectos anteriores."
           },
           "source": {
             "type": "string",
@@ -18627,10 +17477,7 @@
           },
           "operation": {
             "type": "string",
-            "enum": [
-              "document_edit",
-              "phase_transition"
-            ],
+            "const": "document_edit",
             "title": "Operation"
           },
           "head": {
@@ -18937,8 +17784,7 @@
                 "authorize_batch",
                 "batch_next",
                 "amend",
-                "abandon",
-                "transition"
+                "abandon"
               ]
             },
             "type": "array",
@@ -19176,237 +18022,6 @@
         "title": "PhaseTaskRead",
         "description": "Resumen de una tarea de la fase para su URL `PNNN-TNNN` (D076); sin runs, `latest` es null."
       },
-      "PhaseTransitionCreate": {
-        "properties": {
-          "expected_version": {
-            "type": "integer",
-            "minimum": 0.0,
-            "title": "Expected Version"
-          },
-          "next_steps": {
-            "anyOf": [
-              {
-                "type": "string",
-                "maxLength": 524288
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Next Steps"
-          },
-          "plan_proposal": {
-            "anyOf": [
-              {
-                "$ref": "#/components/schemas/PlanProposalRef"
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
-          "preview_sha256": {
-            "type": "string",
-            "pattern": "^[0-9a-f]{64}$",
-            "title": "Preview Sha256"
-          },
-          "resume_operation_id": {
-            "anyOf": [
-              {
-                "type": "string",
-                "maxLength": 36
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Resume Operation Id"
-          },
-          "reason": {
-            "type": "string",
-            "maxLength": 2000,
-            "minLength": 1,
-            "title": "Reason"
-          },
-          "confirmed": {
-            "type": "boolean",
-            "const": true,
-            "title": "Confirmed"
-          }
-        },
-        "additionalProperties": false,
-        "type": "object",
-        "required": [
-          "expected_version",
-          "preview_sha256",
-          "reason",
-          "confirmed"
-        ],
-        "title": "PhaseTransitionCreate"
-      },
-      "PhaseTransitionInput": {
-        "properties": {
-          "next_steps": {
-            "anyOf": [
-              {
-                "type": "string",
-                "maxLength": 524288
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Next Steps",
-            "description": "Plan NEXT_STEPS de la fase siguiente del ROADMAP; null si no hay más fases."
-          },
-          "plan_proposal": {
-            "anyOf": [
-              {
-                "$ref": "#/components/schemas/PlanProposalRef"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "description": "H6.5: plan propuesto en una conversación phase_planning, en lugar de next_steps."
-          }
-        },
-        "additionalProperties": false,
-        "type": "object",
-        "title": "PhaseTransitionInput"
-      },
-      "PhaseTransitionPreviewRead": {
-        "properties": {
-          "resume_operation_id": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Resume Operation Id"
-          },
-          "preview_sha256": {
-            "type": "string",
-            "title": "Preview Sha256"
-          },
-          "operation": {
-            "type": "string",
-            "enum": [
-              "document_edit",
-              "phase_transition"
-            ],
-            "title": "Operation"
-          },
-          "head": {
-            "type": "string",
-            "title": "Head"
-          },
-          "fingerprint": {
-            "type": "string",
-            "title": "Fingerprint"
-          },
-          "tree": {
-            "type": "string",
-            "title": "Tree"
-          },
-          "index_tree": {
-            "type": "string",
-            "title": "Index Tree"
-          },
-          "documents": {
-            "items": {
-              "$ref": "#/components/schemas/DocumentPreviewEntry"
-            },
-            "type": "array",
-            "title": "Documents"
-          },
-          "mechanical": {
-            "items": {
-              "additionalProperties": {
-                "type": "string"
-              },
-              "type": "object"
-            },
-            "type": "array",
-            "title": "Mechanical"
-          },
-          "diff": {
-            "type": "string",
-            "title": "Diff"
-          },
-          "expected_version": {
-            "type": "integer",
-            "title": "Expected Version"
-          },
-          "snapshot": {
-            "additionalProperties": true,
-            "type": "object",
-            "title": "Snapshot"
-          },
-          "closed": {
-            "type": "string",
-            "title": "Closed"
-          },
-          "archive": {
-            "type": "string",
-            "title": "Archive"
-          },
-          "next": {
-            "anyOf": [
-              {
-                "additionalProperties": true,
-                "type": "object"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Next"
-          },
-          "warnings": {
-            "items": {
-              "type": "string"
-            },
-            "type": "array",
-            "title": "Warnings"
-          },
-          "plan_origin": {
-            "anyOf": [
-              {
-                "additionalProperties": true,
-                "type": "object"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Plan Origin"
-          }
-        },
-        "type": "object",
-        "required": [
-          "resume_operation_id",
-          "preview_sha256",
-          "operation",
-          "head",
-          "fingerprint",
-          "tree",
-          "index_tree",
-          "documents",
-          "mechanical",
-          "diff",
-          "expected_version",
-          "snapshot",
-          "closed",
-          "archive",
-          "next",
-          "warnings"
-        ],
-        "title": "PhaseTransitionPreviewRead"
-      },
       "PlanProposalRef": {
         "properties": {
           "conversation_id": {
@@ -19527,7 +18142,7 @@
               }
             ],
             "title": "Phase Id",
-            "description": "Fase más reciente del checkout cuya siguiente se planifica."
+            "description": "Fase ACTIVE sin tareas que se planifica; se conservan las conversaciones históricas anteriores."
           }
         },
         "additionalProperties": false,

@@ -102,6 +102,7 @@ tarea se leen solo las decisiones que cita; este índice sirve para buscar prece
 | [D090](#d090--p008-t003-rutas-del-ejecutor-paridad-de-diagramas-y-propuestas-de-adr) | P008-T003: rutas del ejecutor, paridad de diagramas y propuestas de ADR | P008 |
 | [D091](#d091--p008-t004-cierre-y-archivo-unificados-con-planificación-posterior) | P008-T004: cierre y archivo unificados con planificación posterior | P008 |
 | [D092](#d092--p008-t005-prompts-y-definición-bajo-el-contrato-unificado) | P008-T005: prompts y definición bajo el contrato unificado | P008 |
+| [D093](#d093--p008-t006-api-y-ui-del-contrato-unificado) | P008-T006: API y UI del contrato unificado | P008 |
 
 ## D001 — Alcance local y arquitectura base
 
@@ -2935,3 +2936,28 @@ Fase: P008. Aplica D088 y conserva los valores por defecto de D089 y el plan pos
   todos los roles y la verificación de los flags de las CLI siguen pendientes de T007.
 
 No se ejecutó el harness sobre este repositorio, ni proveedores reales, smokes, push o publicación.
+
+## D093 — P008-T006: API y UI del contrato unificado
+
+Estado: implementada y verificada offline el 2026-10-15; detalle en el [registro](phase/P008-T006_API_UI.md).
+Fase: P008. Aplica D088 y alinea la UI de D080/D082 con el cierre y el plan posterior de D091. Sustituye sus enlaces
+a decisiones individuales, la creación v1 y la transición separada de fase en la API/UI.
+
+- `DocumentKind` distingue `phase`, `product`, `instructions`, `diagram`, `flow`, `phase_work`, `archive` y `other`.
+  La proyección de API clasifica por el `Layout` configurado y añade AGENTS/CLAUDE/GEMINI al árbol y al estado; no los
+  incorpora a los hashes adoptados de la fase. No sigue enlaces simbólicos en las instrucciones. La representación
+  interna de almacenamiento y los historiales congelados se conservan.
+- El índice público de decisiones tiene solo `id`, `title` y `status`, desde los encabezados y la primera línea
+  `Estado:` de DECISIONS. La UI enlaza al encabezado del registro con el mismo slug que su renderizador Markdown;
+  no ofrece archivos individuales ni columnas de fecha/fase que el índice ya no produce.
+- Se retiran POST de bootstrap, su preview y discovery, y ambos POST de transición, junto con sus esquemas públicos
+  de entrada. Se conserva GET `/projects/{id}/bootstrap` como estado de la definición conversacional, con `enabled`,
+  `import_required`, `diagnostic` y `definition_operation`. Las lecturas de runs/operaciones conservan los tipos
+  históricos y el motor mantiene la conciliación de intenciones antiguas selladas, sin exponer otra transición.
+- `Bootstrap.tsx` se elimina. Cierre y abandono explican el archivo en un commit y la sucesora ACTIVE sin tareas (o
+  solo archivo si ROADMAP termina). La planificación de esa fase vive en su propia página: texto o propuesta,
+  vista previa, diff, hash, motivo y confirmación idempotente por `/phases/{id}/plan`. Una versión distinta de la fase
+  o un cambio del plan descarta la vista previa. El registro deja de ofrecer el layout como una opción desactivable.
+
+Sin modelos, migraciones, dependencias ni cambio de versión congelada: la tarea cambia la superficie de API/UI,
+no los contratos del motor. OpenAPI y tipos del cliente regenerados desde los esquemas.

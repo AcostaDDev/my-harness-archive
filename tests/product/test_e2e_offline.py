@@ -224,7 +224,7 @@ def test_create_confirm_restart_then_first_task_and_commit(tmp_path, url):
     base = '/api/managed/projects/synthetic'
     with open_app(url, tmp_path, managed) as http:
         login(http)
-        assert http.post(base + '/bootstrap/preview', json=DATA).status_code == 422
+        assert http.post(base + '/bootstrap/preview', json=DATA).status_code == 404
         created = http.post(base + '/planning', json={'kind': 'definition', 'title': 'Sintético', 'brief': BRIEF},
                             headers={'Idempotency-Key': 'definition'})
         assert created.status_code == 201, created.text

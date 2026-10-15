@@ -226,7 +226,8 @@ def test_final_phase_archives_without_creating_another_phase(unified):
         TransitionRepository(world.repository).preview(world.context, pid, world.ports.writer(world.context, VERSIONS))
 
 
-def test_http_closure_and_confirmed_plan_use_the_current_protocol(unified, tmp_path):
+@pytest.mark.parametrize('source', ['text', 'proposal'])
+def test_http_closure_and_confirmed_plan_use_the_current_protocol(unified, tmp_path, source):
     world = unified
     pid = ready(world)
     from test_managed_api import config
@@ -240,11 +241,30 @@ def test_http_closure_and_confirmed_plan_use_the_current_protocol(unified, tmp_p
         world.run()
         assert http.get(f'/api/managed/phases/{pid}').json()['status'] == 'CLOSED'
         following = world.phases.by_code(str(world.context.root), 'P002')
-        body = {'next_steps': PLAN_P002}
+        if source == 'proposal':
+            from test_definition import planning_answer
+            base = '/api/managed/projects/synthetic/planning'
+            created = http.post(base, json={'kind': 'phase_planning', 'title': 'Plan de P002', 'phase_id': following},
+                                headers={'Idempotency-Key': 'plan-conversation'})
+            assert created.status_code == 201, created.text
+            conversation = created.json()['id']
+            world.script(planning_answer())
+            sent = http.post(base + f'/{conversation}/messages', json={'expected_version': 0, 'text': 'Planifica P002'},
+                             headers={'Idempotency-Key': 'plan-turn'})
+            assert sent.status_code == 202, sent.text
+            world.run()
+            plan = http.get(base + f'/{conversation}').json()['proposals'][0]
+            body = {'plan_proposal': {'conversation_id': conversation, 'proposal_id': plan['id'],
+                                      'proposal_sha256': plan['proposal_sha256']}}
+        else:
+            body = {'next_steps': PLAN_P002}
         shown = http.post(f'/api/managed/phases/{following}/plan/preview', json=body)
         assert shown.status_code == 200, shown.text
         proposal = {**body, 'preview_sha256': shown.json()['preview_sha256'], 'reason': 'HTTP plan', 'confirmed': True}
         assert http.post(f'/api/managed/phases/{following}/plan', json=proposal).status_code == 422
+        rejected = http.post(f'/api/managed/phases/{following}/plan', json={**proposal, 'preview_sha256': '0' * 64},
+                             headers={'Idempotency-Key': 'stale-plan'})
+        assert rejected.status_code == 409
         created = http.post(f'/api/managed/phases/{following}/plan', json=proposal,
                             headers={'Idempotency-Key': 'http-plan'})
         assert created.status_code == 202, created.text

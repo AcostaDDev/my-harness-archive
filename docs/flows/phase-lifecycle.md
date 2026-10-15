@@ -55,10 +55,12 @@ se deja indicado que no hay fase activa. STATE y NEXT_STEPS se archivan por byte
 las subcarpetas de `docs/phase/`. REVIEW y SUMMARY se generan desde la instantánea SQLite.
 
 Las nuevas transiciones separadas H6.3 se rechazan. Sus intenciones ya selladas conservan la vía de recuperación;
-los endpoints se mantienen hasta su retirada de API/UI en T006. Nunca se recalcula una intención pendiente ni se
-reescriben sus snapshots. El prompt de planificación usa el destino exacto del contexto: la fase ACTIVE vacía, o la
+sus endpoints se retiraron de API/UI en T006 (D093), conservando la conciliación interna del motor. Nunca se recalcula
+una intención pendiente ni se reescriben sus snapshots. El prompt de planificación usa el destino exacto del contexto: la fase ACTIVE vacía, o la
 siguiente en conversaciones anteriores (T005, D092). Propone NEXT_STEPS y exige confirmación propia del plan; no
-autoriza otra transición. La adaptación de UI sigue pendiente de T006.
+autoriza otra transición. Desde T006, la página de la fase ACTIVE sin tareas ofrece texto o propuesta conversacional,
+vista previa con diff y hash, motivo y confirmación idempotente del plan. Cambiar la versión de la fase o el origen
+del plan descarta la vista previa. La fase cerrada enlaza a su sucesora; no ofrece otra transición.
 
 ## Fuente en el código
 

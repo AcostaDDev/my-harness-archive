@@ -739,8 +739,8 @@ def test_http_definition_flow(migrated_database, tmp_path):
     with client(url, tmp_path, configuration) as http:
         base = '/api/managed/projects/fresh'
         status = http.get(base + '/bootstrap').json()
-        assert status['enabled'] and not status['import_required'] and not status['discovery_available']
-        assert http.post(base + '/bootstrap/preview', json={'brief': {}, 'decisions': {}}).status_code == 422
+        assert status['enabled'] and not status['import_required'] and status['definition_operation'] is None
+        assert http.post(base + '/bootstrap/preview', json={'brief': {}, 'decisions': {}}).status_code == 404
         definition = {'kind': 'definition', 'title': 'Sintético', 'brief': BRIEF}
         assert http.post(base + '/planning', json=definition).status_code == 422  # sin Idempotency-Key
         created = http.post(base + '/planning', json=definition, headers={'Idempotency-Key': 'definition'})
@@ -804,7 +804,7 @@ def test_http_definition_flow(migrated_database, tmp_path):
         assert accepted.status_code == 202, accepted.text
         assert worker.run_once().status == 'DONE'
         status = http.get(base + '/bootstrap').json()
-        assert status['operation'] is None and status['definition_operation']['status'] == 'COMPLETED'
+        assert 'operation' not in status and status['definition_operation']['status'] == 'COMPLETED'
         detail = http.get(base + f'/planning/{cid}').json()
         assert detail['created'] and detail['operation']['phase_id'] and detail['actions'] == []
         assert http.get(base + f'/planning/{cid}/drafts/content', params={'path': 'README.md'}).status_code == 409
