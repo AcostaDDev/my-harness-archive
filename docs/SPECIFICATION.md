@@ -70,7 +70,7 @@ run y, cuando procede, al intento exacto.
 | F16 | Recuperar y conservar | Backup y restauración de consulta, retención explícita de logs, recuperación tras caída | Implementado (P003, P006) |
 | F17 | Distribución local | Wheel con UI y migraciones, `init-db`, `serve`, sesión local | Implementado (P006) |
 | F18 | Perfiles declarativos | Perfil de stack (preparación, tests, lint, tipos) declarado en el TOML local y confirmado por el usuario, incluido Python/Django (`pytest`, `ruff`, `mypy`) | Pendiente (P008-T008) |
-| F19 | Instrucciones del proyecto para los agentes | `AGENTS.md` incluido en el contexto congelado de cada intento | Pendiente (P008-T007) |
+| F19 | Instrucciones del proyecto para los agentes | `AGENTS.md` incluido en el contexto congelado de cada intento | Implementada (P008-T007, D094) |
 
 Modos por checkout: **observación** (indexa un harness anterior) y **gestionado** (el motor nuevo controla). Nunca
 escriben dos motores sobre el mismo checkout.
@@ -104,8 +104,8 @@ esta estructura; la creación v1 se rechaza). P008-T003 (D090): rutas del ejecut
 de flujos por el revisor, y propuestas de ADR. P008-T004 (D091): cierre y archivo unificados y plan posterior
 confirmado. P008-T005 (D092): prompts y definición alineados; once documentos obligatorios al aceptar, con
 instrucciones y DDBB-DIAGRAM por plantilla si no hay borrador (D089). P008-T006 (D093): API y UI con índice de
-decisiones único, instrucciones/diagramas/flujos/trabajo de fase, cierre unificado y planificación posterior; retirados los endpoints de creación v1 y transición. Pendiente: inyección de
-`AGENTS.md` en todos los roles (T007).
+decisiones único, instrucciones/diagramas/flujos/trabajo de fase, cierre unificado y planificación posterior; retirados los endpoints de creación v1 y transición. P008-T007
+(D094): `AGENTS.md` con su hash en el prompt de todos los roles salvo la definición, que lo redacta.
 
 | Ruta | Contenido | Autoría |
 |---|---|---|

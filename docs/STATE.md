@@ -1,6 +1,6 @@
 # Estado — my_harness
 
-Actualizado: 2026-10-15. Sin bloques gestionados mientras el repositorio no esté registrado en el harness (D088).
+Actualizado: 2026-10-16. Sin bloques gestionados mientras el repositorio no esté registrado en el harness (D088).
 
 ## Base acumulada
 
@@ -16,7 +16,7 @@ salvo donde se indica. Detalle por fase en `docs/archive/phase-NNN/SUMMARY.md`.
   cuarentena por versión y confirmación explícita del escritor detenido; backup y restauración de consulta; retención
   explícita de streams.
 - **Agentes** ([P007](archive/phase-007/SUMMARY.md)): revisor y ejecutor Codex o Claude en cualquier combinación
-  (`cli-10`, `local-config-2/3`), revisor en solo lectura con esquema tipado, memoria automática desactivada, supresión
+  (`cli-11`, `local-config-2/3`), revisor en solo lectura con esquema tipado, memoria automática desactivada, supresión
   de confianza del escritor Codex. Validaciones nativas `commands-1` con JUnit. Perfiles: `typescript-web` (componible
   desde el TOML) y `reference_project` (solo biblioteca).
 - **Fases y documentos** ([P004](archive/phase-004/SUMMARY.md), [P007](archive/phase-007/SUMMARY.md)): check READY,
@@ -143,5 +143,23 @@ Objetivo y criterios en [ROADMAP](ROADMAP.md); plan en [NEXT_STEPS](NEXT_STEPS.m
   Sin `alembic check` independiente, comprobación visual, proveedores reales ni smokes. Detalle en el
   [registro](phase/P008-T006_API_UI.md).
 
-**Siguiente:** P008-T007 (instrucciones en el contexto congelado), sin iniciar. Este repositorio sigue sin
+**P008-T007 completada** (instrucciones del proyecto en el contexto congelado,
+[D094](DECISIONS.md#d094--p008-t007-agentsmd-en-el-prompt-congelado-de-cada-rol)):
+
+- Verificado sin ejecutar CLI (fuente del pin de Codex y documentación de Claude): el escritor Codex `untrusted` no
+  carga `AGENTS.md`; el lector sí, desde el checkout vivo. Claude con `--setting-sources ""` no carga `CLAUDE.md`.
+- El motor lee `AGENTS.md` en cada intento: regular, sin enlaces, UTF-8, no vacío y de 32 KiB como máximo. Lo inyecta
+  con `{{PROJECT_INSTRUCTIONS}}` en todos los roles salvo la definición, con ruta, hash y tamaño en el snapshot. Sin
+  él, el intento para en `prompts` antes de invocar. Las plantillas anteriores se siguen leyendo, pero no invocan.
+- `cli-11` añade `project_doc_max_bytes=0` en Codex, de modo que el único `AGENTS.md` es el congelado.
+  `document_layout = "d088-5"`: los jobs anteriores quedan en cuarentena.
+- Verificación: 12 checks ligeros. Pytest completo: 1.192 OK y 121 subtests (aviso conocido de Starlette/httpx), con
+  28 casos nuevos en `test_project_instructions.py`. Una primera pasada dio 17 fallos de fixtures v2 sin
+  `AGENTS.md` (`web` de TypeScript y una prueba HTTP de fases), que se corrigieron antes de la pasada final. Hay 242
+  enlaces y anclas válidos y DECISIONS indexa 94 decisiones. El diagrama de secuencia editado pasa el parser Mermaid
+  local; el de estados, sin cambios, no se pudo comprobar sin DOM. Sin Node/build ni `alembic check`, porque no
+  cambian UI, OpenAPI ni esquema. Sin proveedores reales ni smokes. Detalle en el
+  [registro](phase/P008-T007_INSTRUCCIONES_CONTEXTO.md).
+
+**Siguiente:** P008-T008 (perfiles declarativos en el TOML local), sin iniciar. Este repositorio sigue sin
 registrarse en el harness.

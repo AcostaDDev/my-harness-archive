@@ -4,7 +4,7 @@ Objetivo y criterios de salida en [ROADMAP](ROADMAP.md#p008--contrato-documental
 Decisión de base: [D088](DECISIONS.md#d088--contrato-documental-unificado-cierre-de-fase-automático-e-importación-de-proyectos-p008).
 Análisis de incongruencias que originó la fase: [docs/phase](phase/P008-T001_MIGRACION_DOCUMENTAL.md).
 
-**Siguiente tarea:** P008-T007. Orden de ejecución: T002 → T007 (motor y contrato), T008 (perfiles, que el usuario
+**Siguiente tarea:** P008-T008. Orden de ejecución: T002 → T007 (motor y contrato), T008 (perfiles, que el usuario
 necesita para su próximo proyecto Django), T009–T012 (Flujo A) y T013–T015 (Flujo B).
 
 ## Restricciones compartidas
@@ -176,6 +176,10 @@ posterior usa la fase ACTIVE sin tareas de T004, por texto o propuesta confirmad
 ## P008-T007 — Instrucciones del proyecto en el contexto congelado
 
 **Objetivo:** Garantizar que cada agente lee `AGENTS.md` del proyecto en cada intento.
+**Estado:** completada el 2026-10-16 ([D094](DECISIONS.md#d094--p008-t007-agentsmd-en-el-prompt-congelado-de-cada-rol)).
+Evidencia de los flags en el [registro](phase/P008-T007_INSTRUCCIONES_CONTEXTO.md): Codex solo carga `AGENTS.md` en el
+lector (el escritor es `untrusted`) y Claude no carga `CLAUDE.md`. Cambio de flag seguro: `project_doc_max_bytes=0`
+en Codex (`cli-11`). La definición no recibe la variable porque redacta el archivo.
 **Alcance:**
 - Verificar sin ejecutar proveedores (ayuda, documentación oficial y fuente de los pins) si Claude con
   `--setting-sources ""` carga `CLAUDE.md` y si Codex con `--ignore-rules` y proyecto `untrusted` carga `AGENTS.md`.

@@ -427,6 +427,10 @@ def test_http_h34_phase_actions_with_annotated_project_and_guards(tmp_path, migr
     from harness_local.services.managed_runtime import CONFIG_ENV
     monkeypatch.delenv(CONFIG_ENV, raising=False)
     checkout = replace(checkout, documents='v2')
+    # P008-T007: con layout unificado cada intento exige AGENTS.md.
+    checkout.path('AGENTS.md').write_text('# Sintético\n\nInstrucciones sintéticas.\n', encoding='utf-8')
+    git(checkout.root, 'add', 'AGENTS.md')
+    git(checkout.root, 'commit', '-q', '-m', 'docs: instrucciones sintéticas')
     ports = Ports([change('one\n'), accept('P001-T001'), phase_review()])
     managed = ManagedConfig((ManagedProject('synthetic', checkout, VERSIONS, tag_kind='annotated'),),
                             ports_factory=ports, commit_factory=ports.writer, supervisor=True, poll_seconds=0.02)

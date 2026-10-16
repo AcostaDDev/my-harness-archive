@@ -18,6 +18,7 @@ sequenceDiagram
     API->>DB: run QUEUED + job QUEUED
     S->>DB: reclamar job (lease, lock del checkout)
     S->>E: run con contexto, perfil y versiones congelados
+    Note over E,G: cada intento lee AGENTS.md con su hash y se detiene antes de invocar si falta
     E->>G: captura previa (checkout limpio en v2)
     alt plan determinista suficiente
         E->>E: contrato desde NEXT_STEPS
@@ -89,3 +90,12 @@ intento sin resultado al confirmar la parada queda `INTERRUPTED` sin reintento a
   revisor.
 - `decision_proposals` del ejecutor llegan al revisor; las que este devuelve quedan en la revisión del ciclo y en la
   evidencia de la reconciliación. Nunca escriben DECISIONS ni cambian el veredicto.
+
+## Instrucciones del proyecto (D094)
+
+- Cada intento (planificador, ejecutor, corrección y revisor; también fase, chat y planificación) lee `AGENTS.md` de
+  la raíz del checkout del intento y lo incluye en su prompt. Su ruta, SHA-256 y tamaño quedan en el snapshot del
+  intento; un cambio posterior solo afecta a los intentos siguientes.
+- Un `AGENTS.md` ausente, enlazado, no regular, vacío, no UTF-8 o mayor de 32 KiB detiene el run en `prompts`
+  antes de invocar al agente. Una versión de plantilla activa sin `{{PROJECT_INSTRUCTIONS}}` también.
+- Las CLI no cargan otra copia: Claude con `--setting-sources ""` y Codex con `project_doc_max_bytes=0` (`cli-11`).

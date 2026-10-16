@@ -15,7 +15,7 @@ decisiones D001–D088 y la información técnica que antes estaba en README y A
 | Tipos del cliente | `openapi-typescript` 7.13.0 desde el OpenAPI exportado |
 | Herramientas | uv 0.12.19 y `uv.lock`; Node 24.15.0, npm 11.12.1 y `frontend/package-lock.json` |
 | Pruebas | `unittest` (12 checks sin dependencias), pytest 9.1.1 + httpx 0.28.1, `node --test` |
-| Agentes | CLI `codex` 0.161.0/0.162.1 (escritura solo 0.162.1) y `claude` 2.1.295/2.1.296, adaptador `cli-10` |
+| Agentes | CLI `codex` 0.161.0/0.162.1 (escritura solo 0.162.1) y `claude` 2.1.295/2.1.296, adaptador `cli-11` |
 
 Sin Celery, broker ni Docker para el servicio (D003, D004). Detalles de stack de cada proyecto gestionado (Django,
 Node…) pertenecen a perfiles, no al núcleo.
@@ -94,12 +94,13 @@ por su API y los artefactos referenciados; la restauración es de consulta (`que
 
 ## 6. Agentes y configuración
 
-- **Adaptador `cli-10`** (D090: propuestas de ADR en las formas de ejecutor y revisor). Sesión nueva por intento;
+- **Adaptador `cli-11`** (D090: propuestas de ADR en las formas de ejecutor y revisor; D094: Codex con
+  `project_doc_max_bytes=0`). Sesión nueva por intento;
   argv, entorno (sin herencia, `USER` comprobado contra el UID) y timeouts explícitos. Revisor en solo lectura (Codex `--sandbox read-only`; Claude `--restricted` y `--json-schema`
   tipado). Ejecutor Codex `workspace-write` con el checkout como única raíz escribible y confianza `untrusted` inline
   (D059, D068); Claude con herramientas declaradas y `dontAsk`. Memoria automática desactivada en ambos (D066).
-  Claude se lanza con `--setting-sources ""`; si los archivos de instrucciones del checkout llegan al agente se
-  verifica en P008-T007.
+  Ninguna CLI carga por sí misma las instrucciones del checkout: Claude se lanza con `--setting-sources ""` y Codex
+  con presupuesto de project docs 0 (D094). El motor inyecta `AGENTS.md` en el prompt de cada rol.
 - **TOML local del operador** (`local-config-3`), fuera de todo checkout y `chmod 600`: `[service]`, `[git]`,
   `[agents.reviewer]`, `[agents.executor]`, `[registration]` (raíces y techo de bootstrap), `[compositions.*]`
   (perfil y comandos autorizados) y `[[projects]]` opcional con su política. Sin secretos.
@@ -107,8 +108,10 @@ por su API y los artefactos referenciados; la restauración es de consulta (`que
   SQLite, grupos POSIX.
 - **Prompts** (`templates/`): `plan-task`, `execute-task`, `revise-task`, `review-task`, `executor-routing`,
   `close-phase`, `reconcile-phase`, `chat-turn`, `define-project`, `plan-phase`, `bootstrap-project`. Jerarquía base →
-  perfil → proyecto; snapshot por intento. Prompts unificados y definición versión 4 (D092); `document_layout = "d088-4"`
-  congela las reglas nuevas y detiene jobs anteriores antes de efectos. Las transiciones ya selladas conservan su
+  perfil → proyecto; snapshot por intento. Prompts unificados y definición versión 4 (D092). `AGENTS.md` (≤32 KiB)
+  entra por `{{PROJECT_INSTRUCTIONS}}` en todos los roles salvo la definición, con ruta, hash y tamaño en el snapshot;
+  sin él, el intento se detiene antes de invocar (D094). `document_layout = "d088-5"` congela las reglas nuevas y
+  detiene jobs anteriores antes de efectos. Las transiciones ya selladas conservan su
   conciliación con los bytes originales. La definición congela los valores por defecto; la planificación incluye
   instrucciones y DDBB-DIAGRAM entre sus documentos de contexto.
 
@@ -178,4 +181,4 @@ Uso real (D051): construir y verificar el wheel (`scripts/build_distribution.py 
 - Un proyecto `typescript-web` nuevo no tiene `package.json` y el ejecutor no puede crearlo.
 - Dos avisos *low* de KaTeX en Mermaid 11.
 - La estructura de D088 es obligatoria desde P008-T002; rutas y paridad en T003, cierre y archivo unificados en
-  T004, prompts/definición en T005 y API/UI en T006 (D089–D093). Pendiente: inyección de AGENTS en T007.
+  T004, prompts/definición en T005, API/UI en T006 e inyección de AGENTS en T007 (D089–D094).

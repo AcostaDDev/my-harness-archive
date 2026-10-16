@@ -7,18 +7,22 @@ import re
 
 from harness_local.core.engine.contracts import ContractError, freeze
 
+# P008-T007 (D088 punto 8): AGENTS.md del proyecto, leído y con hash en cada intento por `render_attempt`. Lo
+# declaran las plantillas de los roles que trabajan sobre un proyecto existente; la definición lo redacta (su
+# borrador ya está en el contexto) y la creación v1 está retirada.
+PROJECT_INSTRUCTIONS = 'PROJECT_INSTRUCTIONS'
 VARIABLES = {
     'bootstrap-project': ('BRIEF',),
-    'plan-task': ('INPUT_JSON',),
+    'plan-task': ('INPUT_JSON', PROJECT_INSTRUCTIONS),
     'executor-routing': ('POLICY_JSON',),
-    'execute-task': ('INSTRUCTIONS', 'TASK_JSON', 'PROFILE_INSTRUCTIONS'),
-    'review-task': ('INPUT_JSON',),
-    'revise-task': ('INSTRUCTIONS', 'TASK_JSON', 'REVIEW_JSON', 'PROFILE_INSTRUCTIONS'),
+    'execute-task': ('INSTRUCTIONS', 'TASK_JSON', 'PROFILE_INSTRUCTIONS', PROJECT_INSTRUCTIONS),
+    'review-task': ('INPUT_JSON', PROJECT_INSTRUCTIONS),
+    'revise-task': ('INSTRUCTIONS', 'TASK_JSON', 'REVIEW_JSON', 'PROFILE_INSTRUCTIONS', PROJECT_INSTRUCTIONS),
     'reconcile-phase': ('PHASE_ID', 'REVIEW_JSON'),
-    'close-phase': ('PHASE_ID', 'EVIDENCE_JSON'),
-    'chat-turn': ('CONTEXT_JSON', 'MESSAGE'),
+    'close-phase': ('PHASE_ID', 'EVIDENCE_JSON', PROJECT_INSTRUCTIONS),
+    'chat-turn': ('CONTEXT_JSON', 'MESSAGE', PROJECT_INSTRUCTIONS),
     'define-project': ('CONTEXT_JSON', 'MESSAGE'),
-    'plan-phase': ('CONTEXT_JSON', 'MESSAGE'),
+    'plan-phase': ('CONTEXT_JSON', 'MESSAGE', PROJECT_INSTRUCTIONS),
 }
 ROLES = {'bootstrap-project': 'bootstrap', 'plan-task': 'planner', 'review-task': 'reviewer', 'execute-task': 'executor', 'revise-task': 'executor',
          'close-phase': 'phase', 'chat-turn': 'chat', 'define-project': 'definition', 'plan-phase': 'planning'}
@@ -42,7 +46,9 @@ def validate(name: str, template: str) -> tuple[str, ...]:
     if '{{' in rest or '}}' in rest:
         raise ContractError('Malformed variable; use {{UPPERCASE_NAME}}')
     allowed = set(VARIABLES[name])
-    if used != allowed:
+    # Las versiones anteriores a P008-T007 (catálogos congelados y versiones guardadas) siguen siendo legibles sin
+    # la variable de instrucciones; `render_attempt` se niega a invocar con ellas sobre un proyecto con layout.
+    if used - allowed or allowed - used - {PROJECT_INSTRUCTIONS}:
         raise ContractError(f'Invalid variables: unknown={sorted(used - allowed)}, missing={sorted(allowed - used)}')
     return tuple(sorted(used))
 
@@ -161,8 +167,20 @@ def output_schema(role: str) -> dict:
 
 
 def render_attempt(catalog, name, values, context):
-    parts = [{'version': asdict(catalog[name]), 'variables': values}]
-    text = render(catalog[name], values)
+    template = catalog[name]
+    instructions = None
+    if PROJECT_INSTRUCTIONS in VARIABLES[name]:
+        # P008-T007: el motor aporta AGENTS.md; quien llama nunca lo sustituye. Sin archivo válido, sin intento.
+        from harness_local.core.engine.documents import layout, project_instructions
+        if PROJECT_INSTRUCTIONS in values:
+            raise ContractError('Project instructions are supplied by the engine, never by the caller')
+        if layout(context) is not None and PROJECT_INSTRUCTIONS not in TOKEN.findall(template.template):
+            raise ContractError(f'Prompt {name} {template.id} lacks {{{{{PROJECT_INSTRUCTIONS}}}}}; activate a version '
+                                'that includes the project instructions')
+        content, instructions = project_instructions(context)
+        values = {**values, PROJECT_INSTRUCTIONS: content}
+    parts = [{'version': asdict(template), 'variables': values}]
+    text = render(template, values)
     role = ROLES[name]
     if role in {'planner', 'reviewer'}:
         routing = {'POLICY_JSON': freeze({'models': context.policy.executor_models, 'efforts': context.policy.executor_efforts})}
@@ -173,4 +191,6 @@ def render_attempt(catalog, name, values, context):
     snapshot = {'parts': parts, 'output_schema': schema, 'schema_sha256': digest(freeze(schema)),
                 'document_references': [context.next_steps_file, context.state_file],
                 'rendered': text, 'rendered_sha256': digest(text)}
+    if instructions is not None:
+        snapshot['project_instructions'] = instructions  # P008-T007: ruta, hash y tamaño de AGENTS.md
     return text, freeze(snapshot)

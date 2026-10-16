@@ -27,7 +27,7 @@ from harness_local.core.engine.metrics import CAPTURE as METRICS_CAPTURE
 from harness_local.core.engine.prompts import digest, output_schema
 
 
-VERSION = "cli-10"
+VERSION = "cli-11"
 # Version/help characterization (D052): Claude 2.1.295 and 2.1.296 share the same help.
 SUPPORTED = {"codex": ("0.161.0", "0.162.1"), "claude": ("2.1.295", "2.1.296")}
 # Codex workspace-write was characterized on 0.162.1 only.
@@ -189,6 +189,10 @@ def argv_for(config, context, request):
             # the feature gate and command history. Ephemeral alone is not enough.
             "-c", 'features.memories=false', "-c", 'memories.generate_memories=false',
             "-c", 'memories.use_memories=false', "-c", 'history.persistence="none"',
+            # cli-11 (P008-T007): the engine injects the frozen, hashed AGENTS.md into every prompt. A zero
+            # project-doc budget stops the pin from also loading AGENTS.override.md/AGENTS.md from the live
+            # checkout (it skips them only for untrusted projects, i.e. the writer).
+            "-c", "project_doc_max_bytes=0",
             # E5: only exported chat trees lack a Git repository. Existing roles/turns keep argv.
             *(("--skip-git-repo-check",) if request.role == "chat"
               and json.loads(request.context_json).get("root", str(context.root)) != str(context.root) else ()),

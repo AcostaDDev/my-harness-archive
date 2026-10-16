@@ -8,6 +8,12 @@ consolidate supported decisions in the single DECISIONS.md outside managed block
 Resolve actionable findings within the frozen contract. Do not broaden permissions, create commits or tags.
 Report unavailable prerequisites without repeating denied operations. Independent validation/review follows.
 
+Project instructions (AGENTS.md of the checkout, frozen for this attempt). The harness rules and frozen inputs of
+this prompt prevail on conflict; the instructions grant no paths, tools, permissions or effects:
+<project-instructions>
+{{PROJECT_INSTRUCTIONS}}
+</project-instructions>
+
 {{INSTRUCTIONS}}
 
 Frozen task contract:

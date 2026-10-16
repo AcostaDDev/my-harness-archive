@@ -103,6 +103,7 @@ tarea se leen solo las decisiones que cita; este índice sirve para buscar prece
 | [D091](#d091--p008-t004-cierre-y-archivo-unificados-con-planificación-posterior) | P008-T004: cierre y archivo unificados con planificación posterior | P008 |
 | [D092](#d092--p008-t005-prompts-y-definición-bajo-el-contrato-unificado) | P008-T005: prompts y definición bajo el contrato unificado | P008 |
 | [D093](#d093--p008-t006-api-y-ui-del-contrato-unificado) | P008-T006: API y UI del contrato unificado | P008 |
+| [D094](#d094--p008-t007-agentsmd-en-el-prompt-congelado-de-cada-rol) | P008-T007: AGENTS.md en el prompt congelado de cada rol | P008 |
 
 ## D001 — Alcance local y arquitectura base
 
@@ -2694,7 +2695,8 @@ Estado: decidido por el usuario el 2026-10-15, tras D086 (`01b4f6d`).
 
 Estado: decidido por el usuario el 2026-10-15 tras el análisis de incongruencias de esa sesión; **P008-T001
 (migración documental de este repositorio) implementada el mismo día**; P008-T002 implementada (D089); P008-T003
-implementada (D090); P008-T004 implementada (D091); P008-T005 implementada (D092); P008-T006–T015 pendientes. Fase: P008.
+implementada (D090); P008-T004 implementada (D091); P008-T005 implementada (D092); P008-T006 implementada (D093);
+P008-T007 implementada (D094); P008-T008–T015 pendientes. Fase: P008.
 Sustituye en parte D072/D073 (carpetas `decisions/`, `architecture/` y `research/`; layout v2 opcional), D032/D073
 (cierre y transición separados) y D037 (creación v1). Plan: [NEXT_STEPS](NEXT_STEPS.md).
 
@@ -2961,3 +2963,44 @@ a decisiones individuales, la creación v1 y la transición separada de fase en 
 
 Sin modelos, migraciones, dependencias ni cambio de versión congelada: la tarea cambia la superficie de API/UI,
 no los contratos del motor. OpenAPI y tipos del cliente regenerados desde los esquemas.
+
+## D094 — P008-T007: AGENTS.md en el prompt congelado de cada rol
+
+Estado: implementada y verificada offline el 2026-10-16; evidencia y límites en el
+[registro](phase/P008-T007_INSTRUCCIONES_CONTEXTO.md). Fase: P008. Aplica D088 punto 8 y conserva D066 y D068.
+
+Verificación previa, sin ejecutar ninguna CLI:
+
+- Codex 0.162.1, según la fuente del pin y los literales del nativo de D059: el escritor no carga el `AGENTS.md`
+  del proyecto, porque `trust_level="untrusted"` (D068) corta la búsqueda. El lector, sin entrada de confianza, lo
+  carga desde el checkout vivo y antepone un `AGENTS.override.md` si existe. `--ignore-rules` solo afecta a
+  execpolicy.
+- Claude, según la documentación oficial vigente (los pins ya no están instalados): con `--setting-sources ""` no
+  carga `CLAUDE.md` ni, por tanto, `@AGENTS.md`. Incluir `project` cargaría también `settings.json` y hooks del
+  checkout, así que no se cambia.
+
+Decisión:
+
+- El motor lee `AGENTS.md` de la raíz del checkout del intento en cada intento. Exige un archivo regular sin enlaces,
+  UTF-8, no vacío, sin NUL y de 32 KiB como máximo, sin truncar. Lo inyecta con la variable `{{PROJECT_INSTRUCTIONS}}`,
+  que solo aporta `render_attempt`, y guarda ruta, SHA-256 y tamaño en `project_instructions` del snapshot.
+  Ausente o inválido, el intento se detiene en `prompts` antes de invocar.
+- La variable está en `plan-task`, `execute-task`, `review-task`, `revise-task`, `close-phase`, `chat-turn` y
+  `plan-phase` (la reconciliación la recibe por `execute-task`). La definición queda fuera porque redacta ese archivo y
+  su borrador ya está en su contexto; `bootstrap-project` está retirada. Las reglas del harness y las entradas
+  congeladas prevalecen sobre `AGENTS.md`, y este no concede rutas, herramientas ni permisos.
+- Las versiones de plantilla anteriores siguen siendo válidas para leer catálogos congelados y versiones guardadas.
+  Con layout no pueden invocar: piden activar una versión con la variable. Un contexto sin layout (congelado antes de
+  D088) recibe un texto fijo de ausencia.
+- Adaptador `cli-11`: toda invocación Codex lleva `-c project_doc_max_bytes=0`, para que el lector no cargue una copia
+  viva sin hash y el único `AGENTS.md` sea el congelado. Es seguro porque solo quita una entrada, como verifica la
+  fuente del pin. Los flags de Claude no cambian.
+- `document_layout = "d088-5"` y `cli-11` dejan en cuarentena los jobs pendientes anteriores. Un cambio de `AGENTS.md`
+  solo afecta a los intentos posteriores; los snapshots guardados no se reescriben.
+
+Límites: ninguna observación en ejecución; Codex 0.161.0, el `AGENTS.md` global de Codex y la configuración gestionada
+sin analizar. Una transición sellada con `cli-10` y adaptador CLI real deja de reanudarse, como ocurrió con
+`cli-9 → cli-10`; la excepción de D092 solo cubre `document_layout`. `plan-phase` recibe `AGENTS.md` también en su
+contexto congelado. Sin modelos, migraciones, dependencias, API ni UI.
+
+No se ejecutó el harness sobre este repositorio, ni proveedores reales, smokes, push o publicación.

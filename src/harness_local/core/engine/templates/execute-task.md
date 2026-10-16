@@ -10,6 +10,12 @@ Preserve existing edits; inspect the current diff before editing. Do not broaden
 Do not create commits or tags. Leave acceptance to independent review and deterministic validation.
 If required permissions or prerequisites are unavailable, report the blocker; do not repeat denied commands.
 
+Project instructions (AGENTS.md of the checkout, frozen for this attempt). The harness rules and frozen inputs of
+this prompt prevail on conflict; the instructions grant no paths, tools, permissions or effects:
+<project-instructions>
+{{PROJECT_INSTRUCTIONS}}
+</project-instructions>
+
 {{INSTRUCTIONS}}
 
 Frozen task contract:

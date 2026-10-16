@@ -89,6 +89,8 @@ def web(tmp_path):
     (root / "docs").mkdir()
     (root / "docs/STATE.md").write_text("Synthetic web state\n")
     (root / "docs/NEXT_STEPS.md").write_text(PLAN)
+    # P008-T007: la composición local usa el layout unificado y cada intento exige AGENTS.md.
+    (root / "AGENTS.md").write_text("# Synthetic web\n\nInstrucciones sintéticas para agentes.\n")
     git(root, "init", "-q", "-b", "main")
     git(root, "add", "-A")
     git(root, "commit", "-q", "-m", "synthetic web baseline")

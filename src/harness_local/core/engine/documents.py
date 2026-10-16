@@ -7,16 +7,22 @@ que no pueden abrir encabezados, fences, HTML ni marcadores.
 """
 
 from dataclasses import dataclass
+import hashlib
+import os
 import re
 from pathlib import PurePosixPath
 import shlex
+import stat
 
-from harness_local.core.engine.contracts import RECONCILE_TASK
+from harness_local.core.engine.contracts import RECONCILE_TASK, ContractError
 from harness_local.core.engine.planning import FIELD_RE, TASK_RE, backticked, bullet_items, collapse
 
 MAX_DOCUMENT_BYTES = 512 * 1024
-# P008-T005: prompts y definición del contrato unificado; los jobs anteriores se detienen antes de efectos.
-DOCUMENT_LAYOUT = 'd088-4'
+# P008-T007: AGENTS.md en el prompt de cada rol y prompts nuevos; los jobs anteriores se detienen antes de efectos.
+DOCUMENT_LAYOUT = 'd088-5'
+# Igual que el `project_doc_max_bytes` por defecto del pin de Codex; AGENTS.md tiene como mucho 60 líneas.
+MAX_INSTRUCTIONS_BYTES = 32 * 1024
+LEGACY_INSTRUCTIONS = 'No project instructions: this frozen context predates the unified document contract (D088).'
 BLOCK_REASON = 'Managed documentation blocks (D072)'
 BLOCK_NAMES = ('state', 'roadmap', 'decisions')
 PHASE_CODE = re.compile(r'P\d{3}')
@@ -171,6 +177,40 @@ def require_layout(context) -> Layout:
     if value is None:
         raise ValueError('This operation requires the D072 document layout (documents = "v2")')
     return value
+
+
+def project_instructions(context) -> tuple[str, dict]:
+    """D088 punto 8 (P008-T007): `AGENTS.md` del checkout del intento, completo y con su hash.
+
+    Las CLI no lo cargan por sí mismas con sus flags congelados, así que entra en el prompt de cada rol. Se lee
+    en cada intento: un cambio afecta solo a los intentos posteriores. Ausente, enlace simbólico, no regular, vacío,
+    no UTF-8 o de más de 32 KiB detiene el intento antes de invocar; nunca se trunca. Sin layout (contextos
+    congelados anteriores a D088) no hay archivo de instrucciones que leer."""
+    target = layout(context)
+    if target is None:
+        return LEGACY_INSTRUCTIONS, {'path': None, 'sha256': None, 'bytes': 0}
+    missing = f'D088: {target.agents} is required before invoking agents; restore the project instructions'
+    try:
+        path = context.path(target.agents)
+        descriptor = os.open(path, os.O_RDONLY | os.O_NOFOLLOW)
+    except FileNotFoundError:
+        raise ContractError(missing) from None
+    except (OSError, ValueError) as exc:
+        raise ContractError(f'{target.agents} cannot be read as a regular file: {exc}') from None
+    if not stat.S_ISREG(os.fstat(descriptor).st_mode):
+        os.close(descriptor)
+        raise ContractError(f'{target.agents} must be a regular file')
+    with os.fdopen(descriptor, 'rb') as file:
+        data = file.read(MAX_INSTRUCTIONS_BYTES + 1)
+    if len(data) > MAX_INSTRUCTIONS_BYTES:
+        raise ContractError(f'{target.agents} exceeds {MAX_INSTRUCTIONS_BYTES} bytes; keep it within 60 lines')
+    try:
+        text = data.decode('utf-8')
+    except UnicodeDecodeError:
+        raise ContractError(f'{target.agents} must be UTF-8 text') from None
+    if not text.strip() or '\0' in text:
+        raise ContractError(f'{target.agents} must contain NUL-free project instructions')
+    return text, {'path': target.agents, 'sha256': hashlib.sha256(data).hexdigest(), 'bytes': len(data)}
 
 
 # --- bloques gestionados -----------------------------------------------------------------------
