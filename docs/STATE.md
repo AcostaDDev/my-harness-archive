@@ -179,5 +179,25 @@ Objetivo y criterios en [ROADMAP](ROADMAP.md); plan en [NEXT_STEPS](NEXT_STEPS.m
   ayuda, registro y UI que citan `local-config-3` quedan pendientes, fuera de las rutas de la tarea
   ([registro](phase/P008-T008_PERFILES_DECLARATIVOS.md)).
 
-**Siguiente:** P008-T009 (Flujo A: inventario de solo lectura), sin iniciar. Este repositorio sigue sin
+**P008-T009 completada** (Flujo A: inventario de solo lectura,
+[D096](DECISIONS.md#d096--p008-t009-inventario-de-importación-desde-el-árbol-de-head)):
+
+- `core/project_import.py` (reglas puras) y `adapters/project_import.py` (`read_inventory(context)`): lee el árbol de
+  HEAD de un checkout limpio con Git de solo lectura (`rev-parse`, `status`, `ls-tree`, `cat-file --batch`, sin
+  hooks, fsmonitor ni filtros). Rechaza sin Git, sin commits, con HEAD vacío o con cambios o archivos sin seguimiento.
+  Lo ignorado no se lee; enlaces y submódulos son entradas rechazadas que bloquean; `.harness/runs` solo se cuenta.
+- Ámbito: Markdown de la raíz, `docs/` y `.harness/` sin runs. Cada entrada con ruta, tamaño, SHA-256, clase
+  (`canonical`, `renameable`, `mergeable`, `historical`, `foreign`), regla y canónico inequívoco; alias y renumeración
+  del archivo nunca ocupan un destino existente o compartido. Origen por señales (ReferenceProject, v1, v2, `mixed`,
+  `unified`, `unknown`), fases de ROADMAP/STATE/NEXT_STEPS/archivo sin reconciliar, tamaño de AGENTS/CLAUDE/GEMINI,
+  bloques gestionados y huella `inventory_sha256` sin raíz ni commit.
+- Sin persistencia, API ni UI (T011 congelará el inventario); sin modelos, migraciones, dependencias ni prompts.
+- Verificación: 12 checks ligeros. Pytest completo: 1.233 OK y 121 subtests (aviso conocido de Starlette/httpx),
+  con 14 casos nuevos en `test_project_import.py`: tres orígenes sintéticos con su clasificación completa, relectura
+  idéntica sin cambios en el árbol ni en `.git`, huella sin raíz ni commit, solo Git de lectura, rechazos y enlaces.
+  252 enlaces y anclas válidos y los tres diagramas de `flows/legacy-migration.md` pasan el parser Mermaid local.
+  Sin Node/build ni `alembic check` (no cambian UI, OpenAPI ni esquema), sin proveedores reales ni smokes. Detalle
+  en el [registro](phase/P008-T009_INVENTARIO_FLUJO_A.md).
+
+**Siguiente:** P008-T010 (Flujo A: mapa de normalización determinista), sin iniciar. Este repositorio sigue sin
 registrarse en el harness.

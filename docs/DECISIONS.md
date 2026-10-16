@@ -105,6 +105,7 @@ tarea se leen solo las decisiones que cita; este índice sirve para buscar prece
 | [D093](#d093--p008-t006-api-y-ui-del-contrato-unificado) | P008-T006: API y UI del contrato unificado | P008 |
 | [D094](#d094--p008-t007-agentsmd-en-el-prompt-congelado-de-cada-rol) | P008-T007: AGENTS.md en el prompt congelado de cada rol | P008 |
 | [D095](#d095--p008-t008-perfiles-declarados-en-local-config-4) | P008-T008: perfiles declarados en local-config-4 | P008 |
+| [D096](#d096--p008-t009-inventario-de-importación-desde-el-árbol-de-head) | P008-T009: inventario de importación desde el árbol de HEAD | P008 |
 
 ## D001 — Alcance local y arquitectura base
 
@@ -2697,7 +2698,8 @@ Estado: decidido por el usuario el 2026-10-15, tras D086 (`01b4f6d`).
 Estado: decidido por el usuario el 2026-10-15 tras el análisis de incongruencias de esa sesión; **P008-T001
 (migración documental de este repositorio) implementada el mismo día**; P008-T002 implementada (D089); P008-T003
 implementada (D090); P008-T004 implementada (D091); P008-T005 implementada (D092); P008-T006 implementada (D093);
-P008-T007 implementada (D094); P008-T008 implementada (D095); P008-T009–T015 pendientes. Fase: P008.
+P008-T007 implementada (D094); P008-T008 implementada (D095); P008-T009 implementada (D096);
+P008-T010–T015 pendientes. Fase: P008.
 Sustituye en parte D072/D073 (carpetas `decisions/`, `architecture/` y `research/`; layout v2 opcional), D032/D073
 (cierre y transición separados) y D037 (creación v1). Plan: [NEXT_STEPS](NEXT_STEPS.md).
 
@@ -3042,5 +3044,38 @@ Decisiones tomadas con criterio dentro de la tarea:
 Límites: los textos de `serve --help`, el diagnóstico del registro y la UI (Home y Registry) siguen citando
 `local-config-3`, porque esos archivos quedan fuera de las rutas de la tarea. El perfil no se ha ensayado con un
 proyecto Django ni con herramientas reales. Sin modelos, migraciones, codec, dependencias, API ni UI.
+
+No se ejecutó el harness sobre este repositorio, ni proveedores reales, smokes, push o publicación.
+
+## D096 — P008-T009: inventario de importación desde el árbol de HEAD
+
+Estado: implementada y verificada offline el 2026-10-16; detalle y límites en el
+[registro](phase/P008-T009_INVENTARIO_FLUJO_A.md). Fase: P008. Aplica D088 punto 10; conserva D012 y D027.
+
+Decisiones tomadas con criterio dentro de la tarea:
+
+- El inventario lee el árbol de HEAD de un checkout limpio con Git de solo lectura (`rev-parse`, `status` sin locks
+  opcionales, `ls-tree` y `cat-file --batch` sin filtros), con el entorno controlado de `adapters/git.py`. Lo ignorado
+  no se lee, los enlaces simbólicos y submódulos son entradas rechazadas que bloquean el Flujo A, y releer el mismo
+  checkout da el mismo resultado. Se rechaza sin Git, sin commits, con HEAD vacío o con cambios o archivos sin
+  seguimiento. Límites: 5.000 entradas, 16 MiB por entrada y 256 MiB en total, sin truncar.
+- Ámbito documental: Markdown de la raíz, `docs/` (la carpeta de STATE del contexto) y `.harness/` salvo sus runs,
+  que solo se cuentan por lstat porque siguen la migración D027.
+- Cinco clases (`canonical`, `renameable`, `mergeable`, `historical`, `foreign`), cada entrada con la regla que la
+  justifica y el documento canónico cuando es inequívoco. Los alias son una lista explícita (mayúsculas,
+  `DECISSONS.md`, `ADR*.md`, documentos de `docs/` en la raíz, `architecture/data-model.md`). Un alias que chocaría
+  con un destino existente o compartido pasa a `mergeable` (`alias-conflict`); igual con la renumeración del archivo.
+  Lo ambiguo (`PROJECT.md`, `REQUIREMENTS.md`, `HARNESS_COMMANDS.md`, `UI_*.md`, `DELIVERY_CHECKLIST.md`) es
+  `mergeable` para la propuesta del revisor; `.harness/**` y lo que no es Markdown fuera del archivo son `foreign`.
+- Origen por señales: un único origen (ReferenceProject, v1 o v2) lo determina; varios dan `mixed`; ninguno, `unified` con
+  los once documentos de D088 o `unknown`. `phase-000` sin STATE no es señal de ReferenceProject.
+- Las fases de ROADMAP (`## PNNN —` o `## Phase NNN —`), STATE, NEXT_STEPS y archivo se informan tal como se detectan,
+  sin reconciliarlas. La huella `inventory_sha256` excluye raíz y commit e incluye árbol, entradas y runs.
+- Sin persistencia, API ni UI: el inventario es un valor recalculable que T011 congelará con la conversación de
+  importación.
+
+Límites: un filtro `clean` definido en la configuración local del repositorio podría ejecutarse durante `status`
+(configuración del usuario, no contenido del proyecto). No hay entrada HTTP ni CLI todavía. Sin modelos, migraciones,
+codec, dependencias, prompts ni contratos generados.
 
 No se ejecutó el harness sobre este repositorio, ni proveedores reales, smokes, push o publicación.

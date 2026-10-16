@@ -42,6 +42,7 @@ casos de uso. El supervisor es el único que lanza procesos y consume la cola; c
 | Módulo | Responsabilidad |
 |---|---|
 | `core/legacy.py`, `core/migration.py`, `core/simulation.py`, `core/evidence.py` | Lectura legacy, plan de migración a gestionado, esqueleto H0.3, evidencia |
+| `core/project_import.py`, `adapters/project_import.py` | Flujo A: inventario de solo lectura desde el árbol de HEAD (D096) |
 | `core/engine/context.py` | `ProjectContext`, perfil, política, comandos; contexto explícito por proyecto |
 | `core/engine/contracts.py`, `planning.py` | Contrato de tarea, rutas protegidas, planificación determinista desde NEXT_STEPS |
 | `core/engine/workflow.py`, `validation.py`, `review.py`, `acceptance.py`, `junit.py` | Bucle plan → ejecución → validación → revisión → aceptación |

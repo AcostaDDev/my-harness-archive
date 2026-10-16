@@ -4,7 +4,7 @@ Objetivo y criterios de salida en [ROADMAP](ROADMAP.md#p008--contrato-documental
 Decisión de base: [D088](DECISIONS.md#d088--contrato-documental-unificado-cierre-de-fase-automático-e-importación-de-proyectos-p008).
 Análisis de incongruencias que originó la fase: [docs/phase](phase/P008-T001_MIGRACION_DOCUMENTAL.md).
 
-**Siguiente tarea:** P008-T009. Orden de ejecución: T002 → T007 (motor y contrato), T008 (perfiles, que el usuario
+**Siguiente tarea:** P008-T010. Orden de ejecución: T002 → T007 (motor y contrato), T008 (perfiles, que el usuario
 necesita para su próximo proyecto Django), T009–T012 (Flujo A) y T013–T015 (Flujo B).
 
 ## Restricciones compartidas
@@ -223,6 +223,9 @@ registro y UI que citan `local-config-3` quedan fuera de las rutas de la tarea (
 ## P008-T009 — Flujo A: inventario de solo lectura
 
 **Objetivo:** Auditar un proyecto de un harness anterior sin modificarlo.
+**Estado:** completada el 2026-10-16 ([D096](DECISIONS.md#d096--p008-t009-inventario-de-importación-desde-el-árbol-de-head)).
+Lee el árbol de HEAD de un checkout limpio con Git de solo lectura; sin persistencia, API ni UI (T011 congela el
+inventario). Clases, reglas y límites en el [registro](phase/P008-T009_INVENTARIO_FLUJO_A.md).
 **Alcance:**
 - Proyecto registrado no vacío, en Git y con checkout limpio. Detección del origen: tipo ReferenceProject (`.harness/`,
   `PROJECT.md`, `REQUIREMENTS.md`, `archive/phase-NNN` sin STATE), v1 de este harness (`BRIEF.md`,
