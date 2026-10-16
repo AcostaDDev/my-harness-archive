@@ -259,5 +259,15 @@ Objetivo y criterios en [ROADMAP](ROADMAP.md); plan en [NEXT_STEPS](NEXT_STEPS.m
   válidos por parser/gramática; diff revisado. Sin comprobación visual, proveedores ni smokes reales. Detalle y
   límites en el [registro](phase/P008-T012_COMMIT_CONTINUIDAD.md).
 
-**Siguiente:** P008-T013 (Flujo B: inventario determinista), sin iniciar. Este repositorio sigue sin
+**P008-T013 completada** (Flujo B,
+[D101](DECISIONS.md#d101--p008-t013-inventario-estático-del-flujo-b-y-propuesta-de-perfil)):
+
+- Inventario puro de HEAD: stack, entidades/relaciones, rutas locales, tests y CI con fuentes y hashes. Git de
+  lectura sin filtros ni ejecutar el proyecto; límites y diagnósticos explícitos. Dinamismo sin resolver.
+- Propuesta `local-config-4` con argv/cwd y evidencia, pendiente de confirmar; sin escribir TOML. Sin API, UI o
+  persistencia; conversación/commit pendientes de T014/T015. [Registro](phase/P008-T013_INVENTARIO_FLUJO_B.md).
+- Verificación: 12 checks; pytest 1.303 y 121 subtests; 20 casos finales, 284 enlaces/anclas y un diagrama válidos.
+  Sin pruebas frontend ni Alembic independiente (sin UI/esquema), proveedores reales ni smokes.
+
+**Siguiente:** P008-T014 (Flujo B: ingeniería inversa del revisor), sin iniciar. Este repositorio sigue sin
 registrarse en el harness.

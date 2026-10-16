@@ -110,6 +110,7 @@ tarea se leen solo las decisiones que cita; este índice sirve para buscar prece
 | [D098](#d098--p008-t011-conversación-de-importación-con-borradores-privados) | P008-T011: conversación de importación con borradores privados | P008 |
 | [D099](#d099--flujo-a-activación-d027-antes-de-la-importación) | Flujo A: activación D027 antes de la importación | P008 |
 | [D100](#d100--p008-t012-importación-confirmada-y-continuidad-del-flujo-a) | P008-T012: importación confirmada y continuidad del Flujo A | P008 |
+| [D101](#d101--p008-t013-inventario-estático-del-flujo-b-y-propuesta-de-perfil) | P008-T013: inventario estático del Flujo B y propuesta de perfil | P008 |
 
 ## D001 — Alcance local y arquitectura base
 
@@ -3223,3 +3224,36 @@ D037 y D098. No reescribe historiales ni intenciones anteriores.
 
 Extensiones técnicas de las rutas de T012: `frontend/openapi.json`, tipos generados y prueba Node del enrutador para
 los contratos y la nueva navegación. Sin dependencias nuevas, proveedores reales, smokes ni publicación.
+
+## D101 — P008-T013: inventario estático del Flujo B y propuesta de perfil
+
+Estado: implementada el 2026-10-16; verificación offline y límites en el
+[registro](phase/P008-T013_INVENTARIO_FLUJO_B.md). Fase: P008. Aplica D088 punto 11 sobre el perfil declarativo de D095.
+
+Decisiones tomadas con criterio dentro de la tarea:
+
+- **Fuente y frontera.** `adapters/project_onboarding.read_inventory(root)` describe un HEAD no vacío por su árbol
+  sellado, usando solo `rev-parse`, `ls-tree` por id y `cat-file --batch`, con el entorno Git controlado existente.
+  Exige `--no-lazy-fetch` para impedir descargas de objetos de clones parciales; Git sin ese flag se rechaza.
+  No usa `status` (podría lanzar filtros `clean`), no recorre el worktree ni ejecuta código del proyecto. Los cambios
+  locales no forman parte del inventario; T015 deberá exigir una base vigente antes de escribir.
+- **Ámbito acotado.** Fuentes Python/JS/TS/Prisma/Go, manifiestos, configuración de herramientas, tests, CI y
+  documentos raíz seleccionados. Se excluyen dependencias instaladas, cachés y builds aunque estén versionados.
+  Límites: 50.000 entradas de árbol, 1 MiB por fuente, 32 MiB total; no se trunca. Enlaces/submódulos no se siguen;
+  errores de lectura, formato o sintaxis dejan diagnóstico. El árbol sigue identificando la base completa.
+- **Hechos con procedencia.** `core/project_onboarding.build_inventory` es puro, sin dependencias nuevas. Python
+  con AST; manifiestos con JSON/TOML; JS/TS/Prisma con un subconjunto léxico explícito. Registra entidades/campos,
+  relaciones, rutas locales, tests, CI y stack con fuentes. No evalúa expresiones ni resuelve imports, herencia entre
+  módulos o montajes; lo dinámico queda señalado y los destinos desconocidos, a `null`. El inventario no garantiza
+  completar el esquema runtime; la ingeniería inversa del revisor sigue pendiente de T014.
+- **Formato recalculable.** `harness-local/onboarding-inventory/1`, con SHA-256 por fuente y `inventory_sha256`
+  sobre árbol y hechos, independiente de raíz y commit. Sin SQLite, API, UI ni snapshots nuevos en T013. T014 lo
+  congelará con la conversación; T015 confirmará perfil e incorporación.
+- **Perfil propuesto.** Forma `local-config-4` con `[profiles.<nombre>]`, argv, cwd y evidencia de comandos,
+  protección documental y paridad sobre modelos observados. Preparación vacía; no instala ni ejecuta nada, no
+  escribe el TOML y siempre exige confirmación o edición. Si no detecta validaciones, `ready=false` y no inventa
+  comandos para rellenarlas. Ejecutables, entorno y composición quedan para el operador. Los perfiles propuestos
+  con comandos se validan en pruebas con el parser de D095.
+
+Sin cambios de modelos, migraciones, dependencias, prompts, versiones congeladas ni API. Sin ejecución del harness
+sobre este repositorio, proveedores reales, smokes, push o publicación.

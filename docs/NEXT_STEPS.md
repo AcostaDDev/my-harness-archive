@@ -4,7 +4,7 @@ Objetivo y criterios de salida en [ROADMAP](ROADMAP.md#p008--contrato-documental
 Decisión de base: [D088](DECISIONS.md#d088--contrato-documental-unificado-cierre-de-fase-automático-e-importación-de-proyectos-p008).
 Análisis de incongruencias que originó la fase: [docs/phase](phase/P008-T001_MIGRACION_DOCUMENTAL.md).
 
-**Siguiente tarea:** P008-T013. Orden de ejecución: T002 → T007 (motor y contrato), T008 (perfiles, que el usuario
+**Siguiente tarea:** P008-T014. Orden de ejecución: T002 → T007 (motor y contrato), T008 (perfiles, que el usuario
 necesita para su próximo proyecto Django), T009–T012 (Flujo A) y T013–T015 (Flujo B).
 
 ## Restricciones compartidas
@@ -317,6 +317,10 @@ técnicas en el [registro](phase/P008-T012_COMMIT_CONTINUIDAD.md).
 ## P008-T013 — Flujo B: inventario determinista
 
 **Objetivo:** Describir un repositorio sin harness por análisis estático, sin ejecutar su código.
+**Estado:** completada el 2026-10-16 ([D101](DECISIONS.md#d101--p008-t013-inventario-estático-del-flujo-b-y-propuesta-de-perfil)).
+Inventario recalculable de HEAD con fuentes, hashes y límites explícitos; propuesta `[profiles.*]` de
+`local-config-4` pendiente de confirmación. Sin API, UI, persistencia ni escritura de TOML: T014/T015 incorporarán
+la conversación y la confirmación. Detalle en el [registro](phase/P008-T013_INVENTARIO_FLUJO_B.md).
 **Alcance:**
 - Detección de stack (`pyproject.toml`, `requirements*.txt`, `manage.py`, `package.json`, `go.mod`…), modelos de datos
   (SQLAlchemy, modelos Django, Prisma, entidades TypeORM) por lectura sintáctica, rutas (Django `urls.py`, decoradores

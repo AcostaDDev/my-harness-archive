@@ -43,6 +43,7 @@ casos de uso. El supervisor es el único que lanza procesos y consume la cola; c
 |---|---|
 | `core/legacy.py`, `core/migration.py`, `core/simulation.py`, `core/evidence.py` | Lectura legacy, plan de migración a gestionado, esqueleto H0.3, evidencia |
 | `core/project_import.py`, `adapters/project_import.py` | Flujo A: inventario de solo lectura desde el árbol de HEAD (D096) |
+| `core/project_onboarding.py`, `adapters/project_onboarding.py` | Flujo B: inventario estático de HEAD (stack, entidades, rutas, tests y CI) y propuesta local-config-4 pendiente de confirmación (D101) |
 | `core/project_normalization.py` | Flujo A: mapa de normalización determinista sobre el inventario (D097) |
 | `core/engine/import_commit.py`, `storage/project_import.py` | Flujo A: árbol confirmado, conservación de originales, intención de commit y adopción de la fase (D100) |
 | `core/engine/import_conversation.py`, `storage/import_drafts.py` | Flujo A: conversación `project_import` del revisor, área privada de borradores y bloqueos de la vista previa (D098) |
@@ -126,6 +127,12 @@ por su API y los artefactos referenciados; la restauración es de consulta (`que
   de esta instalación; la importación confirma originales archivados y un commit conciliable (D100). Las transiciones ya selladas conservan su
   conciliación con los bytes originales. La definición congela los valores por defecto; la planificación incluye
   instrucciones y DDBB-DIAGRAM entre sus documentos de contexto.
+- **Inventario del Flujo B** (D101): AST de Python, JSON/TOML de manifiestos y un subconjunto léxico de JS/TS/Prisma,
+  solo biblioteca estándar. Lee blobs de un árbol Git sellado, sin `status`, filtros ni código del proyecto; excluye
+  dependencias instaladas y builds incluso si están versionados. Cada entidad/ruta cita fuente y línea; las rutas
+  son declaraciones locales, sin expandir montajes o imports. Propone comandos con argv/cwd y evidencia en la forma
+  de `[profiles.*]` de T008; no escribe el TOML ni autoriza ejecución. Sin API, UI ni persistencia en T013; conversación
+  e incorporación pendientes de T014/T015. Detalle en el [flujo](flows/project-onboarding.md).
 
 ## 7. API, UI y seguridad
 
