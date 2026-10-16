@@ -122,7 +122,7 @@ def _operation_module(run):
     if run.purpose == "phase_transition":
         from harness_local.storage import transition
         return transition
-    if run.purpose in ("definition", "phase_planning", "project_import"):
+    if run.purpose in ("definition", "phase_planning", "project_import", "onboarding"):
         from harness_local.storage import planning
         return planning
     from harness_local.storage import phases
@@ -379,10 +379,10 @@ class SQLiteManagedRepository:
         return job, run
 
     def _release(self, session, job, run):
-        if independent_chat(job):
+        if independent_chat(job) or run.purpose == 'onboarding':
             from harness_local.adapters.chat_snapshot import cleanup
             cleanup(self, job)
-        else:
+        if not independent_chat(job):
             session.delete(session.get(Lock, run.root))
 
     def heartbeat(self, claim: JobRecord, *, lease_seconds=30) -> None:

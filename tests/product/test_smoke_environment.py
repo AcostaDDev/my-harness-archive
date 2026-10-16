@@ -127,7 +127,7 @@ def test_synthetic_smoke_environment_and_frozen_history(smoke, monkeypatch, tmp_
             spec = process['spec']
             assert spec['environment_keys'] == sorted(environment)
             assert spec['environment_sha256'] == hashlib.sha256(freeze(environment).encode()).hexdigest()
-            assert spec['adapter_version'] == 'cli-11' and spec['timeout_seconds'] == 60
+            assert spec['adapter_version'] == 'cli-12' and spec['timeout_seconds'] == 60
             model = 'claude-sonnet-4-6' if attempt.request.role == 'executor' else 'gpt-6-luna'
             assert attempt.request.selection.model == model and attempt.request.selection.effort == 'low'
             assert attempt.request.fresh_session and spec['requested']['fresh_session']
@@ -153,7 +153,7 @@ def test_synthetic_smoke_environment_and_frozen_history(smoke, monkeypatch, tmp_
                 assert args[args.index('--sandbox') + 1] == 'read-only'
         frozen = json.loads(run.versions_json)
         assert frozen['cli_config_sha256'] == port.frozen_versions()['cli_config_sha256']
-        assert frozen['agent_adapter'] == 'cli-11'
+        assert frozen['agent_adapter'] == 'cli-12'
         changed = CLIProcessAdapter([replace(c, environment=tuple(expected.items()) if legacy else
                                     tuple((k, v) for k, v in expected.items() if k != 'USER'))
                                     for c in port.agents.values()], port.artifact_root)

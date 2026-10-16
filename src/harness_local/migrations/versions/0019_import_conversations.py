@@ -15,7 +15,7 @@ def upgrade():
 
 def downgrade():
     bind = op.get_bind()
-    if (bind.execute(sa.text("SELECT count(*) FROM planning_conversations WHERE kind = 'project_import'")).scalar()
-            or bind.execute(sa.text("SELECT count(*) FROM managed_runs WHERE purpose = 'project_import'")).scalar()):
-        raise RuntimeError('Import conversations cannot be represented before 0019; keep this revision')
+    if (bind.execute(sa.text("SELECT count(*) FROM planning_conversations WHERE kind IN ('project_import', 'onboarding')")).scalar()
+            or bind.execute(sa.text("SELECT count(*) FROM managed_runs WHERE purpose IN ('project_import', 'onboarding')")).scalar()):
+        raise RuntimeError('Import/onboarding conversations cannot be represented before 0019; keep this revision')
     op.drop_column('planning_conversations', 'source')

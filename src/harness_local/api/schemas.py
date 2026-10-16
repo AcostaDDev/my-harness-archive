@@ -300,7 +300,7 @@ class ManagedRunSummaryRead(BaseModel):
     created_at: str
     updated_at: str
     purpose: Literal['task', 'phase_check', 'phase_close', 'chat', 'document_export', 'bootstrap', 'bootstrap_discovery',
-                     'definition', 'phase_planning', 'project_import', 'import_commit',
+                     'definition', 'phase_planning', 'project_import', 'onboarding', 'import_commit',
                      'document_edit', 'phase_transition']
 
 
@@ -1080,7 +1080,7 @@ class ChatCommandRead(BaseModel):
 
 # --- H6.5: creación y planificación conversacionales -----------------------------------------------
 
-PlanningKind = Literal['definition', 'phase_planning', 'project_import']
+PlanningKind = Literal['definition', 'phase_planning', 'project_import', 'onboarding']
 SHA256 = r'^[0-9a-f]{64}$'
 
 
@@ -1220,7 +1220,7 @@ class PlanningConversationRead(BaseModel):
     brief: dict[str, Any] | None
     source: dict[str, Any] | None = Field(default=None, description=(
         'Importación (P008-T011): origen, HEAD, carpeta de documentos, huellas del inventario y del mapa congelados '
-        'y fase activa detectada; null en las demás conversaciones.'))
+        'y fase activa detectada. Onboarding: HEAD, árbol y huella del inventario; null en las demás.'))
     known: dict[str, str | None]
     log: list[dict[str, Any]]
     questions: list[PlanningQuestionRead]

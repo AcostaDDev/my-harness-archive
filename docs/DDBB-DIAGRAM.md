@@ -1,6 +1,6 @@
 # Diagrama de datos — my_harness
 
-Esquema SQLite del servicio local (Alembic `0020_project_imports`, 35 tablas). Generado en P008-T001 desde el metadata de `src/harness_local/storage/models.py` (actualizado en P008-T012); cualquier cambio de modelos o migraciones actualiza este documento en la misma tarea (regla de paridad, D088).
+Esquema SQLite del servicio local (Alembic `0020_project_imports`, 35 tablas). Generado en P008-T001 desde el metadata de `src/harness_local/storage/models.py` (actualizado en P008-T014, sin cambio de esquema); cualquier cambio de modelos o migraciones actualiza este documento en la misma tarea (regla de paridad, D088).
 
 Convenciones: `PK` clave primaria, `FK` clave ajena declarada, `UK` unicidad de columna; «null» marca columnas opcionales. Las unicidades compuestas y los índices únicos parciales se listan bajo cada diagrama. Las entidades de otro contexto aparecen solo con las columnas que relacionan. Los artefactos pesados (streams, capturas, copias) viven fuera de SQLite y se referencian por ruta y hash.
 
@@ -337,7 +337,10 @@ Unicidad: `managed_phases` (root, code); `uq_managed_phases_open_root` sobre `ma
 
 Chat contextual (D035, D083), conversaciones de definición y planificación de fase (D075, D086) e importación del
 Flujo A (`kind = 'project_import'`, D098): `source` congela el inventario y el mapa al crearla; sus borradores viven
-fuera de SQLite, en `import-drafts/<id>/` junto a la base.
+fuera de SQLite, en `import-drafts/<id>/` junto a la base. El Flujo B (`kind = 'onboarding'`, D102) usa la misma
+columna `source` para congelar inventario, HEAD y árbol, y `onboarding-drafts/<id>/` para sus borradores. No añade
+tablas, columnas ni índices. `managed_runs.purpose = 'onboarding'` enlaza sus turnos con la autoridad de planificación;
+la intención de exportación queda en eventos antes del efecto. La guardia de downgrade de 0019 protege ambos orígenes.
 
 ```mermaid
 erDiagram

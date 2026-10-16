@@ -278,6 +278,7 @@ class LocalSupervisor:
                 from harness_local.storage.prompts import PromptRepository
                 snapshot = PlanningRepository(self.repository).snapshot(claim.run_id)
                 agents, _, evidence = self.ports_factory(context, versions)
+                catalog = PromptRepository(self.repository.engine).catalog(context)
                 if hasattr(agents, "bind_process_journal"):
                     agents.bind_process_journal(journal)
                 if snapshot["kind"] == "definition":
@@ -287,6 +288,21 @@ class LocalSupervisor:
 
                     def observe():
                         return reader.inspect_definition(context)
+                elif snapshot["kind"] == "onboarding":
+                    from harness_local.adapters.chat_snapshot import snapshot_path
+                    from harness_local.storage.onboarding import OnboardingDrafts, export_snapshot, observation
+                    area = OnboardingDrafts.of(self.repository.engine, snapshot['conversation_id'])
+                    destination = snapshot_path(self.repository, claim)
+                    head = snapshot['context']['head']
+                    journal._call(self.repository.effect, 'onboarding_snapshot_intent', {
+                        'head': head, 'format': 'head-export-1', 'path': str(destination)})
+                    reader = self.commit_factory(context, versions) if self.commit_factory is not None else None
+                    evidence = export_snapshot(context.root, head, destination, getattr(reader, 'executable', 'git'))
+                    context = replace(context, root=destination)
+
+                    def observe():
+                        return {**observation(area.inspect_definition(context)),
+                                'snapshot': evidence.capture(context).fingerprint}
                 elif snapshot["kind"] == "project_import":
                     # P008-T011: origen (árbol de HEAD) y borradores del área privada, sin escribir el checkout.
                     from harness_local.storage.import_drafts import ImportDrafts, observe as observe_import
@@ -301,7 +317,7 @@ class LocalSupervisor:
                         captured = evidence.capture(context)
                         return {"base_revision": captured.base_revision, "fingerprint": captured.fingerprint}
                 history, outcome = planning_turn(context, record.history, snapshot, agents, observe, journal,
-                                                 PromptRepository(self.repository.engine).catalog(context))
+                                                 catalog)
             elif request["action"] in ("phase_check", "phase_close"):
                 # D088: check y cierre bajo el lock; el cierre incluye el archivo documental.
                 if self.commit_factory is None:

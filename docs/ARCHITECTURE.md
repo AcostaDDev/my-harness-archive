@@ -46,6 +46,7 @@ casos de uso. El supervisor es el único que lanza procesos y consume la cola; c
 | `core/project_onboarding.py`, `adapters/project_onboarding.py` | Flujo B: inventario estático de HEAD (stack, entidades, rutas, tests y CI) y propuesta local-config-4 pendiente de confirmación (D101) |
 | `core/project_normalization.py` | Flujo A: mapa de normalización determinista sobre el inventario (D097) |
 | `core/engine/import_commit.py`, `storage/project_import.py` | Flujo A: árbol confirmado, conservación de originales, intención de commit y adopción de la fase (D100) |
+| `storage/onboarding.py` | Flujo B: conversación de ingeniería inversa, exportación de HEAD de solo lectura y borradores privados (D102) |
 | `core/engine/import_conversation.py`, `storage/import_drafts.py` | Flujo A: conversación `project_import` del revisor, área privada de borradores y bloqueos de la vista previa (D098) |
 | `core/engine/context.py` | `ProjectContext`, perfil, política, comandos; contexto explícito por proyecto |
 | `core/engine/contracts.py`, `planning.py` | Contrato de tarea, rutas protegidas, planificación determinista desde NEXT_STEPS |
@@ -118,11 +119,11 @@ por su API y los artefactos referenciados; la restauración es de consulta (`que
 - **Validaciones nativas** (`commands-1`): ejecutables absolutos, autorización por comando completo, captura acotada en
   SQLite, grupos POSIX.
 - **Prompts** (`templates/`): `plan-task`, `execute-task`, `revise-task`, `review-task`, `executor-routing`,
-  `close-phase`, `reconcile-phase`, `chat-turn`, `define-project`, `plan-phase`, `import-project` (D098; rol de
+  `close-phase`, `reconcile-phase`, `chat-turn`, `define-project`, `plan-phase`, `import-project` (D098), `onboard-project` (D102; rol de
   solo lectura `definition`, sin `AGENTS.md` inyectado porque es parte del origen), `bootstrap-project`. Jerarquía base →
   perfil → proyecto; snapshot por intento. Prompts unificados y definición versión 4 (D092). `AGENTS.md` (≤32 KiB)
   entra por `{{PROJECT_INSTRUCTIONS}}` en todos los roles salvo la definición, con ruta, hash y tamaño en el snapshot;
-  sin él, el intento se detiene antes de invocar (D094). `document_layout = "d088-6"` congela las reglas nuevas y
+  sin él, el intento se detiene antes de invocar (D094). `document_layout = "d088-7"` congela las reglas nuevas y
   detiene jobs anteriores antes de efectos. D099 excluye de Git solo el marcador local validado por la guardia
   de esta instalación; la importación confirma originales archivados y un commit conciliable (D100). Las transiciones ya selladas conservan su
   conciliación con los bytes originales. La definición congela los valores por defecto; la planificación incluye
@@ -131,15 +132,20 @@ por su API y los artefactos referenciados; la restauración es de consulta (`que
   solo biblioteca estándar. Lee blobs de un árbol Git sellado, sin `status`, filtros ni código del proyecto; excluye
   dependencias instaladas y builds incluso si están versionados. Cada entidad/ruta cita fuente y línea; las rutas
   son declaraciones locales, sin expandir montajes o imports. Propone comandos con argv/cwd y evidencia en la forma
-  de `[profiles.*]` de T008; no escribe el TOML ni autoriza ejecución. Sin API, UI ni persistencia en T013; conversación
-  e incorporación pendientes de T014/T015. Detalle en el [flujo](flows/project-onboarding.md).
+  de `[profiles.*]` de T008; no escribe el TOML ni autoriza ejecución. T014 congela inventario y HEAD en la
+  conversación `onboarding`, con borradores CAS privados, exportación de D083 y evidencia antes/después. Mantiene
+  el lock y carril de planificación; no consulta el checkout vivo durante la invocación. `cli-12` permite al rol
+  `definition` omitir la comprobación Git solo en exportaciones; el sandbox sigue siendo de lectura. Sin diagrama
+  ni comandos de plantilla por defecto. UI específica, vista previa/commit y confirmación del perfil pendientes
+  de T015. Detalle en el [flujo](flows/project-onboarding.md).
 
 ## 7. API, UI y seguridad
 
 - `/api/managed`: proyectos, registro, runs, jobs, intentos, diffs paginados, permisos, fases, documentos, chat,
   planificación, métricas. Desde T006 no hay endpoints de creación v1 ni transición; el GET de estado de creación
-  acompaña a la definición conversacional y el plan confirmado usa la fase ACTIVE sin tareas. La conversación
-  `project_import` usa las rutas de planificación y `GET …/planning/{c}/import` da sus bloqueos (D098).
+  acompaña a la definición conversacional y el plan confirmado usa la fase ACTIVE sin tareas. Las conversaciones
+  `onboarding` (D102) y `project_import` usan las rutas de planificación; solo para importación,
+  `GET …/planning/{c}/import` da sus bloqueos (D098).
   `GET …/projects/{p}/import` ofrece primero la activación D027 si hace falta;
   `POST …/planning/{c}/import/preview` y `…/import/confirm` aplican el árbol por hash (D100). `/api/legacy`:
   observación de solo lectura. Mutaciones con `Idempotency-Key` y versión esperada; 409 con `{code, diagnostic}`; 422 ante contrato inválido.

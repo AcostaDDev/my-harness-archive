@@ -27,7 +27,7 @@ from harness_local.core.engine.metrics import CAPTURE as METRICS_CAPTURE
 from harness_local.core.engine.prompts import digest, output_schema
 
 
-VERSION = "cli-11"
+VERSION = "cli-12"
 # Version/help characterization (D052): Claude 2.1.295 and 2.1.296 share the same help.
 SUPPORTED = {"codex": ("0.161.0", "0.162.1"), "claude": ("2.1.295", "2.1.296")}
 # Codex workspace-write was characterized on 0.162.1 only.
@@ -193,8 +193,8 @@ def argv_for(config, context, request):
             # project-doc budget stops the pin from also loading AGENTS.override.md/AGENTS.md from the live
             # checkout (it skips them only for untrusted projects, i.e. the writer).
             "-c", "project_doc_max_bytes=0",
-            # E5: only exported chat trees lack a Git repository. Existing roles/turns keep argv.
-            *(("--skip-git-repo-check",) if request.role == "chat"
+            # D083/D102: exported chat and onboarding trees lack Git metadata; live checkouts keep argv.
+            *(("--skip-git-repo-check",) if request.role in ("chat", "definition")
               and json.loads(request.context_json).get("root", str(context.root)) != str(context.root) else ()),
             "--cd", str(context.root), "-")
     if access == "read":

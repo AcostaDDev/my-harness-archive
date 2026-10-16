@@ -192,7 +192,9 @@ def test_api_editor_guard_conflict_diff_rollback_and_restart(migrated_database, 
     setup = config(context, supervisor=False)
     path = '/api/managed/projects/synthetic/prompts/execute-task'
     with client(migrated_database[0], tmp_path, setup) as http:
-        assert len(http.get('/api/managed/projects/synthetic/prompts').json()) == 12
+        shown = http.get('/api/managed/projects/synthetic/prompts').json()
+        assert {item['name'] for item in shown} == set(VARIABLES)
+        assert len(shown) == len(VARIABLES)
         original = http.get(path).json()
         text = original['effective']['template'] + '\nSynthetic API draft'
         assert http.post(path + '/validate', json={'template': '{{INVALID}}'}).status_code == 422

@@ -284,7 +284,7 @@ def test_sealed_legacy_transition_recovers_with_layout_version_upgrade(unified, 
     transitions = TransitionRepository(world.repository)
     writer = world.ports.writer(world.context, VERSIONS)
     older = {**VERSIONS, 'document_layout': previous}
-    current = {**VERSIONS, 'document_layout': 'd088-6'}
+    current = {**VERSIONS, 'document_layout': 'd088-7'}
     seen = []
     def factory(context, versions):
         seen.append(versions)

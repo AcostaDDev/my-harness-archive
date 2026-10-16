@@ -16,7 +16,7 @@ salvo donde se indica. Detalle por fase en `docs/archive/phase-NNN/SUMMARY.md`.
   cuarentena por versión y confirmación explícita del escritor detenido; backup y restauración de consulta; retención
   explícita de streams.
 - **Agentes** ([P007](archive/phase-007/SUMMARY.md)): revisor y ejecutor Codex o Claude en cualquier combinación
-  (`cli-11`, `local-config-2/3/4`), revisor en solo lectura con esquema tipado, memoria automática desactivada,
+  (`cli-12`, `local-config-2/3/4`), revisor en solo lectura con esquema tipado, memoria automática desactivada,
   supresión de confianza del escritor Codex. Validaciones nativas `commands-1` con JUnit. Perfiles: `typescript-web`
   (componible desde el TOML), `reference_project` (solo biblioteca) y perfiles declarados en `[profiles.*]` de
   `local-config-4`, con el ejemplo `python-django` (P008-T008).
@@ -51,12 +51,8 @@ Objetivo y criterios en [ROADMAP](ROADMAP.md); plan en [NEXT_STEPS](NEXT_STEPS.m
   D088; AGENTS (45 líneas), CLAUDE (8), GEMINI (5) y README (79).
 - Código: solo la ruta de `baseline.json` (ahora en `tests/fixtures/legacy/`) en `tests/test_legacy_fixtures.py` y dos
   docstrings.
-- Verificación: 12 checks ligeros; pytest 1120 pruebas y 121 subtests (un aviso de deprecación de Starlette sobre
-  `httpx`, ajeno a esta tarea); 72 pruebas Node; ningún enlace relativo roto en los Markdown del repositorio; 16
-  diagramas Mermaid válidos con el parser de `mermaid` 11.17.2; `parse_roadmap` (P001–P008) y `plan_tasks` (15 tareas)
-  del motor aceptan ROADMAP y NEXT_STEPS; los 18 documentos activos pasan el parser de bloques; STATE 4,5 KiB (base
-  3,2 KiB) y NEXT_STEPS 22 KiB dentro de presupuesto. No se ejecutaron `alembic check` ni el build del frontend: no
-  cambian modelos, migraciones ni UI.
+- Verificación: 12 checks ligeros, pytest 1.120 y 121 subtests, 72 Node, enlaces y 16 diagramas válidos;
+  parsers de ROADMAP/NEXT_STEPS y presupuestos correctos. Sin Alembic/build: no cambian esquema ni UI.
 
 **P008-T002 completada** (layout unificado obligatorio y plantilla, [D089](DECISIONS.md#d089--p008-t002-layout-unificado-obligatorio-y-plantilla)):
 
@@ -69,11 +65,8 @@ Objetivo y criterios en [ROADMAP](ROADMAP.md); plan en [NEXT_STEPS](NEXT_STEPS.m
 - La configuración compone siempre `documents = "v2"` y congela `document_layout = "d088-1"` (jobs anteriores en
   cuarentena). Creación v1 y descubrimiento rechazados con diagnóstico; plantilla `project-foundation` y
   `examples/bootstrap_demo.py` eliminados. `protected_write` exime AGENTS/CLAUDE/GEMINI para la creación.
-- Verificación: 12 checks ligeros; pytest 1112 pruebas y 121 subtests (la suite completa dio 1111 OK y 1 fallo de
-  `test_document_viewer`, ruta antigua en la prueba, corregida y re-ejecutada en su archivo: 7 OK); `alembic check`
-  sobre una base temporal; 16
-  diagramas Mermaid válidos con el parser local; el DECISIONS de este repositorio indexa 89 decisiones sin duplicados.
-  No se ejecutaron pruebas Node ni el build: no cambian UI ni OpenAPI.
+- Verificación: 12 checks ligeros; pytest 1.112 y 121 subtests (ruta antigua del visor corregida y sus 7 casos
+  revalidados), Alembic temporal, 16 diagramas y 89 decisiones válidos. Sin Node/build: sin UI/OpenAPI.
 - En esta entrega quedaban prompts, cierre, API y UI; cierre resuelto en T004 y prompts en T005. API/UI e inyección
   de instrucciones siguen pendientes de T006/T007.
 
@@ -90,11 +83,8 @@ Objetivo y criterios en [ROADMAP](ROADMAP.md); plan en [NEXT_STEPS](NEXT_STEPS.m
 - `decision_proposals` (≤5, `title`/`decision`/`rationale`) en la salida del ejecutor y del revisor; mal formadas
   detienen el run; se guardan con el intento y la revisión y llegan a la evidencia de la reconciliación sin escribir
   DECISIONS. Adaptador `cli-10` y `document_layout = "d088-2"` (jobs pendientes anteriores en cuarentena).
-- Verificación: 12 checks ligeros; pytest 1122 pruebas y 121 subtests (un aviso de Starlette ajeno); tras dos
-  retoques posteriores (validación de propuestas al revalidar, ajuste de línea) se re-ejecutaron los archivos
-  afectados: 144 OK, incluidas 11 pruebas nuevas en `test_documentation_parity.py`. Enlaces relativos y anclas de los
-  Markdown editados correctos; el diagrama de secuencia modificado de `flows/task-run.md` pasa el parser Mermaid
-  local. Sin `alembic check`, pruebas Node ni build: no cambian modelos, migraciones, UI ni OpenAPI.
+- Verificación: 12 checks ligeros; pytest 1.122 y 121 subtests; 144 casos afectados tras ajustes finales,
+  incluidas 11 pruebas de paridad, enlaces y diagrama válidos. Sin Alembic/Node/build: sin esquema/UI/OpenAPI.
 
 **P008-T004 completada** (cierre y archivo unificados,
 [D091](DECISIONS.md#d091--p008-t004-cierre-y-archivo-unificados-con-planificación-posterior)):
@@ -269,5 +259,17 @@ Objetivo y criterios en [ROADMAP](ROADMAP.md); plan en [NEXT_STEPS](NEXT_STEPS.m
 - Verificación: 12 checks; pytest 1.303 y 121 subtests; 20 casos finales, 284 enlaces/anclas y un diagrama válidos.
   Sin pruebas frontend ni Alembic independiente (sin UI/esquema), proveedores reales ni smokes.
 
-**Siguiente:** P008-T014 (Flujo B: ingeniería inversa del revisor), sin iniciar. Este repositorio sigue sin
+**P008-T014 completada** (Flujo B: ingeniería inversa del revisor,
+[D102](DECISIONS.md#d102--p008-t014-ingeniería-inversa-sobre-head-y-borradores-privados)):
+
+- Conversación `onboarding` con inventario y HEAD congelados; revisor de solo lectura sobre exportación privada
+  de ese commit. Propone documentos D088, diagrama desde modelos, flujos y decisiones inferidas; pregunta las
+  incógnitas. Borradores privados con CAS, sin escribir checkout/README ni activar el perfil.
+- Observación antes/después, respuesta inválida FAILED sin fallback y limpieza al terminar o confirmar detenido
+  tras caída. `cli-12`, `document_layout = "d088-7"`, OpenAPI/tipos y etiquetas actualizados; sin cambio de esquema.
+  UI específica, vista previa/commit y confirmación del perfil pendientes de T015.
+- Verificación: pytest 1.322 OK y 121 subtests; recuento antiguo corregido y 29 prompts OK. 12 checks, 74 Node,
+  build y Alembic correctos; [registro](phase/P008-T014_INGENIERIA_INVERSA.md).
+
+**Siguiente:** P008-T015 (Flujo B: vista previa, commit y control del harness), sin iniciar. Este repositorio sigue sin
 registrarse en el harness.

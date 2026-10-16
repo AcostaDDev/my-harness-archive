@@ -74,7 +74,7 @@ def test_reader_schema_comes_from_the_frozen_prompt_snapshot(setup):
 def test_claude_reader_journey_sends_the_attempt_schema_and_gets_typed_lists(setup, repository):
     context, data, folder, tmp_path = setup
     config = load_local_config(write(folder, v2(data, 'claude', 'claude')))
-    assert config.projects[0].versions['agent_adapter'] == 'cli-11'
+    assert config.projects[0].versions['agent_adapter'] == 'cli-12'
     job, record = journey(repository, config, 'typed')
     assert record.status == 'ACCEPTANCE_READY', record.history.stop
     readers = [json.loads(line) for line in launches(tmp_path)][0::2]

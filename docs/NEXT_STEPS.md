@@ -4,7 +4,7 @@ Objetivo y criterios de salida en [ROADMAP](ROADMAP.md#p008--contrato-documental
 Decisión de base: [D088](DECISIONS.md#d088--contrato-documental-unificado-cierre-de-fase-automático-e-importación-de-proyectos-p008).
 Análisis de incongruencias que originó la fase: [docs/phase](phase/P008-T001_MIGRACION_DOCUMENTAL.md).
 
-**Siguiente tarea:** P008-T014. Orden de ejecución: T002 → T007 (motor y contrato), T008 (perfiles, que el usuario
+**Siguiente tarea:** P008-T015. Orden de ejecución: T002 → T007 (motor y contrato), T008 (perfiles, que el usuario
 necesita para su próximo proyecto Django), T009–T012 (Flujo A) y T013–T015 (Flujo B).
 
 ## Restricciones compartidas
@@ -336,6 +336,11 @@ la conversación y la confirmación. Detalle en el [registro](phase/P008-T013_IN
 **Referencias:** D088 punto 11
 
 ## P008-T014 — Flujo B: ingeniería inversa del revisor
+
+**Estado:** completada el 2026-10-16 ([D102](DECISIONS.md#d102--p008-t014-ingeniería-inversa-sobre-head-y-borradores-privados)).
+Conversación `onboarding` con el inventario y HEAD congelados, exportación privada de solo lectura y borradores
+privados con CAS; preguntas y decisiones inferidas. Sin commit ni perfil activo hasta T015. Detalle y extensiones
+técnicas en el [registro](phase/P008-T014_INGENIERIA_INVERSA.md).
 
 **Objetivo:** Generar en solo lectura los documentos iniciales a partir del código real.
 **Alcance:**

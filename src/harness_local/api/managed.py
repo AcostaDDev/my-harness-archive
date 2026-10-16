@@ -886,7 +886,8 @@ def managed_router(runtime: ManagedRuntime):
     def conversation_port(item, kind):
         """Puerto de cada tipo: destino del bootstrap (definición) o lector Git (importación; sus borradores viven
         en el área privada junto a SQLite)."""
-        return {'definition': definition_writer, 'project_import': import_reader}.get(kind, lambda _: None)(item)
+        port = {'definition': definition_writer, 'project_import': import_reader, 'onboarding': import_reader}
+        return port.get(kind, lambda _: None)(item)
 
     def drafts_port(item, conversation_id):
         """Los borradores de una importación están en el área privada: no necesitan Git ni bootstrap."""

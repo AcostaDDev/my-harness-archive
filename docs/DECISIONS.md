@@ -111,6 +111,7 @@ tarea se leen solo las decisiones que cita; este índice sirve para buscar prece
 | [D099](#d099--flujo-a-activación-d027-antes-de-la-importación) | Flujo A: activación D027 antes de la importación | P008 |
 | [D100](#d100--p008-t012-importación-confirmada-y-continuidad-del-flujo-a) | P008-T012: importación confirmada y continuidad del Flujo A | P008 |
 | [D101](#d101--p008-t013-inventario-estático-del-flujo-b-y-propuesta-de-perfil) | P008-T013: inventario estático del Flujo B y propuesta de perfil | P008 |
+| [D102](#d102--p008-t014-ingeniería-inversa-sobre-head-y-borradores-privados) | P008-T014: ingeniería inversa sobre HEAD y borradores privados | P008 |
 
 ## D001 — Alcance local y arquitectura base
 
@@ -3257,3 +3258,41 @@ Decisiones tomadas con criterio dentro de la tarea:
 
 Sin cambios de modelos, migraciones, dependencias, prompts, versiones congeladas ni API. Sin ejecución del harness
 sobre este repositorio, proveedores reales, smokes, push o publicación.
+
+
+## D102 — P008-T014: ingeniería inversa sobre HEAD y borradores privados
+
+Estado: implementada el 2026-10-16; verificación offline y límites en el
+[registro](phase/P008-T014_INGENIERIA_INVERSA.md). Fase: P008. Aplica D088 punto 11 y D083, sobre D075 y D101.
+
+- Conversación `onboarding` en las rutas de planificación existentes. Congela el inventario de T013, su HEAD y
+  árbol en `planning_conversations.source` (0019), sin nuevas tablas ni columnas. Solo repositorios Git no vacíos
+  y sin creación, fases o importación propia confirmada; STATE/NEXT_STEPS o `.harness/` versionados remiten al Flujo A.
+  Los archivos raíz existentes, incluido README, son evidencia; no se sustituyen al conversar o aplicar borradores.
+- Cada turno congela inventario, borradores, preguntas, ediciones y conversación, con límite conjunto de 2 MiB.
+  Consulta el HEAD original incluso si el worktree o HEAD cambian después. T015 deberá comprobar la base vigente
+  antes de escribir. Reutiliza la exportación privada de D083, sin `.git`, enlaces ni submódulos, con sus límites
+  completos (20.000 archivos, 16 MiB por archivo y 128 MiB total), y Git con `--no-lazy-fetch` de D101. Se congela
+  también el árbol completo, no solo las fuentes seleccionadas por el inventario. No se ejecuta código del proyecto.
+- Rol de solo lectura `definition`, esquema existente y plantilla nueva por hash `onboard-project`. No inyecta
+  AGENTS del disco: sus reglas se analizan como evidencia de la instantánea. Pide los once documentos D088 y
+  flujos, diagrama desde modelos concretos, decisiones observadas marcadas «inferida del código», preguntas ante
+  requisitos o planes no deducibles y confirmación de sustitución de README. Sin plantilla automática de diagrama
+  «Sin persistencia» ni comandos de un perfil aún sin confirmar. Una respuesta inválida es FAILED sin fallback.
+- Borradores en `onboarding-drafts/<id>/` junto a SQLite, con la CAS de la definición/importación. El harness solo
+  los escribe tras aplicar una propuesta confirmada o una edición del usuario. El checkout no se escribe. Detecta
+  cambios del área antes de invocar y modificaciones de la exportación o del área durante el turno; descarta la
+  respuesta alterada. Preguntas abiertas y aplazamientos con motivo se conservan para la confirmación de T015.
+- Conserva el carril de planificación de H6.5 y su lock por checkout; comparte con el chat la exportación, no su
+  carril. Intención persistida antes de exportar; limpieza al terminar o al confirmar detenido el proceso tras
+  caída. Una exportación fallida queda en recuperación, sin invocación ni reintento automático.
+- `cli-12`: Codex recibe `--skip-git-repo-check` también para el rol `definition` si su raíz es una exportación,
+  conservando sandbox de lectura y memoria desactivada. `document_layout = "d088-7"` deja jobs anteriores en
+  cuarentena. Catálogos y snapshots anteriores siguen legibles; no se reescriben. La guardia de downgrade de 0019
+  también impide perder un origen de onboarding, sin cambiar su upgrade ni la revisión SQLite.
+
+Extensiones técnicas acotadas: supervisor para exportación/observación; flag/versionado del adaptador Codex;
+`0019` solo en la guardia de downgrade; OpenAPI/tipos regenerados y etiqueta de propósito en dos archivos de UI.
+El control y la recuperación siguen siendo cooperativos, sin aislamiento OS. Las pruebas usan revisores falsos:
+comprueban contexto, contrato, CAS, diagrama sintético exacto y efectos, no la calidad de generación de un proveedor
+real. UI específica, vista previa/commit, conservación de originales y confirmación del perfil pendientes de T015.

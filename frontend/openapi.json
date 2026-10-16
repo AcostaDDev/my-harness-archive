@@ -15968,6 +15968,7 @@
               "definition",
               "phase_planning",
               "project_import",
+              "onboarding",
               "import_commit",
               "document_edit",
               "phase_transition"
@@ -16132,6 +16133,7 @@
               "definition",
               "phase_planning",
               "project_import",
+              "onboarding",
               "import_commit",
               "document_edit",
               "phase_transition"
@@ -18896,7 +18898,8 @@
             "enum": [
               "definition",
               "phase_planning",
-              "project_import"
+              "project_import",
+              "onboarding"
             ],
             "title": "Kind"
           },
@@ -18968,7 +18971,8 @@
             "enum": [
               "definition",
               "phase_planning",
-              "project_import"
+              "project_import",
+              "onboarding"
             ],
             "title": "Kind"
           },
@@ -19009,7 +19013,7 @@
               }
             ],
             "title": "Source",
-            "description": "Importación (P008-T011): origen, HEAD, carpeta de documentos, huellas del inventario y del mapa congelados y fase activa detectada; null en las demás conversaciones."
+            "description": "Importación (P008-T011): origen, HEAD, carpeta de documentos, huellas del inventario y del mapa congelados y fase activa detectada. Onboarding: HEAD, árbol y huella del inventario; null en las demás."
           },
           "known": {
             "additionalProperties": {
@@ -19142,7 +19146,8 @@
             "enum": [
               "definition",
               "phase_planning",
-              "project_import"
+              "project_import",
+              "onboarding"
             ],
             "title": "Kind"
           },

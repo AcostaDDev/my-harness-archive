@@ -21,8 +21,8 @@ from harness_local.core.project_normalization import snapshot_contents
 AREA = 'import-drafts'
 
 
-def area_root(engine) -> Path:
-    parent = Path(engine.url.database).resolve().parent / AREA
+def area_root(engine, area=AREA) -> Path:
+    parent = Path(engine.url.database).resolve().parent / area
     if parent.is_symlink() or (parent.exists() and not parent.is_dir()):
         raise ValueError('The import drafts area must be a private directory')
     parent.mkdir(mode=0o700, exist_ok=True)
@@ -41,6 +41,8 @@ def read_source(context, executable: str = 'git', guard=None) -> tuple[dict, dic
 class ImportDrafts:
     """Borradores de una conversación de importación; misma interfaz que el lector de la definición."""
 
+    area = AREA
+
     def __init__(self, base: Path):
         self.base = base
 
@@ -48,7 +50,7 @@ class ImportDrafts:
     def of(cls, engine, conversation_id: str) -> 'ImportDrafts':
         if not isinstance(conversation_id, str) or not conversation_id or '/' in conversation_id or conversation_id in ('.', '..'):
             raise ValueError('Invalid import conversation id')
-        return cls(area_root(engine) / conversation_id)
+        return cls(area_root(engine, cls.area) / conversation_id)
 
     def _folder(self) -> Path | None:
         if self.base.is_symlink() or (self.base.exists() and not self.base.is_dir()):

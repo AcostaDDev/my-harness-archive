@@ -55,7 +55,7 @@ run y, cuando procede, al intento exacto.
 | F01 | Registrar proyecto | Alta desde la UI con raíz canónica, confianza explícita, perfil y composición del TOML; o en `[[projects]]` del TOML | Implementado (P007, D078) |
 | F02 | Crear proyecto desde cero | Brief, conversación con el revisor, borradores en disco con CAS, aceptación y commit raíz con P001 | Implementado (P007, D075, D082; P008-T002/T005, D092) |
 | F03 | Importar un proyecto de un harness anterior (Flujo A) | Inventario, normalización al layout unificado sin perder historial, documentos sincronizados | Inventario de solo lectura (P008-T009, D096), mapa determinista (P008-T010, D097) propuesta del revisor con borradores privados (P008-T011, D098) y commit confirmado con continuidad (P008-T012, D100) |
-| F04 | Incorporar un repositorio sin harness (Flujo B) | Discovery por ingeniería inversa, documentos iniciales y archivos raíz mínimos | Inventario estático y propuesta de perfil implementados (P008-T013, D101); conversación e incorporación pendientes (T014/T015) |
+| F04 | Incorporar un repositorio sin harness (Flujo B) | Discovery por ingeniería inversa, documentos iniciales y archivos raíz mínimos | Inventario estático y propuesta de perfil implementados (P008-T013, D101); conversación de ingeniería inversa sobre HEAD con borradores privados (P008-T014, D102); incorporación confirmada pendiente (T015) |
 | F05 | Observar un harness anterior | Índice de lectura idempotente, navegación y actualización incremental | Implementado (P002) |
 | F06 | Navegar proyectos, fases, tareas y runs | URL propia por recurso, carga limitada y paginada | Implementado (P007, D077) |
 | F07 | Ejecutar una tarea | Planificación → ejecución → validación → revisión → aceptación o corrección → commit del harness | Implementado (P003) |
@@ -170,7 +170,11 @@ bloques de estado y crea una nueva versión de su definición, conservando la an
   SPECIFICATION base, STATE actual y los archivos raíz mínimos, con un perfil declarativo confirmado por el usuario.
   T013 implementa el inventario de HEAD y la propuesta de perfil (D101), sin ejecutar el proyecto ni escribir su TOML.
   Enumera tests y CI, fuentes y hashes; declara los límites del análisis estático y las expresiones dinámicas sin
-  resolverlas. La generación documental y el commit siguen pendientes de T014/T015; [flujo](flows/project-onboarding.md).
+  resolverlas. T014 añade la conversación `onboarding`: el revisor de solo lectura consulta ese HEAD exportado,
+  propone los documentos D088 y flujos, señala las decisiones inferidas y pregunta lo no deducible. Los borradores
+  se aplican por confirmación/CAS en un área privada junto a SQLite; no se reemplaza el README del checkout.
+  Vista previa, conservación de originales, perfil confirmado y commit pendientes de T015;
+  [flujo](flows/project-onboarding.md).
 
 En ambos: el agente no escribe; el harness aplica borradores confirmados con CAS; nada del código del proyecto se
 modifica ni se ejecuta sin autorización; el resultado entra en un único commit confirmado.

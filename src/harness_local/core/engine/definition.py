@@ -39,8 +39,8 @@ DRAFT_NAME = re.compile(r'[A-Za-z0-9][A-Za-z0-9._-]{0,99}\.md')
 # P008-T011: la importación reutiliza el rol de solo lectura `definition` y su esquema (documentos completos), así que
 # el adaptador no cambia; su plantilla y su contexto son propios.
 KINDS = {'definition': ('define-project', 'definition'), 'phase_planning': ('plan-phase', 'planning'),
-         'project_import': ('import-project', 'definition')}
-DRAFT_KINDS = ('definition', 'project_import')
+         'project_import': ('import-project', 'definition'), 'onboarding': ('onboard-project', 'definition')}
+DRAFT_KINDS = ('definition', 'project_import', 'onboarding')
 TEMPLATE = {'name': 'project-definition', 'version': '4'}  # 4: documentos obligatorios y prompts D088
 
 
@@ -211,7 +211,9 @@ def planning_turn(context, history, snapshot: dict, agents, observe, journal, ca
     except Exception as exc:
         reason = f'Target could not be observed before the turn: {type(exc).__name__}: {exc}'
         return done(stop_history(history, kind, reason), 'FAILED', [reason])
-    if snapshot.get('observed') is not None and before != snapshot['observed']:
+    queued_observation = ({k: v for k, v in before.items() if k != 'snapshot'}
+                          if kind == 'onboarding' else before)
+    if snapshot.get('observed') is not None and queued_observation != snapshot['observed']:
         # La CAS de las propuestas usa los hashes congelados: si ya no coinciden, ni se invoca al agente.
         reason = 'Drafts changed after the message was queued; send the message again'
         return done(stop_history(history, kind, reason), 'FAILED', [reason], observed={'before': before})

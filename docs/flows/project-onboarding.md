@@ -2,7 +2,8 @@
 
 El Flujo B de D088 describe el código existente antes de proponer su documentación y ponerlo bajo control del
 harness. **Implementado en P008-T013 (D101): inventario estático y propuesta de perfil.** La conversación con el
-revisor (T014), la confirmación del perfil y el commit documental (T015) siguen pendientes.
+revisor sobre HEAD está implementada en T014 (D102); la confirmación del perfil y el commit documental (T015)
+siguen pendientes.
 
 ```mermaid
 flowchart TD
@@ -47,3 +48,50 @@ rutas y scripts, y aportar ejecutables, entorno y composición; ningún perfil q
 - `core/project_onboarding.py`: `build_inventory(entries, head, tree)` puro y propuesta de perfil.
 - `tests/product/test_project_onboarding.py`: fuentes y checkouts sintéticos, sin frameworks instalados ni código
   del proyecto ejecutado.
+
+
+## Conversación de ingeniería inversa (P008-T014, D102)
+
+```mermaid
+flowchart TD
+    A["Crear conversación onboarding sobre repositorio sin harness"] --> B["Inventario y HEAD congelados en planning_conversations.source"]
+    B --> C["Mensaje: inventario, borradores CAS, preguntas e historial congelados"]
+    C --> D["Persistir intención de exportación antes del efecto"]
+    D --> E["Exportar HEAD original sin Git metadata; permisos de lectura y límites D083"]
+    E --> F["Observar exportación y borradores; comparar CAS congelada"]
+    F --> G["Revisor definition con onboard-project; sin ejecutar código ni comandos"]
+    G --> H{"¿Salida válida y observación intacta?"}
+    H -- no --> I["FAILED sin fallback; descartar propuestas"]
+    H -- sí --> J["Guardar preguntas y propuestas de documentos completos"]
+    J --> K["Usuario confirma propuesta o edita; CAS escribe solo borrador privado"]
+    K --> C
+    J --> L["Limpiar exportación al finalizar"]
+    I --> L
+    E -. caída .-> M["Recuperación: confirmar proceso detenido y limpiar; turno UNKNOWN sin reintento"]
+    K -. pendiente T015 .-> N["Vista previa, conservación de originales, perfil y commit confirmados"]
+```
+
+La API admite `kind = "onboarding"` en las rutas de planificación existentes, sin brief ni fase. Congela el
+inventario completo de T013 en la conversación y usa su HEAD en todos los turnos, aunque cambie el checkout vivo.
+T015 deberá rechazar una base obsoleta antes de escribir. STATE/NEXT_STEPS o `.harness/` versionados remiten al
+Flujo A; fases, creación o importación confirmada en esta instalación también impiden conversar/incorporar de nuevo.
+
+La exportación completa usa los límites de D083, más estrictos que los del inventario: 20.000 archivos, 16 MiB
+por archivo y 128 MiB en total, sin enlaces ni submódulos. Git exige `--no-lazy-fetch`; no hay filtros, ejecución de
+fuentes ni comandos del perfil. El contexto conjunto del inventario y los borradores se limita a 2 MiB sin truncar.
+La exportación conserva el carril y lock de planificación, con permisos cooperativos de lectura, no aislamiento OS.
+
+La plantilla pide los once documentos D088, flujos de módulos observados, entidades/relaciones contrastadas con el
+código real y DECISIONS con estado «inferida del código». No usa el diagrama «Sin persistencia» ni comandos de
+plantilla como fallback. Pregunta las incógnitas, incluido el trabajo futuro de P001; las preguntas bloqueantes y
+sus aplazamientos explícitos quedan guardados para la futura confirmación. Una propuesta del revisor no prueba
+que su contenido sea correcto: la generación semántica depende de su revisión y confirmación humanas.
+
+Los borradores se guardan en `onboarding-drafts/<id>/` junto a SQLite. Los cambios antes de invocar impiden llamar;
+los cambios de la exportación o del área durante el turno descartan la respuesta. El README original y el resto
+del checkout permanecen intactos al aplicar una propuesta confirmada: solo cambia el borrador privado. La plantilla
+pide consentimiento para proponer sustituir README; T015 deberá conservar el original y confirmar la sustitución.
+Sin UI específica ni operación de commit en T014. El perfil propuesto sigue sin activar ni escribir el TOML.
+
+Fuente: `storage/onboarding.py`, `storage/planning.py`, `core/engine/templates/onboard-project.md` y
+`tests/product/test_onboarding_conversation.py`. La exportación y limpieza reutilizan `adapters/chat_snapshot.py`.

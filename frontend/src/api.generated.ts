@@ -3515,7 +3515,7 @@ export interface components {
              * Purpose
              * @enum {string}
              */
-            purpose: "task" | "phase_check" | "phase_close" | "chat" | "document_export" | "bootstrap" | "bootstrap_discovery" | "definition" | "phase_planning" | "project_import" | "import_commit" | "document_edit" | "phase_transition";
+            purpose: "task" | "phase_check" | "phase_close" | "chat" | "document_export" | "bootstrap" | "bootstrap_discovery" | "definition" | "phase_planning" | "project_import" | "onboarding" | "import_commit" | "document_edit" | "phase_transition";
             /** Actions */
             actions: ("revalidate" | "retry_executor" | "commit" | "permissions")[];
             /** Versions */
@@ -3562,7 +3562,7 @@ export interface components {
              * Purpose
              * @enum {string}
              */
-            purpose: "task" | "phase_check" | "phase_close" | "chat" | "document_export" | "bootstrap" | "bootstrap_discovery" | "definition" | "phase_planning" | "project_import" | "import_commit" | "document_edit" | "phase_transition";
+            purpose: "task" | "phase_check" | "phase_close" | "chat" | "document_export" | "bootstrap" | "bootstrap_discovery" | "definition" | "phase_planning" | "project_import" | "onboarding" | "import_commit" | "document_edit" | "phase_transition";
         };
         /** MetricAccountingRead */
         MetricAccountingRead: {
@@ -4492,7 +4492,7 @@ export interface components {
              * Kind
              * @enum {string}
              */
-            kind: "definition" | "phase_planning" | "project_import";
+            kind: "definition" | "phase_planning" | "project_import" | "onboarding";
             /** Title */
             title: string;
             /**
@@ -4518,7 +4518,7 @@ export interface components {
              * Kind
              * @enum {string}
              */
-            kind: "definition" | "phase_planning" | "project_import";
+            kind: "definition" | "phase_planning" | "project_import" | "onboarding";
             /** Title */
             title: string;
             phase: components["schemas"]["ChatPhaseRead"] | null;
@@ -4528,7 +4528,7 @@ export interface components {
             } | null;
             /**
              * Source
-             * @description Importación (P008-T011): origen, HEAD, carpeta de documentos, huellas del inventario y del mapa congelados y fase activa detectada; null en las demás conversaciones.
+             * @description Importación (P008-T011): origen, HEAD, carpeta de documentos, huellas del inventario y del mapa congelados y fase activa detectada. Onboarding: HEAD, árbol y huella del inventario; null en las demás.
              */
             source?: {
                 [key: string]: unknown;
@@ -4576,7 +4576,7 @@ export interface components {
              * Kind
              * @enum {string}
              */
-            kind: "definition" | "phase_planning" | "project_import";
+            kind: "definition" | "phase_planning" | "project_import" | "onboarding";
             /** Title */
             title: string;
             /** Phase Id */
