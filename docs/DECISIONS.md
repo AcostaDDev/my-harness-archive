@@ -108,6 +108,7 @@ tarea se leen solo las decisiones que cita; este índice sirve para buscar prece
 | [D096](#d096--p008-t009-inventario-de-importación-desde-el-árbol-de-head) | P008-T009: inventario de importación desde el árbol de HEAD | P008 |
 | [D097](#d097--p008-t010-mapa-de-normalización-del-flujo-a) | P008-T010: mapa de normalización del Flujo A | P008 |
 | [D098](#d098--p008-t011-conversación-de-importación-con-borradores-privados) | P008-T011: conversación de importación con borradores privados | P008 |
+| [D099](#d099--flujo-a-activación-d027-antes-de-la-importación) | Flujo A: activación D027 antes de la importación | P008 |
 
 ## D001 — Alcance local y arquitectura base
 
@@ -3153,3 +3154,31 @@ estado limpio que exige el inventario. La coherencia de STATE y NEXT_STEPS con l
 entradas en revisión no se comprueban aquí: son de la vista previa de T012. Sin UI propia de la importación.
 
 No se ejecutó el harness sobre este repositorio, ni proveedores reales, smokes, push o publicación.
+
+## D099 — Flujo A: activación D027 antes de la importación
+
+Estado: decidida por el usuario el 2026-10-16, a propuesta de la sesión; pendiente de implementar en P008-T012. Fase:
+P008. Resuelve la pregunta abierta de D098 (límites); conserva D027 y su guardia de modo.
+
+Contexto: con `.harness/runs` sin activar, la guardia D027 rechaza los turnos de la conversación `project_import`.
+Activar el modo gestionado escribe `.harness/managed-mode.json`, que en ReferenceProject no está ignorado
+(`.harness/.gitignore` solo ignora `runs/`, comprobado en solo lectura), y el inventario de D096 exige un checkout
+limpio, así que las dos operaciones se bloqueaban entre sí.
+
+Decisión:
+
+1. **Orden.** Con runs legacy, la activación D027 (operación confirmada aparte, con su copia verificada del historial)
+   va antes de la conversación de importación y de su commit. La guardia no se exime para ningún run del Flujo A.
+2. **Inventario.** El inventario tolera un único archivo sin seguimiento, `.harness/managed-mode.json`, y solo cuando
+   la guardia confirma que coincide por hash con una activación viva y `ACTIVE`. Cualquier otro cambio, o un marcador
+   sin activación o distinto de ella, sigue bloqueando como checkout sucio.
+3. **Commit de T012.** No versiona el marcador ni modifica ningún `.gitignore` del proyecto: el marcador es estado
+   local de esta instalación y queda fuera del contrato documental.
+4. **API y UI.** Si hay runs legacy sin activar, la importación presenta como primer paso la vista previa de la
+   activación D027 en lugar de crear la conversación.
+
+Motivos: el commit de normalización es una escritura del harness y necesitaría la activación de todos modos; el
+historial queda copiado y verificado antes de mover ningún documento; no se abre una excepción en la guardia de
+seguridad de D027; activación (`.harness/`) e importación (documentos; `.harness/**` es ajeno en el mapa) no se
+solapan. Alternativa descartada: importar primero, que exigía eximir de la guardia los turnos (y el commit o un
+orden inverso dentro de T012) y dejaba al harness anterior escribir runs durante la conversación sin copia verificada.

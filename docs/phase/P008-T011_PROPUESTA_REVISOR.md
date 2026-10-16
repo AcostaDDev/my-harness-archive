@@ -63,7 +63,8 @@ con runs legacy; y el recorrido HTTP completo.
 
 - **Guardia D027.** Un checkout con `.harness/runs` sin activar rechaza los turnos. Activar el modo gestionado escribe
   `.harness/managed-mode.json`, que deja el checkout sucio salvo que esté ignorado, y el inventario exige un checkout
-  limpio. El orden entre ambas operaciones debe decidirse en T012 (pregunta para el usuario).
+  limpio. Decidido por el usuario en [D099](../DECISIONS.md#d099--flujo-a-activación-d027-antes-de-la-importación):
+  activación primero y tolerancia solo del marcador de una activación viva; se implementa en T012.
 - **Coherencia de fase.** No se comprueba que STATE, NEXT_STEPS y ROADMAP resultantes coincidan en la fase activa; es
   criterio de T012.
 - **Entradas en revisión.** Las que no cubre un borrador quedan como aviso; su destino (archivo en `phase-000` u otro)

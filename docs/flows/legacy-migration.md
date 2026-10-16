@@ -64,7 +64,8 @@ flowchart TD
 ```
 
 Límite (D098): con `.harness/runs` sin activar, la guardia de modo D027 rechaza los turnos de la conversación; la
-conversación y su estado sí se pueden crear y consultar.
+conversación y su estado sí se pueden crear y consultar. D099 fija el orden para T012: primero la activación D027 y
+después la importación, con el marcador de la activación viva tolerado por el inventario y fuera del commit.
 
 ## Fuente en el código
 

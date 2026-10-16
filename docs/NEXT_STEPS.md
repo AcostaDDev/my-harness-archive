@@ -269,8 +269,8 @@ Función pura del inventario y sus bytes, sin persistencia (T011 congela el mapa
 **Objetivo:** Que el revisor, en solo lectura, proponga las fusiones y el adelgazamiento que el mapa no resuelve.
 **Estado:** completada el 2026-10-16 ([D098](DECISIONS.md#d098--p008-t011-conversación-de-importación-con-borradores-privados)).
 Rol de solo lectura `definition` con la plantilla `import-project`; inventario y mapa congelados en
-`planning_conversations.source` (`0019`); bloqueos de la vista previa en `GET …/planning/{c}/import`. Pendiente para
-T012: el orden entre la activación D027 y la importación cuando hay runs legacy ([registro](phase/P008-T011_PROPUESTA_REVISOR.md)).
+`planning_conversations.source` (`0019`); bloqueos de la vista previa en `GET …/planning/{c}/import`. El orden entre
+la activación D027 y la importación con runs legacy lo fija [D099](DECISIONS.md#d099--flujo-a-activación-d027-antes-de-la-importación) para T012.
 **Alcance:**
 - Conversación `import` sobre la infraestructura de H6.5, con inventario, mapa y contenidos congelados: borradores de
   SPECIFICATION y ARCHITECTURE fusionados, AGENTS ≤60 líneas que conserve las reglas del proyecto, CLAUDE y GEMINI
@@ -294,16 +294,20 @@ T012: el orden entre la activación D027 y la importación cuando hay runs legac
 - Vista previa con el árbol completo: movimientos, renombrados, borradores aplicados, archivos de fase y documentos
   retirados (siempre conservados en `archive/`). Confirmación por hash, motivo e Idempotency-Key; job con intención
   sellada; commit «docs: normalizar al contrato documental»; adopción de la fase activa y sus documentos.
-- Si hay runs legacy, la migración D027 se ofrece como operación confirmada aparte.
+- Si hay runs legacy, la migración D027 se ofrece como operación confirmada aparte y va primero ([D099](DECISIONS.md#d099--flujo-a-activación-d027-antes-de-la-importación)): el
+  inventario tolera solo el marcador `.harness/managed-mode.json` de una activación viva, y el commit no lo versiona
+  ni toca `.gitignore`.
 **Rutas permitidas:** `src/harness_local/**`, `frontend/src/**`, `tests/**`, `docs/**`
 **Criterios de aceptación:**
 - Cada fixture de T009 acaba con la estructura de D088, sin bytes perdidos (todo original está movido o archivado) y
   con STATE y NEXT_STEPS coherentes con la fase activa.
 - Repetir la importación no encuentra cambios; una caída concilia el mismo commit.
+- Con runs legacy: sin activación, la importación ofrece la activación D027; tras activarla, el marcador no bloquea el
+  inventario ni entra en el commit, y un marcador ajeno a la activación viva sí bloquea.
 **Comandos de validación:**
 - `UV_CACHE_DIR=.local/uv-cache uv run --frozen --offline pytest -q`
 - `node --test frontend/tests/*.test.mjs`
-**Referencias:** D088; D027; D037
+**Referencias:** D088; D027; D037; D099
 
 ## P008-T013 — Flujo B: inventario determinista
 
