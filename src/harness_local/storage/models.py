@@ -498,7 +498,7 @@ class ProjectBootstrapRow(Base):
 
 
 class ProjectImportRow(Base):
-    """P008-T012: una importación confirmada por checkout; intención y bytes inmutables."""
+    """P008-T012/T015: una incorporación (Flujo A o B) por checkout; intención y bytes inmutables."""
     __tablename__ = 'project_imports'
     id: Mapped[str] = mapped_column(String(36), primary_key=True)
     root: Mapped[str] = mapped_column(String, unique=True)

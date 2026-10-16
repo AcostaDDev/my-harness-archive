@@ -49,7 +49,7 @@ export function ProjectPage() {
       <Pagination offset={offset} next={runs.data?.next_offset} onChange={setOffset} size={10} label="Páginas de runs" />
     </section>
 
-    {detail.data?.documents === "v2" && !phases.data?.length && <p><Link to={{ name: "import", project }}>Importar un proyecto de un harness anterior</Link></p>}
+    {detail.data?.documents === "v2" && !phases.data?.length && <p><Link to={{ name: "import", project }}>Importar un proyecto de un harness anterior</Link> · <Link to={{ name: "onboarding", project }}>Incorporar un repositorio sin harness</Link></p>}
     {detail.data?.documents === "v2" && !phases.data?.length ? <Creation /> : <TaskForm />}
     <Migration project={project} mode={mode.data} />
   </>;

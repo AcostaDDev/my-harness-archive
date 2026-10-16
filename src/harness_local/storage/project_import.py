@@ -61,6 +61,9 @@ def abort(managed, session, run, status, reason):
 
 
 class ImportRepository:
+    kind = 'project_import'
+    drafts_class = ImportDrafts
+
     def __init__(self, managed):
         self.managed = managed
 
@@ -81,6 +84,12 @@ class ImportRepository:
             raise Conflict('Checkout has unfinished jobs; confirm stopped writers before importing')
 
     def preview(self, context, conversation_id, versions, writer):
+        with Session(self.managed.engine) as session:
+            row = session.get(Conversation, conversation_id)
+            if row is None or row.root != str(context.root):
+                raise LookupError('Unknown conversation of this checkout')
+            if row.kind != self.kind:
+                raise Conflict('The conversation belongs to another import flow')
         saved = self.get(context.root)
         if saved is not None:
             if saved['conversation_id'] != conversation_id:
@@ -92,11 +101,11 @@ class ImportRepository:
                 return {**saved['preview'], 'already_imported': True, 'documents': [], 'mechanical': [],
                         'diff': '', 'resume_operation_id': None, 'expected_version': saved['expected_version']}
             raise Conflict('Import is already queued')
-        from harness_local.storage.planning import PlanningRepository, _executable
+        from harness_local.storage.planning import PlanningRepository
         planning = PlanningRepository(self.managed)
         with Session(self.managed.engine) as session:
             row = planning._conversation(session, conversation_id, context=context)
-            if row.kind != 'project_import':
+            if row.kind != self.kind:
                 raise Conflict('Only an import conversation can normalize the project')
             planning._importable(session, str(context.root))
             self._idle(session, str(context.root))
@@ -107,19 +116,7 @@ class ImportRepository:
         if assessment.refusal:
             raise Conflict('Activate D027 before importing: ' + assessment.refusal)
         try:
-            inventory, contents = read_source(context, _executable(writer), self.managed.guard)
-            inspection = ImportDrafts.of(self.managed.engine, conversation_id).inspect_definition(context, texts=True)
-            drafts = inspection.pop('texts')
-            ready = readiness(definition_layout(context), source, record, inspection, drafts,
-                              {'inventory': inventory, 'contents': contents})
-            if not ready['ready']:
-                raise Conflict('; '.join(ready['blockers']))
-            # The writer also excludes only the marker validated by this installation's guard.
-            from harness_local.storage.migration import bind_git_mode
-            bind_git_mode(writer, self.managed.guard)
-            shown = build_preview(context, source, contents, drafts, record['title'], writer,
-                origin={'conversation_id': conversation_id, 'conversation_version': record['version'],
-                        'drafts': inspection['drafts']}, warnings=ready['warnings'])
+            shown = self._build_preview(context, conversation_id, source, record, writer)
         except (ValueError, OSError, RuntimeError) as exc:
             raise Conflict(str(exc)) from exc
         shown = {**shown, 'versions': versions, 'context': context_snapshot(context)}
@@ -127,17 +124,35 @@ class ImportRepository:
         shown['preview_sha256'] = digest({k: v for k, v in shown.items() if k != 'preview_sha256'})
         return {**shown, 'resume_operation_id': None, 'expected_version': None, 'already_imported': False}
 
+    def _build_preview(self, context, conversation_id, source, record, writer):
+        from harness_local.storage.planning import _executable
+        inventory, contents = read_source(context, _executable(writer), self.managed.guard)
+        inspection = self.drafts_class.of(self.managed.engine, conversation_id).inspect_definition(context, texts=True)
+        drafts = inspection.pop('texts')
+        ready = readiness(definition_layout(context), source, record, inspection, drafts,
+                          {'inventory': inventory, 'contents': contents})
+        if not ready['ready']:
+            raise Conflict('; '.join(ready['blockers']))
+        from harness_local.storage.migration import bind_git_mode
+        bind_git_mode(writer, self.managed.guard)
+        return build_preview(context, source, contents, drafts, record['title'], writer,
+            origin={'conversation_id': conversation_id, 'conversation_version': record['version'],
+                    'drafts': inspection['drafts']}, warnings=ready['warnings'])
+
     def submit(self, context, conversation_id, versions, writer, *, key, preview_sha256, reason, confirmed,
-               resume_operation_id=None, expected_version=None):
+               resume_operation_id=None, expected_version=None, profile_sha256=None):
         if confirmed is not True or not isinstance(reason, str) or not reason.strip():
             raise ValueError('Explicit confirmation of the exact import and a reason required')
+        confirmation = {'profile_sha256': profile_sha256} if self.kind == 'onboarding' else {}
         marker = freeze({'action': 'import_commit', 'root': str(context.root), 'conversation_id': conversation_id,
             'preview_sha256': preview_sha256, 'reason': reason, 'confirmed': confirmed,
-            'resume_operation_id': resume_operation_id, 'expected_version': expected_version})
+            'resume_operation_id': resume_operation_id, 'expected_version': expected_version, **confirmation})
         with Session(self.managed.engine) as session:
             if existing := self.managed._existing(session, key, marker):
                 return _job(existing)
         shown = self.preview(context, conversation_id, versions, writer)
+        if self.kind == 'onboarding' and (not profile_sha256 or profile_sha256 != shown['profile_sha256']):
+            raise Conflict('Explicit confirmation of the composition profile hash required')
         if (shown.get('already_imported') or not shown['mechanical'] or shown['preview_sha256'] != preview_sha256
                 or shown['resume_operation_id'] != resume_operation_id or shown['expected_version'] != expected_version):
             raise Conflict('Import preview changed or has no changes; review it again')
@@ -169,7 +184,7 @@ class ImportRepository:
                 conversation = session.get(Conversation, conversation_id)
                 if conversation.version != origin['conversation_version']:
                     raise Conflict('Import conversation changed since preview')
-                area = ImportDrafts.of(self.managed.engine, conversation_id).inspect_definition(context)
+                area = self.drafts_class.of(self.managed.engine, conversation_id).inspect_definition(context)
                 if area['drafts'] != origin['drafts'] or area['invalid']:
                     raise Conflict('Import drafts changed since preview')
                 job = self.managed._queue_new_run(session, assessment, context, versions, 'IMPORT',
@@ -179,7 +194,8 @@ class ImportRepository:
                 op = Import(id=operation_id, root=str(context.root), conversation_id=conversation_id,
                     run_id=job.run_id, status='QUEUED', preview={k: v for k, v in shown.items()
                         if k not in ('resume_operation_id', 'expected_version', 'already_imported')},
-                    intent=intent.to_json(), decision={'actor': actor(), 'reason': reason, 'confirmed': True},
+                    intent=intent.to_json(), decision={'actor': actor(), 'reason': reason, 'confirmed': True,
+                                                      **confirmation},
                     created_at=self.managed._now())
                 session.add(op)
             self.managed._event(session, session.get(Run, job.run_id), 'import_confirmed', {

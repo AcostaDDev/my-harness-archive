@@ -209,7 +209,10 @@ class PlanningRepository:
             return session.scalar(select(ProjectImportRow.id).where(ProjectImportRow.root == conversation.root)) is not None
         if conversation.kind == 'onboarding':
             from harness_local.storage.documents import latest_phase
-            return _bootstrapped(session, conversation.root) or latest_phase(session, conversation.root) is not None
+            from harness_local.storage.models import ProjectImportRow
+            return (_bootstrapped(session, conversation.root) or latest_phase(session, conversation.root) is not None
+                    or session.scalar(select(ProjectImportRow.id).where(
+                        ProjectImportRow.root == conversation.root)) is not None)
         return conversation.kind == 'definition' and _bootstrapped(session, conversation.root)
 
     @staticmethod

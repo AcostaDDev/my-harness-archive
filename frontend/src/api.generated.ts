@@ -1701,6 +1701,57 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/managed/projects/{project_id}/onboarding": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Onboarding Entry */
+        get: operations["managed_onboarding_entry"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/managed/projects/{project_id}/planning/{conversation_id}/onboarding/preview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Onboarding Preview */
+        post: operations["managed_onboarding_preview"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/managed/projects/{project_id}/planning/{conversation_id}/onboarding/confirm": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Onboarding Confirm */
+        post: operations["managed_onboarding_confirm"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/managed/projects/{project_id}/import": {
         parameters: {
             query?: never;
@@ -3079,6 +3130,18 @@ export interface components {
              * @default false
              */
             already_imported: boolean;
+            /** Flow */
+            flow?: "onboarding" | null;
+            /** Profile */
+            profile?: {
+                [key: string]: unknown;
+            } | null;
+            /** Profile Sha256 */
+            profile_sha256?: string | null;
+            /** Profile Proposal */
+            profile_proposal?: {
+                [key: string]: unknown;
+            } | null;
         };
         /**
          * ImportStatusRead
@@ -3800,6 +3863,24 @@ export interface components {
         ObservationUpdate: {
             /** Enabled */
             enabled: boolean;
+        };
+        /** OnboardingConfirmCreate */
+        OnboardingConfirmCreate: {
+            /** Preview Sha256 */
+            preview_sha256: string;
+            /**
+             * Confirmed
+             * @constant
+             */
+            confirmed: true;
+            /** Reason */
+            reason: string;
+            /** Resume Operation Id */
+            resume_operation_id?: string | null;
+            /** Expected Version */
+            expected_version?: number | null;
+            /** Profile Sha256 */
+            profile_sha256: string;
         };
         /** Page[AttemptMetricRead] */
         Page_AttemptMetricRead_: {
@@ -11640,6 +11721,197 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["PlanningConversationRead"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+        };
+    };
+    managed_onboarding_entry: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Obligatoria con valor 1 en mutaciones (protección CSRF). */
+                "x-harness-local"?: string | null;
+            };
+            path: {
+                project_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ImportEntryRead"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+        };
+    };
+    managed_onboarding_preview: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Obligatoria con valor 1 en mutaciones (protección CSRF). */
+                "x-harness-local"?: string | null;
+            };
+            path: {
+                project_id: string;
+                conversation_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ImportPreviewRead"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+        };
+    };
+    managed_onboarding_confirm: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Misma clave y misma acción devuelven el mismo job. */
+                "Idempotency-Key": string;
+                /** @description Obligatoria con valor 1 en mutaciones (protección CSRF). */
+                "x-harness-local"?: string | null;
+            };
+            path: {
+                project_id: string;
+                conversation_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["OnboardingConfirmCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ManagedJobRead"];
                 };
             };
             /** @description Forbidden */

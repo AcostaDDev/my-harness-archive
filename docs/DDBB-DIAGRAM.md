@@ -1,6 +1,6 @@
 # Diagrama de datos — my_harness
 
-Esquema SQLite del servicio local (Alembic `0020_project_imports`, 35 tablas). Generado en P008-T001 desde el metadata de `src/harness_local/storage/models.py` (actualizado en P008-T014, sin cambio de esquema); cualquier cambio de modelos o migraciones actualiza este documento en la misma tarea (regla de paridad, D088).
+Esquema SQLite del servicio local (Alembic `0020_project_imports`, 35 tablas). Generado en P008-T001 desde el metadata de `src/harness_local/storage/models.py` (actualizado en P008-T015, sin cambio de esquema); cualquier cambio de modelos o migraciones actualiza este documento en la misma tarea (regla de paridad, D088).
 
 Convenciones: `PK` clave primaria, `FK` clave ajena declarada, `UK` unicidad de columna; «null» marca columnas opcionales. Las unicidades compuestas y los índices únicos parciales se listan bajo cada diagrama. Las entidades de otro contexto aparecen solo con las columnas que relacionan. Los artefactos pesados (streams, capturas, copias) viven fuera de SQLite y se referencian por ruta y hash.
 
@@ -455,10 +455,13 @@ erDiagram
 
 Unicidad: `uq_chat_conversations_key` sobre `chat_conversations` (idempotency_key); `chat_turns` (conversation_id, number); `uq_chat_turns_pending` sobre `chat_turns` (conversation_id) donde status = 'QUEUED'; `chat_proposals` (conversation_id, number); `uq_planning_conversations_key` sobre `planning_conversations` (idempotency_key); `uq_planning_definition` sobre `planning_conversations` (root) donde kind = 'definition'; `planning_turns` (conversation_id, number); `uq_planning_turns_pending` sobre `planning_turns` (conversation_id) donde status = 'QUEUED'; `planning_proposals` (conversation_id, number).
 
-## Importación documental confirmada (P008-T012)
+## Incorporación documental confirmada (P008-T012/T015)
 
 `project_imports` conserva una operación por checkout y conversación: vista previa íntegra, intención de commit
-sellada antes del efecto, decisión y resultado (D100). El job, lock, lease y recuperación son los de `managed_jobs`.
+sellada antes del efecto, decisión y resultado (D100). El Flujo B reutiliza esta tabla (D103), sin columnas ni
+índices nuevos: `preview.flow = "onboarding"` identifica el origen; `preview.profile` y `profile_sha256` sellan el
+perfil de la composición, y `decision.profile_sha256` registra su confirmación. Conserva el propósito compartido
+`managed_runs.purpose = 'import_commit'`; la conversación mantiene `kind = 'onboarding'`. El job, lock, lease y recuperación son los de `managed_jobs`.
 La fase y su base documental se insertan en la misma transacción que el resultado y el fin del job. Un estado
 `INTERRUPTED` conserva la intención y bloquea trabajo nuevo y la reversión D027 hasta conciliarla.
 

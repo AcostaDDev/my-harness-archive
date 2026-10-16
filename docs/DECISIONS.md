@@ -112,6 +112,7 @@ tarea se leen solo las decisiones que cita; este índice sirve para buscar prece
 | [D100](#d100--p008-t012-importación-confirmada-y-continuidad-del-flujo-a) | P008-T012: importación confirmada y continuidad del Flujo A | P008 |
 | [D101](#d101--p008-t013-inventario-estático-del-flujo-b-y-propuesta-de-perfil) | P008-T013: inventario estático del Flujo B y propuesta de perfil | P008 |
 | [D102](#d102--p008-t014-ingeniería-inversa-sobre-head-y-borradores-privados) | P008-T014: ingeniería inversa sobre HEAD y borradores privados | P008 |
+| [D103](#d103--p008-t015-incorporación-confirmada-del-flujo-b) | P008-T015: incorporación confirmada del Flujo B | P008 |
 
 ## D001 — Alcance local y arquitectura base
 
@@ -3296,3 +3297,42 @@ Extensiones técnicas acotadas: supervisor para exportación/observación; flag/
 El control y la recuperación siguen siendo cooperativos, sin aislamiento OS. Las pruebas usan revisores falsos:
 comprueban contexto, contrato, CAS, diagrama sintético exacto y efectos, no la calidad de generación de un proveedor
 real. UI específica, vista previa/commit, conservación de originales y confirmación del perfil pendientes de T015.
+
+
+## D103 — P008-T015: incorporación confirmada del Flujo B
+
+Estado: implementada el 2026-10-16; verificación offline y límites en el
+[registro](phase/P008-T015_INCORPORACION_CONFIRMADA.md). Fase: P008. Aplica D088 punto 11 sobre D037, D095,
+D100 y D102.
+
+- Vista previa sobre el HEAD original, checkout e índice limpios. Solo documentos de D088 y flujos; los once
+  documentos deben existir en el origen o los borradores, sin fallback. STATE/NEXT_STEPS acuerdan P001 y ROADMAP
+  aporta objetivo/criterios; se regeneran sus bloques e índice de decisiones antes de sellar la base adoptada.
+  Preguntas bloqueantes sin responder ni aplazar, turno pendiente, borradores inválidos/ajenos, límites de líneas,
+  deriva de HEAD/checkout o colisiones (también de mayúsculas y archivo/directorio) bloquean antes de escribir.
+- El perfil propuesto por el inventario se muestra como referencia. La autoridad de efectos sigue siendo la
+  composición local del operador (D049/D095): la vista previa muestra su perfil completo, incluidas validaciones,
+  preparación, JUnit y rutas, y exige su `profile_sha256` además del hash de la vista previa, motivo e
+  Idempotency-Key. Para modificarlo se edita el TOML local y se selecciona la composición en Ajustes; la API no
+  admite comandos/ejecutables nuevos ni escribe el TOML. Confirmar la incorporación no ejecuta esos comandos.
+- `archive/phase-000/INVENTORY.json` conserva el inventario congelado; `SUMMARY.md`, la conversación, preguntas,
+  aplazamientos, pendientes y perfil. Todo original sustituido (README, instrucciones o documentación) se guarda
+  por bytes en `onboarding-originals/<ruta original>`. README sin borrador se conserva en su sitio. Ningún archivo
+  de código se sustituye ni se ejecuta; un destino de archivo ocupado bloquea, sin renumerar el historial.
+- Se reutiliza `project_imports` (0020), `purpose = import_commit`, intención sellada, lock/lease y conciliación
+  de D100. `preview.flow = onboarding` distingue la incorporación. Resultado, fase P001 ACTIVE y base documental
+  se registran atómicamente al terminar el job. Al confirmar se cierran todos los borradores del checkout.
+  Una caída conserva intención/run y exige confirmar detenido y reconfirmar para el mismo commit; una repetición
+  completada devuelve cero cambios. Una composición distinta de la congelada impide conciliar.
+- El escritor compartido de Git puede usar conversiones: antes de capturar o ejecutar la incorporación se
+  rechazan filtros clean/process configurados, también mediante includes, y se contrastan los blobs del árbol
+  propuesto con los bytes de la vista previa. Las conversiones internas que alteren bytes también bloquean.
+  Los límites de exportación D083, documentos de 512 KiB y diff de 4 MiB se mantienen, sin truncar.
+- API específica `…/onboarding` y UI `/projects/:p/onboarding[/:c/*borrador]`, sobre los componentes de importación;
+  muestran perfil detectado, composición elegida, diff, conservación de originales, run y continuidad en P001.
+  OpenAPI/tipos regenerados; `document_layout = "d088-8"` deja jobs anteriores en cuarentena sin reescribir
+  historiales, catálogos, snapshots ni intenciones. Sin modelos estructurales, migraciones o dependencias nuevas.
+
+La revisión del contenido inferido y la elección de la composición corresponden al usuario. Las pruebas offline
+con revisores/comandos falsos verifican los efectos y la continuidad; no acreditan generación semántica ni CLI
+reales. La exclusión y los permisos siguen siendo cooperativos. P008 sigue activa hasta su revisión y cierre.

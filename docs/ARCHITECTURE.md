@@ -46,7 +46,7 @@ casos de uso. El supervisor es el único que lanza procesos y consume la cola; c
 | `core/project_onboarding.py`, `adapters/project_onboarding.py` | Flujo B: inventario estático de HEAD (stack, entidades, rutas, tests y CI) y propuesta local-config-4 pendiente de confirmación (D101) |
 | `core/project_normalization.py` | Flujo A: mapa de normalización determinista sobre el inventario (D097) |
 | `core/engine/import_commit.py`, `storage/project_import.py` | Flujo A: árbol confirmado, conservación de originales, intención de commit y adopción de la fase (D100) |
-| `storage/onboarding.py` | Flujo B: conversación de ingeniería inversa, exportación de HEAD de solo lectura y borradores privados (D102) |
+| `storage/onboarding.py`, `storage/onboarding_commit.py`, `core/engine/onboarding_commit.py` | Flujo B: ingeniería inversa, borradores privados y commit documental confirmado con perfil y P001 adoptados (D102, D103) |
 | `core/engine/import_conversation.py`, `storage/import_drafts.py` | Flujo A: conversación `project_import` del revisor, área privada de borradores y bloqueos de la vista previa (D098) |
 | `core/engine/context.py` | `ProjectContext`, perfil, política, comandos; contexto explícito por proyecto |
 | `core/engine/contracts.py`, `planning.py` | Contrato de tarea, rutas protegidas, planificación determinista desde NEXT_STEPS |
@@ -136,8 +136,10 @@ por su API y los artefactos referenciados; la restauración es de consulta (`que
   conversación `onboarding`, con borradores CAS privados, exportación de D083 y evidencia antes/después. Mantiene
   el lock y carril de planificación; no consulta el checkout vivo durante la invocación. `cli-12` permite al rol
   `definition` omitir la comprobación Git solo en exportaciones; el sandbox sigue siendo de lectura. Sin diagrama
-  ni comandos de plantilla por defecto. UI específica, vista previa/commit y confirmación del perfil pendientes
-  de T015. Detalle en el [flujo](flows/project-onboarding.md).
+  ni comandos de plantilla por defecto. T015 añade UI, vista previa de documentos/perfil de la composición y
+  confirmación por ambos hashes, motivo y clave. Reutiliza la intención y adopción atómica del Flujo A (0020),
+  conserva inventario/resumen/originales en `phase-000` y adopta P001. No escribe el TOML ni ejecuta comandos;
+  rechaza filtros Git ejecutables y transformaciones de bytes. Detalle en el [flujo](flows/project-onboarding.md).
 
 ## 7. API, UI y seguridad
 
@@ -147,9 +149,11 @@ por su API y los artefactos referenciados; la restauración es de consulta (`que
   `onboarding` (D102) y `project_import` usan las rutas de planificación; solo para importación,
   `GET …/planning/{c}/import` da sus bloqueos (D098).
   `GET …/projects/{p}/import` ofrece primero la activación D027 si hace falta;
-  `POST …/planning/{c}/import/preview` y `…/import/confirm` aplican el árbol por hash (D100). `/api/legacy`:
+  `POST …/planning/{c}/import/preview` y `…/import/confirm` aplican el árbol por hash (D100). Para el Flujo B, `GET …/projects/{p}/onboarding` y
+  `POST …/planning/{c}/onboarding/preview` / `…/onboarding/confirm` confirman también `profile_sha256` (D103).
+  `/api/legacy`:
   observación de solo lectura. Mutaciones con `Idempotency-Key` y versión esperada; 409 con `{code, diagnostic}`; 422 ante contrato inválido.
-- Rutas de la UI: `/`, `/stats`, `/projects/new`, `/projects/:p` con `setup`, `import[/:c/*borrador]`, `chat[/:c]`, `docs[/*ruta]`, `phases`,
+- Rutas de la UI: `/`, `/stats`, `/projects/new`, `/projects/:p` con `setup`, `import[/:c/*borrador]`, `onboarding[/:c/*borrador]`, `chat[/:c]`, `docs[/*ruta]`, `phases`,
   `phases/:code`, `phases/:code/plan[/:c]`, `phases/:code/tasks/:task[/runs/:run]`, `stats` y `settings`; `/runs/:id`
   como enlace corto; `/legacy` para la observación.
 - Seguridad: solo loopback; clave de sesión efímera en un archivo privado, cookie HttpOnly de ocho horas; Host y Origin

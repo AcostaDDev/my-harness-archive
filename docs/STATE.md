@@ -44,31 +44,17 @@ Objetivo y criterios en [ROADMAP](ROADMAP.md); plan en [NEXT_STEPS](NEXT_STEPS.m
 
 **P008-T001 completada** (migración documental de este repositorio, sin cambios del motor):
 
-- `docs/discovery/` eliminado; su contenido está en `docs/archive/phase-000…007/` con NEXT_STEPS, STATE y SUMMARY por
-  fase y REVIEW donde hubo revisión de cierre. Registro e incongruencias del motor en
-  [docs/phase](phase/P008-T001_MIGRACION_DOCUMENTAL.md).
-- Nuevos SPECIFICATION, ARCHITECTURE, ROADMAP, DDBB-DIAGRAM y `docs/flows/` (seis flujos); DECISIONS con índice y
-  D088; AGENTS (45 líneas), CLAUDE (8), GEMINI (5) y README (79).
-- Código: solo la ruta de `baseline.json` (ahora en `tests/fixtures/legacy/`) en `tests/test_legacy_fixtures.py` y dos
-  docstrings.
-- Verificación: 12 checks ligeros, pytest 1.120 y 121 subtests, 72 Node, enlaces y 16 diagramas válidos;
-  parsers de ROADMAP/NEXT_STEPS y presupuestos correctos. Sin Alembic/build: no cambian esquema ni UI.
+- Archivo por fases P000–P007, seis flujos y documentos D088; retirada de discovery. Código: ruta del fixture legacy
+  y dos docstrings. 12 checks, pytest 1.120 +121 subtests, 72 Node, enlaces y diagramas correctos; sin Alembic/build.
+  Detalle e incongruencias en el [registro](phase/P008-T001_MIGRACION_DOCUMENTAL.md).
 
-**P008-T002 completada** (layout unificado obligatorio y plantilla, [D089](DECISIONS.md#d089--p008-t002-layout-unificado-obligatorio-y-plantilla)):
+**P008-T002 completada** (layout y plantilla obligatorios,
+[D089](DECISIONS.md#d089--p008-t002-layout-unificado-obligatorio-y-plantilla)):
 
-- `Layout` con AGENTS, CLAUDE, GEMINI, DDBB-DIAGRAM, `flows/` y `phase/`, sin `decisions/`, `architecture/` ni
-  `research/`; `skeleton()` genera exactamente la lista de D088 (AGENTS ≤60 líneas con los comandos del perfil,
-  CLAUDE/GEMINI ≤15).
-- Índice de DECISIONS desde sus encabezados `## DNNN — título` y la primera línea `Estado:`; numeración repetida
-  rechazada en commit de tarea, edición, transición y aceptación de la definición; sin presupuesto de 8 KiB. La
-  reconciliación puede añadir decisiones a la prosa de DECISIONS.
-- La configuración compone siempre `documents = "v2"` y congela `document_layout = "d088-1"` (jobs anteriores en
-  cuarentena). Creación v1 y descubrimiento rechazados con diagnóstico; plantilla `project-foundation` y
-  `examples/bootstrap_demo.py` eliminados. `protected_write` exime AGENTS/CLAUDE/GEMINI para la creación.
-- Verificación: 12 checks ligeros; pytest 1.112 y 121 subtests (ruta antigua del visor corregida y sus 7 casos
-  revalidados), Alembic temporal, 16 diagramas y 89 decisiones válidos. Sin Node/build: sin UI/OpenAPI.
-- En esta entrega quedaban prompts, cierre, API y UI; cierre resuelto en T004 y prompts en T005. API/UI e inyección
-  de instrucciones siguen pendientes de T006/T007.
+- Layout D088 y DECISIONS único con índice, duplicados rechazados y sin presupuesto de 8 KiB. Instrucciones raíz
+  con límites de líneas; creación v1 y discovery rechazados. `documents = "v2"`, `document_layout = "d088-1"`;
+  jobs anteriores en cuarentena. Cierre, prompts, API/UI e instrucciones resueltos después en T004–T007.
+- 12 checks, pytest 1.112 +121 subtests y Alembic temporal correctos; enlaces y diagramas válidos. Sin Node/build.
 
 **P008-T003 completada** (rutas protegidas, paridad y propuestas de ADR,
 [D090](DECISIONS.md#d090--p008-t003-rutas-del-ejecutor-paridad-de-diagramas-y-propuestas-de-adr)):
@@ -271,5 +257,17 @@ Objetivo y criterios en [ROADMAP](ROADMAP.md); plan en [NEXT_STEPS](NEXT_STEPS.m
 - Verificación: pytest 1.322 OK y 121 subtests; recuento antiguo corregido y 29 prompts OK. 12 checks, 74 Node,
   build y Alembic correctos; [registro](phase/P008-T014_INGENIERIA_INVERSA.md).
 
-**Siguiente:** P008-T015 (Flujo B: vista previa, commit y control del harness), sin iniciar. Este repositorio sigue sin
-registrarse en el harness.
+**P008-T015 completada** (Flujo B: vista previa, commit y control del harness,
+[D103](DECISIONS.md#d103--p008-t015-incorporación-confirmada-del-flujo-b)):
+
+- Vista previa de documentos y perfil de la composición, ambos confirmados por hash. P001 ACTIVE adoptada con
+  su base documental. Inventario y resumen en `archive/phase-000/`; originales sustituidos conservados por bytes.
+- Reutiliza la intención, cola, recuperación y registro atómico de `project_imports` (0020); sin cambios de esquema.
+  UI de incorporación y borradores privados; OpenAPI/tipos regenerados. `document_layout = "d088-8"`.
+- Sin escribir TOML, ejecutar herramientas del proyecto ni modificar código durante la incorporación. Los filtros
+  Git ejecutables y las transformaciones de bytes impiden la vista previa.
+- Verificación: pytest 1.345 y 121 subtests, 12 checks ligeros, 75 Node, build y Alembic temporal correctos;
+  enlaces y diagramas válidos. Sin UI visual, proveedores reales ni smokes. [Registro](phase/P008-T015_INCORPORACION_CONFIRMADA.md).
+
+**Siguiente:** revisión de salida de P008; sus quince tareas están completadas, pero la fase sigue activa y no se
+ha cerrado ni archivado. Este repositorio sigue sin registrarse en el harness.

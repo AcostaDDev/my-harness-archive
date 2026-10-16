@@ -33,6 +33,26 @@ def build_tree(context, source, contents, drafts, title):
         if not path.startswith(target.docs + '/archive/'):
             tree.pop(path, None)
     tree.update({path: text.encode() for path, text in drafts.items()})
+    definition = adopt_documents(context, tree)
+    preserved = []
+    moved = {move['source']: move['target'] for move in source['map']['moves']}
+    for path, data in sorted(contents.items()):
+        if tree.get(path) == data or (path in moved and tree.get(moved[path]) == data):
+            continue
+        archive = f'{target.archive("P000")}/import-originals/{path}'
+        try:
+            check_destinations([*tree, archive])
+        except ValueError as exc:
+            raise ValueError(f'Original archive destination already occupied: {archive}') from exc
+        tree[archive] = data
+        preserved.append({'source': path, 'target': archive, 'sha256': sha256(data).hexdigest()})
+    check_destinations(tree)
+    return tree, definition, preserved
+
+
+def adopt_documents(context, tree):
+    """Valida la fase declarada y regenera sus bloques sobre el árbol documental propuesto."""
+    target = definition_layout(context)
     texts = {path: tree[path].decode('utf-8') for path in target.phase_documents}
     for path, text in texts.items():
         if set(blocks(text)) - _block_names(target, path):
@@ -61,17 +81,10 @@ def build_tree(context, source, contents, drafts, title):
             render_decisions(decision_index(texts[target.decisions])), 'decisions'),
     }
     tree.update({path: text.encode() for path, text in generated.items()})
-    preserved = []
-    moved = {move['source']: move['target'] for move in source['map']['moves']}
-    for path, data in sorted(contents.items()):
-        if tree.get(path) == data or (path in moved and tree.get(moved[path]) == data):
-            continue
-        archive = f'{target.archive("P000")}/import-originals/{path}'
-        if any(p.lower() == archive.lower() or p.lower().startswith(archive.lower() + '/')
-               or archive.lower().startswith(p.lower() + '/') for p in tree):
-            raise ValueError(f'Original archive destination already occupied: {archive}')
-        tree[archive] = data
-        preserved.append({'source': path, 'target': archive, 'sha256': sha256(data).hexdigest()})
+    return definition
+
+
+def check_destinations(tree):
     # Includes file/directory and case collisions, including destinations introduced by drafts.
     paths = {path.lower() for path in tree}
     if len(paths) != len(tree):
@@ -79,11 +92,18 @@ def build_tree(context, source, contents, drafts, title):
     for path in paths:
         if any('/'.join(path.split('/')[:n]) in paths for n in range(1, path.count('/') + 1)):
             raise ValueError(f'Import destinations conflict as file and directory: {path}')
-    return tree, definition, preserved
 
 
 def preview(context, source, contents, drafts, title, writer, *, origin, warnings):
     tree, phase, preserved = build_tree(context, source, contents, drafts, title)
+    return preview_tree(context, source, contents, tree, phase, writer, {
+        'origin': origin, 'source': {
+            'inventory_sha256': source['inventory']['inventory_sha256'], 'map_sha256': source['map']['map_sha256']},
+        'moves': source['map']['moves'], 'preserved': preserved, 'foreign': source['map']['foreign'],
+        'warnings': warnings}, MESSAGE)
+
+
+def preview_tree(context, source, contents, tree, phase, writer, extra, message):
     evidence = writer.capture(context)
     provenance = git_provenance(evidence)
     if evidence.base_revision != source['inventory']['head'] or evidence.changed_paths:
@@ -99,16 +119,14 @@ def preview(context, source, contents, drafts, title, writer, *, origin, warning
             return data
     changes = [(path, content(contents.get(path)), content(tree.get(path)))
                for path in sorted(set(contents) | set(tree))]
-    shown = _sealed_preview(context, evidence, provenance, provenance.base_tree, changes, MESSAGE, {
-        'operation': 'import_commit', 'origin': origin, 'source': {
-            'inventory_sha256': source['inventory']['inventory_sha256'], 'map_sha256': source['map']['map_sha256']},
-        'moves': source['map']['moves'], 'preserved': preserved, 'foreign': source['map']['foreign'],
+    shown = _sealed_preview(context, evidence, provenance, provenance.base_tree, changes, message, {
+        **extra, 'operation': 'import_commit',
         'phase': phase, 'baseline': {path: sha256(tree[path]).hexdigest() for path in phase['documents']},
         'result_tree': [{'path': path, 'sha256': sha256(data).hexdigest(), 'size': len(data)}
-                        for path, data in sorted(tree.items())], 'warnings': warnings,
-        'author': {'name': writer.identity.name, 'email': writer.identity.email}, 'message': MESSAGE})
+                        for path, data in sorted(tree.items())],
+        'author': {'name': writer.identity.name, 'email': writer.identity.email}, 'message': message})
     probe = CommitPlan(shown['head'], shown['tree'], tuple(MechanicalUpdate(**item) for item in shown['mechanical']),
-                       MESSAGE + '\n', writer.identity.name, writer.identity.email, 0)
+                       message + '\n', writer.identity.name, writer.identity.email, 0)
     proposed_tree, _ = writer.seal(context, probe)
     writer.check_tree_diff(context, shown['tree'], proposed_tree)
     shown['proposed_tree'] = proposed_tree
@@ -121,7 +139,7 @@ def preview(context, source, contents, drafts, title, writer, *, origin, warning
 
 def seal(context, shown, writer, operation_id, run_id, timestamp):
     updates = tuple(MechanicalUpdate(**item) for item in shown['mechanical'])
-    message = f'{MESSAGE}\n\nHarness-Operation: {operation_id}\nHarness-Preview: {shown["preview_sha256"]}\n'
+    message = f'{shown["message"]}\n\nHarness-Operation: {operation_id}\nHarness-Preview: {shown["preview_sha256"]}\n'
     plan = CommitPlan(shown['head'], shown['tree'], updates, message, writer.identity.name,
                       writer.identity.email, timestamp)
     tree, commit = writer.seal(context, plan)

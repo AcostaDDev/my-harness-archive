@@ -3,6 +3,9 @@ import assert from 'node:assert/strict';
 import { parse, href, trail, runRoute, projectOf } from '../src/router.ts';
 
 const valid = [
+  ['/projects/library/onboarding', { name: 'onboarding', project: 'library' }],
+  ['/projects/library/onboarding/c-1', { name: 'onboarding', project: 'library', conversation: 'c-1' }],
+  ['/projects/library/onboarding/c-1/AGENTS.md', { name: 'onboarding', project: 'library', conversation: 'c-1', path: 'AGENTS.md' }],
   ['/projects/gym/import', { name: 'import', project: 'gym' }],
   ['/projects/gym/import/c-1', { name: 'import', project: 'gym', conversation: 'c-1' }],
   ['/projects/gym/import/c-1/docs/STATE.md', { name: 'import', project: 'gym', conversation: 'c-1', path: 'docs/STATE.md' }],
@@ -121,4 +124,14 @@ test('import routes retain conversation and draft and reject parent segments', (
   assert.deepEqual(parse(href(route)), route);
   assert.deepEqual(trail(route).map(item => item.label), ['Proyectos', 'gym', 'Importación']);
   assert.equal(parse('/projects/gym/import/c-1/docs/../STATE.md').name, 'not-found');
+});
+
+test('onboarding keeps private draft URLs and refuses traversal', () => {
+  const route = { name: 'onboarding', project: 'library', conversation: 'c-1', path: 'docs/flows/books.md' };
+  assert.deepEqual(parse(href(route)), route);
+  assert.deepEqual(trail(route).map(item => item.label), ['Proyectos', 'library', 'Incorporación']);
+  for (const path of ['/projects/library/onboarding/c-1/docs/../STATE.md',
+    '/projects/library/onboarding/c-1/docs/%2E%2E/STATE.md', '/projects/library/onboarding/c-1/a%2Fb.md']) {
+    assert.equal(parse(path).name, 'not-found');
+  }
 });

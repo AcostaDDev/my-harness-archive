@@ -999,6 +999,32 @@ def managed_router(runtime: ManagedRuntime):
         return planning_read(item, conversation_id)
 
     from harness_local.storage.project_import import ImportRepository
+    from harness_local.storage.onboarding_commit import OnboardingRepository
+    from harness_local.api.schemas import OnboardingConfirmCreate
+
+    @router.get('/projects/{project_id}/onboarding', response_model=ImportEntryRead,
+                operation_id='managed_onboarding_entry')
+    def onboarding_entry(project_id: str):
+        item = planning_project(project_id)
+        return {'activation_required': False, 'refusal': None, 'activation_preview': None,
+                'operation': call(OnboardingRepository(runtime.repository).get, item.context.root)}
+
+    @router.post('/projects/{project_id}/planning/{conversation_id}/onboarding/preview',
+                 response_model=ImportPreviewRead, operation_id='managed_onboarding_preview')
+    def onboarding_preview(project_id: str, conversation_id: str):
+        item = planning_project(project_id)
+        return call(OnboardingRepository(runtime.repository).preview, item.context,
+                    conversation_of(item, conversation_id), frozen_versions(item), import_reader(item))
+
+    @router.post('/projects/{project_id}/planning/{conversation_id}/onboarding/confirm',
+                 response_model=ManagedJobRead, status_code=202, operation_id='managed_onboarding_confirm')
+    def onboarding_confirm(project_id: str, conversation_id: str, body: OnboardingConfirmCreate,
+                           idempotency_key: IdempotencyKey):
+        item = planning_project(project_id)
+        job = call(OnboardingRepository(runtime.repository).submit, item.context,
+                   conversation_of(item, conversation_id), frozen_versions(item), import_reader(item),
+                   key=idempotency_key, **body.model_dump())
+        return queued(job)
 
     @router.get('/projects/{project_id}/import', response_model=ImportEntryRead,
                 operation_id='managed_import_entry')

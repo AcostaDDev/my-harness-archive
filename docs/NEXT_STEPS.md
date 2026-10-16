@@ -4,7 +4,8 @@ Objetivo y criterios de salida en [ROADMAP](ROADMAP.md#p008--contrato-documental
 Decisión de base: [D088](DECISIONS.md#d088--contrato-documental-unificado-cierre-de-fase-automático-e-importación-de-proyectos-p008).
 Análisis de incongruencias que originó la fase: [docs/phase](phase/P008-T001_MIGRACION_DOCUMENTAL.md).
 
-**Siguiente tarea:** P008-T015. Orden de ejecución: T002 → T007 (motor y contrato), T008 (perfiles, que el usuario
+**Siguiente:** revisión de salida de P008; T001–T015 completadas. El cierre y archivo de la fase quedan para una
+operación posterior. Orden ejecutado: T002 → T007 (motor y contrato), T008 (perfiles, que el usuario
 necesita para su próximo proyecto Django), T009–T012 (Flujo A) y T013–T015 (Flujo B).
 
 ## Restricciones compartidas
@@ -359,6 +360,11 @@ técnicas en el [registro](phase/P008-T014_INGENIERIA_INVERSA.md).
 **Referencias:** D088; D083
 
 ## P008-T015 — Flujo B: vista previa, commit y control del harness
+
+**Estado:** completada el 2026-10-16 ([D103](DECISIONS.md#d103--p008-t015-incorporación-confirmada-del-flujo-b)).
+Vista previa y perfil de la composición confirmados por hash, originales conservados, commit conciliable y P001
+ACTIVE adoptada. No escribe el TOML ni ejecuta comandos del proyecto. Detalle en el
+[registro](phase/P008-T015_INCORPORACION_CONFIRMADA.md).
 
 **Objetivo:** Dejar el repositorio bajo control del harness con un único commit documental confirmado.
 **Alcance:**

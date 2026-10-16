@@ -198,6 +198,9 @@ class LocalSupervisor:
                     raise RuntimeError('Import requires the configured Git writer')
                 writer = self.commit_factory(context, versions)
                 saved = ImportRepository(self.repository).request(claim.run_id)
+                if saved['preview'].get('flow') == 'onboarding':
+                    from harness_local.storage.onboarding_commit import check_filters
+                    check_filters(context, writer)
                 history, outcome = execute(context, record.history, saved, writer, journal)
             elif request["action"] == "bootstrap":
                 from harness_local.core.engine.bootstrap import execute

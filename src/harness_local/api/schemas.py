@@ -1725,6 +1725,14 @@ class ImportPreviewRead(BaseModel):
     resume_operation_id: str | None = None
     expected_version: int | None = None
     already_imported: bool = False
+    flow: Literal['onboarding'] | None = None
+    profile: dict[str, Any] | None = None
+    profile_sha256: str | None = None
+    profile_proposal: dict[str, Any] | None = None
+
+
+class OnboardingConfirmCreate(DefinitionAcceptCreate):
+    profile_sha256: str = Field(pattern=SHA256)
 
 
 class ImportOperationRead(BaseModel):

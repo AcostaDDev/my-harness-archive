@@ -54,6 +54,7 @@ function ProjectPageFor({ route }: { route: Exclude<Route, { name: "home" | "sta
     case "settings": return <SettingsPage />;
     case "project-stats": return <Suspense fallback={<Loading />}><ProjectStats /></Suspense>;
     case "docs": return <Suspense fallback={<Loading />}><DocsPage path={route.path} /></Suspense>;
+    case "onboarding": return <Suspense fallback={<Loading />}><ImportPage flow="onboarding" conversation={route.conversation} path={route.path} /></Suspense>;
     case "import": return <Suspense fallback={<Loading />}><ImportPage conversation={route.conversation} path={route.path} /></Suspense>;
     case "setup": return <Suspense fallback={<Loading />}><SetupPage path={route.path} /></Suspense>;
     case "plan": return <Suspense fallback={<Loading />}><PlanPage key={route.phase} phase={route.phase} conversation={route.conversation} /></Suspense>;

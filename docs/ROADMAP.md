@@ -100,7 +100,8 @@ sin harness.
 - Checks offline en verde; ningún proveedor real sin consentimiento específico.
 **Dependencias:** P007.
 **Fuera de alcance:** Rediseño visual de la UI; recorridos con CLI reales; publicación del paquete.
-**Estado:** activa desde el 2026-10-15. Plan en [NEXT_STEPS](NEXT_STEPS.md).
+**Estado:** activa desde el 2026-10-15; T001–T015 completadas el 2026-10-16. Pendiente de revisión de salida y
+cierre. Plan y entregas en [NEXT_STEPS](NEXT_STEPS.md).
 
 ## Candidatas sin fase asignada
 

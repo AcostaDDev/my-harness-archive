@@ -15,7 +15,7 @@ export type Route =
   | { name: "settings"; project: string }
   | { name: "project-stats"; project: string }
   | { name: "docs"; project: string; path?: string }
-  | { name: "import"; project: string; conversation?: string; path?: string }
+  | { name: "import" | "onboarding"; project: string; conversation?: string; path?: string }
   | { name: "setup"; project: string; path?: string }
   | { name: "plan"; project: string; phase: string; conversation?: string }
   | { name: "run-short"; run: string }
@@ -59,10 +59,10 @@ export function parse(pathname: string): Route {
     if (rest.some(part => part === "." || part === "..")) return { name: "not-found", path: pathname };
     return rest.length ? { name: "setup", project, path: rest.join("/") } : { name: "setup", project };
   }
-  if (c === "import") {
+  if (c === "import" || c === "onboarding") {
     const rest = (parts as string[]).slice(4);
     if (rest.some(part => part === "." || part === "..")) return { name: "not-found", path: pathname };
-    return { name: "import", project, ...(d ? { conversation: d } : {}), ...(rest.length ? { path: rest.join("/") } : {}) };
+    return { name: c, project, ...(d ? { conversation: d } : {}), ...(rest.length ? { path: rest.join("/") } : {}) };
   }
   if (c === "chat" && n <= 4) return n === 3 ? { name: "chat", project } : { name: "chat", project, conversation: d };
   if (c !== "phases") return { name: "not-found", path: pathname };
@@ -90,7 +90,8 @@ export function href(route: Route): string {
     case "settings": return `/projects/${e(route.project)}/settings`;
     case "project-stats": return `/projects/${e(route.project)}/stats`;
     case "docs": return `/projects/${e(route.project)}/docs${route.path ? `/${route.path.split("/").map(e).join("/")}` : ""}`;
-    case "import": return `/projects/${e(route.project)}/import${route.conversation ? `/${e(route.conversation)}` : ""}${route.path ? `/${route.path.split("/").map(e).join("/")}` : ""}`;
+    case "import":
+    case "onboarding": return `/projects/${e(route.project)}/${route.name}${route.conversation ? `/${e(route.conversation)}` : ""}${route.path ? `/${route.path.split("/").map(e).join("/")}` : ""}`;
     case "setup": return `/projects/${e(route.project)}/setup${route.path ? `/${route.path.split("/").map(e).join("/")}` : ""}`;
     case "plan": return `/projects/${e(route.project)}/phases/${e(route.phase)}/plan${route.conversation ? `/${e(route.conversation)}` : ""}`;
     case "run-short": return `/runs/${e(route.run)}`;
@@ -125,6 +126,7 @@ export function trail(route: Route): { label: string; to: Route }[] {
     items.push({ label: "Documentación", to: { name: "docs", project } });
     if (route.path) items.push({ label: route.path.split("/").pop()!, to: route });
   }
+  if (route.name === "onboarding") items.push({ label: "Incorporación", to: route });
   if (route.name === "import") items.push({ label: "Importación", to: route });
   if (route.name === "setup") {
     items.push({ label: "Creación", to: { name: "setup", project } });
