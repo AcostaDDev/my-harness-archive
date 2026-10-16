@@ -4,7 +4,7 @@ Objetivo y criterios de salida en [ROADMAP](ROADMAP.md#p008--contrato-documental
 Decisión de base: [D088](DECISIONS.md#d088--contrato-documental-unificado-cierre-de-fase-automático-e-importación-de-proyectos-p008).
 Análisis de incongruencias que originó la fase: [docs/phase](phase/P008-T001_MIGRACION_DOCUMENTAL.md).
 
-**Siguiente tarea:** P008-T008. Orden de ejecución: T002 → T007 (motor y contrato), T008 (perfiles, que el usuario
+**Siguiente tarea:** P008-T009. Orden de ejecución: T002 → T007 (motor y contrato), T008 (perfiles, que el usuario
 necesita para su próximo proyecto Django), T009–T012 (Flujo A) y T013–T015 (Flujo B).
 
 ## Restricciones compartidas
@@ -199,6 +199,9 @@ en Codex (`cli-11`). La definición no recibe la variable porque redacta el arch
 ## P008-T008 — Perfiles declarativos en el TOML local
 
 **Objetivo:** Declarar perfiles de stack en el TOML del operador, empezando por Python/Django con pytest, ruff y mypy.
+**Estado:** completada el 2026-10-16 ([D095](DECISIONS.md#d095--p008-t008-perfiles-declarados-en-local-config-4)).
+JUnit declarado junto a su validación; en v4 el perfil de toda composición entra en el hash. Los textos de ayuda,
+registro y UI que citan `local-config-3` quedan fuera de las rutas de la tarea ([registro](phase/P008-T008_PERFILES_DECLARATIVOS.md)).
 **Alcance:**
 - Formato nuevo del TOML (`local-config-4`) con `[profiles.<nombre>]`: preparación, validaciones (argv), prefijos
   permitidos, rutas protegidas y sensibles, reportes JUnit, `data_model_paths` e instrucciones del ejecutor. Las

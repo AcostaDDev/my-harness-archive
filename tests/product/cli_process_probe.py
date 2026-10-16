@@ -97,6 +97,12 @@ if mode == 'web':
         path = Path('src/estimate.ts')
         path.write_text(path.read_text().replace('tasks * 45', 'tasks * 30'))
     mode = 'flow'
+if mode == 'django':
+    # P008-T008: same journey with the declared python-django profile.
+    if writer:
+        path = Path('shop/pricing.py')
+        path.write_text(path.read_text().replace('tasks * 45', 'tasks * 30'))
+    mode = 'flow'
 def usage_events(provider):
     """H6.4: forma de uso caracterizada en D071 con valores sintéticos. Claude repite el mismo mensaje en
     eventos `assistant` con una salida parcial; el total de cada mensaje llega en `message_delta`."""

@@ -101,9 +101,15 @@ por su API y los artefactos referenciados; la restauración es de consulta (`que
   (D059, D068); Claude con herramientas declaradas y `dontAsk`. Memoria automática desactivada en ambos (D066).
   Ninguna CLI carga por sí misma las instrucciones del checkout: Claude se lanza con `--setting-sources ""` y Codex
   con presupuesto de project docs 0 (D094). El motor inyecta `AGENTS.md` en el prompt de cada rol.
-- **TOML local del operador** (`local-config-3`), fuera de todo checkout y `chmod 600`: `[service]`, `[git]`,
-  `[agents.reviewer]`, `[agents.executor]`, `[registration]` (raíces y techo de bootstrap), `[compositions.*]`
-  (perfil y comandos autorizados) y `[[projects]]` opcional con su política. Sin secretos.
+- **TOML local del operador** (`local-config-4`; 1–3 se siguen leyendo), fuera de todo checkout y `chmod 600`:
+  `[service]`, `[git]`, `[agents.reviewer]`, `[agents.executor]`, `[registration]` (raíces y techo de bootstrap),
+  `[profiles.*]` opcionales, `[compositions.*]` (perfil integrado o declarado y comandos autorizados) y
+  `[[projects]]` opcional con su política. Sin secretos.
+- **Perfiles**: integrados en `profiles/` (`typescript-web` componible; `reference_project` solo biblioteca) o declarados en
+  `[profiles.<nombre>]` (D095): preparación y validaciones como argv sin shell, JUnit junto a su validación,
+  prefijos, rutas protegidas y sensibles, `data_model_paths` e instrucciones del ejecutor. En `local-config-4` el
+  contenido del perfil entra en el hash congelado de la composición. Ejemplo `python-django` en
+  `examples/local_config.example.toml`.
 - **Validaciones nativas** (`commands-1`): ejecutables absolutos, autorización por comando completo, captura acotada en
   SQLite, grupos POSIX.
 - **Prompts** (`templates/`): `plan-task`, `execute-task`, `revise-task`, `review-task`, `executor-routing`,

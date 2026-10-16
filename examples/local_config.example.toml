@@ -1,11 +1,12 @@
-# Harness Local — configuración de uso real (local-config-3, D076). Plantilla, no válida tal cual.
+# Harness Local — configuración de uso real (local-config-4, P008-T008). Plantilla, no válida tal cual.
 # Guardar FUERA de cualquier checkout, propietario el usuario del servicio, chmod 600.
 # Sin secretos: la autenticación sigue en cada CLI. Rutas absolutas canónicas.
+# local-config-3 (lo mismo sin [profiles]) conserva su comportamiento y su hash congelado.
 # local-config-2 (comandos dentro de cada [[projects]]) y local-config-1 ([providers.codex]/[providers.claude],
 # revisor Codex + ejecutor Claude) se siguen leyendo, pero no admiten registrar proyectos desde la UI.
 # Validar:  harness-local check-config /ruta/harness-local.toml [--preflight]
 # Arrancar: harness-local serve --database /ruta/state/harness.sqlite3 --config /ruta/harness-local.toml
-format = "local-config-3"
+format = "local-config-4"
 
 [service]
 state_dir = "/RUTA/ABSOLUTA/harness-state"   # artefactos CLI y migraciones; fuera de los checkouts
@@ -41,8 +42,50 @@ allowed_tools = ["Read", "Edit", "Write", "Glob", "Grep"]    # solo Claude
 roots = ["/RUTA/ABSOLUTA/proyectos"]          # solo se registran carpetas bajo estas raíces canónicas
 bootstrap_enabled = false                     # true: la UI puede activar bootstrap en carpetas registradas
 
+# Perfiles declarados (local-config-4): stack del proyecto, sin ejecutar nada al cargar. Revisar y confirmar
+# cada comando: argv sin shell, cuyo primer elemento es un nombre de `executables` de la composición. Todas las
+# claves son obligatorias salvo `sensitive_allowlist`; las listas vacías solo se admiten en `preparation` y
+# `data_model_paths`. El contenido entra en el hash congelado: cambiarlo deja en cuarentena los jobs pendientes.
+# Los nombres de perfiles integrados (typescript-web) están reservados.
+[profiles.python-django]
+preparation = [
+  { argv = ["python", "--version"], timeout_seconds = 30 },
+  { argv = ["python", "-m", "django", "--version"], timeout_seconds = 30 },
+]
+validations = [
+  # El reporte JUnit se declara junto a su validación; `.local/` debe estar en el .gitignore del proyecto.
+  { argv = ["pytest", "--junitxml=.local/junit.xml", "-q"], timeout_seconds = 900, junit = { path = ".local/junit.xml", coverage = "Tests pytest del proyecto; no cobertura de código" } },
+  { argv = ["ruff", "check", "."], timeout_seconds = 120 },
+  { argv = ["ruff", "format", "--check", "."], timeout_seconds = 120 },
+  { argv = ["mypy", "."], timeout_seconds = 600 },
+  { argv = ["python", "manage.py", "check"], timeout_seconds = 120 },
+  { argv = ["python", "manage.py", "makemigrations", "--check", "--dry-run", "--noinput"], timeout_seconds = 120 },
+]
+# Prefijos que el contrato de una tarea puede citar; ejecutarlos exige además la autorización exacta.
+allowed_command_prefixes = [["pytest"], ["ruff", "check"], ["ruff", "format", "--check"], ["mypy"],
+                            ["python", "manage.py", "check"], ["python", "manage.py", "makemigrations", "--check"]]
+protected_paths = ["docs/STATE.md", "docs/NEXT_STEPS.md", "docs/ROADMAP.md", "docs/DECISIONS.md", "docs/archive/**",
+                   "AGENTS.md", "CLAUDE.md", "GEMINI.md", ".harness/**", ".codex/**", ".claude/**",
+                   "pyproject.toml", "uv.lock", "poetry.lock", "requirements*.txt", "setup.cfg", "tox.ini",
+                   "pytest.ini", "mypy.ini", "ruff.toml", ".ruff.toml", "manage.py", ".gitignore"]
+sensitive_paths = [".env", ".env.*", "**/.env", "**/.env.*", "*.pem", "*.key", "*.p12", "*.pfx", "id_rsa*", "*.sqlite3"]
+sensitive_allowlist = [".env.example"]
+# Paridad (D090): un diff que toque estas rutas sin docs/DDBB-DIAGRAM.md no se acepta.
+data_model_paths = ["**/models.py", "**/models/**", "**/migrations/**"]
+executor_instructions = """Implement the Django change within the frozen task paths, with pytest tests next to it. \
+Keep ruff check, ruff format --check, mypy, manage.py check and makemigrations --check passing; \
+add migrations for model changes and update docs/DDBB-DIAGRAM.md in the same task. \
+Do not weaken tests, tool settings, dependencies or their locks. Dependency installation, \
+database services and network access require separate authorization."""
+
+[compositions.django]                         # composición del perfil declarado
+profile = "python-django"
+authorize_profile_commands = true
+executables = { python = "/RUTA/ABSOLUTA/.venv/bin/python", pytest = "/RUTA/ABSOLUTA/.venv/bin/pytest", ruff = "/RUTA/ABSOLUTA/.venv/bin/ruff", mypy = "/RUTA/ABSOLUTA/.venv/bin/mypy" }
+environment = { PATH = "/RUTA/ABSOLUTA/.venv/bin:/usr/bin:/bin", HOME = "/RUTA/PRIVADA/home-comandos", LANG = "C.UTF-8", CI = "true", DJANGO_SETTINGS_MODULE = "config.settings" }
+
 [compositions.web]                            # comandos con nombre; la UI elige una, nunca los define
-profile = "typescript-web"                    # único perfil admitido
+profile = "typescript-web"                    # perfil integrado o uno de [profiles]
 authorize_profile_commands = true             # autoriza exactamente preparación y validaciones del perfil
 executables = { node = "/RUTA/ABSOLUTA/node", npm = "/RUTA/ABSOLUTA/npm" }
 environment = { PATH = "/RUTA/ABSOLUTA/bin:/usr/bin:/bin", HOME = "/RUTA/PRIVADA/home-comandos", LANG = "C.UTF-8", CI = "true", npm_config_cache = "/RUTA/ABSOLUTA/npm-cache", npm_config_update_notifier = "false" }

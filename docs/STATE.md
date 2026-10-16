@@ -16,9 +16,10 @@ salvo donde se indica. Detalle por fase en `docs/archive/phase-NNN/SUMMARY.md`.
   cuarentena por versión y confirmación explícita del escritor detenido; backup y restauración de consulta; retención
   explícita de streams.
 - **Agentes** ([P007](archive/phase-007/SUMMARY.md)): revisor y ejecutor Codex o Claude en cualquier combinación
-  (`cli-11`, `local-config-2/3`), revisor en solo lectura con esquema tipado, memoria automática desactivada, supresión
-  de confianza del escritor Codex. Validaciones nativas `commands-1` con JUnit. Perfiles: `typescript-web` (componible
-  desde el TOML) y `reference_project` (solo biblioteca).
+  (`cli-11`, `local-config-2/3/4`), revisor en solo lectura con esquema tipado, memoria automática desactivada,
+  supresión de confianza del escritor Codex. Validaciones nativas `commands-1` con JUnit. Perfiles: `typescript-web`
+  (componible desde el TOML), `reference_project` (solo biblioteca) y perfiles declarados en `[profiles.*]` de
+  `local-config-4`, con el ejemplo `python-django` (P008-T008).
 - **Fases y documentos** ([P004](archive/phase-004/SUMMARY.md), [P007](archive/phase-007/SUMMARY.md)): check READY,
   reconciliación, preguntas, lote desatendido, enmiendas, abandono y cierre con tag. Contrato documental unificado y
   obligatorio de D088 desde P008-T002 (layout v2 modificado; DECISIONS único con índice): bloques regenerados en cada
@@ -161,5 +162,22 @@ Objetivo y criterios en [ROADMAP](ROADMAP.md); plan en [NEXT_STEPS](NEXT_STEPS.m
   cambian UI, OpenAPI ni esquema. Sin proveedores reales ni smokes. Detalle en el
   [registro](phase/P008-T007_INSTRUCCIONES_CONTEXTO.md).
 
-**Siguiente:** P008-T008 (perfiles declarativos en el TOML local), sin iniciar. Este repositorio sigue sin
+**P008-T008 completada** (perfiles declarativos en el TOML local,
+[D095](DECISIONS.md#d095--p008-t008-perfiles-declarados-en-local-config-4)):
+
+- `local-config-4` = `local-config-3` + `[profiles.<nombre>]`: preparación y validaciones como argv sin shell (JUnit
+  junto a su validación), prefijos, rutas protegidas y sensibles, `data_model_paths` e instrucciones del ejecutor,
+  todo explícito y con claves desconocidas rechazadas. Las composiciones nombran un perfil integrado o declarado.
+- En v4 el contenido del perfil entra en `local_config_sha256` (cambiarlo pone en cuarentena los jobs pendientes);
+  v1–v3 conservan comportamiento y hash. `check-config` muestra cada perfil declarado con su hash y sus argv.
+- Ejemplo `python-django` en `examples/local_config.example.toml` (pytest con JUnit, ruff, mypy, `manage.py check` y
+  `makemigrations --check`), pendiente de que el usuario lo confirme sobre su proyecto.
+- Verificación: 12 checks ligeros. Pytest completo: 1.218 OK y 121 subtests, con 1 fallo de la prueba que fijaba el
+  ejemplo a v3; se actualizó y se re-ejecutaron los tres archivos afectados (74 OK), incluidos 27 casos nuevos con un
+  recorrido Django sintético hasta COMMITTED. 241 enlaces y anclas válidos. Sin Node/build ni `alembic check` (no
+  cambian UI, OpenAPI ni esquema), sin proveedores reales, smokes ni herramientas Python reales. Los textos de
+  ayuda, registro y UI que citan `local-config-3` quedan pendientes, fuera de las rutas de la tarea
+  ([registro](phase/P008-T008_PERFILES_DECLARATIVOS.md)).
+
+**Siguiente:** P008-T009 (Flujo A: inventario de solo lectura), sin iniciar. Este repositorio sigue sin
 registrarse en el harness.

@@ -104,6 +104,7 @@ tarea se leen solo las decisiones que cita; este índice sirve para buscar prece
 | [D092](#d092--p008-t005-prompts-y-definición-bajo-el-contrato-unificado) | P008-T005: prompts y definición bajo el contrato unificado | P008 |
 | [D093](#d093--p008-t006-api-y-ui-del-contrato-unificado) | P008-T006: API y UI del contrato unificado | P008 |
 | [D094](#d094--p008-t007-agentsmd-en-el-prompt-congelado-de-cada-rol) | P008-T007: AGENTS.md en el prompt congelado de cada rol | P008 |
+| [D095](#d095--p008-t008-perfiles-declarados-en-local-config-4) | P008-T008: perfiles declarados en local-config-4 | P008 |
 
 ## D001 — Alcance local y arquitectura base
 
@@ -2696,7 +2697,7 @@ Estado: decidido por el usuario el 2026-10-15, tras D086 (`01b4f6d`).
 Estado: decidido por el usuario el 2026-10-15 tras el análisis de incongruencias de esa sesión; **P008-T001
 (migración documental de este repositorio) implementada el mismo día**; P008-T002 implementada (D089); P008-T003
 implementada (D090); P008-T004 implementada (D091); P008-T005 implementada (D092); P008-T006 implementada (D093);
-P008-T007 implementada (D094); P008-T008–T015 pendientes. Fase: P008.
+P008-T007 implementada (D094); P008-T008 implementada (D095); P008-T009–T015 pendientes. Fase: P008.
 Sustituye en parte D072/D073 (carpetas `decisions/`, `architecture/` y `research/`; layout v2 opcional), D032/D073
 (cierre y transición separados) y D037 (creación v1). Plan: [NEXT_STEPS](NEXT_STEPS.md).
 
@@ -3002,5 +3003,44 @@ Límites: ninguna observación en ejecución; Codex 0.161.0, el `AGENTS.md` glob
 sin analizar. Una transición sellada con `cli-10` y adaptador CLI real deja de reanudarse, como ocurrió con
 `cli-9 → cli-10`; la excepción de D092 solo cubre `document_layout`. `plan-phase` recibe `AGENTS.md` también en su
 contexto congelado. Sin modelos, migraciones, dependencias, API ni UI.
+
+No se ejecutó el harness sobre este repositorio, ni proveedores reales, smokes, push o publicación.
+
+## D095 — P008-T008: perfiles declarados en local-config-4
+
+Estado: implementada y verificada offline el 2026-10-16; detalle y límites en el
+[registro](phase/P008-T008_PERFILES_DECLARATIVOS.md). Fase: P008. Aplica D088 punto 11 y conserva D049 y D078.
+
+Decisiones tomadas con criterio dentro de la tarea:
+
+- `local-config-4` es `local-config-3` más `[profiles.<nombre>]` opcional. Las composiciones nombran un perfil
+  integrado (`typescript-web`) o uno declarado; los proyectos siguen nombrando una composición y el registro desde la
+  UI funciona igual. `local-config-1/2/3` se leen sin cambios, con sus hashes congelados, y v1–v3 no admiten
+  `[profiles]`. Los nombres integrados quedan reservados; `reference_project` sigue siendo solo de biblioteca.
+- Claves explícitas, como en D049: `preparation`, `validations` (al menos una), `allowed_command_prefixes`,
+  `protected_paths` y `sensitive_paths` (no vacías), `data_model_paths` (puede ir vacía) y
+  `executor_instructions`; solo `sensitive_allowlist` es opcional. Cada comando es una tabla con `argv` y
+  `timeout_seconds`, más `cwd` y `environment` opcionales. El JUnit se declara junto a su validación con
+  `junit = { path, coverage }`, así que el reporte siempre se refiere a un comando exacto del perfil. No se exponen
+  `formatter_*`, porque nada los ejecuta. Una clave desconocida, una ruta que sale del checkout o un comando repetido
+  se rechazan.
+- «argv sin shell»: el primer elemento es un nombre simple de `executables` y no un intérprete de órdenes (sh, bash,
+  zsh…). Ningún argumento puede ser un operador de shell (`&&`, `|`, `;`, `>`…) ni contener `` ` `` o `$(`. En v4 la
+  regla cubre también los prefijos, las autorizaciones extra y los ejecutables de la composición, que no pueden
+  apuntar a un shell. Un prefijo permitido no autoriza ejecutar nada: ejecutar exige la autorización exacta.
+- En v4 el contenido completo del perfil de cada composición, integrado o declarado (`asdict` del `ProjectProfile`),
+  entra en `local_config_sha256`. Si cambia, los jobs pendientes quedan en cuarentena antes de efectos. El snapshot
+  del run ya guardaba el perfil completo, así que el codec no cambia.
+- `check-config` muestra en `profiles` cada perfil declarado con su SHA-256, los argv de preparación y validación,
+  los reportes JUnit y `data_model_paths`, sin valores de entorno. Las opciones de registro de la API no cambian.
+- El ejemplo `python-django` de `examples/local_config.example.toml` incluye: preparación `python --version` y
+  `python -m django --version`; validaciones `pytest --junitxml=.local/junit.xml -q` (con JUnit), `ruff check .`,
+  `ruff format --check .`, `mypy .`, `manage.py check` y `makemigrations --check --dry-run --noinput`; protección de
+  los documentos de control, de las instrucciones y de la configuración de herramientas; y paridad sobre
+  `models.py`, `models/` y `migrations/`. Es una propuesta que el usuario debe confirmar antes de usarla.
+
+Límites: los textos de `serve --help`, el diagnóstico del registro y la UI (Home y Registry) siguen citando
+`local-config-3`, porque esos archivos quedan fuera de las rutas de la tarea. El perfil no se ha ensayado con un
+proyecto Django ni con herramientas reales. Sin modelos, migraciones, codec, dependencias, API ni UI.
 
 No se ejecutó el harness sobre este repositorio, ni proveedores reales, smokes, push o publicación.

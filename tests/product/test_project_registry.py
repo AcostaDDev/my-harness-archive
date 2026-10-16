@@ -97,11 +97,12 @@ def test_local_config_3_toml_projects_name_a_composition(operator):
             load_local_config(write(folder, broken))
 
 
-def test_example_template_documents_the_local_config_3_keys(operator):
+def test_example_template_documents_the_local_config_4_keys(operator):
+    """P008-T008: el ejemplo es `local-config-4`, las claves de v3 más `[profiles]` (probado en test_declared_profiles)."""
     import tomllib
     data = v3(operator[1], [], toml_project=True)
     example = tomllib.loads((Path(__file__).parents[2] / 'examples/local_config.example.toml').read_text())
-    assert example['format'] == 'local-config-3' and example.keys() == data.keys()
+    assert example['format'] == 'local-config-4' and example.keys() == data.keys() | {'profiles'}
     assert example['registration'].keys() == data['registration'].keys()
     assert example['compositions']['web'].keys() == data['compositions']['web'].keys()
     assert example['projects'][0].keys() == data['projects'][0].keys()
@@ -111,7 +112,7 @@ def test_example_template_documents_the_local_config_3_keys(operator):
 
 
 def test_previous_formats_keep_their_frozen_identity(operator):
-    """local-config-1 y -2 se leen igual: mismo hash congelado que antes de `local-config-3`."""
+    """local-config-1, -2 y -3 se leen igual: mismo hash congelado que antes de sus sucesores."""
     context, data, folder, tmp_path = operator
     for fmt, value in (('local-config-1', data), ('local-config-2', v2(data))):
         project = load_local_config(write(folder, value)).projects[0]
@@ -120,6 +121,15 @@ def test_previous_formats_keep_their_frozen_identity(operator):
                                           'state_dir': value['service']['state_dir']}).encode()).hexdigest()
         assert project.versions['local_config'] == fmt and project.versions['local_config_sha256'] == expected
         assert 'project_registry' not in project.versions
+    # P008-T008: local-config-3 conserva su hash (sin el perfil, que solo entra en local-config-4).
+    value = v3(data, [], toml_project=True)
+    project = load_local_config(write(folder, value)).projects[0]
+    composition = {'web': {'profile': 'typescript-web', **value['compositions']['web']}}
+    expected = hashlib.sha256(freeze({'project': value['projects'][0], 'agents': value['agents'], 'git': value['git'],
+                                      'state_dir': value['service']['state_dir'],
+                                      'composition': composition}).encode()).hexdigest()
+    assert project.versions['local_config'] == 'local-config-3'
+    assert project.versions['local_config_sha256'] == expected
 
 
 def test_register_from_the_api_to_the_first_task(operator, repository, migrated_database):
