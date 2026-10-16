@@ -104,6 +104,9 @@ def _operation_module(run):
     if run.purpose == "bootstrap_discovery":
         from harness_local.storage import bootstrap_discovery
         return bootstrap_discovery
+    if run.purpose == "import_commit":
+        from harness_local.storage import project_import
+        return project_import
     if run.purpose == "bootstrap":
         from harness_local.storage import bootstrap
         return bootstrap
@@ -241,6 +244,10 @@ class SQLiteManagedRepository:
     def _queue_new_run(self, session, assessment, context, versions, task_id, phase_id, key, request,
                        purpose="task"):
         """Run nuevo y su primer job en la transacción del llamante (tareas y operaciones de fase H3.3)."""
+        if purpose != "import_commit":
+            from harness_local.storage.project_import import unresolved as import_unresolved
+            if import_unresolved(session, str(context.root)):
+                raise Conflict('Import awaits completion or explicit recovery')
         if purpose != "bootstrap":
             from harness_local.storage.bootstrap import unresolved
             if unresolved(session, str(context.root)):

@@ -55,9 +55,9 @@ def _executable(reader) -> str:
     return getattr(reader, 'executable', 'git')
 
 
-def _source(context, reader) -> tuple[dict, dict[str, bytes]]:
+def _source(context, reader, guard=None) -> tuple[dict, dict[str, bytes]]:
     try:
-        return read_source(context, _executable(reader))
+        return read_source(context, _executable(reader), guard)
     except ImportInventoryError as exc:
         raise Conflict(f'The project cannot be imported: {exc}') from exc
 
@@ -198,6 +198,9 @@ class PlanningRepository:
         """Solo definición e importación tienen borradores; True si la definición ya creó el proyecto."""
         if conversation.kind not in DRAFT_KINDS:
             raise Conflict('Only definition and import conversations have drafts')
+        if conversation.kind == 'project_import':
+            from harness_local.storage.models import ProjectImportRow
+            return session.scalar(select(ProjectImportRow.id).where(ProjectImportRow.root == conversation.root)) is not None
         return conversation.kind == 'definition' and _bootstrapped(session, conversation.root)
 
     @staticmethod
@@ -241,7 +244,7 @@ class PlanningRepository:
                                         .order_by(Proposal.number)).all()
             numbers = {turn.id: turn.number for turn in turns}
             pending = any(turn.status == 'QUEUED' for turn in turns)
-            created = row.kind == 'definition' and _bootstrapped(session, row.root)
+            created = self._drafts_created(session, row) if row.kind in DRAFT_KINDS else False
             open_ = not pending and not created
             questions, items = current_questions(session, row)
             turn_views = [{
@@ -359,11 +362,14 @@ class PlanningRepository:
             if writer.inspect_definition(context)['import_required']:
                 raise Conflict('The target belongs to a Git repository or contains .git: use the import flow')
         elif kind == 'project_import':
+            assessment = self.managed.guard.assess(context.root)
+            if assessment.refusal:
+                raise Conflict('Activate D027 before importing: ' + assessment.refusal)
             # P008-T011: inventario (T009) y mapa (T010) del árbol de HEAD, congelados con la conversación.
             definition_layout(context)
             if brief is not None or phase_id is not None:
                 raise ValueError('An import conversation has no brief or phase')
-            inventory, contents = _source(context, writer)
+            inventory, contents = _source(context, writer, self.managed.guard)
             try:
                 source = frozen_source(inventory, build_map(inventory, contents))
             except ImportMapError as exc:
@@ -411,6 +417,9 @@ class PlanningRepository:
             raise Conflict('The project was created by the harness; there is nothing to import')
         if latest_phase(session, root) is not None:
             raise Conflict('The project already has managed phases; the import flow is for projects not yet managed')
+        from harness_local.storage.models import ProjectImportRow
+        if session.scalar(select(ProjectImportRow.id).where(ProjectImportRow.root == root)):
+            raise Conflict('Import already confirmed; complete or reconcile its sealed intent')
 
     # --- turnos ------------------------------------------------------------------------
 
@@ -434,7 +443,7 @@ class PlanningRepository:
             target = definition_layout(context)
             inspection = port.inspect_definition(context, texts=True)
             texts = inspection.pop('texts')
-            inventory, contents = _source(context, writer)
+            inventory, contents = _source(context, writer, self.managed.guard)
             if inventory['inventory_sha256'] != source['inventory']['inventory_sha256']:
                 raise Conflict('The checkout changed since the import conversation started; start a new import '
                                'conversation')
@@ -620,6 +629,8 @@ class PlanningRepository:
             raise ValueError('Explicit dismissal reason required')
         with self.managed._write() as session:
             conversation = self._conversation(session, conversation_id, expected)
+            if conversation.kind == 'project_import':
+                self._definition_open(session, conversation)
             proposal = session.get(Proposal, proposal_id)
             if proposal is None or proposal.conversation_id != conversation.id:
                 raise LookupError('Unknown proposal of this conversation')
@@ -646,7 +657,7 @@ class PlanningRepository:
         inspection = port.inspect_definition(context, texts=True)
         texts = inspection.pop('texts')
         try:
-            inventory, contents = read_source(context, _executable(reader))
+            inventory, contents = read_source(context, _executable(reader), self.managed.guard)
             current = {'inventory': inventory, 'contents': contents}
         except (ImportInventoryError, OSError) as exc:
             current, record['current_error'] = None, str(exc)

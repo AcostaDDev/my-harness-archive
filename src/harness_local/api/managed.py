@@ -851,7 +851,7 @@ def managed_router(runtime: ManagedRuntime):
 
     # --- H6.5: creación y planificación conversacionales -----------------------------------------
     from harness_local.api.schemas import (
-        DefinitionAcceptCreate, DefinitionPreviewRead, ImportStatusRead, PlanningApplyCreate, PlanningBriefRead,
+        DefinitionAcceptCreate, DefinitionPreviewRead, ImportStatusRead, ImportPreviewRead, ImportEntryRead, PlanningApplyCreate, PlanningBriefRead,
         PlanningConversationCreate, PlanningConversationRead, PlanningConversationSummaryRead, PlanningDeferCreate,
         PlanningDismissCreate, PlanningDraftContentRead, PlanningDraftEdit, PlanningDraftsRead, PlanningMessageCreate,
     )
@@ -996,6 +996,35 @@ def managed_router(runtime: ManagedRuntime):
         call(planning_repository().defer, conversation_of(item, conversation_id), body.expected_version,
              question_id=body.question_id, reason=body.reason)
         return planning_read(item, conversation_id)
+
+    from harness_local.storage.project_import import ImportRepository
+
+    @router.get('/projects/{project_id}/import', response_model=ImportEntryRead,
+                operation_id='managed_import_entry')
+    def import_entry(project_id: str):
+        item = planning_project(project_id)
+        assessment = runtime.repository.guard.assess(item.context.root)
+        required = bool(assessment.facts and assessment.facts.legacy_state and assessment.activation is None)
+        return {'activation_required': required, 'refusal': assessment.refusal,
+                'activation_preview': call(runtime.migration.preview, item.context.root) if required else None,
+                'operation': call(ImportRepository(runtime.repository).get, item.context.root)}
+
+    @router.post('/projects/{project_id}/planning/{conversation_id}/import/preview',
+                 response_model=ImportPreviewRead, operation_id='managed_import_preview')
+    def import_preview(project_id: str, conversation_id: str):
+        item = planning_project(project_id)
+        return call(ImportRepository(runtime.repository).preview, item.context,
+                    conversation_of(item, conversation_id), frozen_versions(item), import_reader(item))
+
+    @router.post('/projects/{project_id}/planning/{conversation_id}/import/confirm', response_model=ManagedJobRead,
+                 status_code=202, operation_id='managed_import_confirm')
+    def import_confirm(project_id: str, conversation_id: str, body: DefinitionAcceptCreate,
+                       idempotency_key: IdempotencyKey):
+        item = planning_project(project_id)
+        job = call(ImportRepository(runtime.repository).submit, item.context,
+                   conversation_of(item, conversation_id), frozen_versions(item), import_reader(item),
+                   key=idempotency_key, **body.model_dump())
+        return queued(job)
 
     @router.get('/projects/{project_id}/planning/{conversation_id}/import', response_model=ImportStatusRead,
                 operation_id='managed_import_status')

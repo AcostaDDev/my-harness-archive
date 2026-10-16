@@ -312,7 +312,9 @@ class SQLiteMigrationRepository:
             intent = session.scalar(select(Commit.operation_id).join(Job, Job.id == Commit.job_id).join(
                 Run, Run.id == Commit.run_id).where(Commit.status == "INTENT",
                                                     or_(Job.activation_id == row.id, Run.root == row.root)))
-            if busy is not None or intent is not None or session.get(Lock, row.root) is not None:
+            from harness_local.storage.project_import import unresolved as import_unresolved
+            if (busy is not None or intent is not None or session.get(Lock, row.root) is not None
+                    or import_unresolved(session, row.root)):
                 raise ModeConflict("Trabajo gestionado sin terminar o commit ambiguo bajo esta activación; "
                                    "terminarlo o conciliarlo antes de revertir.")
             row.status, row.owner_token, row.version = "REVERTING", str(uuid4()), row.version + 1
@@ -366,3 +368,21 @@ class SQLiteMigrationRepository:
             row.status, row.owner_token, row.version = "REVERTED", None, row.version + 1
             row.export_path, row.export_sha256, row.finished_at = export_path, export_sha256, self._now()
             return _record(row)
+
+
+def import_marker(guard, root):
+    """D099: solo el marcador de una activación ACTIVE propia y sin deriva puede excluirse de Git."""
+    assessment = guard.assess(root)
+    live = assessment.activation
+    if (assessment.refusal is None and live is not None and live.status == 'ACTIVE'
+            and live.root == str(root)):
+        return live.marker_sha256
+    return None
+
+
+def bind_git_mode(writer, guard):
+    """Inyecta la autoridad de modo sin acoplar el adaptador Git a SQLite."""
+    from harness_local.adapters.git import GitWorkspace
+    if isinstance(writer, GitWorkspace):
+        writer.marker_reader = lambda root: import_marker(guard, root)
+    return writer

@@ -457,7 +457,9 @@ class PhaseRepository:
             root = str(context.root)
             from harness_local.storage.documents import unresolved
             from harness_local.storage.bootstrap import unresolved as bootstrap_unresolved
-            if self._root_pending(session, root) or unresolved(session, root) or bootstrap_unresolved(session, root):
+            from harness_local.storage.project_import import unresolved as import_unresolved
+            if (self._root_pending(session, root) or unresolved(session, root)
+                    or bootstrap_unresolved(session, root) or import_unresolved(session, root)):
                 raise Conflict('Checkout has unfinished work; finish or reconcile it before creating a phase')
             if session.scalar(select(Phase.id).where(Phase.root == root, Phase.code == definition['code'])):
                 raise Conflict('Phase code already exists in this checkout')

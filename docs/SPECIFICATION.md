@@ -54,7 +54,7 @@ run y, cuando procede, al intento exacto.
 |---|---|---|---|
 | F01 | Registrar proyecto | Alta desde la UI con raíz canónica, confianza explícita, perfil y composición del TOML; o en `[[projects]]` del TOML | Implementado (P007, D078) |
 | F02 | Crear proyecto desde cero | Brief, conversación con el revisor, borradores en disco con CAS, aceptación y commit raíz con P001 | Implementado (P007, D075, D082; P008-T002/T005, D092) |
-| F03 | Importar un proyecto de un harness anterior (Flujo A) | Inventario, normalización al layout unificado sin perder historial, documentos sincronizados | Inventario de solo lectura (P008-T009, D096), mapa determinista (P008-T010, D097) y propuesta del revisor con borradores privados (P008-T011, D098); T012 pendiente |
+| F03 | Importar un proyecto de un harness anterior (Flujo A) | Inventario, normalización al layout unificado sin perder historial, documentos sincronizados | Inventario de solo lectura (P008-T009, D096), mapa determinista (P008-T010, D097) propuesta del revisor con borradores privados (P008-T011, D098) y commit confirmado con continuidad (P008-T012, D100) |
 | F04 | Incorporar un repositorio sin harness (Flujo B) | Discovery por ingeniería inversa, documentos iniciales y archivos raíz mínimos | Pendiente (P008-T013–T015) |
 | F05 | Observar un harness anterior | Índice de lectura idempotente, navegación y actualización incremental | Implementado (P002) |
 | F06 | Navegar proyectos, fases, tareas y runs | URL propia por recurso, carga limitada y paginada | Implementado (P007, D077) |
@@ -162,7 +162,9 @@ bloques de estado y crea una nueva versión de su definición, conservando la an
   `REQUIREMENTS.md`, archivo por fase sin STATE) y proyectos v1/v2 de este harness. Audita la documentación,
   reorganiza a `docs/flows/` y `docs/archive/phase-NNN/`, normaliza nombres (`SPECIFICATION`, `DECISIONS`,
   `DDBB-DIAGRAM`; variantes como `DECISSONS.md`), adelgaza `CLAUDE.md` y `AGENTS.md` y deja STATE y NEXT_STEPS listos
-  para continuar sin perder historial. El historial de runs sigue la migración a gestionado existente (D027).
+  para continuar sin perder historial. El historial de runs sigue la migración a gestionado existente (D027),
+  confirmada antes de importar cuando hay runs legacy (D099). La vista previa confirma el árbol y los originales
+  conservados; el commit sellado se concilia tras una caída y adopta la fase activa con sus documentos (D100).
 - **Flujo B — repositorio sin harness.** Inventario determinista (stack, modelos de datos, rutas, tests) e ingeniería
   inversa del revisor en solo lectura para generar ARCHITECTURE, DDBB-DIAGRAM (desde los modelos reales),
   SPECIFICATION base, STATE actual y los archivos raíz mínimos, con un perfil declarativo confirmado por el usuario.

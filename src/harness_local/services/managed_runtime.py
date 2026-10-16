@@ -10,7 +10,7 @@ RECOVERY_REQUIRED hasta una confirmación explícita.
 """
 
 from collections.abc import Callable, Mapping
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 import importlib
 import logging
 import os
@@ -210,6 +210,9 @@ class ManagedRuntime:
         _validate(config, database, migration.migrations_dir)
         self.config, self.migration = config, migration
         self.repository = SQLiteManagedRepository(self.engine)
+        from harness_local.services.managed import guarded_writer
+        config = replace(config, commit_factory=guarded_writer(config.commit_factory, self.repository.guard))
+        self.config = config
         self.views = SQLiteManagedViews(self.engine)
         self.prompts = PromptRepository(self.engine)
         from harness_local.storage.permissions import PermissionRepository

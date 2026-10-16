@@ -404,9 +404,7 @@ def test_legacy_runs_keep_the_d027_guard_on_turns(migrated_database, tmp_path):
     from test_project_import import reference_project
     engine = make_engine(migrated_database[0])
     world = World(reference_project(tmp_path), engine)
-    cid = world.create()
-    assert world.view(cid)['source']['origin'] == 'reference_project'
-    with pytest.raises(Exception, match='estado legacy'):
-        world.message(cid)
-    assert world.view(cid)['turns'] == []
+    with pytest.raises(Conflict, match='Activate D027 before importing'):
+        world.create()
+    assert world.planning.list(world.context.root) == []
     engine.dispose()

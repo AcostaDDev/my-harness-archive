@@ -1701,6 +1701,57 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/managed/projects/{project_id}/import": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Import Entry */
+        get: operations["managed_import_entry"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/managed/projects/{project_id}/planning/{conversation_id}/import/preview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Import Preview */
+        post: operations["managed_import_preview"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/managed/projects/{project_id}/planning/{conversation_id}/import/confirm": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Import Confirm */
+        post: operations["managed_import_confirm"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/managed/projects/{project_id}/planning/{conversation_id}/import": {
         parameters: {
             query?: never;
@@ -2900,6 +2951,135 @@ export interface components {
              */
             mode: "simulation";
         };
+        /** ImportEntryRead */
+        ImportEntryRead: {
+            /** Activation Required */
+            activation_required: boolean;
+            /** Refusal */
+            refusal: string | null;
+            activation_preview: components["schemas"]["MigrationPreviewRead"] | null;
+            operation: components["schemas"]["ImportOperationRead"] | null;
+        };
+        /** ImportOperationRead */
+        ImportOperationRead: {
+            /** Id */
+            id: string;
+            /** Root */
+            root: string;
+            /** Conversation Id */
+            conversation_id: string;
+            /** Run Id */
+            run_id: string;
+            /** Phase Id */
+            phase_id: string | null;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "QUEUED" | "COMPLETED" | "INTERRUPTED";
+            preview: components["schemas"]["ImportPreviewRead"];
+            /** Decision */
+            decision: {
+                [key: string]: unknown;
+            };
+            /** Result */
+            result: {
+                [key: string]: unknown;
+            } | null;
+            /** Expected Version */
+            expected_version: number;
+            /** Run Status */
+            run_status: string;
+            /** Created At */
+            created_at: string;
+            /** Finished At */
+            finished_at: string | null;
+        };
+        /** ImportPreviewRead */
+        ImportPreviewRead: {
+            /** Preview Sha256 */
+            preview_sha256: string;
+            /**
+             * Operation
+             * @constant
+             */
+            operation: "import_commit";
+            /** Proposed Tree */
+            proposed_tree: string;
+            /** Head */
+            head: string;
+            /** Fingerprint */
+            fingerprint: string;
+            /** Tree */
+            tree: string;
+            /** Index Tree */
+            index_tree: string;
+            /** Documents */
+            documents: {
+                [key: string]: unknown;
+            }[];
+            /** Mechanical */
+            mechanical: {
+                [key: string]: unknown;
+            }[];
+            /** Diff */
+            diff: string;
+            /** Phase */
+            phase: {
+                [key: string]: unknown;
+            };
+            /** Baseline */
+            baseline: {
+                [key: string]: string;
+            };
+            /** Origin */
+            origin: {
+                [key: string]: unknown;
+            };
+            /** Source */
+            source: {
+                [key: string]: unknown;
+            };
+            /** Moves */
+            moves: {
+                [key: string]: unknown;
+            }[];
+            /** Preserved */
+            preserved: {
+                [key: string]: unknown;
+            }[];
+            /** Foreign */
+            foreign: {
+                [key: string]: unknown;
+            }[];
+            /** Result Tree */
+            result_tree: {
+                [key: string]: unknown;
+            }[];
+            /** Warnings */
+            warnings: string[];
+            /** Author */
+            author: {
+                [key: string]: string;
+            };
+            /** Message */
+            message: string;
+            /** Versions */
+            versions: {
+                [key: string]: unknown;
+            };
+            /** Context */
+            context: string;
+            /** Resume Operation Id */
+            resume_operation_id?: string | null;
+            /** Expected Version */
+            expected_version?: number | null;
+            /**
+             * Already Imported
+             * @default false
+             */
+            already_imported: boolean;
+        };
         /**
          * ImportStatusRead
          * @description P008-T011: si la importación puede pasar a la vista previa; se recalcula releyendo checkout y borradores.
@@ -3335,7 +3515,7 @@ export interface components {
              * Purpose
              * @enum {string}
              */
-            purpose: "task" | "phase_check" | "phase_close" | "chat" | "document_export" | "bootstrap" | "bootstrap_discovery" | "definition" | "phase_planning" | "project_import" | "document_edit" | "phase_transition";
+            purpose: "task" | "phase_check" | "phase_close" | "chat" | "document_export" | "bootstrap" | "bootstrap_discovery" | "definition" | "phase_planning" | "project_import" | "import_commit" | "document_edit" | "phase_transition";
             /** Actions */
             actions: ("revalidate" | "retry_executor" | "commit" | "permissions")[];
             /** Versions */
@@ -3382,7 +3562,7 @@ export interface components {
              * Purpose
              * @enum {string}
              */
-            purpose: "task" | "phase_check" | "phase_close" | "chat" | "document_export" | "bootstrap" | "bootstrap_discovery" | "definition" | "phase_planning" | "project_import" | "document_edit" | "phase_transition";
+            purpose: "task" | "phase_check" | "phase_close" | "chat" | "document_export" | "bootstrap" | "bootstrap_discovery" | "definition" | "phase_planning" | "project_import" | "import_commit" | "document_edit" | "phase_transition";
         };
         /** MetricAccountingRead */
         MetricAccountingRead: {
@@ -4377,7 +4557,7 @@ export interface components {
             updated_at: string;
             /**
              * Created
-             * @description Definición ya convertida en proyecto por el bootstrap v2.
+             * @description Definición o importación ya confirmada; sus borradores quedan cerrados.
              */
             created: boolean;
             /** Turns */
@@ -11460,6 +11640,197 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["PlanningConversationRead"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+        };
+    };
+    managed_import_entry: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Obligatoria con valor 1 en mutaciones (protección CSRF). */
+                "x-harness-local"?: string | null;
+            };
+            path: {
+                project_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ImportEntryRead"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+        };
+    };
+    managed_import_preview: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Obligatoria con valor 1 en mutaciones (protección CSRF). */
+                "x-harness-local"?: string | null;
+            };
+            path: {
+                project_id: string;
+                conversation_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ImportPreviewRead"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+        };
+    };
+    managed_import_confirm: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Misma clave y misma acción devuelven el mismo job. */
+                "Idempotency-Key": string;
+                /** @description Obligatoria con valor 1 en mutaciones (protección CSRF). */
+                "x-harness-local"?: string | null;
+            };
+            path: {
+                project_id: string;
+                conversation_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DefinitionAcceptCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ManagedJobRead"];
                 };
             };
             /** @description Forbidden */

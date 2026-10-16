@@ -3,6 +3,8 @@ import type { ReactNode } from "react";
 import { unifiedDiff } from "../diff.ts";
 import { createOnce, jobRequest, managed, ManagedError } from "../managed-api";
 import type { S } from "../managed-api";
+import type { Route } from "../router";
+import { Migration } from "./Project";
 import { Link, navigate } from "../navigation";
 import { Alert, DiffBlock, Empty, Evidence, Fields, Hash, Loading, PageHeader, Stale, Status, message, usePoll, when } from "../ui";
 import { useWorkspace } from "../workspace";
@@ -35,6 +37,11 @@ const PROPOSAL: Record<Proposal["status"], [string, "active" | "ok" | "danger" |
 const ORIGIN: Record<S["DefinitionDocumentRead"]["origin"], string> = {
   draft: "Borrador tal cual", "draft+blocks": "Borrador con bloques regenerados", template: "Plantilla unificada", archive: "Archivo de la definición",
 };
+
+function draftRoute(conversation: Conversation, project: string, path?: string): Route {
+  return conversation.kind === "project_import" ? { name: "import", project, conversation: conversation.id, path }
+    : { name: "setup", project, path };
+}
 
 function Tone({ value }: { value: [string, string] }) {
   return <span className={`status status-${value[1]}`}><span className="status-mark" aria-hidden="true" />{value[0]}</span>;
@@ -232,7 +239,7 @@ function Questions({ conversation, base }: { conversation: Conversation; base: s
       <p><strong>{question.blocking ? "Bloqueante" : "Informativa"}</strong>{question.deferred ? " · aplazada" : ""}: {question.text}</p>
       {question.deferred && <p className="hint">Aplazada con motivo: {String(question.deferred.reason)}</p>}
       {question.blocking && !question.deferred && <>
-        <p className="hint">Respóndela en un mensaje nuevo o aplázala de forma explícita; aplazar no la responde, solo deja de bloquear la aceptación y queda registrado en DEFINITION.md.</p>
+        <p className="hint">Respóndela en un mensaje nuevo o aplázala de forma explícita; aplazar no la responde, solo deja de bloquear la aceptación y queda registrado en la conversación y su vista previa.</p>
         {canDefer && <div className="form-row"><label>Motivo del aplazamiento<input value={reasons[question.id] ?? ""} maxLength={2000} onChange={e => setReasons({ ...reasons, [question.id]: e.target.value })} /></label>
           <button type="button" className="button-quiet" disabled={busy || !(reasons[question.id] ?? "").trim()} onClick={() => void operate(async () => {
             await managed(`${base}/questions/defer`, { expected_version: conversation.version, question_id: question.id, reason: reasons[question.id] } satisfies S["PlanningDeferCreate"]);
@@ -267,7 +274,7 @@ function ProposalEntry({ conversation, proposal, base, drafts }: { conversation:
   const disk = drafts?.drafts.find(d => d.path === proposal.path);
   const moved = disk && disk.sha256 !== proposal.base_sha256 && disk.sha256 !== proposal.content_sha256;
   return <div className="entry entry-open">
-    <p><strong>#{proposal.number}</strong> <Link to={{ name: "setup", project, path: proposal.path! }}><code className="path">{proposal.path}</code></Link>{" "}
+    <p><strong>#{proposal.number}</strong> <Link to={draftRoute(conversation, project, proposal.path!)}><code className="path">{proposal.path}</code></Link>{" "}
       <span className="muted">· turno {proposal.turn_number} · {proposal.base_sha256 ? "sustituye un borrador" : "documento nuevo"}</span></p>
     <p>{proposal.reason}</p>
     {moved && <p className="state state-attention">El borrador cambió en disco desde el turno: aplicarla no sobrescribirá tu cambio y fallará. Pide otro turno o edítalo tú.</p>}
@@ -334,32 +341,32 @@ function DraftTree({ conversation, drafts, current, error }: { conversation: Con
   // Carpeta de documentación (la de STATE): los nombres del árbol son relativos a ella; la ruta completa va en el título.
   const docsFolder = drafts?.allowed.required.find(p => p.endsWith("/STATE.md"))?.slice(0, -"/STATE.md".length);
   return <nav className="docs-tree" aria-label="Borradores">
-    <p className="docs-tree-title"><Link to={{ name: "setup", project }} current={!current}>Definición</Link></p>
-    {conversation.created ? <p className="hint">Proyecto creado: los documentos están en la <Link to={{ name: "docs", project }}>documentación</Link>.</p>
+    <p className="docs-tree-title"><Link to={draftRoute(conversation, project)} current={!current}>{conversation.kind === "project_import" ? "Importación" : "Definición"}</Link></p>
+    {conversation.created ? <p className="hint">{conversation.kind === "project_import" ? "Importación confirmada; borradores cerrados. Consulta la" : "Proyecto creado: consulta la"} <Link to={{ name: "docs", project }}>documentación</Link>.</p>
       : !drafts ? (error ? <Alert>{error}</Alert> : <Loading />) : <>
         <ul className="docs-tree-list">{paths.map(path => {
           const draft = present.get(path);
-          return <li key={path}><Link to={{ name: "setup", project, path }} current={path === current} className="docs-tree-file">
+          return <li key={path}><Link to={draftRoute(conversation, project, path)} current={path === current} className="docs-tree-file">
             <span className={draft ? "docs-tree-name" : "docs-tree-name muted"} title={path}>{docsFolder && path.startsWith(`${docsFolder}/`) ? path.slice(docsFolder.length + 1) : path}</span>
             {pending.has(path) && <span className="docs-flag docs-flag-local" title="Propuesta pendiente de decidir">propuesta</span>}
             {draft?.user_edited && <span className="docs-flag docs-flag-drift" title="Cambiado desde el último turno respondido; el siguiente turno lo verá">editado</span>}
-            {!draft && required.has(path) && <span className="docs-flag" title="Obligatorio para aceptar">falta</span>}
+            {!draft && required.has(path) && <span className="docs-flag" title={conversation.kind === "project_import" ? "La vista previa combina los documentos del origen y los borradores" : "Obligatorio para aceptar"}>{conversation.kind === "project_import" ? "sin borrador" : "falta"}</span>}
           </Link></li>;
         })}</ul>
         {drafts.invalid.length > 0 && <p className="hint">Inválidos: {drafts.invalid.map(p => <code key={p} className="chip">{p}</code>)}</p>}
-        {drafts.foreign.length > 0 && <div className="docs-tree-missing"><p className="hint">Archivos ajenos (bloquean la aceptación):</p>
+        {drafts.foreign.length > 0 && <div className="docs-tree-missing"><p className="hint">{conversation.kind === "project_import" ? "Archivos ajenos del área privada (no se importan):" : "Archivos ajenos (bloquean la aceptación):"}</p>
           <ul className="docs-tree-list">{drafts.foreign.map(p => <li key={p}><code className="path">{p}</code></li>)}</ul>
           {drafts.foreign_truncated && <p className="hint">Lista recortada.</p>}</div>}
-        <NewDraft patterns={drafts.allowed.patterns} existing={new Set(paths)} />
+        <NewDraft conversation={conversation} patterns={drafts.allowed.patterns} existing={new Set(paths)} />
       </>}
   </nav>;
 }
 
-function NewDraft({ patterns, existing }: { patterns: string[]; existing: Set<string> }) {
+function NewDraft({ conversation, patterns, existing }: { conversation: Conversation; patterns: string[]; existing: Set<string> }) {
   const { project } = useWorkspace();
   const [path, setPath] = useState("");
   const valid = matchesPattern(path.trim(), patterns) && !existing.has(path.trim());
-  return <form className="docs-new" onSubmit={e => { e.preventDefault(); if (valid) navigate({ name: "setup", project, path: path.trim() }); }}>
+  return <form className="docs-new" onSubmit={e => { e.preventDefault(); if (valid) navigate(draftRoute(conversation, project, path.trim())); }}>
     <label>Nuevo borrador<input value={path} onChange={e => setPath(e.target.value)} placeholder={patterns[0]?.replace("*", "D002-titulo")} maxLength={400} /></label>
     <p className="hint">Admitidos: {patterns.map(p => <code key={p} className="chip">{p}</code>)}</p>
     <button className="button-quiet" disabled={!valid}>Crear borrador</button>
@@ -380,7 +387,8 @@ function DraftPage({ conversation, path, drafts }: { conversation: Conversation;
   const base = `/projects/${project}/planning/${conversation.id}`;
   // Se relee: una edición en disco se ve (y el editor la avisa) antes de intentar guardar.
   const { draft, missing, error } = useDraft(conversation.id, path, refresh, 3000);
-  const key = `harness-setup-draft-v1:${project}:${path}`;
+  const key = conversation.kind === "project_import" ? `harness-import-draft-v1:${project}:${conversation.id}:${path}`
+    : `harness-setup-draft-v1:${project}:${path}`;
   const [editing, setEditing] = useState(() => !!loadEdit(key));
   const state = drafts?.drafts.find(d => d.path === path);
   const allowed = !!drafts && (drafts.allowed.fixed.includes(path) || matchesPattern(path, drafts.allowed.patterns));
@@ -724,5 +732,100 @@ export function PhasePlanPanel({ phase, stale = false }: { phase: S["PhaseRead"]
         })}>Confirmar el plan y hacer commit</button>
       </div>}
     </>}
+  </section>;
+}
+
+// --- importación: /projects/:p/import[/:c/*borrador] ---------------------------------------------
+
+export function ImportPage({ conversation, path }: { conversation?: string; path?: string }) {
+  const { project, refresh, busy, operate } = useWorkspace();
+  const entry = usePoll<S["ImportEntryRead"]>(`/projects/${project}/import`, 3000, refresh);
+  const mode = usePoll<S["ModeRead"]>(`/projects/${project}/mode`, 4000, refresh);
+  const list = usePoll<Summary[]>(`/projects/${project}/planning`, 4000, refresh);
+  const [title, setTitle] = useState("");
+  if (!entry.data || !list.data) return entry.error ?? list.error ? <Alert>{entry.error ?? list.error}</Alert> : <Loading />;
+  if (entry.data.activation_required || entry.data.refusal) return <>
+    <PageHeader title="Importar proyecto"><p>Primero activa el modo gestionado: conserva y verifica el histórico del harness anterior antes de normalizar los documentos.</p></PageHeader>
+    {entry.data.refusal && <p className="state state-attention">{entry.data.refusal}</p>}
+    {entry.data.activation_preview && <Evidence title="Vista previa de la activación requerida" value={entry.data.activation_preview} />}
+    <Migration project={project} mode={mode.data} />
+  </>;
+  const mine = list.data.filter(c => c.kind === "project_import");
+  const op = entry.data.operation;
+  const selected = conversation ?? op?.conversation_id;
+  return <>
+    <PageHeader title="Importar proyecto"><p>El revisor propone fusiones y documentos. Los borradores se guardan en un área privada. Revisa el árbol completo y confirma su hash para normalizar el checkout en un único commit.</p></PageHeader>
+    <Stale error={entry.error ?? list.error} />
+    {!op && <section className="panel">
+      <ul className="link-list">{mine.map(c => <li key={c.id}><Link to={{ name: "import", project, conversation: c.id }} current={selected === c.id}>{c.title} · {c.turns} turnos</Link></li>)}</ul>
+      <form onSubmit={e => { e.preventDefault(); void operate(async () => {
+        const created = await createOnce<Conversation>(`/projects/${project}/planning`, { kind: "project_import", title: title.trim(), brief: null, phase_id: null } satisfies S["PlanningConversationCreate"]);
+        setTitle(""); navigate({ name: "import", project, conversation: created.id });
+      }); }}><label>Nueva conversación de importación<input value={title} maxLength={200} onChange={e => setTitle(e.target.value)} /></label><button disabled={busy || !title.trim()}>Inventariar y crear conversación</button></form>
+    </section>}
+    {op && selected !== op.conversation_id ? <p>Hay una importación confirmada. <Link to={{ name: "import", project, conversation: op.conversation_id }}>Ver su operación</Link>.</p>
+      : selected && <ImportConversation key={selected} id={selected} path={path} operation={op} />}
+  </>;
+}
+
+function ImportConversation({ id, path, operation }: { id: string; path?: string; operation: S["ImportOperationRead"] | null }) {
+  const { project, refresh } = useWorkspace();
+  const base = `/projects/${project}/planning/${id}`;
+  const read = usePoll<Conversation>(base, 1500, refresh);
+  const c = read.data;
+  const drafts = usePoll<Drafts>(c && !c.created ? `${base}/drafts` : null, 3000, refresh);
+  if (!c) return read.error ? <Alert>{read.error}</Alert> : <Loading />;
+  if (c.kind !== "project_import") return <Alert>Esta conversación no es de importación.</Alert>;
+  return <div className="docs-layout">
+    <DraftTree conversation={c} drafts={drafts.data} current={path} error={drafts.error} />
+    <div className="docs-main"><Stale error={read.error} />
+      {path && !c.created ? <DraftPage key={path} conversation={c} path={path} drafts={drafts.data} /> : <>
+        <h2>{c.title}</h2><Evidence title="Origen y mapa congelados" value={c.source} />
+        <section className="panel"><h3>Conversación</h3><TurnList conversation={c} />
+          {!c.created && <MessageForm conversation={c} path={`${base}/messages`} hint="El revisor recibe el inventario, el mapa y los borradores; no escribe en el checkout." />}
+        </section>
+        <Questions conversation={c} base={base} />
+        {c.proposals.filter(p => p.status === "PROPOSED").map(p => <ProposalEntry key={p.id} conversation={c} proposal={p} base={base} drafts={drafts.data} />)}
+        <ProposalHistory proposals={c.proposals.filter(p => p.status !== "PROPOSED")} />
+        <ImportConfirmation base={base} conversation={c} operation={operation} />
+      </>}
+    </div>
+  </div>;
+}
+
+function ImportConfirmation({ base, conversation, operation }: { base: string; conversation: Conversation; operation: S["ImportOperationRead"] | null }) {
+  const { project, busy, operate, send } = useWorkspace();
+  const [shown, setShown] = useState<S["ImportPreviewRead"]>();
+  const [confirmed, setConfirmed] = useState(false);
+  const [reason, setReason] = useState("");
+  useEffect(() => { setShown(undefined); setConfirmed(false); }, [conversation.version, operation?.status]);
+  const completed = operation?.status === "COMPLETED";
+  const queued = operation?.status === "QUEUED";
+  return <section className="panel">
+    <h3>{completed ? "Proyecto importado" : "Confirmar la normalización"}</h3>
+    {operation && <><p><Status value={operation.status} /> · <Link to={{ name: "run-short", run: operation.run_id }}>Ver run</Link> <Status value={operation.run_status} /></p>
+      {operation.result && <Evidence title="Resultado de la importación" value={operation.result} />}
+      {completed && <p>Documentos adoptados. <Link to={{ name: "phase", project, phase: String(operation.preview.phase.code) }}>Continuar en {String(operation.preview.phase.code)}</Link>.</p>}
+      {operation.run_status === "RECOVERY_REQUIRED" && <p>Confirma el escritor detenido en el run y vuelve aquí para conciliar el mismo commit.</p>}
+    </>}
+    {!completed && !queued && <button disabled={busy} onClick={() => void operate(async () => {
+      setShown(undefined); setConfirmed(false);
+      setShown(await managed<S["ImportPreviewRead"]>(`${base}/import/preview`, {}));
+    })}>{operation ? "Revisar la intención para conciliarla" : "Revisar el árbol y el commit"}</button>}
+    {shown && <div className="docs-review">
+      <p>Fase que se adoptará: <strong>{String(shown.phase.code)}</strong>. Los originales sustituidos o retirados se conservan en el archivo.</p>
+      <Fields items={[["Base", <Hash value={shown.head} />], ["Vista previa", <Hash value={shown.preview_sha256} />]]} />
+      <Evidence title="Árbol documental completo, movimientos y conservación de originales" value={{ tree: shown.result_tree, moves: shown.moves, preserved: shown.preserved, foreign: shown.foreign, phase: shown.phase }} />
+      {shown.warnings.length > 0 && <ul>{shown.warnings.map((warning, i) => <li key={i}>{warning}</li>)}</ul>}
+      <DiffBlock diff={shown.diff} label="Cambios de la importación" />
+      <details><summary>Bytes exactos de cada cambio (base64 en binarios)</summary>{shown.documents.map(doc => <details key={String(doc.path)}><summary>{String(doc.path)} · {doc.content === null ? "retirado" : String(doc.after_sha256).slice(0, 12)}</summary><pre>{String(doc.content ?? "Archivo retirado; original conservado en el árbol mostrado.")}</pre></details>)}</details>
+      <label>Motivo<input value={reason} maxLength={2000} onChange={e => setReason(e.target.value)} /></label>
+      <label className="check"><input type="checkbox" checked={confirmed} onChange={e => setConfirmed(e.target.checked)} />He revisado este árbol, la fase y los originales conservados, y confirmo el hash {shown.preview_sha256.slice(0, 12)}.</label>
+      <button disabled={busy || !confirmed || !reason.trim()} onClick={() => void operate(async () => {
+        await send(jobRequest(`${base}/import/confirm`, { preview_sha256: shown.preview_sha256, reason, confirmed: true,
+          resume_operation_id: shown.resume_operation_id ?? null, expected_version: shown.expected_version ?? null } satisfies S["DefinitionAcceptCreate"]));
+        setShown(undefined); setConfirmed(false);
+      })}>{operation ? "Conciliar el mismo commit" : "Confirmar y hacer commit documental"}</button>
+    </div>}
   </section>;
 }

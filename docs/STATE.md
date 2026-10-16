@@ -12,7 +12,7 @@ salvo donde se indica. Detalle por fase en `docs/archive/phase-NNN/SUMMARY.md`.
   revisor, bucle ejecución → validación → revisión con límite de correcciones, aceptación ligada al contenido exacto y
   commit determinista conciliable. Codec de historial en formato 7 (lee 1–6).
 - **Persistencia y recuperación** ([P003](archive/phase-003/SUMMARY.md), [P006](archive/phase-006/SUMMARY.md)): SQLite
-  `0019_import_conversations` (34 tablas, [diagrama](DDBB-DIAGRAM.md)); cola idempotente, lease, lock por checkout,
+  `0020_project_imports` (35 tablas, [diagrama](DDBB-DIAGRAM.md)); cola idempotente, lease, lock por checkout,
   cuarentena por versión y confirmación explícita del escritor detenido; backup y restauración de consulta; retención
   explícita de streams.
 - **Agentes** ([P007](archive/phase-007/SUMMARY.md)): revisor y ejecutor Codex o Claude en cualquier combinación
@@ -240,5 +240,24 @@ Objetivo y criterios en [ROADMAP](ROADMAP.md); plan en [NEXT_STEPS](NEXT_STEPS.m
   anclas válidos y los dos flowcharts de `flows/legacy-migration.md` pasan el parser local. Sin proveedores reales ni
   smokes. Detalle en el [registro](phase/P008-T011_PROPUESTA_REVISOR.md).
 
-**Siguiente:** P008-T012 (Flujo A: vista previa, commit y continuidad), sin iniciar. Este repositorio sigue sin
+**P008-T012 completada** (Flujo A: vista previa, commit y continuidad,
+[D100](DECISIONS.md#d100--p008-t012-importación-confirmada-y-continuidad-del-flujo-a)):
+
+- Árbol completo del mapa y borradores privados; originales sustituidos o retirados conservados por bytes en
+  `archive/phase-000/import-originals/`, sin sobrescribir archivo previo. STATE/NEXT_STEPS deben coincidir en una
+  fase de ROADMAP con objetivo y criterios; bloques regenerados y fase ACTIVE adoptada con sus documentos.
+- `0020_project_imports`: intención sellada antes del efecto, confirmación por hash/motivo/clave y un commit
+  «docs: normalizar al contrato documental». Caídas conciliables con el mismo run y commit; resultado, fase y fin
+  del job atómicos. Intención incierta bloquea trabajo nuevo y reversión; borradores cerrados al confirmar.
+- D099 implementada: activación antes de conversar si hay runs legacy; solo el marcador propio ACTIVE y validado
+  se tolera y excluye de Git, también al continuar. Ningún `.gitignore` cambia. Grafías exactas en macOS y binarios
+  por bytes. API, UI de importación y tipos generados; `document_layout = "d088-6"`.
+- Verificación: 12 checks ligeros; suite pytest con 1.281 OK y 121 subtests, y dos fallos en el recorrido legacy
+  por excluir un marcador ya ignorado. Corregidos y revalidados en 79 pruebas de Git/API/importación; cinco casos
+  de recuperación re-ejecutados tras limpiar la parada antigua al conciliar. 74 pruebas Node, tipos, build y
+  `alembic check` temporal correctos. Ocho Markdown con 276 enlaces/anclas válidos, siete ER y dos flowcharts
+  válidos por parser/gramática; diff revisado. Sin comprobación visual, proveedores ni smokes reales. Detalle y
+  límites en el [registro](phase/P008-T012_COMMIT_CONTINUIDAD.md).
+
+**Siguiente:** P008-T013 (Flujo B: inventario determinista), sin iniciar. Este repositorio sigue sin
 registrarse en el harness.

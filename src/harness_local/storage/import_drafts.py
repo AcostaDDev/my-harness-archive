@@ -29,10 +29,12 @@ def area_root(engine) -> Path:
     return parent
 
 
-def read_source(context, executable: str = 'git') -> tuple[dict, dict[str, bytes]]:
+def read_source(context, executable: str = 'git', guard=None) -> tuple[dict, dict[str, bytes]]:
     """Inventario del árbol de HEAD (T009) y sus bytes; la carpeta de documentación es la de STATE."""
     docs = str(PurePosixPath(context.state_file).parent)
-    snapshot = read_checkout(context.root, docs, executable=executable)
+    from harness_local.storage.migration import import_marker
+    marker = import_marker(guard, context.root) if guard is not None else None
+    snapshot = read_checkout(context.root, docs, executable=executable, marker_sha256=marker)
     return build_inventory(snapshot, docs), snapshot_contents(snapshot)
 
 
@@ -113,7 +115,7 @@ class ImportDrafts:
         return {'before': current, 'after': after, 'written': True}
 
 
-def observe(context, area: ImportDrafts, executable: str = 'git') -> dict:
+def observe(context, area: ImportDrafts, executable: str = 'git', guard=None) -> dict:
     """Lo observado antes y después de un turno: la huella del origen y los borradores del área."""
-    inventory, _ = read_source(context, executable)
+    inventory, _ = read_source(context, executable, guard)
     return observation(inventory['inventory_sha256'], area.inspect_definition(context))

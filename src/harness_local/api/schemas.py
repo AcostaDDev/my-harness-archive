@@ -300,7 +300,7 @@ class ManagedRunSummaryRead(BaseModel):
     created_at: str
     updated_at: str
     purpose: Literal['task', 'phase_check', 'phase_close', 'chat', 'document_export', 'bootstrap', 'bootstrap_discovery',
-                     'definition', 'phase_planning', 'project_import',
+                     'definition', 'phase_planning', 'project_import', 'import_commit',
                      'document_edit', 'phase_transition']
 
 
@@ -1229,7 +1229,7 @@ class PlanningConversationRead(BaseModel):
     version: int
     created_at: str
     updated_at: str
-    created: bool = Field(description='Definición ya convertida en proyecto por el bootstrap v2.')
+    created: bool = Field(description='Definición o importación ya confirmada; sus borradores quedan cerrados.')
     turns: list[PlanningTurnRead]
     proposals: list[PlanningProposalRead]
     actions: list[Literal['message', 'edit_draft', 'defer_question', 'accept']]
@@ -1696,3 +1696,55 @@ class RegistryPreviewRead(BaseModel):
 class RegistryApplyRead(BaseModel):
     project: RegisteredProjectSummaryRead
     replayed: bool = Field(description='La misma confirmación ya estaba aplicada; no hay otra versión.')
+
+
+class ImportPreviewRead(BaseModel):
+    preview_sha256: str
+    operation: Literal['import_commit']
+    proposed_tree: str
+    head: str
+    fingerprint: str
+    tree: str
+    index_tree: str
+    documents: list[dict[str, Any]]
+    mechanical: list[dict[str, Any]]
+    diff: str
+    phase: dict[str, Any]
+    baseline: dict[str, str]
+    origin: dict[str, Any]
+    source: dict[str, Any]
+    moves: list[dict[str, Any]]
+    preserved: list[dict[str, Any]]
+    foreign: list[dict[str, Any]]
+    result_tree: list[dict[str, Any]]
+    warnings: list[str]
+    author: dict[str, str]
+    message: str
+    versions: dict[str, Any]
+    context: str
+    resume_operation_id: str | None = None
+    expected_version: int | None = None
+    already_imported: bool = False
+
+
+class ImportOperationRead(BaseModel):
+    id: str
+    root: str
+    conversation_id: str
+    run_id: str
+    phase_id: str | None
+    status: Literal['QUEUED', 'COMPLETED', 'INTERRUPTED']
+    preview: ImportPreviewRead
+    decision: dict[str, Any]
+    result: dict[str, Any] | None
+    expected_version: int
+    run_status: str
+    created_at: str
+    finished_at: str | None
+
+
+class ImportEntryRead(BaseModel):
+    activation_required: bool
+    refusal: str | None
+    activation_preview: MigrationPreviewRead | None
+    operation: ImportOperationRead | None

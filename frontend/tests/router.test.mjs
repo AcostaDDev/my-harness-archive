@@ -3,6 +3,9 @@ import assert from 'node:assert/strict';
 import { parse, href, trail, runRoute, projectOf } from '../src/router.ts';
 
 const valid = [
+  ['/projects/gym/import', { name: 'import', project: 'gym' }],
+  ['/projects/gym/import/c-1', { name: 'import', project: 'gym', conversation: 'c-1' }],
+  ['/projects/gym/import/c-1/docs/STATE.md', { name: 'import', project: 'gym', conversation: 'c-1', path: 'docs/STATE.md' }],
   ['/', { name: 'home' }],
   ['/legacy', { name: 'legacy' }],
   ['/projects/new', { name: 'project-new' }],
@@ -110,4 +113,12 @@ test('statistics: global page and project page with their own trail (H6.2 E6)', 
   const items = trail(parse('/projects/mi-web/stats'));
   assert.deepEqual(items.map(item => item.label), ['Proyectos', 'mi-web', 'Estadísticas']);
   assert.equal(projectOf(parse('/projects/mi-web/stats')), 'mi-web');
+});
+
+
+test('import routes retain conversation and draft and reject parent segments', () => {
+  const route = { name: 'import', project: 'gym', conversation: 'c-1', path: 'docs/flows/members.md' };
+  assert.deepEqual(parse(href(route)), route);
+  assert.deepEqual(trail(route).map(item => item.label), ['Proyectos', 'gym', 'Importación']);
+  assert.equal(parse('/projects/gym/import/c-1/docs/../STATE.md').name, 'not-found');
 });

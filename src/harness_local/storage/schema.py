@@ -3,7 +3,7 @@ from sqlalchemy.engine import Engine
 from sqlalchemy.exc import SQLAlchemyError
 
 
-SCHEMA_REVISION = "0019_import_conversations"
+SCHEMA_REVISION = "0020_project_imports"
 
 
 def require_schema(engine: Engine) -> None:

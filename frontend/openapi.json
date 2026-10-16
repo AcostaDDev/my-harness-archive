@@ -10289,6 +10289,308 @@
         }
       }
     },
+    "/api/managed/projects/{project_id}/import": {
+      "get": {
+        "summary": "Import Entry",
+        "operationId": "managed_import_entry",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          },
+          {
+            "name": "x-harness-local",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Obligatoria con valor 1 en mutaciones (protección CSRF).",
+              "title": "X-Harness-Local"
+            },
+            "description": "Obligatoria con valor 1 en mutaciones (protección CSRF)."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ImportEntryRead"
+                }
+              }
+            }
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          }
+        }
+      }
+    },
+    "/api/managed/projects/{project_id}/planning/{conversation_id}/import/preview": {
+      "post": {
+        "summary": "Import Preview",
+        "operationId": "managed_import_preview",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          },
+          {
+            "name": "conversation_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Conversation Id"
+            }
+          },
+          {
+            "name": "x-harness-local",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Obligatoria con valor 1 en mutaciones (protección CSRF).",
+              "title": "X-Harness-Local"
+            },
+            "description": "Obligatoria con valor 1 en mutaciones (protección CSRF)."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ImportPreviewRead"
+                }
+              }
+            }
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          }
+        }
+      }
+    },
+    "/api/managed/projects/{project_id}/planning/{conversation_id}/import/confirm": {
+      "post": {
+        "summary": "Import Confirm",
+        "operationId": "managed_import_confirm",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          },
+          {
+            "name": "conversation_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Conversation Id"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200,
+              "description": "Misma clave y misma acción devuelven el mismo job.",
+              "title": "Idempotency-Key"
+            },
+            "description": "Misma clave y misma acción devuelven el mismo job."
+          },
+          {
+            "name": "x-harness-local",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Obligatoria con valor 1 en mutaciones (protección CSRF).",
+              "title": "X-Harness-Local"
+            },
+            "description": "Obligatoria con valor 1 en mutaciones (protección CSRF)."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DefinitionAcceptCreate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ManagedJobRead"
+                }
+              }
+            }
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          }
+        }
+      }
+    },
     "/api/managed/projects/{project_id}/planning/{conversation_id}/import": {
       "get": {
         "summary": "Import Status",
@@ -14060,6 +14362,341 @@
         "type": "object",
         "title": "HealthRead"
       },
+      "ImportEntryRead": {
+        "properties": {
+          "activation_required": {
+            "type": "boolean",
+            "title": "Activation Required"
+          },
+          "refusal": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Refusal"
+          },
+          "activation_preview": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/MigrationPreviewRead"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "operation": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ImportOperationRead"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "activation_required",
+          "refusal",
+          "activation_preview",
+          "operation"
+        ],
+        "title": "ImportEntryRead"
+      },
+      "ImportOperationRead": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "root": {
+            "type": "string",
+            "title": "Root"
+          },
+          "conversation_id": {
+            "type": "string",
+            "title": "Conversation Id"
+          },
+          "run_id": {
+            "type": "string",
+            "title": "Run Id"
+          },
+          "phase_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Phase Id"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "QUEUED",
+              "COMPLETED",
+              "INTERRUPTED"
+            ],
+            "title": "Status"
+          },
+          "preview": {
+            "$ref": "#/components/schemas/ImportPreviewRead"
+          },
+          "decision": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Decision"
+          },
+          "result": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Result"
+          },
+          "expected_version": {
+            "type": "integer",
+            "title": "Expected Version"
+          },
+          "run_status": {
+            "type": "string",
+            "title": "Run Status"
+          },
+          "created_at": {
+            "type": "string",
+            "title": "Created At"
+          },
+          "finished_at": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Finished At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "root",
+          "conversation_id",
+          "run_id",
+          "phase_id",
+          "status",
+          "preview",
+          "decision",
+          "result",
+          "expected_version",
+          "run_status",
+          "created_at",
+          "finished_at"
+        ],
+        "title": "ImportOperationRead"
+      },
+      "ImportPreviewRead": {
+        "properties": {
+          "preview_sha256": {
+            "type": "string",
+            "title": "Preview Sha256"
+          },
+          "operation": {
+            "type": "string",
+            "const": "import_commit",
+            "title": "Operation"
+          },
+          "proposed_tree": {
+            "type": "string",
+            "title": "Proposed Tree"
+          },
+          "head": {
+            "type": "string",
+            "title": "Head"
+          },
+          "fingerprint": {
+            "type": "string",
+            "title": "Fingerprint"
+          },
+          "tree": {
+            "type": "string",
+            "title": "Tree"
+          },
+          "index_tree": {
+            "type": "string",
+            "title": "Index Tree"
+          },
+          "documents": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "type": "array",
+            "title": "Documents"
+          },
+          "mechanical": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "type": "array",
+            "title": "Mechanical"
+          },
+          "diff": {
+            "type": "string",
+            "title": "Diff"
+          },
+          "phase": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Phase"
+          },
+          "baseline": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "type": "object",
+            "title": "Baseline"
+          },
+          "origin": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Origin"
+          },
+          "source": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Source"
+          },
+          "moves": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "type": "array",
+            "title": "Moves"
+          },
+          "preserved": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "type": "array",
+            "title": "Preserved"
+          },
+          "foreign": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "type": "array",
+            "title": "Foreign"
+          },
+          "result_tree": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "type": "array",
+            "title": "Result Tree"
+          },
+          "warnings": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Warnings"
+          },
+          "author": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "type": "object",
+            "title": "Author"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message"
+          },
+          "versions": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Versions"
+          },
+          "context": {
+            "type": "string",
+            "title": "Context"
+          },
+          "resume_operation_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Resume Operation Id"
+          },
+          "expected_version": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Expected Version"
+          },
+          "already_imported": {
+            "type": "boolean",
+            "title": "Already Imported",
+            "default": false
+          }
+        },
+        "type": "object",
+        "required": [
+          "preview_sha256",
+          "operation",
+          "proposed_tree",
+          "head",
+          "fingerprint",
+          "tree",
+          "index_tree",
+          "documents",
+          "mechanical",
+          "diff",
+          "phase",
+          "baseline",
+          "origin",
+          "source",
+          "moves",
+          "preserved",
+          "foreign",
+          "result_tree",
+          "warnings",
+          "author",
+          "message",
+          "versions",
+          "context"
+        ],
+        "title": "ImportPreviewRead"
+      },
       "ImportStatusRead": {
         "properties": {
           "ready": {
@@ -15331,6 +15968,7 @@
               "definition",
               "phase_planning",
               "project_import",
+              "import_commit",
               "document_edit",
               "phase_transition"
             ],
@@ -15494,6 +16132,7 @@
               "definition",
               "phase_planning",
               "project_import",
+              "import_commit",
               "document_edit",
               "phase_transition"
             ],
@@ -18428,7 +19067,7 @@
           "created": {
             "type": "boolean",
             "title": "Created",
-            "description": "Definición ya convertida en proyecto por el bootstrap v2."
+            "description": "Definición o importación ya confirmada; sus borradores quedan cerrados."
           },
           "turns": {
             "items": {

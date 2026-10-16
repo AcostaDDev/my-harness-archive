@@ -116,7 +116,7 @@ def test_projects_without_documents_use_the_mandatory_unified_layout_and_quarant
     context, data, folder, tmp_path = setup
     (project,) = load_local_config(write(folder, data)).projects
     assert 'documents' not in data['projects'][0] and project.context.documents == 'v2'
-    assert project.versions['document_layout'] == 'd088-5'
+    assert project.versions['document_layout'] == 'd088-6'
     explicit = copy.deepcopy(data)
     explicit['projects'][0]['documents'] = 'v2'
     config = load_local_config(write(folder, explicit))

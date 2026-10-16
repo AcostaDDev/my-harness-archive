@@ -109,6 +109,7 @@ tarea se leen solo las decisiones que cita; este índice sirve para buscar prece
 | [D097](#d097--p008-t010-mapa-de-normalización-del-flujo-a) | P008-T010: mapa de normalización del Flujo A | P008 |
 | [D098](#d098--p008-t011-conversación-de-importación-con-borradores-privados) | P008-T011: conversación de importación con borradores privados | P008 |
 | [D099](#d099--flujo-a-activación-d027-antes-de-la-importación) | Flujo A: activación D027 antes de la importación | P008 |
+| [D100](#d100--p008-t012-importación-confirmada-y-continuidad-del-flujo-a) | P008-T012: importación confirmada y continuidad del Flujo A | P008 |
 
 ## D001 — Alcance local y arquitectura base
 
@@ -3182,3 +3183,43 @@ historial queda copiado y verificado antes de mover ningún documento; no se abr
 seguridad de D027; activación (`.harness/`) e importación (documentos; `.harness/**` es ajeno en el mapa) no se
 solapan. Alternativa descartada: importar primero, que exigía eximir de la guardia los turnos (y el commit o un
 orden inverso dentro de T012) y dejaba al harness anterior escribir runs durante la conversación sin copia verificada.
+
+
+## D100 — P008-T012: importación confirmada y continuidad del Flujo A
+
+Estado: implementada y verificada offline el 2026-10-16; detalle y límites en el
+[registro](phase/P008-T012_COMMIT_CONTINUIDAD.md). Fase: P008. Aplica D088 punto 10 e implementa D099, sobre D027,
+D037 y D098. No reescribe historiales ni intenciones anteriores.
+
+- **Árbol confirmado.** Inventario y mapa de la conversación + borradores privados y valores por defecto de D089.
+  El mapa resuelve movimientos; las entradas de `review` fuera del archivo se retiran al archivo como parte de la
+  confirmación del árbol completo. Los archivos ajenos quedan donde están, listados para la revisión. Cada original
+  cuyo destino cambie por borradores, composición o bloques se conserva por bytes en
+  `docs/archive/phase-000/import-originals/<ruta original>`. Los originales ya conservados en un destino del mapa no
+  se duplican. Ningún destino de conservación ocupado se sobrescribe; colisiones de mayúsculas, archivos y
+  directorios bloquean. El archivo previo permanece intacto.
+- **Coherencia.** STATE y NEXT_STEPS deben declarar inequívocamente la misma fase; ROADMAP debe describirla con
+  objetivo y criterios. Se regeneran los cuatro bloques de control y el índice de decisiones. Se adopta esa fase
+  `ACTIVE` con las tareas del plan (puede estar vacía); no se infiere aceptación ni intentos desde runs legacy.
+- **Persistencia y recuperación.** `0020_project_imports` añade una tabla (35 en total), única por raíz,
+  conversación y run, con preview, intención, decisión, resultado y fase. La confirmación exige hash, motivo y clave
+  idempotente, congela versiones, contexto y autor y sella árbol/commit antes de escribir archivos o refs. El mensaje
+  es «docs: normalizar al contrato documental». Reutiliza jobs, locks, leases, cuarentena y el escritor documental CAS.
+  Una caída requiere confirmar el escritor detenido y reconfirmar la misma intención: mismo run y commit, job nuevo.
+  La adopción y el resultado/fin del job son atómicos. La intención incierta cierra los borradores y bloquea trabajo
+  nuevo, la creación de fases y la reversión D027. Repetir la vista previa completada informa que no hay cambios.
+- **D099.** La API ofrece la vista previa de activación antes de crear la conversación cuando hay runs legacy.
+  El inventario solo tolera el marcador sin seguimiento de una activación propia `ACTIVE`, coincidente por hash y
+  sin deriva. La misma autoridad, inyectada en los puertos Git, lo excluye de la evidencia y de los commits también
+  en tareas posteriores. Un marcador versionado se rechaza. No se toca ningún `.gitignore`.
+- **Git y límites.** Las grafías de rutas son exactas: en macOS los alias de mayúsculas se borran antes de crear el
+  canónico y la captura descarta del índice temporal la grafía ausente. No se modifica la configuración del usuario.
+  La vista previa materializa blobs/árboles Git sin mover refs ni cambiar el índice real y comprueba que el diff
+  resultante cabe en el límite de captura. Los binarios se congelan como base64 y se escriben por bytes.
+- **API y UI.** `GET /projects/{p}/import`; `POST /projects/{p}/planning/{c}/import/preview` y `…/import/confirm`.
+  Ruta `/projects/:p/import[/:c/*borrador]`, con activación previa D027, conversación, editor CAS, revisión del árbol,
+  hash/motivo, progreso, recuperación y enlace a la fase adoptada. OpenAPI y tipos regenerados, sin rediseño visual.
+  `document_layout = "d088-6"` congela estas reglas; jobs pendientes anteriores quedan en cuarentena.
+
+Extensiones técnicas de las rutas de T012: `frontend/openapi.json`, tipos generados y prueba Node del enrutador para
+los contratos y la nueva navegación. Sin dependencias nuevas, proveedores reales, smokes ni publicación.

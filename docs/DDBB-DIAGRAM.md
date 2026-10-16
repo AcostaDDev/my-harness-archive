@@ -1,6 +1,6 @@
 # Diagrama de datos — my_harness
 
-Esquema SQLite del servicio local (Alembic `0019_import_conversations`, 34 tablas). Generado en P008-T001 desde el metadata de `src/harness_local/storage/models.py` (actualizado en P008-T011); cualquier cambio de modelos o migraciones actualiza este documento en la misma tarea (regla de paridad, D088).
+Esquema SQLite del servicio local (Alembic `0020_project_imports`, 35 tablas). Generado en P008-T001 desde el metadata de `src/harness_local/storage/models.py` (actualizado en P008-T012); cualquier cambio de modelos o migraciones actualiza este documento en la misma tarea (regla de paridad, D088).
 
 Convenciones: `PK` clave primaria, `FK` clave ajena declarada, `UK` unicidad de columna; «null» marca columnas opcionales. Las unicidades compuestas y los índices únicos parciales se listan bajo cada diagrama. Las entidades de otro contexto aparecen solo con las columnas que relacionan. Los artefactos pesados (streams, capturas, copias) viven fuera de SQLite y se referencian por ruta y hash.
 
@@ -451,6 +451,34 @@ erDiagram
 ```
 
 Unicidad: `uq_chat_conversations_key` sobre `chat_conversations` (idempotency_key); `chat_turns` (conversation_id, number); `uq_chat_turns_pending` sobre `chat_turns` (conversation_id) donde status = 'QUEUED'; `chat_proposals` (conversation_id, number); `uq_planning_conversations_key` sobre `planning_conversations` (idempotency_key); `uq_planning_definition` sobre `planning_conversations` (root) donde kind = 'definition'; `planning_turns` (conversation_id, number); `uq_planning_turns_pending` sobre `planning_turns` (conversation_id) donde status = 'QUEUED'; `planning_proposals` (conversation_id, number).
+
+## Importación documental confirmada (P008-T012)
+
+`project_imports` conserva una operación por checkout y conversación: vista previa íntegra, intención de commit
+sellada antes del efecto, decisión y resultado (D100). El job, lock, lease y recuperación son los de `managed_jobs`.
+La fase y su base documental se insertan en la misma transacción que el resultado y el fin del job. Un estado
+`INTERRUPTED` conserva la intención y bloquea trabajo nuevo y la reversión D027 hasta conciliarla.
+
+```mermaid
+erDiagram
+    project_imports {
+        string id PK
+        string root UK
+        string conversation_id FK, UK
+        string run_id FK, UK
+        string phase_id FK "null"
+        string status
+        json preview
+        text intent
+        json decision
+        json result "null"
+        string created_at
+        string finished_at "null"
+    }
+    planning_conversations ||--o| project_imports : "conversation_id"
+    managed_runs ||--o| project_imports : "run_id"
+    managed_phases |o--o{ project_imports : "phase_id"
+```
 
 ## Métricas y registro de proyectos (P007)
 

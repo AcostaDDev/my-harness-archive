@@ -114,6 +114,16 @@ def _bind_commands(commands, journal, versions):
         raise JournalError("Run has a frozen native command configuration; its managed runner is required")
 
 
+def guarded_writer(factory, guard):
+    """Bind Git evidence to the installation's mode authority, including D099's local marker."""
+    if factory is None:
+        return None
+    def create(context, versions):
+        from harness_local.storage.migration import bind_git_mode
+        return bind_git_mode(factory(context, versions), guard)
+    return create
+
+
 class LocalSupervisor:
     def __init__(self, repository, ports_factory, *, lease_seconds=30, commit_factory=None, lane=None):
         """factory(context, frozen_versions) devuelve agentes, comandos y evidencia.
@@ -125,8 +135,12 @@ class LocalSupervisor:
         """
         self.lane = lane
         self.repository = repository
-        self.ports_factory = ports_factory
-        self.commit_factory = commit_factory
+        def ports(context, versions):
+            from harness_local.storage.migration import bind_git_mode
+            agents, commands, evidence = ports_factory(context, versions)
+            return agents, commands, bind_git_mode(evidence, repository.guard)
+        self.ports_factory = ports
+        self.commit_factory = guarded_writer(commit_factory, repository.guard)
         self.lease_seconds = lease_seconds
 
     def run_once(self):
@@ -177,6 +191,14 @@ class LocalSupervisor:
                     agents.bind_process_journal(journal)
                 history, outcome = execute(context, record.history,
                     DiscoveryRepository(self.repository).request(claim.run_id), agents, writer, journal)
+            elif request["action"] == "import_commit":
+                from harness_local.core.engine.import_commit import execute
+                from harness_local.storage.project_import import ImportRepository
+                if self.commit_factory is None:
+                    raise RuntimeError('Import requires the configured Git writer')
+                writer = self.commit_factory(context, versions)
+                saved = ImportRepository(self.repository).request(claim.run_id)
+                history, outcome = execute(context, record.history, saved, writer, journal)
             elif request["action"] == "bootstrap":
                 from harness_local.core.engine.bootstrap import execute
                 from harness_local.storage.bootstrap import BootstrapRepository
@@ -273,7 +295,7 @@ class LocalSupervisor:
                         if self.commit_factory is not None else "git"
 
                     def observe():
-                        return observe_import(context, area, executable)
+                        return observe_import(context, area, executable, self.repository.guard)
                 else:
                     def observe():
                         captured = evidence.capture(context)

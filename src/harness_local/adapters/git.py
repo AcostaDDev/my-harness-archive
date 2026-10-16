@@ -24,7 +24,7 @@ from harness_local.core.engine.contracts import freeze
 from harness_local.core.engine.evidence import ContentEvidence
 
 MAX_DIFF_BYTES = 4 * 1024 * 1024
-_CONFIG = ("-c", "core.hooksPath=/dev/null", "-c", "core.fsmonitor=false", "-c", "core.quotePath=false",
+_CONFIG = ("-c", "core.hooksPath=/dev/null", "-c", "core.fsmonitor=false", "-c", "core.ignorecase=false", "-c", "core.quotePath=false",
            "-c", "core.excludesFile=/dev/null", "-c", "gc.auto=0", "-c", "maintenance.auto=false",
            "-c", "advice.detachedHead=false")
 
@@ -109,6 +109,16 @@ def _raw_entries(data: bytes) -> list[tuple[str, str, str, str]]:
     return entries
 
 
+def _exact_path(root: Path, path: str) -> bool:
+    """La grafía de una ruta Git es exacta, también en sistemas de archivos sin distinción de mayúsculas."""
+    parent = root
+    for part in path.split('/'):
+        if not parent.is_dir() or part not in {item.name for item in parent.iterdir()}:
+            return False
+        parent = parent / part
+    return True
+
+
 class GitWorkspace:
     """Captura Git completa y escritor de commit; puede reemplazar a SyntheticWorkspace."""
 
@@ -120,6 +130,7 @@ class GitWorkspace:
         self.max_diff_bytes = max_diff_bytes
         self.executable = executable
         self.timeout = timeout
+        self.marker_reader = None
 
     def _git(self, root: Path) -> Git:
         return Git(root, executable=self.executable, timeout=self.timeout)
@@ -165,7 +176,23 @@ class GitWorkspace:
                 index_tree = git.text("write-tree", env=staged_env)
                 untracked = sorted(_split0(git.run("ls-files", "--others", "--exclude-standard", "-z",
                                                    env=staged_env)))
-                git.run("add", "-A", "--", ".", env=work_env)
+                paths = ["."]
+                # D099: exclusion only while SQLite and the filesystem agree on a live activation.
+                if self.marker_reader is not None:
+                    from harness_local.core.migration import MARKER_PATH
+                    if self.marker_reader(root) is not None:
+                        if git.run("ls-files", "--", MARKER_PATH).strip():
+                            raise EvidenceCaptureError('The managed marker must remain untracked (D099)')
+                        if MARKER_PATH in untracked:
+                            paths.append(":(exclude,literal)" + MARKER_PATH)
+                            untracked.remove(MARKER_PATH)
+                if untracked:
+                    tracked = _split0(git.run('ls-files', '-z', env=work_env))
+                    spellings = {path.lower() for path in untracked}
+                    for path in tracked:
+                        if path.lower() in spellings and path not in untracked and not _exact_path(root, path):
+                            git.run('update-index', '--force-remove', '--', path, env=work_env)
+                git.run("add", "-A", "--", *paths, env=work_env)
                 worktree_tree = git.text("write-tree", env=work_env)
             diff_args = ("diff-tree", "-r", "--no-renames", "--no-ext-diff", "--no-textconv", "--no-color")
             raw = _raw_entries(git.run(*diff_args, "-z", "--raw", "--full-index", base_tree, worktree_tree))
@@ -227,6 +254,13 @@ class GitWorkspace:
         except GitError as exc:
             raise CommitError(f"Commit could not be sealed: {exc}") from exc
         return tree, commit
+
+    def check_tree_diff(self, context, before, after):
+        """Rechaza una vista previa que la captura no podría verificar tras escribirla."""
+        patch = self._git(context.root).run('diff-tree', '-r', '-p', '--binary', '--full-index',
+            '--no-ext-diff', '--no-textconv', '--no-color', before, after)
+        if len(patch) > self.max_diff_bytes:
+            raise EvidenceCaptureError(f'Import diff exceeds the {self.max_diff_bytes}-byte review limit')
 
     def _write_mechanical(self, context: ProjectContext, intent: CommitIntent) -> None:
         # Todos los destinos se validan antes de escribir ninguno: sin estado parcial propio.
@@ -435,6 +469,8 @@ class GitWorkspace:
     def _document_sha(context: ProjectContext, doc: dict):
         """Hash del documento; None si falta (el CAS decide si se admite); False si no es regular."""
         target = context.path(doc['path'])
+        if doc.get('exact_path') and not _exact_path(context.root, doc['path']):
+            return None
         if not target.exists() and not target.is_symlink():
             return None
         if not target.is_file() or target.is_symlink():

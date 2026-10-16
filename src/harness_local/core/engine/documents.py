@@ -18,8 +18,8 @@ from harness_local.core.engine.contracts import RECONCILE_TASK, ContractError
 from harness_local.core.engine.planning import FIELD_RE, TASK_RE, backticked, bullet_items, collapse
 
 MAX_DOCUMENT_BYTES = 512 * 1024
-# P008-T007: AGENTS.md en el prompt de cada rol y prompts nuevos; los jobs anteriores se detienen antes de efectos.
-DOCUMENT_LAYOUT = 'd088-5'
+# P008-T012: importación confirmada y exclusión del marcador local D099; jobs anteriores en cuarentena.
+DOCUMENT_LAYOUT = 'd088-6'
 # Igual que el `project_doc_max_bytes` por defecto del pin de Codex; AGENTS.md tiene como mucho 60 líneas.
 MAX_INSTRUCTIONS_BYTES = 32 * 1024
 LEGACY_INSTRUCTIONS = 'No project instructions: this frozen context predates the unified document contract (D088).'

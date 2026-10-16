@@ -68,7 +68,8 @@ def legacy_runs(root: Path) -> dict:
     return {**observed, 'present': True, 'kind': 'dir', 'directories': count}
 
 
-def read_checkout(root: Path, docs: str = 'docs', *, executable: str = 'git') -> CheckoutSnapshot:
+def read_checkout(root: Path, docs: str = 'docs', *, executable: str = 'git',
+                  marker_sha256: str | None = None) -> CheckoutSnapshot:
     root = Path(root)
     git = Git(root, executable=executable)
     try:
@@ -84,10 +85,18 @@ def read_checkout(root: Path, docs: str = 'docs', *, executable: str = 'git') ->
         raise ImportInventoryError('The checkout has no commits; import needs a non-empty repository.') from exc
     dirty = [item for item in git.run('status', '--porcelain=v1', '-z', '--untracked-files=all',
                                       '--ignore-submodules=none').split(b'\0') if item]
+    if marker_sha256 is not None:
+        from hashlib import sha256
+        marker = root / MARKER_PATH
+        if (not marker.is_symlink() and marker.is_file()
+                and sha256(marker.read_bytes()).hexdigest() == marker_sha256):
+            dirty = [item for item in dirty if item != b'?? ' + MARKER_PATH.encode()]
     if dirty:
         sample = ', '.join(item[3:].decode('utf-8', 'replace') for item in dirty[:5])
         raise ImportInventoryError(f'The checkout has uncommitted changes ({sample}); commit or discard them first.')
     rows = _tree(git)
+    if any(row[4] == MARKER_PATH for row in rows):
+        raise ImportInventoryError('The managed marker must remain untracked local state (D099).')
     if not rows:
         raise ImportInventoryError('HEAD has no files; an empty project uses the creation flow.')
     scoped = [row for row in rows if in_scope(row[4], docs)]

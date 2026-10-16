@@ -4,7 +4,7 @@ Objetivo y criterios de salida en [ROADMAP](ROADMAP.md#p008--contrato-documental
 Decisión de base: [D088](DECISIONS.md#d088--contrato-documental-unificado-cierre-de-fase-automático-e-importación-de-proyectos-p008).
 Análisis de incongruencias que originó la fase: [docs/phase](phase/P008-T001_MIGRACION_DOCUMENTAL.md).
 
-**Siguiente tarea:** P008-T012. Orden de ejecución: T002 → T007 (motor y contrato), T008 (perfiles, que el usuario
+**Siguiente tarea:** P008-T013. Orden de ejecución: T002 → T007 (motor y contrato), T008 (perfiles, que el usuario
 necesita para su próximo proyecto Django), T009–T012 (Flujo A) y T013–T015 (Flujo B).
 
 ## Restricciones compartidas
@@ -288,6 +288,11 @@ la activación D027 y la importación con runs legacy lo fija [D099](DECISIONS.m
 **Referencias:** D088; D075
 
 ## P008-T012 — Flujo A: vista previa, commit y continuidad
+
+**Estado:** completada el 2026-10-16 ([D100](DECISIONS.md#d100--p008-t012-importación-confirmada-y-continuidad-del-flujo-a)).
+Vista previa con originales conservados, intención sellada, commit conciliable y fase activa adoptada. D099
+implementada: activación antes de conversar, marcador local validado y excluido de Git. Detalle y extensiones
+técnicas en el [registro](phase/P008-T012_COMMIT_CONTINUIDAD.md).
 
 **Objetivo:** Aplicar la normalización en un único commit confirmado y dejar el proyecto listo para seguir trabajando.
 **Alcance:**

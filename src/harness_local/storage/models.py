@@ -497,6 +497,23 @@ class ProjectBootstrapRow(Base):
 
 
 
+class ProjectImportRow(Base):
+    """P008-T012: una importación confirmada por checkout; intención y bytes inmutables."""
+    __tablename__ = 'project_imports'
+    id: Mapped[str] = mapped_column(String(36), primary_key=True)
+    root: Mapped[str] = mapped_column(String, unique=True)
+    conversation_id: Mapped[str] = mapped_column(ForeignKey('planning_conversations.id'), unique=True)
+    run_id: Mapped[str] = mapped_column(ForeignKey('managed_runs.id'), unique=True)
+    phase_id: Mapped[str | None] = mapped_column(ForeignKey('managed_phases.id'), nullable=True)
+    status: Mapped[str] = mapped_column(String(20))
+    preview: Mapped[dict] = mapped_column(JSON)
+    intent: Mapped[str] = mapped_column(Text)
+    decision: Mapped[dict] = mapped_column(JSON)
+    result: Mapped[dict | None] = mapped_column(JSON, nullable=True)
+    created_at: Mapped[str] = mapped_column(String(40))
+    finished_at: Mapped[str | None] = mapped_column(String(40), nullable=True)
+
+
 class AttemptMetricRow(Base):
     """H6.4: métricas de un intento resuelto, materializadas con su resultado; procedencia por campo.
 

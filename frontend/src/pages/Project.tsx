@@ -49,7 +49,8 @@ export function ProjectPage() {
       <Pagination offset={offset} next={runs.data?.next_offset} onChange={setOffset} size={10} label="Páginas de runs" />
     </section>
 
-    {detail.data?.documents === "v2" ? <Creation /> : <TaskForm />}
+    {detail.data?.documents === "v2" && !phases.data?.length && <p><Link to={{ name: "import", project }}>Importar un proyecto de un harness anterior</Link></p>}
+    {detail.data?.documents === "v2" && !phases.data?.length ? <Creation /> : <TaskForm />}
     <Migration project={project} mode={mode.data} />
   </>;
 }
@@ -73,7 +74,7 @@ function Creation() {
   </section>;
 }
 
-function Migration({ project, mode }: { project: string; mode?: S["ModeRead"] }) {
+export function Migration({ project, mode }: { project: string; mode?: S["ModeRead"] }) {
   const { busy, operate } = useWorkspace();
   const [preview, setPreview] = useState<S["MigrationPreviewRead"]>();
   const [reason, setReason] = useState("");

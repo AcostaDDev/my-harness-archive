@@ -32,12 +32,15 @@ stateDiagram-v2
 El Flujo A (T009–T012) añade, sobre esta vía y sobre proyectos v1/v2 de este harness, la normalización documental al
 layout unificado. Implementados: el inventario de solo lectura (P008-T009, D096), el mapa determinista de
 renombrados, movimientos y composición de decisiones (P008-T010, D097) y la conversación `project_import` en la que
-el revisor propone fusiones y adelgazamiento como borradores privados (P008-T011, D098). Pendiente: la vista previa y
-el commit confirmado con CAS (T012).
+el revisor propone fusiones y adelgazamiento como borradores privados (P008-T011, D098), y la vista previa y
+el commit confirmado con CAS y adopción de fase (P008-T012, D100).
 
 ```mermaid
 flowchart TD
-    A["Proyecto registrado"] --> B{"Git, HEAD con archivos y checkout limpio"}
+    A["Proyecto registrado"] --> A1{"¿Runs legacy sin activar?"}
+    A1 -- sí --> A2["Vista previa y activación D027 confirmada aparte; copia verificada"]
+    A2 --> B
+    A1 -- no --> B{"Git, HEAD con archivos y checkout limpio"}
     B -- no --> R["Rechazo con diagnóstico, sin escrituras"]
     B -- sí --> C["Árbol de HEAD: Markdown raíz, docs/ y .harness/ sin runs"]
     C --> D["Blobs por cat-file; enlaces y submódulos rechazados sin leer"]
@@ -60,12 +63,29 @@ flowchart TD
     W -- no --> X["Turno FAILED sin fallback; nada se escribe"]
     W -- sí --> Y["Propuestas; aplicar o editar con CAS en import-drafts/ junto a SQLite"]
     Y --> Z{"GET …/import: ¿preguntas bloqueantes resueltas o aplazadas, documentos y límites D088?"}
-    Z -. "T012, pendiente" .-> H["Vista previa y commit confirmado"]
+    Z -- sí --> H["Árbol completo: mapa, borradores y bloques; originales sustituidos o retirados al archivo"]
+    H --> H1{"¿STATE y NEXT_STEPS coinciden en fase descrita por ROADMAP? ¿Destinos libres?"}
+    H1 -- no --> R
+    H1 -- sí --> H2["Confirmación de hash, motivo e Idempotency-Key"]
+    H2 --> H3["Job y project_imports con intención sellada, antes de escribir"]
+    H3 --> H4["CAS por archivo, borrados y escritura; commit documental determinista"]
+    H4 --> H5["Transacción: fase ACTIVE y base documental adoptadas; importación COMPLETED y job DONE"]
+    H3 --> H6["Caída: RECOVERY_REQUIRED; confirmar escritor detenido"]
+    H6 --> H7["INTERRUPTED: reconfirmar la misma intención y el mismo commit"]
+    H7 --> H4
 ```
 
-Límite (D098): con `.harness/runs` sin activar, la guardia de modo D027 rechaza los turnos de la conversación; la
-conversación y su estado sí se pueden crear y consultar. D099 fija el orden para T012: primero la activación D027 y
-después la importación, con el marcador de la activación viva tolerado por el inventario y fuera del commit.
+D099 implementada en T012: la activación va antes de crear la conversación. Solo el marcador no versionado de
+una activación propia, `ACTIVE`, coincidente por hash y sin deriva se tolera en el inventario y se excluye de las
+capturas Git (también al continuar con tareas). Otro marcador o cualquier otro cambio sigue bloqueando. El commit
+no versiona el marcador ni modifica `.gitignore`.
+
+La vista previa conserva en `archive/phase-000/import-originals/<ruta original>` cada original cuyo destino cambia
+por borradores o bloques y cada documento retirado de `review` (salvo el archivo existente). Los movimientos del mapa
+conservan sus originales por bytes; lo ajeno queda donde está y se lista para la confirmación. Una colisión de archivo,
+directorio o mayúsculas bloquea. STATE y NEXT_STEPS deben declarar la misma fase, con objetivo y criterios en ROADMAP;
+no se infiere ningún intento ni aceptación desde el historial. Después del commit, la fase puede continuar por las
+acciones existentes; repetir la vista previa devuelve la importación ya completada sin cambios.
 
 ## Fuente en el código
 
@@ -74,3 +94,4 @@ después la importación, con el marcador de la activación viva tolerado por el
 - `core/project_import.py`, `adapters/project_import.py` (inventario del Flujo A).
 - `core/project_normalization.py` (mapa de normalización del Flujo A).
 - `core/engine/import_conversation.py`, `storage/import_drafts.py`, `storage/planning.py` (conversación del Flujo A).
+- `core/engine/import_commit.py`, `storage/project_import.py` (vista previa, confirmación y conciliación).
