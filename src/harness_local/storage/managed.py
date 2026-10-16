@@ -119,7 +119,7 @@ def _operation_module(run):
     if run.purpose == "phase_transition":
         from harness_local.storage import transition
         return transition
-    if run.purpose in ("definition", "phase_planning"):
+    if run.purpose in ("definition", "phase_planning", "project_import"):
         from harness_local.storage import planning
         return planning
     from harness_local.storage import phases

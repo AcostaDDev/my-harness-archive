@@ -851,7 +851,7 @@ def managed_router(runtime: ManagedRuntime):
 
     # --- H6.5: creación y planificación conversacionales -----------------------------------------
     from harness_local.api.schemas import (
-        DefinitionAcceptCreate, DefinitionPreviewRead, PlanningApplyCreate, PlanningBriefRead,
+        DefinitionAcceptCreate, DefinitionPreviewRead, ImportStatusRead, PlanningApplyCreate, PlanningBriefRead,
         PlanningConversationCreate, PlanningConversationRead, PlanningConversationSummaryRead, PlanningDeferCreate,
         PlanningDismissCreate, PlanningDraftContentRead, PlanningDraftEdit, PlanningDraftsRead, PlanningMessageCreate,
     )
@@ -877,6 +877,22 @@ def managed_router(runtime: ManagedRuntime):
         """Lectura y escritura de borradores: solo destinos con bootstrap autorizado por el servidor."""
         return bootstrap_writer(item)
 
+    def import_reader(item):
+        """P008-T011: Git de solo lectura del escritor configurado para leer el árbol de HEAD del proyecto."""
+        if runtime.config.commit_factory is None:
+            raise problem(409, 'git_unconfigured', 'No hay lector Git configurado para importar el proyecto.')
+        return call(runtime.config.commit_factory, item.context, frozen_versions(item))
+
+    def conversation_port(item, kind):
+        """Puerto de cada tipo: destino del bootstrap (definición) o lector Git (importación; sus borradores viven
+        en el área privada junto a SQLite)."""
+        return {'definition': definition_writer, 'project_import': import_reader}.get(kind, lambda _: None)(item)
+
+    def drafts_port(item, conversation_id):
+        """Los borradores de una importación están en el área privada: no necesitan Git ni bootstrap."""
+        kind = call(planning_repository().get, conversation_id)['kind']
+        return definition_writer(item) if kind == 'definition' else None
+
     def planning_read(item, conversation_id):
         detail = call(planning_repository().get, conversation_id)
         operation = None
@@ -892,10 +908,11 @@ def managed_router(runtime: ManagedRuntime):
     @router.post('/projects/{project_id}/planning', response_model=PlanningConversationRead, status_code=201,
                  operation_id='managed_planning_create')
     def planning_create(project_id: str, body: PlanningConversationCreate, idempotency_key: IdempotencyKey):
-        """Definición (brief Markdown, destino vacío o con borradores) o planificación de la fase activa sin tareas. Misma
-        clave y misma petición devuelven la misma conversación."""
+        """Definición (brief Markdown, destino vacío o con borradores), planificación de la fase activa sin tareas o
+        importación de un proyecto aún no gestionado (inventario y mapa de HEAD congelados). Misma clave y misma
+        petición devuelven la misma conversación."""
         item = planning_project(project_id)
-        writer = definition_writer(item) if body.kind == 'definition' else None
+        writer = conversation_port(item, body.kind)
         conversation_id = call(planning_repository().create, item.context, kind=body.kind, title=body.title, brief=body.brief,
                                phase_id=body.phase_id, writer=writer, key=idempotency_key)
         return planning_read(item, conversation_id)
@@ -924,7 +941,7 @@ def managed_router(runtime: ManagedRuntime):
         kind = call(planning_repository().get, conversation_id)['kind']
         job = call(planning_repository().submit_message, item.context, conversation_id, body.expected_version,
                    key=idempotency_key, versions=frozen_versions(item), text=body.text,
-                   writer=definition_writer(item) if kind == 'definition' else None)
+                   writer=conversation_port(item, kind))
         return queued(job)
 
     @router.get('/projects/{project_id}/planning/{conversation_id}/drafts', response_model=PlanningDraftsRead,
@@ -932,7 +949,8 @@ def managed_router(runtime: ManagedRuntime):
     def planning_drafts(project_id: str, conversation_id: str):
         """Borradores en disco frente a lo que conoce el harness; archivos ajenos e inválidos."""
         item = planning_project(project_id)
-        return call(planning_repository().drafts, item.context, conversation_of(item, conversation_id), definition_writer(item))
+        return call(planning_repository().drafts, item.context, conversation_of(item, conversation_id),
+                    drafts_port(item, conversation_id))
 
     @router.get('/projects/{project_id}/planning/{conversation_id}/drafts/content', response_model=PlanningDraftContentRead,
                 operation_id='managed_planning_draft')
@@ -940,7 +958,7 @@ def managed_router(runtime: ManagedRuntime):
         """H6.2 E4: un borrador admitido con su hash en disco, base de la CAS del editor."""
         item = planning_project(project_id)
         return call(planning_repository().draft, item.context, conversation_of(item, conversation_id), path,
-                    definition_writer(item))
+                    drafts_port(item, conversation_id))
 
     @router.put('/projects/{project_id}/planning/{conversation_id}/drafts', response_model=PlanningConversationRead,
                 operation_id='managed_planning_draft_edit')
@@ -948,7 +966,8 @@ def managed_router(runtime: ManagedRuntime):
         """Edición del usuario con CAS sobre el hash en disco; nunca sobrescribe otro cambio."""
         item = planning_project(project_id)
         call(planning_repository().edit_draft, item.context, conversation_of(item, conversation_id), body.expected_version,
-             path=body.path, content=body.content, base_sha256=body.base_sha256, writer=definition_writer(item))
+             path=body.path, content=body.content, base_sha256=body.base_sha256,
+             writer=drafts_port(item, conversation_id))
         return planning_read(item, conversation_id)
 
     @router.post('/projects/{project_id}/planning/{conversation_id}/proposals/{proposal_id}/apply',
@@ -958,7 +977,7 @@ def managed_router(runtime: ManagedRuntime):
         item = planning_project(project_id)
         call(planning_repository().apply, item.context, conversation_of(item, conversation_id), proposal_id,
              body.expected_version, proposal_sha256=body.proposal_sha256, confirmed=body.confirmed,
-             writer=definition_writer(item))
+             writer=drafts_port(item, conversation_id))
         return planning_read(item, conversation_id)
 
     @router.post('/projects/{project_id}/planning/{conversation_id}/proposals/{proposal_id}/dismiss',
@@ -977,6 +996,15 @@ def managed_router(runtime: ManagedRuntime):
         call(planning_repository().defer, conversation_of(item, conversation_id), body.expected_version,
              question_id=body.question_id, reason=body.reason)
         return planning_read(item, conversation_id)
+
+    @router.get('/projects/{project_id}/planning/{conversation_id}/import', response_model=ImportStatusRead,
+                operation_id='managed_import_status')
+    def import_status(project_id: str, conversation_id: str):
+        """P008-T011: bloqueos para pasar a la vista previa de la importación (preguntas bloqueantes sin responder ni
+        aplazar, checkout distinto del inventariado, borradores inválidos, documentos o límites de D088)."""
+        item = planning_project(project_id)
+        return call(planning_repository().import_status, item.context, conversation_of(item, conversation_id),
+                    import_reader(item))
 
     @router.post('/projects/{project_id}/planning/{conversation_id}/accept/preview',
                  response_model=DefinitionPreviewRead, operation_id='managed_definition_accept_preview')

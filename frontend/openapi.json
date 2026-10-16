@@ -9221,7 +9221,7 @@
       },
       "post": {
         "summary": "Planning Create",
-        "description": "Definición (brief Markdown, destino vacío o con borradores) o planificación de la fase activa sin tareas. Misma\nclave y misma petición devuelven la misma conversación.",
+        "description": "Definición (brief Markdown, destino vacío o con borradores), planificación de la fase activa sin tareas o\nimportación de un proyecto aún no gestionado (inventario y mapa de HEAD congelados). Misma clave y misma\npetición devuelven la misma conversación.",
         "operationId": "managed_planning_create",
         "parameters": [
           {
@@ -10242,6 +10242,103 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/PlanningConversationRead"
+                }
+              }
+            }
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          }
+        }
+      }
+    },
+    "/api/managed/projects/{project_id}/planning/{conversation_id}/import": {
+      "get": {
+        "summary": "Import Status",
+        "description": "P008-T011: bloqueos para pasar a la vista previa de la importación (preguntas bloqueantes sin responder ni\naplazar, checkout distinto del inventariado, borradores inválidos, documentos o límites de D088).",
+        "operationId": "managed_import_status",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          },
+          {
+            "name": "conversation_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Conversation Id"
+            }
+          },
+          {
+            "name": "x-harness-local",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Obligatoria con valor 1 en mutaciones (protección CSRF).",
+              "title": "X-Harness-Local"
+            },
+            "description": "Obligatoria con valor 1 en mutaciones (protección CSRF)."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ImportStatusRead"
                 }
               }
             }
@@ -13963,6 +14060,56 @@
         "type": "object",
         "title": "HealthRead"
       },
+      "ImportStatusRead": {
+        "properties": {
+          "ready": {
+            "type": "boolean",
+            "title": "Ready"
+          },
+          "blockers": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Blockers"
+          },
+          "warnings": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Warnings"
+          },
+          "source": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Source"
+          },
+          "drafts": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "type": "object",
+            "title": "Drafts",
+            "description": "Hash de cada borrador del área privada de la importación."
+          },
+          "conversation_version": {
+            "type": "integer",
+            "title": "Conversation Version"
+          }
+        },
+        "type": "object",
+        "required": [
+          "ready",
+          "blockers",
+          "warnings",
+          "source",
+          "drafts",
+          "conversation_version"
+        ],
+        "title": "ImportStatusRead",
+        "description": "P008-T011: si la importación puede pasar a la vista previa; se recalcula releyendo checkout y borradores."
+      },
       "JUnitCaseRead": {
         "properties": {
           "id": {
@@ -15183,6 +15330,7 @@
               "bootstrap_discovery",
               "definition",
               "phase_planning",
+              "project_import",
               "document_edit",
               "phase_transition"
             ],
@@ -15345,6 +15493,7 @@
               "bootstrap_discovery",
               "definition",
               "phase_planning",
+              "project_import",
               "document_edit",
               "phase_transition"
             ],
@@ -18107,7 +18256,8 @@
             "type": "string",
             "enum": [
               "definition",
-              "phase_planning"
+              "phase_planning",
+              "project_import"
             ],
             "title": "Kind"
           },
@@ -18129,7 +18279,7 @@
               }
             ],
             "title": "Brief",
-            "description": "Brief Markdown (UTF-8, máximo 256 KiB) de una definición; null en la planificación de fase."
+            "description": "Brief Markdown (UTF-8, máximo 256 KiB) de una definición; null en la planificación y la importación."
           },
           "phase_id": {
             "anyOf": [
@@ -18178,7 +18328,8 @@
             "type": "string",
             "enum": [
               "definition",
-              "phase_planning"
+              "phase_planning",
+              "project_import"
             ],
             "title": "Kind"
           },
@@ -18207,6 +18358,19 @@
               }
             ],
             "title": "Brief"
+          },
+          "source": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source",
+            "description": "Importación (P008-T011): origen, HEAD, carpeta de documentos, huellas del inventario y del mapa congelados y fase activa detectada; null en las demás conversaciones."
           },
           "known": {
             "additionalProperties": {
@@ -18338,7 +18502,8 @@
             "type": "string",
             "enum": [
               "definition",
-              "phase_planning"
+              "phase_planning",
+              "project_import"
             ],
             "title": "Kind"
           },
@@ -18871,7 +19036,7 @@
             },
             "type": "array",
             "title": "Drafts",
-            "description": "Borradores congelados (ruta, hash, tamaño); solo definición."
+            "description": "Borradores congelados (ruta, hash, tamaño); definición e importación."
           },
           "user_edits": {
             "items": {

@@ -107,6 +107,7 @@ tarea se leen solo las decisiones que cita; este índice sirve para buscar prece
 | [D095](#d095--p008-t008-perfiles-declarados-en-local-config-4) | P008-T008: perfiles declarados en local-config-4 | P008 |
 | [D096](#d096--p008-t009-inventario-de-importación-desde-el-árbol-de-head) | P008-T009: inventario de importación desde el árbol de HEAD | P008 |
 | [D097](#d097--p008-t010-mapa-de-normalización-del-flujo-a) | P008-T010: mapa de normalización del Flujo A | P008 |
+| [D098](#d098--p008-t011-conversación-de-importación-con-borradores-privados) | P008-T011: conversación de importación con borradores privados | P008 |
 
 ## D001 — Alcance local y arquitectura base
 
@@ -2700,7 +2701,7 @@ Estado: decidido por el usuario el 2026-10-15 tras el análisis de incongruencia
 (migración documental de este repositorio) implementada el mismo día**; P008-T002 implementada (D089); P008-T003
 implementada (D090); P008-T004 implementada (D091); P008-T005 implementada (D092); P008-T006 implementada (D093);
 P008-T007 implementada (D094); P008-T008 implementada (D095); P008-T009 implementada (D096);
-P008-T010 implementada (D097); P008-T011–T015 pendientes. Fase: P008.
+P008-T010 implementada (D097); P008-T011 implementada (D098); P008-T012–T015 pendientes. Fase: P008.
 Sustituye en parte D072/D073 (carpetas `decisions/`, `architecture/` y `research/`; layout v2 opcional), D032/D073
 (cierre y transición separados) y D037 (creación v1). Plan: [NEXT_STEPS](NEXT_STEPS.md).
 
@@ -3110,5 +3111,45 @@ Decisiones tomadas con criterio dentro de la tarea:
 
 Límites: la prosa de una base v2 de DECISIONS («Registro en `decisions/`…») y el cuerpo antiguo de su bloque siguen
 tal cual hasta T011 y el commit. Sin modelos, migraciones, codec, dependencias, prompts ni contratos generados.
+
+No se ejecutó el harness sobre este repositorio, ni proveedores reales, smokes, push o publicación.
+
+## D098 — P008-T011: conversación de importación con borradores privados
+
+Estado: implementada y verificada offline el 2026-10-16; detalle y límites en el
+[registro](phase/P008-T011_PROPUESTA_REVISOR.md). Fase: P008. Aplica D088 punto 10 sobre D075, D096 y D097.
+
+Decisiones tomadas con criterio dentro de la tarea:
+
+- Tercer tipo de conversación de H6.5, `project_import`, con las mismas tablas, cola, lock, guardia, cuarentena y
+  reglas de turno (FAILED sin fallback; caída → UNKNOWN). La migración `0019_import_conversations` añade
+  `planning_conversations.source`, donde se congelan al crearla el inventario de HEAD (T009) y su mapa (T010). Solo
+  para proyectos que el harness aún no gestiona: sin creación por bootstrap ni fases propias.
+- El turno reutiliza el rol de solo lectura `definition` y su esquema (respuesta, preguntas, borradores completos y
+  pendientes) con una plantilla nueva, `import-project`; el adaptador sigue en `cli-11`. La plantilla no inyecta
+  `AGENTS.md`: el del proyecto es parte del origen (puede faltar o exceder D088) y llega con los demás textos.
+- Cada turno comprueba que el checkout sigue dando la misma huella de inventario (si no, no se encola) y congela los
+  textos del árbol resultante del mapa, comprobados contra sus hashes, salvo el archivo, que va por ruta y hash, junto
+  con los borradores (2 MiB en total como máximo). Antes y después de invocar se observan la huella y el área: un
+  cambio descarta la respuesta.
+- Rutas admitidas: las de la definición (plantilla D088 y `docs/flows/*.md`). Un borrador sustituye el documento de
+  su ruta en el árbol resultante; lo demás conserva el resultado del mapa.
+- Borradores en `import-drafts/<conversación>/` junto a la base SQLite (carpeta 0700 derivada solo de la base y del
+  id), con la CAS de los borradores de la definición; aplicar exige confirmación y el hash mostrado. El checkout no se
+  escribe hasta T012.
+- `GET …/planning/{c}/import` relee checkout y área y da los bloqueos para pasar a la vista previa: turno pendiente,
+  checkout distinto del inventariado, entradas bloqueadas del inventario, borradores inválidos, preguntas bloqueantes
+  sin responder ni aplazar, documentos de D088 ausentes del mapa y de los borradores, AGENTS >60 líneas o
+  CLAUDE/GEMINI >15, bloques gestionados ajenos y numeración de DECISIONS. Los documentos con contenido por defecto
+  (AGENTS, CLAUDE, GEMINI, DDBB-DIAGRAM) ausentes, las entradas que el mapa dejó al revisor, lo ajeno y los pendientes
+  son avisos.
+- Extensiones técnicas fuera de las rutas de la tarea, como en D091/D092: `services/managed.py` (observación del turno),
+  `frontend/openapi.json` y `frontend/src/api.generated.ts` regenerados, y la etiqueta «Importación» del nuevo
+  `purpose` en `frontend/src/pages/shared.tsx` y `frontend/src/metrics.ts`, que el tipo exige.
+
+Límites: con `.harness/runs` sin activar, la guardia de modo D027 rechaza los turnos (la conversación sí se crea). El
+orden entre la activación D027 y la importación queda para T012, porque el marcador de modo gestionado cambia el
+estado limpio que exige el inventario. La coherencia de STATE y NEXT_STEPS con la fase activa y el destino de las
+entradas en revisión no se comprueban aquí: son de la vista previa de T012. Sin UI propia de la importación.
 
 No se ejecutó el harness sobre este repositorio, ni proveedores reales, smokes, push o publicación.

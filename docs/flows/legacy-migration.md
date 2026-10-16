@@ -30,9 +30,10 @@ stateDiagram-v2
 ## Flujo A en P008 (D088)
 
 El Flujo A (T009–T012) añade, sobre esta vía y sobre proyectos v1/v2 de este harness, la normalización documental al
-layout unificado. Implementados: el inventario de solo lectura (P008-T009, D096) y el mapa determinista de
-renombrados, movimientos y composición de decisiones (P008-T010, D097). Pendientes: la propuesta del revisor para
-fusionar y adelgazar (T011) y un commit confirmado con CAS (T012).
+layout unificado. Implementados: el inventario de solo lectura (P008-T009, D096), el mapa determinista de
+renombrados, movimientos y composición de decisiones (P008-T010, D097) y la conversación `project_import` en la que
+el revisor propone fusiones y adelgazamiento como borradores privados (P008-T011, D098). Pendiente: la vista previa y
+el commit confirmado con CAS (T012).
 
 ```mermaid
 flowchart TD
@@ -52,8 +53,18 @@ flowchart TD
     P -- no --> Q["review: target-conflict"]
     P -- sí --> S["Mapa con árbol resultante, review, foreign, missing y map_sha256"]
     Q --> S
-    S -. "T011–T012, pendientes" .-> H["Propuesta del revisor y commit confirmado"]
+    S --> T["Conversación project_import: inventario y mapa congelados en SQLite"]
+    T --> U["Turno: ¿checkout igual al inventariado? Textos del árbol resultante y borradores congelados"]
+    U --> V["Revisor de solo lectura (rol definition): borradores, preguntas y pendientes"]
+    V --> W{"¿Esquema y rutas D088 válidos, origen y área sin cambios?"}
+    W -- no --> X["Turno FAILED sin fallback; nada se escribe"]
+    W -- sí --> Y["Propuestas; aplicar o editar con CAS en import-drafts/ junto a SQLite"]
+    Y --> Z{"GET …/import: ¿preguntas bloqueantes resueltas o aplazadas, documentos y límites D088?"}
+    Z -. "T012, pendiente" .-> H["Vista previa y commit confirmado"]
 ```
+
+Límite (D098): con `.harness/runs` sin activar, la guardia de modo D027 rechaza los turnos de la conversación; la
+conversación y su estado sí se pueden crear y consultar.
 
 ## Fuente en el código
 
@@ -61,3 +72,4 @@ flowchart TD
 - `core/migration.py`, `adapters/migration.py`, `storage/migration.py`, `services/migration.py`.
 - `core/project_import.py`, `adapters/project_import.py` (inventario del Flujo A).
 - `core/project_normalization.py` (mapa de normalización del Flujo A).
+- `core/engine/import_conversation.py`, `storage/import_drafts.py`, `storage/planning.py` (conversación del Flujo A).

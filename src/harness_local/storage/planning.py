@@ -13,6 +13,10 @@ previa del bootstrap D037 con la plantilla v2 (`storage/bootstrap.py`).
 
 Planificación: propone NEXT_STEPS para la fase activa sin tareas (o la siguiente en conversaciones anteriores).
 La confirmación del plan escribe los documentos y versiona la definición; el agente nunca produce efectos.
+
+Importación (P008-T011, Flujo A): congela al crearse el inventario y el mapa del árbol de HEAD de un proyecto que el
+harness aún no gestiona. Sus borradores viven en el área privada junto a SQLite (`storage/import_drafts.py`) con la
+misma CAS; cada turno comprueba que el checkout sigue siendo el inventariado. El checkout no se escribe aquí (T012).
 """
 
 from sqlalchemy import func, select
@@ -23,13 +27,19 @@ from uuid import uuid4
 from harness_local.core.engine.chat import digest
 from harness_local.core.engine.contracts import freeze
 from harness_local.core.engine.definition import (
-    MAX_CONTEXT_DRAFT_BYTES, acceptance, allowed_draft, allowed_drafts_view, brief as brief_payload,
+    DRAFT_KINDS, MAX_CONTEXT_DRAFT_BYTES, acceptance, allowed_draft, allowed_drafts_view, brief as brief_payload,
     default_documents, definition_layout, text_hash,
 )
 from harness_local.core.engine.document_ops import read_text
 from harness_local.core.engine.documents import base_section, parse_roadmap, require_layout, skeleton
+from harness_local.core.engine.import_conversation import (
+    frozen_source, identity, observation, readiness, turn_context,
+)
 from harness_local.core.engine.serialization import load_history
+from harness_local.core.project_import import ImportInventoryError
+from harness_local.core.project_normalization import ImportMapError, build_map
 from harness_local.storage.chat import MAX_MESSAGE, MAX_PREVIOUS_TURNS, read_documents
+from harness_local.storage.import_drafts import ImportDrafts, read_source
 from harness_local.storage.managed import Conflict, _job, existing_creation
 from harness_local.storage.models import (
     ManagedRunRow as Run, PhaseRow as Phase, PlanningConversationRow as Conversation,
@@ -37,7 +47,19 @@ from harness_local.storage.models import (
 )
 from harness_local.storage.permissions import actor
 
-KINDS = ('definition', 'phase_planning')
+KINDS = ('definition', 'phase_planning', 'project_import')
+
+
+def _executable(reader) -> str:
+    """Git del lector configurado (el mismo del escritor); `git` en el PATH si no hay ninguno."""
+    return getattr(reader, 'executable', 'git')
+
+
+def _source(context, reader) -> tuple[dict, dict[str, bytes]]:
+    try:
+        return read_source(context, _executable(reader))
+    except ImportInventoryError as exc:
+        raise Conflict(f'The project cannot be imported: {exc}') from exc
 
 
 def _touch(managed, conversation):
@@ -76,7 +98,7 @@ def settle(managed, session, run, outcome):
     turn.status, turn.finished_at = outcome['status'], managed._now()
     result = outcome['result']
     stored = result
-    if outcome['status'] == 'ANSWERED' and conversation.kind == 'definition':
+    if outcome['status'] == 'ANSWERED' and conversation.kind in DRAFT_KINDS:
         # El contenido íntegro vive en cada propuesta; el turno conserva ruta, motivo y hash.
         stored = {**result, 'drafts': [{'path': d['path'], 'reason': d['reason'], 'content_sha256': text_hash(d['content'])}
                                        for d in result['drafts']]}
@@ -85,7 +107,7 @@ def settle(managed, session, run, outcome):
                                      'content_sha256': text_hash(result['plan']['content'])}}
     turn.result = {**outcome, 'result': stored, 'attempt_id': attempts[-1].request.id if attempts else None}
     if outcome['status'] == 'ANSWERED':
-        if conversation.kind == 'definition':
+        if conversation.kind in DRAFT_KINDS:
             bases = {item['path']: item['sha256'] for item in turn.request['context']['drafts']}
             # Solo un turno respondido «ve» los borradores: uno fallido vuelve a mostrar las ediciones al siguiente.
             conversation.known = dict(bases)
@@ -165,6 +187,19 @@ class PlanningRepository:
             raise Conflict('Conversation changed; reload before acting')
         return row
 
+    def _port(self, conversation, writer):
+        """Borradores en disco: carpeta destino de la definición o área privada de la importación."""
+        if conversation.kind == 'project_import':
+            return ImportDrafts.of(self.managed.engine, conversation.id)
+        return writer
+
+    @staticmethod
+    def _drafts_created(session, conversation):
+        """Solo definición e importación tienen borradores; True si la definición ya creó el proyecto."""
+        if conversation.kind not in DRAFT_KINDS:
+            raise Conflict('Only definition and import conversations have drafts')
+        return conversation.kind == 'definition' and _bootstrapped(session, conversation.root)
+
     @staticmethod
     def _record(session, conversation) -> dict:
         """Lo que la aceptación resume en DEFINITION.md: datos de SQLite, deterministas."""
@@ -233,10 +268,12 @@ class PlanningRepository:
                     'version': item.version, 'created_at': item.created_at, 'actions': actions})
             actions = []
             if open_:
-                actions = ['message'] + (['edit_draft', 'defer_question', 'accept'] if row.kind == 'definition' else [])
+                actions = ['message'] + {'definition': ['edit_draft', 'defer_question', 'accept'],
+                                         'project_import': ['edit_draft', 'defer_question']}.get(row.kind, [])
             return {'id': row.id, 'root': row.root, 'kind': row.kind, 'title': row.title,
                     'phase': None if phase is None else {'id': phase.id, 'code': phase.code, 'status': phase.status},
                     'brief': None if row.brief is None else {k: row.brief[k] for k in ('sha256', 'size')},
+                    'source': None if row.source is None else identity(row.source),
                     'known': row.known, 'log': row.log, 'questions': questions, 'pending': items,
                     'actor': row.actor, 'version': row.version, 'created_at': row.created_at,
                     'updated_at': row.updated_at, 'created': created, 'turns': turn_views,
@@ -254,12 +291,11 @@ class PlanningRepository:
         target = definition_layout(context)
         with Session(self.managed.engine) as session:
             row = self._conversation(session, conversation_id, context=context)
-            if row.kind != 'definition':
-                raise Conflict('Only a definition conversation has drafts on disk')
             known = dict(row.known)
-            if _bootstrapped(session, row.root):
+            if self._drafts_created(session, row):
                 return {'created': True, 'allowed': allowed_drafts_view(target), 'drafts': [], 'foreign': [],
                         'foreign_truncated': False, 'invalid': [], 'import_required': False}
+            writer = self._port(row, writer)
         inspection = writer.inspect_definition(context)
         drafts = [{'path': path, 'sha256': inspection['drafts'].get(path), 'known_sha256': known.get(path),
                    'user_edited': inspection['drafts'].get(path) != known.get(path)}
@@ -275,11 +311,10 @@ class PlanningRepository:
             raise LookupError(f'{path} is not an allowed definition draft')
         with Session(self.managed.engine) as session:
             row = self._conversation(session, conversation_id, context=context)
-            if row.kind != 'definition':
-                raise Conflict('Only a definition conversation has drafts on disk')
-            if _bootstrapped(session, row.root):
+            if self._drafts_created(session, row):
                 raise Conflict('The project was already created; read its documents instead')
             known = row.known.get(path)
+            writer = self._port(row, writer)
         inspection = writer.inspect_definition(context, texts=True)
         if path in inspection['invalid']:
             raise Conflict(f'{path} is not a valid draft (UTF-8 without NUL, not executable, at most 512 KiB)')
@@ -295,7 +330,8 @@ class PlanningRepository:
             if run is None:
                 raise LookupError('Unknown managed run')
             turn, conversation = _turn(session, run)
-            return {'kind': conversation.kind, 'turn_id': turn.id, 'message': turn.message,
+            return {'kind': conversation.kind, 'conversation_id': conversation.id, 'turn_id': turn.id,
+                    'message': turn.message,
                     'context': turn.request['context'], 'context_sha256': turn.request['context_sha256'],
                     'observed': turn.request.get('observed')}
 
@@ -311,9 +347,10 @@ class PlanningRepository:
                 if found := existing_creation(session, Conversation, key, request):
                     return found
         if kind not in KINDS:
-            raise ValueError('Conversation kind must be definition or phase_planning')
+            raise ValueError('Conversation kind must be definition, phase_planning or project_import')
         if not isinstance(title, str) or not title.strip() or len(title) > 200:
             raise ValueError('Conversation title must contain 1–200 characters')
+        source = None
         if kind == 'definition':
             definition_layout(context)
             frozen = brief_payload(brief)
@@ -321,6 +358,17 @@ class PlanningRepository:
                 raise ValueError('A definition conversation has no phase')
             if writer.inspect_definition(context)['import_required']:
                 raise Conflict('The target belongs to a Git repository or contains .git: use the import flow')
+        elif kind == 'project_import':
+            # P008-T011: inventario (T009) y mapa (T010) del árbol de HEAD, congelados con la conversación.
+            definition_layout(context)
+            if brief is not None or phase_id is not None:
+                raise ValueError('An import conversation has no brief or phase')
+            inventory, contents = _source(context, writer)
+            try:
+                source = frozen_source(inventory, build_map(inventory, contents))
+            except ImportMapError as exc:
+                raise Conflict(f'The import map could not be built: {exc}') from exc
+            frozen = None
         else:
             require_layout(context)
             if brief is not None:
@@ -335,6 +383,8 @@ class PlanningRepository:
                     if _bootstrapped(session, str(context.root)):
                         raise Conflict('The project was already created; plan its phases instead')
                     BootstrapRepository._empty_authority(session, str(context.root))
+                elif kind == 'project_import':
+                    self._importable(session, str(context.root))
                 else:
                     phase = session.get(Phase, phase_id) if isinstance(phase_id, str) else None
                     if phase is None or phase.root != str(context.root):
@@ -346,12 +396,21 @@ class PlanningRepository:
                 row = Conversation(id=str(uuid4()), root=str(context.root), kind=kind, phase_id=phase_id,
                                    title=title.strip(), brief=frozen, known={}, deferred={}, log=[], actor=actor(),
                                    version=0, created_at=now, updated_at=now, idempotency_key=key,
-                                   request_sha256=request if key is not None else None)
+                                   request_sha256=request if key is not None else None, source=source)
                 session.add(row)
                 session.flush()
                 return row.id
         except IntegrityError as exc:
             raise Conflict('This project already has a definition conversation') from exc
+
+    @staticmethod
+    def _importable(session, root):
+        """El Flujo A incorpora proyectos que el harness aún no gestiona: sin creación ni fases propias."""
+        from harness_local.storage.documents import latest_phase
+        if _bootstrapped(session, root):
+            raise Conflict('The project was created by the harness; there is nothing to import')
+        if latest_phase(session, root) is not None:
+            raise Conflict('The project already has managed phases; the import flow is for projects not yet managed')
 
     # --- turnos ------------------------------------------------------------------------
 
@@ -366,11 +425,22 @@ class PlanningRepository:
             if existing:
                 return _job(existing)
             conversation = self._conversation(session, conversation_id, context=context)
-            kind = conversation.kind
+            kind, source = conversation.kind, conversation.source
             if kind == 'definition' and _bootstrapped(session, conversation.root):
                 raise Conflict('The project was already created from this definition')
+            port = self._port(conversation, writer)
         observed, prepared = None, {}
-        if kind == 'definition':
+        if kind == 'project_import':
+            target = definition_layout(context)
+            inspection = port.inspect_definition(context, texts=True)
+            texts = inspection.pop('texts')
+            inventory, contents = _source(context, writer)
+            if inventory['inventory_sha256'] != source['inventory']['inventory_sha256']:
+                raise Conflict('The checkout changed since the import conversation started; start a new import '
+                               'conversation')
+            prepared = turn_context(target, source, contents, texts, inspection)
+            observed = observation(inventory['inventory_sha256'], inspection)
+        elif kind == 'definition':
             target = definition_layout(context)
             inspection = writer.inspect_definition(context, texts=True)
             texts = inspection.pop('texts')
@@ -421,18 +491,25 @@ class PlanningRepository:
                                              'phase': target.phase_dir}},
                       'conversation': {'id': conversation.id, 'title': conversation.title, 'turn': number},
                       'questions': questions, 'pending': pending, 'previous_turns': history}
-            if conversation.kind == 'definition':
-                if _bootstrapped(session, conversation.root):
+            if conversation.kind in DRAFT_KINDS:
+                if conversation.kind == 'definition' and _bootstrapped(session, conversation.root):
                     raise Conflict('The project was already created from this definition')
+                if conversation.kind == 'project_import':
+                    self._importable(session, conversation.root)
                 known, drafts = conversation.known, observed['drafts']
                 defaults = skeleton(target, conversation.title,
                                     preparation=[command.argv for command in context.profile.preparation],
                                     validations=[command.argv for command in context.profile.validations])
-                frozen.update(prepared, brief=conversation.brief, user_edits=[
+                frozen.update(prepared, user_edits=[
                     {'path': path, 'before_sha256': known.get(path), 'after_sha256': drafts.get(path)}
                     for path in sorted(set(known) | set(drafts)) if known.get(path) != drafts.get(path)],
                     template_defaults={path: defaults[path] for path in default_documents(target)})
-                task_id, phase_code = f'DEF-{conversation.id[:8]}-{number}', 'P000'
+                if conversation.kind == 'definition':
+                    frozen['brief'] = conversation.brief
+                    task_id = f'DEF-{conversation.id[:8]}-{number}'
+                else:
+                    task_id = f'IMP-{conversation.id[:8]}-{number}'
+                phase_code = 'P000'
             else:
                 from harness_local.storage.documents import latest_phase, summary_snapshot
                 phase = session.get(Phase, conversation.phase_id)
@@ -461,12 +538,12 @@ class PlanningRepository:
     # --- borradores ----------------------------------------------------------------------
 
     def _definition_open(self, session, conversation):
-        if conversation.kind != 'definition':
-            raise Conflict('Only a definition conversation has drafts on disk')
-        if _bootstrapped(session, conversation.root):
+        if self._drafts_created(session, conversation):
             raise Conflict('The project was already created; edit its documents with a confirmed edit')
+        if conversation.kind == 'project_import':
+            self._importable(session, conversation.root)
         if session.scalar(select(Turn.id).where(Turn.conversation_id == conversation.id, Turn.status == 'QUEUED')):
-            raise Conflict('A definition turn is pending; act after it settles')
+            raise Conflict('A turn of this conversation is pending; act after it settles')
 
     def apply(self, context, conversation_id, proposal_id, expected, *, proposal_sha256, confirmed, writer):
         """Confirmación explícita → el harness escribe el borrador si sigue siendo el que leyó el turno."""
@@ -484,7 +561,8 @@ class PlanningRepository:
             if proposal.proposal_sha256 != proposal_sha256:
                 raise Conflict('Apply the exact proposal that was shown; reload it')
             try:
-                written = writer.write_draft(context, proposal.path, proposal.content, proposal.base_sha256)
+                written = self._port(conversation, writer).write_draft(context, proposal.path, proposal.content,
+                                                                       proposal.base_sha256)
             except DraftConflict as exc:
                 raise Conflict(f'{exc}. The user edit is preserved; ask a new turn or edit the draft yourself') from exc
             turn = session.get(Turn, proposal.turn_id)
@@ -512,7 +590,7 @@ class PlanningRepository:
             conversation = self._conversation(session, conversation_id, expected, context)
             self._definition_open(session, conversation)
             try:
-                written = writer.write_draft(context, path, content, base_sha256)
+                written = self._port(conversation, writer).write_draft(context, path, content, base_sha256)
             except DraftConflict as exc:
                 raise Conflict(f'{exc}; nothing was overwritten') from exc
             conversation.log = [*conversation.log, {'source': 'api', 'path': path, 'before': written['before'],
@@ -551,6 +629,29 @@ class PlanningRepository:
             proposal.decision = {'decision': 'dismiss', 'actor': actor(), 'at': self.managed._now(),
                                  'reason': reason.strip()}
             _touch(self.managed, conversation)
+
+    # --- importación ------------------------------------------------------------------------
+
+    def import_status(self, context, conversation_id, reader=None) -> dict:
+        """P008-T011: ¿puede la importación pasar a la vista previa (T012)? Relee el checkout y el área, sin efectos."""
+        target = definition_layout(context)
+        with Session(self.managed.engine) as session:
+            row = self._conversation(session, conversation_id, context=context)
+            if row.kind != 'project_import':
+                raise Conflict('Only an import conversation has an import status')
+            record = self._record(session, row)
+            record['pending_turn'] = session.scalar(select(Turn.id).where(
+                Turn.conversation_id == row.id, Turn.status == 'QUEUED')) is not None
+            source, port = row.source, self._port(row, None)
+        inspection = port.inspect_definition(context, texts=True)
+        texts = inspection.pop('texts')
+        try:
+            inventory, contents = read_source(context, _executable(reader))
+            current = {'inventory': inventory, 'contents': contents}
+        except (ImportInventoryError, OSError) as exc:
+            current, record['current_error'] = None, str(exc)
+        return {**readiness(target, source, record, inspection, texts, current),
+                'conversation_version': record['version']}
 
     # --- plan de la fase siguiente ---------------------------------------------------------
 

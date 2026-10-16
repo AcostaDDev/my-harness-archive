@@ -3,7 +3,7 @@ from sqlalchemy.engine import Engine
 from sqlalchemy.exc import SQLAlchemyError
 
 
-SCHEMA_REVISION = "0018_conversation_keys"
+SCHEMA_REVISION = "0019_import_conversations"
 
 
 def require_schema(engine: Engine) -> None:

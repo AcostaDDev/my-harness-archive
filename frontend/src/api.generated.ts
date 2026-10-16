@@ -1535,8 +1535,9 @@ export interface paths {
         put?: never;
         /**
          * Planning Create
-         * @description Definición (brief Markdown, destino vacío o con borradores) o planificación de la fase activa sin tareas. Misma
-         *     clave y misma petición devuelven la misma conversación.
+         * @description Definición (brief Markdown, destino vacío o con borradores), planificación de la fase activa sin tareas o
+         *     importación de un proyecto aún no gestionado (inventario y mapa de HEAD congelados). Misma clave y misma
+         *     petición devuelven la misma conversación.
          */
         post: operations["managed_planning_create"];
         delete?: never;
@@ -1694,6 +1695,27 @@ export interface paths {
          * @description Aplazamiento explícito de una pregunta bloqueante, con motivo; no la responde.
          */
         post: operations["managed_planning_defer"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/managed/projects/{project_id}/planning/{conversation_id}/import": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Import Status
+         * @description P008-T011: bloqueos para pasar a la vista previa de la importación (preguntas bloqueantes sin responder ni
+         *     aplazar, checkout distinto del inventariado, borradores inválidos, documentos o límites de D088).
+         */
+        get: operations["managed_import_status"];
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -2878,6 +2900,31 @@ export interface components {
              */
             mode: "simulation";
         };
+        /**
+         * ImportStatusRead
+         * @description P008-T011: si la importación puede pasar a la vista previa; se recalcula releyendo checkout y borradores.
+         */
+        ImportStatusRead: {
+            /** Ready */
+            ready: boolean;
+            /** Blockers */
+            blockers: string[];
+            /** Warnings */
+            warnings: string[];
+            /** Source */
+            source: {
+                [key: string]: unknown;
+            };
+            /**
+             * Drafts
+             * @description Hash de cada borrador del área privada de la importación.
+             */
+            drafts: {
+                [key: string]: string;
+            };
+            /** Conversation Version */
+            conversation_version: number;
+        };
         /** JUnitCaseRead */
         JUnitCaseRead: {
             /** Id */
@@ -3288,7 +3335,7 @@ export interface components {
              * Purpose
              * @enum {string}
              */
-            purpose: "task" | "phase_check" | "phase_close" | "chat" | "document_export" | "bootstrap" | "bootstrap_discovery" | "definition" | "phase_planning" | "document_edit" | "phase_transition";
+            purpose: "task" | "phase_check" | "phase_close" | "chat" | "document_export" | "bootstrap" | "bootstrap_discovery" | "definition" | "phase_planning" | "project_import" | "document_edit" | "phase_transition";
             /** Actions */
             actions: ("revalidate" | "retry_executor" | "commit" | "permissions")[];
             /** Versions */
@@ -3335,7 +3382,7 @@ export interface components {
              * Purpose
              * @enum {string}
              */
-            purpose: "task" | "phase_check" | "phase_close" | "chat" | "document_export" | "bootstrap" | "bootstrap_discovery" | "definition" | "phase_planning" | "document_edit" | "phase_transition";
+            purpose: "task" | "phase_check" | "phase_close" | "chat" | "document_export" | "bootstrap" | "bootstrap_discovery" | "definition" | "phase_planning" | "project_import" | "document_edit" | "phase_transition";
         };
         /** MetricAccountingRead */
         MetricAccountingRead: {
@@ -4265,12 +4312,12 @@ export interface components {
              * Kind
              * @enum {string}
              */
-            kind: "definition" | "phase_planning";
+            kind: "definition" | "phase_planning" | "project_import";
             /** Title */
             title: string;
             /**
              * Brief
-             * @description Brief Markdown (UTF-8, máximo 256 KiB) de una definición; null en la planificación de fase.
+             * @description Brief Markdown (UTF-8, máximo 256 KiB) de una definición; null en la planificación y la importación.
              */
             brief?: string | null;
             /**
@@ -4291,12 +4338,19 @@ export interface components {
              * Kind
              * @enum {string}
              */
-            kind: "definition" | "phase_planning";
+            kind: "definition" | "phase_planning" | "project_import";
             /** Title */
             title: string;
             phase: components["schemas"]["ChatPhaseRead"] | null;
             /** Brief */
             brief: {
+                [key: string]: unknown;
+            } | null;
+            /**
+             * Source
+             * @description Importación (P008-T011): origen, HEAD, carpeta de documentos, huellas del inventario y del mapa congelados y fase activa detectada; null en las demás conversaciones.
+             */
+            source?: {
                 [key: string]: unknown;
             } | null;
             /** Known */
@@ -4342,7 +4396,7 @@ export interface components {
              * Kind
              * @enum {string}
              */
-            kind: "definition" | "phase_planning";
+            kind: "definition" | "phase_planning" | "project_import";
             /** Title */
             title: string;
             /** Phase Id */
@@ -4527,7 +4581,7 @@ export interface components {
             request_sha256: string;
             /**
              * Drafts
-             * @description Borradores congelados (ruta, hash, tamaño); solo definición.
+             * @description Borradores congelados (ruta, hash, tamaño); definición e importación.
              */
             drafts: {
                 [key: string]: unknown;
@@ -11406,6 +11460,68 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["PlanningConversationRead"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+        };
+    };
+    managed_import_status: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Obligatoria con valor 1 en mutaciones (protección CSRF). */
+                "x-harness-local"?: string | null;
+            };
+            path: {
+                project_id: string;
+                conversation_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ImportStatusRead"];
                 };
             };
             /** @description Forbidden */

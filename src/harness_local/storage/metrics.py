@@ -29,7 +29,7 @@ from harness_local.storage.models import (
 SUMMED = ('uncached_input_tokens', 'cache_read_tokens', 'cache_write_tokens', 'output_tokens', 'reasoning_tokens',
           'total_tokens')
 # Conversaciones que no son trabajo de una fase: no entran en su SUMMARY (H6.4/H6.5).
-CONVERSATIONS = ('chat', 'definition', 'phase_planning')
+CONVERSATIONS = ('chat', 'definition', 'phase_planning', 'project_import')
 DIMENSIONS = {'role': Metric.role, 'provider': Metric.provider, 'requested_model': Metric.requested_model,
               'requested_effort': Metric.requested_effort, 'day': Metric.day, 'phase': Metric.phase_code,
               'task': Metric.task_id, 'status': Metric.status, 'purpose': Metric.purpose, 'root': Metric.root}

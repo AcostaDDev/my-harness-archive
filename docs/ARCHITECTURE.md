@@ -10,7 +10,7 @@ decisiones D001–D088 y la información técnica que antes estaba en README y A
 |---|---|
 | Núcleo | Python 3.14.4, biblioteca estándar, paquete `harness-local` 0.1.0 (`uv_build==0.12.19`) |
 | API local | FastAPI 0.143.0, Pydantic 2.14.0, Uvicorn 0.54.0; HTTP para acciones, SSE para observación legacy |
-| Persistencia | SQLite con SQLAlchemy 2.1.4 y Alembic 1.20.0 (esquema `0018_conversation_keys`) |
+| Persistencia | SQLite con SQLAlchemy 2.1.4 y Alembic 1.20.0 (esquema `0019_import_conversations`) |
 | UI | React 19.3.0, TypeScript 5.9.3, Vite 8.3.4; `markdown-it` 15.0.2 (`html: false`) y `mermaid` 11.17.2 (`strict`) |
 | Tipos del cliente | `openapi-typescript` 7.13.0 desde el OpenAPI exportado |
 | Herramientas | uv 0.12.19 y `uv.lock`; Node 24.15.0, npm 11.12.1 y `frontend/package-lock.json` |
@@ -44,6 +44,7 @@ casos de uso. El supervisor es el único que lanza procesos y consume la cola; c
 | `core/legacy.py`, `core/migration.py`, `core/simulation.py`, `core/evidence.py` | Lectura legacy, plan de migración a gestionado, esqueleto H0.3, evidencia |
 | `core/project_import.py`, `adapters/project_import.py` | Flujo A: inventario de solo lectura desde el árbol de HEAD (D096) |
 | `core/project_normalization.py` | Flujo A: mapa de normalización determinista sobre el inventario (D097) |
+| `core/engine/import_conversation.py`, `storage/import_drafts.py` | Flujo A: conversación `project_import` del revisor, área privada de borradores y bloqueos de la vista previa (D098) |
 | `core/engine/context.py` | `ProjectContext`, perfil, política, comandos; contexto explícito por proyecto |
 | `core/engine/contracts.py`, `planning.py` | Contrato de tarea, rutas protegidas, planificación determinista desde NEXT_STEPS |
 | `core/engine/workflow.py`, `validation.py`, `review.py`, `acceptance.py`, `junit.py` | Bucle plan → ejecución → validación → revisión → aceptación |
@@ -62,7 +63,7 @@ casos de uso. El supervisor es el único que lanza procesos y consume la cola; c
 | `api/app.py`, `managed.py`, `legacy.py`, `schemas.py`, `session.py`, `security.py` | Aplicación, rutas, contratos Pydantic, sesión y guardia |
 | `profiles/typescript_web.py`, `profiles/reference_project.py` | Perfiles declarativos (solo `typescript-web` se compone desde el TOML) |
 | `cli.py`, `launcher.py` | `harness-local` (legacy, backup, retención, diagnóstico, `check-config`, `metrics-backfill`, `init-db`, `serve`) |
-| `migrations/versions/0001…0018` | Esquema Alembic |
+| `migrations/versions/0001…0019` | Esquema Alembic |
 
 `frontend/src`: `router.ts`, `pages/` (Home, Registry, Project, Phases, Task, Run, Docs, Planning, Stats, Settings),
 `markdown.ts` y `mermaid-view.ts` (render aislado), `managed-api.ts` (envíos idempotentes), `api.generated.ts`
@@ -115,7 +116,8 @@ por su API y los artefactos referenciados; la restauración es de consulta (`que
 - **Validaciones nativas** (`commands-1`): ejecutables absolutos, autorización por comando completo, captura acotada en
   SQLite, grupos POSIX.
 - **Prompts** (`templates/`): `plan-task`, `execute-task`, `revise-task`, `review-task`, `executor-routing`,
-  `close-phase`, `reconcile-phase`, `chat-turn`, `define-project`, `plan-phase`, `bootstrap-project`. Jerarquía base →
+  `close-phase`, `reconcile-phase`, `chat-turn`, `define-project`, `plan-phase`, `import-project` (D098; rol de
+  solo lectura `definition`, sin `AGENTS.md` inyectado porque es parte del origen), `bootstrap-project`. Jerarquía base →
   perfil → proyecto; snapshot por intento. Prompts unificados y definición versión 4 (D092). `AGENTS.md` (≤32 KiB)
   entra por `{{PROJECT_INSTRUCTIONS}}` en todos los roles salvo la definición, con ruta, hash y tamaño en el snapshot;
   sin él, el intento se detiene antes de invocar (D094). `document_layout = "d088-5"` congela las reglas nuevas y
@@ -127,7 +129,8 @@ por su API y los artefactos referenciados; la restauración es de consulta (`que
 
 - `/api/managed`: proyectos, registro, runs, jobs, intentos, diffs paginados, permisos, fases, documentos, chat,
   planificación, métricas. Desde T006 no hay endpoints de creación v1 ni transición; el GET de estado de creación
-  acompaña a la definición conversacional y el plan confirmado usa la fase ACTIVE sin tareas. `/api/legacy`:
+  acompaña a la definición conversacional y el plan confirmado usa la fase ACTIVE sin tareas. La conversación
+  `project_import` usa las rutas de planificación y `GET …/planning/{c}/import` da sus bloqueos (D098). `/api/legacy`:
   observación de solo lectura. Mutaciones con `Idempotency-Key` y versión esperada; 409 con `{code, diagnostic}`; 422 ante contrato inválido.
 - Rutas de la UI: `/`, `/stats`, `/projects/new`, `/projects/:p` con `setup`, `chat[/:c]`, `docs[/*ruta]`, `phases`,
   `phases/:code`, `phases/:code/plan[/:c]`, `phases/:code/tasks/:task[/runs/:run]`, `stats` y `settings`; `/runs/:id`

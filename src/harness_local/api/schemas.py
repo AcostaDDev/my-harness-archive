@@ -300,7 +300,7 @@ class ManagedRunSummaryRead(BaseModel):
     created_at: str
     updated_at: str
     purpose: Literal['task', 'phase_check', 'phase_close', 'chat', 'document_export', 'bootstrap', 'bootstrap_discovery',
-                     'definition', 'phase_planning',
+                     'definition', 'phase_planning', 'project_import',
                      'document_edit', 'phase_transition']
 
 
@@ -1080,7 +1080,7 @@ class ChatCommandRead(BaseModel):
 
 # --- H6.5: creación y planificación conversacionales -----------------------------------------------
 
-PlanningKind = Literal['definition', 'phase_planning']
+PlanningKind = Literal['definition', 'phase_planning', 'project_import']
 SHA256 = r'^[0-9a-f]{64}$'
 
 
@@ -1149,7 +1149,7 @@ class PlanningConversationCreate(BaseModel):
     kind: PlanningKind
     title: str = Field(min_length=1, max_length=200)
     brief: str | None = Field(default=None, min_length=1, max_length=256 * 1024, description=(
-        'Brief Markdown (UTF-8, máximo 256 KiB) de una definición; null en la planificación de fase.'))
+        'Brief Markdown (UTF-8, máximo 256 KiB) de una definición; null en la planificación y la importación.'))
     phase_id: str | None = Field(default=None, max_length=36,
                                  description='Fase ACTIVE sin tareas que se planifica; se conservan las conversaciones históricas anteriores.')
 
@@ -1175,7 +1175,7 @@ class PlanningTurnRead(BaseModel):
     message: str
     context_sha256: str
     request_sha256: str
-    drafts: list[dict[str, Any]] = Field(description='Borradores congelados (ruta, hash, tamaño); solo definición.')
+    drafts: list[dict[str, Any]] = Field(description='Borradores congelados (ruta, hash, tamaño); definición e importación.')
     user_edits: list[dict[str, Any]] = Field(description='Ediciones del usuario detectadas por hash al congelar.')
     documents: list[dict[str, Any]] = Field(description='Documentos congelados; solo planificación de fase.')
     result: dict[str, Any] | None
@@ -1218,6 +1218,9 @@ class PlanningConversationRead(BaseModel):
     title: str
     phase: ChatPhaseRead | None
     brief: dict[str, Any] | None
+    source: dict[str, Any] | None = Field(default=None, description=(
+        'Importación (P008-T011): origen, HEAD, carpeta de documentos, huellas del inventario y del mapa congelados '
+        'y fase activa detectada; null en las demás conversaciones.'))
     known: dict[str, str | None]
     log: list[dict[str, Any]]
     questions: list[PlanningQuestionRead]
@@ -1231,6 +1234,16 @@ class PlanningConversationRead(BaseModel):
     proposals: list[PlanningProposalRead]
     actions: list[Literal['message', 'edit_draft', 'defer_question', 'accept']]
     operation: DefinitionOperationRead | None = None
+
+
+class ImportStatusRead(BaseModel):
+    """P008-T011: si la importación puede pasar a la vista previa; se recalcula releyendo checkout y borradores."""
+    ready: bool
+    blockers: list[str]
+    warnings: list[str]
+    source: dict[str, Any]
+    drafts: dict[str, str] = Field(description='Hash de cada borrador del área privada de la importación.')
+    conversation_version: int
 
 
 class PlanningMessageCreate(BaseModel):

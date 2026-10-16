@@ -9,7 +9,8 @@ import { useWorkspace } from "../workspace";
 const PURPOSES: Record<S["ManagedRunSummaryRead"]["purpose"], string> = {
   task: "Tarea", phase_check: "Comprobación de fase", phase_close: "Cierre de fase", chat: "Chat",
   document_export: "Exportación documental", bootstrap: "Creación del proyecto", bootstrap_discovery: "Propuesta de creación",
-  definition: "Definición", phase_planning: "Planificación de fase", document_edit: "Edición de documento",
+  definition: "Definición", phase_planning: "Planificación de fase", project_import: "Importación",
+  document_edit: "Edición de documento",
   phase_transition: "Transición de fase",
 };
 

@@ -23,12 +23,15 @@ VARIABLES = {
     'chat-turn': ('CONTEXT_JSON', 'MESSAGE', PROJECT_INSTRUCTIONS),
     'define-project': ('CONTEXT_JSON', 'MESSAGE'),
     'plan-phase': ('CONTEXT_JSON', 'MESSAGE', PROJECT_INSTRUCTIONS),
+    # P008-T011: el AGENTS.md de un proyecto importado es parte del origen congelado y puede faltar o exceder D088.
+    'import-project': ('CONTEXT_JSON', 'MESSAGE'),
 }
 ROLES = {'bootstrap-project': 'bootstrap', 'plan-task': 'planner', 'review-task': 'reviewer', 'execute-task': 'executor', 'revise-task': 'executor',
-         'close-phase': 'phase', 'chat-turn': 'chat', 'define-project': 'definition', 'plan-phase': 'planning'}
-# H4.1/H6.5: plantillas añadidas después de H3.1. Los catálogos congelados en runs anteriores no las
+         'close-phase': 'phase', 'chat-turn': 'chat', 'define-project': 'definition', 'plan-phase': 'planning',
+         'import-project': 'definition'}
+# H4.1/H6.5/P008-T011: plantillas añadidas después de H3.1. Los catálogos congelados en runs anteriores no las
 # contienen y siguen siendo válidos al reanudar; los catálogos nuevos siempre las incluyen.
-ADDED_LATER = frozenset({'chat-turn', 'define-project', 'plan-phase'})
+ADDED_LATER = frozenset({'chat-turn', 'define-project', 'plan-phase', 'import-project'})
 TOKEN = re.compile(r'{{([A-Z][A-Z0-9_]*)}}')
 
 

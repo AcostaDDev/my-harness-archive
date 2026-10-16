@@ -265,6 +265,15 @@ class LocalSupervisor:
 
                     def observe():
                         return reader.inspect_definition(context)
+                elif snapshot["kind"] == "project_import":
+                    # P008-T011: origen (árbol de HEAD) y borradores del área privada, sin escribir el checkout.
+                    from harness_local.storage.import_drafts import ImportDrafts, observe as observe_import
+                    area = ImportDrafts.of(self.repository.engine, snapshot["conversation_id"])
+                    executable = getattr(self.commit_factory(context, versions), "executable", "git") \
+                        if self.commit_factory is not None else "git"
+
+                    def observe():
+                        return observe_import(context, area, executable)
                 else:
                     def observe():
                         captured = evidence.capture(context)

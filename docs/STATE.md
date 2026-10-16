@@ -12,7 +12,7 @@ salvo donde se indica. Detalle por fase en `docs/archive/phase-NNN/SUMMARY.md`.
   revisor, bucle ejecución → validación → revisión con límite de correcciones, aceptación ligada al contenido exacto y
   commit determinista conciliable. Codec de historial en formato 7 (lee 1–6).
 - **Persistencia y recuperación** ([P003](archive/phase-003/SUMMARY.md), [P006](archive/phase-006/SUMMARY.md)): SQLite
-  `0018_conversation_keys` (34 tablas, [diagrama](DDBB-DIAGRAM.md)); cola idempotente, lease, lock por checkout,
+  `0019_import_conversations` (34 tablas, [diagrama](DDBB-DIAGRAM.md)); cola idempotente, lease, lock por checkout,
   cuarentena por versión y confirmación explícita del escritor detenido; backup y restauración de consulta; retención
   explícita de streams.
 - **Agentes** ([P007](archive/phase-007/SUMMARY.md)): revisor y ejecutor Codex o Claude en cualquier combinación
@@ -219,5 +219,26 @@ Objetivo y criterios en [ROADMAP](ROADMAP.md); plan en [NEXT_STEPS](NEXT_STEPS.m
   cambia). Sin Node/build ni `alembic check` (no cambian UI, OpenAPI ni esquema), sin proveedores reales ni smokes.
   Detalle en el [registro](phase/P008-T010_MAPA_NORMALIZACION.md).
 
-**Siguiente:** P008-T011 (Flujo A: propuesta del revisor), sin iniciar. Este repositorio sigue sin registrarse en el
-harness.
+**P008-T011 completada** (Flujo A: propuesta del revisor,
+[D098](DECISIONS.md#d098--p008-t011-conversación-de-importación-con-borradores-privados)):
+
+- Conversación `project_import` sobre H6.5: inventario y mapa congelados al crearla (`planning_conversations.source`,
+  migración `0019`), solo para proyectos sin creación ni fases. Cada turno exige la misma huella del checkout y
+  congela los textos del árbol resultante (archivo solo por ruta y hash) y los borradores, como máximo 2 MiB.
+- Revisor de solo lectura con el rol y el esquema `definition` y la plantilla `import-project` (adaptador `cli-11`,
+  sin `AGENTS.md` inyectado). Rutas admitidas: plantilla D088 y `flows/*.md`; lo demás, FAILED sin fallback. Un
+  cambio del checkout o del área durante el turno descarta la respuesta.
+- Borradores en `import-drafts/<id>/` junto a SQLite (0700) con la CAS de la definición; el checkout no se escribe.
+  `GET …/planning/{c}/import` da los bloqueos de la vista previa: preguntas bloqueantes sin responder ni aplazar,
+  checkout cambiado, documentos de D088 ausentes, límites de AGENTS/CLAUDE/GEMINI, borradores inválidos.
+- Extensiones técnicas: observación en `services/managed.py`, OpenAPI y tipos regenerados y etiqueta «Importación»
+  del nuevo `purpose` en dos archivos de la UI. Límite: con runs legacy sin activar, la guardia D027 rechaza los
+  turnos; el orden entre activación e importación queda como pregunta para T012.
+- Verificación: 12 checks ligeros. Pytest completo: 1.264 OK y 121 subtests (aviso conocido de Starlette/httpx),
+  con 17 casos nuevos en `test_import_conversation.py`; tras un retoque de imports se re-ejecutaron cuatro archivos
+  afectados (113 OK). `alembic check` sobre una base temporal, 73 pruebas Node, `tsc` y build correctos. 264 enlaces y
+  anclas válidos y los dos flowcharts de `flows/legacy-migration.md` pasan el parser local. Sin proveedores reales ni
+  smokes. Detalle en el [registro](phase/P008-T011_PROPUESTA_REVISOR.md).
+
+**Siguiente:** P008-T012 (Flujo A: vista previa, commit y continuidad), sin iniciar. Este repositorio sigue sin
+registrarse en el harness.

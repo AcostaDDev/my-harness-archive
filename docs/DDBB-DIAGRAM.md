@@ -1,6 +1,6 @@
 # Diagrama de datos — my_harness
 
-Esquema SQLite del servicio local (Alembic `0018_conversation_keys`, 34 tablas). Generado en P008-T001 desde el metadata de `src/harness_local/storage/models.py`; cualquier cambio de modelos o migraciones actualiza este documento en la misma tarea (regla de paridad, D088).
+Esquema SQLite del servicio local (Alembic `0019_import_conversations`, 34 tablas). Generado en P008-T001 desde el metadata de `src/harness_local/storage/models.py` (actualizado en P008-T011); cualquier cambio de modelos o migraciones actualiza este documento en la misma tarea (regla de paridad, D088).
 
 Convenciones: `PK` clave primaria, `FK` clave ajena declarada, `UK` unicidad de columna; «null» marca columnas opcionales. Las unicidades compuestas y los índices únicos parciales se listan bajo cada diagrama. Las entidades de otro contexto aparecen solo con las columnas que relacionan. Los artefactos pesados (streams, capturas, copias) viven fuera de SQLite y se referencian por ruta y hash.
 
@@ -333,9 +333,11 @@ erDiagram
 
 Unicidad: `managed_phases` (root, code); `uq_managed_phases_open_root` sobre `managed_phases` (root) donde status NOT IN ('CLOSED', 'ABANDONED'); `phase_definitions` (phase_id, number); `phase_events` (phase_id, sequence).
 
-## Chat y planificación conversacional (P005, P007)
+## Chat y planificación conversacional (P005, P007, P008)
 
-Chat contextual (D035, D083) y conversaciones de definición y planificación de fase (D075, D086).
+Chat contextual (D035, D083), conversaciones de definición y planificación de fase (D075, D086) e importación del
+Flujo A (`kind = 'project_import'`, D098): `source` congela el inventario y el mapa al crearla; sus borradores viven
+fuera de SQLite, en `import-drafts/<id>/` junto a la base.
 
 ```mermaid
 erDiagram
@@ -395,6 +397,7 @@ erDiagram
         string updated_at
         string idempotency_key "null"
         string request_sha256 "null"
+        json source "null"
     }
     planning_turns {
         string id PK

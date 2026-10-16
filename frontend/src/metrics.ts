@@ -19,6 +19,7 @@ export const ROLES: Record<string, string> = {
 export const PURPOSES: Record<string, string> = {
   task: "Tarea", phase_check: "Comprobación de fase", phase_close: "Cierre de fase", chat: "Chat",
   bootstrap_discovery: "Propuesta de creación", definition: "Definición", phase_planning: "Planificación de fase",
+  project_import: "Importación",
 };
 
 const integer = new Intl.NumberFormat("es-ES", { maximumFractionDigits: 0 });

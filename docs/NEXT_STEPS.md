@@ -4,7 +4,7 @@ Objetivo y criterios de salida en [ROADMAP](ROADMAP.md#p008--contrato-documental
 Decisión de base: [D088](DECISIONS.md#d088--contrato-documental-unificado-cierre-de-fase-automático-e-importación-de-proyectos-p008).
 Análisis de incongruencias que originó la fase: [docs/phase](phase/P008-T001_MIGRACION_DOCUMENTAL.md).
 
-**Siguiente tarea:** P008-T011. Orden de ejecución: T002 → T007 (motor y contrato), T008 (perfiles, que el usuario
+**Siguiente tarea:** P008-T012. Orden de ejecución: T002 → T007 (motor y contrato), T008 (perfiles, que el usuario
 necesita para su próximo proyecto Django), T009–T012 (Flujo A) y T013–T015 (Flujo B).
 
 ## Restricciones compartidas
@@ -267,6 +267,10 @@ Función pura del inventario y sus bytes, sin persistencia (T011 congela el mapa
 ## P008-T011 — Flujo A: propuesta del revisor
 
 **Objetivo:** Que el revisor, en solo lectura, proponga las fusiones y el adelgazamiento que el mapa no resuelve.
+**Estado:** completada el 2026-10-16 ([D098](DECISIONS.md#d098--p008-t011-conversación-de-importación-con-borradores-privados)).
+Rol de solo lectura `definition` con la plantilla `import-project`; inventario y mapa congelados en
+`planning_conversations.source` (`0019`); bloqueos de la vista previa en `GET …/planning/{c}/import`. Pendiente para
+T012: el orden entre la activación D027 y la importación cuando hay runs legacy ([registro](phase/P008-T011_PROPUESTA_REVISOR.md)).
 **Alcance:**
 - Conversación `import` sobre la infraestructura de H6.5, con inventario, mapa y contenidos congelados: borradores de
   SPECIFICATION y ARCHITECTURE fusionados, AGENTS ≤60 líneas que conserve las reglas del proyecto, CLAUDE y GEMINI

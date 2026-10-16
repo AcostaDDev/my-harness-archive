@@ -405,13 +405,14 @@ class ChatProposalRow(Base):
 
 
 class PlanningConversationRow(Base):
-    """H6.5: conversación de definición (proyecto nuevo) o de planificación de la fase siguiente."""
+    """H6.5: conversación de definición (proyecto nuevo) o de planificación de la fase siguiente; P008-T011:
+    importación de un proyecto de un harness anterior (Flujo A)."""
     __tablename__ = 'planning_conversations'
     __table_args__ = (Index('uq_planning_definition', 'root', unique=True, sqlite_where=text("kind = 'definition'")),
                       Index('uq_planning_conversations_key', 'idempotency_key', unique=True))
     id: Mapped[str] = mapped_column(String(36), primary_key=True)
     root: Mapped[str] = mapped_column(String)
-    # definition | phase_planning
+    # definition | phase_planning | project_import
     kind: Mapped[str] = mapped_column(String(20))
     phase_id: Mapped[str | None] = mapped_column(ForeignKey('managed_phases.id'), nullable=True)
     title: Mapped[str] = mapped_column(String(200))
@@ -430,6 +431,8 @@ class PlanningConversationRow(Base):
     # 0018: como en el chat.
     idempotency_key: Mapped[str | None] = mapped_column(String(200), nullable=True)
     request_sha256: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    # 0019: inventario (T009) y mapa (T010) congelados al crear una importación; null en las demás conversaciones.
+    source: Mapped[dict | None] = mapped_column(JSON, nullable=True)
 
 
 class PlanningTurnRow(Base):

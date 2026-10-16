@@ -36,7 +36,11 @@ MAX_DRAFTS = 20
 MAX_QUESTIONS = 30
 MAX_PENDING = 30
 DRAFT_NAME = re.compile(r'[A-Za-z0-9][A-Za-z0-9._-]{0,99}\.md')
-KINDS = {'definition': ('define-project', 'definition'), 'phase_planning': ('plan-phase', 'planning')}
+# P008-T011: la importación reutiliza el rol de solo lectura `definition` y su esquema (documentos completos), así que
+# el adaptador no cambia; su plantilla y su contexto son propios.
+KINDS = {'definition': ('define-project', 'definition'), 'phase_planning': ('plan-phase', 'planning'),
+         'project_import': ('import-project', 'definition')}
+DRAFT_KINDS = ('definition', 'project_import')
 TEMPLATE = {'name': 'project-definition', 'version': '4'}  # 4: documentos obligatorios y prompts D088
 
 
@@ -148,7 +152,7 @@ def validate_definition_result(data, target: Layout) -> dict:
         if not isinstance(item, dict) or set(item) != {'path', 'content', 'reason'}:
             raise ContractError('Each draft must contain exactly path, content and reason')
         if not allowed_draft(target, item['path']):
-            raise ContractError(f"Draft path {item['path']!r} is outside the v2 template, architecture/ and decisions/")
+            raise ContractError(f"Draft path {item['path']!r} is outside the D088 template and flows/*.md")
         if item['path'] in paths:
             raise ContractError('Each document may be proposed once per turn')
         paths.add(item['path'])
@@ -236,7 +240,7 @@ def planning_turn(context, history, snapshot: dict, agents, observe, journal, ca
     if data is None:
         return done(history, 'FAILED', [history.stop.reason], observed=observed)
     try:
-        if kind == 'definition':
+        if kind in DRAFT_KINDS:
             result = validate_definition_result(data, definition_layout(context))
         else:
             following = snapshot['context']['next']
