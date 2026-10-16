@@ -199,5 +199,25 @@ Objetivo y criterios en [ROADMAP](ROADMAP.md); plan en [NEXT_STEPS](NEXT_STEPS.m
   Sin Node/build ni `alembic check` (no cambian UI, OpenAPI ni esquema), sin proveedores reales ni smokes. Detalle
   en el [registro](phase/P008-T009_INVENTARIO_FLUJO_A.md).
 
-**Siguiente:** P008-T010 (Flujo A: mapa de normalización determinista), sin iniciar. Este repositorio sigue sin
-registrarse en el harness.
+**P008-T010 completada** (Flujo A: mapa de normalización determinista,
+[D097](DECISIONS.md#d097--p008-t010-mapa-de-normalización-del-flujo-a)):
+
+- `core/project_normalization.py`: `build_map(inventory, contents)` puro, con los bytes comprobados contra la huella
+  y los SHA-256 del inventario, y `materialize` para obtener los bytes del árbol resultante. Formato
+  `harness-local/import-map/1` y huella `map_sha256`.
+- Reglas con identificador: alias hacia el canónico (`DECISSONS.md` → `DECISIONS.md`), `data-model` →
+  DDBB-DIAGRAM, `phase-N` → `phase-NNN`, BRIEF/PROJECT_PROFILE v1 y README de las carpetas v2 a
+  `archive/phase-000/`, artefactos de fase (`research/**` y `docs/PNNN*`) a `docs/phase/` o al archivo de su fase,
+  y `decisions/DNNN-*.md` inequívocos compuestos en DECISIONS por número con su original en `phase-000`.
+- Movimientos byte a byte; ningún destino coincide, ni en mayúsculas ni como directorio, con una ruta existente u
+  otro destino (`target-conflict`). Lo ambiguo queda en `review` con su motivo para T011, lo ajeno en `foreign`, y
+  `missing` lista los documentos de D088 que faltan. Sin adaptador, persistencia, API ni UI.
+- Verificación: 12 checks ligeros. Pytest completo: 1.246 OK y 121 subtests (aviso conocido de Starlette/httpx), con
+  13 casos nuevos en `test_project_normalization.py`; tras esa pasada se simplificó la detección de conflictos y se
+  re-ejecutaron las pruebas de inventario y mapa (27 OK). 307 enlaces y anclas válidos en los documentos activos y
+  los dos flowcharts de `flows/legacy-migration.md` pasan el parser de flujo de `mermaid` local (el de estados no
+  cambia). Sin Node/build ni `alembic check` (no cambian UI, OpenAPI ni esquema), sin proveedores reales ni smokes.
+  Detalle en el [registro](phase/P008-T010_MAPA_NORMALIZACION.md).
+
+**Siguiente:** P008-T011 (Flujo A: propuesta del revisor), sin iniciar. Este repositorio sigue sin registrarse en el
+harness.

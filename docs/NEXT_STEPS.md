@@ -4,7 +4,7 @@ Objetivo y criterios de salida en [ROADMAP](ROADMAP.md#p008--contrato-documental
 Decisión de base: [D088](DECISIONS.md#d088--contrato-documental-unificado-cierre-de-fase-automático-e-importación-de-proyectos-p008).
 Análisis de incongruencias que originó la fase: [docs/phase](phase/P008-T001_MIGRACION_DOCUMENTAL.md).
 
-**Siguiente tarea:** P008-T010. Orden de ejecución: T002 → T007 (motor y contrato), T008 (perfiles, que el usuario
+**Siguiente tarea:** P008-T011. Orden de ejecución: T002 → T007 (motor y contrato), T008 (perfiles, que el usuario
 necesita para su próximo proyecto Django), T009–T012 (Flujo A) y T013–T015 (Flujo B).
 
 ## Restricciones compartidas
@@ -246,6 +246,9 @@ inventario). Clases, reglas y límites en el [registro](phase/P008-T009_INVENTAR
 ## P008-T010 — Flujo A: mapa de normalización determinista
 
 **Objetivo:** Calcular sin agentes los movimientos y renombrados inequívocos hacia la estructura de D088.
+**Estado:** completada el 2026-10-16 ([D097](DECISIONS.md#d097--p008-t010-mapa-de-normalización-del-flujo-a)).
+Función pura del inventario y sus bytes, sin persistencia (T011 congela el mapa). Lo retirado sin fase va a
+`archive/phase-000/`; reglas, motivos de revisión y límites en el [registro](phase/P008-T010_MAPA_NORMALIZACION.md).
 **Alcance:**
 - Reglas con identificador: variantes de nombre (mayúsculas, `DECISSONS.md`, `decisions.md`, `ADR*.md`) hacia el
   nombre canónico por lista de alias explícita; `archive/phase-N` → `phase-NNN`; `decisions/DNNN-*.md` → secciones de

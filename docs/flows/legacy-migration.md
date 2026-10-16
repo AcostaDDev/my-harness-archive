@@ -30,9 +30,9 @@ stateDiagram-v2
 ## Flujo A en P008 (D088)
 
 El Flujo A (T009–T012) añade, sobre esta vía y sobre proyectos v1/v2 de este harness, la normalización documental al
-layout unificado. Implementado: el inventario de solo lectura (P008-T009, D096). Pendientes: el mapa determinista de
-renombrados y movimientos (T010), la propuesta del revisor para fusionar y adelgazar (T011) y un commit confirmado
-con CAS (T012).
+layout unificado. Implementados: el inventario de solo lectura (P008-T009, D096) y el mapa determinista de
+renombrados, movimientos y composición de decisiones (P008-T010, D097). Pendientes: la propuesta del revisor para
+fusionar y adelgazar (T011) y un commit confirmado con CAS (T012).
 
 ```mermaid
 flowchart TD
@@ -44,7 +44,15 @@ flowchart TD
     D --> F["Clase y regla por entrada, origen, fases, instrucciones y bloques"]
     E --> F
     F --> G["Inventario con inventory_sha256"]
-    G -. "T010–T012, pendientes" .-> H["Mapa, propuesta del revisor y commit confirmado"]
+    G --> M["Mapa: bytes comprobados contra el inventario"]
+    M --> N["Movimientos por regla: alias, renumeración, phase-000, artefactos de fase"]
+    M --> O["Decisiones inequívocas: archivo en phase-000 y sección en DECISIONS"]
+    N --> P{"¿Destino libre en el árbol original?"}
+    O --> P
+    P -- no --> Q["review: target-conflict"]
+    P -- sí --> S["Mapa con árbol resultante, review, foreign, missing y map_sha256"]
+    Q --> S
+    S -. "T011–T012, pendientes" .-> H["Propuesta del revisor y commit confirmado"]
 ```
 
 ## Fuente en el código
@@ -52,3 +60,4 @@ flowchart TD
 - `core/legacy.py`, `adapters/legacy.py`, `storage/legacy.py`, `storage/observation.py`, `services/observation.py`.
 - `core/migration.py`, `adapters/migration.py`, `storage/migration.py`, `services/migration.py`.
 - `core/project_import.py`, `adapters/project_import.py` (inventario del Flujo A).
+- `core/project_normalization.py` (mapa de normalización del Flujo A).

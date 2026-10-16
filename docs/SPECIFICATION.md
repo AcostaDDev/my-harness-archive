@@ -54,7 +54,7 @@ run y, cuando procede, al intento exacto.
 |---|---|---|---|
 | F01 | Registrar proyecto | Alta desde la UI con raíz canónica, confianza explícita, perfil y composición del TOML; o en `[[projects]]` del TOML | Implementado (P007, D078) |
 | F02 | Crear proyecto desde cero | Brief, conversación con el revisor, borradores en disco con CAS, aceptación y commit raíz con P001 | Implementado (P007, D075, D082; P008-T002/T005, D092) |
-| F03 | Importar un proyecto de un harness anterior (Flujo A) | Inventario, normalización al layout unificado sin perder historial, documentos sincronizados | Inventario de solo lectura (P008-T009, D096); T010–T012 pendientes |
+| F03 | Importar un proyecto de un harness anterior (Flujo A) | Inventario, normalización al layout unificado sin perder historial, documentos sincronizados | Inventario de solo lectura (P008-T009, D096) y mapa determinista (P008-T010, D097); T011–T012 pendientes |
 | F04 | Incorporar un repositorio sin harness (Flujo B) | Discovery por ingeniería inversa, documentos iniciales y archivos raíz mínimos | Pendiente (P008-T013–T015) |
 | F05 | Observar un harness anterior | Índice de lectura idempotente, navegación y actualización incremental | Implementado (P002) |
 | F06 | Navegar proyectos, fases, tareas y runs | URL propia por recurso, carga limitada y paginada | Implementado (P007, D077) |

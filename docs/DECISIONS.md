@@ -106,6 +106,7 @@ tarea se leen solo las decisiones que cita; este índice sirve para buscar prece
 | [D094](#d094--p008-t007-agentsmd-en-el-prompt-congelado-de-cada-rol) | P008-T007: AGENTS.md en el prompt congelado de cada rol | P008 |
 | [D095](#d095--p008-t008-perfiles-declarados-en-local-config-4) | P008-T008: perfiles declarados en local-config-4 | P008 |
 | [D096](#d096--p008-t009-inventario-de-importación-desde-el-árbol-de-head) | P008-T009: inventario de importación desde el árbol de HEAD | P008 |
+| [D097](#d097--p008-t010-mapa-de-normalización-del-flujo-a) | P008-T010: mapa de normalización del Flujo A | P008 |
 
 ## D001 — Alcance local y arquitectura base
 
@@ -2699,7 +2700,7 @@ Estado: decidido por el usuario el 2026-10-15 tras el análisis de incongruencia
 (migración documental de este repositorio) implementada el mismo día**; P008-T002 implementada (D089); P008-T003
 implementada (D090); P008-T004 implementada (D091); P008-T005 implementada (D092); P008-T006 implementada (D093);
 P008-T007 implementada (D094); P008-T008 implementada (D095); P008-T009 implementada (D096);
-P008-T010–T015 pendientes. Fase: P008.
+P008-T010 implementada (D097); P008-T011–T015 pendientes. Fase: P008.
 Sustituye en parte D072/D073 (carpetas `decisions/`, `architecture/` y `research/`; layout v2 opcional), D032/D073
 (cierre y transición separados) y D037 (creación v1). Plan: [NEXT_STEPS](NEXT_STEPS.md).
 
@@ -3077,5 +3078,37 @@ Decisiones tomadas con criterio dentro de la tarea:
 Límites: un filtro `clean` definido en la configuración local del repositorio podría ejecutarse durante `status`
 (configuración del usuario, no contenido del proyecto). No hay entrada HTTP ni CLI todavía. Sin modelos, migraciones,
 codec, dependencias, prompts ni contratos generados.
+
+No se ejecutó el harness sobre este repositorio, ni proveedores reales, smokes, push o publicación.
+
+## D097 — P008-T010: mapa de normalización del Flujo A
+
+Estado: implementada y verificada offline el 2026-10-16; reglas, salida y límites en el
+[registro](phase/P008-T010_MAPA_NORMALIZACION.md). Fase: P008. Aplica D088 punto 10 sobre el inventario de D096.
+
+Decisiones tomadas con criterio dentro de la tarea:
+
+- El mapa es una función pura del inventario y de sus bytes, que se comprueban contra la huella y los SHA-256 del
+  inventario. Sin adaptador, persistencia, API ni UI: T011 lo congela y T012 lo aplica. Formato
+  `harness-local/import-map/1` con huella `map_sha256`.
+- Cada operación cita una regla con identificador. Los movimientos conservan los bytes; ningún destino coincide, sin
+  distinguir mayúsculas, con una ruta del árbol original distinta de su origen, con otro destino o con un directorio.
+  Lo que choca pasa a la propuesta del revisor (`target-conflict`). No hay cadenas de movimientos.
+- Lo retirado sin fase propia (BRIEF y PROJECT_PROFILE de v1, los README de las carpetas v2 y los originales de las
+  decisiones compuestas) va a `archive/phase-000/` conservando su ruta bajo `docs/`, como el Flujo B guarda en
+  `phase-000` lo sustituido.
+- `research/**` y los archivos de la raíz de `docs/` que empiezan por `PNNN` son artefactos de fase: a `docs/phase/`
+  si su único código es la fase activa (STATE y NEXT_STEPS deben coincidir) y a `archive/phase-NNN/` si es otra con
+  archivo. Sin código único o sin destino conocido, al revisor (`phase-unknown`).
+- `decisions/DNNN-*.md` se compone en DECISIONS en orden numérico: base intacta y cada archivo con un `#` delante
+  (título a nivel 2). Solo entra lo que no admite dos lecturas: primera línea `# DNNN — título` con el número del
+  nombre, UTF-8, sin otros encabezados de nivel 1 o 2 ni marcadores, número único y ausente de la base. Sin
+  DECISIONS ni alias, la base es una plantilla mínima con el bloque vacío; el índice lo regenera el commit (T012).
+- Lo ambiguo (fuentes de SPECIFICATION, detalle de arquitectura, checklist v1, Markdown sin clasificar, conflictos de
+  alias y del archivo) queda en `review` con su motivo; `.harness/**` y lo no Markdown, en `foreign` para el usuario.
+  `missing` lista los documentos de D088 que el árbol resultante no tiene.
+
+Límites: la prosa de una base v2 de DECISIONS («Registro en `decisions/`…») y el cuerpo antiguo de su bloque siguen
+tal cual hasta T011 y el commit. Sin modelos, migraciones, codec, dependencias, prompts ni contratos generados.
 
 No se ejecutó el harness sobre este repositorio, ni proveedores reales, smokes, push o publicación.
