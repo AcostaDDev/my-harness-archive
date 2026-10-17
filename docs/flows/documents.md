@@ -34,11 +34,12 @@ El índice de DECISIONS (T002, D089) sale de los encabezados `## DNNN — títul
 línea `Estado:` de cada sección; el bloque nunca se lee como fuente. La reconciliación de fase puede añadir decisiones
 a la prosa de DECISIONS; las tareas normales no.
 
-## Cambios previstos en P008 (D088, sin implementar)
+## Rutas del contrato unificado (P008-T003, D090)
 
 - Los ejecutores pueden editar `docs/flows/**`, `docs/DDBB-DIAGRAM.md`, `docs/ARCHITECTURE.md`,
-  `docs/SPECIFICATION.md` y `docs/phase/**` cuando su contrato lo incluya (T003).
-- Edición confirmada de `AGENTS.md`, `CLAUDE.md` y `GEMINI.md` (T003); hoy el harness solo los escribe en la creación.
+  `docs/SPECIFICATION.md` y `docs/phase/**` cuando su contrato lo incluya; los documentos de control siguen protegidos.
+- `AGENTS.md`, `CLAUDE.md` y `GEMINI.md` admiten edición confirmada; también se escriben en la creación y en
+  las importaciones A/B confirmadas (D100, D103).
 
 ## Fuente en el código
 

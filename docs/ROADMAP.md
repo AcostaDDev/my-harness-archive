@@ -104,7 +104,11 @@ sin harness.
 2026-10-17 con tres hallazgos funcionales del Flujo A y referencias vigentes desactualizadas
 ([D104](DECISIONS.md#d104--revisión-de-salida-de-p008-con-hallazgos-en-el-flujo-a),
 [registro](phase/P008_REVISION_SALIDA.md)). T016 corrige los tres hallazgos funcionales el 2026-10-17 (D105).
-T017 sincroniza las referencias vigentes el 2026-10-17 (D106). Pendiente nueva revisión antes del cierre.
+T017 sincroniza las referencias vigentes el 2026-10-17 (D106). Segunda revisión de salida completada el mismo día
+([D107](DECISIONS.md#d107--segunda-revisión-de-salida-de-p008), [registro](phase/P008_REVISION_SALIDA_2.md)):
+H1–H4 resueltos y dos referencias residuales corregidas; H5 reproduce ejecución de lazy-fetch durante el inventario
+A con un blob prometido ausente. P008 sigue activa y no está lista para cerrar: siguiente T018 y nueva revisión.
+El cierre y archivo serán posteriores; no se ha ejecutado un check READY del producto sobre este repositorio.
 Plan y entregas en [NEXT_STEPS](NEXT_STEPS.md).
 
 ## Candidatas sin fase asignada

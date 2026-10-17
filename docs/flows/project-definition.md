@@ -44,9 +44,11 @@ documentos son obligatorios en el resultado aceptado. La vista previa bloquea AG
 CLAUDE/GEMINI de más de 15. Los borradores de flujos admiten un solo nivel; ni los artefactos de `docs/phase/` ni
 archivos individuales de decisiones son borradores de definición.
 
-## Cambios previstos en P008 (D088, sin implementar)
+## Repositorios existentes (P008-T009–T015)
 
-- Un repositorio con contenido entra por los flujos de importación A o B (T009–T015).
+Un repositorio con contenido entra por el [Flujo A](legacy-migration.md#flujo-a-en-p008-d088) si tiene un harness
+anterior (D100), o por el [Flujo B](project-onboarding.md) si necesita su documentación inicial (D103). Ambas vías
+están implementadas y exigen su propia vista previa y confirmación antes del commit; no usan la creación vacía.
 
 ## Fuente en el código
 

@@ -91,29 +91,20 @@ Objetivo y criterios en [ROADMAP](ROADMAP.md); plan en [NEXT_STEPS](NEXT_STEPS.m
   conserva solo la definición conversacional. Las intenciones históricas siguen en el motor; no se reescriben.
 - UI de cierre y abandono explica el archivo unificado; el plan posterior se confirma por texto o propuesta en la
   fase ACTIVE vacía, con diff, hash, motivo y clave idempotente. El registro usa siempre el contrato unificado.
-- Verificación: 12 checks ligeros, 73 pruebas Node y build correctos; pytest completo con 1.163 OK y 121 subtests
-  y un fallo de comparación de OpenAPI al regenerarlo durante la suite. Re-ejecutado el archivo de contratos en un
-  proceso nuevo: 10 OK, incluida la igualdad con OpenAPI. Ocho Markdown, 235 enlaces/anclas y tres diagramas válidos.
-  Sin `alembic check` independiente, comprobación visual, proveedores reales ni smokes. Detalle en el
-  [registro](phase/P008-T006_API_UI.md).
+- Verificación: 12 checks, 73 Node y build correctos; pytest 1.163 OK y 121 subtests, con un fallo OpenAPI al
+  regenerarlo durante la suite, revalidado en un proceso nuevo (10 OK). Enlaces/diagramas válidos; sin Alembic
+  independiente, UI visual ni proveedores/smokes reales. Detalle en el [registro](phase/P008-T006_API_UI.md).
 
 **P008-T007 completada** (instrucciones del proyecto en el contexto congelado,
 [D094](DECISIONS.md#d094--p008-t007-agentsmd-en-el-prompt-congelado-de-cada-rol)):
 
-- Verificado sin ejecutar CLI (fuente del pin de Codex y documentación de Claude): el escritor Codex `untrusted` no
-  carga `AGENTS.md`; el lector sí, desde el checkout vivo. Claude con `--setting-sources ""` no carga `CLAUDE.md`.
-- El motor lee `AGENTS.md` en cada intento: regular, sin enlaces, UTF-8, no vacío y de 32 KiB como máximo. Lo inyecta
-  con `{{PROJECT_INSTRUCTIONS}}` en todos los roles salvo la definición, con ruta, hash y tamaño en el snapshot. Sin
-  él, el intento para en `prompts` antes de invocar. Las plantillas anteriores se siguen leyendo, pero no invocan.
-- `cli-11` añade `project_doc_max_bytes=0` en Codex, de modo que el único `AGENTS.md` es el congelado.
-  `document_layout = "d088-5"`: los jobs anteriores quedan en cuarentena.
-- Verificación: 12 checks ligeros. Pytest completo: 1.192 OK y 121 subtests (aviso conocido de Starlette/httpx), con
-  28 casos nuevos en `test_project_instructions.py`. Una primera pasada dio 17 fallos de fixtures v2 sin
-  `AGENTS.md` (`web` de TypeScript y una prueba HTTP de fases), que se corrigieron antes de la pasada final. Hay 242
-  enlaces y anclas válidos y DECISIONS indexa 94 decisiones. El diagrama de secuencia editado pasa el parser Mermaid
-  local; el de estados, sin cambios, no se pudo comprobar sin DOM. Sin Node/build ni `alembic check`, porque no
-  cambian UI, OpenAPI ni esquema. Sin proveedores reales ni smokes. Detalle en el
-  [registro](phase/P008-T007_INSTRUCCIONES_CONTEXTO.md).
+- El motor congela `AGENTS.md` regular, sin enlaces, UTF-8, no vacío y ≤32 KiB, con ruta, hash y tamaño; lo inyecta
+  por `{{PROJECT_INSTRUCTIONS}}` salvo en definición. Su ausencia detiene antes de invocar. Fuente del pin de Codex
+  y documentación de Claude verificadas sin CLI; `cli-11` desactiva carga automática de Codex con
+  `project_doc_max_bytes=0`; Claude conserva `--setting-sources ""`. `d088-5` pone jobs anteriores en cuarentena.
+- Verificación: 12 checks; pytest 1.192 OK y 121 subtests, incluidos 28 casos nuevos, tras corregir fixtures v2 sin
+  AGENTS. Enlaces y secuencia Mermaid válidos; estados sin DOM no comprobados. Sin Node/build/Alembic ni
+  proveedores/smokes reales. Evidencia y límites en el [registro](phase/P008-T007_INSTRUCCIONES_CONTEXTO.md).
 
 **P008-T008 completada** (perfiles declarativos en el TOML local,
 [D095](DECISIONS.md#d095--p008-t008-perfiles-declarados-en-local-config-4)):
@@ -276,5 +267,14 @@ Objetivo y criterios en [ROADMAP](ROADMAP.md); plan en [NEXT_STEPS](NEXT_STEPS.m
 - Verificación: 12 checks ligeros, 52 pytest dirigidas, 75 Node y tipos/build correctos; ayuda CLI comprobada.
   Detalle y límites en el [registro](phase/P008-T017_REFERENCIAS_VIGENTES.md).
 
-**Siguiente:** nueva revisión de salida de P008 tras T016/T017; cierre y archivo separados. P008 sigue activa
-y este repositorio sin registrarse en el harness.
+**Segunda revisión de salida completada el 2026-10-17**
+([D107](DECISIONS.md#d107--segunda-revisión-de-salida-de-p008), [registro](phase/P008_REVISION_SALIDA_2.md)):
+
+- Sobre `a455ff9`, H1–H3 se rechazan sin efectos en reproducciones independientes y H4 concuerda con el código.
+  Corregidas dos referencias residuales en la prosa de los flujos de documentos/creación; sin cambios del producto.
+- H5 reproduce ejecución de `upload-pack` por lazy-fetch con un blob prometido ausente en A; B no lo ejecuta.
+  P008 no está lista para cerrar. Verificación: 1.365 pytest y 121 subtests, 12 checks, 75 Node, build y Alembic
+  temporal correctos. Evidencia y límites en el registro; sin proveedores/smokes reales ni comprobación visual.
+
+**Siguiente:** P008-T018 (lecturas A sin lazy-fetch), después nueva revisión de salida. Cierre y archivo separados.
+P008 sigue activa y este repositorio sin registrarse ni ejecutar un check READY del producto sobre él.

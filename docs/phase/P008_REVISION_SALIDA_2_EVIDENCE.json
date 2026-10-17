@@ -1,0 +1,91 @@
+{
+  "reviewed_commit": "a455ff9951f479994f42cee51d988cc605932da3",
+  "historical_reproduction_sha256": "fa3508d611a98330b773fb1ecca3ff903c3f46dbccaded2096fd47e6d2a8f3a3",
+  "filter": {
+    "inventory_rejected": true,
+    "diagnostic": "Import requires no local clean/process Git filters; project code cannot be executed",
+    "filter_executed": false,
+    "unchanged": true
+  },
+  "conversion": {
+    "preview_rejected": true,
+    "diagnostic": "Git attributes would transform the confirmed document bytes",
+    "unchanged": true,
+    "new_file_written": false,
+    "operation_created": false,
+    "phase_count": 0,
+    "commit_count": 1
+  },
+  "ignored": {
+    "preview_rejected": true,
+    "diagnostic": "Import document destinations are ignored by Git; review the project ignore rules",
+    "unchanged": true,
+    "new_file_written": false,
+    "operation_created": false,
+    "phase_count": 0,
+    "commit_count": 1
+  },
+  "partial_clone": {
+    "flow_a_upload_pack_invoked": true,
+    "flow_a_diagnostic": "ValueError: invalid literal for int() with base 10: 'BAD'",
+    "flow_a_calls": [
+      {
+        "argv": [
+          "rev-parse",
+          "--show-toplevel"
+        ],
+        "upload_pack_invoked": false
+      },
+      {
+        "argv": [
+          "config",
+          "--includes",
+          "--get-regexp",
+          "^filter\\..*\\.(clean|process)$"
+        ],
+        "upload_pack_invoked": false
+      },
+      {
+        "argv": [
+          "rev-parse",
+          "--verify",
+          "--quiet",
+          "HEAD^{commit}"
+        ],
+        "upload_pack_invoked": false
+      },
+      {
+        "argv": [
+          "rev-parse",
+          "--verify",
+          "02237e7c60c2fff081703c715ab8453d0b328247^{tree}"
+        ],
+        "upload_pack_invoked": false
+      },
+      {
+        "argv": [
+          "status",
+          "--porcelain=v1",
+          "-z",
+          "--untracked-files=all",
+          "--ignore-submodules=none"
+        ],
+        "upload_pack_invoked": false
+      },
+      {
+        "argv": [
+          "ls-tree",
+          "-r",
+          "-z",
+          "-l",
+          "--full-tree",
+          "HEAD"
+        ],
+        "upload_pack_invoked": true
+      }
+    ],
+    "unchanged": true,
+    "flow_b_diagnostic": "ValueError: invalid literal for int() with base 10: 'BAD'",
+    "flow_b_upload_pack_invoked": false
+  }
+}

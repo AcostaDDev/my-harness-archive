@@ -4,10 +4,14 @@ Objetivo y criterios de salida en [ROADMAP](ROADMAP.md#p008--contrato-documental
 Decisión de base: [D088](DECISIONS.md#d088--contrato-documental-unificado-cierre-de-fase-automático-e-importación-de-proyectos-p008).
 Análisis de incongruencias que originó la fase: [docs/phase](phase/P008-T001_MIGRACION_DOCUMENTAL.md).
 
-**Siguiente:** repetir la revisión de salida de D104 tras las correcciones T016/T017. T001–T017 completadas:
+**Siguiente:** P008-T018, impedir lazy-fetch durante las lecturas del Flujo A. La segunda revisión de salida
+([D107](DECISIONS.md#d107--segunda-revisión-de-salida-de-p008), [registro](phase/P008_REVISION_SALIDA_2.md))
+confirma H1–H4 corregidos tras T016/T017 y corrige dos referencias residuales en la prosa de los flujos, pero
+reproduce H5: un blob prometido ausente ejecuta el transporte Git durante el inventario A. T001–T017 completadas:
 T016 corrige los tres hallazgos funcionales del Flujo A ([D105](DECISIONS.md#d105--p008-t016-frontera-git-y-bytes-confirmados-en-las-importaciones))
 y T017 sincroniza las referencias vigentes de H4 ([D106](DECISIONS.md#d106--p008-t017-referencias-vigentes-sin-cambiar-contratos)).
-P008 sigue activa; el cierre y archivo quedan para una operación posterior. Orden ejecutado: T002 → T007 (motor y
+P008 sigue activa y no está lista para cerrar; tras T018 se repetirá la revisión. No se ha ejecutado un check READY
+del producto sobre este repositorio ni su cierre. Orden ejecutado: T002 → T007 (motor y
 contrato), T008 (perfiles), T009–T012 (Flujo A), T013–T015 (Flujo B), T016 (frontera Git) y T017 (textos).
 
 ## Restricciones compartidas
@@ -431,3 +435,32 @@ sin cambios de comportamiento, contratos ni evidencias congeladas.
 **Comandos de validación:** checks ligeros, pruebas dirigidas a ayudas/registro, pruebas Node y build del frontend.
 **Referencias:** D104 H4; [revisión](phase/P008_REVISION_SALIDA.md). Tras esta tarea, nueva revisión de salida;
 cierre y archivo separados.
+
+## P008-T018 — Flujo A: lecturas sin lazy-fetch y objetos ausentes
+
+**Objetivo:** Impedir que el inventario A recupere objetos prometidos o ejecute transportes Git durante una lectura;
+rechazar un objeto ausente con un diagnóstico explícito, sin ejecutar código ni acceder a remotos.
+**Estado:** pendiente, derivada de H5 de [D107](DECISIONS.md#d107--segunda-revisión-de-salida-de-p008).
+**Alcance:**
+- Desactivar lazy-fetch obligatoriamente desde el primer comando Git del lector A, incluidos `rev-parse`,
+  `status`, `ls-tree -l` y `cat-file`; reutilizar la frontera local de B o extraer lo común sin dependencias circulares.
+- Cubrir los puntos de inventario, conversación y vista previa que leen el origen mediante `read_checkout`.
+  Rechazar tamaños/objetos ausentes sin `int('BAD')` ni respuestas parciales, también en los lectores compartidos
+  con B. No recuperar objetos, ejecutar transportes ni modificar configuración para resolver la ausencia.
+- Mantener las guardias de filtros, D099, CAS, hashes, conciliación y compatibilidad de historiales; evaluar
+  la versión congelada que exige la corrección sin reescribir intenciones ni snapshots.
+**Rutas permitidas:** `src/harness_local/adapters/**`, `src/harness_local/storage/import_drafts.py`,
+`src/harness_local/storage/project_import.py`, `src/harness_local/storage/onboarding_commit.py`,
+`src/harness_local/core/engine/documents.py`, `src/harness_local/services/local_config.py`, `tests/**`, `docs/**`.
+**Criterios de aceptación:**
+- Repositorio promisor sintético con blob ausente y `upload-pack` falso: inventario A rechazado con diagnóstico,
+  sin marcador, red, cambios de checkout/índice/refs ni objetos recuperados. B conserva el rechazo sin transporte.
+- El rechazo precede a un turno o sellado que pudiera invocar agentes/escritores; no hay operación, commit ni
+  fase nuevos. Los inventarios completos, H1–H3, recorridos A/B y recuperación siguen funcionando.
+- Regresiones exclusivamente con Git/SQLite temporales, herramientas falsas y fixtures sintéticos. Se conserva
+  la evidencia histórica de H5; no se cambia para aparentar que describía el resultado corregido.
+**Comandos de validación:**
+- `python3 -m unittest discover -s tests -p 'test_*.py'`
+- `UV_CACHE_DIR=.local/uv-cache uv run --frozen --offline pytest -q`
+**Referencias:** D096; D100; D101; D105; D107; [revisión y reproducción](phase/P008_REVISION_SALIDA_2.md).
+Después: nueva revisión de salida; cierre y archivo separados.

@@ -116,6 +116,7 @@ tarea se leen solo las decisiones que cita; este índice sirve para buscar prece
 | [D104](#d104--revisión-de-salida-de-p008-con-hallazgos-en-el-flujo-a) | Revisión de salida de P008 con hallazgos en el Flujo A | P008 |
 | [D105](#d105--p008-t016-frontera-git-y-bytes-confirmados-en-las-importaciones) | P008-T016: frontera Git y bytes confirmados en las importaciones | P008 |
 | [D106](#d106--p008-t017-referencias-vigentes-sin-cambiar-contratos) | P008-T017: referencias vigentes sin cambiar contratos | P008 |
+| [D107](#d107--segunda-revisión-de-salida-de-p008) | Segunda revisión de salida de P008 | P008 |
 
 ## D001 — Alcance local y arquitectura base
 
@@ -3407,3 +3408,27 @@ Resuelve H4 de D104 contrastando los textos con D093, D095, D102 y D105 y con el
   prompts del motor, esquema, API ni dependencias. Las ADR anteriores, archivos y evidencias congeladas se conservan.
 
 P008 sigue activa. La siguiente tarea es repetir la revisión de salida; el cierre y archivo son posteriores.
+
+## D107 — Segunda revisión de salida de P008
+
+Estado: revisión completada el 2026-10-17 sobre `a455ff9`, tras T016/T017; P008 sigue activa y no está lista
+para cerrar por H5. [Dictamen y verificación](phase/P008_REVISION_SALIDA_2.md). Fase: P008.
+
+- H1–H3 de D104 se rechazan antes de efectos: filtros sin ejecución, conversiones de bytes y destinos ignorados
+  sin escritura ni operación/commit/fase nuevos. Se conserva nueva evidencia sintética independiente y se
+  comprueban las regresiones, recorridos válidos A/B, D099, recuperación y cuarentena por versiones.
+- H4 está resuelto por T017. La revisión encuentra y corrige dos referencias adicionales de la prosa vigente
+  en `flows/documents.md` y `flows/project-definition.md`: rutas/edición de instrucciones de T003 y flujos A/B
+  de T009–T015 ya implementados. No cambia el diseño, los diagramas ni el código del producto.
+- **H5, alta:** el lector A usa Git sin desactivar lazy-fetch. Un blob prometido ausente provoca que `ls-tree -l`
+  ejecute el `upload-pack` configurado antes de confirmación o turno; reproducción offline con un marcador y
+  transporte falso. B no lo ejecuta con `--no-lazy-fetch`. Se define P008-T018 para corregir esta frontera y los
+  diagnósticos de objetos ausentes bajo las garantías existentes de D096; no cambia el diseño del producto.
+- Se contrastan todos los criterios de ROADMAP, checks offline y paridad documental. STATE compacta el detalle
+  de T006/T007 con enlaces a sus registros para conservar el presupuesto; entregas, ADR y evidencia anteriores
+  permanecen intactas. No cambian modelos, esquema, API, dependencias ni contratos/versiones congelados.
+
+Siguiente: T018 y nueva revisión de salida; el cierre y archivo son posteriores. Esta revisión no ejecuta
+un check READY del producto sobre este repositorio, ni lo registra, cierra, archiva o etiqueta. ROADMAP no
+define sucesora; no se inventa P009. No se amplían los consentimientos de proveedores, smokes, push o
+publicación; se mantienen los límites de contención cooperativa y verificación visual.
