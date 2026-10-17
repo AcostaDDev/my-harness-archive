@@ -100,8 +100,11 @@ sin harness.
 - Checks offline en verde; ningún proveedor real sin consentimiento específico.
 **Dependencias:** P007.
 **Fuera de alcance:** Rediseño visual de la UI; recorridos con CLI reales; publicación del paquete.
-**Estado:** activa desde el 2026-10-15; T001–T015 completadas el 2026-10-16. Pendiente de revisión de salida y
-cierre. Plan y entregas en [NEXT_STEPS](NEXT_STEPS.md).
+**Estado:** activa desde el 2026-10-15; T001–T015 completadas el 2026-10-16. Revisión de salida completada el
+2026-10-17 con tres hallazgos funcionales del Flujo A y referencias vigentes desactualizadas
+([D104](DECISIONS.md#d104--revisión-de-salida-de-p008-con-hallazgos-en-el-flujo-a),
+[registro](phase/P008_REVISION_SALIDA.md)). Pendiente T016, sincronización de referencias y nueva revisión antes
+del cierre. Plan y entregas en [NEXT_STEPS](NEXT_STEPS.md).
 
 ## Candidatas sin fase asignada
 

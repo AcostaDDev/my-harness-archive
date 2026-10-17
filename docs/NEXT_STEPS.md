@@ -4,9 +4,12 @@ Objetivo y criterios de salida en [ROADMAP](ROADMAP.md#p008--contrato-documental
 Decisión de base: [D088](DECISIONS.md#d088--contrato-documental-unificado-cierre-de-fase-automático-e-importación-de-proyectos-p008).
 Análisis de incongruencias que originó la fase: [docs/phase](phase/P008-T001_MIGRACION_DOCUMENTAL.md).
 
-**Siguiente:** revisión de salida de P008; T001–T015 completadas. El cierre y archivo de la fase quedan para una
-operación posterior. Orden ejecutado: T002 → T007 (motor y contrato), T008 (perfiles, que el usuario
-necesita para su próximo proyecto Django), T009–T012 (Flujo A) y T013–T015 (Flujo B).
+**Siguiente:** P008-T016, corregir los tres hallazgos del Flujo A. La revisión de salida del 2026-10-17 está
+completada ([D104](DECISIONS.md#d104--revisión-de-salida-de-p008-con-hallazgos-en-el-flujo-a),
+[registro](phase/P008_REVISION_SALIDA.md)); P008 sigue activa y no está lista para cerrar. T001–T015 completadas.
+Después de T016: sincronizar las referencias vigentes (H4) y repetir la revisión de salida. El cierre y archivo
+quedan para una operación posterior. Orden ejecutado: T002 → T007 (motor y contrato), T008 (perfiles),
+T009–T012 (Flujo A) y T013–T015 (Flujo B).
 
 ## Restricciones compartidas
 
@@ -379,3 +382,33 @@ ACTIVE adoptada. No escribe el TOML ni ejecuta comandos del proyecto. Detalle en
 - `UV_CACHE_DIR=.local/uv-cache uv run --frozen --offline pytest -q`
 - `node --test frontend/tests/*.test.mjs`
 **Referencias:** D088; D037
+
+## P008-T016 — Flujo A: filtros Git, bytes exactos y destinos ignorados
+
+**Estado:** pendiente; derivada de los hallazgos H1–H3 de la revisión de salida ([D104](DECISIONS.md#d104--revisión-de-salida-de-p008-con-hallazgos-en-el-flujo-a)).
+**Objetivo:** Cumplir las garantías ya decididas para el Flujo A antes de aceptar su inventario, vista previa y
+commit: sin ejecución de filtros del proyecto, sin conversiones de bytes confirmados y sin escrituras de una
+importación que no pueda incluir todos sus destinos en Git.
+**Alcance:**
+- Aplicar al Flujo A las guardias que ya utiliza B, reutilizando lo común cuando corresponda. Comprobar filtros
+  `clean`/`process`, incluidos includes, antes de `status`/captura/sellado y de la ejecución del job.
+- Contrastar los blobs del árbol propuesto con los bytes confirmados, incluidos originales archivados y binarios;
+  rechazar conversiones y destinos nuevos ignorados antes de confirmar o escribir.
+- Mantener CAS, D099, recuperación del mismo commit, compatibilidad de historiales y el Flujo B. Evaluar la versión
+  congelada que requiere el cambio; no reescribir intenciones selladas ni configuración del usuario.
+**Rutas permitidas:** `src/harness_local/adapters/**`, `src/harness_local/core/engine/import_commit.py`,
+`src/harness_local/core/engine/documents.py`,
+`src/harness_local/storage/project_import.py`, `src/harness_local/storage/onboarding_commit.py`,
+`src/harness_local/services/managed.py`, `src/harness_local/services/local_config.py`, `tests/**`, `docs/**`.
+**Criterios de aceptación:**
+- H1: inventario/preview/job rechazan filtros locales y por include sin ejecutarlos; sin marcador sintético ni
+  cambios en checkout/índice. La comprobación precede a cualquier comando Git que pueda invocarlos.
+- H2: el borrador CRLF con `text eol=lf` se rechaza antes de escribir/adoptar; cada blob admitido coincide con su
+  hash confirmado. Originales y binarios conservan sus bytes; los casos válidos A/B siguen llegando a COMMITTED.
+- H3: un GEMINI nuevo ignorado bloquea antes de escribir, sin operación, commit ni fase nuevos; `.gitignore` intacto.
+- Las caídas y reintentos conservan la conciliación documentada; las pruebas de regresión usan exclusivamente
+  fixtures temporales sintéticos, agentes y herramientas falsas.
+**Comandos de validación:**
+- `python3 -m unittest discover -s tests -p 'test_*.py'`
+- `UV_CACHE_DIR=.local/uv-cache uv run --frozen --offline pytest -q`
+**Referencias:** D096; D099; D100; D103; D104; [revisión y reproducciones](phase/P008_REVISION_SALIDA.md).

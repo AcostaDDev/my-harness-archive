@@ -1,6 +1,6 @@
 # Estado — my_harness
 
-Actualizado: 2026-10-16. Sin bloques gestionados mientras el repositorio no esté registrado en el harness (D088).
+Actualizado: 2026-10-17. Sin bloques gestionados mientras el repositorio no esté registrado en el harness (D088).
 
 ## Base acumulada
 
@@ -56,53 +56,30 @@ Objetivo y criterios en [ROADMAP](ROADMAP.md); plan en [NEXT_STEPS](NEXT_STEPS.m
   jobs anteriores en cuarentena. Cierre, prompts, API/UI e instrucciones resueltos después en T004–T007.
 - 12 checks, pytest 1.112 +121 subtests y Alembic temporal correctos; enlaces y diagramas válidos. Sin Node/build.
 
-**P008-T003 completada** (rutas protegidas, paridad y propuestas de ADR,
-[D090](DECISIONS.md#d090--p008-t003-rutas-del-ejecutor-paridad-de-diagramas-y-propuestas-de-adr)):
+**P008-T003 completada** ([D090](DECISIONS.md#d090--p008-t003-rutas-del-ejecutor-paridad-de-diagramas-y-propuestas-de-adr)):
 
-- `typescript-web` protege STATE, NEXT_STEPS, ROADMAP, DECISIONS, `docs/archive/**`, AGENTS, CLAUDE y GEMINI en lugar
-  de `docs/**`; `harness_owned_paths` prohíbe además siempre AGENTS, CLAUDE y GEMINI. `executor_protected` deja a la
-  reconciliación editar la prosa de los cuatro documentos de control aunque el perfil los proteja. AGENTS, CLAUDE y
-  GEMINI son editables por edición confirmada. `reference_project` conserva `docs/**`.
-- `ProjectProfile.data_model_paths`: con layout v2, un diff que toca modelos sin `DDBB-DIAGRAM.md` no es aceptable
-  (motivo determinista en `assess_acceptance`, también al preparar el commit). `review-task` nuevo recibe
-  `documentation` y exige los flujos.
-- `decision_proposals` (≤5, `title`/`decision`/`rationale`) en la salida del ejecutor y del revisor; mal formadas
-  detienen el run; se guardan con el intento y la revisión y llegan a la evidencia de la reconciliación sin escribir
-  DECISIONS. Adaptador `cli-10` y `document_layout = "d088-2"` (jobs pendientes anteriores en cuarentena).
-- Verificación: 12 checks ligeros; pytest 1.122 y 121 subtests; 144 casos afectados tras ajustes finales,
-  incluidas 11 pruebas de paridad, enlaces y diagrama válidos. Sin Alembic/Node/build: sin esquema/UI/OpenAPI.
+- `typescript-web` reserva instrucciones y documentos de control; SPECIFICATION, ARCHITECTURE, diagramas,
+  flujos y trabajo de fase admitidos bajo contrato. `reference_project` conserva `docs/**`. Paridad de modelos y propuestas de ADR
+  del ejecutor/revisor conservadas para reconciliación; `cli-10`, `document_layout = "d088-2"`.
+- Verificación de entrega: 12 checks ligeros, pytest 1.122 +121 subtests, enlaces y diagrama válidos. Sin esquema/UI.
+  Detalle duradero en D090; la revisión de salida posterior figura en D104.
 
-**P008-T004 completada** (cierre y archivo unificados,
-[D091](DECISIONS.md#d091--p008-t004-cierre-y-archivo-unificados-con-planificación-posterior)):
+**P008-T004 completada** ([D091](DECISIONS.md#d091--p008-t004-cierre-y-archivo-unificados-con-planificación-posterior)):
 
-- Cierre autorizado con tag sobre el HEAD evaluado y un commit de archivo conciliable: STATE/NEXT_STEPS por bytes,
-  REVIEW/SUMMARY desde SQLite y todo `docs/phase/`, incluidos binarios. STATE fresco con base, NEXT_STEPS con
-  objetivo/criterios de N+1 sin tareas, ROADMAP con enlace al archivo y sucesora ACTIVE adoptada atómicamente.
-- Abandono por la misma vía sin READY ni tag; rechazo previo de deriva, checkout sucio, archivo existente o trabajo
-  pendiente. Check bloqueado por STATE >24 KiB o base >12 KiB. Nuevas transiciones H6.3 retiradas, conservando la
-  conciliación de sus intenciones selladas. `document_layout = "d088-3"`.
-- Plan posterior confirmado desde texto o `phase_planning`: commit documental y nueva versión de la definición;
-  endpoints mínimos y contratos generados actualizados. Prompts adaptados en T005; UI pendiente de T006.
-- Verificación: 12 checks ligeros; pytest completo con 1.142 OK y 121 subtests, dos fixtures históricos de métricas
-  corregidos y su archivo re-ejecutado (27 OK); 113 pruebas afectadas tras los ajustes finales, incluidos los 22 casos
-  nuevos de cierre. 72 pruebas Node y build (incluye tipos) correctos. Dos diagramas Mermaid y enlaces/anclas de los
-  siete Markdown editados/nuevos válidos. Sin `alembic check` independiente (no cambian modelos ni migraciones),
-  proveedores reales ni smokes. Detalle en [registro](phase/P008-T004_CIERRE_UNIFICADO.md).
+- Cierre READY y abandono por archivo unificado, commit conciliable, originales/binarios por bytes, STATE/NEXT_STEPS
+  frescos y sucesora ACTIVE sin tareas; plan posterior confirmado y definido por versión. Límites de STATE/base y
+  rechazo previo de deriva, suciedad, archivo ocupado o trabajo pendiente. `document_layout = "d088-3"`.
+- Verificación de entrega: 12 checks, pytest 1.142 +121 subtests; fixtures de métricas revalidados (27 OK),
+  72 Node, tipos/build y enlaces/diagramas correctos. Sin esquema ni proveedores reales.
+  Detalle en el [registro](phase/P008-T004_CIERRE_UNIFICADO.md).
 
-**P008-T005 completada** (prompts y definición unificados,
-[D092](DECISIONS.md#d092--p008-t005-prompts-y-definición-bajo-el-contrato-unificado)):
+**P008-T005 completada** ([D092](DECISIONS.md#d092--p008-t005-prompts-y-definición-bajo-el-contrato-unificado)):
 
-- Siete prompts nuevos por hash, incluida la corrección `revise-task`: discovery de AGENTS, DECISIONS único,
-  DDBB-DIAGRAM, flujos, artefactos de fase y propuestas de ADR; la reconciliación puede consolidarlas bajo su contrato.
-- Definición versión 4: once documentos obligatorios al aceptar, con el completado por plantilla de D089 y sus valores
-  congelados en el turno. Se conservan instrucciones personalizadas; AGENTS >60 líneas o CLAUDE/GEMINI >15 bloquean.
-- Planificación sobre la fase ACTIVE vacía y confirmación propia del plan. Contexto con instrucciones y diagrama de
-  datos. `document_layout = "d088-4"`: jobs anteriores en cuarentena; recuperación de transiciones ya selladas sin
-  reescribir run ni intención. Sin cambios de modelo, migración, dependencias o esquema de salida.
-- Verificación: 12 checks ligeros; pytest completo con 1.158 pruebas y 121 subtests correctos (aviso conocido de
-  Starlette/httpx); primera pasada dirigida con 179 OK. Quince Markdown con enlaces/anclas válidos, tres diagramas
-  Mermaid válidos y diff revisado. Sin Node/build ni `alembic check` independiente: no cambian UI, OpenAPI ni esquema.
-  Sin proveedores reales ni smokes. Detalle en el [registro](phase/P008-T005_PROMPTS_DEFINICION.md).
+- Siete prompts nuevos por hash, incluida la corrección; definición v4 con once documentos obligatorios y defaults
+  congelados de D089. Instrucciones personalizadas conservadas, límites de líneas y planificación sobre la fase
+  ACTIVE vacía. `document_layout = "d088-4"`; conciliación de transiciones selladas sin reescribirlas.
+- Verificación de entrega: 12 checks, pytest 1.158 +121 subtests, enlaces y tres diagramas válidos. Sin cambios de
+  esquema/UI ni proveedores reales. Detalle en el [registro](phase/P008-T005_PROMPTS_DEFINICION.md).
 
 **P008-T006 completada** (API y UI mínimas,
 [D093](DECISIONS.md#d093--p008-t006-api-y-ui-del-contrato-unificado)):
@@ -269,5 +246,19 @@ Objetivo y criterios en [ROADMAP](ROADMAP.md); plan en [NEXT_STEPS](NEXT_STEPS.m
 - Verificación: pytest 1.345 y 121 subtests, 12 checks ligeros, 75 Node, build y Alembic temporal correctos;
   enlaces y diagramas válidos. Sin UI visual, proveedores reales ni smokes. [Registro](phase/P008-T015_INCORPORACION_CONFIRMADA.md).
 
-**Siguiente:** revisión de salida de P008; sus quince tareas están completadas, pero la fase sigue activa y no se
-ha cerrado ni archivado. Este repositorio sigue sin registrarse en el harness.
+**Revisión de salida completada el 2026-10-17** ([D104](DECISIONS.md#d104--revisión-de-salida-de-p008-con-hallazgos-en-el-flujo-a)):
+
+- Sobre `f650851`, tres fallos del Flujo A reproducidos con repositorios temporales y agentes falsos: el inventario
+  ejecuta filtros locales; una conversión CRLF/LF acaba COMMITTED con bytes distintos de los confirmados; un destino
+  ignorado se admite y deja documentos escritos con importación INTERRUPTED, sin commit. Las guardias del Flujo B
+  ya cubren esos casos. También se detectaron ayudas y estados documentales desactualizados.
+- Dictamen: P008 sigue activa y no está lista para cerrar. No cambia el código del producto ni se reescriben las ADR,
+  snapshots o intenciones previas. Reproducciones, criterio por criterio y verificación en el
+  [registro](phase/P008_REVISION_SALIDA.md).
+- Verificación: 1.345 pruebas pytest y 121 subtests correctos (767 iniciales y tres lotes sin solapamiento de
+  193/194/191); 12 checks ligeros, 75 Node, tipos/build y Alembic temporal correctos. 363 enlaces/anclas y veinte
+  diagramas válidos por parser/gramática; 35 tablas/columnas en paridad. Sin UI visual ni proveedores reales.
+
+**Siguiente:** P008-T016, corregir la frontera Git del Flujo A (H1–H3 de la revisión). Después, sincronizar las
+referencias vigentes (H4) y repetir la revisión de salida. Sin cierre ni archivo en esta tarea; este repositorio
+sigue sin registrarse en el harness.

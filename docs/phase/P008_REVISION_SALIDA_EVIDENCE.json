@@ -1,0 +1,29 @@
+{
+  "reviewed_commit": "f65085105e61954ca247266d7ecf928871f6b416",
+  "filter": {
+    "inventory_accepted": true,
+    "local_filter_executed": true
+  },
+  "ignored": {
+    "preview_accepted": true,
+    "job_status": "DONE",
+    "operation_status": "INTERRUPTED",
+    "result_status": "INVALIDATED",
+    "new_file_written": true,
+    "commit_count": 1,
+    "preview_after_sha256": "66e4fcd0d140fec0ec324414e2693dde9d1046e3c2ba2dc8d8a47dd99fac900e",
+    "disk_sha256": "66e4fcd0d140fec0ec324414e2693dde9d1046e3c2ba2dc8d8a47dd99fac900e"
+  },
+  "conversion": {
+    "preview_accepted": true,
+    "job_status": "DONE",
+    "operation_status": "COMPLETED",
+    "result_status": "COMMITTED",
+    "new_file_written": true,
+    "commit_count": 2,
+    "preview_after_sha256": "7422cb318daee9ab89ed83111a3e900c963324db9646f5dcecb8ea0569254e1d",
+    "disk_sha256": "7422cb318daee9ab89ed83111a3e900c963324db9646f5dcecb8ea0569254e1d",
+    "committed_sha256": "33e3ec280f4319f645b532b57d09332d2e04e3334cd376250bb93be04e5ed28c",
+    "commit_matches_preview": false
+  }
+}

@@ -113,6 +113,7 @@ tarea se leen solo las decisiones que cita; este índice sirve para buscar prece
 | [D101](#d101--p008-t013-inventario-estático-del-flujo-b-y-propuesta-de-perfil) | P008-T013: inventario estático del Flujo B y propuesta de perfil | P008 |
 | [D102](#d102--p008-t014-ingeniería-inversa-sobre-head-y-borradores-privados) | P008-T014: ingeniería inversa sobre HEAD y borradores privados | P008 |
 | [D103](#d103--p008-t015-incorporación-confirmada-del-flujo-b) | P008-T015: incorporación confirmada del Flujo B | P008 |
+| [D104](#d104--revisión-de-salida-de-p008-con-hallazgos-en-el-flujo-a) | Revisión de salida de P008 con hallazgos en el Flujo A | P008 |
 
 ## D001 — Alcance local y arquitectura base
 
@@ -3336,3 +3337,25 @@ D100 y D102.
 La revisión del contenido inferido y la elección de la composición corresponden al usuario. Las pruebas offline
 con revisores/comandos falsos verifican los efectos y la continuidad; no acreditan generación semántica ni CLI
 reales. La exclusión y los permisos siguen siendo cooperativos. P008 sigue activa hasta su revisión y cierre.
+
+## D104 — Revisión de salida de P008 con hallazgos en el Flujo A
+
+Estado: revisión completada el 2026-10-17 sobre `f650851`; P008 sigue activa y no está lista para cerrar.
+[Dictamen, evidencia y verificación](phase/P008_REVISION_SALIDA.md). Fase: P008.
+
+- Las quince entregas están implementadas y los recorridos sintéticos previstos existen. La revisión adicional
+  reproduce tres incumplimientos del Flujo A: `git status` ejecuta un filtro local incluso con checkout limpio;
+  `text eol=lf` cambia los bytes del blob y aun así la importación termina COMPLETED; un destino nuevo ignorado
+  se acepta y deja documentos escritos con importación INTERRUPTED, sin commit ni fase adoptada.
+- El requisito ya decidido sigue siendo lectura sin ejecución y commit del árbol documental exacto confirmado
+  (D096/D100). El Flujo B tiene guardias para esos casos (D103). Se registra P008-T016 como siguiente tarea de
+  corrección, sin iniciar su implementación en esta revisión y sin cambiar el diseño ni intenciones anteriores.
+- Quedan referencias activas desactualizadas en especificación, arquitectura y ayudas de CLI/UI (H4), incluida
+  la deuda de textos de `local-config-4` anotada en T008. Se sincronizarán antes de repetir la revisión de salida;
+  las referencias históricas en decisiones, archivos o snapshots congelados se conservan.
+- Esta sesión solo añade la revisión y sus reproducciones/evidencia sintéticas y actualiza el seguimiento.
+  STATE compacta T003–T005 con enlaces al detalle existente para respetar el presupuesto. No hay cambios de
+  producto, modelo, esquema, API, UI, dependencias ni versiones congeladas.
+
+La revisión no autoriza ni ejecuta el cierre/archivo, registro de este repositorio, proveedores reales, smokes,
+push o publicación. No se han lanzado subagentes ni cambiado la configuración global del usuario.
