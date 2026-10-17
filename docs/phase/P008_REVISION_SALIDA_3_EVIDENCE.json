@@ -1,0 +1,567 @@
+{
+  "reviewed_commit": "0348b84bb0909b2de817e33e5c14a391a3945315",
+  "git_version": "git version 2.50.1 (Apple Git-155)",
+  "reproduction_sha256": "392e81a94cd898b159ea126633437785911c1aab44c0f5712d067d4d1582b7b4",
+  "historical_scripts_sha256": {
+    "P008_REVISION_SALIDA_REPRO.py": "fa3508d611a98330b773fb1ecca3ff903c3f46dbccaded2096fd47e6d2a8f3a3",
+    "P008_REVISION_SALIDA_2_REPRO.py": "fd0585cb997f7dd477083ef99c3160d1037118c8fef3de29ab74fb85ff71bb43"
+  },
+  "H1_filter": {
+    "inventory_rejected": true,
+    "diagnostic": "Import requires no local clean/process Git filters; project code cannot be executed",
+    "filter_executed": false,
+    "unchanged": true
+  },
+  "H2_conversion": {
+    "preview_rejected": true,
+    "diagnostic": "Git attributes would transform the confirmed document bytes",
+    "unchanged": true,
+    "new_file_written": false,
+    "operation_created": false,
+    "phase_count": 0,
+    "commit_count": 1
+  },
+  "H3_ignored": {
+    "preview_rejected": true,
+    "diagnostic": "Import document destinations are ignored by Git; review the project ignore rules",
+    "unchanged": true,
+    "new_file_written": false,
+    "operation_created": false,
+    "phase_count": 0,
+    "commit_count": 1
+  },
+  "H5_partial_clone": {
+    "A": {
+      "diagnostic": "Cannot read the local HEAD tree: Git object 4b808719aac233e53994d6c94282242510a9c4fd at 'README.md' is missing or has an unavailable size; reading requires complete local objects.",
+      "calls": [
+        {
+          "argv": [
+            "--no-lazy-fetch",
+            "rev-parse",
+            "--show-toplevel"
+          ],
+          "upload_pack_invoked": false
+        },
+        {
+          "argv": [
+            "--no-lazy-fetch",
+            "config",
+            "--includes",
+            "--get-regexp",
+            "^filter\\..*\\.(clean|process)$"
+          ],
+          "upload_pack_invoked": false
+        },
+        {
+          "argv": [
+            "--no-lazy-fetch",
+            "rev-parse",
+            "--verify",
+            "--quiet",
+            "HEAD^{commit}"
+          ],
+          "upload_pack_invoked": false
+        },
+        {
+          "argv": [
+            "--no-lazy-fetch",
+            "rev-parse",
+            "--verify",
+            "02237e7c60c2fff081703c715ab8453d0b328247^{tree}"
+          ],
+          "upload_pack_invoked": false
+        },
+        {
+          "argv": [
+            "--no-lazy-fetch",
+            "status",
+            "--porcelain=v1",
+            "-z",
+            "--untracked-files=all",
+            "--ignore-submodules=none"
+          ],
+          "upload_pack_invoked": false
+        },
+        {
+          "argv": [
+            "--no-lazy-fetch",
+            "ls-tree",
+            "-r",
+            "-z",
+            "-l",
+            "--full-tree",
+            "HEAD"
+          ],
+          "upload_pack_invoked": false
+        }
+      ],
+      "upload_pack_invoked": false,
+      "object_still_missing": true,
+      "all_checkout_and_git_bytes_unchanged": true
+    },
+    "B": {
+      "diagnostic": "Cannot read a non-empty Git HEAD from complete local objects (lazy-fetch is disabled): Git object 4b808719aac233e53994d6c94282242510a9c4fd at 'README.md' is missing or has an unavailable size; reading requires complete local objects.",
+      "calls": [
+        {
+          "argv": [
+            "--no-lazy-fetch",
+            "rev-parse",
+            "--show-toplevel"
+          ],
+          "upload_pack_invoked": false
+        },
+        {
+          "argv": [
+            "--no-lazy-fetch",
+            "rev-parse",
+            "--verify",
+            "--quiet",
+            "HEAD^{commit}"
+          ],
+          "upload_pack_invoked": false
+        },
+        {
+          "argv": [
+            "--no-lazy-fetch",
+            "rev-parse",
+            "--verify",
+            "02237e7c60c2fff081703c715ab8453d0b328247^{tree}"
+          ],
+          "upload_pack_invoked": false
+        },
+        {
+          "argv": [
+            "--no-lazy-fetch",
+            "ls-tree",
+            "-r",
+            "-z",
+            "-l",
+            "--full-tree",
+            "55b743503034b99277fbec22eb975192a455f68f"
+          ],
+          "upload_pack_invoked": false
+        }
+      ],
+      "upload_pack_invoked": false,
+      "object_still_missing": true,
+      "all_checkout_and_git_bytes_unchanged": true
+    }
+  },
+  "H6_submodule": [
+    {
+      "path": "synthetic-module",
+      "filter_via_include": false,
+      "stage": "inventory",
+      "accepted": true,
+      "blockers": [],
+      "filter_invoked": true,
+      "calls": [
+        {
+          "argv": [
+            "--no-lazy-fetch",
+            "rev-parse",
+            "--show-toplevel"
+          ],
+          "filter_invoked": false
+        },
+        {
+          "argv": [
+            "--no-lazy-fetch",
+            "config",
+            "--includes",
+            "--get-regexp",
+            "^filter\\..*\\.(clean|process)$"
+          ],
+          "filter_invoked": false
+        },
+        {
+          "argv": [
+            "--no-lazy-fetch",
+            "rev-parse",
+            "--verify",
+            "--quiet",
+            "HEAD^{commit}"
+          ],
+          "filter_invoked": false
+        },
+        {
+          "argv": [
+            "--no-lazy-fetch",
+            "rev-parse",
+            "--verify",
+            "790310e4081931bced5e31f999cef3b969254a27^{tree}"
+          ],
+          "filter_invoked": false
+        },
+        {
+          "argv": [
+            "--no-lazy-fetch",
+            "status",
+            "--porcelain=v1",
+            "-z",
+            "--untracked-files=all",
+            "--ignore-submodules=none"
+          ],
+          "filter_invoked": true
+        },
+        {
+          "argv": [
+            "--no-lazy-fetch",
+            "ls-tree",
+            "-r",
+            "-z",
+            "-l",
+            "--full-tree",
+            "HEAD"
+          ],
+          "filter_invoked": true
+        },
+        {
+          "argv": [
+            "--no-lazy-fetch",
+            "cat-file",
+            "--batch"
+          ],
+          "filter_invoked": true
+        }
+      ],
+      "all_checkout_and_git_bytes_unchanged": true,
+      "flow_b_inventory_filter_invoked": false
+    },
+    {
+      "path": "synthetic-module",
+      "filter_via_include": true,
+      "stage": "inventory",
+      "accepted": true,
+      "blockers": [],
+      "filter_invoked": true,
+      "calls": [
+        {
+          "argv": [
+            "--no-lazy-fetch",
+            "rev-parse",
+            "--show-toplevel"
+          ],
+          "filter_invoked": false
+        },
+        {
+          "argv": [
+            "--no-lazy-fetch",
+            "config",
+            "--includes",
+            "--get-regexp",
+            "^filter\\..*\\.(clean|process)$"
+          ],
+          "filter_invoked": false
+        },
+        {
+          "argv": [
+            "--no-lazy-fetch",
+            "rev-parse",
+            "--verify",
+            "--quiet",
+            "HEAD^{commit}"
+          ],
+          "filter_invoked": false
+        },
+        {
+          "argv": [
+            "--no-lazy-fetch",
+            "rev-parse",
+            "--verify",
+            "790310e4081931bced5e31f999cef3b969254a27^{tree}"
+          ],
+          "filter_invoked": false
+        },
+        {
+          "argv": [
+            "--no-lazy-fetch",
+            "status",
+            "--porcelain=v1",
+            "-z",
+            "--untracked-files=all",
+            "--ignore-submodules=none"
+          ],
+          "filter_invoked": true
+        },
+        {
+          "argv": [
+            "--no-lazy-fetch",
+            "ls-tree",
+            "-r",
+            "-z",
+            "-l",
+            "--full-tree",
+            "HEAD"
+          ],
+          "filter_invoked": true
+        },
+        {
+          "argv": [
+            "--no-lazy-fetch",
+            "cat-file",
+            "--batch"
+          ],
+          "filter_invoked": true
+        }
+      ],
+      "all_checkout_and_git_bytes_unchanged": true,
+      "flow_b_inventory_filter_invoked": false
+    },
+    {
+      "path": "docs/synthetic-module",
+      "filter_via_include": false,
+      "stage": "inventory",
+      "accepted": false,
+      "blockers": [
+        {
+          "code": "submodule_entry",
+          "path": "docs/synthetic-module",
+          "diagnostic": "Submodule: outside the documentation contract."
+        }
+      ],
+      "filter_invoked": true,
+      "calls": [
+        {
+          "argv": [
+            "--no-lazy-fetch",
+            "rev-parse",
+            "--show-toplevel"
+          ],
+          "filter_invoked": false
+        },
+        {
+          "argv": [
+            "--no-lazy-fetch",
+            "config",
+            "--includes",
+            "--get-regexp",
+            "^filter\\..*\\.(clean|process)$"
+          ],
+          "filter_invoked": false
+        },
+        {
+          "argv": [
+            "--no-lazy-fetch",
+            "rev-parse",
+            "--verify",
+            "--quiet",
+            "HEAD^{commit}"
+          ],
+          "filter_invoked": false
+        },
+        {
+          "argv": [
+            "--no-lazy-fetch",
+            "rev-parse",
+            "--verify",
+            "f2aefc7537ca31f66a20d1e79726cbea93b01239^{tree}"
+          ],
+          "filter_invoked": false
+        },
+        {
+          "argv": [
+            "--no-lazy-fetch",
+            "status",
+            "--porcelain=v1",
+            "-z",
+            "--untracked-files=all",
+            "--ignore-submodules=none"
+          ],
+          "filter_invoked": true
+        },
+        {
+          "argv": [
+            "--no-lazy-fetch",
+            "ls-tree",
+            "-r",
+            "-z",
+            "-l",
+            "--full-tree",
+            "HEAD"
+          ],
+          "filter_invoked": true
+        },
+        {
+          "argv": [
+            "--no-lazy-fetch",
+            "cat-file",
+            "--batch"
+          ],
+          "filter_invoked": true
+        }
+      ],
+      "all_checkout_and_git_bytes_unchanged": true,
+      "flow_b_inventory_filter_invoked": false
+    },
+    {
+      "path": "docs/synthetic-module",
+      "filter_via_include": true,
+      "stage": "inventory",
+      "accepted": false,
+      "blockers": [
+        {
+          "code": "submodule_entry",
+          "path": "docs/synthetic-module",
+          "diagnostic": "Submodule: outside the documentation contract."
+        }
+      ],
+      "filter_invoked": true,
+      "calls": [
+        {
+          "argv": [
+            "--no-lazy-fetch",
+            "rev-parse",
+            "--show-toplevel"
+          ],
+          "filter_invoked": false
+        },
+        {
+          "argv": [
+            "--no-lazy-fetch",
+            "config",
+            "--includes",
+            "--get-regexp",
+            "^filter\\..*\\.(clean|process)$"
+          ],
+          "filter_invoked": false
+        },
+        {
+          "argv": [
+            "--no-lazy-fetch",
+            "rev-parse",
+            "--verify",
+            "--quiet",
+            "HEAD^{commit}"
+          ],
+          "filter_invoked": false
+        },
+        {
+          "argv": [
+            "--no-lazy-fetch",
+            "rev-parse",
+            "--verify",
+            "f2aefc7537ca31f66a20d1e79726cbea93b01239^{tree}"
+          ],
+          "filter_invoked": false
+        },
+        {
+          "argv": [
+            "--no-lazy-fetch",
+            "status",
+            "--porcelain=v1",
+            "-z",
+            "--untracked-files=all",
+            "--ignore-submodules=none"
+          ],
+          "filter_invoked": true
+        },
+        {
+          "argv": [
+            "--no-lazy-fetch",
+            "ls-tree",
+            "-r",
+            "-z",
+            "-l",
+            "--full-tree",
+            "HEAD"
+          ],
+          "filter_invoked": true
+        },
+        {
+          "argv": [
+            "--no-lazy-fetch",
+            "cat-file",
+            "--batch"
+          ],
+          "filter_invoked": true
+        }
+      ],
+      "all_checkout_and_git_bytes_unchanged": true,
+      "flow_b_inventory_filter_invoked": false
+    },
+    {
+      "path": "synthetic-module",
+      "filter_via_include": true,
+      "stage": "conversation",
+      "accepted": true,
+      "blockers": [],
+      "filter_invoked": true,
+      "calls": [
+        {
+          "argv": [
+            "--no-lazy-fetch",
+            "rev-parse",
+            "--show-toplevel"
+          ],
+          "filter_invoked": false
+        },
+        {
+          "argv": [
+            "--no-lazy-fetch",
+            "config",
+            "--includes",
+            "--get-regexp",
+            "^filter\\..*\\.(clean|process)$"
+          ],
+          "filter_invoked": false
+        },
+        {
+          "argv": [
+            "--no-lazy-fetch",
+            "rev-parse",
+            "--verify",
+            "--quiet",
+            "HEAD^{commit}"
+          ],
+          "filter_invoked": false
+        },
+        {
+          "argv": [
+            "--no-lazy-fetch",
+            "rev-parse",
+            "--verify",
+            "790310e4081931bced5e31f999cef3b969254a27^{tree}"
+          ],
+          "filter_invoked": false
+        },
+        {
+          "argv": [
+            "--no-lazy-fetch",
+            "status",
+            "--porcelain=v1",
+            "-z",
+            "--untracked-files=all",
+            "--ignore-submodules=none"
+          ],
+          "filter_invoked": true
+        },
+        {
+          "argv": [
+            "--no-lazy-fetch",
+            "ls-tree",
+            "-r",
+            "-z",
+            "-l",
+            "--full-tree",
+            "HEAD"
+          ],
+          "filter_invoked": true
+        },
+        {
+          "argv": [
+            "--no-lazy-fetch",
+            "cat-file",
+            "--batch"
+          ],
+          "filter_invoked": true
+        }
+      ],
+      "all_checkout_and_git_bytes_unchanged": true,
+      "agent_calls": 0,
+      "jobs": 0,
+      "import_operation": null,
+      "flow_b_inventory_filter_invoked": false
+    }
+  ]
+}

@@ -119,42 +119,20 @@ Objetivo y criterios en [ROADMAP](ROADMAP.md); plan en [NEXT_STEPS](NEXT_STEPS.m
 **P008-T009 completada** (Flujo A: inventario de solo lectura,
 [D096](DECISIONS.md#d096--p008-t009-inventario-de-importación-desde-el-árbol-de-head)):
 
-- `core/project_import.py` (reglas puras) y `adapters/project_import.py` (`read_inventory(context)`): lee el árbol de
-  HEAD de un checkout limpio con Git de solo lectura (`rev-parse`, `status`, `ls-tree`, `cat-file --batch`, sin
-  hooks, fsmonitor ni filtros). Rechaza sin Git, sin commits, con HEAD vacío o con cambios o archivos sin seguimiento.
-  Lo ignorado no se lee; enlaces y submódulos son entradas rechazadas que bloquean; `.harness/runs` solo se cuenta.
-- Ámbito: Markdown de la raíz, `docs/` y `.harness/` sin runs. Cada entrada con ruta, tamaño, SHA-256, clase
-  (`canonical`, `renameable`, `mergeable`, `historical`, `foreign`), regla y canónico inequívoco; alias y renumeración
-  del archivo nunca ocupan un destino existente o compartido. Origen por señales (ReferenceProject, v1, v2, `mixed`,
-  `unified`, `unknown`), fases de ROADMAP/STATE/NEXT_STEPS/archivo sin reconciliar, tamaño de AGENTS/CLAUDE/GEMINI,
-  bloques gestionados y huella `inventory_sha256` sin raíz ni commit.
-- Sin persistencia, API ni UI (T011 congelará el inventario); sin modelos, migraciones, dependencias ni prompts.
-- Verificación: 12 checks ligeros. Pytest completo: 1.233 OK y 121 subtests (aviso conocido de Starlette/httpx),
-  con 14 casos nuevos en `test_project_import.py`: tres orígenes sintéticos con su clasificación completa, relectura
-  idéntica sin cambios en el árbol ni en `.git`, huella sin raíz ni commit, solo Git de lectura, rechazos y enlaces.
-  252 enlaces y anclas válidos y los tres diagramas de `flows/legacy-migration.md` pasan el parser Mermaid local.
-  Sin Node/build ni `alembic check` (no cambian UI, OpenAPI ni esquema), sin proveedores reales ni smokes. Detalle
-  en el [registro](phase/P008-T009_INVENTARIO_FLUJO_A.md).
+- Inventario documental determinista de HEAD limpio: rutas, bytes/hashes, clases/reglas, origen, fases,
+  instrucciones, bloques y runs legacy por lstat; sin persistencia ni escrituras. Frontera Git reforzada
+  después en T016/T018; H6 de la tercera revisión queda pendiente de T019.
+- Verificación de entrega: 12 checks, 1.233 pytest y 121 subtests; 14 casos nuevos, enlaces/diagramas válidos.
+  Detalle y límites en el [registro](phase/P008-T009_INVENTARIO_FLUJO_A.md).
 
 **P008-T010 completada** (Flujo A: mapa de normalización determinista,
 [D097](DECISIONS.md#d097--p008-t010-mapa-de-normalización-del-flujo-a)):
 
-- `core/project_normalization.py`: `build_map(inventory, contents)` puro, con los bytes comprobados contra la huella
-  y los SHA-256 del inventario, y `materialize` para obtener los bytes del árbol resultante. Formato
-  `harness-local/import-map/1` y huella `map_sha256`.
-- Reglas con identificador: alias hacia el canónico (`DECISSONS.md` → `DECISIONS.md`), `data-model` →
-  DDBB-DIAGRAM, `phase-N` → `phase-NNN`, BRIEF/PROJECT_PROFILE v1 y README de las carpetas v2 a
-  `archive/phase-000/`, artefactos de fase (`research/**` y `docs/PNNN*`) a `docs/phase/` o al archivo de su fase,
-  y `decisions/DNNN-*.md` inequívocos compuestos en DECISIONS por número con su original en `phase-000`.
-- Movimientos byte a byte; ningún destino coincide, ni en mayúsculas ni como directorio, con una ruta existente u
-  otro destino (`target-conflict`). Lo ambiguo queda en `review` con su motivo para T011, lo ajeno en `foreign`, y
-  `missing` lista los documentos de D088 que faltan. Sin adaptador, persistencia, API ni UI.
-- Verificación: 12 checks ligeros. Pytest completo: 1.246 OK y 121 subtests (aviso conocido de Starlette/httpx), con
-  13 casos nuevos en `test_project_normalization.py`; tras esa pasada se simplificó la detección de conflictos y se
-  re-ejecutaron las pruebas de inventario y mapa (27 OK). 307 enlaces y anclas válidos en los documentos activos y
-  los dos flowcharts de `flows/legacy-migration.md` pasan el parser de flujo de `mermaid` local (el de estados no
-  cambia). Sin Node/build ni `alembic check` (no cambian UI, OpenAPI ni esquema), sin proveedores reales ni smokes.
-  Detalle en el [registro](phase/P008-T010_MAPA_NORMALIZACION.md).
+- Mapa puro `harness-local/import-map/1` con huella y bytes comprobados: alias, renumeración, composición de
+  decisiones y archivo por reglas. Movimientos byte a byte, conflictos sin sobrescritura, ambigüedades en
+  `review`, ajenos en `foreign` y documentos ausentes en `missing`. Sin persistencia ni efectos.
+- Verificación de entrega: 12 checks, 1.246 pytest y 121 subtests; 13 casos nuevos y 27 pruebas revalidadas,
+  enlaces/diagramas válidos. Detalle y límites en el [registro](phase/P008-T010_MAPA_NORMALIZACION.md).
 
 **P008-T011 completada** (Flujo A: propuesta del revisor,
 [D098](DECISIONS.md#d098--p008-t011-conversación-de-importación-con-borradores-privados)):
@@ -279,5 +257,16 @@ Objetivo y criterios en [ROADMAP](ROADMAP.md); plan en [NEXT_STEPS](NEXT_STEPS.m
 - Verificación: 12 checks; suite de 1.383 casos y 121 subtests, cuatro fallos iniciales corregidos y 128 pruebas
   revalidadas; 403 enlaces y cinco flowcharts válidos. Sin proveedores ni smokes reales.
 
-**Siguiente:** nueva revisión de salida tras T018. Cierre y archivo separados.
+**Tercera revisión de salida completada el 2026-10-17**
+([D109](DECISIONS.md#d109--tercera-revisión-de-salida-de-p008), [registro](phase/P008_REVISION_SALIDA_3.md)):
+
+- Sobre `0348b84`, H1–H5 resueltos en sus comprobaciones. H6 ejecuta un filtro `clean` de un
+  submódulo desde `status --ignore-submodules=none`, pese a no haber filtros propios en el padre limpio.
+  Fuera de `docs/` se aceptan inventario y conversación; dentro, el bloqueo llega después del efecto.
+  Reproducido con filtros directos y por include; el inventario B no los invoca en los mismos fixtures.
+- P008 no lista para cerrar. Sin cambios del producto ni evidencia histórica; reproducción y JSON nuevos.
+  Verificación: 1.383 pytest y 121 subtests, 12 checks, 75 Node, tipos/build y Alembic temporal correctos;
+  OpenAPI, 413 enlaces y 20 diagramas válidos por parser/gramática. Límites en el registro. T019 pendiente.
+
+**Siguiente:** P008-T019 (H6). Cierre y archivo separados.
 P008 sigue activa y este repositorio sin registrarse ni ejecutar un check READY del producto sobre él.

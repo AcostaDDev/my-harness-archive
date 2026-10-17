@@ -4,12 +4,12 @@ Objetivo y criterios de salida en [ROADMAP](ROADMAP.md#p008--contrato-documental
 Decisión de base: [D088](DECISIONS.md#d088--contrato-documental-unificado-cierre-de-fase-automático-e-importación-de-proyectos-p008).
 Análisis de incongruencias que originó la fase: [docs/phase](phase/P008-T001_MIGRACION_DOCUMENTAL.md).
 
-**Siguiente:** nueva revisión de salida de P008, después de T018 (D108). T001–T018 completadas.
-La segunda revisión ([D107](DECISIONS.md#d107--segunda-revisión-de-salida-de-p008),
-[registro](phase/P008_REVISION_SALIDA_2.md)) conserva la evidencia histórica de H5. T018 corrige sus lecturas
-sin lazy-fetch y sus diagnósticos de objetos ausentes con regresiones sintéticas; detalle en el
-[registro](phase/P008-T018_OBJETOS_LOCALES.md). T016 corrigió H1–H3 y T017 las referencias de H4.
-P008 sigue activa; su salida debe revisarse de nuevo antes del cierre y archivo, que son operaciones separadas.
+**Siguiente:** P008-T019, impedir filtros de submódulos durante la lectura del Flujo A (H6 de D109).
+T001–T018 completadas. Tercera revisión de salida completada el 2026-10-17
+([D109](DECISIONS.md#d109--tercera-revisión-de-salida-de-p008), [registro](phase/P008_REVISION_SALIDA_3.md)):
+H1–H5 resueltos en sus comprobaciones; H6 ejecuta un filtro del submódulo desde `status` antes de la conversación.
+Las evidencias históricas de las dos revisiones anteriores permanecen intactas.
+P008 sigue activa; después de T019 se repetirá la revisión de salida. Cierre y archivo son operaciones separadas.
 No se ha ejecutado un check READY del producto ni registrado este repositorio. No se inventa una fase sucesora.
 
 ## Restricciones compartidas
@@ -464,4 +464,40 @@ conservadas. Detalle y verificación en el [registro](phase/P008-T018_OBJETOS_LO
 - `python3 -m unittest discover -s tests -p 'test_*.py'`
 - `UV_CACHE_DIR=.local/uv-cache uv run --frozen --offline pytest -q`
 **Referencias:** D096; D100; D101; D105; D107; [revisión y reproducción](phase/P008_REVISION_SALIDA_2.md).
+Después: nueva revisión de salida; cierre y archivo separados.
+
+## P008-T019 — Flujo A: submódulos sin ejecución implícita
+
+**Objetivo:** Que la consulta de un checkout con gitlinks no ejecute filtros ni código de submódulos antes de
+aceptar o rechazar su inventario, conversación o vista previa.
+**Estado:** pendiente; derivada de H6 de [D109](DECISIONS.md#d109--tercera-revisión-de-salida-de-p008).
+**Alcance:**
+- Impedir la inspección ejecutable de submódulos desde `status --ignore-submodules=none`: la guardia del
+  repositorio principal no cubre su configuración. Resolver antes del comando que pueda ejecutar el filtro,
+  tanto con gitlinks dentro de `docs/` como fuera del ámbito documental, sin ampliar soporte de submódulos.
+- Cubrir los consumidores de `read_checkout` (creación, turnos, estado, vista previa y confirmación); revisar
+  también la captura/escritura compartida A/B y la recuperación, sin ocultar cambios del checkout ni suavizar
+  el requisito de limpieza. No ejecutar filtros para averiguar si un submódulo está limpio.
+- Mantener filtros del repositorio principal e includes, objetos locales sin lazy-fetch, bytes exactos,
+  destinos ignorados, D099, CAS y conciliación del mismo commit. Evaluar la versión congelada del cambio;
+  no modificar configuración ni evidencia, intenciones o snapshots históricos.
+**Rutas permitidas:** `src/harness_local/adapters/**`, `src/harness_local/storage/import_drafts.py`,
+`src/harness_local/storage/project_import.py`, `src/harness_local/storage/onboarding_commit.py`,
+`src/harness_local/core/engine/import_commit.py`, `src/harness_local/core/engine/documents.py`,
+`src/harness_local/services/managed.py`, `src/harness_local/services/local_config.py`, `tests/**`, `docs/**`.
+**Criterios de aceptación:**
+- Padre sintético limpio, sin filtros propios, con gitlink y submódulo inicializado cuyo filtro falso `clean`
+  (directo o por include) crea un marcador: ninguna lectura A lo ejecuta, dentro o fuera de `docs/`.
+  Si el checkout no es admisible, el rechazo llega con diagnóstico antes del efecto; los bytes del checkout,
+  índice, refs, configuración y objetos permanecen intactos.
+- El bloqueo precede a cualquier turno/agente o sellado/escritura; sin nueva operación, commit o fase.
+  La creación de conversación también debe quedar protegida. Cubrir `process` cuando corresponda y no
+  depender solo de los filtros del padre o de la selección documental posterior a `status`.
+- H1–H5, checkout sucio, recorridos válidos A/B, D099 y recuperación siguen funcionando. Regresiones solo
+  con Git/SQLite temporales, herramientas falsas y fixtures sintéticos; sin red ni proveedores reales.
+**Comandos de validación:**
+- `python3 -m unittest discover -s tests -p 'test_*.py'`
+- `UV_CACHE_DIR=.local/uv-cache uv run --frozen --offline pytest -q`
+**Referencias:** D096; D100; D103; D105; D108; D109;
+[revisión y reproducciones](phase/P008_REVISION_SALIDA_3.md).
 Después: nueva revisión de salida; cierre y archivo separados.

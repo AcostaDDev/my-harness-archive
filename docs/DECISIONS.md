@@ -118,6 +118,7 @@ tarea se leen solo las decisiones que cita; este índice sirve para buscar prece
 | [D106](#d106--p008-t017-referencias-vigentes-sin-cambiar-contratos) | P008-T017: referencias vigentes sin cambiar contratos | P008 |
 | [D107](#d107--segunda-revisión-de-salida-de-p008) | Segunda revisión de salida de P008 | P008 |
 | [D108](#d108--p008-t018-lecturas-de-importación-sin-lazy-fetch) | P008-T018: lecturas de importación sin lazy-fetch | P008 |
+| [D109](#d109--tercera-revisión-de-salida-de-p008) | Tercera revisión de salida de P008 | P008 |
 
 ## D001 — Alcance local y arquitectura base
 
@@ -3456,3 +3457,24 @@ Estado: implementada el 2026-10-17; verificación y límites en el
   Git/SQLite temporales y herramientas falsas en las regresiones, sin configurar el usuario ni ejecutar el
   harness sobre este repositorio. P008 sigue activa: después corresponde otra revisión de salida; cierre y
   archivo separados.
+
+## D109 — Tercera revisión de salida de P008
+
+Estado: revisión completada el 2026-10-17 sobre `0348b84`; P008 no lista para cerrar. Fase: P008.
+Evidencia, comprobaciones y límites en el [registro](phase/P008_REVISION_SALIDA_3.md).
+
+- H1–H3 siguen rechazados antes de sus efectos y H4 conserva las referencias sincronizadas. H5 ya se rechaza
+  en A/B con diagnóstico del objeto ausente, sin ejecutar el transporte falso, recuperar objetos ni cambiar
+  bytes del checkout o de `.git`; todos los comandos observados llevan `--no-lazy-fetch`.
+- H6 reproduce ejecución de un filtro `clean` de un submódulo durante `read_checkout`: la guardia solo consulta
+  la configuración del repositorio principal, pero `status --ignore-submodules=none` inspecciona el submódulo.
+  Con gitlink fuera de `docs/`, se acepta el inventario y se crea una conversación después de ejecutar el filtro;
+  dentro de `docs/`, el bloqueo por submódulo llega después del efecto. Configuración directa y por include
+  reproducidas con herramientas falsas; el inventario B no invoca el filtro en los mismos fixtures.
+- Se define P008-T019 para impedir esa ejecución implícita antes de inventario/conversación/vista previa,
+  conservando el rechazo de checkout sucio, las guardias D105/D108, D099, CAS y recuperación. Es una corrección
+  de las garantías existentes de D096/D100, sin ampliar soporte de submódulos. Se evaluará su versión congelada.
+- Esta revisión no cambia el producto, esquema, API ni versiones, ni reescribe evidencia histórica. El script
+  nuevo y su JSON conservan H6; una ejecución correcta del script acredita el hallazgo, no su corrección.
+  Cierre y archivo siguen separados. Sin registro ni check READY del producto sobre este repositorio;
+  sin fase sucesora inventada, proveedores reales, smokes, push, publicación ni subagentes.

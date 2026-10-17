@@ -109,7 +109,10 @@ T017 sincroniza las referencias vigentes el 2026-10-17 (D106). Segunda revisión
 H1–H4 resueltos y dos referencias residuales corregidas; H5 reproduce ejecución de lazy-fetch durante el inventario
 A con un blob prometido ausente. T018 corrige H5 el 2026-10-17
 ([D108](DECISIONS.md#d108--p008-t018-lecturas-de-importación-sin-lazy-fetch),
-[registro](phase/P008-T018_OBJETOS_LOCALES.md)). P008 sigue activa: siguiente nueva revisión de salida.
+[registro](phase/P008-T018_OBJETOS_LOCALES.md)). Tercera revisión completada el mismo día
+([D109](DECISIONS.md#d109--tercera-revisión-de-salida-de-p008), [registro](phase/P008_REVISION_SALIDA_3.md)):
+H1–H5 resueltos; H6 reproduce filtros de submódulos ejecutados por el inventario A. P008 sigue activa y no lista
+para cerrar: siguiente P008-T019, seguida de otra revisión de salida.
 El cierre y archivo serán posteriores; no se ha ejecutado un check READY del producto sobre este repositorio.
 Plan y entregas en [NEXT_STEPS](NEXT_STEPS.md).
 
