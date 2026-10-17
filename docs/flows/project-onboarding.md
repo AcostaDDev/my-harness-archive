@@ -145,12 +145,14 @@ borradores de todas las conversaciones del checkout; una intención incierta blo
 
 El escritor Git compartido no ejecuta filtros clean/process durante el Flujo B: se rechazan configuraciones de
 esos filtros (incluidos includes) antes de capturar y antes de ejecutar el commit. Se contrastan los blobs sellados
-con los bytes de la vista previa; cualquier conversión interna que los cambie también bloquea. Se mantienen los
+con los bytes de la vista previa; cualquier conversión interna que los cambie también bloquea. Desde T016 (D105),
+estas guardias son comunes a A/B: comprueban todo el árbol documental resultante, los destinos nuevos ignorados
+y la igualdad del árbol en el sellado final; se repiten al ejecutar/reanudar sin alterar la intención. Se mantienen los
 límites de D083, 512 KiB por documento y 4 MiB de diff, sin truncar, y la exclusión cooperativa de D100.
 
 `GET …/projects/{p}/onboarding` permite recuperar la operación y la UI `/projects/:p/onboarding[/:c/*borrador]`
 reutiliza conversación, editor CAS y confirmación del Flujo A, con perfil y continuidad en P001. Una tarea de P001
-se encola por una acción posterior con la composición confirmada. `document_layout = "d088-8"` pone en cuarentena
+se encola por una acción posterior con la composición confirmada. `document_layout = "d088-9"` (T016) pone en cuarentena
 jobs anteriores antes de efectos; no se reescriben snapshots, intenciones ni historiales existentes.
 
 Fuente: `core/engine/onboarding_commit.py`, `storage/onboarding_commit.py`, infraestructura compartida de

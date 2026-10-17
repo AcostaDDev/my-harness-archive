@@ -8,6 +8,7 @@ observan los nombres por lstat. No escribe en el checkout ni en `.git` y no ejec
 """
 
 import os
+from hashlib import sha256
 from pathlib import Path, PurePosixPath
 import stat
 
@@ -22,10 +23,10 @@ from harness_local.core.project_import import (
 READABLE_MODES = ('100644', '100755')
 
 
-def _tree(git: Git) -> list[tuple[str, str, str, int | None, str]]:
-    """(modo, tipo, objeto, tamaño, ruta) de todo HEAD, sin citar rutas (`-z`)."""
+def _tree(git: Git, revision: str = 'HEAD') -> list[tuple[str, str, str, int | None, str]]:
+    """(modo, tipo, objeto, tamaño, ruta) de un árbol, sin citar rutas (`-z`)."""
     rows = []
-    for record in git.run('ls-tree', '-r', '-z', '-l', '--full-tree', 'HEAD').split(b'\0'):
+    for record in git.run('ls-tree', '-r', '-z', '-l', '--full-tree', revision).split(b'\0'):
         if not record:
             continue
         header, _, raw_path = record.partition(b'\t')
@@ -49,6 +50,28 @@ def _blobs(git: Git, objects: list[str]) -> dict[str, bytes]:
         found[obj] = output[end + 1:end + 1 + size]
         offset = end + 1 + size + 1
     return found
+
+
+def check_filters(git: Git):
+    """Antes de status/add/hash-object: config lee includes, pero nunca ejecuta los filtros."""
+    if git.run('config', '--includes', '--get-regexp', r'^filter\..*\.(clean|process)$', ok=(0, 1)).strip():
+        raise ImportInventoryError('Import requires no local clean/process Git filters; project code cannot be executed')
+
+
+def check_tree(git: Git, tree: str, expected: list[dict], documents: list[dict]):
+    """Guardias A/B antes de confirmar o escribir, incluidos archivo, binarios y recuperación parcial."""
+    destinations = b''.join(doc['path'].encode() + b'\0' for doc in documents
+                            if doc['before_sha256'] is None and doc['after_sha256'] is not None)
+    if destinations and git.run('check-ignore', '-z', '--stdin', input=destinations, ok=(0, 1)).strip(b'\0'):
+        raise ValueError('Import document destinations are ignored by Git; review the project ignore rules')
+    entries = {path: (mode, obj) for mode, _, obj, _, path in _tree(git, tree)}
+    if any(item['path'] not in entries or entries[item['path']][0] not in READABLE_MODES for item in expected):
+        raise ValueError('The sealed import tree lacks a confirmed regular document')
+    blobs = _blobs(git, sorted({entries[item['path']][1] for item in expected}))
+    if any(sha256(blobs[entries[item['path']][1]]).hexdigest() != item['sha256'] for item in expected):
+        raise ValueError('Git attributes would transform the confirmed document bytes')
+    if any(doc['after_sha256'] is None and doc['path'] in entries for doc in documents):
+        raise ValueError('The sealed import tree retains a deleted document')
 
 
 def legacy_runs(root: Path) -> dict:
@@ -78,6 +101,7 @@ def read_checkout(root: Path, docs: str = 'docs', *, executable: str = 'git',
         raise ImportInventoryError(f'Not a Git checkout: {exc}') from exc
     if top != root.resolve():
         raise ImportInventoryError('The project root must be the top level of its Git checkout.')
+    check_filters(git)
     try:
         head = git.text('rev-parse', '--verify', '--quiet', 'HEAD^{commit}')
         tree = git.text('rev-parse', '--verify', f'{head}^{{tree}}')
@@ -86,7 +110,6 @@ def read_checkout(root: Path, docs: str = 'docs', *, executable: str = 'git',
     dirty = [item for item in git.run('status', '--porcelain=v1', '-z', '--untracked-files=all',
                                       '--ignore-submodules=none').split(b'\0') if item]
     if marker_sha256 is not None:
-        from hashlib import sha256
         marker = root / MARKER_PATH
         if (not marker.is_symlink() and marker.is_file()
                 and sha256(marker.read_bytes()).hexdigest() == marker_sha256):

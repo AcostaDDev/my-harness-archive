@@ -193,14 +193,12 @@ class LocalSupervisor:
                     DiscoveryRepository(self.repository).request(claim.run_id), agents, writer, journal)
             elif request["action"] == "import_commit":
                 from harness_local.core.engine.import_commit import execute
-                from harness_local.storage.project_import import ImportRepository
+                from harness_local.storage.project_import import ImportRepository, check_git
                 if self.commit_factory is None:
                     raise RuntimeError('Import requires the configured Git writer')
                 writer = self.commit_factory(context, versions)
                 saved = ImportRepository(self.repository).request(claim.run_id)
-                if saved['preview'].get('flow') == 'onboarding':
-                    from harness_local.storage.onboarding_commit import check_filters
-                    check_filters(context, writer)
+                check_git(context, writer, saved['preview'], json.loads(saved['intent'])['expected_tree'])
                 history, outcome = execute(context, record.history, saved, writer, journal)
             elif request["action"] == "bootstrap":
                 from harness_local.core.engine.bootstrap import execute

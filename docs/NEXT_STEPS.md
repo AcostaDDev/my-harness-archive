@@ -4,12 +4,11 @@ Objetivo y criterios de salida en [ROADMAP](ROADMAP.md#p008--contrato-documental
 Decisión de base: [D088](DECISIONS.md#d088--contrato-documental-unificado-cierre-de-fase-automático-e-importación-de-proyectos-p008).
 Análisis de incongruencias que originó la fase: [docs/phase](phase/P008-T001_MIGRACION_DOCUMENTAL.md).
 
-**Siguiente:** P008-T016, corregir los tres hallazgos del Flujo A. La revisión de salida del 2026-10-17 está
-completada ([D104](DECISIONS.md#d104--revisión-de-salida-de-p008-con-hallazgos-en-el-flujo-a),
-[registro](phase/P008_REVISION_SALIDA.md)); P008 sigue activa y no está lista para cerrar. T001–T015 completadas.
-Después de T016: sincronizar las referencias vigentes (H4) y repetir la revisión de salida. El cierre y archivo
-quedan para una operación posterior. Orden ejecutado: T002 → T007 (motor y contrato), T008 (perfiles),
-T009–T012 (Flujo A) y T013–T015 (Flujo B).
+**Siguiente:** P008-T017, sincronizar las referencias vigentes (H4). T001–T016 completadas; T016 corrige
+los tres hallazgos funcionales del Flujo A ([D105](DECISIONS.md#d105--p008-t016-frontera-git-y-bytes-confirmados-en-las-importaciones),
+[registro](phase/P008-T016_FRONTERA_GIT.md)). Después de T017, repetir la revisión de salida de D104; P008
+sigue activa. El cierre y archivo quedan para una operación posterior. Orden ejecutado: T002 → T007 (motor y
+contrato), T008 (perfiles), T009–T012 (Flujo A), T013–T015 (Flujo B) y T016 (frontera Git).
 
 ## Restricciones compartidas
 
@@ -385,7 +384,10 @@ ACTIVE adoptada. No escribe el TOML ni ejecuta comandos del proyecto. Detalle en
 
 ## P008-T016 — Flujo A: filtros Git, bytes exactos y destinos ignorados
 
-**Estado:** pendiente; derivada de los hallazgos H1–H3 de la revisión de salida ([D104](DECISIONS.md#d104--revisión-de-salida-de-p008-con-hallazgos-en-el-flujo-a)).
+**Estado:** completada el 2026-10-17 ([D105](DECISIONS.md#d105--p008-t016-frontera-git-y-bytes-confirmados-en-las-importaciones)).
+Guardias compartidas A/B antes de inventario/captura/sellado y ejecución; todos los blobs documentales contrastados
+por SHA-256 y destinos nuevos ignorados rechazados. `document_layout = "d088-9"`; CAS, D099 y conciliación conservadas.
+Detalle y verificación en el [registro](phase/P008-T016_FRONTERA_GIT.md). Derivada de H1–H3 de D104.
 **Objetivo:** Cumplir las garantías ya decididas para el Flujo A antes de aceptar su inventario, vista previa y
 commit: sin ejecución de filtros del proyecto, sin conversiones de bytes confirmados y sin escrituras de una
 importación que no pueda incluir todos sus destinos en Git.
@@ -412,3 +414,18 @@ importación que no pueda incluir todos sus destinos en Git.
 - `python3 -m unittest discover -s tests -p 'test_*.py'`
 - `UV_CACHE_DIR=.local/uv-cache uv run --frozen --offline pytest -q`
 **Referencias:** D096; D099; D100; D103; D104; [revisión y reproducciones](phase/P008_REVISION_SALIDA.md).
+
+## P008-T017 — Sincronizar referencias vigentes de P008
+
+**Estado:** pendiente; H4 de D104, posterior a la corrección funcional de T016.
+**Objetivo:** Que los textos activos reflejen lo implementado, antes de repetir la revisión de salida.
+**Alcance:** estados F11/F18 de SPECIFICATION, versión del adaptador en ARCHITECTURE, ayudas de registro/serve y
+Home/Registry sobre `local-config-4`, y mensajes de Prompts sobre cierre/reconciliación. Contrastar otros textos
+vigentes afectados; conservar ADR, archivos, snapshots e intenciones históricos.
+**Rutas permitidas:** `docs/**`, `src/harness_local/cli.py`, `src/harness_local/services/project_registry.py`,
+`frontend/src/**`, `tests/**`, `frontend/tests/**`.
+**Criterios de aceptación:** las referencias vigentes concuerdan con D093, D095, D102 y D105 y los contratos actuales;
+sin cambios de comportamiento, contratos ni evidencias congeladas.
+**Comandos de validación:** checks ligeros, pruebas dirigidas a ayudas/registro, pruebas Node y build del frontend.
+**Referencias:** D104 H4; [revisión](phase/P008_REVISION_SALIDA.md). Tras esta tarea, nueva revisión de salida;
+cierre y archivo separados.

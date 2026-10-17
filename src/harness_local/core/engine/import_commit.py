@@ -143,6 +143,8 @@ def seal(context, shown, writer, operation_id, run_id, timestamp):
     plan = CommitPlan(shown['head'], shown['tree'], updates, message, writer.identity.name,
                       writer.identity.email, timestamp)
     tree, commit = writer.seal(context, plan)
+    if tree != shown['proposed_tree']:
+        raise ValueError('Git attributes or checkout changed after the import preview; review it again')
     return CommitIntent(operation_id, run_id, 'IMPORT', shown['head'], shown['fingerprint'], shown['tree'],
                         shown['index_tree'], (), updates, tree, commit, message, plan.author_name,
                         plan.author_email, timestamp)

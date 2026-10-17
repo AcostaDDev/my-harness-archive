@@ -165,6 +165,9 @@ bloques de estado y crea una nueva versión de su definición, conservando la an
   para continuar sin perder historial. El historial de runs sigue la migración a gestionado existente (D027),
   confirmada antes de importar cuando hay runs legacy (D099). La vista previa confirma el árbol y los originales
   conservados; el commit sellado se concilia tras una caída y adopta la fase activa con sus documentos (D100).
+  T016 (D105) rechaza filtros Git `clean`/`process` incluidos por configuración antes de consultar el estado,
+  capturar o sellar; comprueba destinos nuevos ignorados y blobs por hash antes de confirmar y ejecutar.
+  Las conversiones de atributos no pueden cambiar los bytes confirmados, tampoco en originales o binarios.
 - **Flujo B — repositorio sin harness.** Inventario determinista (stack, modelos de datos, rutas, tests) e ingeniería
   inversa del revisor en solo lectura para generar ARCHITECTURE, DDBB-DIAGRAM (desde los modelos reales),
   SPECIFICATION base, STATE actual y los archivos raíz mínimos, con un perfil declarativo confirmado por el usuario.

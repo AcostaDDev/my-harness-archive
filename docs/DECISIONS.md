@@ -114,6 +114,7 @@ tarea se leen solo las decisiones que cita; este índice sirve para buscar prece
 | [D102](#d102--p008-t014-ingeniería-inversa-sobre-head-y-borradores-privados) | P008-T014: ingeniería inversa sobre HEAD y borradores privados | P008 |
 | [D103](#d103--p008-t015-incorporación-confirmada-del-flujo-b) | P008-T015: incorporación confirmada del Flujo B | P008 |
 | [D104](#d104--revisión-de-salida-de-p008-con-hallazgos-en-el-flujo-a) | Revisión de salida de P008 con hallazgos en el Flujo A | P008 |
+| [D105](#d105--p008-t016-frontera-git-y-bytes-confirmados-en-las-importaciones) | P008-T016: frontera Git y bytes confirmados en las importaciones | P008 |
 
 ## D001 — Alcance local y arquitectura base
 
@@ -3359,3 +3360,32 @@ Estado: revisión completada el 2026-10-17 sobre `f650851`; P008 sigue activa y 
 
 La revisión no autoriza ni ejecuta el cierre/archivo, registro de este repositorio, proveedores reales, smokes,
 push o publicación. No se han lanzado subagentes ni cambiado la configuración global del usuario.
+
+## D105 — P008-T016: frontera Git y bytes confirmados en las importaciones
+
+Estado: implementada el 2026-10-17; verificación en el [registro](phase/P008-T016_FRONTERA_GIT.md). Fase: P008.
+Corrige H1–H3 de D104 bajo las garantías existentes de D096, D099, D100 y D103.
+
+- **Antes de ejecutar Git con filtros.** El inventario A consulta `config --includes --get-regexp` y rechaza
+  cualquier `filter.*.clean` o `filter.*.process` antes de `status`. La guardia se comparte con B y precede a
+  captura/sellado y ejecución/reanudación. No ejecuta los filtros ni edita configuración. Las lecturas de los
+  árboles propuestos mantienen `--no-lazy-fetch`, como B.
+- **Árbol exacto.** Se leen los blobs del árbol propuesto y se contrasta el SHA-256 de cada documento resultante,
+  incluidos los no modificados, originales archivados y binarios; las eliminaciones deben estar ausentes.
+  Una conversión interna de atributos que altere bytes bloquea la vista previa antes de confirmar o escribir.
+  El sellado final tiene que reproducir el árbol validado en la vista previa. El job contrasta el árbol sellado
+  antes de llamar al escritor; este conserva la recaptura, el recálculo y la CAS anteriores, por lo que una deriva
+  posterior de atributos tampoco autoriza escribir un árbol distinto.
+- **Destinos ignorados.** `check-ignore` comprueba los documentos nuevos antes de confirmar y vuelve a hacerlo
+  al ejecutar/reanudar. Un destino ignorado impide la escritura; no se fuerza su inclusión ni se cambia
+  `.gitignore`. Los documentos ya versionados pueden seguir sujetos a sus reglas de exclusión habituales.
+- **Continuidad.** Las guardias se aplican también a la vista previa de una importación interrumpida. Se mantiene
+  la intención original, el mismo run/commit al conciliar, la CAS por bytes, D099 y la adopción atómica de fase.
+  `document_layout = "d088-9"` congela estas reglas; una composición actual pone en cuarentena los jobs anteriores
+  antes de efectos. No se reescriben intenciones ni snapshots; una intención antigua exige restaurar su composición
+  compatible para continuar. No cambian esquema, API, prompts, adaptador CLI ni TOML.
+
+Las regresiones usan exclusivamente repositorios/SQLite temporales, marcadores sintéticos y puertos falsos.
+La configuración y exclusión siguen siendo cooperativas: las comprobaciones no añaden aislamiento del sistema
+operativo ni una garantía frente a cambios concurrentes arbitrarios de configuración. H4 y la nueva revisión de
+salida quedan para las tareas siguientes; esta corrección no cierra ni archiva P008.

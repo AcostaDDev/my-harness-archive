@@ -4,6 +4,8 @@ from uuid import uuid4
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
+from harness_local.adapters.project_import import check_filters, check_tree
+from harness_local.adapters.project_onboarding import _InventoryGit
 from harness_local.core.engine.contracts import context_snapshot, freeze
 from harness_local.core.engine.import_commit import preview as build_preview, seal
 from harness_local.core.engine.import_conversation import readiness
@@ -27,6 +29,14 @@ def _operation(session, run):
     if op is None:
         raise Conflict('Import run lacks its operation')
     return op
+
+
+def check_git(context, writer, shown=None, tree=None):
+    """Frontera compartida A/B, también al ejecutar o reanudar una intención sellada."""
+    git = _InventoryGit(context.root, executable=writer.executable)
+    check_filters(git)
+    if shown is not None:
+        check_tree(git, tree or shown['proposed_tree'], shown['result_tree'], shown['documents'])
 
 
 def settle(managed, session, run, outcome):
@@ -95,6 +105,10 @@ class ImportRepository:
             if saved['conversation_id'] != conversation_id:
                 raise Conflict('Import already exists; inspect the confirmed conversation')
             if saved['status'] == 'INTERRUPTED':
+                try:
+                    check_git(context, writer, saved['preview'])
+                except (ValueError, OSError, RuntimeError) as exc:
+                    raise Conflict(str(exc)) from exc
                 return {**saved['preview'], 'resume_operation_id': saved['id'],
                         'expected_version': saved['expected_version']}
             if saved['status'] == 'COMPLETED':
@@ -116,7 +130,9 @@ class ImportRepository:
         if assessment.refusal:
             raise Conflict('Activate D027 before importing: ' + assessment.refusal)
         try:
+            check_git(context, writer)
             shown = self._build_preview(context, conversation_id, source, record, writer)
+            check_git(context, writer, shown)
         except (ValueError, OSError, RuntimeError) as exc:
             raise Conflict(str(exc)) from exc
         shown = {**shown, 'versions': versions, 'context': context_snapshot(context)}
@@ -190,6 +206,7 @@ class ImportRepository:
                 job = self.managed._queue_new_run(session, assessment, context, versions, 'IMPORT',
                     shown['phase']['code'], key, marker, purpose='import_commit')
                 operation_id = str(uuid4())
+                check_git(context, writer, shown)
                 intent = seal(context, shown, writer, operation_id, job.run_id, int(self.managed.clock().timestamp()))
                 op = Import(id=operation_id, root=str(context.root), conversation_id=conversation_id,
                     run_id=job.run_id, status='QUEUED', preview={k: v for k, v in shown.items()

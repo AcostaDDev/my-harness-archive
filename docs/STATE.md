@@ -259,6 +259,16 @@ Objetivo y criterios en [ROADMAP](ROADMAP.md); plan en [NEXT_STEPS](NEXT_STEPS.m
   193/194/191); 12 checks ligeros, 75 Node, tipos/build y Alembic temporal correctos. 363 enlaces/anclas y veinte
   diagramas válidos por parser/gramática; 35 tablas/columnas en paridad. Sin UI visual ni proveedores reales.
 
-**Siguiente:** P008-T016, corregir la frontera Git del Flujo A (H1–H3 de la revisión). Después, sincronizar las
-referencias vigentes (H4) y repetir la revisión de salida. Sin cierre ni archivo en esta tarea; este repositorio
-sigue sin registrarse en el harness.
+**P008-T016 completada** ([D105](DECISIONS.md#d105--p008-t016-frontera-git-y-bytes-confirmados-en-las-importaciones)):
+
+- Frontera Git A/B compartida: filtros `clean`/`process` (incluidos includes) rechazados antes de `status`,
+  captura/sellado y ejecución/reanudación. Destinos nuevos ignorados bloqueados antes de confirmar o escribir.
+- Todos los blobs documentales coinciden con sus SHA-256 confirmados, incluidos originales archivados y binarios;
+  el sellado final reproduce el árbol de la vista previa. CAS, D099 y conciliación del mismo commit conservadas.
+  `document_layout = "d088-9"` pone en cuarentena composiciones anteriores; no se reescriben intenciones.
+- Verificación: 1.365 pytest y 121 subtests, 12 checks ligeros, 371 enlaces/anclas y dos flowcharts correctos;
+  diff revisado. [Registro](phase/P008-T016_FRONTERA_GIT.md). Sin Node/build/Alembic independiente (sin cambios
+  de esquema/API/UI), proveedores reales ni smokes.
+
+**Siguiente:** P008-T017, sincronizar referencias vigentes (H4); después, nueva revisión de salida. P008 sigue
+activa, sin cierre ni archivo en esta tarea; este repositorio sigue sin registrarse en el harness.
