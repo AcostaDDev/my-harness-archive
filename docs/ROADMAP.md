@@ -104,8 +104,8 @@ sin harness.
 2026-10-17 con tres hallazgos funcionales del Flujo A y referencias vigentes desactualizadas
 ([D104](DECISIONS.md#d104--revisión-de-salida-de-p008-con-hallazgos-en-el-flujo-a),
 [registro](phase/P008_REVISION_SALIDA.md)). T016 corrige los tres hallazgos funcionales el 2026-10-17 (D105).
-Pendiente T017 (sincronización de referencias) y nueva revisión antes
-del cierre. Plan y entregas en [NEXT_STEPS](NEXT_STEPS.md).
+T017 sincroniza las referencias vigentes el 2026-10-17 (D106). Pendiente nueva revisión antes del cierre.
+Plan y entregas en [NEXT_STEPS](NEXT_STEPS.md).
 
 ## Candidatas sin fase asignada
 

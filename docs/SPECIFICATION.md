@@ -62,14 +62,14 @@ run y, cuando procede, al intento exacto.
 | F08 | Gestionar prompts | Versiones, diff, variables validadas, activación y rollback; snapshot por intento | Implementado (P004) |
 | F09 | Resolver bloqueos y permisos | Motivo y evidencia; conceder o denegar una petición exacta; revalidar o reintentar | Implementado (P004) |
 | F10 | Controlar fases | Check, reconciliación, preguntas, lote desatendido, enmienda, abandono, cierre con tag | Implementado (P004) |
-| F11 | Cerrar y archivar una fase | Protocolo de §7 en un único flujo tras READY | Implementado (P008-T004, D091); adaptación de UI pendiente (T006) |
+| F11 | Cerrar y archivar una fase | Protocolo de §7 en un único flujo tras READY | Implementado (P008-T004/T006, D091, D093) |
 | F12 | Ver y editar la documentación | Visor seguro y edición con diff confirmado y commit del harness | Implementado (P007, D080) |
 | F13 | Conversar con el revisor | Chat sobre HEAD sin esperar al ejecutor; propuestas → tareas confirmadas; comandos deterministas | Implementado (P005, P007) |
 | F14 | Inspeccionar tests | Suites y casos JUnit, OK/KO por tarea y evolución por fase | Implementado (P006, P007) |
 | F15 | Métricas y estadísticas | Tokens, turnos, modelos, esfuerzos, duraciones y coste equivalente con procedencia | Implementado (P007, D074, D084) |
 | F16 | Recuperar y conservar | Backup y restauración de consulta, retención explícita de logs, recuperación tras caída | Implementado (P003, P006) |
 | F17 | Distribución local | Wheel con UI y migraciones, `init-db`, `serve`, sesión local | Implementado (P006) |
-| F18 | Perfiles declarativos | Perfil de stack (preparación, tests, lint, tipos) declarado en el TOML local y confirmado por el usuario, incluido Python/Django (`pytest`, `ruff`, `mypy`) | Pendiente (P008-T008) |
+| F18 | Perfiles declarativos | Perfil de stack (preparación, tests, lint, tipos) declarado en el TOML local y confirmado por el usuario, incluido Python/Django (`pytest`, `ruff`, `mypy`) | Implementado (P008-T008, D095); ejemplo Python/Django pendiente de confirmación sobre el proyecto del usuario |
 | F19 | Instrucciones del proyecto para los agentes | `AGENTS.md` incluido en el contexto congelado de cada intento | Implementada (P008-T007, D094) |
 
 Modos por checkout: **observación** (indexa un harness anterior) y **gestionado** (el motor nuevo controla). Nunca

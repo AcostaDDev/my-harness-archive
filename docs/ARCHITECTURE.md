@@ -1,7 +1,7 @@
 # Arquitectura — Harness Local
 
 Stack, módulos, patrones y convenciones vigentes. Consolida la especificación inicial (§5–7, 9, 10 y 13), las
-decisiones D001–D088 y la información técnica que antes estaba en README y AGENTS. Datos:
+decisiones vigentes y la información técnica que antes estaba en README y AGENTS. Datos:
 [DDBB-DIAGRAM](DDBB-DIAGRAM.md). Flujos: [docs/flows](flows/task-run.md).
 
 ## 1. Stack
@@ -15,7 +15,7 @@ decisiones D001–D088 y la información técnica que antes estaba en README y A
 | Tipos del cliente | `openapi-typescript` 7.13.0 desde el OpenAPI exportado |
 | Herramientas | uv 0.12.19 y `uv.lock`; Node 24.15.0, npm 11.12.1 y `frontend/package-lock.json` |
 | Pruebas | `unittest` (12 checks sin dependencias), pytest 9.1.1 + httpx 0.28.1, `node --test` |
-| Agentes | CLI `codex` 0.161.0/0.162.1 (escritura solo 0.162.1) y `claude` 2.1.295/2.1.296, adaptador `cli-11` |
+| Agentes | CLI `codex` 0.161.0/0.162.1 (escritura solo 0.162.1) y `claude` 2.1.295/2.1.296, adaptador `cli-12` |
 
 Sin Celery, broker ni Docker para el servicio (D003, D004). Detalles de stack de cada proyecto gestionado (Django,
 Node…) pertenecen a perfiles, no al núcleo.
@@ -62,9 +62,9 @@ casos de uso. El supervisor es el único que lanza procesos y consume la cola; c
 | `adapters/commands.py`, `git.py`, `bootstrap.py`, `chat_snapshot.py`, `migration.py`, `legacy.py` | Validaciones nativas (`commands-1`), Git, commit raíz, instantánea de HEAD, migración, lector legacy |
 | `storage/*.py` | Repositorios SQLAlchemy por área (`managed`, `phases`, `documents`, `transition`, `planning`, `chat`, `metrics`, `registry`, `backup`, `retention`, `migrate`…) |
 | `services/managed.py`, `managed_runtime.py` | Supervisor (`run_once`, lease, cuarentena) y composición del runtime |
-| `services/local_config.py`, `project_registry.py` | TOML `local-config-1/2/3` y registro de proyectos desde la UI |
+| `services/local_config.py`, `project_registry.py` | TOML `local-config-4` (lectura de 1–3) y registro de proyectos desde la UI con 3/4 |
 | `api/app.py`, `managed.py`, `legacy.py`, `schemas.py`, `session.py`, `security.py` | Aplicación, rutas, contratos Pydantic, sesión y guardia |
-| `profiles/typescript_web.py`, `profiles/reference_project.py` | Perfiles declarativos (solo `typescript-web` se compone desde el TOML) |
+| `profiles/typescript_web.py`, `profiles/reference_project.py` | Perfiles integrados (`typescript-web` componible; `reference_project` solo biblioteca); los perfiles del TOML v4 se componen en `services/local_config.py` |
 | `cli.py`, `launcher.py` | `harness-local` (legacy, backup, retención, diagnóstico, `check-config`, `metrics-backfill`, `init-db`, `serve`) |
 | `migrations/versions/0001…0020` | Esquema Alembic |
 
@@ -100,13 +100,14 @@ por su API y los artefactos referenciados; la restauración es de consulta (`que
 
 ## 6. Agentes y configuración
 
-- **Adaptador `cli-11`** (D090: propuestas de ADR en las formas de ejecutor y revisor; D094: Codex con
-  `project_doc_max_bytes=0`). Sesión nueva por intento;
+- **Adaptador `cli-12`** (D090: propuestas de ADR en las formas de ejecutor y revisor; D094: Codex con
+  `project_doc_max_bytes=0`; D102: rol `definition` sobre exportaciones de solo lectura). Sesión nueva por intento;
   argv, entorno (sin herencia, `USER` comprobado contra el UID) y timeouts explícitos. Revisor en solo lectura (Codex `--sandbox read-only`; Claude `--restricted` y `--json-schema`
   tipado). Ejecutor Codex `workspace-write` con el checkout como única raíz escribible y confianza `untrusted` inline
   (D059, D068); Claude con herramientas declaradas y `dontAsk`. Memoria automática desactivada en ambos (D066).
   Ninguna CLI carga por sí misma las instrucciones del checkout: Claude se lanza con `--setting-sources ""` y Codex
-  con presupuesto de project docs 0 (D094). El motor inyecta `AGENTS.md` en el prompt de cada rol.
+  con presupuesto de project docs 0 (D094). El motor inyecta `AGENTS.md` en el prompt de los roles sobre proyectos
+  existentes; el rol `definition` (definición, importación e incorporación) lo redacta o lo analiza como evidencia.
 - **TOML local del operador** (`local-config-4`; 1–3 se siguen leyendo), fuera de todo checkout y `chmod 600`:
   `[service]`, `[git]`, `[agents.reviewer]`, `[agents.executor]`, `[registration]` (raíces y techo de bootstrap),
   `[profiles.*]` opcionales, `[compositions.*]` (perfil integrado o declarado y comandos autorizados) y

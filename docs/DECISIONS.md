@@ -115,6 +115,7 @@ tarea se leen solo las decisiones que cita; este índice sirve para buscar prece
 | [D103](#d103--p008-t015-incorporación-confirmada-del-flujo-b) | P008-T015: incorporación confirmada del Flujo B | P008 |
 | [D104](#d104--revisión-de-salida-de-p008-con-hallazgos-en-el-flujo-a) | Revisión de salida de P008 con hallazgos en el Flujo A | P008 |
 | [D105](#d105--p008-t016-frontera-git-y-bytes-confirmados-en-las-importaciones) | P008-T016: frontera Git y bytes confirmados en las importaciones | P008 |
+| [D106](#d106--p008-t017-referencias-vigentes-sin-cambiar-contratos) | P008-T017: referencias vigentes sin cambiar contratos | P008 |
 
 ## D001 — Alcance local y arquitectura base
 
@@ -3389,3 +3390,20 @@ Las regresiones usan exclusivamente repositorios/SQLite temporales, marcadores s
 La configuración y exclusión siguen siendo cooperativas: las comprobaciones no añaden aislamiento del sistema
 operativo ni una garantía frente a cambios concurrentes arbitrarios de configuración. H4 y la nueva revisión de
 salida quedan para las tareas siguientes; esta corrección no cierra ni archiva P008.
+
+## D106 — P008-T017: referencias vigentes sin cambiar contratos
+
+Estado: implementada el 2026-10-17; verificación en el [registro](phase/P008-T017_REFERENCIAS_VIGENTES.md). Fase: P008.
+Resuelve H4 de D104 contrastando los textos con D093, D095, D102 y D105 y con el código vigente.
+
+- SPECIFICATION refleja F11 y F18 implementados, conservando la confirmación pendiente del ejemplo Django sobre
+  el proyecto del usuario. ARCHITECTURE presenta `cli-12`, `local-config-4` con lectura de 1–3, registro con 3/4
+  y perfiles declarados; mantiene `document_layout = "d088-9"` de T016. Se aclaran las excepciones del rol
+  `definition` a la inyección de instrucciones y la procedencia del control introducido en `cli-11`.
+- Ayuda de `serve`, diagnóstico del registro y Home/Registry muestran los formatos admitidos. Prompts explica
+  que `bootstrap-project` pertenece a la creación v1 retirada, `reconcile-phase` construye una tarea documental
+  y `close-phase` revisa el check; el cierre tras READY exige su propia confirmación. Activar no inicia operaciones.
+- Solo se corrigen textos y su selección en la UI: no cambian comportamiento operativo, contratos, versiones,
+  prompts del motor, esquema, API ni dependencias. Las ADR anteriores, archivos y evidencias congeladas se conservan.
+
+P008 sigue activa. La siguiente tarea es repetir la revisión de salida; el cierre y archivo son posteriores.

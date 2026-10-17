@@ -98,4 +98,4 @@ intento sin resultado al confirmar la parada queda `INTERRUPTED` sin reintento a
   intento; un cambio posterior solo afecta a los intentos siguientes.
 - Un `AGENTS.md` ausente, enlazado, no regular, vacío, no UTF-8 o mayor de 32 KiB detiene el run en `prompts`
   antes de invocar al agente. Una versión de plantilla activa sin `{{PROJECT_INSTRUCTIONS}}` también.
-- Las CLI no cargan otra copia: Claude con `--setting-sources ""` y Codex con `project_doc_max_bytes=0` (`cli-11`).
+- Las CLI no cargan otra copia: Claude con `--setting-sources ""` y Codex con `project_doc_max_bytes=0` (desde `cli-11`, D094).

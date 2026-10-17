@@ -4,11 +4,11 @@ Objetivo y criterios de salida en [ROADMAP](ROADMAP.md#p008--contrato-documental
 Decisión de base: [D088](DECISIONS.md#d088--contrato-documental-unificado-cierre-de-fase-automático-e-importación-de-proyectos-p008).
 Análisis de incongruencias que originó la fase: [docs/phase](phase/P008-T001_MIGRACION_DOCUMENTAL.md).
 
-**Siguiente:** P008-T017, sincronizar las referencias vigentes (H4). T001–T016 completadas; T016 corrige
-los tres hallazgos funcionales del Flujo A ([D105](DECISIONS.md#d105--p008-t016-frontera-git-y-bytes-confirmados-en-las-importaciones),
-[registro](phase/P008-T016_FRONTERA_GIT.md)). Después de T017, repetir la revisión de salida de D104; P008
-sigue activa. El cierre y archivo quedan para una operación posterior. Orden ejecutado: T002 → T007 (motor y
-contrato), T008 (perfiles), T009–T012 (Flujo A), T013–T015 (Flujo B) y T016 (frontera Git).
+**Siguiente:** repetir la revisión de salida de D104 tras las correcciones T016/T017. T001–T017 completadas:
+T016 corrige los tres hallazgos funcionales del Flujo A ([D105](DECISIONS.md#d105--p008-t016-frontera-git-y-bytes-confirmados-en-las-importaciones))
+y T017 sincroniza las referencias vigentes de H4 ([D106](DECISIONS.md#d106--p008-t017-referencias-vigentes-sin-cambiar-contratos)).
+P008 sigue activa; el cierre y archivo quedan para una operación posterior. Orden ejecutado: T002 → T007 (motor y
+contrato), T008 (perfiles), T009–T012 (Flujo A), T013–T015 (Flujo B), T016 (frontera Git) y T017 (textos).
 
 ## Restricciones compartidas
 
@@ -417,7 +417,9 @@ importación que no pueda incluir todos sus destinos en Git.
 
 ## P008-T017 — Sincronizar referencias vigentes de P008
 
-**Estado:** pendiente; H4 de D104, posterior a la corrección funcional de T016.
+**Estado:** completada el 2026-10-17 ([D106](DECISIONS.md#d106--p008-t017-referencias-vigentes-sin-cambiar-contratos)).
+Textos vigentes alineados con el código, sin cambios de contratos ni evidencias congeladas; verificación y límites
+en el [registro](phase/P008-T017_REFERENCIAS_VIGENTES.md). Resuelve H4 de D104, tras la corrección funcional de T016.
 **Objetivo:** Que los textos activos reflejen lo implementado, antes de repetir la revisión de salida.
 **Alcance:** estados F11/F18 de SPECIFICATION, versión del adaptador en ARCHITECTURE, ayudas de registro/serve y
 Home/Registry sobre `local-config-4`, y mensajes de Prompts sobre cierre/reconciliación. Contrastar otros textos

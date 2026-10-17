@@ -60,7 +60,7 @@ def main(argv: list[str] | None = None) -> int:
         command.add_argument('--database', required=True, help='Ruta absoluta SQLite; no usa HARNESS_DATABASE_URL')
         if name == 'serve':
             command.add_argument('--port', type=int, default=8013)
-            command.add_argument('--config', help='TOML local de uso real (local-config-1/2/3); por defecto, sin proyectos')
+            command.add_argument('--config', help='TOML local de uso real (local-config-4; también 1–3); por defecto, sin proyectos')
     args = parser.parse_args(argv)
     engine = None
     try:

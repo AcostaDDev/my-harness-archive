@@ -1,4 +1,4 @@
-"""H6.2 E2 (D054/D076): alta, cambio y baja de proyectos desde la UI sobre el TOML `local-config-3`.
+"""Alta, cambio y baja de proyectos desde la UI sobre `local-config-3/4` (D078/D095).
 
 El TOML sigue siendo la autoridad de lo que se ejecuta; el registro solo guarda
 datos no ejecutables (raíz canónica, confianza, composición nombrada, política,
@@ -87,7 +87,8 @@ class ProjectRegistry:
     def _require(self):
         if self.registrar is None:
             raise RegistryError(409, 'registry_unavailable',
-                                'La configuración del servicio no admite registrar proyectos (requiere local-config-3).')
+                                'La configuración del servicio no admite registrar proyectos '
+                                '(requiere local-config-3 o local-config-4 con [registration] y al menos una composición).')
         return self.registrar
 
     # --- composición ------------------------------------------------------------------

@@ -255,9 +255,8 @@ Objetivo y criterios en [ROADMAP](ROADMAP.md); plan en [NEXT_STEPS](NEXT_STEPS.m
 - Dictamen: P008 sigue activa y no está lista para cerrar. No cambia el código del producto ni se reescriben las ADR,
   snapshots o intenciones previas. Reproducciones, criterio por criterio y verificación en el
   [registro](phase/P008_REVISION_SALIDA.md).
-- Verificación: 1.345 pruebas pytest y 121 subtests correctos (767 iniciales y tres lotes sin solapamiento de
-  193/194/191); 12 checks ligeros, 75 Node, tipos/build y Alembic temporal correctos. 363 enlaces/anclas y veinte
-  diagramas válidos por parser/gramática; 35 tablas/columnas en paridad. Sin UI visual ni proveedores reales.
+- Verificación y límites en el registro: pytest, checks ligeros, Node, tipos/build, Alembic temporal y paridad
+  documental correctos. Sin UI visual ni proveedores reales.
 
 **P008-T016 completada** ([D105](DECISIONS.md#d105--p008-t016-frontera-git-y-bytes-confirmados-en-las-importaciones)):
 
@@ -270,5 +269,12 @@ Objetivo y criterios en [ROADMAP](ROADMAP.md); plan en [NEXT_STEPS](NEXT_STEPS.m
   diff revisado. [Registro](phase/P008-T016_FRONTERA_GIT.md). Sin Node/build/Alembic independiente (sin cambios
   de esquema/API/UI), proveedores reales ni smokes.
 
-**Siguiente:** P008-T017, sincronizar referencias vigentes (H4); después, nueva revisión de salida. P008 sigue
-activa, sin cierre ni archivo en esta tarea; este repositorio sigue sin registrarse en el harness.
+**P008-T017 completada** ([D106](DECISIONS.md#d106--p008-t017-referencias-vigentes-sin-cambiar-contratos)):
+
+- F11/F18, arquitectura y ayudas CLI/registro/UI alineadas con lo implementado; Prompts distingue creación v1
+  retirada, reconciliación y check previo al cierre. Solo textos, sin contratos ni históricos modificados.
+- Verificación: 12 checks ligeros, 52 pytest dirigidas, 75 Node y tipos/build correctos; ayuda CLI comprobada.
+  Detalle y límites en el [registro](phase/P008-T017_REFERENCIAS_VIGENTES.md).
+
+**Siguiente:** nueva revisión de salida de P008 tras T016/T017; cierre y archivo separados. P008 sigue activa
+y este repositorio sin registrarse en el harness.

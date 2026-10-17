@@ -55,7 +55,13 @@ function Editor({ project, scope, name }: { project: string; scope: Scope; name:
   }, [base, scope]);
   useEffect(() => { setConfirmed(false); setDiff(""); setStatus(""); }, [selected, before, text, detail?.generation]);
   const version = detail?.versions.find(v => v.id === selected);
-  const inactiveFlow = ["bootstrap-project", "reconcile-phase", "close-phase"].includes(name);
+  const flowHelp = name === "bootstrap-project"
+    ? "Plantilla histórica de la creación v1, retirada. Los proyectos nuevos usan define-project."
+    : name === "reconcile-phase"
+      ? "Plantilla de la tarea de reconciliación documental: se ejecuta, revisa y confirma como una tarea; después se adopta la base documental por hash."
+      : name === "close-phase"
+        ? "Plantilla de revisión del check de fase. Tras READY, el cierre y archivo requieren su propia confirmación."
+        : "";
   async function operate(action: () => Promise<void>) {
     if (guard.current) return;
     guard.current = true; setBusy(true); setError("");
@@ -77,7 +83,7 @@ function Editor({ project, scope, name }: { project: string; scope: Scope; name:
     if (alive.current) { setSelected(v.id); setText(v.template); }
   }
   return <section>
-    {inactiveFlow && <p>Plantilla conservada para un flujo aún no implementado. Activarla no ejecuta bootstrap, reconciliación ni cierre.</p>}
+    {flowHelp && <p>{flowHelp} Activar una plantilla afecta a usos posteriores; no inicia la operación.</p>}
     {scope !== "project" && <p>Este ámbito afecta a otros proyectos que hereden {scope === "core" ? "la base global" : "este perfil"}.</p>}
     {error && <p role="alert" className="state state-error">{error}</p>}
     {status && <p role="status" className="state state-ok">{status}</p>}

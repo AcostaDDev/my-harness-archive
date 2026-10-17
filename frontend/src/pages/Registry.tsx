@@ -232,7 +232,7 @@ export function RegisterPage() {
     </PageHeader>
     {!options ? read.error ? <Alert>No se pudo leer el registro: {read.error}</Alert> : <Loading />
       : !options.available ? <Empty title="Este servicio no admite registrar proyectos">
-        <p>El registro desde la interfaz necesita una configuración <code>local-config-3</code> con <code>[registration]</code> y al menos una composición. {options.format ? <>El servicio usa <code>{options.format}</code>.</> : "El servicio arrancó sin configuración local."}</p>
+        <p>El registro desde la interfaz necesita una configuración <code>local-config-3</code> o <code>local-config-4</code> con <code>[registration]</code> y al menos una composición. {options.format ? <>El servicio usa <code>{options.format}</code>.</> : "El servicio arrancó sin configuración local."}</p>
         <p>Los proyectos del TOML siguen en la <Link to={{ name: "home" }}>lista de proyectos</Link>.</p>
       </Empty>
       : !options.roots.length ? <Empty title="No hay raíces autorizadas"><p>Añade rutas a <code>[registration].roots</code> en el TOML del operador y reinicia el servicio.</p></Empty>
