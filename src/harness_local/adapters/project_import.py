@@ -1,7 +1,8 @@
 """P008-T009: lectura de solo lectura del checkout para el inventario del Flujo A.
 
 Solo Git de lectura con el entorno controlado de `adapters/git.py` (sin hooks, fsmonitor ni configuración global):
-`rev-parse`, `status` sin locks opcionales, `ls-tree` y `cat-file --batch` sin filtros. El contenido sale del árbol
+`rev-parse`, `status` sin locks opcionales, `ls-tree` y `cat-file --batch` sin filtros ni lazy-fetch desde el primer
+comando (D108). El contenido sale del árbol
 de HEAD de un checkout limpio, así que lo ignorado (entornos, secretos locales) nunca se lee y los enlaces
 simbólicos son entradas del árbol que no se siguen. De `.harness/runs`, que sigue la migración D027, solo se
 observan los nombres por lstat. No escribe en el checkout ni en `.git` y no ejecuta código del proyecto.
@@ -13,6 +14,7 @@ from pathlib import Path, PurePosixPath
 import stat
 
 from harness_local.adapters.git import Git, GitError
+from harness_local.adapters.local_git import LocalGit, object_size
 from harness_local.core.engine.context import ProjectContext
 from harness_local.core.migration import MARKER_PATH
 from harness_local.core.project_import import (
@@ -31,7 +33,8 @@ def _tree(git: Git, revision: str = 'HEAD') -> list[tuple[str, str, str, int | N
             continue
         header, _, raw_path = record.partition(b'\t')
         mode, kind, obj, size = header.decode('ascii').split()
-        rows.append((mode, kind, obj, None if size == '-' else int(size), raw_path.decode('utf-8')))
+        path = raw_path.decode('utf-8')
+        rows.append((mode, kind, obj, object_size(size, kind, obj, path), path))
     return rows
 
 
@@ -42,11 +45,18 @@ def _blobs(git: Git, objects: list[str]) -> dict[str, bytes]:
     output = git.run('cat-file', '--batch', input=('\n'.join(objects) + '\n').encode('ascii'))
     found, offset = {}, 0
     for obj in objects:
-        end = output.index(b'\n', offset)
+        end = output.find(b'\n', offset)
+        if end == -1:
+            raise ImportInventoryError(f'Git object {obj} has an incomplete batch response.')
         header = output[offset:end].decode('ascii').split()
         if len(header) != 3 or header[0] != obj or header[1] != 'blob':
-            raise ImportInventoryError(f'Git object {obj} could not be read as a blob.')
+            raise ImportInventoryError(f'Git object {obj} is missing or could not be read as a local blob '
+                                       '(lazy-fetch is disabled).')
+        if not header[2].isascii() or not header[2].isdecimal():
+            raise ImportInventoryError(f'Git object {obj} has an unavailable blob size.')
         size = int(header[2])
+        if output[end + 1 + size:end + 2 + size] != b'\n':
+            raise ImportInventoryError(f'Git object {obj} has incomplete blob content.')
         found[obj] = output[end + 1:end + 1 + size]
         offset = end + 1 + size + 1
     return found
@@ -94,7 +104,7 @@ def legacy_runs(root: Path) -> dict:
 def read_checkout(root: Path, docs: str = 'docs', *, executable: str = 'git',
                   marker_sha256: str | None = None) -> CheckoutSnapshot:
     root = Path(root)
-    git = Git(root, executable=executable)
+    git = LocalGit(root, executable=executable)
     try:
         top = Path(git.text('rev-parse', '--show-toplevel')).resolve()
     except GitError as exc:
@@ -104,11 +114,18 @@ def read_checkout(root: Path, docs: str = 'docs', *, executable: str = 'git',
     check_filters(git)
     try:
         head = git.text('rev-parse', '--verify', '--quiet', 'HEAD^{commit}')
+    except GitError as exc:
+        raise ImportInventoryError('The checkout has no commits or its HEAD object is missing locally; '
+                                   'import needs a non-empty repository (lazy-fetch is disabled).') from exc
+    try:
         tree = git.text('rev-parse', '--verify', f'{head}^{{tree}}')
     except GitError as exc:
-        raise ImportInventoryError('The checkout has no commits; import needs a non-empty repository.') from exc
-    dirty = [item for item in git.run('status', '--porcelain=v1', '-z', '--untracked-files=all',
-                                      '--ignore-submodules=none').split(b'\0') if item]
+        raise ImportInventoryError(f'Cannot read the local HEAD tree: {exc}') from exc
+    try:
+        dirty = [item for item in git.run('status', '--porcelain=v1', '-z', '--untracked-files=all',
+                                          '--ignore-submodules=none').split(b'\0') if item]
+    except GitError as exc:
+        raise ImportInventoryError(f'Cannot inspect the checkout with local Git objects: {exc}') from exc
     if marker_sha256 is not None:
         marker = root / MARKER_PATH
         if (not marker.is_symlink() and marker.is_file()
@@ -117,7 +134,10 @@ def read_checkout(root: Path, docs: str = 'docs', *, executable: str = 'git',
     if dirty:
         sample = ', '.join(item[3:].decode('utf-8', 'replace') for item in dirty[:5])
         raise ImportInventoryError(f'The checkout has uncommitted changes ({sample}); commit or discard them first.')
-    rows = _tree(git)
+    try:
+        rows = _tree(git)
+    except GitError as exc:
+        raise ImportInventoryError(f'Cannot read the local HEAD tree: {exc}') from exc
     if any(row[4] == MARKER_PATH for row in rows):
         raise ImportInventoryError('The managed marker must remain untracked local state (D099).')
     if not rows:
@@ -129,7 +149,10 @@ def read_checkout(root: Path, docs: str = 'docs', *, executable: str = 'git',
                 and row[3] <= MAX_ENTRY_BYTES]
     if sum(row[3] for row in readable) > MAX_TOTAL_BYTES:
         raise ImportInventoryError(f'Documentation exceeds {MAX_TOTAL_BYTES} bytes; inventory refused.')
-    contents = _blobs(git, sorted({row[2] for row in readable}))
+    try:
+        contents = _blobs(git, sorted({row[2] for row in readable}))
+    except GitError as exc:
+        raise ImportInventoryError(f'Cannot read local HEAD blobs: {exc}') from exc
     entries = []
     for mode, _, obj, size, path in scoped:
         if '..' in PurePosixPath(path).parts:

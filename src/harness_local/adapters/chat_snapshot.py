@@ -10,6 +10,7 @@ import shutil
 import stat
 
 from harness_local.adapters.git import Git, GitError
+from harness_local.adapters.local_git import object_size
 from harness_local.core.engine.context import relative_path
 from harness_local.core.engine.contracts import freeze
 from harness_local.core.engine.evidence import ContentEvidence
@@ -42,10 +43,11 @@ class HeadSnapshot:
             parts = relative_path(path).parts
             if kind != 'blob' or mode not in ('100644', '100755') or '.git' in parts:
                 raise ValueError('Chat snapshots require regular files; symlinks and submodules are not supported')
-            total += int(size)
-            if int(size) > MAX_FILE_BYTES or total > MAX_BYTES or len(entries) >= MAX_FILES:
+            size = object_size(size, kind, oid, path)
+            total += size
+            if size > MAX_FILE_BYTES or total > MAX_BYTES or len(entries) >= MAX_FILES:
                 raise ValueError('Chat HEAD snapshot exceeds the file/byte limit')
-            entries[path] = (oid, int(size), mode)
+            entries[path] = (oid, size, mode)
         return entries
 
     def documents(self, context, head, paths):

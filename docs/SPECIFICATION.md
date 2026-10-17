@@ -168,6 +168,8 @@ bloques de estado y crea una nueva versión de su definición, conservando la an
   T016 (D105) rechaza filtros Git `clean`/`process` incluidos por configuración antes de consultar el estado,
   capturar o sellar; comprueba destinos nuevos ignorados y blobs por hash antes de confirmar y ejecutar.
   Las conversiones de atributos no pueden cambiar los bytes confirmados, tampoco en originales o binarios.
+  T018 (D108) exige lecturas A/B sin lazy-fetch desde el primer comando Git; objetos locales ausentes o
+  respuestas incompletas bloquean con diagnóstico, sin transportes, recuperación de objetos ni inventarios parciales.
 - **Flujo B — repositorio sin harness.** Inventario determinista (stack, modelos de datos, rutas, tests) e ingeniería
   inversa del revisor en solo lectura para generar ARCHITECTURE, DDBB-DIAGRAM (desde los modelos reales),
   SPECIFICATION base, STATE actual y los archivos raíz mínimos, con un perfil declarativo confirmado por el usuario.

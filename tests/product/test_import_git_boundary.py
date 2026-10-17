@@ -64,7 +64,7 @@ def test_inventory_rejects_filters_before_status_without_touching_git(tmp_path, 
     original = Git.run
 
     def recording(self, *args, **kwargs):
-        calls.append(args[0])
+        calls.append(args[1] if args[0] == '--no-lazy-fetch' else args[0])
         return original(self, *args, **kwargs)
 
     monkeypatch.setattr(Git, 'run', recording)

@@ -4,15 +4,13 @@ Objetivo y criterios de salida en [ROADMAP](ROADMAP.md#p008--contrato-documental
 Decisión de base: [D088](DECISIONS.md#d088--contrato-documental-unificado-cierre-de-fase-automático-e-importación-de-proyectos-p008).
 Análisis de incongruencias que originó la fase: [docs/phase](phase/P008-T001_MIGRACION_DOCUMENTAL.md).
 
-**Siguiente:** P008-T018, impedir lazy-fetch durante las lecturas del Flujo A. La segunda revisión de salida
-([D107](DECISIONS.md#d107--segunda-revisión-de-salida-de-p008), [registro](phase/P008_REVISION_SALIDA_2.md))
-confirma H1–H4 corregidos tras T016/T017 y corrige dos referencias residuales en la prosa de los flujos, pero
-reproduce H5: un blob prometido ausente ejecuta el transporte Git durante el inventario A. T001–T017 completadas:
-T016 corrige los tres hallazgos funcionales del Flujo A ([D105](DECISIONS.md#d105--p008-t016-frontera-git-y-bytes-confirmados-en-las-importaciones))
-y T017 sincroniza las referencias vigentes de H4 ([D106](DECISIONS.md#d106--p008-t017-referencias-vigentes-sin-cambiar-contratos)).
-P008 sigue activa y no está lista para cerrar; tras T018 se repetirá la revisión. No se ha ejecutado un check READY
-del producto sobre este repositorio ni su cierre. Orden ejecutado: T002 → T007 (motor y
-contrato), T008 (perfiles), T009–T012 (Flujo A), T013–T015 (Flujo B), T016 (frontera Git) y T017 (textos).
+**Siguiente:** nueva revisión de salida de P008, después de T018 (D108). T001–T018 completadas.
+La segunda revisión ([D107](DECISIONS.md#d107--segunda-revisión-de-salida-de-p008),
+[registro](phase/P008_REVISION_SALIDA_2.md)) conserva la evidencia histórica de H5. T018 corrige sus lecturas
+sin lazy-fetch y sus diagnósticos de objetos ausentes con regresiones sintéticas; detalle en el
+[registro](phase/P008-T018_OBJETOS_LOCALES.md). T016 corrigió H1–H3 y T017 las referencias de H4.
+P008 sigue activa; su salida debe revisarse de nuevo antes del cierre y archivo, que son operaciones separadas.
+No se ha ejecutado un check READY del producto ni registrado este repositorio. No se inventa una fase sucesora.
 
 ## Restricciones compartidas
 
@@ -440,7 +438,10 @@ cierre y archivo separados.
 
 **Objetivo:** Impedir que el inventario A recupere objetos prometidos o ejecute transportes Git durante una lectura;
 rechazar un objeto ausente con un diagnóstico explícito, sin ejecutar código ni acceder a remotos.
-**Estado:** pendiente, derivada de H5 de [D107](DECISIONS.md#d107--segunda-revisión-de-salida-de-p008).
+**Estado:** completada el 2026-10-17 ([D108](DECISIONS.md#d108--p008-t018-lecturas-de-importación-sin-lazy-fetch)).
+`LocalGit` compartido exige `--no-lazy-fetch` desde el primer comando A/B; tamaños y objetos ausentes bloquean
+con diagnóstico, sin respuestas parciales. `document_layout = "d088-10"`; guardias, D099, CAS y conciliación
+conservadas. Detalle y verificación en el [registro](phase/P008-T018_OBJETOS_LOCALES.md). Derivada de H5 de D107.
 **Alcance:**
 - Desactivar lazy-fetch obligatoriamente desde el primer comando Git del lector A, incluidos `rev-parse`,
   `status`, `ls-tree -l` y `cat-file`; reutilizar la frontera local de B o extraer lo común sin dependencias circulares.

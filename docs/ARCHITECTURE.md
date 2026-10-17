@@ -124,16 +124,20 @@ por su API y los artefactos referenciados; la restauración es de consulta (`que
   solo lectura `definition`, sin `AGENTS.md` inyectado porque es parte del origen), `bootstrap-project`. Jerarquía base →
   perfil → proyecto; snapshot por intento. Prompts unificados y definición versión 4 (D092). `AGENTS.md` (≤32 KiB)
   entra por `{{PROJECT_INSTRUCTIONS}}` en todos los roles salvo la definición, con ruta, hash y tamaño en el snapshot;
-  sin él, el intento se detiene antes de invocar (D094). `document_layout = "d088-9"` (T016, D105) congela las reglas nuevas y
+  sin él, el intento se detiene antes de invocar (D094). `document_layout = "d088-10"` (T018, D108) congela las reglas nuevas y
   detiene jobs anteriores antes de efectos. D099 excluye de Git solo el marcador local validado por la guardia
   de esta instalación; la importación confirma originales archivados y un commit conciliable (D100). Las transiciones ya selladas conservan su
   conciliación con los bytes originales. La definición congela los valores por defecto; la planificación incluye
   instrucciones y DDBB-DIAGRAM entre sus documentos de contexto.
-- **Frontera Git A/B** (D105): `adapters/project_import.py` rechaza filtros `clean`/`process`, incluidos includes,
+- **Frontera Git A/B** (D105, D108): `adapters/project_import.py` rechaza filtros `clean`/`process`, incluidos includes,
   antes del primer `status`; `storage/project_import.py` aplica las mismas guardias a ambos flujos antes de capturar,
   sellar y ejecutar/reanudar. Los destinos nuevos ignorados bloquean y todos los blobs documentales se contrastan
   con los SHA-256 confirmados, incluidos archivo y binarios. El sellado final exige el mismo árbol propuesto;
-  no se cambia la configuración ni se reescriben intenciones anteriores.
+  no se cambia la configuración ni se reescriben intenciones anteriores. `adapters/local_git.py` comparte
+  `LocalGit`: exige `--no-lazy-fetch` desde el primer comando de lectura A/B; un Git sin ese flag falla.
+  Los tamaños `BAD`/ausentes y las respuestas de blobs ausentes o incompletas bloquean con diagnóstico;
+  no se recuperan objetos ni se devuelve un inventario parcial. Se aplica también a conversación/vista previa
+  A y a los lectores de instantáneas compartidos con B.
 - **Inventario del Flujo B** (D101): AST de Python, JSON/TOML de manifiestos y un subconjunto léxico de JS/TS/Prisma,
   solo biblioteca estándar. Lee blobs de un árbol Git sellado, sin `status`, filtros ni código del proyecto; excluye
   dependencias instaladas y builds incluso si están versionados. Cada entidad/ruta cita fuente y línea; las rutas

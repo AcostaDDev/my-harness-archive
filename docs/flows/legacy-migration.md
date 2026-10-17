@@ -33,7 +33,8 @@ El Flujo A (T009–T012) añade, sobre esta vía y sobre proyectos v1/v2 de este
 layout unificado. Implementados: el inventario de solo lectura (P008-T009, D096), el mapa determinista de
 renombrados, movimientos y composición de decisiones (P008-T010, D097) y la conversación `project_import` en la que
 el revisor propone fusiones y adelgazamiento como borradores privados (P008-T011, D098), y la vista previa y
-el commit confirmado con CAS y adopción de fase (P008-T012, D100). T016 (D105) corrige la frontera Git de H1–H3.
+el commit confirmado con CAS y adopción de fase (P008-T012, D100). T016 (D105) corrige la frontera Git de H1–H3;
+T018 (D108), las lecturas locales sin lazy-fetch de H5.
 
 ```mermaid
 flowchart TD
@@ -42,10 +43,13 @@ flowchart TD
     A2 --> B0
     A1 -- no --> B0{"¿Sin filtros clean/process configurados, incluidos includes?"}
     B0 -- no --> R
-    B0 -- sí --> B{"Git, HEAD con archivos y checkout limpio"}
+    B0 -- sí --> B{"Git con no-lazy-fetch obligatorio, HEAD local con archivos y checkout limpio"}
     B -- no --> R["Rechazo con diagnóstico, sin escrituras"]
     B -- sí --> C["Árbol de HEAD: Markdown raíz, docs/ y .harness/ sin runs"]
-    C --> D["Blobs por cat-file; enlaces y submódulos rechazados sin leer"]
+    C --> C1{"¿Objetos locales y tamaños disponibles, sin lazy-fetch?"}
+    C1 -- no --> R
+    C1 -- sí --> D["Blobs completos por cat-file; enlaces y submódulos rechazados sin leer"]
+    D -- objeto ausente o respuesta incompleta --> R
     C --> E[".harness/runs por lstat (D027)"]
     D --> F["Clase y regla por entrada, origen, fases, instrucciones y bloques"]
     E --> F
@@ -99,8 +103,15 @@ confirmar; las conversiones internas de atributos también bloquean si cualquier
 resultante difiere de su SHA-256 confirmado, incluidos originales archivados y binarios. El sellado final debe
 reproducir el árbol de la vista previa. Cambiar atributos después de confirmar se detecta al recalcular la intención
 antes de escribir; cambiar exclusiones se vuelve a comprobar en el job. Se mantiene la CAS y la recuperación del
-mismo commit. `document_layout = "d088-9"` pone en cuarentena jobs con composiciones anteriores; ninguna intención
-sellada se reescribe y la configuración global permanece intacta.
+mismo commit.
+
+T018 (D108) comparte `LocalGit` con B y exige `--no-lazy-fetch` desde `rev-parse`, incluida la consulta de
+filtros, `status`, `ls-tree -l` y `cat-file`. Git sin ese flag se rechaza en el primer comando. Un blob prometido
+ausente, un tamaño no disponible o una respuesta de blobs incompleta rechazan la lectura con diagnóstico:
+no se invoca ningún transporte ni se recuperan objetos. La misma frontera cubre crear la conversación, enviar
+un turno, observarlo y consultar estado/vista previa/confirmación a través de `read_checkout`; nada parcial
+llega al revisor ni al sellado. `document_layout = "d088-10"` pone en cuarentena jobs anteriores; ninguna
+intención sellada se reescribe y la configuración global permanece intacta.
 
 ## Fuente en el código
 

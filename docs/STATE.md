@@ -106,22 +106,15 @@ Objetivo y criterios en [ROADMAP](ROADMAP.md); plan en [NEXT_STEPS](NEXT_STEPS.m
   AGENTS. Enlaces y secuencia Mermaid válidos; estados sin DOM no comprobados. Sin Node/build/Alembic ni
   proveedores/smokes reales. Evidencia y límites en el [registro](phase/P008-T007_INSTRUCCIONES_CONTEXTO.md).
 
-**P008-T008 completada** (perfiles declarativos en el TOML local,
-[D095](DECISIONS.md#d095--p008-t008-perfiles-declarados-en-local-config-4)):
+**P008-T008 completada** ([D095](DECISIONS.md#d095--p008-t008-perfiles-declarados-en-local-config-4)):
 
-- `local-config-4` = `local-config-3` + `[profiles.<nombre>]`: preparación y validaciones como argv sin shell (JUnit
-  junto a su validación), prefijos, rutas protegidas y sensibles, `data_model_paths` e instrucciones del ejecutor,
-  todo explícito y con claves desconocidas rechazadas. Las composiciones nombran un perfil integrado o declarado.
-- En v4 el contenido del perfil entra en `local_config_sha256` (cambiarlo pone en cuarentena los jobs pendientes);
-  v1–v3 conservan comportamiento y hash. `check-config` muestra cada perfil declarado con su hash y sus argv.
-- Ejemplo `python-django` en `examples/local_config.example.toml` (pytest con JUnit, ruff, mypy, `manage.py check` y
-  `makemigrations --check`), pendiente de que el usuario lo confirme sobre su proyecto.
-- Verificación: 12 checks ligeros. Pytest completo: 1.218 OK y 121 subtests, con 1 fallo de la prueba que fijaba el
-  ejemplo a v3; se actualizó y se re-ejecutaron los tres archivos afectados (74 OK), incluidos 27 casos nuevos con un
-  recorrido Django sintético hasta COMMITTED. 241 enlaces y anclas válidos. Sin Node/build ni `alembic check` (no
-  cambian UI, OpenAPI ni esquema), sin proveedores reales, smokes ni herramientas Python reales. Los textos de
-  ayuda, registro y UI que citan `local-config-3` quedan pendientes, fuera de las rutas de la tarea
-  ([registro](phase/P008-T008_PERFILES_DECLARATIVOS.md)).
+- `local-config-4` añade `[profiles.<nombre>]` con argv sin shell, JUnit, prefijos, rutas y paridad de modelos;
+  claves desconocidas rechazadas. Perfiles integrados o declarados en composiciones; contenido en el hash
+  congelado v4 (v1–v3 conservados), `check-config` con hash y argv. Ejemplo `python-django` pendiente de confirmar
+  sobre un proyecto real; recorrido Django sintético hasta COMMITTED cubierto.
+- Verificación: 12 checks, pytest 1.218 y 121 subtests, con un fallo de expectativa del ejemplo v3 corregido y
+  74 pruebas afectadas revalidadas; 241 enlaces correctos. Sin Node/build/Alembic ni herramientas/proveedores
+  reales. Ayudas desactualizadas resueltas después en T017. [Registro](phase/P008-T008_PERFILES_DECLARATIVOS.md).
 
 **P008-T009 completada** (Flujo A: inventario de solo lectura,
 [D096](DECISIONS.md#d096--p008-t009-inventario-de-importación-desde-el-árbol-de-head)):
@@ -276,5 +269,15 @@ Objetivo y criterios en [ROADMAP](ROADMAP.md); plan en [NEXT_STEPS](NEXT_STEPS.m
   P008 no está lista para cerrar. Verificación: 1.365 pytest y 121 subtests, 12 checks, 75 Node, build y Alembic
   temporal correctos. Evidencia y límites en el registro; sin proveedores/smokes reales ni comprobación visual.
 
-**Siguiente:** P008-T018 (lecturas A sin lazy-fetch), después nueva revisión de salida. Cierre y archivo separados.
+**P008-T018 completada** ([D108](DECISIONS.md#d108--p008-t018-lecturas-de-importación-sin-lazy-fetch)):
+
+- `LocalGit` compartido exige `--no-lazy-fetch` desde el primer comando A/B. Objetos o tamaños ausentes y
+  respuestas de blobs incompletas bloquean con diagnóstico, sin transporte, objetos recuperados ni inventarios
+  parciales; conversación, turnos, estado, vista previa y confirmación A heredan la misma frontera.
+- `document_layout = "d088-10"` pone en cuarentena jobs anteriores; sin reescribir intenciones ni la evidencia de H5.
+  Filtros, bytes exactos, D099, CAS y conciliación conservados. [Registro](phase/P008-T018_OBJETOS_LOCALES.md).
+- Verificación: 12 checks; suite de 1.383 casos y 121 subtests, cuatro fallos iniciales corregidos y 128 pruebas
+  revalidadas; 403 enlaces y cinco flowcharts válidos. Sin proveedores ni smokes reales.
+
+**Siguiente:** nueva revisión de salida tras T018. Cierre y archivo separados.
 P008 sigue activa y este repositorio sin registrarse ni ejecutar un check READY del producto sobre él.

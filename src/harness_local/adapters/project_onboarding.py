@@ -7,18 +7,13 @@ comprobar de nuevo su base. No lee archivos locales ignorados, enlaces, submódu
 
 from pathlib import Path
 
-from harness_local.adapters.git import Git, GitError
+from harness_local.adapters.git import GitError
+from harness_local.adapters.local_git import LocalGit as _InventoryGit, object_size
 from harness_local.adapters.project_import import _blobs
 from harness_local.core.project_import import ImportInventoryError, TreeEntry
 from harness_local.core.project_onboarding import (
     MAX_ENTRIES, MAX_ENTRY_BYTES, MAX_TOTAL_BYTES, OnboardingInventoryError, build_inventory, in_scope,
 )
-
-
-class _InventoryGit(Git):
-    def run(self, *args, **kwargs):
-        # Fallar también con Git antiguo: una variable de entorno desconocida se ignoraría silenciosamente.
-        return super().run('--no-lazy-fetch', *args, **kwargs)
 
 
 def read_inventory(root: Path, *, executable: str = 'git') -> dict:
@@ -39,10 +34,10 @@ def read_inventory(root: Path, *, executable: str = 'git') -> dict:
             raise OnboardingInventoryError(f'More than {MAX_ENTRIES} tree entries; inventory refused.')
         for record in records:
             header, raw_path = record.split(b'\t', 1)
-            mode, _, obj, size = header.decode('ascii').split()
+            mode, kind, obj, size = header.decode('ascii').split()
             path = raw_path.decode('utf-8')
             if in_scope(path):
-                rows.append((mode, obj, None if size == '-' else int(size), path))
+                rows.append((mode, obj, object_size(size, kind, obj, path), path))
         readable = [row for row in rows if row[0] in ('100644', '100755')
                     and row[2] is not None and row[2] <= MAX_ENTRY_BYTES]
         if sum(row[2] for row in readable) > MAX_TOTAL_BYTES:
@@ -58,4 +53,5 @@ def read_inventory(root: Path, *, executable: str = 'git') -> dict:
             entries.append(TreeEntry(path, mode, size, None if diagnostic else blobs[obj], diagnostic))
         return build_inventory(tuple(entries), head=head, tree=tree)
     except (GitError, ImportInventoryError, UnicodeError) as exc:
-        raise OnboardingInventoryError(f'Cannot read a non-empty Git HEAD: {exc}') from exc
+        raise OnboardingInventoryError('Cannot read a non-empty Git HEAD from complete local objects '
+                                       f'(lazy-fetch is disabled): {exc}') from exc

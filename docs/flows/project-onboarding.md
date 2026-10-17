@@ -7,12 +7,13 @@ documental con P001 adoptada en T015 (D103).
 
 ```mermaid
 flowchart TD
-    A["Raíz Git con un HEAD no vacío"] --> B["Sellar commit y árbol por rev-parse"]
+    A["Raíz Git con un HEAD no vacío; no-lazy-fetch desde el primer comando"] --> B["Sellar commit y árbol por rev-parse"]
     B --> C["ls-tree del árbol sellado: seleccionar fuentes, manifiestos, tests, CI y documentos raíz"]
     C --> D["Excluir dependencias instaladas, cachés y builds aunque estén versionados"]
-    D --> E{"¿Límites de entradas y bytes?"}
+    D --> E{"¿Objetos locales, tamaños disponibles y límites de entradas y bytes?"}
     E -- no --> R["Rechazo con diagnóstico; sin truncar"]
     E -- sí --> F["cat-file --batch de blobs regulares; sin filtros, enlaces ni submódulos"]
+    F -- objeto ausente o respuesta incompleta --> R
     F --> G["Hashes y diagnóstico por fuente; sin importar módulos ni ejecutar herramientas"]
     G --> H["Python AST; manifiestos JSON y TOML; subconjunto léxico JS, TS y Prisma"]
     H --> I["Stack, entidades y relaciones, rutas locales, tests y CI con procedencia"]
@@ -23,7 +24,11 @@ flowchart TD
 La lectura usa el árbol del commit sellado, incluso con cambios locales: no inspecciona el worktree, el índice ni
 archivos sin seguimiento. No usa `status`, que podría invocar filtros `clean`. La confirmación de T015
 comprueba su base y el checkout antes de cualquier escritura. Releer el mismo árbol produce el mismo
-inventario; la huella no contiene raíz ni fecha/id del commit.
+inventario; la huella no contiene raíz ni fecha/id del commit. T018 (D108) comparte `LocalGit` con A,
+conservando `--no-lazy-fetch` obligatorio desde el primer comando (Git sin soporte se rechaza). Un objeto
+ausente, tamaño no disponible o respuesta de blobs incompleta bloquea con diagnóstico, sin transporte ni
+objetos recuperados ni inventarios parciales; también en la exportación y vista previa que usan el lector
+de instantáneas compartido.
 
 Cada fuente seleccionada lleva modo Git, tamaño, SHA-256 y estado. Enlaces y submódulos no se siguen; un archivo
 excesivo, binario, no UTF-8 o de sintaxis no analizable deja un diagnóstico explícito. El árbol completo sigue
@@ -152,7 +157,7 @@ límites de D083, 512 KiB por documento y 4 MiB de diff, sin truncar, y la exclu
 
 `GET …/projects/{p}/onboarding` permite recuperar la operación y la UI `/projects/:p/onboarding[/:c/*borrador]`
 reutiliza conversación, editor CAS y confirmación del Flujo A, con perfil y continuidad en P001. Una tarea de P001
-se encola por una acción posterior con la composición confirmada. `document_layout = "d088-9"` (T016) pone en cuarentena
+se encola por una acción posterior con la composición confirmada. `document_layout = "d088-10"` (T018) pone en cuarentena
 jobs anteriores antes de efectos; no se reescriben snapshots, intenciones ni historiales existentes.
 
 Fuente: `core/engine/onboarding_commit.py`, `storage/onboarding_commit.py`, infraestructura compartida de

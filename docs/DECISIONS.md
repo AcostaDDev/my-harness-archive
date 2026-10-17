@@ -117,6 +117,7 @@ tarea se leen solo las decisiones que cita; este índice sirve para buscar prece
 | [D105](#d105--p008-t016-frontera-git-y-bytes-confirmados-en-las-importaciones) | P008-T016: frontera Git y bytes confirmados en las importaciones | P008 |
 | [D106](#d106--p008-t017-referencias-vigentes-sin-cambiar-contratos) | P008-T017: referencias vigentes sin cambiar contratos | P008 |
 | [D107](#d107--segunda-revisión-de-salida-de-p008) | Segunda revisión de salida de P008 | P008 |
+| [D108](#d108--p008-t018-lecturas-de-importación-sin-lazy-fetch) | P008-T018: lecturas de importación sin lazy-fetch | P008 |
 
 ## D001 — Alcance local y arquitectura base
 
@@ -3432,3 +3433,26 @@ Siguiente: T018 y nueva revisión de salida; el cierre y archivo son posteriores
 un check READY del producto sobre este repositorio, ni lo registra, cierra, archiva o etiqueta. ROADMAP no
 define sucesora; no se inventa P009. No se amplían los consentimientos de proveedores, smokes, push o
 publicación; se mantienen los límites de contención cooperativa y verificación visual.
+
+
+## D108 — P008-T018: lecturas de importación sin lazy-fetch
+
+Estado: implementada el 2026-10-17; verificación y límites en el
+[registro](phase/P008-T018_OBJETOS_LOCALES.md). Fase: P008. Corrige H5 de D107 bajo D096/D100/D101/D105.
+
+- `adapters/local_git.py` extrae la frontera de B en `LocalGit`, sin depender de los inventarios. Cada comando
+  exige `--no-lazy-fetch`; un Git antiguo falla desde el primer `rev-parse`, sin fallback por entorno. A la usa
+  en `read_checkout`, por lo que también cubre inventario, origen de conversación, turnos, estado, vista previa
+  y confirmación. B conserva su protección en inventario, exportación y lecturas de árboles sellados.
+- El lector de tamaños compartido reconoce objetos/tamaños ausentes (`BAD`, o `-` en un blob) y da un diagnóstico
+  con objeto y ruta; `-` en submódulos conserva su semántica anterior. Los lectores A/B y `HeadSnapshot` dejan
+  de intentar `int('BAD')`. El lector batch común rechaza objetos ausentes, cabeceras sin tamaño válido y cuerpos
+  incompletos; no entrega contenidos ni inventarios parciales. No se recuperan objetos ni ejecutan transportes.
+- `document_layout = "d088-10"` congela las reglas corregidas; la composición pone en cuarentena jobs anteriores,
+  incluido `d088-9`, antes de efectos. No cambia el formato de inventarios/mapas, prompts, codec, adaptador CLI,
+  esquema, API ni dependencias. No se reescriben intenciones, snapshots ni evidencia histórica de H5; las
+  transiciones antiguas selladas conservan su conciliación documentada.
+- Se conservan las guardias de filtros y bytes confirmados, D099, CAS y recuperación del mismo commit. Solo
+  Git/SQLite temporales y herramientas falsas en las regresiones, sin configurar el usuario ni ejecutar el
+  harness sobre este repositorio. P008 sigue activa: después corresponde otra revisión de salida; cierre y
+  archivo separados.

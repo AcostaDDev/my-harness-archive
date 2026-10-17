@@ -1,7 +1,7 @@
 """Flujo B sobre la intención conciliable y la adopción atómica de las importaciones (0020)."""
 from harness_local.adapters.chat_snapshot import HeadSnapshot
 from harness_local.adapters.project_import import _blobs
-from harness_local.adapters.project_onboarding import _InventoryGit
+from harness_local.adapters.local_git import LocalGit
 from harness_local.core.engine.definition import allowed_draft, definition_layout
 from harness_local.core.engine.onboarding_commit import preview as build_preview
 from harness_local.storage.managed import Conflict
@@ -15,7 +15,7 @@ class OnboardingRepository(ImportRepository):
 
     def _build_preview(self, context, conversation_id, source, record, writer):
         reader = HeadSnapshot(context.root, executable=writer.executable)
-        reader.git = _InventoryGit(context.root, executable=writer.executable)
+        reader.git = LocalGit(context.root, executable=writer.executable)
         head = reader.head()
         if head != source['inventory']['head']:
             raise Conflict('The checkout changed since the onboarding conversation started')

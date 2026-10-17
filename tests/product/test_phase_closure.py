@@ -7,7 +7,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from harness_local.adapters.git import GitWorkspace
-from harness_local.core.engine.documents import base_section, blocks, plan_tasks
+from harness_local.core.engine.documents import DOCUMENT_LAYOUT, base_section, blocks, plan_tasks
 from harness_local.storage.managed import Conflict
 from harness_local.storage.models import PhaseRow
 from harness_local.storage.phase_plan import PhasePlanRepository
@@ -284,7 +284,7 @@ def test_sealed_legacy_transition_recovers_with_layout_version_upgrade(unified, 
     transitions = TransitionRepository(world.repository)
     writer = world.ports.writer(world.context, VERSIONS)
     older = {**VERSIONS, 'document_layout': previous}
-    current = {**VERSIONS, 'document_layout': 'd088-9'}
+    current = {**VERSIONS, 'document_layout': DOCUMENT_LAYOUT}
     seen = []
     def factory(context, versions):
         seen.append(versions)
