@@ -37,7 +37,8 @@ Cambiar capacidades del TOML mantiene la cuarentena de jobs por composición ant
 La transacción se serializa con la admisión. Rechaza jobs QUEUED/ACTIVE/RECOVERY_REQUIRED, locks, aceptación
 pendiente, commit con intención, propuestas de chat sin resolver y definición/importación con turnos todavía
 utilizables u operaciones documentales incompletas. Definiciones/importaciones ya adoptadas no bloquean.
-T004 añadirá preparación y su exclusión al implementar esas entidades; aquí aún no existen.
+T004 añade la reserva de preparación a esa exclusión ([flujo](project-preparation.md)); una preparación
+pendiente o incierta bloquea cambios de roles incluso después de liberar su lock.
 
 Los planes de fase PROPOSED pasan a SUPERSEDED con actor/fecha y referencia a la versión nueva, en la misma
 transacción. Su contenido/hash y los request/result de los turnos no se reescriben; requieren nuevo turno de
@@ -49,3 +50,7 @@ V5 también liga id/hash de la fila, evitando admitir un contexto anterior cuand
 Si una petición antigua llega antes del cambio, su job impide cambiar; si llega después, se rechaza. Lectura e
 idempotencia de operaciones previas conservadas. Adaptadores por job usan los agentes del checkout, sin mutar
 la pareja global ni modificar otros proyectos.
+
+[T005](../phase/P009-T005_ENSAYO_DJANGO.md) recorre las cuatro parejas en el mismo hijo preparado, con cambios
+confirmados entre commits y reinicios del servicio. Los procesos de agentes son falsos, pasan por los adaptadores
+CLI reales y dejan proveedor/modelo/esfuerzo y motivo verificables; los historiales anteriores permanecen intactos.

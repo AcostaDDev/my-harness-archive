@@ -283,4 +283,7 @@ el carril escritor atiende su journal sin crear un run. Modelo/migración 0022 y
 Capturas inline, sin nuevas referencias externas de backup o purga. Recibos congelados en jobs posteriores;
 guardias de bytes/configuración antes de efectos, y recuperación explícita sin replay automático de herramientas.
 API/UI de preparación en [flujo](flows/project-preparation.md); verificación sintética y límites en
-[entrega T004](phase/P009-T004_RECETA_DJANGO.md). T005 verificará el scaffold con herramientas reales.
+[entrega T004](phase/P009-T004_RECETA_DJANGO.md). T005 verifica el scaffold con herramientas reales y el recorrido
+API completo con CLI falsas, reinicios y recuperación, en un único hijo temporal:
+[entrega y reproducción](phase/P009-T005_ENSAYO_DJANGO.md). La variante real de pytest exige wheelhouse e intérprete
+explícitos; si no se proporcionan se omite, sin descargas implícitas ni nuevas dependencias del harness.

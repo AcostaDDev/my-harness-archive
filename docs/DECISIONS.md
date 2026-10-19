@@ -130,6 +130,7 @@ tarea se leen solo las decisiones que cita; este índice sirve para buscar prece
 
 | [D118](#d118--p009-t003-presets-v5-y-selección-de-agentes-por-proyecto) | P009-T003: presets v5 y selección de agentes por proyecto | P009 |
 | [D119](#d119--p009-t004-receta-django-confirmada-y-entorno-acreditado) | P009-T004: receta Django confirmada y entorno acreditado | P009 |
+| [D120](#d120--p009-t005-ensayo-temporal-con-cli-falsas-y-django-real) | P009-T005: ensayo temporal con CLI falsas y Django real | P009 |
 
 ## D001 — Alcance local y arquitectura base
 
@@ -3806,3 +3807,30 @@ sin ampliar el consentimiento de instalación/proveedores/piloto.
 
 No se instala Django ni se ejecutan sus herramientas reales en T004. Solo se consultan metadatos públicos de
 versiones/hashes; paquetes, red de instalación y piloto mantienen su propuesta/consentimiento propios.
+
+## D120 — P009-T005: ensayo temporal con CLI falsas y Django real
+
+Estado: verificado el 2026-10-19. Fase: P009.
+[Entrega, reproducción y límites](phase/P009-T005_ENSAYO_DJANGO.md). Aplica D116/D119, sin cambiar sus contratos.
+
+- Ensayo por la API con sesión real, Git/SQLite temporales y los adaptadores CLI de producto conectados solo
+  a procesos falsos. Un único hijo recorre raíz → creación/registro → definición D088/commit → receta/commit →
+  cuatro tareas COMMITTED (Codex→Codex, Codex→Claude, Claude→Claude, Claude→Codex) → check/cierre, tag y archivo.
+  Incrementos sintéticos de plantilla; no se adelanta el CRUD ni se presenta como piloto con modelos.
+- Reinicios y reenvíos conservan carpeta/id/intenciones/commits. Los cambios de roles preservan el recibo del
+  entorno y todos los historiales/configuraciones anteriores. El revisor falso selecciona modelo/esfuerzo y
+  motivo del ejecutor; los specs de los procesos acreditan la pareja usada y el cwd hijo.
+- Fallo inyectado tras el commit técnico y antes de adoptar el recibo: reiniciar no repite herramientas. Una
+  nueva intención confirmada enlaza la fallida y concilia el mismo hash, sin nuevos procesos de preparación;
+  conserva plan/pasos originales y añade el evento de sucesión, sin reescribir esa evidencia.
+- El usuario autoriza específicamente en esta sesión descargar de PyPI los 17 wheels fijados y verificarlos
+  contra el lock, para entornos temporales con Python 3.13.13 y uv 0.12.19 ya instalados. La receta se ejecuta
+  después offline, sin modificar configuraciones globales ni dependencias del harness. Versiones/hashes
+  públicos en el [recibo saneado](phase/P009-T005_WHEELS.json).
+- La prueba tiene variante sintética ordinaria y variante real optativa: exige rutas explícitas de Python y
+  wheelhouse; ausencia de ambas omite solo la variante real y no descarga nada. La receta intacta pasa pytest/JUnit,
+  ruff check/format, mypy estricto con stubs/plugin, migrate, check y makemigrations --check.
+
+La evidencia real corresponde a macOS arm64 y CPython 3.13.13; no certifica toda la matriz Python/plataformas.
+T006 conserva propuesta y consentimiento del wheel operativo, servicios y proveedores. Este consentimiento
+temporal de paquetes no inicia ni autoriza el piloto; los consentimientos históricos de proveedores siguen agotados.

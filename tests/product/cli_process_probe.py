@@ -176,7 +176,34 @@ elif mode == 'hang' or mode == 'child':
     print('{"type":"stream_event","event":{"delta":{"text":"partial"}}}', flush=True)
     time.sleep(60)
     sys.exit(0)
-if mode == 'flow' and not writer:
+if mode == 'recipe':
+    # T005: explicitly scripted, synthetic responses through both real CLI transports.
+    # The script lives outside the child and is supplied by the test's operator config.
+    script = json.loads(Path(os.environ['PROBE_SCRIPT']).read_text())
+    required = set(json.JSONDecoder().raw_decode(prompt.rsplit('JSON Schema:\n', 1)[1])[0]['required'])
+    if writer:
+        role = 'executor'
+        for path, content in script['edits'].items():
+            target = Path(path)
+            assert not target.is_absolute() and '..' not in target.parts
+            target.write_text(content)
+    elif 'drafts' in required:
+        role = 'definition'
+    elif 'executor_prompt' in required:
+        role = 'planner'
+    elif 'exit_criteria_results' in required:
+        role = 'phase'
+    else:
+        role = 'reviewer'
+    payload = script[role]
+    if provider == 'codex':
+        events = [{'type': 'item.completed', 'item': {'type': 'agent_message', 'text': json.dumps(payload)}},
+                  {'type': 'turn.completed'}]
+    else:
+        events = [{'type': 'result', 'subtype': 'success', 'is_error': False,
+                   'result': json.dumps(payload) if writer else '',
+                   **({} if writer else {'structured_output': payload}), 'usage': None, 'duration_ms': 0}]
+elif mode == 'flow' and not writer:
     selection = json.loads(os.environ.get('PROBE_SELECTION', '{"model":"synthetic-executor","effort":"medium"}'))
     if prompt.startswith('Plan exactly'):
         payload = {'task_id':'P001-T001','phase_id':'P001','title':'Synthetic task',

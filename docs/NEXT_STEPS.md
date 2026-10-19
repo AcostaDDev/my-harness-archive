@@ -4,7 +4,7 @@ Objetivo y criterios en [ROADMAP](ROADMAP.md#p009--proyecto-django-desde-cero-y-
 Decisión: [D115](DECISIONS.md#d115--p009-django-desde-cero-carpeta-de-proyectos-y-agentes-por-proyecto).
 [Diseño y matriz](phase/P009_PLAN_DJANGO.md); [flujo y estado de implementación](flows/project-creation.md).
 
-**Estado:** T001–T004 completadas (diseño, carpeta/creación, agentes y receta); T005–T012 pendientes. **Siguiente:** P009-T005.
+**Estado:** T001–T005 completadas (diseño, producto y ensayo); T006–T012 pendientes. **Siguiente:** P009-T006.
 [Contrato implementable](phase/P009-T001_CONTRATO_CREACION.md), decisión D116. T002 añade producto de
 carpeta/creación, sin piloto ni selección de carpeta real del usuario;
 la implementación no concede permisos de red, instalación o proveedores.
@@ -119,7 +119,11 @@ No instalar ni lanzar herramientas reales fuera del alcance autorizado de la tar
 
 ## P009-T005 — Ensayo del recorrido sin proveedores reales
 
-**Estado:** pendiente. **Depende de:** T002, T003, T004.
+**Estado:** completada el 2026-10-19 (D120). **Depende de:** T002, T003, T004.
+**Resultado:** recorrido API completo con cuatro parejas de CLI falsas en un hijo, reinicios/reenvíos,
+recuperación del commit técnico sin repetir herramientas y cierre con archivo/tag. Scaffold contrastado con Django,
+pytest/ruff/mypy reales en Python 3.13.13 y uv 0.12.19; wheels fijados preparados con autorización específica.
+[Entrega, comandos y límites](phase/P009-T005_ENSAYO_DJANGO.md). Sin proveedores ni piloto.
 **Objetivo:** Comprobar el recorrido completo antes de consumir modelos en el piloto.
 **Alcance:** raíces y checkouts temporales, agentes falsos, las cuatro parejas en un único proyecto y recuperación.
 Contrastar el scaffold con Django/pytest/ruff/mypy reales en un entorno temporal con paquetes fijados disponibles;

@@ -56,6 +56,12 @@ COMPLETED, el recibo fija intérprete/ejecutables, todas las distribuciones, has
 local por hash y archivos protegidos. Cambiar los roles conserva ese recibo si la receta no deriva. Se valida
 antes de tareas/checks y de cada comando nativo; no se reescriben snapshots documentales anteriores.
 
+[T005](../phase/P009-T005_ENSAYO_DJANGO.md) contrasta este flujo con Python 3.13.13/uv 0.12.19 y los wheels
+fijados, instalados offline en un hijo temporal. Una caída simulada tras el commit técnico y antes de adoptar
+el recibo conserva la intención original: reiniciar no ejecuta herramientas, y una nueva confirmación enlazada
+concilia el mismo hash sin crear procesos nuevos. Después se completan cuatro tareas con CLI falsas y cambios
+de roles, check y cierre de fase. No acredita proveedores reales ni el piloto operativo.
+
 Backup incluye journal/capturas inline, locks/procesos de ambos propietarios y las raíces nuevas; restaurar
 sigue en consulta sin cargar configuración ni dar autoridad ejecutable. Retención mantiene la evidencia de
 preparación y rechaza escritores/grupos vivos o inciertos de ambos tipos.

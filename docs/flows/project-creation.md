@@ -1,7 +1,8 @@
 # Flujo — carpeta de proyectos y Django desde cero (P009)
 
 **Estado: selección/retirada de carpeta y creación/registro del hijo implementados en T002 (D117).**
-Roles por proyecto implementados en T003 (D118); preparación Django implementada en T004 (D119), con herramientas sintéticas. D115/D116;
+Roles por proyecto implementados en T003 (D118); preparación Django implementada en T004 (D119).
+T005 verifica el recorrido con CLI falsas y herramientas Django reales en un hijo temporal ([evidencia](../phase/P009-T005_ENSAYO_DJANGO.md), D120). D115/D116;
 [contrato/API/recuperación](../phase/P009-T001_CONTRATO_CREACION.md), [plan](../phase/P009_PLAN_DJANGO.md) y
 [tareas](../NEXT_STEPS.md). El flujo vigente de definición documental continúa en
 [project-definition](project-definition.md); el detalle técnico de preparación está en [project-preparation](project-preparation.md). El piloto real sigue pendiente.

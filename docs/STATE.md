@@ -49,7 +49,7 @@ salvo donde se indica. Detalle por fase en `docs/archive/phase-NNN/SUMMARY.md`.
 
 ## Fase activa — P009 Proyecto Django desde cero y piloto con cuatro combinaciones de agentes
 
-**Estado:** T001–T004 completadas el 2026-10-19 (diseño, carpeta/creación, agentes y receta); T005–T012 pendientes, sin piloto.
+**Estado:** T001–T005 completadas el 2026-10-19 (diseño, producto y ensayo); T006–T012 pendientes, sin piloto.
 Objetivo y criterios en [ROADMAP](ROADMAP.md#p009--proyecto-django-desde-cero-y-piloto-con-cuatro-combinaciones-de-agentes),
 tareas en [NEXT_STEPS](NEXT_STEPS.md) y diseño en el [plan](phase/P009_PLAN_DJANGO.md).
 Decisión: [D115](DECISIONS.md#d115--p009-django-desde-cero-carpeta-de-proyectos-y-agentes-por-proyecto).
@@ -60,7 +60,8 @@ Contrato de T001: [diseño implementable](phase/P009-T001_CONTRATO_CREACION.md),
   hijos y queda guardada. La IA no propone ni descubre la ubicación. `$HOME/Documents/projects/` es
   el ejemplo del usuario, no un valor por defecto ni una autorización ejecutada en esta tarea.
 - T004 implementa receta Django confirmada tras la definición D088: esqueleto propio, lock con hashes,
-  entorno aislado, checks y commit técnico conciliable (D119). Solo herramientas sintéticas; T005 verificará las reales.
+  entorno aislado, checks y commit técnico conciliable (D119). T005 contrasta las herramientas reales en un hijo temporal
+  con Python 3.13.13/uv 0.12.19 y wheels fijados, preparados con autorización específica (D120).
   El piloto será una lista de tareas con SQLite y plantillas Django.
 - T003 implementa presets del servicio en `local-config-5`, selección por proyecto y modelo/esfuerzo explícitos
   del revisor (D118). El revisor elige modelo/esfuerzo del ejecutor. Cuatro tareas previstas en el mismo proyecto: Codex→Codex, Codex→Claude,
@@ -74,12 +75,12 @@ Contrato de T001: [diseño implementable](phase/P009-T001_CONTRATO_CREACION.md),
   diferidos al entorno, conservando protección de configuración e historiales. Esquema/API y fronteras documentados.
 
 P008 permanece cerrada ([archivo](archive/phase-008/SUMMARY.md), D114). Este repositorio sigue sin registrarse
-ni ejecutarse con el harness. T002–T004 solo usan carpetas/SQLite temporales, CLI falsas y QA con respuestas sintéticas;
-sin carpetas reales del usuario ni proveedores.
+ni ejecutarse con el harness. T002–T005 usan carpetas/SQLite temporales y CLI de agentes falsas;
+sin proyectos reales del usuario ni proveedores. T005 añade herramientas Django reales, sin modificar el runtime del harness.
 
-**Siguiente:** P009-T005, ensayo del recorrido sin proveedores y contraste del scaffold con herramientas Django reales.
-Entrega de T004 y checks en [receta](phase/P009-T004_RECETA_DJANGO.md), con capturas sintéticas y límites;
-T003 y sus checks en [registro](phase/P009-T003_AGENTES_PROYECTO.md): cuatro parejas sintéticas,
-CAS/idempotencia, admisión serializada, bloqueos de trabajo utilizable y planes obsoletos; v1–v4 conservados. T006 preparará la
-propuesta de operación real con las selecciones y límites pendientes; redactar la fase no autoriza invocar proveedores, instalar dependencias,
-consumir red o ejecutar el piloto. Los consentimientos anteriores siguen agotados.
+**Siguiente:** P009-T006, propuesta operativa y consentimiento del piloto. T005 acredita creación → definición → receta →
+cuatro parejas en el mismo hijo → commits → check/cierre y archivo, con reinicios, reenvíos y recuperación del mismo commit
+sin repetir herramientas. [Ensayo, verificaciones y límites](phase/P009-T005_ENSAYO_DJANGO.md), D120.
+El alcance autorizado de descarga/instalación de T005 es temporal y no concede instalar el wheel operativo,
+invocar proveedores ni ejecutar el piloto. T006 concretará las selecciones y límites pendientes; los consentimientos
+históricos de proveedores siguen agotados.

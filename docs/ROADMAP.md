@@ -135,11 +135,11 @@ y desarrollar cuatro tareas del mismo proyecto alternando revisor/ejecutor, con 
 **Fuera de alcance:** Despliegue, autenticación de usuarios, API REST, frontend separado, base externa, terminal
 web genérica, edición de credenciales/ejecutables/TOML desde la UI, agentes con acceso a toda la carpeta padre,
 evaluación estadística de modelos y ejecución del harness sobre este repositorio.
-**Estado:** diseño T001, creación de hijos T002 agentes por proyecto T003 y receta Django T004 completados el 2026-10-19
-(D116–D119); herramientas Django reales y piloto pendientes.
+**Estado:** diseño T001, creación de hijos T002, agentes por proyecto T003, receta Django T004 y ensayo T005 completados el 2026-10-19
+(D116–D120). Herramientas Django reales verificadas en entorno temporal; piloto pendiente.
 Plan de doce tareas en [NEXT_STEPS](NEXT_STEPS.md); alcance y autorizaciones en
 [docs/phase](phase/P009_PLAN_DJANGO.md); [contrato T001](phase/P009-T001_CONTRATO_CREACION.md).
-La siguiente tarea es P009-T005. Las invocaciones reales requieren
+La siguiente tarea es P009-T006. Las invocaciones de proveedores reales requieren
 la propuesta y las selecciones de T006; no se reutilizan los consentimientos agotados de fases anteriores.
 
 ## Candidatas sin fase asignada
