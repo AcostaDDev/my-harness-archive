@@ -129,6 +129,7 @@ tarea se leen solo las decisiones que cita; este índice sirve para buscar prece
 | [D117](#d117--p009-t002-carpeta-persistente-y-creación-con-intención-previa) | P009-T002: carpeta persistente y creación con intención previa | P009 |
 
 | [D118](#d118--p009-t003-presets-v5-y-selección-de-agentes-por-proyecto) | P009-T003: presets v5 y selección de agentes por proyecto | P009 |
+| [D119](#d119--p009-t004-receta-django-confirmada-y-entorno-acreditado) | P009-T004: receta Django confirmada y entorno acreditado | P009 |
 
 ## D001 — Alcance local y arquitectura base
 
@@ -3756,3 +3757,52 @@ Aplica D116 §4; conserva D049/D052/D078/D095 y la separación de preparación d
 
 Sin operación con proveedores reales ni consentimiento del piloto. Receta Django, enlaces diferidos al entorno,
 preparación y su journal/locks siguen en T004; esta entrega no acepta aún esas claves de v5.
+
+
+## D119 — P009-T004: receta Django confirmada y entorno acreditado
+
+Estado: implementado el 2026-10-19, pruebas con herramientas sintéticas; herramientas Django reales en T005.
+Fase: P009. [Entrega](phase/P009-T004_RECETA_DJANGO.md), [flujo](flows/project-preparation.md). Aplica D116 §5–9,
+sin ampliar el consentimiento de instalación/proveedores/piloto.
+
+- V5 admite `[recipes.django]`, composición `recipe="django"`, perfil empaquetado `python-django-recipe` y
+  enlaces exactos `project_venv` de python/pytest/ruff/mypy. Crear/definir/commit documental no exige `.venv`.
+  Solo el hijo nuevo con procedencia de creación y commit raíz documental aceptado puede preparar esta receta.
+  Perfiles Django declarados con rutas absolutas y v1–v4 conservan su comportamiento/hashes.
+- Implementación empaquetada `django-recipe-1`; el hash de composición incluye configuración y bytes/manifest
+  del productor. Preview de solo lectura: contenido/hashes íntegros, templates, lock, versiones, HEAD, identidad,
+  ejecutables acreditados por hash, argv, entorno público, límites por paso, red/cache y commit previsto. Confirmar
+  liga ese plan por CAS/hash/clave; ninguna entrada admite comandos o archivos libres.
+- CPython 3.11–3.13 de patch explícito; uv del operador con versión exacta. Dependencias directas/transitivas
+  fijadas con hashes de wheels publicados: Django 5.2.17, pytest 9.0.3, pytest-django 4.11.1, ruff 0.14.1,
+  mypy 1.18.2, django-stubs/ext 5.2.7 y cierre completo del lock empaquetado. No entran en las dependencias
+  del harness. La compatibilidad publicada guía esta selección; T005 acreditará su ejecución real.
+- Ambos roles/presets efectivos deben declarar `PYTHONDONTWRITEBYTECODE=1` para que comandos Python de agentes
+  no alteren incidentalmente el entorno acreditado. Se rechaza la incompatibilidad; no se reescribe su entorno
+  ni la configuración global. Los validadores nativos llevan esa política dentro de la composición de receta.
+- Venv sin pip, instalación uv con hashes, sin dependencias implícitas, builds, configuración descubierta,
+  descargas de Python o retry HTTP. Offline usa wheelhouse opcional explícito o caché privada; vacío falla sin
+  red. Network requiere techo del operador y aceptación del plan. HOME/cache/tmp quedan dentro del hijo.
+- startproject/startapp usan templates propios en staging y su salida exacta se compara antes de publicar.
+  Proyecto/app, templates/static, pytest/JUnit, ruff check/format, mypy estricto con stubs/plugin y checks Django;
+  sin modelo Task. Secreto aleatorio y SQLite solo locales/ignorados, sin bytes secretos en el plan/commit.
+  La receta escribe configuración protegida; un ejecutor normal sigue sin poder hacerlo.
+- Migración `0022_project_preparation`, 42 tablas: operaciones/pasos/eventos y propietarios exclusivos
+  job/preparación en locks/procesos compartidos. Migración conserva FK/datos/id de procesos previos, sin apagar
+  FKs. Intención/reserva/lock se sellan antes de efectos; lease/propietario y grupo antes de GO. Binding nuevo
+  `preparation-commands-1`; `commands-1`, CLI, codec y snapshots históricos conservan sus formas.
+- El worker del carril escritor procesa preparaciones; consulta/polling no ejecutan herramientas. Caída/lease
+  o error detienen, conservando evidencia. Cancelación usa handle propio y acredita muerte del grupo; recuperación
+  nunca señala PIDs persistidos. Nueva intención enlazada confirma primer paso no acreditado; prefijo DONE
+  conserva evidencia. Archivos iniciales parciales, entorno incierto o deriva frente al último prefijo bloquean;
+  no hay borrado/recreación/reinstalación automática ni adopción de bytes ajenos.
+- Commit técnico determinista con intención previa y blobs/árbol/HEAD exactos. Una caída antes de adopción
+  concilia el mismo commit sin repetir herramientas. COMPLETED/recibo/liberación se adoptan juntos; jobs
+  posteriores congelan `project_environment_sha256`. Identidad, entorno completo y archivos protegidos se
+  verifican antes de tareas/checks y de cada comando. Cambios de roles conservan recibo compatible.
+- Admisión/registro/preparación comparten exclusión SQLite; una reserva pendiente/incierta bloquea jobs,
+  cambios de composición y baja. Lectores de procesos, backup/restauración de consulta y retención reconocen
+  preparación; capturas/journal permanecen inline en SQLite. Sin runs ficticios ni otra cola de agentes.
+
+No se instala Django ni se ejecutan sus herramientas reales en T004. Solo se consultan metadatos públicos de
+versiones/hashes; paquetes, red de instalación y piloto mantienen su propuesta/consentimiento propios.

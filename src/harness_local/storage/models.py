@@ -142,9 +142,13 @@ class ManagedJobRow(Base):
 
 class CheckoutLockRow(Base):
     __tablename__ = "checkout_locks"
+    __table_args__ = (CheckConstraint('(job_id IS NOT NULL) != (preparation_id IS NOT NULL)',
+                                    name='ck_checkout_lock_owner'),)
 
     root: Mapped[str] = mapped_column(String, primary_key=True)
-    job_id: Mapped[int] = mapped_column(ForeignKey("managed_jobs.id"), unique=True)
+    job_id: Mapped[int | None] = mapped_column(ForeignKey("managed_jobs.id"), unique=True, nullable=True)
+    preparation_id: Mapped[str | None] = mapped_column(ForeignKey('project_preparation_operations.id'),
+                                                     unique=True, nullable=True)
 
 
 class ManagedAttemptRow(Base):
@@ -176,9 +180,15 @@ class ManagedEventRow(Base):
 
 class ManagedProcessRow(Base):
     __tablename__ = "managed_processes"
+    __table_args__ = (CheckConstraint(
+        '(job_id IS NOT NULL AND attempt_id IS NOT NULL AND preparation_id IS NULL) OR '
+        '(job_id IS NULL AND attempt_id IS NULL AND preparation_id IS NOT NULL)', name='ck_managed_process_owner'),)
 
-    attempt_id: Mapped[str] = mapped_column(ForeignKey("managed_attempts.id"), primary_key=True)
-    job_id: Mapped[int] = mapped_column(ForeignKey("managed_jobs.id"))
+    id: Mapped[str] = mapped_column(String(36), primary_key=True,
+                                  default=lambda ctx: ctx.get_current_parameters()['attempt_id'])
+    attempt_id: Mapped[str | None] = mapped_column(ForeignKey("managed_attempts.id"), unique=True, nullable=True)
+    job_id: Mapped[int | None] = mapped_column(ForeignKey("managed_jobs.id"), nullable=True)
+    preparation_id: Mapped[str | None] = mapped_column(ForeignKey('project_preparation_operations.id'), nullable=True)
     spec: Mapped[dict] = mapped_column(JSON)
     identity: Mapped[dict | None] = mapped_column(JSON, nullable=True)
     status: Mapped[str] = mapped_column(String(40))
@@ -678,3 +688,55 @@ class ProjectCreationOperationEventRow(Base):
     idempotency_key: Mapped[str | None] = mapped_column(String(200), unique=True, nullable=True)
     request_sha256: Mapped[str | None] = mapped_column(String(64), nullable=True)
     payload: Mapped[dict] = mapped_column(JSON)
+
+
+class ProjectPreparationOperationRow(Base):
+    __tablename__ = 'project_preparation_operations'
+    __table_args__ = (Index('uq_preparation_reserved', 'root', unique=True,
+                           sqlite_where=text('reserved = 1')),)
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True)
+    project_id: Mapped[str] = mapped_column(ForeignKey('registered_projects.id'))
+    root: Mapped[str] = mapped_column(String)
+    idempotency_key: Mapped[str] = mapped_column(String(200), unique=True)
+    request_sha256: Mapped[str] = mapped_column(String(64))
+    previous_id: Mapped[str | None] = mapped_column(ForeignKey('project_preparation_operations.id'), nullable=True)
+    version: Mapped[int] = mapped_column(Integer)
+    status: Mapped[str] = mapped_column(String(24))
+    reserved: Mapped[bool] = mapped_column(Boolean)
+    plan: Mapped[dict] = mapped_column(JSON)
+    plan_sha256: Mapped[str] = mapped_column(String(64))
+    owner_token: Mapped[str | None] = mapped_column(String(36), nullable=True)
+    lease_until: Mapped[str | None] = mapped_column(String(40), nullable=True)
+    process_owner: Mapped[dict | None] = mapped_column(JSON, nullable=True)
+    owner_closed: Mapped[bool] = mapped_column(Boolean, server_default='0')
+    cancel_requested: Mapped[bool] = mapped_column(Boolean, server_default='0')
+    commit_intent: Mapped[dict | None] = mapped_column(JSON, nullable=True)
+    receipt: Mapped[dict | None] = mapped_column(JSON, nullable=True)
+    diagnostic: Mapped[str | None] = mapped_column(Text, nullable=True)
+    created_at: Mapped[str] = mapped_column(String(40))
+    updated_at: Mapped[str] = mapped_column(String(40))
+
+
+class ProjectPreparationStepRow(Base):
+    __tablename__ = 'project_preparation_steps'
+    __table_args__ = (UniqueConstraint('operation_id', 'number'),)
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True)
+    operation_id: Mapped[str] = mapped_column(ForeignKey('project_preparation_operations.id'))
+    number: Mapped[int] = mapped_column(Integer)
+    spec: Mapped[dict] = mapped_column(JSON)
+    status: Mapped[str] = mapped_column(String(24))
+    evidence: Mapped[dict | None] = mapped_column(JSON, nullable=True)
+
+
+class ProjectPreparationEventRow(Base):
+    __tablename__ = 'project_preparation_events'
+    __table_args__ = (UniqueConstraint('operation_id', 'version'),)
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    operation_id: Mapped[str] = mapped_column(ForeignKey('project_preparation_operations.id'))
+    version: Mapped[int] = mapped_column(Integer)
+    kind: Mapped[str] = mapped_column(String(40))
+    payload: Mapped[dict] = mapped_column(JSON)
+    recorded_at: Mapped[str] = mapped_column(String(40))

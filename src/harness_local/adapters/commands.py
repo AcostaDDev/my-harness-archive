@@ -78,6 +78,8 @@ class CommandConfig:
 
 
 class ManagedCommandRunner:
+    adapter_version = VERSION
+
     def __init__(self, config: CommandConfig):
         self.config = config
         self.journal = None
@@ -93,6 +95,9 @@ class ManagedCommandRunner:
         if any(versions.get(k) != v for k, v in self.frozen_versions().items()):
             raise JournalError('Command configuration differs from frozen job versions')
         self.journal = journal
+
+    def cancel_requested(self):
+        return False
 
     def run(self, context, command):
         raise JournalError('Native commands require managed command identity and journal')
@@ -113,7 +118,7 @@ class ManagedCommandRunner:
         argv = (dict(config.executables)[command.argv[0]], *command.argv[1:])
         environment = {**dict(config.environment), **dict(command.environment)}
         emit = lambda kind, payload: self.journal.command_process_event(command_id, kind, payload)
-        spec = {'adapter_version': VERSION, 'command': asdict(command), 'argv': argv, 'cwd': str(cwd),
+        spec = {'adapter_version': self.adapter_version, 'command': asdict(command), 'argv': argv, 'cwd': str(cwd),
                 'environment_keys': sorted(environment),
                 'environment_sha256': hashlib.sha256(freeze(environment).encode()).hexdigest(),
                 'config_sha256': self.frozen_versions()['command_config_sha256'],
@@ -157,7 +162,9 @@ class ManagedCommandRunner:
                 while selector.get_map() or process.poll() is None:
                     now = time.monotonic()
                     if error is None:
-                        if now >= deadline:
+                        if self.cancel_requested():
+                            error = 'Command cancelled'
+                        elif now >= deadline:
                             error, timed_out = 'Command timed out', True
                         elif process.poll() is not None and liveness(value, group=True) != 'dead':
                             error = 'Descendants survived command leader'

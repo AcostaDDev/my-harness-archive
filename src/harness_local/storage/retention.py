@@ -115,7 +115,7 @@ def _preview(db, roots, selected_policy):
     if len(refs) > MAX_FILES:
         raise ValueError('Demasiadas referencias de artefactos.')
     intents, removed = audit(db, refs)
-    checkouts = [Path(r[0]) for r in db.execute('SELECT root FROM managed_runs UNION SELECT root FROM managed_activations UNION SELECT root FROM managed_phases')]
+    checkouts = [Path(r[0]) for r in db.execute('SELECT root FROM managed_runs UNION SELECT root FROM managed_activations UNION SELECT root FROM managed_phases UNION SELECT root FROM registered_projects UNION SELECT root FROM project_preparation_operations')]
     if not roots or any(not r.is_dir() or r == Path('/') or any(r.is_relative_to(c) or c.is_relative_to(r) for c in checkouts) for r in roots):
         raise ValueError('Raíces explícitas de artefactos fuera de checkouts requeridas.')
     database = Path(db.execute('PRAGMA database_list').fetchone()['file'])
@@ -207,6 +207,9 @@ def _stopped(db, writers_stopped):
         if liveness(json.loads(row[0]), group=True) != 'dead':
             raise ValueError('Grupo vivo o incierto; no purgar.')
 
+    for row in db.execute('SELECT process_owner,owner_closed FROM project_preparation_operations WHERE process_owner IS NOT NULL'):
+        if not row['owner_closed'] and liveness(json.loads(row['process_owner'])) != 'dead':
+            raise ValueError('Propietario de preparación vivo o incierto.')
     from harness_local.storage.command_processes import persisted_identities
     if any(liveness(value, group=True) != 'dead' for value in persisted_identities(db)):
         raise ValueError('Grupo de validación vivo o incierto; no purgar.')

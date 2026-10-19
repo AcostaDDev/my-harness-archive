@@ -1916,3 +1916,64 @@ class CreationCancelInput(BaseModel):
     expected_version: int = Field(ge=1)
     intent_sha256: str = Field(pattern=SHA256)
     reason: str | None = Field(default=None, max_length=2000)
+
+
+class PreparationChangeInput(BaseModel):
+    model_config = ConfigDict(extra='forbid', strict=True)
+    expected_version: int = Field(ge=1)
+    mode: Literal['offline', 'network']
+    previous_id: str | None = Field(default=None, min_length=1, max_length=36)
+    retry_step: int | None = Field(default=None, ge=0, le=100)
+
+
+class PreparationConfirmInput(BaseModel):
+    model_config = ConfigDict(extra='forbid', strict=True)
+    change: PreparationChangeInput
+    preview_sha256: str = Field(pattern=SHA256)
+    reason: str | None = Field(default=None, max_length=2000)
+
+
+class PreparationControlInput(BaseModel):
+    model_config = ConfigDict(extra='forbid', strict=True)
+    expected_version: int = Field(ge=1)
+    plan_sha256: str = Field(pattern=SHA256)
+    reason: str | None = Field(default=None, max_length=2000)
+
+
+class PreparationPlanRead(BaseModel):
+    model_config = ConfigDict(extra='allow')
+    contract: str
+    recipe: str
+    project_id: str
+    root: str
+    preview_sha256: str
+    files: list[dict[str, Any]]
+    steps: list[dict[str, Any]]
+    mode: Literal['offline', 'network']
+
+
+class PreparationOperationRead(BaseModel):
+    id: str
+    project_id: str
+    version: int
+    status: Literal['QUEUED', 'ACTIVE', 'FAILED', 'RECOVERY_REQUIRED', 'CANCELLED', 'COMPLETED']
+    plan: dict[str, Any]
+    plan_sha256: str
+    previous_id: str | None
+    receipt: dict[str, Any] | None
+    diagnostic: str | None
+    cancel_requested: bool
+    owner_closed: bool
+    created_at: str
+    updated_at: str
+    steps: list[dict[str, Any]]
+    events: list[dict[str, Any]]
+
+
+class PreparationRead(BaseModel):
+    available: bool
+    prepared: bool
+    diagnostic: str | None
+    recipe: str | None
+    project_version: int
+    operation: PreparationOperationRead | None

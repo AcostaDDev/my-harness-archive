@@ -5,6 +5,7 @@ import { createOnce, jobRequest, managed, ManagedError } from "../managed-api";
 import type { S } from "../managed-api";
 import type { Route } from "../router";
 import { Migration } from "./Project";
+import { Preparation } from "./Preparation";
 import { Link, navigate } from "../navigation";
 import { Alert, DiffBlock, Empty, Evidence, Fields, Hash, Loading, PageHeader, Stale, Status, message, usePoll, when } from "../ui";
 import { useWorkspace } from "../workspace";
@@ -199,6 +200,7 @@ function Definition({ id, path, status }: { id: string; path?: string; status: S
           </PageHeader>
           <Stale error={read.error} />
           <Steps current={step} labels={["Brief", "Conversación y borradores", "Aceptación", "Primera tarea"]} />
+          {op?.status === "COMPLETED" && <Preparation />}
           {op && <OperationPanel conversation={c} op={op} />}
           <BriefPanel base={base} brief={c.brief} />
           <section className="panel" aria-labelledby="def-turns">
@@ -558,6 +560,8 @@ function OperationPanel({ conversation, op }: { conversation: Conversation; op: 
   const preview = op.preview;
   const task = preview.first_task as { task_id?: string } | null;
   const phase = preview.phase as { code?: string } | null;
+  const preparation = usePoll<S["PreparationRead"]>(`/projects/${project}/preparation`, 2000);
+  const preparationRequired = preparation.data?.available && !preparation.data.prepared;
   const commit = op.result?.commit ? String(op.result.commit) : undefined;
   return <section className={op.status === "COMPLETED" ? "decision" : "decision decision-attention"} aria-labelledby="def-operation">
     <h2 id="def-operation">{op.status === "COMPLETED" ? "Proyecto creado" : op.status === "INTERRUPTED" ? "Creación interrumpida" : "Creando el proyecto"}</h2>
@@ -567,10 +571,11 @@ function OperationPanel({ conversation, op }: { conversation: Conversation; op: 
     {op.status === "INTERRUPTED" && <AcceptReview conversation={conversation} base={base} preview={{ ...preview, resume_operation_id: op.id, expected_version: op.expected_version }} resume={op} />}
     {op.status === "COMPLETED" && <>
       <p>La fase <Link className="mono" to={{ name: "phase", project, phase: phase?.code ?? "P001" }}>{phase?.code ?? "P001"}</Link> está activa con sus documentos adoptados. Los documentos están en la <Link to={{ name: "docs", project }}>documentación</Link>.</p>
+      {preparationRequired && <p className="hint">Prepara Django antes de encolar la primera tarea.</p>}
       {op.first_task_run ? <p>Primera tarea: <Link to={{ name: "run-short", run: op.first_task_run.run_id }} className="mono">{task?.task_id ?? "run"}</Link> <Status value={op.first_task_run.status} /></p>
         : task?.task_id && phase?.code && <>
           <p>Encola la primera tarea, <code>{task.task_id}</code>, con el plan regenerado de NEXT_STEPS. El planificador fija su contrato con la política del proyecto.</p>
-          <button type="button" disabled={busy} onClick={() => void operate(() => send(jobRequest(`/projects/${project}/runs`, {
+          <button type="button" disabled={busy || preparationRequired} onClick={() => void operate(() => send(jobRequest(`/projects/${project}/runs`, {
             task_id: task.task_id!, phase_id: phase.code!, text: preview.task_text ?? "",
           } satisfies S["RunCreate"])))}>Encolar primera tarea</button>
         </>}

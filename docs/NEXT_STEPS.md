@@ -4,7 +4,7 @@ Objetivo y criterios en [ROADMAP](ROADMAP.md#p009--proyecto-django-desde-cero-y-
 Decisión: [D115](DECISIONS.md#d115--p009-django-desde-cero-carpeta-de-proyectos-y-agentes-por-proyecto).
 [Diseño y matriz](phase/P009_PLAN_DJANGO.md); [flujo y estado de implementación](flows/project-creation.md).
 
-**Estado:** T001–T003 completadas (diseño, carpeta/creación y agentes); T004–T012 pendientes. **Siguiente:** P009-T004.
+**Estado:** T001–T004 completadas (diseño, carpeta/creación, agentes y receta); T005–T012 pendientes. **Siguiente:** P009-T005.
 [Contrato implementable](phase/P009-T001_CONTRATO_CREACION.md), decisión D116. T002 añade producto de
 carpeta/creación, sin piloto ni selección de carpeta real del usuario;
 la implementación no concede permisos de red, instalación o proveedores.
@@ -94,7 +94,10 @@ explícitos del revisor y catálogo/modo admisible del ejecutor. Mantener elecci
 
 ## P009-T004 — Receta Django desde cero y perfil ejecutable
 
-**Estado:** pendiente. **Depende de:** T001, T002, T003 (base v5 definida en D116).
+**Estado:** completada el 2026-10-19 (D119). **Depende de:** T001, T002, T003 (base v5 definida en D116).
+**Resultado:** receta empaquetada, enlaces diferidos al entorno, plan/confirmación, journal de preparación,
+perfil ejecutable y UI implementados; [entrega y verificaciones](phase/P009-T004_RECETA_DJANGO.md).
+Herramientas reales y ensayo completo en T005; sin instalación ni piloto en T004.
 **Objetivo:** Que crear un Django nuevo no exija preparar manualmente scaffold, dependencias ni entorno.
 **Alcance:** receta determinista de preparación posterior al commit documental, con plan confirmado de archivos,
 comandos, versiones y red necesaria; entorno aislado del hijo; perfil Django con ejecutables reales del entorno.

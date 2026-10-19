@@ -157,7 +157,7 @@ def _references(db):
             ref['expected'].append((sha, size))
         ref['chunks'].extend(chunks)
 
-    for row in db.execute('SELECT * FROM managed_processes ORDER BY attempt_id'):
+    for row in db.execute('SELECT * FROM managed_processes WHERE job_id IS NOT NULL ORDER BY attempt_id'):
         spec, capture = json.loads(row['spec']), json.loads(row['capture']) if row['capture'] else None
         directory = _historical_path(spec['artifacts'])
         prompt = _historical_path(spec['prompt_path'])
@@ -254,13 +254,16 @@ def _create_backup(database, destination, *, artifact_roots=(), writers_stopped=
             for row in lock.execute('SELECT process_owner, owner_closed FROM managed_jobs WHERE process_owner IS NOT NULL'):
                 if not row['owner_closed'] and liveness(json.loads(row['process_owner'])) == 'alive':
                     raise BackupError('Propietario del servicio vivo; detenerlo antes de copiar.')
+            for row in lock.execute('SELECT process_owner, owner_closed FROM project_preparation_operations WHERE process_owner IS NOT NULL'):
+                if not row['owner_closed'] and liveness(json.loads(row['process_owner'])) == 'alive':
+                    raise BackupError('Propietario de preparación vivo; detenerlo antes de copiar.')
             for row in lock.execute('SELECT identity FROM managed_processes WHERE identity IS NOT NULL'):
                 if liveness(json.loads(row['identity']), group=True) == 'alive':
                     raise BackupError('Grupo de procesos vivo; detener escritores antes de copiar.')
             from harness_local.storage.command_processes import persisted_identities
             if any(liveness(value, group=True) == 'alive' for value in persisted_identities(lock)):
                 raise BackupError('Grupo de validación vivo; detener escritores antes de copiar.')
-            checkouts = {Path(r[0]) for r in lock.execute('SELECT root FROM managed_runs UNION SELECT root FROM managed_activations UNION SELECT root FROM managed_phases')}
+            checkouts = {Path(r[0]) for r in lock.execute('SELECT root FROM managed_runs UNION SELECT root FROM managed_activations UNION SELECT root FROM managed_phases UNION SELECT root FROM registered_projects UNION SELECT root FROM project_preparation_operations')}
             if any(destination.is_relative_to(r) or any(root.is_relative_to(r) or r.is_relative_to(root) for root in roots) for r in checkouts):
                 raise BackupError('Backup/artefactos deben estar fuera de los checkouts.')
             # No probar muerte por lease ni modificar jobs/locks. Un estado incierto puede copiarse,
@@ -408,7 +411,7 @@ def restore_backup(bundle, destination):
         raise BackupError('Restauración solapada con el backup.')
     manifest = verify_bundle(bundle)  # Nada creado hasta verificar los originales completos.
     with closing(_connect(bundle / 'state.sqlite3')) as db:
-        checkouts = [Path(r[0]) for r in db.execute('SELECT root FROM managed_runs UNION SELECT root FROM managed_activations UNION SELECT root FROM managed_phases')]
+        checkouts = [Path(r[0]) for r in db.execute('SELECT root FROM managed_runs UNION SELECT root FROM managed_activations UNION SELECT root FROM managed_phases UNION SELECT root FROM registered_projects UNION SELECT root FROM project_preparation_operations')]
     if any(destination.is_relative_to(r) or r.is_relative_to(destination) for r in checkouts):
         raise BackupError('Restauración debe estar fuera de los checkouts históricos.')
     destination = _new_destination(destination)

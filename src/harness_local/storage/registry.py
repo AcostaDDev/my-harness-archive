@@ -61,12 +61,17 @@ class ProjectRegistryRepository:
     def _unfinished(session, root):
         jobs = session.scalars(select(Job.id).join(Run, Run.id == Job.run_id)
                                .where(Run.root == root, Job.status.in_(UNFINISHED))).all()
-        locked = session.scalar(select(Lock.job_id).where(Lock.root == root))
-        return sorted(set(jobs) | ({locked} if locked is not None else set()))
+        from harness_local.storage.models import ProjectPreparationOperationRow as Preparation
+        locked = session.get(Lock, root)
+        pending = {f'preparation:{value}' for value in session.scalars(select(Preparation.id).where(
+            Preparation.root == root, Preparation.reserved.is_(True)))}
+        if locked is not None:
+            pending.add(locked.job_id if locked.job_id is not None else f'preparation:{locked.preparation_id}')
+        return sorted(set(jobs) | {p for p in pending if isinstance(p, int)}) + sorted(p for p in pending if isinstance(p, str))
 
     def unfinished(self, root):
         with self._read() as session:
-            return self._unfinished(session, root)
+            return [value for value in self._unfinished(session, root) if isinstance(value, int)]
 
     @staticmethod
     def _configuration_blockers(session, root):
@@ -76,7 +81,10 @@ class ProjectRegistryRepository:
             PlanningTurnRow, ProjectBootstrapRow, ProjectImportRow,
         )
         from harness_local.storage.planning import PlanningRepository
-        blockers = [f'Run pendiente de aceptación: {value}' for value in session.scalars(
+        from harness_local.storage.models import ProjectPreparationOperationRow as Preparation
+        blockers = [f'Preparación sin resolver: {value}' for value in session.scalars(
+            select(Preparation.id).where(Preparation.root == root, Preparation.reserved.is_(True)))]
+        blockers += [f'Run pendiente de aceptación: {value}' for value in session.scalars(
             select(Run.id).where(Run.root == root, Run.status == 'ACCEPTANCE_READY'))]
         blockers += [f'Commit pendiente: {value}' for value in session.scalars(
             select(ManagedCommitRow.operation_id).join(Run, Run.id == ManagedCommitRow.run_id)

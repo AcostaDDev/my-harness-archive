@@ -1,9 +1,9 @@
 # Diagrama de datos — my_harness
 
-Esquema SQLite del servicio local (Alembic `0021_project_creation`, 39 tablas). Generado en P008-T001 desde el metadata de `src/harness_local/storage/models.py` (actualizado en P009-T002 con selección y creación de hijos); cualquier cambio de modelos o migraciones actualiza este documento en la misma tarea (regla de paridad, D088).
+Esquema SQLite del servicio local (Alembic `0022_project_preparation`, 42 tablas). Generado en P008-T001 desde el metadata de `src/harness_local/storage/models.py` (actualizado en P009-T004 con preparación y propietarios compartidos); cualquier cambio de modelos o migraciones actualiza este documento en la misma tarea (regla de paridad, D088).
 
-P009-T002 implementa la autoridad y creación de hijos previstas por D116; tablas de preparación y cambios
-de propietario de locks/procesos siguen en el [diseño futuro](phase/P009-T001_CONTRATO_CREACION.md#6-persistencia-propuesta-y-migraciones), pendientes de T004.
+P009-T002 implementa autoridad y creación de hijos (D117); T004 implementa preparación/pasos/journal y amplía
+locks/procesos compartidos (D119). [Diseño de partida](phase/P009-T001_CONTRATO_CREACION.md#6-persistencia-propuesta-y-migraciones).
 
 Convenciones: `PK` clave primaria, `FK` clave ajena declarada, `UK` unicidad de columna; «null» marca columnas opcionales. Las unicidades compuestas y los índices únicos parciales se listan bajo cada diagrama. Las entidades de otro contexto aparecen solo con las columnas que relacionan. Los artefactos pesados (streams, capturas, copias) viven fuera de SQLite y se referencian por ruta y hash.
 
@@ -115,11 +115,14 @@ erDiagram
     }
     checkout_locks {
         string root PK
-        integer job_id FK, UK "→ managed_jobs.id"
+        integer job_id FK, UK "null; → managed_jobs.id"
+        string preparation_id FK, UK "null; → project_preparation_operations.id"
     }
     managed_processes {
-        string attempt_id PK, FK "→ managed_attempts.id"
-        integer job_id FK "→ managed_jobs.id"
+        string id PK
+        string attempt_id FK, UK "null; → managed_attempts.id"
+        integer job_id FK "null; → managed_jobs.id"
+        string preparation_id FK "null; → project_preparation_operations.id"
         json spec
         json identity "null"
         string status
@@ -167,9 +170,9 @@ erDiagram
     managed_runs ||--o{ managed_events : "run_id"
     managed_runs ||--o{ managed_jobs : "run_id"
     managed_activations |o--o{ managed_jobs : "activation_id"
-    managed_jobs ||--o{ checkout_locks : "job_id"
-    managed_attempts ||--o| managed_processes : "attempt_id"
-    managed_jobs ||--o{ managed_processes : "job_id"
+    managed_jobs |o--o{ checkout_locks : "job_id"
+    managed_attempts |o--o| managed_processes : "attempt_id"
+    managed_jobs |o--o{ managed_processes : "job_id"
     managed_runs ||--o{ managed_commits : "run_id"
     managed_jobs ||--o{ managed_commits : "job_id"
 ```
@@ -604,7 +607,7 @@ D116/D117. La selección UI autoriza hijos directos nuevos; no amplía las raíc
 no existe hasta la primera selección. Eventos de raíz conservan snapshots de cada revisión, sin FK a una fila
 mutable como prueba de autoridad. Intención sellada antes de mkdir; identidad del hijo solo tras fsync del padre.
 Alta, evento D078, `creation_id` y resultado REGISTERED se confirman juntos. No hay jobs, agentes o procesos
-asociados a estas operaciones; preparación de Django y sus tablas siguen pendientes de T004.
+asociados a estas operaciones de creación; preparación de Django se registra por separado en T004 (D119).
 
 ```mermaid
 erDiagram
@@ -667,3 +670,72 @@ registered_projects (creation_id). Las reservas se contrastan transaccionalmente
 anidados, incluidos alias físicos de mayúsculas. Los índices textuales no sustituyen esa comprobación.
 REGISTERED libera la reserva de operación y manda D078; CANCELLED solo la libera con ausencia
 acreditada. No caducan por timeout. Autoridad/retirada/efectos cortos comparten la exclusión de escritura SQLite.
+
+
+## Preparación Django (P009-T004)
+
+D119. Intención previa y reserva única por checkout; confirmación y admisión/registro comparten la transacción
+SQLite. No hay run/attempt ficticio. Las capturas y bytes de preparación permanecen dentro de SQLite, sin
+artefactos externos nuevos para backup o retención. El recibo solo se adopta junto a COMPLETED y la liberación
+del lock; su SHA-256 se congela en jobs posteriores como `project_environment_sha256`.
+
+```mermaid
+erDiagram
+    project_preparation_operations {
+        string id PK
+        string project_id FK "→ registered_projects.id"
+        string root
+        string idempotency_key UK
+        string request_sha256
+        string previous_id FK "null; → project_preparation_operations.id"
+        integer version
+        string status
+        boolean reserved
+        json plan
+        string plan_sha256
+        string owner_token "null"
+        string lease_until "null"
+        json process_owner "null"
+        boolean owner_closed
+        boolean cancel_requested
+        json commit_intent "null"
+        json receipt "null"
+        text diagnostic "null"
+        string created_at
+        string updated_at
+    }
+    project_preparation_steps {
+        string id PK
+        string operation_id FK
+        integer number
+        json spec
+        string status
+        json evidence "null; captura y snapshot de bytes acreditados"
+    }
+    project_preparation_events {
+        integer id PK
+        string operation_id FK
+        integer version
+        string kind
+        json payload "actor, confirmación, proceso, captura o transición"
+        string recorded_at
+    }
+    registered_projects ||--o{ project_preparation_operations : project_id
+    project_preparation_operations |o--o{ project_preparation_operations : previous_id
+    project_preparation_operations ||--o{ project_preparation_steps : operation_id
+    project_preparation_operations ||--o{ project_preparation_events : operation_id
+    project_preparation_operations |o--o| checkout_locks : preparation_id
+    project_preparation_operations |o--o{ managed_processes : preparation_id
+```
+
+Unicidad: `uq_preparation_reserved` sobre (root) donde reserved = 1; pasos (operation_id, number), eventos
+(operation_id, version). Reintentar crea otra operación enlazada y copia únicamente el prefijo DONE acreditado;
+los registros/payloads de intentos anteriores conservan sus bytes. La sucesión se audita y traspasa la reserva.
+Cancelación sin efectos libera la reserva; efectos inciertos se conservan reservados, incluso sin lock vivo.
+Controles CAS guardan clave/hash en el payload del evento bajo la misma exclusión SQLite para replay.
+
+`checkout_locks` conserva root como PK y exige exactamente un propietario (job_id o preparation_id). En
+`managed_processes`, id sustituye a la PK attempt_id: las filas antiguas conservan id=attempt_id, su FK y su
+job; para preparación, attempt_id/job_id son null y preparation_id es obligatorio. El CHECK impide propietarios
+vacíos o mixtos. Ambas tablas hoja se reconstruyen con FKs activas, copiando todas las filas previas. Downgrade
+solo sin historia de preparación; de lo contrario se usa backup en consulta, sin borrar evidencia.

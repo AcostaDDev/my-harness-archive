@@ -99,7 +99,7 @@ def test_missing_or_stale_authorization_has_no_effect(sealed, kwargs):
     "UPDATE managed_attempts SET result_json=NULL",
     "UPDATE managed_attempts SET status='UNKNOWN'",
     "UPDATE managed_processes SET status='UNCERTAIN'",
-    "INSERT INTO checkout_locks SELECT root,(SELECT id FROM managed_jobs LIMIT 1) FROM managed_runs",
+    "INSERT INTO checkout_locks(root,job_id) SELECT root,(SELECT id FROM managed_jobs LIMIT 1) FROM managed_runs",
 ])
 def test_active_uncertain_or_locked_evidence_is_excluded(sealed, sql):
     mutate(sealed[0], sql)

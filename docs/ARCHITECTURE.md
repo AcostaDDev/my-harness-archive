@@ -241,7 +241,7 @@ Uso real (D051): construir y verificar el wheel (`scripts/build_distribution.py 
 
 ## 11. Ampliación — P009
 
-Diseño completado en P009-T001; carpeta/creación implementadas en T002 (D117) y roles en T003 (D118); receta pendiente
+Diseño completado en P009-T001; carpeta/creación implementadas en T002 (D117) y roles en T003 (D118); receta implementada en T004 (D119)
 ([D116](DECISIONS.md#d116--p009-t001-autoridad-de-creación-presets-por-proyecto-y-preparación-separada),
 [contrato](phase/P009-T001_CONTRATO_CREACION.md)).
 El alta existente conserva `[registration].roots`. La autoridad UI de creación permite hijos directos nuevos
@@ -259,7 +259,7 @@ presets por proyecto registrado con v5; los proyectos TOML conservan edición so
 - Receta técnica Django confirmada tras el commit documental: entorno, scaffold, dependencias fijadas y checks.
   Autoridad separada para crear archivos protegidos, sin relajar el contrato documental ni el ejecutor normal.
   Enlaces tipados de ejecutables diferidos permiten definir antes de crear el entorno; tareas/checks se bloquean
-  hasta tener recibo de preparación. Django será una herramienta del proyecto, no una dependencia del runtime.
+  hasta tener recibo de preparación. Django es una herramienta del proyecto, no una dependencia del runtime.
 
 T002 añade cuatro tablas en `0021_project_creation`, procedencia nullable en el registro y las rutas
 `/project-creation-root` y `/project-creations` (preview/confirmación/lectura/reanudación/cancelación).
@@ -272,3 +272,15 @@ La preview de composición valida sobre el padre existente y calcula los hashes 
 para él. La composición operativa continúa exigiendo un checkout existente. La UI conserva el sobre y la clave
 de confirmación al perder respuesta. Contratos/hashes v1–v4 previos, CLI y codec conservados. Flujo y límites en
 [project-creation](flows/project-creation.md); plan y matriz en [docs/phase](phase/P009_PLAN_DJANGO.md).
+
+
+T004 implementa `recipes/django.py` y su perfil empaquetado, lock con hashes y closure de versiones.
+[Fragmento de configuración v5](../examples/django-recipe.example.toml). Los enlaces `project_venv` solo
+resuelven comandos después de acreditar el entorno; no adelantan validaciones al bootstrap documental.
+`services/project_preparation.py`, `storage/preparation.py` y `adapters/preparation.py` separan plan/confirmación,
+journal/lease/propietarios y transporte POSIX. Comparten locks/procesos con jobs mediante propietario exclusivo;
+el carril escritor atiende su journal sin crear un run. Modelo/migración 0022 y [diagrama](DDBB-DIAGRAM.md).
+Capturas inline, sin nuevas referencias externas de backup o purga. Recibos congelados en jobs posteriores;
+guardias de bytes/configuración antes de efectos, y recuperación explícita sin replay automático de herramientas.
+API/UI de preparación en [flujo](flows/project-preparation.md); verificación sintética y límites en
+[entrega T004](phase/P009-T004_RECETA_DJANGO.md). T005 verificará el scaffold con herramientas reales.

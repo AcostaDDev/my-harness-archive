@@ -3,7 +3,7 @@ import { jobRequest } from "../managed-api";
 import type { S } from "../managed-api";
 import { Link } from "../navigation";
 import { runRoute } from "../router.ts";
-import { Empty, Status, when } from "../ui";
+import { Empty, Status, when, usePoll } from "../ui";
 import { useWorkspace } from "../workspace";
 
 const PURPOSES: Record<S["ManagedRunSummaryRead"]["purpose"], string> = {
@@ -41,19 +41,22 @@ export function RunTable({ runs, project, show = ["task", "phase"] }: { runs: S[
 /** Encolar una tarea con su contrato. La fase o la tarea pueden venir fijadas por la página. */
 export function TaskForm({ phase, task, title = "Encolar tarea" }: { phase?: string; task?: string; title?: string }) {
   const { project, busy, operate, send } = useWorkspace();
+  const preparation = usePoll<S["PreparationRead"]>(`/projects/${project}/preparation`, 2000);
+  const preparationRequired = preparation.data?.available && !preparation.data.prepared;
   const [taskId, setTaskId] = useState(task ?? "");
   const [phaseId, setPhaseId] = useState(phase ?? "");
   const [text, setText] = useState("");
   return <section className="panel" aria-labelledby="task-form">
     <h2 id="task-form">{title}</h2>
     <p className="hint">El planificador fija el contrato con la política del proyecto; el ejecutor trabaja en un worktree y el revisor decide. El commit se confirma aparte.</p>
-    <form onSubmit={e => { e.preventDefault(); if (!busy) void operate(() => send(jobRequest(`/projects/${project}/runs`, { task_id: taskId.trim(), phase_id: phaseId.trim(), text }))); }}>
+    {preparationRequired && <p className="state state-attention">Prepara Django desde la creación o el resumen del proyecto antes de encolar tareas.</p>}
+    <form onSubmit={e => { e.preventDefault(); if (!busy && !preparationRequired) void operate(() => send(jobRequest(`/projects/${project}/runs`, { task_id: taskId.trim(), phase_id: phaseId.trim(), text }))); }}>
       {(!task || !phase) && <div className="form-row">
         {!task && <label>Tarea<input value={taskId} onChange={e => setTaskId(e.target.value)} required maxLength={120} placeholder={phase ? `${phase}-T001` : "P001-T001"} /></label>}
         {!phase && <label>Fase<input value={phaseId} onChange={e => setPhaseId(e.target.value)} required maxLength={120} placeholder="P001" /></label>}
       </div>}
       <label>Contrato de tarea<textarea value={text} onChange={e => setText(e.target.value)} required maxLength={200000} rows={8} /></label>
-      <button disabled={busy || !text.trim() || !taskId.trim() || !phaseId.trim()}>Encolar tarea</button>
+      <button disabled={busy || preparationRequired || !text.trim() || !taskId.trim() || !phaseId.trim()}>Encolar tarea</button>
     </form>
   </section>;
 }

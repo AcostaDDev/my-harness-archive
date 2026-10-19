@@ -1,0 +1,609 @@
+"""D119: confirmed, deterministic Django preparation after the documentary root commit."""
+from dataclasses import asdict, replace
+from difflib import unified_diff
+import json
+import os
+from pathlib import Path
+import secrets
+import stat
+from threading import Event as ThreadEvent, Thread
+from uuid import uuid4
+
+from sqlalchemy import select, delete
+from sqlalchemy.orm import Session
+
+from harness_local.adapters.commands import CommandConfig
+from harness_local.adapters.git import GitWorkspace
+from harness_local.adapters.preparation import (
+    PreparationCommandRunner, environment_snapshot, file_hash, sha, verify_files, verify_receipt, write_new,
+    parent as file_parent,
+)
+from harness_local.adapters.project_import import check_filters, check_submodules
+from harness_local.core.engine.context import Command
+from harness_local.core.engine.contracts import freeze
+from harness_local.core.engine.journal import JournalError
+from harness_local.recipes import django
+from harness_local.services.project_creation import directory, identity
+from harness_local.services.project_registry import RegistryError, digest
+from harness_local.storage.managed import Conflict
+from harness_local.storage.models import (
+    CheckoutLockRow as Lock, RegisteredProjectRow as Project, ManagedJobRow as Job, ManagedRunRow as Run,
+    ProjectBootstrapRow as Bootstrap, ProjectPreparationOperationRow as Operation,
+    ProjectPreparationStepRow as Step, ProjectPreparationEventRow as PreparationEvent,
+)
+from harness_local.storage.preparation import PreparationRepository, PreparationJournal
+from harness_local.storage.registry import ProjectRegistryRepository, UNFINISHED
+
+CONTRACT = 'project-preparation-1'
+
+
+def snapshot(root):
+    """All checkout bytes/links/modes outside Git, including ignored files. Never follows a link."""
+    result, size = {}, 0
+    with directory(root):
+        for folder, dirs, files in os.walk(root, followlinks=False):
+            if Path(folder) == root:
+                dirs[:] = [d for d in dirs if d != '.git']
+            for name in sorted(dirs + files):
+                path = Path(folder) / name
+                key, info = str(path.relative_to(root)), path.lstat()
+                if stat.S_ISLNK(info.st_mode):
+                    # Only the environment's known interpreter aliases; caches may not redirect effects.
+                    cache = root / django.WORK / 'cache'
+                    cache_link = key.startswith(django.WORK + '/cache/') and path.resolve(strict=True).is_relative_to(cache)
+                    if not key.startswith('.venv/bin/python') and key != '.venv/lib64' and not cache_link:
+                        raise ValueError(f'Unexpected symlink: {key}')
+                    result[key] = {'link': os.readlink(path)}
+                elif stat.S_ISDIR(info.st_mode):
+                    result[key] = {'directory': identity(info)}
+                elif stat.S_ISREG(info.st_mode) and info.st_nlink == 1:
+                    size += info.st_size
+                    result[key] = {'sha256': file_hash(path), 'executable': bool(info.st_mode & 0o111)}
+                else:
+                    raise ValueError(f'Unexpected file: {key}')
+                if len(result) > 40000 or size > 1024 * 1024 * 1024:
+                    raise ValueError('Preparation workspace evidence limit exceeded')
+    return result
+
+
+def hashes(files):
+    return {path: sha(content.encode()) for path, content in files.items()}
+
+
+class ProjectPreparation:
+    def __init__(self, runtime):
+        self.runtime, self.managed = runtime, runtime.repository
+        self.repository = PreparationRepository(self.managed)
+        self.lock = runtime.registry._lock
+        self.runner_factory = PreparationCommandRunner
+
+    def require(self, project_id):
+        project = self.runtime.project(project_id)
+        registrar = self.runtime.registry.registrar
+        if not registrar or project.versions.get('project_recipe') != django.VERSION:
+            raise RegistryError(409, 'recipe_unavailable', 'Este proyecto no tiene receta Django v5 configurada.')
+        config = registrar._recipe_roots.get(project.context.root)
+        if not config or 'project_registry' not in project.versions:
+            raise RegistryError(409, 'recipe_unavailable', 'La receta requiere un hijo nuevo registrado por el servicio.')
+        return project, config
+
+    def writer(self, project):
+        registrar = self.runtime.registry.registrar
+        writer = GitWorkspace(registrar.identity, executable=registrar.git_executable)
+        writer.local_objects_only = True
+        git = writer._git(project.context.root)
+        check_filters(git)
+        check_submodules(git)
+        with directory(project.context.root / '.git'):
+            pass
+        assessment = self.managed.guard.assess(project.context.root)
+        if assessment.refusal or assessment.activation is not None:
+            raise RegistryError(409, 'mode_refused', 'La preparación solo admite el hijo nuevo sin estado legacy.')
+        return writer, git
+
+    def latest(self, project_id, session):
+        return session.scalar(select(Operation).where(Operation.project_id == project_id)
+                              .order_by(Operation.created_at.desc(), Operation.id.desc()).limit(1))
+
+    def read(self, project_id):
+        project = self.runtime.project(project_id)
+        available = bool(project.versions.get('project_recipe'))
+        with Session(self.runtime.engine) as session:
+            row = self.latest(project_id, session)
+            receipt = session.scalar(select(Operation.receipt).where(Operation.project_id == project_id,
+                                                                     Operation.status == 'COMPLETED'))
+        diagnostic = None
+        if receipt:
+            try:
+                verify_receipt(project.context.root, receipt)
+            except JournalError as exc:
+                diagnostic = str(exc)
+        return {'available': available, 'prepared': bool(receipt and not diagnostic), 'diagnostic': diagnostic,
+                'recipe': django.VERSION if available else None,
+                'operation': self.repository.read(row.id, summary=True) if row else None,
+                'project_version': int(project.versions.get('project_registry', 0))}
+
+    def bind(self, project):
+        if not project.versions.get('project_recipe'):
+            return project
+        with Session(self.runtime.engine) as session:
+            row = session.scalar(select(Operation).where(Operation.project_id == project.id,
+                                                          Operation.status == 'COMPLETED'))
+            receipt = row.receipt if row else None
+        registrar = self.runtime.registry.registrar
+        if receipt and receipt['recipe_config_sha256'] == project.versions['recipe_config_sha256']:
+            registrar._receipts[project.context.root] = receipt
+            project = replace(project, versions={**project.versions, 'project_environment_sha256': digest(receipt)})
+        else:
+            registrar._receipts.pop(project.context.root, None)
+        self.runtime.install(project)
+        return project
+
+    def _idle(self, session, root, *, previous=None):
+        if session.scalar(select(Job.id).join(Run, Run.id == Job.run_id).where(
+                Run.root == root, Job.status.in_(UNFINISHED))):
+            raise RegistryError(409, 'pending_jobs', 'Hay trabajo pendiente en el checkout.')
+        lock = session.get(Lock, root)
+        if lock and lock.preparation_id != previous:
+            raise RegistryError(409, 'pending_jobs', 'El checkout está bloqueado por otro escritor.')
+        active = session.scalar(select(Operation).where(Operation.root == root, Operation.reserved.is_(True)))
+        if active and active.id != previous:
+            raise RegistryError(409, 'recovery_required', 'Hay una preparación sin resolver; revisa su operación.')
+        # Exclude the already completed definition; preserve pending acceptance/commit/chat barriers.
+        blockers = [value for value in ProjectRegistryRepository._configuration_blockers(session, root)
+                    if value != f'Preparación sin resolver: {previous}']
+        if blockers:
+            raise RegistryError(409, 'pending_jobs', '; '.join(blockers))
+
+    def preview(self, project_id, body, *, session=None):
+        if session is None:
+            with Session(self.runtime.engine) as read:
+                return self.preview(project_id, body, session=read)
+        project, config = self.require(project_id)
+        root = project.context.root
+        current = session.get(Project, project_id)
+        if not current or current.status != 'ACTIVE' or current.version != body['expected_version']:
+            raise RegistryError(409, 'stale_version', 'El proyecto cambió; vuelve a cargarlo.')
+        previous_id = body.get('previous_id')
+        self._idle(session, str(root), previous=previous_id)
+        if body['mode'] == 'network' and not config['allow_network']:
+            raise RegistryError(409, 'network_not_allowed', 'El operador solo permite preparación offline.')
+        writer, git = self.writer(project)
+        with directory(root) as fd:
+            info = identity(os.fstat(fd))
+        if previous_id:
+            previous = self.repository.require(session, previous_id)
+            if (previous.project_id != project_id or previous.status not in ('FAILED', 'CANCELLED', 'RECOVERY_REQUIRED')
+                    or previous.status != 'CANCELLED' and not previous.reserved):
+                raise RegistryError(409, 'recovery_required', 'La preparación previa no admite una nueva intención.')
+            self.repository.stopped(session, previous)
+            if previous.plan['versions'] != dict(project.versions) or previous.plan['identity'] != info:
+                raise RegistryError(409, 'preview_changed', 'La composición o identidad original cambió.')
+            steps = list(session.scalars(select(Step).where(Step.operation_id == previous.id).order_by(Step.number)))
+            first = next((s.number for s in steps if s.status != 'DONE'), len(steps) - 1)
+            if body.get('retry_step') != first:
+                raise RegistryError(409, 'recovery_required', 'Confirma el primer paso pendiente; archivos inciertos requieren resolución externa.')
+            if steps[first].spec['label'] == 'Crear entorno aislado':
+                raise RegistryError(409, 'recovery_required', 'No se recrea un entorno incierto; requiere resolución externa.')
+            old = previous.plan
+            verify_files(root, old['base_files'])
+            if first == 0:
+                if snapshot(root) != old['initial_workspace']:
+                    raise RegistryError(409, 'recovery_required', 'Archivos iniciales inciertos; requiere resolución externa.')
+            else:
+                self._verify_source(root, old, allow_partial=True)
+                # A failed command cannot establish ownership of new environment bytes. Reuse only the
+                # environment accredited by the completed prefix; partial installations need external repair.
+                before = steps[first - 1].evidence['workspace']
+                now = snapshot(root)
+                env = lambda values: {p: v for p, v in values.items() if p == '.venv' or p.startswith('.venv/')}
+                if env(now) != env(before):
+                    raise RegistryError(409, 'recovery_required', 'El entorno cambió sin recibo de paso; no se reinstala ni sobrescribe.')
+            expected_head = previous.commit_intent['expected_commit'] if previous.commit_intent else old['base_head']
+            head = git.text('rev-parse', 'HEAD')
+            if head not in {old['base_head'], expected_head}:
+                raise RegistryError(409, 'preview_changed', 'HEAD cambió; requiere resolución externa.')
+            plan = {**old, 'mode': body['mode'], 'steps': self.steps(root, config, body['mode']),
+                    'recovery': {'previous_id': previous.id, 'previous_version': previous.version,
+                                 'retry_step': first, 'workspace': snapshot(root)},
+                    'inherited_commit': previous.commit_intent,
+                    'network': {**old['network'], 'enabled': body['mode'] == 'network'}}
+            # Changing network mode changes only the pending install command; completed effects remain frozen.
+            for s in steps[:first]:
+                plan['steps'][s.number] = s.spec
+            plan.pop('preview_sha256', None)
+        else:
+            if body.get('retry_step') is not None:
+                raise RegistryError(422, 'invalid_request', 'retry_step requiere previous_id.')
+            if self.latest(project_id, session):
+                raise RegistryError(409, 'recovery_required', 'El proyecto ya tiene una preparación; consulta su recibo u operación.')
+            if not current.creation_id:
+                raise RegistryError(409, 'recipe_unavailable', 'La receta solo prepara hijos nuevos creados por este servicio.')
+            bootstrap = session.scalar(select(Bootstrap).where(Bootstrap.root == str(root), Bootstrap.status == 'COMPLETED'))
+            if not bootstrap or git.text('rev-parse', 'HEAD') != bootstrap.result['commit']:
+                raise RegistryError(409, 'definition_required', 'Confirma primero el commit documental raíz D088.')
+            captured = writer.capture(project.context)
+            provenance = json.loads(captured.provenance_json)
+            if provenance['base_tree'] != provenance['index_tree'] or captured.changed_paths:
+                raise RegistryError(409, 'checkout_changed', 'El checkout y el índice deben estar limpios.')
+            tracked = set(git.run('ls-files', '-z').decode().strip('\0').split('\0'))
+            if tracked != set(bootstrap.result['documents']):
+                raise RegistryError(409, 'definition_required', 'El árbol inicial debe contener solo los documentos aceptados.')
+            workspace = snapshot(root)
+            if any('sha256' in v and p not in tracked for p, v in workspace.items()):
+                raise RegistryError(409, 'target_exists', 'Hay archivos ajenos o ignorados; no se adoptan.')
+            files = django.scaffold()
+            for path in (*files, '.venv', django.WORK, '.django-secret', 'db.sqlite3'):
+                if os.path.lexists(root / path):
+                    raise RegistryError(409, 'target_exists', f'El destino {path} ya existe.')
+            # Every new tracked path must actually enter Git; a parent exclude cannot hide part of the manifest.
+            for path in files:
+                if git.code('check-ignore', '--no-index', '--', path) == 0:
+                    raise RegistryError(409, 'target_ignored', f'El destino {path} está ignorado por Git.')
+            plan = {'contract': CONTRACT, 'recipe': django.VERSION, 'preparation_commands': 'preparation-commands-1',
+                    'project_id': project_id, 'root': str(root), 'identity': info,
+                    'expected_version': current.version, 'versions': dict(project.versions), 'config': config,
+                    'tool_files': {key: {'resolved': str(Path(config[key]).resolve(strict=True)),
+                                         'sha256': file_hash(Path(config[key]).resolve(strict=True))}
+                                   for key in ('python_executable', 'installer_executable')},
+                    'base_head': captured.base_revision, 'base_tree': provenance['base_tree'],
+                    'base_files': bootstrap.result['documents'], 'initial_workspace': workspace,
+                    'files': [{'path': p, 'content': c, 'sha256': sha(c.encode()),
+                               'diff': ''.join(unified_diff([], c.splitlines(keepends=True),
+                                                            fromfile='/dev/null', tofile=p))}
+                              for p, c in sorted(files.items())],
+                    'templates': django.templates(files), 'packages': django.PACKAGES,
+                    'lock_sha256': sha(django.LOCK.encode()), 'mode': body['mode'],
+                    'network': {'enabled': body['mode'] == 'network', 'index': 'https://pypi.org/simple',
+                                'files_host': 'files.pythonhosted.org', 'automatic_retry': False},
+                    'local_only': ['.venv/', django.WORK + '/', '.django-secret', 'db.sqlite3', 'reports/'],
+                    'steps': self.steps(root, config, body['mode']),
+                    'commit': {'message': 'harness: prepare Django (django-recipe-1)',
+                               'author_name': writer.identity.name, 'author_email': writer.identity.email}}
+        return {**plan, 'preview_sha256': digest(plan)}
+
+    def confirm(self, project_id, body, key):
+        request_sha = digest({'project_id': project_id, **body})
+        with self.lock, self.managed._write() as session:
+            old = session.scalar(select(Operation).where(Operation.idempotency_key == key))
+            if old:
+                if old.request_sha256 != request_sha:
+                    raise RegistryError(409, 'idempotency_conflict', 'La clave pertenece a otro payload.')
+                return self.repository.read(old.id)
+            preview = self.preview(project_id, body['change'], session=session)
+            if preview['preview_sha256'] != body['preview_sha256']:
+                raise RegistryError(409, 'preview_changed', 'El plan cambió; vuelve a revisarlo.')
+            operation_id, now = str(uuid4()), self.managed._now()
+            previous_id = body['change'].get('previous_id')
+            if previous_id:
+                previous = self.repository.require(session, previous_id)
+                previous.reserved = False
+                self.repository.event(session, previous, 'successor_confirmed', {'successor_id': operation_id})
+                session.execute(delete(Lock).where(Lock.preparation_id == previous_id))
+                session.flush()
+            row = Operation(id=operation_id, project_id=project_id, root=preview['root'], version=0,
+                status='QUEUED', reserved=True, idempotency_key=key, request_sha256=request_sha,
+                previous_id=previous_id, plan=preview, plan_sha256=digest(preview),
+                commit_intent=preview.get('inherited_commit'), created_at=now, updated_at=now)
+            session.add(row)
+            session.flush()
+            session.add(Lock(root=row.root, preparation_id=row.id))
+            inherited = {}
+            if previous_id:
+                inherited = {s.number: s for s in session.scalars(select(Step).where(Step.operation_id == previous_id))}
+            first = preview.get('recovery', {}).get('retry_step', 0)
+            for n, spec in enumerate(preview['steps']):
+                done = n < first
+                session.add(Step(id=str(uuid4()), operation_id=row.id, number=n, spec=spec,
+                                 status='DONE' if done else 'PENDING',
+                                 evidence=inherited[n].evidence if done else None))
+            self.repository.event(session, row, 'intended', {'reason': body.get('reason'),
+                                                           'preview_sha256': preview['preview_sha256']})
+        self.runtime.notify()
+        return self.repository.read(operation_id)
+
+    def _verify_source(self, root, plan, *, allow_partial=False):
+        files = {f['path']: f['sha256'] for f in plan['files']}
+        for path, expected in files.items():
+            if os.path.lexists(root / path):
+                verify_files(root, {path: expected})
+            elif not allow_partial:
+                raise ValueError(f'Scaffold missing: {path}')
+        allowed = set(files) | set(plan['base_files']) | set(plan['templates']) | {'.django-secret', 'db.sqlite3'}
+        prefixes = ('.venv/', django.WORK + '/', 'reports/', '.pytest_cache/', '.mypy_cache/', '.ruff_cache/')
+        for path, value in snapshot(root).items():
+            if 'sha256' in value and path not in allowed and not path.startswith(prefixes):
+                raise ValueError(f'Foreign code or file: {path}')
+        templates = hashes(plan['templates'])
+        verify_files(root, templates)
+        for path, expected in files.items():
+            generated = root / django.WORK / 'output' / path
+            if os.path.lexists(generated):
+                verify_files(root, {str(generated.relative_to(root)): expected})
+        verify_files(root, plan['base_files'])
+
+    def _check(self, row, project, expected_workspace):
+        root = project.context.root
+        if digest(row['plan']) != row['plan_sha256'] or row['plan']['contract'] != CONTRACT:
+            raise ValueError('Preparation intent corrupt/incompatible')
+        if (len(row['steps']) != len(row['plan']['steps']) or any(
+                step['number'] != number or step['spec'] != row['plan']['steps'][number]
+                for number, step in enumerate(row['steps']))):
+            raise ValueError('Preparation step/argv differs from the confirmed plan')
+        if dict(project.versions) != row['plan']['versions']:
+            raise ValueError('Frozen project composition changed')
+        with directory(root) as fd:
+            if identity(os.fstat(fd)) != row['plan']['identity']:
+                raise ValueError('Checkout identity changed')
+        _, git = self.writer(project)
+        inherited = row['plan'].get('inherited_commit')
+        heads = {row['plan']['base_head']}
+        if inherited:
+            heads.add(inherited['expected_commit'])
+        if git.text('rev-parse', 'HEAD') not in heads:
+            raise ValueError('HEAD changed since preparation consent')
+        for key, evidence in row['plan']['tool_files'].items():
+            path = Path(row['plan']['config'][key]).resolve(strict=True)
+            if str(path) != evidence['resolved'] or file_hash(path) != evidence['sha256']:
+                raise ValueError('Authorized service executable changed')
+        if snapshot(root) != expected_workspace:
+            raise ValueError('Checkout bytes/identity changed since the previous accredited step')
+
+    def _files(self, root, plan):
+        # All targets were absent. Any interrupted write is left for conservative recovery.
+        for path in (django.WORK, django.WORK + '/home', django.WORK + '/tmp', django.WORK + '/cache',
+                     django.WORK + '/output', django.WORK + '/output/core'):
+            with file_parent(root, path, expected_identity=plan['identity']) as (fd, name):
+                os.mkdir(name, 0o700, dir_fd=fd)
+                os.fsync(fd)
+        for path, content in plan['templates'].items():
+            write_new(root, path, content.encode(), expected_identity=plan['identity'])
+        files = {f['path']: f['content'] for f in plan['files']}
+        for path in ('.gitignore', 'requirements.lock', 'pyproject.toml'):
+            write_new(root, path, files[path].encode(), expected_identity=plan['identity'])
+        # The random local secret is deliberately absent from plans, logs, Git and fixtures.
+        write_new(root, '.django-secret', secrets.token_urlsafe(64).encode(), expected_identity=plan['identity'])
+
+    def _publish(self, root, plan):
+        generated = {p: c for p, c in django.scaffold().items() if p.endswith('.py')}
+        # The generator's complete file set must match, including empty package/migration markers.
+        output = root / django.WORK / 'output'
+        observed = {str(p.relative_to(output)) for p in output.rglob('*') if p.is_file()}
+        if observed != set(generated):
+            raise ValueError('Generated scaffold differs from the confirmed manifest')
+        verify_files(root, {f'{django.WORK}/output/{p}': sha(c.encode()) for p, c in generated.items()})
+        for item in plan['files']:
+            if item['path'] not in ('.gitignore', 'requirements.lock', 'pyproject.toml'):
+                write_new(root, item['path'], item['content'].encode(), expected_identity=plan['identity'])
+        self._verify_source(root, plan)
+
+    @staticmethod
+    def command_config(root, operator, spec):
+        command = Command(('tool', *spec['argv'][1:]), timeout_seconds=spec['timeout_seconds'])
+        config = CommandConfig(str(root), True, (command,), (('tool', spec['argv'][0]),),
+                               tuple(sorted(spec['environment'].items())),
+                               max_timeout_seconds=operator['timeout_seconds'],
+                               max_output_bytes=spec['max_output_bytes'])
+        return command, config
+
+    def steps(self, root, config, mode):
+        steps = django.steps(root, config, mode)
+        for spec in steps:
+            if spec['kind'] == 'command':
+                _, binding = self.command_config(root, config, spec)
+                spec['binding'] = PreparationCommandRunner(binding).frozen_versions()
+        return steps
+
+    def _command(self, root, plan, step, journal):
+        spec = step['spec']
+        command, config = self.command_config(root, plan['config'], spec)
+        runner = self.runner_factory(config)
+        runner.bind_preparation(journal, spec['binding'])
+        context = self.runtime.project(plan['project_id']).context
+        result = runner.run_managed(context, command, step['id'])
+        if result.error or result.timed_out or result.exit_code != 0:
+            raise ValueError(f'Paso fallido ({spec["label"]}); consulta la captura, sin reintento automático.')
+        label = spec['label']
+        if label == 'Verificar intérprete base' and result.stdout.strip() != 'Python ' + plan['config']['python_version']:
+            raise ValueError('Base Python version differs from confirmed plan')
+        if label == 'Verificar instalador uv' and result.stdout.strip().split()[:2] != ['uv', plan['config']['installer_version']]:
+            raise ValueError('uv version differs from confirmed plan')
+        if label == 'Acreditar versiones instaladas':
+            actual = json.loads(result.stdout)
+            normalize = lambda name: name.lower().replace('_', '-')
+            installed = {normalize(k): v for k, v in actual['packages'].items()}
+            if installed != {normalize(k): v for k, v in plan['packages'].items()}:
+                raise ValueError('Installed distributions differ from the pinned dependency closure')
+            if '.'.join(map(str, actual['python'])) != plan['config']['python_version']:
+                raise ValueError('Environment Python version differs from authorized interpreter')
+        evidence = {'result': asdict(result)}
+        if spec['argv'][1:2] == ['--junitxml=reports/pytest.xml']:
+            from harness_local.core.engine.junit import parse_junit
+            report = root / 'reports/pytest.xml'
+            if report.is_symlink() or not report.is_file() or report.stat().st_size > 1048576:
+                raise ValueError('JUnit evidence missing or unsafe')
+            parsed = parse_junit(report.read_bytes(), django.profile().junit_reports[0])
+            if parsed.status != 'complete' or not any(c.result == 'passed' for c in parsed.cases) or any(
+                    c.result not in ('passed', 'skipped') for c in parsed.cases):
+                raise ValueError('JUnit evidence must contain successful tests with consistent counters')
+            evidence['junit'] = asdict(parsed)
+        return evidence
+
+    def _commit(self, operation_id, token, project, plan):
+        root = project.context.root
+        self._verify_source(root, plan)
+        writer, git = self.writer(project)
+        with Session(self.runtime.engine) as session:
+            pending = self.repository.require(session, operation_id).commit_intent
+        if pending is None:
+            captured = writer.capture(project.context)
+            trees = json.loads(captured.provenance_json)
+            expected_files = {f['path']: f['sha256'] for f in plan['files']}
+            if (captured.base_revision != plan['base_head'] or trees['index_tree'] != plan['base_tree']
+                    or set(captured.changed_paths) != set(expected_files)):
+                raise ValueError('Commit contains paths outside the confirmed manifest or HEAD/index changed')
+            verify_files(root, expected_files)
+            for path, expected in expected_files.items():
+                if sha(git.run('cat-file', 'blob', f'{trees["worktree_tree"]}:{path}')) != expected:
+                    raise ValueError('Git normalization changed a confirmed manifest blob')
+            timestamp = int(self.managed.clock().timestamp())
+            message = plan['commit']['message'] + '\n\nHarness-Preparation: ' + operation_id + '\n'
+            raw = writer._commit_text(trees['worktree_tree'], plan['base_head'], message,
+                                     plan['commit']['author_name'], plan['commit']['author_email'], timestamp)
+            pending = {'base_head': plan['base_head'], 'base_tree': plan['base_tree'],
+                       'tree': trees['worktree_tree'], 'expected_commit': git.text('hash-object', '-t', 'commit', '--stdin', input=raw),
+                       'message': message, 'author_name': plan['commit']['author_name'],
+                       'author_email': plan['commit']['author_email'], 'timestamp': timestamp}
+            with self.managed._write() as session:
+                row = self.repository.owned(session, operation_id, token)
+                row.commit_intent = pending
+                self.repository.event(session, row, 'commit_intended', pending)
+        raw = writer._commit_text(pending['tree'], pending['base_head'], pending['message'],
+                                 pending['author_name'], pending['author_email'], pending['timestamp'])
+        if git.text('hash-object', '-t', 'commit', '--stdin', input=raw) != pending['expected_commit']:
+            raise ValueError('Sealed commit intent corrupt')
+        head = git.text('rev-parse', 'HEAD')
+        index = writer._index_tree(git)
+        if head == pending['base_head']:
+            captured = writer.capture(project.context)
+            tree = json.loads(captured.provenance_json)
+            if tree['worktree_tree'] != pending['tree'] or index != pending['base_tree']:
+                raise ValueError('Content/index changed before commit')
+            git.run('hash-object', '-t', 'commit', '-w', '--stdin', input=raw)
+            git.run('update-ref', '-m', 'harness: prepare Django', 'HEAD', pending['expected_commit'], pending['base_head'])
+        elif head != pending['expected_commit'] or git.run('cat-file', 'commit', head) != raw:
+            raise ValueError('Sealed commit cannot be reconciled with HEAD')
+        if index == pending['base_tree']:
+            git.run('read-tree', '--reset', pending['tree'])
+        elif index != pending['tree']:
+            raise ValueError('Index changed; leave it untouched')
+        captured = writer.capture(project.context)
+        if captured.changed_paths:
+            raise ValueError('Checkout drift after technical commit')
+        receipt = {'contract': CONTRACT, 'recipe': django.VERSION, 'identity': plan['identity'],
+                   'recipe_config_sha256': plan['versions']['recipe_config_sha256'], 'config': plan['config'],
+                   'lock_sha256': plan['lock_sha256'], 'packages': plan['packages'],
+                   'commit': pending['expected_commit'], 'operation_id': operation_id,
+                   'environment': environment_snapshot(root, plan['config']),
+                   'protected_files': {f['path']: f['sha256'] for f in plan['files']
+                                       if f['path'] in project.context.profile.protected_paths}}
+        receipt['protected_files']['.django-secret'] = file_hash(root / '.django-secret')
+        return receipt
+
+    def run_once(self):
+        claim = self.repository.claim(self.runtime.config.lease_seconds)
+        if claim is None:
+            return None
+        operation_id, token = claim
+        stopping = ThreadEvent()
+        def heartbeat():
+            while not stopping.wait(self.runtime.config.lease_seconds / 3):
+                try:
+                    self.repository.heartbeat(operation_id, token, self.runtime.config.lease_seconds)
+                except Exception:
+                    return
+        thread = Thread(target=heartbeat, daemon=True, name='preparation-heartbeat')
+        thread.start()
+        receipt, error = None, None
+        try:
+            operation = self.repository.read(operation_id)
+            plan = operation['plan']
+            project = self.runtime.project(operation['project_id'])
+            root = project.context.root
+            expected = plan.get('recovery', {}).get('workspace', plan.get('initial_workspace'))
+            for step in operation['steps']:
+                if step['status'] == 'DONE':
+                    if not plan.get('recovery'):
+                        expected = step['evidence']['workspace']
+                    continue
+                if self.repository.cancelled(operation_id, token):
+                    raise InterruptedError('Preparación cancelada; se conservan los efectos acreditados.')
+                self._check(operation, project, expected)
+                with self.managed._write() as session:
+                    row = self.repository.owned(session, operation_id, token)
+                    session.get(Step, step['id']).status = 'STARTED'
+                    self.repository.event(session, row, 'step_started', {'number': step['number'], 'spec': step['spec']})
+                kind = step['spec']['kind']
+                evidence = {}
+                if kind == 'files':
+                    self._files(root, plan)
+                elif kind == 'publish':
+                    self._publish(root, plan)
+                elif kind == 'command':
+                    if step['number'] >= 7:
+                        self._verify_source(root, plan, allow_partial=step['number'] < 10)
+                    evidence = self._command(root, plan, step, PreparationJournal(self.repository, operation_id, token))
+                elif kind == 'commit':
+                    receipt = self._commit(operation_id, token, project, plan)
+                else:
+                    raise ValueError('Unknown preparation step')
+                expected = snapshot(root)
+                with self.managed._write() as session:
+                    row = self.repository.owned(session, operation_id, token)
+                    saved = session.get(Step, step['id'])
+                    saved.status, saved.evidence = 'DONE', {**evidence, 'workspace': expected}
+                    self.repository.event(session, row, 'step_completed', {'number': step['number'],
+                                                                         'workspace_sha256': digest(expected)})
+        except Exception as exc:
+            error = exc
+        finally:
+            stopping.set()
+            thread.join()
+            with self.managed._write() as session:
+                row = self.repository.require(session, operation_id)
+                row.owner_closed = True
+                self.repository.event(session, row, 'owner_closed')
+                try:
+                    self.repository.stopped(session, row)
+                    stopped = True
+                except Conflict:
+                    stopped = False
+                if receipt and error is None and stopped and row.status == 'ACTIVE':
+                    row.receipt, row.status, row.reserved = receipt, 'COMPLETED', False
+                elif row.cancel_requested and stopped:
+                    row.status = 'CANCELLED'
+                    # Releasing a reservation requires an explicit successor once any effect exists.
+                    row.diagnostic = 'Cancelada; los bytes acreditados permanecen en el hijo.'
+                else:
+                    row.status = 'FAILED' if stopped and row.status == 'ACTIVE' else 'RECOVERY_REQUIRED'
+                    row.diagnostic = 'Preparación detenida: ' + (str(error) if isinstance(error, (ValueError, JournalError))
+                                                               else type(error).__name__ if error else 'efecto incierto')
+                if stopped:
+                    session.execute(delete(Lock).where(Lock.preparation_id == row.id))
+                self.repository.event(session, row, 'settled', {'status': row.status, 'diagnostic': row.diagnostic})
+            if receipt and error is None:
+                self.bind(self.runtime.project(operation['project_id']))
+        return operation_id
+
+    def control(self, operation_id, body, action, key=None):
+        with self.lock, self.managed._write() as session:
+            request_sha = digest({'operation_id': operation_id, 'action': action, **body})
+            replay = session.scalar(select(PreparationEvent).where(
+                PreparationEvent.payload['idempotency_key'].as_string() == key)) if key else None
+            if replay:
+                if replay.payload['request_sha256'] != request_sha:
+                    raise RegistryError(409, 'idempotency_conflict', 'La clave pertenece a otro payload.')
+                return self.repository.read(operation_id)
+            row = self.repository.require(session, operation_id)
+            if row.version != body['expected_version'] or row.plan_sha256 != body['plan_sha256']:
+                raise RegistryError(409, 'stale_version', 'La preparación cambió; vuelve a cargarla.')
+            if action == 'cancel':
+                if row.status == 'COMPLETED':
+                    raise RegistryError(409, 'already_completed', 'La preparación ya terminó.')
+                row.cancel_requested = True
+                if row.status == 'QUEUED':
+                    row.status, row.reserved, row.owner_closed = 'CANCELLED', False, True
+                    session.execute(delete(Lock).where(Lock.preparation_id == row.id))
+                elif row.status != 'ACTIVE':
+                    self.repository.stopped(session, row)
+                    row.status = 'CANCELLED'
+                    session.execute(delete(Lock).where(Lock.preparation_id == row.id))
+            elif action == 'confirm-stopped':
+                if row.status not in ('RECOVERY_REQUIRED', 'FAILED', 'CANCELLED'):
+                    raise RegistryError(409, 'recovery_required', 'Primero debe detenerse la preparación.')
+                self.repository.stopped(session, row)
+                row.owner_closed = True
+                session.execute(delete(Lock).where(Lock.preparation_id == row.id))
+            self.repository.event(session, row, action, {'reason': body.get('reason'),
+                                                       'idempotency_key': key, 'request_sha256': request_sha})
+        return self.repository.read(operation_id)

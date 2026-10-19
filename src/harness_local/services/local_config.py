@@ -320,13 +320,23 @@ def _profile(name, value):
         raise LocalConfigError(f'{where}: {exc}') from None
 
 
-def _commands(value, where, root, profile, *, strict=False):
+def _commands(value, where, root, profile, *, strict=False, deferred_root=None):
     value = _fields(value, where, ('executables', 'environment', 'authorize_profile_commands'),
                     ('max_timeout_seconds', 'max_output_bytes', 'authorized'))
     if not isinstance(value['executables'], dict) or not value['executables']:
         raise LocalConfigError(f'{where}.executables: tabla nombre → ejecutable requerida')
-    executables = tuple(sorted((_text(name, where), _executable(path, f'{where}.executables.{name}'))
-                               for name, path in value['executables'].items()))
+    executables = []
+    for name, path in value['executables'].items():
+        if isinstance(path, dict) and deferred_root is not None:
+            _fields(path, f'{where}.executables.{name}', ('project_venv',))
+            tool = path['project_venv']
+            if tool not in ('python', 'pytest', 'ruff', 'mypy') or tool != name:
+                raise LocalConfigError(f'{where}: enlace project_venv tipado python/pytest/ruff/mypy requerido')
+            executable = str(deferred_root / '.venv' / 'bin' / tool)
+        else:
+            executable = _executable(path, f'{where}.executables.{name}')
+        executables.append((_text(name, where), executable))
+    executables = tuple(sorted(executables))
     if strict:
         for name, path in executables:
             if not COMMAND_NAME.fullmatch(name) or {Path(path).name, Path(path).resolve().name} & SHELLS:
@@ -386,7 +396,7 @@ def _outside(path, root):
     return not (path.is_relative_to(root) or root.is_relative_to(path))
 
 
-def _composition(value, where, state, profiles, *, strict):
+def _composition(value, where, state, profiles, *, strict, recipes=None):
     """`local-config-3/4`: commands of a profile under a name, independent of any checkout (D076).
 
     `profiles` maps every admitted name (built-in, plus declared ones in `local-config-4`) to its profile."""
@@ -394,9 +404,19 @@ def _composition(value, where, state, profiles, *, strict):
         raise LocalConfigError(f'{where}: se esperaba una tabla')
     if _text(value.get('profile'), f'{where}.profile') not in profiles:
         raise LocalConfigError(f'{where}.profile: perfiles admitidos {sorted(profiles)}')
-    commands = {key: item for key, item in value.items() if key != 'profile'}
+    recipe = value.get('recipe')
+    if recipe is not None:
+        if not recipes or recipe != 'django' or recipe not in recipes or value['profile'] != 'python-django-recipe':
+            raise LocalConfigError(f'{where}: receta Django v5 y perfil empaquetado requeridos')
+        expected = {name: {'project_venv': name} for name in ('python', 'pytest', 'ruff', 'mypy')}
+        if value.get('executables') != expected or value.get('environment') != {} or value.get('authorized'):
+            raise LocalConfigError(f'{where}: enlaces exactos al entorno y environment vacío requeridos para la receta')
+    elif value['profile'] == 'python-django-recipe' and recipes:
+        raise LocalConfigError(f'{where}: el perfil de receta exige recipe = "django"')
+    commands = {key: item for key, item in value.items() if key not in ('profile', 'recipe')}
     # The state directory stands in for a checkout: only the table itself is validated here.
-    _commands(commands, where, state, profiles[value['profile']], strict=strict)
+    _commands(commands, where, state, profiles[value['profile']], strict=strict,
+              deferred_root=state if recipe else None)
     return value['profile'], commands
 
 
@@ -412,12 +432,13 @@ class LocalComposer:
     OPTIONAL_KEYS = ('tag_kind', 'permission_authority', 'documents')
 
     def __init__(self, fmt, data, source, state, agents, reviewer, identity, git_executable, engine,
-                 compositions, registration, profiles, presets):
+                 compositions, registration, profiles, presets, recipes):
         self.format, self.source, self.state = fmt, source, state
         self.agents_key = 'providers' if fmt == 'local-config-1' else 'agents'
         self._authority = {self.agents_key: data[self.agents_key], 'git': data['git'], 'state_dir': str(state)}
         self.agents, self.reviewer = agents, reviewer
-        self.presets = presets
+        self.presets, self.recipes = presets, recipes
+        self._recipe_roots, self._receipts = {}, {}
         self.identity, self.git_executable, self.engine = identity, git_executable, engine
         self.compositions = compositions  # name → (profile, raw command table); empty before v3
         self.profiles = profiles  # name → ProjectProfile: built-in ones, plus those declared in v4
@@ -462,10 +483,15 @@ class LocalComposer:
                 raise LocalConfigError(f'{where}.composition: composiciones declaradas {sorted(self.compositions)}')
             profile_name, table = self.compositions[name]
             authority['composition'] = {name: {'profile': profile_name, **table}}
+            recipe = self._recipes_by_composition.get(name)
+            if recipe:
+                from harness_local.recipes.django import fingerprint
+                authority['recipe'] = {'config': self.recipes[recipe], 'implementation_sha256': fingerprint()}
         else:
             profile_name, table = _text(item['profile'], f'{where}.profile'), item['commands']
             if profile_name not in self.profiles:
                 raise LocalConfigError(f'{where}.profile: perfiles admitidos {sorted(self.profiles)}')
+        recipe = self._recipes_by_composition.get(item.get('composition'))
         profile = self.profiles[profile_name]
         if self.format in PROFILE_FORMATS:
             # P008-T008: el contenido completo del perfil (declarado o integrado) entra en el hash congelado, así que
@@ -473,6 +499,9 @@ class LocalComposer:
             authority['profile'] = asdict(profile)
         bootstrap = _flag(item.get('bootstrap_enabled', False), f'{where}.bootstrap_enabled')
         agents, reviewer, selected = self.effective_agents(item, where)
+        if recipe and any(dict(agent.environment).get('PYTHONDONTWRITEBYTECODE') != '1' for agent in agents.values()):
+            raise LocalConfigError(f'{where}: la receta requiere PYTHONDONTWRITEBYTECODE=1 explícito en ambos '
+                                   'roles/presets para conservar los bytes del entorno; no se reescribe su entorno')
         engine_policy = _policy(item['policy'], f'{where}.policy', reviewer, agents['executor'].provider)
         if selected:
             executor = selected['executor']
@@ -487,7 +516,7 @@ class LocalComposer:
             authority['agent_presets'] = selected
         # La preview valida la configuración sobre el padre existente, sin construir puertos para el hijo.
         commands = _commands(table, f'{where}.commands', root.parent if new_directory else root, profile,
-                             strict=self.format in PROFILE_FORMATS)
+                             strict=self.format in PROFILE_FORMATS, deferred_root=root if recipe else None)
         identifier = _text(item['id'], f'{where}.id')
         if not PROJECT_ID.fullmatch(identifier):
             raise LocalConfigError(f'{where}.id: [a-z0-9][a-z0-9._-]{{0,63}} requerido')
@@ -496,6 +525,8 @@ class LocalComposer:
             cli = CLIProcessAdapter(agents, artifacts)
         except ValueError as exc:
             raise LocalConfigError(f'{self.agents_key}: {exc}') from None
+        if recipe:
+            commands = replace(commands, environment=(('PYTHONDONTWRITEBYTECODE', '1'), ('PYTHONNOUSERSITE', '1')))
         runner = ManagedCommandRunner(commands)
         frozen = {'project': item, **authority}
         if registry is not None:
@@ -512,7 +543,10 @@ class LocalComposer:
                     **({'project_registry': str(registry[0])} if registry is not None else {}),
                     **({'project_registry_id': identifier, 'project_registry_sha256': registry[1]}
                        if registry is not None and self.format == VERSION else {}),
-                    **cli.frozen_versions(), **runner.frozen_versions()}
+                    **cli.frozen_versions(), **runner.frozen_versions(),
+                    **({'project_recipe': 'django-recipe-1',
+                        'recipe_config_sha256': hashlib.sha256(freeze(authority['recipe']).encode()).hexdigest()}
+                       if recipe else {})}
         if new_directory:
             commands_snapshot = {**asdict(commands), 'checkout': str(root)}
             versions['command_config_sha256'] = hashlib.sha256(freeze(commands_snapshot).encode()).hexdigest()
@@ -553,6 +587,8 @@ class LocalComposer:
         project, composition = composed
         with self._lock:
             self._live[project.context.root] = composition
+        if project.versions.get('project_recipe'):
+            self._recipe_roots[project.context.root] = self.recipes['django']
         return project
 
     def forget(self, root):
@@ -571,7 +607,12 @@ class LocalComposer:
 
     def ports(self, context, versions):
         commands, artifacts, agents = self._composed(context, versions)
-        return (CLIProcessAdapter(agents, artifacts), ManagedCommandRunner(commands),
+        if versions.get('project_recipe'):
+            from harness_local.adapters.preparation import PreparedCommandRunner
+            runner = PreparedCommandRunner(commands, self._receipts.get(context.root), versions)
+        else:
+            runner = ManagedCommandRunner(commands)
+        return (CLIProcessAdapter(agents, artifacts), runner,
                 GitWorkspace(self.identity, executable=self.git_executable))
 
     def writer(self, context, versions):
@@ -603,7 +644,7 @@ def _build(data, source):
     agents_key = 'providers' if fmt == 'local-config-1' else 'agents'
     if fmt in REGISTRABLE:
         data = _fields(data, 'raíz', ('format', 'service', 'git', 'agents', 'registration', 'compositions'),
-                       ('projects', 'profiles', 'agent_presets') if fmt == VERSION else
+                       ('projects', 'profiles', 'agent_presets', 'recipes') if fmt == VERSION else
                        ('projects', 'profiles') if fmt in PROFILE_FORMATS else ('projects',))
     else:
         data = _fields(data, 'raíz', ('format', 'service', 'git', agents_key, 'projects'))
@@ -624,11 +665,40 @@ def _build(data, source):
         agents, reviewer = _agents(data['agents'])
     presets = _presets(data.get('agent_presets', {}))
     compositions, registration = {}, ((), False)
+    recipes = {}
+    if 'recipes' in data:
+        raw = _fields(data['recipes'], 'recipes', (), ('django',))
+        if 'django' in raw:
+            entry = _fields(raw['django'], 'recipes.django',
+                            ('python_executable', 'python_version', 'installer_executable', 'installer_version',
+                             'timeout_seconds', 'max_output_bytes', 'allow_network'), ('wheelhouse',))
+            entry = dict(entry)
+            for key in ('python_executable', 'installer_executable'):
+                entry[key] = _executable(entry[key], f'recipes.django.{key}')
+                if {Path(entry[key]).name, Path(entry[key]).resolve().name} & SHELLS:
+                    raise LocalConfigError('recipes.django: intérprete Python e instalador uv, sin shells')
+            if not re.fullmatch(r'3\.(11|12|13)\.[0-9]+', _text(entry['python_version'], 'recipes.django.python_version')):
+                raise LocalConfigError('recipes.django.python_version: CPython 3.11–3.13 exacto requerido')
+            if not re.fullmatch(r'0\.[0-9]+\.[0-9]+', _text(entry['installer_version'], 'recipes.django.installer_version')):
+                raise LocalConfigError('recipes.django.installer_version: versión uv exacta requerida')
+            if not 120 <= _number(entry['timeout_seconds'], 'recipes.django.timeout_seconds') <= 1800:
+                raise LocalConfigError('recipes.django.timeout_seconds: 120..1800 segundos requeridos')
+            if type(entry['max_output_bytes']) is not int or not 1024 <= entry['max_output_bytes'] <= 1048576:
+                raise LocalConfigError('recipes.django.max_output_bytes: 1024..1048576 requerido')
+            _flag(entry['allow_network'], 'recipes.django.allow_network')
+            if 'wheelhouse' in entry:
+                entry['wheelhouse'] = str(_path(entry['wheelhouse'], 'recipes.django.wheelhouse', kind='directory'))
+            recipes['django'] = entry
     profiles = {name: factory() for name, factory in PROFILES.items()}
+    if recipes:
+        from harness_local.recipes.django import profile
+        profiles['python-django-recipe'] = profile()
     declared = data.get('profiles', {})
     if not isinstance(declared, dict):
         raise LocalConfigError('profiles: se esperaba una tabla [profiles.NOMBRE]')
     for name, value in declared.items():
+        if name == 'python-django-recipe' and recipes:
+            raise LocalConfigError('Perfil python-django-recipe reservado para la receta empaquetada')
         profiles[name] = _profile(name, value)
     if fmt in REGISTRABLE:
         if not isinstance(data['compositions'], dict) or not data['compositions']:
@@ -637,7 +707,7 @@ def _build(data, source):
             if not PROJECT_ID.fullmatch(name):
                 raise LocalConfigError(f'compositions.{name}: nombre [a-z0-9][a-z0-9._-]{{0,63}} requerido')
             compositions[name] = _composition(value, f'compositions.{name}', state, profiles,
-                                               strict=fmt in PROFILE_FORMATS)
+                                               strict=fmt in PROFILE_FORMATS, recipes=recipes)
         table = _fields(data['registration'], 'registration', ('roots', 'bootstrap_enabled'))
         roots = tuple(_path(item, 'registration.roots', kind='directory')
                       for item in _texts(table['roots'], 'registration.roots', empty=True))
@@ -653,7 +723,9 @@ def _build(data, source):
         raise LocalConfigError('Versión del paquete harness-local no disponible') from None
 
     composer = LocalComposer(fmt, data, source, state, agents, reviewer, identity, git_executable, engine,
-                             compositions, registration, profiles, presets)
+                             compositions, registration, profiles, presets, recipes)
+    composer._recipes_by_composition = {name: value['recipe'] for name, value in data.get('compositions', {}).items()
+                                       if value.get('recipe')}
     projects = []
     for index, item in enumerate(items):
         project, composition = composer.compose(item, f'projects[{index}]')

@@ -1,10 +1,10 @@
 # Flujo — carpeta de proyectos y Django desde cero (P009)
 
 **Estado: selección/retirada de carpeta y creación/registro del hijo implementados en T002 (D117).**
-Roles por proyecto implementados en T003 (D118); preparación Django pendiente de T004. D115/D116;
+Roles por proyecto implementados en T003 (D118); preparación Django implementada en T004 (D119), con herramientas sintéticas. D115/D116;
 [contrato/API/recuperación](../phase/P009-T001_CONTRATO_CREACION.md), [plan](../phase/P009_PLAN_DJANGO.md) y
 [tareas](../NEXT_STEPS.md). El flujo vigente de definición documental continúa en
-[project-definition](project-definition.md); este documento distingue lo construido en T002 de la ampliación pendiente de P009.
+[project-definition](project-definition.md); el detalle técnico de preparación está en [project-preparation](project-preparation.md). El piloto real sigue pendiente.
 
 ```mermaid
 flowchart TD
@@ -15,7 +15,7 @@ flowchart TD
     V -- sí --> C["Persistir intención; crear hijo y registrar idempotentemente"]
     C --> D["Enlace a definición documental con agentes efectivos: presets v5 o pareja heredada"]
     D --> DC["Definición conversacional D088 y commit documental raíz"]
-    DC -. "T004 pendiente" .-> P["Mostrar receta Django: archivos, dependencias, comandos y red exactos"]
+    DC --> P["Mostrar receta Django: archivos, dependencias, comandos y red exactos"]
     P --> A["Usuario acepta el plan de preparación dentro de la carpeta ya autorizada"]
     A --> S["Preparación controlada: entorno, scaffold, configuración y commit técnico"]
     S --> Q["Usuario revisa roles y modelo/esfuerzo del revisor por proyecto"]
@@ -73,7 +73,7 @@ incluso si después se retiró el padre. El estado `BLOCKED` no concede autorida
 trabajo pendiente utilizable bajo la selección anterior; se congelan versiones y los borradores anteriores
 quedan obsoletos. Formatos previos y proyectos sin override conservan su pareja global, sin sustituciones.
 
-**Pendiente de T004:** la definición admite solo sus documentos actuales. Los enlaces tipados a herramientas de `.venv` permiten
+**Implementado en T004:** la definición admite solo sus documentos actuales. Los enlaces tipados a herramientas de `.venv` permiten
 confirmar ese commit sin instalar antes; tareas/checks de ese perfil siguen bloqueados hasta preparar.
 La receta usa escritor y plan propios para archivos protegidos, con intención/pasos/lease/lock y procesos
 registrados. Confirmar liga archivos/argv/HEAD/versiones/red/límites; fallos o cancelación detienen, sin repetir
@@ -89,4 +89,4 @@ y preserva su intención original. Cancelar solo libera reservas si se acredita 
 comprobación versionada puede liberar una reserva de cancelación sin reabrir efectos.
 Cuatro tablas nuevas y procedencia del registro en [DDBB-DIAGRAM](../DDBB-DIAGRAM.md);
 detalles y verificación en [entrega T002](../phase/P009-T002_CARPETA_PROYECTOS.md). D118 implementa roles con el JSON existente del registro. D116 sigue fijando
-el contrato pendiente de receta; T004 mantendrá la paridad al construirlo.
+el contrato de receta implementado por D119; [flujo de preparación](project-preparation.md) y [entrega T004](../phase/P009-T004_RECETA_DJANGO.md).

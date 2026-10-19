@@ -137,7 +137,10 @@ class ProjectRegistry:
             try:
                 self._conflicts(item['id'], Path(item['root']), registered=True)
                 composed = self._compose(item['row'], (item['version'], item['row_sha256']))
-                self.runtime.install(self.registrar.install(composed))
+                installed = self.registrar.install(composed)
+                if hasattr(self.runtime, 'preparation'):
+                    installed = self.runtime.preparation.bind(installed)
+                self.runtime.install(installed)
             except RegistryError as exc:
                 self.unavailable[item['id']] = str(exc)
 
@@ -300,7 +303,10 @@ class ProjectRegistry:
             self.unavailable.pop(saved['id'], None)
             if saved['status'] == 'ACTIVE':
                 composed = self._compose(saved['row'], (saved['version'], saved['row_sha256']))
-                self.runtime.install(self.registrar.install(composed))
+                installed = self.registrar.install(composed)
+                if hasattr(self.runtime, 'preparation'):
+                    installed = self.runtime.preparation.bind(installed)
+                self.runtime.install(installed)
             else:
                 self.runtime.uninstall(saved['id'])
                 self.registrar.forget(Path(saved['root']))

@@ -218,7 +218,7 @@ def test_corrupt_or_incompatible_backup_never_creates_restore(migrated_database,
                 # La integridad relacional es válida pero el codec es futuro.
                 db.execute("INSERT INTO managed_runs VALUES('r','/synthetic','t','p','{}','{}',?, 'STOPPED','stop',0,0,0,'now','now','task')", ('{"format":99,"history":{}}',))
             elif corruption == 'foreign-key':
-                db.execute("INSERT INTO checkout_locks VALUES('/synthetic',999)")
+                db.execute("INSERT INTO checkout_locks(root,job_id) VALUES('/synthetic',999)")
             else:
                 db.execute('DROP TABLE simulations')
             db.commit()

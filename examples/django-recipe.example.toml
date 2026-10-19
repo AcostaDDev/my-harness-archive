@@ -1,0 +1,27 @@
+# Fragmento para un TOML local-config-5 existente, FUERA de los checkouts y chmod 600.
+# Plantilla NO válida tal cual. Conservar service/git/agents/agent_presets/registration del operador.
+# En environment de AMBOS roles/presets efectivos declarar PYTHONDONTWRITEBYTECODE = "1".
+# Evita que sus comandos Python creen bytecode dentro del entorno acreditado. No se modifica su TOML desde UI.
+# Añadir esta composición al catálogo. Crear el hijo desde UI con ella y bootstrap_enabled=true;
+# la raíz padre se elige desde UI, nunca se deduce de este ejemplo. [registration].bootstrap_enabled=true.
+# No modifica configuración global ni instala nada al cargar. Habilitar red aquí solo fija un techo:
+# cada preparación confirma su propio modo, manifiesto, argv y límites antes de ejecutar.
+
+[recipes.django]
+python_executable = "/RUTA/ABSOLUTA/python3.13"
+python_version = "3.13.1"                  # reemplazar por el patch EXACTO del intérprete autorizado, 3.11–3.13
+installer_executable = "/RUTA/ABSOLUTA/uv"
+installer_version = "0.9.5"               # reemplazar por la versión EXACTA del uv autorizado
+allow_network = false                     # true permite solicitar modo network en la preview; no lo ejecuta
+# wheelhouse = "/RUTA/ABSOLUTA/wheels"     # opcional: wheels locales previamente preparados y autorizados
+# Offline usa --no-index/--find-links si hay wheelhouse, o solo la caché privada del hijo si no.
+# Un hijo nuevo con caché vacía y sin wheelhouse falla offline sin descargar ni cambiar de modo.
+timeout_seconds = 120                     # techo por comando, 120..1800 s; no timeout global ni retry
+max_output_bytes = 65536                   # por stream y comando
+
+[compositions.django]
+profile = "python-django-recipe"           # perfil empaquetado; no duplicarlo en [profiles]
+recipe = "django"
+authorize_profile_commands = true
+environment = {}                          # entorno de preparación cerrado y HOME/cache/tmp dentro del hijo
+executables = { python = { project_venv = "python" }, pytest = { project_venv = "pytest" }, ruff = { project_venv = "ruff" }, mypy = { project_venv = "mypy" } }

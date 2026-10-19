@@ -4,6 +4,7 @@ import type { S } from "../managed-api";
 import { Link } from "../navigation";
 import { Empty, Evidence, Loading, PageHeader, Pagination, PhaseRail, Stale, Status, usePoll } from "../ui";
 import { useWorkspace } from "../workspace";
+import { Preparation } from "./Preparation";
 import { RunTable, TaskForm } from "./shared";
 
 const OPEN: S["PhaseSummaryRead"]["status"][] = ["ACTIVE", "CHECKING", "READY_TO_CLOSE", "NEEDS_RECONCILIATION", "BLOCKED", "CLOSING"];
@@ -28,6 +29,8 @@ export function ProjectPage() {
     </PageHeader>
     <Stale error={detail.data ? detail.error ?? mode.error ?? phases.error ?? runs.error : undefined} />
     {mode.data?.refusal && <p className="state state-attention">{mode.data.refusal}</p>}
+
+    {detail.data?.versions.project_recipe && !!phases.data?.length && <Preparation />}
 
     <section className="panel" aria-labelledby="active-phase">
       <h2 id="active-phase">Fase abierta</h2>

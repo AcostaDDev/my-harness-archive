@@ -259,6 +259,8 @@ class SQLiteManagedRepository:
                        purpose="task"):
         """Run nuevo y su primer job en la transacción del llamante (tareas y operaciones de fase H3.3)."""
         self._registry_current(session, str(context.root), versions)
+        from harness_local.storage.preparation import admit
+        admit(session, str(context.root), versions, purpose)
         if purpose != "import_commit":
             from harness_local.storage.project_import import unresolved as import_unresolved
             if import_unresolved(session, str(context.root)):
@@ -327,6 +329,8 @@ class SQLiteManagedRepository:
                 raise Conflict("Read-only tasks cannot retry implementation")
             self._phase_open(session, run.root, run.phase_id)
             self._registry_current(session, run.root, json.loads(run.versions_json))
+            from harness_local.storage.preparation import admit
+            admit(session, run.root, json.loads(run.versions_json), run.purpose)
             activation_id = self._admit(session, assessment)
             job = Job(idempotency_key=key, run_id=run_id, request_json=request, status="QUEUED", created_at=self._now(),
                       activation_id=activation_id)
@@ -599,6 +603,8 @@ class SQLiteManagedRepository:
     def _queue_commit(self, session, run, key, request, updates, assessment) -> JobRecord:
         """Comprobaciones y job de commit en la transacción del llamante (acción propia o lote H3.4)."""
         self._registry_current(session, run.root, json.loads(run.versions_json))
+        from harness_local.storage.preparation import admit
+        admit(session, run.root, json.loads(run.versions_json), run.purpose)
         run_id = run.id
         if session.scalar(select(Job.id).where(Job.run_id == run_id,
                 Job.status.in_(("QUEUED", "ACTIVE", "RECOVERY_REQUIRED")))) is not None:

@@ -46,7 +46,8 @@ def call(operation, /, *args, **kwargs):
         raise problem(404, "not_found", str(error)) from error
     except Conflict as error:
         code = ("mode_refused" if isinstance(error.__cause__, ModeConflict)
-                else "document_changed" if isinstance(error.__cause__, BaseChanged) else "conflict")
+                else "document_changed" if isinstance(error.__cause__, BaseChanged)
+                else "preparation_required" if str(error).startswith("preparation_required:") else "conflict")
         raise problem(409, code, str(error)) from error
     except ModeConflict as error:
         raise problem(409, "migration_conflict", str(error)) from error
@@ -1136,5 +1137,40 @@ def managed_router(runtime: ManagedRuntime):
                  operation_id='managed_creation_cancel')
     def creation_cancel(operation_id: str, body: CreationCancelInput, idempotency_key: IdempotencyKey):
         return registry(runtime.creation.cancel, operation_id, body.model_dump(exclude_none=True), idempotency_key)
+
+    from harness_local.api.schemas import (
+        PreparationChangeInput, PreparationConfirmInput, PreparationControlInput,
+        PreparationRead, PreparationPlanRead, PreparationOperationRead,
+    )
+
+    @router.get('/projects/{project_id}/preparation', response_model=PreparationRead,
+                operation_id='managed_preparation')
+    def preparation_status(project_id: str):
+        return registry(runtime.preparation.read, project_id)
+
+    @router.post('/projects/{project_id}/preparation/preview', response_model=PreparationPlanRead,
+                 operation_id='managed_preparation_preview')
+    def preparation_preview(project_id: str, body: PreparationChangeInput):
+        return registry(runtime.preparation.preview, project_id, body.model_dump(exclude_none=True))
+
+    @router.post('/projects/{project_id}/preparation/confirm', response_model=PreparationOperationRead,
+                 operation_id='managed_preparation_confirm')
+    def preparation_confirm(project_id: str, body: PreparationConfirmInput, idempotency_key: IdempotencyKey):
+        return registry(runtime.preparation.confirm, project_id, body.model_dump(exclude_none=True), idempotency_key)
+
+    @router.get('/preparations/{operation_id}', response_model=PreparationOperationRead,
+                operation_id='managed_preparation_operation')
+    def preparation_operation(operation_id: str):
+        return registry(runtime.preparation.repository.read, operation_id)
+
+    @router.post('/preparations/{operation_id}/cancel', response_model=PreparationOperationRead,
+                 operation_id='managed_preparation_cancel')
+    def preparation_cancel(operation_id: str, body: PreparationControlInput, idempotency_key: IdempotencyKey):
+        return registry(runtime.preparation.control, operation_id, body.model_dump(exclude_none=True), 'cancel', idempotency_key)
+
+    @router.post('/preparations/{operation_id}/confirm-stopped', response_model=PreparationOperationRead,
+                 operation_id='managed_preparation_confirm_stopped')
+    def preparation_stopped(operation_id: str, body: PreparationControlInput, idempotency_key: IdempotencyKey):
+        return registry(runtime.preparation.control, operation_id, body.model_dump(exclude_none=True), 'confirm-stopped', idempotency_key)
 
     return router

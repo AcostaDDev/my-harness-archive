@@ -37,3 +37,6 @@ def persisted_identities(db):
     """sqlite3 maintenance readers use the same ownership evidence, including old jobs."""
     for row in db.execute("SELECT payload FROM managed_events WHERE kind='command_process_spawned'"):
         yield json.loads(row[0])['identity']
+    # Preparation commands have a real preparation owner in the shared process table, never a run event.
+    for row in db.execute('SELECT identity FROM managed_processes WHERE preparation_id IS NOT NULL AND identity IS NOT NULL'):
+        yield json.loads(row[0])

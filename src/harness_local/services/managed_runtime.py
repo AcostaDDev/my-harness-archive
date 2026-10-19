@@ -159,7 +159,8 @@ class SupervisorWorker:
             lease_seconds=self.supervisor.lease_seconds, commit_factory=self.supervisor.commit_factory, lane=lane)
         while not self.stopping.is_set():
             try:
-                claimed = supervisor.run_once()
+                prepared = self.preparation.run_once() if lane != 'chat' and getattr(self, 'preparation', None) else None
+                claimed = prepared or supervisor.run_once()
             except Exception as exc:  # job en RECOVERY_REQUIRED o fallo local; nunca se reintenta solo
                 with self._lock:
                     self.last_error = f"{type(exc).__name__}: {exc}"
@@ -229,10 +230,17 @@ class ManagedRuntime:
         from harness_local.services.project_creation import ProjectCreation
         self.creation = ProjectCreation(self)
         self.creation.reconcile()
+        from harness_local.services.project_preparation import ProjectPreparation
+        self.preparation = ProjectPreparation(self)
+        if not is_read_only_archive(self.engine):
+            self.preparation.repository.recover_expired()
+        for project in list(self.projects.values()):
+            self.preparation.bind(project)
         if config.supervisor:
             supervisor = LocalSupervisor(self.repository, config.ports_factory, lease_seconds=config.lease_seconds,
                                          commit_factory=config.commit_factory)
             self.worker = SupervisorWorker(supervisor, config.poll_seconds)
+            self.worker.preparation = self.preparation
             self.worker.start()
 
     def stop(self) -> None:
