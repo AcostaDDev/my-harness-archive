@@ -13,7 +13,7 @@ hitos H0–H6 del backlog original; la definición inicial está en [archive/pha
 | P005 | Chat y creación de proyectos | completada (2026-10-13) | [phase-005](archive/phase-005/SUMMARY.md) |
 | P006 | Calidad de uso y distribución local | completada (2026-10-13) | [phase-006](archive/phase-006/SUMMARY.md) |
 | P007 | Agentes configurables e interfaz de producto | completada (2026-10-15) | [phase-007](archive/phase-007/SUMMARY.md) |
-| P008 | Contrato documental unificado, cierre de fase e importación de proyectos | activa | — |
+| P008 | Contrato documental unificado, cierre de fase e importación de proyectos | completada (2026-10-19) | [phase-008](archive/phase-008/SUMMARY.md) |
 
 ## P001 — Contratos y prueba de viabilidad
 
@@ -100,30 +100,16 @@ sin harness.
 - Checks offline en verde; ningún proveedor real sin consentimiento específico.
 **Dependencias:** P007.
 **Fuera de alcance:** Rediseño visual de la UI; recorridos con CLI reales; publicación del paquete.
-**Estado:** activa desde el 2026-10-15; T001–T015 completadas el 2026-10-16. Revisión de salida completada el
-2026-10-17 con tres hallazgos funcionales del Flujo A y referencias vigentes desactualizadas
-([D104](DECISIONS.md#d104--revisión-de-salida-de-p008-con-hallazgos-en-el-flujo-a),
-[registro](phase/P008_REVISION_SALIDA.md)). T016 corrige los tres hallazgos funcionales el 2026-10-17 (D105).
-T017 sincroniza las referencias vigentes el 2026-10-17 (D106). Segunda revisión de salida completada el mismo día
-([D107](DECISIONS.md#d107--segunda-revisión-de-salida-de-p008), [registro](phase/P008_REVISION_SALIDA_2.md)):
-H1–H4 resueltos y dos referencias residuales corregidas; H5 reproduce ejecución de lazy-fetch durante el inventario
-A con un blob prometido ausente. T018 corrige H5 el 2026-10-17
-([D108](DECISIONS.md#d108--p008-t018-lecturas-de-importación-sin-lazy-fetch),
-[registro](phase/P008-T018_OBJETOS_LOCALES.md)). Tercera revisión completada el mismo día
-([D109](DECISIONS.md#d109--tercera-revisión-de-salida-de-p008), [registro](phase/P008_REVISION_SALIDA_3.md)):
-H1–H5 resueltos; H6 reproduce filtros de submódulos ejecutados por el inventario A. T019 corrige H6 el 2026-10-19
-([D110](DECISIONS.md#d110--p008-t019-gitlinks-rechazados-antes-de-inspeccionar-el-checkout),
-[registro](phase/P008-T019_SUBMODULOS.md)). Cuarta revisión completada el mismo día
-([D111](DECISIONS.md#d111--cuarta-revisión-de-salida-de-p008), [registro](phase/P008_REVISION_SALIDA_4.md)):
-H1–H6 resueltos; H7 reproduce transportes por lazy-fetch del escritor A/B al consultar el commit futuro.
-T020 corrige H7 el 2026-10-19: escritor A/B con objetos locales obligatorios, incluido `code` y recuperación
-([D112](DECISIONS.md#d112--p008-t020-escritor-de-importaciones-con-objetos-locales),
-[registro](phase/P008-T020_ESCRITOR_LOCAL.md)). Quinta revisión completada el mismo día
-([D113](DECISIONS.md#d113--quinta-revisión-de-salida-de-p008), [registro](phase/P008_REVISION_SALIDA_5.md)):
-H1–H7 resueltos en las comprobaciones, sin nuevos bloqueos; los siete criterios cumplidos offline.
-P008 sigue activa: siguiente, cierre y archivo documental en una tarea separada, sin sucesora definida.
-No se ha ejecutado un check READY del producto sobre este repositorio.
-Plan y entregas en [NEXT_STEPS](NEXT_STEPS.md).
+**Estado:** completada el 2026-10-19 por la continuación solicitada por el usuario
+([D114](DECISIONS.md#d114--cierre-documental-manual-de-p008)) — [archivo](archive/phase-008/SUMMARY.md).
+T001–T020 completadas; la quinta revisión de salida (D113) acredita los siete criterios cumplidos offline
+y H1–H7 resueltos en sus comprobaciones. Dictamen en [REVIEW](archive/phase-008/REVIEW.md);
+entregas, revisiones previas y límites conservados en el [estado archivado](archive/phase-008/STATE.md)
+y el [plan archivado](archive/phase-008/NEXT_STEPS.md).
+
+Cierre documental manual, sin registro ni check READY del producto sobre este repositorio y sin tag de fase.
+STATE y NEXT_STEPS reiniciados; `docs/phase/` sin artefactos. No hay sucesora definida ni fase activa.
+El usuario elige la próxima prioridad en [NEXT_STEPS](NEXT_STEPS.md).
 
 ## Candidatas sin fase asignada
 

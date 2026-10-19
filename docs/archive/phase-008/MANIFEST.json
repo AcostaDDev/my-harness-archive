@@ -1,0 +1,219 @@
+{
+  "phase": "P008",
+  "closed_at": "2026-10-19",
+  "source_commit": "9c8887989332028a906349351e5554b4e2ad7a80",
+  "mode": "manual_documentary_closure",
+  "snapshot_policy": "exact_bytes_original_paths",
+  "files": [
+    {
+      "source": "docs/STATE.md",
+      "target": "docs/archive/phase-008/STATE.md",
+      "size_bytes": 24017,
+      "sha256": "a6cb5fedaa2bc96d133bfc41c8be340a8731a24e4899995fb76442f6d77df91a"
+    },
+    {
+      "source": "docs/NEXT_STEPS.md",
+      "target": "docs/archive/phase-008/NEXT_STEPS.md",
+      "size_bytes": 43476,
+      "sha256": "8143396beda77469cbb7d737d1b2ba633208e37544ec55a10cc2f4ed415e1f26"
+    },
+    {
+      "source": "docs/phase/P008-T001_MIGRACION_DOCUMENTAL.md",
+      "target": "docs/archive/phase-008/P008-T001_MIGRACION_DOCUMENTAL.md",
+      "size_bytes": 5432,
+      "sha256": "1645904c197cc7b6cb6a762f1792258a08cbb8ae64cf7a1df9fe6644a1172c64"
+    },
+    {
+      "source": "docs/phase/P008-T004_CIERRE_UNIFICADO.md",
+      "target": "docs/archive/phase-008/P008-T004_CIERRE_UNIFICADO.md",
+      "size_bytes": 5610,
+      "sha256": "df38ac2a34aab012de96112a298301c89d9aa68bb11e1b1aff91c84546c0cced"
+    },
+    {
+      "source": "docs/phase/P008-T005_PROMPTS_DEFINICION.md",
+      "target": "docs/archive/phase-008/P008-T005_PROMPTS_DEFINICION.md",
+      "size_bytes": 4315,
+      "sha256": "caea891d8c3ca56ecdb2414a098899758b6c6cad4c628cd90716c219a38cf8ea"
+    },
+    {
+      "source": "docs/phase/P008-T006_API_UI.md",
+      "target": "docs/archive/phase-008/P008-T006_API_UI.md",
+      "size_bytes": 4680,
+      "sha256": "dfb8addede823f94335a97299887620e1fbb14025a0852d2565619bce3170695"
+    },
+    {
+      "source": "docs/phase/P008-T007_INSTRUCCIONES_CONTEXTO.md",
+      "target": "docs/archive/phase-008/P008-T007_INSTRUCCIONES_CONTEXTO.md",
+      "size_bytes": 8634,
+      "sha256": "2fffdc16ad8e05cf3a4f5fe4168fe94dec647318f689aba7ecc6e74a88d4256d"
+    },
+    {
+      "source": "docs/phase/P008-T008_PERFILES_DECLARATIVOS.md",
+      "target": "docs/archive/phase-008/P008-T008_PERFILES_DECLARATIVOS.md",
+      "size_bytes": 4881,
+      "sha256": "4191c7d75c6ee96b3b9c478878827a8bad423dfadcff370ee91a242daa22d358"
+    },
+    {
+      "source": "docs/phase/P008-T009_INVENTARIO_FLUJO_A.md",
+      "target": "docs/archive/phase-008/P008-T009_INVENTARIO_FLUJO_A.md",
+      "size_bytes": 6196,
+      "sha256": "4584964a681f1f0a55f60f3f2f4a784a925e6387543710e288d32c07489c54c9"
+    },
+    {
+      "source": "docs/phase/P008-T010_MAPA_NORMALIZACION.md",
+      "target": "docs/archive/phase-008/P008-T010_MAPA_NORMALIZACION.md",
+      "size_bytes": 6609,
+      "sha256": "1622de5164a0d39739bcd7212f28c3d1d9554d3d2f05bdfe653b190d37f7cd1e"
+    },
+    {
+      "source": "docs/phase/P008-T011_PROPUESTA_REVISOR.md",
+      "target": "docs/archive/phase-008/P008-T011_PROPUESTA_REVISOR.md",
+      "size_bytes": 5666,
+      "sha256": "511bade01831c10944f3a02242b9fcd20eaf06b8682cb1398ef76fa4116c6396"
+    },
+    {
+      "source": "docs/phase/P008-T012_COMMIT_CONTINUIDAD.md",
+      "target": "docs/archive/phase-008/P008-T012_COMMIT_CONTINUIDAD.md",
+      "size_bytes": 7528,
+      "sha256": "6de56d8f07b73a11a31abb512e482d9f95bb2cff77eb3389660552650f23182a"
+    },
+    {
+      "source": "docs/phase/P008-T013_INVENTARIO_FLUJO_B.md",
+      "target": "docs/archive/phase-008/P008-T013_INVENTARIO_FLUJO_B.md",
+      "size_bytes": 5437,
+      "sha256": "492040869422a723085bd80228e9f7e359bb44f0670c2ca1b7ed3f3aa37ef2ac"
+    },
+    {
+      "source": "docs/phase/P008-T014_INGENIERIA_INVERSA.md",
+      "target": "docs/archive/phase-008/P008-T014_INGENIERIA_INVERSA.md",
+      "size_bytes": 7300,
+      "sha256": "0a6a55921f8f1d22f407a119512830b471943379bb0c3a97fe36f461c338677a"
+    },
+    {
+      "source": "docs/phase/P008-T015_INCORPORACION_CONFIRMADA.md",
+      "target": "docs/archive/phase-008/P008-T015_INCORPORACION_CONFIRMADA.md",
+      "size_bytes": 6714,
+      "sha256": "2ed18d25106499d41f50c499881c60799d414e5f6a88071bd13b8c8e973d28c2"
+    },
+    {
+      "source": "docs/phase/P008-T016_FRONTERA_GIT.md",
+      "target": "docs/archive/phase-008/P008-T016_FRONTERA_GIT.md",
+      "size_bytes": 6892,
+      "sha256": "2b2b08c7488459438b2f0c789d78619618132601307eb7e26ce35770965fb29c"
+    },
+    {
+      "source": "docs/phase/P008-T017_REFERENCIAS_VIGENTES.md",
+      "target": "docs/archive/phase-008/P008-T017_REFERENCIAS_VIGENTES.md",
+      "size_bytes": 3146,
+      "sha256": "84e24289786a60bb63ef6914389ac9f09251287c24865d496c1bf2741568c8aa"
+    },
+    {
+      "source": "docs/phase/P008-T018_OBJETOS_LOCALES.md",
+      "target": "docs/archive/phase-008/P008-T018_OBJETOS_LOCALES.md",
+      "size_bytes": 7225,
+      "sha256": "9416ae78c39e6d6037fdec23d55f8ae8aa81a789bff9ad5940b370de0947d340"
+    },
+    {
+      "source": "docs/phase/P008-T019_SUBMODULOS.md",
+      "target": "docs/archive/phase-008/P008-T019_SUBMODULOS.md",
+      "size_bytes": 6717,
+      "sha256": "fcc248c54cf10094c9a28cb4ffd7553fb4728c6884db05b1ca94ac1ef5bac0f5"
+    },
+    {
+      "source": "docs/phase/P008-T020_ESCRITOR_LOCAL.md",
+      "target": "docs/archive/phase-008/P008-T020_ESCRITOR_LOCAL.md",
+      "size_bytes": 6771,
+      "sha256": "b8c2d9ac493369e3660b2e16e3917afbf3caf892b278af5308dc2a08dca9ad9a"
+    },
+    {
+      "source": "docs/phase/P008_REVISION_SALIDA.md",
+      "target": "docs/archive/phase-008/P008_REVISION_SALIDA.md",
+      "size_bytes": 10305,
+      "sha256": "5fc5b5be29e5c3d678612af3f61cfed82c8cdcce04a7e873cbf8ed230ab6f9b1"
+    },
+    {
+      "source": "docs/phase/P008_REVISION_SALIDA_2.md",
+      "target": "docs/archive/phase-008/P008_REVISION_SALIDA_2.md",
+      "size_bytes": 10218,
+      "sha256": "a0f83195b8befa6f232eebd9a0bef5f7b6600f41a3d0b3d2304a4e5ef403e9bc"
+    },
+    {
+      "source": "docs/phase/P008_REVISION_SALIDA_2_EVIDENCE.json",
+      "target": "docs/archive/phase-008/P008_REVISION_SALIDA_2_EVIDENCE.json",
+      "size_bytes": 2361,
+      "sha256": "e15e34ab042457f99140d23283ebb38a0956cd40b72725a8ef60669c94ea4f31"
+    },
+    {
+      "source": "docs/phase/P008_REVISION_SALIDA_2_REPRO.py",
+      "target": "docs/archive/phase-008/P008_REVISION_SALIDA_2_REPRO.py",
+      "size_bytes": 6946,
+      "sha256": "fd0585cb997f7dd477083ef99c3160d1037118c8fef3de29ab74fb85ff71bb43"
+    },
+    {
+      "source": "docs/phase/P008_REVISION_SALIDA_3.md",
+      "target": "docs/archive/phase-008/P008_REVISION_SALIDA_3.md",
+      "size_bytes": 10187,
+      "sha256": "c5a24333fa70b30bb25afbf222fce21e90c801b5b3e65e86c652dfc26aef6ec6"
+    },
+    {
+      "source": "docs/phase/P008_REVISION_SALIDA_3_EVIDENCE.json",
+      "target": "docs/archive/phase-008/P008_REVISION_SALIDA_3_EVIDENCE.json",
+      "size_bytes": 14054,
+      "sha256": "0c9f049c90f0b9cbfa102a7e0d41494c791e8575b8a57e0da035a41dec81d1bb"
+    },
+    {
+      "source": "docs/phase/P008_REVISION_SALIDA_3_REPRO.py",
+      "target": "docs/archive/phase-008/P008_REVISION_SALIDA_3_REPRO.py",
+      "size_bytes": 8633,
+      "sha256": "392e81a94cd898b159ea126633437785911c1aab44c0f5712d067d4d1582b7b4"
+    },
+    {
+      "source": "docs/phase/P008_REVISION_SALIDA_4.md",
+      "target": "docs/archive/phase-008/P008_REVISION_SALIDA_4.md",
+      "size_bytes": 10900,
+      "sha256": "a0062d172f6fa436f4b93f153c83077ec01c3cd86292a17a3b7325ed5f7f8396"
+    },
+    {
+      "source": "docs/phase/P008_REVISION_SALIDA_4_EVIDENCE.json",
+      "target": "docs/archive/phase-008/P008_REVISION_SALIDA_4_EVIDENCE.json",
+      "size_bytes": 39753,
+      "sha256": "7574c19d9bf8814962befb9136c4c818c60fef7bed8e834ff11d63d1c40eb06b"
+    },
+    {
+      "source": "docs/phase/P008_REVISION_SALIDA_4_REPRO.py",
+      "target": "docs/archive/phase-008/P008_REVISION_SALIDA_4_REPRO.py",
+      "size_bytes": 13649,
+      "sha256": "2a17db372a6c959a11118b04501d846589a52dcd8ab6e4388ea9557e40551e37"
+    },
+    {
+      "source": "docs/phase/P008_REVISION_SALIDA_5.md",
+      "target": "docs/archive/phase-008/P008_REVISION_SALIDA_5.md",
+      "size_bytes": 9839,
+      "sha256": "99aa033344fa5866a5de964671a581dbb65c78eba2220fe265228df706d18b2b"
+    },
+    {
+      "source": "docs/phase/P008_REVISION_SALIDA_5_EVIDENCE.json",
+      "target": "docs/archive/phase-008/P008_REVISION_SALIDA_5_EVIDENCE.json",
+      "size_bytes": 53794,
+      "sha256": "1559c6b1244a6720c1c1a51268791057d27a11fd625aa30bf4bed89c59c8445a"
+    },
+    {
+      "source": "docs/phase/P008_REVISION_SALIDA_5_REPRO.py",
+      "target": "docs/archive/phase-008/P008_REVISION_SALIDA_5_REPRO.py",
+      "size_bytes": 11238,
+      "sha256": "5cee96bad04c8586c761bdf9bcae516d013704616f97bffed206c3a5eda6576b"
+    },
+    {
+      "source": "docs/phase/P008_REVISION_SALIDA_EVIDENCE.json",
+      "target": "docs/archive/phase-008/P008_REVISION_SALIDA_EVIDENCE.json",
+      "size_bytes": 1053,
+      "sha256": "8ddb0b76fa7035290d56275dacccf7d4a1d6d16b7a4a84567de7d4aa27f4e0a9"
+    },
+    {
+      "source": "docs/phase/P008_REVISION_SALIDA_REPRO.py",
+      "target": "docs/archive/phase-008/P008_REVISION_SALIDA_REPRO.py",
+      "size_bytes": 4479,
+      "sha256": "fa3508d611a98330b773fb1ecca3ff903c3f46dbccaded2096fd47e6d2a8f3a3"
+    }
+  ]
+}

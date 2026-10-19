@@ -7,9 +7,10 @@ usan a través de las CLI de Codex y Claude Code con tu propia suscripción.
 
 ## Estado
 
-Fases P001–P007 completadas; en curso P008 (contrato documental unificado, cierre de fase automático e importación de
-proyectos). Detalle en [ROADMAP](docs/ROADMAP.md) y [STATE](docs/STATE.md). Todo está verificado offline con datos
-sintéticos; el uso con proveedores reales se ha comprobado en ejecuciones puntuales autorizadas.
+Fases P001–P008 completadas, incluido el contrato documental unificado, cierre de fase e importación de proyectos.
+Sin fase activa; la próxima prioridad está por definir. Detalle en [ROADMAP](docs/ROADMAP.md) y
+[STATE](docs/STATE.md). Verificación offline con datos sintéticos; el uso con proveedores reales se ha comprobado
+en ejecuciones puntuales autorizadas.
 
 ## Requisitos
 
@@ -75,5 +76,5 @@ Las pruebas usan Git, SQLite y procesos temporales con agentes falsos; no consum
 - [Arquitectura](docs/ARCHITECTURE.md): stack, módulos, patrones, comandos y límites.
 - [Roadmap](docs/ROADMAP.md), [estado](docs/STATE.md) y [siguientes pasos](docs/NEXT_STEPS.md).
 - [Decisiones](docs/DECISIONS.md), [diagrama de datos](docs/DDBB-DIAGRAM.md) y [flujos](docs/flows/task-run.md).
-- [Archivo de fases](docs/archive/phase-007/SUMMARY.md) y trabajo de la fase en curso en [docs/phase](docs/phase/P008-T001_MIGRACION_DOCUMENTAL.md).
+- [Archivo de fases](docs/archive/phase-008/SUMMARY.md): entregas, revisión y evidencia de la última fase cerrada.
 - Instrucciones para agentes: [AGENTS.md](AGENTS.md), con [CLAUDE.md](CLAUDE.md) y [GEMINI.md](GEMINI.md) como envoltorios.

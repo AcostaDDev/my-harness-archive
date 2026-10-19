@@ -123,6 +123,7 @@ tarea se leen solo las decisiones que cita; este índice sirve para buscar prece
 | [D111](#d111--cuarta-revisión-de-salida-de-p008) | Cuarta revisión de salida de P008 | P008 |
 | [D112](#d112--p008-t020-escritor-de-importaciones-con-objetos-locales) | P008-T020: escritor de importaciones con objetos locales | P008 |
 | [D113](#d113--quinta-revisión-de-salida-de-p008) | Quinta revisión de salida de P008 | P008 |
+| [D114](#d114--cierre-documental-manual-de-p008) | Cierre documental manual de P008 | P008 |
 
 ## D001 — Alcance local y arquitectura base
 
@@ -2885,7 +2886,7 @@ Pendiente: prompts restantes (T005), API y UI de las propuestas y las clases de 
 
 ## D091 — P008-T004: cierre y archivo unificados con planificación posterior
 
-Estado: implementada el 2026-10-15; verificación offline en [registro de trabajo](phase/P008-T004_CIERRE_UNIFICADO.md).
+Estado: implementada el 2026-10-15; verificación offline en [registro de trabajo](archive/phase-008/P008-T004_CIERRE_UNIFICADO.md).
 Fase: P008. Aplica D088 punto 4; sustituye el cierre sin edición de D032 y la nueva transición separada de D073.
 Conserva las definiciones versionadas de D034 y los historiales anteriores.
 
@@ -2929,7 +2930,7 @@ invocaron proveedores reales.
 
 ## D092 — P008-T005: prompts y definición bajo el contrato unificado
 
-Estado: implementada el 2026-10-15; verificación offline en el [registro de trabajo](phase/P008-T005_PROMPTS_DEFINICION.md).
+Estado: implementada el 2026-10-15; verificación offline en el [registro de trabajo](archive/phase-008/P008-T005_PROMPTS_DEFINICION.md).
 Fase: P008. Aplica D088 y conserva los valores por defecto de D089 y el plan posterior de D091.
 
 - Nuevas versiones por hash de `define-project`, `plan-phase`, `reconcile-phase`, `close-phase`, `review-task` y
@@ -2961,7 +2962,7 @@ No se ejecutó el harness sobre este repositorio, ni proveedores reales, smokes,
 
 ## D093 — P008-T006: API y UI del contrato unificado
 
-Estado: implementada y verificada offline el 2026-10-15; detalle en el [registro](phase/P008-T006_API_UI.md).
+Estado: implementada y verificada offline el 2026-10-15; detalle en el [registro](archive/phase-008/P008-T006_API_UI.md).
 Fase: P008. Aplica D088 y alinea la UI de D080/D082 con el cierre y el plan posterior de D091. Sustituye sus enlaces
 a decisiones individuales, la creación v1 y la transición separada de fase en la API/UI.
 
@@ -2987,7 +2988,7 @@ no los contratos del motor. OpenAPI y tipos del cliente regenerados desde los es
 ## D094 — P008-T007: AGENTS.md en el prompt congelado de cada rol
 
 Estado: implementada y verificada offline el 2026-10-16; evidencia y límites en el
-[registro](phase/P008-T007_INSTRUCCIONES_CONTEXTO.md). Fase: P008. Aplica D088 punto 8 y conserva D066 y D068.
+[registro](archive/phase-008/P008-T007_INSTRUCCIONES_CONTEXTO.md). Fase: P008. Aplica D088 punto 8 y conserva D066 y D068.
 
 Verificación previa, sin ejecutar ninguna CLI:
 
@@ -3028,7 +3029,7 @@ No se ejecutó el harness sobre este repositorio, ni proveedores reales, smokes,
 ## D095 — P008-T008: perfiles declarados en local-config-4
 
 Estado: implementada y verificada offline el 2026-10-16; detalle y límites en el
-[registro](phase/P008-T008_PERFILES_DECLARATIVOS.md). Fase: P008. Aplica D088 punto 11 y conserva D049 y D078.
+[registro](archive/phase-008/P008-T008_PERFILES_DECLARATIVOS.md). Fase: P008. Aplica D088 punto 11 y conserva D049 y D078.
 
 Decisiones tomadas con criterio dentro de la tarea:
 
@@ -3067,7 +3068,7 @@ No se ejecutó el harness sobre este repositorio, ni proveedores reales, smokes,
 ## D096 — P008-T009: inventario de importación desde el árbol de HEAD
 
 Estado: implementada y verificada offline el 2026-10-16; detalle y límites en el
-[registro](phase/P008-T009_INVENTARIO_FLUJO_A.md). Fase: P008. Aplica D088 punto 10; conserva D012 y D027.
+[registro](archive/phase-008/P008-T009_INVENTARIO_FLUJO_A.md). Fase: P008. Aplica D088 punto 10; conserva D012 y D027.
 
 Decisiones tomadas con criterio dentro de la tarea:
 
@@ -3100,7 +3101,7 @@ No se ejecutó el harness sobre este repositorio, ni proveedores reales, smokes,
 ## D097 — P008-T010: mapa de normalización del Flujo A
 
 Estado: implementada y verificada offline el 2026-10-16; reglas, salida y límites en el
-[registro](phase/P008-T010_MAPA_NORMALIZACION.md). Fase: P008. Aplica D088 punto 10 sobre el inventario de D096.
+[registro](archive/phase-008/P008-T010_MAPA_NORMALIZACION.md). Fase: P008. Aplica D088 punto 10 sobre el inventario de D096.
 
 Decisiones tomadas con criterio dentro de la tarea:
 
@@ -3132,7 +3133,7 @@ No se ejecutó el harness sobre este repositorio, ni proveedores reales, smokes,
 ## D098 — P008-T011: conversación de importación con borradores privados
 
 Estado: implementada y verificada offline el 2026-10-16; detalle y límites en el
-[registro](phase/P008-T011_PROPUESTA_REVISOR.md). Fase: P008. Aplica D088 punto 10 sobre D075, D096 y D097.
+[registro](archive/phase-008/P008-T011_PROPUESTA_REVISOR.md). Fase: P008. Aplica D088 punto 10 sobre D075, D096 y D097.
 
 Decisiones tomadas con criterio dentro de la tarea:
 
@@ -3201,7 +3202,7 @@ orden inverso dentro de T012) y dejaba al harness anterior escribir runs durante
 ## D100 — P008-T012: importación confirmada y continuidad del Flujo A
 
 Estado: implementada y verificada offline el 2026-10-16; detalle y límites en el
-[registro](phase/P008-T012_COMMIT_CONTINUIDAD.md). Fase: P008. Aplica D088 punto 10 e implementa D099, sobre D027,
+[registro](archive/phase-008/P008-T012_COMMIT_CONTINUIDAD.md). Fase: P008. Aplica D088 punto 10 e implementa D099, sobre D027,
 D037 y D098. No reescribe historiales ni intenciones anteriores.
 
 - **Árbol confirmado.** Inventario y mapa de la conversación + borradores privados y valores por defecto de D089.
@@ -3240,7 +3241,7 @@ los contratos y la nueva navegación. Sin dependencias nuevas, proveedores reale
 ## D101 — P008-T013: inventario estático del Flujo B y propuesta de perfil
 
 Estado: implementada el 2026-10-16; verificación offline y límites en el
-[registro](phase/P008-T013_INVENTARIO_FLUJO_B.md). Fase: P008. Aplica D088 punto 11 sobre el perfil declarativo de D095.
+[registro](archive/phase-008/P008-T013_INVENTARIO_FLUJO_B.md). Fase: P008. Aplica D088 punto 11 sobre el perfil declarativo de D095.
 
 Decisiones tomadas con criterio dentro de la tarea:
 
@@ -3274,7 +3275,7 @@ sobre este repositorio, proveedores reales, smokes, push o publicación.
 ## D102 — P008-T014: ingeniería inversa sobre HEAD y borradores privados
 
 Estado: implementada el 2026-10-16; verificación offline y límites en el
-[registro](phase/P008-T014_INGENIERIA_INVERSA.md). Fase: P008. Aplica D088 punto 11 y D083, sobre D075 y D101.
+[registro](archive/phase-008/P008-T014_INGENIERIA_INVERSA.md). Fase: P008. Aplica D088 punto 11 y D083, sobre D075 y D101.
 
 - Conversación `onboarding` en las rutas de planificación existentes. Congela el inventario de T013, su HEAD y
   árbol en `planning_conversations.source` (0019), sin nuevas tablas ni columnas. Solo repositorios Git no vacíos
@@ -3312,7 +3313,7 @@ real. UI específica, vista previa/commit, conservación de originales y confirm
 ## D103 — P008-T015: incorporación confirmada del Flujo B
 
 Estado: implementada el 2026-10-16; verificación offline y límites en el
-[registro](phase/P008-T015_INCORPORACION_CONFIRMADA.md). Fase: P008. Aplica D088 punto 11 sobre D037, D095,
+[registro](archive/phase-008/P008-T015_INCORPORACION_CONFIRMADA.md). Fase: P008. Aplica D088 punto 11 sobre D037, D095,
 D100 y D102.
 
 - Vista previa sobre el HEAD original, checkout e índice limpios. Solo documentos de D088 y flujos; los once
@@ -3350,7 +3351,7 @@ reales. La exclusión y los permisos siguen siendo cooperativos. P008 sigue acti
 ## D104 — Revisión de salida de P008 con hallazgos en el Flujo A
 
 Estado: revisión completada el 2026-10-17 sobre `f650851`; P008 sigue activa y no está lista para cerrar.
-[Dictamen, evidencia y verificación](phase/P008_REVISION_SALIDA.md). Fase: P008.
+[Dictamen, evidencia y verificación](archive/phase-008/P008_REVISION_SALIDA.md). Fase: P008.
 
 - Las quince entregas están implementadas y los recorridos sintéticos previstos existen. La revisión adicional
   reproduce tres incumplimientos del Flujo A: `git status` ejecuta un filtro local incluso con checkout limpio;
@@ -3371,7 +3372,7 @@ push o publicación. No se han lanzado subagentes ni cambiado la configuración 
 
 ## D105 — P008-T016: frontera Git y bytes confirmados en las importaciones
 
-Estado: implementada el 2026-10-17; verificación en el [registro](phase/P008-T016_FRONTERA_GIT.md). Fase: P008.
+Estado: implementada el 2026-10-17; verificación en el [registro](archive/phase-008/P008-T016_FRONTERA_GIT.md). Fase: P008.
 Corrige H1–H3 de D104 bajo las garantías existentes de D096, D099, D100 y D103.
 
 - **Antes de ejecutar Git con filtros.** El inventario A consulta `config --includes --get-regexp` y rechaza
@@ -3400,7 +3401,7 @@ salida quedan para las tareas siguientes; esta corrección no cierra ni archiva 
 
 ## D106 — P008-T017: referencias vigentes sin cambiar contratos
 
-Estado: implementada el 2026-10-17; verificación en el [registro](phase/P008-T017_REFERENCIAS_VIGENTES.md). Fase: P008.
+Estado: implementada el 2026-10-17; verificación en el [registro](archive/phase-008/P008-T017_REFERENCIAS_VIGENTES.md). Fase: P008.
 Resuelve H4 de D104 contrastando los textos con D093, D095, D102 y D105 y con el código vigente.
 
 - SPECIFICATION refleja F11 y F18 implementados, conservando la confirmación pendiente del ejemplo Django sobre
@@ -3418,7 +3419,7 @@ P008 sigue activa. La siguiente tarea es repetir la revisión de salida; el cier
 ## D107 — Segunda revisión de salida de P008
 
 Estado: revisión completada el 2026-10-17 sobre `a455ff9`, tras T016/T017; P008 sigue activa y no está lista
-para cerrar por H5. [Dictamen y verificación](phase/P008_REVISION_SALIDA_2.md). Fase: P008.
+para cerrar por H5. [Dictamen y verificación](archive/phase-008/P008_REVISION_SALIDA_2.md). Fase: P008.
 
 - H1–H3 de D104 se rechazan antes de efectos: filtros sin ejecución, conversiones de bytes y destinos ignorados
   sin escritura ni operación/commit/fase nuevos. Se conserva nueva evidencia sintética independiente y se
@@ -3443,7 +3444,7 @@ publicación; se mantienen los límites de contención cooperativa y verificaci�
 ## D108 — P008-T018: lecturas de importación sin lazy-fetch
 
 Estado: implementada el 2026-10-17; verificación y límites en el
-[registro](phase/P008-T018_OBJETOS_LOCALES.md). Fase: P008. Corrige H5 de D107 bajo D096/D100/D101/D105.
+[registro](archive/phase-008/P008-T018_OBJETOS_LOCALES.md). Fase: P008. Corrige H5 de D107 bajo D096/D100/D101/D105.
 
 - `adapters/local_git.py` extrae la frontera de B en `LocalGit`, sin depender de los inventarios. Cada comando
   exige `--no-lazy-fetch`; un Git antiguo falla desde el primer `rev-parse`, sin fallback por entorno. A la usa
@@ -3465,7 +3466,7 @@ Estado: implementada el 2026-10-17; verificación y límites en el
 ## D109 — Tercera revisión de salida de P008
 
 Estado: revisión completada el 2026-10-17 sobre `0348b84`; P008 no lista para cerrar. Fase: P008.
-Evidencia, comprobaciones y límites en el [registro](phase/P008_REVISION_SALIDA_3.md).
+Evidencia, comprobaciones y límites en el [registro](archive/phase-008/P008_REVISION_SALIDA_3.md).
 
 - H1–H3 siguen rechazados antes de sus efectos y H4 conserva las referencias sincronizadas. H5 ya se rechaza
   en A/B con diagnóstico del objeto ausente, sin ejecutar el transporte falso, recuperar objetos ni cambiar
@@ -3485,7 +3486,7 @@ Evidencia, comprobaciones y límites en el [registro](phase/P008_REVISION_SALIDA
 
 ## D110 — P008-T019: gitlinks rechazados antes de inspeccionar el checkout
 
-Estado: implementada el 2026-10-19; verificación en el [registro](phase/P008-T019_SUBMODULOS.md). Fase: P008.
+Estado: implementada el 2026-10-19; verificación en el [registro](archive/phase-008/P008-T019_SUBMODULOS.md). Fase: P008.
 Corrige H6 de D109 bajo D096/D100/D103/D105/D108, sin ampliar soporte de submódulos.
 
 - **Rechazo previo en todo el repositorio.** `check_submodules` consulta `ls-tree -r -z --full-tree HEAD` y
@@ -3511,7 +3512,7 @@ P008 sigue activa. Después corresponde otra revisión de salida; cierre y archi
 ## D111 — Cuarta revisión de salida de P008
 
 Estado: revisión completada el 2026-10-19 sobre `2815b5c`; P008 no lista para cerrar por H7. Fase: P008.
-Evidencia, comprobaciones y límites en el [registro](phase/P008_REVISION_SALIDA_4.md).
+Evidencia, comprobaciones y límites en el [registro](archive/phase-008/P008_REVISION_SALIDA_4.md).
 
 - H1–H5 mantienen sus resultados en las rutas revisadas. H6 queda resuelto: dieciocho escenarios nuevos con
   gitlinks dentro/fuera de `docs/` o solo en índice, filtros `clean`/`process` directos/por include y creación
@@ -3534,7 +3535,7 @@ Evidencia, comprobaciones y límites en el [registro](phase/P008_REVISION_SALIDA
 ## D112 — P008-T020: escritor de importaciones con objetos locales
 
 Estado: implementada el 2026-10-19; verificación y límites en el
-[registro](phase/P008-T020_ESCRITOR_LOCAL.md). Fase: P008. Corrige H7 de D111 bajo D100/D103/D105/D108/D110.
+[registro](archive/phase-008/P008-T020_ESCRITOR_LOCAL.md). Fase: P008. Corrige H7 de D111 bajo D100/D103/D105/D108/D110.
 
 - **Escritor vinculado a la frontera local.** `check_git` configura `GitWorkspace.local_objects_only` antes
   de captura/sellado y ejecución/reanudación A/B. Su fábrica interna entrega `LocalGit` para todas las llamadas
@@ -3562,7 +3563,7 @@ P008 sigue activa. Después corresponde otra revisión de salida; cierre y archi
 ## D113 — Quinta revisión de salida de P008
 
 Estado: revisión completada el 2026-10-19 sobre `7568215`; criterios cumplidos offline. Fase: P008.
-Evidencia, comprobaciones y límites en el [registro](phase/P008_REVISION_SALIDA_5.md).
+Evidencia, comprobaciones y límites en el [registro](archive/phase-008/P008_REVISION_SALIDA_5.md).
 
 - H1–H6 conservan sus guardias. H7 queda resuelto en A/B: captura/sellado, ejecución y recuperación con
   puertos nuevos usan `--no-lazy-fetch` en ambas APIs Git. La ausencia normal del commit futuro permite
@@ -3577,3 +3578,27 @@ Evidencia, comprobaciones y límites en el [registro](phase/P008_REVISION_SALIDA
 - P008 sigue activa hasta el cierre y archivo documental en una tarea separada. No se registra ni ejecuta
   un check READY del producto sobre este repositorio; no se inventa sucesora, ni se amplían consentimientos
   de proveedores, smokes, push o publicación. Se conservan los límites de contención cooperativa y QA visual.
+
+## D114 — Cierre documental manual de P008
+
+Estado: cerrada y archivada el 2026-10-19 por la continuación solicitada por el usuario, tras D113. Fase: P008.
+[Resumen](archive/phase-008/SUMMARY.md), [revisión](archive/phase-008/REVIEW.md) y
+[registro de cierre](archive/phase-008/P008_CIERRE.md).
+
+- Las veinte tareas de P008 y sus siete criterios de salida están cumplidos en el alcance offline de D113,
+  sobre el código `7568215`; la revisión y sus evidencias quedaron en `9c88879`. No se amplían sus garantías
+  a UI visual, generación semántica real, Django/ruff/mypy reales o recorridos con proveedores reales.
+- El usuario pide continuar con la siguiente tarea y hacer commit, que STATE/NEXT_STEPS identifican como
+  cierre y archivo documental. Se completa manualmente bajo D002/D088, sin registrar ni ejecutar el harness
+  sobre este repositorio, check READY, SQLite, agentes o proveedores. No se crea tag de fase: este cierre
+  manual se acredita con su commit y el HEAD de origen del manifiesto; no simula el protocolo gestionado.
+- `archive/phase-008/` conserva STATE, NEXT_STEPS y los 33 artefactos originales de `docs/phase/` por bytes.
+  El manifiesto recoge rutas de origen/destino, tamaños y SHA-256; REVIEW y SUMMARY nuevos identifican el
+  dictamen y el alcance del cierre. Los enlaces y comandos internos de los originales conservan su contexto
+  histórico; los scripts se reproducen en su commit de origen. No se reescriben snapshots, scripts ni JSON.
+- Los enlaces vigentes de DECISIONS y README se actualizan al archivo, sin cambiar decisiones anteriores.
+  ROADMAP conserva objetivo y criterios de P008 y enlaza su archivo. STATE incorpora la base de P008 y
+  NEXT_STEPS queda sin tareas; `docs/phase/` vacía. Sin sucesora en ROADMAP, no se inventa P009.
+- La próxima prioridad corresponde al usuario; las candidatas y límites quedan en ROADMAP. Se mantienen
+  las restricciones de desarrollo manual y los consentimientos agotados de proveedores/smokes. Sin push,
+  publicación, cambios de configuración global, esquema, API o código del producto.
