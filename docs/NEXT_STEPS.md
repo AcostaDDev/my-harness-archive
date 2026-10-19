@@ -4,8 +4,9 @@ Objetivo y criterios en [ROADMAP](ROADMAP.md#p009--proyecto-django-desde-cero-y-
 Decisión: [D115](DECISIONS.md#d115--p009-django-desde-cero-carpeta-de-proyectos-y-agentes-por-proyecto).
 [Diseño y matriz](phase/P009_PLAN_DJANGO.md); [flujo previsto](flows/project-creation.md).
 
-**Estado:** fase planificada; todas las tareas pendientes. **Siguiente:** P009-T001.
-Esta tarea solo redacta P009. No crea el proyecto ni concede permisos reales de carpeta, red, instalación o proveedores.
+**Estado:** P009-T001 completada como diseño; T002–T012 pendientes. **Siguiente:** P009-T002.
+[Contrato implementable](phase/P009-T001_CONTRATO_CREACION.md), decisión D116. Todavía no hay producto nuevo ni
+piloto; el diseño no concede permisos reales de carpeta, red, instalación o proveedores.
 
 ## Restricciones compartidas
 
@@ -26,7 +27,7 @@ Esta tarea solo redacta P009. No crea el proyecto ni concede permisos reales de 
 
 ## P009-T001 — Contrato de creación, raíces y agentes por proyecto
 
-**Estado:** pendiente.
+**Estado:** completada el 2026-10-19 (solo diseño; D116).
 **Objetivo:** Dejar un diseño implementable de las ampliaciones, contrastado con D049/D051/D052/D078/D095.
 **Alcance:** autoridad de raíz elegida desde UI y convivencia con TOML; persistencia auditada/versionada;
 creación idempotente de hijos; presets de roles por proyecto; receta Django posterior al bootstrap documental;
@@ -42,10 +43,15 @@ operaciones, contratos, compatibilidad y versiones congeladas afectadas. No ejec
 - Diseño de recuperación y tests de frontera; ADR correspondiente. Decisiones técnicas reversibles con criterio;
   incógnitas que requieran al usuario se registran, sin inventar modelos, esfuerzos ni consentimientos.
 **Validación:** parsers, enlaces y diagramas de diseño; contraste de consumidores existentes. Sin proveedores.
+**Resultado:** [contrato](phase/P009-T001_CONTRATO_CREACION.md) con autoridad UI separada del TOML,
+creación/retirada/recuperación, esquema y API propuestos, presets v5 y vinculación diferida del entorno Django.
+Matriz de fronteras para T002–T005; ninguna incógnita de usuario bloquea T002. Selecciones reales quedan en T006.
 
 ## P009-T002 — Elegir carpeta de proyectos y crear carpetas hijas desde la UI
 
 **Estado:** pendiente. **Depende de:** T001.
+**Contrato de partida:** [D116](DECISIONS.md#d116--p009-t001-autoridad-de-creación-presets-por-proyecto-y-preparación-separada)
+y [diseño §§2–3, 6–9](phase/P009-T001_CONTRATO_CREACION.md#2-autoridad-de-carpeta-y-convivencia-con-el-toml).
 **Objetivo:** Que una persona elija su ubicación y pueda crear allí un nuevo proyecto sin preparar su carpeta a mano.
 **Alcance:** sección «Carpeta de proyectos», selección/ruta explícita normalizada y persistida, retirada de la raíz;
 formulario con nombre del proyecto y destino completo; creación de hijo, registro y enlace a definición existente.
@@ -83,7 +89,7 @@ explícitos del revisor y catálogo/modo admisible del ejecutor. Mantener elecci
 
 ## P009-T004 — Receta Django desde cero y perfil ejecutable
 
-**Estado:** pendiente. **Depende de:** T001, T002.
+**Estado:** pendiente. **Depende de:** T001, T002, T003 (base v5 definida en D116).
 **Objetivo:** Que crear un Django nuevo no exija preparar manualmente scaffold, dependencias ni entorno.
 **Alcance:** receta determinista de preparación posterior al commit documental, con plan confirmado de archivos,
 comandos, versiones y red necesaria; entorno aislado del hijo; perfil Django con ejecutables reales del entorno.

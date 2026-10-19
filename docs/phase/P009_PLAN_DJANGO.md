@@ -3,6 +3,8 @@
 Fecha: 2026-10-19. Base: `747fc33` (P008 cerrada). Decisión:
 [D115](../DECISIONS.md#d115--p009-django-desde-cero-carpeta-de-proyectos-y-agentes-por-proyecto).
 **Estado:** planificación, sin implementación, configuración efectiva ni ejecución del piloto.
+P009-T001 completada como diseño: [contrato](P009-T001_CONTRATO_CREACION.md) y
+[D116](../DECISIONS.md#d116--p009-t001-autoridad-de-creación-presets-por-proyecto-y-preparación-separada).
 
 ## Resultado que se busca
 
@@ -26,7 +28,8 @@ Los datos de prueba son sintéticos. No se utiliza este repositorio ni Reference
 | Evidencia real | D071 verificó las cuatro parejas en un fixture anterior; P008 está validada offline. | Proyecto Django completo con cuatro tareas sucesivas, UI y cierre de fase reales. |
 
 La selección de carpeta y los ajustes por proyecto amplían D049/D078; no se presentan como capacidades ya
-existentes. T001 concretará persistencia, contratos y compatibilidad antes de modificar código o migraciones.
+existentes. T001 concreta persistencia, contratos y compatibilidad en el diseño enlazado, antes de modificar
+código o migraciones en T002–T004.
 
 ## Carpeta de proyectos y autoridad
 
@@ -39,7 +42,7 @@ existentes. T001 concretará persistencia, contratos y compatibilidad antes de m
 - El servicio controla la creación; la IA solo recibe la raíz del hijo. No se entrega el padre como raíz escribible
   ni se confía automáticamente en proyectos existentes. Destino existente, escape, enlace, raíz revocada o conflicto
   bloquean antes de efectos. No se reutiliza una carpeta vacía ajena ni se sobrescribe su contenido.
-- Persistencia operativa auditada, sin editar el TOML/globales. T001 definirá convivencia con raíces del TOML,
+- Persistencia operativa auditada, sin editar el TOML/globales. D116 define convivencia con raíces del TOML,
   precedencia y retirada: no ampliar autoridades antiguas de manera implícita. Retirar una raíz impide nuevas
   creaciones y no borra hijos; los registros y jobs pendientes siguen reglas explícitas de autoridad/versiones.
 - Elegir carpeta no concede llamadas a modelos, red o instalaciones. Esas operaciones se presentan juntas en el
@@ -53,7 +56,7 @@ confirmada con commit propio → tareas del proyecto. La receta no se disfraza c
 pasar un repositorio ya preparado por una creación desde cero.
 
 La receta controla scaffold, entorno, dependencias fijadas y configuración: Django, pytest-django, ruff, mypy
-y los stubs que se necesiten. T001/T004 decidirán comandos/versiones e identificarán dependencias de pruebas
+y los stubs que se necesiten. T004 concretará comandos/versiones dentro del contrato T001 y las dependencias de pruebas
 sin añadir Django al runtime del harness. Instalación offline desde cache cuando sea posible; cualquier red
 necesaria debe figurar en el plan autorizado. SQLite local, entorno, caches, reportes y secretos quedan ignorados.
 

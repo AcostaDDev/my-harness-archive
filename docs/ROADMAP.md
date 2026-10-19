@@ -135,9 +135,10 @@ y desarrollar cuatro tareas del mismo proyecto alternando revisor/ejecutor, con 
 **Fuera de alcance:** Despliegue, autenticación de usuarios, API REST, frontend separado, base externa, terminal
 web genérica, edición de credenciales/ejecutables/TOML desde la UI, agentes con acceso a toda la carpeta padre,
 evaluación estadística de modelos y ejecución del harness sobre este repositorio.
-**Estado:** planificada el 2026-10-19 por petición del usuario; sin implementación ni piloto.
+**Estado:** diseño P009-T001 completado el 2026-10-19 (D116); sin implementación ni piloto.
 Plan de doce tareas en [NEXT_STEPS](NEXT_STEPS.md); alcance y autorizaciones en
-[docs/phase](phase/P009_PLAN_DJANGO.md). La siguiente tarea es P009-T001. Las invocaciones reales requieren
+[docs/phase](phase/P009_PLAN_DJANGO.md); [contrato T001](phase/P009-T001_CONTRATO_CREACION.md).
+La siguiente tarea es P009-T002. Las invocaciones reales requieren
 la propuesta y las selecciones de T006; no se reutilizan los consentimientos agotados de fases anteriores.
 
 ## Candidatas sin fase asignada

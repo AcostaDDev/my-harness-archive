@@ -49,10 +49,12 @@ salvo donde se indica. Detalle por fase en `docs/archive/phase-NNN/SUMMARY.md`.
 
 ## Fase activa — P009 Proyecto Django desde cero y piloto con cuatro combinaciones de agentes
 
-**Estado:** planificada el 2026-10-19 por petición del usuario; ninguna tarea implementada ni piloto ejecutado.
+**Estado:** P009-T001 completada como diseño el 2026-10-19; T002–T012 pendientes, sin implementación ni piloto.
 Objetivo y criterios en [ROADMAP](ROADMAP.md#p009--proyecto-django-desde-cero-y-piloto-con-cuatro-combinaciones-de-agentes),
 tareas en [NEXT_STEPS](NEXT_STEPS.md) y diseño en el [plan](phase/P009_PLAN_DJANGO.md).
 Decisión: [D115](DECISIONS.md#d115--p009-django-desde-cero-carpeta-de-proyectos-y-agentes-por-proyecto).
+Contrato de T001: [diseño implementable](phase/P009-T001_CONTRATO_CREACION.md),
+[D116](DECISIONS.md#d116--p009-t001-autoridad-de-creación-presets-por-proyecto-y-preparación-separada).
 
 - Selección explícita en la UI de «Carpeta de proyectos»: concede al servicio la creación de nuevos proyectos
   hijos y queda guardada. La IA no propone ni descubre la ubicación. `$HOME/Documents/projects/` es
@@ -64,10 +66,13 @@ Decisión: [D115](DECISIONS.md#d115--p009-django-desde-cero-carpeta-de-proyectos
   Claude→Claude y Claude→Codex, siempre en orden revisor→ejecutor.
 - Las raíces hoy dependen del TOML y el alta exige una carpeta existente; los proveedores hoy son globales
   y se muestran en solo lectura. P009 planifica cubrir esas carencias; no las presenta como implementadas.
+- T001 separa el permiso UI para hijos nuevos del alta existente bajo raíces TOML; fija retirada y recuperación
+  por intención/identidad. Diseña presets por proyecto en v5 y receta posterior al commit documental con enlaces
+  diferidos al entorno, conservando protección de configuración e historiales. Esquema/API y fronteras documentados.
 
 P008 permanece cerrada ([archivo](archive/phase-008/SUMMARY.md), D114). Este repositorio sigue sin registrarse
 ni ejecutarse con el harness. No se crean carpetas externas, entornos ni proyectos durante la planificación.
 
-**Siguiente:** P009-T001, contrato y diseño de la ampliación. T006 preparará la propuesta de operación real con
-las selecciones y límites pendientes; redactar la fase no autoriza invocar proveedores, instalar dependencias,
+**Siguiente:** P009-T002, elegir carpeta de proyectos y crear hijos desde la UI según D116. T006 preparará la
+propuesta de operación real con las selecciones y límites pendientes; redactar la fase no autoriza invocar proveedores, instalar dependencias,
 consumir red o ejecutar el piloto. Los consentimientos anteriores siguen agotados.

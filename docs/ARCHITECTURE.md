@@ -235,20 +235,25 @@ Uso real (D051): construir y verificar el wheel (`scripts/build_distribution.py 
 
 ## 11. Ampliación planificada — P009
 
-Diseño pendiente de implementación ([D115](DECISIONS.md#d115--p009-django-desde-cero-carpeta-de-proyectos-y-agentes-por-proyecto)).
+Diseño completado en P009-T001; implementación pendiente
+([D116](DECISIONS.md#d116--p009-t001-autoridad-de-creación-presets-por-proyecto-y-preparación-separada),
+[contrato](phase/P009-T001_CONTRATO_CREACION.md)).
 Hoy el registro exige carpeta existente bajo `[registration].roots`, y los proveedores se fijan en los agentes
 globales del TOML; Settings los muestra en solo lectura. P009 ampliará ambos contratos de forma explícita:
 
 - Selección de carpeta padre desde UI, guardada como autoridad operativa local auditada; creación idempotente
   de nuevos hijos con intención previa. No se edita el TOML ni la configuración global; convivencia con sus
-  raíces, revocación, esquema y contratos se concretan en T001. Los agentes solo reciben la raíz del hijo.
+  raíces TOML separadas: estas siguen autorizando solo el alta existente. Retirada bloquea creaciones pendientes,
+  no proyectos ya registrados. Intención y alta atómica conservan procedencia; los agentes solo reciben el hijo.
 - Presets de roles del servicio con selección por proyecto; el usuario fija modelo/esfuerzo del revisor y este
   decide los del ejecutor. Cambios entre tareas, versiones congeladas e historiales anteriores conservados.
-  El navegador no suministra ejecutables, entornos o credenciales.
+  Se reserva `local-config-5`; v1–v4 conservan lectura/hashes. El navegador no suministra ejecutables, entornos
+  o credenciales; la composición efectiva guarda agentes por checkout, también al construir `ports`.
 - Receta técnica Django confirmada tras el commit documental: entorno, scaffold, dependencias fijadas y checks.
   Autoridad separada para crear archivos protegidos, sin relajar el contrato documental ni el ejecutor normal.
-  Django será una herramienta del proyecto/piloto, no una dependencia del runtime del harness.
+  Enlaces tipados de ejecutables diferidos permiten definir antes de crear el entorno; tareas/checks se bloquean
+  hasta tener recibo de preparación. Django será una herramienta del proyecto, no una dependencia del runtime.
 
-No hay tablas, migraciones, endpoints ni versiones nuevas implementadas en esta planificación. T001 documentará
-el diseño y T002–T004 mantendrán la paridad de esquema/API/tipos/diagramas al construirlo. Flujo futuro en
+No hay tablas, migraciones, endpoints ni versiones nuevas implementadas. El contrato T001 documenta entidades,
+API, versiones, recuperación y matriz de pruebas; T002–T004 mantendrán la paridad al construirlo. Flujo futuro en
 [project-creation](flows/project-creation.md); plan y matriz en [docs/phase](phase/P009_PLAN_DJANGO.md).

@@ -8,6 +8,9 @@ escribe: el harness aplica borradores confirmados con CAS y el commit raíz sigu
 P009 planifica la elección de carpeta padre y la preparación Django posterior al commit documental en el
 [flujo de creación desde cero](project-creation.md). Esa ampliación aún no está implementada; el siguiente
 diagrama sigue describiendo la definición documental existente.
+El [contrato T001](../phase/P009-T001_CONTRATO_CREACION.md#5-receta-posterior-al-bootstrap-t004) conserva estos
+borradores y commit raíz: el scaffold/entorno se prepara después mediante una operación distinta, sin ampliar
+`allowed_draft` ni aceptar marcadores ajenos en la carpeta de definición.
 
 ```mermaid
 sequenceDiagram

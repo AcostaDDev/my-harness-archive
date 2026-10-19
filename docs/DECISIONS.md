@@ -125,6 +125,7 @@ tarea se leen solo las decisiones que cita; este índice sirve para buscar prece
 | [D113](#d113--quinta-revisión-de-salida-de-p008) | Quinta revisión de salida de P008 | P008 |
 | [D114](#d114--cierre-documental-manual-de-p008) | Cierre documental manual de P008 | P008 |
 | [D115](#d115--p009-django-desde-cero-carpeta-de-proyectos-y-agentes-por-proyecto) | P009: Django desde cero, carpeta de proyectos y agentes por proyecto | P009 |
+| [D116](#d116--p009-t001-autoridad-de-creación-presets-por-proyecto-y-preparación-separada) | P009-T001: autoridad de creación, presets por proyecto y preparación separada | P009 |
 
 ## D001 — Alcance local y arquitectura base
 
@@ -3638,3 +3639,47 @@ Estado: fase planificada el 2026-10-19 por petición del usuario; pendiente de i
 Todo lo anterior está planificado. No se cambia en esta tarea código, esquema, configuración real, contratos o
 versiones congeladas. Los modelos de datos y los flujos vigentes conservan sus diagramas; el flujo futuro se
 identifica expresamente como diseño pendiente. P008 y su archivo permanecen intactos.
+
+## D116 — P009-T001: autoridad de creación, presets por proyecto y preparación separada
+
+Estado: diseño completado el 2026-10-19; implementación pendiente de P009-T002–T004. Fase: P009.
+[Contrato, esquema propuesto, API y pruebas](phase/P009-T001_CONTRATO_CREACION.md).
+Concreta D115 tras contrastar D049/D051/D052/D078/D095 y los consumidores del registro, composición y bootstrap.
+
+- Una selección de carpeta UI por instalación, inicialmente ausente, persistida en SQLite con revisión, identidad
+  filesystem y eventos append-only. Es autoridad solo para hijos nuevos; no amplía `[registration].roots`, que
+  conserva el alta de checkouts existentes. La carpeta UI puede estar fuera de esas raíces. Funciona en formatos
+  registrables v3/v4 y futura v5; no eleva el techo de bootstrap del operador ni edita TOML/configuración global.
+- Guardar/cambiar/retirar se confirma por preview/CAS y ruta exacta. Retirada invalida creaciones aún pendientes
+  antes de nuevos efectos; no retira hijos ya registrados, borra archivos ni cambia sus hashes. Reelección de la
+  misma ruta no revive intenciones antiguas. Reanudación requiere nueva autorización y propiedad acreditada.
+- Cada creación reserva id/destino y sella intención antes de `mkdir`. Nombre de un componente y destino nuevo,
+  incluso frente a carpetas vacías, con identidad/guardias de enlaces y conflictos. Alta D078, evento, procedencia
+  y resultado de creación se confirman atómicamente. Repetir devuelve la misma operación; una caída entre mkdir
+  y persistir identidad queda incierta, sin adoptar por vacío ni borrar a ciegas. Sin marcador nuevo en el hijo.
+- Se reserva `local-config-5` para presets `[agent_presets.*]`, selección por proyecto y preparación. Las ramas
+  v1–v4 conservan sus hashes y rechazan claves nuevas. Fila sin override conserva agentes globales; el registro
+  v5 guarda selección en su fila/eventos existentes. Proyectos TOML siguen en consulta en UI. Presets contienen
+  ejecutables/entornos/capacidades del operador; el cliente solo selecciona ids, modelo/esfuerzo del revisor y
+  política/catálogos del ejecutor. `ports` compondrá ambos agentes por checkout, sin pareja global mutable.
+- Cambio de roles confirmado por versión/hash y sin trabajo utilizable pendiente: jobs/locks, preparación,
+  aceptación/commit o planificación anterior incompatible bloquean o se invalidan antes de efectos según el
+  contrato. Catálogos/esfuerzos se validan por proveedor/preset, sin fallback. D052 conserva la decisión concreta
+  y motivo del ejecutor en el revisor por tarea/revisión. Snapshots anteriores intactos.
+- Orden: hijo → definición/commit documental → receta/commit técnico → tareas. V5 permite enlaces tipados a
+  ejecutables del entorno aún no creado; definición y bootstrap no ejecutan checks irresolubles. Hasta preparar,
+  se bloquean tareas/comandos/checks que los necesiten. El recibo de entorno habilita su resolución controlada.
+- Receta Django empaquetada, con plan materializado confirmado de archivos/hashes, comandos exactos, versiones,
+  entorno, red/cache y límites. Tiene escritor propio para configuración protegida, sin excepción para ejecutores
+  ni borradores documentales. Intención/pasos/lease/lock y registro de procesos, conciliación de commit y adopción
+  atómica; un efecto de instalación/red incierto no se reintenta implícitamente. Django sigue fuera del runtime.
+  La preparación tendrá journal propio y propietario explícito en locks/procesos compartidos: las FK actuales a
+  jobs/runs no se pueden reutilizar sin ampliación. Su binding `preparation-commands-1` será independiente del
+  binding actual de `commands-1`. Admisión, recuperación y lectores/backup cubrirán ambos propietarios.
+- Los contratos nuevos de creación/preparación se versionan por separado. V5 congela presets efectivos y recibo
+  en la composición; no exige cambiar formas `cli-12`, `commands-1`, codec 7 o layout `d088-12`. Si la implementación
+  necesitase cambiar alguna forma real, deberá versionarla. Tablas/migraciones/API/tipos se incorporan en T002–T004
+  con paridad; el diagrama vigente conserva solo entidades implementadas.
+
+T004 concretará versiones/lock/instalador; T006 recogerá selecciones y consentimiento real. Esta decisión no fija
+modelos/esfuerzos, rutas operativas, permisos de red/instalación o llamadas de proveedor. Sin ejecución del piloto.

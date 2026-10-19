@@ -255,3 +255,8 @@ esfuerzo del revisor y proveedor/catálogo del ejecutor; el revisor decide model
 El piloto usa planificación por agente y cuatro tareas del mismo Django: Codex→Codex, Codex→Claude,
 Claude→Claude y Claude→Codex (revisor→ejecutor), con intentos previos conservados tras cada cambio.
 Plan, alcance y puerta de operación real en [NEXT_STEPS](NEXT_STEPS.md) y [docs/phase](phase/P009_PLAN_DJANGO.md).
+Contrato de diseño completado en T001: [D116](DECISIONS.md#d116--p009-t001-autoridad-de-creación-presets-por-proyecto-y-preparación-separada)
+y [detalle](phase/P009-T001_CONTRATO_CREACION.md). La autoridad UI para hijos nuevos se separa del registro
+existente bajo raíces TOML; retirar el padre no revoca proyectos ya registrados. Presets y receta se diseñan
+como v5 optativa, conservando formatos previos. La preparación posterior al commit documental habilita los
+ejecutables del entorno; antes se bloquean tareas y checks que los necesitan. Todo sigue pendiente de producto.

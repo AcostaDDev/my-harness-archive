@@ -2,6 +2,9 @@
 
 Esquema SQLite del servicio local (Alembic `0020_project_imports`, 35 tablas). Generado en P008-T001 desde el metadata de `src/harness_local/storage/models.py` (actualizado en P008-T015, sin cambio de esquema); cualquier cambio de modelos o migraciones actualiza este documento en la misma tarea (regla de paridad, D088).
 
+P009-T001 define un [esquema futuro separado](phase/P009-T001_CONTRATO_CREACION.md#6-persistencia-propuesta-y-migraciones)
+(D116). No está migrado ni forma parte de los diagramas vigentes de este documento.
+
 Convenciones: `PK` clave primaria, `FK` clave ajena declarada, `UK` unicidad de columna; «null» marca columnas opcionales. Las unicidades compuestas y los índices únicos parciales se listan bajo cada diagrama. Las entidades de otro contexto aparecen solo con las columnas que relacionan. Los artefactos pesados (streams, capturas, copias) viven fuera de SQLite y se referencian por ruta y hash.
 
 ## Observación legacy y simulaciones (P001–P002)
