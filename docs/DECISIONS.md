@@ -122,6 +122,7 @@ tarea se leen solo las decisiones que cita; este índice sirve para buscar prece
 | [D110](#d110--p008-t019-gitlinks-rechazados-antes-de-inspeccionar-el-checkout) | P008-T019: gitlinks rechazados antes de inspeccionar el checkout | P008 |
 | [D111](#d111--cuarta-revisión-de-salida-de-p008) | Cuarta revisión de salida de P008 | P008 |
 | [D112](#d112--p008-t020-escritor-de-importaciones-con-objetos-locales) | P008-T020: escritor de importaciones con objetos locales | P008 |
+| [D113](#d113--quinta-revisión-de-salida-de-p008) | Quinta revisión de salida de P008 | P008 |
 
 ## D001 — Alcance local y arquitectura base
 
@@ -3557,3 +3558,22 @@ Estado: implementada el 2026-10-19; verificación y límites en el
   no añade aislamiento frente a cambios concurrentes arbitrarios del checkout o su configuración.
 
 P008 sigue activa. Después corresponde otra revisión de salida; cierre y archivo separados.
+
+## D113 — Quinta revisión de salida de P008
+
+Estado: revisión completada el 2026-10-19 sobre `7568215`; criterios cumplidos offline. Fase: P008.
+Evidencia, comprobaciones y límites en el [registro](phase/P008_REVISION_SALIDA_5.md).
+
+- H1–H6 conservan sus guardias. H7 queda resuelto en A/B: captura/sellado, ejecución y recuperación con
+  puertos nuevos usan `--no-lazy-fetch` en ambas APIs Git. La ausencia normal del commit futuro permite
+  crearlo localmente sin invocar el transporte falso; se mantienen la intención, run, commit y una sola
+  fase adoptada. Los objetos necesarios ausentes bloquean sin alterar bytes; restituirlos permite continuar.
+- Git sin soporte falla con diagnóstico en `run` y `code`, sin fallback. Las regresiones cubren además
+  caídas parciales y posteriores al commit/antes de adopción, D099, CAS, originales/binarios y cuarentena.
+  Los siete criterios de ROADMAP se cumplen en el alcance offline; no aparecen nuevos bloqueos.
+- Esta revisión solo añade registro, script y JSON de evidencia y actualiza la continuidad documental.
+  Los resúmenes activos de las revisiones primera/tercera se compactan con enlaces para respetar el
+  presupuesto de STATE. ADR anteriores, snapshots, intenciones y evidencia histórica permanecen intactos.
+- P008 sigue activa hasta el cierre y archivo documental en una tarea separada. No se registra ni ejecuta
+  un check READY del producto sobre este repositorio; no se inventa sucesora, ni se amplían consentimientos
+  de proveedores, smokes, push o publicación. Se conservan los límites de contención cooperativa y QA visual.

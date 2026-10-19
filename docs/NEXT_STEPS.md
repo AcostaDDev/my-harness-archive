@@ -4,14 +4,14 @@ Objetivo y criterios de salida en [ROADMAP](ROADMAP.md#p008--contrato-documental
 Decisión de base: [D088](DECISIONS.md#d088--contrato-documental-unificado-cierre-de-fase-automático-e-importación-de-proyectos-p008).
 Análisis de incongruencias que originó la fase: [docs/phase](phase/P008-T001_MIGRACION_DOCUMENTAL.md).
 
-**Siguiente:** nueva revisión de salida de P008 tras T020; cierre y archivo separados.
-T001–T020 completadas. Cuarta revisión de salida completada el 2026-10-19
-([D111](DECISIONS.md#d111--cuarta-revisión-de-salida-de-p008), [registro](phase/P008_REVISION_SALIDA_4.md)):
-H1–H6 resueltos en sus comprobaciones. H7 ejecuta `upload-pack` al consultar el commit sellado aún ausente,
-incluso con todos los objetos del origen disponibles; afecta a ejecución y recuperación A/B.
-T020 corrige el escritor con objetos locales obligatorios, incluido `code`, sin transporte ni fallback (D112).
-Las evidencias de las cuatro revisiones permanecen intactas.
-P008 sigue activa; se repetirá la revisión de salida. Cierre y archivo son operaciones separadas.
+**Siguiente:** cierre y archivo documental de P008 en una tarea separada, sin fase sucesora definida.
+T001–T020 completadas. Quinta revisión de salida completada el 2026-10-19
+([D113](DECISIONS.md#d113--quinta-revisión-de-salida-de-p008), [registro](phase/P008_REVISION_SALIDA_5.md)):
+H1–H7 resueltos en las comprobaciones, sin nuevos bloqueos. T020 mantiene el escritor A/B y su recuperación
+con objetos locales, incluido `code`: el commit futuro se crea sin transporte y los objetos necesarios
+ausentes bloquean antes de escribir. Los siete criterios de ROADMAP están cumplidos offline.
+Las evidencias de las cuatro revisiones anteriores permanecen intactas.
+P008 sigue activa hasta el cierre y archivo; esta revisión no los ejecuta.
 No se ha ejecutado un check READY del producto ni registrado este repositorio. No se inventa una fase sucesora.
 
 ## Restricciones compartidas

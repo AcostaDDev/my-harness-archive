@@ -197,15 +197,9 @@ Objetivo y criterios en [ROADMAP](ROADMAP.md); plan en [NEXT_STEPS](NEXT_STEPS.m
 
 **Revisión de salida completada el 2026-10-17** ([D104](DECISIONS.md#d104--revisión-de-salida-de-p008-con-hallazgos-en-el-flujo-a)):
 
-- Sobre `f650851`, tres fallos del Flujo A reproducidos con repositorios temporales y agentes falsos: el inventario
-  ejecuta filtros locales; una conversión CRLF/LF acaba COMMITTED con bytes distintos de los confirmados; un destino
-  ignorado se admite y deja documentos escritos con importación INTERRUPTED, sin commit. Las guardias del Flujo B
-  ya cubren esos casos. También se detectaron ayudas y estados documentales desactualizados.
-- Dictamen: P008 sigue activa y no está lista para cerrar. No cambia el código del producto ni se reescriben las ADR,
-  snapshots o intenciones previas. Reproducciones, criterio por criterio y verificación en el
-  [registro](phase/P008_REVISION_SALIDA.md).
-- Verificación y límites en el registro: pytest, checks ligeros, Node, tipos/build, Alembic temporal y paridad
-  documental correctos. Sin UI visual ni proveedores reales.
+- Sobre `f650851`, H1–H3 reproducen filtros ejecutados, bytes transformados y escritura con destino ignorado
+  en A; H4 detecta referencias desactualizadas. P008 no lista para cerrar. Sin cambios del producto.
+  Evidencia, checks offline y límites en el [registro](phase/P008_REVISION_SALIDA.md); intactos.
 
 **P008-T016 completada** ([D105](DECISIONS.md#d105--p008-t016-frontera-git-y-bytes-confirmados-en-las-importaciones)):
 
@@ -247,13 +241,10 @@ Objetivo y criterios en [ROADMAP](ROADMAP.md); plan en [NEXT_STEPS](NEXT_STEPS.m
 **Tercera revisión de salida completada el 2026-10-17**
 ([D109](DECISIONS.md#d109--tercera-revisión-de-salida-de-p008), [registro](phase/P008_REVISION_SALIDA_3.md)):
 
-- Sobre `0348b84`, H1–H5 resueltos en sus comprobaciones. H6 ejecuta un filtro `clean` de un
-  submódulo desde `status --ignore-submodules=none`, pese a no haber filtros propios en el padre limpio.
-  Fuera de `docs/` se aceptan inventario y conversación; dentro, el bloqueo llega después del efecto.
-  Reproducido con filtros directos y por include; el inventario B no los invoca en los mismos fixtures.
-- P008 no lista para cerrar. Sin cambios del producto ni evidencia histórica; reproducción y JSON nuevos.
-  Verificación: 1.383 pytest y 121 subtests, 12 checks, 75 Node, tipos/build y Alembic temporal correctos;
-  OpenAPI, 413 enlaces y 20 diagramas válidos por parser/gramática. Límites en el registro; H6 corregido después en T019.
+- Sobre `0348b84`, H1–H5 resueltos; H6 reproduce filtros de submódulos desde `status` en A, dentro/fuera de
+  `docs/`, directos/por include; B no los invoca. P008 no lista para cerrar. Corregido después en T019.
+- 1.383 pytest y 121 subtests, 12 checks, 75 Node, tipos/build, Alembic temporal, OpenAPI, 413 enlaces y
+  20 diagramas correctos. Evidencia y límites intactos en el registro; sin cambios del producto.
 
 **P008-T019 completada** ([D110](DECISIONS.md#d110--p008-t019-gitlinks-rechazados-antes-de-inspeccionar-el-checkout)):
 
@@ -285,5 +276,15 @@ Objetivo y criterios en [ROADMAP](ROADMAP.md); plan en [NEXT_STEPS](NEXT_STEPS.m
 - Verificación: 12 checks, 1.436 pytest y 121 subtests, 442 enlaces y cinco flowcharts correctos; diff revisado.
   Detalle y límites en el [registro](phase/P008-T020_ESCRITOR_LOCAL.md). Sin esquema/API/UI ni proveedores reales.
 
-**Siguiente:** nueva revisión de salida de P008 tras T020. Cierre y archivo separados.
+**Quinta revisión de salida completada el 2026-10-19**
+([D113](DECISIONS.md#d113--quinta-revisión-de-salida-de-p008), [registro](phase/P008_REVISION_SALIDA_5.md)):
+
+- Sobre `7568215`, H1–H7 resueltos en las comprobaciones; sin nuevos bloqueos. A/B crean el commit futuro y
+  recuperan la misma intención con puertos nuevos, sin transportes. Objetos necesarios ausentes y Git sin
+  soporte bloquean sin efectos; restituir los bytes sintéticos permite completar la intención original.
+- Siete criterios de ROADMAP cumplidos offline: 1.436 pytest y 121 subtests, 12 checks, 75 Node, tipos/build,
+  Alembic temporal, OpenAPI, paridad de datos y enlaces/diagramas correctos. Script/JSON nuevos;
+  evidencia previa intacta. P008 preparada para su cierre documental separado; límites en el registro.
+
+**Siguiente:** cierre y archivo documental de P008 en una tarea separada, sin inventar fase sucesora.
 P008 sigue activa y este repositorio sin registrarse ni ejecutar un check READY del producto sobre él.

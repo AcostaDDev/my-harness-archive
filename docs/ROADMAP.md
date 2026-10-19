@@ -118,8 +118,11 @@ H1–H5 resueltos; H6 reproduce filtros de submódulos ejecutados por el inventa
 H1–H6 resueltos; H7 reproduce transportes por lazy-fetch del escritor A/B al consultar el commit futuro.
 T020 corrige H7 el 2026-10-19: escritor A/B con objetos locales obligatorios, incluido `code` y recuperación
 ([D112](DECISIONS.md#d112--p008-t020-escritor-de-importaciones-con-objetos-locales),
-[registro](phase/P008-T020_ESCRITOR_LOCAL.md)). P008 sigue activa: siguiente, nueva revisión de salida.
-El cierre y archivo serán posteriores; no se ha ejecutado un check READY del producto sobre este repositorio.
+[registro](phase/P008-T020_ESCRITOR_LOCAL.md)). Quinta revisión completada el mismo día
+([D113](DECISIONS.md#d113--quinta-revisión-de-salida-de-p008), [registro](phase/P008_REVISION_SALIDA_5.md)):
+H1–H7 resueltos en las comprobaciones, sin nuevos bloqueos; los siete criterios cumplidos offline.
+P008 sigue activa: siguiente, cierre y archivo documental en una tarea separada, sin sucesora definida.
+No se ha ejecutado un check READY del producto sobre este repositorio.
 Plan y entregas en [NEXT_STEPS](NEXT_STEPS.md).
 
 ## Candidatas sin fase asignada
