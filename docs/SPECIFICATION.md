@@ -170,6 +170,9 @@ bloques de estado y crea una nueva versión de su definición, conservando la an
   Las conversiones de atributos no pueden cambiar los bytes confirmados, tampoco en originales o binarios.
   T018 (D108) exige lecturas A/B sin lazy-fetch desde el primer comando Git; objetos locales ausentes o
   respuestas incompletas bloquean con diagnóstico, sin transportes, recuperación de objetos ni inventarios parciales.
+  T019 (D110) rechaza gitlinks en HEAD o índice antes de consultar el estado, también fuera de `docs/`, sin
+  inspeccionar submódulos. La misma guardia precede a captura, sellado, escritura y recuperación A/B; se conserva
+  el requisito de checkout e índice limpios.
 - **Flujo B — repositorio sin harness.** Inventario determinista (stack, modelos de datos, rutas, tests) e ingeniería
   inversa del revisor en solo lectura para generar ARCHITECTURE, DDBB-DIAGRAM (desde los modelos reales),
   SPECIFICATION base, STATE actual y los archivos raíz mínimos, con un perfil declarativo confirmado por el usuario.

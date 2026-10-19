@@ -1,6 +1,6 @@
 # Estado — my_harness
 
-Actualizado: 2026-10-17. Sin bloques gestionados mientras el repositorio no esté registrado en el harness (D088).
+Actualizado: 2026-10-19. Sin bloques gestionados mientras el repositorio no esté registrado en el harness (D088).
 
 ## Base acumulada
 
@@ -121,7 +121,7 @@ Objetivo y criterios en [ROADMAP](ROADMAP.md); plan en [NEXT_STEPS](NEXT_STEPS.m
 
 - Inventario documental determinista de HEAD limpio: rutas, bytes/hashes, clases/reglas, origen, fases,
   instrucciones, bloques y runs legacy por lstat; sin persistencia ni escrituras. Frontera Git reforzada
-  después en T016/T018; H6 de la tercera revisión queda pendiente de T019.
+  después en T016/T018/T019; filtros, objetos locales y submódulos comprobados antes de efectos.
 - Verificación de entrega: 12 checks, 1.233 pytest y 121 subtests; 14 casos nuevos, enlaces/diagramas válidos.
   Detalle y límites en el [registro](phase/P008-T009_INVENTARIO_FLUJO_A.md).
 
@@ -266,7 +266,16 @@ Objetivo y criterios en [ROADMAP](ROADMAP.md); plan en [NEXT_STEPS](NEXT_STEPS.m
   Reproducido con filtros directos y por include; el inventario B no los invoca en los mismos fixtures.
 - P008 no lista para cerrar. Sin cambios del producto ni evidencia histórica; reproducción y JSON nuevos.
   Verificación: 1.383 pytest y 121 subtests, 12 checks, 75 Node, tipos/build y Alembic temporal correctos;
-  OpenAPI, 413 enlaces y 20 diagramas válidos por parser/gramática. Límites en el registro. T019 pendiente.
+  OpenAPI, 413 enlaces y 20 diagramas válidos por parser/gramática. Límites en el registro; H6 corregido después en T019.
 
-**Siguiente:** P008-T019 (H6). Cierre y archivo separados.
+**P008-T019 completada** ([D110](DECISIONS.md#d110--p008-t019-gitlinks-rechazados-antes-de-inspeccionar-el-checkout)):
+
+- Gitlinks en HEAD o índice rechazados antes de `status` en A y de captura/sellado/escritura/recuperación A/B,
+  dentro o fuera de `docs/`. Solo lee el padre, sin filtros hijos ni configuración modificada; mantiene limpieza,
+  D099, CAS y conciliación del mismo commit. `document_layout = "d088-11"` pone jobs anteriores en cuarentena.
+- 27 regresiones nuevas; 1.410 pytest y 121 subtests cubiertos, con una expectativa antigua corregida y 14 casos
+  revalidados; 12 checks, 425 enlaces y cinco flowcharts correctos. [Registro](phase/P008-T019_SUBMODULOS.md).
+  Sin cambios de esquema/API/UI, Node/build/Alembic independiente ni proveedores o smokes reales.
+
+**Siguiente:** repetir la revisión de salida de P008 tras T019. Cierre y archivo separados.
 P008 sigue activa y este repositorio sin registrarse ni ejecutar un check READY del producto sobre él.

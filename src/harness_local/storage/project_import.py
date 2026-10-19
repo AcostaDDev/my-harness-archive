@@ -4,7 +4,7 @@ from uuid import uuid4
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from harness_local.adapters.project_import import check_filters, check_tree
+from harness_local.adapters.project_import import check_filters, check_submodules, check_tree
 from harness_local.adapters.local_git import LocalGit
 from harness_local.core.engine.contracts import context_snapshot, freeze
 from harness_local.core.engine.import_commit import preview as build_preview, seal
@@ -35,6 +35,7 @@ def check_git(context, writer, shown=None, tree=None):
     """Frontera compartida A/B, también al ejecutar o reanudar una intención sellada."""
     git = LocalGit(context.root, executable=writer.executable)
     check_filters(git)
+    check_submodules(git)
     if shown is not None:
         check_tree(git, tree or shown['proposed_tree'], shown['result_tree'], shown['documents'])
 

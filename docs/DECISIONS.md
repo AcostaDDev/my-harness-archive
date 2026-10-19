@@ -119,6 +119,7 @@ tarea se leen solo las decisiones que cita; este índice sirve para buscar prece
 | [D107](#d107--segunda-revisión-de-salida-de-p008) | Segunda revisión de salida de P008 | P008 |
 | [D108](#d108--p008-t018-lecturas-de-importación-sin-lazy-fetch) | P008-T018: lecturas de importación sin lazy-fetch | P008 |
 | [D109](#d109--tercera-revisión-de-salida-de-p008) | Tercera revisión de salida de P008 | P008 |
+| [D110](#d110--p008-t019-gitlinks-rechazados-antes-de-inspeccionar-el-checkout) | P008-T019: gitlinks rechazados antes de inspeccionar el checkout | P008 |
 
 ## D001 — Alcance local y arquitectura base
 
@@ -3478,3 +3479,28 @@ Evidencia, comprobaciones y límites en el [registro](phase/P008_REVISION_SALIDA
   nuevo y su JSON conservan H6; una ejecución correcta del script acredita el hallazgo, no su corrección.
   Cierre y archivo siguen separados. Sin registro ni check READY del producto sobre este repositorio;
   sin fase sucesora inventada, proveedores reales, smokes, push, publicación ni subagentes.
+
+## D110 — P008-T019: gitlinks rechazados antes de inspeccionar el checkout
+
+Estado: implementada el 2026-10-19; verificación en el [registro](phase/P008-T019_SUBMODULOS.md). Fase: P008.
+Corrige H6 de D109 bajo D096/D100/D103/D105/D108, sin ampliar soporte de submódulos.
+
+- **Rechazo previo en todo el repositorio.** `check_submodules` consulta `ls-tree -r -z --full-tree HEAD` y
+  `ls-files --stage -z` con `LocalGit`, sin abrir repositorios hijos. Un modo `160000` en cualquiera de las dos
+  fuentes bloquea con ruta y origen antes de `status`, incluso fuera de `docs/`. Se cubren gitlinks recién
+  añadidos o retirados del índice, hijos sin inicializar y gitdirs separados. No se ejecutan filtros de hijos,
+  ni siquiera para comprobar su limpieza; no se cambia configuración ni se ignora suciedad.
+- **Consumidores y escritor compartido.** Crear una conversación A, enviar turnos, observar antes/después y
+  consultar estado/vista previa/confirmación heredan la guardia de `read_checkout`. `check_git` la repite
+  antes de capturar/sellar y ejecutar/reanudar A/B, incluidas intenciones interrumpidas. El inventario estático
+  B conserva su lectura sin seguir submódulos; la guardia posterior impide aprobar su escritura. El escritor
+  general no cambia ni se amplía su soporte de submódulos.
+- **Compatibilidad.** `document_layout = "d088-11"` congela el rechazo; la composición actual pone jobs anteriores
+  en cuarentena antes de efectos. No se reescriben intenciones, snapshots, historiales ni la reproducción de H6.
+  Tras retirar un gitlink añadido después de confirmar, la recuperación mantiene la intención, run y commit
+  originales. Se conservan D099, CAS, filtros del padre/includes, objetos locales, hashes y destinos ignorados.
+- **Alcance.** Solo Git/SQLite temporales, filtros marcador y agentes falsos. Sin esquema, API, UI, prompts,
+  dependencias ni configuración global nuevos. Las comprobaciones mantienen la exclusión cooperativa de D105;
+  no añaden aislamiento frente a cambios concurrentes arbitrarios del checkout/configuración.
+
+P008 sigue activa. Después corresponde otra revisión de salida; cierre y archivo separados.

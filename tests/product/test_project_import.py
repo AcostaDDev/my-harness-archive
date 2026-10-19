@@ -302,7 +302,7 @@ def test_only_read_only_git_commands_run(tmp_path, monkeypatch):
     read_inventory(context(root))
     assert calls and all(Path(argv[0]).name == "git" for argv in calls)
     commands = [next(arg for arg in argv[1:] if not arg.startswith("-") and "=" not in arg) for argv in calls]
-    assert set(commands) <= {"rev-parse", "config", "status", "ls-tree", "cat-file"}
+    assert set(commands) <= {"rev-parse", "config", "status", "ls-tree", "ls-files", "cat-file"}
     assert all("--no-lazy-fetch" in argv for argv in calls)
     assert all("core.hooksPath=/dev/null" in argv and "core.fsmonitor=false" in argv for argv in calls)
 

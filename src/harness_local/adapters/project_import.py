@@ -1,9 +1,10 @@
 """P008-T009: lectura de solo lectura del checkout para el inventario del Flujo A.
 
 Solo Git de lectura con el entorno controlado de `adapters/git.py` (sin hooks, fsmonitor ni configuración global):
-`rev-parse`, `status` sin locks opcionales, `ls-tree` y `cat-file --batch` sin filtros ni lazy-fetch desde el primer
-comando (D108). El contenido sale del árbol
-de HEAD de un checkout limpio, así que lo ignorado (entornos, secretos locales) nunca se lee y los enlaces
+`rev-parse`, `status` sin locks opcionales, `ls-tree`, `ls-files` y `cat-file --batch` sin filtros ni lazy-fetch
+desde el primer comando (D108). Los gitlinks de HEAD o índice se rechazan antes de status, sin inspeccionar hijos
+(D110). El contenido sale del árbol de HEAD de un checkout limpio, así que lo ignorado (entornos, secretos locales)
+nunca se lee y los enlaces
 simbólicos son entradas del árbol que no se siguen. De `.harness/runs`, que sigue la migración D027, solo se
 observan los nombres por lstat. No escribe en el checkout ni en `.git` y no ejecuta código del proyecto.
 """
@@ -68,6 +69,20 @@ def check_filters(git: Git):
         raise ImportInventoryError('Import requires no local clean/process Git filters; project code cannot be executed')
 
 
+def check_submodules(git: Git):
+    """Rechaza gitlinks de HEAD o índice antes de status/add, sin consultar el repositorio hijo."""
+    for source, args in (
+        ('HEAD', ('ls-tree', '-r', '-z', '--full-tree', 'HEAD')),
+        ('index', ('ls-files', '--stage', '-z')),
+    ):
+        for record in git.run(*args).split(b'\0'):
+            header, _, path = record.partition(b'\t')
+            if header.startswith(b'160000 '):
+                raise ImportInventoryError(
+                    f'Import does not support submodule/gitlink {path.decode("utf-8", "replace")!r} '
+                    f'in {source}; checkout inspection cannot execute submodule code.')
+
+
 def check_tree(git: Git, tree: str, expected: list[dict], documents: list[dict]):
     """Guardias A/B antes de confirmar o escribir, incluidos archivo, binarios y recuperación parcial."""
     destinations = b''.join(doc['path'].encode() + b'\0' for doc in documents
@@ -122,6 +137,7 @@ def read_checkout(root: Path, docs: str = 'docs', *, executable: str = 'git',
     except GitError as exc:
         raise ImportInventoryError(f'Cannot read the local HEAD tree: {exc}') from exc
     try:
+        check_submodules(git)
         dirty = [item for item in git.run('status', '--porcelain=v1', '-z', '--untracked-files=all',
                                           '--ignore-submodules=none').split(b'\0') if item]
     except GitError as exc:

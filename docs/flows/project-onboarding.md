@@ -109,7 +109,7 @@ Fuente: `storage/onboarding.py`, `storage/planning.py`, `core/engine/templates/o
 flowchart TD
     A["Borradores privados revisados por el usuario"] --> B{"¿Sin turnos pendientes ni preguntas bloqueantes abiertas?"}
     B -- no --> X["Resolver o aplazar con motivo; sin escrituras en el checkout"]
-    B -- sí --> C["Comprobar HEAD original, checkout e índice limpios y filtros Git"]
+    B -- sí --> C["Comprobar filtros, gitlinks y HEAD original antes de capturar checkout e índice limpios"]
     C --> D["Exigir once documentos D088; STATE y NEXT_STEPS acuerdan P001"]
     D --> E["Regenerar bloques e índice; conservar originales sustituidos por bytes"]
     E --> F["Añadir phase-000: INVENTORY.json y SUMMARY.md"]
@@ -117,11 +117,12 @@ flowchart TD
     G --> H["Mostrar diff, documentos, perfil detectado y perfil de la composición"]
     H --> I["Usuario confirma preview_sha256, profile_sha256, motivo e Idempotency-Key"]
     I --> J["Sellar intención en project_imports y encolar import_commit; cerrar borradores"]
-    J --> K["Aplicar solo documentos con CAS y crear el commit sellado"]
+    J --> J1["Recomprobar filtros, gitlinks, destinos y blobs sellados"]
+    J1 --> K["Aplicar solo documentos con CAS y crear el commit sellado"]
     K --> L["Una transacción: resultado, job terminado y P001 ACTIVE con base adoptada"]
     L --> M["Continuar en P001; repetir devuelve cero cambios"]
     K -. caída .-> R["Confirmar escritor detenido; reconfirmar intención con igual composición"]
-    R --> K
+    R --> J1
 ```
 
 `POST …/planning/{c}/onboarding/preview` exige borradores válidos, AGENTS ≤60 líneas, CLAUDE/GEMINI ≤15 y una
@@ -154,10 +155,14 @@ con los bytes de la vista previa; cualquier conversión interna que los cambie t
 estas guardias son comunes a A/B: comprueban todo el árbol documental resultante, los destinos nuevos ignorados
 y la igualdad del árbol en el sellado final; se repiten al ejecutar/reanudar sin alterar la intención. Se mantienen los
 límites de D083, 512 KiB por documento y 4 MiB de diff, sin truncar, y la exclusión cooperativa de D100.
+Desde T019 (D110), HEAD e índice con gitlinks en cualquier ruta bloquean esta frontera antes de captura/sellado,
+escritura o recuperación: solo se consultan árboles e índice del padre, sin inspeccionar hijos ni ejecutar sus
+filtros. El inventario estático B conserva la lectura de HEAD sin seguir submódulos; no acredita que el checkout
+pueda pasar esta guardia posterior ni se amplía soporte de submódulos.
 
 `GET …/projects/{p}/onboarding` permite recuperar la operación y la UI `/projects/:p/onboarding[/:c/*borrador]`
 reutiliza conversación, editor CAS y confirmación del Flujo A, con perfil y continuidad en P001. Una tarea de P001
-se encola por una acción posterior con la composición confirmada. `document_layout = "d088-10"` (T018) pone en cuarentena
+se encola por una acción posterior con la composición confirmada. `document_layout = "d088-11"` (T019) pone en cuarentena
 jobs anteriores antes de efectos; no se reescriben snapshots, intenciones ni historiales existentes.
 
 Fuente: `core/engine/onboarding_commit.py`, `storage/onboarding_commit.py`, infraestructura compartida de

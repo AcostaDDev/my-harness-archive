@@ -34,7 +34,7 @@ layout unificado. Implementados: el inventario de solo lectura (P008-T009, D096)
 renombrados, movimientos y composición de decisiones (P008-T010, D097) y la conversación `project_import` en la que
 el revisor propone fusiones y adelgazamiento como borradores privados (P008-T011, D098), y la vista previa y
 el commit confirmado con CAS y adopción de fase (P008-T012, D100). T016 (D105) corrige la frontera Git de H1–H3;
-T018 (D108), las lecturas locales sin lazy-fetch de H5.
+T018 (D108), las lecturas locales sin lazy-fetch de H5; T019 (D110), el rechazo de gitlinks antes de inspeccionar hijos (H6).
 
 ```mermaid
 flowchart TD
@@ -43,7 +43,9 @@ flowchart TD
     A2 --> B0
     A1 -- no --> B0{"¿Sin filtros clean/process configurados, incluidos includes?"}
     B0 -- no --> R
-    B0 -- sí --> B{"Git con no-lazy-fetch obligatorio, HEAD local con archivos y checkout limpio"}
+    B0 -- sí --> B1{"¿HEAD e índice sin gitlinks en ninguna ruta? Lectura solo del padre"}
+    B1 -- no --> R
+    B1 -- sí --> B{"Git con no-lazy-fetch obligatorio, HEAD local con archivos y checkout limpio"}
     B -- no --> R["Rechazo con diagnóstico, sin escrituras"]
     B -- sí --> C["Árbol de HEAD: Markdown raíz, docs/ y .harness/ sin runs"]
     C --> C1{"¿Objetos locales y tamaños disponibles, sin lazy-fetch?"}
@@ -76,7 +78,7 @@ flowchart TD
     H1B -- no --> R
     H1B -- sí --> H2["Confirmación de hash, motivo e Idempotency-Key"]
     H2 --> H3["Job y project_imports con intención sellada, antes de escribir"]
-    H3 --> H3B["Recomprobar filtros, destinos y blobs sellados antes de ejecutar"]
+    H3 --> H3B["Recomprobar filtros, gitlinks, destinos y blobs sellados antes de ejecutar"]
     H3B --> H4["CAS por archivo, borrados y escritura; commit documental determinista"]
     H4 --> H5["Transacción: fase ACTIVE y base documental adoptadas; importación COMPLETED y job DONE"]
     H3 --> H6["Caída: RECOVERY_REQUIRED; confirmar escritor detenido"]
@@ -110,8 +112,16 @@ filtros, `status`, `ls-tree -l` y `cat-file`. Git sin ese flag se rechaza en el 
 ausente, un tamaño no disponible o una respuesta de blobs incompleta rechazan la lectura con diagnóstico:
 no se invoca ningún transporte ni se recuperan objetos. La misma frontera cubre crear la conversación, enviar
 un turno, observarlo y consultar estado/vista previa/confirmación a través de `read_checkout`; nada parcial
-llega al revisor ni al sellado. `document_layout = "d088-10"` pone en cuarentena jobs anteriores; ninguna
+llega al revisor ni al sellado. `document_layout = "d088-11"` (T019) pone en cuarentena jobs anteriores; ninguna
 intención sellada se reescribe y la configuración global permanece intacta.
+
+T019 (D110) consulta `ls-tree -r -z HEAD` y `ls-files --stage -z` antes de `status`: cualquier modo `160000`
+en HEAD o índice bloquea con ruta y origen, dentro o fuera de `docs/`, aunque el hijo no esté inicializado o el
+gitlink esté añadido o retirado del índice. No consulta la configuración, estado ni archivos de los hijos.
+Así no puede invocar sus filtros `clean`/`process`, directos o por include. La guardia se repite antes de
+capturar/sellar y ejecutar/reanudar A/B; no se sustituye la limpieza por ignorar cambios de submódulos.
+La observación anterior y posterior de cada turno A usa la misma lectura; un gitlink nuevo impide invocar
+o aceptar propuestas. Tras retirar el bloqueo se puede conciliar la misma intención, run y commit.
 
 ## Fuente en el código
 

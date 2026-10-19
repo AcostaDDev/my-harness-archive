@@ -4,10 +4,12 @@ Objetivo y criterios de salida en [ROADMAP](ROADMAP.md#p008--contrato-documental
 Decisión de base: [D088](DECISIONS.md#d088--contrato-documental-unificado-cierre-de-fase-automático-e-importación-de-proyectos-p008).
 Análisis de incongruencias que originó la fase: [docs/phase](phase/P008-T001_MIGRACION_DOCUMENTAL.md).
 
-**Siguiente:** P008-T019, impedir filtros de submódulos durante la lectura del Flujo A (H6 de D109).
-T001–T018 completadas. Tercera revisión de salida completada el 2026-10-17
+**Siguiente:** repetir la revisión de salida de P008 tras corregir H6 en T019.
+T001–T019 completadas. Tercera revisión de salida completada el 2026-10-17
 ([D109](DECISIONS.md#d109--tercera-revisión-de-salida-de-p008), [registro](phase/P008_REVISION_SALIDA_3.md)):
-H1–H5 resueltos en sus comprobaciones; H6 ejecuta un filtro del submódulo desde `status` antes de la conversación.
+H1–H5 resueltos en sus comprobaciones; H6 ejecutaba un filtro del submódulo desde `status` antes de la conversación.
+T019 lo corrige el 2026-10-19 ([D110](DECISIONS.md#d110--p008-t019-gitlinks-rechazados-antes-de-inspeccionar-el-checkout),
+[registro](phase/P008-T019_SUBMODULOS.md)): gitlinks de HEAD/índice rechazados antes de inspeccionar hijos.
 Las evidencias históricas de las dos revisiones anteriores permanecen intactas.
 P008 sigue activa; después de T019 se repetirá la revisión de salida. Cierre y archivo son operaciones separadas.
 No se ha ejecutado un check READY del producto ni registrado este repositorio. No se inventa una fase sucesora.
@@ -470,7 +472,10 @@ Después: nueva revisión de salida; cierre y archivo separados.
 
 **Objetivo:** Que la consulta de un checkout con gitlinks no ejecute filtros ni código de submódulos antes de
 aceptar o rechazar su inventario, conversación o vista previa.
-**Estado:** pendiente; derivada de H6 de [D109](DECISIONS.md#d109--tercera-revisión-de-salida-de-p008).
+**Estado:** completada el 2026-10-19 ([D110](DECISIONS.md#d110--p008-t019-gitlinks-rechazados-antes-de-inspeccionar-el-checkout)).
+Guardia de HEAD/índice en todo el repositorio antes de `status` y de captura/sellado/escritura/recuperación A/B,
+sin consultar hijos ni suavizar la limpieza; `document_layout = "d088-11"`. Verificación y límites en el
+[registro](phase/P008-T019_SUBMODULOS.md). Derivada de H6 de [D109](DECISIONS.md#d109--tercera-revisión-de-salida-de-p008).
 **Alcance:**
 - Impedir la inspección ejecutable de submódulos desde `status --ignore-submodules=none`: la guardia del
   repositorio principal no cubre su configuración. Resolver antes del comando que pueda ejecutar el filtro,
