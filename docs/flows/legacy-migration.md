@@ -78,8 +78,8 @@ flowchart TD
     H1B -- no --> R
     H1B -- sí --> H2["Confirmación de hash, motivo e Idempotency-Key"]
     H2 --> H3["Job y project_imports con intención sellada, antes de escribir"]
-    H3 --> H3B["Recomprobar filtros, gitlinks, destinos y blobs sellados antes de ejecutar"]
-    H3B --> H4["CAS por archivo, borrados y escritura; commit documental determinista"]
+    H3 --> H3B["Recomprobar filtros, gitlinks, destinos y objetos locales completos antes de ejecutar"]
+    H3B --> H4["Escritor sin lazy-fetch: CAS por archivo, borrados y commit documental determinista"]
     H4 --> H5["Transacción: fase ACTIVE y base documental adoptadas; importación COMPLETED y job DONE"]
     H3 --> H6["Caída: RECOVERY_REQUIRED; confirmar escritor detenido"]
     H6 --> H7["INTERRUPTED: reconfirmar la misma intención y el mismo commit"]
@@ -112,7 +112,7 @@ filtros, `status`, `ls-tree -l` y `cat-file`. Git sin ese flag se rechaza en el 
 ausente, un tamaño no disponible o una respuesta de blobs incompleta rechazan la lectura con diagnóstico:
 no se invoca ningún transporte ni se recuperan objetos. La misma frontera cubre crear la conversación, enviar
 un turno, observarlo y consultar estado/vista previa/confirmación a través de `read_checkout`; nada parcial
-llega al revisor ni al sellado. `document_layout = "d088-11"` (T019) pone en cuarentena jobs anteriores; ninguna
+llega al revisor ni al sellado. `document_layout = "d088-12"` (T020) pone en cuarentena jobs anteriores; ninguna
 intención sellada se reescribe y la configuración global permanece intacta.
 
 T019 (D110) consulta `ls-tree -r -z HEAD` y `ls-files --stage -z` antes de `status`: cualquier modo `160000`
@@ -122,6 +122,14 @@ Así no puede invocar sus filtros `clean`/`process`, directos o por include. La 
 capturar/sellar y ejecutar/reanudar A/B; no se sustituye la limpieza por ignorar cambios de submódulos.
 La observación anterior y posterior de cada turno A usa la misma lectura; un gitlink nuevo impide invocar
 o aceptar propuestas. Tras retirar el bloqueo se puede conciliar la misma intención, run y commit.
+
+T020 (D112) vincula también el escritor A/B a `LocalGit`: captura, sellado, comprobaciones booleanas,
+escritura, conciliación y refresco del índice usan `--no-lazy-fetch`. Antes de capturar o escribir se comprueban
+todos los objetos de HEAD y del árbol propuesto/sellado, incluidos los blobs ajenos a la documentación.
+Un objeto necesario ausente bloquea con diagnóstico; no se recupera ni se ejecuta un transporte. La ausencia
+normal del commit futuro permite crearlo localmente y conservar la misma intención/run/commit al reanudar.
+Las consultas `code` comprueban el soporte del modo con `run(--version)` antes de interpretar una ausencia;
+Git sin soporte falla sin fallback. No se cambia la configuración ni la evidencia histórica de H5/H7.
 
 ## Fuente en el código
 

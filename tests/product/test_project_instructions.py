@@ -144,7 +144,7 @@ def test_a_project_without_agents_md_stops_before_invoking(v2):
 
 
 def test_frozen_versions_identify_the_injection():
-    assert VERSION == 'cli-12' and DOCUMENT_LAYOUT == 'd088-11'
+    assert VERSION == 'cli-12' and DOCUMENT_LAYOUT == 'd088-12'
 
 
 @pytest.mark.parametrize('version,role', [(version, role) for version in ('0.161.0', '0.162.1')

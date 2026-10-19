@@ -121,6 +121,7 @@ tarea se leen solo las decisiones que cita; este índice sirve para buscar prece
 | [D109](#d109--tercera-revisión-de-salida-de-p008) | Tercera revisión de salida de P008 | P008 |
 | [D110](#d110--p008-t019-gitlinks-rechazados-antes-de-inspeccionar-el-checkout) | P008-T019: gitlinks rechazados antes de inspeccionar el checkout | P008 |
 | [D111](#d111--cuarta-revisión-de-salida-de-p008) | Cuarta revisión de salida de P008 | P008 |
+| [D112](#d112--p008-t020-escritor-de-importaciones-con-objetos-locales) | P008-T020: escritor de importaciones con objetos locales | P008 |
 
 ## D001 — Alcance local y arquitectura base
 
@@ -3528,3 +3529,31 @@ Evidencia, comprobaciones y límites en el [registro](phase/P008_REVISION_SALIDA
   El script y JSON nuevos exigen las guardias anteriores y acreditan el hallazgo H7, no su corrección.
   Cierre y archivo separados; sin registro ni check READY del producto sobre este repositorio, fase sucesora
   inventada, proveedores reales, smokes, push, publicación o subagentes.
+
+## D112 — P008-T020: escritor de importaciones con objetos locales
+
+Estado: implementada el 2026-10-19; verificación y límites en el
+[registro](phase/P008-T020_ESCRITOR_LOCAL.md). Fase: P008. Corrige H7 de D111 bajo D100/D103/D105/D108/D110.
+
+- **Escritor vinculado a la frontera local.** `check_git` configura `GitWorkspace.local_objects_only` antes
+  de captura/sellado y ejecución/reanudación A/B. Su fábrica interna entrega `LocalGit` para todas las llamadas
+  `run`/`code`, incluidas comprobación del commit esperado, recaptura, escritura, conciliación y refresco del índice.
+  Las demás instancias conservan su comportamiento por defecto. No depende de los objetos disponibles en
+  el inventario ni de una variable de entorno que Git antiguo pueda ignorar.
+- **Ausencia normal y soporte obligatorio.** El commit sellado aún ausente se consulta con
+  `--no-lazy-fetch`: su ausencia permite crearlo localmente. `LocalGit.code` verifica primero el soporte
+  mediante `run(--version)` con el mismo flag y ejecutable; Git sin soporte falla con diagnóstico, sin
+  confundir el error con una respuesta booleana ni intentar otro modo.
+- **Objetos necesarios.** Antes de capturar o escribir, la guardia comprueba los árboles completos de HEAD
+  y de la vista previa/intención con `ls-tree` y `cat-file --batch-check`. Incluye árboles y blobs ajenos
+  al ámbito documental; un objeto ausente o una respuesta incompleta bloquean con diagnóstico. No se
+  ejecutan transportes, recuperan objetos ni modifican remotos/configuración para resolver la ausencia.
+- **Compatibilidad.** `document_layout = "d088-12"` congela las reglas corregidas y pone composiciones
+  anteriores, incluida `d088-11`, en cuarentena antes de efectos. No se reescriben intenciones, snapshots,
+  historiales ni reproducciones/evidencia de H5/H7. Se conservan filtros del padre/includes, gitlinks,
+  destinos ignorados, bytes exactos, D099, CAS, adopción atómica y la misma intención/run/commit al recuperar.
+- **Alcance.** Regresiones con Git/SQLite temporales, agentes y transportes falsos, sin red ni proveedores
+  reales. Sin esquema, API, UI, prompts o dependencias nuevos. Se mantiene la exclusión cooperativa:
+  no añade aislamiento frente a cambios concurrentes arbitrarios del checkout o su configuración.
+
+P008 sigue activa. Después corresponde otra revisión de salida; cierre y archivo separados.

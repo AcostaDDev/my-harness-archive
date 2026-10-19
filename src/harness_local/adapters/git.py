@@ -131,9 +131,14 @@ class GitWorkspace:
         self.executable = executable
         self.timeout = timeout
         self.marker_reader = None
+        self.local_objects_only = False
 
     def _git(self, root: Path) -> Git:
-        return Git(root, executable=self.executable, timeout=self.timeout)
+        git_class = Git
+        if self.local_objects_only:
+            from harness_local.adapters.local_git import LocalGit
+            git_class = LocalGit
+        return git_class(root, executable=self.executable, timeout=self.timeout)
 
     def _require_root(self, git: Git, root: Path) -> None:
         try:

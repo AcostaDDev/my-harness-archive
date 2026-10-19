@@ -117,8 +117,8 @@ flowchart TD
     G --> H["Mostrar diff, documentos, perfil detectado y perfil de la composición"]
     H --> I["Usuario confirma preview_sha256, profile_sha256, motivo e Idempotency-Key"]
     I --> J["Sellar intención en project_imports y encolar import_commit; cerrar borradores"]
-    J --> J1["Recomprobar filtros, gitlinks, destinos y blobs sellados"]
-    J1 --> K["Aplicar solo documentos con CAS y crear el commit sellado"]
+    J --> J1["Recomprobar filtros, gitlinks, destinos y objetos locales completos"]
+    J1 --> K["Escritor sin lazy-fetch: aplicar solo documentos con CAS y crear el commit sellado"]
     K --> L["Una transacción: resultado, job terminado y P001 ACTIVE con base adoptada"]
     L --> M["Continuar en P001; repetir devuelve cero cambios"]
     K -. caída .-> R["Confirmar escritor detenido; reconfirmar intención con igual composición"]
@@ -160,9 +160,16 @@ escritura o recuperación: solo se consultan árboles e índice del padre, sin i
 filtros. El inventario estático B conserva la lectura de HEAD sin seguir submódulos; no acredita que el checkout
 pueda pasar esta guardia posterior ni se amplía soporte de submódulos.
 
+Desde T020 (D112), la frontera compartida vincula el escritor a `LocalGit` antes de capturar/sellar o
+ejecutar/reanudar. Todas sus llamadas `run`/`code`, incluida la conciliación y el índice, exigen
+`--no-lazy-fetch`; las preguntas booleanas comprueban primero el soporte mediante `run(--version)`.
+El commit futuro aún ausente puede crearse localmente sin transporte. Un objeto necesario de HEAD o del
+árbol propuesto/sellado ausente bloquea antes de escribir, también fuera del ámbito documental: se comprueba
+el árbol completo con `ls-tree` y `cat-file --batch-check`. No se cambia configuración ni se recuperan objetos.
+
 `GET …/projects/{p}/onboarding` permite recuperar la operación y la UI `/projects/:p/onboarding[/:c/*borrador]`
 reutiliza conversación, editor CAS y confirmación del Flujo A, con perfil y continuidad en P001. Una tarea de P001
-se encola por una acción posterior con la composición confirmada. `document_layout = "d088-11"` (T019) pone en cuarentena
+se encola por una acción posterior con la composición confirmada. `document_layout = "d088-12"` (T020) pone en cuarentena
 jobs anteriores antes de efectos; no se reescriben snapshots, intenciones ni historiales existentes.
 
 Fuente: `core/engine/onboarding_commit.py`, `storage/onboarding_commit.py`, infraestructura compartida de

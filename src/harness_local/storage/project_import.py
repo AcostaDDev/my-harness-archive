@@ -5,6 +5,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from harness_local.adapters.project_import import check_filters, check_submodules, check_tree
+from harness_local.adapters.git import GitWorkspace
 from harness_local.adapters.local_git import LocalGit
 from harness_local.core.engine.contracts import context_snapshot, freeze
 from harness_local.core.engine.import_commit import preview as build_preview, seal
@@ -33,11 +34,18 @@ def _operation(session, run):
 
 def check_git(context, writer, shown=None, tree=None):
     """Frontera compartida A/B, también al ejecutar o reanudar una intención sellada."""
-    git = LocalGit(context.root, executable=writer.executable)
+    if isinstance(writer, GitWorkspace):
+        # La guardia y todas las operaciones posteriores del escritor comparten la frontera local,
+        # incluidas code(), recaptura, sellado, conciliación y refresco del índice.
+        writer.local_objects_only = True
+    git = LocalGit(context.root, executable=writer.executable, timeout=writer.timeout)
     check_filters(git)
     check_submodules(git)
+    git.require_tree('HEAD')
     if shown is not None:
-        check_tree(git, tree or shown['proposed_tree'], shown['result_tree'], shown['documents'])
+        proposed = tree or shown['proposed_tree']
+        git.require_tree(proposed)
+        check_tree(git, proposed, shown['result_tree'], shown['documents'])
 
 
 def settle(managed, session, run, outcome):

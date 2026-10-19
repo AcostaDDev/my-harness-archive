@@ -116,12 +116,12 @@ def test_projects_without_documents_use_the_mandatory_unified_layout_and_quarant
     context, data, folder, tmp_path = setup
     (project,) = load_local_config(write(folder, data)).projects
     assert 'documents' not in data['projects'][0] and project.context.documents == 'v2'
-    assert project.versions['document_layout'] == 'd088-11'
+    assert project.versions['document_layout'] == 'd088-12'
     explicit = copy.deepcopy(data)
     explicit['projects'][0]['documents'] = 'v2'
     config = load_local_config(write(folder, explicit))
     assert config.projects[0].context == project.context
-    for previous in (None, 'd088-1', 'd088-2', 'd088-3', 'd088-4', 'd088-5', 'd088-6', 'd088-7', 'd088-8', 'd088-9', 'd088-10'):
+    for previous in (None, 'd088-1', 'd088-2', 'd088-3', 'd088-4', 'd088-5', 'd088-6', 'd088-7', 'd088-8', 'd088-9', 'd088-10', 'd088-11'):
         older = {key: value for key, value in config.projects[0].versions.items() if key != 'document_layout'}
         if previous is not None:
             older['document_layout'] = previous

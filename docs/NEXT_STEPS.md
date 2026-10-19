@@ -4,13 +4,14 @@ Objetivo y criterios de salida en [ROADMAP](ROADMAP.md#p008--contrato-documental
 Decisión de base: [D088](DECISIONS.md#d088--contrato-documental-unificado-cierre-de-fase-automático-e-importación-de-proyectos-p008).
 Análisis de incongruencias que originó la fase: [docs/phase](phase/P008-T001_MIGRACION_DOCUMENTAL.md).
 
-**Siguiente:** P008-T020, impedir transportes por lazy-fetch del escritor de importaciones A/B (H7 de D111).
-T001–T019 completadas. Cuarta revisión de salida completada el 2026-10-19
+**Siguiente:** nueva revisión de salida de P008 tras T020; cierre y archivo separados.
+T001–T020 completadas. Cuarta revisión de salida completada el 2026-10-19
 ([D111](DECISIONS.md#d111--cuarta-revisión-de-salida-de-p008), [registro](phase/P008_REVISION_SALIDA_4.md)):
 H1–H6 resueltos en sus comprobaciones. H7 ejecuta `upload-pack` al consultar el commit sellado aún ausente,
 incluso con todos los objetos del origen disponibles; afecta a ejecución y recuperación A/B.
-Las evidencias de las tres revisiones anteriores permanecen intactas.
-P008 sigue activa; después de T020 se repetirá la revisión de salida. Cierre y archivo son operaciones separadas.
+T020 corrige el escritor con objetos locales obligatorios, incluido `code`, sin transporte ni fallback (D112).
+Las evidencias de las cuatro revisiones permanecen intactas.
+P008 sigue activa; se repetirá la revisión de salida. Cierre y archivo son operaciones separadas.
 No se ha ejecutado un check READY del producto ni registrado este repositorio. No se inventa una fase sucesora.
 
 ## Restricciones compartidas
@@ -510,7 +511,11 @@ Después: nueva revisión de salida; cierre y archivo separados.
 
 **Objetivo:** Que todas las comprobaciones y operaciones Git del escritor de importaciones A/B, también al
 recuperar, usen objetos locales sin lanzar transportes por lazy-fetch ni modificar configuración.
-**Estado:** pendiente; derivada de H7 de [D111](DECISIONS.md#d111--cuarta-revisión-de-salida-de-p008).
+**Estado:** completada el 2026-10-19 ([D112](DECISIONS.md#d112--p008-t020-escritor-de-importaciones-con-objetos-locales)).
+Escritor A/B vinculado a `LocalGit` en todas sus operaciones y recuperación; commit futuro ausente admitido sin
+transporte, objetos necesarios comprobados antes de escribir y Git sin soporte rechazado también en `code`.
+`document_layout = "d088-12"`; misma intención/run/commit, D099 y guardias anteriores conservadas. Detalle y
+verificación en el [registro](phase/P008-T020_ESCRITOR_LOCAL.md). Derivada de H7 de D111.
 **Alcance:**
 - Cubrir la frontera posterior a `check_git`: el escritor compartido usa `Git` sin `--no-lazy-fetch` y
   `_reachable` consulta el commit esperado aún no escrito mediante `Git.code(cat-file -e)`. Revisar las

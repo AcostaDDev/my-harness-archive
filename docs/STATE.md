@@ -157,12 +157,9 @@ Objetivo y criterios en [ROADMAP](ROADMAP.md); plan en [NEXT_STEPS](NEXT_STEPS.m
 - D099 implementada: activación antes de conversar si hay runs legacy; solo el marcador propio ACTIVE y validado
   se tolera y excluye de Git, también al continuar. Ningún `.gitignore` cambia. Grafías exactas en macOS y binarios
   por bytes. API, UI de importación y tipos generados; `document_layout = "d088-6"`.
-- Verificación: 12 checks ligeros; suite pytest con 1.281 OK y 121 subtests, y dos fallos en el recorrido legacy
-  por excluir un marcador ya ignorado. Corregidos y revalidados en 79 pruebas de Git/API/importación; cinco casos
-  de recuperación re-ejecutados tras limpiar la parada antigua al conciliar. 74 pruebas Node, tipos, build y
-  `alembic check` temporal correctos. Ocho Markdown con 276 enlaces/anclas válidos, siete ER y dos flowcharts
-  válidos por parser/gramática; diff revisado. Sin comprobación visual, proveedores ni smokes reales. Detalle y
-  límites en el [registro](phase/P008-T012_COMMIT_CONTINUIDAD.md).
+- Verificación de entrega y correcciones legacy/recuperación en el [registro](phase/P008-T012_COMMIT_CONTINUIDAD.md):
+  12 checks, 1.281 pytest y 121 subtests, 79 casos revalidados, 74 Node, tipos/build y Alembic temporal;
+  enlaces/diagramas correctos. Sin comprobación visual, proveedores ni smokes reales.
 
 **P008-T013 completada** (Flujo B,
 [D101](DECISIONS.md#d101--p008-t013-inventario-estático-del-flujo-b-y-propuesta-de-perfil)):
@@ -278,5 +275,15 @@ Objetivo y criterios en [ROADMAP](ROADMAP.md); plan en [NEXT_STEPS](NEXT_STEPS.m
   35 tablas/377 columnas, 434 enlaces y 20 diagramas válidos. Script/JSON nuevos; sin cambiar producto ni evidencia previa,
   proveedores reales o smokes. Verificación documental y límites en el registro.
 
-**Siguiente:** P008-T020 (H7). Cierre y archivo separados.
+**P008-T020 completada** ([D112](DECISIONS.md#d112--p008-t020-escritor-de-importaciones-con-objetos-locales)):
+
+- El escritor A/B usa `LocalGit` en captura/sellado, ejecución, conciliación e índice; `run`/`code` exigen
+  `--no-lazy-fetch`, también al recuperar con un puerto nuevo. El commit futuro ausente se crea localmente;
+  los objetos necesarios de HEAD/árbol sellado, incluidos blobs ajenos a documentos, bloquean si faltan.
+- Git sin soporte falla también en consultas booleanas, sin fallback ni configuración modificada.
+  `document_layout = "d088-12"` pone jobs anteriores en cuarentena; misma intención/run/commit y D099 conservados.
+- Verificación: 12 checks, 1.436 pytest y 121 subtests, 442 enlaces y cinco flowcharts correctos; diff revisado.
+  Detalle y límites en el [registro](phase/P008-T020_ESCRITOR_LOCAL.md). Sin esquema/API/UI ni proveedores reales.
+
+**Siguiente:** nueva revisión de salida de P008 tras T020. Cierre y archivo separados.
 P008 sigue activa y este repositorio sin registrarse ni ejecutar un check READY del producto sobre él.

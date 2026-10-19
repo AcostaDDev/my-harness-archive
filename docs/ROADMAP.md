@@ -116,7 +116,9 @@ H1–H5 resueltos; H6 reproduce filtros de submódulos ejecutados por el inventa
 [registro](phase/P008-T019_SUBMODULOS.md)). Cuarta revisión completada el mismo día
 ([D111](DECISIONS.md#d111--cuarta-revisión-de-salida-de-p008), [registro](phase/P008_REVISION_SALIDA_4.md)):
 H1–H6 resueltos; H7 reproduce transportes por lazy-fetch del escritor A/B al consultar el commit futuro.
-P008 sigue activa y no lista para cerrar: siguiente P008-T020 y después otra revisión de salida.
+T020 corrige H7 el 2026-10-19: escritor A/B con objetos locales obligatorios, incluido `code` y recuperación
+([D112](DECISIONS.md#d112--p008-t020-escritor-de-importaciones-con-objetos-locales),
+[registro](phase/P008-T020_ESCRITOR_LOCAL.md)). P008 sigue activa: siguiente, nueva revisión de salida.
 El cierre y archivo serán posteriores; no se ha ejecutado un check READY del producto sobre este repositorio.
 Plan y entregas en [NEXT_STEPS](NEXT_STEPS.md).
 

@@ -124,12 +124,12 @@ por su API y los artefactos referenciados; la restauración es de consulta (`que
   solo lectura `definition`, sin `AGENTS.md` inyectado porque es parte del origen), `bootstrap-project`. Jerarquía base →
   perfil → proyecto; snapshot por intento. Prompts unificados y definición versión 4 (D092). `AGENTS.md` (≤32 KiB)
   entra por `{{PROJECT_INSTRUCTIONS}}` en todos los roles salvo la definición, con ruta, hash y tamaño en el snapshot;
-  sin él, el intento se detiene antes de invocar (D094). `document_layout = "d088-11"` (T019, D110) congela las reglas nuevas y
+  sin él, el intento se detiene antes de invocar (D094). `document_layout = "d088-12"` (T020, D112) congela las reglas nuevas y
   detiene jobs anteriores antes de efectos. D099 excluye de Git solo el marcador local validado por la guardia
   de esta instalación; la importación confirma originales archivados y un commit conciliable (D100). Las transiciones ya selladas conservan su
   conciliación con los bytes originales. La definición congela los valores por defecto; la planificación incluye
   instrucciones y DDBB-DIAGRAM entre sus documentos de contexto.
-- **Frontera Git A/B** (D105, D108, D110): `adapters/project_import.py` rechaza filtros `clean`/`process`, incluidos includes,
+- **Frontera Git A/B** (D105, D108, D110, D112): `adapters/project_import.py` rechaza filtros `clean`/`process`, incluidos includes,
   antes del primer `status`; `storage/project_import.py` aplica las mismas guardias a ambos flujos antes de capturar,
   sellar y ejecutar/reanudar. Los destinos nuevos ignorados bloquean y todos los blobs documentales se contrastan
   con los SHA-256 confirmados, incluidos archivo y binarios. El sellado final exige el mismo árbol propuesto;
@@ -140,6 +140,12 @@ por su API y los artefactos referenciados; la restauración es de consulta (`que
   A y a los lectores de instantáneas compartidos con B. T019 rechaza gitlinks en todo HEAD o índice antes de
   `status` en A y de captura/sellado/escritura o recuperación en A/B: `ls-tree` y `ls-files --stage` solo leen
   el padre, sin inspeccionar ni ejecutar filtros de hijos. No se ignora su suciedad ni se amplía soporte de submódulos.
+  T020 vincula el escritor `GitWorkspace` al mismo `LocalGit` antes de capturar/sellar o ejecutar/reanudar:
+  todas sus llamadas `run`/`code`, incluida la conciliación y el índice, exigen `--no-lazy-fetch`. `code`
+  comprueba primero el soporte con `run(--version)` para no confundir Git antiguo con un commit futuro ausente.
+  La ausencia de ese commit permite crearlo localmente; los árboles completos de HEAD y de la intención se
+  comprueban con `ls-tree` y `cat-file --batch-check`, también fuera del ámbito documental, antes de escribir.
+  Un objeto necesario ausente bloquea sin transporte ni cambios de configuración.
 - **Inventario del Flujo B** (D101): AST de Python, JSON/TOML de manifiestos y un subconjunto léxico de JS/TS/Prisma,
   solo biblioteca estándar. Lee blobs de un árbol Git sellado, sin `status`, filtros ni código del proyecto; excluye
   dependencias instaladas y builds incluso si están versionados. Cada entidad/ruta cita fuente y línea; las rutas
@@ -224,8 +230,5 @@ Uso real (D051): construir y verificar el wheel (`scripts/build_distribution.py 
 - Las validaciones no guardan su hora; la lectura de un run decodifica su historial completo.
 - Un proyecto `typescript-web` nuevo no tiene `package.json` y el ejecutor no puede crearlo.
 - Dos avisos *low* de KaTeX en Mermaid 11.
-- H7 de la cuarta revisión P008: el escritor A/B usa Git sin desactivar lazy-fetch al consultar el commit
-  esperado aún ausente y puede ejecutar transportes, incluso con el origen completo. Pendiente de P008-T020
-  ([D111](DECISIONS.md#d111--cuarta-revisión-de-salida-de-p008)); las guardias locales de inventario siguen vigentes.
 - La estructura de D088 es obligatoria desde P008-T002; rutas y paridad en T003, cierre y archivo unificados en
   T004, prompts/definición en T005, API/UI en T006 e inyección de AGENTS en T007 (D089–D094).
