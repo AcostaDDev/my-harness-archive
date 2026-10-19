@@ -226,6 +226,9 @@ class ManagedRuntime:
         from harness_local.services.project_registry import ProjectRegistry
         self.registry = ProjectRegistry(self)
         self.registry.load()
+        from harness_local.services.project_creation import ProjectCreation
+        self.creation = ProjectCreation(self)
+        self.creation.reconcile()
         if config.supervisor:
             supervisor = LocalSupervisor(self.repository, config.ports_factory, lease_seconds=config.lease_seconds,
                                          commit_factory=config.commit_factory)

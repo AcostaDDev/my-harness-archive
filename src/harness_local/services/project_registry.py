@@ -12,7 +12,7 @@ import hashlib
 import os
 from pathlib import Path
 import stat
-from threading import Lock
+from threading import RLock
 
 from harness_local.core.engine.contracts import freeze
 from harness_local.services.managed_runtime import PROJECT_ID, ManagedConfig, validate_projects
@@ -36,8 +36,29 @@ def digest(value):
     return hashlib.sha256(freeze(value).encode()).hexdigest()
 
 
+def _location(path):
+    """Identidad del ancestro existente y sufijo pendiente; también reconoce alias de caso del filesystem."""
+    suffix = []
+    for current in (path, *path.parents):
+        try:
+            info = os.lstat(current)
+            return info.st_dev, info.st_ino, tuple(reversed(suffix))
+        except FileNotFoundError:
+            suffix.append(current.name)
+        except OSError:
+            return None
+    return None
+
+
+def _within(path, parent):
+    if path.is_relative_to(parent):
+        return True
+    boundary = _location(parent)
+    return boundary is not None and any(_location(ancestor) == boundary for ancestor in (path, *path.parents))
+
+
 def _inside(path, other):
-    return path.is_relative_to(other) or other.is_relative_to(path)
+    return _within(path, other) or _within(other, path)
 
 
 def canonical_root(value, authorized):
@@ -77,7 +98,7 @@ class ProjectRegistry:
         self.runtime = runtime
         self.repository = ProjectRegistryRepository(runtime.repository)
         self.unavailable: dict[str, str] = {}
-        self._lock = Lock()
+        self._lock = RLock()
 
     @property
     def registrar(self):
@@ -93,11 +114,13 @@ class ProjectRegistry:
 
     # --- composición ------------------------------------------------------------------
 
-    def _compose(self, row, registry):
+    def _compose(self, row, registry, *, new_directory=False):
         from harness_local.services.local_config import LocalConfigError
         registrar = self._require()
         try:
-            composed = registrar.compose(row, 'registro', registry=registry)
+            composed = registrar.compose(row, 'registro', registry=registry, new_directory=new_directory)
+            if new_directory:
+                return composed
             # Mismas comprobaciones que un proyecto del TOML (techo de permisos, bootstrap, tag).
             validate_projects(ManagedConfig((composed[0],), ports_factory=registrar.ports,
                                             commit_factory=registrar.writer))
@@ -118,8 +141,14 @@ class ProjectRegistry:
             except RegistryError as exc:
                 self.unavailable[item['id']] = str(exc)
 
-    def _conflicts(self, project_id, root, *, registered=False):
+    def _conflicts(self, project_id, root, *, registered=False, creation_id=None):
         """Ids únicos frente al TOML; raíces ni iguales ni anidadas; estado del servicio fuera."""
+        # Las intenciones inciertas siguen reservadas, también frente al alta existente D078.
+        from harness_local.storage.project_creation import CreationRepository
+        for operation in CreationRepository(self.runtime.repository).operations():
+            if (operation['reserved'] and operation['id'] != creation_id
+                    and (operation['project_id'] == project_id or _inside(root, Path(operation['target'])))):
+                raise RegistryError(409, 'target_reserved', 'Id o destino reservado por una creación pendiente.')
         for other in self.runtime.projects.values():
             if other.id == project_id:
                 if not registered or 'project_registry' not in other.versions:
@@ -139,6 +168,7 @@ class ProjectRegistry:
         rows = self.repository.rows()
         return {'available': registrar is not None,
                 'format': self.runtime.config.registrar.format if self.runtime.config.registrar else None,
+                'creation_available': registrar is not None and registrar.bootstrap_enabled,
                 **({key: value for key, value in registrar.options().items() if key != 'format'} if registrar else
                    {'roots': [], 'bootstrap_enabled': False, 'compositions': [], 'executor_provider': None,
                     'reviewer_provider': None, 'executor_effort_vocabulary': []}),
@@ -149,7 +179,7 @@ class ProjectRegistry:
 
     def _summary(self, item):
         return {**{key: item[key] for key in ('id', 'version', 'status', 'root', 'composition', 'profile',
-                                              'row_sha256', 'created_at', 'updated_at')},
+                                              'row_sha256', 'created_at', 'updated_at', 'creation_id')},
                 'available': item['status'] == 'ACTIVE' and item['id'] not in self.unavailable,
                 'diagnostic': self.unavailable.get(item['id'])}
 

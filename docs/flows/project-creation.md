@@ -1,9 +1,10 @@
-# Flujo previsto — carpeta de proyectos y Django desde cero (P009)
+# Flujo — carpeta de proyectos y Django desde cero (P009)
 
-**Estado: diseño T001 completado, pendiente de implementación.** D115/D116;
+**Estado: selección/retirada de carpeta y creación/registro del hijo implementados en T002 (D117).**
+Roles por proyecto y preparación Django siguen como diseño T001, pendientes de T003/T004. D115/D116;
 [contrato/API/recuperación](../phase/P009-T001_CONTRATO_CREACION.md), [plan](../phase/P009_PLAN_DJANGO.md) y
 [tareas](../NEXT_STEPS.md). El flujo vigente de definición documental continúa en
-[project-definition](project-definition.md); este documento describe la ampliación de P009.
+[project-definition](project-definition.md); este documento distingue lo construido en T002 de la ampliación pendiente de P009.
 
 ```mermaid
 flowchart TD
@@ -12,9 +13,10 @@ flowchart TD
     N --> V{"¿Raíz vigente y destino nuevo dentro de su alcance?"}
     V -- no --> X["Diagnóstico sin escribir en destinos ajenos"]
     V -- sí --> C["Persistir intención; crear hijo y registrar idempotentemente"]
-    C --> Q0["Roles efectivos confirmados; definición usa el revisor del proyecto"]
-    Q0 --> D["Definición conversacional D088 y commit documental raíz"]
-    D --> P["Mostrar receta Django: archivos, dependencias, comandos y red exactos"]
+    C --> D["Enlace a definición documental existente con los agentes globales del TOML"]
+    D -. "T003/T004 pendientes" .-> Q0["Roles por proyecto y receta Django"]
+    Q0 --> DC["Definición conversacional D088 y commit documental raíz"]
+    DC --> P["Mostrar receta Django: archivos, dependencias, comandos y red exactos"]
     P --> A["Usuario acepta el plan de preparación dentro de la carpeta ya autorizada"]
     A --> S["Preparación controlada: entorno, scaffold, configuración y commit técnico"]
     S --> Q["Usuario revisa roles y modelo/esfuerzo del revisor por proyecto"]
@@ -42,8 +44,8 @@ Las cuatro tareas terminan COMMITTED; no se modifican los snapshots previos al c
 La autoridad UI permite hijos directos nuevos, aunque el padre no figure en el TOML. Las raíces TOML mantienen
 el alta de carpetas existentes con confianza exacta; elegir el padre no amplía ese alta ni confía en hermanos.
 Al guardar/cambiar/retirar la selección aumenta su revisión. Antes de cada efecto corto, creación comprueba
-esa revisión y la identidad del padre bajo exclusión compartida con la retirada. Un hijo ya registrado sigue
-con su autoridad propia. Reelección de la misma ruta no reanuda operaciones automáticamente.
+esa revisión y la identidad del padre bajo exclusión compartida con la retirada. Los conflictos incluyen ancestros físicos y alias de mayúsculas, también en reservas aún sin carpeta.
+Un hijo ya registrado sigue con su autoridad propia. Reelección de la misma ruta no reanuda operaciones automáticamente.
 
 ```mermaid
 stateDiagram-v2
@@ -53,9 +55,12 @@ stateDiagram-v2
     INTENDED --> RECOVERY_REQUIRED: carpeta sin prueba de propiedad
     INTENDED --> BLOCKED: autoridad o destino cambiado
     DIRECTORY_CREATED --> BLOCKED: autoridad retirada o deriva
+    RECOVERY_REQUIRED --> CANCELLED: conservar carpeta y reserva inciertas
+    BLOCKED --> CANCELLED: detener sin borrar
     BLOCKED --> DIRECTORY_CREATED: reanudación confirmada con propiedad acreditada
     INTENDED --> CANCELLED: detener efectos pendientes
     DIRECTORY_CREATED --> CANCELLED: conservar carpeta
+    CANCELLED --> CANCELLED: comprobar ausencia sin reabrir efectos
     REGISTERED --> [*]
 ```
 
@@ -64,7 +69,7 @@ demuestra propiedad. No se borran carpetas inciertas. Repetir clave/payload devu
 otra clave no puede reservar el mismo destino/id. Una respuesta perdida tras el alta devuelve el mismo proyecto,
 incluso si después se retiró el padre. El estado `BLOCKED` no concede autoridad para continuar.
 
-En v5, presets seleccionados y agentes efectivos se componen por checkout. Cambiar ajustes exige no tener
+**Pendiente de T003/T004:** en v5, presets seleccionados y agentes efectivos se componen por checkout. Cambiar ajustes exige no tener
 trabajo pendiente utilizable bajo la selección anterior; se congelan versiones y los borradores anteriores
 quedan obsoletos. Formatos previos y proyectos sin override conservan su pareja global, sin sustituciones.
 
@@ -74,5 +79,14 @@ La receta usa escritor y plan propios para archivos protegidos, con intención/p
 registrados. Confirmar liga archivos/argv/HEAD/versiones/red/límites; fallos o cancelación detienen, sin repetir
 instalación/red. El commit técnico se concilia antes de adoptar atómicamente el recibo y habilitar tareas.
 
-D116 y el contrato fijan API, esquema propuesto, compatibilidad y matriz de pruebas. Al implementar T002–T004
-se actualizarán este flujo y los diagramas vigentes con lo construido. No se añaden aquí tablas al diagrama actual.
+T002 implementa `/project-creation-root` (GET, preview y apply) y `/project-creations`
+(preview, confirm, lectura por id, resume/preview, resume/confirm y cancel). Confirmaciones con sesión, CSRF,
+clave idempotente, versión y hash; el formulario conserva el sobre tras perder respuesta o recargar.
+El arranque clasifica un destino presente sin identidad acreditada como RECOVERY_REQUIRED, sin tocarlo.
+Los efectos son síncronos y cortos, serializados con la retirada mediante lock y transacciones SQLite.
+Guardar otra selección o retirarla bloquea intenciones pendientes; la reanudación confirma la misma operación
+y preserva su intención original. Cancelar solo libera reservas si se acredita ausencia; conserva bytes. Tras resolución externa, una nueva
+comprobación versionada puede liberar una reserva de cancelación sin reabrir efectos.
+Cuatro tablas nuevas y procedencia del registro en [DDBB-DIAGRAM](../DDBB-DIAGRAM.md);
+detalles y verificación en [entrega T002](../phase/P009-T002_CARPETA_PROYECTOS.md). D116 sigue fijando
+los contratos pendientes de roles/receta; T003/T004 mantendrán la paridad al construirlos.

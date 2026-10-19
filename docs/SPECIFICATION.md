@@ -72,7 +72,7 @@ run y, cuando procede, al intento exacto.
 | F17 | Distribución local | Wheel con UI y migraciones, `init-db`, `serve`, sesión local | Implementado (P006) |
 | F18 | Perfiles declarativos | Perfil de stack (preparación, tests, lint, tipos) declarado en el TOML local y confirmado por el usuario, incluido Python/Django (`pytest`, `ruff`, `mypy`) | Implementado (P008-T008, D095); ejemplo Python/Django pendiente de confirmación sobre el proyecto del usuario |
 | F19 | Instrucciones del proyecto para los agentes | `AGENTS.md` incluido en el contexto congelado de cada intento | Implementada (P008-T007, D094) |
-| F20 | Elegir carpeta de proyectos | Raíz elegida explícitamente en UI y persistida; concede al servicio crear nuevos hijos sin que la IA decida su ubicación | Planificado (P009-T001/T002, D115) |
+| F20 | Elegir carpeta de proyectos | Raíz elegida explícitamente en UI y persistida; concede al servicio crear nuevos hijos sin que la IA decida su ubicación | Implementado (P009-T002, D117), sin operación real |
 | F21 | Agentes configurables por proyecto | Elegir proveedores y modelo/esfuerzo del revisor en UI; selección concreta del ejecutor a cargo del revisor | Planificado (P009-T001/T003, D115); hoy los proveedores son globales y se consultan en solo lectura |
 | F22 | Preparar Django desde cero | Hijo nuevo, documentos D088, scaffold, entorno/dependencias y validaciones mediante receta confirmada | Planificado (P009-T004, D115); la creación actual de F02 es documental |
 
@@ -240,7 +240,8 @@ específicos del usuario.
 
 ## 12. Ampliación planificada — P009
 
-D115 añade F20–F22 para un piloto Django desde cero; todavía no están implementados. La persona elige la
+D115 añade F20–F22 para un piloto Django desde cero. T002 implementa F20 y la creación/registro del hijo;
+los agentes por proyecto y la receta siguen pendientes. La persona elige la
 carpeta de proyectos y el nombre del hijo desde la UI; la IA no descubre ni propone dónde crear el checkout.
 La elección guardada concede al servicio crear hijos en esa raíz, sin repetir ese permiso por proyecto;
 no entrega la carpeta padre a los agentes ni amplía confianza en repositorios existentes. No se sobrescribe
@@ -259,4 +260,4 @@ Contrato de diseño completado en T001: [D116](DECISIONS.md#d116--p009-t001-auto
 y [detalle](phase/P009-T001_CONTRATO_CREACION.md). La autoridad UI para hijos nuevos se separa del registro
 existente bajo raíces TOML; retirar el padre no revoca proyectos ya registrados. Presets y receta se diseñan
 como v5 optativa, conservando formatos previos. La preparación posterior al commit documental habilita los
-ejecutables del entorno; antes se bloquean tareas y checks que los necesitan. Todo sigue pendiente de producto.
+ejecutables del entorno; antes se bloquean tareas y checks que los necesitan. La carpeta y el alta del hijo están implementadas en T002 (D117); presets, receta y piloto siguen pendientes.

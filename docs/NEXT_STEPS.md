@@ -2,11 +2,12 @@
 
 Objetivo y criterios en [ROADMAP](ROADMAP.md#p009--proyecto-django-desde-cero-y-piloto-con-cuatro-combinaciones-de-agentes).
 Decisión: [D115](DECISIONS.md#d115--p009-django-desde-cero-carpeta-de-proyectos-y-agentes-por-proyecto).
-[Diseño y matriz](phase/P009_PLAN_DJANGO.md); [flujo previsto](flows/project-creation.md).
+[Diseño y matriz](phase/P009_PLAN_DJANGO.md); [flujo y estado de implementación](flows/project-creation.md).
 
-**Estado:** P009-T001 completada como diseño; T002–T012 pendientes. **Siguiente:** P009-T002.
-[Contrato implementable](phase/P009-T001_CONTRATO_CREACION.md), decisión D116. Todavía no hay producto nuevo ni
-piloto; el diseño no concede permisos reales de carpeta, red, instalación o proveedores.
+**Estado:** T001 (diseño) y T002 (carpeta/creación) completadas; T003–T012 pendientes. **Siguiente:** P009-T003.
+[Contrato implementable](phase/P009-T001_CONTRATO_CREACION.md), decisión D116. T002 añade producto de
+carpeta/creación, sin piloto ni selección de carpeta real del usuario;
+la implementación no concede permisos de red, instalación o proveedores.
 
 ## Restricciones compartidas
 
@@ -49,7 +50,9 @@ Matriz de fronteras para T002–T005; ninguna incógnita de usuario bloquea T002
 
 ## P009-T002 — Elegir carpeta de proyectos y crear carpetas hijas desde la UI
 
-**Estado:** pendiente. **Depende de:** T001.
+**Estado:** completada el 2026-10-19 (D117). **Depende de:** T001.
+**Resultado:** selección/retirada persistente, creación/registro idempotente, recuperación y UI implementadas;
+[entrega y verificación](phase/P009-T002_CARPETA_PROYECTOS.md). Sin operación real.
 **Contrato de partida:** [D116](DECISIONS.md#d116--p009-t001-autoridad-de-creación-presets-por-proyecto-y-preparación-separada)
 y [diseño §§2–3, 6–9](phase/P009-T001_CONTRATO_CREACION.md#2-autoridad-de-carpeta-y-convivencia-con-el-toml).
 **Objetivo:** Que una persona elija su ubicación y pueda crear allí un nuevo proyecto sin preparar su carpeta a mano.

@@ -1864,6 +1864,159 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/managed/project-creation-root": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Creation Root */
+        get: operations["managed_creation_root"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/managed/project-creation-root/preview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Creation Root Preview */
+        post: operations["managed_creation_root_preview"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/managed/project-creation-root/apply": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Creation Root Apply */
+        post: operations["managed_creation_root_apply"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/managed/project-creations/preview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Creation Preview */
+        post: operations["managed_creation_preview"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/managed/project-creations/confirm": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Creation Confirm */
+        post: operations["managed_creation_confirm"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/managed/project-creations/{operation_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Creation Operation */
+        get: operations["managed_creation_operation"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/managed/project-creations/{operation_id}/resume/preview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Creation Resume Preview */
+        post: operations["managed_creation_resume_preview"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/managed/project-creations/{operation_id}/resume/confirm": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Creation Resume Confirm */
+        post: operations["managed_creation_resume_confirm"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/managed/project-creations/{operation_id}/cancel": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Creation Cancel */
+        post: operations["managed_creation_cancel"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/health": {
         parameters: {
             query?: never;
@@ -2388,6 +2541,266 @@ export interface components {
             sum: number;
             /** Tasks */
             tasks: number;
+        };
+        /** CreationCancelInput */
+        CreationCancelInput: {
+            /** Expected Version */
+            expected_version: number;
+            /** Intent Sha256 */
+            intent_sha256: string;
+            /** Reason */
+            reason?: string | null;
+        };
+        /** CreationConfirmInput */
+        CreationConfirmInput: {
+            change: components["schemas"]["CreationInput"];
+            /** Preview Sha256 */
+            preview_sha256: string;
+            /** Trust Root */
+            trust_root: string;
+            /** Reason */
+            reason?: string | null;
+        };
+        /** CreationInput */
+        CreationInput: {
+            /** Project Id */
+            project_id: string;
+            /** Directory Name */
+            directory_name: string;
+            /** Root Version */
+            root_version: number;
+            /** Composition */
+            composition: string;
+            policy: components["schemas"]["RegistryPolicyInput"];
+            /**
+             * Tag Kind
+             * @default lightweight
+             * @enum {string}
+             */
+            tag_kind: "lightweight" | "annotated";
+            /**
+             * Documents
+             * @default v2
+             * @constant
+             */
+            documents: "v2";
+            /** Permission Authority */
+            permission_authority?: {
+                [key: string]: {
+                    [key: string]: string[];
+                };
+            } | null;
+        };
+        /** CreationOperationRead */
+        CreationOperationRead: {
+            /** Id */
+            id: string;
+            /** Version */
+            version: number;
+            /** Project Id */
+            project_id: string;
+            /** Directory Name */
+            directory_name: string;
+            /** Target */
+            target: string;
+            /** Reserved */
+            reserved: boolean;
+            /** Authority */
+            authority: {
+                [key: string]: unknown;
+            };
+            /** Intent */
+            intent: {
+                [key: string]: unknown;
+            };
+            /** Intent Sha256 */
+            intent_sha256: string;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "INTENDED" | "DIRECTORY_CREATED" | "REGISTERED" | "BLOCKED" | "RECOVERY_REQUIRED" | "CANCELLED";
+            /** Child Identity */
+            child_identity: {
+                [key: string]: number;
+            } | null;
+            /** Result */
+            result: {
+                [key: string]: unknown;
+            } | null;
+            /** Diagnostic */
+            diagnostic: string | null;
+            /** Created At */
+            created_at: string;
+            /** Updated At */
+            updated_at: string;
+            /** History */
+            history?: {
+                [key: string]: unknown;
+            }[];
+        };
+        /** CreationPreviewRead */
+        CreationPreviewRead: {
+            /** Contract */
+            contract: string;
+            /** Authority */
+            authority: {
+                [key: string]: unknown;
+            };
+            /** Row */
+            row: {
+                [key: string]: unknown;
+            };
+            /** Target */
+            target: string;
+            /** Directory Name */
+            directory_name: string;
+            /** Versions */
+            versions: {
+                [key: string]: string | null;
+            };
+            /** Profile */
+            profile: string;
+            /** Profile Details */
+            profile_details: {
+                [key: string]: unknown;
+            };
+            agents: components["schemas"]["ProjectAgentsRead"];
+            composition: components["schemas"]["RegistryCompositionRead"];
+            /** Trust Statement */
+            trust_statement: string;
+            /** Permission Statement */
+            permission_statement: string;
+            /** Preview Sha256 */
+            preview_sha256: string;
+        };
+        /** CreationResumeConfirmInput */
+        CreationResumeConfirmInput: {
+            change: components["schemas"]["CreationResumeInput"];
+            /** Preview Sha256 */
+            preview_sha256: string;
+            /** Reason */
+            reason?: string | null;
+        };
+        /** CreationResumeInput */
+        CreationResumeInput: {
+            /** Expected Version */
+            expected_version: number;
+            /** Root Version */
+            root_version: number;
+        };
+        /** CreationResumePreviewRead */
+        CreationResumePreviewRead: {
+            /** Operation Id */
+            operation_id: string;
+            /** Expected Version */
+            expected_version: number;
+            /** Authority */
+            authority: {
+                [key: string]: unknown;
+            };
+            /** Intent Sha256 */
+            intent_sha256: string;
+            /** Target */
+            target: string;
+            /** Preview Sha256 */
+            preview_sha256: string;
+        };
+        /** CreationRootApplyInput */
+        CreationRootApplyInput: {
+            change: components["schemas"]["CreationRootChangeInput"];
+            /** Preview Sha256 */
+            preview_sha256: string;
+            /** Confirm Path */
+            confirm_path?: string | null;
+            /** Reason */
+            reason?: string | null;
+        };
+        /** CreationRootChangeInput */
+        CreationRootChangeInput: {
+            /**
+             * Action
+             * @enum {string}
+             */
+            action: "select" | "retire";
+            /** Expected Version */
+            expected_version: number;
+            /** Path */
+            path?: string | null;
+        };
+        /** CreationRootPreviewRead */
+        CreationRootPreviewRead: {
+            /**
+             * Action
+             * @enum {string}
+             */
+            action: "select" | "retire";
+            /** Expected Version */
+            expected_version: number;
+            root: components["schemas"]["CreationRootSnapshotRead"];
+            /** Permission Statement */
+            permission_statement: string;
+            /** Preview Sha256 */
+            preview_sha256: string;
+            /**
+             * Replayed
+             * @default false
+             */
+            replayed: boolean;
+        };
+        /** CreationRootRead */
+        CreationRootRead: {
+            /** Version */
+            version: number;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "ABSENT" | "ACTIVE" | "REVOKED";
+            /** Path */
+            path: string | null;
+            /** Identity */
+            identity: {
+                [key: string]: number;
+            } | null;
+            /** Row Sha256 */
+            row_sha256?: string | null;
+            /** Updated At */
+            updated_at?: string | null;
+            /** Available */
+            available: boolean;
+            /** Diagnostic */
+            diagnostic: string | null;
+            /** Bootstrap Enabled */
+            bootstrap_enabled: boolean;
+            /** Permission Statement */
+            permission_statement: string;
+            /** History */
+            history: {
+                [key: string]: unknown;
+            }[];
+            /** Operations */
+            operations: components["schemas"]["CreationOperationRead"][];
+        };
+        /** CreationRootSnapshotRead */
+        CreationRootSnapshotRead: {
+            /** Version */
+            version: number;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "ABSENT" | "ACTIVE" | "REVOKED";
+            /** Path */
+            path: string | null;
+            /** Identity */
+            identity: {
+                [key: string]: number;
+            } | null;
+            /** Row Sha256 */
+            row_sha256?: string | null;
+            /** Updated At */
+            updated_at?: string | null;
         };
         /** CycleDiffRead */
         CycleDiffRead: {
@@ -5010,6 +5423,8 @@ export interface components {
         RegisteredProjectRead: {
             /** Id */
             id: string;
+            /** Creation Id */
+            creation_id?: string | null;
             /** Version */
             version: number;
             /**
@@ -5053,6 +5468,8 @@ export interface components {
         RegisteredProjectSummaryRead: {
             /** Id */
             id: string;
+            /** Creation Id */
+            creation_id?: string | null;
             /** Version */
             version: number;
             /**
@@ -5284,6 +5701,11 @@ export interface components {
         RegistryRead: {
             /** Available */
             available: boolean;
+            /**
+             * Creation Available
+             * @default false
+             */
+            creation_available: boolean;
             /** Format */
             format: string | null;
             /** Roots */
@@ -12295,6 +12717,581 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ManagedJobRead"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+        };
+    };
+    managed_creation_root: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Obligatoria con valor 1 en mutaciones (protección CSRF). */
+                "x-harness-local"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CreationRootRead"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+        };
+    };
+    managed_creation_root_preview: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Obligatoria con valor 1 en mutaciones (protección CSRF). */
+                "x-harness-local"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreationRootChangeInput"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CreationRootPreviewRead"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+        };
+    };
+    managed_creation_root_apply: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Misma clave y misma acción devuelven el mismo job. */
+                "Idempotency-Key": string;
+                /** @description Obligatoria con valor 1 en mutaciones (protección CSRF). */
+                "x-harness-local"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreationRootApplyInput"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CreationRootPreviewRead"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+        };
+    };
+    managed_creation_preview: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Obligatoria con valor 1 en mutaciones (protección CSRF). */
+                "x-harness-local"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreationInput"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CreationPreviewRead"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+        };
+    };
+    managed_creation_confirm: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Misma clave y misma acción devuelven el mismo job. */
+                "Idempotency-Key": string;
+                /** @description Obligatoria con valor 1 en mutaciones (protección CSRF). */
+                "x-harness-local"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreationConfirmInput"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CreationOperationRead"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+        };
+    };
+    managed_creation_operation: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Obligatoria con valor 1 en mutaciones (protección CSRF). */
+                "x-harness-local"?: string | null;
+            };
+            path: {
+                operation_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CreationOperationRead"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+        };
+    };
+    managed_creation_resume_preview: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Obligatoria con valor 1 en mutaciones (protección CSRF). */
+                "x-harness-local"?: string | null;
+            };
+            path: {
+                operation_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreationResumeInput"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CreationResumePreviewRead"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+        };
+    };
+    managed_creation_resume_confirm: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Misma clave y misma acción devuelven el mismo job. */
+                "Idempotency-Key": string;
+                /** @description Obligatoria con valor 1 en mutaciones (protección CSRF). */
+                "x-harness-local"?: string | null;
+            };
+            path: {
+                operation_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreationResumeConfirmInput"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CreationOperationRead"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+        };
+    };
+    managed_creation_cancel: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Misma clave y misma acción devuelven el mismo job. */
+                "Idempotency-Key": string;
+                /** @description Obligatoria con valor 1 en mutaciones (protección CSRF). */
+                "x-harness-local"?: string | null;
+            };
+            path: {
+                operation_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreationCancelInput"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CreationOperationRead"];
                 };
             };
             /** @description Forbidden */

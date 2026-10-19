@@ -1,6 +1,6 @@
 import { useRef, useState } from "react";
 import type { ReactNode } from "react";
-import { managed } from "../managed-api";
+import { managed, confirmOnce, readConfirmation } from "../managed-api";
 import type { S } from "../managed-api";
 import { Link, navigate } from "../navigation";
 import { Alert, Empty, Evidence, Fields, Hash, Loading, PageHeader, Stale, message, usePoll, when } from "../ui";
@@ -128,7 +128,7 @@ function Confirmation({ preview, busy, danger, onConfirm }: {
 }
 
 function DraftFields({ draft, options, action, onChange }: {
-  draft: Draft; options: S["RegistryRead"]; action: "register" | "update"; onChange: (d: Draft) => void;
+  draft: Draft; options: S["RegistryRead"]; action: "register" | "update" | "create"; onChange: (d: Draft) => void;
 }) {
   const set = <K extends keyof Draft>(key: K, value: Draft[K]) => onChange({ ...draft, [key]: value });
   const composition = options.compositions.find(c => c.name === draft.composition);
@@ -180,9 +180,9 @@ function DraftFields({ draft, options, action, onChange }: {
           <option value="lightweight">Ligero</option><option value="annotated">Anotado</option></select></label>
       </div>
       <p className="hint">Todos los proyectos usan el contrato documental unificado: instrucciones, diagramas, flujos y archivo por fase.</p>
-      <label className="check"><input type="checkbox" checked={draft.bootstrap_enabled} disabled={!options.bootstrap_enabled}
+      {action !== "create" && <label className="check"><input type="checkbox" checked={draft.bootstrap_enabled} disabled={!options.bootstrap_enabled}
         onChange={e => set("bootstrap_enabled", e.target.checked)} />
-        <span>Permitir crear el proyecto desde cero en esta carpeta{options.bootstrap_enabled ? "" : " (el operador no lo autoriza)"}</span></label>
+        <span>Permitir crear el proyecto desde cero en esta carpeta{options.bootstrap_enabled ? "" : " (el operador no lo autoriza)"}</span></label>}
       <label>Techo de permisos (JSON opcional: capa → tipo → objetivos)
         <textarea rows={3} value={draft.permission_authority} onChange={e => set("permission_authority", e.target.value)} spellCheck={false}
           placeholder={'{"global": {}, "project": {"tools": ["Read"]}, "contract": {}, "provider": {}}'} /></label>
@@ -223,25 +223,186 @@ function RegistryForm({ options, action, initial, expected, onApplied }: {
   </form>;
 }
 
+function CreationRootPanel({ root, refresh }: { root: S["CreationRootRead"]; refresh: () => void }) {
+  const [path, setPath] = useState("");
+  const [preview, setPreview] = useState<{ change: S["CreationRootChangeInput"]; data: S["CreationRootPreviewRead"] }>();
+  const [accepted, setAccepted] = useState(false);
+  const generation = useRef(0);
+  const op = useOperation();
+  return <section className="panel" aria-labelledby="creation-root">
+    <h2 id="creation-root">Carpeta de proyectos</h2>
+    <p>{root.permission_statement} La elección se guarda para los siguientes proyectos; cada creación muestra su destino.</p>
+    <Fields items={[["Carpeta vigente", root.status === "ACTIVE" ? <code className="path">{root.path}</code> : "Sin selección"],
+      ["Revisión", root.version]]} />
+    {!root.available ? <p>{root.diagnostic}</p> : <form onSubmit={e => {
+      e.preventDefault();
+      void op.run(async () => {
+        const current = generation.current;
+        const change: S["CreationRootChangeInput"] = { action: "select", expected_version: root.version, path };
+        const data = await managed<S["CreationRootPreviewRead"]>("/project-creation-root/preview", change);
+        if (current === generation.current) { setPreview({ change, data }); setAccepted(false); }
+      });
+    }}>
+      <label>Ruta absoluta de la carpeta padre<input value={path} maxLength={4096} required className="mono" spellCheck={false}
+        onChange={e => { generation.current++; setPath(e.target.value); setPreview(undefined); setAccepted(false); }} /></label>
+      <p className="hint">Debe existir, ser accesible y estar fuera de repositorios. Escríbela explícitamente; no se buscan ubicaciones.</p>
+      <div className="actions">
+        <button disabled={op.busy || !path.trim()}>Revisar carpeta</button>
+        {root.status === "ACTIVE" && <button type="button" className="button-quiet" disabled={op.busy} onClick={() => void op.run(async () => {
+          const change: S["CreationRootChangeInput"] = { action: "retire", expected_version: root.version };
+          setPreview({ change, data: await managed("/project-creation-root/preview", change) }); setAccepted(false);
+        })}>Revisar retirada</button>}
+      </div>
+      {preview && <div className="decision decision-attention">
+        <h3>{preview.change.action === "select" ? "Guardar carpeta" : "Retirar carpeta"}</h3>
+        {preview.change.action === "select" ? <p className="path"><code>{preview.data.root.path}</code></p>
+          : <p>Se detienen nuevas creaciones pendientes. Los proyectos registrados y las carpetas se conservan.</p>}
+        <label className="check"><input type="checkbox" checked={accepted} onChange={e => setAccepted(e.target.checked)} />
+          <span>{preview.change.action === "select" ? "Autorizo al servicio a crear hijos nuevos en esta ruta exacta." : "He revisado la retirada."}</span></label>
+        <button type="button" disabled={op.busy || !accepted} onClick={() => void op.run(async () => {
+          await confirmOnce("/project-creation-root/apply", { change: preview.change, preview_sha256: preview.data.preview_sha256,
+            confirm_path: preview.data.root.path });
+          setPreview(undefined); refresh();
+        })}>{preview.change.action === "select" ? "Guardar carpeta" : "Retirar carpeta"}</button>
+      </div>}
+    </form>}
+    {op.error && <Alert>{op.error}</Alert>}
+    {!!root.history.length && <Evidence title="Historial de la carpeta" value={root.history} />}
+  </section>;
+}
+
+function CreationOperation({ initial, rootVersion, editable, refresh }: {
+  initial: S["CreationOperationRead"]; rootVersion: number; editable: boolean; refresh: () => void;
+}) {
+  const [operation, setOperation] = useState(initial);
+  const [preview, setPreview] = useState<{ change: S["CreationResumeInput"]; data: S["CreationResumePreviewRead"] }>();
+  const op = useOperation();
+  function saved(value: S["CreationOperationRead"]) { setOperation(value); setPreview(undefined); refresh(); }
+  return <article className="decision decision-attention">
+    <h3><code>{operation.project_id}</code> · {operation.status}</h3>
+    <p><code className="path">{operation.target}</code></p>
+    <p>Operación <code>{operation.id}</code> · versión {operation.version}</p>
+    {operation.diagnostic && <p role="status">{operation.diagnostic}</p>}
+    {operation.reserved && operation.status !== "REGISTERED" && <p>El destino queda reservado; se conservan sus bytes.</p>}
+    {editable && (operation.status === "REGISTERED" ? <Link to={{ name: "setup", project: operation.project_id }}>Continuar con la definición</Link>
+      : (operation.status !== "CANCELLED" || operation.reserved) && <div className="actions">
+        {operation.status !== "RECOVERY_REQUIRED" && operation.status !== "CANCELLED" && <button type="button" disabled={op.busy} onClick={() => void op.run(async () => {
+          const change = { expected_version: operation.version, root_version: rootVersion };
+          setPreview({ change, data: await managed(`/project-creations/${operation.id}/resume/preview`, change) });
+        })}>Revisar reanudación</button>}
+        <button type="button" className="button-quiet" disabled={op.busy} onClick={() => void op.run(async () => {
+          saved(await confirmOnce(`/project-creations/${operation.id}/cancel`, {
+            expected_version: operation.version, intent_sha256: operation.intent_sha256 }));
+        })}>{operation.status === "CANCELLED" ? "Volver a comprobar ausencia" : "Cancelar futuros efectos"}</button>
+      </div>)}
+    {preview && <div className="decision">
+      <p>Reanudar la misma operación en <code className="path">{preview.data.target}</code> con revisión de carpeta {rootVersion}.</p>
+      <button type="button" disabled={op.busy} onClick={() => void op.run(async () => {
+        saved(await confirmOnce(`/project-creations/${operation.id}/resume/confirm`, {
+          change: preview.change, preview_sha256: preview.data.preview_sha256 }));
+      })}>Confirmar reanudación</button>
+    </div>}
+    {op.error && <Alert>{op.error}</Alert>}
+    <Evidence title="Intención e historial" value={operation} />
+  </article>;
+}
+
+function NewDirectoryForm({ options, root, refresh }: {
+  options: S["RegistryRead"]; root: S["CreationRootRead"]; refresh: () => void;
+}) {
+  const [draft, setDraft] = useState(() => emptyDraft(options));
+  const [name, setName] = useState("");
+  const [preview, setPreview] = useState<{ change: S["CreationInput"]; data: S["CreationPreviewRead"] }>();
+  const [trusted, setTrusted] = useState(false);
+  const generation = useRef(0);
+  const op = useOperation();
+  function invalidate() { generation.current++; setPreview(undefined); setTrusted(false); }
+  const ready = draft.project_id.trim() && name && draft.composition && draft.executor_models.trim() && draft.executor_efforts.length;
+  return <section className="panel" aria-labelledby="new-directory"><h2 id="new-directory">Crear carpeta nueva</h2>
+    <form onSubmit={e => { e.preventDefault(); void op.run(async () => {
+      const current = generation.current;
+      const fields = changeOf(draft, "register", 0);
+      const change: S["CreationInput"] = { project_id: fields.project_id, directory_name: name, root_version: root.version,
+        composition: fields.composition!, policy: fields.policy!, tag_kind: draft.tag_kind, documents: "v2",
+        permission_authority: fields.permission_authority };
+      const data = await managed<S["CreationPreviewRead"]>("/project-creations/preview", change);
+      if (current === generation.current) setPreview({ change, data });
+    }); }}>
+      <div className="form-row">
+        <label>Id del proyecto<input value={draft.project_id} required maxLength={64} pattern="[a-z0-9][a-z0-9._\-]{0,63}"
+          onChange={e => { invalidate(); setDraft({ ...draft, project_id: e.target.value }); }} /></label>
+        <label>Nombre de la carpeta hija<input value={name} required maxLength={64} pattern="[a-z0-9][a-z0-9._\-]{0,63}"
+          onChange={e => { invalidate(); setName(e.target.value); }} /></label>
+      </div>
+      <p>Destino: <code className="path">{root.path}/{name || "…"}</code></p>
+      <p className="hint">Solo una carpeta nueva; un destino existente, incluso vacío, se rechaza.</p>
+      <DraftFields draft={draft} options={options} action="create" onChange={next => { invalidate(); setDraft(next); }} />
+      <button disabled={op.busy || !ready}>Revisar creación</button>
+      {preview && <div className="decision decision-attention">
+        <h3>Crear <code>{preview.change.project_id}</code></h3>
+        <p><code className="path">{preview.data.target}</code></p>
+        <Fields items={[["Perfil", preview.data.profile], ["Revisión de carpeta", root.version]]} />
+        <Fields items={[["Revisor", `${preview.data.agents.reviewer.provider} · ${preview.data.agents.reviewer.model} · ${preview.data.agents.reviewer.effort}`],
+          ["Ejecutor", `${preview.data.agents.executor.provider} · selección del revisor`]]} />
+        <p>Se creará y registrará la carpeta. Después podrás iniciar la definición documental con su revisor.</p>
+        <p>{preview.data.trust_statement}</p>
+        <Evidence title="Composición y versiones confirmadas" value={preview.data} />
+        <label className="check"><input type="checkbox" checked={trusted} onChange={e => setTrusted(e.target.checked)} />
+          <span>He revisado la composición y confío en el nuevo checkout <code className="path">{preview.data.target}</code>.</span></label>
+        <button type="button" disabled={op.busy || !trusted} onClick={() => void op.run(async () => {
+          const result = await confirmOnce<S["CreationOperationRead"]>("/project-creations/confirm", {
+            change: preview.change, preview_sha256: preview.data.preview_sha256, trust_root: preview.data.target });
+          setPreview(undefined); refresh();
+          if (result.status === "REGISTERED") navigate({ name: "setup", project: result.project_id });
+        })}>Crear y registrar</button>
+      </div>}
+      {op.error && <Alert>{op.error}</Alert>}
+    </form>
+  </section>;
+}
+
 export function RegisterPage() {
-  const read = usePoll<S["RegistryRead"]>("/registry", 0);
+  const [revision, setRevision] = useState(0);
+  const [mode, setMode] = useState<"create" | "register">("create");
+  const read = usePoll<S["RegistryRead"]>("/registry", 0, revision);
+  const folder = usePoll<S["CreationRootRead"]>("/project-creation-root", 0, revision);
+  const retry = useOperation();
+  const pending = readConfirmation();
+  const refresh = () => setRevision(n => n + 1);
   const options = read.data;
   return <>
-    <PageHeader title="Registrar proyecto">
-      <p>Da de alta una carpeta bajo las raíces que autoriza el operador. Elige una composición del TOML; los ejecutables y el entorno nunca se definen aquí.</p>
-    </PageHeader>
-    {!options ? read.error ? <Alert>No se pudo leer el registro: {read.error}</Alert> : <Loading />
-      : !options.available ? <Empty title="Este servicio no admite registrar proyectos">
-        <p>El registro desde la interfaz necesita una configuración <code>local-config-3</code> o <code>local-config-4</code> con <code>[registration]</code> y al menos una composición. {options.format ? <>El servicio usa <code>{options.format}</code>.</> : "El servicio arrancó sin configuración local."}</p>
-        <p>Los proyectos del TOML siguen en la <Link to={{ name: "home" }}>lista de proyectos</Link>.</p>
-      </Empty>
-      : !options.roots.length ? <Empty title="No hay raíces autorizadas"><p>Añade rutas a <code>[registration].roots</code> en el TOML del operador y reinicia el servicio.</p></Empty>
-      : <section className="panel" aria-labelledby="register-form"><h2 id="register-form">Alta</h2>
+    <PageHeader title="Nuevo proyecto"><p>Elige una carpeta nueva o registra un checkout existente con la composición del operador.</p></PageHeader>
+    {pending && <section className="decision decision-attention">
+      <h2>Confirmación pendiente de respuesta</h2><p>Se conserva el envío exacto. Reenviarlo devuelve su resultado sin duplicar la operación.</p>
+      <Evidence title="Envío pendiente" value={pending} />
+      <button disabled={retry.busy} onClick={() => void retry.run(async () => {
+        await confirmOnce(pending.path, pending.body); refresh();
+      })}>Reenviar confirmación</button>
+      {retry.error && <Alert>{retry.error}</Alert>}
+    </section>}
+    {folder.data ? <CreationRootPanel key={folder.data.version} root={folder.data} refresh={refresh} />
+      : folder.error ? <Alert>{folder.error}</Alert> : <Loading />}
+    <div className="actions" role="group" aria-label="Tipo de alta">
+      <button type="button" className={mode === "create" ? undefined : "button-quiet"} aria-pressed={mode === "create"}
+        onClick={() => setMode("create")}>Crear carpeta nueva</button>
+      <button type="button" className={mode === "register" ? undefined : "button-quiet"} aria-pressed={mode === "register"}
+        onClick={() => setMode("register")}>Registrar carpeta existente</button>
+    </div>
+    {!options ? read.error ? <Alert>{read.error}</Alert> : <Loading />
+      : !options.available ? <Empty title="Este servicio no admite registrar proyectos"><p>Requiere local-config-3/4 con registro y composiciones.</p></Empty>
+      : mode === "create" ? !options.creation_available ? <Empty title="Creación deshabilitada por el operador"><p>La configuración debe permitir bootstrap.</p></Empty>
+        : folder.data?.status !== "ACTIVE" ? <Empty title="Elige una carpeta de proyectos"><p>Guarda primero la carpeta padre donde crear los hijos.</p></Empty>
+        : <NewDirectoryForm key={folder.data.version} options={options} root={folder.data} refresh={refresh} />
+      : !options.roots.length ? <Empty title="No hay raíces TOML para registrar carpetas existentes"><p>Esta autoridad es independiente de la carpeta elegida para hijos nuevos.</p></Empty>
+      : <section className="panel"><h2>Registrar carpeta existente</h2>
         <RegistryForm options={options} action="register" initial={emptyDraft(options)} expected={0}
           onApplied={(result, change) => navigate(change.bootstrap_enabled
-            // Los destinos con creación habilitada abren la definición conversacional.
             ? { name: "setup", project: result.project.id } : { name: "project", project: result.project.id })} />
       </section>}
+    {!!folder.data?.operations.length && <section className="panel"><h2>Operaciones de creación</h2>
+      {folder.data.operations.map(operation => <CreationOperation key={`${operation.id}-${operation.version}`} initial={operation}
+        rootVersion={folder.data!.version} editable={folder.data!.available} refresh={refresh} />)}
+    </section>}
   </>;
 }
 

@@ -10,7 +10,7 @@ decisiones vigentes y la información técnica que antes estaba en README y AGEN
 |---|---|
 | Núcleo | Python 3.14.4, biblioteca estándar, paquete `harness-local` 0.1.0 (`uv_build==0.12.19`) |
 | API local | FastAPI 0.143.0, Pydantic 2.14.0, Uvicorn 0.54.0; HTTP para acciones, SSE para observación legacy |
-| Persistencia | SQLite con SQLAlchemy 2.1.4 y Alembic 1.20.0 (esquema `0020_project_imports`) |
+| Persistencia | SQLite con SQLAlchemy 2.1.4 y Alembic 1.20.0 (esquema `0021_project_creation`) |
 | UI | React 19.3.0, TypeScript 5.9.3, Vite 8.3.4; `markdown-it` 15.0.2 (`html: false`) y `mermaid` 11.17.2 (`strict`) |
 | Tipos del cliente | `openapi-typescript` 7.13.0 desde el OpenAPI exportado |
 | Herramientas | uv 0.12.19 y `uv.lock`; Node 24.15.0, npm 11.12.1 y `frontend/package-lock.json` |
@@ -62,11 +62,11 @@ casos de uso. El supervisor es el único que lanza procesos y consume la cola; c
 | `adapters/commands.py`, `git.py`, `bootstrap.py`, `chat_snapshot.py`, `migration.py`, `legacy.py` | Validaciones nativas (`commands-1`), Git, commit raíz, instantánea de HEAD, migración, lector legacy |
 | `storage/*.py` | Repositorios SQLAlchemy por área (`managed`, `phases`, `documents`, `transition`, `planning`, `chat`, `metrics`, `registry`, `backup`, `retention`, `migrate`…) |
 | `services/managed.py`, `managed_runtime.py` | Supervisor (`run_once`, lease, cuarentena) y composición del runtime |
-| `services/local_config.py`, `project_registry.py` | TOML `local-config-4` (lectura de 1–3) y registro de proyectos desde la UI con 3/4 |
+| `services/local_config.py`, `project_registry.py`, `project_creation.py` | TOML `local-config-4` (lectura de 1–3) y registro/creación de hijos desde la UI con 3/4 |
 | `api/app.py`, `managed.py`, `legacy.py`, `schemas.py`, `session.py`, `security.py` | Aplicación, rutas, contratos Pydantic, sesión y guardia |
 | `profiles/typescript_web.py`, `profiles/reference_project.py` | Perfiles integrados (`typescript-web` componible; `reference_project` solo biblioteca); los perfiles del TOML v4 se componen en `services/local_config.py` |
 | `cli.py`, `launcher.py` | `harness-local` (legacy, backup, retención, diagnóstico, `check-config`, `metrics-backfill`, `init-db`, `serve`) |
-| `migrations/versions/0001…0020` | Esquema Alembic |
+| `migrations/versions/0001…0021` | Esquema Alembic |
 
 `frontend/src`: `router.ts`, `pages/` (Home, Registry, Project, Phases, Task, Run, Docs, Planning, Stats, Settings),
 `markdown.ts` y `mermaid-view.ts` (render aislado), `managed-api.ts` (envíos idempotentes), `api.generated.ts`
@@ -233,13 +233,14 @@ Uso real (D051): construir y verificar el wheel (`scripts/build_distribution.py 
 - La estructura de D088 es obligatoria desde P008-T002; rutas y paridad en T003, cierre y archivo unificados en
   T004, prompts/definición en T005, API/UI en T006 e inyección de AGENTS en T007 (D089–D094).
 
-## 11. Ampliación planificada — P009
+## 11. Ampliación — P009
 
-Diseño completado en P009-T001; implementación pendiente
+Diseño completado en P009-T001; carpeta y creación implementadas en T002 (D117); roles y receta pendientes
 ([D116](DECISIONS.md#d116--p009-t001-autoridad-de-creación-presets-por-proyecto-y-preparación-separada),
 [contrato](phase/P009-T001_CONTRATO_CREACION.md)).
-Hoy el registro exige carpeta existente bajo `[registration].roots`, y los proveedores se fijan en los agentes
-globales del TOML; Settings los muestra en solo lectura. P009 ampliará ambos contratos de forma explícita:
+El alta existente conserva `[registration].roots`. La autoridad UI de creación permite hijos directos nuevos
+fuera de esas raíces, también con `roots = []`, sin elevar `bootstrap_enabled`. Los proveedores siguen globales
+y Settings los muestra en consulta; T003/T004 implementarán presets y receta:
 
 - Selección de carpeta padre desde UI, guardada como autoridad operativa local auditada; creación idempotente
   de nuevos hijos con intención previa. No se edita el TOML ni la configuración global; convivencia con sus
@@ -254,6 +255,14 @@ globales del TOML; Settings los muestra en solo lectura. P009 ampliará ambos co
   Enlaces tipados de ejecutables diferidos permiten definir antes de crear el entorno; tareas/checks se bloquean
   hasta tener recibo de preparación. Django será una herramienta del proyecto, no una dependencia del runtime.
 
-No hay tablas, migraciones, endpoints ni versiones nuevas implementadas. El contrato T001 documenta entidades,
-API, versiones, recuperación y matriz de pruebas; T002–T004 mantendrán la paridad al construirlo. Flujo futuro en
+T002 añade cuatro tablas en `0021_project_creation`, procedencia nullable en el registro y las rutas
+`/project-creation-root` y `/project-creations` (preview/confirmación/lectura/reanudación/cancelación).
+Las intenciones `project-creation-1` y sus reservas se sellan antes de efectos; transacciones de escritura SQLite
+y un lock reentrante compartido con el registro serializan cada efecto corto y la retirada. `mkdir` usa fd del
+padre sin seguir enlaces; identidad y fsync preceden al checkpoint. Los conflictos reconocen ancestros físicos
+y alias de mayúsculas, también para reservas sin carpeta, sin depender solo de rutas textuales. Alta/evento/procedencia/resultado son atómicos.
+El arranque solo clasifica carpetas inciertas; la continuación exige acción explícita. No hay borrado automático.
+La preview de composición valida sobre el padre existente y calcula los hashes del futuro hijo sin crear puertos
+para él. La composición operativa continúa exigiendo un checkout existente. La UI conserva el sobre y la clave
+de confirmación al perder respuesta. Contratos/hashes v1–v4 previos, CLI y codec conservados. Flujo y límites en
 [project-creation](flows/project-creation.md); plan y matriz en [docs/phase](phase/P009_PLAN_DJANGO.md).

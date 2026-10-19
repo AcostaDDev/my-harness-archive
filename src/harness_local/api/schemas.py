@@ -1624,6 +1624,7 @@ class RegistryCompositionRead(BaseModel):
 
 class RegisteredProjectSummaryRead(BaseModel):
     id: str
+    creation_id: str | None = None
     version: int
     status: Literal['ACTIVE', 'RETIRED']
     root: str
@@ -1638,6 +1639,7 @@ class RegisteredProjectSummaryRead(BaseModel):
 
 class RegistryRead(BaseModel):
     available: bool
+    creation_available: bool = False
     format: str | None
     roots: list[str]
     bootstrap_enabled: bool
@@ -1756,3 +1758,129 @@ class ImportEntryRead(BaseModel):
     refusal: str | None
     activation_preview: MigrationPreviewRead | None
     operation: ImportOperationRead | None
+
+
+class CreationRootChangeInput(BaseModel):
+    model_config = ConfigDict(extra='forbid', strict=True)
+    action: Literal['select', 'retire']
+    expected_version: int = Field(ge=0)
+    path: str | None = Field(default=None, max_length=4096)
+
+
+class CreationRootApplyInput(BaseModel):
+    model_config = ConfigDict(extra='forbid', strict=True)
+    change: CreationRootChangeInput
+    preview_sha256: str = Field(pattern=SHA256)
+    confirm_path: str | None = Field(default=None, max_length=4096)
+    reason: str | None = Field(default=None, max_length=2000)
+
+
+class CreationInput(BaseModel):
+    model_config = ConfigDict(extra='forbid', strict=True)
+    project_id: str = Field(min_length=1, max_length=64)
+    directory_name: str = Field(min_length=1, max_length=64)
+    root_version: int = Field(ge=1)
+    composition: str = Field(min_length=1, max_length=64)
+    policy: RegistryPolicyInput
+    tag_kind: Literal['lightweight', 'annotated'] = 'lightweight'
+    documents: Literal['v2'] = 'v2'
+    permission_authority: dict[PermissionLayer, dict[PermissionKind, list[ShortText]]] | None = None
+
+
+class CreationConfirmInput(BaseModel):
+    model_config = ConfigDict(extra='forbid', strict=True)
+    change: CreationInput
+    preview_sha256: str = Field(pattern=SHA256)
+    trust_root: str = Field(min_length=1, max_length=4096)
+    reason: str | None = Field(default=None, max_length=2000)
+
+
+class CreationRootSnapshotRead(BaseModel):
+    version: int
+    status: Literal['ABSENT', 'ACTIVE', 'REVOKED']
+    path: str | None
+    identity: dict[str, int] | None
+    row_sha256: str | None = None
+    updated_at: str | None = None
+
+
+class CreationOperationRead(BaseModel):
+    id: str
+    version: int
+    project_id: str
+    directory_name: str
+    target: str
+    reserved: bool
+    authority: dict[str, Any]
+    intent: dict[str, Any]
+    intent_sha256: str
+    status: Literal['INTENDED', 'DIRECTORY_CREATED', 'REGISTERED', 'BLOCKED', 'RECOVERY_REQUIRED', 'CANCELLED']
+    child_identity: dict[str, int] | None
+    result: dict[str, Any] | None
+    diagnostic: str | None
+    created_at: str
+    updated_at: str
+    history: list[dict[str, Any]] = Field(default_factory=list)
+
+
+class CreationRootRead(CreationRootSnapshotRead):
+    available: bool
+    diagnostic: str | None
+    bootstrap_enabled: bool
+    permission_statement: str
+    history: list[dict[str, Any]]
+    operations: list[CreationOperationRead]
+
+
+class CreationRootPreviewRead(BaseModel):
+    action: Literal['select', 'retire']
+    expected_version: int
+    root: CreationRootSnapshotRead
+    permission_statement: str
+    preview_sha256: str
+    replayed: bool = False
+
+
+class CreationPreviewRead(BaseModel):
+    contract: str
+    authority: dict[str, Any]
+    row: dict[str, Any]
+    target: str
+    directory_name: str
+    versions: dict[str, str | None]
+    profile: str
+    profile_details: dict[str, Any]
+    agents: ProjectAgentsRead
+    composition: RegistryCompositionRead
+    trust_statement: str
+    permission_statement: str
+    preview_sha256: str
+
+
+class CreationResumeInput(BaseModel):
+    model_config = ConfigDict(extra='forbid', strict=True)
+    expected_version: int = Field(ge=1)
+    root_version: int = Field(ge=1)
+
+
+class CreationResumePreviewRead(BaseModel):
+    operation_id: str
+    expected_version: int
+    authority: dict[str, Any]
+    intent_sha256: str
+    target: str
+    preview_sha256: str
+
+
+class CreationResumeConfirmInput(BaseModel):
+    model_config = ConfigDict(extra='forbid', strict=True)
+    change: CreationResumeInput
+    preview_sha256: str = Field(pattern=SHA256)
+    reason: str | None = Field(default=None, max_length=2000)
+
+
+class CreationCancelInput(BaseModel):
+    model_config = ConfigDict(extra='forbid', strict=True)
+    expected_version: int = Field(ge=1)
+    intent_sha256: str = Field(pattern=SHA256)
+    reason: str | None = Field(default=None, max_length=2000)

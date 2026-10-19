@@ -1,9 +1,9 @@
 # Diagrama de datos — my_harness
 
-Esquema SQLite del servicio local (Alembic `0020_project_imports`, 35 tablas). Generado en P008-T001 desde el metadata de `src/harness_local/storage/models.py` (actualizado en P008-T015, sin cambio de esquema); cualquier cambio de modelos o migraciones actualiza este documento en la misma tarea (regla de paridad, D088).
+Esquema SQLite del servicio local (Alembic `0021_project_creation`, 39 tablas). Generado en P008-T001 desde el metadata de `src/harness_local/storage/models.py` (actualizado en P009-T002 con selección y creación de hijos); cualquier cambio de modelos o migraciones actualiza este documento en la misma tarea (regla de paridad, D088).
 
-P009-T001 define un [esquema futuro separado](phase/P009-T001_CONTRATO_CREACION.md#6-persistencia-propuesta-y-migraciones)
-(D116). No está migrado ni forma parte de los diagramas vigentes de este documento.
+P009-T002 implementa la autoridad y creación de hijos previstas por D116; tablas de preparación y cambios
+de propietario de locks/procesos siguen en el [diseño futuro](phase/P009-T001_CONTRATO_CREACION.md#6-persistencia-propuesta-y-migraciones), pendientes de T004.
 
 Convenciones: `PK` clave primaria, `FK` clave ajena declarada, `UK` unicidad de columna; «null» marca columnas opcionales. Las unicidades compuestas y los índices únicos parciales se listan bajo cada diagrama. Las entidades de otro contexto aparecen solo con las columnas que relacionan. Los artefactos pesados (streams, capturas, copias) viven fuera de SQLite y se referencian por ruta y hash.
 
@@ -554,6 +554,7 @@ erDiagram
     }
     registered_projects {
         string id PK
+        string creation_id FK, UK "null; → project_creation_operations.id"
         integer version
         string status
         string root
@@ -591,3 +592,73 @@ erDiagram
 ```
 
 Unicidad: `ix_attempt_metrics_run` sobre `attempt_metrics` (run_id, number); `uq_registered_projects_active_root` sobre `registered_projects` (root) donde status = 'ACTIVE'; `registered_project_events` (project_id, version).
+
+## Autoridad de carpeta y creación de hijos (P009-T002)
+
+D116/D117. La selección UI autoriza hijos directos nuevos; no amplía las raíces TOML de D078. El singleton
+no existe hasta la primera selección. Eventos de raíz conservan snapshots de cada revisión, sin FK a una fila
+mutable como prueba de autoridad. Intención sellada antes de mkdir; identidad del hijo solo tras fsync del padre.
+Alta, evento D078, `creation_id` y resultado REGISTERED se confirman juntos. No hay jobs, agentes o procesos
+asociados a estas operaciones; preparación de Django y sus tablas siguen pendientes de T004.
+
+```mermaid
+erDiagram
+    project_creation_root {
+        integer id PK "singleton; CHECK id = 1"
+        integer version
+        string status
+        string path "null"
+        json identity "null; device, inode"
+        string row_sha256
+        string updated_at
+    }
+    project_creation_root_events {
+        integer id PK
+        integer version UK
+        string idempotency_key UK
+        string request_sha256
+        json payload "antes, después, preview, actor, motivo, fecha y hashes"
+    }
+    project_creation_operations {
+        string id PK
+        string idempotency_key UK
+        string request_sha256
+        integer version
+        string project_id
+        string directory_name
+        string target
+        boolean reserved
+        json authority "revisión vigente autorizada; intención original intacta"
+        json intent
+        string intent_sha256
+        string status
+        json child_identity "null"
+        json result "null"
+        text diagnostic "null"
+        string created_at
+        string updated_at
+    }
+    project_creation_operation_events {
+        integer id PK
+        string operation_id FK
+        integer version
+        string idempotency_key UK "null; reanudar/cancelar"
+        string request_sha256 "null"
+        json payload "snapshot, transición, actor, fecha y cadena de hashes"
+    }
+    registered_projects {
+        string id PK
+        string creation_id FK, UK "null; filas previas conservadas"
+    }
+    project_creation_root ||..o{ project_creation_root_events : "revisión lógica"
+    project_creation_root ||..o{ project_creation_operations : "autoridad lógica congelada"
+    project_creation_operations ||--o{ project_creation_operation_events : "operation_id"
+    project_creation_operations |o--o| registered_projects : "creation_id"
+```
+
+Unicidad: `uq_creation_reserved_id` sobre (project_id) y `uq_creation_reserved_target` sobre (target) donde
+reserved = 1; `project_creation_operation_events` (operation_id, version); `uq_registered_creation` sobre
+registered_projects (creation_id). Las reservas se contrastan transaccionalmente con filas D078 y destinos
+anidados, incluidos alias físicos de mayúsculas. Los índices textuales no sustituyen esa comprobación.
+REGISTERED libera la reserva de operación y manda D078; CANCELLED solo la libera con ausencia
+acreditada. No caducan por timeout. Autoridad/retirada/efectos cortos comparten la exclusión de escritura SQLite.

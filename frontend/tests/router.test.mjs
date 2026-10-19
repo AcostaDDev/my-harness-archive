@@ -80,7 +80,7 @@ test('run reads map to their canonical URL; runs outside a registered project ha
 
 test('the registration page is not a project and keeps its own trail', () => {
   assert.equal(projectOf(parse('/projects/new')), undefined);
-  assert.deepEqual(trail({ name: 'project-new' }).map(item => item.label), ['Proyectos', 'Registrar proyecto']);
+  assert.deepEqual(trail({ name: 'project-new' }).map(item => item.label), ['Proyectos', 'Nuevo proyecto']);
   assert.deepEqual(parse('/projects/new/settings'), { name: 'settings', project: 'new' });
 });
 

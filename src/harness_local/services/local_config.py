@@ -394,11 +394,13 @@ class LocalComposer:
     def registrable(self):
         return self.format in REGISTRABLE
 
-    def compose(self, item, where, *, registry=None):
+    def compose(self, item, where, *, registry=None, new_directory=False):
         """Validated `ManagedProject` and its composition, without installing it.
 
         `registry` is `(version, row_sha256)` of a registered row: it enters the frozen
         hash, so a newer registry version quarantines jobs admitted under the older one.
+        `new_directory` is a data-only creation preview: validates on the existing parent,
+        freezes the future child's hashes and returns versions/profile, never installable ports.
         """
         if self.registrable:
             required, optional = (*self.PROJECT_KEYS, 'composition'), (*self.OPTIONAL_KEYS, 'bootstrap_enabled')
@@ -410,7 +412,8 @@ class LocalComposer:
                                    'omitirlo equivale a "v2")')
         if _flag(item['repository_trusted'], f'{where}.repository_trusted') is not True:
             raise LocalConfigError(f'{where}: sin confianza explícita el proyecto no se registra')
-        root = _path(item['root'], f'{where}.root', kind='directory')
+        # Solo la preview de creación D116 admite un destino aún inexistente, ya validado por el servicio.
+        root = _path(item['root'], f'{where}.root', kind='new_directory' if new_directory else 'directory')
         if not (_outside(self.state, root) and _outside(self.source, root)):
             raise LocalConfigError(f'{where}: configuración y estado deben quedar fuera del checkout')
         authority = dict(self._authority)
@@ -431,7 +434,9 @@ class LocalComposer:
             authority['profile'] = asdict(profile)
         bootstrap = _flag(item.get('bootstrap_enabled', False), f'{where}.bootstrap_enabled')
         engine_policy = _policy(item['policy'], f'{where}.policy', self.reviewer, self.agents['executor'].provider)
-        commands = _commands(table, f'{where}.commands', root, profile, strict=self.format == VERSION)
+        # La preview valida la configuración sobre el padre existente, sin construir puertos para el hijo.
+        commands = _commands(table, f'{where}.commands', root.parent if new_directory else root, profile,
+                             strict=self.format == VERSION)
         identifier = _text(item['id'], f'{where}.id')
         if not PROJECT_ID.fullmatch(identifier):
             raise LocalConfigError(f'{where}.id: [a-z0-9][a-z0-9._-]{{0,63}} requerido')
@@ -455,6 +460,16 @@ class LocalComposer:
                     'document_layout': DOCUMENT_LAYOUT,
                     **({'project_registry': str(registry[0])} if registry is not None else {}),
                     **cli.frozen_versions(), **runner.frozen_versions()}
+        if new_directory:
+            commands_snapshot = {**asdict(commands), 'checkout': str(root)}
+            versions['command_config_sha256'] = hashlib.sha256(freeze(commands_snapshot).encode()).hexdigest()
+            preview = ManagedProject(identifier, ProjectContext(root.parent, profile, engine_policy, documents='v2'),
+                                     versions, item.get('permission_authority'), item.get('tag_kind', 'lightweight'),
+                                     bootstrap)
+            validate_projects(ManagedConfig((preview,), ports_factory=self.ports, commit_factory=self.writer))
+            return {'versions': versions, 'profile': profile.name, 'profile_details': _profile_view(profile),
+                    'agents': agents_view(preview),
+                    'composition': next(c for c in self.options()['compositions'] if c['name'] == name)}
         context = ProjectContext(root, profile, engine_policy, documents='v2')
         project = ManagedProject(identifier, context, versions, item.get('permission_authority'),
                                  item.get('tag_kind', 'lightweight'), bootstrap)

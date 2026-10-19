@@ -11207,6 +11207,866 @@
         }
       }
     },
+    "/api/managed/project-creation-root": {
+      "get": {
+        "summary": "Creation Root",
+        "operationId": "managed_creation_root",
+        "parameters": [
+          {
+            "name": "x-harness-local",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Obligatoria con valor 1 en mutaciones (protección CSRF).",
+              "title": "X-Harness-Local"
+            },
+            "description": "Obligatoria con valor 1 en mutaciones (protección CSRF)."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreationRootRead"
+                }
+              }
+            }
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          }
+        }
+      }
+    },
+    "/api/managed/project-creation-root/preview": {
+      "post": {
+        "summary": "Creation Root Preview",
+        "operationId": "managed_creation_root_preview",
+        "parameters": [
+          {
+            "name": "x-harness-local",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Obligatoria con valor 1 en mutaciones (protección CSRF).",
+              "title": "X-Harness-Local"
+            },
+            "description": "Obligatoria con valor 1 en mutaciones (protección CSRF)."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreationRootChangeInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreationRootPreviewRead"
+                }
+              }
+            }
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          }
+        }
+      }
+    },
+    "/api/managed/project-creation-root/apply": {
+      "post": {
+        "summary": "Creation Root Apply",
+        "operationId": "managed_creation_root_apply",
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200,
+              "description": "Misma clave y misma acción devuelven el mismo job.",
+              "title": "Idempotency-Key"
+            },
+            "description": "Misma clave y misma acción devuelven el mismo job."
+          },
+          {
+            "name": "x-harness-local",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Obligatoria con valor 1 en mutaciones (protección CSRF).",
+              "title": "X-Harness-Local"
+            },
+            "description": "Obligatoria con valor 1 en mutaciones (protección CSRF)."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreationRootApplyInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreationRootPreviewRead"
+                }
+              }
+            }
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          }
+        }
+      }
+    },
+    "/api/managed/project-creations/preview": {
+      "post": {
+        "summary": "Creation Preview",
+        "operationId": "managed_creation_preview",
+        "parameters": [
+          {
+            "name": "x-harness-local",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Obligatoria con valor 1 en mutaciones (protección CSRF).",
+              "title": "X-Harness-Local"
+            },
+            "description": "Obligatoria con valor 1 en mutaciones (protección CSRF)."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreationInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreationPreviewRead"
+                }
+              }
+            }
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          }
+        }
+      }
+    },
+    "/api/managed/project-creations/confirm": {
+      "post": {
+        "summary": "Creation Confirm",
+        "operationId": "managed_creation_confirm",
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200,
+              "description": "Misma clave y misma acción devuelven el mismo job.",
+              "title": "Idempotency-Key"
+            },
+            "description": "Misma clave y misma acción devuelven el mismo job."
+          },
+          {
+            "name": "x-harness-local",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Obligatoria con valor 1 en mutaciones (protección CSRF).",
+              "title": "X-Harness-Local"
+            },
+            "description": "Obligatoria con valor 1 en mutaciones (protección CSRF)."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreationConfirmInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreationOperationRead"
+                }
+              }
+            }
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          }
+        }
+      }
+    },
+    "/api/managed/project-creations/{operation_id}": {
+      "get": {
+        "summary": "Creation Operation",
+        "operationId": "managed_creation_operation",
+        "parameters": [
+          {
+            "name": "operation_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Operation Id"
+            }
+          },
+          {
+            "name": "x-harness-local",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Obligatoria con valor 1 en mutaciones (protección CSRF).",
+              "title": "X-Harness-Local"
+            },
+            "description": "Obligatoria con valor 1 en mutaciones (protección CSRF)."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreationOperationRead"
+                }
+              }
+            }
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          }
+        }
+      }
+    },
+    "/api/managed/project-creations/{operation_id}/resume/preview": {
+      "post": {
+        "summary": "Creation Resume Preview",
+        "operationId": "managed_creation_resume_preview",
+        "parameters": [
+          {
+            "name": "operation_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Operation Id"
+            }
+          },
+          {
+            "name": "x-harness-local",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Obligatoria con valor 1 en mutaciones (protección CSRF).",
+              "title": "X-Harness-Local"
+            },
+            "description": "Obligatoria con valor 1 en mutaciones (protección CSRF)."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreationResumeInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreationResumePreviewRead"
+                }
+              }
+            }
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          }
+        }
+      }
+    },
+    "/api/managed/project-creations/{operation_id}/resume/confirm": {
+      "post": {
+        "summary": "Creation Resume Confirm",
+        "operationId": "managed_creation_resume_confirm",
+        "parameters": [
+          {
+            "name": "operation_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Operation Id"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200,
+              "description": "Misma clave y misma acción devuelven el mismo job.",
+              "title": "Idempotency-Key"
+            },
+            "description": "Misma clave y misma acción devuelven el mismo job."
+          },
+          {
+            "name": "x-harness-local",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Obligatoria con valor 1 en mutaciones (protección CSRF).",
+              "title": "X-Harness-Local"
+            },
+            "description": "Obligatoria con valor 1 en mutaciones (protección CSRF)."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreationResumeConfirmInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreationOperationRead"
+                }
+              }
+            }
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          }
+        }
+      }
+    },
+    "/api/managed/project-creations/{operation_id}/cancel": {
+      "post": {
+        "summary": "Creation Cancel",
+        "operationId": "managed_creation_cancel",
+        "parameters": [
+          {
+            "name": "operation_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Operation Id"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200,
+              "description": "Misma clave y misma acción devuelven el mismo job.",
+              "title": "Idempotency-Key"
+            },
+            "description": "Misma clave y misma acción devuelven el mismo job."
+          },
+          {
+            "name": "x-harness-local",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Obligatoria con valor 1 en mutaciones (protección CSRF).",
+              "title": "X-Harness-Local"
+            },
+            "description": "Obligatoria con valor 1 en mutaciones (protección CSRF)."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreationCancelInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreationOperationRead"
+                }
+              }
+            }
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          }
+        }
+      }
+    },
     "/api/health": {
       "get": {
         "summary": "Health",
@@ -12977,6 +13837,780 @@
           "tasks"
         ],
         "title": "CountSumRead"
+      },
+      "CreationCancelInput": {
+        "properties": {
+          "expected_version": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Expected Version"
+          },
+          "intent_sha256": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$",
+            "title": "Intent Sha256"
+          },
+          "reason": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 2000
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reason"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "expected_version",
+          "intent_sha256"
+        ],
+        "title": "CreationCancelInput"
+      },
+      "CreationConfirmInput": {
+        "properties": {
+          "change": {
+            "$ref": "#/components/schemas/CreationInput"
+          },
+          "preview_sha256": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$",
+            "title": "Preview Sha256"
+          },
+          "trust_root": {
+            "type": "string",
+            "maxLength": 4096,
+            "minLength": 1,
+            "title": "Trust Root"
+          },
+          "reason": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 2000
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reason"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "change",
+          "preview_sha256",
+          "trust_root"
+        ],
+        "title": "CreationConfirmInput"
+      },
+      "CreationInput": {
+        "properties": {
+          "project_id": {
+            "type": "string",
+            "maxLength": 64,
+            "minLength": 1,
+            "title": "Project Id"
+          },
+          "directory_name": {
+            "type": "string",
+            "maxLength": 64,
+            "minLength": 1,
+            "title": "Directory Name"
+          },
+          "root_version": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Root Version"
+          },
+          "composition": {
+            "type": "string",
+            "maxLength": 64,
+            "minLength": 1,
+            "title": "Composition"
+          },
+          "policy": {
+            "$ref": "#/components/schemas/RegistryPolicyInput"
+          },
+          "tag_kind": {
+            "type": "string",
+            "enum": [
+              "lightweight",
+              "annotated"
+            ],
+            "title": "Tag Kind",
+            "default": "lightweight"
+          },
+          "documents": {
+            "type": "string",
+            "const": "v2",
+            "title": "Documents",
+            "default": "v2"
+          },
+          "permission_authority": {
+            "anyOf": [
+              {
+                "additionalProperties": {
+                  "additionalProperties": {
+                    "items": {
+                      "type": "string",
+                      "maxLength": 200,
+                      "minLength": 1
+                    },
+                    "type": "array"
+                  },
+                  "propertyNames": {
+                    "enum": [
+                      "files",
+                      "tools",
+                      "network",
+                      "product",
+                      "acceptance"
+                    ]
+                  },
+                  "type": "object"
+                },
+                "propertyNames": {
+                  "enum": [
+                    "global",
+                    "project",
+                    "contract",
+                    "provider"
+                  ]
+                },
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Permission Authority"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "project_id",
+          "directory_name",
+          "root_version",
+          "composition",
+          "policy"
+        ],
+        "title": "CreationInput"
+      },
+      "CreationOperationRead": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "version": {
+            "type": "integer",
+            "title": "Version"
+          },
+          "project_id": {
+            "type": "string",
+            "title": "Project Id"
+          },
+          "directory_name": {
+            "type": "string",
+            "title": "Directory Name"
+          },
+          "target": {
+            "type": "string",
+            "title": "Target"
+          },
+          "reserved": {
+            "type": "boolean",
+            "title": "Reserved"
+          },
+          "authority": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Authority"
+          },
+          "intent": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Intent"
+          },
+          "intent_sha256": {
+            "type": "string",
+            "title": "Intent Sha256"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "INTENDED",
+              "DIRECTORY_CREATED",
+              "REGISTERED",
+              "BLOCKED",
+              "RECOVERY_REQUIRED",
+              "CANCELLED"
+            ],
+            "title": "Status"
+          },
+          "child_identity": {
+            "anyOf": [
+              {
+                "additionalProperties": {
+                  "type": "integer"
+                },
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Child Identity"
+          },
+          "result": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Result"
+          },
+          "diagnostic": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Diagnostic"
+          },
+          "created_at": {
+            "type": "string",
+            "title": "Created At"
+          },
+          "updated_at": {
+            "type": "string",
+            "title": "Updated At"
+          },
+          "history": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "type": "array",
+            "title": "History"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "version",
+          "project_id",
+          "directory_name",
+          "target",
+          "reserved",
+          "authority",
+          "intent",
+          "intent_sha256",
+          "status",
+          "child_identity",
+          "result",
+          "diagnostic",
+          "created_at",
+          "updated_at"
+        ],
+        "title": "CreationOperationRead"
+      },
+      "CreationPreviewRead": {
+        "properties": {
+          "contract": {
+            "type": "string",
+            "title": "Contract"
+          },
+          "authority": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Authority"
+          },
+          "row": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Row"
+          },
+          "target": {
+            "type": "string",
+            "title": "Target"
+          },
+          "directory_name": {
+            "type": "string",
+            "title": "Directory Name"
+          },
+          "versions": {
+            "additionalProperties": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "type": "object",
+            "title": "Versions"
+          },
+          "profile": {
+            "type": "string",
+            "title": "Profile"
+          },
+          "profile_details": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Profile Details"
+          },
+          "agents": {
+            "$ref": "#/components/schemas/ProjectAgentsRead"
+          },
+          "composition": {
+            "$ref": "#/components/schemas/RegistryCompositionRead"
+          },
+          "trust_statement": {
+            "type": "string",
+            "title": "Trust Statement"
+          },
+          "permission_statement": {
+            "type": "string",
+            "title": "Permission Statement"
+          },
+          "preview_sha256": {
+            "type": "string",
+            "title": "Preview Sha256"
+          }
+        },
+        "type": "object",
+        "required": [
+          "contract",
+          "authority",
+          "row",
+          "target",
+          "directory_name",
+          "versions",
+          "profile",
+          "profile_details",
+          "agents",
+          "composition",
+          "trust_statement",
+          "permission_statement",
+          "preview_sha256"
+        ],
+        "title": "CreationPreviewRead"
+      },
+      "CreationResumeConfirmInput": {
+        "properties": {
+          "change": {
+            "$ref": "#/components/schemas/CreationResumeInput"
+          },
+          "preview_sha256": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$",
+            "title": "Preview Sha256"
+          },
+          "reason": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 2000
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reason"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "change",
+          "preview_sha256"
+        ],
+        "title": "CreationResumeConfirmInput"
+      },
+      "CreationResumeInput": {
+        "properties": {
+          "expected_version": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Expected Version"
+          },
+          "root_version": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Root Version"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "expected_version",
+          "root_version"
+        ],
+        "title": "CreationResumeInput"
+      },
+      "CreationResumePreviewRead": {
+        "properties": {
+          "operation_id": {
+            "type": "string",
+            "title": "Operation Id"
+          },
+          "expected_version": {
+            "type": "integer",
+            "title": "Expected Version"
+          },
+          "authority": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Authority"
+          },
+          "intent_sha256": {
+            "type": "string",
+            "title": "Intent Sha256"
+          },
+          "target": {
+            "type": "string",
+            "title": "Target"
+          },
+          "preview_sha256": {
+            "type": "string",
+            "title": "Preview Sha256"
+          }
+        },
+        "type": "object",
+        "required": [
+          "operation_id",
+          "expected_version",
+          "authority",
+          "intent_sha256",
+          "target",
+          "preview_sha256"
+        ],
+        "title": "CreationResumePreviewRead"
+      },
+      "CreationRootApplyInput": {
+        "properties": {
+          "change": {
+            "$ref": "#/components/schemas/CreationRootChangeInput"
+          },
+          "preview_sha256": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$",
+            "title": "Preview Sha256"
+          },
+          "confirm_path": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 4096
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Confirm Path"
+          },
+          "reason": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 2000
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reason"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "change",
+          "preview_sha256"
+        ],
+        "title": "CreationRootApplyInput"
+      },
+      "CreationRootChangeInput": {
+        "properties": {
+          "action": {
+            "type": "string",
+            "enum": [
+              "select",
+              "retire"
+            ],
+            "title": "Action"
+          },
+          "expected_version": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Expected Version"
+          },
+          "path": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 4096
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Path"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "action",
+          "expected_version"
+        ],
+        "title": "CreationRootChangeInput"
+      },
+      "CreationRootPreviewRead": {
+        "properties": {
+          "action": {
+            "type": "string",
+            "enum": [
+              "select",
+              "retire"
+            ],
+            "title": "Action"
+          },
+          "expected_version": {
+            "type": "integer",
+            "title": "Expected Version"
+          },
+          "root": {
+            "$ref": "#/components/schemas/CreationRootSnapshotRead"
+          },
+          "permission_statement": {
+            "type": "string",
+            "title": "Permission Statement"
+          },
+          "preview_sha256": {
+            "type": "string",
+            "title": "Preview Sha256"
+          },
+          "replayed": {
+            "type": "boolean",
+            "title": "Replayed",
+            "default": false
+          }
+        },
+        "type": "object",
+        "required": [
+          "action",
+          "expected_version",
+          "root",
+          "permission_statement",
+          "preview_sha256"
+        ],
+        "title": "CreationRootPreviewRead"
+      },
+      "CreationRootRead": {
+        "properties": {
+          "version": {
+            "type": "integer",
+            "title": "Version"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "ABSENT",
+              "ACTIVE",
+              "REVOKED"
+            ],
+            "title": "Status"
+          },
+          "path": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Path"
+          },
+          "identity": {
+            "anyOf": [
+              {
+                "additionalProperties": {
+                  "type": "integer"
+                },
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Identity"
+          },
+          "row_sha256": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Row Sha256"
+          },
+          "updated_at": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Updated At"
+          },
+          "available": {
+            "type": "boolean",
+            "title": "Available"
+          },
+          "diagnostic": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Diagnostic"
+          },
+          "bootstrap_enabled": {
+            "type": "boolean",
+            "title": "Bootstrap Enabled"
+          },
+          "permission_statement": {
+            "type": "string",
+            "title": "Permission Statement"
+          },
+          "history": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "type": "array",
+            "title": "History"
+          },
+          "operations": {
+            "items": {
+              "$ref": "#/components/schemas/CreationOperationRead"
+            },
+            "type": "array",
+            "title": "Operations"
+          }
+        },
+        "type": "object",
+        "required": [
+          "version",
+          "status",
+          "path",
+          "identity",
+          "available",
+          "diagnostic",
+          "bootstrap_enabled",
+          "permission_statement",
+          "history",
+          "operations"
+        ],
+        "title": "CreationRootRead"
+      },
+      "CreationRootSnapshotRead": {
+        "properties": {
+          "version": {
+            "type": "integer",
+            "title": "Version"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "ABSENT",
+              "ACTIVE",
+              "REVOKED"
+            ],
+            "title": "Status"
+          },
+          "path": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Path"
+          },
+          "identity": {
+            "anyOf": [
+              {
+                "additionalProperties": {
+                  "type": "integer"
+                },
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Identity"
+          },
+          "row_sha256": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Row Sha256"
+          },
+          "updated_at": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Updated At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "version",
+          "status",
+          "path",
+          "identity"
+        ],
+        "title": "CreationRootSnapshotRead"
       },
       "CycleDiffRead": {
         "properties": {
@@ -20542,6 +22176,17 @@
             "type": "string",
             "title": "Id"
           },
+          "creation_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Creation Id"
+          },
           "version": {
             "type": "integer",
             "title": "Version"
@@ -20644,6 +22289,17 @@
           "id": {
             "type": "string",
             "title": "Id"
+          },
+          "creation_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Creation Id"
           },
           "version": {
             "type": "integer",
@@ -21250,6 +22906,11 @@
           "available": {
             "type": "boolean",
             "title": "Available"
+          },
+          "creation_available": {
+            "type": "boolean",
+            "title": "Creation Available",
+            "default": false
           },
           "format": {
             "anyOf": [

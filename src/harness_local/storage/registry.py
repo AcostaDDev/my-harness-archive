@@ -26,7 +26,8 @@ class RegistryConflict(Conflict):
 def view(row):
     return {'id': row.id, 'version': row.version, 'status': row.status, 'root': row.root,
             'composition': row.composition, 'profile': row.profile, 'row': row.row, 'row_sha256': row.row_sha256,
-            'trust': row.trust, 'created_at': row.created_at, 'updated_at': row.updated_at}
+            'trust': row.trust, 'creation_id': row.creation_id,
+            'created_at': row.created_at, 'updated_at': row.updated_at}
 
 
 def event_view(row):
@@ -85,6 +86,8 @@ class ProjectRegistryRepository:
                 raise RegistryConflict('stale_version', 'El registro cambió desde la vista previa; vuelve a revisarlo.')
             now = self.managed._now()
             if action == 'register':
+                from harness_local.storage.project_creation import CreationRepository
+                CreationRepository.conflicts(session, project_id, row['root'])
                 if current is not None:
                     raise RegistryConflict('duplicate_id', f'El id {project_id} ya está registrado.')
                 if session.scalar(select(Row.id).where(Row.root == row['root'], Row.status == 'ACTIVE')):

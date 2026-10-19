@@ -126,6 +126,7 @@ tarea se leen solo las decisiones que cita; este índice sirve para buscar prece
 | [D114](#d114--cierre-documental-manual-de-p008) | Cierre documental manual de P008 | P008 |
 | [D115](#d115--p009-django-desde-cero-carpeta-de-proyectos-y-agentes-por-proyecto) | P009: Django desde cero, carpeta de proyectos y agentes por proyecto | P009 |
 | [D116](#d116--p009-t001-autoridad-de-creación-presets-por-proyecto-y-preparación-separada) | P009-T001: autoridad de creación, presets por proyecto y preparación separada | P009 |
+| [D117](#d117--p009-t002-carpeta-persistente-y-creación-con-intención-previa) | P009-T002: carpeta persistente y creación con intención previa | P009 |
 
 ## D001 — Alcance local y arquitectura base
 
@@ -3683,3 +3684,40 @@ Concreta D115 tras contrastar D049/D051/D052/D078/D095 y los consumidores del re
 
 T004 concretará versiones/lock/instalador; T006 recogerá selecciones y consentimiento real. Esta decisión no fija
 modelos/esfuerzos, rutas operativas, permisos de red/instalación o llamadas de proveedor. Sin ejecución del piloto.
+
+
+## D117 — P009-T002: carpeta persistente y creación con intención previa
+
+Estado: implementado el 2026-10-19, verificación offline y QA con respuestas sintéticas. Fase: P009.
+[Entrega y límites](phase/P009-T002_CARPETA_PROYECTOS.md). Aplica D116 §§2–3/6–9; conserva D078/D095.
+
+- Raíz UI singleton inicialmente ausente, revisiones y eventos persistentes; selección/retirada por preview,
+  CAS, clave idempotente y ruta canónica exacta. Sin HOME/cwd/raíz predeterminada, exploración de disco, cambios
+  de TOML, chmod o confianza global. Disponible con configuración registrable v3/v4 y `roots = []`; el techo
+  `bootstrap_enabled` sigue vigente. Las raíces TOML conservan únicamente el alta existente.
+- Creación síncrona de efectos cortos: intención y reservas antes de mkdir, fd del padre sin seguir enlaces,
+  identidad y fsync antes del checkpoint; alta/evento/procedencia/resultado en una transacción. Lock reentrante
+  compartido con registro y transacciones de escritura SQLite serializan contra la retirada, también entre
+  instancias. Conflictos por ancestros/identidades físicos incluyen alias de mayúsculas y reservas sin carpeta,
+  sin confiar solo en la comparación textual de rutas. No añade jobs, ejecutores ni Git a la creación. Tras REGISTERED enlaza a la definición existente.
+- Las intenciones `project-creation-1` congelan autoridad, composición completa por hashes, versiones, perfil,
+  política, roles efectivos y confianza exacta. Liga además el hash del perfil completo, también en v3,
+  sin cambiar los hashes históricos del registro. La preview valida comandos/contexto sobre el padre existente
+  y calcula hashes para el destino futuro; devuelve solo datos. La composición operativa sigue exigiendo directorio existente.
+  Formatos/hashes previos, CLI, commands, codec y layout se conservan.
+- Una carpeta sin identidad persistida queda incierta; reiniciar solo clasifica, nunca adopta por vacío,
+  borra ni reintenta. Retirada bloquea efectos pendientes y conserva hijos registrados. Reanudar exige preview
+  nueva, misma identidad, hijo vacío acreditado y composición original vigente; añade autoridad/evento sin
+  reescribir la intención. Sin prueba de propiedad requiere resolución externa. Cancelar conserva bytes y
+  reserva salvo ausencia acreditada; tras resolución externa, otra comprobación versionada de cancelación
+  puede liberar la reserva sin reabrir efectos. El alta D078 tampoco puede adoptar una reserva incierta.
+- Migración aditiva `0021_project_creation`: cuatro tablas y `registered_projects.creation_id` nullable con
+  FK/índice único, fuera del JSON/hash de fila v3/v4. ALTER ADD COLUMN evita reconstruir la tabla referenciada
+  por auditoría previa con foreign_keys activas. Downgrade rechaza pérdida de autoridad/historia nueva.
+  Backup incluye estas tablas; restauración permanece de consulta.
+- UI «Nuevo proyecto» con autoridades diferenciadas, destino absoluto, confianza del checkout, historial,
+  reanudación y cancelación. Conserva sobre/clave de confirmación en sesión ante pérdida de respuesta o 401;
+  tras recargar el reenvío es explícito. Entradas estrictas, sesión/CSRF/origen y OpenAPI/tipos actualizados.
+
+No implementa presets v5, scaffold/entorno Django ni receta, ni ejecuta proveedores/piloto. T003 es la siguiente
+entrega; T006 conserva la puerta de consentimiento real. Fixtures y QA no conceden una carpeta real al servicio.

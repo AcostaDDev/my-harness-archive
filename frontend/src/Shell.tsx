@@ -97,7 +97,7 @@ export function Shell({ route, children }: { route: Route; children: ReactNode }
       <div className="nav-group">
         <ul>
           <li><Link to={{ name: "home" }} current={route.name === "home"}>Proyectos</Link></li>
-          <li><Link to={{ name: "project-new" }} current={route.name === "project-new"}>Registrar proyecto</Link></li>
+          <li><Link to={{ name: "project-new" }} current={route.name === "project-new"}>Nuevo proyecto</Link></li>
           <li><Link to={{ name: "stats" }} current={route.name === "stats"}>Estadísticas</Link></li>
           <li><Link to={{ name: "legacy" }} current={route.name === "legacy"}>Importados</Link></li>
         </ul>

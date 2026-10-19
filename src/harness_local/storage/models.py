@@ -1,4 +1,4 @@
-from sqlalchemy import Boolean, Float, Index, JSON, ForeignKey, ForeignKeyConstraint, Integer, String, Text, UniqueConstraint, text
+from sqlalchemy import Boolean, CheckConstraint, Float, Index, JSON, ForeignKey, ForeignKeyConstraint, Integer, String, Text, UniqueConstraint, text
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 
 
@@ -589,8 +589,10 @@ class RegisteredProjectRow(Base):
     Solo datos no ejecutables: la composición se nombra y la resuelve el TOML del operador."""
     __tablename__ = 'registered_projects'
     __table_args__ = (Index('uq_registered_projects_active_root', 'root', unique=True,
-                            sqlite_where=text("status = 'ACTIVE'")),)
+                            sqlite_where=text("status = 'ACTIVE'")),
+                      Index('uq_registered_creation', 'creation_id', unique=True))
     id: Mapped[str] = mapped_column(String(64), primary_key=True)
+    creation_id: Mapped[str | None] = mapped_column(ForeignKey('project_creation_operations.id'), nullable=True)
     version: Mapped[int] = mapped_column(Integer)
     status: Mapped[str] = mapped_column(String(20))
     root: Mapped[str] = mapped_column(String)
@@ -619,3 +621,60 @@ class RegisteredProjectEventRow(Base):
     actor: Mapped[dict] = mapped_column(JSON)
     reason: Mapped[str | None] = mapped_column(Text, nullable=True)
     recorded_at: Mapped[str] = mapped_column(String(40))
+
+
+class ProjectCreationRootRow(Base):
+    __tablename__ = 'project_creation_root'
+    __table_args__ = (CheckConstraint('id = 1', name='ck_creation_root_singleton'),)
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    version: Mapped[int] = mapped_column(Integer)
+    status: Mapped[str] = mapped_column(String(20))
+    path: Mapped[str | None] = mapped_column(String, nullable=True)
+    identity: Mapped[dict | None] = mapped_column(JSON, nullable=True)
+    row_sha256: Mapped[str] = mapped_column(String(64))
+    updated_at: Mapped[str] = mapped_column(String(40))
+
+
+class ProjectCreationRootEventRow(Base):
+    __tablename__ = 'project_creation_root_events'
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    version: Mapped[int] = mapped_column(Integer, unique=True)
+    idempotency_key: Mapped[str] = mapped_column(String(200), unique=True)
+    request_sha256: Mapped[str] = mapped_column(String(64))
+    payload: Mapped[dict] = mapped_column(JSON)
+
+
+class ProjectCreationOperationRow(Base):
+    __tablename__ = 'project_creation_operations'
+    __table_args__ = (
+        Index('uq_creation_reserved_id', 'project_id', unique=True, sqlite_where=text('reserved = 1')),
+        Index('uq_creation_reserved_target', 'target', unique=True, sqlite_where=text('reserved = 1')),
+    )
+    id: Mapped[str] = mapped_column(String(36), primary_key=True)
+    idempotency_key: Mapped[str] = mapped_column(String(200), unique=True)
+    request_sha256: Mapped[str] = mapped_column(String(64))
+    version: Mapped[int] = mapped_column(Integer)
+    project_id: Mapped[str] = mapped_column(String(64))
+    directory_name: Mapped[str] = mapped_column(String(64))
+    target: Mapped[str] = mapped_column(String)
+    reserved: Mapped[bool] = mapped_column(Boolean)
+    authority: Mapped[dict] = mapped_column(JSON)
+    intent: Mapped[dict] = mapped_column(JSON)
+    intent_sha256: Mapped[str] = mapped_column(String(64))
+    status: Mapped[str] = mapped_column(String(24))
+    child_identity: Mapped[dict | None] = mapped_column(JSON, nullable=True)
+    result: Mapped[dict | None] = mapped_column(JSON, nullable=True)
+    diagnostic: Mapped[str | None] = mapped_column(Text, nullable=True)
+    created_at: Mapped[str] = mapped_column(String(40))
+    updated_at: Mapped[str] = mapped_column(String(40))
+
+
+class ProjectCreationOperationEventRow(Base):
+    __tablename__ = 'project_creation_operation_events'
+    __table_args__ = (UniqueConstraint('operation_id', 'version'),)
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    operation_id: Mapped[str] = mapped_column(ForeignKey('project_creation_operations.id'))
+    version: Mapped[int] = mapped_column(Integer)
+    idempotency_key: Mapped[str | None] = mapped_column(String(200), unique=True, nullable=True)
+    request_sha256: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    payload: Mapped[dict] = mapped_column(JSON)

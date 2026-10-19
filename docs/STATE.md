@@ -12,7 +12,7 @@ salvo donde se indica. Detalle por fase en `docs/archive/phase-NNN/SUMMARY.md`.
   revisor, bucle ejecución → validación → revisión con límite de correcciones, aceptación ligada al contenido exacto y
   commit determinista conciliable. Codec de historial en formato 7 (lee 1–6).
 - **Persistencia y recuperación** ([P003](archive/phase-003/SUMMARY.md), [P006](archive/phase-006/SUMMARY.md)): SQLite
-  `0020_project_imports` (35 tablas, [diagrama](DDBB-DIAGRAM.md)); cola idempotente, lease, lock por checkout,
+  `0021_project_creation` (39 tablas, [diagrama](DDBB-DIAGRAM.md)); cola idempotente, lease, lock por checkout,
   cuarentena por versión y confirmación explícita del escritor detenido; backup y restauración de consulta; retención
   explícita de streams.
 - **Agentes** ([P007](archive/phase-007/SUMMARY.md)): revisor y ejecutor Codex o Claude en cualquier combinación
@@ -49,7 +49,7 @@ salvo donde se indica. Detalle por fase en `docs/archive/phase-NNN/SUMMARY.md`.
 
 ## Fase activa — P009 Proyecto Django desde cero y piloto con cuatro combinaciones de agentes
 
-**Estado:** P009-T001 completada como diseño el 2026-10-19; T002–T012 pendientes, sin implementación ni piloto.
+**Estado:** T001 (diseño) y T002 (carpeta/creación) completadas el 2026-10-19; T003–T012 pendientes, sin piloto.
 Objetivo y criterios en [ROADMAP](ROADMAP.md#p009--proyecto-django-desde-cero-y-piloto-con-cuatro-combinaciones-de-agentes),
 tareas en [NEXT_STEPS](NEXT_STEPS.md) y diseño en el [plan](phase/P009_PLAN_DJANGO.md).
 Decisión: [D115](DECISIONS.md#d115--p009-django-desde-cero-carpeta-de-proyectos-y-agentes-por-proyecto).
@@ -59,20 +59,24 @@ Contrato de T001: [diseño implementable](phase/P009-T001_CONTRATO_CREACION.md),
 - Selección explícita en la UI de «Carpeta de proyectos»: concede al servicio la creación de nuevos proyectos
   hijos y queda guardada. La IA no propone ni descubre la ubicación. `$HOME/Documents/projects/` es
   el ejemplo del usuario, no un valor por defecto ni una autorización ejecutada en esta tarea.
-- Creación desde carpeta hija inexistente, documentación D088 y receta Django confirmada: esqueleto,
+- Pendiente de T004: receta Django confirmada tras la definición D088 existente: esqueleto,
   dependencias, entorno y validaciones. El piloto será una lista de tareas con SQLite y plantillas Django.
-- Ajustes por proyecto para elegir proveedores y modelo/esfuerzo del revisor. El revisor elige modelo y
+- Pendiente de T003: ajustes por proyecto para elegir proveedores y modelo/esfuerzo del revisor. El revisor elige modelo y
   esfuerzo del ejecutor. Cuatro tareas sucesivas en el mismo proyecto: Codex→Codex, Codex→Claude,
   Claude→Claude y Claude→Codex, siempre en orden revisor→ejecutor.
-- Las raíces hoy dependen del TOML y el alta exige una carpeta existente; los proveedores hoy son globales
-  y se muestran en solo lectura. P009 planifica cubrir esas carencias; no las presenta como implementadas.
+- T002 implementa selección/retirada UI persistente y auditada, creación exclusiva de hijos nuevos, registro
+  atómico con procedencia y enlace a definición existente (D117). Preview/CAS/claves, fd sin enlaces, reservas
+  y recuperación conservadora; no borra carpetas inciertas. Compatible con v3/v4 y roots TOML vacías.
+  Los proveedores siguen globales y en consulta; presets, receta y operación Django permanecen pendientes.
 - T001 separa el permiso UI para hijos nuevos del alta existente bajo raíces TOML; fija retirada y recuperación
   por intención/identidad. Diseña presets por proyecto en v5 y receta posterior al commit documental con enlaces
   diferidos al entorno, conservando protección de configuración e historiales. Esquema/API y fronteras documentados.
 
 P008 permanece cerrada ([archivo](archive/phase-008/SUMMARY.md), D114). Este repositorio sigue sin registrarse
-ni ejecutarse con el harness. No se crean carpetas externas, entornos ni proyectos durante la planificación.
+ni ejecutarse con el harness. T002 solo usa carpetas/SQLite temporales y QA con respuestas sintéticas;
+sin carpetas reales del usuario ni proveedores.
 
-**Siguiente:** P009-T002, elegir carpeta de proyectos y crear hijos desde la UI según D116. T006 preparará la
+**Siguiente:** P009-T003, configurar revisor y ejecutor por proyecto según D116.
+Entrega de T002 y checks en [registro](phase/P009-T002_CARPETA_PROYECTOS.md). T006 preparará la
 propuesta de operación real con las selecciones y límites pendientes; redactar la fase no autoriza invocar proveedores, instalar dependencias,
 consumir red o ejecutar el piloto. Los consentimientos anteriores siguen agotados.

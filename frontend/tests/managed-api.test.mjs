@@ -142,3 +142,34 @@ test('a definitive rejection forgets the creation key', async () => {
   await createOnce('/projects/demo/planning', body);
   assert.notEqual(keys[0], keys[1]);
 });
+
+test('folder/project confirmation survives reload and a lost acknowledgement with its exact envelope', async () => {
+  const { confirmOnce, readConfirmation } = await import('../src/managed-api.ts');
+  const path = '/project-creations/confirm';
+  const body = { change: { project_id: 'synthetic', directory_name: 'synthetic', root_version: 4 },
+    preview_sha256: 'a'.repeat(64), trust_root: '/synthetic/parent/synthetic' };
+  const calls = [];
+  globalThis.fetch = async (url, options) => {
+    calls.push({ url, options });
+    if (calls.length === 1) throw new TypeError('Lost reply');
+    return Response.json({ id: 'operation', status: 'REGISTERED' });
+  };
+  await assert.rejects(confirmOnce(path, body));
+  const pending = readConfirmation();
+  assert.deepEqual(pending.body, body);
+  await assert.rejects(confirmOnce(path, { ...body, trust_root: '/another' }), /pendiente/);
+  assert.equal(calls.length, 1);
+  assert.deepEqual(await confirmOnce(pending.path, pending.body), { id: 'operation', status: 'REGISTERED' });
+  assert.deepEqual(calls[0], calls[1]);
+  assert.equal(readConfirmation(), undefined);
+});
+
+test('confirmation preserves expired-session envelope and forgets a definitive conflict', async () => {
+  const { confirmOnce, readConfirmation } = await import('../src/managed-api.ts');
+  globalThis.fetch = async () => Response.json({ detail: { code: 'session_required' } }, { status: 401 });
+  await assert.rejects(confirmOnce('/project-creation-root/apply', { preview_sha256: 'x' }));
+  const pending = readConfirmation();
+  globalThis.fetch = async () => Response.json({ detail: { code: 'stale_version' } }, { status: 409 });
+  await assert.rejects(confirmOnce(pending.path, pending.body));
+  assert.equal(readConfirmation(), undefined);
+});

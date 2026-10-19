@@ -114,7 +114,7 @@ export function trail(route: Route): { label: string; to: Route }[] {
   const items: { label: string; to: Route }[] = [{ label: "Proyectos", to: { name: "home" } }];
   if (route.name === "legacy") items.push({ label: "Importados", to: route });
   if (route.name === "stats") items.push({ label: "Estadísticas", to: route });
-  if (route.name === "project-new") items.push({ label: "Registrar proyecto", to: route });
+  if (route.name === "project-new") items.push({ label: "Nuevo proyecto", to: route });
   if (route.name === "run-short") items.push({ label: route.run, to: route });
   if (route.name === "not-found") items.push({ label: "Página no encontrada", to: route });
   if (!("project" in route)) return items;

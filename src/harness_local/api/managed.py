@@ -132,6 +132,9 @@ def managed_router(runtime: ManagedRuntime):
                 return operation(*args, **kwargs)
             except RegistryError as error:  # antes que ValueError en `call`: códigos propios del registro
                 raise problem(error.status, error.code, str(error)) from error
+            except OSError as error:
+                raise problem(409, 'target_identity_changed',
+                              'La carpeta dejó de estar accesible o cambió de identidad; revisa la operación.') from error
         return call(guarded)
 
     def change(body: RegistryChangeInput) -> dict:
@@ -1081,5 +1084,57 @@ def managed_router(runtime: ManagedRuntime):
                    {'conversation_id': conversation_of(item, conversation_id)}, frozen_versions(item),
                    definition_writer(item), key=idempotency_key, **body.model_dump())
         return queued(job)
+
+    # --- autoridad UI de creación de hijos nuevos (P009-T002 / D116) -------------------
+    from harness_local.api.schemas import (
+        CreationRootChangeInput, CreationRootApplyInput, CreationRootRead, CreationRootPreviewRead,
+        CreationInput, CreationConfirmInput, CreationPreviewRead, CreationOperationRead,
+        CreationResumeInput, CreationResumePreviewRead, CreationResumeConfirmInput, CreationCancelInput,
+    )
+
+    @router.get('/project-creation-root', response_model=CreationRootRead, operation_id='managed_creation_root')
+    def creation_root():
+        runtime.ready()
+        return registry(runtime.creation.read_root)
+
+    @router.post('/project-creation-root/preview', response_model=CreationRootPreviewRead,
+                 operation_id='managed_creation_root_preview')
+    def creation_root_preview(body: CreationRootChangeInput):
+        return registry(runtime.creation.root_preview, body.model_dump(exclude_none=True))
+
+    @router.post('/project-creation-root/apply', response_model=CreationRootPreviewRead,
+                 operation_id='managed_creation_root_apply')
+    def creation_root_apply(body: CreationRootApplyInput, idempotency_key: IdempotencyKey):
+        return registry(runtime.creation.root_apply, body.model_dump(exclude_none=True), idempotency_key)
+
+    @router.post('/project-creations/preview', response_model=CreationPreviewRead,
+                 operation_id='managed_creation_preview')
+    def creation_preview(body: CreationInput):
+        return registry(runtime.creation.preview, body.model_dump(exclude_none=True))
+
+    @router.post('/project-creations/confirm', response_model=CreationOperationRead,
+                 operation_id='managed_creation_confirm')
+    def creation_confirm(body: CreationConfirmInput, idempotency_key: IdempotencyKey):
+        return registry(runtime.creation.confirm, body.model_dump(exclude_none=True), idempotency_key)
+
+    @router.get('/project-creations/{operation_id}', response_model=CreationOperationRead,
+                operation_id='managed_creation_operation')
+    def creation_operation(operation_id: str):
+        return registry(runtime.creation.repository.read, operation_id)
+
+    @router.post('/project-creations/{operation_id}/resume/preview', response_model=CreationResumePreviewRead,
+                 operation_id='managed_creation_resume_preview')
+    def creation_resume_preview(operation_id: str, body: CreationResumeInput):
+        return registry(runtime.creation.resume_preview, operation_id, body.model_dump(exclude_none=True))
+
+    @router.post('/project-creations/{operation_id}/resume/confirm', response_model=CreationOperationRead,
+                 operation_id='managed_creation_resume_confirm')
+    def creation_resume_confirm(operation_id: str, body: CreationResumeConfirmInput, idempotency_key: IdempotencyKey):
+        return registry(runtime.creation.resume, operation_id, body.model_dump(exclude_none=True), idempotency_key)
+
+    @router.post('/project-creations/{operation_id}/cancel', response_model=CreationOperationRead,
+                 operation_id='managed_creation_cancel')
+    def creation_cancel(operation_id: str, body: CreationCancelInput, idempotency_key: IdempotencyKey):
+        return registry(runtime.creation.cancel, operation_id, body.model_dump(exclude_none=True), idempotency_key)
 
     return router

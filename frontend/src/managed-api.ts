@@ -66,3 +66,26 @@ export async function createOnce<T>(path: string, body: unknown): Promise<T> {
     throw e;
   }
 }
+
+// Confirmaciones sin job: conservar el sobre completo al perder la respuesta, también al recargar.
+export type ConfirmationRequest = { path: string; body: unknown; key: string };
+const confirmationKey = "harness-confirmation-v1";
+export function readConfirmation(): ConfirmationRequest | undefined {
+  try { return JSON.parse(sessionStorage.getItem(confirmationKey) ?? "null") ?? undefined; } catch { return undefined; }
+}
+export async function confirmOnce<T>(path: string, body: unknown): Promise<T> {
+  const previous = readConfirmation();
+  if (previous && (previous.path !== path || JSON.stringify(previous.body) !== JSON.stringify(body)))
+    throw new Error("Hay una confirmación pendiente de respuesta. Reenvíala antes de confirmar otro cambio.");
+  const request = previous ?? { path, body, key: crypto.randomUUID() };
+  sessionStorage.setItem(confirmationKey, JSON.stringify(request));
+  try {
+    const result = await managed<T>(path, body, request.key);
+    sessionStorage.removeItem(confirmationKey);
+    return result;
+  } catch (error) {
+    if (error instanceof ManagedError && error.status >= 400 && error.status < 500 && error.status !== 401)
+      sessionStorage.removeItem(confirmationKey);
+    throw error;
+  }
+}
