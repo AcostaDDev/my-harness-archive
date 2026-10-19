@@ -232,3 +232,23 @@ Uso real (D051): construir y verificar el wheel (`scripts/build_distribution.py 
 - Dos avisos *low* de KaTeX en Mermaid 11.
 - La estructura de D088 es obligatoria desde P008-T002; rutas y paridad en T003, cierre y archivo unificados en
   T004, prompts/definición en T005, API/UI en T006 e inyección de AGENTS en T007 (D089–D094).
+
+## 11. Ampliación planificada — P009
+
+Diseño pendiente de implementación ([D115](DECISIONS.md#d115--p009-django-desde-cero-carpeta-de-proyectos-y-agentes-por-proyecto)).
+Hoy el registro exige carpeta existente bajo `[registration].roots`, y los proveedores se fijan en los agentes
+globales del TOML; Settings los muestra en solo lectura. P009 ampliará ambos contratos de forma explícita:
+
+- Selección de carpeta padre desde UI, guardada como autoridad operativa local auditada; creación idempotente
+  de nuevos hijos con intención previa. No se edita el TOML ni la configuración global; convivencia con sus
+  raíces, revocación, esquema y contratos se concretan en T001. Los agentes solo reciben la raíz del hijo.
+- Presets de roles del servicio con selección por proyecto; el usuario fija modelo/esfuerzo del revisor y este
+  decide los del ejecutor. Cambios entre tareas, versiones congeladas e historiales anteriores conservados.
+  El navegador no suministra ejecutables, entornos o credenciales.
+- Receta técnica Django confirmada tras el commit documental: entorno, scaffold, dependencias fijadas y checks.
+  Autoridad separada para crear archivos protegidos, sin relajar el contrato documental ni el ejecutor normal.
+  Django será una herramienta del proyecto/piloto, no una dependencia del runtime del harness.
+
+No hay tablas, migraciones, endpoints ni versiones nuevas implementadas en esta planificación. T001 documentará
+el diseño y T002–T004 mantendrán la paridad de esquema/API/tipos/diagramas al construirlo. Flujo futuro en
+[project-creation](flows/project-creation.md); plan y matriz en [docs/phase](phase/P009_PLAN_DJANGO.md).

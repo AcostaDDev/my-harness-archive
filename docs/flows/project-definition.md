@@ -5,6 +5,10 @@ creación: la v1 (formulario H4.2, plantilla `project-foundation` y descubrimien
 diagnóstico en el motor (D089); sus endpoints y Bootstrap.tsx se retiraron de API/UI en T006 (D093). El agente nunca
 escribe: el harness aplica borradores confirmados con CAS y el commit raíz sigue el bootstrap D037.
 
+P009 planifica la elección de carpeta padre y la preparación Django posterior al commit documental en el
+[flujo de creación desde cero](project-creation.md). Esa ampliación aún no está implementada; el siguiente
+diagrama sigue describiendo la definición documental existente.
+
 ```mermaid
 sequenceDiagram
     autonumber

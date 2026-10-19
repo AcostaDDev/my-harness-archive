@@ -1,7 +1,8 @@
 # Especificación — Harness Local
 
 Requisitos funcionales y reglas de negocio vigentes. Consolida la especificación inicial
-([archivo](archive/phase-000/01-especificacion-harness-local.md)) con lo decidido en D001–D088. La columna «Estado» de
+([archivo](archive/phase-000/01-especificacion-harness-local.md)) con las decisiones posteriores y la ampliación
+planificada de P009 (D115). La columna «Estado» de
 cada requisito dice si está implementado (fase en la que se entregó) o pendiente; el detalle técnico está en
 [ARCHITECTURE](ARCHITECTURE.md) y el avance, en [ROADMAP](ROADMAP.md) y [STATE](STATE.md).
 
@@ -71,6 +72,9 @@ run y, cuando procede, al intento exacto.
 | F17 | Distribución local | Wheel con UI y migraciones, `init-db`, `serve`, sesión local | Implementado (P006) |
 | F18 | Perfiles declarativos | Perfil de stack (preparación, tests, lint, tipos) declarado en el TOML local y confirmado por el usuario, incluido Python/Django (`pytest`, `ruff`, `mypy`) | Implementado (P008-T008, D095); ejemplo Python/Django pendiente de confirmación sobre el proyecto del usuario |
 | F19 | Instrucciones del proyecto para los agentes | `AGENTS.md` incluido en el contexto congelado de cada intento | Implementada (P008-T007, D094) |
+| F20 | Elegir carpeta de proyectos | Raíz elegida explícitamente en UI y persistida; concede al servicio crear nuevos hijos sin que la IA decida su ubicación | Planificado (P009-T001/T002, D115) |
+| F21 | Agentes configurables por proyecto | Elegir proveedores y modelo/esfuerzo del revisor en UI; selección concreta del ejecutor a cargo del revisor | Planificado (P009-T001/T003, D115); hoy los proveedores son globales y se consultan en solo lectura |
+| F22 | Preparar Django desde cero | Hijo nuevo, documentos D088, scaffold, entorno/dependencias y validaciones mediante receta confirmada | Planificado (P009-T004, D115); la creación actual de F02 es documental |
 
 Modos por checkout: **observación** (indexa un harness anterior) y **gestionado** (el motor nuevo controla). Nunca
 escriben dos motores sobre el mismo checkout.
@@ -233,3 +237,21 @@ Multiusuario, nube, ejecución paralela de escritores en un proyecto, App Server
 compatibilidad y autenticación, `project.yaml` portable, edición del TOML desde la UI, aislamiento físico del sistema
 operativo y publicación del paquete. Cualquier uso real de proveedores requiere una propuesta y un consentimiento
 específicos del usuario.
+
+## 12. Ampliación planificada — P009
+
+D115 añade F20–F22 para un piloto Django desde cero; todavía no están implementados. La persona elige la
+carpeta de proyectos y el nombre del hijo desde la UI; la IA no descubre ni propone dónde crear el checkout.
+La elección guardada concede al servicio crear hijos en esa raíz, sin repetir ese permiso por proyecto;
+no entrega la carpeta padre a los agentes ni amplía confianza en repositorios existentes. No se sobrescribe
+un destino existente ni se modifican permisos del sistema operativo.
+
+La receta Django prepara scaffold, entorno y dependencias mediante un plan confirmado y recuperable, después
+del bootstrap documental. Red/instalación y creación de archivos protegidos tienen alcance propio; no se
+desprotegen para tareas normales. La UI no edita el TOML, ejecutables, credenciales o configuración global.
+
+Los roles podrán configurarse por proyecto desde presets del servicio. El usuario fija proveedor/modelo/
+esfuerzo del revisor y proveedor/catálogo del ejecutor; el revisor decide modelo/esfuerzo concretos del ejecutor.
+El piloto usa planificación por agente y cuatro tareas del mismo Django: Codex→Codex, Codex→Claude,
+Claude→Claude y Claude→Codex (revisor→ejecutor), con intentos previos conservados tras cada cambio.
+Plan, alcance y puerta de operación real en [NEXT_STEPS](NEXT_STEPS.md) y [docs/phase](phase/P009_PLAN_DJANGO.md).

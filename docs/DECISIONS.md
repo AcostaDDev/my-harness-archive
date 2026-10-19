@@ -124,6 +124,7 @@ tarea se leen solo las decisiones que cita; este índice sirve para buscar prece
 | [D112](#d112--p008-t020-escritor-de-importaciones-con-objetos-locales) | P008-T020: escritor de importaciones con objetos locales | P008 |
 | [D113](#d113--quinta-revisión-de-salida-de-p008) | Quinta revisión de salida de P008 | P008 |
 | [D114](#d114--cierre-documental-manual-de-p008) | Cierre documental manual de P008 | P008 |
+| [D115](#d115--p009-django-desde-cero-carpeta-de-proyectos-y-agentes-por-proyecto) | P009: Django desde cero, carpeta de proyectos y agentes por proyecto | P009 |
 
 ## D001 — Alcance local y arquitectura base
 
@@ -3602,3 +3603,38 @@ Estado: cerrada y archivada el 2026-10-19 por la continuación solicitada por el
 - La próxima prioridad corresponde al usuario; las candidatas y límites quedan en ROADMAP. Se mantienen
   las restricciones de desarrollo manual y los consentimientos agotados de proveedores/smokes. Sin push,
   publicación, cambios de configuración global, esquema, API o código del producto.
+
+## D115 — P009: Django desde cero, carpeta de proyectos y agentes por proyecto
+
+Estado: fase planificada el 2026-10-19 por petición del usuario; pendiente de implementación y piloto. Fase: P009.
+[Plan](phase/P009_PLAN_DJANGO.md) y [tareas](NEXT_STEPS.md). Amplía D049/D078/D082; conserva la asignación de D052.
+
+- Nueva sección de UI «Elegir carpeta de proyectos». La elección explícita del usuario concede al servicio la
+  creación de proyectos hijos en esa raíz y se conserva entre reinicios; no la elige la IA, ni se deduce de HOME,
+  del cwd, de otros proyectos o de un prompt. `$HOME/Documents/projects/` es el ejemplo del usuario;
+  cada instalación puede elegir otra ubicación. La aplicación no modifica permisos del sistema operativo.
+- Ese permiso de carpeta cubre nuevas creaciones dentro de su alcance, sin repetirlo para cada hijo. El usuario
+  indica el nombre y ve el destino exacto antes de crear. No autoriza modificar proyectos hermanos, sobrescribir
+  destinos, instalar dependencias, usar red o llamar proveedores fuera de la operación confirmada. El ejecutor
+  solo recibe la raíz del proyecto hijo. La elección no implica confiar en repositorios ya existentes.
+- La UI guardará la elección como configuración operativa local auditada, sin editar el TOML ni la configuración
+  global del usuario. T001 concretará persistencia, contratos, convivencia con las raíces explícitas del TOML,
+  revocación y recuperación; las autoridades antiguas no se amplían ni sustituyen silenciosamente.
+- Creación desde cero mediante carpeta hija nueva, definición/documentos D088 y receta técnica Django confirmada.
+  Se evita exigir un scaffold o entorno manual, y se conserva el bootstrap documental existente. Las operaciones
+  de instalación y creación de archivos protegidos tienen alcance propio; no se abren al ejecutor de tareas.
+- Proveedores seleccionables por proyecto desde presets autorizados del servicio, también al cambiar entre tareas.
+  El usuario fija proveedor/modelo/esfuerzo del revisor y proveedor/catálogo admisible del ejecutor. El revisor
+  elige modelo y esfuerzo concretos del ejecutor por tarea/revisión, con motivo. Se usa planificación por agente.
+  El servidor sigue fijando ejecutables, entornos, credenciales y versiones admitidas; no los suministra el cliente.
+- Piloto en un único proyecto Django pequeño: lista de tareas, SQLite y plantillas. Cuatro tareas incrementales
+  COMMITTED, en orden revisor→ejecutor: Codex→Codex, Codex→Claude, Claude→Claude y Claude→Codex. Los cambios de
+  selección son por proyecto, entre tareas terminadas; no alteran intentos anteriores ni jobs en curso.
+- P009-T001–T005 preparan producto y ensayo offline; T006 fija ruta/nombre, modelos/esfuerzos del revisor,
+  catálogos del ejecutor, comandos, versiones y límites de la operación real. T007–T012 ejecutarán el piloto
+  solo tras ese consentimiento específico. La petición actual autoriza redactar la fase, no ejecutar proveedores,
+  instalaciones, red, servicios o el harness sobre este repositorio. No cambia ningún archivo fuera del checkout.
+
+Todo lo anterior está planificado. No se cambia en esta tarea código, esquema, configuración real, contratos o
+versiones congeladas. Los modelos de datos y los flujos vigentes conservan sus diagramas; el flujo futuro se
+identifica expresamente como diseño pendiente. P008 y su archivo permanecen intactos.

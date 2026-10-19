@@ -46,16 +46,28 @@ salvo donde se indica. Detalle por fase en `docs/archive/phase-NNN/SUMMARY.md`.
   operativo; validaciones sin hora; historial del run decodificado completo en cada lectura; `package.json` de un
   `typescript-web` nuevo; dos avisos *low* de KaTeX; perfil Python/Django pendiente de confirmar sobre un proyecto real.
 
-## Sin fase activa
 
-P001–P008 completadas. P008 cerrada y archivada el 2026-10-19 por la continuación solicitada por el usuario
-([D114](DECISIONS.md#d114--cierre-documental-manual-de-p008), [resumen](archive/phase-008/SUMMARY.md),
-[revisión](archive/phase-008/REVIEW.md)). Sus veinte tareas y siete criterios de salida están cumplidos offline.
+## Fase activa — P009 Proyecto Django desde cero y piloto con cuatro combinaciones de agentes
 
-Archivo por bytes de STATE, NEXT_STEPS y los 33 artefactos de trabajo, acreditado en el
-[manifiesto](archive/phase-008/MANIFEST.json). `docs/phase/` queda sin artefactos. Cierre documental manual: este
-repositorio sigue sin registrarse ni ejecutar un check READY del producto; no se ha creado tag de fase.
+**Estado:** planificada el 2026-10-19 por petición del usuario; ninguna tarea implementada ni piloto ejecutado.
+Objetivo y criterios en [ROADMAP](ROADMAP.md#p009--proyecto-django-desde-cero-y-piloto-con-cuatro-combinaciones-de-agentes),
+tareas en [NEXT_STEPS](NEXT_STEPS.md) y diseño en el [plan](phase/P009_PLAN_DJANGO.md).
+Decisión: [D115](DECISIONS.md#d115--p009-django-desde-cero-carpeta-de-proyectos-y-agentes-por-proyecto).
 
-**Siguiente:** el usuario elige la próxima prioridad; no hay fase sucesora ni tarea autorizada pendiente.
-Candidatas conservadas en [ROADMAP](ROADMAP.md#candidatas-sin-fase-asignada); continuidad en
-[NEXT_STEPS](NEXT_STEPS.md). Los consentimientos de proveedores y smokes no se amplían.
+- Selección explícita en la UI de «Carpeta de proyectos»: concede al servicio la creación de nuevos proyectos
+  hijos y queda guardada. La IA no propone ni descubre la ubicación. `$HOME/Documents/projects/` es
+  el ejemplo del usuario, no un valor por defecto ni una autorización ejecutada en esta tarea.
+- Creación desde carpeta hija inexistente, documentación D088 y receta Django confirmada: esqueleto,
+  dependencias, entorno y validaciones. El piloto será una lista de tareas con SQLite y plantillas Django.
+- Ajustes por proyecto para elegir proveedores y modelo/esfuerzo del revisor. El revisor elige modelo y
+  esfuerzo del ejecutor. Cuatro tareas sucesivas en el mismo proyecto: Codex→Codex, Codex→Claude,
+  Claude→Claude y Claude→Codex, siempre en orden revisor→ejecutor.
+- Las raíces hoy dependen del TOML y el alta exige una carpeta existente; los proveedores hoy son globales
+  y se muestran en solo lectura. P009 planifica cubrir esas carencias; no las presenta como implementadas.
+
+P008 permanece cerrada ([archivo](archive/phase-008/SUMMARY.md), D114). Este repositorio sigue sin registrarse
+ni ejecutarse con el harness. No se crean carpetas externas, entornos ni proyectos durante la planificación.
+
+**Siguiente:** P009-T001, contrato y diseño de la ampliación. T006 preparará la propuesta de operación real con
+las selecciones y límites pendientes; redactar la fase no autoriza invocar proveedores, instalar dependencias,
+consumir red o ejecutar el piloto. Los consentimientos anteriores siguen agotados.
