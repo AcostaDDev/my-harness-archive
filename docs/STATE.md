@@ -137,23 +137,13 @@ Objetivo y criterios en [ROADMAP](ROADMAP.md); plan en [NEXT_STEPS](NEXT_STEPS.m
 **P008-T011 completada** (Flujo A: propuesta del revisor,
 [D098](DECISIONS.md#d098--p008-t011-conversación-de-importación-con-borradores-privados)):
 
-- Conversación `project_import` sobre H6.5: inventario y mapa congelados al crearla (`planning_conversations.source`,
-  migración `0019`), solo para proyectos sin creación ni fases. Cada turno exige la misma huella del checkout y
-  congela los textos del árbol resultante (archivo solo por ruta y hash) y los borradores, como máximo 2 MiB.
-- Revisor de solo lectura con el rol y el esquema `definition` y la plantilla `import-project` (adaptador `cli-11`,
-  sin `AGENTS.md` inyectado). Rutas admitidas: plantilla D088 y `flows/*.md`; lo demás, FAILED sin fallback. Un
-  cambio del checkout o del área durante el turno descarta la respuesta.
-- Borradores en `import-drafts/<id>/` junto a SQLite (0700) con la CAS de la definición; el checkout no se escribe.
-  `GET …/planning/{c}/import` da los bloqueos de la vista previa: preguntas bloqueantes sin responder ni aplazar,
-  checkout cambiado, documentos de D088 ausentes, límites de AGENTS/CLAUDE/GEMINI, borradores inválidos.
-- Extensiones técnicas: observación en `services/managed.py`, OpenAPI y tipos regenerados y etiqueta «Importación»
-  del nuevo `purpose` en dos archivos de la UI. Límite: con runs legacy sin activar, la guardia D027 rechaza los
-  turnos; el orden lo fija [D099](DECISIONS.md#d099--flujo-a-activación-d027-antes-de-la-importación) (activación primero), que se implementa en T012.
-- Verificación: 12 checks ligeros. Pytest completo: 1.264 OK y 121 subtests (aviso conocido de Starlette/httpx),
-  con 17 casos nuevos en `test_import_conversation.py`; tras un retoque de imports se re-ejecutaron cuatro archivos
-  afectados (113 OK). `alembic check` sobre una base temporal, 73 pruebas Node, `tsc` y build correctos. 264 enlaces y
-  anclas válidos y los dos flowcharts de `flows/legacy-migration.md` pasan el parser local. Sin proveedores reales ni
-  smokes. Detalle en el [registro](phase/P008-T011_PROPUESTA_REVISOR.md).
+- Conversación `project_import`: inventario/mapa congelados (`0019`), revisor de solo lectura `definition`
+  con `import-project`, borradores privados con CAS y origen/área observados antes/después. Rutas D088/flows;
+  inválidos FAILED sin fallback. Vista de bloqueos por preguntas, deriva, documentos ausentes y límites.
+- Sin escribir checkout; activación legacy primero, decidida en D099 e implementada en T012. API/tipos y
+  etiqueta de importación actualizados. Detalle y límites en el [registro](phase/P008-T011_PROPUESTA_REVISOR.md).
+- Verificación de entrega: 12 checks, 1.264 pytest y 121 subtests, 113 casos revalidados; Alembic temporal,
+  73 Node, tipos/build, 264 enlaces y dos flowcharts correctos. Sin proveedores ni smokes reales.
 
 **P008-T012 completada** (Flujo A: vista previa, commit y continuidad,
 [D100](DECISIONS.md#d100--p008-t012-importación-confirmada-y-continuidad-del-flujo-a)):
@@ -277,5 +267,16 @@ Objetivo y criterios en [ROADMAP](ROADMAP.md); plan en [NEXT_STEPS](NEXT_STEPS.m
   revalidados; 12 checks, 425 enlaces y cinco flowcharts correctos. [Registro](phase/P008-T019_SUBMODULOS.md).
   Sin cambios de esquema/API/UI, Node/build/Alembic independiente ni proveedores o smokes reales.
 
-**Siguiente:** repetir la revisión de salida de P008 tras T019. Cierre y archivo separados.
+**Cuarta revisión de salida completada el 2026-10-19**
+([D111](DECISIONS.md#d111--cuarta-revisión-de-salida-de-p008), [registro](phase/P008_REVISION_SALIDA_4.md)):
+
+- Sobre `2815b5c`, H1–H6 resueltos en sus comprobaciones; 18 escenarios nuevos H6 rechazan sin filtros ni
+  cambios de bytes. H7 ejecuta `upload-pack` desde el escritor A/B al consultar el commit sellado aún ausente,
+  incluso con todos los objetos del origen disponibles. Reproducido en ejecución y reanudación: COMPLETED
+  con el mismo commit, pero con transporte falso invocado. P008 no lista para cerrar; T020 pendiente.
+- 1.410 pytest y 121 subtests, 12 checks, 75 Node, tipos/build, Alembic temporal y OpenAPI correctos;
+  35 tablas/377 columnas, 434 enlaces y 20 diagramas válidos. Script/JSON nuevos; sin cambiar producto ni evidencia previa,
+  proveedores reales o smokes. Verificación documental y límites en el registro.
+
+**Siguiente:** P008-T020 (H7). Cierre y archivo separados.
 P008 sigue activa y este repositorio sin registrarse ni ejecutar un check READY del producto sobre él.

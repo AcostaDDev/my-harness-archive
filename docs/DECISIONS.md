@@ -120,6 +120,7 @@ tarea se leen solo las decisiones que cita; este índice sirve para buscar prece
 | [D108](#d108--p008-t018-lecturas-de-importación-sin-lazy-fetch) | P008-T018: lecturas de importación sin lazy-fetch | P008 |
 | [D109](#d109--tercera-revisión-de-salida-de-p008) | Tercera revisión de salida de P008 | P008 |
 | [D110](#d110--p008-t019-gitlinks-rechazados-antes-de-inspeccionar-el-checkout) | P008-T019: gitlinks rechazados antes de inspeccionar el checkout | P008 |
+| [D111](#d111--cuarta-revisión-de-salida-de-p008) | Cuarta revisión de salida de P008 | P008 |
 
 ## D001 — Alcance local y arquitectura base
 
@@ -3504,3 +3505,26 @@ Corrige H6 de D109 bajo D096/D100/D103/D105/D108, sin ampliar soporte de submód
   no añaden aislamiento frente a cambios concurrentes arbitrarios del checkout/configuración.
 
 P008 sigue activa. Después corresponde otra revisión de salida; cierre y archivo separados.
+
+## D111 — Cuarta revisión de salida de P008
+
+Estado: revisión completada el 2026-10-19 sobre `2815b5c`; P008 no lista para cerrar por H7. Fase: P008.
+Evidencia, comprobaciones y límites en el [registro](phase/P008_REVISION_SALIDA_4.md).
+
+- H1–H5 mantienen sus resultados en las rutas revisadas. H6 queda resuelto: dieciocho escenarios nuevos con
+  gitlinks dentro/fuera de `docs/` o solo en índice, filtros `clean`/`process` directos/por include y creación
+  de conversación rechazan antes de `status`, sin filtros invocados ni cambios de bytes. Las 27 regresiones
+  T019 también pasan, incluidos consumidores, observaciones y recuperación A/B.
+- **H7, alta:** `GitWorkspace._git` usa `Git` sin `--no-lazy-fetch`. `_reachable` llama a `Git.code(cat-file -e)`
+  sobre el commit esperado aún no escrito; su ausencia normal provoca lazy-fetch y ejecuta `upload-pack`.
+  La guardia local previa no cubre ese comando posterior. Se reproduce con todos los objetos del origen
+  disponibles en A/B, ejecución inicial y reanudación tras caída anterior al escritor. El transporte falso
+  local deja marcador; las operaciones terminan COMPLETED con el commit sellado y sin nuevas invocaciones
+  de agentes. No hubo red, objetos recuperados ni pérdida documental demostrada.
+- Se define P008-T020 para impedir transportes implícitos del escritor A/B y su recuperación, manteniendo
+  la ausencia normal del commit futuro, el rechazo de objetos necesarios ausentes, D099, CAS, hashes,
+  guardias H1–H6 y conciliación de la misma intención/run/commit. Se evaluará su versión congelada.
+- Esta revisión no cambia producto, esquema, API, prompts ni versiones; no reescribe evidencia histórica.
+  El script y JSON nuevos exigen las guardias anteriores y acreditan el hallazgo H7, no su corrección.
+  Cierre y archivo separados; sin registro ni check READY del producto sobre este repositorio, fase sucesora
+  inventada, proveedores reales, smokes, push, publicación o subagentes.

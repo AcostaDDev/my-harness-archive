@@ -1,0 +1,1505 @@
+{
+  "reviewed_commit": "2815b5cbb5137e2d723e800a971b3e70fe7d2855",
+  "git_version": "git version 2.50.1 (Apple Git-155)",
+  "reproduction_sha256": "2a17db372a6c959a11118b04501d846589a52dcd8ab6e4388ea9557e40551e37",
+  "historical_files_sha256": {
+    "P008_REVISION_SALIDA_REPRO.py": "fa3508d611a98330b773fb1ecca3ff903c3f46dbccaded2096fd47e6d2a8f3a3",
+    "P008_REVISION_SALIDA_2_REPRO.py": "fd0585cb997f7dd477083ef99c3160d1037118c8fef3de29ab74fb85ff71bb43",
+    "P008_REVISION_SALIDA_3_REPRO.py": "392e81a94cd898b159ea126633437785911c1aab44c0f5712d067d4d1582b7b4",
+    "P008_REVISION_SALIDA_EVIDENCE.json": "8ddb0b76fa7035290d56275dacccf7d4a1d6d16b7a4a84567de7d4aa27f4e0a9",
+    "P008_REVISION_SALIDA_2_EVIDENCE.json": "e15e34ab042457f99140d23283ebb38a0956cd40b72725a8ef60669c94ea4f31",
+    "P008_REVISION_SALIDA_3_EVIDENCE.json": "0c9f049c90f0b9cbfa102a7e0d41494c791e8575b8a57e0da035a41dec81d1bb"
+  },
+  "H1_filter": {
+    "inventory_rejected": true,
+    "diagnostic": "Import requires no local clean/process Git filters; project code cannot be executed",
+    "filter_executed": false,
+    "unchanged": true
+  },
+  "H2_conversion": {
+    "preview_rejected": true,
+    "diagnostic": "Git attributes would transform the confirmed document bytes",
+    "unchanged": true,
+    "new_file_written": false,
+    "operation_created": false,
+    "phase_count": 0,
+    "commit_count": 1
+  },
+  "H3_ignored": {
+    "preview_rejected": true,
+    "diagnostic": "Import document destinations are ignored by Git; review the project ignore rules",
+    "unchanged": true,
+    "new_file_written": false,
+    "operation_created": false,
+    "phase_count": 0,
+    "commit_count": 1
+  },
+  "H5_partial_clone": {
+    "A": {
+      "diagnostic": "Cannot read the local HEAD tree: Git object 4b808719aac233e53994d6c94282242510a9c4fd at 'README.md' is missing or has an unavailable size; reading requires complete local objects.",
+      "calls": [
+        {
+          "argv": [
+            "--no-lazy-fetch",
+            "rev-parse",
+            "--show-toplevel"
+          ],
+          "upload_pack_invoked": false
+        },
+        {
+          "argv": [
+            "--no-lazy-fetch",
+            "config",
+            "--includes",
+            "--get-regexp",
+            "^filter\\..*\\.(clean|process)$"
+          ],
+          "upload_pack_invoked": false
+        },
+        {
+          "argv": [
+            "--no-lazy-fetch",
+            "rev-parse",
+            "--verify",
+            "--quiet",
+            "HEAD^{commit}"
+          ],
+          "upload_pack_invoked": false
+        },
+        {
+          "argv": [
+            "--no-lazy-fetch",
+            "rev-parse",
+            "--verify",
+            "02237e7c60c2fff081703c715ab8453d0b328247^{tree}"
+          ],
+          "upload_pack_invoked": false
+        },
+        {
+          "argv": [
+            "--no-lazy-fetch",
+            "ls-tree",
+            "-r",
+            "-z",
+            "--full-tree",
+            "HEAD"
+          ],
+          "upload_pack_invoked": false
+        },
+        {
+          "argv": [
+            "--no-lazy-fetch",
+            "ls-files",
+            "--stage",
+            "-z"
+          ],
+          "upload_pack_invoked": false
+        },
+        {
+          "argv": [
+            "--no-lazy-fetch",
+            "status",
+            "--porcelain=v1",
+            "-z",
+            "--untracked-files=all",
+            "--ignore-submodules=none"
+          ],
+          "upload_pack_invoked": false
+        },
+        {
+          "argv": [
+            "--no-lazy-fetch",
+            "ls-tree",
+            "-r",
+            "-z",
+            "-l",
+            "--full-tree",
+            "HEAD"
+          ],
+          "upload_pack_invoked": false
+        }
+      ],
+      "upload_pack_invoked": false,
+      "object_still_missing": true,
+      "all_checkout_and_git_bytes_unchanged": true
+    },
+    "B": {
+      "diagnostic": "Cannot read a non-empty Git HEAD from complete local objects (lazy-fetch is disabled): Git object 4b808719aac233e53994d6c94282242510a9c4fd at 'README.md' is missing or has an unavailable size; reading requires complete local objects.",
+      "calls": [
+        {
+          "argv": [
+            "--no-lazy-fetch",
+            "rev-parse",
+            "--show-toplevel"
+          ],
+          "upload_pack_invoked": false
+        },
+        {
+          "argv": [
+            "--no-lazy-fetch",
+            "rev-parse",
+            "--verify",
+            "--quiet",
+            "HEAD^{commit}"
+          ],
+          "upload_pack_invoked": false
+        },
+        {
+          "argv": [
+            "--no-lazy-fetch",
+            "rev-parse",
+            "--verify",
+            "02237e7c60c2fff081703c715ab8453d0b328247^{tree}"
+          ],
+          "upload_pack_invoked": false
+        },
+        {
+          "argv": [
+            "--no-lazy-fetch",
+            "ls-tree",
+            "-r",
+            "-z",
+            "-l",
+            "--full-tree",
+            "55b743503034b99277fbec22eb975192a455f68f"
+          ],
+          "upload_pack_invoked": false
+        }
+      ],
+      "upload_pack_invoked": false,
+      "object_still_missing": true,
+      "all_checkout_and_git_bytes_unchanged": true
+    }
+  },
+  "H6_submodule": [
+    {
+      "path": "synthetic-module",
+      "filter": "clean",
+      "filter_via_include": false,
+      "stage": "inventory",
+      "gitlink_source": "HEAD",
+      "diagnostic": "Import does not support submodule/gitlink 'synthetic-module' in HEAD; checkout inspection cannot execute submodule code.",
+      "rejected": true,
+      "filter_invoked": false,
+      "calls": [
+        {
+          "argv": [
+            "--no-lazy-fetch",
+            "rev-parse",
+            "--show-toplevel"
+          ],
+          "filter_invoked": false
+        },
+        {
+          "argv": [
+            "--no-lazy-fetch",
+            "config",
+            "--includes",
+            "--get-regexp",
+            "^filter\\..*\\.(clean|process)$"
+          ],
+          "filter_invoked": false
+        },
+        {
+          "argv": [
+            "--no-lazy-fetch",
+            "rev-parse",
+            "--verify",
+            "--quiet",
+            "HEAD^{commit}"
+          ],
+          "filter_invoked": false
+        },
+        {
+          "argv": [
+            "--no-lazy-fetch",
+            "rev-parse",
+            "--verify",
+            "3570b3900ba6181039f547418ad228810f9ba2b8^{tree}"
+          ],
+          "filter_invoked": false
+        },
+        {
+          "argv": [
+            "--no-lazy-fetch",
+            "ls-tree",
+            "-r",
+            "-z",
+            "--full-tree",
+            "HEAD"
+          ],
+          "filter_invoked": false
+        }
+      ],
+      "all_checkout_and_git_bytes_unchanged": true,
+      "flow_b_inventory_filter_invoked": false
+    },
+    {
+      "path": "synthetic-module",
+      "filter": "clean",
+      "filter_via_include": false,
+      "stage": "conversation",
+      "gitlink_source": "HEAD",
+      "diagnostic": "The project cannot be imported: Import does not support submodule/gitlink 'synthetic-module' in HEAD; checkout inspection cannot execute submodule code.",
+      "rejected": true,
+      "filter_invoked": false,
+      "calls": [
+        {
+          "argv": [
+            "--no-lazy-fetch",
+            "rev-parse",
+            "--show-toplevel"
+          ],
+          "filter_invoked": false
+        },
+        {
+          "argv": [
+            "--no-lazy-fetch",
+            "config",
+            "--includes",
+            "--get-regexp",
+            "^filter\\..*\\.(clean|process)$"
+          ],
+          "filter_invoked": false
+        },
+        {
+          "argv": [
+            "--no-lazy-fetch",
+            "rev-parse",
+            "--verify",
+            "--quiet",
+            "HEAD^{commit}"
+          ],
+          "filter_invoked": false
+        },
+        {
+          "argv": [
+            "--no-lazy-fetch",
+            "rev-parse",
+            "--verify",
+            "3570b3900ba6181039f547418ad228810f9ba2b8^{tree}"
+          ],
+          "filter_invoked": false
+        },
+        {
+          "argv": [
+            "--no-lazy-fetch",
+            "ls-tree",
+            "-r",
+            "-z",
+            "--full-tree",
+            "HEAD"
+          ],
+          "filter_invoked": false
+        }
+      ],
+      "all_checkout_and_git_bytes_unchanged": true,
+      "conversations": 0,
+      "agent_calls": 0,
+      "jobs": 0,
+      "import_operation": null,
+      "phases": 0,
+      "flow_b_inventory_filter_invoked": false
+    },
+    {
+      "path": "synthetic-module",
+      "filter": "clean",
+      "filter_via_include": true,
+      "stage": "inventory",
+      "gitlink_source": "HEAD",
+      "diagnostic": "Import does not support submodule/gitlink 'synthetic-module' in HEAD; checkout inspection cannot execute submodule code.",
+      "rejected": true,
+      "filter_invoked": false,
+      "calls": [
+        {
+          "argv": [
+            "--no-lazy-fetch",
+            "rev-parse",
+            "--show-toplevel"
+          ],
+          "filter_invoked": false
+        },
+        {
+          "argv": [
+            "--no-lazy-fetch",
+            "config",
+            "--includes",
+            "--get-regexp",
+            "^filter\\..*\\.(clean|process)$"
+          ],
+          "filter_invoked": false
+        },
+        {
+          "argv": [
+            "--no-lazy-fetch",
+            "rev-parse",
+            "--verify",
+            "--quiet",
+            "HEAD^{commit}"
+          ],
+          "filter_invoked": false
+        },
+        {
+          "argv": [
+            "--no-lazy-fetch",
+            "rev-parse",
+            "--verify",
+            "3570b3900ba6181039f547418ad228810f9ba2b8^{tree}"
+          ],
+          "filter_invoked": false
+        },
+        {
+          "argv": [
+            "--no-lazy-fetch",
+            "ls-tree",
+            "-r",
+            "-z",
+            "--full-tree",
+            "HEAD"
+          ],
+          "filter_invoked": false
+        }
+      ],
+      "all_checkout_and_git_bytes_unchanged": true,
+      "flow_b_inventory_filter_invoked": false
+    },
+    {
+      "path": "synthetic-module",
+      "filter": "clean",
+      "filter_via_include": true,
+      "stage": "conversation",
+      "gitlink_source": "HEAD",
+      "diagnostic": "The project cannot be imported: Import does not support submodule/gitlink 'synthetic-module' in HEAD; checkout inspection cannot execute submodule code.",
+      "rejected": true,
+      "filter_invoked": false,
+      "calls": [
+        {
+          "argv": [
+            "--no-lazy-fetch",
+            "rev-parse",
+            "--show-toplevel"
+          ],
+          "filter_invoked": false
+        },
+        {
+          "argv": [
+            "--no-lazy-fetch",
+            "config",
+            "--includes",
+            "--get-regexp",
+            "^filter\\..*\\.(clean|process)$"
+          ],
+          "filter_invoked": false
+        },
+        {
+          "argv": [
+            "--no-lazy-fetch",
+            "rev-parse",
+            "--verify",
+            "--quiet",
+            "HEAD^{commit}"
+          ],
+          "filter_invoked": false
+        },
+        {
+          "argv": [
+            "--no-lazy-fetch",
+            "rev-parse",
+            "--verify",
+            "5d9f8c2ef17f34e6fed610416927f72753b5b428^{tree}"
+          ],
+          "filter_invoked": false
+        },
+        {
+          "argv": [
+            "--no-lazy-fetch",
+            "ls-tree",
+            "-r",
+            "-z",
+            "--full-tree",
+            "HEAD"
+          ],
+          "filter_invoked": false
+        }
+      ],
+      "all_checkout_and_git_bytes_unchanged": true,
+      "conversations": 0,
+      "agent_calls": 0,
+      "jobs": 0,
+      "import_operation": null,
+      "phases": 0,
+      "flow_b_inventory_filter_invoked": false
+    },
+    {
+      "path": "synthetic-module",
+      "filter": "process",
+      "filter_via_include": false,
+      "stage": "inventory",
+      "gitlink_source": "HEAD",
+      "diagnostic": "Import does not support submodule/gitlink 'synthetic-module' in HEAD; checkout inspection cannot execute submodule code.",
+      "rejected": true,
+      "filter_invoked": false,
+      "calls": [
+        {
+          "argv": [
+            "--no-lazy-fetch",
+            "rev-parse",
+            "--show-toplevel"
+          ],
+          "filter_invoked": false
+        },
+        {
+          "argv": [
+            "--no-lazy-fetch",
+            "config",
+            "--includes",
+            "--get-regexp",
+            "^filter\\..*\\.(clean|process)$"
+          ],
+          "filter_invoked": false
+        },
+        {
+          "argv": [
+            "--no-lazy-fetch",
+            "rev-parse",
+            "--verify",
+            "--quiet",
+            "HEAD^{commit}"
+          ],
+          "filter_invoked": false
+        },
+        {
+          "argv": [
+            "--no-lazy-fetch",
+            "rev-parse",
+            "--verify",
+            "5d9f8c2ef17f34e6fed610416927f72753b5b428^{tree}"
+          ],
+          "filter_invoked": false
+        },
+        {
+          "argv": [
+            "--no-lazy-fetch",
+            "ls-tree",
+            "-r",
+            "-z",
+            "--full-tree",
+            "HEAD"
+          ],
+          "filter_invoked": false
+        }
+      ],
+      "all_checkout_and_git_bytes_unchanged": true,
+      "flow_b_inventory_filter_invoked": false
+    },
+    {
+      "path": "synthetic-module",
+      "filter": "process",
+      "filter_via_include": false,
+      "stage": "conversation",
+      "gitlink_source": "HEAD",
+      "diagnostic": "The project cannot be imported: Import does not support submodule/gitlink 'synthetic-module' in HEAD; checkout inspection cannot execute submodule code.",
+      "rejected": true,
+      "filter_invoked": false,
+      "calls": [
+        {
+          "argv": [
+            "--no-lazy-fetch",
+            "rev-parse",
+            "--show-toplevel"
+          ],
+          "filter_invoked": false
+        },
+        {
+          "argv": [
+            "--no-lazy-fetch",
+            "config",
+            "--includes",
+            "--get-regexp",
+            "^filter\\..*\\.(clean|process)$"
+          ],
+          "filter_invoked": false
+        },
+        {
+          "argv": [
+            "--no-lazy-fetch",
+            "rev-parse",
+            "--verify",
+            "--quiet",
+            "HEAD^{commit}"
+          ],
+          "filter_invoked": false
+        },
+        {
+          "argv": [
+            "--no-lazy-fetch",
+            "rev-parse",
+            "--verify",
+            "5d9f8c2ef17f34e6fed610416927f72753b5b428^{tree}"
+          ],
+          "filter_invoked": false
+        },
+        {
+          "argv": [
+            "--no-lazy-fetch",
+            "ls-tree",
+            "-r",
+            "-z",
+            "--full-tree",
+            "HEAD"
+          ],
+          "filter_invoked": false
+        }
+      ],
+      "all_checkout_and_git_bytes_unchanged": true,
+      "conversations": 0,
+      "agent_calls": 0,
+      "jobs": 0,
+      "import_operation": null,
+      "phases": 0,
+      "flow_b_inventory_filter_invoked": false
+    },
+    {
+      "path": "synthetic-module",
+      "filter": "process",
+      "filter_via_include": true,
+      "stage": "inventory",
+      "gitlink_source": "HEAD",
+      "diagnostic": "Import does not support submodule/gitlink 'synthetic-module' in HEAD; checkout inspection cannot execute submodule code.",
+      "rejected": true,
+      "filter_invoked": false,
+      "calls": [
+        {
+          "argv": [
+            "--no-lazy-fetch",
+            "rev-parse",
+            "--show-toplevel"
+          ],
+          "filter_invoked": false
+        },
+        {
+          "argv": [
+            "--no-lazy-fetch",
+            "config",
+            "--includes",
+            "--get-regexp",
+            "^filter\\..*\\.(clean|process)$"
+          ],
+          "filter_invoked": false
+        },
+        {
+          "argv": [
+            "--no-lazy-fetch",
+            "rev-parse",
+            "--verify",
+            "--quiet",
+            "HEAD^{commit}"
+          ],
+          "filter_invoked": false
+        },
+        {
+          "argv": [
+            "--no-lazy-fetch",
+            "rev-parse",
+            "--verify",
+            "da1cdc80dcc30884e6395666e483564aca76ef26^{tree}"
+          ],
+          "filter_invoked": false
+        },
+        {
+          "argv": [
+            "--no-lazy-fetch",
+            "ls-tree",
+            "-r",
+            "-z",
+            "--full-tree",
+            "HEAD"
+          ],
+          "filter_invoked": false
+        }
+      ],
+      "all_checkout_and_git_bytes_unchanged": true,
+      "flow_b_inventory_filter_invoked": false
+    },
+    {
+      "path": "synthetic-module",
+      "filter": "process",
+      "filter_via_include": true,
+      "stage": "conversation",
+      "gitlink_source": "HEAD",
+      "diagnostic": "The project cannot be imported: Import does not support submodule/gitlink 'synthetic-module' in HEAD; checkout inspection cannot execute submodule code.",
+      "rejected": true,
+      "filter_invoked": false,
+      "calls": [
+        {
+          "argv": [
+            "--no-lazy-fetch",
+            "rev-parse",
+            "--show-toplevel"
+          ],
+          "filter_invoked": false
+        },
+        {
+          "argv": [
+            "--no-lazy-fetch",
+            "config",
+            "--includes",
+            "--get-regexp",
+            "^filter\\..*\\.(clean|process)$"
+          ],
+          "filter_invoked": false
+        },
+        {
+          "argv": [
+            "--no-lazy-fetch",
+            "rev-parse",
+            "--verify",
+            "--quiet",
+            "HEAD^{commit}"
+          ],
+          "filter_invoked": false
+        },
+        {
+          "argv": [
+            "--no-lazy-fetch",
+            "rev-parse",
+            "--verify",
+            "da1cdc80dcc30884e6395666e483564aca76ef26^{tree}"
+          ],
+          "filter_invoked": false
+        },
+        {
+          "argv": [
+            "--no-lazy-fetch",
+            "ls-tree",
+            "-r",
+            "-z",
+            "--full-tree",
+            "HEAD"
+          ],
+          "filter_invoked": false
+        }
+      ],
+      "all_checkout_and_git_bytes_unchanged": true,
+      "conversations": 0,
+      "agent_calls": 0,
+      "jobs": 0,
+      "import_operation": null,
+      "phases": 0,
+      "flow_b_inventory_filter_invoked": false
+    },
+    {
+      "path": "docs/synthetic-module",
+      "filter": "clean",
+      "filter_via_include": false,
+      "stage": "inventory",
+      "gitlink_source": "HEAD",
+      "diagnostic": "Import does not support submodule/gitlink 'docs/synthetic-module' in HEAD; checkout inspection cannot execute submodule code.",
+      "rejected": true,
+      "filter_invoked": false,
+      "calls": [
+        {
+          "argv": [
+            "--no-lazy-fetch",
+            "rev-parse",
+            "--show-toplevel"
+          ],
+          "filter_invoked": false
+        },
+        {
+          "argv": [
+            "--no-lazy-fetch",
+            "config",
+            "--includes",
+            "--get-regexp",
+            "^filter\\..*\\.(clean|process)$"
+          ],
+          "filter_invoked": false
+        },
+        {
+          "argv": [
+            "--no-lazy-fetch",
+            "rev-parse",
+            "--verify",
+            "--quiet",
+            "HEAD^{commit}"
+          ],
+          "filter_invoked": false
+        },
+        {
+          "argv": [
+            "--no-lazy-fetch",
+            "rev-parse",
+            "--verify",
+            "1c46ab783de771f8f9a785c9677e09520817afa6^{tree}"
+          ],
+          "filter_invoked": false
+        },
+        {
+          "argv": [
+            "--no-lazy-fetch",
+            "ls-tree",
+            "-r",
+            "-z",
+            "--full-tree",
+            "HEAD"
+          ],
+          "filter_invoked": false
+        }
+      ],
+      "all_checkout_and_git_bytes_unchanged": true,
+      "flow_b_inventory_filter_invoked": false
+    },
+    {
+      "path": "docs/synthetic-module",
+      "filter": "clean",
+      "filter_via_include": false,
+      "stage": "conversation",
+      "gitlink_source": "HEAD",
+      "diagnostic": "The project cannot be imported: Import does not support submodule/gitlink 'docs/synthetic-module' in HEAD; checkout inspection cannot execute submodule code.",
+      "rejected": true,
+      "filter_invoked": false,
+      "calls": [
+        {
+          "argv": [
+            "--no-lazy-fetch",
+            "rev-parse",
+            "--show-toplevel"
+          ],
+          "filter_invoked": false
+        },
+        {
+          "argv": [
+            "--no-lazy-fetch",
+            "config",
+            "--includes",
+            "--get-regexp",
+            "^filter\\..*\\.(clean|process)$"
+          ],
+          "filter_invoked": false
+        },
+        {
+          "argv": [
+            "--no-lazy-fetch",
+            "rev-parse",
+            "--verify",
+            "--quiet",
+            "HEAD^{commit}"
+          ],
+          "filter_invoked": false
+        },
+        {
+          "argv": [
+            "--no-lazy-fetch",
+            "rev-parse",
+            "--verify",
+            "1c46ab783de771f8f9a785c9677e09520817afa6^{tree}"
+          ],
+          "filter_invoked": false
+        },
+        {
+          "argv": [
+            "--no-lazy-fetch",
+            "ls-tree",
+            "-r",
+            "-z",
+            "--full-tree",
+            "HEAD"
+          ],
+          "filter_invoked": false
+        }
+      ],
+      "all_checkout_and_git_bytes_unchanged": true,
+      "conversations": 0,
+      "agent_calls": 0,
+      "jobs": 0,
+      "import_operation": null,
+      "phases": 0,
+      "flow_b_inventory_filter_invoked": false
+    },
+    {
+      "path": "docs/synthetic-module",
+      "filter": "clean",
+      "filter_via_include": true,
+      "stage": "inventory",
+      "gitlink_source": "HEAD",
+      "diagnostic": "Import does not support submodule/gitlink 'docs/synthetic-module' in HEAD; checkout inspection cannot execute submodule code.",
+      "rejected": true,
+      "filter_invoked": false,
+      "calls": [
+        {
+          "argv": [
+            "--no-lazy-fetch",
+            "rev-parse",
+            "--show-toplevel"
+          ],
+          "filter_invoked": false
+        },
+        {
+          "argv": [
+            "--no-lazy-fetch",
+            "config",
+            "--includes",
+            "--get-regexp",
+            "^filter\\..*\\.(clean|process)$"
+          ],
+          "filter_invoked": false
+        },
+        {
+          "argv": [
+            "--no-lazy-fetch",
+            "rev-parse",
+            "--verify",
+            "--quiet",
+            "HEAD^{commit}"
+          ],
+          "filter_invoked": false
+        },
+        {
+          "argv": [
+            "--no-lazy-fetch",
+            "rev-parse",
+            "--verify",
+            "e9e7aacd2266ea61f6701f2924525a175752fc53^{tree}"
+          ],
+          "filter_invoked": false
+        },
+        {
+          "argv": [
+            "--no-lazy-fetch",
+            "ls-tree",
+            "-r",
+            "-z",
+            "--full-tree",
+            "HEAD"
+          ],
+          "filter_invoked": false
+        }
+      ],
+      "all_checkout_and_git_bytes_unchanged": true,
+      "flow_b_inventory_filter_invoked": false
+    },
+    {
+      "path": "docs/synthetic-module",
+      "filter": "clean",
+      "filter_via_include": true,
+      "stage": "conversation",
+      "gitlink_source": "HEAD",
+      "diagnostic": "The project cannot be imported: Import does not support submodule/gitlink 'docs/synthetic-module' in HEAD; checkout inspection cannot execute submodule code.",
+      "rejected": true,
+      "filter_invoked": false,
+      "calls": [
+        {
+          "argv": [
+            "--no-lazy-fetch",
+            "rev-parse",
+            "--show-toplevel"
+          ],
+          "filter_invoked": false
+        },
+        {
+          "argv": [
+            "--no-lazy-fetch",
+            "config",
+            "--includes",
+            "--get-regexp",
+            "^filter\\..*\\.(clean|process)$"
+          ],
+          "filter_invoked": false
+        },
+        {
+          "argv": [
+            "--no-lazy-fetch",
+            "rev-parse",
+            "--verify",
+            "--quiet",
+            "HEAD^{commit}"
+          ],
+          "filter_invoked": false
+        },
+        {
+          "argv": [
+            "--no-lazy-fetch",
+            "rev-parse",
+            "--verify",
+            "e9e7aacd2266ea61f6701f2924525a175752fc53^{tree}"
+          ],
+          "filter_invoked": false
+        },
+        {
+          "argv": [
+            "--no-lazy-fetch",
+            "ls-tree",
+            "-r",
+            "-z",
+            "--full-tree",
+            "HEAD"
+          ],
+          "filter_invoked": false
+        }
+      ],
+      "all_checkout_and_git_bytes_unchanged": true,
+      "conversations": 0,
+      "agent_calls": 0,
+      "jobs": 0,
+      "import_operation": null,
+      "phases": 0,
+      "flow_b_inventory_filter_invoked": false
+    },
+    {
+      "path": "docs/synthetic-module",
+      "filter": "process",
+      "filter_via_include": false,
+      "stage": "inventory",
+      "gitlink_source": "HEAD",
+      "diagnostic": "Import does not support submodule/gitlink 'docs/synthetic-module' in HEAD; checkout inspection cannot execute submodule code.",
+      "rejected": true,
+      "filter_invoked": false,
+      "calls": [
+        {
+          "argv": [
+            "--no-lazy-fetch",
+            "rev-parse",
+            "--show-toplevel"
+          ],
+          "filter_invoked": false
+        },
+        {
+          "argv": [
+            "--no-lazy-fetch",
+            "config",
+            "--includes",
+            "--get-regexp",
+            "^filter\\..*\\.(clean|process)$"
+          ],
+          "filter_invoked": false
+        },
+        {
+          "argv": [
+            "--no-lazy-fetch",
+            "rev-parse",
+            "--verify",
+            "--quiet",
+            "HEAD^{commit}"
+          ],
+          "filter_invoked": false
+        },
+        {
+          "argv": [
+            "--no-lazy-fetch",
+            "rev-parse",
+            "--verify",
+            "e9e7aacd2266ea61f6701f2924525a175752fc53^{tree}"
+          ],
+          "filter_invoked": false
+        },
+        {
+          "argv": [
+            "--no-lazy-fetch",
+            "ls-tree",
+            "-r",
+            "-z",
+            "--full-tree",
+            "HEAD"
+          ],
+          "filter_invoked": false
+        }
+      ],
+      "all_checkout_and_git_bytes_unchanged": true,
+      "flow_b_inventory_filter_invoked": false
+    },
+    {
+      "path": "docs/synthetic-module",
+      "filter": "process",
+      "filter_via_include": false,
+      "stage": "conversation",
+      "gitlink_source": "HEAD",
+      "diagnostic": "The project cannot be imported: Import does not support submodule/gitlink 'docs/synthetic-module' in HEAD; checkout inspection cannot execute submodule code.",
+      "rejected": true,
+      "filter_invoked": false,
+      "calls": [
+        {
+          "argv": [
+            "--no-lazy-fetch",
+            "rev-parse",
+            "--show-toplevel"
+          ],
+          "filter_invoked": false
+        },
+        {
+          "argv": [
+            "--no-lazy-fetch",
+            "config",
+            "--includes",
+            "--get-regexp",
+            "^filter\\..*\\.(clean|process)$"
+          ],
+          "filter_invoked": false
+        },
+        {
+          "argv": [
+            "--no-lazy-fetch",
+            "rev-parse",
+            "--verify",
+            "--quiet",
+            "HEAD^{commit}"
+          ],
+          "filter_invoked": false
+        },
+        {
+          "argv": [
+            "--no-lazy-fetch",
+            "rev-parse",
+            "--verify",
+            "e9e7aacd2266ea61f6701f2924525a175752fc53^{tree}"
+          ],
+          "filter_invoked": false
+        },
+        {
+          "argv": [
+            "--no-lazy-fetch",
+            "ls-tree",
+            "-r",
+            "-z",
+            "--full-tree",
+            "HEAD"
+          ],
+          "filter_invoked": false
+        }
+      ],
+      "all_checkout_and_git_bytes_unchanged": true,
+      "conversations": 0,
+      "agent_calls": 0,
+      "jobs": 0,
+      "import_operation": null,
+      "phases": 0,
+      "flow_b_inventory_filter_invoked": false
+    },
+    {
+      "path": "docs/synthetic-module",
+      "filter": "process",
+      "filter_via_include": true,
+      "stage": "inventory",
+      "gitlink_source": "HEAD",
+      "diagnostic": "Import does not support submodule/gitlink 'docs/synthetic-module' in HEAD; checkout inspection cannot execute submodule code.",
+      "rejected": true,
+      "filter_invoked": false,
+      "calls": [
+        {
+          "argv": [
+            "--no-lazy-fetch",
+            "rev-parse",
+            "--show-toplevel"
+          ],
+          "filter_invoked": false
+        },
+        {
+          "argv": [
+            "--no-lazy-fetch",
+            "config",
+            "--includes",
+            "--get-regexp",
+            "^filter\\..*\\.(clean|process)$"
+          ],
+          "filter_invoked": false
+        },
+        {
+          "argv": [
+            "--no-lazy-fetch",
+            "rev-parse",
+            "--verify",
+            "--quiet",
+            "HEAD^{commit}"
+          ],
+          "filter_invoked": false
+        },
+        {
+          "argv": [
+            "--no-lazy-fetch",
+            "rev-parse",
+            "--verify",
+            "ef26f116afe8198b9aaf5404a08c209bb3facfb1^{tree}"
+          ],
+          "filter_invoked": false
+        },
+        {
+          "argv": [
+            "--no-lazy-fetch",
+            "ls-tree",
+            "-r",
+            "-z",
+            "--full-tree",
+            "HEAD"
+          ],
+          "filter_invoked": false
+        }
+      ],
+      "all_checkout_and_git_bytes_unchanged": true,
+      "flow_b_inventory_filter_invoked": false
+    },
+    {
+      "path": "docs/synthetic-module",
+      "filter": "process",
+      "filter_via_include": true,
+      "stage": "conversation",
+      "gitlink_source": "HEAD",
+      "diagnostic": "The project cannot be imported: Import does not support submodule/gitlink 'docs/synthetic-module' in HEAD; checkout inspection cannot execute submodule code.",
+      "rejected": true,
+      "filter_invoked": false,
+      "calls": [
+        {
+          "argv": [
+            "--no-lazy-fetch",
+            "rev-parse",
+            "--show-toplevel"
+          ],
+          "filter_invoked": false
+        },
+        {
+          "argv": [
+            "--no-lazy-fetch",
+            "config",
+            "--includes",
+            "--get-regexp",
+            "^filter\\..*\\.(clean|process)$"
+          ],
+          "filter_invoked": false
+        },
+        {
+          "argv": [
+            "--no-lazy-fetch",
+            "rev-parse",
+            "--verify",
+            "--quiet",
+            "HEAD^{commit}"
+          ],
+          "filter_invoked": false
+        },
+        {
+          "argv": [
+            "--no-lazy-fetch",
+            "rev-parse",
+            "--verify",
+            "ef26f116afe8198b9aaf5404a08c209bb3facfb1^{tree}"
+          ],
+          "filter_invoked": false
+        },
+        {
+          "argv": [
+            "--no-lazy-fetch",
+            "ls-tree",
+            "-r",
+            "-z",
+            "--full-tree",
+            "HEAD"
+          ],
+          "filter_invoked": false
+        }
+      ],
+      "all_checkout_and_git_bytes_unchanged": true,
+      "conversations": 0,
+      "agent_calls": 0,
+      "jobs": 0,
+      "import_operation": null,
+      "phases": 0,
+      "flow_b_inventory_filter_invoked": false
+    },
+    {
+      "path": "synthetic-module",
+      "filter": "clean",
+      "filter_via_include": true,
+      "stage": "inventory",
+      "gitlink_source": "index",
+      "diagnostic": "Import does not support submodule/gitlink 'synthetic-module' in index; checkout inspection cannot execute submodule code.",
+      "rejected": true,
+      "filter_invoked": false,
+      "calls": [
+        {
+          "argv": [
+            "--no-lazy-fetch",
+            "rev-parse",
+            "--show-toplevel"
+          ],
+          "filter_invoked": false
+        },
+        {
+          "argv": [
+            "--no-lazy-fetch",
+            "config",
+            "--includes",
+            "--get-regexp",
+            "^filter\\..*\\.(clean|process)$"
+          ],
+          "filter_invoked": false
+        },
+        {
+          "argv": [
+            "--no-lazy-fetch",
+            "rev-parse",
+            "--verify",
+            "--quiet",
+            "HEAD^{commit}"
+          ],
+          "filter_invoked": false
+        },
+        {
+          "argv": [
+            "--no-lazy-fetch",
+            "rev-parse",
+            "--verify",
+            "ba58727bef8e0c765e0dca03b3d267c8a4a229bf^{tree}"
+          ],
+          "filter_invoked": false
+        },
+        {
+          "argv": [
+            "--no-lazy-fetch",
+            "ls-tree",
+            "-r",
+            "-z",
+            "--full-tree",
+            "HEAD"
+          ],
+          "filter_invoked": false
+        },
+        {
+          "argv": [
+            "--no-lazy-fetch",
+            "ls-files",
+            "--stage",
+            "-z"
+          ],
+          "filter_invoked": false
+        }
+      ],
+      "all_checkout_and_git_bytes_unchanged": true,
+      "flow_b_inventory_filter_invoked": false
+    },
+    {
+      "path": "docs/synthetic-module",
+      "filter": "process",
+      "filter_via_include": true,
+      "stage": "conversation",
+      "gitlink_source": "index",
+      "diagnostic": "The project cannot be imported: Import does not support submodule/gitlink 'docs/synthetic-module' in index; checkout inspection cannot execute submodule code.",
+      "rejected": true,
+      "filter_invoked": false,
+      "calls": [
+        {
+          "argv": [
+            "--no-lazy-fetch",
+            "rev-parse",
+            "--show-toplevel"
+          ],
+          "filter_invoked": false
+        },
+        {
+          "argv": [
+            "--no-lazy-fetch",
+            "config",
+            "--includes",
+            "--get-regexp",
+            "^filter\\..*\\.(clean|process)$"
+          ],
+          "filter_invoked": false
+        },
+        {
+          "argv": [
+            "--no-lazy-fetch",
+            "rev-parse",
+            "--verify",
+            "--quiet",
+            "HEAD^{commit}"
+          ],
+          "filter_invoked": false
+        },
+        {
+          "argv": [
+            "--no-lazy-fetch",
+            "rev-parse",
+            "--verify",
+            "ba58727bef8e0c765e0dca03b3d267c8a4a229bf^{tree}"
+          ],
+          "filter_invoked": false
+        },
+        {
+          "argv": [
+            "--no-lazy-fetch",
+            "ls-tree",
+            "-r",
+            "-z",
+            "--full-tree",
+            "HEAD"
+          ],
+          "filter_invoked": false
+        },
+        {
+          "argv": [
+            "--no-lazy-fetch",
+            "ls-files",
+            "--stage",
+            "-z"
+          ],
+          "filter_invoked": false
+        }
+      ],
+      "all_checkout_and_git_bytes_unchanged": true,
+      "conversations": 0,
+      "agent_calls": 0,
+      "jobs": 0,
+      "import_operation": null,
+      "phases": 0,
+      "flow_b_inventory_filter_invoked": false
+    }
+  ],
+  "H7_writer_lazy_fetch": [
+    {
+      "flow": "A",
+      "resume": false,
+      "all_source_objects_local": true,
+      "source_object_count": 29,
+      "upload_pack_before_writer": false,
+      "no_lazy_fetch_control_invoked_transport": false,
+      "calls": [
+        {
+          "argv": [
+            "cat-file",
+            "-e",
+            "079ec8d930fd7d965e586a53959a6e77456d500b^{commit}"
+          ],
+          "returncode": 128,
+          "upload_pack_invoked": true
+        },
+        {
+          "argv": [
+            "cat-file",
+            "-e",
+            "079ec8d930fd7d965e586a53959a6e77456d500b^{commit}"
+          ],
+          "returncode": 128,
+          "upload_pack_invoked": true
+        }
+      ],
+      "upload_pack_invoked": true,
+      "upload_pack_invocations": 4,
+      "job_status": "DONE",
+      "operation_status": "COMPLETED",
+      "expected_commit": "079ec8d930fd7d965e586a53959a6e77456d500b",
+      "head": "079ec8d930fd7d965e586a53959a6e77456d500b",
+      "same_sealed_intent": true,
+      "new_agent_invocations": 0,
+      "phases": 1
+    },
+    {
+      "flow": "A",
+      "resume": true,
+      "all_source_objects_local": true,
+      "source_object_count": 29,
+      "upload_pack_before_writer": false,
+      "no_lazy_fetch_control_invoked_transport": false,
+      "calls": [
+        {
+          "argv": [
+            "cat-file",
+            "-e",
+            "23a36306efa6561bd591fe9e09123166d9c5126e^{commit}"
+          ],
+          "returncode": 128,
+          "upload_pack_invoked": true
+        },
+        {
+          "argv": [
+            "cat-file",
+            "-e",
+            "23a36306efa6561bd591fe9e09123166d9c5126e^{commit}"
+          ],
+          "returncode": 128,
+          "upload_pack_invoked": true
+        }
+      ],
+      "upload_pack_invoked": true,
+      "upload_pack_invocations": 4,
+      "job_status": "DONE",
+      "operation_status": "COMPLETED",
+      "expected_commit": "23a36306efa6561bd591fe9e09123166d9c5126e",
+      "head": "23a36306efa6561bd591fe9e09123166d9c5126e",
+      "same_sealed_intent": true,
+      "new_agent_invocations": 0,
+      "phases": 1
+    },
+    {
+      "flow": "B",
+      "resume": false,
+      "all_source_objects_local": true,
+      "source_object_count": 17,
+      "upload_pack_before_writer": false,
+      "no_lazy_fetch_control_invoked_transport": false,
+      "calls": [
+        {
+          "argv": [
+            "cat-file",
+            "-e",
+            "f6fb9c57697ef5f69cc4fc1ae566bebee231b973^{commit}"
+          ],
+          "returncode": 128,
+          "upload_pack_invoked": true
+        },
+        {
+          "argv": [
+            "cat-file",
+            "-e",
+            "f6fb9c57697ef5f69cc4fc1ae566bebee231b973^{commit}"
+          ],
+          "returncode": 128,
+          "upload_pack_invoked": true
+        }
+      ],
+      "upload_pack_invoked": true,
+      "upload_pack_invocations": 4,
+      "job_status": "DONE",
+      "operation_status": "COMPLETED",
+      "expected_commit": "f6fb9c57697ef5f69cc4fc1ae566bebee231b973",
+      "head": "f6fb9c57697ef5f69cc4fc1ae566bebee231b973",
+      "same_sealed_intent": true,
+      "new_agent_invocations": 0,
+      "phases": 1
+    },
+    {
+      "flow": "B",
+      "resume": true,
+      "all_source_objects_local": true,
+      "source_object_count": 17,
+      "upload_pack_before_writer": false,
+      "no_lazy_fetch_control_invoked_transport": false,
+      "calls": [
+        {
+          "argv": [
+            "cat-file",
+            "-e",
+            "1f4f3e9a36cf829953c79c010eb5601176cdf977^{commit}"
+          ],
+          "returncode": 128,
+          "upload_pack_invoked": true
+        },
+        {
+          "argv": [
+            "cat-file",
+            "-e",
+            "1f4f3e9a36cf829953c79c010eb5601176cdf977^{commit}"
+          ],
+          "returncode": 128,
+          "upload_pack_invoked": true
+        }
+      ],
+      "upload_pack_invoked": true,
+      "upload_pack_invocations": 4,
+      "job_status": "DONE",
+      "operation_status": "COMPLETED",
+      "expected_commit": "1f4f3e9a36cf829953c79c010eb5601176cdf977",
+      "head": "1f4f3e9a36cf829953c79c010eb5601176cdf977",
+      "same_sealed_intent": true,
+      "new_agent_invocations": 0,
+      "phases": 1
+    }
+  ]
+}

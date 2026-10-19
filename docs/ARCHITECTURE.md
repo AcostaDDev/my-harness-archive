@@ -224,5 +224,8 @@ Uso real (D051): construir y verificar el wheel (`scripts/build_distribution.py 
 - Las validaciones no guardan su hora; la lectura de un run decodifica su historial completo.
 - Un proyecto `typescript-web` nuevo no tiene `package.json` y el ejecutor no puede crearlo.
 - Dos avisos *low* de KaTeX en Mermaid 11.
+- H7 de la cuarta revisión P008: el escritor A/B usa Git sin desactivar lazy-fetch al consultar el commit
+  esperado aún ausente y puede ejecutar transportes, incluso con el origen completo. Pendiente de P008-T020
+  ([D111](DECISIONS.md#d111--cuarta-revisión-de-salida-de-p008)); las guardias locales de inventario siguen vigentes.
 - La estructura de D088 es obligatoria desde P008-T002; rutas y paridad en T003, cierre y archivo unificados en
   T004, prompts/definición en T005, API/UI en T006 e inyección de AGENTS en T007 (D089–D094).

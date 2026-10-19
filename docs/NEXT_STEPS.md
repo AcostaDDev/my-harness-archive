@@ -4,14 +4,13 @@ Objetivo y criterios de salida en [ROADMAP](ROADMAP.md#p008--contrato-documental
 Decisión de base: [D088](DECISIONS.md#d088--contrato-documental-unificado-cierre-de-fase-automático-e-importación-de-proyectos-p008).
 Análisis de incongruencias que originó la fase: [docs/phase](phase/P008-T001_MIGRACION_DOCUMENTAL.md).
 
-**Siguiente:** repetir la revisión de salida de P008 tras corregir H6 en T019.
-T001–T019 completadas. Tercera revisión de salida completada el 2026-10-17
-([D109](DECISIONS.md#d109--tercera-revisión-de-salida-de-p008), [registro](phase/P008_REVISION_SALIDA_3.md)):
-H1–H5 resueltos en sus comprobaciones; H6 ejecutaba un filtro del submódulo desde `status` antes de la conversación.
-T019 lo corrige el 2026-10-19 ([D110](DECISIONS.md#d110--p008-t019-gitlinks-rechazados-antes-de-inspeccionar-el-checkout),
-[registro](phase/P008-T019_SUBMODULOS.md)): gitlinks de HEAD/índice rechazados antes de inspeccionar hijos.
-Las evidencias históricas de las dos revisiones anteriores permanecen intactas.
-P008 sigue activa; después de T019 se repetirá la revisión de salida. Cierre y archivo son operaciones separadas.
+**Siguiente:** P008-T020, impedir transportes por lazy-fetch del escritor de importaciones A/B (H7 de D111).
+T001–T019 completadas. Cuarta revisión de salida completada el 2026-10-19
+([D111](DECISIONS.md#d111--cuarta-revisión-de-salida-de-p008), [registro](phase/P008_REVISION_SALIDA_4.md)):
+H1–H6 resueltos en sus comprobaciones. H7 ejecuta `upload-pack` al consultar el commit sellado aún ausente,
+incluso con todos los objetos del origen disponibles; afecta a ejecución y recuperación A/B.
+Las evidencias de las tres revisiones anteriores permanecen intactas.
+P008 sigue activa; después de T020 se repetirá la revisión de salida. Cierre y archivo son operaciones separadas.
 No se ha ejecutado un check READY del producto ni registrado este repositorio. No se inventa una fase sucesora.
 
 ## Restricciones compartidas
@@ -505,4 +504,43 @@ sin consultar hijos ni suavizar la limpieza; `document_layout = "d088-11"`. Veri
 - `UV_CACHE_DIR=.local/uv-cache uv run --frozen --offline pytest -q`
 **Referencias:** D096; D100; D103; D105; D108; D109;
 [revisión y reproducciones](phase/P008_REVISION_SALIDA_3.md).
+Después: nueva revisión de salida; cierre y archivo separados.
+
+## P008-T020 — Importaciones A/B: escritor sin lazy-fetch ni transportes implícitos
+
+**Objetivo:** Que todas las comprobaciones y operaciones Git del escritor de importaciones A/B, también al
+recuperar, usen objetos locales sin lanzar transportes por lazy-fetch ni modificar configuración.
+**Estado:** pendiente; derivada de H7 de [D111](DECISIONS.md#d111--cuarta-revisión-de-salida-de-p008).
+**Alcance:**
+- Cubrir la frontera posterior a `check_git`: el escritor compartido usa `Git` sin `--no-lazy-fetch` y
+  `_reachable` consulta el commit esperado aún no escrito mediante `Git.code(cat-file -e)`. Revisar las
+  llamadas `run` y `code` de captura/sellado/ejecución/conciliación e índice utilizadas por A/B, sin depender
+  solo de los lectores previos ni de que todos los objetos del origen estén disponibles.
+- La ausencia del commit futuro es normal y no debe recuperar nada ni impedir crear localmente el commit
+  confirmado. La ausencia de un objeto necesario del origen/árbol sellado sí debe bloquear con diagnóstico,
+  sin transportar, recuperar objetos ni resolverlo cambiando configuración o remotos del usuario.
+- Mantener H1–H6, D099, CAS por bytes, originales/binarios, destinos ignorados, índice y refs protegidos,
+  adopción atómica y conciliación de la misma intención/run/commit. Evaluar la versión congelada y la
+  cuarentena de jobs anteriores; no reescribir intenciones, snapshots ni evidencia histórica.
+**Rutas permitidas:** `src/harness_local/adapters/**`, `src/harness_local/storage/project_import.py`,
+`src/harness_local/storage/onboarding_commit.py`, `src/harness_local/core/engine/import_commit.py`,
+`src/harness_local/core/engine/documents.py`, `src/harness_local/services/managed.py`,
+`src/harness_local/services/local_config.py`, `tests/**`, `docs/**`.
+**Criterios de aceptación:**
+- A/B sintéticos con todos los objetos del origen disponibles, remoto promisor local y `upload-pack` falso:
+  la ejecución inicial y la reanudación tras caída antes del escritor llegan al commit confirmado sin
+  marcador ni transporte; la prueba de existencia del commit futuro no hace lazy-fetch. La recuperación
+  conserva la intención, run, commit y una sola fase adoptada.
+- Objetos necesarios ausentes y Git sin soporte del modo local se rechazan antes de efectos indebidos,
+  con diagnóstico y sin fallback que pueda lanzar transportes. Cubrir ambas APIs Git (`run`/`code`) y los
+  puntos del escritor, sin limitarse al inventario ni a variables de entorno ignorables por Git antiguo.
+- H1–H6, checkout sucio, recorridos A/B válidos, D099 y recuperaciones posteriores a escritura/commit
+  siguen funcionando; configuración global/local intacta salvo los cambios deliberados del fixture.
+- Solo repositorios/SQLite temporales, agentes y transportes falsos, datos sintéticos y sin red/proveedores.
+  Las reproducciones históricas de H5/H7 permanecen intactas.
+**Comandos de validación:**
+- `python3 -m unittest discover -s tests -p 'test_*.py'`
+- `UV_CACHE_DIR=.local/uv-cache uv run --frozen --offline pytest -q`
+**Referencias:** D100; D103; D105; D108; D110; D111;
+[revisión y reproducción](phase/P008_REVISION_SALIDA_4.md).
 Después: nueva revisión de salida; cierre y archivo separados.
