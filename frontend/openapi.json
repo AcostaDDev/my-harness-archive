@@ -12409,6 +12409,78 @@
         ],
         "title": "ActivationTransition"
       },
+      "AgentPresetRead": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "provider": {
+            "type": "string",
+            "enum": [
+              "codex",
+              "claude"
+            ],
+            "title": "Provider"
+          },
+          "roles": {
+            "items": {
+              "type": "string",
+              "enum": [
+                "reviewer",
+                "executor"
+              ]
+            },
+            "type": "array",
+            "title": "Roles"
+          },
+          "models": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Models"
+          },
+          "efforts": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Efforts"
+          },
+          "allow_open_executor": {
+            "type": "boolean",
+            "title": "Allow Open Executor"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "provider",
+          "roles",
+          "models",
+          "efforts",
+          "allow_open_executor"
+        ],
+        "title": "AgentPresetRead"
+      },
+      "AgentSelectionInput": {
+        "properties": {
+          "reviewer": {
+            "$ref": "#/components/schemas/ReviewerSelectionInput"
+          },
+          "executor": {
+            "$ref": "#/components/schemas/ExecutorSelectionInput"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "reviewer",
+          "executor"
+        ],
+        "title": "AgentSelectionInput"
+      },
       "ArchivedPhaseRead": {
         "properties": {
           "path": {
@@ -13936,6 +14008,16 @@
           },
           "policy": {
             "$ref": "#/components/schemas/RegistryPolicyInput"
+          },
+          "agent_selection": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AgentSelectionInput"
+              },
+              {
+                "type": "null"
+              }
+            ]
           },
           "tag_kind": {
             "type": "string",
@@ -16229,6 +16311,22 @@
         ],
         "title": "ExecutorAgentRead",
         "description": "Único escritor; el revisor fija su modelo y esfuerzo en cada tarea y revisión."
+      },
+      "ExecutorSelectionInput": {
+        "properties": {
+          "preset_id": {
+            "type": "string",
+            "maxLength": 64,
+            "minLength": 1,
+            "title": "Preset Id"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "preset_id"
+        ],
+        "title": "ExecutorSelectionInput"
       },
       "FieldRead": {
         "properties": {
@@ -22256,6 +22354,13 @@
             "type": "array",
             "title": "Unfinished Jobs"
           },
+          "configuration_blockers": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Configuration Blockers"
+          },
           "history": {
             "items": {
               "$ref": "#/components/schemas/RegistryEventRead"
@@ -22485,6 +22590,16 @@
             "anyOf": [
               {
                 "$ref": "#/components/schemas/RegistryPolicyInput"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "agent_selection": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AgentSelectionInput"
               },
               {
                 "type": "null"
@@ -22877,6 +22992,13 @@
             "title": "Unfinished Jobs",
             "description": "Trabajos sin terminar del checkout: bloquean la confirmación."
           },
+          "configuration_blockers": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Configuration Blockers"
+          },
           "preview_sha256": {
             "type": "string",
             "title": "Preview Sha256"
@@ -22970,6 +23092,13 @@
             "type": "array",
             "title": "Executor Effort Vocabulary"
           },
+          "agent_presets": {
+            "items": {
+              "$ref": "#/components/schemas/AgentPresetRead"
+            },
+            "type": "array",
+            "title": "Agent Presets"
+          },
           "reserved_ids": {
             "items": {
               "type": "string"
@@ -23043,6 +23172,36 @@
         ],
         "title": "ReviewerAgentRead",
         "description": "D052: el revisor planifica, revisa, evalúa fases, conversa y propone el bootstrap (solo lectura)."
+      },
+      "ReviewerSelectionInput": {
+        "properties": {
+          "preset_id": {
+            "type": "string",
+            "maxLength": 64,
+            "minLength": 1,
+            "title": "Preset Id"
+          },
+          "model": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Model"
+          },
+          "effort": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Effort"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "preset_id",
+          "model",
+          "effort"
+        ],
+        "title": "ReviewerSelectionInput"
       },
       "RunActionCreate": {
         "properties": {

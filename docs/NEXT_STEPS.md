@@ -4,7 +4,7 @@ Objetivo y criterios en [ROADMAP](ROADMAP.md#p009--proyecto-django-desde-cero-y-
 Decisión: [D115](DECISIONS.md#d115--p009-django-desde-cero-carpeta-de-proyectos-y-agentes-por-proyecto).
 [Diseño y matriz](phase/P009_PLAN_DJANGO.md); [flujo y estado de implementación](flows/project-creation.md).
 
-**Estado:** T001 (diseño) y T002 (carpeta/creación) completadas; T003–T012 pendientes. **Siguiente:** P009-T003.
+**Estado:** T001–T003 completadas (diseño, carpeta/creación y agentes); T004–T012 pendientes. **Siguiente:** P009-T004.
 [Contrato implementable](phase/P009-T001_CONTRATO_CREACION.md), decisión D116. T002 añade producto de
 carpeta/creación, sin piloto ni selección de carpeta real del usuario;
 la implementación no concede permisos de red, instalación o proveedores.
@@ -74,7 +74,9 @@ La selección concede capacidad de creación al servicio, sin `chmod` recursivo 
 
 ## P009-T003 — Configurar revisor y ejecutor por proyecto
 
-**Estado:** pendiente. **Depende de:** T001.
+**Estado:** completada el 2026-10-19 (D118). **Depende de:** T001.
+**Resultado:** presets v5, selección efectiva por checkout y UI, cambios CAS/idempotentes, guardia transaccional
+y obsolescencia de planes; [entrega y verificación](phase/P009-T003_AGENTES_PROYECTO.md). Sin proveedores reales.
 **Objetivo:** Cambiar las combinaciones en el mismo proyecto sin editar el TOML entre tareas ni recrear el registro.
 **Alcance:** presets de proveedor configurados por el servicio; ajustes por proyecto para ambos roles, modelo/esfuerzo
 explícitos del revisor y catálogo/modo admisible del ejecutor. Mantener elección final del ejecutor en el revisor.

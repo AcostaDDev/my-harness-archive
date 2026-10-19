@@ -492,6 +492,11 @@ erDiagram
 ## Métricas y registro de proyectos (P007)
 
 Métricas por intento con procedencia (D074) y registro de proyectos desde la UI (D078).
+P009-T003 (D118) amplía el JSON `row` de fila/eventos con `agent_selection` opcional en v5:
+`reviewer = {preset_id, model, effort}` y `executor = {preset_id}`; catálogo/modo siguen en `row.policy`.
+Sin tablas/columnas ni migración nuevas. Cambio de versión/evento e invalidación de propuestas de planificación
+son atómicos; solo cambian status/version/decision de la propuesta, nunca request/result del turno ni snapshots
+del run. La fila sin selección conserva la pareja heredada y los eventos anteriores intactos.
 
 ```mermaid
 erDiagram

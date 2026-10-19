@@ -16,7 +16,7 @@ salvo donde se indica. Detalle por fase en `docs/archive/phase-NNN/SUMMARY.md`.
   cuarentena por versión y confirmación explícita del escritor detenido; backup y restauración de consulta; retención
   explícita de streams.
 - **Agentes** ([P007](archive/phase-007/SUMMARY.md)): revisor y ejecutor Codex o Claude en cualquier combinación
-  (`cli-12`, `local-config-2/3/4`), revisor en solo lectura con esquema tipado, memoria automática desactivada,
+  (`cli-12`, `local-config-2/3/4/5`), revisor en solo lectura con esquema tipado, memoria automática desactivada,
   supresión de confianza del escritor Codex. Validaciones nativas `commands-1` con JUnit. Perfiles: `typescript-web`
   (componible desde el TOML), `reference_project` (solo biblioteca) y perfiles declarados en `[profiles.*]` de
   `local-config-4`, con el ejemplo `python-django` (P008, D095).
@@ -49,7 +49,7 @@ salvo donde se indica. Detalle por fase en `docs/archive/phase-NNN/SUMMARY.md`.
 
 ## Fase activa — P009 Proyecto Django desde cero y piloto con cuatro combinaciones de agentes
 
-**Estado:** T001 (diseño) y T002 (carpeta/creación) completadas el 2026-10-19; T003–T012 pendientes, sin piloto.
+**Estado:** T001–T003 completadas el 2026-10-19 (diseño, carpeta/creación y agentes por proyecto); T004–T012 pendientes, sin piloto.
 Objetivo y criterios en [ROADMAP](ROADMAP.md#p009--proyecto-django-desde-cero-y-piloto-con-cuatro-combinaciones-de-agentes),
 tareas en [NEXT_STEPS](NEXT_STEPS.md) y diseño en el [plan](phase/P009_PLAN_DJANGO.md).
 Decisión: [D115](DECISIONS.md#d115--p009-django-desde-cero-carpeta-de-proyectos-y-agentes-por-proyecto).
@@ -61,22 +61,23 @@ Contrato de T001: [diseño implementable](phase/P009-T001_CONTRATO_CREACION.md),
   el ejemplo del usuario, no un valor por defecto ni una autorización ejecutada en esta tarea.
 - Pendiente de T004: receta Django confirmada tras la definición D088 existente: esqueleto,
   dependencias, entorno y validaciones. El piloto será una lista de tareas con SQLite y plantillas Django.
-- Pendiente de T003: ajustes por proyecto para elegir proveedores y modelo/esfuerzo del revisor. El revisor elige modelo y
-  esfuerzo del ejecutor. Cuatro tareas sucesivas en el mismo proyecto: Codex→Codex, Codex→Claude,
+- T003 implementa presets del servicio en `local-config-5`, selección por proyecto y modelo/esfuerzo explícitos
+  del revisor (D118). El revisor elige modelo/esfuerzo del ejecutor. Cuatro tareas previstas en el mismo proyecto: Codex→Codex, Codex→Claude,
   Claude→Claude y Claude→Codex, siempre en orden revisor→ejecutor.
 - T002 implementa selección/retirada UI persistente y auditada, creación exclusiva de hijos nuevos, registro
   atómico con procedencia y enlace a definición existente (D117). Preview/CAS/claves, fd sin enlaces, reservas
   y recuperación conservadora; no borra carpetas inciertas. Compatible con v3/v4 y roots TOML vacías.
-  Los proveedores siguen globales y en consulta; presets, receta y operación Django permanecen pendientes.
+  T003 añade agentes por checkout; receta y operación Django permanecen pendientes.
 - T001 separa el permiso UI para hijos nuevos del alta existente bajo raíces TOML; fija retirada y recuperación
   por intención/identidad. Diseña presets por proyecto en v5 y receta posterior al commit documental con enlaces
   diferidos al entorno, conservando protección de configuración e historiales. Esquema/API y fronteras documentados.
 
 P008 permanece cerrada ([archivo](archive/phase-008/SUMMARY.md), D114). Este repositorio sigue sin registrarse
-ni ejecutarse con el harness. T002 solo usa carpetas/SQLite temporales y QA con respuestas sintéticas;
+ni ejecutarse con el harness. T002/T003 solo usan carpetas/SQLite temporales, CLI falsas y QA con respuestas sintéticas;
 sin carpetas reales del usuario ni proveedores.
 
-**Siguiente:** P009-T003, configurar revisor y ejecutor por proyecto según D116.
-Entrega de T002 y checks en [registro](phase/P009-T002_CARPETA_PROYECTOS.md). T006 preparará la
+**Siguiente:** P009-T004, receta Django desde cero y perfil ejecutable según D116.
+Entrega de T003 y checks en [registro](phase/P009-T003_AGENTES_PROYECTO.md): cuatro parejas sintéticas,
+CAS/idempotencia, admisión serializada, bloqueos de trabajo utilizable y planes obsoletos; v1–v4 conservados. T006 preparará la
 propuesta de operación real con las selecciones y límites pendientes; redactar la fase no autoriza invocar proveedores, instalar dependencias,
 consumir red o ejecutar el piloto. Los consentimientos anteriores siguen agotados.

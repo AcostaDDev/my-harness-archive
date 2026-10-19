@@ -68,6 +68,50 @@ class ProjectRegistryRepository:
         with self._read() as session:
             return self._unfinished(session, root)
 
+    @staticmethod
+    def _configuration_blockers(session, root):
+        """V5: trabajo todavía aceptable no puede sobrevivir al cambio de composición."""
+        from harness_local.storage.models import (
+            ChatConversationRow, ChatProposalRow, ManagedCommitRow, PlanningConversationRow,
+            PlanningTurnRow, ProjectBootstrapRow, ProjectImportRow,
+        )
+        from harness_local.storage.planning import PlanningRepository
+        blockers = [f'Run pendiente de aceptación: {value}' for value in session.scalars(
+            select(Run.id).where(Run.root == root, Run.status == 'ACCEPTANCE_READY'))]
+        blockers += [f'Commit pendiente: {value}' for value in session.scalars(
+            select(ManagedCommitRow.operation_id).join(Run, Run.id == ManagedCommitRow.run_id)
+            .where(Run.root == root, ManagedCommitRow.status == 'INTENT'))]
+        blockers += [f'Propuesta de chat pendiente; acepta o descarta: {value}' for value in session.scalars(
+            select(ChatProposalRow.id).join(ChatConversationRow,
+                                           ChatConversationRow.id == ChatProposalRow.conversation_id)
+            .where(ChatConversationRow.root == root, ChatProposalRow.status == 'PROPOSED'))]
+        for conversation in session.scalars(select(PlanningConversationRow).where(
+                PlanningConversationRow.root == root, PlanningConversationRow.kind != 'phase_planning')):
+            if (not PlanningRepository._drafts_created(session, conversation)
+                    and session.scalar(select(PlanningTurnRow.id).where(
+                        PlanningTurnRow.conversation_id == conversation.id).limit(1))):
+                blockers.append(f'Conversación de definición/importación utilizable: {conversation.id}')
+        for model in (ProjectBootstrapRow, ProjectImportRow):
+            blockers += [f'Operación documental sin resolver: {value}' for value in session.scalars(
+                select(model.id).where(model.root == root, model.status != 'COMPLETED'))]
+        return sorted(blockers)
+
+    def configuration_blockers(self, root):
+        with self._read() as session:
+            return self._configuration_blockers(session, root)
+
+    def _supersede_plans(self, session, root, version):
+        from harness_local.storage.models import PlanningConversationRow as Conversation, PlanningProposalRow as Proposal
+        for proposal in session.scalars(select(Proposal).join(Conversation,
+                Conversation.id == Proposal.conversation_id).where(
+                    Conversation.root == root, Conversation.kind == 'phase_planning', Proposal.status == 'PROPOSED')):
+            proposal.status, proposal.version = 'SUPERSEDED', proposal.version + 1
+            proposal.decision = {'decision': 'configuration_changed', 'registry_version': version,
+                                 'actor': actor(), 'at': self.managed._now()}
+            conversation = session.get(Conversation, proposal.conversation_id)
+            conversation.version += 1
+            conversation.updated_at = self.managed._now()
+
     def replay(self, project_id, expected_version, preview_sha256):
         """La confirmación ya aplicada (misma vista previa, versión siguiente) se devuelve tal cual."""
         with self._read() as session:
@@ -79,7 +123,7 @@ class ProjectRegistryRepository:
             return view(row) if event is not None and event.preview_sha256 == preview_sha256 else None
 
     def apply(self, action, project_id, *, expected_version, row, row_sha256, profile, preview_sha256,
-              trust=None, reason=None):
+              trust=None, reason=None, protect_agents=False):
         with self.managed._write() as session:
             current = session.get(Row, project_id)
             if (current.version if current else 0) != expected_version:
@@ -106,6 +150,11 @@ class ProjectRegistryRepository:
                 if unfinished:
                     raise RegistryConflict('pending_jobs', f'El checkout tiene trabajos sin terminar ({unfinished}); '
                                                            'espera a que terminen o concílialos antes de cambiarlo.')
+                if protect_agents:
+                    blockers = self._configuration_blockers(session, current.root)
+                    if blockers:
+                        raise RegistryConflict('pending_configuration', '; '.join(blockers))
+                    self._supersede_plans(session, current.root, expected_version + 1)
                 previous = current.row_sha256
                 current.version += 1
                 current.updated_at = now

@@ -128,6 +128,8 @@ tarea se leen solo las decisiones que cita; este índice sirve para buscar prece
 | [D116](#d116--p009-t001-autoridad-de-creación-presets-por-proyecto-y-preparación-separada) | P009-T001: autoridad de creación, presets por proyecto y preparación separada | P009 |
 | [D117](#d117--p009-t002-carpeta-persistente-y-creación-con-intención-previa) | P009-T002: carpeta persistente y creación con intención previa | P009 |
 
+| [D118](#d118--p009-t003-presets-v5-y-selección-de-agentes-por-proyecto) | P009-T003: presets v5 y selección de agentes por proyecto | P009 |
+
 ## D001 — Alcance local y arquitectura base
 
 Estado: base aceptada por el usuario el 2026-10-11.
@@ -3721,3 +3723,36 @@ Estado: implementado el 2026-10-19, verificación offline y QA con respuestas si
 
 No implementa presets v5, scaffold/entorno Django ni receta, ni ejecuta proveedores/piloto. T003 es la siguiente
 entrega; T006 conserva la puerta de consentimiento real. Fixtures y QA no conceden una carpeta real al servicio.
+
+## D118 — P009-T003: presets v5 y selección de agentes por proyecto
+
+Estado: implementado y verificado offline el 2026-10-19. Fase: P009.
+[Entrega y verificaciones](phase/P009-T003_AGENTES_PROYECTO.md), [flujo](flows/project-agents.md).
+Aplica D116 §4; conserva D049/D052/D078/D095 y la separación de preparación de T004.
+
+- `local-config-5` optativa conserva claves v4 y admite `[agent_presets.<id>]`: CLI privada, proveedor/roles,
+  catálogo local de modelos, esfuerzos del proveedor y permiso explícito de modo libre. Sin consulta remota
+  ni procesos al cargar; validación de USER, herramientas de lectura fijas y versión caracterizada por rol.
+  V1–v4 rechazan claves nuevas y mantienen sus hashes. Sin override se hereda la pareja/política actual.
+- Registro y `[[projects]]` v5 admiten `agent_selection`: revisor con preset/modelo/esfuerzo; ejecutor solo preset.
+  Catálogo/modo siguen en `policy`. UI editable solo para registros, en alta/creación/Ajustes; no preselecciona
+  modelo/esfuerzo al cambiar preset. El catálogo público omite ejecutables y valores de entorno. Configuración
+  ausente/incompatible se diagnostica sin fallback; no se escribe el TOML ni configuración global.
+- Agentes efectivos guardados por checkout junto a comandos/artefactos; `ports` crea adaptadores por job con
+  ellos, sin mutar los defaults ni otros proyectos. Vistas muestran los proveedores efectivos. Preflight
+  explícito cubre la pareja heredada y todos los roles de los presets. El revisor decide modelo/esfuerzo/motivo
+  del ejecutor por tarea/revisión y se valida antes de invocarlo; codec 7 y cli-12 sin cambios.
+- JSON de fila/eventos D078, sin tablas/columnas ni migración. Preview/hash incluye selección y contenido de
+  ambos presets; CAS/replay conserva una sola versión. V5 congela también id/hash de fila; historial anterior
+  intacto. Deriva de capacidades mantiene cuarentena por composición; preset retirado deja fila no disponible.
+- Cambios/bajas v5 exigen ausencia de jobs/locks, aceptación/commit pendiente, propuestas de chat sin resolver,
+  definición/importación con turnos utilizables y operaciones documentales incompletas. Planes de fase PROPOSED
+  se invalidan atómicamente como SUPERSEDED con decisión auditada, sin editar snapshots/contenido/hash. Requieren
+  nueva planificación. Entidades y exclusión de preparación siguen pendientes de T004.
+- Admisión, reanudación y commit comprueban la versión activa bajo la misma transacción SQLite que el cambio
+  de registro. Un job anterior impide cambiar; petición posterior con contexto obsoleto se rechaza sin encolar.
+  Los puertos congelados siguen comprobando la composición antes de efectos. La UI actualiza su lectura de
+  agentes inmediatamente después de guardar.
+
+Sin operación con proveedores reales ni consentimiento del piloto. Receta Django, enlaces diferidos al entorno,
+preparación y su journal/locks siguen en T004; esta entrega no acepta aún esas claves de v5.

@@ -1588,6 +1588,33 @@ class RegistryPolicyInput(BaseModel):
     max_revision_cycles: int | None = Field(default=None, ge=0, le=20)
 
 
+class ReviewerSelectionInput(BaseModel):
+    model_config = ConfigDict(extra='forbid', strict=True)
+    preset_id: str = Field(min_length=1, max_length=64)
+    model: ShortText
+    effort: ShortText
+
+
+class ExecutorSelectionInput(BaseModel):
+    model_config = ConfigDict(extra='forbid', strict=True)
+    preset_id: str = Field(min_length=1, max_length=64)
+
+
+class AgentSelectionInput(BaseModel):
+    model_config = ConfigDict(extra='forbid', strict=True)
+    reviewer: ReviewerSelectionInput
+    executor: ExecutorSelectionInput
+
+
+class AgentPresetRead(BaseModel):
+    id: str
+    provider: Literal['codex', 'claude']
+    roles: list[Literal['reviewer', 'executor']]
+    models: list[str]
+    efforts: list[str]
+    allow_open_executor: bool
+
+
 class RegistryChangeInput(BaseModel):
     """Alta (`register`), cambio (`update`) o baja lógica (`retire`); la composición se nombra, no se define."""
     model_config = ConfigDict(extra='forbid', strict=True)
@@ -1597,6 +1624,7 @@ class RegistryChangeInput(BaseModel):
     root: str | None = Field(default=None, max_length=4096, description='Solo en el alta; la raíz no cambia después.')
     composition: str | None = Field(default=None, max_length=64)
     policy: RegistryPolicyInput | None = None
+    agent_selection: AgentSelectionInput | None = None
     tag_kind: Literal['lightweight', 'annotated'] = 'lightweight'
     documents: Literal['v2'] | None = 'v2'
     bootstrap_enabled: bool = False
@@ -1647,6 +1675,7 @@ class RegistryRead(BaseModel):
     executor_provider: str | None
     reviewer_provider: str | None
     executor_effort_vocabulary: list[str]
+    agent_presets: list[AgentPresetRead] = Field(default_factory=list)
     reserved_ids: list[str]
     operator_projects: list[str]
     projects: list[RegisteredProjectSummaryRead]
@@ -1669,6 +1698,7 @@ class RegisteredProjectRead(RegisteredProjectSummaryRead):
     row: dict[str, Any]
     trust: dict[str, Any]
     unfinished_jobs: list[int]
+    configuration_blockers: list[str] = Field(default_factory=list)
     history: list[RegistryEventRead]
 
 
@@ -1692,6 +1722,7 @@ class RegistryPreviewRead(BaseModel):
     trust_required: bool
     trust_statement: str | None
     unfinished_jobs: list[int] = Field(description='Trabajos sin terminar del checkout: bloquean la confirmación.')
+    configuration_blockers: list[str] = Field(default_factory=list)
     preview_sha256: str
 
 
@@ -1782,6 +1813,7 @@ class CreationInput(BaseModel):
     root_version: int = Field(ge=1)
     composition: str = Field(min_length=1, max_length=64)
     policy: RegistryPolicyInput
+    agent_selection: AgentSelectionInput | None = None
     tag_kind: Literal['lightweight', 'annotated'] = 'lightweight'
     documents: Literal['v2'] = 'v2'
     permission_authority: dict[PermissionLayer, dict[PermissionKind, list[ShortText]]] | None = None

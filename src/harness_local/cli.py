@@ -60,7 +60,7 @@ def main(argv: list[str] | None = None) -> int:
         command.add_argument('--database', required=True, help='Ruta absoluta SQLite; no usa HARNESS_DATABASE_URL')
         if name == 'serve':
             command.add_argument('--port', type=int, default=8013)
-            command.add_argument('--config', help='TOML local de uso real (local-config-4; también 1–3); por defecto, sin proyectos')
+            command.add_argument('--config', help='TOML local de uso real (local-config-5; también 1–4); por defecto, sin proyectos')
     args = parser.parse_args(argv)
     engine = None
     try:
@@ -88,8 +88,8 @@ def main(argv: list[str] | None = None) -> int:
             if args.preflight:
                 from harness_local.adapters.cli_agents import access_for
                 from harness_local.adapters.cli_diagnostics import preflight_config
-                # Mismo CLIConfig validado por agente para todos los proyectos; solo version/help.
-                result['preflight'] = {agent: preflight_config(cli, access=access_for(agent))
+                # Defaults y capacidades por rol de cada preset; solo version/help explícito.
+                result['preflight'] = {agent: preflight_config(cli, access=access_for(agent.rsplit('.', 1)[-1]))
                                        for agent, cli in agents.items()}
             print(json.dumps(result, ensure_ascii=False, indent=2))
             return 0 if not args.preflight or all(r['available'] for r in result['preflight'].values()) else 1

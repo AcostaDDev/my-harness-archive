@@ -168,6 +168,20 @@ class SQLiteManagedRepository:
         except ModeConflict as exc:
             raise Conflict(str(exc)) from exc
 
+    @staticmethod
+    def _registry_current(session, root, versions):
+        """Serializa la admisión con D078: nunca encolar con una fila ya sustituida."""
+        if 'project_registry' not in versions:
+            return
+        from harness_local.storage.models import RegisteredProjectRow
+        current = session.scalar(select(RegisteredProjectRow).where(
+            RegisteredProjectRow.root == root, RegisteredProjectRow.status == 'ACTIVE'))
+        if (current is None or str(current.version) != versions['project_registry']
+                or ('project_registry_id' in versions and current.id != versions['project_registry_id'])
+                or ('project_registry_sha256' in versions
+                    and current.row_sha256 != versions['project_registry_sha256'])):
+            raise Conflict('Project configuration changed; reload and plan again before submitting work')
+
     def _run_root(self, run_id: str) -> str | None:
         with Session(self.engine) as session:
             return session.scalar(select(Run.root).where(Run.id == run_id))
@@ -244,6 +258,7 @@ class SQLiteManagedRepository:
     def _queue_new_run(self, session, assessment, context, versions, task_id, phase_id, key, request,
                        purpose="task"):
         """Run nuevo y su primer job en la transacción del llamante (tareas y operaciones de fase H3.3)."""
+        self._registry_current(session, str(context.root), versions)
         if purpose != "import_commit":
             from harness_local.storage.project_import import unresolved as import_unresolved
             if import_unresolved(session, str(context.root)):
@@ -311,6 +326,7 @@ class SQLiteManagedRepository:
             if retry_executor and not json.loads(history.task_json)["allowed_paths"]:
                 raise Conflict("Read-only tasks cannot retry implementation")
             self._phase_open(session, run.root, run.phase_id)
+            self._registry_current(session, run.root, json.loads(run.versions_json))
             activation_id = self._admit(session, assessment)
             job = Job(idempotency_key=key, run_id=run_id, request_json=request, status="QUEUED", created_at=self._now(),
                       activation_id=activation_id)
@@ -582,6 +598,7 @@ class SQLiteManagedRepository:
 
     def _queue_commit(self, session, run, key, request, updates, assessment) -> JobRecord:
         """Comprobaciones y job de commit en la transacción del llamante (acción propia o lote H3.4)."""
+        self._registry_current(session, run.root, json.loads(run.versions_json))
         run_id = run.id
         if session.scalar(select(Job.id).where(Job.run_id == run_id,
                 Job.status.in_(("QUEUED", "ACTIVE", "RECOVERY_REQUIRED")))) is not None:

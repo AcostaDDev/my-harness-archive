@@ -1,4 +1,4 @@
-"""Alta, cambio y baja de proyectos desde la UI sobre `local-config-3/4` (D078/D095).
+"""Alta, cambio y baja de proyectos desde la UI sobre `local-config-3/4/5` (D078/D095).
 
 El TOML sigue siendo la autoridad de lo que se ejecuta; el registro solo guarda
 datos no ejecutables (raíz canónica, confianza, composición nombrada, política,
@@ -109,7 +109,7 @@ class ProjectRegistry:
         if self.registrar is None:
             raise RegistryError(409, 'registry_unavailable',
                                 'La configuración del servicio no admite registrar proyectos '
-                                '(requiere local-config-3 o local-config-4 con [registration] y al menos una composición).')
+                                '(requiere local-config-3/4/5 con [registration] y al menos una composición).')
         return self.registrar
 
     # --- composición ------------------------------------------------------------------
@@ -189,6 +189,8 @@ class ProjectRegistry:
             raise LookupError('Proyecto registrado desconocido.')
         return {**self._summary(item), 'row': item['row'], 'trust': item['trust'],
                 'unfinished_jobs': self.repository.unfinished(item['root']) if item['status'] == 'ACTIVE' else [],
+                'configuration_blockers': self.repository.configuration_blockers(item['root'])
+                if self.registrar and self.registrar.format == 'local-config-5' else [],
                 'history': self.repository.history(project_id)}
 
     # --- vista previa y confirmación --------------------------------------------------
@@ -214,6 +216,8 @@ class ProjectRegistry:
             row['documents'] = body['documents']
         if body.get('permission_authority') is not None:
             row['permission_authority'] = body['permission_authority']
+        if body.get('agent_selection') is not None:
+            row['agent_selection'] = body['agent_selection']
         return row
 
     def preview(self, body):
@@ -255,6 +259,8 @@ class ProjectRegistry:
         if action == 'retire':
             changes = [{'field': 'status', 'before': 'ACTIVE', 'after': 'RETIRED'}]
         unfinished = self.repository.unfinished(row['root']) if action != 'register' else []
+        blockers = self.repository.configuration_blockers(row['root']) if (
+            action != 'register' and registrar.format == 'local-config-5') else []
         preview_sha256 = digest({'action': action, 'project_id': project_id, 'expected_version': expected,
                                  'current_sha256': current['row_sha256'] if current else None, 'status': status,
                                  'row_sha256': row_sha256, 'versions': versions})
@@ -262,7 +268,7 @@ class ProjectRegistry:
                 'status': status, 'row': row, 'row_sha256': row_sha256, 'changes': changes, 'versions': versions,
                 'profile': current['profile'] if action == 'retire' else registrar.compositions[row['composition']][0],
                 'trust_required': action == 'register', 'trust_statement': TRUST if action == 'register' else None,
-                'unfinished_jobs': unfinished, 'preview_sha256': preview_sha256}
+                'unfinished_jobs': unfinished, 'configuration_blockers': blockers, 'preview_sha256': preview_sha256}
 
     def apply(self, body, *, preview_sha256, trust_root=None, reason=None):
         with self._lock:
@@ -275,6 +281,8 @@ class ProjectRegistry:
             if shown['unfinished_jobs']:
                 raise RegistryError(409, 'pending_jobs', f'El checkout tiene trabajos sin terminar '
                                     f'({shown["unfinished_jobs"]}); espera o concílialos antes de cambiarlo.')
+            if shown['configuration_blockers']:
+                raise RegistryError(409, 'pending_configuration', '; '.join(shown['configuration_blockers']))
             trust = None
             if shown['trust_required']:
                 if trust_root != shown['row']['root']:
@@ -285,7 +293,8 @@ class ProjectRegistry:
                 saved = self.repository.apply(shown['action'], shown['project_id'],
                                               expected_version=shown['expected_version'], row=shown['row'],
                                               row_sha256=shown['row_sha256'], profile=shown['profile'],
-                                              preview_sha256=preview_sha256, trust=trust, reason=reason)
+                                              preview_sha256=preview_sha256, trust=trust, reason=reason,
+                                              protect_agents=self.registrar.format == 'local-config-5')
             except RegistryConflict as exc:
                 raise RegistryError(409, exc.code, str(exc)) from None
             self.unavailable.pop(saved['id'], None)

@@ -2130,6 +2130,29 @@ export interface components {
             /** Reason */
             reason: string;
         };
+        /** AgentPresetRead */
+        AgentPresetRead: {
+            /** Id */
+            id: string;
+            /**
+             * Provider
+             * @enum {string}
+             */
+            provider: "codex" | "claude";
+            /** Roles */
+            roles: ("reviewer" | "executor")[];
+            /** Models */
+            models: string[];
+            /** Efforts */
+            efforts: string[];
+            /** Allow Open Executor */
+            allow_open_executor: boolean;
+        };
+        /** AgentSelectionInput */
+        AgentSelectionInput: {
+            reviewer: components["schemas"]["ReviewerSelectionInput"];
+            executor: components["schemas"]["ExecutorSelectionInput"];
+        };
         /** ArchivedPhaseRead */
         ArchivedPhaseRead: {
             /** Path */
@@ -2572,6 +2595,7 @@ export interface components {
             /** Composition */
             composition: string;
             policy: components["schemas"]["RegistryPolicyInput"];
+            agent_selection?: components["schemas"]["AgentSelectionInput"] | null;
             /**
              * Tag Kind
              * @default lightweight
@@ -3377,6 +3401,11 @@ export interface components {
             efforts: string[];
             /** Effort Vocabulary */
             effort_vocabulary: string[];
+        };
+        /** ExecutorSelectionInput */
+        ExecutorSelectionInput: {
+            /** Preset Id */
+            preset_id: string;
         };
         /** FieldRead */
         FieldRead: {
@@ -5461,6 +5490,8 @@ export interface components {
             };
             /** Unfinished Jobs */
             unfinished_jobs: number[];
+            /** Configuration Blockers */
+            configuration_blockers?: string[];
             /** History */
             history: components["schemas"]["RegistryEventRead"][];
         };
@@ -5544,6 +5575,7 @@ export interface components {
             /** Composition */
             composition?: string | null;
             policy?: components["schemas"]["RegistryPolicyInput"] | null;
+            agent_selection?: components["schemas"]["AgentSelectionInput"] | null;
             /**
              * Tag Kind
              * @default lightweight
@@ -5694,6 +5726,8 @@ export interface components {
              * @description Trabajos sin terminar del checkout: bloquean la confirmación.
              */
             unfinished_jobs: number[];
+            /** Configuration Blockers */
+            configuration_blockers?: string[];
             /** Preview Sha256 */
             preview_sha256: string;
         };
@@ -5720,6 +5754,8 @@ export interface components {
             reviewer_provider: string | null;
             /** Executor Effort Vocabulary */
             executor_effort_vocabulary: string[];
+            /** Agent Presets */
+            agent_presets?: components["schemas"]["AgentPresetRead"][];
             /** Reserved Ids */
             reserved_ids: string[];
             /** Operator Projects */
@@ -5736,6 +5772,15 @@ export interface components {
         ReviewerAgentRead: {
             /** Provider */
             provider: string | null;
+            /** Model */
+            model: string;
+            /** Effort */
+            effort: string;
+        };
+        /** ReviewerSelectionInput */
+        ReviewerSelectionInput: {
+            /** Preset Id */
+            preset_id: string;
             /** Model */
             model: string;
             /** Effort */

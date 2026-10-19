@@ -1,7 +1,7 @@
 # Flujo — carpeta de proyectos y Django desde cero (P009)
 
 **Estado: selección/retirada de carpeta y creación/registro del hijo implementados en T002 (D117).**
-Roles por proyecto y preparación Django siguen como diseño T001, pendientes de T003/T004. D115/D116;
+Roles por proyecto implementados en T003 (D118); preparación Django pendiente de T004. D115/D116;
 [contrato/API/recuperación](../phase/P009-T001_CONTRATO_CREACION.md), [plan](../phase/P009_PLAN_DJANGO.md) y
 [tareas](../NEXT_STEPS.md). El flujo vigente de definición documental continúa en
 [project-definition](project-definition.md); este documento distingue lo construido en T002 de la ampliación pendiente de P009.
@@ -13,10 +13,9 @@ flowchart TD
     N --> V{"¿Raíz vigente y destino nuevo dentro de su alcance?"}
     V -- no --> X["Diagnóstico sin escribir en destinos ajenos"]
     V -- sí --> C["Persistir intención; crear hijo y registrar idempotentemente"]
-    C --> D["Enlace a definición documental existente con los agentes globales del TOML"]
-    D -. "T003/T004 pendientes" .-> Q0["Roles por proyecto y receta Django"]
-    Q0 --> DC["Definición conversacional D088 y commit documental raíz"]
-    DC --> P["Mostrar receta Django: archivos, dependencias, comandos y red exactos"]
+    C --> D["Enlace a definición documental con agentes efectivos: presets v5 o pareja heredada"]
+    D --> DC["Definición conversacional D088 y commit documental raíz"]
+    DC -. "T004 pendiente" .-> P["Mostrar receta Django: archivos, dependencias, comandos y red exactos"]
     P --> A["Usuario acepta el plan de preparación dentro de la carpeta ya autorizada"]
     A --> S["Preparación controlada: entorno, scaffold, configuración y commit técnico"]
     S --> Q["Usuario revisa roles y modelo/esfuerzo del revisor por proyecto"]
@@ -69,11 +68,12 @@ demuestra propiedad. No se borran carpetas inciertas. Repetir clave/payload devu
 otra clave no puede reservar el mismo destino/id. Una respuesta perdida tras el alta devuelve el mismo proyecto,
 incluso si después se retiró el padre. El estado `BLOCKED` no concede autoridad para continuar.
 
-**Pendiente de T003/T004:** en v5, presets seleccionados y agentes efectivos se componen por checkout. Cambiar ajustes exige no tener
+**Implementado en T003:** en v5, presets seleccionados y agentes efectivos se componen por checkout.
+[Selección, bloqueos e invalidación de planes](project-agents.md). Cambiar ajustes exige no tener
 trabajo pendiente utilizable bajo la selección anterior; se congelan versiones y los borradores anteriores
 quedan obsoletos. Formatos previos y proyectos sin override conservan su pareja global, sin sustituciones.
 
-La definición admite solo sus documentos actuales. Los enlaces tipados a herramientas de `.venv` permiten
+**Pendiente de T004:** la definición admite solo sus documentos actuales. Los enlaces tipados a herramientas de `.venv` permiten
 confirmar ese commit sin instalar antes; tareas/checks de ese perfil siguen bloqueados hasta preparar.
 La receta usa escritor y plan propios para archivos protegidos, con intención/pasos/lease/lock y procesos
 registrados. Confirmar liga archivos/argv/HEAD/versiones/red/límites; fallos o cancelación detienen, sin repetir
@@ -88,5 +88,5 @@ Guardar otra selección o retirarla bloquea intenciones pendientes; la reanudaci
 y preserva su intención original. Cancelar solo libera reservas si se acredita ausencia; conserva bytes. Tras resolución externa, una nueva
 comprobación versionada puede liberar una reserva de cancelación sin reabrir efectos.
 Cuatro tablas nuevas y procedencia del registro en [DDBB-DIAGRAM](../DDBB-DIAGRAM.md);
-detalles y verificación en [entrega T002](../phase/P009-T002_CARPETA_PROYECTOS.md). D116 sigue fijando
-los contratos pendientes de roles/receta; T003/T004 mantendrán la paridad al construirlos.
+detalles y verificación en [entrega T002](../phase/P009-T002_CARPETA_PROYECTOS.md). D118 implementa roles con el JSON existente del registro. D116 sigue fijando
+el contrato pendiente de receta; T004 mantendrá la paridad al construirlo.

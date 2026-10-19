@@ -108,10 +108,16 @@ por su API y los artefactos referenciados; la restauración es de consulta (`que
   Ninguna CLI carga por sí misma las instrucciones del checkout: Claude se lanza con `--setting-sources ""` y Codex
   con presupuesto de project docs 0 (D094). El motor inyecta `AGENTS.md` en el prompt de los roles sobre proyectos
   existentes; el rol `definition` (definición, importación e incorporación) lo redacta o lo analiza como evidencia.
-- **TOML local del operador** (`local-config-4`; 1–3 se siguen leyendo), fuera de todo checkout y `chmod 600`:
+- **TOML local del operador** (`local-config-5`; 1–4 se siguen leyendo), fuera de todo checkout y `chmod 600`:
   `[service]`, `[git]`, `[agents.reviewer]`, `[agents.executor]`, `[registration]` (raíces y techo de bootstrap),
   `[profiles.*]` opcionales, `[compositions.*]` (perfil integrado o declarado y comandos autorizados) y
-  `[[projects]]` opcional con su política. Sin secretos.
+  `[[projects]]` opcional con su política. V5 añade `[agent_presets.*]` y `agent_selection` opcional por
+  proyecto: ids de presets, modelo/esfuerzo del revisor; catálogo/modo del ejecutor en `policy`. Sin secretos.
+  El catálogo público omite ejecutables/entornos; `ports` conserva ambos agentes por checkout. El preflight
+  explícito cubre la pareja heredada y cada rol de los presets; cargar no invoca CLI. V1–v4 conservan sus hashes.
+  Cambios confirmados serializan registro y admisión en SQLite; bloquean aceptación/commit, propuestas de chat
+  y definición/importación utilizable. Planes no aceptados pasan a SUPERSEDED sin alterar sus snapshots;
+  nueva planificación antes de confirmar otro plan. [Flujo de agentes](flows/project-agents.md) (D118).
 - **Perfiles**: integrados en `profiles/` (`typescript-web` componible; `reference_project` solo biblioteca) o declarados en
   `[profiles.<nombre>]` (D095): preparación y validaciones como argv sin shell, JUnit junto a su validación,
   prefijos, rutas protegidas y sensibles, `data_model_paths` e instrucciones del ejecutor. En `local-config-4` el
@@ -235,12 +241,12 @@ Uso real (D051): construir y verificar el wheel (`scripts/build_distribution.py 
 
 ## 11. Ampliación — P009
 
-Diseño completado en P009-T001; carpeta y creación implementadas en T002 (D117); roles y receta pendientes
+Diseño completado en P009-T001; carpeta/creación implementadas en T002 (D117) y roles en T003 (D118); receta pendiente
 ([D116](DECISIONS.md#d116--p009-t001-autoridad-de-creación-presets-por-proyecto-y-preparación-separada),
 [contrato](phase/P009-T001_CONTRATO_CREACION.md)).
 El alta existente conserva `[registration].roots`. La autoridad UI de creación permite hijos directos nuevos
-fuera de esas raíces, también con `roots = []`, sin elevar `bootstrap_enabled`. Los proveedores siguen globales
-y Settings los muestra en consulta; T003/T004 implementarán presets y receta:
+fuera de esas raíces, también con `roots = []`, sin elevar `bootstrap_enabled`. Settings permite seleccionar
+presets por proyecto registrado con v5; los proyectos TOML conservan edición solo por el operador:
 
 - Selección de carpeta padre desde UI, guardada como autoridad operativa local auditada; creación idempotente
   de nuevos hijos con intención previa. No se edita el TOML ni la configuración global; convivencia con sus
@@ -248,7 +254,7 @@ y Settings los muestra en consulta; T003/T004 implementarán presets y receta:
   no proyectos ya registrados. Intención y alta atómica conservan procedencia; los agentes solo reciben el hijo.
 - Presets de roles del servicio con selección por proyecto; el usuario fija modelo/esfuerzo del revisor y este
   decide los del ejecutor. Cambios entre tareas, versiones congeladas e historiales anteriores conservados.
-  Se reserva `local-config-5`; v1–v4 conservan lectura/hashes. El navegador no suministra ejecutables, entornos
+  Implementado en `local-config-5`; v1–v4 conservan lectura/hashes. El navegador no suministra ejecutables, entornos
   o credenciales; la composición efectiva guarda agentes por checkout, también al construir `ports`.
 - Receta técnica Django confirmada tras el commit documental: entorno, scaffold, dependencias fijadas y checks.
   Autoridad separada para crear archivos protegidos, sin relajar el contrato documental ni el ejecutor normal.

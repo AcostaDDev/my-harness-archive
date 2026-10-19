@@ -1,5 +1,7 @@
-"""Operator TOML outside managed checkouts → explicit ManagedConfig (`local-config-4`).
+"""Operator TOML outside managed checkouts → explicit ManagedConfig (`local-config-5`).
 
+`local-config-5` (P009-T003) adds private role presets and optional project selections.
+Effective agents are composed per checkout; older formats keep their frozen identity.
 `local-config-4` (P008-T008) is `local-config-3` plus optional `[profiles.NAME]`:
 stack profiles declared by the operator (preparation, validations with JUnit,
 command prefixes, protected/sensitive paths, data-model paths and executor
@@ -19,7 +21,7 @@ executables, environment, models and command authorizations come only from
 this file; there are no implicit defaults for them. Provider authentication
 stays with each installed CLI: the file must not contain secrets.
 """
-from dataclasses import asdict
+from dataclasses import asdict, replace
 import hashlib
 import importlib.metadata
 import math
@@ -31,22 +33,23 @@ import stat
 from threading import Lock
 import tomllib
 
-from harness_local.adapters.cli_agents import EFFORTS, CLIConfig, CLIProcessAdapter
+from harness_local.adapters.cli_agents import EFFORTS, WRITE_SUPPORTED, CLIConfig, CLIProcessAdapter
 from harness_local.adapters.commands import CommandConfig, ManagedCommandRunner
 from harness_local.adapters.git import GitWorkspace
 from harness_local.core.engine.commit import GitIdentity
 from harness_local.core.engine.context import (Command, EnginePolicy, JUnitDeclaration, ProjectContext,
                                                ProjectProfile, relative_path)
-from harness_local.core.engine.contracts import freeze
+from harness_local.core.engine.contracts import MODEL_FORM, freeze
 from harness_local.core.engine.documents import DOCUMENT_LAYOUT
 from harness_local.core.engine.journal import JournalError
 from harness_local.profiles.typescript_web import typescript_web_profile
 from harness_local.services.managed_runtime import (PROJECT_ID, ManagedConfig, ManagedProject, agents_view,
                                                     validate_projects)
 
-VERSION = 'local-config-4'
-FORMATS = ('local-config-1', 'local-config-2', 'local-config-3', VERSION)
-REGISTRABLE = ('local-config-3', VERSION)
+VERSION = 'local-config-5'
+FORMATS = ('local-config-1', 'local-config-2', 'local-config-3', 'local-config-4', VERSION)
+REGISTRABLE = ('local-config-3', 'local-config-4', VERSION)
+PROFILE_FORMATS = ('local-config-4', VERSION)
 CLI_KEYS = ('executable', 'cli_version', 'timeout_seconds', 'environment')
 TOOL_KEYS = ('tools', 'allowed_tools', 'grantable_tools')
 CONFIG_ENV = 'HARNESS_LOCAL_CONFIG'
@@ -187,6 +190,39 @@ def _agents(data):
         own = ('provider', 'model', 'effort') if agent == 'reviewer' else ('provider',)
         agents[agent] = _cli(where, provider, {k: v for k, v in value.items() if k not in own}, optional=optional)
     return agents, reviewer
+
+
+def _presets(data):
+    """V5: capacidades locales explícitas; cargar no consulta disponibilidad remota."""
+    if not isinstance(data, dict):
+        raise LocalConfigError('agent_presets: se esperaba una tabla')
+    presets = {}
+    for name, value in data.items():
+        where = f'agent_presets.{name}'
+        if not PROJECT_ID.fullmatch(name):
+            raise LocalConfigError(f'{where}: id de preset inválido')
+        value = _fields(value, where, ('provider', 'roles', 'models', 'efforts', 'allow_open_executor', *CLI_KEYS),
+                        TOOL_KEYS)
+        provider = value['provider']
+        if not isinstance(provider, str) or provider not in EFFORTS:
+            raise LocalConfigError(f'{where}.provider: proveedores admitidos {sorted(EFFORTS)}')
+        roles = _texts(value['roles'], f'{where}.roles')
+        models, efforts = (_texts(value[key], f'{where}.{key}') for key in ('models', 'efforts'))
+        if len(set(roles)) != len(roles) or not set(roles) <= {'reviewer', 'executor'}:
+            raise LocalConfigError(f'{where}.roles: reviewer y/o executor sin repeticiones')
+        if (len(set(models)) != len(models) or len(set(efforts)) != len(efforts)
+                or any(not MODEL_FORM.fullmatch(model) for model in models)
+                or not set(efforts) <= set(EFFORTS[provider])):
+            raise LocalConfigError(f'{where}: modelos únicos válidos y esfuerzos del proveedor requeridos')
+        _flag(value['allow_open_executor'], f'{where}.allow_open_executor')
+        config = _cli(where, provider, {k: v for k, v in value.items() if k in (*CLI_KEYS, *TOOL_KEYS)},
+                      optional=TOOL_KEYS if provider == 'claude' else ())
+        if 'reviewer' in roles and any((config.tools, config.allowed_tools, config.grantable_tools)):
+            raise LocalConfigError(f'{where}: el revisor tiene inventario de herramientas fijo de solo lectura')
+        if 'executor' in roles and config.cli_version not in WRITE_SUPPORTED[provider]:
+            raise LocalConfigError(f'{where}: versión CLI incompatible con escritura')
+        presets[name] = (value, config)
+    return presets
 
 
 def _shell_free(argv, where):
@@ -376,16 +412,17 @@ class LocalComposer:
     OPTIONAL_KEYS = ('tag_kind', 'permission_authority', 'documents')
 
     def __init__(self, fmt, data, source, state, agents, reviewer, identity, git_executable, engine,
-                 compositions, registration, profiles):
+                 compositions, registration, profiles, presets):
         self.format, self.source, self.state = fmt, source, state
         self.agents_key = 'providers' if fmt == 'local-config-1' else 'agents'
         self._authority = {self.agents_key: data[self.agents_key], 'git': data['git'], 'state_dir': str(state)}
         self.agents, self.reviewer = agents, reviewer
+        self.presets = presets
         self.identity, self.git_executable, self.engine = identity, git_executable, engine
         self.compositions = compositions  # name → (profile, raw command table); empty before v3
         self.profiles = profiles  # name → ProjectProfile: built-in ones, plus those declared in v4
         self.declared = tuple(sorted(name for name in profiles if name not in PROFILES))
-        # v3/v4 only: canonical roots under which the UI may register, and the bootstrap ceiling.
+        # v3–v5: canonical roots under which the UI may register, and the bootstrap ceiling.
         self.roots, self.bootstrap_enabled = registration
         self._lock = Lock()
         self._live = {}
@@ -406,6 +443,8 @@ class LocalComposer:
             required, optional = (*self.PROJECT_KEYS, 'composition'), (*self.OPTIONAL_KEYS, 'bootstrap_enabled')
         else:
             required, optional = (*self.PROJECT_KEYS, 'profile', 'commands'), self.OPTIONAL_KEYS
+        if self.format == VERSION:
+            optional = (*optional, 'agent_selection')
         item = _fields(item, where, required, optional)
         if item.get('documents', 'v2') != 'v2':
             raise LocalConfigError(f'{where}.documents: solo se admite "v2" (contrato documental unificado D088; '
@@ -428,21 +467,33 @@ class LocalComposer:
             if profile_name not in self.profiles:
                 raise LocalConfigError(f'{where}.profile: perfiles admitidos {sorted(self.profiles)}')
         profile = self.profiles[profile_name]
-        if self.format == VERSION:
+        if self.format in PROFILE_FORMATS:
             # P008-T008: el contenido completo del perfil (declarado o integrado) entra en el hash congelado, así que
             # cambiarlo deja en cuarentena los jobs admitidos antes. v1–v3 conservan sus hashes.
             authority['profile'] = asdict(profile)
         bootstrap = _flag(item.get('bootstrap_enabled', False), f'{where}.bootstrap_enabled')
-        engine_policy = _policy(item['policy'], f'{where}.policy', self.reviewer, self.agents['executor'].provider)
+        agents, reviewer, selected = self.effective_agents(item, where)
+        engine_policy = _policy(item['policy'], f'{where}.policy', reviewer, agents['executor'].provider)
+        if selected:
+            executor = selected['executor']
+            if ((engine_policy.executor_mode == 'catalog'
+                 and not set(engine_policy.executor_models) <= set(executor['models']))
+                    or any(not MODEL_FORM.fullmatch(model) for model in engine_policy.executor_models)
+                    or not set(engine_policy.executor_efforts) <= set(executor['efforts'])):
+                raise LocalConfigError(f'{where}.policy: catálogo del ejecutor fuera del preset seleccionado')
+            if engine_policy.executor_mode == 'open' and not executor['allow_open_executor']:
+                raise LocalConfigError(f'{where}.policy: el preset no admite ejecutor libre')
+            engine_policy = replace(engine_policy, executor_effort_vocabulary=tuple(executor['efforts']))
+            authority['agent_presets'] = selected
         # La preview valida la configuración sobre el padre existente, sin construir puertos para el hijo.
         commands = _commands(table, f'{where}.commands', root.parent if new_directory else root, profile,
-                             strict=self.format == VERSION)
+                             strict=self.format in PROFILE_FORMATS)
         identifier = _text(item['id'], f'{where}.id')
         if not PROJECT_ID.fullmatch(identifier):
             raise LocalConfigError(f'{where}.id: [a-z0-9][a-z0-9._-]{{0,63}} requerido')
         artifacts = self.state / 'artifacts' / identifier
         try:
-            cli = CLIProcessAdapter(self.agents, artifacts)
+            cli = CLIProcessAdapter(agents, artifacts)
         except ValueError as exc:
             raise LocalConfigError(f'{self.agents_key}: {exc}') from None
         runner = ManagedCommandRunner(commands)
@@ -459,6 +510,8 @@ class LocalComposer:
                     'local_config': self.format, 'profile': profile.name, 'local_config_sha256': digest,
                     'document_layout': DOCUMENT_LAYOUT,
                     **({'project_registry': str(registry[0])} if registry is not None else {}),
+                    **({'project_registry_id': identifier, 'project_registry_sha256': registry[1]}
+                       if registry is not None and self.format == VERSION else {}),
                     **cli.frozen_versions(), **runner.frozen_versions()}
         if new_directory:
             commands_snapshot = {**asdict(commands), 'checkout': str(root)}
@@ -473,7 +526,28 @@ class LocalComposer:
         context = ProjectContext(root, profile, engine_policy, documents='v2')
         project = ManagedProject(identifier, context, versions, item.get('permission_authority'),
                                  item.get('tag_kind', 'lightweight'), bootstrap)
-        return project, (identifier, versions, commands, artifacts)
+        return project, (identifier, versions, commands, artifacts, agents)
+
+    def effective_agents(self, item, where):
+        selection = item.get('agent_selection')
+        if selection is None:
+            return self.agents, self.reviewer, None
+        selection = _fields(selection, f'{where}.agent_selection', ('reviewer', 'executor'))
+        agents, selected, reviewer = {}, {}, None
+        for role in ('reviewer', 'executor'):
+            label = f'{where}.agent_selection.{role}'
+            choice = _fields(selection[role], label, ('preset_id', 'model', 'effort') if role == 'reviewer'
+                             else ('preset_id',))
+            name = _text(choice['preset_id'], f'{label}.preset_id')
+            if name not in self.presets or role not in self.presets[name][0]['roles']:
+                raise LocalConfigError(f'{label}: preset ausente o incompatible con el rol ({name})')
+            preset, agents[role] = self.presets[name]
+            selected[role] = preset
+            if role == 'reviewer':
+                reviewer = tuple(_text(choice[key], f'{label}.{key}') for key in ('model', 'effort'))
+                if reviewer[0] not in preset['models'] or reviewer[1] not in preset['efforts']:
+                    raise LocalConfigError(f'{label}: modelo/esfuerzo del revisor fuera del preset')
+        return agents, reviewer, selected
 
     def install(self, composed):
         project, composition = composed
@@ -490,14 +564,14 @@ class LocalComposer:
             current = self._live.get(context.root)
         if current is None:
             raise JournalError('Checkout sin composición local registrada')
-        identifier, frozen, commands, artifacts = current
+        identifier, frozen, commands, artifacts, agents = current
         if any(versions.get(key) != value for key, value in frozen.items()):
             raise JournalError(f'Composición local de {identifier} distinta de la congelada; no se ejecuta')
-        return commands, artifacts
+        return commands, artifacts, agents
 
     def ports(self, context, versions):
-        commands, artifacts = self._composed(context, versions)
-        return (CLIProcessAdapter(self.agents, artifacts), ManagedCommandRunner(commands),
+        commands, artifacts, agents = self._composed(context, versions)
+        return (CLIProcessAdapter(agents, artifacts), ManagedCommandRunner(commands),
                 GitWorkspace(self.identity, executable=self.git_executable))
 
     def writer(self, context, versions):
@@ -511,6 +585,9 @@ class LocalComposer:
                 'executor_provider': self.agents['executor'].provider,
                 'reviewer_provider': self.agents['reviewer'].provider,
                 'executor_effort_vocabulary': list(EFFORTS[self.agents['executor'].provider]),
+                'agent_presets': [{'id': name, **{key: value[key] for key in
+                                  ('provider', 'roles', 'models', 'efforts', 'allow_open_executor')}}
+                                  for name, (value, _) in sorted(self.presets.items())],
                 'compositions': [{'name': name, 'profile': profile,
                                   'executables': sorted(table['executables']),
                                   'environment_keys': sorted(table['environment']),
@@ -526,7 +603,8 @@ def _build(data, source):
     agents_key = 'providers' if fmt == 'local-config-1' else 'agents'
     if fmt in REGISTRABLE:
         data = _fields(data, 'raíz', ('format', 'service', 'git', 'agents', 'registration', 'compositions'),
-                       ('projects', 'profiles') if fmt == VERSION else ('projects',))
+                       ('projects', 'profiles', 'agent_presets') if fmt == VERSION else
+                       ('projects', 'profiles') if fmt in PROFILE_FORMATS else ('projects',))
     else:
         data = _fields(data, 'raíz', ('format', 'service', 'git', agents_key, 'projects'))
     service = _fields(data['service'], 'service', ('state_dir', 'supervisor'), ('lease_seconds', 'poll_seconds'))
@@ -544,6 +622,7 @@ def _build(data, source):
         reviewer = None
     else:
         agents, reviewer = _agents(data['agents'])
+    presets = _presets(data.get('agent_presets', {}))
     compositions, registration = {}, ((), False)
     profiles = {name: factory() for name, factory in PROFILES.items()}
     declared = data.get('profiles', {})
@@ -557,7 +636,8 @@ def _build(data, source):
         for name, value in data['compositions'].items():
             if not PROJECT_ID.fullmatch(name):
                 raise LocalConfigError(f'compositions.{name}: nombre [a-z0-9][a-z0-9._-]{{0,63}} requerido')
-            compositions[name] = _composition(value, f'compositions.{name}', state, profiles, strict=fmt == VERSION)
+            compositions[name] = _composition(value, f'compositions.{name}', state, profiles,
+                                               strict=fmt in PROFILE_FORMATS)
         table = _fields(data['registration'], 'registration', ('roots', 'bootstrap_enabled'))
         roots = tuple(_path(item, 'registration.roots', kind='directory')
                       for item in _texts(table['roots'], 'registration.roots', empty=True))
@@ -573,7 +653,7 @@ def _build(data, source):
         raise LocalConfigError('Versión del paquete harness-local no disponible') from None
 
     composer = LocalComposer(fmt, data, source, state, agents, reviewer, identity, git_executable, engine,
-                             compositions, registration, profiles)
+                             compositions, registration, profiles, presets)
     projects = []
     for index, item in enumerate(items):
         project, composition = composer.compose(item, f'projects[{index}]')
@@ -603,9 +683,12 @@ def load_local_config(path) -> ManagedConfig:
 
 
 def inspect_local_config(path) -> tuple[ManagedConfig, dict[str, CLIConfig]]:
-    """For check-config: the validated reviewer/executor CLI configurations shared by every project."""
+    """For check-config: defaults and every role admitted by a V5 preset."""
     path = Path(path)
-    return _build(_read(path), path)
+    config, agents = _build(_read(path), path)
+    return config, {**agents, **{f'preset.{name}.{role}': cli
+                               for name, (value, cli) in config.registrar.presets.items()
+                               for role in value['roles']}}
 
 
 def from_environment() -> ManagedConfig:

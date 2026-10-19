@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import { useState, type ReactNode } from "react";
 import type { S } from "../managed-api";
 import { Prompts } from "../Prompts";
 import { Fields, Loading, PageHeader, Stale, usePoll } from "../ui";
@@ -8,13 +8,14 @@ import { useWorkspace } from "../workspace";
 const SELECTION = { catalog: "Solo el catálogo", open: "Libre (catálogo como referencia)" } as const;
 const PLANNING = { auto: "Automática", agent: "La hace el revisor", deterministic: "Determinista, desde NEXT_STEPS" } as const;
 
-/** Ajustes: agentes en solo lectura (TOML, D049/D052), registro editable si se dio de alta desde la UI (D076) y prompts. */
+/** Ajustes efectivos; selección por proyecto mediante el registro V5 y presets del operador (D116). */
 export function SettingsPage() {
   const { project } = useWorkspace();
-  const read = usePoll<S["ManagedProjectRead"]>(`/projects/${project}`, 15000);
+  const [revision, setRevision] = useState(0);
+  const read = usePoll<S["ManagedProjectRead"]>(`/projects/${project}`, 15000, revision);
   const p = read.data;
   return <>
-    <PageHeader title="Ajustes"><p>Los agentes, ejecutables y entornos los fija la configuración local del servicio. Aquí se consultan; el registro de un proyecto dado de alta desde la interfaz y los prompts versionados sí se editan.</p></PageHeader>
+    <PageHeader title="Ajustes"><p>Consulta los agentes efectivos y cambia su selección en el registro del proyecto, si el servicio ofrece presets. El revisor decide el modelo y esfuerzo del ejecutor en cada tarea. Ejecutables y entornos los fija el operador.</p></PageHeader>
     <Stale error={p ? read.error : undefined} />
     {!p ? <Loading /> : <>
       <section className="panel" aria-labelledby="settings-agents">
@@ -45,7 +46,7 @@ export function SettingsPage() {
         <h3>Versiones congeladas en cada trabajo</h3>
         <Fields items={Object.entries(p.versions).map(([k, v]) => [k, v === null ? <span className="muted">no registrada</span> : <code>{v}</code>])} />
       </section>
-      {p.source === "registry" && <RegistrySettings project={project} />}
+      {p.source === "registry" && <RegistrySettings project={project} onChanged={() => setRevision(n => n + 1)} />}
       <Prompts project={project} />
     </>}
   </>;

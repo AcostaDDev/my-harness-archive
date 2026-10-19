@@ -118,7 +118,7 @@ class ProjectCreation:
         available = self.registry.registrar is not None
         root = self.repository.root()
         return {**root, 'available': available,
-                'diagnostic': None if available else 'Requiere local-config-3/4 registrable.',
+                'diagnostic': None if available else 'Requiere local-config-3/4/5 registrable.',
                 'bootstrap_enabled': available and self.registry.registrar.bootstrap_enabled,
                 'permission_statement': PERMISSION, 'history': self.repository.roots_history(),
                 'operations': self.repository.operations()}

@@ -16,6 +16,7 @@ type Draft = {
   project_id: string; root: string; composition: string; planning_mode: "agent" | "deterministic";
   executor_mode: "catalog" | "open"; executor_models: string; executor_efforts: string[]; max_revision_cycles: string;
   tag_kind: "lightweight" | "annotated"; bootstrap_enabled: boolean; permission_authority: string;
+  agent_mode: "inherited" | "project"; reviewer_preset: string; reviewer_model: string; reviewer_effort: string; executor_preset: string;
 };
 
 const PLANNING = { agent: "La hace el revisor", deterministic: "Determinista, desde NEXT_STEPS" } as const;
@@ -25,16 +26,19 @@ const FIELDS: Record<string, string> = {
   id: "Id", root: "Raíz", repository_trusted: "Confianza (se confirma aparte)", composition: "Composición", policy: "Política",
   tag_kind: "Tag al cerrar fases", documents: "Documentos", bootstrap_enabled: "Bootstrap",
   permission_authority: "Techo de permisos", status: "Estado",
+  agent_selection: "Agentes del proyecto",
 };
 
 function emptyDraft(options: S["RegistryRead"]): Draft {
   return { project_id: "", root: options.roots.length === 1 ? `${options.roots[0]}/` : "", composition: options.compositions[0]?.name ?? "",
     planning_mode: "agent", executor_mode: "catalog", executor_models: "", executor_efforts: [], max_revision_cycles: "",
-    tag_kind: "lightweight", bootstrap_enabled: false, permission_authority: "" };
+    tag_kind: "lightweight", bootstrap_enabled: false, permission_authority: "",
+    agent_mode: "inherited", reviewer_preset: "", reviewer_model: "", reviewer_effort: "", executor_preset: "" };
 }
 
 function draftOf(row: Record<string, unknown>): Draft {
   const policy = (row.policy ?? {}) as Record<string, unknown>;
+  const selection = row.agent_selection as S["AgentSelectionInput"] | undefined;
   return { project_id: String(row.id), root: String(row.root), composition: String(row.composition),
     planning_mode: policy.planning_mode === "deterministic" ? "deterministic" : "agent",
     executor_mode: policy.executor_mode === "open" ? "open" : "catalog",
@@ -43,7 +47,10 @@ function draftOf(row: Record<string, unknown>): Draft {
     max_revision_cycles: policy.max_revision_cycles == null ? "" : String(policy.max_revision_cycles),
     tag_kind: row.tag_kind === "annotated" ? "annotated" : "lightweight",
     bootstrap_enabled: row.bootstrap_enabled === true,
-    permission_authority: row.permission_authority ? JSON.stringify(row.permission_authority, null, 2) : "" };
+    permission_authority: row.permission_authority ? JSON.stringify(row.permission_authority, null, 2) : "",
+    agent_mode: selection ? "project" : "inherited", reviewer_preset: selection?.reviewer.preset_id ?? "",
+    reviewer_model: selection?.reviewer.model ?? "", reviewer_effort: selection?.reviewer.effort ?? "",
+    executor_preset: selection?.executor.preset_id ?? "" };
 }
 
 /** Cambio exacto que se envía; un techo de permisos que no es JSON se rechaza aquí, sin llamar al servidor. */
@@ -59,6 +66,9 @@ function changeOf(draft: Draft, action: Change["action"], expected: number): Cha
     action, project_id: draft.project_id.trim(), expected_version: expected,
     ...(action === "register" ? { root: draft.root.trim() } : {}),
     composition: draft.composition,
+    ...(draft.agent_mode === "project" ? { agent_selection: {
+      reviewer: { preset_id: draft.reviewer_preset, model: draft.reviewer_model, effort: draft.reviewer_effort },
+      executor: { preset_id: draft.executor_preset } } } : {}),
     policy: { planning_mode: draft.planning_mode, executor_mode: draft.executor_mode,
       executor_models: draft.executor_models.split(/[\n,]/).map(v => v.trim()).filter(Boolean),
       executor_efforts: draft.executor_efforts, ...(cycles ? { max_revision_cycles: Number(cycles) } : {}) },
@@ -91,7 +101,7 @@ function Confirmation({ preview, busy, danger, onConfirm }: {
   const [trusted, setTrusted] = useState(false);
   const [reviewed, setReviewed] = useState(false);
   const [reason, setReason] = useState("");
-  const blocked = preview.unfinished_jobs.length > 0;
+  const blocked = preview.unfinished_jobs.length > 0 || (preview.configuration_blockers ?? []).length > 0;
   const creating = preview.action === "register";
   return <section className={`decision ${danger ? "decision-danger" : "decision-attention"}`} aria-labelledby="registry-preview">
     <h3 id="registry-preview">{ACTIONS[preview.action]} de <code>{preview.project_id}</code>: revisa antes de confirmar</h3>
@@ -109,7 +119,8 @@ function Confirmation({ preview, busy, danger, onConfirm }: {
       </table>
     </div>
     {preview.versions && <Evidence title="Versiones que congelará cada trabajo" value={preview.versions} />}
-    {blocked && <p className="state state-attention" role="status">El checkout tiene trabajos sin terminar ({preview.unfinished_jobs.join(", ")}). Espera a que terminen o concílialos: el servidor rechazará el cambio.</p>}
+    {!!preview.unfinished_jobs.length && <p className="state state-attention" role="status">El checkout tiene trabajos sin terminar ({preview.unfinished_jobs.join(", ")}). Espera a que terminen o concílialos: el servidor rechazará el cambio.</p>}
+    {!!(preview.configuration_blockers ?? []).length && <Alert>{(preview.configuration_blockers ?? []).join(". ")}</Alert>}
     {preview.trust_required && <fieldset className="trust">
       <legend>Confianza en el checkout</legend>
       <p>{preview.trust_statement}</p>
@@ -132,6 +143,10 @@ function DraftFields({ draft, options, action, onChange }: {
 }) {
   const set = <K extends keyof Draft>(key: K, value: Draft[K]) => onChange({ ...draft, [key]: value });
   const composition = options.compositions.find(c => c.name === draft.composition);
+  const reviewer = (options.agent_presets ?? []).find(p => p.id === draft.reviewer_preset && p.roles.includes("reviewer"));
+  const executor = (options.agent_presets ?? []).find(p => p.id === draft.executor_preset && p.roles.includes("executor"));
+  const projectAgents = draft.agent_mode === "project";
+  const efforts = projectAgents ? executor?.efforts ?? [] : options.executor_effort_vocabulary;
   return <>
     {action === "register" && <div className="form-row">
       <label>Id del proyecto<input value={draft.project_id} onChange={e => set("project_id", e.target.value)} required maxLength={64}
@@ -157,21 +172,53 @@ function DraftFields({ draft, options, action, onChange }: {
     </fieldset>
     <fieldset>
       <legend>Política de agentes</legend>
+      {options.format === "local-config-5" ? <>
+        <label>Agentes<select value={draft.agent_mode} onChange={e => onChange({ ...draft,
+          agent_mode: e.target.value as Draft["agent_mode"], reviewer_preset: "", reviewer_model: "", reviewer_effort: "",
+          executor_preset: "", executor_models: "", executor_efforts: [], executor_mode: "catalog" })}>
+          <option value="inherited">Heredar la pareja del servicio</option><option value="project">Elegir para este proyecto</option>
+        </select></label>
+        {!projectAgents && <p className="hint">Se heredan proveedor, modelo y esfuerzo del revisor y proveedor del ejecutor del servicio. La política del ejecutor se define abajo.</p>}
+        {projectAgents && <>
+          {!(options.agent_presets ?? []).some(p => p.roles.includes("reviewer")) || !(options.agent_presets ?? []).some(p => p.roles.includes("executor"))
+            ? <Alert>Faltan presets compatibles para ambos roles. El operador debe declararlos en la configuración del servicio.</Alert> : null}
+          <div className="form-row">
+            <label>Preset del revisor<select required value={draft.reviewer_preset} onChange={e => onChange({ ...draft,
+              reviewer_preset: e.target.value, reviewer_model: "", reviewer_effort: "" })}>
+              <option value="">Elige proveedor y preset</option>
+              {(options.agent_presets ?? []).filter(p => p.roles.includes("reviewer")).map(p => <option key={p.id} value={p.id}>{p.provider} · {p.id}</option>)}
+            </select></label>
+            <label>Modelo del revisor<select required value={draft.reviewer_model} onChange={e => set("reviewer_model", e.target.value)}>
+              <option value="">Elige modelo</option>{reviewer?.models.map(model => <option key={model} value={model}>{model}</option>)}
+            </select></label>
+            <label>Esfuerzo del revisor<select required value={draft.reviewer_effort} onChange={e => set("reviewer_effort", e.target.value)}>
+              <option value="">Elige esfuerzo</option>{reviewer?.efforts.map(effort => <option key={effort} value={effort}>{effort}</option>)}
+            </select></label>
+          </div>
+          <label>Preset del ejecutor<select required value={draft.executor_preset} onChange={e => onChange({ ...draft,
+            executor_preset: e.target.value, executor_models: "", executor_efforts: [], executor_mode: "catalog" })}>
+            <option value="">Elige proveedor y preset</option>
+            {(options.agent_presets ?? []).filter(p => p.roles.includes("executor")).map(p => <option key={p.id} value={p.id}>{p.provider} · {p.id}</option>)}
+          </select></label>
+          {executor && <p className="hint">Modelos admisibles como catálogo: {executor.models.join(", ")}. {executor.allow_open_executor ? "Admite modo libre." : "Solo admite catálogo."}</p>}
+          <p className="hint">El revisor decidirá el modelo y esfuerzo concretos del ejecutor, con motivo, en cada tarea y revisión. Al guardar se invalidan los planes aún no aceptados.</p>
+        </>}
+      </> : <p className="hint">Cambiar proveedores por proyecto requiere local-config-5 y presets del operador. Esta configuración conserva la pareja del servicio.</p>}
       <div className="form-row">
         <label>Planificación<select value={draft.planning_mode} onChange={e => set("planning_mode", e.target.value as Draft["planning_mode"])}>
           {Object.entries(PLANNING).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select></label>
         <label>Selección del ejecutor<select value={draft.executor_mode} onChange={e => set("executor_mode", e.target.value as Draft["executor_mode"])}>
-          {Object.entries(SELECTION).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select></label>
+          {Object.entries(SELECTION).map(([value, label]) => <option key={value} value={value} disabled={value === "open" && projectAgents && !executor?.allow_open_executor}>{label}</option>)}</select></label>
         <label>Ciclos de revisión<input type="number" min={0} max={20} value={draft.max_revision_cycles} placeholder="3"
           onChange={e => set("max_revision_cycles", e.target.value)} /></label>
       </div>
-      <label>Modelos del ejecutor ({options.executor_provider ?? "sin proveedor"}), uno por línea
+      <label>Catálogo de modelos del ejecutor ({projectAgents ? executor?.provider ?? "elige preset" : options.executor_provider ?? "sin proveedor"}), uno por línea
         <textarea rows={2} value={draft.executor_models} onChange={e => set("executor_models", e.target.value)} spellCheck={false} /></label>
       <p className="legend">Esfuerzos del ejecutor</p>
-      <div className="effort-list">{options.executor_effort_vocabulary.map(effort => <label key={effort} className="check">
+      <div className="effort-list">{efforts.map(effort => <label key={effort} className="check">
         <input type="checkbox" checked={draft.executor_efforts.includes(effort)} onChange={e => set("executor_efforts",
-          e.target.checked ? options.executor_effort_vocabulary.filter(v => v === effort || draft.executor_efforts.includes(v)) : draft.executor_efforts.filter(v => v !== effort))} />{effort}</label>)}</div>
-      <p className="hint">El revisor ({options.reviewer_provider ?? "sin proveedor"}) planifica con el modelo y el esfuerzo que fija el TOML.</p>
+          e.target.checked ? efforts.filter(v => v === effort || draft.executor_efforts.includes(v)) : draft.executor_efforts.filter(v => v !== effort))} />{effort}</label>)}</div>
+      {!projectAgents && <p className="hint">El revisor ({options.reviewer_provider ?? "sin proveedor"}) planifica con el modelo y el esfuerzo que fija el TOML.</p>}
     </fieldset>
     <fieldset>
       <legend>Proyecto</legend>
@@ -324,7 +371,7 @@ function NewDirectoryForm({ options, root, refresh }: {
       const fields = changeOf(draft, "register", 0);
       const change: S["CreationInput"] = { project_id: fields.project_id, directory_name: name, root_version: root.version,
         composition: fields.composition!, policy: fields.policy!, tag_kind: draft.tag_kind, documents: "v2",
-        permission_authority: fields.permission_authority };
+        permission_authority: fields.permission_authority, agent_selection: fields.agent_selection };
       const data = await managed<S["CreationPreviewRead"]>("/project-creations/preview", change);
       if (current === generation.current) setPreview({ change, data });
     }); }}>
@@ -389,7 +436,7 @@ export function RegisterPage() {
         onClick={() => setMode("register")}>Registrar carpeta existente</button>
     </div>
     {!options ? read.error ? <Alert>{read.error}</Alert> : <Loading />
-      : !options.available ? <Empty title="Este servicio no admite registrar proyectos"><p>Requiere local-config-3/4 con registro y composiciones.</p></Empty>
+      : !options.available ? <Empty title="Este servicio no admite registrar proyectos"><p>Requiere local-config-3/4/5 con registro y composiciones.</p></Empty>
       : mode === "create" ? !options.creation_available ? <Empty title="Creación deshabilitada por el operador"><p>La configuración debe permitir bootstrap.</p></Empty>
         : folder.data?.status !== "ACTIVE" ? <Empty title="Elige una carpeta de proyectos"><p>Guarda primero la carpeta padre donde crear los hijos.</p></Empty>
         : <NewDirectoryForm key={folder.data.version} options={options} root={folder.data} refresh={refresh} />
@@ -407,7 +454,7 @@ export function RegisterPage() {
 }
 
 /** Ajustes de un proyecto registrado: versión, auditoría, cambio y baja. Los del TOML solo se consultan. */
-export function RegistrySettings({ project }: { project: string }) {
+export function RegistrySettings({ project, onChanged }: { project: string; onChanged: () => void }) {
   const [refresh, setRefresh] = useState(0);
   const options = usePoll<S["RegistryRead"]>("/registry", 0, refresh);
   const detail = usePoll<S["RegisteredProjectRead"]>(`/registry/projects/${project}`, 0, refresh);
@@ -424,6 +471,8 @@ export function RegistrySettings({ project }: { project: string }) {
       ["Confianza", item.trust.confirmed && item.trust.root === item.root ? "Confirmada en el alta sobre esta raíz" : "sin confirmar"],
       ["Fila", <Hash value={item.row_sha256} />],
       ["Trabajos sin terminar", item.unfinished_jobs.length ? item.unfinished_jobs.join(", ") : "ninguno"],
+      ["Bloqueos de configuración", (item.configuration_blockers ?? []).length ? (item.configuration_blockers ?? []).join(". ") : "ninguno"],
+      ["Agentes", item.row.agent_selection ? "Selección propia del proyecto" : "Pareja heredada del servicio"],
     ]} />
     {!item.available && item.diagnostic && <p className="state state-attention">No se compone con el TOML actual: {item.diagnostic}</p>}
     <h3>Auditoría</h3>
@@ -441,7 +490,7 @@ export function RegistrySettings({ project }: { project: string }) {
         <summary><h3>Cambiar el registro</h3></summary>
         <p className="hint">La raíz no cambia. Cambiar la versión invalida los trabajos admitidos con la anterior; con trabajos sin terminar el cambio se rechaza.</p>
         <RegistryForm key={item.version} options={options.data} action="update" initial={draftOf(item.row)} expected={item.version}
-          onApplied={() => setRefresh(n => n + 1)} />
+          onApplied={() => { setRefresh(n => n + 1); onChanged(); }} />
       </details>
       <div className="decision decision-danger">
         <h3>Dar de baja</h3>

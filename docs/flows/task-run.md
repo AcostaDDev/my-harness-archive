@@ -2,6 +2,8 @@
 
 Recorrido de un run `task` desde que se encola hasta el commit del harness (D015–D026, D047, D052). El revisor
 planifica y revisa en solo lectura; el ejecutor es el único escritor; el commit es una acción separada.
+P009-T003: [selección de agentes por proyecto](project-agents.md) desde presets v5; los formatos anteriores
+conservan su pareja heredada. Admisión, reanudación y commit comprueban el registro activo en la transacción.
 
 ```mermaid
 sequenceDiagram
@@ -15,6 +17,7 @@ sequenceDiagram
     participant X as Ejecutor (CLI, escritor)
     participant G as Git del checkout
     U->>API: encolar tarea (Idempotency-Key)
+    Note over API,DB: rechazo si cambió la composición del registro antes de admitir
     API->>DB: run QUEUED + job QUEUED
     S->>DB: reclamar job (lease, lock del checkout)
     S->>E: run con contexto, perfil y versiones congelados
@@ -25,6 +28,7 @@ sequenceDiagram
     else planificación del revisor
         E->>R: plan-task (sesión nueva)
         R-->>E: contrato + selección del ejecutor
+        E->>E: validar modelo/esfuerzo/motivo contra política congelada
     end
     loop hasta ACCEPT, BLOCKED o límite de revisiones
         E->>X: execute-task o revise-task (sesión nueva)
