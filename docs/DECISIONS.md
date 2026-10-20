@@ -131,6 +131,7 @@ tarea se leen solo las decisiones que cita; este índice sirve para buscar prece
 | [D118](#d118--p009-t003-presets-v5-y-selección-de-agentes-por-proyecto) | P009-T003: presets v5 y selección de agentes por proyecto | P009 |
 | [D119](#d119--p009-t004-receta-django-confirmada-y-entorno-acreditado) | P009-T004: receta Django confirmada y entorno acreditado | P009 |
 | [D120](#d120--p009-t005-ensayo-temporal-con-cli-falsas-y-django-real) | P009-T005: ensayo temporal con CLI falsas y Django real | P009 |
+| [D121](#d121--p009-t006-propuesta-del-piloto-y-caracterización-previa-de-cli) | P009-T006: propuesta del piloto y caracterización previa de CLI | P009 |
 
 ## D001 — Alcance local y arquitectura base
 
@@ -3834,3 +3835,32 @@ Estado: verificado el 2026-10-19. Fase: P009.
 La evidencia real corresponde a macOS arm64 y CPython 3.13.13; no certifica toda la matriz Python/plataformas.
 T006 conserva propuesta y consentimiento del wheel operativo, servicios y proveedores. Este consentimiento
 temporal de paquetes no inicia ni autoriza el piloto; los consentimientos históricos de proveedores siguen agotados.
+
+## D121 — P009-T006: propuesta del piloto y caracterización previa de CLI
+
+Estado: propuesta preparada y **autorizada por el usuario el 2026-10-20** («Autorizo la propuesta completa»);
+sin ejecutar. Fase: P009. [Propuesta, selecciones, límites y parada](phase/P009-T006_PROPUESTA_PILOTO.md).
+Concreta D115 para la operación real; aplica D050/D051/D052/D119. No reutiliza consentimientos de D050/D071.
+
+- Las CLI instaladas, Codex 0.163.0 y Claude 2.1.304, están fuera del baseline (`SUPPORTED`: Codex 0.161.0/0.162.1,
+  escritura solo 0.162.1; Claude 2.1.295/2.1.296) y no queda ninguna versión caracterizada en disco. El usuario
+  elige caracterizarlas en una tarea de producto previa, P009-T013, que se ejecuta antes de T007. No se instalan
+  versiones antiguas ni se cambian enlaces globales. Se fijan el binario nativo de Codex y el binario versionado
+  de Claude por ruta y SHA-256; cualquier cambio de hash detiene el piloto.
+- T013 se numera tras T012 para no renumerar las referencias de D115–D120 y del plan; su orden de ejecución
+  lo fija la dependencia de T007. El wheel operativo se construye después de T013, porque debe incluir el baseline
+  nuevo; instalarlo en T006 habría dejado un paquete obsoleto.
+- Selecciones del usuario: raíz `$HOME/Documents/projects/`, hijo `harness-django-pilot`, área persistente
+  `$HOME/.local/share/harness-local/`, revisor Codex `gpt-6-luna`/`medium`, revisor Claude
+  `claude-sonnet-5-5`/`medium`. Ejecutor en modo catálogo: Codex `gpt-6-luna` y Claude `claude-sonnet-5-5`/`claude-opus-5-5`,
+  con esfuerzos {low, medium, high}. Wheelhouse offline previo con los 17 wheels del lock, `max_revision_cycles = 2`,
+  timeouts de 1800/3600 s. El revisor sigue eligiendo modelo/esfuerzo y motivo del ejecutor (D052).
+- Detalles reversibles fijados con criterio: subcarpetas del área, puertos 8031 (servicio) y 8032 (runserver de QA),
+  `supervisor = true`, autor Git con la identidad del usuario y tags `lightweight`, timeout de la receta de 600 s.
+- Techo de 60 invocaciones de proveedor (máximo previsto: 50; definición ≤20 turnos, 7 por tarea y 2 de cierre).
+  Para al primer fallo, sin retry/fallback/cambio de proveedor; corregir no autoriza a repetir consumo. Red solo
+  para PyPI (17 wheels) y el tráfico propio de las CLI. Si T013 necesitara invocar un modelo para caracterizar la
+  escritura de Codex, se detiene y pide autorización aparte.
+
+T006 no instala, crea ni ejecuta nada: solo lee versiones, enlaces, hashes, destino y puertos. Sin cambios de
+código, esquema, API, versiones congeladas ni diagramas.

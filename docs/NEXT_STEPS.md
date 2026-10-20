@@ -4,7 +4,8 @@ Objetivo y criterios en [ROADMAP](ROADMAP.md#p009--proyecto-django-desde-cero-y-
 Decisión: [D115](DECISIONS.md#d115--p009-django-desde-cero-carpeta-de-proyectos-y-agentes-por-proyecto).
 [Diseño y matriz](phase/P009_PLAN_DJANGO.md); [flujo y estado de implementación](flows/project-creation.md).
 
-**Estado:** T001–T005 completadas (diseño, producto y ensayo); T006–T012 pendientes. **Siguiente:** P009-T006.
+**Estado:** T001–T006 completadas (diseño, producto, ensayo y propuesta autorizada); T007–T013 pendientes.
+**Siguiente:** P009-T013, que precede a T007 ([propuesta](phase/P009-T006_PROPUESTA_PILOTO.md), D121).
 [Contrato implementable](phase/P009-T001_CONTRATO_CREACION.md), decisión D116. T002 añade producto de
 carpeta/creación, sin piloto ni selección de carpeta real del usuario;
 la implementación no concede permisos de red, instalación o proveedores.
@@ -140,7 +141,10 @@ si falta preparar esos paquetes, registrar y autorizar esa preparación, sin des
 
 ## P009-T006 — Propuesta operativa y consentimiento del piloto
 
-**Estado:** pendiente. **Depende de:** T005.
+**Estado:** completada el 2026-10-20 (D121). **Depende de:** T005.
+**Resultado:** [propuesta autorizada](phase/P009-T006_PROPUESTA_PILOTO.md) con raíz, hijo, área, puertos, revisores,
+catálogos, wheelhouse, límites, parada y limpieza. Las CLI instaladas están fuera del baseline: T013 las caracteriza
+antes de T007. El wheel operativo se instala tras T013, dentro del consentimiento; nada se instaló ni ejecutó en T006.
 **Objetivo:** Concretar todo lo necesario para una ejecución real revisable, sin deducir preferencias del usuario.
 **Alcance:** instalar/verificar el wheel fuera del checkout de desarrollo (D051), preparar la propuesta sin iniciar
 el piloto y recoger las selecciones/autorizaciones que falten. Preflight de CLI reales solo dentro del consentimiento.
@@ -160,7 +164,7 @@ el piloto y recoger las selecciones/autorizaciones que falten. Preflight de CLI 
 
 ## P009-T007 — Crear el proyecto Django nuevo desde la UI
 
-**Estado:** pendiente. **Depende de:** T006 con consentimiento registrado.
+**Estado:** pendiente. **Depende de:** T006 con consentimiento registrado (D121) y T013.
 **Objetivo:** Empezar con un destino inexistente y llegar a Django ejecutable y documentado sin scaffold manual.
 **Alcance:** elegir carpeta padre, dar nombre al hijo, definir el pequeño gestor de tareas con el revisor, aceptar
 D088/P001 y preparar mediante receta su entorno/código base. Operar con el wheel instalado, no con este checkout.
@@ -244,3 +248,21 @@ vigente; resumen de cuatro tareas, incidencias y métricas. No cerrar P009 del h
   acotadas si hay hallazgos. Cierre/archivo documental de P009 solo después de su revisión, en otra tarea.
 **Validación:** evidencia del producto instalado y proyecto hijo, comprobaciones Git/SQLite/archivos y suites pertinentes;
 sin publicar, hacer push, añadir funciones o consumir llamadas fuera de la autorización.
+
+## P009-T013 — Caracterizar las CLI instaladas para el piloto
+
+**Estado:** pendiente; se ejecuta antes de T007 (D121). **Depende de:** T006.
+**Objetivo:** Que el producto admita Codex 0.163.0 y Claude 2.1.304, las versiones fijadas en la propuesta, sin
+debilitar las comprobaciones de versión ni los controles de lectura, escritura, memoria y confianza.
+**Alcance:** ejecutar `--version`, `--help` y la ayuda de los subcomandos usados de los binarios fijados en
+[§1 de la propuesta](phase/P009-T006_PROPUESTA_PILOTO.md#1-bloqueo-constatado-cli-fuera-del-baseline); leer las cadenas
+del binario de Codex para su vocabulario de esfuerzo. Comparar con la caracterización vigente y ampliar `SUPPORTED`/
+`WRITE_SUPPORTED`, o versionar el adaptador si cambia el argv, el protocolo o las salidas.
+**Rutas permitidas:** `src/harness_local/**`, `tests/**`, `examples/**`, `docs/**`.
+**Criterios de aceptación:**
+- Diferencias de ayuda/flags/esfuerzos registradas por versión; las versiones anteriores siguen admitidas y sus
+  hashes y snapshots congelados no cambian. Una versión no caracterizada sigue rechazándose.
+- Escritura de Codex admitida solo si su protocolo y la supresión de confianza (D066/D071) siguen comprobados;
+  si hace falta invocar un modelo, parar y pedir autorización aparte. Ningún proveedor invocado con prompt.
+- Regresiones offline con CLI falsas para cada versión nueva; ejemplos de configuración al día.
+**Validación:** pytest dirigida y completa, unittest, Alembic check si procede; sin wheel operativo ni piloto.
