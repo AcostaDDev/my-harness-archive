@@ -15,7 +15,7 @@ decisiones vigentes y la información técnica que antes estaba en README y AGEN
 | Tipos del cliente | `openapi-typescript` 7.13.0 desde el OpenAPI exportado |
 | Herramientas | uv 0.12.19 y `uv.lock`; Node 24.15.0, npm 11.12.1 y `frontend/package-lock.json` |
 | Pruebas | `unittest` (12 checks sin dependencias), pytest 9.1.1 + httpx 0.28.1, `node --test` |
-| Agentes | CLI `codex` 0.161.0/0.162.1 (escritura solo 0.162.1) y `claude` 2.1.295/2.1.296, adaptador `cli-12` |
+| Agentes | CLI `codex` 0.161.0/0.162.1/0.163.0 (escritura 0.162.1/0.163.0) y `claude` 2.1.295/2.1.296/2.1.304, adaptador `cli-12` |
 
 Sin Celery, broker ni Docker para el servicio (D003, D004). Detalles de stack de cada proyecto gestionado (Django,
 Node…) pertenecen a perfiles, no al núcleo.

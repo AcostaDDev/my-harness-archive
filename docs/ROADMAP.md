@@ -136,10 +136,10 @@ y desarrollar cuatro tareas del mismo proyecto alternando revisor/ejecutor, con 
 web genérica, edición de credenciales/ejecutables/TOML desde la UI, agentes con acceso a toda la carpeta padre,
 evaluación estadística de modelos y ejecución del harness sobre este repositorio.
 **Estado:** diseño T001, creación de hijos T002, agentes por proyecto T003, receta Django T004 y ensayo T005 completados el 2026-10-19
-(D116–D120); propuesta del piloto autorizada en T006 el 2026-10-20 (D121). Herramientas Django reales verificadas
+(D116–D120); propuesta del piloto autorizada en T006 y CLI caracterizadas en T013 el 2026-10-20 (D121, D122). Herramientas Django reales verificadas
 en entorno temporal; piloto pendiente. Plan de trece tareas en [NEXT_STEPS](NEXT_STEPS.md); alcance y autorizaciones en
 [docs/phase](phase/P009_PLAN_DJANGO.md); [contrato T001](phase/P009-T001_CONTRATO_CREACION.md).
-La siguiente tarea es P009-T013 (caracterizar las CLI instaladas), antes de T007. Las invocaciones de proveedores
+La siguiente tarea es P009-T007. Las invocaciones de proveedores
 reales se limitan a la [propuesta de T006](phase/P009-T006_PROPUESTA_PILOTO.md); no se reutilizan consentimientos anteriores.
 
 ## Candidatas sin fase asignada

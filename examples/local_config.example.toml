@@ -24,14 +24,14 @@ provider = "codex"                            # "codex" o "claude"
 model = "MODELO-REVISOR"                      # el usuario fija modelo y esfuerzo del revisor
 effort = "high"                               # vocabulario del proveedor (codex: minimal…ultra; claude: low…max)
 executable = ["/RUTA/ABSOLUTA/codex"]
-cli_version = "0.162.1"                       # baseline caracterizado; otra versión se rechaza
+cli_version = "0.163.0"                       # baseline: 0.161.0, 0.162.1 o 0.163.0; otra versión se rechaza
 timeout_seconds = 1800
 environment = { HOME = "/Users/USUARIO", USER = "USUARIO", PATH = "/usr/bin:/bin", LANG = "C.UTF-8" }
 
 [agents.executor]                             # único escritor; el revisor fija su modelo y esfuerzo
-provider = "claude"                           # "claude" o "codex" (Codex: workspace-write sin red, 0.162.1)
+provider = "claude"                           # "claude" o "codex" (Codex: workspace-write sin red, 0.162.1/0.163.0)
 executable = ["/RUTA/ABSOLUTA/claude"]
-cli_version = "2.1.296"                       # 2.1.295 o 2.1.296
+cli_version = "2.1.304"                       # 2.1.295, 2.1.296 o 2.1.304
 timeout_seconds = 3600
 environment = { HOME = "/Users/USUARIO", USER = "USUARIO", PATH = "/usr/bin:/bin", LANG = "C.UTF-8" }
 tools = ["Read", "Edit", "Write", "Glob", "Grep"]            # solo Claude

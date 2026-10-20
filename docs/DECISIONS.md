@@ -132,6 +132,7 @@ tarea se leen solo las decisiones que cita; este índice sirve para buscar prece
 | [D119](#d119--p009-t004-receta-django-confirmada-y-entorno-acreditado) | P009-T004: receta Django confirmada y entorno acreditado | P009 |
 | [D120](#d120--p009-t005-ensayo-temporal-con-cli-falsas-y-django-real) | P009-T005: ensayo temporal con CLI falsas y Django real | P009 |
 | [D121](#d121--p009-t006-propuesta-del-piloto-y-caracterización-previa-de-cli) | P009-T006: propuesta del piloto y caracterización previa de CLI | P009 |
+| [D122](#d122--p009-t013-codex-01630-y-claude-21304-en-el-baseline-cli-12) | P009-T013: Codex 0.163.0 y Claude 2.1.304 en el baseline `cli-12` | P009 |
 
 ## D001 — Alcance local y arquitectura base
 
@@ -3864,3 +3865,28 @@ Concreta D115 para la operación real; aplica D050/D051/D052/D119. No reutiliza 
 
 T006 no instala, crea ni ejecuta nada: solo lee versiones, enlaces, hashes, destino y puertos. Sin cambios de
 código, esquema, API, versiones congeladas ni diagramas.
+
+## D122 — P009-T013: Codex 0.163.0 y Claude 2.1.304 en el baseline `cli-12`
+
+Estado: implementado y verificado offline el 2026-10-20. Fase: P009.
+[Sondas, fuente, pruebas y límites](phase/P009-T013_CARACTERIZACION_CLI.md). Dentro del consentimiento de D121 (§§1, 6).
+Amplía D052/D068 sin cambiar argv, protocolo, salidas ni controles de D059/D066/D068 o cli-11.
+
+- Sondas reales solo de `--version`, `exec --help`/`--help` sobre los binarios fijados por hash, con entorno
+  explícito y cwd temporal; ninguna llamada a modelos. Versiones con el formato reconocido y todos los flags
+  requeridos y usados presentes. Las ayudas de `exec` y de Claude quedan como fixtures públicas de regresión.
+- Codex: `rust-v0.163.0` resuelve al commit `83086188…`, embebido en el nativo. La comparación con la fuente del pin
+  anterior en lectura deja idénticos la guardia de confianza de `thread/start`, el parser de overrides, la CLI y los
+  eventos JSONL de `exec`, `ReasoningEffort`, las estructuras de memoria/historial/sandbox y la carga de AGENTS.md.
+  Los cambios del cargador y de permisos no afectan a las claves ni al modo de aprobación del transporte. Por eso
+  0.163.0 se admite también como escritor, con la misma supresión de confianza.
+- Claude: ayuda y literales de 2.1.304 conservan flags, semántica de `--restricted`, vocabulario de esfuerzo,
+  controles de memoria/hooks y los terminales `result` del parser. La ayuda de 2.1.296 ya no está en disco para
+  compararla byte a byte; queda como límite, junto a los eventos de cambio de modelo, visibles en `message_models`.
+- Se mantiene `cli-12`: la forma de la invocación no cambia y la versión de cada CLI ya forma parte de la identidad
+  congelada por rol. Versiones anteriores admitidas; las no caracterizadas (Claude 2.1.299–2.1.301 en disco, entre
+  otras) se siguen rechazando. Ejemplo de configuración al día; scripts históricos de ejemplos sin tocar.
+
+30 pruebas nuevas: baseline, vecinos rechazados, argv idéntico por rol/proveedor, preflight con las ayudas reales
+y las cuatro parejas por el adaptador real. Suite offline completa: 1.577 tests y 121 subtests correctos, una omisión
+esperada (variante Django real sin wheelhouse). Sin observación en ejecución: el piloto acreditará los efectos reales.

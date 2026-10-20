@@ -49,8 +49,8 @@ salvo donde se indica. Detalle por fase en `docs/archive/phase-NNN/SUMMARY.md`.
 
 ## Fase activa — P009 Proyecto Django desde cero y piloto con cuatro combinaciones de agentes
 
-**Estado:** T001–T005 completadas el 2026-10-19 y T006 el 2026-10-20 (propuesta autorizada, D121);
-T007–T013 pendientes, sin piloto.
+**Estado:** T001–T005 completadas el 2026-10-19; T006 (propuesta autorizada, D121) y T013 (CLI caracterizadas,
+D122) el 2026-10-20. T007–T012 pendientes, sin piloto.
 Objetivo y criterios en [ROADMAP](ROADMAP.md#p009--proyecto-django-desde-cero-y-piloto-con-cuatro-combinaciones-de-agentes),
 tareas en [NEXT_STEPS](NEXT_STEPS.md) y diseño en el [plan](phase/P009_PLAN_DJANGO.md).
 Decisión: [D115](DECISIONS.md#d115--p009-django-desde-cero-carpeta-de-proyectos-y-agentes-por-proyecto).
@@ -79,9 +79,10 @@ P008 permanece cerrada ([archivo](archive/phase-008/SUMMARY.md), D114). Este rep
 ni ejecutarse con el harness. T002–T005 usan carpetas/SQLite temporales y CLI de agentes falsas;
 sin proyectos reales del usuario ni proveedores. T005 añade herramientas Django reales, sin modificar el runtime del harness.
 
-**Siguiente:** P009-T013, caracterizar Codex 0.163.0 y Claude 2.1.304, que están fuera del baseline (Codex
-0.161.0/0.162.1, Claude 2.1.295/2.1.296), y después T007. La [propuesta autorizada](phase/P009-T006_PROPUESTA_PILOTO.md)
+**Siguiente:** P009-T007, crear el Django desde la UI con el wheel operativo. T013 admite Codex 0.163.0, también
+como escritor, y Claude 2.1.304 en `cli-12` sin cambiar argv ni controles ([caracterización](phase/P009-T013_CARACTERIZACION_CLI.md)).
+La [propuesta autorizada](phase/P009-T006_PROPUESTA_PILOTO.md)
 fija raíz `$HOME/Documents/projects/`, hijo `harness-django-pilot`, área `~/.local/share/harness-local/`,
 revisores Codex `gpt-6-luna`/`medium` y Claude `claude-sonnet-5-5`/`medium`, catálogos del ejecutor, wheelhouse
 offline, dos correcciones por tarea, techo de 60 invocaciones y parada al primer fallo. T006 no instaló ni ejecutó nada;
-el wheel operativo se construye tras T013. T005 acredita el recorrido con CLI falsas ([ensayo](phase/P009-T005_ENSAYO_DJANGO.md), D120).
+el wheel operativo se construye al empezar T007, desde el HEAD con T013. T005 acredita el recorrido con CLI falsas ([ensayo](phase/P009-T005_ENSAYO_DJANGO.md), D120).

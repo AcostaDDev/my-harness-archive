@@ -29,10 +29,11 @@ from harness_local.core.engine.prompts import digest, output_schema
 
 VERSION = "cli-12"
 # Version/help characterization (D052): Claude 2.1.295 and 2.1.296 share the same help.
-SUPPORTED = {"codex": ("0.161.0", "0.162.1"), "claude": ("2.1.295", "2.1.296")}
-# Codex workspace-write was characterized on 0.162.1 only.
-WRITE_SUPPORTED = {"codex": ("0.162.1",), "claude": SUPPORTED["claude"]}
-# Claude: --help. Codex 0.162.1: reasoning-effort variants in the binary (help lists none).
+# D122: Codex 0.163.0 (source of its tag vs 0.162.1) and Claude 2.1.304 (help/literals) keep this argv.
+SUPPORTED = {"codex": ("0.161.0", "0.162.1", "0.163.0"), "claude": ("2.1.295", "2.1.296", "2.1.304")}
+# Codex workspace-write: thread/start trust guard unchanged between 0.162.1 and 0.163.0 (D068/D122).
+WRITE_SUPPORTED = {"codex": ("0.162.1", "0.163.0"), "claude": SUPPORTED["claude"]}
+# Claude: --help. Codex 0.162.1/0.163.0: reasoning-effort variants in the binary (help lists none).
 EFFORTS = {"codex": ("minimal", "low", "medium", "high", "xhigh", "max", "ultra"),
            "claude": ("low", "medium", "high", "xhigh", "max")}
 # H3.2 grant kinds each provider can enforce before launch; anything else is refused.
@@ -163,7 +164,8 @@ def argv_for(config, context, request):
         raise ValueError(f"Effort outside the {config.provider} CLI vocabulary")
     if config.provider == "codex":
         if access == "write" and config.cli_version not in WRITE_SUPPORTED["codex"]:
-            raise ValueError("Codex workspace-write is characterized on 0.162.1 only")
+            raise ValueError("Codex workspace-write is characterized on "
+                             + ", ".join(WRITE_SUPPORTED["codex"]) + " only")
         # D059: name the canonical checkout and omit the broad /tmp grant. On
         # macOS /tmp aliases /private/tmp and can obscure a checkout beneath it
         # in the permissions description. The explicitly configured TMPDIR
@@ -171,7 +173,7 @@ def argv_for(config, context, request):
         sandbox = ("workspace-write", "-c", "sandbox_workspace_write.network_access=false",
                    "-c", "sandbox_workspace_write.writable_roots=" + json.dumps([str(context.root)], ensure_ascii=False),
                    "-c", "sandbox_workspace_write.exclude_slash_tmp=true",
-                   # The pinned 0.162.1 thread/start persists trust only when
+                   # The pinned 0.162.1/0.163.0 thread/start persists trust only when
                    # active_project.trust_level is absent. An explicit untrusted
                    # entry skips that write and keeps project config/hooks disabled.
                    # Override the whole table: the CLI splits dotted keys literally,

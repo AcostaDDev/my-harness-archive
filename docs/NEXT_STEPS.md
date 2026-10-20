@@ -4,8 +4,8 @@ Objetivo y criterios en [ROADMAP](ROADMAP.md#p009--proyecto-django-desde-cero-y-
 Decisión: [D115](DECISIONS.md#d115--p009-django-desde-cero-carpeta-de-proyectos-y-agentes-por-proyecto).
 [Diseño y matriz](phase/P009_PLAN_DJANGO.md); [flujo y estado de implementación](flows/project-creation.md).
 
-**Estado:** T001–T006 completadas (diseño, producto, ensayo y propuesta autorizada); T007–T013 pendientes.
-**Siguiente:** P009-T013, que precede a T007 ([propuesta](phase/P009-T006_PROPUESTA_PILOTO.md), D121).
+**Estado:** T001–T006 y T013 completadas (diseño, producto, ensayo, propuesta autorizada y CLI caracterizadas);
+T007–T012 pendientes. **Siguiente:** P009-T007 ([propuesta](phase/P009-T006_PROPUESTA_PILOTO.md), D121; D122).
 [Contrato implementable](phase/P009-T001_CONTRATO_CREACION.md), decisión D116. T002 añade producto de
 carpeta/creación, sin piloto ni selección de carpeta real del usuario;
 la implementación no concede permisos de red, instalación o proveedores.
@@ -251,7 +251,9 @@ sin publicar, hacer push, añadir funciones o consumir llamadas fuera de la auto
 
 ## P009-T013 — Caracterizar las CLI instaladas para el piloto
 
-**Estado:** pendiente; se ejecuta antes de T007 (D121). **Depende de:** T006.
+**Estado:** completada el 2026-10-20 (D122). **Depende de:** T006.
+**Resultado:** Codex 0.163.0 (también escritor) y Claude 2.1.304 en el baseline `cli-12` sin cambiar argv ni controles;
+[sondas, fuente, pruebas y límites](phase/P009-T013_CARACTERIZACION_CLI.md). Ningún modelo invocado.
 **Objetivo:** Que el producto admita Codex 0.163.0 y Claude 2.1.304, las versiones fijadas en la propuesta, sin
 debilitar las comprobaciones de versión ni los controles de lectura, escritura, memoria y confianza.
 **Alcance:** ejecutar `--version`, `--help` y la ayuda de los subcomandos usados de los binarios fijados en
