@@ -27,7 +27,8 @@ from harness_local.core.engine.metrics import CAPTURE as METRICS_CAPTURE
 from harness_local.core.engine.prompts import digest, output_schema
 
 
-VERSION = "cli-12"
+# cli-13 (P009-T014): Codex skips its Git check also for a D088 definition of a new folder.
+VERSION = "cli-13"
 # Version/help characterization (D052): Claude 2.1.295 and 2.1.296 share the same help.
 # D122: Codex 0.163.0 (source of its tag vs 0.162.1) and Claude 2.1.304 (help/literals) keep this argv.
 SUPPORTED = {"codex": ("0.161.0", "0.162.1", "0.163.0"), "claude": ("2.1.295", "2.1.296", "2.1.304")}
@@ -133,6 +134,24 @@ def access_for(role):
     return "write" if role == "executor" else "read"
 
 
+def skips_git_check(context, request):
+    """Read-only Codex roles whose working tree is not a Git repository by contract.
+
+    D083/D102: exported chat and onboarding trees lack Git metadata. cli-13 (P009-T014): a D088
+    definition (frozen template `define-project`) reads the new project folder, which only becomes a
+    repository with the root commit. Queueing refuses a target inside Git, and the turn fails before
+    launch if `.git` appears afterwards. Live checkouts, imports and the executor keep the check.
+    """
+    if request.role not in ("chat", "definition"):
+        return False
+    if json.loads(request.context_json).get("root", str(context.root)) != str(context.root):
+        return True
+    if request.role != "definition" or request.prompt_snapshot_json is None:
+        return False
+    parts = json.loads(request.prompt_snapshot_json).get("parts") or ({},)
+    return parts[0].get("version", {}).get("name") == "define-project"
+
+
 def argv_for(config, context, request):
     if not request.fresh_session or request.context_json is None:
         raise ValueError("Fresh frozen request required")
@@ -195,9 +214,7 @@ def argv_for(config, context, request):
             # project-doc budget stops the pin from also loading AGENTS.override.md/AGENTS.md from the live
             # checkout (it skips them only for untrusted projects, i.e. the writer).
             "-c", "project_doc_max_bytes=0",
-            # D083/D102: exported chat and onboarding trees lack Git metadata; live checkouts keep argv.
-            *(("--skip-git-repo-check",) if request.role in ("chat", "definition")
-              and json.loads(request.context_json).get("root", str(context.root)) != str(context.root) else ()),
+            *(("--skip-git-repo-check",) if skips_git_check(context, request) else ()),
             "--cd", str(context.root), "-")
     if access == "read":
         tools = allowed = READ_TOOLS

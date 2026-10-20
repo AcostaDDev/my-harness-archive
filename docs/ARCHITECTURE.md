@@ -15,7 +15,7 @@ decisiones vigentes y la información técnica que antes estaba en README y AGEN
 | Tipos del cliente | `openapi-typescript` 7.13.0 desde el OpenAPI exportado |
 | Herramientas | uv 0.12.19 y `uv.lock`; Node 24.15.0, npm 11.12.1 y `frontend/package-lock.json` |
 | Pruebas | `unittest` (12 checks sin dependencias), pytest 9.1.1 + httpx 0.28.1, `node --test` |
-| Agentes | CLI `codex` 0.161.0/0.162.1/0.163.0 (escritura 0.162.1/0.163.0) y `claude` 2.1.295/2.1.296/2.1.304, adaptador `cli-12` |
+| Agentes | CLI `codex` 0.161.0/0.162.1/0.163.0 (escritura 0.162.1/0.163.0) y `claude` 2.1.295/2.1.296/2.1.304, adaptador `cli-13` |
 
 Sin Celery, broker ni Docker para el servicio (D003, D004). Detalles de stack de cada proyecto gestionado (Django,
 Node…) pertenecen a perfiles, no al núcleo.
@@ -100,8 +100,9 @@ por su API y los artefactos referenciados; la restauración es de consulta (`que
 
 ## 6. Agentes y configuración
 
-- **Adaptador `cli-12`** (D090: propuestas de ADR en las formas de ejecutor y revisor; D094: Codex con
-  `project_doc_max_bytes=0`; D102: rol `definition` sobre exportaciones de solo lectura). Sesión nueva por intento;
+- **Adaptador `cli-13`** (D090: propuestas de ADR en las formas de ejecutor y revisor; D094: Codex con
+  `project_doc_max_bytes=0`; D102: rol `definition` sobre exportaciones de solo lectura; D124: Codex omite su
+  comprobación Git también al definir una carpeta nueva, plantilla congelada `define-project`). Sesión nueva por intento;
   argv, entorno (sin herencia, `USER` comprobado contra el UID) y timeouts explícitos. Revisor en solo lectura (Codex `--sandbox read-only`; Claude `--restricted` y `--json-schema`
   tipado). Ejecutor Codex `workspace-write` con el checkout como única raíz escribible y confianza `untrusted` inline
   (D059, D068); Claude con herramientas declaradas y `dontAsk`. Memoria automática desactivada en ambos (D066).
@@ -159,7 +160,8 @@ por su API y los artefactos referenciados; la restauración es de consulta (`que
   de `[profiles.*]` de T008; no escribe el TOML ni autoriza ejecución. T014 congela inventario y HEAD en la
   conversación `onboarding`, con borradores CAS privados, exportación de D083 y evidencia antes/después. Mantiene
   el lock y carril de planificación; no consulta el checkout vivo durante la invocación. `cli-12` permite al rol
-  `definition` omitir la comprobación Git solo en exportaciones; el sandbox sigue siendo de lectura. Sin diagrama
+  `definition` omitir la comprobación Git en exportaciones (`cli-13` añade la definición D088 de una carpeta nueva,
+  D124); el sandbox sigue siendo de lectura. Sin diagrama
   ni comandos de plantilla por defecto. T015 añade UI, vista previa de documentos/perfil de la composición y
   confirmación por ambos hashes, motivo y clave. Reutiliza la intención y adopción atómica del Flujo A (0020),
   conserva inventario/resumen/originales en `phase-000` y adopta P001. No escribe el TOML ni ejecuta comandos;

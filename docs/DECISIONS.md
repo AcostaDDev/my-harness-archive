@@ -134,6 +134,7 @@ tarea se leen solo las decisiones que cita; este índice sirve para buscar prece
 | [D121](#d121--p009-t006-propuesta-del-piloto-y-caracterización-previa-de-cli) | P009-T006: propuesta del piloto y caracterización previa de CLI | P009 |
 | [D122](#d122--p009-t013-codex-01630-y-claude-21304-en-el-baseline-cli-12) | P009-T013: Codex 0.163.0 y Claude 2.1.304 en el baseline `cli-12` | P009 |
 | [D123](#d123--p009-t007-detenida-codex-rechaza-la-definición-en-un-hijo-sin-git) | P009-T007: detenida; Codex rechaza la definición en un hijo sin Git | P009 |
+| [D124](#d124--p009-t014-cli-13-codex-define-un-proyecto-nuevo-fuera-de-git) | P009-T014: `cli-13`, Codex define un proyecto nuevo fuera de Git | P009 |
 
 ## D001 — Alcance local y arquitectura base
 
@@ -3912,3 +3913,27 @@ Estado: observado el 2026-10-20 y piloto detenido. Fase: P009. Dentro del consen
   antes de cerrar P009 (P009-T015).
 - Detalles operativos fijados con criterio: `serve` con `TMPDIR` dentro del área, para que la clave de sesión no salga
   del área; sin `home-commands/`, porque la composición de la receta exige un entorno vacío (D119).
+
+## D124 — P009-T014: `cli-13`, Codex define un proyecto nuevo fuera de Git
+
+Estado: implementado y verificado offline el 2026-10-20. Fase: P009. Corrige el defecto de D123; amplía D083/D102.
+[Criterio, versión, CLI falsa y verificación](phase/P009-T014_DEFINICION_SIN_GIT.md).
+
+- Codex recibe `--skip-git-repo-check` en el rol `definition` cuando el snapshot congelado del prompt es la
+  plantilla `define-project`, es decir, la definición D088 de una carpeta nueva, además de las exportaciones
+  de D083/D102. La condición sale de la petición congelada, no del disco al lanzar. Una definición D088 nunca
+  apunta a Git: el turno se rechaza al encolar si el destino pertenece a un repositorio, y falla antes de invocar
+  si aparece `.git` después. Importación sobre checkout vivo, demás roles, ejecutor y Claude conservan su argv.
+- El flag solo salta la comprobación de arranque de Codex. Sandbox `read-only`, memoria desactivada,
+  `project_doc_max_bytes=0` y la falta de override de confianza no cambian. La guardia de `thread/start` (D068/D122)
+  solo persiste confianza con permisos que escriben el cwd, y el revisor no los tiene.
+- Adaptador `cli-13`: el argv cambia para una clase de peticiones (regla de D052; precedente D102). Los jobs
+  congelados con `cli-12` y aún no reclamados quedan en `RECOVERY_REQUIRED` antes del preflight, por la comparación
+  de versiones existente. Runs, snapshots y métricas anteriores conservan `cli-12`. Sin cambios de esquema, API,
+  codec, layout, `local-config` ni baseline de CLI.
+- La CLI falsa de las pruebas rechaza siempre, como el pin, un `exec` fuera de cualquier repositorio sin el flag.
+  Con `cli-12` falla el ensayo sintético de T005, que es el caso de T007. Otros 25 tests usaban checkouts sin Git;
+  la fixture compartida pasa a ser un repositorio, sin tocar el adaptador.
+- Una conversación de definición con un turno `FAILED` admite un turno nuevo (cada turno es su propio run y congela
+  sus versiones). La reanudación de T007 reutiliza hijo, registro y conversación. La propuesta de T006 se actualiza
+  (§8). Reanudar exige wheel nuevo y autorización nueva del usuario; Codex real con el flag queda para el piloto.

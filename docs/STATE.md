@@ -16,7 +16,7 @@ salvo donde se indica. Detalle por fase en `docs/archive/phase-NNN/SUMMARY.md`.
   cuarentena por versión y confirmación explícita del escritor detenido; backup y restauración de consulta; retención
   explícita de streams.
 - **Agentes** ([P007](archive/phase-007/SUMMARY.md)): revisor y ejecutor Codex o Claude en cualquier combinación
-  (`cli-12`, `local-config-2/3/4/5`), revisor en solo lectura con esquema tipado, memoria automática desactivada,
+  (`cli-13`, `local-config-2/3/4/5`), revisor en solo lectura con esquema tipado, memoria automática desactivada,
   supresión de confianza del escritor Codex. Validaciones nativas `commands-1` con JUnit. Perfiles: `typescript-web`
   (componible desde el TOML), `reference_project` (solo biblioteca) y perfiles declarados en `[profiles.*]` de
   `local-config-4`, con el ejemplo `python-django` (P008, D095).
@@ -49,14 +49,18 @@ salvo donde se indica. Detalle por fase en `docs/archive/phase-NNN/SUMMARY.md`.
 
 ## Fase activa — P009 Proyecto Django desde cero y piloto con cuatro combinaciones de agentes
 
-**Estado:** T001–T005 completadas el 2026-10-19; T006 (propuesta autorizada, D121) y T013 (CLI caracterizadas,
-D122) el 2026-10-20. T007 detenida el 2026-10-20 (D123); T008–T012, T014 y T015 pendientes.
+**Estado:** T001–T005 completadas el 2026-10-19; T006 (propuesta autorizada, D121), T013 (CLI caracterizadas,
+D122) y T014 (definición Codex sin Git, D124) el 2026-10-20. T007 detenida el 2026-10-20 (D123); T008–T012 y T015 pendientes.
 Objetivo y criterios en [ROADMAP](ROADMAP.md#p009--proyecto-django-desde-cero-y-piloto-con-cuatro-combinaciones-de-agentes),
 tareas en [NEXT_STEPS](NEXT_STEPS.md) y diseño en el [plan](phase/P009_PLAN_DJANGO.md).
 Decisión: [D115](DECISIONS.md#d115--p009-django-desde-cero-carpeta-de-proyectos-y-agentes-por-proyecto).
 Contrato de T001: [diseño implementable](phase/P009-T001_CONTRATO_CREACION.md),
 [D116](DECISIONS.md#d116--p009-t001-autoridad-de-creación-presets-por-proyecto-y-preparación-separada).
 
+- T014 corrige la parada de T007 con el adaptador `cli-13`: el revisor Codex recibe `--skip-git-repo-check` al
+  redactar la definición D088 (plantilla congelada `define-project`) de una carpeta aún sin Git, con sandbox de
+  lectura, memoria y confianza intactos. Jobs `cli-12` pendientes quedan en cuarentena; la CLI falsa rechaza ya como
+  Codex fuera de Git. Una conversación con turno fallido admite otro ([entrega](phase/P009-T014_DEFINICION_SIN_GIT.md)).
 - Selección explícita en la UI de «Carpeta de proyectos»: concede al servicio la creación de nuevos proyectos
   hijos y queda guardada. La IA no propone ni descubre la ubicación. `$HOME/Documents/projects/` es
   el ejemplo del usuario, no un valor por defecto ni una autorización ejecutada en esta tarea.
@@ -79,10 +83,11 @@ P008 permanece cerrada ([archivo](archive/phase-008/SUMMARY.md), D114). Este rep
 ni ejecutarse con el harness. T002–T005 usan carpetas/SQLite temporales y CLI de agentes falsas;
 sin proyectos reales del usuario ni proveedores. T005 añade herramientas Django reales, sin modificar el runtime del harness.
 
-**Siguiente:** P009-T014. T007 se detuvo en el primer turno de la definición: Codex 0.163.0 no arranca en un hijo sin
-`.git` porque `cli-12` solo le pasa `--skip-git-repo-check` con raíces exportadas. Una invocación lanzada, cero
-tokens ([evidencia](phase/P009-T007_CREACION_DJANGO.md)). Ya existen el área `~/.local/share/harness-local/` (wheel de
-`21871a0`, 17 wheels, TOML v5, preflight correcto, SQLite) y el hijo `harness-django-pilot`, vacío y registrado desde la UI
-con revisor Codex `gpt-6-luna`/`medium`. Servicio detenido. Reanudar T007 exige T014, wheel nuevo, la
-[propuesta](phase/P009-T006_PROPUESTA_PILOTO.md) al día si cambia el adaptador y autorización nueva del usuario.
+**Siguiente:** reanudar P009-T007, que exige **autorización nueva del usuario** (D123). T007 se detuvo en el
+primer turno de la definición: Codex 0.163.0 no arrancaba en un hijo sin `.git` ([evidencia](phase/P009-T007_CREACION_DJANGO.md));
+T014 lo corrige en `cli-13` (D124). Ya existen el área `~/.local/share/harness-local/` (wheel de `21871a0`, ahora
+obsoleto; 17 wheels, TOML v5, SQLite) y el hijo `harness-django-pilot`, vacío y registrado desde la UI con revisor
+Codex `gpt-6-luna`/`medium`, con una conversación de definición cuyo primer turno falló. Servicio detenido.
+La reanudación construye e instala un wheel desde el commit de T014 y sigue en esa conversación
+([propuesta §8](phase/P009-T006_PROPUESTA_PILOTO.md#8-actualización-tras-t014)).
 T015 (verificación del wheel al flujo D088) es obligatoria antes del cierre documental de P009.

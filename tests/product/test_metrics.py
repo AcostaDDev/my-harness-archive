@@ -253,7 +253,7 @@ def test_cli_flow_materializes_one_row_per_attempt_from_the_sealed_capture(tmp_p
     assert [r['role'] for r in rows] == ['planner', 'executor', 'reviewer']
     assert [r['executor_round'] for r in rows] == [0, 1, 1]
     assert {r['source'] for r in rows} == {'capture'} and {r['normalization'] for r in rows} == {'terminal-2'}
-    assert (planner['provider'], planner['adapter_version'], planner['cli_version']) == ('codex', 'cli-12', '0.161.0')
+    assert (planner['provider'], planner['adapter_version'], planner['cli_version']) == ('codex', 'cli-13', '0.161.0')
     assert (planner['total_tokens'], planner['uncached_input_tokens'], planner['turns'], planner['tools']) \
         == (1050, 400, 3, {'command_execution': 1, 'file_change': 1})
     assert (executor['provider'], executor['total_tokens'], executor['output_tokens'], executor['turns']) \

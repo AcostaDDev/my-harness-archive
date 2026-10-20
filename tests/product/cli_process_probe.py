@@ -33,6 +33,13 @@ if record:
                               'explicit': os.environ.get('PROBE_EXPLICIT'), 'pid': os.getpid()}) + '\n')
 args = sys.argv[3:]
 if provider == 'codex':
+    # D123/P009-T014: like the pinned exec, refuse a working directory outside any Git repository
+    # unless told to skip the check. --ignore-user-config leaves no trusted project to exempt it.
+    workdir = Path(args[args.index('--cd') + 1]) if '--cd' in args else Path.cwd()
+    if '--skip-git-repo-check' not in args and not any(
+            (folder / '.git').exists() for folder in (workdir, *workdir.parents)):
+        print('Not inside a trusted directory and --skip-git-repo-check was not specified.', file=sys.stderr)
+        sys.exit(1)
     # Characterize CLI configuration semantics independently of the adapter.
     # Help/version do not certify the validity of an invocation's overrides.
     overrides = [args[index + 1] for index, value in enumerate(args) if value == '-c']

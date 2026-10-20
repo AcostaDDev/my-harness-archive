@@ -67,6 +67,8 @@ def edit(text="implemented"):
 def context(tmp_path):
     root = tmp_path / "managed-checkout"
     root.mkdir()
+    # A repository, as every live checkout is: the synthetic Codex refuses anything else (D124).
+    subprocess.run(["git", "init", "--quiet", str(root)], check=True, capture_output=True)
     (root / "app").mkdir()
     (root / "app/main.txt").write_text("baseline", encoding="utf-8")
     return ProjectContext(root, ProjectProfile("synthetic", validations=(Command(("test-runner", "check")),),

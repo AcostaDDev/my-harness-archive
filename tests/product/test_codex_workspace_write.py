@@ -60,7 +60,8 @@ def test_synthetic_writer_rejects_previous_or_broader_roots_before_editing(tmp_p
         workspace['writable_roots'].append('/another-checkout')
     else:
         workspace['exclude_slash_tmp'] = False
-    args = [sys.executable, PROBE, 'codex', 'web', '--sandbox', 'workspace-write']
+    # The Git check comes first (D124); skip it to reach the writable-root contract.
+    args = [sys.executable, PROBE, 'codex', 'web', '--skip-git-repo-check', '--sandbox', 'workspace-write']
     for key, value in workspace.items():
         args += ['-c', f'sandbox_workspace_write.{key}={json.dumps(value)}']
     result = subprocess.run(args, cwd=tmp_path, env={}, input='', capture_output=True, encoding='utf-8')
@@ -87,7 +88,7 @@ def test_codex_writer_journey_freezes_requested_access_without_changing_contract
                for line in launches(tmp_path)[0::2])
     spec = repository.processes(job.id)[1]['spec']
     prompt = Path(spec['prompt_path']).read_bytes()
-    assert spec['adapter_version'] == 'cli-12' and prompt.decode() == launch['prompt']
+    assert spec['adapter_version'] == 'cli-13' and prompt.decode() == launch['prompt']
     assert spec['prompt_sha256'] == hashlib.sha256(prompt).hexdigest()
     assert 'tasks * 30' in context.path('src/estimate.ts').read_text()
 

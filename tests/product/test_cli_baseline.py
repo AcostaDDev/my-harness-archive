@@ -25,7 +25,7 @@ ROLES = ('planner', 'reviewer', 'phase', 'chat', 'bootstrap', 'definition', 'pla
 
 
 def test_baseline_adds_the_pilot_versions_and_keeps_the_previous_ones():
-    assert VERSION == 'cli-12'
+    assert VERSION == 'cli-13'
     assert SUPPORTED == {'codex': ('0.161.0', '0.162.1', '0.163.0'), 'claude': ('2.1.295', '2.1.296', '2.1.304')}
     assert WRITE_SUPPORTED == {'codex': ('0.162.1', '0.163.0'), 'claude': SUPPORTED['claude']}
 

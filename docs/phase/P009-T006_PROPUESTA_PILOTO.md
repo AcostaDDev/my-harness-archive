@@ -114,3 +114,18 @@ Codex 0.163.0 requiere invocar un modelo, se detiene y se pide una autorización
   `python3.13`, SHA-256 de §1, ausencia del destino y del área, y puertos 8031/8032 sin escucha (`lsof`).
 - 12 checks unittest correctos; 317 enlaces/anclas relativos de los documentos tocados válidos; `git diff --check` correcto.
 - Sin pytest, Node/build ni Alembic: solo cambia documentación, sin código, esquema, API, tipos ni versiones.
+
+## 8. Actualización tras T014
+
+2026-10-20, por D121 §6 tras la parada de T007 ([D123](../DECISIONS.md#d123--p009-t007-detenida-codex-rechaza-la-definición-en-un-hijo-sin-git))
+y su corrección ([D124](../DECISIONS.md#d124--p009-t014-cli-13-codex-define-un-proyecto-nuevo-fuera-de-git)). Solo cambia la
+identidad del transporte; selecciones, binarios y hashes de §1, área, puertos, techos y criterios de parada siguen igual.
+
+- Adaptador `cli-13`: el revisor Codex recibe `--skip-git-repo-check` al redactar la definición D088 del hijo,
+  que aún no es un repositorio. Sandbox de lectura, memoria y confianza sin cambios. Los jobs nuevos congelan `cli-13`.
+- El wheel instalado en T007 (`21871a0`, `cli-12`) queda obsoleto: la reanudación construye, verifica e instala
+  uno desde el commit con T014, en el mismo venv del área, offline y por hashes, como en §3.
+- La reanudación reutiliza el área, la SQLite, la carpeta de proyectos guardada, el hijo `harness-django-pilot`
+  y su conversación de definición. La comprobación de §5 sobre destino y área inexistentes se cumplió al crearlos
+  y no se repite. El primer mensaje nuevo es un turno más de esa conversación. T007 ya consumió 1 de sus 20 invocaciones.
+- Este apartado no autoriza la reanudación. Hace falta una autorización nueva del usuario (D123).

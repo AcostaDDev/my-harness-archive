@@ -4,9 +4,10 @@ Objetivo y criterios en [ROADMAP](ROADMAP.md#p009--proyecto-django-desde-cero-y-
 Decisión: [D115](DECISIONS.md#d115--p009-django-desde-cero-carpeta-de-proyectos-y-agentes-por-proyecto).
 [Diseño y matriz](phase/P009_PLAN_DJANGO.md); [flujo y estado de implementación](flows/project-creation.md).
 
-**Estado:** T001–T006 y T013 completadas (diseño, producto, ensayo, propuesta autorizada y CLI caracterizadas).
-T007 detenida en el primer turno de la definición: Codex rechaza un hijo sin Git ([evidencia](phase/P009-T007_CREACION_DJANGO.md), D123).
-T008–T012, T014 y T015 pendientes. **Siguiente:** P009-T014; después, T007 con autorización nueva del usuario.
+**Estado:** T001–T006, T013 y T014 completadas (diseño, producto, ensayo, propuesta autorizada, CLI caracterizadas
+y definición Codex sin Git). T007 detenida en el primer turno de la definición: Codex rechazaba un hijo sin Git
+([evidencia](phase/P009-T007_CREACION_DJANGO.md), D123), corregido en `cli-13` (D124). T008–T012 y T015 pendientes.
+**Siguiente:** reanudar T007 con wheel nuevo y **autorización nueva del usuario**.
 [Contrato implementable](phase/P009-T001_CONTRATO_CREACION.md), decisión D116. T002 añade producto de
 carpeta/creación, sin piloto ni selección de carpeta real del usuario;
 la implementación no concede permisos de red, instalación o proveedores.
@@ -165,12 +166,14 @@ el piloto y recoger las selecciones/autorizaciones que falten. Preflight de CLI 
 
 ## P009-T007 — Crear el proyecto Django nuevo desde la UI
 
-**Estado:** detenida el 2026-10-20 (D123). **Depende de:** T006 con consentimiento registrado (D121), T013 y T014.
+**Estado:** detenida el 2026-10-20 (D123); T014 completada (D124). **Depende de:** T006 con consentimiento
+registrado (D121), T013, T014 y una autorización nueva del usuario.
 **Avance:** área, wheel, wheelhouse, TOML, preflight e `init-db` preparados; carpeta de proyectos guardada e hijo
 `harness-django-pilot` creado y registrado desde la UI. El primer turno de definición con revisor Codex falla sin
 llegar al modelo (falta `--skip-git-repo-check` en un hijo sin Git). Una invocación lanzada, cero tokens.
-[Evidencia saneada](phase/P009-T007_CREACION_DJANGO.md). Reanudar exige T014, wheel reconstruido, propuesta
-al día si cambia el adaptador y **autorización nueva del usuario**; se reutilizan el hijo y su registro.
+[Evidencia saneada](phase/P009-T007_CREACION_DJANGO.md). T014 lo corrige (`cli-13`) y la propuesta está al día
+([§8](phase/P009-T006_PROPUESTA_PILOTO.md#8-actualización-tras-t014)). Reanudar exige wheel reconstruido desde
+T014 y **autorización nueva del usuario**; se reutilizan el hijo, su registro y su conversación (admite turno nuevo).
 **Objetivo:** Empezar con un destino inexistente y llegar a Django ejecutable y documentado sin scaffold manual.
 **Alcance:** elegir carpeta padre, dar nombre al hijo, definir el pequeño gestor de tareas con el revisor, aceptar
 D088/P001 y preparar mediante receta su entorno/código base. Operar con el wheel instalado, no con este checkout.
@@ -277,7 +280,11 @@ del binario de Codex para su vocabulario de esfuerzo. Comparar con la caracteriz
 
 ## P009-T014 — Definición con revisor Codex en un hijo sin Git
 
-**Estado:** pendiente. **Depende de:** T013; bloquea la reanudación de T007 (D123).
+**Estado:** completada el 2026-10-20 (D124). **Depende de:** T013; bloqueaba la reanudación de T007 (D123).
+**Resultado:** adaptador `cli-13`; Codex recibe el flag en la definición D088 (plantilla congelada `define-project`)
+y en exportaciones, nunca en importación sobre checkout vivo, otros roles ni ejecutor. Jobs `cli-12` pendientes
+en cuarentena; CLI falsa con la negativa de Codex; conversación con turno fallido admite otro; propuesta §8 al día.
+[Criterio, versión y verificación](phase/P009-T014_DEFINICION_SIN_GIT.md). Sin proveedores ni piloto.
 **Objetivo:** que el revisor Codex pueda redactar la definición D088 de un proyecto nuevo, cuya carpeta aún no es
 un repositorio Git, sin relajar el sandbox de lectura ni la memoria desactivada.
 **Alcance:** decidir cuándo recibe Codex `--skip-git-repo-check` en `definition` sobre la carpeta viva (hoy solo
