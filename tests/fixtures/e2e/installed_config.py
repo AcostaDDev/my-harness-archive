@@ -6,9 +6,33 @@ from pathlib import Path
 from harness_local.adapters.engine_fake import ScriptedCommandRunner
 from harness_local.adapters.git import GitWorkspace
 from harness_local.core.engine.commit import GitIdentity
-from harness_local.core.engine.context import EnginePolicy, ProjectContext, ProjectProfile
+from harness_local.core.engine.context import Command, EnginePolicy, ProjectContext, ProjectProfile
 from harness_local.core.engine.contracts import AgentResult, freeze
+from harness_local.core.engine.documents import markers
 from harness_local.services.managed_runtime import ManagedConfig, ManagedProject
+
+MARKER = 'offline-installed-v2\n'
+STATE_BEGIN, STATE_END = markers('state')
+ROAD_BEGIN, ROAD_END = markers('roadmap')
+DEC_BEGIN, DEC_END = markers('decisions')
+# D088 definition drafts; AGENTS, CLAUDE, GEMINI and DDBB-DIAGRAM come from the template.
+DRAFTS = {
+    'README.md': '# Installed synthetic\n\nOffline wheel verification project.\n',
+    'docs/SPECIFICATION.md': '# Specification\n\n## Problem\n\nRecord one synthetic outcome offline.\n',
+    'docs/ARCHITECTURE.md': '# Architecture\n\n## Stack\n\nRegistered synthetic profile.\n',
+    'docs/ROADMAP.md': (f'# Roadmap\n\n{ROAD_BEGIN}\n{ROAD_END}\n\n## P001 — Foundations\n\n'
+                        '**Objetivo:** Deliver one synthetic outcome.\n**Criterios de salida:**\n'
+                        '- The synthetic outcome is accepted.\n**Tag:** `p001`\n'),
+    'docs/DECISIONS.md': (f'# Decisions\n\nSingle record.\n\n{DEC_BEGIN}\n{DEC_END}\n\n'
+                          '## D001 — Use the registered profile\n\n**Estado:** aceptada\n'),
+    'docs/STATE.md': (f'# State\n\n{STATE_BEGIN}\n{STATE_END}\n\n## Base acumulada\n\n'
+                      'Nothing accepted yet.\n\n## Fase activa — P001 Foundations\n\nNo notes yet.\n'),
+    'docs/NEXT_STEPS.md': (f'# P001 — Foundations\n\nGoal in [ROADMAP](ROADMAP.md).\n\n{STATE_BEGIN}\n{STATE_END}\n\n'
+                           '## P001-T001 — Synthetic outcome\n\n**Objetivo:** Record the synthetic outcome.\n'
+                           '**Rutas permitidas:** `app/**`\n**Criterios de aceptación:**\n'
+                           '- The synthetic outcome is present.\n**Comandos de validación:** `test-runner check`\n'
+                           '**Ejecutor:** synthetic-executor / medium — Explicit offline selection\n'),
+}
 
 
 class Agent:
@@ -18,10 +42,13 @@ class Agent:
     def invoke(self, context, request):
         with (self.area / 'calls.jsonl').open('a') as stream:
             stream.write(freeze({'role': request.role, 'id': request.id}) + '\n')
-        if request.role == 'executor':
-            context.path('docs/DELIVERY_CHECKLIST.md').write_text(
-                '# Synthetic delivery\n\nInput: local request.\nSuccess: recorded outcome.\n'
-                'Failure: invalid input rejected.\nNo provider or network.\n')
+        if request.role == 'definition':
+            payload = {'answer': 'Synthetic drafts', 'questions': [], 'pending': [],
+                       'drafts': [{'path': path, 'content': content, 'reason': 'Synthetic definition'}
+                                  for path, content in DRAFTS.items()]}
+        elif request.role == 'executor':
+            context.path('app').mkdir(exist_ok=True)
+            context.path('app/outcome.txt').write_text('Synthetic outcome recorded offline.\n')
             payload = {'result': 'synthetic installed executor'}
         elif request.role == 'reviewer':
             payload = {'task_id': json.loads(request.task_json)['task_id'], 'verdict': 'ACCEPT',
@@ -33,10 +60,13 @@ class Agent:
 
 def build():
     area = Path(os.environ['HARNESS_E2E_ROOT']).resolve(strict=True)
-    if (area / 'marker').read_text() != 'offline-installed-v1\n':
+    if (area / 'marker').read_text() != MARKER:
         raise ValueError('Not a prepared offline fixture')
-    context = ProjectContext(area / 'project', ProjectProfile('installed-synthetic'),
-        EnginePolicy(('synthetic-executor',), ('medium',), 'synthetic-planner', 'medium', 'synthetic-reviewer', 'high'))
+    profile = ProjectProfile('installed-synthetic', validations=(Command(('test-runner', 'check')),),
+                             allowed_command_prefixes=(('test-runner',),))
+    context = ProjectContext(area / 'project', profile,
+        EnginePolicy(('synthetic-executor',), ('medium',), 'synthetic-planner', 'medium', 'synthetic-reviewer', 'high'),
+        documents='v2')
     versions = {'engine': 'e2e-1', 'agent_adapter': 'synthetic-1', 'commands': 'synthetic-1',
                 'evidence': 'git-1', 'provider_cli': None}
     agent = Agent(area)

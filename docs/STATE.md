@@ -50,14 +50,17 @@ salvo donde se indica. Detalle por fase en `docs/archive/phase-NNN/SUMMARY.md`.
 ## Fase activa — P009 Proyecto Django desde cero y piloto con cuatro combinaciones de agentes
 
 **Estado:** T001–T005 completadas el 2026-10-19; T006 (propuesta autorizada, D121), T013 (CLI caracterizadas,
-D122), T014 (definición Codex sin Git, D124) y T016 (suite pytest rápida, D125) el 2026-10-20. T007 detenida el
-2026-10-20 (D123); T008–T012 y T015 pendientes.
+D122), T014 (definición Codex sin Git, D124), T016 (suite pytest rápida, D125) y T015 (wheel verificado con D088,
+D126) el 2026-10-20. T007 detenida el 2026-10-20 (D123); T008–T012 pendientes.
 Objetivo y criterios en [ROADMAP](ROADMAP.md#p009--proyecto-django-desde-cero-y-piloto-con-cuatro-combinaciones-de-agentes),
 tareas en [NEXT_STEPS](NEXT_STEPS.md) y diseño en el [plan](phase/P009_PLAN_DJANGO.md).
 Decisión: [D115](DECISIONS.md#d115--p009-django-desde-cero-carpeta-de-proyectos-y-agentes-por-proyecto).
 Contrato de T001: [diseño implementable](phase/P009-T001_CONTRATO_CREACION.md),
 [D116](DECISIONS.md#d116--p009-t001-autoridad-de-creación-presets-por-proyecto-y-preparación-separada).
 
+- T015 devuelve a `check_distribution.py` la verificación completa del wheel: el tramo v1 retirado pasa a ser la
+  definición D088 con agentes sintéticos, aceptación, primera tarea, commit y reinicios. `serve` corre con `TMPDIR`
+  propio (ARCHITECTURE §9) ([entrega](phase/P009-T015_VERIFICACION_WHEEL.md)).
 - T016 reduce pytest de más de 25 minutos a unos 4:20: xdist por defecto (`-n 0` en serie), Git real en macOS,
   plantilla migrada, 16 combinaciones redundantes menos y adaptador Git con menos procesos y `posix_spawn`
   ([entrega](phase/P009-T016_SUITE_RAPIDA.md)).
@@ -92,6 +95,6 @@ primer turno de la definición: Codex 0.163.0 no arrancaba en un hijo sin `.git`
 T014 lo corrige en `cli-13` (D124). Ya existen el área `~/.local/share/harness-local/` (wheel de `21871a0`, ahora
 obsoleto; 17 wheels, TOML v5, SQLite) y el hijo `harness-django-pilot`, vacío y registrado desde la UI con revisor
 Codex `gpt-6-luna`/`medium`, con una conversación de definición cuyo primer turno falló. Servicio detenido.
-La reanudación construye e instala un wheel desde el commit de T014 y sigue en esa conversación
+La reanudación construye e instala un wheel desde un commit que incluya T014 y sigue en esa conversación
 ([propuesta §8](phase/P009-T006_PROPUESTA_PILOTO.md#8-actualización-tras-t014)).
-T015 (verificación del wheel al flujo D088) es obligatoria antes del cierre documental de P009.
+Desde T015 ese wheel se verifica entero con `check_distribution.py`, y `serve` se lanza con `TMPDIR` dentro del área.

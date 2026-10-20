@@ -42,8 +42,10 @@ def main():
         cli = venv / 'bin/harness-local'
         # Git is the only extra executable exposed to the managed synthetic journey.
         (venv / 'bin/git').symlink_to(shutil.which('git'))
-        # PATH sin Node, sin PYTHONPATH, sin configuración ambiental de producto.
-        env = {'PATH': str(venv / 'bin'), 'LANG': 'en_US.UTF-8', 'PYTHONNOUSERSITE': '1'}
+        # PATH sin Node, sin PYTHONPATH, sin configuración ambiental de producto. TMPDIR decide dónde quedan
+        # la clave de sesión y los índices temporales de Git del servicio (ARCHITECTURE §9).
+        (work / 'tmp').mkdir(mode=0o700)
+        env = {'PATH': str(venv / 'bin'), 'LANG': 'en_US.UTF-8', 'PYTHONNOUSERSITE': '1', 'TMPDIR': str(work / 'tmp')}
 
         def run(*argv, ok=True, extra=None):
             result = subprocess.run([str(cli), *map(str, argv)], cwd=work, env=env | (extra or {}),
@@ -90,6 +92,7 @@ def main():
                     log.flush()
                     log.seek(0)
                     key_path = Path(re.search(r'clave de acceso en (.+)', log.read())[1])
+                    assert key_path.resolve().is_relative_to(work / 'tmp'), key_path
                     key = key_path.read_text()
                     assert request(base, '/api/session', {'key': key}, {'X-Harness-Local': '1'})[0] == 200
                     assert request(base, '/api/health')[0] == 200
@@ -141,12 +144,12 @@ def main():
         area = work / 'offline'
         area.mkdir()
         (area / 'project').mkdir()
-        (area / 'marker').write_text('offline-installed-v1\n')
+        (area / 'marker').write_text('offline-installed-v2\n')
         fixture_env = {'PYTHONPATH': str(work), 'HARNESS_E2E_ROOT': str(area),
                        'HARNESS_MANAGED_CONFIG': 'installed_config:build'}
         headers = {'X-Harness-Local': '1'}
         def post(base, path, data, key=None, expected=202):
-            status, body = request(base, path, data, headers | ({'Idempotency-Key': key} if key else {}))
+            status, body = request(base, path, data, headers | ({'Idempotency-Key': key} if key else {}), 'POST')
             assert status == expected, (status, body)
             return json.loads(body)
         def read(base, path):
@@ -160,29 +163,41 @@ def main():
                     return read(base, f'/api/managed/runs/{run_id}')
                 time.sleep(.05)
             raise AssertionError('Installed managed job did not settle')
-        path = '/api/managed/projects/offline/bootstrap'
-        data = {'brief': {'problem': 'Synthetic local workflow', 'users': 'Offline operator',
-                         'minimum_features': 'One observable task', 'constraints': 'Offline only',
-                         'delivery_goal': 'Reviewed documentary task'},
-                'decisions': {'scope': 'One task', 'architecture': 'Registered synthetic profile',
-                              'out_of_scope': 'Providers, network and publication'}}
+        def roles():
+            calls = area / 'calls.jsonl'
+            return [json.loads(line)['role'] for line in calls.read_text().splitlines()] if calls.exists() else []
+        # D088: the project is created by the definition conversation (v1 bootstrap retired, D089/D093).
+        project = '/api/managed/projects/offline'
         with server(db, fixture_env) as base:
-            preview = post(base, path + '/preview', data, expected=200)
-            body = {'input': data, 'preview_sha256': preview['preview_sha256'],
-                    'reason': 'Reviewed installed preview', 'confirmed': True}
-            post(base, path, {**body, 'confirmed': False}, 'create', expected=422)
-            assert not list((area / 'project').iterdir())
-            created = post(base, path, body, 'create')
+            assert request(base, project + '/bootstrap/preview', {}, headers)[0] in (404, 405)
+            assert read(base, project + '/bootstrap')['enabled'] is True
+            conversation = post(base, project + '/planning', {'kind': 'definition', 'title': 'Installed synthetic',
+                                'brief': '# Brief\n\nOne synthetic outcome, offline only.\n'}, 'definition', 201)
+            planning = f"{project}/planning/{conversation['id']}"
+            turn = post(base, planning + '/messages', {'expected_version': 0, 'text': 'Draft the definition'}, 'turn')
+            settled(base, turn['run_id'])
+            for proposal in read(base, planning)['proposals']:
+                post(base, f"{planning}/proposals/{proposal['id']}/apply",
+                     {'expected_version': read(base, planning)['version'],
+                      'proposal_sha256': proposal['proposal_sha256'], 'confirmed': True}, expected=200)
+            shown = post(base, planning + '/accept/preview', None, expected=200)
+            assert shown['ready'], shown['blockers']
+            body = {'preview_sha256': shown['preview_sha256'], 'confirmed': True,
+                    'reason': 'Reviewed installed preview', 'resume_operation_id': None, 'expected_version': None}
+            post(base, planning + '/accept', {**body, 'confirmed': False}, 'create', expected=422)
+            assert not (area / 'project/.git').exists()
+            created = post(base, planning + '/accept', body, 'create')
             settled(base, created['run_id'])
-            assert read(base, path)['operation']['status'] == 'COMPLETED'
-            assert not (area / 'calls.jsonl').exists()
+            assert read(base, project + '/bootstrap')['definition_operation']['status'] == 'COMPLETED'
+            assert (area / 'project/AGENTS.md').is_file() and (area / 'project/docs/DDBB-DIAGRAM.md').is_file()
+            assert roles() == ['definition']
         with server(db, fixture_env) as base:
-            assert post(base, path, body, 'create')['id'] == created['id']
-            task_body = {'task_id': 'P001-T001', 'phase_id': 'P001', 'text': preview['task_text']}
+            assert post(base, planning + '/accept', body, 'create')['id'] == created['id']
+            task_body = {'task_id': 'P001-T001', 'phase_id': 'P001', 'text': shown['task_text']}
             task = post(base, '/api/managed/projects/offline/runs', task_body, 'first-task')
             ready = settled(base, task['run_id'])
-            assert ready['status'] == 'ACCEPTANCE_READY'
-            assert ready['history']['acceptance']['changed_paths'] == ['docs/DELIVERY_CHECKLIST.md']
+            assert ready['status'] == 'ACCEPTANCE_READY', ready['history'].get('stop')
+            assert ready['history']['acceptance']['changed_paths'] == ['app/outcome.txt']
             action_path = f"/api/managed/runs/{task['run_id']}/actions"
             action_body = {'action': 'commit', 'expected_version': ready['version']}
             checkpoint = post(base, action_path, action_body, 'checkpoint')
@@ -193,7 +208,7 @@ def main():
             historical_attempts = read(base, f"/api/managed/runs/{task['run_id']}/attempts")
             historical_events = read(base, f"/api/managed/runs/{task['run_id']}/events?limit=100")
         calls = (area / 'calls.jsonl').read_bytes()
-        assert [json.loads(line)['role'] for line in calls.splitlines()] == ['executor', 'reviewer']
+        assert roles() == ['definition', 'executor', 'reviewer']
         with server(db, fixture_env) as base:
             assert read(base, f"/api/managed/runs/{task['run_id']}") == committed
             assert post(base, '/api/managed/projects/offline/runs', task_body, 'first-task')['id'] == task['id']
@@ -227,7 +242,7 @@ def main():
             assert read(base, '/api/managed/supervisor')['enabled'] is False
             assert request(base, action_path, action_body, headers | {'Idempotency-Key': 'archive-refused'})[0] == 409
             assert (area / 'calls.jsonl').read_bytes() == calls
-        print('Wheel aislado: UI/assets/API, sesión, bootstrap/tarea/commit/reinicio, errores y evidencia restaurada correctos.')
+        print('Wheel aislado: UI/assets/API, sesión, definición D088/tarea/commit/reinicio, errores y evidencia restaurada correctos.')
 
 
 if __name__ == '__main__':

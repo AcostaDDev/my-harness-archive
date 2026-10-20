@@ -136,6 +136,7 @@ tarea se leen solo las decisiones que cita; este índice sirve para buscar prece
 | [D123](#d123--p009-t007-detenida-codex-rechaza-la-definición-en-un-hijo-sin-git) | P009-T007: detenida; Codex rechaza la definición en un hijo sin Git | P009 |
 | [D124](#d124--p009-t014-cli-13-codex-define-un-proyecto-nuevo-fuera-de-git) | P009-T014: `cli-13`, Codex define un proyecto nuevo fuera de Git | P009 |
 | [D125](#d125--p009-t016-suite-pytest-en-paralelo-y-git-sin-fork) | P009-T016: suite pytest en paralelo y Git sin fork | P009 |
+| [D126](#d126--p009-t015-el-wheel-se-verifica-con-la-definición-d088) | P009-T015: el wheel se verifica con la definición D088 | P009 |
 
 ## D001 — Alcance local y arquitectura base
 
@@ -3962,3 +3963,22 @@ Estado: implementado y verificado offline el 2026-10-20. Fase: P009. Autorizado 
   como heredables, debe revisar esta decisión.
 - Resultado en la máquina de desarrollo: de más de 25 minutos a unos 4:20 con 10 workers. Sin cambios de esquema,
   API, versiones congeladas ni contratos de agentes.
+
+## D126 — P009-T015: el wheel se verifica con la definición D088
+
+Estado: implementado y verificado offline el 2026-10-20. Fase: P009. Cierra el hallazgo §5 de
+[T007](phase/P009-T007_CREACION_DJANGO.md#5-verificación-del-wheel-incompleta) (D123);
+[entrega](phase/P009-T015_VERIFICACION_WHEEL.md).
+
+- `scripts/check_distribution.py` sustituye el tramo de bootstrap v1 (retirado en D089/D093) por el recorrido HTTP
+  vigente: conversación `definition`, un turno con agente sintético, aplicación confirmada de los borradores, vista
+  previa lista, aceptación sin confirmar rechazada sin `.git`, aceptación con commit raíz e idempotencia tras reinicio.
+  La primera tarea sale del `task_text` de esa vista previa. Se conservan contenido del wheel, sesión, UI/assets,
+  simulación, reinicio, errores de configuración y esquema, backup y restauración de consulta sin el checkout.
+- El fixture `tests/fixtures/e2e/installed_config.py` pasa a `offline-installed-v2`: contexto `documents = "v2"`,
+  perfil sintético con validación `test-runner check` resuelta por `ScriptedCommandRunner` y un agente que responde
+  a `definition`, `executor` y `reviewer`. Sigue siendo un módulo aislado, copiado junto al wheel, sin proveedores.
+- El script lanza el servicio con `TMPDIR` dentro de su directorio temporal y comprueba que la clave de sesión queda
+  allí. ARCHITECTURE §9 documenta que `serve` usa `TMPDIR` para la clave y los temporales de Git.
+- Sin cambios de producto, esquema, API ni versiones congeladas. El fixture no tiene una prueba pytest propia: el
+  script es su única comprobación y se ejecuta al construir un wheel (D051).

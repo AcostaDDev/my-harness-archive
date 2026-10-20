@@ -233,6 +233,12 @@ Uso real (D051): construir y verificar el wheel (`scripts/build_distribution.py 
 --dist`), instalarlo en un venv propio y operar con `harness-local check-config RUTA [--preflight]`,
 `harness-local init-db --database RUTA` y `harness-local serve --database RUTA --config RUTA`. Nunca desde este checkout.
 
+`serve` escribe la clave de sesión (`harness-session-*/login-key`, 0700/0600, se borra al salir) y los índices y
+sellos temporales de Git (`harness-git-*`, `harness-bootstrap-*`) bajo el `TMPDIR` del proceso. Sin él, Python usa el
+temporal del sistema (`/var/folders/…` en macOS), fuera del área de operación. Para mantenerlos dentro, lanzar
+`serve` con `TMPDIR` apuntando a un directorio 0700 del área, como hace `check_distribution.py` (D126). Los comandos
+de la receta Django no heredan ese valor: reciben `HOME`/`TMPDIR` propios dentro del hijo (D119).
+
 ## 10. Límites conocidos
 
 - Ningún recorrido de producto completo con CLI reales; D071 comprobó las cuatro combinaciones revisor/ejecutor con una

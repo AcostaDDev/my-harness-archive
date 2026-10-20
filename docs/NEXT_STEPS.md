@@ -7,7 +7,7 @@ Decisión: [D115](DECISIONS.md#d115--p009-django-desde-cero-carpeta-de-proyectos
 **Estado:** T001–T006, T013 y T014 completadas (diseño, producto, ensayo, propuesta autorizada, CLI caracterizadas
 y definición Codex sin Git). T007 detenida en el primer turno de la definición: Codex rechazaba un hijo sin Git
 ([evidencia](phase/P009-T007_CREACION_DJANGO.md), D123), corregido en `cli-13` (D124). T016 (suite rápida, D125)
-completada. T008–T012 y T015 pendientes.
+y T015 (wheel verificado con D088, D126) completadas. T008–T012 pendientes.
 **Siguiente:** reanudar T007 con wheel nuevo y **autorización nueva del usuario**.
 [Contrato implementable](phase/P009-T001_CONTRATO_CREACION.md), decisión D116. T002 añade producto de
 carpeta/creación, sin piloto ni selección de carpeta real del usuario;
@@ -302,7 +302,10 @@ para que un ensayo como el de T005 la detecte. Comprobar si la conversación del
 
 ## P009-T015 — Actualizar la verificación del wheel al flujo D088
 
-**Estado:** pendiente; obligatoria antes del cierre documental de P009 (decisión del usuario, D123).
+**Estado:** completada el 2026-10-20 (D126); era obligatoria antes del cierre documental de P009 (D123).
+**Resultado:** el script recorre definición D088 → aceptación → primera tarea → commit con agentes sintéticos y
+reinicios, y lanza `serve` con `TMPDIR` propio; ARCHITECTURE §9 lo documenta. Wheel nuevo construido y verificado
+entero sin conexión. [Recorrido y verificación](phase/P009-T015_VERIFICACION_WHEEL.md).
 **Objetivo:** que `scripts/check_distribution.py` vuelva a verificar entero un wheel construido.
 **Alcance:** sustituir el tramo de bootstrap v1 (405 en `POST /projects/offline/bootstrap/preview`, retirado en
 D089/D093) por el recorrido vigente de definición/aceptación con agentes sintéticos, conservando las demás
