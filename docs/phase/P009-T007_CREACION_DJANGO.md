@@ -7,6 +7,10 @@ Base: `21871a0` (T013). Autorización: [propuesta de T006](P009-T006_PROPUESTA_P
 definición con el revisor Codex falla antes de llegar al modelo y el piloto se detiene (§5 de la propuesta).
 Sin definición, commit raíz, receta ni Django. No se reintentó ni se cambió de proveedor.
 
+**Reanudación (2026-10-21, D127):** con autorización nueva del usuario y wheel de `1f8aa7a` (`cli-13`, T014/T015),
+T007 se completa: definición en dos turnos más, commit raíz, receta offline con commit técnico y portada en
+loopback. Tres invocaciones de 20 en total. Ver [§7](#7-reanudación-y-cierre-de-t007-2026-10-21).
+
 ## 1. Precondiciones comprobadas antes de crear nada
 
 - SHA-256 de los binarios fijados idénticos a §1: Codex `8813367285524ac7…cfdee31`, Claude `b9ac5374839f14ab…aab78e6a`.
@@ -81,3 +85,73 @@ con pruebas que reproduzcan la comprobación de Codex. Reanudar T007 exige otra 
 la propuesta actualizada si cambia el adaptador (§6) y **una autorización nueva del usuario** (§5). La reanudación
 prevista no recrea la carpeta: sigue con el hijo ya registrado y su conversación. T014 debe comprobar si esa
 conversación admite un turno nuevo con el adaptador corregido o necesita otra; aquí no se ha verificado.
+
+## 7. Reanudación y cierre de T007 (2026-10-21)
+
+Autorización nueva del usuario en el chat («Reanuda P009-T007»), dentro de D121 §§3–6 y de la propuesta §8.
+Decisión [D127](../DECISIONS.md#d127--p009-t007-completada-django-creado-desde-la-ui-con-revisor-codex).
+
+### 7.1 Precondiciones y preparación (sin proveedores)
+
+| Comprobación | Resultado |
+|---|---|
+| SHA-256 de los binarios de §1 de la propuesta | idénticos |
+| 8031/8032, servicio y CLI del área | libres, sin procesos; hijo vacío y registrado |
+| Checkout de desarrollo | limpio en `1f8aa7a` (T014 + T015) |
+| `build_distribution.py --out-dir …/dist` | wheel `7218250e…5b229fd` (sustituye `ae1f5640…a6f33f` de `21871a0`) |
+| `check_distribution.py --dist …/dist` | **completo** por primera vez sobre el wheel operativo (T015) |
+| `uv pip sync --offline --require-hashes` + wheel `--no-deps --reinstall` en el venv del área | `cli-13` instalado |
+| `check-config --preflight` | `version_help_match` en los 6 roles/presets |
+| Esquema SQLite | sin migraciones nuevas desde `21871a0`; no hizo falta `init-db` |
+| `serve` en 8031 con `TMPDIR=…/harness-local/tmp` | clave de sesión dentro del área |
+
+La navegación directa de la extensión del navegador vuelve a llegar como `Sec-Fetch-Site: cross-site` y se rechaza
+con `origin_rejected`; una recarga desde el propio origen pasa la guardia. Es el mismo comportamiento de §2.
+
+### 7.2 Definición con revisor Codex
+
+| Turno | Run | Resultado | Tokens (entrada / caché / salida / razonamiento) | Duración |
+|---|---|---|---|---|
+| 1 (2026-10-20, `cli-12`) | `8eb93241` | `FAILED` sin llegar al modelo (§4) | — | 302 ms |
+| 2 (`cli-13`) | `fcd25961` | `ANSWERED` sin borradores y con una pregunta bloqueante | 14 070 / 9 088 / 655 / 449 | 10,2 s |
+| 3 (`cli-13`) | `93d22685` | `ANSWERED`: 8 borradores, sin preguntas | 14 542 / 0 / 3 483 / 188 | 28,7 s |
+
+Los tres usan `gpt-6-luna`/`medium`, como fija D121. El turno 2 llega al modelo con el flag de D124: la carpeta sin
+Git ya no lo bloquea. El revisor no redacta y pregunta, como bloqueante, por «el contenido actual y los marcadores
+gestionados» de STATE, NEXT_STEPS, ROADMAP y DECISIONS. Es una ambigüedad de la plantilla `define-project` ante
+una carpeta nueva: pide conservar los marcadores «exactly where the drafts have them», pero no dice que en un borrador
+nuevo son opcionales (la aceptación añade los bloques con `replace_block`). El usuario eligió responder en la
+conversación en lugar de parar. El turno 3 responde solo con esos hechos del producto y repite el encargo.
+
+Borradores del turno 3: README, SPECIFICATION, ARCHITECTURE, DECISIONS (sin ADR propias), ROADMAP (P001 y sus
+criterios), STATE, NEXT_STEPS (P001-T001…T004 en el orden del brief, con los seis comandos del perfil) y
+`docs/flows/tasks.md`. Se ciñen al brief y no añaden funciones; el flujo y el README describen lo planificado como
+tal. Cada borrador se aplicó desde la UI con su hash revisado; en disco coinciden con `content_sha256`.
+
+El ROADMAP no declaraba `**Tag:**`, así que la vista previa indicaba «sin tag» aunque el proyecto usa tag ligero
+(el nombre sale de ROADMAP, `tag_intent`). Por decisión del usuario se añadió `**Tag:**` con el nombre `p001` como edición
+propia desde el editor de la UI, sin otra invocación. Vista previa final `8aede869d2fd`: lista, 14 archivos, AGENTS
+con los comandos del perfil y DDBB-DIAGRAM «Sin persistencia».
+
+### 7.3 Commit raíz, receta y comprobación
+
+| Paso | Resultado |
+|---|---|
+| Crear el proyecto (vista previa `8aede869d2fd`) | commit raíz `9b612ca`, 14 archivos, operación `COMPLETED`, P001 activa |
+| Plan de preparación offline `5250fc08a214` | 18 archivos; `uv pip install --offline --no-index --find-links …/wheels --require-hashes --no-deps` |
+| Preparación `934cbf76` | `COMPLETED` en 1 min 29 s; los seis checks del perfil, `migrate` local |
+| Commit técnico | `d762e77` «harness: prepare Django (django-recipe-1)», identidad Git del usuario |
+| Ignorados | `.venv/`, `db.sqlite3`, `.django-secret`, `.harness-preparation/`, cachés y `reports/` |
+| `runserver 127.0.0.1:8032 --noreload` | `/` y `/static/core.css` responden 200; detenido después |
+
+Ninguna edición manual del scaffold: el único cambio fuera de los borradores del revisor es la línea del tag.
+P001 tiene las cuatro tareas planificadas y la primera se encola en T008.
+
+### 7.4 Consumo, parada y límites
+
+- **Consumo de T007:** 3 invocaciones de proveedor de 20 (1 sin modelo en la primera sesión). Del piloto, 3 de 60.
+- **Al terminar:** sesión de la UI cerrada, servicio detenido con SIGTERM y apagado limpio, `tmp/` vacío, 8031/8032
+  libres, sin procesos de CLI, árbol del hijo limpio. Área e hijo se conservan. Streams y SQLite siguen privados en `state/`.
+- Las lecturas de comprobación por API iniciaban una sesión por consulta y acabaron recibiendo 429 del limitador
+  de sesiones. El servicio se comportó como debía; el resto se leyó desde la sesión del navegador.
+- **No probado aquí:** tareas con ejecutor (T008–T011) ni QA funcional del Django más allá de la portada.

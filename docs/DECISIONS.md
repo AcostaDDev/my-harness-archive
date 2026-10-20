@@ -137,6 +137,7 @@ tarea se leen solo las decisiones que cita; este índice sirve para buscar prece
 | [D124](#d124--p009-t014-cli-13-codex-define-un-proyecto-nuevo-fuera-de-git) | P009-T014: `cli-13`, Codex define un proyecto nuevo fuera de Git | P009 |
 | [D125](#d125--p009-t016-suite-pytest-en-paralelo-y-git-sin-fork) | P009-T016: suite pytest en paralelo y Git sin fork | P009 |
 | [D126](#d126--p009-t015-el-wheel-se-verifica-con-la-definición-d088) | P009-T015: el wheel se verifica con la definición D088 | P009 |
+| [D127](#d127--p009-t007-completada-django-creado-desde-la-ui-con-revisor-codex) | P009-T007: completada; Django creado desde la UI con revisor Codex | P009 |
 
 ## D001 — Alcance local y arquitectura base
 
@@ -3982,3 +3983,22 @@ Estado: implementado y verificado offline el 2026-10-20. Fase: P009. Cierra el h
   allí. ARCHITECTURE §9 documenta que `serve` usa `TMPDIR` para la clave y los temporales de Git.
 - Sin cambios de producto, esquema, API ni versiones congeladas. El fixture no tiene una prueba pytest propia: el
   script es su única comprobación y se ejecuta al construir un wheel (D051).
+
+## D127 — P009-T007: completada; Django creado desde la UI con revisor Codex
+
+Estado: completada el 2026-10-21. Fase: P009. Reanuda D123 con autorización nueva del usuario, dentro de D121 §§3–6
+y de la propuesta §8. [Evidencia saneada](phase/P009-T007_CREACION_DJANGO.md#7-reanudación-y-cierre-de-t007-2026-10-21).
+
+- Wheel de `1f8aa7a` (`cli-13`), verificado entero con `check_distribution.py` (D126) e instalado offline en el
+  venv del área; preflight correcto en los seis roles. Se reutilizan el área, la SQLite, el hijo y su conversación.
+- La definición se completa en los turnos 2 y 3 con Codex `gpt-6-luna`/`medium`. Commit raíz `9b612ca` desde la UI,
+  receta offline `django-recipe-1` y commit técnico `d762e77`; portada y estáticos responden en loopback. Consumo:
+  3 de 20 invocaciones de T007, 3 de 60 del piloto. Sin edición manual del scaffold.
+- Hallazgo: la plantilla `define-project` pide conservar los marcadores gestionados «donde los borradores los
+  tienen», pero no dice que en una carpeta nueva son opcionales. Codex 0.163.0 respondió con una pregunta bloqueante en
+  lugar de redactar. El usuario decidió contestarla en la conversación (turno 3), que es el uso previsto, en lugar de
+  parar; queda como corrección propuesta para la plantilla, sin implementar.
+- Hallazgo: el ROADMAP del revisor no declaraba `**Tag:**` y el cierre de P001 no habría creado tag pese a la
+  configuración `lightweight`. El usuario decidió añadir `p001` como edición propia desde la UI antes de aceptar.
+- El consentimiento de D121 cubre T008–T012 dentro de sus techos. T008 (Codex→Codex) es la siguiente; se lanza
+  cuando el usuario lo pida.

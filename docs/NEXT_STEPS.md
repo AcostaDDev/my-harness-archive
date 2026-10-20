@@ -4,11 +4,10 @@ Objetivo y criterios en [ROADMAP](ROADMAP.md#p009--proyecto-django-desde-cero-y-
 Decisión: [D115](DECISIONS.md#d115--p009-django-desde-cero-carpeta-de-proyectos-y-agentes-por-proyecto).
 [Diseño y matriz](phase/P009_PLAN_DJANGO.md); [flujo y estado de implementación](flows/project-creation.md).
 
-**Estado:** T001–T006, T013 y T014 completadas (diseño, producto, ensayo, propuesta autorizada, CLI caracterizadas
-y definición Codex sin Git). T007 detenida en el primer turno de la definición: Codex rechazaba un hijo sin Git
-([evidencia](phase/P009-T007_CREACION_DJANGO.md), D123), corregido en `cli-13` (D124). T016 (suite rápida, D125)
-y T015 (wheel verificado con D088, D126) completadas. T008–T012 pendientes.
-**Siguiente:** reanudar T007 con wheel nuevo y **autorización nueva del usuario**.
+**Estado:** T001–T007 y T013–T016 completadas. T007 se detuvo el 2026-10-20 (D123), se corrigió en `cli-13` (D124)
+y se completó el 2026-10-21 con autorización nueva: Django creado desde la UI, commit raíz y técnico
+([evidencia §7](phase/P009-T007_CREACION_DJANGO.md#7-reanudación-y-cierre-de-t007-2026-10-21), D127). T008–T012 pendientes.
+**Siguiente:** T008 (Codex→Codex, P001-T001 del hijo), dentro del consentimiento de D121, cuando el usuario lo pida.
 [Contrato implementable](phase/P009-T001_CONTRATO_CREACION.md), decisión D116. T002 añade producto de
 carpeta/creación, sin piloto ni selección de carpeta real del usuario;
 la implementación no concede permisos de red, instalación o proveedores.
@@ -167,9 +166,12 @@ el piloto y recoger las selecciones/autorizaciones que falten. Preflight de CLI 
 
 ## P009-T007 — Crear el proyecto Django nuevo desde la UI
 
-**Estado:** detenida el 2026-10-20 (D123); T014 completada (D124). **Depende de:** T006 con consentimiento
-registrado (D121), T013, T014 y una autorización nueva del usuario.
-**Avance:** área, wheel, wheelhouse, TOML, preflight e `init-db` preparados; carpeta de proyectos guardada e hijo
+**Estado:** completada el 2026-10-21 (D127), tras la parada del 2026-10-20 (D123) y su corrección (D124).
+**Resultado:** definición en los turnos 2–3 con Codex, commit raíz `9b612ca` (con tag `p001` de P001 añadido por el
+usuario), receta offline y commit técnico `d762e77`; portada en loopback. 3 de 20 invocaciones.
+Hallazgo: la plantilla `define-project` no aclara que los marcadores son opcionales en una carpeta nueva (D127).
+**Depende de:** T006 con consentimiento registrado (D121), T013, T014 y una autorización nueva del usuario.
+**Avance del 2026-10-20:** área, wheel, wheelhouse, TOML, preflight e `init-db` preparados; carpeta de proyectos guardada e hijo
 `harness-django-pilot` creado y registrado desde la UI. El primer turno de definición con revisor Codex falla sin
 llegar al modelo (falta `--skip-git-repo-check` en un hijo sin Git). Una invocación lanzada, cero tokens.
 [Evidencia saneada](phase/P009-T007_CREACION_DJANGO.md). T014 lo corrige (`cli-13`) y la propuesta está al día

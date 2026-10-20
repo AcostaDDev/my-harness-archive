@@ -51,13 +51,18 @@ salvo donde se indica. Detalle por fase en `docs/archive/phase-NNN/SUMMARY.md`.
 
 **Estado:** T001–T005 completadas el 2026-10-19; T006 (propuesta autorizada, D121), T013 (CLI caracterizadas,
 D122), T014 (definición Codex sin Git, D124), T016 (suite pytest rápida, D125) y T015 (wheel verificado con D088,
-D126) el 2026-10-20. T007 detenida el 2026-10-20 (D123); T008–T012 pendientes.
+D126) el 2026-10-20. T007 detenida el 2026-10-20 (D123) y completada el 2026-10-21 (D127); T008–T012 pendientes.
 Objetivo y criterios en [ROADMAP](ROADMAP.md#p009--proyecto-django-desde-cero-y-piloto-con-cuatro-combinaciones-de-agentes),
 tareas en [NEXT_STEPS](NEXT_STEPS.md) y diseño en el [plan](phase/P009_PLAN_DJANGO.md).
 Decisión: [D115](DECISIONS.md#d115--p009-django-desde-cero-carpeta-de-proyectos-y-agentes-por-proyecto).
 Contrato de T001: [diseño implementable](phase/P009-T001_CONTRATO_CREACION.md),
 [D116](DECISIONS.md#d116--p009-t001-autoridad-de-creación-presets-por-proyecto-y-preparación-separada).
 
+- T007 crea desde la UI el Django `harness-django-pilot` con revisor Codex `gpt-6-luna`/`medium`: definición en
+  dos turnos, commit raíz `9b612ca` con P001 y sus cuatro tareas, receta offline y commit técnico `d762e77`; la portada
+  responde en loopback. 3 de 20 invocaciones. Hallazgos: la plantilla `define-project` no aclara que los marcadores
+  son opcionales en una carpeta nueva, y el ROADMAP del revisor no traía tag (el usuario añadió `p001`)
+  ([evidencia §7](phase/P009-T007_CREACION_DJANGO.md#7-reanudación-y-cierre-de-t007-2026-10-21), D127).
 - T015 devuelve a `check_distribution.py` la verificación completa del wheel: el tramo v1 retirado pasa a ser la
   definición D088 con agentes sintéticos, aceptación, primera tarea, commit y reinicios. `serve` corre con `TMPDIR`
   propio (ARCHITECTURE §9) ([entrega](phase/P009-T015_VERIFICACION_WHEEL.md)).
@@ -90,11 +95,9 @@ P008 permanece cerrada ([archivo](archive/phase-008/SUMMARY.md), D114). Este rep
 ni ejecutarse con el harness. T002–T005 usan carpetas/SQLite temporales y CLI de agentes falsas;
 sin proyectos reales del usuario ni proveedores. T005 añade herramientas Django reales, sin modificar el runtime del harness.
 
-**Siguiente:** reanudar P009-T007, que exige **autorización nueva del usuario** (D123). T007 se detuvo en el
-primer turno de la definición: Codex 0.163.0 no arrancaba en un hijo sin `.git` ([evidencia](phase/P009-T007_CREACION_DJANGO.md));
-T014 lo corrige en `cli-13` (D124). Ya existen el área `~/.local/share/harness-local/` (wheel de `21871a0`, ahora
-obsoleto; 17 wheels, TOML v5, SQLite) y el hijo `harness-django-pilot`, vacío y registrado desde la UI con revisor
-Codex `gpt-6-luna`/`medium`, con una conversación de definición cuyo primer turno falló. Servicio detenido.
-La reanudación construye e instala un wheel desde un commit que incluya T014 y sigue en esa conversación
-([propuesta §8](phase/P009-T006_PROPUESTA_PILOTO.md#8-actualización-tras-t014)).
-Desde T015 ese wheel se verifica entero con `check_distribution.py`, y `serve` se lanza con `TMPDIR` dentro del área.
+**Siguiente:** P009-T008, Codex→Codex sobre P001-T001 del hijo (modelo `Task`, alta y lista), dentro del
+consentimiento de D121: el revisor Codex elige modelo/esfuerzo del ejecutor en el catálogo `gpt-6-luna` × {low,
+medium, high}. Quedan 57 de 60 invocaciones del piloto. Área `~/.local/share/harness-local/` con el wheel de
+`1f8aa7a` (`cli-13`); hijo `harness-django-pilot` en `d762e77`, preparado y con P001 activa. Servicio detenido:
+relanzar `serve` con `TMPDIR` dentro del área. Corrección propuesta y sin implementar: aclarar en `define-project`
+que una carpeta nueva no tiene marcadores (D127).
