@@ -129,3 +129,13 @@ identidad del transporte; selecciones, binarios y hashes de §1, área, puertos,
   y su conversación de definición. La comprobación de §5 sobre destino y área inexistentes se cumplió al crearlos
   y no se repite. El primer mensaje nuevo es un turno más de esa conversación. T007 ya consumió 1 de sus 20 invocaciones.
 - Este apartado no autoriza la reanudación. Hace falta una autorización nueva del usuario (D123).
+
+## 9. Actualización tras T008
+
+2026-10-21, por D121 §6 tras la parada de T008 ([D128](../DECISIONS.md#d128--p009-t008-detenida-una-ruta-de-directorio-no-cubre-sus-archivos)).
+Selecciones, binarios, área, puertos, techos y criterios de parada siguen igual.
+
+- El `runserver` de QA (T012) se lanza con `PYTHONDONTWRITEBYTECODE=1`. Sin esa variable escribe bytecode en
+  `.venv`, invalida el recibo de preparación y bloquea las tareas siguientes (T008 §2).
+- La reanudación de T008 espera a P009-T017 y a un wheel reconstruido y verificado, como en §8. Quedan 4 de las 7
+  invocaciones de T008 y 54 de las 60 del piloto. Hace falta una **autorización nueva del usuario**.

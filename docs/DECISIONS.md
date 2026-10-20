@@ -138,6 +138,7 @@ tarea se leen solo las decisiones que cita; este índice sirve para buscar prece
 | [D125](#d125--p009-t016-suite-pytest-en-paralelo-y-git-sin-fork) | P009-T016: suite pytest en paralelo y Git sin fork | P009 |
 | [D126](#d126--p009-t015-el-wheel-se-verifica-con-la-definición-d088) | P009-T015: el wheel se verifica con la definición D088 | P009 |
 | [D127](#d127--p009-t007-completada-django-creado-desde-la-ui-con-revisor-codex) | P009-T007: completada; Django creado desde la UI con revisor Codex | P009 |
+| [D128](#d128--p009-t008-detenida-una-ruta-de-directorio-no-cubre-sus-archivos) | P009-T008: detenida; una ruta de directorio no cubre sus archivos | P009 |
 
 ## D001 — Alcance local y arquitectura base
 
@@ -4002,3 +4003,23 @@ y de la propuesta §8. [Evidencia saneada](phase/P009-T007_CREACION_DJANGO.md#7-
   configuración `lightweight`. El usuario decidió añadir `p001` como edición propia desde la UI antes de aceptar.
 - El consentimiento de D121 cubre T008–T012 dentro de sus techos. T008 (Codex→Codex) es la siguiente; se lanza
   cuando el usuario lo pida.
+
+## D128 — P009-T008: detenida; una ruta de directorio no cubre sus archivos
+
+Estado: detenida el 2026-10-21. Fase: P009. Dentro de D121 y de la propuesta §§3–6, a petición del usuario.
+[Evidencia saneada](phase/P009-T008_PILOTO_CODEX_CODEX.md).
+
+- P001-T001 del hijo (run `fc340afb`) se planifica, se ejecuta y pasa las seis validaciones del perfil con Codex
+  `gpt-6-luna`/`medium` en los tres roles. La selección del ejecutor la decide el revisor con motivo propio y coincide
+  con la invocación. El revisor bloquea: la política de rutas marca como infracción los seis archivos de `core/`.
+- Causa: `check_paths` empareja con `fnmatchcase`, que no trata `core/` como prefijo de directorio, y
+  `task_contract` acepta esa entrada sin avisar. El fallo llega después de ejecutar y revisar. La notación viene del
+  NEXT_STEPS que redactó el revisor en la definición; el ensayo T005 usaba `templates/**` y no lo cubría.
+- Se para por rechazo del revisor (propuesta §5): sin reintento, revalidación, concesiones ni commit. Consumo: 3 de
+  las 7 invocaciones de T008, 6 de 60 del piloto. Los cambios del ejecutor se conservan sin confirmar en el hijo,
+  por decisión del usuario.
+- La corrección es una tarea de producto aparte, P009-T017. Reanudar T008 exige wheel nuevo verificado y
+  autorización nueva del usuario; esta parada no autoriza más consumo.
+- Antes de encolar, el recibo de preparación no coincidía: el `runserver` de QA de T007 escribió 366 `.pyc` en
+  `.venv`, cuyo bytecode también acredita el recibo (D119). Por decisión del usuario se borraron exactamente esos
+  archivos, sin tocar código, TOML ni SQLite. El QA de T012 lanzará `runserver` sin escribir bytecode.

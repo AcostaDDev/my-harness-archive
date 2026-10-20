@@ -6,8 +6,11 @@ Decisión: [D115](DECISIONS.md#d115--p009-django-desde-cero-carpeta-de-proyectos
 
 **Estado:** T001–T007 y T013–T016 completadas. T007 se detuvo el 2026-10-20 (D123), se corrigió en `cli-13` (D124)
 y se completó el 2026-10-21 con autorización nueva: Django creado desde la UI, commit raíz y técnico
-([evidencia §7](phase/P009-T007_CREACION_DJANGO.md#7-reanudación-y-cierre-de-t007-2026-10-21), D127). T008–T012 pendientes.
-**Siguiente:** T008 (Codex→Codex, P001-T001 del hijo), dentro del consentimiento de D121, cuando el usuario lo pida.
+([evidencia §7](phase/P009-T007_CREACION_DJANGO.md#7-reanudación-y-cierre-de-t007-2026-10-21), D127). T008 se detuvo el
+2026-10-21 en la revisión: una ruta de directorio (`core/`) no cubre sus archivos en la política de rutas
+([evidencia](phase/P009-T008_PILOTO_CODEX_CODEX.md), D128). T009–T012 pendientes.
+**Siguiente:** T017 (rutas de directorio en el contrato de tarea). Después, reanudar T008 con wheel nuevo y
+**autorización nueva del usuario**.
 [Contrato implementable](phase/P009-T001_CONTRATO_CREACION.md), decisión D116. T002 añade producto de
 carpeta/creación, sin piloto ni selección de carpeta real del usuario;
 la implementación no concede permisos de red, instalación o proveedores.
@@ -191,7 +194,13 @@ D088/P001 y preparar mediante receta su entorno/código base. Operar con el whee
 
 ## P009-T008 — Piloto: Codex revisor → Codex ejecutor
 
-**Estado:** pendiente. **Depende de:** T007.
+**Estado:** detenida el 2026-10-21 (D128). **Depende de:** T007; su reanudación, de T017.
+**Avance:** run `fc340afb` planificado y ejecutado con Codex `gpt-6-luna`/`medium` en los tres roles; selección del
+ejecutor por el revisor, con motivo, igual a la invocación; seis validaciones correctas. El revisor bloquea porque la
+política de rutas marca los seis archivos de `core/` aunque `core/` está en la allowlist. 3 de 7 invocaciones, sin
+commit. Cambios del ejecutor conservados sin confirmar en el hijo. Antes, el recibo de preparación se restauró
+borrando el bytecode que dejó el QA de T007. [Evidencia saneada](phase/P009-T008_PILOTO_CODEX_CODEX.md).
+Reanudar exige T017, wheel reconstruido y verificado y **autorización nueva del usuario**.
 **Objetivo:** Modelo Task y creación/listado de tareas (tarea P001-T001 del proyecto hijo).
 **Alcance:** título obligatorio, descripción opcional, completada inicialmente false y fecha de creación;
 formulario de alta y lista mediante plantillas. Migración, tests y diagrama de datos/flujos en el mismo cambio.
@@ -329,3 +338,24 @@ Git real en lugar del shim de macOS, plantilla migrada por sesión, mundos A/B m
 **Rutas permitidas:** `tests/**`, `src/harness_local/adapters/**`, `pyproject.toml`, `uv.lock`, `AGENTS.md`, `docs/**`.
 **Validación:** suite pytest completa en paralelo y en serie, unittest, `node --test` y equivalencia del adaptador
 contra `HEAD`. Sin proveedores, wheel ni harness.
+
+## P009-T017 — Rutas de directorio en el contrato de tarea
+
+**Estado:** pendiente. **Depende de:** T008 detenida (D128); bloquea su reanudación.
+**Objetivo:** que una entrada de directorio de un contrato (`core/`) signifique lo mismo al congelar el contrato,
+al restringir al ejecutor y al comprobar la política de rutas, o que se rechace antes de invocar al ejecutor.
+**Alcance:** hoy `task_contract` acepta `core/` y `check_paths` lo empareja con `fnmatchcase`, que no cubre
+`core/models.py`. Decidir con criterio entre normalizar la barra final como `dir/**` en ambas listas y rechazarla al
+validar. Contrastarlo con el resto de consumidores de `allowed_paths`/`forbidden_paths` (restricciones del ejecutor,
+revisión, `scope_grants`, concesiones de ficheros, documentos), con la orientación de `plan-task` y con los
+contratos ya congelados. Decidir también cómo sigue el run `fc340afb`, BLOCKED con los cambios conservados en el
+hijo: revalidarlo con la semántica nueva o descartarlo con la acción del producto y abrir otro.
+**Rutas permitidas:** `src/harness_local/**`, `tests/**`, `docs/**`.
+**Criterios de aceptación:**
+- Una tarea con `core/` en la allowlist no marca como infracción los archivos de `core/`, o falla al congelar el
+  contrato sin ejecutar nada; nunca después de ejecutar y revisar. Lo mismo con un directorio en `forbidden_paths`.
+- Los contratos y snapshots ya congelados conservan su lectura y sus hashes; si cambia la semántica de un run ya
+  congelado, se versiona y se documenta. Rutas exactas y globs actuales se comportan igual.
+- Regresiones con agentes falsos que reproducen el contrato de T008 (rutas de directorio del NEXT_STEPS del hijo).
+  El ensayo de Django usa también esa notación.
+**Validación:** pytest dirigida y completa, unittest, Alembic check si procede. Sin proveedores ni piloto.
