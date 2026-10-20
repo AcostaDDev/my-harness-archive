@@ -222,7 +222,7 @@ def test_empty_mcp_wrapper_fails_after_planner_without_review_or_retry(
     ('no_terminal','partial'),('error','failed'),('exit_error','failed'),('bad_payload','invalid'),
     ('double_terminal','invalid'),('hang','timeout')])
 def test_partial_error_invalid_timeout_preserve_raw_once(tmp_path,context,repository,mode,status):
-    port=adapter(tmp_path,mode,timeout=.2)
+    port=adapter(tmp_path,mode,timeout=.2 if status=='timeout' else 10)
     job,claim,request=setup_invocation(repository,context,port)
     result=port.invoke(context,request)
     assert result.status==status and result.error and result.payload_json is None
@@ -288,7 +288,7 @@ def test_recovery_blocks_live_owner_and_group_after_lease(tmp_path,context,repos
 @pytest.mark.parametrize("mode,status", [("error","failed"),("invalid","invalid"),
                                          ("no_terminal","partial"),("hang","timeout")])
 def test_managed_flow_stops_on_cli_error_without_reviewer_or_retry(tmp_path,context,repository,mode,status):
-    port=adapter(tmp_path,mode,timeout=.2)
+    port=adapter(tmp_path,mode,timeout=.2 if status=='timeout' else 10)
     job=repository.submit(context,'P001-T001','P001',PLAN,{**VERSIONS,**port.frozen_versions()},key='run')
     def factory(ctx,versions):
         return port,ScriptedCommandRunner([]),SyntheticWorkspace(ctx,('app/main.txt',))

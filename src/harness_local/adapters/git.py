@@ -57,14 +57,38 @@ class Git:
         env.update(extra or {})
         return env
 
-    def run(self, *args: str, input: bytes | None = None, env: dict[str, str] | None = None,
-            ok: tuple[int, ...] = (0,)) -> bytes:
+    def _completed(self, args: tuple[str, ...], input: bytes | None,
+                   env: dict[str, str] | None) -> tuple[tuple[str, ...], subprocess.CompletedProcess]:
+        """Ejecuta Git y captura su salida; un fallo al lanzarlo o el timeout son GitError.
+
+        D125: con ruta absoluta, `-C` en lugar de cwd y sin cerrar descriptores, subprocess usa
+        posix_spawn en vez de fork (varias veces más barato desde un proceso grande). Los
+        descriptores de Python no son heredables (PEP 446) y SQLite abre con O_CLOEXEC, así que el
+        hijo recibe lo mismo que con close_fds. Un directorio inaccesible falla antes de lanzar Git,
+        igual que el chdir de subprocess: nunca se convierte en un código de salida de Git.
+        """
         argv = (self.executable, *_CONFIG, *args)
+        environment = self._environment(env)
+        executable = self.executable
+        if not os.path.isabs(executable) and os.sep not in executable:
+            executable = shutil.which(executable, path=environment["PATH"]) or executable
         try:
-            completed = subprocess.run(argv, cwd=self.cwd, input=input, capture_output=True,
-                                       env=self._environment(env), timeout=self.timeout, check=False)
+            if os.path.isabs(executable):
+                if not (os.path.isdir(self.cwd) and os.access(self.cwd, os.X_OK)):
+                    raise NotADirectoryError(f"cannot change to {self.cwd}")
+                completed = subprocess.run((executable, "-C", str(self.cwd), *argv[1:]), input=input,
+                                           capture_output=True, env=environment, close_fds=False,
+                                           timeout=self.timeout, check=False)
+            else:
+                completed = subprocess.run(argv, cwd=self.cwd, input=input, capture_output=True,
+                                           env=environment, timeout=self.timeout, check=False)
         except (OSError, subprocess.TimeoutExpired) as exc:
             raise GitError(f"git {args[0] if args else ''} could not run: {exc}", argv=argv) from exc
+        return argv, completed
+
+    def run(self, *args: str, input: bytes | None = None, env: dict[str, str] | None = None,
+            ok: tuple[int, ...] = (0,)) -> bytes:
+        argv, completed = self._completed(args, input, env)
         if completed.returncode not in ok:
             stderr = completed.stderr.decode("utf-8", "replace").strip()
             raise GitError(f"git {args[0] if args else ''} failed with exit {completed.returncode}: {stderr[:500]}",
@@ -73,12 +97,7 @@ class Git:
 
     def code(self, *args: str, env: dict[str, str] | None = None) -> int:
         """Código de salida sin interpretar; permite preguntas booleanas (is-ancestor)."""
-        argv = (self.executable, *_CONFIG, *args)
-        try:
-            return subprocess.run(argv, cwd=self.cwd, capture_output=True, env=self._environment(env),
-                                  timeout=self.timeout, check=False).returncode
-        except (OSError, subprocess.TimeoutExpired) as exc:
-            raise GitError(f"git {args[0] if args else ''} could not run: {exc}", argv=argv) from exc
+        return self._completed(args, None, env)[1].returncode
 
     def text(self, *args: str, input: bytes | None = None, env: dict[str, str] | None = None) -> str:
         try:
@@ -151,9 +170,9 @@ class GitWorkspace:
     def _index_path(self, git: Git) -> Path:
         return Path(git.text("rev-parse", "--path-format=absolute", "--git-path", "index"))
 
-    def _scratch_index(self, git: Git, target: Path) -> dict[str, str]:
+    def _scratch_index(self, git: Git, target: Path, real: Path | None = None) -> dict[str, str]:
         """Copia del índice real; no se escribe nunca en el índice del usuario."""
-        real = self._index_path(git)
+        real = real or self._index_path(git)
         env = {"GIT_INDEX_FILE": str(target)}
         if real.is_file():
             shutil.copy2(real, target)
@@ -175,8 +194,9 @@ class GitWorkspace:
             base_tree = git.text("rev-parse", "--verify", f"{head}^{{tree}}")
             ref = git.run("symbolic-ref", "-q", "HEAD", ok=(0, 1)).decode("utf-8").strip() or None
             with tempfile.TemporaryDirectory(prefix="harness-git-") as scratch:
-                staged_env = self._scratch_index(git, Path(scratch) / "staged")
-                work_env = self._scratch_index(git, Path(scratch) / "work")
+                real_index = self._index_path(git)
+                staged_env = self._scratch_index(git, Path(scratch) / "staged", real_index)
+                work_env = self._scratch_index(git, Path(scratch) / "work", real_index)
                 # Un índice con conflictos falla aquí: nunca se resuelve implícitamente.
                 index_tree = git.text("write-tree", env=staged_env)
                 untracked = sorted(_split0(git.run("ls-files", "--others", "--exclude-standard", "-z",
@@ -231,20 +251,35 @@ class GitWorkspace:
         return (f"tree {tree}\nparent {base}\nauthor {who}\ncommitter {who}\n\n{message}").encode("utf-8")
 
     def _tree_with(self, git: Git, tree: str, plan_updates) -> str:
+        updates = sorted(plan_updates, key=lambda item: item.path)
+        # Un único listado del árbol (rutas exactas, sin pathspec) para todos los modos.
+        modes = {}
+        for record in git.run("ls-tree", "-r", "-t", "-z", "--full-tree", tree).split(b"\0"):
+            if record:
+                header, _, path = record.partition(b"\t")
+                modes[path.decode("utf-8", "surrogateescape")] = header.split(b" ", 1)[0].decode()
+        for update in updates:
+            if update.content is not None and modes.get(update.path, "100644") not in {"100644", "100755"}:
+                raise CommitError("Mechanical update target is not a regular file")
         with tempfile.TemporaryDirectory(prefix="harness-git-") as scratch:
             env = {"GIT_INDEX_FILE": str(Path(scratch) / "index")}
             git.run("read-tree", tree, env=env)
-            for update in sorted(plan_updates, key=lambda item: item.path):
+            # hash-object sigue siendo por ruta: `--path` aplica los atributos de cada destino.
+            # Las altas consecutivas comparten un update-index (cada --cacheinfo se aplica en orden
+            # y falla igual que por separado); las bajas conservan su posición en el orden.
+            additions = []
+            for update in updates:
                 if update.content is None:
+                    if additions:
+                        git.run("update-index", "--add", *additions, env=env)
+                        additions = []
                     git.run('update-index', '--force-remove', '--', update.path, env=env)
                     continue
-                listing = git.run("ls-tree", "-z", tree, "--", update.path).split(b"\0")[0]
-                mode = listing.split(b" ", 1)[0].decode() if listing else "100644"
-                if mode not in {"100644", "100755"}:
-                    raise CommitError("Mechanical update target is not a regular file")
                 blob = git.text("hash-object", "-w", f"--path={update.path}", "--stdin",
                                 input=update.bytes())
-                git.run("update-index", "--add", "--cacheinfo", f"{mode},{blob},{update.path}", env=env)
+                additions += ["--cacheinfo", f"{modes.get(update.path, '100644')},{blob},{update.path}"]
+            if additions:
+                git.run("update-index", "--add", *additions, env=env)
             return git.text("write-tree", env=env)
 
     def seal(self, context: ProjectContext, plan: CommitPlan) -> tuple[str, str]:

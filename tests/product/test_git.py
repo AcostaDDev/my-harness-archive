@@ -251,6 +251,17 @@ def test_capture_fails_safe_for_unsupported_states(tmp_path, repo, task):
         workspace.capture(make_context(unborn))
 
 
+def test_unreachable_directory_is_a_launch_error_not_a_git_answer(tmp_path, repo):
+    # D125: `-C` sustituye a cwd; un directorio ausente no puede convertirse en un código booleano.
+    missing = Git(tmp_path / "missing")
+    with pytest.raises(GitError, match="could not run"):
+        missing.code("cat-file", "-e", "HEAD")
+    with pytest.raises(GitError, match="could not run"):
+        missing.run("rev-parse", "HEAD")
+    assert Git(repo).code("cat-file", "-e", "HEAD") == 0
+    assert Git(repo).code("cat-file", "-e", "0" * 40) == 1
+
+
 def test_conflicted_index_is_never_resolved_implicitly(task):
     context, _ = task
     root = context.root

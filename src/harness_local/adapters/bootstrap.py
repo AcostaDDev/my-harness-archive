@@ -167,9 +167,20 @@ def _tree(git, documents):
     with tempfile.TemporaryDirectory(prefix='harness-bootstrap-index-') as area:
         env = {'GIT_INDEX_FILE': str(Path(area) / 'index')}
         git.run('read-tree', '--empty', env=env)
-        for doc in documents:
-            blob = git.text('hash-object', '-w', '--stdin', input=doc['content'].encode('utf-8'))
-            git.run('update-index', '--add', '--cacheinfo', '100644', blob, doc['path'], env=env)
+        if documents:
+            # Un único hash-object con bytes exactos: --no-filters equivale a --stdin sin --path.
+            sources = []
+            for number, doc in enumerate(documents):
+                source = Path(area) / f'blob-{number}'
+                source.write_bytes(doc['content'].encode('utf-8'))
+                sources.append(str(source))
+            blobs = git.text('hash-object', '-w', '--no-filters', '--stdin-paths',
+                             input=('\n'.join(sources) + '\n').encode('utf-8')).splitlines()
+            if len(blobs) != len(documents):
+                raise ValueError('Git returned an unexpected number of bootstrap objects')
+            cacheinfo = [arg for doc, blob in zip(documents, blobs)
+                         for arg in ('--cacheinfo', f"100644,{blob},{doc['path']}")]
+            git.run('update-index', '--add', *cacheinfo, env=env)
         return git.text('write-tree', env=env)
 
 

@@ -15,7 +15,7 @@ dependencies = [
 harness-local = "harness_local.cli:main"
 
 [dependency-groups]
-dev = ["pytest==9.1.1", "httpx==0.28.1"]
+dev = ["pytest==9.1.1", "httpx==0.28.1", "pytest-xdist==3.8.0"]
 
 [build-system]
 requires = ["uv_build==0.12.19"]
@@ -24,3 +24,5 @@ build-backend = "uv_build"
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 pythonpath = ["tests"]
+# Paralelo por defecto (D125); `-n 0` ejecuta en serie, p. ej. para depurar una prueba.
+addopts = "-n auto --dist worksteal"

@@ -6,7 +6,8 @@ Decisión: [D115](DECISIONS.md#d115--p009-django-desde-cero-carpeta-de-proyectos
 
 **Estado:** T001–T006, T013 y T014 completadas (diseño, producto, ensayo, propuesta autorizada, CLI caracterizadas
 y definición Codex sin Git). T007 detenida en el primer turno de la definición: Codex rechazaba un hijo sin Git
-([evidencia](phase/P009-T007_CREACION_DJANGO.md), D123), corregido en `cli-13` (D124). T008–T012 y T015 pendientes.
+([evidencia](phase/P009-T007_CREACION_DJANGO.md), D123), corregido en `cli-13` (D124). T016 (suite rápida, D125)
+completada. T008–T012 y T015 pendientes.
 **Siguiente:** reanudar T007 con wheel nuevo y **autorización nueva del usuario**.
 [Contrato implementable](phase/P009-T001_CONTRATO_CREACION.md), decisión D116. T002 añade producto de
 carpeta/creación, sin piloto ni selección de carpeta real del usuario;
@@ -312,3 +313,14 @@ Documentar en ARCHITECTURE §9 el `TMPDIR` del servicio, que hoy decide dónde q
 - `build_distribution.py` + `check_distribution.py` terminan correctamente sobre un wheel nuevo en directorios temporales.
 - Sin proveedores, red ni la SQLite/área operativa del piloto; ningún proyecto real del usuario.
 **Validación:** el propio script, la suite offline completa y unittest.
+
+## P009-T016 — Suite pytest rápida
+
+**Estado:** completada el 2026-10-20 (D125), a petición del usuario y fuera del piloto.
+**Resultado:** pytest pasa de más de 25 minutos en serie a unos 4:20 con xdist (`-n auto`), sin perder garantías:
+Git real en lugar del shim de macOS, plantilla migrada por sesión, mundos A/B montados solo si se usan,
+16 combinaciones redundantes menos, adaptador Git con menos procesos y `posix_spawn`.
+[Diagnóstico, criterio y medidas](phase/P009-T016_SUITE_RAPIDA.md).
+**Rutas permitidas:** `tests/**`, `src/harness_local/adapters/**`, `pyproject.toml`, `uv.lock`, `AGENTS.md`, `docs/**`.
+**Validación:** suite pytest completa en paralelo y en serie, unittest, `node --test` y equivalencia del adaptador
+contra `HEAD`. Sin proveedores, wheel ni harness.

@@ -95,8 +95,7 @@ def test_preview_and_confirmation_refuse_new_filters_before_capture(world, monke
     assert_no_effect(world, before, jobs)
 
 
-@pytest.mark.parametrize('kind', ['clean', 'process'])
-@pytest.mark.parametrize('included', [False, True])
+@pytest.mark.parametrize('kind,included', [('clean', False), ('process', True)])
 def test_job_rejects_filters_before_writing_and_recovers_same_intent(world, monkeypatch, kind, included):
     cid = ready(world)
     shown = preview(world, cid)

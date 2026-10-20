@@ -21,6 +21,8 @@ from test_typescript_profile import PHASE, PLAN, TASK, repository, web  # noqa: 
 
 VERSIONS = {'codex': '0.162.1', 'claude': '2.1.296'}
 PAIRS = [('codex', 'claude'), ('claude', 'claude'), ('codex', 'codex'), ('claude', 'codex')]
+# Cada proveedor como revisor y como ejecutor: basta para cablear versiones o presets ya cubiertos por PAIRS.
+MIXED_PAIRS = [('codex', 'claude'), ('claude', 'codex')]
 
 
 def agent(base, provider, *, reviewer, **environment):

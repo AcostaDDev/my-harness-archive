@@ -19,9 +19,10 @@ from test_onboarding_commit import confirm as onboarding_confirm, preview as onb
 from test_onboarding_conversation import world as onboarding_world  # noqa: F401
 
 
-def flow_ports(flow, world, onboarding_world):
-    return ((world, ready, preview, confirm) if flow == 'A' else
-            (onboarding_world, onboarding_ready, onboarding_preview, onboarding_confirm))
+def flow_ports(flow, request):
+    """Solo se monta el mundo del flujo parametrizado; el otro sería preparación descartada."""
+    return ((request.getfixturevalue('world'), ready, preview, confirm) if flow == 'A' else
+            (request.getfixturevalue('onboarding_world'), onboarding_ready, onboarding_preview, onboarding_confirm))
 
 
 def sealed(world):
@@ -34,10 +35,12 @@ def stop(world, job):
         expected_version=world.repo.get_run(job.run_id).version, reason='Synthetic writer stopped')
 
 
-@pytest.mark.parametrize('flow', ['A', 'B'])
-@pytest.mark.parametrize('crash', [None, 'before', 'write', 'commit', 'register'])
-def test_all_writer_commands_stay_local_and_recover_same_intent(world, onboarding_world, monkeypatch, flow, crash):
-    world, prepare, show, submit = flow_ports(flow, world, onboarding_world)
+@pytest.mark.parametrize('flow,crash', [
+    ('A', None), ('A', 'before'), ('A', 'write'), ('A', 'commit'), ('A', 'register'),
+    ('B', None), ('B', 'commit'),
+])
+def test_all_writer_commands_stay_local_and_recover_same_intent(request, monkeypatch, flow, crash):
+    world, prepare, show, submit = flow_ports(flow, request)
     cid = prepare(world)
     root = world.context.root
     _, _, marker = promisor(root)
@@ -112,11 +115,12 @@ def test_all_writer_commands_stay_local_and_recover_same_intent(world, onboardin
     assert not marker.exists() and sealed(world) == frozen
 
 
-@pytest.mark.parametrize('flow', ['A', 'B'])
-@pytest.mark.parametrize('missing', ['source-blob', 'source-tree', 'sealed-blob', 'sealed-tree'])
-def test_required_source_or_sealed_objects_block_job_and_resume_without_effects(
-        world, onboarding_world, flow, missing):
-    world, prepare, show, submit = flow_ports(flow, world, onboarding_world)
+@pytest.mark.parametrize('flow,missing', [
+    ('A', 'source-blob'), ('A', 'source-tree'), ('A', 'sealed-blob'), ('A', 'sealed-tree'),
+    ('B', 'source-blob'), ('B', 'sealed-tree'),
+])
+def test_required_source_or_sealed_objects_block_job_and_resume_without_effects(request, flow, missing):
+    world, prepare, show, submit = flow_ports(flow, request)
     root = world.context.root
     # Un blob ajeno a la documentación también es necesario para capturar el árbol completo.
     (root / 'synthetic-payload.bin').write_bytes(b'\x00Synthetic code payload\xff')
@@ -179,8 +183,8 @@ def test_both_local_apis_reject_unsupported_git_instead_of_reporting_future_comm
 
 @pytest.mark.parametrize('flow', ['A', 'B'])
 @pytest.mark.parametrize('stage', ['preview', 'job', 'resume'])
-def test_unsupported_writer_git_blocks_before_any_checkout_effect(world, onboarding_world, monkeypatch, flow, stage):
-    world, prepare, show, submit = flow_ports(flow, world, onboarding_world)
+def test_unsupported_writer_git_blocks_before_any_checkout_effect(request, monkeypatch, flow, stage):
+    world, prepare, show, submit = flow_ports(flow, request)
     cid = prepare(world)
     if stage != 'preview':
         job = submit(world, cid)

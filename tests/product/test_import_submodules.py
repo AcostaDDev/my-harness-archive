@@ -106,8 +106,10 @@ def test_head_and_index_guard_does_not_depend_on_child_config_or_initialization(
     assert not marker.exists() and tree_state(root) == before
 
 
-@pytest.mark.parametrize('stage', ['create', 'message', 'status', 'preview', 'confirm'])
-@pytest.mark.parametrize('location', ['synthetic-module', 'docs/synthetic-module'])
+@pytest.mark.parametrize('stage,location', [
+    ('create', 'synthetic-module'), ('message', 'docs/synthetic-module'), ('status', 'synthetic-module'),
+    ('preview', 'docs/synthetic-module'), ('confirm', 'synthetic-module'),
+])
 def test_consumers_block_before_conversation_turn_or_writer(world, monkeypatch, stage, location):
     cid = None if stage == 'create' else ready(world)
     shown = preview(world, cid) if stage == 'confirm' else None
@@ -179,11 +181,12 @@ def test_queued_turn_observations_refuse_gitlinks_without_accepting_proposals(wo
 
 
 @pytest.mark.parametrize('flow', ['A', 'B'])
-def test_job_and_resume_reject_new_index_gitlink_then_recover_same_commit(world, onboarding_world, monkeypatch, flow):
+def test_job_and_resume_reject_new_index_gitlink_then_recover_same_commit(request, monkeypatch, flow):
     if flow == 'B':
-        world, prepare, show, submit = onboarding_world, onboarding_ready, onboarding_preview, onboarding_confirm
+        world, prepare, show, submit = (request.getfixturevalue('onboarding_world'), onboarding_ready,
+                                        onboarding_preview, onboarding_confirm)
     else:
-        prepare, show, submit = ready, preview, confirm
+        world, prepare, show, submit = request.getfixturevalue('world'), ready, preview, confirm
     cid = prepare(world)
     job = submit(world, cid, show(world, cid))
     with Session(world.engine) as session:

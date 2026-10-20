@@ -16,7 +16,7 @@ from harness_local.storage.models import (
     ChatConversationRow, ChatProposalRow, ChatTurnRow, ManagedRunRow,
     ManagedJobRow, PlanningConversationRow, PlanningProposalRow, PlanningTurnRow,
 )
-from test_agent_roles import agent
+from test_agent_roles import MIXED_PAIRS, agent
 from test_local_config import SENTINEL, launches, setup, web, write  # noqa: F401
 from test_managed_api import client
 from test_project_registry import POLICY, confirm, operator, register, v3  # noqa: F401
@@ -115,8 +115,7 @@ def test_invalid_presets_fail_at_load_without_processes(operator, change):
     assert not launches(tmp_path)
 
 
-@pytest.mark.parametrize('reviewer,executor', [('codex', 'codex'), ('codex', 'claude'),
-                                             ('claude', 'claude'), ('claude', 'codex')])
+@pytest.mark.parametrize('reviewer,executor', MIXED_PAIRS)
 def test_selected_presets_drive_the_plan_and_execution(operator, repository, migrated_database, reviewer, executor):
     context, data, folder, tmp_path = operator
     config = load_local_config(write(folder, v5(data, [tmp_path])))

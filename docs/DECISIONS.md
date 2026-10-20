@@ -135,6 +135,7 @@ tarea se leen solo las decisiones que cita; este índice sirve para buscar prece
 | [D122](#d122--p009-t013-codex-01630-y-claude-21304-en-el-baseline-cli-12) | P009-T013: Codex 0.163.0 y Claude 2.1.304 en el baseline `cli-12` | P009 |
 | [D123](#d123--p009-t007-detenida-codex-rechaza-la-definición-en-un-hijo-sin-git) | P009-T007: detenida; Codex rechaza la definición en un hijo sin Git | P009 |
 | [D124](#d124--p009-t014-cli-13-codex-define-un-proyecto-nuevo-fuera-de-git) | P009-T014: `cli-13`, Codex define un proyecto nuevo fuera de Git | P009 |
+| [D125](#d125--p009-t016-suite-pytest-en-paralelo-y-git-sin-fork) | P009-T016: suite pytest en paralelo y Git sin fork | P009 |
 
 ## D001 — Alcance local y arquitectura base
 
@@ -3937,3 +3938,27 @@ Estado: implementado y verificado offline el 2026-10-20. Fase: P009. Corrige el 
 - Una conversación de definición con un turno `FAILED` admite un turno nuevo (cada turno es su propio run y congela
   sus versiones). La reanudación de T007 reutiliza hijo, registro y conversación. La propuesta de T006 se actualiza
   (§8). Reanudar exige wheel nuevo y autorización nueva del usuario; Codex real con el flag queda para el piloto.
+
+## D125 — P009-T016: suite pytest en paralelo y Git sin fork
+
+Estado: implementado y verificado offline el 2026-10-20. Fase: P009. Autorizado por el usuario punto por punto.
+[Diagnóstico, cambios, matrices recortadas y medidas](phase/P009-T016_SUITE_RAPIDA.md).
+
+- La suite pytest se ejecuta en paralelo por defecto con pytest-xdist 3.8.0 (`-n auto --dist worksteal` en
+  `pyproject.toml`); `-n 0` la ejecuta en serie. El mismo comando de AGENTS.md sigue siendo el de referencia.
+- Pruebas: en macOS la sesión evita el shim `xcrun` de `/usr/bin/git` con un prefijo temporal enlazado al Git real.
+  `migrated_database` copia una plantilla migrada una vez por sesión. Los tests A/B montan solo el mundo de su flujo.
+- Matrices: se elimina una combinación solo si cada eje sigue cubierto (producto completo en otra prueba más barata
+  o cada valor presente al menos una vez), con el precedente del muestreo diagonal de filtros. Puntos de crash,
+  orígenes, pasos de cierre y etapas no se recortan. 16 combinaciones menos.
+- Adaptador Git, sin cambiar árboles, commits, errores ni mensajes: `_tree_with` lista el árbol una vez y agrupa
+  `update-index` consecutivos (`hash-object` sigue por ruta por los atributos), `bootstrap._tree` hace un único
+  `hash-object --no-filters --stdin-paths`, `capture` resuelve el índice una vez y `LocalGit.code()` comprueba
+  `--no-lazy-fetch` una vez por instancia.
+- `Git.run/code` lanzan `git -C <raíz>` con ruta absoluta y `close_fds=False` para que `subprocess` use
+  `posix_spawn` en lugar de `fork`. Es seguro porque los descriptores del proceso no son heredables (PEP 446,
+  `O_CLOEXEC` en SQLite). Un directorio inaccesible sigue siendo un `GitError` de lanzamiento, nunca un código de
+  salida. Un ejecutable no resoluble a ruta absoluta usa el camino anterior. Si un cambio futuro marca descriptores
+  como heredables, debe revisar esta decisión.
+- Resultado en la máquina de desarrollo: de más de 25 minutos a unos 4:20 con 10 workers. Sin cambios de esquema,
+  API, versiones congeladas ni contratos de agentes.

@@ -14,7 +14,7 @@ decisiones vigentes y la información técnica que antes estaba en README y AGEN
 | UI | React 19.3.0, TypeScript 5.9.3, Vite 8.3.4; `markdown-it` 15.0.2 (`html: false`) y `mermaid` 11.17.2 (`strict`) |
 | Tipos del cliente | `openapi-typescript` 7.13.0 desde el OpenAPI exportado |
 | Herramientas | uv 0.12.19 y `uv.lock`; Node 24.15.0, npm 11.12.1 y `frontend/package-lock.json` |
-| Pruebas | `unittest` (12 checks sin dependencias), pytest 9.1.1 + httpx 0.28.1, `node --test` |
+| Pruebas | `unittest` (12 checks sin dependencias), pytest 9.1.1 + httpx 0.28.1 + pytest-xdist 3.8.0, `node --test` |
 | Agentes | CLI `codex` 0.161.0/0.162.1/0.163.0 (escritura 0.162.1/0.163.0) y `claude` 2.1.295/2.1.296/2.1.304, adaptador `cli-13` |
 
 Sin Celery, broker ni Docker para el servicio (D003, D004). Detalles de stack de cada proyecto gestionado (Django,
@@ -218,6 +218,9 @@ node --test frontend/tests/*.test.mjs
 npm --prefix frontend run check
 npm --prefix frontend run build
 ```
+
+pytest se ejecuta en paralelo por defecto (`-n auto`, D125); añadir `-n 0` para ejecutarla en serie, por ejemplo
+al depurar una prueba concreta.
 
 Tras cambiar un contrato de la API:
 

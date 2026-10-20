@@ -10,8 +10,11 @@ class LocalGit(Git):
 
     def code(self, *args, **kwargs):
         # Una pregunta booleana no puede confundir Git sin soporte con un objeto futuro ausente.
-        # run comprueba el soporte con el mismo ejecutable y falla sin fallback antes de la pregunta.
-        self.run('--version')
+        # run comprueba el soporte con el mismo ejecutable y falla sin fallback antes de la primera
+        # pregunta de esta instancia; un fallo no se recuerda y se vuelve a comprobar.
+        if not getattr(self, '_lazy_fetch_checked', False):
+            self.run('--version')
+            self._lazy_fetch_checked = True
         return super().code('--no-lazy-fetch', *args, **kwargs)
 
     def require_tree(self, revision: str):

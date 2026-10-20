@@ -78,7 +78,7 @@ sys.stdout.write(open({str(HELP / name)!r}).read())
         assert report['available'] and report['observed_version'] == NEW[provider], report
 
 
-@pytest.mark.parametrize('reviewer,executor', test_agent_roles.PAIRS)
+@pytest.mark.parametrize('reviewer,executor', test_agent_roles.MIXED_PAIRS)
 def test_four_pairings_through_the_real_adapter_with_the_pilot_versions(
         setup, repository, monkeypatch, reviewer, executor):
     for provider, version in NEW.items():

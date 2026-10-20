@@ -50,13 +50,17 @@ salvo donde se indica. Detalle por fase en `docs/archive/phase-NNN/SUMMARY.md`.
 ## Fase activa — P009 Proyecto Django desde cero y piloto con cuatro combinaciones de agentes
 
 **Estado:** T001–T005 completadas el 2026-10-19; T006 (propuesta autorizada, D121), T013 (CLI caracterizadas,
-D122) y T014 (definición Codex sin Git, D124) el 2026-10-20. T007 detenida el 2026-10-20 (D123); T008–T012 y T015 pendientes.
+D122), T014 (definición Codex sin Git, D124) y T016 (suite pytest rápida, D125) el 2026-10-20. T007 detenida el
+2026-10-20 (D123); T008–T012 y T015 pendientes.
 Objetivo y criterios en [ROADMAP](ROADMAP.md#p009--proyecto-django-desde-cero-y-piloto-con-cuatro-combinaciones-de-agentes),
 tareas en [NEXT_STEPS](NEXT_STEPS.md) y diseño en el [plan](phase/P009_PLAN_DJANGO.md).
 Decisión: [D115](DECISIONS.md#d115--p009-django-desde-cero-carpeta-de-proyectos-y-agentes-por-proyecto).
 Contrato de T001: [diseño implementable](phase/P009-T001_CONTRATO_CREACION.md),
 [D116](DECISIONS.md#d116--p009-t001-autoridad-de-creación-presets-por-proyecto-y-preparación-separada).
 
+- T016 reduce pytest de más de 25 minutos a unos 4:20: xdist por defecto (`-n 0` en serie), Git real en macOS,
+  plantilla migrada, 16 combinaciones redundantes menos y adaptador Git con menos procesos y `posix_spawn`
+  ([entrega](phase/P009-T016_SUITE_RAPIDA.md)).
 - T014 corrige la parada de T007 con el adaptador `cli-13`: el revisor Codex recibe `--skip-git-repo-check` al
   redactar la definición D088 (plantilla congelada `define-project`) de una carpeta aún sin Git, con sandbox de
   lectura, memoria y confianza intactos. Jobs `cli-12` pendientes quedan en cuarentena; la CLI falsa rechaza ya como

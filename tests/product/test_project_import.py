@@ -301,7 +301,9 @@ def test_only_read_only_git_commands_run(tmp_path, monkeypatch):
     monkeypatch.setattr(subprocess, "run", recording)
     read_inventory(context(root))
     assert calls and all(Path(argv[0]).name == "git" for argv in calls)
-    commands = [next(arg for arg in argv[1:] if not arg.startswith("-") and "=" not in arg) for argv in calls]
+    # D125: `-C <raíz>` sustituye a cwd y precede a la configuración y al subcomando.
+    commands = [next(arg for arg in (argv[3:] if argv[1:2] == ["-C"] else argv[1:])
+                     if not arg.startswith("-") and "=" not in arg) for argv in calls]
     assert set(commands) <= {"rev-parse", "config", "status", "ls-tree", "ls-files", "cat-file"}
     assert all("--no-lazy-fetch" in argv for argv in calls)
     assert all("core.hooksPath=/dev/null" in argv and "core.fsmonitor=false" in argv for argv in calls)

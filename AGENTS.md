@@ -34,7 +34,7 @@ implementar y revisar cuando el usuario lo pide.
 
 ```sh
 python3 -m unittest discover -s tests -p 'test_*.py'
-UV_CACHE_DIR=.local/uv-cache uv run --frozen --offline pytest -q
+UV_CACHE_DIR=.local/uv-cache uv run --frozen --offline pytest -q   # paralelo (xdist); -n 0 en serie
 UV_CACHE_DIR=.local/uv-cache uv run --frozen --offline alembic check
 node --test frontend/tests/*.test.mjs
 npm --prefix frontend run check
