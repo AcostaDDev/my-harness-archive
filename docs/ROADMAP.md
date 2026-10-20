@@ -137,9 +137,10 @@ web genérica, edición de credenciales/ejecutables/TOML desde la UI, agentes co
 evaluación estadística de modelos y ejecución del harness sobre este repositorio.
 **Estado:** diseño T001, creación de hijos T002, agentes por proyecto T003, receta Django T004 y ensayo T005 completados el 2026-10-19
 (D116–D120); propuesta del piloto autorizada en T006 y CLI caracterizadas en T013 el 2026-10-20 (D121, D122). Herramientas Django reales verificadas
-en entorno temporal; piloto pendiente. Plan de trece tareas en [NEXT_STEPS](NEXT_STEPS.md); alcance y autorizaciones en
+en entorno temporal. T007 detenida en el primer turno de la definición (D123): Codex no arranca en un hijo sin Git.
+Plan de quince tareas en [NEXT_STEPS](NEXT_STEPS.md); alcance y autorizaciones en
 [docs/phase](phase/P009_PLAN_DJANGO.md); [contrato T001](phase/P009-T001_CONTRATO_CREACION.md).
-La siguiente tarea es P009-T007. Las invocaciones de proveedores
+La siguiente tarea es P009-T014; T007 se reanuda después, con autorización nueva. Las invocaciones de proveedores
 reales se limitan a la [propuesta de T006](phase/P009-T006_PROPUESTA_PILOTO.md); no se reutilizan consentimientos anteriores.
 
 ## Candidatas sin fase asignada

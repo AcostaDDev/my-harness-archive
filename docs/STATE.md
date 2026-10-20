@@ -50,7 +50,7 @@ salvo donde se indica. Detalle por fase en `docs/archive/phase-NNN/SUMMARY.md`.
 ## Fase activa — P009 Proyecto Django desde cero y piloto con cuatro combinaciones de agentes
 
 **Estado:** T001–T005 completadas el 2026-10-19; T006 (propuesta autorizada, D121) y T013 (CLI caracterizadas,
-D122) el 2026-10-20. T007–T012 pendientes, sin piloto.
+D122) el 2026-10-20. T007 detenida el 2026-10-20 (D123); T008–T012, T014 y T015 pendientes.
 Objetivo y criterios en [ROADMAP](ROADMAP.md#p009--proyecto-django-desde-cero-y-piloto-con-cuatro-combinaciones-de-agentes),
 tareas en [NEXT_STEPS](NEXT_STEPS.md) y diseño en el [plan](phase/P009_PLAN_DJANGO.md).
 Decisión: [D115](DECISIONS.md#d115--p009-django-desde-cero-carpeta-de-proyectos-y-agentes-por-proyecto).
@@ -79,10 +79,10 @@ P008 permanece cerrada ([archivo](archive/phase-008/SUMMARY.md), D114). Este rep
 ni ejecutarse con el harness. T002–T005 usan carpetas/SQLite temporales y CLI de agentes falsas;
 sin proyectos reales del usuario ni proveedores. T005 añade herramientas Django reales, sin modificar el runtime del harness.
 
-**Siguiente:** P009-T007, crear el Django desde la UI con el wheel operativo. T013 admite Codex 0.163.0, también
-como escritor, y Claude 2.1.304 en `cli-12` sin cambiar argv ni controles ([caracterización](phase/P009-T013_CARACTERIZACION_CLI.md)).
-La [propuesta autorizada](phase/P009-T006_PROPUESTA_PILOTO.md)
-fija raíz `$HOME/Documents/projects/`, hijo `harness-django-pilot`, área `~/.local/share/harness-local/`,
-revisores Codex `gpt-6-luna`/`medium` y Claude `claude-sonnet-5-5`/`medium`, catálogos del ejecutor, wheelhouse
-offline, dos correcciones por tarea, techo de 60 invocaciones y parada al primer fallo. T006 no instaló ni ejecutó nada;
-el wheel operativo se construye al empezar T007, desde el HEAD con T013. T005 acredita el recorrido con CLI falsas ([ensayo](phase/P009-T005_ENSAYO_DJANGO.md), D120).
+**Siguiente:** P009-T014. T007 se detuvo en el primer turno de la definición: Codex 0.163.0 no arranca en un hijo sin
+`.git` porque `cli-12` solo le pasa `--skip-git-repo-check` con raíces exportadas. Una invocación lanzada, cero
+tokens ([evidencia](phase/P009-T007_CREACION_DJANGO.md)). Ya existen el área `~/.local/share/harness-local/` (wheel de
+`21871a0`, 17 wheels, TOML v5, preflight correcto, SQLite) y el hijo `harness-django-pilot`, vacío y registrado desde la UI
+con revisor Codex `gpt-6-luna`/`medium`. Servicio detenido. Reanudar T007 exige T014, wheel nuevo, la
+[propuesta](phase/P009-T006_PROPUESTA_PILOTO.md) al día si cambia el adaptador y autorización nueva del usuario.
+T015 (verificación del wheel al flujo D088) es obligatoria antes del cierre documental de P009.

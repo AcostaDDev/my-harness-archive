@@ -133,6 +133,7 @@ tarea se leen solo las decisiones que cita; este índice sirve para buscar prece
 | [D120](#d120--p009-t005-ensayo-temporal-con-cli-falsas-y-django-real) | P009-T005: ensayo temporal con CLI falsas y Django real | P009 |
 | [D121](#d121--p009-t006-propuesta-del-piloto-y-caracterización-previa-de-cli) | P009-T006: propuesta del piloto y caracterización previa de CLI | P009 |
 | [D122](#d122--p009-t013-codex-01630-y-claude-21304-en-el-baseline-cli-12) | P009-T013: Codex 0.163.0 y Claude 2.1.304 en el baseline `cli-12` | P009 |
+| [D123](#d123--p009-t007-detenida-codex-rechaza-la-definición-en-un-hijo-sin-git) | P009-T007: detenida; Codex rechaza la definición en un hijo sin Git | P009 |
 
 ## D001 — Alcance local y arquitectura base
 
@@ -3890,3 +3891,24 @@ Amplía D052/D068 sin cambiar argv, protocolo, salidas ni controles de D059/D066
 30 pruebas nuevas: baseline, vecinos rechazados, argv idéntico por rol/proveedor, preflight con las ayudas reales
 y las cuatro parejas por el adaptador real. Suite offline completa: 1.577 tests y 121 subtests correctos, una omisión
 esperada (variante Django real sin wheelhouse). Sin observación en ejecución: el piloto acreditará los efectos reales.
+
+## D123 — P009-T007: detenida; Codex rechaza la definición en un hijo sin Git
+
+Estado: observado el 2026-10-20 y piloto detenido. Fase: P009. Dentro del consentimiento de D121 (§§3–5).
+[Evidencia saneada, causa y consumo](phase/P009-T007_CREACION_DJANGO.md).
+
+- Preparación correcta fuera de los checkouts: wheel de `21871a0`, venv offline por hashes, 17 wheels verificados
+  contra el lock, TOML v5, preflight `version_help_match` en los seis roles/presets e `init-db`. Desde la UI:
+  carpeta de proyectos guardada, hijo `harness-django-pilot` creado y registrado con revisor Codex
+  `gpt-6-luna`/`medium` y ejecutor Codex en catálogo, brief y primer mensaje de la definición.
+- El primer turno `definition` falla en 302 ms sin llegar al modelo: Codex 0.163.0 exige `--skip-git-repo-check`
+  fuera de un repositorio, y `cli-12` solo lo pasa a raíces exportadas (D083/D102). Un hijo nuevo no tiene `.git`
+  hasta el commit raíz. Las CLI falsas de T005 no reproducían esa comprobación. Es un defecto del producto, no del entorno.
+- Parada según D121 §5: sin reintento, sin cambiar de proveedor ni tocar TOML/SQLite. Consumo: una invocación lanzada,
+  cero tokens. Servicio detenido y sin procesos; área e hijo vacío conservados. P009-T014 corrige el transporte.
+  Reanudar T007 exige wheel nuevo, propuesta al día si cambia el adaptador y autorización nueva del usuario.
+- `check_distribution.py` conserva un tramo de bootstrap v1 retirado y falla con 405 después de verificar el contenido,
+  el arranque y la sesión del wheel. El usuario decide continuar con esa verificación parcial y exige corregirlo
+  antes de cerrar P009 (P009-T015).
+- Detalles operativos fijados con criterio: `serve` con `TMPDIR` dentro del área, para que la clave de sesión no salga
+  del área; sin `home-commands/`, porque la composición de la receta exige un entorno vacío (D119).

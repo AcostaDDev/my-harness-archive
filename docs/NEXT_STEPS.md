@@ -4,8 +4,9 @@ Objetivo y criterios en [ROADMAP](ROADMAP.md#p009--proyecto-django-desde-cero-y-
 Decisión: [D115](DECISIONS.md#d115--p009-django-desde-cero-carpeta-de-proyectos-y-agentes-por-proyecto).
 [Diseño y matriz](phase/P009_PLAN_DJANGO.md); [flujo y estado de implementación](flows/project-creation.md).
 
-**Estado:** T001–T006 y T013 completadas (diseño, producto, ensayo, propuesta autorizada y CLI caracterizadas);
-T007–T012 pendientes. **Siguiente:** P009-T007 ([propuesta](phase/P009-T006_PROPUESTA_PILOTO.md), D121; D122).
+**Estado:** T001–T006 y T013 completadas (diseño, producto, ensayo, propuesta autorizada y CLI caracterizadas).
+T007 detenida en el primer turno de la definición: Codex rechaza un hijo sin Git ([evidencia](phase/P009-T007_CREACION_DJANGO.md), D123).
+T008–T012, T014 y T015 pendientes. **Siguiente:** P009-T014; después, T007 con autorización nueva del usuario.
 [Contrato implementable](phase/P009-T001_CONTRATO_CREACION.md), decisión D116. T002 añade producto de
 carpeta/creación, sin piloto ni selección de carpeta real del usuario;
 la implementación no concede permisos de red, instalación o proveedores.
@@ -164,7 +165,12 @@ el piloto y recoger las selecciones/autorizaciones que falten. Preflight de CLI 
 
 ## P009-T007 — Crear el proyecto Django nuevo desde la UI
 
-**Estado:** pendiente. **Depende de:** T006 con consentimiento registrado (D121) y T013.
+**Estado:** detenida el 2026-10-20 (D123). **Depende de:** T006 con consentimiento registrado (D121), T013 y T014.
+**Avance:** área, wheel, wheelhouse, TOML, preflight e `init-db` preparados; carpeta de proyectos guardada e hijo
+`harness-django-pilot` creado y registrado desde la UI. El primer turno de definición con revisor Codex falla sin
+llegar al modelo (falta `--skip-git-repo-check` en un hijo sin Git). Una invocación lanzada, cero tokens.
+[Evidencia saneada](phase/P009-T007_CREACION_DJANGO.md). Reanudar exige T014, wheel reconstruido, propuesta
+al día si cambia el adaptador y **autorización nueva del usuario**; se reutilizan el hijo y su registro.
 **Objetivo:** Empezar con un destino inexistente y llegar a Django ejecutable y documentado sin scaffold manual.
 **Alcance:** elegir carpeta padre, dar nombre al hijo, definir el pequeño gestor de tareas con el revisor, aceptar
 D088/P001 y preparar mediante receta su entorno/código base. Operar con el wheel instalado, no con este checkout.
@@ -268,3 +274,34 @@ del binario de Codex para su vocabulario de esfuerzo. Comparar con la caracteriz
   si hace falta invocar un modelo, parar y pedir autorización aparte. Ningún proveedor invocado con prompt.
 - Regresiones offline con CLI falsas para cada versión nueva; ejemplos de configuración al día.
 **Validación:** pytest dirigida y completa, unittest, Alembic check si procede; sin wheel operativo ni piloto.
+
+## P009-T014 — Definición con revisor Codex en un hijo sin Git
+
+**Estado:** pendiente. **Depende de:** T013; bloquea la reanudación de T007 (D123).
+**Objetivo:** que el revisor Codex pueda redactar la definición D088 de un proyecto nuevo, cuya carpeta aún no es
+un repositorio Git, sin relajar el sandbox de lectura ni la memoria desactivada.
+**Alcance:** decidir cuándo recibe Codex `--skip-git-repo-check` en `definition` sobre la carpeta viva (hoy solo
+lo recibe con raíces exportadas, D083/D102) y si eso exige versionar el adaptador frente a `cli-12`, con su
+efecto sobre jobs congelados y cuarentena. Hacer que la CLI falsa reproduzca la negativa de Codex fuera de Git,
+para que un ensayo como el de T005 la detecte. Comprobar si la conversación del hijo admite un turno nuevo.
+**Rutas permitidas:** `src/harness_local/**`, `tests/**`, `examples/**`, `docs/**`.
+**Criterios de aceptación:**
+- Una definición con revisor Codex en un hijo vacío sin `.git` arranca. El flag no llega a ejecutores, a checkouts
+  Git vivos ni a otros roles que no lo necesiten; sandbox `read-only`, memoria y confianza sin cambios.
+- La CLI falsa falla como la real sin el flag; regresiones por rol, proveedor y versión. Versiones/snapshots previos intactos.
+- Si cambia la identidad del adaptador, la propuesta de T006 se actualiza antes de operar (D121 §6).
+**Validación:** pytest dirigida y completa, unittest, Alembic check si procede. Sin proveedores ni piloto.
+
+## P009-T015 — Actualizar la verificación del wheel al flujo D088
+
+**Estado:** pendiente; obligatoria antes del cierre documental de P009 (decisión del usuario, D123).
+**Objetivo:** que `scripts/check_distribution.py` vuelva a verificar entero un wheel construido.
+**Alcance:** sustituir el tramo de bootstrap v1 (405 en `POST /projects/offline/bootstrap/preview`, retirado en
+D089/D093) por el recorrido vigente de definición/aceptación con agentes sintéticos, conservando las demás
+comprobaciones del wheel instalado (contenido, sesión, reinicio, errores, backup y restauración de consulta).
+Documentar en ARCHITECTURE §9 el `TMPDIR` del servicio, que hoy decide dónde queda la clave de sesión.
+**Rutas permitidas:** `scripts/**`, `tests/**`, `docs/**`.
+**Criterios de aceptación:**
+- `build_distribution.py` + `check_distribution.py` terminan correctamente sobre un wheel nuevo en directorios temporales.
+- Sin proveedores, red ni la SQLite/área operativa del piloto; ningún proyecto real del usuario.
+**Validación:** el propio script, la suite offline completa y unittest.
