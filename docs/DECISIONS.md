@@ -141,6 +141,7 @@ tarea se leen solo las decisiones que cita; este índice sirve para buscar prece
 | [D128](#d128--p009-t008-detenida-una-ruta-de-directorio-no-cubre-sus-archivos) | P009-T008: detenida; una ruta de directorio no cubre sus archivos | P009 |
 | [D129](#d129--p009-t017-una-ruta-de-directorio-se-congela-como-dir) | P009-T017: una ruta de directorio se congela como `dir/**` | P009 |
 | [D130](#d130--p009-t018-el-recibo-de-preparación-compara-el-inodo-no-el-dispositivo) | P009-T018: el recibo de preparación compara el inodo, no el dispositivo | P009 |
+| [D131](#d131--p009-t008-completada-codexcodex-committed) | P009-T008: completada; Codex→Codex COMMITTED | P009 |
 
 ## D001 — Alcance local y arquitectura base
 
@@ -4054,4 +4055,19 @@ Estado: implementada el 2026-10-21. Fase: P009. Desbloquea la segunda reanudaci�
   comandos nativos usan esa misma verificación.
 - Las operaciones en curso (creación, preparación y carpeta de proyectos) siguen comparando `{device, inode}`.
   Tras un reinicio, crear otro proyecto exige volver a elegir la carpeta. Queda como límite, fuera del piloto.
+
+## D131 — P009-T008: completada; Codex→Codex COMMITTED
+
+Estado: completada el 2026-10-21. Fase: P009. Dentro de D121 y de la propuesta §§3–6 y §10.
+[Evidencia saneada §8](phase/P009-T008_PILOTO_CODEX_CODEX.md#8-reanudación-2026-10-21-sesión-3-committed).
+
+- El run nuevo `7fbaf89c` de P001-T001 se planifica, se ejecuta, valida y revisa con Codex `gpt-6-luna`/`medium` en los
+  tres roles. La selección del ejecutor la decide el revisor con motivo y coincide con la invocación. `core/` se congela
+  como `core/**` (D129) y la política de rutas no marca nada. ACCEPT sin hallazgos.
+- Commit `98f4611` confirmado desde la UI por decisión del usuario: P001-T001 COMMITTED, con contenido exacto
+  acreditado. Es la primera tarea del piloto P009 que llega a COMMITTED, sobre un proyecto creado desde la UI.
+- Consumo: T008 6 de 10, piloto 9 de 60. `fc340afb` sigue BLOCKED como evidencia.
+- Antes hubo que corregir dos defectos que ningún ensayo había detectado: rutas de directorio (T017, D129) y recibo
+  tras reinicio (T018, D130). Las observaciones de contenido (alta sin redirección y flujo recortado) no bloquean.
+  Quedan registradas para las tareas siguientes del hijo.
 

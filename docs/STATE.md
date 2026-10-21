@@ -52,14 +52,19 @@ salvo donde se indica. Detalle por fase en `docs/archive/phase-NNN/SUMMARY.md`.
 **Estado:** T001–T005 completadas el 2026-10-19; T006 (propuesta autorizada, D121), T013 (CLI caracterizadas,
 D122), T014 (definición Codex sin Git, D124), T016 (suite pytest rápida, D125) y T015 (wheel verificado con D088,
 D126) el 2026-10-20. T007 detenida el 2026-10-20 (D123) y completada el 2026-10-21 (D127). T008 detenida el
-2026-10-21 en la revisión (D128). T017 (D129) y T018 (D130), completadas el 2026-10-21, la desbloquean.
-T009–T012 pendientes.
+2026-10-21 en la revisión (D128). Tras T017 (D129) y T018 (D130) se completó el mismo día: P001-T001 del hijo
+COMMITTED (D131). T009–T012 pendientes.
 Objetivo y criterios en [ROADMAP](ROADMAP.md#p009--proyecto-django-desde-cero-y-piloto-con-cuatro-combinaciones-de-agentes),
 tareas en [NEXT_STEPS](NEXT_STEPS.md) y diseño en el [plan](phase/P009_PLAN_DJANGO.md).
 Decisión: [D115](DECISIONS.md#d115--p009-django-desde-cero-carpeta-de-proyectos-y-agentes-por-proyecto).
 Contrato de T001: [diseño implementable](phase/P009-T001_CONTRATO_CREACION.md),
 [D116](DECISIONS.md#d116--p009-t001-autoridad-de-creación-presets-por-proyecto-y-preparación-separada).
 
+- T008 completada en la sesión 3: run `7fbaf89c` con Codex `gpt-6-luna`/`medium` en los tres roles. El contrato
+  congela `core/**`, pasan las seis validaciones y el revisor da ACCEPT sin hallazgos. Commit `98f4611` confirmado por
+  el usuario. Consumo de T008: 6 de 10. Observaciones sin bloqueo: el alta no redirige y el flujo `tasks.md` del
+  hijo quedó reducido al alta y el listado
+  ([evidencia §8](phase/P009-T008_PILOTO_CODEX_CODEX.md#8-reanudación-2026-10-21-sesión-3-committed), D131).
 - T018: tras un reinicio, macOS renumeró `st_dev` del hijo y el recibo de preparación dejó de valer. La sesión 2
   de T008 se paró antes de encolar, sin consumo. `verify_receipt` compara ahora el inodo y sigue verificando todos los
   bytes; los recibos no se reescriben. Crear otro proyecto tras un reinicio sigue exigiendo volver a elegir la
@@ -111,9 +116,9 @@ P008 permanece cerrada ([archivo](archive/phase-008/SUMMARY.md), D114). Este rep
 ni ejecutarse con el harness. T002–T005 usan carpetas/SQLite temporales y CLI de agentes falsas;
 sin proyectos reales del usuario ni proveedores. T005 añade herramientas Django reales, sin modificar el runtime del harness.
 
-**Siguiente:** reanudar T008 (run nuevo de P001-T001) con el wheel de T018 reconstruido, verificado e instalado.
-Ya tiene autorización del usuario con techo ampliado a 10 (propuesta §10): quedan 7 de 10 en T008 y 54 de 60 en el
-piloto. Área `~/.local/share/harness-local/` con el wheel de `0852f39` (T017, sin T018). Hijo `harness-django-pilot`
-limpio en `d762e77`; los cambios de `fc340afb` están en una copia privada en `state/fc340afb-discarded/`. Servicio detenido. El QA de T012 lanza `runserver` con
-`PYTHONDONTWRITEBYTECODE=1` (propuesta §9). Sigue pendiente aclarar en `define-project` que una carpeta nueva no tiene
-marcadores (D127).
+**Siguiente:** T009 (Codex→Claude, P001-T002 editar y borrar), lanzada cuando el usuario lo pida dentro de D121
+(techo 7). En Ajustes solo cambia el ejecutor, a Claude. Piloto: 9 de 60. Área `~/.local/share/harness-local/` con el
+wheel de `d557082` (`cli-13`, T017 y T018). Hijo `harness-django-pilot` limpio en `98f4611`. Los cambios descartados de
+`fc340afb` están en una copia privada en `state/fc340afb-discarded/`. El usuario detiene `serve` al terminar la
+sesión. El QA de T012 lanza `runserver` con `PYTHONDONTWRITEBYTECODE=1` (propuesta §9). Sigue pendiente aclarar
+en `define-project` que una carpeta nueva no tiene marcadores (D127).

@@ -1,4 +1,4 @@
-# P009-T008 — Piloto Codex→Codex (detenida en la revisión)
+# P009-T008 — Piloto Codex→Codex
 
 Fecha: 2026-10-21. Decisión [D128](../DECISIONS.md#d128--p009-t008-detenida-una-ruta-de-directorio-no-cubre-sus-archivos).
 Base: `2ae39f9` (sin cambios de `src/` ni `frontend/` desde el wheel de `1f8aa7a`). Autorización: petición del usuario
@@ -109,4 +109,37 @@ coinciden. Lo único distinto es `st_dev` del checkout y de `.venv` (16777230 �
 Mac se había reiniciado 22 minutos antes y macOS renumeró el volumen. Se para por entorno (§5 de la propuesta), sin
 tocar la SQLite y **sin consumir invocaciones**: siguen 3 de 10 en T008 y 6 de 60 en el piloto. La corrección es
 [P009-T018](P009-T018_RECIBO_TRAS_REINICIO.md).
+
+## 8. Reanudación (2026-10-21, sesión 3): COMMITTED
+
+Misma autorización que la sesión 2, con techo de 10. Wheel de `d557082` (T017 y T018): `1163e0b9…5d9a86`, verificado
+completo con `check_distribution.py` e instalado offline con `serve` detenido. Preflight correcto en los 6
+roles/presets. El recibo real del piloto vuelve a valer sin tocar la SQLite, y la UI muestra «Django preparado».
+Ajustes sin cambios: coinciden con D121. El usuario lanzó `serve` e inició la sesión. Contrato enviado desde
+«Encolar tarea en esta fase»: la sección P001-T001 literal del hijo, sin los saltos de línea finales (976 bytes).
+
+| Intento | Selección congelada | Resultado | Duración | Actividad del stream |
+|---|---|---|---|---|
+| 1 planificador | `gpt-6-luna`/`medium` (política) | COMPLETE | 13,4 s | 2 comandos |
+| 2 ejecutor | `gpt-6-luna`/`medium`, elegida por el revisor | COMPLETE | 2 min 19 s | 19 comandos, 13 cambios de archivo |
+| 3 revisor | `gpt-6-luna`/`medium` (política) | COMPLETE, **ACCEPT** | 10,9 s | 2 comandos |
+
+- **Contrato (run `7fbaf89c`):** `allowed_paths = ["core/**", "docs/DDBB-DIAGRAM.md", "docs/flows/tasks.md"]`. La
+  entrada `core/` del NEXT_STEPS del hijo se congeló como `core/**` (D129). El revisor eligió el ejecutor con un
+  motivo propio de la tarea, y el intento 2 usa exactamente esa selección.
+- **Cambio:** 8 rutas, diff de 8 478 bytes, huella `5bd87295…cbf1e527`. Modelo `Task` (título obligatorio,
+  descripción opcional, `completed` falso, `created_at`), migración `0001_initial`, `TaskForm`, vista con alta por POST
+  y listado, plantilla con CSRF, tres tests, `erDiagram` y flujo de alta/listado. Sin infracciones de rutas.
+- **Validaciones:** las seis con salida 0. pytest pasa 3 casos JUnit: alta persistida, título vacío rechazado y listado.
+- **Revisión y aceptación:** ACCEPT sin hallazgos, preguntas, concesiones ni propuestas. La aceptación es elegible y
+  tiene paridad de modelos con el diagrama.
+- **Commit:** confirmado desde la UI con autorización explícita del usuario. Commit `98f4611` «harness: accept
+  P001-T001 - Crear y listar», con la identidad Git del usuario, árbol revisado `527061ee` y STATE/NEXT_STEPS del hijo
+  regenerados. Run COMMITTED y checkout limpio.
+- **Observaciones de contenido, fuera de los criterios:** tras un alta válida la vista vuelve a renderizar en lugar de
+  redirigir, así que recargar la página repite el POST. `docs/flows/tasks.md` describía el plan completo de P001 y
+  ahora solo describe el alta y el listado: las tareas siguientes deben volver a añadir sus flujos.
+- **Consumo:** 3 invocaciones en esta sesión. T008: 6 de 10. Piloto: 9 de 60.
+- **Al terminar:** sesión de la UI cerrada, sin CLI vivas, `.venv` sin bytecode. El usuario detiene `serve`.
+- **No probado aquí:** QA en navegador del Django (T012) y las combinaciones con Claude (T009–T011).
 

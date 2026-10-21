@@ -4,15 +4,15 @@ Objetivo y criterios en [ROADMAP](ROADMAP.md#p009--proyecto-django-desde-cero-y-
 Decisión: [D115](DECISIONS.md#d115--p009-django-desde-cero-carpeta-de-proyectos-y-agentes-por-proyecto).
 [Diseño y matriz](phase/P009_PLAN_DJANGO.md); [flujo y estado de implementación](flows/project-creation.md).
 
-**Estado:** T001–T007 y T013–T018 completadas. T007 se detuvo el 2026-10-20 (D123), se corrigió en `cli-13` (D124)
+**Estado:** T001–T008 y T013–T018 completadas. T007 se detuvo el 2026-10-20 (D123), se corrigió en `cli-13` (D124)
 y se completó el 2026-10-21 con autorización nueva: Django creado desde la UI, commit raíz y técnico
 ([evidencia §7](phase/P009-T007_CREACION_DJANGO.md#7-reanudación-y-cierre-de-t007-2026-10-21), D127). T008 se detuvo el
 2026-10-21 en la revisión: una ruta de directorio (`core/`) no cubre sus archivos en la política de rutas
 ([evidencia](phase/P009-T008_PILOTO_CODEX_CODEX.md), D128). T017 lo corrige el 2026-10-21: `dir/` se congela como
 `dir/**` (D129). La segunda sesión de T008 se paró antes de encolar: tras un reinicio, el recibo de preparación
-dejó de valer por el número de dispositivo. T018 lo corrige (D130). T009–T012 pendientes.
-**Siguiente:** reanudar T008 con un run nuevo y el wheel de T018 reconstruido y verificado. Tiene autorización del
-usuario con techo de 10 (propuesta §10). El hijo ya está limpio en `d762e77`.
+dejó de valer por el número de dispositivo. T018 lo corrige (D130). La sesión 3 completa T008: run `7fbaf89c`
+COMMITTED en `98f4611` (D131). T009–T012 pendientes.
+**Siguiente:** T009 (Codex→Claude), lanzada cuando el usuario lo pida, dentro de D121.
 [Contrato implementable](phase/P009-T001_CONTRATO_CREACION.md), decisión D116. T002 añade producto de
 carpeta/creación, sin piloto ni selección de carpeta real del usuario;
 la implementación no concede permisos de red, instalación o proveedores.
@@ -196,7 +196,9 @@ D088/P001 y preparar mediante receta su entorno/código base. Operar con el whee
 
 ## P009-T008 — Piloto: Codex revisor → Codex ejecutor
 
-**Estado:** detenida el 2026-10-21 (D128). **Depende de:** T007; su reanudación, de T017 (completada, D129).
+**Estado:** completada el 2026-10-21 (D131): run `7fbaf89c` COMMITTED en `98f4611`, 6 de 10 invocaciones
+([evidencia §8](phase/P009-T008_PILOTO_CODEX_CODEX.md#8-reanudación-2026-10-21-sesión-3-committed)). Antes, detenida
+en la revisión (D128). **Depende de:** T007; su reanudación, de T017 (D129) y T018 (D130).
 **Avance:** run `fc340afb` planificado y ejecutado con Codex `gpt-6-luna`/`medium` en los tres roles; selección del
 ejecutor por el revisor, con motivo, igual a la invocación; seis validaciones correctas. El revisor bloquea porque la
 política de rutas marca los seis archivos de `core/` aunque `core/` está en la allowlist. 3 de 7 invocaciones, sin
