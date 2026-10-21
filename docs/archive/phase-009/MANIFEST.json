@@ -1,0 +1,177 @@
+{
+  "phase": "P009",
+  "closed_at": "2026-10-21",
+  "source_commit": "422357145d4120a9d55a65783864054ee3e96378",
+  "mode": "manual_documentary_closure",
+  "snapshot_policy": "exact_bytes_original_paths",
+  "files": [
+    {
+      "source": "docs/STATE.md",
+      "target": "docs/archive/phase-009/STATE.md",
+      "size_bytes": 16833,
+      "sha256": "59f4d33c8609e4621df7678e58bd70bd2c17b63fbbb7e7b76d96b9c00cefeaed"
+    },
+    {
+      "source": "docs/NEXT_STEPS.md",
+      "target": "docs/archive/phase-009/NEXT_STEPS.md",
+      "size_bytes": 43209,
+      "sha256": "c7112c85bf8872280cba549d8c43703c4983405734cd828ac413919202c09684"
+    },
+    {
+      "source": "docs/phase/P009-T001_CONTRATO_CREACION.md",
+      "target": "docs/archive/phase-009/P009-T001_CONTRATO_CREACION.md",
+      "size_bytes": 35865,
+      "sha256": "99c8da451fea0c444f733743ee39219fdab02ac8a6f6e1584b3dd1330970f24b"
+    },
+    {
+      "source": "docs/phase/P009-T002_CARPETA_PROYECTOS.md",
+      "target": "docs/archive/phase-009/P009-T002_CARPETA_PROYECTOS.md",
+      "size_bytes": 7454,
+      "sha256": "1eb4048186bc92d615b6e62587d77f0531d7816890fb2da828c5efa7fb3469b4"
+    },
+    {
+      "source": "docs/phase/P009-T002_QA.png",
+      "target": "docs/archive/phase-009/P009-T002_QA.png",
+      "size_bytes": 112634,
+      "sha256": "cf59ce818c581471a344f1d0d5b400a425aaaf7cdfbd8f935ac7bfce0df7bcbd"
+    },
+    {
+      "source": "docs/phase/P009-T003_AGENTES_PROYECTO.md",
+      "target": "docs/archive/phase-009/P009-T003_AGENTES_PROYECTO.md",
+      "size_bytes": 7360,
+      "sha256": "ffc5087d7c4cfbb51a4a73e2c93191f773ea1164c5529845847f78a6c708c65c"
+    },
+    {
+      "source": "docs/phase/P009-T003_QA.jpg",
+      "target": "docs/archive/phase-009/P009-T003_QA.jpg",
+      "size_bytes": 106189,
+      "sha256": "787d705d23527f464d0d5bf39cfba59d2c13520f7953a990cc11a1bb34e57f44"
+    },
+    {
+      "source": "docs/phase/P009-T004_QA.jpg",
+      "target": "docs/archive/phase-009/P009-T004_QA.jpg",
+      "size_bytes": 196646,
+      "sha256": "09c060333d9f460e315c30d5763e90e291ef81c70d2c5accc682dd8ce8858eca"
+    },
+    {
+      "source": "docs/phase/P009-T004_RECETA_DJANGO.md",
+      "target": "docs/archive/phase-009/P009-T004_RECETA_DJANGO.md",
+      "size_bytes": 9992,
+      "sha256": "6fe2f9b20195fb9d95cdab887859b0bf16f7b7d7b64dcf515997a8786d3e1da6"
+    },
+    {
+      "source": "docs/phase/P009-T005_ENSAYO_DJANGO.md",
+      "target": "docs/archive/phase-009/P009-T005_ENSAYO_DJANGO.md",
+      "size_bytes": 8360,
+      "sha256": "77074d6696749bba8802bb37e0c08bd5ce60342b2c46c5b849e1099f89d1e1c1"
+    },
+    {
+      "source": "docs/phase/P009-T005_WHEELS.json",
+      "target": "docs/archive/phase-009/P009-T005_WHEELS.json",
+      "size_bytes": 4216,
+      "sha256": "57e2d2f62cb5c32b1246824cd65df787ffb798c194b7b4bcfb6dc14f30467b58"
+    },
+    {
+      "source": "docs/phase/P009-T006_PROPUESTA_PILOTO.md",
+      "target": "docs/archive/phase-009/P009-T006_PROPUESTA_PILOTO.md",
+      "size_bytes": 15732,
+      "sha256": "61632bd9252b52e366846bd149af0ef8c572e361d58d65297744e1326e152f91"
+    },
+    {
+      "source": "docs/phase/P009-T007_CREACION_DJANGO.md",
+      "target": "docs/archive/phase-009/P009-T007_CREACION_DJANGO.md",
+      "size_bytes": 11427,
+      "sha256": "b86197fa34d4a40014d7934ade463de8cdecb19aed10a92b7b5f21787d882bad"
+    },
+    {
+      "source": "docs/phase/P009-T008_PILOTO_CODEX_CODEX.md",
+      "target": "docs/archive/phase-009/P009-T008_PILOTO_CODEX_CODEX.md",
+      "size_bytes": 11280,
+      "sha256": "743e6bb9322e12f7f6a51be04463d40d3fd8f44704048f6e2b489d1b0f1a9cba"
+    },
+    {
+      "source": "docs/phase/P009-T009_PILOTO_CODEX_CLAUDE.md",
+      "target": "docs/archive/phase-009/P009-T009_PILOTO_CODEX_CLAUDE.md",
+      "size_bytes": 11738,
+      "sha256": "9649293adff9ab8895f535d0ff3096a8555aaf01b12db2ae3134fe43ef809676"
+    },
+    {
+      "source": "docs/phase/P009-T010_PILOTO_CLAUDE_CLAUDE.md",
+      "target": "docs/archive/phase-009/P009-T010_PILOTO_CLAUDE_CLAUDE.md",
+      "size_bytes": 7798,
+      "sha256": "18f267211d149e07974eb300c3ff5ba00e8aa772d8dcb2517c7028752b52612e"
+    },
+    {
+      "source": "docs/phase/P009-T011_PILOTO_CLAUDE_CODEX.md",
+      "target": "docs/archive/phase-009/P009-T011_PILOTO_CLAUDE_CODEX.md",
+      "size_bytes": 7238,
+      "sha256": "76c94955172b2692d40450632f8bc4320eaf3a03407ba26ae3e0bd070212ce14"
+    },
+    {
+      "source": "docs/phase/P009-T012_CIERRE_PILOTO.md",
+      "target": "docs/archive/phase-009/P009-T012_CIERRE_PILOTO.md",
+      "size_bytes": 16178,
+      "sha256": "12b03651c5158e7cc080485b786c6a3a49a4f35cef55d0a8b0309c5b42c77bd1"
+    },
+    {
+      "source": "docs/phase/P009-T012_CORRECCION_DOCUMENTAL.md",
+      "target": "docs/archive/phase-009/P009-T012_CORRECCION_DOCUMENTAL.md",
+      "size_bytes": 3553,
+      "sha256": "12f0f49a21c0e46d4b4382a69490af7065f1c900cd8d5239bf3916793b30a2c7"
+    },
+    {
+      "source": "docs/phase/P009-T013_CARACTERIZACION_CLI.md",
+      "target": "docs/archive/phase-009/P009-T013_CARACTERIZACION_CLI.md",
+      "size_bytes": 7855,
+      "sha256": "d5c9faefd8afa2d9da3e0479d328689656188f632fb2925cc1f3ab900d4e7b77"
+    },
+    {
+      "source": "docs/phase/P009-T014_DEFINICION_SIN_GIT.md",
+      "target": "docs/archive/phase-009/P009-T014_DEFINICION_SIN_GIT.md",
+      "size_bytes": 6980,
+      "sha256": "0e8685068a3bda90e23f588cfc6904e9d43cc989a6b956daea0dfd5dbbd9c9a4"
+    },
+    {
+      "source": "docs/phase/P009-T015_VERIFICACION_WHEEL.md",
+      "target": "docs/archive/phase-009/P009-T015_VERIFICACION_WHEEL.md",
+      "size_bytes": 2960,
+      "sha256": "d132629b81ee0b65c582c4b3a25606b7cff41e67b43dce5f96416ef25f1d0a6f"
+    },
+    {
+      "source": "docs/phase/P009-T016_SUITE_RAPIDA.md",
+      "target": "docs/archive/phase-009/P009-T016_SUITE_RAPIDA.md",
+      "size_bytes": 8165,
+      "sha256": "61b9607f35c2f2ca632245c9bbbd9b7647ce19123c90806f7b52ac7c2d45e0db"
+    },
+    {
+      "source": "docs/phase/P009-T017_RUTAS_DIRECTORIO.md",
+      "target": "docs/archive/phase-009/P009-T017_RUTAS_DIRECTORIO.md",
+      "size_bytes": 5463,
+      "sha256": "e57582b1ef24d0ac55f2833c1b4a681519328b14ae1e6dc036bcad13b964d698"
+    },
+    {
+      "source": "docs/phase/P009-T018_RECIBO_TRAS_REINICIO.md",
+      "target": "docs/archive/phase-009/P009-T018_RECIBO_TRAS_REINICIO.md",
+      "size_bytes": 2872,
+      "sha256": "0823b237a0960342ab84665e082c4c26b39d302f2a8f764b20b052d0d23d2099"
+    },
+    {
+      "source": "docs/phase/P009-T019_FORMATEO_PERFIL.md",
+      "target": "docs/archive/phase-009/P009-T019_FORMATEO_PERFIL.md",
+      "size_bytes": 8264,
+      "sha256": "09b8457b2f463eeece82ea1979ccc35e6c015104443d46fc322900d354c54587"
+    },
+    {
+      "source": "docs/phase/P009-T020_ENCOLAR_DESDE_DOCUMENTOS.md",
+      "target": "docs/archive/phase-009/P009-T020_ENCOLAR_DESDE_DOCUMENTOS.md",
+      "size_bytes": 5247,
+      "sha256": "11fa0b42a2eed2a9645dd185a49c167cbbf6122a9a12d8215ec76ecb0ab6fa1a"
+    },
+    {
+      "source": "docs/phase/P009_PLAN_DJANGO.md",
+      "target": "docs/archive/phase-009/P009_PLAN_DJANGO.md",
+      "size_bytes": 10214,
+      "sha256": "1dca6ba6c896e468755b75b7c364bf843e3277be78e2ffcae8257a5f09496aca"
+    }
+  ]
+}

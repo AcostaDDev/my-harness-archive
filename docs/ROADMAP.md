@@ -14,7 +14,7 @@ hitos H0–H6 del backlog original; la definición inicial está en [archive/pha
 | P006 | Calidad de uso y distribución local | completada (2026-10-13) | [phase-006](archive/phase-006/SUMMARY.md) |
 | P007 | Agentes configurables e interfaz de producto | completada (2026-10-15) | [phase-007](archive/phase-007/SUMMARY.md) |
 | P008 | Contrato documental unificado, cierre de fase e importación de proyectos | completada (2026-10-19) | [phase-008](archive/phase-008/SUMMARY.md) |
-| P009 | Proyecto Django desde cero y piloto con cuatro combinaciones de agentes | planificada | — |
+| P009 | Proyecto Django desde cero y piloto con cuatro combinaciones de agentes | completada (2026-10-21) | [phase-009](archive/phase-009/SUMMARY.md) |
 
 ## P001 — Contratos y prueba de viabilidad
 
@@ -139,13 +139,18 @@ evaluación estadística de modelos y ejecución del harness sobre este reposito
 Codex→Claude (D134), Claude→Claude (D136) y Claude→Codex (D137). T012 completa el QA conjunto y, tras las
 correcciones documentales autorizadas del REVISE (D138), obtiene READY y cierra P001 (D139): 27 tests y seis
 validaciones verdes, tag ligero `p001` sobre `47a0557`, archivo en `3d105c6` y sin sucesora.
-Incidencias, correcciones y evidencia en [NEXT_STEPS](NEXT_STEPS.md) y el [informe de salida](phase/P009-T012_CIERRE_PILOTO.md);
-alcance y autorizaciones en el [plan](phase/P009_PLAN_DJANGO.md) y la [propuesta](phase/P009-T006_PROPUESTA_PILOTO.md).
-Consumo final: 26 de 60; T012 agotó sus dos llamadas. Siguiente: revisión y cierre/archivo documental de P009
-del harness, en otra tarea. Esta fase aún no se declara cerrada ni se archiva aquí.
+Incidencias, correcciones y evidencia en el [plan archivado](archive/phase-009/NEXT_STEPS.md) y el [informe de salida](archive/phase-009/P009-T012_CIERRE_PILOTO.md);
+alcance y autorizaciones en el [plan](archive/phase-009/P009_PLAN_DJANGO.md) y la [propuesta](archive/phase-009/P009-T006_PROPUESTA_PILOTO.md).
+Consumo final: 26 de 60; T012 agotó sus dos llamadas. **Completada y archivada documentalmente el 2026-10-21**
+([D140](DECISIONS.md#d140--cierre-documental-manual-de-p009), [revisión](archive/phase-009/REVIEW.md),
+[archivo](archive/phase-009/SUMMARY.md)), tras revisar la salida de T012. Cierre manual del harness separado
+del cierre gestionado de P001 del hijo; sin fase sucesora ni ampliación de consentimientos.
 
 ## Candidatas sin fase asignada
 
+- Observaciones de P009, sin bloqueo del piloto: alta Django sin POST→redirect→GET; aclarar los marcadores
+  opcionales de define-project en una carpeta nueva; revisar la presentación de deriva documental al ver una
+  fase cerrada, cuyos documentos vivos ya se renovaron. [Contexto y límites](archive/phase-009/REVIEW.md).
 - Pilotos adicionales después del Django de P009; cada operación real conserva propuesta y consentimiento propios.
 - `package.json` inicial de un proyecto `typescript-web` nuevo (límite de E4); revisar tras los perfiles de P008.
 - Hora de cada validación (cambia el formato del historial) y lectura del run sin decodificar el historial completo.

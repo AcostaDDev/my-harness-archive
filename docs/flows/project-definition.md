@@ -5,10 +5,10 @@ creación: la v1 (formulario H4.2, plantilla `project-foundation` y descubrimien
 diagnóstico en el motor (D089); sus endpoints y Bootstrap.tsx se retiraron de API/UI en T006 (D093). El agente nunca
 escribe: el harness aplica borradores confirmados con CAS y el commit raíz sigue el bootstrap D037.
 
-P009 planifica la elección de carpeta padre y la preparación Django posterior al commit documental en el
-[flujo de creación desde cero](project-creation.md). Esa ampliación aún no está implementada; el siguiente
-diagrama sigue describiendo la definición documental existente.
-El [contrato T001](../phase/P009-T001_CONTRATO_CREACION.md#5-receta-posterior-al-bootstrap-t004) conserva estos
+P009 implementa la elección de carpeta padre y la preparación Django posterior al commit documental en el
+[flujo de creación desde cero](project-creation.md) (D117/D119). T007–T012 acreditan el recorrido real con P001
+del hijo cerrada y archivada (D139). El siguiente diagrama describe la etapa de definición documental.
+El [contrato T001](../archive/phase-009/P009-T001_CONTRATO_CREACION.md#5-receta-posterior-al-bootstrap-t004) conserva estos
 borradores y commit raíz: el scaffold/entorno se prepara después mediante una operación distinta, sin ampliar
 `allowed_draft` ni aceptar marcadores ajenos en la carpeta de definición.
 

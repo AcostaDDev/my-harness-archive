@@ -256,7 +256,7 @@ de la receta Django no heredan ese valor: reciben `HOME`/`TMPDIR` propios dentro
 
 Diseño completado en P009-T001; carpeta/creación implementadas en T002 (D117) y roles en T003 (D118); receta implementada en T004 (D119)
 ([D116](DECISIONS.md#d116--p009-t001-autoridad-de-creación-presets-por-proyecto-y-preparación-separada),
-[contrato](phase/P009-T001_CONTRATO_CREACION.md)).
+[contrato](archive/phase-009/P009-T001_CONTRATO_CREACION.md)).
 El alta existente conserva `[registration].roots`. La autoridad UI de creación permite hijos directos nuevos
 fuera de esas raíces, también con `roots = []`, sin elevar `bootstrap_enabled`. Settings permite seleccionar
 presets por proyecto registrado con v5; los proyectos TOML conservan edición solo por el operador:
@@ -284,7 +284,7 @@ El arranque solo clasifica carpetas inciertas; la continuación exige acción ex
 La preview de composición valida sobre el padre existente y calcula los hashes del futuro hijo sin crear puertos
 para él. La composición operativa continúa exigiendo un checkout existente. La UI conserva el sobre y la clave
 de confirmación al perder respuesta. Contratos/hashes v1–v4 previos, CLI y codec conservados. Flujo y límites en
-[project-creation](flows/project-creation.md); plan y matriz en [docs/phase](phase/P009_PLAN_DJANGO.md).
+[project-creation](flows/project-creation.md); plan y matriz en el [archivo de P009](archive/phase-009/P009_PLAN_DJANGO.md).
 
 
 T004 implementa `recipes/django.py` y su perfil empaquetado, lock con hashes y closure de versiones.
@@ -296,7 +296,7 @@ el carril escritor atiende su journal sin crear un run. Modelo/migración 0022 y
 Capturas inline, sin nuevas referencias externas de backup o purga. Recibos congelados en jobs posteriores;
 guardias de bytes/configuración antes de efectos, y recuperación explícita sin replay automático de herramientas.
 API/UI de preparación en [flujo](flows/project-preparation.md); verificación sintética y límites en
-[entrega T004](phase/P009-T004_RECETA_DJANGO.md). T005 verifica el scaffold con herramientas reales y el recorrido
+[entrega T004](archive/phase-009/P009-T004_RECETA_DJANGO.md). T005 verifica el scaffold con herramientas reales y el recorrido
 API completo con CLI falsas, reinicios y recuperación, en un único hijo temporal:
-[entrega y reproducción](phase/P009-T005_ENSAYO_DJANGO.md). La variante real de pytest exige wheelhouse e intérprete
+[entrega y reproducción](archive/phase-009/P009-T005_ENSAYO_DJANGO.md). La variante real de pytest exige wheelhouse e intérprete
 explícitos; si no se proporcionan se omite, sin descargas implícitas ni nuevas dependencias del harness.

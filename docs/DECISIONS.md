@@ -150,6 +150,7 @@ tarea se leen solo las decisiones que cita; este índice sirve para buscar prece
 | [D137](#d137--p009-t011-completada-claudecodex-committed) | P009-T011: completada; Claude→Codex COMMITTED | P009 |
 | [D138](#d138--p009-t012-qa-correcto-y-cierre-detenido-por-revise-documental) | P009-T012: QA correcto y cierre detenido por REVISE documental | P009 |
 | [D139](#d139--p009-t012-completada-piloto-django-con-p001-cerrada-y-archivada) | P009-T012: completada; piloto Django con P001 cerrada y archivada | P009 |
+| [D140](#d140--cierre-documental-manual-de-p009) | Cierre documental manual de P009 | P009 |
 
 ## D001 — Alcance local y arquitectura base
 
@@ -3632,7 +3633,7 @@ Estado: cerrada y archivada el 2026-10-19 por la continuación solicitada por el
 ## D115 — P009: Django desde cero, carpeta de proyectos y agentes por proyecto
 
 Estado: fase planificada el 2026-10-19 por petición del usuario; pendiente de implementación y piloto. Fase: P009.
-[Plan](phase/P009_PLAN_DJANGO.md) y [tareas](NEXT_STEPS.md). Amplía D049/D078/D082; conserva la asignación de D052.
+[Plan](archive/phase-009/P009_PLAN_DJANGO.md) y [tareas](archive/phase-009/NEXT_STEPS.md). Amplía D049/D078/D082; conserva la asignación de D052.
 
 - Nueva sección de UI «Elegir carpeta de proyectos». La elección explícita del usuario concede al servicio la
   creación de proyectos hijos en esa raíz y se conserva entre reinicios; no la elige la IA, ni se deduce de HOME,
@@ -3667,7 +3668,7 @@ identifica expresamente como diseño pendiente. P008 y su archivo permanecen int
 ## D116 — P009-T001: autoridad de creación, presets por proyecto y preparación separada
 
 Estado: diseño completado el 2026-10-19; implementación pendiente de P009-T002–T004. Fase: P009.
-[Contrato, esquema propuesto, API y pruebas](phase/P009-T001_CONTRATO_CREACION.md).
+[Contrato, esquema propuesto, API y pruebas](archive/phase-009/P009-T001_CONTRATO_CREACION.md).
 Concreta D115 tras contrastar D049/D051/D052/D078/D095 y los consumidores del registro, composición y bootstrap.
 
 - Una selección de carpeta UI por instalación, inicialmente ausente, persistida en SQLite con revisión, identidad
@@ -3712,7 +3713,7 @@ modelos/esfuerzos, rutas operativas, permisos de red/instalación o llamadas de 
 ## D117 — P009-T002: carpeta persistente y creación con intención previa
 
 Estado: implementado el 2026-10-19, verificación offline y QA con respuestas sintéticas. Fase: P009.
-[Entrega y límites](phase/P009-T002_CARPETA_PROYECTOS.md). Aplica D116 §§2–3/6–9; conserva D078/D095.
+[Entrega y límites](archive/phase-009/P009-T002_CARPETA_PROYECTOS.md). Aplica D116 §§2–3/6–9; conserva D078/D095.
 
 - Raíz UI singleton inicialmente ausente, revisiones y eventos persistentes; selección/retirada por preview,
   CAS, clave idempotente y ruta canónica exacta. Sin HOME/cwd/raíz predeterminada, exploración de disco, cambios
@@ -3748,7 +3749,7 @@ entrega; T006 conserva la puerta de consentimiento real. Fixtures y QA no conced
 ## D118 — P009-T003: presets v5 y selección de agentes por proyecto
 
 Estado: implementado y verificado offline el 2026-10-19. Fase: P009.
-[Entrega y verificaciones](phase/P009-T003_AGENTES_PROYECTO.md), [flujo](flows/project-agents.md).
+[Entrega y verificaciones](archive/phase-009/P009-T003_AGENTES_PROYECTO.md), [flujo](flows/project-agents.md).
 Aplica D116 §4; conserva D049/D052/D078/D095 y la separación de preparación de T004.
 
 - `local-config-5` optativa conserva claves v4 y admite `[agent_presets.<id>]`: CLI privada, proveedor/roles,
@@ -3782,7 +3783,7 @@ preparación y su journal/locks siguen en T004; esta entrega no acepta aún esas
 ## D119 — P009-T004: receta Django confirmada y entorno acreditado
 
 Estado: implementado el 2026-10-19, pruebas con herramientas sintéticas; herramientas Django reales en T005.
-Fase: P009. [Entrega](phase/P009-T004_RECETA_DJANGO.md), [flujo](flows/project-preparation.md). Aplica D116 §5–9,
+Fase: P009. [Entrega](archive/phase-009/P009-T004_RECETA_DJANGO.md), [flujo](flows/project-preparation.md). Aplica D116 §5–9,
 sin ampliar el consentimiento de instalación/proveedores/piloto.
 
 - V5 admite `[recipes.django]`, composición `recipe="django"`, perfil empaquetado `python-django-recipe` y
@@ -3830,7 +3831,7 @@ versiones/hashes; paquetes, red de instalación y piloto mantienen su propuesta/
 ## D120 — P009-T005: ensayo temporal con CLI falsas y Django real
 
 Estado: verificado el 2026-10-19. Fase: P009.
-[Entrega, reproducción y límites](phase/P009-T005_ENSAYO_DJANGO.md). Aplica D116/D119, sin cambiar sus contratos.
+[Entrega, reproducción y límites](archive/phase-009/P009-T005_ENSAYO_DJANGO.md). Aplica D116/D119, sin cambiar sus contratos.
 
 - Ensayo por la API con sesión real, Git/SQLite temporales y los adaptadores CLI de producto conectados solo
   a procesos falsos. Un único hijo recorre raíz → creación/registro → definición D088/commit → receta/commit →
@@ -3845,7 +3846,7 @@ Estado: verificado el 2026-10-19. Fase: P009.
 - El usuario autoriza específicamente en esta sesión descargar de PyPI los 17 wheels fijados y verificarlos
   contra el lock, para entornos temporales con Python 3.13.13 y uv 0.12.19 ya instalados. La receta se ejecuta
   después offline, sin modificar configuraciones globales ni dependencias del harness. Versiones/hashes
-  públicos en el [recibo saneado](phase/P009-T005_WHEELS.json).
+  públicos en el [recibo saneado](archive/phase-009/P009-T005_WHEELS.json).
 - La prueba tiene variante sintética ordinaria y variante real optativa: exige rutas explícitas de Python y
   wheelhouse; ausencia de ambas omite solo la variante real y no descarga nada. La receta intacta pasa pytest/JUnit,
   ruff check/format, mypy estricto con stubs/plugin, migrate, check y makemigrations --check.
@@ -3857,7 +3858,7 @@ temporal de paquetes no inicia ni autoriza el piloto; los consentimientos histó
 ## D121 — P009-T006: propuesta del piloto y caracterización previa de CLI
 
 Estado: propuesta preparada y **autorizada por el usuario el 2026-10-20** («Autorizo la propuesta completa»);
-sin ejecutar. Fase: P009. [Propuesta, selecciones, límites y parada](phase/P009-T006_PROPUESTA_PILOTO.md).
+sin ejecutar. Fase: P009. [Propuesta, selecciones, límites y parada](archive/phase-009/P009-T006_PROPUESTA_PILOTO.md).
 Concreta D115 para la operación real; aplica D050/D051/D052/D119. No reutiliza consentimientos de D050/D071.
 
 - Las CLI instaladas, Codex 0.163.0 y Claude 2.1.304, están fuera del baseline (`SUPPORTED`: Codex 0.161.0/0.162.1,
@@ -3886,7 +3887,7 @@ código, esquema, API, versiones congeladas ni diagramas.
 ## D122 — P009-T013: Codex 0.163.0 y Claude 2.1.304 en el baseline `cli-12`
 
 Estado: implementado y verificado offline el 2026-10-20. Fase: P009.
-[Sondas, fuente, pruebas y límites](phase/P009-T013_CARACTERIZACION_CLI.md). Dentro del consentimiento de D121 (§§1, 6).
+[Sondas, fuente, pruebas y límites](archive/phase-009/P009-T013_CARACTERIZACION_CLI.md). Dentro del consentimiento de D121 (§§1, 6).
 Amplía D052/D068 sin cambiar argv, protocolo, salidas ni controles de D059/D066/D068 o cli-11.
 
 - Sondas reales solo de `--version`, `exec --help`/`--help` sobre los binarios fijados por hash, con entorno
@@ -3911,7 +3912,7 @@ esperada (variante Django real sin wheelhouse). Sin observación en ejecución: 
 ## D123 — P009-T007: detenida; Codex rechaza la definición en un hijo sin Git
 
 Estado: observado el 2026-10-20 y piloto detenido. Fase: P009. Dentro del consentimiento de D121 (§§3–5).
-[Evidencia saneada, causa y consumo](phase/P009-T007_CREACION_DJANGO.md).
+[Evidencia saneada, causa y consumo](archive/phase-009/P009-T007_CREACION_DJANGO.md).
 
 - Preparación correcta fuera de los checkouts: wheel de `21871a0`, venv offline por hashes, 17 wheels verificados
   contra el lock, TOML v5, preflight `version_help_match` en los seis roles/presets e `init-db`. Desde la UI:
@@ -3932,7 +3933,7 @@ Estado: observado el 2026-10-20 y piloto detenido. Fase: P009. Dentro del consen
 ## D124 — P009-T014: `cli-13`, Codex define un proyecto nuevo fuera de Git
 
 Estado: implementado y verificado offline el 2026-10-20. Fase: P009. Corrige el defecto de D123; amplía D083/D102.
-[Criterio, versión, CLI falsa y verificación](phase/P009-T014_DEFINICION_SIN_GIT.md).
+[Criterio, versión, CLI falsa y verificación](archive/phase-009/P009-T014_DEFINICION_SIN_GIT.md).
 
 - Codex recibe `--skip-git-repo-check` en el rol `definition` cuando el snapshot congelado del prompt es la
   plantilla `define-project`, es decir, la definición D088 de una carpeta nueva, además de las exportaciones
@@ -3956,7 +3957,7 @@ Estado: implementado y verificado offline el 2026-10-20. Fase: P009. Corrige el 
 ## D125 — P009-T016: suite pytest en paralelo y Git sin fork
 
 Estado: implementado y verificado offline el 2026-10-20. Fase: P009. Autorizado por el usuario punto por punto.
-[Diagnóstico, cambios, matrices recortadas y medidas](phase/P009-T016_SUITE_RAPIDA.md).
+[Diagnóstico, cambios, matrices recortadas y medidas](archive/phase-009/P009-T016_SUITE_RAPIDA.md).
 
 - La suite pytest se ejecuta en paralelo por defecto con pytest-xdist 3.8.0 (`-n auto --dist worksteal` en
   `pyproject.toml`); `-n 0` la ejecuta en serie. El mismo comando de AGENTS.md sigue siendo el de referencia.
@@ -3980,8 +3981,8 @@ Estado: implementado y verificado offline el 2026-10-20. Fase: P009. Autorizado 
 ## D126 — P009-T015: el wheel se verifica con la definición D088
 
 Estado: implementado y verificado offline el 2026-10-20. Fase: P009. Cierra el hallazgo §5 de
-[T007](phase/P009-T007_CREACION_DJANGO.md#5-verificación-del-wheel-incompleta) (D123);
-[entrega](phase/P009-T015_VERIFICACION_WHEEL.md).
+[T007](archive/phase-009/P009-T007_CREACION_DJANGO.md#5-verificación-del-wheel-incompleta) (D123);
+[entrega](archive/phase-009/P009-T015_VERIFICACION_WHEEL.md).
 
 - `scripts/check_distribution.py` sustituye el tramo de bootstrap v1 (retirado en D089/D093) por el recorrido HTTP
   vigente: conversación `definition`, un turno con agente sintético, aplicación confirmada de los borradores, vista
@@ -3999,7 +4000,7 @@ Estado: implementado y verificado offline el 2026-10-20. Fase: P009. Cierra el h
 ## D127 — P009-T007: completada; Django creado desde la UI con revisor Codex
 
 Estado: completada el 2026-10-21. Fase: P009. Reanuda D123 con autorización nueva del usuario, dentro de D121 §§3–6
-y de la propuesta §8. [Evidencia saneada](phase/P009-T007_CREACION_DJANGO.md#7-reanudación-y-cierre-de-t007-2026-10-21).
+y de la propuesta §8. [Evidencia saneada](archive/phase-009/P009-T007_CREACION_DJANGO.md#7-reanudación-y-cierre-de-t007-2026-10-21).
 
 - Wheel de `1f8aa7a` (`cli-13`), verificado entero con `check_distribution.py` (D126) e instalado offline en el
   venv del área; preflight correcto en los seis roles. Se reutilizan el área, la SQLite, el hijo y su conversación.
@@ -4018,7 +4019,7 @@ y de la propuesta §8. [Evidencia saneada](phase/P009-T007_CREACION_DJANGO.md#7-
 ## D128 — P009-T008: detenida; una ruta de directorio no cubre sus archivos
 
 Estado: detenida el 2026-10-21. Fase: P009. Dentro de D121 y de la propuesta §§3–6, a petición del usuario.
-[Evidencia saneada](phase/P009-T008_PILOTO_CODEX_CODEX.md).
+[Evidencia saneada](archive/phase-009/P009-T008_PILOTO_CODEX_CODEX.md).
 
 - P001-T001 del hijo (run `fc340afb`) se planifica, se ejecuta y pasa las seis validaciones del perfil con Codex
   `gpt-6-luna`/`medium` en los tres roles. La selección del ejecutor la decide el revisor con motivo propio y coincide
@@ -4038,7 +4039,7 @@ Estado: detenida el 2026-10-21. Fase: P009. Dentro de D121 y de la propuesta §�
 ## D129 — P009-T017: una ruta de directorio se congela como `dir/**`
 
 Estado: implementada el 2026-10-21. Fase: P009. Corrige la causa de D128.
-[Entrega](phase/P009-T017_RUTAS_DIRECTORIO.md).
+[Entrega](archive/phase-009/P009-T017_RUTAS_DIRECTORIO.md).
 
 - `task_contract` congela como `dir/**` toda entrada de `allowed_paths` o `forbidden_paths` que termina en `/`.
   Ejecutor, revisor, política de rutas, concesiones de ficheros y comprobación de contradicciones leen así el mismo
@@ -4054,7 +4055,7 @@ Estado: implementada el 2026-10-21. Fase: P009. Corrige la causa de D128.
 ## D130 — P009-T018: el recibo de preparación compara el inodo, no el dispositivo
 
 Estado: implementada el 2026-10-21. Fase: P009. Desbloquea la segunda reanudación de T008.
-[Entrega](phase/P009-T018_RECIBO_TRAS_REINICIO.md).
+[Entrega](archive/phase-009/P009-T018_RECIBO_TRAS_REINICIO.md).
 
 - La segunda sesión de T008 se paró antes de encolar, sin consumir invocaciones. Tras reiniciar el Mac, macOS
   renumeró `st_dev` del hijo con el mismo inodo y los mismos bytes, y el recibo de D119 dejó de valer.
@@ -4067,7 +4068,7 @@ Estado: implementada el 2026-10-21. Fase: P009. Desbloquea la segunda reanudaci�
 ## D131 — P009-T008: completada; Codex→Codex COMMITTED
 
 Estado: completada el 2026-10-21. Fase: P009. Dentro de D121 y de la propuesta §§3–6 y §10.
-[Evidencia saneada §8](phase/P009-T008_PILOTO_CODEX_CODEX.md#8-reanudación-2026-10-21-sesión-3-committed).
+[Evidencia saneada §8](archive/phase-009/P009-T008_PILOTO_CODEX_CODEX.md#8-reanudación-2026-10-21-sesión-3-committed).
 
 - El run nuevo `7fbaf89c` de P001-T001 se planifica, se ejecuta, valida y revisa con Codex `gpt-6-luna`/`medium` en los
   tres roles. La selección del ejecutor la decide el revisor con motivo y coincide con la invocación. `core/` se congela
@@ -4082,7 +4083,7 @@ Estado: completada el 2026-10-21. Fase: P009. Dentro de D121 y de la propuesta �
 ## D132 — P009-T009: detenida; el ejecutor Claude no puede cumplir `ruff format`
 
 Estado: detenida el 2026-10-21. Fase: P009. Dentro de D121 y de la propuesta §§3–6, a petición del usuario.
-[Evidencia saneada](phase/P009-T009_PILOTO_CODEX_CLAUDE.md).
+[Evidencia saneada](archive/phase-009/P009-T009_PILOTO_CODEX_CLAUDE.md).
 
 - En Ajustes solo cambia el ejecutor, a Claude con el catálogo de D121 (registro v2, auditado). El run `bb29b133` de
   P001-T002 se planifica con revisor Codex `gpt-6-luna`/`medium`, que elige al ejecutor Claude `claude-sonnet-5-5`/`medium`
@@ -4101,7 +4102,7 @@ Estado: detenida el 2026-10-21. Fase: P009. Dentro de D121 y de la propuesta §�
 ## D133 — P009-T019: el harness formatea con la herramienta del perfil tras cada turno del ejecutor
 
 Estado: implementada el 2026-10-21. Fase: P009. Corrige la causa de D132.
-[Entrega](phase/P009-T019_FORMATEO_PERFIL.md).
+[Entrega](archive/phase-009/P009-T019_FORMATEO_PERFIL.md).
 
 - Por decisión del usuario, tras cada turno del ejecutor y antes de capturar la evidencia, el motor ejecuta el
   formateador del perfil (`formatter_argv` + rutas) sobre los `changed_paths` que casan con `formatter_paths` y que
@@ -4123,7 +4124,7 @@ Estado: implementada el 2026-10-21. Fase: P009. Corrige la causa de D132.
 ## D134 — P009-T009: completada; Codex→Claude COMMITTED
 
 Estado: completada el 2026-10-21. Fase: P009. Dentro de D121 y de la propuesta §§3–6 y §12.
-[Evidencia saneada §7](phase/P009-T009_PILOTO_CODEX_CLAUDE.md#7-reanudación-2026-10-21-sesión-2-committed).
+[Evidencia saneada §7](archive/phase-009/P009-T009_PILOTO_CODEX_CLAUDE.md#7-reanudación-2026-10-21-sesión-2-committed).
 
 - Autorización nueva del usuario: reanudar T009 con techo 13. Wheel de `494b929` (T019) verificado e instalado. Las 7
   rutas de `bb29b133` se retiran del hijo con copia privada. Una incidencia del script obligó a reconstruir dos
@@ -4137,7 +4138,7 @@ Estado: completada el 2026-10-21. Fase: P009. Dentro de D121 y de la propuesta �
 ## D135 — P009-T020: encolar desde los documentos, con notas adicionales
 
 Estado: implementada el 2026-10-21. Fase: P009. A propuesta del usuario, antes de T010.
-[Entrega](phase/P009-T020_ENCOLAR_DESDE_DOCUMENTOS.md).
+[Entrega](archive/phase-009/P009-T020_ENCOLAR_DESDE_DOCUMENTOS.md).
 
 - `GET /projects/{id}/task-sources` ofrece las tareas del NEXT_STEPS vivo con su sección literal (precedida de las
   restricciones compartidas, si las hay) y su hash. El formulario elige fase y tarea con desplegables y muestra el
@@ -4153,7 +4154,7 @@ Estado: implementada el 2026-10-21. Fase: P009. A propuesta del usuario, antes d
 ## D136 — P009-T010: completada; Claude→Claude COMMITTED
 
 Estado: completada el 2026-10-21. Fase: P009. Petición del usuario de continuar, dentro de D121 y de la propuesta
-§§3–6. [Evidencia saneada](phase/P009-T010_PILOTO_CLAUDE_CLAUDE.md).
+§§3–6. [Evidencia saneada](archive/phase-009/P009-T010_PILOTO_CLAUDE_CLAUDE.md).
 
 - Wheel de `5ba32f8` (T020) construido, verificado e instalado offline. Registro v3 al cambiar solo el revisor a
   Claude `claude-sonnet-5-5`/`medium` desde Ajustes; ejecutor Claude y catálogo intactos. Mismo proyecto e historial.
@@ -4170,7 +4171,7 @@ Estado: completada el 2026-10-21. Fase: P009. Petición del usuario de continuar
 ## D137 — P009-T011: completada; Claude→Codex COMMITTED
 
 Estado: completada el 2026-10-21. Fase: P009. Petición del usuario de continuar, dentro de D121 y de la propuesta
-§§3–6. [Evidencia saneada](phase/P009-T011_PILOTO_CLAUDE_CODEX.md).
+§§3–6. [Evidencia saneada](archive/phase-009/P009-T011_PILOTO_CLAUDE_CODEX.md).
 
 - Mismo wheel instalado de T020. Desde Ajustes, registro v4 al cambiar solo el ejecutor a Codex con el catálogo
   D121; revisor Claude `claude-sonnet-5-5`/`medium` intacto. Proyecto, checkout e historial conservados.
@@ -4188,7 +4189,7 @@ Estado: completada el 2026-10-21. Fase: P009. Petición del usuario de continuar
 ## D138 — P009-T012: QA correcto y cierre detenido por REVISE documental
 
 Estado: detenida el 2026-10-21. Fase: P009. Dentro de D121 y de la propuesta §§3–6, con reanudación HITL de §13.
-[Informe y matriz](phase/P009-T012_CIERRE_PILOTO.md), [corrección propuesta](phase/P009-T012_CORRECCION_DOCUMENTAL.md).
+[Informe y matriz](archive/phase-009/P009-T012_CIERRE_PILOTO.md), [corrección propuesta](archive/phase-009/P009-T012_CORRECCION_DOCUMENTAL.md).
 
 - Primer acceso del QA devuelve 500: la migración aceptada `core.0001_initial` no está aplicada a la SQLite de uso.
   Las validaciones del perfil usan la base de tests y comprueban deriva de migraciones; no migran la base local.
@@ -4209,7 +4210,7 @@ Estado: detenida el 2026-10-21. Fase: P009. Dentro de D121 y de la propuesta §�
 
 Estado: completada el 2026-10-21. Fase: P009. Continúa D138 tras autorización expresa «Autorizo» en el chat,
 para corregir documentos desde el producto, gastar la llamada restante y cerrar solo si READY (propuesta §14).
-[Informe y matriz](phase/P009-T012_CIERRE_PILOTO.md), [ediciones confirmadas](phase/P009-T012_CORRECCION_DOCUMENTAL.md).
+[Informe y matriz](archive/phase-009/P009-T012_CIERRE_PILOTO.md), [ediciones confirmadas](archive/phase-009/P009-T012_CORRECCION_DOCUMENTAL.md).
 
 - Editor documental con preview/diff/hash, motivo y confirmación en tres commits ingleses: `2f23d3d` corrige
   nodo y título del flujo; `0787bff` actualiza prosa de STATE; `47a0557` consolida D001/D002 del hijo desde las
@@ -4227,3 +4228,25 @@ para corregir documentos desde el producto, gastar la llamada restante y cerrar 
   llamadas por el margen global restante ni permite comparar estadísticamente la calidad de los modelos.
 - Hijo limpio, servicios detenidos, SQLite íntegra, cero locks y ningún job pendiente. P009 del harness no se
   cierra en esta tarea: su revisión y archivo documental son posteriores. Observaciones sin bloqueo en el informe.
+
+## D140 — Cierre documental manual de P009
+
+Estado: cerrada y archivada el 2026-10-21 por la continuación solicitada por el usuario, tras D139. Fase: P009.
+[Resumen](archive/phase-009/SUMMARY.md), [revisión](archive/phase-009/REVIEW.md) y
+[registro de cierre](archive/phase-009/P009_CIERRE.md). Precedente: D002/D088/D114.
+
+- Las veinte tareas y siete criterios de ROADMAP están cumplidos en el alcance acreditado por T012/D139:
+  creación UI, cuatro parejas sobre el mismo Django, QA conjunto, READY y cierre/archivo de P001 del hijo.
+  El piloto consume 26 de 60; T012 agota sus dos llamadas. No demuestra portabilidad ni superioridad de modelos.
+- La petición de continuar y hacer commit cubre la siguiente tarea identificada en STATE/NEXT_STEPS: revisar
+  la salida y cerrar/archivar documentalmente P009. Se completa manualmente; el repositorio sigue sin
+  registrarse ni ejecutarse en el harness. Sin check READY ni tag propios, SQLite operativa o proveedores.
+- Se conservan STATE, NEXT_STEPS y los 26 artefactos originales de `docs/phase/` por bytes respecto de `4223571`.
+  El manifiesto registra origen/destino, tamaño y SHA-256. SUMMARY y REVIEW sintetizan entregas, evidencia y
+  límites; los originales conservan sus estados, enlaces y comandos históricos en su contexto de origen.
+- STATE compacta la base de P009, NEXT_STEPS queda sin tareas y ROADMAP marca la fase completada con su archivo.
+  Sin sucesora definida, el usuario elige la próxima prioridad. Las referencias vigentes se reubican;
+  las fases anteriores y las decisiones históricas conservan su contenido.
+- Las observaciones de alta sin redirección, marcadores de define-project y presentación de deriva de fase
+  cerrada quedan como candidatas sin fase. No se corrigen en este cierre ni se añaden migraciones automáticas.
+  No cambian código, esquema, API, flujos, configuración global o consentimientos. Sin push ni publicación.

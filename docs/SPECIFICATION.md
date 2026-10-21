@@ -255,13 +255,14 @@ Los roles se configuran por proyecto desde presets del servicio en `local-config
 esfuerzo del revisor y proveedor/catálogo del ejecutor; el revisor decide modelo/esfuerzo concretos del ejecutor.
 El piloto usa planificación por agente y cuatro tareas del mismo Django: Codex→Codex, Codex→Claude,
 Claude→Claude y Claude→Codex (revisor→ejecutor), con intentos previos conservados tras cada cambio.
-Plan, alcance y puerta de operación real en [NEXT_STEPS](NEXT_STEPS.md) y [docs/phase](phase/P009_PLAN_DJANGO.md).
+Plan, alcance y puerta de operación real en el [plan archivado](archive/phase-009/NEXT_STEPS.md) y el
+[diseño de P009](archive/phase-009/P009_PLAN_DJANGO.md).
 Contrato de diseño completado en T001: [D116](DECISIONS.md#d116--p009-t001-autoridad-de-creación-presets-por-proyecto-y-preparación-separada)
-y [detalle](phase/P009-T001_CONTRATO_CREACION.md). La autoridad UI para hijos nuevos se separa del registro
+y [detalle](archive/phase-009/P009-T001_CONTRATO_CREACION.md). La autoridad UI para hijos nuevos se separa del registro
 existente bajo raíces TOML; retirar el padre no revoca proyectos ya registrados. Presets y receta se diseñan
 como v5 optativa, conservando formatos previos. La preparación posterior al commit documental habilita los
 ejecutables del entorno; antes se bloquean tareas y checks que los necesitan. La carpeta y el alta del hijo están
 implementadas en T002 (D117); los presets en T003 (D118). Receta implementada en T004 (D119); T005 acredita
 herramientas reales y ensayo temporal completo (D120). T007–T012 acreditan el piloto real: cuatro tareas COMMITTED
-con las cuatro parejas, QA conjunto y P001 cerrada/archivada (D139); P009 del harness mantiene su cierre documental
-separado.
+con las cuatro parejas, QA conjunto y P001 cerrada/archivada (D139). P009 del harness se cierra y archiva
+documentalmente en una tarea posterior (D140), con [revisión y límites](archive/phase-009/REVIEW.md).

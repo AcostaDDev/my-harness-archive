@@ -1,7 +1,7 @@
 # Flujo — preparación Django confirmada (P009-T004)
 
-Implementado en D119; [contrato previo](../phase/P009-T001_CONTRATO_CREACION.md#5-receta-posterior-al-bootstrap-t004),
-[entrega y límites](../phase/P009-T004_RECETA_DJANGO.md). Solo hijos nuevos registrados por el servicio, composición
+Implementado en D119; [contrato previo](../archive/phase-009/P009-T001_CONTRATO_CREACION.md#5-receta-posterior-al-bootstrap-t004),
+[entrega y límites](../archive/phase-009/P009-T004_RECETA_DJANGO.md). Solo hijos nuevos registrados por el servicio, composición
 v5 con `recipe = "django"`, perfil empaquetado y commit documental raíz aceptado. No ejecuta agentes.
 
 ```mermaid
@@ -58,7 +58,7 @@ antes de tareas/checks y de cada comando nativo; no se reescriben snapshots docu
 La identidad del checkout y de `.venv` se compara por inodo: macOS renumera el dispositivo al remontar el volumen
 tras un reinicio, y los bytes se siguen verificando enteros (D130).
 
-[T005](../phase/P009-T005_ENSAYO_DJANGO.md) contrasta este flujo con Python 3.13.13/uv 0.12.19 y los wheels
+[T005](../archive/phase-009/P009-T005_ENSAYO_DJANGO.md) contrasta este flujo con Python 3.13.13/uv 0.12.19 y los wheels
 fijados, instalados offline en un hijo temporal. Una caída simulada tras el commit técnico y antes de adoptar
 el recibo conserva la intención original: reiniciar no ejecuta herramientas, y una nueva confirmación enlazada
 concilia el mismo hash sin crear procesos nuevos. Después se completan cuatro tareas con CLI falsas y cambios

@@ -2,10 +2,12 @@
 
 **Estado: selección/retirada de carpeta y creación/registro del hijo implementados en T002 (D117).**
 Roles por proyecto implementados en T003 (D118); preparación Django implementada en T004 (D119).
-T005 verifica el recorrido con CLI falsas y herramientas Django reales en un hijo temporal ([evidencia](../phase/P009-T005_ENSAYO_DJANGO.md), D120). D115/D116;
-[contrato/API/recuperación](../phase/P009-T001_CONTRATO_CREACION.md), [plan](../phase/P009_PLAN_DJANGO.md) y
-[tareas](../NEXT_STEPS.md). El flujo vigente de definición documental continúa en
-[project-definition](project-definition.md); el detalle técnico de preparación está en [project-preparation](project-preparation.md). El piloto real sigue pendiente.
+T005 verifica el recorrido con CLI falsas y herramientas Django reales en un hijo temporal ([evidencia](../archive/phase-009/P009-T005_ENSAYO_DJANGO.md), D120). D115/D116;
+[contrato/API/recuperación](../archive/phase-009/P009-T001_CONTRATO_CREACION.md), [plan](../archive/phase-009/P009_PLAN_DJANGO.md) y
+[tareas archivadas](../archive/phase-009/NEXT_STEPS.md). El flujo vigente de definición documental continúa en
+[project-definition](project-definition.md); el detalle técnico de preparación está en
+[project-preparation](project-preparation.md). T007–T012 completan el piloto real con P001 del hijo cerrada
+y archivada (D139); [matriz y límites](../archive/phase-009/P009-T012_CIERRE_PILOTO.md).
 
 ```mermaid
 flowchart TD
@@ -89,5 +91,5 @@ Guardar otra selección o retirarla bloquea intenciones pendientes; la reanudaci
 y preserva su intención original. Cancelar solo libera reservas si se acredita ausencia; conserva bytes. Tras resolución externa, una nueva
 comprobación versionada puede liberar una reserva de cancelación sin reabrir efectos.
 Cuatro tablas nuevas y procedencia del registro en [DDBB-DIAGRAM](../DDBB-DIAGRAM.md);
-detalles y verificación en [entrega T002](../phase/P009-T002_CARPETA_PROYECTOS.md). D118 implementa roles con el JSON existente del registro. D116 sigue fijando
-el contrato de receta implementado por D119; [flujo de preparación](project-preparation.md) y [entrega T004](../phase/P009-T004_RECETA_DJANGO.md).
+detalles y verificación en [entrega T002](../archive/phase-009/P009-T002_CARPETA_PROYECTOS.md). D118 implementa roles con el JSON existente del registro. D116 sigue fijando
+el contrato de receta implementado por D119; [flujo de preparación](project-preparation.md) y [entrega T004](../archive/phase-009/P009-T004_RECETA_DJANGO.md).

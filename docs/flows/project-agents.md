@@ -1,7 +1,7 @@
 # Flujo — selección de agentes por proyecto
 
 Implementado en P009-T003 ([D118](../DECISIONS.md#d118--p009-t003-presets-v5-y-selección-de-agentes-por-proyecto)),
-según [D116](../phase/P009-T001_CONTRATO_CREACION.md#4-presets-y-composición-por-proyecto-t003).
+según [D116](../archive/phase-009/P009-T001_CONTRATO_CREACION.md#4-presets-y-composición-por-proyecto-t003).
 
 ```mermaid
 flowchart TD
@@ -51,6 +51,6 @@ Si una petición antigua llega antes del cambio, su job impide cambiar; si llega
 idempotencia de operaciones previas conservadas. Adaptadores por job usan los agentes del checkout, sin mutar
 la pareja global ni modificar otros proyectos.
 
-[T005](../phase/P009-T005_ENSAYO_DJANGO.md) recorre las cuatro parejas en el mismo hijo preparado, con cambios
+[T005](../archive/phase-009/P009-T005_ENSAYO_DJANGO.md) recorre las cuatro parejas en el mismo hijo preparado, con cambios
 confirmados entre commits y reinicios del servicio. Los procesos de agentes son falsos, pasan por los adaptadores
 CLI reales y dejan proveedor/modelo/esfuerzo y motivo verificables; los historiales anteriores permanecen intactos.
