@@ -236,9 +236,11 @@ class SQLiteManagedRepository:
         return row
 
     def submit(self, context: ProjectContext, task_id: str, phase_id: str, text: str,
-               versions: dict, *, key: str) -> JobRecord:
+               versions: dict, *, key: str, notes: str | None = None) -> JobRecord:
         for value, name in ((task_id, "task identity"), (phase_id, "phase identity"), (text, "plan text")):
             _nonempty(value, name)
+        if notes is not None:
+            _nonempty(notes, "additional notes")
         if (not isinstance(versions, dict)
                 or not {"engine", "agent_adapter", "commands", "evidence"} <= versions.keys()
                 or not all(isinstance(k, str) and k and (v is None or isinstance(v, str) and v.strip())
@@ -246,8 +248,11 @@ class SQLiteManagedRepository:
             raise ValueError("Explicit component versions required; unknown values use null")
         if Path(self.engine.url.database).resolve().is_relative_to(context.root):
             raise ValueError("Managed SQLite must be outside the agent checkout")
-        request = freeze({"action": "start", "context_json": context_snapshot(context),
-                          "versions_json": freeze(versions), "task_id": task_id, "phase_id": phase_id, "text": text})
+        request = {"action": "start", "context_json": context_snapshot(context),
+                   "versions_json": freeze(versions), "task_id": task_id, "phase_id": phase_id, "text": text}
+        if notes is not None:
+            request["notes"] = notes  # P009-T020: en la petición del job; sin notas, la petición no cambia
+        request = freeze(request)
         assessment = self.guard.assess(context.root)
         with self._write() as session:
             existing = self._existing(session, key, request)

@@ -145,6 +145,7 @@ tarea se leen solo las decisiones que cita; este índice sirve para buscar prece
 | [D132](#d132--p009-t009-detenida-el-ejecutor-claude-no-puede-cumplir-ruff-format) | P009-T009: detenida; el ejecutor Claude no puede cumplir `ruff format` | P009 |
 | [D133](#d133--p009-t019-el-harness-formatea-con-la-herramienta-del-perfil-tras-cada-turno-del-ejecutor) | P009-T019: el harness formatea con la herramienta del perfil tras cada turno del ejecutor | P009 |
 | [D134](#d134--p009-t009-completada-codexclaude-committed) | P009-T009: completada; Codex→Claude COMMITTED | P009 |
+| [D135](#d135--p009-t020-encolar-desde-los-documentos-con-notas-adicionales) | P009-T020: encolar desde los documentos, con notas adicionales | P009 |
 
 ## D001 — Alcance local y arquitectura base
 
@@ -4128,3 +4129,19 @@ Estado: completada el 2026-10-21. Fase: P009. Dentro de D121 y de la propuesta �
   archivos, pasan las seis validaciones y el revisor acepta a la primera, sin hallazgos.
 - Commit `2f2b13f` confirmado desde la UI por decisión del usuario: P001-T002 COMMITTED. Consumo: T009 9 de 13,
   piloto 18 de 60. Es la primera tarea del piloto con un ejecutor sin shell que llega a COMMITTED.
+
+## D135 — P009-T020: encolar desde los documentos, con notas adicionales
+
+Estado: implementada el 2026-10-21. Fase: P009. A propuesta del usuario, antes de T010.
+[Entrega](phase/P009-T020_ENCOLAR_DESDE_DOCUMENTOS.md).
+
+- `GET /projects/{id}/task-sources` ofrece las tareas del NEXT_STEPS vivo con su sección literal (precedida de las
+  restricciones compartidas, si las hay) y su hash. El formulario elige fase y tarea con desplegables y muestra el
+  contrato en solo lectura. El modo manual sigue disponible. En el hijo del piloto, los textos coinciden byte a byte
+  con los que se pegaron a mano en T008 y T009.
+- `POST /runs` acepta `source_sha256` (CAS: 409 `task_source_changed` si el documento vivo ya no da ese texto) y
+  `notes`, hasta 4000 caracteres. Las notas van en la petición del job, sin columna ni migración. El motor las pasa
+  al planificador, las congela en el contrato como `additional_notes` y las añade a las instrucciones del ejecutor.
+- No basta con añadirlas al texto: el planificador solo lee la sección de la tarea y las restricciones compartidas.
+  Solo el usuario aporta `additional_notes` (se retira la que invente el planificador) y nunca amplían rutas,
+  comandos ni permisos. Sin notas, petición, entrada, contrato y prompts no cambian.

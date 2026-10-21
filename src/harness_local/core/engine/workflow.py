@@ -40,6 +40,20 @@ FORMATTING_NOTE = ('The harness ran the profile formatter on these executor file
                    'and the diff already include its output.')
 
 
+NOTES_PREFIX = ('\nAdditional notes from the user (they never widen the contract\'s paths, commands or '
+                'permissions):\n')
+
+
+def _with_notes(context: ProjectContext, task_json: str, notes: str | None) -> str:
+    """P009-T020: `additional_notes` del contrato son siempre las del usuario: se fijan con notas y, sin ellas, se
+    retira la clave si la inventó el planificador (su salida original queda en su intento)."""
+    task = json.loads(task_json)
+    task.pop("additional_notes", None)
+    if notes is not None:
+        task["additional_notes"] = notes
+    return task_contract(context, task, task["task_id"], task["phase_id"])
+
+
 def _profile_instructions(context: ProjectContext) -> str:
     """P009-T019 (D133): un ejecutor sin shell no puede formatear con la herramienta del perfil; se le dice que no hace
     falta. Sin formateador, el texto del perfil queda igual."""
@@ -111,8 +125,13 @@ class OfflineEngine:
         return history
 
     def start(self, context: ProjectContext, task_id: str, phase_id: str, text: str,
-              *, history: RunHistory | None = None, contract: str | None = None) -> RunHistory:
-        """`contract`: contrato determinista ya congelado por el servidor (H3.4); no se llama al planificador."""
+              *, history: RunHistory | None = None, contract: str | None = None,
+              notes: str | None = None) -> RunHistory:
+        """`contract`: contrato determinista ya congelado por el servidor (H3.4); no se llama al planificador.
+        `notes`: notas adicionales del usuario (P009-T020); se congelan en el contrato y nunca amplían su alcance."""
+        if notes is not None and (not isinstance(notes, str) or not notes.strip() or contract is not None):
+            raise ContractError("Additional notes must be non-empty text for a planned task")
+        planned = contract is None  # el planificador determinista reutiliza `contract` más abajo
         self.resuming = False
         history = history or RunHistory(str(uuid4()), context_snapshot(context))
         if (history.context_json != context_snapshot(context) or history.task_json is not None
@@ -147,16 +166,21 @@ class OfflineEngine:
                 else:
                     history = replace(history, task_json=contract)
             if history.task_json is None:
-                prompt = freeze({
+                planner_input = {
                     "task_id": task_id, "phase_id": phase_id,
                     "task_section": section(text, rf"^##\s+{task_id}\s+[—-].*$"),
                     "shared_constraints": section(text, SHARED_HEADING),
-                })
+                }
+                if notes is not None:
+                    planner_input["additional_notes"] = notes  # P009-T020: solo con notas; sin ellas, misma entrada
+                prompt = freeze(planner_input)
                 selection = Selection(context.policy.planner_model, context.policy.planner_effort, "Explicit planner policy")
                 history, data = self._invoke(context, history, "planner", selection, "plan-task", {"INPUT_JSON": prompt})
                 if data is None:
                     return history
                 history = replace(history, task_json=task_contract(context, data, task_id, phase_id))
+            if notes is not None or (planned and "additional_notes" in json.loads(history.task_json)):
+                history = replace(history, task_json=_with_notes(context, history.task_json, notes))
         except ContractError as exc:
             return stopped(history, "planner", str(exc))
         task = json.loads(history.task_json)
@@ -223,6 +247,9 @@ class OfflineEngine:
             before = self.evidence.capture(context)
         except Exception as exc:
             return stopped(history, "evidence", str(exc))
+        notes = json.loads(history.task_json).get("additional_notes")
+        if isinstance(notes, str):
+            prompt += NOTES_PREFIX + notes
         # No path/tool/network grant is inferred from prompt text.
         history, payload = self._invoke(context, history, "executor", selection, "execute-task", {
             "INSTRUCTIONS": prompt, "TASK_JSON": history.task_json,

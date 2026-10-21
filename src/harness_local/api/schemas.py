@@ -256,6 +256,27 @@ class RunCreate(BaseModel):
     task_id: str = Field(min_length=1, max_length=120)
     phase_id: str = Field(min_length=1, max_length=120)
     text: str = Field(min_length=1, max_length=200_000)
+    source_sha256: Annotated[str, Field(pattern=r'^[0-9a-f]{64}$')] | None = Field(default=None, description=(
+        'Hash de la sección elegida en `/projects/{id}/task-sources` (P009-T020). El servidor vuelve a leer el '
+        'documento y responde 409 si la tarea ya no existe o su texto cambió. Sin él, el texto se toma tal cual.'))
+    notes: str | None = Field(default=None, max_length=4000, description=(
+        'Notas adicionales para el agente. Se congelan en el contrato (`additional_notes`) y llegan al planificador, '
+        'al ejecutor y al revisor; nunca amplían rutas, comandos ni permisos. Vacías equivalen a ausentes.'))
+
+
+class TaskSourceRead(BaseModel):
+    task_id: str
+    phase_id: str
+    title: str
+    text: str = Field(description='Sección literal de la tarea, precedida de las restricciones compartidas si las hay.')
+    sha256: str
+
+
+class TaskSourcesRead(BaseModel):
+    path: str
+    sha256: str | None = Field(description='Hash del documento leído; null si no existe.')
+    items: list[TaskSourceRead]
+    diagnostics: list[str] = Field(description='Tareas repetidas o documento ausente: no se ofrecen para encolar.')
 
 
 class RunActionCreate(BaseModel):

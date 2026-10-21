@@ -14,8 +14,9 @@ dejó de valer por el número de dispositivo. T018 lo corrige (D130). La sesión
 COMMITTED en `98f4611` (D131). T009 se detuvo el 2026-10-21 en el límite de revisiones. El ejecutor Claude, sin
 shell, no logra cumplir `ruff format` ([evidencia](phase/P009-T009_PILOTO_CODEX_CLAUDE.md), D132). T019 lo corrige el
 2026-10-21: el harness formatea con la herramienta del perfil tras cada turno del ejecutor (D133). Con autorización
-nueva y techo 13, T009 se completa el mismo día: P001-T002 COMMITTED en `2f2b13f` (D134). T010–T012 y T020 pendientes.
-**Siguiente:** decidir con el usuario si T020 (encolar desde los documentos) va antes de T010.
+nueva y techo 13, T009 se completa el mismo día: P001-T002 COMMITTED en `2f2b13f` (D134). A petición del usuario,
+T020 (encolar desde los documentos, con notas) se hace antes de T010 (D135). T010–T012 pendientes.
+**Siguiente:** T010 (Claude→Claude), con el wheel de T020 instalado, cuando el usuario lo pida.
 [Contrato implementable](phase/P009-T001_CONTRATO_CREACION.md), decisión D116. T002 añade producto de
 carpeta/creación, sin piloto ni selección de carpeta real del usuario;
 la implementación no concede permisos de red, instalación o proveedores.
@@ -420,7 +421,8 @@ Decidir también cómo sigue el run `bb29b133`, en `revision_limit` con los camb
 
 ## P009-T020 — Encolar una tarea desde los documentos, con notas adicionales
 
-**Estado:** pendiente, a propuesta del usuario (2026-10-21). Orden respecto a T010 por decidir.
+**Estado:** completada el 2026-10-21 (D135, [entrega](phase/P009-T020_ENCOLAR_DESDE_DOCUMENTOS.md)), a propuesta del
+usuario y antes de T010. Selector desde el NEXT_STEPS vivo con CAS, notas congeladas en el contrato y modo manual.
 **Objetivo:** que encolar una tarea no exija escribir a mano fase, id y contrato. Elegir fase y tarea en un selector
 alimentado por los documentos del checkout, con el contrato rellenado automáticamente y un campo opcional de notas
 adicionales para el agente.

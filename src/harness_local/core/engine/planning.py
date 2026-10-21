@@ -48,6 +48,34 @@ def section(text: str, heading: str) -> str:
     return text[match.start():end].strip()
 
 
+def task_heading(task_id: str) -> str:
+    return rf"^##\s+{re.escape(task_id)}\s+[—-].*$"
+
+
+def task_sources(context: ProjectContext) -> dict:
+    """P009-T020: tareas del NEXT_STEPS vivo para encolarlas sin escribir el contrato. El texto de cada una es su
+    sección literal, precedida de las restricciones compartidas si el documento las tiene: es justo lo que el
+    planificador lee del texto enviado (`section`). Un id repetido no se ofrece, porque no se puede elegir."""
+    from harness_local.core.engine.document_ops import read_text, text_hash
+    text = read_text(context, context.next_steps_file)
+    result = {"path": context.next_steps_file, "sha256": None, "items": [], "diagnostics": []}
+    if text is None:
+        return {**result, "diagnostics": [f"{context.next_steps_file} does not exist"]}
+    shared = section(text, SHARED_HEADING)
+    ids = [match.group(1) for match in TASK_RE.finditer(text)]
+    for match in TASK_RE.finditer(text):
+        task_id = match.group(1)
+        if ids.count(task_id) > 1:
+            if f"{task_id} is duplicated" not in result["diagnostics"]:
+                result["diagnostics"].append(f"{task_id} is duplicated")
+            continue
+        body = section(text, task_heading(task_id))
+        value = f"{shared}\n\n{body}" if shared else body
+        result["items"].append({"task_id": task_id, "phase_id": task_id.split("-")[0], "title": match.group(2),
+                                "text": value, "sha256": text_hash(value)})
+    return {**result, "sha256": text_hash(text)}
+
+
 def collapse(text: str) -> str:
     return re.sub(r"\s+", " ", text).strip()
 
@@ -72,7 +100,7 @@ def backticked(text: str) -> list[str]:
 
 
 def deterministic_task(context: ProjectContext, task_id: str, phase_id: str, text: str) -> str:
-    task_section = section(text, rf"^##\s+{re.escape(task_id)}\s+[—-].*$")
+    task_section = section(text, task_heading(task_id))
     if not task_section:
         raise IncompleteContract("Task section absent")
     heading = TASK_RE.search(task_section)

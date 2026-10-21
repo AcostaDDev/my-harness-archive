@@ -5,6 +5,7 @@ import { Link } from "../navigation";
 import { runRoute } from "../router.ts";
 import { Empty, Status, when, usePoll } from "../ui";
 import { useWorkspace } from "../workspace";
+import { runBody, sourcePhases, sourceTasks } from "../task-sources.ts";
 
 const PURPOSES: Record<S["ManagedRunSummaryRead"]["purpose"], string> = {
   task: "Tarea", phase_check: "Comprobación de fase", phase_close: "Cierre de fase", chat: "Chat",
@@ -38,25 +39,63 @@ export function RunTable({ runs, project, show = ["task", "phase"] }: { runs: S[
   </div>;
 }
 
-/** Encolar una tarea con su contrato. La fase o la tarea pueden venir fijadas por la página. */
+/**
+ * Encolar una tarea. Por defecto se elige del NEXT_STEPS vivo y el contrato es su sección literal, con su hash para
+ * que el servidor rechace un documento cambiado (P009-T020); el modo manual queda para lo que no está en él.
+ * La fase o la tarea pueden venir fijadas por la página.
+ */
 export function TaskForm({ phase, task, title = "Encolar tarea" }: { phase?: string; task?: string; title?: string }) {
   const { project, busy, operate, send } = useWorkspace();
   const preparation = usePoll<S["PreparationRead"]>(`/projects/${project}/preparation`, 2000);
   const preparationRequired = preparation.data?.available && !preparation.data.prepared;
+  const sources = usePoll<S["TaskSourcesRead"]>(`/projects/${project}/task-sources`, 5000);
+  const items = sources.data?.items ?? [];
+  const phases = sourcePhases(items, phase);
+  const [manual, setManual] = useState(false);
+  const [chosenPhase, setChosenPhase] = useState(phase ?? "");
+  const [chosenTask, setChosenTask] = useState(task ?? "");
   const [taskId, setTaskId] = useState(task ?? "");
   const [phaseId, setPhaseId] = useState(phase ?? "");
   const [text, setText] = useState("");
+  const [notes, setNotes] = useState("");
+  const selectedPhase = chosenPhase || (phases.length === 1 ? phases[0] : "");
+  const tasks = sourceTasks(items, selectedPhase, task);
+  const source = tasks.find(item => item.task_id === (chosenTask || (task ?? ""))) ?? null;
+  const offered = phases.length > 0 && (!task || tasks.length > 0);
+  const fromDocuments = !manual && offered;
+  const body = runBody(fromDocuments ? source : null, { task: taskId, phase: phaseId, text }, notes);
+  const ready = fromDocuments ? source !== null : !!(text.trim() && taskId.trim() && phaseId.trim());
   return <section className="panel" aria-labelledby="task-form">
     <h2 id="task-form">{title}</h2>
     <p className="hint">El planificador fija el contrato con la política del proyecto; el ejecutor trabaja en un worktree y el revisor decide. El commit se confirma aparte.</p>
     {preparationRequired && <p className="state state-attention">Prepara Django desde la creación o el resumen del proyecto antes de encolar tareas.</p>}
-    <form onSubmit={e => { e.preventDefault(); if (!busy && !preparationRequired) void operate(() => send(jobRequest(`/projects/${project}/runs`, { task_id: taskId.trim(), phase_id: phaseId.trim(), text }))); }}>
-      {(!task || !phase) && <div className="form-row">
-        {!task && <label>Tarea<input value={taskId} onChange={e => setTaskId(e.target.value)} required maxLength={120} placeholder={phase ? `${phase}-T001` : "P001-T001"} /></label>}
-        {!phase && <label>Fase<input value={phaseId} onChange={e => setPhaseId(e.target.value)} required maxLength={120} placeholder="P001" /></label>}
-      </div>}
-      <label>Contrato de tarea<textarea value={text} onChange={e => setText(e.target.value)} required maxLength={200000} rows={8} /></label>
-      <button disabled={busy || preparationRequired || !text.trim() || !taskId.trim() || !phaseId.trim()}>Encolar tarea</button>
+    <form onSubmit={e => { e.preventDefault(); if (!busy && !preparationRequired && ready) void operate(() => send(jobRequest(`/projects/${project}/runs`, body))); }}>
+      {fromDocuments ? <>
+        <div className="form-row">
+          <label>Fase<select value={selectedPhase} onChange={e => { setChosenPhase(e.target.value); setChosenTask(""); }} disabled={!!phase} required>
+            {!selectedPhase && <option value="">Elige una fase</option>}
+            {phases.map(code => <option key={code} value={code}>{code}</option>)}
+          </select></label>
+          <label>Tarea<select value={source?.task_id ?? ""} onChange={e => setChosenTask(e.target.value)} disabled={!!task} required>
+            {!source && <option value="">Elige una tarea</option>}
+            {tasks.map(item => <option key={item.task_id} value={item.task_id}>{item.task_id} — {item.title}</option>)}
+          </select></label>
+        </div>
+        {source && <label>Contrato de tarea<textarea value={source.text} readOnly rows={8} /></label>}
+        {source && <p className="hint">Sección literal de <code>{sources.data?.path}</code> · SHA-256 <code>{source.sha256.slice(0, 12)}</code>. Si el documento cambia antes de encolar, el servidor lo rechaza.</p>}
+      </> : <>
+        {(!task || !phase) && <div className="form-row">
+          {!task && <label>Tarea<input value={taskId} onChange={e => setTaskId(e.target.value)} required maxLength={120} placeholder={phase ? `${phase}-T001` : "P001-T001"} /></label>}
+          {!phase && <label>Fase<input value={phaseId} onChange={e => setPhaseId(e.target.value)} required maxLength={120} placeholder="P001" /></label>}
+        </div>}
+        <label>Contrato de tarea<textarea value={text} onChange={e => setText(e.target.value)} required maxLength={200000} rows={8} /></label>
+      </>}
+      {sources.data?.diagnostics.map(item => <p key={item} className="hint">{item}</p>)}
+      {offered && <label className="check"><input type="checkbox" checked={manual} onChange={e => setManual(e.target.checked)} />Escribir el contrato a mano</label>}
+      {items.length > 0 && !offered && <p className="hint">{task ?? phase} no está en <code>{sources.data?.path}</code>; escribe el contrato a mano.</p>}
+      <label>Notas adicionales (opcional)<textarea value={notes} onChange={e => setNotes(e.target.value)} maxLength={4000} rows={3} /></label>
+      <p className="hint">Se congelan en el contrato y llegan al planificador, al ejecutor y al revisor. No amplían rutas, comandos ni permisos.</p>
+      <button disabled={busy || preparationRequired || !ready}>Encolar tarea</button>
     </form>
   </section>;
 }

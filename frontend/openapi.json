@@ -2546,6 +2546,94 @@
         }
       }
     },
+    "/api/managed/projects/{project_id}/task-sources": {
+      "get": {
+        "summary": "Task Sources Read",
+        "description": "P009-T020: tareas del NEXT_STEPS vivo, con el texto que se enviaría para cada una y su hash.",
+        "operationId": "managed_task_sources",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          },
+          {
+            "name": "x-harness-local",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Obligatoria con valor 1 en mutaciones (protección CSRF).",
+              "title": "X-Harness-Local"
+            },
+            "description": "Obligatoria con valor 1 en mutaciones (protección CSRF)."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TaskSourcesRead"
+                }
+              }
+            }
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          }
+        }
+      }
+    },
     "/api/managed/runs/{run_id}": {
       "get": {
         "summary": "Run",
@@ -24216,6 +24304,32 @@
             "maxLength": 200000,
             "minLength": 1,
             "title": "Text"
+          },
+          "source_sha256": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^[0-9a-f]{64}$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source Sha256",
+            "description": "Hash de la sección elegida en `/projects/{id}/task-sources` (P009-T020). El servidor vuelve a leer el documento y responde 409 si la tarea ya no existe o su texto cambió. Sin él, el texto se toma tal cual."
+          },
+          "notes": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 4000
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Notes",
+            "description": "Notas adicionales para el agente. Se congelan en el contrato (`additional_notes`) y llegan al planificador, al ejecutor y al revisor; nunca amplían rutas, comandos ni permisos. Vacías equivalen a ausentes."
           }
         },
         "additionalProperties": false,
@@ -24709,6 +24823,83 @@
           "seconds_to_commit"
         ],
         "title": "TaskQualityRead"
+      },
+      "TaskSourceRead": {
+        "properties": {
+          "task_id": {
+            "type": "string",
+            "title": "Task Id"
+          },
+          "phase_id": {
+            "type": "string",
+            "title": "Phase Id"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "text": {
+            "type": "string",
+            "title": "Text",
+            "description": "Sección literal de la tarea, precedida de las restricciones compartidas si las hay."
+          },
+          "sha256": {
+            "type": "string",
+            "title": "Sha256"
+          }
+        },
+        "type": "object",
+        "required": [
+          "task_id",
+          "phase_id",
+          "title",
+          "text",
+          "sha256"
+        ],
+        "title": "TaskSourceRead"
+      },
+      "TaskSourcesRead": {
+        "properties": {
+          "path": {
+            "type": "string",
+            "title": "Path"
+          },
+          "sha256": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Sha256",
+            "description": "Hash del documento leído; null si no existe."
+          },
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/TaskSourceRead"
+            },
+            "type": "array",
+            "title": "Items"
+          },
+          "diagnostics": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Diagnostics",
+            "description": "Tareas repetidas o documento ausente: no se ofrecen para encolar."
+          }
+        },
+        "type": "object",
+        "required": [
+          "path",
+          "sha256",
+          "items",
+          "diagnostics"
+        ],
+        "title": "TaskSourcesRead"
       },
       "ValidationCountsRead": {
         "properties": {

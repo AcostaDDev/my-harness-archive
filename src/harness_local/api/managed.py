@@ -21,9 +21,11 @@ from harness_local.api.schemas import (
     ActivationCreate, ActivationRead, ActivationTransition, ConfirmStoppedCreate, ManagedAttemptRead,
     ManagedEventsRead, ManagedJobRead, ManagedProjectRead, ManagedRunRead, ManagedRunSummaryRead,
     MigrationPreviewRead, ModeRead, Page, PhaseTaskRead, ProblemResponse, RunActionCreate, RunCreate, SupervisorRead,
+    TaskSourcesRead,
 )
 from harness_local.api.security import local_request, problem
 from harness_local.core.engine.document_ops import BaseChanged
+from harness_local.core.engine.planning import task_sources
 from harness_local.core.migration import MigrationError
 from harness_local.services.managed_runtime import ManagedRuntime, agents_view
 from harness_local.storage.documents import IMAGE_TYPES
@@ -264,12 +266,27 @@ def managed_router(runtime: ManagedRuntime):
             versions['permission_authority'] = freeze(item.permission_authority)
         return versions
 
+    @router.get("/projects/{project_id}/task-sources", response_model=TaskSourcesRead,
+                operation_id="managed_task_sources")
+    def task_sources_read(project_id: str):
+        """P009-T020: tareas del NEXT_STEPS vivo, con el texto que se enviaría para cada una y su hash."""
+        return call(task_sources, documents_project(project_id).context)
+
     @router.post("/projects/{project_id}/runs", response_model=ManagedJobRead, status_code=202,
                  operation_id="managed_submit_run")
     def submit_run(project_id: str, body: RunCreate, idempotency_key: IdempotencyKey):
         item = project(project_id)
+        if body.source_sha256 is not None:
+            # P009-T020: el texto elegido en el selector debe seguir siendo el del documento vivo (CAS).
+            live = next((source for source in call(task_sources, documents_project(project_id).context)["items"]
+                         if source["task_id"] == body.task_id), None)
+            if (live is None or live["phase_id"] != body.phase_id or live["sha256"] != body.source_sha256
+                    or live["text"] != body.text):
+                raise problem(409, "task_source_changed", "La tarea ya no está en el documento o su texto cambió; "
+                                                          "vuelve a elegirla.")
+        notes = body.notes.strip() if body.notes is not None and body.notes.strip() else None
         job = call(runtime.repository.submit, item.context, body.task_id, body.phase_id, body.text,
-                   frozen_versions(item), key=idempotency_key)
+                   frozen_versions(item), key=idempotency_key, notes=notes)
         return queued(job)
 
     @router.get("/runs/{run_id}", response_model=ManagedRunRead, operation_id="managed_run")

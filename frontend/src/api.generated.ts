@@ -513,6 +513,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/managed/projects/{project_id}/task-sources": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Task Sources Read
+         * @description P009-T020: tareas del NEXT_STEPS vivo, con el texto que se enviaría para cada una y su hash.
+         */
+        get: operations["managed_task_sources"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/managed/runs/{run_id}": {
         parameters: {
             query?: never;
@@ -6030,6 +6050,16 @@ export interface components {
             phase_id: string;
             /** Text */
             text: string;
+            /**
+             * Source Sha256
+             * @description Hash de la sección elegida en `/projects/{id}/task-sources` (P009-T020). El servidor vuelve a leer el documento y responde 409 si la tarea ya no existe o su texto cambió. Sin él, el texto se toma tal cual.
+             */
+            source_sha256?: string | null;
+            /**
+             * Notes
+             * @description Notas adicionales para el agente. Se congelan en el contrato (`additional_notes`) y llegan al planificador, al ejecutor y al revisor; nunca amplían rutas, comandos ni permisos. Vacías equivalen a ausentes.
+             */
+            notes?: string | null;
         };
         /** SelectionRead */
         SelectionRead: {
@@ -6179,6 +6209,39 @@ export interface components {
             committed: number;
             corrections: components["schemas"]["CountSumRead"] | null;
             seconds_to_commit: components["schemas"]["DurationSumRead"] | null;
+        };
+        /** TaskSourceRead */
+        TaskSourceRead: {
+            /** Task Id */
+            task_id: string;
+            /** Phase Id */
+            phase_id: string;
+            /** Title */
+            title: string;
+            /**
+             * Text
+             * @description Sección literal de la tarea, precedida de las restricciones compartidas si las hay.
+             */
+            text: string;
+            /** Sha256 */
+            sha256: string;
+        };
+        /** TaskSourcesRead */
+        TaskSourcesRead: {
+            /** Path */
+            path: string;
+            /**
+             * Sha256
+             * @description Hash del documento leído; null si no existe.
+             */
+            sha256: string | null;
+            /** Items */
+            items: components["schemas"]["TaskSourceRead"][];
+            /**
+             * Diagnostics
+             * @description Tareas repetidas o documento ausente: no se ofrecen para encolar.
+             */
+            diagnostics: string[];
         };
         /** ValidationCountsRead */
         ValidationCountsRead: {
@@ -7878,6 +7941,67 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ManagedJobRead"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+        };
+    };
+    managed_task_sources: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Obligatoria con valor 1 en mutaciones (protección CSRF). */
+                "x-harness-local"?: string | null;
+            };
+            path: {
+                project_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TaskSourcesRead"];
                 };
             };
             /** @description Forbidden */

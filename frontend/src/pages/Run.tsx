@@ -97,6 +97,7 @@ export function RunPage({ phase, task, run: id }: { phase: string; task: string;
         ["Creado", when(run.created_at)], ["Identificador", <code>{run.id}</code>],
       ]} />
       {!documentRun && <p className="hint">Un commit conserva un checkpoint del trabajo revisado; la integración en la rama destino queda pendiente.</p>}
+      {typeof run.history.task?.additional_notes === "string" && <div className="entry"><h3>Notas adicionales</h3><p className="turn-answer">{run.history.task.additional_notes}</p></div>}
       <Evidence title="Contrato, revisiones y aceptación" value={run.history} />
       <Evidence title="Evidencia de commit y versiones" value={{ commit: run.commit, versions: run.versions }} />
     </section>

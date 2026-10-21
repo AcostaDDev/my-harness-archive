@@ -16,7 +16,10 @@ sequenceDiagram
     participant R as Revisor (CLI, solo lectura)
     participant X as Ejecutor (CLI, escritor)
     participant G as Git del checkout
-    U->>API: encolar tarea (Idempotency-Key)
+    U->>API: task-sources: fase y tarea del NEXT_STEPS vivo (D135)
+    API-->>U: sección literal y su hash
+    U->>API: encolar tarea con hash y notas opcionales (Idempotency-Key)
+    Note over API,G: 409 si la sección ya no coincide con el documento vivo
     Note over API,DB: rechazo si cambió la composición del registro antes de admitir
     API->>DB: run QUEUED + job QUEUED
     S->>DB: reclamar job (lease, lock del checkout)
@@ -99,6 +102,19 @@ intento sin resultado al confirmar la parada queda `INTERRUPTED` sin reintento a
   revisor.
 - `decision_proposals` del ejecutor llegan al revisor; las que este devuelve quedan en la revisión del ciclo y en la
   evidencia de la reconciliación. Nunca escriben DECISIONS ni cambian el veredicto.
+
+## Encolar desde los documentos y notas adicionales (D135)
+
+- `GET /projects/{id}/task-sources` lee el NEXT_STEPS vivo y ofrece cada tarea `PNNN-TNNN` con su sección literal
+  (precedida de las restricciones compartidas, si las hay) y su SHA-256. Un id repetido no se ofrece. El formulario
+  elige fase y tarea con desplegables y muestra el contrato sin editarlo; el modo manual sigue disponible.
+- Con `source_sha256`, `POST /runs` vuelve a leer el documento y responde 409 `task_source_changed` si la tarea ya
+  no está, cambió de fase o su texto difiere. Sin él, el texto se toma tal cual, como antes.
+- `notes` (hasta 4000 caracteres; en blanco equivalen a ausentes) va en la petición del job, sin columna nueva. El
+  motor las pasa al planificador como `additional_notes`, las congela en el contrato con esa clave (el revisor y el
+  ejecutor las ven en `TASK_JSON`) y las añade a las instrucciones del ejecutor. Solo el usuario las aporta: una clave
+  igual inventada por el planificador se retira. No amplían rutas, comandos ni permisos. Sin notas, petición, entrada
+  del planificador, contrato y prompts quedan como antes. La página del run las muestra.
 
 ## Formateo del perfil (D133)
 

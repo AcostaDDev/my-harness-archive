@@ -368,7 +368,8 @@ class LocalSupervisor:
                                        prompts=PromptRepository(self.repository.engine).catalog)
                 if request["action"] == "start":
                     history = engine.start(context, request["task_id"], request["phase_id"], request["text"],
-                                           history=record.history, contract=request.get("contract_json"))
+                                           history=record.history, contract=request.get("contract_json"),
+                                           notes=request.get("notes"))
                 else:
                     history = engine.resume(context, record.history, retry_executor=request["action"] == "retry")
             self.repository.close_owner(claim)
