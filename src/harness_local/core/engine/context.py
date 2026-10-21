@@ -48,7 +48,8 @@ class ProjectProfile:
     sensitive_paths: tuple[str, ...] = ()
     sensitive_allowlist: tuple[str, ...] = ()
     executor_instructions: str = ""
-    # Declaración para el futuro adaptador de preparación; no ejecutada en H2.1.
+    # P009-T019 (D133): tras cada intento del ejecutor, el motor formatea con `formatter_argv + rutas` los archivos
+    # cambiados dentro del contrato que casan con `formatter_paths`. El argv acaba en `--`: ninguna ruta es una opción.
     formatter_argv: tuple[str, ...] = ()
     formatter_paths: tuple[str, ...] = ()
     junit_reports: tuple[JUnitDeclaration, ...] = ()
@@ -61,6 +62,9 @@ class ProjectProfile:
             raise ValueError('At most eight JUnit reports per profile')
         if len({item.path for item in self.junit_reports}) != len(self.junit_reports):
             raise ValueError('JUnit report paths must be unique per profile')
+        if self.formatter_argv and (self.formatter_argv[-1] != '--' or len(self.formatter_argv) < 2
+                                    or not self.formatter_paths):
+            raise ValueError('A formatter needs an argv ending in -- and the paths it formats')
 
 
 @dataclass(frozen=True)

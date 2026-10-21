@@ -2,23 +2,26 @@
 
 from dataclasses import asdict, replace
 import json
+import shlex
 from uuid import uuid4
 
 from harness_local.core.engine.acceptance import assess_acceptance, documentation_parity
-from harness_local.core.engine.context import ProjectContext
+from harness_local.core.engine.context import Command, ProjectContext
 from harness_local.core.engine.contracts import (
     AgentAdapter, ContractError, IncompleteContract, RunHistory,
     Selection, context_snapshot, executor_selection, freeze, invoke_agent, task_contract,
     stop_history as stopped,
 )
 from harness_local.core.engine.evidence import (
-    ContentEvidence, EvidenceCapture, check_paths, strip_empty_provenance,
+    ContentEvidence, EvidenceCapture, check_paths, matches, strip_empty_provenance,
 )
 from harness_local.core.engine.journal import EngineJournal, JournalError
 from harness_local.core.engine.prompts import builtin_catalog, dump_catalog, load_catalog, render_attempt
 from harness_local.core.engine.planning import SHARED_HEADING, deterministic_task, section
 from harness_local.core.engine.review import ReviewCycle, decision_proposals, review_contract, stalled_review_signature
-from harness_local.core.engine.validation import CommandRunner, command_result_payload, run_command, run_validations, validation_payload
+from harness_local.core.engine.validation import (
+    CommandRunner, command_result_payload, run_command, run_identified_command, run_validations, validation_payload,
+)
 
 
 def _executor_output(payload: dict) -> str | None:
@@ -30,6 +33,22 @@ def _executor_output(payload: dict) -> str | None:
     except ContractError as exc:
         return f"Malformed decision proposals: {exc}"
     return None
+
+
+FORMATTER_TIMEOUT_SECONDS = 120
+FORMATTING_NOTE = ('The harness ran the profile formatter on these executor files before validation; the evidence '
+                   'and the diff already include its output.')
+
+
+def _profile_instructions(context: ProjectContext) -> str:
+    """P009-T019 (D133): un ejecutor sin shell no puede formatear con la herramienta del perfil; se le dice que no hace
+    falta. Sin formateador, el texto del perfil queda igual."""
+    profile = context.profile
+    if not profile.formatter_argv:
+        return profile.executor_instructions
+    return (profile.executor_instructions + '\nAfter each of your turns the harness runs `'
+            + shlex.join(profile.formatter_argv) + '` on the changed files that match '
+            + ', '.join(profile.formatter_paths) + '; do not reformat by hand to a different style.').lstrip('\n')
 
 
 def _latest_executor_proposals(history: RunHistory) -> list:
@@ -179,6 +198,25 @@ class OfflineEngine:
             return self._execute(context, history, selection, prompt)
         return self._review_loop(context, history, None, [], allow_revision=False)
 
+    def _format(self, context: ProjectContext, task: dict) -> tuple[str | None, str | None]:
+        """P009-T019 (D133): formatea los archivos que el ejecutor puede tocar según el contrato, antes de capturar la
+        evidencia. Devuelve el registro congelado (None si no hay nada que formatear) y el motivo de parada si el
+        formateador no llegó a ejecutarse bien; un código de salida distinto de cero lo juzgan validación y revisión."""
+        profile = context.profile
+        evidence = self.evidence.capture(context)
+        excluded = set(check_paths(context, task, evidence).violations)
+        paths = tuple(path for path in evidence.changed_paths if path not in excluded
+                      and matches(path, profile.formatter_paths) and context.path(path).is_file())
+        if not paths:
+            return None, None
+        command = Command(profile.formatter_argv + paths, timeout_seconds=FORMATTER_TIMEOUT_SECONDS)
+        result, identity = run_identified_command(context, self.commands, command, self.journal)
+        record = freeze({'command': asdict(command), 'command_id': identity, 'paths': list(paths),
+                         'result': command_result_payload(result), 'note': FORMATTING_NOTE})
+        if result.error or result.timed_out or result.exit_code is None:
+            return record, 'Formatter failed: ' + (result.error or 'no exit code')
+        return record, None
+
     def _execute(self, context: ProjectContext, history: RunHistory, selection: Selection, prompt: str) -> RunHistory:
         self._checkpoint(history, "executor")
         try:
@@ -188,7 +226,7 @@ class OfflineEngine:
         # No path/tool/network grant is inferred from prompt text.
         history, payload = self._invoke(context, history, "executor", selection, "execute-task", {
             "INSTRUCTIONS": prompt, "TASK_JSON": history.task_json,
-            "PROFILE_INSTRUCTIONS": context.profile.executor_instructions})
+            "PROFILE_INSTRUCTIONS": _profile_instructions(context)})
         if payload is None:
             return history
         malformed = _executor_output(payload)
@@ -202,12 +240,18 @@ class OfflineEngine:
         while True:
             self._checkpoint(history, "validation")
             try:
+                formatting = None
+                if before is not None and context.profile.formatter_argv:
+                    formatting, failure = self._format(context, task)
+                    if failure:
+                        return stopped(history, "formatter", failure)
                 evidence = self.evidence.capture(context)
                 policy = check_paths(context, task, evidence)
                 source = next((a.request.id for a in reversed(history.attempts) if a.request.role == 'executor'), None)
                 validation = run_validations(context, task, evidence, self.commands, self.journal,
                                              run_id=history.id, source_attempt_id=source)
-                cycle = ReviewCycle(len(history.cycles), evidence, policy, validation, None, before, freeze(denials))
+                cycle = ReviewCycle(len(history.cycles), evidence, policy, validation, None, before, freeze(denials),
+                                    formatting)
                 history = replace(history, cycles=history.cycles + (cycle,))
                 if self.evidence.capture(context) != evidence:
                     return stopped(history, "validation", "Content changed during validation; revalidate")
@@ -220,7 +264,10 @@ class OfflineEngine:
                 "task": task, "evidence": strip_empty_provenance(asdict(evidence)), "policy": asdict(policy),
                 "validation": strip_empty_provenance(validation_payload(validation)),
             }
-            # P008-T003: claves solo con el layout v2 o con propuestas, para conservar la entrada anterior.
+            # P008-T003 y D133: claves solo con el layout v2, con formateo o con propuestas, para conservar la entrada
+            # anterior.
+            if formatting is not None:
+                review_input["formatting"] = json.loads(formatting)
             parity = documentation_parity(context, evidence.changed_paths)
             if parity is not None:
                 review_input["documentation"] = parity
@@ -273,7 +320,7 @@ class OfflineEngine:
                 return stopped(history, "evidence", str(exc))
             history, payload = self._invoke(context, history, "executor", selection, "revise-task", {
                 "INSTRUCTIONS": prompt, "TASK_JSON": history.task_json, "REVIEW_JSON": cycle.review_json,
-                "PROFILE_INSTRUCTIONS": context.profile.executor_instructions})
+                "PROFILE_INSTRUCTIONS": _profile_instructions(context)})
             if payload is None:
                 return history
             malformed = _executor_output(payload)

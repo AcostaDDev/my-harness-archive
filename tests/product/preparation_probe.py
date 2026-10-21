@@ -32,6 +32,18 @@ elif args[:2] == ['-m', 'django']:
     shutil.copytree(source, target, dirs_exist_ok=True)
 elif args[:2] == ['manage.py', 'migrate']:
     (root / 'db.sqlite3').write_text('synthetic sqlite evidence')
+elif name == 'ruff' and args[:1] == ['format']:
+    # P009-T019: one rule of `ruff format`, single to double quotes, on SYNTHETIC; the real tool behaves the same.
+    single, double = "'" + 'SYNTHETIC' + "'", '"SYNTHETIC"'
+    if args[1:3] == ['--check', '.']:
+        pending = sorted(str(path.relative_to(root)) for path in root.rglob('*.py')
+                         if '.venv' not in path.parts and single in path.read_text())
+        print('\n'.join(f'Would reformat: {path}' for path in pending))
+        sys.exit(1 if pending else 0)
+    assert args[1] == '--' and args[2:], args
+    for path in args[2:]:
+        (root / path).write_text((root / path).read_text().replace(single, double))
+    print(f'{len(args) - 2} file(s) formatted')
 elif name == 'pytest':
     folder = root / 'reports'
     folder.mkdir(exist_ok=True)

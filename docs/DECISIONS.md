@@ -143,6 +143,7 @@ tarea se leen solo las decisiones que cita; este índice sirve para buscar prece
 | [D130](#d130--p009-t018-el-recibo-de-preparación-compara-el-inodo-no-el-dispositivo) | P009-T018: el recibo de preparación compara el inodo, no el dispositivo | P009 |
 | [D131](#d131--p009-t008-completada-codexcodex-committed) | P009-T008: completada; Codex→Codex COMMITTED | P009 |
 | [D132](#d132--p009-t009-detenida-el-ejecutor-claude-no-puede-cumplir-ruff-format) | P009-T009: detenida; el ejecutor Claude no puede cumplir `ruff format` | P009 |
+| [D133](#d133--p009-t019-el-harness-formatea-con-la-herramienta-del-perfil-tras-cada-turno-del-ejecutor) | P009-T019: el harness formatea con la herramienta del perfil tras cada turno del ejecutor | P009 |
 
 ## D001 — Alcance local y arquitectura base
 
@@ -4090,3 +4091,25 @@ Estado: detenida el 2026-10-21. Fase: P009. Dentro de D121 y de la propuesta §�
 - Consumo: T009 6 de 7, piloto 15 de 60. Sin commit; los cambios del ejecutor se conservan en el hijo.
 - La corrección es una tarea de producto aparte, P009-T019. Reanudar T009 exige autorización nueva del usuario;
   esta parada no autoriza más consumo.
+
+## D133 — P009-T019: el harness formatea con la herramienta del perfil tras cada turno del ejecutor
+
+Estado: implementada el 2026-10-21. Fase: P009. Corrige la causa de D132.
+[Entrega](phase/P009-T019_FORMATEO_PERFIL.md).
+
+- Por decisión del usuario, tras cada turno del ejecutor y antes de capturar la evidencia, el motor ejecuta el
+  formateador del perfil (`formatter_argv` + rutas) sobre los `changed_paths` que casan con `formatter_paths` y que
+  el contrato permite. Nunca al revalidar. Se descartan el diff de `ruff format --diff` para el ejecutor (cuesta un
+  ciclo por error y depende del modelo) y una concesión `Bash(ruff format …)` (shell parcial, contra D121).
+- El perfil `python-django-recipe` declara `ruff format --` y `*.py` en `local_config.py`, no en `recipes/django.py`:
+  su texto es la huella que vincula los recibos de preparación (D119). La huella no cambia y el hijo del piloto sigue
+  preparado. Un formateador exige argv terminado en `--` y `authorize_profile_commands = true`.
+- El runner nativo autoriza ese argv solo con archivos regulares existentes del checkout (`formatter-paths`). Sin
+  formateador, `command_config_sha256` no cambia y el adaptador sigue en `commands-1`.
+- Un formateador que no se ejecuta para el run en la etapa `formatter` antes de revisar. Un código de salida distinto
+  de cero llega a la validación y al revisor. El ciclo guarda `formatting_json`: el revisor lo recibe como
+  `formatting`, la API lo expone y la UI lo muestra. El historial pasa a formato 8 solo si algún ciclo lo tiene, y
+  lee 1–8. `PROFILE_INSTRUCTIONS` avisa al ejecutor de que el harness formatea.
+- Por decisión del usuario, `bb29b133` queda en `revision_limit` como evidencia, igual que `fc340afb` (D129).
+  Reanudar T009 exige un wheel reconstruido y verificado, retirar del hijo las 7 rutas de su diff con copia privada
+  y una autorización nueva con techo: un run nuevo necesita al menos 3 invocaciones y queda 1 de 7.

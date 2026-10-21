@@ -32,6 +32,7 @@ ROOT = '/api/managed/project-creation-root'
 CREATE = '/api/managed/project-creations'
 PAIRS = [('codex', 'codex'), ('codex', 'claude'), ('claude', 'claude'), ('claude', 'codex')]
 CRITERION = 'El flujo sintético está aceptado.'
+FORMATTED = 'core/synthetic_format.py'
 
 
 def post(http, path, body, key=None, status=200):
@@ -212,21 +213,39 @@ def test_new_child_definition_recipe_four_pairs_restart_and_phase_closure(journe
                 assert post(http, '/api/managed/registry/apply', body, f'roles-{stage}') == {**saved, 'replayed': True}
             task_id = f'P001-T00{stage + 1}'
             content = (root / 'templates/core/index.html').read_text().replace('</main>', f'<p>{task_id}</p></main>')
+            edits, allowed = {'templates/core/index.html': content}, ['templates/']
+            if PAIRS[stage] == ('codex', 'claude'):
+                # P009-T019 (D133): like T009, the shell-less Claude executor leaves Python that `ruff format --check`
+                # rejects; the profile formatter fixes it before validation, so the first review already accepts.
+                edits[FORMATTED] = "VALUE = 'SYNTHETIC'\n"
+                allowed.append('core/')
             script.write_text(json.dumps({
                 'planner': {'task_id': task_id, 'phase_id': 'P001', 'title': 'Synthetic increment',
                     'objective': 'Preserve the Django scaffold', 'executor_prompt': 'Apply the synthetic increment',
-                    'allowed_paths': ['templates/'], 'forbidden_paths': [],
+                    'allowed_paths': allowed, 'forbidden_paths': [],
                     'acceptance_criteria': ['Synthetic behavior is present.'], 'validation_commands': [],
                     'executor_selection': {'model': 'synthetic-executor', 'effort': 'medium',
                                            'reason': f'Synthetic reviewer choice for {task_id}'}},
-                'edits': {'templates/core/index.html': content}, 'executor': {'result': f'Applied {task_id}'},
+                'edits': edits, 'executor': {'result': f'Applied {task_id}'},
                 'reviewer': {'task_id': task_id, 'verdict': 'ACCEPT', 'findings': [],
                              'blocking_questions': [], 'scope_grants': []}}))
             body = {'task_id': task_id, 'phase_id': 'P001', 'text': (root / 'docs/NEXT_STEPS.md').read_text()}
             job = post(http, BASE + '/runs', body, task_id, 202)
             accepted = run(job)
             assert accepted.status == 'ACCEPTANCE_READY'
-            assert json.loads(accepted.history.task_json)['allowed_paths'] == ['templates/**']  # D129
+            assert json.loads(accepted.history.task_json)['allowed_paths'] == [f'{p}**' for p in allowed]  # D129
+            formatters = [p['spec'] for p in runtime.repository.command_processes(job['id'])
+                          if p['spec']['authorization'] == 'formatter-paths']
+            formatting = [json.loads(c.formatting_json) if c.formatting_json else None for c in accepted.history.cycles]
+            if FORMATTED in edits:
+                assert [spec['command']['argv'] for spec in formatters] == [['ruff', 'format', '--', FORMATTED]]
+                assert formatting[0]['paths'] == [FORMATTED] and formatting[0]['result']['exit_code'] == 0
+                assert (root / FORMATTED).read_text() == 'VALUE = "SYNTHETIC"\n'
+                assert all(entry.result.passed for entry in accepted.history.cycles[0].validation.entries)
+                instructions = json.loads(accepted.history.attempts[1].request.prompt_snapshot_json)
+                assert '`ruff format --`' in instructions['parts'][0]['variables']['PROFILE_INSTRUCTIONS']
+            else:  # Only HTML changed: nothing to format, no command and the cycle keeps its previous shape.
+                assert formatters == [] and formatting == [None]
             attempts = accepted.history.attempts
             assert [a.request.role for a in attempts] == ['planner', 'executor', 'reviewer']
             assert attempts[1].request.selection.reason.endswith(task_id)

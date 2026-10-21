@@ -376,6 +376,8 @@ class CycleRead(BaseModel):
     provenance: dict[str, Any] | None
     validation: ValidationRead
     review: dict[str, Any] | None
+    formatting: dict[str, Any] | None = Field(default=None, description='Formateo del perfil tras el intento del '
+                                              'ejecutor (comando, rutas, resultado); null si no hubo (D133).')
     number: int
     verdict: str | None
     fingerprint: str

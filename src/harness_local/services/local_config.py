@@ -34,7 +34,7 @@ from threading import Lock
 import tomllib
 
 from harness_local.adapters.cli_agents import EFFORTS, WRITE_SUPPORTED, CLIConfig, CLIProcessAdapter
-from harness_local.adapters.commands import CommandConfig, ManagedCommandRunner
+from harness_local.adapters.commands import CommandConfig, ManagedCommandRunner, config_payload
 from harness_local.adapters.git import GitWorkspace
 from harness_local.core.engine.commit import GitIdentity
 from harness_local.core.engine.context import (Command, EnginePolicy, JUnitDeclaration, ProjectContext,
@@ -342,7 +342,8 @@ def _commands(value, where, root, profile, *, strict=False, deferred_root=None):
             if not COMMAND_NAME.fullmatch(name) or {Path(path).name, Path(path).resolve().name} & SHELLS:
                 raise LocalConfigError(f'{where}.executables.{name}: nombre simple y ejecutable que no sea un shell')
     required = profile.preparation + profile.validations
-    authorized = required if _flag(value['authorize_profile_commands'], f'{where}.authorize_profile_commands') else ()
+    authorize = _flag(value['authorize_profile_commands'], f'{where}.authorize_profile_commands')
+    authorized = required if authorize else ()
     extras = value.get('authorized', [])
     if not isinstance(extras, list):
         raise LocalConfigError(f'{where}.authorized: lista de comandos exactos requerida')
@@ -352,9 +353,13 @@ def _commands(value, where, root, profile, *, strict=False, deferred_root=None):
             authorized += (command,)
     if any(command not in authorized for command in required):
         raise LocalConfigError(f'{where}: autorizar exactamente todos los comandos del perfil')
+    if profile.formatter_argv and not authorize:
+        # D133: el formateador recibe rutas variables, así que no cabe en una autorización exacta.
+        raise LocalConfigError(f'{where}: el formateador del perfil exige authorize_profile_commands = true')
     try:
         return CommandConfig(str(root), True, authorized, executables,
                              _environment(value['environment'], f'{where}.environment'),
+                             formatter_argv=profile.formatter_argv,
                              **{key: value[key] for key in ('max_timeout_seconds', 'max_output_bytes') if key in value})
     except LocalConfigError:
         raise
@@ -548,7 +553,7 @@ class LocalComposer:
                         'recipe_config_sha256': hashlib.sha256(freeze(authority['recipe']).encode()).hexdigest()}
                        if recipe else {})}
         if new_directory:
-            commands_snapshot = {**asdict(commands), 'checkout': str(root)}
+            commands_snapshot = {**config_payload(commands), 'checkout': str(root)}
             versions['command_config_sha256'] = hashlib.sha256(freeze(commands_snapshot).encode()).hexdigest()
             preview = ManagedProject(identifier, ProjectContext(root.parent, profile, engine_policy, documents='v2'),
                                      versions, item.get('permission_authority'), item.get('tag_kind', 'lightweight'),
@@ -692,7 +697,10 @@ def _build(data, source):
     profiles = {name: factory() for name, factory in PROFILES.items()}
     if recipes:
         from harness_local.recipes.django import profile
-        profiles['python-django-recipe'] = profile()
+        # P009-T019 (D133): el formateador se declara aquí y no en recipes/django.py, cuyo texto es la huella de la
+        # receta que vincula los recibos de preparación ya emitidos.
+        profiles['python-django-recipe'] = replace(profile(), formatter_argv=('ruff', 'format', '--'),
+                                                   formatter_paths=('*.py',))
     declared = data.get('profiles', {})
     if not isinstance(declared, dict):
         raise LocalConfigError('profiles: se esperaba una tabla [profiles.NOMBRE]')

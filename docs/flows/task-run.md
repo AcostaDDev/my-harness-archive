@@ -34,6 +34,9 @@ sequenceDiagram
         E->>X: execute-task o revise-task (sesión nueva)
         X->>G: edita dentro de las rutas permitidas
         X-->>E: resultado y propuestas de ADR opcionales
+        opt el perfil declara formateador y hay archivos del contrato que casan (D133)
+            E->>G: formateador del perfil sobre esos archivos
+        end
         E->>G: evidencia (árbol, diff, fingerprint)
         E->>E: rutas, validaciones del perfil y JUnit
         E->>R: review-task con diff, validaciones, paridad y propuestas
@@ -96,6 +99,17 @@ intento sin resultado al confirmar la parada queda `INTERRUPTED` sin reintento a
   revisor.
 - `decision_proposals` del ejecutor llegan al revisor; las que este devuelve quedan en la revisión del ciclo y en la
   evidencia de la reconciliación. Nunca escriben DECISIONS ni cambian el veredicto.
+
+## Formateo del perfil (D133)
+
+- Tras cada turno del ejecutor, y antes de capturar la evidencia, el motor ejecuta `formatter_argv` + rutas sobre los
+  `changed_paths` que casan con `formatter_paths`, existen como archivo y el contrato permite. Revalidar no formatea.
+  Sin archivos que casen no se lanza nada. Hoy lo declara el perfil de la receta Django (`ruff format --`, `*.py`).
+- El runner nativo lo autoriza como `formatter-paths`: el argv del perfil seguido solo de archivos existentes del
+  checkout. Si no llega a ejecutarse, el run se para en `formatter` antes de revisar. Un código de salida distinto
+  de cero llega a la validación y al revisor.
+- El ciclo guarda `formatting_json` (formato 8 del historial). El revisor lo recibe como `formatting`, y la API y la
+  página del run lo muestran. `PROFILE_INSTRUCTIONS` avisa al ejecutor de que no reformatee a mano.
 
 ## Instrucciones del proyecto (D094)
 

@@ -1,13 +1,12 @@
 """Preparation command binding and exact, no-follow filesystem evidence."""
 from contextlib import contextmanager
-from dataclasses import asdict
 import hashlib
 import json
 import os
 from pathlib import Path
 import stat
 
-from harness_local.adapters.commands import ManagedCommandRunner
+from harness_local.adapters.commands import ManagedCommandRunner, config_payload
 from harness_local.core.engine.contracts import freeze
 from harness_local.core.engine.journal import JournalError
 from harness_local.services.project_creation import directory, identity
@@ -149,7 +148,8 @@ class PreparationCommandRunner(ManagedCommandRunner):
     adapter_version = VERSION
 
     def frozen_versions(self):
-        return {'preparation_commands': VERSION, 'command_config_sha256': sha(freeze(asdict(self.config)).encode())}
+        return {'preparation_commands': VERSION,
+                'command_config_sha256': sha(freeze(config_payload(self.config)).encode())}
 
     def bind_preparation(self, journal, expected):
         if self.journal is not None or self.frozen_versions() != expected:

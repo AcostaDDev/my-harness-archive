@@ -125,7 +125,8 @@ por su API y los artefactos referenciados; la restauración es de consulta (`que
   contenido del perfil entra en el hash congelado de la composición. Ejemplo `python-django` en
   `examples/local_config.example.toml`.
 - **Validaciones nativas** (`commands-1`): ejecutables absolutos, autorización por comando completo, captura acotada en
-  SQLite, grupos POSIX.
+  SQLite, grupos POSIX. El formateador del perfil se autoriza aparte (`formatter-paths`): su argv seguido solo de
+  archivos existentes del checkout. El motor lo ejecuta tras cada turno del ejecutor (D133).
 - **Prompts** (`templates/`): `plan-task`, `execute-task`, `revise-task`, `review-task`, `executor-routing`,
   `close-phase`, `reconcile-phase`, `chat-turn`, `define-project`, `plan-phase`, `import-project` (D098), `onboard-project` (D102; rol de
   solo lectura `definition`, sin `AGENTS.md` inyectado porque es parte del origen), `bootstrap-project`. Jerarquía base →

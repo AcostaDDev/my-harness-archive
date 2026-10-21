@@ -62,6 +62,8 @@ class ReviewCycle:
     review_json: str | None
     before_execution: ContentEvidence | None
     permission_denials_json: str = "[]"
+    # P009-T019 (D133): formateo del perfil tras el intento del ejecutor (comando, rutas y resultado); None si no hubo.
+    formatting_json: str | None = None
 
     @property
     def verdict(self) -> str | None:

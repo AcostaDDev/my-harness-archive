@@ -10,7 +10,8 @@ salvo donde se indica. Detalle por fase en `docs/archive/phase-NNN/SUMMARY.md`.
 - **Núcleo y motor** ([P001](archive/phase-001/SUMMARY.md), [P003](archive/phase-003/SUMMARY.md)): paquete
   `harness_local` con contexto explícito por proyecto, contrato de tarea congelado, planificación determinista o por el
   revisor, bucle ejecución → validación → revisión con límite de correcciones, aceptación ligada al contenido exacto y
-  commit determinista conciliable. Codec de historial en formato 7 (lee 1–6).
+  commit determinista conciliable. Formateo del perfil tras cada turno del ejecutor (D133). Codec de historial
+  en formato 8 (lee 1–7).
 - **Persistencia y recuperación** ([P003](archive/phase-003/SUMMARY.md), [P006](archive/phase-006/SUMMARY.md)): SQLite
   `0022_project_preparation` (42 tablas, [diagrama](DDBB-DIAGRAM.md)); cola idempotente, lease, lock por checkout,
   cuarentena por versión y confirmación explícita del escritor detenido; backup y restauración de consulta; retención
@@ -53,13 +54,19 @@ salvo donde se indica. Detalle por fase en `docs/archive/phase-NNN/SUMMARY.md`.
 D122), T014 (definición Codex sin Git, D124), T016 (suite pytest rápida, D125) y T015 (wheel verificado con D088,
 D126) el 2026-10-20. T007 detenida el 2026-10-20 (D123) y completada el 2026-10-21 (D127). T008 detenida el
 2026-10-21 en la revisión (D128). Tras T017 (D129) y T018 (D130) se completó el mismo día: P001-T001 del hijo
-COMMITTED (D131). T009 detenida el 2026-10-21 en el límite de revisiones (D132). T010–T012 pendientes.
+COMMITTED (D131). T009 detenida el 2026-10-21 en el límite de revisiones (D132); T019 corrige la causa el mismo
+día (D133). T010–T012 pendientes.
 Objetivo y criterios en [ROADMAP](ROADMAP.md#p009--proyecto-django-desde-cero-y-piloto-con-cuatro-combinaciones-de-agentes),
 tareas en [NEXT_STEPS](NEXT_STEPS.md) y diseño en el [plan](phase/P009_PLAN_DJANGO.md).
 Decisión: [D115](DECISIONS.md#d115--p009-django-desde-cero-carpeta-de-proyectos-y-agentes-por-proyecto).
 Contrato de T001: [diseño implementable](phase/P009-T001_CONTRATO_CREACION.md),
 [D116](DECISIONS.md#d116--p009-t001-autoridad-de-creación-presets-por-proyecto-y-preparación-separada).
 
+- T019 corrige la causa de D132. Por decisión del usuario, tras cada turno del ejecutor el harness ejecuta el
+  formateador del perfil (`ruff format --` en la receta Django) sobre los archivos `.py` del contrato que cambiaron,
+  antes de validar. El revisor ve y se acepta el contenido formateado, y el ejecutor no gana shell. La huella de la
+  receta no cambia, así que el hijo sigue preparado. Fuera de la receta, los hashes y el flujo no cambian. Por
+  decisión del usuario, `bb29b133` queda como evidencia ([entrega](phase/P009-T019_FORMATEO_PERFIL.md), D133).
 - T009 (Codex→Claude, run `bb29b133`): en Ajustes solo cambia el ejecutor, a Claude (registro v2). El revisor
   Codex elige `claude-sonnet-5-5`/`medium` con motivo, y la invocación coincide. Edición y borrado con 11 tests
   verdes, pero `ruff format --check` falla por una línea: el hijo usa 100 columnas y el ejecutor Claude, sin shell,
@@ -123,10 +130,11 @@ P008 permanece cerrada ([archivo](archive/phase-008/SUMMARY.md), D114). Este rep
 ni ejecutarse con el harness. T002–T005 usan carpetas/SQLite temporales y CLI de agentes falsas;
 sin proyectos reales del usuario ni proveedores. T005 añade herramientas Django reales, sin modificar el runtime del harness.
 
-**Siguiente:** P009-T019, para que un ejecutor sin shell cumpla el formato del perfil, y la decisión sobre `bb29b133`.
-Después, reanudar T009 con autorización nueva del usuario: queda 1 de 7 invocaciones, y el piloto va por 15 de 60.
-Área `~/.local/share/harness-local/` con el wheel de `d557082`. Hijo en `98f4611`, con los cambios de `bb29b133` sin
-confirmar. Ajustes en el registro v2 (revisor Codex, ejecutor Claude). Durante la operación no se abre la SQLite
-viva con otro proceso SQLite (propuesta §11). El usuario detiene `serve` al terminar la sesión. El QA de T012 lanza
-`runserver` con `PYTHONDONTWRITEBYTECODE=1` (propuesta §9). Sigue pendiente aclarar en `define-project` que una
-carpeta nueva no tiene marcadores (D127).
+**Siguiente:** reanudar T009 con autorización nueva del usuario y techo: queda 1 de 7 invocaciones, un run nuevo
+necesita al menos 3, y el piloto va por 15 de 60. Antes hay que reconstruir, verificar e instalar el wheel con T019 y
+retirar del hijo las 7 rutas de `bb29b133`, con copia privada (entrega de T019, §5). Área
+`~/.local/share/harness-local/` con el wheel de `d557082`. Hijo en `98f4611`, con los cambios de `bb29b133` sin
+confirmar. Ajustes en el registro v2 (revisor Codex, ejecutor Claude). Durante la operación no se abre la SQLite viva
+con otro proceso SQLite (propuesta §11). El usuario detiene `serve` al terminar la sesión. El QA de T012 lanza
+`runserver` con `PYTHONDONTWRITEBYTECODE=1` (propuesta §9). Sigue pendiente aclarar en `define-project` que una carpeta
+nueva no tiene marcadores (D127).

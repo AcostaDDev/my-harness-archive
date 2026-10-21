@@ -98,7 +98,8 @@ def _history_view(history_json: str) -> dict:
                     "changed_paths": list(cycle.evidence.changed_paths), **_diff_summary(cycle.evidence.diff),
                     "provenance": _loads(cycle.evidence.provenance_json),
                     "validation": _validation_view(cycle.validation),
-                    "review": _loads(cycle.review_json)} for cycle in history.cycles],
+                    "review": _loads(cycle.review_json), "formatting": _loads(cycle.formatting_json)}
+                   for cycle in history.cycles],
         "acceptance": None if acceptance is None else {
             "eligible": acceptance.eligible, "reasons": list(acceptance.reasons),
             "base_revision": acceptance.evidence.base_revision, "fingerprint": acceptance.evidence.fingerprint,

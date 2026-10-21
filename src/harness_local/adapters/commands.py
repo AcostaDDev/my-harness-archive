@@ -46,6 +46,8 @@ class CommandConfig:
     max_output_bytes: int = 65536  # Per stream; bytes saved, not characters.
     terminate_grace_seconds: float = 0.3
     drain_seconds: float = 0.3
+    # P009-T019 (D133): formatter of the profile, authorized with the checkout files that follow its final `--`.
+    formatter_argv: tuple[str, ...] = ()
 
     def __post_init__(self):
         if os.name != 'posix':
@@ -68,6 +70,10 @@ class CommandConfig:
                 raise ValueError('Authorized command requires an explicit executable')
             if type(command.timeout_seconds) not in (int, float) or not math.isfinite(command.timeout_seconds):
                 raise ValueError('Finite command timeout required')
+        if self.formatter_argv and (not isinstance(self.formatter_argv, tuple) or self.formatter_argv[-1] != '--'
+                                    or self.formatter_argv[0] not in executables
+                                    or any(not isinstance(a, str) or not a or '\0' in a for a in self.formatter_argv)):
+            raise ValueError('Formatter requires an explicit executable and an argv ending in --')
         for value in (self.max_timeout_seconds, self.terminate_grace_seconds, self.drain_seconds):
             if type(value) not in (int, float) or not math.isfinite(value) or not 0 < value <= 86400:
                 raise ValueError('Finite positive time limits required')
@@ -75,6 +81,22 @@ class CommandConfig:
             raise ValueError('Cleanup limits must be at most two seconds')
         if type(self.max_output_bytes) is not int or not 1 <= self.max_output_bytes <= 1048576:
             raise ValueError('Capture limit must be 1..1048576 bytes per stream')
+
+
+def config_payload(config: CommandConfig) -> dict:
+    """Frozen shape; without a formatter it keeps the hashes frozen before P009-T019."""
+    data = asdict(config)
+    if not data['formatter_argv']:
+        data.pop('formatter_argv')
+    return data
+
+
+def formatter_command(config: CommandConfig, context, command: Command) -> bool:
+    """The formatter argv followed only by existing regular checkout files; `context.path` rejects symlinks/escapes."""
+    prefix, paths = config.formatter_argv, command.argv[len(config.formatter_argv):]
+    if not prefix or command.argv[:len(prefix)] != prefix or not paths or command.cwd != '.' or command.environment:
+        return False
+    return all(not path.startswith('-') and context.path(path).is_file() for path in paths)
 
 
 class ManagedCommandRunner:
@@ -86,7 +108,7 @@ class ManagedCommandRunner:
 
     def frozen_versions(self):
         return {'commands': VERSION, 'command_config_sha256':
-                hashlib.sha256(freeze(asdict(self.config)).encode()).hexdigest()}
+                hashlib.sha256(freeze(config_payload(self.config)).encode()).hexdigest()}
 
     def bind_process_journal(self, journal):
         if self.journal is not None:
@@ -108,7 +130,9 @@ class ManagedCommandRunner:
         config = self.config
         if not config.repository_trusted or str(context.root) != config.checkout:
             raise ValueError('Checkout trust has not been granted for this root')
-        if command not in config.authorized_commands:
+        authorization = 'exact-command' if command in config.authorized_commands else (
+            'formatter-paths' if formatter_command(config, context, command) else None)
+        if authorization is None:
             raise ValueError('Exact command execution has not been authorized')
         cwd = context.path(command.cwd)
         if not cwd.is_dir():
@@ -124,7 +148,7 @@ class ManagedCommandRunner:
                 'config_sha256': self.frozen_versions()['command_config_sha256'],
                 'timeout_seconds': command.timeout_seconds, 'max_output_bytes': config.max_output_bytes,
                 'terminate_grace_seconds': config.terminate_grace_seconds, 'drain_seconds': config.drain_seconds,
-                'repository_trusted': True, 'authorization': 'exact-command', 'isolation': 'native-uid-posix-group'}
+                'repository_trusted': True, 'authorization': authorization, 'isolation': 'native-uid-posix-group'}
         emit('intent', {'spec': spec})
         started = time.monotonic()
         process = None

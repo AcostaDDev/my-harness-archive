@@ -117,6 +117,7 @@ export function RunPage({ phase, task, run: id }: { phase: string; task: string;
         <h3>Revisión {c.number}: {c.verdict ?? "sin veredicto"}</h3>
         <CycleDiff runId={run.id} number={c.number} sha256={c.diff_sha256} bytes={c.diff_bytes} paths={c.changed_paths.length} />
         <Tests runId={run.id} cycle={c.number} validation={c.validation} />
+        {c.formatting && <Evidence title={`Formateo del perfil (${(c.formatting.paths as string[] | undefined)?.length ?? 0} archivos)`} value={c.formatting} />}
         <Evidence title="Tests y evidencia validada" value={c.validation} /><Evidence title="Hallazgos y revisión" value={c.review} />
       </div>)}
     </section>}

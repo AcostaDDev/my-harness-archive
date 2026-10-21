@@ -95,10 +95,10 @@ def validation_payload(report: ValidationReport, *, include_cases: bool = True) 
 
 def run_command(context: ProjectContext, runner: CommandRunner, command: Command,
                 journal: EngineJournal | None = None) -> CommandResult:
-    return _run_command(context, runner, command, journal)[0]
+    return run_identified_command(context, runner, command, journal)[0]
 
 
-def _run_command(context, runner, command, journal):
+def run_identified_command(context, runner, command, journal):
     identity = journal.command_started(command) if journal else str(uuid4())
     try:
         context.path(command.cwd)
@@ -143,7 +143,8 @@ def run_validations(context: ProjectContext, task: dict, evidence: ContentEviden
     for text, command, error in commands:
         declarations = tuple(d for d in context.profile.junit_reports if d.command == command)
         before = tuple(observe_report(context, d.path) for d in declarations)
-        result, identity = (CommandResult(None, error=error), None) if error else _run_command(context, runner, command, journal)
+        result, identity = ((CommandResult(None, error=error), None) if error
+                            else run_identified_command(context, runner, command, journal))
         reports = tuple(capture_junit(context, d, observation) for d, observation in zip(declarations, before))
         entries.append(ValidationEntry(command, text, result, identity if declarations else None, reports))
     # Solo comandos seleccionados exactamente por argv/cwd/entorno/timeout importan reportes.

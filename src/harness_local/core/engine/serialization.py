@@ -91,6 +91,11 @@ def dump_history(history: RunHistory) -> str:
                        for item in history.preparation_json)
     if has_capture:
         version = 7
+    if any(cycle.formatting_json is not None for cycle in history.cycles):
+        version = 8
+    else:
+        for cycle in data['cycles']:
+            cycle.pop('formatting_json')
     for cycle in data['cycles']:
         for entry in cycle['validation']['entries']:
             if entry['result']['capture_json'] is None:
@@ -104,7 +109,7 @@ def dump_history(history: RunHistory) -> str:
 
 def load_history(snapshot: str) -> RunHistory:
     value = json.loads(snapshot)
-    if value["format"] not in {1, 2, 3, 4, 5, 6, 7}:
+    if value["format"] not in {1, 2, 3, 4, 5, 6, 7, 8}:
         raise ValueError("Unknown managed history format")
     data = value["history"]
     data["attempts"] = tuple(Attempt(restore_request(item["request"]), AgentResult(**item["result"]))
@@ -124,7 +129,7 @@ def load_history(snapshot: str) -> RunHistory:
                                   ValidationReport(_evidence(report["evidence"]), entries, report.get('run_id'),
                                                    report.get('source_attempt_id')), item["review_json"],
                                   _evidence(item["before_execution"]) if item["before_execution"] else None,
-                                  item["permission_denials_json"]))
+                                  item["permission_denials_json"], item.get("formatting_json")))
     data["cycles"] = tuple(cycles)
     data["preparation_json"] = tuple(data["preparation_json"])
     data["stop"] = OperationalStop(**data["stop"]) if data["stop"] else None

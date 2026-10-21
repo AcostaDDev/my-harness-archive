@@ -2969,6 +2969,13 @@ export interface components {
             review: {
                 [key: string]: unknown;
             } | null;
+            /**
+             * Formatting
+             * @description Formateo del perfil tras el intento del ejecutor (comando, rutas, resultado); null si no hubo (D133).
+             */
+            formatting?: {
+                [key: string]: unknown;
+            } | null;
             /** Number */
             number: number;
             /** Verdict */

@@ -12,8 +12,10 @@ y se completó el 2026-10-21 con autorización nueva: Django creado desde la UI,
 `dir/**` (D129). La segunda sesión de T008 se paró antes de encolar: tras un reinicio, el recibo de preparación
 dejó de valer por el número de dispositivo. T018 lo corrige (D130). La sesión 3 completa T008: run `7fbaf89c`
 COMMITTED en `98f4611` (D131). T009 se detuvo el 2026-10-21 en el límite de revisiones. El ejecutor Claude, sin
-shell, no logra cumplir `ruff format` ([evidencia](phase/P009-T009_PILOTO_CODEX_CLAUDE.md), D132). T010–T012 pendientes.
-**Siguiente:** T019 (formato del perfil con un ejecutor sin shell). Reanudar T009 exige después una autorización nueva.
+shell, no logra cumplir `ruff format` ([evidencia](phase/P009-T009_PILOTO_CODEX_CLAUDE.md), D132). T019 lo corrige el
+2026-10-21: el harness formatea con la herramienta del perfil tras cada turno del ejecutor (D133). T010–T012 pendientes.
+**Siguiente:** reanudar T009 (run nuevo de P001-T002) con wheel reconstruido, hijo limpio y **autorización nueva**
+con techo ([entrega de T019 §5](phase/P009-T019_FORMATEO_PERFIL.md#5-run-bb29b133-y-reanudación-de-t009)).
 [Contrato implementable](phase/P009-T001_CONTRATO_CREACION.md), decisión D116. T002 añade producto de
 carpeta/creación, sin piloto ni selección de carpeta real del usuario;
 la implementación no concede permisos de red, instalación o proveedores.
@@ -225,7 +227,7 @@ formulario de alta y lista mediante plantillas. Migración, tests y diagrama de 
 
 **Estado:** detenida el 2026-10-21 (D132), en el límite de revisiones; 6 de 7 invocaciones (piloto 15 de 60)
 ([evidencia](phase/P009-T009_PILOTO_CODEX_CLAUDE.md)). **Depende de:** T008 COMMITTED y sin trabajo pendiente;
-su reanudación, de T019.
+su reanudación, de T019 (completada, D133). `bb29b133` queda como evidencia por decisión del usuario.
 **Avance:** registro v2 con ejecutor Claude y revisor Codex sin cambios. En el run `bb29b133`, el revisor eligió
 `claude-sonnet-5-5`/`medium` con motivo, y la invocación coincide. El ejecutor implementa edición y borrado con 404,
 POST y CSRF, y pasan 11 tests y cinco de las seis validaciones. `ruff format --check` falla por una línea de
@@ -396,7 +398,9 @@ recibos guardados no se reescriben. Las operaciones en curso de creación y prep
 
 ## P009-T019 — El ejecutor sin shell puede cumplir el formato del perfil
 
-**Estado:** pendiente. **Depende de:** parada de T009 (D132); bloquea su reanudación.
+**Estado:** completada el 2026-10-21 (D133, [entrega](phase/P009-T019_FORMATEO_PERFIL.md)): por decisión del usuario,
+el harness formatea con la herramienta del perfil los archivos del contrato tras cada turno del ejecutor; `bb29b133`
+queda como evidencia. **Depende de:** parada de T009 (D132); bloqueaba su reanudación.
 **Objetivo:** que un ejecutor sin shell, como Claude con `Read`/`Edit`/`Write`/`Glob`/`Grep` (D121), pueda dejar en
 verde las validaciones de formato del perfil, o que el fallo se detecte antes de gastar correcciones que no pueden
 arreglarlo.
