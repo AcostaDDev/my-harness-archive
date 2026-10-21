@@ -137,11 +137,13 @@ web genérica, edición de credenciales/ejecutables/TOML desde la UI, agentes co
 evaluación estadística de modelos y ejecución del harness sobre este repositorio.
 **Estado:** T001–T011 y T013–T020 completadas. El Django hijo tiene cuatro tareas COMMITTED: Codex→Codex
 (D131), Codex→Claude (D134), Claude→Claude (D136) y Claude→Codex (D137), con 27 tests y las seis validaciones
-verdes en T011. Pendiente T012 (QA funcional y cierre del hijo). Incidencias, correcciones y evidencia en
+verdes en T011. En T012 pasa el QA conjunto tras aplicar la migración local con autorización HITL; el check
+queda REVISE por documentación (D138), con corrección propuesta pendiente de autorización. P001 aún sin cerrar.
+Incidencias, correcciones y evidencia en
 [NEXT_STEPS](NEXT_STEPS.md); alcance y autorizaciones en [docs/phase](phase/P009_PLAN_DJANGO.md);
 [contrato T001](phase/P009-T001_CONTRATO_CREACION.md). La siguiente tarea es P009-T012. Las invocaciones de
 proveedores reales se limitan a la [propuesta de T006](phase/P009-T006_PROPUESTA_PILOTO.md); no se reutilizan
-consentimientos anteriores. Consumo del piloto: 24 de 60; el cierre documental de P009 queda separado.
+consentimientos anteriores. Consumo del piloto: 25 de 60; el cierre documental de P009 queda separado.
 
 ## Candidatas sin fase asignada
 

@@ -180,3 +180,16 @@ criterios de parada siguen igual.
   privada en `state/bb29b133-discarded/`, y se comprueba «Django preparado».
 - Wheel del commit con T019 (`494b929`), construido, verificado con `check_distribution.py` e instalado offline en el
   venv del área con `serve` detenido.
+
+## 13. Reanudación de T012 tras la migración local pendiente
+
+2026-10-21. El primer GET del QA devuelve 500 (`no such table: core_task`): `core/0001_initial.py`
+está aceptada en Git, pero aún no aplicada a `db.sqlite3`. Se detienen ambos servicios antes de comprobar la fase,
+sin invocaciones nuevas. Las seis validaciones del perfil prueban una base de tests y la ausencia de cambios de
+migración; no aplican las migraciones nuevas a la base local de uso.
+
+El usuario autoriza en el bucle HITL «Aplicar la migración y reanudar T012»: copia privada de la SQLite Django en
+`state/t012/django-before-migrate.sqlite3`, aplicación de la migración existente mediante
+`PYTHONDONTWRITEBYTECODE=1 .venv/bin/python manage.py migrate --noinput` desde el hijo y reanudación del QA/check/cierre.
+Solo se aplica `core.0001_initial`, sin cambios de código, configuración ni SQLite del harness. El techo de T012
+sigue siendo 2 invocaciones; el acumulado antes del check, 24 de 60. Selecciones y criterios de parada intactos.

@@ -57,13 +57,20 @@ D126) el 2026-10-20. T007 detenida el 2026-10-20 (D123) y completada el 2026-10-
 COMMITTED (D131). T009 detenida el 2026-10-21 en el límite de revisiones (D132); T019 corrige la causa el mismo
 día (D133) y T009 se completa: P001-T002 del hijo COMMITTED (D134). T020 añade encolar desde los documentos con
 notas (D135). T010 se completa el mismo día: P001-T003 COMMITTED con Claude→Claude (D136). T011 completa
-P001-T004 con Claude→Codex (D137); T012 pendiente.
+P001-T004 con Claude→Codex (D137). T012 detenida tras QA correcto y check REVISE documental (D138).
 Objetivo y criterios en [ROADMAP](ROADMAP.md#p009--proyecto-django-desde-cero-y-piloto-con-cuatro-combinaciones-de-agentes),
 tareas en [NEXT_STEPS](NEXT_STEPS.md) y diseño en el [plan](phase/P009_PLAN_DJANGO.md).
 Decisión: [D115](DECISIONS.md#d115--p009-django-desde-cero-carpeta-de-proyectos-y-agentes-por-proyecto).
 Contrato de T001: [diseño implementable](phase/P009-T001_CONTRATO_CREACION.md),
 [D116](DECISIONS.md#d116--p009-t001-autoridad-de-creación-presets-por-proyecto-y-preparación-separada).
 
+- T012 detenida: primer GET 500 por `core.0001_initial` sin aplicar a la SQLite local; tras HITL, copia privada y
+  migración existente aplicada. QA conjunto en navegador correcto, dato sintético retirado, 27 tests y seis
+  validaciones verdes. Check `82cc4650`/run `400d5d48` con Claude Sonnet/medium devuelve REVISE por el nodo `R`
+  duplicado y el título incompleto del flujo; pide además consolidar dos ADR propuestas y refrescar STATE del hijo.
+  Corrección documental concreta preparada para el editor del producto; su aplicación y nuevo check esperan
+  respuesta HITL. T012 consume 1 de 2; piloto 25 de 60. P001 sigue sin READY ni cierre/tag/archivo
+  ([informe](phase/P009-T012_CIERRE_PILOTO.md), [corrección propuesta](phase/P009-T012_CORRECCION_DOCUMENTAL.md), D138).
 - T011 completada: run `6bb55757`, revisor Claude `claude-sonnet-5-5`/`medium` y ejecutor Codex
   `gpt-6-luna`/`medium` elegido con motivo. Búsqueda GET por título combinable con filtros, 27 tests y seis
   validaciones correctas; ACCEPT a la primera. Commit inglés `a2de6ad`, hijo limpio y registro v4 al cambiar solo
@@ -151,12 +158,13 @@ P008 permanece cerrada ([archivo](archive/phase-008/SUMMARY.md), D114). Este rep
 ni ejecutarse con el harness. T002–T005 usan carpetas/SQLite temporales y CLI de agentes falsas;
 sin proyectos reales del usuario ni proveedores. T005 añade herramientas Django reales, sin modificar el runtime del harness.
 
-**Siguiente:** T012, QA funcional conjunto y check/cierre/archivo de P001 del hijo. Revisor Claude
-`claude-sonnet-5-5`/`medium`; techo propio de 2 invocaciones, cuando el usuario lo pida. Las cuatro tareas están
-COMMITTED; el piloto acumula 24 de 60. Área `~/.local/share/harness-local/` con el wheel de `5ba32f8` (T020),
-verificado e instalado; hijo limpio en `a2de6ad`. Servicio detenido, sin locks ni trabajos pendientes tras T011.
-Durante la operación no se abre la SQLite viva con otro proceso SQLite (propuesta §11). El QA de T012 lanza
-`runserver` con `PYTHONDONTWRITEBYTECODE=1` (propuesta §9). Revisar el nodo `R` duplicado del Mermaid del hijo
-(evidencia T011 §4). El cierre documental de P009 y la planificación posterior del hijo quedan separados.
-Sigue pendiente aclarar en `define-project` que
-una carpeta nueva no tiene marcadores (D127).
+**Siguiente:** reanudar T012 tras respuesta HITL a la [corrección documental propuesta](phase/P009-T012_CORRECCION_DOCUMENTAL.md).
+El QA funcional ya pasó; el check `82cc4650` quedó REVISE y se conserva. Aplicar la corrección desde el editor
+confirmado del producto, sin agentes de edición, permitiría un check con la llamada restante a Claude
+`claude-sonnet-5-5`/`medium` y cierre/archivo solo si READY. No hay autorización de reanudación tras REVISE aún.
+Las cuatro tareas siguen COMMITTED; piloto 25 de 60. Área `~/.local/share/harness-local/` con el wheel de
+`5ba32f8` (T020); hijo limpio en `a2de6ad`, migración local aplicada y copia previa privada conservada.
+Servicios detenidos, cero locks y sin trabajos pendientes; SQLite íntegra. No abrir SQLite viva desde otro proceso
+(propuesta §11); runserver con `PYTHONDONTWRITEBYTECODE=1` (§9). P001 del hijo y P009 del harness siguen abiertas.
+El cierre documental de P009 y la planificación posterior del hijo quedan separados.
+Sigue pendiente aclarar en `define-project` que una carpeta nueva no tiene marcadores (D127).

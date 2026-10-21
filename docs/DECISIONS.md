@@ -148,6 +148,7 @@ tarea se leen solo las decisiones que cita; este índice sirve para buscar prece
 | [D135](#d135--p009-t020-encolar-desde-los-documentos-con-notas-adicionales) | P009-T020: encolar desde los documentos, con notas adicionales | P009 |
 | [D136](#d136--p009-t010-completada-claudeclaude-committed) | P009-T010: completada; Claude→Claude COMMITTED | P009 |
 | [D137](#d137--p009-t011-completada-claudecodex-committed) | P009-T011: completada; Claude→Codex COMMITTED | P009 |
+| [D138](#d138--p009-t012-qa-correcto-y-cierre-detenido-por-revise-documental) | P009-T012: QA correcto y cierre detenido por REVISE documental | P009 |
 
 ## D001 — Alcance local y arquitectura base
 
@@ -4182,3 +4183,23 @@ Estado: completada el 2026-10-21. Fase: P009. Petición del usuario de continuar
 - Las cuatro parejas tienen tareas COMMITTED. QA funcional conjunto y check/cierre del hijo quedan para T012;
   no se presenta el piloto como terminado. Observación documental: nodo `R` duplicado en el Mermaid de búsqueda
   y estado del hijo; revisar en T012 sin reescribir evidencia ni editar el hijo fuera del producto.
+
+## D138 — P009-T012: QA correcto y cierre detenido por REVISE documental
+
+Estado: detenida el 2026-10-21. Fase: P009. Dentro de D121 y de la propuesta §§3–6, con reanudación HITL de §13.
+[Informe y matriz](phase/P009-T012_CIERRE_PILOTO.md), [corrección propuesta](phase/P009-T012_CORRECCION_DOCUMENTAL.md).
+
+- Primer acceso del QA devuelve 500: la migración aceptada `core.0001_initial` no está aplicada a la SQLite de uso.
+  Las validaciones del perfil usan la base de tests y comprueban deriva de migraciones; no migran la base local.
+  Se detienen ambos servicios sin consumo. El usuario autoriza copia privada, aplicación de la migración existente
+  y reanudación, con el mismo techo de dos llamadas. Sin cambios de código/configuración ni SQLite del harness.
+- QA conjunto en Chrome correcto con una tarea sintética, eliminada desde la UI: alta/listado, edición,
+  estado/filtros, búsqueda combinada, escape y confirmación/cancelación/borrado. El check vuelve a pasar las seis
+  validaciones con 27 tests y JUnit completo, sobre `a2de6ad` limpio.
+- Check `82cc4650`/run `400d5d48`, Claude `claude-sonnet-5-5`/`medium`: REVISE por el nodo `R` duplicado y
+  título incompleto de `tasks.md`. Pide también consolidar dos propuestas ADR y actualizar la prosa de STATE.
+  Se respeta la parada, sin retry ni cierre. Corrección concreta lista para confirmar en el editor documental del
+  producto, sin agentes de edición y conservando los cuatro commits y el check original; espera respuesta HITL.
+- T012: 1 de 2; piloto: 25 de 60. Una llamada restante no autoriza reanudar tras REVISE sin respuesta del usuario.
+  P001 sin READY, cierre, tag ni archivo; P009 tampoco se cierra. Servicios detenidos, cero locks y sin trabajos
+  pendientes, SQLite íntegra. Las cuatro parejas COMMITTED están acreditadas, pero el piloto no está completado.
