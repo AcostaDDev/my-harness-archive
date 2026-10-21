@@ -149,6 +149,7 @@ tarea se leen solo las decisiones que cita; este índice sirve para buscar prece
 | [D136](#d136--p009-t010-completada-claudeclaude-committed) | P009-T010: completada; Claude→Claude COMMITTED | P009 |
 | [D137](#d137--p009-t011-completada-claudecodex-committed) | P009-T011: completada; Claude→Codex COMMITTED | P009 |
 | [D138](#d138--p009-t012-qa-correcto-y-cierre-detenido-por-revise-documental) | P009-T012: QA correcto y cierre detenido por REVISE documental | P009 |
+| [D139](#d139--p009-t012-completada-piloto-django-con-p001-cerrada-y-archivada) | P009-T012: completada; piloto Django con P001 cerrada y archivada | P009 |
 
 ## D001 — Alcance local y arquitectura base
 
@@ -4203,3 +4204,26 @@ Estado: detenida el 2026-10-21. Fase: P009. Dentro de D121 y de la propuesta §�
 - T012: 1 de 2; piloto: 25 de 60. Una llamada restante no autoriza reanudar tras REVISE sin respuesta del usuario.
   P001 sin READY, cierre, tag ni archivo; P009 tampoco se cierra. Servicios detenidos, cero locks y sin trabajos
   pendientes, SQLite íntegra. Las cuatro parejas COMMITTED están acreditadas, pero el piloto no está completado.
+
+## D139 — P009-T012: completada; piloto Django con P001 cerrada y archivada
+
+Estado: completada el 2026-10-21. Fase: P009. Continúa D138 tras autorización expresa «Autorizo» en el chat,
+para corregir documentos desde el producto, gastar la llamada restante y cerrar solo si READY (propuesta §14).
+[Informe y matriz](phase/P009-T012_CIERRE_PILOTO.md), [ediciones confirmadas](phase/P009-T012_CORRECCION_DOCUMENTAL.md).
+
+- Editor documental con preview/diff/hash, motivo y confirmación en tres commits ingleses: `2f23d3d` corrige
+  nodo y título del flujo; `0787bff` actualiza prosa de STATE; `47a0557` consolida D001/D002 del hijo desde las
+  propuestas aceptadas de T003/T004 y regenera su índice. Sin agentes para editar ni cambios manuales en el hijo.
+  Los cuatro commits anteriores y el primer check REVISE se conservan.
+- Check `9f9bdb44`/run `21f607d3`, Claude `claude-sonnet-5-5`/`medium`, devuelve READY sobre `47a0557` limpio;
+  los cinco criterios pasan, sin preguntas ni acciones, con 27 tests/JUnit y las seis validaciones correctas.
+  Vínculo `d61549f4668a`. Modelo reportado Sonnet; esfuerzo efectivo sin medición independiente.
+- Cierre confirmado desde UI sobre ese vínculo: `d2e45cf7`/run `99852943`, CLOSED, tag ligero `p001` sobre
+  el HEAD evaluado y commit inglés `3d105c6` (`harness: archive P001`). STATE/NEXT_STEPS se archivan por bytes,
+  con REVIEW y SUMMARY, en `docs/archive/phase-001/`. Documentos vivos renovados y ROADMAP actualizado;
+  sin sucesora ni planificación posterior. Cierre sin invocaciones de proveedor ni duplicados.
+- Se acredita el recorrido real Django desde creación UI hasta cuatro tareas COMMITTED con las cuatro parejas,
+  QA conjunto y cierre/archivo del mismo proyecto. T012 consume 2 de 2; piloto 26 de 60. No autoriza más
+  llamadas por el margen global restante ni permite comparar estadísticamente la calidad de los modelos.
+- Hijo limpio, servicios detenidos, SQLite íntegra, cero locks y ningún job pendiente. P009 del harness no se
+  cierra en esta tarea: su revisión y archivo documental son posteriores. Observaciones sin bloqueo en el informe.

@@ -42,10 +42,12 @@ salvo donde se indica. Detalle por fase en `docs/archive/phase-NNN/SUMMARY.md`.
 - **Operación** ([P006](archive/phase-006/SUMMARY.md)): wheel con UI y migraciones, `init-db`, `serve`,
   `check-config`, `metrics-backfill`, `diagnose-cli`; `scripts/dev` para desarrollo.
 - **Evidencia con proveedores reales** (consentimientos agotados): transporte de las tres CLI (D025), primer uso real
-  COMMITTED con fase cerrada (D050) y cuatro combinaciones revisor/ejecutor COMMITTED (D071).
-- **Límites**: ningún recorrido de producto completo con CLI reales; contención cooperativa sin aislamiento del sistema
-  operativo; validaciones sin hora; historial del run decodificado completo en cada lectura; `package.json` de un
-  `typescript-web` nuevo; dos avisos *low* de KaTeX; perfil Python/Django pendiente de confirmar sobre un proyecto real.
+  COMMITTED con fase cerrada (D050), cuatro combinaciones revisor/ejecutor COMMITTED (D071) y recorrido Django
+  desde creación UI hasta cuatro tareas, QA conjunto y cierre/archivo de P001 (P009-T012, D139).
+- **Límites**: contención cooperativa sin aislamiento del sistema operativo; validaciones sin hora; historial del
+  run decodificado completo en cada lectura; `package.json` de un `typescript-web` nuevo; dos avisos *low* de KaTeX.
+  Piloto de receta Django limitado a macOS arm64/Python 3.13; el perfil Python/Django declarativo sigue pendiente
+  de confirmar sobre un proyecto real. El piloto no evalúa comparativamente la calidad de modelos.
 
 
 ## Fase activa — P009 Proyecto Django desde cero y piloto con cuatro combinaciones de agentes
@@ -57,20 +59,20 @@ D126) el 2026-10-20. T007 detenida el 2026-10-20 (D123) y completada el 2026-10-
 COMMITTED (D131). T009 detenida el 2026-10-21 en el límite de revisiones (D132); T019 corrige la causa el mismo
 día (D133) y T009 se completa: P001-T002 del hijo COMMITTED (D134). T020 añade encolar desde los documentos con
 notas (D135). T010 se completa el mismo día: P001-T003 COMMITTED con Claude→Claude (D136). T011 completa
-P001-T004 con Claude→Codex (D137). T012 detenida tras QA correcto y check REVISE documental (D138).
+P001-T004 con Claude→Codex (D137). T012 se detiene tras REVISE documental (D138) y, con autorización HITL,
+completa el mismo día el QA y cierre del hijo: P001 CLOSED, tag `p001` y archivo (D139).
 Objetivo y criterios en [ROADMAP](ROADMAP.md#p009--proyecto-django-desde-cero-y-piloto-con-cuatro-combinaciones-de-agentes),
 tareas en [NEXT_STEPS](NEXT_STEPS.md) y diseño en el [plan](phase/P009_PLAN_DJANGO.md).
 Decisión: [D115](DECISIONS.md#d115--p009-django-desde-cero-carpeta-de-proyectos-y-agentes-por-proyecto).
 Contrato de T001: [diseño implementable](phase/P009-T001_CONTRATO_CREACION.md),
 [D116](DECISIONS.md#d116--p009-t001-autoridad-de-creación-presets-por-proyecto-y-preparación-separada).
 
-- T012 detenida: primer GET 500 por `core.0001_initial` sin aplicar a la SQLite local; tras HITL, copia privada y
-  migración existente aplicada. QA conjunto en navegador correcto, dato sintético retirado, 27 tests y seis
-  validaciones verdes. Check `82cc4650`/run `400d5d48` con Claude Sonnet/medium devuelve REVISE por el nodo `R`
-  duplicado y el título incompleto del flujo; pide además consolidar dos ADR propuestas y refrescar STATE del hijo.
-  Corrección documental concreta preparada para el editor del producto; su aplicación y nuevo check esperan
-  respuesta HITL. T012 consume 1 de 2; piloto 25 de 60. P001 sigue sin READY ni cierre/tag/archivo
-  ([informe](phase/P009-T012_CIERRE_PILOTO.md), [corrección propuesta](phase/P009-T012_CORRECCION_DOCUMENTAL.md), D138).
+- T012 completada tras dos bucles HITL: migración local aplicada con copia privada; QA conjunto correcto.
+  Tras el primer REVISE (D138), el editor documental confirma tres commits: flujo sin nodo duplicado, STATE
+  actualizado y dos ADR consolidadas. Check `9f9bdb44` con Claude Sonnet/medium: READY, cinco criterios, 27 tests
+  y seis validaciones verdes. Cierre `d2e45cf7`: P001 CLOSED, tag ligero `p001` sobre `47a0557`, archivo en
+  `3d105c6`, sin sucesora. T012: 2 de 2; piloto: 26 de 60; servicios detenidos y sin locks
+  ([informe](phase/P009-T012_CIERRE_PILOTO.md), [corrección aplicada](phase/P009-T012_CORRECCION_DOCUMENTAL.md), D139).
 - T011 completada: run `6bb55757`, revisor Claude `claude-sonnet-5-5`/`medium` y ejecutor Codex
   `gpt-6-luna`/`medium` elegido con motivo. Búsqueda GET por título combinable con filtros, 27 tests y seis
   validaciones correctas; ACCEPT a la primera. Commit inglés `a2de6ad`, hijo limpio y registro v4 al cambiar solo
@@ -158,13 +160,12 @@ P008 permanece cerrada ([archivo](archive/phase-008/SUMMARY.md), D114). Este rep
 ni ejecutarse con el harness. T002–T005 usan carpetas/SQLite temporales y CLI de agentes falsas;
 sin proyectos reales del usuario ni proveedores. T005 añade herramientas Django reales, sin modificar el runtime del harness.
 
-**Siguiente:** reanudar T012 tras respuesta HITL a la [corrección documental propuesta](phase/P009-T012_CORRECCION_DOCUMENTAL.md).
-El QA funcional ya pasó; el check `82cc4650` quedó REVISE y se conserva. Aplicar la corrección desde el editor
-confirmado del producto, sin agentes de edición, permitiría un check con la llamada restante a Claude
-`claude-sonnet-5-5`/`medium` y cierre/archivo solo si READY. No hay autorización de reanudación tras REVISE aún.
-Las cuatro tareas siguen COMMITTED; piloto 25 de 60. Área `~/.local/share/harness-local/` con el wheel de
-`5ba32f8` (T020); hijo limpio en `a2de6ad`, migración local aplicada y copia previa privada conservada.
-Servicios detenidos, cero locks y sin trabajos pendientes; SQLite íntegra. No abrir SQLite viva desde otro proceso
-(propuesta §11); runserver con `PYTHONDONTWRITEBYTECODE=1` (§9). P001 del hijo y P009 del harness siguen abiertas.
-El cierre documental de P009 y la planificación posterior del hijo quedan separados.
-Sigue pendiente aclarar en `define-project` que una carpeta nueva no tiene marcadores (D127).
+**Siguiente:** revisar el informe de salida y realizar el cierre/archivo documental de P009 del harness en una
+tarea separada; no se cierra en T012. T001–T020 completadas. El Django hijo tiene P001 CLOSED, cuatro tareas
+COMMITTED y ninguna fase sucesora. Piloto final: 26 de 60 invocaciones; T012 agotó sus 2 y no autoriza más llamadas.
+Área `~/.local/share/harness-local/` con wheel de `5ba32f8` (T020); hijo limpio en `3d105c6`, tag `p001` en
+`47a0557`, archivo `docs/archive/phase-001/`. Migración local aplicada y copia previa privada conservada.
+Servicio detenido, cero locks y sin trabajos pendientes; SQLite íntegra. No abrir SQLite viva desde otro proceso
+(propuesta §11). Cualquier operación posterior del hijo y planificación de otra fase requieren alcance propio.
+Observaciones sin bloqueo en el informe: alta sin redirección, texto de define-project sobre marcadores (D127)
+y la vista de P001 cerrada compara los documentos frescos con la base histórica y muestra deriva.

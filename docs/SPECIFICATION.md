@@ -72,9 +72,9 @@ run y, cuando procede, al intento exacto.
 | F17 | Distribución local | Wheel con UI y migraciones, `init-db`, `serve`, sesión local | Implementado (P006) |
 | F18 | Perfiles declarativos | Perfil de stack (preparación, tests, lint, tipos) declarado en el TOML local y confirmado por el usuario, incluido Python/Django (`pytest`, `ruff`, `mypy`) | Implementado (P008-T008, D095); ejemplo Python/Django pendiente de confirmación sobre el proyecto del usuario |
 | F19 | Instrucciones del proyecto para los agentes | `AGENTS.md` incluido en el contexto congelado de cada intento | Implementada (P008-T007, D094) |
-| F20 | Elegir carpeta de proyectos | Raíz elegida explícitamente en UI y persistida; concede al servicio crear nuevos hijos sin que la IA decida su ubicación | Implementado (P009-T002, D117), sin operación real |
+| F20 | Elegir carpeta de proyectos | Raíz elegida explícitamente en UI y persistida; concede al servicio crear nuevos hijos sin que la IA decida su ubicación | Implementado (P009-T002, D117); carpeta elegida y creación real en T007, piloto cerrado en T012 (D139) |
 | F21 | Agentes configurables por proyecto | Elegir proveedores y modelo/esfuerzo del revisor en UI; selección concreta del ejecutor a cargo del revisor | Implementado (P009-T003, D118): presets v5, selección por checkout y cambios confirmados entre tareas |
-| F22 | Preparar Django desde cero | Hijo nuevo, documentos D088, scaffold, entorno/dependencias y validaciones mediante receta confirmada | Implementado (P009-T004, D119); herramientas reales y recorrido temporal verificados en T005 (D120), sin piloto |
+| F22 | Preparar Django desde cero | Hijo nuevo, documentos D088, scaffold, entorno/dependencias y validaciones mediante receta confirmada | Implementado (P009-T004, D119); ensayo real T005 (D120) y piloto T007–T012 con P001 cerrada/archivada (D139) |
 
 Modos por checkout: **observación** (indexa un harness anterior) y **gestionado** (el motor nuevo controla). Nunca
 escriben dos motores sobre el mismo checkout.
@@ -260,4 +260,8 @@ Contrato de diseño completado en T001: [D116](DECISIONS.md#d116--p009-t001-auto
 y [detalle](phase/P009-T001_CONTRATO_CREACION.md). La autoridad UI para hijos nuevos se separa del registro
 existente bajo raíces TOML; retirar el padre no revoca proyectos ya registrados. Presets y receta se diseñan
 como v5 optativa, conservando formatos previos. La preparación posterior al commit documental habilita los
-ejecutables del entorno; antes se bloquean tareas y checks que los necesitan. La carpeta y el alta del hijo están implementadas en T002 (D117); los presets en T003 (D118). Receta implementada en T004 (D119); T005 acredita herramientas reales y ensayo temporal completo (D120). El piloto sigue pendiente.
+ejecutables del entorno; antes se bloquean tareas y checks que los necesitan. La carpeta y el alta del hijo están
+implementadas en T002 (D117); los presets en T003 (D118). Receta implementada en T004 (D119); T005 acredita
+herramientas reales y ensayo temporal completo (D120). T007–T012 acreditan el piloto real: cuatro tareas COMMITTED
+con las cuatro parejas, QA conjunto y P001 cerrada/archivada (D139); P009 del harness mantiene su cierre documental
+separado.

@@ -135,15 +135,14 @@ y desarrollar cuatro tareas del mismo proyecto alternando revisor/ejecutor, con 
 **Fuera de alcance:** Despliegue, autenticación de usuarios, API REST, frontend separado, base externa, terminal
 web genérica, edición de credenciales/ejecutables/TOML desde la UI, agentes con acceso a toda la carpeta padre,
 evaluación estadística de modelos y ejecución del harness sobre este repositorio.
-**Estado:** T001–T011 y T013–T020 completadas. El Django hijo tiene cuatro tareas COMMITTED: Codex→Codex
-(D131), Codex→Claude (D134), Claude→Claude (D136) y Claude→Codex (D137), con 27 tests y las seis validaciones
-verdes en T011. En T012 pasa el QA conjunto tras aplicar la migración local con autorización HITL; el check
-queda REVISE por documentación (D138), con corrección propuesta pendiente de autorización. P001 aún sin cerrar.
-Incidencias, correcciones y evidencia en
-[NEXT_STEPS](NEXT_STEPS.md); alcance y autorizaciones en [docs/phase](phase/P009_PLAN_DJANGO.md);
-[contrato T001](phase/P009-T001_CONTRATO_CREACION.md). La siguiente tarea es P009-T012. Las invocaciones de
-proveedores reales se limitan a la [propuesta de T006](phase/P009-T006_PROPUESTA_PILOTO.md); no se reutilizan
-consentimientos anteriores. Consumo del piloto: 25 de 60; el cierre documental de P009 queda separado.
+**Estado:** T001–T020 completadas. El Django hijo tiene cuatro tareas COMMITTED: Codex→Codex (D131),
+Codex→Claude (D134), Claude→Claude (D136) y Claude→Codex (D137). T012 completa el QA conjunto y, tras las
+correcciones documentales autorizadas del REVISE (D138), obtiene READY y cierra P001 (D139): 27 tests y seis
+validaciones verdes, tag ligero `p001` sobre `47a0557`, archivo en `3d105c6` y sin sucesora.
+Incidencias, correcciones y evidencia en [NEXT_STEPS](NEXT_STEPS.md) y el [informe de salida](phase/P009-T012_CIERRE_PILOTO.md);
+alcance y autorizaciones en el [plan](phase/P009_PLAN_DJANGO.md) y la [propuesta](phase/P009-T006_PROPUESTA_PILOTO.md).
+Consumo final: 26 de 60; T012 agotó sus dos llamadas. Siguiente: revisión y cierre/archivo documental de P009
+del harness, en otra tarea. Esta fase aún no se declara cerrada ni se archiva aquí.
 
 ## Candidatas sin fase asignada
 

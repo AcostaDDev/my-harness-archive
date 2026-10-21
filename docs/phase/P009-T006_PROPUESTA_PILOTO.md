@@ -193,3 +193,13 @@ El usuario autoriza en el bucle HITL «Aplicar la migración y reanudar T012»: 
 `PYTHONDONTWRITEBYTECODE=1 .venv/bin/python manage.py migrate --noinput` desde el hijo y reanudación del QA/check/cierre.
 Solo se aplica `core.0001_initial`, sin cambios de código, configuración ni SQLite del harness. El techo de T012
 sigue siendo 2 invocaciones; el acumulado antes del check, 24 de 60. Selecciones y criterios de parada intactos.
+
+## 14. Reanudación de T012 tras REVISE documental
+
+2026-10-21. El usuario autoriza expresamente en el chat corregir desde el editor del producto el diagrama,
+STATE y las dos decisiones propuestas del hijo, repetir el check con la única llamada restante a Claude y
+cerrar P001 solo si obtiene READY. Aplica la [corrección concreta](P009-T012_CORRECCION_DOCUMENTAL.md).
+No se usan agentes para editar. Los cuatro commits y el check REVISE original se conservan; cada edición
+pasa por preview/diff/hash y commit del producto, sin tocar el checkout a mano ni la SQLite/TOML.
+Techo de T012 intacto: 2 invocaciones (1 consumida); piloto 25 de 60 antes de reanudar. Revisor Sonnet/medium,
+área, hashes y criterios de parada sin cambios. No incluye planificar otra fase ni cerrar P009 del harness.

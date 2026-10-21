@@ -242,8 +242,9 @@ de la receta Django no heredan ese valor: reciben `HOME`/`TMPDIR` propios dentro
 
 ## 10. Límites conocidos
 
-- Ningún recorrido de producto completo con CLI reales; D071 comprobó las cuatro combinaciones revisor/ejecutor con una
-  tarea sintética. Los consentimientos de proveedor están agotados.
+- P009-T012 acredita un recorrido real Django desde creación UI hasta cuatro tareas con las cuatro parejas,
+  QA y cierre/archivo (D139); evidencia limitada a macOS arm64/Python 3.13. T012 agotó sus dos llamadas y no
+  autoriza nuevas operaciones con proveedores.
 - Contención cooperativa (POSIX, rutas, sandbox de cada CLI); sin aislamiento del sistema operativo (D064, D065).
 - Las validaciones no guardan su hora; la lectura de un run decodifica su historial completo.
 - Un proyecto `typescript-web` nuevo no tiene `package.json` y el ejecutor no puede crearlo.

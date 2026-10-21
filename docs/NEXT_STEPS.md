@@ -18,10 +18,11 @@ nueva y techo 13, T009 se completa el mismo día: P001-T002 COMMITTED en `2f2b13
 T020 (encolar desde los documentos, con notas) se hace antes de T010 (D135). T010 se completa el mismo día: run
 `beaf4528`, P001-T003 COMMITTED en `882af9b`, 22 tests y seis validaciones correctas con Claude→Claude (D136).
 T011 se completa el mismo día: run `6bb55757`, P001-T004 COMMITTED en `a2de6ad` con Claude→Codex,
-27 tests y seis validaciones correctas (D137). T012 detenida tras QA correcto y REVISE documental (D138).
-**Siguiente:** reanudar T012 tras respuesta HITL a la corrección documental del check REVISE. Wheel de T020
-instalado; hijo limpio y migración local aplicada tras autorización. Piloto: 25 de 60 invocaciones; las cuatro
-tareas COMMITTED. Queda 1 de las 2 llamadas de T012; no repetir el check sin nueva autorización.
+27 tests y seis validaciones correctas (D137). Tras el REVISE documental de T012 (D138), el usuario autoriza
+la corrección y reanudación: P001 del hijo CLOSED, tag y archivo completos (D139).
+**Siguiente:** revisar el informe de salida y cerrar/archivar documentalmente P009 del harness en una tarea
+separada. T001–T020 completadas. Wheel de T020 instalado; hijo limpio en `3d105c6`, P001 CLOSED y sin sucesora.
+Piloto: 26 de 60 invocaciones; T012 consumió sus 2, sin autorización para más llamadas.
 [Contrato implementable](phase/P009-T001_CONTRATO_CREACION.md), decisión D116. T002 añade producto de
 carpeta/creación, sin piloto ni selección de carpeta real del usuario;
 la implementación no concede permisos de red, instalación o proveedores.
@@ -288,15 +289,15 @@ piloto: 24 de 60. QA funcional en navegador y revisión del nodo `R` duplicado e
 
 ## P009-T012 — Cierre del piloto y revisión de salida de P009
 
-**Estado:** detenida el 2026-10-21 tras check REVISE (D138,
+**Estado:** completada el 2026-10-21 tras autorización HITL (D139,
 [informe](phase/P009-T012_CIERRE_PILOTO.md)). **Depende de:** T008–T011 COMMITTED (cumplido).
-**Resultado parcial:** QA funcional conjunto correcto tras resolver por HITL la migración local pendiente
-(copia privada y aplicación de `core.0001_initial`, sin cambiar código). Las seis validaciones pasan con 27 tests.
-Check `82cc4650`, run `400d5d48`, con Claude Sonnet/medium: REVISE por nodo `R` duplicado y título del flujo;
-pide consolidar las dos ADR propuestas y refrescar STATE del hijo. Servicios detenidos, hijo limpio y sin locks;
-no READY, cierre, tag ni archivo. T012: 1 de 2; piloto: 25 de 60.
-**Reanudación:** [corrección concreta](phase/P009-T012_CORRECCION_DOCUMENTAL.md) mediante editor documental del
-producto, sin agentes de edición; espera respuesta HITL. Repetir check con la llamada restante y cerrar solo si READY.
+**Resultado:** migración local aplicada con copia previa tras el primer fallo; QA funcional conjunto correcto.
+Primer check REVISE documental conservado (D138). Tras nuevo HITL, tres ediciones confirmadas desde el producto
+corrigen flujo, STATE y dos ADR. Check `9f9bdb44`, run `21f607d3`, con Claude Sonnet/medium: READY,
+cinco criterios y seis validaciones verdes con 27 tests. Cierre `d2e45cf7`, run `99852943`: P001 CLOSED,
+tag ligero `p001` sobre `47a0557` y commit de archivo `3d105c6`; originales archivados por bytes, sin sucesora.
+Matriz de las cuatro parejas, métricas, incidencias y límites documentados. Hijo limpio, servicios detenidos,
+SQLite íntegra, cero locks y sin trabajos pendientes. T012: 2 de 2; piloto: 26 de 60. P009 no se cierra aquí.
 **Objetivo:** Acreditar que el mismo Django soporta el cambio de agentes durante su desarrollo y un cierre completo.
 **Alcance:** QA funcional en navegador, validaciones finales y check/cierre/archivo de P001 del hijo con autorización
 vigente; resumen de cuatro tareas, incidencias y métricas. No cerrar P009 del harness en esta misma tarea.
