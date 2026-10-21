@@ -135,13 +135,13 @@ y desarrollar cuatro tareas del mismo proyecto alternando revisor/ejecutor, con 
 **Fuera de alcance:** Despliegue, autenticación de usuarios, API REST, frontend separado, base externa, terminal
 web genérica, edición de credenciales/ejecutables/TOML desde la UI, agentes con acceso a toda la carpeta padre,
 evaluación estadística de modelos y ejecución del harness sobre este repositorio.
-**Estado:** T001–T010 y T013–T020 completadas. El Django hijo tiene tres tareas COMMITTED: Codex→Codex (D131),
-Codex→Claude (D134) y Claude→Claude (D136), con 22 tests y las seis validaciones verdes en T010. Pendientes T011
-(Claude→Codex, búsqueda) y T012 (QA funcional y cierre del hijo). Incidencias, correcciones y evidencia en
+**Estado:** T001–T011 y T013–T020 completadas. El Django hijo tiene cuatro tareas COMMITTED: Codex→Codex
+(D131), Codex→Claude (D134), Claude→Claude (D136) y Claude→Codex (D137), con 27 tests y las seis validaciones
+verdes en T011. Pendiente T012 (QA funcional y cierre del hijo). Incidencias, correcciones y evidencia en
 [NEXT_STEPS](NEXT_STEPS.md); alcance y autorizaciones en [docs/phase](phase/P009_PLAN_DJANGO.md);
-[contrato T001](phase/P009-T001_CONTRATO_CREACION.md). La siguiente tarea es P009-T011. Las invocaciones de
+[contrato T001](phase/P009-T001_CONTRATO_CREACION.md). La siguiente tarea es P009-T012. Las invocaciones de
 proveedores reales se limitan a la [propuesta de T006](phase/P009-T006_PROPUESTA_PILOTO.md); no se reutilizan
-consentimientos anteriores. Consumo del piloto: 21 de 60; el cierre documental de P009 queda separado.
+consentimientos anteriores. Consumo del piloto: 24 de 60; el cierre documental de P009 queda separado.
 
 ## Candidatas sin fase asignada
 

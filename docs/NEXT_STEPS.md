@@ -17,8 +17,10 @@ shell, no logra cumplir `ruff format` ([evidencia](phase/P009-T009_PILOTO_CODEX_
 nueva y techo 13, T009 se completa el mismo día: P001-T002 COMMITTED en `2f2b13f` (D134). A petición del usuario,
 T020 (encolar desde los documentos, con notas) se hace antes de T010 (D135). T010 se completa el mismo día: run
 `beaf4528`, P001-T003 COMMITTED en `882af9b`, 22 tests y seis validaciones correctas con Claude→Claude (D136).
-T011–T012 pendientes.
-**Siguiente:** T011 (Claude→Codex), P001-T004, cuando el usuario lo pida. Wheel de T020 instalado; hijo limpio.
+T011 se completa el mismo día: run `6bb55757`, P001-T004 COMMITTED en `a2de6ad` con Claude→Codex,
+27 tests y seis validaciones correctas (D137). T012 pendiente.
+**Siguiente:** T012, QA conjunto y cierre de P001 del hijo, cuando el usuario lo pida. Wheel de T020 instalado;
+hijo limpio. Piloto: 24 de 60 invocaciones; las cuatro tareas COMMITTED.
 [Contrato implementable](phase/P009-T001_CONTRATO_CREACION.md), decisión D116. T002 añade producto de
 carpeta/creación, sin piloto ni selección de carpeta real del usuario;
 la implementación no concede permisos de red, instalación o proveedores.
@@ -266,7 +268,13 @@ piloto: 21 de 60. QA funcional en navegador pendiente de T012.
 
 ## P009-T011 — Piloto: Claude revisor → Codex ejecutor
 
-**Estado:** pendiente. **Depende de:** T010 COMMITTED y sin trabajo pendiente.
+**Estado:** completada el 2026-10-21 (D137, [evidencia](phase/P009-T011_PILOTO_CLAUDE_CODEX.md)).
+**Resultado:** registro v4 al cambiar solo el ejecutor a Codex; revisor Claude Sonnet/medium intacto. Run
+`6bb55757`, ejecutor Luna/medium elegido por el revisor con motivo. Búsqueda GET combinada con filtros, ORM y
+escape, mensajes sin resultados y cinco pruebas nuevas; 27 tests y seis validaciones correctas, ACCEPT a la primera.
+Commit `a2de6ad` en inglés gracias al título congelado desde notas del selector; checkout limpio. T011: 3 de 7;
+piloto: 24 de 60. QA funcional en navegador y revisión del nodo `R` duplicado en el Mermaid del hijo pendientes de T012.
+**Depende de:** T010 COMMITTED y sin trabajo pendiente.
 **Objetivo:** Buscar tareas por título y verificar el recorrido completo (P001-T004).
 **Alcance:** búsqueda GET combinable con filtros, sin resultados y tests de integración de alta/edición/estado/borrado.
 **Rutas permitidas:** `docs/phase/**`; cambios del hijo solo mediante su contrato gestionado confirmado.

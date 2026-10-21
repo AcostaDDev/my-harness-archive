@@ -147,6 +147,7 @@ tarea se leen solo las decisiones que cita; este índice sirve para buscar prece
 | [D134](#d134--p009-t009-completada-codexclaude-committed) | P009-T009: completada; Codex→Claude COMMITTED | P009 |
 | [D135](#d135--p009-t020-encolar-desde-los-documentos-con-notas-adicionales) | P009-T020: encolar desde los documentos, con notas adicionales | P009 |
 | [D136](#d136--p009-t010-completada-claudeclaude-committed) | P009-T010: completada; Claude→Claude COMMITTED | P009 |
+| [D137](#d137--p009-t011-completada-claudecodex-committed) | P009-T011: completada; Claude→Codex COMMITTED | P009 |
 
 ## D001 — Alcance local y arquitectura base
 
@@ -4163,3 +4164,21 @@ Estado: completada el 2026-10-21. Fase: P009. Petición del usuario de continuar
 - El mensaje automático del commit toma el título congelado en español. Consultado después de confirmarlo, el
   usuario elige conservar ese commit y su evidencia y aplicar el inglés al commit de esta sesión en `my_harness`.
   No se reescriben historiales. T011–T012 pendientes; el piloto todavía no está terminado.
+
+## D137 — P009-T011: completada; Claude→Codex COMMITTED
+
+Estado: completada el 2026-10-21. Fase: P009. Petición del usuario de continuar, dentro de D121 y de la propuesta
+§§3–6. [Evidencia saneada](phase/P009-T011_PILOTO_CLAUDE_CODEX.md).
+
+- Mismo wheel instalado de T020. Desde Ajustes, registro v4 al cambiar solo el ejecutor a Codex con el catálogo
+  D121; revisor Claude `claude-sonnet-5-5`/`medium` intacto. Proyecto, checkout e historial conservados.
+- Run `6bb55757`, P001-T004, desde el selector documental. Notas del usuario exigen título inglés; el planificador
+  congela `Search tasks by title`, del que deriva el mensaje de commit, sin modificar el documento ni ampliar
+  permisos. El revisor elige `gpt-6-luna`/`medium` con motivo y el argv coincide. Claude reporta Sonnet en sus
+  streams; Codex no reporta modelo independiente. El esfuerzo efectivo tampoco se mide independientemente.
+- Búsqueda GET por título con ORM y escape, combinable con filtros, estado sin resultados y flujo documentado.
+  Cinco tests nuevos; 27 tests y seis validaciones correctas. ACCEPT a la primera, sin hallazgos ni concesiones.
+  Commit `a2de6ad` confirmado desde la UI, mensaje inglés; COMMITTED y checkout limpio. T011: 3 de 7; piloto: 24 de 60.
+- Las cuatro parejas tienen tareas COMMITTED. QA funcional conjunto y check/cierre del hijo quedan para T012;
+  no se presenta el piloto como terminado. Observación documental: nodo `R` duplicado en el Mermaid de búsqueda
+  y estado del hijo; revisar en T012 sin reescribir evidencia ni editar el hijo fuera del producto.
