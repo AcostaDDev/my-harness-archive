@@ -15,6 +15,7 @@ hitos H0–H6 del backlog original; la definición inicial está en [archive/pha
 | P007 | Agentes configurables e interfaz de producto | completada (2026-10-15) | [phase-007](archive/phase-007/SUMMARY.md) |
 | P008 | Contrato documental unificado, cierre de fase e importación de proyectos | completada (2026-10-19) | [phase-008](archive/phase-008/SUMMARY.md) |
 | P009 | Proyecto Django desde cero y piloto con cuatro combinaciones de agentes | completada (2026-10-21) | [phase-009](archive/phase-009/SUMMARY.md) |
+| P010 | Consolidación de la primera versión local | planificada (2026-10-21), sin implementar | [plan](phase/P010_PLAN_CONSOLIDACION.md) |
 
 ## P001 — Contratos y prueba de viabilidad
 
@@ -146,12 +147,42 @@ Consumo final: 26 de 60; T012 agotó sus dos llamadas. **Completada y archivada 
 [archivo](archive/phase-009/SUMMARY.md)), tras revisar la salida de T012. Cierre manual del harness separado
 del cierre gestionado de P001 del hijo; sin fase sucesora ni ampliación de consentimientos.
 
+## P010 — Consolidación de la primera versión local
+
+**Objetivo:** Resolver las carencias conocidas de arranque TypeScript y consulta de runs, aclarar dos puntos de la
+interfaz y cerrar una primera versión local con documentación, paquete y evidencia de aceptación coherentes.
+**Criterios de salida:**
+
+- Un proyecto `typescript-web` nuevo puede obtener su `package.json` inicial mediante un flujo confirmado y
+  recuperable, sin desproteger manifiestos frente al ejecutor normal ni sobrescribir proyectos existentes.
+- Las vistas de runs usan lecturas acotadas sin decodificar el historial completo; se conservan trazabilidad,
+  paginación, recuperación y lectura de los formatos históricos, sin reescribir snapshots congelados.
+- Definir un proyecto nuevo explica los marcadores opcionales; ver una fase cerrada distingue su evidencia
+  histórica de los documentos vivos renovados, sin ocultar deriva real ni alterar el resultado del check.
+- Documentación de instalación, versiones admitidas y alcance soportado contrastados con código y evidencia;
+  capacidades pendientes y límites identificados. No se presume versión semántica `1.0.0` ni publicación.
+- Los trece criterios globales de SPECIFICATION §10 tienen una matriz de evidencia y dictamen explícito;
+  ningún incumplimiento del alcance declarado se presenta como completo por el cierre de fases anteriores.
+- La evidencia real de A/B y del perfil Python/Django declarativo queda diferenciada de la evidencia sintética
+  y de la receta Django. Hay una propuesta complementaria y una decisión explícita sobre el alcance soportado;
+  cualquier ejecución real requiere consentimiento propio y conserva su resultado o su condición pendiente.
+- Checks offline pertinentes, QA y verificación del wheel final acreditados, con revisión de salida y límites.
+  El cierre documental de P010 y de la primera versión se hace después del dictamen, sin operar este repositorio
+  con el harness, crear tag o publicar por efecto de esta planificación.
+
+**Dependencias:** P009; D088, D095, D122, D126, D139, D140 y D141; SPECIFICATION §§9–11.
+**Fuera de alcance:** Hora de cada validación, avisos *low* de KaTeX, POST→redirect→GET del Django hijo,
+rediseño general de UI, App Server/Agent SDK, `project.yaml`, nube, multiusuario, aislamiento del sistema operativo,
+publicación y ejecución del harness sobre este repositorio. Sin ampliación de compatibilidad CLI no caracterizada.
+**Estado:** planificada el 2026-10-21 por aceptación de la propuesta del usuario, con encargo limitado a documentación.
+T001–T010 pendientes. [Plan](phase/P010_PLAN_CONSOLIDACION.md), [tareas](NEXT_STEPS.md) y
+[D141](DECISIONS.md#d141--p010-consolidación-de-la-primera-versión-local).
+
 ## Candidatas sin fase asignada
 
-- Observaciones de P009, sin bloqueo del piloto: alta Django sin POST→redirect→GET; aclarar los marcadores
-  opcionales de define-project en una carpeta nueva; revisar la presentación de deriva documental al ver una
-  fase cerrada, cuyos documentos vivos ya se renovaron. [Contexto y límites](archive/phase-009/REVIEW.md).
-- Pilotos adicionales después del Django de P009; cada operación real conserva propuesta y consentimiento propios.
-- `package.json` inicial de un proyecto `typescript-web` nuevo (límite de E4); revisar tras los perfiles de P008.
-- Hora de cada validación (cambia el formato del historial) y lectura del run sin decodificar el historial completo.
+- Alta Django sin POST→redirect→GET, observación sin bloqueo del piloto y propia del hijo;
+  [contexto y límites](archive/phase-009/REVIEW.md). Los otros dos ajustes de interfaz pasan a P010.
+- Pilotos adicionales fuera de la propuesta complementaria de P010-T008; cada operación real conserva
+  propuesta y consentimiento propios. P010 no inicia otra fase del Django de P009.
+- Hora de cada validación (cambia el formato del historial).
 - Avisos *low* de KaTeX en Mermaid 11; App Server o Agent SDK; `project.yaml` portable.

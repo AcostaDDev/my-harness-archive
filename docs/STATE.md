@@ -54,11 +54,17 @@ salvo donde se indica. Detalle por fase en `docs/archive/phase-NNN/SUMMARY.md`; 
   Piloto de receta Django limitado a macOS arm64/Python 3.13; el perfil Python/Django declarativo sigue pendiente
   de confirmar sobre un proyecto real. El piloto no evalúa comparativamente la calidad de modelos.
   Observaciones de P009: alta sin redirección, texto de marcadores de define-project y presentación de deriva
-  tras cerrar; candidatas en ROADMAP.
+  tras cerrar; consolidación planificada en P010 y aplazamientos en ROADMAP.
 
 ## Fase activa
 
-Sin fase activa ni sucesora planificada. P009 cerrada y archivada documentalmente el 2026-10-21
+**P010 — Consolidación de la primera versión local. Planificada, sin implementación iniciada.**
+El usuario acepta la propuesta el 2026-10-21 y solicita únicamente documentar la nueva fase
+([D141](DECISIONS.md#d141--p010-consolidación-de-la-primera-versión-local),
+[plan](phase/P010_PLAN_CONSOLIDACION.md), [tareas](NEXT_STEPS.md)). Diez tareas pendientes.
+La petición actual autoriza solo esta planificación documental; no su ejecución.
+
+P009 cerrada y archivada documentalmente el 2026-10-21
 ([resumen](archive/phase-009/SUMMARY.md), [revisión](archive/phase-009/REVIEW.md),
 [D140](DECISIONS.md#d140--cierre-documental-manual-de-p009)). Sus veinte tareas y siete criterios de salida
 están completos en el alcance acreditado. Originales conservados por bytes y referencias vigentes reubicadas.
@@ -67,5 +73,8 @@ El Django hijo conserva P001 CLOSED, cuatro tareas COMMITTED, tag `p001` sobre `
 Última comprobación operativa en T012: servicios detenidos, cero locks y sin jobs pendientes; no se repite aquí.
 Este repositorio sigue sin registrarse ni ejecutarse con el harness; cierre manual sin check READY ni tag propio.
 
-**Siguiente:** el usuario elige la próxima prioridad entre las [candidatas](ROADMAP.md#candidatas-sin-fase-asignada)
-o define otra. No hay tareas aprobadas ni operaciones del hijo autorizadas por este cierre.
+**Siguiente:** P010-T001, contrato de las correcciones y criterios de cierre, cuando se solicite ejecutar la fase.
+Prioridades: arranque `typescript-web` con `package.json`, consultas acotadas de runs, marcadores de definición,
+presentación de fases cerradas, documentación y evidencia de aceptación. Los límites actuales de la base acumulada
+siguen vigentes hasta implementar y verificar cada entrega. La validación real complementaria se concreta en T008;
+no se da por realizada ni autorizada. Sin nueva fase del Django hijo ni ampliación de consentimientos de P009.

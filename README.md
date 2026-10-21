@@ -9,7 +9,9 @@ usan a través de las CLI de Codex y Claude Code con tu propia suscripción.
 
 Fases P001–P008 completadas, incluido el contrato documental unificado, cierre de fase e importación de proyectos.
 P009 completada y [archivada](docs/archive/phase-009/SUMMARY.md): Django creado desde cero desde la UI,
-cuatro combinaciones de agentes y primera fase del hijo cerrada. Sin fase sucesora planificada.
+cuatro combinaciones de agentes y primera fase del hijo cerrada.
+P010, [consolidación de la primera versión local](docs/phase/P010_PLAN_CONSOLIDACION.md), está planificada;
+sus diez tareas siguen pendientes y aún no se ha iniciado la implementación.
 Detalle en [ROADMAP](docs/ROADMAP.md) y
 [STATE](docs/STATE.md). Verificación offline con datos sintéticos; el uso con proveedores reales se ha comprobado
 en ejecuciones puntuales autorizadas.

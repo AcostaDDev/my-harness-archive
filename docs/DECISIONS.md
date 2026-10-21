@@ -151,6 +151,7 @@ tarea se leen solo las decisiones que cita; este índice sirve para buscar prece
 | [D138](#d138--p009-t012-qa-correcto-y-cierre-detenido-por-revise-documental) | P009-T012: QA correcto y cierre detenido por REVISE documental | P009 |
 | [D139](#d139--p009-t012-completada-piloto-django-con-p001-cerrada-y-archivada) | P009-T012: completada; piloto Django con P001 cerrada y archivada | P009 |
 | [D140](#d140--cierre-documental-manual-de-p009) | Cierre documental manual de P009 | P009 |
+| [D141](#d141--p010-consolidación-de-la-primera-versión-local) | P010: consolidación de la primera versión local | P010 |
 
 ## D001 — Alcance local y arquitectura base
 
@@ -4250,3 +4251,29 @@ Estado: cerrada y archivada el 2026-10-21 por la continuación solicitada por el
 - Las observaciones de alta sin redirección, marcadores de define-project y presentación de deriva de fase
   cerrada quedan como candidatas sin fase. No se corrigen en este cierre ni se añaden migraciones automáticas.
   No cambian código, esquema, API, flujos, configuración global o consentimientos. Sin push ni publicación.
+
+## D141 — P010: consolidación de la primera versión local
+
+Estado: propuesta aceptada por el usuario el 2026-10-21; fase planificada, sin implementación. Fase: P010.
+El encargo es «Crea únicamente la documentación de la nueva fase. (Acepto tu propuesta)».
+[Plan](phase/P010_PLAN_CONSOLIDACION.md), [tareas](NEXT_STEPS.md) y [criterios](ROADMAP.md#p010--consolidación-de-la-primera-versión-local).
+
+- Tras P001–P009, se acota una fase de consolidación: `package.json` inicial de `typescript-web`, lecturas de runs
+  sin decodificación completa, marcadores opcionales de definición, presentación de deriva de fases cerradas,
+  documentación de instalación/compatibilidad y contraste de los criterios globales de aceptación.
+- Las correcciones técnicas se diseñan en T001; esta decisión fija resultados y restricciones, sin dar por elegidos
+  una receta TypeScript, tablas, migraciones, índices, formatos o versiones nuevos. La paridad documental se hace
+  al implementar, conservando snapshots, recuperación y protecciones de los manifiestos.
+- Una matriz relacionará los trece criterios de SPECIFICATION §10 con evidencia y límites. El cierre de las fases
+  anteriores no sustituye a esa revisión ni acredita por sí solo la primera versión. «Primera versión local»
+  describe un alcance de producto; no cambia automáticamente `0.1.0`, crea un tag ni publica el paquete.
+- La validación real complementaria de A/B y del perfil Python/Django declarativo se prepara como propuesta
+  concreta en T008. Antes del cierre se decidirá explícitamente si se ejecuta o se mantiene como límite del
+  alcance soportado; no se confunde la receta Django de P009 con el perfil de D095. Una operación real conserva
+  consentimiento propio; aceptar el plan no lo concede. No se obliga a repetir la matriz de cuatro parejas.
+- Se aplazan la hora de validaciones, KaTeX y el POST→redirect→GET del Django hijo; continúan fuera de alcance
+  App Server/SDK, `project.yaml`, nube, multiusuario, aislamiento físico y publicación. P009 y sus snapshots
+  permanecen intactos; no se inicia otra fase del hijo.
+- Esta entrega cambia solo documentación. No autoriza implementar tareas, lanzar agentes/proveedores o smokes,
+  instalar, levantar servicios, modificar configuración global, hacer commits, push o publicar. La siguiente
+  tarea es P010-T001 cuando el usuario solicite ejecutar el plan; no se usa el harness sobre este repositorio.
