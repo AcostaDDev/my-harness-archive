@@ -43,7 +43,7 @@ def post(http, path, body, key=None, status=200):
 def drafts():
     result = dict(DRAFTS)
     task = result['docs/NEXT_STEPS.md'].split('## P001-T001')[1]
-    task = '## P001-T001' + task.replace('`app/**`', '`templates/**`').replace(
+    task = '## P001-T001' + task.replace('`app/**`', '`templates/`').replace(
         '`test-runner check`', '`pytest --junitxml=reports/pytest.xml`')
     result['docs/NEXT_STEPS.md'] = result['docs/NEXT_STEPS.md'].split('## P001-T001')[0] + '\n'.join(
         task.replace('P001-T001', f'P001-T00{i}') for i in range(1, 5))
@@ -215,7 +215,7 @@ def test_new_child_definition_recipe_four_pairs_restart_and_phase_closure(journe
             script.write_text(json.dumps({
                 'planner': {'task_id': task_id, 'phase_id': 'P001', 'title': 'Synthetic increment',
                     'objective': 'Preserve the Django scaffold', 'executor_prompt': 'Apply the synthetic increment',
-                    'allowed_paths': ['templates/**'], 'forbidden_paths': [],
+                    'allowed_paths': ['templates/'], 'forbidden_paths': [],
                     'acceptance_criteria': ['Synthetic behavior is present.'], 'validation_commands': [],
                     'executor_selection': {'model': 'synthetic-executor', 'effort': 'medium',
                                            'reason': f'Synthetic reviewer choice for {task_id}'}},
@@ -226,6 +226,7 @@ def test_new_child_definition_recipe_four_pairs_restart_and_phase_closure(journe
             job = post(http, BASE + '/runs', body, task_id, 202)
             accepted = run(job)
             assert accepted.status == 'ACCEPTANCE_READY'
+            assert json.loads(accepted.history.task_json)['allowed_paths'] == ['templates/**']  # D129
             attempts = accepted.history.attempts
             assert [a.request.role for a in attempts] == ['planner', 'executor', 'reviewer']
             assert attempts[1].request.selection.reason.endswith(task_id)

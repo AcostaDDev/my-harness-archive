@@ -76,6 +76,7 @@ def task_contract(context: ProjectContext, data: object, task_id: str, phase_id:
             raise ContractError(f"Invalid task {field}")
     if not data["acceptance_criteria"]:
         raise ContractError("Task requires acceptance criteria")
+    data = {**data, **{field: directory_patterns(data[field]) for field in ("allowed_paths", "forbidden_paths")}}
     data = harness_owned_paths(context, data, task_id)
     for path in data["allowed_paths"] + data["forbidden_paths"]:
         try:
@@ -92,6 +93,13 @@ def task_contract(context: ProjectContext, data: object, task_id: str, phase_id:
             raise ContractError(f"Task allowed path is also forbidden: {allowed}")
     executor_selection(context, data.get("executor_selection"))
     return freeze(data)
+
+
+def directory_patterns(paths: list[str]) -> list[str]:
+    """P009-T017 (D129): `core/` names a directory, but fnmatch never matches a file against it. It is frozen as
+    `core/**` so the contract, the executor and the path policy read the same scope. Idempotent; contracts frozen
+    before keep their bytes and their literal reading."""
+    return [path + "**" if path.endswith("/") else path for path in paths]
 
 
 RECONCILE_TASK = re.compile(r".+-RECONCILE-\d+")

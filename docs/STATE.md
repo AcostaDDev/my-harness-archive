@@ -52,13 +52,17 @@ salvo donde se indica. Detalle por fase en `docs/archive/phase-NNN/SUMMARY.md`.
 **Estado:** T001–T005 completadas el 2026-10-19; T006 (propuesta autorizada, D121), T013 (CLI caracterizadas,
 D122), T014 (definición Codex sin Git, D124), T016 (suite pytest rápida, D125) y T015 (wheel verificado con D088,
 D126) el 2026-10-20. T007 detenida el 2026-10-20 (D123) y completada el 2026-10-21 (D127). T008 detenida el
-2026-10-21 en la revisión (D128); T017 la desbloquea. T009–T012 pendientes.
+2026-10-21 en la revisión (D128). T017 completada el 2026-10-21 (D129) y la desbloquea. T009–T012 pendientes.
 Objetivo y criterios en [ROADMAP](ROADMAP.md#p009--proyecto-django-desde-cero-y-piloto-con-cuatro-combinaciones-de-agentes),
 tareas en [NEXT_STEPS](NEXT_STEPS.md) y diseño en el [plan](phase/P009_PLAN_DJANGO.md).
 Decisión: [D115](DECISIONS.md#d115--p009-django-desde-cero-carpeta-de-proyectos-y-agentes-por-proyecto).
 Contrato de T001: [diseño implementable](phase/P009-T001_CONTRATO_CREACION.md),
 [D116](DECISIONS.md#d116--p009-t001-autoridad-de-creación-presets-por-proyecto-y-preparación-separada).
 
+- T017 corrige la causa de D128: `task_contract` congela como `dir/**` toda entrada de `allowed_paths` o
+  `forbidden_paths` terminada en `/`, y `plan-task` pide `dir/**`. Rutas exactas, globs, perfiles y contratos ya
+  congelados no cambian, así que no hay versión nueva. Por decisión del usuario, `fc340afb` no se revalida y queda
+  BLOCKED como evidencia ([entrega](phase/P009-T017_RUTAS_DIRECTORIO.md), D129).
 - T008 (Codex→Codex, run `fc340afb`) planifica y ejecuta P001-T001 con `gpt-6-luna`/`medium` en los tres roles.
   El ejecutor usa la selección que el revisor eligió con motivo, y pasan las seis validaciones. El revisor bloquea
   porque `core/` en la allowlist no cubre sus archivos: `check_paths` usa `fnmatchcase` y `task_contract` acepta la
@@ -102,10 +106,10 @@ P008 permanece cerrada ([archivo](archive/phase-008/SUMMARY.md), D114). Este rep
 ni ejecutarse con el harness. T002–T005 usan carpetas/SQLite temporales y CLI de agentes falsas;
 sin proyectos reales del usuario ni proveedores. T005 añade herramientas Django reales, sin modificar el runtime del harness.
 
-**Siguiente:** P009-T017, rutas de directorio en el contrato de tarea: que `core/` cubra sus archivos en la política
-de rutas o se rechace al congelar el contrato, sin cambiar contratos ya congelados. Sin proveedores. Después, reanudar
-T008 con wheel nuevo y **autorización nueva del usuario** (quedan 4 de 7 invocaciones de T008 y 54 de 60 del piloto).
-Área `~/.local/share/harness-local/` con el wheel de `1f8aa7a` (`cli-13`); hijo `harness-django-pilot` en `d762e77`
-con los cambios de `fc340afb` sin confirmar. Servicio detenido. El QA de T012 lanza `runserver` con
+**Siguiente:** reanudar T008 con wheel reconstruido y verificado y **autorización nueva del usuario** (quedan 4 de 7
+invocaciones de T008 y 54 de 60 del piloto). Antes, retirar del hijo las ocho rutas del diff de `fc340afb` y
+encolar P001-T001 en un run nuevo: al menos 3 invocaciones; un ciclo REVISE superaría el techo de T008 (D129).
+Área `~/.local/share/harness-local/` con el wheel de `1f8aa7a` (`cli-13`, sin T017); hijo `harness-django-pilot` en
+`d762e77` con los cambios de `fc340afb` sin confirmar. Servicio detenido. El QA de T012 lanza `runserver` con
 `PYTHONDONTWRITEBYTECODE=1` (propuesta §9). Sigue pendiente aclarar en `define-project` que una carpeta nueva no tiene
 marcadores (D127).

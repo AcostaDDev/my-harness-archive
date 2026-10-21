@@ -139,6 +139,7 @@ tarea se leen solo las decisiones que cita; este índice sirve para buscar prece
 | [D126](#d126--p009-t015-el-wheel-se-verifica-con-la-definición-d088) | P009-T015: el wheel se verifica con la definición D088 | P009 |
 | [D127](#d127--p009-t007-completada-django-creado-desde-la-ui-con-revisor-codex) | P009-T007: completada; Django creado desde la UI con revisor Codex | P009 |
 | [D128](#d128--p009-t008-detenida-una-ruta-de-directorio-no-cubre-sus-archivos) | P009-T008: detenida; una ruta de directorio no cubre sus archivos | P009 |
+| [D129](#d129--p009-t017-una-ruta-de-directorio-se-congela-como-dir) | P009-T017: una ruta de directorio se congela como `dir/**` | P009 |
 
 ## D001 — Alcance local y arquitectura base
 
@@ -4023,3 +4024,19 @@ Estado: detenida el 2026-10-21. Fase: P009. Dentro de D121 y de la propuesta §�
 - Antes de encolar, el recibo de preparación no coincidía: el `runserver` de QA de T007 escribió 366 `.pyc` en
   `.venv`, cuyo bytecode también acredita el recibo (D119). Por decisión del usuario se borraron exactamente esos
   archivos, sin tocar código, TOML ni SQLite. El QA de T012 lanzará `runserver` sin escribir bytecode.
+
+## D129 — P009-T017: una ruta de directorio se congela como `dir/**`
+
+Estado: implementada el 2026-10-21. Fase: P009. Corrige la causa de D128.
+[Entrega](phase/P009-T017_RUTAS_DIRECTORIO.md).
+
+- `task_contract` congela como `dir/**` toda entrada de `allowed_paths` o `forbidden_paths` que termina en `/`.
+  Ejecutor, revisor, política de rutas, concesiones de ficheros y comprobación de contradicciones leen así el mismo
+  alcance. La contradicción con una prohibición se rechaza antes del escritor. Se descarta rechazar la notación:
+  los NEXT_STEPS que redacta el revisor la usan, y el run pararía sin ejecutar.
+- `matches` no cambia. Las rutas exactas, los globs, las entradas sin barra y los patrones de perfiles se leen igual.
+  Los contratos ya congelados conservan bytes, hashes y lectura literal, así que no se versiona el motor ni el
+  adaptador. `plan-task` y el esquema del planificador piden `dir/**`.
+- Por decisión del usuario, el run `fc340afb` no se revalida: con su contrato literal volvería a parar. Queda
+  BLOCKED como evidencia. Reanudar T008 exige retirar del hijo las ocho rutas de su diff y encolar P001-T001 de
+  nuevo. Necesita al menos 3 de las 4 invocaciones que quedan, y un ciclo REVISE superaría el techo de 7.

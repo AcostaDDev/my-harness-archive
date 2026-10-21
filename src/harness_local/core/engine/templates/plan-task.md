@@ -21,3 +21,5 @@ paths"; forbidden patterns take precedence and would prohibit the allowed file t
 For a task allowing only src/estimate.ts, use allowed_paths=["src/estimate.ts"] and
 forbidden_paths=[] unless the input supplies a separate explicit exclusion.
 Do not return a concrete allowed path that matches a forbidden pattern.
+Express a whole directory as dir/** (for example core/**); an entry ending in / is frozen
+as dir/**.

@@ -86,6 +86,8 @@ intento sin resultado al confirmar la parada queda `INTERRUPTED` sin reintento a
 
 ## Rutas, paridad y propuestas (D090)
 
+- Al congelar el contrato, una entrada de `allowed_paths` o `forbidden_paths` terminada en `/` pasa a `dir/**`
+  (D129). Los contratos ya congelados se leen tal como se guardaron.
 - El ejecutor no escribe STATE, NEXT_STEPS, ROADMAP, DECISIONS, `docs/archive/**` ni AGENTS, CLAUDE y GEMINI
   (`harness_owned_paths` y perfil, con `executor_protected`); la reconciliación `<fase>-RECONCILE-<n>` sí edita la prosa
   de los cuatro primeros.

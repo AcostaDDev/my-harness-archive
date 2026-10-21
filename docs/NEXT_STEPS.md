@@ -4,13 +4,14 @@ Objetivo y criterios en [ROADMAP](ROADMAP.md#p009--proyecto-django-desde-cero-y-
 Decisión: [D115](DECISIONS.md#d115--p009-django-desde-cero-carpeta-de-proyectos-y-agentes-por-proyecto).
 [Diseño y matriz](phase/P009_PLAN_DJANGO.md); [flujo y estado de implementación](flows/project-creation.md).
 
-**Estado:** T001–T007 y T013–T016 completadas. T007 se detuvo el 2026-10-20 (D123), se corrigió en `cli-13` (D124)
+**Estado:** T001–T007 y T013–T017 completadas. T007 se detuvo el 2026-10-20 (D123), se corrigió en `cli-13` (D124)
 y se completó el 2026-10-21 con autorización nueva: Django creado desde la UI, commit raíz y técnico
 ([evidencia §7](phase/P009-T007_CREACION_DJANGO.md#7-reanudación-y-cierre-de-t007-2026-10-21), D127). T008 se detuvo el
 2026-10-21 en la revisión: una ruta de directorio (`core/`) no cubre sus archivos en la política de rutas
-([evidencia](phase/P009-T008_PILOTO_CODEX_CODEX.md), D128). T009–T012 pendientes.
-**Siguiente:** T017 (rutas de directorio en el contrato de tarea). Después, reanudar T008 con wheel nuevo y
-**autorización nueva del usuario**.
+([evidencia](phase/P009-T008_PILOTO_CODEX_CODEX.md), D128). T017 lo corrige el 2026-10-21: `dir/` se congela como
+`dir/**` (D129). T009–T012 pendientes.
+**Siguiente:** reanudar T008 con un run nuevo, wheel reconstruido y verificado y **autorización nueva del usuario**
+(D129: antes, el hijo vuelve a quedar limpio en `d762e77`; `fc340afb` no se revalida).
 [Contrato implementable](phase/P009-T001_CONTRATO_CREACION.md), decisión D116. T002 añade producto de
 carpeta/creación, sin piloto ni selección de carpeta real del usuario;
 la implementación no concede permisos de red, instalación o proveedores.
@@ -194,13 +195,16 @@ D088/P001 y preparar mediante receta su entorno/código base. Operar con el whee
 
 ## P009-T008 — Piloto: Codex revisor → Codex ejecutor
 
-**Estado:** detenida el 2026-10-21 (D128). **Depende de:** T007; su reanudación, de T017.
+**Estado:** detenida el 2026-10-21 (D128). **Depende de:** T007; su reanudación, de T017 (completada, D129).
 **Avance:** run `fc340afb` planificado y ejecutado con Codex `gpt-6-luna`/`medium` en los tres roles; selección del
 ejecutor por el revisor, con motivo, igual a la invocación; seis validaciones correctas. El revisor bloquea porque la
 política de rutas marca los seis archivos de `core/` aunque `core/` está en la allowlist. 3 de 7 invocaciones, sin
 commit. Cambios del ejecutor conservados sin confirmar en el hijo. Antes, el recibo de preparación se restauró
 borrando el bytecode que dejó el QA de T007. [Evidencia saneada](phase/P009-T008_PILOTO_CODEX_CODEX.md).
-Reanudar exige T017, wheel reconstruido y verificado y **autorización nueva del usuario**.
+Reanudar exige wheel reconstruido y verificado y **autorización nueva del usuario**. Por decisión del usuario
+(D129), `fc340afb` queda BLOCKED como evidencia y no se revalida. Se retiran del hijo exactamente las ocho rutas de su
+diff, sin tocar `.venv`, TOML ni SQLite, y se encola P001-T001 en un run nuevo. Son al menos 3 de las 4 invocaciones
+que quedan; la autorización dirá si se amplía el techo para un ciclo REVISE o si se para.
 **Objetivo:** Modelo Task y creación/listado de tareas (tarea P001-T001 del proyecto hijo).
 **Alcance:** título obligatorio, descripción opcional, completada inicialmente false y fecha de creación;
 formulario de alta y lista mediante plantillas. Migración, tests y diagrama de datos/flujos en el mismo cambio.
@@ -341,7 +345,9 @@ contra `HEAD`. Sin proveedores, wheel ni harness.
 
 ## P009-T017 — Rutas de directorio en el contrato de tarea
 
-**Estado:** pendiente. **Depende de:** T008 detenida (D128); bloquea su reanudación.
+**Estado:** completada el 2026-10-21 (D129, [entrega](phase/P009-T017_RUTAS_DIRECTORIO.md)): `task_contract`
+congela `dir/` como `dir/**` en ambas listas; contratos ya congelados intactos; `fc340afb` no se revalida.
+**Depende de:** T008 detenida (D128); bloqueaba su reanudación.
 **Objetivo:** que una entrada de directorio de un contrato (`core/`) signifique lo mismo al congelar el contrato,
 al restringir al ejecutor y al comprobar la política de rutas, o que se rechace antes de invocar al ejecutor.
 **Alcance:** hoy `task_contract` acepta `core/` y `check_paths` lo empareja con `fnmatchcase`, que no cubre
