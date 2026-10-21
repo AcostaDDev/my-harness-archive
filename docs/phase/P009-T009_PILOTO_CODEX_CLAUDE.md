@@ -108,3 +108,47 @@ que no formatean.
 un ejecutor sin shell cumpla las validaciones de formato del perfil, y decidir qué se hace con `bb29b133` y sus cambios.
 Reanudar T009 exige un wheel reconstruido y verificado si cambia el producto, y **una autorización nueva del usuario**
 con techo: queda 1 de 7.
+
+## 7. Reanudación (2026-10-21, sesión 2): COMMITTED
+
+Autorización nueva del usuario en el chat: reanudar T009 con un run nuevo y techo ampliado de 7 a 13 (propuesta §12).
+`bb29b133` queda en `revision_limit` como evidencia (D133).
+
+| Comprobación o paso | Resultado |
+|---|---|
+| SHA-256 de los binarios de §1 de la propuesta | idénticos |
+| Wheel de `494b929` (T019) | `29a50da8…f119da`, verificado entero con `check_distribution.py` e instalado offline con `serve` detenido |
+| `check-config --preflight` | `version_help_match` en los 6 roles/presets; huella de la receta `f511c00a…` sin cambios |
+| Hijo | 7 rutas de `bb29b133` retiradas (`git restore` de cinco y borrado de dos nuevas); limpio en `98f4611`; `.venv` sin bytecode |
+| Copia privada | `state/bb29b133-discarded/` del área: los 7 archivos, `tracked.diff`, `cycle-evidence.diff` y `SHA256SUMS` |
+| UI | «Django preparado» con el recibo real; Ajustes sin cambios (registro v2) |
+
+**Incidencia en la copia privada.** El script de retirada pasaba las rutas en una variable que zsh no separa en
+palabras. La copia falló, pero el script siguió, así que restauró y borró antes de copiar los dos archivos nuevos
+(`task_edit.html` y `task_confirm_delete.html`). Se reconstruyeron desde la evidencia del propio producto: el diff
+del último ciclo de `bb29b133`, tal como lo recibió el revisor en su prompt (`state/artifacts/`), con la huella
+`996c5442…e1423991` de §2. La parte rastreada de ese diff es idéntica al `tracked.diff` copiado directamente del hijo
+antes de restaurar. No se perdió contenido. No se abrió la SQLite viva.
+
+**Run `bf007561`.** Contrato: la sección P001-T002 literal del hijo (875 bytes, `acd0105b…bf6790de`, igual que en §1).
+Lo encoló el usuario desde la UI.
+
+| Intento | Selección congelada | Resultado | Duración |
+|---|---|---|---|
+| 1 planificador | Codex `gpt-6-luna`/`medium` (política) | COMPLETE | 16,7 s |
+| 2 ejecutor | Claude `claude-sonnet-5-5`/`medium`, elegida por el revisor | COMPLETE | 39,5 s |
+| 3 revisor | Codex `gpt-6-luna`/`medium` | COMPLETE, **ACCEPT** | 8,8 s |
+
+- **Selección:** el revisor eligió `claude-sonnet-5-5`/`medium` con un motivo propio de la tarea. El modelo observado
+  en el stream es `claude-sonnet-5-5`. Las instrucciones del ejecutor incluyen el aviso del formateador (D133).
+- **Formateo del harness:** `ruff format -- core/tests.py core/urls.py core/views.py`, con salida 0 y
+  `1 file reformatted, 2 files left unchanged`. Es el caso que detuvo `bb29b133`, resuelto sin el ejecutor.
+- **Cambio:** 7 rutas, diff de 10 012 bytes, huella `06ba52f3…b3f6`. Vistas de edición y borrado con
+  `get_object_or_404`, `require_http_methods(["GET", "POST"])` y redirección tras POST válido. Plantillas de edición
+  y de confirmación con CSRF, enlaces en la lista y flujo en `tasks.md`. Tests: 11 en total.
+- **Validaciones:** las seis con salida 0, incluido `ruff format --check .`. pytest pasa los 11 casos JUnit.
+- **Revisión y aceptación:** ACCEPT sin hallazgos, preguntas, concesiones ni propuestas. Aceptación elegible.
+- **Commit:** confirmado desde la UI por decisión del usuario. Commit `2f2b13f` «harness: accept P001-T002 - Editar y
+  borrar», con la identidad Git del usuario, sobre `98f4611`. Run COMMITTED y checkout limpio.
+- **Consumo:** 3 invocaciones en esta sesión. T009: 9 de 13. Piloto: 18 de 60.
+- **No probado aquí:** QA en navegador del Django (T012) y las parejas con revisor Claude (T010–T011).

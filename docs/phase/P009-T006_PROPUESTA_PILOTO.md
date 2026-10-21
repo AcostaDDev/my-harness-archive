@@ -167,3 +167,16 @@ Selecciones, binarios, área, puertos, techos y criterios de parada siguen igual
 - Durante la operación no se abre `state/harness.sqlite3` con otro proceso SQLite mientras corre `serve`. El
   seguimiento se hace desde la UI o con los artefactos de `state/artifacts/`. Las comprobaciones de la SQLite se hacen
   con el servicio detenido o sobre una copia.
+
+## 12. Actualización tras T019
+
+2026-10-21, por D121 §6 tras la corrección de T019 ([D133](../DECISIONS.md#d133--p009-t019-el-harness-formatea-con-la-herramienta-del-perfil-tras-cada-turno-del-ejecutor)).
+Autorización nueva del usuario en el chat: reanudar T009 con techo 13. Selecciones, binarios, área, puertos y
+criterios de parada siguen igual.
+
+- **Techo de T009: de 7 a 13.** El run nuevo recibe el techo original: 1 plan, 3 ejecuciones y 3 revisiones. El
+  techo total del piloto sigue en 60.
+- `bb29b133` queda en `revision_limit` como evidencia. Antes de encolar se retiran del hijo sus 7 rutas, con copia
+  privada en `state/bb29b133-discarded/`, y se comprueba «Django preparado».
+- Wheel del commit con T019 (`494b929`), construido, verificado con `check_distribution.py` e instalado offline en el
+  venv del área con `serve` detenido.

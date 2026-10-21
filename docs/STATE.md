@@ -55,13 +55,17 @@ D122), T014 (definición Codex sin Git, D124), T016 (suite pytest rápida, D125)
 D126) el 2026-10-20. T007 detenida el 2026-10-20 (D123) y completada el 2026-10-21 (D127). T008 detenida el
 2026-10-21 en la revisión (D128). Tras T017 (D129) y T018 (D130) se completó el mismo día: P001-T001 del hijo
 COMMITTED (D131). T009 detenida el 2026-10-21 en el límite de revisiones (D132); T019 corrige la causa el mismo
-día (D133). T010–T012 pendientes.
+día (D133) y T009 se completa: P001-T002 del hijo COMMITTED (D134). T010–T012 y T020 pendientes.
 Objetivo y criterios en [ROADMAP](ROADMAP.md#p009--proyecto-django-desde-cero-y-piloto-con-cuatro-combinaciones-de-agentes),
 tareas en [NEXT_STEPS](NEXT_STEPS.md) y diseño en el [plan](phase/P009_PLAN_DJANGO.md).
 Decisión: [D115](DECISIONS.md#d115--p009-django-desde-cero-carpeta-de-proyectos-y-agentes-por-proyecto).
 Contrato de T001: [diseño implementable](phase/P009-T001_CONTRATO_CREACION.md),
 [D116](DECISIONS.md#d116--p009-t001-autoridad-de-creación-presets-por-proyecto-y-preparación-separada).
 
+- T009 completada en la sesión 2: run `bf007561` con revisor Codex `gpt-6-luna`/`medium` y ejecutor Claude
+  `claude-sonnet-5-5`/`medium`, elegido por el revisor. El formateo del harness reformatea 1 de 3 archivos, pasan
+  las seis validaciones y el revisor acepta a la primera. Commit `2f2b13f` confirmado por el usuario. T009: 9 de 13;
+  piloto: 18 de 60 ([evidencia §7](phase/P009-T009_PILOTO_CODEX_CLAUDE.md#7-reanudación-2026-10-21-sesión-2-committed), D134).
 - T019 corrige la causa de D132. Por decisión del usuario, tras cada turno del ejecutor el harness ejecuta el
   formateador del perfil (`ruff format --` en la receta Django) sobre los archivos `.py` del contrato que cambiaron,
   antes de validar. El revisor ve y se acepta el contenido formateado, y el ejecutor no gana shell. La huella de la
@@ -130,11 +134,10 @@ P008 permanece cerrada ([archivo](archive/phase-008/SUMMARY.md), D114). Este rep
 ni ejecutarse con el harness. T002–T005 usan carpetas/SQLite temporales y CLI de agentes falsas;
 sin proyectos reales del usuario ni proveedores. T005 añade herramientas Django reales, sin modificar el runtime del harness.
 
-**Siguiente:** reanudar T009 con autorización nueva del usuario y techo: queda 1 de 7 invocaciones, un run nuevo
-necesita al menos 3, y el piloto va por 15 de 60. Antes hay que reconstruir, verificar e instalar el wheel con T019 y
-retirar del hijo las 7 rutas de `bb29b133`, con copia privada (entrega de T019, §5). Área
-`~/.local/share/harness-local/` con el wheel de `d557082`. Hijo en `98f4611`, con los cambios de `bb29b133` sin
-confirmar. Ajustes en el registro v2 (revisor Codex, ejecutor Claude). Durante la operación no se abre la SQLite viva
-con otro proceso SQLite (propuesta §11). El usuario detiene `serve` al terminar la sesión. El QA de T012 lanza
-`runserver` con `PYTHONDONTWRITEBYTECODE=1` (propuesta §9). Sigue pendiente aclarar en `define-project` que una carpeta
-nueva no tiene marcadores (D127).
+**Siguiente:** el usuario propone P009-T020 (encolar una tarea eligiendo fase y tarea de los documentos, con el
+contrato rellenado y notas adicionales). Queda por decidir si va antes de T010. T010 (Claude→Claude) cambia el revisor
+a Claude en Ajustes y necesita que el usuario pida lanzarla; su techo sigue en 7. Área `~/.local/share/harness-local/`
+con el wheel de `494b929`. Hijo limpio en `2f2b13f`. Durante la operación no se abre la SQLite viva con otro proceso
+SQLite (propuesta §11). El usuario detiene `serve` al terminar la sesión. El QA de T012 lanza `runserver` con
+`PYTHONDONTWRITEBYTECODE=1` (propuesta §9). Sigue pendiente aclarar en `define-project` que una carpeta nueva no tiene
+marcadores (D127).

@@ -13,9 +13,9 @@ y se completó el 2026-10-21 con autorización nueva: Django creado desde la UI,
 dejó de valer por el número de dispositivo. T018 lo corrige (D130). La sesión 3 completa T008: run `7fbaf89c`
 COMMITTED en `98f4611` (D131). T009 se detuvo el 2026-10-21 en el límite de revisiones. El ejecutor Claude, sin
 shell, no logra cumplir `ruff format` ([evidencia](phase/P009-T009_PILOTO_CODEX_CLAUDE.md), D132). T019 lo corrige el
-2026-10-21: el harness formatea con la herramienta del perfil tras cada turno del ejecutor (D133). T010–T012 pendientes.
-**Siguiente:** reanudar T009 (run nuevo de P001-T002) con wheel reconstruido, hijo limpio y **autorización nueva**
-con techo ([entrega de T019 §5](phase/P009-T019_FORMATEO_PERFIL.md#5-run-bb29b133-y-reanudación-de-t009)).
+2026-10-21: el harness formatea con la herramienta del perfil tras cada turno del ejecutor (D133). Con autorización
+nueva y techo 13, T009 se completa el mismo día: P001-T002 COMMITTED en `2f2b13f` (D134). T010–T012 y T020 pendientes.
+**Siguiente:** decidir con el usuario si T020 (encolar desde los documentos) va antes de T010.
 [Contrato implementable](phase/P009-T001_CONTRATO_CREACION.md), decisión D116. T002 añade producto de
 carpeta/creación, sin piloto ni selección de carpeta real del usuario;
 la implementación no concede permisos de red, instalación o proveedores.
@@ -225,16 +225,13 @@ formulario de alta y lista mediante plantillas. Migración, tests y diagrama de 
 
 ## P009-T009 — Piloto: Codex revisor → Claude ejecutor
 
-**Estado:** detenida el 2026-10-21 (D132), en el límite de revisiones; 6 de 7 invocaciones (piloto 15 de 60)
-([evidencia](phase/P009-T009_PILOTO_CODEX_CLAUDE.md)). **Depende de:** T008 COMMITTED y sin trabajo pendiente;
-su reanudación, de T019 (completada, D133). `bb29b133` queda como evidencia por decisión del usuario.
-**Avance:** registro v2 con ejecutor Claude y revisor Codex sin cambios. En el run `bb29b133`, el revisor eligió
-`claude-sonnet-5-5`/`medium` con motivo, y la invocación coincide. El ejecutor implementa edición y borrado con 404,
-POST y CSRF, y pasan 11 tests y cinco de las seis validaciones. `ruff format --check` falla por una línea de
-`core/tests.py`: el hijo usa 100 columnas y el ejecutor, sin shell, formatea a mano con 88. Dos REVISE y un
-reintento sin cambios. Entre medias, `serve` murió por SIGBUS (causa probable: lectores `sqlite3` externos sobre la
-SQLite viva). El producto recuperó el run sin reencolar nada. Cambios sin confirmar en el hijo y sin commit.
-Reanudar exige **autorización nueva del usuario**, con techo y decisión sobre `bb29b133`.
+**Estado:** completada el 2026-10-21 (D134): run `bf007561` COMMITTED en `2f2b13f`, 9 de 13 invocaciones
+([evidencia §7](phase/P009-T009_PILOTO_CODEX_CLAUDE.md#7-reanudación-2026-10-21-sesión-2-committed)). Antes, detenida
+en el límite de revisiones (D132) y corregida en T019 (D133). **Depende de:** T008 COMMITTED y sin trabajo pendiente.
+**Avance:** registro v2 con ejecutor Claude y revisor Codex sin cambios. `bb29b133` quedó en `revision_limit` como
+evidencia y sus 7 rutas se retiraron del hijo con copia privada. En `bf007561` el revisor eligió
+`claude-sonnet-5-5`/`medium` con motivo, y el stream lo confirma. El formateo del harness reformateó 1 de 3 archivos,
+pasaron las seis validaciones (11 tests) y el revisor aceptó a la primera. Commit confirmado por el usuario.
 **Objetivo:** Editar y borrar tareas con confirmación (P001-T002 del mismo proyecto).
 **Alcance:** formularios de edición/borrado, validación de título y gestión de inexistentes; conservar datos previos.
 **Rutas permitidas:** `docs/phase/**`; cambios del hijo solo mediante su contrato gestionado confirmado.
@@ -420,3 +417,29 @@ Decidir también cómo sigue el run `bb29b133`, en `revision_limit` con los camb
   y se documenta. Codex y los demás perfiles se comportan igual.
 - El ejecutor no gana shell, red ni rutas fuera del contrato sin una concesión explícita.
 **Validación:** pytest dirigida y completa, unittest y Alembic check si procede. Sin proveedores ni piloto.
+
+## P009-T020 — Encolar una tarea desde los documentos, con notas adicionales
+
+**Estado:** pendiente, a propuesta del usuario (2026-10-21). Orden respecto a T010 por decidir.
+**Objetivo:** que encolar una tarea no exija escribir a mano fase, id y contrato. Elegir fase y tarea en un selector
+alimentado por los documentos del checkout, con el contrato rellenado automáticamente y un campo opcional de notas
+adicionales para el agente.
+**Alcance:** formulario «Encolar tarea» (`frontend/src/pages/shared.tsx`) y las páginas que lo usan; fuente de fases y
+tareas desde los documentos vigentes (NEXT_STEPS del layout v2) en lugar de texto libre; contrato mostrado antes de
+encolar, editable o no según se decida; notas que llegan al agente sin columna nueva en el modelo.
+**Rutas permitidas:** `src/harness_local/**`, `frontend/**`, `tests/**`, `docs/**`.
+**Puntos a decidir al empezar:**
+- Hoy el planificador solo lee la sección `## <tarea>` y las restricciones compartidas del texto enviado
+  (`section` en `workflow.start`). Unas notas añadidas al final del texto no llegarían al agente: deben entrar de
+  forma explícita en la entrada del planificador y del ejecutor (o del contrato determinista) y quedar congeladas en
+  el run, que ya guarda el texto y la historia sin migración.
+- Si el contrato sigue siendo editable o queda fijado al documento, con hash visible, y qué pasa si el documento cambia
+  entre mostrarlo y encolar (CAS).
+- Encaje con el lote desatendido, la reconciliación y las páginas de fase y tarea, que ya fijan fase o tarea.
+**Criterios de aceptación:**
+- Elegir fase y tarea de los documentos rellena un contrato idéntico a la sección literal que se enviaba a mano
+  (mismos bytes y hash en el piloto). Una tarea inexistente o un documento cambiado no se encola en silencio.
+- Las notas, si las hay, llegan al planificador y al ejecutor, quedan visibles en el run y nunca amplían rutas,
+  comandos ni permisos del contrato. Sin notas, prompts y contratos quedan byte a byte como antes.
+- API/tipos, flujos y pruebas al día; los runs ya congelados se leen igual.
+**Validación:** pytest dirigida y completa, Node, tipos/build y QA visual del formulario. Sin proveedores.

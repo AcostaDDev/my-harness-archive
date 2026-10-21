@@ -144,6 +144,7 @@ tarea se leen solo las decisiones que cita; este índice sirve para buscar prece
 | [D131](#d131--p009-t008-completada-codexcodex-committed) | P009-T008: completada; Codex→Codex COMMITTED | P009 |
 | [D132](#d132--p009-t009-detenida-el-ejecutor-claude-no-puede-cumplir-ruff-format) | P009-T009: detenida; el ejecutor Claude no puede cumplir `ruff format` | P009 |
 | [D133](#d133--p009-t019-el-harness-formatea-con-la-herramienta-del-perfil-tras-cada-turno-del-ejecutor) | P009-T019: el harness formatea con la herramienta del perfil tras cada turno del ejecutor | P009 |
+| [D134](#d134--p009-t009-completada-codexclaude-committed) | P009-T009: completada; Codex→Claude COMMITTED | P009 |
 
 ## D001 — Alcance local y arquitectura base
 
@@ -4113,3 +4114,17 @@ Estado: implementada el 2026-10-21. Fase: P009. Corrige la causa de D132.
 - Por decisión del usuario, `bb29b133` queda en `revision_limit` como evidencia, igual que `fc340afb` (D129).
   Reanudar T009 exige un wheel reconstruido y verificado, retirar del hijo las 7 rutas de su diff con copia privada
   y una autorización nueva con techo: un run nuevo necesita al menos 3 invocaciones y queda 1 de 7.
+
+## D134 — P009-T009: completada; Codex→Claude COMMITTED
+
+Estado: completada el 2026-10-21. Fase: P009. Dentro de D121 y de la propuesta §§3–6 y §12.
+[Evidencia saneada §7](phase/P009-T009_PILOTO_CODEX_CLAUDE.md#7-reanudación-2026-10-21-sesión-2-committed).
+
+- Autorización nueva del usuario: reanudar T009 con techo 13. Wheel de `494b929` (T019) verificado e instalado. Las 7
+  rutas de `bb29b133` se retiran del hijo con copia privada. Una incidencia del script obligó a reconstruir dos
+  archivos de esa copia desde la evidencia del producto, sin pérdida.
+- Run `bf007561` de P001-T002: revisor Codex `gpt-6-luna`/`medium`, ejecutor Claude `claude-sonnet-5-5`/`medium`
+  elegido por el revisor con motivo y observado en el stream. El formateo del harness (D133) reformatea 1 de 3
+  archivos, pasan las seis validaciones y el revisor acepta a la primera, sin hallazgos.
+- Commit `2f2b13f` confirmado desde la UI por decisión del usuario: P001-T002 COMMITTED. Consumo: T009 9 de 13,
+  piloto 18 de 60. Es la primera tarea del piloto con un ejecutor sin shell que llega a COMMITTED.
