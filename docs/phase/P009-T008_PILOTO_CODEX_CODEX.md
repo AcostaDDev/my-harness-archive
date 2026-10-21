@@ -89,3 +89,24 @@ ilustra rutas exactas y no dice cómo expresar un directorio.
 [P009-T017](../NEXT_STEPS.md#p009-t017--rutas-de-directorio-en-el-contrato-de-tarea) corrige la semántica de las rutas
 de directorio con regresiones. Reanudar T008 exige wheel reconstruido y verificado, decidir qué hacer con el run
 `fc340afb` y los cambios conservados, y **una autorización nueva del usuario** con el consumo restante de T008 (4 de 7).
+
+## 7. Reanudación (2026-10-21, sesión 2): parada antes de encolar
+
+Autorización nueva del usuario en el chat: reanudar T008 con un run nuevo y techo ampliado a 10 (propuesta §10, D129).
+
+| Comprobación o paso | Resultado |
+|---|---|
+| SHA-256 de los binarios de §1 de la propuesta | idénticos |
+| 8031/8032, servicio y CLI del área | libres, sin procesos |
+| Hijo | ocho rutas de `fc340afb` retiradas (`git restore` de cinco y borrado de tres nuevas); limpio en `d762e77`; `.venv` sin bytecode. Copia privada en `state/fc340afb-discarded/` del área |
+| Wheel de `0852f39` (T017) | `0301493b…cc7de`, verificado completo con `check_distribution.py` e instalado offline en el venv del área |
+| `check-config --preflight` | `version_help_match` en los 6 roles/presets |
+| `serve` en 8031 | lanzado por el usuario en su terminal |
+
+La UI volvió a mostrar `preparation_required: identidad, archivos protegidos o entorno preparados cambiaron`.
+Diagnóstico de solo lectura con el recibo de la SQLite: los archivos protegidos y todos los archivos de `.venv`
+coinciden. Lo único distinto es `st_dev` del checkout y de `.venv` (16777230 → 16777233), con el mismo inodo. El
+Mac se había reiniciado 22 minutos antes y macOS renumeró el volumen. Se para por entorno (§5 de la propuesta), sin
+tocar la SQLite y **sin consumir invocaciones**: siguen 3 de 10 en T008 y 6 de 60 en el piloto. La corrección es
+[P009-T018](P009-T018_RECIBO_TRAS_REINICIO.md).
+

@@ -471,6 +471,29 @@ def test_successful_environment_receipt_is_required_before_native_commands(prepa
         service.managed.submit(project.context,'P001-T001','P001','synthetic',key='after-drift',versions=dict(project.versions))
 
 
+def test_receipt_survives_a_remount_that_renumbers_the_device_but_not_another_directory(preparation, monkeypatch):
+    """P009-T018 (D130): after a reboot macOS gave the pilot's volume another st_dev with the same inodes and bytes."""
+    service,*_=preparation
+    op=complete(service)
+    import harness_local.adapters.preparation as adapter
+    original=adapter.identity
+    monkeypatch.setattr(adapter,'identity',lambda info: {**original(info),'device':info.st_dev+3})
+    verify_receipt(root(service),op['receipt'])
+    assert service.runtime.preparation.read('child')['prepared']
+    project=service.runtime.project('child')
+    assert service.managed.submit(project.context,'P001-T001','P001','synthetic',key='after-remount',
+                                  versions=dict(project.versions)).status=='QUEUED'
+    for field in ('identity','environment'):
+        moved=json.loads(json.dumps(op['receipt']))
+        target=moved[field] if field=='identity' else moved[field]['identity']
+        target['inode']+=1  # Another directory at the same path, with identical bytes.
+        with pytest.raises(JournalError,match='preparation_required'):
+            verify_receipt(root(service),moved)
+    (root(service)/'.venv/bin/ruff').write_text('changed binary')
+    with pytest.raises(JournalError,match='preparation_required'):
+        verify_receipt(root(service),op['receipt'])
+
+
 def test_failure_in_success_exit_junit_never_adopts_environment(preparation, monkeypatch):
     service,*_=preparation
     original=service._files

@@ -140,6 +140,7 @@ tarea se leen solo las decisiones que cita; este índice sirve para buscar prece
 | [D127](#d127--p009-t007-completada-django-creado-desde-la-ui-con-revisor-codex) | P009-T007: completada; Django creado desde la UI con revisor Codex | P009 |
 | [D128](#d128--p009-t008-detenida-una-ruta-de-directorio-no-cubre-sus-archivos) | P009-T008: detenida; una ruta de directorio no cubre sus archivos | P009 |
 | [D129](#d129--p009-t017-una-ruta-de-directorio-se-congela-como-dir) | P009-T017: una ruta de directorio se congela como `dir/**` | P009 |
+| [D130](#d130--p009-t018-el-recibo-de-preparación-compara-el-inodo-no-el-dispositivo) | P009-T018: el recibo de preparación compara el inodo, no el dispositivo | P009 |
 
 ## D001 — Alcance local y arquitectura base
 
@@ -4040,3 +4041,17 @@ Estado: implementada el 2026-10-21. Fase: P009. Corrige la causa de D128.
 - Por decisión del usuario, el run `fc340afb` no se revalida: con su contrato literal volvería a parar. Queda
   BLOCKED como evidencia. Reanudar T008 exige retirar del hijo las ocho rutas de su diff y encolar P001-T001 de
   nuevo. Necesita al menos 3 de las 4 invocaciones que quedan, y un ciclo REVISE superaría el techo de 7.
+
+## D130 — P009-T018: el recibo de preparación compara el inodo, no el dispositivo
+
+Estado: implementada el 2026-10-21. Fase: P009. Desbloquea la segunda reanudación de T008.
+[Entrega](phase/P009-T018_RECIBO_TRAS_REINICIO.md).
+
+- La segunda sesión de T008 se paró antes de encolar, sin consumir invocaciones. Tras reiniciar el Mac, macOS
+  renumeró `st_dev` del hijo con el mismo inodo y los mismos bytes, y el recibo de D119 dejó de valer.
+- Por decisión del usuario, `verify_receipt` compara el inodo del checkout y de `.venv`, y sigue verificando
+  byte a byte los archivos protegidos y el entorno. Los recibos no se reescriben y conservan su hash. Admisión, UI y
+  comandos nativos usan esa misma verificación.
+- Las operaciones en curso (creación, preparación y carpeta de proyectos) siguen comparando `{device, inode}`.
+  Tras un reinicio, crear otro proyecto exige volver a elegir la carpeta. Queda como límite, fuera del piloto.
+

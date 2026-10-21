@@ -4,14 +4,15 @@ Objetivo y criterios en [ROADMAP](ROADMAP.md#p009--proyecto-django-desde-cero-y-
 Decisión: [D115](DECISIONS.md#d115--p009-django-desde-cero-carpeta-de-proyectos-y-agentes-por-proyecto).
 [Diseño y matriz](phase/P009_PLAN_DJANGO.md); [flujo y estado de implementación](flows/project-creation.md).
 
-**Estado:** T001–T007 y T013–T017 completadas. T007 se detuvo el 2026-10-20 (D123), se corrigió en `cli-13` (D124)
+**Estado:** T001–T007 y T013–T018 completadas. T007 se detuvo el 2026-10-20 (D123), se corrigió en `cli-13` (D124)
 y se completó el 2026-10-21 con autorización nueva: Django creado desde la UI, commit raíz y técnico
 ([evidencia §7](phase/P009-T007_CREACION_DJANGO.md#7-reanudación-y-cierre-de-t007-2026-10-21), D127). T008 se detuvo el
 2026-10-21 en la revisión: una ruta de directorio (`core/`) no cubre sus archivos en la política de rutas
 ([evidencia](phase/P009-T008_PILOTO_CODEX_CODEX.md), D128). T017 lo corrige el 2026-10-21: `dir/` se congela como
-`dir/**` (D129). T009–T012 pendientes.
-**Siguiente:** reanudar T008 con un run nuevo, wheel reconstruido y verificado y **autorización nueva del usuario**
-(D129: antes, el hijo vuelve a quedar limpio en `d762e77`; `fc340afb` no se revalida).
+`dir/**` (D129). La segunda sesión de T008 se paró antes de encolar: tras un reinicio, el recibo de preparación
+dejó de valer por el número de dispositivo. T018 lo corrige (D130). T009–T012 pendientes.
+**Siguiente:** reanudar T008 con un run nuevo y el wheel de T018 reconstruido y verificado. Tiene autorización del
+usuario con techo de 10 (propuesta §10). El hijo ya está limpio en `d762e77`.
 [Contrato implementable](phase/P009-T001_CONTRATO_CREACION.md), decisión D116. T002 añade producto de
 carpeta/creación, sin piloto ni selección de carpeta real del usuario;
 la implementación no concede permisos de red, instalación o proveedores.
@@ -202,9 +203,10 @@ política de rutas marca los seis archivos de `core/` aunque `core/` está en la
 commit. Cambios del ejecutor conservados sin confirmar en el hijo. Antes, el recibo de preparación se restauró
 borrando el bytecode que dejó el QA de T007. [Evidencia saneada](phase/P009-T008_PILOTO_CODEX_CODEX.md).
 Reanudar exige wheel reconstruido y verificado y **autorización nueva del usuario**. Por decisión del usuario
-(D129), `fc340afb` queda BLOCKED como evidencia y no se revalida. Se retiran del hijo exactamente las ocho rutas de su
-diff, sin tocar `.venv`, TOML ni SQLite, y se encola P001-T001 en un run nuevo. Son al menos 3 de las 4 invocaciones
-que quedan; la autorización dirá si se amplía el techo para un ciclo REVISE o si se para.
+(D129), `fc340afb` queda BLOCKED como evidencia y no se revalida. El usuario amplió el techo de T008 a 10
+(propuesta §10). Sesión 2 (2026-10-21): ocho rutas retiradas del hijo, con copia privada en el área, y wheel de T017
+instalado. Se paró antes de encolar porque el recibo no sobrevivió a un reinicio (T018, D130). Sin consumo: siguen 3 de
+10 ([evidencia §7](phase/P009-T008_PILOTO_CODEX_CODEX.md#7-reanudación-2026-10-21-sesión-2-parada-antes-de-encolar)).
 **Objetivo:** Modelo Task y creación/listado de tareas (tarea P001-T001 del proyecto hijo).
 **Alcance:** título obligatorio, descripción opcional, completada inicialmente false y fecha de creación;
 formulario de alta y lista mediante plantillas. Migración, tests y diagrama de datos/flujos en el mismo cambio.
@@ -365,3 +367,18 @@ hijo: revalidarlo con la semántica nueva o descartarlo con la acción del produ
 - Regresiones con agentes falsos que reproducen el contrato de T008 (rutas de directorio del NEXT_STEPS del hijo).
   El ensayo de Django usa también esa notación.
 **Validación:** pytest dirigida y completa, unittest, Alembic check si procede. Sin proveedores ni piloto.
+
+## P009-T018 — El recibo de preparación sobrevive a un reinicio
+
+**Estado:** completada el 2026-10-21 (D130, [entrega](phase/P009-T018_RECIBO_TRAS_REINICIO.md)).
+**Depende de:** parada de la sesión 2 de T008; bloqueaba su reanudación.
+**Objetivo:** que un reinicio del Mac, que renumera `st_dev` sin cambiar inodos ni bytes, no invalide el recibo de
+`django-recipe-1`.
+**Alcance:** `verify_receipt` compara el inodo del checkout y de `.venv` y sigue verificando todos los bytes. Los
+recibos guardados no se reescriben. Las operaciones en curso de creación y preparación no cambian.
+**Rutas permitidas:** `src/harness_local/**`, `tests/**`, `docs/**`.
+**Criterios de aceptación:**
+- Con el dispositivo renumerado, el recibo vale, la UI muestra el proyecto preparado y se admiten tareas.
+- Otro inodo con los mismos bytes, o un byte distinto del entorno, se sigue rechazando. El hash del recibo no cambia.
+**Validación:** pytest dirigida y completa, unittest. Sin proveedores ni piloto.
+

@@ -139,3 +139,17 @@ Selecciones, binarios, área, puertos, techos y criterios de parada siguen igual
   `.venv`, invalida el recibo de preparación y bloquea las tareas siguientes (T008 §2).
 - La reanudación de T008 espera a P009-T017 y a un wheel reconstruido y verificado, como en §8. Quedan 4 de las 7
   invocaciones de T008 y 54 de las 60 del piloto. Hace falta una **autorización nueva del usuario**.
+
+## 10. Actualización tras T017
+
+2026-10-21, por D121 §6 tras la corrección de T017 ([D129](../DECISIONS.md#d129--p009-t017-una-ruta-de-directorio-se-congela-como-dir)).
+Autorización nueva del usuario en el chat: reanudar T008 y ampliar su techo. Selecciones, binarios y hashes de §1,
+área, puertos y criterios de parada de §5 siguen igual.
+
+- **Techo de T008: de 7 a 10.** El run nuevo recibe el mismo techo que el original: 1 plan, 3 ejecuciones y 3
+  revisiones. El máximo previsto del piloto pasa de 50 a 53, dentro del techo total de 60, que no cambia.
+- El run `fc340afb` queda BLOCKED como evidencia y no se revalida. Antes de encolar se retiran del hijo exactamente
+  las ocho rutas de su diff, sin tocar `.venv`, TOML ni SQLite, y se comprueba «Django preparado». Después se encola
+  P001-T001 con una clave nueva.
+- Antes de encolar se construye, se verifica con `check_distribution.py` y se instala offline el wheel del commit con
+  T017 (`0852f39`, `cli-13`), en el mismo venv del área y como en §8. El usuario lanza `serve` en su terminal.

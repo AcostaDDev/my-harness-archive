@@ -108,15 +108,24 @@ def environment_snapshot(root, config):
     return result
 
 
+def same_directory(current, recorded):
+    """P009-T018 (D130): macOS renumbers st_dev when it remounts a volume, for example after a reboot, while the
+    inode and every byte stay the same. A receipt compares the inode; protected files and the environment are still
+    verified byte by byte. Receipts keep the device they recorded."""
+    return current['inode'] == recorded['inode']
+
+
 def verify_receipt(root, receipt):
     if receipt is None:
         raise JournalError('preparation_required: prepara Django antes de ejecutar validaciones o tareas')
     try:
         with directory(root) as fd:
-            if identity(os.fstat(fd)) != receipt['identity']:
+            if not same_directory(identity(os.fstat(fd)), receipt['identity']):
                 raise ValueError('Checkout identity changed')
         verify_files(root, receipt['protected_files'])
-        if environment_snapshot(root, receipt['config']) != receipt['environment']:
+        current, recorded = environment_snapshot(root, receipt['config']), receipt['environment']
+        if (not same_directory(current['identity'], recorded['identity'])
+                or {**current, 'identity': None} != {**recorded, 'identity': None}):
             raise ValueError('Prepared environment changed')
     except (OSError, ValueError, KeyError) as exc:
         raise JournalError('preparation_required: identidad, archivos protegidos o entorno preparados cambiaron') from exc

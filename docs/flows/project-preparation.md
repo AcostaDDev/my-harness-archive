@@ -55,6 +55,8 @@ La admisión de jobs y la confirmación comparten la transacción SQLite; no hay
 COMPLETED, el recibo fija intérprete/ejecutables, todas las distribuciones, hashes del entorno, lock, secreto
 local por hash y archivos protegidos. Cambiar los roles conserva ese recibo si la receta no deriva. Se valida
 antes de tareas/checks y de cada comando nativo; no se reescriben snapshots documentales anteriores.
+La identidad del checkout y de `.venv` se compara por inodo: macOS renumera el dispositivo al remontar el volumen
+tras un reinicio, y los bytes se siguen verificando enteros (D130).
 
 [T005](../phase/P009-T005_ENSAYO_DJANGO.md) contrasta este flujo con Python 3.13.13/uv 0.12.19 y los wheels
 fijados, instalados offline en un hijo temporal. Una caída simulada tras el commit técnico y antes de adoptar
