@@ -146,6 +146,7 @@ tarea se leen solo las decisiones que cita; este índice sirve para buscar prece
 | [D133](#d133--p009-t019-el-harness-formatea-con-la-herramienta-del-perfil-tras-cada-turno-del-ejecutor) | P009-T019: el harness formatea con la herramienta del perfil tras cada turno del ejecutor | P009 |
 | [D134](#d134--p009-t009-completada-codexclaude-committed) | P009-T009: completada; Codex→Claude COMMITTED | P009 |
 | [D135](#d135--p009-t020-encolar-desde-los-documentos-con-notas-adicionales) | P009-T020: encolar desde los documentos, con notas adicionales | P009 |
+| [D136](#d136--p009-t010-completada-claudeclaude-committed) | P009-T010: completada; Claude→Claude COMMITTED | P009 |
 
 ## D001 — Alcance local y arquitectura base
 
@@ -4145,3 +4146,20 @@ Estado: implementada el 2026-10-21. Fase: P009. A propuesta del usuario, antes d
 - No basta con añadirlas al texto: el planificador solo lee la sección de la tarea y las restricciones compartidas.
   Solo el usuario aporta `additional_notes` (se retira la que invente el planificador) y nunca amplían rutas,
   comandos ni permisos. Sin notas, petición, entrada, contrato y prompts no cambian.
+
+## D136 — P009-T010: completada; Claude→Claude COMMITTED
+
+Estado: completada el 2026-10-21. Fase: P009. Petición del usuario de continuar, dentro de D121 y de la propuesta
+§§3–6. [Evidencia saneada](phase/P009-T010_PILOTO_CLAUDE_CLAUDE.md).
+
+- Wheel de `5ba32f8` (T020) construido, verificado e instalado offline. Registro v3 al cambiar solo el revisor a
+  Claude `claude-sonnet-5-5`/`medium` desde Ajustes; ejecutor Claude y catálogo intactos. Mismo proyecto e historial.
+- Run `beaf4528`, P001-T003, encolado desde el selector documental sin notas. Claude Sonnet 5.5/medium en los tres
+  roles; ejecutor elegido por el revisor con motivo y modelo observado en el stream. Completar/reabrir por POST,
+  filtros por estado y vacíos legibles; flujo actualizado, sin cambios de modelo ni migraciones.
+- Pasan los 22 tests y las seis validaciones; el formateador deja los tres archivos Python sin cambios. ACCEPT a la
+  primera, sin hallazgos ni concesiones. Commit `882af9b` confirmado desde la UI; run COMMITTED y checkout limpio.
+  T010 consume 3 de 7; piloto acumulado 21 de 60. La comprobación de fase previa `08f3532f` no tiene intentos de agentes.
+- El mensaje automático del commit toma el título congelado en español. Consultado después de confirmarlo, el
+  usuario elige conservar ese commit y su evidencia y aplicar el inglés al commit de esta sesión en `my_harness`.
+  No se reescriben historiales. T011–T012 pendientes; el piloto todavía no está terminado.

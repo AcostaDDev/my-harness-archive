@@ -56,13 +56,19 @@ D126) el 2026-10-20. T007 detenida el 2026-10-20 (D123) y completada el 2026-10-
 2026-10-21 en la revisión (D128). Tras T017 (D129) y T018 (D130) se completó el mismo día: P001-T001 del hijo
 COMMITTED (D131). T009 detenida el 2026-10-21 en el límite de revisiones (D132); T019 corrige la causa el mismo
 día (D133) y T009 se completa: P001-T002 del hijo COMMITTED (D134). T020 añade encolar desde los documentos con
-notas (D135). T010–T012 pendientes.
+notas (D135). T010 se completa el mismo día: P001-T003 COMMITTED con Claude→Claude (D136). T011–T012 pendientes.
 Objetivo y criterios en [ROADMAP](ROADMAP.md#p009--proyecto-django-desde-cero-y-piloto-con-cuatro-combinaciones-de-agentes),
 tareas en [NEXT_STEPS](NEXT_STEPS.md) y diseño en el [plan](phase/P009_PLAN_DJANGO.md).
 Decisión: [D115](DECISIONS.md#d115--p009-django-desde-cero-carpeta-de-proyectos-y-agentes-por-proyecto).
 Contrato de T001: [diseño implementable](phase/P009-T001_CONTRATO_CREACION.md),
 [D116](DECISIONS.md#d116--p009-t001-autoridad-de-creación-presets-por-proyecto-y-preparación-separada).
 
+- T010 completada: run `beaf4528` con Claude `claude-sonnet-5-5`/`medium` en los tres roles. El revisor elige
+  Sonnet/medium para el ejecutor con motivo; pasan los 22 tests y las seis validaciones y acepta a la primera.
+  P001-T003 del hijo permite completar/reabrir por POST y filtrar por estado, con flujo actualizado. Commit
+  `882af9b`, checkout limpio; registro v3 al cambiar solo el revisor desde Ajustes. Primer uso del selector de T020
+  para encolar una tarea real. Consumo T010: 3 de 7; piloto: 21 de 60
+  ([evidencia](phase/P009-T010_PILOTO_CLAUDE_CLAUDE.md), D136).
 - T020, a propuesta del usuario: el formulario de encolar ofrece fase y tarea del NEXT_STEPS vivo, muestra la sección
   literal con su hash y el servidor rechaza un documento cambiado. Las notas adicionales se congelan en el contrato
   (`additional_notes`) y llegan al planificador, al ejecutor y al revisor, sin migración y sin ampliar el alcance
@@ -139,9 +145,10 @@ P008 permanece cerrada ([archivo](archive/phase-008/SUMMARY.md), D114). Este rep
 ni ejecutarse con el harness. T002–T005 usan carpetas/SQLite temporales y CLI de agentes falsas;
 sin proyectos reales del usuario ni proveedores. T005 añade herramientas Django reales, sin modificar el runtime del harness.
 
-**Siguiente:** T010 (Claude→Claude): en Ajustes se cambia el revisor a Claude y se encola P001-T003 desde el
-selector nuevo. Techo de 7. Antes hay que instalar el wheel con T020 en el área y lanzarla cuando el usuario lo pida.
-Área `~/.local/share/harness-local/` con el wheel de `494b929`. Hijo limpio en `2f2b13f`. Durante la operación no se
-abre la SQLite viva con otro proceso SQLite (propuesta §11). El usuario detiene `serve` al terminar la sesión. El QA de
-T012 lanza `runserver` con `PYTHONDONTWRITEBYTECODE=1` (propuesta §9). Sigue pendiente aclarar en `define-project` que
+**Siguiente:** T011 (Claude→Codex): en Ajustes se cambia solo el ejecutor a Codex y se encola P001-T004 desde el
+selector documental. Revisor Claude `claude-sonnet-5-5`/`medium`; techo propio de 7, cuando el usuario lo pida.
+Área `~/.local/share/harness-local/` con el wheel de `5ba32f8` (T020), verificado e instalado. Hijo limpio en `882af9b`.
+Durante la operación no se abre la SQLite viva con otro proceso SQLite (propuesta §11). Servicio detenido, sin locks
+ni trabajos pendientes tras T010. El QA de T012 lanza `runserver` con `PYTHONDONTWRITEBYTECODE=1` (propuesta §9).
+Sigue pendiente aclarar en `define-project` que
 una carpeta nueva no tiene marcadores (D127).

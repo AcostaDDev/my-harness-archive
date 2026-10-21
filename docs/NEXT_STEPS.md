@@ -15,8 +15,10 @@ COMMITTED en `98f4611` (D131). T009 se detuvo el 2026-10-21 en el límite de rev
 shell, no logra cumplir `ruff format` ([evidencia](phase/P009-T009_PILOTO_CODEX_CLAUDE.md), D132). T019 lo corrige el
 2026-10-21: el harness formatea con la herramienta del perfil tras cada turno del ejecutor (D133). Con autorización
 nueva y techo 13, T009 se completa el mismo día: P001-T002 COMMITTED en `2f2b13f` (D134). A petición del usuario,
-T020 (encolar desde los documentos, con notas) se hace antes de T010 (D135). T010–T012 pendientes.
-**Siguiente:** T010 (Claude→Claude), con el wheel de T020 instalado, cuando el usuario lo pida.
+T020 (encolar desde los documentos, con notas) se hace antes de T010 (D135). T010 se completa el mismo día: run
+`beaf4528`, P001-T003 COMMITTED en `882af9b`, 22 tests y seis validaciones correctas con Claude→Claude (D136).
+T011–T012 pendientes.
+**Siguiente:** T011 (Claude→Codex), P001-T004, cuando el usuario lo pida. Wheel de T020 instalado; hijo limpio.
 [Contrato implementable](phase/P009-T001_CONTRATO_CREACION.md), decisión D116. T002 añade producto de
 carpeta/creación, sin piloto ni selección de carpeta real del usuario;
 la implementación no concede permisos de red, instalación o proveedores.
@@ -245,7 +247,13 @@ pasaron las seis validaciones (11 tests) y el revisor aceptó a la primera. Comm
 
 ## P009-T010 — Piloto: Claude revisor → Claude ejecutor
 
-**Estado:** pendiente. **Depende de:** T009 COMMITTED y sin trabajo pendiente.
+**Estado:** completada el 2026-10-21 (D136, [evidencia](phase/P009-T010_PILOTO_CLAUDE_CLAUDE.md)).
+**Resultado:** registro v3 al cambiar solo el revisor a Claude `claude-sonnet-5-5`/`medium` desde Ajustes. Contrato
+desde el selector de T020, sin notas; run `beaf4528` con Sonnet/medium en los tres roles, ejecutor elegido por el
+revisor con motivo y modelo observado en el stream. Completar/reabrir por POST y filtros/estados vacíos con
+22 tests y seis validaciones correctas; ACCEPT a la primera. Commit `882af9b`, checkout limpio. T010: 3 de 7;
+piloto: 21 de 60. QA funcional en navegador pendiente de T012.
+**Depende de:** T009 COMMITTED y sin trabajo pendiente.
 **Objetivo:** Completar/reabrir y filtrar pendientes/completadas (P001-T003).
 **Alcance:** cambio de estado mediante POST, filtros de lista y estados vacíos, manteniendo CRUD anterior.
 **Rutas permitidas:** `docs/phase/**`; cambios del hijo solo mediante su contrato gestionado confirmado.
