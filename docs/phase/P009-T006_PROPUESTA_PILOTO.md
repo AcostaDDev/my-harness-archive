@@ -153,3 +153,17 @@ Autorización nueva del usuario en el chat: reanudar T008 y ampliar su techo. Se
   P001-T001 con una clave nueva.
 - Antes de encolar se construye, se verifica con `check_distribution.py` y se instala offline el wheel del commit con
   T017 (`0852f39`, `cli-13`), en el mismo venv del área y como en §8. El usuario lanza `serve` en su terminal.
+
+## 11. Actualización tras T009
+
+2026-10-21, por D121 §6 tras la parada de T009 ([D132](../DECISIONS.md#d132--p009-t009-detenida-el-ejecutor-claude-no-puede-cumplir-ruff-format)).
+Selecciones, binarios, área, puertos, techos y criterios de parada siguen igual.
+
+- Ajustes del hijo en el registro v2: ejecutor Claude con el catálogo de §2 y revisor Codex sin cambios. T010 cambia
+  después el revisor a Claude.
+- T009 ha consumido 6 de sus 7 invocaciones; el piloto, 15 de 60. El run `bb29b133` está en `revision_limit` y sus
+  cambios siguen sin confirmar en el hijo. Reanudar espera a P009-T019 y a una **autorización nueva del usuario**, que
+  fije el techo de T009 y qué hacer con `bb29b133`.
+- Durante la operación no se abre `state/harness.sqlite3` con otro proceso SQLite mientras corre `serve`. El
+  seguimiento se hace desde la UI o con los artefactos de `state/artifacts/`. Las comprobaciones de la SQLite se hacen
+  con el servicio detenido o sobre una copia.

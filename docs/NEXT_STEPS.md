@@ -11,8 +11,9 @@ y se completó el 2026-10-21 con autorización nueva: Django creado desde la UI,
 ([evidencia](phase/P009-T008_PILOTO_CODEX_CODEX.md), D128). T017 lo corrige el 2026-10-21: `dir/` se congela como
 `dir/**` (D129). La segunda sesión de T008 se paró antes de encolar: tras un reinicio, el recibo de preparación
 dejó de valer por el número de dispositivo. T018 lo corrige (D130). La sesión 3 completa T008: run `7fbaf89c`
-COMMITTED en `98f4611` (D131). T009–T012 pendientes.
-**Siguiente:** T009 (Codex→Claude), lanzada cuando el usuario lo pida, dentro de D121.
+COMMITTED en `98f4611` (D131). T009 se detuvo el 2026-10-21 en el límite de revisiones. El ejecutor Claude, sin
+shell, no logra cumplir `ruff format` ([evidencia](phase/P009-T009_PILOTO_CODEX_CLAUDE.md), D132). T010–T012 pendientes.
+**Siguiente:** T019 (formato del perfil con un ejecutor sin shell). Reanudar T009 exige después una autorización nueva.
 [Contrato implementable](phase/P009-T001_CONTRATO_CREACION.md), decisión D116. T002 añade producto de
 carpeta/creación, sin piloto ni selección de carpeta real del usuario;
 la implementación no concede permisos de red, instalación o proveedores.
@@ -222,7 +223,16 @@ formulario de alta y lista mediante plantillas. Migración, tests y diagrama de 
 
 ## P009-T009 — Piloto: Codex revisor → Claude ejecutor
 
-**Estado:** pendiente. **Depende de:** T008 COMMITTED y sin trabajo pendiente.
+**Estado:** detenida el 2026-10-21 (D132), en el límite de revisiones; 6 de 7 invocaciones (piloto 15 de 60)
+([evidencia](phase/P009-T009_PILOTO_CODEX_CLAUDE.md)). **Depende de:** T008 COMMITTED y sin trabajo pendiente;
+su reanudación, de T019.
+**Avance:** registro v2 con ejecutor Claude y revisor Codex sin cambios. En el run `bb29b133`, el revisor eligió
+`claude-sonnet-5-5`/`medium` con motivo, y la invocación coincide. El ejecutor implementa edición y borrado con 404,
+POST y CSRF, y pasan 11 tests y cinco de las seis validaciones. `ruff format --check` falla por una línea de
+`core/tests.py`: el hijo usa 100 columnas y el ejecutor, sin shell, formatea a mano con 88. Dos REVISE y un
+reintento sin cambios. Entre medias, `serve` murió por SIGBUS (causa probable: lectores `sqlite3` externos sobre la
+SQLite viva). El producto recuperó el run sin reencolar nada. Cambios sin confirmar en el hijo y sin commit.
+Reanudar exige **autorización nueva del usuario**, con techo y decisión sobre `bb29b133`.
 **Objetivo:** Editar y borrar tareas con confirmación (P001-T002 del mismo proyecto).
 **Alcance:** formularios de edición/borrado, validación de título y gestión de inexistentes; conservar datos previos.
 **Rutas permitidas:** `docs/phase/**`; cambios del hijo solo mediante su contrato gestionado confirmado.
@@ -384,3 +394,25 @@ recibos guardados no se reescriben. Las operaciones en curso de creación y prep
 - Otro inodo con los mismos bytes, o un byte distinto del entorno, se sigue rechazando. El hash del recibo no cambia.
 **Validación:** pytest dirigida y completa, unittest. Sin proveedores ni piloto.
 
+## P009-T019 — El ejecutor sin shell puede cumplir el formato del perfil
+
+**Estado:** pendiente. **Depende de:** parada de T009 (D132); bloquea su reanudación.
+**Objetivo:** que un ejecutor sin shell, como Claude con `Read`/`Edit`/`Write`/`Glob`/`Grep` (D121), pueda dejar en
+verde las validaciones de formato del perfil, o que el fallo se detecte antes de gastar correcciones que no pueden
+arreglarlo.
+**Alcance:** hoy `ruff format --check .` solo informa del archivo. El revisor repite «would be reformatted» y el
+ejecutor, que no puede ejecutar Ruff, formatea a mano con 88 columnas cuando el hijo fija 100. Decidir con criterio,
+o preguntando si cambia el diseño, entre: dar al ejecutor la salida concreta de la validación fallida (por ejemplo
+el diff de `ruff format --diff`); que el perfil formatee de forma determinista los archivos del contrato con su propia
+herramienta; o una concesión de comando acotada. Contrastarlo con las restricciones de D121, la protección de la
+configuración (D119), los perfiles y comandos congelados (`commands-1`, `command_config_sha256`) y Codex como ejecutor.
+Decidir también cómo sigue el run `bb29b133`, en `revision_limit` con los cambios conservados en el hijo.
+**Rutas permitidas:** `src/harness_local/**`, `tests/**`, `examples/**`, `docs/**`.
+**Criterios de aceptación:**
+- Con agentes falsos que reproducen T009, un ejecutor sin shell recibe información suficiente o el formato queda
+  resuelto sin que intervenga, y el run llega a ACCEPT. Nunca se gasta un ciclo de corrección que no puede cambiar
+  el resultado sin que el usuario lo vea.
+- Perfiles, comandos y contratos ya congelados conservan su lectura y sus hashes. Si cambia la semántica, se versiona
+  y se documenta. Codex y los demás perfiles se comportan igual.
+- El ejecutor no gana shell, red ni rutas fuera del contrato sin una concesión explícita.
+**Validación:** pytest dirigida y completa, unittest y Alembic check si procede. Sin proveedores ni piloto.

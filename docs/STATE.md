@@ -53,13 +53,20 @@ salvo donde se indica. Detalle por fase en `docs/archive/phase-NNN/SUMMARY.md`.
 D122), T014 (definición Codex sin Git, D124), T016 (suite pytest rápida, D125) y T015 (wheel verificado con D088,
 D126) el 2026-10-20. T007 detenida el 2026-10-20 (D123) y completada el 2026-10-21 (D127). T008 detenida el
 2026-10-21 en la revisión (D128). Tras T017 (D129) y T018 (D130) se completó el mismo día: P001-T001 del hijo
-COMMITTED (D131). T009–T012 pendientes.
+COMMITTED (D131). T009 detenida el 2026-10-21 en el límite de revisiones (D132). T010–T012 pendientes.
 Objetivo y criterios en [ROADMAP](ROADMAP.md#p009--proyecto-django-desde-cero-y-piloto-con-cuatro-combinaciones-de-agentes),
 tareas en [NEXT_STEPS](NEXT_STEPS.md) y diseño en el [plan](phase/P009_PLAN_DJANGO.md).
 Decisión: [D115](DECISIONS.md#d115--p009-django-desde-cero-carpeta-de-proyectos-y-agentes-por-proyecto).
 Contrato de T001: [diseño implementable](phase/P009-T001_CONTRATO_CREACION.md),
 [D116](DECISIONS.md#d116--p009-t001-autoridad-de-creación-presets-por-proyecto-y-preparación-separada).
 
+- T009 (Codex→Claude, run `bb29b133`): en Ajustes solo cambia el ejecutor, a Claude (registro v2). El revisor
+  Codex elige `claude-sonnet-5-5`/`medium` con motivo, y la invocación coincide. Edición y borrado con 11 tests
+  verdes, pero `ruff format --check` falla por una línea: el hijo usa 100 columnas y el ejecutor Claude, sin shell,
+  formatea a mano con 88. Dos REVISE iguales y el run acaba en `revision_limit`. 6 de 7 invocaciones; piloto 15 de
+  60. Cambios sin confirmar en el hijo. `serve` murió por SIGBUS a mitad del run (causa probable: lectores `sqlite3`
+  externos sobre la SQLite viva). La recuperación del producto funcionó sin reencolar nada
+  ([evidencia](phase/P009-T009_PILOTO_CODEX_CLAUDE.md), D132).
 - T008 completada en la sesión 3: run `7fbaf89c` con Codex `gpt-6-luna`/`medium` en los tres roles. El contrato
   congela `core/**`, pasan las seis validaciones y el revisor da ACCEPT sin hallazgos. Commit `98f4611` confirmado por
   el usuario. Consumo de T008: 6 de 10. Observaciones sin bloqueo: el alta no redirige y el flujo `tasks.md` del
@@ -116,9 +123,10 @@ P008 permanece cerrada ([archivo](archive/phase-008/SUMMARY.md), D114). Este rep
 ni ejecutarse con el harness. T002–T005 usan carpetas/SQLite temporales y CLI de agentes falsas;
 sin proyectos reales del usuario ni proveedores. T005 añade herramientas Django reales, sin modificar el runtime del harness.
 
-**Siguiente:** T009 (Codex→Claude, P001-T002 editar y borrar), lanzada cuando el usuario lo pida dentro de D121
-(techo 7). En Ajustes solo cambia el ejecutor, a Claude. Piloto: 9 de 60. Área `~/.local/share/harness-local/` con el
-wheel de `d557082` (`cli-13`, T017 y T018). Hijo `harness-django-pilot` limpio en `98f4611`. Los cambios descartados de
-`fc340afb` están en una copia privada en `state/fc340afb-discarded/`. El usuario detiene `serve` al terminar la
-sesión. El QA de T012 lanza `runserver` con `PYTHONDONTWRITEBYTECODE=1` (propuesta §9). Sigue pendiente aclarar
-en `define-project` que una carpeta nueva no tiene marcadores (D127).
+**Siguiente:** P009-T019, para que un ejecutor sin shell cumpla el formato del perfil, y la decisión sobre `bb29b133`.
+Después, reanudar T009 con autorización nueva del usuario: queda 1 de 7 invocaciones, y el piloto va por 15 de 60.
+Área `~/.local/share/harness-local/` con el wheel de `d557082`. Hijo en `98f4611`, con los cambios de `bb29b133` sin
+confirmar. Ajustes en el registro v2 (revisor Codex, ejecutor Claude). Durante la operación no se abre la SQLite
+viva con otro proceso SQLite (propuesta §11). El usuario detiene `serve` al terminar la sesión. El QA de T012 lanza
+`runserver` con `PYTHONDONTWRITEBYTECODE=1` (propuesta §9). Sigue pendiente aclarar en `define-project` que una
+carpeta nueva no tiene marcadores (D127).

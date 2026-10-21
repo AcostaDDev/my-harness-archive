@@ -142,6 +142,7 @@ tarea se leen solo las decisiones que cita; este índice sirve para buscar prece
 | [D129](#d129--p009-t017-una-ruta-de-directorio-se-congela-como-dir) | P009-T017: una ruta de directorio se congela como `dir/**` | P009 |
 | [D130](#d130--p009-t018-el-recibo-de-preparación-compara-el-inodo-no-el-dispositivo) | P009-T018: el recibo de preparación compara el inodo, no el dispositivo | P009 |
 | [D131](#d131--p009-t008-completada-codexcodex-committed) | P009-T008: completada; Codex→Codex COMMITTED | P009 |
+| [D132](#d132--p009-t009-detenida-el-ejecutor-claude-no-puede-cumplir-ruff-format) | P009-T009: detenida; el ejecutor Claude no puede cumplir `ruff format` | P009 |
 
 ## D001 — Alcance local y arquitectura base
 
@@ -4071,3 +4072,21 @@ Estado: completada el 2026-10-21. Fase: P009. Dentro de D121 y de la propuesta �
   tras reinicio (T018, D130). Las observaciones de contenido (alta sin redirección y flujo recortado) no bloquean.
   Quedan registradas para las tareas siguientes del hijo.
 
+## D132 — P009-T009: detenida; el ejecutor Claude no puede cumplir `ruff format`
+
+Estado: detenida el 2026-10-21. Fase: P009. Dentro de D121 y de la propuesta §§3–6, a petición del usuario.
+[Evidencia saneada](phase/P009-T009_PILOTO_CODEX_CLAUDE.md).
+
+- En Ajustes solo cambia el ejecutor, a Claude con el catálogo de D121 (registro v2, auditado). El run `bb29b133` de
+  P001-T002 se planifica con revisor Codex `gpt-6-luna`/`medium`, que elige al ejecutor Claude `claude-sonnet-5-5`/`medium`
+  con motivo. La invocación coincide con esa selección. Edición y borrado con 404, POST y CSRF; 11 tests JUnit verdes.
+- Falla `ruff format --check .` por una línea de `core/tests.py`. El hijo usa `line-length = 100` y el ejecutor
+  Claude, sin shell (D121), formatea a mano con 88 columnas. Dos REVISE con el mismo hallazgo, y el reintento no
+  cambia nada. Ni el revisor ni el ejecutor ven qué línea cambiaría Ruff. El run acaba en `revision_limit`.
+- `serve` murió por SIGBUS en el índice WAL durante el primer ciclo de corrección. Causa probable, no demostrada: los
+  lectores `sqlite3` del sistema que el agente lanzaba sobre la SQLite viva. La SQLite está íntegra. La recuperación
+  del producto funcionó: RECOVERY_REQUIRED sin reencolar, escritor confirmado, run INTERRUPTED y reintento explícito
+  pedido por el usuario. Regla de operación: no se abre la SQLite viva con otra build de SQLite mientras corre `serve`.
+- Consumo: T009 6 de 7, piloto 15 de 60. Sin commit; los cambios del ejecutor se conservan en el hijo.
+- La corrección es una tarea de producto aparte, P009-T019. Reanudar T009 exige autorización nueva del usuario;
+  esta parada no autoriza más consumo.
