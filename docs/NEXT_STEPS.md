@@ -1,11 +1,440 @@
-# Siguientes pasos — my_harness
+# P011 — Preparación para apertura pública en GitHub
 
-Sin fase activa ni tareas planificadas. P001–P010 completadas y archivadas; la primera versión local queda
-cerrada documentalmente el 2026-10-22 en el alcance declarado de D151/D153, tras el dictamen favorable de T009.
-[Resumen de P010](archive/phase-010/SUMMARY.md), [revisión](archive/phase-010/REVIEW.md),
-[plan histórico](archive/phase-010/NEXT_STEPS.md) y [cierre](archive/phase-010/P010_CIERRE.md).
+Objetivo y criterios en [ROADMAP](ROADMAP.md#p011--preparación-para-apertura-pública-en-github).
+Decisión: [D154](DECISIONS.md#d154--p011-preparación-para-apertura-pública-en-github).
+[Plan y alcance](phase/P011_PLAN_APERTURA_PUBLICA.md).
 
-La próxima prioridad corresponde al usuario; [candidatas sin fase](ROADMAP.md#candidatas-sin-fase-asignada).
-No se inventa una sucesora ni se inicia otra fase del Django hijo. A/B y D095 conservan su validación solo offline;
-una comprobación real futura exige tarea y consentimiento propios. Siguen vigentes AGENTS y los límites operativos,
-sin autorización para proveedores, smokes, push o publicación.
+**Estado:** planificada el 2026-10-22, ampliada por D155. Diecinueve tareas pendientes; sin implementación.
+**Planificación:** finalizada para ejecución por petición del usuario (D156); no equivale a fase completada.
+**Siguiente:** P011-T001. Crear la fase no ejecuta sus tareas ni autoriza publicación.
+P001–P010 siguen cerradas; la primera versión local mantiene el alcance de D151/D153.
+
+## Restricciones compartidas
+
+- Una tarea acotada cada vez, desarrollo manual, decisiones duraderas en DECISIONS y artefactos por tarea en
+  `docs/phase/`. Los checks siguientes son previsiones; registrar base, comandos, resultados y omisiones al ejecutar.
+- No operar este repositorio con el harness ni lanzar agentes, proveedores, smokes, instalaciones/red o servicios
+  por efecto de esta planificación; cada operación que lo requiera conserva autorización explícita propia.
+  Sin commits, tags, push, Releases, PyPI, cambio de visibilidad ni publicación automática.
+- Fixtures sintéticos; sin credenciales, datos privados ni runs operativos. ReferenceProject solo se lee; no operar
+  el hijo de P009 ni reutilizar sus consentimientos. No modificar configuración global.
+- Preservar CAS, aceptación por contenido, permisos separados, locks, intención, cuarentena y recuperación.
+  No reescribir archivos de fases cerradas, historiales, snapshots, catálogos ni recibos congelados.
+- Inglés como base del código, comentarios/docstrings, prompts originales y documentación pública vigente;
+  interfaz y trabajo de proyecto seleccionables en en/es. Datos de usuario, logs externos y fixtures bilingües
+  necesarios no se traducen por sustitución masiva. Excepciones históricas con ruta y motivo.
+- No renombrar protocolos, rutas canónicas, revisiones Alembic o claves persistidas por estética. Fuentes de
+  recetas ligadas a huellas requieren el tratamiento T001 antes de tocarlas, incluso sus comentarios.
+- Modelos/migraciones con DDBB-DIAGRAM; flujos con `docs/flows/`; API con OpenAPI/tipos en la misma tarea.
+  Bibliotecas/formatos nuevos con decisión previa; incongruencias de diseño se resuelven antes de implementarse.
+- D155 retira del alcance público la observación/importación del harness anterior y el Flujo A; solo se mantienen
+  crear desde cero e incorporar un repositorio existente sin harness (Flujo B). T019 se ejecuta tras T002 y antes
+  de T003 para no traducir ni empaquetar funcionalidades destinadas a eliminación. No ocultarlas dejando API/CLI activas.
+- B y D095 conservan el aplazamiento D151; A queda fuera del soporte futuro por retirada, sin validarlo por ello.
+  Licencia, versión y publicación son decisiones distintas; no se deducen por silencio.
+  Los tests sintéticos no acreditan uso real. Ninguna tarea pendiente figura como capacidad entregada.
+- D156 reserva el modo continuo `tareas → commits → check → cierre/archivo → planificación y ejecución de la
+  siguiente fase` para v0.2.0 después de abrir el proyecto en GitHub, fuera de estas tareas. P011 mantiene
+  cierre con READY y autorización propia, nueva fase sin tareas y confirmación del plan posterior.
+  La petición actual autoriza el commit documental que finaliza esta planificación, sin ejecutar la fase ni publicar.
+
+## P011-T001 — Inventario y contrato de la apertura pública
+
+**Estado:** pendiente.
+**Objetivo:** Hacer implementables la traducción, los idiomas y la distribución sin romper compatibilidad.
+**Alcance:** inventario por archivo de comentarios/docstrings/descripciones e identificadores españoles;
+superficies UI/API/CLI/documentos/prompts; fuentes congeladas, hashes y lectores antiguos; brechas de primer uso
+y mapa de retirada del harness anterior con separación de infraestructura compartida por la incorporación B.
+**Rutas permitidas:** `docs/**`.
+**Criterios de aceptación:**
+
+- Matriz por archivo/grupo con tarea propietaria, idioma actual, tratamiento y excepción justificada; revisar
+  también español sin tildes. Separar texto de código, contenido de usuario y fixtures de compatibilidad.
+- Contrato separa preferencia visual y lengua de trabajo por proyecto (`en`/`es`): inglés para nuevos usuarios/
+  proyectos y conservación de la semántica anterior española. Fijar precedencias, persistencia, fallback,
+  interpolación/plurales/fechas, mensajes API/CLI, configuración, migraciones y snapshots por intento.
+- Decidir la solución React/Python mínima con justificación y decisión de dependencias; no elegir `.po` por
+  analogía con Django. Definir tratamiento de recetas cuyo texto entra en `fingerprint()`, prompts versionados,
+  ADR históricas, anclas, parsers D088 y fixtures congelados antes de editarlos.
+- Inventario de licencia, privacidad/historial Git, metadatos, cachés y setup; matriz inicial de diez criterios
+  de salida, tareas/evidencias y decisiones pendientes, sin implantar producto ni dar auditorías por realizadas.
+- Identificar entradas legacy/A, observadores, prompts, módulos/tablas propios y dependencias compartidas por B,
+  recuperación, backups e historiales propios. Definir disposición no destructiva de datos/jobs antiguos para T019.
+
+**Validación:** contraste estático de código, decisiones, parsers y enlaces; sin suites ni procesos de agentes.
+**Entregables:** `docs/phase/P011-T001_CONTRATO_APERTURA.md`, inventario y decisión de diseño.
+
+## P011-T002 — Licencia y revisión del contenido publicable
+
+**Estado:** pendiente. **Depende de:** T001.
+**Objetivo:** Preparar derechos, atribuciones y contenido revisados para abrir el repositorio y sus artefactos.
+**Alcance:** licencia/titularidad elegidas por el usuario, avisos de terceros, archivos rastreados e historial Git
+alcanzable, soporte/contribución y reporte responsable; exclusión de estado y evidencias privadas.
+**Rutas permitidas:** `LICENSE*`, `NOTICE*`, `CONTRIBUTING*`, `SECURITY*`, `.gitignore`, `.gitattributes`,
+`pyproject.toml`, `frontend/package.json`, `docs/**`.
+**Criterios de aceptación:**
+
+- Registrar elección explícita de licencia y titularidad antes de escribir términos/metadatos. La autoridad de
+  planificación no elige licencia; su ausencia es bloqueo identificado de esta tarea y de la preparación pública.
+- Auditar contenido actual, historial alcanzable y archivos previstos de wheel/sdist; informe saneado con
+  cobertura/límites, sin copiar secretos. `.gitignore` no constituye saneamiento del historial.
+- No borrar ni reescribir historia automáticamente. Un hallazgo histórico necesita resolución explícita antes
+  de declarar publicable el conjunto. Preservar atribuciones; documentos públicos ingleses sin contactos inventados.
+
+**Validación:** revisión estática y escaneo local documentado sin red ni exposición de valores sensibles;
+contenidos exactos del artefacto final se verifican en T016.
+**Entregables:** `docs/phase/P011-T002_CONTENIDO_PUBLICABLE.md` y archivos públicos acordados.
+
+## P011-T003 — Comentarios e identificadores en inglés: núcleo y perfiles
+
+**Estado:** pendiente. **Depende de:** T001, T019.
+**Objetivo:** Que el núcleo mantenido tenga comentarios, docstrings y descripciones técnicas en inglés.
+**Alcance:** `core/engine` y `profiles`; revisar variables, funciones/clases y descripciones de esquemas.
+Mensajes visibles corresponden a T007/T010; prompts/documentos generados a T009.
+**Rutas permitidas:** `src/harness_local/core/**`, `src/harness_local/profiles/**`, `tests/**`, `docs/**`.
+**Criterios de aceptación:**
+
+- Inventario del grupo resuelto archivo a archivo, incluidos comentarios en línea y español sin tildes;
+  renombrar identificadores españoles internos solo si existen, conservando referencias y comportamiento.
+- Mantener protocolos, literales del parsing bilingüe y contenido de prueba; no modificar lógica, claves
+  persistidas, catálogos congelados o rutas por traducción. Justificar cualquier refactor imprescindible por separado.
+
+**Validación:** inventario/diff y pruebas existentes pertinentes del núcleo; sin tests que solo repitan comentarios.
+**Entregables:** `docs/phase/P011-T003_INGLES_NUCLEO.md` e inventario actualizado.
+
+## P011-T004 — Comentarios e identificadores en inglés: backend y recetas
+
+**Estado:** pendiente. **Depende de:** T001, T003.
+**Objetivo:** Completar el inglés del código backend sin alterar identidades persistidas.
+**Alcance:** adaptadores, servicios, API, almacenamiento, CLI, migraciones y recetas según T001.
+**Rutas permitidas:** `src/harness_local/**`, `tests/**`, `docs/**`.
+**Criterios de aceptación:**
+
+- Comentarios/docstrings/nombres internos del inventario revisados y traducidos; conservar revisiones Alembic,
+  formatos y códigos externos. Inventariar mensajes visibles para T010, sin mezclarlos con comentarios.
+- Resolver fuentes ligadas a huellas mediante el contrato aprobado; conservar lectura/recuperación de recibos
+  antiguos. No editar una receta congelada para aparentar cobertura ni invalidar entornos por cambios cosméticos.
+- Cambios imprescindibles de formato/modelos/flujos con decisión, regresiones y paridad en la misma entrega;
+  desglosar trabajo adicional antes de sobrepasar el contrato de compatibilidad.
+
+**Validación:** revisión lingüística/diff, regresiones de recetas/recibos/snapshots; pytest/unittest pertinentes y
+Alembic temporal si cambia esquema.
+**Entregables:** `docs/phase/P011-T004_INGLES_BACKEND.md` e inventario actualizado.
+
+## P011-T005 — Comentarios en inglés: frontend, scripts y ejemplos
+
+**Estado:** pendiente. **Depende de:** T001, T004.
+**Objetivo:** Completar los comentarios/descripciones técnicas de cliente y herramientas mantenidas.
+**Alcance:** TS/TSX, CSS/HTML, Python/shell, TOML, ejemplos vigentes y metadatos descriptivos.
+**Rutas permitidas:** `frontend/**`, `scripts/**`, `examples/**`, `pyproject.toml`, `.gitignore`,
+`.gitattributes`, `tests/**`, `docs/**`.
+**Criterios de aceptación:**
+
+- Revisión por archivo de comentarios/docstrings/nombres; cadenas visibles inventariadas para catálogos.
+  No editar a mano OpenAPI generado ni cambiar comandos, locks o autorizaciones por traducción.
+- Ejemplos vigentes en inglés con datos sintéticos; guiones históricos identificados sin reescribir snapshots
+  ni presentarlos como instrucciones actuales. Descripción del paquete coherente con su estado real.
+
+**Validación:** inventario/diff, Node/tipos/build y pruebas de ejemplos/scripts según archivos afectados.
+**Entregables:** `docs/phase/P011-T005_INGLES_CLIENTE_HERRAMIENTAS.md` e inventario actualizado.
+
+## P011-T006 — Comentarios en inglés: tests y fixtures
+
+**Estado:** pendiente. **Depende de:** T001, T005.
+**Objetivo:** Mantener pruebas comprensibles en inglés sin perder cobertura bilingüe e histórica.
+**Alcance:** comentarios/docstrings/descripciones y nombres internos de tests/fixtures sintéticos.
+**Rutas permitidas:** `tests/**`, `frontend/tests/**`, `docs/**`.
+**Criterios de aceptación:**
+
+- Inventario del grupo resuelto; traducir comentarios y nombres internos españoles si existen, conservando
+  parametrizaciones, expectativas, datos bilingües, hashes y snapshots que prueban comportamiento anterior.
+- Excepciones con ruta/motivo; no traducir strings indiscriminadamente ni debilitar expectativas. Las pruebas
+  funcionales de nuevas capacidades pertenecen a sus tareas, sin tests que solo busquen comentarios.
+
+**Validación:** pytest/unittest/Node sobre pruebas afectadas y revisión del inventario/excepciones.
+**Entregables:** `docs/phase/P011-T006_INGLES_PRUEBAS.md` e inventario actualizado.
+
+## P011-T007 — Infraestructura de idiomas para interfaz y mensajes
+
+**Estado:** pendiente. **Depende de:** T001, T006.
+**Objetivo:** Introducir catálogos en/es y preferencia visual independiente de la lengua de proyecto.
+**Alcance:** solución T001, selector accesible, persistencia, fallback, formatos/plurales y mensajes API/CLI propios.
+**Rutas permitidas:** `frontend/**`, `src/harness_local/**`, `tests/**`, `pyproject.toml`, `uv.lock`, `docs/**`.
+**Criterios de aceptación:**
+
+- Inglés inicial en instalaciones nuevas y elección en/es persistente según contrato; casos de locale inválido,
+  catálogos/claves ausentes y almacenamiento no disponible definidos. Dependencias nuevas con decisión y locks.
+- Claves estables, interpolación segura y formatos accesibles, sin concatenación de frases traducidas; mecanismo
+  explícito de locale para mensajes propios API/CLI, preservando códigos, estados, estructura y evidencia original.
+- Cambiar UI no reencola trabajo, modifica hashes de aceptaciones ni cambia lengua de proyecto. Logs externos
+  y datos de usuario conservan su texto; establecer control de cobertura de catálogos antes de T010.
+
+**Validación:** preferencia/fallback/interpolación/formatos y límites API; Node/tipos/build, pytest pertinente y
+OpenAPI regenerado si cambia contrato.
+**Entregables:** `docs/phase/P011-T007_INFRAESTRUCTURA_IDIOMAS.md`, decisión y catálogos iniciales.
+
+## P011-T008 — Idioma de trabajo por proyecto y contexto congelado
+
+**Estado:** pendiente. **Depende de:** T001, T007.
+**Objetivo:** Elegir en/es para conversaciones y documentos nuevos por proyecto con trazabilidad.
+**Alcance:** configuración, registro/creación/incorporación B/ajustes, persistencia/API y contexto de jobs/intentos.
+**Rutas permitidas:** `src/harness_local/**`, `frontend/**`, `tests/**`, `examples/**`, `docs/**`.
+**Criterios de aceptación:**
+
+- Selección visible al crear/incorporar y cambiar ajustes, con procedencia persistida; nuevos proyectos en en,
+  configuraciones/proyectos antiguos conservan semántica y lectura histórica. UI y lengua de trabajo distinguibles.
+- Idioma efectivo congelado con jobs/intentos/conversaciones pertinentes; cambio confirmado solo para trabajo
+  futuro, sin reescribir contratos, borradores, documentos, propuestas, runs ni aceptaciones anteriores.
+- Definir bloqueos/invalidez de trabajo pendiente al cambiar, CAS, idempotencia, recuperación, migración y backup;
+  paridad de DDBB-DIAGRAM/flujos y tipos en la misma entrega. El idioma no amplía permisos.
+
+**Validación:** en/es y configuración antigua, concurrencia, reinicio/snapshots; pytest, Alembic temporal,
+OpenAPI/tipos y pruebas del cliente pertinentes.
+**Entregables:** `docs/phase/P011-T008_IDIOMA_PROYECTO.md` y contratos/documentación actualizados.
+
+## P011-T009 — Prompts ingleses y documentos generados en la lengua elegida
+
+**Estado:** pendiente. **Depende de:** T003, T004, T008.
+**Objetivo:** Prompts originales ingleses con resultados libres y documentos nuevos en la lengua elegida.
+**Alcance:** plantillas/catálogos/esquemas, esqueletos y bloques D088, chat, planificación, revisión, definición,
+incorporación B, resúmenes, check/cierre/archivo e instrucciones de proyecto; sin prompts para el Flujo A retirado.
+**Rutas permitidas:** `src/harness_local/**`, `tests/**`, `frontend/tests/**`, `docs/**`.
+**Criterios de aceptación:**
+
+- Prompts originales ingleses, incluidos textos que explican literales españoles de compatibilidad; inyección
+  inequívoca de idioma y nuevas identidades, sin reescribir catálogos congelados. Prompts personalizados editables.
+- Generación determinista en/es y parsers compatibles, sin traducir rutas, marcadores, JSON, comandos o códigos;
+  no implica hacer bilingüe la app hija. Mantener único registro ADR y presupuestos D088.
+- Cambiar lengua no retraduce contenido/archivos existentes sin edición confirmada propia; lectura/reanudación
+  antigua intacta. Recorridos falsos en/es cubren definición → primera tarea → cierre y propuestas de chat.
+
+**Validación:** regresiones de plantillas, hashes/codec, parsers y flujos sintéticos; pytest/unittest pertinentes.
+No anunciar agentes falsos como calidad lingüística probada con proveedores.
+**Entregables:** `docs/phase/P011-T009_PROMPTS_DOCUMENTOS_BILINGUES.md` y plantillas nuevas.
+
+## P011-T010 — Traducción completa de interfaz, mensajes y accesibilidad
+
+**Estado:** pendiente. **Depende de:** T007, T008, T009.
+**Objetivo:** Completar en/es en todas las superficies propias visibles al usuario.
+**Alcance:** sesión, registro/ajustes, preparación, fases, tareas/runs, docs/chat/estadísticas, incorporación B, errores,
+validaciones, ayuda CLI, textos ARIA, tooltips, estados vacíos y confirmaciones.
+**Rutas permitidas:** `frontend/**`, `src/harness_local/**`, `tests/**`, `examples/**`, `docs/**`.
+**Criterios de aceptación:**
+
+- Inventario cubierto y claves en ambos catálogos; sin restos involuntarios del otro idioma, con excepciones
+  explícitas de código/evidencia/terceros. Mensajes propios API/CLI traducidos sin cambiar significado o protocolo.
+- No traducir Markdown libre ni logs automáticamente. QA en/es, claro/oscuro y escritorio/móvil: longitud,
+  formatos/plurales, teclado/accesibilidad, errores y confirmaciones; entorno sintético autorizado y saneado.
+
+**Validación:** cobertura de catálogos y pruebas funcionales, Node/tipos/build y pytest pertinente; QA visual
+con datos/API sintéticos si se autoriza el navegador/servicio necesarios.
+**Entregables:** `docs/phase/P011-T010_TRADUCCION_PRODUCTO.md`, catálogos y matriz QA.
+
+## P011-T011 — Contrato de compatibilidad de CLI por capacidades
+
+**Estado:** pendiente. **Depende de:** T001, T004.
+**Objetivo:** Definir una política ampliable por capacidades para Codex y Claude Code.
+**Alcance:** proveedor/rol, baselines D122/D124, mínimos/familias, flags/streams/esquemas, permisos/confianza,
+memoria, autenticación/entorno, cancelación y diagnóstico.
+**Rutas permitidas:** `docs/**`.
+**Criterios de aceptación:**
+
+- Matriz de capacidades obligatorias con evidencia de código/documentación oficial; separar version/help,
+  comportamiento e inferencia real. Fijar mínimos con evidencia, sin prometer todas las versiones futuras.
+- Una CLI posterior compatible no se rechaza solo por faltar en una lista exacta; inferiores/incompatibles
+  bloquean antes del efecto. Distinguir verificada/candidata, aceptación de candidatas y semántica que help no prueba.
+- Congelar versión observada/capacidades/política por intento; conservar jobs antiguos, cuarentena, confianza y
+  ausencia de fallback/retry. Si no se acredita una guardia esencial, bloquear con diagnóstico; no reemplazarla por aviso.
+
+**Validación:** revisión de fuentes/precedentes y diseño; sin CLI reales ni proveedores. Proponer una tarea
+operativa separada si hace falta evidencia real para el soporte anunciado.
+**Entregables:** `docs/phase/P011-T011_CONTRATO_COMPATIBILIDAD_CLI.md` y decisión.
+
+## P011-T012 — Implementar compatibilidad y diagnósticos de CLI
+
+**Estado:** pendiente. **Depende de:** T007, T011.
+**Objetivo:** Admitir versiones posteriores compatibles sin editar allowlists por cada patch.
+**Alcance:** configuración/presets, preflight, adaptadores/parsers, diagnósticos UI/CLI y soporte documentado.
+**Rutas permitidas:** `src/harness_local/**`, `frontend/**`, `tests/**`, `examples/**`, `docs/**`.
+**Criterios de aceptación:**
+
+- Contrato T011 en ambos proveedores/roles, conservando baselines previos y coherencia versión configurada/real;
+  diagnóstico ligado al binario/capacidades actuales, sin cachear a ciegas ni modificar configuración global.
+- Fixtures de versión posterior compatible aceptada y de inferior/no parseable/incompatible rechazada; flags,
+  esquema/streams, permisos/read-only/writer, confianza, memoria y cancelación. Exit code cero no sustituye guardias.
+- Runs congelan procedencia/política; cambios de binario/reinicio no reutilizan contratos sin validar. Diagnóstico
+  en/es accionable, sin downgrade/fallback/retry; evidencia sintética distinguida de CLI/proveedores reales.
+
+**Validación:** pytest de configuración/adaptadores/streams/recuperación/API, Node/tipos/build si procede;
+CLI falsas. Caracterización o inferencia real requiere tarea y autorización propias antes de ejecutarse.
+**Entregables:** `docs/phase/P011-T012_COMPATIBILIDAD_CLI.md` y matriz implementada.
+
+## P011-T013 — Auditoría semántica de diagramas y flujos
+
+**Estado:** pendiente. **Depende de:** T008, T009, T010, T012, T019.
+**Objetivo:** Que cada diagrama vigente refleje comportamiento final, fallos y límites del software.
+**Alcance:** inventario de flujos tras T019, nuevos flujos idioma/CLI si proceden, ARCHITECTURE y DDBB-DIAGRAM;
+código, rutas API, permisos, estados, recuperación y persistencia.
+**Rutas permitidas:** `docs/**`, `tests/**`, `frontend/tests/**`.
+**Criterios de aceptación:**
+
+- Matriz diagrama/nodo/transición relevante → código/tests para éxito, bloqueos, caída/reinicio, cancelación y
+  confirmaciones. Revisar también efectos implementados omitidos en dibujos; separar piloto histórico y producto.
+- Flujos legacy/A no se conservan como capacidades vigentes; la documentación histórica conserva su contexto.
+  Verificar los dos accesos finales (desde cero/B) y la infraestructura compartida conservada, sin reintroducir rutas retiradas.
+- Corregir documentación inglesa y relaciones/tablas frente al metadata; validar/renderizar Mermaid no prueba
+  paridad semántica. Diagramas archivados intactos y nuevos tests solo para huecos de comportamiento relevantes.
+- Discrepancia código/diseño identificada y resuelta antes de cambiar diseño; defectos de producto a tarea
+  acotada, sin alterar comportamiento para que encaje en un dibujo ni dar la auditoría por cerrada con hallazgos.
+
+**Validación:** revisión trazable, render Mermaid con herramientas disponibles, metadata y pruebas pertinentes;
+no ejecutar el harness sobre este checkout.
+**Entregables:** `docs/phase/P011-T013_MATRIZ_DIAGRAMAS.md`, diagramas y resolución de incidencias.
+
+## P011-T014 — Documentación inglesa y README completo de primer uso
+
+**Estado:** pendiente. **Depende de:** T002–T006, T010, T012, T013.
+**Objetivo:** Instalar y probar desde GitHub sin conocimiento previo ni entorno privado del autor.
+**Alcance:** README inglés y entrada española, documentación viva/instrucciones/ejemplos, requisitos, operación,
+soporte, idiomas, compatibilidad y límites; excluye originales históricos congelados.
+**Rutas permitidas:** `README*`, `AGENTS.md`, `CLAUDE.md`, `GEMINI.md`, `CONTRIBUTING*`, `SECURITY*`,
+`docs/**`, `examples/**`.
+**Criterios de aceptación:**
+
+- Documentación pública vigente inglesa, navegación española útil, enlaces/anclas y parsers/presupuestos D088
+  correctos. ADR históricas originales con guía inglesa, sin segundo registro canónico ni reescribir evidencia.
+- README cubre propósito/estado/licencia, requisitos servicio/build/hijo, autenticación, primer clon sin cachés,
+  instalación de paquete, ejemplo mínimo de un proveedor, TOML v5, sesión, preparación y primer COMMITTED.
+- Presentar exactamente dos entradas: crear un proyecto nuevo o incorporar código existente sin harness;
+  sin visor, observación, importación ni normalización del harness anterior en guías/opciones públicas.
+- Idiomas, CLI verificadas/candidatas, red/cachés/consumo y confirmaciones; reinicio/actualización/backup de
+  consulta, diagnóstico, desinstalación conservando datos y contribución. Rutas sintéticas/placeholders claros.
+- Separar desarrollo y uso instalado, sin modelos/rutas privadas ni archivos locales no distribuidos; instrucciones
+  solo sobre capacidades entregadas. Declarar plataformas/evidencia pendientes; ensayo efectivo en T016.
+
+**Validación:** parsers/enlaces, comandos contrastados con scripts/CLI y ejemplos cargados con rutas sintéticas
+sin procesos; revisión inglesa/española. No anunciar aún un primer uso ensayado.
+**Entregables:** `docs/phase/P011-T014_DOCUMENTACION_PUBLICA.md`, README y guías/ejemplos.
+
+## P011-T015 — Paquete público, metadatos y checks reproducibles en GitHub
+
+**Estado:** pendiente. **Depende de:** T002, T010, T012, T014, T019.
+**Objetivo:** Preparar wheel/sdist y automatización de validación distribuibles sin secretos ni proveedores.
+**Alcance:** licencia/metadatos/versión candidata, UI/migraciones/catálogos/prompts, build y CI/materiales de release.
+**Rutas permitidas:** `pyproject.toml`, `uv.lock`, `frontend/**`, `scripts/**`, `tests/**`, `.github/**`,
+`LICENSE*`, `NOTICE*`, `CHANGELOG*`, `docs/**`.
+**Criterios de aceptación:**
+
+- Registrar versión/política de cambios sin asumir `1.0.0`; coherencia Python/UI/locks/licencia y contenido
+  permitido del paquete, sin `.local`, runs, credenciales o cachés privadas. Wheel/sdist con recursos completos.
+  Respetar la reserva de v0.2.0 para una entrega posterior a la apertura inicial de GitHub (D156), sin atribuirle
+  a esta fase el modo continuo aplazado ni cambiar versión por efecto de planificar.
+- Sin componentes/entrypoints/prompts exclusivamente legacy/A en el paquete público; compatibilidad interna
+  estrictamente necesaria para B, migraciones e historia propia documentada, sin exponer un tercer modo de proyecto.
+- Construcción desde clon limpio con preparación explícita de cachés; distinguir requisitos build/servicio/hijo
+  y plataforma probada. CI sintética sin login/secretos/proveedores ni publicación automática, permisos explícitos.
+- Notas, hashes/manifiesto y procedimiento manual GitHub revisables. Escribir workflows no ejecuta jobs remotos,
+  crea tags/Releases, cambia visibilidad ni publica. PyPI y publicación automática fuera de alcance.
+
+**Validación:** inspección de contenidos/metadatos/workflows; construir/verificar solo con alcance de ejecución
+autorizado. CI remota pendiente si no se ejecutó, sin equivaler validación local y remota.
+**Entregables:** `docs/phase/P011-T015_PAQUETE_PUBLICO.md`, metadatos, workflows y materiales de release.
+
+## P011-T016 — Primer uso reproducible y QA del paquete candidato
+
+**Estado:** pendiente. **Depende de:** T013, T014, T015, T019.
+**Objetivo:** Acreditar instrucciones y paquete exacto sin las cachés ni configuración privadas del autor.
+**Alcance:** propuesta de ensayo, clon/cachés/venv/estado sintéticos, wheel instalado, configuración mínima,
+recorridos bilingües y recuperación/migración/backup.
+**Rutas permitidas:** `scripts/**`, `tests/**`, `frontend/tests/**`, `docs/**`.
+**Criterios de aceptación:**
+
+- Propuesta previa concreta carpetas/comandos, instalaciones/red, servicios/puertos y limpieza; ejecutar tras
+  autorización del alcance que la requiera. No usar credenciales/configuración personal ni proveedores reales.
+- Clon sin cachés privadas: primera descarga explícita y repetición offline cuando aplique; instalar fuera del
+  checkout, comprobar assets/catálogos/sesión y recorrer hasta COMMITTED/cierre en/es con agentes falsos.
+- Cambio de idioma sin mutar evidencia, CLI falsas posteriores/negativas, reinicio/migración/backup de consulta;
+  QA navegador del candidato exacto con API sintética/integrada según autorización y procedencia separadas.
+- Ambos accesos finales probados (desde cero/B); rutas/comandos/observación legacy/A ausentes o rechazados sin
+  ejecutar efectos, sin activar observadores al arrancar ni al consultar respaldos de instalaciones anteriores.
+- Base/versión/hashes, capturas saneadas, comandos/resultados/skips y servicios detenidos registrados; corregir
+  hallazgos antes de T017. Dobles no acreditan login/inferencia/calidad lingüística o semántica de CLI reales.
+
+**Validación:** suites finales pertinentes de AGENTS, Alembic temporal, wheel/sdist y QA autorizada; operaciones
+reales necesarias exigen tarea/consentimiento propios antes del dictamen. No ampliar ensayos sin motivo.
+**Entregables:** `docs/phase/P011-T016_PRIMER_USO_QA.md`, matriz y evidencia saneada del candidato.
+
+## P011-T017 — Revisión de salida y expediente para apertura pública
+
+**Estado:** pendiente. **Depende de:** T001–T016, T019.
+**Objetivo:** Dictaminar preparación pública con evidencia trazable del candidato final.
+**Alcance:** diez criterios P011, trece globales ajustados por la retirada D155, inventario/excepciones lingüísticas,
+licencia/privacidad, compatibilidad/soporte, diagramas/docs, artefactos y CI.
+**Rutas permitidas:** `docs/**`.
+**Criterios de aceptación:**
+
+- Matriz por criterio con evidencia, base/versión/hashes, procedencia, omisiones y bloqueos; el dictamen P010 no
+  sustituye verificar P011. Sin tareas obligatorias, licencia o hallazgos de privacidad/paridad pendientes.
+- Retirada legacy/A completa en UI/API/CLI, arranque, docs y paquete, y cero/B conservados. Criterios globales
+  1/11/13 actualizados con trazabilidad, sin exigir funcionalidad eliminada ni reescribir su matriz histórica P010.
+- Excepciones históricas y CLI/plataformas no verificadas declaradas sin soporte universal. Hallazgos a tarea
+  acotada y revisión afectada; dictamen favorable antes de T018.
+- Expediente con contenido publicable, notas/artefactos/hashes y acciones remotas exactas propuestas; recomendar
+  abrir no ejecuta push, tag, Release o cambio de visibilidad.
+
+**Validación:** contraste documental con evidencia T016 y diff final, enlaces/versiones/hashes; sin repetir
+suites ya válidas salvo cambios/fallos que lo justifiquen ni lanzar nuevas operaciones reales.
+**Entregables:** `docs/phase/P011_REVIEW.md`, matriz final y expediente público.
+
+## P011-T018 — Cierre documental de P011
+
+**Estado:** pendiente. **Depende de:** T017 con dictamen favorable.
+**Objetivo:** Archivar la preparación pública conservando evidencia y separándola de publicar.
+**Alcance:** resumen/revisión/cierre, archivo y actualización de STATE/NEXT_STEPS/ROADMAP/DECISIONS.
+**Rutas permitidas:** `docs/**`.
+**Criterios de aceptación:**
+
+- Originales conservados por bytes/manifiesto, resumen con capacidades, checks, alcance real y límites;
+  sin reescribir fases/snapshots anteriores. Documentos vivos e índice al día, sin inventar sucesora.
+- Cierre manual sin registrar/ejecutar este checkout, commit/tag, push, Release o publicación. Apertura remota
+  posterior exige instrucción explícita sobre el expediente revisado.
+
+**Validación:** parsers/enlaces/presupuestos, manifiesto/hashes y diff documental; sin suites si no cambia código.
+**Entregables:** `docs/archive/phase-011/` con resumen, revisión, originales y registro de cierre.
+
+## P011-T019 — Retirar el harness anterior y conservar solo creación e incorporación
+
+**Estado:** pendiente. **Depende de:** T001, T002. **Orden:** antes de T003; numeración previa conservada.
+**Objetivo:** Eliminar las funcionalidades del harness anterior y mantener solo proyectos gestionados por my_harness.
+**Alcance:** visor `/legacy`, API/CLI de importación/consulta/observación legacy, SSE/feeds/watchers correspondientes,
+activación/migración desde el motor anterior y normalización/importación documental A; navegación, configuración,
+prompts, código/tests/fixtures exclusivos, documentación y distribución. Se mantienen crear desde cero e incorporar
+un repositorio existente sin harness (B), además de su seguimiento normal dentro de my_harness.
+**Rutas permitidas:** `src/harness_local/**`, `frontend/**`, `tests/**`, `scripts/**`, `examples/**`,
+`README*`, `pyproject.toml`, `uv.lock`, `docs/**`.
+**Criterios de aceptación:**
+
+- Retirar funcionalidad, no solo enlaces: sin pantallas/rutas de navegación, endpoints/contratos activos, comandos
+  `legacy-import`/`legacy-summary`, observadores/SSE legacy, activación del motor anterior, conversación
+  `project_import`/Flujo A ni sus prompts propios. Rutas/comandos antiguos no ejecutan efectos ni redirigen a A;
+  diagnóstico/rechazo de retirada definido, sin modo oculto ni feature flag que reactive el soporte.
+- Conservar de extremo a extremo los dos accesos: cero → definición/preparación/tareas y repositorio existente
+  sin harness → inventario/incorporación B/perfil/documentos/primer run; ambos se monitorizan como gestionados.
+  Registro/reapertura de proyectos ya gestionados siguen siendo operaciones normales, no un tercer tipo de alta.
+- Inventario de dependencias antes de borrar: B comparte `project_imports`, `purpose = import_commit`, repositorios
+  y escritor Git con A. Conservar/reubicar código común necesario por comportamiento, sin eliminarlo por el nombre
+  `legacy`/`import`. Distinguir compatibilidad de runs propios/codec/configuración de soporte al harness anterior.
+- Datos, historiales/snapshots y revisiones Alembic existentes intactos; no eliminar tablas/filas o archivos de usuario
+  automáticamente. Precisar lectura/migración/backup y resolución de jobs legacy pendientes sin ejecutarlos ni
+  reinterpretarlos como B. La compatibilidad interna necesaria no vuelve a exponer el visor/importación anterior.
+- Retirar módulos/tests/fixtures únicamente exclusivos y sustituir cobertura por pruebas significativas de ausencia,
+  arranque sin observadores y regresión cero/B, CAS/permisos, recuperación e historial propio. No declarar retirada
+  completa si permanece un entrypoint operativo del harness anterior o un componente exclusivo en el paquete.
+- Actualizar SPECIFICATION F03/F05 y §10 (criterios 1/11/13: idempotencia cero/B y observación gestionada por cursor),
+  modos de proyecto, README/ejemplos, ARCHITECTURE, flujos y OpenAPI/tipos; DDBB-DIAGRAM si cambia metadata.
+  Conservar archivos/decisiones históricos, sin anunciar retirada implementada antes de esta entrega.
+
+**Validación:** pytest/unittest y Node pertinentes, comprobación de rutas/comandos/OpenAPI y wheel manifest,
+tipos/build; Alembic temporal si procede. Fixtures sintéticos de cero/B e instalación anterior, sin operar el
+harness sobre este checkout ni tocar datos reales. Ensayo del paquete exacto se acredita después en T016.
+**Entregables:** `docs/phase/P011-T019_RETIRADA_LEGACY.md`, inventario de dependencias y decisiones de compatibilidad.

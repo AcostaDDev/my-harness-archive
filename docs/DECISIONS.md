@@ -164,6 +164,9 @@ tarea se leen solo las decisiones que cita; este índice sirve para buscar prece
 | [D151](#d151--p010-t008-validación-real-complementaria-aplazada) | P010-T008: validación real complementaria aplazada | P010 |
 | [D152](#d152--p010-t009-paquete-final-verificado-y-dictamen-favorable) | P010-T009: paquete final verificado y dictamen favorable | P010 |
 | [D153](#d153--cierre-documental-de-p010-y-de-la-primera-versión-local) | Cierre documental de P010 y de la primera versión local | P010 |
+| [D154](#d154--p011-preparación-para-apertura-pública-en-github) | P011: preparación para apertura pública en GitHub | P011 |
+| [D155](#d155--p011-retirada-del-harness-anterior-y-dos-vías-de-alta) | P011: retirada del harness anterior y dos vías de alta | P011 |
+| [D156](#d156--planificación-de-p011-finalizada-y-modo-continuo-aplazado-a-v020) | Planificación de P011 finalizada y modo continuo aplazado a v0.2.0 | P011 |
 
 ## D001 — Alcance local y arquitectura base
 
@@ -4542,3 +4545,87 @@ Estado: cerrada y archivada el 2026-10-22 por la continuación solicitada por el
 - Cierre manual del repositorio, separado del check READY del producto: sin registrarlo ni ejecutarlo con el
   harness, operar el Django hijo, agentes, proveedores, servicios o smokes. Sin cambios de producto, esquema,
   API, flujos, dependencias o configuración global; sin push, publicación ni ampliación de consentimientos.
+
+## D154 — P011: preparación para apertura pública en GitHub
+
+Estado: fase planificada el 2026-10-22 por encargo explícito del usuario; dieciocho tareas pendientes.
+[Plan](phase/P011_PLAN_APERTURA_PUBLICA.md), [tareas](NEXT_STEPS.md) y
+[criterios](ROADMAP.md#p011--preparación-para-apertura-pública-en-github). Precedentes: D051, D088, D119,
+D122/D124, D143 y D151–D153.
+
+- El usuario pide preparar el paquete para abrirlo en GitHub y encarga crear una fase con tareas, permitiendo
+  añadir/modificar las propuestas: inglés de comentarios/código, elección en/es, CLI más compatibles, paridad
+  semántica de diagramas y README completo. Esta entrega documenta el plan, sin ejecutar sus tareas.
+- Se divide traducción por grupos (núcleo/perfiles, backend/recetas, cliente/herramientas y tests/fixtures), con
+  inventario previo por archivo y revisión de identificadores españoles. No se presume que existan nombres que
+  renombrar ni se traduce contenido arbitrario como si fuera comentario. Prompts originales ingleses y editables.
+- Se planifica preferencia de UI independiente de lengua por proyecto, ambas en/es; inglés para nuevos usuarios/
+  proyectos y conservación del español anterior donde corresponda por compatibilidad. La lengua efectiva se
+  congela por intento; cambiarla no reescribe documentos, prompts personalizados, catálogos ni evidencias previas.
+  La solución i18n React/Python, formatos y migraciones se concretan en T001 antes de implementar.
+- La compatibilidad CLI se amplía mediante mínimos/familias/capacidades por proveedor/rol, distinguiendo
+  verificadas/candidatas y preservando permisos, confianza, memoria y recuperación. T011 fija mínimos y
+  comprobaciones con evidencia; no se promete aceptar cualquier CLI futura ni se retiran guardias por conveniencia.
+- La traducción respeta huellas de recetas, protocolos y archivos históricos. T001 define el tratamiento compatible
+  de fuentes ligadas a recibos; ADR e historia conservan el original y pueden tener una guía inglesa sin segundo
+  registro de decisiones. La convención española actual no se presenta aún como cambiada en el producto.
+- Se añaden licencia/titularidad, revisión de contenido e historial publicables, metadatos/versionado, CI sintética,
+  primer uso desde clon limpio y QA del paquete exacto. Licencia y versión pública se deciden en sus tareas;
+  no se eligen términos legales ni `1.0.0` por efecto de planificar. Un hallazgo histórico no autoriza reescritura.
+- Nueve criterios de salida, dieciocho tareas y dictamen previo al archivo. D151 sigue vigente; nuevos proveedores,
+  smokes, instalaciones/red/servicios o caracterizaciones reales requieren su alcance/autorización propios.
+  No se opera este checkout con el harness ni el Django de P009, toca configuración global, hace commit/tag/push,
+  cambia visibilidad o publica. El cierre prepara un expediente; la acción remota posterior exige instrucción explícita.
+
+## D155 — P011: retirada del harness anterior y dos vías de alta
+
+Estado: ampliación de planificación solicitada por el usuario el 2026-10-22; retirada pendiente de P011-T019.
+[Tareas](NEXT_STEPS.md), [plan](phase/P011_PLAN_APERTURA_PUBLICA.md) y
+[criterios](ROADMAP.md#p011--preparación-para-apertura-pública-en-github). Amplía D154 y sustituye para el producto
+público futuro el soporte al harness anterior de D012–D014/D027/D088; conserva su historia y evidencia.
+
+- El usuario pide eliminar funcionalidades del harness anterior porque no estarán disponibles para usuarios de
+  GitHub, manteniendo exactamente dos vías: crear desde cero o adaptar un repositorio existente para my_harness.
+  Se planifica retirar visor/observación/importación legacy, activación desde el motor anterior y normalización A;
+  el alta B desde código sin harness y la creación nueva permanecen, ambas con seguimiento gestionado.
+- La retirada incluye UI/navegación/rutas, API, comandos `legacy-import`/`legacy-summary`, observadores y SSE/feeds
+  legacy, configuración, prompts y módulos/tests/fixtures exclusivamente dedicados al soporte retirado. No basta
+  ocultar enlaces ni dejar un flag que reactive la funcionalidad. Rutas antiguas se rechazan sin efectos.
+- Registrar/reabrir proyectos ya gestionados es operación normal, no un tercer origen. Se mantiene compatibilidad
+  de historiales propios/configuraciones/recibos donde siga siendo necesaria; no confundirla con visor legacy.
+- B comparte `project_imports`, `purpose = import_commit`, repositorios y escritor Git con A. T001 inventaría
+  dependencias y T019 conserva/reubica las necesarias: no se eliminan por nombre ni se destruyen datos, tablas,
+  revisiones Alembic, archivos históricos o backups automáticamente. Jobs del modo retirado no se ejecutan ni
+  se reinterpretan como B; se define su resolución y se conserva evidencia.
+- Se añade T019 tras T002 y antes de T003, manteniendo numeración/enlaces anteriores; P011 queda con diecinueve
+  tareas y diez criterios de salida. Traducción, idiomas, diagramas, README, paquete y QA excluyen soporte retirado
+  y verifican cero/B y ausencia de entrypoints/observadores legacy. T017 depende también de T019.
+- T019 actualizará SPECIFICATION F03/F05, modos/importación y criterios globales 1/11/13: idempotencia cero/B,
+  incorporación existente conservada y observación gestionada por cursor, sin reescribir la matriz histórica P010.
+  D151 mantiene pendiente validación real B/D095; A queda fuera del futuro alcance, sin considerarse validado.
+- Esta entrega solo amplía documentos: no elimina código ni altera datos/modelos/flujos/contratos vigentes,
+  no invoca proveedores, smokes o servicios, hace commit/tag/push ni publica. La base sigue describiendo lo
+  implementado hasta que T019 complete su retirada y paridad en una entrega propia.
+
+## D156 — Planificación de P011 finalizada y modo continuo aplazado a v0.2.0
+
+Estado: decidido por el usuario el 2026-10-22; planificación finalizada, ejecución de P011 pendiente.
+[Plan](phase/P011_PLAN_APERTURA_PUBLICA.md), [tareas](NEXT_STEPS.md) y
+[horizonte v0.2.0](ROADMAP.md#después-de-la-apertura-en-github--v020). Precedentes: D034, D091 y D154/D155.
+
+- Tras comprobar los límites actuales, el usuario aplaza a v0.2.0, después de subir/abrir el proyecto en GitHub,
+  el modo continuo entre fases: tareas, commits, check, cierre/archivo, planificación y ejecución de la siguiente
+  fase cuando no haya error ni HITL. Es una capacidad futura no implementada y fuera de P011.
+- La automatización futura será opcional con autorización inicial acotada, alcance/presupuesto y parada por
+  error, bloqueo, pregunta o límite; deberá conservar READY, aceptación por contenido e intención/recuperación.
+  No se diseña ni habilita aquí, no se añade fase sucesora ni se cambia la versión del paquete `0.1.0`.
+  T015 respetará la reserva de v0.2.0 para después de la apertura inicial.
+- D034/D091 siguen vigentes: lote desatendido para tareas/commits, check explícito, cierre autorizado sobre READY,
+  archivo y apertura mecánica de sucesora sin tareas, y confirmación propia del plan posterior. No se traslada
+  código del comando legacy ni se reintroduce el soporte retirado por D155.
+- El usuario pide un commit en inglés que cierre la planificación de «Publicar en GitHub». Autoriza el commit
+  documental del plan P011 y sus ampliaciones, no completar/archivar la fase, ejecutar tareas o publicar.
+  Se mantienen diecinueve tareas pendientes y diez criterios; siguiente P011-T001.
+- Se conservan decisiones/archivos históricos; sin cambios de producto, modelos, flujos implementados,
+  dependencias o configuración global, sin agentes/proveedores/smokes, servicios, tags, push, publicación o cambio
+  de visibilidad. Checks documentales y revisión del diff antes del commit; las suites del producto no aplican.

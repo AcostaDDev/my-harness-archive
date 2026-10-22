@@ -71,17 +71,40 @@ salvo donde se indica. Detalle por fase en `docs/archive/phase-NNN/SUMMARY.md`; 
 
 ## Fase activa
 
-Ninguna. **P010 cerrada y archivada documentalmente el 2026-10-22**
+**P011 — Preparación para apertura pública en GitHub**, planificada el 2026-10-22 por encargo del usuario
+([D154](DECISIONS.md#d154--p011-preparación-para-apertura-pública-en-github),
+[plan](phase/P011_PLAN_APERTURA_PUBLICA.md), [tareas](NEXT_STEPS.md)). Diecinueve tareas pendientes (ampliación D155);
+esta entrega solo planifica, sin implementar traducción, selección de idiomas o nueva compatibilidad CLI.
+
+**Planificación finalizada para comenzar su ejecución** por petición del usuario
+([D156](DECISIONS.md#d156--planificación-de-p011-finalizada-y-modo-continuo-aplazado-a-v020)).
+P011 no está completada: sus diecinueve tareas siguen pendientes y la siguiente es T001.
+El modo continuo entre fases queda reservado para **v0.2.0, después de abrir el proyecto en GitHub**;
+no forma parte de P011 ni modifica el cierre confirmado actual. El commit documental de planificación está autorizado.
+
+Objetivo: código/comentarios/docstrings y prompts originales ingleses; interfaz y trabajo por proyecto en en/es;
+CLI por capacidades/mínimos; diagramas contrastados con comportamiento; documentación inglesa y README de primer
+uso; licencia/contenido publicable, paquete/CI y QA del candidato antes del dictamen. Sin publicar ni abrir
+visibilidad por efecto de esta fase. Licencia/titularidad y versión candidata se resuelven en sus tareas.
+
+[D155](DECISIONS.md#d155--p011-retirada-del-harness-anterior-y-dos-vías-de-alta) añade T019 antes de T003:
+retirar visor/observación/importación legacy y normalización A, conservando solo creación desde cero e
+incorporación de código existente sin harness (B). La retirada está planificada, no implementada; la base
+acumulada sigue describiendo el código actual. Historiales propios y componentes compartidos por B se conservan.
+
+**P010 cerrada y archivada documentalmente el 2026-10-22**
 ([D153](DECISIONS.md#d153--cierre-documental-de-p010-y-de-la-primera-versión-local),
 [resumen](archive/phase-010/SUMMARY.md), [registro de cierre](archive/phase-010/P010_CIERRE.md)).
 El dictamen favorable de T009 y la decisión explícita D151 permiten completar la primera versión local en ese
 alcance. Originales de STATE/NEXT_STEPS y artefactos de fase conservados por bytes; sin tareas obligatorias pendientes.
-El paquete sigue en `0.1.0`, sin tag ni publicación. No hay fase sucesora definida.
+El paquete sigue en `0.1.0`, sin tag ni publicación; P011 sucede ahora a ese cierre sin reescribirlo.
 
 P009 conserva su cierre documental (D140) y el Django hijo su P001 CLOSED, cuatro tareas COMMITTED,
 tag `p001` sobre `47a0557` y archivo en `3d105c6`. No se repite ninguna operación ni comprobación de su estado.
 Este repositorio sigue sin registrarse ni ejecutarse con el harness; cierre manual sin check READY ni tag propio.
 
-**Siguiente:** el usuario elige la próxima prioridad; candidatas en [ROADMAP](ROADMAP.md#candidatas-sin-fase-asignada).
-Los límites de la base acumulada siguen vigentes. La validación real complementaria A/B y D095 sigue aplazada
-por D151, sin darse por realizada ni autorizada. Sin nueva fase del Django hijo ni ampliación de consentimientos.
+**Siguiente:** P011-T001, inventario por archivo y contrato de idiomas/fuentes/setup antes de implementar.
+Otras candidatas permanecen en [ROADMAP](ROADMAP.md#candidatas-sin-fase-asignada).
+Los límites de la base acumulada siguen vigentes. B y D095 mantienen la validación real aplazada por D151;
+A queda fuera del soporte público futuro por D155, sin considerarse validado ni retirado todavía en código.
+Sin nueva fase del Django hijo ni ampliación de consentimientos.

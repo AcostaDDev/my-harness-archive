@@ -55,9 +55,9 @@ run y, cuando procede, al intento exacto.
 |---|---|---|---|
 | F01 | Registrar proyecto | Alta desde la UI con raíz canónica, confianza explícita, perfil y composición del TOML; o en `[[projects]]` del TOML | Implementado (P007, D078) |
 | F02 | Crear proyecto desde cero | Brief, conversación con el revisor, borradores en disco con CAS, aceptación y commit raíz con P001 | Implementado (P007, D075, D082; P008-T002/T005, D092) |
-| F03 | Importar un proyecto de un harness anterior (Flujo A) | Inventario, normalización al layout unificado sin perder historial, documentos sincronizados | Inventario de solo lectura (P008-T009, D096), mapa determinista (P008-T010, D097) propuesta del revisor con borradores privados (P008-T011, D098) y commit confirmado con continuidad (P008-T012, D100) |
+| F03 | Importar un proyecto de un harness anterior (Flujo A) | Inventario, normalización al layout unificado sin perder historial, documentos sincronizados | Implementado P008 (D096–D100); retirada planificada en P011-T019 (D155), aún no ejecutada |
 | F04 | Incorporar un repositorio sin harness (Flujo B) | Discovery por ingeniería inversa, documentos iniciales y archivos raíz mínimos | Inventario estático y propuesta de perfil implementados (P008-T013, D101); conversación de ingeniería inversa sobre HEAD con borradores privados (P008-T014, D102); vista previa, perfil y commit confirmados con P001 adoptada (P008-T015, D103) |
-| F05 | Observar un harness anterior | Índice de lectura idempotente, navegación y actualización incremental | Implementado (P002) |
+| F05 | Observar un harness anterior | Índice de lectura idempotente, navegación y actualización incremental | Implementado (P002); retirada planificada en P011-T019 (D155), aún no ejecutada |
 | F06 | Navegar proyectos, fases, tareas y runs | URL propia por recurso, carga limitada y paginada | Implementado (P007, D077) |
 | F07 | Ejecutar una tarea | Planificación → ejecución → validación → revisión → aceptación o corrección → commit del harness | Implementado (P003) |
 | F08 | Gestionar prompts | Versiones, diff, variables validadas, activación y rollback; snapshot por intento | Implementado (P004) |
@@ -75,6 +75,8 @@ run y, cuando procede, al intento exacto.
 | F20 | Elegir carpeta de proyectos | Raíz elegida explícitamente en UI y persistida; concede al servicio crear nuevos hijos sin que la IA decida su ubicación | Implementado (P009-T002, D117); carpeta elegida y creación real en T007, piloto cerrado en T012 (D139) |
 | F21 | Agentes configurables por proyecto | Elegir proveedores y modelo/esfuerzo del revisor en UI; selección concreta del ejecutor a cargo del revisor | Implementado (P009-T003, D118): presets v5, selección por checkout y cambios confirmados entre tareas |
 | F22 | Preparar Django desde cero | Hijo nuevo, documentos D088, scaffold, entorno/dependencias y validaciones mediante receta confirmada | Implementado (P009-T004, D119); ensayo real T005 (D120) y piloto T007–T012 con P001 cerrada/archivada (D139) |
+| F23 | Idioma visual y de trabajo | Elegir en/es para interfaz propia y, de forma independiente, conversaciones/documentos nuevos por proyecto, con contexto congelado | Planificado, no implementado (P011, D154; §13) |
+| F24 | Compatibilidad CLI ampliable | Mínimos/capacidades por proveedor/rol, diagnóstico y versiones verificadas/candidatas sin allowlist por patch | Planificado, no implementado (P011, D154; §13); siguen vigentes las listas exactas de `cli-13` |
 
 Modos por checkout: **observación** (indexa un harness anterior) y **gestionado** (el motor nuevo controla). Nunca
 escriben dos motores sobre el mismo checkout.
@@ -266,3 +268,49 @@ implementadas en T002 (D117); los presets en T003 (D118). Receta implementada en
 herramientas reales y ensayo temporal completo (D120). T007–T012 acreditan el piloto real: cuatro tareas COMMITTED
 con las cuatro parejas, QA conjunto y P001 cerrada/archivada (D139). P009 del harness se cierra y archiva
 documentalmente en una tarea posterior (D140), con [revisión y límites](archive/phase-009/REVIEW.md).
+
+## 13. Ampliación planificada — P011
+
+[D154](DECISIONS.md#d154--p011-preparación-para-apertura-pública-en-github) encarga preparar el repositorio/paquete
+para apertura pública en GitHub. F23/F24 y el resto de esta sección son **planificados, no implementados**;
+no cambian el alcance entregado de P010 ni sus límites D151/D153.
+
+- Inglés como base del código mantenido, comentarios/docstrings/descripciones y prompts originales; inventario
+  por archivo y revisión de identificadores españoles internos. Conservar protocolos y originales históricos,
+  fuentes ligadas a huellas/recibos con tratamiento compatible y excepciones de fixtures bilingües justificadas.
+- Elegir en/es para interfaz/mensajes propios y, por separado, lengua de trabajo de cada proyecto. Inglés para
+  nuevos usuarios/proyectos; conservar la semántica anterior y congelar lengua efectiva por intento. Generar
+  respuestas libres/documentos nuevos en la elegida, sin retraducir evidencia ni archivos previos por cambiarla.
+- Prompts originales ingleses, con personalización preservada. T001 concreta i18n React/Python, configuración,
+  precedencias, persistencia, migraciones, fallback y snapshots antes de implementarlos; los parsers siguen
+  admitiendo documentos en/es sin cambiar rutas canónicas, marcadores, comandos o códigos de estado.
+- Política CLI ampliable por mínimos/capacidades y rol, con procedencia verificada/candidata y diagnóstico;
+  versión posterior compatible no rechazada solo por una lista exacta. Permisos, confianza, memoria y recuperación
+  se mantienen; una guardia esencial no acreditada bloquea. No prometer todas las versiones futuras.
+- Paridad semántica diagramas/código/tests, documentación pública inglesa con entrada española y README completo,
+  licencia/contenido publicable, metadatos/CI y ensayo del paquete final desde clon sin cachés privadas.
+
+[D155](DECISIONS.md#d155--p011-retirada-del-harness-anterior-y-dos-vías-de-alta) amplía P011 con T019: retirar
+observación/visor/importación del harness anterior, su activación y normalización A. El producto público tendrá
+solo dos vías de alta: crear desde cero e incorporar un repositorio existente sin harness (B); después ambos
+se siguen como gestionados. Reabrir/registrar proyectos ya gestionados no añade una tercera modalidad.
+Se retiran UI, API, CLI, observadores/SSE legacy, prompts y componentes exclusivos; no se elimina por su nombre
+infraestructura compartida necesaria para B ni lectura de historiales propios de my_harness.
+
+T019 actualizará F03/F05, modos (§4), importación (§8) y criterios globales 1/11/13 para idempotencia cero/B y
+observación gestionada por cursor. Hasta implementarse, esos apartados describen el código vigente; las matrices
+históricas P010 permanecen intactas. D151 sigue aplazando B/D095; A sale del alcance futuro, sin acreditarse por ello.
+No se destruyen datos históricos, revisiones/migraciones o backups automáticamente para retirar funcionalidades.
+
+Los diez criterios de [P011 en ROADMAP](ROADMAP.md#p011--preparación-para-apertura-pública-en-github) y los trece
+globales ajustados por la retirada se dictaminan antes de cerrar. Licencia/titularidad y versión candidata se
+deciden en sus tareas; no se presuponen. Se prepara expediente de apertura, manteniendo fuera de esta entrega la publicación
+remota/PyPI, cambio de visibilidad, tag/push/commit y operación del harness sobre este repositorio.
+Caracterización/inferencia real y ensayos operativos conservan sus autorizaciones propias; D151 sigue vigente.
+Detalle en [plan](phase/P011_PLAN_APERTURA_PUBLICA.md) y [tareas](NEXT_STEPS.md).
+
+[D156](DECISIONS.md#d156--planificación-de-p011-finalizada-y-modo-continuo-aplazado-a-v020) finaliza esta
+planificación y aplaza el modo continuo entre fases a v0.2.0 después de la apertura inicial en GitHub, fuera de P011.
+La cadena futura incluiría tareas/commits, check, cierre/archivo, planificación y ejecución de la siguiente fase,
+con autorización inicial y parada por error/HITL/límites. No está implementada ni cambia las reglas vigentes
+§5.9/§7: el lote no comprueba/cierra, el cierre se autoriza sobre READY y el plan posterior se confirma por hash.

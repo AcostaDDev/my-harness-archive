@@ -16,6 +16,7 @@ hitos H0–H6 del backlog original; la definición inicial está en [archive/pha
 | P008 | Contrato documental unificado, cierre de fase e importación de proyectos | completada (2026-10-19) | [phase-008](archive/phase-008/SUMMARY.md) |
 | P009 | Proyecto Django desde cero y piloto con cuatro combinaciones de agentes | completada (2026-10-21) | [phase-009](archive/phase-009/SUMMARY.md) |
 | P010 | Consolidación de la primera versión local | completada (2026-10-22) | [phase-010](archive/phase-010/SUMMARY.md) |
+| P011 | Preparación para apertura pública en GitHub | planificada (2026-10-22) | [plan](phase/P011_PLAN_APERTURA_PUBLICA.md) |
 
 ## P001 — Contratos y prueba de viabilidad
 
@@ -191,11 +192,64 @@ publicación ni fase sucesora. Originales conservados por bytes; sin check READY
 [Plan](archive/phase-010/P010_PLAN_CONSOLIDACION.md), [tareas archivadas](archive/phase-010/NEXT_STEPS.md) y
 [D141](DECISIONS.md#d141--p010-consolidación-de-la-primera-versión-local).
 
+## P011 — Preparación para apertura pública en GitHub
+
+**Objetivo:** Preparar repositorio y paquete para una apertura pública revisable en GitHub, con inglés como base,
+elección de trabajo en inglés/español, CLI más compatibles y primer uso reproducible sin el entorno del autor.
+**Criterios de salida:**
+
+- Inventario por archivo resuelto: comentarios/docstrings/descripciones técnicas y código mantenido en inglés;
+  identificadores españoles internos revisados/renombrados si existen, con excepciones históricas justificadas
+  y sin modificar protocolos, recibos, snapshots o archivos congelados por una traducción cosmética.
+- Interfaz propia, accesibilidad y mensajes API/CLI seleccionables en en/es, con preferencia persistente,
+  fallback, catálogos completos y QA; códigos técnicos y evidencia original conservados.
+- Lengua de trabajo en/es elegible por proyecto, independiente de la visual y congelada por intento; prompts
+  originales ingleses y documentos/resultados nuevos en la lengua elegida, sin retraducir historia ni trabajo previo.
+- Política CLI por proveedor/rol con mínimos/capacidades y versiones verificadas/candidatas: admitir posteriores
+  compatibles sin allowlist por patch, conservar guardias de permisos/confianza y bloquear incompatibilidades
+  antes del efecto. No se anuncia soporte garantizado para cualquier versión futura ni uso real no probado.
+- Diagramas vigentes de flujos/arquitectura/datos contrastados con código y pruebas, incluidos bloqueos,
+  cancelación y recuperación, con matriz semántica; sin discrepancias pendientes ocultas ni archivos históricos reescritos.
+- Documentación pública vigente inglesa y entrada española útil; README completo y ejemplo mínimo reproducible
+  desde clon sin cachés privadas hasta primer COMMITTED, con requisitos, licencia, idiomas, operación y límites claros.
+- Licencia/titularidad decididas, atribuciones y contenido publicable del checkout/historial/artefactos revisados,
+  sin secretos/estado privado ni hallazgos pendientes que impidan abrir el conjunto; saneamiento histórico no automático.
+- Paquete candidato coherente con versión/metadatos/recursos completos, checks CI sintéticos sin secretos ni
+  proveedores y materiales de release revisables; instalación/QA del artefacto exacto con base/hashes/resultados/omisiones.
+- Funcionalidades del harness anterior retiradas de UI/API/CLI, arranque/observadores, normalización A, prompts,
+  documentación y paquete. Solo crear desde cero e incorporar código existente sin harness (B); conservar historia
+  propia e infraestructura compartida necesaria, sin eliminación automática de datos ni tercer modo de proyecto.
+- Dictamen explícito de estos diez criterios y trece globales ajustados por D155 antes del cierre documental;
+  expediente de apertura pública preparado, sin ejecutar publicación, push, tag, Release ni cambio de visibilidad.
+
+**Dependencias:** P010; D051, D088, D095, D119, D122, D124, D143, D151–D155; SPECIFICATION §§9–11/13.
+**Fuera de alcance:** Publicación remota o PyPI, cambio de visibilidad, commits/tags/push, ejecutar el harness sobre
+este repositorio, reescribir historia/snapshots, nube/multiusuario, aislamiento del SO, App Server/SDK, rediseño
+general, traducción automática de contenido libre o aplicaciones hijas, y ampliación de consentimientos de P009.
+No incorporar automáticamente las otras candidatas ni prometer compatibilidad multiplataforma o CLI futura universal.
+**Estado:** planificada el 2026-10-22 por encargo del usuario, que permite añadir/modificar tareas para preparar
+la apertura. Ampliada por D155: diecinueve tareas pendientes, con T019 tras T002 y antes de T003;
+siguiente T001 (inventario y contrato), sin implementación ni ejecución operativa en esta entrega.
+Planificación finalizada por petición del usuario (D156), con commit documental autorizado; la fase no está cerrada.
+[Plan](phase/P011_PLAN_APERTURA_PUBLICA.md), [tareas](NEXT_STEPS.md) y
+[D154](DECISIONS.md#d154--p011-preparación-para-apertura-pública-en-github).
+La primera versión local P010 sigue completada en su alcance; P011 añade objetivos públicos, no reabre ese cierre.
+
+## Después de la apertura en GitHub — v0.2.0
+
+[D156](DECISIONS.md#d156--planificación-de-p011-finalizada-y-modo-continuo-aplazado-a-v020) reserva para v0.2.0
+un modo continuo opcional que encadene tareas/commits, check, cierre/archivo, planificación y ejecución de la
+siguiente fase sin intervención intermedia cuando no haya errores ni HITL. Se diseñará con autorización inicial
+acotada, límites de alcance/consumo y parada ante bloqueos, sin omitir READY ni aceptación por contenido.
+Trabajo posterior a la publicación inicial, fuera de P011; no implementado, sin fase sucesora ni tareas definidas.
+Los lotes actuales siguen sin comprobar/cerrar y cada nuevo plan exige su confirmación propia.
+
 ## Candidatas sin fase asignada
 
 - Alta Django sin POST→redirect→GET, observación sin bloqueo del piloto y propia del hijo;
   [contexto y límites](archive/phase-009/REVIEW.md). Los otros dos ajustes de interfaz se resolvieron en P010-T004/T005.
-- Validación real A/B y D095 aplazada por D151 ([propuesta](archive/phase-010/P010-T008_PROPUESTA_VALIDACION_REAL.md)),
+- Validación real B y D095 aplazada por D151 ([propuesta histórica A/B](archive/phase-010/P010-T008_PROPUESTA_VALIDACION_REAL.md));
+  A sale del alcance futuro por D155, sin alterar la evidencia anterior. Esta candidata cubre B/D095
   y pilotos adicionales; cada operación real conserva
   propuesta y consentimiento propios. P010 no inicia otra fase del Django de P009.
 - Hora de cada validación (cambia el formato del historial).

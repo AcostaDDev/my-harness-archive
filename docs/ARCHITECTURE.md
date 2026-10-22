@@ -343,3 +343,46 @@ T004 aclara en `define-project` y en la UI que los marcadores gestionados son op
 T005 añade `PhaseRead.closure` (check, base, archivo y commit del cierre) y distingue la renovación de documentos
 vivos de la deriva real de una fase cerrada (D147). T006 contrasta README, este documento y `examples/` con el código
 y la evidencia ([entrega](archive/phase-010/P010-T006_DOCUMENTACION_VERSION.md), D148).
+
+## 13. Preparación pública planificada — P011
+
+[D154](DECISIONS.md#d154--p011-preparación-para-apertura-pública-en-github) abre P011 como planificación, sin
+cambiar todavía implementación, dependencias, configuración, esquema, codec o catálogo de CLI.
+La convención española de §8 y las listas exactas de §6 siguen describiendo el producto actual hasta sus entregas.
+
+T001 inventaría superficies/identidades y fija el contrato de idiomas: preferencia visual en/es independiente de
+lengua por proyecto, catálogos/fallback/formatos, persistencia y snapshots por intento, compatibilidad previa y
+prompts originales ingleses. La solución de internacionalización del cliente React y mensajes Python se decide
+antes de añadir dependencias, no se asume `.po`. T007–T010 implementarán el contrato con paridad de modelos,
+flujos y API/tipos en cada cambio; esta planificación no dibuja tablas o flujos como ya existentes.
+
+Las recetas Django y TypeScript incorporan el texto de su módulo en la huella; traducir incluso comentarios
+puede invalidar recibos. T001 debe definir tratamiento compatible antes de T004; prompts, catálogos y snapshots
+anteriores permanecen congelados. No se renombran claves/revisiones/rutas por traducción.
+
+T011 define mínimos/familias/capacidades de CLI por proveedor/rol y qué semántica no puede acreditarse con help;
+T012 implementará admisión de versiones posteriores compatibles, procedencia y diagnósticos conservando guardias.
+No equivale a garantizar cualquier versión futura ni a pasar a App Server/SDK. Versiones observadas y política
+quedarán ligadas a los intentos sin reescribir evidencia previa o realizar downgrade/retry silencioso.
+
+T013 contrasta semánticamente diagramas con fuentes/tests. T014–T017 preparan documentación inglesa, paquete
+candidato con recursos en/es, CI sintética y primer uso aislado con dictamen. Requisitos build/servicio/hijo y
+plataformas se acreditan por separado; no se cambia el límite de contención cooperativa ni se publica por efecto
+de preparar workflows. [Plan](phase/P011_PLAN_APERTURA_PUBLICA.md) y [tareas](NEXT_STEPS.md).
+
+[D155](DECISIONS.md#d155--p011-retirada-del-harness-anterior-y-dos-vías-de-alta) añade T019, tras T002 y antes de
+traducir: retirar visor/rutas `/legacy`, API/comandos/observadores/SSE legacy, activación desde el harness anterior
+y normalización/importación A, incluidos sus prompts y módulos exclusivos. Solo creación desde cero e incorporación
+de repositorio existente sin harness (B) como entradas; ambos usan seguimiento gestionado de my_harness.
+
+B comparte `project_imports`, `purpose = import_commit`, repositorios y escritor Git con A; no se borran tablas,
+clases o formatos por coincidir su nombre con `import`/`legacy`. T001/T019 separan dependencias necesarias de
+componentes exclusivos y precisan tratamiento no destructivo de datos/jobs anteriores, recuperación, backup y
+historiales propios. Hasta T019 el código y los apartados vigentes aún contienen estas funcionalidades; no se
+anuncia su retirada como implementada ni se reescriben migraciones/archivos históricos.
+
+[D156](DECISIONS.md#d156--planificación-de-p011-finalizada-y-modo-continuo-aplazado-a-v020) deja finalizada la
+planificación de P011, con tareas pendientes, y reserva para v0.2.0 posterior a la apertura en GitHub el modo
+continuo entre fases. No se modifica ahora supervisor/cola/autorizaciones: el lote actual encadena tareas/commits,
+no inicia check/cierre y la planificación posterior mantiene su confirmación por hash (D034/D091).
+El diseño futuro de automatización y sus límites tiene fase/tareas propias por definir, fuera de esta entrega.
