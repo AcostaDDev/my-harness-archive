@@ -170,6 +170,7 @@ tarea se leen solo las decisiones que cita; este índice sirve para buscar prece
 | [D157](#d157--repositorio-público-nuevo-y-continuidad-del-desarrollo) | Repositorio público nuevo y continuidad del desarrollo | P011 |
 | [D158](#d158--idioma-visual-global-y-trabajo-inmutable-por-proyecto) | Idioma visual global y trabajo inmutable por proyecto | P011 |
 | [D159](#d159--p011-t001-contrato-de-idiomas-fuentes-y-corte-público) | P011-T001: contrato de idiomas, fuentes y corte público | P011 |
+| [D160](#d160--p011-t002-licencia-mit-y-frontera-del-contenido-publicable) | P011-T002: licencia MIT y frontera del contenido publicable | P011 |
 
 ## D001 — Alcance local y arquitectura base
 
@@ -4728,3 +4729,45 @@ Concreta D154–D158; conserva las guardias de D027, el layout D088 y las huella
 - Diez criterios con tareas/evidencias pendientes; licencia/titularidad (T002), mínimos CLI (T011), versión
   candidata (T015) y ensayos (T016) siguen en sus tareas. Checks estáticos de inventario, fuentes, parsers,
   enlaces/presupuestos e integridad/diff; sin suites, servicios, proveedores, instalaciones o red.
+
+## D160 — P011-T002: licencia MIT y frontera del contenido publicable
+
+Estado: adoptada el 2026-10-22 al ejecutar T002 por petición del usuario; revisión estática del origen completada,
+sin candidato ni dictamen de preparación pública. [Informe](phase/P011-T002_CONTENIDO_PUBLICABLE.md),
+[inventario privado](phase/P011-T002_INVENTARIO.tsv) y [dependencias](phase/P011-T002_DEPENDENCIAS.tsv).
+Concreta D154/D157/D159; no autoriza publicación o reescritura de historia.
+
+- El usuario delega explícitamente en esta sesión la elección de licencia/canal y confirma David Acosta como
+  titular público. Se elige MIT (copyright 2026 David Acosta), por permitir reutilización/distribución con términos
+  breves y conservación del aviso. La delegación resuelve la elección humana de T002 antes de redactar términos.
+  LICENSE, metadatos de licencia/autor y guías CONTRIBUTING/SECURITY inglesas entregados, sin publicar el correo
+  facilitado para la identidad ni inventar contactos, entidad, SLA, bounty o soporte de versiones.
+- Canal elegido: reportes privados de vulnerabilidades de GitHub del futuro repositorio, con fallback de pedir
+  canal privado por issue sin detalles. SECURITY no activa la función: el propietario debe habilitarla y verificarla
+  antes de abrir; expediente remoto de T015/T017, sin operación de cuenta/repo ahora. Solo se consultaron fuentes
+  oficiales de MIT/GitHub; escaneo local sin enviar contenidos, instalaciones, servicios o proveedores.
+- Base de 690 archivos y 4.009 objetos alcanzables (145 commits, incluidos refs remotos/checkpoints locales)
+  escaneada. No se identifican credenciales reales en los patrones usados; las coincidencias genéricas son
+  centinelas sintéticos. Se constatan rutas/identidad/referencias/evidencia privadas; no se declara publicable el
+  origen. D157 las resuelve mediante exclusión explícita del historial y nuevo árbol/Git revisados, sin borrar refs,
+  reescribir commits/snapshots o confundir ignore con saneamiento. Reflogs/inalcanzables/estado ignorado y formatos
+  de secreto no reconocidos quedan fuera de la garantía del escaneo finito.
+- Inventario exacto privado por ruta/hash/disposición: 244 exclusiones privadas, 99 fixtures legacy a retirar
+  tras contraste T019, siete archivos a sustituir y 340 candidatos a revisar, ninguno aprobado para copiar
+  automáticamente. Ayudas reales de CLI se conservan privadas: T006/T012 deben reemplazar su cobertura pública
+  con fixtures sintéticos, sin asumir licencia de redistribución por ser texto público. Docs/instrucciones nuevas
+  en T014; fuente/recursos técnicos conservan la compatibilidad congelada de T001. Este informe/censo no se exporta.
+- Avisos de terceros de las 123 entradas runtime frontend conservados en NOTICE-THIRD-PARTY: 129 textos de
+  upstream, 69 contenidos distintos, lock/hash y procedencia por paquete. Khroma MIT acreditado por su archivo
+  local aunque el lock omita licencia; fastdom/strictdom la contienen en README. Se preservan alternativas de
+  DOMPurify y copyrights, sin relicenciar terceros bajo MIT del proyecto ni cambiar locks/dependencias.
+- Censo de 247 entradas separa runtime, build y recetas externas. Hay 19 sin términos de versión exacta en
+  evidencia local (colorama, 17 de receta Django y uv_build), no vendorizadas: ausencia declarada, sin atribuirles
+  licencia de memoria. T015 debe acreditar/conservar términos de cualquier material que distribuya, verificar
+  assets/fuentes incorporados y completar avisos/metadatos del paquete; los textos fuente no certifican un bundle.
+- Los dos wheel/sdist locales antiguos son evidencia estática, sin ejecutar: contienen legacy, faltan avisos y el
+  sdist conserva un `.orig`; excluidos del candidato, sin borrarlos. El staging actual no copia LICENSE/NOTICE;
+  su integración explícita y comprobación del candidato pertenecen a T015/T016, antes de distribuir.
+- Sin cambios de comportamiento, API/modelos/flujos, fuentes de recetas o configuración global; sin suites,
+  builds, proveedores/agentes, smokes, servicios, nueva copia, tags/push/publicación. El usuario autoriza el commit
+  local en inglés de esta tarea; siguiente T019, sin encadenar su ejecución.

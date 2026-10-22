@@ -232,12 +232,15 @@ elección de trabajo en inglés/español, CLI más compatibles y primer uso repr
 este repositorio, reescribir historia/snapshots, nube/multiusuario, aislamiento del SO, App Server/SDK, rediseño
 general, traducción automática de contenido libre o aplicaciones hijas, y ampliación de consentimientos de P009.
 No incorporar automáticamente las otras candidatas ni prometer compatibilidad multiplataforma o CLI futura universal.
-**Estado:** en ejecución documental el 2026-10-22 por encargo del usuario. T001 completada (D159):
+**Estado:** en ejecución el 2026-10-22 por encargo del usuario. T001 completada (D159):
 [contrato](phase/P011-T001_CONTRATO_APERTURA.md) e [inventario](phase/P011-T001_INVENTARIO.md), sin cambios de
-producto ni ejecución operativa. Dieciocho tareas pendientes; siguiente T002 y luego T019 antes de T003.
+producto ni ejecución operativa. T002 completada (D160): MIT, titular David Acosta, guías/avisos e inventario/
+escaneo estático del origen; [informe](phase/P011-T002_CONTENIDO_PUBLICABLE.md). No hay candidato público
+aprobado; staging/avisos/assets y activación del canal privado GitHub pendientes en sus entregas.
+Diecisiete tareas pendientes; siguiente T019 y luego T003.
 Planificación inicial finalizada en D156 y commit `6174f51`; ajustes D157/D158 incorporados
-en `2730f54`, sin ejecución del producto. La petición actual autoriza T001 y su commit local en inglés.
-La fase no está cerrada; se mantienen diecinueve tareas (una completada) y diez criterios.
+en `2730f54`, sin ejecución del producto. La petición actual autoriza T002 y su commit local en inglés.
+La fase no está cerrada; se mantienen diecinueve tareas (dos completadas) y diez criterios.
 [Plan](phase/P011_PLAN_APERTURA_PUBLICA.md), [tareas](NEXT_STEPS.md) y
 [D154](DECISIONS.md#d154--p011-preparación-para-apertura-pública-en-github).
 La primera versión local P010 sigue completada en su alcance; P011 añade objetivos públicos, no reabre ese cierre.

@@ -73,15 +73,15 @@ salvo donde se indica. Detalle por fase en `docs/archive/phase-NNN/SUMMARY.md`; 
 
 **P011 — Preparación para apertura pública en GitHub**, iniciada documentalmente el 2026-10-22 por encargo del usuario
 ([D154](DECISIONS.md#d154--p011-preparación-para-apertura-pública-en-github),
-[plan](phase/P011_PLAN_APERTURA_PUBLICA.md), [tareas](NEXT_STEPS.md)). T001 completada (D159), dieciocho tareas
+[plan](phase/P011_PLAN_APERTURA_PUBLICA.md), [tareas](NEXT_STEPS.md)). T001/T002 completadas (D159/D160), diecisiete tareas
 pendientes; sin implementar traducción, selección de idiomas, retirada legacy o nueva compatibilidad CLI.
 
 **Planificación finalizada para comenzar su ejecución** por petición del usuario
 ([D156](DECISIONS.md#d156--planificación-de-p011-finalizada-y-modo-continuo-aplazado-a-v020)).
-P011 no está completada: T001 entrega diseño/inventario y la siguiente es T002.
+P011 no está completada: T001 entrega diseño/inventario, T002 licencia/revisión estática; siguiente T019.
 El modo continuo entre fases queda reservado para **v0.2.0, después de abrir el proyecto en GitHub**;
 no forma parte de P011 ni modifica el cierre confirmado actual. Commit documental D156 realizado en `6174f51`;
-las ampliaciones D157/D158 se incorporaron en `2730f54`. La petición actual autoriza T001 y su commit local
+las ampliaciones D157/D158 se incorporaron en `2730f54`. La petición actual autoriza T002 y su commit local
 en inglés, sin ejecución del producto ni publicación.
 
 **P011-T001 completada** ([contrato](phase/P011-T001_CONTRATO_APERTURA.md),
@@ -92,10 +92,20 @@ retirada A/legacy con infraestructura B e historial propio conservados, y lista 
 Contrato listo para implementar en sus tareas; contraste estático, hashes, parsers/enlaces/presupuestos e
 integridad/diff verificados. Sin suites, builds, servicios, agentes/proveedores, red ni auditoría de privacidad.
 
+**P011-T002 completada** ([informe](phase/P011-T002_CONTENIDO_PUBLICABLE.md), D160): MIT por delegación
+expresa del usuario y copyright 2026 David Acosta; LICENSE/metadatos, contribución/seguridad en inglés, avisos
+de 123 dependencias runtime frontend y exclusiones preventivas. Escaneo local de 690 archivos y 4.009 objetos
+Git alcanzables, sin credenciales reales identificadas con los patrones usados; contenido privado excluido
+mediante nueva raíz/árbol público futuro, sin reescribir el origen. Inventario por ruta/hash y 247 dependencias;
+19 términos de dependencias externas sin evidencia local declarados. Reportes privados GitHub elegidos,
+activación pendiente de apertura; staging/avisos/assets y candidato exacto a T015/T016. Fuentes oficiales
+MIT/GitHub consultadas, sin enviar contenido. Checks estáticos, sin suites/builds/servicios/proveedores.
+No se declara este historial ni los paquetes antiguos publicables; sigue pendiente el dictamen final P011.
+
 Objetivo: código/comentarios/docstrings y prompts originales ingleses; idiomas visual/trabajo separados (D158);
 CLI por capacidades/mínimos; diagramas contrastados con comportamiento; documentación inglesa y README de primer
 uso; licencia/contenido publicable, paquete/CI y QA del candidato antes del dictamen. Sin publicar ni abrir
-visibilidad por efecto de esta fase. Licencia/titularidad y versión candidata se resuelven en sus tareas.
+visibilidad por efecto de esta fase. Licencia/titularidad resueltas en T002; versión candidata pendiente de T015.
 
 [D157](DECISIONS.md#d157--repositorio-público-nuevo-y-continuidad-del-desarrollo) prevé instantánea inicial
 revisada sin historia/docs privados y con docs públicas nuevas útiles; después, código/decisiones/fases evolucionan
@@ -121,7 +131,7 @@ P009 conserva su cierre documental (D140) y el Django hijo su P001 CLOSED, cuatr
 tag `p001` sobre `47a0557` y archivo en `3d105c6`. No se repite ninguna operación ni comprobación de su estado.
 Este repositorio sigue sin registrarse ni ejecutarse con el harness; cierre manual sin check READY ni tag propio.
 
-**Siguiente:** P011-T002, licencia/titularidad y revisión estática del contenido publicable; después T019 antes de T003.
+**Siguiente:** P011-T019, retirada legacy/A conservando cero/B e historia propia; después T003.
 Otras candidatas permanecen en [ROADMAP](ROADMAP.md#candidatas-sin-fase-asignada).
 Los límites de la base acumulada siguen vigentes. B y D095 mantienen la validación real aplazada por D151;
 A queda fuera del soporte público futuro por D155, sin considerarse validado ni retirado todavía en código.

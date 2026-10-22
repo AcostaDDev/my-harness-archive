@@ -4,11 +4,11 @@ Objetivo y criterios en [ROADMAP](ROADMAP.md#p011--preparación-para-apertura-p�
 Decisión: [D154](DECISIONS.md#d154--p011-preparación-para-apertura-pública-en-github).
 [Plan y alcance](phase/P011_PLAN_APERTURA_PUBLICA.md).
 
-**Estado:** en ejecución documental el 2026-10-22. T001 completada (D159); dieciocho tareas pendientes,
-sin cambios de producto.
+**Estado:** en ejecución el 2026-10-22. T001/T002 completadas (D159/D160); diecisiete tareas pendientes.
+Licencia/metadatos y avisos entregados; sin cambios de comportamiento del producto.
 **Planificación:** base finalizada en D156 y afinada por D155/D157/D158; contrato T001 disponible.
 No equivale a fase completada.
-**Siguiente:** P011-T002; después T019 antes de T003. Sin autorización de publicación.
+**Siguiente:** P011-T019; después T003. Sin autorización de publicación.
 P001–P010 siguen cerradas; la primera versión local mantiene el alcance de D151/D153.
 
 ## Restricciones compartidas
@@ -41,7 +41,7 @@ P001–P010 siguen cerradas; la primera versión local mantiene el alcance de D1
   siguiente fase` para v0.2.0 después de abrir el proyecto en GitHub, fuera de estas tareas. P011 mantiene
   cierre con READY y autorización propia, nueva fase sin tareas y confirmación del plan posterior.
   El commit D156 y los ajustes D157/D158 ya se realizaron. La petición actual autoriza ejecutar la siguiente
-  tarea (T001) y su commit local en inglés, sin encadenar tareas ni publicar.
+  tarea (T002) y su commit local en inglés, sin encadenar tareas ni publicar.
 - D157 elige instantánea pública inicial revisada, con Git/documentación de partida nuevos y sin historia privada.
   Desde la apertura, código/decisiones/fases se desarrollan en el repositorio público, fuente principal; este
   checkout conserva su historia privada. No sincronizar dos desarrollos activos ni congelar para siempre `docs/` pública.
@@ -92,7 +92,16 @@ según el contrato. Los formatos/esquemas/flujos nuevos se implementan con su pa
 
 ## P011-T002 — Licencia y revisión del contenido publicable
 
-**Estado:** pendiente. **Depende de:** T001.
+**Estado:** completada el 2026-10-22 (licencia/revisión estática del origen), D160. **Depende de:** T001.
+**Evidencia:** [informe](phase/P011-T002_CONTENIDO_PUBLICABLE.md),
+[inventario por ruta/hash](phase/P011-T002_INVENTARIO.tsv), [dependencias](phase/P011-T002_DEPENDENCIAS.tsv)
+y [script local](phase/P011-T002_audit.py). Usuario delega licencia/canal y confirma titular: MIT, David Acosta;
+LICENSE/metadatos, CONTRIBUTING/SECURITY y avisos de 123 entradas runtime frontend. Escaneo de 690 archivos y
+4.009 objetos alcanzables; sin credenciales reales identificadas en los patrones usados. Censo de 247 entradas,
+19 términos de dependencias externas sin evidencia local declarados. Historia/evidencia privadas y paquetes
+antiguos excluidos del futuro candidato; sin reescritura, copia o publicación. GitHub privado elegido, sin activar;
+T015/T016 completan staging/avisos/assets y comprobación del candidato. Checks estáticos y consulta oficial
+MIT/GitHub; sin suites, builds, servicios, proveedores o instalaciones. Siguiente T019.
 **Objetivo:** Preparar derechos, atribuciones y contenido revisados para abrir el repositorio y sus artefactos.
 **Alcance:** licencia/titularidad elegidas por el usuario, avisos de terceros, archivos rastreados e historial Git
 alcanzable, soporte/contribución y reporte responsable; exclusión de estado y evidencias privadas.
@@ -290,6 +299,8 @@ memoria, autenticación/entorno, cancelación y diagnóstico.
 
 - Matriz de capacidades obligatorias con evidencia de código/documentación oficial; separar version/help,
   comportamiento e inferencia real. Fijar mínimos con evidencia, sin prometer todas las versiones futuras.
+  D160 excluye ayudas reales de CLI del corte: sustituir cobertura con fixtures sintéticos en T006/T012,
+  conservando los originales privados y sin presentarlos como redistribuibles bajo el MIT del proyecto.
 - Una CLI posterior compatible no se rechaza solo por faltar en una lista exacta; inferiores/incompatibles
   bloquean antes del efecto. Distinguir verificada/candidata, aceptación de candidatas y semántica que help no prueba.
 - Congelar versión observada/capacidades/política por intento; conservar jobs antiguos, cuarentena, confianza y
@@ -380,6 +391,8 @@ sin procesos; revisión inglesa/española. No anunciar aún un primer uso ensaya
 
 - Registrar versión/política de cambios sin asumir `1.0.0`; coherencia Python/UI/locks/licencia y contenido
   permitido del paquete, sin `.local`, runs, credenciales o cachés privadas. Wheel/sdist con recursos completos.
+  Integrar LICENSE/NOTICE en staging y comprobar metadatos, avisos de bundles/fuentes y las 19 entradas externas
+  sin términos de versión exacta en evidencia local T002 cuando se redistribuyan; no reutilizar `dist/` antiguo.
   Respetar la reserva de v0.2.0 para una entrega posterior a la apertura inicial de GitHub (D156), sin atribuirle
   a esta fase el modo continuo aplazado ni cambiar versión por efecto de planificar.
 - Sin componentes/entrypoints/prompts exclusivamente legacy/A en el paquete público; compatibilidad interna
@@ -388,6 +401,8 @@ sin procesos; revisión inglesa/española. No anunciar aún un primer uso ensaya
   y plataforma probada. CI sintética sin login/secretos/proveedores ni publicación automática, permisos explícitos.
 - Notas, hashes/manifiesto y procedimiento manual GitHub revisables. Escribir workflows no ejecuta jobs remotos,
   crea tags/Releases, cambia visibilidad ni publica. PyPI y publicación automática fuera de alcance.
+  Incluir activación/verificación de reportes privados GitHub elegidos en D160 antes de abrir; SECURITY no activa
+  el canal. Comprobación operativa remota solo bajo la autorización propia de apertura.
 - Preparar instantánea inicial saneada con docs públicas nuevas y raíz Git independiente, sin `.git`/objetos/ramas/
   tags ni historia privada. Registrar correspondencia origen/candidato de forma privada y comparar código aprobado,
   recursos y dependencias. Después de abrir, el repositorio público será fuente principal de código/docs; no espejo
