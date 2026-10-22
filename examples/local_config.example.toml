@@ -4,6 +4,8 @@
 # local-config-3 (lo mismo sin [profiles]) conserva su comportamiento y su hash congelado.
 # local-config-2 (comandos dentro de cada [[projects]]) y local-config-1 ([providers.codex]/[providers.claude],
 # revisor Codex + ejecutor Claude) se siguen leyendo, pero no admiten registrar proyectos desde la UI.
+# local-config-5 (P009-T003) es esta misma plantilla con format = "local-config-5": admite además
+# [agent_presets.*] y los fragmentos de receta de examples/ (typescript-web-recipe, django-recipe).
 # Validar:  harness-local check-config /ruta/harness-local.toml [--preflight]
 # Arrancar: harness-local serve --database /ruta/state/harness.sqlite3 --config /ruta/harness-local.toml
 format = "local-config-4"

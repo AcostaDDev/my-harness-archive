@@ -10,7 +10,7 @@ decisiones vigentes y la información técnica que antes estaba en README y AGEN
 |---|---|
 | Núcleo | Python 3.14.4, biblioteca estándar, paquete `harness-local` 0.1.0 (`uv_build==0.12.19`) |
 | API local | FastAPI 0.143.0, Pydantic 2.14.0, Uvicorn 0.54.0; HTTP para acciones, SSE para observación legacy |
-| Persistencia | SQLite con SQLAlchemy 2.1.4 y Alembic 1.20.0 (esquema `0021_project_creation`) |
+| Persistencia | SQLite con SQLAlchemy 2.1.4 y Alembic 1.20.0 (esquema `0023_run_projection`) |
 | UI | React 19.3.0, TypeScript 5.9.3, Vite 8.3.4; `markdown-it` 15.0.2 (`html: false`) y `mermaid` 11.17.2 (`strict`) |
 | Tipos del cliente | `openapi-typescript` 7.13.0 desde el OpenAPI exportado |
 | Herramientas | uv 0.12.19 y `uv.lock`; Node 24.15.0, npm 11.12.1 y `frontend/package-lock.json` |
@@ -51,7 +51,7 @@ casos de uso. El supervisor es el único que lanza procesos y consume la cola; c
 | `core/engine/context.py` | `ProjectContext`, perfil, política, comandos; contexto explícito por proyecto |
 | `core/engine/contracts.py`, `planning.py` | Contrato de tarea, rutas protegidas, planificación determinista desde NEXT_STEPS |
 | `core/engine/workflow.py`, `validation.py`, `review.py`, `acceptance.py`, `junit.py` | Bucle plan → ejecución → validación → revisión → aceptación |
-| `core/engine/commit.py`, `evidence.py`, `serialization.py` | Intención de commit, actualizaciones mecánicas, codec de historial (formatos 1–7) |
+| `core/engine/commit.py`, `evidence.py`, `serialization.py` | Intención de commit, actualizaciones mecánicas, codec de historial (escribe el formato 8; lee 1–8) |
 | `core/engine/phases.py`, `storage/closure.py`, `storage/phase_plan.py` | Check READY, cierre y archivo unificados, tags, abandono y plan posterior confirmado (D091) |
 | `core/engine/documents.py`, `document_ops.py`, `document_export.py` | Contrato documental unificado (D088), plantilla, bloques gestionados, archivo, edición, exportación y conciliación de transiciones antiguas |
 | `core/engine/definition.py`, `bootstrap.py`, `bootstrap_discovery.py` | Definición conversacional (v2) y ejecución del bootstrap D037; el descubrimiento v1 solo concilia runs registrados |
@@ -63,16 +63,18 @@ casos de uso. El supervisor es el único que lanza procesos y consume la cola; c
 | `storage/*.py` | Repositorios SQLAlchemy por área (`managed`, `phases`, `documents`, `transition`, `planning`, `chat`, `metrics`, `registry`, `backup`, `retention`, `migrate`…) |
 | `storage/run_projection.py`, `managed_views.py` | Proyección derivada `run-projection-1` escrita con el historial y vistas de runs que solo la leen (D144) |
 | `services/managed.py`, `managed_runtime.py` | Supervisor (`run_once`, lease, cuarentena) y composición del runtime |
-| `services/local_config.py`, `project_registry.py`, `project_creation.py` | TOML `local-config-4` (lectura de 1–3) y registro/creación de hijos desde la UI con 3/4 |
+| `services/local_config.py`, `project_registry.py`, `project_creation.py` | TOML `local-config-5` (lectura de 1–4) y registro/creación de hijos desde la UI con 3/4/5; presets y recetas solo en v5 |
+| `recipes/`, `services/project_preparation.py`, `storage/preparation.py`, `adapters/preparation.py` | Recetas empaquetadas `django-recipe-1` y `typescript-web-recipe-1` y su preparación confirmada y recuperable (D119, D143) |
 | `api/app.py`, `managed.py`, `legacy.py`, `schemas.py`, `session.py`, `security.py` | Aplicación, rutas, contratos Pydantic, sesión y guardia |
-| `profiles/typescript_web.py`, `profiles/reference_project.py` | Perfiles integrados (`typescript-web` componible; `reference_project` solo biblioteca); los perfiles del TOML v4 se componen en `services/local_config.py` |
+| `profiles/typescript_web.py`, `profiles/reference_project.py` | Perfiles integrados (`typescript-web` componible; `reference_project` solo biblioteca); los perfiles del TOML v4/v5 se componen en `services/local_config.py` |
 | `cli.py`, `launcher.py` | `harness-local` (legacy, backup, retención, diagnóstico, `check-config`, `metrics-backfill`, `init-db`, `serve`) |
-| `migrations/versions/0001…0021` | Esquema Alembic |
+| `migrations/versions/0001…0023` | Esquema Alembic |
 
 `frontend/src`: `router.ts`, `pages/` (Home, Registry, Project, Phases, Task, Run, Docs, Planning, Stats, Settings),
 `markdown.ts` y `mermaid-view.ts` (render aislado), `managed-api.ts` (envíos idempotentes), `api.generated.ts`
 (generado, no se edita). `scripts/`: `dev`, `export_openapi.py`, `build_distribution.py`, `check_distribution.py`,
-`smoke_cli.py`. `examples/`: demos sintéticas y plantilla `local_config.example.toml`.
+`smoke_cli.py`. `examples/`: plantilla `local_config.example.toml` (v4, válida como v5 cambiando `format`), fragmentos
+v5 de las recetas, demos sintéticas y guiones históricos (`first_use/`, `provider_matrix/`) que no se actualizan.
 
 ## 4. Patrones
 
@@ -234,6 +236,14 @@ npm --prefix frontend run generate:types
 Uso real (D051): construir y verificar el wheel (`scripts/build_distribution.py --out-dir`, `scripts/check_distribution.py
 --dist`), instalarlo en un venv propio y operar con `harness-local check-config RUTA [--preflight]`,
 `harness-local init-db --database RUTA` y `harness-local serve --database RUTA --config RUTA`. Nunca desde este checkout.
+La plantilla del TOML es `local-config-4`; con `format = "local-config-5"` admite además presets y los fragmentos de
+receta de `examples/` (un fragmento cuya composición ya exista en el TOML se añade con otro nombre). Versiones CLI
+admitidas por rol en el [README](../README.md#requisitos), contrastadas con `cli_agents.SUPPORTED`/`WRITE_SUPPORTED`.
+
+Actualización (D043): `init-db` solo crea bases nuevas y `serve` exige la revisión de esquema del paquete; el paquete
+instalado no migra bases existentes. `storage/migrate.py` (instantánea `premigration-1` y `upgrade head`) solo lo
+usa `scripts/dev` sobre la base de desarrollo. Una base operativa en una revisión anterior (p. ej. `0022`, previa a
+P010-T003) no arranca con un paquete en `0023`.
 
 `serve` escribe la clave de sesión (`harness-session-*/login-key`, 0700/0600, se borra al salir) y los índices y
 sellos temporales de Git (`harness-git-*`, `harness-bootstrap-*`) bajo el `TMPDIR` del proceso. Sin él, Python usa el
@@ -251,6 +261,13 @@ de las recetas Django y TypeScript web no heredan ese valor: reciben `HOME`/`TMP
   leen la proyección `run-projection-1`; la transición, el commit de tarea y el resto del motor leen el historial.
 - El manifiesto que fija una receta (Django o TypeScript web) no admite dependencias nuevas tras preparar; requiere
   un flujo confirmado futuro. Las altas e importaciones aportan su propio `package.json` (D143).
+- Sin actualizador de bases en el paquete instalado (D043): una base de una revisión anterior no arranca con un
+  paquete nuevo; P010-T007 valora si se acota como tarea propia.
+- El perfil `typescript-web` protege `package.json`, `package-lock.json`, `tsconfig.json`, `scripts/**` y `tests/**`
+  frente al ejecutor normal: el ejecutor no crea ni modifica archivos bajo `tests/`.
+- Tras un reinicio que renumere el dispositivo, crear otro proyecto exige volver a elegir la carpeta (D130).
+- Evidencia real limitada a macOS arm64 y a las CLI y recorridos registrados; importaciones A/B, perfil declarado,
+  receta TypeScript, chat y backup sin uso real ([alcance](../README.md#alcance-soportado)).
 - Dos avisos *low* de KaTeX en Mermaid 11.
 - La estructura de D088 es obligatoria desde P008-T002; rutas y paridad en T003, cierre y archivo unificados en
   T004, prompts/definición en T005, API/UI en T006 e inyección de AGENTS en T007 (D089–D094).
@@ -312,3 +329,12 @@ npm del operador en su entorno. `recipes/__init__.py` registra cada receta con s
 preparación separa el núcleo común de las partes por receta y el recibo TypeScript fija manifiesto protegido y
 ejecutables, no `node_modules`. Sin migración ni cambios de API. [Fragmento v5](../examples/typescript-web-recipe.example.toml),
 [flujo](flows/project-preparation.md) y [entrega](phase/P010-T002_ARRANQUE_TYPESCRIPT.md).
+
+T003 añade la proyección derivada `run-projection-1` (migración `0023`, seis tablas, D144): se escribe con cada
+historial, se rellena una vez para los existentes sin reescribirlos y se comprueba en el backup. Las vistas de runs,
+los ciclos paginados (`GET /runs/{id}/cycles`), las métricas y la vista previa de exportación (T011, D145) la leen sin
+decodificar `history_json`; el envío confirmado de la exportación y el motor siguen leyendo el historial.
+T004 aclara en `define-project` y en la UI que los marcadores gestionados son opcionales en la definición (D146).
+T005 añade `PhaseRead.closure` (check, base, archivo y commit del cierre) y distingue la renovación de documentos
+vivos de la deriva real de una fase cerrada (D147). T006 contrasta README, este documento y `examples/` con el código
+y la evidencia ([entrega](phase/P010-T006_DOCUMENTACION_VERSION.md), D148).

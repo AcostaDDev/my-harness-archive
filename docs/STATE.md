@@ -54,7 +54,7 @@ salvo donde se indica. Detalle por fase en `docs/archive/phase-NNN/SUMMARY.md`; 
   desde creación UI hasta cuatro tareas, QA conjunto y cierre/archivo de P001 (P009-T012, D139);
   26 invocaciones de 60 previstas, sin autorización para operaciones nuevas.
 - **Límites**: contención cooperativa sin aislamiento del sistema operativo; validaciones sin hora; manifiestos de
-  receta fijos tras preparar; dos avisos *low* de KaTeX.
+  receta fijos tras preparar; el paquete instalado no migra bases existentes (D043, D148); dos avisos *low* de KaTeX.
   Piloto de receta Django limitado a macOS arm64/Python 3.13; el perfil Python/Django declarativo sigue pendiente
   de confirmar sobre un proyecto real. El piloto no evalúa comparativamente la calidad de modelos.
   Observación de P009 pendiente: alta sin redirección (aplazada en ROADMAP). El texto de marcadores de
@@ -62,7 +62,7 @@ salvo donde se indica. Detalle por fase en `docs/archive/phase-NNN/SUMMARY.md`; 
 
 ## Fase activa
 
-**P010 — Consolidación de la primera versión local. En curso: T001–T005 y T011 completadas.**
+**P010 — Consolidación de la primera versión local. En curso: T001–T006 y T011 completadas.**
 Planificada el 2026-10-21 ([D141](DECISIONS.md#d141--p010-consolidación-de-la-primera-versión-local),
 [plan](phase/P010_PLAN_CONSOLIDACION.md), [tareas](NEXT_STEPS.md)). El 2026-10-22 T001 deja el
 [contrato](phase/P010-T001_CONTRATO_CONSOLIDACION.md) y la matriz inicial
@@ -88,7 +88,11 @@ ni QA visual. T005 presenta la evidencia histórica de una fase cerrada
 [D147](DECISIONS.md#d147--p010-t005-evidencia-histórica-de-una-fase-cerrada)): `PhaseRead.closure` con check, base,
 archivo y commit; la renovación del cierre deja de mostrarse como deriva y la deriva real (documentos vivos sin
 sucesora y archivo alterado) se señala. Sin migración ni cambios del check; verificado con fases sintéticas abierta,
-cerrada con y sin sucesora, abandonada y con deriva real. T006–T010 pendientes.
+cerrada con y sin sucesora, abandonada y con deriva real. T006 contrasta README, ARCHITECTURE y ejemplos con el
+código y la evidencia ([entrega](phase/P010-T006_DOCUMENTACION_VERSION.md),
+[D148](DECISIONS.md#d148--p010-t006-documentación-de-instalación-y-alcance-soportado)): versiones CLI por rol,
+alcance offline frente a real y límites. Por decisión del usuario, la falta de actualizador de bases en el paquete
+instalado queda como límite y la valora T007. Sin cambios de código. T007–T010 pendientes.
 
 P009 cerrada y archivada documentalmente el 2026-10-21
 ([resumen](archive/phase-009/SUMMARY.md), [revisión](archive/phase-009/REVIEW.md),
@@ -99,8 +103,8 @@ El Django hijo conserva P001 CLOSED, cuatro tareas COMMITTED, tag `p001` sobre `
 Última comprobación operativa en T012: servicios detenidos, cero locks y sin jobs pendientes; no se repite aquí.
 Este repositorio sigue sin registrarse ni ejecutarse con el harness; cierre manual sin check READY ni tag propio.
 
-**Siguiente:** P010-T006, documentación de instalación y alcance soportado.
-Después: matriz de aceptación (T007) y propuesta de validación real (T008). Los límites actuales de la base
+**Siguiente:** P010-T007, matriz de aceptación global.
+Después: propuesta de validación real (T008). Los límites actuales de la base
 acumulada siguen vigentes hasta implementar y verificar
-cada entrega; la cuestión del SSE gestionado (criterio 13) queda para T007. La validación real complementaria
+cada entrega; las cuestiones del SSE gestionado (criterio 13) y del actualizador de bases quedan para T007. La validación real complementaria
 se concreta en T008; no se da por realizada ni autorizada. Sin nueva fase del Django hijo ni ampliación de consentimientos de P009.

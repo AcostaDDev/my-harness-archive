@@ -2,7 +2,8 @@
 # Plantilla NO válida tal cual. Conservar service/git/agents/agent_presets/registration del operador.
 # En environment de AMBOS roles/presets efectivos declarar PYTHONDONTWRITEBYTECODE = "1".
 # Evita que sus comandos Python creen bytecode dentro del entorno acreditado. No se modifica su TOML desde UI.
-# Añadir esta composición al catálogo. Crear el hijo desde UI con ella y bootstrap_enabled=true;
+# Añadir esta composición al catálogo; si el TOML ya declara [compositions.django], como la plantilla,
+# usar otro nombre (p. ej. [compositions.django-recipe]). Crear el hijo desde UI con ella y bootstrap_enabled=true;
 # la raíz padre se elige desde UI, nunca se deduce de este ejemplo. [registration].bootstrap_enabled=true.
 # No modifica configuración global ni instala nada al cargar. Habilitar red aquí solo fija un techo:
 # cada preparación confirma su propio modo, manifiesto, argv y límites antes de ejecutar.

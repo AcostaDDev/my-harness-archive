@@ -158,6 +158,7 @@ tarea se leen solo las decisiones que cita; este índice sirve para buscar prece
 | [D145](#d145--p010-t011-métricas-y-vista-previa-de-exportación-sobre-la-proyección) | P010-T011: métricas y vista previa de exportación sobre la proyección | P010 |
 | [D146](#d146--p010-t004-marcadores-opcionales-en-la-definición) | P010-T004: marcadores opcionales en la definición | P010 |
 | [D147](#d147--p010-t005-evidencia-histórica-de-una-fase-cerrada) | P010-T005: evidencia histórica de una fase cerrada | P010 |
+| [D148](#d148--p010-t006-documentación-de-instalación-y-alcance-soportado) | P010-T006: documentación de instalación y alcance soportado | P010 |
 
 ## D001 — Alcance local y arquitectura base
 
@@ -4419,3 +4420,18 @@ cierre con la base histórica y mostraba deriva.
   (`archive_altered`). Ninguno se oculta.
 - La página de documentos usa los hashes esperados si la última fase está terminada. Las fases abiertas conservan
   deriva frente a la base adoptada, READY obsoleto y bloqueo del cierre.
+
+## D148 — P010-T006: documentación de instalación y alcance soportado
+
+Estado: completada el 2026-10-22. Fase: P010. [Entrega](phase/P010-T006_DOCUMENTACION_VERSION.md).
+Contrasta README, ARCHITECTURE y `examples/` con el código y la evidencia, sin cambiar código ni configuración.
+
+- Versiones CLI por rol según `cli_agents.SUPPORTED`/`WRITE_SUPPORTED` y D122, con el uso real registrado de cada
+  una; los usos anteriores a `cli-13` se presentan como históricos y Codex 0.161.0 figura sin uso real localizado.
+- README separa lo verificado offline de lo probado con proveedores; A/B, perfil declarado de D095, receta TypeScript
+  web, chat y backup no tienen uso real. «Primera versión local» no cambia la versión `0.1.0` ni implica publicación.
+- Por decisión del usuario, la falta de actualizador de bases en el paquete instalado (D043) se documenta como límite
+  vigente: una base en una revisión anterior, como `0022`, no arranca con el paquete en `0023`. P010-T007 valora si se
+  acota como tarea de producto; no se documenta una vía manual sobre `storage/migrate.py`.
+- La plantilla TOML sigue en `local-config-4` (la fija un test) y vale como v5 cambiando `format`; el fragmento Django
+  se añade con otro nombre de composición si el TOML ya tiene `[compositions.django]`.

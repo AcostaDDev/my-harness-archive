@@ -11,9 +11,9 @@ Añade T011 (métricas y exportación sobre la proyección de runs). T002 comple
 `typescript-web-recipe-1` implementada y verificada offline. T003 completada el 2026-10-22 (D144): proyección
 `run-projection-1` y vistas de runs sin decodificar historiales. T011 completada el 2026-10-22 (D145): métricas y
 vista previa de exportación sobre la proyección. T004 completada el 2026-10-22 (D146): marcadores opcionales en la
-definición. T005 completada el 2026-10-22 (D147): evidencia histórica de una fase cerrada. T006–T010 pendientes;
-sin operación iniciada.
-**Siguiente:** T006, documentación de instalación y alcance soportado (depende de T002–T005 y T011).
+definición. T005 completada el 2026-10-22 (D147): evidencia histórica de una fase cerrada. T006 completada el
+2026-10-22 (D148): documentación contrastada con código y evidencia. T007–T010 pendientes; sin operación iniciada.
+**Siguiente:** T007, matriz de aceptación global (depende de T002–T006 y T011).
 
 ## Restricciones compartidas
 
@@ -138,7 +138,9 @@ entrega §5). QA visual no realizado; sin leer ni modificar el estado operativo 
 
 ## P010-T006 — Documentación de instalación y alcance soportado
 
-**Estado:** pendiente. **Depende de:** T002–T005 y T011.
+**Estado:** completada el 2026-10-22 ([entrega](phase/P010-T006_DOCUMENTACION_VERSION.md), D148). README,
+ARCHITECTURE y comentarios de `examples/`; sin cambios de código. La falta de actualizador de bases en el paquete
+instalado queda como límite, por decisión del usuario, y pasa a T007. **Depende de:** T002–T005 y T011.
 **Objetivo:** Que la documentación de la primera versión coincida con el producto entregado.
 **Alcance:** README, instalación/operación, compatibilidad, ejemplos y límites; consolidación de los cambios de P010.
 **Rutas permitidas:** `README.md`, `docs/**`, `examples/**`.
@@ -153,15 +155,18 @@ entrega §5). QA visual no realizado; sin leer ni modificar el estado operativo 
 - Se mantiene el significado de «primera versión local» sin convertirlo automáticamente en versión `1.0.0`,
   publicación o compatibilidad multiplataforma. Snapshots archivados e instrucciones históricas intactos.
 
-**Validación:** (prevista) contraste estático, parsers, enlaces y revisión de ejemplos sin ejecutar sus comandos.
-**Entregables:** (previstos) `docs/phase/P010-T006_DOCUMENTACION_VERSION.md`.
+**Validación:** contraste estático con el código, carga de la plantilla y los fragmentos con `load_local_config` y
+rutas sintéticas, los tres módulos de pytest que leen `examples/` y enlaces (entrega §5). Sin ejecutar los comandos de
+instalación ni operación; el wheel de P010 se verifica en T009.
+**Entregables:** `docs/phase/P010-T006_DOCUMENTACION_VERSION.md`.
 
 ## P010-T007 — Matriz de aceptación global
 
 **Estado:** pendiente. **Depende de:** T002–T006 y T011.
 **Objetivo:** Evaluar la primera versión contra los trece criterios de SPECIFICATION §10.
 **Alcance:** actualizar la matriz inicial, comprobar vigencia de evidencia y cubrir huecos mediante pruebas sintéticas
-pertinentes. No repetir todas las operaciones reales de fases anteriores.
+pertinentes. No repetir todas las operaciones reales de fases anteriores. Pendientes de T001 y T006: SSE gestionado
+(criterio 13) y paquete instalado sin actualizador de bases existentes (D043, D148), que se plantean al usuario.
 **Rutas permitidas:** `tests/**`, `frontend/tests/**`, `docs/**`.
 **Criterios de aceptación:**
 
