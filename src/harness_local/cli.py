@@ -55,6 +55,10 @@ def main(argv: list[str] | None = None) -> int:
     command.add_argument('--database', required=True, help='Ruta absoluta SQLite existente; no usa HARNESS_DATABASE_URL')
     command.add_argument('--artifact-root', action='append', default=[],
                          help='Raíz autorizada de streams sellados, verificados por SHA-256; repetible. Sin ella, solo result_json')
+    command = operations.add_parser('migrate', help='Actualizar SQLite existente con instantánea previa verificada')
+    command.add_argument('--database', required=True, help='Ruta absoluta SQLite existente; no usa HARNESS_DATABASE_URL')
+    command.add_argument('--snapshots', required=True, help='Directorio absoluto de instantáneas, fuera de los checkouts')
+    command.add_argument('--writers-stopped', action='store_true', help='Declaro detenidos servicio, observadores y escritores')
     for name in ('init-db', 'serve'):
         command = operations.add_parser(name, help='SQLite nueva explícita' if name == 'init-db' else 'UI/API en 127.0.0.1')
         command.add_argument('--database', required=True, help='Ruta absoluta SQLite; no usa HARNESS_DATABASE_URL')
@@ -64,6 +68,12 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
     engine = None
     try:
+        if args.operation == 'migrate':
+            from dataclasses import asdict
+            from harness_local.storage.migrate import migrate_database
+            result = migrate_database(args.database, Path(args.snapshots), writers_stopped=args.writers_stopped)
+            print(json.dumps(asdict(result), default=str, ensure_ascii=False, indent=2))
+            return 0
         if args.operation in ('init-db', 'serve'):
             from harness_local.launcher import initialize, serve
             if args.operation == 'init-db':

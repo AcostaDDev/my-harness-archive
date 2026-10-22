@@ -1,12 +1,14 @@
 """Verifica wheel instalado en venv nuevo, sin checkout/cwd/Node en ejecución."""
 import argparse
-from contextlib import contextmanager
+from contextlib import closing, contextmanager
+import hashlib
 import json
 from http.cookiejar import CookieJar
 from pathlib import Path
 import re
 import socket
 import shutil
+import sqlite3
 import subprocess
 import tempfile
 import time
@@ -117,6 +119,31 @@ def main():
         assert not db.exists()
         run('init-db', '--database', db)
         run('init-db', '--database', db, ok=False)
+        # P010-T012: the installed entry point upgrades an existing database with a verified snapshot.
+        snapshots = work / 'premigration'
+        run('migrate', '--database', work / 'absent.sqlite3', '--snapshots', snapshots,
+            '--writers-stopped', ok=False)
+        assert not (work / 'absent.sqlite3').exists() and not snapshots.exists()
+        subprocess.run([str(python), '-c',
+            'import sys; from alembic import command; from harness_local.storage.migrate import _config; '
+            'command.downgrade(_config("sqlite:///" + sys.argv[1]), "0022_project_preparation")', str(db)],
+            cwd=work, env=env, check=True)
+        run('serve', '--database', db, ok=False)
+        run('migrate', '--database', db, '--snapshots', snapshots, ok=False)
+        migration = json.loads(run('migrate', '--database', db, '--snapshots', snapshots,
+                                   '--writers-stopped').stdout)
+        assert migration['action'] == 'migrated' and migration['previous'] == '0022_project_preparation'
+        snapshot = Path(migration['snapshot'])
+        manifest = json.loads(snapshot.with_suffix('.json').read_text())
+        assert manifest['format'] == 'premigration-1'
+        assert manifest['sha256'] == hashlib.sha256(snapshot.read_bytes()).hexdigest()
+        with closing(sqlite3.connect(snapshot)) as connection:
+            assert connection.execute('PRAGMA integrity_check').fetchone()[0] == 'ok'
+            assert connection.execute('SELECT version_num FROM alembic_version').fetchone()[0] == migration['previous']
+        before = db.read_bytes()
+        assert json.loads(run('migrate', '--database', db, '--snapshots', snapshots,
+                             '--writers-stopped').stdout)['action'] == 'current'
+        assert db.read_bytes() == before and len(list(snapshots.glob('*.sqlite3'))) == 1
         # Instalación efectiva, migraciones y plantillas fuera del checkout.
         probe = subprocess.check_output([str(python), '-c',
             'import harness_local; print(harness_local.__file__)'], cwd=work, env=env, text=True)

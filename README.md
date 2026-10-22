@@ -11,9 +11,9 @@ Fases P001–P009 completadas y archivadas; la última, [P009](docs/archive/phas
 desde la UI, lo llevó con las cuatro combinaciones de agentes hasta cerrar su primera fase y lo archivó.
 P010, [consolidación de la primera versión local](docs/phase/P010_PLAN_CONSOLIDACION.md), está en curso: receta
 TypeScript web, lecturas de runs y métricas sin decodificar historiales, marcadores opcionales de definición y
-evidencia de fases cerradas ya implementados; quedan la matriz de aceptación, la propuesta de validación real, la
-verificación final y el cierre. «Primera versión local» no implica versión `1.0.0` ni publicación: el paquete sigue
-en `0.1.0`. Detalle en [ROADMAP](docs/ROADMAP.md) y [STATE](docs/STATE.md).
+evidencia de fases cerradas y migración explícita de bases ya implementados, con matriz de aceptación; quedan la
+propuesta de validación real, la verificación final y el cierre. «Primera versión local» no implica versión `1.0.0`
+ni publicación: el paquete sigue en `0.1.0`. Detalle en [ROADMAP](docs/ROADMAP.md) y [STATE](docs/STATE.md).
 
 ## Requisitos
 
@@ -59,10 +59,20 @@ TMPDIR=/ruta/tmp-privado /ruta/venv/bin/harness-local serve --database /ruta/sta
 del archivo privado que anuncia el arranque (bajo `TMPDIR`, válida ocho horas). Con `supervisor = true` el servicio
 consume la cola, invoca las CLI configuradas y gasta tu suscripción.
 
-**Actualizar.** `init-db` solo crea bases nuevas y `serve` rechaza un esquema distinto del que trae el paquete
-(D043). El paquete instalado no migra bases existentes: el paquete actual exige el esquema `0023_run_projection` y una
-base anterior (por ejemplo `0022`) no arranca con él. Sin un actualizador instalado, una instalación nueva usa
-`init-db`; `scripts/dev` migra con copia previa solo la base de desarrollo.
+**Actualizar.** Detén el servicio, observadores y escritores; instala el nuevo wheel en su venv y ejecuta:
+
+```sh
+/ruta/venv/bin/harness-local migrate --database /ruta/state/harness.sqlite3 --snapshots /ruta/copias-previas --writers-stopped
+```
+
+`migrate` actualiza una base existente de una revisión conocida con una instantánea SQLite previa verificada y un
+manifiesto `premigration-1` (integridad, revisión y SHA-256). Ambas rutas son absolutas y el directorio de copias debe
+estar fuera de los checkouts. Devuelve JSON con acción, revisiones y ruta de la copia; una base al día queda intacta,
+sin otra copia. Rechaza propietarios/grupos vivos registrados, restauraciones de consulta, revisiones desconocidas,
+bases sin Alembic y enlaces. `--writers-stopped` declara también la parada de un servicio sin trabajos registrados.
+Ante un fallo conserva base y copia para inspección, sin restaurar automáticamente. Tras el éxito, arranca `serve`.
+`init-db` sigue creando solo bases nuevas y `serve` exige el esquema del paquete sin migrar al arrancar (D043, D150).
+La instantánea contiene solo SQLite; el backup completo de artefactos conserva su orden separada.
 
 ## Operación
 
@@ -96,7 +106,7 @@ métricas; `diagnose-cli` y `legacy-import`/`legacy-summary` completan la CLI. C
 Límites vigentes: contención cooperativa sin aislamiento del sistema operativo; el manifiesto que fija una receta
 no admite dependencias nuevas tras preparar; el perfil `typescript-web` protege `package.json`, `scripts/**` y
 `tests/**` frente al ejecutor; tras un reinicio del Mac, crear otro proyecto exige volver a elegir la carpeta (D130);
-las validaciones no guardan su hora; sin actualizador de bases instalado. Detalle en
+las validaciones no guardan su hora. Detalle en
 [ARCHITECTURE §10](docs/ARCHITECTURE.md#10-límites-conocidos).
 
 ## Desarrollo

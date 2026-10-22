@@ -160,6 +160,7 @@ tarea se leen solo las decisiones que cita; este índice sirve para buscar prece
 | [D147](#d147--p010-t005-evidencia-histórica-de-una-fase-cerrada) | P010-T005: evidencia histórica de una fase cerrada | P010 |
 | [D148](#d148--p010-t006-documentación-de-instalación-y-alcance-soportado) | P010-T006: documentación de instalación y alcance soportado | P010 |
 | [D149](#d149--p010-t007-matriz-de-aceptación-sse-por-cursor-y-tarea-t012) | P010-T007: matriz de aceptación, SSE por cursor y tarea T012 | P010 |
+| [D150](#d150--p010-t012-migración-explícita-de-bases-desde-la-cli-instalada) | P010-T012: migración explícita de bases desde la CLI instalada | P010 |
 
 ## D001 — Alcance local y arquitectura base
 
@@ -4452,3 +4453,25 @@ Decisiones del usuario en el bucle HITL de T007 sobre las dos cuestiones abierta
 - Matriz: los trece criterios cumplen en el alcance offline con tests reejecutados; dos tests nuevos cubren el
   recorrido completo del criterio 2 por la API y el cursor del 13. La evidencia real es histórica y la falta de uso
   real (chat, backup, A/B, perfil declarado, receta TypeScript) queda para T008. Sin cambios de producto.
+
+## D150 — P010-T012: migración explícita de bases desde la CLI instalada
+
+Estado: implementado y verificado offline el 2026-10-22. Fase: P010.
+[Entrega y límites](phase/P010-T012_MIGRACION_INSTALADA.md), [flujo](flows/database-migration.md). Implementa el
+acuerdo de D149 para SPECIFICATION §9; amplía D053 a la CLI instalada y mantiene creación/arranque de D043.
+
+- `harness-local migrate --database RUTA --snapshots DIRECTORIO --writers-stopped` reutiliza `storage/migrate.py`.
+  Ambas rutas son absolutas; exige base existente y directorio de copias fuera de checkouts Git y raíces persistidas.
+  Rechaza enlaces en componentes, base y auxiliares; no usa `HARNESS_DATABASE_URL` ni configuración global.
+- Declaración explícita de servicio/observadores/escritores detenidos, igual que backup. La evidencia persistida
+  comprueba propietarios de jobs y preparaciones, grupos CLI y validaciones, incluso antes de devolver `current`.
+  Un servicio inactivo sin propietario persistido depende de esa declaración; no se añade descubrimiento global.
+- Revisión anterior conocida: instantánea SQLite `premigration-1`, integridad, revisión, SHA-256 y fsync antes de
+  Alembic; validación de esquema tras el éxito. Base al día: sin escritura ni copia. Rechaza revisiones desconocidas,
+  restauraciones de consulta y bases sin Alembic. Fallos conservan base y copia, sin restauración automática.
+- `scripts/dev` conserva creación y migración de su base y comparte las guardias ampliadas y la copia. Sin
+  migraciones nuevas, modelos, API/tipos ni cambios de historiales/snapshots. README y ARCHITECTURE retiran el límite
+  del actualizador ausente; el verificador del wheel incluye el recorrido, pendiente de ejecutar en T009.
+- Evidencia offline sintética: `0022`→`0023` con formatos 1–8, proyección verificada e historiales/contextos/versiones
+  intactos; revisiones antiguas; negativas y fallos. La prueba de `serve` supera su guardia sin arrancar un servicio.
+  Sin instalación real migrada, proveedores, smokes ni operación del hijo de P009.

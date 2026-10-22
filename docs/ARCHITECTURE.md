@@ -240,10 +240,17 @@ La plantilla del TOML es `local-config-4`; con `format = "local-config-5"` admit
 receta de `examples/` (un fragmento cuya composición ya exista en el TOML se añade con otro nombre). Versiones CLI
 admitidas por rol en el [README](../README.md#requisitos), contrastadas con `cli_agents.SUPPORTED`/`WRITE_SUPPORTED`.
 
-Actualización (D043): `init-db` solo crea bases nuevas y `serve` exige la revisión de esquema del paquete; el paquete
-instalado no migra bases existentes. `storage/migrate.py` (instantánea `premigration-1` y `upgrade head`) solo lo
-usa `scripts/dev` sobre la base de desarrollo. Una base operativa en una revisión anterior (p. ej. `0022`, previa a
-P010-T003) no arranca con un paquete en `0023`.
+Actualización (D150): detener servicio, observadores y escritores, instalar el nuevo wheel y ejecutar
+`harness-local migrate --database /ruta/state/harness.sqlite3 --snapshots /ruta/copias-previas --writers-stopped`.
+Reutiliza `storage/migrate.py`: revisión conocida, instantánea SQLite verificada (`premigration-1`, integridad,
+revisión, SHA-256 y fsync) y después `upgrade head`, con comprobación del esquema final. Solo bases existentes;
+una base al día no cambia ni genera copia. Rutas absolutas sin enlaces (también auxiliares y componentes), copias
+fuera de checkouts Git y de las raíces persistidas. Rechaza revisiones desconocidas, bases sin Alembic,
+restauraciones de consulta y propietarios/grupos vivos de jobs, preparaciones, CLI y validaciones. La declaración
+de parada cubre también servicios inactivos sin propietario persistido: no hay descubrimiento global de procesos.
+Un fallo conserva base y copia, sin restaurar automáticamente. Es una instantánea de SQLite, no un bundle de
+artefactos H5.2. [Flujo y recuperación](flows/database-migration.md). `scripts/dev` conserva creación/migración de
+su base de desarrollo con copia previa. `init-db` y `serve` conservan D043: creación nueva y arranque sin migración.
 
 `serve` escribe la clave de sesión (`harness-session-*/login-key`, 0700/0600, se borra al salir) y los índices y
 sellos temporales de Git (`harness-git-*`, `harness-bootstrap-*`) bajo el `TMPDIR` del proceso. Sin él, Python usa el
@@ -261,8 +268,6 @@ de las recetas Django y TypeScript web no heredan ese valor: reciben `HOME`/`TMP
   leen la proyección `run-projection-1`; la transición, el commit de tarea y el resto del motor leen el historial.
 - El manifiesto que fija una receta (Django o TypeScript web) no admite dependencias nuevas tras preparar; requiere
   un flujo confirmado futuro. Las altas e importaciones aportan su propio `package.json` (D143).
-- Sin actualizador de bases en el paquete instalado (D043): una base de una revisión anterior no arranca con un
-  paquete nuevo. Hueco de SPECIFICATION §9 que corrige P010-T012 (D149).
 - El perfil `typescript-web` protege `package.json`, `package-lock.json`, `tsconfig.json`, `scripts/**` y `tests/**`
   frente al ejecutor normal: el ejecutor no crea ni modifica archivos bajo `tests/`.
 - Tras un reinicio que renumere el dispositivo, crear otro proyecto exige volver a elegir la carpeta (D130).

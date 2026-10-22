@@ -1,5 +1,8 @@
 # P010 — Matriz de aceptación global
 
+Actualización del 2026-10-22 tras T012: el hueco de migración instalada identificado por T007 queda implementado y
+verificado offline; véase §6. Se conserva debajo el dictamen y la base de T007, sin atribuirle evidencia posterior.
+
 Fecha: 2026-10-22. Base: `54a5b5b` (T001–T006 y T011). Tarea: P010-T007. Decisión:
 [D149](../DECISIONS.md#d149--p010-t007-matriz-de-aceptación-sse-por-cursor-y-tarea-t012).
 Parte de la [matriz inicial de T001](P010-T001_CONTRATO_CONSOLIDACION.md#4-matriz-inicial-de-aceptación-specification-10).
@@ -75,3 +78,15 @@ nombre; todas existen.
   propuesta y la decisión corresponden a T008. Ningún criterio se cierra por figurar completada su fase original.
 - **Test intermitente** de `test_commands.py` con node/npm reales bajo carga (§4); sin bloqueo, en observación.
 - **Sin bloqueos del alcance declarado** salvo el hueco de §9, que T012 corrige antes de la verificación final.
+
+## 6. Seguimiento tras P010-T012
+
+El 2026-10-22 T012 implementa `harness-local migrate` con instantánea `premigration-1` previa verificada y declaración
+de parada (D150). Resuelve offline el hueco de §9 registrado en §3: bases existentes de revisiones conocidas migran
+explícitamente; las negativas conservan bytes, y `init-db`/`serve` mantienen D043. `0022`→`0023` rellena la proyección
+con formatos 1–8 sin cambiar historiales ni snapshots. Suite completa: 1680 pasan, 2 omitidos y 121 subtests; tras
+añadir dos casos, los 50 tests focalizados pasan. No reaparece el fallo intermitente de §4 en esa suite completa.
+
+[Entrega y evidencia](P010-T012_MIGRACION_INSTALADA.md). El verificador del wheel incorpora el recorrido; ejecutarlo
+sigue pendiente de T009. No se ha migrado ninguna base operativa. El dictamen final de la versión sigue dependiendo
+de T008–T010 y no se anticipa aquí.

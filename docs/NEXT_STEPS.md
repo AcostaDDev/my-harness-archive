@@ -13,8 +13,9 @@ Añade T011 (métricas y exportación sobre la proyección de runs). T002 comple
 vista previa de exportación sobre la proyección. T004 completada el 2026-10-22 (D146): marcadores opcionales en la
 definición. T005 completada el 2026-10-22 (D147): evidencia histórica de una fase cerrada. T006 completada el
 2026-10-22 (D148): documentación contrastada con código y evidencia. T007 completada el 2026-10-22 (D149): matriz de
-aceptación; añade T012 (migración desde el paquete instalado). T008–T010 y T012 pendientes; sin operación iniciada.
-**Siguiente:** T012, migración explícita de una base existente desde el paquete instalado (depende de T007).
+aceptación; añade T012 (migración desde el paquete instalado). T012 completada el 2026-10-22 (D150): orden
+`migrate` con instantánea previa y negativas verificadas offline. T008–T010 pendientes; sin operación iniciada.
+**Siguiente:** T008, propuesta de validación real complementaria y alcance.
 
 ## Restricciones compartidas
 
@@ -270,7 +271,9 @@ no cambian.
 
 ## P010-T012 — Migración explícita de una base existente desde el paquete instalado
 
-**Estado:** pendiente. **Depende de:** T007. Añadida por T007 (D149); precede a T009.
+**Estado:** completada el 2026-10-22 ([entrega](phase/P010-T012_MIGRACION_INSTALADA.md), D150). Orden `migrate`
+con instantánea `premigration-1`, declaración de parada y guardias ampliadas; sin migración nueva ni cambios de API.
+**Depende de:** T007. Añadida por T007 (D149); precede a T009.
 **Objetivo:** Cumplir SPECIFICATION §9 («migraciones explícitas con backup previo») en el paquete instalado.
 **Alcance:** orden `harness-local migrate` sobre `storage/migrate.py` (instantánea `premigration-1`, D053), su ayuda,
 README y ARCHITECTURE; `scripts/dev` y `check_distribution.py` solo si procede. `init-db` y `serve` conservan D043.
@@ -286,6 +289,7 @@ README y ARCHITECTURE; `scripts/dev` y `check_distribution.py` solo si procede. 
   acepta; historiales y snapshots intactos. `scripts/dev` conserva su comportamiento.
 - README («Actualizar») y ARCHITECTURE §§9–10 describen la orden y retiran el límite; paridad de flujos si cambia.
 
-**Validación:** (prevista) pytest completa, unittest y Alembic en SQLite temporal; la orden en el wheel se acredita
-en T009. Sin migrar la instalación real ni el área de P009.
-**Entregables:** (previstos) `docs/phase/P010-T012_MIGRACION_INSTALADA.md`.
+**Validación:** pytest completa (1680 passed, 2 skipped, 121 subtests) y 50 pruebas focalizadas tras añadir dos
+casos, unittest (12 OK) y Alembic en SQLite temporal; resultados y omisiones en la entrega §4. La orden en el wheel
+se acredita en T009; verificador preparado. Sin migrar la instalación real ni el área de P009.
+**Entregables:** `docs/phase/P010-T012_MIGRACION_INSTALADA.md`, `docs/flows/database-migration.md`.
