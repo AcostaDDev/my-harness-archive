@@ -36,7 +36,9 @@ from harness_local.storage.models import (
     PhaseRow as Phase, RunProjectionCycleRow as Cycle, RunProjectionRow as Projection,
 )
 from harness_local.storage.permissions import actor
-from harness_local.storage.phases import PhaseRepository, _event, _latest, _open, _operation, _questions
+from harness_local.storage.phases import (
+    PhaseRepository, _event, _latest, _open, _operation, _questions, expected_documents,
+)
 
 DOCUMENT_KINDS = ('document_export', 'transition', 'document_edit', 'close')
 
@@ -309,7 +311,8 @@ class DocumentsRepository:
         root = str(context.root)
         with Session(self.managed.engine) as session:
             phase = latest_phase(session, root)
-            baseline = dict(phase.documents) if phase is not None else {}
+            # P010-T005: tras cerrar, la referencia incluye lo que renovaron el cierre y las ediciones confirmadas.
+            baseline = expected_documents(session, phase) if phase is not None else {}
             phase_view = None if phase is None else {'id': phase.id, 'code': phase.code, 'status': phase.status}
             open_intent = unresolved(session, root)
         paths = [*target.product_documents, *target.phase_documents]

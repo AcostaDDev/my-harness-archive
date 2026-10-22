@@ -157,6 +157,7 @@ tarea se leen solo las decisiones que cita; este índice sirve para buscar prece
 | [D144](#d144--p010-t003-proyección-run-projection-1-implementada) | P010-T003: proyección `run-projection-1` implementada | P010 |
 | [D145](#d145--p010-t011-métricas-y-vista-previa-de-exportación-sobre-la-proyección) | P010-T011: métricas y vista previa de exportación sobre la proyección | P010 |
 | [D146](#d146--p010-t004-marcadores-opcionales-en-la-definición) | P010-T004: marcadores opcionales en la definición | P010 |
+| [D147](#d147--p010-t005-evidencia-histórica-de-una-fase-cerrada) | P010-T005: evidencia histórica de una fase cerrada | P010 |
 
 ## D001 — Alcance local y arquitectura base
 
@@ -4398,3 +4399,23 @@ marcadores gestionados que la plantilla pedía conservar.
 - La UI de definición explica en una carpeta sin borradores que no hacen falta archivos previos, y el editor de
   borradores ya no pide no borrar los marcadores: indica que son opcionales y cómo se regeneran.
 - `import-project` y `onboard-project` parten de un origen con contenido y no cambian.
+
+## D147 — P010-T005: evidencia histórica de una fase cerrada
+
+Estado: implementado y verificado offline el 2026-10-22. Fase: P010.
+[Entrega](phase/P010-T005_FASES_CERRADAS.md), [flujo](flows/phase-lifecycle.md#consulta-de-una-fase-cerrada-p010-t005).
+Resuelve la observación de P009 (REVIEW): la vista de P001 cerrada del hijo comparaba los documentos renovados por el
+cierre con la base histórica y mostraba deriva.
+
+- Solo cambia la presentación. `phase.documents`, el READY vinculado, el check y la adopción siguen igual; nada
+  histórico se reescribe. Sin migración: todo sale de la operación `close` ya registrada.
+- `PhaseRead.closure` (null en fases abiertas) muestra el cierre o abandono: check READY con su resultado, base
+  (head, evidencia, documentos), tag, motivo, commit y archivo.
+- Hashes esperados tras cerrar: base adoptada, más lo que escribió el cierre (`after_sha256` de su vista previa
+  sellada), más las ediciones y exportaciones documentales COMMITTED posteriores de la fase, encadenadas por
+  `before_sha256`. Su diferencia con la base es `renewed`: esperada, no un fallo del check.
+- Deriva real: sin sucesora, documentos vivos distintos de los esperados (`changed`); con sucesora no se comparan,
+  porque son suyos. Además, cada archivo del archivo se contrasta con el hash que escribió el cierre
+  (`archive_altered`). Ninguno se oculta.
+- La página de documentos usa los hashes esperados si la última fase está terminada. Las fases abiertas conservan
+  deriva frente a la base adoptada, READY obsoleto y bloqueo del cierre.

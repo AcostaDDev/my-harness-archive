@@ -20845,6 +20845,239 @@
         ],
         "title": "PhaseCloseCreate"
       },
+      "PhaseClosureCheckRead": {
+        "properties": {
+          "operation_id": {
+            "type": "string",
+            "title": "Operation Id"
+          },
+          "verdict": {
+            "type": "string",
+            "title": "Verdict"
+          },
+          "finished_at": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Finished At"
+          },
+          "summary": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Summary"
+          },
+          "exit_criteria_results": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "type": "array",
+            "title": "Exit Criteria Results"
+          }
+        },
+        "type": "object",
+        "required": [
+          "operation_id",
+          "verdict",
+          "finished_at",
+          "summary",
+          "exit_criteria_results"
+        ],
+        "title": "PhaseClosureCheckRead"
+      },
+      "PhaseClosureRead": {
+        "properties": {
+          "operation_id": {
+            "type": "string",
+            "title": "Operation Id"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "CLOSED",
+              "ABANDONED"
+            ],
+            "title": "Status"
+          },
+          "finished_at": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Finished At"
+          },
+          "actor": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Actor"
+          },
+          "reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reason"
+          },
+          "commit": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Commit"
+          },
+          "tag": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Tag",
+            "description": "Resultado del tag creado al cerrar; null sin tag."
+          },
+          "archive": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Archive"
+          },
+          "check": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PhaseClosureCheckRead"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Check READY que autorizó el cierre; null al abandonar."
+          },
+          "binding": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Binding",
+            "description": "Base histórica: head, hash de la evidencia y documentos del READY."
+          },
+          "documents": {
+            "additionalProperties": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "type": "object",
+            "title": "Documents",
+            "description": "Hashes esperados: base adoptada, renovación del cierre y ediciones confirmadas posteriores."
+          },
+          "renewed": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Renewed",
+            "description": "Diferencias esperadas respecto de la base adoptada."
+          },
+          "changed": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Changed",
+            "description": "Documentos vivos distintos de los esperados; null si hay sucesora o no se pudieron leer."
+          },
+          "archive_files": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Archive Files"
+          },
+          "archive_altered": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Archive Altered",
+            "description": "Archivos del archivo que ya no tienen los bytes del cierre; null si no se pudieron leer."
+          }
+        },
+        "type": "object",
+        "required": [
+          "operation_id",
+          "status",
+          "finished_at",
+          "actor",
+          "reason",
+          "commit",
+          "tag",
+          "archive",
+          "check",
+          "binding",
+          "documents",
+          "renewed",
+          "changed",
+          "archive_files",
+          "archive_altered"
+        ],
+        "title": "PhaseClosureRead",
+        "description": "P010-T005: evidencia histórica de una fase CLOSED o ABANDONED; nunca se recalcula con el estado actual."
+      },
       "PhaseCreate": {
         "properties": {
           "code": {
@@ -21558,6 +21791,17 @@
               }
             ]
           },
+          "closure": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PhaseClosureRead"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Cierre o abandono registrado; null mientras la fase está abierta."
+          },
           "actions": {
             "items": {
               "type": "string",
@@ -21610,6 +21854,7 @@
           "operations",
           "authorizations",
           "ready",
+          "closure",
           "actions",
           "successor"
         ],

@@ -4821,6 +4821,86 @@ export interface components {
              */
             confirmed: true;
         };
+        /** PhaseClosureCheckRead */
+        PhaseClosureCheckRead: {
+            /** Operation Id */
+            operation_id: string;
+            /** Verdict */
+            verdict: string;
+            /** Finished At */
+            finished_at: string | null;
+            /** Summary */
+            summary: string | null;
+            /** Exit Criteria Results */
+            exit_criteria_results: {
+                [key: string]: unknown;
+            }[];
+        };
+        /**
+         * PhaseClosureRead
+         * @description P010-T005: evidencia histórica de una fase CLOSED o ABANDONED; nunca se recalcula con el estado actual.
+         */
+        PhaseClosureRead: {
+            /** Operation Id */
+            operation_id: string;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "CLOSED" | "ABANDONED";
+            /** Finished At */
+            finished_at: string | null;
+            /** Actor */
+            actor: {
+                [key: string]: unknown;
+            } | null;
+            /** Reason */
+            reason: string | null;
+            /** Commit */
+            commit: string | null;
+            /**
+             * Tag
+             * @description Resultado del tag creado al cerrar; null sin tag.
+             */
+            tag: {
+                [key: string]: unknown;
+            } | null;
+            /** Archive */
+            archive: string | null;
+            /** @description Check READY que autorizó el cierre; null al abandonar. */
+            check: components["schemas"]["PhaseClosureCheckRead"] | null;
+            /**
+             * Binding
+             * @description Base histórica: head, hash de la evidencia y documentos del READY.
+             */
+            binding: {
+                [key: string]: unknown;
+            };
+            /**
+             * Documents
+             * @description Hashes esperados: base adoptada, renovación del cierre y ediciones confirmadas posteriores.
+             */
+            documents: {
+                [key: string]: string | null;
+            };
+            /**
+             * Renewed
+             * @description Diferencias esperadas respecto de la base adoptada.
+             */
+            renewed: string[];
+            /**
+             * Changed
+             * @description Documentos vivos distintos de los esperados; null si hay sucesora o no se pudieron leer.
+             */
+            changed: string[] | null;
+            /** Archive Files */
+            archive_files: string[];
+            /**
+             * Archive Altered
+             * @description Archivos del archivo que ya no tienen los bytes del cierre; null si no se pudieron leer.
+             */
+            archive_altered: string[] | null;
+        };
         /** PhaseCreate */
         PhaseCreate: {
             /** Code */
@@ -5056,6 +5136,8 @@ export interface components {
             /** Authorizations */
             authorizations: components["schemas"]["PhaseAuthorizationRead"][];
             ready: components["schemas"]["PhaseReadyRead"] | null;
+            /** @description Cierre o abandono registrado; null mientras la fase está abierta. */
+            closure: components["schemas"]["PhaseClosureRead"] | null;
             /** Actions */
             actions: ("check" | "reconcile" | "reconcile_task" | "close" | "question" | "authorize_batch" | "batch_next" | "amend" | "abandon")[];
             /**

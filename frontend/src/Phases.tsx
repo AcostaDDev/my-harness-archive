@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { managed, jobRequest } from "./managed-api";
 import type { S } from "./managed-api";
-import { navigate } from "./navigation";
+import { Link, navigate } from "./navigation";
 import { Evidence, Fields, Hash, PHASE } from "./ui";
 import { useWorkspace } from "./workspace";
 
@@ -120,14 +120,15 @@ export function PhaseDetail({ phase, stale, section }: { phase: S["PhaseRead"]; 
 
     {(!section || section === "phase-documents") && <section className="panel" aria-labelledby="phase-documents">
       <h2 id="phase-documents">Documentos</h2>
-      {phase.documents.drift === null ? <p className="state state-error">No se pudieron leer los documentos actuales.</p>
+      {phase.closure ? <ClosureDocuments phase={phase} closure={phase.closure} />
+        : phase.documents.drift === null ? <p className="state state-error">No se pudieron leer los documentos actuales.</p>
         : phase.documents.drift.length ? (superseded
           // La sucesora (transición incluida) cambió los documentos: no hay nada que decidir en esta fase.
           ? <p className="hint">La fase <code>{phase.successor}</code> ya sucede a esta y no hay nada que decidir aquí; la base adoptada se conserva como registro. Cambiados después: {phase.documents.drift.map(d => <code key={d} className="chip">{d}</code>)}</p>
           : <p className="state state-attention">Cambiados desde la base adoptada: {phase.documents.drift.map(d => <code key={d} className="chip">{d}</code>)}</p>)
           : <p className="hint">Sin cambios respecto a la base adoptada.</p>}
       <Evidence title="Hashes adoptados y actuales" value={phase.documents} />
-      {!superseded && <div className="decision">
+      {!superseded && !phase.closure && <div className="decision">
         <h3>Adoptar documentos actuales</h3>
         <label>Motivo de la reconciliación<input value={reason} maxLength={2000} onChange={e => setReason(e.target.value)} /></label>
         <label className="check"><input type="checkbox" checked={reconcileConfirmed} onChange={e => setReconcileConfirmed(e.target.checked)} />He revisado estos documentos y adopto su contenido actual como base de la fase.</label>
@@ -164,11 +165,12 @@ export function PhaseDetail({ phase, stale, section }: { phase: S["PhaseRead"]; 
       <h2 id="phase-check">Comprobación y cierre</h2>
       <p className="hint">Las puertas deterministas (preguntas, documentos, árbol limpio, tareas alcanzables y validación base) se evalúan antes de la evaluación del agente. Comprobar no cierra la fase.</p>
       <button disabled={!can("check")} onClick={() => void operate(() => send(jobRequest(`/phases/${id}/actions`, { action: "check", expected_version: v })))}>Comprobar fase</button>
-      {phase.ready ? <>
+      {phase.closure ? <ClosureCheck closure={phase.closure} />
+        : phase.ready ? <>
         <Fields items={[["READY sobre", <Hash value={String(phase.ready.binding.head)} />], ["Evidencia", <Hash value={phase.ready.binding_sha256} />]]} />
         {phase.ready.stale_reasons.length > 0 && <p className="state state-attention">READY obsoleto: {phase.ready.stale_reasons.join("; ")}. Comprueba de nuevo.</p>}
         <Evidence title="Evidencia READY vinculada" value={phase.ready} /></> : <p className="hint">Sin READY vigente.</p>}
-      <div className="decision">
+      {!phase.closure && <div className="decision">
         <h3>Cerrar fase</h3>
         <p className="hint">Autoriza solo este cierre: vuelve a observar el contenido y, si coincide con READY, registra la fase como {PHASE.CLOSED[0].toLowerCase()}{phase.definition.tag ? ` y crea el tag ${tagNames[phase.tag_kind ?? "lightweight"]} ${String(phase.definition.tag)} sin moverlo nunca` : ""}. Archiva STATE, NEXT_STEPS, REVIEW, SUMMARY y docs/phase/ en un commit, renueva los documentos y, si existe, abre la siguiente fase del ROADMAP activa y sin tareas para planificarla después.</p>
         <label>Motivo de la autorización de cierre<input value={closeReason} maxLength={2000} onChange={e => setCloseReason(e.target.value)} /></label>
@@ -176,7 +178,7 @@ export function PhaseDetail({ phase, stale, section }: { phase: S["PhaseRead"]; 
         <button disabled={!can("close") || !closeConfirmed || !closeReason.trim() || !phase.ready} onClick={() => void operate(() => send(jobRequest(`/phases/${id}/actions`, {
           action: "close", expected_version: v, binding_sha256: phase.ready!.binding_sha256, reason: closeReason, ttl_seconds: 3600, confirmed: true,
         })))}>Cerrar fase</button>
-      </div>
+      </div>}
     </section>}
 
     {(!section || section === "phase-batch") && <section className="panel" aria-labelledby="phase-batch">
@@ -242,5 +244,48 @@ export function PhaseDetail({ phase, stale, section }: { phase: S["PhaseRead"]; 
         <Evidence title="Solicitud, resultado y evidencia" value={o} /></div>)}
       <Evidence title="Autorizaciones de lote y de cierre" value={phase.authorizations} />
     </section>}
+  </>;
+}
+
+
+const chips = (paths: string[]) => paths.map(p => <code key={p} className="chip">{p}</code>);
+
+/** P010-T005: documentos de una fase terminada frente a lo que dejó su cierre; la base adoptada es histórica. */
+function ClosureDocuments({ phase, closure }: { phase: S["PhaseRead"]; closure: S["PhaseClosureRead"] }) {
+  const { project } = useWorkspace();
+  const archive = closure.archive;
+  return <>
+    <Fields items={[
+      ["Archivo", archive ? <Link to={{ name: "docs", project, path: archive }}><code>{archive}/</code></Link> : <span className="muted">sin archivo registrado</span>],
+      ["Commit del cierre", closure.commit ? <Hash value={closure.commit} /> : <span className="muted">—</span>],
+    ]} />
+    {closure.archive_altered === null ? <p className="state state-error">No se pudo leer el archivo de la fase.</p>
+      : closure.archive_altered.length ? <p className="state state-error">El archivo ya no tiene los bytes que escribió el cierre: {chips(closure.archive_altered)}</p>
+        : archive && <p className="hint">Archivo íntegro: {closure.archive_files.length} archivos con los bytes del cierre.</p>}
+    {closure.renewed.length > 0 && <p className="hint">Renovados al {closure.status === "ABANDONED" ? "abandonar" : "cerrar"} o en ediciones confirmadas después (diferencia esperada respecto de la base adoptada, no un fallo del check): {chips(closure.renewed)}</p>}
+    {phase.successor !== null
+      ? <p className="hint">La fase <code>{phase.successor}</code> ya sucede a esta: los documentos vivos son suyos y se comparan allí.</p>
+      : closure.changed === null ? <p className="state state-error">No se pudieron leer los documentos actuales.</p>
+        : closure.changed.length ? <p className="state state-attention">Cambiados después del cierre sin una operación confirmada: {chips(closure.changed)}</p>
+          : <p className="hint">Los documentos vivos coinciden con lo que dejó el cierre.</p>}
+    <Evidence title="Hashes adoptados, esperados y actuales" value={{ ...phase.documents, expected: closure.documents }} />
+  </>;
+}
+
+/** Resultado y base del check que autorizó el cierre: historia, nunca se recalcula con los documentos de hoy. */
+function ClosureCheck({ closure }: { closure: S["PhaseClosureRead"] }) {
+  const check = closure.check;
+  return <>
+    <p className="hint">{closure.status === "ABANDONED" ? "Fase abandonada sin check READY" : "Fase cerrada sobre este READY"}{closure.finished_at ? ` el ${closure.finished_at}` : ""}.{closure.reason ? ` Motivo: ${closure.reason}` : ""}</p>
+    <Fields items={[
+      ...(check ? [["Resultado", check.verdict] as [string, string]] : []),
+      ["Base", <Hash value={String(closure.binding.head)} />],
+      ["Evidencia", <Hash value={closure.binding.binding_sha256 as string} />],
+      ["Tag", closure.tag ? <code>{String(closure.tag.ref)}</code> : <span className="muted">sin tag</span>],
+    ]} />
+    {check?.summary && <p>{check.summary}</p>}
+    {!!check?.exit_criteria_results.length && <ul className="checklist">{check.exit_criteria_results.map((item, i) =>
+      <li key={i}>{item.passed ? "Cumplido" : "No cumplido"}: {String(item.criterion)}</li>)}</ul>}
+    <Evidence title="Cierre registrado" value={closure} />
   </>;
 }

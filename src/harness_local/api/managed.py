@@ -455,13 +455,21 @@ def managed_router(runtime: ManagedRuntime):
         runtime.ready()
         root, definition = call(runtime.phases.definition, phase_id)
         project_id = runtime.project_id(root)
-        current = None
+        current = archived = None
         if project_id is not None:
+            context = runtime.projects[project_id].context
             try:
-                current = document_hashes(runtime.projects[project_id].context, definition["documents"])
+                current = document_hashes(context, definition["documents"])
             except (OSError, ValueError):
                 current = None
-        detail = call(runtime.phases.get, phase_id, current)
+            # P010-T005: el archivo de una fase terminada se contrasta archivo a archivo con lo que escribió el cierre.
+            archived = {}
+            for path in call(runtime.phases.closure_files, phase_id):
+                try:
+                    archived.update(document_hashes(context, [path]))
+                except (OSError, ValueError):
+                    archived[path] = "unreadable"
+        detail = call(runtime.phases.get, phase_id, current, archived)
         actions = detail["actions"] if project_id is not None else []
         if current is None:
             actions = [a for a in actions if a != "reconcile"]

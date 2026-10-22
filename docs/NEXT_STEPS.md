@@ -11,8 +11,9 @@ Añade T011 (métricas y exportación sobre la proyección de runs). T002 comple
 `typescript-web-recipe-1` implementada y verificada offline. T003 completada el 2026-10-22 (D144): proyección
 `run-projection-1` y vistas de runs sin decodificar historiales. T011 completada el 2026-10-22 (D145): métricas y
 vista previa de exportación sobre la proyección. T004 completada el 2026-10-22 (D146): marcadores opcionales en la
-definición. T005–T010 pendientes; sin operación iniciada.
-**Siguiente:** T005, presentar la evidencia de una fase cerrada (depende de T001).
+definición. T005 completada el 2026-10-22 (D147): evidencia histórica de una fase cerrada. T006–T010 pendientes;
+sin operación iniciada.
+**Siguiente:** T006, documentación de instalación y alcance soportado (depende de T002–T005 y T011).
 
 ## Restricciones compartidas
 
@@ -118,7 +119,8 @@ carpeta nueva y con borradores hasta el commit raíz. QA visual no realizado por
 
 ## P010-T005 — Presentar la evidencia de una fase cerrada
 
-**Estado:** pendiente. **Depende de:** T001.
+**Estado:** completada el 2026-10-22 ([entrega](phase/P010-T005_FASES_CERRADAS.md), D147). `PhaseRead.closure` y
+presentación de fase/documentos; sin migración ni cambios del check. **Depende de:** T001.
 **Objetivo:** Distinguir documentos archivados y documentos vivos al consultar una fase cerrada.
 **Alcance:** presentación de fase/check y lecturas documentales necesarias; observación de deriva de P009.
 **Rutas permitidas:** `src/harness_local/**`, `frontend/**`, `tests/**`, `docs/**`.
@@ -130,9 +132,9 @@ carpeta nueva y con borradores hasta el commit raíz. QA visual no realizado por
   fases abiertas conservan sus guardias; no se ocultan avisos reales ni se modifica un READY histórico.
 - Casos sintéticos de fase abierta, cerrada sin sucesora, cerrada con sucesora y deriva real cubren la presentación.
 
-**Validación:** (prevista) pytest de lecturas/contratos, Node/tipos/build y QA visual autorizado. Sin leer ni modificar
-el estado operativo del Django hijo para completar la prueba.
-**Entregables:** (previstos) `docs/phase/P010-T005_FASES_CERRADAS.md`.
+**Validación:** pytest completa, unittest, Alembic en SQLite temporal, OpenAPI/tipos, Node y build (resultados en la
+entrega §5). QA visual no realizado; sin leer ni modificar el estado operativo del Django hijo.
+**Entregables:** `docs/phase/P010-T005_FASES_CERRADAS.md`.
 
 ## P010-T006 — Documentación de instalación y alcance soportado
 

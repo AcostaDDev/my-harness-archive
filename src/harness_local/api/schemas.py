@@ -681,6 +681,36 @@ class PhaseReadyRead(BaseModel):
     stale_reasons: list[str]
 
 
+class PhaseClosureCheckRead(BaseModel):
+    operation_id: str
+    verdict: str
+    finished_at: str | None
+    summary: str | None
+    exit_criteria_results: list[dict[str, Any]]
+
+
+class PhaseClosureRead(BaseModel):
+    """P010-T005: evidencia histórica de una fase CLOSED o ABANDONED; nunca se recalcula con el estado actual."""
+    operation_id: str
+    status: Literal['CLOSED', 'ABANDONED']
+    finished_at: str | None
+    actor: dict[str, Any] | None
+    reason: str | None
+    commit: str | None
+    tag: dict[str, Any] | None = Field(description='Resultado del tag creado al cerrar; null sin tag.')
+    archive: str | None
+    check: PhaseClosureCheckRead | None = Field(description='Check READY que autorizó el cierre; null al abandonar.')
+    binding: dict[str, Any] = Field(description='Base histórica: head, hash de la evidencia y documentos del READY.')
+    documents: dict[str, str | None] = Field(
+        description='Hashes esperados: base adoptada, renovación del cierre y ediciones confirmadas posteriores.')
+    renewed: list[str] = Field(description='Diferencias esperadas respecto de la base adoptada.')
+    changed: list[str] | None = Field(
+        description='Documentos vivos distintos de los esperados; null si hay sucesora o no se pudieron leer.')
+    archive_files: list[str]
+    archive_altered: list[str] | None = Field(
+        description='Archivos del archivo que ya no tienen los bytes del cierre; null si no se pudieron leer.')
+
+
 class PhaseDefinitionRead(BaseModel):
     number: int
     definition: dict[str, Any]
@@ -713,6 +743,7 @@ class PhaseRead(BaseModel):
     operations: list[PhaseOperationRead]
     authorizations: list[PhaseAuthorizationRead]
     ready: PhaseReadyRead | None
+    closure: PhaseClosureRead | None = Field(description='Cierre o abandono registrado; null mientras la fase está abierta.')
     actions: list[PhaseAction]
     successor: str | None = Field(description='Código de la fase posterior del checkout; null si esta es la última. Solo la '
                                               'última exporta su estado y decide sobre sus documentos.')

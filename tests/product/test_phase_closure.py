@@ -9,12 +9,13 @@ from sqlalchemy.orm import Session
 from harness_local.adapters.git import GitWorkspace
 from harness_local.core.engine.documents import DOCUMENT_LAYOUT, base_section, blocks, plan_tasks
 from harness_local.storage.managed import Conflict
+from harness_local.storage.documents import DocumentsRepository
 from harness_local.storage.models import PhaseRow
 from harness_local.storage.phase_plan import PhasePlanRepository
 from harness_local.storage.transition import TransitionRepository
 from test_managed import repository  # noqa: F401
 from test_managed_api import VERSIONS, git, client
-from test_documents import V2World, v2checkout, STATE, PLAN_P002, confirm  # noqa: F401
+from test_documents import V2World, v2checkout, STATE, PLAN_P002, confirm, queue_edit  # noqa: F401
 from harness_local.core.engine.journal import JournalError
 from test_phases import head, phase_review
 
@@ -239,7 +240,9 @@ def test_http_closure_and_confirmed_plan_use_the_current_protocol(unified, tmp_p
         assert response.status_code == 202, response.text
         # El runtime de esta prueba no arranca proveedores ni un supervisor de fondo.
         world.run()
-        assert http.get(f'/api/managed/phases/{pid}').json()['status'] == 'CLOSED'
+        closed = http.get(f'/api/managed/phases/{pid}').json()
+        assert closed['status'] == 'CLOSED' and closed['closure']['archive'] == 'docs/archive/phase-001'
+        assert closed['closure']['archive_altered'] == [] and closed['closure']['changed'] is None
         following = world.phases.by_code(str(world.context.root), 'P002')
         if source == 'proposal':
             from test_definition import planning_answer
@@ -346,3 +349,90 @@ def test_active_empty_phase_accepts_its_conversation_plan(unified):
     assert planning.get(cid)['proposals'][0]['status'] == 'ACCEPTED'
     world.run()
     assert world.get(following)['definition']['tasks'] == ['P002-T001']
+
+
+# --- P010-T005: evidencia de una fase cerrada ----------------------------------------------------
+
+
+def final_roadmap(world):
+    road = world.context.path('docs/ROADMAP.md')
+    road.write_text(road.read_text().split('## P002')[0])
+    git(world.context.root, 'commit', '-qam', 'final phase')
+
+
+def drifted(world):
+    return sorted(d['path'] for d in DocumentsRepository(world.repository).status(world.context)['documents']
+                  if d['drift'])
+
+
+def test_open_phase_has_no_closure_and_keeps_its_guards(unified):
+    world = unified
+    pid = ready(world)
+    detail = world.get(pid)
+    assert detail['closure'] is None and detail['ready'] is not None and 'close' in detail['actions']
+    world.context.path('docs/STATE.md').write_text(STATE + '\nCambio sin confirmar.\n')
+    detail = world.get(pid)
+    assert detail['closure'] is None and detail['documents']['drift'] == ['docs/STATE.md']
+    assert 'documents changed since READY' in detail['ready']['stale_reasons'] and 'close' not in detail['actions']
+    assert drifted(world) == ['docs/STATE.md']
+
+
+def test_closed_phase_without_successor_separates_renewal_from_real_drift(unified):
+    world = unified
+    final_roadmap(world)
+    pid = ready(world)
+    ready_view = world.get(pid)['ready']
+    queue(world, pid)
+    world.run()
+    detail = world.get(pid)
+    closure = detail['closure']
+    assert detail['status'] == 'CLOSED' and detail['successor'] is None and detail['ready'] is None
+    assert closure['commit'] == head(world) and closure['archive'] == 'docs/archive/phase-001'
+    assert closure['binding']['binding_sha256'] == ready_view['binding_sha256']
+    assert closure['binding']['head'] == ready_view['binding']['head'] and closure['reason'] == 'Synthetic closure'
+    assert closure['check']['verdict'] == 'READY' and closure['check']['operation_id'] == ready_view['operation_id']
+    assert closure['tag']['status'] == 'created'
+    # Renovar STATE/NEXT_STEPS/ROADMAP/DECISIONS al cerrar es la diferencia esperada, no un fallo del check.
+    assert detail['documents']['drift'] == closure['renewed'] and 'docs/STATE.md' in closure['renewed']
+    assert closure['changed'] == [] and closure['archive_altered'] == [] and drifted(world) == []
+    assert 'docs/archive/phase-001/STATE.md' in closure['archive_files']
+    assert detail['documents']['baseline'] == ready_view['binding']['documents']  # la base histórica no cambia
+    # Una edición confirmada después del cierre también es esperada.
+    roadmap = world.context.path('docs/ROADMAP.md').read_text() + '\nNota posterior al cierre.\n'
+    queue_edit(world, changes=[{'path': 'docs/ROADMAP.md', 'content': roadmap}])
+    world.run()
+    closure = world.get(pid)['closure']
+    assert closure['changed'] == [] and 'docs/ROADMAP.md' in closure['renewed'] and drifted(world) == []
+    # Un cambio externo de un documento vivo o del archivo es deriva real y se muestra.
+    world.context.path('docs/NEXT_STEPS.md').write_text('# Editado fuera del harness\n')
+    world.context.path('docs/archive/phase-001/SUMMARY.md').write_text('# Alterado\n')
+    world.context.path('docs/archive/phase-001/STATE.md').unlink()
+    closure = world.get(pid)['closure']
+    assert closure['changed'] == ['docs/NEXT_STEPS.md'] and drifted(world) == ['docs/NEXT_STEPS.md']
+    assert closure['archive_altered'] == ['docs/archive/phase-001/STATE.md', 'docs/archive/phase-001/SUMMARY.md']
+    assert world.get(pid)['status'] == 'CLOSED' and world.get(pid)['actions'] == []
+
+
+def test_closed_phase_with_successor_leaves_live_documents_to_it(unified):
+    world = unified
+    pid = ready(world)
+    queue(world, pid)
+    world.run()
+    detail = world.get(pid)
+    assert detail['successor'] == 'P002' and detail['closure']['changed'] is None
+    assert detail['closure']['renewed'] and detail['closure']['archive_altered'] == []
+    world.context.path('docs/STATE.md').write_text(STATE)
+    assert world.get(pid)['closure']['changed'] is None  # la deriva viva pertenece a P002
+    assert drifted(world) == ['docs/STATE.md']
+
+
+def test_abandoned_phase_shows_its_closure_without_check(unified):
+    world = unified
+    pid = world.create_v2()
+    world.phases.abandon(pid, world.get(pid)['version'], reason='Synthetic abandonment', context=world.context,
+                         git=world.ports.writer(world.context, VERSIONS), key=world.key(), versions=VERSIONS)
+    world.run()
+    closure = world.get(pid)['closure']
+    assert closure['status'] == 'ABANDONED' and closure['check'] is None and closure['tag'] is None
+    assert closure['archive'] == 'docs/archive/phase-001' and closure['archive_altered'] == []
+    assert closure['binding']['binding_sha256'] and closure['reason'] == 'Synthetic abandonment'

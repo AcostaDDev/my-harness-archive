@@ -136,6 +136,85 @@ def definition_view(row):
                                                  'reason', 'actor', 'created_at')}
 
 
+CONFIRMED_DOCUMENT_KINDS = ('document_edit', 'document_export')
+
+
+def _closure(session, phase):
+    """Operación que terminó la fase (cierre o abandono); None si sigue abierta o se cerró sin operación registrada."""
+    if phase.status not in TERMINAL:
+        return None
+    return session.scalar(select(Operation).where(
+        Operation.phase_id == phase.id, Operation.kind == 'close', Operation.status == phase.status)
+        .order_by(Operation.created_at.desc(), Operation.id.desc()).limit(1))
+
+
+def closure_files(session, phase) -> dict[str, str | None]:
+    """Hashes que el cierre unificado escribió en el archivo de la fase (D088)."""
+    op = _closure(session, phase)
+    shown = (op.request.get('preview') or {}) if op is not None else {}
+    archive = shown.get('archive')
+    return {} if not archive else {doc['path']: doc['after_sha256'] for doc in shown['documents']
+                                    if doc['path'].startswith(archive + '/')}
+
+
+def expected_documents(session, phase) -> dict[str, str | None]:
+    """P010-T005: base adoptada más lo que escribieron el cierre y las ediciones confirmadas después de él.
+
+    Solo presentación: no cambia `phase.documents`, el READY ni lo que comprueba un check."""
+    expected = dict(phase.documents)
+    op = _closure(session, phase)
+    if op is None or not op.request.get('preview'):
+        return expected
+    for doc in op.request['preview']['documents']:
+        if doc['path'] in expected:
+            expected[doc['path']] = doc['after_sha256']
+    later = session.scalars(select(Operation).where(
+        Operation.phase_id == phase.id, Operation.kind.in_(CONFIRMED_DOCUMENT_KINDS), Operation.status == 'COMMITTED',
+        Operation.created_at > op.created_at).order_by(Operation.created_at, Operation.id)).all()
+    for row in later:
+        for doc in row.request['preview']['documents']:
+            if doc['path'] in expected and expected[doc['path']] == doc['before_sha256']:
+                expected[doc['path']] = doc['after_sha256']
+    return expected
+
+
+def closure_view(session, phase, current_documents, archive_documents, successor):
+    """Evidencia histórica de una fase terminada y clasificación de sus documentos vivos y de su archivo.
+
+    `renewed`: diferencias esperadas respecto de la base adoptada (cierre y ediciones confirmadas posteriores).
+    `changed`: documentos vivos que no coinciden con lo esperado, solo sin sucesora (con ella, son suyos).
+    `archive_altered`: archivos del archivo cuyo contenido en disco ya no es el que escribió el cierre."""
+    op = _closure(session, phase)
+    if op is None:
+        return None
+    result, request = op.result or {}, op.request
+    # Los cierres anteriores a D088 no tienen vista previa sellada: muestran check y base, sin archivo.
+    check = session.get(Operation, request['check_operation_id']) if request.get('check_operation_id') else None
+    review = (check.result or {}).get('result') if check is not None else None
+    auth = session.get(Authorization, request['authorization_id']) if request.get('authorization_id') else None
+    bound = request.get('binding') or {}
+    expected = expected_documents(session, phase)
+    files = closure_files(session, phase)
+    return {
+        'operation_id': op.id, 'status': op.status, 'finished_at': op.finished_at,
+        'actor': auth.actor if auth else None, 'reason': auth.reason if auth else None,
+        'commit': result.get('commit'), 'tag': result.get('tag'), 'archive': result.get('archive'),
+        'check': None if check is None else {
+            'operation_id': check.id, 'verdict': check.status, 'finished_at': check.finished_at,
+            'summary': (review or {}).get('summary'),
+            'exit_criteria_results': (review or {}).get('exit_criteria_results') or []},
+        'binding': {'head': bound.get('head'), 'binding_sha256': request.get('binding_sha256'),
+                    'documents': bound.get('documents')},
+        'documents': expected,
+        'renewed': sorted(path for path, value in expected.items() if phase.documents.get(path) != value),
+        'changed': (None if current_documents is None or successor is not None
+                    else sorted(path for path, value in current_documents.items() if expected.get(path) != value)),
+        'archive_files': sorted(files),
+        'archive_altered': (None if archive_documents is None
+                            else sorted(path for path, value in files.items() if archive_documents.get(path) != value)),
+    }
+
+
 def _invalidate_batches(managed, session, phase, reason):
     """Una enmienda o un abandono invalida los lotes vigentes; los ya terminados se conservan."""
     rows = session.scalars(select(Authorization).where(Authorization.phase_id == phase.id,
@@ -322,8 +401,17 @@ class PhaseRepository:
                 raise LookupError('Unknown managed phase')
             return phase.root, phase.definition
 
-    def get(self, phase_id, current_documents=None):
-        """Proyección con acciones calculadas por el servidor; `current_documents` es una lectura de disco."""
+    def closure_files(self, phase_id):
+        """Rutas del archivo escrito por el cierre, para que la API las lea de disco antes de `get`."""
+        with Session(self.managed.engine) as session:
+            phase = session.get(Phase, phase_id)
+            if phase is None:
+                raise LookupError('Unknown managed phase')
+            return sorted(closure_files(session, phase))
+
+    def get(self, phase_id, current_documents=None, archive_documents=None):
+        """Proyección con acciones calculadas por el servidor; `current_documents` y `archive_documents` (hashes
+        de los archivos de `closure_files`) son lecturas de disco."""
         now = self.managed._now()
         with Session(self.managed.engine) as session:
             phase = session.get(Phase, phase_id)
@@ -387,6 +475,7 @@ class PhaseRepository:
             successor = session.scalar(select(Phase.code).where(Phase.root == phase.root, or_(
                 Phase.created_at > phase.created_at, and_(Phase.created_at == phase.created_at, Phase.id > phase.id)))
                 .order_by(Phase.created_at, Phase.id).limit(1))
+            closure = closure_view(session, phase, current_documents, archive_documents, successor)
             return {
                 'id': phase.id, 'root': phase.root, 'code': phase.code, 'definition': phase.definition,
                 'definition_sha256': phase.definition_sha256, 'definition_number': phase.definition_number,
@@ -397,7 +486,7 @@ class PhaseRepository:
                               'current_sha256': digest(current_documents) if current_documents is not None else None},
                 'tasks': parts['tasks'], 'questions': [question_view(q) for q in rows],
                 'operations': op_views, 'authorizations': auth_views,
-                'ready': ready_view, 'actions': actions, 'successor': successor}
+                'ready': ready_view, 'closure': closure, 'actions': actions, 'successor': successor}
 
     def events(self, phase_id, after=0, limit=100):
         if type(after) is not int or after < 0 or type(limit) is not int or not 1 <= limit <= 1000:

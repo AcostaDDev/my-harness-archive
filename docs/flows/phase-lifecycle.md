@@ -62,10 +62,32 @@ autoriza otra transición. Desde T006, la página de la fase ACTIVE sin tareas o
 vista previa con diff y hash, motivo y confirmación idempotente del plan. Cambiar la versión de la fase o el origen
 del plan descarta la vista previa. La fase cerrada enlaza a su sucesora; no ofrece otra transición.
 
+## Consulta de una fase cerrada (P010-T005)
+
+La lectura de una fase CLOSED o ABANDONED añade `closure` ([D147](../DECISIONS.md#d147--p010-t005-evidencia-histórica-de-una-fase-cerrada)),
+sin cambiar `phase.documents`, el READY ni lo que comprueba un check:
+
+```mermaid
+flowchart TD
+    A["Operación close terminada"] --> B["Resultado y base históricos: check READY, head, evidencia, tag, motivo"]
+    A --> C["Esperados = base adoptada + documentos renovados por el cierre + ediciones confirmadas posteriores"]
+    A --> D["Archivo: hashes escritos por el cierre"]
+    C --> E{"¿Hay sucesora?"}
+    E -->|sí| F["Los documentos vivos son de la sucesora: no se comparan aquí"]
+    E -->|no| G["Vivos ≠ esperados: deriva real (changed); iguales: renovación esperada (renewed)"]
+    D --> H["Disco ≠ hash del cierre: archivo alterado (archive_altered)"]
+```
+
+La página de documentos usa los mismos hashes esperados cuando la última fase está terminada, así que la renovación
+del cierre no aparece como deriva. Una fase abierta conserva sus guardias: deriva frente a la base adoptada y READY
+obsoleto si los documentos cambian.
+
 ## Fuente en el código
 
 - `core/engine/phases.py`, `storage/phases.py`: check, cierre, preguntas, enmiendas, abandono y lote.
 - `storage/closure.py`, `core/engine/document_ops.py`: preparación, intención y adopción del archivo.
 - `storage/phase_plan.py`, `storage/planning.py`: plan posterior confirmado y conversación sobre la fase activa vacía.
 - `storage/transition.py`: conciliación de transiciones antiguas.
+- `storage/phases.py` (`closure_view`, `expected_documents`), `storage/documents.py` (`status`) y `frontend/src/Phases.tsx`:
+  consulta de una fase terminada (P010-T005).
 - `core/engine/documents.py`: REVIEW, SUMMARY y proyecciones de STATE, NEXT_STEPS y ROADMAP.

@@ -17,6 +17,8 @@ type DocsStatus = S["DocumentsStatusRead"];
 type Tree = S["DocumentTreeRead"];
 type Preview = S["DocumentEditPreviewRead"];
 type PhaseView = { id: string; code: string; status: S["PhaseRead"]["status"] };
+/** P010-T005: tras cerrar o abandonar, la referencia es lo que dejó el cierre, no la base del check. */
+const terminal = (phase: PhaseView | null | undefined) => phase?.status === "CLOSED" || phase?.status === "ABANDONED";
 type Draft = { base: string | null; texts: string[]; run?: string };
 
 const q = encodeURIComponent;
@@ -207,6 +209,12 @@ function Drift({ status }: { status: DocsStatus }) {
   const drift = status.documents.filter(d => d.drift && !local.has(d.path));
   const phase = status.phase as PhaseView | null;
   if (!drift.length || !phase) return null;
+  if (terminal(phase)) return <div className="decision decision-attention" role="status">
+    <h2>Documentos distintos de lo que dejó el cierre de {phase.code}</h2>
+    <p>{drift.map(d => <code key={d.path} className="chip">{d.path}</code>)}</p>
+    <p>Cambiaron después del cierre sin una operación confirmada del harness. El check histórico de {phase.code} no cambia; revisa el contenido y confírmalo con una edición o restáuralo.</p>
+    <p><Link to={{ name: "phase", project, phase: phase.code }}>Ver el cierre de {phase.code}</Link></p>
+  </div>;
   return <div className="decision decision-attention" role="status">
     <h2>Documentos de fase distintos de su base</h2>
     <p>{drift.map(d => <code key={d.path} className="chip">{d.path}</code>)}</p>
@@ -339,7 +347,7 @@ function DocumentView({ path, status, tree }: { path: string; status: Poll<DocsS
     <Stale error={doc ? read.error : undefined} />
     {archived && <p className="state state-neutral docs-readonly">Archivo de fase · solo lectura. Lo escribe el harness al cerrar la fase y nunca se edita.</p>}
     {local && <p className="state state-attention" role="status">Este documento tiene cambios locales sin confirmar. Lo que ves es el disco, no el último commit. <Link to={{ name: "docs", project }}>Confirmarlos o regenerar</Link>.</p>}
-    {entry?.drift && !local && <p className="state state-attention" role="status">Difiere de la base que adoptó la fase: el check no queda listo hasta adoptarlo. <Link to={{ name: "docs", project }}>Ver deriva</Link>.</p>}
+    {entry?.drift && !local && <p className="state state-attention" role="status">{terminal(s?.phase as PhaseView | null) ? "Difiere de lo que dejó el cierre de la fase, sin una edición confirmada." : "Difiere de la base que adoptó la fase: el check no queda listo hasta adoptarlo."} <Link to={{ name: "docs", project }}>Ver deriva</Link>.</p>}
     {entry?.error && <Alert>{entry.error}</Alert>}
     {editing ? <Editor path={path} doc={read.missing ? null : doc!} draftKey={draftKey} blocker={blocker} onClose={() => setEditing(false)} />
       : doc && <article className="doc-reader"><MarkdownView source={doc.content} path={path} /></article>}

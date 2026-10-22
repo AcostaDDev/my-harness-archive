@@ -101,7 +101,8 @@ class World:
     def get(self, pid):
         from harness_local.core.engine.phases import document_hashes
         root, data = self.phases.definition(pid)
-        return self.phases.get(pid, document_hashes(self.context, data['documents']))
+        return self.phases.get(pid, document_hashes(self.context, data['documents']),
+                               document_hashes(self.context, self.phases.closure_files(pid)))
 
     def check(self, pid, *responses):
         self.script(*responses)
