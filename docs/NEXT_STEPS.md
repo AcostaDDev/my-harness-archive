@@ -3,9 +3,12 @@
 Objetivo y criterios en [ROADMAP](ROADMAP.md#p010--consolidación-de-la-primera-versión-local).
 Decisión: [D141](DECISIONS.md#d141--p010-consolidación-de-la-primera-versión-local).
 [Plan y alcance](phase/P010_PLAN_CONSOLIDACION.md).
+[Contrato de T001](phase/P010-T001_CONTRATO_CONSOLIDACION.md), decisión
+[D142](DECISIONS.md#d142--p010-t001-receta-typescript-proyección-de-runs-y-tarea-t011).
 
-**Estado:** fase planificada el 2026-10-21. T001–T010 pendientes; ninguna implementación ni operación iniciada.
-**Siguiente:** T001 cuando el usuario solicite ejecutar la fase. El encargo actual cubre solo documentación.
+**Estado:** fase planificada el 2026-10-21. T001 completada el 2026-10-22: diseño y matriz inicial, sin producto.
+Añade T011 (métricas y exportación sobre la proyección de runs). T002–T011 pendientes; sin operación iniciada.
+**Siguiente:** T002, arranque confirmado de un proyecto TypeScript web (receta `typescript-web-recipe-1`).
 
 ## Restricciones compartidas
 
@@ -25,7 +28,8 @@ Decisión: [D141](DECISIONS.md#d141--p010-consolidación-de-la-primera-versión-
 
 ## P010-T001 — Contrato de las correcciones y criterios de cierre
 
-**Estado:** pendiente.
+**Estado:** completada el 2026-10-22 ([contrato](phase/P010-T001_CONTRATO_CONSOLIDACION.md), D142). Cuatro
+elecciones de diseño resueltas con el usuario: receta D119, `npm ci` y validaciones, proyección derivada y T011.
 **Objetivo:** Dejar implementables las dos correcciones técnicas y precisar cómo se acreditará la primera versión.
 **Alcance:** inventario de consumidores de `typescript-web` y de lecturas de runs; diseño de preparación inicial
 confirmada, consultas acotadas, compatibilidad y recuperación; mapa inicial de los trece criterios globales.
@@ -41,8 +45,8 @@ confirmada, consultas acotadas, compatibilidad y recuperación; mapa inicial de 
 - La matriz inicial vincula los trece criterios de SPECIFICATION §10 con evidencia existente, vigencia y huecos,
   sin dar resultados aún no verificados. Cualquier cuestión de diseño bloqueante queda explícita.
 
-**Validación:** (prevista) contraste con código y decisiones vigentes, parsers/enlaces y revisión del contrato.
-**Entregables:** (previstos) `docs/phase/P010-T001_CONTRATO_CONSOLIDACION.md` y matriz inicial de aceptación.
+**Validación:** contraste estático con código y decisiones, citas de tests y enlaces comprobados; sin suites.
+**Entregables:** `docs/phase/P010-T001_CONTRATO_CONSOLIDACION.md`, con matriz inicial (§4).
 
 ## P010-T002 — Arranque confirmado de un proyecto TypeScript web
 
@@ -122,7 +126,7 @@ el estado operativo del Django hijo para completar la prueba.
 
 ## P010-T006 — Documentación de instalación y alcance soportado
 
-**Estado:** pendiente. **Depende de:** T002–T005.
+**Estado:** pendiente. **Depende de:** T002–T005 y T011.
 **Objetivo:** Que la documentación de la primera versión coincida con el producto entregado.
 **Alcance:** README, instalación/operación, compatibilidad, ejemplos y límites; consolidación de los cambios de P010.
 **Rutas permitidas:** `README.md`, `docs/**`, `examples/**`.
@@ -142,7 +146,7 @@ el estado operativo del Django hijo para completar la prueba.
 
 ## P010-T007 — Matriz de aceptación global
 
-**Estado:** pendiente. **Depende de:** T002–T006.
+**Estado:** pendiente. **Depende de:** T002–T006 y T011.
 **Objetivo:** Evaluar la primera versión contra los trece criterios de SPECIFICATION §10.
 **Alcance:** actualizar la matriz inicial, comprobar vigencia de evidencia y cubrir huecos mediante pruebas sintéticas
 pertinentes. No repetir todas las operaciones reales de fases anteriores.
@@ -183,7 +187,7 @@ ejecutar posteriormente o conservar esos límites. Esta tarea prepara la propues
 
 ## P010-T009 — Verificación final del paquete y revisión de salida
 
-**Estado:** pendiente. **Depende de:** T002–T008 y de las correcciones/evidencias adicionales que se acuerden.
+**Estado:** pendiente. **Depende de:** T002–T008, T011 y las correcciones/evidencias adicionales que se acuerden.
 **Objetivo:** Acreditar el estado final del producto y emitir un dictamen de cierre revisable.
 **Alcance:** checks offline finales, QA de las pantallas modificadas y verificación del wheel en entorno temporal;
 contraste del paquete final con la matriz de aceptación y el alcance real decidido.
@@ -219,3 +223,22 @@ contraste del paquete final con la matriz de aceptación y el alcance real decid
 
 **Validación:** (prevista) parsers/enlaces, presupuestos, manifiesto de archivo por hashes y diff documental.
 **Entregables:** (previstos) `docs/phase/P010_CIERRE.md` antes de archivar y `docs/archive/phase-010/` al cerrar.
+
+## P010-T011 — Métricas y exportación sin decodificar historiales
+
+**Estado:** pendiente. **Depende de:** T003. Añadida por T001 (D142); precede a T006.
+**Objetivo:** Cumplir SPECIFICATION §9 en las vistas que no son de runs y hoy decodifican historiales.
+**Alcance:** métricas (`summary`, `tasks`, `validations`) y vista previa de exportación documental sobre la
+proyección `run-projection-1` de T003 y `managed_attempts`; API/tipos y cliente si cambian. Las lecturas del motor
+no cambian.
+**Rutas permitidas:** `src/harness_local/**`, `frontend/**`, `tests/**`, `docs/**`.
+**Criterios de aceptación:**
+
+- Las vistas de métricas y la vista previa de exportación no llaman a `load_history` ni seleccionan `history_json`;
+  agregan en SQL con paginación y límites explícitos.
+- Resultados iguales a los actuales sobre datos sintéticos con formatos 1–8 e historiales grandes, con medidas.
+- Ninguna tabla nueva sin medición que la justifique; si se añade, paridad en DDBB-DIAGRAM y backup.
+- Bloques de STATE, checks y exportación confirmada conservan su contenido y su autoridad.
+
+**Validación:** (prevista) pytest de métricas/exportación y regresiones; Node/tipos/build si cambia el cliente.
+**Entregables:** (previstos) `docs/phase/P010-T011_METRICAS_SIN_HISTORIAL.md`.

@@ -152,6 +152,7 @@ tarea se leen solo las decisiones que cita; este índice sirve para buscar prece
 | [D139](#d139--p009-t012-completada-piloto-django-con-p001-cerrada-y-archivada) | P009-T012: completada; piloto Django con P001 cerrada y archivada | P009 |
 | [D140](#d140--cierre-documental-manual-de-p009) | Cierre documental manual de P009 | P009 |
 | [D141](#d141--p010-consolidación-de-la-primera-versión-local) | P010: consolidación de la primera versión local | P010 |
+| [D142](#d142--p010-t001-receta-typescript-proyección-de-runs-y-tarea-t011) | P010-T001: receta TypeScript, proyección de runs y tarea T011 | P010 |
 
 ## D001 — Alcance local y arquitectura base
 
@@ -4277,3 +4278,30 @@ El encargo es «Crea únicamente la documentación de la nueva fase. (Acepto tu 
 - Esta entrega cambia solo documentación. No autoriza implementar tareas, lanzar agentes/proveedores o smokes,
   instalar, levantar servicios, modificar configuración global, hacer commits, push o publicar. La siguiente
   tarea es P010-T001 cuando el usuario solicite ejecutar el plan; no se usa el harness sobre este repositorio.
+
+## D142 — P010-T001: receta TypeScript, proyección de runs y tarea T011
+
+Estado: diseño completado el 2026-10-22; implementación pendiente de P010-T002, T003 y T011. Fase: P010.
+[Contrato, inventario y matriz inicial](phase/P010-T001_CONTRATO_CONSOLIDACION.md). Concreta D141. Las cuatro
+elecciones de diseño son del usuario (HITL del 2026-10-22). Conserva D029, D088, D095 y D116–D119.
+
+- El `package.json` inicial de un `typescript-web` nuevo lo genera una segunda receta empaquetada,
+  `typescript-web-recipe-1`, dentro del marco D119: `[recipes.typescript-web]` en `local-config-5` y una composición
+  con `recipe = "typescript-web"` y el perfil integrado sin cambios. Mismo contrato `project-preparation-1`, binding,
+  tablas, locks, recuperación y commit técnico; Django conserva sus planes, recibos y hashes. Solo hijos nuevos
+  creados por el servicio, con commit documental raíz; las altas e importaciones no cambian.
+- La receta escribe un manifiesto empaquetado (`typescript@5.9.3` con el lock del fixture y `engines` exactos),
+  verifica `node`/`npm`, ejecuta `npm ci --ignore-scripts` (offline con la caché declarada; red solo con techo del
+  operador y elección en la vista previa) y las validaciones del perfil antes del commit. El recibo fija el
+  manifiesto protegido y los ejecutables, no `node_modules`. Un `npm ci` incierto sigue las reglas D119.
+- Las vistas leen una proyección derivada `run-projection-1`. Se escribe en la misma transacción que
+  `history_json`, que sigue siendo la autoridad, y la rellena una migración aditiva sin reescribir historiales.
+  Las vistas no seleccionan `history_json` ni llaman a `load_history`; el backup comprueba la consistencia. El
+  motor, la recuperación, los checks, el chat y los permisos siguen leyendo el historial.
+- Se añade **P010-T011**, que lleva las métricas y la vista previa de exportación a esa proyección (SPECIFICATION §9).
+  Depende de T003 y precede a T006. T003 cubre detalle, diff, JUnit y listados de runs.
+- La matriz inicial de los trece criterios no reejecuta nada. Huecos: `typescript-web` nuevo (T002), A/B y perfil
+  D095 sin evidencia real (T008), chat sin evidencia real localizada. Queda abierta para T007 la cuestión del SSE
+  gestionado frente al sondeo con cursor de D029 en el criterio 13.
+
+Solo documentación: sin código, esquema, API, flujos, configuración, instalaciones, servicios ni proveedores.

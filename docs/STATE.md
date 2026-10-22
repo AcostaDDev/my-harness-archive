@@ -1,6 +1,6 @@
 # Estado — my_harness
 
-Actualizado: 2026-10-21. Sin bloques gestionados mientras el repositorio no esté registrado en el harness (D088).
+Actualizado: 2026-10-22. Sin bloques gestionados mientras el repositorio no esté registrado en el harness (D088).
 
 ## Base acumulada
 
@@ -58,11 +58,13 @@ salvo donde se indica. Detalle por fase en `docs/archive/phase-NNN/SUMMARY.md`; 
 
 ## Fase activa
 
-**P010 — Consolidación de la primera versión local. Planificada, sin implementación iniciada.**
-El usuario acepta la propuesta el 2026-10-21 y solicita únicamente documentar la nueva fase
-([D141](DECISIONS.md#d141--p010-consolidación-de-la-primera-versión-local),
-[plan](phase/P010_PLAN_CONSOLIDACION.md), [tareas](NEXT_STEPS.md)). Diez tareas pendientes.
-La petición actual autoriza solo esta planificación documental; no su ejecución.
+**P010 — Consolidación de la primera versión local. En curso: T001 completada, sin producto implementado.**
+Planificada el 2026-10-21 ([D141](DECISIONS.md#d141--p010-consolidación-de-la-primera-versión-local),
+[plan](phase/P010_PLAN_CONSOLIDACION.md), [tareas](NEXT_STEPS.md)). El 2026-10-22 T001 deja el
+[contrato](phase/P010-T001_CONTRATO_CONSOLIDACION.md) y la matriz inicial
+([D142](DECISIONS.md#d142--p010-t001-receta-typescript-proyección-de-runs-y-tarea-t011)): receta
+`typescript-web-recipe-1` en el marco D119, proyección derivada `run-projection-1` y una tarea nueva, T011
+(métricas y exportación). T002–T011 pendientes.
 
 P009 cerrada y archivada documentalmente el 2026-10-21
 ([resumen](archive/phase-009/SUMMARY.md), [revisión](archive/phase-009/REVIEW.md),
@@ -73,8 +75,8 @@ El Django hijo conserva P001 CLOSED, cuatro tareas COMMITTED, tag `p001` sobre `
 Última comprobación operativa en T012: servicios detenidos, cero locks y sin jobs pendientes; no se repite aquí.
 Este repositorio sigue sin registrarse ni ejecutarse con el harness; cierre manual sin check READY ni tag propio.
 
-**Siguiente:** P010-T001, contrato de las correcciones y criterios de cierre, cuando se solicite ejecutar la fase.
-Prioridades: arranque `typescript-web` con `package.json`, consultas acotadas de runs, marcadores de definición,
-presentación de fases cerradas, documentación y evidencia de aceptación. Los límites actuales de la base acumulada
-siguen vigentes hasta implementar y verificar cada entrega. La validación real complementaria se concreta en T008;
-no se da por realizada ni autorizada. Sin nueva fase del Django hijo ni ampliación de consentimientos de P009.
+**Siguiente:** P010-T002, arranque confirmado de un proyecto TypeScript web según el contrato de T001.
+Después: lecturas acotadas de runs (T003, T011), marcadores de definición, fases cerradas, documentación y
+evidencia de aceptación. Los límites actuales de la base acumulada siguen vigentes hasta implementar y verificar
+cada entrega; la cuestión del SSE gestionado (criterio 13) queda para T007. La validación real complementaria
+se concreta en T008; no se da por realizada ni autorizada. Sin nueva fase del Django hijo ni ampliación de consentimientos de P009.

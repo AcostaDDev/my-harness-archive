@@ -42,9 +42,11 @@ por contenido, recuperación y compatibilidad. Una contradicción de diseño se 
 5. T008: preparar la validación real complementaria y resolver con el usuario qué se ejecuta y qué se limita.
 6. T009: comprobar base/paquete finales y revisar salida. T010: síntesis y archivo documental posterior.
 
-La numeración expresa el trabajo previsto, sin ejecución paralela ni lanzamiento de agentes. Si un hallazgo
-exige nuevas tareas, se añaden de forma acotada con su decisión y dependencias antes del cierre. La preparación
-de T008 puede reutilizar la evidencia existente; no requiere iniciar una segunda fase del hijo de P009.
+T001 (2026-10-22, [contrato](P010-T001_CONTRATO_CONSOLIDACION.md), D142) añade T011: métricas y vista previa de
+exportación sobre la proyección de T003, antes de T006. La numeración expresa el trabajo previsto, sin ejecución
+paralela ni lanzamiento de agentes. Si un hallazgo exige nuevas tareas, se añaden de forma acotada con su decisión
+y dependencias antes del cierre. La preparación de T008 puede reutilizar la evidencia existente; no requiere
+iniciar una segunda fase del hijo de P009.
 
 ## Evidencia real y alcance soportado
 
