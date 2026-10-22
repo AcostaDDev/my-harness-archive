@@ -7,13 +7,14 @@ usan a través de las CLI de Codex y Claude Code con tu propia suscripción.
 
 ## Estado
 
-Fases P001–P009 completadas y archivadas; la última, [P009](docs/archive/phase-009/SUMMARY.md), creó un Django
-desde la UI, lo llevó con las cuatro combinaciones de agentes hasta cerrar su primera fase y lo archivó.
-P010, [consolidación de la primera versión local](docs/phase/P010_PLAN_CONSOLIDACION.md), está en curso: receta
-TypeScript web, lecturas de runs y métricas sin decodificar historiales, marcadores opcionales de definición y
-evidencia de fases cerradas y migración explícita de bases ya implementados, con matriz de aceptación; quedan la
-propuesta de validación real, la verificación final y el cierre. «Primera versión local» no implica versión `1.0.0`
-ni publicación: el paquete sigue en `0.1.0`. Detalle en [ROADMAP](docs/ROADMAP.md) y [STATE](docs/STATE.md).
+Fases P001–P010 completadas y archivadas. La [primera versión local](docs/archive/phase-010/SUMMARY.md)
+queda cerrada documentalmente el 2026-10-22: receta TypeScript web, lecturas acotadas de runs y métricas,
+marcadores opcionales, evidencia de fases cerradas y migración explícita de bases. Los trece criterios globales
+tienen [matriz de aceptación](docs/archive/phase-010/P010_MATRIZ_ACEPTACION.md); el wheel final y la QA sintética
+cuentan con [dictamen favorable](docs/archive/phase-010/REVIEW.md) en el alcance declarado.
+A/B y el perfil Django declarado conservan su validación solo offline por decisión D151; los límites se detallan
+más abajo. El paquete sigue en `0.1.0`, sin publicación ni fase sucesora planificada.
+Detalle en [ROADMAP](docs/ROADMAP.md) y [STATE](docs/STATE.md).
 
 ## Requisitos
 
@@ -147,5 +148,5 @@ Las pruebas usan Git, SQLite y procesos temporales con agentes falsos; no consum
 - [Arquitectura](docs/ARCHITECTURE.md): stack, módulos, patrones, comandos y límites.
 - [Roadmap](docs/ROADMAP.md), [estado](docs/STATE.md) y [siguientes pasos](docs/NEXT_STEPS.md).
 - [Decisiones](docs/DECISIONS.md), [diagrama de datos](docs/DDBB-DIAGRAM.md) y [flujos](docs/flows/task-run.md).
-- [Archivo de fases](docs/archive/phase-009/SUMMARY.md): entregas, revisión y evidencia de la última fase cerrada.
+- [Archivo de fases](docs/archive/phase-010/SUMMARY.md): entregas, revisión y evidencia de la última fase cerrada.
 - Instrucciones para agentes: [AGENTS.md](AGENTS.md), con [CLAUDE.md](CLAUDE.md) y [GEMINI.md](GEMINI.md) como envoltorios.

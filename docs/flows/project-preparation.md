@@ -3,8 +3,8 @@
 Implementado en D119 para Django y en D143 para TypeScript web;
 [contrato Django](../archive/phase-009/P009-T001_CONTRATO_CREACION.md#5-receta-posterior-al-bootstrap-t004),
 [entrega Django y límites](../archive/phase-009/P009-T004_RECETA_DJANGO.md),
-[contrato TypeScript](../phase/P010-T001_CONTRATO_CONSOLIDACION.md#1-arranque-de-un-proyecto-typescript-web-nuevo-t002)
-y [entrega TypeScript](../phase/P010-T002_ARRANQUE_TYPESCRIPT.md). Solo hijos nuevos registrados por el servicio,
+[contrato TypeScript](../archive/phase-010/P010-T001_CONTRATO_CONSOLIDACION.md#1-arranque-de-un-proyecto-typescript-web-nuevo-t002)
+y [entrega TypeScript](../archive/phase-010/P010-T002_ARRANQUE_TYPESCRIPT.md). Solo hijos nuevos registrados por el servicio,
 composición v5 con `recipe = "django"` (perfil empaquetado) o `recipe = "typescript-web"` (perfil integrado sin
 cambios) y commit documental raíz aceptado. No ejecuta agentes. Ambas recetas comparten contrato
 `project-preparation-1`, binding `preparation-commands-1`, tablas, locks, journal, commit técnico y recuperación;

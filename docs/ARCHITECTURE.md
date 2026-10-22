@@ -333,7 +333,7 @@ D119: `[recipes.typescript-web]` en `local-config-5`, composición con el perfil
 npm del operador en su entorno. `recipes/__init__.py` registra cada receta con su módulo y perfil; el servicio de
 preparación separa el núcleo común de las partes por receta y el recibo TypeScript fija manifiesto protegido y
 ejecutables, no `node_modules`. Sin migración ni cambios de API. [Fragmento v5](../examples/typescript-web-recipe.example.toml),
-[flujo](flows/project-preparation.md) y [entrega](phase/P010-T002_ARRANQUE_TYPESCRIPT.md).
+[flujo](flows/project-preparation.md) y [entrega](archive/phase-010/P010-T002_ARRANQUE_TYPESCRIPT.md).
 
 T003 añade la proyección derivada `run-projection-1` (migración `0023`, seis tablas, D144): se escribe con cada
 historial, se rellena una vez para los existentes sin reescribirlos y se comprueba en el backup. Las vistas de runs,
@@ -342,4 +342,4 @@ decodificar `history_json`; el envío confirmado de la exportación y el motor s
 T004 aclara en `define-project` y en la UI que los marcadores gestionados son opcionales en la definición (D146).
 T005 añade `PhaseRead.closure` (check, base, archivo y commit del cierre) y distingue la renovación de documentos
 vivos de la deriva real de una fase cerrada (D147). T006 contrasta README, este documento y `examples/` con el código
-y la evidencia ([entrega](phase/P010-T006_DOCUMENTACION_VERSION.md), D148).
+y la evidencia ([entrega](archive/phase-010/P010-T006_DOCUMENTACION_VERSION.md), D148).

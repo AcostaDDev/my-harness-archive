@@ -5,7 +5,7 @@ Actualizado: 2026-10-22. Sin bloques gestionados mientras el repositorio no est�
 ## Base acumulada
 
 Lo que existe y funciona, verificado offline con Git, SQLite y procesos temporales, agentes falsos y datos sintéticos
-salvo donde se indica. Detalle por fase en `docs/archive/phase-NNN/SUMMARY.md`; P001–P009 cerradas.
+salvo donde se indica. Detalle por fase en `docs/archive/phase-NNN/SUMMARY.md`; P001–P010 cerradas; primera versión local completada en el alcance de D151/D153.
 
 - **Núcleo y motor** ([P001](archive/phase-001/SUMMARY.md), [P003](archive/phase-003/SUMMARY.md)): paquete
   `harness_local` con contexto explícito por proyecto, contrato de tarea congelado, planificación determinista o por el
@@ -60,70 +60,28 @@ salvo donde se indica. Detalle por fase en `docs/archive/phase-NNN/SUMMARY.md`; 
   de confirmar sobre un proyecto real. A/B y ese perfil conservan su validación solo offline: el usuario aplaza
   la comprobación real complementaria en T008 (D151). El piloto no evalúa comparativamente la calidad de modelos.
   Observación de P009 pendiente: alta sin redirección (aplazada en ROADMAP). El texto de marcadores de
-  define-project y la deriva tras cerrar se corrigen en P010-T004 (D146) y T005 (D147).
+  define-project y la deriva tras cerrar están corregidos en P010-T004 (D146) y T005 (D147).
+
+- **Primera versión local** ([P010](archive/phase-010/SUMMARY.md), D141–D153): doce tareas completadas,
+  siete criterios de salida y trece criterios globales con dictamen en el alcance declarado. T009 verifica
+  el wheel `0.1.0` con UI/migraciones fuera del checkout; pytest (1682 y 121 subtests), unittest (12), Node (82),
+  tipos/build y Alembic temporal correctos, con dos opt-in omitidas. QA de escritorio con API sintética y doce
+  capturas, sin integración navegador/backend adicional ni uso real nuevo. [Matriz](archive/phase-010/P010_MATRIZ_ACEPTACION.md),
+  [revisión](archive/phase-010/REVIEW.md) y [paquete](archive/phase-010/P010-T009_VERIFICACION_FINAL.md).
 
 ## Fase activa
 
-**P010 — Consolidación de la primera versión local. En curso: T001–T009 y T011–T012 completadas; cierre T010 pendiente.**
-Planificada el 2026-10-21 ([D141](DECISIONS.md#d141--p010-consolidación-de-la-primera-versión-local),
-[plan](phase/P010_PLAN_CONSOLIDACION.md), [tareas](NEXT_STEPS.md)). El 2026-10-22 T001 deja el
-[contrato](phase/P010-T001_CONTRATO_CONSOLIDACION.md) y la matriz inicial
-([D142](DECISIONS.md#d142--p010-t001-receta-typescript-proyección-de-runs-y-tarea-t011)): receta
-`typescript-web-recipe-1` en el marco D119, proyección derivada `run-projection-1` y una tarea nueva, T011
-(métricas y exportación). El mismo día T002 implementa la receta
-([entrega](phase/P010-T002_ARRANQUE_TYPESCRIPT.md), [D143](DECISIONS.md#d143--p010-t002-receta-typescript-web-recipe-1-implementada)):
-un `typescript-web` nuevo llega a su primera tarea COMMITTED con las validaciones del perfil, verificado con
-node/npm sintéticos y con node/npm reales sobre la caché local, offline. También el 2026-10-22, T003 implementa la
-proyección `run-projection-1` ([entrega](phase/P010-T003_LECTURAS_RUNS.md),
-[D144](DECISIONS.md#d144--p010-t003-proyección-run-projection-1-implementada)): migración `0023`, vistas de runs sin
-decodificar el historial y ciclos paginados en la API, verificado con historiales sintéticos de los formatos 1–8 y uno
-de 26 MiB. T011 lleva a la proyección las métricas y la vista previa de exportación
-([entrega](phase/P010-T011_METRICAS_SIN_HISTORIAL.md),
-[D145](DECISIONS.md#d145--p010-t011-métricas-y-vista-previa-de-exportación-sobre-la-proyección)); el envío
-confirmado se sigue contrastando con el historial. Sin migración ni cambios de API; verificado con los formatos 1–8,
-casos límite de validación y un ámbito sintético de 35,4 MiB. T004 aclara que los marcadores gestionados son
-opcionales en la definición ([entrega](phase/P010-T004_MARCADORES_DEFINICION.md),
-[D146](DECISIONS.md#d146--p010-t004-marcadores-opcionales-en-la-definición)): plantilla `define-project` y avisos de la
-UI, sin cambios del motor; verificado con un recorrido sintético de carpeta nueva y con borradores, sin revisor real
-ni QA visual. T005 presenta la evidencia histórica de una fase cerrada
-([entrega](phase/P010-T005_FASES_CERRADAS.md),
-[D147](DECISIONS.md#d147--p010-t005-evidencia-histórica-de-una-fase-cerrada)): `PhaseRead.closure` con check, base,
-archivo y commit; la renovación del cierre deja de mostrarse como deriva y la deriva real (documentos vivos sin
-sucesora y archivo alterado) se señala. Sin migración ni cambios del check; verificado con fases sintéticas abierta,
-cerrada con y sin sucesora, abandonada y con deriva real. T006 contrasta README, ARCHITECTURE y ejemplos con el
-código y la evidencia ([entrega](phase/P010-T006_DOCUMENTACION_VERSION.md),
-[D148](DECISIONS.md#d148--p010-t006-documentación-de-instalación-y-alcance-soportado)): versiones CLI por rol,
-alcance offline frente a real y límites. Por decisión del usuario, la falta de actualizador de bases en el paquete
-instalado queda como límite y la valora T007. Sin cambios de código. T007 completa la
-[matriz de aceptación](phase/P010_MATRIZ_ACEPTACION.md)
-([D149](DECISIONS.md#d149--p010-t007-matriz-de-aceptación-sse-por-cursor-y-tarea-t012)): trece criterios cumplen
-offline con tests reejecutados y dos nuevos; el usuario decide que el cursor de D029 cumple el criterio 13 en la UI
-gestionada y que el hueco de migraciones del paquete instalado (§9) se corrige en la nueva T012. T012 implementa
-`harness-local migrate` ([entrega](phase/P010-T012_MIGRACION_INSTALADA.md),
-[D150](DECISIONS.md#d150--p010-t012-migración-explícita-de-bases-desde-la-cli-instalada)): copia previa verificada,
-guardias de rutas, revisiones y propietarios/grupos vivos; no crea bases ni restaura automáticamente tras un fallo.
-Verificado offline con SQLite sintética de `0022`, formatos 1–8 y revisiones antiguas; `serve` acepta el resultado
-sin arrancar un servicio en la prueba. Sin esquema ni API nuevos; wheel pendiente de T009. T008 prepara la
-[propuesta de validación real](phase/P010-T008_PROPUESTA_VALIDACION_REAL.md) y resuelve el alcance por HITL
-([D151](DECISIONS.md#d151--p010-t008-validación-real-complementaria-aplazada)): el usuario aplaza A/B y D095,
-conservando su evidencia offline y sus límites de uso real. Sin tarea operativa ni autorización nueva.
-T009 completa la [verificación final](phase/P010-T009_VERIFICACION_FINAL.md)
-([D152](DECISIONS.md#d152--p010-t009-paquete-final-verificado-y-dictamen-favorable)): pytest (1682 y 121 subtests),
-unittest (12), Node (82), tipos/build, Alembic temporal y wheel instalado correctos. QA de escritorio con API
-sintética y doce capturas; servicios detenidos. Dos opt-in omitidas, sin recurrencia del intermitente de T007.
-La [revisión de salida](phase/P010_REVIEW.md) emite dictamen favorable sobre los siete criterios en el alcance
-de D151. Sin cambios de producto ni validación real nueva. T010 pendiente: fase y primera versión aún sin cierre documental.
+Ninguna. **P010 cerrada y archivada documentalmente el 2026-10-22**
+([D153](DECISIONS.md#d153--cierre-documental-de-p010-y-de-la-primera-versión-local),
+[resumen](archive/phase-010/SUMMARY.md), [registro de cierre](archive/phase-010/P010_CIERRE.md)).
+El dictamen favorable de T009 y la decisión explícita D151 permiten completar la primera versión local en ese
+alcance. Originales de STATE/NEXT_STEPS y artefactos de fase conservados por bytes; sin tareas obligatorias pendientes.
+El paquete sigue en `0.1.0`, sin tag ni publicación. No hay fase sucesora definida.
 
-P009 cerrada y archivada documentalmente el 2026-10-21
-([resumen](archive/phase-009/SUMMARY.md), [revisión](archive/phase-009/REVIEW.md),
-[D140](DECISIONS.md#d140--cierre-documental-manual-de-p009)). Sus veinte tareas y siete criterios de salida
-están completos en el alcance acreditado. Originales conservados por bytes y referencias vigentes reubicadas.
-
-El Django hijo conserva P001 CLOSED, cuatro tareas COMMITTED, tag `p001` sobre `47a0557` y archivo en `3d105c6`.
-Última comprobación operativa en T012: servicios detenidos, cero locks y sin jobs pendientes; no se repite aquí.
+P009 conserva su cierre documental (D140) y el Django hijo su P001 CLOSED, cuatro tareas COMMITTED,
+tag `p001` sobre `47a0557` y archivo en `3d105c6`. No se repite ninguna operación ni comprobación de su estado.
 Este repositorio sigue sin registrarse ni ejecutarse con el harness; cierre manual sin check READY ni tag propio.
 
-**Siguiente:** P010-T010, cierre documental de P010 y de la primera versión, con dictamen favorable de T009.
-Los límites de la base acumulada siguen vigentes;
-el SSE gestionado queda resuelto por D149. La validación real complementaria queda aplazada por D151, sin darse
-por realizada ni autorizada. Sin nueva fase del Django hijo ni ampliación de consentimientos de P009.
+**Siguiente:** el usuario elige la próxima prioridad; candidatas en [ROADMAP](ROADMAP.md#candidatas-sin-fase-asignada).
+Los límites de la base acumulada siguen vigentes. La validación real complementaria A/B y D095 sigue aplazada
+por D151, sin darse por realizada ni autorizada. Sin nueva fase del Django hijo ni ampliación de consentimientos.

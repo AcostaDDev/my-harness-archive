@@ -163,6 +163,7 @@ tarea se leen solo las decisiones que cita; este índice sirve para buscar prece
 | [D150](#d150--p010-t012-migración-explícita-de-bases-desde-la-cli-instalada) | P010-T012: migración explícita de bases desde la CLI instalada | P010 |
 | [D151](#d151--p010-t008-validación-real-complementaria-aplazada) | P010-T008: validación real complementaria aplazada | P010 |
 | [D152](#d152--p010-t009-paquete-final-verificado-y-dictamen-favorable) | P010-T009: paquete final verificado y dictamen favorable | P010 |
+| [D153](#d153--cierre-documental-de-p010-y-de-la-primera-versión-local) | Cierre documental de P010 y de la primera versión local | P010 |
 
 ## D001 — Alcance local y arquitectura base
 
@@ -4267,7 +4268,7 @@ Estado: cerrada y archivada el 2026-10-21 por la continuación solicitada por el
 
 Estado: propuesta aceptada por el usuario el 2026-10-21; fase planificada, sin implementación. Fase: P010.
 El encargo es «Crea únicamente la documentación de la nueva fase. (Acepto tu propuesta)».
-[Plan](phase/P010_PLAN_CONSOLIDACION.md), [tareas](NEXT_STEPS.md) y [criterios](ROADMAP.md#p010--consolidación-de-la-primera-versión-local).
+[Plan](archive/phase-010/P010_PLAN_CONSOLIDACION.md), [tareas](archive/phase-010/NEXT_STEPS.md) y [criterios](ROADMAP.md#p010--consolidación-de-la-primera-versión-local).
 
 - Tras P001–P009, se acota una fase de consolidación: `package.json` inicial de `typescript-web`, lecturas de runs
   sin decodificación completa, marcadores opcionales de definición, presentación de deriva de fases cerradas,
@@ -4292,7 +4293,7 @@ El encargo es «Crea únicamente la documentación de la nueva fase. (Acepto tu 
 ## D142 — P010-T001: receta TypeScript, proyección de runs y tarea T011
 
 Estado: diseño completado el 2026-10-22; implementación pendiente de P010-T002, T003 y T011. Fase: P010.
-[Contrato, inventario y matriz inicial](phase/P010-T001_CONTRATO_CONSOLIDACION.md). Concreta D141. Las cuatro
+[Contrato, inventario y matriz inicial](archive/phase-010/P010-T001_CONTRATO_CONSOLIDACION.md). Concreta D141. Las cuatro
 elecciones de diseño son del usuario (HITL del 2026-10-22). Conserva D029, D088, D095 y D116–D119.
 
 - El `package.json` inicial de un `typescript-web` nuevo lo genera una segunda receta empaquetada,
@@ -4319,7 +4320,7 @@ Solo documentación: sin código, esquema, API, flujos, configuración, instalac
 ## D143 — P010-T002: receta `typescript-web-recipe-1` implementada
 
 Estado: implementado y verificado offline el 2026-10-22. Fase: P010.
-[Entrega, pruebas y límites](phase/P010-T002_ARRANQUE_TYPESCRIPT.md), [flujo](flows/project-preparation.md),
+[Entrega, pruebas y límites](archive/phase-010/P010-T002_ARRANQUE_TYPESCRIPT.md), [flujo](flows/project-preparation.md),
 [ejemplo](../examples/typescript-web-recipe.example.toml). Implementa D142 y el contrato de P010-T001 §1;
 conserva D088, D116 y D119.
 
@@ -4344,7 +4345,7 @@ poblada, sin red. No acredita proveedores, otras plataformas ni dependencias añ
 ## D144 — P010-T003: proyección `run-projection-1` implementada
 
 Estado: implementado y verificado offline el 2026-10-22. Fase: P010.
-[Entrega, medidas y límites](phase/P010-T003_LECTURAS_RUNS.md), [diagrama](DDBB-DIAGRAM.md#proyección-de-runs-p010-t003),
+[Entrega, medidas y límites](archive/phase-010/P010-T003_LECTURAS_RUNS.md), [diagrama](DDBB-DIAGRAM.md#proyección-de-runs-p010-t003),
 [flujo](flows/task-run.md#lectura-del-run-d144). Implementa D142 y el contrato de P010-T001 §2 para las vistas de
 runs; métricas y exportación quedan para T011.
 
@@ -4368,7 +4369,7 @@ comparando con la implementación anterior. No se migra la instalación real en 
 ## D145 — P010-T011: métricas y vista previa de exportación sobre la proyección
 
 Estado: implementado y verificado offline el 2026-10-22. Fase: P010.
-[Entrega, medidas y límites](phase/P010-T011_METRICAS_SIN_HISTORIAL.md), [flujo](flows/documents.md#vista-previa-de-la-exportación-d145).
+[Entrega, medidas y límites](archive/phase-010/P010-T011_METRICAS_SIN_HISTORIAL.md), [flujo](flows/documents.md#vista-previa-de-la-exportación-d145).
 Implementa D142 y el contrato de P010-T001 §2 para las vistas que no son de runs, sobre la proyección de D144.
 
 - Las métricas `summary`, `tasks` y `validations` y la vista previa de la exportación documental (formas D036 y v2)
@@ -4390,7 +4391,7 @@ Verificación con historiales sintéticos (formatos 1–8 tras la migración, ca
 ## D146 — P010-T004: marcadores opcionales en la definición
 
 Estado: implementado y verificado offline el 2026-10-22. Fase: P010.
-[Entrega](phase/P010-T004_MARCADORES_DEFINICION.md), [flujo](flows/project-definition.md).
+[Entrega](archive/phase-010/P010-T004_MARCADORES_DEFINICION.md), [flujo](flows/project-definition.md).
 Resuelve la observación de D127: ante una carpeta nueva, Codex preguntó como bloqueante por el contenido y los
 marcadores gestionados que la plantilla pedía conservar.
 
@@ -4408,7 +4409,7 @@ marcadores gestionados que la plantilla pedía conservar.
 ## D147 — P010-T005: evidencia histórica de una fase cerrada
 
 Estado: implementado y verificado offline el 2026-10-22. Fase: P010.
-[Entrega](phase/P010-T005_FASES_CERRADAS.md), [flujo](flows/phase-lifecycle.md#consulta-de-una-fase-cerrada-p010-t005).
+[Entrega](archive/phase-010/P010-T005_FASES_CERRADAS.md), [flujo](flows/phase-lifecycle.md#consulta-de-una-fase-cerrada-p010-t005).
 Resuelve la observación de P009 (REVIEW): la vista de P001 cerrada del hijo comparaba los documentos renovados por el
 cierre con la base histórica y mostraba deriva.
 
@@ -4427,7 +4428,7 @@ cierre con la base histórica y mostraba deriva.
 
 ## D148 — P010-T006: documentación de instalación y alcance soportado
 
-Estado: completada el 2026-10-22. Fase: P010. [Entrega](phase/P010-T006_DOCUMENTACION_VERSION.md).
+Estado: completada el 2026-10-22. Fase: P010. [Entrega](archive/phase-010/P010-T006_DOCUMENTACION_VERSION.md).
 Contrasta README, ARCHITECTURE y `examples/` con el código y la evidencia, sin cambiar código ni configuración.
 
 - Versiones CLI por rol según `cli_agents.SUPPORTED`/`WRITE_SUPPORTED` y D122, con el uso real registrado de cada
@@ -4442,7 +4443,7 @@ Contrasta README, ARCHITECTURE y `examples/` con el código y la evidencia, sin 
 
 ## D149 — P010-T007: matriz de aceptación, SSE por cursor y tarea T012
 
-Estado: completada el 2026-10-22. Fase: P010. [Matriz](phase/P010_MATRIZ_ACEPTACION.md).
+Estado: completada el 2026-10-22. Fase: P010. [Matriz](archive/phase-010/P010_MATRIZ_ACEPTACION.md).
 Decisiones del usuario en el bucle HITL de T007 sobre las dos cuestiones abiertas de T001 y T006.
 
 - **Criterio 13 de SPECIFICATION §10.** En la UI gestionada, el sondeo de eventos con cursor por secuencia de D029
@@ -4459,7 +4460,7 @@ Decisiones del usuario en el bucle HITL de T007 sobre las dos cuestiones abierta
 ## D150 — P010-T012: migración explícita de bases desde la CLI instalada
 
 Estado: implementado y verificado offline el 2026-10-22. Fase: P010.
-[Entrega y límites](phase/P010-T012_MIGRACION_INSTALADA.md), [flujo](flows/database-migration.md). Implementa el
+[Entrega y límites](archive/phase-010/P010-T012_MIGRACION_INSTALADA.md), [flujo](flows/database-migration.md). Implementa el
 acuerdo de D149 para SPECIFICATION §9; amplía D053 a la CLI instalada y mantiene creación/arranque de D043.
 
 - `harness-local migrate --database RUTA --snapshots DIRECTORIO --writers-stopped` reutiliza `storage/migrate.py`.
@@ -4481,7 +4482,7 @@ acuerdo de D149 para SPECIFICATION §9; amplía D053 a la CLI instalada y mantie
 ## D151 — P010-T008: validación real complementaria aplazada
 
 Estado: completada el 2026-10-22. Fase: P010.
-[Propuesta y alcance](phase/P010-T008_PROPUESTA_VALIDACION_REAL.md). Decisión explícita del usuario en el bucle
+[Propuesta y alcance](archive/phase-010/P010-T008_PROPUESTA_VALIDACION_REAL.md). Decisión explícita del usuario en el bucle
 HITL: «Aplazar y conservar los límites de validación real». Resuelve la elección pendiente de D141, D148 y D149.
 
 - Se aplazan la validación real de importaciones A/B y la del perfil Python/Django declarado de D095. La propuesta
@@ -4499,8 +4500,8 @@ HITL: «Aplazar y conservar los límites de validación real». Resuelve la elec
 ## D152 — P010-T009: paquete final verificado y dictamen favorable
 
 Estado: completada el 2026-10-22. Fase: P010.
-[Verificación final](phase/P010-T009_VERIFICACION_FINAL.md), [revisión de salida](phase/P010_REVIEW.md) y
-[evidencia saneada](phase/P010-T009_EVIDENCE.json). Base `d6a69c8`, producto sin cambios desde `dd7b958`.
+[Verificación final](archive/phase-010/P010-T009_VERIFICACION_FINAL.md), [revisión de salida](archive/phase-010/P010_REVIEW.md) y
+[evidencia saneada](archive/phase-010/P010-T009_EVIDENCE.json). Base `d6a69c8`, producto sin cambios desde `dd7b958`.
 
 - El usuario autoriza expresamente («Autorizo.») el alcance presentado en T009 §1: construcción e instalación
   offline del wheel en venv temporal, verificador con puertos falsos y servicios de loopback y QA con API sintética.
@@ -4518,3 +4519,26 @@ Estado: completada el 2026-10-22. Fase: P010.
   crea tag, publica u opera este repositorio con el harness. Sin cambios de código, esquema, API o flujos.
 - Servicios y pestaña temporales detenidos/cerrada; doce SQLite sintéticas sin jobs pendientes ni locks. Wheel y
   logs locales conservados; entorno del verificador limpiado. Sin configuración global, P009/ReferenceProject o proveedores.
+
+## D153 — Cierre documental de P010 y de la primera versión local
+
+Estado: cerrada y archivada el 2026-10-22 por la continuación solicitada por el usuario, tras D152. Fase: P010.
+[Resumen](archive/phase-010/SUMMARY.md), [revisión](archive/phase-010/REVIEW.md) y
+[registro de cierre](archive/phase-010/P010_CIERRE.md). Precedentes: D002/D088/D114/D140.
+
+- La petición de continuar la siguiente tarea y finalizar con un commit en inglés autoriza T010, identificada
+  en STATE/NEXT_STEPS. T009 ya emite dictamen favorable para los siete criterios; la matriz global acredita
+  los trece en su alcance y D151 resuelve explícitamente el aplazamiento real de A/B y del perfil D095.
+  Las doce tareas quedan completadas; no hay tareas obligatorias pendientes del alcance declarado.
+- Se completa la primera versión local con esos límites: paquete `0.1.0`, fuente de producto `dd7b958` y wheel
+  verificado en T009, sin cambio de versión, tag ni publicación. La evidencia real sigue siendo histórica;
+  el cierre documental no amplía garantías a recorridos con proveedores ni a otras plataformas.
+- STATE, NEXT_STEPS y todos los artefactos originales de `docs/phase/` se conservan por bytes respecto de
+  `2e46c71`; MANIFEST registra origen/destino, tamaño y SHA-256. SUMMARY/REVIEW/P010_CIERRE nuevos sintetizan
+  entregas, paquete y límites. Los snapshots conservan sus estados y enlaces en el contexto original.
+- STATE compacta la base, NEXT_STEPS queda sin tareas y ROADMAP enlaza P010 completada. Las referencias vigentes
+  se reubican, sin reescribir P001–P009 ni el contenido de decisiones históricas. Sin sucesora definida,
+  el usuario elige la próxima prioridad; las candidatas siguen en ROADMAP.
+- Cierre manual del repositorio, separado del check READY del producto: sin registrarlo ni ejecutarlo con el
+  harness, operar el Django hijo, agentes, proveedores, servicios o smokes. Sin cambios de producto, esquema,
+  API, flujos, dependencias o configuración global; sin push, publicación ni ampliación de consentimientos.

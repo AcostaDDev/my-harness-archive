@@ -15,7 +15,7 @@ hitos H0–H6 del backlog original; la definición inicial está en [archive/pha
 | P007 | Agentes configurables e interfaz de producto | completada (2026-10-15) | [phase-007](archive/phase-007/SUMMARY.md) |
 | P008 | Contrato documental unificado, cierre de fase e importación de proyectos | completada (2026-10-19) | [phase-008](archive/phase-008/SUMMARY.md) |
 | P009 | Proyecto Django desde cero y piloto con cuatro combinaciones de agentes | completada (2026-10-21) | [phase-009](archive/phase-009/SUMMARY.md) |
-| P010 | Consolidación de la primera versión local | en curso (T001–T007 y T011–T012 completadas el 2026-10-22) | [plan](phase/P010_PLAN_CONSOLIDACION.md) |
+| P010 | Consolidación de la primera versión local | completada (2026-10-22) | [phase-010](archive/phase-010/SUMMARY.md) |
 
 ## P001 — Contratos y prueba de viabilidad
 
@@ -175,22 +175,28 @@ interfaz y cerrar una primera versión local con documentación, paquete y evide
 rediseño general de UI, App Server/Agent SDK, `project.yaml`, nube, multiusuario, aislamiento del sistema operativo,
 publicación y ejecución del harness sobre este repositorio. Sin ampliación de compatibilidad CLI no caracterizada.
 **Estado:** planificada el 2026-10-21 por aceptación de la propuesta del usuario, con encargo limitado a documentación.
-T001 completada el 2026-10-22 ([contrato](phase/P010-T001_CONTRATO_CONSOLIDACION.md),
+T001 completada el 2026-10-22 ([contrato](archive/phase-010/P010-T001_CONTRATO_CONSOLIDACION.md),
 [D142](DECISIONS.md#d142--p010-t001-receta-typescript-proyección-de-runs-y-tarea-t011)), que añade T011;
 T002–T007 y T011 completadas el mismo día (D143–D149); T007 añade T012, completada también (D150): migración
 explícita con copia previa desde la CLI. T008 completada (D151):
-[propuesta](phase/P010-T008_PROPUESTA_VALIDACION_REAL.md) y decisión del usuario de aplazar la validación real de
+[propuesta](archive/phase-010/P010-T008_PROPUESTA_VALIDACION_REAL.md) y decisión del usuario de aplazar la validación real de
 A/B y D095, conservando sus límites. T009 completada (D152):
-[verificación del paquete](phase/P010-T009_VERIFICACION_FINAL.md) y [dictamen favorable](phase/P010_REVIEW.md) de los
-siete criterios en el alcance declarado, con QA sintética y sin proveedores reales. T010 pendiente; P010 sigue abierta.
-[Plan](phase/P010_PLAN_CONSOLIDACION.md), [tareas](NEXT_STEPS.md) y
+[verificación del paquete](archive/phase-010/P010-T009_VERIFICACION_FINAL.md) y [dictamen favorable](archive/phase-010/P010_REVIEW.md) de los
+siete criterios en el alcance declarado, con QA sintética y sin proveedores reales. T010 completa el cierre
+manual y archivo documental el 2026-10-22
+([D153](DECISIONS.md#d153--cierre-documental-de-p010-y-de-la-primera-versión-local),
+[resumen](archive/phase-010/SUMMARY.md), [revisión de cierre](archive/phase-010/REVIEW.md)).
+Doce tareas completadas; primera versión local terminada con los límites de D151, paquete `0.1.0`, sin tag,
+publicación ni fase sucesora. Originales conservados por bytes; sin check READY ni ejecución de este repositorio.
+[Plan](archive/phase-010/P010_PLAN_CONSOLIDACION.md), [tareas archivadas](archive/phase-010/NEXT_STEPS.md) y
 [D141](DECISIONS.md#d141--p010-consolidación-de-la-primera-versión-local).
 
 ## Candidatas sin fase asignada
 
 - Alta Django sin POST→redirect→GET, observación sin bloqueo del piloto y propia del hijo;
-  [contexto y límites](archive/phase-009/REVIEW.md). Los otros dos ajustes de interfaz pasan a P010.
-- Pilotos adicionales fuera de la propuesta complementaria de P010-T008; cada operación real conserva
+  [contexto y límites](archive/phase-009/REVIEW.md). Los otros dos ajustes de interfaz se resolvieron en P010-T004/T005.
+- Validación real A/B y D095 aplazada por D151 ([propuesta](archive/phase-010/P010-T008_PROPUESTA_VALIDACION_REAL.md)),
+  y pilotos adicionales; cada operación real conserva
   propuesta y consentimiento propios. P010 no inicia otra fase del Django de P009.
 - Hora de cada validación (cambia el formato del historial).
 - Avisos *low* de KaTeX en Mermaid 11; App Server o Agent SDK; `project.yaml` portable.

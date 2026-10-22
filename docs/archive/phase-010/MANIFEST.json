@@ -1,0 +1,177 @@
+{
+  "phase": "P010",
+  "closed_at": "2026-10-22",
+  "source_commit": "2e46c7143ea497774e813f092e36f10e7d662187",
+  "mode": "manual_documentary_closure",
+  "snapshot_policy": "exact_bytes_original_paths",
+  "files": [
+    {
+      "source": "docs/STATE.md",
+      "target": "docs/archive/phase-010/STATE.md",
+      "size_bytes": 12098,
+      "sha256": "3f8d7102a49aeccddbd9300833ad14c8414da01b02612f49e163be0c172b95ac"
+    },
+    {
+      "source": "docs/NEXT_STEPS.md",
+      "target": "docs/archive/phase-010/NEXT_STEPS.md",
+      "size_bytes": 24558,
+      "sha256": "778086a0297765f085aa93fe237fd67450bd0c84ac044e1699235148e9f9a832"
+    },
+    {
+      "source": "docs/phase/P010-T001_CONTRATO_CONSOLIDACION.md",
+      "target": "docs/archive/phase-010/P010-T001_CONTRATO_CONSOLIDACION.md",
+      "size_bytes": 22630,
+      "sha256": "406680afe63523af2f8bf90aec7f2ed126c14b44eec121c380849968a937fb7e"
+    },
+    {
+      "source": "docs/phase/P010-T002_ARRANQUE_TYPESCRIPT.md",
+      "target": "docs/archive/phase-010/P010-T002_ARRANQUE_TYPESCRIPT.md",
+      "size_bytes": 9605,
+      "sha256": "38cb6d52019c694f8d22c269a07a24eb13a671127ef53d57982d7d762d119a0b"
+    },
+    {
+      "source": "docs/phase/P010-T003_LECTURAS_RUNS.md",
+      "target": "docs/archive/phase-010/P010-T003_LECTURAS_RUNS.md",
+      "size_bytes": 8256,
+      "sha256": "54c6d381f68c79bced5cf719eec53a1826f80427bd9bcc7d91f840d3e17f5123"
+    },
+    {
+      "source": "docs/phase/P010-T004_MARCADORES_DEFINICION.md",
+      "target": "docs/archive/phase-010/P010-T004_MARCADORES_DEFINICION.md",
+      "size_bytes": 5042,
+      "sha256": "b743cddad36fcfacb15c1a6276a2314f55d8a36059563984b7c6890c6f8675a5"
+    },
+    {
+      "source": "docs/phase/P010-T005_FASES_CERRADAS.md",
+      "target": "docs/archive/phase-010/P010-T005_FASES_CERRADAS.md",
+      "size_bytes": 5821,
+      "sha256": "58b83bd63b7c237e8b487165e1f722679d3c3c41565101241339f01cfd41ff15"
+    },
+    {
+      "source": "docs/phase/P010-T006_DOCUMENTACION_VERSION.md",
+      "target": "docs/archive/phase-010/P010-T006_DOCUMENTACION_VERSION.md",
+      "size_bytes": 6196,
+      "sha256": "c34e337439019b41ed6a275ffcedd136dcbe8c0f810dbd847a42ade358741359"
+    },
+    {
+      "source": "docs/phase/P010-T008_PROPUESTA_VALIDACION_REAL.md",
+      "target": "docs/archive/phase-010/P010-T008_PROPUESTA_VALIDACION_REAL.md",
+      "size_bytes": 17724,
+      "sha256": "ffdcfbf898c1c32214707d4f8f0d4742697765545de78bb7295c1b99a659ed76"
+    },
+    {
+      "source": "docs/phase/P010-T009_EVIDENCE.json",
+      "target": "docs/archive/phase-010/P010-T009_EVIDENCE.json",
+      "size_bytes": 7928,
+      "sha256": "d59c1871e8ca9cdd541d04eda0bef1c131ea6538ae4cd16671f3b6988d5dd378"
+    },
+    {
+      "source": "docs/phase/P010-T009_QA/definition-draft.jpg",
+      "target": "docs/archive/phase-010/P010-T009_QA/definition-draft.jpg",
+      "size_bytes": 97013,
+      "sha256": "39fa94b8679062364692bae73413e5d75100e16b7e7c13c1b424f7eccaa3109e"
+    },
+    {
+      "source": "docs/phase/P010-T009_QA/definition-empty.jpg",
+      "target": "docs/archive/phase-010/P010-T009_QA/definition-empty.jpg",
+      "size_bytes": 129561,
+      "sha256": "1c690ee5cb8aedd59c4045e33ee91db843eb1b8ee3293ffe2ac5f8815c50b548"
+    },
+    {
+      "source": "docs/phase/P010-T009_QA/docs-closed.jpg",
+      "target": "docs/archive/phase-010/P010-T009_QA/docs-closed.jpg",
+      "size_bytes": 122461,
+      "sha256": "d7b7cad733fba7a630fef1b5ba88123d17bffbef05e4e2bfb431d083a08abcfc"
+    },
+    {
+      "source": "docs/phase/P010-T009_QA/docs-drift.jpg",
+      "target": "docs/archive/phase-010/P010-T009_QA/docs-drift.jpg",
+      "size_bytes": 133286,
+      "sha256": "828c35f89eddd6c7bfbe8b1186e5bfbb82641866b1c5ef57f5bc9872c3a5bfbc"
+    },
+    {
+      "source": "docs/phase/P010-T009_QA/metrics.jpg",
+      "target": "docs/archive/phase-010/P010-T009_QA/metrics.jpg",
+      "size_bytes": 126452,
+      "sha256": "093e07f76cfa8c5737708b2acb30a775bc15ee7c4767f7742ef13edf8cb15b0a"
+    },
+    {
+      "source": "docs/phase/P010-T009_QA/phase-closed.jpg",
+      "target": "docs/archive/phase-010/P010-T009_QA/phase-closed.jpg",
+      "size_bytes": 117180,
+      "sha256": "4ebb1f3377c0a5e19552731c5888f74ec04e388d2905008d2eb3f6d120b8099e"
+    },
+    {
+      "source": "docs/phase/P010-T009_QA/phase-drift.jpg",
+      "target": "docs/archive/phase-010/P010-T009_QA/phase-drift.jpg",
+      "size_bytes": 121335,
+      "sha256": "54dd116971f8239e23ee84a7e6d0741eb19f5d497c85c4ed4ac5e63e37d2869f"
+    },
+    {
+      "source": "docs/phase/P010-T009_QA/phase-open.jpg",
+      "target": "docs/archive/phase-010/P010-T009_QA/phase-open.jpg",
+      "size_bytes": 116856,
+      "sha256": "8d16a31f68c53c350ead02befe9412505db83c4c0b7bb37a5c36a07346092dde"
+    },
+    {
+      "source": "docs/phase/P010-T009_QA/phase-successor.jpg",
+      "target": "docs/archive/phase-010/P010-T009_QA/phase-successor.jpg",
+      "size_bytes": 115861,
+      "sha256": "d061fe659190a72c90e3f85096aee33647d1a4d082ee06247c33a37ab23fee0d"
+    },
+    {
+      "source": "docs/phase/P010-T009_QA/run-diff.jpg",
+      "target": "docs/archive/phase-010/P010-T009_QA/run-diff.jpg",
+      "size_bytes": 138273,
+      "sha256": "34c7ec2accec27069bcb1dd561fb45b321bb4b3ac66864aae8ed7bb53c449c82"
+    },
+    {
+      "source": "docs/phase/P010-T009_QA/run-junit.jpg",
+      "target": "docs/archive/phase-010/P010-T009_QA/run-junit.jpg",
+      "size_bytes": 120594,
+      "sha256": "6eae6a2c9daee499b6a7bf8dcc978cbd2af674a9426a0e44cecb839b61f4e440"
+    },
+    {
+      "source": "docs/phase/P010-T009_QA/typescript-preparation.jpg",
+      "target": "docs/archive/phase-010/P010-T009_QA/typescript-preparation.jpg",
+      "size_bytes": 256737,
+      "sha256": "2a8e98f1ff4ca629af50db9b8268ec692a1c896e1b05748abdf0c1b86debfef9"
+    },
+    {
+      "source": "docs/phase/P010-T009_VERIFICACION_FINAL.md",
+      "target": "docs/archive/phase-010/P010-T009_VERIFICACION_FINAL.md",
+      "size_bytes": 12949,
+      "sha256": "3fd132f22be034094faf7ea204aaaf804323ab925ab53c3ac2dfc8caf39d6475"
+    },
+    {
+      "source": "docs/phase/P010-T011_METRICAS_SIN_HISTORIAL.md",
+      "target": "docs/archive/phase-010/P010-T011_METRICAS_SIN_HISTORIAL.md",
+      "size_bytes": 8263,
+      "sha256": "1b1bcd9aeb63e0bc7760c7b3e6f102ab95d89295bb511925fecf72689504a4df"
+    },
+    {
+      "source": "docs/phase/P010-T012_MIGRACION_INSTALADA.md",
+      "target": "docs/archive/phase-010/P010-T012_MIGRACION_INSTALADA.md",
+      "size_bytes": 7273,
+      "sha256": "50956a25c0a2d45c1ff77415a87138d2328f99720892cf370de4b253223356c8"
+    },
+    {
+      "source": "docs/phase/P010_MATRIZ_ACEPTACION.md",
+      "target": "docs/archive/phase-010/P010_MATRIZ_ACEPTACION.md",
+      "size_bytes": 15529,
+      "sha256": "9f04f063000891f904b346a6d16399f8b9394109453bb0041b458814a8f2713f"
+    },
+    {
+      "source": "docs/phase/P010_PLAN_CONSOLIDACION.md",
+      "target": "docs/archive/phase-010/P010_PLAN_CONSOLIDACION.md",
+      "size_bytes": 8615,
+      "sha256": "974821559e441f0dd4b8c548cb1ceb1b7dec073ed2c6bfd9d856ea694a3cb112"
+    },
+    {
+      "source": "docs/phase/P010_REVIEW.md",
+      "target": "docs/archive/phase-010/P010_REVIEW.md",
+      "size_bytes": 3711,
+      "sha256": "e77d866f4aa08459d3327b74d7363e495ec55d058bddeb8daf82810aa08fdcf5"
+    }
+  ]
+}

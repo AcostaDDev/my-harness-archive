@@ -43,4 +43,4 @@ la proyección derivada leyendo los formatos 1–8. Sin migraciones nuevas ni ca
 
 `scripts/dev` sigue usando `prepare_database`: permite crear su base y conserva su ubicación de copias. Comparte
 las comprobaciones ampliadas de propietarios/grupos y la instantánea verificada; no necesita los argumentos de la
-CLI instalada. Evidencia y límites en [la entrega](../phase/P010-T012_MIGRACION_INSTALADA.md).
+CLI instalada. Evidencia y límites en [la entrega](../archive/phase-010/P010-T012_MIGRACION_INSTALADA.md).
