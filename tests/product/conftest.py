@@ -11,7 +11,7 @@ ROOT = Path(__file__).resolve().parents[2]
 
 @pytest.fixture(scope="session")
 def _migrated_template(tmp_path_factory):
-    """Una única migración real a head por sesión; cada prueba recibe una copia del fichero cerrado."""
+    """A single real migration to head per session; each test gets a copy of the closed file."""
     path = tmp_path_factory.mktemp("migrated") / "template.sqlite3"
     with pytest.MonkeyPatch.context() as patch:
         patch.setenv("HARNESS_DATABASE_URL", f"sqlite:///{path}")
@@ -31,9 +31,9 @@ def migrated_database(tmp_path, monkeypatch, _migrated_template):
 
 @pytest.fixture
 def _legacy_close(monkeypatch):
-    """Simula el productor anterior para verificar sus operaciones congeladas y su conciliación.
+    """Simulates the previous producer to verify its frozen operations and their reconciliation.
 
-    Las pruebas nuevas de T004 usan el productor real, sin este fixture.
+    The new T004 tests use the real producer, without this fixture.
     """
     from harness_local.storage import closure
     from harness_local.storage.transition import TransitionRepository

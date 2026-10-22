@@ -54,7 +54,7 @@ class World:
                                     proposal_sha256=proposal['proposal_sha256'], confirmed=True, writer=None)
 
 def tree_state(root: Path) -> dict:
-    """Bytes del checkout y de `.git` (salvo nada): ninguna operación de T011 los cambia."""
+    """Bytes of the checkout and of `.git` (excluding nothing): no T011 operation changes them."""
     return {path.relative_to(root).as_posix(): sha256(path.read_bytes()).hexdigest()
             for path in sorted(root.rglob('*')) if path.is_file()}
 

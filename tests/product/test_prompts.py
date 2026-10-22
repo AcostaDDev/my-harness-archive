@@ -57,7 +57,7 @@ def test_unified_prompts_retire_old_folders_without_rewriting_frozen_catalogs():
     for name in names:
         assert all(term in catalog[name].template for term in ('AGENTS.md', 'DDBB-DIAGRAM', 'flows/', 'phase/',
                                                               'DECISIONS.md', 'decision_proposals'))
-        # Catálogo sintético anterior: mismo esquema de variables, contenido e identidad inmutables.
+        # Previous synthetic catalog: same variable schema, immutable content and identity.
         old = catalog[name].template + '\nOld layout: decisions/ architecture/ research/\n'
         catalog[name] = replace(catalog[name], template=old, sha256=digest(old), id='builtin-1:' + digest(old))
     frozen = dump_catalog(catalog)

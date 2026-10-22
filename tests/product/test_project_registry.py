@@ -1,6 +1,6 @@
-"""H6.2 E2 (D054/D076): `local-config-3` y registro de proyectos desde la UI.
+"""H6.2 E2 (D054/D076): `local-config-3` and project registration from the UI.
 
-CLIs sintéticas por el adaptador real, Node/npm/Git reales y SQLite temporal; sin proveedores ni red.
+Synthetic CLIs through the real adapter, real Node/npm/Git and temporary SQLite; no providers or network.
 """
 import copy
 import hashlib
@@ -98,7 +98,7 @@ def test_local_config_3_toml_projects_name_a_composition(operator):
 
 
 def test_example_template_documents_the_local_config_4_keys(operator):
-    """P008-T008: el ejemplo es `local-config-4`, las claves de v3 más `[profiles]` (probado en test_declared_profiles)."""
+    """P008-T008: the example is `local-config-4`, the v3 keys plus `[profiles]` (tested in test_declared_profiles)."""
     import tomllib
     data = v3(operator[1], [], toml_project=True)
     example = tomllib.loads((Path(__file__).parents[2] / 'examples/local_config.example.toml').read_text())
@@ -112,7 +112,7 @@ def test_example_template_documents_the_local_config_4_keys(operator):
 
 
 def test_previous_formats_keep_their_frozen_identity(operator):
-    """local-config-1, -2 y -3 se leen igual: mismo hash congelado que antes de sus sucesores."""
+    """local-config-1, -2 and -3 read the same: the same frozen hash as before their successors."""
     context, data, folder, tmp_path = operator
     for fmt, value in (('local-config-1', data), ('local-config-2', v2(data))):
         project = load_local_config(write(folder, value)).projects[0]
@@ -121,7 +121,7 @@ def test_previous_formats_keep_their_frozen_identity(operator):
                                           'state_dir': value['service']['state_dir']}).encode()).hexdigest()
         assert project.versions['local_config'] == fmt and project.versions['local_config_sha256'] == expected
         assert 'project_registry' not in project.versions
-    # P008-T008: local-config-3 conserva su hash (sin el perfil, que solo entra en local-config-4).
+    # P008-T008: local-config-3 keeps its hash (without the profile, which only enters local-config-4).
     value = v3(data, [], toml_project=True)
     project = load_local_config(write(folder, value)).projects[0]
     composition = {'web': {'profile': 'typescript-web', **value['compositions']['web']}}
@@ -158,7 +158,7 @@ def test_register_from_the_api_to_the_first_task(operator, repository, migrated_
         project = http.get('/api/managed/projects/web').json()
         assert project['source'] == 'registry' and project['registry_version'] == 1
         assert project['versions'] == preview['versions']
-        # Primera tarea en el proyecto recién registrado, sin reiniciar ni editar archivos.
+        # First task in the newly registered project, without restarting or editing files.
         job = http.post('/api/managed/projects/web/runs', json={'task_id': TASK, 'phase_id': PHASE, 'text': PLAN},
                         headers={'Idempotency-Key': 'first-task'})
         assert job.status_code == 202, job.text
@@ -194,7 +194,7 @@ def test_registration_rejections(operator, migrated_database):
         assert code(register(context.root, composition='absent'), 422) == 'invalid_request'
         assert code(register(context.root, policy={**POLICY, 'executor_efforts': ['ultra']}), 422) == 'invalid_request'
         assert code(register(context.root, expected_version=3), 409) == 'stale_version'
-        # Nada ejecutable por HTTP: claves fuera del esquema se rechazan.
+        # Nothing executable over HTTP: keys outside the schema are rejected.
         assert http.post('/api/managed/registry/preview', json={**register(context.root), 'commands': {}}
                          ).status_code == 422
         assert confirm(http, register(context.root))[1].status_code == 200
@@ -246,7 +246,7 @@ def test_update_and_retire_are_versioned_audited_and_guarded(operator, repositor
         assert http.post('/api/managed/registry/preview', json={**update, 'expected_version': 2,
                                                                  'root': str(tmp_path)}
                          ).json()['detail']['code'] == 'root_immutable'
-        # Un trabajo sin terminar bloquea cambios y bajas.
+        # Unfinished work blocks changes and removals.
         job = http.post('/api/managed/projects/web/runs', json={'task_id': TASK, 'phase_id': PHASE, 'text': PLAN},
                         headers={'Idempotency-Key': 'pending'}).json()
         blocked = {**update, 'expected_version': 2, 'tag_kind': 'lightweight'}
@@ -263,21 +263,21 @@ def test_update_and_retire_are_versioned_audited_and_guarded(operator, repositor
         assert preview['changes'] == [{'field': 'status', 'before': 'ACTIVE', 'after': 'RETIRED'}]
         assert applied.status_code == 200 and applied.json()['project']['status'] == 'RETIRED'
         assert http.get('/api/managed/projects/web').status_code == 404
-        kept = http.get('/api/managed/runs/' + job['run_id']).json()  # historial legible, sin acciones
+        kept = http.get('/api/managed/runs/' + job['run_id']).json()  # readable history, no actions
         assert kept['project_id'] is None and kept['actions'] == []
         detail = http.get('/api/managed/registry/projects/web').json()
         assert [e['action'] for e in detail['history']] == ['register', 'update', 'retire']
         assert detail['history'][1]['previous_sha256'] == detail['history'][0]['row_sha256']
         again = http.post('/api/managed/registry/preview', json=register(context.root))
         assert again.json()['detail']['code'] == 'duplicate_id'
-        # Baja lógica: la raíz queda libre para otro id; el historial del anterior se conserva.
+        # Logical removal: the root becomes free for another id; the previous one's history is kept.
         assert confirm(http, register(context.root, project_id='web-2'))[1].status_code == 200
     with Session(repository.engine) as session:
         assert session.scalar(select(func.count()).select_from(RegisteredProjectEventRow)) == 4
 
 
 def test_newer_registry_version_quarantines_jobs_admitted_before(operator, repository, migrated_database):
-    """Un job admitido con la versión anterior no se ejecuta con la nueva composición."""
+    """A job admitted with the previous version is not run with the new composition."""
     context, data, folder, tmp_path = operator
     config = load_local_config(write(folder, v3(data, [tmp_path])))
     with client(migrated_database[0], tmp_path, config) as http:
@@ -285,7 +285,7 @@ def test_newer_registry_version_quarantines_jobs_admitted_before(operator, repos
         old = http.get('/api/managed/projects/web').json()['versions']
         job = http.post('/api/managed/projects/web/runs', json={'task_id': TASK, 'phase_id': PHASE, 'text': PLAN},
                         headers={'Idempotency-Key': 'old'}).json()
-        # Simula el instante entre el commit del registro y el cambio del runtime: otra versión instalada.
+        # Simulates the instant between the registry commit and the runtime change: another installed version.
         registrar = config.registrar
         row = http.get('/api/managed/registry/projects/web').json()['row']
         registrar.install(registrar.compose({**row, 'tag_kind': 'annotated'}, 'registro', registry=(2, 'x' * 64)))

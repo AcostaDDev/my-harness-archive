@@ -1,6 +1,6 @@
-"""Hallazgo 1 de D085: diff revisado de cada ciclo por páginas y run sin el contenido del diff.
+"""D085 finding 1: reviewed diff of each cycle by pages and a run without the diff content.
 
-Git y SQLite temporales con agentes falsos; sin proveedores ni red.
+Temporary Git and SQLite with fake agents; no providers or network.
 """
 
 import hashlib
@@ -28,7 +28,7 @@ def test_pages_reassemble_the_exact_text_and_end_on_lines(limit):
     assert ''.join(chunk['text'] for chunk in chunks) == text
     for chunk in chunks[:-1]:
         data = chunk['text'].encode('utf-8')
-        # Acaba en fin de línea, o en un límite UTF-8 si la línea no cabe en la página.
+        # Ends at an end of line, or at a UTF-8 boundary if the line does not fit in the page.
         assert data.endswith(b'\n') or len(data) <= limit + 3
 
 
@@ -37,7 +37,7 @@ def test_long_line_is_cut_on_a_utf8_boundary_and_bad_cursors_are_rejected():
     first = diff_page(text, 0, 3)
     assert first == {'offset': 0, 'next_offset': 4, 'text': 'ññ'}
     with pytest.raises(ValueError, match='previous next_offset'):
-        diff_page(text, 1, 3)  # en medio de «ñ»
+        diff_page(text, 1, 3)  # in the middle of «ñ»
     with pytest.raises(ValueError, match='previous next_offset'):
         diff_page(text, len(text.encode('utf-8')) + 1, 3)
     for offset, limit in ((-1, 3), (0, 0), (0, MAX_DIFF_PAGE + 1)):
@@ -58,11 +58,11 @@ def test_run_carries_the_diff_summary_and_the_diff_is_read_by_pages(tmp_path, ur
         run = settle(http, job['run_id'])
         assert run['status'] == 'ACCEPTANCE_READY' and run['active_job'] is None
         raw = http.get(f"/api/managed/runs/{job['run_id']}")
-        assert len(raw.content) < 32 * 1024  # el sondeo ya no transfiere el diff
+        assert len(raw.content) < 32 * 1024  # polling no longer transfers the diff
         cycle = run['history']['latest_cycle']
         assert run['history']['cycle_count'] == 1
         assert 'diff' not in cycle and cycle['diff_bytes'] > 256 * 1024
-        evidence = cycle['validation']['evidence']  # misma evidencia validada, también sin el texto
+        evidence = cycle['validation']['evidence']  # same validated evidence, also without the text
         assert 'diff' not in evidence and evidence['diff_sha256'] == cycle['diff_sha256']
         path = f"/api/managed/runs/{job['run_id']}/cycles/0/diff"
         text, offset, count = '', 0, 0
@@ -76,9 +76,9 @@ def test_run_carries_the_diff_summary_and_the_diff_is_read_by_pages(tmp_path, ur
         assert count >= 5
         assert hashlib.sha256(text.encode('utf-8')).hexdigest() == cycle['diff_sha256']
         assert len(text.encode('utf-8')) == cycle['diff_bytes'] and '+línea 11999 con ñ y €' in text
-        # Sin `sha256` también se sirve; con otro hash, 409. Límites y cursores fuera de contrato, 422; ciclo o run
-        # desconocidos, 404.
-        default = http.get(path).json()  # página por defecto de 64 KiB
+        # Without `sha256` it is served too; with another hash, 409. Limits and cursors outside the contract, 422;
+        # unknown cycle or run, 404.
+        default = http.get(path).json()  # default 64 KiB page
         assert default['next_offset'] is not None and len(default['text'].encode('utf-8')) <= 64 * 1024
         assert http.get(path, params={'sha256': '0' * 64}).status_code == 409
         assert http.get(path, params={'sha256': 'not-a-hash'}).status_code == 422

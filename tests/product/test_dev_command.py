@@ -1,4 +1,4 @@
-"""Comando único de desarrollo: migración con instantánea previa y supervisión de API/UI. Offline."""
+"""Single development command: migration with a previous snapshot and API/UI supervision. Offline."""
 from contextlib import closing
 import hashlib
 import json
@@ -113,7 +113,7 @@ def test_config_and_environment_composition_are_exclusive(tmp_path, monkeypatch)
 
 
 def child(code):
-    # Cada hijo crea además un nieto en su grupo, para comprobar que se detiene el grupo completo.
+    # Each child also creates a grandchild in its group, to check that the whole group is stopped.
     return [sys.executable, '-c', 'import subprocess, sys, time; '
             'subprocess.Popen([sys.executable, "-c", "import time; time.sleep(60)"]); ' + code]
 
@@ -126,7 +126,7 @@ def group_gone(pgid, timeout=5.0):
         except ProcessLookupError:
             return True
         except PermissionError:
-            pass  # macOS: EPERM mientras el grupo solo conserva zombis aún no recogidos
+            pass  # macOS: EPERM while the group only keeps zombies not yet reaped
         time.sleep(0.05)
     return False
 

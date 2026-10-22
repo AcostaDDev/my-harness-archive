@@ -2,7 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { appendDiffPage, byteSize, unifiedDiff } from '../src/diff.ts';
 
-/** Aplica un diff unificado a `before`; prueba que el diff describe exactamente el cambio. */
+/** Applies a unified diff to `before`; proves that the diff describes exactly the change. */
 function apply(before, diff) {
   const source = before ? before.split('\n') : [];
   if (source[source.length - 1] === '') source.pop();
@@ -68,7 +68,7 @@ test('documents too large to compare return null instead of an approximation', (
   assert.equal(unifiedDiff('big.md', before, after), null);
 });
 
-// --- diff de un ciclo por páginas (D085) ---
+// --- paginated cycle diff (D085) ---
 
 const SHA = 'a'.repeat(64);
 const bytes = text => new TextEncoder().encode(text).length;
@@ -103,11 +103,11 @@ test('cycle diff pages accumulate in order to the exact text', () => {
 test('a page that does not continue the loaded diff is refused, never mixed', () => {
   const [first, second] = serve('+a\n+b\n+c\n', 3);
   const loaded = appendDiffPage(undefined, first);
-  assert.equal(appendDiffPage(undefined, second), null); // empieza en 0
-  assert.equal(appendDiffPage(loaded, first), null); // repetida
+  assert.equal(appendDiffPage(undefined, second), null); // starts at 0
+  assert.equal(appendDiffPage(loaded, first), null); // repeated
   assert.equal(appendDiffPage(loaded, { ...second, sha256: 'b'.repeat(64) }), null);
   assert.equal(appendDiffPage(loaded, { ...second, size_bytes: 99 }), null);
-  assert.equal(appendDiffPage(loaded, { ...second, text: '+b' }), null); // bytes que no llegan al cursor
+  assert.equal(appendDiffPage(loaded, { ...second, text: '+b' }), null); // bytes that do not reach the cursor
   assert.equal(appendDiffPage(loaded, second).text, '+a\n+b\n');
 });
 

@@ -1,7 +1,7 @@
-"""P010-T003 (D142): vistas de runs sobre la proyección `run-projection-1`, sin decodificar historiales.
+"""P010-T003 (D142): run views over the `run-projection-1` projection, without decoding histories.
 
-SQLite temporal, historiales sintéticos de los formatos 1–8 y un historial grande; motor y agentes falsos. Las
-vistas se comparan con una copia de la implementación anterior, que decodificaba el historial completo.
+Temporary SQLite, synthetic histories of formats 1–8 and a large history; fake engine and agents. The
+views are compared with a copy of the previous implementation, which decoded the whole history.
 """
 
 import base64
@@ -43,7 +43,7 @@ from test_git import IDENTITY, VERSIONS, make_context, repo as git_repo  # noqa:
 from test_junit import ReportRunner, configured, simple_xml
 
 
-# --- implementación anterior (base bfbd006), solo como referencia de resultados -----------------------------
+# --- previous implementation (base bfbd006), only as a reference for results --------------------------------
 
 def legacy_history(history_json):
     history = load_history(history_json)
@@ -71,7 +71,7 @@ def legacy_history(history_json):
 
 
 def legacy_actions(history_json, *, revision_limit, purpose='task', status='STOPPED'):
-    """Acciones del detalle anterior sin job, lock ni commit (los demás datos no dependen del historial)."""
+    """Previous detail actions without job, lock or commit (the other data does not depend on the history)."""
     history, actions = load_history(history_json), []
     if history.task_json is not None and history.status in ('stopped', 'blocked', 'revision_limit'):
         actions.append('revalidate')
@@ -107,7 +107,7 @@ def plain(value):
     return json.loads(json.dumps(value))
 
 
-# --- historiales sintéticos ----------------------------------------------------------------------------------
+# --- synthetic histories -------------------------------------------------------------------------------------
 
 FEATURES = {1: set(), 2: {'cli'}, 3: {'cli', 'provenance'}, 4: {'prompts'}, 5: {'prompts', 'permissions'},
             6: {'reports'}, 7: {'reports', 'capture'}, 8: {'formatting', 'reports'}}
@@ -168,7 +168,7 @@ def insert_run(db, run_id, history_json, *, created_at='2026-10-22T00:00:00', re
 
 
 class Probe:
-    """SQL emitido y decodificaciones de historial durante una lectura de vista."""
+    """Emitted SQL and history decodings during a view read."""
 
     def __init__(self, engine, monkeypatch):
         self.statements, self.decoded = [], 0
@@ -233,7 +233,7 @@ def test_migration_backfills_formats_1_to_8_with_previous_results(migrated_datab
         db.commit()
     command.upgrade(config, 'head')
     with closing(sqlite3.connect(db_path(migrated_database))) as db:
-        # La migración no reescribe historiales: bytes idénticos.
+        # The migration does not rewrite histories: identical bytes.
         assert dict(db.execute('SELECT id, history_json FROM managed_runs')) == histories
         for run_id, text in histories.items():
             run_projection.verify(db, run_id, text)
@@ -250,11 +250,11 @@ def test_migration_backfills_formats_1_to_8_with_previous_results(migrated_datab
     with pytest.raises(LookupError, match='Ciclo'):
         views.cycle_diff('run-f1', 3, 0, 10)
     with pytest.raises(LookupError, match='Reporte'):
-        views.test_cases('run-f1', 0, 0, 0, 0, 10)  # formato 1: sin reportes
+        views.test_cases('run-f1', 0, 0, 0, 0, 10)  # format 1: no reports
     with pytest.raises(LookupError, match='Run gestionado'):
         views.cycles('unknown', 0, 10)
     engine.dispose()
-    # El downgrade solo elimina tablas derivadas; los historiales siguen intactos.
+    # The downgrade only drops derived tables; the histories stay intact.
     command.downgrade(config, '0022_project_preparation')
     with closing(sqlite3.connect(db_path(migrated_database))) as db:
         assert dict(db.execute('SELECT id, history_json FROM managed_runs')) == histories
@@ -283,7 +283,7 @@ def test_large_history_reads_are_bounded_and_equivalent(migrated_database, monke
     page = views.cycles('run-large', 10, 10)
     assert [c['number'] for c in page['items']] == list(range(10, 20)) and page['next_offset'] == 20
     assert probe.clean()
-    # Diff: una página de 64 KiB en mitad de 4 MiB lee como mucho dos tramos de la tabla de diffs.
+    # Diff: a 64 KiB page in the middle of 4 MiB reads at most two chunks of the diff table.
     probe.reset()
     middle = views.cycle_diff('run-large', 39, 0, 64 * 1024)['next_offset']
     for _ in range(30):
@@ -295,7 +295,7 @@ def test_large_history_reads_are_bounded_and_equivalent(migrated_database, monke
     first, last = (value for value in chunks[0][2:4])
     assert last - first <= 1 and page == {'run_id': 'run-large', 'cycle': 39,
                                           **legacy_diff(text, 39, middle, 64 * 1024)}
-    # JUnit: una página de casos lee solo sus filas.
+    # JUnit: a page of cases reads only its rows.
     probe.reset()
     cases = views.test_cases('run-large', 39, 0, 0, 1950, 100)
     assert probe.clean() and len(cases['items']) == 50 and cases['next_offset'] is None
@@ -333,21 +333,21 @@ def test_writers_keep_the_projection_consistent_and_roll_back_with_the_history(g
     assert_equivalent(views, text, job.run_id, revision_limit=record.history.revisions + 3)
     with closing(sqlite3.connect(db_path(migrated_database))) as db:
         run_projection.verify(db, job.run_id, text)
-    # Fallo tras escribir la proyección y antes de confirmar: ni historial ni proyección cambian.
+    # Failure after writing the projection and before committing: neither history nor projection change.
     original = run_projection.advance
 
     def interrupted(*args):
         original(*args)
-        raise RuntimeError('caída simulada')
+        raise RuntimeError('simulated crash')
     monkeypatch.setattr(run_projection, 'advance', interrupted)
-    with pytest.raises(RuntimeError, match='caída'):
+    with pytest.raises(RuntimeError, match='crash'):
         with repository._write() as session:
             repository._history(session, session.get(Run, job.run_id), replace(record.history, status='blocked'))
     with closing(sqlite3.connect(db_path(migrated_database))) as db:
         assert db.execute('SELECT history_json FROM managed_runs WHERE id=?', (job.run_id,)).fetchone()[0] == text
         run_projection.verify(db, job.run_id, text)
     assert views.run(job.run_id)['history']['status'] == 'acceptance_ready'
-    # Una reescritura rechazada por la autoridad tampoco toca la proyección.
+    # A rewrite rejected by the authority does not touch the projection either.
     monkeypatch.setattr(run_projection, 'advance', original)
     with pytest.raises(Conflict):
         with repository._write() as session:
@@ -362,7 +362,7 @@ def test_backup_rejects_a_projection_that_differs_from_the_history(git_repo, mig
                                                                    damage):
     repository, job = two_cycle_run(git_repo, migrated_database)
     repository.engine.dispose()
-    bundle = backup(migrated_database, tmp_path)  # la base viva es consistente
+    bundle = backup(migrated_database, tmp_path)  # the live database is consistent
     with closing(sqlite3.connect(bundle / 'state.sqlite3')) as db:
         if damage == 'changed':
             db.execute("UPDATE run_projection_cycles SET verdict='BLOCKED' WHERE number=0")
@@ -393,7 +393,7 @@ def test_lists_and_auxiliary_reads_never_select_the_history(git_repo, migrated_d
     assert [item['id'] for item in runs['items']] == [job.run_id]
     assert [(item['task_id'], item['runs'], item['latest'] and item['latest']['id']) for item in tasks['items']] == [
         (TASK_ID, 1, job.run_id), ('P001-T009', 0, None)]
-    # Una fila leída por las vistas no carga columnas no declaradas: acceder al historial lanza.
+    # A row read by the views does not load undeclared columns: accessing the history raises.
     with Session(repository.engine) as session:
         row = session.get(Run, job.run_id, options=[managed_views.RUN_COLUMNS])
         with pytest.raises(Exception, match='history_json'):

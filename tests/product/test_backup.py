@@ -1,4 +1,4 @@
-"""H5.2: bases, checkouts, streams y XML exclusivamente sintéticos."""
+"""H5.2: synthetic databases, checkouts, streams and XML only."""
 
 from contextlib import closing
 import hashlib
@@ -48,7 +48,7 @@ def backup(migrated_database, tmp_path, **kwargs):
 
 
 def seal(bundle, change):
-    """Recalcular integridad externa demuestra que se verifican también contratos internos."""
+    """Recomputing external integrity shows that internal contracts are verified too."""
     manifest = json.loads((bundle / 'manifest.json').read_bytes())
     change(manifest)
     raw = json.dumps(manifest).encode()
@@ -100,7 +100,7 @@ def test_junit_snapshots_events_and_http_queries_survive_restore(git_repo, migra
         assert SQLiteManagedViews(restored_engine).test_original(job.run_id, 0, 0, 0)[0] == original
     finally:
         restored_engine.dispose()
-    # No se importa siquiera una configuración ambiental que podría lanzar efectos.
+    # Not even an ambient configuration that could launch effects is imported.
     monkeypatch.setenv('HARNESS_MANAGED_CONFIG', 'module_that_must_never_be_imported:build')
     with TestClient(create_app(f'sqlite:///{dest / "state.sqlite3"}', tmp_path,
                               managed=ManagedConfig(supervisor=True)), **LOCAL) as http:
@@ -121,7 +121,7 @@ def test_junit_snapshots_events_and_http_queries_survive_restore(git_repo, migra
 def test_cli_streams_unknown_attempt_and_lock_remain_verifiable(context, repository, migrated_database, tmp_path):
     port = adapter(tmp_path)
     job, claim, request = setup_invocation(repository, context, port)
-    result = port.invoke(context, request)  # Proceso Python sintético, nunca CLI real.
+    result = port.invoke(context, request)  # Synthetic Python process, never a real CLI.
     assert result.status == 'complete'
     repository.close_owner(claim)
     repository.quarantine(claim, 'Resultado sin checkpoint; incertidumbre sintética')
@@ -138,9 +138,9 @@ def test_cli_streams_unknown_attempt_and_lock_remain_verifiable(context, reposit
         restored = SQLiteManagedRepository(engine)
         assert restored.get_job(job.id).status == 'RECOVERY_REQUIRED'
         for source, raw in source_bytes.items():
-            Path(source).unlink()  # El mapeo nunca usa de nuevo el original.
+            Path(source).unlink()  # The mapping never uses the original again.
             assert restored_artifact(engine, source).read_bytes() == raw
-        # Las referencias históricas no consultan rutas originales, tampoco sus enlaces nuevos.
+        # Historical references do not query original paths, nor their new links.
         Path(next(iter(source_bytes))).symlink_to(tmp_path / 'unrelated-absent')
         assert verify_bundle(dest)['files'] == verify_bundle(bundle)['files']
         with pytest.raises(OperationalError, match='readonly'):
@@ -180,7 +180,7 @@ def test_corrupt_or_incompatible_backup_never_creates_restore(migrated_database,
             if corruption == 'schema':
                 db.execute("UPDATE alembic_version SET version_num='future'")
             elif corruption == 'codec':
-                # La integridad relacional es válida pero el codec es futuro.
+                # Relational integrity is valid but the codec is from the future.
                 db.execute("INSERT INTO managed_runs VALUES('r','/synthetic','t','p','{}','{}',?, 'STOPPED','stop',0,0,0,'now','now','task')", ('{"format":99,"history":{}}',))
             elif corruption == 'foreign-key':
                 db.execute("INSERT INTO checkout_locks(root,job_id) VALUES('/synthetic',999)")
@@ -330,7 +330,7 @@ def pending_process(context, repository, tmp_path, *, with_stream):
     repository.process_intent(claim, request.id, {'artifacts': str(directory),
         'prompt_path': str(directory / 'prompt.txt'), 'prompt_sha256': hashlib.sha256(prompt).hexdigest()})
     if with_stream:
-        # El fsync precede al checkpoint: puede haber cola aún no registrada al caer.
+        # The fsync precedes the checkpoint: there may be an unrecorded tail at the crash.
         (directory / 'stdout.bin').write_bytes(b'prefix-uncheckpointed-tail')
         repository.process_update(claim, request.id, 'stream_bytes', {'stream': 'stdout',
             'offset': 0, 'size': 6, 'sha256': hashlib.sha256(b'prefix').hexdigest()})

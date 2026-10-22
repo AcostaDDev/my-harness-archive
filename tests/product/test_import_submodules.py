@@ -1,4 +1,4 @@
-"""P008-T019: gitlinks y filtros hijos, sin ejecutar submódulos; solo Git/SQLite sintéticos."""
+"""P008-T019: gitlinks and child filters, without running submodules; synthetic Git/SQLite only."""
 import os
 import shlex
 import shutil
@@ -26,7 +26,7 @@ from test_project_onboarding import checkout
 
 
 def submodule(root, location='synthetic-module', kind='clean', included=False, *, committed=True):
-    """Un hijo local inicializado con filtro marcador; nunca se ejecuta submodule add ni transporte."""
+    """An initialized local child with a marker filter; submodule add or transport never run."""
     child = root / location
     child.parent.mkdir(parents=True, exist_ok=True)
     checkout(child, {'README.md': '# Synthetic child\n'})

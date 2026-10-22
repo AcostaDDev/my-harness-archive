@@ -11,7 +11,7 @@ from harness_local.api.app import create_app
 from harness_local.storage.database import make_engine
 
 
-LOCAL = {"base_url": "http://127.0.0.1:8013", "headers": {"X-Harness-Local": "1"}}  # guardia local D033
+LOCAL = {"base_url": "http://127.0.0.1:8013", "headers": {"X-Harness-Local": "1"}}  # D033 local guard
 
 
 def test_migration_wal_and_round_trip(migrated_database):

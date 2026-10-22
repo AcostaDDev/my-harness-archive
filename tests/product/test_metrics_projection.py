@@ -1,7 +1,7 @@
-"""P010-T011 (D142): métricas y vista previa de la exportación sobre `run-projection-1`, sin decodificar historiales.
+"""P010-T011 (D142): metrics and export preview over `run-projection-1`, without decoding histories.
 
-SQLite temporal, historiales sintéticos de los formatos 1–8 y un ámbito grande; motor y agentes falsos. Las vistas se
-comparan con una copia de la implementación anterior (base 389a3b1), que decodificaba cada historial.
+Temporary SQLite, synthetic histories of formats 1–8 and a large scope; fake engine and agents. The views are
+compared with a copy of the previous implementation (base 389a3b1), which decoded every history.
 """
 
 from contextlib import closing
@@ -40,10 +40,10 @@ from test_phases import checkout, world  # noqa: F401  (fixtures)
 from test_run_projection import FEATURES, TASK, synthetic
 
 
-# --- implementación anterior (base 389a3b1), solo como referencia de resultados -----------------------------
+# --- previous implementation (base 389a3b1), only as a reference for results --------------------------------
 
 class LegacyMetricsViews(MetricsViews):
-    """`_task`, `validations` y las paradas de `summary` tal como decodificaban los historiales."""
+    """`_task`, `validations` and the stops of `summary` as they decoded the histories."""
 
     def _task(self, session, root, phase, task) -> dict:
         from harness_local.storage.metrics import _consumption, _seconds, _sums
@@ -107,7 +107,7 @@ class LegacyMetricsViews(MetricsViews):
                 'next_offset': offset + limit if len(ordered) > offset + limit else None}
 
     def summary(self, scope) -> dict:
-        result = super().summary(scope)  # tareas por el `_task` anterior; paradas recalculadas abajo
+        result = super().summary(scope)  # tasks by the previous `_task`; stops recomputed below
         stops = {}
         with Session(self.engine) as session:
             for run in session.scalars(_scope(select(Run), Run, scope)):
@@ -120,11 +120,11 @@ class LegacyMetricsViews(MetricsViews):
             for (purpose, stage, reason), n in ranked[:STOP_LIMIT]]}}
 
 
-# --- historiales sintéticos ----------------------------------------------------------------------------------
+# --- synthetic histories -------------------------------------------------------------------------------------
 
 def edge(run_id):
-    """Validaciones límite: códigos no enteros, captura viva, timeout, reportes parciales, sin casos o ausentes,
-    frescura sin cambios y resultados de caso fuera del catálogo; ejecutores con y sin resumen."""
+    """Edge validations: non-integer codes, live capture, timeout, partial reports, no cases or missing ones,
+    freshness without changes and case results outside the catalog; executors with and without summary."""
     selection = Selection('model-b', 'low', 'motivo')
     capture = lambda state: freeze({'group_state': state, 'streams': {  # noqa: E731
         'stdout': {'complete': True}, 'stderr': {'complete': True}}})
@@ -143,7 +143,7 @@ def edge(run_id):
         ValidationEntry(Command(('npm', 'x')), 'npm x', CommandResult(0, timed_out=True)),
         ValidationEntry(Command(('npm', 'y')), 'npm y', CommandResult(0, capture_json=capture('dead'))),
         ValidationEntry(Command(('npm', 'z')), 'npm z', CommandResult(0, capture_json='{no json')),
-        ValidationEntry(Command(('npm', 'b')), 'npm b', CommandResult(False)),  # JSON false no es el código 0
+        ValidationEntry(Command(('npm', 'b')), 'npm b', CommandResult(False)),  # JSON false is not code 0
         ValidationEntry(Command(('npm', 'f')), 'npm f', CommandResult(0.0)),
     )
     clean = (ValidationEntry(Command(('npm', 'test')), 'npm test', CommandResult(0), 'c',
@@ -171,8 +171,8 @@ def insert(db, run_id, text, *, root='/synthetic', phase='P1', task='T1', purpos
                "revisions,revision_limit,version,created_at,updated_at,purpose) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
                (run_id, root, task, phase, '{}', freeze({'engine': 'x'}), text, 'STOPPED', 'stop', 0, 3, 1,
                 created_at, created_at, purpose))
-    # Cada intento del historial tiene su fila con el mismo request y resultado (lo exige `_history`); un intento
-    # en curso tiene fila sin resultado y aún no está en el historial.
+    # Each history attempt has its row with the same request and result (`_history` requires it); an attempt
+    # in progress has a row without result and is not in the history yet.
     history = load_history(text)
     for number, attempt in enumerate(history.attempts, start=1):
         db.execute('INSERT INTO managed_attempts(id,run_id,number,request_json,versions_json,status,result_json,'
@@ -187,7 +187,7 @@ def insert(db, run_id, text, *, root='/synthetic', phase='P1', task='T1', purpos
 
 
 def corpus():
-    """Runs de varias raíces, fases, tareas y propósitos; tareas con varios runs y un último run sin ciclos."""
+    """Runs of several roots, phases, tasks and purposes; tasks with several runs and a last run without cycles."""
     runs = [(f'run-f{fmt}', synthetic(f'run-f{fmt}', fmt, status='reviewing' if fmt == 6 else 'stopped'),
              {'task': 'T1' if fmt <= 4 else 'T2'}) for fmt in FEATURES]
     runs += [('run-edge', edge('run-edge'), {'phase': 'P2', 'task': 'T3', 'pending': True}),
@@ -199,7 +199,7 @@ def corpus():
 
 
 class Probe:
-    """SQL emitido y decodificaciones de historial durante una lectura de vista."""
+    """Emitted SQL and history decodings during a view read."""
 
     def __init__(self, engine, monkeypatch):
         from sqlalchemy import event
@@ -264,11 +264,11 @@ def test_metrics_and_preview_facts_match_the_previous_implementation_on_formats_
         for run_id, text, options in runs:
             insert(db, run_id, text, **options)
         db.commit()
-    command.upgrade(config, 'head')  # la migración 0023 rellena la proyección de los runs previos
+    command.upgrade(config, 'head')  # migration 0023 backfills the projection of the previous runs
     engine = make_engine(url)
     probe = Probe(engine, monkeypatch)
     assert_metrics_equivalent(engine, probe)
-    # Casos límite acreditados en la referencia: el resultado no es trivial.
+    # Edge cases accredited in the reference: the result is not trivial.
     edge_task = MetricsViews(engine).tasks(SCOPES[4], 0, 10)['items'][0]
     assert edge_task['first_verdict'] == 'ACCEPT' and edge_task['executions'] == 3
     assert edge_task['tests'] == {'commands_passed': 0, 'commands_failed': 0, 'cases': None}
@@ -276,7 +276,7 @@ def test_metrics_and_preview_facts_match_the_previous_implementation_on_formats_
     assert edge_validations == {'key': 'T3', 'validations': 3, 'passed': 2, 'failed': 1, 'commands_passed': 3,
                                 'commands_failed': 5, 'cases': {'passed': 3, 'failed': 2, 'error': 2, 'skipped': 1},
                                 'validations_with_cases': 2}
-    # Vista previa de la exportación: mismos hechos por tarea y misma aceptación que desde el historial.
+    # Export preview: same facts per task and same acceptance as from the history.
     with Session(engine) as session:
         for run_id, text, _ in runs:
             probe.reset()
@@ -352,7 +352,7 @@ def test_large_scope_is_read_without_histories_and_matches(migrated_database, mo
     engine.dispose()
 
 
-# --- vista previa de la exportación con el motor real ---------------------------------------------------------
+# --- export preview with the real engine ----------------------------------------------------------------------
 
 def test_d036_export_preview_reads_the_projection_and_the_confirmed_export_commits(world, monkeypatch):  # noqa: F811
     from test_document_export import queue, shown
@@ -362,7 +362,7 @@ def test_d036_export_preview_reads_the_projection_and_the_confirmed_export_commi
     view = shown(world, pid)
     assert probe.clean() and probe.statements
     assert view['snapshot']['tasks']['P001-T001']['acceptance'] is True
-    job = queue(world, pid, view)  # el envío recalcula desde el historial y exige la misma instantánea
+    job = queue(world, pid, view)  # the submission recomputes from the history and requires the same snapshot
     assert probe.decoded > 0
     world.run()
     assert world.repository.get_run(job.run_id).status == 'COMMITTED'
@@ -381,7 +381,7 @@ def test_v2_export_preview_reads_the_projection_and_matches_the_history(v2, monk
     assert task['verdict'] == 'ACCEPT' and task['tests'] is not None
     with Session(v2.repository.engine) as session:
         phase = session.get(documents.Phase, pid)
-        assert view['snapshot'] == document_export.snapshot(session, phase, v2.context)  # desde el historial
+        assert view['snapshot'] == document_export.snapshot(session, phase, v2.context)  # from the history
     job = exporter.submit(v2.context, pid, view['expected_version'], key='v2-export', versions=VERSIONS,
                           preview_sha256=view['preview_sha256'], reason='Export v2 blocks', confirmed=True, git=writer)
     v2.run()
@@ -400,7 +400,7 @@ def test_export_preview_refuses_a_projection_that_differs_from_the_history(v2): 
                         .values(verdict='REVISE'))
     view = exporter.preview(v2.context, pid, writer)
     assert view['snapshot']['state']['tasks'][0]['verdict'] == 'REVISE'
-    # La vista previa no es autoridad: el envío confirmado la contrasta con el historial y no encola nada.
+    # The preview is not authority: the confirmed submission checks it against the history and enqueues nothing.
     with pytest.raises(Conflict, match='authority changed'):
         exporter.submit(v2.context, pid, view['expected_version'], key='v2-export', versions=VERSIONS,
                         preview_sha256=view['preview_sha256'], reason='Export v2 blocks', confirmed=True, git=writer)

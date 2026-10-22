@@ -1,6 +1,6 @@
-"""H4.1 (D033 punto 2): chat contextual por turnos nuevos de solo lectura y propuestas confirmadas.
+"""H4.1 (D033 point 2): contextual chat through new read-only turns and confirmed proposals.
 
-Git/SQLite temporales y agentes falsos; sin proveedores, red ni sesiones reanudadas."""
+Temporary Git/SQLite and fake agents; no providers, network or resumed sessions."""
 import json
 import os
 
@@ -73,7 +73,7 @@ def tree_status(world):
     return git(world.context.root, 'status', '--porcelain')
 
 
-# --- turno nuevo, contexto congelado y solo lectura -------------------------------------------------
+# --- new turn, frozen context and read-only ---------------------------------------------------------
 
 
 def test_turn_freezes_explicit_context_before_a_fresh_read_only_invocation(world, chat):
@@ -83,10 +83,10 @@ def test_turn_freezes_explicit_context_before_a_fresh_read_only_invocation(world
     job = chat.say(cid, run_ids=[run_id])
     detail = chat.get(cid)
     turn = detail['turns'][0]
-    assert turn['status'] == 'QUEUED' and detail['actions'] == []  # un turno pendiente cada vez
-    assert [d['path'] for d in turn['documents']] == ['docs/STATE.md', 'docs/NEXT_STEPS.md']  # los de la fase
+    assert turn['status'] == 'QUEUED' and detail['actions'] == []  # one pending turn at a time
+    assert [d['path'] for d in turn['documents']] == ['docs/STATE.md', 'docs/NEXT_STEPS.md']  # the phase documents
     assert turn['run_ids'] == [run_id] and turn['phase_code'] == 'P001'
-    # Un cambio posterior al encolado no altera la petición congelada.
+    # A change after enqueuing does not alter the frozen request.
     world.context.path('docs/STATE.md').write_text('# Changed after queueing\n', encoding='utf-8')
     world.script(answer(PROPOSAL))
     world.run()
@@ -99,7 +99,7 @@ def test_turn_freezes_explicit_context_before_a_fresh_read_only_invocation(world
     assert set(snapshot['output_schema']['required']) == {'answer', 'references', 'proposals'}
     with Session(world.repository.engine) as session:
         attempt = session.scalar(select(ManagedAttemptRow).where(ManagedAttemptRow.run_id == job.run_id))
-        assert json.loads(attempt.request_json)['prompt'] == request.prompt  # persistida antes del efecto
+        assert json.loads(attempt.request_json)['prompt'] == request.prompt  # persisted before the effect
         stored = session.scalar(select(ChatTurnRow).where(ChatTurnRow.run_id == job.run_id))
         frozen = stored.request['context']
     assert frozen['documents'][0]['content'] == '# State\n' and frozen['runs'][0]['commit'] is not None
@@ -112,7 +112,7 @@ def test_turn_freezes_explicit_context_before_a_fresh_read_only_invocation(world
     run = world.repository.get_run(job.run_id)
     assert run.history.task_json is None and run.history.status == 'completed'
     assert world.ports.roles() == ['executor', 'reviewer', 'chat']
-    assert jobs(world) == 3  # tarea, commit y turno: la propuesta no encoló nada
+    assert jobs(world) == 3  # task, commit and turn: the proposal enqueued nothing
 
 
 def test_each_turn_is_a_new_invocation_with_previous_turns_as_explicit_context(world, chat):
@@ -124,12 +124,12 @@ def test_each_turn_is_a_new_invocation_with_previous_turns_as_explicit_context(w
     world.run()
     first, second = world.ports.agents.requests
     assert first.id != second.id and second.fresh_session
-    assert 'First question' in second.prompt and 'First answer' in second.prompt  # contexto explícito, sin sesión
+    assert 'First question' in second.prompt and 'First answer' in second.prompt  # explicit context, no session
     detail = chat.get(cid)
     assert detail['turns'][1]['previous_turns'] == 1
     assert detail['turns'][1]['documents'] == [
         {'path': 'app/main.txt', 'sha256': detail['turns'][1]['documents'][0]['sha256'], 'size': 9, 'truncated': False},
-        {'path': 'docs/missing.md', 'sha256': None, 'size': None, 'truncated': False}]  # ausencia explícita
+        {'path': 'docs/missing.md', 'sha256': None, 'size': None, 'truncated': False}]  # explicit absence
     assert [t['status'] for t in detail['turns']] == ['ANSWERED', 'ANSWERED']
 
 
@@ -155,7 +155,7 @@ def test_message_selection_is_validated_inside_this_checkout(world, chat, tmp_pa
 
 @pytest.mark.parametrize('bad', [
     {**answer(), 'extra': True},
-    answer({**PROPOSAL, 'allowed_paths': ['**']}),  # una propuesta no fija contratos
+    answer({**PROPOSAL, 'allowed_paths': ['**']}),  # a proposal does not fix contracts
     answer({**PROPOSAL, 'acceptance_criteria': []}),
     answer(*[PROPOSAL] * 6),
     {'answer': '', 'references': [], 'proposals': []},
@@ -169,8 +169,8 @@ def test_invalid_output_stops_the_turn_without_fallback_or_retry(world, chat, ba
     detail = chat.get(cid)
     assert detail['turns'][0]['status'] == 'FAILED' and detail['proposals'] == []
     assert world.repository.get_run(job.run_id).status == 'STOPPED'
-    assert world.ports.roles() == ['chat'] and world.worker.run_once() is None  # nada se reintenta
-    assert detail['actions'] == ['message']  # un turno nuevo es una acción explícita
+    assert world.ports.roles() == ['chat'] and world.worker.run_once() is None  # nothing is retried
+    assert detail['actions'] == ['message']  # a new turn is an explicit action
 
 
 def test_turn_that_writes_to_the_checkout_is_discarded(world, chat):
@@ -196,7 +196,7 @@ def test_validate_chat_result_has_a_fixed_schema():
             validate_chat_result(bad)
 
 
-# --- propuestas y tareas vinculadas ----------------------------------------------------------------
+# --- proposals and linked tasks --------------------------------------------------------------------
 
 
 def test_proposal_without_confirmation_or_with_stale_evidence_queues_nothing(world, chat):
@@ -236,7 +236,7 @@ def test_confirmed_proposal_becomes_a_linked_task_planned_executed_reviewed_and_
                                 proposal_sha256=proposal['proposal_sha256'], task_id=task, phase_id='P001',
                                 confirmed=True)
     job = decide()
-    assert decide() == job  # idempotente: misma clave y misma decisión, aunque la conversación avanzó
+    assert decide() == job  # idempotent: same key and same decision, even though the conversation moved on
     with pytest.raises(Conflict, match='different action'):
         decide('CHAT-T002')
 
@@ -247,7 +247,7 @@ def test_confirmed_proposal_becomes_a_linked_task_planned_executed_reviewed_and_
     world.run()
     record = world.repository.get_run(job.run_id)
     assert record.status == 'ACCEPTANCE_READY', record.history.stop
-    # El chat propone; el planificador fija el contrato bajo la política y el revisor acepta.
+    # The chat proposes; the planner fixes the contract under the policy and the reviewer accepts.
     assert world.ports.roles() == ['chat', 'planner', 'executor', 'reviewer']
     planner = world.ports.agents.requests[1]
     assert '## CHAT-T001 — Adjust wording' in planner.prompt and proposal['proposal_sha256'] in planner.prompt
@@ -272,15 +272,15 @@ def test_chat_never_grants_permissions_or_writes_outside_the_engine(world, chat)
     world.run()
     with Session(world.repository.engine) as session:
         assert session.scalar(select(func.count()).select_from(PermissionRequestRow)) == 0
-    assert tree_status(world) == ''  # el turno no escribió en el checkout
+    assert tree_status(world) == ''  # the turn did not write to the checkout
     turn_run = chat.get(cid)['turns'][0]['run_id']
     assert world.repository.get_run(turn_run).history.task_json is None
     from harness_local.storage.managed_views import SQLiteManagedViews
     view = SQLiteManagedViews(world.repository.engine).run(turn_run)
-    assert view['purpose'] == 'chat' and view['actions'] == []  # sin revalidar, reintentar, commit ni permisos
+    assert view['purpose'] == 'chat' and view['actions'] == []  # no revalidation, retry, commit or permissions
 
 
-# --- concurrencia, idempotencia y recuperación --------------------------------------------------
+# --- concurrency, idempotency and recovery ------------------------------------------------------
 
 
 def test_one_pending_turn_and_idempotent_messages(world, chat):
@@ -332,10 +332,10 @@ def test_fifo_without_a_live_writer_still_preserves_queue_order(world, chat):
     world.run()
     assert world.repository.get_run(task.run_id).status == 'BLOCKED'
     world.run()
-    assert world.ports.roles() == ['executor', 'reviewer', 'chat']  # FIFO bajo el lock del checkout
+    assert world.ports.roles() == ['executor', 'reviewer', 'chat']  # FIFO under the checkout lock
 
 
-# --- compatibilidad, adaptador y migración -------------------------------------------------------
+# --- compatibility, adapter and migration --------------------------------------------------------
 
 
 def test_catalogs_frozen_before_the_chat_template_remain_loadable():
@@ -392,12 +392,12 @@ def test_http_chat_flow_with_guard_confirmation_and_linked_task(tmp_path, migrat
                            headers={'X-Harness-Local': '0'})
         assert denied.status_code == 403
         path = '/api/managed/projects/synthetic/conversations'
-        assert http.post(path, json={'title': 'Chat'}).status_code == 422  # sin Idempotency-Key
+        assert http.post(path, json={'title': 'Chat'}).status_code == 422  # without Idempotency-Key
         created = http.post(path, json={'title': 'Chat'}, headers={'Idempotency-Key': 'chat-1'})
         assert created.status_code == 201, created.text
         conversation = created.json()
         cid = conversation['id']
-        # Hallazgo 2 de D085: un reintento no crea otra conversación vacía; otra petición con la clave, 409.
+        # D085 finding 2: a retry does not create another empty conversation; another request with the key, 409.
         retried = http.post(path, json={'title': 'Chat'}, headers={'Idempotency-Key': 'chat-1'})
         assert retried.status_code == 201 and retried.json()['id'] == cid
         assert http.post(path, json={'title': 'Otro'}, headers={'Idempotency-Key': 'chat-1'}).status_code == 409
@@ -405,7 +405,7 @@ def test_http_chat_flow_with_guard_confirmation_and_linked_task(tmp_path, migrat
         assert conversation['project_id'] == 'synthetic' and conversation['actions'] == ['message']
         assert http.get('/api/managed/projects/synthetic/conversations').json()[0]['turns'] == 0
         body = {'expected_version': conversation['version'], 'text': 'Ajusta el texto'}
-        assert http.post(f'/api/managed/conversations/{cid}/messages', json=body).status_code == 422  # sin clave
+        assert http.post(f'/api/managed/conversations/{cid}/messages', json=body).status_code == 422  # without key
         message = http.post(f'/api/managed/conversations/{cid}/messages', json=body, headers={'Idempotency-Key': 'm'})
         assert message.status_code == 202, message.text
         turn_run = settle(http, message.json()['run_id'])
@@ -416,7 +416,7 @@ def test_http_chat_flow_with_guard_confirmation_and_linked_task(tmp_path, migrat
         accept = {'expected_version': detail['version'], 'proposal_sha256': first['proposal_sha256'],
                   'task_id': 'CHAT-T001', 'phase_id': 'P001'}
         path = f"/api/managed/conversations/{cid}/proposals/{first['id']}/accept"
-        assert http.post(path, json=accept, headers={'Idempotency-Key': 'a'}).status_code == 422  # sin confirmación
+        assert http.post(path, json=accept, headers={'Idempotency-Key': 'a'}).status_code == 422  # without confirmation
         stale = http.post(path, json={**accept, 'confirmed': True, 'proposal_sha256': 'f' * 64},
                           headers={'Idempotency-Key': 'stale'})
         assert stale.status_code == 409 and stale.json()['detail']['code'] == 'conflict'
@@ -432,4 +432,4 @@ def test_http_chat_flow_with_guard_confirmation_and_linked_task(tmp_path, migrat
         assert statuses == [('ACCEPTED', 'ACCEPTANCE_READY'), ('DISMISSED', None)]
         assert http.get('/api/managed/conversations/unknown').status_code == 404
     assert ports.roles() == ['chat', 'planner', 'executor', 'reviewer']
-    assert git(checkout.root, 'status', '--porcelain') == 'M app/main.txt'  # solo la tarea normal escribió
+    assert git(checkout.root, 'status', '--porcelain') == 'M app/main.txt'  # only the normal task wrote

@@ -1,4 +1,4 @@
-"""Checks offline de H0.2; muestras sintéticas y biblioteca estándar."""
+"""Offline H0.2 checks; synthetic samples and the standard library."""
 
 import json
 from pathlib import Path

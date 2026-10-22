@@ -1,7 +1,7 @@
-"""P008-T008: perfiles declarados en el TOML local (`local-config-4`), empezando por `python-django`.
+"""P008-T008: profiles declared in the local TOML (`local-config-4`), starting with `python-django`.
 
-El perfil sale de `examples/local_config.example.toml`. CLIs sintéticas por el adaptador real, herramientas
-Python falsas (pytest, ruff, mypy, python) con argv exacto, Git y SQLite temporales; sin proveedores ni red.
+The profile comes from `examples/local_config.example.toml`. Synthetic CLIs through the real adapter, fake Python
+tools (pytest, ruff, mypy, python) with exact argv, temporary Git and SQLite; no providers or network.
 """
 import copy
 import json
@@ -35,7 +35,7 @@ PLAN = """# Synthetic Django task
 **Executor:** synthetic-executor / medium — Explicit offline selection
 """
 VERSIONS = {'codex': '0.162.1', 'claude': '2.1.296'}
-# Herramientas falsas: registran su argv; pytest comprueba el código real del checkout y escribe JUnit.
+# Fake tools: they record their argv; pytest checks the real checkout code and writes JUnit.
 PYTEST = """
 import os, pathlib, sys
 sys.dont_write_bytecode = True
@@ -66,7 +66,7 @@ def tool(folder, name, body=''):
 
 @pytest.fixture
 def django(tmp_path):
-    """Checkout Django sintético con una regresión, su worktree de tarea y datos `local-config-4`."""
+    """Synthetic Django checkout with a regression, its task worktree and `local-config-4` data."""
     main = tmp_path / 'shop-main'
     (main / 'shop').mkdir(parents=True)
     (main / 'docs').mkdir()
@@ -241,7 +241,7 @@ def test_profile_content_enters_the_frozen_hash_and_quarantines_pending_jobs(dja
         supervisor.run_once()
     assert repository.get_run(job.run_id).status == 'RECOVERY_REQUIRED'
     assert not launches(tmp_path) and not tools(tmp_path)
-    # El mismo archivo vuelve a dar la misma identidad congelada.
+    # The same file gives the same frozen identity again.
     assert load_local_config(write(folder, data)).projects[0].versions == project.versions
 
 
@@ -258,7 +258,7 @@ def test_offline_django_journey_through_validation_junit_and_commit(django, repo
     assert restore_context(record.history.context_json).profile == profile
     assert [a.request.role for a in record.history.attempts] == ['executor', 'reviewer']
     assert len(launches(tmp_path)) == 2
-    # Preparación y validaciones del perfil, por argv exacto y en orden, con la configuración congelada.
+    # Profile preparation and validations, by exact argv and in order, with the frozen configuration.
     assert [tuple(call) for call in tools(tmp_path)] == [c.argv for c in profile.preparation + profile.validations]
     rows = repository.command_processes(job.id)
     assert len(rows) == 8 and {r['spec']['config_sha256'] for r in rows} == {project.versions['command_config_sha256']}
@@ -277,8 +277,8 @@ def test_offline_django_journey_through_validation_junit_and_commit(django, repo
 
 
 def test_builtin_profiles_keep_their_behaviour_under_local_config_4(setup):
-    """La misma composición `typescript-web` en v3 y v4: mismo perfil y comandos; solo cambia la identidad del
-    archivo (formato y hash, que en v4 incluye el perfil). v3 no admite `[profiles]`."""
+    """The same `typescript-web` composition in v3 and v4: same profile and commands; only the file identity
+    changes (format and hash, which in v4 includes the profile). v3 does not accept `[profiles]`."""
     context, data, folder, tmp_path = setup
     old = v3(data, [], toml_project=True)
     new = {**copy.deepcopy(old), 'format': 'local-config-4'}

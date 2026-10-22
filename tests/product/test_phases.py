@@ -1,4 +1,4 @@
-"""H3.3: fases gestionadas con Git/SQLite temporales y agentes falsos; sin proveedores ni red."""
+"""H3.3: managed phases with temporary Git/SQLite and fake agents; no providers or network."""
 from concurrent.futures import ThreadPoolExecutor
 import json
 from pathlib import Path
@@ -148,7 +148,7 @@ def kinds(world, pid):
         return [row.kind for row in rows]
 
 
-# --- recorrido completo -----------------------------------------------------------------------
+# --- full journey -----------------------------------------------------------------------------
 
 
 def test_ready_close_tags_the_reviewed_head_without_editing_documents(world):
@@ -176,7 +176,7 @@ def test_ready_close_tags_the_reviewed_head_without_editing_documents(world):
     assert world.ports.roles() == ['executor', 'reviewer', 'phase']
     assert kinds(world, pid) == ['phase_created', 'phase_check_queued', 'phase_checked', 'close_authorized',
                                  'phase_close_queued', 'phase_tag_intent', 'phase_closed']
-    # Una fase cerrada no avanza: ni tareas nuevas, ni otro cierre, ni preguntas.
+    # A closed phase does not advance: no new tasks, no other closure, no questions.
     with pytest.raises(Conflict, match='closed'):
         world.repository.submit(world.context, 'P001-T009', 'P001', PLAN, VERSIONS, key='late')
     with pytest.raises(Conflict):
@@ -209,7 +209,7 @@ def test_phase_runs_are_not_task_runs(world):
     assert closed['status'] == 'CLOSED' and closed['operations'][-1]['result']['tag'] is None and tags(world) == ''
 
 
-# --- READY obsoleto ---------------------------------------------------------------------------
+# --- stale READY ------------------------------------------------------------------------------
 
 
 def _commit_file(world, path, text):
@@ -236,7 +236,7 @@ def test_stale_ready_never_closes_and_requires_new_evidence(world, change):
     assert tags(world) == '' and head(world) == before
     if change == 'docs_commit':
         assert stale['documents']['drift'] == ['docs/STATE.md']
-        _, drift = world.check(pid)  # sin respuesta de agente: la deriva se detecta antes
+        _, drift = world.check(pid)  # no agent answer: the drift is detected first
         assert drift['operations'][-1]['status'] == 'NEEDS_RECONCILIATION' and world.ports.roles()[-1] == 'phase'
         assert len(world.ports.roles()) == 3
         world.phases.reconcile(world.context, pid, drift['version'], documents_sha256=drift['documents']['current_sha256'],
@@ -276,7 +276,7 @@ def test_stale_binding_or_authority_change_is_refused_before_queueing(world):
     _, again = world.check(pid, phase_review())
     assert again['ready']['binding']['questions_sha256'] != ready['ready']['binding']['questions_sha256']
     assert len(world.ports.agents.requests) == 4 and world.ports.roles()[-1] == 'phase'
-    # La respuesta llega al evaluador como evidencia.
+    # The answer reaches the evaluator as evidence.
     assert 'Is the archive wording approved?' in world.ports.agents.requests[-1].prompt
 
 
@@ -286,7 +286,7 @@ def test_pending_commit_intent_blocks_close(world):
     _, ready = world.check(pid, phase_review())
     from harness_local.storage.models import ManagedCommitRow
     with Session(world.repository.engine) as session, session.begin():
-        session.scalars(select(ManagedCommitRow)).one().status = 'INTENT'  # intención sintética sin conciliar
+        session.scalars(select(ManagedCommitRow)).one().status = 'INTENT'  # synthetic intention not reconciled
     with pytest.raises(Conflict, match='awaits reconciliation'):
         world.phases.submit_close(world.context, pid, ready['version'], key='close', versions=VERSIONS,
                                   binding_sha256=ready['ready']['binding_sha256'], reason='r', ttl_seconds=60)
@@ -305,7 +305,7 @@ def test_authority_change_during_check_downgrades_ready(world):
     assert 'changed during the check' in detail['operations'][-1]['result']['reasons'][0]
 
 
-# --- preguntas, gates y reconciliación -----------------------------------------------------
+# --- questions, gates and reconciliation ---------------------------------------------------
 
 
 def test_pending_questions_block_check_close_and_batch(world):
@@ -373,7 +373,7 @@ def test_revise_requires_reconciliation_and_reconcile_is_bound_to_reviewed_docum
     assert op['result']['before']['docs/STATE.md'] != op['result']['after']['docs/STATE.md']
     _, ready = world.check(pid, phase_review())
     assert ready['status'] == 'READY_TO_CLOSE'
-    # El histórico de checks se conserva completo.
+    # The history of checks is kept complete.
     assert [o['status'] for o in ready['operations']] == ['REVISE', 'RECORDED', 'READY']
 
 
@@ -392,7 +392,7 @@ def test_invalid_phase_review_stops_without_retry_or_fallback(world, bad):
     assert failed['operations'][-1]['result']['result'] == bad
 
 
-# --- autorizaciones separadas ----------------------------------------------------------------
+# --- separate authorizations -----------------------------------------------------------------
 
 
 def test_batch_and_close_authorizations_are_distinct_explicit_and_audited(world):
@@ -424,7 +424,7 @@ def test_batch_and_close_authorizations_are_distinct_explicit_and_audited(world)
                                 authorization_id=auth_id, text=PLAN_2)
     world.run()
     record = world.repository.get_run(job.run_id)
-    assert record.status == 'ACCEPTANCE_READY'  # el lote no confirma commits ni comprueba la fase
+    assert record.status == 'ACCEPTANCE_READY'  # the batch neither confirms commits nor checks the phase
     assert world.get(pid)['status'] == 'ACTIVE' and world.get(pid)['operations'] == []
     with pytest.raises(Conflict, match='without committed acceptance'):
         world.phases.batch_next(world.context, pid, world.get(pid)['version'], key='batch-2', versions=VERSIONS,
@@ -440,7 +440,7 @@ def test_batch_and_close_authorizations_are_distinct_explicit_and_audited(world)
     world.run()
     detail = world.get(pid)
     assert detail['authorizations'][0]['effective_status'] == 'COMPLETE'
-    assert detail['status'] == 'ACTIVE' and 'close' not in detail['actions']  # lote ≠ cierre
+    assert detail['status'] == 'ACTIVE' and 'close' not in detail['actions']  # batch ≠ closure
     with pytest.raises(Conflict, match='READY'):
         world.phases.submit_close(world.context, pid, detail['version'], key='close', versions=VERSIONS,
                                   binding_sha256='0' * 64, reason='Batch does not close', ttl_seconds=60)
@@ -472,7 +472,7 @@ def test_expired_or_revoked_batch_cannot_advance(world):
                                 authorization_id=auth_id, text=PLAN)
 
 
-# --- reinicio, caídas y concurrencia ------------------------------------------------------
+# --- restart, crashes and concurrency -----------------------------------------------------
 
 
 def test_restart_preserves_phase_history_and_does_not_repeat_effects(world):
@@ -482,7 +482,7 @@ def test_restart_preserves_phase_history_and_does_not_repeat_effects(world):
     restarted = World(SQLiteManagedRepository(world.repository.engine), world.context)
     restarted.keys = world.keys
     assert restarted.get(pid) == ready
-    assert restarted.worker.run_once() is None  # nada pendiente: no se repite el check
+    assert restarted.worker.run_once() is None  # nothing pending: the check is not repeated
     _, closed = restarted.close(pid)
     assert closed['status'] == 'CLOSED' and restarted.ports.roles() == []
     assert [o['status'] for o in closed['operations']] == ['READY', 'CLOSED']
@@ -580,7 +580,7 @@ def test_concurrent_close_requests_queue_one_job(world):
     assert len(results) == 1
     detail = world.get(pid)
     assert detail['status'] == 'CLOSING' and len(detail['authorizations']) == 1
-    with pytest.raises(Conflict):  # ni commits ni preguntas durante el cierre
+    with pytest.raises(Conflict):  # no commits or questions during the closure
         world.phases.raise_question(pid, detail['version'], text='Too late')
     world.run()
     assert world.get(pid)['status'] == 'CLOSED'
@@ -663,7 +663,7 @@ def test_http_phase_flow_with_guards_confirmation_and_server_actions(tmp_path, m
         close = {'action': 'close', 'expected_version': ready['version'], 'reason': 'HTTP close',
                  'binding_sha256': ready['ready']['binding_sha256']}
         assert http.post(f'/api/managed/phases/{pid}/actions', json=close,
-                         headers={'Idempotency-Key': 'close'}).status_code == 422  # sin confirmación
+                         headers={'Idempotency-Key': 'close'}).status_code == 422  # without confirmation
         stale = http.post(f'/api/managed/phases/{pid}/actions', json={**close, 'confirmed': True,
                           'binding_sha256': 'f' * 64}, headers={'Idempotency-Key': 'close-stale'})
         assert stale.status_code == 409 and stale.json()['detail']['code'] == 'conflict'

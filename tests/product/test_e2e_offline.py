@@ -203,7 +203,7 @@ def test_managed_execute_block_revalidate_commit(tmp_path, url, repo, failure):
 
 
 def test_create_confirm_restart_then_first_task_and_commit(tmp_path, url):
-    """D088: la creación v1 está retirada; se crea por la conversación de definición, con reinicio intermedio."""
+    """D088: v1 creation is retired; creation goes through the definition conversation, with a restart in between."""
     from test_definition import BRIEF, answer
     root = tmp_path / 'empty'
     root.mkdir()

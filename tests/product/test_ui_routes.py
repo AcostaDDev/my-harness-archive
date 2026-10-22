@@ -1,4 +1,4 @@
-"""H6.2 E1 (D076): rutas de la UI servidas por el wheel y lecturas por código para sus URLs."""
+"""H6.2 E1 (D076): UI routes served by the wheel and code reads for their URLs."""
 import pytest
 
 from test_managed_api import PLAN, Ports, client

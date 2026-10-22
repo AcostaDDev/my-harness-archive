@@ -1,4 +1,4 @@
-"""P008-T015: incorporación y recuperación con datos sintéticos, sin ejecutar herramientas del proyecto."""
+"""P008-T015: onboarding and recovery with synthetic data, without running the project's tools."""
 from dataclasses import replace
 import json
 

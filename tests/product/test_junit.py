@@ -1,4 +1,4 @@
-"""H5.1: XML sintético, rutas seguras y procedencia persistida; sin proveedores."""
+"""H5.1: synthetic XML, safe paths and persisted provenance; no providers."""
 
 import base64
 from dataclasses import replace
@@ -225,7 +225,7 @@ def test_reports_do_not_replace_command_outcome_or_accept_without_review(context
     assert json.loads(dump_history(history))['format'] == 6 and load_history(dump_history(history)) == history
     reviewer = agents.requests[-1]
     assert 'original_base64' not in reviewer.prompt
-    # Una salida del agente inválida nunca se transforma en aceptación por JUnit.
+    # An invalid agent output is never turned into acceptance by JUnit.
     failed_engine = OfflineEngine(ScriptedAgentAdapter([edit(), {'bad': 'review'}]), runner,
                                   SyntheticWorkspace(context, ('app/main.txt',)))
     assert failed_engine.start(context, TASK_ID, PHASE_ID, PLAN).acceptance is None
@@ -295,7 +295,7 @@ def test_sqlite_api_pagination_original_download_restart_and_exact_commit(git_re
         assert http.get(prefix, headers={'Host': 'external.invalid'}).status_code == 403
         detail = http.get(f'/api/managed/runs/{job.run_id}').json()
         assert detail['history']['latest_cycle']['validation'] == json.loads(json.dumps(summary))
-    # Reinicio y eliminación del archivo fuente no eliminan la evidencia importada.
+    # Restarting and deleting the source file do not remove the imported evidence.
     context.path(DECLARATION.path).unlink()
     restarted = SQLiteManagedRepository(repository.engine)
     assert restarted.get_run(job.run_id).history == record.history
@@ -359,7 +359,7 @@ def test_phase_baseline_report_is_preserved_in_the_check_run(git_repo, migrated_
     record = repository.get_run(job.run_id)
     assert record.history.status == 'completed'
     report = record.history.cycles[0].validation
-    assert report.run_id == job.run_id and report.source_attempt_id is None  # No ejecutor en un check de fase.
+    assert report.run_id == job.run_id and report.source_attempt_id is None  # No executor in a phase check.
     assert report.entries[0].reports[0].status == 'complete'
     assert SQLiteManagedViews(database).test_original(job.run_id, 0, 0, 0)[0] == simple_xml()
     assert 'original_base64' not in agents.requests[0].prompt
@@ -384,5 +384,5 @@ def test_revalidation_keeps_previous_original_and_execution_provenance(git_repo,
     assert second.entries[0].command_id != first.entries[0].command_id
     assert SQLiteManagedViews(repository.engine).test_original(job.run_id, 0, 0, 0)[0] == simple_xml(55)
     assert SQLiteManagedViews(repository.engine).test_original(job.run_id, 1, 0, 0)[0] == simple_xml(2)
-    assert len(agents.requests) == 2  # Revalidar no repite ejecución.
+    assert len(agents.requests) == 2  # Revalidating does not repeat execution.
     repository.engine.dispose()

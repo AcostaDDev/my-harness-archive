@@ -1,4 +1,4 @@
-"""H6.5: creación y planificación conversacionales con Git/SQLite temporales y agentes falsos; sin proveedores."""
+"""H6.5: conversational creation and planning with temporary Git/SQLite and fake agents; no providers."""
 from dataclasses import replace
 from hashlib import sha256
 import json
@@ -157,25 +157,25 @@ class World:
 
 
 def ready(world):
-    """Conversación con todos los borradores aplicados y sin preguntas bloqueantes."""
+    """Conversation with every draft applied and no blocking questions."""
     cid = world.create()
     world.turn(cid, answer())
     world.apply_all(cid)
     return cid
 
 
-# --- recorrido completo ------------------------------------------------------------------------
+# --- full journey ------------------------------------------------------------------------------
 
 
 def test_empty_folder_to_root_commit_with_p001_and_phase_000(world):
     cid = world.create()
     assert world.files() == []
     job, turn = world.turn(cid, answer(questions=[QUESTION], pending=['Confirmar autenticación']))
-    assert turn['status'] == 'ANSWERED' and world.files() == []  # el agente no escribe
+    assert turn['status'] == 'ANSWERED' and world.files() == []  # the agent does not write
     request = world.repo.get_run(job.run_id).history.attempts[0].request
     assert request.role == 'definition' and request.fresh_session
     assert json.loads(request.prompt_snapshot_json)['parts'][0]['version']['name'] == 'define-project'
-    assert sha256(BRIEF.encode()).hexdigest() in request.prompt  # brief congelado en el contexto
+    assert sha256(BRIEF.encode()).hexdigest() in request.prompt  # brief frozen in the context
     assert world.planning.snapshot(job.run_id)['context']['brief']['content'] == BRIEF
     view = world.view(cid)
     assert [p['status'] for p in view['proposals']] == ['PROPOSED'] * len(DRAFTS)
@@ -183,7 +183,7 @@ def test_empty_folder_to_root_commit_with_p001_and_phase_000(world):
     assert view['questions'][0]['blocking'] and view['pending'] == ['Confirmar autenticación']
     world.apply_all(cid)
     assert {path: world.path(path).read_text() for path in DRAFTS} == DRAFTS
-    # Edición del usuario en su editor y por API entre turnos.
+    # User edit in their editor and through the API between turns.
     world.path('docs/SPECIFICATION.md').write_text(DRAFTS['docs/SPECIFICATION.md'] + '\nEditado en disco.\n')
     readme = '# Sintético\n\nEditado por API.\n'
     world.planning.edit_draft(world.context, cid, world.view(cid)['version'], path='README.md', content=readme,
@@ -202,7 +202,7 @@ def test_empty_folder_to_root_commit_with_p001_and_phase_000(world):
     assert documents['docs/archive/phase-000/BRIEF.md']['content'] == BRIEF
     record = documents['docs/archive/phase-000/DEFINITION.md']['content']
     assert '| 2 | ANSWERED | No hace falta autenticación |' in record and 'edición del usuario por API' in record
-    # D088: los archivos de instrucciones no redactados salen de la plantilla con el título y los comandos.
+    # D088: the instruction files that were not drafted come from the template with the title and the commands.
     assert {path for path, doc in documents.items() if doc['origin'] == 'template'} == {
         'AGENTS.md', 'CLAUDE.md', 'GEMINI.md'}
     assert documents['AGENTS.md']['content'].startswith('# Sintético — instrucciones para agentes\n')
@@ -221,7 +221,7 @@ def test_empty_folder_to_root_commit_with_p001_and_phase_000(world):
     before = world.files()
     job = world.accept(cid, shown, key='accept-once')
     assert world.accept(cid, shown, key='accept-once').id == job.id
-    assert world.files() == before  # encolar no escribe
+    assert world.files() == before  # enqueuing does not write
     assert world.worker.run_once().status == 'DONE'
     op = world.bootstrap.get(world.context.root)
     assert op['status'] == 'COMPLETED' and op['result']['commit'] == git(world.context.root, 'rev-parse', 'HEAD')
@@ -236,7 +236,7 @@ def test_empty_folder_to_root_commit_with_p001_and_phase_000(world):
     assert world.view(cid)['created'] and world.view(cid)['actions'] == []
     with pytest.raises(Conflict, match='already created'):
         world.message(cid)
-    # La primera tarea sigue por el flujo normal y regenera los bloques en su commit.
+    # The first task follows the normal flow and regenerates the blocks in its commit.
     def implement(context, request):
         context.path('app/main.txt').parent.mkdir(exist_ok=True)
         context.path('app/main.txt').write_text('implemented\n')
@@ -287,9 +287,9 @@ def test_all_unified_documents_are_required_in_the_accepted_result(world, custom
 
 
 def test_profile_protection_limits_the_executor_not_confirmed_v2_document_writes(world):
-    """D081: typescript-web protege los documentos de control frente al ejecutor (P008-T003); la creación y la
-    edición confirmadas del contrato v2 escriben ahí igualmente. Fuera del contrato, y en v1, la protección del
-    perfil se mantiene."""
+    """D081: typescript-web protects the control documents from the executor (P008-T003); the confirmed creation
+    and editing of the v2 contract write there anyway. Outside the contract, and in v1, the profile protection
+    stays."""
     from harness_local.core.engine.documents import protected_write
     from harness_local.core.engine.evidence import check_paths
     from harness_local.profiles.typescript_web import typescript_web_profile
@@ -297,7 +297,7 @@ def test_profile_protection_limits_the_executor_not_confirmed_v2_document_writes
     world.context = replace(world.context, profile=typescript_web_profile())
     contract = ('README.md', 'docs/STATE.md', 'docs/DDBB-DIAGRAM.md', 'docs/flows/x.md', 'docs/phase/x.md',
                 'docs/archive/phase-001/SUMMARY.md', 'docs/archive/phase-000/BRIEF.md',
-                'AGENTS.md', 'CLAUDE.md', 'GEMINI.md')  # D088: la creación escribe los archivos de instrucciones
+                'AGENTS.md', 'CLAUDE.md', 'GEMINI.md')  # D088: creation writes the instruction files
     assert not any(protected_write(world.context, path) for path in contract)
     for path in ('package.json', 'docs/archive/phase-001/x.png', 'docs/../package.json',
                  'tests/a.test.mjs', '.claude/settings.json'):
@@ -316,8 +316,8 @@ def test_profile_protection_limits_the_executor_not_confirmed_v2_document_writes
         {'path': 'docs/SPECIFICATION.md', 'content': spec + '\nEditado y confirmado.\n',
          'base_sha256': sha256(spec.encode()).hexdigest()}])
     assert [d['path'] for d in edited['documents']] == ['docs/SPECIFICATION.md']
-    # P008-T003: el ejecutor puede mantener la documentación de producto si su contrato la incluye, pero nunca los
-    # documentos de control ni las instrucciones, aunque su contrato los pidiera.
+    # P008-T003: the executor may maintain the product documentation if its contract includes it, but never the
+    # control documents or the instructions, even if its contract asked for them.
     evidence = type('Evidence', (), {'changed_paths': ('docs/STATE.md', 'docs/SPECIFICATION.md', 'app/x.ts',
                                                        'AGENTS.md')})()
     task = {'task_id': 'P001-T001', 'allowed_paths': ['**'], 'forbidden_paths': []}
@@ -333,7 +333,7 @@ def test_agent_writes_are_detected_and_discard_the_turn(world):
     _, turn = world.turn(cid, writes)
     assert turn['status'] == 'FAILED' and 'changed during a read-only turn' in turn['result']['reasons'][0]
     assert world.view(cid)['proposals'] == []
-    assert world.path('README.md').read_text() == '# escrito por el agente\n'  # conservado, no se revierte
+    assert world.path('README.md').read_text() == '# escrito por el agente\n'  # kept, not reverted
     assert world.ports.roles() == ['definition']
 
 
@@ -361,7 +361,7 @@ def test_invalid_definition_output_stops_the_turn_without_retry(world, case):
     assert world.files() == [] and world.worker.run_once() is None and world.ports.roles() == ['definition']
 
 
-# --- ediciones concurrentes ----------------------------------------------------------------------
+# --- concurrent edits ----------------------------------------------------------------------------
 
 
 def test_concurrent_edits_are_detected_and_never_overwritten(world):
@@ -369,13 +369,13 @@ def test_concurrent_edits_are_detected_and_never_overwritten(world):
     world.turn(cid, answer())
     proposals = {p['path']: p for p in world.view(cid)['proposals']}
     world.apply(cid, proposals['docs/ROADMAP.md'])
-    # El usuario crea README entre el turno y la aplicación: conflicto, nada se sobrescribe.
+    # The user creates README between the turn and the application: conflict, nothing is overwritten.
     world.path('README.md').write_text('# mío\n')
     with pytest.raises(Conflict, match='changed since it was read'):
         world.apply(cid, proposals['README.md'])
     assert world.path('README.md').read_text() == '# mío\n'
     assert world.view(cid)['proposals'][0]['status'] in ('PROPOSED', 'APPLIED')
-    # Una edición por API con un hash base obsoleto tampoco sobrescribe.
+    # An API edit with a stale base hash does not overwrite either.
     with pytest.raises(Conflict, match='nothing was overwritten'):
         world.planning.edit_draft(world.context, cid, world.view(cid)['version'], path='README.md', content='# API\n',
                                   base_sha256=None, writer=world.writer)
@@ -383,14 +383,14 @@ def test_concurrent_edits_are_detected_and_never_overwritten(world):
     with pytest.raises(ValueError, match='not an allowed definition draft'):
         world.planning.edit_draft(world.context, cid, world.view(cid)['version'], path='notes.txt', content='x',
                                   base_sha256=None, writer=world.writer)
-    # Un borrador cambiado después de encolar el mensaje detiene el turno sin invocar al agente.
+    # A draft changed after enqueuing the message stops the turn without invoking the agent.
     world.message(cid)
     world.path('docs/ROADMAP.md').write_text(DRAFTS['docs/ROADMAP.md'] + '\nCambio tardío.\n')
     assert world.worker.run_once().status == 'DONE'
     turn = world.view(cid)['turns'][-1]
     assert turn['status'] == 'FAILED' and 'changed after the message was queued' in turn['result']['reasons'][0]
     assert world.ports.roles() == ['definition']
-    # Con un turno pendiente no se aplica ni se edita por API.
+    # With a pending turn nothing is applied or edited through the API.
     world.message(cid)
     with pytest.raises(Conflict, match='pending'):
         world.apply(cid, proposals['docs/STATE.md'])
@@ -401,11 +401,11 @@ def test_concurrent_edits_are_detected_and_never_overwritten(world):
     readme = [p for p in world.view(cid)['proposals'] if p['path'] == 'README.md']
     assert [p['status'] for p in readme] == ['SUPERSEDED', 'PROPOSED']
     assert readme[-1]['base_sha256'] == sha256('# mío\n'.encode()).hexdigest()
-    world.apply(cid, readme[-1])  # el turno ya leyó la edición del usuario: la CAS coincide
+    world.apply(cid, readme[-1])  # the turn already read the user's edit: the CAS matches
     assert world.path('README.md').read_text() == '# propuesto\n'
 
 
-# --- archivos ajenos y bloqueos ------------------------------------------------------------------
+# --- foreign files and locks ---------------------------------------------------------------------
 
 
 @pytest.mark.parametrize('foreign', ['notes.txt', '.DS_Store', 'docs/other.md', 'docs/research/spike.md',
@@ -482,7 +482,7 @@ def test_acceptance_blockers_are_explicit_and_fail_closed(world, case):
 
 
 def test_new_folder_drafts_without_markers_get_their_blocks_appended(world):
-    """P010-T004: en una carpeta nueva no hay archivos previos y los marcadores son opcionales en los borradores."""
+    """P010-T004: a new folder has no previous files and the markers are optional in the drafts."""
     pairs = [f'{begin}\n{end}\n\n' for begin, end in (markers('state'), markers('roadmap'), markers('decisions'))]
     plain = dict(DRAFTS)
     for path, content in plain.items():
@@ -498,7 +498,7 @@ def test_new_folder_drafts_without_markers_get_their_blocks_appended(world):
     assert 'do not ask for existing content or markers' in prompt
     assert 'are optional in drafts and you never need to add them' in prompt
     world.apply_all(cid)
-    # Carpeta con borradores: el turno siguiente los recibe con la misma guía.
+    # Folder with drafts: the next turn receives them with the same guide.
     job, _ = world.turn(cid, answer(drafts={}), text='Revisa los borradores')
     assert {d['path'] for d in world.planning.snapshot(job.run_id)['context']['drafts']} == set(plain)
     assert 'keep each pair where it is' in world.repo.get_run(job.run_id).history.attempts[0].request.prompt
@@ -568,7 +568,7 @@ def test_changed_conversation_or_drafts_invalidate_the_reviewed_preview(world):
 
 
 def test_bootstrap_replaces_drafts_only_from_their_reviewed_bytes(world, monkeypatch):
-    """Un borrador editado tras encolar se conserva; el job falla cerrado sin `.git`."""
+    """A draft edited after enqueuing is kept; the job fails closed without `.git`."""
     cid = ready(world)
     job = world.accept(cid)
     world.path('docs/STATE.md').write_text('# editado tras confirmar\n')
@@ -635,7 +635,7 @@ def test_turn_crash_is_unknown_and_never_retried(world):
     assert world.ports.roles() == ['definition'] and world.view(cid)['actions'][0] == 'message'
 
 
-# --- compatibilidad ------------------------------------------------------------------------------
+# --- compatibility -------------------------------------------------------------------------------
 
 
 def test_v1_flows_are_refused_for_v2_and_v2_flows_for_v1(world, tmp_path):
@@ -650,7 +650,7 @@ def test_v1_flows_are_refused_for_v2_and_v2_flows_for_v1(world, tmp_path):
     v1.mkdir()
     with pytest.raises(ValueError, match='documents = "v2"'):
         world.planning.create(make_context(v1), kind='definition', title='x', brief=BRIEF, writer=world.writer)
-    # D088: la creación v1 (H4.2) está retirada; se rechaza con diagnóstico, sin leer ni escribir el destino.
+    # D088: v1 creation (H4.2) is retired; it is rejected with a diagnostic, without reading or writing the target.
     with pytest.raises(ValueError, match='D088: v1 project creation .* is retired'):
         world.bootstrap.preview(make_context(v1), DATA, VERSIONS, world.writer)
     assert list(v1.iterdir()) == [] and world.bootstrap.get(v1) is None
@@ -673,7 +673,7 @@ def test_migration_roundtrip_and_guard(migrated_database, world):
         command.downgrade(config, '0014_attempt_metrics')
 
 
-# --- planificación de la fase siguiente ----------------------------------------------------------
+# --- planning of the next phase ------------------------------------------------------------------
 
 
 def planning_answer(plan=PLAN_P002, text='Plan propuesto'):
@@ -725,8 +725,8 @@ def test_phase_planning_proposes_the_plan_used_by_the_transition(v2):  # noqa: F
         decision = session.scalar(select(PlanningProposalRow.decision))
         assert decision['run_id'] == job.run_id
         following = session.scalar(select(PhaseRow.id).where(PhaseRow.code == 'P002'))
-    # Hallazgo 2 de D085: el reintento tras la transición devuelve la misma conversación, sin otra vacía;
-    # sin clave se reevalúa el destino y la misma clave con otra petición es un conflicto.
+    # D085 finding 2: the retry after the transition returns the same conversation, without another empty one;
+    # without a key the target is reevaluated and the same key with another request is a conflict.
     assert planning.create(v2.context, kind='phase_planning', title='Plan P002', phase_id=pid,
                            key='plan-conversation') == cid
     with pytest.raises(Conflict, match='latest phase'):
@@ -734,7 +734,7 @@ def test_phase_planning_proposes_the_plan_used_by_the_transition(v2):  # noqa: F
     with pytest.raises(Conflict, match='different conversation'):
         planning.create(v2.context, kind='phase_planning', title='Otro plan', phase_id=pid, key='plan-conversation')
     assert [c['id'] for c in planning.list(v2.context.root) if c['kind'] == 'phase_planning'] == [cid]
-    # Hallazgo 3 de D085: la fase transicionada conoce su sucesora; la última no tiene.
+    # D085 finding 3: the transitioned phase knows its successor; the last one has none.
     phases = PhaseRepository(v2.repository)
     assert phases.get(pid)['successor'] == 'P002' and phases.get(following)['successor'] is None
 
@@ -782,7 +782,7 @@ def test_http_definition_flow(migrated_database, tmp_path):
         assert status['enabled'] and not status['import_required'] and status['definition_operation'] is None
         assert http.post(base + '/bootstrap/preview', json={'brief': {}, 'decisions': {}}).status_code == 404
         definition = {'kind': 'definition', 'title': 'Sintético', 'brief': BRIEF}
-        assert http.post(base + '/planning', json=definition).status_code == 422  # sin Idempotency-Key
+        assert http.post(base + '/planning', json=definition).status_code == 422  # without Idempotency-Key
         created = http.post(base + '/planning', json=definition, headers={'Idempotency-Key': 'definition'})
         assert created.status_code == 201, created.text
         cid = created.json()['id']
@@ -810,7 +810,7 @@ def test_http_definition_flow(migrated_database, tmp_path):
             assert applied.status_code == 200, applied.text
         drafts = http.get(base + f'/planning/{cid}/drafts').json()
         assert not any(d['user_edited'] for d in drafts['drafts']) and drafts['foreign'] == []
-        # H6.2 E4: contenido de un borrador con el hash de la CAS; solo rutas admitidas y existentes.
+        # H6.2 E4: content of a draft with the CAS hash; only admitted and existing paths.
         read = http.get(base + f'/planning/{cid}/drafts/content', params={'path': 'README.md'}).json()
         assert read == {'path': 'README.md', 'content': DRAFTS['README.md'],
                         'sha256': sha256(DRAFTS['README.md'].encode()).hexdigest(), 'known_sha256': read['sha256']}
@@ -839,7 +839,7 @@ def test_http_definition_flow(migrated_database, tmp_path):
         assert shown['ready'], shown['blockers']
         body = {'preview_sha256': shown['preview_sha256'], 'confirmed': True, 'reason': 'HTTP',
                 'resume_operation_id': None, 'expected_version': None}
-        assert http.post(base + f'/planning/{cid}/accept', json=body).status_code == 422  # sin Idempotency-Key
+        assert http.post(base + f'/planning/{cid}/accept', json=body).status_code == 422  # without Idempotency-Key
         accepted = http.post(base + f'/planning/{cid}/accept', json=body, headers={'Idempotency-Key': 'accept'})
         assert accepted.status_code == 202, accepted.text
         assert worker.run_once().status == 'DONE'

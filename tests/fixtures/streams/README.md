@@ -1,34 +1,36 @@
-# Streams sintéticos — H0.2
+# Synthetic streams — H0.2
 
-Ocho muestras inventadas a partir de los envelopes documentados; ninguna procede
-de una llamada real. [Manifest](manifest.json) indica proveedor, exit code
-simulado, estado esperado y número de eventos completos. Son independientes de
-los fixtures legacy H0.1 y no prueban qué emiten hoy las cuentas del usuario.
+Eight samples made up from the documented envelopes; none comes from a real
+call. The [manifest](manifest.json) gives the provider, simulated exit code,
+expected status and number of complete events. They are independent of the
+H0.1 legacy fixtures and do not test what the user's accounts emit today.
 
-Por proveedor: éxito con campos y evento desconocidos, stream truncado, error
-de autenticación sintético y salida sin terminal. Las muestras de éxito omiten
-telemetría deliberadamente. Las truncadas terminan a mitad de JSON, sin newline.
+Per provider: success with unknown fields and event, truncated stream,
+synthetic authentication error and output without a terminal. The success
+samples deliberately omit telemetry. The truncated ones end mid-JSON, without
+a newline.
 
-La [sonda](../../stream_probe.py) recibe bytes incrementales, conserva registros
-originales, cola parcial y campos desconocidos. `complete` solo certifica un fin
-de stream conocido con exit code cero: no significa aceptación, commit ni
-validación del contrato de respuesta. Codex requiere `turn.completed`; Claude,
-`result` con `subtype: success` e `is_error: false`. Un mensaje de agente o un
-evento futuro llamado «completed» no sustituyen esos terminales.
+The [probe](../../stream_probe.py) receives incremental bytes and keeps the
+original records, the partial tail and unknown fields. `complete` only
+certifies a known end of stream with exit code zero: it does not mean
+acceptance, commit or validation of the response contract. Codex requires
+`turn.completed`; Claude, `result` with `subtype: success` and
+`is_error: false`. An agent message or a future event called «completed» does
+not replace those terminals.
 
-Un registro terminado malformado invalida la salida sin borrar eventos posteriores.
-Una cola no decodificable al EOF se conserva como incompleta; sin newline no se
-puede distinguir con certeza un corte de un JSON malformado. El EOF con JSON
-válido se procesa. Un terminal duplicado es inválido. Un error o exit code
-distinto de cero impide éxito; el diagnóstico de formato tiene prioridad cuando
-ambos fallan. El lector no abre procesos/red ni reintenta o elige modelos.
+A malformed finished record invalidates the output without erasing later
+events. An undecodable tail at EOF is kept as incomplete; without a newline a
+cut cannot be told apart from malformed JSON with certainty. EOF with valid
+JSON is processed. A duplicate terminal is invalid. An error or a non-zero exit
+code prevents success; the format diagnostic takes priority when both fail.
+The reader opens no processes or network and does not retry or choose models.
 
-Los checks también cubren UTF-8 dividido/cortado, JSON no objeto, constante NaN,
-final sin newline, terminal seguido de error/corte, terminal Claude desconocido,
-ausencia/null/cero observados y chunks de 1, 7 o todos los bytes.
+The checks also cover split/cut UTF-8, non-object JSON, the NaN constant, an
+end without newline, a terminal followed by an error/cut, an unknown Claude
+terminal, observed absence/null/zero and chunks of 1, 7 or all bytes.
 
-Límites: sonda finita en memoria bajo `tests/`, no adaptador de producción,
-validador JSON Schema completo, parser App Server/SDK ni lector acotado de logs.
-La validación del resultado de tarea, denegaciones de herramientas y aislamiento
-de stdout/stderr se resolverán al implementar los adaptadores; estos datos no
-otorgan permisos. Ejecutar desde la raíz con el comando unittest del README.
+Limits: a finite in-memory probe under `tests/`, not a production adapter, a
+complete JSON Schema validator, an App Server/SDK parser or a bounded log
+reader. Task result validation, tool denials and stdout/stderr isolation will
+be resolved when the adapters are implemented; these data grant no
+permissions. Run from the root with the unittest command of the README.

@@ -1,7 +1,7 @@
-"""P009-T020: encolar una tarea eligiéndola de los documentos, con notas adicionales.
+"""P009-T020: enqueue a task chosen from the documents, with additional notes.
 
-Hasta ahora el contrato se copiaba a mano desde el NEXT_STEPS del hijo (T008, T009). Git/SQLite temporales y agentes
-falsos; sin proveedores.
+Until now the contract was copied by hand from the child's NEXT_STEPS (T008, T009). Temporary Git/SQLite and
+fake agents; no providers.
 """
 from dataclasses import replace
 import json

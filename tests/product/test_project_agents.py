@@ -1,4 +1,4 @@
-"""P009-T003: presets locales y cambios en un único registro; solo CLI/SQLite/FS sintéticos."""
+"""P009-T003: local presets and changes in a single registry; synthetic CLI/SQLite/FS only."""
 import copy
 from dataclasses import asdict
 import hashlib
@@ -281,7 +281,7 @@ def test_reviewer_cannot_escape_selected_preset_policy(operator, repository, mod
 
 
 def seed_proposal(repository, project, kind):
-    """Filas sintéticas para comprobar admisión/obsolescencia sin ejecutar un proveedor."""
+    """Synthetic rows to check admission/staleness without running a provider."""
     job = repository.submit(project.context, TASK, PHASE, PLAN, dict(project.versions), key='proposal')
     chat = kind == 'chat'
     conversation_type, turn_type, proposal_type = ((ChatConversationRow, ChatTurnRow, ChatProposalRow) if chat

@@ -2,7 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { axis, compact, count, coverage, coverageText, duration, niceStep, percent, rootLabel, scale, usd } from '../src/metrics.ts';
 
-test('null es «sin dato», nunca cero', () => {
+test('null renders as «sin dato», never zero', () => {
   for (const format of [count, compact, usd, duration]) assert.equal(format(null), 'sin dato');
   assert.equal(count(0), '0');
   assert.equal(usd(0), '0,0000 US$');
@@ -10,7 +10,7 @@ test('null es «sin dato», nunca cero', () => {
   assert.equal(scale(0, 100, 200), 0);
 });
 
-test('cobertura de una suma según los intentos que la aportan', () => {
+test('coverage of a sum by the attempts that contribute to it', () => {
   assert.equal(coverage({ sum: null, attempts: 0 }, 4), 'absent');
   assert.equal(coverage({ sum: 0, attempts: 4 }, 4), 'complete');
   assert.equal(coverage({ sum: 120, attempts: 1 }, 4), 'partial');
@@ -20,7 +20,7 @@ test('cobertura de una suma según los intentos que la aportan', () => {
   assert.equal(coverageText({ sum: 5, attempts: 1 }, 1), 'de 1 intento');
 });
 
-test('ejes redondos desde cero, con marcas enteras para conteos', () => {
+test('round axes from zero, with integer ticks for counts', () => {
   assert.equal(niceStep(0), 1);
   assert.equal(niceStep(719), 1000);
   assert.equal(niceStep(1.75), 2);
@@ -34,7 +34,7 @@ test('ejes redondos desde cero, con marcas enteras para conteos', () => {
   assert.equal(scale(-3, 5000, 200), 0);
 });
 
-test('formatos legibles', () => {
+test('readable formats', () => {
   assert.equal(compact(2876), count(2876));
   assert.equal(count(12345), '12.345');
   assert.match(compact(1_250_000), /1,3\s?M/);
@@ -46,7 +46,7 @@ test('formatos legibles', () => {
   assert.equal(usd(0.0125), '0,0125 US$');
 });
 
-test('etiqueta de una raíz: id del proyecto o último segmento', () => {
+test('root label: project id or last segment', () => {
   const projects = [{ id: 'demo', root: '/tmp/a/demo-root' }];
   assert.equal(rootLabel('/tmp/a/demo-root', projects), 'demo');
   assert.equal(rootLabel('/tmp/b/otro', projects), 'otro');

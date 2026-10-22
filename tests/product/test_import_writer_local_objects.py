@@ -1,4 +1,4 @@
-"""P008-T020: escritor A/B sin transportes; solo Git/SQLite temporales y herramientas falsas."""
+"""P008-T020: A/B writer without transports; temporary Git/SQLite and fake tools only."""
 import sys
 
 import pytest
@@ -20,7 +20,7 @@ from test_onboarding_conversation import world as onboarding_world  # noqa: F401
 
 
 def flow_ports(flow, request):
-    """Solo se monta el mundo del flujo parametrizado; el otro sería preparación descartada."""
+    """Only the world of the parametrized flow is built; the other would be discarded preparation."""
     return (request.getfixturevalue('onboarding_world'), onboarding_ready, onboarding_preview, onboarding_confirm)
 
 
@@ -68,7 +68,7 @@ def test_all_writer_commands_stay_local_and_recover_same_intent(request, monkeyp
     intent = CommitIntent.from_json(frozen)
     assert local.code('cat-file', '-e', intent.expected_commit + '^{commit}') != 0
     assert not marker.exists()
-    # Cada ejecución recibe un puerto nuevo, como la composición real; no hereda el modo del preview.
+    # Each run gets a new port, like the real composition; it does not inherit the preview mode.
     world.writer = GitWorkspace(IDENTITY)
     if crash:
         target, name = ((world.repo, 'finish') if crash == 'register' else
@@ -105,7 +105,7 @@ def test_all_writer_commands_stay_local_and_recover_same_intent(request, monkeyp
     assert any(api == 'run' and args[:4] == ('hash-object', '-t', 'commit', '-w') for api, args in calls)
     assert any(api == 'run' and args[0] == 'update-ref' for api, args in calls)
     assert any(api == 'run' and args[0] == 'read-tree' for api, args in calls)
-    # Conciliación tras un commit posterior: merge-base usa también la API booleana local.
+    # Reconciliation after a later commit: merge-base also uses the local boolean API.
     local.run('-c', 'user.name=Synthetic', '-c', 'user.email=synthetic@example.invalid',
               'commit', '--allow-empty', '-qm', 'Synthetic later commit')
     assert world.writer.execute_documents(world.context, intent, shown['documents']).status == 'reconciled'
@@ -119,7 +119,7 @@ def test_all_writer_commands_stay_local_and_recover_same_intent(request, monkeyp
 def test_required_source_or_sealed_objects_block_job_and_resume_without_effects(request, flow, missing):
     world, prepare, show, submit = flow_ports(flow, request)
     root = world.context.root
-    # Un blob ajeno a la documentación también es necesario para capturar el árbol completo.
+    # A blob outside the documentation is also needed to capture the whole tree.
     (root / 'synthetic-payload.bin').write_bytes(b'\x00Synthetic code payload\xff')
     git = LocalGit(root)
     git.run('add', 'synthetic-payload.bin')
@@ -146,7 +146,7 @@ def test_required_source_or_sealed_objects_block_job_and_resume_without_effects(
         submit(world, cid)
     assert tree_state(root) == before and not marker.exists() and not path.exists()
     assert sealed(world) == frozen
-    # Restituir solo los bytes sintéticos permite conciliar la intención original, sin fetch.
+    # Restoring only the synthetic bytes allows reconciling the original intention, without fetch.
     path.write_bytes(data)
     assert git.text('cat-file', '-t', obj) in ('blob', 'tree')
     assert submit(world, cid).run_id == job.run_id

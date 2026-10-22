@@ -111,8 +111,8 @@ if mode == 'django':
         path.write_text(path.read_text().replace('tasks * 45', 'tasks * 30'))
     mode = 'flow'
 def usage_events(provider):
-    """H6.4: forma de uso caracterizada en D071 con valores sintéticos. Claude repite el mismo mensaje en
-    eventos `assistant` con una salida parcial; el total de cada mensaje llega en `message_delta`."""
+    """H6.4: usage shape characterized in D071 with synthetic values. Claude repeats the same message in
+    `assistant` events with partial output; the total of each message arrives in `message_delta`."""
     if provider == 'codex':
         command = {'id': 'item_0', 'type': 'command_execution', 'command': 'synthetic', 'aggregated_output': '',
                    'exit_code': 0, 'status': 'completed'}
@@ -139,7 +139,7 @@ def usage_events(provider):
 def with_usage(provider, terminal):
     if provider == 'codex':
         if terminal['type'] != 'turn.completed':
-            return terminal  # Un turn.failed de Codex no informa uso: queda ausente, no cero.
+            return terminal  # A Codex turn.failed reports no usage: it stays absent, not zero.
         return {**terminal, 'usage': {'input_tokens': 1000, 'cached_input_tokens': 600, 'cache_write_input_tokens': 0,
                                       'output_tokens': 50, 'reasoning_output_tokens': 10}}
     per_model = lambda cache_read, cache_write, output, thinking, cost: {
@@ -165,7 +165,7 @@ elif mode == 'no_terminal':
     print('{"type":"future.event","unknown":null}', flush=True)
     sys.exit(0)
 elif (mode == 'hang' or mode == 'child') and os.environ.get('PROBE_USAGE') == '1' and provider == 'claude':
-    # H6.4: un mensaje completo y otro empezado antes de colgarse; sin terminal no hay total reportado.
+    # H6.4: one complete message and another started before hanging; without a terminal no total is reported.
     for event in usage_events(provider)[:6]:
         print(json.dumps(event), flush=True)
     time.sleep(60)

@@ -8,12 +8,12 @@ import tempfile
 
 
 def _bypass_xcode_git_shim():
-    """En macOS, `/usr/bin/git` es un shim de xcrun que duplica el coste de cada llamada a Git.
+    """On macOS, `/usr/bin/git` is an xcrun shim that doubles the cost of every Git call.
 
-    Las pruebas lanzan miles de procesos Git: se antepone al PATH de la sesión un prefijo con el
-    mismo binario real, su `libexec/git-core` y su `share` (Apple Git resuelve ambos relativos al
-    ejecutable). Debe ocurrir al importar este conftest, antes de que los módulos de prueba copien
-    `os.environ` en sus entornos de Git.
+    The tests launch thousands of Git processes: the session PATH gets a prefix with the same
+    real binary, its `libexec/git-core` and its `share` (Apple Git resolves both relative to the
+    executable). It must happen when this conftest is imported, before the test modules copy
+    `os.environ` into their Git environments.
     """
     if sys.platform != 'darwin' or shutil.which('git') != '/usr/bin/git':
         return

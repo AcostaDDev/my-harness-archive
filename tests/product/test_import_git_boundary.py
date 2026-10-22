@@ -1,4 +1,4 @@
-"""P008-T016: regresiones H1–H3 con Git/SQLite temporales, sin proveedores ni código real."""
+"""P008-T016: H1–H3 regressions with temporary Git/SQLite, no providers or real code."""
 from hashlib import sha256
 import os
 import shlex
@@ -22,7 +22,7 @@ from test_project_onboarding import checkout
 
 
 def install_filter(root, kind, included):
-    """El filtro falso dejaría un marcador si Git lo invocase; no debe llegar a ejecutarse."""
+    """The fake filter would leave a marker if Git invoked it; it must never run."""
     port = Git(root)
     marker = root.parent / 'filter-invoked'
     script = root.parent / 'filter probe.py'

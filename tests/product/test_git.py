@@ -1,7 +1,7 @@
-"""H2.4: Git real en repositorios temporales, SQLite y agentes falsos.
+"""H2.4: real Git in temporary repositories, SQLite and fake agents.
 
-Ningún proveedor ni CLI de agente. El hook `reference-transaction` instalado
-en los repositorios sirve para comprobar que los hooks nunca se ejecutan.
+No provider or agent CLI. The `reference-transaction` hook installed in the
+repositories is used to check that hooks are never executed.
 """
 
 from dataclasses import replace
@@ -163,7 +163,7 @@ def commits_after(root, base):
 
 
 def snapshot(root):
-    """Estado observable del checkout principal: HEAD, índice, contenido y estado."""
+    """Observable state of the main checkout: HEAD, index, content and status."""
     index = Path(git(root, "rev-parse", "--absolute-git-dir")) / "index"
     files = {str(p.relative_to(root)): p.read_bytes() for p in sorted(root.rglob("*"))
              if p.is_file() and ".git" not in p.relative_to(root).parts}
@@ -171,7 +171,7 @@ def snapshot(root):
             "status": git(root, "status", "--porcelain=v1", "-uall")}
 
 
-# --- captura --------------------------------------------------------------------
+# --- capture --------------------------------------------------------------------
 
 def test_capture_covers_staged_unstaged_untracked_deleted_and_modes_without_side_effects(task):
     context, info = task
@@ -199,7 +199,7 @@ def test_capture_covers_staged_unstaged_untracked_deleted_and_modes_without_side
     assert "secret" not in evidence.diff
     assert provenance["worktree_tree"] != provenance["index_tree"]
     assert git_provenance(evidence).worktree_tree == provenance["worktree_tree"]
-    # Determinista y sin efectos sobre HEAD, índice real, archivos ni estado.
+    # Deterministic and without effects on HEAD, the real index, files or status.
     assert workspace.capture(context) == evidence
     assert snapshot(root) == before
     assert not (context.root.parent.parent / "hook-ran").exists()
@@ -252,7 +252,7 @@ def test_capture_fails_safe_for_unsupported_states(tmp_path, repo, task):
 
 
 def test_unreachable_directory_is_a_launch_error_not_a_git_answer(tmp_path, repo):
-    # D125: `-C` sustituye a cwd; un directorio ausente no puede convertirse en un código booleano.
+    # D125: `-C` replaces cwd; a missing directory cannot turn into a boolean code.
     missing = Git(tmp_path / "missing")
     with pytest.raises(GitError, match="could not run"):
         missing.code("cat-file", "-e", "HEAD")
@@ -291,13 +291,13 @@ def test_worktree_is_isolated_idempotent_and_preserves_main_checkout(tmp_path, r
     first = worktrees.prepare(repo, destination, branch="harness/P001-T001")
     assert first.created and first.head == first.base_revision == before["head"]
     assert "harness/P001-T001" in git(repo, "branch", "--list")
-    assert snapshot(repo) == before  # sin stash/clean/reset/checkout
+    assert snapshot(repo) == before  # no stash/clean/reset/checkout
     assert git(first.path, "status", "--porcelain") == ""
     assert (first.path / "app/main.txt").read_text() == "baseline\n"
     write(first.path, "app/main.txt", "task work in progress\n")
     second = worktrees.prepare(repo, destination, branch="harness/P001-T001")
     assert not second.created and second.path == first.path
-    assert (second.path / "app/main.txt").read_text() == "task work in progress\n"  # no limpia
+    assert (second.path / "app/main.txt").read_text() == "task work in progress\n"  # does not clean
     assert snapshot(repo) == before
 
 
@@ -324,7 +324,7 @@ def test_worktree_refuses_to_overwrite_or_reuse_silently(tmp_path, repo):
         worktrees.prepare(repo, ok / "c", branch="harness/other")
 
 
-# --- aceptación y commit --------------------------------------------------------------
+# --- acceptance and commit ------------------------------------------------------------
 
 def test_accepted_task_creates_exactly_the_reviewed_commit(tmp_path, repo, task, repository):
     context, info = task
@@ -333,7 +333,7 @@ def test_accepted_task_creates_exactly_the_reviewed_commit(tmp_path, repo, task,
     job, record = accept(repository, context, {"app/main.txt": "implemented\n", "app/new.txt": "new\n"})
     evidence = record.history.acceptance.evidence
     assert evidence.provenance_json and evidence.changed_paths == ("app/main.txt", "app/new.txt")
-    assert git(context.root, "rev-parse", "HEAD") == info.base_revision  # aceptar no es commit
+    assert git(context.root, "rev-parse", "HEAD") == info.base_revision  # accepting is not committing
     assert repository.commit_record(job.run_id) is None
 
     _, worker = run_commit(repository, job)
@@ -354,7 +354,7 @@ def test_accepted_task_creates_exactly_the_reviewed_commit(tmp_path, repo, task,
     assert f"Harness-Reviewed-Fingerprint: {evidence.fingerprint}" in message
     assert git(context.root, "log", "-1", "--format=%an <%ae>|%cn <%ce>") == (
         "Harness Local <harness@example.invalid>|Harness Local <harness@example.invalid>")
-    # Índice refrescado, contenido no revisado conservado, nada hecho fuera del worktree.
+    # Index refreshed, unreviewed content kept, nothing done outside the worktree.
     assert git(context.root, "status", "--porcelain") == ""
     assert (context.root / "ignored/ignored.txt").read_text() == "never reviewed\n"
     assert snapshot(repo) == before_main
@@ -363,7 +363,7 @@ def test_accepted_task_creates_exactly_the_reviewed_commit(tmp_path, repo, task,
     assert kinds.count("commit_intent") == kinds.count("commit_recorded") == 1
     last_finish = len(kinds) - 1 - kinds[::-1].index("job_finished")
     assert kinds.index("commit_intent") < kinds.index("commit_recorded") < last_finish
-    # Sin reintento ni segunda operación.
+    # No retry and no second operation.
     with pytest.raises(Conflict, match="recorded commit"):
         repository.submit_commit(job.run_id, key="again", expected_version=record.version)
 
@@ -419,7 +419,7 @@ def test_external_modification_after_review_invalidates_acceptance(task, reposit
     elif mutation == "delete":
         (root / "app/keep.txt").unlink()
     else:
-        git(root, "add", "app/main.txt")  # mismo contenido, estado staged distinto
+        git(root, "add", "app/main.txt")  # same content, different staged state
     _, worker = run_commit(repository, job)
     assert worker.run_once().status == "DONE"
     run = repository.get_run(job.run_id)
@@ -428,7 +428,7 @@ def test_external_modification_after_review_invalidates_acceptance(task, reposit
     assert repository.commit_record(job.run_id) is None
     assert git(root, "rev-parse", "HEAD") == info.base_revision
     assert any(e["kind"] == "commit_invalidated" for e in repository.events(job.run_id))
-    # Revalidar produce nueva evidencia; el commit contiene lo revisado de nuevo.
+    # Revalidating produces new evidence; the commit contains what was reviewed again.
     repository.resume(job.run_id, key="revalidate", expected_version=run.version)
     revalidate, _ = supervisor(repository, context, [review()])
     revalidate.run_once()
@@ -479,7 +479,7 @@ def test_unreviewed_changes_in_main_checkout_survive_the_whole_flow(tmp_path, re
     assert (context.root / "app/main.txt").read_text() == "implemented\n"
 
 
-# --- mecánicas ----------------------------------------------------------------------------
+# --- mechanics ----------------------------------------------------------------------------
 
 def test_mechanical_updates_join_the_commit_explicitly(task, repository):
     context, info = task
@@ -520,7 +520,7 @@ def test_mechanical_updates_are_validated_before_any_effect(task, repository):
     assert repository.get_run(job.run_id).version == version
 
 
-# --- caídas -----------------------------------------------------------------------------------
+# --- crashes ----------------------------------------------------------------------------------
 
 def crash_on(monkeypatch, predicate, *, after=False):
     original = Git.run
@@ -546,7 +546,7 @@ def ref_update(args):
 
 
 def recover(repository, job, crashed_job):
-    """Lease vencido → confirmación explícita → nuevo job de commit (conciliación)."""
+    """Expired lease → explicit confirmation → new commit job (reconciliation)."""
     repository.clock.now += timedelta(seconds=31)
     assert repository.recover_expired() == [crashed_job.id]
     quarantined = repository.get_run(job.run_id)
@@ -566,14 +566,14 @@ def test_crash_around_the_git_effect_recovers_without_duplicate_commit(task, rep
         worker.run_once()
     restore()
     intent = repository.commit_record(job.run_id)
-    assert intent.status == "INTENT" and intent.outcome is None  # intención durable, sin resultado
+    assert intent.status == "INTENT" and intent.outcome is None  # durable intention, no result
     head = git(context.root, "rev-parse", "HEAD")
     assert (head == intent.intent.expected_commit) is after and (head == info.base_revision) is not after
     assert commits_after(context.root, info.base_revision) == ("1" if after else "0")
     object_exists = subprocess.run(["git", "-C", str(context.root), "cat-file", "-e", intent.intent.expected_commit],
                                    env=GIT_ENV).returncode == 0
     assert object_exists is (point != "before-object")
-    # Reinicio: la conciliación no necesita volver a revisar ni reconstruir la intención.
+    # Restart: reconciliation needs neither another review nor rebuilding the intention.
     recover(repository, job, queued)
     assert repository.get_run(job.run_id).status == "INTERRUPTED"
     _, fresh = run_commit(repository, job, key="reconcile")
@@ -599,7 +599,7 @@ def test_reconciliation_does_not_rewrite_history_after_later_commits_or_edits(ta
         worker.run_once()
     monkeypatch.undo()
     intent = repository.commit_record(job.run_id).intent
-    # El usuario sigue trabajando sobre el commit ya creado antes de la conciliación.
+    # The user keeps working on top of the commit already created before reconciliation.
     write(context.root, "app/main.txt", "user continued\n")
     git(context.root, "commit", "-qam", "user follow-up")
     write(context.root, "app/main.txt", "and again\n")
@@ -610,8 +610,8 @@ def test_reconciliation_does_not_rewrite_history_after_later_commits_or_edits(ta
     record = repository.commit_record(job.run_id)
     assert record.status == "COMMITTED" and record.outcome.status == "reconciled"
     assert record.commit == intent.expected_commit
-    assert git(context.root, "rev-parse", "HEAD") == follow_up  # historial intacto
-    assert (context.root / "app/main.txt").read_text() == "and again\n"  # edición conservada
+    assert git(context.root, "rev-parse", "HEAD") == follow_up  # history intact
+    assert (context.root / "app/main.txt").read_text() == "and again\n"  # edit kept
     assert record.outcome.index == "left_untouched" or record.outcome.index == "already_current"
 
 
@@ -634,14 +634,14 @@ def test_content_changed_between_intent_and_effect_never_commits(task, repositor
     assert run.status == "STOPPED" and run.history.stop.stage == "commit"
     assert git(context.root, "rev-parse", "HEAD") == info.base_revision
     assert (context.root / "app/main.txt").read_text() == "modified after the intent was persisted\n"
-    # Una operación invalidada no bloquea una nueva revalidación explícita.
+    # An invalidated operation does not block a new explicit revalidation.
     repository.resume(job.run_id, key="revalidate", expected_version=run.version)
 
 
 def test_head_moved_before_the_commit_object_exists_invalidates(task, repository, monkeypatch):
     context, info = task
     job, _ = accept(repository, context)
-    # Caída antes de crear el objeto: nada existe; mover HEAD invalida de forma determinable.
+    # Crash before creating the object: nothing exists; moving HEAD invalidates it determinably.
     restore = crash_on(monkeypatch, written_commit)
     queued, worker = run_commit(repository, job)
     with pytest.raises(SyntheticCrash):
@@ -672,14 +672,14 @@ def test_head_moving_during_the_effect_is_caught_by_compare_and_swap(task, repos
     assert commit.status == "INVALIDATED" and "moved" in commit.outcome.diagnostic
     racing_head = git(context.root, "rev-parse", "HEAD")
     assert racing_head != commit.intent.expected_commit
-    assert git(context.root, "rev-parse", "HEAD^") == info.base_revision  # nadie fue sobrescrito
+    assert git(context.root, "rev-parse", "HEAD^") == info.base_revision  # nobody was overwritten
     assert repository.get_run(job.run_id).status == "STOPPED"
 
 
 def test_unreachable_commit_object_is_quarantined_with_evidence(task, repository, monkeypatch):
     context, info = task
     job, _ = accept(repository, context)
-    restore = crash_on(monkeypatch, ref_update)  # objeto escrito, referencia sin mover
+    restore = crash_on(monkeypatch, ref_update)  # object written, reference not moved
     queued, worker = run_commit(repository, job)
     with pytest.raises(SyntheticCrash):
         worker.run_once()
@@ -723,7 +723,7 @@ def test_crash_after_mechanical_write_resumes_the_same_sealed_tree(task, reposit
     assert git(context.root, "status", "--porcelain") == ""
 
 
-# --- exclusión, serialización y migración -----------------------------------------------------
+# --- exclusion, serialization and migration ---------------------------------------------------
 
 def test_commit_job_holds_the_checkout_writer_lock(task, repository):
     context, _ = task
@@ -733,7 +733,7 @@ def test_commit_job_holds_the_checkout_writer_lock(task, repository):
                               key="other-run-same-root")
     claim = repository.claim()
     assert claim.id == commit_job.id
-    assert repository.claim() is None  # misma raíz canónica: un solo escritor
+    assert repository.claim() is None  # same canonical root: a single writer
     assert repository.get_job(other.id).status == "QUEUED"
 
 

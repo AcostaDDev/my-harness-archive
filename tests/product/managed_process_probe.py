@@ -1,4 +1,4 @@
-"""Worker de prueba offline en procesos independientes, únicamente sintético."""
+"""Offline test worker in separate processes, synthetic only."""
 import json
 import sys
 

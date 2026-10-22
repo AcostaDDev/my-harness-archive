@@ -1,7 +1,7 @@
-"""Salida H2, parte 1: API gestionada local con TestClient, Git/SQLite temporales y fakes.
+"""H2 exit, part 1: local managed API with TestClient, temporary Git/SQLite and fakes.
 
-Ningún proveedor, CLI de agente, red, run privado ni ReferenceProject. El supervisor
-opt-in corre en el hilo del servicio igual que en Uvicorn.
+No provider, agent CLI, network, private run or ReferenceProject. The opt-in
+supervisor runs in the service thread just as under Uvicorn.
 """
 
 import os
@@ -78,7 +78,7 @@ def edit(context, request):
 
 
 class Ports:
-    """Puertos falsos compartidos entre jobs; registra cada invocación y cada petición de puertos."""
+    """Fake ports shared between jobs; records every invocation and every port request."""
 
     def __init__(self, responses=(), commands=(), git=True):
         self.agents = ScriptedAgentAdapter(list(responses))
@@ -117,7 +117,7 @@ def client(url, tmp_path, managed, **kwargs):
 
 
 def settle(http, run_id, timeout=20.0):
-    """Espera hasta que ningún job del run esté en cola o activo; el supervisor corre en otro hilo."""
+    """Waits until no job of the run is queued or active; the supervisor runs in another thread."""
     deadline = time.monotonic() + timeout
     while time.monotonic() < deadline:
         jobs = http.get(f"/api/managed/runs/{run_id}/jobs?limit=100").json()["items"]
@@ -204,7 +204,7 @@ def main_snapshot(root):
             "status": git(root, "status", "--porcelain=v1", "-uall")}
 
 
-# --- recorrido completo ---------------------------------------------------------------
+# --- full journey ---------------------------------------------------------------------
 
 
 def test_http_flow_executes_reviews_and_commits_once_across_double_submit_and_restart(
@@ -241,7 +241,7 @@ def test_http_flow_executes_reviews_and_commits_once_across_double_submit_and_re
         assert run["history"]["acceptance"]["changed_paths"] == ["app/main.txt"]
         assert run["versions"] == VERSIONS and run["locked_by_job"] is None
         cycle = run["history"]["latest_cycle"]
-        assert "diff" not in cycle  # D085: el run lleva el resumen; el contenido va paginado
+        assert "diff" not in cycle  # D085: the run carries the summary; the content is paginated
         page = http.get(f"/api/managed/runs/{job['run_id']}/cycles/0/diff",
                         params={"sha256": cycle["diff_sha256"]}).json()
         assert page["size_bytes"] == cycle["diff_bytes"] and page["next_offset"] is None
@@ -276,13 +276,13 @@ def test_http_flow_executes_reviews_and_commits_once_across_double_submit_and_re
         page = http.get(f"/api/managed/runs/{job['run_id']}/events", params={"limit": 100}).json()
         assert page["items"] == events and page["cursor"] == final["version"] and not page["has_more"]
     assert ports.roles() == ["executor", "reviewer"]
-    assert main_snapshot(repo) == before_main  # el checkout principal no cambia
+    assert main_snapshot(repo) == before_main  # the main checkout does not change
 
     idle = Ports([])
     with client(url, tmp_path, config(task, idle)) as http:
         assert submit(http, "start-1").json()["id"] == job["id"]
         assert action(http, job["run_id"], "commit", run["version"], "commit-1").json()["id"] == commit.json()["id"]
-        time.sleep(0.2)  # el supervisor reiniciado tiene ocasión de reclamar algo
+        time.sleep(0.2)  # the restarted supervisor gets a chance to claim something
         assert http.get(f"/api/managed/runs/{job['run_id']}").json() == final
         assert all_events(http, job["run_id"]) == events
     assert idle.requested == 0 and idle.roles() == []
@@ -311,7 +311,7 @@ def test_queued_job_survives_restart_and_runs_once_when_the_supervisor_is_enable
 
 def test_recovery_over_http_requires_explicit_confirmation_and_never_repeats_the_executor(
         tmp_path, url, engine, task):
-    # Persistencia perdida durante la invocación del revisor: resultado incierto, cuarentena.
+    # Persistence lost during the reviewer invocation: uncertain result, quarantine.
     ports = Ports([edit, JournalError("Synthetic persistence failure during review"), review()])
     with client(url, tmp_path, config(task, ports)) as http:
         job = submit(http).json()
@@ -349,12 +349,12 @@ def test_recovery_over_http_requires_explicit_confirmation_and_never_repeats_the
         assert [(a["role"], a["status"]) for a in attempts] == [
             ("executor", "COMPLETED"), ("reviewer", "INTERRUPTED"), ("reviewer", "COMPLETED")]
         assert "outcome unknown" in attempts[1]["result"]["error"]
-    # Revalidar solo valida y revisa: el ejecutor no se repite y el revisor incierto no se reanuda.
+    # Revalidating only validates and reviews: the executor is not repeated and the uncertain reviewer is not resumed.
     assert ports.roles() == ["executor", "reviewer", "reviewer"]
     assert len(ports.runner.calls) == 2
 
 
-# --- conflictos y validación ------------------------------------------------------------
+# --- conflicts and validation -----------------------------------------------------------
 
 
 def test_version_and_idempotency_conflicts_return_409_without_effects(tmp_path, url, engine, plain):
@@ -378,7 +378,7 @@ def test_version_and_idempotency_conflicts_return_409_without_effects(tmp_path, 
 
 
 @pytest.mark.parametrize("request_kwargs", [
-    {"json": RUN},  # sin Idempotency-Key
+    {"json": RUN},  # without Idempotency-Key
     {"json": {**RUN, "model": "real"}, "headers": {"Idempotency-Key": "extra"}},
     {"json": {**RUN, "text": ""}, "headers": {"Idempotency-Key": "empty"}},
     {"json": {**RUN, "task_id": 7}, "headers": {"Idempotency-Key": "type"}},
@@ -418,7 +418,7 @@ def test_runs_of_unregistered_checkouts_are_readable_but_not_actionable(tmp_path
         assert table_counts(engine) == counts
 
 
-# --- modo y migración -------------------------------------------------------------------
+# --- mode and migration -----------------------------------------------------------------
 
 
 def test_mode_refusals_return_409_with_diagnostic_and_no_partial_effects(tmp_path, url, engine):
@@ -458,7 +458,7 @@ def test_host_origin_and_csrf_header_are_enforced_without_effects(tmp_path, url,
                 "Idempotency-Key": "k", "X-Harness-Local": "1", "Origin": origin})
             assert cross.status_code == 403 and cross.json()["detail"]["code"] == "origin_rejected"
         assert table_counts(engine) == counts
-        assert http.get("/api/managed/projects").status_code == 200  # lecturas sin cabecera propia
+        assert http.get("/api/managed/projects").status_code == 200  # reads without their own header
         local = http.post("/api/managed/projects/synthetic/runs", json=RUN, headers={
             "Idempotency-Key": "k", "X-Harness-Local": "1", "Origin": LOCAL})
         assert local.status_code == 202

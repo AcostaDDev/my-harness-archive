@@ -1,6 +1,6 @@
-"""H6.4: métricas por intento y agregados con streams sintéticos, Git/SQLite temporales; sin proveedores.
+"""H6.4: per-attempt metrics and aggregates with synthetic streams, temporary Git/SQLite; no providers.
 
-Los streams imitan la forma caracterizada en D071 (docs/archive/phase-007/H6.4_METRICS.md) con valores inventados.
+The streams imitate the shape characterized in D071 (docs/archive/phase-007/H6.4_METRICS.md) with made-up values.
 """
 from concurrent.futures import ThreadPoolExecutor
 from contextlib import closing
@@ -45,7 +45,7 @@ def usage_adapter(tmp_path, mode='flow', timeout=5):
 
 
 def flow(tmp_path, context, repository, mode='flow', key='metrics', planning='agent'):
-    """Planificador y revisor Codex, ejecutor Claude, por el adaptador real y el probe sintético."""
+    """Codex planner and reviewer, Claude executor, through the real adapter and the synthetic probe."""
     ctx = replace(context, policy=replace(context.policy, planning_mode=planning))
     port = usage_adapter(tmp_path, mode)
     job = repository.submit(ctx, 'P001-T001', 'P001', PLAN, {**VERSIONS, **port.frozen_versions()}, key=key)
@@ -84,7 +84,7 @@ def clear_metrics(path):
 
 
 def as_terminal_1(path):
-    """Forma exacta de los resultados sellados antes de 0014 (cli-9): sin turnos, duración de API ni contadores."""
+    """Exact shape of the results sealed before 0014 (cli-9): no turns, API duration or counters."""
     with closing(sqlite3.connect(path)) as db:
         for attempt_id, raw in db.execute('SELECT id, result_json FROM managed_attempts').fetchall():
             result = json.loads(raw)
@@ -98,7 +98,7 @@ def as_terminal_1(path):
         db.commit()
 
 
-# --- catálogo puro ------------------------------------------------------------------------------
+# --- pure catalog -------------------------------------------------------------------------------
 
 
 CLAUDE_STREAM = [
@@ -109,7 +109,7 @@ CLAUDE_STREAM = [
                                       'content': [{'type': 'tool_use', 'id': 't1', 'name': 'Read'}]}},
     {'type': 'assistant', 'message': {'id': 'm1', 'model': 'm-a', 'usage': {'output_tokens': 1},
                                       'content': [{'type': 'tool_use', 'id': 't1', 'name': 'Read'}]}},
-    # message_delta: uso acumulado del mensaje; aquí solo la salida, la entrada sigue la de message_start.
+    # message_delta: cumulative usage of the message; here only output, input follows message_start.
     {'type': 'stream_event', 'event': {'type': 'message_delta', 'usage': {'output_tokens': 20}}},
     {'type': 'rate_limit_event', 'rate_limit_info': {'status': 'allowed', 'utilization': 0.9}},
     {'type': 'system', 'subtype': 'thinking_tokens', 'estimated_tokens': 9871},
@@ -127,7 +127,7 @@ CLAUDE_RESULT = {'type': 'result', 'subtype': 'success', 'is_error': False, 'num
 
 
 def sealed(provider, events, *, terminal=True, wall=1.5):
-    """Metadatos como los sella el adaptador (terminal-2) para un stream dado."""
+    """Metadata as the adapter seals it (terminal-2) for a given stream."""
     metrics = StreamMetrics(provider)
     observed = {}
     for event in events:
@@ -154,7 +154,7 @@ def compute(provider, result, role='executor', status='COMPLETE', **kwargs):
 def test_claude_terminal_total_wins_over_incremental_messages_and_models_are_listed():
     row = compute('claude', sealed('claude', CLAUDE_STREAM + [CLAUDE_RESULT]))
     assert (row['accounting'], row['input_semantics']) == ('terminal', 'excludes_cache')
-    # Totales del terminal: ni el uso por mensaje ni las instantáneas de `assistant` se suman encima.
+    # Terminal totals: neither per-message usage nor `assistant` snapshots are added on top.
     assert (row['input_tokens'], row['cache_read_tokens'], row['cache_write_tokens'], row['output_tokens'],
             row['reasoning_tokens']) == (3, 25, 5, 30, 4)
     assert (row['uncached_input_tokens'], row['total_tokens']) == (3, 63)
@@ -165,19 +165,19 @@ def test_claude_terminal_total_wins_over_incremental_messages_and_models_are_lis
          'reasoning_tokens': None, 'cost_usd': 0.1}]
     assert row['reported_models'] == ['m-a', 'm-b'] and row['reported_effort'] is None
     assert (row['turns'], row['provenance']['turns']) == (2, 'reported')
-    assert (row['tools'], row['tool_calls']) == ({'Read': 1}, 1)  # el mismo tool_use repetido cuenta una vez
+    assert (row['tools'], row['tool_calls']) == ({'Read': 1}, 1)  # the same repeated tool_use counts once
     assert (row['permission_denials'], row['duration_ms'], row['api_duration_ms'], row['cost_usd'], row['wall_ms']) \
         == (1, 50, 40, 0.5, 1500)
     assert row['provenance']['wall_ms'] == 'measured' and row['provenance']['cost_usd'] == 'reported'
     assert row['provenance']['total_tokens'] == 'derived' and row['provenance']['requested_model'] == 'requested'
-    # Nada del rate_limit_event ni del recuento estimado de razonamiento: no se deduce cuota.
+    # Nothing from rate_limit_event or the estimated reasoning count: no quota is inferred.
     assert not any(word in json.dumps(row) for word in ('rate_limit', 'utilization', 'quota', '9871'))
 
 
 def test_claude_without_terminal_derives_partial_usage_from_message_deltas():
     row = compute('claude', sealed('claude', CLAUDE_STREAM, terminal=False), status='CANCELLED')
     assert row['accounting'] == 'messages' and row['provenance']['input_tokens'] == 'derived'
-    # m1: entrada de message_start y salida acumulada de message_delta; m2 sin delta: su instantánea inicial.
+    # m1: input from message_start and cumulative output from message_delta; m2 without delta: its initial snapshot.
     assert (row['input_tokens'], row['cache_read_tokens'], row['cache_write_tokens'], row['output_tokens']) \
         == (3, 25, 5, 21)
     assert row['reasoning_tokens'] is None and row['provenance']['reasoning_tokens'] == 'absent'
@@ -201,7 +201,7 @@ def test_codex_cumulative_terminal_derived_turns_and_absent_fields():
     for field in ('cost_usd', 'duration_ms', 'api_duration_ms', 'permission_denials', 'reported_models', 'models'):
         assert row['provenance'][field] == 'absent'
     assert row['cost_usd'] is None and row['models'] == []
-    # Escritura de caché distinta de cero: semántica no certificada, total ausente en vez de adivinado.
+    # Non-zero cache write: uncertified semantics, total absent instead of guessed.
     events[-1]['usage']['cache_write_input_tokens'] = 7
     assert compute('codex', sealed('codex', events))['total_tokens'] is None
 
@@ -227,17 +227,17 @@ def test_historical_results_without_metadata_stay_readable_with_absent_values():
 
 def test_replay_of_a_terminal_1_capture_adds_only_what_the_seal_lacked():
     raw = b''.join(json.dumps(event).encode() + b'\n' for event in CLAUDE_STREAM + [CLAUDE_RESULT])
-    stream = replay('claude', raw + b'{"type":"res')  # cola parcial ignorada como en la captura
+    stream = replay('claude', raw + b'{"type":"res')  # partial tail ignored as in the capture
     old = json.loads(sealed('claude', CLAUDE_STREAM + [CLAUDE_RESULT])['metadata_json'])
     old.pop('normalization'), old.pop('stream_metrics'), old['observed'].pop('num_turns')
-    old['observed']['usage'] = {**old['observed']['usage'], 'output_tokens': 31}  # el sello prevalece
+    old['observed']['usage'] = {**old['observed']['usage'], 'output_tokens': 31}  # the seal prevails
     row = compute('claude', {'metadata_json': json.dumps(old)}, stream=stream)
     assert (row['turns'], row['tools'], row['output_tokens'], row['normalization']) == (2, {'Read': 1}, 31, 'terminal-1')
     without = compute('claude', {'metadata_json': json.dumps(old)})
     assert (without['turns'], without['tools'], without['api_duration_ms']) == (None, None, 40)
 
 
-# --- captura en la transacción del resultado ------------------------------------------------------
+# --- capture in the result transaction ------------------------------------------------------------
 
 
 def test_cli_flow_materializes_one_row_per_attempt_from_the_sealed_capture(tmp_path, context, repository):
@@ -265,7 +265,7 @@ def test_cli_flow_materializes_one_row_per_attempt_from_the_sealed_capture(tmp_p
         ('claude-synthetic-a', 3, 100, 400, 30, 12, 0.01), ('claude-synthetic-b', 3, 200, 0, 40, 0, 0.0025)]
     summary = MetricsViews(repository.engine).summary(GLOBAL)['consumption']
     assert summary['tokens']['total_tokens'] == {'sum': 2876, 'attempts': 3}
-    # La entrada cruda (Codex incluye la caché, Claude no) no se agrega; sí la entrada sin caché.
+    # Raw input (Codex includes the cache, Claude does not) is not aggregated; uncached input is.
     assert 'input_tokens' not in summary['tokens']
     assert summary['tokens']['uncached_input_tokens'] == {'sum': 806, 'attempts': 3}
     assert summary['turns_reported'] == {'sum': 2, 'attempts': 1}
@@ -298,7 +298,7 @@ def test_cancelled_failed_and_double_terminal_attempts_are_counted_once(tmp_path
                                  planning='deterministic')
     double.run_once()
     [invalid] = metric_rows(repository, double_job.run_id)
-    # Dos terminales: estado inválido y el total de uno solo, nunca la suma de ambos.
+    # Two terminals: invalid status and the total of only one, never the sum of both.
     assert (invalid['status'], invalid['total_tokens'], invalid['turns']) == ('INVALID', 776, 2)
 
 
@@ -318,7 +318,7 @@ def test_codex_failure_reports_no_usage_as_absent_not_zero(tmp_path, context, re
     repository.checkpoint(claim, replace(history, attempts=(Attempt(request, result),)), 'reviewer')
     [row] = metric_rows(repository)
     assert (row['provider'], row['status'], row['accounting'], row['total_tokens']) == ('codex', 'FAILED', None, None)
-    assert row['provenance']['input_tokens'] == 'absent' and row['turns'] == 3  # elementos sí observados
+    assert row['provenance']['input_tokens'] == 'absent' and row['turns'] == 3  # items actually observed
 
 
 def test_metrics_and_result_commit_atomically(context, repository, monkeypatch):
@@ -331,7 +331,7 @@ def test_metrics_and_result_commit_atomically(context, repository, monkeypatch):
     with pytest.raises(RuntimeError, match='synthetic metrics failure'):
         supervisor.run_once()
     with Session(repository.engine) as session:
-        # El resultado no quedó registrado sin su fila de métricas: misma transacción.
+        # The result was not recorded without its metrics row: same transaction.
         assert session.scalars(select(ManagedAttemptRow.result_json).where(ManagedAttemptRow.run_id == job.run_id)).all() == [None]
     assert metric_rows(repository) == []
 
@@ -358,7 +358,7 @@ def test_interrupted_attempts_get_rows_when_the_stopped_writer_is_confirmed(cont
     assert row['total_tokens'] is None and row['day'] == '2026-10-11'
 
 
-# --- relleno explícito -------------------------------------------------------------------------
+# --- explicit backfill -------------------------------------------------------------------------
 
 
 def test_backfill_from_result_json_reproduces_capture_and_is_idempotent(tmp_path, context, repository,
@@ -402,7 +402,7 @@ def test_backfill_of_old_captures_reads_only_verified_streams(tmp_path, context,
     assert [row['tools'] for row in verified[:2]] == [captured[0]['tools'], captured[1]['tools']]
     assert verified[1]['api_duration_ms'] == 800 and verified[1]['provenance']['turns'] == 'reported'
     assert verified[2]['diagnostics'] == ['stream_hash_mismatch'] and verified[2]['total_tokens'] == 1050
-    # Lo leído de un stream verificado no se reconstruiría si ese stream se retira: el downgrade se niega.
+    # What was read from a verified stream would not be rebuilt if that stream is retired: the downgrade refuses.
     config = migrated_database[1]
     with pytest.raises(RuntimeError, match='Stream-derived'):
         command.downgrade(config, '0013_bootstrap')
@@ -455,10 +455,10 @@ def test_downgrade_without_stream_derived_rows_round_trips(tmp_path, context, re
     command.downgrade(config, '0013_bootstrap')
     command.upgrade(config, 'head')
     command.check(config)
-    assert backfill(repository.engine)['inserted'] == 3  # derivados: el relleno los reconstruye
+    assert backfill(repository.engine)['inserted'] == 3  # derived: the backfill rebuilds them
 
 
-# --- agregados ----------------------------------------------------------------------------------
+# --- aggregates ---------------------------------------------------------------------------------
 
 
 @pytest.fixture
@@ -513,7 +513,7 @@ def test_task_quality_tests_and_stops_without_reported_usage(world):
     assert summary['stops'] == {'distinct': 1, 'items': [{'purpose': 'task', 'stage': 'executor',
                                                           'reason': 'RuntimeError: synthetic executor failure',
                                                           'count': 1}]}
-    # Agentes falsos: los intentos cuentan, sus tokens son ausencia (null), nunca cero.
+    # Fake agents: the attempts count, their tokens are absence (null), never zero.
     consumption = summary['consumption']
     assert consumption['attempts'] == 7 and consumption['accounting'] == {'terminal': 0, 'messages': 0, 'absent': 7}
     assert consumption['tokens']['total_tokens'] == {'sum': None, 'attempts': 0}
@@ -538,7 +538,7 @@ def test_task_quality_tests_and_stops_without_reported_usage(world):
 
 
 def test_validation_evolution_counts_every_cycle_by_phase_task_and_root(world):
-    """H6.2 E6: OK/KO de cada ciclo de validación (también las revalidaciones), por fase, tarea o raíz."""
+    """H6.2 E6: OK/KO of each validation cycle (revalidations too), by phase, task or root."""
     from harness_local.core.engine.validation import CommandResult
     from test_managed_api import PLAN as TASK_PLAN, review as accept
     from test_phases import PLAN_2
@@ -566,13 +566,13 @@ def test_validation_evolution_counts_every_cycle_by_phase_task_and_root(world):
                         'commands_failed': 1, 'cases': None, 'validations_with_cases': 0}
     task, = views.validations({**scope, 'phase': 'P001', 'task': 'P001-T001'}, 'root', 0, 30)['items']
     assert (task['key'], task['validations'], task['passed'], task['failed']) == (root, 2, 1, 1)
-    # La última validación de cada tarea (resumen) frente a la evolución completa (todas las validaciones).
+    # The last validation of each task (summary) versus the full evolution (all validations).
     assert views.summary(scope)['tests']['commands_failed'] == 0
     assert views.validations(GLOBAL, 'phase', 1, 30) == {'dimension': 'phase', 'items': [], 'offset': 1,
                                                          'next_offset': None}
     with pytest.raises(ValueError):
         views.validations(GLOBAL, 'day', 0, 30)
-    # Orden por clave descendente también en los grupos de consumo (series por día de la UI).
+    # Order by descending key in the consumption groups too (per-day series of the UI).
     assert [item['key'] for item in views.groups(scope, 'task', 0, 10, order='key')['items']] == ['P001-T002', 'P001-T001']
 
 
@@ -635,7 +635,7 @@ def test_http_metrics_are_read_only_paginated_and_scoped(tmp_path, context, repo
         assert http.get('/api/managed/metrics/validations', params={'phase': 'P001'}).status_code == 422
 
 
-# --- SUMMARY de fase ---------------------------------------------------------------------------
+# --- phase SUMMARY -----------------------------------------------------------------------------
 
 
 SUMMARY = {'phase': {'code': 'P001', 'status': 'CLOSED', 'objective': 'o', 'exit_criteria': ['c'], 'tag': 'p001',
@@ -663,7 +663,7 @@ def test_summary_render_adds_tokens_and_turns_only_for_new_snapshots():
     new = render_summary({**SUMMARY, 'consumption': consumption})
     assert '| Tests | Tokens | Turnos |' in new
     assert '| 776 | 2 reportados · 3 derivados |' in new
-    assert '| reviewer | 1 | — | — | — | — | — | — | — |' in new  # ausencia, no cero
+    assert '| reviewer | 1 | — | — | — | — | — | — | — |' in new  # absence, not zero
     assert '| total | 2 | 776 | 776 | 776 | 776 | 776 | 2 reportados · 3 derivados | 0.0125 |' in new
     assert render_summary({**SUMMARY, 'consumption': consumption}) == new
 
@@ -689,7 +689,7 @@ def test_phase_transition_summary_includes_consumption(repository, tmp_path, _le
     from test_documents import queue_transition
     v2, pid = closed_v2(repository, tmp_path)
     with closing(sqlite3.connect(repository.engine.url.database)) as db:
-        # Uso reportado inyectado en la fila del ejecutor; los agentes falsos no informan uso.
+        # Reported usage injected into the executor's row; fake agents report no usage.
         db.execute("UPDATE attempt_metrics SET total_tokens=500, uncached_input_tokens=10, output_tokens=90, "
                    "cache_read_tokens=300, cache_write_tokens=100, turns=4, provider='claude', accounting='terminal', "
                    "provenance=json_set(provenance, '$.turns', 'reported') WHERE role='executor'")
@@ -711,7 +711,7 @@ def test_transition_reviewed_before_metrics_runs_exactly_as_reviewed(repository,
     with Session(repository.engine) as session, session.begin():
         op = session.scalar(select(PhaseOperationRow).where(PhaseOperationRow.run_id == job.run_id))
         stored = json.loads(json.dumps(op.request))
-        stored['preview']['snapshot']['summary'].pop('consumption')  # forma congelada antes de 0014
+        stored['preview']['snapshot']['summary'].pop('consumption')  # shape frozen before 0014
         op.request = stored
     v2.run()
     assert repository.get_run(job.run_id).status == 'COMMITTED'

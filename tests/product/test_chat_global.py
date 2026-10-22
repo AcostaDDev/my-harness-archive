@@ -136,7 +136,7 @@ def test_all_command_previews_are_read_only_and_bind_the_observed_context(world,
         chat.repo.command_preview(world.context, cid, 10, '/estado')
 
 
-def test_tarea_is_idempotent_proposal_without_snapshot_or_agent(world, chat, monkeypatch):
+def test_task_command_is_idempotent_proposal_without_snapshot_or_agent(world, chat, monkeypatch):
     cid = chat.create()
     def no_head(*args):
         pytest.fail('deterministic commands do not inspect Git')

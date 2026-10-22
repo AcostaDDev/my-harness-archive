@@ -1,4 +1,4 @@
-"""P008-T004: cierre unificado con repositorios, Git, SQLite y proveedores sintéticos."""
+"""P008-T004: unified closure with synthetic repositories, Git, SQLite and providers."""
 from dataclasses import replace
 import json
 
@@ -238,7 +238,7 @@ def test_http_closure_and_confirmed_plan_use_the_current_protocol(unified, tmp_p
                 'binding_sha256': detail['ready']['binding_sha256'], 'reason': 'HTTP closure', 'confirmed': True}
         response = http.post(f'/api/managed/phases/{pid}/actions', json=body, headers={'Idempotency-Key': 'http-close'})
         assert response.status_code == 202, response.text
-        # El runtime de esta prueba no arranca proveedores ni un supervisor de fondo.
+        # This test's runtime starts no providers or background supervisor.
         world.run()
         closed = http.get(f'/api/managed/phases/{pid}').json()
         assert closed['status'] == 'CLOSED' and closed['closure']['archive'] == 'docs/archive/phase-001'
@@ -351,7 +351,7 @@ def test_active_empty_phase_accepts_its_conversation_plan(unified):
     assert world.get(following)['definition']['tasks'] == ['P002-T001']
 
 
-# --- P010-T005: evidencia de una fase cerrada ----------------------------------------------------
+# --- P010-T005: evidence of a closed phase -------------------------------------------------------
 
 
 def final_roadmap(world):
@@ -392,18 +392,18 @@ def test_closed_phase_without_successor_separates_renewal_from_real_drift(unifie
     assert closure['binding']['head'] == ready_view['binding']['head'] and closure['reason'] == 'Synthetic closure'
     assert closure['check']['verdict'] == 'READY' and closure['check']['operation_id'] == ready_view['operation_id']
     assert closure['tag']['status'] == 'created'
-    # Renovar STATE/NEXT_STEPS/ROADMAP/DECISIONS al cerrar es la diferencia esperada, no un fallo del check.
+    # Renewing STATE/NEXT_STEPS/ROADMAP/DECISIONS at closure is the expected difference, not a check failure.
     assert detail['documents']['drift'] == closure['renewed'] and 'docs/STATE.md' in closure['renewed']
     assert closure['changed'] == [] and closure['archive_altered'] == [] and drifted(world) == []
     assert 'docs/archive/phase-001/STATE.md' in closure['archive_files']
-    assert detail['documents']['baseline'] == ready_view['binding']['documents']  # la base histórica no cambia
-    # Una edición confirmada después del cierre también es esperada.
+    assert detail['documents']['baseline'] == ready_view['binding']['documents']  # the historical base does not change
+    # A confirmed edit after the closure is expected as well.
     roadmap = world.context.path('docs/ROADMAP.md').read_text() + '\nNota posterior al cierre.\n'
     queue_edit(world, changes=[{'path': 'docs/ROADMAP.md', 'content': roadmap}])
     world.run()
     closure = world.get(pid)['closure']
     assert closure['changed'] == [] and 'docs/ROADMAP.md' in closure['renewed'] and drifted(world) == []
-    # Un cambio externo de un documento vivo o del archivo es deriva real y se muestra.
+    # An external change to a live document or to the archive is real drift and is shown.
     world.context.path('docs/NEXT_STEPS.md').write_text('# Editado fuera del harness\n')
     world.context.path('docs/archive/phase-001/SUMMARY.md').write_text('# Alterado\n')
     world.context.path('docs/archive/phase-001/STATE.md').unlink()
@@ -422,7 +422,7 @@ def test_closed_phase_with_successor_leaves_live_documents_to_it(unified):
     assert detail['successor'] == 'P002' and detail['closure']['changed'] is None
     assert detail['closure']['renewed'] and detail['closure']['archive_altered'] == []
     world.context.path('docs/STATE.md').write_text(STATE)
-    assert world.get(pid)['closure']['changed'] is None  # la deriva viva pertenece a P002
+    assert world.get(pid)['closure']['changed'] is None  # the live drift belongs to P002
     assert drifted(world) == ['docs/STATE.md']
 
 

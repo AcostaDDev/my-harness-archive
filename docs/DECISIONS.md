@@ -175,6 +175,7 @@ tarea se leen solo las decisiones que cita; este índice sirve para buscar prece
 | [D162](#d162--p011-t003-núcleo-y-perfiles-en-inglés-sin-cambiar-comportamiento) | P011-T003: núcleo y perfiles en inglés sin cambiar comportamiento | P011 |
 | [D163](#d163--p011-t004-backend-en-inglés-y-recetas-v2-sin-cablear) | P011-T004: backend en inglés y recetas v2 sin cablear | P011 |
 | [D164](#d164--p011-t005-cliente-scripts-y-ejemplos-en-inglés) | P011-T005: cliente, scripts y ejemplos en inglés | P011 |
+| [D165](#d165--p011-t006-pruebas-y-fixtures-en-inglés-sin-tocar-datos) | P011-T006: pruebas y fixtures en inglés sin tocar datos | P011 |
 
 ## D001 — Alcance local y arquitectura base
 
@@ -4870,3 +4871,24 @@ Fase: P011. Precedentes: D159/D162/D163 y [inventario T001](phase/P011-T001_INVE
   instrucciones actuales. Referencias internas (Hx.y, DNNN) en comentarios se mantienen como en T003/T004 (T014).
 - Sin cambios de modelos, migraciones, flujos, API, dependencias o configuración global. Checks offline en el
   informe; sin servicios, construcción/instalación del paquete, agentes, proveedores ni red. T006 es la siguiente.
+
+## D165 — P011-T006: pruebas y fixtures en inglés sin tocar datos
+
+Estado: implementada el 2026-10-23 por la continuación y commit local en inglés pedidos por el usuario.
+Fase: P011. Precedentes: D159/D162–D164 y [inventario T001](phase/P011-T001_INVENTARIO.md) (F, E2).
+[Inventario resuelto y validación](phase/P011-T006_INGLES_PRUEBAS.md).
+
+- Comentarios y docstrings de las pruebas Python en inglés: 294 comentarios y 91 docstrings en 49 archivos, con
+  AST idéntico (docstrings aparte). Comentarios y cinco nombres de test de `frontend/tests` en inglés. Único
+  identificador español renombrado: `test_task_command_is_idempotent_proposal_without_snapshot_or_agent`; el
+  comando `tarea` y sus expectativas se conservan.
+- Se traducen también los textos propios de las pruebas que no son expectativas ni datos: un diagnóstico de
+  `AssertionError`, dos excepciones sintéticas junto con su `match=` y dos motivos de `pytest.skip`.
+- Se conservan expectativas de mensajes del producto (cambian con su origen en T009/T010), campos bilingües
+  D088, comandos de chat, contenido sintético de usuario, sondas Unicode y los datos de fixtures: streams,
+  manifest, ayudas reales de CLI y texto visible de la app hija `typescript_web`. Las referencias internas
+  (Hx.y, DNNN, `docs/archive`) quedan para T014.
+- HITL del usuario: los README de `tests/fixtures/{cli_help,streams,typescript_web}` se traducen; son descripción
+  y no datos, aunque `streams/` sea E2, y ninguna prueba hashea sus bytes.
+- Sin cambios de modelos, migraciones, flujos, API, dependencias ni configuración global. Suites offline en verde
+  con los mismos totales que en T005; sin servicios, agentes, proveedores ni red. T007 es la siguiente.

@@ -111,8 +111,8 @@ def test_valid_configuration_composes_fresh_ports_without_processes(setup):
 
 
 def test_projects_without_documents_use_the_mandatory_unified_layout_and_quarantine_older_jobs(setup):
-    """D088: omitir `documents` equivale a "v2"; la versión del layout entra en las congeladas, así que un job
-    admitido con la composición anterior no recibe puertos ni escritor (el supervisor lo deja en cuarentena)."""
+    """D088: omitting `documents` equals "v2"; the layout version is among the frozen ones, so a job admitted
+    with the previous composition receives no ports or writer (the supervisor quarantines it)."""
     context, data, folder, tmp_path = setup
     (project,) = load_local_config(write(folder, data)).projects
     assert 'documents' not in data['projects'][0] and project.context.documents == 'v2'

@@ -1,4 +1,4 @@
-"""P008-T014: repositorios sintéticos, SQLite/Git temporales y revisor falso; ningún proveedor real."""
+"""P008-T014: synthetic repositories, temporary SQLite/Git and a fake reviewer; no real provider."""
 from dataclasses import replace
 import json
 import re
@@ -97,7 +97,7 @@ def test_django_reverse_engineering_is_pinned_read_only_and_private(world):
     world.apply_all(cid)
     assert tree_state(world.context.root) == before
     actual = (world.area(cid) / 'docs/DDBB-DIAGRAM.md').read_text()
-    # El documento persistido coincide con las entidades y relaciones concretas del inventario sellado.
+    # The persisted document matches the concrete entities and relations of the sealed inventory.
     assert re.findall(r'^    (\w+) \{', actual, re.M) == [e['name'] for e in source['inventory']['entities']]
     assert re.findall(r'^    Author ([|o}{-]+) Book : (\w+)$', actual, re.M) == [
         ('||--o{', 'author'), ('}o--o{', 'editors')]

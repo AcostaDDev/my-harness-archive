@@ -1,7 +1,7 @@
-"""Caracterización H2.1 en checkouts Git temporales, solo puertos falsos.
+"""H2.1 characterization in temporary Git checkouts, fake ports only.
 
-La referencia nunca se importa ni ejecuta. No se llama a proveedores ni se
-validan stacks reales. Git se usa únicamente para crear el repositorio de test.
+The reference is never imported or executed. No provider is called and no
+real stacks are validated. Git is only used to create the test repository.
 """
 
 from dataclasses import asdict, replace
@@ -112,7 +112,7 @@ def test_flow_is_offline_with_fresh_independent_requests(context, monkeypatch):
     assert len({item.id for item in agents.requests}) == 2
     assert all(item.fresh_session for item in agents.requests)
     assert all(item.task_json == result.task_json and item.context_json == result.context_json for item in agents.requests)
-    assert len(runner.calls) == 1  # task/baseline deduplicados
+    assert len(runner.calls) == 1  # task/baseline deduplicated
     assert runner.calls[0][0].root == context.root
     prompt = json.loads(json.loads(agents.requests[-1].prompt_snapshot_json)["parts"][0]["variables"]["INPUT_JSON"])
     assert prompt["evidence"]["fingerprint"] == result.cycles[0].evidence.fingerprint
@@ -457,7 +457,7 @@ def test_reference_project_rules_are_in_declarative_profile_not_core(context, mo
     core = Path(__file__).resolve().parents[2] / "src/harness_local/core/engine"
     assert not any(word in path.read_text() for path in core.glob("*.py")
                    for word in ("Django", "docker", "PostgreSQL", "manage.py", "ruff", "reference_project"))
-    # El perfil genérico ya recorre el mismo flujo sin excepciones de stack.
+    # The generic profile already walks the same flow without stack exceptions.
     engine, _, _, _ = harness(context, [edit(), review()])
     assert start(engine, context).status == "acceptance_ready"
     reference_project = replace(context, profile=profile)

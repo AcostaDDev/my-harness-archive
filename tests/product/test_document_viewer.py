@@ -1,6 +1,6 @@
-"""H6.2 E3: lecturas del visor (árbol e imágenes), CAS del hash base y regeneración de bloques editados en local.
+"""H6.2 E3: viewer reads (tree and images), base hash CAS and regeneration of blocks edited locally.
 
-Git/SQLite temporales y agentes falsos, sin proveedores. Se apoya en el mundo v2 de `test_documents`.
+Temporary Git/SQLite and fake agents, no providers. Builds on the v2 world of `test_documents`.
 """
 import os
 
@@ -26,7 +26,7 @@ def test_content_edit_compares_the_base_hash_the_editor_opened(v2):
     change = {'path': 'docs/SPECIFICATION.md', 'content': '# Especificación\n\nEditada.\n', 'base_sha256': text_hash(spec)}
     view = edit_view(v2, changes=[change])
     assert [doc['before_sha256'] for doc in view['documents']] == [text_hash(spec)]
-    # Otro escritor cambia el documento y lo commitea: el editor ya no tiene la base.
+    # Another writer changes the document and commits it: the editor no longer has the base.
     v2.context.path('docs/SPECIFICATION.md').write_text('# Externa\n', encoding='utf-8')
     git(v2.context.root, 'commit', '-qam', 'external edit')
     with pytest.raises(Conflict, match='changed since it was opened') as caught:
@@ -36,7 +36,7 @@ def test_content_edit_compares_the_base_hash_the_editor_opened(v2):
     with pytest.raises(Conflict, match='changed since it was opened'):
         queue_edit(v2, changes=[change], view=view)
     assert head(v2) == before and text(v2, 'docs/SPECIFICATION.md') == '# Externa\n'
-    # null: documento nuevo que no debe existir; sin el campo no se compara (contrato anterior).
+    # null: new document that must not exist; without the field nothing is compared (previous contract).
     new = {'path': 'docs/research/nota.md', 'content': '# Nota\n', 'base_sha256': None}
     assert [doc['before_sha256'] for doc in edit_view(v2, changes=[new])['documents']] == [None]
     with pytest.raises(Conflict, match='changed since it was opened'):
@@ -64,7 +64,7 @@ def test_regenerate_keeps_local_prose_restores_blocks_and_adopts(v2):
     [regenerated] = view['regenerated']
     assert regenerated['path'] == 'docs/STATE.md' and '-forged' in regenerated['diff']
     assert 'forged' not in view['diff'] and '+Nota escrita en el editor.' in view['diff']
-    assert text(v2, 'docs/STATE.md') == local  # la vista previa no escribe
+    assert text(v2, 'docs/STATE.md') == local  # the preview does not write
     job = editor(v2).submit(v2.context, key='regen', versions=VERSIONS, preview_sha256=view['preview_sha256'],
                             reason='Regenerar bloques', confirmed=True, git=v2.ports.writer(v2.context, VERSIONS),
                             source='worktree', changes=None, regenerate_blocks=True)
@@ -122,7 +122,7 @@ def test_regenerate_recovers_after_a_crash_between_document_write_and_commit(v2,
     with pytest.raises((RuntimeError, JournalError), match='synthetic'):
         v2.run()
     expected = view['documents'][0]['content']
-    assert text(v2, 'docs/STATE.md') == expected  # escrito, sin commit
+    assert text(v2, 'docs/STATE.md') == expected  # written, no commit
     monkeypatch.setattr(GitWorkspace, 'execute', original)
     confirm(v2, job)
     resumed = editor(v2).preview(v2.context, v2.ports.writer(v2.context, VERSIONS), source='worktree', changes=None,
@@ -203,12 +203,12 @@ def test_http_tree_image_and_cas_conflict(v2, tmp_path):
         bad = {**body, 'changes': [{**body['changes'][0], 'base_sha256': 'nope'}]}
         assert http.post(f'{base}/edit/preview', json=bad).status_code == 422
         regen = http.post(f'{base}/edit/preview', json={'source': 'worktree', 'regenerate_blocks': True})
-        assert regen.status_code == 409  # checkout limpio: nada que regenerar
+        assert regen.status_code == 409  # clean checkout: nothing to regenerate
 
 
 @pytest.mark.parametrize('docs', ['docs', 'manual'])
 def test_http_unified_document_classes_instructions_and_decision_register(v2, tmp_path, docs):
-    """La API proyecta D088 también con una carpeta documental configurada distinta."""
+    """The API projects D088 also with a different configured documents folder."""
     from dataclasses import replace
     from harness_local.services.managed_runtime import ManagedConfig, ManagedProject
 
@@ -248,7 +248,7 @@ def test_http_unified_document_classes_instructions_and_decision_register(v2, tm
         assert tree[f'{docs}/phase/tareas.md']['kind'] == 'phase_work'
         assert tree[f'{docs}/DDBB-DIAGRAM.md']['kind'] == 'diagram'
         assert tree['AGENTS.md']['kind'] == 'instructions'
-        # Ni lectura ni clasificación siguen enlaces en los archivos raíz de instrucciones.
+        # Neither reading nor classification follows links in the root instruction files.
         (root / 'CLAUDE.md').unlink()
         os.symlink(root / 'AGENTS.md', root / 'CLAUDE.md')
         linked = http.get(base + '/tree').json()

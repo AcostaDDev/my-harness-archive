@@ -1,6 +1,6 @@
-"""P010-T007: huecos de la matriz de aceptación (SPECIFICATION §10, criterios 2 y 13) por la API gestionada.
+"""P010-T007: gaps of the acceptance matrix (SPECIFICATION §10, criteria 2 and 13) through the managed API.
 
-Git/SQLite temporales, agentes y comandos falsos; ningún proveedor, red ni run privado.
+Temporary Git/SQLite, fake agents and commands; no provider, network or private run.
 """
 
 from harness_local.core.engine.validation import CommandResult
@@ -23,7 +23,7 @@ def correct(context, request):
 
 
 def test_failed_test_correction_review_and_commit_keep_the_whole_history(tmp_path, url, task):
-    """Criterio 2: fallo de test → corrección → revisión → commit, con los dos ciclos y sus intentos."""
+    """Criterion 2: test failure → correction → review → commit, with both cycles and their attempts."""
     base = git(task.root, "rev-parse", "HEAD")
     ports = Ports([edit, revise(), correct, review()], [CommandResult(1, stderr="Synthetic failed assertion")])
     with client(url, tmp_path, config(task, ports)) as http:
@@ -47,7 +47,7 @@ def test_failed_test_correction_review_and_commit_keep_the_whole_history(tmp_pat
         assert final["commit"]["commit"] == git(task.root, "rev-parse", "HEAD")
         assert git(task.root, "rev-list", "--count", f"{base}..HEAD") == "1"
         assert git(task.root, "show", "HEAD:app/main.txt") == "corrected"
-        # El historial completo sigue legible tras el commit: mismos ciclos e intentos.
+        # The full history stays readable after the commit: same cycles and attempts.
         assert http.get(f"/api/managed/runs/{job['run_id']}/cycles").json()["items"] == cycles
         assert http.get(f"/api/managed/runs/{job['run_id']}/attempts").json()["items"] == attempts
         events = all_events(http, job["run_id"])
@@ -57,10 +57,10 @@ def test_failed_test_correction_review_and_commit_keep_the_whole_history(tmp_pat
 
 
 def test_event_cursor_resumes_across_a_restart_without_gaps_or_duplicates(tmp_path, url, task):
-    """Criterio 13 (D029, interpretación de T007): el cursor de la UI gestionada sustituye al SSE.
+    """Criterion 13 (D029, T007 interpretation): the managed UI cursor replaces SSE.
 
-    Se leen páginas pequeñas mientras el run avanza, se reinicia el servicio y se continúa desde el último
-    cursor aceptado; repetir conserva el prefijo ya leído. Una página incompleta puede crecer con eventos nuevos."""
+    Small pages are read while the run advances, the service restarts and reading continues from the last
+    accepted cursor; repeating keeps the prefix already read. An incomplete page may grow with new events."""
     ports = Ports([edit, review()])
     seen, cursor = [], 0
 
@@ -82,7 +82,7 @@ def test_event_cursor_resumes_across_a_restart_without_gaps_or_duplicates(tmp_pa
         run = settle(http, job["run_id"])
         drain(http)
         assert action(http, job["run_id"], "commit", run["version"], "commit").status_code == 202
-    # Reinicio: el commit puede quedar en cola o terminado; el cursor sigue valiendo en el servicio nuevo.
+    # Restart: the commit may be queued or finished; the cursor stays valid in the new service.
     with client(url, tmp_path, config(task, ports)) as http:
         final = settle(http, job["run_id"])
         drain(http)

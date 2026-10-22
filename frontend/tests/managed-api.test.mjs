@@ -116,13 +116,13 @@ test('conversation creation reuses its key until acknowledged, then starts anoth
   const body = { title: 'Chat', phase_id: null, task_run_id: null };
   await assert.rejects(createOnce('/projects/demo/conversations', body));
   assert.deepEqual(await createOnce('/projects/demo/conversations', body), { id: 'c1' });
-  assert.equal(keys[0], keys[1]); // reintento tras perder la respuesta: misma clave
+  assert.equal(keys[0], keys[1]); // retry after losing the response: same key
   await createOnce('/projects/demo/conversations', body);
-  assert.notEqual(keys[2], keys[1]); // respuesta confirmada: otra conversación
+  assert.notEqual(keys[2], keys[1]); // confirmed response: another conversation
   fail = true;
   await assert.rejects(createOnce('/projects/demo/conversations', body));
   await createOnce('/projects/demo/conversations', { ...body, title: 'Otra' });
-  assert.notEqual(keys[4], keys[3]); // otro cuerpo, otra clave
+  assert.notEqual(keys[4], keys[3]); // another body, another key
 });
 
 test('a definitive rejection forgets the creation key', async () => {

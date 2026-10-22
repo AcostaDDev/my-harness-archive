@@ -1,5 +1,5 @@
-"""H3.4 (D033): guardia H0/H1, lote desatendido con commits, enmienda/abandono, tags configurables
-y reconciliación con agente. Git/SQLite temporales y agentes falsos; sin proveedores ni red."""
+"""H3.4 (D033): H0/H1 guard, unattended batch with commits, amendment/abandonment, configurable tags
+and reconciliation with an agent. Temporary Git/SQLite and fake agents; no providers or network."""
 from datetime import timedelta
 from dataclasses import replace
 import json
@@ -37,7 +37,7 @@ def accept(task):
 
 
 def drain(world, limit=20):
-    """Ejecuta el supervisor hasta que no reclama nada; el conductor del lote corre en cada vuelta."""
+    """Runs the supervisor until it claims nothing; the batch driver runs on every round."""
     for count in range(limit):
         if world.worker.run_once() is None:
             return count
@@ -54,7 +54,7 @@ def batch(detail, auth_id):
     return next(a for a in detail['authorizations'] if a['id'] == auth_id)
 
 
-# --- guardia H0/H1 ---------------------------------------------------------------------------------
+# --- H0/H1 guard -----------------------------------------------------------------------------------
 
 
 def test_h0_h1_mutations_reject_foreign_host_origin_and_missing_header(migrated_database, tmp_path):
@@ -65,7 +65,7 @@ def test_h0_h1_mutations_reject_foreign_host_origin_and_missing_header(migrated_
         assert rejected.status_code == 403 and rejected.json()['detail']['code'] == 'host_rejected'
         assert foreign.put('/api/legacy/projects/x/observation', json={'enabled': True},
                            headers={'X-Harness-Local': '1'}).json()['detail']['code'] == 'host_rejected'
-        assert foreign.get('/api/simulations').status_code == 403  # H5.6 cubre también lecturas
+        assert foreign.get('/api/simulations').status_code == 403  # H5.6 covers reads too
     with TestClient(create_app(url, tmp_path), base_url=LOCAL) as local:
         missing = local.post('/api/simulations', json=body)
         assert missing.status_code == 403 and missing.json()['detail']['code'] == 'csrf_header_required'
@@ -74,16 +74,16 @@ def test_h0_h1_mutations_reject_foreign_host_origin_and_missing_header(migrated_
         assert cross.status_code == 403 and cross.json()['detail']['code'] == 'origin_rejected'
         put = local.put('/api/legacy/projects/x/observation', json={'enabled': True})
         assert put.status_code == 403 and put.json()['detail']['code'] == 'csrf_header_required'
-        # La guardia precede a la búsqueda: con cabecera, el proyecto desconocido da 404.
+        # The guard precedes the lookup: with the header, the unknown project gives 404.
         assert local.put('/api/legacy/projects/x/observation', json={'enabled': True},
                          headers={'X-Harness-Local': '1', 'Origin': LOCAL}).status_code == 404
-        assert local.get('/api/simulations').json() == []  # ningún rechazo creó filas
+        assert local.get('/api/simulations').json() == []  # no rejection created rows
         created = local.post('/api/simulations', json=body, headers={'X-Harness-Local': '1',
                                                                      'Origin': LOCAL})
         assert created.status_code == 201
 
 
-# --- lote desatendido -------------------------------------------------------------------------------
+# --- unattended batch -------------------------------------------------------------------------------
 
 
 def test_unattended_batch_chains_task_commit_and_next_task_without_checking_or_closing(world):
@@ -97,19 +97,19 @@ def test_unattended_batch_chains_task_commit_and_next_task_without_checking_or_c
         world.phases.batch_next(world.context, pid, detail['version'], key='manual', versions=VERSIONS,
                                 authorization_id=auth_id, text=PLAN)
     world.script(change('one\n'), accept('P001-T001'), change('two\n'), accept('P001-T002'))
-    assert drain(world) == 4  # tarea → commit → tarea → commit, sin intervención
+    assert drain(world) == 4  # task → commit → task → commit, without intervention
     detail = world.get(pid)
     assert all(item is not None for item in detail['tasks'].values())
     assert detail['tasks']['P001-T002']['commit'] == head(world)
     assert git(world.context.root, 'rev-parse', detail['tasks']['P001-T002']['commit'] + '^') == \
         detail['tasks']['P001-T001']['commit']
     assert batch(detail, auth_id)['status'] == 'COMPLETED'
-    assert detail['status'] == 'ACTIVE' and detail['operations'] == [] and tags(world) == ''  # nunca comprueba/cierra
+    assert detail['status'] == 'ACTIVE' and detail['operations'] == [] and tags(world) == ''  # never checks/closes
     assert world.ports.roles() == ['executor', 'reviewer', 'executor', 'reviewer']
     events = kinds(world, pid)
     assert events.count('batch_task_queued') == 2 and events.count('batch_commit_queued') == 2
     assert events[-1] == 'batch_completed'
-    assert drain(world) == 0  # nada más que hacer: el lote terminó
+    assert drain(world) == 0  # nothing else to do: the batch finished
 
 
 def test_unattended_batch_stops_at_the_first_blocked_task(world):
@@ -122,8 +122,8 @@ def test_unattended_batch_stops_at_the_first_blocked_task(world):
     stopped = batch(detail, auth_id)
     assert stopped['status'] == 'STOPPED' and 'P001-T001' in stopped['closed']['reason']
     assert detail['tasks'] == {'P001-T001': None, 'P001-T002': None}
-    assert world.ports.roles() == ['executor', 'reviewer']  # la segunda tarea nunca empieza
-    assert 'authorize_batch' in detail['actions']  # reanudar exige otra autorización explícita
+    assert world.ports.roles() == ['executor', 'reviewer']  # the second task never starts
+    assert 'authorize_batch' in detail['actions']  # resuming requires another explicit authorization
 
 
 @pytest.mark.parametrize('interruption', ['question', 'expiry', 'revocation', 'invalidated_evidence'])
@@ -131,7 +131,7 @@ def test_unattended_batch_stops_on_question_expiry_revocation_or_invalidated_evi
     pid = world.create(tasks=('P001-T001', 'P001-T002'))
     auth_id = chain(world, pid, ttl=60)
     world.script(change('one\n'), accept('P001-T001'))
-    world.run()  # primera tarea hasta ACCEPTANCE_READY; el commit aún no está encolado
+    world.run()  # first task up to ACCEPTANCE_READY; the commit is not queued yet
     before = head(world)
     if interruption == 'question':
         world.phases.raise_question(pid, world.get(pid)['version'], text='Product decision needed')
@@ -147,7 +147,7 @@ def test_unattended_batch_stops_on_question_expiry_revocation_or_invalidated_evi
     expected = {'question': 'STOPPED', 'expiry': 'EXPIRED', 'revocation': 'REVOKED',
                 'invalidated_evidence': 'STOPPED'}[interruption]
     assert batch(detail, auth_id)['status'] == expected
-    assert head(world) == before and detail['tasks']['P001-T001'] is None  # ningún commit tras la parada
+    assert head(world) == before and detail['tasks']['P001-T001'] is None  # no commit after the stop
     assert world.ports.roles() == ['executor', 'reviewer']
     if interruption == 'invalidated_evidence':
         assert 'did not complete' in batch(detail, auth_id)['closed']['reason']
@@ -172,7 +172,7 @@ def test_crash_in_unattended_batch_requires_explicit_recovery_and_repeats_nothin
         job_id, token, run_id = held.id, held.owner_token, held.run_id
     world.repository.confirm_stopped(job_id, owner_token=token, reason='Synthetic worker stopped',
                                      expected_version=world.repository.get_run(run_id).version)
-    assert drain(world) == 0 and world.ports.roles() == ['executor']  # sin relanzar ni encadenar
+    assert drain(world) == 0 and world.ports.roles() == ['executor']  # no relaunching or chaining
 
 
 def test_unattended_batch_does_not_adopt_runs_started_outside_it(world):
@@ -187,7 +187,7 @@ def test_unattended_batch_does_not_adopt_runs_started_outside_it(world):
     assert world.get(pid)['tasks']['P001-T001'] is None
 
 
-# --- enmienda y abandono --------------------------------------------------------------------------
+# --- amendment and abandonment --------------------------------------------------------------------
 
 
 def test_amendment_keeps_previous_definition_and_invalidates_ready_and_batches(world):
@@ -201,7 +201,7 @@ def test_amendment_keeps_previous_definition_and_invalidates_ready_and_batches(w
     amended = world.get(pid)
     assert amended['definition_number'] == 2 and amended['definition']['tasks'] == ['P001-T001']
     assert [d['number'] for d in amended['definitions']] == [1, 2]
-    assert amended['definitions'][0]['definition'] == first['definition']  # la anterior se conserva intacta
+    assert amended['definitions'][0]['definition'] == first['definition']  # the previous one stays intact
     assert amended['definitions'][0]['origin'] == 'created' and amended['definitions'][1]['origin'] == 'amended'
     assert amended['definitions'][1]['reason'] == 'Second task moves to another phase'
     assert batch(amended, auth_id)['status'] == 'INVALIDATED'
@@ -225,7 +225,7 @@ def test_amendment_keeps_previous_definition_and_invalidates_ready_and_batches(w
     amend_op = after['operations'][-1]
     assert amend_op['kind'] == 'amend' and amend_op['result']['ready_invalidated'] is True
     assert amend_op['result']['added_documents'] == ['README.md']
-    with pytest.raises(Conflict):  # el READY anterior no cierra
+    with pytest.raises(Conflict):  # the previous READY does not close
         world.phases.submit_close(world.context, pid, after['version'], key='late', versions=VERSIONS,
                                   binding_sha256=ready['ready']['binding_sha256'], reason='r', ttl_seconds=60)
     _, again = world.check(pid, phase_review())
@@ -255,11 +255,11 @@ def test_abandonment_is_terminal_audited_and_frees_the_checkout(world):
                 reason='Late amendment')):
         with pytest.raises(Conflict):
             call()
-    assert world.create(code='P002')  # una fase abandonada no ocupa el checkout
+    assert world.create(code='P002')  # an abandoned phase does not occupy the checkout
     assert kinds(world, pid)[-1] == 'phase_abandoned'
 
 
-# --- tags configurables ---------------------------------------------------------------------------
+# --- configurable tags ----------------------------------------------------------------------------
 
 
 def close_annotated(world, pid, key):
@@ -292,7 +292,7 @@ def test_annotated_tag_fixes_message_identity_and_date_in_the_intent(world):
         intent = op.request['tag_intent']
     assert intent['kind'] == 'annotated' and intent['object'] == tag['object']
     assert type(intent['tagged_at']) is int and abs(world.repository.clock().timestamp() - intent['tagged_at']) < 600
-    assert world.ports.writer(world.context, VERSIONS).seal_tag(world.context, intent) == tag['object']  # determinista
+    assert world.ports.writer(world.context, VERSIONS).seal_tag(world.context, intent) == tag['object']  # deterministic
     assert closed['authorizations'][-1]['scope']['tag_kind'] == 'annotated'
 
 
@@ -310,7 +310,7 @@ def test_annotated_tag_crash_is_reconciled_with_the_same_object(world):
                                      expected_version=world.repository.get_run(job.run_id).version)
     world.worker.commit_factory = world.ports.writer
     original = world.repository.clock
-    world.repository.clock = lambda: original() + timedelta(hours=1)  # otra fecha: se reutiliza la intención
+    world.repository.clock = lambda: original() + timedelta(hours=1)  # another date: the intention is reused
     close_annotated(world, pid, 'close-2')
     world.run()
     closed = world.get(pid)
@@ -332,7 +332,7 @@ def test_existing_lightweight_tag_is_never_replaced_by_an_annotated_one(world):
     assert git(world.context.root, 'cat-file', '-t', 'refs/tags/phase-P001-complete') == 'commit'
 
 
-# --- reconciliación con agente ---------------------------------------------------------------------
+# --- reconciliation with an agent ------------------------------------------------------------------
 
 
 def test_agent_reconciliation_is_a_reviewed_committed_task_limited_to_phase_documents(world):
@@ -402,10 +402,10 @@ def test_agent_reconciliation_writing_outside_documents_is_never_eligible(world)
     with pytest.raises(Conflict, match='eligible'):
         world.repository.submit_commit(job.run_id, key='commit', expected_version=record.version)
     assert head(world) == before
-    assert 'reconcile_task' in world.get(pid)['actions']  # el intento fallido no bloquea otro explícito
+    assert 'reconcile_task' in world.get(pid)['actions']  # the failed attempt does not block another explicit one
 
 
-# --- migración y HTTP -------------------------------------------------------------------------------
+# --- migration and HTTP -----------------------------------------------------------------------------
 
 
 def test_migration_0011_backfills_definitions_and_refuses_lossy_downgrade(migrated_database, world):
@@ -427,7 +427,7 @@ def test_http_h34_phase_actions_with_annotated_project_and_guards(tmp_path, migr
     from harness_local.services.managed_runtime import CONFIG_ENV
     monkeypatch.delenv(CONFIG_ENV, raising=False)
     checkout = replace(checkout, documents='v2')
-    # P008-T007: con layout unificado cada intento exige AGENTS.md.
+    # P008-T007: with the unified layout every attempt requires AGENTS.md.
     checkout.path('AGENTS.md').write_text('# Sintético\n\nInstrucciones sintéticas.\n', encoding='utf-8')
     git(checkout.root, 'add', 'AGENTS.md')
     git(checkout.root, 'commit', '-q', '-m', 'docs: instrucciones sintéticas')
@@ -444,7 +444,7 @@ def test_http_h34_phase_actions_with_annotated_project_and_guards(tmp_path, migr
         assert {'amend', 'abandon', 'reconcile_task', 'authorize_batch'} <= set(phase['actions'])
         body = {'expected_version': phase['version'], 'tasks': ['P001-T001'], 'ttl_seconds': 600,
                 'reason': 'HTTP unattended batch', 'confirmed': True, 'chain_commits': True}
-        assert http.post(f'/api/managed/phases/{pid}/authorizations', json=body).status_code == 422  # sin plan
+        assert http.post(f'/api/managed/phases/{pid}/authorizations', json=body).status_code == 422  # no plan
         assert http.post(f'/api/managed/phases/{pid}/authorizations', json={**body, 'text': PLAN},
                          headers={'X-Harness-Local': '0'}).status_code == 403
         authorized = http.post(f'/api/managed/phases/{pid}/authorizations', json={**body, 'text': PLAN})
@@ -467,7 +467,7 @@ def test_http_h34_phase_actions_with_annotated_project_and_guards(tmp_path, migr
         amend = {'expected_version': ready['version'], 'objective': 'HTTP phase (amended)', 'exit_criteria': CRITERIA,
                  'tasks': ['P001-T001'], 'documents': ['docs/STATE.md', 'docs/NEXT_STEPS.md'],
                  'tag': 'phase-P001-complete', 'reason': 'Clarify objective'}
-        assert http.post(f'/api/managed/phases/{pid}/amend', json=amend).status_code == 422  # sin confirmación
+        assert http.post(f'/api/managed/phases/{pid}/amend', json=amend).status_code == 422  # without confirmation
         amended = http.post(f'/api/managed/phases/{pid}/amend', json={**amend, 'confirmed': True})
         assert amended.status_code == 200, amended.text
         assert amended.json()['status'] == 'ACTIVE' and amended.json()['ready'] is None
@@ -475,7 +475,7 @@ def test_http_h34_phase_actions_with_annotated_project_and_guards(tmp_path, migr
         task = http.post(f'/api/managed/phases/{pid}/reconcile-task', json={
             'expected_version': amended.json()['version']}, headers={'Idempotency-Key': 'reconcile'})
         assert task.status_code == 202, task.text
-        assert settle(http, task.json()['run_id'])['status'] == 'STOPPED'  # sin respuesta guionizada: se detiene
+        assert settle(http, task.json()['run_id'])['status'] == 'STOPPED'  # no scripted answer: it stops
         current = http.get(f'/api/managed/phases/{pid}').json()
         abandoned = http.post(f'/api/managed/phases/{pid}/abandon', json={
             'expected_version': current['version'], 'reason': 'HTTP abandonment', 'confirmed': True},

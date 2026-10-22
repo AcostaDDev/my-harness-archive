@@ -1,4 +1,4 @@
-"""D116: autoridad e hijos sintéticos; SQLite/FS temporales, sin Git/proveedores/instalaciones de creación."""
+"""D116: synthetic authority and children; temporary SQLite/FS, no Git/providers/creation installs."""
 from concurrent.futures import ThreadPoolExecutor
 import json
 import os
@@ -67,7 +67,7 @@ def test_new_child_preview_and_confirm_without_toml_roots_restart_and_revocation
     assert not (parent / 'different').exists()
     result = service.confirm(body, 'create')
     assert result['status'] == 'REGISTERED' and result['result']['project_id'] == 'child'
-    assert list((parent / 'different').iterdir()) == []  # ni .git ni marcador ajeno al bootstrap
+    assert list((parent / 'different').iterdir()) == []  # neither .git nor a marker foreign to the bootstrap
     assert service.confirm(body, 'create') == result
     item = service.registry.read('child')
     assert item['creation_id'] == result['id'] and item['trust']['root'] == str(parent / 'different')
@@ -76,7 +76,7 @@ def test_new_child_preview_and_confirm_without_toml_roots_restart_and_revocation
     assert result['intent']['profile_details']['sha256'] and result['intent']['composition']['name'] == 'web'
     old_versions = dict(service.runtime.project('child').versions)
     select_root(service, parent, 'retire', 'retire')
-    assert service.confirm(body, 'create') == result  # replay no revalida permiso revocado
+    assert service.confirm(body, 'create') == result  # replay does not revalidate a revoked permission
     engine = make_engine(url)
     restarted = ManagedRuntime(engine, config)
     restarted.start()
@@ -142,7 +142,7 @@ def test_root_boundaries_and_service_conflicts(creation, monkeypatch):
 
 def test_parent_can_contain_siblings_and_state_but_new_target_cannot_conflict(creation):
     service, parent, config, _ = creation
-    # Un padre común está permitido; su hijo de estado/configuración queda excluido.
+    # A common parent is allowed; its state/configuration child stays excluded.
     select_root(service, parent.parent)
     for name in ('state', 'operator', 'synthetic.sqlite3', 'new'):
         with pytest.raises(RegistryError):
@@ -304,12 +304,12 @@ def test_cancel_keeps_uncertain_reservation_and_blocks_existing_registration(cre
     assert service.cancel(op['id'], body, 'cancel') == result
     assert (parent / 'child').is_dir()
     from test_project_registry import register
-    # roots vacías no autorizan alta existente; incluso con raíz TOML no se adopta la reserva.
+    # empty roots do not authorize an existing registration; even with a TOML root the reservation is not adopted.
     service.registry.registrar.roots = (parent,)
     with pytest.raises(RegistryError) as error:
         service.registry.preview(register(parent / 'child'))
     assert error.value.code == 'target_reserved'
-    # Resolución externa sintética: una nueva comprobación versionada puede liberar la reserva.
+    # Synthetic external resolution: a new versioned check may release the reservation.
     (parent / 'child').rmdir()
     released = service.cancel(op['id'], {'expected_version': result['version'],
                                        'intent_sha256': result['intent_sha256']}, 'absence-recheck')
@@ -350,7 +350,7 @@ def test_api_strict_contract_and_same_result_after_lost_reply(creation):
 def test_additive_migration_preserves_prior_registered_row_and_event(creation, migrated_database):
     service, parent, config, url = creation
     engine = service.runtime.engine
-    # Sin historia de creación, 0021 puede retirarse; D078 conserva sus filas previas.
+    # Without creation history, 0021 can be downgraded; D078 keeps its previous rows.
     service.runtime.stop()
     command.downgrade(migrated_database[1], '0020_project_imports')
     with engine.begin() as connection:
@@ -502,7 +502,7 @@ def test_retirement_between_checkpoint_and_registration_stops_next_effect(creati
         with original() as session:
             yield session
         calls += 1
-        if calls == 2:  # intención confirmada y checkpoint DIRECTORY_CREATED confirmados
+        if calls == 2:  # confirmed intention and confirmed DIRECTORY_CREATED checkpoint
             checkpoint.set()
             assert proceed.wait(5)
     monkeypatch.setattr(service.runtime.repository, '_write', write)
@@ -530,7 +530,7 @@ def test_case_aliases_cannot_enter_service_state_or_a_registered_empty_child(cre
     state = config.registrar.state
     alias = state.with_name(state.name.upper())
     if not alias.exists():
-        pytest.skip('Filesystem distingue mayúsculas; no existe ese alias físico.')
+        pytest.skip('Case-sensitive filesystem; that physical alias does not exist.')
     with pytest.raises(RegistryError) as error:
         select_root(service, alias)
     assert error.value.code == 'root_service_state'
@@ -546,7 +546,7 @@ def test_case_aliases_preserve_reservations_before_mkdir(creation, monkeypatch):
     service, parent, *_ = creation
     alias = parent.with_name(parent.name.upper())
     if not alias.exists():
-        pytest.skip('Filesystem distingue mayúsculas; no existe ese alias físico.')
+        pytest.skip('Case-sensitive filesystem; that physical alias does not exist.')
     select_root(service, parent)
     monkeypatch.setattr(service, 'advance', lambda operation_id: None)
     service.confirm(request(service), 'intended')

@@ -1,6 +1,6 @@
-"""P008-T007 (D088 punto 8): AGENTS.md del proyecto en el prompt congelado de cada rol.
+"""P008-T007 (D088 point 8): the project's AGENTS.md in the frozen prompt of each role.
 
-Git y SQLite temporales, agentes falsos y datos sintéticos; sin proveedores ni CLI reales."""
+Temporary Git and SQLite, fake agents and synthetic data; no providers or real CLIs."""
 from dataclasses import replace
 import hashlib
 import json
@@ -34,7 +34,7 @@ def provenance(data: bytes) -> dict:
 
 
 def without_instructions(catalog, name):
-    """Versión sintética anterior a P008-T007: misma plantilla sin la variable nueva."""
+    """Synthetic version from before P008-T007: same template without the new variable."""
     old = catalog[name].template.replace('{{PROJECT_INSTRUCTIONS}}', '')
     return {**catalog, name: replace(catalog[name], template=old, sha256=digest(old), id='builtin-1:' + digest(old))}
 
@@ -82,7 +82,7 @@ def test_invalid_agents_md_refuses_the_attempt(v2checkout, tmp_path, case):
     with pytest.raises(ContractError, match='AGENTS.md'):
         render_attempt(builtin_catalog(), 'execute-task', values('execute-task'), v2checkout)
     if case == 'oversize':
-        path.write_bytes(b'#' * MAX_INSTRUCTIONS_BYTES)  # El límite exacto se admite completo, sin truncar.
+        path.write_bytes(b'#' * MAX_INSTRUCTIONS_BYTES)  # The exact limit is admitted whole, without truncation.
         assert project_instructions(v2checkout)[1]['bytes'] == MAX_INSTRUCTIONS_BYTES
 
 
@@ -101,7 +101,7 @@ def test_the_engine_alone_supplies_the_instructions(v2checkout):
 
 def test_earlier_template_versions_stay_readable_but_cannot_invoke_on_a_project(v2checkout):
     catalog = without_instructions(builtin_catalog(), 'execute-task')
-    frozen = dump_catalog(catalog)  # Catálogos congelados y versiones guardadas anteriores siguen siendo válidos.
+    frozen = dump_catalog(catalog)  # Frozen catalogs and previously saved versions stay valid.
     assert dump_catalog(load_catalog(frozen)) == frozen
     with pytest.raises(ContractError, match='lacks'):
         render_attempt(catalog, 'execute-task', values('execute-task'), v2checkout)
@@ -149,7 +149,7 @@ def test_frozen_versions_identify_the_injection():
 
 @pytest.mark.parametrize('version,role', [(version, role) for version in ('0.161.0', '0.162.1')
                                            for role in ('planner', 'reviewer', 'phase', 'chat', 'planning')]
-                         + [('0.162.1', 'executor')])  # Escritor Codex caracterizado solo en 0.162.1.
+                         + [('0.162.1', 'executor')])  # Codex writer characterized only on 0.162.1.
 def test_codex_no_longer_loads_its_own_copy_of_the_project_docs(context, version, role):
     args = argv_for(CLIConfig('codex', ('/synthetic/cli',), version, (), 1), context, request(role))
     overrides = tomllib.loads('\n'.join(args[i + 1] for i, value in enumerate(args) if value == '-c'))

@@ -1,7 +1,7 @@
-"""H4.3: Node/npm/tsc reales, Git/SQLite temporales y agentes falsos.
+"""H4.3: real Node/npm/tsc, temporary Git/SQLite and fake agents.
 
-El runner es un puerto de prueba para este fixture confiable, no un supervisor de
-procesos de producto ni un sandbox. No se ejecuta el harness sobre este repositorio.
+The runner is a test port for this trusted fixture, not a product process
+supervisor or a sandbox. The harness is not run on this repository.
 """
 
 from dataclasses import replace
@@ -51,10 +51,10 @@ PLAN = """# Synthetic web task
 
 
 class FixtureCommandRunner:
-    """Ejecuta argv sin shell, cwd comprobado y entorno explícito sin credenciales.
+    """Runs argv without a shell, with a checked cwd and an explicit environment without credentials.
 
-    npm ejecuta scripts del fixture confiable. Su caché se configura aparte del
-    perfil; una caché vacía falla, sin descargar ni sustituir el resultado.
+    npm runs scripts of the trusted fixture. Its cache is configured apart from the
+    profile; an empty cache fails, without downloading or replacing the result.
     """
 
     def __init__(self, temporary, cache=CACHE):
@@ -89,7 +89,7 @@ def web(tmp_path):
     (root / "docs").mkdir()
     (root / "docs/STATE.md").write_text("Synthetic web state\n")
     (root / "docs/NEXT_STEPS.md").write_text(PLAN)
-    # P008-T007: la composición local usa el layout unificado y cada intento exige AGENTS.md.
+    # P008-T007: the local composition uses the unified layout and every attempt requires AGENTS.md.
     (root / "AGENTS.md").write_text("# Synthetic web\n\nInstrucciones sintéticas para agentes.\n")
     git(root, "init", "-q", "-b", "main")
     git(root, "add", "-A")
@@ -132,7 +132,7 @@ def edit(mode="correct"):
 
 def task_checkout(web, tmp_path):
     context, runner = web
-    # La fixture sana no se cambia: se introduce una regresión en el checkout sintético.
+    # The healthy fixture is not changed: a regression is introduced in the synthetic checkout.
     path = context.path("src/estimate.ts")
     path.write_text(path.read_text().replace("tasks * 30", "tasks * 45"))
     git(context.root, "add", "src/estimate.ts")
@@ -200,7 +200,7 @@ def test_managed_real_validations_frozen_snapshots_restart_and_exact_commit(web,
     events = repository.events(job.run_id)
     assert sum(e["kind"] == "command_started" for e in events) == 6
     assert sum(e["kind"] == "command_finished" for e in events) == 6
-    # Configurar un perfil distinto después no reescribe el contexto encolado.
+    # Configuring a different profile afterwards does not rewrite the queued context.
     altered = replace(context, profile=replace(context.profile, executor_instructions="changed later"))
     assert context_snapshot(altered) != history.context_json
     restarted = SQLiteManagedRepository(repository.engine)
@@ -282,7 +282,7 @@ def test_changed_content_after_real_validation_cannot_commit(web, repository, tm
     repository.submit_commit(job.run_id, key="stale-commit", expected_version=record.version)
     supervisor.run_once()
     assert repository.get_run(job.run_id).status == "STOPPED"
-    assert repository.commit_record(job.run_id) is None  # Se rechaza antes de fabricar intención.
+    assert repository.commit_record(job.run_id) is None  # Rejected before manufacturing an intention.
     assert context.path("src/estimate.ts").read_text() == "// external edit\n"
 
 
@@ -325,7 +325,7 @@ def test_profile_import_is_declarative_and_core_has_no_new_stack_conditions(monk
 @pytest.mark.parametrize("command", ["npm install", "npm exec something", "node external.mjs", "sh -c true"])
 def test_task_cannot_add_unapproved_command_prefixes(web, command):
     context, runner = web
-    # Las validaciones reales del baseline se prueban en el recorrido completo.
+    # The real validations of the baseline are tested in the full journey.
     context = replace(context, profile=replace(context.profile, validations=()))
     report = run_validations(context, {"validation_commands": [command]}, GitWorkspace(IDENTITY).capture(context), runner)
     assert not report.all_passed and not runner.calls

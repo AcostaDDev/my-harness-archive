@@ -1,4 +1,4 @@
-"""Sonda de contrato H0.2: JSONL sintético, sin procesos ni integración de producto."""
+"""H0.2 contract probe: synthetic JSONL, without processes or product integration."""
 
 from dataclasses import dataclass
 import json
@@ -27,10 +27,10 @@ def reject_constant(value):
 
 
 class StreamProbe:
-    """Lee bytes incrementales; solo un terminal conocido puede certificar fin.
+    """Reads incremental bytes; only a known terminal can certify the end.
 
-    No valida el contrato de tarea ni implementa start/cancel/respond_approval.
-    finish requiere el código observado del proceso, aportado por el fixture.
+    It does not validate the task contract or implement start/cancel/respond_approval.
+    finish requires the observed process code, supplied by the fixture.
     """
 
     def __init__(self, provider):
@@ -70,7 +70,7 @@ class StreamProbe:
         if not isinstance(event, dict) or not isinstance(event.get("type"), str):
             self._diagnostic("invalid_envelope")
             return True
-        self.events.append(event)  # Incluye los campos desconocidos y null originales.
+        self.events.append(event)  # Includes the original unknown and null fields.
         kind = event["type"]
         if kind not in KNOWN[self.provider]:
             self.unknown_events.append(event)

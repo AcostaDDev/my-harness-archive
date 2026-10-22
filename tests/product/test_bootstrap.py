@@ -1,8 +1,8 @@
-"""H4.2 y D088: bootstrap con Git/SQLite temporales y agentes falsos; sin proveedores, red ni preparación real.
+"""H4.2 and D088: bootstrap with temporary Git/SQLite and fake agents; no providers, network or real preparation.
 
-D088 retira la creación v1 (formulario, plantilla `project-foundation` y descubrimiento de un turno): estas pruebas
-ejercen la misma infraestructura (intención sellada, caídas, conciliación, guardias) desde una conversación de
-definición v2 lista para aceptar, y comprueban que la creación v1 se rechaza con diagnóstico."""
+D088 retires v1 creation (form, `project-foundation` template and one-turn discovery): these tests exercise
+the same infrastructure (sealed intention, crashes, reconciliation, guards) from a v2 definition conversation
+ready to accept, and check that v1 creation is rejected with a diagnostic."""
 from concurrent.futures import ThreadPoolExecutor
 from dataclasses import replace
 from hashlib import sha256
@@ -26,7 +26,7 @@ from harness_local.storage.models import ManagedRunRow, ProjectBootstrapRow
 from harness_local.storage.phases import PhaseRepository
 from test_managed_api import IDENTITY, VERSIONS, client, git, make_context, Ports
 
-# Entrada del formulario v1 retirado: solo sirve para comprobar el rechazo.
+# Input of the retired v1 form: only used to check the rejection.
 DATA = {'brief': {'problem': 'Synthetic coordination problem', 'users': 'Synthetic operators',
     'minimum_features': 'One observable workflow', 'constraints': 'Local/offline synthetic data only',
     'delivery_goal': 'A reviewed delivery scenario'},
@@ -35,7 +35,7 @@ DATA = {'brief': {'problem': 'Synthetic coordination problem', 'users': 'Synthet
 
 
 class BootstrapWorld(tuple):
-    """(context, repo, bootstrap, writer, worker, ports) con la conversación de definición ya lista."""
+    """(context, repo, bootstrap, writer, worker, ports) with the definition conversation already ready."""
 
 
 def make_world(database, root, brief=None):
@@ -118,7 +118,7 @@ def test_create_ends_with_clean_commit_phase_and_bounded_task_without_agents(wor
     context, repo, bootstrap, writer, worker, ports = world
     shown = preview(world)
     job = submit(world, shown)
-    assert listing(world) == world.drafts and not (context.root / '.git').exists()  # submit solo encola
+    assert listing(world) == world.drafts and not (context.root / '.git').exists()  # submit only enqueues
     assert worker.run_once().status == 'DONE'
     op = operation(world)
     assert op['status'] == 'COMPLETED'
@@ -138,7 +138,7 @@ def test_create_ends_with_clean_commit_phase_and_bounded_task_without_agents(wor
     with Session(repo.engine) as session:
         assert session.scalar(text('SELECT count(*) FROM checkout_locks')) == 0
         assert session.scalar(text('SELECT count(*) FROM managed_commits')) == 0
-    # Primera tarea sigue por el flujo normal; encolarla es una decisión separada.
+    # The first task follows the normal flow; enqueuing it is a separate decision.
     task = repo.submit(context, 'P001-T001', 'P001', shown['task_text'], VERSIONS, key='first-task')
     assert repo.get_run(task.run_id).status == 'QUEUED'
 
@@ -191,7 +191,7 @@ def test_changed_preview_is_rejected_before_effects(world, mutation):
 
 
 def test_v1_creation_is_retired_with_a_diagnostic(world, tmp_path):
-    """D088: el formulario H4.2 y el descubrimiento de un turno se rechazan antes de leer o escribir el destino."""
+    """D088: the H4.2 form and one-turn discovery are rejected before reading or writing the target."""
     from harness_local.storage.bootstrap_discovery import DiscoveryRepository
     root = tmp_path / 'v1-destination'
     root.mkdir()
@@ -219,7 +219,7 @@ def test_free_text_cannot_inject_task_scope_or_managed_markers(migrated_database
     assert shown['ready'], shown['blockers']
     assert shown['first_task']['allowed_paths'] == ['app/**'] and shown['phase']['tasks'] == ['P001-T001']
     documents = {d['path']: d['content'] for d in shown['documents']}
-    assert documents['docs/archive/phase-000/BRIEF.md'] == hostile  # el brief se archiva literal, sin interpretarlo
+    assert documents['docs/archive/phase-000/BRIEF.md'] == hostile  # brief archived literally, uninterpreted
     record = documents['docs/archive/phase-000/DEFINITION.md']
     assert '<!--' not in record and 'P002-T009' not in record
     assert all('<!-- harness-local' not in content for path, content in documents.items()
@@ -231,7 +231,7 @@ def test_free_text_cannot_inject_task_scope_or_managed_markers(migrated_database
 def test_profile_path_policy_and_git_metadata_are_enforced(world, policy):
     context = world[0]
     if policy == 'protected':
-        # D081: el perfil no limita las escrituras documentales confirmadas, pero sí la primera tarea determinista.
+        # D081: the profile does not limit confirmed document writes, but it does limit the deterministic first task.
         context = replace(context, profile=replace(context.profile, protected_paths=('docs/**', 'app/**')),
                           policy=replace(context.policy, planning_mode='deterministic'))
         shown = world[2].preview(context, {'conversation_id': world.cid}, VERSIONS, world[3])
@@ -360,7 +360,7 @@ def test_modified_partial_file_is_preserved_after_recovery(world, monkeypatch):
 
 
 def test_http_v1_routes_are_removed_and_definition_creation_reloads(migrated_database, tmp_path):
-    """HTTP: el formulario v1 ya no tiene rutas y la aceptación de la definición sobrevive a un reinicio."""
+    """HTTP: the v1 form no longer has routes and accepting the definition survives a restart."""
     from test_definition import BRIEF, answer
     root = tmp_path / 'http-empty'
     root.mkdir()
@@ -431,7 +431,7 @@ def test_http_guard_and_server_authorized_destination(migrated_database, tmp_pat
 
 
 def test_migration_check_and_guard_against_lost_history(migrated_database, world):
-    """La ida y vuelta de 0015 la cubre test_definition; aquí, ninguna bajada pierde la definición ni el bootstrap."""
+    """The 0015 round trip is covered by test_definition; here, no downgrade loses the definition or the bootstrap."""
     url, config = migrated_database
     command.check(config)
     submit(world)
@@ -492,6 +492,6 @@ def test_foreign_git_or_files_after_uncertain_commit_are_preserved(world, monkey
 
 
 def test_bootstrap_demo_is_retired_with_v1_creation():
-    """D088: `examples/bootstrap_demo.py` recorría la creación v1; se retira con ella."""
+    """D088: `examples/bootstrap_demo.py` walked through v1 creation; it is retired with it."""
     from pathlib import Path
     assert not (Path(__file__).resolve().parents[2] / 'examples/bootstrap_demo.py').exists()

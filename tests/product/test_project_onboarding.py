@@ -1,4 +1,4 @@
-"""Flujo B: checkouts y fuentes sintéticos; ningún framework o código del proyecto se ejecuta."""
+"""Flow B: synthetic checkouts and sources; no framework or project code is executed."""
 
 import copy
 import hashlib
@@ -150,7 +150,7 @@ def proposed(result):
     assert proposal['format'] == 'local-config-4' and proposal['requires_confirmation'] is True
     name, profile = next(iter(proposal['profiles'].items()))
     assert proposal['ready']
-    # El parser de T008 valida la propuesta real, no una representación paralela del perfil.
+    # T008's parser validates the real proposal, not a parallel representation of the profile.
     parsed = _profile(name, profile)
     return parsed, profile
 
@@ -281,7 +281,7 @@ def test_dependencies_and_build_outputs_are_never_read_even_if_tracked(tmp_path,
         'node_modules/lib/evil.py', '.venv/lib/evil.py', 'vendor/evil.py', 'dist/bundle.js', 'build/evil.py',
         '.local/evil.py', '__pycache__/evil.py', '.next/routes.ts', 'site-packages/evil.py')},
         'image.png': b'not source', 'secret.pem': 'synthetic private key'}
-    # .local está ignorado: el resto se versiona para comprobar el filtro del árbol, no solo .gitignore.
+    # .local is ignored: the rest is versioned to check the tree filter, not just .gitignore.
     root = checkout(tmp_path / 'ignored', files)
     objects, calls = [], []
     original = Git.run

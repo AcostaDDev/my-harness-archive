@@ -41,7 +41,7 @@ def test_core_imports_with_standard_library_only():
 
 def test_fake_result_is_local_and_does_not_launch_processes(monkeypatch):
     def forbidden(*args, **kwargs):
-        raise AssertionError("La simulación no debe lanzar procesos.")
+        raise AssertionError("The simulation must not launch processes.")
     monkeypatch.setattr(subprocess, "Popen", forbidden)
     repository = MemoryRepository()
     service = SimulationService(repository, FakeSimulationAdapter())
@@ -58,12 +58,12 @@ def test_adapter_error_is_not_saved_or_retried():
 
         def execute(self):
             self.calls += 1
-            raise RuntimeError("Fallo sintético")
+            raise RuntimeError("Synthetic failure")
 
     repository = MemoryRepository()
     adapter = FailingAdapter()
     service = SimulationService(repository, adapter)
-    with pytest.raises(RuntimeError, match="Fallo sintético"):
+    with pytest.raises(RuntimeError, match="Synthetic failure"):
         service.create("Datos sintéticos")
     assert adapter.calls == 1
     assert repository.saved == []

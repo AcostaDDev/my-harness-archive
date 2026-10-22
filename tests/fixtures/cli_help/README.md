@@ -1,6 +1,6 @@
-# Ayudas reales de las CLI fijadas — P009-T013
+# Real help output of the pinned CLIs — P009-T013
 
-Salida exacta de `exec --help` de Codex 0.163.0 y de `--help` de Claude Code 2.1.304, obtenida el 2026-10-20 con
-entorno explícito y cwd temporal (D122). Texto público, sin rutas ni datos de cuenta. Solo las usa
-`tests/product/test_cli_baseline.py` para comprobar los flags que exige el preflight; no prueban el comportamiento
-en ejecución. Los SHA-256 figuran en `docs/archive/phase-009/P009-T013_CARACTERIZACION_CLI.md`.
+Exact output of Codex 0.163.0 `exec --help` and Claude Code 2.1.304 `--help`, captured on 2026-10-20 with an
+explicit environment and a temporary cwd (D122). Public text, with no paths or account data. Only
+`tests/product/test_cli_baseline.py` uses them, to check the flags the preflight requires; they do not test runtime
+behavior. The SHA-256 values are listed in `docs/archive/phase-009/P009-T013_CARACTERIZACION_CLI.md`.

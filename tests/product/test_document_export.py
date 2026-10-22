@@ -1,4 +1,4 @@
-"""Exportación offline sobre Git y SQLite temporales; sin agentes ni proveedores."""
+"""Offline export over temporary Git and SQLite; no agents or providers."""
 from dataclasses import replace
 import json
 
@@ -123,7 +123,7 @@ def test_preview_fails_closed(world, change):
     if change == 'untracked':
         (world.context.root / 'new.txt').write_text('unrelated\n')
     elif change == 'staged':
-        # Índice distinto aunque el worktree vuelva a HEAD.
+        # Different index even though the worktree goes back to HEAD.
         target.write_text('staged\n')
         git(world.context.root, 'add', '-A')
         target.write_text('# State\n')
@@ -226,7 +226,7 @@ def test_stale_sqlite_preview_version_hash_and_confirmation_rejected(world):
     with pytest.raises(Conflict, match='Preview changed'):
         queue(world, pid, view)
     queued = queue(world, pid)
-    # Cambiar la autoridad tras admitir no permite un efecto con snapshot obsoleto.
+    # Changing the authority after admission does not allow an effect with a stale snapshot.
     with Session(world.repository.engine) as session:
         from harness_local.storage.models import PhaseRow
         p = session.get(PhaseRow, pid)
@@ -265,7 +265,7 @@ def test_http_guard_confirmation_versions_idempotency_and_projection(world, tmp_
         assert http.post(path, json={**body, 'expected_version': v['expected_version'] + 1},
                          headers={'Idempotency-Key': 'version'}).status_code == 409
         assert http.post(path, json=body, headers={'Idempotency-Key': 'origin', 'Origin': 'https://foreign.invalid'}).status_code == 403
-        # La guardia precede a la búsqueda, incluidas las lecturas gestionadas.
+        # The guard precedes the lookup, managed reads included.
         assert http.get(path, headers={'Host': 'foreign.invalid'}).status_code == 403
         http.headers.pop('X-Harness-Local')
         assert http.post(path, json=body, headers={'Idempotency-Key': 'missing-csrf'}).status_code == 403
@@ -285,7 +285,7 @@ def test_http_guard_confirmation_versions_idempotency_and_projection(world, tmp_
         assert phase.json()['documents']['drift'] == []
         assert http.post(path, json=body, headers={'Idempotency-Key': 'http-export'}).json()['id'] == job['id']
         assert http.get(path).json()['diff'] == ''
-    # Reiniciar el servicio conserva la operación y el envío sin invocar ni duplicar Git.
+    # Restarting the service keeps the operation and the submission without invoking or duplicating Git.
     old = head(world)
     with client(str(world.repository.engine.url), tmp_path, configuration) as http:
         assert http.post(path, json=body, headers={'Idempotency-Key': 'http-export'}).json()['id'] == job['id']
@@ -319,7 +319,7 @@ def test_partial_recovery_never_overwrites_new_external_bytes(world, monkeypatch
         world.run()
     confirm(world, job)
     view = shown(world, pid)
-    # La recuperación preserva también cambios ajenos posteriores a la caída.
+    # Recovery also preserves foreign changes made after the crash.
     world.context.path('docs/NEXT_STEPS.md').write_text('external after crash\n')
     before, old = docs(world), head(world)
     resumed = queue(world, pid, view)
@@ -336,7 +336,7 @@ def test_ready_export_preserves_history_and_makes_close_stale(world):
     world.run()
     detail = world.get(pid)
     assert detail['ready']['stale_reasons'] and detail['status'] == 'READY_TO_CLOSE'
-    # Exportar otra vez el mismo estado no vuelve a generar un commit.
+    # Exporting the same state again does not generate another commit.
     assert shown(world, pid)['diff'] == ''
     world.close(pid)
     assert world.get(pid)['status'] == 'NEEDS_RECONCILIATION' and tags(world) == ''

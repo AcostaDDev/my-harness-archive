@@ -1,4 +1,4 @@
-"""P008-T018: objetos prometidos ausentes, sin transporte ni efectos; solo fixtures sintéticos."""
+"""P008-T018: missing promised objects, without transport or effects; synthetic fixtures only."""
 import shlex
 import sys
 
@@ -24,7 +24,7 @@ from test_project_onboarding import checkout
 
 
 def promisor(root, revision='HEAD:README.md'):
-    """El upload-pack falso solo crearía un marcador. No dispone de red ni entrega objetos."""
+    """The fake upload-pack would only create a marker. It has no network and delivers no objects."""
     git = Git(root)
     obj = git.text('rev-parse', revision)
     marker, script = root.parent / 'fetch-invoked', root.parent / 'upload-pack probe.py'

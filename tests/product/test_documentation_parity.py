@@ -1,6 +1,6 @@
-"""P008-T003 (D088 puntos 2, 6 y 8): rutas del ejecutor y del harness, paridad diagramas‑código y propuestas de ADR.
+"""P008-T003 (D088 points 2, 6 and 8): executor and harness paths, diagram‑code parity and ADR proposals.
 
-Git y SQLite temporales, agentes falsos y datos sintéticos; sin proveedores."""
+Temporary Git and SQLite, fake agents and synthetic data; no providers."""
 from dataclasses import replace
 import json
 
@@ -26,7 +26,7 @@ PROPOSAL = {'title': 'Usar SQLite como estado', 'decision': 'El estado operativo
 
 
 def web_protection(world):
-    """Protecciones de `typescript-web` sobre el perfil sintético (sin sus comandos npm)."""
+    """`typescript-web` protections over the synthetic profile (without its npm commands)."""
     profile = replace(world.context.profile, protected_paths=typescript_web_profile().protected_paths)
     world.context = replace(world.context, profile=profile)
 
@@ -58,14 +58,14 @@ def test_profile_protects_control_documents_not_product_documentation(v2):
     for path in HARNESS:
         assert check_paths(v2.context, task, changed(path)).violations == (path,), path
         assert executor_protected(v2.context, 'P001-T001', path), path
-    # La reconciliación edita la prosa de los documentos del harness; nunca el archivo ni las instrucciones.
+    # Reconciliation edits the prose of the harness documents; never the archive or the instructions.
     assert not any(executor_protected(v2.context, 'P001-RECONCILE-1', path) for path in HARNESS[:4])
     assert all(executor_protected(v2.context, 'P001-RECONCILE-1', path) for path in HARNESS[4:])
     reconcile = contract(v2.context, 'P001-RECONCILE-1', ('docs/**',))
     assert not set(HARNESS[:4]) & set(reconcile['forbidden_paths'])
     assert check_paths(v2.context, reconcile, changed(*HARNESS[:4], *PRODUCT)).violations == ()
     assert check_paths(v2.context, reconcile, changed(*HARNESS[4:])).violations == tuple(sorted(HARNESS[4:]))
-    # Fuera del layout v2 manda el perfil, también para la reconciliación (D081).
+    # Outside the v2 layout the profile rules, reconciliation included (D081).
     v1 = replace(v2.context, documents=None)
     assert executor_protected(v1, 'P001-RECONCILE-1', 'docs/STATE.md')
     assert not executor_protected(v1, 'P001-T001', 'docs/flows/alta.md')
@@ -178,11 +178,11 @@ def test_decision_proposals_are_recorded_without_writing_decisions(v2):
     v2.repository.submit_commit(job.run_id, key=v2.key(), expected_version=record.version)
     v2.run()
     assert v2.repository.get_run(job.run_id).status == 'COMMITTED'
-    # Fuera del índice gestionado, que el commit regenera, DECISIONS no cambia: ninguna propuesta se escribe.
+    # Outside the managed index, which the commit regenerates, DECISIONS does not change: no proposal is written.
     after = text(v2, 'docs/DECISIONS.md')
     assert after.replace(blocks(after)['decisions'], '') == decisions.replace(blocks(decisions)['decisions'], '')
     assert 'Usar SQLite' not in git(v2.context.root, 'show', 'HEAD:docs/DECISIONS.md')
-    # La reconciliación las recibe para consolidarlas y puede editar DECISIONS aunque el perfil lo proteja.
+    # Reconciliation receives them to consolidate them and may edit DECISIONS even if the profile protects it.
     web_protection(v2)
     reconcile = v2.phases.submit_reconcile_task(v2.context, pid, v2.get(pid)['version'], key=v2.key(),
                                                 versions=VERSIONS)

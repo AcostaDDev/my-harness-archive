@@ -1,4 +1,4 @@
-"""H2.2: SQLite y checkouts sintéticos; ninguna CLI de agente ni red."""
+"""H2.2: synthetic SQLite and checkouts; no agent CLI or network."""
 
 from concurrent.futures import ThreadPoolExecutor
 from dataclasses import asdict, replace
@@ -233,7 +233,7 @@ def test_threaded_double_requests_and_claims_invoke_once(repository, context, mi
 def test_processes_share_idempotency_and_writer_lock(repository, context, migrated_database):
     probe = Path(__file__).with_name("managed_process_probe.py")
     payload = {"database": migrated_database[0], "context": json.loads(
-        # Usar el snapshot real del contexto canónico, nunca datos privados.
+        # Use the real snapshot of the canonical context, never private data.
         submit(repository, context).request_json)["context_json"], "plan": PLAN, "versions": VERSIONS}
 
     def run(action):
@@ -267,7 +267,7 @@ def test_canonical_roots_share_lock_and_other_checkout_progresses(repository, co
     claimed = repository.claim()
     assert claimed.id == first.id
     assert repository.claim().id == third.id
-    assert repository.claim() is None  # segundo espera por la misma raíz
+    assert repository.claim() is None  # the second waits for the same root
     history = repository.get_run(first.run_id).history
     repository.finish(claimed, stop_history(history, "start", "Synthetic explicit stop before effects"))
     assert repository.claim().id == second.id
@@ -367,7 +367,7 @@ def test_crash_during_correction_reserves_budget_and_needs_explicit_recovery(rep
     with pytest.raises(SyntheticCrash):
         supervisor.run_once()
     during = repository.get_run(job.run_id)
-    assert during.revisions == 1 and during.history.revisions == 0  # intención reservada aún sin resultado
+    assert during.revisions == 1 and during.history.revisions == 0  # intention reserved, still without result
     assert attempts(repository, job.run_id)[-1]["result"] is None
     assert len(agents.requests) == 3
     clock.now += timedelta(seconds=31)
@@ -498,7 +498,7 @@ def test_work_has_no_open_sqlite_transaction_and_heartbeat_runs(repository, cont
     repository.heartbeat = observed
 
     def long_call(context, request):
-        # Otra transacción escritora termina mientras el adaptador espera.
+        # Another writing transaction finishes while the adapter waits.
         submit(repository, context, key="while-running")
         entered.set()
         assert release.wait(timeout=5)
@@ -567,7 +567,7 @@ def test_conflicts_and_frozen_history_are_rejected(repository, context):
 
 def test_managed_database_cannot_live_inside_agent_checkout(repository, context):
     engine = make_engine(f"sqlite:///{context.root / 'state.sqlite3'}")
-    # Evitar crear/abrir la base: comprobar la guardia sobre repositorio ya preparado.
+    # Avoid creating/opening the database: check the guard on an already prepared repository.
     previous = repository.engine
     repository.engine = engine
     try:

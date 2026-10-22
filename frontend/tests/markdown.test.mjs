@@ -5,7 +5,7 @@ import { blockBody, decisionHref, classify, renderMarkdown, resolvePath, splitBl
 const ctx = { project: 'mi-web', path: 'docs/STATE.md' };
 const render = source => renderMarkdown(source, ctx).html;
 
-// Todo el HTML producido cabe en esta tabla: etiquetas, atributos y destinos. Cualquier otra cosa es un fallo.
+// All produced HTML fits in this table: tags, attributes and targets. Anything else is a failure.
 const TAGS = new Set(['p', 'a', 'img', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'ul', 'ol', 'li', 'em', 'strong', 's', 'code', 'pre',
   'blockquote', 'hr', 'br', 'table', 'thead', 'tbody', 'tr', 'th', 'td', 'span', 'section', 'figure']);
 const ATTRS = new Set(['href', 'src', 'alt', 'title', 'class', 'id', 'target', 'rel', 'loading', 'start', 'style',
@@ -153,7 +153,7 @@ test('paths resolve inside the checkout only', () => {
   assert.equal(classify('mailto:a@b.c', ctx).kind, 'blocked');
 });
 
-// El enlace del índice y el encabezado renderizado deben coincidir, también con acentos y Markdown.
+// The index link and the rendered heading must match, accents and Markdown included.
 test('decision index links to the heading inside the single register', () => {
   const title = 'Persistencia con **SQLite** y réplica';
   const target = decisionHref('mi web', 'manual', 'D093', title);
