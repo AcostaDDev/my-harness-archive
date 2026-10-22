@@ -16,7 +16,7 @@ hitos H0–H6 del backlog original; la definición inicial está en [archive/pha
 | P008 | Contrato documental unificado, cierre de fase e importación de proyectos | completada (2026-10-19) | [phase-008](archive/phase-008/SUMMARY.md) |
 | P009 | Proyecto Django desde cero y piloto con cuatro combinaciones de agentes | completada (2026-10-21) | [phase-009](archive/phase-009/SUMMARY.md) |
 | P010 | Consolidación de la primera versión local | completada (2026-10-22) | [phase-010](archive/phase-010/SUMMARY.md) |
-| P011 | Preparación para apertura pública en GitHub | planificada (2026-10-22) | [plan](phase/P011_PLAN_APERTURA_PUBLICA.md) |
+| P011 | Preparación para apertura pública en GitHub | en ejecución documental (2026-10-22) | [plan](phase/P011_PLAN_APERTURA_PUBLICA.md) |
 
 ## P001 — Contratos y prueba de viabilidad
 
@@ -232,12 +232,12 @@ elección de trabajo en inglés/español, CLI más compatibles y primer uso repr
 este repositorio, reescribir historia/snapshots, nube/multiusuario, aislamiento del SO, App Server/SDK, rediseño
 general, traducción automática de contenido libre o aplicaciones hijas, y ampliación de consentimientos de P009.
 No incorporar automáticamente las otras candidatas ni prometer compatibilidad multiplataforma o CLI futura universal.
-**Estado:** planificada el 2026-10-22 por encargo del usuario, que permite añadir/modificar tareas para preparar
-la apertura. Ampliada por D155: diecinueve tareas pendientes, con T019 tras T002 y antes de T003;
-siguiente T001 (inventario y contrato), sin implementación ni ejecución operativa en esta entrega.
-Planificación inicial finalizada en D156 y commit `6174f51`; ajustes D157/D158 confirmados por el usuario
-para commit documental propio, sin ejecución del producto.
-La fase no está cerrada; se mantienen diecinueve tareas y diez criterios, ajustados a ambas decisiones.
+**Estado:** en ejecución documental el 2026-10-22 por encargo del usuario. T001 completada (D159):
+[contrato](phase/P011-T001_CONTRATO_APERTURA.md) e [inventario](phase/P011-T001_INVENTARIO.md), sin cambios de
+producto ni ejecución operativa. Dieciocho tareas pendientes; siguiente T002 y luego T019 antes de T003.
+Planificación inicial finalizada en D156 y commit `6174f51`; ajustes D157/D158 incorporados
+en `2730f54`, sin ejecución del producto. La petición actual autoriza T001 y su commit local en inglés.
+La fase no está cerrada; se mantienen diecinueve tareas (una completada) y diez criterios.
 [Plan](phase/P011_PLAN_APERTURA_PUBLICA.md), [tareas](NEXT_STEPS.md) y
 [D154](DECISIONS.md#d154--p011-preparación-para-apertura-pública-en-github).
 La primera versión local P010 sigue completada en su alcance; P011 añade objetivos públicos, no reabre ese cierre.

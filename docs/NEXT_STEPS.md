@@ -4,10 +4,11 @@ Objetivo y criterios en [ROADMAP](ROADMAP.md#p011--preparación-para-apertura-p�
 Decisión: [D154](DECISIONS.md#d154--p011-preparación-para-apertura-pública-en-github).
 [Plan y alcance](phase/P011_PLAN_APERTURA_PUBLICA.md).
 
-**Estado:** planificada el 2026-10-22, ampliada por D155/D157/D158. Diecinueve tareas pendientes; sin implementación.
-**Planificación:** base finalizada en D156, ajustes D157/D158 confirmados por el usuario para commit documental;
-no equivale a fase completada.
-**Siguiente:** P011-T001. Crear la fase no ejecuta sus tareas ni autoriza publicación.
+**Estado:** en ejecución documental el 2026-10-22. T001 completada (D159); dieciocho tareas pendientes,
+sin cambios de producto.
+**Planificación:** base finalizada en D156 y afinada por D155/D157/D158; contrato T001 disponible.
+No equivale a fase completada.
+**Siguiente:** P011-T002; después T019 antes de T003. Sin autorización de publicación.
 P001–P010 siguen cerradas; la primera versión local mantiene el alcance de D151/D153.
 
 ## Restricciones compartidas
@@ -39,15 +40,20 @@ P001–P010 siguen cerradas; la primera versión local mantiene el alcance de D1
 - D156 reserva el modo continuo `tareas → commits → check → cierre/archivo → planificación y ejecución de la
   siguiente fase` para v0.2.0 después de abrir el proyecto en GitHub, fuera de estas tareas. P011 mantiene
   cierre con READY y autorización propia, nueva fase sin tareas y confirmación del plan posterior.
-  El commit D156 ya se realizó; la nueva petición confirma D157/D158 y autoriza su commit documental,
-  sin ejecutar tareas ni publicar.
+  El commit D156 y los ajustes D157/D158 ya se realizaron. La petición actual autoriza ejecutar la siguiente
+  tarea (T001) y su commit local en inglés, sin encadenar tareas ni publicar.
 - D157 elige instantánea pública inicial revisada, con Git/documentación de partida nuevos y sin historia privada.
   Desde la apertura, código/decisiones/fases se desarrollan en el repositorio público, fuente principal; este
   checkout conserva su historia privada. No sincronizar dos desarrollos activos ni congelar para siempre `docs/` pública.
 
 ## P011-T001 — Inventario y contrato de la apertura pública
 
-**Estado:** pendiente.
+**Estado:** completada el 2026-10-22 (diseño, sin implementación de producto), D159.
+**Evidencia:** [contrato](phase/P011-T001_CONTRATO_APERTURA.md) e
+[inventario](phase/P011-T001_INVENTARIO.md): 688 archivos de `2730f54`, propietarios/excepciones,
+persistencia/catálogos, par por job/turno, mapa de campos, compatibilidad de recetas/datos y corte inicial.
+Contraste estático, cobertura de rutas, hashes, parsers, enlaces/presupuestos e integridad/diff correctos;
+sin suites, procesos de agentes, proveedores, servicios, instalaciones o red.
 **Objetivo:** Hacer implementables la traducción, los idiomas y la distribución sin romper compatibilidad.
 **Alcance:** inventario por archivo de comentarios/docstrings/descripciones e identificadores españoles;
 superficies UI/API/CLI/documentos/prompts; fuentes congeladas, hashes y lectores antiguos; brechas de primer uso
@@ -77,6 +83,12 @@ global de idiomas y frontera de la instantánea inicial pública respecto de his
 
 **Validación:** contraste estático de código, decisiones, parsers y enlaces; sin suites ni procesos de agentes.
 **Entregables:** `docs/phase/P011-T001_CONTRATO_APERTURA.md`, inventario y decisión de diseño.
+
+Contrato implementable para las siguientes tareas: [D159](DECISIONS.md#d159--p011-t001-contrato-de-idiomas-fuentes-y-corte-público).
+T004 preserva v1 y prepara recetas v2; T007 usa SQLite/catálogos JSON sin nuevas dependencias; T008 incorpora
+asociación inmutable para proyectos de registro/TOML, migración explícita y `local-config-6`; T009 aplica el mapa
+V/W/T y generación v2. T019 extrae dependencias/guardias antes de retirar entradas y conserva datos/jobs antiguos
+según el contrato. Los formatos/esquemas/flujos nuevos se implementan con su paridad en esas tareas.
 
 ## P011-T002 — Licencia y revisión del contenido publicable
 

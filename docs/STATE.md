@@ -71,18 +71,26 @@ salvo donde se indica. Detalle por fase en `docs/archive/phase-NNN/SUMMARY.md`; 
 
 ## Fase activa
 
-**P011 — Preparación para apertura pública en GitHub**, planificada el 2026-10-22 por encargo del usuario
+**P011 — Preparación para apertura pública en GitHub**, iniciada documentalmente el 2026-10-22 por encargo del usuario
 ([D154](DECISIONS.md#d154--p011-preparación-para-apertura-pública-en-github),
-[plan](phase/P011_PLAN_APERTURA_PUBLICA.md), [tareas](NEXT_STEPS.md)). Diecinueve tareas pendientes (D155/D157/D158);
-esta entrega solo planifica, sin implementar traducción, selección de idiomas o nueva compatibilidad CLI.
+[plan](phase/P011_PLAN_APERTURA_PUBLICA.md), [tareas](NEXT_STEPS.md)). T001 completada (D159), dieciocho tareas
+pendientes; sin implementar traducción, selección de idiomas, retirada legacy o nueva compatibilidad CLI.
 
 **Planificación finalizada para comenzar su ejecución** por petición del usuario
 ([D156](DECISIONS.md#d156--planificación-de-p011-finalizada-y-modo-continuo-aplazado-a-v020)).
-P011 no está completada: sus diecinueve tareas siguen pendientes y la siguiente es T001.
+P011 no está completada: T001 entrega diseño/inventario y la siguiente es T002.
 El modo continuo entre fases queda reservado para **v0.2.0, después de abrir el proyecto en GitHub**;
 no forma parte de P011 ni modifica el cierre confirmado actual. Commit documental D156 realizado en `6174f51`;
-las ampliaciones D157/D158 están confirmadas por el usuario y se incorporan en un commit documental propio,
-sin ejecución del producto ni publicación.
+las ampliaciones D157/D158 se incorporaron en `2730f54`. La petición actual autoriza T001 y su commit local
+en inglés, sin ejecución del producto ni publicación.
+
+**P011-T001 completada** ([contrato](phase/P011-T001_CONTRATO_APERTURA.md),
+[inventario](phase/P011-T001_INVENTARIO.md), D159): 688 archivos de base, con tratamiento/propietaria y
+excepciones; defaults globales en SQLite, catálogos JSON sin nuevas dependencias, trabajo inmutable y par
+congelado por job/turno con mapa de campos humanos/técnicos. Diseñadas compatibilidad de recetas v1/v2,
+retirada A/legacy con infraestructura B e historial propio conservados, y lista permitida del corte público.
+Contrato listo para implementar en sus tareas; contraste estático, hashes, parsers/enlaces/presupuestos e
+integridad/diff verificados. Sin suites, builds, servicios, agentes/proveedores, red ni auditoría de privacidad.
 
 Objetivo: código/comentarios/docstrings y prompts originales ingleses; idiomas visual/trabajo separados (D158);
 CLI por capacidades/mínimos; diagramas contrastados con comportamiento; documentación inglesa y README de primer
@@ -113,7 +121,7 @@ P009 conserva su cierre documental (D140) y el Django hijo su P001 CLOSED, cuatr
 tag `p001` sobre `47a0557` y archivo en `3d105c6`. No se repite ninguna operación ni comprobación de su estado.
 Este repositorio sigue sin registrarse ni ejecutarse con el harness; cierre manual sin check READY ni tag propio.
 
-**Siguiente:** P011-T001, inventario por archivo y contrato de idiomas/fuentes/setup antes de implementar.
+**Siguiente:** P011-T002, licencia/titularidad y revisión estática del contenido publicable; después T019 antes de T003.
 Otras candidatas permanecen en [ROADMAP](ROADMAP.md#candidatas-sin-fase-asignada).
 Los límites de la base acumulada siguen vigentes. B y D095 mantienen la validación real aplazada por D151;
 A queda fuera del soporte público futuro por D155, sin considerarse validado ni retirado todavía en código.

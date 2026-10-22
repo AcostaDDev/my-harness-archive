@@ -1,9 +1,10 @@
 # P011 — Plan de preparación para apertura pública en GitHub
 
 Fecha: 2026-10-22. Decisión: [D154](../DECISIONS.md#d154--p011-preparación-para-apertura-pública-en-github).
-**Estado:** planificación afinada por D155/D157/D158; diecinueve tareas pendientes, sin implementación.
-**Planificación inicial:** finalizada en D156 y commit `6174f51`; ajustes D157/D158 confirmados por el usuario
-para commit documental propio. La fase sigue pendiente de ejecución, con T001 como siguiente tarea.
+**Estado:** T001 completada documentalmente (D159); dieciocho tareas pendientes, sin cambios de producto.
+**Planificación inicial:** finalizada en D156 y commit `6174f51`; ajustes D157/D158 incorporados
+en `2730f54`. La petición posterior autoriza T001 y su commit local en inglés; siguiente T002.
+Contrato de ejecución: [T001](P011-T001_CONTRATO_APERTURA.md), [inventario](P011-T001_INVENTARIO.md).
 [Criterios](../ROADMAP.md#p011--preparación-para-apertura-pública-en-github),
 [tareas](../NEXT_STEPS.md), [estado](../STATE.md).
 
@@ -12,6 +13,7 @@ para commit documental propio. La fase sigue pendiente de ejecución, con T001 c
 Preparar una distribución local que una persona ajena al proyecto pueda encontrar en GitHub, entender, instalar
 y probar con documentación inglesa, opción española, configuración mínima, licencia y soporte claros.
 El usuario encarga crear la fase y permite añadir/modificar tareas; no encarga ejecutarlas en esta entrega.
+Ese fue el alcance de la planificación original; la petición posterior de continuar ejecuta únicamente T001.
 La primera versión local P010 y su paquete `0.1.0` siguen siendo la base entregada, con límites D151/D153.
 
 Se conservan los cinco objetivos pedidos: inglés del código, elección en/es, CLI más compatibles, paridad
@@ -53,8 +55,8 @@ la autoridad por registrarlo. T015 no asigna v0.2.0 a la apertura inicial ni inc
 El comportamiento vigente conserva lote de tareas/commits, check explícito y cierre con autorización propia.
 El cierre confirmado archiva y abre la sucesora de ROADMAP sin tareas; su plan posterior requiere confirmación.
 Finalizar esta planificación no equivale a cerrar P011, publicar el paquete o cambiar versión. El commit
-documental autorizado en D156 ya se hizo; la nueva petición confirma D157/D158 y autoriza su commit documental,
-sin ejecutar tareas ni publicar.
+documental autorizado en D156 y los ajustes D157/D158 ya se hicieron; la petición posterior autoriza T001 y su
+commit local en inglés, sin encadenamiento automático ni publicación.
 
 ## Base inspeccionada
 

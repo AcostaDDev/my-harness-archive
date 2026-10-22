@@ -169,6 +169,7 @@ tarea se leen solo las decisiones que cita; este índice sirve para buscar prece
 | [D156](#d156--planificación-de-p011-finalizada-y-modo-continuo-aplazado-a-v020) | Planificación de P011 finalizada y modo continuo aplazado a v0.2.0 | P011 |
 | [D157](#d157--repositorio-público-nuevo-y-continuidad-del-desarrollo) | Repositorio público nuevo y continuidad del desarrollo | P011 |
 | [D158](#d158--idioma-visual-global-y-trabajo-inmutable-por-proyecto) | Idioma visual global y trabajo inmutable por proyecto | P011 |
+| [D159](#d159--p011-t001-contrato-de-idiomas-fuentes-y-corte-público) | P011-T001: contrato de idiomas, fuentes y corte público | P011 |
 
 ## D001 — Alcance local y arquitectura base
 
@@ -4682,3 +4683,48 @@ y la asociación de conversación al trabajo propuestas en D154; conserva prompt
   snapshot de ambos idiomas y pruebas de las cuatro combinaciones/concurrencia/compatibilidad. Modelos/flujos/API
   con paridad al implementar; hoy solo cambian documentos del plan, sin proveedores, servicios, instalaciones,
   código, esquema, nuevos commits o publicación.
+
+## D159 — P011-T001: contrato de idiomas, fuentes y corte público
+
+Estado: diseño documentado el 2026-10-22 al ejecutar T001 por petición del usuario; sin implementación de producto.
+[Contrato](phase/P011-T001_CONTRATO_APERTURA.md), [inventario](phase/P011-T001_INVENTARIO.md).
+Concreta D154–D158; conserva las guardias de D027, el layout D088 y las huellas/recuperación D119/D143.
+
+- T001 inventaría los 688 archivos de `2730f54`: 469 filas individuales y 219 archivos históricos agrupados,
+  con propietaria, idioma/candidatos, tratamiento y excepciones. No equivale a traducción, retirada legacy,
+  auditoría de privacidad/derechos o validación pública. La petición actual autoriza su commit local en inglés.
+- Preferencias globales por instalación/base SQLite: `ui_language` y `default_work_language`, en/es, iniciales
+  en/en, mutables con CAS y auditoría; sin TOML global ni autoridad de navegador. Catálogos JSON por ámbito
+  React/Python, claves/parámetros controlados, fallback inglés, Intl en cliente y datos técnicos estructurados;
+  sin dependencias nuevas ni `.po`. API conserva códigos y evidencia original; override CLI explícito por invocación.
+- Trabajo elegido al alta/confirmación por hash y asociado una vez a la identidad/raíz del proyecto, también
+  para proyectos TOML. SQLite manda tras asociarlo; cambios por UI/API/TOML o baja/reapertura se rechazan.
+  T008 añadirá `local-config-6`, conservando lectura/hashes 1–5. Proyectos previos sin valor requieren selección
+  explícita antes de futuras operaciones; no inferirlo del idioma de archivos ni reescribirlos.
+- `language-context-1` sella par/procedencia al admitir cada job/turno. Pendientes, intentos, revisiones y retries
+  conservan su par; nuevo turno captura visual actual. El visual no cambia hashes de composición ni invalida
+  aceptaciones. El contrato asigna campos humanos a visual y artefactos técnicos a trabajo, conservando
+  literales/criterios originales. Directiva tipada del motor sellada en prompt por stdin de ambos proveedores,
+  fuera de variables editables; sin flags nuevos ni cambios de permisos/confianza/memoria.
+- Recetas v1 y recursos ligados a huellas permanecen por bytes/perfil como compatibilidad histórica. T004
+  prepara v2 de Django/TypeScript con fuente inglesa; T008/T009 ligan nuevas altas y generación a trabajo.
+  No sustituir v1 bajo su identidad, invalidar recibos por comentarios ni imponer idioma funcional a la app hija.
+  Conservar lectores de historiales/catálogos antiguos y alias D088 en/es; nuevas formas se versionan, no rellenan
+  snapshots antiguos con valores inventados. Conciliar una intención propia sellada conserva sus bytes.
+- T019 retirará entradas A/legacy/observadores, extrayendo antes Git,
+  escritor/adopción y guardias compartidas por B/preparación. `project_imports` y `purpose=import_commit` siguen
+  compartidos; distinguir por origen/preview. Guardias mínimas de activaciones ACTIVE anteriores protegen
+  solo trabajo gestionado, sin nuevas activaciones/reversiones ni visor/lector/indexador operativo. El esqueleto
+  sintético propio H0 es independiente de legacy, no otra vía de alta, y no se elimina por D155.
+- Datos/tablas/migraciones, historial propio y referencias de backup se conservan. Jobs A pendientes se
+  rechazan/cuarentenan sin ejecutar intenciones; resolución explícita tras acreditar escritor detenido, sin
+  reinterpretar como B ni borrar evidencia. PREPARING/REVERTING antiguos bloquean efectos y requieren resolución
+  manual explícita. Restauraciones siguen de consulta, sin observadores ni reanudación del modo retirado.
+- Corte público inicial por lista positiva de archivos exactos revisados: fuentes/recursos/tests sintéticos y
+  herramientas vigentes, documentación pública nueva suficiente para usuarios/forks/agentes y nueva raíz Git.
+  Excluir historia/ADR/fases/evidencias privadas y estado/cachés/credenciales; correspondencia privada por hashes.
+  Desde la apertura, código/docs/decisiones/fases evolucionan en el repositorio público como fuente principal,
+  sin dos desarrollos sincronizados por copias. No se crea/exporta/publica un candidato en T001.
+- Diez criterios con tareas/evidencias pendientes; licencia/titularidad (T002), mínimos CLI (T011), versión
+  candidata (T015) y ensayos (T016) siguen en sus tareas. Checks estáticos de inventario, fuentes, parsers,
+  enlaces/presupuestos e integridad/diff; sin suites, servicios, proveedores, instalaciones o red.
