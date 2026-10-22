@@ -178,7 +178,9 @@ publicación y ejecución del harness sobre este repositorio. Sin ampliación de
 T001 completada el 2026-10-22 ([contrato](phase/P010-T001_CONTRATO_CONSOLIDACION.md),
 [D142](DECISIONS.md#d142--p010-t001-receta-typescript-proyección-de-runs-y-tarea-t011)), que añade T011;
 T002–T007 y T011 completadas el mismo día (D143–D149); T007 añade T012, completada también (D150): migración
-explícita con copia previa desde la CLI. T008–T010 pendientes. [Plan](phase/P010_PLAN_CONSOLIDACION.md), [tareas](NEXT_STEPS.md) y
+explícita con copia previa desde la CLI. T008 completada (D151):
+[propuesta](phase/P010-T008_PROPUESTA_VALIDACION_REAL.md) y decisión del usuario de aplazar la validación real de
+A/B y D095, conservando sus límites. T009–T010 pendientes. [Plan](phase/P010_PLAN_CONSOLIDACION.md), [tareas](NEXT_STEPS.md) y
 [D141](DECISIONS.md#d141--p010-consolidación-de-la-primera-versión-local).
 
 ## Candidatas sin fase asignada

@@ -57,13 +57,14 @@ salvo donde se indica. Detalle por fase en `docs/archive/phase-NNN/SUMMARY.md`; 
 - **Límites**: contención cooperativa sin aislamiento del sistema operativo; validaciones sin hora; manifiestos de
   receta fijos tras preparar; dos avisos *low* de KaTeX.
   Piloto de receta Django limitado a macOS arm64/Python 3.13; el perfil Python/Django declarativo sigue pendiente
-  de confirmar sobre un proyecto real. El piloto no evalúa comparativamente la calidad de modelos.
+  de confirmar sobre un proyecto real. A/B y ese perfil conservan su validación solo offline: el usuario aplaza
+  la comprobación real complementaria en T008 (D151). El piloto no evalúa comparativamente la calidad de modelos.
   Observación de P009 pendiente: alta sin redirección (aplazada en ROADMAP). El texto de marcadores de
   define-project y la deriva tras cerrar se corrigen en P010-T004 (D146) y T005 (D147).
 
 ## Fase activa
 
-**P010 — Consolidación de la primera versión local. En curso: T001–T007 y T011–T012 completadas.**
+**P010 — Consolidación de la primera versión local. En curso: T001–T008 y T011–T012 completadas.**
 Planificada el 2026-10-21 ([D141](DECISIONS.md#d141--p010-consolidación-de-la-primera-versión-local),
 [plan](phase/P010_PLAN_CONSOLIDACION.md), [tareas](NEXT_STEPS.md)). El 2026-10-22 T001 deja el
 [contrato](phase/P010-T001_CONTRATO_CONSOLIDACION.md) y la matriz inicial
@@ -102,7 +103,11 @@ gestionada y que el hueco de migraciones del paquete instalado (§9) se corrige 
 [D150](DECISIONS.md#d150--p010-t012-migración-explícita-de-bases-desde-la-cli-instalada)): copia previa verificada,
 guardias de rutas, revisiones y propietarios/grupos vivos; no crea bases ni restaura automáticamente tras un fallo.
 Verificado offline con SQLite sintética de `0022`, formatos 1–8 y revisiones antiguas; `serve` acepta el resultado
-sin arrancar un servicio en la prueba. Sin esquema ni API nuevos; wheel pendiente de T009. T008–T010 pendientes.
+sin arrancar un servicio en la prueba. Sin esquema ni API nuevos; wheel pendiente de T009. T008 prepara la
+[propuesta de validación real](phase/P010-T008_PROPUESTA_VALIDACION_REAL.md) y resuelve el alcance por HITL
+([D151](DECISIONS.md#d151--p010-t008-validación-real-complementaria-aplazada)): el usuario aplaza A/B y D095,
+conservando su evidencia offline y sus límites de uso real. Sin tarea operativa ni autorización nueva.
+T009–T010 pendientes; la versión aún no tiene dictamen final.
 
 P009 cerrada y archivada documentalmente el 2026-10-21
 ([resumen](archive/phase-009/SUMMARY.md), [revisión](archive/phase-009/REVIEW.md),
@@ -113,8 +118,7 @@ El Django hijo conserva P001 CLOSED, cuatro tareas COMMITTED, tag `p001` sobre `
 Última comprobación operativa en T012: servicios detenidos, cero locks y sin jobs pendientes; no se repite aquí.
 Este repositorio sigue sin registrarse ni ejecutarse con el harness; cierre manual sin check READY ni tag propio.
 
-**Siguiente:** P010-T008, propuesta de validación real complementaria y alcance.
-Después: verificación final del paquete (T009). Los límites actuales de la base
-acumulada siguen vigentes hasta implementar y verificar
-cada entrega; el SSE gestionado queda resuelto por D149. La validación real complementaria
-se concreta en T008; no se da por realizada ni autorizada. Sin nueva fase del Django hijo ni ampliación de consentimientos de P009.
+**Siguiente:** P010-T009, verificación final del paquete y revisión de salida.
+Después: cierre documental (T010), solo con dictamen favorable. Los límites de la base acumulada siguen vigentes;
+el SSE gestionado queda resuelto por D149. La validación real complementaria queda aplazada por D151, sin darse
+por realizada ni autorizada. Sin nueva fase del Django hijo ni ampliación de consentimientos de P009.

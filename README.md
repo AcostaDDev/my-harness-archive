@@ -98,8 +98,8 @@ métricas; `diagnose-cli` y `legacy-import`/`legacy-summary` completan la CLI. C
 | Revisor/ejecutor Codex o Claude en las cuatro combinaciones | Sí | Sí (D071; piloto P009) |
 | Proyecto Django nuevo con receta `django-recipe-1` | Sí | Sí, macOS arm64 y Python 3.13 (D139) |
 | Proyecto TypeScript web nuevo con receta `typescript-web-recipe-1` | Sí, también con node/npm reales y caché local | No |
-| Perfil declarado (`[profiles.*]`, ejemplo `python-django`) | Sí | No; pendiente de decidir en P010-T008 (D095) |
-| Importación A (harness anterior) y B (código sin harness) | Sí | No; pendiente de decidir en P010-T008 |
+| Perfil declarado (`[profiles.*]`, ejemplo `python-django`) | Sí | No; validación real aplazada en P010-T008 (D095, D151) |
+| Importación A (harness anterior) y B (código sin harness) | Sí | No; validación real aplazada en P010-T008 (D151) |
 | Chat ligado a tareas, backup y restauración | Sí | Sin evidencia real localizada (matriz de T001) |
 | Lecturas de runs, métricas y vista previa de exportación sin decodificar historiales | Sí, con historiales sintéticos de 26 y 35,4 MiB | No aplica |
 

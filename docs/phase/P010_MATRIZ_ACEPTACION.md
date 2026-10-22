@@ -1,5 +1,8 @@
 # P010 — Matriz de aceptación global
 
+Actualización del 2026-10-22 tras T008: el usuario aplaza la validación real complementaria y conserva sus límites
+(D151, §7). Se mantiene debajo el dictamen original de T007 y su seguimiento, sin reescribir su evidencia histórica.
+
 Actualización del 2026-10-22 tras T012: el hueco de migración instalada identificado por T007 queda implementado y
 verificado offline; véase §6. Se conserva debajo el dictamen y la base de T007, sin atribuirle evidencia posterior.
 
@@ -90,3 +93,16 @@ añadir dos casos, los 50 tests focalizados pasan. No reaparece el fallo intermi
 [Entrega y evidencia](P010-T012_MIGRACION_INSTALADA.md). El verificador del wheel incorpora el recorrido; ejecutarlo
 sigue pendiente de T009. No se ha migrado ninguna base operativa. El dictamen final de la versión sigue dependiendo
 de T008–T010 y no se anticipa aquí.
+
+## 7. Seguimiento tras P010-T008
+
+El 2026-10-22 el usuario elige «Aplazar y conservar los límites de validación real» (D151), tras revisar la
+[propuesta](P010-T008_PROPUESTA_VALIDACION_REAL.md). Queda resuelta la decisión de alcance pendiente: A/B y el
+perfil declarado D095 conservan únicamente su validación offline con agentes y herramientas falsos, sin uso real.
+La receta Django mantiene la evidencia histórica de D139, limitada a macOS arm64/Python 3.13, y no acredita D095.
+Chat, backup/restauración y receta TypeScript tampoco adquieren uso real por esta decisión.
+
+No se ejecuta el recorrido ni se añaden tests o tarea operativa. Los dictámenes offline de los criterios 9–12
+conservan su evidencia; la falta de uso real se declara, sin convertirla en validación adicional. T009 verificará
+el paquete y revisará la salida con estos límites. T010 sigue condicionado a un dictamen favorable; T008 no
+declara terminada la versión ni amplía consentimientos de P009.

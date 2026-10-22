@@ -161,6 +161,7 @@ tarea se leen solo las decisiones que cita; este índice sirve para buscar prece
 | [D148](#d148--p010-t006-documentación-de-instalación-y-alcance-soportado) | P010-T006: documentación de instalación y alcance soportado | P010 |
 | [D149](#d149--p010-t007-matriz-de-aceptación-sse-por-cursor-y-tarea-t012) | P010-T007: matriz de aceptación, SSE por cursor y tarea T012 | P010 |
 | [D150](#d150--p010-t012-migración-explícita-de-bases-desde-la-cli-instalada) | P010-T012: migración explícita de bases desde la CLI instalada | P010 |
+| [D151](#d151--p010-t008-validación-real-complementaria-aplazada) | P010-T008: validación real complementaria aplazada | P010 |
 
 ## D001 — Alcance local y arquitectura base
 
@@ -4475,3 +4476,21 @@ acuerdo de D149 para SPECIFICATION §9; amplía D053 a la CLI instalada y mantie
 - Evidencia offline sintética: `0022`→`0023` con formatos 1–8, proyección verificada e historiales/contextos/versiones
   intactos; revisiones antiguas; negativas y fallos. La prueba de `serve` supera su guardia sin arrancar un servicio.
   Sin instalación real migrada, proveedores, smokes ni operación del hijo de P009.
+
+## D151 — P010-T008: validación real complementaria aplazada
+
+Estado: completada el 2026-10-22. Fase: P010.
+[Propuesta y alcance](phase/P010-T008_PROPUESTA_VALIDACION_REAL.md). Decisión explícita del usuario en el bucle
+HITL: «Aplazar y conservar los límites de validación real». Resuelve la elección pendiente de D141, D148 y D149.
+
+- Se aplazan la validación real de importaciones A/B y la del perfil Python/Django declarado de D095. La propuesta
+  concreta dos repositorios sintéticos, una pareja, una tarea B/D095 y un techo de 21 llamadas, sin ejecutarlos.
+  Rutas, modelos y demás parámetros operativos quedan sin elegir; no se añade una tarea operativa ni autorización.
+- Alcance anunciado: A/B y D095 implementados y verificados offline con agentes/herramientas falsos, sin uso real.
+  La receta Django conserva su evidencia histórica D139 (macOS arm64/Python 3.13), sin extrapolarla al perfil
+  declarado. Chat, backup/restauración y receta TypeScript conservan también su falta de uso real.
+- T009 puede verificar el paquete y emitir el dictamen en ese alcance, conservando los límites; T010 sigue
+  condicionado a un dictamen favorable. Aplazar no equivale a validar ni a declarar terminada la versión.
+- Se sincronizan STATE, NEXT_STEPS, ROADMAP, seguimiento de la matriz y las dos filas de alcance de README.
+  Sin cambios de producto, comandos operativos, proveedores, instalaciones, servicios, push o publicación;
+  no se opera P009 ni se reutiliza su consentimiento. Una validación real futura exige tarea y consentimiento propios.

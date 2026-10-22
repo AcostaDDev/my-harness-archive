@@ -14,8 +14,10 @@ vista previa de exportación sobre la proyección. T004 completada el 2026-10-22
 definición. T005 completada el 2026-10-22 (D147): evidencia histórica de una fase cerrada. T006 completada el
 2026-10-22 (D148): documentación contrastada con código y evidencia. T007 completada el 2026-10-22 (D149): matriz de
 aceptación; añade T012 (migración desde el paquete instalado). T012 completada el 2026-10-22 (D150): orden
-`migrate` con instantánea previa y negativas verificadas offline. T008–T010 pendientes; sin operación iniciada.
-**Siguiente:** T008, propuesta de validación real complementaria y alcance.
+`migrate` con instantánea previa y negativas verificadas offline. T008 completada el 2026-10-22 (D151): propuesta
+complementaria y decisión HITL de aplazar A/B y D095, conservando sus límites de uso real. T009–T010 pendientes;
+sin operación iniciada ni tarea operativa añadida.
+**Siguiente:** T009, verificación final del paquete y revisión de salida.
 
 ## Restricciones compartidas
 
@@ -187,11 +189,13 @@ base (matriz §4); sin proveedores, servicios operativos ni smokes.
 
 ## P010-T008 — Propuesta de validación real complementaria y alcance
 
-**Estado:** pendiente. **Depende de:** T006, T007.
+**Estado:** completada el 2026-10-22 ([propuesta](phase/P010-T008_PROPUESTA_VALIDACION_REAL.md), D151). El usuario
+aplaza la validación real complementaria y conserva los límites; sin recorrido ejecutado ni tarea operativa.
+**Depende de:** T006, T007.
 **Objetivo:** Resolver qué evidencia adicional se necesita antes de declarar el alcance soportado de la versión.
 **Alcance:** propuesta concreta para importaciones A/B y perfil Python/Django declarativo; decisión explícita de
 ejecutar posteriormente o conservar esos límites. Esta tarea prepara la propuesta y no ejecuta el recorrido.
-**Rutas permitidas:** `docs/**`.
+**Rutas permitidas:** `docs/**`; sincronización de las dos filas de alcance de `README.md` con la decisión HITL.
 **Criterios de aceptación:**
 
 - Se diferencia evidencia sintética A/B, receta Django acreditada y perfil declarativo pendiente de D095;
@@ -204,8 +208,10 @@ ejecutar posteriormente o conservar esos límites. Esta tarea prepara la propues
   si se aplaza, documentos y dictamen conservan la falta de validación real. No hay aprobación por silencio.
 - No se reutiliza el consentimiento de P009 ni se opera su hijo o este repositorio con el harness.
 
-**Validación:** (prevista) revisión de alcance/evidencia y enlaces; sin proveedores, instalaciones, servicios o smokes.
-**Entregables:** (previstos) `docs/phase/P010-T008_PROPUESTA_VALIDACION_REAL.md`.
+**Validación:** contraste estático con decisiones, contratos y evidencia; parsers, enlaces, presupuestos y
+conservación de documentos históricos (resultados en la propuesta §7). Sin suites de producto, proveedores,
+instalaciones, servicios o smokes.
+**Entregables:** `docs/phase/P010-T008_PROPUESTA_VALIDACION_REAL.md`.
 
 ## P010-T009 — Verificación final del paquete y revisión de salida
 
