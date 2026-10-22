@@ -15,7 +15,7 @@ from fastapi.responses import Response
 from pydantic import Field
 
 from harness_local.api.schemas import (
-    CycleDiffRead, JUnitCasesRead, ManagedLogRead,
+    CycleDiffRead, CycleRead, JUnitCasesRead, ManagedLogRead,
     PromptScope, PromptDetailRead, PromptVersionRead, PromptDraftCreate, PromptActivateCreate,
     PromptValidateCreate, PromptValidationRead, PromptDiffRead,
     ActivationCreate, ActivationRead, ActivationTransition, ConfirmStoppedCreate, ManagedAttemptRead,
@@ -300,6 +300,12 @@ def managed_router(runtime: ManagedRuntime):
         """Del más reciente al más antiguo."""
         runtime.ready()
         return call(runtime.views.jobs, run_id, offset, limit)
+
+    @router.get("/runs/{run_id}/cycles", response_model=Page[CycleRead], operation_id="managed_run_cycles")
+    def run_cycles(run_id: str, offset: Offset = 0, limit: Limit = 10):
+        """Ciclos de revisión por número ascendente, sin el texto del diff ni los casos JUnit (D142)."""
+        runtime.ready()
+        return call(runtime.views.cycles, run_id, offset, limit)
 
     @router.get("/runs/{run_id}/cycles/{cycle}/diff", response_model=CycleDiffRead, operation_id="managed_cycle_diff")
     def cycle_diff(run_id: str, cycle: int, offset: Offset = 0, limit: DiffLimit = 64 * 1024,

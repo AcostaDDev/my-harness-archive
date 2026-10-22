@@ -30,6 +30,7 @@ from harness_local.storage.models import (
 )
 from harness_local.storage.migration import ModeConflict, ModeGuard
 from harness_local.storage.metrics import executor_round, record as record_metrics
+from harness_local.storage import run_projection
 from harness_local.storage.schema import require_schema
 
 
@@ -287,6 +288,7 @@ class SQLiteManagedRepository:
                   revision_limit=context.policy.max_revision_cycles, version=0, created_at=now, updated_at=now)
         session.add(run)
         session.flush()
+        run_projection.create(session, run.id, run.history_json, history)
         job = Job(idempotency_key=key, run_id=run.id, request_json=request, status="QUEUED", created_at=now,
                   activation_id=activation_id)
         session.add(job)
@@ -452,6 +454,7 @@ class SQLiteManagedRepository:
                 record_metrics(session, run, row, executor_round=executor_round(roles, number), recorded_at=row.finished_at)
         run.history_json = dump_history(history)
         run.revisions = history.revisions
+        run_projection.advance(session, run.id, previous, history, run.history_json)  # misma transacción (D142)
         return completed
 
     def checkpoint(self, claim: JobRecord, history: RunHistory, stage: str) -> None:

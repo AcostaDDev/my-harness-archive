@@ -35,6 +35,8 @@ export function RunPage({ phase, task, run: id }: { phase: string; task: string;
   const [jobOffset, setJobOffset] = useState(0);
   const [attempts, setAttempts] = useState<S["Page_ManagedAttemptRead_"]>();
   const [offset, setOffset] = useState(0);
+  const [cycles, setCycles] = useState<S["Page_CycleRead_"]>();
+  const [cycleOffset, setCycleOffset] = useState(0);
   const [events, setEvents] = useState<S["ManagedEventRead"][]>([]);
   const [missing, setMissing] = useState(false);
   const cursor = useRef(0);
@@ -48,10 +50,11 @@ export function RunPage({ phase, task, run: id }: { phase: string; task: string;
     let timer: ReturnType<typeof setTimeout>;
     async function poll() {
       try {
-        const [r, j, a, e] = await Promise.all([managed<S["ManagedRunRead"]>(path), managed<S["Page_ManagedJobRead_"]>(`${path}/jobs?offset=${jobOffset}`),
-          managed<S["Page_ManagedAttemptRead_"]>(`${path}/attempts?offset=${offset}`), managed<S["ManagedEventsRead"]>(`${path}/events?after=${cursor.current}&limit=50`)]);
+        const [r, j, a, e, c] = await Promise.all([managed<S["ManagedRunRead"]>(path), managed<S["Page_ManagedJobRead_"]>(`${path}/jobs?offset=${jobOffset}`),
+          managed<S["Page_ManagedAttemptRead_"]>(`${path}/attempts?offset=${offset}`), managed<S["ManagedEventsRead"]>(`${path}/events?after=${cursor.current}&limit=50`),
+          managed<S["Page_CycleRead_"]>(`${path}/cycles?offset=${cycleOffset}`)]);
         if (active) {
-          setRun(r); setJobs(j); setAttempts(a); setError(""); cursor.current = e.cursor;
+          setRun(r); setJobs(j); setAttempts(a); setCycles(c); setError(""); cursor.current = e.cursor;
           setEvents(previous => [...previous, ...e.items.filter(item => !previous.some(old => old.sequence === item.sequence))]);
           timer = setTimeout(() => void poll(), e.has_more ? 0 : r.active_job === null ? SETTLED_POLL : ACTIVE_POLL);
         }
@@ -62,7 +65,7 @@ export function RunPage({ phase, task, run: id }: { phase: string; task: string;
       }
     }
     void poll(); return () => { active = false; clearTimeout(timer); };
-  }, [path, offset, jobOffset, refresh]);
+  }, [path, offset, jobOffset, cycleOffset, refresh]);
   useEffect(() => { setCommitConfirmed(false); setConfirmed(false); }, [run?.version]);
   // Una URL con otra fase, tarea o proyecto se corrige a la canónica sin añadir historial.
   const canonical = run && runRoute(run);
@@ -112,15 +115,16 @@ export function RunPage({ phase, task, run: id }: { phase: string; task: string;
       <button disabled={busy || locked || stale || !commitConfirmed || !run.actions.includes("commit")} onClick={() => action("commit")}>Confirmar commit</button>
     </section>}
 
-    {run.history.cycles.length > 0 && <section className="panel" aria-labelledby="run-cycles">
-      <h2 id="run-cycles">Revisiones</h2>
-      {run.history.cycles.map(c => <div className="entry" key={c.number}>
+    {run.history.cycle_count > 0 && <section className="panel" aria-labelledby="run-cycles">
+      <h2 id="run-cycles">Revisiones <span className="count">{run.history.cycle_count}</span></h2>
+      {cycles?.items.map(c => <div className="entry" key={c.number}>
         <h3>Revisión {c.number}: {c.verdict ?? "sin veredicto"}</h3>
         <CycleDiff runId={run.id} number={c.number} sha256={c.diff_sha256} bytes={c.diff_bytes} paths={c.changed_paths.length} />
         <Tests runId={run.id} cycle={c.number} validation={c.validation} />
         {c.formatting && <Evidence title={`Formateo del perfil (${(c.formatting.paths as string[] | undefined)?.length ?? 0} archivos)`} value={c.formatting} />}
         <Evidence title="Tests y evidencia validada" value={c.validation} /><Evidence title="Hallazgos y revisión" value={c.review} />
       </div>)}
+      <Pagination offset={cycleOffset} next={cycles?.next_offset} onChange={setCycleOffset} label="Páginas de revisiones" />
     </section>}
 
     {run.purpose === "task" && <Permissions run={run} busy={busy || stale} refresh={refresh} operate={operate} />}

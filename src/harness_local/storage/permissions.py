@@ -47,7 +47,7 @@ class PermissionRepository:
         from sqlalchemy.orm import Session
         # Reads never expire or rewrite rows; historical decisions stay intact.
         with Session(self.managed.engine) as session:
-            if session.get(Run, run_id) is None:
+            if session.scalar(select(Run.id).where(Run.id == run_id)) is None:  # sin cargar el historial (D142)
                 raise LookupError('Unknown managed run')
             rows = session.scalars(select(Permission).where(Permission.run_id == run_id).order_by(Permission.created_at, Permission.id)).all()
             return [view(row, self.managed._now()) for row in rows]

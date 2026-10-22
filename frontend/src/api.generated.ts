@@ -570,6 +570,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/managed/runs/{run_id}/cycles": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Run Cycles
+         * @description Ciclos de revisión por número ascendente, sin el texto del diff ni los casos JUnit (D142).
+         */
+        get: operations["managed_run_cycles"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/managed/runs/{run_id}/cycles/{cycle}/diff": {
         parameters: {
             query?: never;
@@ -4025,8 +4045,13 @@ export interface components {
             stops: components["schemas"]["StopRead"][];
             /** Attempts */
             attempts: number;
-            /** Cycles */
-            cycles: components["schemas"]["CycleRead"][];
+            /**
+             * Cycle Count
+             * @description Ciclos de revisión del run; se leen por páginas en `/runs/{id}/cycles`.
+             */
+            cycle_count: number;
+            /** @description Último ciclo de revisión; null si el run aún no tiene ciclos. */
+            latest_cycle: components["schemas"]["CycleRead"] | null;
             acceptance: components["schemas"]["AcceptanceRead"] | null;
         };
         /** ManagedJobRead */
@@ -4457,6 +4482,15 @@ export interface components {
         Page_AttemptMetricRead_: {
             /** Items */
             items: components["schemas"]["AttemptMetricRead"][];
+            /** Offset */
+            offset: number;
+            /** Next Offset */
+            next_offset: number | null;
+        };
+        /** Page[CycleRead] */
+        Page_CycleRead_: {
+            /** Items */
+            items: components["schemas"]["CycleRead"][];
             /** Offset */
             offset: number;
             /** Next Offset */
@@ -8127,6 +8161,70 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["Page_ManagedJobRead_"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+        };
+    };
+    managed_run_cycles: {
+        parameters: {
+            query?: {
+                offset?: number;
+                limit?: number;
+            };
+            header?: {
+                /** @description Obligatoria con valor 1 en mutaciones (protección CSRF). */
+                "x-harness-local"?: string | null;
+            };
+            path: {
+                run_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Page_CycleRead_"];
                 };
             };
             /** @description Forbidden */

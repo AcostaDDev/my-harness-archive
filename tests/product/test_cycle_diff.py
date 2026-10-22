@@ -59,7 +59,8 @@ def test_run_carries_the_diff_summary_and_the_diff_is_read_by_pages(tmp_path, ur
         assert run['status'] == 'ACCEPTANCE_READY' and run['active_job'] is None
         raw = http.get(f"/api/managed/runs/{job['run_id']}")
         assert len(raw.content) < 32 * 1024  # el sondeo ya no transfiere el diff
-        cycle = run['history']['cycles'][0]
+        cycle = run['history']['latest_cycle']
+        assert run['history']['cycle_count'] == 1
         assert 'diff' not in cycle and cycle['diff_bytes'] > 256 * 1024
         evidence = cycle['validation']['evidence']  # misma evidencia validada, también sin el texto
         assert 'diff' not in evidence and evidence['diff_sha256'] == cycle['diff_sha256']

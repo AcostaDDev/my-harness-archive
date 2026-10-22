@@ -430,7 +430,8 @@ class ManagedHistoryRead(BaseModel):
     stop: StopRead | None
     stops: list[StopRead]
     attempts: int
-    cycles: list[CycleRead]
+    cycle_count: int = Field(description='Ciclos de revisión del run; se leen por páginas en `/runs/{id}/cycles`.')
+    latest_cycle: CycleRead | None = Field(description='Último ciclo de revisión; null si el run aún no tiene ciclos.')
     acceptance: AcceptanceRead | None
 
 

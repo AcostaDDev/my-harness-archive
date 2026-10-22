@@ -10,6 +10,7 @@ import sqlite3
 import stat
 
 from harness_local.core.engine.serialization import load_history
+from harness_local.storage import run_projection
 from harness_local.storage.models import Base
 from harness_local.storage.schema import SCHEMA_REVISION
 
@@ -130,9 +131,10 @@ def _integrity(db, *, restored=False):
         columns = {r['name'] for r in db.execute(f'PRAGMA table_info("{name}")')}
         if columns != set(table.columns.keys()):
             raise BackupError(f'Esquema SQLite incompleto/incompatible: {name}')
-    for row in db.execute('SELECT history_json FROM managed_runs'):
+    projected = dict.fromkeys(run_projection.TABLES, 0)
+    for run_id, history_json in db.execute('SELECT id, history_json FROM managed_runs ORDER BY id'):
         try:
-            history = load_history(row[0])
+            history = load_history(history_json)
             for cycle in history.cycles:
                 for entry in cycle.validation.entries:
                     for report in entry.reports:
@@ -140,8 +142,16 @@ def _integrity(db, *, restored=False):
                             raw = base64.b64decode(report.original_base64, validate=True)
                             if _hash(raw) != report.sha256 or len(raw) != report.size_bytes:
                                 raise BackupError('Original JUnit corrupto en el historial.')
+            # D142: la proyección derivada debe coincidir con la recalculada; nunca se reconstruye aquí.
+            for name, count in run_projection.verify(db, run_id, history_json, history).items():
+                projected[name] += count
+        except run_projection.ProjectionMismatch as exc:
+            raise BackupError(str(exc)) from exc
         except (KeyError, TypeError, ValueError) as exc:
             raise BackupError(f'Historial gestionado incompatible o corrupto: {exc}') from exc
+    for name, count in projected.items():
+        if db.execute(f'SELECT count(*) FROM {name}').fetchone()[0] != count:
+            raise BackupError(f'Proyección {run_projection.PROJECTION} con filas sin historial en {name}.')
 
 
 def _references(db):

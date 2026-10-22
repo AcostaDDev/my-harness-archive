@@ -1,4 +1,7 @@
-from sqlalchemy import Boolean, CheckConstraint, Float, Index, JSON, ForeignKey, ForeignKeyConstraint, Integer, String, Text, UniqueConstraint, text
+from sqlalchemy import (
+    Boolean, CheckConstraint, Float, Index, JSON, ForeignKey, ForeignKeyConstraint, Integer, LargeBinary, String, Text,
+    UniqueConstraint, text,
+)
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 
 
@@ -215,6 +218,95 @@ class ManagedCommitRow(Base):
     commit_sha: Mapped[str | None] = mapped_column(String(64), nullable=True)
     created_at: Mapped[str] = mapped_column(String(40))
     finished_at: Mapped[str | None] = mapped_column(String(40), nullable=True)
+
+
+class RunProjectionRow(Base):
+    """P010-T003 (D142): proyección derivada `run-projection-1` de `history_json`, que sigue siendo la autoridad.
+
+    Se escribe en la misma transacción que el historial; las vistas leen solo estas tablas. Columnas JSON en texto
+    congelado (`freeze`) o el texto exacto del historial, para comparar por igualdad en el backup."""
+
+    __tablename__ = 'run_projections'
+
+    run_id: Mapped[str] = mapped_column(ForeignKey('managed_runs.id'), primary_key=True)
+    projection: Mapped[str] = mapped_column(String(20))
+    history_sha256: Mapped[str] = mapped_column(String(64))
+    history_status: Mapped[str] = mapped_column(String(40))
+    task_json: Mapped[str | None] = mapped_column(Text, nullable=True)
+    attempts: Mapped[int] = mapped_column(Integer)
+    executor_attempts: Mapped[int] = mapped_column(Integer)
+    cycle_count: Mapped[int] = mapped_column(Integer)
+    stop_count: Mapped[int] = mapped_column(Integer)
+    stop_stage: Mapped[str | None] = mapped_column(Text, nullable=True)
+    stop_reason: Mapped[str | None] = mapped_column(Text, nullable=True)
+    acceptance_json: Mapped[str | None] = mapped_column(Text, nullable=True)
+
+
+class RunProjectionStopRow(Base):
+    __tablename__ = 'run_projection_stops'
+
+    run_id: Mapped[str] = mapped_column(ForeignKey('managed_runs.id'), primary_key=True)
+    ordinal: Mapped[int] = mapped_column(Integer, primary_key=True)
+    stage: Mapped[str] = mapped_column(Text)
+    reason: Mapped[str] = mapped_column(Text)
+
+
+class RunProjectionCycleRow(Base):
+    """Ciclo sin el texto del diff ni los casos JUnit; `validation_json` es la vista de validación del detalle."""
+
+    __tablename__ = 'run_projection_cycles'
+
+    run_id: Mapped[str] = mapped_column(ForeignKey('managed_runs.id'), primary_key=True)
+    number: Mapped[int] = mapped_column(Integer, primary_key=True)
+    verdict: Mapped[str | None] = mapped_column(Text, nullable=True)
+    fingerprint: Mapped[str] = mapped_column(Text)
+    changed_paths_json: Mapped[str] = mapped_column(Text)
+    diff_sha256: Mapped[str] = mapped_column(String(64))
+    diff_bytes: Mapped[int] = mapped_column(Integer)
+    provenance_json: Mapped[str | None] = mapped_column(Text, nullable=True)
+    review_json: Mapped[str | None] = mapped_column(Text, nullable=True)
+    formatting_json: Mapped[str | None] = mapped_column(Text, nullable=True)
+    validation_json: Mapped[str] = mapped_column(Text)
+    validation_evidence_json: Mapped[str] = mapped_column(Text)
+    validation_run_id: Mapped[str | None] = mapped_column(Text, nullable=True)
+    validation_source_attempt_id: Mapped[str | None] = mapped_column(Text, nullable=True)
+
+
+class RunProjectionDiffChunkRow(Base):
+    """Diff revisado en tramos fijos de bytes UTF-8: una página lee solo los tramos que cubre."""
+
+    __tablename__ = 'run_projection_diff_chunks'
+
+    run_id: Mapped[str] = mapped_column(ForeignKey('managed_runs.id'), primary_key=True)
+    cycle: Mapped[int] = mapped_column(Integer, primary_key=True)
+    chunk: Mapped[int] = mapped_column(Integer, primary_key=True)
+    data: Mapped[bytes] = mapped_column(LargeBinary)
+
+
+class RunProjectionReportRow(Base):
+    __tablename__ = 'run_projection_reports'
+
+    run_id: Mapped[str] = mapped_column(ForeignKey('managed_runs.id'), primary_key=True)
+    cycle: Mapped[int] = mapped_column(Integer, primary_key=True)
+    entry: Mapped[int] = mapped_column(Integer, primary_key=True)
+    report: Mapped[int] = mapped_column(Integer, primary_key=True)
+    command_id: Mapped[str | None] = mapped_column(Text, nullable=True)
+    summary_json: Mapped[str] = mapped_column(Text)
+    original_base64: Mapped[str | None] = mapped_column(Text, nullable=True)
+    sha256: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    size_bytes: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    case_count: Mapped[int] = mapped_column(Integer)
+
+
+class RunProjectionCaseRow(Base):
+    __tablename__ = 'run_projection_cases'
+
+    run_id: Mapped[str] = mapped_column(ForeignKey('managed_runs.id'), primary_key=True)
+    cycle: Mapped[int] = mapped_column(Integer, primary_key=True)
+    entry: Mapped[int] = mapped_column(Integer, primary_key=True)
+    report: Mapped[int] = mapped_column(Integer, primary_key=True)
+    ordinal: Mapped[int] = mapped_column(Integer, primary_key=True)
+    case_json: Mapped[str] = mapped_column(Text)
 
 
 class PromptHeadRow(Base):

@@ -253,7 +253,7 @@ def test_http_flow_executes_reviews_and_commits_once_across_double_submit_and_re
         assert run["history"]["acceptance"]["eligible"] is True
         assert run["history"]["acceptance"]["changed_paths"] == ["app/main.txt"]
         assert run["versions"] == VERSIONS and run["locked_by_job"] is None
-        cycle = run["history"]["cycles"][0]
+        cycle = run["history"]["latest_cycle"]
         assert "diff" not in cycle  # D085: el run lleva el resumen; el contenido va paginado
         page = http.get(f"/api/managed/runs/{job['run_id']}/cycles/0/diff",
                         params={"sha256": cycle["diff_sha256"]}).json()

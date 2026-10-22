@@ -41,7 +41,7 @@ function CommandTests({ run }: { run: string }) {
   const { refresh } = useWorkspace();
   const detail = usePoll<S['ManagedRunRead']>(`/runs/${encodeURIComponent(run)}`, 2000, refresh);
   if (!detail.data) return detail.error ? <p role="alert">{detail.error}</p> : <Loading />;
-  const latest = detail.data.history.cycles.at(-1);
+  const latest = detail.data.history.latest_cycle;
   return <div><p>Última validación de <Link to={{ name: 'run-short', run }}>{detail.data.task_id}</Link>. Solo consulta; no ejecuta tests.</p>
     <Stale error={detail.error} />
     {latest?.validation ? <Tests runId={run} cycle={latest.number} validation={latest.validation} /> : <p>No hay validación observada.</p>}

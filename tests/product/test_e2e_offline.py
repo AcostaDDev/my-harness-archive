@@ -42,7 +42,7 @@ def commit(http, run_id):
     assert response.status_code == 202, response.text
     result = settle(http, run_id)
     assert result['status'] == 'COMMITTED'
-    cycle = result['history']['cycles'][-1]
+    cycle = result['history']['latest_cycle']
     assert cycle['validation']['evidence']['fingerprint'] == cycle['fingerprint']
     assert cycle['review']['verdict'] == 'ACCEPT'
     assert result['commit']['commit'] == result['commit']['expected_commit']
@@ -80,11 +80,11 @@ def test_session_restart_preserves_action_identity_and_rejects_changed_content(t
         assert idle.roles() == []
         assert action(http, job['run_id'], 'revalidate', invalid['version'], 'new-evidence').status_code == 202
         ready_again = settle(http, job['run_id'])
-        assert ready_again['history']['cycles'][-1]['fingerprint'] != ready['history']['cycles'][-1]['fingerprint']
+        assert ready_again['history']['latest_cycle']['fingerprint'] != ready['history']['latest_cycle']['fingerprint']
         final = commit(http, job['run_id'])
         assert git(task.root, 'show', 'HEAD:app/main.txt') == 'external edit after review'
         assert git(task.root, 'rev-list', '--count', f'{base}..HEAD') == '1'
-        assert final['history']['cycles'][0] == ready['history']['cycles'][0]
+        assert http.get(f"/api/managed/runs/{job['run_id']}/cycles").json()['items'][0] == ready['history']['latest_cycle']
     assert idle.roles() == ['reviewer']
     assert main_snapshot(repo) == before
 
@@ -198,10 +198,10 @@ def test_import_execute_block_revalidate_commit(tmp_path, url, failure):
         assert stopped['status'] != 'ACCEPTANCE_READY'
         assert action(http, job['run_id'], 'commit', stopped['version'], 'refused-commit').status_code == 409
         assert git(root, 'rev-parse', 'HEAD') == base
-        cycle = stopped['history']['cycles'][0]
+        cycle = stopped['history']['latest_cycle']
     with open_app(url, tmp_path, config(context, ports)) as http:
         login(http)
-        assert get_run(http, job['run_id'])['history']['cycles'][0] == cycle
+        assert get_run(http, job['run_id'])['history']['latest_cycle'] == cycle
         assert action(http, job['run_id'], 'revalidate', stopped['version'], 'explicit-revalidation').status_code == 202
         settle(http, job['run_id'])
         commit(http, job['run_id'])

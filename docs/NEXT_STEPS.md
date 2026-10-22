@@ -8,8 +8,9 @@ Decisión: [D141](DECISIONS.md#d141--p010-consolidación-de-la-primera-versión-
 
 **Estado:** fase planificada el 2026-10-21. T001 completada el 2026-10-22: diseño y matriz inicial, sin producto.
 Añade T011 (métricas y exportación sobre la proyección de runs). T002 completada el 2026-10-22 (D143): receta
-`typescript-web-recipe-1` implementada y verificada offline. T003–T011 pendientes; sin operación iniciada.
-**Siguiente:** T003, consultas de runs sin decodificar todo el historial (proyección `run-projection-1`).
+`typescript-web-recipe-1` implementada y verificada offline. T003 completada el 2026-10-22 (D144): proyección
+`run-projection-1` y vistas de runs sin decodificar historiales. T004–T011 pendientes; sin operación iniciada.
+**Siguiente:** T011, métricas y vista previa de exportación sobre la proyección (depende de T003).
 
 ## Restricciones compartidas
 
@@ -74,7 +75,9 @@ proveedores ni smoke real.
 
 ## P010-T003 — Consultas de runs sin decodificar todo el historial
 
-**Estado:** pendiente. **Depende de:** T001.
+**Estado:** completada el 2026-10-22 ([entrega](phase/P010-T003_LECTURAS_RUNS.md), D144). Migración `0023`,
+proyección escrita con el historial y comprobada en el backup; `GET /runs/{id}/cycles` pagina los ciclos.
+**Depende de:** T001.
 **Objetivo:** Cumplir SPECIFICATION §9 en las lecturas que alimentan las vistas de runs.
 **Alcance:** repositorios/vistas de lectura, API y consumidores identificados en T001; compatibilidad histórica
 y proyecciones o índices que el contrato justifique, sin cambiar el significado de la evidencia.
@@ -89,9 +92,9 @@ y proyecciones o índices que el contrato justifique, sin cambiar el significado
   se prueba consistencia/recuperación y su preparación para datos previos sin reescribir el historial original.
 - Backup/restauración, migraciones y cuarentena mantienen su contrato; paridad documental y API/tipos al día.
 
-**Validación:** (prevista) pytest de lectura/compatibilidad/recuperación y regresiones; Alembic en SQLite temporal
-si cambia esquema; Node/tipos/build si cambia el cliente. Sin datos operativos ni migración de la instalación real.
-**Entregables:** (previstos) `docs/phase/P010-T003_LECTURAS_RUNS.md`.
+**Validación:** pytest completa, unittest, Alembic en SQLite temporal, OpenAPI/tipos, Node y build (resultados en la
+entrega §6); medidas sobre un historial sintético de 26 MiB. Sin datos operativos ni migración de la instalación real.
+**Entregables:** `docs/phase/P010-T003_LECTURAS_RUNS.md`.
 
 ## P010-T004 — Aclarar los marcadores opcionales de definición
 

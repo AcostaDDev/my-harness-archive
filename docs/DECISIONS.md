@@ -154,6 +154,7 @@ tarea se leen solo las decisiones que cita; este índice sirve para buscar prece
 | [D141](#d141--p010-consolidación-de-la-primera-versión-local) | P010: consolidación de la primera versión local | P010 |
 | [D142](#d142--p010-t001-receta-typescript-proyección-de-runs-y-tarea-t011) | P010-T001: receta TypeScript, proyección de runs y tarea T011 | P010 |
 | [D143](#d143--p010-t002-receta-typescript-web-recipe-1-implementada) | P010-T002: receta `typescript-web-recipe-1` implementada | P010 |
+| [D144](#d144--p010-t003-proyección-run-projection-1-implementada) | P010-T003: proyección `run-projection-1` implementada | P010 |
 
 ## D001 — Alcance local y arquitectura base
 
@@ -4331,3 +4332,27 @@ conserva D088, D116 y D119.
 
 Verificación con node/npm sintéticos y, opcionalmente, con node 24.15.0/npm 11.12.1 reales sobre una caché local ya
 poblada, sin red. No acredita proveedores, otras plataformas ni dependencias añadidas tras preparar.
+
+## D144 — P010-T003: proyección `run-projection-1` implementada
+
+Estado: implementado y verificado offline el 2026-10-22. Fase: P010.
+[Entrega, medidas y límites](phase/P010-T003_LECTURAS_RUNS.md), [diagrama](DDBB-DIAGRAM.md#proyección-de-runs-p010-t003),
+[flujo](flows/task-run.md#lectura-del-run-d144). Implementa D142 y el contrato de P010-T001 §2 para las vistas de
+runs; métricas y exportación quedan para T011.
+
+- Migración aditiva `0023_run_projection` con seis tablas derivadas (resumen, paradas, ciclos, tramos de diff,
+  reportes JUnit y casos), con FK a `managed_runs` y claves primarias compuestas que fijan el orden. Rellena cada
+  historial existente con el codec vigente (formatos 1–8) sin modificar `history_json`; el downgrade solo las borra.
+- `_queue_new_run` y `_history` escriben la proyección en la misma transacción que el historial; la actualización es
+  incremental (paradas y ciclos añadidos, y la revisión de un ciclo previo, único cambio que `_history` admite).
+- El diff revisado se guarda en tramos fijos de 64 KiB: una página lee solo los tramos que cubre más 4 bytes para
+  completar una secuencia UTF-8. El tamaño del tramo forma parte de `run-projection-1`.
+- API: `history.cycles` se sustituye por `history.cycle_count` y `history.latest_cycle`, y los ciclos se leen con
+  `GET /runs/{id}/cycles` (10 por defecto, hasta 100). El resto del detalle conserva su forma; `stops` sigue completo
+  porque crece con los jobs y sus filas son pequeñas. OpenAPI, tipos, página del run y chat actualizados.
+- Las vistas cargan solo columnas declaradas de `managed_runs` (el resto lanza) y no importan el codec; los listados
+  de tareas agregan en SQL. El backup recalcula la proyección de cada run y compara filas y recuentos; si difiere
+  falla con diagnóstico. La restauración no reconstruye y la cuarentena no cambia.
+
+Verificación con historiales sintéticos (formatos 1–8 tras la migración y uno de 26 MiB), motor y agentes falsos,
+comparando con la implementación anterior. No se migra la instalación real en esta fase.

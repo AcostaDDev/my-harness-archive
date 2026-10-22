@@ -1,6 +1,6 @@
 # Diagrama de datos — my_harness
 
-Esquema SQLite del servicio local (Alembic `0022_project_preparation`, 42 tablas). Generado en P008-T001 desde el metadata de `src/harness_local/storage/models.py` (actualizado en P009-T004 con preparación y propietarios compartidos); cualquier cambio de modelos o migraciones actualiza este documento en la misma tarea (regla de paridad, D088).
+Esquema SQLite del servicio local (Alembic `0023_run_projection`, 48 tablas). Generado en P008-T001 desde el metadata de `src/harness_local/storage/models.py` (actualizado en P009-T004 con preparación y propietarios compartidos, y en P010-T003 con la proyección de runs); cualquier cambio de modelos o migraciones actualiza este documento en la misma tarea (regla de paridad, D088).
 
 P009-T002 implementa autoridad y creación de hijos (D117); T004 implementa preparación/pasos/journal y amplía
 locks/procesos compartidos (D119). [Diseño de partida](archive/phase-009/P009-T001_CONTRATO_CREACION.md#6-persistencia-propuesta-y-migraciones).
@@ -739,3 +739,91 @@ Controles CAS guardan clave/hash en el payload del evento bajo la misma exclusi�
 job; para preparación, attempt_id/job_id son null y preparation_id es obligatorio. El CHECK impide propietarios
 vacíos o mixtos. Ambas tablas hoja se reconstruyen con FKs activas, copiando todas las filas previas. Downgrade
 solo sin historia de preparación; de lo contrario se usa backup en consulta, sin borrar evidencia.
+
+## Proyección de runs (P010-T003)
+
+D142/D144. `run-projection-1`: tablas derivadas de `managed_runs.history_json`, que sigue siendo la autoridad. Se
+escriben en la misma transacción que el historial (`_queue_new_run` y `_history`) y `0023_run_projection` las rellena
+decodificando una vez cada historial existente (formatos 1–8), sin modificarlo. Las vistas de runs solo leen estas
+tablas; el motor, la recuperación, los checks, el chat y los permisos siguen leyendo el historial. Las columnas
+`*_json` guardan el texto exacto del historial o JSON congelado. El diff revisado se guarda en tramos fijos de 64 KiB
+(`chunk` desde 0). El backup recalcula cada run y compara filas y recuentos; nunca reconstruye.
+
+```mermaid
+erDiagram
+    run_projections {
+        string run_id PK, FK "→ managed_runs.id"
+        string projection "run-projection-1"
+        string history_sha256 "del texto del que se derivó"
+        string history_status
+        text task_json "null"
+        integer attempts
+        integer executor_attempts
+        integer cycle_count
+        integer stop_count
+        text stop_stage "null; parada actual"
+        text stop_reason "null"
+        text acceptance_json "null"
+    }
+    run_projection_stops {
+        string run_id PK, FK "→ managed_runs.id"
+        integer ordinal PK
+        text stage
+        text reason
+    }
+    run_projection_cycles {
+        string run_id PK, FK "→ managed_runs.id"
+        integer number PK
+        text verdict "null"
+        text fingerprint
+        text changed_paths_json
+        string diff_sha256
+        integer diff_bytes
+        text provenance_json "null"
+        text review_json "null"
+        text formatting_json "null"
+        text validation_json "vista sin casos ni diff"
+        text validation_evidence_json
+        text validation_run_id "null"
+        text validation_source_attempt_id "null"
+    }
+    run_projection_diff_chunks {
+        string run_id PK, FK "→ managed_runs.id"
+        integer cycle PK
+        integer chunk PK
+        blob data "≤ 64 KiB de bytes UTF-8"
+    }
+    run_projection_reports {
+        string run_id PK, FK "→ managed_runs.id"
+        integer cycle PK
+        integer entry PK
+        integer report PK
+        text command_id "null"
+        text summary_json
+        text original_base64 "null"
+        string sha256 "null"
+        integer size_bytes "null"
+        integer case_count
+    }
+    run_projection_cases {
+        string run_id PK, FK "→ managed_runs.id"
+        integer cycle PK
+        integer entry PK
+        integer report PK
+        integer ordinal PK
+        text case_json
+    }
+    managed_runs {
+        string id PK
+    }
+    managed_runs ||--|| run_projections : "run_id"
+    managed_runs ||--o{ run_projection_stops : "run_id"
+    managed_runs ||--o{ run_projection_cycles : "run_id"
+    managed_runs ||--o{ run_projection_diff_chunks : "run_id"
+    managed_runs ||--o{ run_projection_reports : "run_id"
+    managed_runs ||--o{ run_projection_cases : "run_id"
+```
+
+Las claves primarias compuestas fijan el orden estable de lectura: paradas por ordinal, ciclos por número, tramos,
+reportes y casos por sus índices. `cycle` de tramos, reportes y casos es el `number` del ciclo, sin FK declarada.
+Downgrade: elimina solo estas tablas.

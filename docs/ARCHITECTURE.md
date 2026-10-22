@@ -61,6 +61,7 @@ casos de uso. El supervisor es el único que lanza procesos y consume la cola; c
 | `adapters/cli_agents.py`, `cli_diagnostics.py`, `streams.py`, `processes.py`, `process_gate.py` | Lanzamiento de CLI, preflight, captura incremental, grupos de procesos |
 | `adapters/commands.py`, `git.py`, `bootstrap.py`, `chat_snapshot.py`, `migration.py`, `legacy.py` | Validaciones nativas (`commands-1`), Git, commit raíz, instantánea de HEAD, migración, lector legacy |
 | `storage/*.py` | Repositorios SQLAlchemy por área (`managed`, `phases`, `documents`, `transition`, `planning`, `chat`, `metrics`, `registry`, `backup`, `retention`, `migrate`…) |
+| `storage/run_projection.py`, `managed_views.py` | Proyección derivada `run-projection-1` escrita con el historial y vistas de runs que solo la leen (D144) |
 | `services/managed.py`, `managed_runtime.py` | Supervisor (`run_once`, lease, cuarentena) y composición del runtime |
 | `services/local_config.py`, `project_registry.py`, `project_creation.py` | TOML `local-config-4` (lectura de 1–3) y registro/creación de hijos desde la UI con 3/4 |
 | `api/app.py`, `managed.py`, `legacy.py`, `schemas.py`, `session.py`, `security.py` | Aplicación, rutas, contratos Pydantic, sesión y guardia |
@@ -246,7 +247,8 @@ de las recetas Django y TypeScript web no heredan ese valor: reciben `HOME`/`TMP
   QA y cierre/archivo (D139); evidencia limitada a macOS arm64/Python 3.13. T012 agotó sus dos llamadas y no
   autoriza nuevas operaciones con proveedores.
 - Contención cooperativa (POSIX, rutas, sandbox de cada CLI); sin aislamiento del sistema operativo (D064, D065).
-- Las validaciones no guardan su hora; la lectura de un run decodifica su historial completo.
+- Las validaciones no guardan su hora. Las vistas de runs leen la proyección `run-projection-1` (D144); las métricas
+  y la vista previa de exportación aún decodifican historiales hasta P010-T011.
 - El manifiesto que fija una receta (Django o TypeScript web) no admite dependencias nuevas tras preparar; requiere
   un flujo confirmado futuro. Las altas e importaciones aportan su propio `package.json` (D143).
 - Dos avisos *low* de KaTeX en Mermaid 11.

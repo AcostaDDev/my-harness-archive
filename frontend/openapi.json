@@ -2833,6 +2833,118 @@
         }
       }
     },
+    "/api/managed/runs/{run_id}/cycles": {
+      "get": {
+        "summary": "Run Cycles",
+        "description": "Ciclos de revisión por número ascendente, sin el texto del diff ni los casos JUnit (D142).",
+        "operationId": "managed_run_cycles",
+        "parameters": [
+          {
+            "name": "run_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Run Id"
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 9007199254740991,
+              "minimum": 0,
+              "default": 0,
+              "title": "Offset"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 100,
+              "minimum": 1,
+              "default": 10,
+              "title": "Limit"
+            }
+          },
+          {
+            "name": "x-harness-local",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Obligatoria con valor 1 en mutaciones (protección CSRF).",
+              "title": "X-Harness-Local"
+            },
+            "description": "Obligatoria con valor 1 en mutaciones (protección CSRF)."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Page_CycleRead_"
+                }
+              }
+            }
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          }
+        }
+      }
+    },
     "/api/managed/runs/{run_id}/cycles/{cycle}/diff": {
       "get": {
         "summary": "Cycle Diff",
@@ -18392,12 +18504,21 @@
             "type": "integer",
             "title": "Attempts"
           },
-          "cycles": {
-            "items": {
-              "$ref": "#/components/schemas/CycleRead"
-            },
-            "type": "array",
-            "title": "Cycles"
+          "cycle_count": {
+            "type": "integer",
+            "title": "Cycle Count",
+            "description": "Ciclos de revisión del run; se leen por páginas en `/runs/{id}/cycles`."
+          },
+          "latest_cycle": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/CycleRead"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Último ciclo de revisión; null si el run aún no tiene ciclos."
           },
           "acceptance": {
             "anyOf": [
@@ -18417,7 +18538,8 @@
           "stop",
           "stops",
           "attempts",
-          "cycles",
+          "cycle_count",
+          "latest_cycle",
           "acceptance"
         ],
         "title": "ManagedHistoryRead"
@@ -19744,6 +19866,39 @@
           "next_offset"
         ],
         "title": "Page[AttemptMetricRead]"
+      },
+      "Page_CycleRead_": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/CycleRead"
+            },
+            "type": "array",
+            "title": "Items"
+          },
+          "offset": {
+            "type": "integer",
+            "title": "Offset"
+          },
+          "next_offset": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Next Offset"
+          }
+        },
+        "type": "object",
+        "required": [
+          "items",
+          "offset",
+          "next_offset"
+        ],
+        "title": "Page[CycleRead]"
       },
       "Page_LegacyArtifactRead_": {
         "properties": {

@@ -47,6 +47,7 @@ sequenceDiagram
     end
     E->>E: aceptación (paridad de modelos con DDBB-DIAGRAM)
     E->>DB: acceptance_ready, stopped, blocked o revision_limit
+    Note over E,DB: cada escritura del historial actualiza run-projection-1 en la misma transacción (D144)
     S->>DB: job DONE y lock liberado
     U->>API: confirmar commit (hash mostrado)
     API->>DB: job commit QUEUED
@@ -86,9 +87,18 @@ intento sin resultado al confirmar la parada queda `INTERRUPTED` sin reintento a
 
 - `core/engine/workflow.py` (bucle plan → ejecución → validación → revisión), `core/engine/contracts.py`,
   `core/engine/planning.py`, `core/engine/acceptance.py`, `core/engine/commit.py`.
-- `storage/managed.py` (cola, lease, lock, estados), `services/managed.py` (supervisor), `adapters/cli_agents.py`,
+- `storage/managed.py` (cola, lease, lock, estados), `storage/run_projection.py` y `storage/managed_views.py`
+  (proyección y lecturas del run), `services/managed.py` (supervisor), `adapters/cli_agents.py`,
   `adapters/commands.py`, `adapters/git.py`.
 - Bloques gestionados en el commit: `core/engine/documents.py` (ver [documentos](documents.md)).
+
+## Lectura del run (D144)
+
+- `GET /runs/{id}` devuelve el resumen, las paradas, `history.cycle_count` y `history.latest_cycle`; los ciclos se
+  leen con `GET /runs/{id}/cycles?offset&limit` (por número, 10 por defecto, hasta 100). El diff de un ciclo se pide
+  por páginas de bytes con su hash; los casos JUnit, por ordinal. Ninguna de estas lecturas selecciona
+  `history_json` ni decodifica el historial: usan la proyección `run-projection-1` ([diagrama](../DDBB-DIAGRAM.md#proyección-de-runs-p010-t003)).
+- La página del run sondea la página de ciclos visible junto con el detalle; el chat (`tests`) usa el último ciclo.
 
 ## Rutas, paridad y propuestas (D090)
 

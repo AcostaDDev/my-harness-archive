@@ -3,7 +3,7 @@ from sqlalchemy.engine import Engine
 from sqlalchemy.exc import SQLAlchemyError
 
 
-SCHEMA_REVISION = "0022_project_preparation"
+SCHEMA_REVISION = "0023_run_projection"
 
 
 def require_schema(engine: Engine) -> None:
@@ -21,7 +21,9 @@ def require_schema(engine: Engine) -> None:
                           "planning_proposals", "registered_projects", "registered_project_events", "project_imports",
                           "project_creation_root", "project_creation_root_events", "project_creation_operations",
                           "project_creation_operation_events", "project_preparation_operations",
-                          "project_preparation_steps", "project_preparation_events"):
+                          "project_preparation_steps", "project_preparation_events", "run_projections",
+                          "run_projection_stops", "run_projection_cycles", "run_projection_diff_chunks",
+                          "run_projection_reports", "run_projection_cases"):
                 connection.execute(text(f"SELECT * FROM {table} LIMIT 0"))
     except SQLAlchemyError as error:
         raise RuntimeError("Base SQLite no preparada; ejecutar uv run --frozen alembic upgrade head.") from error

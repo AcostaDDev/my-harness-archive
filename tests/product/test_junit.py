@@ -262,7 +262,7 @@ def test_sqlite_api_pagination_original_download_restart_and_exact_commit(git_re
     validation = record.history.cycles[0].validation
     entry = validation.entries[0]
     views = SQLiteManagedViews(repository.engine)
-    summary = views.run(job.run_id)['history']['cycles'][0]['validation']
+    summary = views.run(job.run_id)['history']['latest_cycle']['validation']
     assert summary['entries'][0]['reports'][0]['case_count'] == 55
     assert 'cases' not in summary['entries'][0]['reports'][0] and 'original_base64' not in json.dumps(summary)
     events = repository.events(job.run_id)
@@ -294,7 +294,7 @@ def test_sqlite_api_pagination_original_download_restart_and_exact_commit(git_re
         assert http.get(prefix.replace('/cycles/0/', '/cycles/-1/')).status_code == 404
         assert http.get(prefix, headers={'Host': 'external.invalid'}).status_code == 403
         detail = http.get(f'/api/managed/runs/{job.run_id}').json()
-        assert detail['history']['cycles'][0]['validation'] == json.loads(json.dumps(summary))
+        assert detail['history']['latest_cycle']['validation'] == json.loads(json.dumps(summary))
     # Reinicio y eliminación del archivo fuente no eliminan la evidencia importada.
     context.path(DECLARATION.path).unlink()
     restarted = SQLiteManagedRepository(repository.engine)
