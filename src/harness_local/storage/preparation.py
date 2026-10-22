@@ -150,5 +150,5 @@ def admit(session, root, versions, purpose):
         receipt = session.scalar(select(Operation.receipt).where(Operation.root == root, Operation.status == 'COMPLETED'))
         if (not receipt or versions.get('project_environment_sha256') != digest(receipt)
                 or versions.get('recipe_config_sha256') != receipt['recipe_config_sha256']):
-            raise Conflict('preparation_required: prepara Django antes de tareas o checks')
+            raise Conflict('preparation_required: prepara el proyecto antes de tareas o checks')
         verify_receipt(Path(root), receipt)

@@ -1,0 +1,29 @@
+# Fragmento para un TOML local-config-5 existente, FUERA de los checkouts y chmod 600 (P010-T002, D143).
+# Plantilla NO válida tal cual. Conservar service/git/agents/agent_presets/registration del operador.
+# Añadir esta composición al catálogo. Crear el hijo desde UI con ella y bootstrap_enabled=true;
+# la raíz padre se elige desde UI, nunca se deduce de este ejemplo. [registration].bootstrap_enabled=true.
+# Solo prepara hijos nuevos creados por el servicio; las altas e importaciones aportan su propio package.json.
+# No modifica configuración global ni instala nada al cargar. Habilitar red aquí solo fija un techo:
+# cada preparación confirma su propio modo, manifiesto, argv y límites antes de ejecutar.
+
+[recipes.typescript-web]
+node_executable = "/RUTA/ABSOLUTA/node"
+node_version = "24.15.0"                  # versión EXACTA de ese node; entra en engines del package.json
+npm_executable = "/RUTA/ABSOLUTA/npm"
+npm_version = "11.12.1"                   # versión EXACTA de ese npm; engine-strict la exige en cada npm ci
+npm_cache = "/RUTA/ABSOLUTA/npm-cache"    # directorio existente, fuera de los checkouts y del estado del servicio
+# Offline (por defecto) usa solo esta caché: debe contener typescript@5.9.3 del lock empaquetado.
+# Una caché vacía falla sin descargar ni cambiar de modo. Con red, npm escribe en esta caché.
+allow_network = false                     # true permite solicitar modo network en la preview; no lo ejecuta
+timeout_seconds = 120                     # techo por comando, 120..1800 s; no timeout global ni retry
+max_output_bytes = 65536                   # por stream y comando
+
+[compositions.typescript]
+profile = "typescript-web"                 # perfil integrado sin cambios
+recipe = "typescript-web"
+authorize_profile_commands = true
+# node y npm deben resolver a los mismos archivos que la receta.
+executables = { node = "/RUTA/ABSOLUTA/node", npm = "/RUTA/ABSOLUTA/npm" }
+# Entorno de las tareas: no se reescribe. npm_config_cache debe ser igual a npm_cache para que cada tarea
+# reinstale (npm ci --offline) con la caché que acreditó la preparación. PATH debe incluir el directorio de node.
+environment = { PATH = "/RUTA/ABSOLUTA/bin-de-node:/usr/bin:/bin", HOME = "/RUTA/ABSOLUTA/home-de-tareas", npm_config_cache = "/RUTA/ABSOLUTA/npm-cache", npm_config_userconfig = "/RUTA/ABSOLUTA/user.npmrc", npm_config_globalconfig = "/RUTA/ABSOLUTA/global.npmrc", npm_config_update_notifier = "false" }

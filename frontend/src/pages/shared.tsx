@@ -6,6 +6,7 @@ import { runRoute } from "../router.ts";
 import { Empty, Status, when, usePoll } from "../ui";
 import { useWorkspace } from "../workspace";
 import { runBody, sourcePhases, sourceTasks } from "../task-sources.ts";
+import { recipeLabel } from "../preparation.ts";
 
 const PURPOSES: Record<S["ManagedRunSummaryRead"]["purpose"], string> = {
   task: "Tarea", phase_check: "Comprobación de fase", phase_close: "Cierre de fase", chat: "Chat",
@@ -68,7 +69,7 @@ export function TaskForm({ phase, task, title = "Encolar tarea" }: { phase?: str
   return <section className="panel" aria-labelledby="task-form">
     <h2 id="task-form">{title}</h2>
     <p className="hint">El planificador fija el contrato con la política del proyecto; el ejecutor trabaja en un worktree y el revisor decide. El commit se confirma aparte.</p>
-    {preparationRequired && <p className="state state-attention">Prepara Django desde la creación o el resumen del proyecto antes de encolar tareas.</p>}
+    {preparationRequired && <p className="state state-attention">Prepara {recipeLabel(preparation.data?.recipe)} desde la creación o el resumen del proyecto antes de encolar tareas.</p>}
     <form onSubmit={e => { e.preventDefault(); if (!busy && !preparationRequired && ready) void operate(() => send(jobRequest(`/projects/${project}/runs`, body))); }}>
       {fromDocuments ? <>
         <div className="form-row">

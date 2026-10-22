@@ -10,6 +10,7 @@ import { Link, navigate } from "../navigation";
 import { Alert, DiffBlock, Empty, Evidence, Fields, Hash, Loading, PageHeader, Stale, Status, message, usePoll, when } from "../ui";
 import { useWorkspace } from "../workspace";
 import { EditProgress, MarkdownView } from "./Docs";
+import { recipeLabel } from "../preparation.ts";
 
 // Creación y planificación conversacionales en la UI (H6.2 E4) sobre la API de H6.5 (D075).
 // El agente nunca escribe: cada borrador se aplica o se edita con CAS sobre el hash mostrado, y la aceptación
@@ -571,7 +572,7 @@ function OperationPanel({ conversation, op }: { conversation: Conversation; op: 
     {op.status === "INTERRUPTED" && <AcceptReview conversation={conversation} base={base} preview={{ ...preview, resume_operation_id: op.id, expected_version: op.expected_version }} resume={op} />}
     {op.status === "COMPLETED" && <>
       <p>La fase <Link className="mono" to={{ name: "phase", project, phase: phase?.code ?? "P001" }}>{phase?.code ?? "P001"}</Link> está activa con sus documentos adoptados. Los documentos están en la <Link to={{ name: "docs", project }}>documentación</Link>.</p>
-      {preparationRequired && <p className="hint">Prepara Django antes de encolar la primera tarea.</p>}
+      {preparationRequired && <p className="hint">Prepara {recipeLabel(preparation.data?.recipe)} antes de encolar la primera tarea.</p>}
       {op.first_task_run ? <p>Primera tarea: <Link to={{ name: "run-short", run: op.first_task_run.run_id }} className="mono">{task?.task_id ?? "run"}</Link> <Status value={op.first_task_run.status} /></p>
         : task?.task_id && phase?.code && <>
           <p>Encola la primera tarea, <code>{task.task_id}</code>, con el plan regenerado de NEXT_STEPS. El planificador fija su contrato con la política del proyecto.</p>

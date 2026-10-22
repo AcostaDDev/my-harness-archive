@@ -35,6 +35,8 @@ salvo donde se indica. Detalle por fase en `docs/archive/phase-NNN/SUMMARY.md`; 
   elegida y retirada desde UI, hijos nuevos con intención/recuperación, presets por proyecto en `local-config-5`
   y receta `django-recipe-1` confirmada tras D088; entorno acreditado y commit técnico separado. Selector de
   tareas del NEXT_STEPS con CAS y notas congeladas (D135). Wheel verificado con definición D088 (D126).
+  Segunda receta `typescript-web-recipe-1` (P010-T002, D143): manifiesto inicial con `typescript@5.9.3`, `npm ci`
+  desde la caché del operador y validaciones del perfil antes del commit técnico, para hijos TypeScript web nuevos.
 - **Importación de proyectos** ([P008](archive/phase-008/SUMMARY.md)): inventarios deterministas,
   conversación de solo lectura y borradores privados; normalización de harness anterior (A) e incorporación
   desde código sin harness (B), con perfil confirmado, originales conservados y commit conciliable.
@@ -50,7 +52,7 @@ salvo donde se indica. Detalle por fase en `docs/archive/phase-NNN/SUMMARY.md`; 
   desde creación UI hasta cuatro tareas, QA conjunto y cierre/archivo de P001 (P009-T012, D139);
   26 invocaciones de 60 previstas, sin autorización para operaciones nuevas.
 - **Límites**: contención cooperativa sin aislamiento del sistema operativo; validaciones sin hora; historial del
-  run decodificado completo en cada lectura; `package.json` de un `typescript-web` nuevo; dos avisos *low* de KaTeX.
+  run decodificado completo en cada lectura; manifiestos de receta fijos tras preparar; dos avisos *low* de KaTeX.
   Piloto de receta Django limitado a macOS arm64/Python 3.13; el perfil Python/Django declarativo sigue pendiente
   de confirmar sobre un proyecto real. El piloto no evalúa comparativamente la calidad de modelos.
   Observaciones de P009: alta sin redirección, texto de marcadores de define-project y presentación de deriva
@@ -58,13 +60,16 @@ salvo donde se indica. Detalle por fase en `docs/archive/phase-NNN/SUMMARY.md`; 
 
 ## Fase activa
 
-**P010 — Consolidación de la primera versión local. En curso: T001 completada, sin producto implementado.**
+**P010 — Consolidación de la primera versión local. En curso: T001 y T002 completadas.**
 Planificada el 2026-10-21 ([D141](DECISIONS.md#d141--p010-consolidación-de-la-primera-versión-local),
 [plan](phase/P010_PLAN_CONSOLIDACION.md), [tareas](NEXT_STEPS.md)). El 2026-10-22 T001 deja el
 [contrato](phase/P010-T001_CONTRATO_CONSOLIDACION.md) y la matriz inicial
 ([D142](DECISIONS.md#d142--p010-t001-receta-typescript-proyección-de-runs-y-tarea-t011)): receta
 `typescript-web-recipe-1` en el marco D119, proyección derivada `run-projection-1` y una tarea nueva, T011
-(métricas y exportación). T002–T011 pendientes.
+(métricas y exportación). El mismo día T002 implementa la receta
+([entrega](phase/P010-T002_ARRANQUE_TYPESCRIPT.md), [D143](DECISIONS.md#d143--p010-t002-receta-typescript-web-recipe-1-implementada)):
+un `typescript-web` nuevo llega a su primera tarea COMMITTED con las validaciones del perfil, verificado con
+node/npm sintéticos y con node/npm reales sobre la caché local, offline. T003–T011 pendientes.
 
 P009 cerrada y archivada documentalmente el 2026-10-21
 ([resumen](archive/phase-009/SUMMARY.md), [revisión](archive/phase-009/REVIEW.md),
@@ -75,8 +80,8 @@ El Django hijo conserva P001 CLOSED, cuatro tareas COMMITTED, tag `p001` sobre `
 Última comprobación operativa en T012: servicios detenidos, cero locks y sin jobs pendientes; no se repite aquí.
 Este repositorio sigue sin registrarse ni ejecutarse con el harness; cierre manual sin check READY ni tag propio.
 
-**Siguiente:** P010-T002, arranque confirmado de un proyecto TypeScript web según el contrato de T001.
-Después: lecturas acotadas de runs (T003, T011), marcadores de definición, fases cerradas, documentación y
+**Siguiente:** P010-T003, consultas de runs sin decodificar todo el historial (proyección `run-projection-1`).
+Después: métricas y exportación (T011), marcadores de definición, fases cerradas, documentación y
 evidencia de aceptación. Los límites actuales de la base acumulada siguen vigentes hasta implementar y verificar
 cada entrega; la cuestión del SSE gestionado (criterio 13) queda para T007. La validación real complementaria
 se concreta en T008; no se da por realizada ni autorizada. Sin nueva fase del Django hijo ni ampliación de consentimientos de P009.

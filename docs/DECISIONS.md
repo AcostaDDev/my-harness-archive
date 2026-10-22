@@ -153,6 +153,7 @@ tarea se leen solo las decisiones que cita; este índice sirve para buscar prece
 | [D140](#d140--cierre-documental-manual-de-p009) | Cierre documental manual de P009 | P009 |
 | [D141](#d141--p010-consolidación-de-la-primera-versión-local) | P010: consolidación de la primera versión local | P010 |
 | [D142](#d142--p010-t001-receta-typescript-proyección-de-runs-y-tarea-t011) | P010-T001: receta TypeScript, proyección de runs y tarea T011 | P010 |
+| [D143](#d143--p010-t002-receta-typescript-web-recipe-1-implementada) | P010-T002: receta `typescript-web-recipe-1` implementada | P010 |
 
 ## D001 — Alcance local y arquitectura base
 
@@ -4305,3 +4306,28 @@ elecciones de diseño son del usuario (HITL del 2026-10-22). Conserva D029, D088
   gestionado frente al sondeo con cursor de D029 en el criterio 13.
 
 Solo documentación: sin código, esquema, API, flujos, configuración, instalaciones, servicios ni proveedores.
+
+## D143 — P010-T002: receta `typescript-web-recipe-1` implementada
+
+Estado: implementado y verificado offline el 2026-10-22. Fase: P010.
+[Entrega, pruebas y límites](phase/P010-T002_ARRANQUE_TYPESCRIPT.md), [flujo](flows/project-preparation.md),
+[ejemplo](../examples/typescript-web-recipe.example.toml). Implementa D142 y el contrato de P010-T001 §1;
+conserva D088, D116 y D119.
+
+- `local-config-5` admite `[recipes.typescript-web]` (node/npm absolutos sin shells y con versión exacta, `npm_cache`
+  canónico fuera del estado y de los checkouts, timeout, salida y techo de red). Su composición nombra el perfil
+  integrado `typescript-web` sin cambios, `node`/`npm` que resuelven a los mismos archivos y un entorno propio con
+  `npm_config_cache` igual a la caché; no se reescribe. Formato, `[recipes.django]` y v1–v4 sin cambios.
+- `recipes/django.py` permanece byte a byte: su texto entra en la huella de los recibos emitidos. Un registro en
+  `recipes/__init__.py` asocia cada receta a su módulo y perfil; el servicio separa núcleo común y partes por receta,
+  y el plan Django conserva claves y valores.
+- Manifiesto empaquetado íntegro en la vista previa; pasos `files` → versiones exactas → `npm ci --ignore-scripts`
+  (offline solo desde la caché) → `npm run check/test/build` con JUnit → commit técnico. HOME/TMPDIR y dos npmrc
+  vacíos en el hijo, porque npm rechaza el mismo archivo como configuración de usuario y global.
+- Recibo con identidad, manifiesto protegido según el glob del perfil y `node`/`npm` por hash; `node_modules` no se
+  congela porque el perfil lo reinstala en cada tarea. Recuperación D119 sin relajar: con caché vacía npm falla sin
+  crear `node_modules/` y el sucesor explícito es posible; bytes parciales o un `npm ci` sin checkpoint bloquean.
+- Sin migración, tablas ni cambios de API. UI con textos por receta. Mensajes `preparation_required` genéricos.
+
+Verificación con node/npm sintéticos y, opcionalmente, con node 24.15.0/npm 11.12.1 reales sobre una caché local ya
+poblada, sin red. No acredita proveedores, otras plataformas ni dependencias añadidas tras preparar.

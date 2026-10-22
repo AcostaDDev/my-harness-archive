@@ -1,4 +1,7 @@
-"""D119: confirmed, deterministic Django preparation after the documentary root commit."""
+"""D119: confirmed, deterministic preparation after the documentary root commit.
+
+The core (CAS, intention, steps, lease, journal, commit and recovery) is shared; each packaged recipe
+contributes its manifest, steps, source rules and receipt: Django (D119) and TypeScript web (D142)."""
 from dataclasses import asdict, replace
 from difflib import unified_diff
 import json
@@ -21,8 +24,9 @@ from harness_local.adapters.preparation import (
 from harness_local.adapters.project_import import check_filters, check_submodules
 from harness_local.core.engine.context import Command
 from harness_local.core.engine.contracts import freeze
+from harness_local.core.engine.evidence import matches
 from harness_local.core.engine.journal import JournalError
-from harness_local.recipes import django
+from harness_local.recipes import django, typescript_web
 from harness_local.services.project_creation import directory, identity
 from harness_local.services.project_registry import RegistryError, digest
 from harness_local.storage.managed import Conflict
@@ -37,7 +41,19 @@ from harness_local.storage.registry import ProjectRegistryRepository, UNFINISHED
 CONTRACT = 'project-preparation-1'
 
 
-def snapshot(root):
+def django_link(root, key, path):
+    """Only the environment's known interpreter aliases; caches may not redirect effects."""
+    cache = root / django.WORK / 'cache'
+    cache_link = key.startswith(django.WORK + '/cache/') and path.resolve(strict=True).is_relative_to(cache)
+    return key.startswith('.venv/bin/python') or key == '.venv/lib64' or cache_link
+
+
+def typescript_link(root, key, path):
+    """npm links package binaries (`node_modules/.bin/tsc`); none may leave `node_modules`."""
+    return key.startswith('node_modules/') and path.resolve(strict=True).is_relative_to(root / 'node_modules')
+
+
+def snapshot(root, links=django_link):
     """All checkout bytes/links/modes outside Git, including ignored files. Never follows a link."""
     result, size = {}, 0
     with directory(root):
@@ -48,10 +64,7 @@ def snapshot(root):
                 path = Path(folder) / name
                 key, info = str(path.relative_to(root)), path.lstat()
                 if stat.S_ISLNK(info.st_mode):
-                    # Only the environment's known interpreter aliases; caches may not redirect effects.
-                    cache = root / django.WORK / 'cache'
-                    cache_link = key.startswith(django.WORK + '/cache/') and path.resolve(strict=True).is_relative_to(cache)
-                    if not key.startswith('.venv/bin/python') and key != '.venv/lib64' and not cache_link:
+                    if not links(root, key, path):
                         raise ValueError(f'Unexpected symlink: {key}')
                     result[key] = {'link': os.readlink(path)}
                 elif stat.S_ISDIR(info.st_mode):
@@ -70,6 +83,137 @@ def hashes(files):
     return {path: sha(content.encode()) for path, content in files.items()}
 
 
+class DjangoRecipe:
+    """D119: templates through startproject/startapp, a pinned venv and a local secret."""
+    module, label, links = django, 'Django', staticmethod(django_link)
+    tools = ('python_executable', 'installer_executable')
+    environment = '.venv'
+    reflog = 'harness: prepare Django'
+    local_prefixes = ('.venv/', django.WORK + '/', 'reports/', '.pytest_cache/', '.mypy_cache/', '.ruff_cache/')
+
+    @staticmethod
+    def manifest(project_id, config):
+        return django.scaffold()
+
+    @staticmethod
+    def targets(files):
+        return (*files, '.venv', django.WORK, '.django-secret', 'db.sqlite3')
+
+    @staticmethod
+    def plan(files, config, mode):
+        return {'templates': django.templates(files), 'packages': django.PACKAGES,
+                'lock_sha256': sha(django.LOCK.encode()),
+                'network': {'enabled': mode == 'network', 'index': 'https://pypi.org/simple',
+                            'files_host': 'files.pythonhosted.org', 'automatic_retry': False},
+                'local_only': ['.venv/', django.WORK + '/', '.django-secret', 'db.sqlite3', 'reports/'],
+                'message': 'harness: prepare Django (django-recipe-1)'}
+
+    @staticmethod
+    def uncertain(spec):
+        return spec['label'] == 'Crear entorno aislado'
+
+    @staticmethod
+    def source_check(number):
+        """Before generation the scaffold is partial; after publishing, it is complete."""
+        return None if number < 7 else number < 10
+
+    @staticmethod
+    def extra_allowed(plan):
+        return set(plan['templates']) | {'.django-secret', 'db.sqlite3'}
+
+    @staticmethod
+    def verify_staging(root, plan, files):
+        verify_files(root, hashes(plan['templates']))
+        for path, expected in files.items():
+            generated = root / django.WORK / 'output' / path
+            if os.path.lexists(generated):
+                verify_files(root, {str(generated.relative_to(root)): expected})
+
+    @staticmethod
+    def check_output(label, stdout, plan):
+        if label == 'Verificar intérprete base' and stdout.strip() != 'Python ' + plan['config']['python_version']:
+            raise ValueError('Base Python version differs from confirmed plan')
+        if label == 'Verificar instalador uv' and stdout.strip().split()[:2] != ['uv', plan['config']['installer_version']]:
+            raise ValueError('uv version differs from confirmed plan')
+        if label == 'Acreditar versiones instaladas':
+            actual = json.loads(stdout)
+            normalize = lambda name: name.lower().replace('_', '-')
+            installed = {normalize(k): v for k, v in actual['packages'].items()}
+            if installed != {normalize(k): v for k, v in plan['packages'].items()}:
+                raise ValueError('Installed distributions differ from the pinned dependency closure')
+            if '.'.join(map(str, actual['python'])) != plan['config']['python_version']:
+                raise ValueError('Environment Python version differs from authorized interpreter')
+
+    @staticmethod
+    def receipt(root, plan):
+        return {'packages': plan['packages'], 'environment': environment_snapshot(root, plan['config'])}
+
+    @staticmethod
+    def local_secrets(root):
+        return {'.django-secret': file_hash(root / '.django-secret')}
+
+
+class TypeScriptRecipe:
+    """D142: the packaged manifest, `npm ci` from the declared cache and the profile validations."""
+    module, label, links = typescript_web, 'TypeScript web', staticmethod(typescript_link)
+    tools = ('node_executable', 'npm_executable')
+    environment = 'node_modules'
+    reflog = 'harness: prepare TypeScript web'
+    local_prefixes = typescript_web.LOCAL
+
+    @staticmethod
+    def manifest(project_id, config):
+        return typescript_web.manifest(project_id, config)
+
+    @staticmethod
+    def targets(files):
+        return (*files, *(path.rstrip('/') for path in typescript_web.LOCAL))
+
+    @staticmethod
+    def plan(files, config, mode):
+        return {'lock_sha256': sha(files['package-lock.json'].encode()),
+                'network': {'enabled': mode == 'network', 'registry': typescript_web.REGISTRY,
+                            'cache': config['npm_cache'], 'automatic_retry': False,
+                            'notice': 'Con red, npm descarga del registro y escribe en la caché del operador.'},
+                'local_only': list(typescript_web.LOCAL),
+                'message': 'harness: prepare TypeScript web (typescript-web-recipe-1)'}
+
+    @staticmethod
+    def uncertain(spec):
+        return False
+
+    @staticmethod
+    def source_check(number):
+        return False  # The whole manifest exists from the first step on.
+
+    @staticmethod
+    def extra_allowed(plan):
+        return set()
+
+    @staticmethod
+    def verify_staging(root, plan, files):
+        pass
+
+    @staticmethod
+    def check_output(label, stdout, plan):
+        if label == 'Verificar Node' and stdout.strip() != 'v' + plan['config']['node_version']:
+            raise ValueError('Node version differs from confirmed plan')
+        if label == 'Verificar npm' and stdout.strip() != plan['config']['npm_version']:
+            raise ValueError('npm version differs from confirmed plan')
+
+    @staticmethod
+    def receipt(root, plan):
+        # node_modules is not frozen: the profile reinstalls it from the lock before every task.
+        return {'tools': plan['tool_files']}
+
+    @staticmethod
+    def local_secrets(root):
+        return {}
+
+
+RECIPES = {django.VERSION: DjangoRecipe, typescript_web.VERSION: TypeScriptRecipe}
+
+
 class ProjectPreparation:
     def __init__(self, runtime):
         self.runtime, self.managed = runtime, runtime.repository
@@ -80,8 +224,8 @@ class ProjectPreparation:
     def require(self, project_id):
         project = self.runtime.project(project_id)
         registrar = self.runtime.registry.registrar
-        if not registrar or project.versions.get('project_recipe') != django.VERSION:
-            raise RegistryError(409, 'recipe_unavailable', 'Este proyecto no tiene receta Django v5 configurada.')
+        if not registrar or project.versions.get('project_recipe') not in RECIPES:
+            raise RegistryError(409, 'recipe_unavailable', 'Este proyecto no tiene una receta v5 configurada.')
         config = registrar._recipe_roots.get(project.context.root)
         if not config or 'project_registry' not in project.versions:
             raise RegistryError(409, 'recipe_unavailable', 'La receta requiere un hijo nuevo registrado por el servicio.')
@@ -119,7 +263,7 @@ class ProjectPreparation:
             except JournalError as exc:
                 diagnostic = str(exc)
         return {'available': available, 'prepared': bool(receipt and not diagnostic), 'diagnostic': diagnostic,
-                'recipe': django.VERSION if available else None,
+                'recipe': project.versions['project_recipe'] if available else None,
                 'operation': self.repository.read(row.id, summary=True) if row else None,
                 'project_version': int(project.versions.get('project_registry', 0))}
 
@@ -161,6 +305,7 @@ class ProjectPreparation:
                 return self.preview(project_id, body, session=read)
         project, config = self.require(project_id)
         root = project.context.root
+        recipe = RECIPES[project.versions['project_recipe']]
         current = session.get(Project, project_id)
         if not current or current.status != 'ACTIVE' or current.version != body['expected_version']:
             raise RegistryError(409, 'stale_version', 'El proyecto cambió; vuelve a cargarlo.')
@@ -183,29 +328,30 @@ class ProjectPreparation:
             first = next((s.number for s in steps if s.status != 'DONE'), len(steps) - 1)
             if body.get('retry_step') != first:
                 raise RegistryError(409, 'recovery_required', 'Confirma el primer paso pendiente; archivos inciertos requieren resolución externa.')
-            if steps[first].spec['label'] == 'Crear entorno aislado':
+            if recipe.uncertain(steps[first].spec):
                 raise RegistryError(409, 'recovery_required', 'No se recrea un entorno incierto; requiere resolución externa.')
             old = previous.plan
             verify_files(root, old['base_files'])
             if first == 0:
-                if snapshot(root) != old['initial_workspace']:
+                if snapshot(root, recipe.links) != old['initial_workspace']:
                     raise RegistryError(409, 'recovery_required', 'Archivos iniciales inciertos; requiere resolución externa.')
             else:
                 self._verify_source(root, old, allow_partial=True)
                 # A failed command cannot establish ownership of new environment bytes. Reuse only the
                 # environment accredited by the completed prefix; partial installations need external repair.
                 before = steps[first - 1].evidence['workspace']
-                now = snapshot(root)
-                env = lambda values: {p: v for p, v in values.items() if p == '.venv' or p.startswith('.venv/')}
+                now = snapshot(root, recipe.links)
+                env = lambda values: {p: v for p, v in values.items()
+                                      if p == recipe.environment or p.startswith(recipe.environment + '/')}
                 if env(now) != env(before):
                     raise RegistryError(409, 'recovery_required', 'El entorno cambió sin recibo de paso; no se reinstala ni sobrescribe.')
             expected_head = previous.commit_intent['expected_commit'] if previous.commit_intent else old['base_head']
             head = git.text('rev-parse', 'HEAD')
             if head not in {old['base_head'], expected_head}:
                 raise RegistryError(409, 'preview_changed', 'HEAD cambió; requiere resolución externa.')
-            plan = {**old, 'mode': body['mode'], 'steps': self.steps(root, config, body['mode']),
+            plan = {**old, 'mode': body['mode'], 'steps': self.steps(root, config, body['mode'], recipe),
                     'recovery': {'previous_id': previous.id, 'previous_version': previous.version,
-                                 'retry_step': first, 'workspace': snapshot(root)},
+                                 'retry_step': first, 'workspace': snapshot(root, recipe.links)},
                     'inherited_commit': previous.commit_intent,
                     'network': {**old['network'], 'enabled': body['mode'] == 'network'}}
             # Changing network mode changes only the pending install command; completed effects remain frozen.
@@ -229,36 +375,34 @@ class ProjectPreparation:
             tracked = set(git.run('ls-files', '-z').decode().strip('\0').split('\0'))
             if tracked != set(bootstrap.result['documents']):
                 raise RegistryError(409, 'definition_required', 'El árbol inicial debe contener solo los documentos aceptados.')
-            workspace = snapshot(root)
+            workspace = snapshot(root, recipe.links)
             if any('sha256' in v and p not in tracked for p, v in workspace.items()):
                 raise RegistryError(409, 'target_exists', 'Hay archivos ajenos o ignorados; no se adoptan.')
-            files = django.scaffold()
-            for path in (*files, '.venv', django.WORK, '.django-secret', 'db.sqlite3'):
+            files = recipe.manifest(project_id, config)
+            for path in recipe.targets(files):
                 if os.path.lexists(root / path):
                     raise RegistryError(409, 'target_exists', f'El destino {path} ya existe.')
             # Every new tracked path must actually enter Git; a parent exclude cannot hide part of the manifest.
             for path in files:
                 if git.code('check-ignore', '--no-index', '--', path) == 0:
                     raise RegistryError(409, 'target_ignored', f'El destino {path} está ignorado por Git.')
-            plan = {'contract': CONTRACT, 'recipe': django.VERSION, 'preparation_commands': 'preparation-commands-1',
+            specific = recipe.plan(files, config, body['mode'])
+            message = specific.pop('message')
+            plan = {'contract': CONTRACT, 'recipe': recipe.module.VERSION, 'preparation_commands': 'preparation-commands-1',
                     'project_id': project_id, 'root': str(root), 'identity': info,
                     'expected_version': current.version, 'versions': dict(project.versions), 'config': config,
                     'tool_files': {key: {'resolved': str(Path(config[key]).resolve(strict=True)),
                                          'sha256': file_hash(Path(config[key]).resolve(strict=True))}
-                                   for key in ('python_executable', 'installer_executable')},
+                                   for key in recipe.tools},
                     'base_head': captured.base_revision, 'base_tree': provenance['base_tree'],
                     'base_files': bootstrap.result['documents'], 'initial_workspace': workspace,
                     'files': [{'path': p, 'content': c, 'sha256': sha(c.encode()),
                                'diff': ''.join(unified_diff([], c.splitlines(keepends=True),
                                                             fromfile='/dev/null', tofile=p))}
                               for p, c in sorted(files.items())],
-                    'templates': django.templates(files), 'packages': django.PACKAGES,
-                    'lock_sha256': sha(django.LOCK.encode()), 'mode': body['mode'],
-                    'network': {'enabled': body['mode'] == 'network', 'index': 'https://pypi.org/simple',
-                                'files_host': 'files.pythonhosted.org', 'automatic_retry': False},
-                    'local_only': ['.venv/', django.WORK + '/', '.django-secret', 'db.sqlite3', 'reports/'],
-                    'steps': self.steps(root, config, body['mode']),
-                    'commit': {'message': 'harness: prepare Django (django-recipe-1)',
+                    **specific, 'mode': body['mode'],
+                    'steps': self.steps(root, config, body['mode'], recipe),
+                    'commit': {'message': message,
                                'author_name': writer.identity.name, 'author_email': writer.identity.email}}
         return {**plan, 'preview_sha256': digest(plan)}
 
@@ -303,23 +447,18 @@ class ProjectPreparation:
         return self.repository.read(operation_id)
 
     def _verify_source(self, root, plan, *, allow_partial=False):
+        recipe = RECIPES[plan['recipe']]
         files = {f['path']: f['sha256'] for f in plan['files']}
         for path, expected in files.items():
             if os.path.lexists(root / path):
                 verify_files(root, {path: expected})
             elif not allow_partial:
                 raise ValueError(f'Scaffold missing: {path}')
-        allowed = set(files) | set(plan['base_files']) | set(plan['templates']) | {'.django-secret', 'db.sqlite3'}
-        prefixes = ('.venv/', django.WORK + '/', 'reports/', '.pytest_cache/', '.mypy_cache/', '.ruff_cache/')
-        for path, value in snapshot(root).items():
-            if 'sha256' in value and path not in allowed and not path.startswith(prefixes):
+        allowed = set(files) | set(plan['base_files']) | recipe.extra_allowed(plan)
+        for path, value in snapshot(root, recipe.links).items():
+            if 'sha256' in value and path not in allowed and not path.startswith(recipe.local_prefixes):
                 raise ValueError(f'Foreign code or file: {path}')
-        templates = hashes(plan['templates'])
-        verify_files(root, templates)
-        for path, expected in files.items():
-            generated = root / django.WORK / 'output' / path
-            if os.path.lexists(generated):
-                verify_files(root, {str(generated.relative_to(root)): expected})
+        recipe.verify_staging(root, plan, files)
         verify_files(root, plan['base_files'])
 
     def _check(self, row, project, expected_workspace):
@@ -346,11 +485,13 @@ class ProjectPreparation:
             path = Path(row['plan']['config'][key]).resolve(strict=True)
             if str(path) != evidence['resolved'] or file_hash(path) != evidence['sha256']:
                 raise ValueError('Authorized service executable changed')
-        if snapshot(root) != expected_workspace:
+        if snapshot(root, RECIPES[row['plan']['recipe']].links) != expected_workspace:
             raise ValueError('Checkout bytes/identity changed since the previous accredited step')
 
     def _files(self, root, plan):
         # All targets were absent. Any interrupted write is left for conservative recovery.
+        if plan['recipe'] == typescript_web.VERSION:
+            return self._typescript_files(root, plan)
         for path in (django.WORK, django.WORK + '/home', django.WORK + '/tmp', django.WORK + '/cache',
                      django.WORK + '/output', django.WORK + '/output/core'):
             with file_parent(root, path, expected_identity=plan['identity']) as (fd, name):
@@ -363,6 +504,16 @@ class ProjectPreparation:
             write_new(root, path, files[path].encode(), expected_identity=plan['identity'])
         # The random local secret is deliberately absent from plans, logs, Git and fixtures.
         write_new(root, '.django-secret', secrets.token_urlsafe(64).encode(), expected_identity=plan['identity'])
+
+    def _typescript_files(self, root, plan):
+        for path in (typescript_web.WORK, typescript_web.WORK + '/home', typescript_web.WORK + '/tmp'):
+            with file_parent(root, path, expected_identity=plan['identity']) as (fd, name):
+                os.mkdir(name, 0o700, dir_fd=fd)
+                os.fsync(fd)
+        for name in ('user.npmrc', 'global.npmrc'):
+            write_new(root, f'{typescript_web.WORK}/{name}', b'', expected_identity=plan['identity'])
+        for item in plan['files']:
+            write_new(root, item['path'], item['content'].encode(), expected_identity=plan['identity'])
 
     def _publish(self, root, plan):
         generated = {p: c for p, c in django.scaffold().items() if p.endswith('.py')}
@@ -386,8 +537,8 @@ class ProjectPreparation:
                                max_output_bytes=spec['max_output_bytes'])
         return command, config
 
-    def steps(self, root, config, mode):
-        steps = django.steps(root, config, mode)
+    def steps(self, root, config, mode, recipe):
+        steps = recipe.module.steps(root, config, mode)
         for spec in steps:
             if spec['kind'] == 'command':
                 _, binding = self.command_config(root, config, spec)
@@ -403,26 +554,18 @@ class ProjectPreparation:
         result = runner.run_managed(context, command, step['id'])
         if result.error or result.timed_out or result.exit_code != 0:
             raise ValueError(f'Paso fallido ({spec["label"]}); consulta la captura, sin reintento automático.')
-        label = spec['label']
-        if label == 'Verificar intérprete base' and result.stdout.strip() != 'Python ' + plan['config']['python_version']:
-            raise ValueError('Base Python version differs from confirmed plan')
-        if label == 'Verificar instalador uv' and result.stdout.strip().split()[:2] != ['uv', plan['config']['installer_version']]:
-            raise ValueError('uv version differs from confirmed plan')
-        if label == 'Acreditar versiones instaladas':
-            actual = json.loads(result.stdout)
-            normalize = lambda name: name.lower().replace('_', '-')
-            installed = {normalize(k): v for k, v in actual['packages'].items()}
-            if installed != {normalize(k): v for k, v in plan['packages'].items()}:
-                raise ValueError('Installed distributions differ from the pinned dependency closure')
-            if '.'.join(map(str, actual['python'])) != plan['config']['python_version']:
-                raise ValueError('Environment Python version differs from authorized interpreter')
+        recipe = RECIPES[plan['recipe']]
+        recipe.check_output(spec['label'], result.stdout, plan)
         evidence = {'result': asdict(result)}
-        if spec['argv'][1:2] == ['--junitxml=reports/pytest.xml']:
+        # The profile's JUnit command, by its arguments: the recipe runs it through its own executable path.
+        declaration = next((item for item in recipe.module.profile().junit_reports
+                            if list(item.command.argv[1:]) == spec['argv'][1:]), None)
+        if declaration is not None:
             from harness_local.core.engine.junit import parse_junit
-            report = root / 'reports/pytest.xml'
+            report = root / declaration.path
             if report.is_symlink() or not report.is_file() or report.stat().st_size > 1048576:
                 raise ValueError('JUnit evidence missing or unsafe')
-            parsed = parse_junit(report.read_bytes(), django.profile().junit_reports[0])
+            parsed = parse_junit(report.read_bytes(), declaration)
             if parsed.status != 'complete' or not any(c.result == 'passed' for c in parsed.cases) or any(
                     c.result not in ('passed', 'skipped') for c in parsed.cases):
                 raise ValueError('JUnit evidence must contain successful tests with consistent counters')
@@ -470,7 +613,7 @@ class ProjectPreparation:
             if tree['worktree_tree'] != pending['tree'] or index != pending['base_tree']:
                 raise ValueError('Content/index changed before commit')
             git.run('hash-object', '-t', 'commit', '-w', '--stdin', input=raw)
-            git.run('update-ref', '-m', 'harness: prepare Django', 'HEAD', pending['expected_commit'], pending['base_head'])
+            git.run('update-ref', '-m', RECIPES[plan['recipe']].reflog, 'HEAD', pending['expected_commit'], pending['base_head'])
         elif head != pending['expected_commit'] or git.run('cat-file', 'commit', head) != raw:
             raise ValueError('Sealed commit cannot be reconciled with HEAD')
         if index == pending['base_tree']:
@@ -480,14 +623,16 @@ class ProjectPreparation:
         captured = writer.capture(project.context)
         if captured.changed_paths:
             raise ValueError('Checkout drift after technical commit')
-        receipt = {'contract': CONTRACT, 'recipe': django.VERSION, 'identity': plan['identity'],
+        recipe = RECIPES[plan['recipe']]
+        receipt = {'contract': CONTRACT, 'recipe': plan['recipe'], 'identity': plan['identity'],
                    'recipe_config_sha256': plan['versions']['recipe_config_sha256'], 'config': plan['config'],
-                   'lock_sha256': plan['lock_sha256'], 'packages': plan['packages'],
+                   'lock_sha256': plan['lock_sha256'],
                    'commit': pending['expected_commit'], 'operation_id': operation_id,
-                   'environment': environment_snapshot(root, plan['config']),
+                   **recipe.receipt(root, plan),
+                   # Same glob semantics as the profile (`scripts/**`); Django's literal paths match themselves.
                    'protected_files': {f['path']: f['sha256'] for f in plan['files']
-                                       if f['path'] in project.context.profile.protected_paths}}
-        receipt['protected_files']['.django-secret'] = file_hash(root / '.django-secret')
+                                       if matches(f['path'], project.context.profile.protected_paths)}}
+        receipt['protected_files'].update(recipe.local_secrets(root))
         return receipt
 
     def run_once(self):
@@ -530,14 +675,15 @@ class ProjectPreparation:
                 elif kind == 'publish':
                     self._publish(root, plan)
                 elif kind == 'command':
-                    if step['number'] >= 7:
-                        self._verify_source(root, plan, allow_partial=step['number'] < 10)
+                    partial = RECIPES[plan['recipe']].source_check(step['number'])
+                    if partial is not None:
+                        self._verify_source(root, plan, allow_partial=partial)
                     evidence = self._command(root, plan, step, PreparationJournal(self.repository, operation_id, token))
                 elif kind == 'commit':
                     receipt = self._commit(operation_id, token, project, plan)
                 else:
                     raise ValueError('Unknown preparation step')
-                expected = snapshot(root)
+                expected = snapshot(root, RECIPES[plan['recipe']].links)
                 with self.managed._write() as session:
                     row = self.repository.owned(session, operation_id, token)
                     saved = session.get(Step, step['id'])

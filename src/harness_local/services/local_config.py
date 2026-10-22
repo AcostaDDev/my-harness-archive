@@ -1,6 +1,7 @@
 """Operator TOML outside managed checkouts → explicit ManagedConfig (`local-config-5`).
 
-`local-config-5` (P009-T003) adds private role presets and optional project selections.
+`local-config-5` (P009-T003) adds private role presets and optional project selections, and
+optional packaged recipes: `[recipes.django]` (D119) and `[recipes.typescript-web]` (D142).
 Effective agents are composed per checkout; older formats keep their frozen identity.
 `local-config-4` (P008-T008) is `local-config-3` plus optional `[profiles.NAME]`:
 stack profiles declared by the operator (preparation, validations with JUnit,
@@ -43,6 +44,7 @@ from harness_local.core.engine.contracts import MODEL_FORM, freeze
 from harness_local.core.engine.documents import DOCUMENT_LAYOUT
 from harness_local.core.engine.journal import JournalError
 from harness_local.profiles.typescript_web import typescript_web_profile
+from harness_local.recipes import RECIPES, by_version as recipe_version, module as recipe_module
 from harness_local.services.managed_runtime import (PROJECT_ID, ManagedConfig, ManagedProject, agents_view,
                                                     validate_projects)
 
@@ -411,18 +413,38 @@ def _composition(value, where, state, profiles, *, strict, recipes=None):
         raise LocalConfigError(f'{where}.profile: perfiles admitidos {sorted(profiles)}')
     recipe = value.get('recipe')
     if recipe is not None:
-        if not recipes or recipe != 'django' or recipe not in recipes or value['profile'] != 'python-django-recipe':
-            raise LocalConfigError(f'{where}: receta Django v5 y perfil empaquetado requeridos')
-        expected = {name: {'project_venv': name} for name in ('python', 'pytest', 'ruff', 'mypy')}
-        if value.get('executables') != expected or value.get('environment') != {} or value.get('authorized'):
-            raise LocalConfigError(f'{where}: enlaces exactos al entorno y environment vacío requeridos para la receta')
-    elif value['profile'] == 'python-django-recipe' and recipes:
+        if not recipes or recipe not in RECIPES or recipe not in recipes or value['profile'] != RECIPES[recipe][1]:
+            raise LocalConfigError(f'{where}: receta v5 declarada y su perfil empaquetado requeridos')
+        if recipe == 'django':
+            expected = {name: {'project_venv': name} for name in ('python', 'pytest', 'ruff', 'mypy')}
+            if value.get('executables') != expected or value.get('environment') != {} or value.get('authorized'):
+                raise LocalConfigError(f'{where}: enlaces exactos al entorno y environment vacío requeridos para la receta')
+        else:
+            _typescript_composition(value, where, recipes[recipe])
+    elif value['profile'] == 'python-django-recipe' and 'django' in recipes:
         raise LocalConfigError(f'{where}: el perfil de receta exige recipe = "django"')
     commands = {key: item for key, item in value.items() if key not in ('profile', 'recipe')}
     # The state directory stands in for a checkout: only the table itself is validated here.
     _commands(commands, where, state, profiles[value['profile']], strict=strict,
-              deferred_root=state if recipe else None)
+              deferred_root=state if recipe == 'django' else None)
     return value['profile'], commands
+
+
+def _typescript_composition(value, where, recipe):
+    """P010-T002 (D142): each task reinstalls with the node/npm and the cache that accredited the preparation.
+
+    The composition keeps its own environment: it must already name that cache, and it is never rewritten."""
+    executables = value.get('executables')
+    if not isinstance(executables, dict) or not {'node', 'npm'} <= set(executables):
+        raise LocalConfigError(f'{where}.executables: node y npm requeridos para la receta typescript-web')
+    for name in ('node', 'npm'):
+        path = _executable(executables[name], f'{where}.executables.{name}')
+        if Path(path).resolve() != Path(recipe[f'{name}_executable']).resolve():
+            raise LocalConfigError(f'{where}.executables.{name}: debe resolver al mismo archivo que la receta')
+    environment = value.get('environment')
+    if not isinstance(environment, dict) or environment.get('npm_config_cache') != recipe['npm_cache']:
+        raise LocalConfigError(f'{where}.environment: npm_config_cache igual a recipes.typescript-web.npm_cache '
+                               'requerido; no se reescribe el entorno')
 
 
 class LocalComposer:
@@ -490,8 +512,8 @@ class LocalComposer:
             authority['composition'] = {name: {'profile': profile_name, **table}}
             recipe = self._recipes_by_composition.get(name)
             if recipe:
-                from harness_local.recipes.django import fingerprint
-                authority['recipe'] = {'config': self.recipes[recipe], 'implementation_sha256': fingerprint()}
+                authority['recipe'] = {'config': self.recipes[recipe],
+                                       'implementation_sha256': recipe_module(recipe).fingerprint()}
         else:
             profile_name, table = _text(item['profile'], f'{where}.profile'), item['commands']
             if profile_name not in self.profiles:
@@ -504,7 +526,8 @@ class LocalComposer:
             authority['profile'] = asdict(profile)
         bootstrap = _flag(item.get('bootstrap_enabled', False), f'{where}.bootstrap_enabled')
         agents, reviewer, selected = self.effective_agents(item, where)
-        if recipe and any(dict(agent.environment).get('PYTHONDONTWRITEBYTECODE') != '1' for agent in agents.values()):
+        if recipe == 'django' and any(dict(agent.environment).get('PYTHONDONTWRITEBYTECODE') != '1'
+                                      for agent in agents.values()):
             raise LocalConfigError(f'{where}: la receta requiere PYTHONDONTWRITEBYTECODE=1 explícito en ambos '
                                    'roles/presets para conservar los bytes del entorno; no se reescribe su entorno')
         engine_policy = _policy(item['policy'], f'{where}.policy', reviewer, agents['executor'].provider)
@@ -519,9 +542,11 @@ class LocalComposer:
                 raise LocalConfigError(f'{where}.policy: el preset no admite ejecutor libre')
             engine_policy = replace(engine_policy, executor_effort_vocabulary=tuple(executor['efforts']))
             authority['agent_presets'] = selected
+        if recipe == 'typescript-web' and not _outside(Path(self.recipes[recipe]['npm_cache']), root):
+            raise LocalConfigError(f'{where}: la caché npm de la receta debe quedar fuera del checkout')
         # La preview valida la configuración sobre el padre existente, sin construir puertos para el hijo.
         commands = _commands(table, f'{where}.commands', root.parent if new_directory else root, profile,
-                             strict=self.format in PROFILE_FORMATS, deferred_root=root if recipe else None)
+                             strict=self.format in PROFILE_FORMATS, deferred_root=root if recipe == 'django' else None)
         identifier = _text(item['id'], f'{where}.id')
         if not PROJECT_ID.fullmatch(identifier):
             raise LocalConfigError(f'{where}.id: [a-z0-9][a-z0-9._-]{{0,63}} requerido')
@@ -530,7 +555,7 @@ class LocalComposer:
             cli = CLIProcessAdapter(agents, artifacts)
         except ValueError as exc:
             raise LocalConfigError(f'{self.agents_key}: {exc}') from None
-        if recipe:
+        if recipe == 'django':
             commands = replace(commands, environment=(('PYTHONDONTWRITEBYTECODE', '1'), ('PYTHONNOUSERSITE', '1')))
         runner = ManagedCommandRunner(commands)
         frozen = {'project': item, **authority}
@@ -549,7 +574,7 @@ class LocalComposer:
                     **({'project_registry_id': identifier, 'project_registry_sha256': registry[1]}
                        if registry is not None and self.format == VERSION else {}),
                     **cli.frozen_versions(), **runner.frozen_versions(),
-                    **({'project_recipe': 'django-recipe-1',
+                    **({'project_recipe': recipe_module(recipe).VERSION,
                         'recipe_config_sha256': hashlib.sha256(freeze(authority['recipe']).encode()).hexdigest()}
                        if recipe else {})}
         if new_directory:
@@ -592,8 +617,9 @@ class LocalComposer:
         project, composition = composed
         with self._lock:
             self._live[project.context.root] = composition
-        if project.versions.get('project_recipe'):
-            self._recipe_roots[project.context.root] = self.recipes['django']
+        known = recipe_version(project.versions.get('project_recipe'))
+        if known:
+            self._recipe_roots[project.context.root] = self.recipes[known[0]]
         return project
 
     def forget(self, root):
@@ -672,7 +698,7 @@ def _build(data, source):
     compositions, registration = {}, ((), False)
     recipes = {}
     if 'recipes' in data:
-        raw = _fields(data['recipes'], 'recipes', (), ('django',))
+        raw = _fields(data['recipes'], 'recipes', (), tuple(RECIPES))
         if 'django' in raw:
             entry = _fields(raw['django'], 'recipes.django',
                             ('python_executable', 'python_version', 'installer_executable', 'installer_version',
@@ -694,8 +720,10 @@ def _build(data, source):
             if 'wheelhouse' in entry:
                 entry['wheelhouse'] = str(_path(entry['wheelhouse'], 'recipes.django.wheelhouse', kind='directory'))
             recipes['django'] = entry
+        if 'typescript-web' in raw:
+            recipes['typescript-web'] = _typescript_recipe(raw['typescript-web'], state)
     profiles = {name: factory() for name, factory in PROFILES.items()}
-    if recipes:
+    if 'django' in recipes:
         from harness_local.recipes.django import profile
         # P009-T019 (D133): el formateador se declara aquí y no en recipes/django.py, cuyo texto es la huella de la
         # receta que vincula los recibos de preparación ya emitidos.
@@ -705,7 +733,7 @@ def _build(data, source):
     if not isinstance(declared, dict):
         raise LocalConfigError('profiles: se esperaba una tabla [profiles.NOMBRE]')
     for name, value in declared.items():
-        if name == 'python-django-recipe' and recipes:
+        if name == 'python-django-recipe' and 'django' in recipes:
             raise LocalConfigError('Perfil python-django-recipe reservado para la receta empaquetada')
         profiles[name] = _profile(name, value)
     if fmt in REGISTRABLE:
@@ -751,6 +779,29 @@ def _build(data, source):
     except ValueError as exc:
         raise LocalConfigError(str(exc)) from None
     return config, agents
+
+
+def _typescript_recipe(value, state):
+    """P010-T002 (D142): `[recipes.typescript-web]`, operator authority for `typescript-web-recipe-1`."""
+    where = 'recipes.typescript-web'
+    entry = dict(_fields(value, where, ('node_executable', 'node_version', 'npm_executable', 'npm_version', 'npm_cache',
+                                        'timeout_seconds', 'max_output_bytes', 'allow_network')))
+    for key in ('node_executable', 'npm_executable'):
+        entry[key] = _executable(entry[key], f'{where}.{key}')
+        if {Path(entry[key]).name, Path(entry[key]).resolve().name} & SHELLS:
+            raise LocalConfigError(f'{where}: ejecutables node y npm, sin shells')
+    for key in ('node_version', 'npm_version'):
+        if not re.fullmatch(r'[0-9]+\.[0-9]+\.[0-9]+', _text(entry[key], f'{where}.{key}')):
+            raise LocalConfigError(f'{where}.{key}: versión exacta requerida')
+    entry['npm_cache'] = str(_path(entry['npm_cache'], f'{where}.npm_cache', kind='directory'))
+    if not _outside(Path(entry['npm_cache']), state):
+        raise LocalConfigError(f'{where}.npm_cache: fuera del estado del servicio')
+    if not 120 <= _number(entry['timeout_seconds'], f'{where}.timeout_seconds') <= 1800:
+        raise LocalConfigError(f'{where}.timeout_seconds: 120..1800 segundos requeridos')
+    if type(entry['max_output_bytes']) is not int or not 1024 <= entry['max_output_bytes'] <= 1048576:
+        raise LocalConfigError(f'{where}.max_output_bytes: 1024..1048576 requerido')
+    _flag(entry['allow_network'], f'{where}.allow_network')
+    return entry
 
 
 def build(data, source) -> ManagedConfig:

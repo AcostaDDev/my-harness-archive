@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { pendingPreparationStep, preparationStatus } from '../src/preparation.ts';
+import { pendingPreparationStep, preparationStatus, recipeLabel, recipeModes } from '../src/preparation.ts';
 import { createOnce } from '../src/managed-api.ts';
 
 test('recovery starts at the first unaccredited step, including an uncertain spawn', () => {
@@ -8,6 +8,17 @@ test('recovery starts at the first unaccredited step, including an uncertain spa
   assert.equal(pendingPreparationStep([{number:0,status:'DONE'}]), 0); // reconcile commit if adoption was lost
   assert.equal(pendingPreparationStep([]), undefined);
   assert.equal(preparationStatus('RECOVERY_REQUIRED'), 'Requiere conciliación');
+});
+
+test('texts follow the frozen recipe: Django keeps its wording, TypeScript web names npm and the cache', () => {
+  assert.equal(preparationStatus('ACTIVE', 'django-recipe-1'), 'Preparando Django');
+  assert.equal(preparationStatus('COMPLETED', 'django-recipe-1'), 'Django preparado');
+  assert.equal(preparationStatus('COMPLETED', 'typescript-web-recipe-1'), 'TypeScript web preparado');
+  assert.equal(preparationStatus('COMPLETED'), 'Proyecto preparado');
+  assert.equal(recipeLabel('typescript-web-recipe-1'), 'TypeScript web');
+  assert.equal(recipeModes('django-recipe-1').offline, 'Offline: usar wheels locales y caché del hijo');
+  assert.match(recipeModes('typescript-web-recipe-1').offline, /caché npm declarada por el operador/);
+  assert.match(recipeModes('typescript-web-recipe-1').hint, /con red también se escribe/);
 });
 
 test('lost preparation confirmation retains exact consent and key until acknowledged', async () => {

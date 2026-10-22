@@ -114,14 +114,26 @@ def same_directory(current, recorded):
     return current['inode'] == recorded['inode']
 
 
+def verify_tools(tools):
+    """P010-T002 (D142): the executables a TypeScript web receipt accredited, resolved and hashed again."""
+    for evidence in tools.values():
+        path = Path(evidence['resolved'])
+        if path.resolve(strict=True) != path or file_hash(path) != evidence['sha256']:
+            raise ValueError('Prepared executable changed')
+
+
 def verify_receipt(root, receipt):
     if receipt is None:
-        raise JournalError('preparation_required: prepara Django antes de ejecutar validaciones o tareas')
+        raise JournalError('preparation_required: prepara el proyecto antes de ejecutar validaciones o tareas')
     try:
         with directory(root) as fd:
             if not same_directory(identity(os.fstat(fd)), receipt['identity']):
                 raise ValueError('Checkout identity changed')
         verify_files(root, receipt['protected_files'])
+        if receipt['recipe'] == 'typescript-web-recipe-1':
+            # node_modules is reinstalled from the protected lock before every task; it is not frozen.
+            verify_tools(receipt['tools'])
+            return
         current, recorded = environment_snapshot(root, receipt['config']), receipt['environment']
         if (not same_directory(current['identity'], recorded['identity'])
                 or {**current, 'identity': None} != {**recorded, 'identity': None}):

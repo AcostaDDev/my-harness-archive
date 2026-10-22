@@ -7,8 +7,9 @@ Decisión: [D141](DECISIONS.md#d141--p010-consolidación-de-la-primera-versión-
 [D142](DECISIONS.md#d142--p010-t001-receta-typescript-proyección-de-runs-y-tarea-t011).
 
 **Estado:** fase planificada el 2026-10-21. T001 completada el 2026-10-22: diseño y matriz inicial, sin producto.
-Añade T011 (métricas y exportación sobre la proyección de runs). T002–T011 pendientes; sin operación iniciada.
-**Siguiente:** T002, arranque confirmado de un proyecto TypeScript web (receta `typescript-web-recipe-1`).
+Añade T011 (métricas y exportación sobre la proyección de runs). T002 completada el 2026-10-22 (D143): receta
+`typescript-web-recipe-1` implementada y verificada offline. T003–T011 pendientes; sin operación iniciada.
+**Siguiente:** T003, consultas de runs sin decodificar todo el historial (proyección `run-projection-1`).
 
 ## Restricciones compartidas
 
@@ -50,7 +51,8 @@ confirmada, consultas acotadas, compatibilidad y recuperación; mapa inicial de 
 
 ## P010-T002 — Arranque confirmado de un proyecto TypeScript web
 
-**Estado:** pendiente. **Depende de:** T001.
+**Estado:** completada el 2026-10-22 ([entrega](phase/P010-T002_ARRANQUE_TYPESCRIPT.md), D143). Receta
+`typescript-web-recipe-1` en el marco D119; sin migración ni cambios de API. **Depende de:** T001.
 **Objetivo:** Que un proyecto `typescript-web` nuevo tenga un manifiesto inicial utilizable.
 **Alcance:** implementar el contrato de T001 en creación/preparación, perfil y UI correspondientes; proteger
 proyectos existentes y conservar el flujo documental D088.
@@ -65,9 +67,10 @@ proyectos existentes y conservar el flujo documental D088.
   bloquean con diagnóstico. Los proyectos previos conservan su comportamiento.
 - Tests de fronteras/recuperación y documentación de flujo actualizados; esquema/API/versiones solo si procede.
 
-**Validación:** (prevista) pytest dirigida y regresiones pertinentes, Node/tipos/build si cambia UI; ensayo sintético
-con herramientas falsas, sin proveedores ni smoke real.
-**Entregables:** (previstos) `docs/phase/P010-T002_ARRANQUE_TYPESCRIPT.md`.
+**Validación:** pytest completa, unittest, Alembic, Node, tipos y build (resultados en la entrega §6); recorrido
+sintético con node/npm falsos y variante opt-in con node/npm reales sobre `.local/npm-cache`, offline. Sin
+proveedores ni smoke real.
+**Entregables:** `docs/phase/P010-T002_ARRANQUE_TYPESCRIPT.md`, `examples/typescript-web-recipe.example.toml`.
 
 ## P010-T003 — Consultas de runs sin decodificar todo el historial
 

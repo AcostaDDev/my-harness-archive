@@ -238,7 +238,7 @@ Uso real (D051): construir y verificar el wheel (`scripts/build_distribution.py 
 sellos temporales de Git (`harness-git-*`, `harness-bootstrap-*`) bajo el `TMPDIR` del proceso. Sin él, Python usa el
 temporal del sistema (`/var/folders/…` en macOS), fuera del área de operación. Para mantenerlos dentro, lanzar
 `serve` con `TMPDIR` apuntando a un directorio 0700 del área, como hace `check_distribution.py` (D126). Los comandos
-de la receta Django no heredan ese valor: reciben `HOME`/`TMPDIR` propios dentro del hijo (D119).
+de las recetas Django y TypeScript web no heredan ese valor: reciben `HOME`/`TMPDIR` propios dentro del hijo (D119, D143).
 
 ## 10. Límites conocidos
 
@@ -247,7 +247,8 @@ de la receta Django no heredan ese valor: reciben `HOME`/`TMPDIR` propios dentro
   autoriza nuevas operaciones con proveedores.
 - Contención cooperativa (POSIX, rutas, sandbox de cada CLI); sin aislamiento del sistema operativo (D064, D065).
 - Las validaciones no guardan su hora; la lectura de un run decodifica su historial completo.
-- Un proyecto `typescript-web` nuevo no tiene `package.json` y el ejecutor no puede crearlo.
+- El manifiesto que fija una receta (Django o TypeScript web) no admite dependencias nuevas tras preparar; requiere
+  un flujo confirmado futuro. Las altas e importaciones aportan su propio `package.json` (D143).
 - Dos avisos *low* de KaTeX en Mermaid 11.
 - La estructura de D088 es obligatoria desde P008-T002; rutas y paridad en T003, cierre y archivo unificados en
   T004, prompts/definición en T005, API/UI en T006 e inyección de AGENTS en T007 (D089–D094).
@@ -300,3 +301,12 @@ API/UI de preparación en [flujo](flows/project-preparation.md); verificación s
 API completo con CLI falsas, reinicios y recuperación, en un único hijo temporal:
 [entrega y reproducción](archive/phase-009/P009-T005_ENSAYO_DJANGO.md). La variante real de pytest exige wheelhouse e intérprete
 explícitos; si no se proporcionan se omite, sin descargas implícitas ni nuevas dependencias del harness.
+
+## 12. Consolidación — P010
+
+T002 añade la segunda receta empaquetada, `recipes/typescript_web.py` (`typescript-web-recipe-1`, D143), en el marco
+D119: `[recipes.typescript-web]` en `local-config-5`, composición con el perfil integrado `typescript-web` y la caché
+npm del operador en su entorno. `recipes/__init__.py` registra cada receta con su módulo y perfil; el servicio de
+preparación separa el núcleo común de las partes por receta y el recibo TypeScript fija manifiesto protegido y
+ejecutables, no `node_modules`. Sin migración ni cambios de API. [Fragmento v5](../examples/typescript-web-recipe.example.toml),
+[flujo](flows/project-preparation.md) y [entrega](phase/P010-T002_ARRANQUE_TYPESCRIPT.md).

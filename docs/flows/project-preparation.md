@@ -1,8 +1,14 @@
-# Flujo — preparación Django confirmada (P009-T004)
+# Flujo — preparación confirmada por receta (P009-T004, P010-T002)
 
-Implementado en D119; [contrato previo](../archive/phase-009/P009-T001_CONTRATO_CREACION.md#5-receta-posterior-al-bootstrap-t004),
-[entrega y límites](../archive/phase-009/P009-T004_RECETA_DJANGO.md). Solo hijos nuevos registrados por el servicio, composición
-v5 con `recipe = "django"`, perfil empaquetado y commit documental raíz aceptado. No ejecuta agentes.
+Implementado en D119 para Django y en D143 para TypeScript web;
+[contrato Django](../archive/phase-009/P009-T001_CONTRATO_CREACION.md#5-receta-posterior-al-bootstrap-t004),
+[entrega Django y límites](../archive/phase-009/P009-T004_RECETA_DJANGO.md),
+[contrato TypeScript](../phase/P010-T001_CONTRATO_CONSOLIDACION.md#1-arranque-de-un-proyecto-typescript-web-nuevo-t002)
+y [entrega TypeScript](../phase/P010-T002_ARRANQUE_TYPESCRIPT.md). Solo hijos nuevos registrados por el servicio,
+composición v5 con `recipe = "django"` (perfil empaquetado) o `recipe = "typescript-web"` (perfil integrado sin
+cambios) y commit documental raíz aceptado. No ejecuta agentes. Ambas recetas comparten contrato
+`project-preparation-1`, binding `preparation-commands-1`, tablas, locks, journal, commit técnico y recuperación;
+cada una aporta su manifiesto, pasos, reglas de fuente y recibo.
 
 ```mermaid
 flowchart TD
@@ -11,19 +17,26 @@ flowchart TD
     C --> I["Transacción: intención project-preparation-1, pasos y lock exclusivo del checkout"]
     I --> W["Worker reclama propietario y lease; journal registra grupo antes de GO"]
     W --> V["Verificar identidad, herramientas, HEAD y snapshot antes de cada efecto"]
-    V --> E["Plantillas propias, secreto local ignorado, venv y wheels fijados con hashes"]
+    V --> RC{"Receta"}
+    RC -- django-recipe-1 --> E["Plantillas propias, secreto local ignorado, venv y wheels fijados con hashes"]
     E --> G["startproject y startapp sobre plantillas propias en staging del hijo"]
     G --> M["Comparar salida exacta y publicar solo archivos nuevos"]
     M --> T["migrate local; pytest/JUnit, ruff, mypy, check y ausencia de migraciones nuevas"]
+    RC -- typescript-web-recipe-1 --> F["Manifiesto empaquetado y HOME/TMPDIR/npmrc vacíos en .harness-preparation"]
+    F --> N["node y npm con versión exacta; npm ci --ignore-scripts desde la caché declarada"]
+    N --> U["npm run check, test (JUnit) y build"]
     T --> K["Sellar y persistir intención de commit; árbol exacto y CAS de HEAD"]
+    U --> K
     K --> R["Adoptar recibo y COMPLETED; liberar reserva y lock en una transacción"]
-    R --> J["Jobs posteriores congelan project_environment_sha256; guardia de entorno antes de comandos"]
+    R --> J["Jobs posteriores congelan project_environment_sha256; guardia del recibo antes de comandos"]
     W -. "fallo / cancelación / lease" .-> X["Detener grupo propio; conservar bytes y journal; sin replay"]
     X --> A["Acreditar escritor detenido y revisar nueva intención enlazada"]
     A --> B{"¿Prefijo, fuente y entorno acreditados?"}
     B -- sí --> I
     B -- no --> Q["RECOVERY_REQUIRED / diagnóstico; resolución externa, sin borrar ni sobrescribir"]
 ```
+
+## Núcleo común y receta Django (D119)
 
 El padre ya autorizado no se vuelve a confirmar: esta confirmación cubre efectos técnicos nuevos dentro del
 hijo. La preview no instala, resuelve paquetes ni invoca procesos Django/uv. Solo consulta Git local controlado
@@ -67,3 +80,26 @@ de roles, check y cierre de fase. No acredita proveedores reales ni el piloto op
 Backup incluye journal/capturas inline, locks/procesos de ambos propietarios y las raíces nuevas; restaurar
 sigue en consulta sin cargar configuración ni dar autoridad ejecutable. Retención mantiene la evidencia de
 preparación y rechaza escritores/grupos vivos o inciertos de ambos tipos.
+
+## Receta TypeScript web (P010-T002, D143)
+
+`[recipes.typescript-web]` declara node/npm absolutos con versión exacta, la caché npm del operador (directorio
+existente fuera de checkouts y estado), techo de red, timeout y salida. La composición nombra el perfil integrado
+`typescript-web`, ejecutables `node`/`npm` que resuelven a los mismos archivos y un entorno propio con
+`npm_config_cache` igual a esa caché: el servicio no lo reescribe, y cada tarea reinstala con la caché que acreditó
+la preparación.
+
+La preview muestra el manifiesto completo (`package.json` con el id del proyecto y `engines` exactos, lock v3 con
+`typescript@5.9.3` del fixture, `tsconfig.json`, `.gitignore`, `scripts/`, `index.html`, `src/main.ts` y su test),
+los destinos que deben faltar (`node_modules`, `.build`, `dist`, `.local`, `.harness-preparation`), el registro,
+la caché y el aviso de que la red escribe en ella. No hay generador ni paso de publicación: el primer paso escribe
+todo el manifiesto. Offline añade `--offline` y un fallo de caché no cambia a red; network exige `allow_network` y
+elegirlo en la preview. Los pasos fijan `HOME`/`TMPDIR` y dos npmrc vacíos (usuario y global deben ser archivos
+distintos) dentro del hijo, `engine-strict`, registro y `fetch-retries=0`.
+
+Recibo: identidad, archivos del manifiesto que casan con `protected_paths` del perfil (misma semántica glob) y
+`node`/`npm` resueltos con su hash. `node_modules` no se congela: el perfil lo reinstala antes de cada tarea. Un
+`npm ci` solo se reintenta si `node_modules/` sigue igual que en el último prefijo acreditado; con caché vacía npm
+falla sin crearlo (comprobado con npm 11.12.1), y bytes parciales o un `npm ci` sin checkpoint bloquean con
+diagnóstico, sin borrar. El commit técnico «harness: prepare TypeScript web (typescript-web-recipe-1)» contiene
+exactamente el manifiesto. El manifiesto queda fijo tras preparar; añadir dependencias requiere un flujo futuro.

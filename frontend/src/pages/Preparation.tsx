@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { createOnce, managed } from "../managed-api";
 import type { S } from "../managed-api";
-import { pendingPreparationStep, preparationStatus } from "../preparation.ts";
+import { pendingPreparationStep, preparationStatus, recipeLabel, recipeModes } from "../preparation.ts";
 import { DiffBlock, Evidence, Hash, Stale, usePoll } from "../ui";
 import { useWorkspace } from "../workspace";
 
@@ -17,6 +17,9 @@ export function Preparation() {
   const [confirmed, setConfirmed] = useState(false);
   const data = read.data;
   if (!data?.available) return null;
+  const label = recipeLabel(data.recipe);
+  const modes = recipeModes(data.recipe);
+  const typescript = data.recipe === "typescript-web-recipe-1";
   const op = data.operation;
   const working = op?.status === "QUEUED" || op?.status === "ACTIVE";
   const retry = op && ["FAILED", "RECOVERY_REQUIRED", "CANCELLED"].includes(op.status);
@@ -33,14 +36,16 @@ export function Preparation() {
     } satisfies S["PreparationControlInput"]);
     setPreview(undefined); setConfirmed(false);
   });
-  return <section className="panel" aria-labelledby="django-preparation">
-    <h2 id="django-preparation">Preparar Django</h2>
+  return <section className="panel" aria-labelledby="recipe-preparation">
+    <h2 id="recipe-preparation">Preparar {label}</h2>
     <Stale error={read.error} />
-    <p>Después del commit documental, esta receta crea el entorno, el proyecto y la app base, valida sus herramientas y hace un commit técnico. Las tareas se habilitan cuando termina.</p>
-    {data.prepared && <p className="state state-ok" role="status">Django preparado. Puedes continuar con las tareas de la fase.</p>}
+    <p>{typescript
+      ? "Después del commit documental, esta receta escribe el manifiesto inicial (package.json, lock, tsconfig, scripts, un módulo y su test), instala el lock con npm ci, ejecuta las validaciones del perfil y hace un commit técnico. Las tareas se habilitan cuando termina."
+      : "Después del commit documental, esta receta crea el entorno, el proyecto y la app base, valida sus herramientas y hace un commit técnico. Las tareas se habilitan cuando termina."}</p>
+    {data.prepared && <p className="state state-ok" role="status">{label} preparado. Puedes continuar con las tareas de la fase.</p>}
     {data.diagnostic && <p className="state state-attention">{data.diagnostic}</p>}
     {op && <>
-      <p role="status"><strong>{preparationStatus(op.status)}</strong> · operación <code>{op.id}</code></p>
+      <p role="status"><strong>{preparationStatus(op.status, data.recipe)}</strong> · operación <code>{op.id}</code></p>
       <progress max={op.steps.length} value={op.steps.filter(s => s.status === "DONE").length} aria-label="Pasos de preparación completados" />
       <ol>{op.steps.map(s => <li key={String(s.id)}>{String(s.spec && (s.spec as Record<string, unknown>).label)} · {({ DONE: "Completado", STARTED: working ? "En curso" : "Sin resultado acreditado", PENDING: "Pendiente" } as Record<string, string>)[String(s.status)] ?? String(s.status)}</li>)}</ol>
       {op.diagnostic && <p className="state state-attention">{op.diagnostic}</p>}
@@ -53,10 +58,10 @@ export function Preparation() {
     </>}
     {!data.prepared && !working && <>
       <label>Modo de instalación<select value={mode} onChange={e => { setMode(e.target.value as "offline" | "network"); setPreview(undefined); setConfirmed(false); }}>
-        <option value="offline">Offline: usar wheels locales y caché del hijo</option>
-        <option value="network">Red: descargar wheels fijados de PyPI</option>
+        <option value="offline">{modes.offline}</option>
+        <option value="network">{modes.network}</option>
       </select></label>
-      <p className="hint">La caché y el entorno permanecen dentro del hijo. Un fallo detiene la preparación y conserva sus bytes; no se repite ningún comando automáticamente.</p>
+      <p className="hint">{modes.hint}</p>
       <button disabled={busy || !!op && !retry} onClick={() => void operate(show)}>{retry ? `Revisar nueva intención desde el paso ${next ?? "pendiente"}` : "Revisar plan de preparación"}</button>
     </>}
     {preview && <div className="decision">
@@ -72,7 +77,7 @@ export function Preparation() {
           change: preview.change, preview_sha256: preview.plan.preview_sha256,
         } satisfies S["PreparationConfirmInput"]);
         setPreview(undefined); setConfirmed(false);
-      })}>Confirmar preparación Django</button>
+      })}>Confirmar preparación {label}</button>
     </div>}
   </section>;
 }
