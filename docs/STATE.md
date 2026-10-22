@@ -64,7 +64,7 @@ salvo donde se indica. Detalle por fase en `docs/archive/phase-NNN/SUMMARY.md`; 
 
 ## Fase activa
 
-**P010 — Consolidación de la primera versión local. En curso: T001–T008 y T011–T012 completadas.**
+**P010 — Consolidación de la primera versión local. En curso: T001–T009 y T011–T012 completadas; cierre T010 pendiente.**
 Planificada el 2026-10-21 ([D141](DECISIONS.md#d141--p010-consolidación-de-la-primera-versión-local),
 [plan](phase/P010_PLAN_CONSOLIDACION.md), [tareas](NEXT_STEPS.md)). El 2026-10-22 T001 deja el
 [contrato](phase/P010-T001_CONTRATO_CONSOLIDACION.md) y la matriz inicial
@@ -107,7 +107,12 @@ sin arrancar un servicio en la prueba. Sin esquema ni API nuevos; wheel pendient
 [propuesta de validación real](phase/P010-T008_PROPUESTA_VALIDACION_REAL.md) y resuelve el alcance por HITL
 ([D151](DECISIONS.md#d151--p010-t008-validación-real-complementaria-aplazada)): el usuario aplaza A/B y D095,
 conservando su evidencia offline y sus límites de uso real. Sin tarea operativa ni autorización nueva.
-T009–T010 pendientes; la versión aún no tiene dictamen final.
+T009 completa la [verificación final](phase/P010-T009_VERIFICACION_FINAL.md)
+([D152](DECISIONS.md#d152--p010-t009-paquete-final-verificado-y-dictamen-favorable)): pytest (1682 y 121 subtests),
+unittest (12), Node (82), tipos/build, Alembic temporal y wheel instalado correctos. QA de escritorio con API
+sintética y doce capturas; servicios detenidos. Dos opt-in omitidas, sin recurrencia del intermitente de T007.
+La [revisión de salida](phase/P010_REVIEW.md) emite dictamen favorable sobre los siete criterios en el alcance
+de D151. Sin cambios de producto ni validación real nueva. T010 pendiente: fase y primera versión aún sin cierre documental.
 
 P009 cerrada y archivada documentalmente el 2026-10-21
 ([resumen](archive/phase-009/SUMMARY.md), [revisión](archive/phase-009/REVIEW.md),
@@ -118,7 +123,7 @@ El Django hijo conserva P001 CLOSED, cuatro tareas COMMITTED, tag `p001` sobre `
 Última comprobación operativa en T012: servicios detenidos, cero locks y sin jobs pendientes; no se repite aquí.
 Este repositorio sigue sin registrarse ni ejecutarse con el harness; cierre manual sin check READY ni tag propio.
 
-**Siguiente:** P010-T009, verificación final del paquete y revisión de salida.
-Después: cierre documental (T010), solo con dictamen favorable. Los límites de la base acumulada siguen vigentes;
+**Siguiente:** P010-T010, cierre documental de P010 y de la primera versión, con dictamen favorable de T009.
+Los límites de la base acumulada siguen vigentes;
 el SSE gestionado queda resuelto por D149. La validación real complementaria queda aplazada por D151, sin darse
 por realizada ni autorizada. Sin nueva fase del Django hijo ni ampliación de consentimientos de P009.

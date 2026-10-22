@@ -1,0 +1,209 @@
+{
+  "format": "p010-t009-evidence-1",
+  "date": "2026-10-22",
+  "base_commit": "d6a69c8",
+  "product_commit": "dd7b958",
+  "platform": {
+    "os": "macOS 26.4.1",
+    "architecture": "arm64",
+    "python": "3.14.4",
+    "uv": "0.12.19",
+    "node": "24.15.0",
+    "npm": "11.12.1"
+  },
+  "authority": "User explicitly authorized section 1 of P010-T009_VERIFICACION_FINAL.md; D151 real-provider validation remains deferred.",
+  "checks": {
+    "pytest": {
+      "passed": 1682,
+      "skipped": 2,
+      "subtests_passed": 121,
+      "warnings": 10,
+      "seconds": 123.49,
+      "intermittent_case_recurred": false
+    },
+    "unittest": {
+      "passed": 12
+    },
+    "node_tests": {
+      "passed": 82
+    },
+    "typescript": "passed",
+    "alembic": "new temporary SQLite upgraded to head; check reports no new operations",
+    "build": "offline lock install and production UI build passed; known chunk-size warning",
+    "distribution": "installed-wheel verifier passed, including migration snapshot, D088 definition/task/commit/restart and backup/restore"
+  },
+  "distribution": {
+    "harness_local-0.1.0-py3-none-any.whl": {
+      "bytes": 1650938,
+      "sha256": "94a6699e7c2e36cc42bcf45e1e2feb4d2028aa722756b47cb862087919792b17"
+    },
+    "harness_local-0.1.0.tar.gz": {
+      "bytes": 1512596,
+      "sha256": "5dd0c72e897f4e43c02bf34ed4d17e2574b417e86e4e21173df3a6649ba211f2"
+    },
+    "requirements.txt": {
+      "bytes": 11324,
+      "sha256": "4587b997650b377d167ff9cad68708cfaffb9e080294867a2541188c044bf873"
+    }
+  },
+  "presentation": {
+    "source": "Exact assets extracted from the verified wheel; synthetic API snapshots based on existing fixtures and production read views; no live provider or supervisor.",
+    "wheel_assets_verified": 102,
+    "synthetic_response_snapshots": 236,
+    "browser": "Google Chrome, default desktop viewport, one temporary tab",
+    "cases": [
+      "TypeScript recipe preview and disabled confirmation before consent; no install executed",
+      "Definition without drafts: optional-marker guidance",
+      "Draft editor with complete marker pair: optional-marker guidance; edit discarded",
+      "Open phase: real drift and unchanged close guard",
+      "Closed phase: historical READY, integral archive, expected document renewal",
+      "Closed phase with successor: live documents assigned to successor",
+      "Closed phase: live drift and archive alteration remain visible",
+      "Documents: no false drift after closure; committed real drift refers to historical closure",
+      "Run cycles: offsets 0 and 10 for 11 cycles",
+      "UTF-8 diff: offsets 0 and 65527, completed without mixed hashes",
+      "JUnit: offsets 0, 50, 100; observed case counts 50, 50, 1; last Next disabled",
+      "Metrics: missing usage remains missing, task and validation data render"
+    ],
+    "cycle_diff_junit_requests": [
+      "/api/managed/runs/qa-run/cycles/10/diff?offset=0&sha256=668ba4db1369fab6b09d67826850290003fe79aba3134c79f8bf6b08ae18aca2",
+      "/api/managed/runs/qa-run/cycles/10/diff?offset=65527&sha256=668ba4db1369fab6b09d67826850290003fe79aba3134c79f8bf6b08ae18aca2",
+      "/api/managed/runs/qa-run/cycles/10/validations/0/reports/0?offset=0&limit=50",
+      "/api/managed/runs/qa-run/cycles/10/validations/0/reports/0?offset=100&limit=50",
+      "/api/managed/runs/qa-run/cycles/10/validations/0/reports/0?offset=50&limit=50",
+      "/api/managed/runs/qa-run/cycles?offset=0",
+      "/api/managed/runs/qa-run/cycles?offset=10"
+    ],
+    "screenshots": {
+      "definition-draft.jpg": {
+        "bytes": 97013,
+        "sha256": "39fa94b8679062364692bae73413e5d75100e16b7e7c13c1b424f7eccaa3109e",
+        "width": 2560,
+        "height": 1262,
+        "mime_type": "image/jpeg"
+      },
+      "definition-empty.jpg": {
+        "bytes": 129561,
+        "sha256": "1c690ee5cb8aedd59c4045e33ee91db843eb1b8ee3293ffe2ac5f8815c50b548",
+        "width": 2560,
+        "height": 1262,
+        "mime_type": "image/jpeg"
+      },
+      "docs-closed.jpg": {
+        "bytes": 122461,
+        "sha256": "d7b7cad733fba7a630fef1b5ba88123d17bffbef05e4e2bfb431d083a08abcfc",
+        "width": 2545,
+        "height": 1255,
+        "mime_type": "image/jpeg"
+      },
+      "docs-drift.jpg": {
+        "bytes": 133286,
+        "sha256": "828c35f89eddd6c7bfbe8b1186e5bfbb82641866b1c5ef57f5bc9872c3a5bfbc",
+        "width": 2545,
+        "height": 1255,
+        "mime_type": "image/jpeg"
+      },
+      "metrics.jpg": {
+        "bytes": 126452,
+        "sha256": "093e07f76cfa8c5737708b2acb30a775bc15ee7c4767f7742ef13edf8cb15b0a",
+        "width": 2545,
+        "height": 1255,
+        "mime_type": "image/jpeg"
+      },
+      "phase-closed.jpg": {
+        "bytes": 117180,
+        "sha256": "4ebb1f3377c0a5e19552731c5888f74ec04e388d2905008d2eb3f6d120b8099e",
+        "width": 2545,
+        "height": 1255,
+        "mime_type": "image/jpeg"
+      },
+      "phase-drift.jpg": {
+        "bytes": 121335,
+        "sha256": "54dd116971f8239e23ee84a7e6d0741eb19f5d497c85c4ed4ac5e63e37d2869f",
+        "width": 2545,
+        "height": 1255,
+        "mime_type": "image/jpeg"
+      },
+      "phase-open.jpg": {
+        "bytes": 116856,
+        "sha256": "8d16a31f68c53c350ead02befe9412505db83c4c0b7bb37a5c36a07346092dde",
+        "width": 2545,
+        "height": 1255,
+        "mime_type": "image/jpeg"
+      },
+      "phase-successor.jpg": {
+        "bytes": 115861,
+        "sha256": "d061fe659190a72c90e3f85096aee33647d1a4d082ee06247c33a37ab23fee0d",
+        "width": 2545,
+        "height": 1255,
+        "mime_type": "image/jpeg"
+      },
+      "run-diff.jpg": {
+        "bytes": 138273,
+        "sha256": "34c7ec2accec27069bcb1dd561fb45b321bb4b3ac66864aae8ed7bb53c449c82",
+        "width": 2545,
+        "height": 1255,
+        "mime_type": "image/jpeg"
+      },
+      "run-junit.jpg": {
+        "bytes": 120594,
+        "sha256": "6eae6a2c9daee499b6a7bf8dcc978cbd2af674a9426a0e44cecb839b61f4e440",
+        "width": 2545,
+        "height": 1255,
+        "mime_type": "image/jpeg"
+      },
+      "typescript-preparation.jpg": {
+        "bytes": 256737,
+        "sha256": "2a8e98f1ff4ca629af50db9b8268ec692a1c896e1b05748abdf0c1b86debfef9",
+        "width": 2545,
+        "height": 2844,
+        "mime_type": "image/jpeg"
+      }
+    }
+  },
+  "cleanup": {
+    "presentation_listener_stopped": true,
+    "temporary_tab_closed": true,
+    "verifier_temporary_environment_removed": true,
+    "synthetic_databases_checked": 12,
+    "active_jobs": 0,
+    "checkout_locks": 0,
+    "persistent_operational_installation_accessed": false
+  },
+  "limits": [
+    "Django/TypeScript opt-in real-toolchain variants omitted in this final suite",
+    "A/B and declarative Django real-provider validation deferred by D151",
+    "No real providers, operational migrations, P009/ReferenceProject operations, global config changes, push, publication or T010 closure",
+    "Presentation QA does not certify browser/backend integration or responsive breakpoints"
+  ],
+  "local_logs": {
+    "pytest.log": {
+      "bytes": 2715,
+      "sha256": "5a417711eaafeca8188b78c1e5a6cca3a1fa1939347d403b20cf7450b9736c9f"
+    },
+    "unittest.log": {
+      "bytes": 111,
+      "sha256": "8ffa5975dbde749685ff98587bd42d81c65a4fbb8cdb7823318908026d6cecb9"
+    },
+    "node.log": {
+      "bytes": 6095,
+      "sha256": "1b4378a0d4ea8b889e3a2184ba2c789eed0308fbfa75206417053fa6ef029014"
+    },
+    "types.log": {
+      "bytes": 48,
+      "sha256": "f523e4f3b1c45547deac148158eaab336eee8cb2615a2c0e031c4cc8f230486b"
+    },
+    "alembic.log": {
+      "bytes": 84,
+      "sha256": "5873f0cb1abeaa2e9242f509c243b4605a6d5c8e7f4de0a80705786043f67936"
+    },
+    "build.log": {
+      "bytes": 9499,
+      "sha256": "ef9f76ad49694fa3242e91a393b80e0dfea2b788da56e1837103a16cbc127de6"
+    },
+    "distribution.log": {
+      "bytes": 1255,
+      "sha256": "9f8f0e5a42924f4f80f02029eb9d2577f921cd0fd8aa0747beaf9acfcbd2bba3"
+    }
+  }
+}

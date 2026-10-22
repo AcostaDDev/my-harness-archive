@@ -15,9 +15,10 @@ definición. T005 completada el 2026-10-22 (D147): evidencia histórica de una f
 2026-10-22 (D148): documentación contrastada con código y evidencia. T007 completada el 2026-10-22 (D149): matriz de
 aceptación; añade T012 (migración desde el paquete instalado). T012 completada el 2026-10-22 (D150): orden
 `migrate` con instantánea previa y negativas verificadas offline. T008 completada el 2026-10-22 (D151): propuesta
-complementaria y decisión HITL de aplazar A/B y D095, conservando sus límites de uso real. T009–T010 pendientes;
-sin operación iniciada ni tarea operativa añadida.
-**Siguiente:** T009, verificación final del paquete y revisión de salida.
+complementaria y decisión HITL de aplazar A/B y D095, conservando sus límites de uso real. T009 completada el
+2026-10-22 (D152): checks, wheel instalado y QA sintética correctos; dictamen favorable en el alcance de D151.
+T010 pendiente; sin cierre documental ni tarea operativa añadida.
+**Siguiente:** T010, cierre documental de P010 y de la primera versión.
 
 ## Restricciones compartidas
 
@@ -215,7 +216,12 @@ instalaciones, servicios o smokes.
 
 ## P010-T009 — Verificación final del paquete y revisión de salida
 
-**Estado:** pendiente. **Depende de:** T002–T008, T011, T012 y las correcciones/evidencias adicionales que se acuerden.
+**Estado:** completada el 2026-10-22 ([verificación](phase/P010-T009_VERIFICACION_FINAL.md),
+[revisión favorable](phase/P010_REVIEW.md), D152). Autorización específica del usuario para wheel/QA registrada:
+pytest 1682 y 121 subtests, unittest 12, Node 82, tipos/build, Alembic temporal y verificador del wheel correctos;
+doce capturas de QA con API sintética. Siete criterios de salida cumplidos en el alcance declarado de D151;
+dos opt-in omitidas, sin recurrencia del intermitente de T007. Sin cambios de producto ni cierre T010.
+**Depende de:** T002–T008, T011, T012 y las correcciones/evidencias adicionales que se acuerden.
 **Objetivo:** Acreditar el estado final del producto y emitir un dictamen de cierre revisable.
 **Alcance:** checks offline finales, QA de las pantallas modificadas y verificación del wheel en entorno temporal;
 contraste del paquete final con la matriz de aceptación y el alcance real decidido.
@@ -232,8 +238,10 @@ contraste del paquete final con la matriz de aceptación y el alcance real decid
 - Revisión expresa cada criterio de ROADMAP como cumplido, pendiente o bloqueado, con evidencia; un fallo del
   alcance declarado impide pasar a T010. No se declara la versión terminada antes del dictamen favorable.
 
-**Validación:** (prevista) comandos de AGENTS y recorrido de distribución aplicable, dentro del alcance autorizado.
-**Entregables:** (previstos) `docs/phase/P010-T009_VERIFICACION_FINAL.md` y `docs/phase/P010_REVIEW.md`.
+**Validación:** comandos de AGENTS y recorrido de distribución offline autorizados, QA de escritorio con assets del
+wheel y API sintética; resultados, hashes, límites y parada en la verificación. Sin proveedores reales ni operación de P009.
+**Entregables:** `docs/phase/P010-T009_VERIFICACION_FINAL.md`, `docs/phase/P010_REVIEW.md`,
+`docs/phase/P010-T009_EVIDENCE.json` y `docs/phase/P010-T009_QA/`.
 
 ## P010-T010 — Cierre documental de P010 y de la primera versión
 

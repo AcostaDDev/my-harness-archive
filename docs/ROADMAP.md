@@ -180,7 +180,10 @@ T001 completada el 2026-10-22 ([contrato](phase/P010-T001_CONTRATO_CONSOLIDACION
 T002–T007 y T011 completadas el mismo día (D143–D149); T007 añade T012, completada también (D150): migración
 explícita con copia previa desde la CLI. T008 completada (D151):
 [propuesta](phase/P010-T008_PROPUESTA_VALIDACION_REAL.md) y decisión del usuario de aplazar la validación real de
-A/B y D095, conservando sus límites. T009–T010 pendientes. [Plan](phase/P010_PLAN_CONSOLIDACION.md), [tareas](NEXT_STEPS.md) y
+A/B y D095, conservando sus límites. T009 completada (D152):
+[verificación del paquete](phase/P010-T009_VERIFICACION_FINAL.md) y [dictamen favorable](phase/P010_REVIEW.md) de los
+siete criterios en el alcance declarado, con QA sintética y sin proveedores reales. T010 pendiente; P010 sigue abierta.
+[Plan](phase/P010_PLAN_CONSOLIDACION.md), [tareas](NEXT_STEPS.md) y
 [D141](DECISIONS.md#d141--p010-consolidación-de-la-primera-versión-local).
 
 ## Candidatas sin fase asignada

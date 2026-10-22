@@ -162,6 +162,7 @@ tarea se leen solo las decisiones que cita; este índice sirve para buscar prece
 | [D149](#d149--p010-t007-matriz-de-aceptación-sse-por-cursor-y-tarea-t012) | P010-T007: matriz de aceptación, SSE por cursor y tarea T012 | P010 |
 | [D150](#d150--p010-t012-migración-explícita-de-bases-desde-la-cli-instalada) | P010-T012: migración explícita de bases desde la CLI instalada | P010 |
 | [D151](#d151--p010-t008-validación-real-complementaria-aplazada) | P010-T008: validación real complementaria aplazada | P010 |
+| [D152](#d152--p010-t009-paquete-final-verificado-y-dictamen-favorable) | P010-T009: paquete final verificado y dictamen favorable | P010 |
 
 ## D001 — Alcance local y arquitectura base
 
@@ -4494,3 +4495,26 @@ HITL: «Aplazar y conservar los límites de validación real». Resuelve la elec
 - Se sincronizan STATE, NEXT_STEPS, ROADMAP, seguimiento de la matriz y las dos filas de alcance de README.
   Sin cambios de producto, comandos operativos, proveedores, instalaciones, servicios, push o publicación;
   no se opera P009 ni se reutiliza su consentimiento. Una validación real futura exige tarea y consentimiento propios.
+
+## D152 — P010-T009: paquete final verificado y dictamen favorable
+
+Estado: completada el 2026-10-22. Fase: P010.
+[Verificación final](phase/P010-T009_VERIFICACION_FINAL.md), [revisión de salida](phase/P010_REVIEW.md) y
+[evidencia saneada](phase/P010-T009_EVIDENCE.json). Base `d6a69c8`, producto sin cambios desde `dd7b958`.
+
+- El usuario autoriza expresamente («Autorizo.») el alcance presentado en T009 §1: construcción e instalación
+  offline del wheel en venv temporal, verificador con puertos falsos y servicios de loopback y QA con API sintética.
+  No incluye proveedores reales ni la instalación operativa; D151 permanece vigente.
+- Checks finales: 1682 pytest, 121 subtests, dos variantes opt-in omitidas; 12 unittest, 82 Node, tipos, build y
+  Alembic temporal correctos. No reaparece el intermitente de T007; pasan las lecturas acotadas T003/T011.
+- Wheel `0.1.0` con UI y migraciones verificado fuera del checkout: instalación por hashes, sesión/CSRF,
+  `migrate` `0022`→`0023` con copia previa, definición D088, tarea/commit/reinicio idempotentes y backup/restauración
+  de consulta. SHA-256: `94a6699e7c2e36cc42bcf45e1e2feb4d2028aa722756b47cb862087919792b17`.
+- QA de escritorio con 102 assets idénticos a los del wheel y respuestas sintéticas: preparación TypeScript,
+  marcadores, fases abierta/cerrada/sucesora/deriva, documentos, ciclos/diff/JUnit y métricas. Doce capturas saneadas;
+  sin hallazgos de producto. No se anuncia integración navegador/backend ni validación real adicional por esta QA.
+- Dictamen favorable para los siete criterios de ROADMAP en el alcance declarado. La matriz de trece criterios
+  conserva evidencia y límites. T010 queda como siguiente tarea; T009 no cierra ni archiva P010, cambia versión,
+  crea tag, publica u opera este repositorio con el harness. Sin cambios de código, esquema, API o flujos.
+- Servicios y pestaña temporales detenidos/cerrada; doce SQLite sintéticas sin jobs pendientes ni locks. Wheel y
+  logs locales conservados; entorno del verificador limpiado. Sin configuración global, P009/ReferenceProject o proveedores.

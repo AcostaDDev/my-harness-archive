@@ -1,5 +1,8 @@
 # P010 — Matriz de aceptación global
 
+Actualización del 2026-10-22 tras T009: suites, wheel final instalado y QA de presentación sintética acreditados;
+dictamen de salida favorable en el alcance de D151 (D152, §8). El cierre documental sigue pendiente de T010.
+
 Actualización del 2026-10-22 tras T008: el usuario aplaza la validación real complementaria y conserva sus límites
 (D151, §7). Se mantiene debajo el dictamen original de T007 y su seguimiento, sin reescribir su evidencia histórica.
 
@@ -106,3 +109,21 @@ No se ejecuta el recorrido ni se añaden tests o tarea operativa. Los dictámene
 conservan su evidencia; la falta de uso real se declara, sin convertirla en validación adicional. T009 verificará
 el paquete y revisará la salida con estos límites. T010 sigue condicionado a un dictamen favorable; T008 no
 declara terminada la versión ni amplía consentimientos de P009.
+
+## 8. Seguimiento tras P010-T009
+
+El 2026-10-22 T009 verifica la base `d6a69c8` (producto `dd7b958`): **1682 pytest y 121 subtests, 12 unittest,
+82 Node, tipos/build y Alembic temporal correctos**, sin recurrencia del intermitente de T007. Se mantienen las
+dos omisiones opt-in (Django y TypeScript reales); los tests de lecturas acotadas y los trece criterios se
+reejecutan en la suite. No se reescribe el dictamen original ni se atribuye uso real a pruebas sintéticas.
+
+El wheel final `0.1.0`, SHA-256 `94a6699e7c2e36cc42bcf45e1e2feb4d2028aa722756b47cb862087919792b17`, se instala y
+verifica offline fuera del checkout con UI/migraciones, sesión, definición D088/tarea/commit/reinicio idempotentes
+y backup/restauración de consulta. La entrada instalada `migrate` acredita `0022`→`0023`, instantánea previa y
+repetición sin cambios: se cierra la comprobación de distribución pendiente del seguimiento T012 (§6).
+
+La QA de escritorio revisa los assets exactos del wheel con API sintética; no acredita integración navegador/backend
+ni uso de proveedores. [Verificación y capturas](P010-T009_VERIFICACION_FINAL.md),
+[evidencia saneada](P010-T009_EVIDENCE.json) y [revisión favorable](P010_REVIEW.md) (D152). Los siete criterios de
+ROADMAP se consideran cumplidos en el alcance declarado; D151 y todos los límites reales permanecen. T010 queda
+como siguiente tarea, sin dar aún por cerrado P010 ni ampliar consentimientos operativos.
