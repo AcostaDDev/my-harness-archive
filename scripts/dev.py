@@ -1,12 +1,12 @@
-"""Desarrollo local con un solo comando: dependencias al día, base migrada, API :8013 y Vite :5173.
+"""Local development with a single command: dependencies up to date, migrated database, API :8013 and Vite :5173.
 
-Uso: scripts/dev [--database RUTA] [--config TOML]
+Usage: scripts/dev [--database PATH] [--config TOML]
 
-`uv run --frozen` (en scripts/dev) sincroniza el entorno Python desde uv.lock. Este
-script reinstala el frontend solo si cambió su lock, migra la SQLite de desarrollo
-con instantánea previa (storage/migrate.py), arranca la API y Vite en sus propios
-grupos de procesos y los detiene juntos con Ctrl+C o si uno de ellos termina.
-Sin red: npm y uv trabajan offline con las cachés de .local/.
+`uv run --frozen` (in scripts/dev) syncs the Python environment from uv.lock. This
+script reinstalls the frontend only if its lock changed, migrates the development SQLite
+with a prior snapshot (storage/migrate.py), starts the API and Vite in their own
+process groups and stops them together on Ctrl+C or when one of them exits.
+No network: npm and uv work offline with the caches in .local/.
 """
 import argparse
 import hashlib
@@ -22,7 +22,7 @@ import time
 from toolchain import check_tools
 
 ROOT = Path(__file__).resolve().parents[1]
-API_PORT, UI_PORT = 8013, 5173  # fijados por frontend/package.json y vite.config.ts
+API_PORT, UI_PORT = 8013, 5173  # fixed by frontend/package.json and vite.config.ts
 STAMP = ROOT / '.local/dev/frontend-lock.sha256'
 
 
@@ -39,7 +39,7 @@ def frontend_install_needed(root=ROOT, stamp=STAMP):
 def ensure_frontend(root=ROOT, stamp=STAMP):
     if not frontend_install_needed(root, stamp):
         return False
-    print('frontend: lock cambiado o dependencias ausentes; npm ci offline', flush=True)
+    print('frontend: lock changed or dependencies missing; offline npm ci', flush=True)
     subprocess.run(['npm', 'ci', '--offline', '--ignore-scripts', '--no-audit', '--no-fund',
                     '--cache', str(root / '.local/npm-cache')], cwd=root / 'frontend', check=True)
     stamp.parent.mkdir(parents=True, exist_ok=True)
@@ -64,7 +64,7 @@ def listening(port):
 
 
 def stop(process, grace=10.0):
-    """Terminar el grupo propio del hijo; matar solo si no termina a tiempo."""
+    """Terminate the child's own process group; kill it only if it does not exit in time."""
     if process.poll() is not None:
         return process.returncode
     for sig, wait in ((signal.SIGTERM, grace), (signal.SIGKILL, 5.0)):
@@ -80,7 +80,7 @@ def stop(process, grace=10.0):
 
 
 class Services:
-    """Hijos en sesiones propias; el padre reenvía la parada y no deja huérfanos."""
+    """Children in their own sessions; the parent forwards the stop and leaves no orphans."""
 
     def __init__(self):
         self.children = []
@@ -116,12 +116,12 @@ class Services:
         self.stopping = True
 
     def run(self):
-        """Hasta Ctrl+C/TERM o hasta que un hijo termine; devuelve el código de salida."""
+        """Until Ctrl+C/TERM or until a child exits; returns the exit code."""
         code = 0
         while not self.stopping:
             for name, process in self.children:
                 if process.poll() is not None:
-                    print(f'{name} terminó con código {process.returncode}; deteniendo el resto', flush=True)
+                    print(f'{name} exited with code {process.returncode}; stopping the rest', flush=True)
                     code = process.returncode or 1
                     self.stopping = True
                     break
@@ -138,7 +138,7 @@ def api_command(database, config):
     env = {**os.environ, 'HARNESS_DATABASE_URL': f'sqlite:///{database}', 'PYTHONUNBUFFERED': '1'}
     if config is not None:
         if env.get('HARNESS_MANAGED_CONFIG'):
-            raise SystemExit('--config y HARNESS_MANAGED_CONFIG son incompatibles; elegir una sola composición.')
+            raise SystemExit('--config and HARNESS_MANAGED_CONFIG are incompatible; choose a single composition.')
         env.update(HARNESS_MANAGED_CONFIG='harness_local.services.local_config:from_environment',
                    HARNESS_LOCAL_CONFIG=str(config))
     argv = [sys.executable, '-m', 'uvicorn', 'harness_local.api.app:create_app', '--factory',
@@ -150,8 +150,9 @@ def api_command(database, config):
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument('--database', type=Path, default=ROOT / '.local/harness.sqlite3',
-                        help='SQLite de desarrollo (por defecto .local/harness.sqlite3)')
-    parser.add_argument('--config', type=Path, help='TOML local-config-1/2/3 opcional; sin él, la API gestionada solo lee')
+                        help='development SQLite (default .local/harness.sqlite3)')
+    parser.add_argument('--config', type=Path,
+                        help='optional local-config TOML; without it the managed API only reads')
     args = parser.parse_args(argv)
     database = args.database.expanduser().absolute()
     config = args.config.expanduser().absolute() if args.config else None
@@ -159,23 +160,23 @@ def main(argv=None):
     check_tools()
     busy = [port for port in (API_PORT, UI_PORT) if not port_free(port)]
     if busy:
-        raise SystemExit(f'Puertos ocupados en 127.0.0.1: {busy}; detener el servicio anterior.')
+        raise SystemExit(f'Ports in use on 127.0.0.1: {busy}; stop the previous service.')
     ensure_frontend()
     from harness_local.storage.migrate import MigrationRefused, prepare_database
     try:
         outcome = prepare_database(str(database), ROOT / '.local/backups')
     except (MigrationRefused, ValueError) as exc:
-        raise SystemExit(f'Base de datos: {exc}') from None
-    print(f'base: {database} ({outcome.action}, revisión {outcome.revision})'
-          + (f'; instantánea previa {outcome.snapshot}' if outcome.snapshot else ''), flush=True)
+        raise SystemExit(f'Database: {exc}') from None
+    print(f'database: {database} ({outcome.action}, revision {outcome.revision})'
+          + (f'; prior snapshot {outcome.snapshot}' if outcome.snapshot else ''), flush=True)
     if config is not None:
         from harness_local.services.local_config import load_local_config
-        load_local_config(config)  # validar antes de lanzar nada; no ejecuta procesos
+        load_local_config(config)  # validate before launching anything; runs no processes
 
     services = Services()
     signal.signal(signal.SIGINT, services.request_stop)
     signal.signal(signal.SIGTERM, services.request_stop)
-    key = []
+    key = []  # path from the service's access-key line (harness_local.api.session); keep the match in sync
     api_argv, api_env = api_command(database, config)
     api = services.start('api', api_argv, env=api_env,
                          relay=lambda line: key.append(line.split(' en ', 1)[1].strip())
@@ -187,8 +188,8 @@ def main(argv=None):
     if not services.wait_port(UI_PORT, ui):
         services.close()
         return 0 if services.stopping else 1
-    print(f'\nHarness Local (desarrollo)\n  UI:    http://127.0.0.1:{UI_PORT}\n  API:   http://127.0.0.1:{API_PORT}\n'
-          f'  Clave: {key[0] if key else "ver la línea «clave de acceso» de la API"}\n  Ctrl+C detiene ambos.\n', flush=True)
+    print(f'\nHarness Local (development)\n  UI:    http://127.0.0.1:{UI_PORT}\n  API:   http://127.0.0.1:{API_PORT}\n'
+          f'  Key:   {key[0] if key else "see the API access-key line"}\n  Ctrl+C stops both.\n', flush=True)
     return services.run()
 
 

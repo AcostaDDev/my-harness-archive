@@ -1,4 +1,4 @@
-"""Construcción local offline: UI desde lock, sdist/wheel y pins de instalación."""
+"""Offline local build: UI from the lock, sdist/wheel and installation pins."""
 import argparse
 from pathlib import Path
 import shutil

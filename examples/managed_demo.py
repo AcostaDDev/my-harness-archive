@@ -55,7 +55,7 @@ class DemoAgent:
                 raise JournalError("Synthetic UI quarantine after executor; no live process")
             payload = {"task_id": task["task_id"], "verdict": "ACCEPT", "findings": [], "blocking_questions": [], "scope_grants": []}
         elif request.role == "phase":
-            # H3.3: evaluación sintética READY de los criterios congelados que recibe como evidencia.
+            # H3.3: synthetic READY evaluation of the frozen criteria it receives as evidence.
             evidence = json.loads(request.prompt.split("Evidence:\n", 1)[1].split("\nReturn exactly one JSON object", 1)[0])
             phase = evidence["phase"]
             payload = {"phase_id": phase["code"], "verdict": "READY", "summary": "Synthetic phase review; no provider",
@@ -63,7 +63,7 @@ class DemoAgent:
                                                  for c in phase["exit_criteria"]],
                        "required_actions": [], "blocking_questions": []}
         elif request.role == "chat":
-            # H4.1: respuesta sintética de solo lectura con una propuesta derivada del mensaje.
+            # H4.1: synthetic read-only answer with a proposal derived from the message.
             text = request.prompt.split("User message:\n", 1)[1].split("\nReturn exactly one JSON object", 1)[0].strip()
             payload = {"answer": f"Synthetic read-only answer; no provider. Message: {text}",
                        "references": ["app/main.txt"],
@@ -71,7 +71,7 @@ class DemoAgent:
                                       "scope": "Only app/main.txt", "acceptance_criteria": ["app/main.txt reflects the request"],
                                       "validation": ["test-runner check"], "rationale": "Synthetic chat proposal"}]}
         elif request.role == "planner":
-            # H4.1: solo para tareas creadas desde una propuesta confirmada; contrato dentro de la política.
+            # H4.1: only for tasks created from a confirmed proposal; contract within the policy.
             data = json.loads(next(line for line in request.prompt.splitlines() if line.startswith('{"phase_id"')))
             payload = {"task_id": data["task_id"], "phase_id": data["phase_id"], "title": "Synthetic chat task",
                        "objective": "Apply the confirmed chat proposal", "executor_prompt": "Change app/main.txt",

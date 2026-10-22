@@ -7,7 +7,7 @@ type SessionControls = { logout: () => Promise<void>; busy: boolean; notice: str
 
 const SessionContext = createContext<SessionControls | null>(null);
 
-/** Controles de la sesión para la cabecera; solo existe dentro de una sesión iniciada. */
+/** Session controls for the header; only exists inside a started session. */
 export function useSession(): SessionControls {
   const value = useContext(SessionContext);
   if (!value) throw new Error("Sesión ausente");
@@ -26,7 +26,7 @@ export function SessionGate({ children }: { children: ReactNode }) {
   useEffect(() => { if (session) { known.current = true; setExpiresAt(Date.now() + session.expires_in * 1000); } }, [session]);
   useEffect(() => {
     let active = true;
-    // Sin sesión previa en esta página no hay nada que avisar: es el acceso normal.
+    // Without a previous session on this page there is nothing to warn about: it is the normal sign-in.
     const expired = () => { epoch.current++; if (known.current) setError("Sesión cerrada o caducada. Las acciones pendientes no se repiten automáticamente."); known.current = false; setSession(undefined); };
     window.addEventListener("harness-session-required", expired);
     const check = async () => {

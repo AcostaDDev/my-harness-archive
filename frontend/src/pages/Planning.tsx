@@ -11,9 +11,9 @@ import { useWorkspace } from "../workspace";
 import { EditProgress, MarkdownView } from "./Docs";
 import { recipeLabel } from "../preparation.ts";
 
-// Creación y planificación conversacionales en la UI (H6.2 E4) sobre la API de H6.5 (D075).
-// El agente nunca escribe: cada borrador se aplica o se edita con CAS sobre el hash mostrado, y la aceptación
-// y el plan se confirman sobre la vista previa exacta. Nada se escribe al teclear ni al recargar.
+// Conversational creation and planning in the UI (H6.2 E4) over the H6.5 API (D075).
+// The agent never writes: each draft is applied or edited with CAS on the hash shown, and the acceptance
+// and the plan are confirmed on the exact preview. Nothing is written while typing or reloading.
 
 type Conversation = S["PlanningConversationRead"];
 type Summary = S["PlanningConversationSummaryRead"];
@@ -48,7 +48,7 @@ function Tone({ value }: { value: [string, string] }) {
   return <span className={`status status-${value[1]}`}><span className="status-mark" aria-hidden="true" />{value[0]}</span>;
 }
 
-/** Pasos de la creación con la misma vía que el ciclo de la fase: dónde está y qué falta. */
+/** Creation steps on the same track as the phase lifecycle: where it is and what is missing. */
 function Steps({ current, labels }: { current: number; labels: string[] }) {
   return <div className="rail" role="img" aria-label={`Paso ${current + 1} de ${labels.length}: ${labels[Math.min(current, labels.length - 1)]}`}>
     <ol className="rail-track">{labels.map((label, index) => <li key={label} className={index < current ? "rail-past" : index === current ? "rail-now" : "rail-next"}>
@@ -60,7 +60,7 @@ function conflictText(error: unknown) {
   return error instanceof ManagedError && error.status === 409 ? message(error) : undefined;
 }
 
-// --- conversación compartida -------------------------------------------------------------------
+// --- shared conversation -----------------------------------------------------------------------
 
 function TurnList({ conversation }: { conversation: Conversation }) {
   if (!conversation.turns.length) return <p className="hint">Todavía no hay turnos. Escribe el primer mensaje abajo.</p>;
@@ -115,7 +115,7 @@ function Dismiss({ conversation, proposal, base }: { conversation: Conversation;
   </div>;
 }
 
-// --- creación: /projects/:p/setup ----------------------------------------------------------------
+// --- creation: /projects/:p/setup ----------------------------------------------------------------
 
 export function SetupPage({ path }: { path?: string }) {
   const { project, refresh } = useWorkspace();
@@ -149,7 +149,7 @@ function BriefForm({ status }: { status: S["BootstrapStatusRead"] }) {
   const [title, setTitle] = useState(() => { try { return JSON.parse(sessionStorage.getItem(key) ?? "null")?.title ?? ""; } catch { return ""; } });
   const [brief, setBrief] = useState(() => { try { return JSON.parse(sessionStorage.getItem(key) ?? "null")?.brief ?? ""; } catch { return ""; } });
   const [view, setView] = useState<"edit" | "preview">("edit");
-  useEffect(() => { try { sessionStorage.setItem(key, JSON.stringify({ title, brief })); } catch { /* sin borrador */ } }, [key, title, brief]);
+  useEffect(() => { try { sessionStorage.setItem(key, JSON.stringify({ title, brief })); } catch { /* no draft */ } }, [key, title, brief]);
   const bytes = new TextEncoder().encode(brief).length;
   return <>
     <PageHeader title="Crear el proyecto">
@@ -162,7 +162,7 @@ function BriefForm({ status }: { status: S["BootstrapStatusRead"] }) {
       <p className="hint">Markdown libre, como máximo 256 KiB. Se congela al empezar y se archiva en <code>archive/phase-000/BRIEF.md</code>; no se edita después.</p>
       <form onSubmit={e => { e.preventDefault(); void operate(async () => {
         await createOnce<Conversation>(`/projects/${project}/planning`, { kind: "definition", title: title.trim(), brief, phase_id: null } satisfies S["PlanningConversationCreate"]);
-        try { sessionStorage.removeItem(key); } catch { /* sin borrador */ }
+        try { sessionStorage.removeItem(key); } catch { /* no draft */ }
       }); }}>
         <label>Nombre del proyecto<input value={title} maxLength={200} onChange={e => setTitle(e.target.value)} required /></label>
         <div className="docs-editor-tabs" role="tablist">
@@ -264,7 +264,7 @@ function ProposalHistory({ proposals }: { proposals: Proposal[] }) {
   </details>;
 }
 
-/** Contenido actual de un borrador (null si no existe) por la misma inspección que la CAS. */
+/** Current content of a draft (null if it does not exist) through the same inspection as the CAS. */
 function useDraft(conversation: string, path: string | null, refresh: number, interval = 0) {
   const { project } = useWorkspace();
   const read = usePoll<DraftRead>(path ? `/projects/${project}/planning/${conversation}/drafts/content?path=${q(path)}` : null, interval, refresh);
@@ -287,7 +287,7 @@ function ProposalEntry({ conversation, proposal, base, drafts }: { conversation:
   </div>;
 }
 
-/** Diff del borrador en disco a la propuesta y confirmación ligada a su hash; el harness escribe con CAS. */
+/** Diff from the draft on disk to the proposal and confirmation bound to its hash; the harness writes with CAS. */
 function ProposalReview({ conversation, proposal, base }: { conversation: Conversation; proposal: Proposal; base: string }) {
   const { busy, refresh, operate } = useWorkspace();
   const { draft, missing, error } = useDraft(conversation.id, proposal.path, refresh);
@@ -325,7 +325,7 @@ function ProposalReview({ conversation, proposal, base }: { conversation: Conver
   </div>;
 }
 
-// --- borradores ----------------------------------------------------------------------------------
+// --- drafts --------------------------------------------------------------------------------------
 
 function matchesPattern(path: string, patterns: string[]) {
   return patterns.some(pattern => {
@@ -341,7 +341,7 @@ function DraftTree({ conversation, drafts, current, error }: { conversation: Con
   const present = new Map(drafts?.drafts.filter(d => d.sha256).map(d => [d.path, d]));
   const required = new Set(drafts?.allowed.required);
   const paths = [...new Set([...(drafts?.allowed.fixed ?? []), ...present.keys(), ...[...pending].filter(Boolean) as string[]])].sort();
-  // Carpeta de documentación (la de STATE): los nombres del árbol son relativos a ella; la ruta completa va en el título.
+  // Documentation folder (STATE's): tree names are relative to it; the full path goes in the title.
   const docsFolder = drafts?.allowed.required.find(p => p.endsWith("/STATE.md"))?.slice(0, -"/STATE.md".length);
   return <nav className="docs-tree" aria-label="Borradores">
     <p className="docs-tree-title"><Link to={draftRoute(conversation, project)} current={!current}>{conversation.kind === "onboarding" ? "Incorporación" : "Definición"}</Link></p>
@@ -382,13 +382,13 @@ function loadEdit(key: string): Edit | undefined {
   try { return JSON.parse(sessionStorage.getItem(key) ?? "null") ?? undefined; } catch { return undefined; }
 }
 function saveEdit(key: string, value?: Edit) {
-  try { if (value) sessionStorage.setItem(key, JSON.stringify(value)); else sessionStorage.removeItem(key); } catch { /* sin borrador guardado */ }
+  try { if (value) sessionStorage.setItem(key, JSON.stringify(value)); else sessionStorage.removeItem(key); } catch { /* no saved draft */ }
 }
 
 function DraftPage({ conversation, path, drafts }: { conversation: Conversation; path: string; drafts?: Drafts }) {
   const { project, refresh } = useWorkspace();
   const base = `/projects/${project}/planning/${conversation.id}`;
-  // Se relee: una edición en disco se ve (y el editor la avisa) antes de intentar guardar.
+  // Reread: an edit on disk shows up (and the editor warns about it) before trying to save.
   const { draft, missing, error } = useDraft(conversation.id, path, refresh, 3000);
   const key = conversation.kind === "onboarding" ? `harness-onboarding-draft-v1:${project}:${conversation.id}:${path}`
     : `harness-setup-draft-v1:${project}:${path}`;
@@ -419,7 +419,7 @@ function DraftPage({ conversation, path, drafts }: { conversation: Conversation;
   </>;
 }
 
-/** Editor de un borrador: texto completo, vista previa y diff; se guarda con CAS sobre el hash con que se abrió. */
+/** Draft editor: full text, preview and diff; saved with CAS on the hash it was opened with. */
 function DraftEditor({ conversation, path, draft, editKey, blocked, onClose }: {
   conversation: Conversation; path: string; draft: DraftRead | null; editKey: string; blocked?: string; onClose: () => void;
 }) {
@@ -473,13 +473,13 @@ function DraftEditor({ conversation, path, draft, editKey, blocked, onClose }: {
   </section>;
 }
 
-// --- aceptación ------------------------------------------------------------------------------------
+// --- acceptance ------------------------------------------------------------------------------------
 
 function AcceptPanel({ conversation, base, drafts }: { conversation: Conversation; base: string; drafts?: Drafts }) {
   const { busy, operate } = useWorkspace();
   const [preview, setPreview] = useState<Acceptance>();
   const signature = drafts?.drafts.map(d => `${d.path}:${d.sha256}`).join("|");
-  // La vista previa vale para la versión de la conversación y los bytes en disco con que se pidió.
+  // The preview is valid for the conversation version and the bytes on disk it was requested with.
   const shownFor = useRef<string | undefined>(undefined);
   useEffect(() => { if (shownFor.current !== `${conversation.version}/${signature}`) setPreview(undefined); }, [conversation.version, signature]);
   const can = conversation.actions.includes("accept");
@@ -541,7 +541,7 @@ function AcceptedDocument({ conversation, doc }: { conversation: string; doc: S[
   </details>;
 }
 
-/** Lo que cambia la aceptación en un borrador: solo los bloques gestionados regenerados. */
+/** What acceptance changes in a draft: only the regenerated managed blocks. */
 function RegeneratedDiff({ conversation, doc }: { conversation: string; doc: S["DefinitionDocumentRead"] }) {
   const { refresh } = useWorkspace();
   const { draft, error } = useDraft(conversation, doc.path, refresh);
@@ -582,7 +582,7 @@ function OperationPanel({ conversation, op }: { conversation: Conversation; op: 
   </section>;
 }
 
-// --- planificación de la fase activa: /projects/:p/phases/:code/plan ---------------------------
+// --- active phase planning: /projects/:p/phases/:code/plan -------------------------------------
 
 export function PlanPage({ phase, conversation }: { phase: string; conversation?: string }) {
   const { project, busy, refresh, operate } = useWorkspace();
@@ -654,11 +654,11 @@ function PlanConversation({ id, phase, writable }: { id: string; phase: string; 
   </section>;
 }
 
-// --- plan confirmado de la fase activa (en la página de la fase) ---------------------------------------------------
+// --- confirmed plan of the active phase (on the phase page) --------------------------------------------------------
 
 type Source = { kind: "proposal"; conversation: string; proposal: Proposal; title: string } | { kind: "text" };
 
-/** Planes propuestos (PROPOSED) de las conversaciones de planificación de esta fase. */
+/** Proposed plans (PROPOSED) from the planning conversations of this phase. */
 function usePlans(project: string, phaseId: string, refresh: number) {
   const list = usePoll<Summary[]>(`/projects/${project}/planning`, 5000, refresh);
   const mine = useMemo(() => list.data?.filter(c => c.kind === "phase_planning" && c.phase_id === phaseId) ?? [], [list.data, phaseId]);
@@ -674,7 +674,7 @@ function usePlans(project: string, phaseId: string, refresh: number) {
   return { plans: list.data ? plans : undefined, error: list.error };
 }
 
-/** Instala NEXT_STEPS por texto o propuesta en la fase ACTIVE vacía que deja el cierre. */
+/** Installs NEXT_STEPS from text or a proposal in the empty ACTIVE phase the closure leaves. */
 export function PhasePlanPanel({ phase, stale = false }: { phase: S["PhaseRead"]; stale?: boolean }) {
   const { project, busy, refresh, operate, send } = useWorkspace();
   const { plans } = usePlans(project, phase.id, refresh);
@@ -741,7 +741,7 @@ export function PhasePlanPanel({ phase, stale = false }: { phase: S["PhaseRead"]
   </section>;
 }
 
-// --- incorporación: /projects/:p/onboarding[/:c/*borrador] ---------------------------------------------
+// --- onboarding: /projects/:p/onboarding[/:c/*draft] ---------------------------------------------------
 
 export function ImportPage({ conversation, path }: { conversation?: string; path?: string }) {
   const flow = "onboarding";

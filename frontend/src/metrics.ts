@@ -1,5 +1,5 @@
-// Estadísticas (H6.2 E6): formato y escalas sin React ni dependencias, para probarlos con `node --test`.
-// Null es ausencia («sin dato»), nunca cero; cada suma dice cuántos intentos la aportan (D074).
+// Statistics (H6.2 E6): formatting and scales without React or dependencies, to test them with `node --test`.
+// Null is absence ("no data"), never zero; every sum says how many attempts contribute to it (D074).
 
 export type Sum = { sum: number | null; attempts: number };
 
@@ -26,24 +26,24 @@ export const PURPOSES: Record<string, string> = {
 const integer = new Intl.NumberFormat("es-ES", { maximumFractionDigits: 0 });
 const short = new Intl.NumberFormat("es-ES", { notation: "compact", maximumFractionDigits: 1 });
 
-/** Entero completo (`12.345`). Null es «sin dato». */
+/** Full integer (`12.345`). Null is "no data". */
 export function count(value: number | null | undefined): string {
   return value == null ? "sin dato" : integer.format(value);
 }
 
-/** Compacto para ejes y titulares (`12,3 mil`); por debajo de 10 000, el número completo. */
+/** Compact for axes and headlines (`12,3 mil`); below 10 000, the full number. */
 export function compact(value: number | null | undefined): string {
   if (value == null) return "sin dato";
   return Math.abs(value) < 10_000 ? integer.format(value) : short.format(value);
 }
 
-/** Coste equivalente API reportado: nunca factura ni cuota. Céntimos de dólar por debajo de 1. */
+/** Reported API-equivalent cost: never an invoice or quota. Dollar cents below 1. */
 export function usd(value: number | null | undefined): string {
   if (value == null) return "sin dato";
   return `${value.toLocaleString("es-ES", { minimumFractionDigits: value < 1 ? 4 : 2, maximumFractionDigits: value < 1 ? 4 : 2 })} US$`;
 }
 
-/** Duración legible desde milisegundos o segundos. */
+/** Human-readable duration from milliseconds or seconds. */
 export function duration(value: number | null | undefined, unit: "ms" | "s" = "s"): string {
   if (value == null) return "sin dato";
   const seconds = unit === "ms" ? value / 1000 : value;
@@ -60,8 +60,8 @@ export function percent(part: number, whole: number): string {
 }
 
 /**
- * Cobertura de una suma: «completa» si todos los intentos la aportan, «parcial» si solo algunos y «ausente» si
- * ninguno. Una suma parcial nunca se presenta como el total del ámbito.
+ * Coverage of a sum: "complete" if every attempt contributes, "partial" if only some do and "absent" if
+ * none does. A partial sum is never presented as the total of the scope.
  */
 export function coverage(value: Sum, attempts: number): "complete" | "partial" | "absent" {
   if (value.sum == null || value.attempts === 0) return "absent";
@@ -75,7 +75,7 @@ export function coverageText(value: Sum, attempts: number): string {
   return attempts === 1 ? "de 1 intento" : `de los ${attempts} intentos`;
 }
 
-/** Paso «redondo» (1, 2 o 5 por potencia de diez) que no baja de `value`. */
+/** "Round" step (1, 2 or 5 times a power of ten) not below `value`. */
 export function niceStep(value: number): number {
   if (!(value > 0)) return 1;
   const power = 10 ** Math.floor(Math.log10(value));
@@ -84,8 +84,8 @@ export function niceStep(value: number): number {
 }
 
 /**
- * Eje desde cero: tope y marcas en pasos redondos, unas `count` divisiones como mucho. Con valores enteros las
- * marcas son enteras (los conteos nunca muestran 2,5).
+ * Axis from zero: top and ticks in round steps, about `count` divisions at most. With integer values the
+ * ticks are integers (counts never show 2,5).
  */
 export function axis(max: number, count = 4, integer = false): { top: number; ticks: number[] } {
   let step = niceStep(max > 0 ? max / count : 1);
@@ -95,13 +95,13 @@ export function axis(max: number, count = 4, integer = false): { top: number; ti
   return { top, ticks };
 }
 
-/** Escala lineal de [0, max] a [0, length]; null no tiene longitud (no se dibuja como cero). */
+/** Linear scale from [0, max] to [0, length]; null has no length (it is not drawn as zero). */
 export function scale(value: number | null, max: number, length: number): number | null {
   if (value == null) return null;
   return max > 0 ? (Math.max(0, value) / max) * length : 0;
 }
 
-/** Nombre corto de un proyecto a partir de su raíz, si no hay id registrado para ella. */
+/** Short name of a project from its root, if no id is registered for it. */
 export function rootLabel(root: string | null, projects: { id: string; root: string }[]): string {
   if (root == null) return "sin raíz";
   return projects.find(project => project.root === root)?.id ?? root.split("/").filter(Boolean).pop() ?? root;

@@ -11,7 +11,7 @@ type Theme = "system" | "light" | "dark";
 const THEMES: Record<Theme, string> = { system: "Tema del sistema", light: "Tema claro", dark: "Tema oscuro" };
 const NEXT: Record<Theme, Theme> = { system: "light", light: "dark", dark: "system" };
 
-// Preferencia de este navegador; si el almacenamiento no está disponible, sigue el sistema.
+// Preference of this browser; if storage is unavailable, it follows the system.
 function storedTheme(): Theme {
   try { const value = localStorage.getItem("harness-theme"); return value === "light" || value === "dark" ? value : "system"; }
   catch { return "system"; }
@@ -22,7 +22,7 @@ function useTheme(): [Theme, () => void] {
   useEffect(() => {
     if (theme === "system") document.documentElement.removeAttribute("data-theme");
     else document.documentElement.setAttribute("data-theme", theme);
-    try { if (theme === "system") localStorage.removeItem("harness-theme"); else localStorage.setItem("harness-theme", theme); } catch { /* sin preferencia guardada */ }
+    try { if (theme === "system") localStorage.removeItem("harness-theme"); else localStorage.setItem("harness-theme", theme); } catch { /* no saved preference */ }
   }, [theme]);
   return [theme, () => setTheme(NEXT[theme])];
 }
@@ -69,7 +69,7 @@ export function Shell({ route, children }: { route: Route; children: ReactNode }
   const project = "project" in route ? route.project : undefined;
   const path = href(route);
   const first = useRef(true);
-  // Al cambiar de página: título del documento, scroll arriba y foco en el titular (lectores de pantalla).
+  // On page change: document title, scroll to top and focus on the heading (screen readers).
   useEffect(() => {
     document.title = `${items[items.length - 1].label} | Harness Local`;
     if (first.current) { first.current = false; return; }

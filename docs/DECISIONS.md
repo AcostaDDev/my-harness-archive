@@ -174,6 +174,7 @@ tarea se leen solo las decisiones que cita; este índice sirve para buscar prece
 | [D161](#d161--p011-t019-retirada-legacya-y-compatibilidad-no-destructiva) | P011-T019: retirada legacy/A y compatibilidad no destructiva | P011 |
 | [D162](#d162--p011-t003-núcleo-y-perfiles-en-inglés-sin-cambiar-comportamiento) | P011-T003: núcleo y perfiles en inglés sin cambiar comportamiento | P011 |
 | [D163](#d163--p011-t004-backend-en-inglés-y-recetas-v2-sin-cablear) | P011-T004: backend en inglés y recetas v2 sin cablear | P011 |
+| [D164](#d164--p011-t005-cliente-scripts-y-ejemplos-en-inglés) | P011-T005: cliente, scripts y ejemplos en inglés | P011 |
 
 ## D001 — Alcance local y arquitectura base
 
@@ -4845,3 +4846,27 @@ Fase: P011. Precedentes: D159/D162 y [contrato T001 §5](phase/P011-T001_CONTRAT
   que cambios futuros del integrado no alteren su identidad; Django v2 solo cambia instrucciones del ejecutor.
 - Sin cambios de modelos, migraciones, flujos, configuración, dependencias, recibos o historia congelada.
   Checks offline en el informe; sin agentes, proveedores, servicios, preparaciones reales ni red. T005 es la siguiente.
+
+## D164 — P011-T005: cliente, scripts y ejemplos en inglés
+
+Estado: implementada el 2026-10-23 por la continuación y commit local en inglés pedidos por el usuario.
+Fase: P011. Precedentes: D159/D162/D163 y [inventario T001](phase/P011-T001_INVENTARIO.md) (U, H, E3, E6, E8).
+[Inventario resuelto y validación](phase/P011-T005_INGLES_CLIENTE_HERRAMIENTAS.md).
+
+- Comentarios del frontend en inglés: 195 líneas en 27 archivos TS/TSX (JSDoc y `{/* */}` incluidos) y 17
+  comentarios CSS. Flujo de tokens sin comentarios idéntico a `HEAD` en los 38 archivos y CSS sin comentarios
+  idéntico; sin identificadores españoles. Cadenas visibles, ARIA, formatos es-ES y `<html lang="es">` quedan
+  inventariados para T010 (1240 candidatos); comandos de chat bilingües conservados; OpenAPI/tipos y lock intactos.
+- HITL del usuario: los mensajes propios de los scripts de mantenedor (`dev.py`, `toolchain.py`,
+  `check_distribution.py`, ayudas argparse) se traducen ya, porque no tienen catálogo y T010 no incluye
+  `scripts/**`. Se conservan, con comentario a su origen, las cadenas que casan con salida del producto
+  (`clave de acceso en`, `módulo:atributo`, `Esquema SQLite`). Nota abierta: T010 debe actualizar esos scripts
+  cuando traduzca los mensajes origen; su planificación ampliará rutas o hará los scripts independientes del idioma.
+- HITL del usuario: descripción del paquete «Local application that orchestrates Codex and Claude Code agents to
+  plan, implement, review and commit tasks in Git repositories»; versión y resto de metadatos siguen en T015.
+- Ejemplos vigentes (`local_config`, fragmentos de receta, `managed_demo.py`) en inglés con placeholders sintéticos
+  ingleses; datos TOML idénticos salvo esos placeholders y la etiqueta JUnit del perfil de ejemplo. Guiones
+  históricos E6 (`first_use`, `provider_matrix`) conservan bytes, fuera del corte público y sin presentarse como
+  instrucciones actuales. Referencias internas (Hx.y, DNNN) en comentarios se mantienen como en T003/T004 (T014).
+- Sin cambios de modelos, migraciones, flujos, API, dependencias o configuración global. Checks offline en el
+  informe; sin servicios, construcción/instalación del paquete, agentes, proveedores ni red. T006 es la siguiente.

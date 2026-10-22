@@ -1,7 +1,7 @@
 [project]
 name = "harness-local"
 version = "0.1.0"
-description = "Esqueleto local de Harness Local"
+description = "Local application that orchestrates Codex and Claude Code agents to plan, implement, review and commit tasks in Git repositories"
 license = "MIT"
 authors = [{ name = "David Acosta" }]
 requires-python = ">=3.14,<3.15"
@@ -26,5 +26,5 @@ build-backend = "uv_build"
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 pythonpath = ["tests"]
-# Paralelo por defecto (D125); `-n 0` ejecuta en serie, p. ej. para depurar una prueba.
+# Parallel by default (D125); `-n 0` runs serially, e.g. to debug a test.
 addopts = "-n auto --dist worksteal"

@@ -5,7 +5,7 @@ import { Empty, Loading, PageHeader, Pagination, Stale, Status, usePoll } from "
 import { useWorkspace } from "../workspace";
 import { RunTable, TaskForm } from "./shared";
 
-// Métricas de la tarea (H6.2 E6): mismo chunk diferido que las estadísticas.
+// Task metrics (H6.2 E6): same lazy chunk as the statistics.
 const TaskMetrics = lazy(() => import("./Stats").then(module => ({ default: module.TaskMetrics })));
 
 export function TaskPage({ phase, task }: { phase: string; task: string }) {

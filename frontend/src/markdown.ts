@@ -1,11 +1,11 @@
-// Markdown seguro del visor de documentación (H6.2 E3, D076). Módulo puro: sin DOM ni React, probado con node --test.
+// Safe Markdown for the documentation viewer (H6.2 E3, D076). Pure module: no DOM or React, tested with node --test.
 //
-// - markdown-it con `html: false`: el HTML del documento se muestra como texto, nunca se interpreta.
-// - Enlaces: solo rutas relativas al documento (o a la raíz del checkout con `/`) y `http(s)`. Las relativas a
-//   Markdown pasan a la URL del visor; las externas se abren aparte sin `opener` ni `referrer`; el resto no navega.
-// - Imágenes: solo del checkout, servidas por la API de la sesión. Una imagen externa nunca se carga.
-// - Mermaid: el bloque solo deja su texto escapado; el diagrama se pinta después y aislado (mermaid-view.ts).
-// - Bloques gestionados: se muestran aparte y sin sus marcadores; el editor no los toca.
+// - markdown-it with `html: false`: the document HTML is shown as text, never interpreted.
+// - Links: only paths relative to the document (or to the checkout root with `/`) and `http(s)`. Relative ones to
+//   Markdown become viewer URLs; external ones open apart without `opener` or `referrer`; the rest do not navigate.
+// - Images: only from the checkout, served by the session API. An external image is never loaded.
+// - Mermaid: the block only leaves its escaped text; the diagram is painted later and isolated (mermaid-view.ts).
+// - Managed blocks: shown apart and without their markers; the editor does not touch them.
 import MarkdownIt from "markdown-it";
 import type { MarkdownIt as Engine, RendererRule } from "markdown-it";
 
@@ -16,8 +16,8 @@ const marker = (name: string, edge: "start" | "end") => `<!-- harness-local:mana
 const ANY_MARKER = /<!--\s*harness-local:managed-/g;
 
 /**
- * Prosa y bloques gestionados, con las reglas del servidor (marcadores en líneas propias, un par por nombre).
- * Unir los textos de los segmentos reproduce el documento byte a byte. Un marcador mal formado → `error`.
+ * Prose and managed blocks, with the server rules (markers on their own lines, one pair per name).
+ * Joining the segment texts reproduces the document byte for byte. A malformed marker → `error`.
  */
 export function splitBlocks(text: string): { segments: Segment[]; error?: string } {
   const spans: { name: string; start: number; stop: number }[] = [];
@@ -46,12 +46,12 @@ export function splitBlocks(text: string): { segments: Segment[]; error?: string
   return { segments };
 }
 
-/** Contenido de un bloque sin sus líneas de marcador. */
+/** Content of a block without its marker lines. */
 export function blockBody(segment: Extract<Segment, { kind: "block" }>): string {
   return segment.text.slice(marker(segment.name, "start").length, -marker(segment.name, "end").length).replace(/^\r?\n/, "");
 }
 
-/** Ruta normalizada respecto al checkout, o undefined si sale de él. */
+/** Path normalized against the checkout, or undefined if it leaves it. */
 export function resolvePath(from: string, target: string): string | undefined {
   const base = target.startsWith("/") ? [] : from.split("/").slice(0, -1);
   const parts = [...base];
@@ -79,12 +79,12 @@ export type LinkTarget =
 
 const e = encodeURIComponent;
 export const docHref = (project: string, path: string) => `/projects/${e(project)}/docs/${path.split("/").map(e).join("/")}`;
-/** Enlace a una sección del registro único; comparte el slug de los encabezados del visor. */
+/** Link to a section of the single register; shares the slug of the viewer headings. */
 export const decisionHref = (project: string, docs: string, id: string, title: string) =>
   `${docHref(project, `${docs}/DECISIONS.md`)}#doc-${slug(`${id} — ${title}`)}`;
 export const imageSrc = (project: string, path: string) => `/api/managed/projects/${e(project)}/documents/image?path=${e(path)}`;
 
-/** Destino admitido de un enlace o una imagen; nada fuera de esta tabla llega al HTML. */
+/** Accepted target of a link or an image; nothing outside this table reaches the HTML. */
 export function classify(url: string, context: { project: string; path: string }, image = false): LinkTarget {
   const value = url.trim();
   if (!value) return { kind: "blocked", reason: "Enlace vacío" };
@@ -116,7 +116,7 @@ const reasonOf = (target: LinkTarget) => target.kind === "blocked" ? target.reas
 
 function engine(): Engine {
   const md = new MarkdownIt({ html: false, linkify: false, typographer: false });
-  // Primer filtro: un destino fuera de la tabla no llega a ser enlace ni imagen (queda como texto).
+  // First filter: a target outside the table never becomes a link or an image (it stays as text).
   md.validateLink = (url: string) => { const v = url.trim(); return !v.startsWith("//") && (!SCHEME.test(v) || /^https?:/i.test(v)); };
   const fallback: RendererRule = (tokens, idx, options, _env, self) => self.renderToken(tokens, idx, options);
   const fence = md.renderer.rules.fence ?? fallback;
@@ -171,8 +171,8 @@ const md = engine();
 const LABELS: Record<string, string> = { state: "Estado de la fase", roadmap: "Fases del roadmap", decisions: "Índice de decisiones" };
 
 /**
- * HTML del documento y fuentes Mermaid en orden. `path` es la ruta del documento en el checkout: los enlaces
- * relativos se resuelven desde su carpeta.
+ * Document HTML and Mermaid sources in order. `path` is the document path in the checkout: relative links
+ * are resolved from its folder.
  */
 export function renderMarkdown(source: string, context: { project: string; path: string }): { html: string; mermaid: string[]; error?: string } {
   const env: Env = { ...context, slugs: new Map(), mermaid: [] };

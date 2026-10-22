@@ -4,12 +4,12 @@ Objetivo y criterios en [ROADMAP](ROADMAP.md#p011--preparación-para-apertura-p�
 Decisión: [D154](DECISIONS.md#d154--p011-preparación-para-apertura-pública-en-github).
 [Plan y alcance](phase/P011_PLAN_APERTURA_PUBLICA.md).
 
-**Estado:** en ejecución el 2026-10-22. T001/T002/T019/T003/T004 completadas (D159–D163); catorce tareas pendientes.
-Licencia/avisos entregados, retirada legacy/A implementada y núcleo/backend con comentarios en inglés;
-recetas v2 preparadas sin cablear.
+**Estado:** en ejecución desde el 2026-10-22. T001/T002/T019/T003/T004/T005 completadas (D159–D164); trece tareas
+pendientes. Licencia/avisos entregados, retirada legacy/A implementada y núcleo/backend/cliente/scripts/ejemplos
+con comentarios en inglés; recetas v2 preparadas sin cablear.
 **Planificación:** base finalizada en D156 y afinada por D155/D157/D158; contrato T001 disponible.
 No equivale a fase completada.
-**Siguiente:** P011-T005. Sin autorización de publicación.
+**Siguiente:** P011-T006. Sin autorización de publicación.
 P001–P010 siguen cerradas; la primera versión local mantiene el alcance de D151/D153.
 
 ## Restricciones compartidas
@@ -42,7 +42,7 @@ P001–P010 siguen cerradas; la primera versión local mantiene el alcance de D1
   siguiente fase` para v0.2.0 después de abrir el proyecto en GitHub, fuera de estas tareas. P011 mantiene
   cierre con READY y autorización propia, nueva fase sin tareas y confirmación del plan posterior.
   El commit D156 y los ajustes D157/D158 ya se realizaron. La petición actual autoriza ejecutar la siguiente
-  tarea (T004) y su commit local en inglés, sin encadenar tareas ni publicar.
+  tarea (T005) y su commit local en inglés, sin encadenar tareas ni publicar.
 - D157 elige instantánea pública inicial revisada, con Git/documentación de partida nuevos y sin historia privada.
   Desde la apertura, código/decisiones/fases se desarrollan en el repositorio público, fuente principal; este
   checkout conserva su historia privada. No sincronizar dos desarrollos activos ni congelar para siempre `docs/` pública.
@@ -168,7 +168,11 @@ Alembic temporal si cambia esquema.
 
 ## P011-T005 — Comentarios en inglés: frontend, scripts y ejemplos
 
-**Estado:** pendiente. **Depende de:** T001, T004.
+**Estado:** completada el 2026-10-23, D164. **Depende de:** T001, T004.
+**Evidencia:** [inventario resuelto](phase/P011-T005_INGLES_CLIENTE_HERRAMIENTAS.md): 195 líneas de comentario
+TS/TSX y 17 CSS en inglés con tokens/reglas idénticos; 1240 literales visibles candidatos para T010. Por HITL,
+mensajes de scripts en inglés salvo tres acoplados a salida del producto (nota para T010) y descripción del
+paquete nueva. Ejemplos vigentes en inglés con datos TOML equivalentes; guiones históricos E6 intactos.
 **Objetivo:** Completar los comentarios/descripciones técnicas de cliente y herramientas mantenidas.
 **Alcance:** TS/TSX, CSS/HTML, Python/shell, TOML, ejemplos vigentes y metadatos descriptivos.
 **Rutas permitidas:** `frontend/**`, `scripts/**`, `examples/**`, `pyproject.toml`, `.gitignore`,
@@ -294,6 +298,9 @@ validaciones, ayuda CLI, textos ARIA, tooltips, estados vacíos y confirmaciones
 **Validación:** cobertura de catálogos y pruebas funcionales, Node/tipos/build y pytest pertinente; QA visual
 con datos/API sintéticos si se autoriza el navegador/servicio necesarios.
 **Entregables:** `docs/phase/P011-T010_TRADUCCION_PRODUCTO.md`, catálogos y matriz QA.
+**Nota (D164):** `scripts/dev.py` y `scripts/check_distribution.py` casan con `clave de acceso en`, `módulo:atributo`
+y `Esquema SQLite`; al traducir esos mensajes, actualizar los scripts en el mismo cambio. Las rutas permitidas no
+incluyen `scripts/**`: ampliarlas o hacer los scripts independientes del idioma antes de implementar.
 
 ## P011-T011 — Contrato de compatibilidad de CLI por capacidades
 

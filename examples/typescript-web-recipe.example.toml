@@ -1,29 +1,29 @@
-# Fragmento para un TOML local-config-5 existente, FUERA de los checkouts y chmod 600 (P010-T002, D143).
-# Plantilla NO válida tal cual. Conservar service/git/agents/agent_presets/registration del operador.
-# Añadir esta composición al catálogo. Crear el hijo desde UI con ella y bootstrap_enabled=true;
-# la raíz padre se elige desde UI, nunca se deduce de este ejemplo. [registration].bootstrap_enabled=true.
-# Solo prepara hijos nuevos creados por el servicio; las altas e importaciones aportan su propio package.json.
-# No modifica configuración global ni instala nada al cargar. Habilitar red aquí solo fija un techo:
-# cada preparación confirma su propio modo, manifiesto, argv y límites antes de ejecutar.
+# Fragment for an existing local-config-5 TOML, OUTSIDE the checkouts and chmod 600 (P010-T002, D143).
+# Template NOT valid as is. Keep the operator's service/git/agents/agent_presets/registration.
+# Add this composition to the catalog. Create the child from the UI with it and bootstrap_enabled=true;
+# the parent root is chosen in the UI, never inferred from this example. [registration].bootstrap_enabled=true.
+# It only prepares new children created by the service; registered and onboarded projects bring their own package.json.
+# Loading it changes no global configuration and installs nothing. Enabling network here only sets a ceiling:
+# each preparation confirms its own mode, manifest, argv and limits before running.
 
 [recipes.typescript-web]
-node_executable = "/RUTA/ABSOLUTA/node"
-node_version = "24.15.0"                  # versión EXACTA de ese node; entra en engines del package.json
-npm_executable = "/RUTA/ABSOLUTA/npm"
-npm_version = "11.12.1"                   # versión EXACTA de ese npm; engine-strict la exige en cada npm ci
-npm_cache = "/RUTA/ABSOLUTA/npm-cache"    # directorio existente, fuera de los checkouts y del estado del servicio
-# Offline (por defecto) usa solo esta caché: debe contener typescript@5.9.3 del lock empaquetado.
-# Una caché vacía falla sin descargar ni cambiar de modo. Con red, npm escribe en esta caché.
-allow_network = false                     # true permite solicitar modo network en la preview; no lo ejecuta
-timeout_seconds = 120                     # techo por comando, 120..1800 s; no timeout global ni retry
-max_output_bytes = 65536                   # por stream y comando
+node_executable = "/ABSOLUTE/PATH/node"
+node_version = "24.15.0"                  # EXACT version of that node; goes into the package.json engines
+npm_executable = "/ABSOLUTE/PATH/npm"
+npm_version = "11.12.1"                   # EXACT version of that npm; engine-strict requires it on every npm ci
+npm_cache = "/ABSOLUTE/PATH/npm-cache"    # existing directory, outside the checkouts and the service state
+# Offline (the default) uses only this cache: it must contain typescript@5.9.3 from the packaged lock.
+# An empty cache fails without downloading or switching mode. With network, npm writes to this cache.
+allow_network = false                     # true allows requesting network mode in the preview; does not run it
+timeout_seconds = 120                     # ceiling per command, 120..1800 s; no global timeout or retry
+max_output_bytes = 65536                   # per stream and command
 
 [compositions.typescript]
-profile = "typescript-web"                 # perfil integrado sin cambios
+profile = "typescript-web"                 # built-in profile, unchanged
 recipe = "typescript-web"
 authorize_profile_commands = true
-# node y npm deben resolver a los mismos archivos que la receta.
-executables = { node = "/RUTA/ABSOLUTA/node", npm = "/RUTA/ABSOLUTA/npm" }
-# Entorno de las tareas: no se reescribe. npm_config_cache debe ser igual a npm_cache para que cada tarea
-# reinstale (npm ci --offline) con la caché que acreditó la preparación. PATH debe incluir el directorio de node.
-environment = { PATH = "/RUTA/ABSOLUTA/bin-de-node:/usr/bin:/bin", HOME = "/RUTA/ABSOLUTA/home-de-tareas", npm_config_cache = "/RUTA/ABSOLUTA/npm-cache", npm_config_userconfig = "/RUTA/ABSOLUTA/user.npmrc", npm_config_globalconfig = "/RUTA/ABSOLUTA/global.npmrc", npm_config_update_notifier = "false" }
+# node and npm must resolve to the same files as the recipe.
+executables = { node = "/ABSOLUTE/PATH/node", npm = "/ABSOLUTE/PATH/npm" }
+# Task environment: never rewritten. npm_config_cache must equal npm_cache so that every task
+# reinstalls (npm ci --offline) with the cache the preparation accredited. PATH must include node's directory.
+environment = { PATH = "/ABSOLUTE/PATH/node-bin:/usr/bin:/bin", HOME = "/ABSOLUTE/PATH/task-home", npm_config_cache = "/ABSOLUTE/PATH/npm-cache", npm_config_userconfig = "/ABSOLUTE/PATH/user.npmrc", npm_config_globalconfig = "/ABSOLUTE/PATH/global.npmrc", npm_config_update_notifier = "false" }

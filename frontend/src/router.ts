@@ -1,5 +1,5 @@
-// Enrutador mínimo propio (D076): rutas de D072 §7 como datos puros, sin React ni dependencias.
-// Solo se usan códigos y ids codificados; nada de la URL se interpreta como HTML.
+// Minimal in-house router (D076): D072 §7 routes as pure data, without React or dependencies.
+// Only encoded codes and ids are used; nothing in the URL is interpreted as HTML.
 
 export type Route =
   | { name: "home" }
@@ -29,7 +29,7 @@ function decode(segment: string): string | undefined {
   } catch { return undefined; }
 }
 
-/** Ruta de una URL de la aplicación. Una barra final o repetida no cambia la ruta. */
+/** Route of an application URL. A trailing or repeated slash does not change the route. */
 export function parse(pathname: string): Route {
   const raw = pathname.split("/").filter(Boolean);
   const parts = raw.map(decode);
@@ -41,17 +41,17 @@ export function parse(pathname: string): Route {
   if (a === "runs" && n === 2) return { name: "run-short", run: b };
   if (a !== "projects" || n < 2) return { name: "not-found", path: pathname };
   const project = b;
-  // `new` está reservado: el servidor nunca registra un proyecto con ese id (D076).
+  // `new` is reserved: the server never registers a project with that id (D076).
   if (n === 2) return project === "new" ? { name: "project-new" } : { name: "project", project };
   if (c === "settings" && n === 3) return { name: "settings", project };
   if (c === "stats" && n === 3) return { name: "project-stats", project };
-  // Documentación (H6.2 E3): el resto de la URL es la ruta del documento en el checkout, segmento a segmento.
+  // Documentation (H6.2 E3): the rest of the URL is the document path in the checkout, segment by segment.
   if (c === "docs") {
     const rest = (parts as string[]).slice(3);
     if (rest.some(part => part === "." || part === "..")) return { name: "not-found", path: pathname };
     return rest.length ? { name: "docs", project, path: rest.join("/") } : { name: "docs", project };
   }
-  // Creación (H6.2 E4): igual que la documentación, el resto de la URL es la ruta de un borrador.
+  // Creation (H6.2 E4): like documentation, the rest of the URL is the path of a draft.
   if (c === "setup") {
     const rest = (parts as string[]).slice(3);
     if (rest.some(part => part === "." || part === "..")) return { name: "not-found", path: pathname };
@@ -72,7 +72,7 @@ export function parse(pathname: string): Route {
   return { name: "not-found", path: pathname };
 }
 
-/** URL canónica de una ruta; `parse(href(r))` devuelve `r` para toda ruta válida. */
+/** Canonical URL of a route; `parse(href(r))` returns `r` for every valid route. */
 export function href(route: Route): string {
   switch (route.name) {
     case "home": return "/";
@@ -95,17 +95,17 @@ export function href(route: Route): string {
   }
 }
 
-/** Ruta del proyecto activo, si la hay, para la navegación lateral. */
+/** Route of the active project, if any, for the side navigation. */
 export function projectOf(route: Route): string | undefined {
   return "project" in route ? route.project : undefined;
 }
 
-/** Destino canónico de un run a partir de su lectura (`project_id`, `phase_id`, `task_id`). */
+/** Canonical target of a run from its read (`project_id`, `phase_id`, `task_id`). */
 export function runRoute(run: { id: string; project_id: string | null; phase_id: string; task_id: string }): Route | undefined {
   return run.project_id ? { name: "run", project: run.project_id, phase: run.phase_id, task: run.task_id, run: run.id } : undefined;
 }
 
-/** Miga de pan: cada nivel de la ruta con su destino. La última entrada es la página actual. */
+/** Breadcrumb: each level of the route with its target. The last entry is the current page. */
 export function trail(route: Route): { label: string; to: Route }[] {
   const items: { label: string; to: Route }[] = [{ label: "Proyectos", to: { name: "home" } }];
   if (route.name === "stats") items.push({ label: "Estadísticas", to: route });

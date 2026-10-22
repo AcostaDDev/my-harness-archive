@@ -1,6 +1,6 @@
 # Estado — my_harness
 
-Actualizado: 2026-10-22. Sin bloques gestionados mientras el repositorio no esté registrado en el harness (D088).
+Actualizado: 2026-10-23. Sin bloques gestionados mientras el repositorio no esté registrado en el harness (D088).
 
 ## Base acumulada
 
@@ -74,16 +74,17 @@ salvo donde se indica. Detalle por fase en `docs/archive/phase-NNN/SUMMARY.md`; 
 
 **P011 — Preparación para apertura pública en GitHub**, iniciada documentalmente el 2026-10-22 por encargo del usuario
 ([D154](DECISIONS.md#d154--p011-preparación-para-apertura-pública-en-github),
-[plan](phase/P011_PLAN_APERTURA_PUBLICA.md), [tareas](NEXT_STEPS.md)). T001/T002/T019/T003/T004 completadas (D159–D163), catorce
-tareas pendientes; retirada legacy/A implementada y núcleo/backend en inglés, sin selección de idiomas ni nueva compatibilidad CLI.
+[plan](phase/P011_PLAN_APERTURA_PUBLICA.md), [tareas](NEXT_STEPS.md)). T001/T002/T019/T003/T004/T005
+completadas (D159–D164), trece tareas pendientes; retirada legacy/A implementada y núcleo/backend/cliente en
+inglés, sin selección de idiomas ni nueva compatibilidad CLI.
 
 **Planificación finalizada para comenzar su ejecución** por petición del usuario
 ([D156](DECISIONS.md#d156--planificación-de-p011-finalizada-y-modo-continuo-aplazado-a-v020)).
 P011 no está completada: T001 entrega diseño/inventario, T002 licencia/revisión estática, T019 retirada funcional y
-T003/T004 comentarios del núcleo y backend en inglés; siguiente T005.
+T003/T004/T005 comentarios del núcleo, backend, cliente, scripts y ejemplos en inglés; siguiente T006.
 El modo continuo entre fases queda reservado para **v0.2.0, después de abrir el proyecto en GitHub**;
 no forma parte de P011 ni modifica el cierre confirmado actual. Commit documental D156 realizado en `6174f51`;
-las ampliaciones D157/D158 se incorporaron en `2730f54`. La petición actual autoriza T004 y su commit local
+las ampliaciones D157/D158 se incorporaron en `2730f54`. La petición actual autoriza T005 y su commit local
 en inglés, con checks sintéticos offline, sin ejecución del producto ni publicación.
 
 **P011-T001 completada** ([contrato](phase/P011-T001_CONTRATO_APERTURA.md),
@@ -135,6 +136,11 @@ descripciones OpenAPI del resto de `src/harness_local` en inglés (OpenAPI/tipos
 inventariados para T010. Recetas v1 conservan bytes/huellas (fijadas por test). Por HITL, `django-recipe-2` y
 `typescript-web-recipe-2` existen en inglés con prosa técnica en/es y defaults funcionales v1, sin cablear hasta T008.
 
+**P011-T005 completada** ([inventario](phase/P011-T005_INGLES_CLIENTE_HERRAMIENTAS.md), D164): comentarios TS/TSX/CSS
+del frontend en inglés con tokens y reglas idénticos; cadenas visibles inventariadas para T010. Por HITL, mensajes de
+scripts de mantenedor en inglés (tres acoplados a mensajes del producto quedan para T010) y descripción del paquete
+nueva. Ejemplos vigentes en inglés con placeholders sintéticos; guiones históricos E6 sin cambios.
+
 **P010 cerrada y archivada documentalmente el 2026-10-22**
 ([D153](DECISIONS.md#d153--cierre-documental-de-p010-y-de-la-primera-versión-local),
 [resumen](archive/phase-010/SUMMARY.md), [registro de cierre](archive/phase-010/P010_CIERRE.md)).
@@ -146,7 +152,7 @@ P009 conserva su cierre documental (D140) y el Django hijo su P001 CLOSED, cuatr
 tag `p001` sobre `47a0557` y archivo en `3d105c6`. No se repite ninguna operación ni comprobación de su estado.
 Este repositorio sigue sin registrarse ni ejecutarse con el harness; cierre manual sin check READY ni tag propio.
 
-**Siguiente:** P011-T005, comentarios en inglés del frontend, scripts y ejemplos.
+**Siguiente:** P011-T006, comentarios en inglés de tests y fixtures.
 Otras candidatas permanecen en [ROADMAP](ROADMAP.md#candidatas-sin-fase-asignada).
 Los límites de la base acumulada siguen vigentes. B y D095 mantienen la validación real aplazada por D151;
 A queda retirado del producto por D155/D161, sin acreditarlo como validado con proveedores reales.

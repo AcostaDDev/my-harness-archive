@@ -42,7 +42,7 @@ export function PhasePage({ code }: { code: string }) {
   const phases = usePoll<S["PhaseSummaryRead"][]>(`/projects/${project}/phases`, 5000, refresh);
   const data = phase.data;
   const v2 = info.data?.documents === "v2";
-  // La fase siguiente en el checkout (la lista va en orden de creación); null si esta es la última.
+  // The next phase in the checkout (the list is in creation order); null if this is the last one.
   const index = phases.data?.findIndex(p => p.code === code) ?? -1;
   const following = phases.data && index >= 0 ? phases.data[index + 1]?.code ?? null : undefined;
   const undefinedPhase = phase.missing && !!tasks.data;

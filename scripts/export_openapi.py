@@ -1,4 +1,4 @@
-"""Exportar contratos sin iniciar servicio, conectar SQLite ni ejecutar simulaciones."""
+"""Export contracts without starting the service, connecting to SQLite or running simulations."""
 import json
 from pathlib import Path
 

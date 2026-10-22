@@ -10,14 +10,14 @@ import { Alert, DiffBlock, Empty, Fields, Hash, Loading, PageHeader, Stale, Stat
 import type { Poll } from "../ui";
 import { useWorkspace } from "../workspace";
 
-// Documentación de un proyecto con contrato v2 (H6.2 E3): árbol, visor seguro y edición confirmada (D072 §6).
-// Toda escritura es un job `document_edit` sobre el diff exacto mostrado; nada se escribe al teclear.
+// Documentation of a project with the v2 contract (H6.2 E3): tree, safe viewer and confirmed editing (D072 §6).
+// Every write is a `document_edit` job on the exact diff shown; nothing is written while typing.
 
 type DocsStatus = S["DocumentsStatusRead"];
 type Tree = S["DocumentTreeRead"];
 type Preview = S["DocumentEditPreviewRead"];
 type PhaseView = { id: string; code: string; status: S["PhaseRead"]["status"] };
-/** P010-T005: tras cerrar o abandonar, la referencia es lo que dejó el cierre, no la base del check. */
+/** P010-T005: after closing or abandoning, the reference is what the closure left, not the check base. */
 const terminal = (phase: PhaseView | null | undefined) => phase?.status === "CLOSED" || phase?.status === "ABANDONED";
 type Draft = { base: string | null; texts: string[]; run?: string };
 
@@ -27,7 +27,7 @@ const KIND: Record<S["DocumentTreeEntryRead"]["kind"], string> = {
   phase: "Documento de fase", product: "Documento de producto", archive: "Archivo de fase", other: "Documento",
 };
 
-/** Regla del servidor (`Layout.editable`): README o Markdown bajo la carpeta de documentación, nunca el archivo. */
+/** Server rule (`Layout.editable`): README or Markdown under the documentation folder, never the archive. */
 function editablePath(path: string, docs: string) {
   if (["README.md", "AGENTS.md", "CLAUDE.md", "GEMINI.md"].includes(path)) return true;
   const parts = path.split("/");
@@ -35,7 +35,7 @@ function editablePath(path: string, docs: string) {
     && !parts.includes("..") && !parts.includes(".") && !parts.includes("");
 }
 
-/** Motivo por el que ahora no se puede editar desde la interfaz; undefined si se puede. */
+/** Reason why editing from the interface is not possible now; undefined if it is. */
 function editBlocker(status: DocsStatus | undefined): string | undefined {
   if (!status) return "Cargando el estado de los documentos…";
   const phase = status.phase as PhaseView | null;
@@ -69,7 +69,7 @@ export function DocsPage({ path }: { path?: string }) {
   </div>;
 }
 
-// --- árbol --------------------------------------------------------------------------------------
+// --- tree ---------------------------------------------------------------------------------------
 
 type Node = { name: string; path: string; children: Map<string, Node>; file?: S["DocumentTreeEntryRead"] };
 
@@ -118,13 +118,13 @@ function DocsTree({ tree, status, current, error }: { tree?: Tree; status?: Docs
   </nav>;
 }
 
-// --- resumen ------------------------------------------------------------------------------------
+// --- summary ------------------------------------------------------------------------------------
 
 function DocsOverview({ status, tree }: { status: Poll<DocsStatus>; tree?: Tree }) {
   const { project } = useWorkspace();
   const s = status.data;
   const phase = s?.phase as PhaseView | null | undefined;
-  // El panel de cambios locales desaparece con el commit; su resultado se sigue mostrando aquí.
+  // The local changes panel disappears with the commit; its result is still shown here.
   const [run, setRun] = useState<string>();
   return <>
     <PageHeader title="Documentación">
@@ -200,9 +200,9 @@ function NewDocument({ docs, existing, blocked }: { docs: string; existing: Set<
   </section>;
 }
 
-// --- deriva -------------------------------------------------------------------------------------
+// --- drift --------------------------------------------------------------------------------------
 
-/** Documentos commiteados que difieren de la base adoptada por la fase: se resuelven adoptándolos en la fase. */
+/** Committed documents that differ from the base adopted by the phase: resolved by adopting them in the phase. */
 function Drift({ status }: { status: DocsStatus }) {
   const { project } = useWorkspace();
   const local = new Set(status.uncommitted?.map(c => c.path));
@@ -223,7 +223,7 @@ function Drift({ status }: { status: DocsStatus }) {
   </div>;
 }
 
-/** Cambios del editor de código sin commit: confirmar sus bytes exactos o regenerar los bloques que tocan. */
+/** Uncommitted changes from the code editor: confirm their exact bytes or regenerate the blocks they touch. */
 function LocalChanges({ status, onQueued }: { status: DocsStatus; onQueued: (run: string) => void }) {
   const { project, busy, operate } = useWorkspace();
   const [review, setReview] = useState<{ body: S["DocumentEditInput"]; preview: Preview }>();
@@ -255,9 +255,9 @@ function LocalChanges({ status, onQueued }: { status: DocsStatus; onQueued: (run
   </section>;
 }
 
-// --- confirmación común -------------------------------------------------------------------------
+// --- shared confirmation ------------------------------------------------------------------------
 
-/** Diff exacto, motivo y confirmación; encola `document_edit` con clave idempotente y sigue su run. */
+/** Exact diff, reason and confirmation; enqueues `document_edit` with an idempotency key and follows its run. */
 function EditReview({ body, preview, onCancel, onQueued, done }: {
   body: S["DocumentEditInput"]; preview: Preview; onCancel: () => void; onQueued?: (run: string) => void; done?: ReactNode;
 }) {
@@ -314,7 +314,7 @@ export function EditProgress({ run, done, onBack, title = "Edición encolada" }:
   </div>;
 }
 
-// --- documento ----------------------------------------------------------------------------------
+// --- document -----------------------------------------------------------------------------------
 
 function DocumentView({ path, status, tree }: { path: string; status: Poll<DocsStatus>; tree?: Tree }) {
   const { project } = useWorkspace();
@@ -354,7 +354,7 @@ function DocumentView({ path, status, tree }: { path: string; status: Poll<DocsS
   </>;
 }
 
-/** Markdown renderizado (markdown.ts) con navegación interna y diagramas aislados (mermaid-view.ts). */
+/** Rendered Markdown (markdown.ts) with internal navigation and isolated diagrams (mermaid-view.ts). */
 export function MarkdownView({ source, path }: { source: string; path: string }) {
   const { project } = useWorkspace();
   const rendered = useMemo(() => renderMarkdown(source, { project, path }), [source, project, path]);
@@ -415,12 +415,12 @@ function loadDraft(key: string): Draft | undefined {
   try { return JSON.parse(sessionStorage.getItem(key) ?? "null") ?? undefined; } catch { return undefined; }
 }
 function saveDraft(key: string, draft?: Draft) {
-  try { if (draft) sessionStorage.setItem(key, JSON.stringify(draft)); else sessionStorage.removeItem(key); } catch { /* sin borrador guardado */ }
+  try { if (draft) sessionStorage.setItem(key, JSON.stringify(draft)); else sessionStorage.removeItem(key); } catch { /* no saved draft */ }
 }
 
 /**
- * Prosa editable y bloques gestionados bloqueados. El borrador sobrevive a una recarga (sessionStorage) con su hash
- * base; la vista previa compara ese hash (CAS) y el commit lleva el diff exacto confirmado.
+ * Editable prose and locked managed blocks. The draft survives a reload (sessionStorage) with its base hash;
+ * the preview compares that hash (CAS) and the commit carries the exact confirmed diff.
  */
 function Editor({ path, doc, draftKey, blocker, onClose }: { path: string; doc: S["DocumentRead"] | null; draftKey: string; blocker?: string; onClose: () => void }) {
   const { project, busy, operate } = useWorkspace();
@@ -431,7 +431,7 @@ function Editor({ path, doc, draftKey, blocker, onClose }: { path: string; doc: 
   const [review, setReview] = useState<{ body: S["DocumentEditInput"]; preview: Preview }>();
   const [conflict, setConflict] = useState<string>();
   useEffect(() => { saveDraft(draftKey, draft); }, [draftKey, draft]);
-  // El borrador se escribió sobre otros segmentos (otra versión): se conserva, pero no se puede reconstruir aquí.
+  // The draft was written over other segments (another version): it is kept, but cannot be rebuilt here.
   const shape = draft.texts.length === segments.length && segments.every((s, i) => s.kind === "prose" || draft.texts[i] === s.text);
   const content = draft.texts.join("");
   const changed = draft.base !== (doc?.sha256 ?? null) || content !== original;

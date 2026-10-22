@@ -2,8 +2,8 @@ import { useLayoutEffect, useRef, useState } from "react";
 import type { ReactNode } from "react";
 import { axis, compact, scale } from "./metrics.ts";
 
-// Gráficos SVG propios (H6.2 E6, D076): una serie en el acento o, para OK/KO, el par de estado validado para
-// daltonismo. Null nunca se dibuja como cero: tiene su propia marca «sin dato». Cada gráfico tiene su tabla.
+// In-house SVG charts (H6.2 E6, D076): one series in the accent or, for OK/KO, the status pair validated for
+// color blindness. Null is never drawn as zero: it has its own "no data" mark. Every chart has its table.
 
 export type Datum = { key: string; label: string; value: number | null; tip: string[] };
 export type Stacked = { key: string; label: string; ok: number; ko: number; tip: string[] };
@@ -24,7 +24,7 @@ function useWidth<T extends HTMLElement>(): [React.RefObject<T | null>, number] 
 
 type Tip = { x: number; y: number; lines: string[] } | null;
 
-/** Lectura de la marca bajo el puntero o con el foco: el valor primero, la etiqueta después. */
+/** Readout of the mark under the pointer or with focus: the value first, the label after. */
 function Tooltip({ tip, width }: { tip: Tip; width: number }) {
   if (!tip) return null;
   const left = Math.min(Math.max(tip.x, 8), Math.max(8, width - 220));
@@ -40,7 +40,7 @@ function Frame({ label, children, tip, width, frameRef }: { label: string; child
   </div>;
 }
 
-/** Barras horizontales de una serie (magnitud por categoría), con el valor en la punta. */
+/** Horizontal bars of one series (magnitude by category), with the value at the tip. */
 export function BarChart({ data, label, unit = "" }: { data: Datum[]; label: string; unit?: string }) {
   const [ref, width] = useWidth<HTMLDivElement>();
   const [tip, setTip] = useState<Tip>(null);
@@ -82,7 +82,7 @@ export function BarChart({ data, label, unit = "" }: { data: Datum[]; label: str
   </Frame>;
 }
 
-/** Columnas de una serie en orden cronológico; los días sin dato llevan su marca, no una columna cero. */
+/** Columns of one series in chronological order; days without data carry their mark, not a zero column. */
 export function ColumnChart({ data, label }: { data: Datum[]; label: string }) {
   const [ref, width] = useWidth<HTMLDivElement>();
   const [tip, setTip] = useState<Tip>(null);
@@ -120,7 +120,7 @@ export function ColumnChart({ data, label }: { data: Datum[]; label: string }) {
   </Frame>;
 }
 
-/** OK/KO apilados por categoría ordenada (fases): OK en la base, KO encima, separados por 2 px de superficie. */
+/** OK/KO stacked by ordered category (phases): OK at the base, KO on top, separated by 2 px of surface. */
 export function StackedColumns({ data, label }: { data: Stacked[]; label: string }) {
   const [ref, width] = useWidth<HTMLDivElement>();
   const [tip, setTip] = useState<Tip>(null);
@@ -163,7 +163,7 @@ export function StackedColumns({ data, label }: { data: Stacked[]; label: string
   </Frame>;
 }
 
-// Barra con el extremo de datos redondeado (4 px) y la base recta.
+// Bar with the data end rounded (4 px) and a straight base.
 function bar(x: number, y: number, length: number, thickness: number) {
   const r = Math.min(4, length, thickness / 2);
   return `M${x},${y}H${x + length - r}Q${x + length},${y} ${x + length},${y + r}V${y + thickness - r}Q${x + length},${y + thickness} ${x + length - r},${y + thickness}H${x}Z`;

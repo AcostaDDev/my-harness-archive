@@ -8,7 +8,7 @@ import { useWorkspace } from "../workspace";
 const SELECTION = { catalog: "Solo el catálogo", open: "Libre (catálogo como referencia)" } as const;
 const PLANNING = { auto: "Automática", agent: "La hace el revisor", deterministic: "Determinista, desde NEXT_STEPS" } as const;
 
-/** Ajustes efectivos; selección por proyecto mediante el registro V5 y presets del operador (D116). */
+/** Effective settings; per-project selection through the V5 registry and operator presets (D116). */
 export function SettingsPage() {
   const { project } = useWorkspace();
   const [revision, setRevision] = useState(0);

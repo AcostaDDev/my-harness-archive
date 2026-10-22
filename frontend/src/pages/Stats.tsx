@@ -8,8 +8,8 @@ import type { Sum } from "../metrics.ts";
 import { Link } from "../navigation";
 import { Empty, Loading, PageHeader, Pagination, Stale, Status, usePoll, when } from "../ui";
 
-// Estadísticas (H6.2 E6) sobre /api/managed/metrics/* (D074): cada panel lee su recurso, las listas van paginadas
-// y null se muestra como «sin dato», nunca como cero. El coste es el equivalente API que reporta el proveedor.
+// Statistics (H6.2 E6) over /api/managed/metrics/* (D074): each panel reads its resource, lists are paginated
+// and null is shown as "no data", never as zero. The cost is the API equivalent the provider reports.
 
 const INTERVAL = 15000;
 type Scope = { project?: string; phase?: string; task?: string };
@@ -25,7 +25,7 @@ function query(scope: Scope, extra: Record<string, string | number> = {}) {
   return text ? `?${text}` : "";
 }
 
-/** Suma con su cobertura: «sin dato» si nadie la aporta, marca «parcial» si solo algunos intentos. */
+/** Sum with its coverage: "no data" if nobody contributes, a "partial" mark if only some attempts do. */
 function Amount({ value, attempts, format = count }: { value: Sum; attempts: number; format?: (n: number | null) => string }) {
   const state = coverage(value, attempts);
   if (state === "absent") return <span className="muted" title={coverageText(value, attempts)}>sin dato</span>;
@@ -46,7 +46,7 @@ function TableView({ title, children }: { title: string; children: ReactNode }) 
   return <details className="chart-table"><summary>{title}</summary><div className="table-scroll" tabIndex={0} role="region" aria-label={title}>{children}</div></details>;
 }
 
-// --- página ------------------------------------------------------------------------------------
+// --- page --------------------------------------------------------------------------------------
 
 export function StatsPage({ project, refresh = 0 }: { project?: string; refresh?: number }) {
   const scope: Scope = { project };
@@ -113,7 +113,7 @@ function Headline({ summary }: { summary: S["MetricsSummaryRead"] }) {
   </section>;
 }
 
-// --- consumo -----------------------------------------------------------------------------------
+// --- consumption -------------------------------------------------------------------------------
 
 type Dimension = S["MetricGroupsRead"]["dimension"] | "reported_model";
 const DIMENSIONS: [Dimension, string][] = [["phase", "Fase"], ["root", "Proyecto"], ["day", "Día"], ["role", "Rol"],
@@ -138,8 +138,8 @@ function Consumption({ scope, projects, refresh }: { scope: Scope; projects: Pro
   const path = models ? `/metrics/models${query(scope, { order: "tokens", offset, limit: size })}`
     : `/metrics/groups${query(scope, { dimension, order: day ? "key" : "tokens", offset, limit: size })}`;
   const read = usePoll<S["MetricGroupsRead"] | S["ModelMetricGroupsRead"]>(path, INTERVAL, refresh);
-  // Al cambiar de agrupación, la lectura anterior (otro esquema) sigue en el primer render: solo se pinta la que
-  // corresponde a la dimensión elegida.
+  // When the grouping changes, the previous read (another schema) remains in the first render: only the one
+  // matching the chosen dimension is painted.
   const data = read.data?.dimension === dimension ? read.data : undefined;
   const choose = (value: Dimension) => { setDimension(value); setOffset(0); };
   const label = choices.find(([value]) => value === dimension)![1].toLowerCase();
@@ -215,7 +215,7 @@ function ModelConsumption({ groups }: { groups: S["ModelMetricGroupsRead"] }) {
   </>;
 }
 
-// --- favoritos por rol -------------------------------------------------------------------------
+// --- favorites by role -------------------------------------------------------------------------
 
 function Favorites({ scope, refresh }: { scope: Scope; refresh: number }) {
   const [order, setOrder] = useState<"attempts" | "tokens">("attempts");
@@ -250,7 +250,7 @@ function Favorite({ scope, role, dimension, order, refresh }: { scope: Scope; ro
   return <span><span className="mono">{first.key ?? "sin declarar"}</span> <span className="muted">({metric(first)}{second ? `; luego ${second.key ?? "sin declarar"}` : ""})</span></span>;
 }
 
-// --- tareas ------------------------------------------------------------------------------------
+// --- tasks -------------------------------------------------------------------------------------
 
 function Tasks({ scope, refresh }: { scope: Scope; refresh: number }) {
   const [offset, setOffset] = useState(0);
@@ -289,7 +289,7 @@ function TestCounts({ tests }: { tests: S["ValidationCountsRead"] | null }) {
   </span>;
 }
 
-// --- tests: evolución --------------------------------------------------------------------------
+// --- tests: trend ------------------------------------------------------------------------------
 
 function TestsEvolution({ scope, projects, refresh }: { scope: Scope; projects: Projects; refresh: number }) {
   const [offset, setOffset] = useState(0);
@@ -322,7 +322,7 @@ function TestsEvolution({ scope, projects, refresh }: { scope: Scope; projects: 
   </section>;
 }
 
-// --- paradas -----------------------------------------------------------------------------------
+// --- stops -------------------------------------------------------------------------------------
 
 function Stops({ summary }: { summary: S["MetricsSummaryRead"] }) {
   const stops = summary.stops;
@@ -342,10 +342,10 @@ function Stops({ summary }: { summary: S["MetricsSummaryRead"] }) {
   </section>;
 }
 
-// --- intentos ----------------------------------------------------------------------------------
+// --- attempts ----------------------------------------------------------------------------------
 
-// Resultado del intento (D074): `COMPLETE`/`FAILED`/`INVALID`/`PARTIAL` los informa el stream del adaptador CLI,
-// `COMPLETED` los adaptadores sin stream e `INTERRUPTED` la confirmación de un escritor detenido.
+// Attempt outcome (D074): `COMPLETE`/`FAILED`/`INVALID`/`PARTIAL` come from the CLI adapter stream,
+// `COMPLETED` from adapters without a stream and `INTERRUPTED` from confirming a stopped writer.
 const ATTEMPT: Record<string, [string, string]> = {
   COMPLETE: ["Completo", "ok"], COMPLETED: ["Completo", "ok"], FAILED: ["Fallido", "danger"], INVALID: ["Inválido", "danger"],
   PARTIAL: ["Parcial", "attention"], INTERRUPTED: ["Interrumpido", "danger"],
@@ -394,9 +394,9 @@ export function Attempts({ scope, projects = [], refresh, title = "Intentos" }: 
   </section>;
 }
 
-// --- tarea -------------------------------------------------------------------------------------
+// --- task --------------------------------------------------------------------------------------
 
-/** Métricas de una tarea (H6.2 E6): agentes, intentos, tokens (también de fallos), turnos y última validación. */
+/** Metrics of a task (H6.2 E6): agents, attempts, tokens (failures included), turns and latest validation. */
 export function TaskMetrics({ project, phase, task, refresh }: { project: string; phase: string; task: string; refresh: number }) {
   const scope: Scope = { project, phase, task };
   const read = usePoll<S["Page_TaskMetricsRead_"]>(`/metrics/tasks${query(scope, { limit: 1 })}`, INTERVAL, refresh);

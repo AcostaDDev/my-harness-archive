@@ -1,5 +1,5 @@
-// Diff unificado por líneas, sin dependencias (H6.2 E4). Solo muestra: la autoridad sigue siendo el hash
-// que confirma el servidor, nunca este diff. Por encima del límite devuelve null en lugar de aproximar.
+// Line-based unified diff, without dependencies (H6.2 E4). Display only: the authority is still the hash
+// the server confirms, never this diff. Above the limit it returns null instead of approximating.
 
 const CONTEXT = 3;
 const MAX_CELLS = 4_000_000;
@@ -13,7 +13,7 @@ function lines(text: string): string[] {
   return parts;
 }
 
-/** Operaciones de edición mínimas (LCS) entre dos listas de líneas; null si la tabla supera el límite. */
+/** Minimal edit operations (LCS) between two lists of lines; null if the table exceeds the limit. */
 function operations(a: string[], b: string[]): Op[] | null {
   let start = 0;
   while (start < a.length && start < b.length && a[start] === b[start]) start++;
@@ -43,15 +43,15 @@ function operations(a: string[], b: string[]): Op[] | null {
 }
 
 /**
- * Diff unificado de `before` a `after` con tres líneas de contexto. `before` null es un archivo nuevo y `after`
- * null uno borrado. Devuelve "" si no hay cambios y null si el documento es demasiado grande para compararlo aquí.
+ * Unified diff from `before` to `after` with three lines of context. A null `before` is a new file and a null
+ * `after` a deleted one. Returns "" if nothing changed and null if the document is too large to compare here.
  */
 export function unifiedDiff(path: string, before: string | null, after: string | null): string | null {
   if (before === after) return "";
   const ops = operations(lines(before ?? ""), lines(after ?? ""));
   if (!ops) return null;
   const out = [`--- ${before === null ? "/dev/null" : `a/${path}`}`, `+++ ${after === null ? "/dev/null" : `b/${path}`}`];
-  // Final de archivo distinto (con o sin salto de línea final): se marca como en Git.
+  // Different end of file (with or without a final newline): marked as Git does.
   const eol = !!before && !!after && before.endsWith("\n") !== after.endsWith("\n");
   const changed = ops.map((op, index) => op.kind !== " " ? index : -1).filter(index => index >= 0);
   if (eol && changed[changed.length - 1] !== ops.length - 1) changed.push(ops.length - 1);
@@ -75,15 +75,16 @@ export function unifiedDiff(path: string, before: string | null, after: string |
   return out.join("\n") + "\n";
 }
 
-// --- diff revisado de un ciclo, leído por páginas (D085) ----------------------------------------
+// --- reviewed diff of a cycle, read in pages (D085) ---------------------------------------------
 
 export type DiffPage = { sha256: string; size_bytes: number; offset: number; next_offset: number | null; text: string };
-// `pages` conserva cada página tal como llegó, para pintarlas por separado sin repintar las anteriores.
+// `pages` keeps each page as it arrived, to paint them separately without repainting the previous ones.
 export type LoadedDiff = { sha256: string; size: number; text: string; pages: string[]; loaded: number; next: number | null };
 
 /**
- * Añade la página siguiente a lo ya cargado. Devuelve null si no encaja (otro hash o tamaño, un cursor distinto
- * del esperado o bytes que no llegan al `next_offset`): lo cargado no se mezcla con otro diff y se relee desde 0.
+ * Appends the next page to what is already loaded. Returns null if it does not fit (another hash or size, a cursor
+ * other than expected or bytes that fall short of `next_offset`): what is loaded is not mixed with another diff
+ * and is reread from 0.
  */
 export function appendDiffPage(loaded: LoadedDiff | undefined, page: DiffPage): LoadedDiff | null {
   if (page.offset !== (loaded ? loaded.next : 0)) return null;
@@ -94,7 +95,7 @@ export function appendDiffPage(loaded: LoadedDiff | undefined, page: DiffPage): 
     pages: [...(loaded?.pages ?? []), page.text], loaded: end, next: page.next_offset };
 }
 
-/** Tamaño legible en unidades binarias, como los límites del servidor (64 KiB, 4 MiB). */
+/** Human-readable size in binary units, like the server limits (64 KiB, 4 MiB). */
 export function byteSize(value: number): string {
   if (value < 1024) return `${value.toLocaleString("es-ES")} B`;
   const [amount, unit] = value < 1024 * 1024 ? [value / 1024, "KiB"] : [value / (1024 * 1024), "MiB"];

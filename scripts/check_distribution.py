@@ -1,4 +1,4 @@
-"""Verifica wheel instalado en venv nuevo, sin checkout/cwd/Node en ejecución."""
+"""Verify the wheel installed in a new venv, with no checkout, cwd or Node at runtime."""
 import argparse
 from contextlib import closing, contextmanager
 import hashlib
@@ -44,8 +44,8 @@ def main():
         cli = venv / 'bin/harness-local'
         # Git is the only extra executable exposed to the managed synthetic journey.
         (venv / 'bin/git').symlink_to(shutil.which('git'))
-        # PATH sin Node, sin PYTHONPATH, sin configuración ambiental de producto. TMPDIR decide dónde quedan
-        # la clave de sesión y los índices temporales de Git del servicio (ARCHITECTURE §9).
+        # PATH without Node, no PYTHONPATH, no product configuration from the environment. TMPDIR decides where
+        # the session key and the service's temporary Git indexes live (ARCHITECTURE §9).
         (work / 'tmp').mkdir(mode=0o700)
         env = {'PATH': str(venv / 'bin'), 'LANG': 'en_US.UTF-8', 'PYTHONNOUSERSITE': '1', 'TMPDIR': str(work / 'tmp')}
 
@@ -89,10 +89,11 @@ def main():
                             pass
                         time.sleep(.1)
                     else:
-                        raise AssertionError('El servidor no arrancó en 15 s')
+                        raise AssertionError('The server did not start within 15 s')
                     assert request(base, '/api/managed/projects')[0] == 401
                     log.flush()
                     log.seek(0)
+                    # Matches the service's access-key line (harness_local.api.session).
                     key_path = Path(re.search(r'clave de acceso en (.+)', log.read())[1])
                     assert key_path.resolve().is_relative_to(work / 'tmp'), key_path
                     key = key_path.read_text()
@@ -112,7 +113,7 @@ def main():
                     except subprocess.TimeoutExpired:
                         process.kill()
                         process.wait(timeout=5)
-                        raise AssertionError('El servicio no terminó limpiamente')
+                        raise AssertionError('The service did not exit cleanly')
 
         db = work / 'synthetic.sqlite3'
         run('serve', '--database', db, ok=False)
@@ -144,7 +145,7 @@ def main():
         assert json.loads(run('migrate', '--database', db, '--snapshots', snapshots,
                              '--writers-stopped').stdout)['action'] == 'current'
         assert db.read_bytes() == before and len(list(snapshots.glob('*.sqlite3'))) == 1
-        # Instalación efectiva, migraciones y plantillas fuera del checkout.
+        # Effective installation, migrations and templates outside the checkout.
         probe = subprocess.check_output([str(python), '-c',
             'import harness_local; print(harness_local.__file__)'], cwd=work, env=env, text=True)
         assert str(venv) in probe and str(ROOT) not in probe
@@ -243,7 +244,8 @@ def main():
             time.sleep(.1)
             assert (area / 'calls.jsonl').read_bytes() == calls
 
-        # Configuración incompatible: fallo visible, sin corregir ni activar nada.
+        # Incompatible configuration: visible failure, nothing corrected or activated. The expected texts are the
+        # product's own diagnostics (services/managed_runtime.py, launcher.py).
         result = run('serve', '--database', db, ok=False, extra={'HARNESS_MANAGED_CONFIG': 'invalid'})
         assert 'módulo:atributo' in result.stderr
         empty = work / 'empty.sqlite3'
@@ -269,7 +271,7 @@ def main():
             assert read(base, '/api/managed/supervisor')['enabled'] is False
             assert request(base, action_path, action_body, headers | {'Idempotency-Key': 'archive-refused'})[0] == 409
             assert (area / 'calls.jsonl').read_bytes() == calls
-        print('Wheel aislado: UI/assets/API, sesión, definición D088/tarea/commit/reinicio, errores y evidencia restaurada correctos.')
+        print('Isolated wheel: UI/assets/API, session, D088 definition/task/commit/restart, errors and restored evidence OK.')
 
 
 if __name__ == '__main__':

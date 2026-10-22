@@ -44,17 +44,17 @@ export function jobRequest(path: string, body: Pending["body"]): Pending {
   return request;
 }
 
-// Altas sin job (conversaciones, D085): la clave se conserva mientras el mismo cuerpo no tenga respuesta
-// confirmada, también al recargar; reenviar tras perder la respuesta devuelve la misma conversación.
-// Tras la respuesta o un rechazo definitivo, el envío siguiente lleva otra clave y crea otra.
+// Creations without a job (conversations, D085): the key is kept while the same body has no acknowledged
+// response, also across reloads; resending after losing the response returns the same conversation.
+// After the response or a definitive rejection, the next submission carries another key and creates another.
 const creationKey = "harness-managed-creation-v1";
 export async function createOnce<T>(path: string, body: unknown): Promise<T> {
   const text = JSON.stringify(body);
   let saved: { path: string; body: string; key: string } | null = null;
-  try { saved = JSON.parse(sessionStorage.getItem(creationKey) ?? "null"); } catch { /* sin almacenamiento */ }
+  try { saved = JSON.parse(sessionStorage.getItem(creationKey) ?? "null"); } catch { /* no storage */ }
   const key = saved?.path === path && saved.body === text ? saved.key : crypto.randomUUID();
-  const forget = () => { try { sessionStorage.removeItem(creationKey); } catch { /* sin almacenamiento */ } };
-  try { sessionStorage.setItem(creationKey, JSON.stringify({ path, body: text, key })); } catch { /* sin almacenamiento */ }
+  const forget = () => { try { sessionStorage.removeItem(creationKey); } catch { /* no storage */ } };
+  try { sessionStorage.setItem(creationKey, JSON.stringify({ path, body: text, key })); } catch { /* no storage */ }
   try {
     const created = await managed<T>(path, body, key);
     forget();
@@ -65,7 +65,7 @@ export async function createOnce<T>(path: string, body: unknown): Promise<T> {
   }
 }
 
-// Confirmaciones sin job: conservar el sobre completo al perder la respuesta, también al recargar.
+// Confirmations without a job: keep the whole envelope when the response is lost, also across reloads.
 export type ConfirmationRequest = { path: string; body: unknown; key: string };
 const confirmationKey = "harness-confirmation-v1";
 export function readConfirmation(): ConfirmationRequest | undefined {

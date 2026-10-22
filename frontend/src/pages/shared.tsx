@@ -16,7 +16,7 @@ const PURPOSES: Record<S["ManagedRunSummaryRead"]["purpose"], string> = {
   phase_transition: "Transición de fase",
 };
 
-/** Runs como filas enlazadas a su URL canónica; la tarea y la fase enlazan a sus páginas. */
+/** Runs as rows linked to their canonical URL; the task and the phase link to their pages. */
 export function RunTable({ runs, project, show = ["task", "phase"] }: { runs: S["ManagedRunSummaryRead"][]; project: string; show?: ("task" | "phase")[] }) {
   if (!runs.length) return <Empty title="Todavía no hay runs">
     <p>Encola una tarea para que el planificador, el ejecutor y el revisor trabajen sobre ella.</p></Empty>;
@@ -41,9 +41,9 @@ export function RunTable({ runs, project, show = ["task", "phase"] }: { runs: S[
 }
 
 /**
- * Encolar una tarea. Por defecto se elige del NEXT_STEPS vivo y el contrato es su sección literal, con su hash para
- * que el servidor rechace un documento cambiado (P009-T020); el modo manual queda para lo que no está en él.
- * La fase o la tarea pueden venir fijadas por la página.
+ * Enqueue a task. By default it is chosen from the live NEXT_STEPS and the contract is its literal section, with
+ * its hash so the server rejects a changed document (P009-T020); manual mode is for what is not in it.
+ * The phase or the task can be fixed by the page.
  */
 export function TaskForm({ phase, task, title = "Encolar tarea" }: { phase?: string; task?: string; title?: string }) {
   const { project, busy, operate, send } = useWorkspace();

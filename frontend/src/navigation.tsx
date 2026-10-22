@@ -3,7 +3,7 @@ import type { AnchorHTMLAttributes, MouseEvent } from "react";
 import { href } from "./router.ts";
 import type { Route } from "./router.ts";
 
-// History API sin dependencias (D076). Navegar nunca repite acciones: solo cambia la vista.
+// History API without dependencies (D076). Navigating never repeats actions: it only changes the view.
 const listeners = new Set<() => void>();
 
 function subscribe(listener: () => void) {
@@ -26,7 +26,7 @@ export function navigate(to: Route | string, options: { replace?: boolean } = {}
 
 type LinkProps = Omit<AnchorHTMLAttributes<HTMLAnchorElement>, "href"> & { to: Route | string; current?: boolean };
 
-/** Enlace real (abrir en otra pestaña, copiar) con navegación interna para el clic simple. */
+/** Real link (open in another tab, copy) with internal navigation for a plain click. */
 export function Link({ to, current, onClick, children, ...rest }: LinkProps) {
   const path = typeof to === "string" ? to : href(to);
   function follow(event: MouseEvent<HTMLAnchorElement>) {

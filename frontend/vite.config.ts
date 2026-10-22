@@ -3,7 +3,7 @@ import react from "@vitejs/plugin-react";
 
 export default defineConfig({
   plugins: [react()],
-  // Forma objeto obligatoria: la abreviatura de cadena implica changeOrigin: true, que
-  // reescribe Host y hace que la guardia rechace el Origin de la UI (H5.6).
+  // Object form required: the string shorthand implies changeOrigin: true, which
+  // rewrites Host and makes the guard reject the UI Origin (H5.6).
   server: { proxy: { "/api": { target: "http://127.0.0.1:8013", changeOrigin: false } } },
 });

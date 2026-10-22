@@ -1,4 +1,4 @@
-# Entornos y dependencias
+# Environments and dependencies
 .venv/
 node_modules/
 __pycache__/
@@ -7,7 +7,7 @@ __pycache__/
 .mypy_cache/
 .ruff_cache/
 
-# Build y resultados locales
+# Build and local results
 dist/
 build/
 *.egg-info/
@@ -17,7 +17,7 @@ htmlcov/
 playwright-report/
 test-results/
 
-# Secretos y estado local
+# Secrets and local state
 .env
 .env.*
 !.env.example

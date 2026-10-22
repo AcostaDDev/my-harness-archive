@@ -1,69 +1,69 @@
-# Harness Local — configuración de uso real (local-config-4, P008-T008). Plantilla, no válida tal cual.
-# Guardar FUERA de cualquier checkout, propietario el usuario del servicio, chmod 600.
-# Sin secretos: la autenticación sigue en cada CLI. Rutas absolutas canónicas.
-# local-config-3 (lo mismo sin [profiles]) conserva su comportamiento y su hash congelado.
-# local-config-2 (comandos dentro de cada [[projects]]) y local-config-1 ([providers.codex]/[providers.claude],
-# revisor Codex + ejecutor Claude) se siguen leyendo, pero no admiten registrar proyectos desde la UI.
-# local-config-5 (P009-T003) es esta misma plantilla con format = "local-config-5": admite además
-# [agent_presets.*] y los fragmentos de receta de examples/ (typescript-web-recipe, django-recipe).
-# Validar:  harness-local check-config /ruta/harness-local.toml [--preflight]
-# Arrancar: harness-local serve --database /ruta/state/harness.sqlite3 --config /ruta/harness-local.toml
+# Harness Local — real-use configuration (local-config-4, P008-T008). Template, not valid as is.
+# Keep it OUTSIDE any checkout, owned by the service user, chmod 600.
+# No secrets: authentication stays in each CLI. Canonical absolute paths.
+# local-config-3 (the same without [profiles]) keeps its behavior and its frozen hash.
+# local-config-2 (commands inside each [[projects]]) and local-config-1 ([providers.codex]/[providers.claude],
+# Codex reviewer + Claude executor) are still read, but do not allow registering projects from the UI.
+# local-config-5 (P009-T003) is this same template with format = "local-config-5": it also accepts
+# [agent_presets.*] and the recipe fragments in examples/ (typescript-web-recipe, django-recipe).
+# Validate: harness-local check-config /path/harness-local.toml [--preflight]
+# Start:    harness-local serve --database /path/state/harness.sqlite3 --config /path/harness-local.toml
 format = "local-config-4"
 
 [service]
-state_dir = "/RUTA/ABSOLUTA/harness-state"   # artefactos CLI y migraciones; fuera de los checkouts
-supervisor = false                            # true: ejecuta la cola al arrancar
+state_dir = "/ABSOLUTE/PATH/harness-state"   # CLI artifacts and migrations; outside the checkouts
+supervisor = false                            # true: runs the queue on startup
 # lease_seconds = 30.0
 # poll_seconds = 0.5
 
 [git]
 executable = "/usr/bin/git"
-author_name = "Nombre Autor"
-author_email = "autor@example.invalid"
+author_name = "Author Name"
+author_email = "author@example.invalid"
 
-[agents.reviewer]                             # planifica, revisa, evalúa fases, chat y bootstrap; solo lectura
-provider = "codex"                            # "codex" o "claude"
-model = "MODELO-REVISOR"                      # el usuario fija modelo y esfuerzo del revisor
-effort = "high"                               # vocabulario del proveedor (codex: minimal…ultra; claude: low…max)
-executable = ["/RUTA/ABSOLUTA/codex"]
-cli_version = "0.163.0"                       # baseline: 0.161.0, 0.162.1 o 0.163.0; otra versión se rechaza
+[agents.reviewer]                             # plans, reviews, evaluates phases, chat and bootstrap; read-only
+provider = "codex"                            # "codex" or "claude"
+model = "REVIEWER-MODEL"                      # the user sets the reviewer model and effort
+effort = "high"                               # provider vocabulary (codex: minimal…ultra; claude: low…max)
+executable = ["/ABSOLUTE/PATH/codex"]
+cli_version = "0.163.0"                       # baseline: 0.161.0, 0.162.1 or 0.163.0; any other version is rejected
 timeout_seconds = 1800
-environment = { HOME = "/Users/USUARIO", USER = "USUARIO", PATH = "/usr/bin:/bin", LANG = "C.UTF-8" }
+environment = { HOME = "/Users/USER", USER = "USER", PATH = "/usr/bin:/bin", LANG = "C.UTF-8" }
 
-[agents.executor]                             # único escritor; el revisor fija su modelo y esfuerzo
-provider = "claude"                           # "claude" o "codex" (Codex: workspace-write sin red, 0.162.1/0.163.0)
-executable = ["/RUTA/ABSOLUTA/claude"]
-cli_version = "2.1.304"                       # 2.1.295, 2.1.296 o 2.1.304
+[agents.executor]                             # single writer; the reviewer sets its model and effort
+provider = "claude"                           # "claude" or "codex" (Codex: workspace-write, offline, 0.162.1/0.163.0)
+executable = ["/ABSOLUTE/PATH/claude"]
+cli_version = "2.1.304"                       # 2.1.295, 2.1.296 or 2.1.304
 timeout_seconds = 3600
-environment = { HOME = "/Users/USUARIO", USER = "USUARIO", PATH = "/usr/bin:/bin", LANG = "C.UTF-8" }
-tools = ["Read", "Edit", "Write", "Glob", "Grep"]            # solo Claude
-allowed_tools = ["Read", "Edit", "Write", "Glob", "Grep"]    # solo Claude
-# grantable_tools = []                        # solo Claude: herramientas concedibles por H3.2
+environment = { HOME = "/Users/USER", USER = "USER", PATH = "/usr/bin:/bin", LANG = "C.UTF-8" }
+tools = ["Read", "Edit", "Write", "Glob", "Grep"]            # Claude only
+allowed_tools = ["Read", "Edit", "Write", "Glob", "Grep"]    # Claude only
+# grantable_tools = []                        # Claude only: tools grantable through H3.2
 
-[registration]                                # alta de proyectos desde la UI (SQLite, versionada y auditada)
-roots = ["/RUTA/ABSOLUTA/proyectos"]          # solo se registran carpetas bajo estas raíces canónicas
-bootstrap_enabled = false                     # true: la UI puede activar bootstrap en carpetas registradas
+[registration]                                # project registration from the UI (SQLite, versioned and audited)
+roots = ["/ABSOLUTE/PATH/projects"]           # only folders under these canonical roots can be registered
+bootstrap_enabled = false                     # true: the UI can enable bootstrap in registered folders
 
-# Perfiles declarados (local-config-4): stack del proyecto, sin ejecutar nada al cargar. Revisar y confirmar
-# cada comando: argv sin shell, cuyo primer elemento es un nombre de `executables` de la composición. Todas las
-# claves son obligatorias salvo `sensitive_allowlist`; las listas vacías solo se admiten en `preparation` y
-# `data_model_paths`. El contenido entra en el hash congelado: cambiarlo deja en cuarentena los jobs pendientes.
-# Los nombres de perfiles integrados (typescript-web) están reservados.
+# Declared profiles (local-config-4): the project stack, nothing runs on load. Review and confirm
+# every command: argv without a shell, whose first element is a name from the composition `executables`. All
+# keys are required except `sensitive_allowlist`; empty lists are only accepted in `preparation` and
+# `data_model_paths`. The content enters the frozen hash: changing it quarantines the pending jobs.
+# Built-in profile names (typescript-web) are reserved.
 [profiles.python-django]
 preparation = [
   { argv = ["python", "--version"], timeout_seconds = 30 },
   { argv = ["python", "-m", "django", "--version"], timeout_seconds = 30 },
 ]
 validations = [
-  # El reporte JUnit se declara junto a su validación; `.local/` debe estar en el .gitignore del proyecto.
-  { argv = ["pytest", "--junitxml=.local/junit.xml", "-q"], timeout_seconds = 900, junit = { path = ".local/junit.xml", coverage = "Tests pytest del proyecto; no cobertura de código" } },
+  # The JUnit report is declared with its validation; `.local/` must be in the project's .gitignore.
+  { argv = ["pytest", "--junitxml=.local/junit.xml", "-q"], timeout_seconds = 900, junit = { path = ".local/junit.xml", coverage = "Project pytest tests; not code coverage" } },
   { argv = ["ruff", "check", "."], timeout_seconds = 120 },
   { argv = ["ruff", "format", "--check", "."], timeout_seconds = 120 },
   { argv = ["mypy", "."], timeout_seconds = 600 },
   { argv = ["python", "manage.py", "check"], timeout_seconds = 120 },
   { argv = ["python", "manage.py", "makemigrations", "--check", "--dry-run", "--noinput"], timeout_seconds = 120 },
 ]
-# Prefijos que el contrato de una tarea puede citar; ejecutarlos exige además la autorización exacta.
+# Prefixes a task contract can cite; running them also requires the exact authorization.
 allowed_command_prefixes = [["pytest"], ["ruff", "check"], ["ruff", "format", "--check"], ["mypy"],
                             ["python", "manage.py", "check"], ["python", "manage.py", "makemigrations", "--check"]]
 protected_paths = ["docs/STATE.md", "docs/NEXT_STEPS.md", "docs/ROADMAP.md", "docs/DECISIONS.md", "docs/archive/**",
@@ -72,7 +72,7 @@ protected_paths = ["docs/STATE.md", "docs/NEXT_STEPS.md", "docs/ROADMAP.md", "do
                    "pytest.ini", "mypy.ini", "ruff.toml", ".ruff.toml", "manage.py", ".gitignore"]
 sensitive_paths = [".env", ".env.*", "**/.env", "**/.env.*", "*.pem", "*.key", "*.p12", "*.pfx", "id_rsa*", "*.sqlite3"]
 sensitive_allowlist = [".env.example"]
-# Paridad (D090): un diff que toque estas rutas sin docs/DDBB-DIAGRAM.md no se acepta.
+# Parity (D090): a diff touching these paths without docs/DDBB-DIAGRAM.md is not accepted.
 data_model_paths = ["**/models.py", "**/models/**", "**/migrations/**"]
 executor_instructions = """Implement the Django change within the frozen task paths, with pytest tests next to it. \
 Keep ruff check, ruff format --check, mypy, manage.py check and makemigrations --check passing; \
@@ -80,38 +80,38 @@ add migrations for model changes and update docs/DDBB-DIAGRAM.md in the same tas
 Do not weaken tests, tool settings, dependencies or their locks. Dependency installation, \
 database services and network access require separate authorization."""
 
-[compositions.django]                         # composición del perfil declarado
+[compositions.django]                         # composition of the declared profile
 profile = "python-django"
 authorize_profile_commands = true
-executables = { python = "/RUTA/ABSOLUTA/.venv/bin/python", pytest = "/RUTA/ABSOLUTA/.venv/bin/pytest", ruff = "/RUTA/ABSOLUTA/.venv/bin/ruff", mypy = "/RUTA/ABSOLUTA/.venv/bin/mypy" }
-environment = { PATH = "/RUTA/ABSOLUTA/.venv/bin:/usr/bin:/bin", HOME = "/RUTA/PRIVADA/home-comandos", LANG = "C.UTF-8", CI = "true", DJANGO_SETTINGS_MODULE = "config.settings" }
+executables = { python = "/ABSOLUTE/PATH/.venv/bin/python", pytest = "/ABSOLUTE/PATH/.venv/bin/pytest", ruff = "/ABSOLUTE/PATH/.venv/bin/ruff", mypy = "/ABSOLUTE/PATH/.venv/bin/mypy" }
+environment = { PATH = "/ABSOLUTE/PATH/.venv/bin:/usr/bin:/bin", HOME = "/PRIVATE/PATH/command-home", LANG = "C.UTF-8", CI = "true", DJANGO_SETTINGS_MODULE = "config.settings" }
 
-[compositions.web]                            # comandos con nombre; la UI elige una, nunca los define
-profile = "typescript-web"                    # perfil integrado o uno de [profiles]
-authorize_profile_commands = true             # autoriza exactamente preparación y validaciones del perfil
-executables = { node = "/RUTA/ABSOLUTA/node", npm = "/RUTA/ABSOLUTA/npm" }
-environment = { PATH = "/RUTA/ABSOLUTA/bin:/usr/bin:/bin", HOME = "/RUTA/PRIVADA/home-comandos", LANG = "C.UTF-8", CI = "true", npm_config_cache = "/RUTA/ABSOLUTA/npm-cache", npm_config_update_notifier = "false" }
+[compositions.web]                            # named commands; the UI picks one, never defines them
+profile = "typescript-web"                    # built-in profile or one from [profiles]
+authorize_profile_commands = true             # authorizes exactly the profile preparation and validations
+executables = { node = "/ABSOLUTE/PATH/node", npm = "/ABSOLUTE/PATH/npm" }
+environment = { PATH = "/ABSOLUTE/PATH/bin:/usr/bin:/bin", HOME = "/PRIVATE/PATH/command-home", LANG = "C.UTF-8", CI = "true", npm_config_cache = "/ABSOLUTE/PATH/npm-cache", npm_config_update_notifier = "false" }
 # max_timeout_seconds = 1800
 # max_output_bytes = 65536
 
-# Variante exacta adicional (p. ej. una orden del contrato con timeout por defecto):
+# Additional exact variant (e.g. a contract command with the default timeout):
 # [[compositions.web.authorized]]
 # argv = ["npm", "run", "test"]
 # timeout_seconds = 1800
 
-# [[projects]] es opcional: proyectos del operador, no editables desde la UI. Sus ids no se pueden registrar.
+# [[projects]] is optional: operator projects, not editable from the UI. Their ids cannot be registered.
 [[projects]]
-id = "mi-web"
-root = "/RUTA/ABSOLUTA/checkout-desechable"   # worktree/checkout Git; mejor desechable al empezar
-repository_trusted = true                     # confianza en scripts/configuración del repositorio
-composition = "web"                           # composición de arriba; el perfil sale de ella
-# tag_kind = "lightweight"                    # o "annotated"
-# documents = "v2"                           # contrato documental unificado (D088), obligatorio; omitir = "v2"
-# bootstrap_enabled = false                   # H4.2/H6.5: crear desde cero en este destino vacío
+id = "my-web"
+root = "/ABSOLUTE/PATH/disposable-checkout"   # Git worktree/checkout; preferably disposable to start with
+repository_trusted = true                     # trust in the repository scripts/configuration
+composition = "web"                           # composition above; the profile comes from it
+# tag_kind = "lightweight"                    # or "annotated"
+# documents = "v2"                           # unified documentation contract (D088), mandatory; omitted = "v2"
+# bootstrap_enabled = false                   # H4.2/H6.5: create from scratch in this empty target
 
-[projects.policy]                             # elección explícita del usuario; sin valores por defecto
-planning_mode = "agent"                       # "agent": el revisor planifica; "deterministic": contrato de NEXT_STEPS
-executor_mode = "catalog"                     # "catalog": solo este catálogo; "open": cualquier modelo de la CLI
-executor_models = ["MODELO-EJECUTOR"]         # en "open", selección de referencia (contratos del servidor)
-executor_efforts = ["medium"]                 # dentro del vocabulario del proveedor ejecutor
+[projects.policy]                             # the user's explicit choice; no defaults
+planning_mode = "agent"                       # "agent": the reviewer plans; "deterministic": NEXT_STEPS contract
+executor_mode = "catalog"                     # "catalog": only this catalog; "open": any CLI model
+executor_models = ["EXECUTOR-MODEL"]          # in "open", reference selection (server contracts)
+executor_efforts = ["medium"]                 # within the executor provider vocabulary
 # max_revision_cycles = 3

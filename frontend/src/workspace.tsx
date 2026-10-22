@@ -6,8 +6,8 @@ import { navigate } from "./navigation";
 import { runRoute } from "./router.ts";
 import { Evidence, message } from "./ui";
 
-// Acciones de un proyecto compartidas por sus páginas. Un envío sin respuesta confirmada se
-// conserva con su clave (también al recargar) y solo se repite por acción explícita (H2).
+// Project actions shared by its pages. A submission without an acknowledged response is kept
+// with its key (also across reloads) and only repeated by explicit action (H2).
 export type Workspace = {
   project: string;
   busy: boolean;
@@ -45,11 +45,11 @@ export function ProjectWorkspace({ project, children }: { project: string; child
       remember();
       const run = await managed<S["ManagedRunRead"]>(`/runs/${job.run_id}`).catch(() => undefined);
       const route = run && runRoute(run);
-      // Las acciones sobre un run ya abierto no cambian de página; las que crean uno, sí.
+      // Actions on an already open run do not change page; those that create one do.
       if (route && (request.path.endsWith("/runs") || request.path.endsWith("/batch/next"))) navigate(route);
       return job;
     } catch (e) {
-      // Un rechazo definitivo permite una acción nueva tras releer la versión actual.
+      // A definitive rejection allows a new action after rereading the current version.
       if (e instanceof ManagedError && e.status >= 400 && e.status < 500 && e.status !== 401) remember();
       throw e;
     }

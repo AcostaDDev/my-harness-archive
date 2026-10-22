@@ -1,4 +1,4 @@
-/* Harness Local: sistema de diseño (H6.2 E1, D076). Tokens en :root; modo oscuro por sistema o elección. */
+/* Harness Local: design system (H6.2 E1, D076). Tokens in :root; dark mode by system or choice. */
 :root {
   color-scheme: light;
   --paper: #edf0ee;
@@ -28,7 +28,7 @@
   --font-mono: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
   --radius: 8px;
   --gutter: 40px;
-  /* Gráficos (H6.2 E6): una serie en el acento; OK/KO validados para daltonismo (ΔE ≥ 10 deutan) contra la superficie. */
+  /* Charts (H6.2 E6): one series in the accent; OK/KO validated for color blindness (ΔE ≥ 10 deutan) on the surface. */
   --chart-series: var(--accent);
   --chart-ok: #3d9a6c;
   --chart-ko: #b52f2a;
@@ -74,7 +74,7 @@ code { overflow-wrap: anywhere; }
 .strong { font-weight: 650; }
 .large { font-size: 22px; }
 
-/* Controles */
+/* Controls */
 button { font: inherit; font-size: 14px; font-weight: 600; cursor: pointer; border-radius: 6px; padding: 8px 14px;
   border: 1px solid var(--accent); background: var(--accent); color: var(--accent-ink); }
 button:hover:not(:disabled) { background: var(--accent-hover); border-color: var(--accent-hover); }
@@ -135,7 +135,7 @@ legend, .legend { font-weight: 650; font-size: 13px; padding: 0 6px; margin: 14p
 .content .table, .content .rail { overflow-wrap: normal; }
 .nowrap { white-space: nowrap; }
 
-/* Páginas */
+/* Pages */
 .page-header { display: flex; gap: 20px; align-items: flex-start; justify-content: space-between; margin-bottom: 20px; }
 .page-heading { min-width: 0; }
 .page-header h1 { font-size: 30px; letter-spacing: -0.025em; overflow-wrap: anywhere; }
@@ -154,7 +154,7 @@ legend, .legend { font-weight: 650; font-size: 13px; padding: 0 6px; margin: 14p
 .panel-collapsible > summary h2 { font-size: 17px; display: flex; gap: 10px; align-items: baseline; }
 .panel-collapsible > :not(summary) { margin-left: 24px; margin-right: 24px; }
 .panel-collapsible[open] { padding-bottom: 22px; }
-/* Acción con confirmación: recuadro neutro. Ámbar solo cuando algo espera tu decisión ahora. */
+/* Action with confirmation: neutral box. Amber only when something awaits your decision now. */
 .decision { margin-top: 20px; padding: 16px 20px 20px; border-radius: var(--radius); background: color-mix(in srgb, var(--paper) 70%, var(--surface)); border-left: 3px solid var(--line-strong); }
 .decision-attention { background: var(--attention-soft); border-left-color: var(--attention-mark); }
 .panel .decision-attention { background: color-mix(in srgb, var(--attention-soft) 60%, var(--surface)); }
@@ -189,14 +189,14 @@ legend, .legend { font-weight: 650; font-size: 13px; padding: 0 6px; margin: 14p
 .turn-message { font-weight: 600; white-space: pre-wrap; }
 .turn-answer { white-space: pre-wrap; max-width: 80ch; }
 
-/* Datos */
+/* Data */
 .fields { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 14px 28px; margin: 10px 0 14px; }
 .fields dt { font-size: 12.5px; color: var(--muted); }
 .fields dd { margin: 3px 0 0; overflow-wrap: anywhere; }
 .chip { display: inline-block; background: var(--code-bg); border-radius: 4px; padding: 1px 6px; margin: 2px 6px 2px 0; font-size: 12.5px; }
 .hash { color: var(--muted); font-size: 12.5px; }
 .path { font-size: 13px; overflow-wrap: anywhere; }
-/* En una tabla, una ruta larga ocupa una línea y se trunca; el title conserva la completa. */
+/* In a table, a long path takes one line and is truncated; the title keeps the full one. */
 .table td code.path { display: inline-block; max-width: 36ch; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; vertical-align: bottom; }
 .table-scroll { width: 100%; overflow-x: auto; }
 .table { width: 100%; border-collapse: collapse; font-size: 14px; }
@@ -218,7 +218,7 @@ legend, .legend { font-weight: 650; font-size: 13px; padding: 0 6px; margin: 14p
 .status-neutral { color: var(--neutral); background: var(--neutral-soft); }
 .status-attention .status-mark { border-radius: 2px; transform: rotate(45deg); }
 
-/* Ciclo de vida de la fase: la vía principal y sus desvíos. */
+/* Phase lifecycle: the main track and its detours. */
 .rail { margin: 4px 0 12px; overflow-x: auto; }
 .rail-track { display: flex; list-style: none; margin: 0; padding: 4px 0 0; min-width: 520px; }
 .rail-track li { flex: 1; position: relative; padding-top: 22px; font-size: 13px; color: var(--muted); }
@@ -238,7 +238,7 @@ legend, .legend { font-weight: 650; font-size: 13px; padding: 0 6px; margin: 14p
 .rail-branch .rail-label { text-decoration: line-through; text-decoration-color: var(--line-strong); }
 .rail-siding { display: inline-block; margin-top: 6px; padding: 3px 8px; border-radius: 4px; background: var(--attention-soft); color: var(--attention); font-weight: 650; }
 
-/* Estados de lectura */
+/* Read states */
 .state { border-radius: 6px; padding: 10px 14px; font-size: 14px; margin: 12px 0; max-width: 80ch; }
 .state-loading { color: var(--muted); padding-left: 0; }
 .state-stale, .state-attention { background: var(--attention-soft); color: var(--attention); }
@@ -252,7 +252,7 @@ legend, .legend { font-weight: 650; font-size: 13px; padding: 0 6px; margin: 14p
 .toast p { margin: 0 0 10px; color: var(--danger); overflow-wrap: anywhere; }
 .pagination { display: flex; gap: 10px; margin-top: 14px; }
 
-/* Evidencia */
+/* Evidence */
 .evidence { margin: 10px 0; }
 .evidence > summary { cursor: pointer; color: var(--muted); font-size: 13.5px; width: fit-content; }
 .evidence > summary:hover { color: var(--ink); }
@@ -265,7 +265,7 @@ pre.diff { max-height: 560px; }
 .test-table th { color: var(--muted); font-size: 12.5px; }
 .test-table th:first-child, .test-table th:last-child { width: 30%; }
 
-/* Acceso */
+/* Sign-in */
 .gate { min-height: 100vh; display: grid; place-items: center; padding: 24px 16px; }
 .gate-card { width: min(440px, 100%); background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 28px; }
 .gate-card .brand { margin: 0 0 20px; }
@@ -303,7 +303,7 @@ button[aria-pressed="true"] { border-color: var(--accent) !important; box-shadow
   .split { grid-template-columns: minmax(0, 1fr); }
   .field { grid-template-columns: 1fr; gap: 4px; }
   .decision { padding: 14px 14px 16px; }
-  /* El raíl pasa a vertical: la vía baja por la izquierda y los desvíos quedan a su lado. */
+  /* The rail turns vertical: the track runs down the left and the detours sit beside it. */
   .rail-track { flex-direction: column; min-width: 0; padding: 0; }
   .rail-track li { padding: 0 0 14px 26px; }
   .rail-track li::before, .rail-track li:first-child::before, .rail-track li:last-child::before { top: 0; bottom: 0; left: 6px; right: auto; width: 2px; height: auto; }
@@ -318,7 +318,7 @@ button[aria-pressed="true"] { border-color: var(--accent) !important; box-shadow
   * { transition: none !important; scroll-behavior: auto !important; }
 }
 
-/* Registro de proyectos (H6.2 E2): alta, cambio y baja con vista previa. */
+/* Project registry (H6.2 E2): registration, change and removal with preview. */
 .button-link { display: inline-block; font-size: 14px; font-weight: 600; border-radius: 6px; padding: 8px 14px; white-space: nowrap;
   border: 1px solid var(--accent); background: var(--accent); color: var(--accent-ink); text-decoration: none; }
 .button-link:hover { background: var(--accent-hover); border-color: var(--accent-hover); }
@@ -335,7 +335,7 @@ fieldset.trust { background: var(--surface); }
 .state-attention .state-title { margin: 0 0 4px; font-weight: 650; }
 .state-attention ul { margin: 4px 0 0; padding-left: 20px; }
 
-/* Documentación (H6.2 E3): árbol, lector de Markdown seguro, editor con bloques bloqueados y diffs. */
+/* Documentation (H6.2 E3): tree, safe Markdown reader, editor with locked blocks and diffs. */
 .visually-hidden { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 .state-neutral { background: var(--neutral-soft); color: var(--neutral); }
 .docs-layout { display: grid; grid-template-columns: 250px minmax(0, 1fr); gap: 28px; align-items: start; }
@@ -367,7 +367,7 @@ fieldset.trust { background: var(--surface); }
 .docs-prefix code { color: var(--muted); }
 .docs-readonly { max-width: none; }
 
-/* Lector: una columna de lectura sobre la superficie, con bloques gestionados apartados. */
+/* Reader: one reading column over the surface, with managed blocks set apart. */
 .doc-reader { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 28px 36px 32px; margin-top: 16px; }
 .doc-prose { max-width: 76ch; font-size: 15.5px; line-height: 1.65; }
 .doc-prose > :first-child, .doc-managed > :nth-child(2) { margin-top: 0; }
@@ -396,7 +396,7 @@ fieldset.trust { background: var(--surface); }
 .doc-mermaid-loading { opacity: .7; }
 .doc-mermaid-error { margin: 0 0 8px; font-size: 13px; color: var(--danger); }
 
-/* Editor: prosa en textarea, bloques gestionados cerrados con candado, diff coloreado. */
+/* Editor: prose in a textarea, managed blocks locked with a padlock, colored diff. */
 .docs-editor { margin-top: 16px; }
 .docs-editor-tabs { display: flex; gap: 6px; margin-bottom: 10px; }
 label + .docs-editor-tabs { margin-top: 12px; }
@@ -431,7 +431,7 @@ pre.diff span { display: block; }
 .chat-command .panel { box-shadow: none; }
 .chat-command .actions h3 { margin: 0; margin-right: auto; }
 
-/* E6: estadísticas. Cifras en el sans de la interfaz; las tablas alinean con tabular-nums (heredado). */
+/* E6: statistics. Figures in the interface sans; tables align with tabular-nums (inherited). */
 .tiles { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px; margin-top: 4px; }
 .tile { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 14px 16px; min-width: 0; }
 .tiles-compact .tile { background: transparent; }

@@ -5,7 +5,7 @@ import type { S } from "./managed-api";
 
 export const message = (e: unknown) => e instanceof Error ? e.message : String(e);
 
-/** Evidencia completa sin interpretar: null se muestra como «no registrado», nunca como vacío. */
+/** Full uninterpreted evidence: null is shown as "not recorded", never as empty. */
 export function Evidence({ title, value }: { title: string; value: unknown }) {
   return <details className="evidence"><summary>{title}</summary>
     <pre>{value === null ? "No registrado (null)" : JSON.stringify(value, null, 2)}</pre></details>;
@@ -14,14 +14,14 @@ export function Evidence({ title, value }: { title: string; value: unknown }) {
 export type Poll<T> = { data?: T; error?: string; missing: boolean; loading: boolean };
 
 /**
- * Lectura periódica de un recurso de /api/managed. Un fallo conserva la última lectura y lo
- * indica; un 404 marca el recurso como ausente. `path` null no consulta nada.
+ * Periodic read of an /api/managed resource. A failure keeps the last read and says so;
+ * a 404 marks the resource as absent. A null `path` queries nothing.
  */
 export function usePoll<T>(path: string | null, interval = 1500, refresh = 0): Poll<T> {
   const [state, setState] = useState<Poll<T>>({ missing: false, loading: path !== null });
   const current = useRef(path);
   useEffect(() => {
-    // Releer el mismo recurso tras una acción conserva la lectura mostrada (y lo que cuelga de ella) hasta la nueva.
+    // Rereading the same resource after an action keeps the shown read (and what hangs from it) until the new one.
     const same = current.current === path;
     current.current = path;
     setState(previous => same && previous.data !== undefined ? { ...previous, loading: true } : { missing: false, loading: path !== null });
@@ -45,14 +45,14 @@ export function usePoll<T>(path: string | null, interval = 1500, refresh = 0): P
   return state;
 }
 
-/** Diff unificado coloreado por tipo de línea; solo muestra, la autoridad es el hash que confirma el servidor. */
+/** Unified diff colored by line type; display only, the authority is the hash the server confirms. */
 export function DiffBlock({ diff, label }: { diff: string; label: string }) {
   return <pre className="diff" aria-label={label}><DiffLines text={diff.endsWith("\n") ? diff : `${diff}\n`} /></pre>;
 }
 
 /**
- * Líneas de un tramo de diff con su texto exacto: solo añade el salto que el tramo trae, así una línea larga
- * partida entre dos páginas se lee seguida. Memoizado: un tramo ya pintado no se repinta al añadir otro.
+ * Lines of a diff chunk with their exact text: only the newline the chunk carries is added, so a long line
+ * split across two pages reads continuously. Memoized: a painted chunk is not repainted when another is added.
  */
 export const DiffLines = memo(function DiffLines({ text }: { text: string }) {
   const lines = text.split("\n");
@@ -80,7 +80,7 @@ export function Alert({ children }: { children: ReactNode }) {
   return <p role="alert" className="state state-error">{children}</p>;
 }
 
-/** Titular de un recurso: su identificador (`P001-T003`) es el titular, en monoespaciada. */
+/** Heading of a resource: its identifier (`P001-T003`) is the heading, in monospace. */
 export function PageHeader({ title, code = false, children, aside }: { title: ReactNode; code?: boolean; children?: ReactNode; aside?: ReactNode }) {
   return <header className="page-header">
     <div className="page-heading">
@@ -119,7 +119,7 @@ export const PHASE: Record<S["PhaseRead"]["status"], [string, Tone]> = {
   CLOSING: ["Cerrando", "active"], CLOSED: ["Cerrada", "ok"], ABANDONED: ["Abandonada", "neutral"],
 };
 
-/** Estado con texto y tono; el color nunca es la única señal. Un estado desconocido se muestra tal cual. */
+/** Status with text and tone; color is never the only signal. An unknown status is shown as is. */
 export function Status({ value, kind = "run" }: { value: string; kind?: "run" | "phase" }) {
   const known = kind === "phase" ? PHASE[value as S["PhaseRead"]["status"]] : RUN[value];
   const [label, tone] = known ?? [value, "neutral" as Tone];
@@ -131,7 +131,7 @@ const SIDINGS: Partial<Record<S["PhaseRead"]["status"], S["PhaseRead"]["status"]
   NEEDS_RECONCILIATION: "CHECKING", BLOCKED: "CHECKING", ABANDONED: "ACTIVE",
 };
 
-/** Ciclo de vida de la fase (D032/D034): la vía principal y, fuera de ella, los desvíos. */
+/** Phase lifecycle (D032/D034): the main track and, off it, the detours. */
 export function PhaseRail({ status }: { status: S["PhaseRead"]["status"] }) {
   const siding = SIDINGS[status];
   const position = TRACK.indexOf(siding ?? status);

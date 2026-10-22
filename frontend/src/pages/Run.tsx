@@ -11,7 +11,7 @@ import { Tests } from "../Tests";
 import { DiffLines, Empty, Evidence, Fields, Hash, Loading, PageHeader, Pagination, Stale, Status, message, usePoll, when } from "../ui";
 import { useWorkspace } from "../workspace";
 
-/** `/runs/:id`: resuelve la URL canónica del run y la sustituye en el historial. */
+/** `/runs/:id`: resolves the canonical run URL and replaces it in the history. */
 export function RunRedirect({ run }: { run: string }) {
   const read = usePoll<S["ManagedRunRead"]>(`/runs/${encodeURIComponent(run)}`, 0);
   useEffect(() => {
@@ -23,8 +23,8 @@ export function RunRedirect({ run }: { run: string }) {
   return read.error ? <p role="alert" className="state state-error">{read.error}</p> : <Loading>Buscando el run…</Loading>;
 }
 
-// Con un job en cola, en curso o por recuperar el run cambia solo; sin él, solo cambia por una acción nueva
-// (de esta página, que relee al momento, o de otra pestaña), así que basta un sondeo espaciado.
+// With a job queued, running or pending recovery the run changes by itself; without one, it only changes through
+// a new action (from this page, which rereads at once, or from another tab), so a spaced poll is enough.
 const ACTIVE_POLL = 1500;
 const SETTLED_POLL = 15000;
 
@@ -67,7 +67,7 @@ export function RunPage({ phase, task, run: id }: { phase: string; task: string;
     void poll(); return () => { active = false; clearTimeout(timer); };
   }, [path, offset, jobOffset, cycleOffset, refresh]);
   useEffect(() => { setCommitConfirmed(false); setConfirmed(false); }, [run?.version]);
-  // Una URL con otra fase, tarea o proyecto se corrige a la canónica sin añadir historial.
+  // A URL with another phase, task or project is corrected to the canonical one without adding history.
   const canonical = run && runRoute(run);
   useEffect(() => {
     if (canonical && href(canonical) !== window.location.pathname) navigate(canonical, { replace: true });
@@ -166,9 +166,9 @@ export function RunPage({ phase, task, run: id }: { phase: string; task: string;
 }
 
 /**
- * Diff revisado de un ciclo: se lee al abrirlo, por páginas de 64 KiB ligadas al hash del resumen del run, y no
- * se vuelve a pedir en cada sondeo. Una página que no continúa lo mostrado lo descarta en lugar de mezclarlo.
- * Props escalares y memo: el sondeo del run no repinta un diff de miles de líneas, y cada página es su tramo.
+ * Reviewed diff of a cycle: read when opened, in 64 KiB pages bound to the hash of the run summary, and not
+ * requested again on every poll. A page that does not continue what is shown discards it instead of mixing it.
+ * Scalar props and memo: polling the run does not repaint a diff of thousands of lines; each page is its chunk.
  */
 const CycleDiff = memo(function CycleDiff({ runId, number, sha256, bytes, paths }: { runId: string; number: number; sha256: string; bytes: number; paths: number }) {
   const [diff, setDiff] = useState<LoadedDiff>();

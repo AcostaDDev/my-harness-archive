@@ -13,7 +13,7 @@ const turnNames: Record<S["ChatTurnRead"]["status"], string> = {
 };
 const proposalNames: Record<S["ChatProposalRead"]["status"], string> = { PROPOSED: "Propuesta", ACCEPTED: "Aceptada", DISMISSED: "Descartada" };
 
-/** Chat contextual (D035) con la conversación elegida en la URL. */
+/** Contextual chat (D035) with the conversation selected in the URL. */
 export function Chat({ conversation }: { conversation?: string }) {
   const { project, busy, refresh, operate } = useWorkspace();
   const conversations = usePoll<S["ChatConversationSummaryRead"][]>(`/projects/${project}/conversations`, 3000, refresh);
@@ -85,7 +85,7 @@ function Conversation({ id }: { id: string }) {
     }
     void poll(); return () => { active = false; clearTimeout(timer); };
   }, [id, project, refresh]);
-  // Una confirmación solo vale para la versión y la propuesta exacta que se mostraron.
+  // A confirmation is only valid for the version and the exact proposal that were shown.
   useEffect(() => { setConfirmed({}); }, [conversation?.version]);
   if (!conversation) return missing ? <Empty title="No existe esa conversación"><p>Elige otra de la lista.</p></Empty>
     : error ? <p role="alert" className="state state-error">{error}</p> : <Loading>Cargando conversación…</Loading>;

@@ -1,28 +1,28 @@
-# Fragmento para un TOML local-config-5 existente, FUERA de los checkouts y chmod 600.
-# Plantilla NO válida tal cual. Conservar service/git/agents/agent_presets/registration del operador.
-# En environment de AMBOS roles/presets efectivos declarar PYTHONDONTWRITEBYTECODE = "1".
-# Evita que sus comandos Python creen bytecode dentro del entorno acreditado. No se modifica su TOML desde UI.
-# Añadir esta composición al catálogo; si el TOML ya declara [compositions.django], como la plantilla,
-# usar otro nombre (p. ej. [compositions.django-recipe]). Crear el hijo desde UI con ella y bootstrap_enabled=true;
-# la raíz padre se elige desde UI, nunca se deduce de este ejemplo. [registration].bootstrap_enabled=true.
-# No modifica configuración global ni instala nada al cargar. Habilitar red aquí solo fija un techo:
-# cada preparación confirma su propio modo, manifiesto, argv y límites antes de ejecutar.
+# Fragment for an existing local-config-5 TOML, OUTSIDE the checkouts and chmod 600.
+# Template NOT valid as is. Keep the operator's service/git/agents/agent_presets/registration.
+# In the environment of BOTH effective roles/presets declare PYTHONDONTWRITEBYTECODE = "1".
+# It keeps their Python commands from writing bytecode inside the accredited environment. The UI never edits the TOML.
+# Add this composition to the catalog; if the TOML already declares [compositions.django], like the template,
+# use another name (e.g. [compositions.django-recipe]). Create the child from the UI with it and bootstrap_enabled=true;
+# the parent root is chosen in the UI, never inferred from this example. [registration].bootstrap_enabled=true.
+# Loading it changes no global configuration and installs nothing. Enabling network here only sets a ceiling:
+# each preparation confirms its own mode, manifest, argv and limits before running.
 
 [recipes.django]
-python_executable = "/RUTA/ABSOLUTA/python3.13"
-python_version = "3.13.1"                  # reemplazar por el patch EXACTO del intérprete autorizado, 3.11–3.13
-installer_executable = "/RUTA/ABSOLUTA/uv"
-installer_version = "0.9.5"               # reemplazar por la versión EXACTA del uv autorizado
-allow_network = false                     # true permite solicitar modo network en la preview; no lo ejecuta
-# wheelhouse = "/RUTA/ABSOLUTA/wheels"     # opcional: wheels locales previamente preparados y autorizados
-# Offline usa --no-index/--find-links si hay wheelhouse, o solo la caché privada del hijo si no.
-# Un hijo nuevo con caché vacía y sin wheelhouse falla offline sin descargar ni cambiar de modo.
-timeout_seconds = 120                     # techo por comando, 120..1800 s; no timeout global ni retry
-max_output_bytes = 65536                   # por stream y comando
+python_executable = "/ABSOLUTE/PATH/python3.13"
+python_version = "3.13.1"                  # replace with the EXACT patch of the authorized interpreter, 3.11–3.13
+installer_executable = "/ABSOLUTE/PATH/uv"
+installer_version = "0.9.5"               # replace with the EXACT version of the authorized uv
+allow_network = false                     # true allows requesting network mode in the preview; does not run it
+# wheelhouse = "/ABSOLUTE/PATH/wheels"     # optional: local wheels prepared and authorized beforehand
+# Offline uses --no-index/--find-links with a wheelhouse, or only the child's private cache without one.
+# A new child with an empty cache and no wheelhouse fails offline without downloading or switching mode.
+timeout_seconds = 120                     # ceiling per command, 120..1800 s; no global timeout or retry
+max_output_bytes = 65536                   # per stream and command
 
 [compositions.django]
-profile = "python-django-recipe"           # perfil empaquetado; no duplicarlo en [profiles]
+profile = "python-django-recipe"           # packaged profile; do not duplicate it in [profiles]
 recipe = "django"
 authorize_profile_commands = true
-environment = {}                          # entorno de preparación cerrado y HOME/cache/tmp dentro del hijo
+environment = {}                          # closed preparation environment and HOME/cache/tmp inside the child
 executables = { python = { project_venv = "python" }, pytest = { project_venv = "pytest" }, ruff = { project_venv = "ruff" }, mypy = { project_venv = "mypy" } }

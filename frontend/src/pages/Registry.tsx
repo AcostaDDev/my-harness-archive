@@ -5,11 +5,11 @@ import type { S } from "../managed-api";
 import { Link, navigate } from "../navigation";
 import { Alert, Empty, Evidence, Fields, Hash, Loading, PageHeader, Stale, message, usePoll, when } from "../ui";
 
-// Registro de proyectos (H6.2 E2, D054/D076). El TOML del operador fija lo que se ejecuta; aquí solo
-// se eligen raíz, composición y política. Cada cambio pasa por una vista previa ligada a su hash y versión,
-// y la confianza en el checkout se confirma aparte.
+// Project registry (H6.2 E2, D054/D076). The operator TOML sets what runs; here only root, composition and
+// policy are chosen. Every change goes through a preview bound to its hash and version, and trust in the
+// checkout is confirmed separately.
 
-// Los campos con valor por defecto del servidor son opcionales al enviar (la baja no los lleva).
+// Fields with a server default are optional when submitting (removal does not carry them).
 type Defaulted = "tag_kind" | "documents" | "bootstrap_enabled";
 type Change = Omit<S["RegistryChangeInput"], Defaulted> & Partial<Pick<S["RegistryChangeInput"], Defaulted>>;
 type Draft = {
@@ -53,7 +53,7 @@ function draftOf(row: Record<string, unknown>): Draft {
     executor_preset: selection?.executor.preset_id ?? "" };
 }
 
-/** Cambio exacto que se envía; un techo de permisos que no es JSON se rechaza aquí, sin llamar al servidor. */
+/** Exact change to submit; a permission ceiling that is not JSON is rejected here, without calling the server. */
 function changeOf(draft: Draft, action: Change["action"], expected: number): Change {
   if (action === "retire") return { action, project_id: draft.project_id, expected_version: expected };
   let authority: Change["permission_authority"] = null;
@@ -77,7 +77,7 @@ function changeOf(draft: Draft, action: Change["action"], expected: number): Cha
   };
 }
 
-/** Una operación cada vez: un segundo clic mientras responde el servidor no envía nada. */
+/** One operation at a time: a second click while the server responds sends nothing. */
 function useOperation() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
@@ -93,7 +93,7 @@ function useOperation() {
 const show = (value: unknown) => value === undefined || value === null ? <span className="muted">sin valor</span>
   : typeof value === "object" ? <pre className="inline-json">{JSON.stringify(value, null, 2)}</pre> : <code>{String(value)}</code>;
 
-/** Vista previa y confirmación. `trust` solo existe en el alta: confirmación aparte de la del cambio. */
+/** Preview and confirmation. `trust` only exists on registration: a confirmation separate from the change. */
 function Confirmation({ preview, busy, danger, onConfirm }: {
   preview: S["RegistryPreviewRead"]; busy: boolean; danger?: boolean;
   onConfirm: (trustRoot: string | null, reason: string) => void;
@@ -113,7 +113,7 @@ function Confirmation({ preview, busy, danger, onConfirm }: {
     ]} />
     <div className="table-scroll" role="region" aria-label="Cambios" tabIndex={0}>
       <table className="table">
-        {/* En el alta no hay valor anterior: solo la fila que se registrará. */}
+        {/* A registration has no previous value: only the row that will be registered. */}
         <thead><tr><th scope="col">Campo</th>{!creating && <th scope="col">Antes</th>}<th scope="col">{creating ? "Valor" : "Después"}</th></tr></thead>
         <tbody>{preview.changes.map(c => <tr key={c.field}><th scope="row">{FIELDS[c.field] ?? c.field}</th>{!creating && <td>{show(c.before)}</td>}<td>{show(c.after)}</td></tr>)}</tbody>
       </table>
@@ -237,7 +237,7 @@ function DraftFields({ draft, options, action, onChange }: {
   </>;
 }
 
-/** Formulario con vista previa: cualquier edición invalida la vista previa ya mostrada. */
+/** Form with preview: any edit invalidates the preview already shown. */
 function RegistryForm({ options, action, initial, expected, onApplied }: {
   options: S["RegistryRead"]; action: "register" | "update"; initial: Draft; expected: number;
   onApplied: (result: S["RegistryApplyRead"], change: Change) => void;
@@ -453,7 +453,7 @@ export function RegisterPage() {
   </>;
 }
 
-/** Ajustes de un proyecto registrado: versión, auditoría, cambio y baja. Los del TOML solo se consultan. */
+/** Settings of a registered project: version, audit, change and removal. TOML projects are read-only. */
 export function RegistrySettings({ project, onChanged }: { project: string; onChanged: () => void }) {
   const [refresh, setRefresh] = useState(0);
   const options = usePoll<S["RegistryRead"]>("/registry", 0, refresh);

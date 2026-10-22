@@ -50,7 +50,7 @@ export function ProjectPage() {
   </>;
 }
 
-/** Proyecto v2 (H6.5/H6.2 E4): se crea por la conversación de definición, en su propia página. */
+/** v2 project (H6.5/H6.2 E4): created through the definition conversation, on its own page. */
 function Creation() {
   const { project, refresh } = useWorkspace();
   const status = usePoll<S["BootstrapStatusRead"]>(`/projects/${project}/bootstrap`, 5000, refresh);

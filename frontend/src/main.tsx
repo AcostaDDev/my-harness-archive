@@ -17,13 +17,13 @@ import { Empty, Loading, PageHeader } from "./ui";
 import { ProjectWorkspace, useWorkspace } from "./workspace";
 import "./styles.css";
 
-// La documentación (markdown-it y, al dibujar, Mermaid) se descarga solo al abrirla (H6.2 E3).
+// Documentation (markdown-it and, when drawing, Mermaid) is only downloaded when opened (H6.2 E3).
 const DocsPage = lazy(() => import("./pages/Docs").then(module => ({ default: module.DocsPage })));
-// Creación y planificación (H6.2 E4) comparten el visor de Markdown: mismo criterio de carga diferida.
+// Creation and planning (H6.2 E4) share the Markdown viewer: same lazy-loading rule.
 const ImportPage = lazy(() => import("./pages/Planning").then(module => ({ default: module.ImportPage })));
 const SetupPage = lazy(() => import("./pages/Planning").then(module => ({ default: module.SetupPage })));
 const PlanPage = lazy(() => import("./pages/Planning").then(module => ({ default: module.PlanPage })));
-// Estadísticas (H6.2 E6): gráficos y tablas en su propio chunk.
+// Statistics (H6.2 E6): charts and tables in their own chunk.
 const StatsPage = lazy(() => import("./pages/Stats").then(module => ({ default: module.StatsPage })));
 
 function Page({ route }: { route: Route }) {
@@ -37,7 +37,7 @@ function Page({ route }: { route: Route }) {
       <Empty title={`No hay nada en ${route.path}`}><p>Puede que el enlace esté incompleto. Vuelve a la <Link to={{ name: "home" }}>lista de proyectos</Link>.</p></Empty>
     </>;
   }
-  // Cada proyecto tiene su propio espacio de acciones; cambiar de proyecto lo reinicia.
+  // Each project has its own action workspace; switching projects resets it.
   return <ProjectWorkspace key={route.project} project={route.project}><ProjectPageFor route={route} /></ProjectWorkspace>;
 }
 

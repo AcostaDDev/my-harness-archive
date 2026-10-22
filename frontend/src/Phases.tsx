@@ -8,7 +8,7 @@ import { useWorkspace } from "./workspace";
 const lines = (value: string) => value.split("\n").map(item => item.trim()).filter(Boolean);
 const tagNames = { lightweight: "ligero", annotated: "anotado (mensaje, identidad y fecha fijados en la intención)" };
 
-/** Definición congelada de una fase nueva (H3.3); al crearla se abre su URL. */
+/** Frozen definition of a new phase (H3.3); creating it opens its URL. */
 export function PhaseCreate() {
   const { project, busy, operate } = useWorkspace();
   const [code, setCode] = useState("");
@@ -38,7 +38,7 @@ export function PhaseCreate() {
   </section>;
 }
 
-/** Operaciones de una fase sobre la lectura que muestra la página; cada confirmación vale para esa versión. */
+/** Phase operations on the read the page shows; each confirmation is valid for that version. */
 export function PhaseDetail({ phase, stale, section }: { phase: S["PhaseRead"]; stale: boolean; section?: string }) {
   const { busy, operate, send } = useWorkspace();
   const id = phase.id;
@@ -68,11 +68,11 @@ export function PhaseDetail({ phase, stale, section }: { phase: S["PhaseRead"]; 
   const [exportPreview, setExportPreview] = useState<S["DocumentExportPreviewRead"]>();
   const [exportReason, setExportReason] = useState("");
   const [exportConfirmed, setExportConfirmed] = useState(false);
-  // Las confirmaciones solo valen para la versión y la evidencia que se mostraron.
+  // Confirmations are only valid for the version and the evidence that were shown.
   useEffect(() => { setAnswerConfirmed(false); setReconcileConfirmed(false); setCloseConfirmed(false); setBatchConfirmed(false); setAmendConfirmed(false); setAbandonConfirmed(false); },
     [phase.version, phase.ready?.binding_sha256, phase.documents.current_sha256]);
   useEffect(() => { setExportConfirmed(false); setExportPreview(undefined); }, [phase.version, phase.documents.current_sha256]);
-  // El formulario de enmienda parte de la definición vigente; cambia solo al cambiar de versión de definición.
+  // The amendment form starts from the current definition; it only changes when the definition version changes.
   useEffect(() => {
     const d = phase.definition;
     setAmendObjective(String(d.objective)); setAmendCriteria((d.exit_criteria as string[]).join("\n"));
@@ -123,7 +123,7 @@ export function PhaseDetail({ phase, stale, section }: { phase: S["PhaseRead"]; 
       {phase.closure ? <ClosureDocuments phase={phase} closure={phase.closure} />
         : phase.documents.drift === null ? <p className="state state-error">No se pudieron leer los documentos actuales.</p>
         : phase.documents.drift.length ? (superseded
-          // La sucesora (transición incluida) cambió los documentos: no hay nada que decidir en esta fase.
+          // The successor (transition included) changed the documents: there is nothing to decide in this phase.
           ? <p className="hint">La fase <code>{phase.successor}</code> ya sucede a esta y no hay nada que decidir aquí; la base adoptada se conserva como registro. Cambiados después: {phase.documents.drift.map(d => <code key={d} className="chip">{d}</code>)}</p>
           : <p className="state state-attention">Cambiados desde la base adoptada: {phase.documents.drift.map(d => <code key={d} className="chip">{d}</code>)}</p>)
           : <p className="hint">Sin cambios respecto a la base adoptada.</p>}
@@ -250,7 +250,7 @@ export function PhaseDetail({ phase, stale, section }: { phase: S["PhaseRead"]; 
 
 const chips = (paths: string[]) => paths.map(p => <code key={p} className="chip">{p}</code>);
 
-/** P010-T005: documentos de una fase terminada frente a lo que dejó su cierre; la base adoptada es histórica. */
+/** P010-T005: documents of a finished phase against what its closure left; the adopted base is history. */
 function ClosureDocuments({ phase, closure }: { phase: S["PhaseRead"]; closure: S["PhaseClosureRead"] }) {
   const { project } = useWorkspace();
   const archive = closure.archive;
@@ -272,7 +272,7 @@ function ClosureDocuments({ phase, closure }: { phase: S["PhaseRead"]; closure: 
   </>;
 }
 
-/** Resultado y base del check que autorizó el cierre: historia, nunca se recalcula con los documentos de hoy. */
+/** Result and base of the check that authorized the closure: history, never recomputed from today's documents. */
 function ClosureCheck({ closure }: { closure: S["PhaseClosureRead"] }) {
   const check = closure.check;
   return <>

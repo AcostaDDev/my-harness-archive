@@ -240,10 +240,12 @@ aprobado; staging/avisos/assets y activación del canal privado GitHub pendiente
 T019 completada (D161): retirada legacy/A, con cero/B y datos propios conservados; [informe](phase/P011-T019_RETIRADA_LEGACY.md).
 T003 completada (D162): comentarios/docstrings de núcleo y perfiles en inglés; [inventario](phase/P011-T003_INGLES_NUCLEO.md).
 T004 completada (D163): backend en inglés y recetas v2 sin cablear; [inventario](phase/P011-T004_INGLES_BACKEND.md).
-Catorce tareas pendientes; siguiente T005.
+T005 completada (D164): frontend, scripts y ejemplos en inglés;
+[inventario](phase/P011-T005_INGLES_CLIENTE_HERRAMIENTAS.md).
+Trece tareas pendientes; siguiente T006.
 Planificación inicial finalizada en D156 y commit `6174f51`; ajustes D157/D158 incorporados
-en `2730f54`, sin ejecución del producto. La petición actual autoriza T004 y su commit local en inglés.
-La fase no está cerrada; se mantienen diecinueve tareas (cinco completadas) y diez criterios.
+en `2730f54`, sin ejecución del producto. La petición actual autoriza T005 y su commit local en inglés.
+La fase no está cerrada; se mantienen diecinueve tareas (seis completadas) y diez criterios.
 [Plan](phase/P011_PLAN_APERTURA_PUBLICA.md), [tareas](NEXT_STEPS.md) y
 [D154](DECISIONS.md#d154--p011-preparación-para-apertura-pública-en-github).
 La primera versión local P010 sigue completada en su alcance; P011 añade objetivos públicos, no reabre ese cierre.
