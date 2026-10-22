@@ -201,10 +201,12 @@ elección de trabajo en inglés/español, CLI más compatibles y primer uso repr
 - Inventario por archivo resuelto: comentarios/docstrings/descripciones técnicas y código mantenido en inglés;
   identificadores españoles internos revisados/renombrados si existen, con excepciones históricas justificadas
   y sin modificar protocolos, recibos, snapshots o archivos congelados por una traducción cosmética.
-- Interfaz propia, accesibilidad y mensajes API/CLI seleccionables en en/es, con preferencia persistente,
-  fallback, catálogos completos y QA; códigos técnicos y evidencia original conservados.
-- Lengua de trabajo en/es elegible por proyecto, independiente de la visual y congelada por intento; prompts
-  originales ingleses y documentos/resultados nuevos en la lengua elegida, sin retraducir historia ni trabajo previo.
+- Ajustes globales visual/default de trabajo en/es (en inicial); visual mutable para UI/accesibilidad/mensajes y
+  conversación/respuestas humanas, sin visual por proyecto. Preferencia persistente, fallback/catálogos y QA;
+  nuevas interacciones capturan visual, sin alterar evidencia previa ni llamadas/jobs ya congelados.
+- Trabajo en/es elegido al crear/incorporar desde default global e inmutable por UI/API/configuración; rige
+  documentación/código, no conversación. Cambiar defaults no afecta proyectos; prompts originales ingleses,
+  directivas de ambos idiomas congeladas por job/turno, código/docs ingleses con conversación española probados.
 - Política CLI por proveedor/rol con mínimos/capacidades y versiones verificadas/candidatas: admitir posteriores
   compatibles sin allowlist por patch, conservar guardias de permisos/confianza y bloquear incompatibilidades
   antes del efecto. No se anuncia soporte garantizado para cualquier versión futura ni uso real no probado.
@@ -212,8 +214,11 @@ elección de trabajo en inglés/español, CLI más compatibles y primer uso repr
   cancelación y recuperación, con matriz semántica; sin discrepancias pendientes ocultas ni archivos históricos reescritos.
 - Documentación pública vigente inglesa y entrada española útil; README completo y ejemplo mínimo reproducible
   desde clon sin cachés privadas hasta primer COMMITTED, con requisitos, licencia, idiomas, operación y límites claros.
+  Documentación de partida pública nueva con contexto para forks/agentes, sin publicar ADR/fases privadas;
+  tras la apertura, nuevas decisiones/fases y código se mantienen públicamente como fuente principal (D157).
 - Licencia/titularidad decididas, atribuciones y contenido publicable del checkout/historial/artefactos revisados,
-  sin secretos/estado privado ni hallazgos pendientes que impidan abrir el conjunto; saneamiento histórico no automático.
+  instantánea pública inicial con Git independiente sin objetos/historia privada, sin secretos/estado privado ni
+  hallazgos pendientes; este historial privado se conserva, sin saneamiento destructivo ni clon espejo público.
 - Paquete candidato coherente con versión/metadatos/recursos completos, checks CI sintéticos sin secretos ni
   proveedores y materiales de release revisables; instalación/QA del artefacto exacto con base/hashes/resultados/omisiones.
 - Funcionalidades del harness anterior retiradas de UI/API/CLI, arranque/observadores, normalización A, prompts,
@@ -222,7 +227,7 @@ elección de trabajo en inglés/español, CLI más compatibles y primer uso repr
 - Dictamen explícito de estos diez criterios y trece globales ajustados por D155 antes del cierre documental;
   expediente de apertura pública preparado, sin ejecutar publicación, push, tag, Release ni cambio de visibilidad.
 
-**Dependencias:** P010; D051, D088, D095, D119, D122, D124, D143, D151–D155; SPECIFICATION §§9–11/13.
+**Dependencias:** P010; D051, D088, D095, D119, D122, D124, D143, D151–D158; SPECIFICATION §§9–11/13.
 **Fuera de alcance:** Publicación remota o PyPI, cambio de visibilidad, commits/tags/push, ejecutar el harness sobre
 este repositorio, reescribir historia/snapshots, nube/multiusuario, aislamiento del SO, App Server/SDK, rediseño
 general, traducción automática de contenido libre o aplicaciones hijas, y ampliación de consentimientos de P009.
@@ -230,7 +235,9 @@ No incorporar automáticamente las otras candidatas ni prometer compatibilidad m
 **Estado:** planificada el 2026-10-22 por encargo del usuario, que permite añadir/modificar tareas para preparar
 la apertura. Ampliada por D155: diecinueve tareas pendientes, con T019 tras T002 y antes de T003;
 siguiente T001 (inventario y contrato), sin implementación ni ejecución operativa en esta entrega.
-Planificación finalizada por petición del usuario (D156), con commit documental autorizado; la fase no está cerrada.
+Planificación inicial finalizada en D156 y commit `6174f51`; ajustes D157/D158 confirmados por el usuario
+para commit documental propio, sin ejecución del producto.
+La fase no está cerrada; se mantienen diecinueve tareas y diez criterios, ajustados a ambas decisiones.
 [Plan](phase/P011_PLAN_APERTURA_PUBLICA.md), [tareas](NEXT_STEPS.md) y
 [D154](DECISIONS.md#d154--p011-preparación-para-apertura-pública-en-github).
 La primera versión local P010 sigue completada en su alcance; P011 añade objetivos públicos, no reabre ese cierre.

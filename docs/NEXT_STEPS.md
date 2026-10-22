@@ -4,8 +4,9 @@ Objetivo y criterios en [ROADMAP](ROADMAP.md#p011--preparación-para-apertura-p�
 Decisión: [D154](DECISIONS.md#d154--p011-preparación-para-apertura-pública-en-github).
 [Plan y alcance](phase/P011_PLAN_APERTURA_PUBLICA.md).
 
-**Estado:** planificada el 2026-10-22, ampliada por D155. Diecinueve tareas pendientes; sin implementación.
-**Planificación:** finalizada para ejecución por petición del usuario (D156); no equivale a fase completada.
+**Estado:** planificada el 2026-10-22, ampliada por D155/D157/D158. Diecinueve tareas pendientes; sin implementación.
+**Planificación:** base finalizada en D156, ajustes D157/D158 confirmados por el usuario para commit documental;
+no equivale a fase completada.
 **Siguiente:** P011-T001. Crear la fase no ejecuta sus tareas ni autoriza publicación.
 P001–P010 siguen cerradas; la primera versión local mantiene el alcance de D151/D153.
 
@@ -21,8 +22,10 @@ P001–P010 siguen cerradas; la primera versión local mantiene el alcance de D1
 - Preservar CAS, aceptación por contenido, permisos separados, locks, intención, cuarentena y recuperación.
   No reescribir archivos de fases cerradas, historiales, snapshots, catálogos ni recibos congelados.
 - Inglés como base del código, comentarios/docstrings, prompts originales y documentación pública vigente;
-  interfaz y trabajo de proyecto seleccionables en en/es. Datos de usuario, logs externos y fixtures bilingües
-  necesarios no se traducen por sustitución masiva. Excepciones históricas con ruta y motivo.
+  en los proyectos gestionados, defaults globales de idioma visual y de trabajo (en/es). El visual es global,
+  mutable y gobierna UI/conversación/respuestas humanas, nunca un ajuste de proyecto. El de trabajo se elige
+  al crear/incorporar, queda inmutable y gobierna documentación/código. Público my_harness: trabajo en inglés.
+  Datos originales, logs externos y fixtures necesarios no se traducen por sustitución masiva.
 - No renombrar protocolos, rutas canónicas, revisiones Alembic o claves persistidas por estética. Fuentes de
   recetas ligadas a huellas requieren el tratamiento T001 antes de tocarlas, incluso sus comentarios.
 - Modelos/migraciones con DDBB-DIAGRAM; flujos con `docs/flows/`; API con OpenAPI/tipos en la misma tarea.
@@ -36,7 +39,11 @@ P001–P010 siguen cerradas; la primera versión local mantiene el alcance de D1
 - D156 reserva el modo continuo `tareas → commits → check → cierre/archivo → planificación y ejecución de la
   siguiente fase` para v0.2.0 después de abrir el proyecto en GitHub, fuera de estas tareas. P011 mantiene
   cierre con READY y autorización propia, nueva fase sin tareas y confirmación del plan posterior.
-  La petición actual autoriza el commit documental que finaliza esta planificación, sin ejecutar la fase ni publicar.
+  El commit D156 ya se realizó; la nueva petición confirma D157/D158 y autoriza su commit documental,
+  sin ejecutar tareas ni publicar.
+- D157 elige instantánea pública inicial revisada, con Git/documentación de partida nuevos y sin historia privada.
+  Desde la apertura, código/decisiones/fases se desarrollan en el repositorio público, fuente principal; este
+  checkout conserva su historia privada. No sincronizar dos desarrollos activos ni congelar para siempre `docs/` pública.
 
 ## P011-T001 — Inventario y contrato de la apertura pública
 
@@ -44,15 +51,20 @@ P001–P010 siguen cerradas; la primera versión local mantiene el alcance de D1
 **Objetivo:** Hacer implementables la traducción, los idiomas y la distribución sin romper compatibilidad.
 **Alcance:** inventario por archivo de comentarios/docstrings/descripciones e identificadores españoles;
 superficies UI/API/CLI/documentos/prompts; fuentes congeladas, hashes y lectores antiguos; brechas de primer uso
-y mapa de retirada del harness anterior con separación de infraestructura compartida por la incorporación B.
+y mapa de retirada del harness anterior con separación de infraestructura compartida por B, configuración
+global de idiomas y frontera de la instantánea inicial pública respecto de historia/documentación privadas.
 **Rutas permitidas:** `docs/**`.
 **Criterios de aceptación:**
 
 - Matriz por archivo/grupo con tarea propietaria, idioma actual, tratamiento y excepción justificada; revisar
   también español sin tildes. Separar texto de código, contenido de usuario y fixtures de compatibilidad.
-- Contrato separa preferencia visual y lengua de trabajo por proyecto (`en`/`es`): inglés para nuevos usuarios/
-  proyectos y conservación de la semántica anterior española. Fijar precedencias, persistencia, fallback,
-  interpolación/plurales/fechas, mensajes API/CLI, configuración, migraciones y snapshots por intento.
+- Contrato con defaults globales `ui_language` y `default_work_language` (en/es, inicial en); proyecto guarda solo
+  `work_language` elegido al crear/incorporar e inmutable. UI/conversación/respuestas humanas usan el visual global
+  actual; documentación y código usan trabajo. Cambiar defaults afecta solo a futuras altas, sin cascada a proyectos.
+  Definir persistencia, fallback/formatos, compatibilidad/migración y controles API/UI de inmutabilidad.
+- Congelar ambas lenguas al admitir cada job/turno; un cambio visual rige nuevas interacciones, sin mutar llamadas,
+  reintentos o pendientes ya congelados. Mapear por campo la prosa humana y los artefactos técnicos en respuestas
+  estructuradas; definir inyección controlada en contexto de instrucciones para ambos proveedores, sin inventar flags.
 - Decidir la solución React/Python mínima con justificación y decisión de dependencias; no elegir `.po` por
   analogía con Django. Definir tratamiento de recetas cuyo texto entra en `fingerprint()`, prompts versionados,
   ADR históricas, anclas, parsers D088 y fixtures congelados antes de editarlos.
@@ -60,6 +72,8 @@ y mapa de retirada del harness anterior con separación de infraestructura compa
   de salida, tareas/evidencias y decisiones pendientes, sin implantar producto ni dar auditorías por realizadas.
 - Identificar entradas legacy/A, observadores, prompts, módulos/tablas propios y dependencias compartidas por B,
   recuperación, backups e historiales propios. Definir disposición no destructiva de datos/jobs antiguos para T019.
+- Definir exportación inicial por lista permitida, docs públicas suficientes para forks/agentes sin referencias
+  privadas rotas y continuidad pública posterior con decisiones/fases; no reescribir el historial de este checkout.
 
 **Validación:** contraste estático de código, decisiones, parsers y enlaces; sin suites ni procesos de agentes.
 **Entregables:** `docs/phase/P011-T001_CONTRATO_APERTURA.md`, inventario y decisión de diseño.
@@ -78,6 +92,9 @@ alcanzable, soporte/contribución y reporte responsable; exclusión de estado y 
   planificación no elige licencia; su ausencia es bloqueo identificado de esta tarea y de la preparación pública.
 - Auditar contenido actual, historial alcanzable y archivos previstos de wheel/sdist; informe saneado con
   cobertura/límites, sin copiar secretos. `.gitignore` no constituye saneamiento del historial.
+- Separar auditoría de origen privado y del árbol/historial público nuevos: inventario permitido para exportación,
+  sin `.git`, archivo de fases, ADR internas, evidencias/rutas privadas o enlaces a ellas. No publicar el historial
+  privado ni asumir que borrar `docs/` de un clon lo elimina. Documentación pública nueva conserva contexto técnico útil.
 - No borrar ni reescribir historia automáticamente. Un hallazgo histórico necesita resolución explícita antes
   de declarar publicable el conjunto. Preservar atribuciones; documentos públicos ingleses sin contactos inventados.
 
@@ -157,56 +174,73 @@ Alembic temporal si cambia esquema.
 ## P011-T007 — Infraestructura de idiomas para interfaz y mensajes
 
 **Estado:** pendiente. **Depende de:** T001, T006.
-**Objetivo:** Introducir catálogos en/es y preferencia visual independiente de la lengua de proyecto.
-**Alcance:** solución T001, selector accesible, persistencia, fallback, formatos/plurales y mensajes API/CLI propios.
+**Objetivo:** Añadir ajustes globales de idiomas, catálogos en/es y conversación en el idioma visual.
+**Alcance:** solución T001, ajustes/defaults globales, selector accesible, persistencia/fallback/formatos,
+propagación de lengua de respuesta a nuevas interacciones y mensajes API/CLI propios.
 **Rutas permitidas:** `frontend/**`, `src/harness_local/**`, `tests/**`, `pyproject.toml`, `uv.lock`, `docs/**`.
 **Criterios de aceptación:**
 
-- Inglés inicial en instalaciones nuevas y elección en/es persistente según contrato; casos de locale inválido,
-  catálogos/claves ausentes y almacenamiento no disponible definidos. Dependencias nuevas con decisión y locks.
+- Ajustes globales explícitos: idioma visual mutable y default de idioma de trabajo para nuevas altas, ambos
+  en/es e inicialmente en. Cambiar default no cambia proyectos existentes. Sin idioma visual guardado en el proyecto;
+  definir persistencia por operador/sesión local y precedencias sin modificar TOML/configuración global del equipo.
+- UI/catálogos, conversación, preguntas HITL y respuestas humanas usan visual; cambios visuales rigen nuevos
+  jobs/turnos. Invocaciones y pendientes conservan su par congelado; no reencolar ni invalidar aceptaciones por cambiar UI.
 - Claves estables, interpolación segura y formatos accesibles, sin concatenación de frases traducidas; mecanismo
   explícito de locale para mensajes propios API/CLI, preservando códigos, estados, estructura y evidencia original.
-- Cambiar UI no reencola trabajo, modifica hashes de aceptaciones ni cambia lengua de proyecto. Logs externos
-  y datos de usuario conservan su texto; establecer control de cobertura de catálogos antes de T010.
+- Fallback para locale inválido, claves/almacenamiento ausentes; cobertura de catálogos y dependencias con decisión/
+  locks. Logs externos, contenido libre y mensajes históricos mantienen original. Paridad si cambia almacenamiento/API.
 
-**Validación:** preferencia/fallback/interpolación/formatos y límites API; Node/tipos/build, pytest pertinente y
-OpenAPI regenerado si cambia contrato.
+**Validación:** preferencias/defaults/fallback, cambios entre turnos y aislamiento de jobs pendientes, límites API;
+Node/tipos/build, pytest pertinente, Alembic temporal y OpenAPI regenerado si cambia contrato/esquema.
 **Entregables:** `docs/phase/P011-T007_INFRAESTRUCTURA_IDIOMAS.md`, decisión y catálogos iniciales.
 
-## P011-T008 — Idioma de trabajo por proyecto y contexto congelado
+## P011-T008 — Idioma de trabajo inmutable por proyecto y contexto congelado
 
 **Estado:** pendiente. **Depende de:** T001, T007.
-**Objetivo:** Elegir en/es para conversaciones y documentos nuevos por proyecto con trazabilidad.
-**Alcance:** configuración, registro/creación/incorporación B/ajustes, persistencia/API y contexto de jobs/intentos.
+**Objetivo:** Fijar en/es al crear/incorporar para documentación/código del proyecto, separado de la conversación.
+**Alcance:** default global, registro/creación/incorporación B, lectura de ajustes, persistencia/API y contexto
+de jobs/intentos. No se añade un selector visual por proyecto ni se permite cambiar trabajo en sus ajustes.
 **Rutas permitidas:** `src/harness_local/**`, `frontend/**`, `tests/**`, `examples/**`, `docs/**`.
 **Criterios de aceptación:**
 
-- Selección visible al crear/incorporar y cambiar ajustes, con procedencia persistida; nuevos proyectos en en,
-  configuraciones/proyectos antiguos conservan semántica y lectura histórica. UI y lengua de trabajo distinguibles.
-- Idioma efectivo congelado con jobs/intentos/conversaciones pertinentes; cambio confirmado solo para trabajo
-  futuro, sin reescribir contratos, borradores, documentos, propuestas, runs ni aceptaciones anteriores.
-- Definir bloqueos/invalidez de trabajo pendiente al cambiar, CAS, idempotencia, recuperación, migración y backup;
-  paridad de DDBB-DIAGRAM/flujos y tipos en la misma entrega. El idioma no amplía permisos.
+- Selección explícita y vista previa al crear/incorporar, inicializada desde default global (en de fábrica), con
+  procedencia persistida y ligada a confirmación por hash. Tras confirmar el alta es inmutable también por API/
+  configuración/importaciones; ajustes existentes solo muestran el valor. Nuevos defaults no lo sobrescriben.
+- Documentación/código/comentarios nuevos siguen trabajo; UI/conversación usan visual global. Leer fuentes previas
+  en otro idioma sigue permitido, sin traducirlas ni renombrar interfaces automáticamente. No traducir keywords,
+  comandos, formatos, rutas o códigos técnicos, ni confundirlo con idioma funcional de la app hija.
+- Congelar trabajo y lengua visual de respuesta por job/turno, con procedencia en intentos/prompts; cambios globales
+  posteriores no mutan pendientes/reintentos ni historia. Configuraciones/proyectos antiguos conservan lectura y
+  semántica; migrar el valor explícitamente sin deducirlo por heurísticas ni retraducir archivos existentes.
+- CAS/idempotencia/concurrencia, recuperación/backup y rechazo de cambios posteriores probados; paridad de
+  DDBB-DIAGRAM/flujos/API/tipos. El idioma no amplía permisos ni activa escrituras/instalaciones por sí mismo.
 
-**Validación:** en/es y configuración antigua, concurrencia, reinicio/snapshots; pytest, Alembic temporal,
+**Validación:** cuatro combinaciones visual/trabajo en/es, inmutabilidad por UI/API, defaults antiguos/nuevos,
+concurrencia y reinicio/snapshots; pytest, Alembic temporal,
 OpenAPI/tipos y pruebas del cliente pertinentes.
 **Entregables:** `docs/phase/P011-T008_IDIOMA_PROYECTO.md` y contratos/documentación actualizados.
 
 ## P011-T009 — Prompts ingleses y documentos generados en la lengua elegida
 
 **Estado:** pendiente. **Depende de:** T003, T004, T008.
-**Objetivo:** Prompts originales ingleses con resultados libres y documentos nuevos en la lengua elegida.
+**Objetivo:** Prompts originales ingleses con prosa humana en idioma visual y documentación/código en trabajo fijo.
 **Alcance:** plantillas/catálogos/esquemas, esqueletos y bloques D088, chat, planificación, revisión, definición,
 incorporación B, resúmenes, check/cierre/archivo e instrucciones de proyecto; sin prompts para el Flujo A retirado.
 **Rutas permitidas:** `src/harness_local/**`, `tests/**`, `frontend/tests/**`, `docs/**`.
 **Criterios de aceptación:**
 
-- Prompts originales ingleses, incluidos textos que explican literales españoles de compatibilidad; inyección
-  inequívoca de idioma y nuevas identidades, sin reescribir catálogos congelados. Prompts personalizados editables.
+- Prompts originales ingleses y personalizados editables; directivas del motor tipadas para ambos proveedores:
+  `Respond to the user in {ui_language}. Write project documentation and code in {work_language}.`
+  Usar en/es validados y canal de instrucciones soportado por cada adaptador, sin prometer un system prompt nativo
+  inexistente ni cambiar permisos. Congelar directivas/valores/identidad; no inyectar nuevos valores en un intento activo.
+- Mapear campos: respuestas/resúmenes dirigidos al usuario y preguntas HITL en visual; borradores Markdown,
+  contratos/planes/ADR, código/comentarios y contenido técnico persistido en trabajo. Una respuesta puede contener
+  prosa española y documentos ingleses. JSON/estados/keys técnicos permanecen estables; snapshot auditable del par.
 - Generación determinista en/es y parsers compatibles, sin traducir rutas, marcadores, JSON, comandos o códigos;
   no implica hacer bilingüe la app hija. Mantener único registro ADR y presupuestos D088.
-- Cambiar lengua no retraduce contenido/archivos existentes sin edición confirmada propia; lectura/reanudación
-  antigua intacta. Recorridos falsos en/es cubren definición → primera tarea → cierre y propuestas de chat.
+- Trabajo inmutable; cambiar visual afecta solo a nuevas interacciones, no archivos/contenido previo ni versiones
+  personalizadas congeladas. Lectura/reanudación antigua intacta; recorridos falsos combinan las cuatro parejas
+  visual/trabajo, definición → tarea → cierre y chat. No prometer reducción fija de tokens por elegir inglés.
 
 **Validación:** regresiones de plantillas, hashes/codec, parsers y flujos sintéticos; pytest/unittest pertinentes.
 No anunciar agentes falsos como calidad lingüística probada con proveedores.
@@ -223,6 +257,9 @@ validaciones, ayuda CLI, textos ARIA, tooltips, estados vacíos y confirmaciones
 
 - Inventario cubierto y claves en ambos catálogos; sin restos involuntarios del otro idioma, con excepciones
   explícitas de código/evidencia/terceros. Mensajes propios API/CLI traducidos sin cambiar significado o protocolo.
+- Ajustes globales de visual/default trabajo y selección única de trabajo en el alta cubiertos; proyectos solo
+  muestran trabajo inmutable. Con visual es/trabajo en, interfaz/respuesta/preguntas en español y documentación/
+  código en inglés. Cambiar visual en el chat afecta próximas respuestas, sin modificar historial o jobs pendientes.
 - No traducir Markdown libre ni logs automáticamente. QA en/es, claro/oscuro y escritorio/móvil: longitud,
   formatos/plurales, teclado/accesibilidad, errores y confirmaciones; entorno sintético autorizado y saneado.
 
@@ -302,13 +339,17 @@ soporte, idiomas, compatibilidad y límites; excluye originales históricos cong
 **Criterios de aceptación:**
 
 - Documentación pública vigente inglesa, navegación española útil, enlaces/anclas y parsers/presupuestos D088
-  correctos. ADR históricas originales con guía inglesa, sin segundo registro canónico ni reescribir evidencia.
+  correctos. Baseline pública nueva en inglés con contexto técnico, arquitectura y decisiones iniciales suficientes
+  para forks/agentes; sin copiar ADR/fases privadas ni dejar enlaces/DNNN internos imprescindibles sin explicación.
+  Originales privados intactos; desde la apertura, nuevas decisiones/fases y docs se versionan en el repositorio público.
 - README cubre propósito/estado/licencia, requisitos servicio/build/hijo, autenticación, primer clon sin cachés,
   instalación de paquete, ejemplo mínimo de un proveedor, TOML v5, sesión, preparación y primer COMMITTED.
 - Presentar exactamente dos entradas: crear un proyecto nuevo o incorporar código existente sin harness;
   sin visor, observación, importación ni normalización del harness anterior en guías/opciones públicas.
 - Idiomas, CLI verificadas/candidatas, red/cachés/consumo y confirmaciones; reinicio/actualización/backup de
   consulta, diagnóstico, desinstalación conservando datos y contribución. Rutas sintéticas/placeholders claros.
+- Explicar visual global para UI/conversación, default global de trabajo y trabajo en/es inmutable al alta;
+  ejemplo español visual/inglés técnico para ambos proveedores. La documentación pública de my_harness usa trabajo en.
 - Separar desarrollo y uso instalado, sin modelos/rutas privadas ni archivos locales no distribuidos; instrucciones
   solo sobre capacidades entregadas. Declarar plataformas/evidencia pendientes; ensayo efectivo en T016.
 
@@ -335,6 +376,10 @@ sin procesos; revisión inglesa/española. No anunciar aún un primer uso ensaya
   y plataforma probada. CI sintética sin login/secretos/proveedores ni publicación automática, permisos explícitos.
 - Notas, hashes/manifiesto y procedimiento manual GitHub revisables. Escribir workflows no ejecuta jobs remotos,
   crea tags/Releases, cambia visibilidad ni publica. PyPI y publicación automática fuera de alcance.
+- Preparar instantánea inicial saneada con docs públicas nuevas y raíz Git independiente, sin `.git`/objetos/ramas/
+  tags ni historia privada. Registrar correspondencia origen/candidato de forma privada y comparar código aprobado,
+  recursos y dependencias. Después de abrir, el repositorio público será fuente principal de código/docs; no espejo
+  que sobrescriba contribuciones ni dos fuentes activas. Crear repositorio/commit público solo con autorización propia.
 
 **Validación:** inspección de contenidos/metadatos/workflows; construir/verificar solo con alcance de ejecución
 autorizado. CI remota pendiente si no se ejecutó, sin equivaler validación local y remota.
@@ -355,6 +400,10 @@ recorridos bilingües y recuperación/migración/backup.
   checkout, comprobar assets/catálogos/sesión y recorrer hasta COMMITTED/cierre en/es con agentes falsos.
 - Cambio de idioma sin mutar evidencia, CLI falsas posteriores/negativas, reinicio/migración/backup de consulta;
   QA navegador del candidato exacto con API sintética/integrada según autorización y procedencia separadas.
+- Probar las cuatro combinaciones visual/trabajo, defaults que no cambian proyectos, rechazo de modificar trabajo
+  tras el alta y cambio visual entre turnos con llamadas activas/pendientes congeladas; fuentes B mixtas legibles.
+- Ensayo desde la instantánea pública permitida, sin historial/docs privados ni referencias imprescindibles ausentes;
+  código/recursos equivalentes al candidato aprobado, documentación nueva útil para forks/agentes y build autónomo.
 - Ambos accesos finales probados (desde cero/B); rutas/comandos/observación legacy/A ausentes o rechazados sin
   ejecutar efectos, sin activar observadores al arrancar ni al consultar respaldos de instalaciones anteriores.
 - Base/versión/hashes, capturas saneadas, comandos/resultados/skips y servicios detenidos registrados; corregir
@@ -381,6 +430,8 @@ licencia/privacidad, compatibilidad/soporte, diagramas/docs, artefactos y CI.
   acotada y revisión afectada; dictamen favorable antes de T018.
 - Expediente con contenido publicable, notas/artefactos/hashes y acciones remotas exactas propuestas; recomendar
   abrir no ejecuta push, tag, Release o cambio de visibilidad.
+- Frontera inicial privada/pública y continuidad pública de código/decisiones/fases documentadas; idiomas conforme
+  a D158 (visual global, defaults globales y trabajo inmutable). No exigir publicar ADR/historia privadas para cumplir.
 
 **Validación:** contraste documental con evidencia T016 y diff final, enlaces/versiones/hashes; sin repetir
 suites ya válidas salvo cambios/fallos que lo justifiquen ni lanzar nuevas operaciones reales.

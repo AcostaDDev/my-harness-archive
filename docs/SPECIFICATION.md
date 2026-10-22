@@ -75,7 +75,7 @@ run y, cuando procede, al intento exacto.
 | F20 | Elegir carpeta de proyectos | Raíz elegida explícitamente en UI y persistida; concede al servicio crear nuevos hijos sin que la IA decida su ubicación | Implementado (P009-T002, D117); carpeta elegida y creación real en T007, piloto cerrado en T012 (D139) |
 | F21 | Agentes configurables por proyecto | Elegir proveedores y modelo/esfuerzo del revisor en UI; selección concreta del ejecutor a cargo del revisor | Implementado (P009-T003, D118): presets v5, selección por checkout y cambios confirmados entre tareas |
 | F22 | Preparar Django desde cero | Hijo nuevo, documentos D088, scaffold, entorno/dependencias y validaciones mediante receta confirmada | Implementado (P009-T004, D119); ensayo real T005 (D120) y piloto T007–T012 con P001 cerrada/archivada (D139) |
-| F23 | Idioma visual y de trabajo | Elegir en/es para interfaz propia y, de forma independiente, conversaciones/documentos nuevos por proyecto, con contexto congelado | Planificado, no implementado (P011, D154; §13) |
+| F23 | Idioma visual y de trabajo | Defaults globales en/es: visual global mutable para UI/conversación y trabajo inmutable por proyecto para documentación/código, con ambos congelados por job/turno | Planificado, no implementado (P011, D158; §13); afina D154 |
 | F24 | Compatibilidad CLI ampliable | Mínimos/capacidades por proveedor/rol, diagnóstico y versiones verificadas/candidatas sin allowlist por patch | Planificado, no implementado (P011, D154; §13); siguen vigentes las listas exactas de `cli-13` |
 
 Modos por checkout: **observación** (indexa un harness anterior) y **gestionado** (el motor nuevo controla). Nunca
@@ -278,9 +278,12 @@ no cambian el alcance entregado de P010 ni sus límites D151/D153.
 - Inglés como base del código mantenido, comentarios/docstrings/descripciones y prompts originales; inventario
   por archivo y revisión de identificadores españoles internos. Conservar protocolos y originales históricos,
   fuentes ligadas a huellas/recibos con tratamiento compatible y excepciones de fixtures bilingües justificadas.
-- Elegir en/es para interfaz/mensajes propios y, por separado, lengua de trabajo de cada proyecto. Inglés para
-  nuevos usuarios/proyectos; conservar la semántica anterior y congelar lengua efectiva por intento. Generar
-  respuestas libres/documentos nuevos en la elegida, sin retraducir evidencia ni archivos previos por cambiarla.
+- Defaults globales `ui_language` y `default_work_language` en/es, inicialmente en; visual mutable y global para
+  UI, mensajes, conversación/respuestas humanas y preguntas HITL, nunca un ajuste de proyecto. Trabajo elegido
+  al crear/incorporar, inmutable y persistido por proyecto para documentación/código. Defaults nuevos solo rigen altas.
+- Congelar el par efectivo por job/turno y sus intentos. Cambiar visual afecta nuevas interacciones, sin mutar
+  llamadas activas, jobs pendientes/reintentos, textos históricos o aceptaciones. Fuentes existentes en otros
+  idiomas siguen legibles, sin traducción forzada ni cambios de interfaces/keywords/rutas por el locale.
 - Prompts originales ingleses, con personalización preservada. T001 concreta i18n React/Python, configuración,
   precedencias, persistencia, migraciones, fallback y snapshots antes de implementarlos; los parsers siguen
   admitiendo documentos en/es sin cambiar rutas canónicas, marcadores, comandos o códigos de estado.
@@ -308,6 +311,19 @@ deciden en sus tareas; no se presuponen. Se prepara expediente de apertura, mant
 remota/PyPI, cambio de visibilidad, tag/push/commit y operación del harness sobre este repositorio.
 Caracterización/inferencia real y ensayos operativos conservan sus autorizaciones propias; D151 sigue vigente.
 Detalle en [plan](phase/P011_PLAN_APERTURA_PUBLICA.md) y [tareas](NEXT_STEPS.md).
+
+[D157](DECISIONS.md#d157--repositorio-público-nuevo-y-continuidad-del-desarrollo) prevé una instantánea pública
+inicial revisada, con historia Git y documentación de partida nuevas, sin exportar las ADR/fases/historia privadas.
+Después de abrir, repositorio público como fuente principal de código, nuevas decisiones y fases, con contexto
+útil para usuarios/forks/agentes; este checkout conserva su historia privada. No se congelará la documentación
+pública entre versiones ni se mantendrán dos fuentes activas sobrescribiéndose.
+
+[D158](DECISIONS.md#d158--idioma-visual-global-y-trabajo-inmutable-por-proyecto) sustituye el idioma mutable por
+proyecto propuesto en D154: trabajo fijo al alta, visual global para conversación y defaults globales. Una misma
+respuesta puede llevar explicación española y borradores/código ingleses; el contrato mapeará los campos humanos
+y técnicos con directivas tipadas, usando el canal de instrucciones soportado por ambos proveedores. Prompts
+originales ingleses, contenido técnico público de my_harness en inglés y lengua humana elegible; no implica
+traducir toda entrada/archivo ni garantizar un ahorro fijo de tokens. Todo sigue planificado, no implementado.
 
 [D156](DECISIONS.md#d156--planificación-de-p011-finalizada-y-modo-continuo-aplazado-a-v020) finaliza esta
 planificación y aplaza el modo continuo entre fases a v0.2.0 después de la apertura inicial en GitHub, fuera de P011.

@@ -73,19 +73,29 @@ salvo donde se indica. Detalle por fase en `docs/archive/phase-NNN/SUMMARY.md`; 
 
 **P011 — Preparación para apertura pública en GitHub**, planificada el 2026-10-22 por encargo del usuario
 ([D154](DECISIONS.md#d154--p011-preparación-para-apertura-pública-en-github),
-[plan](phase/P011_PLAN_APERTURA_PUBLICA.md), [tareas](NEXT_STEPS.md)). Diecinueve tareas pendientes (ampliación D155);
+[plan](phase/P011_PLAN_APERTURA_PUBLICA.md), [tareas](NEXT_STEPS.md)). Diecinueve tareas pendientes (D155/D157/D158);
 esta entrega solo planifica, sin implementar traducción, selección de idiomas o nueva compatibilidad CLI.
 
 **Planificación finalizada para comenzar su ejecución** por petición del usuario
 ([D156](DECISIONS.md#d156--planificación-de-p011-finalizada-y-modo-continuo-aplazado-a-v020)).
 P011 no está completada: sus diecinueve tareas siguen pendientes y la siguiente es T001.
 El modo continuo entre fases queda reservado para **v0.2.0, después de abrir el proyecto en GitHub**;
-no forma parte de P011 ni modifica el cierre confirmado actual. El commit documental de planificación está autorizado.
+no forma parte de P011 ni modifica el cierre confirmado actual. Commit documental D156 realizado en `6174f51`;
+las ampliaciones D157/D158 están confirmadas por el usuario y se incorporan en un commit documental propio,
+sin ejecución del producto ni publicación.
 
-Objetivo: código/comentarios/docstrings y prompts originales ingleses; interfaz y trabajo por proyecto en en/es;
+Objetivo: código/comentarios/docstrings y prompts originales ingleses; idiomas visual/trabajo separados (D158);
 CLI por capacidades/mínimos; diagramas contrastados con comportamiento; documentación inglesa y README de primer
 uso; licencia/contenido publicable, paquete/CI y QA del candidato antes del dictamen. Sin publicar ni abrir
 visibilidad por efecto de esta fase. Licencia/titularidad y versión candidata se resuelven en sus tareas.
+
+[D157](DECISIONS.md#d157--repositorio-público-nuevo-y-continuidad-del-desarrollo) prevé instantánea inicial
+revisada sin historia/docs privados y con docs públicas nuevas útiles; después, código/decisiones/fases evolucionan
+en el repositorio público como fuente principal. Este checkout conserva su historia; no hay copia/repositorio nuevos aún.
+[D158](DECISIONS.md#d158--idioma-visual-global-y-trabajo-inmutable-por-proyecto): defaults globales visual/trabajo
+en/es (en inicial); visual global mutable gobierna UI y conversación/respuesta humana. Trabajo se elige al alta
+y es inmutable para documentación/código, sin visual por proyecto. my_harness público usará trabajo en inglés;
+ambas lenguas se congelarán por job/turno, con nuevas respuestas en el visual elegido sin mutar las ya iniciadas.
 
 [D155](DECISIONS.md#d155--p011-retirada-del-harness-anterior-y-dos-vías-de-alta) añade T019 antes de T003:
 retirar visor/observación/importación legacy y normalización A, conservando solo creación desde cero e

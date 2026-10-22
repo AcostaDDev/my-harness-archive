@@ -167,6 +167,8 @@ tarea se leen solo las decisiones que cita; este índice sirve para buscar prece
 | [D154](#d154--p011-preparación-para-apertura-pública-en-github) | P011: preparación para apertura pública en GitHub | P011 |
 | [D155](#d155--p011-retirada-del-harness-anterior-y-dos-vías-de-alta) | P011: retirada del harness anterior y dos vías de alta | P011 |
 | [D156](#d156--planificación-de-p011-finalizada-y-modo-continuo-aplazado-a-v020) | Planificación de P011 finalizada y modo continuo aplazado a v0.2.0 | P011 |
+| [D157](#d157--repositorio-público-nuevo-y-continuidad-del-desarrollo) | Repositorio público nuevo y continuidad del desarrollo | P011 |
+| [D158](#d158--idioma-visual-global-y-trabajo-inmutable-por-proyecto) | Idioma visual global y trabajo inmutable por proyecto | P011 |
 
 ## D001 — Alcance local y arquitectura base
 
@@ -4629,3 +4631,54 @@ Estado: decidido por el usuario el 2026-10-22; planificación finalizada, ejecuc
 - Se conservan decisiones/archivos históricos; sin cambios de producto, modelos, flujos implementados,
   dependencias o configuración global, sin agentes/proveedores/smokes, servicios, tags, push, publicación o cambio
   de visibilidad. Checks documentales y revisión del diff antes del commit; las suites del producto no aplican.
+
+## D157 — Repositorio público nuevo y continuidad del desarrollo
+
+Estado: preferencia adoptada para la planificación por el usuario el 2026-10-22; sin exportación ni publicación.
+[Plan](phase/P011_PLAN_APERTURA_PUBLICA.md), [tareas](NEXT_STEPS.md). Afina la frontera pública de D154/D156.
+
+- El usuario prefiere el segundo modelo: conservar privado el historial/documentación anteriores y, desde la
+  publicación, desarrollar código, documentación, decisiones y fases en el repositorio público, útiles para
+  usuarios/forks y sus agentes. No congelar ni excluir permanentemente `docs/` de las versiones públicas.
+- P011 preparará una instantánea inicial permitida/revisada con nueva raíz Git independiente y docs públicas
+  nuevas suficientes para explicar estado, arquitectura, decisiones de partida y contribución. No copiar `.git`,
+  objetos/refs/tags, historia privada, ADR/fases/evidencias internas ni referencias que exijan acceso a ellas.
+  No reescribir ni borrar la historia de este checkout para lograrlo.
+- Tras abrir, repositorio público como fuente principal de código/docs y cambios mediante commits/PR públicos;
+  este checkout conserva historia/archivo privado. No mantener dos desarrollos activos con copias que sobrescriban
+  contribuciones. La correspondencia entre origen privado y candidato se registra privadamente al preparar el corte.
+- T001/T002 definen frontera/inventario; T014 redacta contexto público nuevo; T015/T016 preparan/verifican el árbol
+  candidato y T017 revisa la transición. Solo publicar lo revisado con licencia/evidencia adecuadas; la decisión
+  no crea repositorios, autoriza push/cambio de visibilidad ni ejecuta el harness sobre este checkout o su futura copia.
+- Siguen diecinueve tareas y diez criterios; ninguna implementación iniciada. D156 y la reserva de automatización
+  para v0.2.0 siguen vigentes. No se hace otro commit por esta ampliación sin nueva petición.
+
+## D158 — Idioma visual global y trabajo inmutable por proyecto
+
+Estado: requisitos afinados por el usuario el 2026-10-22; diseño/implementación pendientes en P011.
+[Plan](phase/P011_PLAN_APERTURA_PUBLICA.md), [tareas](NEXT_STEPS.md). Sustituye el idioma mutable por proyecto
+y la asociación de conversación al trabajo propuestas en D154; conserva prompts originales ingleses y snapshots.
+
+- Dos ajustes/defaults globales del producto: `ui_language` y `default_work_language`, en/es e inicialmente en.
+  Cambiar el default de trabajo afecta solo a futuras altas. Persistencia/precedencias/formato se concretan en T001;
+  no se edita configuración global del equipo ni se presupone escribir TOML desde UI.
+- Visual global, mutable, no un ajuste por proyecto: UI, mensajes y conversación con el agente, sus respuestas
+  al usuario y preguntas HITL. La persona puede conversar en español mientras todo el trabajo técnico es inglés.
+- Trabajo por proyecto elegido explícitamente al crear/incorporar a partir del default global, ligado a la
+  confirmación de alta y después inmutable por UI/API/configuración. Rige documentación/planes/ADR y código/
+  comentarios nuevos que lee/escribe el agente; proyecto público my_harness se establece en inglés. Proyectos
+  previos preservan contratos/semántica, con migración explícita antes de futuras operaciones sin inferencias de idioma.
+- No impedir leer fuentes previas en otro idioma ni traducir automáticamente archivos, datos de usuario o logs.
+  No traducir keywords, nombres públicos, formatos, rutas canónicas, comandos o códigos técnicos por el locale;
+  no impone idioma funcional a la aplicación hija ni una reducción fija de tokens.
+- Congelar ambas lenguas al admitir cada job/turno, con directivas y procedencia en intentos/prompts: el cambio
+  visual rige nuevas interacciones, no modifica una llamada activa, jobs pendientes/reintentos, aceptaciones o
+  respuestas pasadas. La misma conversación puede tener nuevos turnos en otro visual sin cambiar trabajo.
+- Prompts originales en inglés y personalización conservada. Directiva del motor tipada, conceptualmente
+  `Respond to the user in {ui_language}. Write project documentation and code in {work_language}.`, por el canal
+  de instrucciones disponible de Codex/Claude, sin asumir flags/system prompts comunes inexistentes ni ampliar permisos.
+  Campos humanos en visual y borradores/código/contenido técnico en trabajo, incluso dentro de una misma respuesta.
+- T001 y T007–T010 se ajustan: defaults globales, selector visual, alta de trabajo inmutable, rechazo de cambios,
+  snapshot de ambos idiomas y pruebas de las cuatro combinaciones/concurrencia/compatibilidad. Modelos/flujos/API
+  con paridad al implementar; hoy solo cambian documentos del plan, sin proveedores, servicios, instalaciones,
+  código, esquema, nuevos commits o publicación.

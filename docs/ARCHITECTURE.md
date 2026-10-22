@@ -350,9 +350,10 @@ y la evidencia ([entrega](archive/phase-010/P010-T006_DOCUMENTACION_VERSION.md),
 cambiar todavía implementación, dependencias, configuración, esquema, codec o catálogo de CLI.
 La convención española de §8 y las listas exactas de §6 siguen describiendo el producto actual hasta sus entregas.
 
-T001 inventaría superficies/identidades y fija el contrato de idiomas: preferencia visual en/es independiente de
-lengua por proyecto, catálogos/fallback/formatos, persistencia y snapshots por intento, compatibilidad previa y
-prompts originales ingleses. La solución de internacionalización del cliente React y mensajes Python se decide
+T001 inventaría superficies/identidades y fija el contrato de idiomas D158: defaults globales visual/trabajo en/es;
+visual global mutable para UI/conversación y trabajo inmutable al alta para documentación/código por proyecto.
+Catálogos/fallback/formatos, persistencia, par congelado por job/turno, compatibilidad y prompts originales ingleses.
+La solución de internacionalización del cliente React y mensajes Python se decide
 antes de añadir dependencias, no se asume `.po`. T007–T010 implementarán el contrato con paridad de modelos,
 flujos y API/tipos en cada cambio; esta planificación no dibuja tablas o flujos como ya existentes.
 
@@ -386,3 +387,14 @@ planificación de P011, con tareas pendientes, y reserva para v0.2.0 posterior a
 continuo entre fases. No se modifica ahora supervisor/cola/autorizaciones: el lote actual encadena tareas/commits,
 no inicia check/cierre y la planificación posterior mantiene su confirmación por hash (D034/D091).
 El diseño futuro de automatización y sus límites tiene fase/tareas propias por definir, fuera de esta entrega.
+
+D157 planifica la frontera inicial: instantánea saneada en repositorio público con nueva raíz Git y docs útiles
+de partida, sin objetos/historia/ADR/fases privados; después código/decisiones/fases evolucionan allí como fuente
+principal. Exportación/validación en T002/T014–T017, sin reescribir este checkout ni crear/publicar repositorios ahora.
+
+D158 requiere persistir solo trabajo inmutable en el proyecto y defaults/preferencia visual en ajustes globales
+del producto; el contrato T001 determinará el almacenamiento sin editar TOML/configuración global del equipo.
+Cada job/turno congela trabajo y lengua visual de respuesta; cambios globales no alteran pendientes/activos ni
+reintentos. Directivas tipadas y versionadas separarán prosa humana de borradores/código en respuestas estructuradas.
+Se usará el canal de instrucciones realmente disponible en cada CLI, sin asumir un system prompt nativo común;
+no cambia hoy `render_attempt`, adaptadores, variables, snapshots, API o esquema. T007–T010 tendrán su paridad.

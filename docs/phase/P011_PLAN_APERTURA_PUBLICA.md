@@ -1,9 +1,9 @@
 # P011 — Plan de preparación para apertura pública en GitHub
 
 Fecha: 2026-10-22. Decisión: [D154](../DECISIONS.md#d154--p011-preparación-para-apertura-pública-en-github).
-**Estado:** planificación documental ampliada por D155; diecinueve tareas pendientes, sin implementación.
-**Planificación finalizada:** por petición del usuario (D156), con commit documental en inglés autorizado;
-la fase sigue pendiente de ejecución, con T001 como siguiente tarea.
+**Estado:** planificación afinada por D155/D157/D158; diecinueve tareas pendientes, sin implementación.
+**Planificación inicial:** finalizada en D156 y commit `6174f51`; ajustes D157/D158 confirmados por el usuario
+para commit documental propio. La fase sigue pendiente de ejecución, con T001 como siguiente tarea.
 [Criterios](../ROADMAP.md#p011--preparación-para-apertura-pública-en-github),
 [tareas](../NEXT_STEPS.md), [estado](../STATE.md).
 
@@ -23,6 +23,24 @@ candidata quedan para sus tareas; no se presumen aquí ni se cambia visibilidad 
 funcionalidades del harness anterior antes de la apertura pública. Se incorpora T019 y un décimo criterio de
 salida, manteniendo los números anteriores. La retirada es trabajo pendiente, no eliminación ya implementada.
 
+## Corte inicial privado/público y desarrollo posterior
+
+[D157](../DECISIONS.md#d157--repositorio-público-nuevo-y-continuidad-del-desarrollo) adopta como dirección el
+segundo modelo propuesto por el usuario: instantánea pública inicial revisada con nueva raíz Git y documentación
+de partida nueva, conservando este historial/ADR/fases anteriores privados. No exportar `.git`/objetos/refs/tags,
+archivos internos o enlaces/contexto que requieran acceso privado; tampoco reescribir o borrar este historial.
+
+La documentación pública inicial sí debe explicar el estado real, arquitectura, decisiones técnicas de partida,
+requisitos/operación y cómo contribuir, para que usuarios/forks/agentes dispongan de contexto suficiente. No es
+una carpeta vacía ni un índice de ADR internas. Se mantiene D088 con contexto público nuevo coherente, sin fingir
+que decisiones/fases privadas ocurrieron en el nuevo repositorio. Mapear la procedencia del corte privadamente.
+
+Desde la apertura, el repositorio público será fuente principal de código y docs; nuevas decisiones/fases se
+registran y versionan allí y evolucionan con las releases. Este checkout conserva historia/archivo privado, sin
+dos desarrollos activos sincronizados por copias que sobrescriban contribuciones. No excluir ni congelar las docs
+públicas posteriores. T001/T002 definen frontera, T014 el contexto público y T015–T017 el candidato/verificación.
+Aquí no se crea una copia, inicializa Git, publica, cambia visibilidad ni opera ningún checkout con el harness.
+
 ## Modo continuo reservado para v0.2.0
 
 [D156](../DECISIONS.md#d156--planificación-de-p011-finalizada-y-modo-continuo-aplazado-a-v020) reserva el
@@ -34,8 +52,9 @@ la autoridad por registrarlo. T015 no asigna v0.2.0 a la apertura inicial ni inc
 
 El comportamiento vigente conserva lote de tareas/commits, check explícito y cierre con autorización propia.
 El cierre confirmado archiva y abre la sucesora de ROADMAP sin tareas; su plan posterior requiere confirmación.
-Finalizar esta planificación no equivale a cerrar P011, publicar el paquete o cambiar versión; el usuario
-autoriza únicamente el commit documental en inglés del plan y sus ampliaciones.
+Finalizar esta planificación no equivale a cerrar P011, publicar el paquete o cambiar versión. El commit
+documental autorizado en D156 ya se hizo; la nueva petición confirma D157/D158 y autoriza su commit documental,
+sin ejecutar tareas ni publicar.
 
 ## Base inspeccionada
 
@@ -62,15 +81,29 @@ autoriza únicamente el commit documental en inglés del plan y sus ampliaciones
 |---|---|---|
 | Código mantenido, comentarios/docstrings/descripciones | Inglés y revisión de identificadores españoles internos | Protocolos, rutas/revisiones/claves persistidas no se renombran por estética |
 | Prompts originales | Instrucciones inglesas con lengua efectiva de salida | Personalización y catálogos congelados intactos |
-| UI/API/CLI propios | Catálogos en/es, selector/fallback y formatos definidos para el producto tras retirar legacy/A | Logs externos y datos de usuario mantienen original |
-| Trabajo por proyecto | en/es para respuestas libres, borradores/documentos nuevos; independiente de UI | Snapshot por intento; cambio futuro confirmado, sin retraducir evidencia |
-| Documentación pública vigente | Inglés principal, entrada española útil | Historia/ADR conservan original, guía inglesa sin segundo registro de decisiones |
+| Ajustes globales | Visual y default de trabajo en/es, inicialmente en; visual mutable y default solo para nuevas altas | No son cambios del TOML/configuración global del equipo |
+| UI/API/CLI y conversación | UI/mensajes/respuestas humanas/HITL en visual global; sin ajuste visual por proyecto | Logs, mensajes históricos y datos originales no se retraducen |
+| Trabajo por proyecto | en/es inmutable desde alta para documentos/planes/ADR/código/comentarios nuevos | Ambas lenguas congeladas por job/turno; fuentes previas en otros idiomas legibles |
+| Documentación pública vigente | Baseline inglesa nueva y entrada española; futuras decisiones/fases públicas | Historia/ADR privadas originales conservadas y excluidas del corte inicial |
 | Fixtures/evidencias | Comentarios mantenidos ingleses, entradas bilingües donde prueban comportamiento | Excepciones históricas por ruta/motivo, bytes/hashes intactos |
 
-Objetivo: inglés inicial para nuevos usuarios/proyectos y conservación de la semántica española anterior donde
-se debe mantener compatibilidad. T001 concreta persistencia/precedencias/formatos; T008 congela la lengua y T009
-la aplica a generación. No obliga a internacionalizar automáticamente las apps hijas, traducir contenido libre
-existente ni garantizar que un modelo siempre responda en el idioma pedido.
+[D158](../DECISIONS.md#d158--idioma-visual-global-y-trabajo-inmutable-por-proyecto) afina el contrato inicial:
+`ui_language` y `default_work_language` globales, en/es y en inicial. Visual es global y mutable, gobierna UI y
+conversación/respuestas humanas/HITL; nunca se guarda por proyecto. `work_language` se elige al crear/incorporar
+desde default global y queda inmutable por UI/API/configuración; gobierna documentación y código. Nuevos defaults
+solo afectan futuras altas. El propio proyecto público my_harness se establece con trabajo en inglés.
+
+Ejemplo: visual es/trabajo en produce conversación/respuesta española y documentos/código ingleses. Cambiar
+visual durante el proyecto cambia próximas interacciones, sin cambiar trabajo. Ambas lenguas se capturan al
+admitir cada job/turno y conservan en sus intentos: no mutar una llamada activa, pendientes/reintentos o historia.
+Un resultado puede combinar prosa humana en visual y borradores/código en trabajo; T001/T009 mapearán sus campos.
+
+Prompts originales ingleses, con directiva del motor tipada como `Respond to the user in {ui_language}. Write
+project documentation and code in {work_language}.` por el canal de instrucciones disponible de ambos proveedores,
+sin suponer system prompt/flags comunes inexistentes. Plantillas personalizadas editables y congeladas por intento.
+Leer fuentes previas de otro idioma está permitido; no traducir arbitrariamente contenido, protocolos/rutas,
+keywords o interfaces públicas. No impone idioma funcional a apps hijas ni garantiza ahorro fijo de tokens.
+T001 concretará persistencia/precedencias/migración compatibles; T007–T010 implementarán el contrato y sus pruebas.
 
 React permite organizar catálogos y un proveedor/contexto de idioma. T001 elegirá biblioteca o solución propia
 según interpolación, plurales/fechas, accesibilidad y mantenimiento, con decisión antes de añadir dependencias.
@@ -127,9 +160,9 @@ actual hasta implementarse T019; no se exigen mantener como capacidades pública
 | T004 | Inglés backend/recetas con compatibilidad de huellas | T001, T003 |
 | T005 | Inglés frontend/scripts/ejemplos | T001, T004 |
 | T006 | Inglés comentarios de tests/fixtures y excepciones | T001, T005 |
-| T007 | Catálogos y preferencia visual/mensajes | T001, T006 |
-| T008 | Lengua por proyecto cero/B, persistencia/API y snapshots | T001, T007 |
-| T009 | Prompts ingleses y generación en/es | T003, T004, T008 |
+| T007 | Defaults globales, catálogos, visual y conversación | T001, T006 |
+| T008 | Trabajo inmutable por proyecto cero/B y snapshots del par | T001, T007 |
+| T009 | Prompts ingleses: prosa visual y documentos/código en trabajo | T003, T004, T008 |
 | T010 | Traducción UI/API/CLI completa y QA | T007, T008, T009 |
 | T011 | Contrato CLI: capacidades, mínimos y procedencia | T001, T004 |
 | T012 | Compatibilidad/diagnósticos implementados | T007, T011 |
@@ -154,7 +187,9 @@ por separado. No se fija todavía `1.0.0` ni se presume una nueva versión entre
 
 T002 audita contenido rastreado e historial alcanzable, además de artefactos, con hallazgos saneados. Una
 resolución que necesite reescribir/eliminar historia exige decisión aparte; traducir no retira atribuciones ni
-altera snapshots. La licencia/titularidad debe elegirse expresamente antes de incorporar términos al paquete.
+altera snapshots. La auditoría privada identifica lo excluido; el candidato público lleva historia/docs nuevas
+según D157, no necesita publicar esa historia interna para considerarse revisado. La licencia/titularidad debe
+elegirse expresamente antes de incorporar términos al paquete.
 
 T015 prepara metadatos/versión candidata, wheel/sdist con recursos, notas/manifiesto y CI sintética sin secretos
 ni proveedores. Workflows propuestos no equivalen a ejecución remota. T016 presenta primero comandos, destinos,
@@ -220,3 +255,25 @@ conservación histórica y diff se registran debajo al terminar.
 - Sin unittest/pytest/Node/tipos/build/Alembic ni verificador del wheel: no cambia producto. Sin instalaciones,
   servicios, agentes/proveedores, smokes, tag, push, publicación o cambio de visibilidad. El commit documental
   sí está autorizado por esta petición; las verificaciones anteriores mantienen su contexto histórico.
+
+## Comprobación de los ajustes D157/D158
+
+- Parsers puros: once fases, diez criterios P011, diecinueve tareas pendientes con campos reconocidos y 158
+  decisiones con estado. Orden/dependencias T001 → T002 → T019 → T003–T018 válidos; no se añaden tareas sin acotar.
+- Presupuestos: STATE 10.792/24.576 bytes, base acumulada 6.548/12.288 y NEXT_STEPS 39.934/49.152.
+  Cincuenta y siete enlaces/anclas locales comprobados por documento en el plan activo y secciones nuevas.
+- D001–D156/índice previo, base acumulada, fases P001–P010 y horizonte v0.2.0 conservados por bytes respecto de
+  `6174f51`; verificación de la separación visual/global/trabajo fijo y del corte inicial privado/público en tareas.
+- Diff revisado y `git diff --check` correcto. Solo siete documentos del plan modificados; sin cambios de producto,
+  modelos, flujos implementados, código/tests o archivos históricos. No se ejecutan suites, instalaciones,
+  servicios, CLI reales, agentes/proveedores o smokes; sin stage, commit, copia/repositorio nuevo o publicación.
+- Comprobaciones anteriores conservadas con su contexto; ninguna acredita idiomas implementados, ahorro de
+  tokens, calidad lingüística de proveedores o existencia de un repositorio público. La implementación sigue pendiente.
+
+## Confirmación y commit de los ajustes D157/D158
+
+El usuario confirma las modificaciones documentales y pide su commit. Se revisan el diff y los checks puros:
+once fases, diez criterios, diecinueve tareas pendientes, 158 decisiones, dependencias, 57 enlaces/anclas y
+presupuestos dentro de límites; historial y código intactos. Los registros anteriores conservan su contexto.
+Commit documental en inglés con los siete archivos del plan; sin suites de producto por no cambiar código,
+sin implementación, nueva copia/repositorio, proveedores, servicios, push, tag o publicación.
