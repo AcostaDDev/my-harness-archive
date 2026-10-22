@@ -13,7 +13,7 @@ from pathlib import PurePosixPath
 import stat
 from uuid import uuid4
 
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from harness_local.core.engine.commit import CommitIntent, MechanicalUpdate
@@ -27,11 +27,13 @@ from harness_local.core.engine.documents import (
 from harness_local.core.engine.evidence import matches
 from harness_local.core.engine.phases import document_hashes
 from harness_local.core.engine.serialization import load_history, restore_context
+from harness_local.storage import run_projection
 from harness_local.storage.managed import Conflict, _job
 from harness_local.storage.metrics import phase_consumption
 from harness_local.storage.models import (
-    ManagedCommitRow as Commit, ManagedJobRow as Job, ManagedRunRow as Run, PhaseAuthorizationRow as Authorization,
-    PhaseDefinitionRow as Definition, PhaseOperationRow as Operation, PhaseRow as Phase,
+    ManagedAttemptRow as AttemptRow, ManagedCommitRow as Commit, ManagedJobRow as Job, ManagedRunRow as Run,
+    PhaseAuthorizationRow as Authorization, PhaseDefinitionRow as Definition, PhaseOperationRow as Operation,
+    PhaseRow as Phase, RunProjectionCycleRow as Cycle, RunProjectionRow as Projection,
 )
 from harness_local.storage.permissions import actor
 from harness_local.storage.phases import PhaseRepository, _event, _latest, _open, _operation, _questions
@@ -43,8 +45,9 @@ DOCUMENT_KINDS = ('document_export', 'transition', 'document_edit', 'close')
 
 
 def _latest_run(session, root, code, task):
-    return session.scalar(select(Run).where(Run.root == root, Run.phase_id == code, Run.task_id == task,
-                                            Run.purpose == 'task').order_by(Run.created_at.desc(), Run.id).limit(1))
+    return session.execute(select(Run.id, Run.status, Run.revisions).where(
+        Run.root == root, Run.phase_id == code, Run.task_id == task, Run.purpose == 'task')
+        .order_by(Run.created_at.desc(), Run.id).limit(1)).first()
 
 
 def _commit_of(session, root, code, task):
@@ -53,25 +56,57 @@ def _commit_of(session, root, code, task):
         Commit.status == 'COMMITTED').order_by(Commit.finished_at.desc(), Commit.operation_id).limit(1))
 
 
-def _task_view(session, phase, task, *, planned, committing_run_id=None):
+def _result_text(payload_json):
+    try:
+        payload = json.loads(payload_json)
+    except ValueError:
+        return None
+    return payload['result'] if isinstance(payload, dict) and isinstance(payload.get('result'), str) else None
+
+
+def _history_facts(session, run_id):
+    """Intentos por rol, resumen del último ejecutor, veredicto y tests del último ciclo, desde el historial."""
+    history = load_history(session.scalar(select(Run.history_json).where(Run.id == run_id)))
+    attempts, summary = {}, None
+    for attempt in history.attempts:
+        attempts[attempt.request.role] = attempts.get(attempt.request.role, 0) + 1
+    executed = [a for a in history.attempts if a.request.role == 'executor' and a.result.payload_json]
+    if executed:
+        summary = _result_text(executed[-1].result.payload_json)
+    if not history.cycles:
+        return attempts, summary, None, None
+    return attempts, summary, history.cycles[-1].verdict, validation_counts(history.cycles[-1].validation)
+
+
+def _projected_facts(session, run_id):
+    """Lo mismo desde la proyección y `managed_attempts` (P010-T011), sin decodificar el historial.
+
+    Los intentos del historial son las filas 1..n de `managed_attempts` con el mismo request y resultado (`_history`
+    lo exige); las siguientes, sin resultado, aún no están en el historial y no cuentan."""
+    run_projection.require(session, [run_id])
+    recorded = (AttemptRow.run_id == run_id, AttemptRow.number <= select(Projection.attempts).where(
+        Projection.run_id == run_id).scalar_subquery())
+    role = func.json_extract(AttemptRow.request_json, '$.role')
+    attempts = dict(session.execute(select(role, func.count()).where(*recorded).group_by(role)
+                                    .order_by(func.min(AttemptRow.number))).all())
+    payload = func.json_extract(AttemptRow.result_json, '$.payload_json')
+    executed = session.scalar(select(payload).where(*recorded, role == 'executor', func.coalesce(payload, '') != '')
+                              .order_by(AttemptRow.number.desc()).limit(1))
+    summary = _result_text(executed) if executed is not None else None
+    last = session.execute(select(Cycle.number, Cycle.verdict).where(Cycle.run_id == run_id)
+                           .order_by(Cycle.number.desc()).limit(1)).first()
+    if last is None:
+        return attempts, summary, None, None
+    tests, _ = run_projection.cycle_tests(session, select(Cycle.run_id, Cycle.number).where(
+        Cycle.run_id == run_id, Cycle.number == last.number))[(run_id, last.number)]
+    return attempts, summary, last.verdict, tests
+
+
+def _task_view(session, phase, task, *, planned, committing_run_id=None, projected=False):
     run = _latest_run(session, phase.root, phase.code, task)
-    history = load_history(run.history_json) if run is not None else None
-    summary = verdict = tests = None
-    attempts = {}
-    if history is not None:
-        for attempt in history.attempts:
-            attempts[attempt.request.role] = attempts.get(attempt.request.role, 0) + 1
-        executed = [a for a in history.attempts if a.request.role == 'executor' and a.result.payload_json]
-        if executed:
-            try:
-                payload = json.loads(executed[-1].result.payload_json)
-            except ValueError:
-                payload = None
-            if isinstance(payload, dict) and isinstance(payload.get('result'), str):
-                summary = payload['result']
-        if history.cycles:
-            verdict = history.cycles[-1].verdict
-            tests = validation_counts(history.cycles[-1].validation)
+    attempts, summary, verdict, tests = {}, None, None, None
+    if run is not None:
+        attempts, summary, verdict, tests = (_projected_facts if projected else _history_facts)(session, run.id)
     committing = run is not None and run.id == committing_run_id
     return {'task_id': task, 'planned': planned, 'status': 'COMMITTED' if committing else (run.status if run else None),
             'verdict': verdict, 'commit': _commit_of(session, phase.root, phase.code, task), 'committing': committing,
@@ -79,15 +114,19 @@ def _task_view(session, phase, task, *, planned, committing_run_id=None):
             'revisions': run.revisions if run is not None else None}
 
 
-def state_snapshot(session, phase, committing_run_id=None) -> dict:
-    """Bloques de STATE/NEXT_STEPS: fase, tareas del plan y añadidas, preguntas y último check."""
-    tasks = [_task_view(session, phase, task, planned=True, committing_run_id=committing_run_id)
+def state_snapshot(session, phase, committing_run_id=None, *, projected=False) -> dict:
+    """Bloques de STATE/NEXT_STEPS: fase, tareas del plan y añadidas, preguntas y último check.
+
+    El motor (commit, transición, intención de exportación) lee el historial; `projected` solo lo usa la vista
+    previa de la exportación (P010-T011), cuyo resultado el envío confirmado compara con el del historial."""
+    tasks = [_task_view(session, phase, task, planned=True, committing_run_id=committing_run_id, projected=projected)
              for task in phase.definition['tasks']]
     extra = session.execute(select(Run.task_id).where(
         Run.root == phase.root, Run.phase_id == phase.code, Run.purpose == 'task',
         Run.task_id.notin_(phase.definition['tasks'] or [''])).group_by(Run.task_id)
         .order_by(Run.task_id)).scalars().all()
-    tasks += [_task_view(session, phase, task, planned=False, committing_run_id=committing_run_id) for task in extra]
+    tasks += [_task_view(session, phase, task, planned=False, committing_run_id=committing_run_id,
+                         projected=projected) for task in extra]
     check = _latest(session, phase.id, 'check')
     return {'phase': {'code': phase.code, 'status': phase.status, 'objective': phase.definition['objective']},
             'tasks': tasks, 'open_questions': [q.text for q in _open(_questions(session, phase.id))],

@@ -9,8 +9,9 @@ Decisión: [D141](DECISIONS.md#d141--p010-consolidación-de-la-primera-versión-
 **Estado:** fase planificada el 2026-10-21. T001 completada el 2026-10-22: diseño y matriz inicial, sin producto.
 Añade T011 (métricas y exportación sobre la proyección de runs). T002 completada el 2026-10-22 (D143): receta
 `typescript-web-recipe-1` implementada y verificada offline. T003 completada el 2026-10-22 (D144): proyección
-`run-projection-1` y vistas de runs sin decodificar historiales. T004–T011 pendientes; sin operación iniciada.
-**Siguiente:** T011, métricas y vista previa de exportación sobre la proyección (depende de T003).
+`run-projection-1` y vistas de runs sin decodificar historiales. T011 completada el 2026-10-22 (D145): métricas y
+vista previa de exportación sobre la proyección. T004–T010 pendientes; sin operación iniciada.
+**Siguiente:** T004, aclarar los marcadores opcionales de definición (depende de T001).
 
 ## Restricciones compartidas
 
@@ -232,7 +233,9 @@ contraste del paquete final con la matriz de aceptación y el alcance real decid
 
 ## P010-T011 — Métricas y exportación sin decodificar historiales
 
-**Estado:** pendiente. **Depende de:** T003. Añadida por T001 (D142); precede a T006.
+**Estado:** completada el 2026-10-22 ([entrega](phase/P010-T011_METRICAS_SIN_HISTORIAL.md), D145). Sin migración
+ni cambios de API; el envío confirmado de la exportación recalcula desde el historial.
+**Depende de:** T003. Añadida por T001 (D142); precede a T006.
 **Objetivo:** Cumplir SPECIFICATION §9 en las vistas que no son de runs y hoy decodifican historiales.
 **Alcance:** métricas (`summary`, `tasks`, `validations`) y vista previa de exportación documental sobre la
 proyección `run-projection-1` de T003 y `managed_attempts`; API/tipos y cliente si cambian. Las lecturas del motor
@@ -246,5 +249,6 @@ no cambian.
 - Ninguna tabla nueva sin medición que la justifique; si se añade, paridad en DDBB-DIAGRAM y backup.
 - Bloques de STATE, checks y exportación confirmada conservan su contenido y su autoridad.
 
-**Validación:** (prevista) pytest de métricas/exportación y regresiones; Node/tipos/build si cambia el cliente.
-**Entregables:** (previstos) `docs/phase/P010-T011_METRICAS_SIN_HISTORIAL.md`.
+**Validación:** pytest completa, unittest y Alembic en SQLite temporal (resultados en la entrega §6); medidas sobre un
+ámbito sintético de 35,4 MiB. Node/tipos/build no aplican: el cliente y la API no cambian.
+**Entregables:** `docs/phase/P010-T011_METRICAS_SIN_HISTORIAL.md`.

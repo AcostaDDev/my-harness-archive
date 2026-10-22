@@ -17,12 +17,12 @@ from pathlib import Path
 from sqlalchemy import case, func, select, text
 from sqlalchemy.orm import Session
 
-from harness_local.core.engine.documents import validation_counts
 from harness_local.core.engine.metrics import CATALOG, TOKENS, attempt_metrics, replay
-from harness_local.core.engine.serialization import load_history
+from harness_local.storage import run_projection
 from harness_local.storage.models import (
     AttemptMetricRow as Metric, AttemptModelMetricRow as ModelMetric, ManagedAttemptRow as AttemptRow,
     ManagedCommitRow as Commit, ManagedEventRow as Event, ManagedProcessRow as Process, ManagedRunRow as Run,
+    RunProjectionCycleRow as Cycle, RunProjectionRow as Projection, RunProjectionStopRow as Stop,
 )
 
 # `input_tokens` crudo no se agrega: Claude excluye la caché y Codex la incluye. Sí lo hace su forma normalizada.
@@ -262,9 +262,11 @@ class MetricsViews:
         return query.group_by(Run.root, Run.phase_id, Run.task_id).order_by(Run.root, Run.phase_id, Run.task_id)
 
     def _task(self, session, root, phase, task) -> dict:
-        runs = session.scalars(select(Run).where(Run.root == root, Run.phase_id == phase, Run.task_id == task,
-                                                 Run.purpose == 'task').order_by(Run.created_at, Run.id)).all()
+        runs = session.execute(select(Run.id, Run.status, Run.created_at).where(
+            Run.root == root, Run.phase_id == phase, Run.task_id == task, Run.purpose == 'task')
+            .order_by(Run.created_at, Run.id)).all()
         ids = [run.id for run in runs]
+        run_projection.require(session, ids)
         metrics = session.scalars(select(Metric).where(Metric.run_id.in_(ids))
                                   .order_by(Metric.started_at, Metric.number)).all()
         consumption = _consumption(session.execute(select(*_sums()).where(Metric.run_id.in_(ids))).one())
@@ -273,13 +275,21 @@ class MetricsViews:
             key = (row.role, row.provider, row.requested_model, row.requested_effort)
             agents[key] = agents.get(key, 0) + 1
             by_role[row.role] = by_role.get(row.role, 0) + 1
-        histories = [load_history(run.history_json) for run in runs]
-        executions = sum(1 for history in histories for a in history.attempts if a.request.role == 'executor')
-        verdicts = [cycle.verdict for history in histories for cycle in history.cycles if cycle.verdict]
+        # P010-T011: proyección `run-projection-1`, en el orden de los runs y de sus ciclos y paradas.
+        executions = session.scalar(select(func.coalesce(func.sum(Projection.executor_attempts), 0))
+                                    .where(Projection.run_id.in_(ids)))
+        ordered = (Run.created_at, Run.id)
+        first = session.scalar(select(Cycle.verdict).join(Run, Run.id == Cycle.run_id)
+                               .where(Cycle.run_id.in_(ids), func.coalesce(Cycle.verdict, '') != '')
+                               .order_by(*ordered, Cycle.number).limit(1))
+        latest = select(Cycle.run_id, Cycle.number).join(Run, Run.id == Cycle.run_id).where(Cycle.run_id.in_(ids)) \
+            .order_by(*(column.desc() for column in ordered), Cycle.number.desc()).limit(1)
+        tests = [counts for counts, _ in run_projection.cycle_tests(session, latest).values()]
+        stops = session.execute(select(Stop.stage, Stop.reason).join(Run, Run.id == Stop.run_id)
+                                .where(Stop.run_id.in_(ids)).order_by(*ordered, Stop.ordinal)).all()
         accepted = [row.finished_at for row in metrics if row.role == 'reviewer' and row.verdict == 'ACCEPT']
         committed = session.scalar(select(Commit.finished_at).where(Commit.run_id.in_(ids), Commit.status == 'COMMITTED')
                                    .order_by(Commit.finished_at).limit(1))
-        latest = next((h.cycles[-1] for h in reversed(histories) if h.cycles), None)
         started = runs[0].created_at if runs else None
         return {'root': root, 'phase_code': phase, 'task_id': task, 'runs': len(runs),
                 'status': runs[-1].status if runs else None,
@@ -287,13 +297,13 @@ class MetricsViews:
                            for (r, p, m, e), n in sorted(agents.items(), key=lambda kv: tuple(str(v) for v in kv[0]))],
                 'attempts_by_role': dict(sorted(by_role.items())),
                 'executions': executions, 'corrections': max(0, executions - 1) if executions else None,
-                'first_verdict': verdicts[0] if verdicts else None,
-                'accepted_first_time': (verdicts[0] == 'ACCEPT') if verdicts else None,
+                'first_verdict': first,
+                'accepted_first_time': (first == 'ACCEPT') if first else None,
                 'started_at': started, 'accepted_at': accepted[-1] if accepted else None, 'committed_at': committed,
                 'seconds_to_accept': _seconds(started, accepted[-1] if accepted else None),
                 'seconds_to_commit': _seconds(started, committed),
-                'tests': validation_counts(latest.validation) if latest is not None else None,
-                'stops': [{'stage': stop.stage, 'reason': stop.reason} for h in histories for stop in h.stops],
+                'tests': tests[0] if tests else None,
+                'stops': [{'stage': stop.stage, 'reason': stop.reason} for stop in stops],
                 'consumption': consumption}
 
     def tasks(self, scope, offset, limit):
@@ -307,29 +317,33 @@ class MetricsViews:
         tarea o raíz, con la clave descendente.
 
         Los ciclos no guardan su hora (`source_attempt_id` solo existe con reportes JUnit), así que no se agrupan
-        por día: la fecha sería inferida. La fase es el eje de la evolución."""
+        por día: la fecha sería inferida. La fase es el eje de la evolución. P010-T011: recuentos por ciclo desde la
+        proyección, sin decodificar historiales."""
         if dimension not in VALIDATION_DIMENSIONS:
             raise ValueError(f'Dimensión desconocida: {dimension}')
+        key = {'phase': Run.phase_id, 'task': Run.task_id, 'root': Run.root}[dimension]
         groups = {}
         with Session(self.engine) as session:
-            for run in session.scalars(_scope(select(Run).where(Run.purpose == 'task'), Run, scope)):
-                key = {'phase': run.phase_id, 'task': run.task_id, 'root': run.root}[dimension]
-                for cycle in load_history(run.history_json).cycles:
-                    if cycle.validation is None:
-                        continue
-                    group = groups.setdefault(key, {'key': key, 'validations': 0, 'passed': 0, 'failed': 0,
-                                                    'commands_passed': 0, 'commands_failed': 0, 'cases': None,
-                                                    'validations_with_cases': 0})
-                    counts = validation_counts(cycle.validation)
-                    group['validations'] += 1
-                    group['passed' if cycle.validation.all_passed else 'failed'] += 1
-                    group['commands_passed'] += counts['commands_passed']
-                    group['commands_failed'] += counts['commands_failed']
-                    if counts['cases'] is not None:
-                        group['validations_with_cases'] += 1
-                        group['cases'] = group['cases'] or {'passed': 0, 'failed': 0, 'error': 0, 'skipped': 0}
-                        for name, value in counts['cases'].items():
-                            group['cases'][name] += value
+            runs = _scope(select(Run.id).where(Run.purpose == 'task'), Run, scope)
+            run_projection.require(session, runs)
+            cycles = select(Cycle.run_id, Cycle.number).where(Cycle.run_id.in_(runs))
+            tests = run_projection.cycle_tests(session, cycles)
+            for run_id, number, group_key in session.execute(
+                    select(Cycle.run_id, Cycle.number, key).join(Run, Run.id == Cycle.run_id)
+                    .where(Cycle.run_id.in_(runs)).order_by(Run.created_at, Run.id, Cycle.number)):
+                counts, all_passed = tests[(run_id, number)]
+                group = groups.setdefault(group_key, {'key': group_key, 'validations': 0, 'passed': 0, 'failed': 0,
+                                                      'commands_passed': 0, 'commands_failed': 0, 'cases': None,
+                                                      'validations_with_cases': 0})
+                group['validations'] += 1
+                group['passed' if all_passed else 'failed'] += 1
+                group['commands_passed'] += counts['commands_passed']
+                group['commands_failed'] += counts['commands_failed']
+                if counts['cases'] is not None:
+                    group['validations_with_cases'] += 1
+                    group['cases'] = group['cases'] or {'passed': 0, 'failed': 0, 'error': 0, 'skipped': 0}
+                    for name, value in counts['cases'].items():
+                        group['cases'][name] += value
         ordered = sorted(groups.values(), key=lambda group: group['key'], reverse=True)
         return {'dimension': dimension, 'items': ordered[offset:offset + limit], 'offset': offset,
                 'next_offset': offset + limit if len(ordered) > offset + limit else None}
@@ -343,11 +357,13 @@ class MetricsViews:
                 .outerjoin(Metric, Metric.attempt_id == AttemptRow.id)
                 .where(AttemptRow.result_json.is_not(None), Metric.attempt_id.is_(None)), Run, scope))
             tasks = [self._task(session, *key) for key in session.execute(self._task_keys(session, scope)).all()]
-            stops = {}
-            for run in session.scalars(_scope(select(Run), Run, scope)):
-                for stop in load_history(run.history_json).stops:
-                    key = (run.purpose, stop.stage, stop.reason)
-                    stops[key] = stops.get(key, 0) + 1
+            run_projection.require(session, _scope(select(Run.id), Run, scope))
+            count = func.count().label('count')
+            grouped = _scope(select(Run.purpose, Stop.stage, Stop.reason, count).join(Run, Run.id == Stop.run_id),
+                             Run, scope).group_by(Run.purpose, Stop.stage, Stop.reason)
+            distinct = session.scalar(select(func.count()).select_from(grouped.subquery()))
+            ranked = session.execute(grouped.order_by(count.desc(), Run.purpose, Stop.stage, Stop.reason)
+                                     .limit(STOP_LIMIT)).all()
         reviewed = [task for task in tasks if task['accepted_first_time'] is not None]
         tests = {'tasks_with_validation': 0, 'commands_passed': 0, 'commands_failed': 0,
                  'cases': None}
@@ -363,7 +379,6 @@ class MetricsViews:
                     tests['cases'][key] += value
         durations = [task['seconds_to_commit'] for task in tasks if task['seconds_to_commit'] is not None]
         corrections = [task['corrections'] for task in tasks if task['corrections'] is not None]
-        ranked = sorted(stops.items(), key=lambda kv: (-kv[1], kv[0]))
         return {'scope': scope, 'catalog': CATALOG, 'consumption': consumption, 'attempts_without_metrics': pending,
                 'tasks': {'count': len(tasks), 'reviewed': len(reviewed),
                           'accepted_first_time': sum(1 for task in reviewed if task['accepted_first_time']),
@@ -372,9 +387,9 @@ class MetricsViews:
                           'seconds_to_commit': {'sum': round(sum(durations), 3), 'tasks': len(durations),
                                                 'max': max(durations)} if durations else None},
                 'tests': tests,
-                'stops': {'distinct': len(ranked), 'items': [
+                'stops': {'distinct': distinct, 'items': [
                     {'purpose': purpose, 'stage': stage, 'reason': reason, 'count': n}
-                    for (purpose, stage, reason), n in ranked[:STOP_LIMIT]]}}
+                    for purpose, stage, reason, n in ranked]}}
 
 
 def phase_consumption(session, root, code) -> dict:

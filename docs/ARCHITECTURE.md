@@ -247,8 +247,8 @@ de las recetas Django y TypeScript web no heredan ese valor: reciben `HOME`/`TMP
   QA y cierre/archivo (D139); evidencia limitada a macOS arm64/Python 3.13. T012 agotó sus dos llamadas y no
   autoriza nuevas operaciones con proveedores.
 - Contención cooperativa (POSIX, rutas, sandbox de cada CLI); sin aislamiento del sistema operativo (D064, D065).
-- Las validaciones no guardan su hora. Las vistas de runs leen la proyección `run-projection-1` (D144); las métricas
-  y la vista previa de exportación aún decodifican historiales hasta P010-T011.
+- Las validaciones no guardan su hora. Las vistas de runs (D144), las métricas y la vista previa de exportación (D145)
+  leen la proyección `run-projection-1`; la transición, el commit de tarea y el resto del motor leen el historial.
 - El manifiesto que fija una receta (Django o TypeScript web) no admite dependencias nuevas tras preparar; requiere
   un flujo confirmado futuro. Las altas e importaciones aportan su propio `package.json` (D143).
 - Dos avisos *low* de KaTeX en Mermaid 11.

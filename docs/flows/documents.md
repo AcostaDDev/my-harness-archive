@@ -21,14 +21,22 @@ flowchart TD
         E5 --> E6["Job bajo el lock: intención sellada y commit"]
     end
     subgraph X["Exportación manual (D036)"]
-        X1["Vista previa de bloques desde SQLite"] --> X2["Confirmación del diff exacto"]
-        X2 --> X3["Commit conciliable y adopción de hashes"]
+        X1["Vista previa de bloques desde la proyección de runs"] --> X2["Confirmación del diff exacto"]
+        X2 --> X4["Envío: misma instantánea recalculada desde el historial"]
+        X4 --> X3["Commit conciliable y adopción de hashes"]
     end
 ```
 
 Reglas comunes: solo el harness escribe los bloques `harness-local:managed-*`; `docs/archive/**` es de solo lectura;
 con documentos sin confirmar no arranca ninguna tarea, check, exportación ni transición; un cambio externo después de
 la vista previa invalida el job sin sobrescribir.
+
+## Vista previa de la exportación (D145)
+
+La vista previa calcula los bloques desde la proyección `run-projection-1` y `managed_attempts`, sin decodificar
+historiales. El envío confirmado, la petición del job y la intención recalculan la instantánea desde el historial y
+exigen la misma que se revisó; si difiere, responden `Conflict` sin encolar ni escribir. El commit de tarea y la
+transición siguen regenerando los bloques desde el historial.
 
 El índice de DECISIONS (T002, D089) sale de los encabezados `## DNNN — título` del propio archivo y de la primera
 línea `Estado:` de cada sección; el bloque nunca se lee como fuente. La reconciliación de fase puede añadir decisiones

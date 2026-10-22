@@ -46,16 +46,15 @@ salvo donde se indica. Detalle por fase en `docs/archive/phase-NNN/SUMMARY.md`; 
 - **API y UI** ([P007](archive/phase-007/SUMMARY.md)): `/api/managed` con sesión local, Host/Origin y CSRF; UI por URL
   (registro, proyecto, documentación, creación, fases, tareas, runs con diff paginado, chat, estadísticas); métricas por
   intento con procedencia; observación legacy en `/legacy`. Detalle, ciclos paginados, diff y casos JUnit de un run
-  leen la proyección sin decodificar el historial (D144).
+  (D144), métricas y vista previa de exportación (D145) leen la proyección sin decodificar el historial.
 - **Operación** ([P006](archive/phase-006/SUMMARY.md)): wheel con UI y migraciones, `init-db`, `serve`,
   `check-config`, `metrics-backfill`, `diagnose-cli`; `scripts/dev` para desarrollo.
 - **Evidencia con proveedores reales** (consentimientos agotados): transporte de las tres CLI (D025), primer uso real
   COMMITTED con fase cerrada (D050), cuatro combinaciones revisor/ejecutor COMMITTED (D071) y recorrido Django
   desde creación UI hasta cuatro tareas, QA conjunto y cierre/archivo de P001 (P009-T012, D139);
   26 invocaciones de 60 previstas, sin autorización para operaciones nuevas.
-- **Límites**: contención cooperativa sin aislamiento del sistema operativo; validaciones sin hora; métricas y vista
-  previa de exportación aún decodifican historiales (T011); manifiestos de receta fijos tras preparar; dos avisos
-  *low* de KaTeX.
+- **Límites**: contención cooperativa sin aislamiento del sistema operativo; validaciones sin hora; manifiestos de
+  receta fijos tras preparar; dos avisos *low* de KaTeX.
   Piloto de receta Django limitado a macOS arm64/Python 3.13; el perfil Python/Django declarativo sigue pendiente
   de confirmar sobre un proyecto real. El piloto no evalúa comparativamente la calidad de modelos.
   Observaciones de P009: alta sin redirección, texto de marcadores de define-project y presentación de deriva
@@ -63,7 +62,7 @@ salvo donde se indica. Detalle por fase en `docs/archive/phase-NNN/SUMMARY.md`; 
 
 ## Fase activa
 
-**P010 — Consolidación de la primera versión local. En curso: T001, T002 y T003 completadas.**
+**P010 — Consolidación de la primera versión local. En curso: T001, T002, T003 y T011 completadas.**
 Planificada el 2026-10-21 ([D141](DECISIONS.md#d141--p010-consolidación-de-la-primera-versión-local),
 [plan](phase/P010_PLAN_CONSOLIDACION.md), [tareas](NEXT_STEPS.md)). El 2026-10-22 T001 deja el
 [contrato](phase/P010-T001_CONTRATO_CONSOLIDACION.md) y la matriz inicial
@@ -76,7 +75,11 @@ node/npm sintéticos y con node/npm reales sobre la caché local, offline. Tambi
 proyección `run-projection-1` ([entrega](phase/P010-T003_LECTURAS_RUNS.md),
 [D144](DECISIONS.md#d144--p010-t003-proyección-run-projection-1-implementada)): migración `0023`, vistas de runs sin
 decodificar el historial y ciclos paginados en la API, verificado con historiales sintéticos de los formatos 1–8 y uno
-de 26 MiB. T004–T011 pendientes.
+de 26 MiB. T011 lleva a la proyección las métricas y la vista previa de exportación
+([entrega](phase/P010-T011_METRICAS_SIN_HISTORIAL.md),
+[D145](DECISIONS.md#d145--p010-t011-métricas-y-vista-previa-de-exportación-sobre-la-proyección)); el envío
+confirmado se sigue contrastando con el historial. Sin migración ni cambios de API; verificado con los formatos 1–8,
+casos límite de validación y un ámbito sintético de 35,4 MiB. T004–T010 pendientes.
 
 P009 cerrada y archivada documentalmente el 2026-10-21
 ([resumen](archive/phase-009/SUMMARY.md), [revisión](archive/phase-009/REVIEW.md),
@@ -87,7 +90,8 @@ El Django hijo conserva P001 CLOSED, cuatro tareas COMMITTED, tag `p001` sobre `
 Última comprobación operativa en T012: servicios detenidos, cero locks y sin jobs pendientes; no se repite aquí.
 Este repositorio sigue sin registrarse ni ejecutarse con el harness; cierre manual sin check READY ni tag propio.
 
-**Siguiente:** P010-T011, métricas y vista previa de exportación sobre la proyección `run-projection-1`.
-Después: marcadores de definición (T004), fases cerradas (T005), documentación y evidencia de aceptación. Los límites actuales de la base acumulada siguen vigentes hasta implementar y verificar
+**Siguiente:** P010-T004, aclarar los marcadores opcionales de definición en una carpeta nueva.
+Después: fases cerradas (T005), documentación (T006) y evidencia de aceptación. Los límites actuales de la base
+acumulada siguen vigentes hasta implementar y verificar
 cada entrega; la cuestión del SSE gestionado (criterio 13) queda para T007. La validación real complementaria
 se concreta en T008; no se da por realizada ni autorizada. Sin nueva fase del Django hijo ni ampliación de consentimientos de P009.

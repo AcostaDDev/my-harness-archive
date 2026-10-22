@@ -155,6 +155,7 @@ tarea se leen solo las decisiones que cita; este índice sirve para buscar prece
 | [D142](#d142--p010-t001-receta-typescript-proyección-de-runs-y-tarea-t011) | P010-T001: receta TypeScript, proyección de runs y tarea T011 | P010 |
 | [D143](#d143--p010-t002-receta-typescript-web-recipe-1-implementada) | P010-T002: receta `typescript-web-recipe-1` implementada | P010 |
 | [D144](#d144--p010-t003-proyección-run-projection-1-implementada) | P010-T003: proyección `run-projection-1` implementada | P010 |
+| [D145](#d145--p010-t011-métricas-y-vista-previa-de-exportación-sobre-la-proyección) | P010-T011: métricas y vista previa de exportación sobre la proyección | P010 |
 
 ## D001 — Alcance local y arquitectura base
 
@@ -4356,3 +4357,25 @@ runs; métricas y exportación quedan para T011.
 
 Verificación con historiales sintéticos (formatos 1–8 tras la migración y uno de 26 MiB), motor y agentes falsos,
 comparando con la implementación anterior. No se migra la instalación real en esta fase.
+
+## D145 — P010-T011: métricas y vista previa de exportación sobre la proyección
+
+Estado: implementado y verificado offline el 2026-10-22. Fase: P010.
+[Entrega, medidas y límites](phase/P010-T011_METRICAS_SIN_HISTORIAL.md), [flujo](flows/documents.md#vista-previa-de-la-exportación-d145).
+Implementa D142 y el contrato de P010-T001 §2 para las vistas que no son de runs, sobre la proyección de D144.
+
+- Las métricas `summary`, `tasks` y `validations` y la vista previa de la exportación documental (formas D036 y v2)
+  leen `run-projection-1` y `managed_attempts`; no llaman a `load_history` ni seleccionan `history_json`.
+- La validación de cada ciclo se reconstruye sin casos en Python. SQL extrae de cada comando los campos que decide
+  `CommandResult.passed`, evaluado con la misma clase del motor, y cuenta los casos JUnit por reporte y resultado.
+  Solo un entero JSON es código de salida.
+- Los intentos del historial son las filas `1..attempts` de `managed_attempts`, invariante que ya exige `_history`.
+  Una fila posterior sin resultado es un intento en curso y no cuenta.
+- La vista previa no es autoridad. El envío confirmado, la petición del job y la intención recalculan la instantánea
+  desde el historial y exigen la revisada; si la proyección difiere, responden `Conflict` sin efecto. El commit de
+  tarea, la transición y su vista previa, los checks, el chat y la recuperación siguen leyendo el historial.
+- Un run sin proyección es una base inconsistente: las vistas fallan con diagnóstico y no reconstruyen.
+- Sin migración, tablas, columnas ni cambios de API: las medidas no justifican una versión nueva de la proyección.
+
+Verificación con historiales sintéticos (formatos 1–8 tras la migración, casos límite de validación y un ámbito de
+35,4 MiB), motor y agentes falsos, comparando con la implementación anterior. No se migra la instalación real.

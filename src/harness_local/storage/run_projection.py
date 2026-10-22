@@ -2,21 +2,22 @@
 
 `managed_runs.history_json` sigue siendo la autoridad. La proyección se escribe en la misma transacción que el
 historial desde sus dos únicos escritores (`_queue_new_run` y `_history`) y la migración 0023 la rellena para los
-runs anteriores decodificando cada historial una vez. Las vistas de runs leen solo estas tablas; el motor, la
-recuperación, los checks, el chat y los permisos siguen leyendo el historial. El backup recalcula y compara cada run.
+runs anteriores decodificando cada historial una vez. Las vistas de runs, las métricas y la vista previa de la
+exportación documental (P010-T011) leen estas tablas en lugar del historial; el motor, la recuperación, los checks, el chat y los
+permisos siguen leyendo el historial. El backup recalcula y compara cada run.
 """
 
 from dataclasses import asdict
 import hashlib
 import json
 
-from sqlalchemy import insert, update
+from sqlalchemy import func, insert, select, true, tuple_, update
 
 from harness_local.core.engine.contracts import freeze
 from harness_local.core.engine.serialization import load_history
-from harness_local.core.engine.validation import validation_payload
+from harness_local.core.engine.validation import CommandResult, validation_payload
 from harness_local.storage.models import (
-    RunProjectionCaseRow, RunProjectionCycleRow, RunProjectionDiffChunkRow, RunProjectionReportRow,
+    ManagedRunRow, RunProjectionCaseRow, RunProjectionCycleRow, RunProjectionDiffChunkRow, RunProjectionReportRow,
     RunProjectionRow, RunProjectionStopRow,
 )
 
@@ -155,3 +156,60 @@ def verify(db, run_id: str, history_json: str, history=None) -> dict:
 
 def loads(value):
     return json.loads(value) if value is not None else None
+
+
+# --- lecturas agregadas de las vistas (P010-T011) ------------------------------------------------------------
+
+
+def require(session, run_ids) -> None:
+    """`run_ids`: lista o select de ids. Las vistas no reconstruyen: un run sin proyección es una base inconsistente,
+    como en `managed_views`."""
+    missing = session.scalar(select(ManagedRunRow.id).where(
+        ManagedRunRow.id.in_(run_ids), ManagedRunRow.id.notin_(select(RunProjectionRow.run_id))).limit(1))
+    if missing is not None:
+        raise RuntimeError(f'Run {missing} sin proyección {PROJECTION}; la base no es consistente.')
+
+
+def cycle_tests(session, cycles) -> dict:
+    """`validation_counts` y `all_passed` de cada ciclo de `cycles` (select de run_id y número), sin decodificar el
+    historial: SQL extrae de cada comando solo lo que decide `CommandResult.passed` y cuenta los casos por resultado.
+
+    Devuelve {(run_id, número): (recuentos, all_passed)} con la misma semántica que la validación del historial."""
+    Cycle, Report, Case = RunProjectionCycleRow, RunProjectionReportRow, RunProjectionCaseRow
+    result = {tuple(key): ({'commands_passed': 0, 'commands_failed': 0, 'cases': None}, True)
+              for key in session.execute(select(Cycle.run_id, Cycle.number)
+                                         .where(tuple_(Cycle.run_id, Cycle.number).in_(cycles)))}
+    entry = func.json_each(Cycle.validation_json, '$.entries').table_valued('value')
+    field = lambda name: func.json_extract(entry.c.value, f'$.result.{name}')  # noqa: E731
+    for run_id, number, kind, code, error, timed_out, capture in session.execute(
+            select(Cycle.run_id, Cycle.number, func.json_type(entry.c.value, '$.result.exit_code'), field('exit_code'),
+                   field('error'), field('timed_out'), field('capture_json'))
+            .join(entry, true()).where(tuple_(Cycle.run_id, Cycle.number).in_(cycles))):
+        # SQLite devuelve false como 0 y true como 1: solo un entero JSON es código de salida (`type(...) is int`).
+        passed = CommandResult(code if kind == 'integer' else None, error=error, timed_out=bool(timed_out),
+                               capture_json=capture).passed
+        counts, all_passed = result[(run_id, number)]
+        counts['commands_passed' if passed else 'commands_failed'] += 1
+        result[(run_id, number)] = (counts, all_passed and passed)
+    observed = {}
+    outcome = func.json_extract(Case.case_json, '$.result')
+    for run_id, number, e, r, value, n in session.execute(
+            select(Case.run_id, Case.cycle, Case.entry, Case.report, outcome, func.count())
+            .where(tuple_(Case.run_id, Case.cycle).in_(cycles))
+            .group_by(Case.run_id, Case.cycle, Case.entry, Case.report, outcome)):
+        observed.setdefault((run_id, number, e, r), []).append((value, n))
+    for run_id, number, e, r, status, freshness in session.execute(
+            select(Report.run_id, Report.cycle, Report.entry, Report.report,
+                   func.json_extract(Report.summary_json, '$.status'), func.json_extract(Report.summary_json, '$.freshness'))
+            .where(tuple_(Report.run_id, Report.cycle).in_(cycles))
+            .order_by(Report.run_id, Report.cycle, Report.entry, Report.report)):
+        if status not in ('complete', 'partial'):
+            continue
+        counts, all_passed = result[(run_id, number)]
+        counts['cases'] = counts['cases'] or {'passed': 0, 'failed': 0, 'error': 0, 'skipped': 0}
+        for value, n in observed.get((run_id, number, e, r), ()):
+            counts['cases'][value if value in counts['cases'] else 'error'] += n
+            if freshness in ('created', 'changed') and value in ('failed', 'error'):
+                all_passed = False
+        result[(run_id, number)] = (counts, all_passed)
+    return result

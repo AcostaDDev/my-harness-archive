@@ -745,7 +745,8 @@ solo sin historia de preparación; de lo contrario se usa backup en consulta, si
 D142/D144. `run-projection-1`: tablas derivadas de `managed_runs.history_json`, que sigue siendo la autoridad. Se
 escriben en la misma transacción que el historial (`_queue_new_run` y `_history`) y `0023_run_projection` las rellena
 decodificando una vez cada historial existente (formatos 1–8), sin modificarlo. Las vistas de runs solo leen estas
-tablas; el motor, la recuperación, los checks, el chat y los permisos siguen leyendo el historial. Las columnas
+tablas, y las métricas y la vista previa de exportación (P010-T011, D145) las leen junto a `managed_attempts`; el motor,
+la recuperación, los checks, el chat y los permisos siguen leyendo el historial. Las columnas
 `*_json` guardan el texto exacto del historial o JSON congelado. El diff revisado se guarda en tramos fijos de 64 KiB
 (`chunk` desde 0). El backup recalcula cada run y compara filas y recuentos; nunca reconstruye.
 

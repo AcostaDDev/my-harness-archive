@@ -1,4 +1,5 @@
 """Exportación documental sobre operaciones de fase y jobs existentes; SQLite es autoridad."""
+import json
 from uuid import uuid4
 
 from sqlalchemy import select
@@ -8,8 +9,9 @@ from harness_local.core.engine.commit import CommitIntent
 from harness_local.core.engine.contracts import freeze
 from harness_local.core.engine.document_export import preview as build_preview
 from harness_local.core.engine.phases import document_hashes
+from harness_local.storage import run_projection
 from harness_local.storage.managed import Conflict, _job
-from harness_local.storage.models import ManagedJobRow as Job, ManagedRunRow as Run
+from harness_local.storage.models import ManagedJobRow as Job, ManagedRunRow as Run, RunProjectionRow as Projection
 from harness_local.storage.models import PhaseOperationRow as Operation, PhaseRow as Phase
 from harness_local.storage.permissions import actor
 from harness_local.storage.phases import (
@@ -18,20 +20,33 @@ from harness_local.storage.phases import (
 from harness_local.core.engine.serialization import load_history
 
 
-def snapshot(session, phase, context=None):
-    """Forma D036 (JSON) o, con el layout D072, la proyección legible de los bloques gestionados."""
+def _acceptance(session, run_id, projected):
+    if projected:
+        run_projection.require(session, [run_id])
+        accepted = session.scalar(select(Projection.acceptance_json).where(Projection.run_id == run_id))
+        return json.loads(accepted)['eligible'] if accepted is not None else None
+    history = load_history(session.scalar(select(Run.history_json).where(Run.id == run_id)))
+    return history.acceptance.eligible if history.acceptance else None
+
+
+def snapshot(session, phase, context=None, *, projected=False):
+    """Forma D036 (JSON) o, con el layout D072, la proyección legible de los bloques gestionados.
+
+    `projected`: solo la vista previa lee la proyección `run-projection-1` (P010-T011). El envío, la petición del job
+    y la intención recalculan desde el historial y exigen el mismo resultado que se revisó."""
     from harness_local.core.engine.documents import layout
     if context is not None and layout(context) is not None:
         from harness_local.storage.documents import phases_snapshot, state_snapshot
-        return {'layout': 'v2', 'state': state_snapshot(session, phase), 'phases': phases_snapshot(session, phase.root)}
+        return {'layout': 'v2', 'state': state_snapshot(session, phase, projected=projected),
+                'phases': phases_snapshot(session, phase.root)}
     tasks = {}
     committed = committed_tasks(session, phase)
     for task in sorted(phase.definition['tasks']):
-        run = session.scalar(select(Run).where(Run.root == phase.root, Run.phase_id == phase.code,
-                             Run.task_id == task, Run.purpose == 'task').order_by(Run.created_at.desc(), Run.id).limit(1))
-        history = load_history(run.history_json) if run else None
+        run = session.execute(select(Run.id, Run.status).where(
+            Run.root == phase.root, Run.phase_id == phase.code, Run.task_id == task, Run.purpose == 'task')
+            .order_by(Run.created_at.desc(), Run.id).limit(1)).first()
         tasks[task] = {'run_id': run.id if run else None, 'status': run.status if run else None,
-                       'acceptance': history.acceptance.eligible if history and history.acceptance else None,
+                       'acceptance': _acceptance(session, run.id, projected) if run else None,
                        'commit': committed[task]['commit'] if committed[task] else None,
                        'committed_run_id': committed[task]['run_id'] if committed[task] else None}
     check = _latest(session, phase.id, 'check')
@@ -88,7 +103,8 @@ class DocumentExportRepository:
             pending = _pending(session, phase)
             if pending is not None and pending.request.get('commit_intent'):
                 return {**pending.request['preview'], 'expected_version': phase.version, 'resume_operation_id': pending.id}
-            state, baseline, version = snapshot(session, phase, context), dict(phase.documents), phase.version
+            state, baseline = snapshot(session, phase, context, projected=True), dict(phase.documents)
+            version = phase.version
         try:
             shown = build_preview(context, state, baseline, git)
         except (ValueError, OSError, UnicodeError) as exc:
