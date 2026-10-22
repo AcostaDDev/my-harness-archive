@@ -1,4 +1,4 @@
-"""Activación de modo gestionado y procedencia del histórico legacy H2.5."""
+"""Managed mode activation and provenance of the legacy history H2.5."""
 from alembic import op
 import sqlalchemy as sa
 

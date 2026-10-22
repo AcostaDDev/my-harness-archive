@@ -1,8 +1,8 @@
-"""Supervisor local explícito H2.2/H2.3, sin entradas HTTP/CLI gestionadas.
+"""Explicit local supervisor H2.2/H2.3, without managed HTTP/CLI entry points.
 
-Cada run_once reclama como máximo un job. Varias llamadas pueden trabajar en
-checkouts diferentes; la base decide idempotencia y exclusión. Solo el heartbeat
-usa un hilo y nunca mantiene una sesión SQL durante llamadas del motor.
+Each run_once claims at most one job. Several calls may work on
+different checkouts; the database decides idempotency and exclusion. Only the heartbeat
+uses a thread and it never holds an SQL session during engine calls.
 """
 
 from dataclasses import asdict, replace
@@ -78,10 +78,10 @@ class _Journal:
 
 
 class _DocumentsJournal:
-    """D072: adopta los hashes de bloques gestionados en la misma transacción que registra el commit.
+    """D072: adopts the managed block hashes in the same transaction that records the commit.
 
-    La intención (nueva o pendiente de conciliar) fija qué bloques escribió el harness; sus hashes
-    anteriores se leen de la revisión base, de modo que la reanudación adopta lo mismo."""
+    The intent (new or pending reconciliation) fixes which blocks the harness wrote; their previous
+    hashes are read from the base revision, so resuming adopts the same thing."""
 
     def __init__(self, journal, writer, context):
         self.journal, self.writer, self.context = journal, writer, context
@@ -126,12 +126,12 @@ def guarded_writer(factory, guard):
 
 class LocalSupervisor:
     def __init__(self, repository, ports_factory, *, lease_seconds=30, commit_factory=None, lane=None):
-        """factory(context, frozen_versions) devuelve agentes, comandos y evidencia.
+        """factory(context, frozen_versions) returns agents, commands and evidence.
 
-        Los puertos CLI H2.3 se conectan solo por inyección explícita. La selección/versiones es explícita;
-        la factory debe rechazarlas si no dispone de la implementación congelada.
-        No es un servicio autoarrancado. `commit_factory(context, frozen_versions)` aporta el
-        escritor Git (captura + commit idempotente) solo para jobs de acción `commit`.
+        The H2.3 CLI ports are connected only by explicit injection. The selection/versions are explicit;
+        the factory must reject them if it lacks the frozen implementation.
+        It is not a self-starting service. `commit_factory(context, frozen_versions)` provides the
+        Git writer (capture + idempotent commit) only for jobs with the `commit` action.
         """
         self.lane = lane
         self.repository = repository
@@ -145,7 +145,7 @@ class LocalSupervisor:
 
     def run_once(self):
         self.repository.recover_expired()
-        # H3.4: el lote desatendido encola su siguiente paso antes de reclamar; nunca comprueba ni cierra.
+        # H3.4: the unattended batch queues its next step before claiming; it never checks or closes.
         from harness_local.storage.phases import advance_batches
         if self.lane != "chat":
             advance_batches(self.repository)
@@ -156,7 +156,7 @@ class LocalSupervisor:
         if retired is not None:
             self.repository.quarantine(claim, retired)
             return replace(claim, status="RECOVERY_REQUIRED")
-        # H2.5: antes de cualquier efecto. Escritor legacy, marcador o modo cambiado → REFUSED.
+        # H2.5: before any effect. Legacy writer, marker or changed mode → REFUSED.
         refusal = self.repository.mode_refusal(claim)
         if refusal is not None:
             self.repository.refuse(claim, refusal)
@@ -220,11 +220,11 @@ class LocalSupervisor:
                     raise RuntimeError('Document export requires the configured Git writer')
                 writer = self.commit_factory(context, versions)
                 frozen = DocumentExportRepository(self.repository).request(claim.run_id)
-                # En reanudación la intención ya existe; la guardia vuelve a comprobarse antes del efecto.
+                # On resume the intent already exists; the guard is checked again before the effect.
                 self.repository._require_mode(claim)
                 history, outcome = execute(context, record.history, frozen, writer, journal, self.repository.clock)
             elif request["action"] in ("document_edit", "phase_transition"):
-                # D072: edición confirmada o transición de fase; sin agentes, intención antes de escribir.
+                # D072: confirmed edit or phase transition; no agents, intent before writing.
                 from harness_local.core.engine.document_ops import execute
                 if self.commit_factory is None:
                     raise RuntimeError('Document operations require the configured Git writer')
@@ -277,7 +277,7 @@ class LocalSupervisor:
                     context = replace(context, root=destination)
                 history, outcome = chat_turn(context, record.history, frozen, agents, evidence, journal, catalog)
             elif request["action"] == "planning_turn":
-                # H6.5: turno de definición o de planificación de fase, de solo lectura y con petición congelada.
+                # H6.5: definition or phase planning turn, read-only and with a frozen request.
                 from harness_local.core.engine.definition import planning_turn
                 from harness_local.storage.planning import PlanningRepository
                 from harness_local.storage.prompts import PromptRepository
@@ -315,7 +315,7 @@ class LocalSupervisor:
                 history, outcome = planning_turn(context, record.history, snapshot, agents, observe, journal,
                                                  catalog)
             elif request["action"] in ("phase_check", "phase_close"):
-                # D088: check y cierre bajo el lock; el cierre incluye el archivo documental.
+                # D088: check and closure under the lock; the closure includes the documentary archive.
                 if self.commit_factory is None:
                     raise RuntimeError("Phase operations require the configured Git writer")
                 from harness_local.core.engine.phases import check_phase, close_phase
@@ -340,7 +340,7 @@ class LocalSupervisor:
                 updates = tuple(MechanicalUpdate(**item) for item in request["mechanical"])
                 history, blocks, committer = None, frozenset(), journal
                 if context.documents is not None:
-                    # D072: bloques gestionados regenerados sobre lo revisado, en el mismo commit.
+                    # D072: managed blocks regenerated over what was reviewed, in the same commit.
                     committer = _DocumentsJournal(journal, writer, context)
                     if journal.pending_commit() is None:
                         from harness_local.storage.documents import task_commit_updates
@@ -372,7 +372,7 @@ class LocalSupervisor:
             journal._call(self.repository.finish, history, outcome)
             return replace(claim, status="DONE")
         except Exception as exc:
-            # También un error de persistencia deja intención y lock para conciliación.
+            # A persistence error also leaves intent and lock for reconciliation.
             self.repository.quarantine(claim, f"{type(exc).__name__}: {exc}")
             raise
         finally:

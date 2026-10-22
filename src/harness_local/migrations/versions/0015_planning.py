@@ -1,4 +1,4 @@
-"""H6.5: conversaciones de definición y de planificación de fase, turnos congelados y propuestas."""
+"""H6.5: definition and phase planning conversations, frozen turns and proposals."""
 from alembic import op
 import sqlalchemy as sa
 

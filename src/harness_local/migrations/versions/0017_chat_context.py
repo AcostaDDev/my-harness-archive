@@ -1,4 +1,4 @@
-"""E5: tarea opcional como contexto por defecto de una conversación."""
+"""E5: optional task as the default context of a conversation."""
 from alembic import op
 import sqlalchemy as sa
 

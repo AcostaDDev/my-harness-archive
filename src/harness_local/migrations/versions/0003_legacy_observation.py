@@ -1,4 +1,4 @@
-"""Observación opt-in y eventos atómicos del índice H1.3."""
+"""Opt-in observation and atomic events of the H1.3 index."""
 from alembic import op
 import sqlalchemy as sa
 

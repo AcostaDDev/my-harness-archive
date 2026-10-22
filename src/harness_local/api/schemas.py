@@ -51,8 +51,8 @@ class SupervisorRead(BaseModel):
 
 
 class ReviewerAgentRead(BaseModel):
-    """D052: el revisor planifica, revisa, evalúa fases, conversa y propone el bootstrap (solo lectura)."""
-    provider: str | None  # null fuera de una composición CLI local-config-2 (demo o adaptador inyectado)
+    """D052: the reviewer plans, reviews, evaluates phases, converses and proposes the bootstrap (read-only)."""
+    provider: str | None  # null outside a local-config-2 CLI composition (demo or injected adapter)
     model: str
     effort: str
 
@@ -63,7 +63,7 @@ class SelectionRead(BaseModel):
 
 
 class ExecutorAgentRead(BaseModel):
-    """Único escritor; el revisor fija su modelo y esfuerzo en cada tarea y revisión."""
+    """Sole writer; the reviewer fixes its model and effort in each task and review."""
     provider: str | None
     selection_mode: Literal["catalog", "open"]
     models: list[str]
@@ -85,10 +85,10 @@ class ManagedProjectRead(BaseModel):
     versions: dict[str, str | None]
     tag_kind: Literal["lightweight", "annotated"]
     agents: ProjectAgentsRead
-    documents: Literal["v2"] | None = Field(default=None, description="Contrato documental unificado D088; null solo en lecturas de proyectos anteriores.")
+    documents: Literal["v2"] | None = Field(default=None, description="Unified D088 documentary contract; null only when reading earlier projects.")
     source: Literal["operator", "registry"] = Field(
-        default="operator", description="D076: declarado en el TOML del operador o registrado desde la UI.")
-    registry_version: int | None = Field(default=None, description="Versión del registro congelada en sus jobs.")
+        default="operator", description="D076: declared in the operator TOML or registered from the UI.")
+    registry_version: int | None = Field(default=None, description="Registry version frozen in its jobs.")
     bootstrap_enabled: bool = False
 
 
@@ -104,26 +104,26 @@ class RunCreate(BaseModel):
     phase_id: str = Field(min_length=1, max_length=120)
     text: str = Field(min_length=1, max_length=200_000)
     source_sha256: Annotated[str, Field(pattern=r'^[0-9a-f]{64}$')] | None = Field(default=None, description=(
-        'Hash de la sección elegida en `/projects/{id}/task-sources` (P009-T020). El servidor vuelve a leer el '
-        'documento y responde 409 si la tarea ya no existe o su texto cambió. Sin él, el texto se toma tal cual.'))
+        'Hash of the section chosen in `/projects/{id}/task-sources` (P009-T020). The server reads the '
+        'document again and responds 409 if the task is gone or its text changed. Without it, the text is used as is.'))
     notes: str | None = Field(default=None, max_length=4000, description=(
-        'Notas adicionales para el agente. Se congelan en el contrato (`additional_notes`) y llegan al planificador, '
-        'al ejecutor y al revisor; nunca amplían rutas, comandos ni permisos. Vacías equivalen a ausentes.'))
+        'Additional notes for the agent. They are frozen in the contract (`additional_notes`) and reach the planner, '
+        'the executor and the reviewer; they never widen paths, commands or permissions. Empty equals absent.'))
 
 
 class TaskSourceRead(BaseModel):
     task_id: str
     phase_id: str
     title: str
-    text: str = Field(description='Sección literal de la tarea, precedida de las restricciones compartidas si las hay.')
+    text: str = Field(description='Literal section of the task, preceded by the shared constraints if there are any.')
     sha256: str
 
 
 class TaskSourcesRead(BaseModel):
     path: str
-    sha256: str | None = Field(description='Hash del documento leído; null si no existe.')
+    sha256: str | None = Field(description='Hash of the document read; null if it does not exist.')
     items: list[TaskSourceRead]
-    diagnostics: list[str] = Field(description='Tareas repetidas o documento ausente: no se ofrecen para encolar.')
+    diagnostics: list[str] = Field(description='Repeated tasks or missing document: not offered for queuing.')
 
 
 class RunActionCreate(BaseModel):
@@ -174,10 +174,10 @@ class ManagedRunSummaryRead(BaseModel):
 
 
 class PhaseTaskRead(BaseModel):
-    """Resumen de una tarea de la fase para su URL `PNNN-TNNN` (D076); sin runs, `latest` es null."""
+    """Summary of a phase task for its `PNNN-TNNN` URL (D076); without runs, `latest` is null."""
     task_id: str
-    planned: bool = Field(description='La tarea figura en la definición vigente de la fase.')
-    runs: int = Field(description='Runs de propósito task registrados para esta tarea.')
+    planned: bool = Field(description='The task appears in the current definition of the phase.')
+    runs: int = Field(description='Runs with the task purpose recorded for this task.')
     latest: ManagedRunSummaryRead | None
 
 
@@ -238,14 +238,14 @@ class JUnitCasesRead(BaseModel):
 
 
 class CycleRead(BaseModel):
-    diff_sha256: str = Field(description='SHA-256 del diff revisado del ciclo (texto UTF-8 almacenado); su contenido se lee '
-                                         'paginado en `/runs/{id}/cycles/{n}/diff`.')
-    diff_bytes: int = Field(description='Tamaño en bytes UTF-8 del diff revisado del ciclo.')
+    diff_sha256: str = Field(description='SHA-256 of the reviewed cycle diff (stored UTF-8 text); its content is read '
+                                         'paginated at `/runs/{id}/cycles/{n}/diff`.')
+    diff_bytes: int = Field(description='Size in UTF-8 bytes of the reviewed diff of the cycle.')
     provenance: dict[str, Any] | None
     validation: ValidationRead
     review: dict[str, Any] | None
-    formatting: dict[str, Any] | None = Field(default=None, description='Formateo del perfil tras el intento del '
-                                              'ejecutor (comando, rutas, resultado); null si no hubo (D133).')
+    formatting: dict[str, Any] | None = Field(default=None, description='Profile formatting after the executor '
+                                              'attempt (command, paths, result); null if there was none (D133).')
     number: int
     verdict: str | None
     fingerprint: str
@@ -258,8 +258,8 @@ class CycleDiffRead(BaseModel):
     sha256: str
     size_bytes: int
     offset: int
-    next_offset: int | None = Field(description='Offset de la página siguiente; null en la última. Las páginas acaban en '
-                                                'fin de línea salvo una línea mayor que el límite, cortada en un límite UTF-8.')
+    next_offset: int | None = Field(description='Offset of the next page; null on the last one. Pages end at '
+                                                'a line end except for a line longer than the limit, cut at a UTF-8 boundary.')
     text: str
 
 
@@ -277,8 +277,8 @@ class ManagedHistoryRead(BaseModel):
     stop: StopRead | None
     stops: list[StopRead]
     attempts: int
-    cycle_count: int = Field(description='Ciclos de revisión del run; se leen por páginas en `/runs/{id}/cycles`.')
-    latest_cycle: CycleRead | None = Field(description='Último ciclo de revisión; null si el run aún no tiene ciclos.')
+    cycle_count: int = Field(description='Review cycles of the run; read by pages at `/runs/{id}/cycles`.')
+    latest_cycle: CycleRead | None = Field(description='Last review cycle; null if the run has no cycles yet.')
     acceptance: AcceptanceRead | None
 
 
@@ -302,8 +302,8 @@ class ManagedRunRead(ManagedRunSummaryRead):
     history: ManagedHistoryRead
     commit: ManagedCommitRead | None
     locked_by_job: int | None
-    active_job: int | None = Field(description='Job del run en cola, en curso o pendiente de recuperación; null si el run '
-                                               'no avanza sin una acción nueva.')
+    active_job: int | None = Field(description='Job of the run queued, running or pending recovery; null if the run '
+                                               'does not advance without a new action.')
 
 
 class ManagedAttemptRead(BaseModel):
@@ -462,7 +462,7 @@ class PhaseCreate(BaseModel):
     exit_criteria: list[str] = Field(min_length=1, max_length=100)
     tasks: list[str] = Field(max_length=200)
     documents: list[str] | None = Field(default=None, max_length=50,
-                                        description='Rutas del checkout; por defecto STATE y NEXT_STEPS del proyecto.')
+                                        description='Checkout paths; by default the project STATE and NEXT_STEPS.')
     tag: str | None = Field(default=None, max_length=100)
 
 
@@ -537,25 +537,25 @@ class PhaseClosureCheckRead(BaseModel):
 
 
 class PhaseClosureRead(BaseModel):
-    """P010-T005: evidencia histórica de una fase CLOSED o ABANDONED; nunca se recalcula con el estado actual."""
+    """P010-T005: historical evidence of a CLOSED or ABANDONED phase; never recomputed with the current state."""
     operation_id: str
     status: Literal['CLOSED', 'ABANDONED']
     finished_at: str | None
     actor: dict[str, Any] | None
     reason: str | None
     commit: str | None
-    tag: dict[str, Any] | None = Field(description='Resultado del tag creado al cerrar; null sin tag.')
+    tag: dict[str, Any] | None = Field(description='Result of the tag created on closing; null without a tag.')
     archive: str | None
-    check: PhaseClosureCheckRead | None = Field(description='Check READY que autorizó el cierre; null al abandonar.')
-    binding: dict[str, Any] = Field(description='Base histórica: head, hash de la evidencia y documentos del READY.')
+    check: PhaseClosureCheckRead | None = Field(description='READY check that authorized closing; null if abandoned.')
+    binding: dict[str, Any] = Field(description='Historical base: head, evidence hash and documents of the READY.')
     documents: dict[str, str | None] = Field(
-        description='Hashes esperados: base adoptada, renovación del cierre y ediciones confirmadas posteriores.')
-    renewed: list[str] = Field(description='Diferencias esperadas respecto de la base adoptada.')
+        description='Expected hashes: adopted base, closure renewal and later confirmed edits.')
+    renewed: list[str] = Field(description='Expected differences from the adopted base.')
     changed: list[str] | None = Field(
-        description='Documentos vivos distintos de los esperados; null si hay sucesora o no se pudieron leer.')
+        description='Live documents unlike the expected ones; null with a successor or if unreadable.')
     archive_files: list[str]
     archive_altered: list[str] | None = Field(
-        description='Archivos del archivo que ya no tienen los bytes del cierre; null si no se pudieron leer.')
+        description='Archive files that no longer have the closure bytes; null if they could not be read.')
 
 
 class PhaseDefinitionRead(BaseModel):
@@ -579,7 +579,7 @@ class PhaseRead(BaseModel):
     definition_number: int
     definitions: list[PhaseDefinitionRead]
     tag_kind: Literal['lightweight', 'annotated'] | None = Field(
-        description='Tipo de tag que fijará el cierre según el proyecto registrado; null si no está registrado.')
+        description='Tag kind the closure will set according to the registered project; null if it is not registered.')
     status: PhaseStatus
     version: int
     created_at: str
@@ -590,10 +590,10 @@ class PhaseRead(BaseModel):
     operations: list[PhaseOperationRead]
     authorizations: list[PhaseAuthorizationRead]
     ready: PhaseReadyRead | None
-    closure: PhaseClosureRead | None = Field(description='Cierre o abandono registrado; null mientras la fase está abierta.')
+    closure: PhaseClosureRead | None = Field(description='Recorded closure or abandonment; null while the phase is open.')
     actions: list[PhaseAction]
-    successor: str | None = Field(description='Código de la fase posterior del checkout; null si esta es la última. Solo la '
-                                              'última exporta su estado y decide sobre sus documentos.')
+    successor: str | None = Field(description='Code of the next phase of the checkout; null if this is the last. Only the '
+                                              'last one exports its state and decides on its documents.')
 
 
 class PhaseVersioned(BaseModel):
@@ -635,10 +635,10 @@ class PhaseBatchCreate(PhaseVersioned):
     reason: str = Field(min_length=1, max_length=2000)
     confirmed: Literal[True]
     chain_commits: bool = Field(default=False, description=(
-        'Alcance explícito «encadenar tareas y confirmar commits»: el supervisor encola cada tarea, el commit de '
-        'cada aceptación elegible y la siguiente tarea; se detiene en el primer bloqueo. Nunca comprueba ni cierra.'))
+        'Explicit scope «chain tasks and confirm commits»: the supervisor queues each task, the commit of '
+        'each eligible acceptance and the next task; it stops at the first blocker. It never checks or closes.'))
     text: str | None = Field(default=None, min_length=1, max_length=200_000,
-                             description='Texto del plan congelado; obligatorio solo con chain_commits.')
+                             description='Frozen plan text; required only with chain_commits.')
 
 
 class PhaseAmendCreate(PhaseVersioned):
@@ -682,7 +682,7 @@ class DocumentExportCreate(PhaseVersioned):
     confirmed: Literal[True]
 
 
-# --- D072/H6.3: contrato documental por fase -----------------------------------------------------
+# --- D072/H6.3: per-phase documentary contract ---------------------------------------------------
 
 
 DocumentKind = Literal['phase', 'product', 'instructions', 'diagram', 'flow', 'phase_work', 'archive', 'other']
@@ -726,7 +726,7 @@ class DocumentsStatusRead(BaseModel):
     documents: list[DocumentStateRead]
     folders: list[DocumentFolderRead]
     uncommitted: list[DocumentChangeRead] | None = Field(
-        description='Cambios locales del checkout; null si no hay escritor Git configurado.')
+        description='Local changes of the checkout; null if no Git writer is configured.')
     warnings: list[str]
     decisions: list[DecisionEntryRead]
     archive: list[ArchivedPhaseRead]
@@ -748,16 +748,16 @@ class DocumentChange(BaseModel):
     path: str = Field(min_length=1, max_length=500)
     content: str = Field(max_length=512 * 1024)
     base_sha256: Annotated[str, Field(pattern=r'^[0-9a-f]{64}$')] | None = Field(default=None, description=(
-        'Hash con el que se abrió el documento en el editor (CAS); null: no debe existir. Sin el campo, no se compara.'))
+        'Hash of the document when opened in the editor (CAS); null: must not exist. Without it, no comparison.'))
 
 
 class DocumentEditInput(BaseModel):
     model_config = ConfigDict(extra='forbid', strict=True)
     source: Literal['content', 'worktree'] = Field(
-        description='content: documentos enviados sobre un checkout limpio; worktree: cambios locales del editor.')
+        description='content: documents submitted over a clean checkout; worktree: local changes of the editor.')
     changes: list[DocumentChange] | None = Field(default=None, max_length=50)
     regenerate_blocks: bool = Field(default=False, description=(
-        'Solo worktree: sustituye los bloques gestionados editados en local por los de la base (H6.2 E3).'))
+        'Worktree only: replaces the managed blocks edited locally with those of the base (H6.2 E3).'))
 
 
 class DocumentPreviewEntry(BaseModel):
@@ -765,13 +765,13 @@ class DocumentPreviewEntry(BaseModel):
     before_sha256: str | None
     after_sha256: str
     content: str
-    disk_sha256: str | None = Field(default=None, description='Bytes locales que se sustituyen (bloques regenerados).')
+    disk_sha256: str | None = Field(default=None, description='Local bytes that are replaced (regenerated blocks).')
 
 
 class RegeneratedDocumentRead(BaseModel):
     path: str
     local_sha256: str
-    diff: str = Field(description='Lo que se descarta de los bytes locales al regenerar los bloques.')
+    diff: str = Field(description='What is discarded from the local bytes when regenerating the blocks.')
 
 
 class DocumentTreeEntryRead(BaseModel):
@@ -786,7 +786,7 @@ class DocumentTreeRead(BaseModel):
     docs: str
     files: list[DocumentTreeEntryRead]
     truncated: bool
-    skipped: list[str] = Field(description='Enlaces simbólicos u objetos no regulares que no se listan.')
+    skipped: list[str] = Field(description='Symbolic links or non-regular objects that are not listed.')
 
 
 class DocumentOperationPreview(BaseModel):
@@ -840,7 +840,7 @@ class PhaseBatchNextCreate(PhaseVersioned):
     text: str = Field(min_length=1, max_length=200_000)
 
 
-# --- H4.1: chat contextual -------------------------------------------------------------------
+# --- H4.1: contextual chat -------------------------------------------------------------------
 
 ChatTurnStatus = Literal['QUEUED', 'ANSWERED', 'FAILED', 'UNKNOWN', 'REFUSED']
 
@@ -850,7 +850,7 @@ class ChatConversationCreate(BaseModel):
     task_run_id: str | None = Field(default=None, max_length=36)
     title: str = Field(min_length=1, max_length=200)
     phase_id: str | None = Field(default=None, max_length=36,
-                                 description='Fase gestionada de este proyecto cuyo contexto se ofrece por defecto.')
+                                 description='Managed phase of this project whose context is offered by default.')
 
 
 class ChatConversationSummaryRead(BaseModel):
@@ -867,7 +867,7 @@ class ChatConversationSummaryRead(BaseModel):
 
 class ChatDocumentRead(BaseModel):
     path: str
-    sha256: str | None = Field(description='null: el documento no existía al congelar el turno.')
+    sha256: str | None = Field(description='null: the document did not exist when the turn was frozen.')
     size: int | None
     truncated: bool
 
@@ -943,9 +943,9 @@ class ChatMessageCreate(BaseModel):
     expected_version: int = Field(ge=0)
     text: str = Field(min_length=1, max_length=20_000)
     documents: list[str] | None = Field(default=None, max_length=8, description=(
-        'Documentos del checkout que se congelan como contexto; null: los de la fase o STATE y NEXT_STEPS.'))
+        'Checkout documents frozen as context; null: those of the phase or STATE and NEXT_STEPS.'))
     run_ids: list[str] = Field(default_factory=list, max_length=10,
-                               description='Runs de este checkout cuya evidencia se congela como contexto.')
+                               description='Runs of this checkout whose evidence is frozen as context.')
 
 
 class ChatProposalAcceptCreate(BaseModel):
@@ -980,7 +980,7 @@ class ChatCommandRead(BaseModel):
     preview_sha256: str
 
 
-# --- H6.5: creación y planificación conversacionales -----------------------------------------------
+# --- H6.5: conversational creation and planning ----------------------------------------------------
 
 PlanningKind = Literal['definition', 'phase_planning', 'onboarding']
 SHA256 = r'^[0-9a-f]{64}$'
@@ -990,12 +990,12 @@ class DefinitionDocumentRead(BaseModel):
     path: str
     content: str
     sha256: str
-    before_sha256: str | None = Field(description='Hash del borrador en disco que se sustituye; null si no existía.')
+    before_sha256: str | None = Field(description='Hash of the replaced draft on disk; null if it did not exist.')
     origin: Literal['draft', 'draft+blocks', 'template', 'archive']
 
 
 class DefinitionPreviewRead(BaseModel):
-    """Aceptación de la definición v2: bloqueos o los archivos íntegros del commit raíz (bootstrap D037)."""
+    """Acceptance of the v2 definition: blockers or the complete files of the root commit (D037 bootstrap)."""
     template: dict[str, str]
     input: dict[str, str]
     definition: dict[str, Any]
@@ -1051,9 +1051,9 @@ class PlanningConversationCreate(BaseModel):
     kind: PlanningKind
     title: str = Field(min_length=1, max_length=200)
     brief: str | None = Field(default=None, min_length=1, max_length=256 * 1024, description=(
-        'Brief Markdown (UTF-8, máximo 256 KiB) de una definición; null en la planificación y la importación.'))
+        'Markdown brief (UTF-8, at most 256 KiB) of a definition; null in planning and import.'))
     phase_id: str | None = Field(default=None, max_length=36,
-                                 description='Fase ACTIVE sin tareas que se planifica; se conservan las conversaciones históricas anteriores.')
+                                 description='ACTIVE phase without tasks that is planned; earlier historical conversations are kept.')
 
 
 class PlanningConversationSummaryRead(BaseModel):
@@ -1077,9 +1077,9 @@ class PlanningTurnRead(BaseModel):
     message: str
     context_sha256: str
     request_sha256: str
-    drafts: list[dict[str, Any]] = Field(description='Borradores congelados (ruta, hash, tamaño); definición e importación.')
-    user_edits: list[dict[str, Any]] = Field(description='Ediciones del usuario detectadas por hash al congelar.')
-    documents: list[dict[str, Any]] = Field(description='Documentos congelados; solo planificación de fase.')
+    drafts: list[dict[str, Any]] = Field(description='Frozen drafts (path, hash, size); definition and import.')
+    user_edits: list[dict[str, Any]] = Field(description='User edits detected by hash when freezing.')
+    documents: list[dict[str, Any]] = Field(description='Frozen documents; phase planning only.')
     result: dict[str, Any] | None
     actor: dict[str, Any]
     created_at: str
@@ -1096,7 +1096,7 @@ class PlanningProposalRead(BaseModel):
     content: str
     reason: str
     content_sha256: str
-    base_sha256: str | None = Field(description='CAS: hash del borrador que leyó el turno; null si no existía.')
+    base_sha256: str | None = Field(description='CAS: hash of the draft the turn read; null if it did not exist.')
     proposal_sha256: str
     status: Literal['PROPOSED', 'APPLIED', 'ACCEPTED', 'DISMISSED', 'SUPERSEDED']
     decision: dict[str, Any] | None
@@ -1130,7 +1130,7 @@ class PlanningConversationRead(BaseModel):
     version: int
     created_at: str
     updated_at: str
-    created: bool = Field(description='Definición o importación ya confirmada; sus borradores quedan cerrados.')
+    created: bool = Field(description='Definition or import already confirmed; its drafts are closed.')
     turns: list[PlanningTurnRead]
     proposals: list[PlanningProposalRead]
     actions: list[Literal['message', 'edit_draft', 'defer_question', 'accept']]
@@ -1167,8 +1167,8 @@ class PlanningDraftEdit(BaseModel):
     model_config = ConfigDict(extra='forbid', strict=True)
     expected_version: int = Field(ge=0)
     path: str = Field(min_length=1, max_length=500)
-    content: str | None = Field(max_length=512 * 1024, description='Contenido completo; null borra el borrador.')
-    base_sha256: str | None = Field(pattern=SHA256, description='CAS: hash actual en disco; null si no existe.')
+    content: str | None = Field(max_length=512 * 1024, description='Complete content; null deletes the draft.')
+    base_sha256: str | None = Field(pattern=SHA256, description='CAS: current hash on disk; null if it does not exist.')
 
 
 class PlanningDraftStateRead(BaseModel):
@@ -1191,8 +1191,8 @@ class PlanningDraftsRead(BaseModel):
 class PlanningDraftContentRead(BaseModel):
     path: str
     content: str
-    sha256: str = Field(description='Hash en disco: la base de la CAS para editarlo.')
-    known_sha256: str | None = Field(description='Hash que conoce el harness (último turno respondido o propuesta aplicada).')
+    sha256: str = Field(description='Hash on disk: the CAS base for editing it.')
+    known_sha256: str | None = Field(description='Hash the harness knows (last answered turn or applied proposal).')
 
 
 class PlanningBriefRead(BaseModel):
@@ -1213,26 +1213,26 @@ class BootstrapStatusRead(BaseModel):
     import_required: bool
     diagnostic: str | None
     definition_operation: DefinitionOperationRead | None = Field(default=None, description=(
-        'Creación confirmada desde la conversación de definición, con el commit raíz y P001.'))
+        'Creation confirmed from the definition conversation, with the root commit and P001.'))
 
 
-# --- H6.4: métricas por intento y agregados (D072 §9) -------------------------------------------------
+# --- H6.4: per-attempt metrics and aggregates (D072 §9) -----------------------------------------------
 
 class MetricSumRead(BaseModel):
-    sum: int | None = Field(description='Suma de los intentos que aportan el campo; null si ninguno lo aporta (no es cero).')
-    attempts: int = Field(description='Intentos que aportan un valor al campo.')
+    sum: int | None = Field(description='Sum over the attempts that contribute the field; null if none does (not zero).')
+    attempts: int = Field(description='Attempts that contribute a value to the field.')
 
 
 class MetricAmountRead(BaseModel):
     sum: float | None
     attempts: int
     basis: Literal['api_equivalent_reported'] = Field(
-        description='Coste equivalente API reportado por el proveedor; no es factura ni cuota.')
+        description='API-equivalent cost reported by the provider; it is neither an invoice nor a quota.')
 
 
 class MetricAccountingRead(BaseModel):
-    terminal: int = Field(description='Intentos con el total acumulado del terminal (reportado).')
-    messages: int = Field(description='Intentos sin terminal con uso por mensaje deduplicado (derivado, parcial).')
+    terminal: int = Field(description='Attempts with the accumulated terminal total (reported).')
+    messages: int = Field(description='Attempts without terminal, deduplicated per-message usage (derived, partial).')
     absent: int
 
 
@@ -1240,14 +1240,14 @@ class ConsumptionRead(BaseModel):
     attempts: int
     accounting: MetricAccountingRead
     tokens: dict[str, MetricSumRead] = Field(description='uncached_input/cache_read/cache_write/output/reasoning '
-                                                         '(⊆ output)/total, cada uno sumado por separado. La entrada '
-                                                         'cruda no se agrega: su semántica depende del proveedor.')
+                                                         '(⊆ output)/total, each summed separately. Raw '
+                                                         'input is not summed: its meaning depends on the provider.')
     cost_usd: MetricAmountRead
-    turns_reported: MetricSumRead = Field(description='num_turns de Claude.')
-    turns_derived: MetricSumRead = Field(description='Elementos completados del stream de Codex.')
+    turns_reported: MetricSumRead = Field(description='Claude num_turns.')
+    turns_derived: MetricSumRead = Field(description='Completed items of the Codex stream.')
     tool_calls: MetricSumRead
     permission_denials: MetricSumRead
-    attempt_wall_ms: MetricSumRead = Field(description='Suma de duraciones por intento: tiempo de agente, no transcurrido.')
+    attempt_wall_ms: MetricSumRead = Field(description='Sum of durations per attempt: agent time, not elapsed time.')
     reported_duration_ms: MetricSumRead
     api_duration_ms: MetricSumRead
 
@@ -1305,7 +1305,7 @@ class AttemptMetricRead(BaseModel):
     source: Literal['capture', 'backfill']
     normalization: str | None
     catalog: str
-    provenance: dict[str, str] = Field(description='requested | reported | derived | measured | absent, por campo.')
+    provenance: dict[str, str] = Field(description='requested | reported | derived | measured | absent, per field.')
     diagnostics: list[str]
     recorded_at: str
     models: list[ModelUsageRead]
@@ -1356,7 +1356,7 @@ class TaskAgentRead(BaseModel):
 class ValidationCountsRead(BaseModel):
     commands_passed: int
     commands_failed: int
-    cases: dict[str, int] | None = Field(description='JUnit: passed, failed, error, skipped; null sin reportes legibles.')
+    cases: dict[str, int] | None = Field(description='JUnit: passed, failed, error, skipped; null if no readable report.')
 
 
 class StopRead(BaseModel):
@@ -1381,7 +1381,7 @@ class TaskMetricsRead(BaseModel):
     committed_at: str | None
     seconds_to_accept: float | None
     seconds_to_commit: float | None
-    tests: ValidationCountsRead | None = Field(description='Última validación de la tarea.')
+    tests: ValidationCountsRead | None = Field(description='Last validation of the task.')
     stops: list[StopRead]
     consumption: ConsumptionRead
 
@@ -1435,13 +1435,13 @@ ValidationDimension = Literal['phase', 'task', 'root']
 
 
 class ValidationGroupRead(BaseModel):
-    key: str = Field(description='Fase, tarea o raíz. Los ciclos no guardan su hora: no hay agrupación por día.')
-    validations: int = Field(description='Ciclos de validación de tareas, incluidas las revalidaciones.')
-    passed: int = Field(description='Validaciones con todos los comandos correctos y sin fallos nuevos en JUnit.')
+    key: str = Field(description='Phase, task or root. Cycles do not store their time: there is no grouping by day.')
+    validations: int = Field(description='Task validation cycles, revalidations included.')
+    passed: int = Field(description='Validations with every command passing and no new JUnit failures.')
     failed: int
     commands_passed: int
     commands_failed: int
-    cases: dict[str, int] | None = Field(description='JUnit: passed, failed, error, skipped; null sin reportes legibles.')
+    cases: dict[str, int] | None = Field(description='JUnit: passed, failed, error, skipped; null if no readable report.')
     validations_with_cases: int
 
 
@@ -1456,13 +1456,13 @@ class MetricsSummaryRead(BaseModel):
     scope: MetricsScopeRead
     catalog: str
     consumption: ConsumptionRead
-    attempts_without_metrics: int = Field(description='Intentos resueltos sin fila: relleno explícito pendiente.')
+    attempts_without_metrics: int = Field(description='Resolved attempts without a row: explicit backfill pending.')
     tasks: TaskQualityRead
     tests: ValidationTotalsRead
     stops: StopsRead
 
 
-# --- H6.2 E2: registro de proyectos (D054/D076) ------------------------------------------
+# --- H6.2 E2: project registry (D054/D076) -----------------------------------------------
 
 PermissionLayer = Literal['global', 'project', 'contract', 'provider']
 PermissionKind = Literal['files', 'tools', 'network', 'product', 'acceptance']
@@ -1470,7 +1470,7 @@ ShortText = Annotated[str, Field(min_length=1, max_length=200)]
 
 
 class RegistryPolicyInput(BaseModel):
-    """Política D052 del proyecto: selecciones, nunca ejecutables ni entornos."""
+    """Project D052 policy: selections, never executables or environments."""
     model_config = ConfigDict(extra='forbid', strict=True)
     planning_mode: Literal['agent', 'deterministic']
     executor_mode: Literal['catalog', 'open']
@@ -1507,12 +1507,12 @@ class AgentPresetRead(BaseModel):
 
 
 class RegistryChangeInput(BaseModel):
-    """Alta (`register`), cambio (`update`) o baja lógica (`retire`); la composición se nombra, no se define."""
+    """Register (`register`), change (`update`) or logical retirement (`retire`); the composition is named."""
     model_config = ConfigDict(extra='forbid', strict=True)
     action: Literal['register', 'update', 'retire']
     project_id: str = Field(min_length=1, max_length=64)
-    expected_version: int = Field(ge=0, le=2**31, description='0 en el alta; la versión leída en un cambio o baja.')
-    root: str | None = Field(default=None, max_length=4096, description='Solo en el alta; la raíz no cambia después.')
+    expected_version: int = Field(ge=0, le=2**31, description='0 to register; the version read to change or retire.')
+    root: str | None = Field(default=None, max_length=4096, description='Registration only; immutable afterwards.')
     composition: str | None = Field(default=None, max_length=64)
     policy: RegistryPolicyInput | None = None
     agent_selection: AgentSelectionInput | None = None
@@ -1520,7 +1520,7 @@ class RegistryChangeInput(BaseModel):
     documents: Literal['v2'] | None = 'v2'
     bootstrap_enabled: bool = False
     permission_authority: dict[PermissionLayer, dict[PermissionKind, list[ShortText]]] | None = Field(
-        default=None, description='Techo de permisos por capa; null: sin techo explícito.')
+        default=None, description='Permission ceiling per layer; null: no explicit ceiling.')
 
 
 class RegistryApplyCreate(BaseModel):
@@ -1528,15 +1528,15 @@ class RegistryApplyCreate(BaseModel):
     change: RegistryChangeInput
     preview_sha256: str = Field(pattern=r'^[0-9a-f]{64}$')
     trust_root: str | None = Field(default=None, max_length=4096,
-                                   description='Confirmación aparte de la confianza: la raíz canónica exacta.')
+                                   description='Separate confirmation of trust: the exact canonical root.')
     reason: str | None = Field(default=None, max_length=2000)
 
 
 class RegistryCompositionRead(BaseModel):
     name: str
     profile: str
-    executables: list[str] = Field(description='Solo los nombres; las rutas quedan en el TOML.')
-    environment_keys: list[str] = Field(description='Solo las claves; los valores nunca salen del TOML.')
+    executables: list[str] = Field(description='Names only; the paths stay in the TOML.')
+    environment_keys: list[str] = Field(description='Keys only; the values never leave the TOML.')
     authorize_profile_commands: bool
     extra_commands: list[list[str]]
 
@@ -1553,7 +1553,7 @@ class RegisteredProjectSummaryRead(BaseModel):
     created_at: str
     updated_at: str
     available: bool
-    diagnostic: str | None = Field(description='Por qué una fila activa no se compone con el TOML actual.')
+    diagnostic: str | None = Field(description='Why an active row does not compose with the current TOML.')
 
 
 class RegistryRead(BaseModel):
@@ -1608,18 +1608,18 @@ class RegistryPreviewRead(BaseModel):
     row: dict[str, Any]
     row_sha256: str
     changes: list[RegistryFieldChangeRead]
-    versions: dict[str, str | None] | None = Field(description='Versiones que congelarán sus jobs; null en la baja.')
+    versions: dict[str, str | None] | None = Field(description='Versions its jobs will freeze; null on retirement.')
     profile: str
     trust_required: bool
     trust_statement: str | None
-    unfinished_jobs: list[int] = Field(description='Trabajos sin terminar del checkout: bloquean la confirmación.')
+    unfinished_jobs: list[int] = Field(description='Unfinished jobs of the checkout: they block the confirmation.')
     configuration_blockers: list[str] = Field(default_factory=list)
     preview_sha256: str
 
 
 class RegistryApplyRead(BaseModel):
     project: RegisteredProjectSummaryRead
-    replayed: bool = Field(description='La misma confirmación ya estaba aplicada; no hay otra versión.')
+    replayed: bool = Field(description='The same confirmation was already applied; there is no other version.')
 
 
 class ImportPreviewRead(BaseModel):

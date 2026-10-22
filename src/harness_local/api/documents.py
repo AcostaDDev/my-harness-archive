@@ -1,4 +1,4 @@
-"""Proyección del contrato D088 para el visor, sin alterar snapshots ni la base adoptada."""
+"""Projection of the D088 contract for the viewer, without altering snapshots or the adopted base."""
 
 import stat
 
@@ -24,7 +24,7 @@ def document_kind(target, path):
 def document_status(repository, context, git):
     target = require_layout(context)
     result = repository.status(context, git)
-    # Las instrucciones no forman parte de los hashes adoptados de la fase.
+    # The instructions are not part of the phase's adopted hashes.
     for path in target.instructions:
         entry = dict(path=path, exists=False, sha256=None, adopted_sha256=None,
                      drift=False, blocks=[], error=None)

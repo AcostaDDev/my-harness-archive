@@ -7,7 +7,7 @@ from harness_local.adapters.safe_files import read_raw
 from harness_local.core.managed_mode import (LEGACY_RUNS, MARKER_PATH, CheckoutFacts, classify_drift, digest)
 
 def _repository(root: Path) -> tuple[str | None, str | None]:
-    """Common dir Git y checkout principal leyendo `.git`, sin ejecutar Git."""
+    """Git common dir and main checkout by reading `.git`, without running Git."""
     for directory in (root, *root.parents):
         dot = directory / ".git"
         if not os.path.lexists(dot):
@@ -48,7 +48,7 @@ def probe(root) -> CheckoutFacts:
 
 
 def scan_legacy_scope(root: str) -> dict[str, tuple[str, int, int]]:
-    """Estado actual de `.harness/runs` por lstat: (tipo, tamaño, mtime_ns)."""
+    """Current state of `.harness/runs` by lstat: (type, size, mtime_ns)."""
     checkout = Path(root)
     runs = checkout / LEGACY_RUNS
     if not os.path.lexists(runs):

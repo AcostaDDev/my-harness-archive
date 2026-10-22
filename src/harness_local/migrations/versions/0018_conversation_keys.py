@@ -1,4 +1,4 @@
-"""Revisión de cierre de H6.2: clave idempotente al crear conversaciones de chat y de planificación."""
+"""Closing revision of H6.2: idempotency key when creating chat and planning conversations."""
 from alembic import op
 import sqlalchemy as sa
 
@@ -12,7 +12,7 @@ TABLES = (('chat_conversations', 'uq_chat_conversations_key'),
 
 
 def upgrade():
-    # Columnas nullable: las conversaciones anteriores no tienen clave y SQLite no recrea las tablas.
+    # Nullable columns: earlier conversations have no key and SQLite does not recreate the tables.
     for table, index in TABLES:
         op.add_column(table, sa.Column('idempotency_key', sa.String(200), nullable=True))
         op.add_column(table, sa.Column('request_sha256', sa.String(64), nullable=True))
@@ -20,7 +20,7 @@ def upgrade():
 
 
 def downgrade():
-    # La clave solo deduplica reintentos: perderla no cambia ninguna conversación.
+    # The key only deduplicates retries: losing it changes no conversation.
     for table, index in TABLES:
         op.drop_index(index, table_name=table)
         op.drop_column(table, 'request_sha256')

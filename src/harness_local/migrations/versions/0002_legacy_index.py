@@ -1,4 +1,4 @@
-"""Índice reconstruible de observación H1.1, separado de simulations."""
+"""Rebuildable H1.1 observation index, separate from simulations."""
 from alembic import op
 import sqlalchemy as sa
 

@@ -1,4 +1,4 @@
-"""H4.1: conversaciones, turnos congelados y propuestas del chat contextual."""
+"""H4.1: conversations, frozen turns and proposals of the contextual chat."""
 from alembic import op
 import sqlalchemy as sa
 

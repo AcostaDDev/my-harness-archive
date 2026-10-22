@@ -8,7 +8,7 @@ from harness_local.core.tree import ImportInventoryError
 READABLE_MODES = ('100644', '100755')
 
 def _tree(git: Git, revision: str = 'HEAD') -> list[tuple[str, str, str, int | None, str]]:
-    """(modo, tipo, objeto, tamaño, ruta) de un árbol, sin citar rutas (`-z`)."""
+    """(mode, type, object, size, path) of a tree, without quoting paths (`-z`)."""
     rows = []
     for record in git.run('ls-tree', '-r', '-z', '-l', '--full-tree', revision).split(b'\0'):
         if not record:
@@ -21,7 +21,7 @@ def _tree(git: Git, revision: str = 'HEAD') -> list[tuple[str, str, str, int | N
 
 
 def _blobs(git: Git, objects: list[str]) -> dict[str, bytes]:
-    """Contenido exacto de los blobs con `cat-file --batch`, que no aplica filtros ni textconv."""
+    """Exact blob content with `cat-file --batch`, which applies no filters or textconv."""
     if not objects:
         return {}
     output = git.run('cat-file', '--batch', input=('\n'.join(objects) + '\n').encode('ascii'))
@@ -45,13 +45,13 @@ def _blobs(git: Git, objects: list[str]) -> dict[str, bytes]:
 
 
 def check_filters(git: Git):
-    """Antes de status/add/hash-object: config lee includes, pero nunca ejecuta los filtros."""
+    """Before status/add/hash-object: config reads includes, but never runs the filters."""
     if git.run('config', '--includes', '--get-regexp', r'^filter\..*\.(clean|process)$', ok=(0, 1)).strip():
         raise ImportInventoryError('Import requires no local clean/process Git filters; project code cannot be executed')
 
 
 def check_submodules(git: Git):
-    """Rechaza gitlinks de HEAD o índice antes de status/add, sin consultar el repositorio hijo."""
+    """Rejects gitlinks in HEAD or the index before status/add, without querying the child repository."""
     for source, args in (
         ('HEAD', ('ls-tree', '-r', '-z', '--full-tree', 'HEAD')),
         ('index', ('ls-files', '--stage', '-z')),
@@ -65,7 +65,7 @@ def check_submodules(git: Git):
 
 
 def check_tree(git: Git, tree: str, expected: list[dict], documents: list[dict]):
-    """Guardias A/B antes de confirmar o escribir, incluidos archivo, binarios y recuperación parcial."""
+    """A/B guards before confirming or writing, including archive, binaries and partial recovery."""
     destinations = b''.join(doc['path'].encode() + b'\0' for doc in documents
                             if doc['before_sha256'] is None and doc['after_sha256'] is not None)
     if destinations and git.run('check-ignore', '-z', '--stdin', input=destinations, ok=(0, 1)).strip(b'\0'):

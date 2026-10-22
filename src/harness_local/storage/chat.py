@@ -1,15 +1,15 @@
-"""H4.1: autoridad SQLite del chat contextual, serializada con la cola gestionada.
+"""H4.1: SQLite authority of the contextual chat, serialized with the managed queue.
 
-La conversación vive separada del flujo de ejecución. Cada mensaje congela, en la transacción que
-encola su turno, el mensaje y el contexto explícito: proyecto, fase, documentos (contenido acotado
-con hash) y evidencias de runs seleccionadas, más los turnos anteriores. El turno es un run
-`chat` con job `chat_snapshot` sobre HEAD, sin lock del checkout (E5). Reutiliza supervisor,
-guardia de modo, cuarentena y persistencia de intentos. Los jobs antiguos `chat_turn` conservan
-el lock. Una caída deja el turno con resultado desconocido y nunca se reintenta.
+The conversation lives separately from the execution flow. Each message freezes, in the transaction that
+queues its turn, the message and the explicit context: project, phase, documents (bounded content
+with hash) and selected run evidence, plus the previous turns. The turn is a
+`chat` run with a `chat_snapshot` job over HEAD, without the checkout lock (E5). It reuses supervisor,
+mode guard, quarantine and attempt persistence. Old `chat_turn` jobs keep
+the lock. A crash leaves the turn with an unknown result and it is never retried.
 
-Las propuestas no ejecutan nada. Aceptar una exige confirmación explícita, la versión observada y
-el hash exacto mostrado, y encola una tarea normal (planificador, ejecutor, revisión y commit)
-vinculada a la propuesta. El chat no concede permisos ni fija contratos.
+Proposals execute nothing. Accepting one requires explicit confirmation, the observed version and
+the exact hash shown, and queues a normal task (planner, executor, review and commit)
+linked to the proposal. The chat grants no permissions and sets no contracts.
 """
 
 import hashlib
@@ -39,7 +39,7 @@ MAX_MESSAGE = 20_000
 
 
 def read_documents(context, paths) -> list[dict]:
-    """Lectura de disco fuera de transacción: contenido acotado, con hash y tamaño del archivo completo."""
+    """Disk read outside a transaction: bounded content, with hash and size of the complete file."""
     result = []
     for path in paths:
         item = context.path(path)
@@ -102,7 +102,7 @@ def _turn(session, run):
 
 
 def settle(managed, session, run, outcome):
-    """Resultado del turno, atómico con el fin del job (llamado desde `finish`)."""
+    """Turn result, atomic with the end of the job (called from `finish`)."""
     turn, conversation = _turn(session, run)
     if turn.status != 'QUEUED':
         raise Conflict('Chat turn already settled')
@@ -121,7 +121,7 @@ def settle(managed, session, run, outcome):
 
 
 def abort(managed, session, run, status, reason):
-    """Escritor confirmado detenido (resultado desconocido) o job rechazado: nunca se reintenta solo."""
+    """Writer confirmed stopped (unknown result) or refused job: never retried on its own."""
     turn, conversation = _turn(session, run)
     if turn.status != 'QUEUED':
         return
@@ -145,7 +145,7 @@ class ChatRepository:
             raise Conflict('Conversation changed; reload before acting')
         return row
 
-    # --- lecturas ---------------------------------------------------------------------
+    # --- reads ------------------------------------------------------------------------
 
     def root(self, conversation_id):
         with Session(self.managed.engine) as session:
@@ -165,7 +165,7 @@ class ChatRepository:
             return result
 
     def get(self, conversation_id):
-        """Proyección con estado vivo de los runs vinculados y acciones calculadas por el servidor."""
+        """Projection with the live state of the linked runs and actions computed by the server."""
         with Session(self.managed.engine) as session:
             row = self._conversation(session, conversation_id)
             phase = session.get(Phase, row.phase_id) if row.phase_id else None
@@ -208,7 +208,7 @@ class ChatRepository:
                     'actions': [] if pending else ['message']}
 
     def snapshot(self, run_id):
-        """Petición congelada para el job del turno."""
+        """Frozen request for the turn's job."""
         with Session(self.managed.engine) as session:
             run = session.get(Run, run_id)
             if run is None:
@@ -217,10 +217,10 @@ class ChatRepository:
             return {'turn_id': turn.id, 'message': turn.message, 'context': turn.request['context'],
                     'context_sha256': turn.request['context_sha256']}
 
-    # --- conversación y turnos ---------------------------------------------------------
+    # --- conversation and turns --------------------------------------------------------
 
     def create(self, context, *, title, phase_id=None, task_run_id=None, key=None):
-        """`key` (API): un reintento con la misma petición devuelve la misma conversación, sin otra vacía."""
+        """`key` (API): a retry with the same request returns the same conversation, without another empty one."""
         request = digest({'action': 'chat_conversation', 'root': str(context.root), 'title': title,
                           'phase_id': phase_id, 'task_run_id': task_run_id})
         if key is not None:
@@ -253,7 +253,7 @@ class ChatRepository:
             return row.id
 
     def submit_message(self, context, conversation_id, expected, *, key, versions, text, documents=None, run_ids=None, reader=None):
-        """Congela mensaje y contexto explícito en la transacción que encola el turno."""
+        """Freezes message and explicit context in the transaction that queues the turn."""
         if not isinstance(text, str) or not text.strip() or len(text) > MAX_MESSAGE:
             raise ValueError(f'Chat message must contain 1–{MAX_MESSAGE} characters')
         command = parse(text)
@@ -337,11 +337,11 @@ class ChatRepository:
                       'run_id': run.id if run else None, 'run_version': run.version if run else None}
             return {**result, 'preview_sha256': digest(result)}
 
-    # --- propuestas ------------------------------------------------------------------
+    # --- proposals -------------------------------------------------------------------
 
     def accept(self, context, conversation_id, proposal_id, expected, *, key, versions, proposal_sha256, task_id,
                phase_id, confirmed):
-        """Confirmación explícita → tarea normal vinculada; sin confirmación no se encola nada."""
+        """Explicit confirmation → linked normal task; without confirmation nothing is queued."""
         if confirmed is not True:
             raise ValueError('Accepting a proposal requires explicit confirmation; nothing was queued')
         if not isinstance(task_id, str) or not TASK_ID.fullmatch(task_id):

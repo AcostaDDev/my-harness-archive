@@ -1,4 +1,4 @@
-"""Entrada instalada: SQLite explícita, preparación separada y loopback fijo."""
+"""Installed entry point: explicit SQLite, separate preparation and fixed loopback."""
 import os
 from pathlib import Path
 
@@ -19,7 +19,7 @@ def local_database(value: str) -> tuple[Path, str]:
 
 def initialize(value: str) -> None:
     path, url = local_database(value)
-    # Exclusivo: nunca migrar ni sobrescribir una base existente (incluidos enlaces).
+    # Exclusive: never migrate or overwrite an existing database (including links).
     if any(Path(str(path) + suffix).exists() or Path(str(path) + suffix).is_symlink()
            for suffix in ('-wal', '-shm', '-journal')):
         raise ValueError('Hay archivos auxiliares SQLite; conservarlos y usar un destino nuevo.')
@@ -61,8 +61,8 @@ def serve(value: str, port: int, config: str | None = None) -> None:
     managed = None
     if config is not None:
         from harness_local.services.local_config import load_local_config
-        # Solo lectura del TOML: ningún proceso de proveedor, comando ni Git antes de servir.
+        # TOML read only: no provider process, command or Git before serving.
         managed = load_local_config(config)
-    # El lifespan conserva validación de configuración, restauraciones y opt-in.
+    # The lifespan keeps configuration validation, restorations and opt-in.
     uvicorn.run(create_app(url=url, managed=managed), host='127.0.0.1', port=port, workers=1,
                 proxy_headers=False, access_log=False)

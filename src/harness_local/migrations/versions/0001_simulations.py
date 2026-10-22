@@ -1,4 +1,4 @@
-"""Resultado atómico de una simulación local H0.3."""
+"""Atomic result of a local H0.3 simulation."""
 from alembic import op
 import sqlalchemy as sa
 

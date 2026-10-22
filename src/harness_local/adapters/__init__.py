@@ -1,1 +1,1 @@
-"""Adaptadores externos al núcleo."""
+"""Adapters external to the core."""

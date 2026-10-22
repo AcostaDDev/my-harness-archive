@@ -1,4 +1,4 @@
-"""Flujo B sobre la intención conciliable y la adopción atómica de las importaciones (0020)."""
+"""Flow B over the reconcilable intent and the atomic adoption of the imports (0020)."""
 from harness_local.adapters.chat_snapshot import HeadSnapshot
 from harness_local.adapters.import_git import _blobs
 from harness_local.adapters.local_git import LocalGit

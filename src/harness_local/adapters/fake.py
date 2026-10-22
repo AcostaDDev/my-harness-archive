@@ -1,4 +1,4 @@
-"""Adaptador determinista: no usa red, procesos, CLI ni checkouts."""
+"""Deterministic adapter: uses no network, processes, CLI or checkouts."""
 
 
 class FakeSimulationAdapter:

@@ -173,6 +173,7 @@ tarea se leen solo las decisiones que cita; este índice sirve para buscar prece
 | [D160](#d160--p011-t002-licencia-mit-y-frontera-del-contenido-publicable) | P011-T002: licencia MIT y frontera del contenido publicable | P011 |
 | [D161](#d161--p011-t019-retirada-legacya-y-compatibilidad-no-destructiva) | P011-T019: retirada legacy/A y compatibilidad no destructiva | P011 |
 | [D162](#d162--p011-t003-núcleo-y-perfiles-en-inglés-sin-cambiar-comportamiento) | P011-T003: núcleo y perfiles en inglés sin cambiar comportamiento | P011 |
+| [D163](#d163--p011-t004-backend-en-inglés-y-recetas-v2-sin-cablear) | P011-T004: backend en inglés y recetas v2 sin cablear | P011 |
 
 ## D001 — Alcance local y arquitectura base
 
@@ -4818,3 +4819,29 @@ Fase: P011. Precedentes: D158/D159 y [contrato T001 §5](phase/P011-T001_CONTRAT
   valores de `ProjectProfile` permanecen porque `asdict(profile())` entra en la huella de recetas v1.
 - Evidencia de comportamiento: AST idéntico por archivo antes/después con docstrings vaciados; suites existentes
   pertinentes. Sin tests nuevos que solo comprueben comentarios. T004 es la siguiente tarea.
+
+## D163 — P011-T004: backend en inglés y recetas v2 sin cablear
+
+Estado: implementada el 2026-10-22 por la continuación y commit local en inglés pedidos por el usuario.
+Fase: P011. Precedentes: D159/D162 y [contrato T001 §5](phase/P011-T001_CONTRATO_APERTURA.md#5-fuentes-congeladas-recetas-documentos-y-compatibilidad).
+[Inventario resuelto y validación](phase/P011-T004_INGLES_BACKEND.md).
+
+- Los 94 archivos Python de `src/harness_local/**` fuera de `core/**`/`profiles/**` quedan con comentarios y docstrings
+  en inglés (223 líneas de comentario, 318 docstrings), migraciones incluidas sin tocar ids/DDL. Las 84 descripciones
+  `description=` de la API son técnicas: se traducen y `openapi.json`/`api.generated.ts` se regeneran (E3).
+  Sin identificadores españoles que renombrar; AST idéntico con docstrings/descripciones vaciados.
+- Literales sin cambios: 555 candidatos residuales inventariados por archivo, mensajes visibles → T010 (CLI también
+  T011), prosa generada/prompts → T009, comandos bilingües D088 conservados. Fuentes v1 de receta (`django.py`,
+  `typescript_web.py`, lock/paquetes) y perfil `typescript-web` conservan bytes y huellas, ahora fijadas por test.
+- HITL del usuario: T004 añade `recipes/django_2.py` (`django-recipe-2`) y `recipes/typescript_web_2.py`
+  (`typescript-web-recipe-2`) autónomos y en inglés, sin cablear: no figuran en `recipes.RECIPES`, `by_version` ni
+  en la preparación hasta `local-config-6` (T008). Scaffold con prosa técnica según trabajo en/es (docstring del
+  modelo Django; descripción del test TypeScript); con `es`/`en` respectivamente igualan los bytes v1.
+- Los defaults funcionales del hijo (`LANGUAGE_CODE = "es"`, `<html lang="es">`, textos visibles) se conservan en v2
+  por decisión del usuario conforme a §5; no derivan del idioma visual ni del de trabajo.
+- Pasos v2 con efectos idénticos a v1, `id` estable y `label` humano en inglés; T008 debe despachar comprobaciones
+  por `id`, no por etiqueta. Huella v2 = versión, trabajo, scaffold/manifiesto, closure Django, perfil efectivo y
+  fuente del módulo; idioma inválido → `ValueError`. Perfil TypeScript v2 propio (etiqueta JUnit inglesa) para
+  que cambios futuros del integrado no alteren su identidad; Django v2 solo cambia instrucciones del ejecutor.
+- Sin cambios de modelos, migraciones, flujos, configuración, dependencias, recibos o historia congelada.
+  Checks offline en el informe; sin agentes, proveedores, servicios, preparaciones reales ni red. T005 es la siguiente.

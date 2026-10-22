@@ -1,4 +1,4 @@
-"""Journal D116. El lock de escritura SQLite serializa autoridad, reservas, efectos cortos y registro."""
+"""D116 journal. The SQLite write lock serializes authority, reservations, short effects and registration."""
 from pathlib import Path
 
 from sqlalchemy import select
@@ -67,7 +67,7 @@ class CreationRepository:
 
     @staticmethod
     def conflicts(session, project_id, target, *, operation_id=None):
-        """También se usa desde el alta D078: ninguna reserva incierta se adopta como checkout existente."""
+        """Also used from the D078 registration: no uncertain reservation is adopted as an existing checkout."""
         for row in session.scalars(select(Operation).where(Operation.reserved.is_(True))):
             if row.id != operation_id and (row.project_id == project_id or _inside(Path(row.target), Path(target))):
                 raise RegistryError(409, 'target_reserved', 'El id o destino está reservado por otra creación.')

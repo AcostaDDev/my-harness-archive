@@ -1,8 +1,8 @@
-"""Flujo B: instantánea de HEAD sin ejecutar código, filtros ni consultar el worktree.
+"""Flow B: HEAD snapshot without running code or filters or querying the worktree.
 
-Solo rev-parse, ls-tree y cat-file sin filtros. No usa status: este puede lanzar filtros clean del proyecto.
-El inventario describe el commit indicado, incluso si el disco tiene cambios; la incorporación confirmada deberá
-comprobar de nuevo su base. No lee archivos locales ignorados, enlaces, submódulos ni dependencias instaladas.
+Only rev-parse, ls-tree and cat-file without filters. Does not use status: it may launch the project's clean filters.
+The inventory describes the given commit, even if the disk has changes; the confirmed onboarding must
+check its base again. Does not read ignored local files, links, submodules or installed dependencies.
 """
 
 from pathlib import Path
@@ -24,7 +24,7 @@ def read_inventory(root: Path, *, executable: str = 'git') -> dict:
             raise OnboardingInventoryError('The project root must be the top level of its Git checkout.')
         head = git.text('rev-parse', '--verify', '--quiet', 'HEAD^{commit}')
         tree = git.text('rev-parse', '--verify', f'{head}^{{tree}}')
-        # Usar el id sellado, no HEAD de nuevo: un movimiento concurrente de la referencia no mezcla commits.
+        # Use the sealed id, not HEAD again: a concurrent move of the reference does not mix commits.
         output = git.run('ls-tree', '-r', '-z', '-l', '--full-tree', tree)
         rows = []
         records = [record for record in output.split(b'\0') if record]

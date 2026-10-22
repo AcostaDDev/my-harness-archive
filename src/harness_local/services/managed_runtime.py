@@ -1,12 +1,12 @@
-"""Composición opt-in del modo gestionado dentro del servicio local (salida H2, parte 1).
+"""Opt-in composition of the managed mode inside the local service (H2 exit, part 1).
 
-Sin configuración explícita no hay proyectos, puertos ni supervisor: la API
-gestionada solo lee. Los proyectos se registran en el servidor; el cliente HTTP
-los nombra por identificador y nunca aporta rutas, comandos ni selecciones.
-El supervisor tiene un hilo escritor y uno de chat sobre instantáneas en el proceso Uvicorn,
-ambos con `LocalSupervisor.run_once`; la cola, la exclusión y la recuperación siguen en
-SQLite. Apagar el servicio no libera un job a medias: su lease vence y queda
-RECOVERY_REQUIRED hasta una confirmación explícita.
+Without explicit configuration there are no projects, ports or supervisor: the managed API
+only reads. Projects are registered on the server; the HTTP client
+names them by identifier and never supplies paths, commands or selections.
+The supervisor has a writer thread and a chat thread over snapshots in the Uvicorn process,
+both with `LocalSupervisor.run_once`; the queue, the exclusion and the recovery stay in
+SQLite. Shutting down the service does not release a half-done job: its lease expires and it stays
+RECOVERY_REQUIRED until an explicit confirmation.
 """
 
 from collections.abc import Callable, Mapping
@@ -33,15 +33,15 @@ REQUIRED_VERSIONS = frozenset({"engine", "agent_adapter", "commands", "evidence"
 
 @dataclass(frozen=True)
 class ManagedProject:
-    """Checkout gestionable con contexto y versiones congelables fijados por quien arranca el servicio."""
+    """Manageable checkout with context and freezable versions fixed by whoever starts the service."""
 
     id: str
     context: ProjectContext
     versions: Mapping[str, str | None]
     permission_authority: Mapping | None = None
-    # H3.4: tipo del tag de cierre de fase; ligero por defecto, anotado con intención determinista.
+    # H3.4: kind of the phase closure tag; lightweight by default, annotated with a deterministic intent.
     tag_kind: str = "lightweight"
-    # H4.2: capacidad opt-in para crear exclusivamente en este destino vacío.
+    # H4.2: opt-in capability to create exclusively in this empty target.
     bootstrap_enabled: bool = False
 
 
@@ -59,11 +59,11 @@ def agents_view(project: ManagedProject) -> dict:
 
 @dataclass(frozen=True)
 class ManagedConfig:
-    """`ports_factory(context, versions)` y `commit_factory(context, versions)` como en `LocalSupervisor`.
+    """`ports_factory(context, versions)` and `commit_factory(context, versions)` as in `LocalSupervisor`.
 
-    Los adaptadores CLI H2.3 y Git H2.4 solo intervienen si se inyectan aquí.
-    `supervisor=True` arranca el hilo ejecutor con el servicio; por defecto los jobs
-    quedan en cola persistida sin ejecutarse.
+    The H2.3 CLI and H2.4 Git adapters only take part if injected here.
+    `supervisor=True` starts the executor thread with the service; by default jobs
+    stay in the persisted queue without running.
     """
 
     projects: tuple[ManagedProject, ...] = ()
@@ -73,12 +73,12 @@ class ManagedConfig:
     lease_seconds: float = 30.0
     poll_seconds: float = 0.5
     migrations_dir: Path | None = None
-    # D076: autoridad del operador que compone proyectos registrados desde la UI (`local-config-3`).
+    # D076: operator authority that composes projects registered from the UI (`local-config-3`).
     registrar: object | None = None
 
 
 def load_config(spec: str | None = None) -> ManagedConfig:
-    """`módulo:atributo` en HARNESS_MANAGED_CONFIG: un ManagedConfig o una función que lo devuelve."""
+    """`module:attribute` in HARNESS_MANAGED_CONFIG: a ManagedConfig or a function that returns one."""
     spec = spec if spec is not None else os.environ.get(CONFIG_ENV)
     if not spec:
         return ManagedConfig()
@@ -101,7 +101,7 @@ def _validate(config: ManagedConfig, database: Path, migrations_dir: Path) -> No
 
 
 def validate_projects(config: ManagedConfig) -> None:
-    """Comprobaciones sin base ni servicio; también las usa la configuración local TOML."""
+    """Checks without database or service; the local TOML configuration also uses them."""
     ids, roots = set(), set()
     for project in config.projects:
         if not isinstance(project.id, str) or not PROJECT_ID.fullmatch(project.id):
@@ -133,7 +133,7 @@ def validate_projects(config: ManagedConfig) -> None:
 
 
 class SupervisorWorker:
-    """Un job por carril (escritor/chat); errores quedan en cuarentena, sin reintento."""
+    """One job per lane (writer/chat); errors are quarantined, without retry."""
 
     def __init__(self, supervisor: LocalSupervisor, poll_seconds: float):
         self.supervisor = supervisor
@@ -160,7 +160,7 @@ class SupervisorWorker:
             try:
                 prepared = self.preparation.run_once() if lane != 'chat' and getattr(self, 'preparation', None) else None
                 claimed = prepared or supervisor.run_once()
-            except Exception as exc:  # job en RECOVERY_REQUIRED o fallo local; nunca se reintenta solo
+            except Exception as exc:  # job in RECOVERY_REQUIRED or local failure; never retried on its own
                 with self._lock:
                     self.last_error = f"{type(exc).__name__}: {exc}"
                 logger.exception("Job gestionado detenido; requiere conciliación explícita.")
@@ -173,7 +173,7 @@ class SupervisorWorker:
         return bool(self.thread and self.thread.is_alive() and self.chat_thread and self.chat_thread.is_alive())
 
     def stop(self, timeout: float) -> None:
-        """Sin interrumpir el job en curso: si no termina a tiempo, su lease decidirá la recuperación."""
+        """Without interrupting the running job: if it does not finish in time, its lease decides the recovery."""
         self.stopping.set()
         self.wake.set()
         if self.thread is not None:
@@ -187,7 +187,7 @@ class SupervisorWorker:
 
 
 class ManagedRuntime:
-    """Se compone en el lifespan: exportar OpenAPI no conecta SQLite ni importa configuración."""
+    """Composed in the lifespan: exporting OpenAPI neither connects SQLite nor imports configuration."""
 
     def __init__(self, engine, config: ManagedConfig | None = None):
         self.engine = engine
@@ -201,7 +201,7 @@ class ManagedRuntime:
 
     def start(self) -> None:
         from harness_local.storage.backup import is_read_only_archive
-        # Ni importar configuración del usuario: una factory puede tener efectos al cargar.
+        # Not even importing user configuration: a factory may have effects when loaded.
         if is_read_only_archive(self.engine):
             config = ManagedConfig()
         else:
@@ -260,7 +260,7 @@ class ManagedRuntime:
             raise LookupError("Proyecto gestionado no registrado en este servicio.") from None
 
     def install(self, project: ManagedProject) -> None:
-        """D076: alta o cambio en caliente; copia nueva del mapa para los lectores de otros hilos."""
+        """D076: hot registration or change; a new copy of the map for readers on other threads."""
         with self._projects_lock:
             self.projects = {**self.projects, project.id: project}
 

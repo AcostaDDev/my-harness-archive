@@ -1,4 +1,4 @@
-"""H6.2 E2: registro de proyectos desde la UI, versionado y auditado, con baja lógica (D054/D076)."""
+"""H6.2 E2: project registry from the UI, versioned and audited, with logical retirement (D054/D076)."""
 from alembic import op
 import sqlalchemy as sa
 

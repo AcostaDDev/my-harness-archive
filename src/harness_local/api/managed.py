@@ -1,11 +1,11 @@
-"""API gestionada local: delega en la autoridad H2.2–H2.5 sin lógica nueva de motor.
+"""Local managed API: delegates to the H2.2–H2.5 authority without new engine logic.
 
-Toda ruta exige Host de loopback; toda mutación exige además Origin de loopback
-(si el navegador lo envía) y la cabecera `X-Harness-Local: 1`, que una página
-ajena no puede añadir sin preflight CORS (el servicio no habilita CORS). Las
-mutaciones que crean jobs exigen `Idempotency-Key`; las que cambian un recurso
-existente, `expected_version`. Conflictos y rechazos de modo devuelven 409 con
-diagnóstico; la biblioteca garantiza que no quedan efectos parciales.
+Every route requires a loopback Host; every mutation additionally requires a loopback Origin
+(if the browser sends it) and the `X-Harness-Local: 1` header, which a foreign
+page cannot add without a CORS preflight (the service does not enable CORS).
+Mutations that create jobs require `Idempotency-Key`; those that change an
+existing resource, `expected_version`. Conflicts and mode refusals return 409 with
+a diagnostic; the library guarantees that no partial effects remain.
 """
 
 from typing import Annotated
@@ -36,12 +36,12 @@ Offset = Annotated[int, Query(ge=0, le=2**53 - 1)]
 Limit = Annotated[int, Query(ge=1, le=100)]
 DiffLimit = Annotated[int, Query(ge=4096, le=512 * 1024)]
 IdempotencyKey = Annotated[str, Header(alias="Idempotency-Key", min_length=1, max_length=200,
-                                       description="Misma clave y misma acción devuelven el mismo job.")]
+                                       description="The same key and the same action return the same job.")]
 ERRORS = {status: {"model": ProblemResponse} for status in (403, 404, 409, 422)}
 
 
 def call(operation, /, *args, **kwargs):
-    """Traduce los errores de la autoridad a HTTP. El orden importa: todos derivan de ValueError."""
+    """Translates authority errors to HTTP. Order matters: all of them derive from ValueError."""
     try:
         return operation(*args, **kwargs)
     except LookupError as error:
@@ -85,7 +85,7 @@ def managed_router(runtime: ManagedRuntime):
         return detail
 
     def registered_run(run_id: str):
-        """Las acciones solo operan sobre checkouts registrados en este servicio."""
+        """Actions only operate on checkouts registered in this service."""
         run = call(runtime.views.run, run_id)
         project_id = runtime.project_id(run["root"])
         if project_id is None:
@@ -109,7 +109,7 @@ def managed_router(runtime: ManagedRuntime):
     def project_detail(project_id: str):
         return project_read(project(project_id))
 
-    # --- registro de proyectos H6.2 E2 (D054/D076) -------------------------------------
+    # --- project registry H6.2 E2 (D054/D076) ------------------------------------------
     from harness_local.api.schemas import (
         RegisteredProjectRead, RegistryApplyCreate, RegistryApplyRead, RegistryChangeInput, RegistryPreviewRead,
         RegistryRead,
@@ -120,7 +120,7 @@ def managed_router(runtime: ManagedRuntime):
         def guarded():
             try:
                 return operation(*args, **kwargs)
-            except RegistryError as error:  # antes que ValueError en `call`: códigos propios del registro
+            except RegistryError as error:  # before ValueError in `call`: the registry's own codes
                 raise problem(error.status, error.code, str(error)) from error
             except OSError as error:
                 raise problem(409, 'target_identity_changed',
@@ -146,13 +146,13 @@ def managed_router(runtime: ManagedRuntime):
 
     @router.post("/registry/preview", response_model=RegistryPreviewRead, operation_id="managed_registry_preview")
     def registry_preview(body: RegistryChangeInput):
-        """Sin efectos: fila resultante, cambios, versiones congeladas y hash que liga la confirmación."""
+        """No effects: resulting row, changes, frozen versions and the hash that binds the confirmation."""
         runtime.ready()
         return registry(runtime.registry.preview, change(body))
 
     @router.post("/registry/apply", response_model=RegistryApplyRead, operation_id="managed_registry_apply")
     def registry_apply(body: RegistryApplyCreate):
-        """Repetir la misma confirmación devuelve el resultado ya aplicado, sin otra versión."""
+        """Repeating the same confirmation returns the already applied result, without another version."""
         runtime.ready()
         return registry(runtime.registry.apply, change(body.change), preview_sha256=body.preview_sha256,
                         trust_root=body.trust_root, reason=body.reason)
@@ -163,7 +163,7 @@ def managed_router(runtime: ManagedRuntime):
         return {"project_id": project_id, "root": root,
                 "refusal": runtime.repository.guard.assess(root).refusal}
 
-    # --- estado de la creación conversacional (D088) ---------------------------------
+    # --- state of the conversational creation (D088) ---------------------------------
     from harness_local.api.schemas import BootstrapStatusRead
     from harness_local.storage.bootstrap import BootstrapRepository
 
@@ -175,7 +175,7 @@ def managed_router(runtime: ManagedRuntime):
     @router.get('/projects/{project_id}/bootstrap', response_model=BootstrapStatusRead,
                 operation_id='managed_bootstrap_status')
     def bootstrap_status(project_id: str):
-        """Estado de la definición y su commit raíz; la creación v1 ya no se expone."""
+        """State of the definition and its root commit; the v1 creation is no longer exposed."""
         item = project(project_id)
         operation = call(BootstrapRepository(runtime.repository).get, item.context.root)
         target = (call(bootstrap_writer(item).inspect_definition, item.context)
@@ -184,7 +184,7 @@ def managed_router(runtime: ManagedRuntime):
                 'diagnostic': target.get('diagnostic') if target else None,
                 'definition_operation': operation if item.context.documents is not None else None}
 
-    # --- runs, jobs, intentos y eventos ---------------------------------------------
+    # --- runs, jobs, attempts and events --------------------------------------------
 
     @router.get("/projects/{project_id}/runs", response_model=Page[ManagedRunSummaryRead],
                 operation_id="managed_runs")
@@ -204,7 +204,7 @@ def managed_router(runtime: ManagedRuntime):
     @router.get("/projects/{project_id}/task-sources", response_model=TaskSourcesRead,
                 operation_id="managed_task_sources")
     def task_sources_read(project_id: str):
-        """P009-T020: tareas del NEXT_STEPS vivo, con el texto que se enviaría para cada una y su hash."""
+        """P009-T020: tasks of the live NEXT_STEPS, with the text that would be sent for each one and its hash."""
         return call(task_sources, documents_project(project_id).context)
 
     @router.post("/projects/{project_id}/runs", response_model=ManagedJobRead, status_code=202,
@@ -212,7 +212,7 @@ def managed_router(runtime: ManagedRuntime):
     def submit_run(project_id: str, body: RunCreate, idempotency_key: IdempotencyKey):
         item = project(project_id)
         if body.source_sha256 is not None:
-            # P009-T020: el texto elegido en el selector debe seguir siendo el del documento vivo (CAS).
+            # P009-T020: the text chosen in the selector must still be the one in the live document (CAS).
             live = next((source for source in call(task_sources, documents_project(project_id).context)["items"]
                          if source["task_id"] == body.task_id), None)
             if (live is None or live["phase_id"] != body.phase_id or live["sha256"] != body.source_sha256
@@ -232,21 +232,21 @@ def managed_router(runtime: ManagedRuntime):
 
     @router.get("/runs/{run_id}/jobs", response_model=Page[ManagedJobRead], operation_id="managed_run_jobs")
     def run_jobs(run_id: str, offset: Offset = 0, limit: Limit = 30):
-        """Del más reciente al más antiguo."""
+        """From newest to oldest."""
         runtime.ready()
         return call(runtime.views.jobs, run_id, offset, limit)
 
     @router.get("/runs/{run_id}/cycles", response_model=Page[CycleRead], operation_id="managed_run_cycles")
     def run_cycles(run_id: str, offset: Offset = 0, limit: Limit = 10):
-        """Ciclos de revisión por número ascendente, sin el texto del diff ni los casos JUnit (D142)."""
+        """Review cycles by ascending number, without the diff text or the JUnit cases (D142)."""
         runtime.ready()
         return call(runtime.views.cycles, run_id, offset, limit)
 
     @router.get("/runs/{run_id}/cycles/{cycle}/diff", response_model=CycleDiffRead, operation_id="managed_cycle_diff")
     def cycle_diff(run_id: str, cycle: int, offset: Offset = 0, limit: DiffLimit = 64 * 1024,
                    sha256: Annotated[str | None, Query(pattern=r'^[0-9a-f]{64}$')] = None):
-        """Diff revisado de un ciclo por páginas de bytes UTF-8 que acaban en fin de línea; `offset` es 0 o un
-        `next_offset` anterior. Con `sha256`, un diff distinto del pedido responde 409."""
+        """Reviewed diff of a cycle in pages of UTF-8 bytes that end at a line end; `offset` is 0 or a
+        previous `next_offset`. With `sha256`, a diff other than the requested one responds 409."""
         runtime.ready()
         return call(runtime.views.cycle_diff, run_id, cycle, offset, limit, sha256)
 
@@ -286,7 +286,7 @@ def managed_router(runtime: ManagedRuntime):
 
     @router.get("/runs/{run_id}/events", response_model=ManagedEventsRead, operation_id="managed_run_events")
     def events(run_id: str, after: Offset = 0, limit: Limit = 100):
-        """Solo eventos confirmados, por secuencia del run; `cursor` es el `after` de la página siguiente."""
+        """Confirmed events only, by run sequence; `cursor` is the `after` of the next page."""
         runtime.ready()
         return call(runtime.views.events, run_id, after, limit)
 
@@ -299,7 +299,7 @@ def managed_router(runtime: ManagedRuntime):
             if runtime.config.commit_factory is None:
                 raise problem(409, "commit_writer_unavailable",
                               "Este servicio no tiene escritor Git configurado; el commit no se encola.")
-            # Sin actualizaciones mecánicas por HTTP: el commit contiene exactamente lo revisado.
+            # No mechanical updates over HTTP: the commit contains exactly what was reviewed.
             job = call(runtime.repository.submit_commit, run_id, key=idempotency_key,
                        expected_version=body.expected_version)
         else:
@@ -315,7 +315,7 @@ def managed_router(runtime: ManagedRuntime):
     @router.post("/jobs/{job_id}/confirm-stopped", response_model=ManagedRunRead,
                  operation_id="managed_confirm_stopped")
     def confirm_stopped(job_id: int, body: ConfirmStoppedCreate):
-        """Afirmación del usuario tras descartar al escritor anterior; la autoridad comprueba procesos."""
+        """User assertion after ruling out the previous writer; the authority checks processes."""
         runtime.ready()
         detail = call(runtime.views.job, job_id)
         registered_run(detail["run_id"])
@@ -376,7 +376,7 @@ def managed_router(runtime: ManagedRuntime):
         expected = values.pop('expected_version')
         return call(runtime.permissions.decide, run_id, permission_id, expected, **values)
 
-    # --- H3.3: fases ----------------------------------------------------------------
+    # --- H3.3: phases ---------------------------------------------------------------
 
     from harness_local.api.schemas import (
         PhaseAbandonCreate, PhaseAmendCreate, PhaseAnswerCreate, PhaseBatchCreate, PhaseBatchNextCreate,
@@ -386,7 +386,7 @@ def managed_router(runtime: ManagedRuntime):
     from harness_local.core.engine.phases import document_hashes
 
     def phase_read(phase_id: str):
-        """Lectura con documentos actuales (disco) y acciones calculadas por el servidor."""
+        """Read with current documents (disk) and actions computed by the server."""
         runtime.ready()
         root, definition = call(runtime.phases.definition, phase_id)
         project_id = runtime.project_id(root)
@@ -397,7 +397,7 @@ def managed_router(runtime: ManagedRuntime):
                 current = document_hashes(context, definition["documents"])
             except (OSError, ValueError):
                 current = None
-            # P010-T005: el archivo de una fase terminada se contrasta archivo a archivo con lo que escribió el cierre.
+            # P010-T005: the archive of a finished phase is checked file by file against what the closure wrote.
             archived = {}
             for path in call(runtime.phases.closure_files, phase_id):
                 try:
@@ -425,13 +425,13 @@ def managed_router(runtime: ManagedRuntime):
 
     @router.get("/projects/{project_id}/phases/{code}", response_model=PhaseRead, operation_id="managed_phase_by_code")
     def phase_by_code(project_id: str, code: str):
-        """Lectura por el código de la URL (`P001`), único por checkout (D076)."""
+        """Read by the URL code (`P001`), unique per checkout (D076)."""
         return phase_read(call(runtime.phases.by_code, str(project(project_id).context.root), code))
 
     @router.get("/projects/{project_id}/phases/{code}/tasks", response_model=Page[PhaseTaskRead],
                 operation_id="managed_phase_tasks")
     def phase_tasks(project_id: str, code: str, offset: Offset = 0, limit: Limit = 30):
-        """Sin fase definida (runs v1 o anteriores a la definición), solo las tareas con runs."""
+        """Without a defined phase (v1 runs or runs before the definition), only the tasks with runs."""
         root = str(project(project_id).context.root)
         try:
             planned = list(runtime.phases.definition(runtime.phases.by_code(root, code))[1].get("tasks") or [])
@@ -466,7 +466,7 @@ def managed_router(runtime: ManagedRuntime):
                  operation_id="managed_phase_action")
     def phase_action(phase_id: str, body: Annotated[PhaseCheckCreate | PhaseCloseCreate, Field(discriminator="action")],
                      idempotency_key: IdempotencyKey):
-        """check y close son jobs bajo el lock del checkout; el cierre exige su propia autorización."""
+        """check and close are jobs under the checkout lock; the closure requires its own authorization."""
         item, _ = registered_phase(phase_id)
         if runtime.config.commit_factory is None:
             raise problem(409, "commit_writer_unavailable",
@@ -506,7 +506,7 @@ def managed_router(runtime: ManagedRuntime):
     @router.post("/phases/{phase_id}/authorizations", response_model=PhaseRead, status_code=201,
                  operation_id="managed_phase_authorize_batch")
     def authorize_batch(phase_id: str, body: PhaseBatchCreate):
-        """Solo lote: nunca autoriza check ni cierre. Con `chain_commits`, el supervisor encadena tareas y commits."""
+        """Batch only, never check or closure. With `chain_commits` the supervisor chains tasks and commits."""
         item, _ = registered_phase(phase_id)
         if body.chain_commits and runtime.config.commit_factory is None:
             raise problem(409, "commit_writer_unavailable",
@@ -532,11 +532,11 @@ def managed_router(runtime: ManagedRuntime):
                    versions=frozen_versions(item), authorization_id=body.authorization_id, text=body.text)
         return queued(job)
 
-    # --- H3.4: enmienda, abandono y reconciliación con agente ---------------------------
+    # --- H3.4: amendment, abandonment and reconciliation with an agent ------------------
 
     @router.post("/phases/{phase_id}/amend", response_model=PhaseRead, operation_id="managed_phase_amend")
     def amend_phase(phase_id: str, body: PhaseAmendCreate):
-        """Nueva versión de la definición (la anterior se conserva); invalida READY y lotes vigentes."""
+        """New version of the definition (the previous one is kept); invalidates READY and current batches."""
         item, _ = registered_phase(phase_id)
         data = body.model_dump(exclude={"expected_version", "reason", "confirmed"})
         call(runtime.phases.amend, item.context, phase_id, body.expected_version, data=data, reason=body.reason)
@@ -553,7 +553,7 @@ def managed_router(runtime: ManagedRuntime):
     @router.post("/phases/{phase_id}/reconcile-task", response_model=ManagedJobRead, status_code=202,
                  operation_id="managed_phase_reconcile_task")
     def reconcile_task(phase_id: str, body: PhaseReconcileTaskCreate, idempotency_key: IdempotencyKey):
-        """Tarea normal con contrato determinista limitado a los documentos; sin adopción automática."""
+        """Normal task with a deterministic contract limited to the documents; no automatic adoption."""
         item, _ = registered_phase(phase_id)
         if runtime.config.commit_factory is None:
             raise problem(409, "commit_writer_unavailable",
@@ -563,7 +563,7 @@ def managed_router(runtime: ManagedRuntime):
                    key=idempotency_key, versions=frozen_versions(item))
         return queued(job)
 
-    # --- Exportación mecánica confirmada de documentos -----------------------------------------
+    # --- Confirmed mechanical export of documents ----------------------------------------------
     from harness_local.api.schemas import DocumentExportCreate, DocumentExportPreviewRead
     from harness_local.storage.document_export import DocumentExportRepository
 
@@ -587,7 +587,7 @@ def managed_router(runtime: ManagedRuntime):
                    **body.model_dump(exclude={'expected_version'}))
         return queued(job)
 
-    # --- D088: documentos del proyecto y plan de la fase activa ---------------------------------------
+    # --- D088: project documents and plan of the active phase -----------------------------------------
     from harness_local.api.schemas import (
         DocumentEditCreate, DocumentEditInput, DocumentEditPreviewRead, DocumentRead, DocumentsStatusRead,
         DocumentTreeRead,
@@ -609,7 +609,7 @@ def managed_router(runtime: ManagedRuntime):
     @router.get('/projects/{project_id}/documents', response_model=DocumentsStatusRead,
                 operation_id='managed_documents')
     def documents_status(project_id: str):
-        """Documentos, deriva frente a la base adoptada, cambios locales, avisos, decisiones y archivo."""
+        """Documents, drift against the adopted base, local changes, warnings, decisions and archive."""
         item = documents_project(project_id)
         git = runtime.config.commit_factory(item.context, frozen_versions(item)) if runtime.config.commit_factory else None
         return call(document_status, DocumentsRepository(runtime.repository), item.context, git)
@@ -622,15 +622,15 @@ def managed_router(runtime: ManagedRuntime):
     @router.get('/projects/{project_id}/documents/tree', response_model=DocumentTreeRead,
                 operation_id='managed_document_tree')
     def document_tree(project_id: str):
-        """Instrucciones y Markdown del contrato; sin enlaces simbólicos, ocultos ni contenido."""
+        """Instructions and Markdown of the contract; no symbolic links, hidden entries or content."""
         return call(project_document_tree, DocumentsRepository(runtime.repository), documents_project(project_id).context)
 
     @router.get('/projects/{project_id}/documents/image', response_class=Response,
                 operation_id='managed_document_image',
                 responses={200: {'content': {kind: {} for kind in sorted(set(IMAGE_TYPES.values()))},
-                                 'description': 'Bytes de la imagen del checkout'}})
+                                 'description': 'Bytes of the checkout image'}})
     def document_image(project_id: str, path: Annotated[str, Query(min_length=1, max_length=500)]):
-        """Imagen del checkout para el visor (H6.2 E3). Sin scripts ni recursos externos aunque se abra sola."""
+        """Checkout image for the viewer (H6.2 E3). No scripts or external resources even if opened on its own."""
         data, kind = call(DocumentsRepository(runtime.repository).image, documents_project(project_id).context, path)
         return Response(data, media_type=kind, headers={
             'Content-Security-Policy': "default-src 'none'; style-src 'unsafe-inline'; sandbox",
@@ -639,7 +639,7 @@ def managed_router(runtime: ManagedRuntime):
     @router.post('/projects/{project_id}/documents/edit/preview', response_model=DocumentEditPreviewRead,
                  operation_id='managed_document_edit_preview')
     def document_edit_preview(project_id: str, body: DocumentEditInput):
-        """Diff exacto sin efectos; los bloques gestionados y el archivo de fases no se editan."""
+        """Exact diff without effects; the managed blocks and the phase archive are not edited."""
         item = documents_project(project_id)
         return call(DocumentsRepository(runtime.repository).preview, item.context, document_writer(item),
                     source=body.source, changes=_changes(body), regenerate_blocks=body.regenerate_blocks)
@@ -655,7 +655,7 @@ def managed_router(runtime: ManagedRuntime):
         return queued(job)
 
     def _changes(body):
-        # Sin `base_sha256` no hay CAS; con null, el documento no debe existir.
+        # Without `base_sha256` there is no CAS; with null, the document must not exist.
         return None if body.changes is None else [change.model_dump(exclude_unset=True) for change in body.changes]
 
     def _plan(body):
@@ -681,7 +681,7 @@ def managed_router(runtime: ManagedRuntime):
                            git=document_writer(item), source='content', changes=None,
                            resume_operation_id=body.resume_operation_id))
 
-    # --- H6.4: métricas por intento y agregados (solo lectura) ----------------------------------------
+    # --- H6.4: per-attempt metrics and aggregates (read-only) -----------------------------------------
     from harness_local.api.schemas import (
         AttemptMetricRead, MetricDimension, MetricGroupsRead, MetricOrder, MetricsSummaryRead, ModelMetricGroupsRead,
         TaskMetricsRead, ValidationDimension, ValidationGroupsRead,
@@ -691,7 +691,7 @@ def managed_router(runtime: ManagedRuntime):
     Scoped = Annotated[str | None, Query(min_length=1, max_length=200)]
 
     def metrics_scope(project_id, phase, task):
-        """Sin proyecto: global, todos los proyectos de esta SQLite. Fase y tarea exigen proyecto."""
+        """Without a project: global, all projects of this SQLite. Phase and task require a project."""
         runtime.ready()
         if project_id is None:
             if phase is not None or task is not None:
@@ -704,43 +704,43 @@ def managed_router(runtime: ManagedRuntime):
 
     @router.get('/metrics/summary', response_model=MetricsSummaryRead, operation_id='managed_metrics_summary')
     def metrics_summary(project_id: Scoped = None, phase: Scoped = None, task: Scoped = None):
-        """Consumo, calidad de las tareas, tests OK/KO de su última validación y paradas por motivo."""
+        """Consumption, task quality, OK/KO tests of their last validation and stops by reason."""
         return call(metrics().summary, metrics_scope(project_id, phase, task))
 
     @router.get('/metrics/attempts', response_model=Page[AttemptMetricRead], operation_id='managed_metrics_attempts')
     def metrics_attempts(project_id: Scoped = None, phase: Scoped = None, task: Scoped = None, run_id: Scoped = None,
                          offset: Offset = 0, limit: Limit = 30):
-        """Filas materializadas por intento, con procedencia por campo; null es ausencia, no cero."""
+        """Rows materialized per attempt, with per-field provenance; null is absence, not zero."""
         return call(metrics().attempts, metrics_scope(project_id, phase, task), offset, limit, run_id=run_id)
 
     @router.get('/metrics/groups', response_model=MetricGroupsRead, operation_id='managed_metrics_groups')
     def metrics_groups(dimension: MetricDimension, project_id: Scoped = None, phase: Scoped = None,
                        task: Scoped = None, role: Scoped = None, order: MetricOrder = 'attempts',
                        offset: Offset = 0, limit: Limit = 30):
-        """Consumo agrupado; con `role` y `order` da los modelos y esfuerzos favoritos por frecuencia o tokens."""
+        """Grouped consumption; with `role` and `order`, the favorite models and efforts by frequency or tokens."""
         return call(metrics().groups, metrics_scope(project_id, phase, task), dimension, offset, limit,
                     role=role, order=order)
 
     @router.get('/metrics/models', response_model=ModelMetricGroupsRead, operation_id='managed_metrics_models')
     def metrics_models(project_id: Scoped = None, phase: Scoped = None, task: Scoped = None, role: Scoped = None,
                        order: MetricOrder = 'attempts', offset: Offset = 0, limit: Limit = 30):
-        """Consumo por modelo reportado (Claude `modelUsage`); Codex no informa modelo."""
+        """Consumption per reported model (Claude `modelUsage`); Codex does not report a model."""
         return call(metrics().groups, metrics_scope(project_id, phase, task), 'reported_model', offset, limit,
                     role=role, order=order)
 
     @router.get('/metrics/tasks', response_model=Page[TaskMetricsRead], operation_id='managed_metrics_tasks')
     def metrics_tasks(project_id: Scoped = None, phase: Scoped = None, task: Scoped = None,
                       offset: Offset = 0, limit: Limit = 30):
-        """Por tarea: agentes, intentos por rol, correcciones, aceptación a la primera, tiempos, tests y consumo."""
+        """Per task: agents, attempts per role, corrections, first-time acceptance, times, tests and consumption."""
         return call(metrics().tasks, metrics_scope(project_id, phase, task), offset, limit)
 
     @router.get('/metrics/validations', response_model=ValidationGroupsRead, operation_id='managed_metrics_validations')
     def metrics_validations(dimension: ValidationDimension = 'phase', project_id: Scoped = None, phase: Scoped = None,
                             task: Scoped = None, offset: Offset = 0, limit: Limit = 30):
-        """H6.2 E6: evolución de los tests. Cada ciclo de validación de las tareas, OK/KO, por clave descendente."""
+        """H6.2 E6: evolution of the tests. Each validation cycle of the tasks, OK/KO, by descending key."""
         return call(metrics().validations, metrics_scope(project_id, phase, task), dimension, offset, limit)
 
-    # --- H4.1: chat contextual -----------------------------------------------------------------
+    # --- H4.1: contextual chat -----------------------------------------------------------------
 
     from harness_local.api.schemas import (
         ChatConversationCreate, ChatConversationRead, ChatConversationSummaryRead, ChatMessageCreate,
@@ -771,8 +771,8 @@ def managed_router(runtime: ManagedRuntime):
     @router.post("/projects/{project_id}/conversations", response_model=ChatConversationRead, status_code=201,
                  operation_id="managed_create_conversation")
     def create_conversation(project_id: str, body: ChatConversationCreate, idempotency_key: IdempotencyKey):
-        """Conversación separada del flujo de ejecución; no encola nada. Misma clave y misma petición devuelven la
-        misma conversación."""
+        """Conversation separate from the execution flow; queues nothing. The same key and the same request return the
+        same conversation."""
         context = project(project_id).context
         return conversation_read(call(runtime.chat.create, context, title=body.title, phase_id=body.phase_id,
                                       task_run_id=body.task_run_id, key=idempotency_key))
@@ -785,7 +785,7 @@ def managed_router(runtime: ManagedRuntime):
     @router.post("/conversations/{conversation_id}/messages", response_model=ManagedJobRead, status_code=202,
                  operation_id="managed_chat_message")
     def chat_message(conversation_id: str, body: ChatMessageCreate, idempotency_key: IdempotencyKey):
-        """Turno nuevo de solo lectura: mensaje y contexto se congelan al encolar; sin sesión del proveedor."""
+        """New read-only turn: message and context are frozen when queued; no provider session."""
         item = registered_conversation(conversation_id)
         from harness_local.adapters.chat_snapshot import HeadSnapshot
         writer = call(runtime.config.commit_factory, item.context, frozen_versions(item)) if runtime.config.commit_factory else None
@@ -805,7 +805,7 @@ def managed_router(runtime: ManagedRuntime):
                  status_code=202, operation_id="managed_chat_accept")
     def accept_proposal(conversation_id: str, proposal_id: str, body: ChatProposalAcceptCreate,
                         idempotency_key: IdempotencyKey):
-        """Confirmación explícita del hash mostrado → tarea normal vinculada (planificar, ejecutar, revisar)."""
+        """Explicit confirmation of the shown hash → linked normal task (plan, execute, review)."""
         item = registered_conversation(conversation_id)
         job = call(runtime.chat.accept, item.context, conversation_id, proposal_id, body.expected_version,
                    key=idempotency_key, versions=frozen_versions(item), proposal_sha256=body.proposal_sha256,
@@ -819,7 +819,7 @@ def managed_router(runtime: ManagedRuntime):
         call(runtime.chat.dismiss, conversation_id, proposal_id, body.expected_version, reason=body.reason)
         return conversation_read(conversation_id)
 
-    # --- H6.5: creación y planificación conversacionales -----------------------------------------
+    # --- H6.5: conversational creation and planning ----------------------------------------------
     from harness_local.api.schemas import (
         DefinitionAcceptCreate, DefinitionPreviewRead, ImportPreviewRead, ImportEntryRead, PlanningApplyCreate, PlanningBriefRead,
         PlanningConversationCreate, PlanningConversationRead, PlanningConversationSummaryRead, PlanningDeferCreate,
@@ -844,23 +844,23 @@ def managed_router(runtime: ManagedRuntime):
         return conversation_id
 
     def definition_writer(item):
-        """Lectura y escritura de borradores: solo destinos con bootstrap autorizado por el servidor."""
+        """Reading and writing drafts: only targets with a bootstrap authorized by the server."""
         return bootstrap_writer(item)
 
     def import_reader(item):
-        """P008-T011: Git de solo lectura del escritor configurado para leer el árbol de HEAD del proyecto."""
+        """P008-T011: read-only Git of the configured writer to read the tree of the project's HEAD."""
         if runtime.config.commit_factory is None:
             raise problem(409, 'git_unconfigured', 'No hay lector Git configurado para importar el proyecto.')
         return call(runtime.config.commit_factory, item.context, frozen_versions(item))
 
     def conversation_port(item, kind):
-        """Puerto de cada tipo: destino del bootstrap (definición) o lector Git (importación; sus borradores viven
-        en el área privada junto a SQLite)."""
+        """Port for each kind: bootstrap target (definition) or Git reader (import; its drafts live
+        in the private area next to SQLite)."""
         port = {'definition': definition_writer, 'onboarding': import_reader}
         return port.get(kind, lambda _: None)(item)
 
     def drafts_port(item, conversation_id):
-        """Los borradores de una importación están en el área privada: no necesitan Git ni bootstrap."""
+        """The drafts of an import are in the private area: they need neither Git nor bootstrap."""
         kind = call(planning_repository().get, conversation_id)['kind']
         return definition_writer(item) if kind == 'definition' else None
 
@@ -879,9 +879,9 @@ def managed_router(runtime: ManagedRuntime):
     @router.post('/projects/{project_id}/planning', response_model=PlanningConversationRead, status_code=201,
                  operation_id='managed_planning_create')
     def planning_create(project_id: str, body: PlanningConversationCreate, idempotency_key: IdempotencyKey):
-        """Definición (brief Markdown, destino vacío o con borradores), planificación de la fase activa sin tareas o
-        importación de un proyecto aún no gestionado (inventario y mapa de HEAD congelados). Misma clave y misma
-        petición devuelven la misma conversación."""
+        """Definition (Markdown brief, empty target or with drafts), planning of the active phase without tasks or
+        import of a project not yet managed (frozen inventory and HEAD map). The same key and the same
+        request return the same conversation."""
         item = planning_project(project_id)
         writer = conversation_port(item, body.kind)
         conversation_id = call(planning_repository().create, item.context, kind=body.kind, title=body.title, brief=body.brief,
@@ -904,7 +904,7 @@ def managed_router(runtime: ManagedRuntime):
                  status_code=202, operation_id='managed_planning_message')
     def planning_message(project_id: str, conversation_id: str, body: PlanningMessageCreate,
                          idempotency_key: IdempotencyKey):
-        """Turno nuevo de solo lectura del revisor con el contexto congelado al encolarlo."""
+        """New read-only reviewer turn with the context frozen when it was queued."""
         item = planning_project(project_id)
         conversation_of(item, conversation_id)
         if runtime.config.ports_factory is None:
@@ -918,7 +918,7 @@ def managed_router(runtime: ManagedRuntime):
     @router.get('/projects/{project_id}/planning/{conversation_id}/drafts', response_model=PlanningDraftsRead,
                 operation_id='managed_planning_drafts')
     def planning_drafts(project_id: str, conversation_id: str):
-        """Borradores en disco frente a lo que conoce el harness; archivos ajenos e inválidos."""
+        """Drafts on disk against what the harness knows; foreign and invalid files."""
         item = planning_project(project_id)
         return call(planning_repository().drafts, item.context, conversation_of(item, conversation_id),
                     drafts_port(item, conversation_id))
@@ -926,7 +926,7 @@ def managed_router(runtime: ManagedRuntime):
     @router.get('/projects/{project_id}/planning/{conversation_id}/drafts/content', response_model=PlanningDraftContentRead,
                 operation_id='managed_planning_draft')
     def planning_draft(project_id: str, conversation_id: str, path: Annotated[str, Query(min_length=1, max_length=500)]):
-        """H6.2 E4: un borrador admitido con su hash en disco, base de la CAS del editor."""
+        """H6.2 E4: an admitted draft with its hash on disk, the base of the editor's CAS."""
         item = planning_project(project_id)
         return call(planning_repository().draft, item.context, conversation_of(item, conversation_id), path,
                     drafts_port(item, conversation_id))
@@ -934,7 +934,7 @@ def managed_router(runtime: ManagedRuntime):
     @router.put('/projects/{project_id}/planning/{conversation_id}/drafts', response_model=PlanningConversationRead,
                 operation_id='managed_planning_draft_edit')
     def planning_draft_edit(project_id: str, conversation_id: str, body: PlanningDraftEdit):
-        """Edición del usuario con CAS sobre el hash en disco; nunca sobrescribe otro cambio."""
+        """User edit with CAS on the hash on disk; never overwrites another change."""
         item = planning_project(project_id)
         call(planning_repository().edit_draft, item.context, conversation_of(item, conversation_id), body.expected_version,
              path=body.path, content=body.content, base_sha256=body.base_sha256,
@@ -944,7 +944,7 @@ def managed_router(runtime: ManagedRuntime):
     @router.post('/projects/{project_id}/planning/{conversation_id}/proposals/{proposal_id}/apply',
                  response_model=PlanningConversationRead, operation_id='managed_planning_apply')
     def planning_apply(project_id: str, conversation_id: str, proposal_id: str, body: PlanningApplyCreate):
-        """El harness escribe el borrador confirmado si sigue siendo el que leyó el turno (CAS)."""
+        """The harness writes the confirmed draft if it is still the one the turn read (CAS)."""
         item = planning_project(project_id)
         call(planning_repository().apply, item.context, conversation_of(item, conversation_id), proposal_id,
              body.expected_version, proposal_sha256=body.proposal_sha256, confirmed=body.confirmed,
@@ -962,7 +962,7 @@ def managed_router(runtime: ManagedRuntime):
     @router.post('/projects/{project_id}/planning/{conversation_id}/questions/defer',
                  response_model=PlanningConversationRead, operation_id='managed_planning_defer')
     def planning_defer(project_id: str, conversation_id: str, body: PlanningDeferCreate):
-        """Aplazamiento explícito de una pregunta bloqueante, con motivo; no la responde."""
+        """Explicit deferral of a blocking question, with a reason; does not answer it."""
         item = planning_project(project_id)
         call(planning_repository().defer, conversation_of(item, conversation_id), body.expected_version,
              question_id=body.question_id, reason=body.reason)
@@ -998,7 +998,7 @@ def managed_router(runtime: ManagedRuntime):
     @router.post('/projects/{project_id}/planning/{conversation_id}/accept/preview',
                  response_model=DefinitionPreviewRead, operation_id='managed_definition_accept_preview')
     def definition_accept_preview(project_id: str, conversation_id: str):
-        """Archivos íntegros del commit raíz, archivo phase-000, bloques, P001, perfil y comandos; o bloqueos."""
+        """Complete files of the root commit, phase-000 archive, blocks, P001, profile and commands; or blockers."""
         item = planning_project(project_id)
         return call(BootstrapRepository(runtime.repository).preview, item.context,
                     {'conversation_id': conversation_of(item, conversation_id)}, frozen_versions(item),
@@ -1008,14 +1008,14 @@ def managed_router(runtime: ManagedRuntime):
                  status_code=202, operation_id='managed_definition_accept')
     def definition_accept(project_id: str, conversation_id: str, body: DefinitionAcceptCreate,
                           idempotency_key: IdempotencyKey):
-        """Confirma la vista previa exacta: bootstrap D037 con la plantilla v2 y P001 ACTIVE adoptada."""
+        """Confirms the exact preview: D037 bootstrap with the v2 template and P001 ACTIVE adopted."""
         item = planning_project(project_id)
         job = call(BootstrapRepository(runtime.repository).submit, item.context,
                    {'conversation_id': conversation_of(item, conversation_id)}, frozen_versions(item),
                    definition_writer(item), key=idempotency_key, **body.model_dump())
         return queued(job)
 
-    # --- autoridad UI de creación de hijos nuevos (P009-T002 / D116) -------------------
+    # --- UI authority for creating new children (P009-T002 / D116) ---------------------
     from harness_local.api.schemas import (
         CreationRootChangeInput, CreationRootApplyInput, CreationRootRead, CreationRootPreviewRead,
         CreationInput, CreationConfirmInput, CreationPreviewRead, CreationOperationRead,

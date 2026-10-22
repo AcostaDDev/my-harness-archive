@@ -1,4 +1,4 @@
-"""P009-T002 / D116: una autoridad UI para hijos directos nuevos; sin agentes ni Git."""
+"""P009-T002 / D116: a UI authority for new direct children; no agents or Git."""
 from contextlib import contextmanager
 from dataclasses import asdict
 import os
@@ -38,7 +38,7 @@ def normalized(value):
 
 @contextmanager
 def directory(path):
-    """Cada componente por fd y O_NOFOLLOW. Nunca se resuelve un enlace silenciosamente."""
+    """Each component by fd and O_NOFOLLOW. A link is never resolved silently."""
     fd = os.open('/', os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW)
     try:
         for part in path.parts[1:]:
@@ -65,7 +65,7 @@ class ProjectCreation:
         self.lock = self.registry._lock
 
     def reconcile(self):
-        """Arranque: clasifica efectos inciertos; nunca crea, adopta o borra carpetas."""
+        """Startup: classifies uncertain effects; never creates, adopts or deletes folders."""
         if self.registry.registrar is None:
             return
         with self.lock, self.runtime.repository._write() as session:
@@ -101,7 +101,7 @@ class ProjectCreation:
                 info = identity(os.fstat(fd))
                 if not os.access(path, os.W_OK | os.X_OK):
                     raise RegistryError(422, 'root_unwritable', 'La carpeta no permite crear hijos.')
-            # Inspección estática: no ejecuta Git ni lee configuración del repositorio.
+            # Static inspection: runs no Git and reads no repository configuration.
             if any(os.path.lexists(p / '.git') for p in (path, *path.parents)):
                 raise RegistryError(422, 'root_in_repository', 'El padre no puede estar dentro de un repositorio Git.')
             if any(_within(path, p) for p in self.protected() if p is not None):
@@ -277,7 +277,7 @@ class ProjectCreation:
 
     def advance(self, operation_id):
         try:
-            # Intención ya confirmada antes de mkdir. SQLite excluye retirada/cambio durante cada efecto corto.
+            # Intent already confirmed before mkdir. SQLite excludes retirement/change during each short effect.
             with self.runtime.repository._write() as session:
                 row = self.repository.require(session, operation_id)
                 if row.status == 'INTENDED':
@@ -391,7 +391,7 @@ class ProjectCreation:
                 raise RegistryError(409, 'stale_version', 'La operación cambió; vuelve a cargarla.')
             if row.status == 'REGISTERED' or (row.status == 'CANCELLED' and not row.reserved):
                 raise RegistryError(409, 'recovery_required', 'La operación ya terminó.')
-            # Liberar solo si se acredita ausencia bajo el mismo padre. Nunca borrar ni adoptar.
+            # Release only if absence under the same parent is established. Never delete or adopt.
             try:
                 with directory(Path(row.authority['path'])) as fd:
                     if identity(os.fstat(fd)) == row.authority['identity'] and not exists(fd, row.directory_name):

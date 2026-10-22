@@ -1,7 +1,7 @@
-"""Autoridad H2.2. Toda transacción escritora termina antes de ejecutar puertos.
+"""H2.2 authority. Every writing transaction ends before running ports.
 
-FIFO entre jobs elegibles, un escritor por raíz dentro de esta base. El lease
-no libera el checkout: un ejecutor de resultado incierto requiere conciliación.
+FIFO among eligible jobs, one writer per root within this database. The lease
+does not release the checkout: an executor with an uncertain result requires reconciliation.
 """
 
 from contextlib import contextmanager
@@ -86,7 +86,7 @@ def _nonempty(value: str, name: str) -> None:
 
 
 def existing_creation(session, row_type, key, request_sha256):
-    """Alta sin job (conversaciones, 0018): misma clave y misma petición devuelven el mismo id."""
+    """Registration without a job (conversations, 0018): the same key and the same request return the same id."""
     _nonempty(key, "idempotency key")
     if len(key) > 200:
         raise ValueError("Idempotency key exceeds 200 characters")
@@ -101,7 +101,7 @@ def independent_chat(job):
 
 
 def _operation_module(run):
-    """Autoridad del resultado de un run que no es de tarea: fase (H3.3) o turno de chat (H4.1)."""
+    """Authority of the result of a non-task run: phase (H3.3) or chat turn (H4.1)."""
     if run.purpose == "project_import":
         from harness_local.storage import retired_work
         return retired_work
@@ -143,7 +143,7 @@ class SQLiteManagedRepository:
         require_schema(engine)
         self.engine = engine
         self.clock = clock or (lambda: datetime.now(timezone.utc))
-        # H2.5: exclusión legacy/gestionado. Checkouts sin estado legacy no cambian de comportamiento.
+        # H2.5: legacy/managed exclusion. Checkouts without legacy state do not change behavior.
         self.guard = ModeGuard(engine, mode_probe)
 
     def _now(self) -> str:
@@ -155,7 +155,7 @@ class SQLiteManagedRepository:
     @contextmanager
     def _write(self):
         with Session(self.engine) as session, session.begin():
-            # Primera operación DML: obtiene el lock SQLite antes de consultar.
+            # First DML operation: acquires the SQLite lock before querying.
             session.execute(text("UPDATE managed_runs SET version = version WHERE 0"))
             yield session
 
@@ -174,7 +174,7 @@ class SQLiteManagedRepository:
 
     @staticmethod
     def _registry_current(session, root, versions):
-        """Serializa la admisión con D078: nunca encolar con una fila ya sustituida."""
+        """Serializes admission with D078: never queue with an already replaced row."""
         if 'project_registry' not in versions:
             return
         from harness_local.storage.models import RegisteredProjectRow
@@ -197,7 +197,7 @@ class SQLiteManagedRepository:
             return reason(session, run, request_json) if run else 'Unknown persisted run; explicit recovery required'
 
     def mode_refusal(self, claim: JobRecord) -> str | None:
-        """Lectura de disco fuera de transacción: el modo del checkout sigue admitiendo este job."""
+        """Disk read outside a transaction: the checkout mode still admits this job."""
         with Session(self.engine) as session:
             job = session.get(Job, claim.id)
             if job is None:
@@ -220,7 +220,7 @@ class SQLiteManagedRepository:
             raise Conflict(refusal)
 
     def refuse(self, claim: JobRecord, diagnostic: str) -> None:
-        """Job reclamado que no llegó a registrar propietario ni efectos: se cierra y libera el lock."""
+        """Claimed job that never recorded an owner or effects: it is closed and the lock released."""
         _nonempty(diagnostic, "refusal diagnostic")
         with self._write() as session:
             job, run = self._owned(session, claim)
@@ -264,7 +264,7 @@ class SQLiteManagedRepository:
         request = {"action": "start", "context_json": context_snapshot(context),
                    "versions_json": freeze(versions), "task_id": task_id, "phase_id": phase_id, "text": text}
         if notes is not None:
-            request["notes"] = notes  # P009-T020: en la petición del job; sin notas, la petición no cambia
+            request["notes"] = notes  # P009-T020: in the job request; without notes, the request does not change
         request = freeze(request)
         assessment = self.guard.assess(context.root)
         with self._write() as session:
@@ -275,7 +275,7 @@ class SQLiteManagedRepository:
 
     def _queue_new_run(self, session, assessment, context, versions, task_id, phase_id, key, request,
                        purpose="task"):
-        """Run nuevo y su primer job en la transacción del llamante (tareas y operaciones de fase H3.3)."""
+        """New run and its first job in the caller's transaction (tasks and H3.3 phase operations)."""
         self._registry_current(session, str(context.root), versions)
         from harness_local.storage.preparation import admit
         admit(session, str(context.root), versions, purpose)
@@ -310,7 +310,7 @@ class SQLiteManagedRepository:
 
     @staticmethod
     def _phase_open(session, root, code):
-        """H3.3/H3.4: una fase cerrada, cerrándose o abandonada no acepta tareas, reanudaciones ni commits."""
+        """H3.3/H3.4: a closed, closing or abandoned phase accepts no tasks, resumptions or commits."""
         from harness_local.storage.models import PhaseRow
         from harness_local.storage.documents import unresolved
         if unresolved(session, root):
@@ -389,7 +389,7 @@ class SQLiteManagedRepository:
     def claim(self, *, lease_seconds=30, lane=None) -> JobRecord | None:
         _lease(lease_seconds)
         with self._write() as session:
-            # FIFO de trabajos elegibles: otro checkout puede avanzar mientras uno está bloqueado.
+            # FIFO of eligible jobs: another checkout may advance while one is blocked.
             independent = func.json_extract(Job.request_json, '$.action').in_(['chat_snapshot', 'chat_command'])
             query = select(Job).join(Run, Run.id == Job.run_id).where(
                 Job.status == "QUEUED", or_(independent, ~Run.root.in_(select(Lock.root))))
@@ -465,11 +465,11 @@ class SQLiteManagedRepository:
             if row.result_json is None:
                 row.result_json, row.status, row.finished_at = result, (attempt.result.status or "COMPLETED").upper(), self._now()
                 completed.append(row.id)
-                # H6.4: métricas materializadas en la misma transacción que el resultado del intento.
+                # H6.4: metrics materialized in the same transaction as the attempt result.
                 record_metrics(session, run, row, executor_round=executor_round(roles, number), recorded_at=row.finished_at)
         run.history_json = dump_history(history)
         run.revisions = history.revisions
-        run_projection.advance(session, run.id, previous, history, run.history_json)  # misma transacción (D142)
+        run_projection.advance(session, run.id, previous, history, run.history_json)  # same transaction (D142)
         return completed
 
     def checkpoint(self, claim: JobRecord, history: RunHistory, stage: str) -> None:
@@ -517,8 +517,8 @@ class SQLiteManagedRepository:
             self._event(session, run, kind, {**payload, "job_id": job.id})
 
     def finish(self, claim: JobRecord, history: RunHistory, outcome: dict | None = None) -> None:
-        """`outcome`: resultado de una operación de fase (H3.3) o de un turno de chat (H4.1), aplicado en
-        la misma transacción."""
+        """`outcome`: result of a phase operation (H3.3) or a chat turn (H4.1), applied in
+        the same transaction."""
         with self._write() as session:
             job, run = self._owned(session, claim)
             terminal = {"stopped", "completed"} if run.purpose != "task" else {
@@ -541,7 +541,7 @@ class SQLiteManagedRepository:
             self._event(session, run, "job_finished", {"job_id": job.id, "history_status": history.status})
 
     def quarantine(self, claim: JobRecord, reason: str) -> None:
-        """Sin liberar el escritor ni inferir que un proceso terminó."""
+        """Without releasing the writer or inferring that a process finished."""
         _nonempty(reason, "recovery reason")
         with self._write() as session:
             job = session.get(Job, claim.id)
@@ -555,7 +555,7 @@ class SQLiteManagedRepository:
             self._event(session, run, "recovery_required", {"job_id": job.id, "reason": reason})
 
     def recover_expired(self) -> list[int]:
-        """Conciliar al iniciar/periódicamente. Nunca reencola ni libera locks."""
+        """Reconcile at startup/periodically. Never requeues or releases locks."""
         with self._write() as session:
             rows = session.scalars(select(Job).where(Job.status == "ACTIVE", Job.lease_until <= self._now())
                                    .order_by(Job.id)).all()
@@ -567,7 +567,7 @@ class SQLiteManagedRepository:
             return [job.id for job in rows]
 
     def confirm_stopped(self, job_id: int, *, owner_token: str, expected_version: int, reason: str) -> None:
-        """Acción explícita DESPUÉS de descartar al escritor anterior; no prueba su muerte."""
+        """Explicit action AFTER ruling out the previous writer; does not prove its death."""
         _nonempty(reason, "confirmation evidence")
         with self._write() as session:
             job = session.get(Job, job_id)
@@ -598,7 +598,7 @@ class SQLiteManagedRepository:
                 module.abort(self, session, run, "INTERRUPTED", reason)
 
 
-    # --- H2.4: commit aceptado ----------------------------------------------------
+    # --- H2.4: accepted commit ----------------------------------------------------
 
     @staticmethod
     def _live_commit(session, run_id, statuses=("INTENT", "COMMITTED")):
@@ -606,7 +606,7 @@ class SQLiteManagedRepository:
 
     def submit_commit(self, run_id: str, *, key: str, expected_version: int,
                       mechanical: tuple[MechanicalUpdate, ...] = ()) -> JobRecord:
-        """Encola el commit como acción escritora; una intención pendiente se concilia, no se repite."""
+        """Queues the commit as a writing action; a pending intent is reconciled, not repeated."""
         if type(expected_version) is not int:
             raise ValueError("Explicit resource version required")
         updates = tuple(mechanical)
@@ -626,7 +626,7 @@ class SQLiteManagedRepository:
             return self._queue_commit(session, run, key, request, updates, assessment)
 
     def _queue_commit(self, session, run, key, request, updates, assessment) -> JobRecord:
-        """Comprobaciones y job de commit en la transacción del llamante (acción propia o lote H3.4)."""
+        """Checks and commit job in the caller's transaction (own action or H3.4 batch)."""
         self._registry_current(session, run.root, json.loads(run.versions_json))
         from harness_local.storage.preparation import admit
         admit(session, run.root, json.loads(run.versions_json), run.purpose)
@@ -676,7 +676,7 @@ class SQLiteManagedRepository:
             return CommitIntent.from_json(row.intent_json) if row else None
 
     def commit_intent(self, claim: JobRecord, intent: CommitIntent) -> None:
-        """Intención durable ANTES de mover la referencia; transacción propia y corta."""
+        """Durable intent BEFORE moving the reference; own, short transaction."""
         self._require_mode(claim)
         with self._write() as session:
             job, run = self._owned(session, claim)
@@ -699,7 +699,7 @@ class SQLiteManagedRepository:
                 "reviewed_fingerprint": intent.reviewed_fingerprint})
 
     def commit_result(self, claim: JobRecord, outcome: CommitOutcome, adopt: dict | None = None) -> None:
-        """`adopt` (D072): hashes de bloques gestionados que el propio commit regeneró, adoptados atómicamente."""
+        """`adopt` (D072): hashes of managed blocks that the commit itself regenerated, adopted atomically."""
         with self._write() as session:
             job, run = self._owned(session, claim)
             row = session.get(Commit, outcome.operation_id) if outcome.operation_id else None
@@ -724,13 +724,13 @@ class SQLiteManagedRepository:
                 "tree": outcome.tree, "reconciled": outcome.status == "reconciled", "index": outcome.index})
 
     def commit_invalidated(self, claim: JobRecord, outcome: CommitOutcome) -> None:
-        """Invalidación previa a cualquier intención: solo evidencia, sin fila de operación."""
+        """Invalidation prior to any intent: evidence only, no operation row."""
         self.effect(claim, "commit_invalidated", {
             "operation_id": None, "diagnostic": outcome.diagnostic,
             "observed_fingerprint": outcome.observed_fingerprint, "head": outcome.head})
 
     def tag_intent(self, claim: JobRecord, intent: dict) -> None:
-        """H3.3: intención del tag de cierre ANTES de crear la referencia; transacción propia y corta."""
+        """H3.3: closure tag intent BEFORE creating the reference; own, short transaction."""
         self._require_mode(claim)
         with self._write() as session:
             job, run = self._owned(session, claim)
@@ -739,7 +739,7 @@ class SQLiteManagedRepository:
             self._event(session, run, "phase_tag_intent", {"job_id": job.id, **intent})
 
     def export_intent(self, claim: JobRecord, intent: CommitIntent) -> None:
-        """Intención de exportación confirmada, persistida antes de escribir documentos o Git."""
+        """Confirmed export intent, persisted before writing documents or Git."""
         self._require_mode(claim)
         with self._write() as session:
             _, run = self._owned(session, claim)
@@ -750,7 +750,7 @@ class SQLiteManagedRepository:
                 'expected_tree': intent.expected_tree})
 
     def document_intent(self, claim: JobRecord, intent: CommitIntent) -> None:
-        """D072: intención de transición o edición documental, persistida antes de escribir documentos o Git."""
+        """D072: transition or documentary edit intent, persisted before writing documents or Git."""
         self._require_mode(claim)
         with self._write() as session:
             _, run = self._owned(session, claim)

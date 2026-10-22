@@ -1,12 +1,12 @@
-"""H6.4 (D072 §9): autoridad SQLite de las métricas por intento y de sus agregados.
+"""H6.4 (D072 §9): SQLite authority of the per-attempt metrics and their aggregates.
 
-Cada intento resuelto deja una fila en `attempt_metrics` en la misma transacción que registra su
-resultado (`source='capture'`). Los intentos anteriores a 0014 se rellenan con una operación explícita e
-idempotente (`source='backfill'`) desde `result_json` y, si se autoriza su raíz, el stdout sellado
-verificado por tamaño y SHA-256. Las filas no se reescriben: la retención H5.3 no les afecta.
+Each resolved attempt leaves a row in `attempt_metrics` in the same transaction that records its
+result (`source='capture'`). Attempts before 0014 are backfilled with an explicit and
+idempotent operation (`source='backfill'`) from `result_json` and, if its root is authorized, the sealed stdout
+verified by size and SHA-256. Rows are not rewritten: H5.3 retention does not affect them.
 
-Los agregados suman cada campo por separado: `SUM` de solo nulls es null y cada suma lleva el número de
-intentos que la aportan. No se mezclan turnos reportados con derivados ni se deduce cuota.
+Aggregates sum each field separately: `SUM` of only nulls is null and each sum carries the number of
+attempts that contribute to it. Reported turns are not mixed with derived ones and no quota is deduced.
 """
 
 from datetime import datetime, timezone
@@ -25,30 +25,30 @@ from harness_local.storage.models import (
     RunProjectionCycleRow as Cycle, RunProjectionRow as Projection, RunProjectionStopRow as Stop,
 )
 
-# `input_tokens` crudo no se agrega: Claude excluye la caché y Codex la incluye. Sí lo hace su forma normalizada.
+# Raw `input_tokens` is not aggregated: Claude excludes the cache and Codex includes it. Its normalized form is.
 SUMMED = ('uncached_input_tokens', 'cache_read_tokens', 'cache_write_tokens', 'output_tokens', 'reasoning_tokens',
           'total_tokens')
-# Conversaciones que no son trabajo de una fase: no entran en su SUMMARY (H6.4/H6.5).
+# Conversations that are not work of a phase: they do not enter its SUMMARY (H6.4/H6.5).
 CONVERSATIONS = ('chat', 'definition', 'phase_planning', 'project_import', 'onboarding')
 DIMENSIONS = {'role': Metric.role, 'provider': Metric.provider, 'requested_model': Metric.requested_model,
               'requested_effort': Metric.requested_effort, 'day': Metric.day, 'phase': Metric.phase_code,
               'task': Metric.task_id, 'status': Metric.status, 'purpose': Metric.purpose, 'root': Metric.root}
-# `key`: por clave descendente (días más recientes primero), para las series temporales de la UI (H6.2 E6).
+# `key`: by descending key (most recent days first), for the UI time series (H6.2 E6).
 ORDERS = ('attempts', 'tokens', 'key')
 VALIDATION_DIMENSIONS = ('phase', 'task', 'root')
 STOP_LIMIT = 20
 
 
-# --- materialización ---------------------------------------------------------------------------
+# --- materialization ---------------------------------------------------------------------------
 
 
 def executor_round(roles, number) -> int:
-    """Ejecuciones del run hasta el intento `number` (1-based), incluida la suya."""
+    """Executions of the run up to attempt `number` (1-based), including its own."""
     return sum(1 for role in roles[:number] if role == 'executor')
 
 
 def record(session, run, attempt, *, executor_round, recorded_at, source='capture', stream=None, diagnostics=()):
-    """Fila de un intento ya resuelto, en la transacción del llamador. Nunca sustituye una fila existente."""
+    """Row of an already resolved attempt, in the caller's transaction. Never replaces an existing row."""
     if attempt.result_json is None or session.get(Metric, attempt.id) is not None:
         return False
     process = session.get(Process, attempt.id)
@@ -62,23 +62,23 @@ def record(session, run, attempt, *, executor_round, recorded_at, source='captur
                        phase_code=run.phase_id, task_id=run.task_id, purpose=run.purpose, role=request['role'],
                        started_at=attempt.started_at, finished_at=attempt.finished_at, day=attempt.started_at[:10],
                        source=source, catalog=CATALOG, diagnostics=notes, recorded_at=recorded_at, **values))
-    session.flush()  # Las filas por modelo referencian la fila del intento (claves foráneas activas).
+    session.flush()  # The per-model rows reference the attempt row (foreign keys enabled).
     for item in models:
         session.add(ModelMetric(attempt_id=attempt.id, **item))
     return True
 
 
-# --- relleno explícito -------------------------------------------------------------------------
+# --- explicit backfill -------------------------------------------------------------------------
 
 
 def _retired(session) -> set[str]:
-    """Streams con purga autorizada o pendiente (H5.3): no se leen aunque el archivo siga ahí."""
+    """Streams with an authorized or pending purge (H5.3): not read even if the file is still there."""
     rows = session.scalars(select(Event.payload).where(Event.kind.in_(('log_retention_intent', 'log_retention_removed'))))
     return {payload.get('source') for payload in rows if isinstance(payload, dict)}
 
 
 def _stream(spec, capture, roots, retired):
-    """Relectura verificada del stdout sellado, o la razón por la que no se usa."""
+    """Verified reread of the sealed stdout, or the reason it is not used."""
     from harness_local.storage.backup import BackupError, _read
     if not isinstance(spec, dict) or spec.get('provider') not in ('codex', 'claude'):
         return None, ['stream_not_applicable']
@@ -102,7 +102,7 @@ def _stream(spec, capture, roots, retired):
 
 
 def backfill(engine, *, artifact_roots=(), clock=None) -> dict:
-    """Relleno idempotente de intentos resueltos sin métricas. Lee disco fuera de las transacciones."""
+    """Idempotent backfill of resolved attempts without metrics. Reads disk outside the transactions."""
     roots = []
     for value in artifact_roots:
         root = Path(value)
@@ -126,7 +126,7 @@ def backfill(engine, *, artifact_roots=(), clock=None) -> dict:
             stream, notes = _stream(process.spec if process else None, process.capture if process else None,
                                     roots, _retired(session))
         with Session(engine) as session, session.begin():
-            session.execute(text('UPDATE managed_runs SET version = version WHERE 0'))  # lock SQLite primero
+            session.execute(text('UPDATE managed_runs SET version = version WHERE 0'))  # SQLite lock first
             attempt = session.get(AttemptRow, attempt_id)
             run = session.get(Run, attempt.run_id)
             roles = [json.loads(value)['role'] for value in session.scalars(
@@ -140,7 +140,7 @@ def backfill(engine, *, artifact_roots=(), clock=None) -> dict:
     return report
 
 
-# --- consultas ---------------------------------------------------------------------------------
+# --- queries -----------------------------------------------------------------------------------
 
 
 def _scope(query, model, scope):
@@ -157,7 +157,7 @@ def _sums():
         columns += [func.sum(getattr(Metric, name)).label(name), func.count(getattr(Metric, name)).label(f'{name}__n')]
     columns += [func.sum(Metric.cost_usd).label('cost_usd'), func.count(Metric.cost_usd).label('cost_usd__n')]
     for provenance, label in (('reported', 'turns_reported'), ('derived', 'turns_derived')):
-        # Por la procedencia registrada de cada fila, nunca por el proveedor: no se mezclan nunca.
+        # By the recorded provenance of each row, never by the provider: they are never mixed.
         value = case((func.json_extract(Metric.provenance, '$.turns') == provenance, Metric.turns), else_=None)
         columns += [func.sum(value).label(label), func.count(value).label(f'{label}__n')]
     for basis in ('terminal', 'messages'):
@@ -199,7 +199,7 @@ def _seconds(start, end):
 
 
 class MetricsViews:
-    """Lecturas paginadas; sin escrituras. `scope`: {'root', 'phase', 'task'}, cada clave opcional."""
+    """Paginated reads; no writes. `scope`: {'root', 'phase', 'task'}, each key optional."""
 
     def __init__(self, engine):
         self.engine = engine
@@ -236,7 +236,7 @@ class MetricsViews:
                     'next_offset': offset + limit if len(rows) > limit else None}
 
     def _model_groups(self, session, scope, offset, limit, role, order):
-        """Consumo por modelo reportado (Claude `modelUsage`); Codex no informa modelo ni desglose."""
+        """Consumption per reported model (Claude `modelUsage`); Codex reports neither model nor breakdown."""
         columns = [ModelMetric.model.label('key'), func.count(ModelMetric.attempt_id).label('attempts')]
         for name in TOKENS + ('cost_usd',):
             columns += [func.sum(getattr(ModelMetric, name)).label(name),
@@ -255,7 +255,7 @@ class MetricsViews:
         return {'dimension': 'reported_model', 'order': order, 'role': role, 'items': items, 'offset': offset,
                 'next_offset': offset + limit if len(rows) > limit else None}
 
-    # --- tareas ------------------------------------------------------------------------------
+    # --- tasks -------------------------------------------------------------------------------
 
     def _task_keys(self, session, scope):
         query = _scope(select(Run.root, Run.phase_id, Run.task_id).where(Run.purpose == 'task'), Run, scope)
@@ -275,7 +275,7 @@ class MetricsViews:
             key = (row.role, row.provider, row.requested_model, row.requested_effort)
             agents[key] = agents.get(key, 0) + 1
             by_role[row.role] = by_role.get(row.role, 0) + 1
-        # P010-T011: proyección `run-projection-1`, en el orden de los runs y de sus ciclos y paradas.
+        # P010-T011: `run-projection-1` projection, in the order of the runs and of their cycles and stops.
         executions = session.scalar(select(func.coalesce(func.sum(Projection.executor_attempts), 0))
                                     .where(Projection.run_id.in_(ids)))
         ordered = (Run.created_at, Run.id)
@@ -313,12 +313,12 @@ class MetricsViews:
             return {'items': items, 'offset': offset, 'next_offset': offset + limit if len(keys) > limit else None}
 
     def validations(self, scope, dimension, offset, limit):
-        """Evolución de los tests (H6.2 E6): cada ciclo de validación de las tareas del ámbito, agrupado por fase,
-        tarea o raíz, con la clave descendente.
+        """Evolution of the tests (H6.2 E6): each validation cycle of the tasks in scope, grouped by phase,
+        task or root, with the descending key.
 
-        Los ciclos no guardan su hora (`source_attempt_id` solo existe con reportes JUnit), así que no se agrupan
-        por día: la fecha sería inferida. La fase es el eje de la evolución. P010-T011: recuentos por ciclo desde la
-        proyección, sin decodificar historiales."""
+        Cycles do not store their time (`source_attempt_id` only exists with JUnit reports), so they are not
+        grouped by day: the date would be inferred. The phase is the axis of the evolution. P010-T011: counts per
+        cycle from the projection, without decoding histories."""
         if dimension not in VALIDATION_DIMENSIONS:
             raise ValueError(f'Dimensión desconocida: {dimension}')
         key = {'phase': Run.phase_id, 'task': Run.task_id, 'root': Run.root}[dimension]
@@ -349,7 +349,7 @@ class MetricsViews:
                 'next_offset': offset + limit if len(ordered) > offset + limit else None}
 
     def summary(self, scope) -> dict:
-        """Totales del ámbito, calidad de las tareas, tests de su última validación y paradas por motivo."""
+        """Scope totals, task quality, tests of their last validation and stops by reason."""
         with Session(self.engine) as session:
             consumption = _consumption(session.execute(_scope(select(*_sums()), Metric, scope)).one())
             pending = session.scalar(_scope(
@@ -393,8 +393,8 @@ class MetricsViews:
 
 
 def phase_consumption(session, root, code) -> dict:
-    """D072: tokens y turnos de la fase para su SUMMARY. Excluye el chat y las conversaciones de definición y
-    planificación (H6.5): no son trabajo de la fase."""
+    """D072: tokens and turns of the phase for its SUMMARY. Excludes the chat and the definition and
+    planning conversations (H6.5): they are not work of the phase."""
     query = select(*_sums()).where(Metric.root == root, Metric.phase_code == code, Metric.purpose.notin_(CONVERSATIONS))
     by_task = {}
     for row in session.execute(select(Metric.task_id, *_sums()).where(
@@ -409,7 +409,7 @@ def phase_consumption(session, root, code) -> dict:
 
 
 def _brief(consumption) -> dict:
-    """Lo que el SUMMARY archiva: sumas con su número de intentos; null distinto de cero."""
+    """What the SUMMARY archives: sums with their number of attempts; null different from zero."""
     tokens = consumption['tokens']
     return {'attempts': consumption['attempts'], 'accounting': consumption['accounting'],
             **{name: tokens[name] for name in SUMMED if name != 'reasoning_tokens'},

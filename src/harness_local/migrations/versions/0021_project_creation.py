@@ -1,4 +1,4 @@
-"""P009-T002: autoridad UI e intenciones de creación de hijos nuevos (D116)."""
+"""P009-T002: UI authority and creation intents for new children (D116)."""
 from alembic import op
 import sqlalchemy as sa
 
@@ -53,7 +53,7 @@ def upgrade():
         sa.Column('request_sha256', sa.String(64), nullable=True),
         sa.Column('payload', sa.JSON(), nullable=False),
         sa.UniqueConstraint('operation_id', 'version'))
-    # ALTER aditivo: no reconstruir/borrar la tabla padre de los eventos D078 con foreign_keys=ON.
+    # Additive ALTER: do not rebuild/delete the parent table of the D078 events with foreign_keys=ON.
     op.execute('ALTER TABLE registered_projects ADD COLUMN creation_id VARCHAR(36) '
                'REFERENCES project_creation_operations(id)')
     op.create_index('uq_registered_creation', 'registered_projects', ['creation_id'], unique=True)

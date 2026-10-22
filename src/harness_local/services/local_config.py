@@ -59,8 +59,8 @@ MAX_BYTES = 65536
 PROFILES = {'typescript-web': typescript_web_profile}
 PROFILE_KEYS = ('preparation', 'validations', 'allowed_command_prefixes', 'protected_paths', 'sensitive_paths',
                 'data_model_paths', 'executor_instructions')
-# argv sin shell: el ejecutable es un nombre de `executables`, nunca un intérprete de órdenes, y ningún argumento
-# lleva sintaxis que solo un shell interpretaría (el runner no la interpreta y su presencia delata un error).
+# argv without shell: the executable is a name from `executables`, never a command interpreter, and no argument
+# carries syntax that only a shell would interpret (the runner does not interpret it and its presence reveals an error).
 COMMAND_NAME = re.compile(r'[A-Za-z0-9][A-Za-z0-9._+-]{0,63}')
 SHELLS = frozenset({'sh', 'bash', 'zsh', 'dash', 'ksh', 'mksh', 'ash', 'fish', 'csh', 'tcsh', 'busybox'})
 SHELL_TOKENS = frozenset({';', '&', '&&', '|', '||', '|&', '>', '>>', '<', '<<', '2>', '2>&1'})
@@ -195,7 +195,7 @@ def _agents(data):
 
 
 def _presets(data):
-    """V5: capacidades locales explícitas; cargar no consulta disponibilidad remota."""
+    """V5: explicit local capabilities; loading does not query remote availability."""
     if not isinstance(data, dict):
         raise LocalConfigError('agent_presets: se esperaba una tabla')
     presets = {}
@@ -356,7 +356,7 @@ def _commands(value, where, root, profile, *, strict=False, deferred_root=None):
     if any(command not in authorized for command in required):
         raise LocalConfigError(f'{where}: autorizar exactamente todos los comandos del perfil')
     if profile.formatter_argv and not authorize:
-        # D133: el formateador recibe rutas variables, así que no cabe en una autorización exacta.
+        # D133: the formatter receives variable paths, so it does not fit in an exact authorization.
         raise LocalConfigError(f'{where}: el formateador del perfil exige authorize_profile_commands = true')
     try:
         return CommandConfig(str(root), True, authorized, executables,
@@ -499,7 +499,7 @@ class LocalComposer:
                                    'omitirlo equivale a "v2")')
         if _flag(item['repository_trusted'], f'{where}.repository_trusted') is not True:
             raise LocalConfigError(f'{where}: sin confianza explícita el proyecto no se registra')
-        # Solo la preview de creación D116 admite un destino aún inexistente, ya validado por el servicio.
+        # Only the D116 creation preview admits a target that does not exist yet, already validated by the service.
         root = _path(item['root'], f'{where}.root', kind='new_directory' if new_directory else 'directory')
         if not (_outside(self.state, root) and _outside(self.source, root)):
             raise LocalConfigError(f'{where}: configuración y estado deben quedar fuera del checkout')
@@ -521,8 +521,8 @@ class LocalComposer:
         recipe = self._recipes_by_composition.get(item.get('composition'))
         profile = self.profiles[profile_name]
         if self.format in PROFILE_FORMATS:
-            # P008-T008: el contenido completo del perfil (declarado o integrado) entra en el hash congelado, así que
-            # cambiarlo deja en cuarentena los jobs admitidos antes. v1–v3 conservan sus hashes.
+            # P008-T008: the complete profile content (declared or built-in) enters the frozen hash, so
+            # changing it quarantines the jobs admitted before. v1–v3 keep their hashes.
             authority['profile'] = asdict(profile)
         bootstrap = _flag(item.get('bootstrap_enabled', False), f'{where}.bootstrap_enabled')
         agents, reviewer, selected = self.effective_agents(item, where)
@@ -544,7 +544,7 @@ class LocalComposer:
             authority['agent_presets'] = selected
         if recipe == 'typescript-web' and not _outside(Path(self.recipes[recipe]['npm_cache']), root):
             raise LocalConfigError(f'{where}: la caché npm de la receta debe quedar fuera del checkout')
-        # La preview valida la configuración sobre el padre existente, sin construir puertos para el hijo.
+        # The preview validates the configuration on the existing parent, without building ports for the child.
         commands = _commands(table, f'{where}.commands', root.parent if new_directory else root, profile,
                              strict=self.format in PROFILE_FORMATS, deferred_root=root if recipe == 'django' else None)
         identifier = _text(item['id'], f'{where}.id')
@@ -565,8 +565,8 @@ class LocalComposer:
             digest = hashlib.sha256(freeze(frozen).encode()).hexdigest()
         except (TypeError, ValueError):
             raise LocalConfigError(f'{where}: valores TOML no admitidos (fechas u objetos)') from None
-        # D088: el layout documental es obligatorio. Su versión entra en las congeladas, así que un job admitido
-        # antes (contrato opcional o sin contrato) queda en cuarentena en lugar de ejecutarse con otro layout.
+        # D088: the documentary layout is mandatory. Its version enters the frozen ones, so a job admitted
+        # before (optional contract or no contract) is quarantined instead of running with another layout.
         versions = {'engine': f'harness-local-{self.engine}', 'evidence': 'git-1', 'provider_cli': None,
                     'local_config': self.format, 'profile': profile.name, 'local_config_sha256': digest,
                     'document_layout': DOCUMENT_LAYOUT,
@@ -725,8 +725,8 @@ def _build(data, source):
     profiles = {name: factory() for name, factory in PROFILES.items()}
     if 'django' in recipes:
         from harness_local.recipes.django import profile
-        # P009-T019 (D133): el formateador se declara aquí y no en recipes/django.py, cuyo texto es la huella de la
-        # receta que vincula los recibos de preparación ya emitidos.
+        # P009-T019 (D133): the formatter is declared here and not in recipes/django.py, whose text is part of the
+        # recipe fingerprint that binds the preparation receipts already issued.
         profiles['python-django-recipe'] = replace(profile(), formatter_argv=('ruff', 'format', '--'),
                                                    formatter_paths=('*.py',))
     declared = data.get('profiles', {})

@@ -1,9 +1,9 @@
-"""D072/H6.3: autoridad SQLite del contrato documental.
+"""D072/H6.3: SQLite authority of the documentary contract.
 
-Proyecciones de SQLite para los bloques gestionados, regeneración mecánica en cada commit de
-tarea, adopción de los hashes que escribe el propio harness y edición documental confirmada
-como operación de fase con intención conciliable. Las lecturas de disco se hacen fuera de las
-transacciones y se comparan por hash; ningún byte ajeno se sobrescribe.
+SQLite projections for the managed blocks, mechanical regeneration in each task
+commit, adoption of the hashes the harness itself writes and confirmed documentary editing
+as a phase operation with a reconcilable intent. Disk reads happen outside the
+transactions and are compared by hash; no foreign byte is overwritten.
 """
 
 import hashlib
@@ -43,7 +43,7 @@ from harness_local.storage.phases import (
 DOCUMENT_KINDS = ('document_export', 'transition', 'document_edit', 'close')
 
 
-# --- proyecciones de SQLite --------------------------------------------------------------------
+# --- SQLite projections ------------------------------------------------------------------------
 
 
 def _latest_run(session, root, code, task):
@@ -67,7 +67,7 @@ def _result_text(payload_json):
 
 
 def _history_facts(session, run_id):
-    """Intentos por rol, resumen del último ejecutor, veredicto y tests del último ciclo, desde el historial."""
+    """Attempts per role, summary of the last executor, verdict and tests of the last cycle, from the history."""
     history = load_history(session.scalar(select(Run.history_json).where(Run.id == run_id)))
     attempts, summary = {}, None
     for attempt in history.attempts:
@@ -81,10 +81,10 @@ def _history_facts(session, run_id):
 
 
 def _projected_facts(session, run_id):
-    """Lo mismo desde la proyección y `managed_attempts` (P010-T011), sin decodificar el historial.
+    """The same from the projection and `managed_attempts` (P010-T011), without decoding the history.
 
-    Los intentos del historial son las filas 1..n de `managed_attempts` con el mismo request y resultado (`_history`
-    lo exige); las siguientes, sin resultado, aún no están en el historial y no cuentan."""
+    The history attempts are rows 1..n of `managed_attempts` with the same request and result (`_history`
+    requires it); the following ones, without a result, are not in the history yet and do not count."""
     run_projection.require(session, [run_id])
     recorded = (AttemptRow.run_id == run_id, AttemptRow.number <= select(Projection.attempts).where(
         Projection.run_id == run_id).scalar_subquery())
@@ -117,10 +117,10 @@ def _task_view(session, phase, task, *, planned, committing_run_id=None, project
 
 
 def state_snapshot(session, phase, committing_run_id=None, *, projected=False) -> dict:
-    """Bloques de STATE/NEXT_STEPS: fase, tareas del plan y añadidas, preguntas y último check.
+    """STATE/NEXT_STEPS blocks: phase, planned and added tasks, questions and last check.
 
-    El motor (commit, transición, intención de exportación) lee el historial; `projected` solo lo usa la vista
-    previa de la exportación (P010-T011), cuyo resultado el envío confirmado compara con el del historial."""
+    The engine (commit, transition, export intent) reads the history; `projected` is only used by the export
+    preview (P010-T011), whose result the confirmed submission compares with the history's."""
     tasks = [_task_view(session, phase, task, planned=True, committing_run_id=committing_run_id, projected=projected)
              for task in phase.definition['tasks']]
     extra = session.execute(select(Run.task_id).where(
@@ -170,11 +170,11 @@ def latest_phase(session, root):
                           .order_by(Phase.created_at.desc(), Phase.id.desc()).limit(1))
 
 
-# --- intenciones documentales pendientes ------------------------------------------------------
+# --- pending documentary intents --------------------------------------------------------------
 
 
 def unresolved(session, root, kinds=DOCUMENT_KINDS) -> bool:
-    """Una intención incierta conserva su autoridad hasta conciliación; ninguna mutación la oculta."""
+    """An uncertain intent keeps its authority until reconciliation; no mutation hides it."""
     rows = session.scalars(select(Operation).join(Phase, Phase.id == Operation.phase_id).where(
         Phase.root == root, Operation.kind.in_(kinds), Operation.status.in_(('QUEUED', 'INTENT', 'INTERRUPTED')))).all()
     return any(op.request.get('commit_intent') for op in rows)
@@ -220,11 +220,11 @@ def abort_operation(managed, session, run, status, reason, kind):
     _event(managed, session, phase, f'{kind}_aborted', {'operation_id': op.id, 'status': status, 'reason': reason})
 
 
-# --- commits de tarea: bloques regenerados y adopción ------------------------------------------
+# --- task commits: regenerated blocks and adoption ---------------------------------------------
 
 
 def task_commit_updates(managed, context, run_id, history):
-    """Bloques regenerados sobre el contenido revisado; los revisados solo admiten el bloque (reconciliación)."""
+    """Blocks regenerated over the reviewed content; reviewed documents only admit the block (reconciliation)."""
     target = require_layout(context)
     with Session(managed.engine) as session:
         run = session.get(Run, run_id)
@@ -248,7 +248,7 @@ def task_commit_updates(managed, context, run_id, history):
 
 
 def block_adoption(context, intent, writer) -> dict:
-    """Solo bloques sobre documentos no revisados: su prosa es la de la base, ya adoptada o no."""
+    """Only blocks over unreviewed documents: their prose is the base's, adopted or not."""
     adopt = {}
     for update in intent.mechanical:
         if update.reason != BLOCK_REASON or update.path in intent.reviewed_paths:
@@ -259,7 +259,7 @@ def block_adoption(context, intent, writer) -> dict:
 
 
 def adopt_blocks(managed, session, run, adopt, commit):
-    """En la transacción del resultado COMMITTED: la base adoptada avanza solo desde su hash anterior."""
+    """In the transaction of the COMMITTED result: the adopted base advances only from its previous hash."""
     if not adopt:
         return
     phase = session.scalar(select(Phase).where(Phase.root == run.root, Phase.code == run.phase_id))
@@ -275,11 +275,11 @@ def adopt_blocks(managed, session, run, adopt, commit):
                                                                   'documents': changed})
 
 
-# --- edición documental confirmada ----------------------------------------------------------------
+# --- confirmed documentary editing ----------------------------------------------------------------
 
 TREE_LIMIT = 2000
 MAX_IMAGE_BYTES = 8 * 1024 * 1024
-# El visor solo enlaza imágenes del checkout servidas por la API (H6.2 E3); nunca apunta fuera.
+# The viewer only links checkout images served by the API (H6.2 E3); it never points outside.
 IMAGE_TYPES = {'.png': 'image/png', '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg', '.gif': 'image/gif',
                '.webp': 'image/webp', '.avif': 'image/avif', '.svg': 'image/svg+xml'}
 
@@ -311,7 +311,7 @@ class DocumentsRepository:
         root = str(context.root)
         with Session(self.managed.engine) as session:
             phase = latest_phase(session, root)
-            # P010-T005: tras cerrar, la referencia incluye lo que renovaron el cierre y las ediciones confirmadas.
+            # P010-T005: after closing, the reference includes what the closure and the confirmed edits renewed.
             baseline = expected_documents(session, phase) if phase is not None else {}
             phase_view = None if phase is None else {'id': phase.id, 'code': phase.code, 'status': phase.status}
             open_intent = unresolved(session, root)
@@ -348,7 +348,7 @@ class DocumentsRepository:
                                        else read_text(context, target.decisions))
         except (ValueError, OSError, UnicodeError):
             decisions = []
-        # D088: el esquema de la API conserva `file`, `date` y `phase` hasta P008-T006.
+        # D088: the API schema keeps `file`, `date` and `phase` until P008-T006.
         name = PurePosixPath(target.decisions).name
         decisions = [{**entry, 'file': name, 'date': None, 'phase': None} for entry in decisions]
         return {'layout': context.documents, 'phase': phase_view, 'documents': documents,
@@ -368,7 +368,7 @@ class DocumentsRepository:
                 'archived': archived, 'blocks': sorted(blocks(text))}
 
     def tree(self, context) -> dict:
-        """Markdown del README y del directorio de documentación, sin seguir enlaces ni entrar en ocultos."""
+        """Markdown of the README and the documentation directory, without following links or entering hidden ones."""
         target = require_layout(context)
         files, skipped = [], []
 
@@ -412,7 +412,7 @@ class DocumentsRepository:
         return {'docs': target.docs, 'files': files[:TREE_LIMIT], 'truncated': truncated, 'skipped': skipped[:100]}
 
     def image(self, context, path) -> tuple[bytes, str]:
-        """Imagen del checkout para el visor: regular, sin enlaces, fuera de ocultos y de rutas sensibles."""
+        """Checkout image for the viewer: regular, no links, outside hidden and sensitive paths."""
         require_layout(context)
         parts = relative_path(path).parts
         kind = IMAGE_TYPES.get(PurePosixPath(path).suffix.lower())
@@ -439,7 +439,7 @@ class DocumentsRepository:
             raise LookupError('Image does not exist in the checkout') from exc
         except (NotADirectoryError, IsADirectoryError) as exc:
             raise LookupError('Unknown repository image') from exc
-        except OSError as exc:  # ELOOP: un componente es un enlace
+        except OSError as exc:  # ELOOP: a component is a link
             raise LookupError(f'Image is not readable without following links: {exc.strerror}') from exc
         finally:
             for item in reversed(descriptors):
@@ -456,7 +456,7 @@ class DocumentsRepository:
                 return {**stored.request['preview'], 'resume_operation_id': stored.id}
         try:
             shown = preview_edit(context, git, source=source, changes=changes, regenerate_blocks=regenerate_blocks)
-        except (ValueError, OSError, UnicodeError, RuntimeError) as exc:  # RuntimeError: captura/sellado Git
+        except (ValueError, OSError, UnicodeError, RuntimeError) as exc:  # RuntimeError: Git capture/sealing
             raise Conflict(str(exc)) from exc
         return {**shown, 'resume_operation_id': None}
 
@@ -526,7 +526,7 @@ def _resume_job(managed, session, op, context, versions, key, marker, assessment
     if (op.kind == 'transition' and op.request.get('commit_intent')
             and comparable.get('document_layout') in ('d088-1', 'd088-2', 'd088-3')
             and versions.get('document_layout') == DOCUMENT_LAYOUT):
-        comparable['document_layout'] = DOCUMENT_LAYOUT  # solo el escritor ya sellado, nunca agentes ni bytes nuevos
+        comparable['document_layout'] = DOCUMENT_LAYOUT  # only the already sealed writer, never agents or new bytes
     if run.context_json != context_snapshot(context) or comparable != versions:
         raise Conflict('Frozen context/versions changed; restore the configured writer first')
     job = Job(idempotency_key=key, run_id=run.id, request_json=marker, status='QUEUED',

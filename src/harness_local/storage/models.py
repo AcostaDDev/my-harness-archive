@@ -14,7 +14,7 @@ class SimulationRow(Base):
 
     id: Mapped[str] = mapped_column(String(36), primary_key=True)
     title: Mapped[str] = mapped_column(String(120))
-    # ISO 8601 conserva UTC; SQLite DateTime no conserva zona horaria.
+    # ISO 8601 keeps UTC; SQLite DateTime does not keep the time zone.
     created_at: Mapped[str] = mapped_column(String(40))
     events: Mapped[list[str]] = mapped_column(JSON)
 
@@ -82,7 +82,7 @@ class ManagedRunRow(Base):
     version: Mapped[int] = mapped_column(Integer)
     created_at: Mapped[str] = mapped_column(String(40))
     updated_at: Mapped[str] = mapped_column(String(40))
-    # H3.3: 'task', o una operación de fase sin contrato de tarea ('phase_check', 'phase_close').
+    # H3.3: 'task', or a phase operation without a task contract ('phase_check', 'phase_close').
     purpose: Mapped[str] = mapped_column(String(20), server_default='task')
 
 
@@ -90,7 +90,7 @@ _LIVE_ACTIVATION = text("status IN ('PREPARING', 'ACTIVE', 'REVERTING')")
 
 
 class ManagedActivationRow(Base):
-    """Modo gestionado de un checkout legacy H2.5: autoridad del modo y procedencia del histórico."""
+    """Managed mode of a legacy H2.5 checkout: mode authority and provenance of the history."""
 
     __tablename__ = "managed_activations"
     __table_args__ = (
@@ -139,7 +139,7 @@ class ManagedJobRow(Base):
     diagnostic: Mapped[str | None] = mapped_column(Text, nullable=True)
     process_owner: Mapped[dict | None] = mapped_column(JSON, nullable=True)
     owner_closed: Mapped[bool] = mapped_column(Boolean, server_default="0")
-    # Activación H2.5 bajo la que se admitió el job; null en checkouts sin estado legacy.
+    # H2.5 activation under which the job was admitted; null in checkouts without legacy state.
     activation_id: Mapped[str | None] = mapped_column(ForeignKey("managed_activations.id"), nullable=True)
 
 
@@ -199,7 +199,7 @@ class ManagedProcessRow(Base):
 
 
 class ManagedCommitRow(Base):
-    """Intención y resultado del commit aceptado; fuente de la conciliación H2.4."""
+    """Intent and result of the accepted commit; source of the H2.4 reconciliation."""
 
     __tablename__ = "managed_commits"
     __table_args__ = (Index("uq_managed_commits_live", "run_id", unique=True,
@@ -221,10 +221,10 @@ class ManagedCommitRow(Base):
 
 
 class RunProjectionRow(Base):
-    """P010-T003 (D142): proyección derivada `run-projection-1` de `history_json`, que sigue siendo la autoridad.
+    """P010-T003 (D142): derived `run-projection-1` projection of `history_json`, which remains the authority.
 
-    Se escribe en la misma transacción que el historial; las vistas leen solo estas tablas. Columnas JSON en texto
-    congelado (`freeze`) o el texto exacto del historial, para comparar por igualdad en el backup."""
+    Written in the same transaction as the history; the views only read these tables. JSON columns in frozen
+    text (`freeze`) or the exact history text, to compare by equality in the backup."""
 
     __tablename__ = 'run_projections'
 
@@ -252,7 +252,7 @@ class RunProjectionStopRow(Base):
 
 
 class RunProjectionCycleRow(Base):
-    """Ciclo sin el texto del diff ni los casos JUnit; `validation_json` es la vista de validación del detalle."""
+    """Cycle without the diff text or the JUnit cases; `validation_json` is the validation view of the detail."""
 
     __tablename__ = 'run_projection_cycles'
 
@@ -273,7 +273,7 @@ class RunProjectionCycleRow(Base):
 
 
 class RunProjectionDiffChunkRow(Base):
-    """Diff revisado en tramos fijos de bytes UTF-8: una página lee solo los tramos que cubre."""
+    """Reviewed diff in fixed spans of UTF-8 bytes: a page only reads the spans it covers."""
 
     __tablename__ = 'run_projection_diff_chunks'
 
@@ -359,7 +359,7 @@ class PermissionRequestRow(Base):
 
 
 class PhaseRow(Base):
-    """Autoridad H3.3 de una fase: definición congelada, base documental adoptada y estado."""
+    """H3.3 authority of a phase: frozen definition, adopted documentary base and state."""
     __tablename__ = 'managed_phases'
     __table_args__ = (UniqueConstraint('root', 'code'),
                       Index('uq_managed_phases_open_root', 'root', unique=True,
@@ -378,7 +378,7 @@ class PhaseRow(Base):
 
 
 class PhaseDefinitionRow(Base):
-    """H3.4: cada versión de la definición se conserva; una enmienda nunca reescribe la anterior."""
+    """H3.4: each definition version is kept; an amendment never rewrites the previous one."""
     __tablename__ = 'phase_definitions'
     __table_args__ = (UniqueConstraint('phase_id', 'number'),)
     id: Mapped[str] = mapped_column(String(36), primary_key=True)
@@ -387,7 +387,7 @@ class PhaseDefinitionRow(Base):
     definition: Mapped[dict] = mapped_column(JSON)
     definition_sha256: Mapped[str] = mapped_column(String(64))
     documents: Mapped[dict] = mapped_column(JSON)
-    # created | amended | migrated (fila previa a H3.4: sin motivo ni identidad registrados).
+    # created | amended | migrated (row before H3.4: no reason or identity recorded).
     origin: Mapped[str] = mapped_column(String(20))
     reason: Mapped[str | None] = mapped_column(Text, nullable=True)
     actor: Mapped[dict | None] = mapped_column(JSON, nullable=True)
@@ -407,7 +407,7 @@ class PhaseQuestionRow(Base):
 
 
 class PhaseOperationRow(Base):
-    """Check, cierre o reconciliación; nunca se sobrescribe un resultado anterior."""
+    """Check, closure or reconciliation; an earlier result is never overwritten."""
     __tablename__ = 'phase_operations'
     id: Mapped[str] = mapped_column(String(36), primary_key=True)
     phase_id: Mapped[str] = mapped_column(ForeignKey('managed_phases.id'))
@@ -422,7 +422,7 @@ class PhaseOperationRow(Base):
 
 
 class PhaseAuthorizationRow(Base):
-    """Autorización de lote o de cierre: distintas, explícitas y auditadas."""
+    """Batch or closure authorization: distinct, explicit and audited."""
     __tablename__ = 'phase_authorizations'
     id: Mapped[str] = mapped_column(String(36), primary_key=True)
     phase_id: Mapped[str] = mapped_column(ForeignKey('managed_phases.id'))
@@ -450,7 +450,7 @@ class PhaseEventRow(Base):
 
 
 class ChatConversationRow(Base):
-    """H4.1: conversación separada del flujo de ejecución; opcionalmente ligada a una fase."""
+    """H4.1: conversation separate from the execution flow; optionally linked to a phase."""
     __tablename__ = 'chat_conversations'
     __table_args__ = (Index('uq_chat_conversations_key', 'idempotency_key', unique=True),)
     id: Mapped[str] = mapped_column(String(36), primary_key=True)
@@ -462,13 +462,13 @@ class ChatConversationRow(Base):
     version: Mapped[int] = mapped_column(Integer)
     created_at: Mapped[str] = mapped_column(String(40))
     updated_at: Mapped[str] = mapped_column(String(40))
-    # 0018: misma clave y misma petición devuelven la misma conversación; null en altas anteriores o internas.
+    # 0018: the same key and the same request return the same conversation; null in earlier or internal registrations.
     idempotency_key: Mapped[str | None] = mapped_column(String(200), nullable=True)
     request_sha256: Mapped[str | None] = mapped_column(String(64), nullable=True)
 
 
 class ChatTurnRow(Base):
-    """Petición congelada (mensaje y contexto explícito) antes de encolar; un turno pendiente por conversación."""
+    """Frozen request (message and explicit context) before queuing; one pending turn per conversation."""
     __tablename__ = 'chat_turns'
     __table_args__ = (UniqueConstraint('conversation_id', 'number'),
                       Index('uq_chat_turns_pending', 'conversation_id', unique=True,
@@ -477,7 +477,7 @@ class ChatTurnRow(Base):
     conversation_id: Mapped[str] = mapped_column(ForeignKey('chat_conversations.id'))
     number: Mapped[int] = mapped_column(Integer)
     run_id: Mapped[str] = mapped_column(ForeignKey('managed_runs.id'), unique=True)
-    # QUEUED | ANSWERED | FAILED | UNKNOWN (caída confirmada, sin reintento) | REFUSED
+    # QUEUED | ANSWERED | FAILED | UNKNOWN (confirmed crash, no retry) | REFUSED
     status: Mapped[str] = mapped_column(String(20))
     message: Mapped[str] = mapped_column(Text)
     request: Mapped[dict] = mapped_column(JSON)
@@ -489,7 +489,7 @@ class ChatTurnRow(Base):
 
 
 class ChatProposalRow(Base):
-    """Propuesta estructurada de un turno; solo una confirmación explícita crea su tarea vinculada."""
+    """Structured proposal of a turn; only an explicit confirmation creates its linked task."""
     __tablename__ = 'chat_proposals'
     __table_args__ = (UniqueConstraint('conversation_id', 'number'),)
     id: Mapped[str] = mapped_column(String(36), primary_key=True)
@@ -507,8 +507,8 @@ class ChatProposalRow(Base):
 
 
 class PlanningConversationRow(Base):
-    """H6.5: conversación de definición (proyecto nuevo) o de planificación de la fase siguiente; P008-T011:
-    importación de un proyecto de un harness anterior (Flujo A)."""
+    """H6.5: definition conversation (new project) or planning of the next phase; P008-T011:
+    import of a project from an earlier harness (Flow A)."""
     __tablename__ = 'planning_conversations'
     __table_args__ = (Index('uq_planning_definition', 'root', unique=True, sqlite_where=text("kind = 'definition'")),
                       Index('uq_planning_conversations_key', 'idempotency_key', unique=True))
@@ -518,27 +518,27 @@ class PlanningConversationRow(Base):
     kind: Mapped[str] = mapped_column(String(20))
     phase_id: Mapped[str | None] = mapped_column(ForeignKey('managed_phases.id'), nullable=True)
     title: Mapped[str] = mapped_column(String(200))
-    # Brief Markdown congelado con su hash (definición); null en la planificación.
+    # Frozen Markdown brief with its hash (definition); null in planning.
     brief: Mapped[dict | None] = mapped_column(JSON, nullable=True)
-    # Hashes de borradores que conoce el harness (último turno respondido o propuesta aplicada); el resto es del usuario.
+    # Hashes of drafts the harness knows (last answered turn or applied proposal); the rest belongs to the user.
     known: Mapped[dict] = mapped_column(JSON)
-    # Preguntas bloqueantes aplazadas explícitamente, por id de pregunta.
+    # Blocking questions explicitly deferred, by question id.
     deferred: Mapped[dict] = mapped_column(JSON)
-    # Escrituras de borradores del harness (propuestas aplicadas) y ediciones por API, con hashes.
+    # Draft writes by the harness (applied proposals) and edits through the API, with hashes.
     log: Mapped[list] = mapped_column(JSON)
     actor: Mapped[dict] = mapped_column(JSON)
     version: Mapped[int] = mapped_column(Integer)
     created_at: Mapped[str] = mapped_column(String(40))
     updated_at: Mapped[str] = mapped_column(String(40))
-    # 0018: como en el chat.
+    # 0018: as in the chat.
     idempotency_key: Mapped[str | None] = mapped_column(String(200), nullable=True)
     request_sha256: Mapped[str | None] = mapped_column(String(64), nullable=True)
-    # 0019: origen congelado: inventario/mapa de importación o inventario/HEAD del onboarding (T014); null en el resto.
+    # 0019: frozen origin: import inventory/map or onboarding inventory/HEAD (T014); null otherwise.
     source: Mapped[dict | None] = mapped_column(JSON, nullable=True)
 
 
 class PlanningTurnRow(Base):
-    """Petición congelada (mensaje, contexto y lo observado) antes de encolar; un turno pendiente por conversación."""
+    """Frozen request (message, context and what was observed) before queuing; one pending turn per conversation."""
     __tablename__ = 'planning_turns'
     __table_args__ = (UniqueConstraint('conversation_id', 'number'),
                       Index('uq_planning_turns_pending', 'conversation_id', unique=True,
@@ -547,7 +547,7 @@ class PlanningTurnRow(Base):
     conversation_id: Mapped[str] = mapped_column(ForeignKey('planning_conversations.id'))
     number: Mapped[int] = mapped_column(Integer)
     run_id: Mapped[str] = mapped_column(ForeignKey('managed_runs.id'), unique=True)
-    # QUEUED | ANSWERED | FAILED | UNKNOWN (caída confirmada, sin reintento) | REFUSED
+    # QUEUED | ANSWERED | FAILED | UNKNOWN (confirmed crash, no retry) | REFUSED
     status: Mapped[str] = mapped_column(String(20))
     message: Mapped[str] = mapped_column(Text)
     request: Mapped[dict] = mapped_column(JSON)
@@ -559,7 +559,7 @@ class PlanningTurnRow(Base):
 
 
 class PlanningProposalRow(Base):
-    """Borrador de un documento (definición) o plan de la fase siguiente; nunca se aplica sin confirmación."""
+    """Draft of a document (definition) or plan of the next phase; never applied without confirmation."""
     __tablename__ = 'planning_proposals'
     __table_args__ = (UniqueConstraint('conversation_id', 'number'),)
     id: Mapped[str] = mapped_column(String(36), primary_key=True)
@@ -572,10 +572,10 @@ class PlanningProposalRow(Base):
     content: Mapped[str] = mapped_column(Text)
     reason: Mapped[str] = mapped_column(Text)
     content_sha256: Mapped[str] = mapped_column(String(64))
-    # CAS: hash del borrador que leyó el turno (null: ausente). Solo borradores.
+    # CAS: hash of the draft the turn read (null: absent). Drafts only.
     base_sha256: Mapped[str | None] = mapped_column(String(64), nullable=True)
     proposal_sha256: Mapped[str] = mapped_column(String(64))
-    # PROPOSED | APPLIED (borrador escrito) | ACCEPTED (plan usado en una transición) | DISMISSED | SUPERSEDED
+    # PROPOSED | APPLIED (draft written) | ACCEPTED (plan used in a transition) | DISMISSED | SUPERSEDED
     status: Mapped[str] = mapped_column(String(20))
     decision: Mapped[dict | None] = mapped_column(JSON, nullable=True)
     version: Mapped[int] = mapped_column(Integer)
@@ -583,7 +583,7 @@ class PlanningProposalRow(Base):
 
 
 class ProjectBootstrapRow(Base):
-    """H4.2: un bootstrap por destino autorizado; bytes e intención conservados antes de escribir."""
+    """H4.2: one bootstrap per authorized target; bytes and intent kept before writing."""
     __tablename__ = 'project_bootstraps'
     id: Mapped[str] = mapped_column(String(36), primary_key=True)
     root: Mapped[str] = mapped_column(String, unique=True)
@@ -600,7 +600,7 @@ class ProjectBootstrapRow(Base):
 
 
 class ProjectImportRow(Base):
-    """P008-T012/T015: una incorporación (Flujo A o B) por checkout; intención y bytes inmutables."""
+    """P008-T012/T015: one onboarding (Flow A or B) per checkout; immutable intent and bytes."""
     __tablename__ = 'project_imports'
     id: Mapped[str] = mapped_column(String(36), primary_key=True)
     root: Mapped[str] = mapped_column(String, unique=True)
@@ -617,9 +617,9 @@ class ProjectImportRow(Base):
 
 
 class AttemptMetricRow(Base):
-    """H6.4: métricas de un intento resuelto, materializadas con su resultado; procedencia por campo.
+    """H6.4: metrics of a resolved attempt, materialized with its result; per-field provenance.
 
-    Null es ausencia, nunca cero. Sobreviven a la retención de streams (H5.3): no dependen de artefactos."""
+    Null is absence, never zero. They survive stream retention (H5.3): they do not depend on artifacts."""
     __tablename__ = 'attempt_metrics'
     __table_args__ = (Index('ix_attempt_metrics_scope', 'root', 'phase_code', 'task_id'),
                       Index('ix_attempt_metrics_run', 'run_id', 'number', unique=True))
@@ -641,7 +641,7 @@ class AttemptMetricRow(Base):
     status: Mapped[str] = mapped_column(String(40))
     error: Mapped[str | None] = mapped_column(Text, nullable=True)
     verdict: Mapped[str | None] = mapped_column(String(40), nullable=True)
-    # Ejecuciones del run hasta este intento: 0 planificación, n ejecución n y su revisión.
+    # Executions of the run up to this attempt: 0 planning, n execution n and its review.
     executor_round: Mapped[int] = mapped_column(Integer)
     accounting: Mapped[str | None] = mapped_column(String(20), nullable=True)
     input_semantics: Mapped[str | None] = mapped_column(String(30), nullable=True)
@@ -651,7 +651,7 @@ class AttemptMetricRow(Base):
     output_tokens: Mapped[int | None] = mapped_column(Integer, nullable=True)
     reasoning_tokens: Mapped[int | None] = mapped_column(Integer, nullable=True)
     uncached_input_tokens: Mapped[int | None] = mapped_column(Integer, nullable=True)
-    # Derivado sin doble conteo (ver `storage/metrics._total`); null si la semántica no es segura.
+    # Derived without double counting (see `storage/metrics._total`); null if the semantics are not safe.
     total_tokens: Mapped[int | None] = mapped_column(Integer, nullable=True)
     turns: Mapped[int | None] = mapped_column(Integer, nullable=True)
     tool_calls: Mapped[int | None] = mapped_column(Integer, nullable=True)
@@ -673,7 +673,7 @@ class AttemptMetricRow(Base):
 
 
 class AttemptModelMetricRow(Base):
-    """H6.4: consumo reportado por modelo dentro de un intento (Claude `modelUsage`)."""
+    """H6.4: consumption reported per model within an attempt (Claude `modelUsage`)."""
     __tablename__ = 'attempt_model_metrics'
     attempt_id: Mapped[str] = mapped_column(ForeignKey('attempt_metrics.attempt_id'), primary_key=True)
     model: Mapped[str] = mapped_column(String(200), primary_key=True)
@@ -686,9 +686,9 @@ class AttemptModelMetricRow(Base):
 
 
 class RegisteredProjectRow(Base):
-    """H6.2 E2 (D054/D076): proyecto registrado desde la UI; versión optimista y baja lógica.
+    """H6.2 E2 (D054/D076): project registered from the UI; optimistic version and logical retirement.
 
-    Solo datos no ejecutables: la composición se nombra y la resuelve el TOML del operador."""
+    Non-executable data only: the composition is named and the operator's TOML resolves it."""
     __tablename__ = 'registered_projects'
     __table_args__ = (Index('uq_registered_projects_active_root', 'root', unique=True,
                             sqlite_where=text("status = 'ACTIVE'")),
@@ -700,7 +700,7 @@ class RegisteredProjectRow(Base):
     root: Mapped[str] = mapped_column(String)
     composition: Mapped[str] = mapped_column(String(64))
     profile: Mapped[str] = mapped_column(String(64))
-    # Fila canónica completa (lo que se compone) y su hash; la confianza se confirma aparte.
+    # Complete canonical row (what is composed) and its hash; trust is confirmed separately.
     row: Mapped[dict] = mapped_column(JSON)
     row_sha256: Mapped[str] = mapped_column(String(64))
     trust: Mapped[dict] = mapped_column(JSON)
@@ -709,7 +709,7 @@ class RegisteredProjectRow(Base):
 
 
 class RegisteredProjectEventRow(Base):
-    """Auditoría del registro: una fila por versión, nunca reescrita (quién, cuándo, antes y después)."""
+    """Registry audit: one row per version, never rewritten (who, when, before and after)."""
     __tablename__ = 'registered_project_events'
     __table_args__ = (UniqueConstraint('project_id', 'version'), {'sqlite_autoincrement': True})
     id: Mapped[int] = mapped_column(Integer, primary_key=True)

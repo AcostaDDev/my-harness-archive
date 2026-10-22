@@ -1,4 +1,4 @@
-"""H5.2: bundles locales verificados; ningún puerto de ejecución ni escritura de checkout."""
+"""H5.2: verified local bundles; no execution port or checkout write."""
 
 import base64
 from contextlib import closing
@@ -48,14 +48,14 @@ def _relative(path):
 
 
 def _historical_path(path):
-    # La referencia es dato congelado: verificar un bundle no consulta sus originales.
+    # The reference is frozen data: verifying a bundle does not query its originals.
     if not isinstance(path, str) or not path.startswith('/') or any(p in ('.', '..', '') for p in path.split('/')[1:]):
         raise BackupError('Referencia absoluta histórica incompatible.')
     return Path(path)
 
 
 def _read(path, limit=MAX_FILE_BYTES):
-    """Cada componente se abre sin seguir enlaces; archivos especiales nunca bloquean."""
+    """Each component is opened without following links; special files never block."""
     path = _absolute(path)
     descriptors = []
     try:
@@ -142,7 +142,7 @@ def _integrity(db, *, restored=False):
                             raw = base64.b64decode(report.original_base64, validate=True)
                             if _hash(raw) != report.sha256 or len(raw) != report.size_bytes:
                                 raise BackupError('Original JUnit corrupto en el historial.')
-            # D142: la proyección derivada debe coincidir con la recalculada; nunca se reconstruye aquí.
+            # D142: the derived projection must match the recomputed one; it is never rebuilt here.
             for name, count in run_projection.verify(db, run_id, history_json, history).items():
                 projected[name] += count
         except run_projection.ProjectionMismatch as exc:
@@ -155,7 +155,7 @@ def _integrity(db, *, restored=False):
 
 
 def _references(db):
-    """Solo ubicaciones externas conocidas; jamás buscar arbitrariamente campos 'path'."""
+    """Only known external locations; never search arbitrarily for 'path' fields."""
     refs = {}
 
     def add(source, label, sha=None, size=None, *, optional=False, chunks=()):
@@ -241,15 +241,15 @@ def _finish(destination, manifest):
 
 
 def _create_backup(database, destination, *, artifact_roots=(), writers_stopped=False, hook=None):
-    """Servicio/observadores/escritores detenidos explícitamente; BEGIN IMMEDIATE cierra carreras DB."""
+    """Service/observers/writers explicitly stopped; BEGIN IMMEDIATE closes DB races."""
     if writers_stopped is not True:
         raise BackupError('Detener servicio y escritores; se requiere --writers-stopped.')
     database, destination = _absolute(database), _absolute(destination)
-    _read(database)  # validar ruta/tipo antes de abrir SQLite
+    _read(database)  # validate path/type before opening SQLite
     for suffix in ('-wal', '-shm', '-journal'):
         sidecar = Path(str(database) + suffix)
         if os.path.lexists(sidecar):
-            _read(sidecar)  # SQLite también abre estos archivos; no admitir enlaces/especiales.
+            _read(sidecar)  # SQLite also opens these files; do not admit links/special files.
     roots = tuple(_absolute(root) for root in artifact_roots)
     if any(not r.is_dir() or r == Path('/') for r in roots):
         raise BackupError('Raíces de artefactos deben ser directorios explícitos acotados.')
@@ -276,14 +276,14 @@ def _create_backup(database, destination, *, artifact_roots=(), writers_stopped=
             checkouts = {Path(r[0]) for r in lock.execute('SELECT root FROM managed_runs UNION SELECT root FROM managed_activations UNION SELECT root FROM managed_phases UNION SELECT root FROM registered_projects UNION SELECT root FROM project_preparation_operations')}
             if any(destination.is_relative_to(r) or any(root.is_relative_to(r) or r.is_relative_to(root) for root in roots) for r in checkouts):
                 raise BackupError('Backup/artefactos deben estar fuera de los checkouts.')
-            # No probar muerte por lease ni modificar jobs/locks. Un estado incierto puede copiarse,
-            # siempre bajo la declaración de parada y con todos sus bytes verificables.
+            # Do not test death by lease or modify jobs/locks. An uncertain state may be copied,
+            # always under the stop declaration and with all its bytes verifiable.
             destination = _new_destination(destination)
             db_path = destination / 'state.sqlite3'
             with closing(_connect(database)) as source, closing(_connect(db_path, 'rwc')) as target:
                 source.backup(target)
                 _integrity(target)
-                # También la copia en sí impide abrir accidentalmente otra cola escritora.
+                # The copy itself also prevents accidentally opening another writing queue.
                 target.execute(f'PRAGMA user_version={RESTORED_USER_VERSION}')
             os.chmod(db_path, 0o600)
             _sync(db_path)
@@ -319,7 +319,7 @@ def _create_backup(database, destination, *, artifact_roots=(), writers_stopped=
                 files.append({'source': source, 'path': relative, 'sha256': _hash(raw), 'size_bytes': len(raw), 'labels': ref['labels']})
                 if hook:
                     hook('artifact_copied')
-            # Releer el conjunto al terminar detecta cambios entre archivos, también opcionales.
+            # Rereading the set at the end detects changes between files, optional ones included.
             for item in files:
                 raw = _read(item['source'])
                 if _hash(raw) != item['sha256'] or len(raw) != item['size_bytes']:
@@ -356,7 +356,7 @@ def create_backup(database, destination, *, artifact_roots=(), writers_stopped=F
 
 
 def verify_bundle(bundle):
-    """Verifica manifiesto, DB, originales embebidos y correspondencia completa de referencias."""
+    """Verifies manifest, DB, embedded originals and complete correspondence of references."""
     bundle = _absolute(bundle)
     try:
         raw = _read(bundle / 'manifest.json', MAX_MANIFEST_BYTES)
@@ -419,7 +419,7 @@ def restore_backup(bundle, destination):
     bundle, destination = _absolute(bundle), _absolute(destination)
     if destination.is_relative_to(bundle) or bundle.is_relative_to(destination):
         raise BackupError('Restauración solapada con el backup.')
-    manifest = verify_bundle(bundle)  # Nada creado hasta verificar los originales completos.
+    manifest = verify_bundle(bundle)  # Nothing created until the complete originals are verified.
     with closing(_connect(bundle / 'state.sqlite3')) as db:
         checkouts = [Path(r[0]) for r in db.execute('SELECT root FROM managed_runs UNION SELECT root FROM managed_activations UNION SELECT root FROM managed_phases UNION SELECT root FROM registered_projects UNION SELECT root FROM project_preparation_operations')]
     if any(destination.is_relative_to(r) or r.is_relative_to(destination) for r in checkouts):
@@ -429,7 +429,7 @@ def restore_backup(bundle, destination):
     if _hash(raw) != manifest['database']['sha256']:
         raise BackupError('SQLite cambió después de verificar el backup.')
     _write(destination / 'state.sqlite3', raw)
-    # Marca interna persistente: make_engine activa query_only, incluso al mover el fichero.
+    # Persistent internal mark: make_engine enables query_only, even when the file is moved.
     with closing(_connect(destination / 'state.sqlite3', 'rw')) as db:
         db.execute(f'PRAGMA user_version={RESTORED_USER_VERSION}')
     for item in manifest['files']:
@@ -446,7 +446,7 @@ def restore_backup(bundle, destination):
 
 
 def restored_artifact(engine, source):
-    """Resolver referencias históricas sin reescribir snapshots ni volver a los originales."""
+    """Resolve historical references without rewriting snapshots or going back to the originals."""
     if not is_read_only_archive(engine):
         return None
     bundle = Path(engine.url.database).resolve().parent

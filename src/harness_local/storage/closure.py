@@ -1,4 +1,4 @@
-"""D088: preparación y adopción del cierre documental sobre las operaciones existentes."""
+"""D088: preparation and adoption of the documentary closure over the existing operations."""
 
 from sqlalchemy import select
 
@@ -24,7 +24,7 @@ def adopt(managed, session, run, op, phase, outcome):
     shown = op.request['preview']
     context = observed_documents(run, shown)
     phase.status = outcome['status']
-    session.flush()  # libera la restricción de una sola fase abierta antes de crear N+1
+    session.flush()  # releases the single-open-phase constraint before creating N+1
     following = shown['next']
     if following:
         if session.scalar(select(Phase.id).where(Phase.root == phase.root, Phase.code == following['code'])):

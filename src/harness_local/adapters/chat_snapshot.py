@@ -1,7 +1,7 @@
-"""Exportación acotada de un commit para el chat. Sin índice ni worktree registrado.
+"""Bounded export of a commit for the chat. No index or registered worktree.
 
-Los permisos de solo lectura son cooperativos; la evidencia detecta alteraciones, no
-certifica aislamiento del proceso fuera de este árbol.
+Read-only permissions are cooperative; the evidence detects alterations, it does not
+certify isolation of the process outside this tree.
 """
 import hashlib
 from pathlib import Path

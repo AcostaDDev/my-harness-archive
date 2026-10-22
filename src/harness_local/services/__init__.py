@@ -1,1 +1,1 @@
-"""Composición local fuera del núcleo independiente."""
+"""Local composition outside the independent core."""

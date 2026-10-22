@@ -1,4 +1,4 @@
-"""Intención/resultado de commits aceptados H2.4."""
+"""Intent/result of accepted commits H2.4."""
 from alembic import op
 import sqlalchemy as sa
 

@@ -1,7 +1,7 @@
-"""Proyección derivada `run-projection-1` para las vistas de runs (P010-T003, D142).
+"""Derived `run-projection-1` projection for the run views (P010-T003, D142).
 
-Aditiva: crea las tablas y las rellena decodificando una vez cada historial existente (formatos 1–8) con el codec
-vigente. No modifica `managed_runs.history_json`. El downgrade solo elimina tablas derivadas.
+Additive: creates the tables and fills them by decoding each existing history once (formats 1–8) with the current
+codec. Does not modify `managed_runs.history_json`. The downgrade only drops derived tables.
 """
 from alembic import op
 import sqlalchemy as sa
@@ -13,7 +13,7 @@ depends_on = None
 
 
 def _run():
-    """Columna de cada tabla derivada; su FK nunca se comparte entre tablas."""
+    """Column of each derived table; its FK is never shared between tables."""
     return sa.Column('run_id', sa.String(36), sa.ForeignKey('managed_runs.id'), primary_key=True)
 
 
@@ -78,7 +78,7 @@ def upgrade():
     }
     from harness_local.storage.run_projection import rows
     bind = op.get_bind()
-    # Un historial cada vez: el relleno no carga todos los historiales a la vez.
+    # One history at a time: the backfill does not load all histories at once.
     for run_id in bind.execute(sa.text('SELECT id FROM managed_runs ORDER BY id')).scalars().all():
         history_json = bind.execute(sa.text('SELECT history_json FROM managed_runs WHERE id = :id'),
                                     {'id': run_id}).scalar_one()

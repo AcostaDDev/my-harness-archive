@@ -1,4 +1,4 @@
-"""P008-T011: conversación `project_import` del Flujo A con el inventario y el mapa congelados al crearla."""
+"""P008-T011: Flow A `project_import` conversation with the inventory and map frozen when created."""
 from alembic import op
 import sqlalchemy as sa
 
@@ -9,7 +9,7 @@ depends_on = None
 
 
 def upgrade():
-    # Nullable: las conversaciones de definición y planificación no tienen origen que congelar.
+    # Nullable: definition and planning conversations have no origin to freeze.
     op.add_column('planning_conversations', sa.Column('source', sa.JSON(), nullable=True))
 
 

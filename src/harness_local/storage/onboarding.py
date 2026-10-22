@@ -1,7 +1,7 @@
-"""P008-T014: conversación de ingeniería inversa sobre HEAD; borradores privados, sin efectos en el proyecto.
+"""P008-T014: reverse-engineering conversation over HEAD; private drafts, no effects on the project.
 
-Reutiliza la exportación acotada de D083, la CAS de la importación y `planning_conversations.source` (0019).
-No ejecuta fuentes ni comandos del perfil propuesto. La adopción y el commit pertenecen a T015.
+Reuses the bounded export of D083, the import CAS and `planning_conversations.source` (0019).
+Does not run sources or commands of the proposed profile. Adoption and commit belong to T015.
 """
 from harness_local.adapters.chat_snapshot import HeadSnapshot
 from harness_local.adapters.project_onboarding import _InventoryGit, read_inventory as inventory_of

@@ -1,15 +1,15 @@
-"""H3.3/H3.4: autoridad SQLite de fases, serializada con la cola gestionada.
+"""H3.3/H3.4: SQLite authority of phases, serialized with the managed queue.
 
-Las lecturas de disco (documentos) se hacen fuera de transacción y se comparan por
-hash; checks y cierres son jobs bajo el lock del checkout. Las autorizaciones de lote
-y de cierre son filas distintas, explícitas y auditadas: ninguna implica la otra, y
-las concesiones de permisos H3.2 no intervienen. Ningún histórico se reescribe.
+Disk reads (documents) happen outside a transaction and are compared by
+hash; checks and closures are jobs under the checkout lock. Batch and closure
+authorizations are distinct, explicit and audited rows: neither implies the other, and
+H3.2 permission grants play no part. No history is rewritten.
 
-H3.4 (D033): un lote puede autorizar, de forma explícita, encadenar tareas y confirmar
-el commit de cada aceptación elegible; lo conduce el supervisor paso a paso con claves
-deterministas y se detiene en el primer bloqueo. Las definiciones se enmiendan como
-versiones nuevas, la fase puede abandonarse y la reconciliación con agente es una
-tarea normal con contrato determinista limitado a los documentos de la fase.
+H3.4 (D033): a batch may explicitly authorize chaining tasks and confirming
+the commit of each eligible acceptance; the supervisor drives it step by step with deterministic
+keys and stops at the first blocker. Definitions are amended as
+new versions, the phase can be abandoned and reconciliation with an agent is a
+normal task with a deterministic contract limited to the phase documents.
 """
 
 from datetime import datetime, timedelta
@@ -34,12 +34,12 @@ from harness_local.storage.permissions import actor
 PENDING = ('QUEUED', 'ACTIVE', 'RECOVERY_REQUIRED')
 CHECKABLE = ('ACTIVE', 'NEEDS_RECONCILIATION', 'READY_TO_CLOSE', 'BLOCKED')
 RECONCILABLE = CHECKABLE
-# Enmendar o abandonar: nunca con un check/cierre en curso ni sobre una fase terminal.
+# Amend or abandon: never with a check/closure in progress or on a terminal phase.
 AMENDABLE = CHECKABLE
 TERMINAL = ('CLOSED', 'ABANDONED')
-# Run de tarea que terminó sin aceptación confirmable: no bloquea otra tarea de reconciliación.
+# Task run that ended without a confirmable acceptance: it does not block another reconciliation task.
 FAILED_RUN = ('STOPPED', 'BLOCKED', 'REVISION_LIMIT', 'INTERRUPTED', 'REFUSED')
-# Partes del alcance de un lote desatendido que no se proyectan (contenido grande o interno).
+# Parts of an unattended batch scope that are not projected (large or internal content).
 HIDDEN_SCOPE = ('text', 'context_json', 'versions_json')
 
 
@@ -60,7 +60,7 @@ def _open(rows):
 
 
 def committed_tasks(session, phase):
-    """Última aceptación COMMITTED de cada tarea declarada, solo runs de tarea de este checkout y fase."""
+    """Last COMMITTED acceptance of each declared task, only task runs of this checkout and phase."""
     result = {}
     for task in phase.definition['tasks']:
         row = session.execute(select(Commit.run_id, Commit.commit_sha).join(Run, Run.id == Commit.run_id).where(
@@ -71,8 +71,8 @@ def committed_tasks(session, phase):
 
 
 def _decision_proposals(session, tasks):
-    """D088 punto 2 (P008-T003): propuestas de ADR del revisor en la última revisión de cada tarea COMMITTED,
-    para consolidarlas en la reconciliación. Nunca escriben DECISIONS por sí mismas."""
+    """D088 point 2 (P008-T003): reviewer ADR proposals in the last review of each COMMITTED task,
+    to consolidate them in the reconciliation. They never write DECISIONS by themselves."""
     result = {}
     for task, item in tasks.items():
         if item is None:
@@ -85,7 +85,7 @@ def _decision_proposals(session, tasks):
 
 
 def authority(session, phase):
-    """Partes del vínculo READY que viven en SQLite."""
+    """Parts of the READY binding that live in SQLite."""
     rows = _questions(session, phase.id)
     sha = digest([[q.id, q.status, q.text, q.answer['text'] if q.answer else None] for q in rows])
     return {'definition_sha256': phase.definition_sha256, 'tasks': committed_tasks(session, phase),
@@ -102,7 +102,7 @@ def _latest(session, phase_id, kind):
 
 
 def _ready(session, phase):
-    """READY vigente: el último check, mientras la fase siga en READY_TO_CLOSE/CLOSING."""
+    """Current READY: the last check, while the phase stays in READY_TO_CLOSE/CLOSING."""
     if phase.status not in ('READY_TO_CLOSE', 'CLOSING'):
         return None
     check = _latest(session, phase.id, 'check')
@@ -140,7 +140,7 @@ CONFIRMED_DOCUMENT_KINDS = ('document_edit', 'document_export')
 
 
 def _closure(session, phase):
-    """Operación que terminó la fase (cierre o abandono); None si sigue abierta o se cerró sin operación registrada."""
+    """Operation that ended the phase (closure or abandonment); None if open or closed without a recorded operation."""
     if phase.status not in TERMINAL:
         return None
     return session.scalar(select(Operation).where(
@@ -149,7 +149,7 @@ def _closure(session, phase):
 
 
 def closure_files(session, phase) -> dict[str, str | None]:
-    """Hashes que el cierre unificado escribió en el archivo de la fase (D088)."""
+    """Hashes the unified closure wrote into the phase archive (D088)."""
     op = _closure(session, phase)
     shown = (op.request.get('preview') or {}) if op is not None else {}
     archive = shown.get('archive')
@@ -158,9 +158,9 @@ def closure_files(session, phase) -> dict[str, str | None]:
 
 
 def expected_documents(session, phase) -> dict[str, str | None]:
-    """P010-T005: base adoptada más lo que escribieron el cierre y las ediciones confirmadas después de él.
+    """P010-T005: adopted base plus what the closure and the confirmed edits after it wrote.
 
-    Solo presentación: no cambia `phase.documents`, el READY ni lo que comprueba un check."""
+    Presentation only: does not change `phase.documents`, the READY or what a check verifies."""
     expected = dict(phase.documents)
     op = _closure(session, phase)
     if op is None or not op.request.get('preview'):
@@ -179,16 +179,16 @@ def expected_documents(session, phase) -> dict[str, str | None]:
 
 
 def closure_view(session, phase, current_documents, archive_documents, successor):
-    """Evidencia histórica de una fase terminada y clasificación de sus documentos vivos y de su archivo.
+    """Historical evidence of a finished phase and classification of its live documents and its archive.
 
-    `renewed`: diferencias esperadas respecto de la base adoptada (cierre y ediciones confirmadas posteriores).
-    `changed`: documentos vivos que no coinciden con lo esperado, solo sin sucesora (con ella, son suyos).
-    `archive_altered`: archivos del archivo cuyo contenido en disco ya no es el que escribió el cierre."""
+    `renewed`: expected differences from the adopted base (closure and later confirmed edits).
+    `changed`: live documents that do not match what is expected, only without a successor (with one, they are its).
+    `archive_altered`: archive files whose content on disk is no longer what the closure wrote."""
     op = _closure(session, phase)
     if op is None:
         return None
     result, request = op.result or {}, op.request
-    # Los cierres anteriores a D088 no tienen vista previa sellada: muestran check y base, sin archivo.
+    # Closures before D088 have no sealed preview: they show check and base, without an archive.
     check = session.get(Operation, request['check_operation_id']) if request.get('check_operation_id') else None
     review = (check.result or {}).get('result') if check is not None else None
     auth = session.get(Authorization, request['authorization_id']) if request.get('authorization_id') else None
@@ -216,7 +216,7 @@ def closure_view(session, phase, current_documents, archive_documents, successor
 
 
 def _invalidate_batches(managed, session, phase, reason):
-    """Una enmienda o un abandono invalida los lotes vigentes; los ya terminados se conservan."""
+    """An amendment or an abandonment invalidates the current batches; finished ones are kept."""
     rows = session.scalars(select(Authorization).where(Authorization.phase_id == phase.id,
                            Authorization.kind == 'batch', Authorization.status == 'ACTIVE')).all()
     for row in rows:
@@ -226,7 +226,7 @@ def _invalidate_batches(managed, session, phase, reason):
 
 
 def _open_reconcile_task(session, phase):
-    """Tarea de reconciliación en curso, pendiente de commit o de adopción (una a la vez)."""
+    """Reconciliation task in progress, pending commit or adoption (one at a time)."""
     op = _latest(session, phase.id, 'reconcile_task')
     if op is None or op.status != 'QUEUED':
         return None
@@ -248,7 +248,7 @@ def _invalidate(managed, session, phase, op, status, reason):
 
 
 def settle(managed, session, run, outcome):
-    """Resultado de check/cierre, atómico con el fin del job (llamado desde `finish`)."""
+    """Check/closure result, atomic with the end of the job (called from `finish`)."""
     op, phase = _operation(session, run)
     if op.status not in ('QUEUED', 'INTENT'):
         raise Conflict('Phase operation already settled')
@@ -277,7 +277,7 @@ def settle(managed, session, run, outcome):
         return
     op.result, op.finished_at = outcome, now
     if outcome['status'] in ('CLOSED', 'ABANDONED'):
-        # Preguntas y commits están excluidos durante CLOSING; un cambio aquí exige recuperación manual.
+        # Questions and commits are excluded during CLOSING; a change here requires manual recovery.
         changed = stale_reasons(parts, op.request['binding'])
         if changed or (outcome['status'] == 'CLOSED' and _open(rows)):
             raise Conflict('Phase authority changed during close; recover manually with the recorded evidence')
@@ -306,7 +306,7 @@ def settle(managed, session, run, outcome):
 
 
 def abort(managed, session, run, status, reason):
-    """Job rechazado o escritor confirmado detenido: sin repetir efectos; el tag queda por conciliar."""
+    """Refused job or writer confirmed stopped: no effects repeated; the tag is left to reconcile."""
     op, phase = _operation(session, run)
     if op.status not in ('QUEUED', 'INTENT'):
         return
@@ -335,7 +335,7 @@ def record_intent(managed, session, run, intent):
 
 
 def insert_phase(managed, session, root, definition, documents, source=None):
-    """Inserción compartida: creación normal y adopción bootstrap en la transacción del job."""
+    """Shared insertion: normal creation and bootstrap adoption in the job's transaction."""
     now = managed._now()
     phase = Phase(id=str(uuid4()), root=root, code=definition['code'], definition=definition,
                   definition_sha256=digest(definition), documents=documents, status='ACTIVE', version=0,
@@ -378,7 +378,7 @@ class PhaseRepository:
         return (PhaseRepository._root_pending(session, root) or session.scalar(select(Run.id).where(
             Run.root == root, Run.purpose == 'task', Run.status == 'ACCEPTANCE_READY')) is not None)
 
-    # --- lecturas ---------------------------------------------------------------------
+    # --- reads ------------------------------------------------------------------------
 
     def list(self, root):
         with Session(self.managed.engine) as session:
@@ -387,7 +387,7 @@ class PhaseRepository:
                     | {'objective': row.definition['objective']} for row in rows]
 
     def by_code(self, root, code):
-        """Id de la fase con ese código en el checkout; el código es único por raíz."""
+        """Id of the phase with that code in the checkout; the code is unique per root."""
         with Session(self.managed.engine) as session:
             phase_id = session.scalar(select(Phase.id).where(Phase.root == root, Phase.code == code))
         if phase_id is None:
@@ -402,7 +402,7 @@ class PhaseRepository:
             return phase.root, phase.definition
 
     def closure_files(self, phase_id):
-        """Rutas del archivo escrito por el cierre, para que la API las lea de disco antes de `get`."""
+        """Paths of the archive written by the closure, so the API reads them from disk before `get`."""
         with Session(self.managed.engine) as session:
             phase = session.get(Phase, phase_id)
             if phase is None:
@@ -410,8 +410,8 @@ class PhaseRepository:
             return sorted(closure_files(session, phase))
 
     def get(self, phase_id, current_documents=None, archive_documents=None):
-        """Proyección con acciones calculadas por el servidor; `current_documents` y `archive_documents` (hashes
-        de los archivos de `closure_files`) son lecturas de disco."""
+        """Projection with actions computed by the server; `current_documents` and `archive_documents` (hashes
+        of the `closure_files` files) are disk reads."""
         now = self.managed._now()
         with Session(self.managed.engine) as session:
             phase = session.get(Phase, phase_id)
@@ -428,7 +428,7 @@ class PhaseRepository:
             for op in ops:
                 view = operation_view(op)
                 if op.kind == 'reconcile_task' and op.status == 'QUEUED':
-                    view['status'] = session.get(Run, op.run_id).status  # estado vivo del run normal
+                    view['status'] = session.get(Run, op.run_id).status  # live state of the normal run
                 op_views.append(view)
             definitions = session.scalars(select(Definition).where(Definition.phase_id == phase.id)
                                           .order_by(Definition.number)).all()
@@ -461,7 +461,7 @@ class PhaseRepository:
                 if not active_batch:
                     actions.append('authorize_batch')
                 elif not active_batch[0]['scope'].get('chain_commits'):
-                    actions.append('batch_next')  # lote manual H3.3; el desatendido lo conduce el supervisor
+                    actions.append('batch_next')  # manual H3.3 batch; the supervisor drives the unattended one
             if phase.status in AMENDABLE and not pending:
                 actions += ['amend', 'abandon']
             from harness_local.storage.documents import unresolved
@@ -471,7 +471,7 @@ class PhaseRepository:
                 interrupted = interrupted_document(session, phase, 'close')
                 if interrupted is not None and not pending:
                     actions = ['abandon' if interrupted.request.get('terminal') == 'ABANDONED' else 'close']
-            # Mismo orden que `latest_phase`: creación y después id.
+            # Same order as `latest_phase`: creation and then id.
             successor = session.scalar(select(Phase.code).where(Phase.root == phase.root, or_(
                 Phase.created_at > phase.created_at, and_(Phase.created_at == phase.created_at, Phase.id > phase.id)))
                 .order_by(Phase.created_at, Phase.id).limit(1))
@@ -501,7 +501,7 @@ class PhaseRepository:
             return {'items': items, 'cursor': items[-1]['sequence'] if items else after, 'has_more': len(rows) > limit}
 
     def snapshot(self, run_id):
-        """Lectura para el job de fase; `settle` vuelve a comprobar la autoridad en su transacción."""
+        """Read for the phase job; `settle` checks the authority again in its transaction."""
         with Session(self.managed.engine) as session:
             run = session.get(Run, run_id)
             op, phase = _operation(session, run)
@@ -537,7 +537,7 @@ class PhaseRepository:
                     result['tag_intent'] = op.request.get('tag_intent')
             return result
 
-    # --- definición y documentos ---------------------------------------------------------
+    # --- definition and documents --------------------------------------------------------
 
     def create(self, context, data):
         definition = phase_definition(context, data)
@@ -557,7 +557,7 @@ class PhaseRepository:
             return insert_phase(self.managed, session, root, definition, documents)
 
     def reconcile(self, context, phase_id, expected, *, documents_sha256, reason):
-        """Adopción explícita de documentos cambiados (propuesta por hash), nunca mezcla silenciosa."""
+        """Explicit adoption of changed documents (proposal by hash), never a silent merge."""
         if not isinstance(reason, str) or not reason.strip():
             raise ValueError('Explicit reconciliation reason required')
         root, definition = self.definition(phase_id)
@@ -577,7 +577,7 @@ class PhaseRepository:
             source = None
             task_op = _open_reconcile_task(session, phase)
             if task_op is not None:
-                # H3.4: la base se adopta después del commit de contenido exacto de la tarea de reconciliación.
+                # H3.4: the base is adopted after the exact-content commit of the reconciliation task.
                 commit = session.scalar(select(Commit).where(Commit.run_id == task_op.run_id,
                                                              Commit.status == 'COMMITTED'))
                 if commit is None:
@@ -598,7 +598,7 @@ class PhaseRepository:
             _event(self.managed, session, phase, 'documents_reconciled', {
                 'operation_id': op.id, 'changed': op.result['changed'], 'reason': reason, 'actor': op.request['actor']})
 
-    # --- preguntas bloqueantes ---------------------------------------------------------
+    # --- blocking questions ------------------------------------------------------------
 
     def raise_question(self, phase_id, expected, *, text):
         if not isinstance(text, str) or not text.strip():
@@ -633,7 +633,7 @@ class PhaseRepository:
                 phase.status = 'ACTIVE'
             _event(self.managed, session, phase, 'question_answered', question_view(row))
 
-    # --- operaciones por job -----------------------------------------------------------
+    # --- operations by job -------------------------------------------------------------
 
     def submit_check(self, context, phase_id, expected, *, key, versions):
         request = freeze({'action': 'phase_check', 'phase_id': phase_id, 'expected_version': expected})
@@ -660,9 +660,9 @@ class PhaseRepository:
 
     def submit_close(self, context, phase_id, expected, *, key, versions, binding_sha256, reason, ttl_seconds,
                      tag_kind='lightweight', git=None, terminal='CLOSED'):
-        """Autorización de cierre ligada al READY mostrado + job de cierre, en una transacción.
+        """Closure authorization bound to the shown READY + closure job, in one transaction.
 
-        `tag_kind` lo fija el proyecto en el servidor (H3.4) y queda congelado en la autorización."""
+        `tag_kind` is fixed by the project on the server (H3.4) and stays frozen in the authorization."""
         if not isinstance(reason, str) or not reason.strip():
             raise ValueError('Explicit close reason required')
         if tag_kind not in TAG_KINDS:
@@ -764,12 +764,12 @@ class PhaseRepository:
                    {'operation_id': op.id, 'run_id': job.run_id, 'job_id': job.id})
             return job
 
-    # --- lote ----------------------------------------------------------------------
+    # --- batch ---------------------------------------------------------------------
 
     def authorize_batch(self, phase_id, expected, *, tasks, ttl_seconds, reason, chain_commits=False, text=None,
                         context=None, versions=None):
-        """`chain_commits` (H3.4, D033): alcance explícito «encadenar tareas y confirmar commits», con texto del
-        plan, contexto y versiones congelados; sin él, lote manual H3.3 que solo encola por `batch_next`."""
+        """`chain_commits` (H3.4, D033): explicit scope «chain tasks and confirm commits», with frozen plan
+        text, context and versions; without it, a manual H3.3 batch that only queues via `batch_next`."""
         if not isinstance(reason, str) or not reason.strip():
             raise ValueError('Explicit batch reason required')
         if type(chain_commits) is not bool:
@@ -824,7 +824,7 @@ class PhaseRepository:
             _event(self.managed, session, phase, 'batch_revoked', authorization_view(row, self.managed._now()))
 
     def batch_next(self, context, phase_id, expected, *, key, versions, authorization_id, text):
-        """Encola la siguiente tarea autorizada; no comprueba ni cierra la fase y no confirma commits."""
+        """Queues the next authorized task; does not check or close the phase and does not confirm commits."""
         if not isinstance(text, str) or not text.strip():
             raise ValueError('Explicit plan text required')
         assessment = self.managed.guard.assess(context.root)
@@ -869,13 +869,13 @@ class PhaseRepository:
                 'authorization_id': auth.id, 'task_id': task, 'run_id': job.run_id, 'job_id': job.id})
             return job
 
-    # --- H3.4: enmienda, abandono y reconciliación con agente -----------------------------
+    # --- H3.4: amendment, abandonment and reconciliation with an agent --------------------
 
     def amend(self, context, phase_id, expected, *, data, reason):
-        """Nueva versión de la definición; la anterior se conserva. Invalida READY y lotes vigentes.
+        """New version of the definition; the previous one is kept. Invalidates READY and current batches.
 
-        El código no cambia (identifica los runs). Documentos nuevos se adoptan con su hash actual,
-        registrado en la auditoría de la enmienda; los existentes conservan su base adoptada."""
+        The code does not change (it identifies the runs). New documents are adopted with their current hash,
+        recorded in the amendment audit; existing ones keep their adopted base."""
         if not isinstance(reason, str) or not reason.strip():
             raise ValueError('Explicit amendment reason required')
         root, current = self.definition(phase_id)
@@ -916,20 +916,20 @@ class PhaseRepository:
             phase.definition, phase.definition_sha256, phase.definition_number = definition, sha, number
             phase.documents = documents
             if phase.status == 'READY_TO_CLOSE':
-                phase.status = 'ACTIVE'  # READY nunca sobrevive a otra definición
+                phase.status = 'ACTIVE'  # READY never survives another definition
             _event(self.managed, session, phase, 'definition_amended', {
                 'operation_id': op.id, 'number': number, 'definition_sha256': sha, 'reason': reason.strip(),
                 'invalidated_authorizations': invalidated, 'actor': op.request['actor']})
 
     def abandon(self, phase_id, expected, *, reason, context, git, key, versions):
-        """Abandono confirmado: mismo archivo conciliable que el cierre, sin tag ni READY."""
+        """Confirmed abandonment: the same reconcilable archive as the closure, without tag or READY."""
         return self.submit_close(context, phase_id, expected, reason=reason, git=git, key=key, versions=versions,
                                  binding_sha256=None, ttl_seconds=3600, terminal='ABANDONED')
 
     def submit_reconcile_task(self, context, phase_id, expected, *, key, versions):
-        """Tarea normal con contrato determinista (plantilla `reconcile-phase`) limitado a los documentos.
+        """Normal task with a deterministic contract (`reconcile-phase` template) limited to the documents.
 
-        Se ejecuta, revisa y confirma por el flujo de tareas; después se adopta la base por hash."""
+        It is executed, reviewed and confirmed through the task flow; then the base is adopted by hash."""
         from harness_local.core.engine.contracts import task_contract
         from harness_local.core.engine.prompts import digest as text_digest, render
         from harness_local.storage.prompts import PromptRepository
@@ -960,7 +960,7 @@ class PhaseRepository:
             if target is not None:
                 allowed = list(dict.fromkeys(list(documents) + list(target.product_documents)
                                              + [f'{folder}/**' for folder in target.folders]))
-            # P008-T003: en v2 los documentos del harness los gobierna el contrato documental, no el perfil.
+            # P008-T003: in v2 the harness documents are governed by the documentary contract, not the profile.
             if any(executor_protected(context, task_id, path) for path in allowed):
                 raise Conflict('A phase document is protected by the profile; reconcile it by hand')
             tasks = committed_tasks(session, phase)
@@ -972,14 +972,14 @@ class PhaseRepository:
                             'reasons': (check.result or {}).get('reasons'), 'review': (check.result or {}).get('result')}}
             proposals = _decision_proposals(session, tasks)
             if proposals:
-                evidence['decision_proposals'] = proposals  # D088 punto 2: propuestas para consolidar
+                evidence['decision_proposals'] = proposals  # D088 point 2: proposals to consolidate
             instructions = render(template, {'PHASE_ID': phase.code, 'REVIEW_JSON': freeze(evidence)})
             required = (check.result or {}).get('reasons', []) if check is not None and check.status == 'REVISE' else []
             policy = context.policy
             constraints = ['Documentation only: no code, tests, plans state, commits or tags.']
             if target is not None:
-                # D072: la reconciliación compacta STATE y pone al día los documentos de producto y decisiones;
-                # los bloques gestionados (también el índice de DECISIONS, D088) y el archivo siguen siendo del harness.
+                # D072: reconciliation compacts STATE and updates the product and decision documents;
+                # the managed blocks (also the DECISIONS index, D088) and the archive still belong to the harness.
                 constraints += [
                     'Never edit inside harness-local managed blocks; Harness Local regenerates them at commit.',
                     f'Rewrite the "## Base acumulada" section of {target.state} as a compact description of what '
@@ -1026,7 +1026,7 @@ class PhaseRepository:
             return job
 
 
-# --- H3.4: conductor del lote desatendido ----------------------------------------------------
+# --- H3.4: unattended batch driver -----------------------------------------------------------
 
 
 def _batch_stop(managed, session, phase, auth, status, reason):
@@ -1036,7 +1036,7 @@ def _batch_stop(managed, session, phase, auth, status, reason):
 
 
 def _batch_step(managed, session, auth_id, context, assessment):
-    """Un paso derivado del estado: encola una tarea o un commit, espera, termina o se detiene."""
+    """A step derived from the state: queues a task or a commit, waits, ends or stops."""
     auth = session.get(Authorization, auth_id)
     if auth is None or auth.status != 'ACTIVE':
         return
@@ -1057,7 +1057,7 @@ def _batch_step(managed, session, auth_id, context, assessment):
     if 'RECOVERY_REQUIRED' in states:
         return stop('STOPPED', 'A job of this checkout requires explicit recovery; uncertain effects are not repeated')
     if states:
-        return  # una acción escritora cada vez: espera a que termine
+        return  # one writing action at a time: wait for it to finish
     done = committed_tasks(session, phase)
     for task in scope['tasks']:
         if done.get(task) is not None:
@@ -1099,7 +1099,7 @@ def _batch_step(managed, session, auth_id, context, assessment):
 
 
 def advance_batches(managed):
-    """Llamado por el supervisor antes de reclamar. Idempotente: claves deterministas por lote y paso."""
+    """Called by the supervisor before claiming. Idempotent: deterministic keys per batch and step."""
     with Session(managed.engine) as session:
         live = [row.id for row in session.scalars(select(Authorization).where(
             Authorization.kind == 'batch', Authorization.status == 'ACTIVE')
@@ -1108,10 +1108,10 @@ def advance_batches(managed):
     for auth_id in live:
         try:
             context = restore_context(contexts[auth_id])
-            assessment = managed.guard.assess(context.root)  # lectura de disco fuera de la transacción
+            assessment = managed.guard.assess(context.root)  # disk read outside the transaction
             with managed._write() as session:
                 _batch_step(managed, session, auth_id, context, assessment)
-        except (ValueError, LookupError, OSError) as exc:  # Conflict deriva de ValueError
+        except (ValueError, LookupError, OSError) as exc:  # Conflict derives from ValueError
             with managed._write() as session:
                 auth = session.get(Authorization, auth_id)
                 if auth.status == 'ACTIVE':

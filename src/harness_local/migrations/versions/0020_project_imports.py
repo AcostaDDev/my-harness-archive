@@ -1,4 +1,4 @@
-"""P008-T012: importaciones documentales confirmadas y conciliables."""
+"""P008-T012: confirmed and reconcilable documentary imports."""
 from alembic import op
 import sqlalchemy as sa
 

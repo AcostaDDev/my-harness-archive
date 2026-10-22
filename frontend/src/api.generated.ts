@@ -119,7 +119,7 @@ export interface paths {
         put?: never;
         /**
          * Registry Preview
-         * @description Sin efectos: fila resultante, cambios, versiones congeladas y hash que liga la confirmación.
+         * @description No effects: resulting row, changes, frozen versions and the hash that binds the confirmation.
          */
         post: operations["managed_registry_preview"];
         delete?: never;
@@ -139,7 +139,7 @@ export interface paths {
         put?: never;
         /**
          * Registry Apply
-         * @description Repetir la misma confirmación devuelve el resultado ya aplicado, sin otra versión.
+         * @description Repeating the same confirmation returns the already applied result, without another version.
          */
         post: operations["managed_registry_apply"];
         delete?: never;
@@ -174,7 +174,7 @@ export interface paths {
         };
         /**
          * Bootstrap Status
-         * @description Estado de la definición y su commit raíz; la creación v1 ya no se expone.
+         * @description State of the definition and its root commit; the v1 creation is no longer exposed.
          */
         get: operations["managed_bootstrap_status"];
         put?: never;
@@ -212,7 +212,7 @@ export interface paths {
         };
         /**
          * Task Sources Read
-         * @description P009-T020: tareas del NEXT_STEPS vivo, con el texto que se enviaría para cada una y su hash.
+         * @description P009-T020: tasks of the live NEXT_STEPS, with the text that would be sent for each one and its hash.
          */
         get: operations["managed_task_sources"];
         put?: never;
@@ -249,7 +249,7 @@ export interface paths {
         };
         /**
          * Run Jobs
-         * @description Del más reciente al más antiguo.
+         * @description From newest to oldest.
          */
         get: operations["managed_run_jobs"];
         put?: never;
@@ -269,7 +269,7 @@ export interface paths {
         };
         /**
          * Run Cycles
-         * @description Ciclos de revisión por número ascendente, sin el texto del diff ni los casos JUnit (D142).
+         * @description Review cycles by ascending number, without the diff text or the JUnit cases (D142).
          */
         get: operations["managed_run_cycles"];
         put?: never;
@@ -289,8 +289,8 @@ export interface paths {
         };
         /**
          * Cycle Diff
-         * @description Diff revisado de un ciclo por páginas de bytes UTF-8 que acaban en fin de línea; `offset` es 0 o un
-         *     `next_offset` anterior. Con `sha256`, un diff distinto del pedido responde 409.
+         * @description Reviewed diff of a cycle in pages of UTF-8 bytes that end at a line end; `offset` is 0 or a
+         *     previous `next_offset`. With `sha256`, a diff other than the requested one responds 409.
          */
         get: operations["managed_cycle_diff"];
         put?: never;
@@ -378,7 +378,7 @@ export interface paths {
         };
         /**
          * Events
-         * @description Solo eventos confirmados, por secuencia del run; `cursor` es el `after` de la página siguiente.
+         * @description Confirmed events only, by run sequence; `cursor` is the `after` of the next page.
          */
         get: operations["managed_run_events"];
         put?: never;
@@ -434,7 +434,7 @@ export interface paths {
         put?: never;
         /**
          * Confirm Stopped
-         * @description Afirmación del usuario tras descartar al escritor anterior; la autoridad comprueba procesos.
+         * @description User assertion after ruling out the previous writer; the authority checks processes.
          */
         post: operations["managed_confirm_stopped"];
         delete?: never;
@@ -607,7 +607,7 @@ export interface paths {
         };
         /**
          * Phase By Code
-         * @description Lectura por el código de la URL (`P001`), único por checkout (D076).
+         * @description Read by the URL code (`P001`), unique per checkout (D076).
          */
         get: operations["managed_phase_by_code"];
         put?: never;
@@ -627,7 +627,7 @@ export interface paths {
         };
         /**
          * Phase Tasks
-         * @description Sin fase definida (runs v1 o anteriores a la definición), solo las tareas con runs.
+         * @description Without a defined phase (v1 runs or runs before the definition), only the tasks with runs.
          */
         get: operations["managed_phase_tasks"];
         put?: never;
@@ -683,7 +683,7 @@ export interface paths {
         put?: never;
         /**
          * Phase Action
-         * @description check y close son jobs bajo el lock del checkout; el cierre exige su propia autorización.
+         * @description check and close are jobs under the checkout lock; the closure requires its own authorization.
          */
         post: operations["managed_phase_action"];
         delete?: never;
@@ -754,7 +754,7 @@ export interface paths {
         put?: never;
         /**
          * Authorize Batch
-         * @description Solo lote: nunca autoriza check ni cierre. Con `chain_commits`, el supervisor encadena tareas y commits.
+         * @description Batch only, never check or closure. With `chain_commits` the supervisor chains tasks and commits.
          */
         post: operations["managed_phase_authorize_batch"];
         delete?: never;
@@ -808,7 +808,7 @@ export interface paths {
         put?: never;
         /**
          * Amend Phase
-         * @description Nueva versión de la definición (la anterior se conserva); invalida READY y lotes vigentes.
+         * @description New version of the definition (the previous one is kept); invalidates READY and current batches.
          */
         post: operations["managed_phase_amend"];
         delete?: never;
@@ -845,7 +845,7 @@ export interface paths {
         put?: never;
         /**
          * Reconcile Task
-         * @description Tarea normal con contrato determinista limitado a los documentos; sin adopción automática.
+         * @description Normal task with a deterministic contract limited to the documents; no automatic adoption.
          */
         post: operations["managed_phase_reconcile_task"];
         delete?: never;
@@ -881,7 +881,7 @@ export interface paths {
         };
         /**
          * Documents Status
-         * @description Documentos, deriva frente a la base adoptada, cambios locales, avisos, decisiones y archivo.
+         * @description Documents, drift against the adopted base, local changes, warnings, decisions and archive.
          */
         get: operations["managed_documents"];
         put?: never;
@@ -918,7 +918,7 @@ export interface paths {
         };
         /**
          * Document Tree
-         * @description Instrucciones y Markdown del contrato; sin enlaces simbólicos, ocultos ni contenido.
+         * @description Instructions and Markdown of the contract; no symbolic links, hidden entries or content.
          */
         get: operations["managed_document_tree"];
         put?: never;
@@ -938,7 +938,7 @@ export interface paths {
         };
         /**
          * Document Image
-         * @description Imagen del checkout para el visor (H6.2 E3). Sin scripts ni recursos externos aunque se abra sola.
+         * @description Checkout image for the viewer (H6.2 E3). No scripts or external resources even if opened on its own.
          */
         get: operations["managed_document_image"];
         put?: never;
@@ -960,7 +960,7 @@ export interface paths {
         put?: never;
         /**
          * Document Edit Preview
-         * @description Diff exacto sin efectos; los bloques gestionados y el archivo de fases no se editan.
+         * @description Exact diff without effects; the managed blocks and the phase archive are not edited.
          */
         post: operations["managed_document_edit_preview"];
         delete?: never;
@@ -1029,7 +1029,7 @@ export interface paths {
         };
         /**
          * Metrics Summary
-         * @description Consumo, calidad de las tareas, tests OK/KO de su última validación y paradas por motivo.
+         * @description Consumption, task quality, OK/KO tests of their last validation and stops by reason.
          */
         get: operations["managed_metrics_summary"];
         put?: never;
@@ -1049,7 +1049,7 @@ export interface paths {
         };
         /**
          * Metrics Attempts
-         * @description Filas materializadas por intento, con procedencia por campo; null es ausencia, no cero.
+         * @description Rows materialized per attempt, with per-field provenance; null is absence, not zero.
          */
         get: operations["managed_metrics_attempts"];
         put?: never;
@@ -1069,7 +1069,7 @@ export interface paths {
         };
         /**
          * Metrics Groups
-         * @description Consumo agrupado; con `role` y `order` da los modelos y esfuerzos favoritos por frecuencia o tokens.
+         * @description Grouped consumption; with `role` and `order`, the favorite models and efforts by frequency or tokens.
          */
         get: operations["managed_metrics_groups"];
         put?: never;
@@ -1089,7 +1089,7 @@ export interface paths {
         };
         /**
          * Metrics Models
-         * @description Consumo por modelo reportado (Claude `modelUsage`); Codex no informa modelo.
+         * @description Consumption per reported model (Claude `modelUsage`); Codex does not report a model.
          */
         get: operations["managed_metrics_models"];
         put?: never;
@@ -1109,7 +1109,7 @@ export interface paths {
         };
         /**
          * Metrics Tasks
-         * @description Por tarea: agentes, intentos por rol, correcciones, aceptación a la primera, tiempos, tests y consumo.
+         * @description Per task: agents, attempts per role, corrections, first-time acceptance, times, tests and consumption.
          */
         get: operations["managed_metrics_tasks"];
         put?: never;
@@ -1129,7 +1129,7 @@ export interface paths {
         };
         /**
          * Metrics Validations
-         * @description H6.2 E6: evolución de los tests. Cada ciclo de validación de las tareas, OK/KO, por clave descendente.
+         * @description H6.2 E6: evolution of the tests. Each validation cycle of the tasks, OK/KO, by descending key.
          */
         get: operations["managed_metrics_validations"];
         put?: never;
@@ -1152,8 +1152,8 @@ export interface paths {
         put?: never;
         /**
          * Create Conversation
-         * @description Conversación separada del flujo de ejecución; no encola nada. Misma clave y misma petición devuelven la
-         *     misma conversación.
+         * @description Conversation separate from the execution flow; queues nothing. The same key and the same request return the
+         *     same conversation.
          */
         post: operations["managed_create_conversation"];
         delete?: never;
@@ -1190,7 +1190,7 @@ export interface paths {
         put?: never;
         /**
          * Chat Message
-         * @description Turno nuevo de solo lectura: mensaje y contexto se congelan al encolar; sin sesión del proveedor.
+         * @description New read-only turn: message and context are frozen when queued; no provider session.
          */
         post: operations["managed_chat_message"];
         delete?: never;
@@ -1227,7 +1227,7 @@ export interface paths {
         put?: never;
         /**
          * Accept Proposal
-         * @description Confirmación explícita del hash mostrado → tarea normal vinculada (planificar, ejecutar, revisar).
+         * @description Explicit confirmation of the shown hash → linked normal task (plan, execute, review).
          */
         post: operations["managed_chat_accept"];
         delete?: never;
@@ -1265,9 +1265,9 @@ export interface paths {
         put?: never;
         /**
          * Planning Create
-         * @description Definición (brief Markdown, destino vacío o con borradores), planificación de la fase activa sin tareas o
-         *     importación de un proyecto aún no gestionado (inventario y mapa de HEAD congelados). Misma clave y misma
-         *     petición devuelven la misma conversación.
+         * @description Definition (Markdown brief, empty target or with drafts), planning of the active phase without tasks or
+         *     import of a project not yet managed (frozen inventory and HEAD map). The same key and the same
+         *     request return the same conversation.
          */
         post: operations["managed_planning_create"];
         delete?: never;
@@ -1321,7 +1321,7 @@ export interface paths {
         put?: never;
         /**
          * Planning Message
-         * @description Turno nuevo de solo lectura del revisor con el contexto congelado al encolarlo.
+         * @description New read-only reviewer turn with the context frozen when it was queued.
          */
         post: operations["managed_planning_message"];
         delete?: never;
@@ -1339,12 +1339,12 @@ export interface paths {
         };
         /**
          * Planning Drafts
-         * @description Borradores en disco frente a lo que conoce el harness; archivos ajenos e inválidos.
+         * @description Drafts on disk against what the harness knows; foreign and invalid files.
          */
         get: operations["managed_planning_drafts"];
         /**
          * Planning Draft Edit
-         * @description Edición del usuario con CAS sobre el hash en disco; nunca sobrescribe otro cambio.
+         * @description User edit with CAS on the hash on disk; never overwrites another change.
          */
         put: operations["managed_planning_draft_edit"];
         post?: never;
@@ -1363,7 +1363,7 @@ export interface paths {
         };
         /**
          * Planning Draft
-         * @description H6.2 E4: un borrador admitido con su hash en disco, base de la CAS del editor.
+         * @description H6.2 E4: an admitted draft with its hash on disk, the base of the editor's CAS.
          */
         get: operations["managed_planning_draft"];
         put?: never;
@@ -1385,7 +1385,7 @@ export interface paths {
         put?: never;
         /**
          * Planning Apply
-         * @description El harness escribe el borrador confirmado si sigue siendo el que leyó el turno (CAS).
+         * @description The harness writes the confirmed draft if it is still the one the turn read (CAS).
          */
         post: operations["managed_planning_apply"];
         delete?: never;
@@ -1422,7 +1422,7 @@ export interface paths {
         put?: never;
         /**
          * Planning Defer
-         * @description Aplazamiento explícito de una pregunta bloqueante, con motivo; no la responde.
+         * @description Explicit deferral of a blocking question, with a reason; does not answer it.
          */
         post: operations["managed_planning_defer"];
         delete?: never;
@@ -1493,7 +1493,7 @@ export interface paths {
         put?: never;
         /**
          * Definition Accept Preview
-         * @description Archivos íntegros del commit raíz, archivo phase-000, bloques, P001, perfil y comandos; o bloqueos.
+         * @description Complete files of the root commit, phase-000 archive, blocks, P001, profile and commands; or blockers.
          */
         post: operations["managed_definition_accept_preview"];
         delete?: never;
@@ -1513,7 +1513,7 @@ export interface paths {
         put?: never;
         /**
          * Definition Accept
-         * @description Confirma la vista previa exacta: bootstrap D037 con la plantilla v2 y P001 ACTIVE adoptada.
+         * @description Confirms the exact preview: D037 bootstrap with the v2 template and P001 ACTIVE adopted.
          */
         post: operations["managed_definition_accept"];
         delete?: never;
@@ -1969,7 +1969,7 @@ export interface components {
             catalog: string;
             /**
              * Provenance
-             * @description requested | reported | derived | measured | absent, por campo.
+             * @description requested | reported | derived | measured | absent, per field.
              */
             provenance: {
                 [key: string]: string;
@@ -1989,7 +1989,7 @@ export interface components {
             import_required: boolean;
             /** Diagnostic */
             diagnostic: string | null;
-            /** @description Creación confirmada desde la conversación de definición, con el commit raíz y P001. */
+            /** @description Creation confirmed from the definition conversation, with the root commit and P001. */
             definition_operation?: components["schemas"]["DefinitionOperationRead"] | null;
         };
         /** ChatCommandCreate */
@@ -2029,7 +2029,7 @@ export interface components {
             title: string;
             /**
              * Phase Id
-             * @description Fase gestionada de este proyecto cuyo contexto se ofrece por defecto.
+             * @description Managed phase of this project whose context is offered by default.
              */
             phase_id?: string | null;
         };
@@ -2090,7 +2090,7 @@ export interface components {
             path: string;
             /**
              * Sha256
-             * @description null: el documento no existía al congelar el turno.
+             * @description null: the document did not exist when the turn was frozen.
              */
             sha256: string | null;
             /** Size */
@@ -2106,12 +2106,12 @@ export interface components {
             text: string;
             /**
              * Documents
-             * @description Documentos del checkout que se congelan como contexto; null: los de la fase o STATE y NEXT_STEPS.
+             * @description Checkout documents frozen as context; null: those of the phase or STATE and NEXT_STEPS.
              */
             documents?: string[] | null;
             /**
              * Run Ids
-             * @description Runs de este checkout cuya evidencia se congela como contexto.
+             * @description Runs of this checkout whose evidence is frozen as context.
              */
             run_ids?: string[];
         };
@@ -2257,19 +2257,19 @@ export interface components {
             accounting: components["schemas"]["MetricAccountingRead"];
             /**
              * Tokens
-             * @description uncached_input/cache_read/cache_write/output/reasoning (⊆ output)/total, cada uno sumado por separado. La entrada cruda no se agrega: su semántica depende del proveedor.
+             * @description uncached_input/cache_read/cache_write/output/reasoning (⊆ output)/total, each summed separately. Raw input is not summed: its meaning depends on the provider.
              */
             tokens: {
                 [key: string]: components["schemas"]["MetricSumRead"];
             };
             cost_usd: components["schemas"]["MetricAmountRead"];
-            /** @description num_turns de Claude. */
+            /** @description Claude num_turns. */
             turns_reported: components["schemas"]["MetricSumRead"];
-            /** @description Elementos completados del stream de Codex. */
+            /** @description Completed items of the Codex stream. */
             turns_derived: components["schemas"]["MetricSumRead"];
             tool_calls: components["schemas"]["MetricSumRead"];
             permission_denials: components["schemas"]["MetricSumRead"];
-            /** @description Suma de duraciones por intento: tiempo de agente, no transcurrido. */
+            /** @description Sum of durations per attempt: agent time, not elapsed time. */
             attempt_wall_ms: components["schemas"]["MetricSumRead"];
             reported_duration_ms: components["schemas"]["MetricSumRead"];
             api_duration_ms: components["schemas"]["MetricSumRead"];
@@ -2556,7 +2556,7 @@ export interface components {
             offset: number;
             /**
              * Next Offset
-             * @description Offset de la página siguiente; null en la última. Las páginas acaban en fin de línea salvo una línea mayor que el límite, cortada en un límite UTF-8.
+             * @description Offset of the next page; null on the last one. Pages end at a line end except for a line longer than the limit, cut at a UTF-8 boundary.
              */
             next_offset: number | null;
             /** Text */
@@ -2566,12 +2566,12 @@ export interface components {
         CycleRead: {
             /**
              * Diff Sha256
-             * @description SHA-256 del diff revisado del ciclo (texto UTF-8 almacenado); su contenido se lee paginado en `/runs/{id}/cycles/{n}/diff`.
+             * @description SHA-256 of the reviewed cycle diff (stored UTF-8 text); its content is read paginated at `/runs/{id}/cycles/{n}/diff`.
              */
             diff_sha256: string;
             /**
              * Diff Bytes
-             * @description Tamaño en bytes UTF-8 del diff revisado del ciclo.
+             * @description Size in UTF-8 bytes of the reviewed diff of the cycle.
              */
             diff_bytes: number;
             /** Provenance */
@@ -2585,7 +2585,7 @@ export interface components {
             } | null;
             /**
              * Formatting
-             * @description Formateo del perfil tras el intento del ejecutor (comando, rutas, resultado); null si no hubo (D133).
+             * @description Profile formatting after the executor attempt (command, paths, result); null if there was none (D133).
              */
             formatting?: {
                 [key: string]: unknown;
@@ -2634,7 +2634,7 @@ export interface components {
             sha256: string;
             /**
              * Before Sha256
-             * @description Hash del borrador en disco que se sustituye; null si no existía.
+             * @description Hash of the replaced draft on disk; null if it did not exist.
              */
             before_sha256: string | null;
             /**
@@ -2686,7 +2686,7 @@ export interface components {
         };
         /**
          * DefinitionPreviewRead
-         * @description Aceptación de la definición v2: bloqueos o los archivos íntegros del commit raíz (bootstrap D037).
+         * @description Acceptance of the v2 definition: blockers or the complete files of the root commit (D037 bootstrap).
          */
         DefinitionPreviewRead: {
             /** Template */
@@ -2766,7 +2766,7 @@ export interface components {
             content: string;
             /**
              * Base Sha256
-             * @description Hash con el que se abrió el documento en el editor (CAS); null: no debe existir. Sin el campo, no se compara.
+             * @description Hash of the document when opened in the editor (CAS); null: must not exist. Without it, no comparison.
              */
             base_sha256?: string | null;
         };
@@ -2781,7 +2781,7 @@ export interface components {
         DocumentEditCreate: {
             /**
              * Source
-             * @description content: documentos enviados sobre un checkout limpio; worktree: cambios locales del editor.
+             * @description content: documents submitted over a clean checkout; worktree: local changes of the editor.
              * @enum {string}
              */
             source: "content" | "worktree";
@@ -2789,7 +2789,7 @@ export interface components {
             changes?: components["schemas"]["DocumentChange"][] | null;
             /**
              * Regenerate Blocks
-             * @description Solo worktree: sustituye los bloques gestionados editados en local por los de la base (H6.2 E3).
+             * @description Worktree only: replaces the managed blocks edited locally with those of the base (H6.2 E3).
              * @default false
              */
             regenerate_blocks: boolean;
@@ -2809,7 +2809,7 @@ export interface components {
         DocumentEditInput: {
             /**
              * Source
-             * @description content: documentos enviados sobre un checkout limpio; worktree: cambios locales del editor.
+             * @description content: documents submitted over a clean checkout; worktree: local changes of the editor.
              * @enum {string}
              */
             source: "content" | "worktree";
@@ -2817,7 +2817,7 @@ export interface components {
             changes?: components["schemas"]["DocumentChange"][] | null;
             /**
              * Regenerate Blocks
-             * @description Solo worktree: sustituye los bloques gestionados editados en local por los de la base (H6.2 E3).
+             * @description Worktree only: replaces the managed blocks edited locally with those of the base (H6.2 E3).
              * @default false
              */
             regenerate_blocks: boolean;
@@ -2930,7 +2930,7 @@ export interface components {
             content: string;
             /**
              * Disk Sha256
-             * @description Bytes locales que se sustituyen (bloques regenerados).
+             * @description Local bytes that are replaced (regenerated blocks).
              */
             disk_sha256?: string | null;
         };
@@ -2997,7 +2997,7 @@ export interface components {
             truncated: boolean;
             /**
              * Skipped
-             * @description Enlaces simbólicos u objetos no regulares que no se listan.
+             * @description Symbolic links or non-regular objects that are not listed.
              */
             skipped: string[];
         };
@@ -3018,7 +3018,7 @@ export interface components {
             folders: components["schemas"]["DocumentFolderRead"][];
             /**
              * Uncommitted
-             * @description Cambios locales del checkout; null si no hay escritor Git configurado.
+             * @description Local changes of the checkout; null if no Git writer is configured.
              */
             uncommitted: components["schemas"]["DocumentChangeRead"][] | null;
             /** Warnings */
@@ -3043,7 +3043,7 @@ export interface components {
         };
         /**
          * ExecutorAgentRead
-         * @description Único escritor; el revisor fija su modelo y esfuerzo en cada tarea y revisión.
+         * @description Sole writer; the reviewer fixes its model and effort in each task and review.
          */
         ExecutorAgentRead: {
             /** Provider */
@@ -3407,10 +3407,10 @@ export interface components {
             attempts: number;
             /**
              * Cycle Count
-             * @description Ciclos de revisión del run; se leen por páginas en `/runs/{id}/cycles`.
+             * @description Review cycles of the run; read by pages at `/runs/{id}/cycles`.
              */
             cycle_count: number;
-            /** @description Último ciclo de revisión; null si el run aún no tiene ciclos. */
+            /** @description Last review cycle; null if the run has no cycles yet. */
             latest_cycle: components["schemas"]["CycleRead"] | null;
             acceptance: components["schemas"]["AcceptanceRead"] | null;
         };
@@ -3483,19 +3483,19 @@ export interface components {
             agents: components["schemas"]["ProjectAgentsRead"];
             /**
              * Documents
-             * @description Contrato documental unificado D088; null solo en lecturas de proyectos anteriores.
+             * @description Unified D088 documentary contract; null only when reading earlier projects.
              */
             documents?: "v2" | null;
             /**
              * Source
-             * @description D076: declarado en el TOML del operador o registrado desde la UI.
+             * @description D076: declared in the operator TOML or registered from the UI.
              * @default operator
              * @enum {string}
              */
             source: "operator" | "registry";
             /**
              * Registry Version
-             * @description Versión del registro congelada en sus jobs.
+             * @description Registry version frozen in its jobs.
              */
             registry_version?: number | null;
             /**
@@ -3547,7 +3547,7 @@ export interface components {
             locked_by_job: number | null;
             /**
              * Active Job
-             * @description Job del run en cola, en curso o pendiente de recuperación; null si el run no avanza sin una acción nueva.
+             * @description Job of the run queued, running or pending recovery; null if the run does not advance without a new action.
              */
             active_job: number | null;
         };
@@ -3587,12 +3587,12 @@ export interface components {
         MetricAccountingRead: {
             /**
              * Terminal
-             * @description Intentos con el total acumulado del terminal (reportado).
+             * @description Attempts with the accumulated terminal total (reported).
              */
             terminal: number;
             /**
              * Messages
-             * @description Intentos sin terminal con uso por mensaje deduplicado (derivado, parcial).
+             * @description Attempts without terminal, deduplicated per-message usage (derived, partial).
              */
             messages: number;
             /** Absent */
@@ -3606,7 +3606,7 @@ export interface components {
             attempts: number;
             /**
              * Basis
-             * @description Coste equivalente API reportado por el proveedor; no es factura ni cuota.
+             * @description API-equivalent cost reported by the provider; it is neither an invoice nor a quota.
              * @constant
              */
             basis: "api_equivalent_reported";
@@ -3618,19 +3618,19 @@ export interface components {
             accounting: components["schemas"]["MetricAccountingRead"];
             /**
              * Tokens
-             * @description uncached_input/cache_read/cache_write/output/reasoning (⊆ output)/total, cada uno sumado por separado. La entrada cruda no se agrega: su semántica depende del proveedor.
+             * @description uncached_input/cache_read/cache_write/output/reasoning (⊆ output)/total, each summed separately. Raw input is not summed: its meaning depends on the provider.
              */
             tokens: {
                 [key: string]: components["schemas"]["MetricSumRead"];
             };
             cost_usd: components["schemas"]["MetricAmountRead"];
-            /** @description num_turns de Claude. */
+            /** @description Claude num_turns. */
             turns_reported: components["schemas"]["MetricSumRead"];
-            /** @description Elementos completados del stream de Codex. */
+            /** @description Completed items of the Codex stream. */
             turns_derived: components["schemas"]["MetricSumRead"];
             tool_calls: components["schemas"]["MetricSumRead"];
             permission_denials: components["schemas"]["MetricSumRead"];
-            /** @description Suma de duraciones por intento: tiempo de agente, no transcurrido. */
+            /** @description Sum of durations per attempt: agent time, not elapsed time. */
             attempt_wall_ms: components["schemas"]["MetricSumRead"];
             reported_duration_ms: components["schemas"]["MetricSumRead"];
             api_duration_ms: components["schemas"]["MetricSumRead"];
@@ -3662,12 +3662,12 @@ export interface components {
         MetricSumRead: {
             /**
              * Sum
-             * @description Suma de los intentos que aportan el campo; null si ninguno lo aporta (no es cero).
+             * @description Sum over the attempts that contribute the field; null if none does (not zero).
              */
             sum: number | null;
             /**
              * Attempts
-             * @description Intentos que aportan un valor al campo.
+             * @description Attempts that contribute a value to the field.
              */
             attempts: number;
         };
@@ -3688,7 +3688,7 @@ export interface components {
             consumption: components["schemas"]["ConsumptionRead"];
             /**
              * Attempts Without Metrics
-             * @description Intentos resueltos sin fila: relleno explícito pendiente.
+             * @description Resolved attempts without a row: explicit backfill pending.
              */
             attempts_without_metrics: number;
             tasks: components["schemas"]["TaskQualityRead"];
@@ -4017,13 +4017,13 @@ export interface components {
             confirmed: true;
             /**
              * Chain Commits
-             * @description Alcance explícito «encadenar tareas y confirmar commits»: el supervisor encola cada tarea, el commit de cada aceptación elegible y la siguiente tarea; se detiene en el primer bloqueo. Nunca comprueba ni cierra.
+             * @description Explicit scope «chain tasks and confirm commits»: the supervisor queues each task, the commit of each eligible acceptance and the next task; it stops at the first blocker. It never checks or closes.
              * @default false
              */
             chain_commits: boolean;
             /**
              * Text
-             * @description Texto del plan congelado; obligatorio solo con chain_commits.
+             * @description Frozen plan text; required only with chain_commits.
              */
             text?: string | null;
         };
@@ -4087,7 +4087,7 @@ export interface components {
         };
         /**
          * PhaseClosureRead
-         * @description P010-T005: evidencia histórica de una fase CLOSED o ABANDONED; nunca se recalcula con el estado actual.
+         * @description P010-T005: historical evidence of a CLOSED or ABANDONED phase; never recomputed with the current state.
          */
         PhaseClosureRead: {
             /** Operation Id */
@@ -4109,44 +4109,44 @@ export interface components {
             commit: string | null;
             /**
              * Tag
-             * @description Resultado del tag creado al cerrar; null sin tag.
+             * @description Result of the tag created on closing; null without a tag.
              */
             tag: {
                 [key: string]: unknown;
             } | null;
             /** Archive */
             archive: string | null;
-            /** @description Check READY que autorizó el cierre; null al abandonar. */
+            /** @description READY check that authorized closing; null if abandoned. */
             check: components["schemas"]["PhaseClosureCheckRead"] | null;
             /**
              * Binding
-             * @description Base histórica: head, hash de la evidencia y documentos del READY.
+             * @description Historical base: head, evidence hash and documents of the READY.
              */
             binding: {
                 [key: string]: unknown;
             };
             /**
              * Documents
-             * @description Hashes esperados: base adoptada, renovación del cierre y ediciones confirmadas posteriores.
+             * @description Expected hashes: adopted base, closure renewal and later confirmed edits.
              */
             documents: {
                 [key: string]: string | null;
             };
             /**
              * Renewed
-             * @description Diferencias esperadas respecto de la base adoptada.
+             * @description Expected differences from the adopted base.
              */
             renewed: string[];
             /**
              * Changed
-             * @description Documentos vivos distintos de los esperados; null si hay sucesora o no se pudieron leer.
+             * @description Live documents unlike the expected ones; null with a successor or if unreadable.
              */
             changed: string[] | null;
             /** Archive Files */
             archive_files: string[];
             /**
              * Archive Altered
-             * @description Archivos del archivo que ya no tienen los bytes del cierre; null si no se pudieron leer.
+             * @description Archive files that no longer have the closure bytes; null if they could not be read.
              */
             archive_altered: string[] | null;
         };
@@ -4162,7 +4162,7 @@ export interface components {
             tasks: string[];
             /**
              * Documents
-             * @description Rutas del checkout; por defecto STATE y NEXT_STEPS del proyecto.
+             * @description Checkout paths; by default the project STATE and NEXT_STEPS.
              */
             documents?: string[] | null;
             /** Tag */
@@ -4357,7 +4357,7 @@ export interface components {
             definitions: components["schemas"]["PhaseDefinitionRead"][];
             /**
              * Tag Kind
-             * @description Tipo de tag que fijará el cierre según el proyecto registrado; null si no está registrado.
+             * @description Tag kind the closure will set according to the registered project; null if it is not registered.
              */
             tag_kind: ("lightweight" | "annotated") | null;
             /**
@@ -4385,13 +4385,13 @@ export interface components {
             /** Authorizations */
             authorizations: components["schemas"]["PhaseAuthorizationRead"][];
             ready: components["schemas"]["PhaseReadyRead"] | null;
-            /** @description Cierre o abandono registrado; null mientras la fase está abierta. */
+            /** @description Recorded closure or abandonment; null while the phase is open. */
             closure: components["schemas"]["PhaseClosureRead"] | null;
             /** Actions */
             actions: ("check" | "reconcile" | "reconcile_task" | "close" | "question" | "authorize_batch" | "batch_next" | "amend" | "abandon")[];
             /**
              * Successor
-             * @description Código de la fase posterior del checkout; null si esta es la última. Solo la última exporta su estado y decide sobre sus documentos.
+             * @description Code of the next phase of the checkout; null if this is the last. Only the last one exports its state and decides on its documents.
              */
             successor: string | null;
         };
@@ -4456,19 +4456,19 @@ export interface components {
         };
         /**
          * PhaseTaskRead
-         * @description Resumen de una tarea de la fase para su URL `PNNN-TNNN` (D076); sin runs, `latest` es null.
+         * @description Summary of a phase task for its `PNNN-TNNN` URL (D076); without runs, `latest` is null.
          */
         PhaseTaskRead: {
             /** Task Id */
             task_id: string;
             /**
              * Planned
-             * @description La tarea figura en la definición vigente de la fase.
+             * @description The task appears in the current definition of the phase.
              */
             planned: boolean;
             /**
              * Runs
-             * @description Runs de propósito task registrados para esta tarea.
+             * @description Runs with the task purpose recorded for this task.
              */
             runs: number;
             latest: components["schemas"]["ManagedRunSummaryRead"] | null;
@@ -4514,12 +4514,12 @@ export interface components {
             title: string;
             /**
              * Brief
-             * @description Brief Markdown (UTF-8, máximo 256 KiB) de una definición; null en la planificación y la importación.
+             * @description Markdown brief (UTF-8, at most 256 KiB) of a definition; null in planning and import.
              */
             brief?: string | null;
             /**
              * Phase Id
-             * @description Fase ACTIVE sin tareas que se planifica; se conservan las conversaciones históricas anteriores.
+             * @description ACTIVE phase without tasks that is planned; earlier historical conversations are kept.
              */
             phase_id?: string | null;
         };
@@ -4574,7 +4574,7 @@ export interface components {
             updated_at: string;
             /**
              * Created
-             * @description Definición o importación ya confirmada; sus borradores quedan cerrados.
+             * @description Definition or import already confirmed; its drafts are closed.
              */
             created: boolean;
             /** Turns */
@@ -4633,12 +4633,12 @@ export interface components {
             content: string;
             /**
              * Sha256
-             * @description Hash en disco: la base de la CAS para editarlo.
+             * @description Hash on disk: the CAS base for editing it.
              */
             sha256: string;
             /**
              * Known Sha256
-             * @description Hash que conoce el harness (último turno respondido o propuesta aplicada).
+             * @description Hash the harness knows (last answered turn or applied proposal).
              */
             known_sha256: string | null;
         };
@@ -4650,12 +4650,12 @@ export interface components {
             path: string;
             /**
              * Content
-             * @description Contenido completo; null borra el borrador.
+             * @description Complete content; null deletes the draft.
              */
             content: string | null;
             /**
              * Base Sha256
-             * @description CAS: hash actual en disco; null si no existe.
+             * @description CAS: current hash on disk; null if it does not exist.
              */
             base_sha256: string | null;
         };
@@ -4721,7 +4721,7 @@ export interface components {
             content_sha256: string;
             /**
              * Base Sha256
-             * @description CAS: hash del borrador que leyó el turno; null si no existía.
+             * @description CAS: hash of the draft the turn read; null if it did not exist.
              */
             base_sha256: string | null;
             /** Proposal Sha256 */
@@ -4778,21 +4778,21 @@ export interface components {
             request_sha256: string;
             /**
              * Drafts
-             * @description Borradores congelados (ruta, hash, tamaño); definición e importación.
+             * @description Frozen drafts (path, hash, size); definition and import.
              */
             drafts: {
                 [key: string]: unknown;
             }[];
             /**
              * User Edits
-             * @description Ediciones del usuario detectadas por hash al congelar.
+             * @description User edits detected by hash when freezing.
              */
             user_edits: {
                 [key: string]: unknown;
             }[];
             /**
              * Documents
-             * @description Documentos congelados; solo planificación de fase.
+             * @description Frozen documents; phase planning only.
              */
             documents: {
                 [key: string]: unknown;
@@ -5048,7 +5048,7 @@ export interface components {
             local_sha256: string;
             /**
              * Diff
-             * @description Lo que se descarta de los bytes locales al regenerar los bloques.
+             * @description What is discarded from the local bytes when regenerating the blocks.
              */
             diff: string;
         };
@@ -5081,7 +5081,7 @@ export interface components {
             available: boolean;
             /**
              * Diagnostic
-             * @description Por qué una fila activa no se compone con el TOML actual.
+             * @description Why an active row does not compose with the current TOML.
              */
             diagnostic: string | null;
             /** Row */
@@ -5128,7 +5128,7 @@ export interface components {
             available: boolean;
             /**
              * Diagnostic
-             * @description Por qué una fila activa no se compone con el TOML actual.
+             * @description Why an active row does not compose with the current TOML.
              */
             diagnostic: string | null;
         };
@@ -5139,7 +5139,7 @@ export interface components {
             preview_sha256: string;
             /**
              * Trust Root
-             * @description Confirmación aparte de la confianza: la raíz canónica exacta.
+             * @description Separate confirmation of trust: the exact canonical root.
              */
             trust_root?: string | null;
             /** Reason */
@@ -5150,13 +5150,13 @@ export interface components {
             project: components["schemas"]["RegisteredProjectSummaryRead"];
             /**
              * Replayed
-             * @description La misma confirmación ya estaba aplicada; no hay otra versión.
+             * @description The same confirmation was already applied; there is no other version.
              */
             replayed: boolean;
         };
         /**
          * RegistryChangeInput
-         * @description Alta (`register`), cambio (`update`) o baja lógica (`retire`); la composición se nombra, no se define.
+         * @description Register (`register`), change (`update`) or logical retirement (`retire`); the composition is named.
          */
         RegistryChangeInput: {
             /**
@@ -5168,12 +5168,12 @@ export interface components {
             project_id: string;
             /**
              * Expected Version
-             * @description 0 en el alta; la versión leída en un cambio o baja.
+             * @description 0 to register; the version read to change or retire.
              */
             expected_version: number;
             /**
              * Root
-             * @description Solo en el alta; la raíz no cambia después.
+             * @description Registration only; immutable afterwards.
              */
             root?: string | null;
             /** Composition */
@@ -5198,7 +5198,7 @@ export interface components {
             bootstrap_enabled: boolean;
             /**
              * Permission Authority
-             * @description Techo de permisos por capa; null: sin techo explícito.
+             * @description Permission ceiling per layer; null: no explicit ceiling.
              */
             permission_authority?: {
                 [key: string]: {
@@ -5214,12 +5214,12 @@ export interface components {
             profile: string;
             /**
              * Executables
-             * @description Solo los nombres; las rutas quedan en el TOML.
+             * @description Names only; the paths stay in the TOML.
              */
             executables: string[];
             /**
              * Environment Keys
-             * @description Solo las claves; los valores nunca salen del TOML.
+             * @description Keys only; the values never leave the TOML.
              */
             environment_keys: string[];
             /** Authorize Profile Commands */
@@ -5266,7 +5266,7 @@ export interface components {
         };
         /**
          * RegistryPolicyInput
-         * @description Política D052 del proyecto: selecciones, nunca ejecutables ni entornos.
+         * @description Project D052 policy: selections, never executables or environments.
          */
         RegistryPolicyInput: {
             /**
@@ -5314,7 +5314,7 @@ export interface components {
             changes: components["schemas"]["RegistryFieldChangeRead"][];
             /**
              * Versions
-             * @description Versiones que congelarán sus jobs; null en la baja.
+             * @description Versions its jobs will freeze; null on retirement.
              */
             versions: {
                 [key: string]: string | null;
@@ -5327,7 +5327,7 @@ export interface components {
             trust_statement: string | null;
             /**
              * Unfinished Jobs
-             * @description Trabajos sin terminar del checkout: bloquean la confirmación.
+             * @description Unfinished jobs of the checkout: they block the confirmation.
              */
             unfinished_jobs: number[];
             /** Configuration Blockers */
@@ -5371,7 +5371,7 @@ export interface components {
         };
         /**
          * ReviewerAgentRead
-         * @description D052: el revisor planifica, revisa, evalúa fases, conversa y propone el bootstrap (solo lectura).
+         * @description D052: the reviewer plans, reviews, evaluates phases, converses and proposes the bootstrap (read-only).
          */
         ReviewerAgentRead: {
             /** Provider */
@@ -5410,12 +5410,12 @@ export interface components {
             text: string;
             /**
              * Source Sha256
-             * @description Hash de la sección elegida en `/projects/{id}/task-sources` (P009-T020). El servidor vuelve a leer el documento y responde 409 si la tarea ya no existe o su texto cambió. Sin él, el texto se toma tal cual.
+             * @description Hash of the section chosen in `/projects/{id}/task-sources` (P009-T020). The server reads the document again and responds 409 if the task is gone or its text changed. Without it, the text is used as is.
              */
             source_sha256?: string | null;
             /**
              * Notes
-             * @description Notas adicionales para el agente. Se congelan en el contrato (`additional_notes`) y llegan al planificador, al ejecutor y al revisor; nunca amplían rutas, comandos ni permisos. Vacías equivalen a ausentes.
+             * @description Additional notes for the agent. They are frozen in the contract (`additional_notes`) and reach the planner, the executor and the reviewer; they never widen paths, commands or permissions. Empty equals absent.
              */
             notes?: string | null;
         };
@@ -5549,7 +5549,7 @@ export interface components {
             seconds_to_accept: number | null;
             /** Seconds To Commit */
             seconds_to_commit: number | null;
-            /** @description Última validación de la tarea. */
+            /** @description Last validation of the task. */
             tests: components["schemas"]["ValidationCountsRead"] | null;
             /** Stops */
             stops: components["schemas"]["StopRead"][];
@@ -5578,7 +5578,7 @@ export interface components {
             title: string;
             /**
              * Text
-             * @description Sección literal de la tarea, precedida de las restricciones compartidas si las hay.
+             * @description Literal section of the task, preceded by the shared constraints if there are any.
              */
             text: string;
             /** Sha256 */
@@ -5590,14 +5590,14 @@ export interface components {
             path: string;
             /**
              * Sha256
-             * @description Hash del documento leído; null si no existe.
+             * @description Hash of the document read; null if it does not exist.
              */
             sha256: string | null;
             /** Items */
             items: components["schemas"]["TaskSourceRead"][];
             /**
              * Diagnostics
-             * @description Tareas repetidas o documento ausente: no se ofrecen para encolar.
+             * @description Repeated tasks or missing document: not offered for queuing.
              */
             diagnostics: string[];
         };
@@ -5609,7 +5609,7 @@ export interface components {
             commands_failed: number;
             /**
              * Cases
-             * @description JUnit: passed, failed, error, skipped; null sin reportes legibles.
+             * @description JUnit: passed, failed, error, skipped; null if no readable report.
              */
             cases: {
                 [key: string]: number;
@@ -5649,17 +5649,17 @@ export interface components {
         ValidationGroupRead: {
             /**
              * Key
-             * @description Fase, tarea o raíz. Los ciclos no guardan su hora: no hay agrupación por día.
+             * @description Phase, task or root. Cycles do not store their time: there is no grouping by day.
              */
             key: string;
             /**
              * Validations
-             * @description Ciclos de validación de tareas, incluidas las revalidaciones.
+             * @description Task validation cycles, revalidations included.
              */
             validations: number;
             /**
              * Passed
-             * @description Validaciones con todos los comandos correctos y sin fallos nuevos en JUnit.
+             * @description Validations with every command passing and no new JUnit failures.
              */
             passed: number;
             /** Failed */
@@ -5670,7 +5670,7 @@ export interface components {
             commands_failed: number;
             /**
              * Cases
-             * @description JUnit: passed, failed, error, skipped; null sin reportes legibles.
+             * @description JUnit: passed, failed, error, skipped; null if no readable report.
              */
             cases: {
                 [key: string]: number;
@@ -5799,7 +5799,7 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
-                /** @description Obligatoria con valor 1 en mutaciones (protección CSRF). */
+                /** @description Required with value 1 on mutations (CSRF protection). */
                 "x-harness-local"?: string | null;
             };
             path?: never;
@@ -5858,7 +5858,7 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
-                /** @description Obligatoria con valor 1 en mutaciones (protección CSRF). */
+                /** @description Required with value 1 on mutations (CSRF protection). */
                 "x-harness-local"?: string | null;
             };
             path?: never;
@@ -5917,7 +5917,7 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
-                /** @description Obligatoria con valor 1 en mutaciones (protección CSRF). */
+                /** @description Required with value 1 on mutations (CSRF protection). */
                 "x-harness-local"?: string | null;
             };
             path: {
@@ -5978,7 +5978,7 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
-                /** @description Obligatoria con valor 1 en mutaciones (protección CSRF). */
+                /** @description Required with value 1 on mutations (CSRF protection). */
                 "x-harness-local"?: string | null;
             };
             path?: never;
@@ -6037,7 +6037,7 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
-                /** @description Obligatoria con valor 1 en mutaciones (protección CSRF). */
+                /** @description Required with value 1 on mutations (CSRF protection). */
                 "x-harness-local"?: string | null;
             };
             path: {
@@ -6098,7 +6098,7 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
-                /** @description Obligatoria con valor 1 en mutaciones (protección CSRF). */
+                /** @description Required with value 1 on mutations (CSRF protection). */
                 "x-harness-local"?: string | null;
             };
             path?: never;
@@ -6161,7 +6161,7 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
-                /** @description Obligatoria con valor 1 en mutaciones (protección CSRF). */
+                /** @description Required with value 1 on mutations (CSRF protection). */
                 "x-harness-local"?: string | null;
             };
             path?: never;
@@ -6224,7 +6224,7 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
-                /** @description Obligatoria con valor 1 en mutaciones (protección CSRF). */
+                /** @description Required with value 1 on mutations (CSRF protection). */
                 "x-harness-local"?: string | null;
             };
             path: {
@@ -6285,7 +6285,7 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
-                /** @description Obligatoria con valor 1 en mutaciones (protección CSRF). */
+                /** @description Required with value 1 on mutations (CSRF protection). */
                 "x-harness-local"?: string | null;
             };
             path: {
@@ -6351,7 +6351,7 @@ export interface operations {
                 task?: string | null;
             };
             header?: {
-                /** @description Obligatoria con valor 1 en mutaciones (protección CSRF). */
+                /** @description Required with value 1 on mutations (CSRF protection). */
                 "x-harness-local"?: string | null;
             };
             path: {
@@ -6412,9 +6412,9 @@ export interface operations {
         parameters: {
             query?: never;
             header: {
-                /** @description Misma clave y misma acción devuelven el mismo job. */
+                /** @description The same key and the same action return the same job. */
                 "Idempotency-Key": string;
-                /** @description Obligatoria con valor 1 en mutaciones (protección CSRF). */
+                /** @description Required with value 1 on mutations (CSRF protection). */
                 "x-harness-local"?: string | null;
             };
             path: {
@@ -6479,7 +6479,7 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
-                /** @description Obligatoria con valor 1 en mutaciones (protección CSRF). */
+                /** @description Required with value 1 on mutations (CSRF protection). */
                 "x-harness-local"?: string | null;
             };
             path: {
@@ -6540,7 +6540,7 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
-                /** @description Obligatoria con valor 1 en mutaciones (protección CSRF). */
+                /** @description Required with value 1 on mutations (CSRF protection). */
                 "x-harness-local"?: string | null;
             };
             path: {
@@ -6604,7 +6604,7 @@ export interface operations {
                 limit?: number;
             };
             header?: {
-                /** @description Obligatoria con valor 1 en mutaciones (protección CSRF). */
+                /** @description Required with value 1 on mutations (CSRF protection). */
                 "x-harness-local"?: string | null;
             };
             path: {
@@ -6668,7 +6668,7 @@ export interface operations {
                 limit?: number;
             };
             header?: {
-                /** @description Obligatoria con valor 1 en mutaciones (protección CSRF). */
+                /** @description Required with value 1 on mutations (CSRF protection). */
                 "x-harness-local"?: string | null;
             };
             path: {
@@ -6733,7 +6733,7 @@ export interface operations {
                 sha256?: string | null;
             };
             header?: {
-                /** @description Obligatoria con valor 1 en mutaciones (protección CSRF). */
+                /** @description Required with value 1 on mutations (CSRF protection). */
                 "x-harness-local"?: string | null;
             };
             path: {
@@ -6798,7 +6798,7 @@ export interface operations {
                 limit?: number;
             };
             header?: {
-                /** @description Obligatoria con valor 1 en mutaciones (protección CSRF). */
+                /** @description Required with value 1 on mutations (CSRF protection). */
                 "x-harness-local"?: string | null;
             };
             path: {
@@ -6862,7 +6862,7 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
-                /** @description Obligatoria con valor 1 en mutaciones (protección CSRF). */
+                /** @description Required with value 1 on mutations (CSRF protection). */
                 "x-harness-local"?: string | null;
             };
             path: {
@@ -6929,7 +6929,7 @@ export interface operations {
                 limit?: number;
             };
             header?: {
-                /** @description Obligatoria con valor 1 en mutaciones (protección CSRF). */
+                /** @description Required with value 1 on mutations (CSRF protection). */
                 "x-harness-local"?: string | null;
             };
             path: {
@@ -6990,7 +6990,7 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
-                /** @description Obligatoria con valor 1 en mutaciones (protección CSRF). */
+                /** @description Required with value 1 on mutations (CSRF protection). */
                 "x-harness-local"?: string | null;
             };
             path: {
@@ -7055,7 +7055,7 @@ export interface operations {
                 limit?: number;
             };
             header?: {
-                /** @description Obligatoria con valor 1 en mutaciones (protección CSRF). */
+                /** @description Required with value 1 on mutations (CSRF protection). */
                 "x-harness-local"?: string | null;
             };
             path: {
@@ -7116,9 +7116,9 @@ export interface operations {
         parameters: {
             query?: never;
             header: {
-                /** @description Misma clave y misma acción devuelven el mismo job. */
+                /** @description The same key and the same action return the same job. */
                 "Idempotency-Key": string;
-                /** @description Obligatoria con valor 1 en mutaciones (protección CSRF). */
+                /** @description Required with value 1 on mutations (CSRF protection). */
                 "x-harness-local"?: string | null;
             };
             path: {
@@ -7183,7 +7183,7 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
-                /** @description Obligatoria con valor 1 en mutaciones (protección CSRF). */
+                /** @description Required with value 1 on mutations (CSRF protection). */
                 "x-harness-local"?: string | null;
             };
             path: {
@@ -7244,7 +7244,7 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
-                /** @description Obligatoria con valor 1 en mutaciones (protección CSRF). */
+                /** @description Required with value 1 on mutations (CSRF protection). */
                 "x-harness-local"?: string | null;
             };
             path: {
@@ -7311,7 +7311,7 @@ export interface operations {
                 scope?: "core" | "profile" | "project";
             };
             header?: {
-                /** @description Obligatoria con valor 1 en mutaciones (protección CSRF). */
+                /** @description Required with value 1 on mutations (CSRF protection). */
                 "x-harness-local"?: string | null;
             };
             path: {
@@ -7374,7 +7374,7 @@ export interface operations {
                 scope?: "core" | "profile" | "project";
             };
             header?: {
-                /** @description Obligatoria con valor 1 en mutaciones (protección CSRF). */
+                /** @description Required with value 1 on mutations (CSRF protection). */
                 "x-harness-local"?: string | null;
             };
             path: {
@@ -7436,7 +7436,7 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
-                /** @description Obligatoria con valor 1 en mutaciones (protección CSRF). */
+                /** @description Required with value 1 on mutations (CSRF protection). */
                 "x-harness-local"?: string | null;
             };
             path: {
@@ -7504,7 +7504,7 @@ export interface operations {
                 scope?: "core" | "profile" | "project";
             };
             header?: {
-                /** @description Obligatoria con valor 1 en mutaciones (protección CSRF). */
+                /** @description Required with value 1 on mutations (CSRF protection). */
                 "x-harness-local"?: string | null;
             };
             path: {
@@ -7572,7 +7572,7 @@ export interface operations {
                 scope?: "core" | "profile" | "project";
             };
             header?: {
-                /** @description Obligatoria con valor 1 en mutaciones (protección CSRF). */
+                /** @description Required with value 1 on mutations (CSRF protection). */
                 "x-harness-local"?: string | null;
             };
             path: {
@@ -7641,7 +7641,7 @@ export interface operations {
                 after: string;
             };
             header?: {
-                /** @description Obligatoria con valor 1 en mutaciones (protección CSRF). */
+                /** @description Required with value 1 on mutations (CSRF protection). */
                 "x-harness-local"?: string | null;
             };
             path: {
@@ -7703,7 +7703,7 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
-                /** @description Obligatoria con valor 1 en mutaciones (protección CSRF). */
+                /** @description Required with value 1 on mutations (CSRF protection). */
                 "x-harness-local"?: string | null;
             };
             path: {
@@ -7764,7 +7764,7 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
-                /** @description Obligatoria con valor 1 en mutaciones (protección CSRF). */
+                /** @description Required with value 1 on mutations (CSRF protection). */
                 "x-harness-local"?: string | null;
             };
             path: {
@@ -7829,7 +7829,7 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
-                /** @description Obligatoria con valor 1 en mutaciones (protección CSRF). */
+                /** @description Required with value 1 on mutations (CSRF protection). */
                 "x-harness-local"?: string | null;
             };
             path: {
@@ -7895,7 +7895,7 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
-                /** @description Obligatoria con valor 1 en mutaciones (protección CSRF). */
+                /** @description Required with value 1 on mutations (CSRF protection). */
                 "x-harness-local"?: string | null;
             };
             path: {
@@ -7956,7 +7956,7 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
-                /** @description Obligatoria con valor 1 en mutaciones (protección CSRF). */
+                /** @description Required with value 1 on mutations (CSRF protection). */
                 "x-harness-local"?: string | null;
             };
             path: {
@@ -8021,7 +8021,7 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
-                /** @description Obligatoria con valor 1 en mutaciones (protección CSRF). */
+                /** @description Required with value 1 on mutations (CSRF protection). */
                 "x-harness-local"?: string | null;
             };
             path: {
@@ -8086,7 +8086,7 @@ export interface operations {
                 limit?: number;
             };
             header?: {
-                /** @description Obligatoria con valor 1 en mutaciones (protección CSRF). */
+                /** @description Required with value 1 on mutations (CSRF protection). */
                 "x-harness-local"?: string | null;
             };
             path: {
@@ -8148,7 +8148,7 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
-                /** @description Obligatoria con valor 1 en mutaciones (protección CSRF). */
+                /** @description Required with value 1 on mutations (CSRF protection). */
                 "x-harness-local"?: string | null;
             };
             path: {
@@ -8212,7 +8212,7 @@ export interface operations {
                 limit?: number;
             };
             header?: {
-                /** @description Obligatoria con valor 1 en mutaciones (protección CSRF). */
+                /** @description Required with value 1 on mutations (CSRF protection). */
                 "x-harness-local"?: string | null;
             };
             path: {
@@ -8273,9 +8273,9 @@ export interface operations {
         parameters: {
             query?: never;
             header: {
-                /** @description Misma clave y misma acción devuelven el mismo job. */
+                /** @description The same key and the same action return the same job. */
                 "Idempotency-Key": string;
-                /** @description Obligatoria con valor 1 en mutaciones (protección CSRF). */
+                /** @description Required with value 1 on mutations (CSRF protection). */
                 "x-harness-local"?: string | null;
             };
             path: {
@@ -8340,7 +8340,7 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
-                /** @description Obligatoria con valor 1 en mutaciones (protección CSRF). */
+                /** @description Required with value 1 on mutations (CSRF protection). */
                 "x-harness-local"?: string | null;
             };
             path: {
@@ -8405,7 +8405,7 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
-                /** @description Obligatoria con valor 1 en mutaciones (protección CSRF). */
+                /** @description Required with value 1 on mutations (CSRF protection). */
                 "x-harness-local"?: string | null;
             };
             path: {
@@ -8470,7 +8470,7 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
-                /** @description Obligatoria con valor 1 en mutaciones (protección CSRF). */
+                /** @description Required with value 1 on mutations (CSRF protection). */
                 "x-harness-local"?: string | null;
             };
             path: {
@@ -8536,7 +8536,7 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
-                /** @description Obligatoria con valor 1 en mutaciones (protección CSRF). */
+                /** @description Required with value 1 on mutations (CSRF protection). */
                 "x-harness-local"?: string | null;
             };
             path: {
@@ -8601,7 +8601,7 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
-                /** @description Obligatoria con valor 1 en mutaciones (protección CSRF). */
+                /** @description Required with value 1 on mutations (CSRF protection). */
                 "x-harness-local"?: string | null;
             };
             path: {
@@ -8667,9 +8667,9 @@ export interface operations {
         parameters: {
             query?: never;
             header: {
-                /** @description Misma clave y misma acción devuelven el mismo job. */
+                /** @description The same key and the same action return the same job. */
                 "Idempotency-Key": string;
-                /** @description Obligatoria con valor 1 en mutaciones (protección CSRF). */
+                /** @description Required with value 1 on mutations (CSRF protection). */
                 "x-harness-local"?: string | null;
             };
             path: {
@@ -8734,7 +8734,7 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
-                /** @description Obligatoria con valor 1 en mutaciones (protección CSRF). */
+                /** @description Required with value 1 on mutations (CSRF protection). */
                 "x-harness-local"?: string | null;
             };
             path: {
@@ -8799,9 +8799,9 @@ export interface operations {
         parameters: {
             query?: never;
             header: {
-                /** @description Misma clave y misma acción devuelven el mismo job. */
+                /** @description The same key and the same action return the same job. */
                 "Idempotency-Key": string;
-                /** @description Obligatoria con valor 1 en mutaciones (protección CSRF). */
+                /** @description Required with value 1 on mutations (CSRF protection). */
                 "x-harness-local"?: string | null;
             };
             path: {
@@ -8866,9 +8866,9 @@ export interface operations {
         parameters: {
             query?: never;
             header: {
-                /** @description Misma clave y misma acción devuelven el mismo job. */
+                /** @description The same key and the same action return the same job. */
                 "Idempotency-Key": string;
-                /** @description Obligatoria con valor 1 en mutaciones (protección CSRF). */
+                /** @description Required with value 1 on mutations (CSRF protection). */
                 "x-harness-local"?: string | null;
             };
             path: {
@@ -8933,7 +8933,7 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
-                /** @description Obligatoria con valor 1 en mutaciones (protección CSRF). */
+                /** @description Required with value 1 on mutations (CSRF protection). */
                 "x-harness-local"?: string | null;
             };
             path: {
@@ -8994,9 +8994,9 @@ export interface operations {
         parameters: {
             query?: never;
             header: {
-                /** @description Misma clave y misma acción devuelven el mismo job. */
+                /** @description The same key and the same action return the same job. */
                 "Idempotency-Key": string;
-                /** @description Obligatoria con valor 1 en mutaciones (protección CSRF). */
+                /** @description Required with value 1 on mutations (CSRF protection). */
                 "x-harness-local"?: string | null;
             };
             path: {
@@ -9061,7 +9061,7 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
-                /** @description Obligatoria con valor 1 en mutaciones (protección CSRF). */
+                /** @description Required with value 1 on mutations (CSRF protection). */
                 "x-harness-local"?: string | null;
             };
             path: {
@@ -9124,7 +9124,7 @@ export interface operations {
                 path: string;
             };
             header?: {
-                /** @description Obligatoria con valor 1 en mutaciones (protección CSRF). */
+                /** @description Required with value 1 on mutations (CSRF protection). */
                 "x-harness-local"?: string | null;
             };
             path: {
@@ -9185,7 +9185,7 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
-                /** @description Obligatoria con valor 1 en mutaciones (protección CSRF). */
+                /** @description Required with value 1 on mutations (CSRF protection). */
                 "x-harness-local"?: string | null;
             };
             path: {
@@ -9248,7 +9248,7 @@ export interface operations {
                 path: string;
             };
             header?: {
-                /** @description Obligatoria con valor 1 en mutaciones (protección CSRF). */
+                /** @description Required with value 1 on mutations (CSRF protection). */
                 "x-harness-local"?: string | null;
             };
             path: {
@@ -9258,7 +9258,7 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description Bytes de la imagen del checkout */
+            /** @description Bytes of the checkout image */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -9314,7 +9314,7 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
-                /** @description Obligatoria con valor 1 en mutaciones (protección CSRF). */
+                /** @description Required with value 1 on mutations (CSRF protection). */
                 "x-harness-local"?: string | null;
             };
             path: {
@@ -9379,9 +9379,9 @@ export interface operations {
         parameters: {
             query?: never;
             header: {
-                /** @description Misma clave y misma acción devuelven el mismo job. */
+                /** @description The same key and the same action return the same job. */
                 "Idempotency-Key": string;
-                /** @description Obligatoria con valor 1 en mutaciones (protección CSRF). */
+                /** @description Required with value 1 on mutations (CSRF protection). */
                 "x-harness-local"?: string | null;
             };
             path: {
@@ -9446,7 +9446,7 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
-                /** @description Obligatoria con valor 1 en mutaciones (protección CSRF). */
+                /** @description Required with value 1 on mutations (CSRF protection). */
                 "x-harness-local"?: string | null;
             };
             path: {
@@ -9511,9 +9511,9 @@ export interface operations {
         parameters: {
             query?: never;
             header: {
-                /** @description Misma clave y misma acción devuelven el mismo job. */
+                /** @description The same key and the same action return the same job. */
                 "Idempotency-Key": string;
-                /** @description Obligatoria con valor 1 en mutaciones (protección CSRF). */
+                /** @description Required with value 1 on mutations (CSRF protection). */
                 "x-harness-local"?: string | null;
             };
             path: {
@@ -9582,7 +9582,7 @@ export interface operations {
                 task?: string | null;
             };
             header?: {
-                /** @description Obligatoria con valor 1 en mutaciones (protección CSRF). */
+                /** @description Required with value 1 on mutations (CSRF protection). */
                 "x-harness-local"?: string | null;
             };
             path?: never;
@@ -9648,7 +9648,7 @@ export interface operations {
                 limit?: number;
             };
             header?: {
-                /** @description Obligatoria con valor 1 en mutaciones (protección CSRF). */
+                /** @description Required with value 1 on mutations (CSRF protection). */
                 "x-harness-local"?: string | null;
             };
             path?: never;
@@ -9716,7 +9716,7 @@ export interface operations {
                 limit?: number;
             };
             header?: {
-                /** @description Obligatoria con valor 1 en mutaciones (protección CSRF). */
+                /** @description Required with value 1 on mutations (CSRF protection). */
                 "x-harness-local"?: string | null;
             };
             path?: never;
@@ -9783,7 +9783,7 @@ export interface operations {
                 limit?: number;
             };
             header?: {
-                /** @description Obligatoria con valor 1 en mutaciones (protección CSRF). */
+                /** @description Required with value 1 on mutations (CSRF protection). */
                 "x-harness-local"?: string | null;
             };
             path?: never;
@@ -9848,7 +9848,7 @@ export interface operations {
                 limit?: number;
             };
             header?: {
-                /** @description Obligatoria con valor 1 en mutaciones (protección CSRF). */
+                /** @description Required with value 1 on mutations (CSRF protection). */
                 "x-harness-local"?: string | null;
             };
             path?: never;
@@ -9914,7 +9914,7 @@ export interface operations {
                 limit?: number;
             };
             header?: {
-                /** @description Obligatoria con valor 1 en mutaciones (protección CSRF). */
+                /** @description Required with value 1 on mutations (CSRF protection). */
                 "x-harness-local"?: string | null;
             };
             path?: never;
@@ -9973,7 +9973,7 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
-                /** @description Obligatoria con valor 1 en mutaciones (protección CSRF). */
+                /** @description Required with value 1 on mutations (CSRF protection). */
                 "x-harness-local"?: string | null;
             };
             path: {
@@ -10034,9 +10034,9 @@ export interface operations {
         parameters: {
             query?: never;
             header: {
-                /** @description Misma clave y misma acción devuelven el mismo job. */
+                /** @description The same key and the same action return the same job. */
                 "Idempotency-Key": string;
-                /** @description Obligatoria con valor 1 en mutaciones (protección CSRF). */
+                /** @description Required with value 1 on mutations (CSRF protection). */
                 "x-harness-local"?: string | null;
             };
             path: {
@@ -10101,7 +10101,7 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
-                /** @description Obligatoria con valor 1 en mutaciones (protección CSRF). */
+                /** @description Required with value 1 on mutations (CSRF protection). */
                 "x-harness-local"?: string | null;
             };
             path: {
@@ -10162,9 +10162,9 @@ export interface operations {
         parameters: {
             query?: never;
             header: {
-                /** @description Misma clave y misma acción devuelven el mismo job. */
+                /** @description The same key and the same action return the same job. */
                 "Idempotency-Key": string;
-                /** @description Obligatoria con valor 1 en mutaciones (protección CSRF). */
+                /** @description Required with value 1 on mutations (CSRF protection). */
                 "x-harness-local"?: string | null;
             };
             path: {
@@ -10229,7 +10229,7 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
-                /** @description Obligatoria con valor 1 en mutaciones (protección CSRF). */
+                /** @description Required with value 1 on mutations (CSRF protection). */
                 "x-harness-local"?: string | null;
             };
             path: {
@@ -10294,9 +10294,9 @@ export interface operations {
         parameters: {
             query?: never;
             header: {
-                /** @description Misma clave y misma acción devuelven el mismo job. */
+                /** @description The same key and the same action return the same job. */
                 "Idempotency-Key": string;
-                /** @description Obligatoria con valor 1 en mutaciones (protección CSRF). */
+                /** @description Required with value 1 on mutations (CSRF protection). */
                 "x-harness-local"?: string | null;
             };
             path: {
@@ -10362,7 +10362,7 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
-                /** @description Obligatoria con valor 1 en mutaciones (protección CSRF). */
+                /** @description Required with value 1 on mutations (CSRF protection). */
                 "x-harness-local"?: string | null;
             };
             path: {
@@ -10428,7 +10428,7 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
-                /** @description Obligatoria con valor 1 en mutaciones (protección CSRF). */
+                /** @description Required with value 1 on mutations (CSRF protection). */
                 "x-harness-local"?: string | null;
             };
             path: {
@@ -10489,9 +10489,9 @@ export interface operations {
         parameters: {
             query?: never;
             header: {
-                /** @description Misma clave y misma acción devuelven el mismo job. */
+                /** @description The same key and the same action return the same job. */
                 "Idempotency-Key": string;
-                /** @description Obligatoria con valor 1 en mutaciones (protección CSRF). */
+                /** @description Required with value 1 on mutations (CSRF protection). */
                 "x-harness-local"?: string | null;
             };
             path: {
@@ -10556,7 +10556,7 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
-                /** @description Obligatoria con valor 1 en mutaciones (protección CSRF). */
+                /** @description Required with value 1 on mutations (CSRF protection). */
                 "x-harness-local"?: string | null;
             };
             path: {
@@ -10618,7 +10618,7 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
-                /** @description Obligatoria con valor 1 en mutaciones (protección CSRF). */
+                /** @description Required with value 1 on mutations (CSRF protection). */
                 "x-harness-local"?: string | null;
             };
             path: {
@@ -10680,9 +10680,9 @@ export interface operations {
         parameters: {
             query?: never;
             header: {
-                /** @description Misma clave y misma acción devuelven el mismo job. */
+                /** @description The same key and the same action return the same job. */
                 "Idempotency-Key": string;
-                /** @description Obligatoria con valor 1 en mutaciones (protección CSRF). */
+                /** @description Required with value 1 on mutations (CSRF protection). */
                 "x-harness-local"?: string | null;
             };
             path: {
@@ -10748,7 +10748,7 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
-                /** @description Obligatoria con valor 1 en mutaciones (protección CSRF). */
+                /** @description Required with value 1 on mutations (CSRF protection). */
                 "x-harness-local"?: string | null;
             };
             path: {
@@ -10810,7 +10810,7 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
-                /** @description Obligatoria con valor 1 en mutaciones (protección CSRF). */
+                /** @description Required with value 1 on mutations (CSRF protection). */
                 "x-harness-local"?: string | null;
             };
             path: {
@@ -10878,7 +10878,7 @@ export interface operations {
                 path: string;
             };
             header?: {
-                /** @description Obligatoria con valor 1 en mutaciones (protección CSRF). */
+                /** @description Required with value 1 on mutations (CSRF protection). */
                 "x-harness-local"?: string | null;
             };
             path: {
@@ -10940,7 +10940,7 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
-                /** @description Obligatoria con valor 1 en mutaciones (protección CSRF). */
+                /** @description Required with value 1 on mutations (CSRF protection). */
                 "x-harness-local"?: string | null;
             };
             path: {
@@ -11007,7 +11007,7 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
-                /** @description Obligatoria con valor 1 en mutaciones (protección CSRF). */
+                /** @description Required with value 1 on mutations (CSRF protection). */
                 "x-harness-local"?: string | null;
             };
             path: {
@@ -11074,7 +11074,7 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
-                /** @description Obligatoria con valor 1 en mutaciones (protección CSRF). */
+                /** @description Required with value 1 on mutations (CSRF protection). */
                 "x-harness-local"?: string | null;
             };
             path: {
@@ -11140,7 +11140,7 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
-                /** @description Obligatoria con valor 1 en mutaciones (protección CSRF). */
+                /** @description Required with value 1 on mutations (CSRF protection). */
                 "x-harness-local"?: string | null;
             };
             path: {
@@ -11201,7 +11201,7 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
-                /** @description Obligatoria con valor 1 en mutaciones (protección CSRF). */
+                /** @description Required with value 1 on mutations (CSRF protection). */
                 "x-harness-local"?: string | null;
             };
             path: {
@@ -11263,9 +11263,9 @@ export interface operations {
         parameters: {
             query?: never;
             header: {
-                /** @description Misma clave y misma acción devuelven el mismo job. */
+                /** @description The same key and the same action return the same job. */
                 "Idempotency-Key": string;
-                /** @description Obligatoria con valor 1 en mutaciones (protección CSRF). */
+                /** @description Required with value 1 on mutations (CSRF protection). */
                 "x-harness-local"?: string | null;
             };
             path: {
@@ -11331,7 +11331,7 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
-                /** @description Obligatoria con valor 1 en mutaciones (protección CSRF). */
+                /** @description Required with value 1 on mutations (CSRF protection). */
                 "x-harness-local"?: string | null;
             };
             path: {
@@ -11393,9 +11393,9 @@ export interface operations {
         parameters: {
             query?: never;
             header: {
-                /** @description Misma clave y misma acción devuelven el mismo job. */
+                /** @description The same key and the same action return the same job. */
                 "Idempotency-Key": string;
-                /** @description Obligatoria con valor 1 en mutaciones (protección CSRF). */
+                /** @description Required with value 1 on mutations (CSRF protection). */
                 "x-harness-local"?: string | null;
             };
             path: {
@@ -11461,7 +11461,7 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
-                /** @description Obligatoria con valor 1 en mutaciones (protección CSRF). */
+                /** @description Required with value 1 on mutations (CSRF protection). */
                 "x-harness-local"?: string | null;
             };
             path?: never;
@@ -11520,7 +11520,7 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
-                /** @description Obligatoria con valor 1 en mutaciones (protección CSRF). */
+                /** @description Required with value 1 on mutations (CSRF protection). */
                 "x-harness-local"?: string | null;
             };
             path?: never;
@@ -11583,9 +11583,9 @@ export interface operations {
         parameters: {
             query?: never;
             header: {
-                /** @description Misma clave y misma acción devuelven el mismo job. */
+                /** @description The same key and the same action return the same job. */
                 "Idempotency-Key": string;
-                /** @description Obligatoria con valor 1 en mutaciones (protección CSRF). */
+                /** @description Required with value 1 on mutations (CSRF protection). */
                 "x-harness-local"?: string | null;
             };
             path?: never;
@@ -11648,7 +11648,7 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
-                /** @description Obligatoria con valor 1 en mutaciones (protección CSRF). */
+                /** @description Required with value 1 on mutations (CSRF protection). */
                 "x-harness-local"?: string | null;
             };
             path?: never;
@@ -11711,9 +11711,9 @@ export interface operations {
         parameters: {
             query?: never;
             header: {
-                /** @description Misma clave y misma acción devuelven el mismo job. */
+                /** @description The same key and the same action return the same job. */
                 "Idempotency-Key": string;
-                /** @description Obligatoria con valor 1 en mutaciones (protección CSRF). */
+                /** @description Required with value 1 on mutations (CSRF protection). */
                 "x-harness-local"?: string | null;
             };
             path?: never;
@@ -11776,7 +11776,7 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
-                /** @description Obligatoria con valor 1 en mutaciones (protección CSRF). */
+                /** @description Required with value 1 on mutations (CSRF protection). */
                 "x-harness-local"?: string | null;
             };
             path: {
@@ -11837,7 +11837,7 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
-                /** @description Obligatoria con valor 1 en mutaciones (protección CSRF). */
+                /** @description Required with value 1 on mutations (CSRF protection). */
                 "x-harness-local"?: string | null;
             };
             path: {
@@ -11902,9 +11902,9 @@ export interface operations {
         parameters: {
             query?: never;
             header: {
-                /** @description Misma clave y misma acción devuelven el mismo job. */
+                /** @description The same key and the same action return the same job. */
                 "Idempotency-Key": string;
-                /** @description Obligatoria con valor 1 en mutaciones (protección CSRF). */
+                /** @description Required with value 1 on mutations (CSRF protection). */
                 "x-harness-local"?: string | null;
             };
             path: {
@@ -11969,9 +11969,9 @@ export interface operations {
         parameters: {
             query?: never;
             header: {
-                /** @description Misma clave y misma acción devuelven el mismo job. */
+                /** @description The same key and the same action return the same job. */
                 "Idempotency-Key": string;
-                /** @description Obligatoria con valor 1 en mutaciones (protección CSRF). */
+                /** @description Required with value 1 on mutations (CSRF protection). */
                 "x-harness-local"?: string | null;
             };
             path: {
@@ -12036,7 +12036,7 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
-                /** @description Obligatoria con valor 1 en mutaciones (protección CSRF). */
+                /** @description Required with value 1 on mutations (CSRF protection). */
                 "x-harness-local"?: string | null;
             };
             path: {
@@ -12097,7 +12097,7 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
-                /** @description Obligatoria con valor 1 en mutaciones (protección CSRF). */
+                /** @description Required with value 1 on mutations (CSRF protection). */
                 "x-harness-local"?: string | null;
             };
             path: {
@@ -12162,9 +12162,9 @@ export interface operations {
         parameters: {
             query?: never;
             header: {
-                /** @description Misma clave y misma acción devuelven el mismo job. */
+                /** @description The same key and the same action return the same job. */
                 "Idempotency-Key": string;
-                /** @description Obligatoria con valor 1 en mutaciones (protección CSRF). */
+                /** @description Required with value 1 on mutations (CSRF protection). */
                 "x-harness-local"?: string | null;
             };
             path: {
@@ -12229,7 +12229,7 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
-                /** @description Obligatoria con valor 1 en mutaciones (protección CSRF). */
+                /** @description Required with value 1 on mutations (CSRF protection). */
                 "x-harness-local"?: string | null;
             };
             path: {
@@ -12290,9 +12290,9 @@ export interface operations {
         parameters: {
             query?: never;
             header: {
-                /** @description Misma clave y misma acción devuelven el mismo job. */
+                /** @description The same key and the same action return the same job. */
                 "Idempotency-Key": string;
-                /** @description Obligatoria con valor 1 en mutaciones (protección CSRF). */
+                /** @description Required with value 1 on mutations (CSRF protection). */
                 "x-harness-local"?: string | null;
             };
             path: {
@@ -12357,9 +12357,9 @@ export interface operations {
         parameters: {
             query?: never;
             header: {
-                /** @description Misma clave y misma acción devuelven el mismo job. */
+                /** @description The same key and the same action return the same job. */
                 "Idempotency-Key": string;
-                /** @description Obligatoria con valor 1 en mutaciones (protección CSRF). */
+                /** @description Required with value 1 on mutations (CSRF protection). */
                 "x-harness-local"?: string | null;
             };
             path: {
@@ -12464,7 +12464,7 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
-                /** @description Obligatoria con valor 1 en mutaciones (protección CSRF). */
+                /** @description Required with value 1 on mutations (CSRF protection). */
                 "x-harness-local"?: string | null;
             };
             path?: never;

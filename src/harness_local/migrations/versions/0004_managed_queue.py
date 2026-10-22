@@ -1,4 +1,4 @@
-"""Autoridad gestionada separada, jobs y exclusión H2.2."""
+"""Separate managed authority, jobs and exclusion H2.2."""
 from alembic import op
 import sqlalchemy as sa
 

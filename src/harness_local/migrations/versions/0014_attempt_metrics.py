@@ -1,4 +1,4 @@
-"""H6.4: métricas por intento materializadas con su resultado; el relleno de intentos anteriores es explícito."""
+"""H6.4: per-attempt metrics materialized with their result; backfilling earlier attempts is explicit."""
 from alembic import op
 import sqlalchemy as sa
 
@@ -63,8 +63,8 @@ def upgrade():
 
 
 def downgrade():
-    # Datos derivados: el relleno los reconstruye desde result_json (terminal-2 sella sus contadores). Solo
-    # lo leído de un stdout de antes de 0014 podría no reconstruirse si ese stream se retira después (H5.3).
+    # Derived data: the backfill rebuilds them from result_json (terminal-2 seals its counters). Only
+    # what was read from a stdout before 0014 might not be rebuilt if that stream is later retired (H5.3).
     if op.get_bind().execute(sa.text("SELECT count(*) FROM attempt_metrics WHERE source = 'backfill' "
                                      "AND diagnostics LIKE '%stream_verified%'")).scalar():
         raise RuntimeError('Stream-derived attempt metrics cannot be represented before 0014; keep this revision')

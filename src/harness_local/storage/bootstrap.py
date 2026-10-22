@@ -1,11 +1,11 @@
-"""H4.2: bootstrap como run/job existente; la fase se adopta junto al fin del job.
+"""H4.2: bootstrap as an existing run/job; the phase is adopted together with the end of the job.
 
-H6.5: con el layout v2 la vista previa sale de la conversación de definición y de los borradores del
-destino (`storage/planning.py`); la intención, el adaptador y la recuperación son los mismos.
+H6.5: with the v2 layout the preview comes from the definition conversation and the drafts of the
+target (`storage/planning.py`); the intent, the adapter and the recovery are the same.
 
-D088: la creación v1 (formulario, plantilla `project-foundation` y descubrimiento de un turno) está retirada;
-un contexto sin layout se rechaza antes de cualquier lectura o efecto. Las operaciones v1 ya registradas se
-siguen leyendo."""
+D088: the v1 creation (form, `project-foundation` template and one-turn discovery) is retired;
+a context without a layout is rejected before any read or effect. The v1 operations already recorded
+are still read."""
 from uuid import uuid4
 
 from sqlalchemy import select
@@ -42,7 +42,7 @@ def settle(managed, session, run, outcome):
     if op.status != 'QUEUED' or outcome != {'commit': op.intent['commit'], 'tree': op.intent['tree'],
             'documents': {d['path']: d['sha256'] for d in op.preview['documents']}}:
         raise Conflict('Bootstrap result must match its sealed intent')
-    # La base adoptada son los documentos de la fase (v1: los seis; v2: ROADMAP, DECISIONS, STATE, NEXT_STEPS).
+    # The adopted base is the phase documents (v1: the six; v2: ROADMAP, DECISIONS, STATE, NEXT_STEPS).
     baseline = {path: outcome['documents'][path] for path in op.preview['phase']['documents']}
     pid = insert_phase(managed, session, op.root, op.preview['phase'], baseline,
                        source={'bootstrap_id': op.id, 'run_id': run.id, 'commit': outcome['commit']})

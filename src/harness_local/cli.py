@@ -1,4 +1,4 @@
-"""Índice, backup, retención, relleno de métricas y version/help explícitos; sin inferencia."""
+"""Index, backup, retention, metrics backfill and explicit version/help; no inference."""
 import argparse
 import json
 from pathlib import Path
@@ -92,7 +92,7 @@ def main(argv: list[str] | None = None) -> int:
             if args.preflight:
                 from harness_local.adapters.cli_agents import access_for
                 from harness_local.adapters.cli_diagnostics import preflight_config
-                # Defaults y capacidades por rol de cada preset; solo version/help explícito.
+                # Defaults and per-role capabilities of each preset; explicit version/help only.
                 result['preflight'] = {agent: preflight_config(cli, access=access_for(agent.rsplit('.', 1)[-1]))
                                        for agent, cli in agents.items()}
             print(json.dumps(result, ensure_ascii=False, indent=2))

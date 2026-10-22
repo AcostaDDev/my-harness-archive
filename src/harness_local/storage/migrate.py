@@ -1,9 +1,9 @@
-"""Migración local con instantánea previa: base nueva, al día o actualizada tras copiar.
+"""Local migration with a prior snapshot: new database, up to date, or updated after copying.
 
-Las migraciones solo cambian SQLite; los artefactos externos no se tocan. Por eso
-la instantánea es de la base (API de backup de SQLite, integridad y SHA-256) y no
-un bundle H5.2, que exige el esquema actual. Nunca restaura ni borra nada: ante un
-fallo conserva base e instantánea para inspección.
+Migrations only change SQLite; external artifacts are not touched. That is why
+the snapshot is of the database (SQLite backup API, integrity and SHA-256) and not
+an H5.2 bundle, which requires the current schema. It never restores or deletes anything: on a
+failure it keeps database and snapshot for inspection.
 """
 from contextlib import closing
 from dataclasses import dataclass
@@ -65,7 +65,7 @@ def _revision(path):
 
 
 def _writers_alive(path):
-    """Un servicio o escritor vivo sobre la base impide migrarla."""
+    """A live service or writer on the database prevents migrating it."""
     from harness_local.adapters.processes import liveness
     with closing(_connect(path, 'ro')) as db:
         tables = {row[0] for row in db.execute("SELECT name FROM sqlite_master WHERE type='table'")}
@@ -114,7 +114,7 @@ def _snapshot(path, revision, target, directory):
     directory.mkdir(parents=True, exist_ok=True, mode=0o700)
     stamp = datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%S%fZ')
     destination = directory / f'{path.stem}-{revision}-{stamp}.sqlite3'
-    # Exclusivo: nunca sobrescribir una copia anterior.
+    # Exclusive: never overwrite an earlier copy.
     with destination.open('xb'):
         pass
     os.chmod(destination, 0o600)
@@ -144,12 +144,12 @@ def _snapshot(path, revision, target, directory):
 
 
 def prepare_database(value: str, snapshots: Path) -> MigrationOutcome:
-    """Crear si falta; si hay migraciones pendientes, copiar y después `upgrade head`."""
+    """Create if missing; if migrations are pending, copy and then `upgrade head`."""
     return _prepare_database(value, snapshots, create=True)
 
 
 def migrate_database(value: str, snapshots: Path, *, writers_stopped: bool = False) -> MigrationOutcome:
-    """Entrada instalada: nunca crea bases ni infiere que el servicio esté detenido."""
+    """Installed entry point: never creates databases or infers that the service is stopped."""
     if writers_stopped is not True:
         raise MigrationRefused('Detener servicio, observadores y escritores; se requiere --writers-stopped.')
     path, _ = local_database(value)

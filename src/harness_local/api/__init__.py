@@ -1,1 +1,1 @@
-"""Contratos HTTP y composición del esqueleto."""
+"""HTTP contracts and composition of the skeleton."""

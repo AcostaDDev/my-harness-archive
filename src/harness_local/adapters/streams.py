@@ -23,7 +23,7 @@ class AgentStream:
         self.observed = {}
         self.records = 0
         self.offset = 0
-        # H6.4: contadores derivados de la misma lectura (normalización terminal-2).
+        # H6.4: counters derived from the same read (terminal-2 normalization).
         self.metrics = StreamMetrics(provider)
 
     def feed(self, chunk):

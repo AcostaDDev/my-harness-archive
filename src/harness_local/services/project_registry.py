@@ -1,12 +1,12 @@
-"""Alta, cambio y baja de proyectos desde la UI sobre `local-config-3/4/5` (D078/D095).
+"""Registration, change and retirement of projects from the UI over `local-config-3/4/5` (D078/D095).
 
-El TOML sigue siendo la autoridad de lo que se ejecuta; el registro solo guarda
-datos no ejecutables (raíz canónica, confianza, composición nombrada, política,
-documentos, bootstrap, tag y techo de permisos). Cada cambio pasa por una vista
-previa cuyo hash liga la acción, la versión esperada, la fila resultante y la
-composición congelada; la confianza en la raíz es una confirmación aparte. El
-proyecto se incorpora al runtime sin reiniciar: la versión del registro entra en
-el hash congelado, y un job admitido con otra composición queda en cuarentena.
+The TOML remains the authority for what runs; the registry only stores
+non-executable data (canonical root, trust, named composition, policy,
+documents, bootstrap, tag and permission ceiling). Each change goes through a
+preview whose hash binds the action, the expected version, the resulting row and the
+frozen composition; trust in the root is a separate confirmation. The
+project joins the runtime without restarting: the registry version enters
+the frozen hash, and a job admitted with another composition is quarantined.
 """
 import hashlib
 import os
@@ -19,7 +19,7 @@ from harness_local.services.managed_runtime import PROJECT_ID, ManagedConfig, va
 from harness_local.storage.permissions import actor
 from harness_local.storage.registry import ProjectRegistryRepository, RegistryConflict
 
-# `/projects/new` es la página de alta; el resto de ids siguen la forma de `PROJECT_ID`.
+# `/projects/new` is the registration page; the other ids follow the `PROJECT_ID` form.
 RESERVED_IDS = frozenset({'new'})
 ACTIONS = ('register', 'update', 'retire')
 TRUST = ('Confío en el contenido de este checkout: los agentes y los comandos de la composición elegida '
@@ -37,7 +37,7 @@ def digest(value):
 
 
 def _location(path):
-    """Identidad del ancestro existente y sufijo pendiente; también reconoce alias de caso del filesystem."""
+    """Identity of the existing ancestor and pending suffix; also recognizes filesystem case aliases."""
     suffix = []
     for current in (path, *path.parents):
         try:
@@ -62,7 +62,7 @@ def _inside(path, other):
 
 
 def canonical_root(value, authorized):
-    """Raíz absoluta, existente, sin enlaces en ningún componente y bajo una raíz autorizada."""
+    """Absolute, existing root, without links in any component and under an authorized root."""
     if not isinstance(value, str) or not value or '\0' in value:
         raise RegistryError(422, 'root_invalid', 'Ruta de texto requerida.')
     path = Path(value)
@@ -92,7 +92,7 @@ def canonical_root(value, authorized):
 
 
 class ProjectRegistry:
-    """Servicio del registro dentro del runtime gestionado; un cambio cada vez en este proceso."""
+    """Registry service inside the managed runtime; one change at a time in this process."""
 
     def __init__(self, runtime):
         self.runtime = runtime
@@ -112,7 +112,7 @@ class ProjectRegistry:
                                 '(requiere local-config-3/4/5 con [registration] y al menos una composición).')
         return self.registrar
 
-    # --- composición ------------------------------------------------------------------
+    # --- composition ------------------------------------------------------------------
 
     def _compose(self, row, registry, *, new_directory=False):
         from harness_local.services.local_config import LocalConfigError
@@ -121,7 +121,7 @@ class ProjectRegistry:
             composed = registrar.compose(row, 'registro', registry=registry, new_directory=new_directory)
             if new_directory:
                 return composed
-            # Mismas comprobaciones que un proyecto del TOML (techo de permisos, bootstrap, tag).
+            # Same checks as a TOML project (permission ceiling, bootstrap, tag).
             validate_projects(ManagedConfig((composed[0],), ports_factory=registrar.ports,
                                             commit_factory=registrar.writer))
         except (LocalConfigError, ValueError) as exc:
@@ -129,7 +129,7 @@ class ProjectRegistry:
         return composed
 
     def load(self):
-        """Al arrancar: compone las filas activas. Una fila que ya no compone queda no disponible, con motivo."""
+        """At startup: composes the active rows. A row that no longer composes becomes unavailable, with a reason."""
         self.unavailable = {}
         for item in self.repository.rows():
             if item['status'] != 'ACTIVE':
@@ -145,8 +145,8 @@ class ProjectRegistry:
                 self.unavailable[item['id']] = str(exc)
 
     def _conflicts(self, project_id, root, *, registered=False, creation_id=None):
-        """Ids únicos frente al TOML; raíces ni iguales ni anidadas; estado del servicio fuera."""
-        # Las intenciones inciertas siguen reservadas, también frente al alta existente D078.
+        """Ids unique against the TOML; roots neither equal nor nested; service state outside."""
+        # Uncertain intents remain reserved, also against the existing D078 registration.
         from harness_local.storage.project_creation import CreationRepository
         for operation in CreationRepository(self.runtime.repository).operations():
             if (operation['reserved'] and operation['id'] != creation_id
@@ -164,7 +164,7 @@ class ProjectRegistry:
             if path is not None and _inside(root, path):
                 raise RegistryError(422, 'root_service_state', f'La raíz no puede contener {name} del servicio.')
 
-    # --- lecturas ---------------------------------------------------------------------
+    # --- reads ------------------------------------------------------------------------
 
     def options(self):
         registrar = self.registrar
@@ -196,7 +196,7 @@ class ProjectRegistry:
                 if self.registrar and self.registrar.format == 'local-config-5' else [],
                 'history': self.repository.history(project_id)}
 
-    # --- vista previa y confirmación --------------------------------------------------
+    # --- preview and confirmation -----------------------------------------------------
 
     def _target(self, body, current):
         action = body['action']

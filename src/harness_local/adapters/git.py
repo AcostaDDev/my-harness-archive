@@ -1,10 +1,10 @@
-"""Adaptadores Git H2.4: captura completa, worktrees por tarea y commit idempotente.
+"""Git adapters H2.4: complete capture, per-task worktrees and idempotent commit.
 
-Todo comando usa un entorno explícito y mínimo: sin configuración global/de
-sistema, sin hooks, sin fsmonitor ni mantenimiento automático. La captura trabaja
-con copias temporales del índice y no modifica HEAD, índice real ni archivos.
-Solo se escriben objetos Git (blobs/árboles). No hay filtros definidos fuera del
-repositorio ni sandbox: un worktree separa trabajo, no aísla seguridad.
+Every command uses an explicit, minimal environment: no global/system
+configuration, no hooks, no fsmonitor or automatic maintenance. Capture works
+on temporary copies of the index and does not modify HEAD, the real index or files.
+Only Git objects (blobs/trees) are written. There are no filters defined outside the
+repository and no sandbox: a worktree separates work, it does not isolate security.
 """
 
 from dataclasses import dataclass, replace
@@ -37,11 +37,11 @@ class GitError(RuntimeError):
 
 
 class EvidenceCaptureError(RuntimeError):
-    """El contenido no puede capturarse completo; el motor se detiene sin juzgar."""
+    """The content cannot be captured completely; the engine stops without judging."""
 
 
 class Git:
-    """Invoca el ejecutable Git con entorno controlado; nunca usa shell."""
+    """Invokes the Git executable with a controlled environment; never uses a shell."""
 
     def __init__(self, cwd: Path, *, executable: str = "git", timeout: float = 120.0):
         self.cwd = Path(cwd)
@@ -59,13 +59,13 @@ class Git:
 
     def _completed(self, args: tuple[str, ...], input: bytes | None,
                    env: dict[str, str] | None) -> tuple[tuple[str, ...], subprocess.CompletedProcess]:
-        """Ejecuta Git y captura su salida; un fallo al lanzarlo o el timeout son GitError.
+        """Runs Git and captures its output; a launch failure or the timeout are GitError.
 
-        D125: con ruta absoluta, `-C` en lugar de cwd y sin cerrar descriptores, subprocess usa
-        posix_spawn en vez de fork (varias veces más barato desde un proceso grande). Los
-        descriptores de Python no son heredables (PEP 446) y SQLite abre con O_CLOEXEC, así que el
-        hijo recibe lo mismo que con close_fds. Un directorio inaccesible falla antes de lanzar Git,
-        igual que el chdir de subprocess: nunca se convierte en un código de salida de Git.
+        D125: with an absolute path, `-C` instead of cwd and without closing descriptors, subprocess uses
+        posix_spawn instead of fork (several times cheaper from a large process). Python
+        descriptors are not inheritable (PEP 446) and SQLite opens with O_CLOEXEC, so the
+        child receives the same as with close_fds. An inaccessible directory fails before launching Git,
+        like subprocess's chdir: it never becomes a Git exit code.
         """
         argv = (self.executable, *_CONFIG, *args)
         environment = self._environment(env)
@@ -96,7 +96,7 @@ class Git:
         return completed.stdout
 
     def code(self, *args: str, env: dict[str, str] | None = None) -> int:
-        """Código de salida sin interpretar; permite preguntas booleanas (is-ancestor)."""
+        """Uninterpreted exit code; allows boolean questions (is-ancestor)."""
         return self._completed(args, None, env)[1].returncode
 
     def text(self, *args: str, input: bytes | None = None, env: dict[str, str] | None = None) -> str:
@@ -114,7 +114,7 @@ def _split0(data: bytes) -> list[str]:
 
 
 def _raw_entries(data: bytes) -> list[tuple[str, str, str, str]]:
-    """`diff-tree --raw -z` sin renombrados: (estado, modo anterior, modo nuevo, ruta)."""
+    """`diff-tree --raw -z` without renames: (status, old mode, new mode, path)."""
     tokens = data.split(b"\0")
     entries, index = [], 0
     while index < len(tokens) and tokens[index]:
@@ -129,7 +129,7 @@ def _raw_entries(data: bytes) -> list[tuple[str, str, str, str]]:
 
 
 def _exact_path(root: Path, path: str) -> bool:
-    """La grafía de una ruta Git es exacta, también en sistemas de archivos sin distinción de mayúsculas."""
+    """The spelling of a Git path is exact, also on case-insensitive file systems."""
     parent = root
     for part in path.split('/'):
         if not parent.is_dir() or part not in {item.name for item in parent.iterdir()}:
@@ -139,7 +139,7 @@ def _exact_path(root: Path, path: str) -> bool:
 
 
 class GitWorkspace:
-    """Captura Git completa y escritor de commit; puede reemplazar a SyntheticWorkspace."""
+    """Complete Git capture and commit writer; can replace SyntheticWorkspace."""
 
     def __init__(self, identity: GitIdentity, *, max_diff_bytes: int = MAX_DIFF_BYTES,
                  executable: str = "git", timeout: float = 120.0):
@@ -171,7 +171,7 @@ class GitWorkspace:
         return Path(git.text("rev-parse", "--path-format=absolute", "--git-path", "index"))
 
     def _scratch_index(self, git: Git, target: Path, real: Path | None = None) -> dict[str, str]:
-        """Copia del índice real; no se escribe nunca en el índice del usuario."""
+        """Copy of the real index; the user's index is never written."""
         real = real or self._index_path(git)
         env = {"GIT_INDEX_FILE": str(target)}
         if real.is_file():
@@ -197,7 +197,7 @@ class GitWorkspace:
                 real_index = self._index_path(git)
                 staged_env = self._scratch_index(git, Path(scratch) / "staged", real_index)
                 work_env = self._scratch_index(git, Path(scratch) / "work", real_index)
-                # Un índice con conflictos falla aquí: nunca se resuelve implícitamente.
+                # An index with conflicts fails here: it is never resolved implicitly.
                 index_tree = git.text("write-tree", env=staged_env)
                 untracked = sorted(_split0(git.run("ls-files", "--others", "--exclude-standard", "-z",
                                                    env=staged_env)))
@@ -252,7 +252,7 @@ class GitWorkspace:
 
     def _tree_with(self, git: Git, tree: str, plan_updates) -> str:
         updates = sorted(plan_updates, key=lambda item: item.path)
-        # Un único listado del árbol (rutas exactas, sin pathspec) para todos los modos.
+        # A single tree listing (exact paths, no pathspec) for all modes.
         modes = {}
         for record in git.run("ls-tree", "-r", "-t", "-z", "--full-tree", tree).split(b"\0"):
             if record:
@@ -264,9 +264,9 @@ class GitWorkspace:
         with tempfile.TemporaryDirectory(prefix="harness-git-") as scratch:
             env = {"GIT_INDEX_FILE": str(Path(scratch) / "index")}
             git.run("read-tree", tree, env=env)
-            # hash-object sigue siendo por ruta: `--path` aplica los atributos de cada destino.
-            # Las altas consecutivas comparten un update-index (cada --cacheinfo se aplica en orden
-            # y falla igual que por separado); las bajas conservan su posición en el orden.
+            # hash-object is still per path: `--path` applies each target's attributes.
+            # Consecutive additions share one update-index (each --cacheinfo is applied in order
+            # and fails as it would separately); deletions keep their position in the order.
             additions = []
             for update in updates:
                 if update.content is None:
@@ -289,21 +289,21 @@ class GitWorkspace:
             git.run("cat-file", "-e", f"{tree}^{{tree}}")
             text = self._commit_text(tree, plan.base_revision, plan.message, plan.author_name,
                                      plan.author_email, plan.committed_at)
-            # Sin -w: solo calcula el identificador determinista del commit.
+            # Without -w: only computes the deterministic commit identifier.
             commit = git.text("hash-object", "-t", "commit", "--stdin", input=text)
         except GitError as exc:
             raise CommitError(f"Commit could not be sealed: {exc}") from exc
         return tree, commit
 
     def check_tree_diff(self, context, before, after):
-        """Rechaza una vista previa que la captura no podría verificar tras escribirla."""
+        """Rejects a preview that the capture could not verify after writing it."""
         patch = self._git(context.root).run('diff-tree', '-r', '-p', '--binary', '--full-index',
             '--no-ext-diff', '--no-textconv', '--no-color', before, after)
         if len(patch) > self.max_diff_bytes:
             raise EvidenceCaptureError(f'Import diff exceeds the {self.max_diff_bytes}-byte review limit')
 
     def _write_mechanical(self, context: ProjectContext, intent: CommitIntent) -> None:
-        # Todos los destinos se validan antes de escribir ninguno: sin estado parcial propio.
+        # All targets are validated before writing any: no partial own state.
         targets = []
         for update in intent.mechanical:
             target = context.path(update.path)
@@ -336,7 +336,7 @@ class GitWorkspace:
         if current == intent.expected_tree:
             return "already_current"
         if current != intent.reviewed_index_tree:
-            return "left_untouched"  # contenido staged posterior a la revisión: no se descarta
+            return "left_untouched"  # content staged after the review: not discarded
         git.run("read-tree", intent.expected_tree)
         git.run("update-index", "-q", "--refresh", ok=(0, 1))
         return "refreshed"
@@ -352,13 +352,13 @@ class GitWorkspace:
     def inspect_bootstrap(self, context):
         from harness_local.adapters.bootstrap import inspect_target
         try:
-            self._git(context.root).text('version')  # entorno Git comprobado en lectura
+            self._git(context.root).text('version')  # Git environment checked on read
             return inspect_target(context, self._git(context.root))
         except GitError as exc:
             raise ValueError(f'Bootstrap Git environment unavailable: {exc}') from exc
 
     def inspect_definition(self, context, *, texts=False):
-        """H6.5: borradores, archivos ajenos e inválidos del destino de una definición v2."""
+        """H6.5: drafts, foreign and invalid files at the target of a v2 definition."""
         from harness_local.adapters.bootstrap import inspect_drafts
         try:
             self._git(context.root).text('version')
@@ -427,7 +427,7 @@ class GitWorkspace:
             try:
                 git.run(*update)
             except GitError:
-                # Un CAS fallido no demuestra por sí mismo qué ocurrió: se vuelve a observar.
+                # A failed CAS does not by itself prove what happened: observe again.
                 head = git.text("rev-parse", "--verify", "HEAD^{commit}")
                 if self._reachable(git, intent, head):
                     return self._reconciled(git, intent, head, status="reconciled")
@@ -441,7 +441,7 @@ class GitWorkspace:
             raise CommitUncertain(f"Git state could not be reconciled: {exc}") from exc
 
     def read_blob(self, context: ProjectContext, revision: str, path: str) -> bytes | None:
-        """Bytes de un archivo en una revisión exacta; None si no existe en ella. Solo lecturas."""
+        """Bytes of a file at an exact revision; None if absent there. Reads only."""
         from harness_local.core.engine.context import relative_path
         relative_path(path)
         if not _OBJECT_ID.fullmatch(revision):
@@ -456,12 +456,12 @@ class GitWorkspace:
         return git.run("cat-file", "blob", spec)
 
     def execute_documents(self, context: ProjectContext, intent: CommitIntent, documents: list[dict]) -> CommitOutcome:
-        """H2.4 con recuperación de una escritura parcial de documentos por hashes antiguo/nuevo.
+        """H2.4 with recovery of a partial document write by old/new hashes.
 
-        Nunca adopta bytes externos. Incluso tras una caída, el árbol al completar los
-        documentos debe ser exactamente el árbol sellado y el índice debe seguir intacto.
-        D072: un documento nuevo (archivo de fase) tiene hash anterior null y debe seguir ausente
-        o contener ya sus bytes sellados.
+        Never adopts external bytes. Even after a crash, the tree when completing the
+        documents must be exactly the sealed tree and the index must remain intact.
+        D072: a new document (phase file) has a null previous hash and must remain absent
+        or already contain its sealed bytes.
         """
         git = self._git(context.root)
         head = git.text("rev-parse", "--verify", "HEAD^{commit}")
@@ -473,7 +473,7 @@ class GitWorkspace:
             sha = self._document_sha(context, doc)
             if sha is False:
                 return CommitOutcome('invalidated', intent.operation_id, diagnostic='Export document is no longer regular')
-            # `disk_sha256`: bytes locales que la vista previa confirmada sustituye (bloques regenerados, H6.2 E3).
+            # `disk_sha256`: local bytes that the confirmed preview replaces (regenerated blocks, H6.2 E3).
             allowed = {doc['before_sha256'], doc['after_sha256']}
             if doc.get('disk_sha256') is not None:
                 allowed.add(doc['disk_sha256'])
@@ -488,8 +488,8 @@ class GitWorkspace:
         if (tree != intent.expected_tree or commit != intent.expected_commit
                 or provenance['index_tree'] != intent.reviewed_index_tree):
             return CommitOutcome('invalidated', intent.operation_id, diagnostic='Checkout changed outside export blocks')
-        # Cada reemplazo es atómico. Tras una caída entre documentos, se aceptan solo hashes
-        # originales o sellados; no se genera otra intención/identidad de commit.
+        # Each replacement is atomic. After a crash between documents, only original or sealed
+        # hashes are accepted; no other commit intent/identity is generated.
         for update in intent.mechanical:
             doc = next(d for d in documents if d['path'] == update.path)
             sha = self._document_sha(context, doc)
@@ -503,11 +503,11 @@ class GitWorkspace:
             self._write_mechanical(context, replace(intent, mechanical=(update,)))
         return self.execute(context, intent)
 
-    execute_export = execute_documents  # D036: nombre conservado
+    execute_export = execute_documents  # D036: name kept
 
     @staticmethod
     def _document_sha(context: ProjectContext, doc: dict):
-        """Hash del documento; None si falta (el CAS decide si se admite); False si no es regular."""
+        """Hash of the document; None if missing (the CAS decides whether that is admitted); False if not regular."""
         target = context.path(doc['path'])
         if doc.get('exact_path') and not _exact_path(context.root, doc['path']):
             return None
@@ -517,10 +517,10 @@ class GitWorkspace:
             return False
         return hashlib.sha256(target.read_bytes()).hexdigest()
 
-    # --- H3.3: puertas y tag de fase ----------------------------------------------
+    # --- H3.3: phase gates and tag ------------------------------------------------
 
     def contains(self, context: ProjectContext, commit: str) -> bool:
-        """¿El commit aceptado es alcanzable desde HEAD? Solo lecturas."""
+        """Is the accepted commit reachable from HEAD? Reads only."""
         if not isinstance(commit, str) or not _OBJECT_ID.fullmatch(commit):
             raise ValueError("Expected a full Git object id")
         git = self._git(context.root)
@@ -534,8 +534,8 @@ class GitWorkspace:
 
     @staticmethod
     def _tag_text(intent: dict) -> bytes:
-        """Objeto tag anotado: mensaje, identidad y fecha fijados en la intención → id determinista."""
-        GitIdentity(intent["tagger_name"], intent["tagger_email"])  # sin marcado ni saltos de línea
+        """Annotated tag object: message, identity and date fixed in the intent → deterministic id."""
+        GitIdentity(intent["tagger_name"], intent["tagger_email"])  # no markup or line breaks
         if type(intent["tagged_at"]) is not int or not isinstance(intent["message"], str) or "\0" in intent["message"]:
             raise ValueError("Annotated tag intent requires an integer date and a NUL-free message")
         name = intent["ref"][len("refs/tags/"):]
@@ -555,7 +555,7 @@ class GitWorkspace:
         return git
 
     def seal_tag(self, context: ProjectContext, intent: dict) -> str:
-        """Solo calcula el id del objeto anotado (sin -w); ningún efecto antes de la intención."""
+        """Only computes the id of the annotated object (without -w); no effect before the intent."""
         git = self._tag_git(context, intent)
         try:
             git.run("cat-file", "-e", f"{intent['target']}^{{commit}}")
@@ -564,11 +564,11 @@ class GitWorkspace:
             raise CommitError(f"Phase tag could not be sealed: {exc}") from exc
 
     def tag(self, context: ProjectContext, intent: dict) -> dict:
-        """Tag ligero o anotado determinista: crear solo si no existe (CAS); nunca mover ni sobrescribir."""
+        """Deterministic lightweight or annotated tag: create only if absent (CAS); never move or overwrite."""
         git = self._tag_git(context, intent)
         ref, target = intent["ref"], intent["target"]
         annotated = intent.get("kind", "lightweight") == "annotated"
-        # Valor esperado de la referencia: el commit (ligero) o el objeto tag sellado (anotado).
+        # Expected value of the reference: the commit (lightweight) or the sealed tag object (annotated).
         expected = intent["object"] if annotated else target
         if annotated and not _OBJECT_ID.fullmatch(expected or ""):
             raise ValueError("Annotated tag intent requires its sealed object id")
@@ -596,7 +596,7 @@ class GitWorkspace:
                 git.run("update-ref", "-m", f"harness: close phase {intent['operation_id']}", ref, expected,
                         "0" * len(expected))
             except GitError:
-                # Un CAS fallido no demuestra qué ocurrió: se vuelve a observar.
+                # A failed CAS does not prove what happened: observe again.
                 if observed() == expected:
                     return outcome("reconciled", **({"object": expected} if annotated else {}))
                 raise
@@ -615,7 +615,7 @@ class WorktreeInfo:
 
 
 class GitWorktrees:
-    """Un worktree por tarea, conservado entre revisiones; nunca se limpia ni elimina."""
+    """One worktree per task, kept between reviews; never cleaned or removed."""
 
     def __init__(self, *, executable: str = "git", timeout: float = 120.0):
         self.executable = executable
@@ -660,7 +660,7 @@ class GitWorktrees:
         try:
             git.run("worktree", "add", "--quiet", "-b", branch, str(destination), base_sha)
         except GitError:
-            # Una carrera con otra preparación idéntica es idempotente; otro fallo se propaga.
+            # A race with another identical preparation is idempotent; any other failure propagates.
             raced = self._registered(git).get(destination)
             if raced is not None and raced.get("branch") == f"refs/heads/{branch}":
                 return WorktreeInfo(destination, branch, base_sha, raced["HEAD"], created=False)

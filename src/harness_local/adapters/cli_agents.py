@@ -51,21 +51,21 @@ SHAPES = {
         "allowed_paths": [], "forbidden_paths": [], "acceptance_criteria": ["criterion"],
         "validation_commands": [], "executor_selection": {"model": "allowed model",
             "effort": "allowed effort", "reason": "selection reason"}},
-    # cli-10 (P008-T003): propuestas de ADR opcionales del ejecutor y del revisor; nunca editan DECISIONS.
+    # cli-10 (P008-T003): optional ADR proposals from the executor and the reviewer; they never edit DECISIONS.
     "reviewer": {"task_id": "requested task id", "verdict": "ACCEPT or REVISE or BLOCKED",
         "findings": [], "blocking_questions": [], "scope_grants": [],
         "next_prompt": "required for REVISE", "executor_selection": {"model": "allowed model",
             "effort": "allowed effort", "reason": "required for REVISE"}, "decision_proposals": []},
     "executor": {"result": "implementation summary", "decision_proposals": []},
-    # H3.3, aditivo: la evaluación de fase usa el mismo transporte de solo lectura del revisor.
+    # H3.3, additive: the phase evaluation uses the same read-only transport as the reviewer.
     "phase": {"phase_id": "requested phase id", "verdict": "READY or REVISE or BLOCKED", "summary": "summary",
         "exit_criteria_results": [{"criterion": "frozen criterion", "passed": True, "evidence": "evidence"}],
         "required_actions": [], "blocking_questions": []},
-    # H4.1, aditivo: turno de chat de solo lectura con propuestas estructuradas que no ejecutan nada.
+    # H4.1, additive: read-only chat turn with structured proposals that execute nothing.
     "chat": {"answer": "answer", "references": ["path or run id"], "proposals": [{"title": "title",
         "objective": "objective", "scope": "scope in words", "acceptance_criteria": ["criterion"],
         "validation": ["validation"], "rationale": "rationale"}]},
-    # H6.5, aditivo: conversaciones de definición y de planificación de fase, de solo lectura.
+    # H6.5, additive: read-only definition and phase planning conversations.
     "definition": {"answer": "answer", "questions": [{"text": "question", "blocking": False}],
         "drafts": [{"path": "allowed draft path", "content": "complete document", "reason": "reason"}],
         "pending": ["missing before acceptance"]},

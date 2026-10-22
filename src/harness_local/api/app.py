@@ -25,7 +25,7 @@ from harness_local.services.managed_runtime import ManagedConfig, ManagedRuntime
 
 def create_app(url: str | None = None, ui_dir: Path | None = None,
                managed: ManagedConfig | None = None) -> FastAPI:
-    """`managed` explícito o HARNESS_MANAGED_CONFIG al arrancar; sin ninguno, la API gestionada solo lee."""
+    """Explicit `managed` or HARNESS_MANAGED_CONFIG at startup; with neither, the managed API only reads."""
     engine = make_engine(url or database_url())
     service = SimulationService(SQLiteSimulationRepository(engine), FakeSimulationAdapter())
 
@@ -90,7 +90,7 @@ def create_app(url: str | None = None, ui_dir: Path | None = None,
     def list_simulations():
         return service.list()
 
-    # H3.4 (D033): las mutaciones H0/H1 comparten la guardia local de /api/managed.
+    # H3.4 (D033): the H0/H1 mutations share the local guard of /api/managed.
     @app.post("/api/simulations", response_model=SimulationRead, status_code=201,
               operation_id="create_simulation", dependencies=[Depends(local_request)],
               responses={403: {"model": ProblemResponse}})
@@ -115,11 +115,11 @@ ASSET = re.compile(r"(^|/)assets/|\.(js|mjs|css|map|png|jpe?g|gif|svg|ico|webp|w
 
 
 class SPAStaticFiles(StaticFiles):
-    """Rutas de la UI (D076): un GET sin archivo fuera de `/api/` recibe `index.html`.
+    """UI routes (D076): a GET without a file outside `/api/` receives `index.html`.
 
-    Los 404 de la API siguen siendo JSON; un asset estático inexistente sigue siendo 404
-    para no servir HTML en su lugar. Los códigos de fase pueden contener puntos. Una URL que acaba en `.md` es
-    un documento del visor (H6.2 E3), también bajo una carpeta `assets/` del checkout.
+    API 404s remain JSON; a missing static asset is still 404
+    so HTML is not served in its place. Phase codes may contain dots. A URL ending in `.md` is
+    a viewer document (H6.2 E3), also under an `assets/` folder of the checkout.
     """
 
     async def get_response(self, path: str, scope):

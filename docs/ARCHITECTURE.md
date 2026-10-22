@@ -62,7 +62,7 @@ casos de uso. El supervisor es el único que lanza procesos y consume la cola; c
 | `storage/run_projection.py`, `managed_views.py` | Proyección derivada `run-projection-1` escrita con el historial y vistas de runs que solo la leen (D144) |
 | `services/managed.py`, `managed_runtime.py` | Supervisor (`run_once`, lease, cuarentena) y composición del runtime |
 | `services/local_config.py`, `project_registry.py`, `project_creation.py` | TOML `local-config-5` (lectura de 1–4) y registro/creación de hijos desde la UI con 3/4/5; presets y recetas solo en v5 |
-| `recipes/`, `services/project_preparation.py`, `storage/preparation.py`, `adapters/preparation.py` | Recetas empaquetadas `django-recipe-1` y `typescript-web-recipe-1` y su preparación confirmada y recuperable (D119, D143) |
+| `recipes/`, `services/project_preparation.py`, `storage/preparation.py`, `adapters/preparation.py` | Recetas empaquetadas `django-recipe-1` y `typescript-web-recipe-1` y su preparación confirmada y recuperable (D119, D143); sucesoras v2 sin cablear (D163) |
 | `api/app.py`, `managed.py`, `schemas.py`, `session.py`, `security.py` | Aplicación, rutas, contratos Pydantic, sesión y guardia |
 | `profiles/typescript_web.py`, `profiles/reference_project.py` | Perfiles integrados (`typescript-web` componible; `reference_project` solo biblioteca); los perfiles del TOML v4/v5 se componen en `services/local_config.py` |
 | `cli.py`, `launcher.py` | `harness-local` (backup, retención, diagnóstico, `check-config`, `metrics-backfill`, `init-db`, `serve`) |
@@ -181,6 +181,8 @@ por su API y los artefactos referenciados; la restauración es de consulta (`que
 ## 8. Convenciones
 
 - Documentación en español con nombres de archivo canónicos en inglés; parsers con alias en ambos idiomas.
+- Comentarios, docstrings y descripciones OpenAPI de `src/harness_local` en inglés (P011-T003/T004); los mensajes
+  visibles siguen pendientes de catálogos (T007/T010) y las fuentes v1 de recetas conservan sus bytes (D163).
 - Versiones exactas; ninguna dependencia nueva sin decisión registrada. No documentar scripts inexistentes.
 - Tipos del cliente siempre regenerados desde OpenAPI tras cambiar un contrato; nunca a mano.
 - Pruebas offline con Git/SQLite temporales, procesos y agentes falsos y datos sintéticos; nunca runs ni datos privados.
@@ -346,8 +348,11 @@ antes de añadir dependencias, no se asume `.po`. T007–T010 implementarán el 
 flujos y API/tipos en cada cambio; esta planificación no dibuja tablas o flujos como ya existentes.
 
 Las recetas Django y TypeScript incorporan el texto de su módulo en la huella; traducir incluso comentarios
-puede invalidar recibos. T001 debe definir tratamiento compatible antes de T004; prompts, catálogos y snapshots
-anteriores permanecen congelados. No se renombran claves/revisiones/rutas por traducción.
+puede invalidar recibos. T004 (D163) conserva por bytes y huella `django.py`/`typescript_web.py`, sus datos y el
+perfil `typescript-web`, y añade `django_2.py`/`typescript_web_2.py` (`django-recipe-2`, `typescript-web-recipe-2`):
+fuente inglesa, scaffold con prosa técnica según idioma de trabajo en/es, perfil propio, pasos con `id` estable y
+huella con versión e idioma. No se registran en `recipes/__init__.py` ni en la preparación hasta `local-config-6`
+(T008). Prompts, catálogos y snapshots anteriores permanecen congelados; no se renombran claves/revisiones/rutas.
 
 T011 define mínimos/familias/capacidades de CLI por proveedor/rol y qué semántica no puede acreditarse con help;
 T012 implementará admisión de versiones posteriores compatibles, procedencia y diagnósticos conservando guardias.

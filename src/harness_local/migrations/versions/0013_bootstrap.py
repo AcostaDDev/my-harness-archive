@@ -1,4 +1,4 @@
-"""H4.2: bootstrap documental confirmado y su intención inicial conciliable."""
+"""H4.2: confirmed documentary bootstrap and its reconcilable initial intent."""
 from alembic import op
 import sqlalchemy as sa
 

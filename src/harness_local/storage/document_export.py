@@ -1,4 +1,4 @@
-"""Exportación documental sobre operaciones de fase y jobs existentes; SQLite es autoridad."""
+"""Documentary export over existing phase operations and jobs; SQLite is the authority."""
 import json
 from uuid import uuid4
 
@@ -30,10 +30,10 @@ def _acceptance(session, run_id, projected):
 
 
 def snapshot(session, phase, context=None, *, projected=False):
-    """Forma D036 (JSON) o, con el layout D072, la proyección legible de los bloques gestionados.
+    """D036 shape (JSON) or, with the D072 layout, the readable projection of the managed blocks.
 
-    `projected`: solo la vista previa lee la proyección `run-projection-1` (P010-T011). El envío, la petición del job
-    y la intención recalculan desde el historial y exigen el mismo resultado que se revisó."""
+    `projected`: only the preview reads the `run-projection-1` projection (P010-T011). The submission, the job request
+    and the intent recompute from the history and require the same result that was reviewed."""
     from harness_local.core.engine.documents import layout
     if context is not None and layout(context) is not None:
         from harness_local.storage.documents import phases_snapshot, state_snapshot
@@ -88,7 +88,7 @@ def _pending(session, phase):
 
 
 def unresolved(session, root):
-    """Una intención incierta conserva su autoridad hasta conciliación; incluye las operaciones D072."""
+    """An uncertain intent keeps its authority until reconciliation; includes the D072 operations."""
     from harness_local.storage.documents import unresolved as documents_unresolved
     return documents_unresolved(session, root)
 
@@ -118,7 +118,7 @@ class DocumentExportRepository:
         marker = freeze({'action': 'document_export', 'phase_id': phase_id, 'expected_version': expected,
                          'preview_sha256': preview_sha256, 'reason': reason, 'confirmed': confirmed,
                          'resume_operation_id': resume_operation_id})
-        # Idempotencia antes de releer disco: el envío confirmado sigue siendo el mismo después del efecto.
+        # Idempotency before rereading disk: the confirmed submission is still the same after the effect.
         with Session(self.managed.engine) as session:
             existing = self.managed._existing(session, key, marker)
             if existing:
@@ -126,7 +126,7 @@ class DocumentExportRepository:
         try:
             shown = self.preview(context, phase_id, git)
         except Conflict:
-            # Otro envío idéntico puede confirmar entre la primera lectura y la vista previa.
+            # Another identical submission may confirm between the first read and the preview.
             with Session(self.managed.engine) as session:
                 existing = self.managed._existing(session, key, marker)
                 if existing:
@@ -219,8 +219,8 @@ def settle(managed, session, run, outcome):
         if observed != expected or phase.documents != op.request['preview']['baseline']:
             raise Conflict('Documents changed after export; recover with the recorded intent before adoption')
         phase.documents = observed
-        # READY conserva su evaluación histórica; sus hashes/HEAD ya no certifican el cierre.
-        # La siguiente puerta de cierre observa la deriva y lo invalida, como en H3.3.
+        # READY keeps its historical evaluation; its hashes/HEAD no longer certify the closure.
+        # The next closure gate observes the drift and invalidates it, as in H3.3.
         run.status, run.stage = 'COMMITTED', 'committed'
     op.status, op.result, op.finished_at = outcome['status'], outcome, managed._now()
     _event(managed, session, phase, 'documents_exported' if outcome['status'] == 'COMMITTED' else 'document_export_invalidated',

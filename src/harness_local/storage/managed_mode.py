@@ -48,7 +48,7 @@ def _live(session, root: str, repository_key: str | None):
         clause = or_(clause, Activation.repository_key == repository_key)
     rows = session.scalars(select(Activation).where(clause, Activation.status.in_(LIVE_STATUSES))).all()
     if len(rows) > 1:
-        # Raíz de una activación y repositorio de otra: ambigüedad, nunca se elige una.
+        # Root of one activation and repository of another: ambiguity, one is never chosen.
         raise ModeConflict("Varias activaciones vivas coinciden con este checkout; modo ambiguo.")
     return rows[0] if rows else None
 
@@ -61,7 +61,7 @@ class Assessment:
 
 
 class ModeGuard:
-    """Exclusión legacy/gestionado: lectura de disco fuera de la transacción, verificación dentro."""
+    """Legacy/managed exclusion: disk read outside the transaction, verification inside."""
 
     def __init__(self, engine, probe=None, drift=None):
         from harness_local.adapters import managed_mode as filesystem
@@ -103,7 +103,7 @@ class ModeGuard:
 
     @staticmethod
     def enforce(session, assessment: Assessment) -> str | None:
-        """Dentro de la transacción escritora: el modo no cambió desde la evaluación."""
+        """Inside the writing transaction: the mode has not changed since the evaluation."""
         if assessment.refusal is not None:
             raise ModeConflict(assessment.refusal)
         row = _live(session, assessment.facts.root, assessment.facts.repository_key)
@@ -115,7 +115,7 @@ class ModeGuard:
 
 
 def import_marker(guard, root):
-    """D099: solo el marcador de una activación ACTIVE propia y sin deriva puede excluirse de Git."""
+    """D099: only the marker of an own ACTIVE activation without drift can be excluded from Git."""
     assessment = guard.assess(root)
     live = assessment.activation
     if (assessment.refusal is None and live is not None and live.status == 'ACTIVE'
@@ -125,7 +125,7 @@ def import_marker(guard, root):
 
 
 def bind_git_mode(writer, guard):
-    """Inyecta la autoridad de modo sin acoplar el adaptador Git a SQLite."""
+    """Injects the mode authority without coupling the Git adapter to SQLite."""
     from harness_local.adapters.git import GitWorkspace
     if isinstance(writer, GitWorkspace):
         writer.marker_reader = lambda root: import_marker(guard, root)

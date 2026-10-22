@@ -1,6 +1,6 @@
-"""Propuesta bootstrap en la cola existente; no decide ni escribe documentos.
+"""Bootstrap proposal in the existing queue; does not decide or write documents.
 
-D088: retirada con la creación v1; solo quedan la lectura de runs registrados y su conciliación."""
+D088: retired with the v1 creation; only reading recorded runs and their reconciliation remain."""
 import json
 
 from sqlalchemy import select
@@ -41,7 +41,7 @@ class DiscoveryRepository:
             return json.loads(row.request_json)['snapshot']
 
     def submit(self, context, brief, versions, writer, *, key, confirmed):
-        """D088: el descubrimiento de un turno solo servía a la creación v1, retirada. Los runs ya registrados
-        se siguen leyendo con `latest` y `request`; nunca se admite uno nuevo."""
+        """D088: the one-turn discovery only served the retired v1 creation. Runs already recorded
+        are still read with `latest` and `request`; a new one is never admitted."""
         from harness_local.storage.bootstrap import V1_RETIRED
         raise ValueError(V1_RETIRED)

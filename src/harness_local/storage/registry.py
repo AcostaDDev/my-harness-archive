@@ -1,8 +1,8 @@
-"""H6.2 E2 (D054/D076): registro de proyectos en SQLite, versionado, auditado y con baja lógica.
+"""H6.2 E2 (D054/D076): project registry in SQLite, versioned, audited and with logical retirement.
 
-Cada cambio es una transacción: comprueba la versión esperada, que el checkout no
-tenga trabajo sin terminar y escribe la fila y su evento de auditoría. Repetir una
-confirmación ya aplicada devuelve el mismo resultado sin otra versión.
+Each change is a transaction: it checks the expected version, that the checkout has no
+unfinished work, and writes the row and its audit event. Repeating an
+already applied confirmation returns the same result without another version.
 """
 from sqlalchemy import select
 from sqlalchemy.orm import Session
@@ -75,7 +75,7 @@ class ProjectRegistryRepository:
 
     @staticmethod
     def _configuration_blockers(session, root):
-        """V5: trabajo todavía aceptable no puede sobrevivir al cambio de composición."""
+        """V5: work that is still acceptable cannot survive the composition change."""
         from harness_local.storage.models import (
             ChatConversationRow, ChatProposalRow, ManagedCommitRow, PlanningConversationRow,
             PlanningTurnRow, ProjectBootstrapRow, ProjectImportRow,
@@ -121,7 +121,7 @@ class ProjectRegistryRepository:
             conversation.updated_at = self.managed._now()
 
     def replay(self, project_id, expected_version, preview_sha256):
-        """La confirmación ya aplicada (misma vista previa, versión siguiente) se devuelve tal cual."""
+        """The already applied confirmation (same preview, next version) is returned as is."""
         with self._read() as session:
             row = session.get(Row, project_id)
             if row is None or row.version != expected_version + 1:

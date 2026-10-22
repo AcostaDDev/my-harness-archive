@@ -16,7 +16,7 @@ def area_root(engine, area) -> Path:
 
 
 class PrivateDrafts:
-    """Borradores de una conversación de importación; misma interfaz que el lector de la definición."""
+    """Drafts of an import conversation; the same interface as the definition reader."""
 
     area = 'onboarding-drafts'
 
@@ -35,7 +35,7 @@ class PrivateDrafts:
         return self.base if self.base.exists() else None
 
     def inspect_definition(self, context, *, texts=False):
-        """Borradores admitidos (plantilla D088 y `flows/*.md`), inválidos y ajenos del área."""
+        """Admitted drafts (D088 template and `flows/*.md`), invalid and foreign ones in the area."""
         target = definition_layout(context)
         folders = draft_directories(target)
         drafts, contents, foreign, invalid = {}, {}, [], []
@@ -67,7 +67,7 @@ class PrivateDrafts:
         return {**result, 'texts': contents} if texts else result
 
     def write_draft(self, context, path, content, base_sha256):
-        """Escribe (o borra con `content=None`) un borrador si su hash sigue siendo `base_sha256`."""
+        """Writes (or deletes with `content=None`) a draft if its hash is still `base_sha256`."""
         target = definition_layout(context)
         if not allowed_draft(target, path):
             raise ValueError(f'{path} is not an allowed import draft')

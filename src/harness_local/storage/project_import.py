@@ -1,4 +1,4 @@
-"""P008-T012: importación confirmada, con intención previa y adopción atómica de la fase."""
+"""P008-T012: confirmed import, with a prior intent and atomic adoption of the phase."""
 from uuid import uuid4
 
 from sqlalchemy import select
@@ -32,8 +32,8 @@ def _operation(session, run):
 def check_git(context, writer, shown=None, tree=None):
     """Shared onboarding boundary, including execution and sealed-intent recovery."""
     if isinstance(writer, GitWorkspace):
-        # La guardia y todas las operaciones posteriores del escritor comparten la frontera local,
-        # incluidas code(), recaptura, sellado, conciliación y refresco del índice.
+        # The guard and all later operations of the writer share the local boundary,
+        # including code(), recapture, sealing, reconciliation and index refresh.
         writer.local_objects_only = True
     git = LocalGit(context.root, executable=writer.executable, timeout=writer.timeout)
     check_filters(git)

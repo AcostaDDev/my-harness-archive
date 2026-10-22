@@ -13,7 +13,7 @@ def make_engine(url: str) -> Engine:
     parsed = make_url(url)
     if parsed.drivername != "sqlite" or not parsed.database or parsed.database == ":memory:":
         raise ValueError("H0.3 requiere un archivo SQLite local.")
-    # La creación del directorio ocurre al conectar, nunca al exportar OpenAPI.
+    # The directory is created when connecting, never when exporting OpenAPI.
     engine = create_engine(url, connect_args={"check_same_thread": False, "autocommit": False})
 
     @event.listens_for(engine, "do_connect")

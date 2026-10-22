@@ -1,4 +1,4 @@
-"""Host loopback, Origin exacto y cabecera CSRF; ninguno sustituye la sesión."""
+"""Loopback Host, exact Origin and CSRF header; none of them replaces the session."""
 from typing import Annotated
 from urllib.parse import urlsplit
 
@@ -27,8 +27,8 @@ def _hostname(value: str | None) -> str | None:
 
 
 def local_request(request: Request, x_harness_local: Annotated[str | None, Header(
-        description="Obligatoria con valor 1 en mutaciones (protección CSRF).")] = None) -> None:
-    """Rechaza DNS rebinding (Host), peticiones cruzadas (Origin) y formularios ajenos (cabecera propia)."""
+        description="Required with value 1 on mutations (CSRF protection).")] = None) -> None:
+    """Rejects DNS rebinding (Host), cross-site requests (Origin) and foreign forms (own header)."""
     if _hostname(request.headers.get("host")) not in LOOPBACK_HOSTS:
         raise problem(403, "host_rejected", "El servicio local solo atiende nombres de loopback.")
     origin = request.headers.get("origin")

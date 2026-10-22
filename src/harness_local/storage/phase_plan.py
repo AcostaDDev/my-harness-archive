@@ -1,4 +1,4 @@
-"""D088: plan confirmado de una fase ACTIVE sin tareas, como edición documental conciliable."""
+"""D088: confirmed plan of an ACTIVE phase without tasks, as a reconcilable documentary edit."""
 
 from sqlalchemy.orm import Session
 

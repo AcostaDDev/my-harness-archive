@@ -1,4 +1,4 @@
-"""Puertos falsos H2.1; únicamente datos sintéticos, sin procesos ni red."""
+"""Fake H2.1 ports; synthetic data only, no processes or network."""
 
 from collections import deque
 import hashlib
@@ -44,10 +44,10 @@ class ScriptedCommandRunner:
 
 
 class SyntheticWorkspace:
-    """Captura solo rutas de fixture explícitas. No es captura ni certificado Git.
+    """Captures only explicit fixture paths. It is neither a Git capture nor a certificate.
 
-    El baseline sintético y las rutas se suministran por el test. Un checkout real
-    requerirá un adaptador Git H2.4 que descubra todo staged/untracked y la base.
+    The synthetic baseline and the paths are supplied by the test. A real checkout
+    will require an H2.4 Git adapter that discovers everything staged/untracked and the base.
     """
 
     def __init__(self, context: ProjectContext, paths: tuple[str, ...], base_revision: str = "synthetic-base"):

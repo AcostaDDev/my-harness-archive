@@ -1,18 +1,18 @@
-"""H6.5: autoridad SQLite de las conversaciones de definición y de planificación de fase.
+"""H6.5: SQLite authority of the definition and phase planning conversations.
 
-Reutiliza la infraestructura del chat (D035): cada mensaje congela, en la transacción que encola su
-turno, el mensaje y el contexto explícito; el turno es un run (`definition` o `phase_planning`) con job
-bajo el lock del checkout, con supervisor, guardia de modo, cuarentena y persistencia de intentos.
-Una caída deja el turno con resultado desconocido y nunca se reintenta.
+Reuses the chat infrastructure (D035): each message freezes, in the transaction that queues its
+turn, the message and the explicit context; the turn is a run (`definition` or `phase_planning`) with a job
+under the checkout lock, with supervisor, mode guard, quarantine and attempt persistence.
+A crash leaves the turn with an unknown result and it is never retried.
 
-Definición: el brief y los borradores de la carpeta destino (con su hash) forman el contexto. El agente
-nunca escribe. Aplicar una propuesta confirmada escribe el borrador con CAS sobre el hash que leyó el
-turno; una edición del usuario entre medias es un conflicto y no se sobrescribe. Las ediciones del
-usuario (en disco o por API) se detectan por hash en el turno siguiente. La aceptación es la vista
-previa del bootstrap D037 con la plantilla v2 (`storage/bootstrap.py`).
+Definition: the brief and the drafts of the target folder (with their hash) form the context. The agent
+never writes. Applying a confirmed proposal writes the draft with CAS on the hash the
+turn read; a user edit in between is a conflict and is not overwritten. User edits
+(on disk or through the API) are detected by hash in the next turn. Acceptance is the
+preview of the D037 bootstrap with the v2 template (`storage/bootstrap.py`).
 
-Planificación: propone NEXT_STEPS para la fase activa sin tareas (o la siguiente en conversaciones anteriores).
-La confirmación del plan escribe los documentos y versiona la definición; el agente nunca produce efectos.
+Planning: proposes NEXT_STEPS for the active phase without tasks (or the next one in earlier conversations).
+Confirming the plan writes the documents and versions the definition; the agent never produces effects.
 
 """
 
@@ -46,7 +46,7 @@ KINDS = ('definition', 'phase_planning', 'onboarding')
 
 
 def _executable(reader) -> str:
-    """Git del lector configurado (el mismo del escritor); `git` en el PATH si no hay ninguno."""
+    """Git of the configured reader (the same as the writer's); `git` on the PATH if there is none."""
     return getattr(reader, 'executable', 'git')
 
 
@@ -63,7 +63,7 @@ def _turn(session, run):
 
 
 def current_questions(session, conversation) -> tuple[list[dict], list[str]]:
-    """Preguntas y pendientes del último turno respondido, con los aplazamientos explícitos."""
+    """Questions and pending items of the last answered turn, with the explicit deferrals."""
     turn = session.scalar(select(Turn).where(Turn.conversation_id == conversation.id, Turn.status == 'ANSWERED')
                           .order_by(Turn.number.desc()).limit(1))
     if turn is None:
@@ -78,7 +78,7 @@ def _bootstrapped(session, root) -> bool:
 
 
 def settle(managed, session, run, outcome):
-    """Resultado del turno, atómico con el fin del job; las propuestas nuevas sustituyen a las pendientes."""
+    """Turn result, atomic with the end of the job; the new proposals replace the pending ones."""
     turn, conversation = _turn(session, run)
     if turn.status != 'QUEUED':
         raise Conflict('Planning turn already settled')
@@ -87,7 +87,7 @@ def settle(managed, session, run, outcome):
     result = outcome['result']
     stored = result
     if outcome['status'] == 'ANSWERED' and conversation.kind in DRAFT_KINDS:
-        # El contenido íntegro vive en cada propuesta; el turno conserva ruta, motivo y hash.
+        # The complete content lives in each proposal; the turn keeps path, reason and hash.
         stored = {**result, 'drafts': [{'path': d['path'], 'reason': d['reason'], 'content_sha256': text_hash(d['content'])}
                                        for d in result['drafts']]}
     elif outcome['status'] == 'ANSWERED' and result['plan'] is not None:
@@ -97,7 +97,7 @@ def settle(managed, session, run, outcome):
     if outcome['status'] == 'ANSWERED':
         if conversation.kind in DRAFT_KINDS:
             bases = {item['path']: item['sha256'] for item in turn.request['context']['drafts']}
-            # Solo un turno respondido «ve» los borradores: uno fallido vuelve a mostrar las ediciones al siguiente.
+            # Only an answered turn «sees» the drafts: a failed one shows the edits again to the next one.
             conversation.known = dict(bases)
             items = [('draft', d['path'], d['content'], d['reason'], bases.get(d['path'])) for d in result['drafts']]
         else:
@@ -124,7 +124,7 @@ def settle(managed, session, run, outcome):
 
 
 def abort(managed, session, run, status, reason):
-    """Escritor confirmado detenido (resultado desconocido) o job rechazado: nunca se reintenta solo."""
+    """Writer confirmed stopped (unknown result) or refused job: never retried on its own."""
     turn, conversation = _turn(session, run)
     if turn.status != 'QUEUED':
         return
@@ -135,7 +135,7 @@ def abort(managed, session, run, status, reason):
 
 
 def lock_for_bootstrap(session, shown):
-    """En la transacción que encola el bootstrap v2: la conversación sigue siendo la revisada."""
+    """In the transaction that queues the v2 bootstrap: the conversation is still the reviewed one."""
     definition = shown['definition']
     conversation = session.get(Conversation, definition['conversation_id'])
     if conversation is None or conversation.version != definition['conversation_version']:
@@ -145,7 +145,7 @@ def lock_for_bootstrap(session, shown):
 
 
 def definition_acceptance(managed, context, data, writer) -> dict:
-    """Vista previa de la aceptación v2: snapshot SQLite + borradores del destino, sin efectos."""
+    """Preview of the v2 acceptance: SQLite snapshot + target drafts, without effects."""
     if not isinstance(data, dict) or set(data) != {'conversation_id'}:
         raise ValueError('Projects with documents = "v2" are created through the definition conversation (H6.5)')
     inspection = writer.inspect_definition(context, texts=True)
@@ -178,14 +178,14 @@ class PlanningRepository:
         return row
 
     def _port(self, conversation, writer):
-        """Borradores en disco: carpeta destino de la definición o área privada de la importación."""
+        """Drafts on disk: target folder of the definition or private area of the import."""
         if conversation.kind == 'onboarding':
             return OnboardingDrafts.of(self.managed.engine, conversation.id)
         return writer
 
     @staticmethod
     def _drafts_created(session, conversation):
-        """Solo definición e importación tienen borradores; True si la definición ya creó el proyecto."""
+        """Only definition and import have drafts; True if the definition already created the project."""
         if conversation.kind not in DRAFT_KINDS:
             raise Conflict('Only definition and import conversations have drafts')
         if conversation.kind == 'onboarding':
@@ -198,7 +198,7 @@ class PlanningRepository:
 
     @staticmethod
     def _record(session, conversation) -> dict:
-        """Lo que la aceptación resume en DEFINITION.md: datos de SQLite, deterministas."""
+        """What the acceptance summarizes in DEFINITION.md: SQLite data, deterministic."""
         turns = session.scalars(select(Turn).where(Turn.conversation_id == conversation.id).order_by(Turn.number)).all()
         questions, pending = current_questions(session, conversation)
         return {'id': conversation.id, 'title': conversation.title, 'version': conversation.version,
@@ -208,7 +208,7 @@ class PlanningRepository:
                            'drafts': (t.result['result']['drafts'] if t.status == 'ANSWERED' else [])}
                           for t in turns]}
 
-    # --- lecturas ---------------------------------------------------------------------
+    # --- reads ------------------------------------------------------------------------
 
     def root(self, conversation_id):
         with Session(self.managed.engine) as session:
@@ -228,7 +228,7 @@ class PlanningRepository:
             return result
 
     def get(self, conversation_id):
-        """Proyección con estado vivo de los runs y acciones calculadas por el servidor."""
+        """Projection with the live state of the runs and actions computed by the server."""
         with Session(self.managed.engine) as session:
             row = self._conversation(session, conversation_id)
             phase = session.get(Phase, row.phase_id) if row.phase_id else None
@@ -284,7 +284,7 @@ class PlanningRepository:
             return dict(row.brief)
 
     def drafts(self, context, conversation_id, writer):
-        """Borradores del destino frente a lo que conoce el harness: las diferencias son del usuario."""
+        """Target drafts against what the harness knows: the differences belong to the user."""
         target = definition_layout(context)
         with Session(self.managed.engine) as session:
             row = self._conversation(session, conversation_id, context=context)
@@ -302,7 +302,7 @@ class PlanningRepository:
                 'invalid': inspection['invalid'], 'import_required': inspection['import_required']}
 
     def draft(self, context, conversation_id, path, writer):
-        """H6.2 E4: contenido de un borrador por la misma inspección que usan el turno y la CAS."""
+        """H6.2 E4: content of a draft through the same inspection the turn and the CAS use."""
         target = definition_layout(context)
         if not allowed_draft(target, path):
             raise LookupError(f'{path} is not an allowed definition draft')
@@ -321,7 +321,7 @@ class PlanningRepository:
                 'known_sha256': known}
 
     def snapshot(self, run_id):
-        """Petición congelada para el job del turno."""
+        """Frozen request for the turn's job."""
         with Session(self.managed.engine) as session:
             run = session.get(Run, run_id)
             if run is None:
@@ -332,11 +332,11 @@ class PlanningRepository:
                     'context': turn.request['context'], 'context_sha256': turn.request['context_sha256'],
                     'observed': turn.request.get('observed')}
 
-    # --- conversación ------------------------------------------------------------------
+    # --- conversation ------------------------------------------------------------------
 
     def create(self, context, *, kind, title, brief=None, phase_id=None, writer=None, key=None):
-        """`key` (API): un reintento con la misma petición devuelve la misma conversación antes de reevaluar el
-        destino, que el alta original puede haber cambiado (proyecto ya creado, fase ya transicionada)."""
+        """`key` (API): a retry with the same request returns the same conversation before reevaluating the
+        target, which the original registration may have changed (project already created, phase transitioned)."""
         if kind not in KINDS:
             raise ValueError('Conversation kind must be definition, phase_planning or onboarding')
         request = digest({'action': 'planning_conversation', 'root': str(context.root), 'kind': kind, 'title': title,
@@ -397,7 +397,7 @@ class PlanningRepository:
 
     @staticmethod
     def _importable(session, root):
-        """La incorporación admite proyectos que el harness aún no gestiona: sin creación ni fases propias."""
+        """Onboarding admits projects the harness does not manage yet: no creation or own phases."""
         from harness_local.storage.documents import latest_phase
         if _bootstrapped(session, root):
             raise Conflict('The project was created by the harness; there is nothing to import')
@@ -407,10 +407,10 @@ class PlanningRepository:
         if session.scalar(select(ProjectImportRow.id).where(ProjectImportRow.root == root)):
             raise Conflict('Import already confirmed; complete or reconcile its sealed intent')
 
-    # --- turnos ------------------------------------------------------------------------
+    # --- turns -------------------------------------------------------------------------
 
     def submit_message(self, context, conversation_id, expected, *, key, versions, text, writer=None):
-        """Congela mensaje y contexto en la transacción que encola el turno."""
+        """Freezes message and context in the transaction that queues the turn."""
         if not isinstance(text, str) or not text.strip() or len(text) > MAX_MESSAGE:
             raise ValueError(f'Planning message must contain 1–{MAX_MESSAGE} characters')
         request = freeze({'action': 'planning_turn', 'conversation_id': conversation_id, 'expected_version': expected,
@@ -528,7 +528,7 @@ class PlanningRepository:
             _touch(self.managed, conversation)
             return job
 
-    # --- borradores ----------------------------------------------------------------------
+    # --- drafts --------------------------------------------------------------------------
 
     def _definition_open(self, session, conversation):
         if self._drafts_created(session, conversation):
@@ -539,7 +539,7 @@ class PlanningRepository:
             raise Conflict('A turn of this conversation is pending; act after it settles')
 
     def apply(self, context, conversation_id, proposal_id, expected, *, proposal_sha256, confirmed, writer):
-        """Confirmación explícita → el harness escribe el borrador si sigue siendo el que leyó el turno."""
+        """Explicit confirmation → the harness writes the draft if it is still the one the turn read."""
         from harness_local.adapters.bootstrap import DraftConflict
         if confirmed is not True:
             raise ValueError('Applying a draft requires explicit confirmation; nothing was written')
@@ -571,7 +571,7 @@ class PlanningRepository:
             _touch(self.managed, conversation)
 
     def edit_draft(self, context, conversation_id, expected, *, path, content, base_sha256, writer):
-        """Edición del usuario por API con CAS; el turno siguiente la ve como edición del usuario."""
+        """User edit through the API with CAS; the next turn sees it as a user edit."""
         from harness_local.adapters.bootstrap import DraftConflict
         target = definition_layout(context)
         if not allowed_draft(target, path):
@@ -625,10 +625,10 @@ class PlanningRepository:
                                  'reason': reason.strip()}
             _touch(self.managed, conversation)
 
-    # --- plan de la fase siguiente ---------------------------------------------------------
+    # --- plan of the next phase ------------------------------------------------------------
 
     def plan(self, session, context, phase_id, reference) -> tuple[str, dict]:
-        """Plan propuesto y confirmado para una transición: contenido exacto y su origen."""
+        """Proposed and confirmed plan for a transition: exact content and its origin."""
         if not isinstance(reference, dict) or set(reference) != {'conversation_id', 'proposal_id', 'proposal_sha256'}:
             raise ValueError('A plan proposal reference needs conversation_id, proposal_id and proposal_sha256')
         conversation = self._conversation(session, reference['conversation_id'], context=context)

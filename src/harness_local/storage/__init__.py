@@ -1,1 +1,1 @@
-"""Persistencia SQLite, sin autoridad duplicada en archivos."""
+"""SQLite persistence, without duplicated authority in files."""

@@ -1,8 +1,8 @@
-"""D072/H6.3: transición de fase sobre operaciones de fase y jobs existentes; SQLite es autoridad.
+"""D072/H6.3: phase transition over existing phase operations and jobs; SQLite is the authority.
 
-Después de CLOSED (o ABANDONED) y sin tocar el cierre D032: archiva por bytes la fase, abre
-STATE/NEXT_STEPS frescos e instala la fase siguiente del ROADMAP en un único commit conciliable.
-La fase nueva se crea en la transacción que registra el resultado, junto a su base adoptada.
+After CLOSED (or ABANDONED) and without touching the D032 closure: archives the phase by bytes, opens
+fresh STATE/NEXT_STEPS and installs the next ROADMAP phase in a single reconcilable commit.
+The new phase is created in the transaction that records the result, together with its adopted base.
 """
 
 from uuid import uuid4
@@ -24,7 +24,7 @@ from harness_local.storage.phases import PhaseRepository, _event, _latest, _oper
 
 
 def snapshot(session, phase) -> dict:
-    """Autoridad SQLite que la vista previa congela: fase terminada, estados, check y resumen."""
+    """SQLite authority that the preview freezes: finished phase, states, check and summary."""
     check = _latest(session, phase.id, 'check')
     result = (check.result or {}) if check is not None else {}
     codes = sorted(session.scalars(select(Phase.code).where(Phase.root == phase.root)).all())
@@ -39,8 +39,8 @@ def snapshot(session, phase) -> dict:
 
 
 def reviewed(session, phase, stored) -> bool:
-    """¿Sigue vigente la autoridad revisada? Una vista previa anterior a H6.4 no congeló el consumo: se compara
-    sin él y se escribe exactamente lo que se revisó."""
+    """Is the reviewed authority still current? A preview from before H6.4 did not freeze consumption: it is compared
+    without it and exactly what was reviewed is written."""
     current = snapshot(session, phase)
     if 'consumption' not in stored['summary']:
         current = {**current, 'summary': {k: v for k, v in current['summary'].items() if k != 'consumption'}}
@@ -70,7 +70,7 @@ class TransitionRepository:
         raise Conflict('Separate phase transitions are retired (D088); only a pending intent can resume')
 
     def preview(self, context, phase_id, git, next_steps=None, plan_proposal=None):
-        """`plan_proposal` (H6.5): referencia exacta a un plan propuesto en `phase_planning`, en lugar del texto."""
+        """`plan_proposal` (H6.5): exact reference to a plan proposed in `phase_planning`, instead of the text."""
         origin = None
         with Session(self.managed.engine) as session:
             phase = _phase(session, context, phase_id)
@@ -89,7 +89,7 @@ class TransitionRepository:
             state, version = snapshot(session, phase), phase.version
         try:
             shown = preview_transition(context, state, git, next_steps, origin)
-        except (ValueError, OSError, UnicodeError, RuntimeError) as exc:  # RuntimeError: captura/sellado Git
+        except (ValueError, OSError, UnicodeError, RuntimeError) as exc:  # RuntimeError: Git capture/sealing
             raise Conflict(str(exc)) from exc
         return {**shown, 'expected_version': version, 'resume_operation_id': None}
 
@@ -142,7 +142,7 @@ class TransitionRepository:
                                request={'preview': saved, 'actor': actor(), 'reason': reason})
                 session.add(op)
                 if shown.get('plan_origin') is not None:
-                    # El plan propuesto queda aceptado con la transición que lo usa, en la misma transacción.
+                    # The proposed plan becomes accepted with the transition that uses it, in the same transaction.
                     from harness_local.storage.planning import PlanningRepository
                     PlanningRepository(self.managed).mark_plan(session, shown['plan_origin'], job.run_id, job.id)
             _event(self.managed, session, phase, 'phase_transition_queued', {

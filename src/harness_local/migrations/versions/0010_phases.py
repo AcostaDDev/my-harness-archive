@@ -1,4 +1,4 @@
-"""H3.3: fases gestionadas, preguntas, operaciones de check/cierre/reconciliación y autorizaciones."""
+"""H3.3: managed phases, questions, check/closure/reconciliation operations and authorizations."""
 from alembic import op
 import sqlalchemy as sa
 
@@ -77,5 +77,5 @@ def downgrade():
     op.drop_table('phase_questions')
     op.drop_index('uq_managed_phases_open_root', table_name='managed_phases')
     op.drop_table('managed_phases')
-    # DROP COLUMN nativo (SQLite ≥ 3.35): recrear managed_runs violaría las claves foráneas que la referencian.
+    # Native DROP COLUMN (SQLite ≥ 3.35): recreating managed_runs would violate the foreign keys that reference it.
     op.execute('ALTER TABLE managed_runs DROP COLUMN purpose')

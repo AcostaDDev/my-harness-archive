@@ -1,4 +1,4 @@
-"""H3.4: versiones de definición de fase conservadas y abandono explícito (estado terminal)."""
+"""H3.4: preserved phase definition versions and explicit abandonment (terminal state)."""
 from datetime import datetime, timezone
 import json
 from uuid import uuid4
@@ -16,7 +16,7 @@ OPEN_AFTER = sa.text("status NOT IN ('CLOSED', 'ABANDONED')")
 
 
 def upgrade():
-    # ADD COLUMN nativo: recrear managed_phases rompería las claves foráneas que la referencian.
+    # Native ADD COLUMN: recreating managed_phases would break the foreign keys that reference it.
     op.add_column('managed_phases', sa.Column('definition_number', sa.Integer(), nullable=False, server_default='1'))
     op.drop_index('uq_managed_phases_open_root', table_name='managed_phases')
     op.create_index('uq_managed_phases_open_root', 'managed_phases', ['root'], unique=True, sqlite_where=OPEN_AFTER)
@@ -32,8 +32,8 @@ def upgrade():
         sa.Column('actor', sa.JSON(), nullable=True),
         sa.Column('created_at', sa.String(40), nullable=False),
         sa.UniqueConstraint('phase_id', 'number'))
-    # Fases previas: su definición vigente pasa a ser la versión 1, marcada como migrada
-    # (sin motivo ni identidad: no se infieren).
+    # Earlier phases: their current definition becomes version 1, marked as migrated
+    # (no reason or identity: they are not inferred).
     rows = op.get_bind().execute(sa.text(
         'SELECT id, definition, definition_sha256, documents FROM managed_phases ORDER BY created_at, id')).all()
     now = datetime.now(timezone.utc).isoformat(timespec='microseconds')
@@ -54,5 +54,5 @@ def downgrade():
     op.drop_table('phase_definitions')
     op.drop_index('uq_managed_phases_open_root', table_name='managed_phases')
     op.create_index('uq_managed_phases_open_root', 'managed_phases', ['root'], unique=True, sqlite_where=OPEN_BEFORE)
-    # DROP COLUMN nativo (SQLite ≥ 3.35), como en 0010.
+    # Native DROP COLUMN (SQLite ≥ 3.35), as in 0010.
     op.execute('ALTER TABLE managed_phases DROP COLUMN definition_number')

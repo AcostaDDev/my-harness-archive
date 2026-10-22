@@ -1,9 +1,9 @@
-"""Lecturas paginadas del estado gestionado para la API local. Sin escrituras.
+"""Paginated reads of the managed state for the local API. No writes.
 
-La autoridad sigue en `SQLiteManagedRepository`; estas consultas solo proyectan
-filas confirmadas. Ausencia y null se conservan: nada se rellena con defaults.
-P010-T003 (D142): ninguna vista selecciona `history_json` ni decodifica historiales; leen la proyección
-`run-projection-1`, escrita con el historial, con límites explícitos.
+Authority stays in `SQLiteManagedRepository`; these queries only project
+confirmed rows. Absence and null are preserved: nothing is filled with defaults.
+P010-T003 (D142): no view selects `history_json` or decodes histories; they read the projection
+`run-projection-1`, written with the history, with explicit limits.
 """
 
 import base64
@@ -22,7 +22,7 @@ from harness_local.storage.models import (
 )
 from harness_local.storage.run_projection import DIFF_CHUNK, PROJECTION, loads as _loads
 
-# Columnas de `managed_runs` que leen las vistas; cualquier otra (historial, contexto) lanza en lugar de cargarse.
+# `managed_runs` columns the views read; any other one (history, context) raises instead of being loaded.
 RUN_COLUMNS = load_only(Run.id, Run.root, Run.task_id, Run.phase_id, Run.status, Run.stage, Run.version,
                         Run.revisions, Run.revision_limit, Run.created_at, Run.updated_at, Run.purpose,
                         Run.versions_json, raiseload=True)
@@ -49,11 +49,11 @@ MAX_DIFF_PAGE = 512 * 1024
 
 
 def window_page(read, size: int, offset: int, limit: int) -> dict:
-    """Página por bytes UTF-8 del diff almacenado, terminada en fin de línea.
+    """Page by UTF-8 bytes of the stored diff, ending at a line end.
 
-    Una línea mayor que `limit` se corta en el siguiente límite UTF-8. `offset` válido es 0 o un
-    `next_offset` anterior; un cursor en medio de una secuencia UTF-8 se rechaza, no se sustituye.
-    `read(start, end)` devuelve esos bytes: solo se piden `limit` + 4, lo justo para completar una secuencia.
+    A line longer than `limit` is cut at the next UTF-8 boundary. A valid `offset` is 0 or a
+    previous `next_offset`; a cursor in the middle of a UTF-8 sequence is rejected, not replaced.
+    `read(start, end)` returns those bytes: only `limit` + 4 are requested, just enough to complete a sequence.
     """
     if type(offset) is not int or type(limit) is not int or offset < 0 or not 1 <= limit <= MAX_DIFF_PAGE:
         raise ValueError('Invalid diff page')
@@ -90,7 +90,7 @@ def _cycle_view(row: Cycle) -> dict:
 def _projection(session, run_id: str) -> Projection:
     row = session.get(Projection, run_id)
     if row is None:
-        # Escrita con el historial y rellenada por la migración: su ausencia es una base inconsistente.
+        # Written with the history and backfilled by the migration: its absence is an inconsistent database.
         raise RuntimeError(f'Run {run_id} sin proyección {PROJECTION}; la base no es consistente.')
     return row
 
@@ -107,7 +107,7 @@ class SQLiteManagedViews:
                 "purpose": row.purpose}
 
     def runs(self, root: str, offset: int, limit: int, phase: str | None = None, task: str | None = None) -> dict:
-        """Filtros exactos opcionales por código de fase y de tarea (URLs de la UI, D076)."""
+        """Optional exact filters by phase and task code (UI URLs, D076)."""
         with Session(self.engine) as session:
             query = select(Run).options(RUN_COLUMNS).where(Run.root == root)
             if phase is not None:
@@ -119,11 +119,11 @@ class SQLiteManagedViews:
             return {"items": items, "offset": offset, "next_offset": offset + limit if len(rows) > limit else None}
 
     def tasks(self, root: str, phase: str, planned: list[str], offset: int, limit: int) -> dict:
-        """Tareas de una fase: las de la definición en su orden y después las que solo tienen runs.
+        """Tasks of a phase: those of the definition in their order and then those that only have runs.
 
-        Solo cuenta runs de propósito `task`; el último run de cada tarea es el más reciente
-        por creación. Sin runs, `latest` es null y `runs` es 0: no se infiere ningún estado.
-        Recuentos agregados en SQL; solo se lee el último run de las tareas de la página.
+        Only runs with the `task` purpose count; the last run of each task is the most recent
+        by creation. Without runs, `latest` is null and `runs` is 0: no state is inferred.
+        Aggregate counts in SQL; only the last run of the tasks on the page is read.
         """
         scope = (Run.root == root, Run.phase_id == phase, Run.purpose == 'task')
         with Session(self.engine) as session:
@@ -138,7 +138,7 @@ class SQLiteManagedViews:
         return {"items": items, "offset": offset, "next_offset": offset + limit if len(order) > offset + limit else None}
 
     def run(self, run_id: str) -> dict:
-        """Detalle sin decodificar el historial: resumen, paradas y último ciclo; el resto de ciclos, por páginas."""
+        """Detail without decoding the history: summary, stops and last cycle; the other cycles, by pages."""
         with Session(self.engine) as session:
             row = session.get(Run, run_id, options=[RUN_COLUMNS])
             if row is None:
@@ -181,7 +181,7 @@ class SQLiteManagedViews:
                     "active_job": active_job}
 
     def cycles(self, run_id: str, offset: int, limit: int) -> dict:
-        """Ciclos de revisión por número ascendente, sin el texto del diff ni los casos JUnit."""
+        """Review cycles by ascending number, without the diff text or the JUnit cases."""
         self.exists(run_id)
         with Session(self.engine) as session:
             rows = session.scalars(select(Cycle).where(Cycle.run_id == run_id).order_by(Cycle.number)
@@ -233,9 +233,9 @@ class SQLiteManagedViews:
         return data, sha256
 
     def cycle_diff(self, run_id: str, cycle: int, offset: int, limit: int, sha256: str | None = None) -> dict:
-        """Diff revisado de un ciclo por páginas; `sha256`, si se da, debe ser el del resumen del run.
+        """Reviewed diff of a cycle by pages; `sha256`, if given, must be the one of the run summary.
 
-        Solo lee los tramos de `run_projection_diff_chunks` que cubre la página."""
+        Only reads the `run_projection_diff_chunks` spans the page covers."""
         with Session(self.engine) as session:
             if session.scalar(select(Run.id).where(Run.id == run_id)) is None:
                 raise LookupError('Run gestionado desconocido.')
@@ -258,7 +258,7 @@ class SQLiteManagedViews:
                 **page}
 
     def jobs(self, run_id: str, offset: int = 0, limit: int = 30) -> dict:
-        """Del más reciente al más antiguo: el job en curso o por recuperar está en la primera página."""
+        """From newest to oldest: the running or to-be-recovered job is on the first page."""
         self.exists(run_id)
         with Session(self.engine) as session:
             rows = session.scalars(select(Job).where(Job.run_id == run_id).order_by(Job.id.desc())
@@ -290,7 +290,7 @@ class SQLiteManagedViews:
             return {"items": items, "offset": offset, "next_offset": offset + limit if len(rows) > limit else None}
 
     def events(self, run_id: str, after: int, limit: int) -> dict:
-        """Cursor por secuencia del run: estable, sin huecos ni duplicados entre páginas."""
+        """Cursor by run sequence: stable, without gaps or duplicates between pages."""
         self.exists(run_id)
         with Session(self.engine) as session:
             rows = session.scalars(select(Event).where(Event.run_id == run_id, Event.sequence > after)
