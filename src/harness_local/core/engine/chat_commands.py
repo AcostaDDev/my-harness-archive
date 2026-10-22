@@ -1,4 +1,4 @@
-"""Sintaxis cerrada: una barra inicial nunca se envía implícitamente a un modelo."""
+"""Closed syntax: a leading slash is never implicitly sent to a model."""
 COMMANDS = ('estado', 'tests', 'siguiente', 'lote', 'check', 'cerrar', 'exportar', 'abrir-fase', 'tarea')
 
 

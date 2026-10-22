@@ -35,7 +35,7 @@ def _next_steps(text: str) -> dict:
 
 
 def adopt_documents(context, tree):
-    """Valida la fase declarada y regenera sus bloques sobre el árbol documental propuesto."""
+    """Validates the declared phase and regenerates its blocks over the proposed document tree."""
     target = definition_layout(context)
     texts = {path: tree[path].decode('utf-8') for path in target.phase_documents}
     for path, text in texts.items():

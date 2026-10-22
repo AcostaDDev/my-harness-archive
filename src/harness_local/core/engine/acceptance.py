@@ -1,4 +1,4 @@
-"""Decisión pura: ACCEPT, validación y política no equivalen a commit."""
+"""Pure decision: ACCEPT, validation and policy do not amount to a commit."""
 
 from dataclasses import dataclass
 import json
@@ -16,7 +16,7 @@ class AcceptanceDecision:
 
 
 def documentation_parity(context: ProjectContext, changed_paths) -> dict | None:
-    """D088 punto 6 (P008-T003): qué tocó el diff de modelos de datos, diagrama y flujos. None fuera del layout v2."""
+    """D088 point 6 (P008-T003): what the diff touched among data models, diagram and flows. None outside layout v2."""
     from harness_local.core.engine.documents import layout
     target = layout(context)
     if target is None:
@@ -30,8 +30,8 @@ def documentation_parity(context: ProjectContext, changed_paths) -> dict | None:
 
 
 def parity_reasons(context: ProjectContext, changed_paths) -> list[str]:
-    """Motivo determinista: un cambio de modelos de datos sin el diagrama de datos no se acepta. La paridad de
-    flujos de negocio la juzga el revisor (`review-task`)."""
+    """Deterministic reason: a data model change without the data diagram is not accepted. Business flow parity
+    is judged by the reviewer (`review-task`)."""
     parity = documentation_parity(context, changed_paths)
     if parity is None or not parity['data_model_changes'] or parity['ddbb_diagram_changed']:
         return []

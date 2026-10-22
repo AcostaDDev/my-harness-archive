@@ -1,4 +1,4 @@
-"""Puerto opcional de persistencia; las escrituras preceden a los efectos."""
+"""Optional persistence port; writes precede effects."""
 
 from typing import Protocol, TYPE_CHECKING
 
@@ -9,7 +9,7 @@ if TYPE_CHECKING:
 
 
 class JournalError(RuntimeError):
-    """Una escritura fallida detiene el flujo sin nuevas llamadas externas."""
+    """A failed write stops the flow without further external calls."""
 
 
 class EngineJournal(Protocol):

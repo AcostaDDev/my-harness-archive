@@ -172,6 +172,7 @@ tarea se leen solo las decisiones que cita; este índice sirve para buscar prece
 | [D159](#d159--p011-t001-contrato-de-idiomas-fuentes-y-corte-público) | P011-T001: contrato de idiomas, fuentes y corte público | P011 |
 | [D160](#d160--p011-t002-licencia-mit-y-frontera-del-contenido-publicable) | P011-T002: licencia MIT y frontera del contenido publicable | P011 |
 | [D161](#d161--p011-t019-retirada-legacya-y-compatibilidad-no-destructiva) | P011-T019: retirada legacy/A y compatibilidad no destructiva | P011 |
+| [D162](#d162--p011-t003-núcleo-y-perfiles-en-inglés-sin-cambiar-comportamiento) | P011-T003: núcleo y perfiles en inglés sin cambiar comportamiento | P011 |
 
 ## D001 — Alcance local y arquitectura base
 
@@ -4802,3 +4803,18 @@ Fase: P011. Precedentes: D155/D159 y [contrato T001 §6](phase/P011-T001_CONTRAT
   Sin cambios de modelos, migraciones, dependencias, recetas/recibos, configuración global o historia congelada.
   Checks sintéticos offline y manifiestos fuente en el informe; sin servicios de producto, navegador, proveedores,
   smokes, instalación operativa, push, publicación o consentimientos nuevos. T003 queda como siguiente tarea.
+
+## D162 — P011-T003: núcleo y perfiles en inglés sin cambiar comportamiento
+
+Estado: implementada el 2026-10-22 por la continuación y commit local en inglés pedidos por el usuario.
+Fase: P011. Precedentes: D158/D159 y [contrato T001 §5](phase/P011-T001_CONTRATO_APERTURA.md#5-fuentes-congeladas-recetas-documentos-y-compatibilidad).
+[Inventario resuelto y validación](phase/P011-T003_INGLES_NUCLEO.md).
+
+- Los 35 archivos Python de `core/**` y `profiles/**` quedan con comentarios y docstrings en inglés (123 líneas
+  de comentario, 121 docstrings), incluidos `tree.py`/`managed_mode.py` de T019 y el docstring restante de
+  `import_commit.py`. Sin identificadores españoles que renombrar.
+- Regla aplicada: T003 traduce solo comentarios/docstrings. Ningún literal cambia: mensajes visibles → T007/T010,
+  prosa generada/prompts/esquemas → T009, alias del parsing bilingüe D088 y comandos de chat se conservan, y los
+  valores de `ProjectProfile` permanecen porque `asdict(profile())` entra en la huella de recetas v1.
+- Evidencia de comportamiento: AST idéntico por archivo antes/después con docstrings vaciados; suites existentes
+  pertinentes. Sin tests nuevos que solo comprueben comentarios. T004 es la siguiente tarea.

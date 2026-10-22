@@ -1,10 +1,10 @@
-"""H3.3: puertas de fase con puertos explícitos. Biblioteca estándar; la autoridad vive en SQLite.
+"""H3.3: phase gates with explicit ports. Standard library; authority lives in SQLite.
 
-READY se vincula a contenido exacto: definición, HEAD/fingerprint Git limpio, documentos
-adoptados, commits de tareas aceptadas y preguntas. El cierre vuelve a observar ese
-contenido antes de cualquier efecto Git. D088: cierre y archivo en un solo flujo,
-con tag opcional sobre el HEAD evaluado y un commit documental conciliable.
-Los snapshots anteriores conservan el protocolo de cierre que congelaron.
+READY is bound to exact content: definition, clean Git HEAD/fingerprint, adopted
+documents, commits of accepted tasks and questions. Closing observes that content
+again before any Git effect. D088: closing and archiving in a single flow,
+with an optional tag on the evaluated HEAD and a reconcilable document commit.
+Earlier snapshots keep the closing protocol they froze.
 """
 
 from dataclasses import asdict, replace
@@ -27,7 +27,7 @@ PHASE_CODE = re.compile(r"[A-Za-z0-9][A-Za-z0-9._-]{0,119}")
 TAG_NAME = re.compile(r"[A-Za-z0-9][A-Za-z0-9_-]*(?:\.[A-Za-z0-9_-]+)*")
 VERDICTS = ("READY", "REVISE", "BLOCKED")
 TAG_KINDS = ("lightweight", "annotated")
-# Resultado de check → estado de fase. FAILED vuelve al estado anterior al check.
+# Check result → phase status. FAILED returns to the status before the check.
 CHECK_STATUS = {"READY": "READY_TO_CLOSE", "REVISE": "NEEDS_RECONCILIATION", "BLOCKED": "BLOCKED",
                 "NEEDS_RECONCILIATION": "NEEDS_RECONCILIATION", "NOT_READY": "ACTIVE"}
 
@@ -44,7 +44,7 @@ def _texts(value, name, *, empty=False) -> list[str]:
 
 
 def phase_definition(context: ProjectContext, data: dict) -> dict:
-    """Definición congelada por quien crea la fase; nunca la amplía un agente."""
+    """Definition frozen by whoever creates the phase; an agent never widens it."""
     if not isinstance(data, dict) or set(data) != {"code", "objective", "exit_criteria", "tasks", "documents", "tag"}:
         raise ContractError("Phase requires code, objective, exit_criteria, tasks, documents and tag")
     code, objective, tag = data["code"], data["objective"], data["tag"]
@@ -64,7 +64,7 @@ def phase_definition(context: ProjectContext, data: dict) -> dict:
 
 
 def document_hashes(context: ProjectContext, paths) -> dict[str, str | None]:
-    """SHA-256 de archivos regulares sin enlaces; None si no existen (ausencia explícita)."""
+    """SHA-256 of regular files without links; None if they do not exist (explicit absence)."""
     result = {}
     for path in paths:
         item = context.path(path)
@@ -82,14 +82,14 @@ class PhaseGit(Protocol):
 
 
 def tag_message(definition: dict, binding_sha256: str) -> str:
-    """Sin identificador de operación: un cierre posterior que concilia produce el mismo objeto."""
+    """No operation identifier: a later reconciling close produces the same object."""
     return (f"Phase {definition['code']} closed\n\nHarness-Phase: {definition['code']}\n"
             f"Harness-Ready-Binding: {binding_sha256}\n")
 
 
 def tag_intent(snapshot: dict, git: PhaseGit, context: ProjectContext, now=None) -> dict:
-    """Intención completa antes del efecto. Un tag anotado fija mensaje, identidad y fecha, y con
-    ellos su id; si un cierre anterior dejó una intención incierta para el mismo READY, se reutiliza."""
+    """Complete intent before the effect. An annotated tag fixes message, identity and date, and with
+    them its id; if an earlier close left an uncertain intent for the same READY, it is reused."""
     ready, name = snapshot["ready"], snapshot["definition"]["tag"]
     kind = snapshot.get("tag_kind", "lightweight")
     if kind not in TAG_KINDS:
@@ -121,7 +121,7 @@ def binding(snapshot: dict, evidence: ContentEvidence, documents: dict) -> dict:
 
 
 def observe(context: ProjectContext, snapshot: dict, git: PhaseGit):
-    """Contenido actual y motivos por los que no puede estar listo; solo lecturas."""
+    """Current content and the reasons it cannot be ready; reads only."""
     definition = snapshot["definition"]
     documents = document_hashes(context, definition["documents"])
     drift = sorted(path for path, value in documents.items() if snapshot["documents"].get(path) != value)
@@ -167,7 +167,7 @@ def validate_phase_result(definition: dict, data: dict) -> dict:
 
 def check_phase(context: ProjectContext, history: RunHistory, snapshot: dict, agents, commands, git: PhaseGit,
                 journal, catalog) -> tuple[RunHistory, dict]:
-    """Puertas deterministas antes de gastar una llamada; el agente solo evalúa."""
+    """Deterministic gates before spending a call; the agent only evaluates."""
     definition = snapshot["definition"]
 
     def outcome(verdict, reasons, *, bound=None, result=None, validation=None, questions=()):
@@ -247,7 +247,7 @@ def check_phase(context: ProjectContext, history: RunHistory, snapshot: dict, ag
 
 def close_phase(context: ProjectContext, history: RunHistory, snapshot: dict, git: PhaseGit,
                 journal, now=None) -> tuple[RunHistory, dict]:
-    """Reobserva READY; sella, etiqueta y archiva. Una intención existente solo se concilia."""
+    """Re-observes READY; seals, tags and archives. An existing intent is only reconciled."""
     ready = snapshot["ready"]
     done = replace(history, status="completed", stop=None)
     closure = snapshot.get('closure')

@@ -1,1 +1,1 @@
-"""Perfiles declarativos; importar un perfil no ejecuta preparación ni tests."""
+"""Declarative profiles; importing a profile runs no preparation or tests."""

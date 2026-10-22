@@ -1,9 +1,9 @@
-"""D072/H6.3 y D088: contrato documental por fase (layout v2 unificado). Biblioteca estándar, sin efectos.
+"""D072/H6.3 and D088: per-phase document contract (unified layout v2). Standard library, no effects.
 
-SQLite manda en el estado operativo y Markdown en la intención. Los bloques gestionados son
-proyecciones deterministas de SQLite o de archivos: se regeneran y se comparan byte a byte,
-nunca se vuelven a leer como fuente. Los valores libres se escapan como texto en línea, de modo
-que no pueden abrir encabezados, fences, HTML ni marcadores.
+SQLite governs operational state and Markdown governs intent. Managed blocks are
+deterministic projections of SQLite or files: they are regenerated and compared byte for byte,
+never read back as a source. Free values are escaped as inline text, so they
+cannot open headings, fences, HTML or markers.
 """
 
 from dataclasses import dataclass
@@ -18,28 +18,28 @@ from harness_local.core.engine.contracts import RECONCILE_TASK, ContractError
 from harness_local.core.engine.planning import FIELD_RE, TASK_RE, backticked, bullet_items, collapse
 
 MAX_DOCUMENT_BYTES = 512 * 1024
-# P008-T020: escritor A/B con objetos locales y sin lazy-fetch; jobs anteriores en cuarentena.
+# P008-T020: A/B writer with local objects and no lazy fetch; earlier jobs are quarantined.
 DOCUMENT_LAYOUT = 'd088-12'
-# Igual que el `project_doc_max_bytes` por defecto del pin de Codex; AGENTS.md tiene como mucho 60 líneas.
+# Same as the default `project_doc_max_bytes` of the pinned Codex; AGENTS.md has at most 60 lines.
 MAX_INSTRUCTIONS_BYTES = 32 * 1024
 LEGACY_INSTRUCTIONS = 'No project instructions: this frozen context predates the unified document contract (D088).'
 BLOCK_REASON = 'Managed documentation blocks (D072)'
 BLOCK_NAMES = ('state', 'roadmap', 'decisions')
 PHASE_CODE = re.compile(r'P\d{3}')
 PHASE_RE = re.compile(r'^##\s+(P\d{3})\s+[—-]\s+(.+?)\s*$', re.MULTILINE)
-# D088: el índice de DECISIONS sale de sus propios encabezados y de la primera línea «Estado:» de cada uno.
+# D088: the DECISIONS index comes from its own headings and the first «Estado:»/«Status:» line of each one.
 DECISION_HEADING = re.compile(r'^##\s+D(\d{3,})\s+[—-]\s+(.+?)\s*$', re.MULTILINE)
 DECISION_STATUS = re.compile(r'^(?:\*\*)?(?:Estado|Status)(?::\*\*|\*\*:|:)[ \t]*(.*)$', re.IGNORECASE)
 BASE_HEADING = re.compile(r'^##\s+(?:Base acumulada|Accumulated baseline)\s*$', re.MULTILINE)
 LEVEL_TWO = re.compile(r'^##\s', re.MULTILINE)
 ANY_MARKER = re.compile(r'<!--\s*harness-local:managed-')
-# Avisos, nunca truncado: un documento que los supera pide compactación en la reconciliación.
+# Warnings, never truncation: a document exceeding them asks for compaction during reconciliation.
 BUDGETS = {'state': 24 * 1024, 'base': 12 * 1024, 'next_steps': 48 * 1024}
 SUMMARY_LIMIT = 600
 ROADMAP_FIELDS = {'objective': ('objetivo', 'objective'), 'exit_criteria': ('criterios de salida', 'exit criteria'),
                   'dependencies': ('dependencias', 'dependencies'), 'out_of_scope': ('fuera de alcance', 'out of scope'),
                   'tag': ('tag',)}
-# Límites de la plantilla de instrucciones (D088 punto 1), comprobados por test.
+# Limits of the instructions template (D088 point 1), checked by tests.
 MAX_AGENTS_LINES = 60
 MAX_WRAPPER_LINES = 15
 MAX_TEMPLATE_COMMANDS = 12
@@ -47,8 +47,8 @@ MAX_TEMPLATE_COMMANDS = 12
 
 @dataclass(frozen=True)
 class Layout:
-    """Rutas del layout v2 unificado (D088): README y archivos de instrucciones en la raíz; el resto bajo el
-    directorio de STATE/NEXT_STEPS."""
+    """Paths of the unified layout v2 (D088): README and instruction files at the root; the rest under the
+    STATE/NEXT_STEPS directory."""
 
     docs: str
     state: str
@@ -100,7 +100,7 @@ class Layout:
 
     @property
     def phase_documents(self) -> tuple[str, ...]:
-        """Documentos ligados a la fase (READY y base adoptada): planificación y seguimiento."""
+        """Phase-bound documents (READY and adopted baseline): planning and tracking."""
         return (self.roadmap, self.decisions, self.state, self.next_steps)
 
     @property
@@ -109,12 +109,12 @@ class Layout:
 
     @property
     def instructions(self) -> tuple[str, ...]:
-        """Archivos de instrucciones para agentes: AGENTS canónico y envoltorios por proveedor."""
+        """Agent instruction files: canonical AGENTS and per-provider wrappers."""
         return (self.agents, self.claude, self.gemini)
 
     @property
     def harness_owned(self) -> tuple[str, ...]:
-        """Ningún ejecutor normal los edita; la reconciliación edita su prosa salvo el índice."""
+        """No normal executor edits them; reconciliation edits their prose except the index."""
         return (self.state, self.next_steps, self.roadmap, self.decisions)
 
     @property
@@ -125,8 +125,8 @@ class Layout:
         return path == self.archive_dir or path.startswith(self.archive_dir + '/')
 
     def editable(self, path: str) -> bool:
-        """Documentos editables por el usuario mediante una edición confirmada: README, archivos de instrucciones
-        (D088 punto 8, P008-T003) y Markdown de la documentación fuera del archivo."""
+        """Documents the user can edit through a confirmed edit: README, instruction files
+        (D088 point 8, P008-T003) and documentation Markdown outside the archive."""
         pure = PurePosixPath(path)
         if path == self.readme or path in self.instructions:
             return True
@@ -141,30 +141,30 @@ def layout(context) -> Layout | None:
 
 
 def protected_write(context, path: str) -> bool:
-    """¿Rechaza el perfil que el harness escriba `path` en una operación documental confirmada?
+    """Does the profile reject the harness writing `path` in a confirmed document operation?
 
-    D081: las rutas protegidas del perfil limitan al ejecutor y a los permisos que se le conceden. En v2, el
-    contrato documental (README, archivos de instrucciones de la raíz, Markdown de la documentación y el archivo
-    de fases) se escribe solo con una confirmación del usuario sobre el contenido exacto y tiene sus propias
-    reglas, como la regeneración mecánica de bloques en cada commit de tarea. Fuera de ese contrato, y en v1, la
-    protección del perfil se mantiene. D088 punto 8: AGENTS, CLAUDE y GEMINI son editables y se escriben en la
-    creación, la edición confirmada y la importación."""
+    D081: the profile's protected paths restrict the executor and the permissions granted to it. In v2, the
+    document contract (README, root instruction files, documentation Markdown and the phase archive) is
+    written only with a user confirmation of the exact content and has its own rules, such as the mechanical
+    regeneration of blocks in each task commit. Outside that contract, and in v1, the profile protection
+    still applies. D088 point 8: AGENTS, CLAUDE and GEMINI are editable and are written on creation,
+    confirmed editing and import."""
     from harness_local.core.engine.evidence import matches
     target = layout(context)
     pure = PurePosixPath(path)
     if '..' in pure.parts:
-        return True  # Nunca una ruta del contrato; antes solo la rechazaba un perfil que protegía `docs/**`.
+        return True  # Never a contract path; previously only a profile protecting `docs/**` rejected it.
     if target is not None and (target.editable(path) or (target.archived(path) and pure.suffix == '.md')):
         return False
     return matches(path, context.profile.protected_paths)
 
 
 def executor_protected(context, task_id: str, path: str) -> bool:
-    """¿Protege el perfil `path` frente al ejecutor de la tarea `task_id`?
+    """Does the profile protect `path` from the executor of task `task_id`?
 
-    D088 punto 6 (P008-T003): en v2, STATE, NEXT_STEPS, ROADMAP y DECISIONS los gobierna el contrato documental
-    (`harness_owned_paths`): ninguna tarea normal los edita y la reconciliación de fase edita su prosa aunque el
-    perfil también los proteja. Para el resto de rutas, y en v1, manda el perfil (D081)."""
+    D088 point 6 (P008-T003): in v2, STATE, NEXT_STEPS, ROADMAP and DECISIONS are governed by the document
+    contract (`harness_owned_paths`): no normal task edits them and phase reconciliation edits their prose even
+    if the profile also protects them. For every other path, and in v1, the profile decides (D081)."""
     from harness_local.core.engine.evidence import matches
     target = layout(context)
     if target is not None and RECONCILE_TASK.fullmatch(task_id) and path in target.harness_owned:
@@ -180,12 +180,12 @@ def require_layout(context) -> Layout:
 
 
 def project_instructions(context) -> tuple[str, dict]:
-    """D088 punto 8 (P008-T007): `AGENTS.md` del checkout del intento, completo y con su hash.
+    """D088 point 8 (P008-T007): `AGENTS.md` from the attempt's checkout, complete and with its hash.
 
-    Las CLI no lo cargan por sí mismas con sus flags congelados, así que entra en el prompt de cada rol. Se lee
-    en cada intento: un cambio afecta solo a los intentos posteriores. Ausente, enlace simbólico, no regular, vacío,
-    no UTF-8 o de más de 32 KiB detiene el intento antes de invocar; nunca se trunca. Sin layout (contextos
-    congelados anteriores a D088) no hay archivo de instrucciones que leer."""
+    The CLIs do not load it by themselves with their frozen flags, so it enters each role's prompt. It is read
+    on every attempt: a change only affects later attempts. Absent, a symlink, not regular, empty, not UTF-8
+    or larger than 32 KiB stops the attempt before invoking; it is never truncated. Without a layout (frozen
+    contexts predating D088) there is no instruction file to read."""
     target = layout(context)
     if target is None:
         return LEGACY_INSTRUCTIONS, {'path': None, 'sha256': None, 'bytes': 0}
@@ -213,7 +213,7 @@ def project_instructions(context) -> tuple[str, dict]:
     return text, {'path': target.agents, 'sha256': hashlib.sha256(data).hexdigest(), 'bytes': len(data)}
 
 
-# --- bloques gestionados -----------------------------------------------------------------------
+# --- managed blocks ----------------------------------------------------------------------------
 
 
 def markers(name: str) -> tuple[str, str]:
@@ -239,7 +239,7 @@ def _span(text: str, name: str):
 
 
 def replace_block(text: str, body: str, name: str = 'state') -> str:
-    """No normaliza ni interpreta la prosa exterior, incluidas sus terminaciones de línea."""
+    """Does not normalize or interpret the surrounding prose, including its line endings."""
     begin, end = markers(name)
     block = begin + '\n' + body + end
     span = _span(text, name)
@@ -249,7 +249,7 @@ def replace_block(text: str, body: str, name: str = 'state') -> str:
 
 
 def blocks(text: str) -> dict[str, str]:
-    """Bloques presentes, validados; cualquier otro marcador gestionado es un error."""
+    """Present blocks, validated; any other managed marker is an error."""
     found = {}
     for name in BLOCK_NAMES:
         span = _span(text, name)
@@ -268,11 +268,11 @@ def without_blocks(text: str) -> str:
     return text
 
 
-# --- escape y renderizado ----------------------------------------------------------------------
+# --- escaping and rendering --------------------------------------------------------------------
 
 
 def inline(value, limit: int | None = None) -> str:
-    """Texto en una sola línea: sin saltos, HTML, fences, tablas ni énfasis interpretables."""
+    """Single-line text: no interpretable line breaks, HTML, fences, tables or emphasis."""
     if value is None:
         return '—'
     text = ' '.join(str(value).split())
@@ -289,7 +289,7 @@ def _code(value) -> str:
 
 
 def validation_counts(report) -> dict | None:
-    """OK/KO de una validación: comandos y, si hay reportes JUnit legibles, casos por resultado."""
+    """OK/KO of a validation: commands and, when there are readable JUnit reports, cases by outcome."""
     if report is None:
         return None
     passed = sum(1 for entry in report.entries if entry.result.passed)
@@ -410,7 +410,7 @@ def render_decisions(entries: list[dict]) -> str:
     return '\n'.join(lines) + '\n'
 
 
-# --- lectura estructural de la intención -------------------------------------------------------
+# --- structural reading of intent --------------------------------------------------------------
 
 
 def _fields(body: str) -> dict[str, str]:
@@ -436,7 +436,7 @@ def _section_after(text: str, start: int) -> str:
 
 
 def parse_roadmap(text: str) -> list[dict]:
-    """Fases `## PNNN — título` en orden del documento, con campos en español o inglés."""
+    """Phases `## PNNN — title` in document order, with fields in Spanish or English."""
     entries, seen = [], set()
     for match in PHASE_RE.finditer(text):
         code = match.group(1)
@@ -466,9 +466,9 @@ def plan_tasks(text: str, code: str | None = None) -> list[tuple[str, str]]:
 
 
 def decision_index(text: str | None) -> list[dict]:
-    """D088: decisiones `## DNNN — título` de DECISIONS.md, con el estado de la primera línea `Estado:` de su
-    sección (solo esa línea). El bloque gestionado no se lee. Una numeración repetida, también con otro
-    relleno de ceros (D7 y D007), se rechaza: el índice no elige entre dos decisiones."""
+    """D088: `## DNNN — title` decisions of DECISIONS.md, with the status from the first `Estado:`/`Status:` line
+    of their section (only that line). The managed block is not read. A repeated number, also with different
+    zero padding (D7 and D007), is rejected: the index does not choose between two decisions."""
     source = without_blocks(text or '')
     entries, seen = [], {}
     for match in DECISION_HEADING.finditer(source):
@@ -488,7 +488,7 @@ def decision_index(text: str | None) -> list[dict]:
 
 
 def base_section(text: str) -> str | None:
-    """Sección «Base acumulada» literal, sin un bloque gestionado que pudiera seguirla."""
+    """Literal «Base acumulada»/«Accumulated baseline» section, without any managed block that might follow it."""
     match = BASE_HEADING.search(text)
     if match is None:
         return None
@@ -499,14 +499,14 @@ def base_section(text: str) -> str | None:
 
 
 def phase_data(target: Layout, entry: dict, tasks: list[tuple[str, str]]) -> dict:
-    """Datos de `PhaseCreate` derivados de ROADMAP §PNNN y de NEXT_STEPS; los valida `phase_definition`."""
+    """`PhaseCreate` data derived from ROADMAP §PNNN and NEXT_STEPS; validated by `phase_definition`."""
     return {'code': entry['code'], 'objective': entry['objective'], 'exit_criteria': entry['exit_criteria'],
             'tasks': [task for task, _ in tasks], 'documents': list(target.phase_documents), 'tag': entry['tag']}
 
 
 def managed_bodies(target: Layout, snapshot: dict, phases: dict,
                    texts: dict[str, str | None]) -> dict[str, tuple[str, str]]:
-    """Cuerpo de cada bloque gestionado: STATE/NEXT_STEPS desde SQLite; ROADMAP e índice, además, desde disco."""
+    """Body of each managed block: STATE/NEXT_STEPS from SQLite; ROADMAP and the index also from disk."""
     bodies = {target.state: ('state', render_state(snapshot)), target.next_steps: ('state', render_next_steps(snapshot))}
     if texts.get(target.roadmap) is not None:
         rows = [{'code': entry['code'], 'title': entry['title'], **phases.get(entry['code'], {})}
@@ -519,7 +519,7 @@ def managed_bodies(target: Layout, snapshot: dict, phases: dict,
 
 def budget_warnings(target: Layout, texts: dict[str, str]) -> list[str]:
     warnings = []
-    # D088: DECISIONS es un registro único sin presupuesto; los agentes leen solo las decisiones citadas.
+    # D088: DECISIONS is a single register without a budget; agents read only the cited decisions.
     limits = ((target.state, 'state', 'STATE'), (target.next_steps, 'next_steps', 'NEXT_STEPS'))
     for path, key, label in limits:
         text = texts.get(path)
@@ -532,7 +532,7 @@ def budget_warnings(target: Layout, texts: dict[str, str]) -> list[str]:
     return warnings
 
 
-# --- archivo de fase ---------------------------------------------------------------------------
+# --- phase archive -----------------------------------------------------------------------------
 
 
 def render_review(code: str, check: dict | None, status: str) -> str:
@@ -571,7 +571,7 @@ def render_summary(summary: dict) -> str:
              + f" · **Definición:** versión {phase['definition_number']}",
              f"**Objetivo:** {inline(phase['objective'])}", '', '**Criterios de salida:**']
     lines += [f'- {inline(item)}' for item in phase['exit_criteria']]
-    # H6.4: las fases archivadas después de 0014 añaden tokens y turnos; las anteriores conservan su forma.
+    # H6.4: phases archived after 0014 add tokens and turns; earlier ones keep their shape.
     consumption = summary.get('consumption')
     usage = (consumption or {}).get('by_task') or {}
     lines += ['', '## Tareas', '',
@@ -619,7 +619,7 @@ def render_summary(summary: dict) -> str:
 
 
 def _measure(value, attempts) -> str:
-    """Suma con su cobertura: «—» si ningún intento la aporta (ausencia, no cero); «n (k/m)» si solo algunos."""
+    """Sum with its coverage: «—» if no attempt provides it (absence, not zero); «n (k/m)» if only some do."""
     if not value or value['sum'] is None:
         return '—'
     return f"{value['sum']}" + (f" ({value['attempts']}/{attempts})" if value['attempts'] != attempts else '')
@@ -641,11 +641,11 @@ def turns_label(entry) -> str:
     return ' · '.join(parts) or '—'
 
 
-# --- plantilla documental v2 unificada (D088) -----------------------------------------------------
+# --- unified v2 document template (D088) ----------------------------------------------------------
 
 
 def _command_lines(commands) -> list[str]:
-    """Una línea por argv, sin saltos; un argv que podría cerrar el bloque de código no se transcribe."""
+    """One line per argv, without breaks; an argv that could close the code block is not transcribed."""
     lines = []
     for argv in list(commands)[:MAX_TEMPLATE_COMMANDS]:
         line = ' '.join(shlex.join(list(argv)).split())
@@ -656,7 +656,7 @@ def _command_lines(commands) -> list[str]:
 
 
 def render_agents(target: Layout, name: str, preparation=(), validations=()) -> str:
-    """AGENTS.md canónico (≤60 líneas): discovery, reglas inquebrantables y comandos del perfil."""
+    """Canonical AGENTS.md (≤60 lines): discovery, unbreakable rules and profile commands."""
     lines = [f'# {name} — instrucciones para agentes', '',
              f'Fuente canónica para agentes; `{target.claude}` y `{target.gemini}` la importan. Para personas, '
              f'`{target.readme}`.', '',
@@ -689,17 +689,17 @@ def render_agents(target: Layout, name: str, preparation=(), validations=()) -> 
 
 
 def render_wrapper(target: Layout, provider: str) -> str:
-    """Envoltorio de proveedor (≤15 líneas) que importa AGENTS.md."""
+    """Provider wrapper (≤15 lines) that imports AGENTS.md."""
     return (f'# {provider}\n\n@{target.agents}\n\nNotas para {provider}: ninguna todavía. Las instrucciones '
             f'comunes viven en `{target.agents}`.\n')
 
 
 def skeleton(target: Layout, title: str, phase_title: str = 'Primera fase', *, preparation=(),
              validations=()) -> dict[str, str]:
-    """Documentos base de D088 con bloques vacíos en su sitio; el contenido real lo fija la creación (H6.5).
+    """D088 base documents with empty blocks in place; creation (H6.5) sets the real content.
 
-    `preparation` y `validations`: argv del perfil para la sección de comandos de AGENTS. `flows/` y `phase/`
-    no tienen archivo de plantilla."""
+    `preparation` and `validations`: profile argv for the AGENTS commands section. `flows/` and `phase/`
+    have no template file."""
     name, first = inline(title), inline(phase_title)
     state_begin, state_end = markers('state')
     road_begin, road_end = markers('roadmap')

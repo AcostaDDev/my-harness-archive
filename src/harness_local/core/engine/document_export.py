@@ -1,4 +1,4 @@
-"""Exportación mecánica pura: bloques delimitados, bytes deterministas y commit exacto."""
+"""Pure mechanical export: delimited blocks, deterministic bytes and exact commit."""
 from dataclasses import asdict, replace
 import difflib
 import hashlib
@@ -19,14 +19,14 @@ def text_hash(text):
 
 
 def replace_block(text, body):
-    """No normaliza ni interpreta la prosa exterior, incluidas sus terminaciones de línea."""
+    """Does not normalize or interpret the surrounding prose, including its line endings."""
     return layout_v2.replace_block(text, body, 'state')
 
 
 def render(snapshot, *, next_steps=False):
-    """Representación legible; valores libres se escapan como JSON para no inyectar marcadores/HTML."""
-    # JSON estable también conserva explícitamente datos ausentes (null) y preguntas sin responder.
-    # No incluye versiones/eventos de exportación, fecha actual ni el commit de la propia exportación.
+    """Readable rendering; free values are escaped as JSON so they cannot inject markers/HTML."""
+    # Stable JSON also keeps absent data (null) and unanswered questions explicitly.
+    # It excludes export versions/events, the current date and the export's own commit.
     if next_steps:
         data = {'phase': snapshot['phase'], 'pending_tasks': [
             task for task, value in snapshot['tasks'].items() if value['commit'] is None],
@@ -34,14 +34,14 @@ def render(snapshot, *, next_steps=False):
             'batches': snapshot['batches']}
     else:
         data = snapshot
-    # Escape HTML, Markdown fences y líneas de marcador en valores aportados por humanos.
+    # Escape HTML, Markdown fences and marker lines in human-provided values.
     pretty = json.dumps(data, ensure_ascii=True, sort_keys=True, indent=2)
     pretty = pretty.replace('<', '\\u003c').replace('>', '\\u003e').replace('`', '\\u0060')
     return 'Estado gestionado por Harness Local (SQLite).\n\n```json\n' + pretty + '\n```\n'
 
 
 def _targets(context, snapshot, baseline):
-    """Rutas y cuerpos: D036 (JSON en STATE/NEXT_STEPS) o D072 (bloques legibles de los documentos de fase)."""
+    """Paths and bodies: D036 (JSON in STATE/NEXT_STEPS) or D072 (readable blocks of the phase documents)."""
     target = layout_v2.layout(context)
     if target is None:
         return [(context.state_file, 'state', render(snapshot)),
@@ -93,7 +93,7 @@ def preview(context, snapshot, baseline, git):
 
 
 def execute(context, history, request, git, journal, now):
-    """Sin agentes: confirmación humana del diff, intención previa y escritor H2.4."""
+    """No agents: human confirmation of the diff, prior intent and H2.4 writer."""
     shown = request['preview']
     raw = request.get('commit_intent')
     exported = {document['path'] for document in shown['documents']}

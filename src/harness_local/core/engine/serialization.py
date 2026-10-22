@@ -1,4 +1,4 @@
-"""Codec JSON versionado, sin pickle ni dependencias de almacenamiento."""
+"""Versioned JSON codec, without pickle or storage dependencies."""
 
 from dataclasses import asdict
 import json
@@ -57,7 +57,7 @@ def _has_provenance(history: RunHistory) -> bool:
 
 
 def dump_history(history: RunHistory) -> str:
-    # Sin procedencia ni datos CLI se conserva la forma exacta del formato 1 (H2.2).
+    # Without provenance or CLI data the exact format 1 shape is kept (H2.2).
     data = strip_empty_provenance(asdict(history))
     has_cli = any(attempt.result.status is not None or attempt.result.metadata_json is not None
                   for attempt in history.attempts)

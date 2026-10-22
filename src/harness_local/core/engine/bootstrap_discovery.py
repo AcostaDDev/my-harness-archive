@@ -1,6 +1,6 @@
-"""Propuesta de requisitos/alternativas del agente revisor (Codex o Claude); una invocación nueva de solo lectura.
+"""Requirements/alternatives proposal from the reviewer agent (Codex or Claude); a new read-only invocation.
 
-D088: retirada con la creación v1; no se admiten runs nuevos y solo se ejecutan o concilian los ya registrados."""
+D088: retired with v1 creation; no new runs are admitted and only already recorded ones run or reconcile."""
 from dataclasses import replace
 
 from harness_local.core.engine.contracts import ContractError, Selection, invoke_agent, stop_history

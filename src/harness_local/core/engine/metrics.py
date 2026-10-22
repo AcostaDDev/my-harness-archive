@@ -1,26 +1,26 @@
-"""H6.4 (D072 §9): métricas por intento con procedencia por campo. Biblioteca estándar, sin E/S.
+"""H6.4 (D072 §9): per-attempt metrics with per-field provenance. Standard library, no I/O.
 
-Catálogo `metrics-1`, caracterizado offline con los streams conservados de D071
-(`docs/archive/phase-007/H6.4_METRICS.md`). Procedencias: `requested` (selección congelada), `reported` (lo emite
-el proveedor), `derived` (calculado por el harness desde eventos reportados), `measured` (reloj del
-harness) y `absent`. Un null nunca es cero.
+Catalog `metrics-1`, characterized offline with the D071 retained streams
+(`docs/archive/phase-007/H6.4_METRICS.md`). Provenances: `requested` (frozen selection), `reported` (emitted
+by the provider), `derived` (computed by the harness from reported events), `measured` (harness
+clock) and `absent`. A null is never zero.
 
-Reglas contra el doble conteo: el uso del terminal es el acumulado de la invocación y nunca se suma con
-el uso por mensaje, que solo se usa, deduplicado, cuando no hay terminal. Los eventos `assistant` de
-Claude repiten el mismo mensaje y traen una instantánea parcial de la salida: no cuentan tokens. Los
-tokens de razonamiento son un subconjunto de la salida. Nada de `rate_limit_event` se conserva: la cuota
-no se deduce.
+Rules against double counting: terminal usage is the invocation total and is never added to
+per-message usage, which is only used, deduplicated, when there is no terminal. Claude `assistant`
+events repeat the same message and carry a partial snapshot of the output: they do not count tokens.
+Reasoning tokens are a subset of the output. Nothing from `rate_limit_event` is kept: quota
+is not inferred.
 """
 
 import json
 import math
 
 CATALOG = 'metrics-1'
-# Normalización de la captura del terminal. Sin clave en los metadatos: `terminal-1` (anterior a H6.4).
+# Normalization of the terminal capture. No key in the metadata: `terminal-1` (predates H6.4).
 CAPTURE = 'terminal-2'
 LEGACY_CAPTURE = 'terminal-1'
 TOKENS = ('input_tokens', 'cache_read_tokens', 'cache_write_tokens', 'output_tokens', 'reasoning_tokens')
-# Campos del terminal que `terminal-2` añade a los ya capturados por `terminal-1`.
+# Terminal fields that `terminal-2` adds to those already captured by `terminal-1`.
 TERMINAL_FIELDS = ('usage', 'modelUsage', 'duration_ms', 'total_cost_usd', 'permission_denials')
 TERMINAL_FIELDS_2 = ('num_turns', 'duration_api_ms')
 
@@ -32,15 +32,15 @@ CLAUDE_MODEL_USAGE = {'input_tokens': 'inputTokens', 'cache_read_tokens': 'cache
 CODEX_USAGE = {'input_tokens': 'input_tokens', 'cache_read_tokens': 'cached_input_tokens',
                'cache_write_tokens': 'cache_write_input_tokens', 'output_tokens': 'output_tokens',
                'reasoning_tokens': 'reasoning_output_tokens'}
-# Claude informa la entrada sin la caché; Codex la incluye (caché leída ⊆ entrada en las 6 muestras D071).
+# Claude reports input without the cache; Codex includes it (cache read ⊆ input in the 6 D071 samples).
 INPUT_SEMANTICS = {'claude': 'excludes_cache', 'codex': 'includes_cache_read'}
-# Elementos de Codex que no son herramientas; el resto de tipos completados cuentan como herramienta.
+# Codex items that are not tools; every other completed type counts as a tool.
 CODEX_NON_TOOLS = frozenset({'agent_message', 'reasoning', 'error'})
 VERDICT_ROLES = frozenset({'reviewer', 'phase'})
 
 
 def count(value):
-    """Entero no negativo reportado; cualquier otra cosa es ausencia, nunca cero."""
+    """Reported non-negative integer; anything else is absence, never zero."""
     return value if type(value) is int and value >= 0 else None
 
 
@@ -57,16 +57,16 @@ def _usage(data, mapping):
 
 
 class StreamMetrics:
-    """Contadores derivados de un stream JSONL de agente; el mismo cálculo en la captura y en el relleno."""
+    """Counters derived from an agent JSONL stream; the same computation for capture and backfill."""
 
     def __init__(self, provider):
         self.provider = provider
-        self.messages = []   # Claude: uso por mensaje, message_start actualizado por message_delta (acumulado).
-        self.tool_ids = {}   # nombre o tipo → ids vistos (los eventos de Claude repiten el mismo mensaje).
-        self.anonymous = {}  # herramientas sin id: se cuentan por evento.
-        self.items = {}      # Codex: item.completed por tipo, una vez por id.
+        self.messages = []   # Claude: per-message usage, message_start updated by message_delta (cumulative).
+        self.tool_ids = {}   # name or type → ids seen (Claude events repeat the same message).
+        self.anonymous = {}  # tools without an id: counted per event.
+        self.items = {}      # Codex: item.completed per type, once per id.
         self.item_ids = set()
-        self.terminal = {}   # Campos del último terminal, incluidos los de terminal-2.
+        self.terminal = {}   # Fields of the last terminal, including those of terminal-2.
 
     def _tool(self, name, ident):
         if not isinstance(name, str) or not name:
@@ -94,7 +94,7 @@ class StreamMetrics:
                 self.messages.append(_usage(inner['message'].get('usage'), CLAUDE_USAGE)
                                      or dict.fromkeys(CLAUDE_USAGE))
             elif inner.get('type') == 'message_delta' and self.messages:
-                # Uso acumulado del mensaje en curso: sustituye, nunca suma.
+                # Cumulative usage of the current message: replaces, never adds.
                 delta = _usage(inner.get('usage'), CLAUDE_USAGE) or {}
                 self.messages[-1] = {name: delta[name] if delta.get(name) is not None else value
                                      for name, value in self.messages[-1].items()}
@@ -122,7 +122,7 @@ TERMINALS = {'codex': frozenset({'turn.completed', 'turn.failed'}), 'claude': fr
 
 
 def replay(provider: str, data: bytes) -> dict:
-    """Relectura de un stdout sellado (relleno): mismas reglas que la captura, sin efectos."""
+    """Re-read of a sealed stdout (backfill): same rules as the capture, no effects."""
     metrics = StreamMetrics(provider)
     for line in data.splitlines():
         if not line.strip():
@@ -151,15 +151,15 @@ def _loads(value):
 
 def attempt_metrics(*, request: dict, result: dict | None, status: str, spec: dict | None, executor_round: int,
                     stream: dict | None = None) -> dict:
-    """Fila de métricas de un intento resuelto. `stream`: relectura verificada (relleno) con `summary` y
-    `terminal`; sin ella se usan solo los metadatos sellados del intento."""
+    """Metrics row of a resolved attempt. `stream`: verified re-read (backfill) with `summary` and
+    `terminal`; without it only the attempt's sealed metadata is used."""
     provider = spec.get('provider') if isinstance(spec, dict) else None
     meta = _loads((result or {}).get('metadata_json'))
     meta = meta if isinstance(meta, dict) else {}
     observed = meta.get('observed') if isinstance(meta.get('observed'), dict) else {}
     derived = meta.get('stream_metrics') if isinstance(meta.get('stream_metrics'), dict) else None
     if stream is not None:
-        # Solo completa lo que la captura sellada no tenía; nunca reemplaza un valor sellado.
+        # Only fills in what the sealed capture lacked; never replaces a sealed value.
         observed = {**stream['terminal'], **observed}
         derived = derived or stream['summary']
     provenance = {'requested_model': 'requested', 'requested_effort': 'requested'}
@@ -195,7 +195,7 @@ def attempt_metrics(*, request: dict, result: dict | None, status: str, spec: di
         if semantics == 'excludes_cache' and row['cache_write_tokens'] is not None:
             total = uncached + row['cache_read_tokens'] + row['cache_write_tokens'] + row['output_tokens']
         elif semantics == 'includes_cache_read' and row['cache_write_tokens'] in (0, None):
-            # Codex: escritura de caché nunca observada distinta de cero; no se sabe si va dentro de la entrada.
+            # Codex: cache write never observed non-zero; unknown whether it is included in the input.
             total = uncached + row['cache_read_tokens'] + row['output_tokens']
     row['total_tokens'] = put('total_tokens', total, 'derived')
 

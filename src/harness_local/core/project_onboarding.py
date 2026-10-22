@@ -1,8 +1,8 @@
-"""P008-T013: hechos estáticos de un repositorio sin harness, sin importar ni ejecutar su código.
+"""P008-T013: static facts of a repository without a harness, without importing or executing its code.
 
-AST de Python y lexer de JS/TS/Prisma (subconjunto explícito, sin resolver código dinámico). Cada hallazgo cita
-ruta y línea. La propuesta de perfil es un valor local-config-4 pendiente de confirmación, nunca configuración
-activa ni autorización. No accede a disco, procesos, proveedores o SQLite.
+Python AST and a JS/TS/Prisma lexer (explicit subset, without resolving dynamic code). Each finding cites
+path and line. The profile proposal is a local-config-4 value pending confirmation, never active
+configuration or authorization. No access to disk, processes, providers or SQLite.
 """
 
 import ast
@@ -29,7 +29,7 @@ MANIFESTS = {'pyproject.toml', 'package.json', 'go.mod', 'pytest.ini', 'tox.ini'
 
 
 class OnboardingInventoryError(ValueError):
-    """No se puede obtener una instantánea acotada y verificable del repositorio."""
+    """A bounded, verifiable snapshot of the repository cannot be obtained."""
 
 
 def in_scope(path: str) -> bool:
@@ -78,8 +78,8 @@ def _python(path: str, text: str, result: dict, tools: dict):
     def stack(name, line):
         result['stack'].append({'name': name, 'path': path, 'line': line})
 
-    # Los imports dentro de main()/tests también son evidencia de stack (manage.py suele importarlo ahí).
-    # Solo los imports de módulo alimentan resolve(): no se supone que un binding local exista fuera de su ámbito.
+    # Imports inside main()/tests are stack evidence too (manage.py usually imports it there).
+    # Only module-level imports feed resolve(): a local binding is not assumed to exist outside its scope.
     for node in ast.walk(module):
         targets = ([name.name for name in node.names] if isinstance(node, ast.Import) else
                    [node.module] if isinstance(node, ast.ImportFrom) and node.module else [])
@@ -90,7 +90,7 @@ def _python(path: str, text: str, result: dict, tools: dict):
             if package in ('pytest', 'unittest'):
                 tools.setdefault(package, set()).add(path)
 
-    # Raíces declarativas SQLAlchemy verificadas dentro del módulo; no se adivina una clase solo por llamarse Base.
+    # SQLAlchemy declarative roots verified within the module; a class is not guessed just for being named Base.
     bases = {name for name, target in aliases.items() if target in
              ('sqlalchemy.orm.DeclarativeBase', 'sqlalchemy.ext.declarative.DeclarativeMeta')}
     for node in module.body:
@@ -161,7 +161,7 @@ def _python(path: str, text: str, result: dict, tools: dict):
                         if foreign is not None:
                             field.update(relation='ForeignKey', target=_literal(foreign.args[0]) if foreign.args else None)
                     fields.append(field)
-            # DeclarativeBase sin tabla y bases abstractas no son entidades persistidas.
+            # A table-less DeclarativeBase and abstract bases are not persisted entities.
             abstract = any(isinstance(s, ast.Assign) and any(_dotted(t) == '__abstract__' for t in s.targets)
                            and isinstance(s.value, ast.Constant) and s.value.value is True for s in node.body)
             meta_abstract = any(isinstance(s, ast.ClassDef) and s.name == 'Meta' and any(
@@ -194,7 +194,7 @@ def _python(path: str, text: str, result: dict, tools: dict):
                                      'dynamic': route is None})
 
 
-# Tokens (valor, tipo, línea). Los comentarios y las cadenas se reconocen antes que los identificadores.
+# Tokens (value, type, line). Comments and strings are recognized before identifiers.
 _TOKEN = re.compile(r'(?P<space>\s+)|(?P<comment>//[^\n]*|/\*[\s\S]*?\*/)|'
                     r'(?P<string>"(?:\\.|[^"\\])*"|\'(?:\\.|[^\'\\])*\'|`(?:\\.|[^`\\])*`)|'
                     r'(?P<word>[A-Za-z_$][\w$]*)|(?P<punct>.)')
@@ -206,7 +206,7 @@ def _tokens(text):
     while position < len(text):
         match = _TOKEN.match(text, position)
         kind, value = match.lastgroup, match.group()
-        # Literales regexp en posición de expresión; sus caracteres no son código de rutas/decoradores.
+        # Regexp literals in expression position; their characters are not route/decorator code.
         if value == '/' and (not tokens or tokens[-1][0] in ('=', '(', ':', ',', '[', 'return', '!', '>')):
             literal = regex.match(text, position)
             if literal:
@@ -222,7 +222,7 @@ def _string(token):
     value, kind, _ = token
     if kind != 'string' or (value.startswith('`') and '${' in value):
         return None
-    # No interpretar escapes JS como Python ni confundirlos con rutas literales exactas.
+    # Do not interpret JS escapes as Python nor confuse them with exact literal routes.
     return value[1:-1] if '\\' not in value else None
 
 
@@ -247,7 +247,7 @@ def _javascript(path, text, result):
     tokens = _tokens(text)
     values = [token[0] for token in tokens]
     imports = {}
-    # Imports ESM explícitos, incluidos alias; require('express') se reconoce para la factoría común.
+    # Explicit ESM imports, including aliases; require('express') is recognized for the common factory.
     for i, value in enumerate(values):
         if value == 'import':
             end = next((j for j in range(i + 1, min(i + 60, len(tokens))) if values[j] == 'from'), None)
@@ -297,7 +297,7 @@ def _javascript(path, text, result):
             k = start + 1
             while k + 2 < stop:
                 if values[k] != '@' or values[k + 1] not in decorators or values[k + 2] != '(':
-                    # Saltar métodos/objetos para no interpretar decoradores anidados como campos.
+                    # Skip methods/objects so nested decorators are not read as fields.
                     if values[k] == '{':
                         close = _close(tokens, k)
                         k = (close + 1) if close is not None else stop
@@ -310,7 +310,7 @@ def _javascript(path, text, result):
                     break
                 args = tokens[k + 3:close]
                 field_start = close + 1
-                # Otros decoradores sobre el mismo campo (JoinColumn, Index…).
+                # Other decorators on the same field (JoinColumn, Index…).
                 while field_start + 2 < stop and values[field_start] == '@' and values[field_start + 2] == '(':
                     next_close = _close(tokens, field_start + 2)
                     if next_close is None:
@@ -345,7 +345,7 @@ def _javascript(path, text, result):
         if (values[i] in routers and values[i + 1] == '.'
                 and values[i + 2] in ('get', 'post', 'put', 'patch', 'delete', 'options', 'head', 'all', 'use')
                 and values[i + 3] == '('):
-            # Una cadena seguida de +/otra expresión no es una ruta literal, aunque empiece por una cadena.
+            # A string followed by +/another expression is not a literal route, even if it starts with a string.
             route = _string(tokens[i + 4]) if i + 5 < len(tokens) and values[i + 5] in (',', ')') else None
             result['routes'].append({'framework': 'express', 'path': path, 'line': tokens[i][2],
                                      'method': values[i + 2].upper(), 'route': route, 'dynamic': route is None})
@@ -370,7 +370,7 @@ def _prisma(path, text, result):
                 cursor += 1
             if len(row) < 2 or row[0][1] != 'word' or row[1][1] != 'word':
                 continue
-            # La nulabilidad y la lista pertenecen al tipo, antes de los atributos.
+            # Nullability and list belong to the type, before the attributes.
             type_end = next((j for j, t in enumerate(row[2:], 2) if t[0] == '@'), len(row))
             suffix = ''.join(t[0] for t in row[2:type_end])
             fields.append({'name': row[0][0], 'type': row[1][0] + suffix, 'line': line})

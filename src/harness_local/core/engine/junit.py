@@ -1,4 +1,4 @@
-"""JUnit acotado: bytes observados, nunca autoridad de aceptación ni XML activo."""
+"""Bounded JUnit: observed bytes, never acceptance authority or active XML."""
 
 import base64
 from dataclasses import dataclass, replace
@@ -20,7 +20,7 @@ MAX_DEPTH = 64
 
 @dataclass(frozen=True)
 class TestCase:
-    id: str  # Huella estable de identidad observada + ordinal entre duplicados.
+    id: str  # Stable fingerprint of the observed identity + ordinal among duplicates.
     reported_id: str | None
     name: str | None
     classname: str | None
@@ -54,10 +54,10 @@ class ReportObservation:
 
 
 def observe_report(context: ProjectContext, path: str) -> ReportObservation:
-    """Recorre descriptores sin seguir enlaces ni abrir archivos especiales.
+    """Walks descriptors without following links or opening special files.
 
-    Nunca elimina un reporte anterior. O_NONBLOCK evita bloquear en un FIFO.
-    Rechaza enlaces duros: no atribuye archivos compartidos fuera del checkout.
+    Never deletes an earlier report. O_NONBLOCK avoids blocking on a FIFO.
+    Rejects hard links: does not attribute files shared outside the checkout.
     """
     descriptors = []
     try:
@@ -80,7 +80,7 @@ def observe_report(context: ProjectContext, path: str) -> ReportObservation:
             data = stream.read(MAX_BYTES + 1)
         after = os.fstat(descriptor)
         signature = lambda s: (s.st_dev, s.st_ino, s.st_size, s.st_mtime_ns, s.st_ctime_ns)
-        # Verifica también que el nombre no haya sido sustituido durante la lectura.
+        # Also verifies that the name was not replaced during the read.
         named = os.stat(parts[-1], dir_fd=directory, follow_symlinks=False)
         if signature(before) != signature(after) or signature(after) != signature(named) or len(data) != after.st_size:
             return ReportObservation(None, None, 'unreadable', 'Report changed during capture; bytes not attributed')
@@ -152,7 +152,7 @@ def parse_junit(data: bytes, declaration: JUnitDeclaration) -> JUnitReport:
     except expat.ExpatError as exc:
         diagnostics.append(f'XML incomplete or malformed: {exc}')
     except (ValueError, LookupError) as exc:
-        # Estructura insegura/incompatible: conserva original, no atribuye casos.
+        # Unsafe/incompatible structure: keeps the original, attributes no cases.
         return replace(report, diagnostics=(str(exc),))
 
     cases = []
@@ -201,7 +201,7 @@ def parse_junit(data: bytes, declaration: JUnitDeclaration) -> JUnitReport:
                 diagnostics.append(f'Declared {field}={value!r} differs from observed cases in suite {suite.get("name")!r}')
     if not cases:
         diagnostics.append('No completed testcases observed; no test success inferred')
-    # Evita amplificar respuestas con miles de diagnósticos iguales.
+    # Avoids amplifying responses with thousands of identical diagnostics.
     diagnostics = tuple(dict.fromkeys(diagnostics))[:100]
     status = 'partial' if diagnostics and cases else 'invalid' if diagnostics and root is None else 'partial' if diagnostics else 'complete'
     return replace(report, status=status, diagnostics=diagnostics, cases=tuple(cases))

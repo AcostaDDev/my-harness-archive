@@ -7,9 +7,9 @@ import re
 
 from harness_local.core.engine.contracts import ContractError, freeze
 
-# P008-T007 (D088 punto 8): AGENTS.md del proyecto, leído y con hash en cada intento por `render_attempt`. Lo
-# declaran las plantillas de los roles que trabajan sobre un proyecto existente; la definición lo redacta (su
-# borrador ya está en el contexto) y la creación v1 está retirada.
+# P008-T007 (D088 point 8): the project's AGENTS.md, read and hashed on every attempt by `render_attempt`. It is
+# declared by the templates of the roles working on an existing project; definition drafts it (its draft is
+# already in the context) and v1 creation is retired.
 PROJECT_INSTRUCTIONS = 'PROJECT_INSTRUCTIONS'
 VARIABLES = {
     'bootstrap-project': ('BRIEF',),
@@ -29,8 +29,8 @@ VARIABLES = {
 ROLES = {'bootstrap-project': 'bootstrap', 'plan-task': 'planner', 'review-task': 'reviewer', 'execute-task': 'executor', 'revise-task': 'executor',
          'close-phase': 'phase', 'chat-turn': 'chat', 'define-project': 'definition', 'plan-phase': 'planning',
          'onboard-project': 'definition'}
-# H4.1/H6.5/P008-T011: plantillas añadidas después de H3.1. Los catálogos congelados en runs anteriores no las
-# contienen y siguen siendo válidos al reanudar; los catálogos nuevos siempre las incluyen.
+# H4.1/H6.5/P008-T011: templates added after H3.1. Catalogs frozen in earlier runs do not contain them and
+# remain valid on resume; new catalogs always include them.
 ADDED_LATER = frozenset({'chat-turn', 'define-project', 'plan-phase', 'onboard-project'})
 RETIRED = {'import-project': ('CONTEXT_JSON', 'MESSAGE')}
 TOKEN = re.compile(r'{{([A-Z][A-Z0-9_]*)}}')
@@ -52,8 +52,8 @@ def validate(name: str, template: str, *, historical=False) -> tuple[str, ...]:
     if '{{' in rest or '}}' in rest:
         raise ContractError('Malformed variable; use {{UPPERCASE_NAME}}')
     allowed = set(VARIABLES[name] if name in VARIABLES else RETIRED[name])
-    # Las versiones anteriores a P008-T007 (catálogos congelados y versiones guardadas) siguen siendo legibles sin
-    # la variable de instrucciones; `render_attempt` se niega a invocar con ellas sobre un proyecto con layout.
+    # Versions predating P008-T007 (frozen catalogs and saved versions) remain readable without the
+    # instructions variable; `render_attempt` refuses to invoke with them on a project with a layout.
     if used - allowed or allowed - used - {PROJECT_INSTRUCTIONS}:
         raise ContractError(f'Invalid variables: unknown={sorted(used - allowed)}, missing={sorted(allowed - used)}')
     return tuple(sorted(used))
@@ -124,7 +124,7 @@ QUESTIONS = {'type': 'array', 'items': {'type': 'object', 'properties': {
 
 
 def _proposals(description: str) -> dict:
-    """D088 punto 2 (P008-T003): propuestas de ADR acotadas; la validación del motor está en `review.py`."""
+    """D088 point 2 (P008-T003): bounded ADR proposals; the engine validation lives in `review.py`."""
     return {'type': 'array', 'maxItems': 5, 'description': description,
             'items': _object({'title': 'string', 'decision': 'string', 'rationale': 'string'})}
 
@@ -153,7 +153,7 @@ def output_schema(role: str) -> dict:
             {'title': 'string', 'objective': 'string', 'scope': 'string', 'acceptance_criteria': TEXTS,
              'validation': TEXTS, 'rationale': 'string'})}},
         'bootstrap': {'summary': 'string', 'requirements': TEXTS, 'alternatives': TEXTS, 'pending_decisions': TEXTS},
-        # H6.5: conversaciones de definición y de planificación de fase; documentos completos, nunca efectos.
+        # H6.5: definition and phase planning conversations; complete documents, never effects.
         'definition': {'answer': 'string', 'questions': QUESTIONS, 'drafts': {'type': 'array', 'items': _object(
             {'path': 'string', 'content': 'string', 'reason': 'string'})}, 'pending': TEXTS},
         'planning': {'answer': 'string', 'questions': QUESTIONS,
@@ -179,7 +179,7 @@ def render_attempt(catalog, name, values, context):
     template = catalog[name]
     instructions = None
     if PROJECT_INSTRUCTIONS in VARIABLES[name]:
-        # P008-T007: el motor aporta AGENTS.md; quien llama nunca lo sustituye. Sin archivo válido, sin intento.
+        # P008-T007: the engine supplies AGENTS.md; the caller never replaces it. No valid file, no attempt.
         from harness_local.core.engine.documents import layout, project_instructions
         if PROJECT_INSTRUCTIONS in values:
             raise ContractError('Project instructions are supplied by the engine, never by the caller')
@@ -201,5 +201,5 @@ def render_attempt(catalog, name, values, context):
                 'document_references': [context.next_steps_file, context.state_file],
                 'rendered': text, 'rendered_sha256': digest(text)}
     if instructions is not None:
-        snapshot['project_instructions'] = instructions  # P008-T007: ruta, hash y tamaño de AGENTS.md
+        snapshot['project_instructions'] = instructions  # P008-T007: path, hash and size of AGENTS.md
     return text, freeze(snapshot)

@@ -1,4 +1,4 @@
-"""Planificación documental caracterizada desde el motor legacy (H0.1)."""
+"""Document planning characterized from the legacy engine (H0.1)."""
 
 import re
 
@@ -6,13 +6,13 @@ from harness_local.core.engine.context import ProjectContext
 from harness_local.core.engine.contracts import IncompleteContract, ContractError, task_contract
 
 
-# D072: «Restricciones compartidas» es el alias en español de la sección común.
+# D072: «Restricciones compartidas» is the Spanish alias of the shared section.
 SHARED_HEADING = r"^##\s+(?:Shared|Restricciones compartidas)\b.*$"
 TASK_RE = re.compile(r"^##\s+(P\d{3}-T\d{3})\s+[—-]\s+(.+?)\s*$", re.MULTILINE)
 FIELD_RE = re.compile(r"^\*\*([^*\n]+?)(?::\*\*|\*\*:?)[ \t]*(.*)$")
 BULLET_RE = re.compile(r"^\s*(?:[-*]|\d+[.)])\s+(.*)$")
 EXECUTOR_RE = re.compile(r"^`?([a-z0-9.-]+)`?\s*/\s*`?([a-z]+)`?\s*(?:[—–-]+\s*(.*))?$", re.DOTALL)
-# D072: alias en español después de los ingleses; un plan en inglés se interpreta igual que antes.
+# D072: Spanish aliases after the English ones; an English plan is interpreted as before.
 FIELD_NAMES = {
     "objective": ("objective", "objetivo"), "business_context": ("business context", "contexto de negocio"),
     "scope": ("implementation scope / allowed scope", "implementation scope", "scope", "alcance"),
@@ -53,9 +53,9 @@ def task_heading(task_id: str) -> str:
 
 
 def task_sources(context: ProjectContext) -> dict:
-    """P009-T020: tareas del NEXT_STEPS vivo para encolarlas sin escribir el contrato. El texto de cada una es su
-    sección literal, precedida de las restricciones compartidas si el documento las tiene: es justo lo que el
-    planificador lee del texto enviado (`section`). Un id repetido no se ofrece, porque no se puede elegir."""
+    """P009-T020: tasks of the live NEXT_STEPS, to queue them without writing the contract. The text of each one
+    is its literal section, preceded by the shared constraints when the document has them: exactly what the
+    planner reads from the submitted text (`section`). A repeated id is not offered, since it cannot be chosen."""
     from harness_local.core.engine.document_ops import read_text, text_hash
     text = read_text(context, context.next_steps_file)
     result = {"path": context.next_steps_file, "sha256": None, "items": [], "diagnostics": []}

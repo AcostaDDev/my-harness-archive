@@ -7,7 +7,7 @@ class ImportInventoryError(ValueError):
 
 @dataclass(frozen=True)
 class TreeEntry:
-    """Entrada del árbol de HEAD dentro del ámbito documental. `data` es None si no se leyó."""
+    """HEAD tree entry within the document scope. `data` is None if it was not read."""
 
     path: str
     mode: str

@@ -1,9 +1,9 @@
-"""D072/H6.3: transición de fase y edición documental confirmada. Sin agentes.
+"""D072/H6.3: phase transition and confirmed document editing. No agents.
 
-Ambas operaciones siguen el patrón de la exportación D036: vista previa determinista con
-contenido íntegro y diff, confirmación humana del hash exacto, intención de commit sellada
-antes de escribir y escritor Git H2.4 conciliable tras una caída. Nunca se sobrescriben
-bytes ajenos: cada documento admite solo su hash anterior (o ausencia) o el sellado.
+Both operations follow the D036 export pattern: deterministic preview with
+full content and diff, human confirmation of the exact hash, commit intent sealed
+before writing and an H2.4 Git writer that reconciles after a crash. Foreign bytes
+are never overwritten: each document admits only its previous hash (or absence) or the sealed one.
 """
 
 from dataclasses import asdict, replace
@@ -27,7 +27,7 @@ TERMINAL = ('CLOSED', 'ABANDONED')
 
 
 class BaseChanged(ValueError):
-    """El documento ya no tiene el hash con el que se abrió en el editor (CAS del hash base)."""
+    """The document no longer has the hash it had when opened in the editor (base hash CAS)."""
 
 
 def text_hash(text: str) -> str:
@@ -35,7 +35,7 @@ def text_hash(text: str) -> str:
 
 
 def read_text(context, path: str) -> str | None:
-    """Documento regular UTF-8 acotado; None si no existe. Enlaces y otros tipos se rechazan."""
+    """Bounded regular UTF-8 document; None if absent. Links and other types are rejected."""
     target = context.path(path)
     if target.is_symlink() or (target.exists() and not target.is_file()):
         raise ValueError(f'{path} must be a regular file')
@@ -64,7 +64,7 @@ def _clean_capture(context, git):
 def _sealed_preview(context, evidence, provenance, tree: str,
                     changes: list[tuple[str, str | bytes | None, str | bytes | None]],
                     reason: str, extra: dict, disk: dict[str, str] | None = None) -> dict:
-    """`disk`: bytes locales que el commit sustituye además de los de la base (bloques regenerados)."""
+    """`disk`: local bytes the commit replaces in addition to the base ones (regenerated blocks)."""
     documents, updates, diffs = [], [], []
     for path, old, new in changes:
         if old == new:
@@ -94,7 +94,7 @@ def _protected(context, paths):
             raise ValueError(f'{path} is protected by the project profile')
 
 
-# --- transición ------------------------------------------------------------------------------
+# --- transition ------------------------------------------------------------------------------
 
 
 def _state_title(text: str) -> str:
@@ -104,10 +104,10 @@ def _state_title(text: str) -> str:
 
 def preview_transition(context, snapshot: dict, git, next_steps: str | None, plan_origin: dict | None = None,
                        *, unified=False) -> dict:
-    """Archivo por bytes de la fase terminada, documentos frescos y definición de la siguiente.
+    """Byte archive of the finished phase, fresh documents and definition of the next one.
 
-    `plan_origin` (H6.5): propuesta de la conversación `phase_planning` de la que sale el plan; entra en el
-    hash revisado. Sin ella, la vista previa conserva exactamente su forma anterior."""
+    `plan_origin` (H6.5): proposal of the `phase_planning` conversation the plan comes from; it enters the
+    reviewed hash. Without it, the preview keeps exactly its previous shape."""
     target = require_layout(context)
     closed = snapshot['phase']
     code, status = closed['code'], closed['status']
@@ -185,7 +185,7 @@ def preview_transition(context, snapshot: dict, git, next_steps: str | None, pla
                (target.state, texts[target.state], state), (target.next_steps, texts[target.next_steps], plan),
                (target.roadmap, texts[target.roadmap], roadmap), (target.decisions, texts[target.decisions], decisions)]
     for _, _, text in changes[4:]:
-        blocks(text)  # ningún marcador inyectado ni parcial en los documentos frescos
+        blocks(text)  # no injected or partial marker in the fresh documents
     if unified:
         work = context.path(target.phase_dir)
         if work.exists():
@@ -195,7 +195,7 @@ def preview_transition(context, snapshot: dict, git, next_steps: str | None, pla
             for path in sorted(work.rglob('*')):
                 relative = path.relative_to(work).as_posix()
                 source = f'{target.phase_dir}/{relative}'
-                safe = context.path(source)  # rechaza enlaces de archivos y directorios
+                safe = context.path(source)  # rejects file and directory links
                 if safe.is_dir():
                     continue
                 if not safe.is_file():
@@ -214,7 +214,7 @@ def preview_transition(context, snapshot: dict, git, next_steps: str | None, pla
         **({'plan_origin': plan_origin} if plan_origin is not None else {})})
 
 
-# --- edición documental ----------------------------------------------------------------------
+# --- document editing ------------------------------------------------------------------------
 
 
 def _edit_checks(target: Layout, path: str, old: str | None, new: str):
@@ -232,25 +232,25 @@ def _edit_checks(target: Layout, path: str, old: str | None, new: str):
 
 
 def restore_blocks(local: str, base: str | None, path: str) -> str:
-    """Prosa local con los bloques gestionados de la base: «regenerar» ante una edición local de un bloque."""
+    """Local prose with the base managed blocks: «regenerate» after a local edit of a block."""
     try:
         theirs, ours = blocks(local), blocks(base or '')
     except ValueError as exc:
         raise ValueError(f'{path}: {exc}; restore the markers by hand before regenerating') from exc
     if set(theirs) != set(ours):
         raise ValueError(f'{path}: managed markers were added or removed; restore them by hand before regenerating')
-    for name, block in ours.items():  # bytes exactos del bloque base, incluidas sus terminaciones de línea
+    for name, block in ours.items():  # exact bytes of the base block, including its line endings
         start, stop = _span(local, name)
         local = local[:start] + block + local[stop:]
     return local
 
 
 def preview_edit(context, git, *, source: str, changes: list[dict] | None, regenerate_blocks: bool = False) -> dict:
-    """`content`: documentos enviados sobre un checkout limpio. `worktree`: cambios locales de documentos.
+    """`content`: documents submitted over a clean checkout. `worktree`: local document changes.
 
-    En `content`, un `base_sha256` (null: el documento no debe existir) es el CAS del editor. En `worktree`,
-    `regenerate_blocks` sustituye los bloques gestionados editados en local por los de la base; la vista previa
-    los lista con el diff de lo que se descarta y el escritor solo admite esos bytes locales exactos."""
+    In `content`, a `base_sha256` (null: the document must not exist) is the editor CAS. In `worktree`,
+    `regenerate_blocks` replaces locally edited managed blocks with the base ones; the preview lists them
+    with the diff of what is discarded and the writer only admits those exact local bytes."""
     target = require_layout(context)
     if regenerate_blocks and source != 'worktree':
         raise ValueError('Only a worktree edit regenerates managed blocks')
@@ -303,7 +303,7 @@ def preview_edit(context, git, *, source: str, changes: list[dict] | None, regen
         raise ValueError('Unknown edit source')
     for path, content in proposed.items():
         _edit_checks(target, path, previous[path], content)
-    # D088: editar DECISIONS regenera su índice gestionado, desde sus encabezados, en el mismo commit.
+    # D088: editing DECISIONS regenerates its managed index, from its headings, in the same commit.
     if target.decisions in proposed:
         try:
             index = render_decisions(decision_index(proposed[target.decisions]))
@@ -311,14 +311,14 @@ def preview_edit(context, git, *, source: str, changes: list[dict] | None, regen
             raise ValueError(f'{target.decisions}: {exc}') from exc
         regenerated = replace_block(proposed[target.decisions], index, 'decisions')
         if source == 'worktree' and regenerated != proposed[target.decisions]:
-            # Como «regenerar»: el escritor admite los bytes locales exactos y la vista previa lista el cambio.
+            # Like «regenerate»: the writer admits the exact local bytes and the preview lists the change.
             local.setdefault(target.decisions, proposed[target.decisions])
         proposed[target.decisions] = regenerated
     _protected(context, proposed)
     changes_list = [(path, previous[path], proposed[path]) for path in sorted(proposed)]
     extra = {'operation': 'document_edit', 'source': source}
     if local:
-        # Lo que se descarta de los bytes locales; forma parte del hash revisado.
+        # What is discarded from the local bytes; part of the reviewed hash.
         extra['regenerated'] = [{'path': path, 'local_sha256': text_hash(local[path]),
                                  'diff': diff(path, local[path], proposed[path])} for path in sorted(local)]
     preview = _sealed_preview(context, evidence, provenance, provenance.base_tree, changes_list, EDIT_REASON,
@@ -326,8 +326,8 @@ def preview_edit(context, git, *, source: str, changes: list[dict] | None, regen
     if not preview['documents']:
         raise ValueError('The documents already have this content; there is nothing to commit')
     if source == 'worktree':
-        # Todo el cambio local debe quedar dentro de lo confirmado: los documentos locales, sobre la base,
-        # reproducen el árbol del checkout. El índice regenerado por el harness se añade después.
+        # The whole local change must stay within what was confirmed: the local documents, over the base,
+        # reproduce the checkout tree. The index regenerated by the harness is added afterwards.
         probe = tuple(MechanicalUpdate(item['path'], local.get(item['path'], item['content']), item['reason'])
                       for item in preview['mechanical'] if item['path'] in evidence.changed_paths)
         plan = CommitPlan(evidence.base_revision, provenance.base_tree, probe, 'probe\n',
@@ -338,11 +338,11 @@ def preview_edit(context, git, *, source: str, changes: list[dict] | None, regen
     return preview
 
 
-# --- ejecución común -------------------------------------------------------------------------
+# --- shared execution ------------------------------------------------------------------------
 
 
 def seal_operation(context, history, request, git, journal, now, *, label):
-    """Persiste la intención completa antes del primer efecto del cierre (incluido el tag)."""
+    """Persists the complete intent before the first closing effect (including the tag)."""
     shown = request['preview']
     raw = request.get('commit_intent')
     if raw is None:
@@ -366,7 +366,7 @@ def seal_operation(context, history, request, git, journal, now, *, label):
 
 
 def execute(context, history, request, git, journal, now, *, label: str):
-    """Intención previa sellada y escritor H2.4; una intención existente solo se concilia."""
+    """Prior sealed intent and H2.4 writer; an existing intent is only reconciled."""
     shown = request['preview']
     try:
         intent = seal_operation(context, history, request, git, journal, now, label=label)

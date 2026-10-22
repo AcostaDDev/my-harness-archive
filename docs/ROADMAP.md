@@ -238,10 +238,11 @@ producto ni ejecución operativa. T002 completada (D160): MIT, titular David Aco
 escaneo estático del origen; [informe](phase/P011-T002_CONTENIDO_PUBLICABLE.md). No hay candidato público
 aprobado; staging/avisos/assets y activación del canal privado GitHub pendientes en sus entregas.
 T019 completada (D161): retirada legacy/A, con cero/B y datos propios conservados; [informe](phase/P011-T019_RETIRADA_LEGACY.md).
-Dieciséis tareas pendientes; siguiente T003.
+T003 completada (D162): comentarios/docstrings de núcleo y perfiles en inglés; [inventario](phase/P011-T003_INGLES_NUCLEO.md).
+Quince tareas pendientes; siguiente T004.
 Planificación inicial finalizada en D156 y commit `6174f51`; ajustes D157/D158 incorporados
-en `2730f54`, sin ejecución del producto. La petición actual autoriza T019 y su commit local en inglés.
-La fase no está cerrada; se mantienen diecinueve tareas (tres completadas) y diez criterios.
+en `2730f54`, sin ejecución del producto. La petición actual autoriza T003 y su commit local en inglés.
+La fase no está cerrada; se mantienen diecinueve tareas (cuatro completadas) y diez criterios.
 [Plan](phase/P011_PLAN_APERTURA_PUBLICA.md), [tareas](NEXT_STEPS.md) y
 [D154](DECISIONS.md#d154--p011-preparación-para-apertura-pública-en-github).
 La primera versión local P010 sigue completada en su alcance; P011 añade objetivos públicos, no reabre ese cierre.

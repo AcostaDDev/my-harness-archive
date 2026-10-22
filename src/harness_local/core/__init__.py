@@ -1,1 +1,1 @@
-"""Dominio y casos de uso sin dependencias de infraestructura."""
+"""Domain and use cases without infrastructure dependencies."""

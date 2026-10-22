@@ -1,11 +1,11 @@
-"""H6.5 (D072 §5.1, D073): creación y planificación conversacionales. Biblioteca estándar, sin efectos.
+"""H6.5 (D072 §5.1, D073): conversational creation and planning. Standard library, no effects.
 
-Dos conversaciones sobre la infraestructura del chat (D035): `definition` (proyecto nuevo, desde un
-brief) y `phase_planning` (plan de la fase activa vacía o de la siguiente). Cada turno es una invocación
-nueva, de solo lectura, del revisor con el contexto congelado al encolarlo. La salida tiene un esquema fijo; una
-salida inválida detiene el turno sin fallback ni reintento. El agente nunca escribe: los borradores
-los escribe el harness al aplicar una propuesta confirmada, con CAS sobre el hash leído en el turno.
-La aceptación es una vista previa determinista que lleva al bootstrap D037 con la plantilla v2.
+Two conversations on top of the chat infrastructure (D035): `definition` (new project, from a
+brief) and `phase_planning` (plan for the empty active phase or the next one). Each turn is a new
+read-only invocation of the reviewer with the context frozen when it was queued. The output has a fixed schema;
+an invalid output stops the turn without fallback or retry. The agent never writes: the harness writes
+the drafts when applying a confirmed proposal, with CAS over the hash read in the turn.
+Acceptance is a deterministic preview that leads to the D037 bootstrap with the v2 template.
 """
 
 from dataclasses import asdict, replace
@@ -30,7 +30,7 @@ from harness_local.core.engine.planning import FIELD_NAMES, bullet_items, determ
 from harness_local.core.engine.prompts import dump_catalog, render_attempt
 
 MAX_BRIEF_BYTES = 256 * 1024
-# Borradores congelados en un turno: todos, íntegros; por encima, el turno no se encola.
+# Drafts frozen in a turn: all of them, in full; above this limit, the turn is not queued.
 MAX_CONTEXT_DRAFT_BYTES = 2 * 1024 * 1024
 MAX_DRAFTS = 20
 MAX_QUESTIONS = 30
@@ -40,7 +40,7 @@ DRAFT_NAME = re.compile(r'[A-Za-z0-9][A-Za-z0-9._-]{0,99}\.md')
 KINDS = {'definition': ('define-project', 'definition'), 'phase_planning': ('plan-phase', 'planning'),
          'onboarding': ('onboard-project', 'definition')}
 DRAFT_KINDS = ('definition', 'onboarding')
-TEMPLATE = {'name': 'project-definition', 'version': '4'}  # 4: documentos obligatorios y prompts D088
+TEMPLATE = {'name': 'project-definition', 'version': '4'}  # 4: mandatory documents and D088 prompts
 
 
 def text_hash(text: str) -> str:
@@ -48,7 +48,7 @@ def text_hash(text: str) -> str:
 
 
 def brief(text) -> dict:
-    """Markdown del usuario congelado con su hash. No se interpretan comandos, rutas ni selecciones."""
+    """User Markdown frozen with its hash. Commands, paths and selections are not interpreted."""
     if not isinstance(text, str) or not text.strip() or '\0' in text:
         raise ValueError('The brief must be non-empty, NUL-free Markdown text')
     size = len(text.encode('utf-8'))
@@ -61,7 +61,7 @@ def question_id(text: str) -> str:
     return hashlib.sha256(' '.join(text.split()).encode('utf-8')).hexdigest()
 
 
-# --- rutas de borrador -------------------------------------------------------------------------
+# --- draft paths -------------------------------------------------------------------------------
 
 
 def definition_layout(context) -> Layout:
@@ -74,17 +74,17 @@ def definition_layout(context) -> Layout:
 
 
 def fixed_drafts(target: Layout) -> tuple[str, ...]:
-    """Rutas de la plantilla v2 de D088 (`skeleton`); ni el título ni los comandos cambian las rutas."""
+    """Paths of the D088 v2 template (`skeleton`); neither the title nor the commands change the paths."""
     return tuple(sorted(skeleton(target, 'x')))
 
 
 def required_documents(target: Layout) -> tuple[str, ...]:
-    """Los once documentos del resultado aceptado, incluidos los completados por la plantilla (D089)."""
+    """The eleven documents of the accepted result, including those completed by the template (D089)."""
     return (*target.instructions, *target.product_documents, *target.phase_documents)
 
 
 def default_documents(target: Layout) -> tuple[str, ...]:
-    """D089: solo instrucciones y diagrama sin persistencia tienen un contenido por defecto."""
+    """D089: only instructions and the no-persistence diagram have default content."""
     return (*target.instructions, target.ddbb_diagram)
 
 
@@ -94,7 +94,7 @@ def draft_directories(target: Layout) -> frozenset[str]:
 
 
 def allowed_draft(target: Layout, path: str) -> bool:
-    """Solo la plantilla de D088 y `flows/*.md`; cualquier otro archivo es ajeno."""
+    """Only the D088 template and `flows/*.md`; any other file is foreign."""
     if not isinstance(path, str):
         return False
     if path in fixed_drafts(target):
@@ -113,7 +113,7 @@ def _block_names(target: Layout, path: str) -> set[str]:
             target.decisions: {'decisions'}}.get(path, set())
 
 
-# --- salidas estructuradas ---------------------------------------------------------------------
+# --- structured outputs ------------------------------------------------------------------------
 
 
 def _questions(value) -> list[dict]:
@@ -140,7 +140,7 @@ def _content(value, name) -> str:
 
 
 def validate_definition_result(data, target: Layout) -> dict:
-    """Esquema fijo: respuesta, preguntas, borradores completos por documento y pendientes; nada más."""
+    """Fixed schema: answer, questions, complete drafts per document and open items; nothing else."""
     if not isinstance(data, dict) or set(data) != {'answer', 'questions', 'drafts', 'pending'}:
         raise ContractError('Definition result must contain exactly answer, questions, drafts and pending')
     drafts = data['drafts']
@@ -162,7 +162,7 @@ def validate_definition_result(data, target: Layout) -> dict:
 
 
 def validate_plan(content: str, code: str) -> list[tuple[str, str]]:
-    """Plan NEXT_STEPS de la fase siguiente: tareas con su prefijo y solo el bloque `managed-state`."""
+    """NEXT_STEPS plan of the next phase: tasks with their prefix and only the `managed-state` block."""
     if set(blocks(content)) - {'state'}:
         raise ValueError('The plan may contain only the managed-state block of NEXT_STEPS')
     tasks = plan_tasks(content, code)
@@ -190,11 +190,11 @@ def validate_planning_result(data, following: str | None) -> dict:
             'pending': _texts(data['pending'], 'pending items', limit=MAX_PENDING)}
 
 
-# --- turno -------------------------------------------------------------------------------------
+# --- turn --------------------------------------------------------------------------------------
 
 
 def planning_turn(context, history, snapshot: dict, agents, observe, journal, catalog):
-    """Una invocación con la petición congelada; lo observado (borradores o checkout) no puede cambiar."""
+    """One invocation with the frozen request; what was observed (drafts or checkout) cannot change."""
 
     def done(history, status, reasons, *, result=None, observed=None):
         return replace(history, status='completed', stop=None) if status == 'ANSWERED' else history, {
@@ -213,7 +213,7 @@ def planning_turn(context, history, snapshot: dict, agents, observe, journal, ca
     queued_observation = ({k: v for k, v in before.items() if k != 'snapshot'}
                           if kind == 'onboarding' else before)
     if snapshot.get('observed') is not None and queued_observation != snapshot['observed']:
-        # La CAS de las propuestas usa los hashes congelados: si ya no coinciden, ni se invoca al agente.
+        # The proposals' CAS uses the frozen hashes: if they no longer match, the agent is not even invoked.
         reason = 'Drafts changed after the message was queued; send the message again'
         return done(stop_history(history, kind, reason), 'FAILED', [reason], observed={'before': before})
     try:
@@ -251,7 +251,7 @@ def planning_turn(context, history, snapshot: dict, agents, observe, journal, ca
     return done(history, 'ANSWERED', [], result=result, observed=observed)
 
 
-# --- aceptación --------------------------------------------------------------------------------
+# --- acceptance --------------------------------------------------------------------------------
 
 
 def _task_fields(text: str, task_id: str) -> dict:
@@ -266,7 +266,7 @@ def template_identity(target: Layout) -> dict:
 
 
 def render_definition(conversation: dict, documents: list[dict]) -> str:
-    """Resumen mecánico de la conversación desde SQLite; texto libre escapado en línea."""
+    """Mechanical summary of the conversation from SQLite; free text escaped inline."""
     lines = ['# Definición del proyecto', '',
              'Generado por Harness Local desde SQLite al aceptar la definición (D072). Instantánea inmutable: '
              'la conversación completa sigue en SQLite.', '',
@@ -306,11 +306,11 @@ def _short(value) -> str:
 
 
 def acceptance(context, conversation: dict, inspection: dict, texts: dict[str, str]) -> dict:
-    """Vista previa determinista de la aceptación: bloqueos o los archivos íntegros del commit raíz.
+    """Deterministic acceptance preview: blockers or the complete files of the root commit.
 
-    `conversation`: snapshot SQLite (brief, turnos, preguntas abiertas con aplazamientos, pendientes,
-    registro de borradores). `inspection`: borradores, archivos ajenos e inválidos del destino.
-    `texts`: contenido de cada borrador, con el hash de la inspección."""
+    `conversation`: SQLite snapshot (brief, turns, open questions with deferrals, open items,
+    draft register). `inspection`: drafts, foreign and invalid files of the destination.
+    `texts`: content of each draft, with the inspection hash."""
     target = definition_layout(context)
     blockers, warnings = [], []
     if inspection['import_required']:
@@ -416,8 +416,8 @@ def acceptance(context, conversation: dict, inspection: dict, texts: dict[str, s
         target.decisions: replace_block(texts[target.decisions], render_decisions(decision_index(texts[target.decisions])),
                                         'decisions'),
     }
-    # D088: AGENTS, CLAUDE, GEMINI y DDBB-DIAGRAM no redactados salen de la plantilla con el título y los
-    # comandos del perfil congelado.
+    # D088: AGENTS, CLAUDE, GEMINI and DDBB-DIAGRAM that were not drafted come from the template with the title and
+    # commands of the frozen profile.
     template = skeleton(target, conversation['title'],
                         preparation=[command.argv for command in context.profile.preparation],
                         validations=[command.argv for command in context.profile.validations])

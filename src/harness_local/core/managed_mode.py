@@ -16,13 +16,13 @@ def digest(data: str | bytes) -> str:
 
 @dataclass(frozen=True)
 class CheckoutFacts:
-    """Hechos del sistema de archivos leídos sin seguir enlaces ni escribir."""
+    """Filesystem facts read without following links or writing."""
 
     root: str
-    repository_key: str | None  # common dir Git canónico; None fuera de Git o ilegible
+    repository_key: str | None  # canonical Git common dir; None outside Git or unreadable
     main_checkout: str | None
-    legacy_state: bool  # existe .harness/runs (de cualquier tipo) en root
-    main_legacy_state: bool  # idem en el checkout principal, si es otro
+    legacy_state: bool  # .harness/runs exists (of any type) in root
+    main_legacy_state: bool  # likewise in the main checkout, if different
     marker: bytes | None
     marker_error: str | None = None
 
@@ -40,10 +40,10 @@ class ActivationView:
 
 def classify_drift(manifest: dict, observed: dict[str, tuple[str, int, int]],
                    hash_of: Callable[[str], str | None]) -> dict[str, list[str]]:
-    """Compara el ámbito legacy actual con lo copiado. Borrar no es escribir.
+    """Compares the current legacy scope with what was copied. Deleting is not writing.
 
-    `observed`: ruta → (tipo `file`/`dir`/`other`, tamaño, mtime_ns). Un directorio
-    nuevo (p. ej. un run recién creado y aún vacío) también es actividad legacy.
+    `observed`: path → (type `file`/`dir`/`other`, size, mtime_ns). A new directory
+    (e.g. a freshly created, still empty run) is also legacy activity.
     """
     recorded = {entry["path"]: entry for entry in manifest["artifacts"]
                 if entry["copied"] and entry["path"].startswith(LEGACY_RUNS + "/")}
@@ -67,7 +67,7 @@ def classify_drift(manifest: dict, observed: dict[str, tuple[str, int, int]],
 
 def mode_refusal(facts: CheckoutFacts, live: ActivationView | None, source: CheckoutFacts | None,
                  drift: dict[str, list[str]] | None) -> str | None:
-    """None si el motor gestionado puede operar en `facts.root`; si no, el diagnóstico."""
+    """None if the managed engine may operate in `facts.root`; otherwise, the diagnosis."""
     if live is None:
         if facts.marker is not None or facts.marker_error:
             return ("Marcador de modo gestionado sin activación viva en esta base; "

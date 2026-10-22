@@ -4,11 +4,11 @@ Objetivo y criterios en [ROADMAP](ROADMAP.md#p011--preparación-para-apertura-p�
 Decisión: [D154](DECISIONS.md#d154--p011-preparación-para-apertura-pública-en-github).
 [Plan y alcance](phase/P011_PLAN_APERTURA_PUBLICA.md).
 
-**Estado:** en ejecución el 2026-10-22. T001/T002/T019 completadas (D159–D161); dieciséis tareas pendientes.
-Licencia/avisos entregados y retirada legacy/A implementada; cero/B e historia propia conservados.
+**Estado:** en ejecución el 2026-10-22. T001/T002/T019/T003 completadas (D159–D162); quince tareas pendientes.
+Licencia/avisos entregados, retirada legacy/A implementada y núcleo/perfiles con comentarios en inglés.
 **Planificación:** base finalizada en D156 y afinada por D155/D157/D158; contrato T001 disponible.
 No equivale a fase completada.
-**Siguiente:** P011-T003. Sin autorización de publicación.
+**Siguiente:** P011-T004. Sin autorización de publicación.
 P001–P010 siguen cerradas; la primera versión local mantiene el alcance de D151/D153.
 
 ## Restricciones compartidas
@@ -41,7 +41,7 @@ P001–P010 siguen cerradas; la primera versión local mantiene el alcance de D1
   siguiente fase` para v0.2.0 después de abrir el proyecto en GitHub, fuera de estas tareas. P011 mantiene
   cierre con READY y autorización propia, nueva fase sin tareas y confirmación del plan posterior.
   El commit D156 y los ajustes D157/D158 ya se realizaron. La petición actual autoriza ejecutar la siguiente
-  tarea (T019) y su commit local en inglés, sin encadenar tareas ni publicar.
+  tarea (T003) y su commit local en inglés, sin encadenar tareas ni publicar.
 - D157 elige instantánea pública inicial revisada, con Git/documentación de partida nuevos y sin historia privada.
   Desde la apertura, código/decisiones/fases se desarrollan en el repositorio público, fuente principal; este
   checkout conserva su historia privada. No sincronizar dos desarrollos activos ni congelar para siempre `docs/` pública.
@@ -125,7 +125,10 @@ contenidos exactos del artefacto final se verifican en T016.
 
 ## P011-T003 — Comentarios e identificadores en inglés: núcleo y perfiles
 
-**Estado:** pendiente. **Depende de:** T001, T019.
+**Estado:** completada el 2026-10-22, D162. **Depende de:** T001, T019.
+**Evidencia:** [inventario resuelto](phase/P011-T003_INGLES_NUCLEO.md): 35 archivos de `core/**`/`profiles/**`,
+123 líneas de comentario y 121 docstrings en inglés; sin identificadores españoles. Literales intactos con
+propietaria (T009/T010, alias bilingües, valores de perfil ligados a huellas). AST idéntico y suites registradas.
 **Objetivo:** Que el núcleo mantenido tenga comentarios, docstrings y descripciones técnicas en inglés.
 **Alcance:** `core/engine` y `profiles`; revisar variables, funciones/clases y descripciones de esquemas.
 Mensajes visibles corresponden a T007/T010; prompts/documentos generados a T009.

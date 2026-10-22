@@ -1,4 +1,4 @@
-"""Reglas de stack extraídas de config.yaml/helpers legacy; sin rutas globales."""
+"""Stack rules extracted from legacy config.yaml/helpers; no global paths."""
 
 from harness_local.core.engine.context import Command, ProjectProfile
 

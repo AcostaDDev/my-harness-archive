@@ -1,11 +1,11 @@
-"""H4.1: turno de chat contextual. Biblioteca estándar; la autoridad vive en SQLite.
+"""H4.1: contextual chat turn. Standard library; authority lives in SQLite.
 
-Cada turno es una invocación nueva, de solo lectura, del rol `chat` (agente revisor, Codex o Claude) con el contexto
-explícito congelado al encolarlo: proyecto, fase, documentos y evidencias seleccionadas, más los
-turnos anteriores. No hay sesión del proveedor que reanudar. La salida tiene un esquema fijo; una
-salida inválida detiene el turno sin fallback ni reintento. El turno no escribe: la evidencia del
-checkout se captura antes y después, y cualquier cambio invalida el turno y sus propuestas.
-Una propuesta no ejecuta nada; solo una confirmación explícita la convierte en una tarea normal.
+Each turn is a new read-only invocation of the `chat` role (reviewer agent, Codex or Claude) with the explicit
+context frozen when it was queued: project, phase, selected documents and evidence, plus the previous
+turns. There is no provider session to resume. The output has a fixed schema; an invalid output stops
+the turn without fallback or retry. The turn does not write: checkout evidence is captured before
+and after, and any change invalidates the turn and its proposals.
+A proposal executes nothing; only an explicit confirmation turns it into a normal task.
 """
 
 from dataclasses import replace
@@ -38,7 +38,7 @@ def _texts(value, name, *, empty=True, limit=50) -> list[str]:
 
 
 def validate_chat_result(data: dict) -> dict:
-    """Esquema fijo: respuesta, referencias y propuestas estructuradas; nada más."""
+    """Fixed schema: answer, references and structured proposals; nothing else."""
     if not isinstance(data, dict) or set(data) != {"answer", "references", "proposals"}:
         raise ContractError("Chat result must contain exactly answer, references and proposals")
     proposals = data["proposals"]
@@ -59,8 +59,8 @@ def validate_chat_result(data: dict) -> dict:
 
 
 def task_text(proposal: dict, task_id: str, origin: dict) -> str:
-    """Sección de plan para el flujo normal. Sin rutas permitidas ni ejecutor legibles por máquina:
-    el contrato lo fija el planificador bajo la política del proyecto, nunca el chat."""
+    """Plan section for the normal flow. No machine-readable allowed paths or executor:
+    the planner sets the contract under the project policy, never the chat."""
     if not TASK_ID.fullmatch(task_id):
         raise ValueError("Task id must be 1–120 letters, digits, '.', '_' or '-'")
     lines = [f"## {task_id} — {proposal['title']}", f"**Objective:** {proposal['objective']}"]
@@ -78,7 +78,7 @@ def task_text(proposal: dict, task_id: str, origin: dict) -> str:
 
 def chat_turn(context, history: RunHistory, snapshot: dict, agents, evidence, journal,
               catalog) -> tuple[RunHistory, dict]:
-    """Una sola invocación con la petición congelada; la evidencia del checkout no puede cambiar."""
+    """A single invocation with the frozen request; the checkout evidence cannot change."""
 
     def done(history, status, reasons, *, result=None, checkout=None):
         return replace(history, status="completed", stop=None) if status == "ANSWERED" else history, {

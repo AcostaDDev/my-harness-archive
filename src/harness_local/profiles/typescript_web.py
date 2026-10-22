@@ -1,4 +1,4 @@
-"""Perfil opt-in para una web TypeScript estática; sin ejecución al importar."""
+"""Opt-in profile for a static TypeScript website; nothing runs on import."""
 
 from harness_local.core.engine.context import Command, JUnitDeclaration, ProjectProfile
 
@@ -18,8 +18,8 @@ def typescript_web_profile() -> ProjectProfile:
                                   ("npm", "run", "build")),
         junit_reports=(JUnitDeclaration(Command(('npm', 'run', 'test'), timeout_seconds=120),
                                         '.local/junit.xml', 'Tests Node de tests/*.test.mjs; no cobertura de código'),),
-        # D088 punto 6 (P008-T003): el ejecutor puede mantener la documentación de producto, los diagramas,
-        # `docs/flows/` y `docs/phase/` si su contrato los incluye; los documentos de control son del harness.
+        # D088 point 6 (P008-T003): the executor may maintain product documentation, diagrams,
+        # `docs/flows/` and `docs/phase/` if its contract includes them; control documents belong to the harness.
         protected_paths=("docs/STATE.md", "docs/NEXT_STEPS.md", "docs/ROADMAP.md", "docs/DECISIONS.md",
                          "docs/archive/**", "AGENTS.md", "CLAUDE.md", "GEMINI.md",
                          ".harness/**", ".codex/**", ".claude/**", "package.json", "package-lock.json",

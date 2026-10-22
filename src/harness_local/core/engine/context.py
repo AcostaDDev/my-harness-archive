@@ -1,4 +1,4 @@
-"""Contexto explícito; ninguna ruta deriva de la ubicación del motor."""
+"""Explicit context; no path derives from the engine location."""
 
 from dataclasses import asdict, dataclass
 from pathlib import Path, PurePosixPath
@@ -48,13 +48,13 @@ class ProjectProfile:
     sensitive_paths: tuple[str, ...] = ()
     sensitive_allowlist: tuple[str, ...] = ()
     executor_instructions: str = ""
-    # P009-T019 (D133): tras cada intento del ejecutor, el motor formatea con `formatter_argv + rutas` los archivos
-    # cambiados dentro del contrato que casan con `formatter_paths`. El argv acaba en `--`: ninguna ruta es una opción.
+    # P009-T019 (D133): after each executor attempt, the engine formats with `formatter_argv + paths` the files changed
+    # within the contract that match `formatter_paths`. The argv ends in `--`: no path is an option.
     formatter_argv: tuple[str, ...] = ()
     formatter_paths: tuple[str, ...] = ()
     junit_reports: tuple[JUnitDeclaration, ...] = ()
-    # D088 punto 6 (P008-T003): patrones de modelos de datos; un diff que los toca sin el diagrama de datos del
-    # layout no es aceptable. Vacío: el perfil no declara persistencia que vigilar.
+    # D088 point 6 (P008-T003): data model patterns; a diff touching them without the layout's data diagram is not
+    # acceptable. Empty: the profile declares no persistence to watch.
     data_model_paths: tuple[str, ...] = ()
 
     def __post_init__(self):
@@ -77,9 +77,9 @@ class EnginePolicy:
     reviewer_effort: str
     max_revision_cycles: int = 3
     planning_mode: str = "auto"
-    # D052: `catalog` limita al catálogo; `open` admite cualquier modelo con forma
-    # válida y un esfuerzo del vocabulario del proveedor ejecutor. En `open` el
-    # catálogo queda como selección de referencia para contratos del servidor.
+    # D052: `catalog` restricts to the catalog; `open` admits any model with a valid
+    # shape and an effort from the executor provider's vocabulary. In `open` the
+    # catalog remains the reference selection for server contracts.
     executor_mode: str = "catalog"
     executor_effort_vocabulary: tuple[str, ...] = ()
 
@@ -100,7 +100,7 @@ class EnginePolicy:
 
 
 def policy_payload(policy: EnginePolicy) -> dict:
-    """Forma congelada; omite los ajustes D052 por defecto para conservar snapshots anteriores."""
+    """Frozen shape; omits default D052 settings to preserve earlier snapshots."""
     data = asdict(policy)
     if data["executor_mode"] == "catalog":
         data.pop("executor_mode")
@@ -116,8 +116,8 @@ class ProjectContext:
     policy: EnginePolicy
     next_steps_file: str = "docs/NEXT_STEPS.md"
     state_file: str = "docs/STATE.md"
-    # D072/H6.3 y D088: contrato documental por fase. La configuración local siempre compone "v2" (layout
-    # unificado obligatorio); None solo describe contextos congelados anteriores, que se siguen leyendo.
+    # D072/H6.3 and D088: per-phase document contract. Local configuration always composes "v2" (mandatory
+    # unified layout); None only describes earlier frozen contexts, which are still read.
     documents: str | None = None
 
     def __post_init__(self):
@@ -134,7 +134,7 @@ class ProjectContext:
 
     def path(self, relative: str) -> Path:
         candidate = self.root / relative_path(relative)
-        # También rechaza enlaces interiores aunque apunten dentro del checkout.
+        # Also rejects inner links even when they point inside the checkout.
         if candidate.resolve() != candidate or not candidate.is_relative_to(self.root):
             raise ValueError("Checkout path contains a symlink or escapes root")
         return candidate

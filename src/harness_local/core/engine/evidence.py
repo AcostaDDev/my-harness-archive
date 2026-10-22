@@ -1,4 +1,4 @@
-"""Evidencia suministrada por puerto; política sin restauraciones de archivos."""
+"""Evidence supplied through a port; policy without file restorations."""
 
 from dataclasses import dataclass
 from fnmatch import fnmatchcase
@@ -13,13 +13,13 @@ class ContentEvidence:
     fingerprint: str
     changed_paths: tuple[str, ...]
     diff: str
-    # Procedencia congelada del capturador (p. ej. árboles Git). None: evidencia
-    # sintética o legacy, nunca certificable como contenido de un commit.
+    # Frozen provenance from the capturer (e.g. Git trees). None: synthetic or
+    # legacy evidence, never certifiable as the content of a commit.
     provenance_json: str | None = None
 
 
 def strip_empty_provenance(value):
-    """Conserva la forma serializada/prompt anterior cuando no hay procedencia."""
+    """Keeps the earlier serialized/prompt shape when there is no provenance."""
     if isinstance(value, dict):
         return {key: strip_empty_provenance(item) for key, item in value.items()
                 if not (key == "provenance_json" and item is None)}

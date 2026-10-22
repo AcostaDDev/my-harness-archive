@@ -1,4 +1,4 @@
-"""Valores congelados y puertos; no hay estado operativo persistido."""
+"""Frozen values and ports; no persisted operational state."""
 
 from dataclasses import asdict, dataclass, replace
 from fnmatch import fnmatchcase
@@ -29,7 +29,7 @@ class ContractError(ValueError):
 
 
 class IncompleteContract(ContractError):
-    """Único motivo que permite pasar de planificación documental a agente."""
+    """The only reason that allows moving from document planning to an agent."""
 
 
 @dataclass(frozen=True)
@@ -44,7 +44,7 @@ def executor_selection(context: ProjectContext, data: object) -> Selection:
         raise ContractError("Executor selection requires model, effort and reason")
     policy = context.policy
     if policy.executor_mode == "open":
-        # Modo libre (D052): solo forma del modelo y vocabulario del proveedor ejecutor.
+        # Open mode (D052): only the model shape and the executor provider's vocabulary.
         allowed = (isinstance(data["model"], str) and MODEL_FORM.fullmatch(data["model"]) is not None
                    and data["effort"] in policy.executor_effort_vocabulary)
     else:
@@ -106,14 +106,14 @@ RECONCILE_TASK = re.compile(r".+-RECONCILE-\d+")
 
 
 def harness_owned_paths(context: ProjectContext, data: dict, task_id: str) -> dict:
-    """D072: con el layout v2 el archivo de fases nunca se edita y los documentos de seguimiento son del
-    harness; solo la reconciliación de fase (`<fase>-RECONCILE-<n>`, contrato del servidor) edita su prosa.
-    D088: también la de DECISIONS, ahora registro único donde la reconciliación añade decisiones. Los archivos de
-    instrucciones de la raíz (AGENTS, CLAUDE, GEMINI) solo los escribe el harness, también frente a la
-    reconciliación (P008-T003).
+    """D072: with layout v2 the phase archive is never edited and the tracking documents belong to the
+    harness; only phase reconciliation (`<phase>-RECONCILE-<n>`, server contract) edits their prose.
+    D088: also that of DECISIONS, now a single register where reconciliation appends decisions. The root
+    instruction files (AGENTS, CLAUDE, GEMINI) are written only by the harness, also against
+    reconciliation (P008-T003).
 
-    Se añaden como prohibiciones (nunca se retira ninguna); una ruta concreta permitida que las contradiga se
-    rechaza antes del escritor. Idempotente: un contrato ya congelado se reproduce igual."""
+    They are added as prohibitions (none is ever removed); a concrete allowed path contradicting them is
+    rejected before the writer. Idempotent: an already frozen contract is reproduced unchanged."""
     from harness_local.core.engine.documents import layout
     target = layout(context)
     if target is None:
@@ -132,7 +132,7 @@ class AgentRequest:
     prompt: str
     task_json: str | None
     context_json: str
-    # No conversation/session handle: cada petición exige una sesión nueva.
+    # No conversation/session handle: every request requires a new session.
     fresh_session: bool = True
     prompt_snapshot_json: str | None = None
     permission_snapshot_json: str | None = None
@@ -163,7 +163,7 @@ class Attempt:
 class OperationalStop:
     stage: str
     reason: str
-    # No review verdict: una parada operativa no es juicio de agente.
+    # No review verdict: an operational stop is not an agent judgement.
 
 
 @dataclass(frozen=True)
@@ -188,14 +188,14 @@ class RunHistory:
 def context_snapshot(context: ProjectContext) -> str:
     profile = asdict(context.profile)
     if not profile['junit_reports']:
-        profile.pop('junit_reports')  # Preserva snapshots anteriores sin reportes.
+        profile.pop('junit_reports')  # Preserves earlier snapshots without reports.
     if not profile['data_model_paths']:
-        profile.pop('data_model_paths')  # P008-T003: ídem sin patrones de modelos de datos.
+        profile.pop('data_model_paths')  # P008-T003: likewise without data model patterns.
     data = {"root": str(context.root), "profile": profile,
             "policy": policy_payload(context.policy), "next_steps_file": context.next_steps_file,
             "state_file": context.state_file}
     if context.documents is not None:
-        data["documents"] = context.documents  # D072: ausente conserva snapshots anteriores.
+        data["documents"] = context.documents  # D072: absent preserves earlier snapshots.
     return freeze(data)
 
 
@@ -231,7 +231,7 @@ def invoke_agent(context: ProjectContext, history: RunHistory, adapter: AgentAda
         data = json.loads(result.payload_json or "")
         if not isinstance(data, dict) or data.get("is_error"):
             raise ContractError("Agent result is invalid or reports an error")
-        freeze(data)  # JSON no finito tampoco es un resultado estructurado válido.
+        freeze(data)  # Non-finite JSON is not a valid structured result either.
     except (ValueError, TypeError) as exc:
         return stop_history(history, role, str(exc)), None
     return history, data

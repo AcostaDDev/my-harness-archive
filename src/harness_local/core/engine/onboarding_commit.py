@@ -1,4 +1,4 @@
-"""P008-T015: documentos confirmables del Flujo B, sin código generado ni fallback."""
+"""P008-T015: confirmable Flow B documents, without generated code or fallback."""
 from hashlib import sha256
 import json
 

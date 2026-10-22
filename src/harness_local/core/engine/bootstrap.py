@@ -1,6 +1,6 @@
-"""H4.2: ejecución del bootstrap confirmado; no proveedores, web, SQLite ni stack en el núcleo.
+"""H4.2: execution of the confirmed bootstrap; no providers, web, SQLite or stack in the core.
 
-D088: la plantilla v1 (`project-foundation`) está retirada; la vista previa sale de la definición v2."""
+D088: the v1 template (`project-foundation`) is retired; the preview comes from the v2 definition."""
 from dataclasses import replace
 
 

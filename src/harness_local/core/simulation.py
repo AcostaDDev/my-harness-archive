@@ -1,4 +1,4 @@
-"""Recorrido H0.3; no es el motor de intentos ni una aceptación de tarea."""
+"""H0.3 walkthrough; it is neither the attempt engine nor a task acceptance."""
 
 from dataclasses import dataclass
 from datetime import datetime, timezone
@@ -33,7 +33,7 @@ class SimulationService:
         title = title.strip()
         if not 1 <= len(title) <= 120:
             raise ValueError("El título debe tener entre 1 y 120 caracteres.")
-        # Ejecutar fuera de una transacción; solo guardar un resultado completo.
+        # Run outside a transaction; only store a complete result.
         events = self.adapter.execute()
         simulation = Simulation(str(uuid4()), title, datetime.now(timezone.utc), events)
         self.repository.save(simulation)

@@ -1,4 +1,4 @@
-"""Motor con puertos explícitos y journal opcional; no publica ejecución real."""
+"""Engine with explicit ports and an optional journal; it does not publish real execution."""
 
 from dataclasses import asdict, replace
 import json
@@ -25,7 +25,7 @@ from harness_local.core.engine.validation import (
 
 
 def _executor_output(payload: dict) -> str | None:
-    """Motivo de parada si la salida del ejecutor trae denegaciones o propuestas de ADR mal formadas."""
+    """Stop reason when the executor output brings denials or malformed ADR proposals."""
     if not isinstance(payload.get("permission_denials", []), list):
         return "Malformed permission denials"
     try:
@@ -45,8 +45,8 @@ NOTES_PREFIX = ('\nAdditional notes from the user (they never widen the contract
 
 
 def _with_notes(context: ProjectContext, task_json: str, notes: str | None) -> str:
-    """P009-T020: `additional_notes` del contrato son siempre las del usuario: se fijan con notas y, sin ellas, se
-    retira la clave si la inventó el planificador (su salida original queda en su intento)."""
+    """P009-T020: the contract's `additional_notes` are always the user's: they are set with notes and, without
+    them, the key is removed if the planner invented it (its original output stays in its attempt)."""
     task = json.loads(task_json)
     task.pop("additional_notes", None)
     if notes is not None:
@@ -55,8 +55,8 @@ def _with_notes(context: ProjectContext, task_json: str, notes: str | None) -> s
 
 
 def _profile_instructions(context: ProjectContext) -> str:
-    """P009-T019 (D133): un ejecutor sin shell no puede formatear con la herramienta del perfil; se le dice que no hace
-    falta. Sin formateador, el texto del perfil queda igual."""
+    """P009-T019 (D133): an executor without a shell cannot format with the profile tool; it is told that it does
+    not need to. Without a formatter, the profile text stays the same."""
     profile = context.profile
     if not profile.formatter_argv:
         return profile.executor_instructions
@@ -66,20 +66,20 @@ def _profile_instructions(context: ProjectContext) -> str:
 
 
 def _latest_executor_proposals(history: RunHistory) -> list:
-    """Propuestas de ADR válidas de la última salida del ejecutor (P008-T003). Una salida que se detuvo por
-    propuestas mal formadas no las aporta al revalidar."""
+    """Valid ADR proposals from the executor's last output (P008-T003). An output that stopped because of
+    malformed proposals does not contribute them on revalidation."""
     for attempt in reversed(history.attempts):
         if attempt.request.role == "executor":
             try:
                 payload = json.loads(attempt.result.payload_json or "")
                 return decision_proposals(payload.get("decision_proposals", []))
-            except (ValueError, AttributeError):  # ContractError es un ValueError
+            except (ValueError, AttributeError):  # ContractError is a ValueError
                 return []
     return []
 
 
 class OfflineEngine:
-    """Puertos inyectados; ninguna CLI se activa desde el núcleo."""
+    """Injected ports; no CLI is activated from the core."""
 
     def __init__(self, agents: AgentAdapter, commands: CommandRunner, evidence: EvidenceCapture,
                  journal: EngineJournal | None = None, prompts=None):
@@ -127,11 +127,11 @@ class OfflineEngine:
     def start(self, context: ProjectContext, task_id: str, phase_id: str, text: str,
               *, history: RunHistory | None = None, contract: str | None = None,
               notes: str | None = None) -> RunHistory:
-        """`contract`: contrato determinista ya congelado por el servidor (H3.4); no se llama al planificador.
-        `notes`: notas adicionales del usuario (P009-T020); se congelan en el contrato y nunca amplían su alcance."""
+        """`contract`: deterministic contract already frozen by the server (H3.4); the planner is not called.
+        `notes`: additional user notes (P009-T020); frozen in the contract and never widening its scope."""
         if notes is not None and (not isinstance(notes, str) or not notes.strip() or contract is not None):
             raise ContractError("Additional notes must be non-empty text for a planned task")
-        planned = contract is None  # el planificador determinista reutiliza `contract` más abajo
+        planned = contract is None  # the deterministic planner reuses `contract` further below
         self.resuming = False
         history = history or RunHistory(str(uuid4()), context_snapshot(context))
         if (history.context_json != context_snapshot(context) or history.task_json is not None
@@ -139,7 +139,7 @@ class OfflineEngine:
                 or history.status != "planned"):
             raise ContractError("Start requires a fresh history with the frozen context")
         if context.documents is not None:
-            # D072: unos cambios locales previos se mezclarían con el diff del ejecutor.
+            # D072: prior local changes would get mixed with the executor's diff.
             try:
                 current = self.evidence.capture(context)
             except Exception as exc:
@@ -172,7 +172,7 @@ class OfflineEngine:
                     "shared_constraints": section(text, SHARED_HEADING),
                 }
                 if notes is not None:
-                    planner_input["additional_notes"] = notes  # P009-T020: solo con notas; sin ellas, misma entrada
+                    planner_input["additional_notes"] = notes  # P009-T020: notes only; otherwise the same input
                 prompt = freeze(planner_input)
                 selection = Selection(context.policy.planner_model, context.policy.planner_effort, "Explicit planner policy")
                 history, data = self._invoke(context, history, "planner", selection, "plan-task", {"INPUT_JSON": prompt})
@@ -188,7 +188,7 @@ class OfflineEngine:
                              task["executor_prompt"])
 
     def resume(self, context: ProjectContext, history: RunHistory, *, retry_executor: bool = False) -> RunHistory:
-        """Revalidar conserva trabajo; reintento explícito consume el presupuesto previo."""
+        """Revalidation keeps the work; an explicit retry consumes the previous budget."""
         self.resuming = True
         if context_snapshot(context) != history.context_json:
             raise ContractError("Resume requires the original frozen context/policy")
@@ -212,7 +212,7 @@ class OfflineEngine:
             return history
         if retry_executor:
             selection = executor_selection(context, task["executor_selection"])
-            # Conservar la última selección explícita de corrección si la hubo.
+            # Keep the last explicit correction selection, if any.
             executions = [item for item in history.attempts if item.request.role == "executor"]
             if executions:
                 selection = executions[-1].request.selection
@@ -223,9 +223,9 @@ class OfflineEngine:
         return self._review_loop(context, history, None, [], allow_revision=False)
 
     def _format(self, context: ProjectContext, task: dict) -> tuple[str | None, str | None]:
-        """P009-T019 (D133): formatea los archivos que el ejecutor puede tocar según el contrato, antes de capturar la
-        evidencia. Devuelve el registro congelado (None si no hay nada que formatear) y el motivo de parada si el
-        formateador no llegó a ejecutarse bien; un código de salida distinto de cero lo juzgan validación y revisión."""
+        """P009-T019 (D133): formats the files the executor may touch under the contract, before capturing the
+        evidence. Returns the frozen record (None if there is nothing to format) and the stop reason if the
+        formatter did not run properly; a non-zero exit code is judged by validation and review."""
         profile = context.profile
         evidence = self.evidence.capture(context)
         excluded = set(check_paths(context, task, evidence).violations)
@@ -291,8 +291,8 @@ class OfflineEngine:
                 "task": task, "evidence": strip_empty_provenance(asdict(evidence)), "policy": asdict(policy),
                 "validation": strip_empty_provenance(validation_payload(validation)),
             }
-            # P008-T003 y D133: claves solo con el layout v2, con formateo o con propuestas, para conservar la entrada
-            # anterior.
+            # P008-T003 and D133: keys only with layout v2, formatting or proposals, to preserve the earlier
+            # input.
             if formatting is not None:
                 review_input["formatting"] = json.loads(formatting)
             parity = documentation_parity(context, evidence.changed_paths)
@@ -306,7 +306,7 @@ class OfflineEngine:
             history, data = self._invoke(context, history, "reviewer", selection, "review-task", {"INPUT_JSON": prompt})
             if data is None:
                 return history
-            # Incluso una review inválida queda conservada para diagnóstico.
+            # Even an invalid review is kept for diagnosis.
             cycle = replace(cycle, review_json=freeze(data))
             history = replace(history, cycles=history.cycles[:-1] + (cycle,))
             self._checkpoint(history, "reviewer")

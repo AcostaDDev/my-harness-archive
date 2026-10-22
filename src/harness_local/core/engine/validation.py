@@ -1,4 +1,4 @@
-"""Comandos estructurados y resultados separados del juicio del revisor."""
+"""Structured commands and results kept apart from the reviewer's judgement."""
 
 from dataclasses import asdict, dataclass
 import json
@@ -64,8 +64,8 @@ class ValidationReport:
 
     @property
     def all_passed(self) -> bool:
-        # Un reporte nunca acredita éxito del comando. Fallos observados en un
-        # reporte nuevo son una puerta adicional, sin reescribir exit/stdout/stderr.
+        # A report never proves the command succeeded. Failures observed in a
+        # new report are an additional gate, without rewriting exit/stdout/stderr.
         return all(entry.result.passed and not any(
             report.freshness in ('created', 'changed') and report.status in ('complete', 'partial')
             and any(case.result in ('failed', 'error') for case in report.cases)
@@ -73,7 +73,7 @@ class ValidationReport:
 
 
 def validation_payload(report: ValidationReport, *, include_cases: bool = True) -> dict:
-    """El original binario solo se entrega por descarga, nunca en prompts/sondeo."""
+    """The binary original is only delivered by download, never in prompts/polling."""
     data = asdict(report)
     for entry, source in zip(data['entries'], report.entries):
         entry['result'] = command_result_payload(source.result)
@@ -120,7 +120,7 @@ def run_identified_command(context, runner, command, journal):
 def run_validations(context: ProjectContext, task: dict, evidence: ContentEvidence,
                     runner: CommandRunner, journal: EngineJournal | None = None, *,
                     run_id: str | None = None, source_attempt_id: str | None = None) -> ValidationReport:
-    # El baseline del perfil es configuración confiable; el contrato no autoriza shell.
+    # The profile baseline is trusted configuration; the contract does not authorize a shell.
     commands: list[tuple[str, Command | None, str | None]] = []
     seen: set[Command] = set()
     for text in task["validation_commands"]:
@@ -147,7 +147,7 @@ def run_validations(context: ProjectContext, task: dict, evidence: ContentEviden
                             else run_identified_command(context, runner, command, journal))
         reports = tuple(capture_junit(context, d, observation) for d, observation in zip(declarations, before))
         entries.append(ValidationEntry(command, text, result, identity if declarations else None, reports))
-    # Solo comandos seleccionados exactamente por argv/cwd/entorno/timeout importan reportes.
+    # Only commands selected exactly by argv/cwd/environment/timeout import reports.
     has_reports = any(entry.reports for entry in entries)
     return ValidationReport(evidence, tuple(entries), run_id if has_reports else None,
                             source_attempt_id if has_reports else None)

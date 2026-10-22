@@ -1,9 +1,9 @@
-"""Contrato H2.4 del commit aceptado: intención, resultado y orquestación.
+"""H2.4 contract of the accepted commit: intent, result and orchestration.
 
-Biblioteca estándar y puertos. Los subprocesos Git y SQLite viven en adaptadores.
-El commit se crea desde el árbol revisado (y solo actualizaciones mecánicas
-declaradas) y su identidad es determinista: tras una caída se comprueba antes
-de repetir. ACCEPT/acceptance_ready no equivalen a un commit existente.
+Standard library and ports. Git subprocesses and SQLite live in adapters.
+The commit is created from the reviewed tree (and only declared mechanical
+updates) and its identity is deterministic: after a crash it is checked before
+being repeated. ACCEPT/acceptance_ready do not amount to an existing commit.
 """
 
 from dataclasses import asdict, dataclass
@@ -24,11 +24,11 @@ _OBJECT_ID = re.compile(r"[0-9a-f]{40}(?:[0-9a-f]{24})?")
 
 
 class CommitError(RuntimeError):
-    """Precondición o contrato de commit inválido; no se crea ningún efecto."""
+    """Invalid precondition or commit contract; no effect is created."""
 
 
 class CommitUncertain(CommitError):
-    """No puede determinarse qué ocurrió; exige recuperación manual con evidencia."""
+    """What happened cannot be determined; requires manual recovery with evidence."""
 
 
 @dataclass(frozen=True)
@@ -45,7 +45,7 @@ class GitIdentity:
 
 @dataclass(frozen=True)
 class MechanicalUpdate:
-    """Contenido escrito por el harness; UTF-8 por defecto, bytes base64 o borrado para el archivo D088."""
+    """Content written by the harness; UTF-8 by default, base64 bytes or deletion for the D088 archive."""
 
     path: str
     content: str | None
@@ -60,12 +60,12 @@ class MechanicalUpdate:
             raise ValueError('Unknown mechanical content encoding')
         if self.content is not None and (not isinstance(self.content, str) or "\0" in self.content):
             raise ValueError("Mechanical content must be NUL-free UTF-8 text")
-        self.bytes()  # valida también el base64 antes de sellar la intención
+        self.bytes()  # also validates the base64 before sealing the intent
         if not isinstance(self.reason, str) or not self.reason.strip():
             raise ValueError("Mechanical updates require an explicit reason")
 
     def bytes(self) -> bytes | None:
-        """None elimina el archivo; base64 conserva artefactos de fase binarios por bytes."""
+        """None deletes the file; base64 keeps binary phase artifacts byte for byte."""
         if self.content is None:
             return None
         return (base64.b64decode(self.content, validate=True) if self.encoding == 'base64'
@@ -97,7 +97,7 @@ def git_provenance(evidence: ContentEvidence) -> GitProvenance:
 
 @dataclass(frozen=True)
 class CommitPlan:
-    """Datos fijados antes de que el adaptador calcule árbol/commit esperados."""
+    """Data fixed before the adapter computes the expected tree/commit."""
 
     base_revision: str
     reviewed_tree: str
@@ -139,8 +139,8 @@ class CommitIntent:
 
 @dataclass(frozen=True)
 class CommitOutcome:
-    # committed: esta ejecución movió la referencia. reconciled: ya existía.
-    # invalidated: sin efecto; el contenido/base revisados ya no son vigentes.
+    # committed: this execution moved the reference. reconciled: it already existed.
+    # invalidated: no effect; the reviewed content/base are no longer current.
     status: str
     operation_id: str | None
     commit: str | None = None
@@ -179,10 +179,10 @@ class CommitJournal(Protocol):
 
 def validate_mechanical_updates(context: ProjectContext, reviewed_paths: tuple[str, ...],
                                 updates: tuple[MechanicalUpdate, ...], block_paths: frozenset[str] = frozenset()) -> None:
-    """Rutas propias del harness: nunca sensibles ni solapadas con lo revisado.
+    """Harness-owned paths: never sensitive nor overlapping with the reviewed content.
 
-    D072: `block_paths` son documentos revisados cuyo único cambio mecánico es regenerar un bloque
-    gestionado sobre el contenido revisado (reconciliación de fase); la prosa revisada se conserva."""
+    D072: `block_paths` are reviewed documents whose only mechanical change is regenerating a managed
+    block over the reviewed content (phase reconciliation); the reviewed prose is preserved."""
     seen: set[str] = set()
     for update in updates:
         if not isinstance(update, MechanicalUpdate):
@@ -224,7 +224,7 @@ def prepare_commit(context: ProjectContext, history: RunHistory, writer: CommitW
                    now: Callable[[], datetime] | None = None,
                    operation_id: str | None = None,
                    block_paths: frozenset[str] = frozenset()) -> CommitIntent | CommitOutcome:
-    """Comprueba aceptación vigente y fija la intención; sin efectos sobre refs ni archivos."""
+    """Checks current acceptance and fixes the intent; no effects on refs or files."""
     if (history.status != "acceptance_ready" or history.acceptance is None or not history.acceptance.eligible
             or not history.cycles or history.task_json is None):
         raise CommitError("Only an eligible acceptance_ready run can be committed")
@@ -262,7 +262,7 @@ def commit_accepted(context: ProjectContext, history: RunHistory, writer: Commit
                     message_prefix: str = "harness", now: Callable[[], datetime] | None = None,
                     operation_id: str | None = None,
                     block_paths: frozenset[str] = frozenset()) -> tuple[RunHistory, CommitOutcome]:
-    """Intención persistida antes del efecto, resultado después, reconciliando al reanudar."""
+    """Intent persisted before the effect, result afterwards, reconciling on resume."""
     intent = journal.pending_commit()
     if intent is not None:
         if intent.run_id != history.id:
@@ -272,7 +272,7 @@ def commit_accepted(context: ProjectContext, history: RunHistory, writer: Commit
                                   message_prefix=message_prefix, now=now, operation_id=operation_id,
                                   block_paths=block_paths)
         if isinstance(prepared, CommitOutcome):
-            # Sin intención ni efecto: se conserva el hecho y se exige revalidar.
+            # No intent and no effect: the fact is kept and revalidation is required.
             journal.commit_invalidated(prepared)
             return stop_history(history, "commit", prepared.diagnostic or "Acceptance invalidated"), prepared
         intent = prepared
