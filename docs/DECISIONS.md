@@ -156,6 +156,7 @@ tarea se leen solo las decisiones que cita; este índice sirve para buscar prece
 | [D143](#d143--p010-t002-receta-typescript-web-recipe-1-implementada) | P010-T002: receta `typescript-web-recipe-1` implementada | P010 |
 | [D144](#d144--p010-t003-proyección-run-projection-1-implementada) | P010-T003: proyección `run-projection-1` implementada | P010 |
 | [D145](#d145--p010-t011-métricas-y-vista-previa-de-exportación-sobre-la-proyección) | P010-T011: métricas y vista previa de exportación sobre la proyección | P010 |
+| [D146](#d146--p010-t004-marcadores-opcionales-en-la-definición) | P010-T004: marcadores opcionales en la definición | P010 |
 
 ## D001 — Alcance local y arquitectura base
 
@@ -4379,3 +4380,21 @@ Implementa D142 y el contrato de P010-T001 §2 para las vistas que no son de run
 
 Verificación con historiales sintéticos (formatos 1–8 tras la migración, casos límite de validación y un ámbito de
 35,4 MiB), motor y agentes falsos, comparando con la implementación anterior. No se migra la instalación real.
+
+## D146 — P010-T004: marcadores opcionales en la definición
+
+Estado: implementado y verificado offline el 2026-10-22. Fase: P010.
+[Entrega](phase/P010-T004_MARCADORES_DEFINICION.md), [flujo](flows/project-definition.md).
+Resuelve la observación de D127: ante una carpeta nueva, Codex preguntó como bloqueante por el contenido y los
+marcadores gestionados que la plantilla pedía conservar.
+
+- Los marcadores gestionados son opcionales en los borradores de definición. Es el comportamiento que ya tenía la
+  aceptación (`replace_block` añade al final el bloque ausente); no cambia el motor, la API ni el esquema.
+- La plantilla incorporada `define-project` lo dice expresamente: sin borradores en el contexto se redacta desde el
+  brief sin pedir contenido previo; el revisor no necesita añadir marcadores, conserva las parejas que existan y no
+  los pone en otros documentos. La definición solo crea documentos: el código figura como trabajo planificado.
+- Versionado: la plantilla incorporada cambia de identidad (`builtin-1:` + hash). Los turnos anteriores conservan la
+  plantilla congelada en su catálogo y su snapshot; las versiones activadas desde el editor de prompts no cambian.
+- La UI de definición explica en una carpeta sin borradores que no hacen falta archivos previos, y el editor de
+  borradores ya no pide no borrar los marcadores: indica que son opcionales y cómo se regeneran.
+- `import-project` y `onboard-project` parten de un origen con contenido y no cambian.

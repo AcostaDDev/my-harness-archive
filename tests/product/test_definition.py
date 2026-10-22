@@ -481,6 +481,46 @@ def test_acceptance_blockers_are_explicit_and_fail_closed(world, case):
     assert world.bootstrap.get(world.context.root) is None
 
 
+def test_new_folder_drafts_without_markers_get_their_blocks_appended(world):
+    """P010-T004: en una carpeta nueva no hay archivos previos y los marcadores son opcionales en los borradores."""
+    pairs = [f'{begin}\n{end}\n\n' for begin, end in (markers('state'), markers('roadmap'), markers('decisions'))]
+    plain = dict(DRAFTS)
+    for path, content in plain.items():
+        for pair in pairs:
+            content = content.replace(pair, '')
+        plain[path] = content
+    assert not any('harness-local:managed-' in content for content in plain.values())
+    cid = world.create()
+    job, _ = world.turn(cid, answer(drafts=plain))
+    assert world.planning.snapshot(job.run_id)['context']['drafts'] == []
+    prompt = world.repo.get_run(job.run_id).history.attempts[0].request.prompt
+    assert 'when the context lists no drafts, draft the required documents' in prompt
+    assert 'do not ask for existing content or markers' in prompt
+    assert 'are optional in drafts and you never need to add them' in prompt
+    world.apply_all(cid)
+    # Carpeta con borradores: el turno siguiente los recibe con la misma guía.
+    job, _ = world.turn(cid, answer(drafts={}), text='Revisa los borradores')
+    assert {d['path'] for d in world.planning.snapshot(job.run_id)['context']['drafts']} == set(plain)
+    assert 'keep each pair where it is' in world.repo.get_run(job.run_id).history.attempts[0].request.prompt
+    shown = world.preview(cid)
+    assert shown['ready'] and shown['blockers'] == [], shown['blockers']
+    documents = {doc['path']: doc for doc in shown['documents']}
+    for path, name in (('docs/STATE.md', 'state'), ('docs/NEXT_STEPS.md', 'state'),
+                       ('docs/ROADMAP.md', 'roadmap'), ('docs/DECISIONS.md', 'decisions')):
+        content = documents[path]['content']
+        assert documents[path]['origin'] == 'draft+blocks' and content.startswith(plain[path])
+        assert content.endswith(markers(name)[1] + '\n') and name in blocks(content)
+    assert '**Siguiente tarea:** P001-T001' in blocks(documents['docs/NEXT_STEPS.md']['content'])['state']
+    assert all(documents[path]['content'] == plain[path] for path in ('README.md', 'docs/SPECIFICATION.md'))
+    world.accept(cid, shown)
+    assert world.worker.run_once().status == 'DONE'
+    op = world.bootstrap.get(world.context.root)
+    assert op['status'] == 'COMPLETED'
+    detail = PhaseRepository(world.repo).get(
+        op['phase_id'], {p: sha256(world.path(p).read_bytes()).hexdigest() for p in LAYOUT.phase_documents})
+    assert detail['status'] == 'ACTIVE' and detail['documents']['drift'] == []
+
+
 def test_deterministic_mode_requires_a_complete_first_task(world):
     world.context = replace(world.context, policy=replace(world.context.policy, planning_mode='deterministic'))
     cid = world.create()

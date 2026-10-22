@@ -57,12 +57,12 @@ salvo donde se indica. Detalle por fase en `docs/archive/phase-NNN/SUMMARY.md`; 
   receta fijos tras preparar; dos avisos *low* de KaTeX.
   Piloto de receta Django limitado a macOS arm64/Python 3.13; el perfil Python/Django declarativo sigue pendiente
   de confirmar sobre un proyecto real. El piloto no evalúa comparativamente la calidad de modelos.
-  Observaciones de P009: alta sin redirección, texto de marcadores de define-project y presentación de deriva
-  tras cerrar; consolidación planificada en P010 y aplazamientos en ROADMAP.
+  Observaciones de P009: alta sin redirección y presentación de deriva tras cerrar; consolidación planificada en
+  P010 y aplazamientos en ROADMAP. El texto de marcadores de define-project se corrige en P010-T004 (D146).
 
 ## Fase activa
 
-**P010 — Consolidación de la primera versión local. En curso: T001, T002, T003 y T011 completadas.**
+**P010 — Consolidación de la primera versión local. En curso: T001, T002, T003, T011 y T004 completadas.**
 Planificada el 2026-10-21 ([D141](DECISIONS.md#d141--p010-consolidación-de-la-primera-versión-local),
 [plan](phase/P010_PLAN_CONSOLIDACION.md), [tareas](NEXT_STEPS.md)). El 2026-10-22 T001 deja el
 [contrato](phase/P010-T001_CONTRATO_CONSOLIDACION.md) y la matriz inicial
@@ -79,7 +79,11 @@ de 26 MiB. T011 lleva a la proyección las métricas y la vista previa de export
 ([entrega](phase/P010-T011_METRICAS_SIN_HISTORIAL.md),
 [D145](DECISIONS.md#d145--p010-t011-métricas-y-vista-previa-de-exportación-sobre-la-proyección)); el envío
 confirmado se sigue contrastando con el historial. Sin migración ni cambios de API; verificado con los formatos 1–8,
-casos límite de validación y un ámbito sintético de 35,4 MiB. T004–T010 pendientes.
+casos límite de validación y un ámbito sintético de 35,4 MiB. T004 aclara que los marcadores gestionados son
+opcionales en la definición ([entrega](phase/P010-T004_MARCADORES_DEFINICION.md),
+[D146](DECISIONS.md#d146--p010-t004-marcadores-opcionales-en-la-definición)): plantilla `define-project` y avisos de la
+UI, sin cambios del motor; verificado con un recorrido sintético de carpeta nueva y con borradores, sin revisor real
+ni QA visual. T005–T010 pendientes.
 
 P009 cerrada y archivada documentalmente el 2026-10-21
 ([resumen](archive/phase-009/SUMMARY.md), [revisión](archive/phase-009/REVIEW.md),
@@ -90,8 +94,8 @@ El Django hijo conserva P001 CLOSED, cuatro tareas COMMITTED, tag `p001` sobre `
 Última comprobación operativa en T012: servicios detenidos, cero locks y sin jobs pendientes; no se repite aquí.
 Este repositorio sigue sin registrarse ni ejecutarse con el harness; cierre manual sin check READY ni tag propio.
 
-**Siguiente:** P010-T004, aclarar los marcadores opcionales de definición en una carpeta nueva.
-Después: fases cerradas (T005), documentación (T006) y evidencia de aceptación. Los límites actuales de la base
+**Siguiente:** P010-T005, presentar la evidencia de una fase cerrada.
+Después: documentación (T006) y evidencia de aceptación. Los límites actuales de la base
 acumulada siguen vigentes hasta implementar y verificar
 cada entrega; la cuestión del SSE gestionado (criterio 13) queda para T007. La validación real complementaria
 se concreta en T008; no se da por realizada ni autorizada. Sin nueva fase del Django hijo ni ampliación de consentimientos de P009.

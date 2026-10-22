@@ -207,6 +207,7 @@ function Definition({ id, path, status }: { id: string; path?: string; status: S
           <section className="panel" aria-labelledby="def-turns">
             <h2 id="def-turns">Conversación <span className="count">{c.turns.length} turnos</span></h2>
             <TurnList conversation={c} />
+            {!c.created && drafts.data?.drafts.length === 0 && <p className="hint">Carpeta nueva: no hace falta ningún archivo previo. El revisor redacta los documentos desde el brief; los marcadores de bloques gestionados son opcionales y la aceptación añade los que falten. La definición solo escribe documentos; el código llega después, con la preparación y las tareas.</p>}
             {!c.created && <MessageForm conversation={c} path={`${base}/messages`} hint="Cada mensaje es una invocación nueva de solo lectura del revisor con el brief, los borradores en disco y tus ediciones desde el último turno respondido." />}
           </section>
           <Questions conversation={c} base={base} />
@@ -452,7 +453,7 @@ function DraftEditor({ conversation, path, draft, editKey, blocked, onClose }: {
   const blocks = /<!-- harness-local:managed-[a-z-]+:(start|end) -->/.test(edit.text);
   return <section className="docs-editor" aria-label={`Editar ${path}`}>
     {stale && <p className="state state-attention" role="status">El borrador cambió desde que empezaste a editarlo (base <Hash value={edit.base} length={8} />, ahora <Hash value={draft?.sha256} length={8} />). Guardar fallará: copia tu texto y descarta para partir de la versión actual.</p>}
-    {blocks && <p className="hint">Los bloques gestionados (<code>harness-local:managed-…</code>) se regeneran al aceptar; lo que escribas dentro se sustituye. No borres sus marcadores.</p>}
+    {blocks && <p className="hint">Los bloques gestionados (<code>harness-local:managed-…</code>) se regeneran al aceptar; lo que escribas dentro se sustituye. Sus marcadores son opcionales: conserva cada pareja completa o quítala entera; al aceptar, el bloque que falte se añade al final del documento.</p>}
     <div className="docs-editor-tabs" role="tablist">
       <button type="button" role="tab" aria-selected={view === "edit"} className={view === "edit" ? "" : "button-quiet"} onClick={() => setView("edit")}>Escribir</button>
       <button type="button" role="tab" aria-selected={view === "preview"} className={view === "preview" ? "" : "button-quiet"} onClick={() => setView("preview")}>Vista previa</button>

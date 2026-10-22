@@ -10,8 +10,9 @@ Decisión: [D141](DECISIONS.md#d141--p010-consolidación-de-la-primera-versión-
 Añade T011 (métricas y exportación sobre la proyección de runs). T002 completada el 2026-10-22 (D143): receta
 `typescript-web-recipe-1` implementada y verificada offline. T003 completada el 2026-10-22 (D144): proyección
 `run-projection-1` y vistas de runs sin decodificar historiales. T011 completada el 2026-10-22 (D145): métricas y
-vista previa de exportación sobre la proyección. T004–T010 pendientes; sin operación iniciada.
-**Siguiente:** T004, aclarar los marcadores opcionales de definición (depende de T001).
+vista previa de exportación sobre la proyección. T004 completada el 2026-10-22 (D146): marcadores opcionales en la
+definición. T005–T010 pendientes; sin operación iniciada.
+**Siguiente:** T005, presentar la evidencia de una fase cerrada (depende de T001).
 
 ## Restricciones compartidas
 
@@ -99,7 +100,8 @@ entrega §6); medidas sobre un historial sintético de 26 MiB. Sin datos operati
 
 ## P010-T004 — Aclarar los marcadores opcionales de definición
 
-**Estado:** pendiente. **Depende de:** T001.
+**Estado:** completada el 2026-10-22 ([entrega](phase/P010-T004_MARCADORES_DEFINICION.md), D146). Plantilla
+`define-project` y avisos de la UI; sin cambios del motor, API ni esquema. **Depende de:** T001.
 **Objetivo:** Que definir un proyecto en una carpeta nueva no haga interpretar marcadores opcionales como requisitos.
 **Alcance:** texto de plantilla/prompts y presentación de define-project según la observación de P009.
 **Rutas permitidas:** `src/harness_local/core/engine/templates/**`, `frontend/**`, `tests/**`, `docs/**`.
@@ -110,8 +112,9 @@ entrega §6); medidas sobre un historial sintético de 26 MiB. Sin datos operati
   el código del proyecto ni modifica prompts ya congelados. Si cambia una plantilla, se respeta su versionado.
 - QA con datos sintéticos de carpeta nueva y existente acredita el texto en su contexto.
 
-**Validación:** (prevista) comprobaciones de plantilla pertinentes, Node/tipos/build si procede y QA visual autorizado.
-**Entregables:** (previstos) `docs/phase/P010-T004_MARCADORES_DEFINICION.md`.
+**Validación:** pytest completa, unittest, Node, tipos y build (resultados en la entrega §5); recorrido sintético de
+carpeta nueva y con borradores hasta el commit raíz. QA visual no realizado por decisión del usuario; sin revisor real.
+**Entregables:** `docs/phase/P010-T004_MARCADORES_DEFINICION.md`.
 
 ## P010-T005 — Presentar la evidencia de una fase cerrada
 

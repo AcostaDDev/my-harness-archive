@@ -43,6 +43,12 @@ Bloquean la aceptación: documentos obligatorios ausentes, ROADMAP sin fases, P0
 NEXT_STEPS sin una tarea P001-TNNN válida, DECISIONS con numeración repetida, preguntas bloqueantes abiertas sin
 aplazar o archivos ajenos a la plantilla.
 
+Marcadores gestionados (P010-T004, [D146](../DECISIONS.md#d146--p010-t004-marcadores-opcionales-en-la-definición)):
+son opcionales en los borradores. La vista previa regenera los bloques de STATE, NEXT_STEPS, ROADMAP y DECISIONS donde
+estén sus marcadores y añade al final del documento el bloque que falte; un marcador parcial o en otro documento
+bloquea. En una carpeta nueva el contexto del turno no lista borradores y la plantilla `define-project` pide redactar
+desde el brief, sin preguntar por contenido ni marcadores previos.
+
 Borradores admitidos (T002/T005, D092): la plantilla de D088 (AGENTS, CLAUDE, GEMINI, README, SPECIFICATION, ARCHITECTURE,
 ROADMAP, STATE, NEXT_STEPS, DECISIONS y DDBB-DIAGRAM) y `docs/flows/*.md`. AGENTS, CLAUDE, GEMINI y DDBB-DIAGRAM no
 redactados salen de la plantilla, con el título de la conversación y los comandos del perfil congelado. Esos valores

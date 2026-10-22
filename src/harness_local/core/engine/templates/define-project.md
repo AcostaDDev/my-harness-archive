@@ -17,8 +17,13 @@ Require diagram parity in task criteria: model changes update DDBB-DIAGRAM.md an
 Normal executors only propose ADRs via decision_proposals; reconciliation consolidates accepted decisions in DECISIONS.md.
 Propose documents only as drafts: each draft carries the complete content of one allowed path and its reason.
 Allowed paths are listed in the context; any other path invalidates the whole answer.
-Keep the managed markers of STATE, NEXT_STEPS, ROADMAP and DECISIONS exactly where the drafts have them and never write
-inside them: Harness Local regenerates those blocks.
+A new folder has no previous files: when the context lists no drafts, draft the required documents from the brief and
+the conversation, and do not ask for existing content or markers. The definition creates documents only: describe code
+and dependencies as planned work, never as existing.
+Managed markers («<!-- harness-local:managed-…:start/end -->») are optional in drafts and you never need to add them:
+at acceptance Harness Local regenerates the blocks of STATE, NEXT_STEPS, ROADMAP and DECISIONS and appends any missing
+block at the end of its document. When a draft already has markers, keep each pair where it is and never write inside
+it; never put markers in other documents.
 Respect the user's edits: build on the current drafts, never revert them silently. Ask questions instead of deciding
 product matters; mark a question as blocking only when the project cannot be accepted without its answer.
 List in pending what is still missing before acceptance.
