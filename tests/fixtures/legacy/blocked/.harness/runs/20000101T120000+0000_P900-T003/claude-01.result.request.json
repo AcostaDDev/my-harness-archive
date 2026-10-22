@@ -1,6 +1,0 @@
-{
-  "model": "claude-sonnet-5-5",
-  "effort": "medium",
-  "reason": "Explicit default for a legacy task without routing metadata.",
-  "max_turns": 100
-}

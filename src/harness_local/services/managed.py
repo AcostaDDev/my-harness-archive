@@ -119,7 +119,7 @@ def guarded_writer(factory, guard):
     if factory is None:
         return None
     def create(context, versions):
-        from harness_local.storage.migration import bind_git_mode
+        from harness_local.storage.managed_mode import bind_git_mode
         return bind_git_mode(factory(context, versions), guard)
     return create
 
@@ -136,7 +136,7 @@ class LocalSupervisor:
         self.lane = lane
         self.repository = repository
         def ports(context, versions):
-            from harness_local.storage.migration import bind_git_mode
+            from harness_local.storage.managed_mode import bind_git_mode
             agents, commands, evidence = ports_factory(context, versions)
             return agents, commands, bind_git_mode(evidence, repository.guard)
         self.ports_factory = ports
@@ -152,6 +152,10 @@ class LocalSupervisor:
         claim = self.repository.claim(lease_seconds=self.lease_seconds, lane=self.lane)
         if claim is None:
             return None
+        retired = self.repository.retired_reason(claim.run_id, claim.request_json)
+        if retired is not None:
+            self.repository.quarantine(claim, retired)
+            return replace(claim, status="RECOVERY_REQUIRED")
         # H2.5: antes de cualquier efecto. Escritor legacy, marcador o modo cambiado → REFUSED.
         refusal = self.repository.mode_refusal(claim)
         if refusal is not None:
@@ -304,15 +308,6 @@ class LocalSupervisor:
                     def observe():
                         return {**observation(area.inspect_definition(context)),
                                 'snapshot': evidence.capture(context).fingerprint}
-                elif snapshot["kind"] == "project_import":
-                    # P008-T011: origen (árbol de HEAD) y borradores del área privada, sin escribir el checkout.
-                    from harness_local.storage.import_drafts import ImportDrafts, observe as observe_import
-                    area = ImportDrafts.of(self.repository.engine, snapshot["conversation_id"])
-                    executable = getattr(self.commit_factory(context, versions), "executable", "git") \
-                        if self.commit_factory is not None else "git"
-
-                    def observe():
-                        return observe_import(context, area, executable, self.repository.guard)
                 else:
                     def observe():
                         captured = evidence.capture(context)

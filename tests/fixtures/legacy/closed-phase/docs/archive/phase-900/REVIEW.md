@@ -1,3 +1,0 @@
-# Revisión Demo
-
-READY sintético.

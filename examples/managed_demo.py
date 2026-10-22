@@ -6,7 +6,6 @@ Then set HARNESS_DEMO_ROOT to it and HARNESS_MANAGED_CONFIG=examples.managed_dem
 import json
 import os
 from pathlib import Path
-import shutil
 import subprocess
 import sys
 
@@ -98,7 +97,7 @@ def build():
             raise ValueError("Frozen demo versions differ")
         return GitWorkspace(IDENTITY)
     return ManagedConfig(tuple(ManagedProject(name, context(area / name), VERSIONS)
-        for name in ("task", "recovery", "legacy")), ports_factory=ports, commit_factory=writer,
+        for name in ("task", "recovery")), ports_factory=ports, commit_factory=writer,
         supervisor=True, poll_seconds=0.1)
 
 
@@ -110,10 +109,8 @@ def prepare(area):
     env = {**os.environ, "GIT_CONFIG_GLOBAL": os.devnull, "GIT_CONFIG_NOSYSTEM": "1",
            "GIT_AUTHOR_NAME": IDENTITY.name, "GIT_AUTHOR_EMAIL": IDENTITY.email,
            "GIT_COMMITTER_NAME": IDENTITY.name, "GIT_COMMITTER_EMAIL": IDENTITY.email}
-    for name in ("source", "recovery", "legacy"):
+    for name in ("source", "recovery"):
         root = area / name
-        if name == "legacy":
-            shutil.copytree(Path(__file__).resolve().parents[1] / "tests/fixtures/legacy/accepted", root)
         (root / "app").mkdir(parents=True)
         (root / "app/main.txt").write_text("baseline\n")
         (root / ".gitignore").write_text(".harness/runs/\n.harness/managed-mode.json\n")

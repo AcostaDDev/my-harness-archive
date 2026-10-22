@@ -16,17 +16,14 @@ from sqlalchemy.orm import Session
 
 from harness_local.adapters.engine_fake import ScriptedAgentAdapter, ScriptedCommandRunner, SyntheticWorkspace
 from harness_local.adapters.fake import FakeSimulationAdapter
-from harness_local.adapters.legacy import LocalLegacyReader
 from harness_local.core.engine.context import Command, EnginePolicy, ProjectContext, ProjectProfile
 from harness_local.core.engine.contracts import AgentResult, freeze, stop_history
 from harness_local.core.engine.journal import JournalError
 from harness_local.core.engine.serialization import dump_history, load_history, restore_context
 from harness_local.core.engine.validation import CommandResult
-from harness_local.core.legacy import LegacyImportService
 from harness_local.core.simulation import SimulationService
 from harness_local.services.managed import LocalSupervisor
 from harness_local.storage.database import make_engine
-from harness_local.storage.legacy import SQLiteLegacyRepository
 from harness_local.storage.managed import Conflict, OwnershipLost, SQLiteManagedRepository
 from harness_local.storage.models import (
     CheckoutLockRow, ManagedAttemptRow, ManagedEventRow, ManagedJobRow, ManagedRunRow,
@@ -566,29 +563,6 @@ def test_conflicts_and_frozen_history_are_rejected(repository, context):
     assert repository.get_run(job.run_id).history == record.history
 
 
-def test_migration_round_trip_keeps_other_authorities(repository, context, migrated_database):
-    legacy = LegacyImportService(SQLiteLegacyRepository(repository.engine), LocalLegacyReader())
-    fixture = Path(__file__).resolve().parents[1] / "fixtures/legacy/accepted"
-    legacy.import_checkout(str(fixture))
-    observed = legacy.summary(str(fixture))
-    simulations = SQLiteSimulationRepository(repository.engine)
-    synthetic = SimulationService(simulations, FakeSimulationAdapter()).create("Separate H0.3")
-    job = submit(repository, context)
-    supervisor, _, _, _ = worker(repository, context, [edit(), review()])
-    supervisor.run_once()
-    assert legacy.summary(str(fixture)) == observed
-    assert simulations.get(synthetic.id) == synthetic
-    config = migrated_database[1]
-    command.check(config)
-    command.downgrade(config, "0003_legacy_observation")
-    assert "managed_runs" not in inspect(repository.engine).get_table_names()
-    assert legacy.summary(str(fixture)) == observed and simulations.get(synthetic.id) == synthetic
-    with pytest.raises(RuntimeError, match="incompatible"):
-        require_schema(repository.engine)
-    command.upgrade(config, "head")
-    command.check(config)
-    assert legacy.summary(str(fixture)) == observed and simulations.get(synthetic.id) == synthetic
-    assert rows(repository, ManagedJobRow) == 0  # downgrade es explícitamente destructivo para H2.2
 
 
 def test_managed_database_cannot_live_inside_agent_checkout(repository, context):

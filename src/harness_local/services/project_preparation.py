@@ -21,7 +21,7 @@ from harness_local.adapters.preparation import (
     PreparationCommandRunner, environment_snapshot, file_hash, sha, verify_files, verify_receipt, write_new,
     parent as file_parent,
 )
-from harness_local.adapters.project_import import check_filters, check_submodules
+from harness_local.adapters.import_git import check_filters, check_submodules
 from harness_local.core.engine.context import Command
 from harness_local.core.engine.contracts import freeze
 from harness_local.core.engine.evidence import matches

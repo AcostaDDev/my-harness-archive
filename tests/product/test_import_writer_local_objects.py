@@ -11,8 +11,8 @@ from harness_local.core.engine.commit import CommitIntent
 from harness_local.storage.managed import Conflict
 from harness_local.storage.models import PhaseRow, ProjectImportRow
 from harness_local.storage.phases import PhaseRepository
-from test_import_commit import confirm, operation, preview, ready
-from test_import_conversation import tree_state, world  # noqa: F401
+from onboarding_helpers import operation
+from onboarding_helpers import tree_state
 from test_import_local_objects import promisor
 from test_managed_api import IDENTITY
 from test_onboarding_commit import confirm as onboarding_confirm, preview as onboarding_preview, ready as onboarding_ready
@@ -21,8 +21,7 @@ from test_onboarding_conversation import world as onboarding_world  # noqa: F401
 
 def flow_ports(flow, request):
     """Solo se monta el mundo del flujo parametrizado; el otro sería preparación descartada."""
-    return ((request.getfixturevalue('world'), ready, preview, confirm) if flow == 'A' else
-            (request.getfixturevalue('onboarding_world'), onboarding_ready, onboarding_preview, onboarding_confirm))
+    return (request.getfixturevalue('onboarding_world'), onboarding_ready, onboarding_preview, onboarding_confirm)
 
 
 def sealed(world):
@@ -36,8 +35,7 @@ def stop(world, job):
 
 
 @pytest.mark.parametrize('flow,crash', [
-    ('A', None), ('A', 'before'), ('A', 'write'), ('A', 'commit'), ('A', 'register'),
-    ('B', None), ('B', 'commit'),
+    ('B', None), ('B', 'before'), ('B', 'write'), ('B', 'commit'), ('B', 'register'),
 ])
 def test_all_writer_commands_stay_local_and_recover_same_intent(request, monkeypatch, flow, crash):
     world, prepare, show, submit = flow_ports(flow, request)
@@ -116,8 +114,7 @@ def test_all_writer_commands_stay_local_and_recover_same_intent(request, monkeyp
 
 
 @pytest.mark.parametrize('flow,missing', [
-    ('A', 'source-blob'), ('A', 'source-tree'), ('A', 'sealed-blob'), ('A', 'sealed-tree'),
-    ('B', 'source-blob'), ('B', 'sealed-tree'),
+    ('B', 'source-blob'), ('B', 'source-tree'), ('B', 'sealed-blob'), ('B', 'sealed-tree'),
 ])
 def test_required_source_or_sealed_objects_block_job_and_resume_without_effects(request, flow, missing):
     world, prepare, show, submit = flow_ports(flow, request)
@@ -181,7 +178,7 @@ def test_both_local_apis_reject_unsupported_git_instead_of_reporting_future_comm
     assert len(calls.read_text().splitlines()) == 1 and not fallback.exists()
 
 
-@pytest.mark.parametrize('flow', ['A', 'B'])
+@pytest.mark.parametrize('flow', ['B'])
 @pytest.mark.parametrize('stage', ['preview', 'job', 'resume'])
 def test_unsupported_writer_git_blocks_before_any_checkout_effect(request, monkeypatch, flow, stage):
     world, prepare, show, submit = flow_ports(flow, request)

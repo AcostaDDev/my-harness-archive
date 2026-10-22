@@ -4,7 +4,6 @@ import type { components, operations } from "./api.generated";
 export type Simulation = components["schemas"]["SimulationRead"];
 type SimulationCreate = operations["create_simulation"]["requestBody"]["content"]["application/json"];
 type SimulationList = operations["list_simulations"]["responses"][200]["content"]["application/json"];
-type Observation = components["schemas"]["ObservationRead"];
 
 const SAFE = new Set(["GET", "HEAD", "OPTIONS"]);
 
@@ -26,10 +25,5 @@ export const api = {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(body),
-  }),
-  setObservation: (base: string, enabled: boolean) => request<Observation>(`${base}/observation`, {
-    method: "PUT",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ enabled }),
   }),
 };

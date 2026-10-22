@@ -12,9 +12,21 @@ queda cerrada documentalmente el 2026-10-22: receta TypeScript web, lecturas aco
 marcadores opcionales, evidencia de fases cerradas y migración explícita de bases. Los trece criterios globales
 tienen [matriz de aceptación](docs/archive/phase-010/P010_MATRIZ_ACEPTACION.md); el wheel final y la QA sintética
 cuentan con [dictamen favorable](docs/archive/phase-010/REVIEW.md) en el alcance declarado.
-A/B y el perfil Django declarado conservan su validación solo offline por decisión D151; los límites se detallan
-más abajo. El paquete sigue en `0.1.0`, sin publicación ni fase sucesora planificada.
+B y el perfil Django declarado conservan su validación solo offline por decisión D151; los límites se detallan
+más abajo. El paquete sigue en `0.1.0`, sin publicación. P011 prepara la apertura pública; T019 retira el soporte del harness anterior.
 Detalle en [ROADMAP](docs/ROADMAP.md) y [STATE](docs/STATE.md).
+
+## Accesos al producto
+
+- Crear un proyecto nuevo desde un brief, confirmar sus documentos y preparar la receta elegida.
+- Incorporar un repositorio existente sin harness, revisar su inventario/documentos y confirmar el perfil y P001.
+
+Ambos continúan como proyectos gestionados. Registrar o reabrir uno ya gestionado conserva su autoridad existente.
+El soporte del harness anterior está retirado: sus URLs muestran página no encontrada, la API antigua devuelve 404
+tras las guardias y los comandos antiguos se rechazan. No se borran datos del usuario. Las instalaciones anteriores
+conservan historiales y backups; los trabajos A pendientes se ponen en cuarentena y requieren confirmar el escritor
+detenido, sin ejecutar sus intenciones. Activaciones incompletas bloquean para resolución manual.
+[Compatibilidad y recuperación](docs/flows/legacy-migration.md).
 
 ## Requisitos
 
@@ -88,7 +100,7 @@ las raíces de artefactos, como el `state_dir` del TOML. La restauración crea u
 la misma revisión de esquema.
 
 `logs-preview`, `logs-apply` y `logs-inspect` aplican la retención explícita de streams; `metrics-backfill` rellena
-métricas; `diagnose-cli` y `legacy-import`/`legacy-summary` completan la CLI. Cada orden documenta sus argumentos con
+métricas; `diagnose-cli` completa la CLI. Cada orden documenta sus argumentos con
 `--help`. Detalle y garantías en [ARCHITECTURE §9](docs/ARCHITECTURE.md#9-desarrollo-y-operación).
 
 ## Alcance soportado
@@ -100,7 +112,7 @@ métricas; `diagnose-cli` y `legacy-import`/`legacy-summary` completan la CLI. C
 | Proyecto Django nuevo con receta `django-recipe-1` | Sí | Sí, macOS arm64 y Python 3.13 (D139) |
 | Proyecto TypeScript web nuevo con receta `typescript-web-recipe-1` | Sí, también con node/npm reales y caché local | No |
 | Perfil declarado (`[profiles.*]`, ejemplo `python-django`) | Sí | No; validación real aplazada en P010-T008 (D095, D151) |
-| Importación A (harness anterior) y B (código sin harness) | Sí | No; validación real aplazada en P010-T008 (D151) |
+| Incorporación B (código sin harness) | Sí | No; validación real aplazada en P010-T008 (D151) |
 | Chat ligado a tareas, backup y restauración | Sí | Sin evidencia real localizada (matriz de T001) |
 | Lecturas de runs, métricas y vista previa de exportación sin decodificar historiales | Sí, con historiales sintéticos de 26 y 35,4 MiB | No aplica |
 

@@ -8,7 +8,6 @@ from fastapi.testclient import TestClient
 import pytest
 
 from harness_local.api.app import create_app
-from harness_local.api.events import event_frames
 
 LOCAL = 'http://127.0.0.1:8013'
 CSRF = {'X-Harness-Local': '1'}
@@ -125,22 +124,6 @@ def test_login_rate_limit(http):
     assert http.get('/api/session').status_code == 401
 
 
-def test_stream_stops_after_revocation_before_reading_more(http):
-    assert login(http).status_code == 200
-    sessions = http.app.state.sessions
-    token = http.cookies.get(sessions.cookie)
-    class Repository:
-        def events(self, *args):
-            raise AssertionError('Revoked stream must not read further evidence')
-    async def check():
-        async def disconnected():
-            return not sessions.remaining(token)
-        frames = event_frames(Repository(), 0, disconnected, interval=0)
-        assert await anext(frames) == 'retry: 1000\n\n'
-        sessions.revoke(token)
-        with pytest.raises(StopAsyncIteration):
-            await anext(frames)
-    asyncio.run(check())
 
 
 def test_all_registered_product_routes_require_session(http):

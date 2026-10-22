@@ -11,7 +11,7 @@ import pytest
 
 from harness_local.adapters.git import Git
 from harness_local.adapters.project_onboarding import read_inventory
-from harness_local.core.project_import import ImportInventoryError, TreeEntry
+from harness_local.core.tree import ImportInventoryError, TreeEntry
 from harness_local.core.project_onboarding import (
     INVENTORY_FORMAT, MAX_ENTRY_BYTES, OnboardingInventoryError, build_inventory, fingerprint,
 )

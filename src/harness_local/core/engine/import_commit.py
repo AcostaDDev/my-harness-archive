@@ -1,53 +1,37 @@
-"""P008-T012: árbol documental confirmado del Flujo A; sin agentes ni efectos."""
+"""Confirmed onboarding document tree and reconcilable commit intent."""
 from dataclasses import replace
 from hashlib import sha256
+import re
 
-from harness_local.core.engine.definition import default_documents, definition_layout, _block_names
+from harness_local.core.engine.definition import definition_layout, _block_names
 from harness_local.core.engine.document_ops import _sealed_preview
-from harness_local.core.engine.documents import (
-    blocks, decision_index, parse_roadmap, phase_data, plan_tasks, render_decisions,
-    render_next_steps, render_roadmap, render_state, replace_block, skeleton,
-)
+from harness_local.core.engine.documents import (blocks, decision_index, parse_roadmap, phase_data, plan_tasks, render_decisions, render_next_steps, render_roadmap, render_state, replace_block)
 from harness_local.core.engine.phases import phase_definition
-from harness_local.core.project_import import _state, _next_steps
-from harness_local.core.project_normalization import materialize
+from harness_local.core.engine.planning import TASK_RE
 from harness_local.core.engine.commit import CommitIntent, CommitPlan, MechanicalUpdate, git_provenance
 
-MESSAGE = 'docs: normalizar al contrato documental'
+STATE_HEADING = re.compile(r"^##\s+(?:Fase activa|Active phase)\s*[—–:-]\s*(P\d{3})\b", re.MULTILINE)
+NEXT_STEPS_TITLE = re.compile(r"^#\s+(P\d{3})\b", re.MULTILINE)
+FRONTMATTER_PHASE = re.compile(r"^phase:\s*[\"']?(?:P)?(\d{1,3})[\"']?\s*$", re.MULTILINE)
+
+def code(number):
+    return f'P{int(number):03d}'
+
+def _state(text: str) -> list[dict]:
+    found = []
+    if text.startswith('---\n'):
+        end = text.find('\n---', 4)
+        if end != -1 and (phase := FRONTMATTER_PHASE.search(text[4:end])):
+            found.append({'code': code(phase[1]), 'source': 'frontmatter'})
+    found.extend({'code': match[1], 'source': 'heading'} for match in STATE_HEADING.finditer(text))
+    return found
 
 
-def build_tree(context, source, contents, drafts, title):
-    """Conserva cada original por bytes, también cuando un borrador o un bloque lo sustituye.
-
-    Lo ambiguo del mapa se retira solo si no es archivo ni ajeno; la confirmación del árbol completo autoriza
-    esa retirada. Un destino de conservación ocupado bloquea: nunca se sobrescribe ni se renumera el historial.
-    """
-    target = definition_layout(context)
-    tree = materialize(source['map'], contents)
-    template = skeleton(target, title, preparation=[c.argv for c in context.profile.preparation],
-                        validations=[c.argv for c in context.profile.validations])
-    for path in default_documents(target):
-        tree.setdefault(path, template[path].encode())
-    for item in source['map']['review']:
-        path = item['path']
-        if not path.startswith(target.docs + '/archive/'):
-            tree.pop(path, None)
-    tree.update({path: text.encode() for path, text in drafts.items()})
-    definition = adopt_documents(context, tree)
-    preserved = []
-    moved = {move['source']: move['target'] for move in source['map']['moves']}
-    for path, data in sorted(contents.items()):
-        if tree.get(path) == data or (path in moved and tree.get(moved[path]) == data):
-            continue
-        archive = f'{target.archive("P000")}/import-originals/{path}'
-        try:
-            check_destinations([*tree, archive])
-        except ValueError as exc:
-            raise ValueError(f'Original archive destination already occupied: {archive}') from exc
-        tree[archive] = data
-        preserved.append({'source': path, 'target': archive, 'sha256': sha256(data).hexdigest()})
-    check_destinations(tree)
-    return tree, definition, preserved
+def _next_steps(text: str) -> dict:
+    tasks = [match[1] for match in TASK_RE.finditer(text)]
+    title = NEXT_STEPS_TITLE.search(text)
+    return {'title_code': title[1] if title else None, 'tasks': len(tasks),
+            'task_phases': sorted({task.split('-')[0] for task in tasks})}
 
 
 def adopt_documents(context, tree):
@@ -92,15 +76,6 @@ def check_destinations(tree):
     for path in paths:
         if any('/'.join(path.split('/')[:n]) in paths for n in range(1, path.count('/') + 1)):
             raise ValueError(f'Import destinations conflict as file and directory: {path}')
-
-
-def preview(context, source, contents, drafts, title, writer, *, origin, warnings):
-    tree, phase, preserved = build_tree(context, source, contents, drafts, title)
-    return preview_tree(context, source, contents, tree, phase, writer, {
-        'origin': origin, 'source': {
-            'inventory_sha256': source['inventory']['inventory_sha256'], 'map_sha256': source['map']['map_sha256']},
-        'moves': source['map']['moves'], 'preserved': preserved, 'foreign': source['map']['foreign'],
-        'warnings': warnings}, MESSAGE)
 
 
 def preview_tree(context, source, contents, tree, phase, writer, extra, message):

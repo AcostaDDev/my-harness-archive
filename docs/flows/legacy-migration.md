@@ -1,141 +1,65 @@
-# Flujo — harness anterior: observación y paso a gestionado
+# Compatibility after legacy/A retirement
 
-Un checkout con `.harness/runs` de un harness anterior (ReferenceProject) se observa en lectura y puede pasar a modo
-gestionado (D012–D014, D027). Ninguna de las dos vías reescribe hoy los documentos del proyecto.
-
-```mermaid
-flowchart TD
-    A["Checkout con .harness/runs"] --> B["legacy-import: índice SQLite por ruta y hash"]
-    B --> C["Navegación y observación opt-in (polling, SSE)"]
-    C --> D["Vista previa de migración sin escrituras"]
-    D --> E["Activación: copia inmutable del historial fuera del checkout"]
-    E --> F["Marcador .harness/managed-mode.json"]
-    F --> G["Modo gestionado: el motor rechaza actividad legacy posterior"]
-    G --> H["Reversión opcional: exportación verificada y retirada del marcador"]
-```
-
-## Estados de la activación
-
-```mermaid
-stateDiagram-v2
-    [*] --> PREPARING
-    PREPARING --> ACTIVE: copia, manifiesto y marcador verificados
-    PREPARING --> FAILED
-    ACTIVE --> REVERTING: reversión confirmada
-    REVERTING --> REVERTED
-    REVERTED --> [*]
-    FAILED --> [*]
-```
-
-## Flujo A en P008 (D088)
-
-El Flujo A (T009–T012) añade, sobre esta vía y sobre proyectos v1/v2 de este harness, la normalización documental al
-layout unificado. Implementados: el inventario de solo lectura (P008-T009, D096), el mapa determinista de
-renombrados, movimientos y composición de decisiones (P008-T010, D097) y la conversación `project_import` en la que
-el revisor propone fusiones y adelgazamiento como borradores privados (P008-T011, D098), y la vista previa y
-el commit confirmado con CAS y adopción de fase (P008-T012, D100). T016 (D105) corrige la frontera Git de H1–H3;
-T018 (D108), las lecturas locales sin lazy-fetch de H5; T019 (D110), el rechazo de gitlinks antes de inspeccionar hijos (H6).
+P011-T019, D161 implements D155 and the T001 §6 contract. Legacy observation, indexing, activation/reversion
+and Flow A normalization/import are removed. This canonical document now describes compatibility only;
+the original behavior and its evidence remain in the phase archive and historical decisions.
 
 ```mermaid
 flowchart TD
-    A["Proyecto registrado"] --> A1{"¿Runs legacy sin activar?"}
-    A1 -- sí --> A2["Vista previa y activación D027 confirmada aparte; copia verificada"]
-    A2 --> B0
-    A1 -- no --> B0{"¿Sin filtros clean/process configurados, incluidos includes?"}
-    B0 -- no --> R
-    B0 -- sí --> B1{"¿HEAD e índice sin gitlinks en ninguna ruta? Lectura solo del padre"}
-    B1 -- no --> R
-    B1 -- sí --> B{"Git con no-lazy-fetch obligatorio, HEAD local con archivos y checkout limpio"}
-    B -- no --> R["Rechazo con diagnóstico, sin escrituras"]
-    B -- sí --> C["Árbol de HEAD: Markdown raíz, docs/ y .harness/ sin runs"]
-    C --> C1{"¿Objetos locales y tamaños disponibles, sin lazy-fetch?"}
-    C1 -- no --> R
-    C1 -- sí --> D["Blobs completos por cat-file; enlaces y submódulos rechazados sin leer"]
-    D -- objeto ausente o respuesta incompleta --> R
-    C --> E[".harness/runs por lstat (D027)"]
-    D --> F["Clase y regla por entrada, origen, fases, instrucciones y bloques"]
-    E --> F
-    F --> G["Inventario con inventory_sha256"]
-    G --> M["Mapa: bytes comprobados contra el inventario"]
-    M --> N["Movimientos por regla: alias, renumeración, phase-000, artefactos de fase"]
-    M --> O["Decisiones inequívocas: archivo en phase-000 y sección en DECISIONS"]
-    N --> P{"¿Destino libre en el árbol original?"}
-    O --> P
-    P -- no --> Q["review: target-conflict"]
-    P -- sí --> S["Mapa con árbol resultante, review, foreign, missing y map_sha256"]
-    Q --> S
-    S --> T["Conversación project_import: inventario y mapa congelados en SQLite"]
-    T --> U["Turno: ¿checkout igual al inventariado? Textos del árbol resultante y borradores congelados"]
-    U --> V["Revisor de solo lectura (rol definition): borradores, preguntas y pendientes"]
-    V --> W{"¿Esquema y rutas D088 válidos, origen y área sin cambios?"}
-    W -- no --> X["Turno FAILED sin fallback; nada se escribe"]
-    W -- sí --> Y["Propuestas; aplicar o editar con CAS en import-drafts/ junto a SQLite"]
-    Y --> Z{"GET …/import: ¿preguntas bloqueantes resueltas o aplazadas, documentos y límites D088?"}
-    Z -- sí --> H["Árbol completo: mapa, borradores y bloques; originales sustituidos o retirados al archivo"]
-    H --> H1{"¿STATE y NEXT_STEPS coinciden en fase descrita por ROADMAP? ¿Destinos libres?"}
-    H1 -- no --> R
-    H1 -- sí --> H1B{"¿Destinos nuevos no ignorados y blobs iguales a los bytes confirmados?"}
-    H1B -- no --> R
-    H1B -- sí --> H2["Confirmación de hash, motivo e Idempotency-Key"]
-    H2 --> H3["Job y project_imports con intención sellada, antes de escribir"]
-    H3 --> H3B["Recomprobar filtros, gitlinks, destinos y objetos locales completos antes de ejecutar"]
-    H3B --> H4["Escritor sin lazy-fetch: CAS por archivo, borrados y commit documental determinista"]
-    H4 --> H5["Transacción: fase ACTIVE y base documental adoptadas; importación COMPLETED y job DONE"]
-    H3 --> H6["Caída: RECOVERY_REQUIRED; confirmar escritor detenido"]
-    H6 --> H7["INTERRUPTED: reconfirmar la misma intención y el mismo commit"]
-    H7 --> H3B
+    A["Start service or open restored archive"] --> B["Check schema and archive integrity"]
+    B --> C["Managed runtime only; no observer, scan or legacy router"]
+    C --> D["Retain old tables, watch settings, conversations and intents as data"]
+    D --> E{"Queued work?"}
+    E -- "Valid onboarding B" --> F["Normal managed recovery and sealed commit"]
+    E -- "A, missing source or contradictory classification" --> G["Quarantine before ports, processes or checkout effects; keep lock"]
+    G --> H["Explicit confirm-stopped with exact owner and version"]
+    H --> I{"Owner and command/provider groups proven stopped?"}
+    I -- no --> G
+    I -- yes --> J["Close job, release lock, record reason/event; preserve intent and operation"]
+    E -- "Expired ACTIVE lease" --> K["Recovery required; never signal persisted PIDs or retry"]
+    K --> H
 ```
 
-D099 implementada en T012: la activación va antes de crear la conversación. Solo el marcador no versionado de
-una activación propia, `ACTIVE`, coincidente por hash y sin deriva se tolera en el inventario y se excluye de las
-capturas Git (también al continuar con tareas). Otro marcador o cualquier otro cambio sigue bloqueando. El commit
-no versiona el marcador ni modifica `.gitignore`.
+The API paths `/api/legacy/**`, activation/reversion and managed `/import` paths are absent from the router and
+OpenAPI. Unknown API paths return 404 after session and local request guards; restored archives still reject
+mutations uniformly. `/legacy` and `/projects/:p/import` resolve to the UI's not-found page, without a redirect.
+`legacy-import` and `legacy-summary` fail argument parsing before opening a database. No flag reactivates them.
+The current prompt catalog excludes `import-project`. Frozen catalogs remain readable with that record;
+rendering it fails and persisted active heads cannot add it to a current catalog.
 
-La vista previa conserva en `archive/phase-000/import-originals/<ruta original>` cada original cuyo destino cambia
-por borradores o bloques y cada documento retirado de `review` (salvo el archivo existente). Los movimientos del mapa
-conservan sus originales por bytes; lo ajeno queda donde está y se lista para la confirmación. Una colisión de archivo,
-directorio o mayúsculas bloquea. STATE y NEXT_STEPS deben declarar la misma fase, con objetivo y criterios en ROADMAP;
-no se infiere ningún intento ni aceptación desde el historial. Después del commit, la fase puede continuar por las
-acciones existentes; repetir la vista previa devuelve la importación ya completada sin cambios.
+An already ACTIVE job keeps its lease/lock until the existing recovery rules apply. Queued A/ambiguous work is
+claimed solely to establish a quarantined owner and lock, then stops before factories or filesystem checks.
+`confirm-stopped` requires exact owner/version, a reason, and dead/closed owner and groups. It never invokes
+an old intent. It records `retired_work_resolved` and preserves the old conversation, request, drafts and operation
+verbatim. A retained unresolved import intent continues to block a new writer; resolving or moving old data is
+manual, outside the retired product flow. Completed managed history remains available through managed run views.
 
-Desde T016 (D105), el inventario rechaza configuraciones `filter.*.clean` y `filter.*.process`, incluidos los
-includes de Git, antes de `status`. Las mismas guardias compartidas con B preceden a captura/sellado y ejecución,
-también al reanudar. No se invocan filtros ni se cambia configuración. Los destinos nuevos ignorados impiden
-confirmar; las conversiones internas de atributos también bloquean si cualquier blob del árbol documental
-resultante difiere de su SHA-256 confirmado, incluidos originales archivados y binarios. El sellado final debe
-reproducir el árbol de la vista previa. Cambiar atributos después de confirmar se detecta al recalcular la intención
-antes de escribir; cambiar exclusiones se vuelve a comprobar en el job. Se mantiene la CAS y la recuperación del
-mismo commit.
+```mermaid
+flowchart TD
+    A["Before managed write: existing activation guard"] --> B{"Persisted activation?"}
+    B -- no --> C{"Foreign marker or old runs in checkout/main checkout?"}
+    C -- yes --> X["Refuse; activation support removed"]
+    C -- no --> Y["Normal managed admission"]
+    B -- "PREPARING / REVERTING" --> Z["Refuse; manual resolution outside retired flow"]
+    B -- ACTIVE --> D["Verify recorded marker and manifest hashes, identity and sealed snapshot bytes"]
+    D --> E["Verify live marker and old-scope drift; no indexing or reconstruction"]
+    E -- "Intact authority and no new/modified paths" --> Y
+    D -- mismatch --> X
+    E -- mismatch --> X
+```
 
-T018 (D108) comparte `LocalGit` con B y exige `--no-lazy-fetch` desde `rev-parse`, incluida la consulta de
-filtros, `status`, `ls-tree -l` y `cat-file`. Git sin ese flag se rechaza en el primer comando. Un blob prometido
-ausente, un tamaño no disponible o una respuesta de blobs incompleta rechazan la lectura con diagnóstico:
-no se invoca ningún transporte ni se recuperan objetos. La misma frontera cubre crear la conversación, enviar
-un turno, observarlo y consultar estado/vista previa/confirmación a través de `read_checkout`; nada parcial
-llega al revisor ni al sellado. `document_layout = "d088-12"` (T020) pone en cuarentena jobs anteriores; ninguna
-intención sellada se reescribe y la configuración global permanece intacta.
+`core/managed_mode.py`, `adapters/managed_mode.py`, `adapters/safe_files.py` and `storage/managed_mode.py`
+contain only compatibility reads and admission checks. They cannot create, finish, abandon or revert activations.
+A foreign marker, missing/corrupt snapshot or legacy writer continues to block managed work. The marker is
+excluded from Git only when validated against this installation's intact ACTIVE authority.
 
-T019 (D110) consulta `ls-tree -r -z HEAD` y `ls-files --stage -z` antes de `status`: cualquier modo `160000`
-en HEAD o índice bloquea con ruta y origen, dentro o fuera de `docs/`, aunque el hijo no esté inicializado o el
-gitlink esté añadido o retirado del índice. No consulta la configuración, estado ni archivos de los hijos.
-Así no puede invocar sus filtros `clean`/`process`, directos o por include. La guardia se repite antes de
-capturar/sellar y ejecutar/reanudar A/B; no se sustituye la limpieza por ignorar cambios de submódulos.
-La observación anterior y posterior de cada turno A usa la misma lectura; un gitlink nuevo impide invocar
-o aceptar propuestas. Tras retirar el bloqueo se puede conciliar la misma intención, run y commit.
+`legacy_sources/runs/artifacts/events`, `managed_activations`, `activation_id`, `project_imports`, conversations,
+histories and migrations 0001–0023 remain unchanged. `watch_enabled=true` is inert; startup does not change it
+or traverse its external source. Backup reads sealed manifests and already referenced snapshot/export paths,
+verifies hashes and copies evidence without importing the external checkout. Restore remains query-only and
+starts no observer or retired job. An older schema requires the explicit SQLite migration command; this does
+not activate a project or normalize its documentation. See [database migration](database-migration.md).
 
-T020 (D112) vincula también el escritor A/B a `LocalGit`: captura, sellado, comprobaciones booleanas,
-escritura, conciliación y refresco del índice usan `--no-lazy-fetch`. Antes de capturar o escribir se comprueban
-todos los objetos de HEAD y del árbol propuesto/sellado, incluidos los blobs ajenos a la documentación.
-Un objeto necesario ausente bloquea con diagnóstico; no se recupera ni se ejecuta un transporte. La ausencia
-normal del commit futuro permite crearlo localmente y conservar la misma intención/run/commit al reanudar.
-Las consultas `code` comprueban el soporte del modo con `run(--version)` antes de interpretar una ausencia;
-Git sin soporte falla sin fallback. No se cambia la configuración ni la evidencia histórica de H5/H7.
-
-## Fuente en el código
-
-- `core/legacy.py`, `adapters/legacy.py`, `storage/legacy.py`, `storage/observation.py`, `services/observation.py`.
-- `core/migration.py`, `adapters/migration.py`, `storage/migration.py`, `services/migration.py`.
-- `core/project_import.py`, `adapters/project_import.py` (inventario del Flujo A).
-- `core/project_normalization.py` (mapa de normalización del Flujo A).
-- `core/engine/import_conversation.py`, `storage/import_drafts.py`, `storage/planning.py` (conversación del Flujo A).
-- `core/engine/import_commit.py`, `storage/project_import.py` (vista previa, confirmación y conciliación).
+The two product entries are [new project definition](project-definition.md) and
+[onboarding a repository without harness](project-onboarding.md). Existing managed projects can be registered
+or reopened normally. Synthetic H0 simulations remain independent from project onboarding and legacy support.

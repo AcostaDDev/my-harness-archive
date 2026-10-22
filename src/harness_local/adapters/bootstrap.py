@@ -31,7 +31,7 @@ def inspect_target(context, git):
     nested = git.code('rev-parse', '--is-inside-work-tree') == 0
     return {'identity': identity, 'entries': entries[:100], 'entries_truncated': len(entries) > 100,
             'import_required': bool(entries) or nested,
-            'diagnostic': 'La carpeta contiene datos o pertenece a un repositorio: usa el flujo de importación.'
+            'diagnostic': 'La carpeta contiene datos o pertenece a un repositorio: incorpora un repositorio sin harness o registra uno ya gestionado.'
                           if entries or nested else None}
 
 
@@ -96,7 +96,7 @@ def write_draft(writer, context, path, content, base_sha256):
     if not allowed_draft(target, path):
         raise ValueError(f'{path} is not an allowed definition draft')
     if inspect_drafts(context, writer._git(context.root))['import_required']:
-        raise ValueError('The target belongs to a Git repository or contains .git: use the import flow')
+        raise ValueError('The target belongs to a Git repository or contains .git: use onboarding for a repository without harness')
     folders = draft_directories(target)
     parts = path.split('/')
     for n in range(1, len(parts)):

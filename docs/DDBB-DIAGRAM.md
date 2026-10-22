@@ -9,7 +9,9 @@ Convenciones: `PK` clave primaria, `FK` clave ajena declarada, `UK` unicidad de 
 
 ## Observación legacy y simulaciones (P001–P002)
 
-Índice reconstruible de un harness anterior: los originales son la autoridad (D012–D014). `simulations` es el esqueleto H0.3.
+Tablas de compatibilidad conservadas tras P011-T019 (D161). No hay indexador, visor ni observadores activos;
+`watch_enabled` anterior queda inerte. `simulations` conserva el esqueleto sintético propio H0.3. No cambia metadata
+ni ninguna revisión Alembic por esta retirada.
 
 ```mermaid
 erDiagram
@@ -342,8 +344,8 @@ Unicidad: `managed_phases` (root, code); `uq_managed_phases_open_root` sobre `ma
 ## Chat y planificación conversacional (P005, P007, P008)
 
 Chat contextual (D035, D083), conversaciones de definición y planificación de fase (D075, D086) e importación del
-Flujo A (`kind = 'project_import'`, D098): `source` congela el inventario y el mapa al crearla; sus borradores viven
-fuera de SQLite, en `import-drafts/<id>/` junto a la base. El Flujo B (`kind = 'onboarding'`, D102) usa la misma
+Flujo A histórico (`kind = 'project_import'`, D098), conservado solo como datos tras D161: `source`, turnos,
+propuestas y `import-drafts/<id>/` anteriores no se borran ni vuelven a ejecutarse. El Flujo B (`kind = 'onboarding'`, D102) usa la misma
 columna `source` para congelar inventario, HEAD y árbol, y `onboarding-drafts/<id>/` para sus borradores. No añade
 tablas, columnas ni índices. `managed_runs.purpose = 'onboarding'` enlaza sus turnos con la autoridad de planificación;
 la intención de exportación queda en eventos antes del efecto. La guardia de downgrade de 0019 protege ambos orígenes.

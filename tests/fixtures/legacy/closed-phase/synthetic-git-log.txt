@@ -1,2 +1,0 @@
-EXTRACTO AUXILIAR FICTICIO: no es un artefacto generado por harness.py.
-dddddddddddddddddddddddddddddddddddddddd harness: close phase 900 (tag: phase-900-complete)

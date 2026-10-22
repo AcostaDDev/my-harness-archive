@@ -6,7 +6,6 @@ opt-in corre en el hilo del servicio igual que en Uvicorn.
 
 import os
 from pathlib import Path
-import shutil
 import subprocess
 import sys
 import time
@@ -22,13 +21,11 @@ from harness_local.api.app import create_app
 from harness_local.core.engine.commit import GitIdentity
 from harness_local.core.engine.context import Command, EnginePolicy, ProjectContext, ProjectProfile
 from harness_local.core.engine.journal import JournalError
-from harness_local.core.migration import MARKER_PATH, digest
+from harness_local.core.managed_mode import MARKER_PATH, digest
 from harness_local.services.managed_runtime import CONFIG_ENV, ManagedConfig, ManagedProject, load_config
-from harness_local.services.migration import MigrationService
 from harness_local.storage.database import make_engine
 from harness_local.storage.models import Base
 
-FIXTURES = Path(__file__).resolve().parents[1] / "fixtures/legacy"
 TASK, PHASE = "P001-T001", "P001"
 IDENTITY = GitIdentity("Harness Local", "harness@example.invalid")
 VERSIONS = {"engine": "h2-exit-1", "agent_adapter": "synthetic-1", "commands": "synthetic-1",
@@ -199,16 +196,6 @@ def plain(tmp_path):
     return make_context(root)
 
 
-def legacy_checkout(tmp_path, case="accepted", name="legacy"):
-    root = tmp_path / name
-    shutil.copytree(FIXTURES / case, root)
-    (root / "app").mkdir()
-    (root / "app/main.txt").write_text("baseline\n", encoding="utf-8")
-    (root / ".gitignore").write_text(".harness/runs/\n", encoding="utf-8")
-    git(root, "init", "-q", "-b", "main")
-    git(root, "add", "-A")
-    git(root, "commit", "-q", "-m", "synthetic base")
-    return root.resolve()
 
 
 def main_snapshot(root):
@@ -435,7 +422,9 @@ def test_runs_of_unregistered_checkouts_are_readable_but_not_actionable(tmp_path
 
 
 def test_mode_refusals_return_409_with_diagnostic_and_no_partial_effects(tmp_path, url, engine):
-    legacy = make_context(legacy_checkout(tmp_path))
+    root = tmp_path / "old-checkout"
+    (root / ".harness/runs").mkdir(parents=True)
+    legacy = make_context(root)
     marked = tmp_path / "marked"
     (marked / ".harness").mkdir(parents=True)
     (marked / MARKER_PATH).write_text("{}", encoding="utf-8")
@@ -449,95 +438,6 @@ def test_mode_refusals_return_409_with_diagnostic_and_no_partial_effects(tmp_pat
             assert refused.status_code == 409
             assert refused.json()["detail"]["code"] == "mode_refused" and text in refused.json()["detail"]["diagnostic"]
         assert table_counts(engine) == counts and tree(legacy.root) == before
-
-        preview = http.get("/api/managed/projects/legacy/migration/preview").json()
-        activated = http.post("/api/managed/projects/legacy/migration/activations", json={
-            "preview_sha256": preview["inventory_sha256"], "legacy_stopped": STOPPED}).json()
-        assert activated["status"] == "ACTIVE"
-        (legacy.root / ".harness/runs/20000103T000000+0000_P900-T002").mkdir()
-        counts = table_counts(engine)
-        drifted = submit(http, project="legacy", key="after-drift")
-        assert drifted.status_code == 409 and drifted.json()["detail"]["code"] == "mode_refused"
-        assert "Escritor legacy" in drifted.json()["detail"]["diagnostic"]
-        mode = http.get("/api/managed/projects/legacy/mode").json()
-        assert "Escritor legacy" in mode["refusal"] and mode["drift"]["added"]
-        assert table_counts(engine) == counts
-    assert ports.requested == 0
-
-
-def test_migration_over_http_keeps_library_guarantees(tmp_path, url, engine):
-    root = legacy_checkout(tmp_path)
-    context = make_context(root)
-    before, counts = tree(root), table_counts(engine)
-    migrations = Path(url.removeprefix("sqlite:///")).parent / "migrations"
-    with client(url, tmp_path, config(context)) as http:
-        mode = http.get("/api/managed/projects/synthetic/mode").json()
-        assert mode["activation"] is None and "no activado" in mode["refusal"] and mode["activations"] == []
-        preview = http.get("/api/managed/projects/synthetic/migration/preview").json()
-        assert preview["ready"] and preview["activation"]["managed_runs_created"] == 0
-        assert tree(root) == before and table_counts(engine) == counts and not migrations.exists()
-
-        late = next((root / ".harness/runs").iterdir()) / "late-01.json"
-        late.write_text("{}", encoding="utf-8")
-        changed = http.post("/api/managed/projects/synthetic/migration/activations", json={
-            "preview_sha256": preview["inventory_sha256"], "legacy_stopped": STOPPED})
-        assert changed.status_code == 409 and changed.json()["detail"]["code"] == "migration_refused"
-        assert table_counts(engine) == counts and not (root / MARKER_PATH).exists()
-        late.unlink()
-
-        body = {"preview_sha256": preview["inventory_sha256"], "legacy_stopped": STOPPED}
-        activated = http.post("/api/managed/projects/synthetic/migration/activations", json=body).json()
-        assert activated["status"] == "ACTIVE" and (root / MARKER_PATH).exists()
-        assert http.post("/api/managed/projects/synthetic/migration/activations", json=body).json() == activated
-        assert http.get(f"/api/managed/activations/{activated['id']}").json() == activated
-        mode = http.get("/api/managed/projects/synthetic/mode").json()
-        assert mode["refusal"] is None and mode["activation"] == activated and mode["activations"] == [activated]
-
-        stale = http.post(f"/api/managed/activations/{activated['id']}/revert",
-                          json={"expected_version": activated["version"] - 1, "reason": "Pantalla obsoleta"})
-        assert stale.status_code == 409 and stale.json()["detail"]["code"] == "migration_conflict"
-        assert http.get(f"/api/managed/activations/{activated['id']}").json() == activated
-        reverted = http.post(f"/api/managed/activations/{activated['id']}/revert", json={
-            "expected_version": activated["version"], "reason": "Volver al motor legacy (prueba sintética)"}).json()
-        assert reverted["status"] == "REVERTED" and not (root / MARKER_PATH).exists()
-        assert digest(Path(reverted["export_path"]).read_bytes()) == reverted["export_sha256"]
-        again = http.post(f"/api/managed/activations/{activated['id']}/revert", json={
-            "expected_version": activated["version"], "reason": "Doble envío"})
-        assert again.status_code == 409
-        refused = submit(http, key="after-revert")
-        assert refused.status_code == 409 and "no activado" in refused.json()["detail"]["diagnostic"]
-    assert tree(root) == before  # el checkout vuelve exactamente al estado legacy
-
-
-@pytest.mark.parametrize("decision", ["resume", "abandon"])
-def test_interrupted_activation_is_resumed_or_abandoned_explicitly_over_http(tmp_path, url, engine, decision):
-    root = legacy_checkout(tmp_path)
-
-    def crash(step, **info):
-        if step == "copy_complete":
-            raise SyntheticCrash(step)
-    library = MigrationService(engine, hook=crash)
-    preview = library.preview(root)
-    with pytest.raises(SyntheticCrash):
-        library.activate(root, preview_sha256=preview["inventory_sha256"], legacy_stopped=STOPPED)
-    with client(url, tmp_path, config(make_context(root))) as http:
-        [prepared] = http.get("/api/managed/projects/synthetic/mode").json()["activations"]
-        assert prepared["status"] == "PREPARING"
-        body = {"preview_sha256": preview["inventory_sha256"], "legacy_stopped": STOPPED}
-        blocked = http.post("/api/managed/projects/synthetic/migration/activations", json=body)
-        assert blocked.status_code == 409 and "reanudarla o abandonarla" in blocked.json()["detail"]["diagnostic"]
-        stale = http.post(f"/api/managed/activations/{prepared['id']}/{decision}",
-                          json={"expected_version": prepared["version"] + 1, "reason": "Obsoleta"})
-        assert stale.status_code == 409
-        done = http.post(f"/api/managed/activations/{prepared['id']}/{decision}", json={
-            "expected_version": prepared["version"], "reason": "Proceso anterior terminado (caída simulada)"})
-        assert done.status_code == 200, done.text
-        expected = {"resume": "ACTIVE", "abandon": "FAILED"}[decision]
-        assert done.json()["status"] == expected
-        assert (root / MARKER_PATH).exists() == (decision == "resume")
-
-
-# --- seguridad local y configuración ----------------------------------------------------
 
 
 def test_host_origin_and_csrf_header_are_enforced_without_effects(tmp_path, url, engine, plain):
@@ -574,7 +474,7 @@ def test_default_service_registers_nothing_and_never_launches_processes(tmp_path
             "enabled": False, "alive": False, "last_error": None, "ports_configured": False,
             "commit_writer_configured": False}
         assert submit(http).status_code == 404
-        assert http.get("/api/legacy/projects").status_code == 200
+        assert http.get("/api/legacy/projects").status_code == 404
 
 
 def test_configuration_is_validated_at_startup(tmp_path, url, plain):
@@ -626,7 +526,7 @@ def test_ui_demo_preparation_is_explicit_and_never_replaces_existing_data(tmp_pa
         demo["prepare"](area)
     monkeypatch.setenv("HARNESS_DEMO_ROOT", str(area))
     configured = demo["build"]()
-    assert [p.id for p in configured.projects] == ["task", "recovery", "legacy"]
+    assert [p.id for p in configured.projects] == ["task", "recovery"]
     assert tree(area / "source") == before
     assert not (area / "calls.jsonl").exists()  # loading alone never invokes anything
     (area / "demo-marker").write_text("not a prepared fixture")

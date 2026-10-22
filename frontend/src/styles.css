@@ -273,25 +273,8 @@ pre.diff { max-height: 560px; }
 .gate-card p { color: var(--muted); }
 .gate-card form button { width: 100%; }
 
-/* Vista legacy (H1): misma piel, estructura propia. */
-.legacy h2 { margin-top: 28px; }
-.legacy h3 { margin-top: 22px; }
-.legacy-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 10px; list-style: none; padding: 0; }
-.legacy .choice, .legacy-list button { display: block; width: 100%; height: 100%; text-align: left; background: var(--surface); color: var(--ink);
-  border: 1px solid var(--line); font-weight: 400; padding: 12px 14px; }
-.legacy .choice:hover:not(:disabled), .legacy-list button:hover:not(:disabled) { background: var(--surface); border-color: var(--line-strong); }
 button[aria-pressed="true"] { border-color: var(--accent) !important; box-shadow: inset 0 0 0 1px var(--accent); }
-.choice strong, .choice small { display: block; overflow-wrap: anywhere; }
-.choice small { margin-top: 6px; font-size: 13px; color: var(--muted); }
-.legacy button:not(.choice) { background: transparent; color: var(--ink); border-color: var(--line-strong); }
-.project-detail, .artifact-panel, .evidence-detail { margin-top: 20px; padding: 20px 22px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); }
 .entry-list { list-style: none; padding: 0; }
-.field { display: grid; grid-template-columns: minmax(140px, 1fr) minmax(0, 2fr); gap: 16px; padding: 8px 0; border-top: 1px solid var(--line); }
-.field dt { font-size: 13px; color: var(--muted); }
-.field dd { margin: 0; overflow-wrap: anywhere; }
-.field pre { margin: 0; }
-.verified { color: var(--ok); }
-.legacy details > summary { cursor: pointer; margin-top: 16px; }
 
 @media (max-width: 880px) {
   :root { --gutter: 16px; }

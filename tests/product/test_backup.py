@@ -16,7 +16,6 @@ from harness_local.api.app import create_app
 from harness_local.cli import main
 from harness_local.services.managed import LocalSupervisor
 from harness_local.services.managed_runtime import ManagedConfig
-from harness_local.services.migration import MigrationService
 from harness_local.storage.backup import (
     BackupError, RESTORED_USER_VERSION, create_backup, restore_backup, verify_bundle, restored_artifact,
 )
@@ -24,12 +23,11 @@ from harness_local.storage.database import make_engine
 from harness_local.storage.managed import SQLiteManagedRepository
 from harness_local.storage.managed_views import SQLiteManagedViews
 from harness_local.storage.models import Base
-from harness_local.storage.navigation import identifier
 from test_cli_agents import adapter, setup_invocation
 from test_git import repo as git_repo
 from test_junit import managed_run, simple_xml
 from test_managed import context, repository
-from test_migration import legacy_checkout, tree, STOPPED
+from onboarding_helpers import tree_state as tree
 
 LOCAL = {'base_url': 'http://127.0.0.1:8013', 'headers': {'X-Harness-Local': '1'}}
 
@@ -152,39 +150,6 @@ def test_cli_streams_unknown_attempt_and_lock_remain_verifiable(context, reposit
         engine.dispose()
 
 
-def test_migration_snapshot_export_and_legacy_content_use_restored_mapping(migrated_database, tmp_path):
-    engine = make_engine(migrated_database[0])
-    try:
-        root = legacy_checkout(tmp_path)
-        from harness_local.adapters.legacy import LocalLegacyReader
-        from harness_local.core.legacy import LegacyImportService
-        from harness_local.storage.legacy import SQLiteLegacyRepository
-        LegacyImportService(SQLiteLegacyRepository(engine), LocalLegacyReader()).import_checkout(str(root))
-        migration = MigrationService(engine, migrations_dir=tmp_path / 'migrations')
-        preview = migration.preview(root)
-        activation = migration.activate(root, preview_sha256=preview['inventory_sha256'], legacy_stopped=STOPPED)
-        activation = migration.revert(activation.id, reason='Reversión sintética')
-        original = tree(root)
-        bundle = backup(migrated_database, tmp_path, artifact_roots=[migration.migrations_dir])
-        manifest = verify_bundle(bundle)
-        assert any('export' in label for f in manifest['files'] for label in f['labels'])
-        assert str(root) in manifest['external_legacy_sources']
-        assert tree(root) == original
-        dest = tmp_path / 'restored'
-        restore_backup(bundle, dest)
-        item = next(f for f in manifest['files'] if any('docs/STATE.md' in label for label in f['labels']))
-        raw = Path(item['source']).read_bytes()
-        Path(item['source']).unlink()
-        with TestClient(create_app(f'sqlite:///{dest / "state.sqlite3"}', tmp_path), **LOCAL) as http:
-            url = f'/api/legacy/projects/{identifier(activation.snapshot_root)}/artifacts/{identifier("docs/STATE.md")}/content'
-            result = http.get(url).json()
-            assert result['status'] == 'verified' and result['text'] == raw.decode()
-            assert result['path'] == 'docs/STATE.md'
-            external = http.get(f'/api/legacy/projects/{identifier(str(root))}/artifacts/{identifier("docs/STATE.md")}/content').json()
-            assert external['text'] is None and external['diagnostic']
-        assert verify_bundle(dest)['kind'] == 'restored'
-    finally:
-        engine.dispose()
 
 
 def test_missing_declaration_and_live_owner_are_rejected_without_copy(context, repository, migrated_database, tmp_path):

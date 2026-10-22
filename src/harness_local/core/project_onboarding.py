@@ -13,7 +13,7 @@ import re
 import tomllib
 
 from harness_local.core.engine.contracts import freeze
-from harness_local.core.project_import import TreeEntry
+from harness_local.core.tree import TreeEntry
 
 INVENTORY_FORMAT = 'harness-local/onboarding-inventory/1'
 MAX_ENTRIES = 50000

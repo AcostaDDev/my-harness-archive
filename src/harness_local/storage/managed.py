@@ -28,7 +28,7 @@ from harness_local.storage.models import (
     ManagedJobRow as Job, ManagedRunRow as Run, ManagedProcessRow as Process,
     ManagedCommitRow as Commit,
 )
-from harness_local.storage.migration import ModeConflict, ModeGuard
+from harness_local.storage.managed_mode import ModeConflict, ModeGuard
 from harness_local.storage.metrics import executor_round, record as record_metrics
 from harness_local.storage import run_projection
 from harness_local.storage.schema import require_schema
@@ -102,6 +102,9 @@ def independent_chat(job):
 
 def _operation_module(run):
     """Autoridad del resultado de un run que no es de tarea: fase (H3.3) o turno de chat (H4.1)."""
+    if run.purpose == "project_import":
+        from harness_local.storage import retired_work
+        return retired_work
     if run.purpose == "bootstrap_discovery":
         from harness_local.storage import bootstrap_discovery
         return bootstrap_discovery
@@ -187,6 +190,12 @@ class SQLiteManagedRepository:
         with Session(self.engine) as session:
             return session.scalar(select(Run.root).where(Run.id == run_id))
 
+    def retired_reason(self, run_id, request_json=None):
+        from harness_local.storage.retired_work import reason
+        with Session(self.engine) as session:
+            run = session.get(Run, run_id)
+            return reason(session, run, request_json) if run else 'Unknown persisted run; explicit recovery required'
+
     def mode_refusal(self, claim: JobRecord) -> str | None:
         """Lectura de disco fuera de transacción: el modo del checkout sigue admitiendo este job."""
         with Session(self.engine) as session:
@@ -194,6 +203,9 @@ class SQLiteManagedRepository:
             if job is None:
                 raise LookupError("Unknown managed job")
             root, admitted = session.get(Run, job.run_id).root, job.activation_id
+        retired = self.retired_reason(claim.run_id, claim.request_json)
+        if retired is not None:
+            return retired
         assessment = self.guard.assess(root)
         if assessment.refusal is not None:
             return assessment.refusal
@@ -321,6 +333,9 @@ class SQLiteManagedRepository:
             run = session.get(Run, run_id)
             if run is None:
                 raise LookupError("Unknown managed run")
+            from harness_local.storage.retired_work import reason
+            if diagnostic := reason(session, run):
+                raise Conflict(diagnostic)
             history = load_history(run.history_json)
             if run.version != expected_version:
                 raise Conflict("Run changed; reload before resuming")
@@ -578,7 +593,9 @@ class SQLiteManagedRepository:
             self._release(session, job, run)
             self._event(session, run, "writer_stopped_confirmed", {"job_id": job.id, "owner_token": owner_token, "reason": reason})
             if run.purpose != "task":
-                _operation_module(run).abort(self, session, run, "INTERRUPTED", reason)
+                from harness_local.storage import retired_work
+                module = retired_work if retired_work.reason(session, run, job.request_json) else _operation_module(run)
+                module.abort(self, session, run, "INTERRUPTED", reason)
 
 
     # --- H2.4: commit aceptado ----------------------------------------------------

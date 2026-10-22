@@ -36,11 +36,10 @@ MAX_DRAFTS = 20
 MAX_QUESTIONS = 30
 MAX_PENDING = 30
 DRAFT_NAME = re.compile(r'[A-Za-z0-9][A-Za-z0-9._-]{0,99}\.md')
-# P008-T011: la importación reutiliza el rol de solo lectura `definition` y su esquema (documentos completos), así que
-# el adaptador no cambia; su plantilla y su contexto son propios.
+# Onboarding shares the read-only definition role and schema, with its own template and frozen context.
 KINDS = {'definition': ('define-project', 'definition'), 'phase_planning': ('plan-phase', 'planning'),
-         'project_import': ('import-project', 'definition'), 'onboarding': ('onboard-project', 'definition')}
-DRAFT_KINDS = ('definition', 'project_import', 'onboarding')
+         'onboarding': ('onboard-project', 'definition')}
+DRAFT_KINDS = ('definition', 'onboarding')
 TEMPLATE = {'name': 'project-definition', 'version': '4'}  # 4: documentos obligatorios y prompts D088
 
 
@@ -315,9 +314,9 @@ def acceptance(context, conversation: dict, inspection: dict, texts: dict[str, s
     target = definition_layout(context)
     blockers, warnings = [], []
     if inspection['import_required']:
-        blockers.append('The target belongs to a Git repository or contains .git: use the import flow')
+        blockers.append('The target belongs to a Git repository or contains .git: use onboarding for a repository without harness')
     if inspection['foreign']:
-        blockers.append('Files outside the definition drafts block the acceptance (import flow): '
+        blockers.append('Files outside the definition drafts block the acceptance (onboarding requires a repository without harness): '
                         + ', '.join(inspection['foreign']) + (' …' if inspection.get('foreign_truncated') else ''))
     if inspection['invalid']:
         blockers.append('Drafts must be UTF-8, NUL-free, not executable and at most 512 KiB: '

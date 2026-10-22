@@ -48,15 +48,10 @@ test('H0/H1 mutations carry the local CSRF header; reads do not need it', async 
   globalThis.fetch = async (path, options) => { calls.push({path, options}); return Response.json({}); };
   await api.list();
   await api.create({title: 'synthetic'});
-  await api.setObservation('/api/legacy/projects/p', true);
   assert.equal(calls[0].options, undefined);
   assert.equal(calls[1].options.method, 'POST');
   assert.equal(calls[1].options.headers['X-Harness-Local'], '1');
   assert.equal(calls[1].options.headers['Content-Type'], 'application/json');
-  assert.equal(calls[2].path, '/api/legacy/projects/p/observation');
-  assert.equal(calls[2].options.method, 'PUT');
-  assert.equal(calls[2].options.headers['X-Harness-Local'], '1');
-  assert.deepEqual(JSON.parse(calls[2].options.body), {enabled: true});
 });
 
 test('401 notifies the session gate once and never retries a mutation or changes its envelope', async () => {

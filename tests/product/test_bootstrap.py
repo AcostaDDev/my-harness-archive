@@ -156,7 +156,7 @@ def test_nonempty_target_requires_import_and_preserves_content(world, change, tm
         (context.root / ('.hidden' if change == 'hidden' else 'existing')).write_bytes(b'foreign')
     entries = sorted(p.name for p in context.root.iterdir())
     shown = preview(world)
-    expected = 'import flow' if change == 'git' else 'outside the definition drafts'
+    expected = 'onboarding' if change == 'git' else 'outside the definition drafts'
     assert not shown['ready'] and any(expected in item for item in shown['blockers']), shown['blockers']
     with pytest.raises(Conflict, match='import required'):
         submit(world, shown)
@@ -168,7 +168,7 @@ def test_empty_folder_nested_in_repo_requires_import(world):
     context = world[0]
     git(context.root.parent, 'init', '-q', '-b', 'main')
     assert listing(world) == world.drafts
-    assert any('import flow' in item for item in preview(world)['blockers'])
+    assert any('onboarding' in item for item in preview(world)['blockers'])
 
 
 @pytest.mark.parametrize('mutation', ['content', 'identity', 'versions', 'policy'])

@@ -92,7 +92,7 @@ class ProjectCreation:
         registrar = self.require()
         db = self.runtime.database
         return (registrar.state, registrar.source, db, Path(str(db) + '-wal'), Path(str(db) + '-shm'),
-                self.runtime.migration.migrations_dir)
+                self.runtime.migrations_dir)
 
     def parent(self, value):
         path = normalized(value)

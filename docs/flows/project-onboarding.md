@@ -24,7 +24,7 @@ flowchart TD
 La lectura usa el árbol del commit sellado, incluso con cambios locales: no inspecciona el worktree, el índice ni
 archivos sin seguimiento. No usa `status`, que podría invocar filtros `clean`. La confirmación de T015
 comprueba su base y el checkout antes de cualquier escritura. Releer el mismo árbol produce el mismo
-inventario; la huella no contiene raíz ni fecha/id del commit. T018 (D108) comparte `LocalGit` con A,
+inventario; la huella no contiene raíz ni fecha/id del commit. D108 usa `LocalGit`,
 conservando `--no-lazy-fetch` obligatorio desde el primer comando (Git sin soporte se rechaza). Un objeto
 ausente, tamaño no disponible o respuesta de blobs incompleta bloquea con diagnóstico, sin transporte ni
 objetos recuperados ni inventarios parciales; también en la exportación y vista previa que usan el lector
@@ -78,8 +78,8 @@ flowchart TD
 
 La API admite `kind = "onboarding"` en las rutas de planificación existentes, sin brief ni fase. Congela el
 inventario completo de T013 en la conversación y usa su HEAD en todos los turnos, aunque cambie el checkout vivo.
-T015 rechaza una base obsoleta antes de escribir. STATE/NEXT_STEPS o `.harness/` versionados remiten al
-Flujo A; fases, creación o importación confirmada en esta instalación también impiden conversar/incorporar de nuevo.
+T015 rechaza una base obsoleta antes de escribir. STATE/NEXT_STEPS o `.harness/` versionados bloquean
+la incorporación, sin ofrecer A (retirado en P011-T019, D161); fases, creación o importación confirmada en esta instalación también impiden conversar/incorporar de nuevo.
 
 La exportación completa usa los límites de D083, más estrictos que los del inventario: 20.000 archivos, 16 MiB
 por archivo y 128 MiB en total, sin enlaces ni submódulos. Git exige `--no-lazy-fetch`; no hay filtros, ejecución de
@@ -152,7 +152,7 @@ borradores de todas las conversaciones del checkout; una intención incierta blo
 El escritor Git compartido no ejecuta filtros clean/process durante el Flujo B: se rechazan configuraciones de
 esos filtros (incluidos includes) antes de capturar y antes de ejecutar el commit. Se contrastan los blobs sellados
 con los bytes de la vista previa; cualquier conversión interna que los cambie también bloquea. Desde T016 (D105),
-estas guardias son comunes a A/B: comprueban todo el árbol documental resultante, los destinos nuevos ignorados
+estas guardias se conservan para B tras retirar A (D161): comprueban todo el árbol documental resultante, los destinos nuevos ignorados
 y la igualdad del árbol en el sellado final; se repiten al ejecutar/reanudar sin alterar la intención. Se mantienen los
 límites de D083, 512 KiB por documento y 4 MiB de diff, sin truncar, y la exclusión cooperativa de D100.
 Desde T019 (D110), HEAD e índice con gitlinks en cualquier ruta bloquean esta frontera antes de captura/sellado,
@@ -168,9 +168,19 @@ El commit futuro aún ausente puede crearse localmente sin transporte. Un objeto
 el árbol completo con `ls-tree` y `cat-file --batch-check`. No se cambia configuración ni se recuperan objetos.
 
 `GET …/projects/{p}/onboarding` permite recuperar la operación y la UI `/projects/:p/onboarding[/:c/*borrador]`
-reutiliza conversación, editor CAS y confirmación del Flujo A, con perfil y continuidad en P001. Una tarea de P001
+usa conversación, editor CAS y confirmación de B, con perfil y continuidad en P001. Una tarea de P001
 se encola por una acción posterior con la composición confirmada. `document_layout = "d088-12"` (T020) pone en cuarentena
 jobs anteriores antes de efectos; no se reescriben snapshots, intenciones ni historiales existentes.
 
 Fuente: `core/engine/onboarding_commit.py`, `storage/onboarding_commit.py`, infraestructura compartida de
 `import_commit.py` / `storage/project_import.py` y `tests/product/test_onboarding_commit.py`.
+
+## Retirada de A y compatibilidad (P011-T019, D161)
+
+La extracción conserva `project_imports`, `purpose = import_commit`, intención y adopción de B. El despachador
+exige conversación `onboarding`, inventario del formato B y `preview.flow = onboarding`, con raíces coherentes.
+A, fuente ausente o clasificación contradictoria quedan en cuarentena antes de construir puertos o escritores;
+no se interpretan como B. Una operación B válida mantiene su recuperación/conciliación normal.
+
+Fuentes compartidas vigentes: `adapters/import_git.py`, `core/tree.py`, `storage/private_drafts.py`,
+`core/engine/import_commit.py`, `storage/project_import.py`, `storage/retired_work.py`.

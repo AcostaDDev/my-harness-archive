@@ -1,6 +1,6 @@
 """Flujo B sobre la intención conciliable y la adopción atómica de las importaciones (0020)."""
 from harness_local.adapters.chat_snapshot import HeadSnapshot
-from harness_local.adapters.project_import import _blobs
+from harness_local.adapters.import_git import _blobs
 from harness_local.adapters.local_git import LocalGit
 from harness_local.core.engine.definition import allowed_draft, definition_layout
 from harness_local.core.engine.onboarding_commit import preview as build_preview

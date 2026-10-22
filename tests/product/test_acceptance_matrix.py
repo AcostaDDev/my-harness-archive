@@ -60,7 +60,7 @@ def test_event_cursor_resumes_across_a_restart_without_gaps_or_duplicates(tmp_pa
     """Criterio 13 (D029, interpretación de T007): el cursor de la UI gestionada sustituye al SSE.
 
     Se leen páginas pequeñas mientras el run avanza, se reinicia el servicio y se continúa desde el último
-    cursor aceptado; repetir una página ya leída devuelve los mismos eventos y no adelanta el cursor."""
+    cursor aceptado; repetir conserva el prefijo ya leído. Una página incompleta puede crecer con eventos nuevos."""
     ports = Ports([edit, review()])
     seen, cursor = [], 0
 
@@ -70,7 +70,7 @@ def test_event_cursor_resumes_across_a_restart_without_gaps_or_duplicates(tmp_pa
             page = http.get(f"/api/managed/runs/{job['run_id']}/events", params={"after": cursor, "limit": 2}).json()
             assert [event["sequence"] for event in page["items"]] == list(range(cursor + 1, page["cursor"] + 1))
             again = http.get(f"/api/managed/runs/{job['run_id']}/events", params={"after": cursor, "limit": 2}).json()
-            assert again["items"] == page["items"]
+            assert again["items"][:len(page["items"])] == page["items"]
             seen.extend(page["items"])
             cursor = page["cursor"]
             if not page["has_more"]:

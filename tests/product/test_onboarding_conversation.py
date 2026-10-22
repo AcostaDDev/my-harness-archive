@@ -14,7 +14,7 @@ from harness_local.storage.database import make_engine
 from harness_local.storage.models import PlanningConversationRow
 from harness_local.storage.onboarding import OnboardingDrafts
 from harness_local.storage.managed import Conflict
-from test_import_conversation import World as ImportWorld, answer, tree_state
+from onboarding_helpers import World as ImportWorld, answer, tree_state
 from test_managed_api import VERSIONS, Ports, client, make_context
 from test_project_onboarding import DJANGO, TYPESCRIPT, checkout, git
 
@@ -217,7 +217,7 @@ def test_onboarding_requires_existing_unmanaged_git(world):
     (world.context.root / 'docs/STATE.md').write_text('# Already managed\n')
     git(world.context.root, 'add', '.')
     git(world.context.root, 'commit', '-qm', 'Synthetic harness docs')
-    with pytest.raises(Conflict, match='import flow'):
+    with pytest.raises(Conflict, match='support has been removed'):
         world.create()
     assert KINDS['onboarding'] == ('onboard-project', 'definition')
 

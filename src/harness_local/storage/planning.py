@@ -14,9 +14,6 @@ previa del bootstrap D037 con la plantilla v2 (`storage/bootstrap.py`).
 Planificación: propone NEXT_STEPS para la fase activa sin tareas (o la siguiente en conversaciones anteriores).
 La confirmación del plan escribe los documentos y versiona la definición; el agente nunca produce efectos.
 
-Importación (P008-T011, Flujo A): congela al crearse el inventario y el mapa del árbol de HEAD de un proyecto que el
-harness aún no gestiona. Sus borradores viven en el área privada junto a SQLite (`storage/import_drafts.py`) con la
-misma CAS; cada turno comprueba que el checkout sigue siendo el inventariado. El checkout no se escribe aquí (T012).
 """
 
 from sqlalchemy import func, select
@@ -32,14 +29,8 @@ from harness_local.core.engine.definition import (
 )
 from harness_local.core.engine.document_ops import read_text
 from harness_local.core.engine.documents import base_section, parse_roadmap, require_layout, skeleton
-from harness_local.core.engine.import_conversation import (
-    frozen_source, identity, observation, readiness, turn_context,
-)
 from harness_local.core.engine.serialization import load_history
-from harness_local.core.project_import import ImportInventoryError
-from harness_local.core.project_normalization import ImportMapError, build_map
 from harness_local.storage.chat import MAX_MESSAGE, MAX_PREVIOUS_TURNS, read_documents
-from harness_local.storage.import_drafts import ImportDrafts, read_source
 from harness_local.storage.managed import Conflict, _job, existing_creation
 from harness_local.storage.models import (
     ManagedRunRow as Run, PhaseRow as Phase, PlanningConversationRow as Conversation,
@@ -51,19 +42,12 @@ from harness_local.storage.onboarding import (
     read_inventory, turn_context as onboarding_context,
 )
 
-KINDS = ('definition', 'phase_planning', 'project_import', 'onboarding')
+KINDS = ('definition', 'phase_planning', 'onboarding')
 
 
 def _executable(reader) -> str:
     """Git del lector configurado (el mismo del escritor); `git` en el PATH si no hay ninguno."""
     return getattr(reader, 'executable', 'git')
-
-
-def _source(context, reader, guard=None) -> tuple[dict, dict[str, bytes]]:
-    try:
-        return read_source(context, _executable(reader), guard)
-    except ImportInventoryError as exc:
-        raise Conflict(f'The project cannot be imported: {exc}') from exc
 
 
 def _touch(managed, conversation):
@@ -187,6 +171,8 @@ class PlanningRepository:
             raise LookupError('Unknown planning conversation')
         if context is not None and row.root != str(context.root):
             raise LookupError('Conversation belongs to another checkout')
+        if row.kind not in KINDS:
+            raise Conflict('Legacy/A support has been removed; this conversation is retained as data only')
         if expected is not None and (type(expected) is not int or row.version != expected):
             raise Conflict('Conversation changed; reload before acting')
         return row
@@ -195,8 +181,6 @@ class PlanningRepository:
         """Borradores en disco: carpeta destino de la definición o área privada de la importación."""
         if conversation.kind == 'onboarding':
             return OnboardingDrafts.of(self.managed.engine, conversation.id)
-        if conversation.kind == 'project_import':
-            return ImportDrafts.of(self.managed.engine, conversation.id)
         return writer
 
     @staticmethod
@@ -204,9 +188,6 @@ class PlanningRepository:
         """Solo definición e importación tienen borradores; True si la definición ya creó el proyecto."""
         if conversation.kind not in DRAFT_KINDS:
             raise Conflict('Only definition and import conversations have drafts')
-        if conversation.kind == 'project_import':
-            from harness_local.storage.models import ProjectImportRow
-            return session.scalar(select(ProjectImportRow.id).where(ProjectImportRow.root == conversation.root)) is not None
         if conversation.kind == 'onboarding':
             from harness_local.storage.documents import latest_phase
             from harness_local.storage.models import ProjectImportRow
@@ -235,7 +216,7 @@ class PlanningRepository:
 
     def list(self, root):
         with Session(self.managed.engine) as session:
-            rows = session.scalars(select(Conversation).where(Conversation.root == str(root))
+            rows = session.scalars(select(Conversation).where(Conversation.root == str(root), Conversation.kind.in_(KINDS))
                                    .order_by(Conversation.created_at, Conversation.id)).all()
             result = []
             for row in rows:
@@ -284,13 +265,12 @@ class PlanningRepository:
             actions = []
             if open_:
                 actions = ['message'] + {'definition': ['edit_draft', 'defer_question', 'accept'],
-                                         'project_import': ['edit_draft', 'defer_question'],
                                          'onboarding': ['edit_draft', 'defer_question']}.get(row.kind, [])
             return {'id': row.id, 'root': row.root, 'kind': row.kind, 'title': row.title,
                     'phase': None if phase is None else {'id': phase.id, 'code': phase.code, 'status': phase.status},
                     'brief': None if row.brief is None else {k: row.brief[k] for k in ('sha256', 'size')},
                     'source': (None if row.source is None else onboarding_identity(row.source)
-                               if row.kind == 'onboarding' else identity(row.source)),
+                               if row.kind == 'onboarding' else None),
                     'known': row.known, 'log': row.log, 'questions': questions, 'pending': items,
                     'actor': row.actor, 'version': row.version, 'created_at': row.created_at,
                     'updated_at': row.updated_at, 'created': created, 'turns': turn_views,
@@ -357,14 +337,14 @@ class PlanningRepository:
     def create(self, context, *, kind, title, brief=None, phase_id=None, writer=None, key=None):
         """`key` (API): un reintento con la misma petición devuelve la misma conversación antes de reevaluar el
         destino, que el alta original puede haber cambiado (proyecto ya creado, fase ya transicionada)."""
+        if kind not in KINDS:
+            raise ValueError('Conversation kind must be definition, phase_planning or onboarding')
         request = digest({'action': 'planning_conversation', 'root': str(context.root), 'kind': kind, 'title': title,
                           'brief': brief, 'phase_id': phase_id})
         if key is not None:
             with Session(self.managed.engine) as session:
                 if found := existing_creation(session, Conversation, key, request):
                     return found
-        if kind not in KINDS:
-            raise ValueError('Conversation kind must be definition, phase_planning, project_import or onboarding')
         if not isinstance(title, str) or not title.strip() or len(title) > 200:
             raise ValueError('Conversation title must contain 1–200 characters')
         source = None
@@ -374,27 +354,13 @@ class PlanningRepository:
             if phase_id is not None:
                 raise ValueError('A definition conversation has no phase')
             if writer.inspect_definition(context)['import_required']:
-                raise Conflict('The target belongs to a Git repository or contains .git: use the import flow')
+                raise Conflict('The target belongs to a Git repository or contains .git: use onboarding for a repository without harness')
         elif kind == 'onboarding':
             definition_layout(context)
             if brief is not None or phase_id is not None:
                 raise ValueError('An onboarding conversation has no brief or phase')
             inventory = read_inventory(context, _executable(writer))
             source, frozen = {'inventory': inventory}, None
-        elif kind == 'project_import':
-            assessment = self.managed.guard.assess(context.root)
-            if assessment.refusal:
-                raise Conflict('Activate D027 before importing: ' + assessment.refusal)
-            # P008-T011: inventario (T009) y mapa (T010) del árbol de HEAD, congelados con la conversación.
-            definition_layout(context)
-            if brief is not None or phase_id is not None:
-                raise ValueError('An import conversation has no brief or phase')
-            inventory, contents = _source(context, writer, self.managed.guard)
-            try:
-                source = frozen_source(inventory, build_map(inventory, contents))
-            except ImportMapError as exc:
-                raise Conflict(f'The import map could not be built: {exc}') from exc
-            frozen = None
         else:
             require_layout(context)
             if brief is not None:
@@ -409,7 +375,7 @@ class PlanningRepository:
                     if _bootstrapped(session, str(context.root)):
                         raise Conflict('The project was already created; plan its phases instead')
                     BootstrapRepository._empty_authority(session, str(context.root))
-                elif kind in ('project_import', 'onboarding'):
+                elif kind == 'onboarding':
                     self._importable(session, str(context.root))
                 else:
                     phase = session.get(Phase, phase_id) if isinstance(phase_id, str) else None
@@ -431,7 +397,7 @@ class PlanningRepository:
 
     @staticmethod
     def _importable(session, root):
-        """El Flujo A incorpora proyectos que el harness aún no gestiona: sin creación ni fases propias."""
+        """La incorporación admite proyectos que el harness aún no gestiona: sin creación ni fases propias."""
         from harness_local.storage.documents import latest_phase
         if _bootstrapped(session, root):
             raise Conflict('The project was created by the harness; there is nothing to import')
@@ -465,22 +431,12 @@ class PlanningRepository:
             texts = inspection.pop('texts')
             prepared = onboarding_context(target, source, texts, inspection)
             observed = onboarding_observation(inspection)
-        elif kind == 'project_import':
-            target = definition_layout(context)
-            inspection = port.inspect_definition(context, texts=True)
-            texts = inspection.pop('texts')
-            inventory, contents = _source(context, writer, self.managed.guard)
-            if inventory['inventory_sha256'] != source['inventory']['inventory_sha256']:
-                raise Conflict('The checkout changed since the import conversation started; start a new import '
-                               'conversation')
-            prepared = turn_context(target, source, contents, texts, inspection)
-            observed = observation(inventory['inventory_sha256'], inspection)
         elif kind == 'definition':
             target = definition_layout(context)
             inspection = writer.inspect_definition(context, texts=True)
             texts = inspection.pop('texts')
             if inspection['import_required']:
-                raise Conflict('The target belongs to a Git repository or contains .git: use the import flow')
+                raise Conflict('The target belongs to a Git repository or contains .git: use onboarding for a repository without harness')
             if sum(len(value.encode('utf-8')) for value in texts.values()) > MAX_CONTEXT_DRAFT_BYTES:
                 raise ValueError('Drafts exceed the 2 MiB a turn can freeze; shorten or remove some drafts')
             observed = inspection
@@ -529,7 +485,7 @@ class PlanningRepository:
             if conversation.kind in DRAFT_KINDS:
                 if conversation.kind == 'definition' and _bootstrapped(session, conversation.root):
                     raise Conflict('The project was already created from this definition')
-                if conversation.kind in ('project_import', 'onboarding'):
+                if conversation.kind == 'onboarding':
                     self._importable(session, conversation.root)
                 known, drafts = conversation.known, observed['drafts']
                 defaults = skeleton(target, conversation.title,
@@ -577,7 +533,7 @@ class PlanningRepository:
     def _definition_open(self, session, conversation):
         if self._drafts_created(session, conversation):
             raise Conflict('The project was already created; edit its documents with a confirmed edit')
-        if conversation.kind in ('project_import', 'onboarding'):
+        if conversation.kind == 'onboarding':
             self._importable(session, conversation.root)
         if session.scalar(select(Turn.id).where(Turn.conversation_id == conversation.id, Turn.status == 'QUEUED')):
             raise Conflict('A turn of this conversation is pending; act after it settles')
@@ -657,7 +613,7 @@ class PlanningRepository:
             raise ValueError('Explicit dismissal reason required')
         with self.managed._write() as session:
             conversation = self._conversation(session, conversation_id, expected)
-            if conversation.kind in ('project_import', 'onboarding'):
+            if conversation.kind == 'onboarding':
                 self._definition_open(session, conversation)
             proposal = session.get(Proposal, proposal_id)
             if proposal is None or proposal.conversation_id != conversation.id:
@@ -668,29 +624,6 @@ class PlanningRepository:
             proposal.decision = {'decision': 'dismiss', 'actor': actor(), 'at': self.managed._now(),
                                  'reason': reason.strip()}
             _touch(self.managed, conversation)
-
-    # --- importación ------------------------------------------------------------------------
-
-    def import_status(self, context, conversation_id, reader=None) -> dict:
-        """P008-T011: ¿puede la importación pasar a la vista previa (T012)? Relee el checkout y el área, sin efectos."""
-        target = definition_layout(context)
-        with Session(self.managed.engine) as session:
-            row = self._conversation(session, conversation_id, context=context)
-            if row.kind != 'project_import':
-                raise Conflict('Only an import conversation has an import status')
-            record = self._record(session, row)
-            record['pending_turn'] = session.scalar(select(Turn.id).where(
-                Turn.conversation_id == row.id, Turn.status == 'QUEUED')) is not None
-            source, port = row.source, self._port(row, None)
-        inspection = port.inspect_definition(context, texts=True)
-        texts = inspection.pop('texts')
-        try:
-            inventory, contents = read_source(context, _executable(reader), self.managed.guard)
-            current = {'inventory': inventory, 'contents': contents}
-        except (ImportInventoryError, OSError) as exc:
-            current, record['current_error'] = None, str(exc)
-        return {**readiness(target, source, record, inspection, texts, current),
-                'conversation_version': record['version']}
 
     # --- plan de la fase siguiente ---------------------------------------------------------
 

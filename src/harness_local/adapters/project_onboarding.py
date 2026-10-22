@@ -9,8 +9,8 @@ from pathlib import Path
 
 from harness_local.adapters.git import GitError
 from harness_local.adapters.local_git import LocalGit as _InventoryGit, object_size
-from harness_local.adapters.project_import import _blobs
-from harness_local.core.project_import import ImportInventoryError, TreeEntry
+from harness_local.adapters.import_git import _blobs
+from harness_local.core.tree import ImportInventoryError, TreeEntry
 from harness_local.core.project_onboarding import (
     MAX_ENTRIES, MAX_ENTRY_BYTES, MAX_TOTAL_BYTES, OnboardingInventoryError, build_inventory, in_scope,
 )

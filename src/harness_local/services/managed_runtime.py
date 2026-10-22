@@ -20,7 +20,6 @@ from threading import Event, Lock, Thread
 
 from harness_local.core.engine.context import ProjectContext
 from harness_local.services.managed import LocalSupervisor
-from harness_local.services.migration import MigrationService
 from harness_local.storage.managed import SQLiteManagedRepository
 from harness_local.storage.prompts import PromptRepository
 from harness_local.storage.managed_views import SQLiteManagedViews
@@ -194,8 +193,9 @@ class ManagedRuntime:
         self.engine = engine
         self._explicit = config
         self.config: ManagedConfig | None = None
-        self.repository = self.migration = self.views = self.worker = self.registry = None
+        self.repository = self.views = self.worker = self.registry = None
         self.database: Path | None = None
+        self.migrations_dir: Path | None = None
         self.projects: dict[str, ManagedProject] = {}
         self._projects_lock = Lock()
 
@@ -207,9 +207,10 @@ class ManagedRuntime:
         else:
             config = self._explicit if self._explicit is not None else load_config()
         database = Path(self.engine.url.database).resolve()
-        migration = MigrationService(self.engine, migrations_dir=config.migrations_dir)
-        _validate(config, database, migration.migrations_dir)
-        self.config, self.migration = config, migration
+        migrations_dir = Path(config.migrations_dir or database.parent / 'migrations').resolve()
+        _validate(config, database, migrations_dir)
+        self.migrations_dir = migrations_dir
+        self.config = config
         self.repository = SQLiteManagedRepository(self.engine)
         from harness_local.services.managed import guarded_writer
         config = replace(config, commit_factory=guarded_writer(config.commit_factory, self.repository.guard))

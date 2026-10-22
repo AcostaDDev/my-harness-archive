@@ -55,9 +55,9 @@ run y, cuando procede, al intento exacto.
 |---|---|---|---|
 | F01 | Registrar proyecto | Alta desde la UI con raíz canónica, confianza explícita, perfil y composición del TOML; o en `[[projects]]` del TOML | Implementado (P007, D078) |
 | F02 | Crear proyecto desde cero | Brief, conversación con el revisor, borradores en disco con CAS, aceptación y commit raíz con P001 | Implementado (P007, D075, D082; P008-T002/T005, D092) |
-| F03 | Importar un proyecto de un harness anterior (Flujo A) | Inventario, normalización al layout unificado sin perder historial, documentos sincronizados | Implementado P008 (D096–D100); retirada planificada en P011-T019 (D155), aún no ejecutada |
+| F03 | Importar un harness anterior (Flujo A) | Sin entrada operativa; datos anteriores conservados | Retirado en P011-T019 (D155, D161); implementación histórica P008 conservada en el archivo |
 | F04 | Incorporar un repositorio sin harness (Flujo B) | Discovery por ingeniería inversa, documentos iniciales y archivos raíz mínimos | Inventario estático y propuesta de perfil implementados (P008-T013, D101); conversación de ingeniería inversa sobre HEAD con borradores privados (P008-T014, D102); vista previa, perfil y commit confirmados con P001 adoptada (P008-T015, D103) |
-| F05 | Observar un harness anterior | Índice de lectura idempotente, navegación y actualización incremental | Implementado (P002); retirada planificada en P011-T019 (D155), aún no ejecutada |
+| F05 | Observar un harness anterior | Sin visor, API, CLI, SSE ni observadores; datos anteriores inertes | Retirado en P011-T019 (D155, D161) |
 | F06 | Navegar proyectos, fases, tareas y runs | URL propia por recurso, carga limitada y paginada | Implementado (P007, D077) |
 | F07 | Ejecutar una tarea | Planificación → ejecución → validación → revisión → aceptación o corrección → commit del harness | Implementado (P003) |
 | F08 | Gestionar prompts | Versiones, diff, variables validadas, activación y rollback; snapshot por intento | Implementado (P004) |
@@ -78,8 +78,8 @@ run y, cuando procede, al intento exacto.
 | F23 | Idioma visual y de trabajo | Defaults globales en/es: visual global mutable para UI/conversación y trabajo inmutable por proyecto para documentación/código, con ambos congelados por job/turno | Planificado, no implementado (P011, D158; §13); afina D154 |
 | F24 | Compatibilidad CLI ampliable | Mínimos/capacidades por proveedor/rol, diagnóstico y versiones verificadas/candidatas sin allowlist por patch | Planificado, no implementado (P011, D154; §13); siguen vigentes las listas exactas de `cli-13` |
 
-Modos por checkout: **observación** (indexa un harness anterior) y **gestionado** (el motor nuevo controla). Nunca
-escriben dos motores sobre el mismo checkout.
+Modo de proyecto: **gestionado**. Solo se crean proyectos nuevos o se incorpora código sin harness (B);
+registrar/reabrir uno ya gestionado conserva su autoridad. Nunca escriben dos motores sobre el mismo checkout.
 
 ## 5. Reglas de negocio
 
@@ -162,42 +162,37 @@ el mismo archivo conciliable sin READY ni tag. Un check devuelve NEEDS_RECONCILI
 su base acumulada supera 12 KiB. El plan posterior de N+1 se confirma por hash: escribe NEXT_STEPS, regenera los
 bloques de estado y crea una nueva versión de su definición, conservando la anterior (D034).
 
-## 8. Importación de proyectos existentes
+## 8. Incorporación de proyectos existentes
 
-- **Flujo A — harness anterior.** Orígenes: repositorios tipo ReferenceProject (`.harness/`, `PROJECT.md`,
-  `REQUIREMENTS.md`, archivo por fase sin STATE) y proyectos v1/v2 de este harness. Audita la documentación,
-  reorganiza a `docs/flows/` y `docs/archive/phase-NNN/`, normaliza nombres (`SPECIFICATION`, `DECISIONS`,
-  `DDBB-DIAGRAM`; variantes como `DECISSONS.md`), adelgaza `CLAUDE.md` y `AGENTS.md` y deja STATE y NEXT_STEPS listos
-  para continuar sin perder historial. El historial de runs sigue la migración a gestionado existente (D027),
-  confirmada antes de importar cuando hay runs legacy (D099). La vista previa confirma el árbol y los originales
-  conservados; el commit sellado se concilia tras una caída y adopta la fase activa con sus documentos (D100).
-  T016 (D105) rechaza filtros Git `clean`/`process` incluidos por configuración antes de consultar el estado,
-  capturar o sellar; comprueba destinos nuevos ignorados y blobs por hash antes de confirmar y ejecutar.
-  Las conversiones de atributos no pueden cambiar los bytes confirmados, tampoco en originales o binarios.
-  T018 (D108) exige lecturas A/B sin lazy-fetch desde el primer comando Git; objetos locales ausentes o
-  respuestas incompletas bloquean con diagnóstico, sin transportes, recuperación de objetos ni inventarios parciales.
-  T019 (D110) rechaza gitlinks en HEAD o índice antes de consultar el estado, también fuera de `docs/`, sin
-  inspeccionar submódulos. La misma guardia precede a captura, sellado, escritura y recuperación A/B; se conserva
-  el requisito de checkout e índice limpios.
-  T020 (D112) exige el mismo modo local en todas las operaciones del escritor A/B, incluido sellado,
-  ejecución, conciliación e índice. El commit futuro aún ausente se crea localmente; la falta de un objeto
-  necesario de HEAD o del árbol sellado bloquea con diagnóstico antes de escribir, incluso fuera del ámbito
-  documental. Git sin soporte se rechaza también en las consultas booleanas, sin fallback ni cambios de configuración.
-- **Flujo B — repositorio sin harness.** Inventario determinista (stack, modelos de datos, rutas, tests) e ingeniería
-  inversa del revisor en solo lectura para generar ARCHITECTURE, DDBB-DIAGRAM (desde los modelos reales),
-  SPECIFICATION base, STATE actual y los archivos raíz mínimos, con un perfil declarativo confirmado por el usuario.
-  T013 implementa el inventario de HEAD y la propuesta de perfil (D101), sin ejecutar el proyecto ni escribir su TOML.
-  Enumera tests y CI, fuentes y hashes; declara los límites del análisis estático y las expresiones dinámicas sin
-  resolverlas. T014 añade la conversación `onboarding`: el revisor de solo lectura consulta ese HEAD exportado,
-  propone los documentos D088 y flujos, señala las decisiones inferidas y pregunta lo no deducible. Los borradores
-  se aplican por confirmación/CAS en un área privada junto a SQLite; no se reemplaza el README del checkout.
-  T015 confirma por hash los documentos y el perfil de la composición del operador; conserva inventario, resumen
-  y originales sustituidos en `archive/phase-000/`, crea un commit documental conciliable y adopta P001 ACTIVE
-  (D103). El TOML se edita fuera del checkout por el operador; la incorporación no lo escribe ni ejecuta sus
-  comandos. Vista previa y UI en el [flujo](flows/project-onboarding.md).
+El producto tiene dos accesos: crear desde cero (F02) e incorporar código existente sin harness (F04, Flujo B).
+Registrar o reabrir un proyecto ya gestionado sigue siendo una operación normal sobre su autoridad existente.
+Un repositorio con documentos/historia de otro harness se rechaza; no se convierte silenciosamente en B.
 
-En ambos: el agente no escribe; el harness aplica borradores confirmados con CAS; nada del código del proyecto se
-modifica ni se ejecuta sin autorización; el resultado entra en un único commit confirmado.
+B inventaría el HEAD no vacío (stack, entidades, rutas, tests y CI) y propone un perfil declarativo que el operador
+confirma en su composición. El revisor consulta una exportación de solo lectura del HEAD congelado y propone
+los once documentos D088 y flujos, citando hechos y decisiones inferidas. Pregunta lo no deducible. Sus propuestas
+se aplican con CAS en borradores privados junto a SQLite, sin escribir el checkout ni ejecutar código/comandos.
+
+La vista previa exige los documentos, P001 y sus criterios, preguntas bloqueantes resueltas o aplazadas y un
+checkout/índice limpios sobre el HEAD original. Confirma documentos y perfil por hash, motivo e Idempotency-Key;
+conserva inventario, resumen y originales sustituidos por bytes en `archive/phase-000/`. Sella una intención
+antes de escribir y crea un único commit documental conciliable, con P001 ACTIVE adoptada atómicamente.
+Repetir la confirmación no duplica operaciones; una caída exige confirmar el escritor detenido y reconfirmar
+la intención exacta. No escribe el TOML ni instala o ejecuta herramientas del proyecto.
+
+La frontera Git conserva las guardias D105/D108/D110/D112: objetos completos locales y `--no-lazy-fetch` desde
+el primer comando, filtros clean/process e incluye rechazados antes de capturar/sellar, gitlinks de HEAD/índice
+rechazados antes de consultar hijos, destinos ignorados y blobs por hash contrastados. Recuperar repite las
+mismas guardias sin modificar la intención. [Flujo vigente](flows/project-onboarding.md).
+
+La observación/importación del harness anterior y su activación/reversión están retiradas (D161). Las antiguas
+rutas API devuelven 404 tras las guardias de acceso y los comandos fallan al validar argumentos, sin abrir datos.
+Tablas, revisiones, historiales, snapshots y archivos del usuario permanecen intactos. Jobs A o ambiguos quedan
+en cuarentena antes de cualquier invocación/escritura; la recuperación explícita cierra el job y libera el lock
+solo tras comprobar propietarios, sin ejecutar su intención. Activaciones PREPARING/REVERTING bloquean para
+resolución manual fuera del flujo retirado; ACTIVE solo autoriza trabajo gestionado con guardia de integridad.
+Backup lee referencias selladas y restaura solo para consulta, sin observar orígenes ni reanudar tareas retiradas.
+[Compatibilidad de instalaciones anteriores](flows/legacy-migration.md).
 
 ## 9. Requisitos no funcionales
 
@@ -212,7 +207,7 @@ modifica ni se ejecuta sin autorización; el resultado entra en un único commit
 
 ## 10. Criterios de aceptación globales
 
-1. Importar dos veces un historial no duplica entidades ni inventa datos ausentes.
+1. Repetir el alta desde cero o la incorporación B y sus confirmaciones no duplica proyectos, fases, jobs ni commits; no inventa datos ausentes.
 2. Una tarea recorre ejecución, fallo de test, corrección, revisión y commit con historial completo.
 3. Dos peticiones simultáneas no crean dos escritores sobre el mismo checkout; un reinicio con proceso vivo tampoco.
 4. Una denegación no ejecuta la herramienta; una aprobación caducada o doble no se reutiliza.
@@ -223,11 +218,11 @@ modifica ni se ejecuta sin autorización; el resultado entra en un único commit
 8. El cierre de fase exige validación y autorización vigentes, y archiva la fase sin perder bytes (§7).
 9. Un perfil de stack distinto funciona sin cambios en el núcleo.
 10. Una petición del chat termina vinculada a una tarea y a su resultado.
-11. Crear un proyecto vacío produce documentos, estructura y primera tarea ejecutable; importar uno existente lo deja
-    bajo el contrato documental sin perder historial.
+11. Crear un proyecto vacío produce documentos, estructura y primera tarea ejecutable; incorporar código sin harness
+    adopta P001 y el contrato documental conservando código y originales. Ambos continúan como gestionados.
 12. Backup y restauración recuperan estados, referencias y evidencias verificadas por hash.
 13. Respuesta de agente fuera de esquema: run detenido con diagnóstico y salida conservada. Ciclos sin cambios: parada
-    con motivo. SSE reconecta sin huecos ni duplicados.
+    con motivo. La observación de runs gestionados reanuda el cursor de eventos sin huecos ni duplicados.
 
 Métricas de producto desde el primer piloto: tiempo de configuración, tiempo hasta la primera tarea aceptada,
 intervenciones manuales, errores recuperados, consumo por tarea incluidos los fallos y correcciones tras aceptar. Una
@@ -297,12 +292,11 @@ no cambian el alcance entregado de P010 ni sus límites D151/D153.
 observación/visor/importación del harness anterior, su activación y normalización A. El producto público tendrá
 solo dos vías de alta: crear desde cero e incorporar un repositorio existente sin harness (B); después ambos
 se siguen como gestionados. Reabrir/registrar proyectos ya gestionados no añade una tercera modalidad.
-Se retiran UI, API, CLI, observadores/SSE legacy, prompts y componentes exclusivos; no se elimina por su nombre
+Retirados en T019: UI, API, CLI, observadores/SSE legacy, prompts y componentes exclusivos; no se elimina por su nombre
 infraestructura compartida necesaria para B ni lectura de historiales propios de my_harness.
 
-T019 actualizará F03/F05, modos (§4), importación (§8) y criterios globales 1/11/13 para idempotencia cero/B y
-observación gestionada por cursor. Hasta implementarse, esos apartados describen el código vigente; las matrices
-históricas P010 permanecen intactas. D151 sigue aplazando B/D095; A sale del alcance futuro, sin acreditarse por ello.
+T019 implementa la retirada (D161) y actualiza F03/F05, §8 y criterios 1/11/13 para idempotencia cero/B y
+observación gestionada por cursor. Las matrices históricas P010 permanecen intactas. D151 sigue aplazando B/D095; A sale del alcance futuro, sin acreditarse por ello.
 No se destruyen datos históricos, revisiones/migraciones o backups automáticamente para retirar funcionalidades.
 
 Los diez criterios de [P011 en ROADMAP](ROADMAP.md#p011--preparación-para-apertura-pública-en-github) y los trece

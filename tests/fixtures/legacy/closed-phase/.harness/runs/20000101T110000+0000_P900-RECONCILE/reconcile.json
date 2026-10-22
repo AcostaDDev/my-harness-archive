@@ -1,8 +1,0 @@
-{
-  "phase_id": "P900",
-  "summary": "Aclaración documental sintética.",
-  "files_changed": [
-    "docs/STATE.md"
-  ],
-  "blocking_questions": []
-}

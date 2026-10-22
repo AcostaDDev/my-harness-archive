@@ -18,19 +18,19 @@ from harness_local.api.schemas import (
     CycleDiffRead, CycleRead, JUnitCasesRead, ManagedLogRead,
     PromptScope, PromptDetailRead, PromptVersionRead, PromptDraftCreate, PromptActivateCreate,
     PromptValidateCreate, PromptValidationRead, PromptDiffRead,
-    ActivationCreate, ActivationRead, ActivationTransition, ConfirmStoppedCreate, ManagedAttemptRead,
+    ConfirmStoppedCreate, ManagedAttemptRead,
     ManagedEventsRead, ManagedJobRead, ManagedProjectRead, ManagedRunRead, ManagedRunSummaryRead,
-    MigrationPreviewRead, ModeRead, Page, PhaseTaskRead, ProblemResponse, RunActionCreate, RunCreate, SupervisorRead,
+    ModeRead, Page, PhaseTaskRead, ProblemResponse, RunActionCreate, RunCreate, SupervisorRead,
     TaskSourcesRead,
 )
 from harness_local.api.security import local_request, problem
 from harness_local.core.engine.document_ops import BaseChanged
 from harness_local.core.engine.planning import task_sources
-from harness_local.core.migration import MigrationError
+from harness_local.core.managed_mode import MigrationError
 from harness_local.services.managed_runtime import ManagedRuntime, agents_view
 from harness_local.storage.documents import IMAGE_TYPES
 from harness_local.storage.managed import Conflict, OwnershipLost
-from harness_local.storage.migration import ModeConflict
+from harness_local.storage.managed_mode import ModeConflict
 
 Offset = Annotated[int, Query(ge=0, le=2**53 - 1)]
 Limit = Annotated[int, Query(ge=1, le=100)]
@@ -63,12 +63,6 @@ def call(operation, /, *args, **kwargs):
         raise problem(409, "checkout_unreadable", f"{type(error).__name__}: {error}") from error
 
 
-def _activation(record) -> dict:
-    return {name: getattr(record, name) for name in (
-        "id", "root", "repository_key", "status", "preview_sha256", "marker_sha256", "snapshot_root",
-        "manifest_sha256", "version", "diagnostic", "export_path", "export_sha256")}
-
-
 def managed_router(runtime: ManagedRuntime):
     router = APIRouter(prefix="/api/managed", dependencies=[Depends(local_request)], responses=ERRORS)
 
@@ -97,13 +91,6 @@ def managed_router(runtime: ManagedRuntime):
         if project_id is None:
             raise problem(404, "not_found", "El run pertenece a un checkout no registrado en este servicio.")
         return configured_actions({**run, "project_id": project_id})
-
-    def registered_activation(activation_id: str):
-        runtime.ready()
-        record = call(runtime.migration.repository.get, activation_id)
-        if runtime.project_id(record.root) is None:
-            raise problem(404, "not_found", "La activación pertenece a un checkout no registrado.")
-        return record
 
     def queued(job):
         runtime.notify()
@@ -170,63 +157,11 @@ def managed_router(runtime: ManagedRuntime):
         return registry(runtime.registry.apply, change(body.change), preview_sha256=body.preview_sha256,
                         trust_root=body.trust_root, reason=body.reason)
 
-    # --- migración H2.5 ---------------------------------------------------------------
-
     @router.get("/projects/{project_id}/mode", response_model=ModeRead, operation_id="managed_mode")
     def mode(project_id: str):
         root = str(project(project_id).context.root)
-        status = call(runtime.migration.status, root)
-        live = status["activation"]
-        return {"project_id": project_id, "root": root, "refusal": status["refusal"],
-                "activation": _activation(call(runtime.migration.repository.get, live["id"])) if live else None,
-                "drift": status["drift"], "documents": status["documents"],
-                "activations": [_activation(item) for item in runtime.migration.repository.history(root)]}
-
-    @router.get("/projects/{project_id}/migration/preview", response_model=MigrationPreviewRead,
-                operation_id="managed_migration_preview")
-    def preview(project_id: str):
-        return call(runtime.migration.preview, project(project_id).context.root)
-
-    @router.post("/projects/{project_id}/migration/activations", response_model=ActivationRead,
-                 operation_id="managed_activate")
-    def activate(project_id: str, body: ActivationCreate):
-        """Idempotente por hash de vista previa: repetir devuelve la activación ACTIVE ya completada."""
-        record = call(runtime.migration.activate, project(project_id).context.root,
-                      preview_sha256=body.preview_sha256, legacy_stopped=body.legacy_stopped)
-        return _activation(record)
-
-    @router.get("/activations/{activation_id}", response_model=ActivationRead, operation_id="managed_activation")
-    def activation(activation_id: str):
-        return _activation(registered_activation(activation_id))
-
-    @router.post("/activations/{activation_id}/resume", response_model=ActivationRead,
-                 operation_id="managed_resume_activation")
-    def resume_activation(activation_id: str, body: ActivationTransition):
-        registered_activation(activation_id)
-        return _activation(call(runtime.migration.resume_activation, activation_id, reason=body.reason,
-                                expected_version=body.expected_version))
-
-    @router.post("/activations/{activation_id}/abandon", response_model=ActivationRead,
-                 operation_id="managed_abandon_activation")
-    def abandon_activation(activation_id: str, body: ActivationTransition):
-        registered_activation(activation_id)
-        call(runtime.migration.abandon_activation, activation_id, reason=body.reason,
-             expected_version=body.expected_version)
-        return _activation(registered_activation(activation_id))
-
-    @router.post("/activations/{activation_id}/revert", response_model=ActivationRead,
-                 operation_id="managed_revert")
-    def revert(activation_id: str, body: ActivationTransition):
-        registered_activation(activation_id)
-        return _activation(call(runtime.migration.revert, activation_id, reason=body.reason,
-                                expected_version=body.expected_version))
-
-    @router.post("/activations/{activation_id}/resume-revert", response_model=ActivationRead,
-                 operation_id="managed_resume_revert")
-    def resume_revert(activation_id: str, body: ActivationTransition):
-        registered_activation(activation_id)
-        return _activation(call(runtime.migration.resume_revert, activation_id, reason=body.reason,
-                                expected_version=body.expected_version))
+        return {"project_id": project_id, "root": root,
+                "refusal": runtime.repository.guard.assess(root).refusal}
 
     # --- estado de la creación conversacional (D088) ---------------------------------
     from harness_local.api.schemas import BootstrapStatusRead
@@ -886,7 +821,7 @@ def managed_router(runtime: ManagedRuntime):
 
     # --- H6.5: creación y planificación conversacionales -----------------------------------------
     from harness_local.api.schemas import (
-        DefinitionAcceptCreate, DefinitionPreviewRead, ImportStatusRead, ImportPreviewRead, ImportEntryRead, PlanningApplyCreate, PlanningBriefRead,
+        DefinitionAcceptCreate, DefinitionPreviewRead, ImportPreviewRead, ImportEntryRead, PlanningApplyCreate, PlanningBriefRead,
         PlanningConversationCreate, PlanningConversationRead, PlanningConversationSummaryRead, PlanningDeferCreate,
         PlanningDismissCreate, PlanningDraftContentRead, PlanningDraftEdit, PlanningDraftsRead, PlanningMessageCreate,
     )
@@ -921,7 +856,7 @@ def managed_router(runtime: ManagedRuntime):
     def conversation_port(item, kind):
         """Puerto de cada tipo: destino del bootstrap (definición) o lector Git (importación; sus borradores viven
         en el área privada junto a SQLite)."""
-        port = {'definition': definition_writer, 'project_import': import_reader, 'onboarding': import_reader}
+        port = {'definition': definition_writer, 'onboarding': import_reader}
         return port.get(kind, lambda _: None)(item)
 
     def drafts_port(item, conversation_id):
@@ -1033,7 +968,6 @@ def managed_router(runtime: ManagedRuntime):
              question_id=body.question_id, reason=body.reason)
         return planning_read(item, conversation_id)
 
-    from harness_local.storage.project_import import ImportRepository
     from harness_local.storage.onboarding_commit import OnboardingRepository
     from harness_local.api.schemas import OnboardingConfirmCreate
 
@@ -1041,7 +975,7 @@ def managed_router(runtime: ManagedRuntime):
                 operation_id='managed_onboarding_entry')
     def onboarding_entry(project_id: str):
         item = planning_project(project_id)
-        return {'activation_required': False, 'refusal': None, 'activation_preview': None,
+        return {'refusal': runtime.repository.guard.assess(item.context.root).refusal,
                 'operation': call(OnboardingRepository(runtime.repository).get, item.context.root)}
 
     @router.post('/projects/{project_id}/planning/{conversation_id}/onboarding/preview',
@@ -1060,42 +994,6 @@ def managed_router(runtime: ManagedRuntime):
                    conversation_of(item, conversation_id), frozen_versions(item), import_reader(item),
                    key=idempotency_key, **body.model_dump())
         return queued(job)
-
-    @router.get('/projects/{project_id}/import', response_model=ImportEntryRead,
-                operation_id='managed_import_entry')
-    def import_entry(project_id: str):
-        item = planning_project(project_id)
-        assessment = runtime.repository.guard.assess(item.context.root)
-        required = bool(assessment.facts and assessment.facts.legacy_state and assessment.activation is None)
-        return {'activation_required': required, 'refusal': assessment.refusal,
-                'activation_preview': call(runtime.migration.preview, item.context.root) if required else None,
-                'operation': call(ImportRepository(runtime.repository).get, item.context.root)}
-
-    @router.post('/projects/{project_id}/planning/{conversation_id}/import/preview',
-                 response_model=ImportPreviewRead, operation_id='managed_import_preview')
-    def import_preview(project_id: str, conversation_id: str):
-        item = planning_project(project_id)
-        return call(ImportRepository(runtime.repository).preview, item.context,
-                    conversation_of(item, conversation_id), frozen_versions(item), import_reader(item))
-
-    @router.post('/projects/{project_id}/planning/{conversation_id}/import/confirm', response_model=ManagedJobRead,
-                 status_code=202, operation_id='managed_import_confirm')
-    def import_confirm(project_id: str, conversation_id: str, body: DefinitionAcceptCreate,
-                       idempotency_key: IdempotencyKey):
-        item = planning_project(project_id)
-        job = call(ImportRepository(runtime.repository).submit, item.context,
-                   conversation_of(item, conversation_id), frozen_versions(item), import_reader(item),
-                   key=idempotency_key, **body.model_dump())
-        return queued(job)
-
-    @router.get('/projects/{project_id}/planning/{conversation_id}/import', response_model=ImportStatusRead,
-                operation_id='managed_import_status')
-    def import_status(project_id: str, conversation_id: str):
-        """P008-T011: bloqueos para pasar a la vista previa de la importación (preguntas bloqueantes sin responder ni
-        aplazar, checkout distinto del inventariado, borradores inválidos, documentos o límites de D088)."""
-        item = planning_project(project_id)
-        return call(planning_repository().import_status, item.context, conversation_of(item, conversation_id),
-                    import_reader(item))
 
     @router.post('/projects/{project_id}/planning/{conversation_id}/accept/preview',
                  response_model=DefinitionPreviewRead, operation_id='managed_definition_accept_preview')

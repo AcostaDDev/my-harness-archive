@@ -59,9 +59,9 @@ archivos individuales de decisiones son borradores de definición.
 
 ## Repositorios existentes (P008-T009–T015)
 
-Un repositorio con contenido entra por el [Flujo A](legacy-migration.md#flujo-a-en-p008-d088) si tiene un harness
-anterior (D100), o por el [Flujo B](project-onboarding.md) si necesita su documentación inicial (D103). Ambas vías
-están implementadas y exigen su propia vista previa y confirmación antes del commit; no usan la creación vacía.
+Un repositorio sin harness entra por [incorporación B](project-onboarding.md), con vista previa y confirmación
+propias antes del commit. El harness anterior y la normalización A están retirados (D161); no se redirigen a B.
+Registrar o reabrir un proyecto ya gestionado conserva su autoridad y no repite el alta.
 
 ## Fuente en el código
 

@@ -204,7 +204,7 @@ class GitWorkspace:
                 paths = ["."]
                 # D099: exclusion only while SQLite and the filesystem agree on a live activation.
                 if self.marker_reader is not None:
-                    from harness_local.core.migration import MARKER_PATH
+                    from harness_local.core.managed_mode import MARKER_PATH
                     if self.marker_reader(root) is not None:
                         if git.run("ls-files", "--", MARKER_PATH).strip():
                             raise EvidenceCaptureError('The managed marker must remain untracked (D099)')

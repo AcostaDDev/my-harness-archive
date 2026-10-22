@@ -10,26 +10,26 @@ from sqlalchemy.orm import Session
 
 from harness_local.adapters.git import Git
 from harness_local.adapters.local_git import LocalGit
-from harness_local.adapters.project_import import read_checkout
+from harness_local.adapters.import_git import check_submodules
 from harness_local.adapters.project_onboarding import read_inventory as onboarding_inventory
 from harness_local.core.engine.commit import CommitIntent
-from harness_local.core.project_import import ImportInventoryError
+from harness_local.core.tree import ImportInventoryError
 from harness_local.storage.managed import Conflict
 from harness_local.storage.models import PlanningConversationRow, ProjectImportRow
 from harness_local.storage.phases import PhaseRepository
-from test_import_commit import confirm, operation, preview, ready
-from test_import_conversation import answer, tree_state, world  # noqa: F401
+from onboarding_helpers import operation
+from onboarding_helpers import tree_state
 from test_import_git_boundary import job_count
 from test_onboarding_conversation import world as onboarding_world  # noqa: F401
 from test_onboarding_commit import confirm as onboarding_confirm, preview as onboarding_preview, ready as onboarding_ready
-from test_project_import import V1, checkout
+from test_project_onboarding import checkout
 
 
 def submodule(root, location='synthetic-module', kind='clean', included=False, *, committed=True):
     """Un hijo local inicializado con filtro marcador; nunca se ejecuta submodule add ni transporte."""
     child = root / location
     child.parent.mkdir(parents=True, exist_ok=True)
-    checkout(child.parent, child.name, {'README.md': '# Synthetic child\n'})
+    checkout(child, {'README.md': '# Synthetic child\n'})
     git = Git(root)
     (root / '.gitmodules').write_text(
         '[submodule "synthetic-module"]\n\tpath = ' + location + '\n\turl = ./synthetic-module\n')
@@ -58,7 +58,7 @@ def submodule(root, location='synthetic-module', kind='clean', included=False, *
 @pytest.mark.parametrize('location', ['synthetic-module', 'docs/synthetic-module'])
 @pytest.mark.parametrize('kind,included', [('clean', False), ('clean', True), ('process', False), ('process', True)])
 def test_inventory_rejects_gitlinks_before_status_without_reading_child(tmp_path, monkeypatch, location, kind, included):
-    root = checkout(tmp_path, 'parent', V1)
+    root = checkout(tmp_path / 'parent', {'README.md': '# Synthetic parent\n'})
     child, marker = submodule(root, location, kind, included)
     assert LocalGit(root).run('status', '--porcelain=v1', '--ignore-submodules=all') == b''
     assert LocalGit(root).run('config', '--includes', '--get-regexp',
@@ -74,7 +74,7 @@ def test_inventory_rejects_gitlinks_before_status_without_reading_child(tmp_path
     with monkeypatch.context() as local:
         local.setattr(Git, 'run', recording)
         with pytest.raises(ImportInventoryError, match='submodule/gitlink.*' + location):
-            read_checkout(root)
+            check_submodules(LocalGit(root))
     assert 'ls-tree' in calls and not {'status', 'add', 'hash-object'} & set(calls)
     assert not marker.exists() and tree_state(root) == before
     # B's static inventory still reads only HEAD; it does not approve its later writer boundary.
@@ -84,7 +84,7 @@ def test_inventory_rejects_gitlinks_before_status_without_reading_child(tmp_path
 
 @pytest.mark.parametrize('variant', ['staged', 'removed', 'uninitialized', 'gitfile'])
 def test_head_and_index_guard_does_not_depend_on_child_config_or_initialization(tmp_path, monkeypatch, variant):
-    root = checkout(tmp_path, 'parent', V1)
+    root = checkout(tmp_path / 'parent', {'README.md': '# Synthetic parent\n'})
     child, marker = submodule(root, committed=variant != 'staged')
     git = Git(root)
     if variant == 'removed':
@@ -102,91 +102,18 @@ def test_head_and_index_guard_does_not_depend_on_child_config_or_initialization(
 
     monkeypatch.setattr(Git, 'run', recording)
     with pytest.raises(ImportInventoryError, match='submodule/gitlink.*in ' + ('index' if variant == 'staged' else 'HEAD')):
-        read_checkout(root)
+        check_submodules(LocalGit(root))
     assert not marker.exists() and tree_state(root) == before
 
 
-@pytest.mark.parametrize('stage,location', [
-    ('create', 'synthetic-module'), ('message', 'docs/synthetic-module'), ('status', 'synthetic-module'),
-    ('preview', 'docs/synthetic-module'), ('confirm', 'synthetic-module'),
-])
-def test_consumers_block_before_conversation_turn_or_writer(world, monkeypatch, stage, location):
-    cid = None if stage == 'create' else ready(world)
-    shown = preview(world, cid) if stage == 'confirm' else None
-    _, marker = submodule(world.context.root, location, included=True)
-    before, jobs = tree_state(world.context.root), job_count(world)
-    requests = list(world.ports.agents.requests)
-    with Session(world.engine) as session:
-        conversations = session.scalar(select(func.count()).select_from(PlanningConversationRow))
-
-    def forbidden(*args, **kwargs):
-        pytest.fail('Submodule guard must precede agent/capture/seal/writer')
-
-    for name in ('capture', 'seal', 'execute_documents'):
-        monkeypatch.setattr(world.writer, name, forbidden)
-    monkeypatch.setattr(world.ports.agents, 'invoke', forbidden)
-    if stage == 'status':
-        status = world.status(cid)
-        assert not status['ready'] and any('submodule/gitlink' in blocker for blocker in status['blockers'])
-    else:
-        with pytest.raises(Conflict, match='submodule/gitlink'):
-            if stage == 'create':
-                world.create()
-            elif stage == 'message':
-                world.message(cid)
-            elif stage == 'preview':
-                preview(world, cid)
-            else:
-                confirm(world, cid, shown)
-    assert tree_state(world.context.root) == before and not marker.exists()
-    assert job_count(world) == jobs and world.ports.agents.requests == requests
-    assert operation(world) is None and PhaseRepository(world.repo).list(str(world.context.root)) == []
-    with Session(world.engine) as session:
-        assert session.scalar(select(func.count()).select_from(PlanningConversationRow)) == conversations
 
 
-@pytest.mark.parametrize('point', ['before', 'after'])
-def test_queued_turn_observations_refuse_gitlinks_without_accepting_proposals(world, monkeypatch, point):
-    cid = world.create()
-    world.message(cid)
-    before = None
-    marker = None
-    original = world.ports.agents.invoke
-
-    def install():
-        nonlocal before, marker
-        _, marker = submodule(world.context.root, included=True)
-        before = tree_state(world.context.root)
-
-    if point == 'before':
-        install()
-
-        def invoke(*args, **kwargs):
-            pytest.fail('No agent invocation allowed after the source acquired a gitlink')
-    else:
-        world.ports.agents.responses.append(answer())
-
-        def invoke(*args, **kwargs):
-            response = original(*args, **kwargs)
-            install()  # Synthetic concurrent change after the read-only response.
-            return response
-
-    monkeypatch.setattr(world.ports.agents, 'invoke', invoke)
-    assert world.worker.run_once().status == 'DONE'
-    view = world.view(cid)
-    assert view['turns'][-1]['status'] == 'FAILED' and view['proposals'] == []
-    assert 'submodule/gitlink' in str(view['turns'][-1])
-    assert tree_state(world.context.root) == before and not marker.exists()
-    assert operation(world) is None and PhaseRepository(world.repo).list(str(world.context.root)) == []
 
 
-@pytest.mark.parametrize('flow', ['A', 'B'])
+@pytest.mark.parametrize('flow', ['B'])
 def test_job_and_resume_reject_new_index_gitlink_then_recover_same_commit(request, monkeypatch, flow):
-    if flow == 'B':
-        world, prepare, show, submit = (request.getfixturevalue('onboarding_world'), onboarding_ready,
-                                        onboarding_preview, onboarding_confirm)
-    else:
-        world, prepare, show, submit = request.getfixturevalue('world'), ready, preview, confirm
+    world, prepare, show, submit = (request.getfixturevalue('onboarding_world'), onboarding_ready,
+                                    onboarding_preview, onboarding_confirm)
     cid = prepare(world)
     job = submit(world, cid, show(world, cid))
     with Session(world.engine) as session:

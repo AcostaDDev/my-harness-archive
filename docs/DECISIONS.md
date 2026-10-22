@@ -171,6 +171,7 @@ tarea se leen solo las decisiones que cita; este índice sirve para buscar prece
 | [D158](#d158--idioma-visual-global-y-trabajo-inmutable-por-proyecto) | Idioma visual global y trabajo inmutable por proyecto | P011 |
 | [D159](#d159--p011-t001-contrato-de-idiomas-fuentes-y-corte-público) | P011-T001: contrato de idiomas, fuentes y corte público | P011 |
 | [D160](#d160--p011-t002-licencia-mit-y-frontera-del-contenido-publicable) | P011-T002: licencia MIT y frontera del contenido publicable | P011 |
+| [D161](#d161--p011-t019-retirada-legacya-y-compatibilidad-no-destructiva) | P011-T019: retirada legacy/A y compatibilidad no destructiva | P011 |
 
 ## D001 — Alcance local y arquitectura base
 
@@ -4771,3 +4772,33 @@ Concreta D154/D157/D159; no autoriza publicación o reescritura de historia.
 - Sin cambios de comportamiento, API/modelos/flujos, fuentes de recetas o configuración global; sin suites,
   builds, proveedores/agentes, smokes, servicios, nueva copia, tags/push/publicación. El usuario autoriza el commit
   local en inglés de esta tarea; siguiente T019, sin encadenar su ejecución.
+
+## D161 — P011-T019: retirada legacy/A y compatibilidad no destructiva
+
+Estado: implementada el 2026-10-22 por la continuación y commit local en inglés pedidos por el usuario.
+Fase: P011. Precedentes: D155/D159 y [contrato T001 §6](phase/P011-T001_CONTRATO_APERTURA.md#6-retirada-legacya-frontera-de-código-y-datos).
+[Informe, dependencias y validación](phase/P011-T019_RETIRADA_LEGACY.md).
+
+- Se retiran los módulos exclusivos del visor/índice/observación/SSE, activación/reversión y Flujo A, sus rutas,
+  comandos, conversaciones, plantilla, UI, estilos y fixtures/tests exclusivos. URL UI antigua → no encontrada;
+  API ausente → 404 tras guardias; CLI antigua → error de argumentos antes de SQLite. Sin flags de reactivación.
+- Se conservan dos accesos: creación desde cero e incorporación de código sin harness (B); registro/reapertura
+  normal de proyectos ya gestionados. B conserva `project_imports`, `purpose=import_commit`, perfil confirmado,
+  intención, CAS y adopción P001. Guardias Git/blobs, DTO de árbol y borradores privados extraídos a módulos comunes.
+- Tablas, revisiones 0001–0023, campos y datos previos no cambian. `watch_enabled` queda inerte; arranque y
+  restauración no construyen observadores ni escanean/indexan fuentes externas. Backup verifica referencias
+  selladas de snapshots/exportaciones; restauración solo de consulta y revisión compatible.
+- Antes de construir puertos/procesos o comprobar el checkout, trabajos A o importaciones con conversación,
+  fuente, flujo o petición contradictorios quedan en cuarentena. ACTIVE con lease vencido sigue recuperación
+  conservadora. Confirmar detenido el propietario exacto comprueba procesos/grupos, cierra el job, libera el
+  lock y registra motivo/evento, sin ejecutar ni modificar intención, operación o conversación retiradas.
+  Una intención retenida sin resolver sigue bloqueando otro escritor; su resolución manual está fuera del flujo retirado.
+- Activaciones PREPARING/REVERTING no se completan, abandonan ni revierten: bloquean para resolución manual.
+  ACTIVE propia solo admite trabajo gestionado con marcador/manifiesto y copia íntegros y sin deriva legacy;
+  guardia extraída de solo lectura. Sus rutas de artefactos permanecen protegidas en registro/creación, sin servicio
+  de migración activo. `import-project` se admite al leer catálogos congelados, nunca en el catálogo efectivo,
+  edición, validación actual o render de invocación.
+- SPECIFICATION F03/F05, modos, §8 y criterios 1/11/13, arquitectura, datos, flujos, README y OpenAPI/tipos al día.
+  Sin cambios de modelos, migraciones, dependencias, recetas/recibos, configuración global o historia congelada.
+  Checks sintéticos offline y manifiestos fuente en el informe; sin servicios de producto, navegador, proveedores,
+  smokes, instalación operativa, push, publicación o consentimientos nuevos. T003 queda como siguiente tarea.

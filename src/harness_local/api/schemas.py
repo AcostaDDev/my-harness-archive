@@ -33,110 +33,6 @@ class Page(BaseModel, Generic[Item]):
     next_offset: int | None
 
 
-class LegacyProjectRead(BaseModel):
-    id: str
-    name: str
-    root: str
-    observed_at: str
-    mode: Literal["observation"]
-    authority: Literal["source_files"]
-
-
-class ProvenanceRead(BaseModel):
-    path: str
-    origin: str
-
-
-class LegacyPhaseRead(BaseModel):
-    identity: str
-    provenance: list[ProvenanceRead]
-    more_provenance: bool
-
-
-class LegacyTaskRead(BaseModel):
-    identity: str
-    origin: Literal["run_directory"]
-
-
-class LegacyRunRead(LegacyTaskRead):
-    id: str
-    path: str
-
-
-class LegacyArtifactRead(BaseModel):
-    id: str
-    path: str
-    run_id: str | None
-    kind: str
-    format: str
-    status: Literal["available", "pending", "missing", "error"]
-    sha256: str | None
-    size_bytes: int | None
-    diagnostic: str | None
-
-
-class FieldRead(BaseModel):
-    state: Literal["absent", "null", "recorded"]
-    label: str | None = None
-    value: Any = None
-    truncated: bool = False
-
-
-class EvidenceEntryRead(BaseModel):
-    kind: str
-    pointer: str
-    fields: dict[str, FieldRead] = Field(default_factory=dict)
-    value: Any = None
-    truncated: bool = False
-
-
-class EvidenceEntriesRead(Page[EvidenceEntryRead]):
-    path: str
-    sha256: str | None
-    status: Literal["available", "pending", "missing", "error"]
-    diagnostic: str | None
-    origin: Literal["indexed_payload"]
-
-
-class EvidenceContentRead(BaseModel):
-    path: str
-    indexed_sha256: str | None
-    observed_sha256: str | None
-    status: Literal["verified", "changed", "missing", "unindexed", "unsafe", "unreadable", "too_large", "invalid_utf8"]
-    offset: int
-    next_offset: int | None
-    text: str | None
-    diagnostic: str | None
-
-
-class ObservationUpdate(BaseModel):
-    model_config = ConfigDict(extra="forbid", strict=True)
-    enabled: bool
-
-
-class ObservationRead(BaseModel):
-    enabled: bool
-    diagnostic: str | None
-
-
-class LegacyEventRead(BaseModel):
-    id: int
-    project_id: str
-    root: str
-    kind: Literal["index_updated", "watch_changed", "observation_error"]
-    observed_at: str
-    payload: dict[str, Any]
-
-
-class LegacyUpdatesRead(BaseModel):
-    items: list[LegacyEventRead]
-    cursor: int
-    has_more: bool
-
-
-# --- Modo gestionado (salida H2, parte 1) ---------------------------------------------
-
-
 class ProblemRead(BaseModel):
     code: str
     diagnostic: str
@@ -196,59 +92,10 @@ class ManagedProjectRead(BaseModel):
     bootstrap_enabled: bool = False
 
 
-ActivationStatus = Literal["PREPARING", "ACTIVE", "FAILED", "REVERTING", "REVERTED"]
-
-
-class ActivationRead(BaseModel):
-    id: str
-    root: str
-    repository_key: str | None
-    status: ActivationStatus
-    preview_sha256: str
-    marker_sha256: str
-    snapshot_root: str
-    manifest_sha256: str | None
-    version: int
-    diagnostic: str | None
-    export_path: str | None
-    export_sha256: str | None
-
-
 class ModeRead(BaseModel):
     project_id: str
     root: str
     refusal: str | None
-    activation: ActivationRead | None
-    drift: dict[str, list[str]] | None
-    documents: list[dict[str, Any]] | None
-    activations: list[ActivationRead]
-
-
-class MigrationPreviewRead(BaseModel):
-    format: str
-    root: str
-    repository_key: str | None
-    inventory_sha256: str
-    counts: dict[str, int]
-    read_only_history: list[dict[str, Any]]
-    identities: dict[str, list[dict[str, Any]]]
-    documents: list[dict[str, Any]]
-    uncertainties: list[dict[str, Any]]
-    activation: dict[str, Any]
-    blockers: list[dict[str, Any]]
-    ready: bool
-
-
-class ActivationCreate(BaseModel):
-    model_config = ConfigDict(extra="forbid", strict=True)
-    preview_sha256: str = Field(pattern=r"^[0-9a-f]{64}$")
-    legacy_stopped: str = Field(min_length=1, max_length=2000)
-
-
-class ActivationTransition(BaseModel):
-    model_config = ConfigDict(extra="forbid", strict=True)
-    expected_version: int = Field(ge=1)
-    reason: str = Field(min_length=1, max_length=2000)
 
 
 class RunCreate(BaseModel):
@@ -1135,7 +982,7 @@ class ChatCommandRead(BaseModel):
 
 # --- H6.5: creación y planificación conversacionales -----------------------------------------------
 
-PlanningKind = Literal['definition', 'phase_planning', 'project_import', 'onboarding']
+PlanningKind = Literal['definition', 'phase_planning', 'onboarding']
 SHA256 = r'^[0-9a-f]{64}$'
 
 
@@ -1274,8 +1121,7 @@ class PlanningConversationRead(BaseModel):
     phase: ChatPhaseRead | None
     brief: dict[str, Any] | None
     source: dict[str, Any] | None = Field(default=None, description=(
-        'Importación (P008-T011): origen, HEAD, carpeta de documentos, huellas del inventario y del mapa congelados '
-        'y fase activa detectada. Onboarding: HEAD, árbol y huella del inventario; null en las demás.'))
+        'Onboarding: frozen HEAD, tree and inventory fingerprint; null for other conversation kinds.'))
     known: dict[str, str | None]
     log: list[dict[str, Any]]
     questions: list[PlanningQuestionRead]
@@ -1289,16 +1135,6 @@ class PlanningConversationRead(BaseModel):
     proposals: list[PlanningProposalRead]
     actions: list[Literal['message', 'edit_draft', 'defer_question', 'accept']]
     operation: DefinitionOperationRead | None = None
-
-
-class ImportStatusRead(BaseModel):
-    """P008-T011: si la importación puede pasar a la vista previa; se recalcula releyendo checkout y borradores."""
-    ready: bool
-    blockers: list[str]
-    warnings: list[str]
-    source: dict[str, Any]
-    drafts: dict[str, str] = Field(description='Hash de cada borrador del área privada de la importación.')
-    conversation_version: int
 
 
 class PlanningMessageCreate(BaseModel):
@@ -1813,7 +1649,7 @@ class ImportPreviewRead(BaseModel):
     resume_operation_id: str | None = None
     expected_version: int | None = None
     already_imported: bool = False
-    flow: Literal['onboarding'] | None = None
+    flow: Literal['onboarding']
     profile: dict[str, Any] | None = None
     profile_sha256: str | None = None
     profile_proposal: dict[str, Any] | None = None
@@ -1840,9 +1676,7 @@ class ImportOperationRead(BaseModel):
 
 
 class ImportEntryRead(BaseModel):
-    activation_required: bool
     refusal: str | None
-    activation_preview: MigrationPreviewRead | None
     operation: ImportOperationRead | None
 
 

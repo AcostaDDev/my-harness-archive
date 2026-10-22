@@ -160,7 +160,7 @@ class ProjectRegistry:
             if _inside(root, other.context.root):
                 raise RegistryError(409, 'root_taken', f'La raíz coincide o se anida con la de {other.id}.')
         for path, name in ((self.runtime.database, 'la base SQLite'),
-                           (self.runtime.migration.migrations_dir, 'el directorio de migraciones')):
+                           (self.runtime.migrations_dir, 'el directorio de migraciones')):
             if path is not None and _inside(root, path):
                 raise RegistryError(422, 'root_service_state', f'La raíz no puede contener {name} del servicio.')
 

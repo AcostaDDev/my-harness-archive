@@ -9,11 +9,11 @@ from harness_local.core.engine.contracts import freeze
 from harness_local.core.engine.definition import MAX_CONTEXT_DRAFT_BYTES, allowed_drafts_view
 from harness_local.core.engine.documents import MAX_AGENTS_LINES, MAX_WRAPPER_LINES
 from harness_local.core.project_onboarding import OnboardingInventoryError
-from harness_local.storage.import_drafts import ImportDrafts
+from harness_local.storage.private_drafts import PrivateDrafts
 from harness_local.storage.managed import Conflict
 
 
-class OnboardingDrafts(ImportDrafts):
+class OnboardingDrafts(PrivateDrafts):
     area = 'onboarding-drafts'
 
 
@@ -25,7 +25,7 @@ def read_inventory(context, executable='git'):
         reader.git = _InventoryGit(context.root, executable=executable)
         entries = reader.entries(inventory['head'])
         if any(path in entries for path in target) or any(path.startswith('.harness/') for path in entries):
-            raise Conflict('The repository already has harness documents or history; use the import flow')
+            raise Conflict('The repository already has harness documents or history; legacy/A support has been removed; register an already managed project instead')
         if len(freeze(inventory).encode('utf-8')) > MAX_CONTEXT_DRAFT_BYTES:
             raise ValueError('Onboarding inventory exceeds the 2 MiB a turn can freeze')
         return inventory

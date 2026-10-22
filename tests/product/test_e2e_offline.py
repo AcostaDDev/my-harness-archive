@@ -16,7 +16,7 @@ from harness_local.core.engine.validation import CommandResult
 from harness_local.services.managed_runtime import ManagedConfig, ManagedProject
 from test_bootstrap import DATA
 from test_managed_api import (LOCAL, RUN, STOPPED, VERSIONS, Ports, action, all_events,
-    config, edit, git, legacy_checkout, main_snapshot, make_context, review, settle,
+    config, edit, git, main_snapshot, make_context, review, settle,
     submit, JournalError, repo, task, url)
 
 
@@ -174,8 +174,8 @@ def test_denial_restart_replacement_and_explicit_retry(tmp_path, url, task):
 
 
 @pytest.mark.parametrize('failure', ['tests', 'review'])
-def test_import_execute_block_revalidate_commit(tmp_path, url, failure):
-    root = legacy_checkout(tmp_path)
+def test_managed_execute_block_revalidate_commit(tmp_path, url, repo, failure):
+    root = repo
     (root / '.gitignore').write_text('.harness/runs/\n.harness/managed-mode.json\n')
     git(root, 'add', '.gitignore')
     git(root, 'commit', '-qm', 'Synthetic managed marker exclusion')
@@ -185,13 +185,6 @@ def test_import_execute_block_revalidate_commit(tmp_path, url, failure):
                   [CommandResult(1, stderr='Synthetic failed assertion')] if failure == 'tests' else [])
     with open_app(url, tmp_path, config(context, ports)) as http:
         login(http)
-        assert submit(http).status_code == 409
-        path = '/api/managed/projects/synthetic/migration'
-        shown = http.get(path + '/preview').json()
-        body = dict(preview_sha256=shown['inventory_sha256'], legacy_stopped=STOPPED)
-        activation = http.post(path + '/activations', json=body)
-        assert activation.status_code == 200, activation.text
-        assert http.post(path + '/activations', json=body).json() == activation.json()
         job = submit(http).json()
         stopped = settle(http, job['run_id'])
         base = git(root, 'rev-parse', 'HEAD')
@@ -205,7 +198,7 @@ def test_import_execute_block_revalidate_commit(tmp_path, url, failure):
         assert action(http, job['run_id'], 'revalidate', stopped['version'], 'explicit-revalidation').status_code == 202
         settle(http, job['run_id'])
         commit(http, job['run_id'])
-        assert len(http.get('/api/legacy/projects').json()['items']) == 1
+        assert http.get('/api/legacy/projects').status_code == 404
     assert ports.roles().count('executor') == 1
 
 

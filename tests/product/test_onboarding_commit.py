@@ -14,9 +14,9 @@ from harness_local.storage.database import make_engine
 from harness_local.storage.managed import Conflict
 from harness_local.storage.models import PhaseRow, ProjectImportRow
 from harness_local.storage.onboarding_commit import OnboardingRepository
-from test_import_commit import checkout_state
+from onboarding_helpers import checkout_state
 from test_onboarding_conversation import World, DRAFTS, world  # noqa: F401
-from test_import_conversation import answer
+from onboarding_helpers import answer
 from test_managed_api import VERSIONS, Ports, client
 from test_project_onboarding import DJANGO, TYPESCRIPT, checkout, git
 

@@ -11,7 +11,6 @@ from fastapi.responses import JSONResponse
 from sqlalchemy import text
 
 from harness_local.adapters.fake import FakeSimulationAdapter
-from harness_local.api.legacy import legacy_router
 from harness_local.api.managed import managed_router
 from harness_local.api.schemas import HealthRead, ProblemResponse, SimulationCreate, SimulationRead
 from harness_local.api.security import local_request
@@ -22,7 +21,6 @@ from harness_local.storage.repository import SQLiteSimulationRepository
 from harness_local.storage.schema import require_schema
 from harness_local.storage.backup import is_read_only_archive, verify_bundle
 from harness_local.services.managed_runtime import ManagedConfig, ManagedRuntime
-from harness_local.services.observation import LegacyObserver
 
 
 def create_app(url: str | None = None, ui_dir: Path | None = None,
@@ -32,7 +30,6 @@ def create_app(url: str | None = None, ui_dir: Path | None = None,
     service = SimulationService(SQLiteSimulationRepository(engine), FakeSimulationAdapter())
 
     sessions = LocalSessions()
-    observer = LegacyObserver(engine)
     runtime = ManagedRuntime(engine, managed)
 
     @asynccontextmanager
@@ -45,15 +42,7 @@ def create_app(url: str | None = None, ui_dir: Path | None = None,
             sessions.start()
             await asyncio.to_thread(runtime.start)
             try:
-                if not restored:
-                    await asyncio.to_thread(observer.scan, True)
-                task = None if restored else asyncio.create_task(observer.run())
-                try:
-                    yield
-                finally:
-                    if task is not None:
-                        observer.stop()
-                        await task
+                yield
             finally:
                 await asyncio.to_thread(runtime.stop)
         finally:
@@ -64,7 +53,6 @@ def create_app(url: str | None = None, ui_dir: Path | None = None,
                   docs_url=None, redoc_url=None)
     app.state.sessions = sessions
     app.include_router(session_router(sessions))
-    app.include_router(legacy_router(engine))
     app.include_router(managed_router(runtime))
 
     @app.middleware('http')

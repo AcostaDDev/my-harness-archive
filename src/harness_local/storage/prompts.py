@@ -40,6 +40,8 @@ class PromptRepository:
         for scope in ('core', 'profile', 'project'):
             heads = session.scalars(select(Head).where(Head.scope == scope, Head.owner == self.owner(context, scope))).all()
             for head in heads:
+                if head.name not in VARIABLES:
+                    continue  # Retired prompt heads remain data, never a current catalog entry.
                 if head.active_id:
                     row = session.get(Version, head.active_id)
                     if row is None or (row.scope, row.owner, row.name) != (head.scope, head.owner, head.name):

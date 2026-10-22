@@ -4,7 +4,6 @@
 export type Route =
   | { name: "home" }
   | { name: "stats" }
-  | { name: "legacy" }
   | { name: "project-new" }
   | { name: "project"; project: string }
   | { name: "phases"; project: string }
@@ -15,7 +14,7 @@ export type Route =
   | { name: "settings"; project: string }
   | { name: "project-stats"; project: string }
   | { name: "docs"; project: string; path?: string }
-  | { name: "import" | "onboarding"; project: string; conversation?: string; path?: string }
+  | { name: "onboarding"; project: string; conversation?: string; path?: string }
   | { name: "setup"; project: string; path?: string }
   | { name: "plan"; project: string; phase: string; conversation?: string }
   | { name: "run-short"; run: string }
@@ -38,7 +37,6 @@ export function parse(pathname: string): Route {
   const [a, b, c, d, f, g, h, i] = parts as string[];
   const n = parts.length;
   if (n === 0) return { name: "home" };
-  if (a === "legacy" && n === 1) return { name: "legacy" };
   if (a === "stats" && n === 1) return { name: "stats" };
   if (a === "runs" && n === 2) return { name: "run-short", run: b };
   if (a !== "projects" || n < 2) return { name: "not-found", path: pathname };
@@ -59,7 +57,7 @@ export function parse(pathname: string): Route {
     if (rest.some(part => part === "." || part === "..")) return { name: "not-found", path: pathname };
     return rest.length ? { name: "setup", project, path: rest.join("/") } : { name: "setup", project };
   }
-  if (c === "import" || c === "onboarding") {
+  if (c === "onboarding") {
     const rest = (parts as string[]).slice(4);
     if (rest.some(part => part === "." || part === "..")) return { name: "not-found", path: pathname };
     return { name: c, project, ...(d ? { conversation: d } : {}), ...(rest.length ? { path: rest.join("/") } : {}) };
@@ -78,7 +76,6 @@ export function parse(pathname: string): Route {
 export function href(route: Route): string {
   switch (route.name) {
     case "home": return "/";
-    case "legacy": return "/legacy";
     case "stats": return "/stats";
     case "project-new": return "/projects/new";
     case "project": return `/projects/${e(route.project)}`;
@@ -90,7 +87,6 @@ export function href(route: Route): string {
     case "settings": return `/projects/${e(route.project)}/settings`;
     case "project-stats": return `/projects/${e(route.project)}/stats`;
     case "docs": return `/projects/${e(route.project)}/docs${route.path ? `/${route.path.split("/").map(e).join("/")}` : ""}`;
-    case "import":
     case "onboarding": return `/projects/${e(route.project)}/${route.name}${route.conversation ? `/${e(route.conversation)}` : ""}${route.path ? `/${route.path.split("/").map(e).join("/")}` : ""}`;
     case "setup": return `/projects/${e(route.project)}/setup${route.path ? `/${route.path.split("/").map(e).join("/")}` : ""}`;
     case "plan": return `/projects/${e(route.project)}/phases/${e(route.phase)}/plan${route.conversation ? `/${e(route.conversation)}` : ""}`;
@@ -112,7 +108,6 @@ export function runRoute(run: { id: string; project_id: string | null; phase_id:
 /** Miga de pan: cada nivel de la ruta con su destino. La última entrada es la página actual. */
 export function trail(route: Route): { label: string; to: Route }[] {
   const items: { label: string; to: Route }[] = [{ label: "Proyectos", to: { name: "home" } }];
-  if (route.name === "legacy") items.push({ label: "Importados", to: route });
   if (route.name === "stats") items.push({ label: "Estadísticas", to: route });
   if (route.name === "project-new") items.push({ label: "Nuevo proyecto", to: route });
   if (route.name === "run-short") items.push({ label: route.run, to: route });
@@ -127,7 +122,6 @@ export function trail(route: Route): { label: string; to: Route }[] {
     if (route.path) items.push({ label: route.path.split("/").pop()!, to: route });
   }
   if (route.name === "onboarding") items.push({ label: "Incorporación", to: route });
-  if (route.name === "import") items.push({ label: "Importación", to: route });
   if (route.name === "setup") {
     items.push({ label: "Creación", to: { name: "setup", project } });
     if (route.path) items.push({ label: route.path.split("/").pop()!, to: route });

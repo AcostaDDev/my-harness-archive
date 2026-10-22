@@ -23,16 +23,16 @@ VARIABLES = {
     'chat-turn': ('CONTEXT_JSON', 'MESSAGE', PROJECT_INSTRUCTIONS),
     'define-project': ('CONTEXT_JSON', 'MESSAGE'),
     'plan-phase': ('CONTEXT_JSON', 'MESSAGE', PROJECT_INSTRUCTIONS),
-    # P008-T011: el AGENTS.md de un proyecto importado es parte del origen congelado y puede faltar o exceder D088.
-    'import-project': ('CONTEXT_JSON', 'MESSAGE'),
+    # Onboarding reads the original instructions as evidence in the frozen source tree.
     'onboard-project': ('CONTEXT_JSON', 'MESSAGE'),
 }
 ROLES = {'bootstrap-project': 'bootstrap', 'plan-task': 'planner', 'review-task': 'reviewer', 'execute-task': 'executor', 'revise-task': 'executor',
          'close-phase': 'phase', 'chat-turn': 'chat', 'define-project': 'definition', 'plan-phase': 'planning',
-         'import-project': 'definition', 'onboard-project': 'definition'}
+         'onboard-project': 'definition'}
 # H4.1/H6.5/P008-T011: plantillas añadidas después de H3.1. Los catálogos congelados en runs anteriores no las
 # contienen y siguen siendo válidos al reanudar; los catálogos nuevos siempre las incluyen.
-ADDED_LATER = frozenset({'chat-turn', 'define-project', 'plan-phase', 'import-project', 'onboard-project'})
+ADDED_LATER = frozenset({'chat-turn', 'define-project', 'plan-phase', 'onboard-project'})
+RETIRED = {'import-project': ('CONTEXT_JSON', 'MESSAGE')}
 TOKEN = re.compile(r'{{([A-Z][A-Z0-9_]*)}}')
 
 
@@ -40,8 +40,10 @@ def digest(text: str) -> str:
     return sha256(text.encode('utf-8')).hexdigest()
 
 
-def validate(name: str, template: str) -> tuple[str, ...]:
-    if name not in VARIABLES:
+def validate(name: str, template: str, *, historical=False) -> tuple[str, ...]:
+    if name in RETIRED and not historical:
+        raise ContractError('Legacy/A support has been removed; this prompt is data only')
+    if name not in VARIABLES and name not in RETIRED:
         raise ContractError('Unknown prompt name')
     if not isinstance(template, str) or not template.strip() or len(template) > 100_000:
         raise ContractError('Template must contain 1–100000 characters')
@@ -49,7 +51,7 @@ def validate(name: str, template: str) -> tuple[str, ...]:
     rest = TOKEN.sub('', template)
     if '{{' in rest or '}}' in rest:
         raise ContractError('Malformed variable; use {{UPPERCASE_NAME}}')
-    allowed = set(VARIABLES[name])
+    allowed = set(VARIABLES[name] if name in VARIABLES else RETIRED[name])
     # Las versiones anteriores a P008-T007 (catálogos congelados y versiones guardadas) siguen siendo legibles sin
     # la variable de instrucciones; `render_attempt` se niega a invocar con ellas sobre un proyecto con layout.
     if used - allowed or allowed - used - {PROJECT_INSTRUCTIONS}:
@@ -68,7 +70,7 @@ class Template:
     source: str
 
     def check(self):
-        validate(self.name, self.template)
+        validate(self.name, self.template, historical=True)
         if digest(self.template) != self.sha256:
             raise ContractError('Template hash mismatch')
 
@@ -83,7 +85,7 @@ def builtin_catalog() -> dict[str, Template]:
 
 
 def dump_catalog(catalog: dict[str, Template]) -> str:
-    if not set(VARIABLES) - ADDED_LATER <= set(catalog) <= set(VARIABLES):
+    if not set(VARIABLES) - ADDED_LATER <= set(catalog) <= set(VARIABLES) | set(RETIRED):
         raise ContractError('Incomplete prompt catalog')
     for name, template in catalog.items():
         template.check()
@@ -100,6 +102,8 @@ def load_catalog(value: str) -> dict[str, Template]:
 
 def render(template: Template, values: dict[str, str]) -> str:
     template.check()
+    if template.name in RETIRED:
+        raise ContractError('Legacy/A support has been removed; this prompt is data only')
     if set(values) != set(VARIABLES[template.name]) or not all(isinstance(v, str) for v in values.values()):
         raise ContractError('Missing or unknown render variables')
     # Values are data: inserted braces are never evaluated again.

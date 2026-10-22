@@ -4,15 +4,12 @@ from uuid import uuid4
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from harness_local.adapters.project_import import check_filters, check_submodules, check_tree
+from harness_local.adapters.import_git import check_filters, check_submodules, check_tree
 from harness_local.adapters.git import GitWorkspace
 from harness_local.adapters.local_git import LocalGit
 from harness_local.core.engine.contracts import context_snapshot, freeze
-from harness_local.core.engine.import_commit import preview as build_preview, seal
-from harness_local.core.engine.import_conversation import readiness
-from harness_local.core.engine.definition import definition_layout
+from harness_local.core.engine.import_commit import seal
 from harness_local.core.engine.commit import CommitIntent
-from harness_local.storage.import_drafts import ImportDrafts, read_source
 from harness_local.storage.managed import Conflict, _job
 from harness_local.storage.models import (
     ProjectImportRow as Import, ManagedRunRow as Run, ManagedJobRow as Job,
@@ -33,7 +30,7 @@ def _operation(session, run):
 
 
 def check_git(context, writer, shown=None, tree=None):
-    """Frontera compartida A/B, también al ejecutar o reanudar una intención sellada."""
+    """Shared onboarding boundary, including execution and sealed-intent recovery."""
     if isinstance(writer, GitWorkspace):
         # La guardia y todas las operaciones posteriores del escritor comparten la frontera local,
         # incluidas code(), recaptura, sellado, conciliación y refresco del índice.
@@ -80,8 +77,8 @@ def abort(managed, session, run, status, reason):
 
 
 class ImportRepository:
-    kind = 'project_import'
-    drafts_class = ImportDrafts
+    kind = 'onboarding'
+    drafts_class = None
 
     def __init__(self, managed):
         self.managed = managed
@@ -92,6 +89,9 @@ class ImportRepository:
             if op is None:
                 return None
             run = session.get(Run, op.run_id)
+            from harness_local.storage.retired_work import reason
+            if reason(session, run):
+                raise Conflict('Legacy/A or ambiguous operation is retained as data only; it cannot be onboarded')
             return {**{key: getattr(op, key) for key in ('id', 'root', 'conversation_id', 'run_id', 'phase_id',
                 'status', 'preview', 'decision', 'result', 'created_at', 'finished_at')},
                 'expected_version': run.version, 'run_status': run.status}
@@ -137,7 +137,7 @@ class ImportRepository:
                 Turn.conversation_id == row.id, Turn.status == 'QUEUED')) is not None
         assessment = self.managed.guard.assess(context.root)
         if assessment.refusal:
-            raise Conflict('Activate D027 before importing: ' + assessment.refusal)
+            raise Conflict(assessment.refusal)
         try:
             check_git(context, writer)
             shown = self._build_preview(context, conversation_id, source, record, writer)
@@ -149,20 +149,8 @@ class ImportRepository:
         shown['preview_sha256'] = digest({k: v for k, v in shown.items() if k != 'preview_sha256'})
         return {**shown, 'resume_operation_id': None, 'expected_version': None, 'already_imported': False}
 
-    def _build_preview(self, context, conversation_id, source, record, writer):
-        from harness_local.storage.planning import _executable
-        inventory, contents = read_source(context, _executable(writer), self.managed.guard)
-        inspection = self.drafts_class.of(self.managed.engine, conversation_id).inspect_definition(context, texts=True)
-        drafts = inspection.pop('texts')
-        ready = readiness(definition_layout(context), source, record, inspection, drafts,
-                          {'inventory': inventory, 'contents': contents})
-        if not ready['ready']:
-            raise Conflict('; '.join(ready['blockers']))
-        from harness_local.storage.migration import bind_git_mode
-        bind_git_mode(writer, self.managed.guard)
-        return build_preview(context, source, contents, drafts, record['title'], writer,
-            origin={'conversation_id': conversation_id, 'conversation_version': record['version'],
-                    'drafts': inspection['drafts']}, warnings=ready['warnings'])
+    def _build_preview(self, *args):
+        raise NotImplementedError("Use the onboarding repository")
 
     def submit(self, context, conversation_id, versions, writer, *, key, preview_sha256, reason, confirmed,
                resume_operation_id=None, expected_version=None, profile_sha256=None):
@@ -230,7 +218,11 @@ class ImportRepository:
 
     def request(self, run_id):
         with Session(self.managed.engine) as session:
-            op = _operation(session, session.get(Run, run_id))
+            run = session.get(Run, run_id)
+            from harness_local.storage.retired_work import reason
+            if diagnostic := reason(session, run):
+                raise Conflict(diagnostic)
+            op = _operation(session, run)
             if op.status != 'QUEUED':
                 raise Conflict('Import requires its queued operation')
             return {'preview': op.preview, 'intent': op.intent}

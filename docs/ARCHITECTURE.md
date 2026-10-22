@@ -9,7 +9,7 @@ decisiones vigentes y la información técnica que antes estaba en README y AGEN
 | Capa | Elección y versión exacta |
 |---|---|
 | Núcleo | Python 3.14.4, biblioteca estándar, paquete `harness-local` 0.1.0 (`uv_build==0.12.19`) |
-| API local | FastAPI 0.143.0, Pydantic 2.14.0, Uvicorn 0.54.0; HTTP para acciones, SSE para observación legacy |
+| API local | FastAPI 0.143.0, Pydantic 2.14.0, Uvicorn 0.54.0; HTTP para acciones y observación gestionada por cursor |
 | Persistencia | SQLite con SQLAlchemy 2.1.4 y Alembic 1.20.0 (esquema `0023_run_projection`) |
 | UI | React 19.3.0, TypeScript 5.9.3, Vite 8.3.4; `markdown-it` 15.0.2 (`html: false`) y `mermaid` 11.17.2 (`strict`) |
 | Tipos del cliente | `openapi-typescript` 7.13.0 desde el OpenAPI exportado |
@@ -24,13 +24,13 @@ Node…) pertenecen a perfiles, no al núcleo.
 
 ```text
 Navegador (React, rutas propias sobre History API)
-   │ HTTP / SSE, sesión local + Host/Origin + CSRF
+   │ HTTP, sesión local + Host/Origin + CSRF
 Servicio local (FastAPI + supervisor en un único proceso Uvicorn)
-   ├── api/          rutas /api/managed, /api/legacy, sesión y guardia
-   ├── services/     supervisor, runtime gestionado, TOML local, registro, migración, observación
+   ├── api/          rutas /api/managed, sesión y guardia
+   ├── services/     supervisor, runtime gestionado, TOML local, registro y preparación
    ├── core/engine/  motor: contexto, contratos, flujo, fases, documentos, chat, definición, métricas
    ├── storage/      SQLite: autoridad operativa, cola, journal, vistas
-   └── adapters/     CLI de agentes, comandos, Git, procesos, legacy, exportaciones
+   └── adapters/     CLI de agentes, comandos, Git, procesos y exportaciones
 Directorio local de la aplicación: SQLite, artefactos (streams, capturas, copias), backups
 ```
 
@@ -41,13 +41,11 @@ casos de uso. El supervisor es el único que lanza procesos y consume la cola; c
 
 | Módulo | Responsabilidad |
 |---|---|
-| `core/legacy.py`, `core/migration.py`, `core/simulation.py`, `core/evidence.py` | Lectura legacy, plan de migración a gestionado, esqueleto H0.3, evidencia |
-| `core/project_import.py`, `adapters/project_import.py` | Flujo A: inventario de solo lectura desde el árbol de HEAD (D096) |
 | `core/project_onboarding.py`, `adapters/project_onboarding.py` | Flujo B: inventario estático de HEAD (stack, entidades, rutas, tests y CI) y propuesta local-config-4 pendiente de confirmación (D101) |
-| `core/project_normalization.py` | Flujo A: mapa de normalización determinista sobre el inventario (D097) |
-| `core/engine/import_commit.py`, `storage/project_import.py` | Flujo A: árbol confirmado, conservación de originales, intención de commit y adopción de la fase (D100) |
+| `core/engine/import_commit.py`, `storage/project_import.py` | Infraestructura de B: adopción documental, intención de commit y recuperación; propósito/tabla históricos conservados (D161) |
+| `adapters/import_git.py`, `core/tree.py`, `storage/private_drafts.py` | Objetos Git locales, guardias de escritor, entradas de árbol y borradores CAS compartidos por B y preparación |
+| `core/managed_mode.py`, `adapters/managed_mode.py`, `storage/managed_mode.py`, `storage/retired_work.py` | Compatibilidad de solo lectura de activaciones previas y cuarentena de trabajos retirados/ambiguos (D161) |
 | `storage/onboarding.py`, `storage/onboarding_commit.py`, `core/engine/onboarding_commit.py` | Flujo B: ingeniería inversa, borradores privados y commit documental confirmado con perfil y P001 adoptados (D102, D103) |
-| `core/engine/import_conversation.py`, `storage/import_drafts.py` | Flujo A: conversación `project_import` del revisor, área privada de borradores y bloqueos de la vista previa (D098) |
 | `core/engine/context.py` | `ProjectContext`, perfil, política, comandos; contexto explícito por proyecto |
 | `core/engine/contracts.py`, `planning.py` | Contrato de tarea, rutas protegidas, planificación determinista desde NEXT_STEPS |
 | `core/engine/workflow.py`, `validation.py`, `review.py`, `acceptance.py`, `junit.py` | Bucle plan → ejecución → validación → revisión → aceptación |
@@ -59,15 +57,15 @@ casos de uso. El supervisor es el único que lanza procesos y consume la cola; c
 | `core/engine/prompts.py`, `templates/*.md` | Catálogo de prompts versionados y variables |
 | `core/engine/permissions.py`, `metrics.py` | Permisos por categoría y capa; catálogo de métricas `metrics-1` |
 | `adapters/cli_agents.py`, `cli_diagnostics.py`, `streams.py`, `processes.py`, `process_gate.py` | Lanzamiento de CLI, preflight, captura incremental, grupos de procesos |
-| `adapters/commands.py`, `git.py`, `bootstrap.py`, `chat_snapshot.py`, `migration.py`, `legacy.py` | Validaciones nativas (`commands-1`), Git, commit raíz, instantánea de HEAD, migración, lector legacy |
+| `adapters/commands.py`, `git.py`, `bootstrap.py`, `chat_snapshot.py` | Validaciones nativas (`commands-1`), Git, commit raíz, instantánea de HEAD |
 | `storage/*.py` | Repositorios SQLAlchemy por área (`managed`, `phases`, `documents`, `transition`, `planning`, `chat`, `metrics`, `registry`, `backup`, `retention`, `migrate`…) |
 | `storage/run_projection.py`, `managed_views.py` | Proyección derivada `run-projection-1` escrita con el historial y vistas de runs que solo la leen (D144) |
 | `services/managed.py`, `managed_runtime.py` | Supervisor (`run_once`, lease, cuarentena) y composición del runtime |
 | `services/local_config.py`, `project_registry.py`, `project_creation.py` | TOML `local-config-5` (lectura de 1–4) y registro/creación de hijos desde la UI con 3/4/5; presets y recetas solo en v5 |
 | `recipes/`, `services/project_preparation.py`, `storage/preparation.py`, `adapters/preparation.py` | Recetas empaquetadas `django-recipe-1` y `typescript-web-recipe-1` y su preparación confirmada y recuperable (D119, D143) |
-| `api/app.py`, `managed.py`, `legacy.py`, `schemas.py`, `session.py`, `security.py` | Aplicación, rutas, contratos Pydantic, sesión y guardia |
+| `api/app.py`, `managed.py`, `schemas.py`, `session.py`, `security.py` | Aplicación, rutas, contratos Pydantic, sesión y guardia |
 | `profiles/typescript_web.py`, `profiles/reference_project.py` | Perfiles integrados (`typescript-web` componible; `reference_project` solo biblioteca); los perfiles del TOML v4/v5 se componen en `services/local_config.py` |
-| `cli.py`, `launcher.py` | `harness-local` (legacy, backup, retención, diagnóstico, `check-config`, `metrics-backfill`, `init-db`, `serve`) |
+| `cli.py`, `launcher.py` | `harness-local` (backup, retención, diagnóstico, `check-config`, `metrics-backfill`, `init-db`, `serve`) |
 | `migrations/versions/0001…0023` | Esquema Alembic |
 
 `frontend/src`: `router.ts`, `pages/` (Home, Registry, Project, Phases, Task, Run, Docs, Planning, Stats, Settings),
@@ -111,7 +109,7 @@ por su API y los artefactos referenciados; la restauración es de consulta (`que
   (D059, D068); Claude con herramientas declaradas y `dontAsk`. Memoria automática desactivada en ambos (D066).
   Ninguna CLI carga por sí misma las instrucciones del checkout: Claude se lanza con `--setting-sources ""` y Codex
   con presupuesto de project docs 0 (D094). El motor inyecta `AGENTS.md` en el prompt de los roles sobre proyectos
-  existentes; el rol `definition` (definición, importación e incorporación) lo redacta o lo analiza como evidencia.
+  existentes; el rol `definition` (definición e incorporación) lo redacta o lo analiza como evidencia.
 - **TOML local del operador** (`local-config-5`; 1–4 se siguen leyendo), fuera de todo checkout y `chmod 600`:
   `[service]`, `[git]`, `[agents.reviewer]`, `[agents.executor]`, `[registration]` (raíces y techo de bootstrap),
   `[profiles.*]` opcionales, `[compositions.*]` (perfil integrado o declarado y comandos autorizados) y
@@ -120,7 +118,7 @@ por su API y los artefactos referenciados; la restauración es de consulta (`que
   El catálogo público omite ejecutables/entornos; `ports` conserva ambos agentes por checkout. El preflight
   explícito cubre la pareja heredada y cada rol de los presets; cargar no invoca CLI. V1–v4 conservan sus hashes.
   Cambios confirmados serializan registro y admisión en SQLite; bloquean aceptación/commit, propuestas de chat
-  y definición/importación utilizable. Planes no aceptados pasan a SUPERSEDED sin alterar sus snapshots;
+  y definición/incorporación utilizable. Planes no aceptados pasan a SUPERSEDED sin alterar sus snapshots;
   nueva planificación antes de confirmar otro plan. [Flujo de agentes](flows/project-agents.md) (D118).
 - **Perfiles**: integrados en `profiles/` (`typescript-web` componible; `reference_project` solo biblioteca) o declarados en
   `[profiles.<nombre>]` (D095): preparación y validaciones como argv sin shell, JUnit junto a su validación,
@@ -131,32 +129,22 @@ por su API y los artefactos referenciados; la restauración es de consulta (`que
   SQLite, grupos POSIX. El formateador del perfil se autoriza aparte (`formatter-paths`): su argv seguido solo de
   archivos existentes del checkout. El motor lo ejecuta tras cada turno del ejecutor (D133).
 - **Prompts** (`templates/`): `plan-task`, `execute-task`, `revise-task`, `review-task`, `executor-routing`,
-  `close-phase`, `reconcile-phase`, `chat-turn`, `define-project`, `plan-phase`, `import-project` (D098), `onboard-project` (D102; rol de
+  `close-phase`, `reconcile-phase`, `chat-turn`, `define-project`, `plan-phase`, `onboard-project` (D102; rol de
   solo lectura `definition`, sin `AGENTS.md` inyectado porque es parte del origen), `bootstrap-project`. Jerarquía base →
   perfil → proyecto; snapshot por intento. Prompts unificados y definición versión 4 (D092). `AGENTS.md` (≤32 KiB)
   entra por `{{PROJECT_INSTRUCTIONS}}` en todos los roles salvo la definición, con ruta, hash y tamaño en el snapshot;
   sin él, el intento se detiene antes de invocar (D094). `document_layout = "d088-12"` (T020, D112) congela las reglas nuevas y
   detiene jobs anteriores antes de efectos. D099 excluye de Git solo el marcador local validado por la guardia
-  de esta instalación; la importación confirma originales archivados y un commit conciliable (D100). Las transiciones ya selladas conservan su
+  de esta instalación; B confirma originales archivados y un commit conciliable. El catálogo retirado de A se lee
+  como dato histórico, pero no se edita, activa ni renderiza para invocarlo (D161). Las transiciones ya selladas conservan su
   conciliación con los bytes originales. La definición congela los valores por defecto; la planificación incluye
   instrucciones y DDBB-DIAGRAM entre sus documentos de contexto.
-- **Frontera Git A/B** (D105, D108, D110, D112): `adapters/project_import.py` rechaza filtros `clean`/`process`, incluidos includes,
-  antes del primer `status`; `storage/project_import.py` aplica las mismas guardias a ambos flujos antes de capturar,
-  sellar y ejecutar/reanudar. Los destinos nuevos ignorados bloquean y todos los blobs documentales se contrastan
-  con los SHA-256 confirmados, incluidos archivo y binarios. El sellado final exige el mismo árbol propuesto;
-  no se cambia la configuración ni se reescriben intenciones anteriores. `adapters/local_git.py` comparte
-  `LocalGit`: exige `--no-lazy-fetch` desde el primer comando de lectura A/B; un Git sin ese flag falla.
-  Los tamaños `BAD`/ausentes y las respuestas de blobs ausentes o incompletas bloquean con diagnóstico;
-  no se recuperan objetos ni se devuelve un inventario parcial. Se aplica también a conversación/vista previa
-  A y a los lectores de instantáneas compartidos con B. T019 rechaza gitlinks en todo HEAD o índice antes de
-  `status` en A y de captura/sellado/escritura o recuperación en A/B: `ls-tree` y `ls-files --stage` solo leen
-  el padre, sin inspeccionar ni ejecutar filtros de hijos. No se ignora su suciedad ni se amplía soporte de submódulos.
-  T020 vincula el escritor `GitWorkspace` al mismo `LocalGit` antes de capturar/sellar o ejecutar/reanudar:
-  todas sus llamadas `run`/`code`, incluida la conciliación y el índice, exigen `--no-lazy-fetch`. `code`
-  comprueba primero el soporte con `run(--version)` para no confundir Git antiguo con un commit futuro ausente.
-  La ausencia de ese commit permite crearlo localmente; los árboles completos de HEAD y de la intención se
-  comprueban con `ls-tree` y `cat-file --batch-check`, también fuera del ámbito documental, antes de escribir.
-  Un objeto necesario ausente bloquea sin transporte ni cambios de configuración.
+- **Frontera Git de incorporación y preparación** (D105/D108/D110/D112, extracción D161):
+  `adapters/import_git.py` conserva blobs por hash, rechazo de filtros clean/process (incluidos includes), gitlinks
+  de HEAD/índice y destinos nuevos ignorados. `storage/project_import.py` conserva la intención de B y repite las
+  guardias antes de capturar/sellar, ejecutar o conciliar. `adapters/local_git.py` exige objetos completos locales
+  y `--no-lazy-fetch` en todas las operaciones run/code del escritor y del lector; sin fallback ni transporte.
+  El sellado final exige el árbol mostrado; las conversiones de atributos no pueden cambiar bytes confirmados.
 - **Inventario del Flujo B** (D101): AST de Python, JSON/TOML de manifiestos y un subconjunto léxico de JS/TS/Prisma,
   solo biblioteca estándar. Lee blobs de un árbol Git sellado, sin `status`, filtros ni código del proyecto; excluye
   dependencias instaladas y builds incluso si están versionados. Cada entidad/ruta cita fuente y línea; las rutas
@@ -167,7 +155,7 @@ por su API y los artefactos referenciados; la restauración es de consulta (`que
   `definition` omitir la comprobación Git en exportaciones (`cli-13` añade la definición D088 de una carpeta nueva,
   D124); el sandbox sigue siendo de lectura. Sin diagrama
   ni comandos de plantilla por defecto. T015 añade UI, vista previa de documentos/perfil de la composición y
-  confirmación por ambos hashes, motivo y clave. Reutiliza la intención y adopción atómica del Flujo A (0020),
+  confirmación por ambos hashes, motivo y clave. Reutiliza la intención y adopción atómica persistidas en 0020,
   conserva inventario/resumen/originales en `phase-000` y adopta P001. No escribe el TOML ni ejecuta comandos;
   rechaza filtros Git ejecutables y transformaciones de bytes. Detalle en el [flujo](flows/project-onboarding.md).
 
@@ -176,16 +164,16 @@ por su API y los artefactos referenciados; la restauración es de consulta (`que
 - `/api/managed`: proyectos, registro, runs, jobs, intentos, diffs paginados, permisos, fases, documentos, chat,
   planificación, métricas. Desde T006 no hay endpoints de creación v1 ni transición; el GET de estado de creación
   acompaña a la definición conversacional y el plan confirmado usa la fase ACTIVE sin tareas. Las conversaciones
-  `onboarding` (D102) y `project_import` usan las rutas de planificación; solo para importación,
-  `GET …/planning/{c}/import` da sus bloqueos (D098).
-  `GET …/projects/{p}/import` ofrece primero la activación D027 si hace falta;
-  `POST …/planning/{c}/import/preview` y `…/import/confirm` aplican el árbol por hash (D100). Para el Flujo B, `GET …/projects/{p}/onboarding` y
-  `POST …/planning/{c}/onboarding/preview` / `…/onboarding/confirm` confirman también `profile_sha256` (D103).
-  `/api/legacy`:
-  observación de solo lectura. Mutaciones con `Idempotency-Key` y versión esperada; 409 con `{code, diagnostic}`; 422 ante contrato inválido.
-- Rutas de la UI: `/`, `/stats`, `/projects/new`, `/projects/:p` con `setup`, `import[/:c/*borrador]`, `onboarding[/:c/*borrador]`, `chat[/:c]`, `docs[/*ruta]`, `phases`,
-  `phases/:code`, `phases/:code/plan[/:c]`, `phases/:code/tasks/:task[/runs/:run]`, `stats` y `settings`; `/runs/:id`
-  como enlace corto; `/legacy` para la observación.
+  `onboarding` usan planificación; `GET …/projects/{p}/onboarding` y
+  `POST …/planning/{c}/onboarding/preview` / `…/onboarding/confirm` confirman documentos y `profile_sha256`.
+  `GET …/projects/{p}/mode` solo ofrece diagnóstico de admisión gestionada. Mutaciones con `Idempotency-Key`
+  y versión esperada; 409 con `{code, diagnostic}`; 422 ante contrato inválido.
+- Rutas de UI: `/`, `/stats`, `/projects/new`, `/projects/:p` con `setup`, `onboarding[/:c/*borrador]`,
+  `chat[/:c]`, `docs[/*ruta]`, `phases`, `phases/:code`, `phases/:code/plan[/:c]`,
+  `phases/:code/tasks/:task[/runs/:run]`, `stats`, `settings`; `/runs/:id` como enlace corto.
+  `/legacy` y `/projects/:p/import` muestran ruta no encontrada; API antigua 404 tras sesión/Host/Origin/CSRF,
+  comandos antiguos error de argumentos sin SQLite. No hay observador/SSE ni activación/reversión ejecutables.
+  La compatibilidad de datos y trabajos anteriores se detalla en [su flujo](flows/legacy-migration.md) (D161).
 - Seguridad: solo loopback; clave de sesión efímera en un archivo privado, cookie HttpOnly de ocho horas; Host y Origin
   exactos; cabecera CSRF `X-Harness-Local: 1` en mutaciones; `Sec-Fetch-Site: cross-site` rechazado (D079). Markdown
   sin HTML, Mermaid dibujado como imagen, imágenes del checkout con CSP `sandbox`.
@@ -271,7 +259,7 @@ de las recetas Django y TypeScript web no heredan ese valor: reciben `HOME`/`TMP
 - El perfil `typescript-web` protege `package.json`, `package-lock.json`, `tsconfig.json`, `scripts/**` y `tests/**`
   frente al ejecutor normal: el ejecutor no crea ni modifica archivos bajo `tests/`.
 - Tras un reinicio que renumere el dispositivo, crear otro proyecto exige volver a elegir la carpeta (D130).
-- Evidencia real limitada a macOS arm64 y a las CLI y recorridos registrados; importaciones A/B, perfil declarado,
+- Evidencia real limitada a macOS arm64 y a las CLI y recorridos registrados; incorporación B, perfil declarado,
   receta TypeScript, chat y backup sin uso real ([alcance](../README.md#alcance-soportado)).
 - Dos avisos *low* de KaTeX en Mermaid 11.
 - La estructura de D088 es obligatoria desde P008-T002; rutas y paridad en T003, cierre y archivo unificados en
@@ -379,8 +367,8 @@ de repositorio existente sin harness (B) como entradas; ambos usan seguimiento g
 B comparte `project_imports`, `purpose = import_commit`, repositorios y escritor Git con A; no se borran tablas,
 clases o formatos por coincidir su nombre con `import`/`legacy`. T001/T019 separan dependencias necesarias de
 componentes exclusivos y precisan tratamiento no destructivo de datos/jobs anteriores, recuperación, backup y
-historiales propios. Hasta T019 el código y los apartados vigentes aún contienen estas funcionalidades; no se
-anuncia su retirada como implementada ni se reescriben migraciones/archivos históricos.
+historiales propios. T019 entrega esta retirada y su compatibilidad de datos (D161); las migraciones y archivos históricos
+permanecen intactos.
 
 [D156](DECISIONS.md#d156--planificación-de-p011-finalizada-y-modo-continuo-aplazado-a-v020) deja finalizada la
 planificación de P011, con tareas pendientes, y reserva para v0.2.0 posterior a la apertura en GitHub el modo

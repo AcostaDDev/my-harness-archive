@@ -433,7 +433,7 @@ def test_git_metadata_requires_import(world):
     git(world.context.root, 'init', '-q', '-b', 'main')
     shown = world.preview(cid)
     assert not shown['ready'] and shown['target']['import_required']
-    with pytest.raises(Conflict, match='import'):
+    with pytest.raises(Conflict, match='onboarding'):
         world.message(cid)
 
 

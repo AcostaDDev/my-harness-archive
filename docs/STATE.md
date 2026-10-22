@@ -38,14 +38,15 @@ salvo donde se indica. Detalle por fase en `docs/archive/phase-NNN/SUMMARY.md`; 
   tareas del NEXT_STEPS con CAS y notas congeladas (D135). Wheel verificado con definición D088 (D126).
   Segunda receta `typescript-web-recipe-1` (P010-T002, D143): manifiesto inicial con `typescript@5.9.3`, `npm ci`
   desde la caché del operador y validaciones del perfil antes del commit técnico, para hijos TypeScript web nuevos.
-- **Importación de proyectos** ([P008](archive/phase-008/SUMMARY.md)): inventarios deterministas,
-  conversación de solo lectura y borradores privados; normalización de harness anterior (A) e incorporación
-  desde código sin harness (B), con perfil confirmado, originales conservados y commit conciliable.
-  Frontera Git A/B sin filtros, inspección de submódulos ni lazy-fetch; objetos necesarios locales,
-  blobs por hash y destinos ignorados comprobados antes de escribir, también al recuperar.
+- **Incorporación de proyectos** ([P008](archive/phase-008/SUMMARY.md), D161): inventario estático sobre HEAD,
+  conversación de solo lectura y borradores privados de B, perfil/documentos confirmados y commit conciliable.
+  Objetos locales, blobs por hash, filtros/gitlinks y destinos ignorados comprobados antes de escribir y recuperar.
+  A, visor/observación legacy y activación/reversión retirados en P011-T019; datos y migraciones anteriores
+  conservados, jobs retirados/ambiguos en cuarentena sin ejecutarlos. Guardia de activaciones ACTIVE previas
+  conservada para trabajo gestionado, sin reactivar los flujos retirados.
 - **API y UI** ([P007](archive/phase-007/SUMMARY.md)): `/api/managed` con sesión local, Host/Origin y CSRF; UI por URL
   (registro, proyecto, documentación, creación, fases, tareas, runs con diff paginado, chat, estadísticas); métricas por
-  intento con procedencia; observación legacy en `/legacy`. Detalle, ciclos paginados, diff y casos JUnit de un run
+  intento con procedencia; observación gestionada por cursor de eventos. Detalle, ciclos paginados, diff y casos JUnit de un run
   (D144), métricas y vista previa de exportación (D145) leen la proyección sin decodificar el historial.
 - **Operación** ([P006](archive/phase-006/SUMMARY.md)): wheel con UI y migraciones, `init-db`, `serve`,
   `check-config`, `metrics-backfill`, `diagnose-cli`; `scripts/dev` para desarrollo. `migrate` actualiza bases
@@ -57,7 +58,7 @@ salvo donde se indica. Detalle por fase en `docs/archive/phase-NNN/SUMMARY.md`; 
 - **Límites**: contención cooperativa sin aislamiento del sistema operativo; validaciones sin hora; manifiestos de
   receta fijos tras preparar; dos avisos *low* de KaTeX.
   Piloto de receta Django limitado a macOS arm64/Python 3.13; el perfil Python/Django declarativo sigue pendiente
-  de confirmar sobre un proyecto real. A/B y ese perfil conservan su validación solo offline: el usuario aplaza
+  de confirmar sobre un proyecto real. B y ese perfil conservan su validación solo offline: el usuario aplaza
   la comprobación real complementaria en T008 (D151). El piloto no evalúa comparativamente la calidad de modelos.
   Observación de P009 pendiente: alta sin redirección (aplazada en ROADMAP). El texto de marcadores de
   define-project y la deriva tras cerrar están corregidos en P010-T004 (D146) y T005 (D147).
@@ -73,16 +74,16 @@ salvo donde se indica. Detalle por fase en `docs/archive/phase-NNN/SUMMARY.md`; 
 
 **P011 — Preparación para apertura pública en GitHub**, iniciada documentalmente el 2026-10-22 por encargo del usuario
 ([D154](DECISIONS.md#d154--p011-preparación-para-apertura-pública-en-github),
-[plan](phase/P011_PLAN_APERTURA_PUBLICA.md), [tareas](NEXT_STEPS.md)). T001/T002 completadas (D159/D160), diecisiete tareas
-pendientes; sin implementar traducción, selección de idiomas, retirada legacy o nueva compatibilidad CLI.
+[plan](phase/P011_PLAN_APERTURA_PUBLICA.md), [tareas](NEXT_STEPS.md)). T001/T002/T019 completadas (D159–D161), dieciséis tareas
+pendientes; retirada legacy/A implementada, sin traducción, selección de idiomas o nueva compatibilidad CLI.
 
 **Planificación finalizada para comenzar su ejecución** por petición del usuario
 ([D156](DECISIONS.md#d156--planificación-de-p011-finalizada-y-modo-continuo-aplazado-a-v020)).
-P011 no está completada: T001 entrega diseño/inventario, T002 licencia/revisión estática; siguiente T019.
+P011 no está completada: T001 entrega diseño/inventario, T002 licencia/revisión estática y T019 retirada funcional; siguiente T003.
 El modo continuo entre fases queda reservado para **v0.2.0, después de abrir el proyecto en GitHub**;
 no forma parte de P011 ni modifica el cierre confirmado actual. Commit documental D156 realizado en `6174f51`;
-las ampliaciones D157/D158 se incorporaron en `2730f54`. La petición actual autoriza T002 y su commit local
-en inglés, sin ejecución del producto ni publicación.
+las ampliaciones D157/D158 se incorporaron en `2730f54`. La petición actual autoriza T019 y su commit local
+en inglés, con checks sintéticos offline, sin ejecución del producto ni publicación.
 
 **P011-T001 completada** ([contrato](phase/P011-T001_CONTRATO_APERTURA.md),
 [inventario](phase/P011-T001_INVENTARIO.md), D159): 688 archivos de base, con tratamiento/propietaria y
@@ -115,10 +116,13 @@ en/es (en inicial); visual global mutable gobierna UI y conversación/respuesta 
 y es inmutable para documentación/código, sin visual por proyecto. my_harness público usará trabajo en inglés;
 ambas lenguas se congelarán por job/turno, con nuevas respuestas en el visual elegido sin mutar las ya iniciadas.
 
-[D155](DECISIONS.md#d155--p011-retirada-del-harness-anterior-y-dos-vías-de-alta) añade T019 antes de T003:
-retirar visor/observación/importación legacy y normalización A, conservando solo creación desde cero e
-incorporación de código existente sin harness (B). La retirada está planificada, no implementada; la base
-acumulada sigue describiendo el código actual. Historiales propios y componentes compartidos por B se conservan.
+**P011-T019 completada** ([informe](phase/P011-T019_RETIRADA_LEGACY.md), D161): retirada real de UI/API/CLI,
+SSE/observadores, activación/reversión y normalización/conversación A. Extraídas guardias Git, borradores CAS e
+integridad de activaciones previas; B conserva intención, perfil y adopción P001. Sin cambios de metadata o
+migraciones, eliminación de datos del usuario o reinterpretación de jobs A como B. Cuarentena y resolución
+explícita sin ejecutar intenciones retiradas; backup/restauración conserva datos y no observa orígenes.
+Pruebas sintéticas, OpenAPI/tipos/build y manifiestos fuente registrados en el informe; primer uso del paquete
+exacto y QA de navegador quedan para T016. D155 implementada sin reescribir evidencia de fases cerradas.
 
 **P010 cerrada y archivada documentalmente el 2026-10-22**
 ([D153](DECISIONS.md#d153--cierre-documental-de-p010-y-de-la-primera-versión-local),
@@ -131,8 +135,8 @@ P009 conserva su cierre documental (D140) y el Django hijo su P001 CLOSED, cuatr
 tag `p001` sobre `47a0557` y archivo en `3d105c6`. No se repite ninguna operación ni comprobación de su estado.
 Este repositorio sigue sin registrarse ni ejecutarse con el harness; cierre manual sin check READY ni tag propio.
 
-**Siguiente:** P011-T019, retirada legacy/A conservando cero/B e historia propia; después T003.
+**Siguiente:** P011-T003, traducción del núcleo y perfiles al inglés.
 Otras candidatas permanecen en [ROADMAP](ROADMAP.md#candidatas-sin-fase-asignada).
 Los límites de la base acumulada siguen vigentes. B y D095 mantienen la validación real aplazada por D151;
-A queda fuera del soporte público futuro por D155, sin considerarse validado ni retirado todavía en código.
+A queda retirado del producto por D155/D161, sin acreditarlo como validado con proveedores reales.
 Sin nueva fase del Django hijo ni ampliación de consentimientos.

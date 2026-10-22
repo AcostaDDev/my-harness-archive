@@ -21,7 +21,6 @@ export function Home() {
       : !list.length ? <Empty title="No hay proyectos registrados">
         {available ? <p>Da de alta una carpeta en <Link to={{ name: "project-new" }}>Registrar proyecto</Link>, o declárala en el TOML del operador.</p>
           : <p>Los proyectos se declaran en la configuración local del servicio (<code>harness-local serve --config</code>). El alta desde esta interfaz necesita <code>local-config-3/4/5</code>, con <code>[registration]</code> y al menos una composición.</p>}
-        <p>Si tienes ejecuciones del harness anterior, consúltalas en <Link to={{ name: "legacy" }}>proyectos importados</Link>.</p>
       </Empty>
         : <div className="table-scroll" role="region" aria-label="Proyectos registrados" tabIndex={0}>
           <table className="table">

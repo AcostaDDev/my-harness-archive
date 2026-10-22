@@ -9,15 +9,16 @@ from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from harness_local.adapters.git import Git
-from harness_local.adapters.project_import import _blobs, _tree, read_checkout
+from harness_local.adapters.import_git import check_filters
 from harness_local.core.engine.commit import CommitIntent
-from harness_local.core.project_import import ImportInventoryError
+from harness_local.core.tree import ImportInventoryError
 from harness_local.storage.managed import Conflict
 from harness_local.storage.models import ManagedJobRow, ProjectImportRow
 from harness_local.storage.phases import PhaseRepository
-from test_import_commit import checkout_state, confirm, operation, preview, ready
-from test_import_conversation import world  # noqa: F401
-from test_project_import import V1, checkout
+from onboarding_helpers import checkout_state, operation
+from test_onboarding_commit import confirm, preview, ready
+from test_onboarding_conversation import world  # noqa: F401
+from test_project_onboarding import checkout
 
 
 def install_filter(root, kind, included):
@@ -57,7 +58,7 @@ def assert_no_effect(world, before, jobs):
 @pytest.mark.parametrize('kind', ['clean', 'process'])
 @pytest.mark.parametrize('included', [False, True])
 def test_inventory_rejects_filters_before_status_without_touching_git(tmp_path, monkeypatch, kind, included):
-    root = checkout(tmp_path, 'repo', V1)
+    root = checkout(tmp_path / 'repo', {'README.md': '# Synthetic source\n'})
     marker = install_filter(root, kind, included)
     before = checkout_state(root)
     calls = []
@@ -69,7 +70,7 @@ def test_inventory_rejects_filters_before_status_without_touching_git(tmp_path, 
 
     monkeypatch.setattr(Git, 'run', recording)
     with pytest.raises(ImportInventoryError, match='Git filters'):
-        read_checkout(root)
+        check_filters(Git(root))
     assert 'config' in calls and not {'status', 'add', 'hash-object'} & set(calls)
     assert not marker.exists() and checkout_state(root) == before
 
@@ -132,39 +133,6 @@ def test_job_rejects_filters_before_writing_and_recovers_same_intent(world, monk
         assert session.scalar(select(ProjectImportRow)).intent == sealed
 
 
-@pytest.mark.parametrize('kind', ['draft', 'original', 'binary'])
-def test_transformed_draft_original_and_binary_are_rejected_before_confirmation(world, kind):
-    root = world.context.root
-    port = Git(root)
-    if kind == 'draft':
-        # Versioned attributes reproduce H2 exactly; only the new destination is normalized.
-        (root / '.gitattributes').write_text('GEMINI.md text eol=lf\n')
-    elif kind == 'original':
-        (root / 'AGENTS.md').write_bytes(b'# Original instructions\r\n')
-    else:
-        binary = root / 'docs/research/P002-probe/data.bin'
-        binary.parent.mkdir(parents=True)
-        binary.write_bytes(b'\x00\xffSynthetic binary\r\n')
-    port.run('add', '.')
-    port.run('-c', 'user.name=Synthetic', '-c', 'user.email=synthetic@example.invalid',
-             'commit', '-qm', 'Synthetic conversion fixture')
-    cid = ready(world)
-    if kind == 'draft':
-        world.planning.edit_draft(world.context, cid, world.view(cid)['version'], path='GEMINI.md',
-            content='# Gemini\r\n\r\n@AGENTS.md\r\n', base_sha256=None, writer=None)
-    else:
-        destination = ('docs/archive/phase-000/import-originals/AGENTS.md' if kind == 'original'
-                       else 'docs/phase/P002-probe/data.bin')
-        (root / '.git/info/attributes').write_text(destination + ' text eol=lf\n')
-    before, jobs = checkout_state(root), job_count(world)
-    for action in (lambda: preview(world, cid), lambda: confirm(world, cid, {'preview_sha256': '0' * 64,
-                    'resume_operation_id': None, 'expected_version': None})):
-        with pytest.raises(Conflict, match='transform the confirmed document bytes'):
-            action()
-        assert checkout_state(root) == before and job_count(world) == jobs
-        assert operation(world) is None and not world.context.path('GEMINI.md').exists()
-        assert PhaseRepository(world.repo).list(str(root)) == []
-        assert port.text('rev-list', '--count', 'HEAD') == '2'
 
 
 def test_ignored_gemini_blocks_preview_and_confirmation_without_any_writes(world):
@@ -178,7 +146,7 @@ def test_ignored_gemini_blocks_preview_and_confirmation_without_any_writes(world
     cid = ready(world)
     before, jobs = checkout_state(root), job_count(world)
     for action in (lambda: preview(world, cid), lambda: confirm(world, cid, {'preview_sha256': '0' * 64,
-                    'resume_operation_id': None, 'expected_version': None})):
+                    'resume_operation_id': None, 'expected_version': None, 'profile_sha256': '0' * 64})):
         with pytest.raises(Conflict, match='ignored by Git'):
             action()
         assert checkout_state(root) == before and job_count(world) == jobs
@@ -202,7 +170,7 @@ def test_new_ignore_rule_after_confirmation_blocks_job_before_writing(world):
 def test_attribute_conversion_after_confirmation_is_rejected_before_writing(world):
     cid = ready(world)
     world.planning.edit_draft(world.context, cid, world.view(cid)['version'], path='GEMINI.md',
-        content='# Gemini\r\n\r\n@AGENTS.md\r\n', base_sha256=None, writer=None)
+        content='# Gemini\r\n\r\n@AGENTS.md\r\n', base_sha256=world.view(cid)['known']['GEMINI.md'], writer=None)
     shown = preview(world, cid)
     confirm(world, cid, shown)
     (world.context.root / '.git/info/attributes').write_text('GEMINI.md text eol=lf\n')
@@ -217,7 +185,7 @@ def test_attribute_conversion_after_confirmation_is_rejected_before_writing(worl
 def test_final_seal_cannot_change_the_preview_tree(world, monkeypatch):
     cid = ready(world)
     world.planning.edit_draft(world.context, cid, world.view(cid)['version'], path='GEMINI.md',
-        content='# Gemini\r\n\r\n@AGENTS.md\r\n', base_sha256=None, writer=None)
+        content='# Gemini\r\n\r\n@AGENTS.md\r\n', base_sha256=world.view(cid)['known']['GEMINI.md'], writer=None)
     shown = preview(world, cid)
     before, jobs = checkout_state(world.context.root), job_count(world)
     original, calls = world.writer.seal, []
@@ -237,25 +205,3 @@ def test_final_seal_cannot_change_the_preview_tree(world, monkeypatch):
     with pytest.raises(ValueError, match='changed after the import preview'):
         confirm(world, cid, shown)
     assert_no_effect(world, before, jobs)
-
-
-def test_every_admitted_blob_matches_confirmation_including_archived_binary(world):
-    root = world.context.root
-    binary = root / 'docs/research/P002-probe/data.bin'
-    binary.parent.mkdir(parents=True)
-    binary.write_bytes(b'\x00\xffSynthetic binary\r\n')
-    (root / 'AGENTS.md').write_bytes(b'# Original instructions\r\n')
-    port = Git(root)
-    port.run('add', '.')
-    port.run('-c', 'user.name=Synthetic', '-c', 'user.email=synthetic@example.invalid',
-             'commit', '-qm', 'Synthetic exact bytes')
-    cid = ready(world)
-    shown = preview(world, cid)
-    confirm(world, cid, shown)
-    assert world.worker.run_once().status == 'DONE'
-    assert operation(world)['status'] == 'COMPLETED'
-    entries = {path: obj for _, _, obj, _, path in _tree(port)}
-    blobs = _blobs(port, sorted(set(entries.values())))
-    assert all(sha256(blobs[entries[item['path']]]).hexdigest() == item['sha256'] for item in shown['result_tree'])
-    assert root.joinpath('docs/archive/phase-000/import-originals/AGENTS.md').read_bytes() == b'# Original instructions\r\n'
-    assert root.joinpath('docs/phase/P002-probe/data.bin').read_bytes() == b'\x00\xffSynthetic binary\r\n'

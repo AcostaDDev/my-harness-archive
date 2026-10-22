@@ -16,7 +16,7 @@ hitos H0–H6 del backlog original; la definición inicial está en [archive/pha
 | P008 | Contrato documental unificado, cierre de fase e importación de proyectos | completada (2026-10-19) | [phase-008](archive/phase-008/SUMMARY.md) |
 | P009 | Proyecto Django desde cero y piloto con cuatro combinaciones de agentes | completada (2026-10-21) | [phase-009](archive/phase-009/SUMMARY.md) |
 | P010 | Consolidación de la primera versión local | completada (2026-10-22) | [phase-010](archive/phase-010/SUMMARY.md) |
-| P011 | Preparación para apertura pública en GitHub | en ejecución documental (2026-10-22) | [plan](phase/P011_PLAN_APERTURA_PUBLICA.md) |
+| P011 | Preparación para apertura pública en GitHub | en ejecución (2026-10-22) | [plan](phase/P011_PLAN_APERTURA_PUBLICA.md) |
 
 ## P001 — Contratos y prueba de viabilidad
 
@@ -237,10 +237,11 @@ No incorporar automáticamente las otras candidatas ni prometer compatibilidad m
 producto ni ejecución operativa. T002 completada (D160): MIT, titular David Acosta, guías/avisos e inventario/
 escaneo estático del origen; [informe](phase/P011-T002_CONTENIDO_PUBLICABLE.md). No hay candidato público
 aprobado; staging/avisos/assets y activación del canal privado GitHub pendientes en sus entregas.
-Diecisiete tareas pendientes; siguiente T019 y luego T003.
+T019 completada (D161): retirada legacy/A, con cero/B y datos propios conservados; [informe](phase/P011-T019_RETIRADA_LEGACY.md).
+Dieciséis tareas pendientes; siguiente T003.
 Planificación inicial finalizada en D156 y commit `6174f51`; ajustes D157/D158 incorporados
-en `2730f54`, sin ejecución del producto. La petición actual autoriza T002 y su commit local en inglés.
-La fase no está cerrada; se mantienen diecinueve tareas (dos completadas) y diez criterios.
+en `2730f54`, sin ejecución del producto. La petición actual autoriza T019 y su commit local en inglés.
+La fase no está cerrada; se mantienen diecinueve tareas (tres completadas) y diez criterios.
 [Plan](phase/P011_PLAN_APERTURA_PUBLICA.md), [tareas](NEXT_STEPS.md) y
 [D154](DECISIONS.md#d154--p011-preparación-para-apertura-pública-en-github).
 La primera versión local P010 sigue completada en su alcance; P011 añade objetivos públicos, no reabre ese cierre.
