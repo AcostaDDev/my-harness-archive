@@ -1,9 +1,11 @@
 import { lazy, StrictMode, Suspense } from "react";
 import { createRoot } from "react-dom/client";
 import { Chat } from "./Chat";
+import { I18nProvider, useI18n } from "./Language";
 import { Link, usePath } from "./navigation";
 import { Home } from "./pages/Home";
 import { PhaseListPage, PhasePage } from "./pages/Phases";
+import { PreferencesPage } from "./pages/Preferences";
 import { ProjectPage } from "./pages/Project";
 import { RegisterPage } from "./pages/Registry";
 import { RunPage, RunRedirect } from "./pages/Run";
@@ -27,21 +29,23 @@ const PlanPage = lazy(() => import("./pages/Planning").then(module => ({ default
 const StatsPage = lazy(() => import("./pages/Stats").then(module => ({ default: module.StatsPage })));
 
 function Page({ route }: { route: Route }) {
+  const { t } = useI18n();
   switch (route.name) {
     case "home": return <Home />;
+    case "preferences": return <PreferencesPage />;
     case "stats": return <Suspense fallback={<Loading />}><StatsPage /></Suspense>;
     case "project-new": return <RegisterPage />;
     case "run-short": return <RunRedirect run={route.run} />;
     case "not-found": return <>
-      <PageHeader title="Esta página no existe" />
-      <Empty title={`No hay nada en ${route.path}`}><p>Puede que el enlace esté incompleto. Vuelve a la <Link to={{ name: "home" }}>lista de proyectos</Link>.</p></Empty>
+      <PageHeader title={t("not_found.title")} />
+      <Empty title={t("not_found.empty", { path: route.path })}><p>{t("not_found.hint")} <Link to={{ name: "home" }}>{t("not_found.back")}</Link></p></Empty>
     </>;
   }
   // Each project has its own action workspace; switching projects resets it.
   return <ProjectWorkspace key={route.project} project={route.project}><ProjectPageFor route={route} /></ProjectWorkspace>;
 }
 
-function ProjectPageFor({ route }: { route: Exclude<Route, { name: "home" | "stats" | "project-new" | "run-short" | "not-found" }> }) {
+function ProjectPageFor({ route }: { route: Exclude<Route, { name: "home" | "stats" | "preferences" | "project-new" | "run-short" | "not-found" }> }) {
   switch (route.name) {
     case "project": return <ProjectPage />;
     case "phases": return <PhaseListPage />;
@@ -68,4 +72,4 @@ function App() {
   return <Shell route={route}><Page route={route} /></Shell>;
 }
 
-createRoot(document.getElementById("root")!).render(<StrictMode><SessionGate><App /></SessionGate></StrictMode>);
+createRoot(document.getElementById("root")!).render(<StrictMode><I18nProvider><SessionGate><App /></SessionGate></I18nProvider></StrictMode>);

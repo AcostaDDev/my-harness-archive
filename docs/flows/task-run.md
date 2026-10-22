@@ -21,7 +21,7 @@ sequenceDiagram
     U->>API: encolar tarea con hash y notas opcionales (Idempotency-Key)
     Note over API,G: 409 si la sección ya no coincide con el documento vivo
     Note over API,DB: rechazo si cambió la composición del registro antes de admitir
-    API->>DB: run QUEUED + job QUEUED
+    API->>DB: run QUEUED + job QUEUED con el idioma visual sellado (D166)
     S->>DB: reclamar job (lease, lock del checkout)
     S->>E: run con contexto, perfil y versiones congelados
     Note over E,G: cada intento lee AGENTS.md con su hash y se detiene antes de invocar si falta

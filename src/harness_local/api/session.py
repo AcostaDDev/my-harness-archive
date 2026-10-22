@@ -6,12 +6,14 @@ from pathlib import Path
 import secrets
 import tempfile
 import time
+from typing import Callable
 
 from fastapi import APIRouter, Request
 from fastapi.responses import JSONResponse, Response
 from pydantic import BaseModel, ConfigDict, Field, SecretStr, ValidationError
 
 from harness_local.api.security import problem
+from harness_local.i18n import message
 
 
 class SessionCreate(BaseModel):
@@ -27,7 +29,9 @@ class LocalSessions:
     lifetime = 8 * 60 * 60
     limit = 32
 
-    def __init__(self):
+    def __init__(self, language: Callable[[], str] = lambda: 'en'):
+        # Visual language of the own diagnostics, read from the global preferences when an error is raised.
+        self.language = language
         self.cookie = 'harness_session_' + secrets.token_hex(8)
         self.path: Path | None = None
         self._key = ''
@@ -73,20 +77,20 @@ class LocalSessions:
 
     def require(self, request: Request):
         if not self.remaining(request.cookies.get(self.cookie)):
-            raise problem(401, 'session_required', 'Sesión ausente, cerrada o caducada. Inicia sesión; ninguna acción se repetirá automáticamente.')
+            raise problem(401, 'session_required', message('session.required', self.language()))
 
     def login(self, key: str, previous: str | None) -> str:
         now = self.clock()
         self._attempts = [t for t in self._attempts if now - t < 60]
         if len(self._attempts) >= 10:
-            raise problem(429, 'login_rate_limited', 'Espera un minuto antes de intentar iniciar sesión.')
+            raise problem(429, 'login_rate_limited', message('session.rate_limited', self.language()))
         self._attempts.append(now)
         if not self._key or not key.isascii() or not hmac.compare_digest(key, self._key):
-            raise problem(401, 'session_required', 'Clave de acceso no válida.')
+            raise problem(401, 'session_required', message('session.invalid_key', self.language()))
         self._sessions = {k: v for k, v in self._sessions.items() if v > now}
         self.revoke(previous)
         if len(self._sessions) >= self.limit:
-            raise problem(429, 'session_limit', 'Cierra una sesión o reinicia el servicio.')
+            raise problem(429, 'session_limit', message('session.limit', self.language()))
         token = secrets.token_urlsafe(32)
         self._sessions[self.digest(token)] = now + self.lifetime
         return token
@@ -108,12 +112,12 @@ def session_router(sessions: LocalSessions) -> APIRouter:
         body = bytearray()
         async for chunk in request.stream():
             if len(body) + len(chunk) > 256:
-                raise problem(400, 'invalid_login', 'Solicitud de acceso inválida.')
+                raise problem(400, 'invalid_login', message('session.invalid_login', sessions.language()))
             body.extend(chunk)
         try:
             data = SessionCreate.model_validate_json(bytes(body))
         except ValidationError:
-            raise problem(400, 'invalid_login', 'Solicitud de acceso inválida.') from None
+            raise problem(400, 'invalid_login', message('session.invalid_login', sessions.language())) from None
         token = sessions.login(data.key.get_secret_value(), request.cookies.get(sessions.cookie))
         response = JSONResponse({'expires_in': sessions.lifetime})
         response.set_cookie(sessions.cookie, token, max_age=sessions.lifetime,

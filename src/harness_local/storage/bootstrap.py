@@ -159,7 +159,8 @@ class BootstrapRepository:
                                     Job.status.in_(('QUEUED', 'ACTIVE', 'RECOVERY_REQUIRED')))):
                     raise Conflict('Confirm the stopped bootstrap writer before resuming')
                 job = Job(idempotency_key=key, run_id=run.id, request_json=marker, status='QUEUED',
-                          created_at=self.managed._now(), activation_id=self.managed._admit(session, assessment))
+                          created_at=self.managed._now(), activation_id=self.managed._admit(session, assessment),
+                          language_context=self.managed._language(session, run.id))
                 session.add(job)
                 session.flush()
                 run.status, run.stage, op.status, op.finished_at = 'QUEUED', 'bootstrap', 'QUEUED', None

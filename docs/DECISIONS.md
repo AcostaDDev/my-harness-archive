@@ -176,6 +176,7 @@ tarea se leen solo las decisiones que cita; este índice sirve para buscar prece
 | [D163](#d163--p011-t004-backend-en-inglés-y-recetas-v2-sin-cablear) | P011-T004: backend en inglés y recetas v2 sin cablear | P011 |
 | [D164](#d164--p011-t005-cliente-scripts-y-ejemplos-en-inglés) | P011-T005: cliente, scripts y ejemplos en inglés | P011 |
 | [D165](#d165--p011-t006-pruebas-y-fixtures-en-inglés-sin-tocar-datos) | P011-T006: pruebas y fixtures en inglés sin tocar datos | P011 |
+| [D166](#d166--p011-t007-preferencias-globales-de-idioma-catálogos-y-visual-congelado-por-job) | P011-T007: preferencias globales de idioma, catálogos y visual congelado por job | P011 |
 
 ## D001 — Alcance local y arquitectura base
 
@@ -4892,3 +4893,35 @@ Fase: P011. Precedentes: D159/D162–D164 y [inventario T001](phase/P011-T001_IN
   y no datos, aunque `streams/` sea E2, y ninguna prueba hashea sus bytes.
 - Sin cambios de modelos, migraciones, flujos, API, dependencias ni configuración global. Suites offline en verde
   con los mismos totales que en T005; sin servicios, agentes, proveedores ni red. T007 es la siguiente.
+
+## D166 — P011-T007: preferencias globales de idioma, catálogos y visual congelado por job
+
+Estado: implementada el 2026-10-23 por la continuación y commit local en inglés pedidos por el usuario.
+Fase: P011. Concreta D158/D159 (§2–§4 del [contrato T001](phase/P011-T001_CONTRATO_APERTURA.md)).
+[Entrega, alcance y validación](phase/P011-T007_INFRAESTRUCTURA_IDIOMAS.md), [flujo](flows/language-preferences.md).
+
+- HITL del usuario sobre el reparto T007/T008/T009: T007 congela **solo el visual** por job en
+  `managed_jobs.language_context` (`ui-language-1`: idioma y versión de preferencias), en la transacción de admisión
+  de las siete vías de alta de jobs. T008 añadirá trabajo y llevará el par `language-context-1` a intentos/prompts;
+  T009, la directiva al agente. Hasta entonces el visual congelado es procedencia y los agentes no cambian de idioma.
+- Nueva acción (tarea, turno, check, commit u otra sobre un resultado anterior) captura el visual vigente. Las
+  continuaciones del mismo run (reintento del ejecutor, revalidación y reanudaciones de bootstrap, importación,
+  exportación y edición documental) copian el valor del primer job del run, también null, sin recapturar.
+- Migración `0024_product_preferences`: fila singleton `product-preferences-1` con CHECK en/es, sembrada en/en
+  versión 1, y eventos con `Idempotency-Key` y cadena de hashes. Leer no crea ni repara; una fila inválida se lee
+  como inglés con estado `invalid` y bloquea admisiones (409 `preferences_invalid`) hasta un guardado explícito.
+  Downgrade rechazado solo si hay eventos: sin ellos toda captura es `en` de fábrica y no se pierde una elección.
+- API `GET/PUT /api/managed/preferences` con CAS, idempotencia y códigos `preferences_conflict`/`idempotency_conflict`;
+  los jobs exponen `language_context`. Diagnósticos propios de sesión y preferencias localizados con el visual
+  guardado, sin cambiar códigos ni estados. OpenAPI/tipos regenerados.
+- Catálogos JSON en/es sin dependencias: `harness_local/i18n` (Python, fallback inglés, campo ausente visible) y
+  `frontend/src/i18n.ts` + `i18n/*.json` + `Language.tsx` (claves tipadas, interpolación como texto, `Intl` para
+  números/fechas/plurales). La UI parte de una copia provisional en `localStorage` o inglés y relee el servicio en
+  cada consulta de sesión y al recuperar el foco; la autoridad es SQLite.
+- HITL del usuario: catálogos iniciales para shell, sesión y preferencias (navegación, migas, estado del supervisor,
+  tema, página no encontrada y nueva página global `/preferences`); el resto, en T010.
+- CLI `--ui-language en|es` por invocación; si no, preferencias de la base existente abierta en solo lectura, o `en`.
+  Mensajes propios del lanzador/CLI localizados; `clave de acceso en`, `módulo:atributo` y `Esquema SQLite` siguen
+  en español por su acoplamiento con los scripts (nota D164 para T010).
+- Paridad: DDBB-DIAGRAM (50 tablas), flujo nuevo y notas en chat/tarea, ARCHITECTURE. Suites offline en verde; sin
+  servicios, QA de navegador, agentes, proveedores ni red. T008 es la siguiente.

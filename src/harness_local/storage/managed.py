@@ -166,6 +166,12 @@ class SQLiteManagedRepository:
                           payload={**payload, "status": run.status, "stage": run.stage,
                                    "revisions": run.revisions}))
 
+    @staticmethod
+    def _language(session, inherit_run: str | None = None) -> dict | None:
+        """P011-T007: visual language of a new job; continuing a run keeps its original value (D166)."""
+        from harness_local.storage.preferences import capture, inherited
+        return capture(session) if inherit_run is None else inherited(session, inherit_run)
+
     def _admit(self, session, assessment) -> str | None:
         try:
             return ModeGuard.enforce(session, assessment)
@@ -302,7 +308,7 @@ class SQLiteManagedRepository:
         session.flush()
         run_projection.create(session, run.id, run.history_json, history)
         job = Job(idempotency_key=key, run_id=run.id, request_json=request, status="QUEUED", created_at=now,
-                  activation_id=activation_id)
+                  activation_id=activation_id, language_context=self._language(session))
         session.add(job)
         session.flush()
         self._event(session, run, "job_queued", {"job_id": job.id, "action": action})
@@ -355,7 +361,7 @@ class SQLiteManagedRepository:
             admit(session, run.root, json.loads(run.versions_json), run.purpose)
             activation_id = self._admit(session, assessment)
             job = Job(idempotency_key=key, run_id=run_id, request_json=request, status="QUEUED", created_at=self._now(),
-                      activation_id=activation_id)
+                      activation_id=activation_id, language_context=self._language(session, run_id))
             session.add(job)
             session.flush()
             run.status, run.stage = "QUEUED", json.loads(request)["action"]
@@ -654,7 +660,7 @@ class SQLiteManagedRepository:
                 raise Conflict(str(exc)) from exc
         activation_id = self._admit(session, assessment)
         job = Job(idempotency_key=key, run_id=run_id, request_json=request, status="QUEUED",
-                  created_at=self._now(), activation_id=activation_id)
+                  created_at=self._now(), activation_id=activation_id, language_context=self._language(session))
         session.add(job)
         session.flush()
         run.status, run.stage = "QUEUED", "commit"

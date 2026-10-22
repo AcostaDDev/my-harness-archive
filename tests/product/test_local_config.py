@@ -316,7 +316,7 @@ def test_entry_points_require_one_explicit_composition(setup, monkeypatch, tmp_p
     context, data, folder, _ = setup
     path = write(folder, data)
     monkeypatch.setenv(MANAGED_ENV, 'examples.managed_demo:build')
-    with pytest.raises(ValueError, match='incompatibles'):
+    with pytest.raises(ValueError, match='incompatible'):
         serve(str(tmp_path / 'absent.sqlite3'), 8013, str(path))
     monkeypatch.delenv(CONFIG_ENV, raising=False)
     with pytest.raises(LocalConfigError):

@@ -40,6 +40,30 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/managed/preferences": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Preferences
+         * @description Global languages of this installation (D166); reading never creates or repairs the row.
+         */
+        get: operations["managed_preferences"];
+        /**
+         * Preferences Update
+         * @description CAS by version. Applies to jobs admitted afterwards; queued work and projects keep their values.
+         */
+        put: operations["managed_preferences_update"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/managed/projects": {
         parameters: {
             query?: never;
@@ -3440,6 +3464,7 @@ export interface components {
             activation_id: string | null;
             /** Owner Closed */
             owner_closed: boolean;
+            language_context: components["schemas"]["UiLanguageContextRead"] | null;
         };
         /** ManagedLogRead */
         ManagedLogRead: {
@@ -4810,6 +4835,80 @@ export interface components {
             /** Finished At */
             finished_at: string | null;
         };
+        /**
+         * PreferencesRead
+         * @description Global preferences of this installation; `invalid` reads as English and blocks new admissions.
+         */
+        PreferencesRead: {
+            /**
+             * Format
+             * @constant
+             */
+            format: "product-preferences-1";
+            /** Version */
+            version: number;
+            /**
+             * Ui Language
+             * @enum {string}
+             */
+            ui_language: "en" | "es";
+            /**
+             * Default Work Language
+             * @enum {string}
+             */
+            default_work_language: "en" | "es";
+            /** Updated At */
+            updated_at: string | null;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "stored" | "default" | "invalid";
+        };
+        /** PreferencesUpdate */
+        PreferencesUpdate: {
+            /** Expected Version */
+            expected_version: number;
+            /**
+             * Ui Language
+             * @enum {string}
+             */
+            ui_language: "en" | "es";
+            /**
+             * Default Work Language
+             * @enum {string}
+             */
+            default_work_language: "en" | "es";
+        };
+        /** PreferencesUpdateRead */
+        PreferencesUpdateRead: {
+            /**
+             * Format
+             * @constant
+             */
+            format: "product-preferences-1";
+            /** Version */
+            version: number;
+            /**
+             * Ui Language
+             * @enum {string}
+             */
+            ui_language: "en" | "es";
+            /**
+             * Default Work Language
+             * @enum {string}
+             */
+            default_work_language: "en" | "es";
+            /** Updated At */
+            updated_at: string | null;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "stored" | "default" | "invalid";
+            /** Replayed */
+            replayed: boolean;
+        };
         /** PreparationChangeInput */
         PreparationChangeInput: {
             /** Expected Version */
@@ -5601,6 +5700,24 @@ export interface components {
              */
             diagnostics: string[];
         };
+        /**
+         * UiLanguageContextRead
+         * @description P011-T007: visual language frozen when the job was admitted; null in jobs earlier than 0024.
+         */
+        UiLanguageContextRead: {
+            /**
+             * Format
+             * @constant
+             */
+            format: "ui-language-1";
+            /**
+             * Ui Language
+             * @enum {string}
+             */
+            ui_language: "en" | "es";
+            /** Preferences Version */
+            preferences_version: number;
+        };
         /** ValidationCountsRead */
         ValidationCountsRead: {
             /** Commands Passed */
@@ -5814,6 +5931,130 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["SupervisorRead"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+        };
+    };
+    managed_preferences: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Required with value 1 on mutations (CSRF protection). */
+                "x-harness-local"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PreferencesRead"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+        };
+    };
+    managed_preferences_update: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description The same key and the same action return the same job. */
+                "Idempotency-Key": string;
+                /** @description Required with value 1 on mutations (CSRF protection). */
+                "x-harness-local"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PreferencesUpdate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PreferencesUpdateRead"];
                 };
             };
             /** @description Forbidden */

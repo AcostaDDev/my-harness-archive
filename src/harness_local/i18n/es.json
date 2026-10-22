@@ -1,0 +1,18 @@
+{
+  "cli.assets_missing": "Assets web ausentes; instalar el paquete construido con scripts/build_distribution.py.",
+  "cli.auxiliary_files": "Hay archivos auxiliares SQLite; conservarlos y usar un destino nuevo.",
+  "cli.backfill_missing": "SQLite inexistente; el relleno no crea bases.",
+  "cli.config_conflict": "--config y {variable} son incompatibles; elegir una sola composición.",
+  "cli.database_missing": "SQLite ausente; preparar una base nueva con harness-local init-db --database RUTA.",
+  "cli.database_not_absolute": "SQLite requiere una ruta absoluta (--database).",
+  "cli.destination_exists": "El destino ya existe; init-db solo prepara una SQLite nueva.",
+  "cli.port_range": "El puerto debe estar entre 1 y 65535.",
+  "preferences.conflict": "Las preferencias cambiaron en otra ventana; recárgalas antes de guardar.",
+  "preferences.invalid": "Las preferencias de idioma guardadas no son válidas; guárdalas de nuevo en Preferencias antes de iniciar trabajo nuevo.",
+  "preferences.key_reused": "Esta clave de idempotencia ya nombra otro cambio de preferencias.",
+  "session.invalid_key": "Clave de acceso no válida.",
+  "session.invalid_login": "Solicitud de acceso inválida.",
+  "session.limit": "Cierra una sesión o reinicia el servicio.",
+  "session.rate_limited": "Espera un minuto antes de intentar iniciar sesión.",
+  "session.required": "Sesión ausente, cerrada o caducada. Inicia sesión; ninguna acción se repetirá automáticamente."
+}

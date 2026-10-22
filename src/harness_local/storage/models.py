@@ -141,6 +141,8 @@ class ManagedJobRow(Base):
     owner_closed: Mapped[bool] = mapped_column(Boolean, server_default="0")
     # H2.5 activation under which the job was admitted; null in checkouts without legacy state.
     activation_id: Mapped[str | None] = mapped_column(ForeignKey("managed_activations.id"), nullable=True)
+    # 0024: visual language frozen at admission (`ui-language-1`); null in earlier jobs, never inferred.
+    language_context: Mapped[dict | None] = mapped_column(JSON, nullable=True)
 
 
 class CheckoutLockRow(Base):
@@ -832,3 +834,28 @@ class ProjectPreparationEventRow(Base):
     kind: Mapped[str] = mapped_column(String(40))
     payload: Mapped[dict] = mapped_column(JSON)
     recorded_at: Mapped[str] = mapped_column(String(40))
+
+
+class ProductPreferencesRow(Base):
+    """P011-T007: global language preferences of this installation; a single row, CAS by version."""
+    __tablename__ = 'product_preferences'
+    __table_args__ = (CheckConstraint('id = 1', name='ck_product_preferences_singleton'),
+                      CheckConstraint("ui_language IN ('en', 'es')", name='ck_product_preferences_ui_language'),
+                      CheckConstraint("default_work_language IN ('en', 'es')",
+                                      name='ck_product_preferences_work_language'))
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    format: Mapped[str] = mapped_column(String(40))
+    ui_language: Mapped[str] = mapped_column(String(2))
+    default_work_language: Mapped[str] = mapped_column(String(2))
+    version: Mapped[int] = mapped_column(Integer)
+    updated_at: Mapped[str] = mapped_column(String(40))
+
+
+class ProductPreferenceEventRow(Base):
+    """Audited change of the preferences; the idempotency key replays its result."""
+    __tablename__ = 'product_preference_events'
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    version: Mapped[int] = mapped_column(Integer, unique=True)
+    idempotency_key: Mapped[str] = mapped_column(String(200), unique=True)
+    request_sha256: Mapped[str] = mapped_column(String(64))
+    payload: Mapped[dict] = mapped_column(JSON)

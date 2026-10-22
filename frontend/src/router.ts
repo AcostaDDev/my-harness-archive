@@ -1,9 +1,11 @@
 // Minimal in-house router (D076): D072 §7 routes as pure data, without React or dependencies.
 // Only encoded codes and ids are used; nothing in the URL is interpreted as HTML.
+import type { Translate } from "./i18n.ts";
 
 export type Route =
   | { name: "home" }
   | { name: "stats" }
+  | { name: "preferences" }
   | { name: "project-new" }
   | { name: "project"; project: string }
   | { name: "phases"; project: string }
@@ -38,6 +40,7 @@ export function parse(pathname: string): Route {
   const n = parts.length;
   if (n === 0) return { name: "home" };
   if (a === "stats" && n === 1) return { name: "stats" };
+  if (a === "preferences" && n === 1) return { name: "preferences" };
   if (a === "runs" && n === 2) return { name: "run-short", run: b };
   if (a !== "projects" || n < 2) return { name: "not-found", path: pathname };
   const project = b;
@@ -77,6 +80,7 @@ export function href(route: Route): string {
   switch (route.name) {
     case "home": return "/";
     case "stats": return "/stats";
+    case "preferences": return "/preferences";
     case "project-new": return "/projects/new";
     case "project": return `/projects/${e(route.project)}`;
     case "phases": return `/projects/${e(route.project)}/phases`;
@@ -106,37 +110,38 @@ export function runRoute(run: { id: string; project_id: string | null; phase_id:
 }
 
 /** Breadcrumb: each level of the route with its target. The last entry is the current page. */
-export function trail(route: Route): { label: string; to: Route }[] {
-  const items: { label: string; to: Route }[] = [{ label: "Proyectos", to: { name: "home" } }];
-  if (route.name === "stats") items.push({ label: "Estadísticas", to: route });
-  if (route.name === "project-new") items.push({ label: "Nuevo proyecto", to: route });
+export function trail(route: Route, t: Translate): { label: string; to: Route }[] {
+  const items: { label: string; to: Route }[] = [{ label: t("nav.projects"), to: { name: "home" } }];
+  if (route.name === "stats") items.push({ label: t("nav.stats"), to: route });
+  if (route.name === "preferences") items.push({ label: t("nav.preferences"), to: route });
+  if (route.name === "project-new") items.push({ label: t("nav.new_project"), to: route });
   if (route.name === "run-short") items.push({ label: route.run, to: route });
-  if (route.name === "not-found") items.push({ label: "Página no encontrada", to: route });
+  if (route.name === "not-found") items.push({ label: t("trail.not_found"), to: route });
   if (!("project" in route)) return items;
   const { project } = route;
   items.push({ label: project, to: { name: "project", project } });
-  if (route.name === "settings") items.push({ label: "Ajustes", to: route });
-  if (route.name === "project-stats") items.push({ label: "Estadísticas", to: route });
+  if (route.name === "settings") items.push({ label: t("nav.settings"), to: route });
+  if (route.name === "project-stats") items.push({ label: t("nav.stats"), to: route });
   if (route.name === "docs") {
-    items.push({ label: "Documentación", to: { name: "docs", project } });
+    items.push({ label: t("nav.docs"), to: { name: "docs", project } });
     if (route.path) items.push({ label: route.path.split("/").pop()!, to: route });
   }
-  if (route.name === "onboarding") items.push({ label: "Incorporación", to: route });
+  if (route.name === "onboarding") items.push({ label: t("trail.onboarding"), to: route });
   if (route.name === "setup") {
-    items.push({ label: "Creación", to: { name: "setup", project } });
+    items.push({ label: t("trail.creation"), to: { name: "setup", project } });
     if (route.path) items.push({ label: route.path.split("/").pop()!, to: route });
   }
   if (route.name === "chat") {
-    items.push({ label: "Chat", to: { name: "chat", project } });
-    if (route.conversation) items.push({ label: "Conversación", to: route });
+    items.push({ label: t("nav.chat"), to: { name: "chat", project } });
+    if (route.conversation) items.push({ label: t("trail.conversation"), to: route });
   }
-  if (route.name === "phases" || "phase" in route) items.push({ label: "Fases", to: { name: "phases", project } });
+  if (route.name === "phases" || "phase" in route) items.push({ label: t("nav.phases"), to: { name: "phases", project } });
   if ("phase" in route) items.push({ label: route.phase, to: { name: "phase", project, phase: route.phase } });
   if ("task" in route) items.push({ label: route.task, to: { name: "task", project, phase: route.phase, task: route.task } });
   if (route.name === "plan") {
-    items.push({ label: "Planificación", to: { name: "plan", project, phase: route.phase } });
-    if (route.conversation) items.push({ label: "Conversación", to: route });
+    items.push({ label: t("trail.planning"), to: { name: "plan", project, phase: route.phase } });
+    if (route.conversation) items.push({ label: t("trail.conversation"), to: route });
   }
-  if (route.name === "run") items.push({ label: `Run ${route.run.slice(0, 8)}`, to: route });
+  if (route.name === "run") items.push({ label: t("trail.run", { id: route.run.slice(0, 8) }), to: route });
   return items;
 }

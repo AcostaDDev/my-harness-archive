@@ -20,17 +20,19 @@ from harness_local.api.schemas import (
     PromptValidateCreate, PromptValidationRead, PromptDiffRead,
     ConfirmStoppedCreate, ManagedAttemptRead,
     ManagedEventsRead, ManagedJobRead, ManagedProjectRead, ManagedRunRead, ManagedRunSummaryRead,
-    ModeRead, Page, PhaseTaskRead, ProblemResponse, RunActionCreate, RunCreate, SupervisorRead,
-    TaskSourcesRead,
+    ModeRead, Page, PhaseTaskRead, PreferencesRead, PreferencesUpdate, PreferencesUpdateRead, ProblemResponse,
+    RunActionCreate, RunCreate, SupervisorRead, TaskSourcesRead,
 )
 from harness_local.api.security import local_request, problem
 from harness_local.core.engine.document_ops import BaseChanged
 from harness_local.core.engine.planning import task_sources
 from harness_local.core.managed_mode import MigrationError
+from harness_local.i18n import message
 from harness_local.services.managed_runtime import ManagedRuntime, agents_view
 from harness_local.storage.documents import IMAGE_TYPES
 from harness_local.storage.managed import Conflict, OwnershipLost
 from harness_local.storage.managed_mode import ModeConflict
+from harness_local.storage.preferences import PreferencesChanged, PreferencesInvalid, PreferencesKeyReused
 
 Offset = Annotated[int, Query(ge=0, le=2**53 - 1)]
 Limit = Annotated[int, Query(ge=1, le=100)]
@@ -46,6 +48,8 @@ def call(operation, /, *args, **kwargs):
         return operation(*args, **kwargs)
     except LookupError as error:
         raise problem(404, "not_found", str(error)) from error
+    except PreferencesInvalid as error:  # the stored language is unusable: English diagnostic
+        raise problem(409, "preferences_invalid", message("preferences.invalid", "en")) from error
     except Conflict as error:
         code = ("mode_refused" if isinstance(error.__cause__, ModeConflict)
                 else "document_changed" if isinstance(error.__cause__, BaseChanged)
@@ -99,6 +103,26 @@ def managed_router(runtime: ManagedRuntime):
     @router.get("/supervisor", response_model=SupervisorRead, operation_id="managed_supervisor")
     def supervisor():
         return call(runtime.supervisor_status)
+
+    @router.get("/preferences", response_model=PreferencesRead, operation_id="managed_preferences")
+    def preferences():
+        """Global languages of this installation (D166); reading never creates or repairs the row."""
+        runtime.ready()
+        return runtime.preferences.read()
+
+    @router.put("/preferences", response_model=PreferencesUpdateRead, operation_id="managed_preferences_update")
+    def preferences_update(body: PreferencesUpdate, idempotency_key: IdempotencyKey):
+        """CAS by version. Applies to jobs admitted afterwards; queued work and projects keep their values."""
+        runtime.ready()
+
+        def update():
+            try:
+                return runtime.preferences.update(**body.model_dump(), key=idempotency_key)
+            except (PreferencesChanged, PreferencesKeyReused) as error:
+                code, key = (("preferences_conflict", "preferences.conflict") if isinstance(error, PreferencesChanged)
+                             else ("idempotency_conflict", "preferences.key_reused"))
+                raise problem(409, code, message(key, runtime.preferences.read()["ui_language"])) from error
+        return call(update)
 
     @router.get("/projects", response_model=list[ManagedProjectRead], operation_id="managed_projects")
     def projects():

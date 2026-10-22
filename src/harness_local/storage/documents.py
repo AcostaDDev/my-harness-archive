@@ -530,7 +530,8 @@ def _resume_job(managed, session, op, context, versions, key, marker, assessment
     if run.context_json != context_snapshot(context) or comparable != versions:
         raise Conflict('Frozen context/versions changed; restore the configured writer first')
     job = Job(idempotency_key=key, run_id=run.id, request_json=marker, status='QUEUED',
-              created_at=managed._now(), activation_id=managed._admit(session, assessment))
+              created_at=managed._now(), activation_id=managed._admit(session, assessment),
+              language_context=managed._language(session, run.id))
     session.add(job)
     session.flush()
     run.status, run.stage = 'QUEUED', stage

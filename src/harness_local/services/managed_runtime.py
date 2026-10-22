@@ -193,7 +193,7 @@ class ManagedRuntime:
         self.engine = engine
         self._explicit = config
         self.config: ManagedConfig | None = None
-        self.repository = self.views = self.worker = self.registry = None
+        self.repository = self.views = self.worker = self.registry = self.preferences = None
         self.database: Path | None = None
         self.migrations_dir: Path | None = None
         self.projects: dict[str, ManagedProject] = {}
@@ -212,6 +212,8 @@ class ManagedRuntime:
         self.migrations_dir = migrations_dir
         self.config = config
         self.repository = SQLiteManagedRepository(self.engine)
+        from harness_local.storage.preferences import PreferencesRepository
+        self.preferences = PreferencesRepository(self.repository)
         from harness_local.services.managed import guarded_writer
         config = replace(config, commit_factory=guarded_writer(config.commit_factory, self.repository.guard))
         self.config = config

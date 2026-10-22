@@ -139,6 +139,37 @@ class ConfirmStoppedCreate(BaseModel):
     reason: str = Field(min_length=1, max_length=2000)
 
 
+Language = Literal["en", "es"]
+
+
+class UiLanguageContextRead(BaseModel):
+    """P011-T007: visual language frozen when the job was admitted; null in jobs earlier than 0024."""
+    format: Literal["ui-language-1"]
+    ui_language: Language
+    preferences_version: int
+
+
+class PreferencesRead(BaseModel):
+    """Global preferences of this installation; `invalid` reads as English and blocks new admissions."""
+    format: Literal["product-preferences-1"]
+    version: int
+    ui_language: Language
+    default_work_language: Language
+    updated_at: str | None
+    status: Literal["stored", "default", "invalid"]
+
+
+class PreferencesUpdate(BaseModel):
+    model_config = ConfigDict(extra="forbid", strict=True)
+    expected_version: int = Field(ge=0)
+    ui_language: Language
+    default_work_language: Language
+
+
+class PreferencesUpdateRead(PreferencesRead):
+    replayed: bool
+
+
 class ManagedJobRead(BaseModel):
     id: int
     run_id: str
@@ -152,6 +183,7 @@ class ManagedJobRead(BaseModel):
     diagnostic: str | None
     activation_id: str | None
     owner_closed: bool
+    language_context: UiLanguageContextRead | None
 
 
 class ManagedRunSummaryRead(BaseModel):

@@ -28,6 +28,7 @@ sequenceDiagram
 ```
 
 Las preguntas no toman el lock del checkout; las tareas aceptadas siguen el [flujo de tarea](task-run.md).
+Cada turno sella el idioma visual vigente al admitirlo ([preferencias de idioma](language-preferences.md)).
 
 ## Fuente en el código
 

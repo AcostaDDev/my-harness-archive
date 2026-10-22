@@ -10,7 +10,7 @@ decisiones vigentes y la información técnica que antes estaba en README y AGEN
 |---|---|
 | Núcleo | Python 3.14.4, biblioteca estándar, paquete `harness-local` 0.1.0 (`uv_build==0.12.19`) |
 | API local | FastAPI 0.143.0, Pydantic 2.14.0, Uvicorn 0.54.0; HTTP para acciones y observación gestionada por cursor |
-| Persistencia | SQLite con SQLAlchemy 2.1.4 y Alembic 1.20.0 (esquema `0023_run_projection`) |
+| Persistencia | SQLite con SQLAlchemy 2.1.4 y Alembic 1.20.0 (esquema `0024_product_preferences`) |
 | UI | React 19.3.0, TypeScript 5.9.3, Vite 8.3.4; `markdown-it` 15.0.2 (`html: false`) y `mermaid` 11.17.2 (`strict`) |
 | Tipos del cliente | `openapi-typescript` 7.13.0 desde el OpenAPI exportado |
 | Herramientas | uv 0.12.19 y `uv.lock`; Node 24.15.0, npm 11.12.1 y `frontend/package-lock.json` |
@@ -65,10 +65,12 @@ casos de uso. El supervisor es el único que lanza procesos y consume la cola; c
 | `recipes/`, `services/project_preparation.py`, `storage/preparation.py`, `adapters/preparation.py` | Recetas empaquetadas `django-recipe-1` y `typescript-web-recipe-1` y su preparación confirmada y recuperable (D119, D143); sucesoras v2 sin cablear (D163) |
 | `api/app.py`, `managed.py`, `schemas.py`, `session.py`, `security.py` | Aplicación, rutas, contratos Pydantic, sesión y guardia |
 | `profiles/typescript_web.py`, `profiles/reference_project.py` | Perfiles integrados (`typescript-web` componible; `reference_project` solo biblioteca); los perfiles del TOML v4/v5 se componen en `services/local_config.py` |
-| `cli.py`, `launcher.py` | `harness-local` (backup, retención, diagnóstico, `check-config`, `metrics-backfill`, `init-db`, `serve`) |
-| `migrations/versions/0001…0023` | Esquema Alembic |
+| `cli.py`, `launcher.py` | `harness-local` (backup, retención, diagnóstico, `check-config`, `metrics-backfill`, `init-db`, `serve`); `--ui-language` por invocación |
+| `storage/preferences.py`, `i18n/` | Preferencias globales de idioma con CAS, captura del visual al admitir cada job y catálogos en/es de mensajes propios (D166) |
+| `migrations/versions/0001…0024` | Esquema Alembic |
 
-`frontend/src`: `router.ts`, `pages/` (Home, Registry, Project, Phases, Task, Run, Docs, Planning, Stats, Settings),
+`frontend/src`: `router.ts`, `pages/` (Home, Registry, Project, Phases, Task, Run, Docs, Planning, Stats, Settings,
+Preferences), `i18n.ts`, `i18n/{en,es}.json` y `Language.tsx` (catálogos y proveedor del idioma visual, D166),
 `markdown.ts` y `mermaid-view.ts` (render aislado), `managed-api.ts` (envíos idempotentes), `api.generated.ts`
 (generado, no se edita). `scripts/`: `dev`, `export_openapi.py`, `build_distribution.py`, `check_distribution.py`,
 `smoke_cli.py`. `examples/`: plantilla `local_config.example.toml` (v4, válida como v5 cambiando `format`), fragmentos
@@ -168,7 +170,9 @@ por su API y los artefactos referenciados; la restauración es de consulta (`que
   `POST …/planning/{c}/onboarding/preview` / `…/onboarding/confirm` confirman documentos y `profile_sha256`.
   `GET …/projects/{p}/mode` solo ofrece diagnóstico de admisión gestionada. Mutaciones con `Idempotency-Key`
   y versión esperada; 409 con `{code, diagnostic}`; 422 ante contrato inválido.
-- Rutas de UI: `/`, `/stats`, `/projects/new`, `/projects/:p` con `setup`, `onboarding[/:c/*borrador]`,
+- `GET/PUT /api/managed/preferences`: idiomas globales con versión esperada e `Idempotency-Key`; cada job expone
+  el `language_context` sellado al admitirlo ([flujo](flows/language-preferences.md), D166).
+- Rutas de UI: `/`, `/stats`, `/preferences`, `/projects/new`, `/projects/:p` con `setup`, `onboarding[/:c/*borrador]`,
   `chat[/:c]`, `docs[/*ruta]`, `phases`, `phases/:code`, `phases/:code/plan[/:c]`,
   `phases/:code/tasks/:task[/runs/:run]`, `stats`, `settings`; `/runs/:id` como enlace corto.
   `/legacy` y `/projects/:p/import` muestran ruta no encontrada; API antigua 404 tras sesión/Host/Origin/CSRF,
@@ -181,8 +185,9 @@ por su API y los artefactos referenciados; la restauración es de consulta (`que
 ## 8. Convenciones
 
 - Documentación en español con nombres de archivo canónicos en inglés; parsers con alias en ambos idiomas.
-- Comentarios, docstrings y descripciones OpenAPI de `src/harness_local` en inglés (P011-T003/T004); los mensajes
-  visibles siguen pendientes de catálogos (T007/T010) y las fuentes v1 de recetas conservan sus bytes (D163).
+- Comentarios, docstrings y descripciones OpenAPI de `src/harness_local` en inglés (P011-T003/T004); las fuentes v1
+  de recetas conservan sus bytes (D163). Mensajes visibles nuevos por clave en los catálogos JSON en/es (D166): un
+  mensaje completo por clave, parámetros `{nombre}` como texto, fallback inglés; el resto pasa a catálogos en T010.
 - Versiones exactas; ninguna dependencia nueva sin decisión registrada. No documentar scripts inexistentes.
 - Tipos del cliente siempre regenerados desde OpenAPI tras cambiar un contrato; nunca a mano.
 - Pruebas offline con Git/SQLite temporales, procesos y agentes falsos y datos sintéticos; nunca runs ni datos privados.

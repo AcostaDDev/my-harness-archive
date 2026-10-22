@@ -153,7 +153,8 @@ class DocumentExportRepository:
                 if run.context_json != context_snapshot(context) or run.versions_json != freeze(versions):
                     raise Conflict('Frozen export context/versions changed; restore the configured writer first')
                 job = Job(idempotency_key=key, run_id=run.id, request_json=marker, status='QUEUED',
-                          created_at=self.managed._now(), activation_id=self.managed._admit(session, assessment))
+                          created_at=self.managed._now(), activation_id=self.managed._admit(session, assessment),
+                          language_context=self.managed._language(session, run.id))
                 session.add(job)
                 session.flush()
                 run.status, run.stage = 'QUEUED', 'document_export'

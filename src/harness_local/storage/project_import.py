@@ -185,7 +185,8 @@ class ImportRepository:
                             'name': writer.identity.name, 'email': writer.identity.email}):
                     raise Conflict('Frozen import context/versions/writer changed; restore before resuming')
                 job = Job(idempotency_key=key, run_id=run.id, request_json=marker, status='QUEUED',
-                    created_at=self.managed._now(), activation_id=self.managed._admit(session, assessment))
+                    created_at=self.managed._now(), activation_id=self.managed._admit(session, assessment),
+                    language_context=self.managed._language(session, run.id))
                 session.add(job)
                 session.flush()
                 run.status, run.stage, op.status, op.finished_at = 'QUEUED', 'import_commit', 'QUEUED', None

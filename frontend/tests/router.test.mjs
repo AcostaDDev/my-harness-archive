@@ -1,6 +1,13 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { parse, href, trail, runRoute, projectOf } from '../src/router.ts';
+import { parse, href, trail as trailIn, runRoute, projectOf } from '../src/router.ts';
+import { translate } from '../src/i18n.ts';
+import en from '../src/i18n/en.json' with { type: 'json' };
+import es from '../src/i18n/es.json' with { type: 'json' };
+
+// Expectations written in Spanish; the English trail has its own test below.
+const translator = language => (key, params) => translate({ en, es }, language, key, params);
+const trail = route => trailIn(route, translator('es'));
 
 const valid = [
   ['/projects/library/onboarding', { name: 'onboarding', project: 'library' }],
@@ -17,6 +24,7 @@ const valid = [
   ['/projects/mi-web/chat/c-1', { name: 'chat', project: 'mi-web', conversation: 'c-1' }],
   ['/projects/mi-web/settings', { name: 'settings', project: 'mi-web' }],
   ['/stats', { name: 'stats' }],
+  ['/preferences', { name: 'preferences' }],
   ['/projects/mi-web/stats', { name: 'project-stats', project: 'mi-web' }],
   ['/runs/abc', { name: 'run-short', run: 'abc' }],
   ['/projects/mi-web/docs', { name: 'docs', project: 'mi-web' }],
@@ -114,6 +122,14 @@ test('statistics: global page and project page with their own trail (H6.2 E6)', 
   assert.equal(projectOf(parse('/projects/mi-web/stats')), 'mi-web');
 });
 
+
+test('global preferences page and the English trail (P011-T007)', () => {
+  assert.deepEqual(trail(parse('/preferences')).map(item => item.label), ['Proyectos', 'Preferencias']);
+  assert.equal(projectOf(parse('/preferences')), undefined);
+  assert.equal(parse('/preferences/x').name, 'not-found');
+  const items = trailIn(parse('/projects/mi-web/phases/P001/tasks/P001-T003/runs/0123456789'), translator('en'));
+  assert.deepEqual(items.map(i => i.label), ['Projects', 'mi-web', 'Phases', 'P001', 'P001-T003', 'Run 01234567']);
+});
 
 test('removed legacy and import routes are not found', () => {
   for (const path of ['/legacy', '/projects/gym/import', '/projects/gym/import/c-1/docs/STATE.md']) {

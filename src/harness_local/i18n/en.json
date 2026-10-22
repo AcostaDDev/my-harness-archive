@@ -1,0 +1,18 @@
+{
+  "cli.assets_missing": "Web assets missing; install the package built with scripts/build_distribution.py.",
+  "cli.auxiliary_files": "SQLite auxiliary files exist; keep them and use a new destination.",
+  "cli.backfill_missing": "SQLite does not exist; the backfill does not create databases.",
+  "cli.config_conflict": "--config and {variable} are incompatible; choose a single composition.",
+  "cli.database_missing": "SQLite missing; prepare a new database with harness-local init-db --database PATH.",
+  "cli.database_not_absolute": "SQLite requires an absolute path (--database).",
+  "cli.destination_exists": "The destination already exists; init-db only prepares a new SQLite database.",
+  "cli.port_range": "The port must be between 1 and 65535.",
+  "preferences.conflict": "Preferences changed in another window; reload them before saving.",
+  "preferences.invalid": "The stored language preferences are invalid; save them again in Preferences before starting new work.",
+  "preferences.key_reused": "This idempotency key already names a different preferences change.",
+  "session.invalid_key": "Invalid access key.",
+  "session.invalid_login": "Invalid sign-in request.",
+  "session.limit": "Close a session or restart the service.",
+  "session.rate_limited": "Wait a minute before trying to sign in again.",
+  "session.required": "Session missing, closed or expired. Sign in; no action will be repeated automatically."
+}

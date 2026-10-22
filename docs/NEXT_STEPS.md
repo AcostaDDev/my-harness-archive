@@ -4,12 +4,12 @@ Objetivo y criterios en [ROADMAP](ROADMAP.md#p011--preparación-para-apertura-p�
 Decisión: [D154](DECISIONS.md#d154--p011-preparación-para-apertura-pública-en-github).
 [Plan y alcance](phase/P011_PLAN_APERTURA_PUBLICA.md).
 
-**Estado:** en ejecución desde el 2026-10-22. T001/T002/T019/T003–T006 completadas (D159–D165); doce tareas
-pendientes. Licencia/avisos entregados, retirada legacy/A implementada y núcleo/backend/cliente/scripts/ejemplos/
-pruebas con comentarios en inglés; recetas v2 preparadas sin cablear.
+**Estado:** en ejecución desde el 2026-10-22. T001/T002/T019/T003–T007 completadas (D159–D166); once tareas
+pendientes. Licencia/avisos entregados, retirada legacy/A implementada, núcleo/backend/cliente/scripts/ejemplos/
+pruebas con comentarios en inglés y preferencias globales de idioma con visual congelado por job; recetas v2 sin cablear.
 **Planificación:** base finalizada en D156 y afinada por D155/D157/D158; contrato T001 disponible.
 No equivale a fase completada.
-**Siguiente:** P011-T007. Sin autorización de publicación.
+**Siguiente:** P011-T008. Sin autorización de publicación.
 P001–P010 siguen cerradas; la primera versión local mantiene el alcance de D151/D153.
 
 ## Restricciones compartidas
@@ -42,7 +42,7 @@ P001–P010 siguen cerradas; la primera versión local mantiene el alcance de D1
   siguiente fase` para v0.2.0 después de abrir el proyecto en GitHub, fuera de estas tareas. P011 mantiene
   cierre con READY y autorización propia, nueva fase sin tareas y confirmación del plan posterior.
   El commit D156 y los ajustes D157/D158 ya se realizaron. La petición actual autoriza ejecutar la siguiente
-  tarea (T006) y su commit local en inglés, sin encadenar tareas ni publicar.
+  tarea (T007) y su commit local en inglés, sin encadenar tareas ni publicar.
 - D157 elige instantánea pública inicial revisada, con Git/documentación de partida nuevos y sin historia privada.
   Desde la apertura, código/decisiones/fases se desarrollan en el repositorio público, fuente principal; este
   checkout conserva su historia privada. No sincronizar dos desarrollos activos ni congelar para siempre `docs/` pública.
@@ -209,7 +209,11 @@ HITL, README de fixtures en inglés. Suites offline con los mismos totales que T
 
 ## P011-T007 — Infraestructura de idiomas para interfaz y mensajes
 
-**Estado:** pendiente. **Depende de:** T001, T006.
+**Estado:** completada el 2026-10-23, D166. **Depende de:** T001, T006.
+**Evidencia:** [entrega](phase/P011-T007_INFRAESTRUCTURA_IDIOMAS.md): `0024` con preferencias singleton (CAS,
+eventos, idempotencia), `GET/PUT /api/managed/preferences`, visual `ui-language-1` sellado en cada job y heredado por
+continuaciones (HITL: el par completo es de T008, la directiva de T009). Catálogos JSON en/es Python/React sin
+dependencias, página `/preferences`, shell/sesión traducidos (HITL), `--ui-language`. Suites offline en verde.
 **Objetivo:** Añadir ajustes globales de idiomas, catálogos en/es y conversación en el idioma visual.
 **Alcance:** solución T001, ajustes/defaults globales, selector accesible, persistencia/fallback/formatos,
 propagación de lengua de respuesta a nuevas interacciones y mensajes API/CLI propios.
@@ -255,6 +259,8 @@ de jobs/intentos. No se añade un selector visual por proyecto ni se permite cam
 concurrencia y reinicio/snapshots; pytest, Alembic temporal,
 OpenAPI/tipos y pruebas del cliente pertinentes.
 **Entregables:** `docs/phase/P011-T008_IDIOMA_PROYECTO.md` y contratos/documentación actualizados.
+**Nota (D166):** partir de `managed_jobs.language_context` (`ui-language-1`, versionado por `format`) y de
+`default_work_language` ya persistido; los jobs con `ui-language-1` o null no reciben trabajo inventado.
 
 ## P011-T009 — Prompts ingleses y documentos generados en la lengua elegida
 

@@ -1,6 +1,6 @@
 # Diagrama de datos — my_harness
 
-Esquema SQLite del servicio local (Alembic `0023_run_projection`, 48 tablas). Generado en P008-T001 desde el metadata de `src/harness_local/storage/models.py` (actualizado en P009-T004 con preparación y propietarios compartidos, y en P010-T003 con la proyección de runs); cualquier cambio de modelos o migraciones actualiza este documento en la misma tarea (regla de paridad, D088).
+Esquema SQLite del servicio local (Alembic `0024_product_preferences`, 50 tablas). Generado en P008-T001 desde el metadata de `src/harness_local/storage/models.py` (actualizado en P009-T004 con preparación y propietarios compartidos, en P010-T003 con la proyección de runs y en P011-T007 con las preferencias de idioma); cualquier cambio de modelos o migraciones actualiza este documento en la misma tarea (regla de paridad, D088).
 
 P009-T002 implementa autoridad y creación de hijos (D117); T004 implementa preparación/pasos/journal y amplía
 locks/procesos compartidos (D119). [Diseño de partida](archive/phase-009/P009-T001_CONTRATO_CREACION.md#6-persistencia-propuesta-y-migraciones).
@@ -114,6 +114,7 @@ erDiagram
         json process_owner "null"
         boolean owner_closed
         string activation_id FK "null; → managed_activations.id"
+        json language_context "null; ui-language-1 (0024)"
     }
     checkout_locks {
         string root PK
@@ -830,3 +831,34 @@ erDiagram
 Las claves primarias compuestas fijan el orden estable de lectura: paradas por ordinal, ciclos por número, tramos,
 reportes y casos por sus índices. `cycle` de tramos, reportes y casos es el `number` del ciclo, sin FK declarada.
 Downgrade: elimina solo estas tablas.
+
+## Preferencias de idioma (P011-T007)
+
+Una fila por instalación/base (D166). `0024_product_preferences` la crea con `en`/`en` y versión 1; leerla nunca la
+crea ni la repara. Sin FK: el resto del esquema solo la consulta al admitir un job.
+
+```mermaid
+erDiagram
+    product_preferences {
+        integer id PK "CHECK id = 1"
+        string format "product-preferences-1"
+        string ui_language "CHECK en | es"
+        string default_work_language "CHECK en | es"
+        integer version
+        string updated_at
+    }
+    product_preference_events {
+        integer id PK
+        integer version UK
+        string idempotency_key UK
+        string request_sha256
+        json payload "before, after, actor, recorded_at, previous_sha256, sha256"
+    }
+```
+
+Cada `PUT /api/managed/preferences` con la versión esperada incrementa `version` y añade un evento encadenado por
+hash; la misma clave con la misma petición devuelve el resultado registrado. `managed_jobs.language_context` sella
+`{format: ui-language-1, ui_language, preferences_version}` en la transacción que admite el job; reanudar un run
+(reintento, revalidación, bootstrap, importación, exportación o edición documental) copia el del primer job del
+run, también null. Jobs anteriores a `0024` quedan null («no registrado»). Downgrade: rechazado si hay eventos;
+sin ellos, todas las capturas son `en` de fábrica y se eliminan con la columna.

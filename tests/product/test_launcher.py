@@ -36,13 +36,17 @@ def test_initialize_preserves_existing_destination(tmp_path, kind):
         target.symlink_to(tmp_path / 'absent')
     else:
         target.mkdir()
-    with pytest.raises(ValueError, match='ya existe'):
+    with pytest.raises(ValueError, match='already exists'):
         initialize(str(target))
+    with pytest.raises(ValueError, match='ya existe'):
+        initialize(str(target), 'es')
 
 
 def test_start_rejects_missing_and_relative_database_without_creation(tmp_path, capsys):
     assert main(['serve', '--database', 'relative.sqlite3']) == 1
-    assert 'absoluta' in capsys.readouterr().err
+    assert 'absolute path' in capsys.readouterr().err
+    assert main(['--ui-language', 'es', 'serve', '--database', 'relative.sqlite3']) == 1
+    assert 'ruta absoluta' in capsys.readouterr().err
     path = tmp_path / 'missing.sqlite3'
     assert main(['serve', '--database', str(path)]) == 1
     assert 'init-db' in capsys.readouterr().err
@@ -51,7 +55,7 @@ def test_start_rejects_missing_and_relative_database_without_creation(tmp_path, 
 
 @pytest.mark.parametrize('port', [0, 65536, -1])
 def test_invalid_port_has_no_effects(tmp_path, port):
-    with pytest.raises(ValueError, match='puerto'):
+    with pytest.raises(ValueError, match='port'):
         serve(str(tmp_path / 'absent'), port)
     assert not (tmp_path / 'absent').exists()
 
@@ -83,7 +87,7 @@ def test_initialize_preserves_orphan_sidecars(tmp_path, suffix):
     path = tmp_path / 'new.sqlite3'
     sidecar = Path(str(path) + suffix)
     sidecar.write_bytes(b'foreign evidence')
-    with pytest.raises(ValueError, match='auxiliares'):
+    with pytest.raises(ValueError, match='auxiliary'):
         initialize(str(path))
     assert sidecar.read_bytes() == b'foreign evidence'
     assert not path.exists()

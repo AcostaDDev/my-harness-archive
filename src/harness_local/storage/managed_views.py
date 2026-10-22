@@ -32,7 +32,8 @@ def job_view(row: Job) -> dict:
     return {"id": row.id, "run_id": row.run_id, "action": json.loads(row.request_json)["action"],
             "status": row.status, "idempotency_key": row.idempotency_key, "owner_token": row.owner_token,
             "lease_until": row.lease_until, "created_at": row.created_at, "finished_at": row.finished_at,
-            "diagnostic": row.diagnostic, "activation_id": row.activation_id, "owner_closed": bool(row.owner_closed)}
+            "diagnostic": row.diagnostic, "activation_id": row.activation_id, "owner_closed": bool(row.owner_closed),
+            "language_context": row.language_context}
 
 
 def _commit_view(row: Commit | None) -> dict | None:

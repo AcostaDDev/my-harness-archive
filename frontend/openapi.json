@@ -151,6 +151,185 @@
         }
       }
     },
+    "/api/managed/preferences": {
+      "get": {
+        "summary": "Preferences",
+        "description": "Global languages of this installation (D166); reading never creates or repairs the row.",
+        "operationId": "managed_preferences",
+        "parameters": [
+          {
+            "name": "x-harness-local",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Required with value 1 on mutations (CSRF protection).",
+              "title": "X-Harness-Local"
+            },
+            "description": "Required with value 1 on mutations (CSRF protection)."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PreferencesRead"
+                }
+              }
+            }
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          }
+        }
+      },
+      "put": {
+        "summary": "Preferences Update",
+        "description": "CAS by version. Applies to jobs admitted afterwards; queued work and projects keep their values.",
+        "operationId": "managed_preferences_update",
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200,
+              "description": "The same key and the same action return the same job.",
+              "title": "Idempotency-Key"
+            },
+            "description": "The same key and the same action return the same job."
+          },
+          {
+            "name": "x-harness-local",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Required with value 1 on mutations (CSRF protection).",
+              "title": "X-Harness-Local"
+            },
+            "description": "Required with value 1 on mutations (CSRF protection)."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PreferencesUpdate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PreferencesUpdateRead"
+                }
+              }
+            }
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          }
+        }
+      }
+    },
     "/api/managed/projects": {
       "get": {
         "summary": "Projects",
@@ -16037,6 +16216,16 @@
           "owner_closed": {
             "type": "boolean",
             "title": "Owner Closed"
+          },
+          "language_context": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/UiLanguageContextRead"
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         },
         "type": "object",
@@ -16052,7 +16241,8 @@
           "finished_at",
           "diagnostic",
           "activation_id",
-          "owner_closed"
+          "owner_closed",
+          "language_context"
         ],
         "title": "ManagedJobRead"
       },
@@ -20041,6 +20231,163 @@
         ],
         "title": "PlanningTurnRead"
       },
+      "PreferencesRead": {
+        "properties": {
+          "format": {
+            "type": "string",
+            "const": "product-preferences-1",
+            "title": "Format"
+          },
+          "version": {
+            "type": "integer",
+            "title": "Version"
+          },
+          "ui_language": {
+            "type": "string",
+            "enum": [
+              "en",
+              "es"
+            ],
+            "title": "Ui Language"
+          },
+          "default_work_language": {
+            "type": "string",
+            "enum": [
+              "en",
+              "es"
+            ],
+            "title": "Default Work Language"
+          },
+          "updated_at": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Updated At"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "stored",
+              "default",
+              "invalid"
+            ],
+            "title": "Status"
+          }
+        },
+        "type": "object",
+        "required": [
+          "format",
+          "version",
+          "ui_language",
+          "default_work_language",
+          "updated_at",
+          "status"
+        ],
+        "title": "PreferencesRead",
+        "description": "Global preferences of this installation; `invalid` reads as English and blocks new admissions."
+      },
+      "PreferencesUpdate": {
+        "properties": {
+          "expected_version": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Expected Version"
+          },
+          "ui_language": {
+            "type": "string",
+            "enum": [
+              "en",
+              "es"
+            ],
+            "title": "Ui Language"
+          },
+          "default_work_language": {
+            "type": "string",
+            "enum": [
+              "en",
+              "es"
+            ],
+            "title": "Default Work Language"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "expected_version",
+          "ui_language",
+          "default_work_language"
+        ],
+        "title": "PreferencesUpdate"
+      },
+      "PreferencesUpdateRead": {
+        "properties": {
+          "format": {
+            "type": "string",
+            "const": "product-preferences-1",
+            "title": "Format"
+          },
+          "version": {
+            "type": "integer",
+            "title": "Version"
+          },
+          "ui_language": {
+            "type": "string",
+            "enum": [
+              "en",
+              "es"
+            ],
+            "title": "Ui Language"
+          },
+          "default_work_language": {
+            "type": "string",
+            "enum": [
+              "en",
+              "es"
+            ],
+            "title": "Default Work Language"
+          },
+          "updated_at": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Updated At"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "stored",
+              "default",
+              "invalid"
+            ],
+            "title": "Status"
+          },
+          "replayed": {
+            "type": "boolean",
+            "title": "Replayed"
+          }
+        },
+        "type": "object",
+        "required": [
+          "format",
+          "version",
+          "ui_language",
+          "default_work_language",
+          "updated_at",
+          "status",
+          "replayed"
+        ],
+        "title": "PreferencesUpdateRead"
+      },
       "PreparationChangeInput": {
         "properties": {
           "expected_version": {
@@ -22329,6 +22676,35 @@
           "diagnostics"
         ],
         "title": "TaskSourcesRead"
+      },
+      "UiLanguageContextRead": {
+        "properties": {
+          "format": {
+            "type": "string",
+            "const": "ui-language-1",
+            "title": "Format"
+          },
+          "ui_language": {
+            "type": "string",
+            "enum": [
+              "en",
+              "es"
+            ],
+            "title": "Ui Language"
+          },
+          "preferences_version": {
+            "type": "integer",
+            "title": "Preferences Version"
+          }
+        },
+        "type": "object",
+        "required": [
+          "format",
+          "ui_language",
+          "preferences_version"
+        ],
+        "title": "UiLanguageContextRead",
+        "description": "P011-T007: visual language frozen when the job was admitted; null in jobs earlier than 0024."
       },
       "ValidationCountsRead": {
         "properties": {

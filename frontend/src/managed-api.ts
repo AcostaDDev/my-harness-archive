@@ -3,7 +3,9 @@ import type { components } from "./api.generated";
 export type S = components["schemas"];
 export class ManagedError extends Error {
   status: number;
-  constructor(status: number, message: string) { super(message); this.status = status; }
+  /** Stable code of the service problem (`detail.code`), when it sent one. */
+  code?: string;
+  constructor(status: number, message: string, code?: string) { super(message); this.status = status; this.code = code; }
 }
 export async function managed<T>(path: string, body?: unknown, key?: string, method = "POST"): Promise<T> {
   const response = await fetch(`/api/managed${path}`, body === undefined ? undefined : {
@@ -13,7 +15,7 @@ export async function managed<T>(path: string, body?: unknown, key?: string, met
   sessionResponse(response);
   if (!response.ok) {
     const data = await response.json().catch(() => null);
-    throw new ManagedError(response.status, `${response.status} · ${data?.detail?.code ?? "request_failed"}: ${data?.detail?.diagnostic ?? JSON.stringify(data?.detail ?? "Servicio no disponible")}`);
+    throw new ManagedError(response.status, `${response.status} · ${data?.detail?.code ?? "request_failed"}: ${data?.detail?.diagnostic ?? JSON.stringify(data?.detail ?? "Servicio no disponible")}`, data?.detail?.code);
   }
   return response.json() as Promise<T>;
 }
