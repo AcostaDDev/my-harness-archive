@@ -62,7 +62,7 @@ salvo donde se indica. Detalle por fase en `docs/archive/phase-NNN/SUMMARY.md`; 
 
 ## Fase activa
 
-**P010 — Consolidación de la primera versión local. En curso: T001–T006 y T011 completadas.**
+**P010 — Consolidación de la primera versión local. En curso: T001–T007 y T011 completadas.**
 Planificada el 2026-10-21 ([D141](DECISIONS.md#d141--p010-consolidación-de-la-primera-versión-local),
 [plan](phase/P010_PLAN_CONSOLIDACION.md), [tareas](NEXT_STEPS.md)). El 2026-10-22 T001 deja el
 [contrato](phase/P010-T001_CONTRATO_CONSOLIDACION.md) y la matriz inicial
@@ -92,7 +92,12 @@ cerrada con y sin sucesora, abandonada y con deriva real. T006 contrasta README,
 código y la evidencia ([entrega](phase/P010-T006_DOCUMENTACION_VERSION.md),
 [D148](DECISIONS.md#d148--p010-t006-documentación-de-instalación-y-alcance-soportado)): versiones CLI por rol,
 alcance offline frente a real y límites. Por decisión del usuario, la falta de actualizador de bases en el paquete
-instalado queda como límite y la valora T007. Sin cambios de código. T007–T010 pendientes.
+instalado queda como límite y la valora T007. Sin cambios de código. T007 completa la
+[matriz de aceptación](phase/P010_MATRIZ_ACEPTACION.md)
+([D149](DECISIONS.md#d149--p010-t007-matriz-de-aceptación-sse-por-cursor-y-tarea-t012)): trece criterios cumplen
+offline con tests reejecutados y dos nuevos; el usuario decide que el cursor de D029 cumple el criterio 13 en la UI
+gestionada y que el hueco de migraciones del paquete instalado (§9) se corrige en la nueva T012. T008–T010 y T012
+pendientes.
 
 P009 cerrada y archivada documentalmente el 2026-10-21
 ([resumen](archive/phase-009/SUMMARY.md), [revisión](archive/phase-009/REVIEW.md),
@@ -103,8 +108,8 @@ El Django hijo conserva P001 CLOSED, cuatro tareas COMMITTED, tag `p001` sobre `
 Última comprobación operativa en T012: servicios detenidos, cero locks y sin jobs pendientes; no se repite aquí.
 Este repositorio sigue sin registrarse ni ejecutarse con el harness; cierre manual sin check READY ni tag propio.
 
-**Siguiente:** P010-T007, matriz de aceptación global.
+**Siguiente:** P010-T012, `harness-local migrate` en el paquete instalado.
 Después: propuesta de validación real (T008). Los límites actuales de la base
 acumulada siguen vigentes hasta implementar y verificar
-cada entrega; las cuestiones del SSE gestionado (criterio 13) y del actualizador de bases quedan para T007. La validación real complementaria
+cada entrega; el SSE gestionado queda resuelto por D149. La validación real complementaria
 se concreta en T008; no se da por realizada ni autorizada. Sin nueva fase del Django hijo ni ampliación de consentimientos de P009.

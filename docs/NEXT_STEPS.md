@@ -12,8 +12,9 @@ Añade T011 (métricas y exportación sobre la proyección de runs). T002 comple
 `run-projection-1` y vistas de runs sin decodificar historiales. T011 completada el 2026-10-22 (D145): métricas y
 vista previa de exportación sobre la proyección. T004 completada el 2026-10-22 (D146): marcadores opcionales en la
 definición. T005 completada el 2026-10-22 (D147): evidencia histórica de una fase cerrada. T006 completada el
-2026-10-22 (D148): documentación contrastada con código y evidencia. T007–T010 pendientes; sin operación iniciada.
-**Siguiente:** T007, matriz de aceptación global (depende de T002–T006 y T011).
+2026-10-22 (D148): documentación contrastada con código y evidencia. T007 completada el 2026-10-22 (D149): matriz de
+aceptación; añade T012 (migración desde el paquete instalado). T008–T010 y T012 pendientes; sin operación iniciada.
+**Siguiente:** T012, migración explícita de una base existente desde el paquete instalado (depende de T007).
 
 ## Restricciones compartidas
 
@@ -162,7 +163,9 @@ instalación ni operación; el wheel de P010 se verifica en T009.
 
 ## P010-T007 — Matriz de aceptación global
 
-**Estado:** pendiente. **Depende de:** T002–T006 y T011.
+**Estado:** completada el 2026-10-22 ([matriz](phase/P010_MATRIZ_ACEPTACION.md), D149). Trece criterios con
+dictamen; criterio 13 por cursor (decisión del usuario) y hueco de §9 acotado como T012.
+**Depende de:** T002–T006 y T011.
 **Objetivo:** Evaluar la primera versión contra los trece criterios de SPECIFICATION §10.
 **Alcance:** actualizar la matriz inicial, comprobar vigencia de evidencia y cubrir huecos mediante pruebas sintéticas
 pertinentes. No repetir todas las operaciones reales de fases anteriores. Pendientes de T001 y T006: SSE gestionado
@@ -177,8 +180,9 @@ pertinentes. No repetir todas las operaciones reales de fases anteriores. Pendie
 - Se registran bloqueos y faltas de cobertura; fixes que cambien producto se acotan como tarea propia antes de
   continuar. Ningún criterio del alcance declarado se cierra solo porque su fase original figure completada.
 
-**Validación:** (prevista) pruebas dirigidas a huecos identificados; sin proveedores, servicios operativos ni smokes.
-**Entregables:** (previstos) `docs/phase/P010_MATRIZ_ACEPTACION.md`.
+**Validación:** dos tests nuevos (`tests/product/test_acceptance_matrix.py`) y suites offline reejecutadas sobre la
+base (matriz §4); sin proveedores, servicios operativos ni smokes.
+**Entregables:** `docs/phase/P010_MATRIZ_ACEPTACION.md`, `tests/product/test_acceptance_matrix.py`.
 
 ## P010-T008 — Propuesta de validación real complementaria y alcance
 
@@ -204,14 +208,15 @@ ejecutar posteriormente o conservar esos límites. Esta tarea prepara la propues
 
 ## P010-T009 — Verificación final del paquete y revisión de salida
 
-**Estado:** pendiente. **Depende de:** T002–T008, T011 y las correcciones/evidencias adicionales que se acuerden.
+**Estado:** pendiente. **Depende de:** T002–T008, T011, T012 y las correcciones/evidencias adicionales que se acuerden.
 **Objetivo:** Acreditar el estado final del producto y emitir un dictamen de cierre revisable.
 **Alcance:** checks offline finales, QA de las pantallas modificadas y verificación del wheel en entorno temporal;
 contraste del paquete final con la matriz de aceptación y el alcance real decidido.
 **Rutas permitidas:** `docs/**`; incidencias de código se corrigen en tareas acotadas previas, no en este informe.
 **Criterios de aceptación:**
 
-- unittest, pytest, Node, tipos/build y Alembic pertinentes sobre una base identificada, con resultados y omisiones;
+- unittest, pytest, Node, tipos/build y Alembic pertinentes sobre una base identificada, con resultados y omisiones
+  (incluido el test intermitente de `test_commands.py` observado en T007);
   no repetir suites ya correctas si no hay cambios o incertidumbres que lo justifiquen.
 - Wheel con UI/migraciones verificado fuera de la instalación operativa, con CLI falsas y datos sintéticos.
   Las instalaciones/servicios o smokes que requiera el recorrido se concretan y autorizan antes de ejecutarlos;
@@ -262,3 +267,25 @@ no cambian.
 **Validación:** pytest completa, unittest y Alembic en SQLite temporal (resultados en la entrega §6); medidas sobre un
 ámbito sintético de 35,4 MiB. Node/tipos/build no aplican: el cliente y la API no cambian.
 **Entregables:** `docs/phase/P010-T011_METRICAS_SIN_HISTORIAL.md`.
+
+## P010-T012 — Migración explícita de una base existente desde el paquete instalado
+
+**Estado:** pendiente. **Depende de:** T007. Añadida por T007 (D149); precede a T009.
+**Objetivo:** Cumplir SPECIFICATION §9 («migraciones explícitas con backup previo») en el paquete instalado.
+**Alcance:** orden `harness-local migrate` sobre `storage/migrate.py` (instantánea `premigration-1`, D053), su ayuda,
+README y ARCHITECTURE; `scripts/dev` y `check_distribution.py` solo si procede. `init-db` y `serve` conservan D043.
+**Rutas permitidas:** `src/harness_local/**`, `scripts/**`, `tests/**`, `README.md`, `docs/**`.
+**Criterios de aceptación:**
+
+- Una base existente en una revisión anterior conocida pasa a la cabeza solo por orden explícita, con instantánea
+  previa verificada en un directorio elegido fuera de los checkouts; una base al día no cambia. La orden no crea
+  bases: una ruta inexistente se rechaza y la creación sigue siendo `init-db`.
+- Se rechazan sin tocar bytes un servicio o escritor vivo, una revisión desconocida o más nueva, una restauración de
+  consulta, una base sin Alembic y los enlaces. Un fallo conserva base e instantánea, sin restaurar automáticamente.
+- Una base sintética en `0022` con runs de varios formatos queda en `0023` con su proyección rellenada y `serve` la
+  acepta; historiales y snapshots intactos. `scripts/dev` conserva su comportamiento.
+- README («Actualizar») y ARCHITECTURE §§9–10 describen la orden y retiran el límite; paridad de flujos si cambia.
+
+**Validación:** (prevista) pytest completa, unittest y Alembic en SQLite temporal; la orden en el wheel se acredita
+en T009. Sin migrar la instalación real ni el área de P009.
+**Entregables:** (previstos) `docs/phase/P010-T012_MIGRACION_INSTALADA.md`.

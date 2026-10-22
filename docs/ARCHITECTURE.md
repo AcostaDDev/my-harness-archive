@@ -262,7 +262,7 @@ de las recetas Django y TypeScript web no heredan ese valor: reciben `HOME`/`TMP
 - El manifiesto que fija una receta (Django o TypeScript web) no admite dependencias nuevas tras preparar; requiere
   un flujo confirmado futuro. Las altas e importaciones aportan su propio `package.json` (D143).
 - Sin actualizador de bases en el paquete instalado (D043): una base de una revisión anterior no arranca con un
-  paquete nuevo; P010-T007 valora si se acota como tarea propia.
+  paquete nuevo. Hueco de SPECIFICATION §9 que corrige P010-T012 (D149).
 - El perfil `typescript-web` protege `package.json`, `package-lock.json`, `tsconfig.json`, `scripts/**` y `tests/**`
   frente al ejecutor normal: el ejecutor no crea ni modifica archivos bajo `tests/`.
 - Tras un reinicio que renumere el dispositivo, crear otro proyecto exige volver a elegir la carpeta (D130).

@@ -15,7 +15,7 @@ hitos H0–H6 del backlog original; la definición inicial está en [archive/pha
 | P007 | Agentes configurables e interfaz de producto | completada (2026-10-15) | [phase-007](archive/phase-007/SUMMARY.md) |
 | P008 | Contrato documental unificado, cierre de fase e importación de proyectos | completada (2026-10-19) | [phase-008](archive/phase-008/SUMMARY.md) |
 | P009 | Proyecto Django desde cero y piloto con cuatro combinaciones de agentes | completada (2026-10-21) | [phase-009](archive/phase-009/SUMMARY.md) |
-| P010 | Consolidación de la primera versión local | en curso (T001–T006 y T011 completadas el 2026-10-22) | [plan](phase/P010_PLAN_CONSOLIDACION.md) |
+| P010 | Consolidación de la primera versión local | en curso (T001–T007 y T011 completadas el 2026-10-22) | [plan](phase/P010_PLAN_CONSOLIDACION.md) |
 
 ## P001 — Contratos y prueba de viabilidad
 
@@ -177,7 +177,7 @@ publicación y ejecución del harness sobre este repositorio. Sin ampliación de
 **Estado:** planificada el 2026-10-21 por aceptación de la propuesta del usuario, con encargo limitado a documentación.
 T001 completada el 2026-10-22 ([contrato](phase/P010-T001_CONTRATO_CONSOLIDACION.md),
 [D142](DECISIONS.md#d142--p010-t001-receta-typescript-proyección-de-runs-y-tarea-t011)), que añade T011;
-T002–T006 y T011 completadas el mismo día (D143–D148); T007–T010 pendientes. [Plan](phase/P010_PLAN_CONSOLIDACION.md), [tareas](NEXT_STEPS.md) y
+T002–T007 y T011 completadas el mismo día (D143–D149); T007 añade T012; T008–T010 y T012 pendientes. [Plan](phase/P010_PLAN_CONSOLIDACION.md), [tareas](NEXT_STEPS.md) y
 [D141](DECISIONS.md#d141--p010-consolidación-de-la-primera-versión-local).
 
 ## Candidatas sin fase asignada

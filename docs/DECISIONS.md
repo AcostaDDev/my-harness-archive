@@ -159,6 +159,7 @@ tarea se leen solo las decisiones que cita; este índice sirve para buscar prece
 | [D146](#d146--p010-t004-marcadores-opcionales-en-la-definición) | P010-T004: marcadores opcionales en la definición | P010 |
 | [D147](#d147--p010-t005-evidencia-histórica-de-una-fase-cerrada) | P010-T005: evidencia histórica de una fase cerrada | P010 |
 | [D148](#d148--p010-t006-documentación-de-instalación-y-alcance-soportado) | P010-T006: documentación de instalación y alcance soportado | P010 |
+| [D149](#d149--p010-t007-matriz-de-aceptación-sse-por-cursor-y-tarea-t012) | P010-T007: matriz de aceptación, SSE por cursor y tarea T012 | P010 |
 
 ## D001 — Alcance local y arquitectura base
 
@@ -4435,3 +4436,19 @@ Contrasta README, ARCHITECTURE y `examples/` con el código y la evidencia, sin 
   acota como tarea de producto; no se documenta una vía manual sobre `storage/migrate.py`.
 - La plantilla TOML sigue en `local-config-4` (la fija un test) y vale como v5 cambiando `format`; el fragmento Django
   se añade con otro nombre de composición si el TOML ya tiene `[compositions.django]`.
+
+## D149 — P010-T007: matriz de aceptación, SSE por cursor y tarea T012
+
+Estado: completada el 2026-10-22. Fase: P010. [Matriz](phase/P010_MATRIZ_ACEPTACION.md).
+Decisiones del usuario en el bucle HITL de T007 sobre las dos cuestiones abiertas de T001 y T006.
+
+- **Criterio 13 de SPECIFICATION §10.** En la UI gestionada, el sondeo de eventos con cursor por secuencia de D029
+  cumple la garantía «sin huecos ni duplicados» que el criterio pide al SSE; el SSE literal se acredita en la
+  observación legacy. Es una interpretación explícita: la especificación no cambia y el SSE gestionado sigue sin
+  implementarse. Un test nuevo lee eventos por páginas mientras el run avanza y continúa tras reiniciar el servicio.
+- **Migraciones del paquete instalado.** La falta de una orden de migración en el paquete (D043, D148) incumple
+  «migraciones explícitas con backup previo» de §9. Se añade **P010-T012**: `harness-local migrate` sobre
+  `storage/migrate.py`, con instantánea previa y las mismas negativas, antes de T009.
+- Matriz: los trece criterios cumplen en el alcance offline con tests reejecutados; dos tests nuevos cubren el
+  recorrido completo del criterio 2 por la API y el cursor del 13. La evidencia real es histórica y la falta de uso
+  real (chat, backup, A/B, perfil declarado, receta TypeScript) queda para T008. Sin cambios de producto.
