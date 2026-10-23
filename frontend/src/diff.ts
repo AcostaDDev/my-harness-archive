@@ -45,8 +45,9 @@ function operations(a: string[], b: string[]): Op[] | null {
 /**
  * Unified diff from `before` to `after` with three lines of context. A null `before` is a new file and a null
  * `after` a deleted one. Returns "" if nothing changed and null if the document is too large to compare here.
+ * `eolNote` is the text of the line that marks a changed final newline, in the visual language.
  */
-export function unifiedDiff(path: string, before: string | null, after: string | null): string | null {
+export function unifiedDiff(path: string, before: string | null, after: string | null, eolNote: string): string | null {
   if (before === after) return "";
   const ops = operations(lines(before ?? ""), lines(after ?? ""));
   if (!ops) return null;
@@ -70,7 +71,7 @@ export function unifiedDiff(path: string, before: string | null, after: string |
     const oldCount = hunk.filter(op => op.kind !== "+").length, newCount = hunk.filter(op => op.kind !== "-").length;
     out.push(`@@ -${oldCount ? oldStart : oldStart - 1},${oldCount} +${newCount ? newStart : newStart - 1},${newCount} @@`);
     for (const op of hunk) out.push(op.kind + op.line);
-    if (eol && last === ops.length - 1) out.push("\\ Cambia el salto de línea final");
+    if (eol && last === ops.length - 1) out.push(`\\ ${eolNote}`);
   }
   return out.join("\n") + "\n";
 }
@@ -96,8 +97,8 @@ export function appendDiffPage(loaded: LoadedDiff | undefined, page: DiffPage): 
 }
 
 /** Human-readable size in binary units, like the server limits (64 KiB, 4 MiB). */
-export function byteSize(value: number): string {
-  if (value < 1024) return `${value.toLocaleString("es-ES")} B`;
+export function byteSize(value: number, language: string): string {
+  if (value < 1024) return `${value.toLocaleString(language)} B`;
   const [amount, unit] = value < 1024 * 1024 ? [value / 1024, "KiB"] : [value / (1024 * 1024), "MiB"];
-  return `${amount.toLocaleString("es-ES", { maximumFractionDigits: 1 })} ${unit}`;
+  return `${amount.toLocaleString(language, { maximumFractionDigits: 1 })} ${unit}`;
 }

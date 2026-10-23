@@ -1,6 +1,14 @@
-import { useLayoutEffect, useRef, useState } from "react";
+import { useLayoutEffect, useMemo, useRef, useState } from "react";
 import type { ReactNode } from "react";
-import { axis, compact, scale } from "./metrics.ts";
+import { useI18n } from "./Language";
+import { axis, formats, scale } from "./metrics.ts";
+import type { Formats } from "./metrics.ts";
+
+/** Statistics formats in the current visual language. */
+export function useFormats(): Formats {
+  const { language, t, n } = useI18n();
+  return useMemo(() => formats(language, t, n), [language, t, n]);
+}
 
 // In-house SVG charts (H6.2 E6, D076): one series in the accent or, for OK/KO, the status pair validated for
 // color blindness. Null is never drawn as zero: it has its own "no data" mark. Every chart has its table.
@@ -42,6 +50,8 @@ function Frame({ label, children, tip, width, frameRef }: { label: string; child
 
 /** Horizontal bars of one series (magnitude by category), with the value at the tip. */
 export function BarChart({ data, label, unit = "" }: { data: Datum[]; label: string; unit?: string }) {
+  const { compact } = useFormats();
+  const { t } = useI18n();
   const [ref, width] = useWidth<HTMLDivElement>();
   const [tip, setTip] = useState<Tip>(null);
   const { top: max, ticks } = axis(Math.max(0, ...data.map(d => d.value ?? 0)));
@@ -72,7 +82,7 @@ export function BarChart({ data, label, unit = "" }: { data: Datum[]; label: str
           <text x={labelWidth - 10} y={y + row / 2 + 4} textAnchor="end" className="chart-label">{clip(d.label, labelWidth)}</text>
           {length == null
             ? <><circle cx={labelWidth + 5} cy={y + row / 2} r={4} className="chart-absent" />
-              <text x={labelWidth + 16} y={y + row / 2 + 4} className="chart-value muted-text">sin dato</text></>
+              <text x={labelWidth + 16} y={y + row / 2 + 4} className="chart-value muted-text">{t("metrics.no_data")}</text></>
             : <><path d={bar(labelWidth, y + (row - 16) / 2, Math.max(length, 1), 16)} className="chart-bar" />
               <text x={labelWidth + Math.max(length, 1) + 6} y={y + row / 2 + 4} className="chart-value">{compact(d.value)}{unit}</text></>}
         </g>;
@@ -84,6 +94,7 @@ export function BarChart({ data, label, unit = "" }: { data: Datum[]; label: str
 
 /** Columns of one series in chronological order; days without data carry their mark, not a zero column. */
 export function ColumnChart({ data, label }: { data: Datum[]; label: string }) {
+  const { compact } = useFormats();
   const [ref, width] = useWidth<HTMLDivElement>();
   const [tip, setTip] = useState<Tip>(null);
   const { top: max, ticks } = axis(Math.max(0, ...data.map(d => d.value ?? 0)));
@@ -122,6 +133,8 @@ export function ColumnChart({ data, label }: { data: Datum[]; label: string }) {
 
 /** OK/KO stacked by ordered category (phases): OK at the base, KO on top, separated by 2 px of surface. */
 export function StackedColumns({ data, label }: { data: Stacked[]; label: string }) {
+  const { compact } = useFormats();
+  const { t } = useI18n();
   const [ref, width] = useWidth<HTMLDivElement>();
   const [tip, setTip] = useState<Tip>(null);
   const { top: max, ticks } = axis(Math.max(0, ...data.map(d => d.ok + d.ko)), 4, true);
@@ -134,8 +147,8 @@ export function StackedColumns({ data, label }: { data: Stacked[]; label: string
   const base = 8 + plotHeight;
   return <Frame label={label} tip={tip} width={width} frameRef={ref}>
     <ul className="chart-legend" aria-hidden="true">
-      <li><span className="chart-key chart-key-ok" />Validaciones OK</li>
-      <li><span className="chart-key chart-key-ko" />Validaciones KO</li>
+      <li><span className="chart-key chart-key-ok" />{t("stats.legend.ok")}</li>
+      <li><span className="chart-key chart-key-ko" />{t("stats.legend.ko")}</li>
     </ul>
     {width > 0 && <svg width={width} height={height} aria-hidden="true" className="chart-svg">
       {ticks.map(value => {

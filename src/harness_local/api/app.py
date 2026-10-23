@@ -16,6 +16,7 @@ from harness_local.api.schemas import HealthRead, ProblemResponse, SimulationCre
 from harness_local.api.security import local_request
 from harness_local.api.session import LocalSessions, session_router
 from harness_local.core.simulation import SimulationService
+from harness_local.i18n import message
 from harness_local.storage.database import database_url, make_engine
 from harness_local.storage.repository import SQLiteSimulationRepository
 from harness_local.storage.schema import require_schema
@@ -53,6 +54,7 @@ def create_app(url: str | None = None, ui_dir: Path | None = None,
     app = FastAPI(title="Harness Local", version="0.1.0", lifespan=lifespan,
                   docs_url=None, redoc_url=None)
     app.state.sessions = sessions
+    app.state.language = sessions.language
     app.include_router(session_router(sessions))
     app.include_router(managed_router(runtime))
 
@@ -60,7 +62,7 @@ def create_app(url: str | None = None, ui_dir: Path | None = None,
     async def restored_read_only(request, call_next):
         if request.url.path != '/api/session' and request.method not in ('GET', 'HEAD', 'OPTIONS') and is_read_only_archive(engine):
             return JSONResponse(status_code=409, content={'code': 'restored_read_only',
-                'diagnostic': 'Restauración de consulta; no autoriza escritores ni reanudar procesos.'})
+                'diagnostic': message('api.restored_read_only', language(engine))})
         return await call_next(request)
 
     @app.middleware('http')
@@ -103,7 +105,7 @@ def create_app(url: str | None = None, ui_dir: Path | None = None,
     def get_simulation(simulation_id: UUID):
         simulation = service.get(str(simulation_id))
         if simulation is None:
-            raise HTTPException(404, "Simulación no encontrada.")
+            raise HTTPException(404, message("api.simulation_not_found", language(engine)))
         return simulation
 
     assets = ui_dir if ui_dir is not None else Path(__file__).resolve().parents[1] / "web"

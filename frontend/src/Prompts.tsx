@@ -1,12 +1,14 @@
 import { useEffect, useRef, useState } from "react";
+import { useI18n } from "./Language";
 import { managed } from "./managed-api";
 import type { S } from "./managed-api";
+import { message } from "./ui";
 
 type Scope = S["PromptDetailRead"]["scope"];
 type Detail = S["PromptDetailRead"];
-const message = (e: unknown) => e instanceof Error ? e.message : String(e);
 
 export function Prompts({ project }: { project: string }) {
+  const { t } = useI18n();
   const [scope, setScope] = useState<Scope>("project");
   const [name, setName] = useState("execute-task");
   const [names, setNames] = useState<string[]>([]);
@@ -18,21 +20,21 @@ export function Prompts({ project }: { project: string }) {
     }).catch(e => { if (active) setError(message(e)); });
     return () => { active = false; };
   }, [project]);
-  return <section className="panel" aria-labelledby="prompts-title"><h2 id="prompts-title">Prompts versionados</h2>
-    <p className="hint">Jerarquía: base, perfil y proyecto; cada nivel sustituye al anterior. Activar afecta a intentos futuros de runs en curso o nuevos.
-      Los runs detenidos conservan su catálogo al reanudar. Editar no concede permisos.</p>
+  return <section className="panel" aria-labelledby="prompts-title"><h2 id="prompts-title">{t("prompts.title")}</h2>
+    <p className="hint">{t("prompts.hint")}</p>
     {error && <p role="alert" className="state state-error">{error}</p>}
     <div className="form-row">
-    <label>Ámbito<select value={scope} onChange={e => setScope(e.target.value as Scope)}>
-      <option value="project">Proyecto</option><option value="profile">Perfil compartido</option><option value="core">Base global</option>
+    <label>{t("prompts.scope")}<select value={scope} onChange={e => setScope(e.target.value as Scope)}>
+      <option value="project">{t("prompts.scope.project")}</option><option value="profile">{t("prompts.scope.profile")}</option><option value="core">{t("prompts.scope.core")}</option>
     </select></label>
-    <label>Plantilla<select value={name} onChange={e => setName(e.target.value)}>{names.map(n => <option key={n}>{n}</option>)}</select></label>
+    <label>{t("prompts.template")}<select value={name} onChange={e => setName(e.target.value)}>{names.map(n => <option key={n}>{n}</option>)}</select></label>
     </div>
     <Editor key={`${project}:${scope}:${name}`} project={project} scope={scope} name={name} />
   </section>;
 }
 
 function Editor({ project, scope, name }: { project: string; scope: Scope; name: string }) {
+  const { t } = useI18n();
   const base = `/projects/${project}/prompts/${name}`;
   const [detail, setDetail] = useState<Detail>();
   const [selected, setSelected] = useState("");
@@ -55,13 +57,9 @@ function Editor({ project, scope, name }: { project: string; scope: Scope; name:
   }, [base, scope]);
   useEffect(() => { setConfirmed(false); setDiff(""); setStatus(""); }, [selected, before, text, detail?.generation]);
   const version = detail?.versions.find(v => v.id === selected);
-  const flowHelp = name === "bootstrap-project"
-    ? "Plantilla histórica de la creación v1, retirada. Los proyectos nuevos usan define-project."
-    : name === "reconcile-phase"
-      ? "Plantilla de la tarea de reconciliación documental: se ejecuta, revisa y confirma como una tarea; después se adopta la base documental por hash."
-      : name === "close-phase"
-        ? "Plantilla de revisión del check de fase. Tras READY, el cierre y archivo requieren su propia confirmación."
-        : "";
+  const flowHelp = name === "bootstrap-project" ? t("prompts.flow.bootstrap")
+    : name === "reconcile-phase" ? t("prompts.flow.reconcile")
+      : name === "close-phase" ? t("prompts.flow.close") : "";
   async function operate(action: () => Promise<void>) {
     if (guard.current) return;
     guard.current = true; setBusy(true); setError("");
@@ -83,46 +81,46 @@ function Editor({ project, scope, name }: { project: string; scope: Scope; name:
     if (alive.current) { setSelected(v.id); setText(v.template); }
   }
   return <section>
-    {flowHelp && <p>{flowHelp} Activar una plantilla afecta a usos posteriores; no inicia la operación.</p>}
-    {scope !== "project" && <p>Este ámbito afecta a otros proyectos que hereden {scope === "core" ? "la base global" : "este perfil"}.</p>}
+    {flowHelp && <p>{flowHelp} {t("prompts.flow.activation")}</p>}
+    {scope !== "project" && <p>{scope === "core" ? t("prompts.inherit.core") : t("prompts.inherit.profile")}</p>}
     {error && <p role="alert" className="state state-error">{error}</p>}
     {status && <p role="status" className="state state-ok">{status}</p>}
     {detail && <>
-      <p>Generación: {detail.generation} · Activa en este ámbito: {detail.active_id ?? "heredada"}</p>
-      <p>Efectiva: {detail.effective.scope} · {detail.effective.id}</p>
-      <p>Variables obligatorias: {detail.variables.map(v => `{{${v}}}`).join(", ")}. No se permiten otras variables.</p>
-      <label>Versión seleccionada<select disabled={busy} value={selected} onChange={e => {
+      <p>{t("prompts.generation", { generation: detail.generation, active: detail.active_id ?? t("prompts.inherited") })}</p>
+      <p>{t("prompts.effective", { scope: detail.effective.scope, id: detail.effective.id })}</p>
+      <p>{t("prompts.variables", { variables: detail.variables.map(v => `{{${v}}}`).join(", ") })}</p>
+      <label>{t("prompts.selected")}<select disabled={busy} value={selected} onChange={e => {
         const v = detail.versions.find(v => v.id === e.target.value)!; setSelected(v.id); setText(v.template);
-      }}>{detail.versions.map(v => <option key={v.id} value={v.id}>{v.scope} · {v.id === detail.active_id ? "activa · " : ""}{v.id}</option>)}</select></label>
-      <p>Procedencia: {version?.source} · SHA-256: {version?.sha256}</p>
-      <label>Contenido del borrador<textarea rows={16} disabled={busy} value={text} onChange={e => setText(e.target.value)} maxLength={100000} /></label>
+      }}>{detail.versions.map(v => <option key={v.id} value={v.id}>{v.id === detail.active_id ? t("prompts.version.active", { scope: v.scope, id: v.id }) : `${v.scope} · ${v.id}`}</option>)}</select></label>
+      <p>{t("prompts.provenance", { source: version?.source ?? "", sha: version?.sha256 ?? "" })}</p>
+      <label>{t("prompts.draft")}<textarea rows={16} disabled={busy} value={text} onChange={e => setText(e.target.value)} maxLength={100000} /></label>
       <div className="actions">
         <button disabled={busy} onClick={() => void operate(async () => {
           await managed<S["PromptValidationRead"]>(`${base}/validate`, { template: text } satisfies S["PromptValidateCreate"]);
-          if (alive.current) setStatus("Variables válidas. No se ha guardado ni activado el contenido.");
-        })}>Validar variables</button>
-        <button disabled={busy} onClick={() => void operate(() => draft(false))}>Guardar nueva versión borrador</button>
-        <button disabled={busy || !version} onClick={() => void operate(() => draft(true))}>Rollback: copiar a nueva versión</button>
-        <button disabled={busy} onClick={() => void operate(async () => { await reload(); })}>Recargar versiones</button>
+          if (alive.current) setStatus(t("prompts.valid"));
+        })}>{t("prompts.validate")}</button>
+        <button disabled={busy} onClick={() => void operate(() => draft(false))}>{t("prompts.save_draft")}</button>
+        <button disabled={busy || !version} onClick={() => void operate(() => draft(true))}>{t("prompts.rollback")}</button>
+        <button disabled={busy} onClick={() => void operate(async () => { await reload(); })}>{t("prompts.reload")}</button>
       </div>
-      <label>Comparar desde<select disabled={busy} value={before} onChange={e => setBefore(e.target.value)}>
+      <label>{t("prompts.compare_from")}<select disabled={busy} value={before} onChange={e => setBefore(e.target.value)}>
         {detail.versions.map(v => <option key={v.id} value={v.id}>{v.scope} · {v.id}</option>)}
       </select></label>
       <button disabled={busy || !version} onClick={() => void operate(async () => {
         const d = await managed<S["PromptDiffRead"]>(`${base}/diff?before=${encodeURIComponent(before)}&after=${encodeURIComponent(selected)}`);
-        if (alive.current) setDiff(d.diff || "Sin diferencias de contenido.");
-      })}>Comparar con versión seleccionada</button>
-      {diff && <pre className="diff" aria-label="Diff de versiones">{diff}</pre>}
-      <label>Motivo de activación<input disabled={busy} value={reason} onChange={e => setReason(e.target.value)} maxLength={2000} /></label>
+        if (alive.current) setDiff(d.diff || t("prompts.no_diff"));
+      })}>{t("prompts.compare")}</button>
+      {diff && <pre className="diff" aria-label={t("prompts.diff")}>{diff}</pre>}
+      <label>{t("prompts.reason")}<input disabled={busy} value={reason} onChange={e => setReason(e.target.value)} maxLength={2000} /></label>
       <label className="check"><input type="checkbox" disabled={busy} checked={confirmed} onChange={e => setConfirmed(e.target.checked)} />
-        Confirmo activar esta versión guardada en el ámbito {scope}.</label>
+        {t("prompts.confirm", { scope })}</label>
       <button className="button-primary" disabled={busy || !confirmed || !reason.trim() || version?.scope !== scope || version?.owner !== detail.owner || selected.startsWith("builtin-") || text !== version?.template}
         onClick={() => void operate(async () => {
           const body: S["PromptActivateCreate"] = { expected_version: detail.generation, version_id: selected, reason, confirmed: true };
           const d = await managed<Detail>(`${base}/activate?scope=${scope}`, body);
           if (alive.current) { setDetail(d); setConfirmed(false); setReason(""); }
-        })}>Activar versión seleccionada</button>
-      <details className="evidence"><summary>Historial de activaciones de este ámbito</summary><pre>{JSON.stringify(detail.activations, null, 2)}</pre></details>
+        })}>{t("prompts.activate")}</button>
+      <details className="evidence"><summary>{t("prompts.history")}</summary><pre>{JSON.stringify(detail.activations, null, 2)}</pre></details>
     </>}
   </section>;
 }

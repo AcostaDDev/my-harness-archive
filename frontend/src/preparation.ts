@@ -4,26 +4,31 @@ export function pendingPreparationStep(steps: { number: number; status: string }
   return steps.find(step => step.status !== 'DONE')?.number ?? steps.at(-1)?.number;
 }
 /** P010-T002 (D142): what each packaged recipe prepares, by its frozen `project_recipe` (v2: P011-T020, D168). */
-export function recipeLabel(recipe: string | null | undefined): string {
+export function recipeLabel(recipe: string | null | undefined): string | null {
   return ({ 'django-recipe-1': 'Django', 'typescript-web-recipe-1': 'TypeScript web', 'django-recipe-2': 'Django',
-    'typescript-web-recipe-2': 'TypeScript web' } as Record<string, string>)[recipe ?? ''] ?? 'el proyecto';
+    'typescript-web-recipe-2': 'TypeScript web' } as Record<string, string>)[recipe ?? ''] ?? null;
 }
 export function isTypeScriptRecipe(recipe: string | null | undefined): boolean {
   return recipe === 'typescript-web-recipe-1' || recipe === 'typescript-web-recipe-2';
 }
-export function recipeModes(recipe: string | null | undefined): { offline: string; network: string; hint: string } {
+export function recipeModes(recipe: string | null | undefined, t: Translate): { offline: string; network: string; hint: string } {
   return isTypeScriptRecipe(recipe)
-    ? { offline: 'Offline: usar solo la caché npm declarada por el operador',
-        network: 'Red: descargar del registro npm el lock fijado',
-        hint: 'node_modules queda dentro del hijo; la caché npm es la del operador y con red también se escribe en ella. Un fallo detiene la preparación y conserva sus bytes; no se repite ningún comando automáticamente.' }
-    : { offline: 'Offline: usar wheels locales y caché del hijo',
-        network: 'Red: descargar wheels fijados de PyPI',
-        hint: 'La caché y el entorno permanecen dentro del hijo. Un fallo detiene la preparación y conserva sus bytes; no se repite ningún comando automáticamente.' };
+    ? { offline: t('preparation.mode.typescript.offline'), network: t('preparation.mode.typescript.network'),
+        hint: t('preparation.mode.typescript.hint') }
+    : { offline: t('preparation.mode.django.offline'), network: t('preparation.mode.django.network'),
+        hint: t('preparation.mode.django.hint') };
 }
-export function preparationStatus(status: string, recipe?: string | null): string {
+/** Recipe text with its name, or the generic sentence when the recipe is unknown (no fragment is inserted). */
+export function recipeText(recipe: string | null | undefined, t: Translate, named: MessageKey, generic: MessageKey): string {
   const label = recipeLabel(recipe);
-  return ({ QUEUED: 'En cola', ACTIVE: `Preparando ${label}`, FAILED: 'Detenida por un fallo',
-    RECOVERY_REQUIRED: 'Requiere conciliación', CANCELLED: 'Cancelada', COMPLETED: recipe ? `${label} preparado` : 'Proyecto preparado' } as Record<string, string>)[status] ?? status;
+  return label ? t(named, { recipe: label }) : t(generic);
+}
+export function preparationStatus(status: string, recipe: string | null | undefined, t: Translate): string {
+  if (status === 'ACTIVE') return recipeText(recipe, t, 'preparation.status.active', 'preparation.status.active_generic');
+  if (status === 'COMPLETED') return recipeText(recipe, t, 'preparation.status.completed', 'preparation.status.completed_generic');
+  const keys: Record<string, MessageKey> = { QUEUED: 'preparation.status.queued', FAILED: 'preparation.status.failed',
+    RECOVERY_REQUIRED: 'preparation.status.recovery_required', CANCELLED: 'preparation.status.cancelled' };
+  return keys[status] ? t(keys[status]) : status;
 }
 
 // P011-T020 (D168): v2 steps carry a stable `id` and are named in the visual language; the label frozen in the plan

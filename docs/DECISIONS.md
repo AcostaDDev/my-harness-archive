@@ -180,6 +180,7 @@ tarea se leen solo las decisiones que cita; este índice sirve para buscar prece
 | [D167](#d167--p011-t008-idioma-de-trabajo-inmutable-por-raíz-y-par-congelado-por-job-e-intento) | P011-T008: idioma de trabajo inmutable por raíz y par congelado por job e intento | P011 |
 | [D168](#d168--p011-t020-recetas-v2-en-local-config-6-con-el-idioma-de-trabajo-sellado-en-plan-y-recibo) | P011-T020: recetas v2 en local-config-6 con el idioma de trabajo sellado en plan y recibo | P011 |
 | [D169](#d169--p011-t009-directiva-de-idioma-sellada-y-documentos-generados-en-el-idioma-de-trabajo) | P011-T009: directiva de idioma sellada y documentos generados en el idioma de trabajo | P011 |
+| [D170](#d170--p011-t010-interfaz-enes-por-catálogos-tipados-y-diagnósticos-http-propios-en-el-visual-guardado) | P011-T010: interfaz en/es por catálogos tipados y diagnósticos HTTP propios en el visual guardado | P011 |
 
 ## D001 — Alcance local y arquitectura base
 
@@ -5026,3 +5027,32 @@ Fase: P011. Concreta D158/D159 (contrato T001 §4/§5), D166 y D167 (par congela
 - Sin cambios de esquema, API, rutas, marcadores, códigos, parsers, presupuestos ni del idioma funcional del hijo.
   Mensajes visibles y avisos de vista previa → T010. Pruebas con agentes falsos: no acreditan calidad lingüística
   de proveedores reales ni ahorro de tokens. T010 es la siguiente.
+
+## D170 — P011-T010: interfaz en/es por catálogos tipados y diagnósticos HTTP propios en el visual guardado
+
+Estado: implementada el 2026-10-23 por la continuación y commit local en inglés pedidos por el usuario.
+Fase: P011. Concreta D159 (contrato T001 §3) sobre la infraestructura D166.
+[Entrega, alcance y validación](phase/P011-T010_TRADUCCION_PRODUCTO.md),
+[flujo](flows/language-preferences.md).
+
+- HITL: T010 se desglosa. T010 = toda la interfaz React y los diagnósticos HTTP propios de `api/*` (sesión, guardia,
+  router); la nueva T021 cubre diagnósticos de servicio/CLI y ayuda argparse. La QA visual en/es, claro/oscuro y
+  escritorio/móvil se hace una vez tras T021 con autorización propia. La línea `Harness Local: access key at <ruta>`
+  es salida técnica fija en inglés que leen `scripts/dev.py` y `scripts/check_distribution.py` (actualizados aquí);
+  `módulo:atributo` y `Esquema SQLite` siguen con sus módulos en T021.
+- Catálogos: 1417 claves React en/es tipadas desde el inglés; una clave terminada en `.one` es siempre plural.
+  Frases con elementos (`rich`) parten la plantilla antes de insertar valores; las etiquetas de enlace traducibles son
+  frases propias, nunca fragmentos. Errores fuera de React como `LocalizedError(clave)`; `ManagedError` conserva el
+  `diagnostic` del servicio y, sin él, la interfaz añade su frase. Formatos de estadísticas, fechas, bytes y coste
+  por idioma (`Intl`), sin `es-ES` fijo. Recetas desconocidas usan frases genéricas, no un fragmento.
+- Visor Markdown: el HTML renderizado no lleva texto propio; códigos `data-blocked`/`data-alt` y párrafos vacíos que
+  el visor rellena con `textContent`/`title`. `splitBlocks` devuelve `{code, name}`.
+- Servidor: 24 claves nuevas del catálogo Python para `api/managed.py`, `api/app.py` y `api/security.py`, emitidas en
+  el visual guardado (inglés si no se lee); códigos, estados y claves JSON intactos. Textos que la API reenvía desde
+  servicios/storage, del agente, de terceros y la evidencia se muestran tal cual.
+- Excepciones: nombres de comandos de chat (protocolo español), estados/códigos, rutas, hashes, comandos y el
+  endónimo `Español`. La UI aún compara dos textos ingleses del servicio (`managed blocks are generated`,
+  `changed since`); T021 los conserva o pasa a códigos. Sin cambios de esquema, API/OpenAPI, rutas ni persistencia.
+- Validación: Node 93/93, `check`/`build` (aviso >500 kB previo), pytest 1608 passed, 2 skipped, 29 subtests
+  (una expectativa española antigua de `test_managed_api.py` pasa a leer el catálogo) y unittest 8 OK. Sin esquema
+  nuevo (sin Alembic), servicios, navegador, agentes, proveedores, red ni `scripts/dev`. T021 es la siguiente.

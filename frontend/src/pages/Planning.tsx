@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { ReactNode } from "react";
 import { unifiedDiff } from "../diff.ts";
+import { useI18n } from "../Language";
+import type { MessageKey } from "../i18n.ts";
 import { createOnce, jobRequest, managed, ManagedError } from "../managed-api";
 import type { S } from "../managed-api";
 import type { Route } from "../router";
@@ -9,7 +11,7 @@ import { Link, navigate } from "../navigation";
 import { Alert, DiffBlock, Empty, Evidence, Fields, Hash, Loading, PageHeader, Stale, Status, message, usePoll, when } from "../ui";
 import { useWorkspace } from "../workspace";
 import { EditProgress, MarkdownView } from "./Docs";
-import { recipeLabel } from "../preparation.ts";
+import { recipeText } from "../preparation.ts";
 
 // Conversational creation and planning in the UI (H6.2 E4) over the H6.5 API (D075).
 // The agent never writes: each draft is applied or edited with CAS on the hash shown, and the acceptance
@@ -27,30 +29,36 @@ type TurnResult = { answer?: string; questions?: { text: string; blocking: boole
   drafts?: { path: string; reason: string }[]; plan?: { reason: string } | null };
 
 const q = encodeURIComponent;
-const TURN: Record<Turn["status"], [string, "active" | "ok" | "danger" | "neutral" | "attention"]> = {
-  QUEUED: ["En cola o en curso", "active"], ANSWERED: ["Respondido", "ok"], FAILED: ["Fallido, sin reintento", "danger"],
-  UNKNOWN: ["Resultado desconocido, sin reintento", "attention"], REFUSED: ["Rechazado por el modo del checkout", "neutral"],
+type ToneValue = [MessageKey, "active" | "ok" | "danger" | "neutral" | "attention"];
+const TURN: Record<Turn["status"], ToneValue> = {
+  QUEUED: ["chat.turn.queued", "active"], ANSWERED: ["chat.turn.answered", "ok"], FAILED: ["chat.turn.failed", "danger"],
+  UNKNOWN: ["chat.turn.unknown", "attention"], REFUSED: ["chat.turn.refused", "neutral"],
 };
-const PROPOSAL: Record<Proposal["status"], [string, "active" | "ok" | "danger" | "neutral" | "attention"]> = {
-  PROPOSED: ["Propuesta", "attention"], APPLIED: ["Aplicada", "ok"], ACCEPTED: ["Plan confirmado", "ok"],
-  DISMISSED: ["Descartada", "neutral"], SUPERSEDED: ["Sustituida", "neutral"],
+const PROPOSAL: Record<Proposal["status"], ToneValue> = {
+  PROPOSED: ["chat.proposal.proposed", "attention"], APPLIED: ["planning.proposal.applied", "ok"], ACCEPTED: ["planning.proposal.accepted", "ok"],
+  DISMISSED: ["chat.proposal.dismissed", "neutral"], SUPERSEDED: ["planning.proposal.superseded", "neutral"],
 };
-const ORIGIN: Record<S["DefinitionDocumentRead"]["origin"], string> = {
-  draft: "Borrador tal cual", "draft+blocks": "Borrador con bloques regenerados", template: "Plantilla unificada", archive: "Archivo de la definición",
+const ORIGIN: Record<S["DefinitionDocumentRead"]["origin"], MessageKey> = {
+  draft: "planning.origin.draft", "draft+blocks": "planning.origin.draft_blocks", template: "planning.origin.template",
+  archive: "planning.origin.archive",
 };
+const STEPS: MessageKey[] = ["planning.step.brief", "planning.step.conversation", "planning.step.acceptance", "planning.step.first_task"];
 
 function draftRoute(conversation: Conversation, project: string, path?: string): Route {
   return conversation.kind === "onboarding" ? { name: "onboarding", project, conversation: conversation.id, path }
     : { name: "setup", project, path };
 }
 
-function Tone({ value }: { value: [string, string] }) {
-  return <span className={`status status-${value[1]}`}><span className="status-mark" aria-hidden="true" />{value[0]}</span>;
+function Tone({ value }: { value: ToneValue }) {
+  const { t } = useI18n();
+  return <span className={`status status-${value[1]}`}><span className="status-mark" aria-hidden="true" />{t(value[0])}</span>;
 }
 
 /** Creation steps on the same track as the phase lifecycle: where it is and what is missing. */
-function Steps({ current, labels }: { current: number; labels: string[] }) {
-  return <div className="rail" role="img" aria-label={`Paso ${current + 1} de ${labels.length}: ${labels[Math.min(current, labels.length - 1)]}`}>
+function Steps({ current }: { current: number }) {
+  const { t } = useI18n();
+  const labels = STEPS.map(key => t(key));
+  return <div className="rail" role="img" aria-label={t("planning.steps", { step: current + 1, total: labels.length, label: labels[Math.min(current, labels.length - 1)] })}>
     <ol className="rail-track">{labels.map((label, index) => <li key={label} className={index < current ? "rail-past" : index === current ? "rail-now" : "rail-next"}>
       <span className="rail-stop" aria-hidden="true" /><span className="rail-label">{label}</span></li>)}</ol>
   </div>;
@@ -63,31 +71,34 @@ function conflictText(error: unknown) {
 // --- shared conversation -----------------------------------------------------------------------
 
 function TurnList({ conversation }: { conversation: Conversation }) {
-  if (!conversation.turns.length) return <p className="hint">Todavía no hay turnos. Escribe el primer mensaje abajo.</p>;
+  const { t, n, rich } = useI18n();
+  if (!conversation.turns.length) return <p className="hint">{t("planning.turns.empty")}</p>;
   return <ol className="entry-list">{conversation.turns.map(turn => {
     const result = (turn.result?.result ?? null) as TurnResult | null;
     const reasons = Array.isArray(turn.result?.reasons) ? turn.result!.reasons as string[] : [];
+    const run = <Link to={{ name: "run-short", run: turn.run_id }}>{t("trail.run", { id: turn.run_id.slice(0, 8) })}</Link>;
     return <li className="entry turn" key={turn.id}>
-      <p className="turn-head"><strong>Turno {turn.number}</strong> <Tone value={TURN[turn.status]} /> <span className="muted">{when(turn.created_at)}</span></p>
+      <p className="turn-head"><strong>{t("chat.turn", { number: turn.number })}</strong> <Tone value={TURN[turn.status]} /> <span className="muted">{when(turn.created_at)}</span></p>
       <p className="turn-message">{turn.message}</p>
-      {turn.status === "QUEUED" && turn.run_status === "RECOVERY_REQUIRED" && <p className="state state-attention">El turno se interrumpió: su resultado es desconocido y no se repite. Confirma el escritor detenido en el <Link to={{ name: "run-short", run: turn.run_id }}>run {turn.run_id.slice(0, 8)}</Link>.</p>}
+      {turn.status === "QUEUED" && turn.run_status === "RECOVERY_REQUIRED" && <p className="state state-attention">{rich("planning.turn.interrupted", { run })}</p>}
       {result?.answer && <p className="turn-answer">{result.answer}</p>}
-      {!!result?.drafts?.length && <p className="hint">Borradores propuestos: {result.drafts.map(d => <code key={d.path} className="chip">{d.path}</code>)}</p>}
-      {result && "plan" in result && <p className="hint">{result.plan ? "Propone un plan para la fase de destino." : "Sin plan propuesto."}</p>}
+      {!!result?.drafts?.length && <p className="hint">{t("planning.turn.drafts")} {result.drafts.map(d => <code key={d.path} className="chip">{d.path}</code>)}</p>}
+      {result && "plan" in result && <p className="hint">{result.plan ? t("planning.turn.plan") : t("planning.turn.no_plan")}</p>}
       {reasons.length > 0 && <p className="state state-error">{reasons.join("; ")}</p>}
       <p className="hint">
-        <Link to={{ name: "run-short", run: turn.run_id }}>Run {turn.run_id.slice(0, 8)}</Link> <Status value={turn.run_status} />
-        {" "}· contexto <Hash value={turn.context_sha256} />
-        {turn.drafts.length > 0 && <> · {turn.drafts.length} borradores congelados</>}
-        {turn.documents.length > 0 && <> · {turn.documents.length} documentos congelados</>}
-        {turn.user_edits.length > 0 && <> · {turn.user_edits.length === 1 ? "1 edición tuya detectada" : `${turn.user_edits.length} ediciones tuyas detectadas`}</>}
+        {run} <Status value={turn.run_status} />
+        {" "}· {rich("planning.turn.context", { hash: <Hash value={turn.context_sha256} /> })}
+        {turn.drafts.length > 0 && <> · {n("planning.turn.frozen_drafts", turn.drafts.length)}</>}
+        {turn.documents.length > 0 && <> · {n("planning.turn.frozen_documents", turn.documents.length)}</>}
+        {turn.user_edits.length > 0 && <> · {n("planning.turn.user_edits", turn.user_edits.length)}</>}
       </p>
-      <Evidence title="Contexto congelado y resultado" value={turn} />
+      <Evidence title={t("planning.turn.evidence")} value={turn} />
     </li>;
   })}</ol>;
 }
 
 function MessageForm({ conversation, path, hint }: { conversation: Conversation; path: string; hint: ReactNode }) {
+  const { t } = useI18n();
   const { busy, operate, send } = useWorkspace();
   const [text, setText] = useState("");
   const pending = conversation.turns.some(t => t.status === "QUEUED");
@@ -96,28 +107,30 @@ function MessageForm({ conversation, path, hint }: { conversation: Conversation;
     await send(jobRequest(path, { expected_version: conversation.version, text } satisfies S["PlanningMessageCreate"]));
     setText("");
   }); }}>
-    <label>Mensaje al revisor<textarea rows={4} value={text} maxLength={20000} onChange={e => setText(e.target.value)} disabled={!open} /></label>
+    <label>{t("planning.message")}<textarea rows={4} value={text} maxLength={20000} onChange={e => setText(e.target.value)} disabled={!open} /></label>
     <p className="hint">{hint}</p>
-    {pending && <p role="status" className="state state-loading">El turno anterior sigue en curso; su respuesta aparecerá aquí.</p>}
-    <button disabled={busy || !open || !text.trim()}>Enviar mensaje</button>
+    {pending && <p role="status" className="state state-loading">{t("planning.message.pending")}</p>}
+    <button disabled={busy || !open || !text.trim()}>{t("planning.message.send")}</button>
   </form>;
 }
 
 function Dismiss({ conversation, proposal, base }: { conversation: Conversation; proposal: Proposal; base: string }) {
+  const { t } = useI18n();
   const { busy, operate } = useWorkspace();
   const [reason, setReason] = useState("");
   if (!proposal.actions.includes("dismiss")) return null;
   return <div className="form-row">
-    <label>Motivo del descarte<input value={reason} maxLength={2000} onChange={e => setReason(e.target.value)} /></label>
+    <label>{t("chat.proposal.dismiss_reason")}<input value={reason} maxLength={2000} onChange={e => setReason(e.target.value)} /></label>
     <button type="button" className="button-quiet" disabled={busy || !reason.trim()} onClick={() => void operate(async () => {
       await managed(`${base}/proposals/${proposal.id}/dismiss`, { expected_version: conversation.version, reason } satisfies S["PlanningDismissCreate"]);
-    })}>Descartar propuesta</button>
+    })}>{t("planning.proposal.dismiss")}</button>
   </div>;
 }
 
 // --- creation: /projects/:p/setup ----------------------------------------------------------------
 
 export function SetupPage({ path }: { path?: string }) {
+  const { t, rich } = useI18n();
   const { project, refresh } = useWorkspace();
   const info = usePoll<S["ManagedProjectRead"]>(`/projects/${project}`, 0);
   const v2 = info.data?.documents === "v2";
@@ -125,25 +138,26 @@ export function SetupPage({ path }: { path?: string }) {
   const list = usePoll<Summary[]>(v2 ? `/projects/${project}/planning` : null, 4000, refresh);
   if (!info.data) return info.error ? <Alert>{info.error}</Alert> : <Loading />;
   if (!v2) return <>
-    <PageHeader title="Creación del proyecto" />
-    <Empty title="Este proyecto usa el contrato documental anterior">
-      <p>La creación conversacional usa el contrato unificado D088. Registra un proyecto ya gestionado o incorpora código sin harness; vuelve al <Link to={{ name: "project", project }}>resumen</Link>.</p>
+    <PageHeader title={t("planning.setup.title")} />
+    <Empty title={t("docs.legacy.title")}>
+      <p>{t("planning.setup.legacy")} <Link to={{ name: "project", project }}>{t("planning.back_to_summary")}</Link></p>
     </Empty>
   </>;
   if (!status.data || !list.data) return status.error ?? list.error ? <Alert>{status.error ?? list.error}</Alert> : <Loading />;
   const definition = list.data.find(c => c.kind === "definition");
   if (definition) return <Definition key={definition.id} id={definition.id} path={path} status={status.data} />;
-  if (status.data.definition_operation) return <Empty title="El proyecto ya está creado"><p>Ve al <Link to={{ name: "project", project }}>resumen</Link>.</p></Empty>;
+  if (status.data.definition_operation) return <Empty title={t("planning.setup.created")}><p><Link to={{ name: "project", project }}>{t("planning.back_to_summary")}</Link></p></Empty>;
   if (!status.data.enabled) return <>
-    <PageHeader title="Creación del proyecto" />
-    <Empty title="El operador no ha autorizado crear este proyecto">
-      <p>La creación escribe borradores y el commit raíz en la carpeta, así que necesita <code>bootstrap_enabled</code> en el registro (con el techo de <code>[registration]</code> del TOML) o en el proyecto del operador. Si contiene código sin harness, usa la incorporación.</p>
+    <PageHeader title={t("planning.setup.title")} />
+    <Empty title={t("planning.setup.unauthorized")}>
+      <p>{rich("planning.setup.unauthorized_body", { flag: <code>bootstrap_enabled</code>, section: <code>[registration]</code> })}</p>
     </Empty>
   </>;
   return <BriefForm status={status.data} />;
 }
 
 function BriefForm({ status }: { status: S["BootstrapStatusRead"] }) {
+  const { t, n, rich } = useI18n();
   const { project, busy, operate } = useWorkspace();
   const key = `harness-setup-brief-v1:${project}`;
   const [title, setTitle] = useState(() => { try { return JSON.parse(sessionStorage.getItem(key) ?? "null")?.title ?? ""; } catch { return ""; } });
@@ -152,34 +166,35 @@ function BriefForm({ status }: { status: S["BootstrapStatusRead"] }) {
   useEffect(() => { try { sessionStorage.setItem(key, JSON.stringify({ title, brief })); } catch { /* no draft */ } }, [key, title, brief]);
   const bytes = new TextEncoder().encode(brief).length;
   return <>
-    <PageHeader title="Crear el proyecto">
-      <p>Describe qué quieres construir. El revisor propone los documentos de la plantilla unificada en turnos de solo lectura; tú aplicas, editas o descartas cada borrador, y al aceptar el harness hace el commit raíz con la fase P001 activa.</p>
+    <PageHeader title={t("planning.brief.page")}>
+      <p>{t("planning.brief.lede")}</p>
     </PageHeader>
-    <Steps current={0} labels={["Brief", "Conversación y borradores", "Aceptación", "Primera tarea"]} />
+    <Steps current={0} />
     {status.import_required && <p role="alert" className="state state-attention">{status.diagnostic}</p>}
     <section className="panel" aria-labelledby="brief-title">
-      <h2 id="brief-title">Brief</h2>
-      <p className="hint">Markdown libre, como máximo 256 KiB. Se congela al empezar y se archiva en <code>archive/phase-000/BRIEF.md</code>; no se edita después.</p>
+      <h2 id="brief-title">{t("planning.step.brief")}</h2>
+      <p className="hint">{rich("planning.brief.hint", { path: <code>archive/phase-000/BRIEF.md</code> })}</p>
       <form onSubmit={e => { e.preventDefault(); void operate(async () => {
         await createOnce<Conversation>(`/projects/${project}/planning`, { kind: "definition", title: title.trim(), brief, phase_id: null } satisfies S["PlanningConversationCreate"]);
         try { sessionStorage.removeItem(key); } catch { /* no draft */ }
       }); }}>
-        <label>Nombre del proyecto<input value={title} maxLength={200} onChange={e => setTitle(e.target.value)} required /></label>
+        <label>{t("planning.brief.name")}<input value={title} maxLength={200} onChange={e => setTitle(e.target.value)} required /></label>
         <div className="docs-editor-tabs" role="tablist">
-          <button type="button" role="tab" aria-selected={view === "edit"} className={view === "edit" ? "" : "button-quiet"} onClick={() => setView("edit")}>Escribir</button>
-          <button type="button" role="tab" aria-selected={view === "preview"} className={view === "preview" ? "" : "button-quiet"} onClick={() => setView("preview")}>Vista previa</button>
+          <button type="button" role="tab" aria-selected={view === "edit"} className={view === "edit" ? "" : "button-quiet"} onClick={() => setView("edit")}>{t("docs.editor.write")}</button>
+          <button type="button" role="tab" aria-selected={view === "preview"} className={view === "preview" ? "" : "button-quiet"} onClick={() => setView("preview")}>{t("docs.review.preview")}</button>
         </div>
-        {view === "edit" ? <label><span className="visually-hidden">Brief en Markdown</span><textarea rows={16} value={brief} onChange={e => setBrief(e.target.value)} spellCheck
-            placeholder={"# Qué construimos\n\nProblema, usuarios, funciones mínimas, restricciones y objetivo de entrega."} /></label>
-          : <article className="doc-reader">{brief.trim() ? <MarkdownView source={brief} path="docs/BRIEF.md" /> : <p className="hint">Nada que mostrar todavía.</p>}</article>}
-        <p className="hint">{bytes.toLocaleString("es-ES")} bytes{bytes > 256 * 1024 ? " · supera el límite de 256 KiB" : ""}</p>
-        <button disabled={busy || !title.trim() || !brief.trim() || bytes > 256 * 1024 || status.import_required}>Empezar la definición</button>
+        {view === "edit" ? <label><span className="visually-hidden">{t("planning.brief.markdown")}</span><textarea rows={16} value={brief} onChange={e => setBrief(e.target.value)} spellCheck
+            placeholder={t("planning.brief.placeholder")} /></label>
+          : <article className="doc-reader">{brief.trim() ? <MarkdownView source={brief} path="docs/BRIEF.md" /> : <p className="hint">{t("planning.brief.nothing")}</p>}</article>}
+        <p className="hint">{n("planning.bytes", bytes)}{bytes > 256 * 1024 ? ` · ${t("planning.brief.too_large")}` : ""}</p>
+        <button disabled={busy || !title.trim() || !brief.trim() || bytes > 256 * 1024 || status.import_required}>{t("planning.brief.start")}</button>
       </form>
     </section>
   </>;
 }
 
 function Definition({ id, path, status }: { id: string; path?: string; status: S["BootstrapStatusRead"] }) {
+  const { t, n } = useI18n();
   const { project, refresh } = useWorkspace();
   const base = `/projects/${project}/planning/${id}`;
   const read = usePoll<Conversation>(base, 1500, refresh);
@@ -194,24 +209,24 @@ function Definition({ id, path, status }: { id: string; path?: string; status: S
     <div className="docs-main">
       {path && !c.created ? <DraftPage key={path} conversation={c} path={path} drafts={drafts.data} />
         : <>
-          <PageHeader title={c.title} aside={c.created ? <span className="status status-ok"><span className="status-mark" aria-hidden="true" />Proyecto creado</span> : undefined}>
-            <p>Definición conversacional del proyecto. El revisor solo propone: nada se escribe en la carpeta sin tu confirmación.</p>
+          <PageHeader title={c.title} aside={c.created ? <span className="status status-ok"><span className="status-mark" aria-hidden="true" />{t("planning.created")}</span> : undefined}>
+            <p>{t("planning.definition.lede")}</p>
           </PageHeader>
           <Stale error={read.error} />
-          <Steps current={step} labels={["Brief", "Conversación y borradores", "Aceptación", "Primera tarea"]} />
+          <Steps current={step} />
           {op?.status === "COMPLETED" && <Preparation />}
           {op && <OperationPanel conversation={c} op={op} />}
           <BriefPanel base={base} brief={c.brief} />
           <section className="panel" aria-labelledby="def-turns">
-            <h2 id="def-turns">Conversación <span className="count">{c.turns.length} turnos</span></h2>
+            <h2 id="def-turns">{t("planning.conversation")} <span className="count">{n("chat.turns", c.turns.length)}</span></h2>
             <TurnList conversation={c} />
-            {!c.created && drafts.data?.drafts.length === 0 && <p className="hint">Carpeta nueva: no hace falta ningún archivo previo. El revisor redacta los documentos desde el brief; los marcadores de bloques gestionados son opcionales y la aceptación añade los que falten. La definición solo escribe documentos; el código llega después, con la preparación y las tareas.</p>}
-            {!c.created && <MessageForm conversation={c} path={`${base}/messages`} hint="Cada mensaje es una invocación nueva de solo lectura del revisor con el brief, los borradores en disco y tus ediciones desde el último turno respondido." />}
+            {!c.created && drafts.data?.drafts.length === 0 && <p className="hint">{t("planning.definition.new_folder")}</p>}
+            {!c.created && <MessageForm conversation={c} path={`${base}/messages`} hint={t("planning.definition.message_hint")} />}
           </section>
           <Questions conversation={c} base={base} />
           {(proposed.length > 0 || c.proposals.length > 0) && <section className="panel" aria-labelledby="def-proposals">
-            <h2 id="def-proposals">Propuestas de borrador <span className="count">{proposed.length} por decidir</span></h2>
-            {proposed.length === 0 && <p className="hint">No hay propuestas pendientes.</p>}
+            <h2 id="def-proposals">{t("planning.proposals")} <span className="count">{n("planning.proposals.pending", proposed.length)}</span></h2>
+            {proposed.length === 0 && <p className="hint">{t("planning.proposals.empty")}</p>}
             {proposed.map(p => <ProposalEntry key={p.id} conversation={c} proposal={p} base={base} drafts={drafts.data} />)}
             <ProposalHistory proposals={c.proposals.filter(p => p.status !== "PROPOSED")} />
           </section>}
@@ -222,45 +237,48 @@ function Definition({ id, path, status }: { id: string; path?: string; status: S
 }
 
 function BriefPanel({ base, brief }: { base: string; brief: Conversation["brief"] }) {
+  const { t, n, rich } = useI18n();
   const [open, setOpen] = useState(false);
   const read = usePoll<S["PlanningBriefRead"]>(open ? `${base}/brief` : null, 0);
   return <details className="panel panel-collapsible" onToggle={e => setOpen((e.target as HTMLDetailsElement).open)}>
-    <summary><h2>Brief congelado</h2></summary>
-    <p className="hint">Hash <Hash value={brief ? String(brief.sha256) : null} /> · {brief ? `${Number(brief.size).toLocaleString("es-ES")} bytes` : ""}</p>
+    <summary><h2>{t("planning.brief.frozen")}</h2></summary>
+    <p className="hint">{rich("planning.brief.hash", { hash: <Hash value={brief ? String(brief.sha256) : null} /> })} · {brief ? n("planning.bytes", Number(brief.size)) : ""}</p>
     {open && (read.data ? <article className="doc-reader"><MarkdownView source={read.data.content} path="docs/BRIEF.md" /></article> : read.error ? <Alert>{read.error}</Alert> : <Loading />)}
   </details>;
 }
 
 function Questions({ conversation, base }: { conversation: Conversation; base: string }) {
+  const { t } = useI18n();
   const { busy, operate } = useWorkspace();
   const [reasons, setReasons] = useState<Record<string, string>>({});
   if (!conversation.questions.length && !conversation.pending.length) return null;
   const canDefer = conversation.actions.includes("defer_question");
   return <section className="panel" aria-labelledby="def-questions">
-    <h2 id="def-questions">Preguntas y pendientes del último turno</h2>
+    <h2 id="def-questions">{t("planning.questions")}</h2>
     {conversation.questions.map(question => <div key={question.id} className={question.blocking && !question.deferred ? "entry entry-open" : "entry"}>
-      <p><strong>{question.blocking ? "Bloqueante" : "Informativa"}</strong>{question.deferred ? " · aplazada" : ""}: {question.text}</p>
-      {question.deferred && <p className="hint">Aplazada con motivo: {String(question.deferred.reason)}</p>}
+      <p><strong>{question.blocking ? t("planning.question.blocking") : t("planning.question.informative")}</strong>{question.deferred ? ` · ${t("planning.question.deferred")}` : ""}: {question.text}</p>
+      {question.deferred && <p className="hint">{t("planning.question.deferred_reason", { reason: String(question.deferred.reason) })}</p>}
       {question.blocking && !question.deferred && <>
-        <p className="hint">Respóndela en un mensaje nuevo o aplázala de forma explícita; aplazar no la responde, solo deja de bloquear la aceptación y queda registrado en la conversación y su vista previa.</p>
-        {canDefer && <div className="form-row"><label>Motivo del aplazamiento<input value={reasons[question.id] ?? ""} maxLength={2000} onChange={e => setReasons({ ...reasons, [question.id]: e.target.value })} /></label>
+        <p className="hint">{t("planning.question.hint")}</p>
+        {canDefer && <div className="form-row"><label>{t("planning.question.defer_reason")}<input value={reasons[question.id] ?? ""} maxLength={2000} onChange={e => setReasons({ ...reasons, [question.id]: e.target.value })} /></label>
           <button type="button" className="button-quiet" disabled={busy || !(reasons[question.id] ?? "").trim()} onClick={() => void operate(async () => {
             await managed(`${base}/questions/defer`, { expected_version: conversation.version, question_id: question.id, reason: reasons[question.id] } satisfies S["PlanningDeferCreate"]);
-          })}>Aplazar pregunta</button></div>}
+          })}>{t("planning.question.defer")}</button></div>}
       </>}
     </div>)}
-    {conversation.pending.length > 0 && <><h3>Pendientes declarados</h3>
-      <p className="hint">Son avisos del revisor, no bloqueos; aparecen en la vista previa de la aceptación.</p>
+    {conversation.pending.length > 0 && <><h3>{t("planning.pending")}</h3>
+      <p className="hint">{t("planning.pending.hint")}</p>
       <ul>{conversation.pending.map(item => <li key={item}>{item}</li>)}</ul></>}
   </section>;
 }
 
 function ProposalHistory({ proposals }: { proposals: Proposal[] }) {
+  const { t } = useI18n();
   if (!proposals.length) return null;
-  return <details className="evidence"><summary>Historial de propuestas ({proposals.length})</summary>
+  return <details className="evidence"><summary>{t("planning.proposals.history", { count: proposals.length })}</summary>
     <ul className="docs-changes">{proposals.map(p => <li key={p.id}>
-      <span className="mono">#{p.number}</span> {p.path ? <code className="path">{p.path}</code> : "plan"} <Tone value={PROPOSAL[p.status]} />
-      <span className="muted"> · turno {p.turn_number}{p.decision?.reason ? ` · ${String(p.decision.reason)}` : ""}</span></li>)}</ul>
+      <span className="mono">#{p.number}</span> {p.path ? <code className="path">{p.path}</code> : t("planning.plan")} <Tone value={PROPOSAL[p.status]} />
+      <span className="muted"> · {t("planning.turn_number", { number: p.turn_number })}{p.decision?.reason ? ` · ${String(p.decision.reason)}` : ""}</span></li>)}</ul>
   </details>;
 }
 
@@ -272,16 +290,17 @@ function useDraft(conversation: string, path: string | null, refresh: number, in
 }
 
 function ProposalEntry({ conversation, proposal, base, drafts }: { conversation: Conversation; proposal: Proposal; base: string; drafts?: Drafts }) {
+  const { t } = useI18n();
   const { project } = useWorkspace();
   const [open, setOpen] = useState(false);
   const disk = drafts?.drafts.find(d => d.path === proposal.path);
   const moved = disk && disk.sha256 !== proposal.base_sha256 && disk.sha256 !== proposal.content_sha256;
   return <div className="entry entry-open">
     <p><strong>#{proposal.number}</strong> <Link to={draftRoute(conversation, project, proposal.path!)}><code className="path">{proposal.path}</code></Link>{" "}
-      <span className="muted">· turno {proposal.turn_number} · {proposal.base_sha256 ? "sustituye un borrador" : "documento nuevo"}</span></p>
+      <span className="muted">· {t("planning.turn_number", { number: proposal.turn_number })} · {proposal.base_sha256 ? t("planning.proposal.replaces") : t("planning.proposal.new_document")}</span></p>
     <p>{proposal.reason}</p>
-    {moved && <p className="state state-attention">El borrador cambió en disco desde el turno: aplicarla no sobrescribirá tu cambio y fallará. Pide otro turno o edítalo tú.</p>}
-    <details onToggle={e => setOpen((e.target as HTMLDetailsElement).open)}><summary>Revisar el diff y decidir</summary>
+    {moved && <p className="state state-attention">{t("planning.proposal.moved")}</p>}
+    <details onToggle={e => setOpen((e.target as HTMLDetailsElement).open)}><summary>{t("planning.proposal.review")}</summary>
       {open && <ProposalReview conversation={conversation} proposal={proposal} base={base} />}
     </details>
   </div>;
@@ -289,6 +308,7 @@ function ProposalEntry({ conversation, proposal, base, drafts }: { conversation:
 
 /** Diff from the draft on disk to the proposal and confirmation bound to its hash; the harness writes with CAS. */
 function ProposalReview({ conversation, proposal, base }: { conversation: Conversation; proposal: Proposal; base: string }) {
+  const { t, rich } = useI18n();
   const { busy, refresh, operate } = useWorkspace();
   const { draft, missing, error } = useDraft(conversation.id, proposal.path, refresh);
   const [confirmed, setConfirmed] = useState(false);
@@ -298,28 +318,28 @@ function ProposalReview({ conversation, proposal, base }: { conversation: Conver
   if (error) return <Alert>{error}</Alert>;
   if (!draft && !missing) return <Loading />;
   const current = draft?.content ?? null;
-  const diff = unifiedDiff(proposal.path!, current, proposal.content);
+  const diff = unifiedDiff(proposal.path!, current, proposal.content, t("diff.eol"));
   const canApply = proposal.actions.includes("apply");
   return <div className="docs-review">
-    <Fields items={[["En disco", draft ? <Hash value={draft.sha256} /> : "no existe"], ["Leído por el turno", proposal.base_sha256 ? <Hash value={proposal.base_sha256} /> : "no existía"],
-      ["Propuesto", <Hash value={proposal.content_sha256} />], ["Propuesta", <Hash value={proposal.proposal_sha256} />]]} />
+    <Fields items={[[t("planning.review.disk"), draft ? <Hash value={draft.sha256} /> : t("planning.review.missing")], [t("planning.review.read"), proposal.base_sha256 ? <Hash value={proposal.base_sha256} /> : t("planning.review.did_not_exist")],
+      [t("planning.review.proposed"), <Hash value={proposal.content_sha256} />], [t("planning.review.proposal"), <Hash value={proposal.proposal_sha256} />]]} />
     <div className="docs-editor-tabs" role="tablist">
-      <button type="button" role="tab" aria-selected={view === "diff"} className={view === "diff" ? "" : "button-quiet"} onClick={() => setView("diff")}>Diff</button>
-      <button type="button" role="tab" aria-selected={view === "render"} className={view === "render" ? "" : "button-quiet"} onClick={() => setView("render")}>Documento propuesto</button>
+      <button type="button" role="tab" aria-selected={view === "diff"} className={view === "diff" ? "" : "button-quiet"} onClick={() => setView("diff")}>{t("planning.review.diff")}</button>
+      <button type="button" role="tab" aria-selected={view === "render"} className={view === "render" ? "" : "button-quiet"} onClick={() => setView("render")}>{t("planning.review.document")}</button>
     </div>
     {view === "render" ? <article className="doc-reader"><MarkdownView source={proposal.content} path={proposal.path!} /></article>
-      : diff === null ? <p className="hint">Demasiado grande para compararlo aquí; revisa el documento propuesto completo.</p>
-        : diff === "" ? <p className="hint">El borrador en disco ya es exactamente esta propuesta.</p>
-          : <DiffBlock diff={diff} label={`Diff de ${proposal.path}`} />}
+      : diff === null ? <p className="hint">{t("planning.review.too_large")}</p>
+        : diff === "" ? <p className="hint">{t("planning.review.same")}</p>
+          : <DiffBlock diff={diff} label={t("planning.review.diff_label", { path: proposal.path ?? "" })} />}
     {conflict && <p role="alert" className="state state-error">{conflict}</p>}
     {canApply && <>
-      <label className="check"><input type="checkbox" checked={confirmed} onChange={e => setConfirmed(e.target.checked)} />He revisado esta propuesta exacta ({proposal.proposal_sha256.slice(0, 12)}) y quiero que el harness la escriba en <code>{proposal.path}</code>.</label>
+      <label className="check"><input type="checkbox" checked={confirmed} onChange={e => setConfirmed(e.target.checked)} />{rich("planning.review.confirm", { hash: proposal.proposal_sha256.slice(0, 12), path: <code>{proposal.path}</code> })}</label>
       <div className="actions"><button type="button" disabled={busy || !confirmed} onClick={() => void operate(async () => {
         setConflict(undefined);
         try {
           await managed(`${base}/proposals/${proposal.id}/apply`, { expected_version: conversation.version, proposal_sha256: proposal.proposal_sha256, confirmed: true } satisfies S["PlanningApplyCreate"]);
-        } catch (e) { const text = conflictText(e); if (text) setConflict(`No se aplicó: ${text}`); else throw e; }
-      })}>Aplicar propuesta</button></div>
+        } catch (e) { const text = conflictText(e); if (text) setConflict(t("planning.review.not_applied", { error: text })); else throw e; }
+      })}>{t("planning.review.apply")}</button></div>
     </>}
     <Dismiss conversation={conversation} proposal={proposal} base={base} />
   </div>;
@@ -336,6 +356,7 @@ function matchesPattern(path: string, patterns: string[]) {
 }
 
 function DraftTree({ conversation, drafts, current, error }: { conversation: Conversation; drafts?: Drafts; current?: string; error?: string }) {
+  const { t } = useI18n();
   const { project } = useWorkspace();
   const pending = new Set(conversation.proposals.filter(p => p.status === "PROPOSED").map(p => p.path));
   const present = new Map(drafts?.drafts.filter(d => d.sha256).map(d => [d.path, d]));
@@ -343,36 +364,37 @@ function DraftTree({ conversation, drafts, current, error }: { conversation: Con
   const paths = [...new Set([...(drafts?.allowed.fixed ?? []), ...present.keys(), ...[...pending].filter(Boolean) as string[]])].sort();
   // Documentation folder (STATE's): tree names are relative to it; the full path goes in the title.
   const docsFolder = drafts?.allowed.required.find(p => p.endsWith("/STATE.md"))?.slice(0, -"/STATE.md".length);
-  return <nav className="docs-tree" aria-label="Borradores">
-    <p className="docs-tree-title"><Link to={draftRoute(conversation, project)} current={!current}>{conversation.kind === "onboarding" ? "Incorporación" : "Definición"}</Link></p>
-    {conversation.created ? <p className="hint">{conversation.kind !== "definition" ? "Incorporación confirmada; borradores cerrados. Consulta la" : "Proyecto creado: consulta la"} <Link to={{ name: "docs", project }}>documentación</Link>.</p>
+  return <nav className="docs-tree" aria-label={t("planning.drafts")}>
+    <p className="docs-tree-title"><Link to={draftRoute(conversation, project)} current={!current}>{conversation.kind === "onboarding" ? t("trail.onboarding") : t("purpose.definition")}</Link></p>
+    {conversation.created ? <p className="hint">{conversation.kind !== "definition" ? t("planning.drafts.onboarded") : t("planning.drafts.created")} <Link to={{ name: "docs", project }}>{t("nav.docs")}</Link></p>
       : !drafts ? (error ? <Alert>{error}</Alert> : <Loading />) : <>
         <ul className="docs-tree-list">{paths.map(path => {
           const draft = present.get(path);
           return <li key={path}><Link to={draftRoute(conversation, project, path)} current={path === current} className="docs-tree-file">
             <span className={draft ? "docs-tree-name" : "docs-tree-name muted"} title={path}>{docsFolder && path.startsWith(`${docsFolder}/`) ? path.slice(docsFolder.length + 1) : path}</span>
-            {pending.has(path) && <span className="docs-flag docs-flag-local" title="Propuesta pendiente de decidir">propuesta</span>}
-            {draft?.user_edited && <span className="docs-flag docs-flag-drift" title="Cambiado desde el último turno respondido; el siguiente turno lo verá">editado</span>}
-            {!draft && required.has(path) && <span className="docs-flag" title={"Obligatorio para aceptar"}>{"falta"}</span>}
+            {pending.has(path) && <span className="docs-flag docs-flag-local" title={t("planning.flag.proposal_hint")}>{t("planning.flag.proposal")}</span>}
+            {draft?.user_edited && <span className="docs-flag docs-flag-drift" title={t("planning.flag.edited_hint")}>{t("planning.flag.edited")}</span>}
+            {!draft && required.has(path) && <span className="docs-flag" title={t("planning.flag.required_hint")}>{t("docs.flag.missing")}</span>}
           </Link></li>;
         })}</ul>
-        {drafts.invalid.length > 0 && <p className="hint">Inválidos: {drafts.invalid.map(p => <code key={p} className="chip">{p}</code>)}</p>}
-        {drafts.foreign.length > 0 && <div className="docs-tree-missing"><p className="hint">{"Archivos ajenos (bloquean la aceptación):"}</p>
+        {drafts.invalid.length > 0 && <p className="hint">{t("planning.drafts.invalid")} {drafts.invalid.map(p => <code key={p} className="chip">{p}</code>)}</p>}
+        {drafts.foreign.length > 0 && <div className="docs-tree-missing"><p className="hint">{t("planning.drafts.foreign")}</p>
           <ul className="docs-tree-list">{drafts.foreign.map(p => <li key={p}><code className="path">{p}</code></li>)}</ul>
-          {drafts.foreign_truncated && <p className="hint">Lista recortada.</p>}</div>}
+          {drafts.foreign_truncated && <p className="hint">{t("planning.drafts.truncated")}</p>}</div>}
         <NewDraft conversation={conversation} patterns={drafts.allowed.patterns} existing={new Set(paths)} />
       </>}
   </nav>;
 }
 
 function NewDraft({ conversation, patterns, existing }: { conversation: Conversation; patterns: string[]; existing: Set<string> }) {
+  const { t } = useI18n();
   const { project } = useWorkspace();
   const [path, setPath] = useState("");
   const valid = matchesPattern(path.trim(), patterns) && !existing.has(path.trim());
   return <form className="docs-new" onSubmit={e => { e.preventDefault(); if (valid) navigate(draftRoute(conversation, project, path.trim())); }}>
-    <label>Nuevo borrador<input value={path} onChange={e => setPath(e.target.value)} placeholder={patterns[0]?.replace("*", "D002-titulo")} maxLength={400} /></label>
-    <p className="hint">Admitidos: {patterns.map(p => <code key={p} className="chip">{p}</code>)}</p>
-    <button className="button-quiet" disabled={!valid}>Crear borrador</button>
+    <label>{t("planning.draft.new")}<input value={path} onChange={e => setPath(e.target.value)} placeholder={patterns[0]?.replace("*", "D002-title")} maxLength={400} /></label>
+    <p className="hint">{t("planning.draft.allowed")} {patterns.map(p => <code key={p} className="chip">{p}</code>)}</p>
+    <button className="button-quiet" disabled={!valid}>{t("planning.draft.create")}</button>
   </form>;
 }
 
@@ -386,6 +408,7 @@ function saveEdit(key: string, value?: Edit) {
 }
 
 function DraftPage({ conversation, path, drafts }: { conversation: Conversation; path: string; drafts?: Drafts }) {
+  const { t, rich } = useI18n();
   const { project, refresh } = useWorkspace();
   const base = `/projects/${project}/planning/${conversation.id}`;
   // Reread: an edit on disk shows up (and the editor warns about it) before trying to save.
@@ -397,25 +420,25 @@ function DraftPage({ conversation, path, drafts }: { conversation: Conversation;
   const allowed = !!drafts && (drafts.allowed.fixed.includes(path) || matchesPattern(path, drafts.allowed.patterns));
   const proposal = conversation.proposals.find(p => p.status === "PROPOSED" && p.path === path);
   const canEdit = conversation.actions.includes("edit_draft");
-  const blocked = canEdit ? undefined : conversation.turns.some(t => t.status === "QUEUED") ? "Hay un turno en curso; espera su respuesta para editar." : "La definición ya no admite cambios.";
+  const blocked = canEdit ? undefined : conversation.turns.some(turn => turn.status === "QUEUED") ? t("planning.draft.turn_running") : t("planning.draft.closed");
   const name = path.split("/").pop()!;
   if (error) return <><PageHeader title={name} code><p><code className="path">{path}</code></p></PageHeader><Alert>{error}</Alert></>;
   if (!draft && !missing) return <Loading />;
   return <>
-    <PageHeader title={name} code aside={!editing && canEdit && allowed && <button type="button" onClick={() => setEditing(true)}>{draft ? "Editar" : "Crear"}</button>}>
-      <p><code className="path">{path}</code>{draft && <> · <Hash value={draft.sha256} /></>}{drafts?.allowed.required.includes(path) && " · obligatorio"}</p>
+    <PageHeader title={name} code aside={!editing && canEdit && allowed && <button type="button" onClick={() => setEditing(true)}>{draft ? t("docs.document.edit") : t("planning.draft.create_short")}</button>}>
+      <p><code className="path">{path}</code>{draft && <> · <Hash value={draft.sha256} /></>}{drafts?.allowed.required.includes(path) && ` · ${t("planning.draft.required")}`}</p>
     </PageHeader>
-    {drafts && !allowed && <p className="state state-attention">Esta ruta no es un borrador admitido; un archivo aquí sería ajeno y bloquearía la aceptación.</p>}
-    {state?.user_edited && <p className="state state-neutral" role="status">Cambiado desde lo que vio el último turno respondido (<Hash value={state.known_sha256} length={8} /> → <Hash value={state.sha256} length={8} />). El próximo turno lo recibirá como edición tuya.</p>}
+    {drafts && !allowed && <p className="state state-attention">{t("planning.draft.not_allowed")}</p>}
+    {state?.user_edited && <p className="state state-neutral" role="status">{rich("planning.draft.edited", { before: <Hash value={state.known_sha256} length={8} />, after: <Hash value={state.sha256} length={8} /> })}</p>}
     {blocked && <p className="hint">{blocked}</p>}
     {proposal && <section className="decision decision-attention" aria-labelledby="draft-proposal">
-      <h2 id="draft-proposal">Propuesta #{proposal.number} del turno {proposal.turn_number}</h2>
+      <h2 id="draft-proposal">{t("planning.draft.proposal", { number: proposal.number, turn: proposal.turn_number })}</h2>
       <p>{proposal.reason}</p>
       <ProposalReview conversation={conversation} proposal={proposal} base={base} />
     </section>}
     {editing ? <DraftEditor conversation={conversation} path={path} draft={draft ?? null} editKey={key} blocked={blocked} onClose={() => setEditing(false)} />
       : draft ? <article className="doc-reader"><MarkdownView source={draft.content} path={path} /></article>
-        : <Empty title="Este borrador no existe todavía"><p>{allowed ? "Créalo tú o pide al revisor que lo proponga." : "Vuelve a la definición."}</p></Empty>}
+        : <Empty title={t("planning.draft.missing")}><p>{allowed ? t("planning.draft.missing_hint") : t("planning.draft.back")}</p></Empty>}
   </>;
 }
 
@@ -423,6 +446,7 @@ function DraftPage({ conversation, path, drafts }: { conversation: Conversation;
 function DraftEditor({ conversation, path, draft, editKey, blocked, onClose }: {
   conversation: Conversation; path: string; draft: DraftRead | null; editKey: string; blocked?: string; onClose: () => void;
 }) {
+  const { t, rich } = useI18n();
   const { project, busy, operate } = useWorkspace();
   const [edit, setEdit] = useState<Edit>(() => loadEdit(editKey) ?? { base: draft?.sha256 ?? null, text: draft?.content ?? "" });
   const [view, setView] = useState<"edit" | "preview" | "review">("edit");
@@ -433,7 +457,7 @@ function DraftEditor({ conversation, path, draft, editKey, blocked, onClose }: {
   useEffect(() => { setConfirmed(false); }, [edit.text, view, removing]);
   const stale = edit.base !== (draft?.sha256 ?? null);
   const after = removing ? null : edit.text;
-  const diff = unifiedDiff(path, draft?.content ?? null, after);
+  const diff = unifiedDiff(path, draft?.content ?? null, after, t("diff.eol"));
   function close() { saveEdit(editKey); onClose(); }
   async function save() {
     setConflict(undefined);
@@ -444,30 +468,30 @@ function DraftEditor({ conversation, path, draft, editKey, blocked, onClose }: {
     } catch (e) {
       const text = conflictText(e);
       if (!text) throw e;
-      setConflict(text.includes("changed since") ? "Conflicto: el borrador cambió en disco desde que lo abriste. No se ha escrito nada; copia tu texto y descarta este borrador para partir de la versión actual." : text);
+      setConflict(text.includes("changed since") ? t("planning.editor.conflict") : text);
     }
   }
   const blocks = /<!-- harness-local:managed-[a-z-]+:(start|end) -->/.test(edit.text);
-  return <section className="docs-editor" aria-label={`Editar ${path}`}>
-    {stale && <p className="state state-attention" role="status">El borrador cambió desde que empezaste a editarlo (base <Hash value={edit.base} length={8} />, ahora <Hash value={draft?.sha256} length={8} />). Guardar fallará: copia tu texto y descarta para partir de la versión actual.</p>}
-    {blocks && <p className="hint">Los bloques gestionados (<code>harness-local:managed-…</code>) se regeneran al aceptar; lo que escribas dentro se sustituye. Sus marcadores son opcionales: conserva cada pareja completa o quítala entera; al aceptar, el bloque que falte se añade al final del documento.</p>}
+  return <section className="docs-editor" aria-label={t("docs.editor.label", { path })}>
+    {stale && <p className="state state-attention" role="status">{rich("planning.editor.stale", { base: <Hash value={edit.base} length={8} />, current: <Hash value={draft?.sha256} length={8} /> })}</p>}
+    {blocks && <p className="hint">{rich("planning.editor.blocks", { marker: <code>harness-local:managed-…</code> })}</p>}
     <div className="docs-editor-tabs" role="tablist">
-      <button type="button" role="tab" aria-selected={view === "edit"} className={view === "edit" ? "" : "button-quiet"} onClick={() => setView("edit")}>Escribir</button>
-      <button type="button" role="tab" aria-selected={view === "preview"} className={view === "preview" ? "" : "button-quiet"} onClick={() => setView("preview")}>Vista previa</button>
-      <button type="button" role="tab" aria-selected={view === "review"} className={view === "review" ? "" : "button-quiet"} onClick={() => setView("review")}>Revisar y guardar</button>
+      <button type="button" role="tab" aria-selected={view === "edit"} className={view === "edit" ? "" : "button-quiet"} onClick={() => setView("edit")}>{t("docs.editor.write")}</button>
+      <button type="button" role="tab" aria-selected={view === "preview"} className={view === "preview" ? "" : "button-quiet"} onClick={() => setView("preview")}>{t("docs.review.preview")}</button>
+      <button type="button" role="tab" aria-selected={view === "review"} className={view === "review" ? "" : "button-quiet"} onClick={() => setView("review")}>{t("planning.editor.review")}</button>
     </div>
-    {view === "edit" && <label className="docs-editor-prose"><span className="visually-hidden">Contenido de {path}</span>
+    {view === "edit" && <label className="docs-editor-prose"><span className="visually-hidden">{t("planning.editor.content", { path })}</span>
       <textarea value={edit.text} spellCheck rows={Math.min(36, Math.max(16, edit.text.split("\n").length + 1))} onChange={e => { setRemoving(false); setEdit({ ...edit, text: e.target.value }); }} /></label>}
     {view === "preview" && <article className="doc-reader"><MarkdownView source={edit.text} path={path} /></article>}
     {view === "review" && <div className="docs-review">
-      {diff === null ? <p className="hint">Demasiado grande para compararlo aquí.</p> : diff === "" ? <p className="hint">Sin cambios respecto al disco.</p> : <DiffBlock diff={diff} label={`Cambios en ${path}`} />}
-      {draft && <label className="check"><input type="checkbox" checked={removing} onChange={e => setRemoving(e.target.checked)} />Borrar este borrador en lugar de guardarlo.</label>}
-      <label className="check"><input type="checkbox" checked={confirmed} onChange={e => setConfirmed(e.target.checked)} />He revisado {removing ? "el borrado" : "este diff"} y confirmo {removing ? "borrar" : "escribir"} <code>{path}</code> si sigue siendo <Hash value={edit.base} length={8} />.</label>
+      {diff === null ? <p className="hint">{t("planning.editor.too_large")}</p> : diff === "" ? <p className="hint">{t("planning.editor.no_changes")}</p> : <DiffBlock diff={diff} label={t("planning.editor.changes", { path })} />}
+      {draft && <label className="check"><input type="checkbox" checked={removing} onChange={e => setRemoving(e.target.checked)} />{t("planning.editor.remove")}</label>}
+      <label className="check"><input type="checkbox" checked={confirmed} onChange={e => setConfirmed(e.target.checked)} />{rich(removing ? "planning.editor.confirm_remove" : "planning.editor.confirm_write", { path: <code>{path}</code>, base: <Hash value={edit.base} length={8} /> })}</label>
     </div>}
     {conflict && <p role="alert" className="state state-error">{conflict}</p>}
     <div className="actions">
-      {view === "review" && <button type="button" disabled={busy || !confirmed || !!blocked || diff === "" || stale} onClick={() => void operate(save)}>{removing ? "Borrar borrador" : "Guardar borrador"}</button>}
-      <button type="button" className="button-quiet" disabled={busy} onClick={close}>{edit.text !== (draft?.content ?? "") ? "Descartar cambios" : "Cerrar editor"}</button>
+      {view === "review" && <button type="button" disabled={busy || !confirmed || !!blocked || diff === "" || stale} onClick={() => void operate(save)}>{removing ? t("planning.editor.remove_submit") : t("planning.editor.save")}</button>}
+      <button type="button" className="button-quiet" disabled={busy} onClick={close}>{edit.text !== (draft?.content ?? "") ? t("planning.editor.discard") : t("docs.editor.close")}</button>
       {blocked && <span className="hint">{blocked}</span>}
     </div>
   </section>;
@@ -476,6 +500,7 @@ function DraftEditor({ conversation, path, draft, editKey, blocked, onClose }: {
 // --- acceptance ------------------------------------------------------------------------------------
 
 function AcceptPanel({ conversation, base, drafts }: { conversation: Conversation; base: string; drafts?: Drafts }) {
+  const { t, rich } = useI18n();
   const { busy, operate } = useWorkspace();
   const [preview, setPreview] = useState<Acceptance>();
   const signature = drafts?.drafts.map(d => `${d.path}:${d.sha256}`).join("|");
@@ -484,19 +509,20 @@ function AcceptPanel({ conversation, base, drafts }: { conversation: Conversatio
   useEffect(() => { if (shownFor.current !== `${conversation.version}/${signature}`) setPreview(undefined); }, [conversation.version, signature]);
   const can = conversation.actions.includes("accept");
   return <section className="panel" aria-labelledby="def-accept">
-    <h2 id="def-accept">Aceptar la definición</h2>
-    <p className="hint">La vista previa muestra los archivos íntegros del commit raíz: tus borradores (con los bloques de STATE, NEXT_STEPS, ROADMAP y DECISIONS regenerados), los README que falten, <code>archive/phase-000/</code>, la fase P001 y su primera tarea. O los bloqueos que lo impiden.</p>
-    {!can && <p className="hint">Hay un turno en curso; acepta cuando termine.</p>}
+    <h2 id="def-accept">{t("planning.accept.title")}</h2>
+    <p className="hint">{rich("planning.accept.hint", { archive: <code>archive/phase-000/</code> })}</p>
+    {!can && <p className="hint">{t("planning.accept.running")}</p>}
     <button type="button" disabled={busy || !can} onClick={() => void operate(async () => {
       const shown = await managed<Acceptance>(`${base}/accept/preview`, {});
       shownFor.current = `${conversation.version}/${signature}`;
       setPreview(shown);
-    })}>{preview ? "Volver a revisar" : "Revisar la aceptación"}</button>
+    })}>{preview ? t("registry.review_again") : t("planning.accept.review")}</button>
     {preview && <AcceptReview conversation={conversation} base={base} preview={preview} />}
   </section>;
 }
 
 function AcceptReview({ conversation, base, preview, resume }: { conversation: Conversation; base: string; preview: Acceptance; resume?: Operation }) {
+  const { t, rich } = useI18n();
   const { busy, operate, send } = useWorkspace();
   const [reason, setReason] = useState("");
   const [confirmed, setConfirmed] = useState(false);
@@ -504,56 +530,61 @@ function AcceptReview({ conversation, base, preview, resume }: { conversation: C
   const phase = preview.phase as { code: string; objective: string; exit_criteria: string[]; tasks: string[]; tag?: string | null } | null;
   const task = preview.first_task as Record<string, unknown> | null;
   return <div className="docs-review">
-    {preview.blockers.length > 0 ? <div className="state state-error" role="alert"><p className="state-title">No se puede aceptar todavía</p>
+    {preview.blockers.length > 0 ? <div className="state state-error" role="alert"><p className="state-title">{t("planning.accept.blocked")}</p>
       <ul>{preview.blockers.map(b => <li key={b}>{b}</li>)}</ul></div>
-      : <p className="state state-ok" role="status">Lista para crear el proyecto.</p>}
-    {preview.warnings.length > 0 && <div className="state state-attention"><p className="state-title">Avisos</p><ul>{preview.warnings.map(w => <li key={w}>{w}</li>)}</ul></div>}
+      : <p className="state state-ok" role="status">{t("planning.accept.ready")}</p>}
+    {preview.warnings.length > 0 && <div className="state state-attention"><p className="state-title">{t("planning.accept.warnings")}</p><ul>{preview.warnings.map(w => <li key={w}>{w}</li>)}</ul></div>}
     {phase && <>
-      <h3>Fase <span className="mono">{phase.code}</span></h3>
+      <h3>{rich("chat.conversation.phase", { phase: <span className="mono">{phase.code}</span> })}</h3>
       <p>{phase.objective}</p>
       <ul className="checklist">{phase.exit_criteria.map(c => <li key={c}>{c}</li>)}</ul>
-      <Fields items={[["Tareas", phase.tasks.map(t => <code key={t} className="chip">{t}</code>)], ["Tag al cerrar", phase.tag ? <code>{phase.tag}</code> : <span className="muted">sin tag</span>],
-        ["Primera tarea", task ? <><code>{String(task.task_id)}</code> {task.planner === "agent" ? "· contrato del planificador" : "· contrato determinista"}</> : "—"],
-        ["Perfil", preview.profile], ["Vista previa", <Hash value={preview.preview_sha256} />]]} />
+      <Fields items={[[t("stats.tasks"), phase.tasks.map(item => <code key={item} className="chip">{item}</code>)], [t("settings.tag"), phase.tag ? <code>{phase.tag}</code> : <span className="muted">{t("phase.no_tag")}</span>],
+        [t("planning.accept.first_task"), task ? <><code>{String(task.task_id)}</code> {task.planner === "agent" ? `· ${t("planning.accept.planner_contract")}` : `· ${t("planning.accept.deterministic_contract")}`}</> : "—"],
+        [t("settings.profile"), preview.profile], [t("docs.review.preview"), <Hash value={preview.preview_sha256} />]]} />
     </>}
     {preview.documents.length > 0 && <>
-      <h3>Archivos del commit raíz <span className="count">{preview.documents.length}</span></h3>
+      <h3>{t("planning.accept.files")} <span className="count">{preview.documents.length}</span></h3>
       <ul className="docs-changes">{preview.documents.map(doc => <li key={doc.path}><AcceptedDocument conversation={conversation.id} doc={doc} /></li>)}</ul>
     </>}
-    <Evidence title="Definición, política, preparación, validaciones y Git" value={{ definition: preview.definition, policy: preview.policy, preparation: preview.preparation, validations: preview.validations, versions: preview.versions, git: preview.git, author: preview.author, first_task: preview.first_task }} />
+    <Evidence title={t("planning.accept.evidence")} value={{ definition: preview.definition, policy: preview.policy, preparation: preview.preparation, validations: preview.validations, versions: preview.versions, git: preview.git, author: preview.author, first_task: preview.first_task }} />
     {preview.ready && <>
-      <p className="hint">Crear hace el commit raíz con exactamente estos bytes y abre P001. La preparación y la primera tarea se encolan después, por una acción propia.</p>
-      <label>Motivo<input value={reason} maxLength={2000} onChange={e => setReason(e.target.value)} placeholder="Qué revisaste y por qué aceptas" /></label>
-      <label className="check"><input type="checkbox" checked={confirmed} onChange={e => setConfirmed(e.target.checked)} />He revisado estos archivos, la fase P001 y la primera tarea, y confirmo crear el proyecto con la vista previa {preview.preview_sha256.slice(0, 12)}.</label>
+      <p className="hint">{t("planning.accept.commit_hint")}</p>
+      <label>{t("docs.review.reason")}<input value={reason} maxLength={2000} onChange={e => setReason(e.target.value)} placeholder={t("planning.accept.reason_placeholder")} /></label>
+      <label className="check"><input type="checkbox" checked={confirmed} onChange={e => setConfirmed(e.target.checked)} />{t("planning.accept.confirm", { hash: preview.preview_sha256.slice(0, 12) })}</label>
       <button type="button" disabled={busy || !confirmed || !reason.trim()} onClick={() => void operate(() => send(jobRequest(`${base}/accept`, {
         preview_sha256: preview.preview_sha256, confirmed: true, reason,
         resume_operation_id: resume?.id ?? null, expected_version: resume ? resume.expected_version : null,
-      } satisfies S["DefinitionAcceptCreate"])))}>{resume ? "Conciliar la creación confirmada" : "Crear el proyecto"}</button>
+      } satisfies S["DefinitionAcceptCreate"])))}>{resume ? t("planning.accept.reconcile") : t("planning.brief.page")}</button>
     </>}
   </div>;
 }
 
 function AcceptedDocument({ conversation, doc }: { conversation: string; doc: S["DefinitionDocumentRead"] }) {
+  const { t, rich } = useI18n();
   const [open, setOpen] = useState(false);
+  const after = <Hash value={doc.sha256} length={8} />;
   return <details onToggle={e => setOpen((e.target as HTMLDetailsElement).open)}>
-    <summary><code className="path">{doc.path}</code> <span className="muted">· {ORIGIN[doc.origin]} · {doc.before_sha256 === doc.sha256 ? <>sin cambios, </> : doc.before_sha256 ? <>de <Hash value={doc.before_sha256} length={8} /> a </> : "nuevo, "}<Hash value={doc.sha256} length={8} /></span></summary>
+    <summary><code className="path">{doc.path}</code> <span className="muted">· {t(ORIGIN[doc.origin])} · {doc.before_sha256 === doc.sha256 ? rich("planning.accepted.unchanged", { after })
+      : doc.before_sha256 ? rich("docs.review.change", { before: <Hash value={doc.before_sha256} length={8} />, after }) : rich("docs.review.new", { after })}</span></summary>
     {open && (doc.origin === "draft+blocks" ? <RegeneratedDiff conversation={conversation} doc={doc} /> : <pre>{doc.content}</pre>)}
   </details>;
 }
 
 /** What acceptance changes in a draft: only the regenerated managed blocks. */
 function RegeneratedDiff({ conversation, doc }: { conversation: string; doc: S["DefinitionDocumentRead"] }) {
+  const { t } = useI18n();
   const { refresh } = useWorkspace();
   const { draft, error } = useDraft(conversation, doc.path, refresh);
   if (error) return <Alert>{error}</Alert>;
   if (!draft) return <Loading />;
-  if (draft.sha256 !== doc.before_sha256) return <p className="state state-attention">El borrador cambió después de esta vista previa: revísala de nuevo.</p>;
-  const diff = unifiedDiff(doc.path, draft.content, doc.content);
-  return <>{diff ? <DiffBlock diff={diff} label={`Bloques regenerados en ${doc.path}`} /> : <p className="hint">Sin cambios.</p>}
-    <details><summary>Contenido completo</summary><pre>{doc.content}</pre></details></>;
+  if (draft.sha256 !== doc.before_sha256) return <p className="state state-attention">{t("planning.regenerated.changed")}</p>;
+  const diff = unifiedDiff(doc.path, draft.content, doc.content, t("diff.eol"));
+  return <>{diff ? <DiffBlock diff={diff} label={t("planning.regenerated.label", { path: doc.path })} /> : <p className="hint">{t("planning.regenerated.none")}</p>}
+    <details><summary>{t("preparation.full_content")}</summary><pre>{doc.content}</pre></details></>;
 }
 
 function OperationPanel({ conversation, op }: { conversation: Conversation; op: Operation }) {
+  const { t, rich } = useI18n();
   const { project, busy, operate, send } = useWorkspace();
   const base = `/projects/${project}/planning/${conversation.id}`;
   const preview = op.preview;
@@ -563,20 +594,20 @@ function OperationPanel({ conversation, op }: { conversation: Conversation; op: 
   const preparationRequired = preparation.data?.available && !preparation.data.prepared;
   const commit = op.result?.commit ? String(op.result.commit) : undefined;
   return <section className={op.status === "COMPLETED" ? "decision" : "decision decision-attention"} aria-labelledby="def-operation">
-    <h2 id="def-operation">{op.status === "COMPLETED" ? "Proyecto creado" : op.status === "INTERRUPTED" ? "Creación interrumpida" : "Creando el proyecto"}</h2>
-    <Fields items={[["Estado", <><Status value={op.status} /> · run <Link to={{ name: "run-short", run: op.run_id }} className="mono">{op.run_id.slice(0, 8)}</Link> <Status value={op.run_status} /></>],
-      ["Commit raíz", commit ? <Hash value={commit} /> : <span className="muted">pendiente</span>], ["Vista previa", <Hash value={preview.preview_sha256} />]]} />
-    {op.run_status === "RECOVERY_REQUIRED" && <p>El escritor se interrumpió. Confirma en el <Link to={{ name: "run-short", run: op.run_id }}>run</Link> que está detenido; después concilia aquí la misma intención (mismo commit).</p>}
+    <h2 id="def-operation">{op.status === "COMPLETED" ? t("planning.created") : op.status === "INTERRUPTED" ? t("planning.operation.interrupted") : t("planning.operation.creating")}</h2>
+    <Fields items={[[t("runs.column.status"), <><Status value={op.status} /> · <Link to={{ name: "run-short", run: op.run_id }} className="mono">{t("trail.run", { id: op.run_id.slice(0, 8) })}</Link> <Status value={op.run_status} /></>],
+      [t("planning.operation.root_commit"), commit ? <Hash value={commit} /> : <span className="muted">{t("phases.commit.pending")}</span>], [t("docs.review.preview"), <Hash value={preview.preview_sha256} />]]} />
+    {op.run_status === "RECOVERY_REQUIRED" && <p>{rich("planning.operation.recovery", { run: <Link to={{ name: "run-short", run: op.run_id }}>{t("trail.run", { id: op.run_id.slice(0, 8) })}</Link> })}</p>}
     {op.status === "INTERRUPTED" && <AcceptReview conversation={conversation} base={base} preview={{ ...preview, resume_operation_id: op.id, expected_version: op.expected_version }} resume={op} />}
     {op.status === "COMPLETED" && <>
-      <p>La fase <Link className="mono" to={{ name: "phase", project, phase: phase?.code ?? "P001" }}>{phase?.code ?? "P001"}</Link> está activa con sus documentos adoptados. Los documentos están en la <Link to={{ name: "docs", project }}>documentación</Link>.</p>
-      {preparationRequired && <p className="hint">Prepara {recipeLabel(preparation.data?.recipe)} antes de encolar la primera tarea.</p>}
-      {op.first_task_run ? <p>Primera tarea: <Link to={{ name: "run-short", run: op.first_task_run.run_id }} className="mono">{task?.task_id ?? "run"}</Link> <Status value={op.first_task_run.status} /></p>
+      <p>{rich("planning.operation.active", { phase: <Link className="mono" to={{ name: "phase", project, phase: phase?.code ?? "P001" }}>{phase?.code ?? "P001"}</Link> })} <Link to={{ name: "docs", project }}>{t("docs.document.back")}</Link></p>
+      {preparationRequired && <p className="hint">{recipeText(preparation.data?.recipe, t, "planning.operation.prepare", "planning.operation.prepare_generic")}</p>}
+      {op.first_task_run ? <p>{rich("planning.operation.first_task", { task: <Link to={{ name: "run-short", run: op.first_task_run.run_id }} className="mono">{task?.task_id ?? "run"}</Link> })} <Status value={op.first_task_run.status} /></p>
         : task?.task_id && phase?.code && <>
-          <p>Encola la primera tarea, <code>{task.task_id}</code>, con el plan regenerado de NEXT_STEPS. El planificador fija su contrato con la política del proyecto.</p>
+          <p>{rich("planning.operation.queue_hint", { task: <code>{task.task_id}</code> })}</p>
           <button type="button" disabled={busy || preparationRequired} onClick={() => void operate(() => send(jobRequest(`/projects/${project}/runs`, {
             task_id: task.task_id!, phase_id: phase.code!, text: preview.task_text ?? "",
-          } satisfies S["RunCreate"])))}>Encolar primera tarea</button>
+          } satisfies S["RunCreate"])))}>{t("planning.operation.queue")}</button>
         </>}
     </>}
   </section>;
@@ -585,72 +616,74 @@ function OperationPanel({ conversation, op }: { conversation: Conversation; op: 
 // --- active phase planning: /projects/:p/phases/:code/plan -------------------------------------
 
 export function PlanPage({ phase, conversation }: { phase: string; conversation?: string }) {
+  const { t, n, rich } = useI18n();
   const { project, busy, refresh, operate } = useWorkspace();
   const read = usePoll<S["PhaseRead"]>(`/projects/${project}/phases/${q(phase)}`, 5000, refresh);
   const list = usePoll<Summary[]>(`/projects/${project}/planning`, 4000, refresh);
   const [title, setTitle] = useState("");
   const data = read.data;
-  if (read.missing) return <Empty title={`No hay ninguna fase ${phase} definida`}><p>Vuelve a <Link to={{ name: "phases", project }}>Fases</Link>.</p></Empty>;
+  if (read.missing) return <Empty title={t("planning.plan.missing", { phase })}><p><Link to={{ name: "phases", project }}>{t("nav.phases")}</Link></p></Empty>;
   if (!data || !list.data) return read.error ?? list.error ? <Alert>{read.error ?? list.error}</Alert> : <Loading />;
   const mine = list.data.filter(c => c.kind === "phase_planning" && c.phase_id === data.id);
   const canPlan = data.status === "ACTIVE" && !(data.definition.tasks as string[]).length && !read.error;
   return <>
-    <PageHeader title={`Planificar ${phase}`}>
-      <p>El revisor propone NEXT_STEPS para la fase activa sin tareas. Se confirma desde la <Link to={{ name: "phase", project, phase }}>página de {phase}</Link>, con el diff y el hash exactos.</p>
+    <PageHeader title={t("planning.plan.title", { phase })}>
+      <p>{rich("planning.plan.lede", { page: <Link to={{ name: "phase", project, phase }}>{t("planning.plan.page", { phase })}</Link> })}</p>
     </PageHeader>
     <Stale error={read.error ?? list.error} />
     <div className="split">
-      <nav className="panel split-list" aria-label="Conversaciones de planificación">
-        <h2>Conversaciones</h2>
-        {!mine.length ? <p className="hint">Aún no hay ninguna.</p> : <ul className="link-list">{mine.map(c => <li key={c.id}>
+      <nav className="panel split-list" aria-label={t("planning.plan.conversations")}>
+        <h2>{t("chat.conversations")}</h2>
+        {!mine.length ? <p className="hint">{t("planning.plan.none")}</p> : <ul className="link-list">{mine.map(c => <li key={c.id}>
           <Link to={{ name: "plan", project, phase, conversation: c.id }} current={conversation === c.id}>
-            <span className="link-title">{c.title}</span><span className="link-meta">{c.turns} turnos · {when(c.updated_at)}</span></Link></li>)}</ul>}
+            <span className="link-title">{c.title}</span><span className="link-meta">{n("chat.turns", c.turns)} · {when(c.updated_at)}</span></Link></li>)}</ul>}
         <form onSubmit={e => { e.preventDefault(); if (!canPlan) return; void operate(async () => {
           const created = await createOnce<Conversation>(`/projects/${project}/planning`, { kind: "phase_planning", title: title.trim(), brief: null, phase_id: data.id } satisfies S["PlanningConversationCreate"]);
           setTitle(""); navigate({ name: "plan", project, phase, conversation: created.id });
         }); }}>
-          <label>Nueva conversación<input value={title} maxLength={200} onChange={e => setTitle(e.target.value)} placeholder={`Plan de ${phase}`} /></label>
-          <button className="button-quiet" disabled={busy || !title.trim() || !canPlan}>Crear conversación</button>
+          <label>{t("chat.new")}<input value={title} maxLength={200} onChange={e => setTitle(e.target.value)} placeholder={t("planning.plan.placeholder", { phase })} /></label>
+          <button className="button-quiet" disabled={busy || !title.trim() || !canPlan}>{t("chat.new.create")}</button>
         </form>
-        {(data.status !== "ACTIVE" || !!(data.definition.tasks as string[]).length) && <p className="hint">Solo se planifica la fase ACTIVE sin tareas. Las conversaciones anteriores conservan su historial.</p>}
+        {(data.status !== "ACTIVE" || !!(data.definition.tasks as string[]).length) && <p className="hint">{t("planning.plan.only_active")}</p>}
       </nav>
       <div className="split-main">
         {conversation ? <PlanConversation key={conversation} id={conversation} phase={phase} writable={canPlan} />
-          : <Empty title="Elige o crea una conversación"><p>Cada conversación conserva sus turnos y sus planes propuestos.</p></Empty>}
+          : <Empty title={t("planning.plan.choose")}><p>{t("planning.plan.choose_hint")}</p></Empty>}
       </div>
     </div>
   </>;
 }
 
 function PlanConversation({ id, phase, writable }: { id: string; phase: string; writable: boolean }) {
+  const { t, rich } = useI18n();
   const { project, refresh } = useWorkspace();
   const base = `/projects/${project}/planning/${id}`;
   const read = usePoll<Conversation>(base, 1500, refresh);
   const c = read.data;
-  if (read.missing) return <Empty title="No existe esa conversación"><p>Elige otra de la lista.</p></Empty>;
+  if (read.missing) return <Empty title={t("chat.missing.title")}><p>{t("chat.missing.body")}</p></Empty>;
   if (!c) return read.error ? <Alert>{read.error}</Alert> : <Loading />;
-  if (c.kind !== "phase_planning" || c.phase?.code !== phase) return <Empty title="Esta conversación no planifica esta fase" />;
+  if (c.kind !== "phase_planning" || c.phase?.code !== phase) return <Empty title={t("planning.plan.other_phase")} />;
   const plans = c.proposals.filter(p => p.kind === "plan");
   return <section className="panel" aria-labelledby="plan-title">
     <h2 id="plan-title">{c.title}</h2>
-    <p className="hint">Desde la fase <Link className="mono" to={{ name: "phase", project, phase }}>{phase}</Link> <Status kind="phase" value={c.phase.status} /> · versión {c.version}</p>
+    <p className="hint">{rich("planning.plan.from_phase", { phase: <Link className="mono" to={{ name: "phase", project, phase }}>{phase}</Link> })} <Status kind="phase" value={c.phase.status} /> · {t("planning.plan.version", { version: c.version })}</p>
     <Stale error={read.error} />
     <TurnList conversation={c} />
-    {c.questions.length > 0 && <><h3>Preguntas del revisor</h3><ul>{c.questions.map(question => <li key={question.id}>{question.blocking ? <strong>Bloqueante: </strong> : null}{question.text}</li>)}</ul>
-      <p className="hint">Respóndelas en un mensaje nuevo; las de la fase se registran en su página.</p></>}
-    {c.pending.length > 0 && <><h3>Pendientes declarados</h3><ul>{c.pending.map(item => <li key={item}>{item}</li>)}</ul></>}
-    <h3>Planes propuestos</h3>
-    {!plans.length && <p className="hint">Sin planes todavía.</p>}
+    {c.questions.length > 0 && <><h3>{t("planning.plan.questions")}</h3><ul>{c.questions.map(question => <li key={question.id}>{question.blocking ? <strong>{t("planning.plan.blocking")} </strong> : null}{question.text}</li>)}</ul>
+      <p className="hint">{t("planning.plan.questions_hint")}</p></>}
+    {c.pending.length > 0 && <><h3>{t("planning.pending")}</h3><ul>{c.pending.map(item => <li key={item}>{item}</li>)}</ul></>}
+    <h3>{t("planning.plan.proposed")}</h3>
+    {!plans.length && <p className="hint">{t("planning.plan.no_plans")}</p>}
     {plans.map(p => <div key={p.id} className={p.status === "PROPOSED" ? "entry entry-open" : "entry"}>
-      <p><strong>Plan #{p.number}</strong> <Tone value={PROPOSAL[p.status]} /> <span className="muted">· turno {p.turn_number} · <Hash value={p.proposal_sha256} /></span></p>
+      <p><strong>{t("planning.plan.number", { number: p.number })}</strong> <Tone value={PROPOSAL[p.status]} /> <span className="muted">· {t("planning.turn_number", { number: p.turn_number })} · <Hash value={p.proposal_sha256} /></span></p>
       <p>{p.reason}</p>
-      <details><summary>Ver el plan</summary><article className="doc-reader"><MarkdownView source={p.content} path="docs/NEXT_STEPS.md" /></article>
-        <details><summary>Texto exacto</summary><pre>{p.content}</pre></details></details>
-      {writable && p.status === "PROPOSED" && <p><Link to={{ name: "phase", project, phase }}>Confirmar el plan de {phase}</Link></p>}
+      <details><summary>{t("planning.plan.view")}</summary><article className="doc-reader"><MarkdownView source={p.content} path="docs/NEXT_STEPS.md" /></article>
+        <details><summary>{t("planning.plan.exact")}</summary><pre>{p.content}</pre></details></details>
+      {writable && p.status === "PROPOSED" && <p><Link to={{ name: "phase", project, phase }}>{t("planning.plan.confirm_link", { phase })}</Link></p>}
       <Dismiss conversation={c} proposal={p} base={base} />
     </div>)}
-    {writable && <><h3>Nuevo mensaje</h3>
-      <MessageForm conversation={c} path={`${base}/messages`} hint="El turno congela los documentos del contrato unificado con su hash, el resumen de la fase y los turnos anteriores. Un plan nuevo sustituye al pendiente." /></>}
+    {writable && <><h3>{t("planning.plan.new_message")}</h3>
+      <MessageForm conversation={c} path={`${base}/messages`} hint={t("planning.plan.message_hint")} /></>}
   </section>;
 }
 
@@ -676,6 +709,7 @@ function usePlans(project: string, phaseId: string, refresh: number) {
 
 /** Installs NEXT_STEPS from text or a proposal in the empty ACTIVE phase the closure leaves. */
 export function PhasePlanPanel({ phase, stale = false }: { phase: S["PhaseRead"]; stale?: boolean }) {
+  const { t, rich } = useI18n();
   const { project, busy, refresh, operate, send } = useWorkspace();
   const { plans } = usePlans(project, phase.id, refresh);
   const [choice, setChoice] = useState("");
@@ -702,40 +736,40 @@ export function PhasePlanPanel({ phase, stale = false }: { phase: S["PhaseRead"]
     && (op.request.preview as { phase_plan?: unknown } | undefined)?.phase_plan);
   if (phase.status !== "ACTIVE" || (phase.definition.tasks as string[]).length) return null;
   return <section className="panel" id="phase-plan" aria-labelledby="phase-plan-title">
-    <h2 id="phase-plan-title">Planificar {phase.code}</h2>
-    <p className="hint">La fase está activa sin tareas. Confirmar el plan escribe NEXT_STEPS, actualiza STATE y crea una nueva versión de la definición en un commit.</p>
-    {pending && !run && <p className="state state-attention">Hay un plan {pending.status === "INTERRUPTED" ? "interrumpido: confirma el escritor detenido en su run y revisa la misma intención para conciliarla" : "en curso"}. {pending.run_id && <Link to={{ name: "run-short", run: pending.run_id }}>Ver run</Link>}.</p>}
-    {run ? <EditProgress run={run} title="Plan encolado" done={<p>Plan confirmado en {phase.code}. Las tareas ya figuran en su definición.</p>} /> : <>
+    <h2 id="phase-plan-title">{t("planning.plan.title", { phase: phase.code })}</h2>
+    <p className="hint">{t("planning.panel.hint")}</p>
+    {pending && !run && <p className="state state-attention">{pending.status === "INTERRUPTED" ? t("planning.panel.interrupted") : t("planning.panel.running")} {pending.run_id && <Link to={{ name: "run-short", run: pending.run_id }}>{t("planning.panel.see_run")}</Link>}</p>}
+    {run ? <EditProgress run={run} title={t("planning.panel.queued")} done={<p>{t("planning.panel.done", { phase: phase.code })}</p>} /> : <>
       <fieldset disabled={busy || stale}>
-        <legend>Plan NEXT_STEPS de {phase.code}</legend>
-        {plans === undefined && <Loading>Buscando planes propuestos…</Loading>}
+        <legend>{t("planning.panel.legend", { phase: phase.code })}</legend>
+        {plans === undefined && <Loading>{t("planning.panel.searching")}</Loading>}
         {sources.map(([value, item]) => <label key={value} className="check"><input type="radio" name="plan-source" checked={selected === value} onChange={() => setChoice(value)} />
-          {item.kind === "proposal" ? <span>Plan #{item.proposal.number} de «{item.title}» (turno {item.proposal.turn_number}, <Hash value={item.proposal.proposal_sha256} length={8} />)</span> : "Escribir el plan aquí"}</label>)}
-        <p className="hint"><Link to={{ name: "plan", project, phase: phase.code }}>Planificar {phase.code} con el revisor</Link></p>
-        {source?.kind === "text" && <label>Plan (Markdown con tareas <code>## {phase.code}-TNNN — título</code>)<textarea rows={10} value={text} maxLength={512 * 1024} onChange={e => { setChoice("text"); setText(e.target.value); }} /></label>}
-        {source?.kind === "proposal" && <details><summary>Ver el plan elegido</summary><article className="doc-reader"><MarkdownView source={source.proposal.content} path="docs/NEXT_STEPS.md" /></article></details>}
+          {item.kind === "proposal" ? <span>{rich("planning.panel.source", { number: item.proposal.number, title: item.title, turn: item.proposal.turn_number, hash: <Hash value={item.proposal.proposal_sha256} length={8} /> })}</span> : t("planning.panel.write")}</label>)}
+        <p className="hint"><Link to={{ name: "plan", project, phase: phase.code }}>{t("planning.panel.with_reviewer", { phase: phase.code })}</Link></p>
+        {source?.kind === "text" && <label>{rich("planning.panel.text", { heading: <code>## {phase.code}-TNNN — title</code> })}<textarea rows={10} value={text} maxLength={512 * 1024} onChange={e => { setChoice("text"); setText(e.target.value); }} /></label>}
+        {source?.kind === "proposal" && <details><summary>{t("planning.panel.view_chosen")}</summary><article className="doc-reader"><MarkdownView source={source.proposal.content} path="docs/NEXT_STEPS.md" /></article></details>}
       </fieldset>
       <button type="button" disabled={busy || stale || (!pending && (!source || (source.kind === "text" && !text.trim())))} onClick={() => void operate(async () => {
         setRefused(undefined); setPreview(undefined);
         try { setPreview({ body, shown: await managed<S["PhasePlanPreviewRead"]>(`/phases/${phase.id}/plan/preview`, body) }); }
         catch (error) { const diagnostic = conflictText(error); if (diagnostic) setRefused(diagnostic); else throw error; }
-      })}>Revisar el plan</button>
+      })}>{t("planning.panel.review")}</button>
       {refused && <p role="alert" className="state state-error">{refused}</p>}
       {preview && <div className="docs-review">
-        <h3>Revisa el commit del plan</h3>
-        {preview.shown.resume_operation_id && <p className="state state-attention">Se concilia exactamente el plan confirmado y su mismo commit.</p>}
+        <h3>{t("planning.panel.review_title")}</h3>
+        {preview.shown.resume_operation_id && <p className="state state-attention">{t("planning.panel.resume")}</p>}
         <ul className="docs-changes">{preview.shown.documents.map(document => <li key={document.path}><code className="path">{document.path}</code> · <Hash value={document.after_sha256} /></li>)}</ul>
-        <DiffBlock diff={preview.shown.diff} label="Diff del plan" />
-        <Fields items={[["Base", <Hash value={preview.shown.head} />], ["Vista previa", <Hash value={preview.shown.preview_sha256} />]]} />
-        <label>Motivo<input value={reason} maxLength={2000} onChange={e => setReason(e.target.value)} /></label>
-        <label className="check"><input type="checkbox" checked={confirmed} onChange={e => setConfirmed(e.target.checked)} />He revisado este diff exacto y confirmo el plan de {phase.code}.</label>
+        <DiffBlock diff={preview.shown.diff} label={t("planning.panel.diff")} />
+        <Fields items={[[t("docs.review.base"), <Hash value={preview.shown.head} />], [t("docs.review.preview"), <Hash value={preview.shown.preview_sha256} />]]} />
+        <label>{t("docs.review.reason")}<input value={reason} maxLength={2000} onChange={e => setReason(e.target.value)} /></label>
+        <label className="check"><input type="checkbox" checked={confirmed} onChange={e => setConfirmed(e.target.checked)} />{t("planning.panel.confirm", { phase: phase.code })}</label>
         <button type="button" disabled={busy || stale || !confirmed || !reason.trim()} onClick={() => void operate(async () => {
           const job = await send(jobRequest(`/phases/${phase.id}/plan`, {
             ...preview.body, preview_sha256: preview.shown.preview_sha256,
             resume_operation_id: preview.shown.resume_operation_id ?? null, reason, confirmed: true,
           } satisfies S["PhasePlanCreate"]));
           setRun(job.run_id);
-        })}>Confirmar el plan y hacer commit</button>
+        })}>{t("planning.panel.submit")}</button>
       </div>}
     </>}
   </section>;
@@ -746,6 +780,7 @@ export function PhasePlanPanel({ phase, stale = false }: { phase: S["PhaseRead"]
 export function ImportPage({ conversation, path }: { conversation?: string; path?: string }) {
   const flow = "onboarding";
   const routeName = "onboarding";
+  const { t, n, rich } = useI18n();
   const { project, refresh, busy, operate } = useWorkspace();
   const entry = usePoll<S["ImportEntryRead"]>(`/projects/${project}/${routeName}`, 3000, refresh);
   const list = usePoll<Summary[]>(`/projects/${project}/planning`, 4000, refresh);
@@ -756,35 +791,36 @@ export function ImportPage({ conversation, path }: { conversation?: string; path
   const op = entry.data.operation;
   const selected = conversation ?? op?.conversation_id;
   return <>
-    <PageHeader title="Incorporar repositorio"><p>El revisor documenta el código de HEAD. Confirma los documentos y el perfil de tu composición para adoptar P001 con un commit documental. El código del proyecto no se ejecuta.</p></PageHeader>
+    <PageHeader title={t("onboarding.title")}><p>{t("onboarding.lede")}</p></PageHeader>
     <Stale error={entry.error ?? list.error} />
     {!op && <section className="panel">
-      <ul className="link-list">{mine.map(c => <li key={c.id}><Link to={{ name: routeName, project, conversation: c.id }} current={selected === c.id}>{c.title} · {c.turns} turnos</Link></li>)}</ul>
+      <ul className="link-list">{mine.map(c => <li key={c.id}><Link to={{ name: routeName, project, conversation: c.id }} current={selected === c.id}>{c.title} · {n("chat.turns", c.turns)}</Link></li>)}</ul>
       <form onSubmit={e => { e.preventDefault(); void operate(async () => {
         const created = await createOnce<Conversation>(`/projects/${project}/planning`, { kind: flow, title: title.trim(), brief: null, phase_id: null } satisfies S["PlanningConversationCreate"]);
         setTitle(""); navigate({ name: routeName, project, conversation: created.id });
-      }); }}><label>Nueva conversación de incorporación<input value={title} maxLength={200} onChange={e => setTitle(e.target.value)} /></label><button disabled={busy || !title.trim()}>Inventariar y crear conversación</button></form>
+      }); }}><label>{t("onboarding.new")}<input value={title} maxLength={200} onChange={e => setTitle(e.target.value)} /></label><button disabled={busy || !title.trim()}>{t("onboarding.create")}</button></form>
     </section>}
-    {op && selected !== op.conversation_id ? <p>Hay una incorporación confirmada. <Link to={{ name: routeName, project, conversation: op.conversation_id }}>Ver su operación</Link>.</p>
+    {op && selected !== op.conversation_id ? <p>{rich("onboarding.confirmed", { link: <Link to={{ name: routeName, project, conversation: op.conversation_id }}>{t("onboarding.see_operation")}</Link> })}</p>
       : selected && <ImportConversation key={selected} id={selected} path={path} operation={op} kind={flow} />}
   </>;
 }
 
 function ImportConversation({ id, path, operation, kind }: { id: string; path?: string; operation: S["ImportOperationRead"] | null; kind: "onboarding" }) {
+  const { t } = useI18n();
   const { project, refresh } = useWorkspace();
   const base = `/projects/${project}/planning/${id}`;
   const read = usePoll<Conversation>(base, 1500, refresh);
   const c = read.data;
   const drafts = usePoll<Drafts>(c && !c.created ? `${base}/drafts` : null, 3000, refresh);
   if (!c) return read.error ? <Alert>{read.error}</Alert> : <Loading />;
-  if (c.kind !== kind) return <Alert>Esta conversación pertenece a otro flujo de incorporación.</Alert>;
+  if (c.kind !== kind) return <Alert>{t("onboarding.other_flow")}</Alert>;
   return <div className="docs-layout">
     <DraftTree conversation={c} drafts={drafts.data} current={path} error={drafts.error} />
     <div className="docs-main"><Stale error={read.error} />
       {path && !c.created ? <DraftPage key={path} conversation={c} path={path} drafts={drafts.data} /> : <>
-        <h2>{c.title}</h2><Evidence title="Origen congelado" value={c.source} />
-        <section className="panel"><h3>Conversación</h3><TurnList conversation={c} />
-          {!c.created && <MessageForm conversation={c} path={`${base}/messages`} hint="El revisor recibe el inventario y los borradores; no escribe en el checkout." />}
+        <h2>{c.title}</h2><Evidence title={t("onboarding.source")} value={c.source} />
+        <section className="panel"><h3>{t("planning.conversation")}</h3><TurnList conversation={c} />
+          {!c.created && <MessageForm conversation={c} path={`${base}/messages`} hint={t("onboarding.message_hint")} />}
         </section>
         <Questions conversation={c} base={base} />
         {c.proposals.filter(p => p.status === "PROPOSED").map(p => <ProposalEntry key={p.id} conversation={c} proposal={p} base={base} drafts={drafts.data} />)}
@@ -796,6 +832,7 @@ function ImportConversation({ id, path, operation, kind }: { id: string; path?: 
 }
 
 function ImportConfirmation({ base, conversation, operation }: { base: string; conversation: Conversation; operation: S["ImportOperationRead"] | null }) {
+  const { t, rich } = useI18n();
   const { project, busy, operate, send } = useWorkspace();
   const [shown, setShown] = useState<S["ImportPreviewRead"]>();
   const [confirmed, setConfirmed] = useState(false);
@@ -805,37 +842,37 @@ function ImportConfirmation({ base, conversation, operation }: { base: string; c
   const completed = operation?.status === "COMPLETED";
   const queued = operation?.status === "QUEUED";
   return <section className="panel">
-    <h3>{completed ? "Proyecto incorporado" : "Confirmar la incorporación"}</h3>
-    {operation && <><p><Status value={operation.status} /> · <Link to={{ name: "run-short", run: operation.run_id }}>Ver run</Link> <Status value={operation.run_status} /></p>
-      {operation.result && <Evidence title="Resultado de la incorporación" value={operation.result} />}
-      {completed && <p>Documentos adoptados. <Link to={{ name: "phase", project, phase: String(operation.preview.phase.code) }}>Continuar en {String(operation.preview.phase.code)}</Link>.</p>}
-      {operation.run_status === "RECOVERY_REQUIRED" && <p>Confirma el escritor detenido en el run y vuelve aquí para conciliar el mismo commit.</p>}
+    <h3>{completed ? t("onboarding.completed") : t("onboarding.confirm.title")}</h3>
+    {operation && <><p><Status value={operation.status} /> · <Link to={{ name: "run-short", run: operation.run_id }}>{t("planning.panel.see_run")}</Link> <Status value={operation.run_status} /></p>
+      {operation.result && <Evidence title={t("onboarding.result")} value={operation.result} />}
+      {completed && <p>{t("onboarding.adopted")} <Link to={{ name: "phase", project, phase: String(operation.preview.phase.code) }}>{t("onboarding.continue", { phase: String(operation.preview.phase.code) })}</Link></p>}
+      {operation.run_status === "RECOVERY_REQUIRED" && <p>{t("onboarding.recovery")}</p>}
     </>}
     {!completed && !queued && <button disabled={busy} onClick={() => void operate(async () => {
       setShown(undefined); setConfirmed(false);
       setShown(await managed<S["ImportPreviewRead"]>(`${base}/${endpoint}/preview`, {}));
-    })}>{operation ? "Revisar la intención para conciliarla" : "Revisar el árbol y el commit"}</button>}
+    })}>{operation ? t("onboarding.review_intent") : t("onboarding.review")}</button>}
     {shown && <div className="docs-review">
-      <p>Fase que se adoptará: <strong>{String(shown.phase.code)}</strong>. Los originales sustituidos o retirados se conservan en el archivo.</p>
-      <Fields items={[["Base", <Hash value={shown.head} />], ["Vista previa", <Hash value={shown.preview_sha256} />]]} />
-      <Evidence title="Árbol documental completo, movimientos y conservación de originales" value={{ tree: shown.result_tree, moves: shown.moves, preserved: shown.preserved, foreign: shown.foreign, phase: shown.phase }} />
+      <p>{rich("onboarding.phase", { phase: <strong>{String(shown.phase.code)}</strong> })}</p>
+      <Fields items={[[t("docs.review.base"), <Hash value={shown.head} />], [t("docs.review.preview"), <Hash value={shown.preview_sha256} />]]} />
+      <Evidence title={t("onboarding.tree_evidence")} value={{ tree: shown.result_tree, moves: shown.moves, preserved: shown.preserved, foreign: shown.foreign, phase: shown.phase }} />
       {shown.warnings.length > 0 && <ul>{shown.warnings.map((warning, i) => <li key={i}>{warning}</li>)}</ul>}
       {<>
-        <Evidence title="Perfil detectado: propuesta para tu TOML local" value={shown.profile_proposal} />
-        <Evidence title="Perfil de la composición que confirmas" value={shown.profile} />
-        <p>Revisa comandos, rutas y límites. Para cambiarlos, edita el TOML local y selecciona la composición en Ajustes antes de volver a generar esta vista previa.</p>
-        <Fields items={[["Hash del perfil", <Hash value={shown.profile_sha256 ?? ""} />]]} />
+        <Evidence title={t("onboarding.profile_proposal")} value={shown.profile_proposal} />
+        <Evidence title={t("onboarding.profile")} value={shown.profile} />
+        <p>{t("onboarding.profile_hint")}</p>
+        <Fields items={[[t("onboarding.profile_hash"), <Hash value={shown.profile_sha256 ?? ""} />]]} />
       </>}
-      <DiffBlock diff={shown.diff} label="Cambios documentales" />
-      <details><summary>Bytes exactos de cada cambio (base64 en binarios)</summary>{shown.documents.map(doc => <details key={String(doc.path)}><summary>{String(doc.path)} · {doc.content === null ? "retirado" : String(doc.after_sha256).slice(0, 12)}</summary><pre>{String(doc.content ?? "Archivo retirado; original conservado en el árbol mostrado.")}</pre></details>)}</details>
-      <label>Motivo<input value={reason} maxLength={2000} onChange={e => setReason(e.target.value)} /></label>
-      <label className="check"><input type="checkbox" checked={confirmed} onChange={e => setConfirmed(e.target.checked)} />He revisado este árbol, el perfil de la composición, la fase y los originales conservados, y confirmo el hash {shown.preview_sha256.slice(0, 12)}.</label>
+      <DiffBlock diff={shown.diff} label={t("onboarding.diff")} />
+      <details><summary>{t("onboarding.bytes")}</summary>{shown.documents.map(doc => <details key={String(doc.path)}><summary>{String(doc.path)} · {doc.content === null ? t("onboarding.removed") : String(doc.after_sha256).slice(0, 12)}</summary><pre>{doc.content == null ? t("onboarding.removed_hint") : String(doc.content)}</pre></details>)}</details>
+      <label>{t("docs.review.reason")}<input value={reason} maxLength={2000} onChange={e => setReason(e.target.value)} /></label>
+      <label className="check"><input type="checkbox" checked={confirmed} onChange={e => setConfirmed(e.target.checked)} />{t("onboarding.confirm", { hash: shown.preview_sha256.slice(0, 12) })}</label>
       <button disabled={busy || !confirmed || !reason.trim()} onClick={() => void operate(async () => {
         await send(jobRequest(`${base}/${endpoint}/confirm`, { preview_sha256: shown.preview_sha256, reason, confirmed: true,
           resume_operation_id: shown.resume_operation_id ?? null, expected_version: shown.expected_version ?? null,
           profile_sha256: shown.profile_sha256! }));
         setShown(undefined); setConfirmed(false);
-      })}>{operation ? "Conciliar el mismo commit" : "Confirmar y hacer commit documental"}</button>
+      })}>{operation ? t("onboarding.reconcile") : t("onboarding.submit")}</button>
     </div>}
   </section>;
 }

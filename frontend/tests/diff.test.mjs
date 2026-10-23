@@ -2,6 +2,8 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { appendDiffPage, byteSize, unifiedDiff } from '../src/diff.ts';
 
+const NOTE = 'Cambia el salto de línea final';
+
 /** Applies a unified diff to `before`; proves that the diff describes exactly the change. */
 function apply(before, diff) {
   const source = before ? before.split('\n') : [];
@@ -24,24 +26,24 @@ function apply(before, diff) {
 const lines = text => { const parts = text.split('\n'); if (parts[parts.length - 1] === '') parts.pop(); return parts; };
 
 test('identical texts have no diff; new and deleted files are explicit', () => {
-  assert.equal(unifiedDiff('a.md', 'x\n', 'x\n'), '');
-  assert.equal(unifiedDiff('a.md', null, '# A\nb\n'), '--- /dev/null\n+++ b/a.md\n@@ -0,0 +1,2 @@\n+# A\n+b\n');
-  assert.equal(unifiedDiff('a.md', '# A\n', null), '--- a/a.md\n+++ /dev/null\n@@ -1,1 +0,0 @@\n-# A\n');
+  assert.equal(unifiedDiff('a.md', 'x\n', 'x\n', NOTE), '');
+  assert.equal(unifiedDiff('a.md', null, '# A\nb\n', NOTE), '--- /dev/null\n+++ b/a.md\n@@ -0,0 +1,2 @@\n+# A\n+b\n');
+  assert.equal(unifiedDiff('a.md', '# A\n', null, NOTE), '--- a/a.md\n+++ /dev/null\n@@ -1,1 +0,0 @@\n-# A\n');
 });
 
 test('hunks keep three lines of context and merge when close', () => {
   const before = Array.from({ length: 30 }, (_, i) => `línea ${i + 1}`).join('\n') + '\n';
   const after = before.replace('línea 5\n', 'cinco\n').replace('línea 9\n', 'nueve\n').replace('línea 25\n', '');
-  const diff = unifiedDiff('docs/STATE.md', before, after);
+  const diff = unifiedDiff('docs/STATE.md', before, after, NOTE);
   const hunks = diff.split('\n').filter(l => l.startsWith('@@'));
   assert.deepEqual(hunks, ['@@ -2,11 +2,11 @@', '@@ -22,7 +22,6 @@']);
   assert.deepEqual(apply(before, diff), lines(after));
 });
 
 test('a change of the final newline is shown, never hidden', () => {
-  const diff = unifiedDiff('a.md', 'a\nb\n', 'a\nb');
+  const diff = unifiedDiff('a.md', 'a\nb\n', 'a\nb', NOTE);
   assert.match(diff, /\\ Cambia el salto de línea final/);
-  assert.match(unifiedDiff('a.md', 'x\na\nb\n', 'y\na\nb'), /^-x$[\s\S]*Cambia el salto/m);
+  assert.match(unifiedDiff('a.md', 'x\na\nb\n', 'y\na\nb', NOTE), /^-x$[\s\S]*Cambia el salto/m);
 });
 
 test('random edits round-trip through the diff', () => {
@@ -56,7 +58,7 @@ test('random edits round-trip through the diff', () => {
       else edited.splice(at, 0, `n${random(4)}`);
     }
     const before = base.length ? base.join('\n') + '\n' : '', after = edited.length ? edited.join('\n') + '\n' : '';
-    const diff = unifiedDiff('x.md', before, after);
+    const diff = unifiedDiff('x.md', before, after, NOTE);
     if (before === after) { assert.equal(diff, ''); continue; }
     assert.deepEqual(apply(before, diff), lines(after), JSON.stringify({ base, edited }));
   }
@@ -65,7 +67,7 @@ test('random edits round-trip through the diff', () => {
 test('documents too large to compare return null instead of an approximation', () => {
   const before = Array.from({ length: 2500 }, (_, i) => `a${i}`).join('\n');
   const after = Array.from({ length: 2500 }, (_, i) => `b${i}`).join('\n');
-  assert.equal(unifiedDiff('big.md', before, after), null);
+  assert.equal(unifiedDiff('big.md', before, after, NOTE), null);
 });
 
 // --- paginated cycle diff (D085) ---
@@ -117,8 +119,9 @@ test('an empty diff is a single complete page', () => {
 });
 
 test('byte sizes use binary units', () => {
-  assert.equal(byteSize(512), '512 B');
-  assert.equal(byteSize(64 * 1024), '64 KiB');
-  assert.equal(byteSize(4 * 1024 * 1024), '4 MiB');
-  assert.equal(byteSize(1536), '1,5 KiB');
+  assert.equal(byteSize(512, 'es'), '512 B');
+  assert.equal(byteSize(64 * 1024, 'es'), '64 KiB');
+  assert.equal(byteSize(4 * 1024 * 1024, 'es'), '4 MiB');
+  assert.equal(byteSize(1536, 'es'), '1,5 KiB');
+  assert.equal(byteSize(1536, 'en'), '1.5 KiB');
 });

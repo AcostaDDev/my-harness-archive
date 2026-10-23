@@ -39,9 +39,14 @@ sequenceDiagram
 - CLI: `--ui-language en|es` solo para esa invocación; sin él, preferencias de la base existente (lectura en solo
   lectura) o `en`. No guarda nada.
 - Restauración de consulta: lee preferencias; el middleware rechaza el PUT como cualquier escritura.
+- Interfaz (T010, D170): cada texto propio sale de los catálogos con el visual del proveedor; cambiar el idioma
+  vuelve a pintar textos, fechas y números sin recargar. Diagnósticos HTTP de `api/*` (guardia local, router
+  gestionado) se emiten en el visual guardado al responder; códigos y estados no cambian. Contenido del servicio,
+  del agente o de terceros se muestra tal cual. La línea de la clave de acceso es técnica y siempre inglesa.
 
 ## Fuente en el código
 
 - `storage/preferences.py`, `storage/managed.py::_language`, `api/managed.py` (`/preferences`), `api/session.py`.
 - `i18n/` (catálogos del servicio), `cli.py::cli_language`, `launcher.py`.
-- `frontend/src/{i18n.ts,i18n/*.json,Language.tsx,pages/Preferences.tsx}`.
+- `frontend/src/{i18n.ts,i18n/*.json,Language.tsx,pages/Preferences.tsx}`; formatos en `metrics.ts`/`charts.tsx`.
+- `api/security.py::_say`, `api/managed.py::say` (diagnósticos HTTP propios, T010).

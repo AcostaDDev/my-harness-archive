@@ -10,8 +10,11 @@ export const DEFAULT_LANGUAGE: Language = "en";
 export const LANGUAGE_NAMES: Record<Language, string> = { en: "English", es: "Español" };
 
 export type MessageKey = keyof typeof en;
+/** Base of a plural message: the catalog holds `base.one` and `base.other`. */
+export type PluralKey = MessageKey extends infer K ? K extends `${infer B}.one` ? B : never : never;
 export type Params = Record<string, string | number>;
 export type Translate = (key: MessageKey, params?: Params) => string;
+export type Plural = (key: PluralKey, count: number, params?: Params) => string;
 export type Catalogs = Record<Language, Readonly<Record<string, string>>>;
 
 export const FIELD = /\{([a-z_][a-z0-9_]*)\}/g;
@@ -39,4 +42,27 @@ export function translate(catalogs: Catalogs, language: Language, key: string, p
 export function plural(catalogs: Catalogs, language: Language, key: string, count: number, params: Params = {}): string {
   const form = new Intl.PluralRules(language).select(count) === "one" ? "one" : "other";
   return translate(catalogs, language, `${key}.${form}`, { ...params, count });
+}
+
+/**
+ * A message split at its fields, for rendering values that are elements (a code span, a link to an id).
+ * Text parts keep their order; a field is named so the caller places its element there.
+ */
+export function segments(text: string): ({ text: string } | { field: string })[] {
+  const parts: ({ text: string } | { field: string })[] = [];
+  let last = 0;
+  for (const match of text.matchAll(FIELD)) {
+    if (match.index > last) parts.push({ text: text.slice(last, match.index) });
+    parts.push({ field: match[1] });
+    last = match.index + match[0].length;
+  }
+  if (last < text.length) parts.push({ text: text.slice(last) });
+  return parts;
+}
+
+/** Error raised outside React with a catalog key; it is rendered in the visual language when shown. */
+export class LocalizedError extends Error {
+  readonly key: MessageKey;
+  readonly params: Params;
+  constructor(key: MessageKey, params: Params = {}) { super(key); this.key = key; this.params = params; }
 }

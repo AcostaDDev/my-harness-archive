@@ -1,9 +1,11 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import type { MouseEvent, ReactNode } from "react";
+import { useI18n } from "../Language";
+import type { MessageKey, Translate } from "../i18n.ts";
 import { jobRequest, managed, ManagedError } from "../managed-api";
 import type { S } from "../managed-api";
 import { blockBody, decisionHref, renderMarkdown, splitBlocks } from "../markdown.ts";
-import type { Segment } from "../markdown.ts";
+import type { BlockError, BlockedReason, Segment } from "../markdown.ts";
 import { prefersDark, renderDiagram } from "../mermaid-view.ts";
 import { Link, navigate } from "../navigation";
 import { Alert, DiffBlock, Empty, Fields, Hash, Loading, PageHeader, Stale, Status, message, usePoll } from "../ui";
@@ -22,10 +24,21 @@ const terminal = (phase: PhaseView | null | undefined) => phase?.status === "CLO
 type Draft = { base: string | null; texts: string[]; run?: string };
 
 const q = encodeURIComponent;
-const KIND: Record<S["DocumentTreeEntryRead"]["kind"], string> = {
-  instructions: "Instrucciones para agentes", diagram: "Diagrama de datos", flow: "Flujo", phase_work: "Trabajo de fase",
-  phase: "Documento de fase", product: "Documento de producto", archive: "Archivo de fase", other: "Documento",
+const KIND: Record<S["DocumentTreeEntryRead"]["kind"], MessageKey> = {
+  instructions: "docs.kind.instructions", diagram: "docs.kind.diagram", flow: "docs.kind.flow", phase_work: "docs.kind.phase_work",
+  phase: "docs.kind.phase", product: "docs.kind.product", archive: "docs.kind.archive", other: "docs.kind.other",
 };
+const BLOCK_LABELS: Record<string, MessageKey> = { state: "docs.block.state", roadmap: "docs.block.roadmap", decisions: "docs.block.decisions" };
+const BLOCKED: Record<BlockedReason, MessageKey> = {
+  empty: "docs.blocked.empty", no_scheme: "docs.blocked.no_scheme", scheme: "docs.blocked.scheme",
+  external_image: "docs.blocked.external_image", encoding: "docs.blocked.encoding", image_path: "docs.blocked.image_path",
+  path: "docs.blocked.path", outside: "docs.blocked.outside", image_format: "docs.blocked.image_format",
+  not_markdown: "docs.blocked.not_markdown",
+};
+const BLOCK_ERRORS: Record<BlockError["code"], MessageKey> = {
+  incomplete: "docs.markers.incomplete", own_lines: "docs.markers.own_lines", unknown: "docs.markers.unknown", overlap: "docs.markers.overlap",
+};
+const blockError = (error: BlockError, t: Translate) => t(BLOCK_ERRORS[error.code], { block: error.name ?? "" });
 
 /** Server rule (`Layout.editable`): README or Markdown under the documentation folder, never the archive. */
 function editablePath(path: string, docs: string) {
@@ -36,18 +49,20 @@ function editablePath(path: string, docs: string) {
 }
 
 /** Reason why editing from the interface is not possible now; undefined if it is. */
-function editBlocker(status: DocsStatus | undefined): string | undefined {
-  if (!status) return "Cargando el estado de los documentos…";
+function editBlocker(status: DocsStatus | undefined, t: Translate): string | undefined {
+  if (!status) return t("docs.blocker.loading");
   const phase = status.phase as PhaseView | null;
-  if (status.git_error) return "No se pudo leer el checkout con Git.";
-  if (!phase) return "Crea o importa una fase antes de editar documentos con el harness.";
-  if (phase.status === "CHECKING" || phase.status === "CLOSING") return `La fase ${phase.code} está ${phase.status === "CHECKING" ? "en comprobación" : "cerrándose"}; espera a que termine.`;
-  if (status.unresolved_intent) return "Una operación documental espera recuperación en su run.";
-  if (status.uncommitted?.length) return "Hay cambios locales sin confirmar en el checkout: confírmalos o regenera sus bloques antes de editar aquí.";
+  if (status.git_error) return t("docs.blocker.git");
+  if (!phase) return t("docs.blocker.no_phase");
+  if (phase.status === "CHECKING") return t("docs.blocker.checking", { phase: phase.code });
+  if (phase.status === "CLOSING") return t("docs.blocker.closing", { phase: phase.code });
+  if (status.unresolved_intent) return t("docs.blocker.intent");
+  if (status.uncommitted?.length) return t("docs.blocker.uncommitted");
   return undefined;
 }
 
 export function DocsPage({ path }: { path?: string }) {
+  const { t } = useI18n();
   const { project, refresh } = useWorkspace();
   const info = usePoll<S["ManagedProjectRead"]>(`/projects/${project}`, 0);
   const v2 = info.data?.documents === "v2";
@@ -55,9 +70,9 @@ export function DocsPage({ path }: { path?: string }) {
   const tree = usePoll<Tree>(v2 ? `/projects/${project}/documents/tree` : null, 10000, refresh);
   if (!info.data) return info.error ? <Alert>{info.error}</Alert> : <Loading />;
   if (!v2) return <>
-    <PageHeader title="Documentación" />
-    <Empty title="Este proyecto usa el contrato documental anterior">
-      <p>El visor y la edición confirmada requieren importar la documentación al contrato unificado D088. Los documentos siguen en el checkout y en la exportación de cada fase.</p>
+    <PageHeader title={t("nav.docs")} />
+    <Empty title={t("docs.legacy.title")}>
+      <p>{t("docs.legacy.body")}</p>
     </Empty>
   </>;
   return <div className="docs-layout">
@@ -88,6 +103,7 @@ function buildTree(files: S["DocumentTreeEntryRead"][]): Node {
 }
 
 function DocsTree({ tree, status, current, error }: { tree?: Tree; status?: DocsStatus; current?: string; error?: string }) {
+  const { t, n } = useI18n();
   const { project } = useWorkspace();
   const root = useMemo(() => tree ? buildTree(tree.files) : undefined, [tree]);
   const drift = new Set(status?.documents.filter(d => d.drift).map(d => d.path));
@@ -98,104 +114,106 @@ function DocsTree({ tree, status, current, error }: { tree?: Tree; status?: Docs
     return <ul className="docs-tree-list">{entries.map(child => child.file && !child.children.size
       ? <li key={child.path}><Link to={{ name: "docs", project, path: child.path }} current={child.path === current} className="docs-tree-file">
           <span className="docs-tree-name">{child.name}</span>
-          {local.has(child.path) && <span className="docs-flag docs-flag-local" title="Cambios locales sin confirmar">sin confirmar</span>}
-          {drift.has(child.path) && !local.has(child.path) && <span className="docs-flag docs-flag-drift" title="Difiere de la base adoptada por la fase">deriva</span>}
-          {child.file.archived && <span className="docs-flag" title="Solo lectura">archivo</span>}
+          {local.has(child.path) && <span className="docs-flag docs-flag-local" title={t("docs.flag.local_hint")}>{t("docs.flag.local")}</span>}
+          {drift.has(child.path) && !local.has(child.path) && <span className="docs-flag docs-flag-drift" title={t("docs.flag.drift_hint")}>{t("docs.flag.drift")}</span>}
+          {child.file.archived && <span className="docs-flag" title={t("docs.flag.archive_hint")}>{t("docs.flag.archive")}</span>}
         </Link></li>
       : <li key={child.path}><details open={depth < 1 || (!!current && current.startsWith(`${child.path}/`)) || !child.path.includes("archive")}>
           <summary className="docs-tree-folder">{child.name}/</summary>{branch(child, depth + 1)}</details></li>)}</ul>;
   }
-  return <nav className="docs-tree" aria-label="Documentos">
-    <p className="docs-tree-title"><Link to={{ name: "docs", project }} current={!current}>Documentación</Link></p>
+  return <nav className="docs-tree" aria-label={t("docs.tree")}>
+    <p className="docs-tree-title"><Link to={{ name: "docs", project }} current={!current}>{t("nav.docs")}</Link></p>
     {!root ? (error ? <Alert>{error}</Alert> : <Loading />) : branch(root, 0)}
     {missing.length > 0 && <div className="docs-tree-missing">
-      <p className="hint">Faltan en el checkout:</p>
+      <p className="hint">{t("docs.tree.missing")}</p>
       <ul className="docs-tree-list">{missing.map(d => <li key={d.path}><Link to={{ name: "docs", project, path: d.path }} current={d.path === current} className="docs-tree-file">
-        <span className="docs-tree-name muted">{d.path.split("/").pop()}</span><span className="docs-flag">falta</span></Link></li>)}</ul>
+        <span className="docs-tree-name muted">{d.path.split("/").pop()}</span><span className="docs-flag">{t("docs.flag.missing")}</span></Link></li>)}</ul>
     </div>}
-    {tree?.truncated && <p className="hint">Lista recortada a los primeros 2000 documentos.</p>}
-    {!!tree?.skipped.length && <p className="hint" title={tree.skipped.join("\n")}>{tree.skipped.length} enlaces u objetos no regulares no se muestran.</p>}
+    {tree?.truncated && <p className="hint">{t("docs.tree.truncated")}</p>}
+    {!!tree?.skipped.length && <p className="hint" title={tree.skipped.join("\n")}>{n("docs.tree.skipped", tree.skipped.length)}</p>}
   </nav>;
 }
 
 // --- summary ------------------------------------------------------------------------------------
 
 function DocsOverview({ status, tree }: { status: Poll<DocsStatus>; tree?: Tree }) {
+  const { t, rich } = useI18n();
   const { project } = useWorkspace();
   const s = status.data;
   const phase = s?.phase as PhaseView | null | undefined;
   // The local changes panel disappears with the commit; its result is still shown here.
   const [run, setRun] = useState<string>();
   return <>
-    <PageHeader title="Documentación">
-      <p>Los documentos viven en el checkout y Git es su historial. Editar aquí crea un commit del harness con el diff exacto que confirmes; los bloques gestionados y el archivo de fases no se editan.</p>
+    <PageHeader title={t("nav.docs")}>
+      <p>{t("docs.lede")}</p>
     </PageHeader>
     <Stale error={s ? status.error : undefined} />
     {!s ? (status.error ? <Alert>{status.error}</Alert> : <Loading />) : <>
-      {s.git_error && <Alert>No se pudo leer el checkout con Git: {s.git_error}</Alert>}
+      {s.git_error && <Alert>{t("docs.git_error", { error: s.git_error })}</Alert>}
       {s.unresolved_intent && <div className="decision decision-attention" role="status">
-        <h2>Operación documental pendiente de recuperación</h2>
-        <p>Una operación documental registró su intención y no terminó. Revisa su run y confirma la parada del escritor antes de conciliar el mismo commit.</p>
-        {phase && <p><Link to={{ name: "phase", project, phase: phase.code }}>Ver la fase {phase.code}</Link></p>}
+        <h2>{t("docs.intent.title")}</h2>
+        <p>{t("docs.intent.body")}</p>
+        {phase && <p><Link to={{ name: "phase", project, phase: phase.code }}>{t("docs.see_phase", { phase: phase.code })}</Link></p>}
       </div>}
       {!!s.uncommitted?.length ? <LocalChanges status={s} onQueued={setRun} />
         : run && <section className="decision"><EditProgress run={run} /></section>}
       <Drift status={s} />
-      {!!s.warnings.length && <div className="state state-attention" role="status"><p className="state-title">Presupuestos superados</p>
+      {!!s.warnings.length && <div className="state state-attention" role="status"><p className="state-title">{t("docs.budgets")}</p>
         <ul>{s.warnings.map(w => <li key={w}>{w}</li>)}</ul></div>}
       <section className="panel" aria-labelledby="docs-set">
-        <h2 id="docs-set">Documentos del contrato {phase && <span className="count">fase {phase.code} · <Status value={phase.status} kind="phase" /></span>}</h2>
-        <div className="table-scroll" role="region" aria-label="Documentos del contrato" tabIndex={0}>
+        <h2 id="docs-set">{t("docs.set")} {phase && <span className="count">{t("docs.set.phase", { phase: phase.code })} · <Status value={phase.status} kind="phase" /></span>}</h2>
+        <div className="table-scroll" role="region" aria-label={t("docs.set")} tabIndex={0}>
           <table className="table">
-            <thead><tr><th scope="col">Documento</th><th scope="col">Tipo</th><th scope="col">Estado</th><th scope="col">Bloques</th></tr></thead>
+            <thead><tr><th scope="col">{t("docs.column.document")}</th><th scope="col">{t("runs.column.type")}</th><th scope="col">{t("runs.column.status")}</th><th scope="col">{t("docs.column.blocks")}</th></tr></thead>
             <tbody>{s.documents.map(d => <tr key={d.path}>
               <td><Link to={{ name: "docs", project, path: d.path }}><code className="path">{d.path}</code></Link></td>
-              <td>{KIND[d.kind]}</td>
-              <td>{d.error ? <span className="status status-danger" title={d.error}><span className="status-mark" aria-hidden="true" />Ilegible</span>
-                : !d.exists ? <span className="status status-neutral"><span className="status-mark" aria-hidden="true" />Falta</span>
-                : d.drift ? <span className="status status-attention" title="El contenido no coincide con la base que adoptó la fase"><span className="status-mark" aria-hidden="true" />Difiere de la base</span>
-                : <span className="status status-ok"><span className="status-mark" aria-hidden="true" />Al día</span>}</td>
-              <td>{d.blocks.length ? d.blocks.map(b => <code key={b} className="chip">{b}</code>) : <span className="muted">ninguno</span>}</td>
+              <td>{t(KIND[d.kind])}</td>
+              <td>{d.error ? <span className="status status-danger" title={d.error}><span className="status-mark" aria-hidden="true" />{t("docs.state.unreadable")}</span>
+                : !d.exists ? <span className="status status-neutral"><span className="status-mark" aria-hidden="true" />{t("docs.state.missing")}</span>
+                : d.drift ? <span className="status status-attention" title={t("docs.state.drift_hint")}><span className="status-mark" aria-hidden="true" />{t("docs.state.drift")}</span>
+                : <span className="status status-ok"><span className="status-mark" aria-hidden="true" />{t("docs.state.current")}</span>}</td>
+              <td>{d.blocks.length ? d.blocks.map(b => <code key={b} className="chip">{b}</code>) : <span className="muted">{t("stats.none")}</span>}</td>
             </tr>)}</tbody>
           </table>
         </div>
-        <p className="hint">Carpetas: {s.folders.map(f => <span key={f.path}><code className="chip">{f.path}/</code>{!f.exists && <span className="muted">(falta) </span>}</span>)}</p>
+        <p className="hint">{t("docs.folders")} {s.folders.map(f => <span key={f.path}><code className="chip">{f.path}/</code>{!f.exists && <span className="muted">{t("docs.folder_missing")} </span>}</span>)}</p>
       </section>
       <section className="panel" aria-labelledby="docs-decisions">
-        <h2 id="docs-decisions">Decisiones <span className="count">{s.decisions.length}</span></h2>
-        {!s.decisions.length ? <Empty title="Todavía no hay decisiones registradas"><p>Cada decisión es una sección <code>## DNNN — título</code> de <code>DECISIONS.md</code>; su índice se regenera al confirmar la edición.</p></Empty>
-          : <div className="table-scroll" role="region" aria-label="Decisiones" tabIndex={0}><table className="table">
-            <thead><tr><th scope="col">Id</th><th scope="col" className="wide">Título</th><th scope="col">Estado</th></tr></thead>
+        <h2 id="docs-decisions">{t("docs.decisions")} <span className="count">{s.decisions.length}</span></h2>
+        {!s.decisions.length ? <Empty title={t("docs.decisions.empty")}><p>{rich("docs.decisions.hint", { heading: <code>## DNNN — title</code>, file: <code>DECISIONS.md</code> })}</p></Empty>
+          : <div className="table-scroll" role="region" aria-label={t("docs.decisions")} tabIndex={0}><table className="table">
+            <thead><tr><th scope="col">{t("docs.column.id")}</th><th scope="col" className="wide">{t("docs.column.title")}</th><th scope="col">{t("runs.column.status")}</th></tr></thead>
             <tbody>{s.decisions.map(d => <tr key={d.id}>
               <td><Link className="mono" to={decisionHref(project, tree?.docs ?? "docs", d.id, d.title)}>{d.id}</Link></td>
-              <td>{d.title ?? <span className="muted">sin título</span>}</td><td>{d.status ?? "—"}</td>
+              <td>{d.title ?? <span className="muted">{t("docs.untitled")}</span>}</td><td>{d.status ?? "—"}</td>
             </tr>)}</tbody></table></div>}
       </section>
       <section className="panel" aria-labelledby="docs-archive">
-        <h2 id="docs-archive">Archivo de fases</h2>
-        {!s.archive.length ? <p className="hint">Ninguna fase archivada todavía. El cierre de fase archiva aquí STATE, NEXT_STEPS, la revisión, el resumen y el trabajo de phase/.</p>
+        <h2 id="docs-archive">{t("docs.archive")}</h2>
+        {!s.archive.length ? <p className="hint">{t("docs.archive.empty")}</p>
           : <ul className="docs-archive">{s.archive.map(a => <li key={a.path}><code className="path">{a.path}/</code>{" "}
             {a.files.filter(f => f.endsWith(".md")).map(f => <Link key={f} className="chip" to={{ name: "docs", project, path: `${a.path}/${f}` }}>{f}</Link>)}</li>)}</ul>}
       </section>
-      <NewDocument docs={tree?.docs ?? "docs"} existing={new Set(tree?.files.map(f => f.path))} blocked={editBlocker(s)} />
+      <NewDocument docs={tree?.docs ?? "docs"} existing={new Set(tree?.files.map(f => f.path))} blocked={editBlocker(s, t)} />
     </>}
   </>;
 }
 
 function NewDocument({ docs, existing, blocked }: { docs: string; existing: Set<string>; blocked?: string }) {
+  const { t, rich } = useI18n();
   const { project } = useWorkspace();
   const [name, setName] = useState("");
   const path = `${docs}/${name.trim().replace(/^\/+/, "")}`;
   const valid = name.trim() !== "" && editablePath(path, docs);
   return <section className="panel" aria-labelledby="docs-new">
-    <h2 id="docs-new">Nuevo documento</h2>
-    <p className="hint">Markdown bajo <code>{docs}/</code>, fuera de <code>archive/</code>. Las decisiones se añaden como secciones de <code>DECISIONS.md</code>.</p>
+    <h2 id="docs-new">{t("docs.new")}</h2>
+    <p className="hint">{rich("docs.new.hint", { docs: <code>{docs}/</code>, archive: <code>archive/</code>, file: <code>DECISIONS.md</code> })}</p>
     <form className="docs-new" onSubmit={e => { e.preventDefault(); if (valid && !existing.has(path)) navigate({ name: "docs", project, path }); }}>
-      <label>Ruta<span className="docs-prefix"><code>{docs}/</code><input value={name} onChange={e => setName(e.target.value)} placeholder="flows/tareas.md" maxLength={400} /></span></label>
-      <button disabled={!valid || existing.has(path) || !!blocked}>Crear y editar</button>
+      <label>{t("docs.new.path")}<span className="docs-prefix"><code>{docs}/</code><input value={name} onChange={e => setName(e.target.value)} placeholder="flows/tareas.md" maxLength={400} /></span></label>
+      <button disabled={!valid || existing.has(path) || !!blocked}>{t("docs.new.create")}</button>
     </form>
-    {existing.has(path) && <p className="hint">Ese documento ya existe; ábrelo desde el árbol.</p>}
-    {name.trim() && !valid && <p className="hint">La ruta debe terminar en <code>.md</code> y no puede entrar en el archivo ni salir de la carpeta.</p>}
+    {existing.has(path) && <p className="hint">{t("docs.new.exists")}</p>}
+    {name.trim() && !valid && <p className="hint">{rich("docs.new.invalid", { extension: <code>.md</code> })}</p>}
     {blocked && <p className="hint">{blocked}</p>}
   </section>;
 }
@@ -204,27 +222,29 @@ function NewDocument({ docs, existing, blocked }: { docs: string; existing: Set<
 
 /** Committed documents that differ from the base adopted by the phase: resolved by adopting them in the phase. */
 function Drift({ status }: { status: DocsStatus }) {
+  const { t } = useI18n();
   const { project } = useWorkspace();
   const local = new Set(status.uncommitted?.map(c => c.path));
   const drift = status.documents.filter(d => d.drift && !local.has(d.path));
   const phase = status.phase as PhaseView | null;
   if (!drift.length || !phase) return null;
   if (terminal(phase)) return <div className="decision decision-attention" role="status">
-    <h2>Documentos distintos de lo que dejó el cierre de {phase.code}</h2>
+    <h2>{t("docs.drift.closed.title", { phase: phase.code })}</h2>
     <p>{drift.map(d => <code key={d.path} className="chip">{d.path}</code>)}</p>
-    <p>Cambiaron después del cierre sin una operación confirmada del harness. El check histórico de {phase.code} no cambia; revisa el contenido y confírmalo con una edición o restáuralo.</p>
-    <p><Link to={{ name: "phase", project, phase: phase.code }}>Ver el cierre de {phase.code}</Link></p>
+    <p>{t("docs.drift.closed.body", { phase: phase.code })}</p>
+    <p><Link to={{ name: "phase", project, phase: phase.code }}>{t("docs.drift.closed.link", { phase: phase.code })}</Link></p>
   </div>;
   return <div className="decision decision-attention" role="status">
-    <h2>Documentos de fase distintos de su base</h2>
+    <h2>{t("docs.drift.title")}</h2>
     <p>{drift.map(d => <code key={d.path} className="chip">{d.path}</code>)}</p>
-    <p>Cambiaron fuera de un commit del harness. Hasta adoptarlos, el check de la fase no queda listo y el cierre se bloquea. Revisa el contenido y adóptalo por hash en la fase, o reconcílialo con una tarea.</p>
-    <p><Link to={{ name: "phase", project, phase: phase.code }}>Adoptar o reconciliar en {phase.code}</Link></p>
+    <p>{t("docs.drift.body")}</p>
+    <p><Link to={{ name: "phase", project, phase: phase.code }}>{t("docs.drift.link", { phase: phase.code })}</Link></p>
   </div>;
 }
 
 /** Uncommitted changes from the code editor: confirm their exact bytes or regenerate the blocks they touch. */
 function LocalChanges({ status, onQueued }: { status: DocsStatus; onQueued: (run: string) => void }) {
+  const { t } = useI18n();
   const { project, busy, operate } = useWorkspace();
   const [review, setReview] = useState<{ body: S["DocumentEditInput"]; preview: Preview }>();
   const [refused, setRefused] = useState<string>();
@@ -234,23 +254,23 @@ function LocalChanges({ status, onQueued }: { status: DocsStatus; onQueued: (run
     const body: S["DocumentEditInput"] = { source: "worktree", regenerate_blocks: regenerate };
     setRefused(undefined); setReview(undefined);
     try { setReview({ body, preview: await managed<Preview>(`/projects/${project}/documents/edit/preview`, body) }); }
-    catch (e) { if (e instanceof ManagedError && e.status === 409) setRefused(e.message); else throw e; }
+    catch (e) { if (e instanceof ManagedError && e.status === 409) setRefused(message(e)); else throw e; }
   }
   const blockRefusal = refused?.includes("managed blocks are generated");
   return <section className="decision decision-attention" id="local-changes" aria-labelledby="local-changes-title">
-    <h2 id="local-changes-title">Cambios locales sin confirmar</h2>
+    <h2 id="local-changes-title">{t("docs.local.title")}</h2>
     <ul className="docs-changes">{changes.map(c => <li key={c.path}>
       {c.editable ? <Link to={{ name: "docs", project, path: c.path }}><code className="path">{c.path}</code></Link> : <code className="path">{c.path}</code>}
-      {!c.editable && <span className="muted"> · fuera de los documentos editables</span>}</li>)}</ul>
-    <p>Mientras existan, no arranca ninguna tarea y se bloquean el check, la exportación y el cierre de fase: el ejecutor no debe recibir estos cambios en su diff.</p>
-    {outside.length > 0 ? <p className="hint">Hay cambios fuera de los documentos editables (código u otros archivos). No se confirman desde aquí: haz su commit o descártalos en tu editor, y vuelve.</p> : <>
-      <p className="hint">Confirmar hace un commit del harness con estos bytes exactos. Si tocaste un bloque gestionado, regenerar conserva tu prosa y devuelve el bloque a su contenido actual.</p>
+      {!c.editable && <span className="muted"> · {t("docs.local.outside")}</span>}</li>)}</ul>
+    <p>{t("docs.local.body")}</p>
+    {outside.length > 0 ? <p className="hint">{t("docs.local.outside_hint")}</p> : <>
+      <p className="hint">{t("docs.local.confirm_hint")}</p>
       <div className="actions">
-        <button type="button" disabled={busy} onClick={() => void operate(() => load(false))}>Revisar y confirmar</button>
-        {blockRefusal && <button type="button" className="button-quiet" disabled={busy} onClick={() => void operate(() => load(true))}>Regenerar bloques</button>}
+        <button type="button" disabled={busy} onClick={() => void operate(() => load(false))}>{t("docs.local.review")}</button>
+        {blockRefusal && <button type="button" className="button-quiet" disabled={busy} onClick={() => void operate(() => load(true))}>{t("docs.local.regenerate")}</button>}
       </div>
     </>}
-    {refused && <p role="alert" className="state state-error">{blockRefusal ? "Estos cambios editan un bloque gestionado, que genera el harness. Puedes regenerarlo y confirmar solo tu prosa." : refused}</p>}
+    {refused && <p role="alert" className="state state-error">{blockRefusal ? t("docs.local.block_refusal") : refused}</p>}
     {review && <EditReview body={review.body} preview={review.preview} onCancel={() => setReview(undefined)} onQueued={onQueued} />}
   </section>;
 }
@@ -261,6 +281,7 @@ function LocalChanges({ status, onQueued }: { status: DocsStatus; onQueued: (run
 function EditReview({ body, preview, onCancel, onQueued, done }: {
   body: S["DocumentEditInput"]; preview: Preview; onCancel: () => void; onQueued?: (run: string) => void; done?: ReactNode;
 }) {
+  const { t, rich } = useI18n();
   const { project, busy, operate, send } = useWorkspace();
   const [reason, setReason] = useState("");
   const [confirmed, setConfirmed] = useState(false);
@@ -268,21 +289,22 @@ function EditReview({ body, preview, onCancel, onQueued, done }: {
   const users = new Set(body.changes?.map(c => c.path) ?? []);
   if (run) return <EditProgress run={run} done={done} />;
   return <div className="docs-review">
-    <h3>Revisa el commit</h3>
-    {preview.resume_operation_id && <p className="state state-attention">Hay una edición interrumpida ({preview.resume_operation_id.slice(0, 8)}): se muestra y se reanuda exactamente la que se confirmó, con el mismo commit.</p>}
+    <h3>{t("docs.review.title")}</h3>
+    {preview.resume_operation_id && <p className="state state-attention">{t("docs.review.resume", { id: preview.resume_operation_id.slice(0, 8) })}</p>}
     <ul className="docs-changes">{preview.documents.map(d => <li key={d.path}>
       <code className="path">{d.path}</code>{" "}
-      <span className="muted">{d.before_sha256 === null ? "nuevo" : <>de <Hash value={d.before_sha256} length={8} /></>} a <Hash value={d.after_sha256} length={8} />
-        {body.source === "content" && !users.has(d.path) && " · índice regenerado por el harness"}</span></li>)}</ul>
+      <span className="muted">{d.before_sha256 === null ? rich("docs.review.new", { after: <Hash value={d.after_sha256} length={8} /> })
+        : rich("docs.review.change", { before: <Hash value={d.before_sha256} length={8} />, after: <Hash value={d.after_sha256} length={8} /> })}
+        {body.source === "content" && !users.has(d.path) && ` · ${t("docs.review.index")}`}</span></li>)}</ul>
     {!!preview.regenerated?.length && <div className="state state-attention">
-      <p className="state-title">Se descarta de tus archivos locales</p>
-      <p>El harness sustituye en el disco los bloques gestionados que editaste por su contenido actual. Tu prosa se conserva.</p>
-      {preview.regenerated.map(r => <DiffBlock key={r.path} diff={r.diff} label={`Bloques descartados en ${r.path}`} />)}
+      <p className="state-title">{t("docs.review.discarded")}</p>
+      <p>{t("docs.review.discarded_body")}</p>
+      {preview.regenerated.map(r => <DiffBlock key={r.path} diff={r.diff} label={t("docs.review.discarded_label", { path: r.path })} />)}
     </div>}
-    <DiffBlock diff={preview.diff} label="Diff del commit" />
-    <Fields items={[["Base", <Hash value={preview.head} />], ["Vista previa", <Hash value={preview.preview_sha256} />]]} />
-    <label>Motivo<input value={reason} maxLength={2000} onChange={e => { setReason(e.target.value); setConfirmed(false); }} placeholder="Qué cambia y por qué" /></label>
-    <label className="check"><input type="checkbox" checked={confirmed} onChange={e => setConfirmed(e.target.checked)} />He revisado este diff exacto y confirmo su commit{preview.regenerated?.length ? " y la regeneración de los bloques" : ""}.</label>
+    <DiffBlock diff={preview.diff} label={t("docs.review.diff")} />
+    <Fields items={[[t("docs.review.base"), <Hash value={preview.head} />], [t("docs.review.preview"), <Hash value={preview.preview_sha256} />]]} />
+    <label>{t("docs.review.reason")}<input value={reason} maxLength={2000} onChange={e => { setReason(e.target.value); setConfirmed(false); }} placeholder={t("docs.review.reason_placeholder")} /></label>
+    <label className="check"><input type="checkbox" checked={confirmed} onChange={e => setConfirmed(e.target.checked)} />{preview.regenerated?.length ? t("docs.review.confirm_regenerate") : t("docs.review.confirm")}</label>
     <div className="actions">
       <button type="button" disabled={busy || !confirmed || !reason.trim()} onClick={() => void operate(async () => {
         const job = await send(jobRequest(`/projects/${project}/documents/edit`, {
@@ -290,26 +312,27 @@ function EditReview({ body, preview, onCancel, onQueued, done }: {
           reason, confirmed: true,
         } satisfies S["DocumentEditCreate"]));
         setRun(job.run_id); onQueued?.(job.run_id);
-      })}>Confirmar y hacer commit</button>
-      <button type="button" className="button-quiet" disabled={busy} onClick={onCancel}>Volver</button>
+      })}>{t("docs.review.commit")}</button>
+      <button type="button" className="button-quiet" disabled={busy} onClick={onCancel}>{t("common.back")}</button>
     </div>
   </div>;
 }
 
 const FINAL = new Set(["COMMITTED", "STOPPED", "FAILED", "ABORTED", "INTERRUPTED", "RECOVERY_REQUIRED"]);
 
-export function EditProgress({ run, done, onBack, title = "Edición encolada" }: { run: string; done?: ReactNode; onBack?: () => void; title?: string }) {
+export function EditProgress({ run, done, onBack, title }: { run: string; done?: ReactNode; onBack?: () => void; title?: string }) {
+  const { t } = useI18n();
   const read = usePoll<S["ManagedRunRead"]>(`/runs/${run}`, 1500);
   const r = read.data;
   const finished = r && FINAL.has(r.status);
   const route = r && r.project_id ? { name: "run" as const, project: r.project_id, phase: r.phase_id, task: r.task_id, run: r.id } : undefined;
   return <div className="docs-review" role="status">
-    <h3>{title}</h3>
-    <p>{r ? <Status value={r.status} /> : "Consultando…"} {route && <Link to={route} className="mono">Run {run.slice(0, 8)}</Link>}</p>
-    {r?.status === "COMMITTED" && (done ?? <p>Commit hecho y hashes adoptados por la fase.</p>)}
+    <h3>{title ?? t("docs.progress.title")}</h3>
+    <p>{r ? <Status value={r.status} /> : t("docs.progress.reading")} {route && <Link to={route} className="mono">{t("trail.run", { id: run.slice(0, 8) })}</Link>}</p>
+    {r?.status === "COMMITTED" && (done ?? <p>{t("docs.progress.committed")}</p>)}
     {finished && r?.status !== "COMMITTED" && <>
-      <p className="state state-error">No se hizo el commit{r.history.stop ? ` (${r.history.stop.stage}: ${r.history.stop.reason})` : ""}. Si algo cambió después de la vista previa, no se sobrescribió nada; los detalles están en el run.</p>
-      {onBack && <button type="button" className="button-quiet" onClick={onBack}>Volver al borrador</button>}
+      <p className="state state-error">{r.history.stop ? t("docs.progress.not_committed_stop", { stage: r.history.stop.stage, reason: r.history.stop.reason }) : t("docs.progress.not_committed")}</p>
+      {onBack && <button type="button" className="button-quiet" onClick={onBack}>{t("docs.progress.back")}</button>}
     </>}
   </div>;
 }
@@ -317,6 +340,7 @@ export function EditProgress({ run, done, onBack, title = "Edición encolada" }:
 // --- document -----------------------------------------------------------------------------------
 
 function DocumentView({ path, status, tree }: { path: string; status: Poll<DocsStatus>; tree?: Tree }) {
+  const { t, rich } = useI18n();
   const { project } = useWorkspace();
   const read = usePoll<S["DocumentRead"]>(`/projects/${project}/documents/content?path=${q(path)}`, 8000);
   const draftKey = `harness-doc-draft-v1:${project}:${path}`;
@@ -328,26 +352,26 @@ function DocumentView({ path, status, tree }: { path: string; status: Poll<DocsS
   const local = s?.uncommitted?.some(c => c.path === path);
   const archived = path.startsWith(`${docs}/archive/`);
   const canEdit = editablePath(path, docs);
-  const blocker = editBlocker(s);
+  const blocker = editBlocker(s, t);
   const name = path.split("/").pop()!;
   const kind = tree?.files.find(f => f.path === path)?.kind ?? (entry?.kind as S["DocumentTreeEntryRead"]["kind"] | undefined);
   if (read.missing && !editing) return <>
     <PageHeader title={name} code><p><code className="path">{path}</code></p></PageHeader>
-    <Empty title="Este documento no existe en el checkout">
-      {canEdit ? <><p>Puedes crearlo: se confirma como cualquier edición, con un commit del harness.</p>
-        {blocker ? <p className="hint">{blocker}</p> : <button type="button" onClick={() => setEditing(true)}>Crear documento</button>}</>
-        : <p>Se muestran README, AGENTS, CLAUDE, GEMINI y Markdown bajo <code>{docs}/</code>. Vuelve a la <Link to={{ name: "docs", project }}>documentación</Link>.</p>}
+    <Empty title={t("docs.document.missing")}>
+      {canEdit ? <><p>{t("docs.document.create_hint")}</p>
+        {blocker ? <p className="hint">{blocker}</p> : <button type="button" onClick={() => setEditing(true)}>{t("docs.document.create")}</button>}</>
+        : <p>{rich("docs.document.shown", { docs: <code>{docs}/</code> })} <Link to={{ name: "docs", project }}>{t("docs.document.back")}</Link></p>}
     </Empty>
   </>;
   if (!doc && !read.missing) return read.error ? <Alert>{read.error}</Alert> : <Loading />;
   return <>
-    <PageHeader title={name} code aside={!editing && doc?.editable && <button type="button" disabled={!!blocker} title={blocker} onClick={() => setEditing(true)}>Editar</button>}>
-      <p><code className="path">{path}</code> · {kind ? KIND[kind] : "Documento"}{doc && <> · <Hash value={doc.sha256} /></>}</p>
+    <PageHeader title={name} code aside={!editing && doc?.editable && <button type="button" disabled={!!blocker} title={blocker} onClick={() => setEditing(true)}>{t("docs.document.edit")}</button>}>
+      <p><code className="path">{path}</code> · {t(kind ? KIND[kind] : "docs.kind.other")}{doc && <> · <Hash value={doc.sha256} /></>}</p>
     </PageHeader>
     <Stale error={doc ? read.error : undefined} />
-    {archived && <p className="state state-neutral docs-readonly">Archivo de fase · solo lectura. Lo escribe el harness al cerrar la fase y nunca se edita.</p>}
-    {local && <p className="state state-attention" role="status">Este documento tiene cambios locales sin confirmar. Lo que ves es el disco, no el último commit. <Link to={{ name: "docs", project }}>Confirmarlos o regenerar</Link>.</p>}
-    {entry?.drift && !local && <p className="state state-attention" role="status">{terminal(s?.phase as PhaseView | null) ? "Difiere de lo que dejó el cierre de la fase, sin una edición confirmada." : "Difiere de la base que adoptó la fase: el check no queda listo hasta adoptarlo."} <Link to={{ name: "docs", project }}>Ver deriva</Link>.</p>}
+    {archived && <p className="state state-neutral docs-readonly">{t("docs.document.archived")}</p>}
+    {local && <p className="state state-attention" role="status">{t("docs.document.local")} <Link to={{ name: "docs", project }}>{t("docs.document.local_link")}</Link></p>}
+    {entry?.drift && !local && <p className="state state-attention" role="status">{terminal(s?.phase as PhaseView | null) ? t("docs.document.drift_closed") : t("docs.document.drift")} <Link to={{ name: "docs", project }}>{t("docs.document.drift_link")}</Link></p>}
     {entry?.error && <Alert>{entry.error}</Alert>}
     {editing ? <Editor path={path} doc={read.missing ? null : doc!} draftKey={draftKey} blocker={blocker} onClose={() => setEditing(false)} />
       : doc && <article className="doc-reader"><MarkdownView source={doc.content} path={path} /></article>}
@@ -356,6 +380,7 @@ function DocumentView({ path, status, tree }: { path: string; status: Poll<DocsS
 
 /** Rendered Markdown (markdown.ts) with internal navigation and isolated diagrams (mermaid-view.ts). */
 export function MarkdownView({ source, path }: { source: string; path: string }) {
+  const { t } = useI18n();
   const { project } = useWorkspace();
   const rendered = useMemo(() => renderMarkdown(source, { project, path }), [source, project, path]);
   const container = useRef<HTMLDivElement>(null);
@@ -368,6 +393,25 @@ export function MarkdownView({ source, path }: { source: string; path: string })
     media?.addEventListener("change", update);
     return () => { observer.disconnect(); media?.removeEventListener("change", update); };
   }, []);
+  // Own texts of the rendered HTML, as text: block labels and the reason a link or an image does not navigate.
+  useLayoutEffect(() => {
+    const root = container.current;
+    if (!root) return;
+    root.querySelectorAll<HTMLElement>("section.doc-managed").forEach(section => {
+      const name = section.dataset.block ?? "";
+      const label = section.querySelector(":scope > .doc-managed-label");
+      if (label) label.textContent = t("docs.block.label", { block: BLOCK_LABELS[name] ? t(BLOCK_LABELS[name]) : name });
+      const empty = section.querySelector(":scope > .doc-managed-empty");
+      if (empty) empty.textContent = t("docs.block.empty");
+    });
+    root.querySelectorAll<HTMLElement>("[data-blocked]").forEach(element => {
+      const key = BLOCKED[element.dataset.blocked as BlockedReason];
+      const reason = key ? t(key) : element.dataset.blocked ?? "";
+      element.title = reason;
+      if (element.classList.contains("doc-image-blocked"))
+        element.textContent = t("docs.image_blocked", { alt: element.dataset.alt || t("docs.image"), reason });
+    });
+  }, [rendered, t]);
   useEffect(() => {
     const root = container.current;
     if (!root || !rendered.mermaid.length) return;
@@ -381,18 +425,18 @@ export function MarkdownView({ source, path }: { source: string; path: string })
         if (!active) { URL.revokeObjectURL(url); return; }
         urls.push(url);
         const img = document.createElement("img");
-        img.src = url; img.alt = "Diagrama Mermaid (el código fuente se muestra debajo)";
+        img.src = url; img.alt = t("docs.mermaid.alt");
         figure.prepend(img);
       }).catch(error => {
         if (!active) return;
         const note = document.createElement("p");
         note.className = "doc-mermaid-error";
-        note.textContent = `No se pudo dibujar el diagrama: ${message(error).slice(0, 300)}`;
+        note.textContent = t("docs.mermaid.error", { error: message(error).slice(0, 300) });
         figure.prepend(note);
       }).finally(() => figure.classList.remove("doc-mermaid-loading"));
     });
     return () => { active = false; urls.forEach(url => URL.revokeObjectURL(url)); };
-  }, [rendered, dark]);
+  }, [rendered, dark, t]);
   useEffect(() => {
     const id = decodeURIComponent(window.location.hash.slice(1));
     if (id.startsWith("doc-")) document.getElementById(id)?.scrollIntoView();
@@ -404,7 +448,7 @@ export function MarkdownView({ source, path }: { source: string; path: string })
     navigate(link.getAttribute("href")!);
   }
   return <>
-    {rendered.error && <p className="state state-attention">Marcadores de bloque mal formados: {rendered.error}. Se muestran como texto.</p>}
+    {rendered.error && <p className="state state-attention">{t("docs.markers.malformed", { error: blockError(rendered.error, t) })}</p>}
     <div ref={container} className="doc-prose" onClick={follow} dangerouslySetInnerHTML={{ __html: rendered.html }} />
   </>;
 }
@@ -423,6 +467,7 @@ function saveDraft(key: string, draft?: Draft) {
  * the preview compares that hash (CAS) and the commit carries the exact confirmed diff.
  */
 function Editor({ path, doc, draftKey, blocker, onClose }: { path: string; doc: S["DocumentRead"] | null; draftKey: string; blocker?: string; onClose: () => void }) {
+  const { t, rich } = useI18n();
   const { project, busy, operate } = useWorkspace();
   const original = doc?.content ?? "";
   const { segments, error } = useMemo(() => splitBlocks(original), [original]);
@@ -438,42 +483,43 @@ function Editor({ path, doc, draftKey, blocker, onClose }: { path: string; doc: 
   const stale = draft.base !== (doc?.sha256 ?? null);
   function discard() { saveDraft(draftKey); onClose(); }
   if (draft.run) return <EditProgress run={draft.run} onBack={() => setDraft({ ...draft, run: undefined })}
-    done={<p>Commit hecho y hashes adoptados por la fase. <button type="button" className="button-quiet" onClick={discard}>Volver al documento</button></p>} />;
-  if (error) return <Alert>No se puede editar con seguridad: {error}. Corrige los marcadores en tu editor; el harness rechaza cualquier cambio de un bloque gestionado.</Alert>;
+    done={<p>{t("docs.progress.committed")} <button type="button" className="button-quiet" onClick={discard}>{t("docs.editor.back")}</button></p>} />;
+  if (error) return <Alert>{t("docs.editor.unsafe", { error: blockError(error, t) })}</Alert>;
   async function check() {
     setConflict(undefined); setReview(undefined);
     const body: S["DocumentEditInput"] = { source: "content", changes: [{ path, content, base_sha256: draft.base }], regenerate_blocks: false };
     try { setReview({ body, preview: await managed<Preview>(`/projects/${project}/documents/edit/preview`, body) }); }
-    catch (e) { if (e instanceof ManagedError && e.status === 409) setConflict(e.message); else throw e; }
+    catch (e) { if (e instanceof ManagedError && e.status === 409) setConflict(e.code === "document_changed" ? "document_changed" : message(e)); else throw e; }
   }
-  return <section className="docs-editor" aria-label={`Editar ${path}`}>
-    {stale && <p className="state state-attention" role="status">El documento cambió desde que empezaste este borrador (base <Hash value={draft.base} length={8} />, ahora <Hash value={doc?.sha256} length={8} />). La vista previa lo rechazará: copia tu texto y descarta el borrador para partir de la versión actual.</p>}
-    {!shape ? <Alert>El borrador guardado no encaja con los bloques actuales del documento. Descártalo para editar la versión actual.</Alert> : review ? null : <>
+  return <section className="docs-editor" aria-label={t("docs.editor.label", { path })}>
+    {stale && <p className="state state-attention" role="status">{rich("docs.editor.stale", { base: <Hash value={draft.base} length={8} />, current: <Hash value={doc?.sha256} length={8} /> })}</p>}
+    {!shape ? <Alert>{t("docs.editor.shape")}</Alert> : review ? null : <>
       <div className="docs-editor-tabs" role="tablist">
-        <button type="button" role="tab" aria-selected={view === "edit"} className={view === "edit" ? "" : "button-quiet"} onClick={() => setView("edit")}>Escribir</button>
-        <button type="button" role="tab" aria-selected={view === "preview"} className={view === "preview" ? "" : "button-quiet"} onClick={() => setView("preview")}>Vista previa</button>
+        <button type="button" role="tab" aria-selected={view === "edit"} className={view === "edit" ? "" : "button-quiet"} onClick={() => setView("edit")}>{t("docs.editor.write")}</button>
+        <button type="button" role="tab" aria-selected={view === "preview"} className={view === "preview" ? "" : "button-quiet"} onClick={() => setView("preview")}>{t("docs.review.preview")}</button>
       </div>
       {view === "preview" ? <article className="doc-reader"><MarkdownView source={content} path={path} /></article>
         : segments.map((segment, index) => segment.kind === "block"
           ? <LockedBlock key={index} segment={segment} />
-          : <label key={index} className="docs-editor-prose"><span className="visually-hidden">Texto {index ? "tras el bloque" : "del documento"}</span>
+          : <label key={index} className="docs-editor-prose"><span className="visually-hidden">{index ? t("docs.editor.after_block") : t("docs.editor.text")}</span>
             <textarea value={draft.texts[index]} spellCheck rows={Math.min(30, Math.max(segments.length > 1 ? 4 : 16, draft.texts[index].split("\n").length + 1))}
               onChange={e => { const texts = [...draft.texts]; texts[index] = e.target.value; setDraft({ ...draft, texts }); }} /></label>)}
     </>}
-    {conflict && <p role="alert" className="state state-error">{conflict.includes("document_changed") ? "Conflicto: el documento cambió en el checkout desde que lo abriste. No se ha escrito nada." : conflict}</p>}
+    {conflict && <p role="alert" className="state state-error">{conflict === "document_changed" ? t("docs.editor.conflict") : conflict}</p>}
     {review ? <EditReview body={review.body} preview={review.preview} onCancel={() => setReview(undefined)}
         onQueued={run => setDraft({ ...draft, run })} />
       : <div className="actions">
-        <button type="button" disabled={busy || !changed || !shape || !!blocker} title={blocker} onClick={() => void operate(check)}>Revisar cambios</button>
-        <button type="button" className="button-quiet" disabled={busy} onClick={discard}>{changed ? "Descartar borrador" : "Cerrar editor"}</button>
+        <button type="button" disabled={busy || !changed || !shape || !!blocker} title={blocker} onClick={() => void operate(check)}>{t("docs.editor.review")}</button>
+        <button type="button" className="button-quiet" disabled={busy} onClick={discard}>{changed ? t("docs.editor.discard") : t("docs.editor.close")}</button>
         {blocker && <span className="hint">{blocker}</span>}
       </div>}
   </section>;
 }
 
 function LockedBlock({ segment }: { segment: Extract<Segment, { kind: "block" }> }) {
+  const { t, rich } = useI18n();
   return <details className="docs-locked">
-    <summary><span className="docs-lock" aria-hidden="true" />Bloque gestionado <code>{segment.name}</code> · lo regenera el harness en cada commit y no se edita</summary>
-    <pre>{blockBody(segment) || "Vacío: se rellena en el próximo commit del harness."}</pre>
+    <summary><span className="docs-lock" aria-hidden="true" />{rich("docs.locked", { block: <code>{segment.name}</code> })}</summary>
+    <pre>{blockBody(segment) || t("docs.block.empty")}</pre>
   </details>;
 }

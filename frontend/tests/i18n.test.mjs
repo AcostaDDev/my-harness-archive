@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { FIELD, LANGUAGES, isLanguage, plural, translate } from '../src/i18n.ts';
+import { FIELD, LANGUAGES, LocalizedError, isLanguage, plural, segments, translate } from '../src/i18n.ts';
 import en from '../src/i18n/en.json' with { type: 'json' };
 import es from '../src/i18n/es.json' with { type: 'json' };
 
@@ -42,4 +42,26 @@ test('only en and es are languages; anything else is rejected rather than normal
   assert.deepEqual(LANGUAGES, ['en', 'es']);
   for (const value of ['en', 'es']) assert.ok(isLanguage(value));
   for (const value of ['EN', 'es-ES', 'fr', '', null, undefined, 1]) assert.ok(!isLanguage(value), String(value));
+});
+
+test('segments split a message at its fields so elements are placed as values, never parsed as markup', () => {
+  assert.deepEqual(segments('Task {task} of phase {phase}.'),
+    [{ text: 'Task ' }, { field: 'task' }, { text: ' of phase ' }, { field: 'phase' }, { text: '.' }]);
+  assert.deepEqual(segments('{a}{b}'), [{ field: 'a' }, { field: 'b' }]);
+  assert.deepEqual(segments('No fields <b>here</b>'), [{ text: 'No fields <b>here</b>' }]);
+});
+
+test('own errors outside React carry a catalog key, translated when shown', () => {
+  const error = new LocalizedError('error.request_status', { status: 503 });
+  assert.ok(error instanceof Error);
+  assert.equal(error.key, 'error.request_status');
+  assert.equal(translate({ en, es }, 'es', error.key, error.params), 'La solicitud falló (503). Comprueba que el servicio esté disponible.');
+  assert.equal(translate({ en, es }, 'en', error.key, error.params), 'The request failed (503). Check that the service is available.');
+});
+
+test('the Spanish catalog keeps protocol literals untranslated', () => {
+  // Chat command names and technical markers are protocol, identical in both catalogs.
+  assert.match(en['chat_command.no_phase.body'], /\/abrir-fase/);
+  assert.match(es['chat_command.no_phase.body'], /\/abrir-fase/);
+  for (const key of ['status.run.QUEUED', 'nav.docs', 'stats.api_equivalent']) assert.notEqual(en[key], es[key], key);
 });

@@ -1,6 +1,7 @@
 import { test, beforeEach } from 'node:test';
 import assert from 'node:assert/strict';
 import { createOnce, managed, managedApi, ManagedError, jobRequest, savePending, readPending } from '../src/managed-api.ts';
+import { LocalizedError } from '../src/i18n.ts';
 const values = new Map();
 globalThis.sessionStorage = { getItem: k => values.get(k) ?? null, setItem: (k,v) => values.set(k,v), removeItem: k => values.delete(k) };
 beforeEach(() => values.clear());
@@ -39,7 +40,13 @@ test('conflicts preserve code and diagnostic; all managed mutations carry CSRF h
     return Response.json({detail:{code:'conflict',diagnostic:'Version changed'}},{status:409});
   };
   await assert.rejects(managedApi.confirm(1,{expected_version:8,owner_token:'token',reason:'stopped'}),
-    e => e instanceof ManagedError && e.status === 409 && e.message.includes('conflict: Version changed'));
+    e => e instanceof ManagedError && e.status === 409 && e.message.includes('conflict: Version changed') && e.diagnostic === 'Version changed');
+});
+
+test('a problem without a diagnostic keeps status and code only; the interface adds its own sentence', async () => {
+  globalThis.fetch = async () => new Response('gateway', { status: 502 });
+  await assert.rejects(managed('/supervisor'), e => e instanceof ManagedError && e.status === 502
+    && e.message === '502 · request_failed' && e.code === undefined && e.diagnostic === undefined);
 });
 
 test('H0/H1 mutations carry the local CSRF header; reads do not need it', async () => {
@@ -152,7 +159,8 @@ test('folder/project confirmation survives reload and a lost acknowledgement wit
   await assert.rejects(confirmOnce(path, body));
   const pending = readConfirmation();
   assert.deepEqual(pending.body, body);
-  await assert.rejects(confirmOnce(path, { ...body, trust_root: '/another' }), /pendiente/);
+  await assert.rejects(confirmOnce(path, { ...body, trust_root: '/another' }),
+    e => e instanceof LocalizedError && e.key === 'error.confirmation_pending');
   assert.equal(calls.length, 1);
   assert.deepEqual(await confirmOnce(pending.path, pending.body), { id: 'operation', status: 'REGISTERED' });
   assert.deepEqual(calls[0], calls[1]);

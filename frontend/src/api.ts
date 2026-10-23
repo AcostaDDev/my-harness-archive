@@ -1,3 +1,4 @@
+import { LocalizedError } from "./i18n.ts";
 import { sessionResponse } from "./session.ts";
 import type { components, operations } from "./api.generated";
 
@@ -14,7 +15,7 @@ export async function request<T>(path: string, options?: RequestInit): Promise<T
   const response = await fetch(path, init);
   sessionResponse(response);
   if (!response.ok) {
-    throw new Error(`La solicitud falló (${response.status}). Comprueba que el servicio esté disponible.`);
+    throw new LocalizedError("error.request_status", { status: response.status });
   }
   return response.json() as Promise<T>;
 }

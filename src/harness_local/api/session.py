@@ -51,7 +51,8 @@ class LocalSessions:
             with os.fdopen(fd, 'w') as output:
                 os.fchmod(output.fileno(), 0o600)
                 output.write(self._key)
-            print(f'Harness Local: clave de acceso en {self.path}', flush=True)
+            # Fixed technical line in English, never localized: maintainer scripts read the path from it (P011-T010).
+            print(f'Harness Local: access key at {self.path}', flush=True)
         except BaseException:
             self.stop()
             raise

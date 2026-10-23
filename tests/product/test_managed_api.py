@@ -18,6 +18,7 @@ from sqlalchemy.orm import Session
 from harness_local.adapters.engine_fake import ScriptedAgentAdapter, ScriptedCommandRunner, SyntheticWorkspace
 from harness_local.adapters.git import GitWorkspace, GitWorktrees
 from harness_local.api.app import create_app
+from harness_local.i18n import message
 from harness_local.core.engine.commit import GitIdentity
 from harness_local.core.engine.context import Command, EnginePolicy, ProjectContext, ProjectProfile
 from harness_local.core.engine.journal import JournalError
@@ -415,7 +416,8 @@ def test_runs_of_unregistered_checkouts_are_readable_but_not_actionable(tmp_path
         assert run["project_id"] is None and run["status"] == "QUEUED"
         counts = table_counts(engine)
         refused = action(http, job.run_id, "revalidate", run["version"], "foreign")
-        assert refused.status_code == 404 and "no registrado" in refused.json()["detail"]["diagnostic"]
+        assert refused.status_code == 404
+        assert refused.json()["detail"] == {"code": "not_found", "diagnostic": message("api.run_unregistered", "en")}
         confirm = http.post(f"/api/managed/jobs/{job.id}/confirm-stopped", json={
             "owner_token": "none", "expected_version": run["version"], "reason": "Ajeno"})
         assert confirm.status_code == 404

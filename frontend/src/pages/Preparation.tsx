@@ -2,16 +2,25 @@ import { useState } from "react";
 import { createOnce, managed } from "../managed-api";
 import type { S } from "../managed-api";
 import { useI18n } from "../Language";
-import { isTypeScriptRecipe, pendingPreparationStep, preparationStatus, preparationStepLabel, recipeLabel, recipeModes } from "../preparation.ts";
+import type { MessageKey } from "../i18n.ts";
+import { isTypeScriptRecipe, pendingPreparationStep, preparationStatus, preparationStepLabel, recipeModes, recipeText } from "../preparation.ts";
 import { DiffBlock, Evidence, Hash, Stale, usePoll } from "../ui";
 import { useWorkspace } from "../workspace";
 
 type Plan = S["PreparationPlanRead"];
 type Change = S["PreparationChangeInput"];
 
+const STEP_STATUS: Record<string, MessageKey> = { DONE: "preparation.step_status.done", PENDING: "preparation.step_status.pending" };
+
+/** A started step is only in progress while the operation works; otherwise its result is not accredited. */
+function stepStatus(status: string, working: boolean, t: (key: MessageKey) => string): string {
+  if (status === "STARTED") return t(working ? "preparation.step_status.started" : "preparation.step_status.unaccredited");
+  return STEP_STATUS[status] ? t(STEP_STATUS[status]) : status;
+}
+
 export function Preparation() {
   const { project, refresh, busy, operate } = useWorkspace();
-  const { t } = useI18n();
+  const { t, rich } = useI18n();
   const read = usePoll<S["PreparationRead"]>(`/projects/${project}/preparation`, 1500, refresh);
   const [mode, setMode] = useState<"offline" | "network">("offline");
   const [preview, setPreview] = useState<{ plan: Plan; change: Change }>();
@@ -19,8 +28,8 @@ export function Preparation() {
   const [confirmed, setConfirmed] = useState(false);
   const data = read.data;
   if (!data?.available) return null;
-  const label = recipeLabel(data.recipe);
-  const modes = recipeModes(data.recipe);
+  const text = (named: MessageKey, generic: MessageKey) => recipeText(data.recipe, t, named, generic);
+  const modes = recipeModes(data.recipe, t);
   const typescript = isTypeScriptRecipe(data.recipe);
   const op = data.operation;
   const working = op?.status === "QUEUED" || op?.status === "ACTIVE";
@@ -39,47 +48,45 @@ export function Preparation() {
     setPreview(undefined); setConfirmed(false);
   });
   return <section className="panel" aria-labelledby="recipe-preparation">
-    <h2 id="recipe-preparation">Preparar {label}</h2>
+    <h2 id="recipe-preparation">{text("preparation.title", "preparation.title_generic")}</h2>
     <Stale error={read.error} />
-    <p>{typescript
-      ? "Después del commit documental, esta receta escribe el manifiesto inicial (package.json, lock, tsconfig, scripts, un módulo y su test), instala el lock con npm ci, ejecuta las validaciones del perfil y hace un commit técnico. Las tareas se habilitan cuando termina."
-      : "Después del commit documental, esta receta crea el entorno, el proyecto y la app base, valida sus herramientas y hace un commit técnico. Las tareas se habilitan cuando termina."}</p>
-    {data.prepared && <p className="state state-ok" role="status">{label} preparado. Puedes continuar con las tareas de la fase.</p>}
+    <p>{typescript ? t("preparation.lede.typescript") : t("preparation.lede.django")}</p>
+    {data.prepared && <p className="state state-ok" role="status">{text("preparation.prepared", "preparation.prepared_generic")}</p>}
     {data.diagnostic && <p className="state state-attention">{data.diagnostic}</p>}
     {op && <>
-      <p role="status"><strong>{preparationStatus(op.status, data.recipe)}</strong> · operación <code>{op.id}</code></p>
-      <progress max={op.steps.length} value={op.steps.filter(s => s.status === "DONE").length} aria-label="Pasos de preparación completados" />
-      <ol>{op.steps.map(s => <li key={String(s.id)}>{preparationStepLabel(data.recipe, (s.spec ?? {}) as Record<string, unknown>, t)} · {({ DONE: "Completado", STARTED: working ? "En curso" : "Sin resultado acreditado", PENDING: "Pendiente" } as Record<string, string>)[String(s.status)] ?? String(s.status)}</li>)}</ol>
+      <p role="status">{rich("preparation.operation", { status: <strong>{preparationStatus(op.status, data.recipe, t)}</strong>, id: <code>{op.id}</code> })}</p>
+      <progress max={op.steps.length} value={op.steps.filter(s => s.status === "DONE").length} aria-label={t("preparation.progress")} />
+      <ol>{op.steps.map(s => <li key={String(s.id)}>{preparationStepLabel(data.recipe, (s.spec ?? {}) as Record<string, unknown>, t)} · {stepStatus(String(s.status), working, t)}</li>)}</ol>
       {op.diagnostic && <p className="state state-attention">{op.diagnostic}</p>}
       <button className="button-quiet" disabled={busy} onClick={() => void operate(async () => {
         setJournal(await managed<S["PreparationOperationRead"]>(`/preparations/${op.id}`));
-      })}>Consultar capturas y journal completo</button>
-      {journal?.id === op.id && <Evidence title="Plan confirmado, capturas y journal de preparación" value={journal} />}
-      {working && <button className="button-quiet" disabled={busy || op.cancel_requested} onClick={() => void control("cancel")}>Cancelar preparación</button>}
-      {retry && <button className="button-quiet" disabled={busy} onClick={() => void control("confirm-stopped")}>Comprobar y confirmar escritor detenido</button>}
+      })}>{t("preparation.journal")}</button>
+      {journal?.id === op.id && <Evidence title={t("preparation.journal_evidence")} value={journal} />}
+      {working && <button className="button-quiet" disabled={busy || op.cancel_requested} onClick={() => void control("cancel")}>{t("preparation.cancel")}</button>}
+      {retry && <button className="button-quiet" disabled={busy} onClick={() => void control("confirm-stopped")}>{t("preparation.confirm_stopped")}</button>}
     </>}
     {!data.prepared && !working && <>
-      <label>Modo de instalación<select value={mode} onChange={e => { setMode(e.target.value as "offline" | "network"); setPreview(undefined); setConfirmed(false); }}>
+      <label>{t("preparation.mode")}<select value={mode} onChange={e => { setMode(e.target.value as "offline" | "network"); setPreview(undefined); setConfirmed(false); }}>
         <option value="offline">{modes.offline}</option>
         <option value="network">{modes.network}</option>
       </select></label>
       <p className="hint">{modes.hint}</p>
-      <button disabled={busy || !!op && !retry} onClick={() => void operate(show)}>{retry ? `Revisar nueva intención desde el paso ${next ?? "pendiente"}` : "Revisar plan de preparación"}</button>
+      <button disabled={busy || !!op && !retry} onClick={() => void operate(show)}>{retry ? next === undefined ? t("preparation.review_retry_pending") : t("preparation.review_retry", { step: next }) : t("preparation.review")}</button>
     </>}
     {preview && <div className="decision">
-      <p>Destino: <code>{preview.plan.root}</code> · modo {preview.plan.mode}{preview.plan.work_language && ` · ${t("preparation.work_language", { language: preview.plan.work_language })}`} · hash <Hash value={preview.plan.preview_sha256} /></p>
-      <h3>Archivos del commit técnico</h3>
-      {preview.plan.files.map(file => <details key={String(file.path)}><summary><code>{String(file.path)}</code> · <Hash value={String(file.sha256)} /></summary><DiffBlock diff={String(file.diff ?? "")} label={`Archivo nuevo: ${String(file.path)}`} /><details><summary>Contenido completo</summary><pre>{String(file.content)}</pre></details></details>)}
-      <h3>Comandos y efectos confirmables</h3>
+      <p>{rich("preparation.preview", { root: <code>{preview.plan.root}</code>, mode: preview.plan.mode })}{preview.plan.work_language && ` · ${t("preparation.work_language", { language: preview.plan.work_language })}`} · {rich("preparation.preview_hash", { hash: <Hash value={preview.plan.preview_sha256} /> })}</p>
+      <h3>{t("preparation.files")}</h3>
+      {preview.plan.files.map(file => <details key={String(file.path)}><summary><code>{String(file.path)}</code> · <Hash value={String(file.sha256)} /></summary><DiffBlock diff={String(file.diff ?? "")} label={t("preparation.new_file", { path: String(file.path) })} /><details><summary>{t("preparation.full_content")}</summary><pre>{String(file.content)}</pre></details></details>)}
+      <h3>{t("preparation.commands")}</h3>
       <ol>{preview.plan.steps.map((step, n) => <li key={n}><strong>{preparationStepLabel(preview.plan.recipe, step, t)}</strong>{Array.isArray(step.argv) && <pre>{JSON.stringify(step.argv)}</pre>}</li>)}</ol>
-      <Evidence title="Versiones, lock, entorno público, red, límites y commit" value={preview.plan} />
-      <label className="check"><input type="checkbox" checked={confirmed} onChange={e => setConfirmed(e.target.checked)} />Autorizo estos archivos, comandos, instalación, modo de red y commit dentro del hijo.</label>
+      <Evidence title={t("preparation.plan_evidence")} value={preview.plan} />
+      <label className="check"><input type="checkbox" checked={confirmed} onChange={e => setConfirmed(e.target.checked)} />{t("preparation.authorize")}</label>
       <button disabled={busy || !confirmed} onClick={() => void operate(async () => {
         await createOnce(`/projects/${project}/preparation/confirm`, {
           change: preview.change, preview_sha256: preview.plan.preview_sha256,
         } satisfies S["PreparationConfirmInput"]);
         setPreview(undefined); setConfirmed(false);
-      })}>Confirmar preparación {label}</button>
+      })}>{text("preparation.confirm", "preparation.confirm_generic")}</button>
     </div>}
   </section>;
 }

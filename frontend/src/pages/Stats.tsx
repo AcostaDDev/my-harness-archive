@@ -1,12 +1,15 @@
 import { useState } from "react";
 import type { ReactNode } from "react";
-import { BarChart, ColumnChart, StackedColumns } from "../charts";
+import { BarChart, ColumnChart, StackedColumns, useFormats } from "../charts";
 import type { Datum, Stacked } from "../charts";
+import { useI18n } from "../Language";
+import type { MessageKey } from "../i18n.ts";
 import type { S } from "../managed-api";
-import { compact, count, coverage, coverageText, duration, percent, PROVENANCE, PURPOSES, ROLES, rootLabel, usd } from "../metrics.ts";
+import { coverage, PROVENANCE } from "../metrics.ts";
 import type { Sum } from "../metrics.ts";
 import { Link } from "../navigation";
 import { Empty, Loading, PageHeader, Pagination, Stale, Status, usePoll, when } from "../ui";
+import { PURPOSES } from "./shared";
 
 // Statistics (H6.2 E6) over /api/managed/metrics/* (D074): each panel reads its resource, lists are paginated
 // and null is shown as "no data", never as zero. The cost is the API equivalent the provider reports.
@@ -25,17 +28,29 @@ function query(scope: Scope, extra: Record<string, string | number> = {}) {
   return text ? `?${text}` : "";
 }
 
+/** Purpose of a run in the visual language; an unknown purpose is shown as is. */
+function usePurpose() {
+  const { t } = useI18n();
+  return (purpose: string) => {
+    const key = PURPOSES[purpose as keyof typeof PURPOSES] as MessageKey | undefined;
+    return key ? t(key) : purpose;
+  };
+}
+
 /** Sum with its coverage: "no data" if nobody contributes, a "partial" mark if only some attempts do. */
-function Amount({ value, attempts, format = count }: { value: Sum; attempts: number; format?: (n: number | null) => string }) {
+function Amount({ value, attempts, format }: { value: Sum; attempts: number; format?: (n: number | null) => string }) {
+  const { t } = useI18n();
+  const f = useFormats();
   const state = coverage(value, attempts);
-  if (state === "absent") return <span className="muted" title={coverageText(value, attempts)}>sin dato</span>;
-  return <span title={coverageText(value, attempts)}>{format(value.sum)}{state === "partial" && <sup className="partial"> parcial</sup>}</span>;
+  if (state === "absent") return <span className="muted" title={f.coverageText(value, attempts)}>{t("metrics.no_data")}</span>;
+  return <span title={f.coverageText(value, attempts)}>{(format ?? f.count)(value.sum)}{state === "partial" && <sup className="partial"> {t("stats.partial")}</sup>}</span>;
 }
 
 function Provenance({ of, row }: { of: string; row: S["AttemptMetricRead"] }) {
+  const { t } = useI18n();
   const value = row.provenance[of] ?? "absent";
-  const [label, title] = PROVENANCE[value] ?? [value, value];
-  return <abbr className={`provenance provenance-${value}`} title={title}>{label}</abbr>;
+  const known = PROVENANCE[value];
+  return <abbr className={`provenance provenance-${value}`} title={known ? t(known[1]) : value}>{known ? t(known[0]) : value}</abbr>;
 }
 
 function Tile({ label, value, children }: { label: string; value: ReactNode; children?: ReactNode }) {
@@ -49,24 +64,22 @@ function TableView({ title, children }: { title: string; children: ReactNode }) 
 // --- page --------------------------------------------------------------------------------------
 
 export function StatsPage({ project, refresh = 0 }: { project?: string; refresh?: number }) {
+  const { t, n, rich } = useI18n();
   const scope: Scope = { project };
   const summary = usePoll<S["MetricsSummaryRead"]>(`/metrics/summary${query(scope)}`, INTERVAL, refresh);
   const projects = usePoll<S["ManagedProjectRead"][]>(project ? null : "/projects", 0);
   const list: Projects = projects.data ?? [];
   const s = summary.data;
   return <>
-    <PageHeader title="Estadísticas">
-      <p>{project ? "Consumo y calidad del trabajo de los agentes en este proyecto." : "Consumo y calidad del trabajo de los agentes en todos los proyectos de este servicio."} Los
-        tokens son los que informa cada proveedor: «sin dato» significa que ningún intento los informó, no cero. El coste es el
-        equivalente API reportado, no una factura ni una cuota.</p>
+    <PageHeader title={t("nav.stats")}>
+      <p>{project ? t("stats.lede.project") : t("stats.lede.all")} {t("stats.lede.tokens")}</p>
     </PageHeader>
     <Stale error={s ? summary.error : undefined} />
-    {summary.missing ? <Empty title={`No existe el proyecto ${project}`} />
-      : !s ? summary.error ? <p role="alert" className="state state-error">No se pudieron leer las métricas: {summary.error}</p> : <Loading />
+    {summary.missing ? <Empty title={t("project.missing", { project: project ?? "" })} />
+      : !s ? summary.error ? <p role="alert" className="state state-error">{t("stats.read_failed", { error: summary.error })}</p> : <Loading />
         : <Headline summary={s} />}
     {s && s.attempts_without_metrics > 0 && <p className="state state-attention" role="status">
-      {s.attempts_without_metrics} intentos resueltos no tienen métricas: son anteriores a la captura. El relleno es explícito
-      (<code>harness-local metrics-backfill --database RUTA</code>); hasta entonces no cuentan en ningún total.</p>}
+      {n("stats.without_metrics", s.attempts_without_metrics)} {rich("stats.backfill", { command: <code>harness-local metrics-backfill --database PATH</code> })}</p>}
     {s && <>
       <Consumption scope={scope} projects={list} refresh={refresh} />
       <Favorites scope={scope} refresh={refresh} />
@@ -79,36 +92,39 @@ export function StatsPage({ project, refresh = 0 }: { project?: string; refresh?
 }
 
 function Headline({ summary }: { summary: S["MetricsSummaryRead"] }) {
+  const { t, n } = useI18n();
+  const f = useFormats();
   const c = summary.consumption;
-  const t = summary.tasks;
+  const tasks = summary.tasks;
   const tests = summary.tests;
   const cases = tests.cases;
-  return <section className="tiles" aria-label="Resumen">
-    <Tile label="Intentos de agente" value={count(c.attempts)}>
-      {c.accounting.terminal} con total del proveedor · {c.accounting.messages} por mensajes (parcial) · {c.accounting.absent} sin uso informado
+  return <section className="tiles" aria-label={t("stats.summary")}>
+    <Tile label={t("stats.tile.attempts")} value={f.count(c.attempts)}>
+      {t("stats.tile.attempts_note", { terminal: c.accounting.terminal, messages: c.accounting.messages, absent: c.accounting.absent })}
     </Tile>
-    <Tile label="Tokens totales" value={<Amount value={c.tokens.total_tokens} attempts={c.attempts} format={compact} />}>
-      {coverageText(c.tokens.total_tokens, c.attempts)}
+    <Tile label={t("stats.tile.tokens")} value={<Amount value={c.tokens.total_tokens} attempts={c.attempts} format={f.compact} />}>
+      {f.coverageText(c.tokens.total_tokens, c.attempts)}
     </Tile>
-    <Tile label="Equivalente API" value={<Amount value={c.cost_usd} attempts={c.attempts} format={usd} />}>
-      Reportado por el proveedor, {coverageText(c.cost_usd, c.attempts)}
+    <Tile label={t("stats.api_equivalent")} value={<Amount value={c.cost_usd} attempts={c.attempts} format={f.usd} />}>
+      {t("stats.tile.cost_note", { coverage: f.coverageText(c.cost_usd, c.attempts) })}
     </Tile>
-    <Tile label="Tiempo de agente" value={<Amount value={c.attempt_wall_ms} attempts={c.attempts} format={v => duration(v, "ms")} />}>
-      Suma de intentos, no tiempo transcurrido
+    <Tile label={t("stats.agent_time")} value={<Amount value={c.attempt_wall_ms} attempts={c.attempts} format={v => f.duration(v, "ms")} />}>
+      {t("stats.tile.time_note")}
     </Tile>
-    <Tile label="Aceptadas a la primera" value={t.reviewed ? `${t.accepted_first_time} de ${t.reviewed}` : "sin dato"}>
-      {t.reviewed ? `${percent(t.accepted_first_time, t.reviewed)} de las tareas revisadas` : "Ninguna tarea revisada todavía"}
+    <Tile label={t("stats.tile.first_time")} value={tasks.reviewed ? t("stats.of", { part: tasks.accepted_first_time, whole: tasks.reviewed }) : t("metrics.no_data")}>
+      {tasks.reviewed ? t("stats.tile.first_time_note", { percent: f.percent(tasks.accepted_first_time, tasks.reviewed) }) : t("stats.tile.none_reviewed")}
     </Tile>
-    <Tile label="Revisiones" value={t.corrections ? count(t.corrections.sum) : "sin dato"}>
-      {t.corrections ? `Correcciones del ejecutor en ${t.corrections.tasks} tareas` : "Ninguna tarea con ejecución"}
+    <Tile label={t("stats.revisions")} value={tasks.corrections ? f.count(tasks.corrections.sum) : t("metrics.no_data")}>
+      {tasks.corrections ? n("stats.tile.corrections_note", tasks.corrections.tasks) : t("stats.tile.none_executed")}
     </Tile>
-    <Tile label="Hasta el commit" value={t.seconds_to_commit ? duration(t.seconds_to_commit.sum / t.seconds_to_commit.tasks) : "sin dato"}>
-      {t.seconds_to_commit ? `Media de ${t.seconds_to_commit.tasks} tareas · máximo ${duration(t.seconds_to_commit.max)}` : `${t.committed} tareas con commit`}
+    <Tile label={t("stats.to_commit")} value={tasks.seconds_to_commit ? f.duration(tasks.seconds_to_commit.sum / tasks.seconds_to_commit.tasks) : t("metrics.no_data")}>
+      {tasks.seconds_to_commit ? n("stats.tile.commit_note", tasks.seconds_to_commit.tasks, { max: f.duration(tasks.seconds_to_commit.max) })
+        : n("stats.tile.committed", tasks.committed)}
     </Tile>
-    <Tile label="Tests en la última validación" value={tests.tasks_with_validation ? `${tests.commands_passed} OK · ${tests.commands_failed} KO` : "sin dato"}>
-      {!tests.tasks_with_validation ? "Ninguna tarea validada" : cases
-        ? `Comandos de ${tests.tasks_with_validation} tareas · casos JUnit ${cases.passed} OK · ${cases.failed + cases.error} KO${cases.skipped ? ` · ${cases.skipped} omitidos` : ""}`
-        : `Comandos de ${tests.tasks_with_validation} tareas · sin reportes JUnit legibles`}
+    <Tile label={t("stats.tile.tests")} value={tests.tasks_with_validation ? t("stats.ok_ko", { ok: tests.commands_passed, ko: tests.commands_failed }) : t("metrics.no_data")}>
+      {!tests.tasks_with_validation ? t("stats.tile.none_validated") : cases
+        ? <>{n("stats.tile.commands_of", tests.tasks_with_validation)} · {t("stats.tile.junit", { ok: cases.passed, ko: cases.failed + cases.error })}{cases.skipped ? ` · ${n("stats.skipped", cases.skipped)}` : ""}</>
+        : <>{n("stats.tile.commands_of", tests.tasks_with_validation)} · {t("stats.tile.no_junit")}</>}
     </Tile>
   </section>;
 }
@@ -116,19 +132,30 @@ function Headline({ summary }: { summary: S["MetricsSummaryRead"] }) {
 // --- consumption -------------------------------------------------------------------------------
 
 type Dimension = S["MetricGroupsRead"]["dimension"] | "reported_model";
-const DIMENSIONS: [Dimension, string][] = [["phase", "Fase"], ["root", "Proyecto"], ["day", "Día"], ["role", "Rol"],
-  ["provider", "Proveedor"], ["requested_model", "Modelo solicitado"], ["requested_effort", "Esfuerzo solicitado"],
-  ["reported_model", "Modelo reportado"]];
+const DIMENSIONS: [Dimension, MessageKey, MessageKey][] = [
+  ["phase", "stats.dimension.phase", "stats.consumption.hint.phase"],
+  ["root", "stats.dimension.root", "stats.consumption.hint.root"],
+  ["day", "stats.dimension.day", "stats.consumption.hint.day"],
+  ["role", "stats.dimension.role", "stats.consumption.hint.role"],
+  ["provider", "stats.dimension.provider", "stats.consumption.hint.provider"],
+  ["requested_model", "stats.dimension.requested_model", "stats.consumption.hint.requested_model"],
+  ["requested_effort", "stats.dimension.requested_effort", "stats.consumption.hint.requested_effort"],
+  ["reported_model", "stats.dimension.reported_model", "stats.consumption.hint.reported_model"]];
 const PAGE = 10;
 
-function keyLabel(dimension: Dimension, key: string | null, projects: Projects) {
-  if (dimension === "root") return rootLabel(key, projects);
-  if (key == null) return "sin declarar";
-  if (dimension === "role") return ROLES[key] ?? key;
-  return key;
+function useKeyLabel() {
+  const { t } = useI18n();
+  const f = useFormats();
+  return (dimension: Dimension, key: string | null, projects: Projects) => {
+    if (dimension === "root") return f.rootLabel(key, projects);
+    if (key == null) return t("common.undeclared");
+    if (dimension === "role") return f.role(key);
+    return key;
+  };
 }
 
 function Consumption({ scope, projects, refresh }: { scope: Scope; projects: Projects; refresh: number }) {
+  const { t } = useI18n();
   const choices = DIMENSIONS.filter(([value]) => scope.project ? value !== "root" : value !== "phase");
   const [dimension, setDimension] = useState<Dimension>(scope.project ? "phase" : "root");
   const [offset, setOffset] = useState(0);
@@ -142,43 +169,43 @@ function Consumption({ scope, projects, refresh }: { scope: Scope; projects: Pro
   // matching the chosen dimension is painted.
   const data = read.data?.dimension === dimension ? read.data : undefined;
   const choose = (value: Dimension) => { setDimension(value); setOffset(0); };
-  const label = choices.find(([value]) => value === dimension)![1].toLowerCase();
+  const hint = choices.find(([value]) => value === dimension)![2];
   return <section className="panel" aria-labelledby="consumption">
     <div className="panel-head">
-      <h2 id="consumption">Consumo</h2>
-      <label className="inline-select">Agrupar por<select value={dimension} onChange={e => choose(e.target.value as Dimension)}>
-        {choices.map(([value, text]) => <option key={value} value={value}>{text}</option>)}</select></label>
+      <h2 id="consumption">{t("stats.consumption")}</h2>
+      <label className="inline-select">{t("stats.group_by")}<select value={dimension} onChange={e => choose(e.target.value as Dimension)}>
+        {choices.map(([value, text]) => <option key={value} value={value}>{t(text)}</option>)}</select></label>
     </div>
-    <p className="hint">{models
-      ? "Tokens de salida por modelo que informa el proveedor (Claude). Codex no informa modelo; sus intentos no aparecen aquí."
-      : day ? "Tokens totales por día UTC de inicio del intento, del más antiguo al más reciente. Solo los días con intentos; un círculo vacío marca un día cuyos intentos no informan tokens (sin dato, no cero)."
-        : `Tokens totales por ${label}, de mayor a menor. La entrada cruda no se suma: su semántica depende del proveedor.`}</p>
+    <p className="hint">{t(hint)}</p>
     <Stale error={data ? read.error : undefined} />
-    {!data ? <Loading /> : !data.items.length ? <Empty title="Sin intentos en este ámbito" />
+    {!data ? <Loading /> : !data.items.length ? <Empty title={t("stats.no_attempts")} />
       : models ? <ModelConsumption groups={data as S["ModelMetricGroupsRead"]} />
         : <GroupConsumption groups={data as S["MetricGroupsRead"]} dimension={dimension} projects={projects} />}
-    <Pagination offset={offset} next={data?.next_offset} onChange={setOffset} size={size} label={day ? "Días anteriores y posteriores" : "Páginas de grupos"} />
+    <Pagination offset={offset} next={data?.next_offset} onChange={setOffset} size={size} label={day ? t("stats.pages.days") : t("stats.pages.groups")} />
   </section>;
 }
 
 function GroupConsumption({ groups, dimension, projects }: { groups: S["MetricGroupsRead"]; dimension: Dimension; projects: Projects }) {
+  const { t, n } = useI18n();
+  const f = useFormats();
+  const keyLabel = useKeyLabel();
   const items = dimension === "day" ? [...groups.items].reverse() : groups.items;
   const data: Datum[] = items.map(g => {
     const label = keyLabel(dimension, g.key, projects);
     const total = g.tokens.total_tokens;
     return { key: String(g.key), label, value: total.sum,
-      tip: [total.sum == null ? "sin dato" : `${count(total.sum)} tokens`, label, `${g.attempts} intentos · ${coverageText(total, g.attempts)}`,
-        `Equivalente API: ${usd(g.cost_usd.sum)}`] };
+      tip: [total.sum == null ? t("metrics.no_data") : t("stats.tokens", { value: f.count(total.sum) }), label,
+        `${n("stats.attempts", g.attempts)} · ${f.coverageText(total, g.attempts)}`, t("stats.tip.cost", { value: f.usd(g.cost_usd.sum) })] };
   });
   return <>
-    {dimension === "day" ? <ColumnChart data={data} label="Tokens totales por día" /> : <BarChart data={data} label="Tokens totales por grupo" />}
-    <TableView title="Ver como tabla">
+    {dimension === "day" ? <ColumnChart data={data} label={t("stats.chart.day")} /> : <BarChart data={data} label={t("stats.chart.group")} />}
+    <TableView title={t("stats.as_table")}>
       <table className="table">
-        <thead><tr><th scope="col">Grupo</th><th scope="col" className="numeric">Intentos</th><th scope="col" className="numeric">Sin caché</th>
-          <th scope="col" className="numeric">Caché leída</th><th scope="col" className="numeric">Caché escrita</th><th scope="col" className="numeric">Salida</th>
-          <th scope="col" className="numeric" title="Subconjunto de la salida">Razonamiento</th><th scope="col" className="numeric">Total</th>
-          <th scope="col" className="numeric" title="num_turns de Claude">Turnos rep.</th><th scope="col" className="numeric" title="Elementos del stream de Codex">Turnos der.</th>
-          <th scope="col" className="numeric">Equivalente API</th><th scope="col" className="numeric">Tiempo de agente</th></tr></thead>
+        <thead><tr><th scope="col">{t("stats.column.group")}</th><th scope="col" className="numeric">{t("stats.column.attempts")}</th><th scope="col" className="numeric">{t("stats.column.uncached")}</th>
+          <th scope="col" className="numeric">{t("stats.column.cache_read")}</th><th scope="col" className="numeric">{t("stats.column.cache_write")}</th><th scope="col" className="numeric">{t("stats.column.output")}</th>
+          <th scope="col" className="numeric" title={t("stats.column.reasoning_hint")}>{t("stats.column.reasoning")}</th><th scope="col" className="numeric">{t("stats.column.total")}</th>
+          <th scope="col" className="numeric" title={t("stats.column.turns_reported_hint")}>{t("stats.column.turns_reported")}</th><th scope="col" className="numeric" title={t("stats.column.turns_derived_hint")}>{t("stats.column.turns_derived")}</th>
+          <th scope="col" className="numeric">{t("stats.api_equivalent")}</th><th scope="col" className="numeric">{t("stats.agent_time")}</th></tr></thead>
         <tbody>{items.map(g => <tr key={String(g.key)}>
           <th scope="row">{keyLabel(dimension, g.key, projects)}</th>
           <td className="numeric">{g.attempts}</td>
@@ -186,8 +213,8 @@ function GroupConsumption({ groups, dimension, projects }: { groups: S["MetricGr
             <td key={name} className="numeric"><Amount value={g.tokens[name]} attempts={g.attempts} /></td>)}
           <td className="numeric"><Amount value={g.turns_reported} attempts={g.attempts} /></td>
           <td className="numeric"><Amount value={g.turns_derived} attempts={g.attempts} /></td>
-          <td className="numeric"><Amount value={g.cost_usd} attempts={g.attempts} format={usd} /></td>
-          <td className="numeric"><Amount value={g.attempt_wall_ms} attempts={g.attempts} format={v => duration(v, "ms")} /></td>
+          <td className="numeric"><Amount value={g.cost_usd} attempts={g.attempts} format={f.usd} /></td>
+          <td className="numeric"><Amount value={g.attempt_wall_ms} attempts={g.attempts} format={v => f.duration(v, "ms")} /></td>
         </tr>)}</tbody>
       </table>
     </TableView>
@@ -195,20 +222,23 @@ function GroupConsumption({ groups, dimension, projects }: { groups: S["MetricGr
 }
 
 function ModelConsumption({ groups }: { groups: S["ModelMetricGroupsRead"] }) {
+  const { t, n } = useI18n();
+  const f = useFormats();
   const data: Datum[] = groups.items.map(g => ({ key: g.key, label: g.key, value: g.tokens.output_tokens.sum,
-    tip: [g.tokens.output_tokens.sum == null ? "sin dato" : `${count(g.tokens.output_tokens.sum)} tokens de salida`, g.key, `${g.attempts} intentos`, `Equivalente API: ${usd(g.cost_usd.sum)}`] }));
+    tip: [g.tokens.output_tokens.sum == null ? t("metrics.no_data") : t("stats.output_tokens", { value: f.count(g.tokens.output_tokens.sum) }), g.key,
+      n("stats.attempts", g.attempts), t("stats.tip.cost", { value: f.usd(g.cost_usd.sum) })] }));
   return <>
-    <BarChart data={data} label="Tokens de salida por modelo reportado" />
-    <TableView title="Ver como tabla">
+    <BarChart data={data} label={t("stats.chart.model")} />
+    <TableView title={t("stats.as_table")}>
       <table className="table">
-        <thead><tr><th scope="col">Modelo</th><th scope="col" className="numeric">Intentos</th><th scope="col" className="numeric">Entrada</th>
-          <th scope="col" className="numeric">Caché leída</th><th scope="col" className="numeric">Caché escrita</th><th scope="col" className="numeric">Salida</th>
-          <th scope="col" className="numeric">Razonamiento</th><th scope="col" className="numeric">Equivalente API</th></tr></thead>
+        <thead><tr><th scope="col">{t("stats.column.model")}</th><th scope="col" className="numeric">{t("stats.column.attempts")}</th><th scope="col" className="numeric">{t("stats.column.input")}</th>
+          <th scope="col" className="numeric">{t("stats.column.cache_read")}</th><th scope="col" className="numeric">{t("stats.column.cache_write")}</th><th scope="col" className="numeric">{t("stats.column.output")}</th>
+          <th scope="col" className="numeric">{t("stats.column.reasoning")}</th><th scope="col" className="numeric">{t("stats.api_equivalent")}</th></tr></thead>
         <tbody>{groups.items.map(g => <tr key={g.key}>
           <th scope="row" className="mono">{g.key}</th><td className="numeric">{g.attempts}</td>
           {(["input_tokens", "cache_read_tokens", "cache_write_tokens", "output_tokens", "reasoning_tokens"] as const).map(name =>
             <td key={name} className="numeric"><Amount value={g.tokens[name]} attempts={g.attempts} /></td>)}
-          <td className="numeric"><Amount value={g.cost_usd} attempts={g.attempts} format={usd} /></td>
+          <td className="numeric"><Amount value={g.cost_usd} attempts={g.attempts} format={f.usd} /></td>
         </tr>)}</tbody>
       </table>
     </TableView>
@@ -218,21 +248,23 @@ function ModelConsumption({ groups }: { groups: S["ModelMetricGroupsRead"] }) {
 // --- favorites by role -------------------------------------------------------------------------
 
 function Favorites({ scope, refresh }: { scope: Scope; refresh: number }) {
+  const { t } = useI18n();
+  const f = useFormats();
   const [order, setOrder] = useState<"attempts" | "tokens">("attempts");
   const roles = usePoll<S["MetricGroupsRead"]>(`/metrics/groups${query(scope, { dimension: "role", order: "attempts", limit: 20 })}`, INTERVAL, refresh);
   return <section className="panel" aria-labelledby="favorites">
     <div className="panel-head">
-      <h2 id="favorites">Favoritos por rol</h2>
-      <label className="inline-select">Según<select value={order} onChange={e => setOrder(e.target.value as "attempts" | "tokens")}>
-        <option value="attempts">Número de intentos</option><option value="tokens">Tokens totales</option></select></label>
+      <h2 id="favorites">{t("stats.favorites")}</h2>
+      <label className="inline-select">{t("stats.favorites.order")}<select value={order} onChange={e => setOrder(e.target.value as "attempts" | "tokens")}>
+        <option value="attempts">{t("stats.favorites.by_attempts")}</option><option value="tokens">{t("stats.favorites.by_tokens")}</option></select></label>
     </div>
-    <p className="hint">Lo solicitado en cada intento (selección congelada), no lo que el proveedor dice haber usado.</p>
-    {!roles.data ? <Loading /> : !roles.data.items.length ? <Empty title="Sin intentos en este ámbito" />
-      : <div className="table-scroll" tabIndex={0} role="region" aria-label="Favoritos por rol">
+    <p className="hint">{t("stats.favorites.hint")}</p>
+    {!roles.data ? <Loading /> : !roles.data.items.length ? <Empty title={t("stats.no_attempts")} />
+      : <div className="table-scroll" tabIndex={0} role="region" aria-label={t("stats.favorites")}>
         <table className="table">
-          <thead><tr><th scope="col">Rol</th><th scope="col" className="numeric">Intentos</th><th scope="col">Proveedor</th><th scope="col">Modelo</th><th scope="col">Esfuerzo</th></tr></thead>
+          <thead><tr><th scope="col">{t("stats.column.role")}</th><th scope="col" className="numeric">{t("stats.column.attempts")}</th><th scope="col">{t("settings.provider")}</th><th scope="col">{t("settings.model")}</th><th scope="col">{t("settings.effort")}</th></tr></thead>
           <tbody>{roles.data.items.map(r => r.key && <tr key={r.key}>
-            <th scope="row">{ROLES[r.key] ?? r.key}</th><td className="numeric">{r.attempts}</td>
+            <th scope="row">{f.role(r.key)}</th><td className="numeric">{r.attempts}</td>
             {(["provider", "requested_model", "requested_effort"] as const).map(dimension =>
               <td key={dimension}><Favorite scope={scope} role={r.key!} dimension={dimension} order={order} refresh={refresh} /></td>)}
           </tr>)}</tbody>
@@ -242,99 +274,110 @@ function Favorites({ scope, refresh }: { scope: Scope; refresh: number }) {
 }
 
 function Favorite({ scope, role, dimension, order, refresh }: { scope: Scope; role: string; dimension: string; order: string; refresh: number }) {
+  const { t, n } = useI18n();
+  const f = useFormats();
   const read = usePoll<S["MetricGroupsRead"]>(`/metrics/groups${query(scope, { dimension, role, order, limit: 2 })}`, INTERVAL, refresh);
   if (!read.data) return <span className="muted">…</span>;
   const [first, second] = read.data.items;
-  if (!first) return <span className="muted">sin dato</span>;
-  const metric = (g: S["MetricGroupRead"]) => order === "tokens" ? `${compact(g.tokens.total_tokens.sum)} tokens` : `${g.attempts} intentos`;
-  return <span><span className="mono">{first.key ?? "sin declarar"}</span> <span className="muted">({metric(first)}{second ? `; luego ${second.key ?? "sin declarar"}` : ""})</span></span>;
+  if (!first) return <span className="muted">{t("metrics.no_data")}</span>;
+  const metric = (g: S["MetricGroupRead"]) => order === "tokens" ? t("stats.tokens", { value: f.compact(g.tokens.total_tokens.sum) }) : n("stats.attempts", g.attempts);
+  return <span><span className="mono">{first.key ?? t("common.undeclared")}</span> <span className="muted">({second
+    ? t("stats.favorite.then", { metric: metric(first), next: second.key ?? t("common.undeclared") }) : metric(first)})</span></span>;
 }
 
 // --- tasks -------------------------------------------------------------------------------------
 
 function Tasks({ scope, refresh }: { scope: Scope; refresh: number }) {
+  const { t } = useI18n();
+  const f = useFormats();
   const [offset, setOffset] = useState(0);
   const read = usePoll<S["Page_TaskMetricsRead_"]>(`/metrics/tasks${query(scope, { offset, limit: PAGE })}`, INTERVAL, refresh);
   return <section className="panel" aria-labelledby="task-quality">
-    <h2 id="task-quality">Tareas</h2>
-    <p className="hint">Revisiones = ejecuciones después de la primera. Los tokens incluyen los intentos fallidos. Tests: última validación de la tarea.</p>
-    {!read.data ? <Loading /> : !read.data.items.length && !offset ? <Empty title="Todavía no hay tareas con runs" />
-      : <div className="table-scroll" tabIndex={0} role="region" aria-label="Calidad por tarea">
+    <h2 id="task-quality">{t("stats.tasks")}</h2>
+    <p className="hint">{t("stats.tasks.hint")}</p>
+    {!read.data ? <Loading /> : !read.data.items.length && !offset ? <Empty title={t("stats.tasks.empty")} />
+      : <div className="table-scroll" tabIndex={0} role="region" aria-label={t("stats.tasks.table")}>
         <table className="table">
-          <thead><tr><th scope="col">Tarea</th><th scope="col">Estado</th><th scope="col">Primer veredicto</th><th scope="col" className="numeric">Revisiones</th>
-            <th scope="col" className="numeric">Hasta el commit</th><th scope="col">Tests</th><th scope="col" className="numeric">Tokens</th><th scope="col" className="numeric">Paradas</th></tr></thead>
-          <tbody>{read.data.items.map(t => <tr key={`${t.phase_code}/${t.task_id}`}>
-            <th scope="row"><Link className="mono" to={{ name: "task", project: scope.project!, phase: t.phase_code, task: t.task_id }}>{t.task_id}</Link></th>
-            <td>{t.status ? <Status value={t.status} /> : <span className="muted">sin run</span>}</td>
-            <td>{t.first_verdict ?? <span className="muted">sin revisión</span>}{t.accepted_first_time && <span className="muted"> (a la primera)</span>}</td>
-            <td className="numeric">{t.corrections ?? <span className="muted">sin dato</span>}</td>
-            <td className="numeric">{t.seconds_to_commit == null ? <span className="muted">sin commit</span> : duration(t.seconds_to_commit)}</td>
-            <td><TestCounts tests={t.tests} /></td>
-            <td className="numeric"><Amount value={t.consumption.tokens.total_tokens} attempts={t.consumption.attempts} format={compact} /></td>
-            <td className="numeric">{t.stops.length}</td>
+          <thead><tr><th scope="col">{t("runs.column.task")}</th><th scope="col">{t("runs.column.status")}</th><th scope="col">{t("stats.column.first_verdict")}</th><th scope="col" className="numeric">{t("stats.revisions")}</th>
+            <th scope="col" className="numeric">{t("stats.to_commit")}</th><th scope="col">{t("stats.column.tests")}</th><th scope="col" className="numeric">{t("stats.column.tokens")}</th><th scope="col" className="numeric">{t("stats.stops")}</th></tr></thead>
+          <tbody>{read.data.items.map(task => <tr key={`${task.phase_code}/${task.task_id}`}>
+            <th scope="row"><Link className="mono" to={{ name: "task", project: scope.project!, phase: task.phase_code, task: task.task_id }}>{task.task_id}</Link></th>
+            <td>{task.status ? <Status value={task.status} /> : <span className="muted">{t("stats.no_run")}</span>}</td>
+            <td>{task.first_verdict ?? <span className="muted">{t("stats.no_review")}</span>}{task.accepted_first_time && <span className="muted"> {t("stats.first_time")}</span>}</td>
+            <td className="numeric">{task.corrections ?? <span className="muted">{t("metrics.no_data")}</span>}</td>
+            <td className="numeric">{task.seconds_to_commit == null ? <span className="muted">{t("stats.no_commit")}</span> : f.duration(task.seconds_to_commit)}</td>
+            <td><TestCounts tests={task.tests} /></td>
+            <td className="numeric"><Amount value={task.consumption.tokens.total_tokens} attempts={task.consumption.attempts} format={f.compact} /></td>
+            <td className="numeric">{task.stops.length}</td>
           </tr>)}</tbody>
         </table>
       </div>}
-    <Pagination offset={offset} next={read.data?.next_offset} onChange={setOffset} size={PAGE} label="Páginas de tareas" />
+    <Pagination offset={offset} next={read.data?.next_offset} onChange={setOffset} size={PAGE} label={t("stats.pages.tasks")} />
   </section>;
 }
 
 function TestCounts({ tests }: { tests: S["ValidationCountsRead"] | null }) {
-  if (!tests) return <span className="muted">sin validar</span>;
+  const { t } = useI18n();
+  if (!tests) return <span className="muted">{t("stats.not_validated")}</span>;
   const cases = tests.cases;
   return <span className="nowrap">
     <span className={tests.commands_failed ? "count-ko" : "count-ok"}>{tests.commands_failed ? "KO" : "OK"}</span>{" "}
-    comandos {tests.commands_passed}/{tests.commands_passed + tests.commands_failed}
-    {cases && <span className="muted"> · casos {cases.passed} OK, {cases.failed + cases.error} KO</span>}
+    {t("stats.commands_ratio", { passed: tests.commands_passed, total: tests.commands_passed + tests.commands_failed })}
+    {cases && <span className="muted"> · {t("stats.cases_ok_ko", { ok: cases.passed, ko: cases.failed + cases.error })}</span>}
   </span>;
 }
 
 // --- tests: trend ------------------------------------------------------------------------------
 
 function TestsEvolution({ scope, projects, refresh }: { scope: Scope; projects: Projects; refresh: number }) {
+  const { t, n } = useI18n();
+  const f = useFormats();
   const [offset, setOffset] = useState(0);
   const dimension = scope.project ? "phase" : "root";
   const read = usePoll<S["ValidationGroupsRead"]>(`/metrics/validations${query(scope, { dimension, offset, limit: 30 })}`, INTERVAL, refresh);
   const items = read.data ? [...read.data.items].reverse() : [];
-  const label = (key: string) => dimension === "root" ? rootLabel(key, projects) : key;
+  const label = (key: string) => dimension === "root" ? f.rootLabel(key, projects) : key;
   const data: Stacked[] = items.map(g => ({ key: g.key, label: label(g.key), ok: g.passed, ko: g.failed,
-    tip: [`${g.passed} OK · ${g.failed} KO`, label(g.key), `${g.validations} validaciones · comandos ${g.commands_passed} OK, ${g.commands_failed} KO`] }));
+    tip: [t("stats.ok_ko", { ok: g.passed, ko: g.failed }), label(g.key),
+      `${n("stats.validations", g.validations)} · ${t("stats.commands_ok_ko", { ok: g.commands_passed, ko: g.commands_failed })}`] }));
   return <section className="panel" aria-labelledby="tests-evolution">
-    <h2 id="tests-evolution">{scope.project ? "Tests: evolución por fase" : "Tests por proyecto"}</h2>
-    <p className="hint">Cada validación de cada tarea, también las revalidaciones. OK: todos los comandos correctos y ningún fallo nuevo en JUnit.
-      Las validaciones no guardan su hora, así que la evolución se lee por fase, no por día.</p>
-    {!read.data ? <Loading /> : !items.length ? <Empty title="Todavía no hay validaciones" /> : <>
-      <StackedColumns data={data} label={scope.project ? "Validaciones OK y KO por fase" : "Validaciones OK y KO por proyecto"} />
-      <TableView title="Ver como tabla">
+    <h2 id="tests-evolution">{scope.project ? t("stats.tests.by_phase") : t("stats.tests.by_project")}</h2>
+    <p className="hint">{t("stats.tests.hint")}</p>
+    {!read.data ? <Loading /> : !items.length ? <Empty title={t("stats.tests.empty")} /> : <>
+      <StackedColumns data={data} label={scope.project ? t("stats.chart.validations_phase") : t("stats.chart.validations_project")} />
+      <TableView title={t("stats.as_table")}>
         <table className="table">
-          <thead><tr><th scope="col">{dimension === "root" ? "Proyecto" : "Fase"}</th><th scope="col" className="numeric">Validaciones</th><th scope="col" className="numeric">OK</th>
-            <th scope="col" className="numeric">KO</th><th scope="col" className="numeric">Comandos OK</th><th scope="col" className="numeric">Comandos KO</th><th scope="col">Casos JUnit</th></tr></thead>
+          <thead><tr><th scope="col">{dimension === "root" ? t("stats.dimension.root") : t("stats.dimension.phase")}</th><th scope="col" className="numeric">{t("stats.column.validations")}</th><th scope="col" className="numeric">OK</th>
+            <th scope="col" className="numeric">KO</th><th scope="col" className="numeric">{t("stats.column.commands_ok")}</th><th scope="col" className="numeric">{t("stats.column.commands_ko")}</th><th scope="col">{t("stats.column.junit")}</th></tr></thead>
           <tbody>{items.map(g => <tr key={g.key}>
             <th scope="row">{dimension === "phase" && scope.project ? <Link className="mono" to={{ name: "phase", project: scope.project, phase: g.key }}>{g.key}</Link> : label(g.key)}</th>
             <td className="numeric">{g.validations}</td><td className="numeric">{g.passed}</td><td className="numeric">{g.failed}</td>
             <td className="numeric">{g.commands_passed}</td><td className="numeric">{g.commands_failed}</td>
-            <td>{g.cases ? `${g.cases.passed} OK · ${g.cases.failed + g.cases.error} KO${g.cases.skipped ? ` · ${g.cases.skipped} omitidos` : ""} (${g.validations_with_cases} validaciones con reporte)` : <span className="muted">sin reportes legibles</span>}</td>
+            <td>{g.cases ? <>{t("stats.ok_ko", { ok: g.cases.passed, ko: g.cases.failed + g.cases.error })}{g.cases.skipped ? ` · ${n("stats.skipped", g.cases.skipped)}` : ""} ({n("stats.with_report", g.validations_with_cases)})</>
+              : <span className="muted">{t("stats.no_readable_reports")}</span>}</td>
           </tr>)}</tbody>
         </table>
       </TableView>
     </>}
-    <Pagination offset={offset} next={read.data?.next_offset} onChange={setOffset} size={30} label="Páginas de validaciones" />
+    <Pagination offset={offset} next={read.data?.next_offset} onChange={setOffset} size={30} label={t("stats.pages.validations")} />
   </section>;
 }
 
 // --- stops -------------------------------------------------------------------------------------
 
 function Stops({ summary }: { summary: S["MetricsSummaryRead"] }) {
+  const { t } = useI18n();
+  const purpose = usePurpose();
   const stops = summary.stops;
   return <section className="panel" aria-labelledby="stops">
-    <h2 id="stops">Paradas</h2>
-    {!stops.items.length ? <Empty title="Ningún run se ha detenido" /> : <>
-      <p className="hint">Motivos más frecuentes{stops.distinct > stops.items.length ? ` (${stops.items.length} de ${stops.distinct} distintos)` : ""}.</p>
-      <div className="table-scroll" tabIndex={0} role="region" aria-label="Paradas por motivo">
+    <h2 id="stops">{t("stats.stops")}</h2>
+    {!stops.items.length ? <Empty title={t("stats.stops.empty")} /> : <>
+      <p className="hint">{stops.distinct > stops.items.length ? t("stats.stops.hint_partial", { shown: stops.items.length, distinct: stops.distinct }) : t("stats.stops.hint")}</p>
+      <div className="table-scroll" tabIndex={0} role="region" aria-label={t("stats.stops.table")}>
         <table className="table">
-          <thead><tr><th scope="col" className="numeric">Veces</th><th scope="col">Tipo</th><th scope="col">Etapa</th><th scope="col">Motivo</th></tr></thead>
+          <thead><tr><th scope="col" className="numeric">{t("stats.column.times")}</th><th scope="col">{t("runs.column.type")}</th><th scope="col">{t("stats.column.stage")}</th><th scope="col">{t("stats.column.reason")}</th></tr></thead>
           <tbody>{stops.items.map((item, index) => <tr key={index}>
-            <td className="numeric">{item.count}</td><td>{PURPOSES[item.purpose] ?? item.purpose}</td><td>{item.stage}</td><td className="wide">{item.reason}</td>
+            <td className="numeric">{item.count}</td><td>{purpose(item.purpose)}</td><td>{item.stage}</td><td className="wide">{item.reason}</td>
           </tr>)}</tbody>
         </table>
       </div>
@@ -346,51 +389,57 @@ function Stops({ summary }: { summary: S["MetricsSummaryRead"] }) {
 
 // Attempt outcome (D074): `COMPLETE`/`FAILED`/`INVALID`/`PARTIAL` come from the CLI adapter stream,
 // `COMPLETED` from adapters without a stream and `INTERRUPTED` from confirming a stopped writer.
-const ATTEMPT: Record<string, [string, string]> = {
-  COMPLETE: ["Completo", "ok"], COMPLETED: ["Completo", "ok"], FAILED: ["Fallido", "danger"], INVALID: ["Inválido", "danger"],
-  PARTIAL: ["Parcial", "attention"], INTERRUPTED: ["Interrumpido", "danger"],
+const ATTEMPT: Record<string, [MessageKey, string]> = {
+  COMPLETE: ["stats.attempt.complete", "ok"], COMPLETED: ["stats.attempt.complete", "ok"], FAILED: ["stats.attempt.failed", "danger"],
+  INVALID: ["stats.attempt.invalid", "danger"], PARTIAL: ["stats.attempt.partial", "attention"], INTERRUPTED: ["stats.attempt.interrupted", "danger"],
 };
 
 function AttemptStatus({ value }: { value: string }) {
-  const [label, tone] = ATTEMPT[value] ?? [value, "neutral"];
+  const { t } = useI18n();
+  const known = ATTEMPT[value];
+  const [label, tone] = known ? [t(known[0]), known[1]] : [value, "neutral"];
   return <span className={`status status-${tone}`} title={value}><span className="status-mark" aria-hidden="true" />{label}</span>;
 }
 
-export function Attempts({ scope, projects = [], refresh, title = "Intentos" }: { scope: Scope; projects?: Projects; refresh: number; title?: string }) {
+export function Attempts({ scope, projects = [], refresh, title }: { scope: Scope; projects?: Projects; refresh: number; title?: string }) {
+  const { t, rich } = useI18n();
+  const f = useFormats();
+  const purpose = usePurpose();
   const [offset, setOffset] = useState(0);
   const read = usePoll<S["Page_AttemptMetricRead_"]>(`/metrics/attempts${query(scope, { offset, limit: PAGE })}`, INTERVAL, refresh);
   const projectOf = (root: string) => scope.project ?? projects.find(p => p.root === root)?.id;
+  const heading = title ?? t("stats.attempts.title");
   return <section className="panel" aria-labelledby="attempts">
-    <h2 id="attempts">{title}</h2>
-    <p className="hint">Una fila por intento, del más antiguo al más reciente, con la procedencia de cada valor:
-      {Object.entries(PROVENANCE).map(([key, [label, text]]) => <span key={key}> <abbr className={`provenance provenance-${key}`} title={text}>{label}</abbr> {text.split(":")[0].toLowerCase()}.</span>)}</p>
-    {!read.data ? <Loading /> : !read.data.items.length && !offset ? <Empty title="Sin intentos en este ámbito" />
-      : <div className="table-scroll" tabIndex={0} role="region" aria-label={title}>
+    <h2 id="attempts">{heading}</h2>
+    <p className="hint">{t("stats.attempts.hint")}
+      {Object.entries(PROVENANCE).map(([key, [mark, text, name]]) => <span key={key}> {rich("stats.attempts.provenance", { mark: <abbr className={`provenance provenance-${key}`} title={t(text)}>{t(mark)}</abbr>, name: t(name) })}</span>)}</p>
+    {!read.data ? <Loading /> : !read.data.items.length && !offset ? <Empty title={t("stats.no_attempts")} />
+      : <div className="table-scroll" tabIndex={0} role="region" aria-label={heading}>
         <table className="table">
-          <thead><tr><th scope="col">Inicio</th>{!scope.project && <th scope="col">Proyecto</th>}{!scope.task && <th scope="col">Tarea</th>}<th scope="col">Rol</th><th scope="col">Proveedor y modelo</th>
-            <th scope="col">Resultado</th><th scope="col" className="numeric">Tokens</th><th scope="col" className="numeric">Turnos</th>
-            <th scope="col" className="numeric">Equivalente API</th><th scope="col" className="numeric">Duración</th></tr></thead>
+          <thead><tr><th scope="col">{t("stats.column.start")}</th>{!scope.project && <th scope="col">{t("stats.dimension.root")}</th>}{!scope.task && <th scope="col">{t("runs.column.task")}</th>}<th scope="col">{t("stats.column.role")}</th><th scope="col">{t("stats.column.provider_model")}</th>
+            <th scope="col">{t("stats.column.result")}</th><th scope="col" className="numeric">{t("stats.column.tokens")}</th><th scope="col" className="numeric">{t("stats.column.turns")}</th>
+            <th scope="col" className="numeric">{t("stats.api_equivalent")}</th><th scope="col" className="numeric">{t("stats.column.duration")}</th></tr></thead>
           <tbody>{read.data.items.map(a => {
             const project = projectOf(a.root);
             return <tr key={a.attempt_id}>
               <td className="nowrap">{project && a.purpose === "task"
                 ? <Link to={{ name: "run", project, phase: a.phase_code, task: a.task_id, run: a.run_id }}>{when(a.started_at)}</Link> : when(a.started_at)}</td>
-              {!scope.project && <td className="nowrap">{rootLabel(a.root, projects)}</td>}
-              {!scope.task && <td className="mono nowrap">{a.task_id}{a.purpose !== "task" && <span className="muted"> · {PURPOSES[a.purpose] ?? a.purpose}</span>}</td>}
-              <td>{ROLES[a.role] ?? a.role}<span className="muted"> #{a.number}</span></td>
-              <td><span className="nowrap">{a.provider ?? <span className="muted">sin proceso</span>}{" "}
-                <span className="mono" title="Solicitado">{a.requested_model ?? "—"}</span>{a.requested_effort && <span className="muted"> / {a.requested_effort}</span>}</span>
-                {a.reported_models && <span className="cell-note" title="Reportado por el proveedor">usó {a.reported_models.join(", ")}</span>}</td>
+              {!scope.project && <td className="nowrap">{f.rootLabel(a.root, projects)}</td>}
+              {!scope.task && <td className="mono nowrap">{a.task_id}{a.purpose !== "task" && <span className="muted"> · {purpose(a.purpose)}</span>}</td>}
+              <td>{f.role(a.role)}<span className="muted"> #{a.number}</span></td>
+              <td><span className="nowrap">{a.provider ?? <span className="muted">{t("stats.no_process")}</span>}{" "}
+                <span className="mono" title={t("stats.requested")}>{a.requested_model ?? "—"}</span>{a.requested_effort && <span className="muted"> / {a.requested_effort}</span>}</span>
+                {a.reported_models && <span className="cell-note" title={t("metrics.provenance.reported.title")}>{t("stats.used", { models: a.reported_models.join(", ") })}</span>}</td>
               <td><AttemptStatus value={a.status} />{a.verdict && <span className="cell-note">{a.verdict}</span>}{a.error && <p className="cell-error" title={a.error}>{a.error}</p>}</td>
-              <td className="numeric nowrap">{count(a.total_tokens)} <Provenance of="total_tokens" row={a} /></td>
-              <td className="numeric nowrap">{count(a.turns)} <Provenance of="turns" row={a} /></td>
-              <td className="numeric nowrap">{usd(a.cost_usd)} <Provenance of="cost_usd" row={a} /></td>
-              <td className="numeric nowrap">{duration(a.wall_ms, "ms")} <Provenance of="wall_ms" row={a} /></td>
+              <td className="numeric nowrap">{f.count(a.total_tokens)} <Provenance of="total_tokens" row={a} /></td>
+              <td className="numeric nowrap">{f.count(a.turns)} <Provenance of="turns" row={a} /></td>
+              <td className="numeric nowrap">{f.usd(a.cost_usd)} <Provenance of="cost_usd" row={a} /></td>
+              <td className="numeric nowrap">{f.duration(a.wall_ms, "ms")} <Provenance of="wall_ms" row={a} /></td>
             </tr>;
           })}</tbody>
         </table>
       </div>}
-    <Pagination offset={offset} next={read.data?.next_offset} onChange={setOffset} size={PAGE} label="Páginas de intentos" />
+    <Pagination offset={offset} next={read.data?.next_offset} onChange={setOffset} size={PAGE} label={t("stats.pages.attempts")} />
   </section>;
 }
 
@@ -398,49 +447,52 @@ export function Attempts({ scope, projects = [], refresh, title = "Intentos" }: 
 
 /** Metrics of a task (H6.2 E6): agents, attempts, tokens (failures included), turns and latest validation. */
 export function TaskMetrics({ project, phase, task, refresh }: { project: string; phase: string; task: string; refresh: number }) {
+  const { t, n } = useI18n();
+  const f = useFormats();
   const scope: Scope = { project, phase, task };
   const read = usePoll<S["Page_TaskMetricsRead_"]>(`/metrics/tasks${query(scope, { limit: 1 })}`, INTERVAL, refresh);
   const validations = usePoll<S["ValidationGroupsRead"]>(`/metrics/validations${query(scope, { dimension: "task" })}`, INTERVAL, refresh);
-  const t = read.data?.items[0];
-  if (!read.data) return <section className="panel"><h2>Métricas</h2><Loading /></section>;
-  if (!t) return null;
-  const c = t.consumption;
+  const m = read.data?.items[0];
+  if (!read.data) return <section className="panel"><h2>{t("stats.metrics")}</h2><Loading /></section>;
+  if (!m) return null;
+  const c = m.consumption;
   const all = validations.data?.items[0];
   return <>
     <section className="panel" aria-labelledby="task-metrics">
-      <h2 id="task-metrics">Métricas</h2>
+      <h2 id="task-metrics">{t("stats.metrics")}</h2>
       <div className="tiles tiles-compact">
-        <Tile label="Intentos" value={count(c.attempts)}>{Object.entries(t.attempts_by_role).map(([role, n]) => `${ROLES[role] ?? role} ${n}`).join(" · ") || "ninguno"}</Tile>
-        <Tile label="Tokens (incluidos fallos)" value={<Amount value={c.tokens.total_tokens} attempts={c.attempts} format={compact} />}>{coverageText(c.tokens.total_tokens, c.attempts)}</Tile>
-        <Tile label="Turnos" value={<>{c.turns_reported.sum != null && <><Amount value={c.turns_reported} attempts={c.attempts} /> <abbr className="provenance provenance-reported" title={PROVENANCE.reported[1]}>rep.</abbr></>}
+        <Tile label={t("stats.column.attempts")} value={f.count(c.attempts)}>{Object.entries(m.attempts_by_role).map(([role, number]) => `${f.role(role)} ${number}`).join(" · ") || t("stats.none")}</Tile>
+        <Tile label={t("stats.tile.tokens_failures")} value={<Amount value={c.tokens.total_tokens} attempts={c.attempts} format={f.compact} />}>{f.coverageText(c.tokens.total_tokens, c.attempts)}</Tile>
+        <Tile label={t("stats.column.turns")} value={<>{c.turns_reported.sum != null && <><Amount value={c.turns_reported} attempts={c.attempts} /> <abbr className="provenance provenance-reported" title={t("metrics.provenance.reported.title")}>{t("metrics.provenance.reported.mark")}</abbr></>}
           {c.turns_reported.sum != null && c.turns_derived.sum != null && " · "}
-          {c.turns_derived.sum != null && <><Amount value={c.turns_derived} attempts={c.attempts} /> <abbr className="provenance provenance-derived" title={PROVENANCE.derived[1]}>der.</abbr></>}
-          {c.turns_reported.sum == null && c.turns_derived.sum == null && <span className="muted">sin dato</span>}</>}>
-          Reportados (Claude) y derivados (Codex) no se suman entre sí</Tile>
-        <Tile label="Equivalente API" value={<Amount value={c.cost_usd} attempts={c.attempts} format={usd} />}>{coverageText(c.cost_usd, c.attempts)}</Tile>
-        <Tile label="Revisiones" value={t.corrections == null ? "sin dato" : count(t.corrections)}>{t.executions} ejecuciones · primer veredicto {t.first_verdict ?? "sin revisión"}</Tile>
-        <Tile label="Hasta el commit" value={t.seconds_to_commit == null ? "sin commit" : duration(t.seconds_to_commit)}>
-          {t.seconds_to_accept == null ? "Sin aceptación" : `Aceptada a los ${duration(t.seconds_to_accept)}`}</Tile>
-        <Tile label="Última validación" value={<TestCounts tests={t.tests} />}>
-          {all ? `${all.validations} validaciones en total: ${all.passed} OK, ${all.failed} KO` : "Sin validaciones"}</Tile>
+          {c.turns_derived.sum != null && <><Amount value={c.turns_derived} attempts={c.attempts} /> <abbr className="provenance provenance-derived" title={t("metrics.provenance.derived.title")}>{t("metrics.provenance.derived.mark")}</abbr></>}
+          {c.turns_reported.sum == null && c.turns_derived.sum == null && <span className="muted">{t("metrics.no_data")}</span>}</>}>
+          {t("stats.tile.turns_note")}</Tile>
+        <Tile label={t("stats.api_equivalent")} value={<Amount value={c.cost_usd} attempts={c.attempts} format={f.usd} />}>{f.coverageText(c.cost_usd, c.attempts)}</Tile>
+        <Tile label={t("stats.revisions")} value={m.corrections == null ? t("metrics.no_data") : f.count(m.corrections)}>
+          {n("stats.tile.executions", m.executions)} · {t("stats.tile.first_verdict", { verdict: m.first_verdict ?? t("stats.no_review") })}</Tile>
+        <Tile label={t("stats.to_commit")} value={m.seconds_to_commit == null ? t("stats.no_commit") : f.duration(m.seconds_to_commit)}>
+          {m.seconds_to_accept == null ? t("stats.tile.no_acceptance") : t("stats.tile.accepted_after", { duration: f.duration(m.seconds_to_accept) })}</Tile>
+        <Tile label={t("stats.tile.latest_validation")} value={<TestCounts tests={m.tests} />}>
+          {all ? n("stats.tile.validations_total", all.validations, { ok: all.passed, ko: all.failed }) : t("stats.tile.no_validations")}</Tile>
       </div>
-      {t.agents.length > 0 && <>
-        <h3>Agentes</h3>
-        <div className="table-scroll" tabIndex={0} role="region" aria-label="Agentes de la tarea">
+      {m.agents.length > 0 && <>
+        <h3>{t("settings.agents")}</h3>
+        <div className="table-scroll" tabIndex={0} role="region" aria-label={t("stats.task_agents")}>
           <table className="table">
-            <thead><tr><th scope="col">Rol</th><th scope="col">Proveedor</th><th scope="col">Modelo solicitado</th><th scope="col">Esfuerzo</th><th scope="col" className="numeric">Intentos</th></tr></thead>
-            <tbody>{t.agents.map((a, index) => <tr key={index}>
-              <td>{ROLES[a.role] ?? a.role}</td><td>{a.provider ?? <span className="muted">sin proceso</span>}</td>
+            <thead><tr><th scope="col">{t("stats.column.role")}</th><th scope="col">{t("settings.provider")}</th><th scope="col">{t("stats.dimension.requested_model")}</th><th scope="col">{t("settings.effort")}</th><th scope="col" className="numeric">{t("stats.column.attempts")}</th></tr></thead>
+            <tbody>{m.agents.map((a, index) => <tr key={index}>
+              <td>{f.role(a.role)}</td><td>{a.provider ?? <span className="muted">{t("stats.no_process")}</span>}</td>
               <td className="mono">{a.requested_model ?? "—"}</td><td>{a.requested_effort ?? "—"}</td><td className="numeric">{a.attempts}</td>
             </tr>)}</tbody>
           </table>
         </div>
       </>}
-      {t.stops.length > 0 && <>
-        <h3>Paradas</h3>
-        <ul className="checklist">{t.stops.map((stop, index) => <li key={index}><strong>{stop.stage}</strong>: {stop.reason}</li>)}</ul>
+      {m.stops.length > 0 && <>
+        <h3>{t("stats.stops")}</h3>
+        <ul className="checklist">{m.stops.map((stop, index) => <li key={index}><strong>{stop.stage}</strong>: {stop.reason}</li>)}</ul>
       </>}
     </section>
-    <Attempts scope={scope} refresh={refresh} title="Intentos de la tarea" />
+    <Attempts scope={scope} refresh={refresh} title={t("stats.attempts.task")} />
   </>;
 }

@@ -1,12 +1,17 @@
 import { useEffect, useState } from 'react';
+import { useI18n } from './Language';
+import type { MessageKey } from './i18n.ts';
 import { managed } from './managed-api';
 import type { S } from './managed-api';
+import { message } from './ui';
 
 type Props = { run: S['ManagedRunRead']; busy: boolean; refresh: number; operate: (f: () => Promise<unknown>) => Promise<void> };
 const operations = { files: 'write', tools: 'use', network: 'connect', product: 'decide', acceptance: 'accept' };
-const names = { files: 'Ficheros', tools: 'Herramientas', network: 'Red', product: 'Producto', acceptance: 'Aceptación y cierre' };
+const names: Record<keyof typeof operations, MessageKey> = { files: 'permissions.kind.files', tools: 'permissions.kind.tools',
+  network: 'permissions.kind.network', product: 'permissions.kind.product', acceptance: 'permissions.kind.acceptance' };
 
 export function Permissions({ run, busy, refresh, operate }: Props) {
+  const { t, rich } = useI18n();
   const [requests, setRequests] = useState<S['PermissionRequestRead'][]>([]);
   const [error, setError] = useState('');
   const [kind, setKind] = useState<S['PermissionCreate']['kind']>('tools');
@@ -21,7 +26,7 @@ export function Permissions({ run, busy, refresh, operate }: Props) {
   useEffect(() => {
     let active = true;
     managed<S['PermissionRequestRead'][]>(`/runs/${run.id}/permissions`).then(r => { if (active) { setRequests(r); setError(''); } })
-      .catch(e => { if (active) setError(String(e)); });
+      .catch(e => { if (active) setError(message(e)); });
     return () => { active = false; };
   }, [run.id, run.version, refresh]);
   useEffect(() => { setConfirmed(false); }, [run.version, kind, target, source, supersedes, ttl, scope, reason]);
@@ -35,33 +40,33 @@ export function Permissions({ run, busy, refresh, operate }: Props) {
       setConfirmed(false);
     });
   }
-  return <details className="panel panel-collapsible"><summary><h2>Permisos y decisiones</h2></summary>
-    <p>Conceder registra una autorización; después debes reintentar explícitamente. Revalidar conserva los cambios y ejecuta tests y revisión. Los permisos de ficheros, herramientas y red son independientes.</p>
-    <p>Las decisiones de producto o aceptación quedan auditadas; resolver requisitos o confirmar un commit exige su acción propia. La CLI no admite concesiones de red por dominio. El alcance de ficheros conserva el contrato y las rutas protegidas.</p>
-    <p>La auditoría registra el usuario del servicio local. El nombre del solicitante es declarado.</p>
+  return <details className="panel panel-collapsible"><summary><h2>{t('permissions.title')}</h2></summary>
+    <p>{t('permissions.hint.grant')}</p>
+    <p>{t('permissions.hint.audit')}</p>
+    <p>{t('permissions.hint.user')}</p>
     {error && <p role="alert" className="state state-error">{error}</p>}
-    <label>Motivo de la solicitud o decisión<input value={reason} maxLength={2000} onChange={e => setReason(e.target.value)} /></label>
+    <label>{t('permissions.reason')}<input value={reason} maxLength={2000} onChange={e => setReason(e.target.value)} /></label>
     <form onSubmit={e => { e.preventDefault(); void operate(async () => {
       await managed(`/runs/${run.id}/permissions`, { expected_version: run.version, kind, target,
         operation: operations[kind], arguments: [], requested_by: requester, source_attempt_id: source,
         reason, ttl_seconds: ttl, supersedes: supersedes || null } satisfies S['PermissionCreate']);
       setConfirmed(false); setSupersedes('');
     }); }}>
-      <label>Categoría<select value={kind} onChange={e => setKind(e.target.value as typeof kind)}>{Object.entries(names).map(([k, n]) => <option key={k} value={k}>{n}</option>)}</select></label>
-      <label>Alcance exacto (ruta, regla de herramienta, dominio o decisión)<input required value={target} maxLength={2000} onChange={e => setTarget(e.target.value)} /></label>
-      <label>Identificador del intento que originó la solicitud<input required value={source} maxLength={36} onChange={e => setSource(e.target.value)} /></label>
-      <label>Solicitante declarado<input required value={requester} maxLength={120} onChange={e => setRequester(e.target.value)} /></label>
-      <label>Vigencia en segundos (máximo 24 horas)<input type="number" required min={1} max={86400} value={ttl} onChange={e => setTtl(Number(e.target.value))} /></label>
-      <label>Solicitud que se sustituye<select value={supersedes} onChange={e => setSupersedes(e.target.value)}><option value="">Nueva solicitud</option>{requests.filter(r => ['PENDING', 'GRANTED', 'DENIED'].includes(r.status)).map(r => <option value={r.id} key={r.id}>{r.id} · {String(r.request.target)}</option>)}</select></label>
-      <button className="button-quiet" disabled={!editable || !reason.trim()}>Registrar solicitud</button>
+      <label>{t('permissions.kind')}<select value={kind} onChange={e => setKind(e.target.value as typeof kind)}>{Object.entries(names).map(([k, n]) => <option key={k} value={k}>{t(n)}</option>)}</select></label>
+      <label>{t('permissions.target')}<input required value={target} maxLength={2000} onChange={e => setTarget(e.target.value)} /></label>
+      <label>{t('permissions.source')}<input required value={source} maxLength={36} onChange={e => setSource(e.target.value)} /></label>
+      <label>{t('permissions.requester')}<input required value={requester} maxLength={120} onChange={e => setRequester(e.target.value)} /></label>
+      <label>{t('permissions.ttl')}<input type="number" required min={1} max={86400} value={ttl} onChange={e => setTtl(Number(e.target.value))} /></label>
+      <label>{t('permissions.supersedes')}<select value={supersedes} onChange={e => setSupersedes(e.target.value)}><option value="">{t('permissions.new_request')}</option>{requests.filter(r => ['PENDING', 'GRANTED', 'DENIED'].includes(r.status)).map(r => <option value={r.id} key={r.id}>{r.id} · {String(r.request.target)}</option>)}</select></label>
+      <button className="button-quiet" disabled={!editable || !reason.trim()}>{t('permissions.register')}</button>
     </form>
-    <label>Duración de la concesión<select value={scope} onChange={e => setScope(e.target.value as typeof scope)}><option value="once">Una vez: próximo intento</option><option value="task">Esta tarea, hasta caducidad o sustitución</option></select></label>
-    <label className="check"><input type="checkbox" checked={confirmed} onChange={e => setConfirmed(e.target.checked)} />He revisado el alcance, la vigencia y el motivo de la decisión seleccionada.</label>
-    {requests.map(r => <div className={r.effective_status === 'PENDING' ? "entry entry-open" : "entry"} key={r.id}><p><strong>{names[r.request.kind as keyof typeof names]}</strong> {r.effective_status}</p>
-      <p><code>{String(r.request.operation)}</code> sobre <code>{String(r.request.target)}</code>, caduca {r.expires_at}</p>
-      <details className="evidence"><summary>Solicitud exacta, huella y auditoría</summary><pre>{JSON.stringify(r, null, 2)}</pre></details>
-      {r.effective_status === 'PENDING' && <><button disabled={!editable || !confirmed || !reason.trim()} onClick={() => decide(r, 'grant')}>Conceder</button>
-        <button className="button-danger" disabled={!editable || !confirmed || !reason.trim()} onClick={() => decide(r, 'deny')}>Denegar</button></>}
+    <label>{t('permissions.scope')}<select value={scope} onChange={e => setScope(e.target.value as typeof scope)}><option value="once">{t('permissions.scope.once')}</option><option value="task">{t('permissions.scope.task')}</option></select></label>
+    <label className="check"><input type="checkbox" checked={confirmed} onChange={e => setConfirmed(e.target.checked)} />{t('permissions.confirm')}</label>
+    {requests.map(r => <div className={r.effective_status === 'PENDING' ? "entry entry-open" : "entry"} key={r.id}><p><strong>{names[r.request.kind as keyof typeof names] ? t(names[r.request.kind as keyof typeof names]) : String(r.request.kind)}</strong> {r.effective_status}</p>
+      <p>{rich('permissions.request', { operation: <code>{String(r.request.operation)}</code>, target: <code>{String(r.request.target)}</code>, expires: r.expires_at })}</p>
+      <details className="evidence"><summary>{t('permissions.evidence')}</summary><pre>{JSON.stringify(r, null, 2)}</pre></details>
+      {r.effective_status === 'PENDING' && <><button disabled={!editable || !confirmed || !reason.trim()} onClick={() => decide(r, 'grant')}>{t('permissions.grant')}</button>
+        <button className="button-danger" disabled={!editable || !confirmed || !reason.trim()} onClick={() => decide(r, 'deny')}>{t('permissions.deny')}</button></>}
     </div>)}
   </details>;
 }

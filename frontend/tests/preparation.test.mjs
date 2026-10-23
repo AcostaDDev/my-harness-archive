@@ -6,30 +6,37 @@ import en from '../src/i18n/en.json' with { type: 'json' };
 import es from '../src/i18n/es.json' with { type: 'json' };
 import { createOnce } from '../src/managed-api.ts';
 
+const t = language => (key, params) => translate({ en, es }, language, key, params);
+
 test('recovery starts at the first unaccredited step, including an uncertain spawn', () => {
   assert.equal(pendingPreparationStep([{number:0,status:'DONE'}, {number:1,status:'STARTED'}, {number:2,status:'PENDING'}]), 1);
   assert.equal(pendingPreparationStep([{number:0,status:'DONE'}]), 0); // reconcile commit if adoption was lost
   assert.equal(pendingPreparationStep([]), undefined);
-  assert.equal(preparationStatus('RECOVERY_REQUIRED'), 'Requiere conciliación');
+  assert.equal(preparationStatus('RECOVERY_REQUIRED', null, t('es')), 'Requiere conciliación');
+  assert.equal(preparationStatus('RECOVERY_REQUIRED', null, t('en')), 'Reconciliation required');
+  assert.equal(preparationStatus('SOMETHING_NEW', null, t('es')), 'SOMETHING_NEW');
 });
 
 test('texts follow the frozen recipe: Django keeps its wording, TypeScript web names npm and the cache', () => {
-  assert.equal(preparationStatus('ACTIVE', 'django-recipe-1'), 'Preparando Django');
-  assert.equal(preparationStatus('COMPLETED', 'django-recipe-1'), 'Django preparado');
-  assert.equal(preparationStatus('COMPLETED', 'typescript-web-recipe-1'), 'TypeScript web preparado');
-  assert.equal(preparationStatus('COMPLETED'), 'Proyecto preparado');
+  assert.equal(preparationStatus('ACTIVE', 'django-recipe-1', t('es')), 'Preparando Django');
+  assert.equal(preparationStatus('COMPLETED', 'django-recipe-1', t('es')), 'Django preparado');
+  assert.equal(preparationStatus('COMPLETED', 'typescript-web-recipe-1', t('es')), 'TypeScript web preparado');
+  assert.equal(preparationStatus('COMPLETED', null, t('es')), 'Proyecto preparado');
+  assert.equal(preparationStatus('ACTIVE', 'django-recipe-1', t('en')), 'Preparing Django');
+  assert.equal(preparationStatus('COMPLETED', undefined, t('en')), 'Project prepared');
   assert.equal(recipeLabel('typescript-web-recipe-1'), 'TypeScript web');
-  assert.equal(recipeModes('django-recipe-1').offline, 'Offline: usar wheels locales y caché del hijo');
-  assert.match(recipeModes('typescript-web-recipe-1').offline, /caché npm declarada por el operador/);
-  assert.match(recipeModes('typescript-web-recipe-1').hint, /con red también se escribe/);
+  assert.equal(recipeLabel('unknown-recipe'), null);
+  assert.equal(recipeModes('django-recipe-1', t('es')).offline, 'Offline: usar wheels locales y caché del hijo');
+  assert.match(recipeModes('typescript-web-recipe-1', t('es')).offline, /caché npm declarada por el operador/);
+  assert.match(recipeModes('typescript-web-recipe-1', t('es')).hint, /con red también se escribe/);
+  assert.match(recipeModes('typescript-web-recipe-1', t('en')).hint, /with network it is also written/);
 });
 
 test('v2 recipes keep their texts and name their steps by stable id in the visual language', () => {
-  assert.equal(preparationStatus('COMPLETED', 'django-recipe-2'), 'Django preparado');
+  assert.equal(preparationStatus('COMPLETED', 'django-recipe-2', t('es')), 'Django preparado');
   assert.equal(recipeLabel('typescript-web-recipe-2'), 'TypeScript web');
   assert.ok(isTypeScriptRecipe('typescript-web-recipe-2') && !isTypeScriptRecipe('django-recipe-2'));
-  assert.deepEqual(recipeModes('typescript-web-recipe-2'), recipeModes('typescript-web-recipe-1'));
-  const t = language => (key, params) => translate({ en, es }, language, key, params);
+  assert.deepEqual(recipeModes('typescript-web-recipe-2', t('es')), recipeModes('typescript-web-recipe-1', t('es')));
   const install = { kind: 'command', id: 'install', label: 'Install pinned wheels (no builds or transitive resolution)' };
   assert.equal(preparationStepLabel('django-recipe-2', install, t('es')), 'Instalar wheels fijados (sin builds ni resolución transitiva)');
   assert.equal(preparationStepLabel('django-recipe-2', install, t('en')), install.label);

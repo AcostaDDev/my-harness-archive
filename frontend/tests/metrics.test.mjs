@@ -1,11 +1,24 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { axis, compact, count, coverage, coverageText, duration, niceStep, percent, rootLabel, scale, usd } from '../src/metrics.ts';
+import { axis, coverage, formats, niceStep, scale } from '../src/metrics.ts';
+import { plural, translate } from '../src/i18n.ts';
+import en from '../src/i18n/en.json' with { type: 'json' };
+import es from '../src/i18n/es.json' with { type: 'json' };
 
-test('null renders as «sin dato», never zero', () => {
+const catalogs = { en, es };
+const of = language => formats(language, (key, params) => translate(catalogs, language, key, params),
+  (key, count, params) => plural(catalogs, language, key, count, params));
+const { count, compact, usd, duration, percent, coverageText, rootLabel, role } = of('es');
+const english = of('en');
+// Intl separates the number and the unit with a no-break space; the tests compare plain text.
+const plain = text => text.replace(/[\u00a0\u202f]/g, ' ');
+
+test('null renders as «sin dato» / "no data", never zero', () => {
   for (const format of [count, compact, usd, duration]) assert.equal(format(null), 'sin dato');
+  for (const format of [english.count, english.compact, english.usd, english.duration]) assert.equal(format(null), 'no data');
   assert.equal(count(0), '0');
-  assert.equal(usd(0), '0,0000 US$');
+  assert.equal(plain(usd(0)), '0,0000 US$');
+  assert.equal(english.usd(0), '$0.0000');
   assert.equal(scale(null, 100, 200), null);
   assert.equal(scale(0, 100, 200), 0);
 });
@@ -18,6 +31,10 @@ test('coverage of a sum by the attempts that contribute to it', () => {
   assert.equal(coverageText({ sum: null, attempts: 0 }, 3), 'ninguno de 3 intentos lo informa');
   assert.equal(coverageText({ sum: null, attempts: 0 }, 0), 'sin intentos');
   assert.equal(coverageText({ sum: 5, attempts: 1 }, 1), 'de 1 intento');
+  assert.equal(coverageText({ sum: null, attempts: 0 }, 1), 'el único intento no lo informa');
+  assert.equal(english.coverageText({ sum: 120, attempts: 1 }, 4), 'from 1 of 4 attempts');
+  assert.equal(english.coverageText({ sum: 5, attempts: 3 }, 3), 'from the 3 attempts');
+  assert.equal(english.coverageText({ sum: null, attempts: 0 }, 3), 'none of 3 attempts reports it');
 });
 
 test('round axes from zero, with integer ticks for counts', () => {
@@ -43,7 +60,12 @@ test('readable formats', () => {
   assert.equal(duration(7260), '2 h 1 min');
   assert.equal(percent(1, 3), '33 %');
   assert.equal(percent(0, 0), 'sin dato');
-  assert.equal(usd(0.0125), '0,0125 US$');
+  assert.equal(plain(usd(0.0125)), '0,0125 US$');
+  assert.equal(english.count(12345), '12,345');
+  assert.equal(english.percent(1, 3), '33%');
+  assert.equal(english.usd(12.5), '$12.50');
+  assert.equal(english.duration(1.5), '1.5 s');
+  assert.equal(duration(1.5), '1,5 s');
 });
 
 test('root label: project id or last segment', () => {
@@ -51,4 +73,8 @@ test('root label: project id or last segment', () => {
   assert.equal(rootLabel('/tmp/a/demo-root', projects), 'demo');
   assert.equal(rootLabel('/tmp/b/otro', projects), 'otro');
   assert.equal(rootLabel(null, projects), 'sin raíz');
+  assert.equal(english.rootLabel(null, projects), 'no root');
+  assert.equal(role('executor'), 'Ejecutor');
+  assert.equal(english.role('executor'), 'Executor');
+  assert.equal(role('future-role'), 'future-role');
 });

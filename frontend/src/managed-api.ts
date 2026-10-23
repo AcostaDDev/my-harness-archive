@@ -1,3 +1,4 @@
+import { LocalizedError } from "./i18n.ts";
 import { sessionResponse } from "./session.ts";
 import type { components } from "./api.generated";
 export type S = components["schemas"];
@@ -5,7 +6,11 @@ export class ManagedError extends Error {
   status: number;
   /** Stable code of the service problem (`detail.code`), when it sent one. */
   code?: string;
-  constructor(status: number, message: string, code?: string) { super(message); this.status = status; this.code = code; }
+  /** Human diagnostic of the service, in the language it was emitted; absent when the service sent none. */
+  diagnostic?: string;
+  constructor(status: number, message: string, code?: string, diagnostic?: string) {
+    super(message); this.status = status; this.code = code; this.diagnostic = diagnostic;
+  }
 }
 export async function managed<T>(path: string, body?: unknown, key?: string, method = "POST"): Promise<T> {
   const response = await fetch(`/api/managed${path}`, body === undefined ? undefined : {
@@ -15,7 +20,11 @@ export async function managed<T>(path: string, body?: unknown, key?: string, met
   sessionResponse(response);
   if (!response.ok) {
     const data = await response.json().catch(() => null);
-    throw new ManagedError(response.status, `${response.status} · ${data?.detail?.code ?? "request_failed"}: ${data?.detail?.diagnostic ?? JSON.stringify(data?.detail ?? "Servicio no disponible")}`, data?.detail?.code);
+    const diagnostic = typeof data?.detail?.diagnostic === "string" ? data.detail.diagnostic
+      : data?.detail === undefined || data?.detail === null ? undefined : JSON.stringify(data.detail);
+    // Without a diagnostic the message is the status and code only; the interface adds its own text.
+    const code = data?.detail?.code ?? "request_failed";
+    throw new ManagedError(response.status, `${response.status} · ${code}${diagnostic === undefined ? "" : `: ${diagnostic}`}`, data?.detail?.code, diagnostic);
   }
   return response.json() as Promise<T>;
 }
@@ -76,7 +85,7 @@ export function readConfirmation(): ConfirmationRequest | undefined {
 export async function confirmOnce<T>(path: string, body: unknown): Promise<T> {
   const previous = readConfirmation();
   if (previous && (previous.path !== path || JSON.stringify(previous.body) !== JSON.stringify(body)))
-    throw new Error("Hay una confirmación pendiente de respuesta. Reenvíala antes de confirmar otro cambio.");
+    throw new LocalizedError("error.confirmation_pending");
   const request = previous ?? { path, body, key: crypto.randomUUID() };
   sessionStorage.setItem(confirmationKey, JSON.stringify(request));
   try {

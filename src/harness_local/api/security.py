@@ -4,12 +4,20 @@ from urllib.parse import urlsplit
 
 from fastapi import Header, HTTPException, Request
 
+from harness_local.i18n import DEFAULT_LANGUAGE, message
+
 LOOPBACK_HOSTS = frozenset({"127.0.0.1", "localhost", "::1"})
 SAFE_METHODS = frozenset({"GET", "HEAD", "OPTIONS"})
 
 
 def problem(status: int, code: str, diagnostic: str) -> HTTPException:
     return HTTPException(status, {"code": code, "diagnostic": diagnostic})
+
+
+def _say(request: Request, key: str) -> str:
+    """Own diagnostic in the visual language the application exposes (`app.state.language`), else English."""
+    reader = getattr(request.app.state, "language", None) if "app" in request.scope else None
+    return message(key, reader() if reader else DEFAULT_LANGUAGE)
 
 
 def _hostname(value: str | None) -> str | None:
@@ -30,7 +38,7 @@ def local_request(request: Request, x_harness_local: Annotated[str | None, Heade
         description="Required with value 1 on mutations (CSRF protection).")] = None) -> None:
     """Rejects DNS rebinding (Host), cross-site requests (Origin) and foreign forms (own header)."""
     if _hostname(request.headers.get("host")) not in LOOPBACK_HOSTS:
-        raise problem(403, "host_rejected", "El servicio local solo atiende nombres de loopback.")
+        raise problem(403, "host_rejected", _say(request, "api.host_rejected"))
     origin = request.headers.get("origin")
     if origin is not None:
         try:
@@ -41,10 +49,10 @@ def local_request(request: Request, x_harness_local: Annotated[str | None, Heade
         except ValueError:
             valid = False
         if not valid:
-            raise problem(403, "origin_rejected", "Origen distinto del servicio local.")
+            raise problem(403, "origin_rejected", _say(request, "api.origin_rejected"))
     if request.headers.get("sec-fetch-site") == "cross-site":
-        raise problem(403, "origin_rejected", "Petición de un sitio ajeno.")
+        raise problem(403, "origin_rejected", _say(request, "api.cross_site"))
     if request.method in SAFE_METHODS:
         return
     if x_harness_local != "1":
-        raise problem(403, "csrf_header_required", "Las mutaciones exigen la cabecera X-Harness-Local: 1.")
+        raise problem(403, "csrf_header_required", _say(request, "api.csrf_header_required"))

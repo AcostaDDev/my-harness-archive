@@ -1,14 +1,19 @@
 import { memo, useEffect, useRef, useState } from "react";
 import type { ReactNode } from "react";
+import { errorText, translateNow, useI18n } from "./Language";
+import type { MessageKey } from "./i18n.ts";
 import { managed, ManagedError } from "./managed-api";
 import type { S } from "./managed-api";
 
-export const message = (e: unknown) => e instanceof Error ? e.message : String(e);
+/** Text of an error to show: a service problem without a diagnostic gets the interface's own sentence. */
+export const message = (e: unknown) => e instanceof ManagedError && e.diagnostic === undefined
+  ? translateNow("error.no_diagnostic", { status: e.status, code: e.code ?? "request_failed" }) : errorText(e);
 
 /** Full uninterpreted evidence: null is shown as "not recorded", never as empty. */
 export function Evidence({ title, value }: { title: string; value: unknown }) {
+  const { t } = useI18n();
   return <details className="evidence"><summary>{title}</summary>
-    <pre>{value === null ? "No registrado (null)" : JSON.stringify(value, null, 2)}</pre></details>;
+    <pre>{value === null ? t("common.not_recorded_null") : JSON.stringify(value, null, 2)}</pre></details>;
 }
 
 export type Poll<T> = { data?: T; error?: string; missing: boolean; loading: boolean };
@@ -64,12 +69,14 @@ export const DiffLines = memo(function DiffLines({ text }: { text: string }) {
   })}</>;
 });
 
-export function Loading({ children = "Cargando…" }: { children?: ReactNode }) {
-  return <p role="status" className="state state-loading">{children}</p>;
+export function Loading({ children }: { children?: ReactNode }) {
+  const { t } = useI18n();
+  return <p role="status" className="state state-loading">{children ?? t("common.loading")}</p>;
 }
 
 export function Stale({ error }: { error?: string }) {
-  return error ? <p role="status" className="state state-stale">Sin actualizar: {error}. Se muestra la última lectura.</p> : null;
+  const { t } = useI18n();
+  return error ? <p role="status" className="state state-stale">{t("common.stale", { error })}</p> : null;
 }
 
 export function Empty({ title, children }: { title: string; children?: ReactNode }) {
@@ -96,33 +103,36 @@ export function Fields({ items }: { items: [string, ReactNode][] }) {
 }
 
 export function Hash({ value, length = 12 }: { value?: string | null; length?: number }) {
-  if (!value) return <span className="muted">no registrado</span>;
+  const { t } = useI18n();
+  if (!value) return <span className="muted">{t("common.not_recorded")}</span>;
   return <code className="hash" title={value}>{value.slice(0, length)}</code>;
 }
 
 type Tone = "ok" | "active" | "attention" | "danger" | "neutral";
 
-const RUN: Record<string, [string, Tone]> = {
-  QUEUED: ["En cola", "active"], ACTIVE: ["En curso", "active"], PLANNING: ["Planificando", "active"],
-  PREPARING: ["Preparando", "active"], EXECUTING: ["Ejecutando", "active"], REVIEWING: ["Revisando", "active"],
-  VALIDATING: ["Validando", "active"], COMMITTING: ["Haciendo commit", "active"],
-  ACCEPTANCE_READY: ["Aceptado, falta el commit", "attention"], BLOCKED: ["Bloqueado", "attention"],
-  REVISION_LIMIT: ["Límite de revisiones", "attention"], RECOVERY_REQUIRED: ["Requiere recuperación", "attention"],
-  STOPPED: ["Detenido", "neutral"], INTERRUPTED: ["Interrumpido", "danger"],
-  COMMITTED: ["Commit hecho", "ok"], COMPLETED: ["Completado", "ok"], DONE: ["Terminado", "ok"],
-  FAILED: ["Fallido", "danger"], ABORTED: ["Abortado", "danger"], INTENT: ["Intención registrada", "active"],
+const RUN: Record<string, [MessageKey, Tone]> = {
+  QUEUED: ["status.run.QUEUED", "active"], ACTIVE: ["status.run.ACTIVE", "active"], PLANNING: ["status.run.PLANNING", "active"],
+  PREPARING: ["status.run.PREPARING", "active"], EXECUTING: ["status.run.EXECUTING", "active"], REVIEWING: ["status.run.REVIEWING", "active"],
+  VALIDATING: ["status.run.VALIDATING", "active"], COMMITTING: ["status.run.COMMITTING", "active"],
+  ACCEPTANCE_READY: ["status.run.ACCEPTANCE_READY", "attention"], BLOCKED: ["status.run.BLOCKED", "attention"],
+  REVISION_LIMIT: ["status.run.REVISION_LIMIT", "attention"], RECOVERY_REQUIRED: ["status.run.RECOVERY_REQUIRED", "attention"],
+  STOPPED: ["status.run.STOPPED", "neutral"], INTERRUPTED: ["status.run.INTERRUPTED", "danger"],
+  COMMITTED: ["status.run.COMMITTED", "ok"], COMPLETED: ["status.run.COMPLETED", "ok"], DONE: ["status.run.DONE", "ok"],
+  FAILED: ["status.run.FAILED", "danger"], ABORTED: ["status.run.ABORTED", "danger"], INTENT: ["status.run.INTENT", "active"],
 };
 
-export const PHASE: Record<S["PhaseRead"]["status"], [string, Tone]> = {
-  ACTIVE: ["Activa", "active"], CHECKING: ["Comprobando", "active"], READY_TO_CLOSE: ["Lista para cerrar", "attention"],
-  NEEDS_RECONCILIATION: ["Necesita reconciliación", "attention"], BLOCKED: ["Bloqueada por decisiones", "attention"],
-  CLOSING: ["Cerrando", "active"], CLOSED: ["Cerrada", "ok"], ABANDONED: ["Abandonada", "neutral"],
+export const PHASE: Record<S["PhaseRead"]["status"], [MessageKey, Tone]> = {
+  ACTIVE: ["status.phase.ACTIVE", "active"], CHECKING: ["status.phase.CHECKING", "active"],
+  READY_TO_CLOSE: ["status.phase.READY_TO_CLOSE", "attention"], NEEDS_RECONCILIATION: ["status.phase.NEEDS_RECONCILIATION", "attention"],
+  BLOCKED: ["status.phase.BLOCKED", "attention"], CLOSING: ["status.phase.CLOSING", "active"], CLOSED: ["status.phase.CLOSED", "ok"],
+  ABANDONED: ["status.phase.ABANDONED", "neutral"],
 };
 
 /** Status with text and tone; color is never the only signal. An unknown status is shown as is. */
 export function Status({ value, kind = "run" }: { value: string; kind?: "run" | "phase" }) {
+  const { t } = useI18n();
   const known = kind === "phase" ? PHASE[value as S["PhaseRead"]["status"]] : RUN[value];
-  const [label, tone] = known ?? [value, "neutral" as Tone];
+  const [label, tone] = known ? [t(known[0]), known[1]] : [value, "neutral" as Tone];
   return <span className={`status status-${tone}`} title={value}><span className="status-mark" aria-hidden="true" />{label}</span>;
 }
 
@@ -133,29 +143,37 @@ const SIDINGS: Partial<Record<S["PhaseRead"]["status"], S["PhaseRead"]["status"]
 
 /** Phase lifecycle (D032/D034): the main track and, off it, the detours. */
 export function PhaseRail({ status }: { status: S["PhaseRead"]["status"] }) {
+  const { t } = useI18n();
   const siding = SIDINGS[status];
   const position = TRACK.indexOf(siding ?? status);
-  return <div className="rail" role="img" aria-label={`Ciclo de vida de la fase: ${PHASE[status][0]}`}>
+  return <div className="rail" role="img" aria-label={t("phase.rail", { status: t(PHASE[status][0]) })}>
     <ol className="rail-track">
       {TRACK.map((step, index) => <li key={step} className={index < position ? "rail-past" : index === position ? (siding ? "rail-branch" : "rail-now") : "rail-next"}>
-        <span className="rail-stop" aria-hidden="true" /><span className="rail-label">{PHASE[step][0]}</span>
-        {index === position && siding && <span className="rail-siding">{PHASE[status][0]}</span>}
+        <span className="rail-stop" aria-hidden="true" /><span className="rail-label">{t(PHASE[step][0])}</span>
+        {index === position && siding && <span className="rail-siding">{t(PHASE[status][0])}</span>}
       </li>)}
     </ol>
   </div>;
 }
 
 export function Pagination({ offset, next, onChange, size = 30, label }: { offset: number; next: number | null | undefined; onChange: (offset: number) => void; size?: number; label: string }) {
+  const { t } = useI18n();
   if (!offset && next == null) return null;
   return <nav className="pagination" aria-label={label}>
-    <button type="button" className="button-quiet" disabled={!offset} onClick={() => onChange(Math.max(0, offset - size))}>Anteriores</button>
-    <button type="button" className="button-quiet" disabled={next == null} onClick={() => onChange(next!)}>Siguientes</button>
+    <button type="button" className="button-quiet" disabled={!offset} onClick={() => onChange(Math.max(0, offset - size))}>{t("common.previous_page")}</button>
+    <button type="button" className="button-quiet" disabled={next == null} onClick={() => onChange(next!)}>{t("common.next_page")}</button>
   </nav>;
 }
 
+/** Date and time in the visual language; the original value stays in the tooltip. */
 export function when(value: string | null | undefined) {
-  if (!value) return <span className="muted">sin fecha</span>;
+  return <When value={value} />;
+}
+
+function When({ value }: { value: string | null | undefined }) {
+  const { t, language } = useI18n();
+  if (!value) return <span className="muted">{t("common.no_date")}</span>;
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return value;
-  return <time dateTime={value} title={value}>{date.toLocaleString("es-ES", { dateStyle: "short", timeStyle: "short" })}</time>;
+  return <time dateTime={value} title={value}>{date.toLocaleString(language, { dateStyle: "short", timeStyle: "short" })}</time>;
 }

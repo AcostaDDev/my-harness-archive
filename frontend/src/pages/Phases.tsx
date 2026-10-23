@@ -1,4 +1,5 @@
 import { lazy, Suspense, useState } from "react";
+import { useI18n } from "../Language";
 import type { S } from "../managed-api";
 import { Link } from "../navigation";
 import { PhaseCreate, PhaseDetail } from "../Phases";
@@ -9,17 +10,18 @@ import { TaskForm } from "./shared";
 const PhasePlanPanel = lazy(() => import("./Planning").then(module => ({ default: module.PhasePlanPanel })));
 
 export function PhaseListPage() {
+  const { t } = useI18n();
   const { project, refresh } = useWorkspace();
   const phases = usePoll<S["PhaseSummaryRead"][]>(`/projects/${project}/phases`, 3000, refresh);
   const open = phases.data?.some(p => !["CLOSED", "ABANDONED"].includes(p.status));
   return <>
-    <PageHeader title="Fases"><p>Cada fase agrupa tareas aceptadas y se cierra con su propia autorización sobre la evidencia READY.</p></PageHeader>
+    <PageHeader title={t("nav.phases")}><p>{t("phases.lede")}</p></PageHeader>
     <Stale error={phases.data ? phases.error : undefined} />
-    {!phases.data ? <Loading /> : !phases.data.length ? <Empty title="Este proyecto aún no tiene fases">
-      <p>Define la primera con su objetivo y sus criterios de salida.</p></Empty>
-      : <div className="table-scroll" role="region" aria-label="Fases del proyecto" tabIndex={0}>
+    {!phases.data ? <Loading /> : !phases.data.length ? <Empty title={t("phases.empty.title")}>
+      <p>{t("phases.empty.body")}</p></Empty>
+      : <div className="table-scroll" role="region" aria-label={t("phases.table")} tabIndex={0}>
         <table className="table">
-          <thead><tr><th scope="col">Fase</th><th scope="col">Objetivo</th><th scope="col">Estado</th><th scope="col">Actualizada</th></tr></thead>
+          <thead><tr><th scope="col">{t("runs.column.phase")}</th><th scope="col">{t("phase.field.objective")}</th><th scope="col">{t("runs.column.status")}</th><th scope="col">{t("runs.column.updated")}</th></tr></thead>
           <tbody>{[...phases.data].reverse().map(p => <tr key={p.id}>
             <td><Link className="mono strong" to={{ name: "phase", project, phase: p.code }}>{p.code}</Link></td>
             <td className="wide">{p.objective}</td>
@@ -33,6 +35,7 @@ export function PhaseListPage() {
 }
 
 export function PhasePage({ code }: { code: string }) {
+  const { t, rich } = useI18n();
   const { project, refresh } = useWorkspace();
   const [offset, setOffset] = useState(0);
   const base = `/projects/${project}/phases/${encodeURIComponent(code)}`;
@@ -49,41 +52,41 @@ export function PhasePage({ code }: { code: string }) {
   const open = data && !["CLOSED", "ABANDONED"].includes(data.status);
   if (phase.missing && tasks.data && !tasks.data.items.length && !offset) return <>
     <PageHeader code title={code} />
-    <Empty title={`No hay ninguna fase ${code} en este proyecto`}>
-      <p>Ni definida ni con runs. Vuelve a <Link to={{ name: "phases", project }}>Fases</Link> para ver las existentes o definir una.</p>
+    <Empty title={t("phases.missing.title", { phase: code })}>
+      <p>{t("phases.missing.body")} <Link to={{ name: "phases", project }}>{t("phases.missing.back")}</Link></p>
     </Empty>
   </>;
   return <>
     <PageHeader code title={code} aside={data && <Status kind="phase" value={data.status} />}>
-      {data ? <p>{String(data.definition.objective)}</p> : undefinedPhase ? <p>Runs agrupados con este código, sin definición de fase gestionada.</p> : <Loading />}
+      {data ? <p>{String(data.definition.objective)}</p> : undefinedPhase ? <p>{t("phases.undefined")}</p> : <Loading />}
     </PageHeader>
     <Stale error={data ? phase.error : undefined} />
     {data && <PhaseRail status={data.status} />}
     <section className="panel" aria-labelledby="phase-tasks">
-      <h2 id="phase-tasks">Tareas</h2>
-      {!tasks.data ? <Loading /> : !tasks.data.items.length ? <Empty title="Sin tareas todavía">
-        <p>{data ? "La definición no enumera tareas y ninguna tiene runs. " : ""}Encola la primera abajo.</p></Empty>
-        : <div className="table-scroll" role="region" aria-label="Tareas de la fase" tabIndex={0}>
+      <h2 id="phase-tasks">{t("stats.tasks")}</h2>
+      {!tasks.data ? <Loading /> : !tasks.data.items.length ? <Empty title={t("phases.tasks.empty")}>
+        <p>{data ? `${t("phases.tasks.none_defined")} ` : ""}{t("phases.tasks.queue_first")}</p></Empty>
+        : <div className="table-scroll" role="region" aria-label={t("phases.tasks.table")} tabIndex={0}>
           <table className="table">
-            <thead><tr><th scope="col">Tarea</th><th scope="col">En la definición</th><th scope="col">Último run</th><th scope="col" className="numeric">Runs</th><th scope="col">Commit aceptado</th></tr></thead>
-            <tbody>{tasks.data.items.map(t => {
-              const commit = data?.tasks[t.task_id];
-              return <tr key={t.task_id}>
-                <td><Link className="mono strong" to={{ name: "task", project, phase: code, task: t.task_id }}>{t.task_id}</Link></td>
-                <td>{t.planned ? "Sí" : "No"}</td>
-                <td>{t.latest ? <Status value={t.latest.status} /> : <span className="muted">sin runs</span>}</td>
-                <td className="numeric">{t.runs}</td>
-                <td>{commit?.commit ? <code className="hash" title={commit.commit}>{commit.commit.slice(0, 12)}</code> : <span className="muted">{data ? "pendiente" : "no aplica"}</span>}</td>
+            <thead><tr><th scope="col">{t("runs.column.task")}</th><th scope="col">{t("phases.column.planned")}</th><th scope="col">{t("phases.column.latest")}</th><th scope="col" className="numeric">{t("runs.table")}</th><th scope="col">{t("phases.column.commit")}</th></tr></thead>
+            <tbody>{tasks.data.items.map(task => {
+              const commit = data?.tasks[task.task_id];
+              return <tr key={task.task_id}>
+                <td><Link className="mono strong" to={{ name: "task", project, phase: code, task: task.task_id }}>{task.task_id}</Link></td>
+                <td>{task.planned ? t("common.yes") : t("common.no")}</td>
+                <td>{task.latest ? <Status value={task.latest.status} /> : <span className="muted">{t("phases.no_runs")}</span>}</td>
+                <td className="numeric">{task.runs}</td>
+                <td>{commit?.commit ? <code className="hash" title={commit.commit}>{commit.commit.slice(0, 12)}</code> : <span className="muted">{data ? t("phases.commit.pending") : t("phases.commit.not_applicable")}</span>}</td>
               </tr>;
             })}</tbody>
           </table>
         </div>}
-      <Pagination offset={offset} next={tasks.data?.next_offset} onChange={setOffset} label="Páginas de tareas" />
+      <Pagination offset={offset} next={tasks.data?.next_offset} onChange={setOffset} label={t("stats.pages.tasks")} />
     </section>
-    {(open || undefinedPhase) && <TaskForm phase={code} title="Encolar tarea en esta fase" />}
+    {(open || undefinedPhase) && <TaskForm phase={code} title={t("phases.queue")} />}
     {data && v2 && data.status === "ACTIVE" && !(data.definition.tasks as string[]).length
       && <Suspense fallback={<Loading />}><PhasePlanPanel key={data.id} phase={data} stale={!!phase.error} /></Suspense>}
-    {data && following && <p className="hint">La fase siguiente es <Link to={{ name: "phase", project, phase: following }}>{following}</Link>; se planifica desde su propia página.</p>}
+    {data && following && <p className="hint">{rich("phases.following", { phase: <Link to={{ name: "phase", project, phase: following }}>{following}</Link> })}</p>}
     {data && <PhaseDetail phase={data} stale={!!phase.error} />}
   </>;
 }

@@ -40,7 +40,8 @@ salvo donde se indica. Detalle por fase en `docs/archive/phase-NNN/SUMMARY.md`; 
   desde la caché del operador y validaciones del perfil antes del commit técnico, para hijos TypeScript web nuevos.
   Recetas v2 (`django-recipe-2`, `typescript-web-recipe-2`) en `local-config-6` con el idioma de trabajo del hijo
   sellado en plan/recibo y comprobaciones por `id` (P011-T020, D168); v5 conserva v1. Prompts con la directiva
-  del par congelado y documentos generados en el idioma de trabajo (P011-T009, D169).
+  del par congelado y documentos generados en el idioma de trabajo (P011-T009, D169). Interfaz React completa en
+  en/es por catálogos tipados y diagnósticos HTTP propios en el visual guardado (P011-T010, D170).
 - **Incorporación de proyectos** ([P008](archive/phase-008/SUMMARY.md), D161): inventario estático sobre HEAD,
   conversación de solo lectura y borradores privados de B, perfil/documentos confirmados y commit conciliable.
   Objetos locales, blobs por hash, filtros/gitlinks y destinos ignorados comprobados antes de escribir y recuperar.
@@ -77,19 +78,20 @@ salvo donde se indica. Detalle por fase en `docs/archive/phase-NNN/SUMMARY.md`; 
 
 **P011 — Preparación para apertura pública en GitHub**, iniciada documentalmente el 2026-10-22 por encargo del usuario
 ([D154](DECISIONS.md#d154--p011-preparación-para-apertura-pública-en-github),
-[plan](phase/P011_PLAN_APERTURA_PUBLICA.md), [tareas](NEXT_STEPS.md)). T001/T002/T019/T003–T009/T020
-completadas (D159–D169), nueve tareas pendientes; retirada legacy/A implementada, código y pruebas en inglés,
-preferencias globales, idioma de trabajo inmutable por proyecto, recetas v2 cableadas y directiva de idioma al
-agente con documentos generados en el idioma de trabajo; sin traducción completa de UI ni nueva compatibilidad CLI.
+[plan](phase/P011_PLAN_APERTURA_PUBLICA.md), [tareas](NEXT_STEPS.md)). T001/T002/T019/T003–T010/T020
+completadas (D159–D170), nueve tareas pendientes (T021 desglosada de T010); retirada legacy/A implementada, código
+y pruebas en inglés, preferencias globales, idioma de trabajo inmutable por proyecto, recetas v2 cableadas, directiva
+de idioma al agente con documentos en el idioma de trabajo e interfaz en/es; sin traducir aún los diagnósticos del
+servicio/CLI (T021), sin QA visual ni nueva compatibilidad CLI.
 
 **Planificación finalizada para comenzar su ejecución** por petición del usuario
 ([D156](DECISIONS.md#d156--planificación-de-p011-finalizada-y-modo-continuo-aplazado-a-v020)).
 P011 no está completada: T001 entrega diseño/inventario, T002 licencia/revisión estática, T019 retirada funcional y
-T003–T006 comentarios en inglés, T007 infraestructura de idiomas, T008 idioma de trabajo, T020 recetas v2 y T009
-directiva y documentos por idioma; siguiente T010.
+T003–T006 comentarios en inglés, T007 infraestructura de idiomas, T008 idioma de trabajo, T020 recetas v2, T009
+directiva y documentos por idioma y T010 interfaz en/es; siguiente T021.
 El modo continuo entre fases queda reservado para **v0.2.0, después de abrir el proyecto en GitHub**;
 no forma parte de P011 ni modifica el cierre confirmado actual. Commit documental D156 realizado en `6174f51`;
-las ampliaciones D157/D158 se incorporaron en `2730f54`. La petición actual autoriza T009 y su commit local
+las ampliaciones D157/D158 se incorporaron en `2730f54`. La petición actual autoriza T010 y su commit local
 en inglés, con checks sintéticos offline, sin ejecución del producto ni publicación.
 
 **P011-T001 completada** ([contrato](phase/P011-T001_CONTRATO_APERTURA.md),
@@ -179,6 +181,12 @@ inglesas sin marcadores españoles. Bloques, plantilla D088, archivo, definició
 tarea desde chat siguen el idioma de trabajo; sin él, bytes españoles idénticos. HITL: todo en T009 y commits
 técnicos sin cambios. Recorridos falsos con las cuatro parejas; sin proveedores reales ni QA de navegador.
 
+**P011-T010 completada** ([entrega](phase/P011-T010_TRADUCCION_PRODUCTO.md), D170): todas las superficies React
+(textos, ARIA, tooltips, estados vacíos, confirmaciones) salen de 1417 claves en/es tipadas, con plurales, frases con
+elementos sin fragmentos traducidos, fechas/números/coste por idioma y visor Markdown sin texto propio en el HTML.
+Los diagnósticos HTTP de `api/*` usan el visual guardado; la línea de la clave de acceso es técnica fija en inglés.
+HITL: servicio/CLI → T021 y QA visual conjunta tras T021. Node, tipos/build y suites offline en verde; sin navegador.
+
 **P010 cerrada y archivada documentalmente el 2026-10-22**
 ([D153](DECISIONS.md#d153--cierre-documental-de-p010-y-de-la-primera-versión-local),
 [resumen](archive/phase-010/SUMMARY.md), [registro de cierre](archive/phase-010/P010_CIERRE.md)).
@@ -190,7 +198,7 @@ P009 conserva su cierre documental (D140) y el Django hijo su P001 CLOSED, cuatr
 tag `p001` sobre `47a0557` y archivo en `3d105c6`. No se repite ninguna operación ni comprobación de su estado.
 Este repositorio sigue sin registrarse ni ejecutarse con el harness; cierre manual sin check READY ni tag propio.
 
-**Siguiente:** P011-T010, traducción completa de interfaz, mensajes y accesibilidad.
+**Siguiente:** P011-T021, traducción de diagnósticos del servicio y de la CLI, y después QA visual conjunta.
 Otras candidatas permanecen en [ROADMAP](ROADMAP.md#candidatas-sin-fase-asignada).
 Los límites de la base acumulada siguen vigentes. B y D095 mantienen la validación real aplazada por D151;
 A queda retirado del producto por D155/D161, sin acreditarlo como validado con proveedores reales.

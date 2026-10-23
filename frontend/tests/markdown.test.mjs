@@ -9,7 +9,7 @@ const render = source => renderMarkdown(source, ctx).html;
 const TAGS = new Set(['p', 'a', 'img', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'ul', 'ol', 'li', 'em', 'strong', 's', 'code', 'pre',
   'blockquote', 'hr', 'br', 'table', 'thead', 'tbody', 'tr', 'th', 'td', 'span', 'section', 'figure']);
 const ATTRS = new Set(['href', 'src', 'alt', 'title', 'class', 'id', 'target', 'rel', 'loading', 'start', 'style',
-  'data-internal', 'data-block', 'data-mermaid']);
+  'data-internal', 'data-block', 'data-mermaid', 'data-blocked', 'data-alt']);
 const DESTINATION = /^(\/projects\/mi-web\/docs\/|\/api\/managed\/projects\/mi-web\/documents\/image\?path=|#doc-|https?:\/\/)/;
 
 function assertSafe(html) {
@@ -77,8 +77,9 @@ test('blocked links keep their text but never navigate', () => {
   const html = render('[clic](javascript:alert(1)) [otro](../../../etc/passwd.md) [código](../src/app.py)');
   assert.ok(!/href=/.test(html.replace(/href="\/projects[^"]*"/g, '')), html);
   assert.match(html, /clic/);
-  assert.match(html, /<a class="doc-unlinked" title="La ruta sale del checkout">otro<\/a>/);
-  assert.match(html, /<a class="doc-unlinked" title="Solo se enlazan documentos Markdown del checkout">código<\/a>/);
+  // Codes only: the viewer names the reason in the visual language (no own text inside the HTML).
+  assert.match(html, /<a class="doc-unlinked" data-blocked="outside">otro<\/a>/);
+  assert.match(html, /<a class="doc-unlinked" data-blocked="not_markdown">código<\/a>/);
 });
 
 test('relative Markdown links open in the viewer and keep their anchor', () => {
@@ -99,8 +100,8 @@ test('external links open apart without opener or referrer', () => {
 test('images come only from the checkout through the session API', () => {
   const html = render('![diagrama](img/flujo.png "Flujo") ![fuera](https://cdn.example/x.png) ![texto](notas.txt)');
   assert.match(html, /<img src="\/api\/managed\/projects\/mi-web\/documents\/image\?path=docs%2Fimg%2Fflujo.png" alt="diagrama" title="Flujo" loading="lazy">/);
-  assert.match(html, /\[fuera: Las imágenes externas no se cargan\]/);
-  assert.match(html, /\[texto: Formato de imagen no admitido\]/);
+  assert.match(html, /<span class="doc-image-blocked" data-blocked="external_image" data-alt="fuera"><\/span>/);
+  assert.match(html, /<span class="doc-image-blocked" data-blocked="image_format" data-alt="texto"><\/span>/);
   assert.equal((html.match(/<img/g) ?? []).length, 1);
 });
 
@@ -128,7 +129,7 @@ test('managed blocks split exactly, render apart and hide their markers', () => 
   assert.equal(segments.map(s => s.text).join(''), STATE);
   assert.equal(blockBody(segments[1]), '**Fase:** P001\n');
   const html = render(STATE);
-  assert.match(html, /<section class="doc-managed" data-block="state"><p class="doc-managed-label">Bloque gestionado/);
+  assert.match(html, /<section class="doc-managed" data-block="state"><p class="doc-managed-label"><\/p>/);
   assert.ok(!html.includes('harness-local:managed'), html);
 });
 
@@ -139,7 +140,7 @@ test('malformed or unknown markers are reported and the text stays prose', () =>
     '<!-- harness-local:managed-evil:start -->\nx\n<!-- harness-local:managed-evil:end -->\n',
   ]) {
     const { segments, error } = splitBlocks(text);
-    assert.ok(error, text);
+    assert.ok(['incomplete', 'own_lines', 'unknown', 'overlap'].includes(error?.code), text);
     assert.deepEqual(segments, [{ kind: 'prose', text }]);
   }
 });
@@ -149,7 +150,7 @@ test('paths resolve inside the checkout only', () => {
   assert.equal(resolvePath('docs/STATE.md', './flows/./tareas.md'), 'docs/flows/tareas.md');
   assert.equal(resolvePath('README.md', '../x.md'), undefined);
   assert.equal(resolvePath('docs/a/b.md', '/docs/c.md'), 'docs/c.md');
-  assert.deepEqual(classify('%E0%A4%A.md', ctx), { kind: 'blocked', reason: 'Ruta mal codificada' });
+  assert.deepEqual(classify('%E0%A4%A.md', ctx), { kind: 'blocked', reason: 'encoding' });
   assert.equal(classify('mailto:a@b.c', ctx).kind, 'blocked');
 });
 

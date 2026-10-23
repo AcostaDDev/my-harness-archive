@@ -1,6 +1,7 @@
 // Mermaid diagrams of the viewer (H6.2 E3, D076): lazy loading, `securityLevel: "strict"` and isolated output.
 // The generated SVG is shown as an <img> from a Blob: an image runs no scripts and loads no external resources,
 // so neither an `%%{init}%%` directive nor a label with HTML can act on the page.
+import { LocalizedError } from "./i18n.ts";
 
 export const MERMAID_CONFIG = {
   startOnLoad: false,
@@ -36,7 +37,7 @@ export function renderDiagram(source: string, dark: boolean): Promise<string> {
     // Intrinsic size from the viewBox: as an image, a 100 % width does not set the size.
     const parsed = new DOMParser().parseFromString(svg, "image/svg+xml");
     const root = parsed.documentElement;
-    if (root.nodeName !== "svg") throw new Error("Mermaid no devolvió un SVG");
+    if (root.nodeName !== "svg") throw new LocalizedError("docs.mermaid.no_svg");
     const box = (root.getAttribute("viewBox") ?? "").split(/[\s,]+/).map(Number);
     if (box.length === 4 && box.every(Number.isFinite)) {
       root.setAttribute("width", String(Math.ceil(box[2])));

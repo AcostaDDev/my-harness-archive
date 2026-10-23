@@ -2,6 +2,7 @@ import { createContext, useContext, useRef, useState } from "react";
 import type { ReactNode } from "react";
 import { managed, ManagedError, readPending, savePending } from "./managed-api";
 import type { Pending, S } from "./managed-api";
+import { useI18n } from "./Language";
 import { navigate } from "./navigation";
 import { runRoute } from "./router.ts";
 import { Evidence, message } from "./ui";
@@ -20,11 +21,12 @@ const Context = createContext<Workspace | null>(null);
 
 export function useWorkspace(): Workspace {
   const value = useContext(Context);
-  if (!value) throw new Error("Workspace fuera de un proyecto");
+  if (!value) throw new Error("Workspace outside a project");
   return value;
 }
 
 export function ProjectWorkspace({ project, children }: { project: string; children: ReactNode }) {
+  const { t } = useI18n();
   const [pending, setPending] = useState<Pending | undefined>(readPending);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
@@ -57,12 +59,12 @@ export function ProjectWorkspace({ project, children }: { project: string; child
   const value: Workspace = { project, busy: busy || !!pending, refresh, operate, send };
   return <Context.Provider value={value}>
     {error && <div className="toast" role="alert"><p>{error}</p>
-      <button type="button" className="button-quiet" onClick={() => setError("")}>Cerrar aviso</button></div>}
+      <button type="button" className="button-quiet" onClick={() => setError("")}>{t("workspace.dismiss")}</button></div>}
     {pending && <section className="decision decision-attention decision-pending" aria-labelledby="pending-title">
-      <h2 id="pending-title">Envío sin respuesta confirmada</h2>
-      <p>Repetirlo envía exactamente el mismo contenido con la misma clave, así que no crea un trabajo duplicado.</p>
-      <Evidence title="Solicitud pendiente" value={pending} />
-      <button type="button" disabled={busy} onClick={() => void operate(() => send(pending))}>Repetir envío pendiente</button>
+      <h2 id="pending-title">{t("workspace.pending.title")}</h2>
+      <p>{t("workspace.pending.body")}</p>
+      <Evidence title={t("workspace.pending.evidence")} value={pending} />
+      <button type="button" disabled={busy} onClick={() => void operate(() => send(pending))}>{t("workspace.pending.repeat")}</button>
     </section>}
     {children}
   </Context.Provider>;

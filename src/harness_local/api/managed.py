@@ -33,7 +33,7 @@ from harness_local.services.managed_runtime import ManagedRuntime, agents_view
 from harness_local.storage.documents import IMAGE_TYPES
 from harness_local.storage.managed import Conflict, OwnershipLost
 from harness_local.storage.managed_mode import ModeConflict
-from harness_local.storage.preferences import PreferencesChanged, PreferencesInvalid, PreferencesKeyReused
+from harness_local.storage.preferences import PreferencesChanged, PreferencesInvalid, PreferencesKeyReused, language
 from harness_local.storage.work_language import WorkLanguageImmutable, WorkLanguageRequired
 
 Offset = Annotated[int, Query(ge=0, le=2**53 - 1)]
@@ -76,6 +76,10 @@ def call(operation, /, *args, **kwargs):
 def managed_router(runtime: ManagedRuntime):
     router = APIRouter(prefix="/api/managed", dependencies=[Depends(local_request)], responses=ERRORS)
 
+    def say(key: str, **params) -> str:
+        """Own diagnostic in the stored visual language (P011-T010); codes and statuses never change."""
+        return message(key, language(runtime.engine), **params)
+
     def project_read(project):
         from harness_local.storage.work_language import read
         return {"id": project.id, "root": str(project.context.root), "profile": project.context.profile.name,
@@ -101,7 +105,7 @@ def managed_router(runtime: ManagedRuntime):
         run = call(runtime.views.run, run_id)
         project_id = runtime.project_id(run["root"])
         if project_id is None:
-            raise problem(404, "not_found", "El run pertenece a un checkout no registrado en este servicio.")
+            raise problem(404, "not_found", say('api.run_unregistered'))
         return configured_actions({**run, "project_id": project_id})
 
     def queued(job):
@@ -156,7 +160,7 @@ def managed_router(runtime: ManagedRuntime):
                 raise problem(error.status, error.code, str(error)) from error
             except OSError as error:
                 raise problem(409, 'target_identity_changed',
-                              'La carpeta dejó de estar accesible o cambió de identidad; revisa la operación.') from error
+                              say('api.target_identity_changed')) from error
         return call(guarded)
 
     def change(body: RegistryChangeInput) -> dict:
@@ -217,7 +221,7 @@ def managed_router(runtime: ManagedRuntime):
 
     def bootstrap_writer(item):
         if not item.bootstrap_enabled:
-            raise problem(409, 'bootstrap_disabled', 'Este destino no autoriza crear el proyecto en el servidor.')
+            raise problem(409, 'bootstrap_disabled', say('api.bootstrap_unauthorized'))
         return call(runtime.config.commit_factory, item.context, frozen_versions(item))
 
     @router.get('/projects/{project_id}/bootstrap', response_model=BootstrapStatusRead,
@@ -265,8 +269,7 @@ def managed_router(runtime: ManagedRuntime):
                          if source["task_id"] == body.task_id), None)
             if (live is None or live["phase_id"] != body.phase_id or live["sha256"] != body.source_sha256
                     or live["text"] != body.text):
-                raise problem(409, "task_source_changed", "La tarea ya no está en el documento o su texto cambió; "
-                                                          "vuelve a elegirla.")
+                raise problem(409, "task_source_changed", say('api.task_source_changed'))
         notes = body.notes.strip() if body.notes is not None and body.notes.strip() else None
         job = call(runtime.repository.submit, item.context, body.task_id, body.phase_id, body.text,
                    frozen_versions(item), key=idempotency_key, notes=notes)
@@ -346,7 +349,7 @@ def managed_router(runtime: ManagedRuntime):
         if body.action == "commit":
             if runtime.config.commit_factory is None:
                 raise problem(409, "commit_writer_unavailable",
-                              "Este servicio no tiene escritor Git configurado; el commit no se encola.")
+                              say('api.writer_commit'))
             # No mechanical updates over HTTP: the commit contains exactly what was reviewed.
             job = call(runtime.repository.submit_commit, run_id, key=idempotency_key,
                        expected_version=body.expected_version)
@@ -464,7 +467,7 @@ def managed_router(runtime: ManagedRuntime):
     def registered_phase(phase_id: str):
         detail = phase_read(phase_id)
         if detail["project_id"] is None:
-            raise problem(404, "not_found", "La fase pertenece a un checkout no registrado en este servicio.")
+            raise problem(404, "not_found", say('api.phase_unregistered'))
         return runtime.projects[detail["project_id"]], detail
 
     @router.get("/projects/{project_id}/phases", response_model=list[PhaseSummaryRead], operation_id="managed_phases")
@@ -518,7 +521,7 @@ def managed_router(runtime: ManagedRuntime):
         item, _ = registered_phase(phase_id)
         if runtime.config.commit_factory is None:
             raise problem(409, "commit_writer_unavailable",
-                          "Este servicio no tiene escritor Git configurado; las operaciones de fase no se encolan.")
+                          say('api.writer_phase'))
         if body.action == "check":
             job = call(runtime.phases.submit_check, item.context, phase_id, body.expected_version,
                        key=idempotency_key, versions=frozen_versions(item))
@@ -558,7 +561,7 @@ def managed_router(runtime: ManagedRuntime):
         item, _ = registered_phase(phase_id)
         if body.chain_commits and runtime.config.commit_factory is None:
             raise problem(409, "commit_writer_unavailable",
-                          "Este servicio no tiene escritor Git configurado; un lote con commits no se autoriza.")
+                          say('api.writer_batch'))
         call(runtime.phases.authorize_batch, phase_id, body.expected_version, tasks=body.tasks,
              ttl_seconds=body.ttl_seconds, reason=body.reason, chain_commits=body.chain_commits, text=body.text,
              context=item.context, versions=frozen_versions(item))
@@ -605,8 +608,7 @@ def managed_router(runtime: ManagedRuntime):
         item, _ = registered_phase(phase_id)
         if runtime.config.commit_factory is None:
             raise problem(409, "commit_writer_unavailable",
-                          "Este servicio no tiene escritor Git configurado; la reconciliación con agente no podría "
-                          "confirmarse y no se encola.")
+                          say('api.writer_reconcile'))
         job = call(runtime.phases.submit_reconcile_task, item.context, phase_id, body.expected_version,
                    key=idempotency_key, versions=frozen_versions(item))
         return queued(job)
@@ -617,7 +619,7 @@ def managed_router(runtime: ManagedRuntime):
 
     def export_writer(item):
         if runtime.config.commit_factory is None:
-            raise problem(409, 'commit_writer_unavailable', 'La exportación requiere un escritor Git configurado.')
+            raise problem(409, 'commit_writer_unavailable', say('api.writer_export'))
         return runtime.config.commit_factory(item.context, frozen_versions(item))
 
     @router.get('/phases/{phase_id}/export', response_model=DocumentExportPreviewRead,
@@ -646,12 +648,12 @@ def managed_router(runtime: ManagedRuntime):
     def documents_project(project_id: str):
         item = project(project_id)
         if item.context.documents is None:
-            raise problem(409, 'documents_layout', 'Este proyecto requiere importar su documentación al contrato unificado D088.')
+            raise problem(409, 'documents_layout', say('api.documents_layout'))
         return item
 
     def document_writer(item):
         if runtime.config.commit_factory is None:
-            raise problem(409, 'commit_writer_unavailable', 'Las operaciones documentales requieren un escritor Git.')
+            raise problem(409, 'commit_writer_unavailable', say('api.writer_documents'))
         return runtime.config.commit_factory(item.context, frozen_versions(item))
 
     @router.get('/projects/{project_id}/documents', response_model=DocumentsStatusRead,
@@ -743,7 +745,7 @@ def managed_router(runtime: ManagedRuntime):
         runtime.ready()
         if project_id is None:
             if phase is not None or task is not None:
-                raise problem(422, 'invalid_request', 'Fase y tarea requieren project_id.')
+                raise problem(422, 'invalid_request', say('api.project_id_required'))
             return {'root': None, 'phase': None, 'task': None}
         return {'root': str(project(project_id).context.root), 'phase': phase, 'task': task}
 
@@ -808,7 +810,7 @@ def managed_router(runtime: ManagedRuntime):
         runtime.ready()
         project_id = runtime.project_id(call(runtime.chat.root, conversation_id))
         if project_id is None:
-            raise problem(404, "not_found", "La conversación pertenece a un checkout no registrado en este servicio.")
+            raise problem(404, "not_found", say('api.conversation_unregistered'))
         return runtime.projects[project_id]
 
     @router.get("/projects/{project_id}/conversations", response_model=list[ChatConversationSummaryRead],
@@ -881,14 +883,13 @@ def managed_router(runtime: ManagedRuntime):
     def planning_project(project_id: str):
         item = project(project_id)
         if item.context.documents is None:
-            raise problem(409, 'documents_layout', 'Las conversaciones de definición y planificación requieren '
-                                                  'el contrato documental unificado D088.')
+            raise problem(409, 'documents_layout', say('api.planning_layout'))
         return item
 
     def conversation_of(item, conversation_id: str):
         root = call(planning_repository().root, conversation_id)
         if root != str(item.context.root):
-            raise problem(404, 'not_found', 'La conversación pertenece a otro proyecto.')
+            raise problem(404, 'not_found', say('api.conversation_other_project'))
         return conversation_id
 
     def definition_writer(item):
@@ -898,7 +899,7 @@ def managed_router(runtime: ManagedRuntime):
     def import_reader(item):
         """P008-T011: read-only Git of the configured writer to read the tree of the project's HEAD."""
         if runtime.config.commit_factory is None:
-            raise problem(409, 'git_unconfigured', 'No hay lector Git configurado para importar el proyecto.')
+            raise problem(409, 'git_unconfigured', say('api.reader_import'))
         return call(runtime.config.commit_factory, item.context, frozen_versions(item))
 
     def conversation_port(item, kind):
@@ -956,7 +957,7 @@ def managed_router(runtime: ManagedRuntime):
         item = planning_project(project_id)
         conversation_of(item, conversation_id)
         if runtime.config.ports_factory is None:
-            raise problem(409, 'ports_unconfigured', 'No hay puertos de agente configurados para la conversación.')
+            raise problem(409, 'ports_unconfigured', say('api.ports_unconfigured'))
         kind = call(planning_repository().get, conversation_id)['kind']
         job = call(planning_repository().submit_message, item.context, conversation_id, body.expected_version,
                    key=idempotency_key, versions=frozen_versions(item), text=body.text,

@@ -4,12 +4,13 @@ Objetivo y criterios en [ROADMAP](ROADMAP.md#p011--preparación-para-apertura-p�
 Decisión: [D154](DECISIONS.md#d154--p011-preparación-para-apertura-pública-en-github).
 [Plan y alcance](phase/P011_PLAN_APERTURA_PUBLICA.md).
 
-**Estado:** en ejecución desde el 2026-10-22. T001/T002/T019/T003–T009/T020 completadas (D159–D169); nueve tareas
-pendientes. Licencia/avisos, retirada legacy/A, código/pruebas en inglés, preferencias globales e idioma de trabajo
-inmutable por proyecto con el par congelado por job/intento; recetas v2; directiva al agente y documentos en W.
+**Estado:** en ejecución desde el 2026-10-22. T001/T002/T019/T003–T010/T020 completadas (D159–D170); nueve tareas
+pendientes (T010 desglosó T021 por HITL). Licencia/avisos, retirada legacy/A, código/pruebas en inglés, preferencias
+globales e idioma de trabajo inmutable por proyecto con el par congelado por job/intento; recetas v2; directiva al
+agente y documentos en W; interfaz React y diagnósticos HTTP propios en en/es.
 **Planificación:** base finalizada en D156 y afinada por D155/D157/D158; contrato T001 disponible.
 No equivale a fase completada.
-**Siguiente:** P011-T010. Sin autorización de publicación.
+**Siguiente:** P011-T021. Sin autorización de publicación.
 P001–P010 siguen cerradas; la primera versión local mantiene el alcance de D151/D153.
 
 ## Restricciones compartidas
@@ -42,7 +43,7 @@ P001–P010 siguen cerradas; la primera versión local mantiene el alcance de D1
   siguiente fase` para v0.2.0 después de abrir el proyecto en GitHub, fuera de estas tareas. P011 mantiene
   cierre con READY y autorización propia, nueva fase sin tareas y confirmación del plan posterior.
   El commit D156 y los ajustes D157/D158 ya se realizaron. La petición actual autoriza ejecutar la siguiente
-  tarea (T009) y su commit local en inglés, sin encadenar tareas ni publicar.
+  tarea (T010) y su commit local en inglés, sin encadenar tareas ni publicar.
 - D157 elige instantánea pública inicial revisada, con Git/documentación de partida nuevos y sin historia privada.
   Desde la apertura, código/decisiones/fases se desarrollan en el repositorio público, fuente principal; este
   checkout conserva su historia privada. No sincronizar dos desarrollos activos ni congelar para siempre `docs/` pública.
@@ -296,7 +297,12 @@ No anunciar agentes falsos como calidad lingüística probada con proveedores.
 
 ## P011-T010 — Traducción completa de interfaz, mensajes y accesibilidad
 
-**Estado:** pendiente. **Depende de:** T007, T008, T009.
+**Estado:** completada el 2026-10-23, D170. **Depende de:** T007, T008, T009.
+**Evidencia:** [entrega](phase/P011-T010_TRADUCCION_PRODUCTO.md): por HITL, T010 = interfaz React completa y
+diagnósticos HTTP propios de `api/*`; servicio/CLI → T021 y QA visual conjunta tras T021. 1417 claves en/es tipadas,
+plurales, `rich` sin fragmentos traducidos, formatos por idioma, visor Markdown con códigos rellenados por
+`textContent`, 24 diagnósticos HTTP nuevos en el visual guardado y línea técnica fija `access key at`. Node 93/93,
+tipos/build y suites offline en verde; sin servicios, navegador ni proveedores.
 **Objetivo:** Completar en/es en todas las superficies propias visibles al usuario.
 **Alcance:** sesión, registro/ajustes, preparación, fases, tareas/runs, docs/chat/estadísticas, incorporación B, errores,
 validaciones, ayuda CLI, textos ARIA, tooltips, estados vacíos y confirmaciones.
@@ -314,9 +320,8 @@ validaciones, ayuda CLI, textos ARIA, tooltips, estados vacíos y confirmaciones
 **Validación:** cobertura de catálogos y pruebas funcionales, Node/tipos/build y pytest pertinente; QA visual
 con datos/API sintéticos si se autoriza el navegador/servicio necesarios.
 **Entregables:** `docs/phase/P011-T010_TRADUCCION_PRODUCTO.md`, catálogos y matriz QA.
-**Nota (D164):** `scripts/dev.py` y `scripts/check_distribution.py` casan con `clave de acceso en`, `módulo:atributo`
-y `Esquema SQLite`; al traducir esos mensajes, actualizar los scripts en el mismo cambio. Las rutas permitidas no
-incluyen `scripts/**`: ampliarlas o hacer los scripts independientes del idioma antes de implementar.
+**Nota (D164, resuelta por HITL en D170):** la línea de la clave es salida técnica fija en inglés y ambos scripts la
+leen así (rutas ampliadas a `scripts/**` para ese cambio); `módulo:atributo` y `Esquema SQLite` pasan a T021.
 
 ## P011-T011 — Contrato de compatibilidad de CLI por capacidades
 
@@ -575,3 +580,28 @@ de paso, plan/recibo/huella con trabajo y lectura/conciliación de planes y reci
 **Validación:** regresiones de recetas/huellas/recibos y preparación sintética en/es; pytest, Node/tipos/build si
 cambia el cliente. Sin red ni instalaciones reales salvo autorización propia.
 **Entregables:** `docs/phase/P011-T020_RECETAS_V2.md` y documentación actualizada.
+
+## P011-T021 — Traducción de diagnósticos del servicio y de la CLI
+
+**Estado:** pendiente. **Depende de:** T010. **Orden:** antes de T011; desglosada de T010 por HITL (D170).
+**Objetivo:** Completar en/es en los mensajes propios del servicio y de la CLI que T010 no cubre.
+**Alcance:** diagnósticos de configuración local, backup/restauración, retención, migración, registro, creación,
+preparación, runtime gestionado, lanzador y CLI (errores y ayuda argparse propia), y los textos de servicios/storage
+que la API reenvía como `diagnostic`. Inventario de partida en la
+[entrega de T010](phase/P011-T010_TRADUCCION_PRODUCTO.md#not-done-here-owners) (475 candidatos en 44 módulos).
+**Rutas permitidas:** `src/harness_local/**`, `frontend/**`, `scripts/**`, `tests/**`, `examples/**`, `docs/**`.
+**Criterios de aceptación:**
+
+- Mensajes propios por catálogo en el visual de la emisión (API: preferencias guardadas; CLI: `--ui-language` o
+  base existente, si no `en`), sin cambiar códigos, estados, estructura, evidencia ni mensajes históricos persistidos.
+- Excepciones explícitas y justificadas: vocabulario documental de T009, recetas v1 congeladas, alias bilingües de
+  parsers, protocolos (comandos de chat) y textos de terceros (argparse/Pydantic). Sin reescribir huellas.
+- `módulo:atributo` y `Esquema SQLite`: traducidos o fijados como técnicos con los scripts de mantenedor actualizados
+  en el mismo cambio. Los dos textos del servicio que compara la UI (`managed blocks are generated`, `changed since`)
+  se conservan o la UI pasa a códigos.
+- Al terminar, QA visual conjunta T010+T021 en/es, claro/oscuro y escritorio/móvil con entorno sintético saneado,
+  solo con autorización explícita del servicio/navegador; si no se autoriza, queda registrada como no realizada.
+
+**Validación:** cobertura de catálogos Python, pytest/unittest pertinentes, mensajes CLI en ambos idiomas, Node/tipos/
+build si cambia el cliente y scripts afectados sin ejecutar el producto real.
+**Entregables:** `docs/phase/P011-T021_TRADUCCION_SERVICIO_CLI.md`, catálogos y matriz QA.

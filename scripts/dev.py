@@ -179,8 +179,8 @@ def main(argv=None):
     key = []  # path from the service's access-key line (harness_local.api.session); keep the match in sync
     api_argv, api_env = api_command(database, config)
     api = services.start('api', api_argv, env=api_env,
-                         relay=lambda line: key.append(line.split(' en ', 1)[1].strip())
-                         if 'clave de acceso en' in line else None)
+                         relay=lambda line: key.append(line.split(' at ', 1)[1].strip())
+                         if 'access key at' in line else None)
     if not services.wait_port(API_PORT, api):
         services.close()
         return 0 if services.stopping else 1

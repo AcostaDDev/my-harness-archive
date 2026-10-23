@@ -94,7 +94,7 @@ def main():
                     log.flush()
                     log.seek(0)
                     # Matches the service's access-key line (harness_local.api.session).
-                    key_path = Path(re.search(r'clave de acceso en (.+)', log.read())[1])
+                    key_path = Path(re.search(r'access key at (.+)', log.read())[1])
                     assert key_path.resolve().is_relative_to(work / 'tmp'), key_path
                     key = key_path.read_text()
                     assert request(base, '/api/session', {'key': key}, {'X-Harness-Local': '1'})[0] == 200
