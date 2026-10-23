@@ -101,7 +101,7 @@ def test_cli6_job_is_quarantined_without_preflight_process_or_history_rewrite(se
     job = repository.submit(project.context, TASK, PHASE, PLAN, versions, key='cli-6')
     before = repository.get_run(job.run_id)
     supervisor = LocalSupervisor(repository, config.ports_factory, commit_factory=config.commit_factory)
-    with pytest.raises(JournalError, match='distinta de la congelada'):
+    with pytest.raises(JournalError, match='differs from the frozen one'):
         supervisor.run_once()
     after = repository.get_run(job.run_id)
     assert after.status == 'RECOVERY_REQUIRED' and after.versions_json == before.versions_json

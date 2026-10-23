@@ -332,7 +332,7 @@ def managed_router(runtime: ManagedRuntime):
         with runtime.repository.engine.connect() as db:
             owner = db.scalar(text('SELECT run_id FROM managed_attempts WHERE id=:id'), {'id': attempt_id})
         if owner != run_id:
-            raise problem(404, 'not_found', 'Intento desconocido para este run.')
+            raise problem(404, 'not_found', say('api.attempt_unknown'))
         return call(inspect_logs, runtime.repository.engine.url.database, attempt_id)
 
     @router.get("/runs/{run_id}/events", response_model=ManagedEventsRead, operation_id="managed_run_events")

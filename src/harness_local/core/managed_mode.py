@@ -3,6 +3,8 @@ from dataclasses import dataclass
 import hashlib
 from typing import Callable
 
+from harness_local.i18n import tr
+
 MARKER_PATH = ".harness/managed-mode.json"
 LEGACY_RUNS = ".harness/runs"
 LIVE_STATUSES = ("PREPARING", "ACTIVE", "REVERTING")
@@ -70,27 +72,23 @@ def mode_refusal(facts: CheckoutFacts, live: ActivationView | None, source: Chec
     """None if the managed engine may operate in `facts.root`; otherwise, the diagnosis."""
     if live is None:
         if facts.marker is not None or facts.marker_error:
-            return ("Marcador de modo gestionado sin activación viva en esta base; "
-                    "no se opera (otra base o activación incompleta).")
+            return tr('mode.marker_orphan')
         if facts.legacy_state:
-            return ("Checkout con estado legacy (.harness/runs) no activado; "
-                    "legacy/A support has been removed; this checkout cannot be activated.")
+            return tr('mode.legacy_state')
         if facts.main_legacy_state:
-            return (f"El checkout principal {facts.main_checkout} tiene estado legacy no activado; "
-                    "legacy/A support has been removed; its worktrees cannot be activated.")
+            return tr('mode.main_legacy', checkout=facts.main_checkout)
         return None
     if live.status != "ACTIVE":
-        return f"Activación {live.id} en estado {live.status}; modo gestionado no disponible."
+        return tr('mode.activation_status', id=live.id, status=live.status)
     if live.root != facts.root and facts.legacy_state:
-        return (f"El repositorio está activado desde {live.root}; este checkout tiene estado legacy propio "
-                "y no puede gestionarse.")
+        return tr('mode.activated_elsewhere', root=live.root)
     if source is None or source.marker_error or source.marker is None:
-        detail = source.marker_error if source and source.marker_error else "ausente"
-        return f"Marcador de modo gestionado en {live.root} {detail}; modo gestionado no disponible."
+        if source and source.marker_error:
+            return tr('mode.marker_error', root=live.root, error=source.marker_error)
+        return tr('mode.marker_missing', root=live.root)
     if digest(source.marker) != live.marker_sha256:
-        return f"Marcador de modo gestionado en {live.root} modificado; no coincide con la activación {live.id}."
+        return tr('mode.marker_modified', root=live.root, id=live.id)
     if drift and (drift["added"] or drift["modified"]):
         changed = [*drift["added"], *drift["modified"]]
-        return (f"Escritor legacy detectado tras la activación {live.id}: {len(changed)} rutas nuevas o "
-                f"modificadas bajo {LEGACY_RUNS} (p. ej. {changed[0]}).")
+        return tr('mode.legacy_writer', id=live.id, count=len(changed), runs=LEGACY_RUNS, example=changed[0])
     return None

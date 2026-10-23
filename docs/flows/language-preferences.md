@@ -43,6 +43,13 @@ sequenceDiagram
   vuelve a pintar textos, fechas y números sin recargar. Diagnósticos HTTP de `api/*` (guardia local, router
   gestionado) se emiten en el visual guardado al responder; códigos y estados no cambian. Contenido del servicio,
   del agente o de terceros se muestra tal cual. La línea de la clave de acceso es técnica y siempre inglesa.
+- Servicio y CLI (T021, D171): `i18n.tr()` emite en el visual de la emisión, resuelto una vez por emisión. Cada
+  petición HTTP lee las preferencias guardadas (middleware); un worker usa el visual congelado de su job
+  (`language_context`; un job sin él, el guardado al emitir) y una preparación, el guardado; la CLI, `--ui-language`,
+  la base o `en` (la ayuda, `--ui-language` o `en`). Lo que se persiste queda en la lengua emitida y no se retraduce.
+  Las huellas no dependen del idioma: la vista previa de retención sella cada diagnóstico propio en inglés; las de
+  registro/creación sellan la declaración mostrada, así que cambiar de idioma entre vista previa y confirmación
+  obliga a revisarla de nuevo.
 
 ## Fuente en el código
 
@@ -50,3 +57,5 @@ sequenceDiagram
 - `i18n/` (catálogos del servicio), `cli.py::cli_language`, `launcher.py`.
 - `frontend/src/{i18n.ts,i18n/*.json,Language.tsx,pages/Preferences.tsx}`; formatos en `metrics.ts`/`charts.tsx`.
 - `api/security.py::_say`, `api/managed.py::say` (diagnósticos HTTP propios, T010).
+- `i18n/__init__.py::{emission,tr,Localized}`, `api/app.py::emission_language`, `services/managed.py::run_once`,
+  `storage/managed.py::job_visual`, `services/project_preparation.py::run_once`, `cli.py::build_parser` (T021).

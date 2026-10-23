@@ -3,6 +3,8 @@ import os
 from pathlib import Path
 import stat
 
+from harness_local.i18n import tr
+
 class ChangingEvidence(ValueError):
     pass
 
@@ -21,19 +23,19 @@ def read_raw(root: Path, path: str) -> bytes:
         descriptors.append(fd)
         before = os.fstat(fd)
         if not stat.S_ISREG(before.st_mode):
-            raise ValueError("La evidencia no es un archivo regular.")
+            raise ValueError(tr('evidence.not_regular'))
         maximum = 64 * 1024 * 1024
         if before.st_size > maximum:
-            raise ValueError("Lectura limitada a 64 MiB por evidencia.")
+            raise ValueError(tr('evidence.limit'))
         raw = bytearray()
         while chunk := os.read(fd, 65536):
             raw.extend(chunk)
             if len(raw) > maximum:
-                raise ValueError("Archivo creció sobre el límite de lectura de 64 MiB.")
+                raise ValueError(tr('evidence.grew'))
         after = os.fstat(fd)
         if (before.st_size, before.st_mtime_ns, before.st_ctime_ns) != (
                 after.st_size, after.st_mtime_ns, after.st_ctime_ns):
-            raise ChangingEvidence("Archivo cambió durante la lectura; pendiente de relectura.")
+            raise ChangingEvidence(tr('evidence.changing'))
         return bytes(raw)
     finally:
         for fd in reversed(descriptors):

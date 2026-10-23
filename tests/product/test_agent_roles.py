@@ -141,7 +141,7 @@ def test_changing_selection_mode_quarantines_pending_jobs(setup, repository):
     current = load_local_config(write(folder, v2(data, mode='open')))
     assert current.projects[0].versions['local_config_sha256'] != project.versions['local_config_sha256']
     supervisor = LocalSupervisor(repository, current.ports_factory, commit_factory=current.commit_factory)
-    with pytest.raises(JournalError, match='distinta de la congelada'):
+    with pytest.raises(JournalError, match='differs from the frozen one'):
         supervisor.run_once()
     assert repository.get_run(job.run_id).status == 'RECOVERY_REQUIRED' and not launches(tmp_path)
 

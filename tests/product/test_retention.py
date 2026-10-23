@@ -110,12 +110,12 @@ def test_active_uncertain_or_locked_evidence_is_excluded(sealed, sql):
 
 def test_open_owner_and_unknown_group_refuse_application(sealed, monkeypatch):
     mutate(sealed[0], 'UPDATE managed_jobs SET owner_closed=0')
-    with pytest.raises(ValueError, match='abierto'):
+    with pytest.raises(ValueError, match='Open service owner'):
         apply(sealed)
     mutate(sealed[0], 'UPDATE managed_jobs SET owner_closed=1')
     monkeypatch.setattr('harness_local.adapters.processes.liveness', lambda *a, **kw: 'unknown')
     assert not any(i['eligible'] for i in preview(sealed)['items'])
-    with pytest.raises(ValueError, match='incierto'):
+    with pytest.raises(ValueError, match='uncertain'):
         apply(sealed)
 
 
@@ -145,7 +145,7 @@ def test_loss_replacement_and_unsafe_files_are_never_treated_as_purge(sealed, tm
     states = inspect_logs(sealed[0], sealed[3].id)
     assert states[0]['state'] in ('missing', 'unverified')
     assert states[0]['authorization'] is None
-    with pytest.raises(ValueError, match='obsoleta'):
+    with pytest.raises(ValueError, match='Stale preview'):
         apply(sealed, preview_sha256=old_preview)
     with pytest.raises(BackupError):
         create_backup(sealed[0], tmp_path / 'bad-backup', artifact_roots=[sealed[1].artifact_root], writers_stopped=True)
@@ -160,9 +160,9 @@ def test_crash_requires_fresh_preview_and_explicit_reconciliation(sealed, tmp_pa
     with pytest.raises(RuntimeError, match='Synthetic crash'):
         apply(sealed, hook=crash)
     assert all(i['state'] == 'pending' for i in inspect_logs(sealed[0], sealed[3].id))
-    with pytest.raises(BackupError, match='pendiente'):
+    with pytest.raises(BackupError, match='pending'):
         create_backup(sealed[0], tmp_path / 'pending-backup', artifact_roots=[sealed[1].artifact_root], writers_stopped=True)
-    with pytest.raises(ValueError, match='obsoleta'):
+    with pytest.raises(ValueError, match='Stale preview'):
         apply(sealed, preview_sha256=old_preview)
     result = apply(sealed)
     assert len(result['removed']) == 2
@@ -177,7 +177,7 @@ def test_mutation_between_intent_and_effect_is_not_deleted(sealed):
     def change(stage):
         if stage == 'intents_saved':
             source.write_bytes(b'external synthetic change')
-    with pytest.raises(ValueError, match='Elegibilidad'):
+    with pytest.raises(ValueError, match='Eligibility'):
         apply(sealed, hook=change)
     assert source.read_bytes() == b'external synthetic change'
     assert not preview(sealed)['items'][0]['eligible']
@@ -254,7 +254,7 @@ def test_reappearing_purged_path_is_not_adopted_by_backup_or_query(sealed, tmp_p
     apply(sealed)
     source.write_bytes(b'replacement bytes')
     assert inspect_logs(sealed[0], sealed[3].id)[0]['state'] == 'purged'
-    with pytest.raises(BackupError, match='Reapareció'):
+    with pytest.raises(BackupError, match='reappeared'):
         create_backup(sealed[0], tmp_path / 'replacement-backup', artifact_roots=[sealed[1].artifact_root], writers_stopped=True)
     assert apply(sealed)['retired_bytes'] == 0
     assert source.read_bytes() == b'replacement bytes'
@@ -308,7 +308,7 @@ def test_shared_reference_is_preserved(sealed, monkeypatch):
     monkeypatch.setattr(retention, '_references', shared)
     shown = preview(sealed)
     assert not shown['items'][0]['eligible']
-    assert 'compartida' in shown['items'][0]['diagnostic']
+    assert 'shared' in shown['items'][0]['diagnostic']
     apply(sealed)
     assert Path(shown['items'][0]['source']).exists()
 
@@ -318,11 +318,11 @@ def test_limits_are_explicit_and_never_purge_excluded_bytes(sealed, monkeypatch,
     from harness_local.storage import retention
     if limit == 'files':
         monkeypatch.setattr(retention, 'MAX_FILES', 1)
-        with pytest.raises(ValueError, match='Demasiadas'):
+        with pytest.raises(ValueError, match='Too many'):
             preview(sealed)
     elif limit == 'total':
         monkeypatch.setattr(retention, 'MAX_TOTAL_BYTES', 1)
-        with pytest.raises(ValueError, match='límites'):
+        with pytest.raises(ValueError, match='limits'):
             preview(sealed)
     else:
         # _read's default is frozen at definition time; use its explicit bounded helper.

@@ -13,6 +13,7 @@ from harness_local.storage.models import (
     ProjectPreparationEventRow as Event,
 )
 from harness_local.storage.permissions import actor
+from harness_local.i18n import tr
 
 
 class PreparationRepository:
@@ -59,7 +60,7 @@ class PreparationRepository:
         with self.managed._write() as session:
             for row in session.scalars(select(Operation).where(
                     Operation.status == 'ACTIVE', Operation.lease_until <= self.managed._now())):
-                row.status, row.diagnostic = 'RECOVERY_REQUIRED', 'Lease vencido; no se repiten efectos.'
+                row.status, row.diagnostic = 'RECOVERY_REQUIRED', tr('preparation.lease')
                 self.event(session, row, 'lease_expired')
 
     def claim(self, lease_seconds):
@@ -67,7 +68,7 @@ class PreparationRepository:
             # Expired work is classified, never replayed.
             for row in session.scalars(select(Operation).where(
                     Operation.status == 'ACTIVE', Operation.lease_until <= self.managed._now())):
-                row.status, row.diagnostic = 'RECOVERY_REQUIRED', 'Lease vencido; no se repiten efectos.'
+                row.status, row.diagnostic = 'RECOVERY_REQUIRED', tr('preparation.lease')
                 self.event(session, row, 'lease_expired')
             row = session.scalar(select(Operation).where(Operation.status == 'QUEUED').order_by(Operation.created_at))
             if row is None:
@@ -142,7 +143,7 @@ class PreparationJournal:
 def admit(session, root, versions, purpose):
     """Same SQLite write admission as registry changes and preparation confirmation."""
     if session.scalar(select(Operation.id).where(Operation.root == root, Operation.reserved.is_(True))):
-        raise Conflict('preparation_required: hay una preparación sin resolver en el checkout')
+        raise Conflict(tr('preparation.required_unresolved'))
     if versions.get('project_recipe') and purpose in ('task', 'phase_check', 'phase_close'):
         from pathlib import Path
         from harness_local.adapters.preparation import verify_receipt
@@ -150,5 +151,5 @@ def admit(session, root, versions, purpose):
         receipt = session.scalar(select(Operation.receipt).where(Operation.root == root, Operation.status == 'COMPLETED'))
         if (not receipt or versions.get('project_environment_sha256') != digest(receipt)
                 or versions.get('recipe_config_sha256') != receipt['recipe_config_sha256']):
-            raise Conflict('preparation_required: prepara el proyecto antes de tareas o checks')
+            raise Conflict(tr('preparation.required_tasks'))
         verify_receipt(Path(root), receipt)

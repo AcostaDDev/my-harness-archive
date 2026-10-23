@@ -23,6 +23,7 @@ from harness_local.services.managed import LocalSupervisor
 from harness_local.storage.managed import SQLiteManagedRepository
 from harness_local.storage.prompts import PromptRepository
 from harness_local.storage.managed_views import SQLiteManagedViews
+from harness_local.i18n import tr
 
 logger = logging.getLogger(__name__)
 
@@ -84,20 +85,20 @@ def load_config(spec: str | None = None) -> ManagedConfig:
         return ManagedConfig()
     module, separator, attribute = spec.partition(":")
     if not separator or not module or not attribute:
-        raise ValueError(f"{CONFIG_ENV} debe tener la forma módulo:atributo")
+        raise ValueError(tr('runtime.config_reference', variable=CONFIG_ENV))
     value = getattr(importlib.import_module(module), attribute)
     config = value() if callable(value) and not isinstance(value, ManagedConfig) else value
     if not isinstance(config, ManagedConfig):
-        raise TypeError(f"{spec} no produce un ManagedConfig")
+        raise TypeError(tr('runtime.config_type', spec=spec))
     return config
 
 
 def _validate(config: ManagedConfig, database: Path, migrations_dir: Path) -> None:
     validate_projects(config)
     for project in config.projects:
-        for path, name in ((database, "La base SQLite"), (migrations_dir, "El directorio de migraciones")):
+        for path, key in ((database, 'runtime.database_inside'), (migrations_dir, 'runtime.migrations_inside')):
             if path.is_relative_to(project.context.root) or project.context.root.is_relative_to(path):
-                raise ValueError(f"{name} debe estar fuera del checkout de {project.id}")
+                raise ValueError(tr(key, project=project.id))
 
 
 def validate_projects(config: ManagedConfig) -> None:
@@ -105,11 +106,11 @@ def validate_projects(config: ManagedConfig) -> None:
     ids, roots = set(), set()
     for project in config.projects:
         if not isinstance(project.id, str) or not PROJECT_ID.fullmatch(project.id):
-            raise ValueError(f"Identificador de proyecto inválido: {project.id!r}")
+            raise ValueError(tr('runtime.invalid_id', id=repr(project.id)))
         if project.id in ids:
-            raise ValueError(f"Proyecto duplicado: {project.id}")
+            raise ValueError(tr('runtime.duplicate', id=project.id))
         if project.context.root in roots:
-            raise ValueError(f"Dos proyectos comparten la raíz {project.context.root}")
+            raise ValueError(tr('runtime.shared_root', root=project.context.root))
         ids.add(project.id)
         roots.add(project.context.root)
         if type(project.bootstrap_enabled) is not bool:
@@ -117,9 +118,9 @@ def validate_projects(config: ManagedConfig) -> None:
         if project.bootstrap_enabled and config.commit_factory is None:
             raise ValueError('Bootstrap requires an explicit Git writer')
         if project.tag_kind not in ("lightweight", "annotated"):
-            raise ValueError(f"Tipo de tag de fase inválido para {project.id}: {project.tag_kind!r}")
+            raise ValueError(tr('runtime.tag_kind', id=project.id, kind=repr(project.tag_kind)))
         if not isinstance(project.versions, Mapping) or not REQUIRED_VERSIONS <= project.versions.keys():
-            raise ValueError(f"Versiones explícitas incompletas para {project.id}; desconocidas como null")
+            raise ValueError(tr('runtime.versions', id=project.id))
         if project.permission_authority is not None:
             from harness_local.core.engine.permissions import KINDS, LAYERS
             authority = project.permission_authority
@@ -129,7 +130,7 @@ def validate_projects(config: ManagedConfig) -> None:
                        for targets in values.values()) for values in authority.values()):
                 raise ValueError('Explicit global/project/contract/provider permission ceilings required')
     if config.supervisor and config.ports_factory is None:
-        raise ValueError("El supervisor exige una ports_factory explícita")
+        raise ValueError(tr('runtime.ports_factory'))
 
 
 class SupervisorWorker:
@@ -163,7 +164,7 @@ class SupervisorWorker:
             except Exception as exc:  # job in RECOVERY_REQUIRED or local failure; never retried on its own
                 with self._lock:
                     self.last_error = f"{type(exc).__name__}: {exc}"
-                logger.exception("Job gestionado detenido; requiere conciliación explícita.")
+                logger.exception("Managed job stopped; explicit reconciliation required.")
                 claimed = None
             if claimed is None:
                 self.wake.wait(self.poll_seconds)
@@ -254,14 +255,14 @@ class ManagedRuntime:
 
     def ready(self) -> None:
         if self.repository is None:
-            raise RuntimeError("Servicio gestionado no iniciado")
+            raise RuntimeError(tr('runtime.not_started'))
 
     def project(self, project_id: str) -> ManagedProject:
         self.ready()
         try:
             return self.projects[project_id]
         except KeyError:
-            raise LookupError("Proyecto gestionado no registrado en este servicio.") from None
+            raise LookupError(tr('runtime.unregistered')) from None
 
     def install(self, project: ManagedProject) -> None:
         """D076: hot registration or change; a new copy of the map for readers on other threads."""

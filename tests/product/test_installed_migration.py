@@ -169,7 +169,7 @@ def test_failure_keeps_snapshot_and_database_without_automatic_restore(previous,
         raise RuntimeError('synthetic failure')
     monkeypatch.setattr(migrate.command, 'upgrade', fail)
     assert invoke(previous, tmp_path / 'copies') == 1
-    assert 'base e instantánea conservadas' in capsys.readouterr().err
+    assert 'database and snapshot kept' in capsys.readouterr().err
     [snapshot] = (tmp_path / 'copies').glob('*.sqlite3')
     with closing(sqlite3.connect(snapshot)) as db:
         assert tuple(db.iterdump()) == original_dump
@@ -193,7 +193,7 @@ def test_real_migration_failure_preserves_original_history_and_snapshot(previous
         insert_run(db, 'invalid', '{"format":999}')
         db.commit()
     assert invoke(previous, tmp_path / 'copies') == 1
-    assert 'base e instantánea conservadas' in capsys.readouterr().err
+    assert 'database and snapshot kept' in capsys.readouterr().err
     [snapshot] = (tmp_path / 'copies').glob('*.sqlite3')
     for path in (previous, snapshot):
         with closing(sqlite3.connect(path)) as db:

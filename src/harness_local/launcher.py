@@ -6,19 +6,21 @@ from alembic import command
 from alembic.config import Config
 from sqlalchemy.engine import URL
 
-from harness_local.i18n import message
+from harness_local.i18n import current, message
 from harness_local.storage.database import make_engine
 from harness_local.storage.schema import require_schema
 
 
-def local_database(value: str, language: str = 'en') -> tuple[Path, str]:
+def local_database(value: str, language: str | None = None) -> tuple[Path, str]:
+    language = language or current()  # the CLI passes its own; other callers follow the emission
     path = Path(value).expanduser()
     if not path.is_absolute():
         raise ValueError(message('cli.database_not_absolute', language))
     return path, URL.create('sqlite', database=str(path)).render_as_string(hide_password=False)
 
 
-def initialize(value: str, language: str = 'en') -> None:
+def initialize(value: str, language: str | None = None) -> None:
+    language = language or current()
     path, url = local_database(value, language)
     # Exclusive: never migrate or overwrite an existing database (including links).
     if any(Path(str(path) + suffix).exists() or Path(str(path) + suffix).is_symlink()
@@ -36,7 +38,8 @@ def initialize(value: str, language: str = 'en') -> None:
     command.upgrade(config, 'head')
 
 
-def serve(value: str, port: int, config: str | None = None, language: str = 'en') -> None:
+def serve(value: str, port: int, config: str | None = None, language: str | None = None) -> None:
+    language = language or current()
     import uvicorn
     from harness_local.api.app import create_app
     from harness_local.services.managed_runtime import CONFIG_ENV
@@ -55,8 +58,7 @@ def serve(value: str, port: int, config: str | None = None, language: str = 'en'
     try:
         require_schema(engine)
     except RuntimeError as error:
-        raise RuntimeError('Esquema SQLite incompatible o incompleto; detener el servicio, conservar backup y '
-                           'migrar explícitamente con la versión compatible. init-db no actualiza bases existentes.') from error
+        raise RuntimeError(message('cli.schema_incompatible', language)) from error
     finally:
         engine.dispose()
     managed = None

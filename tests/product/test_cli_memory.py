@@ -93,7 +93,7 @@ def test_old_job_is_quarantined_without_launch_or_history_change(setup, reposito
     job = repository.submit(project.context, TASK, PHASE, PLAN, versions, key=old_version+'-memory')
     before = repository.get_run(job.run_id)
     supervisor = LocalSupervisor(repository, config.ports_factory, commit_factory=config.commit_factory)
-    with pytest.raises(JournalError, match='distinta de la congelada'):
+    with pytest.raises(JournalError, match='differs from the frozen one'):
         supervisor.run_once()
     after = repository.get_run(job.run_id)
     assert after.status == 'RECOVERY_REQUIRED' and after.versions_json == before.versions_json

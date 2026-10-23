@@ -137,7 +137,7 @@ def test_technical_commit_and_receipt_replay_restart_protection_and_process_owne
     assert not (root(service) / '.venv').exists()
     assert confirm(service, preview=request_preview) == queued
     assert service.runtime.registry.repository.unfinished(str(root(service))) == []
-    assert service.runtime.registry.repository.configuration_blockers(str(root(service))) == ['Preparación sin resolver: ' + queued['id']]
+    assert service.runtime.registry.repository.configuration_blockers(str(root(service))) == ['Unresolved preparation: ' + queued['id']]
     service.run_once()
     op = service.repository.read(queued['id'])
     assert op['status'] == 'COMPLETED', op['diagnostic']
@@ -348,7 +348,7 @@ def test_foreign_source_and_environment_drift_cannot_become_recovery_authority(p
         shown(service,previous_id=op['id'],retry_step=5)
     (root(service)/'django.py').unlink()
     (root(service)/'.venv/bin/ruff').write_text('foreign environment bytes')
-    with pytest.raises(RegistryError,match='entorno'):
+    with pytest.raises(RegistryError,match='environment'):
         shown(service,previous_id=op['id'],retry_step=5)
 
 
@@ -397,7 +397,7 @@ def test_cancel_replay_and_new_intention_before_effects(preparation):
     control={'expected_version':op['version'],'plan_sha256':op['plan_sha256']}
     cancelled=service.control(op['id'],control,'cancel','cancel-key')
     assert service.control(op['id'],control,'cancel','cancel-key')==cancelled
-    with pytest.raises(RegistryError,match='clave'):
+    with pytest.raises(RegistryError,match='key'):
         service.control(op['id'],{**control,'reason':'different'},'cancel','cancel-key')
     new=confirm(service,key='new-after-cancel',previous_id=op['id'],retry_step=0)
     service.run_once()
@@ -519,12 +519,12 @@ def test_registry_projects_and_preview_preserve_integer_jobs_during_preparation(
         record=http.get('/api/managed/registry/projects/child')
         assert record.status_code==200,record.text
         assert record.json()['unfinished_jobs']==[]
-        assert record.json()['configuration_blockers']==['Preparación sin resolver: '+op['id']]
+        assert record.json()['configuration_blockers']==['Unresolved preparation: '+op['id']]
         body={'action':'update','project_id':'child','expected_version':1,'composition':'django',
               'policy':POLICY,'bootstrap_enabled':True}
         preview=http.post('/api/managed/registry/preview',json=body)
         assert preview.status_code==200,preview.text
-        assert preview.json()['configuration_blockers']==['Preparación sin resolver: '+op['id']]
+        assert preview.json()['configuration_blockers']==['Unresolved preparation: '+op['id']]
         response=http.post('/api/managed/registry/apply',json={'change':body,'preview_sha256':preview.json()['preview_sha256']})
         assert response.status_code==409,response.text
 

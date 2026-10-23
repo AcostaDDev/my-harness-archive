@@ -234,10 +234,10 @@ def test_profile_content_enters_the_frozen_hash_and_quarantines_pending_jobs(dja
     assert project.versions['local_config_sha256'] != admitted.versions['local_config_sha256']
     assert project.versions['command_config_sha256'] == admitted.versions['command_config_sha256']
     for factory in (current.ports_factory, current.commit_factory):
-        with pytest.raises(JournalError, match='distinta de la congelada'):
+        with pytest.raises(JournalError, match='differs from the frozen one'):
             factory(project.context, admitted.versions)
     supervisor = LocalSupervisor(repository, current.ports_factory, commit_factory=current.commit_factory)
-    with pytest.raises(JournalError, match='distinta de la congelada'):
+    with pytest.raises(JournalError, match='differs from the frozen one'):
         supervisor.run_once()
     assert repository.get_run(job.run_id).status == 'RECOVERY_REQUIRED'
     assert not launches(tmp_path) and not tools(tmp_path)

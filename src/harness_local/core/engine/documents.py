@@ -17,6 +17,7 @@ import stat
 from harness_local.core.engine.contracts import RECONCILE_TASK, ContractError
 from harness_local.core.engine.document_text import AGENTS, HISTORICAL, SKELETON, STATUS_LABELS, words
 from harness_local.core.engine.planning import FIELD_RE, TASK_RE, backticked, bullet_items, collapse
+from harness_local.i18n import tr
 
 MAX_DOCUMENT_BYTES = 512 * 1024
 # P008-T020: A/B writer with local objects and no lazy fetch; earlier jobs are quarantined.
@@ -528,11 +529,11 @@ def budget_warnings(target: Layout, texts: dict[str, str]) -> list[str]:
     for path, key, label in limits:
         text = texts.get(path)
         if text is not None and len(text.encode('utf-8')) > BUDGETS[key]:
-            warnings.append(f'{label} ocupa {len(text.encode("utf-8"))} bytes; presupuesto {BUDGETS[key]}: '
-                            'compactar en la reconciliación')
+            warnings.append(tr('documents.budget', document=label, size=len(text.encode('utf-8')),
+                               budget=BUDGETS[key]))
     base = base_section(texts.get(target.state) or '')
     if base is not None and len(base.encode('utf-8')) > BUDGETS['base']:
-        warnings.append(f'La base acumulada ocupa {len(base.encode("utf-8"))} bytes; presupuesto {BUDGETS["base"]}')
+        warnings.append(tr('documents.base_budget', size=len(base.encode('utf-8')), budget=BUDGETS['base']))
     return warnings
 
 

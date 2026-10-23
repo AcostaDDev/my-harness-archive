@@ -11,6 +11,7 @@ from harness_local.storage.models import (
 )
 from harness_local.storage.permissions import actor
 from harness_local.services.project_registry import digest, RegistryError, _inside
+from harness_local.i18n import tr
 
 
 def root_view(row):
@@ -50,7 +51,7 @@ class CreationRepository:
     def require(session, operation_id):
         row = session.get(Operation, operation_id)
         if row is None:
-            raise LookupError('Operación de creación desconocida.')
+            raise LookupError(tr('creation.unknown'))
         return row
 
     def event(self, session, row, kind, *, reason=None, key=None, request_sha256=None):
@@ -70,9 +71,9 @@ class CreationRepository:
         """Also used from the D078 registration: no uncertain reservation is adopted as an existing checkout."""
         for row in session.scalars(select(Operation).where(Operation.reserved.is_(True))):
             if row.id != operation_id and (row.project_id == project_id or _inside(Path(row.target), Path(target))):
-                raise RegistryError(409, 'target_reserved', 'El id o destino está reservado por otra creación.')
+                raise RegistryError(409, 'target_reserved', tr('creation.reserved'))
         for row in session.scalars(select(Project)):
             if row.id == project_id:
-                raise RegistryError(409, 'duplicate_id', 'El id ya está registrado; las bajas conservan su reserva.')
+                raise RegistryError(409, 'duplicate_id', tr('creation.id_registered'))
             if row.status == 'ACTIVE' and _inside(Path(row.root), Path(target)):
-                raise RegistryError(409, 'root_taken', 'El destino coincide o se anida con un proyecto registrado.')
+                raise RegistryError(409, 'root_taken', tr('creation.target_taken'))

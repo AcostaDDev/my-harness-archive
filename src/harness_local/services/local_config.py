@@ -47,7 +47,7 @@ from harness_local.core.engine.context import (Command, EnginePolicy, JUnitDecla
 from harness_local.core.engine.contracts import MODEL_FORM, freeze
 from harness_local.core.engine.documents import DOCUMENT_LAYOUT
 from harness_local.core.engine.journal import JournalError
-from harness_local.i18n import LANGUAGES
+from harness_local.i18n import LANGUAGES, tr
 from harness_local.profiles.typescript_web import typescript_web_profile
 from harness_local.recipes import RECIPES, by_version as recipe_version, implementation, module as recipe_module
 from harness_local.services.managed_runtime import (PROJECT_ID, ManagedConfig, ManagedProject, agents_view,
@@ -80,46 +80,46 @@ class LocalConfigError(ValueError):
 
 def _fields(value, where, required, optional=()):
     if not isinstance(value, dict):
-        raise LocalConfigError(f'{where}: se esperaba una tabla')
+        raise LocalConfigError(tr('config.table_expected', where=where))
     unknown = set(value) - set(required) - set(optional)
     missing = set(required) - set(value)
     if unknown or missing:
-        raise LocalConfigError(f'{where}: claves desconocidas {sorted(unknown)} / ausentes {sorted(missing)}')
+        raise LocalConfigError(tr('config.keys', where=where, unknown=sorted(unknown), missing=sorted(missing)))
     return value
 
 
 def _text(value, where):
     if not isinstance(value, str) or not value.strip() or '\0' in value:
-        raise LocalConfigError(f'{where}: texto no vacío requerido')
+        raise LocalConfigError(tr('config.text_required', where=where))
     return value
 
 
 def _flag(value, where):
     if type(value) is not bool:
-        raise LocalConfigError(f'{where}: booleano explícito requerido')
+        raise LocalConfigError(tr('config.boolean_required', where=where))
     return value
 
 
 def _number(value, where):
     if type(value) not in (int, float) or not math.isfinite(value) or not value > 0:
-        raise LocalConfigError(f'{where}: número positivo finito requerido')
+        raise LocalConfigError(tr('config.number_required', where=where))
     return value
 
 
 def _texts(value, where, *, empty=False):
     if not isinstance(value, list) or (not value and not empty):
-        raise LocalConfigError(f'{where}: lista de textos requerida')
+        raise LocalConfigError(tr('config.texts_required', where=where))
     return tuple(_text(item, where) for item in value)
 
 
 def _path(value, where, *, kind):
     path = Path(_text(value, where))
     if not path.is_absolute() or path.resolve() != path:
-        raise LocalConfigError(f'{where}: ruta absoluta canónica requerida (sin enlaces)')
+        raise LocalConfigError(tr('config.path_required', where=where))
     if kind == 'directory' and not path.is_dir():
-        raise LocalConfigError(f'{where}: directorio existente requerido')
+        raise LocalConfigError(tr('config.directory_required', where=where))
     if kind == 'executable' and not (path.is_file() and os.access(path, os.X_OK)):
-        raise LocalConfigError(f'{where}: ejecutable existente requerido')
+        raise LocalConfigError(tr('config.executable_required', where=where))
     return path
 
 
@@ -127,34 +127,34 @@ def _executable(value, where):
     """Only the command itself is checked here; operators may name versioned symlinks."""
     path = Path(_text(value, where))
     if not path.is_absolute() or not path.is_file() or not os.access(path, os.X_OK):
-        raise LocalConfigError(f'{where}: ejecutable absoluto existente requerido; sin búsqueda en PATH')
+        raise LocalConfigError(tr('config.absolute_executable', where=where))
     return str(path)
 
 
 def _environment(value, where):
     if not isinstance(value, dict) or any(not isinstance(v, str) or '\0' in v for v in value.values()):
-        raise LocalConfigError(f'{where}: tabla de entorno explícita con valores de texto requerida')
+        raise LocalConfigError(tr('config.environment_required', where=where))
     return tuple(sorted((_text(key, where), item) for key, item in value.items()))
 
 
 def _read(path):
     if not path.is_absolute() or path.resolve() != path:
-        raise LocalConfigError('Configuración local: ruta absoluta canónica requerida')
+        raise LocalConfigError(tr('config.file_path'))
     try:
         fd = os.open(path, os.O_RDONLY | os.O_NOFOLLOW | os.O_NONBLOCK)
     except OSError as exc:
-        raise LocalConfigError(f'Configuración local ilegible: {exc.strerror}') from None
+        raise LocalConfigError(tr('config.unreadable', reason=exc.strerror)) from None
     with os.fdopen(fd, 'rb') as stream:
         info = os.fstat(stream.fileno())
         if not stat.S_ISREG(info.st_mode) or info.st_nlink != 1 or info.st_size > MAX_BYTES:
-            raise LocalConfigError('Configuración local: archivo regular único de hasta 64 KiB')
+            raise LocalConfigError(tr('config.file_kind'))
         if info.st_uid != os.getuid() or info.st_mode & 0o022:
-            raise LocalConfigError('Configuración local: propietario del servicio y sin escritura de grupo/otros')
+            raise LocalConfigError(tr('config.file_owner'))
         raw = stream.read(MAX_BYTES + 1)
     try:
         return tomllib.loads(raw.decode('utf-8'))
     except (UnicodeDecodeError, tomllib.TOMLDecodeError) as exc:
-        raise LocalConfigError(f'Configuración local: TOML UTF-8 inválido ({exc})') from None
+        raise LocalConfigError(tr('config.toml_invalid', error=exc)) from None
 
 
 def _cli(where, provider, value, required=CLI_KEYS, optional=()):
@@ -165,9 +165,9 @@ def _cli(where, provider, value, required=CLI_KEYS, optional=()):
     try:
         local = pwd.getpwuid(os.getuid()).pw_name
     except KeyError:
-        raise LocalConfigError('No se puede resolver la cuenta del UID local') from None
+        raise LocalConfigError(tr('config.uid_account')) from None
     if user != local:
-        raise LocalConfigError(f'{where}.environment.USER debe ser la cuenta del UID local (D024)')
+        raise LocalConfigError(tr('config.user_account', where=where))
     try:
         return CLIConfig(provider, (_executable(argv[0], f'{where}.executable'), *argv[1:]),
                          _text(value['cli_version'], f'{where}.cli_version'), environment,
@@ -188,12 +188,12 @@ def _agents(data):
         value = data[agent]
         provider = _text(value.get('provider') if isinstance(value, dict) else None, f'{where}.provider')
         if provider not in EFFORTS:
-            raise LocalConfigError(f'{where}.provider: proveedores admitidos {sorted(EFFORTS)}')
+            raise LocalConfigError(tr('config.providers', where=where, allowed=sorted(EFFORTS)))
         if agent == 'reviewer':
             value = _fields(value, where, ('provider', 'model', 'effort', *CLI_KEYS))
             reviewer = (_text(value['model'], f'{where}.model'), _text(value['effort'], f'{where}.effort'))
             if reviewer[1] not in EFFORTS[provider]:
-                raise LocalConfigError(f'{where}.effort: vocabulario de {provider} {list(EFFORTS[provider])}')
+                raise LocalConfigError(tr('config.efforts', where=where, provider=provider, allowed=list(EFFORTS[provider])))
             optional = ()
         else:
             optional = TOOL_KEYS if provider == 'claude' else ()
@@ -205,41 +205,41 @@ def _agents(data):
 def _presets(data):
     """V5: explicit local capabilities; loading does not query remote availability."""
     if not isinstance(data, dict):
-        raise LocalConfigError('agent_presets: se esperaba una tabla')
+        raise LocalConfigError(tr('config.presets_table'))
     presets = {}
     for name, value in data.items():
         where = f'agent_presets.{name}'
         if not PROJECT_ID.fullmatch(name):
-            raise LocalConfigError(f'{where}: id de preset inválido')
+            raise LocalConfigError(tr('config.preset_id', where=where))
         value = _fields(value, where, ('provider', 'roles', 'models', 'efforts', 'allow_open_executor', *CLI_KEYS),
                         TOOL_KEYS)
         provider = value['provider']
         if not isinstance(provider, str) or provider not in EFFORTS:
-            raise LocalConfigError(f'{where}.provider: proveedores admitidos {sorted(EFFORTS)}')
+            raise LocalConfigError(tr('config.providers', where=where, allowed=sorted(EFFORTS)))
         roles = _texts(value['roles'], f'{where}.roles')
         models, efforts = (_texts(value[key], f'{where}.{key}') for key in ('models', 'efforts'))
         if len(set(roles)) != len(roles) or not set(roles) <= {'reviewer', 'executor'}:
-            raise LocalConfigError(f'{where}.roles: reviewer y/o executor sin repeticiones')
+            raise LocalConfigError(tr('config.roles', where=where))
         if (len(set(models)) != len(models) or len(set(efforts)) != len(efforts)
                 or any(not MODEL_FORM.fullmatch(model) for model in models)
                 or not set(efforts) <= set(EFFORTS[provider])):
-            raise LocalConfigError(f'{where}: modelos únicos válidos y esfuerzos del proveedor requeridos')
+            raise LocalConfigError(tr('config.models', where=where))
         _flag(value['allow_open_executor'], f'{where}.allow_open_executor')
         config = _cli(where, provider, {k: v for k, v in value.items() if k in (*CLI_KEYS, *TOOL_KEYS)},
                       optional=TOOL_KEYS if provider == 'claude' else ())
         if 'reviewer' in roles and any((config.tools, config.allowed_tools, config.grantable_tools)):
-            raise LocalConfigError(f'{where}: el revisor tiene inventario de herramientas fijo de solo lectura')
+            raise LocalConfigError(tr('config.reviewer_tools', where=where))
         if 'executor' in roles and config.cli_version not in WRITE_SUPPORTED[provider]:
-            raise LocalConfigError(f'{where}: versión CLI incompatible con escritura')
+            raise LocalConfigError(tr('config.write_version', where=where))
         presets[name] = (value, config)
     return presets
 
 
 def _shell_free(argv, where):
     if not COMMAND_NAME.fullmatch(argv[0]) or argv[0] in SHELLS:
-        raise LocalConfigError(f'{where}: el primer elemento nombra un ejecutable de `executables`, no un shell')
+        raise LocalConfigError(tr('config.argv_executable', where=where))
     if any(item in SHELL_TOKENS or '`' in item or '$(' in item for item in argv):
-        raise LocalConfigError(f'{where}: argv sin sintaxis de shell (se ejecuta sin shell)')
+        raise LocalConfigError(tr('config.argv_shell', where=where))
     return argv
 
 
@@ -267,9 +267,9 @@ def _patterns(value, where, *, empty):
         try:
             relative_path(pattern)
         except ValueError:
-            raise LocalConfigError(f'{where}: patrón relativo al checkout requerido ({pattern!r})') from None
+            raise LocalConfigError(tr('config.pattern', where=where, pattern=repr(pattern))) from None
     if len(set(patterns)) != len(patterns):
-        raise LocalConfigError(f'{where}: patrones repetidos')
+        raise LocalConfigError(tr('config.patterns_repeated', where=where))
     return patterns
 
 
@@ -280,16 +280,16 @@ def _profile(name, value):
     A validation may declare its JUnit report with `junit = { path, coverage }`."""
     where = f'profiles.{name}'
     if not PROJECT_ID.fullmatch(name):
-        raise LocalConfigError(f'{where}: nombre [a-z0-9][a-z0-9._-]{{0,63}} requerido')
+        raise LocalConfigError(tr('config.name', where=where, pattern=PROJECT_ID.pattern))
     if name in PROFILES:
-        raise LocalConfigError(f'{where}: nombre reservado por un perfil integrado')
+        raise LocalConfigError(tr('config.name_reserved', where=where))
     value = _fields(value, where, PROFILE_KEYS, ('sensitive_allowlist',))
     commands = {}
     for key in ('preparation', 'validations'):
         items = value[key]
         if not isinstance(items, list) or (key == 'validations' and not items):
-            raise LocalConfigError(f'{where}.{key}: lista de comandos requerida'
-                                   + (' (al menos uno)' if key == 'validations' else ''))
+            raise LocalConfigError(tr('config.validations_required' if key == 'validations' else 'config.commands_required',
+                                      where=f'{where}.{key}'))
         commands[key] = []
         for index, item in enumerate(items):
             label = f'{where}.{key}[{index}]'
@@ -297,7 +297,7 @@ def _profile(name, value):
             command = _command({k: v for k, v in item.items() if k != 'junit'} if junit is not None else item,
                                label, strict=True)
             if command in (entry for entry, _ in commands[key]):
-                raise LocalConfigError(f'{label}: comando repetido')
+                raise LocalConfigError(tr('config.command_repeated', where=label))
             if junit is not None:
                 junit = _fields(junit, f'{label}.junit', ('path', 'coverage'))
                 try:
@@ -308,7 +308,7 @@ def _profile(name, value):
             commands[key].append((command, junit))
     prefixes = value['allowed_command_prefixes']
     if not isinstance(prefixes, list):
-        raise LocalConfigError(f'{where}.allowed_command_prefixes: lista de argv requerida')
+        raise LocalConfigError(tr('config.prefixes', where=where))
     prefixes = tuple(_shell_free(_texts(item, f'{where}.allowed_command_prefixes[{index}]'),
                                  f'{where}.allowed_command_prefixes[{index}]') for index, item in enumerate(prefixes))
     try:
@@ -334,14 +334,14 @@ def _commands(value, where, root, profile, *, strict=False, deferred_root=None):
     value = _fields(value, where, ('executables', 'environment', 'authorize_profile_commands'),
                     ('max_timeout_seconds', 'max_output_bytes', 'authorized'))
     if not isinstance(value['executables'], dict) or not value['executables']:
-        raise LocalConfigError(f'{where}.executables: tabla nombre → ejecutable requerida')
+        raise LocalConfigError(tr('config.executables_table', where=where))
     executables = []
     for name, path in value['executables'].items():
         if isinstance(path, dict) and deferred_root is not None:
             _fields(path, f'{where}.executables.{name}', ('project_venv',))
             tool = path['project_venv']
             if tool not in ('python', 'pytest', 'ruff', 'mypy') or tool != name:
-                raise LocalConfigError(f'{where}: enlace project_venv tipado python/pytest/ruff/mypy requerido')
+                raise LocalConfigError(tr('config.venv_link', where=where))
             executable = str(deferred_root / '.venv' / 'bin' / tool)
         else:
             executable = _executable(path, f'{where}.executables.{name}')
@@ -350,22 +350,22 @@ def _commands(value, where, root, profile, *, strict=False, deferred_root=None):
     if strict:
         for name, path in executables:
             if not COMMAND_NAME.fullmatch(name) or {Path(path).name, Path(path).resolve().name} & SHELLS:
-                raise LocalConfigError(f'{where}.executables.{name}: nombre simple y ejecutable que no sea un shell')
+                raise LocalConfigError(tr('config.executable_name', where=f'{where}.executables.{name}'))
     required = profile.preparation + profile.validations
     authorize = _flag(value['authorize_profile_commands'], f'{where}.authorize_profile_commands')
     authorized = required if authorize else ()
     extras = value.get('authorized', [])
     if not isinstance(extras, list):
-        raise LocalConfigError(f'{where}.authorized: lista de comandos exactos requerida')
+        raise LocalConfigError(tr('config.authorized', where=where))
     for index, item in enumerate(extras):
         command = _command(item, f'{where}.authorized[{index}]', strict=strict)
         if command not in authorized:
             authorized += (command,)
     if any(command not in authorized for command in required):
-        raise LocalConfigError(f'{where}: autorizar exactamente todos los comandos del perfil')
+        raise LocalConfigError(tr('config.authorize_all', where=where))
     if profile.formatter_argv and not authorize:
         # D133: the formatter receives variable paths, so it does not fit in an exact authorization.
-        raise LocalConfigError(f'{where}: el formateador del perfil exige authorize_profile_commands = true')
+        raise LocalConfigError(tr('config.formatter', where=where))
     try:
         return CommandConfig(str(root), True, authorized, executables,
                              _environment(value['environment'], f'{where}.environment'),
@@ -390,14 +390,14 @@ def _policy(value, where, reviewer, executor_provider):
         value = _fields(value, where, ('planning_mode', 'executor_mode', 'executor_models', 'executor_efforts'),
                         ('max_revision_cycles',))
         if value['planning_mode'] not in ('agent', 'deterministic'):
-            raise LocalConfigError(f'{where}.planning_mode: "agent" o "deterministic"')
+            raise LocalConfigError(tr('config.planning_mode', where=where))
         if value['executor_mode'] not in ('catalog', 'open'):
-            raise LocalConfigError(f'{where}.executor_mode: "catalog" o "open"')
+            raise LocalConfigError(tr('config.executor_mode', where=where))
         selections = reviewer * 2
         extra = {key: value[key] for key in ('max_revision_cycles', 'planning_mode', 'executor_mode') if key in value}
         extra['executor_effort_vocabulary'] = EFFORTS[executor_provider]
     if 'max_revision_cycles' in extra and type(extra['max_revision_cycles']) is not int:
-        raise LocalConfigError(f'{where}.max_revision_cycles: entero requerido')
+        raise LocalConfigError(tr('config.revision_cycles', where=where))
     try:
         return EnginePolicy(_texts(value['executor_models'], f'{where}.executor_models'),
                             _texts(value['executor_efforts'], f'{where}.executor_efforts'), *selections, **extra)
@@ -416,21 +416,21 @@ def _composition(value, where, state, profiles, *, strict, recipes=None):
 
     `profiles` maps every admitted name (built-in, plus declared ones in `local-config-4`) to its profile."""
     if not isinstance(value, dict):
-        raise LocalConfigError(f'{where}: se esperaba una tabla')
+        raise LocalConfigError(tr('config.table_expected', where=where))
     if _text(value.get('profile'), f'{where}.profile') not in profiles:
-        raise LocalConfigError(f'{where}.profile: perfiles admitidos {sorted(profiles)}')
+        raise LocalConfigError(tr('config.profiles', where=where, allowed=sorted(profiles)))
     recipe = value.get('recipe')
     if recipe is not None:
         if not recipes or recipe not in RECIPES or recipe not in recipes or value['profile'] != RECIPES[recipe][1]:
-            raise LocalConfigError(f'{where}: receta v5 declarada y su perfil empaquetado requeridos')
+            raise LocalConfigError(tr('config.recipe_v5', where=where))
         if recipe == 'django':
             expected = {name: {'project_venv': name} for name in ('python', 'pytest', 'ruff', 'mypy')}
             if value.get('executables') != expected or value.get('environment') != {} or value.get('authorized'):
-                raise LocalConfigError(f'{where}: enlaces exactos al entorno y environment vacío requeridos para la receta')
+                raise LocalConfigError(tr('config.recipe_links', where=where))
         else:
             _typescript_composition(value, where, recipes[recipe])
     elif value['profile'] == 'python-django-recipe' and 'django' in recipes:
-        raise LocalConfigError(f'{where}: el perfil de receta exige recipe = "django"')
+        raise LocalConfigError(tr('config.recipe_profile', where=where))
     commands = {key: item for key, item in value.items() if key not in ('profile', 'recipe')}
     # The state directory stands in for a checkout: only the table itself is validated here.
     _commands(commands, where, state, profiles[value['profile']], strict=strict,
@@ -444,15 +444,14 @@ def _typescript_composition(value, where, recipe):
     The composition keeps its own environment: it must already name that cache, and it is never rewritten."""
     executables = value.get('executables')
     if not isinstance(executables, dict) or not {'node', 'npm'} <= set(executables):
-        raise LocalConfigError(f'{where}.executables: node y npm requeridos para la receta typescript-web')
+        raise LocalConfigError(tr('config.node_npm', where=where))
     for name in ('node', 'npm'):
         path = _executable(executables[name], f'{where}.executables.{name}')
         if Path(path).resolve() != Path(recipe[f'{name}_executable']).resolve():
-            raise LocalConfigError(f'{where}.executables.{name}: debe resolver al mismo archivo que la receta')
+            raise LocalConfigError(tr('config.same_executable', where=f'{where}.executables.{name}'))
     environment = value.get('environment')
     if not isinstance(environment, dict) or environment.get('npm_config_cache') != recipe['npm_cache']:
-        raise LocalConfigError(f'{where}.environment: npm_config_cache igual a recipes.typescript-web.npm_cache '
-                               'requerido; no se reescribe el entorno')
+        raise LocalConfigError(tr('config.npm_environment', where=where))
 
 
 class LocalComposer:
@@ -509,21 +508,20 @@ class LocalComposer:
         item = _fields(item, where, required, optional)
         work_language = item.get('work_language')
         if work_language is not None and work_language not in LANGUAGES:
-            raise LocalConfigError(f'{where}.work_language: one of {list(LANGUAGES)} required')
+            raise LocalConfigError(tr('config.work_language', where=where, allowed=list(LANGUAGES)))
         if item.get('documents', 'v2') != 'v2':
-            raise LocalConfigError(f'{where}.documents: solo se admite "v2" (contrato documental unificado D088; '
-                                   'omitirlo equivale a "v2")')
+            raise LocalConfigError(tr('config.documents', where=where))
         if _flag(item['repository_trusted'], f'{where}.repository_trusted') is not True:
-            raise LocalConfigError(f'{where}: sin confianza explícita el proyecto no se registra')
+            raise LocalConfigError(tr('config.trust', where=where))
         # Only the D116 creation preview admits a target that does not exist yet, already validated by the service.
         root = _path(item['root'], f'{where}.root', kind='new_directory' if new_directory else 'directory')
         if not (_outside(self.state, root) and _outside(self.source, root)):
-            raise LocalConfigError(f'{where}: configuración y estado deben quedar fuera del checkout')
+            raise LocalConfigError(tr('config.state_outside', where=where))
         authority = dict(self._authority)
         if self.registrable:
             name = _text(item['composition'], f'{where}.composition')
             if name not in self.compositions:
-                raise LocalConfigError(f'{where}.composition: composiciones declaradas {sorted(self.compositions)}')
+                raise LocalConfigError(tr('config.compositions_declared', where=where, allowed=sorted(self.compositions)))
             profile_name, table = self.compositions[name]
             authority['composition'] = {name: {'profile': profile_name, **table}}
             recipe = self._recipes_by_composition.get(name)
@@ -533,7 +531,7 @@ class LocalComposer:
         else:
             profile_name, table = _text(item['profile'], f'{where}.profile'), item['commands']
             if profile_name not in self.profiles:
-                raise LocalConfigError(f'{where}.profile: perfiles admitidos {sorted(self.profiles)}')
+                raise LocalConfigError(tr('config.profiles', where=where, allowed=sorted(self.profiles)))
         recipe = self._recipes_by_composition.get(item.get('composition'))
         # v6: a recipe composition runs with its v2 module's own profile (D163/D168), not the built-in one.
         profile = self.recipe_profiles.get(recipe) or self.profiles[profile_name]
@@ -545,8 +543,7 @@ class LocalComposer:
         agents, reviewer, selected = self.effective_agents(item, where)
         if recipe == 'django' and any(dict(agent.environment).get('PYTHONDONTWRITEBYTECODE') != '1'
                                       for agent in agents.values()):
-            raise LocalConfigError(f'{where}: la receta requiere PYTHONDONTWRITEBYTECODE=1 explícito en ambos '
-                                   'roles/presets para conservar los bytes del entorno; no se reescribe su entorno')
+            raise LocalConfigError(tr('config.bytecode', where=where))
         engine_policy = _policy(item['policy'], f'{where}.policy', reviewer, agents['executor'].provider)
         if selected:
             executor = selected['executor']
@@ -554,19 +551,19 @@ class LocalComposer:
                  and not set(engine_policy.executor_models) <= set(executor['models']))
                     or any(not MODEL_FORM.fullmatch(model) for model in engine_policy.executor_models)
                     or not set(engine_policy.executor_efforts) <= set(executor['efforts'])):
-                raise LocalConfigError(f'{where}.policy: catálogo del ejecutor fuera del preset seleccionado')
+                raise LocalConfigError(tr('config.executor_catalog', where=where))
             if engine_policy.executor_mode == 'open' and not executor['allow_open_executor']:
-                raise LocalConfigError(f'{where}.policy: el preset no admite ejecutor libre')
+                raise LocalConfigError(tr('config.open_executor', where=where))
             engine_policy = replace(engine_policy, executor_effort_vocabulary=tuple(executor['efforts']))
             authority['agent_presets'] = selected
         if recipe == 'typescript-web' and not _outside(Path(self.recipes[recipe]['npm_cache']), root):
-            raise LocalConfigError(f'{where}: la caché npm de la receta debe quedar fuera del checkout')
+            raise LocalConfigError(tr('config.npm_cache_outside', where=where))
         # The preview validates the configuration on the existing parent, without building ports for the child.
         commands = _commands(table, f'{where}.commands', root.parent if new_directory else root, profile,
                              strict=self.format in PROFILE_FORMATS, deferred_root=root if recipe == 'django' else None)
         identifier = _text(item['id'], f'{where}.id')
         if not PROJECT_ID.fullmatch(identifier):
-            raise LocalConfigError(f'{where}.id: [a-z0-9][a-z0-9._-]{{0,63}} requerido')
+            raise LocalConfigError(tr('config.project_id', where=where, pattern=PROJECT_ID.pattern))
         artifacts = self.state / 'artifacts' / identifier
         try:
             cli = CLIProcessAdapter(agents, artifacts)
@@ -581,7 +578,7 @@ class LocalComposer:
         try:
             digest = hashlib.sha256(freeze(frozen).encode()).hexdigest()
         except (TypeError, ValueError):
-            raise LocalConfigError(f'{where}: valores TOML no admitidos (fechas u objetos)') from None
+            raise LocalConfigError(tr('config.toml_values', where=where)) from None
         # D088: the documentary layout is mandatory. Its version enters the frozen ones, so a job admitted
         # before (optional contract or no contract) is quarantined instead of running with another layout.
         versions = {'engine': f'harness-local-{self.engine}', 'evidence': 'git-1', 'provider_cli': None,
@@ -621,13 +618,13 @@ class LocalComposer:
                              else ('preset_id',))
             name = _text(choice['preset_id'], f'{label}.preset_id')
             if name not in self.presets or role not in self.presets[name][0]['roles']:
-                raise LocalConfigError(f'{label}: preset ausente o incompatible con el rol ({name})')
+                raise LocalConfigError(tr('config.preset_role', where=label, preset=name))
             preset, agents[role] = self.presets[name]
             selected[role] = preset
             if role == 'reviewer':
                 reviewer = tuple(_text(choice[key], f'{label}.{key}') for key in ('model', 'effort'))
                 if reviewer[0] not in preset['models'] or reviewer[1] not in preset['efforts']:
-                    raise LocalConfigError(f'{label}: modelo/esfuerzo del revisor fuera del preset')
+                    raise LocalConfigError(tr('config.reviewer_choice', where=label))
         return agents, reviewer, selected
 
     def install(self, composed):
@@ -647,10 +644,10 @@ class LocalComposer:
         with self._lock:
             current = self._live.get(context.root)
         if current is None:
-            raise JournalError('Checkout sin composición local registrada')
+            raise JournalError(tr('config.no_composition'))
         identifier, frozen, commands, artifacts, agents = current
         if any(versions.get(key) != value for key, value in frozen.items()):
-            raise JournalError(f'Composición local de {identifier} distinta de la congelada; no se ejecuta')
+            raise JournalError(tr('config.composition_changed', project=identifier))
         return commands, artifacts, agents
 
     def ports(self, context, versions):
@@ -687,15 +684,15 @@ class LocalComposer:
 
 def _build(data, source):
     if not isinstance(data, dict) or data.get('format') not in FORMATS:
-        raise LocalConfigError(f'format debe ser uno de {list(FORMATS)}')
+        raise LocalConfigError(tr('config.format', allowed=list(FORMATS)))
     fmt = data['format']
     agents_key = 'providers' if fmt == 'local-config-1' else 'agents'
     if fmt in REGISTRABLE:
-        data = _fields(data, 'raíz', ('format', 'service', 'git', 'agents', 'registration', 'compositions'),
+        data = _fields(data, tr('config.root_table'), ('format', 'service', 'git', 'agents', 'registration', 'compositions'),
                        ('projects', 'profiles', 'agent_presets', 'recipes') if fmt in AGENT_FORMATS else
                        ('projects', 'profiles') if fmt in PROFILE_FORMATS else ('projects',))
     else:
-        data = _fields(data, 'raíz', ('format', 'service', 'git', agents_key, 'projects'))
+        data = _fields(data, tr('config.root_table'), ('format', 'service', 'git', agents_key, 'projects'))
     service = _fields(data['service'], 'service', ('state_dir', 'supervisor'), ('lease_seconds', 'poll_seconds'))
     state = _path(service['state_dir'], 'service.state_dir', kind='directory')
     git = _fields(data['git'], 'git', ('executable', 'author_name', 'author_email'))
@@ -724,15 +721,15 @@ def _build(data, source):
             for key in ('python_executable', 'installer_executable'):
                 entry[key] = _executable(entry[key], f'recipes.django.{key}')
                 if {Path(entry[key]).name, Path(entry[key]).resolve().name} & SHELLS:
-                    raise LocalConfigError('recipes.django: intérprete Python e instalador uv, sin shells')
+                    raise LocalConfigError(tr('config.django_tools'))
             if not re.fullmatch(r'3\.(11|12|13)\.[0-9]+', _text(entry['python_version'], 'recipes.django.python_version')):
-                raise LocalConfigError('recipes.django.python_version: CPython 3.11–3.13 exacto requerido')
+                raise LocalConfigError(tr('config.django_python'))
             if not re.fullmatch(r'0\.[0-9]+\.[0-9]+', _text(entry['installer_version'], 'recipes.django.installer_version')):
-                raise LocalConfigError('recipes.django.installer_version: versión uv exacta requerida')
+                raise LocalConfigError(tr('config.django_uv'))
             if not 120 <= _number(entry['timeout_seconds'], 'recipes.django.timeout_seconds') <= 1800:
-                raise LocalConfigError('recipes.django.timeout_seconds: 120..1800 segundos requeridos')
+                raise LocalConfigError(tr('config.timeout', where='recipes.django'))
             if type(entry['max_output_bytes']) is not int or not 1024 <= entry['max_output_bytes'] <= 1048576:
-                raise LocalConfigError('recipes.django.max_output_bytes: 1024..1048576 requerido')
+                raise LocalConfigError(tr('config.output', where='recipes.django'))
             _flag(entry['allow_network'], 'recipes.django.allow_network')
             if 'wheelhouse' in entry:
                 entry['wheelhouse'] = str(_path(entry['wheelhouse'], 'recipes.django.wheelhouse', kind='directory'))
@@ -756,32 +753,32 @@ def _build(data, source):
             recipe_profiles['django'] = profiles['python-django-recipe']
     declared = data.get('profiles', {})
     if not isinstance(declared, dict):
-        raise LocalConfigError('profiles: se esperaba una tabla [profiles.NOMBRE]')
+        raise LocalConfigError(tr('config.profiles_table'))
     for name, value in declared.items():
         if name == 'python-django-recipe' and 'django' in recipes:
-            raise LocalConfigError('Perfil python-django-recipe reservado para la receta empaquetada')
+            raise LocalConfigError(tr('config.recipe_profile_reserved'))
         profiles[name] = _profile(name, value)
     if fmt in REGISTRABLE:
         if not isinstance(data['compositions'], dict) or not data['compositions']:
-            raise LocalConfigError('compositions: al menos una [compositions.NOMBRE] requerida')
+            raise LocalConfigError(tr('config.compositions_required'))
         for name, value in data['compositions'].items():
             if not PROJECT_ID.fullmatch(name):
-                raise LocalConfigError(f'compositions.{name}: nombre [a-z0-9][a-z0-9._-]{{0,63}} requerido')
+                raise LocalConfigError(tr('config.name', where=f'compositions.{name}', pattern=PROJECT_ID.pattern))
             compositions[name] = _composition(value, f'compositions.{name}', state, profiles,
                                                strict=fmt in PROFILE_FORMATS, recipes=recipes)
         table = _fields(data['registration'], 'registration', ('roots', 'bootstrap_enabled'))
         roots = tuple(_path(item, 'registration.roots', kind='directory')
                       for item in _texts(table['roots'], 'registration.roots', empty=True))
         if len(set(roots)) != len(roots):
-            raise LocalConfigError('registration.roots: raíces repetidas')
+            raise LocalConfigError(tr('config.roots_repeated'))
         registration = (roots, _flag(table['bootstrap_enabled'], 'registration.bootstrap_enabled'))
     items = data.get('projects', [])
     if not isinstance(items, list) or (not items and fmt not in REGISTRABLE):
-        raise LocalConfigError('projects: al menos un [[projects]] requerido')
+        raise LocalConfigError(tr('config.projects_required'))
     try:
         engine = importlib.metadata.version('harness-local')
     except importlib.metadata.PackageNotFoundError:
-        raise LocalConfigError('Versión del paquete harness-local no disponible') from None
+        raise LocalConfigError(tr('config.package_version')) from None
 
     composer = LocalComposer(fmt, data, source, state, agents, reviewer, identity, git_executable, engine,
                              compositions, registration, profiles, presets, recipes)
@@ -792,7 +789,7 @@ def _build(data, source):
     for index, item in enumerate(items):
         project, composition = composer.compose(item, f'projects[{index}]')
         if project.id in {p.id for p in projects} or project.context.root in {p.context.root for p in projects}:
-            raise LocalConfigError(f'projects[{index}]: id o raíz duplicados')
+            raise LocalConfigError(tr('config.projects_duplicate', where=f'projects[{index}]'))
         projects.append(composer.install((project, composition)))
 
     config = ManagedConfig(tuple(projects), ports_factory=composer.ports, commit_factory=composer.writer,
@@ -816,17 +813,17 @@ def _typescript_recipe(value, state):
     for key in ('node_executable', 'npm_executable'):
         entry[key] = _executable(entry[key], f'{where}.{key}')
         if {Path(entry[key]).name, Path(entry[key]).resolve().name} & SHELLS:
-            raise LocalConfigError(f'{where}: ejecutables node y npm, sin shells')
+            raise LocalConfigError(tr('config.node_tools', where=where))
     for key in ('node_version', 'npm_version'):
         if not re.fullmatch(r'[0-9]+\.[0-9]+\.[0-9]+', _text(entry[key], f'{where}.{key}')):
-            raise LocalConfigError(f'{where}.{key}: versión exacta requerida')
+            raise LocalConfigError(tr('config.exact_version', where=f'{where}.{key}'))
     entry['npm_cache'] = str(_path(entry['npm_cache'], f'{where}.npm_cache', kind='directory'))
     if not _outside(Path(entry['npm_cache']), state):
-        raise LocalConfigError(f'{where}.npm_cache: fuera del estado del servicio')
+        raise LocalConfigError(tr('config.npm_cache_state', where=where))
     if not 120 <= _number(entry['timeout_seconds'], f'{where}.timeout_seconds') <= 1800:
-        raise LocalConfigError(f'{where}.timeout_seconds: 120..1800 segundos requeridos')
+        raise LocalConfigError(tr('config.timeout', where=where))
     if type(entry['max_output_bytes']) is not int or not 1024 <= entry['max_output_bytes'] <= 1048576:
-        raise LocalConfigError(f'{where}.max_output_bytes: 1024..1048576 requerido')
+        raise LocalConfigError(tr('config.output', where=where))
     _flag(entry['allow_network'], f'{where}.allow_network')
     return entry
 
@@ -853,7 +850,7 @@ def from_environment() -> ManagedConfig:
     """Development entry for `HARNESS_MANAGED_CONFIG=harness_local.services.local_config:from_environment`."""
     value = os.environ.get(CONFIG_ENV)
     if not value:
-        raise LocalConfigError(f'{CONFIG_ENV} debe nombrar el TOML local')
+        raise LocalConfigError(tr('config.env', variable=CONFIG_ENV))
     return load_local_config(value)
 
 

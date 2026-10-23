@@ -15,6 +15,7 @@ from harness_local.core.engine.contracts import stop_history
 from harness_local.core.engine.journal import JournalError
 from harness_local.core.engine.serialization import restore_context
 from harness_local.core.engine.workflow import OfflineEngine
+from harness_local.i18n import emission
 
 
 class _Journal:
@@ -152,6 +153,11 @@ class LocalSupervisor:
         claim = self.repository.claim(lease_seconds=self.lease_seconds, lane=self.lane)
         if claim is None:
             return None
+        # P011-T021: own texts of this job use the visual language frozen at its admission (D166).
+        with emission(lambda: self.repository.job_visual(claim)):
+            return self._run_claimed(claim)
+
+    def _run_claimed(self, claim):
         retired = self.repository.retired_reason(claim.run_id, claim.request_json)
         if retired is not None:
             self.repository.quarantine(claim, retired)

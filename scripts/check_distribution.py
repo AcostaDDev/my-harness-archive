@@ -245,13 +245,14 @@ def main():
             assert (area / 'calls.jsonl').read_bytes() == calls
 
         # Incompatible configuration: visible failure, nothing corrected or activated. The expected texts are the
-        # product's own diagnostics (services/managed_runtime.py, launcher.py).
-        result = run('serve', '--database', db, ok=False, extra={'HARNESS_MANAGED_CONFIG': 'invalid'})
-        assert 'módulo:atributo' in result.stderr
+        # product's own English diagnostics (catalog keys runtime.config_reference, cli.schema_incompatible).
+        result = run('--ui-language', 'en', 'serve', '--database', db, ok=False,
+                     extra={'HARNESS_MANAGED_CONFIG': 'invalid'})
+        assert 'module:attribute' in result.stderr
         empty = work / 'empty.sqlite3'
         empty.touch()
-        result = run('serve', '--database', empty, ok=False)
-        assert 'Esquema SQLite' in result.stderr
+        result = run('--ui-language', 'en', 'serve', '--database', empty, ok=False)
+        assert 'SQLite schema' in result.stderr
         bundle, restored = work / 'backup', work / 'restored'
         run('backup-create', db, bundle, '--writers-stopped')
         run('backup-verify', bundle)

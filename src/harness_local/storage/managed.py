@@ -32,6 +32,7 @@ from harness_local.storage.managed_mode import ModeConflict, ModeGuard
 from harness_local.storage.metrics import executor_round, record as record_metrics
 from harness_local.storage import run_projection
 from harness_local.storage.schema import require_schema
+from harness_local.i18n import tr
 
 
 class Conflict(ValueError):
@@ -182,6 +183,12 @@ class SQLiteManagedRepository:
         with Session(self.engine) as session:
             return session.scalar(select(Job.language_context).where(Job.id == claim.id))
 
+    def job_visual(self, claim: JobRecord) -> str:
+        """Visual language of the job's own texts: the frozen one; jobs admitted without it use the stored one."""
+        from harness_local.storage.preferences import language
+        frozen = self.job_language(claim)
+        return frozen.get("ui_language") if isinstance(frozen, dict) and frozen.get("ui_language") else language(self.engine)
+
     def _admit(self, session, assessment) -> str | None:
         try:
             return ModeGuard.enforce(session, assessment)
@@ -227,7 +234,7 @@ class SQLiteManagedRepository:
             return assessment.refusal
         current = assessment.activation.id if assessment.activation else None
         if current != admitted:
-            return "El modo del checkout cambió desde que se admitió el job; no se ejecuta."
+            return tr('mode.changed_admission')
         return None
 
     def _require_mode(self, claim: JobRecord) -> None:

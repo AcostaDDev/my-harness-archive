@@ -439,7 +439,7 @@ def test_mode_refusals_return_409_with_diagnostic_and_no_partial_effects(tmp_pat
     managed = ManagedConfig(projects, ports_factory=ports, supervisor=True, poll_seconds=0.02)
     with client(url, tmp_path, managed) as http:
         counts, before = table_counts(engine), tree(legacy.root)
-        for project, text in (("legacy", "no activado"), ("marked", "sin activación viva")):
+        for project, text in (("legacy", "non-activated legacy state"), ("marked", "without a live activation")):
             refused = submit(http, project=project)
             assert refused.status_code == 409
             assert refused.json()["detail"]["code"] == "mode_refused" and text in refused.json()["detail"]["diagnostic"]
@@ -486,10 +486,10 @@ def test_default_service_registers_nothing_and_never_launches_processes(tmp_path
 def test_configuration_is_validated_at_startup(tmp_path, url, plain):
     inside = make_context(Path(url.removeprefix("sqlite:///")).parent)
     for managed, message in (
-            (ManagedConfig((ManagedProject("db", inside, VERSIONS),)), "fuera del checkout"),
-            (ManagedConfig((ManagedProject("a", plain, VERSIONS), ManagedProject("a", plain, VERSIONS))), "duplicado"),
-            (ManagedConfig((ManagedProject("Bad/Id", plain, VERSIONS),)), "inválido"),
-            (ManagedConfig((ManagedProject("p", plain, {"engine": "x"}),)), "incompletas"),
+            (ManagedConfig((ManagedProject("db", inside, VERSIONS),)), "outside the checkout"),
+            (ManagedConfig((ManagedProject("a", plain, VERSIONS), ManagedProject("a", plain, VERSIONS))), "Duplicate project"),
+            (ManagedConfig((ManagedProject("Bad/Id", plain, VERSIONS),)), "Invalid project identifier"),
+            (ManagedConfig((ManagedProject("p", plain, {"engine": "x"}),)), "Incomplete explicit versions"),
             (ManagedConfig(supervisor=True), "ports_factory")):
         with pytest.raises(ValueError, match=message):
             with TestClient(create_app(url, tmp_path / "ui", managed=managed)):

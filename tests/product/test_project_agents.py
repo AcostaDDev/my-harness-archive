@@ -234,7 +234,7 @@ def test_selected_preset_drift_quarantines_before_effects(operator, repository, 
     with client(migrated_database[0], tmp_path, new_config) as http:
         assert http.get('/api/managed/projects/web').json()['versions'] != dict(project.versions)
         worker = LocalSupervisor(repository, new_config.ports_factory, commit_factory=new_config.commit_factory)
-        with pytest.raises(JournalError, match='distinta de la congelada'):
+        with pytest.raises(JournalError, match='differs from the frozen one'):
             worker.run_once()
     assert repository.get_run(job.run_id).status == 'RECOVERY_REQUIRED'
     assert not launches(tmp_path)
@@ -249,7 +249,7 @@ def test_missing_selected_preset_is_unavailable_after_restart(operator, migrated
     del value['agent_presets']['codex-reviewer']
     with client(migrated_database[0], tmp_path, load_local_config(write(folder, value))) as http:
         item = http.get('/api/managed/registry/projects/web').json()
-        assert not item['available'] and 'preset ausente' in item['diagnostic']
+        assert not item['available'] and 'preset missing' in item['diagnostic']
         assert http.get('/api/managed/projects/web').status_code == 404
         assert item['version'] == 1 and len(item['history']) == 1
     assert not launches(tmp_path)

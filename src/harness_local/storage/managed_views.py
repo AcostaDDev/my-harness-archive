@@ -21,6 +21,7 @@ from harness_local.storage.models import (
     RunProjectionReportRow as Report, RunProjectionRow as Projection, RunProjectionStopRow as Stop,
 )
 from harness_local.storage.run_projection import DIFF_CHUNK, PROJECTION, loads as _loads
+from harness_local.i18n import tr
 
 # `managed_runs` columns the views read; any other one (history, context) raises instead of being loaded.
 RUN_COLUMNS = load_only(Run.id, Run.root, Run.task_id, Run.phase_id, Run.status, Run.stage, Run.version,
@@ -92,7 +93,7 @@ def _projection(session, run_id: str) -> Projection:
     row = session.get(Projection, run_id)
     if row is None:
         # Written with the history and backfilled by the migration: its absence is an inconsistent database.
-        raise RuntimeError(f'Run {run_id} sin proyección {PROJECTION}; la base no es consistente.')
+        raise RuntimeError(tr('projection.missing_inconsistent', run=run_id, projection=PROJECTION))
     return row
 
 
@@ -143,7 +144,7 @@ class SQLiteManagedViews:
         with Session(self.engine) as session:
             row = session.get(Run, run_id, options=[RUN_COLUMNS])
             if row is None:
-                raise LookupError("Run gestionado desconocido.")
+                raise LookupError(tr('views.run_unknown'))
             live = session.scalar(select(Commit).where(Commit.run_id == run_id,
                                                        Commit.status.in_(("INTENT", "COMMITTED"))))
             latest = live or session.scalar(select(Commit).where(Commit.run_id == run_id)
@@ -193,17 +194,17 @@ class SQLiteManagedViews:
     def exists(self, run_id: str) -> None:
         with Session(self.engine) as session:
             if session.scalar(select(Run.id).where(Run.id == run_id)) is None:
-                raise LookupError("Run gestionado desconocido.")
+                raise LookupError(tr('views.run_unknown'))
 
     def _report(self, session, run_id: str, cycle: int, entry: int, report: int, *columns):
         if min(cycle, entry, report) < 0:
-            raise LookupError('Reporte JUnit desconocido.')
+            raise LookupError(tr('views.junit_unknown'))
         if session.scalar(select(Run.id).where(Run.id == run_id)) is None:
-            raise LookupError('Run gestionado desconocido.')
+            raise LookupError(tr('views.run_unknown'))
         found = session.execute(select(*columns).where(Report.run_id == run_id, Report.cycle == cycle,
                                                        Report.entry == entry, Report.report == report)).one_or_none()
         if found is None:
-            raise LookupError('Reporte JUnit desconocido.')
+            raise LookupError(tr('views.junit_unknown'))
         return found
 
     def test_cases(self, run_id, cycle, entry, report, offset, limit):
@@ -227,7 +228,7 @@ class SQLiteManagedViews:
             original, sha256, size = self._report(session, run_id, cycle, entry, report,
                                                   Report.original_base64, Report.sha256, Report.size_bytes)
         if original is None:
-            raise LookupError('Original JUnit ausente: consulta el diagnóstico del reporte.')
+            raise LookupError(tr('views.junit_missing'))
         data = base64.b64decode(original, validate=True)
         if hashlib.sha256(data).hexdigest() != sha256 or len(data) != size:
             raise ValueError('Persisted JUnit original hash/size mismatch')
@@ -239,13 +240,13 @@ class SQLiteManagedViews:
         Only reads the `run_projection_diff_chunks` spans the page covers."""
         with Session(self.engine) as session:
             if session.scalar(select(Run.id).where(Run.id == run_id)) is None:
-                raise LookupError('Run gestionado desconocido.')
+                raise LookupError(tr('views.run_unknown'))
             summary = session.execute(select(Cycle.diff_sha256, Cycle.diff_bytes)
                                       .where(Cycle.run_id == run_id, Cycle.number == cycle)).one_or_none()
             if summary is None:
-                raise LookupError('Ciclo de revisión desconocido.')
+                raise LookupError(tr('views.cycle_unknown'))
             if sha256 is not None and sha256 != summary.diff_sha256:
-                raise Conflict('El diff del ciclo no coincide con el hash pedido; relee el run.')
+                raise Conflict(tr('views.cycle_diff'))
 
             def read(start: int, end: int) -> bytes:
                 first, last = start // DIFF_CHUNK, (end - 1) // DIFF_CHUNK
@@ -271,7 +272,7 @@ class SQLiteManagedViews:
         with Session(self.engine) as session:
             row = session.get(Job, job_id)
             if row is None:
-                raise LookupError("Job gestionado desconocido.")
+                raise LookupError(tr('views.job_unknown'))
             return job_view(row)
 
     def attempts(self, run_id: str, offset: int, limit: int) -> dict:

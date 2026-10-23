@@ -303,7 +303,7 @@ class ChatRepository:
                       'documents': observed, 'runs': [_run_evidence(session, conversation.root, r) for r in run_ids],
                       'previous_turns': history, 'head': head, 'snapshot_format': 'head-export-1',
                       'command': command,
-                      **({'command_result': command_proposal(command['argument'])} if command else {})}
+                      **({'command_result': command_proposal(command['argument'], context.work_language)} if command else {})}
             job = self.managed._queue_new_run(session, assessment, context, versions,
                                               f'CHAT-{conversation.id[:8]}-{number}', phase.code if phase else 'CHAT',
                                               key, request, purpose='chat')

@@ -34,8 +34,9 @@ Servicio local (FastAPI + supervisor en un único proceso Uvicorn)
 Directorio local de la aplicación: SQLite, artefactos (streams, capturas, copias), backups
 ```
 
-El núcleo (`core/`) no importa FastAPI, React, SDKs de proveedores ni reglas de stack. API y CLI llaman a los mismos
-casos de uso. El supervisor es el único que lanza procesos y consume la cola; cerrar el navegador no cancela trabajo.
+El núcleo (`core/`) no importa FastAPI, React, SDKs de proveedores ni reglas de stack: solo biblioteca estándar,
+`harness_local.core` y, como única hoja externa, los catálogos `harness_local.i18n` (solo stdlib; D171). API y CLI
+llaman a los mismos casos de uso. El supervisor es el único que lanza procesos y consume la cola; cerrar el navegador no cancela trabajo.
 
 ## 3. Módulos (`src/harness_local`)
 
@@ -66,7 +67,7 @@ casos de uso. El supervisor es el único que lanza procesos y consume la cola; c
 | `api/app.py`, `managed.py`, `schemas.py`, `session.py`, `security.py` | Aplicación, rutas, contratos Pydantic, sesión y guardia |
 | `profiles/typescript_web.py`, `profiles/reference_project.py` | Perfiles integrados (`typescript-web` componible; `reference_project` solo biblioteca); los perfiles del TOML v4/v5 se componen en `services/local_config.py` |
 | `cli.py`, `launcher.py` | `harness-local` (backup, retención, diagnóstico, `check-config`, `metrics-backfill`, `init-db`, `serve`); `--ui-language` por invocación |
-| `storage/preferences.py`, `i18n/` | Preferencias globales de idioma con CAS, captura del visual al admitir cada job y catálogos en/es de mensajes propios (D166) |
+| `storage/preferences.py`, `i18n/` | Preferencias globales de idioma con CAS, captura del visual al admitir cada job y catálogos en/es de mensajes propios (D166); `tr()` emite en el visual de cada emisión: petición HTTP, job o invocación CLI (D171) |
 | `storage/work_language.py`, `services/work_language.py` | Idioma de trabajo inmutable por raíz, par `language-context-1` por job/intento y confirmación explícita ausente → valor (D167) |
 | `migrations/versions/0001…0025` | Esquema Alembic |
 
@@ -199,7 +200,9 @@ por su API y los artefactos referenciados; la restauración es de consulta (`que
   idioma de trabajo (`core/engine/document_text.py`, D169); un contexto sin él conserva los bytes españoles.
 - Comentarios, docstrings y descripciones OpenAPI de `src/harness_local` en inglés (P011-T003/T004); las fuentes v1
   de recetas conservan sus bytes (D163). Mensajes visibles nuevos por clave en los catálogos JSON en/es (D166): un
-  mensaje completo por clave, parámetros `{nombre}` como texto, fallback inglés; el resto pasa a catálogos en T010.
+  mensaje completo por clave, parámetros `{nombre}` como texto, fallback inglés. Desde T021 (D171) todo texto propio
+  del servicio/CLI que estaba en español sale de `i18n.tr()` en el visual de la emisión; los textos de servicio ya
+  ingleses siguen como texto técnico inglés hasta T022.
 - Versiones exactas; ninguna dependencia nueva sin decisión registrada. No documentar scripts inexistentes.
 - Tipos del cliente siempre regenerados desde OpenAPI tras cambiar un contrato; nunca a mano.
 - Pruebas offline con Git/SQLite temporales, procesos y agentes falsos y datos sintéticos; nunca runs ni datos privados.

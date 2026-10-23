@@ -5,6 +5,8 @@ from datetime import datetime, timezone
 from typing import Protocol
 from uuid import uuid4
 
+from harness_local.i18n import tr
+
 
 @dataclass(frozen=True)
 class Simulation:
@@ -32,7 +34,7 @@ class SimulationService:
     def create(self, title: str) -> Simulation:
         title = title.strip()
         if not 1 <= len(title) <= 120:
-            raise ValueError("El título debe tener entre 1 y 120 caracteres.")
+            raise ValueError(tr('simulation.title'))
         # Run outside a transaction; only store a complete result.
         events = self.adapter.execute()
         simulation = Simulation(str(uuid4()), title, datetime.now(timezone.utc), events)

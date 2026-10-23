@@ -254,7 +254,7 @@ def test_retained_artifact_directory_remains_canonical_and_protected(world, tmp_
     monkeypatch.chdir(world.context.root)
     managed = ManagedConfig((ManagedProject('synthetic', world.context, VERSIONS),),
                             migrations_dir=Path('old-artifacts'))
-    with pytest.raises(ValueError, match='fuera del checkout'):
+    with pytest.raises(ValueError, match='outside the checkout'):
         with TestClient(create_app(str(world.engine.url), tmp_path / 'ui', managed=managed)):
             pass
     assert not (world.context.root / 'old-artifacts').exists()

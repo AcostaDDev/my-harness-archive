@@ -290,7 +290,7 @@ def test_newer_registry_version_quarantines_jobs_admitted_before(operator, repos
         row = http.get('/api/managed/registry/projects/web').json()['row']
         registrar.install(registrar.compose({**row, 'tag_kind': 'annotated'}, 'registro', registry=(2, 'x' * 64)))
     supervisor = LocalSupervisor(repository, config.ports_factory, commit_factory=config.commit_factory)
-    with pytest.raises(JournalError, match='distinta de la congelada'):
+    with pytest.raises(JournalError, match='differs from the frozen one'):
         supervisor.run_once()
     assert repository.get_run(job['run_id']).status == 'RECOVERY_REQUIRED'
     assert old['project_registry'] == '1' and not launches(tmp_path)

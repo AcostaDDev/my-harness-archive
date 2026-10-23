@@ -2,6 +2,8 @@ from sqlalchemy import text
 from sqlalchemy.engine import Engine
 from sqlalchemy.exc import SQLAlchemyError
 
+from harness_local.i18n import tr
+
 
 SCHEMA_REVISION = "0025_project_work_languages"
 
@@ -11,7 +13,7 @@ def require_schema(engine: Engine) -> None:
         with engine.connect() as connection:
             revision = connection.scalar(text("SELECT version_num FROM alembic_version"))
             if revision != SCHEMA_REVISION:
-                raise RuntimeError("Migración incompatible: ejecutar alembic upgrade head.")
+                raise RuntimeError(tr('database.schema'))
             for table in ("simulations", "legacy_sources", "legacy_runs", "legacy_artifacts", "legacy_events",
                           "managed_runs", "managed_jobs", "managed_attempts", "managed_events", "checkout_locks", "managed_processes",
                           "managed_commits", "managed_activations", "prompt_heads", "prompt_versions", "prompt_activations", "permission_requests",

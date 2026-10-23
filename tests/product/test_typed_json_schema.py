@@ -123,7 +123,7 @@ def test_job_frozen_with_cli5_is_quarantined_before_any_launch(setup, repository
     job = repository.submit(project.context, TASK, PHASE, PLAN, {**project.versions, 'agent_adapter': 'cli-5'},
                             key='cli-5')
     supervisor = LocalSupervisor(repository, config.ports_factory, commit_factory=config.commit_factory)
-    with pytest.raises(JournalError, match='distinta de la congelada'):
+    with pytest.raises(JournalError, match='differs from the frozen one'):
         supervisor.run_once()
     assert repository.get_run(job.run_id).status == 'RECOVERY_REQUIRED'
     assert not launches(tmp_path) and not repository.get_run(job.run_id).history.attempts

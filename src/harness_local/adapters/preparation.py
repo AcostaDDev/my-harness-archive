@@ -10,6 +10,7 @@ from harness_local.adapters.commands import ManagedCommandRunner, config_payload
 from harness_local.core.engine.contracts import freeze
 from harness_local.core.engine.journal import JournalError
 from harness_local.services.project_creation import directory, identity
+from harness_local.i18n import tr
 
 VERSION = 'preparation-commands-1'
 
@@ -124,7 +125,7 @@ def verify_tools(tools):
 
 def verify_receipt(root, receipt):
     if receipt is None:
-        raise JournalError('preparation_required: prepara el proyecto antes de ejecutar validaciones o tareas')
+        raise JournalError(tr('preparation.required_validations'))
     try:
         with directory(root) as fd:
             if not same_directory(identity(os.fstat(fd)), receipt['identity']):
@@ -139,7 +140,7 @@ def verify_receipt(root, receipt):
                 or {**current, 'identity': None} != {**recorded, 'identity': None}):
             raise ValueError('Prepared environment changed')
     except (OSError, ValueError, KeyError) as exc:
-        raise JournalError('preparation_required: identidad, archivos protegidos o entorno preparados cambiaron') from exc
+        raise JournalError(tr('preparation.required_changed')) from exc
 
 
 class PreparedCommandRunner(ManagedCommandRunner):

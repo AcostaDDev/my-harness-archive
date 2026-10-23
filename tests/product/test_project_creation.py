@@ -59,7 +59,7 @@ def request(service, name='child', **extra):
 def test_new_child_preview_and_confirm_without_toml_roots_restart_and_revocation(creation):
     service, parent, config, url = creation
     assert service.read_root()['status'] == 'ABSENT'
-    with pytest.raises(RegistryError, match='vigente'):
+    with pytest.raises(RegistryError, match='current'):
         service.preview(change(service, root_version=1))
     selected, root_body = select_root(service, str(parent) + '//./')
     assert selected['root']['path'] == str(parent)

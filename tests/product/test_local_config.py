@@ -126,7 +126,7 @@ def test_projects_without_documents_use_the_mandatory_unified_layout_and_quarant
         if previous is not None:
             older['document_layout'] = previous
         for factory in (config.ports_factory, config.commit_factory):
-            with pytest.raises(JournalError, match='distinta de la congelada'):
+            with pytest.raises(JournalError, match='differs from the frozen one'):
                 factory(project.context, older)
     legacy = copy.deepcopy(data)
     legacy['projects'][0]['documents'] = 'v1'
@@ -246,7 +246,7 @@ def test_changed_composition_after_admission_quarantines_before_effects(setup, r
     if change == 'composition':
         assert current.projects[0].versions['local_config_sha256'] != project.versions['local_config_sha256']
     supervisor = LocalSupervisor(repository, current.ports_factory, commit_factory=current.commit_factory)
-    with pytest.raises(JournalError, match='distinta de la congelada'):
+    with pytest.raises(JournalError, match='differs from the frozen one'):
         supervisor.run_once()
     assert repository.get_run(job.run_id).status == 'RECOVERY_REQUIRED'
     assert not launches(tmp_path) and not repository.command_processes(job.id)
@@ -309,7 +309,7 @@ def test_check_config_summary_without_environment_values_and_preflight(setup, ca
     assert not launches(tmp_path)  # version/help only; no invocation record
     data['projects'][0]['repository_trusted'] = False
     assert main(['check-config', str(write(folder, data))]) == 1
-    assert 'confianza' in capsys.readouterr().err
+    assert 'explicit trust' in capsys.readouterr().err
 
 
 def test_entry_points_require_one_explicit_composition(setup, monkeypatch, tmp_path):

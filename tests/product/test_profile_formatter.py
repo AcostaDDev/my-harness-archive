@@ -221,7 +221,7 @@ def test_recipe_profile_declares_the_formatter_outside_the_recipe_fingerprint(op
     assert django.fingerprint() == RECIPE_FINGERPRINT
     # Variable paths never fit an exact authorization, so a formatter requires the profile's own authorization.
     table = {'executables': {'fmt': sys.executable}, 'environment': {}, 'authorize_profile_commands': False}
-    with pytest.raises(LocalConfigError, match='formateador'):
+    with pytest.raises(LocalConfigError, match='formatter'):
         _commands(table, 'compositions.x', tmp_path, ProjectProfile('p', formatter_argv=FORMATTER,
                                                                     formatter_paths=('*.py',)))
     assert _commands({**table, 'authorize_profile_commands': True}, 'compositions.x', tmp_path, ProjectProfile(

@@ -280,7 +280,7 @@ def test_partial_install_bytes_require_external_resolution_and_are_never_deleted
     service.run_once()
     assert service.repository.read(op['id'])['status'] == 'FAILED'
     (cache / 'partial').unlink()
-    with pytest.raises(RegistryError, match='entorno') as error:
+    with pytest.raises(RegistryError, match='environment') as error:
         shown(service, previous_id=op['id'], retry_step=INSTALL)
     assert error.value.code == 'recovery_required'
     assert (root(service) / 'node_modules/typescript/partial').exists()
@@ -319,7 +319,7 @@ def test_install_that_ran_without_its_step_receipt_is_not_repeated(preparation, 
     op = confirm(service)
     service.run_once()
     assert service.repository.read(op['id'])['status'] == 'FAILED'
-    with pytest.raises(RegistryError, match='entorno'):
+    with pytest.raises(RegistryError, match='environment'):
         shown(service, previous_id=op['id'], retry_step=INSTALL)
     assert (root(service) / 'node_modules/typescript/package.json').exists()
 
@@ -503,7 +503,7 @@ def test_npm_cache_inside_the_checkout_is_refused_at_composition(operator):
     config = load_local_config(write(folder, raw))
     row = {'id': 'inside', 'root': str(checkout), 'repository_trusted': True, 'composition': 'typescript',
            'policy': POLICY}
-    with pytest.raises(LocalConfigError, match='caché npm'):
+    with pytest.raises(LocalConfigError, match='npm cache'):
         config.registrar.compose(row, 'synthetic')
 
 

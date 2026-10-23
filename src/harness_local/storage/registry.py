@@ -13,6 +13,7 @@ from harness_local.storage.models import (
     RegisteredProjectEventRow as Event, RegisteredProjectRow as Row,
 )
 from harness_local.storage.permissions import actor
+from harness_local.i18n import tr
 
 UNFINISHED = ('QUEUED', 'ACTIVE', 'RECOVERY_REQUIRED')
 
@@ -100,14 +101,14 @@ class ProjectRegistryRepository:
         )
         from harness_local.storage.planning import PlanningRepository
         from harness_local.storage.models import ProjectPreparationOperationRow as Preparation
-        blockers = [f'Preparación sin resolver: {value}' for value in session.scalars(
+        blockers = [tr('registry.blocker_preparation', id=value) for value in session.scalars(
             select(Preparation.id).where(Preparation.root == root, Preparation.reserved.is_(True)))]
-        blockers += [f'Run pendiente de aceptación: {value}' for value in session.scalars(
+        blockers += [tr('registry.blocker_acceptance', id=value) for value in session.scalars(
             select(Run.id).where(Run.root == root, Run.status == 'ACCEPTANCE_READY'))]
-        blockers += [f'Commit pendiente: {value}' for value in session.scalars(
+        blockers += [tr('registry.blocker_commit', id=value) for value in session.scalars(
             select(ManagedCommitRow.operation_id).join(Run, Run.id == ManagedCommitRow.run_id)
             .where(Run.root == root, ManagedCommitRow.status == 'INTENT'))]
-        blockers += [f'Propuesta de chat pendiente; acepta o descarta: {value}' for value in session.scalars(
+        blockers += [tr('registry.blocker_proposal', id=value) for value in session.scalars(
             select(ChatProposalRow.id).join(ChatConversationRow,
                                            ChatConversationRow.id == ChatProposalRow.conversation_id)
             .where(ChatConversationRow.root == root, ChatProposalRow.status == 'PROPOSED'))]
@@ -116,9 +117,9 @@ class ProjectRegistryRepository:
             if (not PlanningRepository._drafts_created(session, conversation)
                     and session.scalar(select(PlanningTurnRow.id).where(
                         PlanningTurnRow.conversation_id == conversation.id).limit(1))):
-                blockers.append(f'Conversación de definición/importación utilizable: {conversation.id}')
+                blockers.append(tr('registry.blocker_conversation', id=conversation.id))
         for model in (ProjectBootstrapRow, ProjectImportRow):
-            blockers += [f'Operación documental sin resolver: {value}' for value in session.scalars(
+            blockers += [tr('registry.blocker_documents', id=value) for value in session.scalars(
                 select(model.id).where(model.root == root, model.status != 'COMPLETED'))]
         return sorted(blockers)
 
@@ -153,15 +154,15 @@ class ProjectRegistryRepository:
         with self.managed._write() as session:
             current = session.get(Row, project_id)
             if (current.version if current else 0) != expected_version:
-                raise RegistryConflict('stale_version', 'El registro cambió desde la vista previa; vuelve a revisarlo.')
+                raise RegistryConflict('stale_version', tr('registry.stale_preview'))
             now = self.managed._now()
             if action == 'register':
                 from harness_local.storage.project_creation import CreationRepository
                 CreationRepository.conflicts(session, project_id, row['root'])
                 if current is not None:
-                    raise RegistryConflict('duplicate_id', f'El id {project_id} ya está registrado.')
+                    raise RegistryConflict('duplicate_id', tr('registry.id_registered', id=project_id))
                 if session.scalar(select(Row.id).where(Row.root == row['root'], Row.status == 'ACTIVE')):
-                    raise RegistryConflict('root_taken', 'Esa raíz ya pertenece a otro proyecto registrado.')
+                    raise RegistryConflict('root_taken', tr('registry.root_registered'))
                 current = Row(id=project_id, version=1, status='ACTIVE', root=row['root'],
                               composition=row['composition'], profile=profile, row=row, row_sha256=row_sha256,
                               trust=trust, created_at=now, updated_at=now)
@@ -172,13 +173,12 @@ class ProjectRegistryRepository:
                                           preview_sha256, reason, now)
             else:
                 if current is None:
-                    raise LookupError('Proyecto registrado desconocido.')
+                    raise LookupError(tr('registry.unknown'))
                 if current.status != 'ACTIVE':
-                    raise RegistryConflict('retired', 'El proyecto está dado de baja; su historial se conserva.')
+                    raise RegistryConflict('retired', tr('registry.retired'))
                 unfinished = self._unfinished(session, current.root)
                 if unfinished:
-                    raise RegistryConflict('pending_jobs', f'El checkout tiene trabajos sin terminar ({unfinished}); '
-                                                           'espera a que terminen o concílialos antes de cambiarlo.')
+                    raise RegistryConflict('pending_jobs', tr('registry.unfinished', jobs=unfinished))
                 if protect_agents:
                     blockers = self._configuration_blockers(session, current.root)
                     if blockers:

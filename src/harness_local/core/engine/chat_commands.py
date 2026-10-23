@@ -1,4 +1,9 @@
-"""Closed syntax: a leading slash is never implicitly sent to a model."""
+"""Closed syntax: a leading slash is never implicitly sent to a model.
+
+Command names are Spanish protocol tokens (P011-T010/T021): they are never translated.
+"""
+from harness_local.i18n import message, tr
+
 COMMANDS = ('estado', 'tests', 'siguiente', 'lote', 'check', 'cerrar', 'exportar', 'abrir-fase', 'tarea')
 
 
@@ -10,14 +15,15 @@ def parse(text):
     name = parts[0][1:]
     argument = parts[1].strip() if len(parts) == 2 else ''
     if name not in COMMANDS or (name == 'tarea') != bool(argument):
-        raise ValueError('Comando inválido. Usa /' + ', /'.join(COMMANDS[:-1]) + ' o /tarea <texto>.')
+        raise ValueError(tr('chat.command_invalid', commands=', '.join('/' + name for name in COMMANDS[:-1])))
     if len(argument) > 4000:
-        raise ValueError('/tarea admite hasta 4000 caracteres')
+        raise ValueError(tr('chat.command_length'))
     return {'name': name, 'argument': argument}
 
 
-def proposal(argument):
-    return {'answer': 'Propuesta creada sin agente. Revisa el objetivo antes de confirmar la tarea.',
+def proposal(argument, work_language=None):
+    """The answer follows the visual language; the proposed task's own text, the work language (D169)."""
+    return {'answer': tr('chat.proposal_answer'),
             'references': [], 'proposals': [{'title': argument[:200], 'objective': argument, 'scope': '',
                 'acceptance_criteria': [argument], 'validation': [],
-                'rationale': 'Petición explícita /tarea; el planificador fijará el contrato bajo la política del proyecto.'}]}
+                'rationale': message('chat.proposal_rationale', work_language)}]}

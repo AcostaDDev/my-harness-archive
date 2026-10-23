@@ -414,10 +414,10 @@ def test_maintenance_checks_validator_groups(repository, context, tmp_path, monk
     command = Command(('python', '-c', 'pass'))
     _, rows, _ = execute(repository, context, command)
     monkeypatch.setattr(processes, 'liveness', lambda *a, **kw: 'alive')
-    with pytest.raises(BackupError, match='validación'):
+    with pytest.raises(BackupError, match='validation'):
         create_backup(Path(repository.engine.url.database), tmp_path / 'blocked-copy', writers_stopped=True)
     with sqlite3.connect(repository.engine.url.database) as db:
-        with pytest.raises(ValueError, match='validación'):
+        with pytest.raises(ValueError, match='validation'):
             _stopped(db, True)
 
 

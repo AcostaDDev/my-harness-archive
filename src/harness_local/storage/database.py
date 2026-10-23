@@ -4,6 +4,8 @@ from pathlib import Path
 from sqlalchemy import create_engine, event
 from sqlalchemy.engine import Engine, make_url
 
+from harness_local.i18n import tr
+
 
 def database_url() -> str:
     return os.environ.get("HARNESS_DATABASE_URL", "sqlite:///.local/harness.sqlite3")
@@ -12,7 +14,7 @@ def database_url() -> str:
 def make_engine(url: str) -> Engine:
     parsed = make_url(url)
     if parsed.drivername != "sqlite" or not parsed.database or parsed.database == ":memory:":
-        raise ValueError("H0.3 requiere un archivo SQLite local.")
+        raise ValueError(tr('database.local_file'))
     # The directory is created when connecting, never when exporting OpenAPI.
     engine = create_engine(url, connect_args={"check_same_thread": False, "autocommit": False})
 
@@ -31,7 +33,7 @@ def make_engine(url: str) -> Engine:
             cursor.execute("PRAGMA user_version")
             version = cursor.fetchone()[0]
             if version not in (0, RESTORED_USER_VERSION):
-                raise RuntimeError('Versión de restauración SQLite incompatible; no se abre para escritura.')
+                raise RuntimeError(tr('database.restore_version'))
             restored = version == RESTORED_USER_VERSION
             if restored:
                 cursor.execute("PRAGMA query_only=ON")

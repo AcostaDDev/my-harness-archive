@@ -8,6 +8,7 @@ from pathlib import Path
 import stat
 from uuid import uuid4
 
+from harness_local.i18n import DEFAULT_LANGUAGE, Localized, rendered, tr
 from harness_local.storage.backup import (
     BackupError, MAX_FILE_BYTES, MAX_FILES, MAX_TOTAL_BYTES, _absolute, _check_bytes, _connect,
     _hash, _integrity, _json, _read, _references,
@@ -21,16 +22,16 @@ TERMINAL_ATTEMPTS = {'COMPLETE', 'COMPLETED', 'FAILED', 'TIMED_OUT', 'CANCELLED'
 
 def _time(value):
     if not isinstance(value, str):
-        raise ValueError('La fecha debe ser texto ISO-8601 UTC.')
+        raise ValueError(tr('retention.date_text'))
     result = datetime.fromisoformat(value.replace('Z', '+00:00'))
     if result.tzinfo is None or result.utcoffset().total_seconds() != 0:
-        raise ValueError('La fecha debe incluir zona UTC.')
+        raise ValueError(tr('retention.date_zone'))
     return result
 
 
 def policy(before, min_bytes=1024 * 1024):
     if type(min_bytes) is not int or min_bytes < 1:
-        raise ValueError('min_bytes debe ser un entero positivo.')
+        raise ValueError(tr('retention.min_bytes'))
     return {'format': 1, 'before': _time(before).isoformat(), 'min_bytes': min_bytes,
             'scope': 'sealed-managed-cli-stdout-stderr', 'automatic': False}
 
@@ -42,10 +43,10 @@ def audit(db, refs):
         p = json.loads(row['payload'])
         if not isinstance(p, dict) or any(not isinstance(p.get(k), str) for k in (
                 'source', 'operation_id', 'attempt_id', 'stream', 'sha256', 'reference_sha256', 'preview_sha256', 'reason')):
-            raise BackupError('Auditoría de retención malformada.')
+            raise BackupError(tr('retention.audit'))
         if (not isinstance(p.get('actor'), dict) or type(p['actor'].get('uid')) is not int or
                 not isinstance(p.get('policy'), dict)):
-            raise BackupError('Identidad/política de retención malformada.')
+            raise BackupError(tr('retention.audit_identity'))
         source, operation = p['source'], p['operation_id']
         ref = refs.get(source)
         label = f"process:{p['attempt_id']}:{p['stream']}"
@@ -53,27 +54,27 @@ def audit(db, refs):
                 not ref['expected'] or any(sha != p['sha256'] or size != p['size_bytes'] for sha, size in ref['expected']) or
                 type(p['size_bytes']) is not int or p['size_bytes'] < 1 or
                 p['reference_sha256'] != _hash(_json(ref))):
-            raise BackupError('Auditoría de retención incompatible con la referencia sellada.')
+            raise BackupError(tr('retention.audit_reference'))
         attempt = db.execute('SELECT run_id FROM managed_attempts WHERE id=?', (p['attempt_id'],)).fetchone()
         if not attempt or attempt[0] != row['run_id']:
-            raise BackupError('Procedencia de retención incompatible.')
+            raise BackupError(tr('retention.audit_provenance'))
         key = (source, operation)
         if row['kind'] == INTENT:
             if source in intents or source in removed or not p['reason'].strip() or not p['actor'] or len(p['preview_sha256']) != 64:
-                raise BackupError('Autorización de retención inválida o duplicada.')
+                raise BackupError(tr('retention.audit_authorization'))
             if policy(p['policy']['before'], p['policy']['min_bytes']) != p['policy']:
-                raise BackupError('Política de retención incompatible.')
+                raise BackupError(tr('retention.audit_policy'))
             intents[source] = {**p, 'recorded_at': row['recorded_at']}
         else:
             intent = intents.get(source)
             if not intent or (source, intent['operation_id']) != key or source in removed:
-                raise BackupError('Purga sin intención autorizada o duplicada.')
+                raise BackupError(tr('retention.audit_purge'))
             for field in ('attempt_id', 'stream', 'sha256', 'reference_sha256', 'size_bytes', 'preview_sha256', 'reason', 'actor', 'policy'):
                 if p[field] != intent[field]:
-                    raise BackupError('Resultado de retención distinto de su intención.')
+                    raise BackupError(tr('retention.audit_result'))
             if (p['observed_removed_bytes'] is not None and
                     (type(p['observed_removed_bytes']) is not int or p['observed_removed_bytes'] != p['size_bytes'])):
-                raise BackupError('Contabilidad de retención inválida.')
+                raise BackupError(tr('retention.audit_accounting'))
             removed[source] = {**p, 'recorded_at': row['recorded_at']}
     return intents, removed
 
@@ -81,7 +82,7 @@ def audit(db, refs):
 def authorized_absences(db, refs):
     intents, removed = audit(db, refs)
     if set(intents) != set(removed):
-        raise BackupError('Retención pendiente de conciliación explícita; no publicar backup.')
+        raise BackupError(tr('retention.pending_backup'))
     return removed
 
 
@@ -89,16 +90,16 @@ def _eligible(db, row):
     if (row['run_status'] not in TERMINAL_RUNS or row['status'] != 'STOPPED' or
             row['attempt_status'] not in TERMINAL_ATTEMPTS or not row['result_json'] or not row['finished_at'] or
             row['job_status'] != 'DONE'):
-        return 'Intento/run/job activo, incierto o sin resultado sellado.'
+        return tr('retention.active')
     if db.execute('SELECT 1 FROM checkout_locks WHERE root=?', (row['root'],)).fetchone():
-        return 'Checkout bloqueado.'
+        return tr('retention.locked')
     if db.execute("SELECT 1 FROM managed_jobs j JOIN managed_runs r ON r.id=j.run_id WHERE r.root=? AND j.status IN ('QUEUED','ACTIVE','RECOVERY_REQUIRED')", (row['root'],)).fetchone():
-        return 'Trabajo pendiente o incierto en el checkout.'
+        return tr('retention.pending_work')
     if db.execute('SELECT 1 FROM managed_attempts WHERE run_id=? AND (result_json IS NULL OR finished_at IS NULL)', (row['run_id'],)).fetchone():
-        return 'Run con otro intento incierto.'
+        return tr('retention.other_attempt')
     from harness_local.adapters.processes import liveness
     if not row['identity'] or liveness(json.loads(row['identity']), group=True) != 'dead':
-        return 'No se ha comprobado la muerte del grupo.'
+        return tr('retention.group_unchecked')
     return None
 
 
@@ -113,14 +114,14 @@ def _rows(db):
 def _preview(db, roots, selected_policy):
     refs = _references(db)
     if len(refs) > MAX_FILES:
-        raise ValueError('Demasiadas referencias de artefactos.')
+        raise ValueError(tr('retention.too_many_references'))
     intents, removed = audit(db, refs)
     checkouts = [Path(r[0]) for r in db.execute('SELECT root FROM managed_runs UNION SELECT root FROM managed_activations UNION SELECT root FROM managed_phases UNION SELECT root FROM registered_projects UNION SELECT root FROM project_preparation_operations')]
     if not roots or any(not r.is_dir() or r == Path('/') or any(r.is_relative_to(c) or c.is_relative_to(r) for c in checkouts) for r in roots):
-        raise ValueError('Raíces explícitas de artefactos fuera de checkouts requeridas.')
+        raise ValueError(tr('retention.roots'))
     database = Path(db.execute('PRAGMA database_list').fetchone()['file'])
     if any(database.is_relative_to(c) for c in checkouts):
-        raise ValueError('SQLite debe estar fuera de los checkouts.')
+        raise ValueError(tr('retention.database_outside'))
     items, total = [], 0
     for row in _rows(db):
         if not row['capture']:
@@ -136,28 +137,28 @@ def _preview(db, roots, selected_policy):
                     'authorization': intents.get(source), 'state': 'retained'}
             diagnostic = _eligible(db, row)
             if source in removed:
-                item['state'], diagnostic = 'purged', 'Purga autorizada conservada en el historial.'
+                item['state'], diagnostic = 'purged', tr('retention.purged')
             elif not any(Path(source).is_relative_to(root) for root in roots):
-                diagnostic = 'Fuera de las raíces permitidas.'
+                diagnostic = tr('retention.outside_roots')
             elif refs[source]['labels'] != [f"process:{row['attempt_id']}:{stream}"]:
-                diagnostic = 'Referencia compartida con evidencia que debe conservarse.'
+                diagnostic = tr('retention.shared')
             elif diagnostic is None and source not in intents and (
                     _time(row['finished_at']) >= _time(selected_policy['before']) or artifact['size'] < selected_policy['min_bytes']):
-                diagnostic = 'Conservado por edad o tamaño de la política.'
+                diagnostic = tr('retention.kept_policy')
             if diagnostic is None:
                 try:
                     raw = _read(source)
                     _check_bytes(raw, refs[source])
                     # Capture and events both describe these exact original bytes.
                     if _hash(raw) != item['sha256'] or len(raw) != item['size_bytes']:
-                        raise ValueError('Hash/tamaño distintos del original sellado.')
+                        raise ValueError(tr('retention.hash'))
                     item['eligible'] = True
                 except FileNotFoundError:
                     item['state'] = 'pending' if source in intents else 'missing'
                     item['eligible'] = source in intents
-                    diagnostic = 'Ausente tras intención autorizada; requiere conciliación.' if source in intents else 'Archivo perdido; no hay purga autorizada.'
+                    diagnostic = tr('retention.absent_intent') if source in intents else tr('retention.lost')
                 except (OSError, ValueError) as exc:
-                    item['state'], diagnostic = 'unverified', str(exc)
+                    item['state'], diagnostic = 'unverified', _diagnostic(exc)
             if source in intents and source not in removed:
                 item['state'] = 'pending'
             item['diagnostic'] = diagnostic
@@ -165,11 +166,20 @@ def _preview(db, roots, selected_policy):
                 total += item['size_bytes']
             items.append(item)
     if len(items) > MAX_FILES or total > MAX_TOTAL_BYTES:
-        raise ValueError('Retención excede los límites de archivos/bytes.')
+        raise ValueError(tr('retention.limits'))
     result = {'format': 1, 'policy': selected_policy, 'artifact_roots': list(map(str, roots)),
               'items': items, 'retire_bytes': total,
               'preserved': ['history', 'contracts', 'prompts', 'snapshots', 'permissions', 'approvals', 'verdicts', 'stream-hashes-and-ranges', 'JUnit', 'migration-artifacts']}
-    return {**result, 'preview_sha256': _hash(_json(result))}
+    # P011-T021: the hash seals each own diagnostic in the English base, so a preview confirmed in another visual
+    # language still matches; system texts (OSError) are sealed as received.
+    sealed = {**result, 'items': [{**item, 'diagnostic': rendered(item['diagnostic'], DEFAULT_LANGUAGE)}
+                                  for item in items]}
+    return {**result, 'preview_sha256': _hash(_json(sealed))}
+
+
+def _diagnostic(error):
+    """The own localized text of an error (kept renderable for the hash), else its text as raised."""
+    return error.args[0] if len(error.args) == 1 and isinstance(error.args[0], Localized) else str(error)
 
 
 def _database(database):
@@ -199,20 +209,20 @@ def _event(db, run_id, kind, payload):
 
 def _stopped(db, writers_stopped):
     if writers_stopped is not True:
-        raise ValueError('Detener servicio/escritores; se requiere --writers-stopped.')
+        raise ValueError(tr('retention.writers'))
     if db.execute('SELECT 1 FROM managed_jobs WHERE process_owner IS NOT NULL AND owner_closed=0').fetchone():
-        raise ValueError('Propietario del servicio abierto; detenerlo antes de purgar.')
+        raise ValueError(tr('retention.service_owner'))
     from harness_local.adapters.processes import liveness
     for row in db.execute('SELECT identity FROM managed_processes WHERE identity IS NOT NULL'):
         if liveness(json.loads(row[0]), group=True) != 'dead':
-            raise ValueError('Grupo vivo o incierto; no purgar.')
+            raise ValueError(tr('retention.group'))
 
     for row in db.execute('SELECT process_owner,owner_closed FROM project_preparation_operations WHERE process_owner IS NOT NULL'):
         if not row['owner_closed'] and liveness(json.loads(row['process_owner'])) != 'dead':
-            raise ValueError('Propietario de preparación vivo o incierto.')
+            raise ValueError(tr('retention.preparation_owner'))
     from harness_local.storage.command_processes import persisted_identities
     if any(liveness(value, group=True) != 'dead' for value in persisted_identities(db)):
-        raise ValueError('Grupo de validación vivo o incierto; no purgar.')
+        raise ValueError(tr('retention.validation_group'))
 
 
 def _unlink_verified(source, ref):
@@ -229,19 +239,19 @@ def _unlink_verified(source, ref):
         fds.append(file_fd)
         before = os.fstat(file_fd)
         if not stat.S_ISREG(before.st_mode) or before.st_nlink != 1 or before.st_size > MAX_FILE_BYTES:
-            raise ValueError('Archivo no regular, enlazado o demasiado grande antes de purgar.')
+            raise ValueError(tr('retention.file_kind'))
         chunks, size = [], 0
         while chunk := os.read(file_fd, 65536):
             size += len(chunk)
             if size > MAX_FILE_BYTES:
-                raise ValueError('Log excede el límite antes de purgar.')
+                raise ValueError(tr('retention.log_limit'))
             chunks.append(chunk)
         data = b''.join(chunks)
         _check_bytes(data, ref)
         after = os.stat(source.name, dir_fd=fd, follow_symlinks=False)
         signature = lambda s: (s.st_dev, s.st_ino, s.st_size, s.st_mtime_ns, s.st_ctime_ns, s.st_nlink)
         if signature(before) != signature(after) or signature(before) != signature(os.fstat(file_fd)):
-            raise ValueError('Archivo sustituido antes de purgar.')
+            raise ValueError(tr('retention.replaced'))
         os.unlink(source.name, dir_fd=fd)
         os.fsync(fd)
         return len(data)
@@ -253,7 +263,7 @@ def _unlink_verified(source, ref):
 def apply_retention(database, *, artifact_roots, before, min_bytes=1024 * 1024,
                     preview_sha256, reason, confirmed=False, writers_stopped=False, hook=None):
     if confirmed is not True or not isinstance(reason, str) or not reason.strip() or len(reason) > 2000:
-        raise ValueError('Confirmación explícita y motivo de 1–2000 caracteres requeridos.')
+        raise ValueError(tr('retention.confirmation'))
     roots, selected_policy = tuple(_absolute(r) for r in artifact_roots), policy(before, min_bytes)
     with closing(_connect(_database(database), 'rw')) as db:
         db.execute('BEGIN IMMEDIATE')
@@ -262,7 +272,7 @@ def apply_retention(database, *, artifact_roots, before, min_bytes=1024 * 1024,
             _stopped(db, writers_stopped)
             preview = _preview(db, roots, selected_policy)
             if preview['preview_sha256'] != preview_sha256:
-                raise ValueError('Vista previa obsoleta; revisar y confirmar un hash nuevo.')
+                raise ValueError(tr('retention.stale'))
             candidates = [i for i in preview['items'] if i['eligible']]
             operation = str(uuid4())
             for item in candidates:
@@ -284,7 +294,7 @@ def apply_retention(database, *, artifact_roots, before, min_bytes=1024 * 1024,
             fresh = _preview(db, roots, selected_policy)
             fresh_by_source = {i['source']: i for i in fresh['items']}
             if any(not fresh_by_source[i['source']]['eligible'] for i in candidates):
-                raise ValueError('Elegibilidad cambió tras guardar la intención; conciliar explícitamente.')
+                raise ValueError(tr('retention.eligibility'))
             refs = _references(db)
             removed = []
             for item in candidates:
@@ -293,7 +303,7 @@ def apply_retention(database, *, artifact_roots, before, min_bytes=1024 * 1024,
                     observed = _unlink_verified(item['source'], refs[item['source']])
                 except FileNotFoundError:
                     if not item['authorization']:
-                        raise ValueError('Archivo perdido antes del efecto; intención pendiente.')
+                        raise ValueError(tr('retention.lost_before'))
                     observed = None  # Crash reconciliation cannot invent an observed unlink.
                 if hook:
                     hook('bytes_removed')
@@ -318,7 +328,7 @@ def inspect_logs(database, attempt_id):
         if not row:
             if db.execute('SELECT 1 FROM managed_attempts WHERE id=?', (attempt_id,)).fetchone():
                 return []
-            raise LookupError('Intento desconocido.')
+            raise LookupError(tr('retention.attempt_unknown'))
         if not row['capture']:
             return []
         result = []
@@ -326,9 +336,9 @@ def inspect_logs(database, attempt_id):
             source = artifact['path']
             state, diagnostic = 'retained', None
             if source in removed:
-                state, diagnostic = 'purged', 'Original retirado por autorización explícita.'
+                state, diagnostic = 'purged', tr('retention.retired')
             elif source in intents:
-                state, diagnostic = 'pending', 'Intención de purga pendiente de conciliación.'
+                state, diagnostic = 'pending', tr('retention.pending_intent')
             else:
                 try:
                     from harness_local.storage.backup import RESTORED_USER_VERSION
@@ -342,9 +352,9 @@ def inspect_logs(database, attempt_id):
                         raw = _read(source)
                     _check_bytes(raw, refs[artifact['path']])
                 except (FileNotFoundError, StopIteration):
-                    state, diagnostic = 'missing', 'Archivo perdido; no hay purga autorizada.'
+                    state, diagnostic = 'missing', tr('retention.lost')
                 except (OSError, ValueError) as exc:
-                    state, diagnostic = 'unverified', str(exc)
+                    state, diagnostic = 'unverified', _diagnostic(exc)
             result.append({'stream': stream, 'source': artifact['path'], 'sha256': artifact['sha256'],
                            'size_bytes': artifact['size'], 'state': state, 'diagnostic': diagnostic,
                            'authorization': removed.get(artifact['path']) or intents.get(artifact['path'])})

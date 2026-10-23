@@ -20,6 +20,7 @@ from harness_local.storage.models import (
     ManagedRunRow, RunProjectionCaseRow, RunProjectionCycleRow, RunProjectionDiffChunkRow, RunProjectionReportRow,
     RunProjectionRow, RunProjectionStopRow,
 )
+from harness_local.i18n import tr
 
 PROJECTION = 'run-projection-1'
 DIFF_CHUNK = 64 * 1024  # Fixed span of the format: changing it requires another projection version.
@@ -129,7 +130,7 @@ def advance(session, run_id: str, previous, history, history_json: str) -> None:
     summary = data.pop('run_projections')[0]
     table = TABLES['run_projections'][0]
     if session.execute(update(table).where(table.c.run_id == run_id).values(summary)).rowcount != 1:
-        raise ProjectionMismatch(f'Run {run_id} sin proyección {PROJECTION}')
+        raise ProjectionMismatch(tr('projection.missing', run=run_id, projection=PROJECTION))
     cycles = TABLES['run_projection_cycles'][0]
     for old, new in zip(previous.cycles, history.cycles):
         if old.review_json != new.review_json:
@@ -149,7 +150,7 @@ def verify(db, run_id: str, history_json: str, history=None) -> dict:
         stored = [dict(zip(columns, row)) for row in db.execute(
             f'SELECT {",".join(columns)} FROM {name} WHERE run_id=? ORDER BY {",".join(key)}', (run_id,))]
         if stored != expected[name]:
-            raise ProjectionMismatch(f'Proyección {PROJECTION} distinta del historial en {name} (run {run_id}).')
+            raise ProjectionMismatch(tr('projection.differs', projection=PROJECTION, name=name, run=run_id))
         counts[name] = len(stored)
     return counts
 
@@ -167,7 +168,7 @@ def require(session, run_ids) -> None:
     missing = session.scalar(select(ManagedRunRow.id).where(
         ManagedRunRow.id.in_(run_ids), ManagedRunRow.id.notin_(select(RunProjectionRow.run_id))).limit(1))
     if missing is not None:
-        raise RuntimeError(f'Run {missing} sin proyección {PROJECTION}; la base no es consistente.')
+        raise RuntimeError(tr('projection.missing_inconsistent', run=missing, projection=PROJECTION))
 
 
 def cycle_tests(session, cycles) -> dict:

@@ -27,7 +27,7 @@ from harness_local.core.engine.context import Command
 from harness_local.core.engine.contracts import freeze
 from harness_local.core.engine.evidence import matches
 from harness_local.core.engine.journal import JournalError
-from harness_local.i18n import message
+from harness_local.i18n import emission, message, tr
 from harness_local.recipes import django, django_2, typescript_web, typescript_web_2
 from harness_local.services.project_creation import directory, identity
 from harness_local.services.project_registry import RegistryError, digest
@@ -37,6 +37,7 @@ from harness_local.storage.models import (
     ProjectBootstrapRow as Bootstrap, ProjectPreparationOperationRow as Operation,
     ProjectPreparationStepRow as Step, ProjectPreparationEventRow as PreparationEvent,
 )
+from harness_local.storage.preferences import language as stored_language
 from harness_local.storage.preparation import PreparationRepository, PreparationJournal
 from harness_local.storage.registry import ProjectRegistryRepository, UNFINISHED
 from harness_local.storage import work_language as work_languages
@@ -300,10 +301,10 @@ class ProjectPreparation:
         project = self.runtime.project(project_id)
         registrar = self.runtime.registry.registrar
         if not registrar or project.versions.get('project_recipe') not in RECIPES:
-            raise RegistryError(409, 'recipe_unavailable', 'Este proyecto no tiene una receta configurada.')
+            raise RegistryError(409, 'recipe_unavailable', tr('preparation.no_recipe'))
         config = registrar._recipe_roots.get(project.context.root)
         if not config or 'project_registry' not in project.versions:
-            raise RegistryError(409, 'recipe_unavailable', 'La receta requiere un hijo nuevo registrado por el servicio.')
+            raise RegistryError(409, 'recipe_unavailable', tr('preparation.new_child'))
         return project, config
 
     def writer(self, project):
@@ -317,7 +318,7 @@ class ProjectPreparation:
             pass
         assessment = self.managed.guard.assess(project.context.root)
         if assessment.refusal or assessment.activation is not None:
-            raise RegistryError(409, 'mode_refused', 'La preparación solo admite el hijo nuevo sin estado legacy.')
+            raise RegistryError(409, 'mode_refused', tr('preparation.legacy'))
         return writer, git
 
     def work_language(self, session, project, recipe):
@@ -373,16 +374,16 @@ class ProjectPreparation:
     def _idle(self, session, root, *, previous=None):
         if session.scalar(select(Job.id).join(Run, Run.id == Job.run_id).where(
                 Run.root == root, Job.status.in_(UNFINISHED))):
-            raise RegistryError(409, 'pending_jobs', 'Hay trabajo pendiente en el checkout.')
+            raise RegistryError(409, 'pending_jobs', tr('preparation.pending'))
         lock = session.get(Lock, root)
         if lock and lock.preparation_id != previous:
-            raise RegistryError(409, 'pending_jobs', 'El checkout está bloqueado por otro escritor.')
+            raise RegistryError(409, 'pending_jobs', tr('preparation.locked'))
         active = session.scalar(select(Operation).where(Operation.root == root, Operation.reserved.is_(True)))
         if active and active.id != previous:
-            raise RegistryError(409, 'recovery_required', 'Hay una preparación sin resolver; revisa su operación.')
+            raise RegistryError(409, 'recovery_required', tr('preparation.unresolved'))
         # Exclude the already completed definition; preserve pending acceptance/commit/chat barriers.
         blockers = [value for value in ProjectRegistryRepository._configuration_blockers(session, root)
-                    if value != f'Preparación sin resolver: {previous}']
+                    if value != tr('registry.blocker_preparation', id=previous)]
         if blockers:
             raise RegistryError(409, 'pending_jobs', '; '.join(blockers))
 
@@ -395,12 +396,12 @@ class ProjectPreparation:
         recipe = RECIPES[project.versions['project_recipe']]
         current = session.get(Project, project_id)
         if not current or current.status != 'ACTIVE' or current.version != body['expected_version']:
-            raise RegistryError(409, 'stale_version', 'El proyecto cambió; vuelve a cargarlo.')
+            raise RegistryError(409, 'stale_version', tr('preparation.project_stale'))
         previous_id = body.get('previous_id')
         self._idle(session, str(root), previous=previous_id)
         language = self.work_language(session, project, recipe)
         if body['mode'] == 'network' and not config['allow_network']:
-            raise RegistryError(409, 'network_not_allowed', 'El operador solo permite preparación offline.')
+            raise RegistryError(409, 'network_not_allowed', tr('preparation.offline_only'))
         writer, git = self.writer(project)
         with directory(root) as fd:
             info = identity(os.fstat(fd))
@@ -408,22 +409,22 @@ class ProjectPreparation:
             previous = self.repository.require(session, previous_id)
             if (previous.project_id != project_id or previous.status not in ('FAILED', 'CANCELLED', 'RECOVERY_REQUIRED')
                     or previous.status != 'CANCELLED' and not previous.reserved):
-                raise RegistryError(409, 'recovery_required', 'La preparación previa no admite una nueva intención.')
+                raise RegistryError(409, 'recovery_required', tr('preparation.previous'))
             self.repository.stopped(session, previous)
             if (previous.plan['versions'] != dict(project.versions) or previous.plan['identity'] != info
                     or any(previous.plan.get(key) != value for key, value in language.items())):
-                raise RegistryError(409, 'preview_changed', 'La composición o identidad original cambió.')
+                raise RegistryError(409, 'preview_changed', tr('preparation.original_changed'))
             steps = list(session.scalars(select(Step).where(Step.operation_id == previous.id).order_by(Step.number)))
             first = next((s.number for s in steps if s.status != 'DONE'), len(steps) - 1)
             if body.get('retry_step') != first:
-                raise RegistryError(409, 'recovery_required', 'Confirma el primer paso pendiente; archivos inciertos requieren resolución externa.')
+                raise RegistryError(409, 'recovery_required', tr('preparation.first_step'))
             if recipe.uncertain(steps[first].spec):
-                raise RegistryError(409, 'recovery_required', 'No se recrea un entorno incierto; requiere resolución externa.')
+                raise RegistryError(409, 'recovery_required', tr('preparation.environment_uncertain'))
             old = previous.plan
             verify_files(root, old['base_files'])
             if first == 0:
                 if snapshot(root, recipe.links) != old['initial_workspace']:
-                    raise RegistryError(409, 'recovery_required', 'Archivos iniciales inciertos; requiere resolución externa.')
+                    raise RegistryError(409, 'recovery_required', tr('preparation.files_uncertain'))
             else:
                 self._verify_source(root, old, allow_partial=True)
                 # A failed command cannot establish ownership of new environment bytes. Reuse only the
@@ -433,11 +434,11 @@ class ProjectPreparation:
                 env = lambda values: {p: v for p, v in values.items()
                                       if p == recipe.environment or p.startswith(recipe.environment + '/')}
                 if env(now) != env(before):
-                    raise RegistryError(409, 'recovery_required', 'El entorno cambió sin recibo de paso; no se reinstala ni sobrescribe.')
+                    raise RegistryError(409, 'recovery_required', tr('preparation.environment_changed'))
             expected_head = previous.commit_intent['expected_commit'] if previous.commit_intent else old['base_head']
             head = git.text('rev-parse', 'HEAD')
             if head not in {old['base_head'], expected_head}:
-                raise RegistryError(409, 'preview_changed', 'HEAD cambió; requiere resolución externa.')
+                raise RegistryError(409, 'preview_changed', tr('preparation.head_changed'))
             plan = {**old, 'mode': body['mode'], 'steps': self.steps(root, config, body['mode'], recipe),
                     'recovery': {'previous_id': previous.id, 'previous_version': previous.version,
                                  'retry_step': first, 'workspace': snapshot(root, recipe.links)},
@@ -449,32 +450,32 @@ class ProjectPreparation:
             plan.pop('preview_sha256', None)
         else:
             if body.get('retry_step') is not None:
-                raise RegistryError(422, 'invalid_request', 'retry_step requiere previous_id.')
+                raise RegistryError(422, 'invalid_request', tr('preparation.retry_previous'))
             if self.latest(project_id, session):
-                raise RegistryError(409, 'recovery_required', 'El proyecto ya tiene una preparación; consulta su recibo u operación.')
+                raise RegistryError(409, 'recovery_required', tr('preparation.exists'))
             if not current.creation_id:
-                raise RegistryError(409, 'recipe_unavailable', 'La receta solo prepara hijos nuevos creados por este servicio.')
+                raise RegistryError(409, 'recipe_unavailable', tr('preparation.created_only'))
             bootstrap = session.scalar(select(Bootstrap).where(Bootstrap.root == str(root), Bootstrap.status == 'COMPLETED'))
             if not bootstrap or git.text('rev-parse', 'HEAD') != bootstrap.result['commit']:
-                raise RegistryError(409, 'definition_required', 'Confirma primero el commit documental raíz D088.')
+                raise RegistryError(409, 'definition_required', tr('preparation.definition_first'))
             captured = writer.capture(project.context)
             provenance = json.loads(captured.provenance_json)
             if provenance['base_tree'] != provenance['index_tree'] or captured.changed_paths:
-                raise RegistryError(409, 'checkout_changed', 'El checkout y el índice deben estar limpios.')
+                raise RegistryError(409, 'checkout_changed', tr('preparation.clean'))
             tracked = set(git.run('ls-files', '-z').decode().strip('\0').split('\0'))
             if tracked != set(bootstrap.result['documents']):
-                raise RegistryError(409, 'definition_required', 'El árbol inicial debe contener solo los documentos aceptados.')
+                raise RegistryError(409, 'definition_required', tr('preparation.initial_tree'))
             workspace = snapshot(root, recipe.links)
             if any('sha256' in v and p not in tracked for p, v in workspace.items()):
-                raise RegistryError(409, 'target_exists', 'Hay archivos ajenos o ignorados; no se adoptan.')
+                raise RegistryError(409, 'target_exists', tr('preparation.foreign_files'))
             files = recipe.manifest(project_id, config, language.get('work_language'))
             for path in recipe.targets(files):
                 if os.path.lexists(root / path):
-                    raise RegistryError(409, 'target_exists', f'El destino {path} ya existe.')
+                    raise RegistryError(409, 'target_exists', tr('preparation.target_exists', path=path))
             # Every new tracked path must actually enter Git; a parent exclude cannot hide part of the manifest.
             for path in files:
                 if git.code('check-ignore', '--no-index', '--', path) == 0:
-                    raise RegistryError(409, 'target_ignored', f'El destino {path} está ignorado por Git.')
+                    raise RegistryError(409, 'target_ignored', tr('preparation.target_ignored', path=path))
             specific = recipe.plan(files, config, body['mode'])
             message = specific.pop('message')
             plan = {'contract': CONTRACT, 'recipe': recipe.module.VERSION, 'preparation_commands': 'preparation-commands-1',
@@ -502,11 +503,11 @@ class ProjectPreparation:
             old = session.scalar(select(Operation).where(Operation.idempotency_key == key))
             if old:
                 if old.request_sha256 != request_sha:
-                    raise RegistryError(409, 'idempotency_conflict', 'La clave pertenece a otro payload.')
+                    raise RegistryError(409, 'idempotency_conflict', tr('preparation.key_reused'))
                 return self.repository.read(old.id)
             preview = self.preview(project_id, body['change'], session=session)
             if preview['preview_sha256'] != body['preview_sha256']:
-                raise RegistryError(409, 'preview_changed', 'El plan cambió; vuelve a revisarlo.')
+                raise RegistryError(409, 'preview_changed', tr('preparation.plan_changed'))
             operation_id, now = str(uuid4()), self.managed._now()
             previous_id = body['change'].get('previous_id')
             if previous_id:
@@ -649,7 +650,7 @@ class ProjectPreparation:
         context = self.runtime.project(plan['project_id']).context
         result = runner.run_managed(context, command, step['id'])
         if result.error or result.timed_out or result.exit_code != 0:
-            raise ValueError(f'Paso fallido ({spec["label"]}); consulta la captura, sin reintento automático.')
+            raise ValueError(tr('preparation.step_failed', step=spec['label']))
         recipe = RECIPES[plan['recipe']]
         recipe.check_output(spec, result.stdout, plan)
         evidence = {'result': asdict(result)}
@@ -737,6 +738,11 @@ class ProjectPreparation:
         claim = self.repository.claim(self.runtime.config.lease_seconds)
         if claim is None:
             return None
+        # P011-T021: a preparation freezes no visual language; its texts use the stored one when emitted.
+        with emission(lambda: stored_language(self.managed.engine)):
+            return self._run_claimed(claim)
+
+    def _run_claimed(self, claim):
         operation_id, token = claim
         stopping = ThreadEvent()
         def heartbeat():
@@ -760,7 +766,7 @@ class ProjectPreparation:
                         expected = step['evidence']['workspace']
                     continue
                 if self.repository.cancelled(operation_id, token):
-                    raise InterruptedError('Preparación cancelada; se conservan los efectos acreditados.')
+                    raise InterruptedError(tr('preparation.cancelled'))
                 self._check(operation, project, expected)
                 with self.managed._write() as session:
                     row = self.repository.owned(session, operation_id, token)
@@ -807,11 +813,12 @@ class ProjectPreparation:
                 elif row.cancel_requested and stopped:
                     row.status = 'CANCELLED'
                     # Releasing a reservation requires an explicit successor once any effect exists.
-                    row.diagnostic = 'Cancelada; los bytes acreditados permanecen en el hijo.'
+                    row.diagnostic = tr('preparation.cancelled_bytes')
                 else:
                     row.status = 'FAILED' if stopped and row.status == 'ACTIVE' else 'RECOVERY_REQUIRED'
-                    row.diagnostic = 'Preparación detenida: ' + (str(error) if isinstance(error, (ValueError, JournalError))
-                                                               else type(error).__name__ if error else 'efecto incierto')
+                    row.diagnostic = tr('preparation.stopped', reason=(
+                        str(error) if isinstance(error, (ValueError, JournalError))
+                        else type(error).__name__ if error else tr('preparation.uncertain_effect')))
                 if stopped:
                     session.execute(delete(Lock).where(Lock.preparation_id == row.id))
                 self.repository.event(session, row, 'settled', {'status': row.status, 'diagnostic': row.diagnostic})
@@ -826,14 +833,14 @@ class ProjectPreparation:
                 PreparationEvent.payload['idempotency_key'].as_string() == key)) if key else None
             if replay:
                 if replay.payload['request_sha256'] != request_sha:
-                    raise RegistryError(409, 'idempotency_conflict', 'La clave pertenece a otro payload.')
+                    raise RegistryError(409, 'idempotency_conflict', tr('preparation.key_reused'))
                 return self.repository.read(operation_id)
             row = self.repository.require(session, operation_id)
             if row.version != body['expected_version'] or row.plan_sha256 != body['plan_sha256']:
-                raise RegistryError(409, 'stale_version', 'La preparación cambió; vuelve a cargarla.')
+                raise RegistryError(409, 'stale_version', tr('preparation.stale'))
             if action == 'cancel':
                 if row.status == 'COMPLETED':
-                    raise RegistryError(409, 'already_completed', 'La preparación ya terminó.')
+                    raise RegistryError(409, 'already_completed', tr('preparation.finished'))
                 row.cancel_requested = True
                 if row.status == 'QUEUED':
                     row.status, row.reserved, row.owner_closed = 'CANCELLED', False, True
@@ -844,7 +851,7 @@ class ProjectPreparation:
                     session.execute(delete(Lock).where(Lock.preparation_id == row.id))
             elif action == 'confirm-stopped':
                 if row.status not in ('RECOVERY_REQUIRED', 'FAILED', 'CANCELLED'):
-                    raise RegistryError(409, 'recovery_required', 'Primero debe detenerse la preparación.')
+                    raise RegistryError(409, 'recovery_required', tr('preparation.stop_first'))
                 self.repository.stopped(session, row)
                 row.owner_closed = True
                 session.execute(delete(Lock).where(Lock.preparation_id == row.id))

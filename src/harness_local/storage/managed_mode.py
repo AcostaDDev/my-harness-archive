@@ -7,6 +7,7 @@ from sqlalchemy.orm import Session
 
 from harness_local.core.managed_mode import (LIVE_STATUSES, ActivationView, CheckoutFacts, MigrationError, digest, mode_refusal)
 from harness_local.storage.models import ManagedActivationRow as Activation
+from harness_local.i18n import tr
 
 class ModeConflict(MigrationError):
     pass
@@ -49,7 +50,7 @@ def _live(session, root: str, repository_key: str | None):
     rows = session.scalars(select(Activation).where(clause, Activation.status.in_(LIVE_STATUSES))).all()
     if len(rows) > 1:
         # Root of one activation and repository of another: ambiguity, one is never chosen.
-        raise ModeConflict("Varias activaciones vivas coinciden con este checkout; modo ambiguo.")
+        raise ModeConflict(tr('mode.ambiguous'))
     return rows[0] if rows else None
 
 
@@ -99,7 +100,7 @@ class ModeGuard:
             refusal = mode_refusal(facts, activation.view() if activation else None, source, drift)
             return Assessment(facts, activation, refusal)
         except (OSError, ValueError, TypeError, KeyError) as exc:
-            return Assessment(None, None, f"No se pudo comprobar el modo del checkout {root}: {exc}")
+            return Assessment(None, None, tr('mode.unchecked', root=root, error=exc))
 
     @staticmethod
     def enforce(session, assessment: Assessment) -> str | None:
@@ -110,7 +111,7 @@ class ModeGuard:
         expected = assessment.activation
         if (row is None) != (expected is None) or (row is not None and (
                 row.id != expected.id or row.status != expected.status or row.version != expected.version)):
-            raise ModeConflict("El modo del checkout cambió durante la comprobación; repetir la solicitud.")
+            raise ModeConflict(tr('mode.changed_check'))
         return row.id if row else None
 
 

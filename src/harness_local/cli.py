@@ -12,7 +12,7 @@ from harness_local.storage.database import make_engine
 from harness_local.storage.schema import require_schema
 from harness_local.storage.backup import create_backup, restore_backup, verify_bundle
 from harness_local.storage.retention import preview_retention, apply_retention, inspect_logs
-from harness_local.i18n import DEFAULT_LANGUAGE, LANGUAGES, message
+from harness_local.i18n import DEFAULT_LANGUAGE, LANGUAGES, emission, message, supported
 
 
 def cli_language(explicit: str | None, database: str | None) -> str:
@@ -33,57 +33,72 @@ def cli_language(explicit: str | None, database: str | None) -> str:
     return row[1] if row and row[0] == 'product-preferences-1' and row[1] in LANGUAGES else DEFAULT_LANGUAGE
 
 
-def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description="Backup, retención y diagnóstico local")
-    parser.add_argument('--ui-language', choices=LANGUAGES,
-                        help="Language of this invocation's own messages; not saved "
-                             "(default: database preferences, else en)")
+def build_parser(language: str = DEFAULT_LANGUAGE) -> argparse.ArgumentParser:
+    """Own help texts in `language`; argparse's own messages and usage lines stay as the library writes them."""
+    def say(key, **params):
+        return message(f'cli.help.{key}', language, **params)
+
+    parser = argparse.ArgumentParser(description=say('description'))
+    parser.add_argument('--ui-language', choices=LANGUAGES, help=say('ui_language'))
     operations = parser.add_subparsers(dest='operation', required=True)
-    command = operations.add_parser('backup-create', help='Servicio y escritores detenidos; destino nuevo')
-    command.add_argument('database', help='Archivo SQLite explícito; no usa HARNESS_DATABASE_URL')
+    command = operations.add_parser('backup-create', help=say('backup_create'))
+    command.add_argument('database', help=say('database_positional'))
     command.add_argument('destination')
-    command.add_argument('--artifact-root', action='append', default=[], help='Raíz permitida de artefactos; repetible')
-    command.add_argument('--writers-stopped', action='store_true', help='Declaro detenidos servicio, observadores y escritores')
+    command.add_argument('--artifact-root', action='append', default=[], help=say('backup_artifact_root'))
+    command.add_argument('--writers-stopped', action='store_true', help=say('writers_stopped'))
     command = operations.add_parser('backup-verify')
     command.add_argument('bundle')
-    command = operations.add_parser('backup-restore', help='Destino nuevo; restauración solo de consulta')
+    command = operations.add_parser('backup-restore', help=say('backup_restore'))
     command.add_argument('bundle')
     command.add_argument('destination')
     for name in ('logs-preview', 'logs-apply'):
-        command = operations.add_parser(name, help='Retención explícita de stdout/stderr CLI sellados')
+        command = operations.add_parser(name, help=say('logs_retention'))
         command.add_argument('database')
         command.add_argument('--artifact-root', action='append', required=True)
-        command.add_argument('--before', required=True, help='Fecha de corte ISO-8601 UTC, exclusiva')
+        command.add_argument('--before', required=True, help=say('logs_before'))
         command.add_argument('--min-bytes', type=int, default=1024 * 1024)
         if name == 'logs-apply':
             command.add_argument('--preview-sha256', required=True)
             command.add_argument('--reason', required=True)
             command.add_argument('--confirmed', action='store_true')
             command.add_argument('--writers-stopped', action='store_true')
-    command = operations.add_parser('logs-inspect', help='Distinguir retenido, purgado, pendiente, perdido y no verificado')
+    command = operations.add_parser('logs-inspect', help=say('logs_inspect'))
     command.add_argument('database')
     command.add_argument('attempt_id')
-    command = operations.add_parser('diagnose-cli', help='Version/help explícitos, sin autenticación ni inferencia')
-    command.add_argument('configuration', help='JSON de una CLIConfig con entorno explícito; ejecutable de confianza')
-    command = operations.add_parser('check-config', help='Validar el TOML local de uso real, sin ejecutar nada')
-    command.add_argument('configuration', help='Ruta absoluta del TOML local, fuera de los checkouts')
-    command.add_argument('--preflight', action='store_true', help='Además, version/help explícitos de la CLI de cada agente')
-    command = operations.add_parser('metrics-backfill', help='Relleno explícito e idempotente de métricas por intento (H6.4)')
-    command.add_argument('--database', required=True, help='Ruta absoluta SQLite existente; no usa HARNESS_DATABASE_URL')
-    command.add_argument('--artifact-root', action='append', default=[],
-                         help='Raíz autorizada de streams sellados, verificados por SHA-256; repetible. Sin ella, solo result_json')
-    command = operations.add_parser('migrate', help='Actualizar SQLite existente con instantánea previa verificada')
-    command.add_argument('--database', required=True, help='Ruta absoluta SQLite existente; no usa HARNESS_DATABASE_URL')
-    command.add_argument('--snapshots', required=True, help='Directorio absoluto de instantáneas, fuera de los checkouts')
-    command.add_argument('--writers-stopped', action='store_true', help='Declaro detenidos servicio, observadores y escritores')
+    command = operations.add_parser('diagnose-cli', help=say('diagnose_cli'))
+    command.add_argument('configuration', help=say('diagnose_configuration'))
+    command = operations.add_parser('check-config', help=say('check_config'))
+    command.add_argument('configuration', help=say('check_configuration'))
+    command.add_argument('--preflight', action='store_true', help=say('preflight'))
+    command = operations.add_parser('metrics-backfill', help=say('metrics_backfill'))
+    command.add_argument('--database', required=True, help=say('database_existing'))
+    command.add_argument('--artifact-root', action='append', default=[], help=say('metrics_artifact_root'))
+    command = operations.add_parser('migrate', help=say('migrate'))
+    command.add_argument('--database', required=True, help=say('database_existing'))
+    command.add_argument('--snapshots', required=True, help=say('snapshots'))
+    command.add_argument('--writers-stopped', action='store_true', help=say('writers_stopped'))
     for name in ('init-db', 'serve'):
-        command = operations.add_parser(name, help='SQLite nueva explícita' if name == 'init-db' else 'UI/API en 127.0.0.1')
-        command.add_argument('--database', required=True, help='Ruta absoluta SQLite; no usa HARNESS_DATABASE_URL')
+        command = operations.add_parser(name, help=say('init_db' if name == 'init-db' else 'serve'))
+        command.add_argument('--database', required=True, help=say('database'))
         if name == 'serve':
             command.add_argument('--port', type=int, default=8013)
-            command.add_argument('--config', help='TOML local de uso real (local-config-6; también 1–5); por defecto, sin proyectos')
+            command.add_argument('--config', help=say('serve_config'))
+    return parser
+
+
+def main(argv: list[str] | None = None) -> int:
+    argv = sys.argv[1:] if argv is None else argv
+    # The help is built before the database is known: `--ui-language` or English (D166).
+    early = argparse.ArgumentParser(add_help=False)
+    early.add_argument('--ui-language')
+    parser = build_parser(supported(early.parse_known_args(argv)[0].ui_language))
     args = parser.parse_args(argv)
     language = cli_language(args.ui_language, getattr(args, 'database', None))
+    with emission(language):
+        return _run(args, language)
+
+
+def _run(args, language: str) -> int:
     engine = None
     try:
         if args.operation == 'migrate':

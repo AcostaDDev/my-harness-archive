@@ -29,6 +29,7 @@ from harness_local.core.engine.documents import (
 from harness_local.core.engine.phases import phase_definition
 from harness_local.core.engine.planning import FIELD_NAMES, bullet_items, deterministic_task, section
 from harness_local.core.engine.prompts import dump_catalog, render_attempt
+from harness_local.i18n import tr
 
 MAX_BRIEF_BYTES = 256 * 1024
 # Drafts frozen in a turn: all of them, in full; above this limit, the turn is not queued.
@@ -389,7 +390,7 @@ def acceptance(context, conversation: dict, inspection: dict, texts: dict[str, s
     protected = [path for path in paths if protected_write(context, path)]
     if protected:
         blockers.append('Paths protected by the project profile: ' + ', '.join(protected))
-    warnings += [f'Pendiente declarado por el revisor: {item}' for item in conversation['pending']]
+    warnings += [tr('definition.pending', item=item) for item in conversation['pending']]
     base = {'template': template_identity(target, language), 'input': {'conversation_id': conversation['id']},
             'definition': {'conversation_id': conversation['id'], 'conversation_version': conversation['version'],
                            'brief_sha256': conversation['brief']['sha256'], 'turns': len(conversation['turns']),

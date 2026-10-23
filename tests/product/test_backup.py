@@ -159,7 +159,7 @@ def test_missing_declaration_and_live_owner_are_rejected_without_copy(context, r
     assert not (tmp_path / 'undeclared').exists()
     port = adapter(tmp_path)
     job, claim, _ = setup_invocation(repository, context, port)
-    with pytest.raises(BackupError, match='vivo'):
+    with pytest.raises(BackupError, match='Live'):
         create_backup(path, tmp_path / 'live', writers_stopped=True)
     assert not (tmp_path / 'live').exists()
     repository.close_owner(claim)
@@ -289,7 +289,7 @@ def test_cli_backup_round_trip_and_errors_are_explicit(migrated_database, tmp_pa
     assert main(['backup-restore', str(bundle), str(dest)]) == 0
     assert json.loads(capsys.readouterr().out)['execution_authorized'] is False
     assert main(['backup-restore', str(bundle), str(dest)]) == 1
-    assert 'destino' in capsys.readouterr().err
+    assert 'destination' in capsys.readouterr().err
     assert main(['backup-create', str(tmp_path / 'missing.sqlite3'), str(tmp_path / 'unused'), '--writers-stopped']) == 1
     assert not (tmp_path / 'missing.sqlite3').exists()
 
@@ -393,7 +393,7 @@ def test_limits_do_not_publish_truncated_bundle(context, repository, migrated_da
     from harness_local.storage import backup as module
     port, _, _ = pending_process(context, repository, tmp_path, with_stream=True)
     monkeypatch.setattr(module, 'MAX_TOTAL_BYTES', 1)
-    with pytest.raises(BackupError, match='límite total'):
+    with pytest.raises(BackupError, match='total limit'):
         backup(migrated_database, tmp_path, artifact_roots=[port.artifact_root])
     assert not (tmp_path / 'backup/COMPLETE').exists()
 
@@ -408,7 +408,7 @@ def test_restore_does_not_trust_changed_file_after_initial_verification(context,
         (bundle / manifest['files'][0]['path']).write_bytes(b'raced')
         return manifest
     monkeypatch.setattr(module, 'verify_bundle', racing_verify)
-    with pytest.raises(BackupError, match='cambió'):
+    with pytest.raises(BackupError, match='changed'):
         restore_backup(bundle, tmp_path / 'restored')
     assert not (tmp_path / 'restored/COMPLETE').exists()
 

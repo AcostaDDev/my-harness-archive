@@ -5,6 +5,7 @@ import stat
 
 from harness_local.adapters.safe_files import read_raw
 from harness_local.core.managed_mode import (LEGACY_RUNS, MARKER_PATH, CheckoutFacts, classify_drift, digest)
+from harness_local.i18n import tr
 
 def _repository(root: Path) -> tuple[str | None, str | None]:
     """Git common dir and main checkout by reading `.git`, without running Git."""
@@ -34,7 +35,7 @@ def _repository(root: Path) -> tuple[str | None, str | None]:
 def probe(root) -> CheckoutFacts:
     checkout = Path(root).expanduser().resolve(strict=True)
     if not checkout.is_dir():
-        raise ValueError("La raíz del checkout debe ser un directorio.")
+        raise ValueError(tr('mode.root_directory'))
     key, main = _repository(checkout)
     marker, error = None, None
     if os.path.lexists(checkout / MARKER_PATH):

@@ -16,7 +16,7 @@ import stat
 from threading import RLock
 
 from harness_local.core.engine.contracts import freeze
-from harness_local.i18n import LANGUAGES, message
+from harness_local.i18n import LANGUAGES, message, tr
 from harness_local.services.managed_runtime import PROJECT_ID, ManagedConfig, validate_projects
 from harness_local.storage import work_language
 from harness_local.storage.permissions import actor
@@ -27,8 +27,9 @@ RESERVED_IDS = frozenset({'new'})
 ACTIONS = ('register', 'update', 'retire')
 # Formats with per-project agent selections (v5) and their successor that adds the work language (v6).
 AGENT_FORMATS = ('local-config-5', 'local-config-6')
-TRUST = ('Confío en el contenido de este checkout: los agentes y los comandos de la composición elegida '
-         'se ejecutarán dentro de él con la configuración del operador.')
+def trust_statement():
+    """The statement the operator confirms, in the visual language of the preview; the record keeps that text."""
+    return tr('registry.trust')
 
 
 class RegistryError(ValueError):
@@ -69,30 +70,29 @@ def _inside(path, other):
 def canonical_root(value, authorized):
     """Absolute, existing root, without links in any component and under an authorized root."""
     if not isinstance(value, str) or not value or '\0' in value:
-        raise RegistryError(422, 'root_invalid', 'Ruta de texto requerida.')
+        raise RegistryError(422, 'root_invalid', tr('registry.root_text'))
     path = Path(value)
     if not path.is_absolute():
-        raise RegistryError(422, 'root_not_absolute', 'La raíz debe ser una ruta absoluta.')
+        raise RegistryError(422, 'root_not_absolute', tr('registry.root_absolute'))
     if str(path) != os.path.normpath(value) or '..' in path.parts:
-        raise RegistryError(422, 'root_not_canonical', 'La raíz debe estar en forma canónica, sin «..» ni barras finales.')
+        raise RegistryError(422, 'root_not_canonical', tr('registry.root_canonical'))
     current = Path(path.anchor)
     for part in path.parts[1:]:
         current = current / part
         try:
             info = os.lstat(current)
         except FileNotFoundError:
-            raise RegistryError(422, 'root_missing', f'No existe {current}.') from None
+            raise RegistryError(422, 'root_missing', tr('registry.root_missing', path=current)) from None
         except OSError as exc:
             raise RegistryError(422, 'root_unreadable', f'{current}: {exc.strerror}') from None
         if stat.S_ISLNK(info.st_mode):
-            raise RegistryError(422, 'root_symlink', f'{current} es un enlace simbólico; usa la ruta real.')
+            raise RegistryError(422, 'root_symlink', tr('registry.root_symlink', path=current))
     if not stat.S_ISDIR(os.lstat(path).st_mode):
-        raise RegistryError(422, 'root_not_directory', 'La raíz debe ser un directorio.')
+        raise RegistryError(422, 'root_not_directory', tr('registry.root_directory'))
     if path.resolve() != path:
-        raise RegistryError(422, 'root_not_canonical', 'La raíz no coincide con su ruta real.')
+        raise RegistryError(422, 'root_not_canonical', tr('registry.root_real'))
     if not any(path.is_relative_to(root) for root in authorized):
-        raise RegistryError(422, 'root_not_authorized',
-                            'La raíz no está bajo ninguna raíz autorizada por el operador ([registration].roots).')
+        raise RegistryError(422, 'root_not_authorized', tr('registry.root_unauthorized'))
     return path
 
 
@@ -135,9 +135,7 @@ class ProjectRegistry:
 
     def _require(self):
         if self.registrar is None:
-            raise RegistryError(409, 'registry_unavailable',
-                                'La configuración del servicio no admite registrar proyectos '
-                                '(requiere local-config-3/4/5/6 con [registration] y al menos una composición).')
+            raise RegistryError(409, 'registry_unavailable', tr('registry.unavailable'))
         return self.registrar
 
     # --- composition ------------------------------------------------------------------
@@ -179,18 +177,18 @@ class ProjectRegistry:
         for operation in CreationRepository(self.runtime.repository).operations():
             if (operation['reserved'] and operation['id'] != creation_id
                     and (operation['project_id'] == project_id or _inside(root, Path(operation['target'])))):
-                raise RegistryError(409, 'target_reserved', 'Id o destino reservado por una creación pendiente.')
+                raise RegistryError(409, 'target_reserved', tr('registry.target_reserved'))
         for other in self.runtime.projects.values():
             if other.id == project_id:
                 if not registered or 'project_registry' not in other.versions:
-                    raise RegistryError(409, 'duplicate_id', f'El id {project_id} ya lo usa otro proyecto.')
+                    raise RegistryError(409, 'duplicate_id', tr('registry.id_used', id=project_id))
                 continue
             if _inside(root, other.context.root):
-                raise RegistryError(409, 'root_taken', f'La raíz coincide o se anida con la de {other.id}.')
-        for path, name in ((self.runtime.database, 'la base SQLite'),
-                           (self.runtime.migrations_dir, 'el directorio de migraciones')):
+                raise RegistryError(409, 'root_taken', tr('registry.root_taken', project=other.id))
+        for path, key in ((self.runtime.database, 'registry.root_database'),
+                          (self.runtime.migrations_dir, 'registry.root_migrations')):
             if path is not None and _inside(root, path):
-                raise RegistryError(422, 'root_service_state', f'La raíz no puede contener {name} del servicio.')
+                raise RegistryError(422, 'root_service_state', tr(key))
 
     # --- reads ------------------------------------------------------------------------
 
@@ -207,7 +205,7 @@ class ProjectRegistry:
                 'reserved_ids': sorted(RESERVED_IDS),
                 'operator_projects': sorted(p.id for p in self.runtime.projects.values()
                                             if 'project_registry' not in p.versions),
-                'projects': [self._summary(item, languages) for item in rows], 'trust_statement': TRUST}
+                'projects': [self._summary(item, languages) for item in rows], 'trust_statement': trust_statement()}
 
     def _summary(self, item, languages=None):
         work = (languages.get(item['root']) if languages is not None
@@ -220,7 +218,7 @@ class ProjectRegistry:
     def read(self, project_id):
         item = self.repository.get(project_id)
         if item is None:
-            raise LookupError('Proyecto registrado desconocido.')
+            raise LookupError(tr('registry.unknown'))
         return {**self._summary(item), 'row': item['row'], 'trust': item['trust'],
                 'unfinished_jobs': self.repository.unfinished(item['root']) if item['status'] == 'ACTIVE' else [],
                 'configuration_blockers': self.repository.configuration_blockers(item['root'])
@@ -240,9 +238,9 @@ class ProjectRegistry:
         else:
             project_id, root = current['id'], current['root']
             if body.get('root') not in (None, root):
-                raise RegistryError(422, 'root_immutable', 'La raíz no cambia: da de baja el proyecto y registra otro.')
+                raise RegistryError(422, 'root_immutable', tr('registry.root_immutable'))
         if body.get('bootstrap_enabled') and not registrar.bootstrap_enabled:
-            raise RegistryError(422, 'bootstrap_not_allowed', 'El operador no autoriza bootstrap en proyectos registrados.')
+            raise RegistryError(422, 'bootstrap_not_allowed', tr('registry.bootstrap'))
         row = {'id': project_id, 'root': root, 'repository_trusted': True, 'composition': body.get('composition'),
                'policy': body.get('policy'), 'tag_kind': body.get('tag_kind', 'lightweight'),
                'bootstrap_enabled': bool(body.get('bootstrap_enabled', False))}
@@ -257,26 +255,26 @@ class ProjectRegistry:
     def preview(self, body):
         action, project_id = body['action'], body['project_id']
         if action not in ACTIONS:
-            raise RegistryError(422, 'invalid_request', f'Acción {action!r} desconocida.')
+            raise RegistryError(422, 'invalid_request', tr('registry.action', action=repr(action)))
         registrar = self._require()
         if not isinstance(project_id, str) or not PROJECT_ID.fullmatch(project_id):
-            raise RegistryError(422, 'invalid_id', 'Id con la forma [a-z0-9][a-z0-9._-]{0,63} requerido.')
+            raise RegistryError(422, 'invalid_id', tr('registry.id_form', pattern=PROJECT_ID.pattern))
         if project_id in RESERVED_IDS:
-            raise RegistryError(422, 'invalid_id', f'El id {project_id!r} está reservado por la interfaz.')
+            raise RegistryError(422, 'invalid_id', tr('registry.id_reserved', id=repr(project_id)))
         current = self.repository.get(project_id)
         expected = body['expected_version']
         if action == 'register':
             if current is not None:
-                raise RegistryError(409, 'duplicate_id', f'El id {project_id} ya está registrado'
-                                    + (' (dado de baja; su historial se conserva).' if current['status'] != 'ACTIVE' else '.'))
+                raise RegistryError(409, 'duplicate_id', tr('registry.id_registered' if current['status'] == 'ACTIVE'
+                                                         else 'registry.id_retired', id=project_id))
             if project_id in self.runtime.projects:
-                raise RegistryError(409, 'duplicate_id', f'El id {project_id} lo declara el TOML del operador.')
+                raise RegistryError(409, 'duplicate_id', tr('registry.id_toml', id=project_id))
         elif current is None:
-            raise LookupError('Proyecto registrado desconocido; los proyectos del TOML no se editan desde la UI.')
+            raise LookupError(tr('registry.unknown_toml'))
         elif current['status'] != 'ACTIVE':
-            raise RegistryError(409, 'retired', 'El proyecto está dado de baja; su historial se conserva.')
+            raise RegistryError(409, 'retired', tr('registry.retired'))
         if (current['version'] if current else 0) != expected:
-            raise RegistryError(409, 'stale_version', 'El registro cambió; vuelve a cargar antes de revisar.')
+            raise RegistryError(409, 'stale_version', tr('registry.stale'))
         if action != 'register' and body.get('work_language') is not None:
             raise RegistryError(409, 'work_language_immutable', message('work_language.confirmed', self._language()))
         row = self._target(body, current)
@@ -306,7 +304,7 @@ class ProjectRegistry:
         return {'action': action, 'project_id': project_id, 'expected_version': expected, 'version': version,
                 'status': status, 'row': row, 'row_sha256': row_sha256, 'changes': changes, 'versions': versions,
                 'profile': current['profile'] if action == 'retire' else registrar.compositions[row['composition']][0],
-                'trust_required': action == 'register', 'trust_statement': TRUST if action == 'register' else None,
+                'trust_required': action == 'register', 'trust_statement': trust_statement() if action == 'register' else None,
                 'unfinished_jobs': unfinished, 'configuration_blockers': blockers, 'work_language': language,
                 'preview_sha256': preview_sha256}
 
@@ -317,18 +315,16 @@ class ProjectRegistry:
                 return {'project': self._summary(replayed), 'replayed': True}
             shown = self.preview(body)
             if shown['preview_sha256'] != preview_sha256:
-                raise RegistryError(409, 'preview_changed', 'La vista previa ya no coincide; revísala de nuevo.')
+                raise RegistryError(409, 'preview_changed', tr('registry.preview_changed'))
             if shown['unfinished_jobs']:
-                raise RegistryError(409, 'pending_jobs', f'El checkout tiene trabajos sin terminar '
-                                    f'({shown["unfinished_jobs"]}); espera o concílialos antes de cambiarlo.')
+                raise RegistryError(409, 'pending_jobs', tr('registry.pending_jobs', jobs=shown['unfinished_jobs']))
             if shown['configuration_blockers']:
                 raise RegistryError(409, 'pending_configuration', '; '.join(shown['configuration_blockers']))
             trust = None
             if shown['trust_required']:
                 if trust_root != shown['row']['root']:
-                    raise RegistryError(409, 'trust_unconfirmed',
-                                        'Confirma la confianza en el checkout escribiendo su raíz exacta.')
-                trust = {'confirmed': True, 'root': trust_root, 'statement': TRUST, 'actor': actor()}
+                    raise RegistryError(409, 'trust_unconfirmed', tr('registry.trust_unconfirmed'))
+                trust = {'confirmed': True, 'root': trust_root, 'statement': shown['trust_statement'], 'actor': actor()}
             try:
                 saved = self.repository.apply(shown['action'], shown['project_id'],
                                               expected_version=shown['expected_version'], row=shown['row'],

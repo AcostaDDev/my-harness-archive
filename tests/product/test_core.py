@@ -35,7 +35,8 @@ def test_core_imports_with_standard_library_only():
                 modules = [node.module or ""]
             else:
                 continue
-            assert all(module.split(".")[0] in sys.stdlib_module_names
+            # P011-T021 (D171): the message catalogs are the only outer leaf allowed; they use the stdlib only.
+            assert all(module.split(".")[0] in sys.stdlib_module_names or module == "harness_local.i18n"
                        or module.startswith("harness_local.core") for module in modules)
 
 

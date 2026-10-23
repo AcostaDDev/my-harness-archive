@@ -4,13 +4,14 @@ Objetivo y criterios en [ROADMAP](ROADMAP.md#p011--preparación-para-apertura-p�
 Decisión: [D154](DECISIONS.md#d154--p011-preparación-para-apertura-pública-en-github).
 [Plan y alcance](phase/P011_PLAN_APERTURA_PUBLICA.md).
 
-**Estado:** en ejecución desde el 2026-10-22. T001/T002/T019/T003–T010/T020 completadas (D159–D170); nueve tareas
-pendientes (T010 desglosó T021 por HITL). Licencia/avisos, retirada legacy/A, código/pruebas en inglés, preferencias
-globales e idioma de trabajo inmutable por proyecto con el par congelado por job/intento; recetas v2; directiva al
-agente y documentos en W; interfaz React y diagnósticos HTTP propios en en/es.
+**Estado:** en ejecución desde el 2026-10-22. T001/T002/T019/T003–T010/T020/T021 completadas (D159–D171); nueve
+tareas pendientes (T010 desglosó T021 y T021 desglosó T022 por HITL). Licencia/avisos, retirada legacy/A,
+código/pruebas en inglés, preferencias globales e idioma de trabajo inmutable por proyecto con el par congelado por
+job/intento; recetas v2; directiva al agente y documentos en W; interfaz React, diagnósticos HTTP propios y textos
+del servicio/CLI antes españoles en en/es.
 **Planificación:** base finalizada en D156 y afinada por D155/D157/D158; contrato T001 disponible.
 No equivale a fase completada.
-**Siguiente:** P011-T021. Sin autorización de publicación.
+**Siguiente:** P011-T022. Sin autorización de publicación.
 P001–P010 siguen cerradas; la primera versión local mantiene el alcance de D151/D153.
 
 ## Restricciones compartidas
@@ -43,7 +44,7 @@ P001–P010 siguen cerradas; la primera versión local mantiene el alcance de D1
   siguiente fase` para v0.2.0 después de abrir el proyecto en GitHub, fuera de estas tareas. P011 mantiene
   cierre con READY y autorización propia, nueva fase sin tareas y confirmación del plan posterior.
   El commit D156 y los ajustes D157/D158 ya se realizaron. La petición actual autoriza ejecutar la siguiente
-  tarea (T010) y su commit local en inglés, sin encadenar tareas ni publicar.
+  tarea (T021) y su commit local en inglés, sin encadenar tareas ni publicar.
 - D157 elige instantánea pública inicial revisada, con Git/documentación de partida nuevos y sin historia privada.
   Desde la apertura, código/decisiones/fases se desarrollan en el repositorio público, fuente principal; este
   checkout conserva su historia privada. No sincronizar dos desarrollos activos ni congelar para siempre `docs/` pública.
@@ -583,7 +584,13 @@ cambia el cliente. Sin red ni instalaciones reales salvo autorización propia.
 
 ## P011-T021 — Traducción de diagnósticos del servicio y de la CLI
 
-**Estado:** pendiente. **Depende de:** T010. **Orden:** antes de T011; desglosada de T010 por HITL (D170).
+**Estado:** completada el 2026-10-23, D171. **Depende de:** T010. **Orden:** antes de T011; desglosada de T010 por
+HITL (D170).
+**Evidencia:** [entrega](phase/P011-T021_TRADUCCION_SERVICIO_CLI.md): por HITL, todo texto propio antes español del
+servicio/CLI y la ayuda argparse pasan a catálogo (471 claves, +425) y los textos de servicio ya ingleses a la nueva
+T022; `tr()` emite en el visual de cada emisión (petición: guardado; job: congelado, HITL; CLI: `--ui-language`/base/
+`en`); `core/` admite la hoja `harness_local.i18n` (HITL). Hash de retención sellado en inglés, scripts al texto
+inglés, excepciones verificadas por test. pytest 1615 passed, unittest 8 y Node 93 en verde; QA visual no autorizada.
 **Objetivo:** Completar en/es en los mensajes propios del servicio y de la CLI que T010 no cubre.
 **Alcance:** diagnósticos de configuración local, backup/restauración, retención, migración, registro, creación,
 preparación, runtime gestionado, lanzador y CLI (errores y ayuda argparse propia), y los textos de servicios/storage
@@ -605,3 +612,26 @@ que la API reenvía como `diagnostic`. Inventario de partida en la
 **Validación:** cobertura de catálogos Python, pytest/unittest pertinentes, mensajes CLI en ambos idiomas, Node/tipos/
 build si cambia el cliente y scripts afectados sin ejecutar el producto real.
 **Entregables:** `docs/phase/P011-T021_TRADUCCION_SERVICIO_CLI.md`, catálogos y matriz QA.
+
+## P011-T022 — Catálogo en/es de los textos de servicio ya ingleses
+
+**Estado:** pendiente. **Depende de:** T021. **Orden:** antes de T011; desglosada de T021 por HITL (D171).
+**Objetivo:** Que los diagnósticos propios del servicio que hoy son texto técnico inglés también salgan en/es.
+**Alcance:** los textos ingleses de `raise`/diagnósticos de servicios, storage, adapters y core que el usuario puede
+ver (directamente o reenviados por la API como `diagnostic`); inventario de partida en la
+[entrega de T021](phase/P011-T021_TRADUCCION_SERVICIO_CLI.md) (≈960 `raise` con texto, muchos invariantes internos).
+**Rutas permitidas:** `src/harness_local/**`, `frontend/**`, `scripts/**`, `tests/**`, `docs/**`.
+**Criterios de aceptación:**
+
+- Inventario que separe diagnósticos visibles de invariantes internas (que pueden quedar como texto técnico inglés
+  justificado); los visibles por `tr()` en el visual de la emisión (D171), sin cambiar códigos, estados, estructura,
+  evidencia ni mensajes históricos persistidos.
+- Los dos textos que compara la UI (`managed blocks are generated`, `changed since`) se conservan o la UI pasa a
+  códigos en el mismo cambio. Hashes y vistas previas no dependen del idioma o fallan de forma segura.
+- Al terminar, QA visual conjunta T010+T021+T022 en/es, claro/oscuro y escritorio/móvil con entorno sintético
+  saneado, solo con autorización explícita del servicio/navegador; si no se autoriza, queda registrada como no
+  realizada.
+
+**Validación:** cobertura de catálogos Python, pytest/unittest pertinentes, Node/tipos/build si cambia el cliente.
+**Entregables:** `docs/phase/P011-T022_TRADUCCION_SERVICIO_INGLES.md`, catálogos y matriz QA.
+

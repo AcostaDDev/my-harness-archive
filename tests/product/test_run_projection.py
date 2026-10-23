@@ -247,11 +247,11 @@ def test_migration_backfills_formats_1_to_8_with_previous_results(migrated_datab
     detail = views.run('run-empty')
     assert detail['history']['cycle_count'] == 0 and detail['history']['latest_cycle'] is None
     assert views.cycles('run-empty', 0, 10) == {'items': [], 'offset': 0, 'next_offset': None}
-    with pytest.raises(LookupError, match='Ciclo'):
+    with pytest.raises(LookupError, match='review cycle'):
         views.cycle_diff('run-f1', 3, 0, 10)
-    with pytest.raises(LookupError, match='Reporte'):
+    with pytest.raises(LookupError, match='JUnit report'):
         views.test_cases('run-f1', 0, 0, 0, 0, 10)  # format 1: no reports
-    with pytest.raises(LookupError, match='Run gestionado'):
+    with pytest.raises(LookupError, match='Unknown managed run'):
         views.cycles('unknown', 0, 10)
     engine.dispose()
     # The downgrade only drops derived tables; the histories stay intact.
@@ -372,7 +372,7 @@ def test_backup_rejects_a_projection_that_differs_from_the_history(git_repo, mig
             db.execute("INSERT INTO run_projection_stops VALUES(?, 99, 'x', 'y')", (job.run_id,))
         db.commit()
     reseal_database(bundle)
-    with pytest.raises(BackupError, match='Proyección'):
+    with pytest.raises(BackupError, match='Projection'):
         restore_backup(bundle, tmp_path / 'restored')
     assert not (tmp_path / 'restored').exists()
 

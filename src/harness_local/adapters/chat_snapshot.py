@@ -14,6 +14,7 @@ from harness_local.adapters.local_git import object_size
 from harness_local.core.engine.context import relative_path
 from harness_local.core.engine.contracts import freeze
 from harness_local.core.engine.evidence import ContentEvidence
+from harness_local.i18n import tr
 
 FORMAT = 'head-export-1'
 MAX_FILES = 20_000
@@ -29,7 +30,7 @@ class HeadSnapshot:
         try:
             return self.git.text('rev-parse', '--verify', 'HEAD^{commit}')
         except GitError as exc:
-            raise ValueError('El chat requiere un commit HEAD; completa la creación del proyecto primero') from exc
+            raise ValueError(tr('chat.head_required')) from exc
 
     def entries(self, head):
         entries = {}

@@ -181,6 +181,7 @@ tarea se leen solo las decisiones que cita; este índice sirve para buscar prece
 | [D168](#d168--p011-t020-recetas-v2-en-local-config-6-con-el-idioma-de-trabajo-sellado-en-plan-y-recibo) | P011-T020: recetas v2 en local-config-6 con el idioma de trabajo sellado en plan y recibo | P011 |
 | [D169](#d169--p011-t009-directiva-de-idioma-sellada-y-documentos-generados-en-el-idioma-de-trabajo) | P011-T009: directiva de idioma sellada y documentos generados en el idioma de trabajo | P011 |
 | [D170](#d170--p011-t010-interfaz-enes-por-catálogos-tipados-y-diagnósticos-http-propios-en-el-visual-guardado) | P011-T010: interfaz en/es por catálogos tipados y diagnósticos HTTP propios en el visual guardado | P011 |
+| [D171](#d171--p011-t021-textos-propios-del-servicio-y-la-cli-en-el-visual-de-cada-emisión) | P011-T021: textos propios del servicio y la CLI en el visual de cada emisión | P011 |
 
 ## D001 — Alcance local y arquitectura base
 
@@ -5056,3 +5057,34 @@ Fase: P011. Concreta D159 (contrato T001 §3) sobre la infraestructura D166.
 - Validación: Node 93/93, `check`/`build` (aviso >500 kB previo), pytest 1608 passed, 2 skipped, 29 subtests
   (una expectativa española antigua de `test_managed_api.py` pasa a leer el catálogo) y unittest 8 OK. Sin esquema
   nuevo (sin Alembic), servicios, navegador, agentes, proveedores, red ni `scripts/dev`. T021 es la siguiente.
+
+## D171 — P011-T021: textos propios del servicio y la CLI en el visual de cada emisión
+
+Estado: implementada el 2026-10-23 por la continuación y commit local en inglés pedidos por el usuario.
+Fase: P011. Concreta D159 (contrato T001 §3) sobre D166/D170.
+[Entrega, alcance y validación](phase/P011-T021_TRADUCCION_SERVICIO_CLI.md),
+[flujo](flows/language-preferences.md).
+
+- HITL sobre el alcance: T021 lleva a catálogo todo texto propio del servicio/CLI que estaba en español y la ayuda
+  argparse; los ~960 textos de servicio ya ingleses quedan como texto técnico inglés y se desglosan en la nueva
+  **T022**. Los dos textos que compara la UI siguen en inglés sin cambios.
+- Emisión: `i18n.emission()` fija el visual en un `ContextVar` (código o resolutor evaluado una vez) y `tr()` lo usa;
+  sin emisión, inglés. Petición HTTP → preferencias guardadas (middleware); job reclamado → visual congelado en su
+  `language_context` (HITL), o el guardado si se admitió sin él; preparación → guardado; CLI → `--ui-language`, base o
+  `en` (la ayuda, `--ui-language` o `en`). Lo persistido queda en la lengua emitida, sin retraducción posterior.
+- `tr()` devuelve `Localized`, un `str` que recuerda clave y campos para volver a renderizarse; copias/pickle/JSON
+  conservan solo el texto. La vista previa de retención sella cada diagnóstico propio en inglés, así que su hash no
+  depende del idioma (las previas calculadas sobre el texto español dejan de coincidir y se revisan de nuevo). Las
+  vistas previas de registro/creación incluyen la declaración mostrada; el registro de confianza guarda la confirmada.
+- HITL sobre el aislamiento del núcleo: `core/` puede importar `harness_local.i18n` como única hoja externa (solo
+  stdlib); test y ARCHITECTURE lo recogen.
+- 471 claves del servicio en/es (+425): configuración local, registro, creación, preparación (prefijo
+  `preparation_required:` conservado), backup, retención, migración, runtime/lanzador, modo gestionado, vistas,
+  métricas, CLI y correcciones de diagnóstico; un resto de T010 en `api/managed.py`. `scripts/check_distribution.py`
+  pasa a `--ui-language en` y a los textos ingleses (`module:attribute`, `SQLite schema`).
+- Excepciones verificadas por test: vocabulario documental y alias de parsers (D169), recetas v1 y perfil con huella
+  (D163), tokens del protocolo de chat, mensaje técnico de commit y textos de terceros. Sin cambios de esquema,
+  API/OpenAPI, rutas, cliente ni dependencias.
+- Validación: pytest 1615 passed, 2 skipped, 29 subtests; unittest 8 OK; Node 93/93. QA visual conjunta no
+  autorizada (HITL), registrada como no realizada; sin servicios, navegador, agentes, proveedores, red ni scripts
+  de distribución. T022 es la siguiente.

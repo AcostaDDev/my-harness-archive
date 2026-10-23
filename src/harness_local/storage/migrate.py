@@ -22,6 +22,7 @@ from harness_local.launcher import initialize, local_database
 from harness_local.storage.backup import RESTORED_USER_VERSION
 from harness_local.storage.database import make_engine
 from harness_local.storage.schema import require_schema
+from harness_local.i18n import tr
 
 MIGRATIONS = Path(__file__).resolve().parents[1] / 'migrations'
 
@@ -54,13 +55,13 @@ def _connect(path, mode):
 def _revision(path):
     with closing(_connect(path, 'ro')) as db:
         if db.execute('PRAGMA user_version').fetchone()[0] == RESTORED_USER_VERSION:
-            raise MigrationRefused('Base restaurada de consulta (H5.2): no se migra.')
+            raise MigrationRefused(tr('migrate.restored'))
         try:
             rows = [r[0] for r in db.execute('SELECT version_num FROM alembic_version')]
         except sqlite3.OperationalError as exc:
-            raise MigrationRefused('Base sin control de versiones Alembic; no se migra.') from exc
+            raise MigrationRefused(tr('migrate.unversioned')) from exc
         if len(rows) != 1:
-            raise MigrationRefused('Base con varias o ninguna revisión Alembic; no se migra.')
+            raise MigrationRefused(tr('migrate.revisions'))
         return rows[0]
 
 
@@ -89,16 +90,16 @@ def _writers_alive(path):
 
 def _unlinked(path):
     if '..' in path.parts or any(part.is_symlink() for part in (path, *path.parents)):
-        raise MigrationRefused(f'Ruta enlazada o no canónica: {path}')
+        raise MigrationRefused(tr('migrate.path', path=path))
 
 
 def _snapshot_directory(path, directory):
     directory = Path(directory).expanduser()
     if not directory.is_absolute():
-        raise MigrationRefused('Las instantáneas requieren un directorio absoluto fuera de los checkouts.')
+        raise MigrationRefused(tr('migrate.snapshots_absolute'))
     _unlinked(directory)
     if any(os.path.lexists(parent / '.git') for parent in (directory, *directory.parents)):
-        raise MigrationRefused('Las instantáneas deben estar fuera de los checkouts.')
+        raise MigrationRefused(tr('migrate.snapshots_outside'))
     with closing(_connect(path, 'ro')) as db:
         tables = {row[0] for row in db.execute("SELECT name FROM sqlite_master WHERE type='table'")}
         for table in ('managed_runs', 'managed_activations', 'managed_phases', 'registered_projects',
@@ -106,7 +107,7 @@ def _snapshot_directory(path, directory):
             if table in tables:
                 for (root,) in db.execute(f'SELECT DISTINCT root FROM {table}'):
                     if directory.resolve().is_relative_to(Path(root).resolve()):
-                        raise MigrationRefused('Las instantáneas deben estar fuera de los checkouts registrados.')
+                        raise MigrationRefused(tr('migrate.snapshots_registered'))
     return directory
 
 
@@ -121,9 +122,9 @@ def _snapshot(path, revision, target, directory):
     with closing(_connect(path, 'ro')) as source, closing(_connect(destination, 'rw')) as copy:
         source.backup(copy)
         if copy.execute('PRAGMA integrity_check').fetchone()[0] != 'ok':
-            raise MigrationRefused(f'Instantánea con integridad inválida; base sin migrar: {destination}')
+            raise MigrationRefused(tr('migrate.snapshot_integrity', snapshot=destination))
         if copy.execute('SELECT version_num FROM alembic_version').fetchall() != [(revision,)]:
-            raise MigrationRefused(f'La revisión cambió durante la copia; base sin migrar: {destination}')
+            raise MigrationRefused(tr('migrate.snapshot_revision', snapshot=destination))
     raw = destination.read_bytes()
     manifest = {'format': 'premigration-1', 'source': str(path), 'source_revision': revision,
                 'target_revision': target, 'snapshot': destination.name,
@@ -151,14 +152,14 @@ def prepare_database(value: str, snapshots: Path) -> MigrationOutcome:
 def migrate_database(value: str, snapshots: Path, *, writers_stopped: bool = False) -> MigrationOutcome:
     """Installed entry point: never creates databases or infers that the service is stopped."""
     if writers_stopped is not True:
-        raise MigrationRefused('Detener servicio, observadores y escritores; se requiere --writers-stopped.')
+        raise MigrationRefused(tr('migrate.writers'))
     path, _ = local_database(value)
     _unlinked(path)
     for suffix in ('-wal', '-shm', '-journal'):
         auxiliary = Path(str(path) + suffix)
         _unlinked(auxiliary)
         if auxiliary.exists() and not auxiliary.is_file():
-            raise MigrationRefused('Los auxiliares SQLite deben ser archivos regulares, sin enlaces.')
+            raise MigrationRefused(tr('migrate.sidecars'))
     return _prepare_database(value, snapshots, create=False)
 
 
@@ -167,17 +168,17 @@ def _prepare_database(value, snapshots, *, create):
     head = ScriptDirectory.from_config(_config(url)).get_current_head()
     if not path.exists():
         if not create:
-            raise MigrationRefused('SQLite inexistente; migrate no crea bases. Usar init-db para una base nueva.')
+            raise MigrationRefused(tr('migrate.missing'))
         initialize(value)
         return MigrationOutcome('created', None, head)
     if not path.is_file() or path.is_symlink():
-        raise MigrationRefused('La base debe ser un archivo regular, sin enlaces.')
+        raise MigrationRefused(tr('migrate.regular'))
     current = _revision(path)
     known = {script.revision for script in ScriptDirectory.from_config(_config(url)).walk_revisions()}
     if current not in known:
-        raise MigrationRefused(f'Revisión {current} desconocida para este código (¿base más nueva?); no se migra.')
+        raise MigrationRefused(tr('migrate.unknown_revision', revision=current))
     if _writers_alive(path):
-        raise MigrationRefused('Hay un servicio o escritor vivo sobre la base; detenerlo antes de migrar.')
+        raise MigrationRefused(tr('migrate.alive'))
     if not create:
         snapshots = _snapshot_directory(path, snapshots)
     if current == head:
@@ -191,5 +192,5 @@ def _prepare_database(value, snapshots, *, create):
         finally:
             engine.dispose()
     except Exception as exc:
-        raise MigrationRefused(f'Migración fallida; base e instantánea conservadas ({snapshot}): {exc}') from exc
+        raise MigrationRefused(tr('migrate.failed', snapshot=snapshot, error=exc)) from exc
     return MigrationOutcome('migrated', current, head, snapshot)

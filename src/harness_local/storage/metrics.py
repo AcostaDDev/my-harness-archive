@@ -24,6 +24,7 @@ from harness_local.storage.models import (
     ManagedCommitRow as Commit, ManagedEventRow as Event, ManagedProcessRow as Process, ManagedRunRow as Run,
     RunProjectionCycleRow as Cycle, RunProjectionRow as Projection, RunProjectionStopRow as Stop,
 )
+from harness_local.i18n import tr
 
 # Raw `input_tokens` is not aggregated: Claude excludes the cache and Codex includes it. Its normalized form is.
 SUMMED = ('uncached_input_tokens', 'cache_read_tokens', 'cache_write_tokens', 'output_tokens', 'reasoning_tokens',
@@ -107,7 +108,7 @@ def backfill(engine, *, artifact_roots=(), clock=None) -> dict:
     for value in artifact_roots:
         root = Path(value)
         if not root.is_absolute() or not root.is_dir() or root.resolve() != root:
-            raise ValueError('Raíces de artefactos absolutas, existentes y sin enlaces requeridas.')
+            raise ValueError(tr('metrics.roots'))
         roots.append(root)
     clock = clock or (lambda: datetime.now(timezone.utc))
 
@@ -115,7 +116,7 @@ def backfill(engine, *, artifact_roots=(), clock=None) -> dict:
         return clock().astimezone(timezone.utc).isoformat(timespec='microseconds')
     with Session(engine) as session:
         if session.execute(text('PRAGMA user_version')).scalar():
-            raise ValueError('La base restaurada es solo de consulta; el relleno no se aplica.')
+            raise ValueError(tr('metrics.restored'))
         pending = session.scalars(select(AttemptRow.id).outerjoin(Metric, Metric.attempt_id == AttemptRow.id)
                                   .where(AttemptRow.result_json.is_not(None), Metric.attempt_id.is_(None))
                                   .order_by(AttemptRow.run_id, AttemptRow.number)).all()
@@ -217,9 +218,9 @@ class MetricsViews:
 
     def groups(self, scope, dimension, offset, limit, *, role=None, order='attempts'):
         if dimension not in DIMENSIONS and dimension != 'reported_model':
-            raise ValueError(f'Dimensión desconocida: {dimension}')
+            raise ValueError(tr('metrics.dimension', dimension=dimension))
         if order not in ORDERS:
-            raise ValueError(f'Orden desconocido: {order}')
+            raise ValueError(tr('metrics.order', order=order))
         with Session(self.engine) as session:
             if dimension == 'reported_model':
                 return self._model_groups(session, scope, offset, limit, role, order)
@@ -320,7 +321,7 @@ class MetricsViews:
         grouped by day: the date would be inferred. The phase is the axis of the evolution. P010-T011: counts per
         cycle from the projection, without decoding histories."""
         if dimension not in VALIDATION_DIMENSIONS:
-            raise ValueError(f'Dimensión desconocida: {dimension}')
+            raise ValueError(tr('metrics.dimension', dimension=dimension))
         key = {'phase': Run.phase_id, 'task': Run.task_id, 'root': Run.root}[dimension]
         groups = {}
         with Session(self.engine) as session:

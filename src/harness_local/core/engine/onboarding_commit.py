@@ -8,6 +8,7 @@ from harness_local.core.engine.document_text import work_language, words
 from harness_local.core.engine.documents import MAX_AGENTS_LINES, MAX_WRAPPER_LINES, blocks
 from harness_local.core.engine.import_commit import adopt_documents, check_destinations, preview_tree
 from harness_local.core.engine.phases import digest
+from harness_local.i18n import tr
 
 MESSAGE = 'docs: incorporar al control del harness'
 
@@ -64,7 +65,7 @@ def preview(context, source, contents, paths, drafts, record, inspection, writer
         'profile': profile, 'profile_sha256': digest(profile),
         'profile_proposal': source['inventory']['profile_proposal'],
         'moves': [], 'preserved': preserved, 'foreign': [],
-        'warnings': [f'Pendiente declarado por el revisor: {item}' for item in record['pending']]
-            + [f"Pregunta aplazada: {q['text']} ({q['deferred']['reason']})"
+        'warnings': [tr('definition.pending', item=item) for item in record['pending']]
+            + [tr('definition.deferred', question=q['text'], reason=q['deferred']['reason'])
                for q in record['questions'] if q.get('deferred')]}, MESSAGE)
     return shown

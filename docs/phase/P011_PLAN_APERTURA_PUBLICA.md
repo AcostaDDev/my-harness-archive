@@ -166,7 +166,8 @@ actual hasta implementarse T019; no se exigen mantener como capacidades pública
 | T008 | Trabajo inmutable por proyecto cero/B y snapshots del par | T001, T007 |
 | T009 | Prompts ingleses: prosa visual y documentos/código en trabajo | T003, T004, T008, T020 |
 | T010 | Traducción de la interfaz y diagnósticos HTTP propios (D170) | T007, T008, T009 |
-| T021 | Diagnósticos de servicio/CLI y QA visual conjunta (desglose HITL de T010, D170) | T010 |
+| T021 | Textos propios del servicio/CLI antes españoles en en/es (desglose HITL de T010, D170; D171) | T010 |
+| T022 | Textos de servicio ya ingleses en en/es y QA visual conjunta (desglose HITL de T021, D171) | T021 |
 | T011 | Contrato CLI: capacidades, mínimos y procedencia | T001, T004 |
 | T012 | Compatibilidad/diagnósticos implementados | T007, T011 |
 | T013 | Matriz semántica diagramas/código/tests tras retirada | T008, T009, T010, T012, T019 |

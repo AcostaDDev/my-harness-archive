@@ -299,11 +299,11 @@ def test_views_refuse_a_run_without_projection(migrated_database):
     with closing(sqlite3.connect(db_path(migrated_database))) as db:
         insert(db, 'run-x', synthetic('run-x', 8), created_at='2026-10-22T00:00:00')
         db.commit()
-    with pytest.raises(RuntimeError, match='sin proyección'):
+    with pytest.raises(RuntimeError, match='without projection'):
         MetricsViews(engine).summary(SCOPES[0])
-    with pytest.raises(RuntimeError, match='sin proyección'):
+    with pytest.raises(RuntimeError, match='without projection'):
         MetricsViews(engine).validations(SCOPES[0], 'task', 0, 10)
-    with Session(engine) as session, pytest.raises(RuntimeError, match='sin proyección'):
+    with Session(engine) as session, pytest.raises(RuntimeError, match='without projection'):
         documents._projected_facts(session, 'run-x')
     engine.dispose()
 

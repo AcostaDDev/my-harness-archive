@@ -15,6 +15,8 @@ import subprocess
 import tempfile
 import time
 
+from harness_local.i18n import tr
+
 
 MAX_OUTPUT = 256 * 1024  # stdout and stderr combined, per command
 TIMEOUT = 10.0
@@ -33,19 +35,9 @@ PATTERNS = {
     'codex': r'codex-cli ([0-9]{1,6}\.[0-9]{1,6}\.[0-9]{1,6})',
     'claude': r'([0-9]{1,6}\.[0-9]{1,6}\.[0-9]{1,6}) \(Claude Code\)',
 }
-FIXES = {
-    'config_invalid': 'Revisar los campos de CLIConfig: proveedor/baseline, argv absoluto, entorno explícito y timeout positivo.',
-    'config_unreadable': 'Usar un JSON UTF-8 regular de hasta 64 KiB, sin enlaces ni claves duplicadas.',
-    'spawn_error': 'Comprobar la ruta absoluta, permisos de ejecución y entorno del ejecutable configurado.',
-    'timeout': 'Revisar por separado por qué version/help no termina; no se reintenta automáticamente.',
-    'output_limit': 'Revisar el ejecutable: version/help excede 256 KiB de salida combinada.',
-    'exit_error': 'Revisar por separado el fallo local de version/help con el entorno explícito.',
-    'unexpected_output': 'Revisar el formato de version/help y caracterizar cualquier formato nuevo antes de admitirlo.',
-    'version_mismatch': 'Seleccionar explícitamente una CLI del baseline esperado; una versión nueva requiere caracterización.',
-    'missing_flags': 'Usar una CLI que anuncie las opciones requeridas; no sustituir flags automáticamente.',
-    'probe_error': 'Revisar los recursos locales y volver a solicitar el diagnóstico explícitamente.',
-    'cleanup_error': 'Comprobar manualmente la parada de la sonda local antes de repetir el diagnóstico.',
-}
+# Correction for each diagnostic code: catalog `cli_diagnostics.<code>`, in the emission's visual language.
+FIXES = ('config_invalid', 'config_unreadable', 'spawn_error', 'timeout', 'output_limit', 'exit_error',
+         'unexpected_output', 'version_mismatch', 'missing_flags', 'probe_error', 'cleanup_error')
 
 
 def _probe(argv, environment, cwd, timeout):
@@ -122,7 +114,7 @@ def preflight_config(config, *, timeout=TIMEOUT, access=None):
 
     def fail(code, status='unknown'):
         report['status'] = status
-        report['diagnostics'].append({'code': code, 'correction': FIXES[code]})
+        report['diagnostics'].append({'code': code, 'correction': tr(f'cli_diagnostics.{code}')})
         return report
 
     try:
@@ -184,7 +176,7 @@ def diagnose_file(path):
     def invalid(code):
         return {'format': 1, 'configuration': 'invalid', 'preflight': None,
                 'supported_versions': SUPPORTED,
-                'diagnostics': [{'code': code, 'correction': FIXES[code]}]}
+                'diagnostics': [{'code': code, 'correction': tr(f'cli_diagnostics.{code}')}]}
 
     def unique(pairs):
         result = {}

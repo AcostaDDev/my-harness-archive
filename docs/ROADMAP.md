@@ -254,10 +254,13 @@ T009 completada (D169): directiva de idioma sellada por job y documentos generad
 T010 completada (D170): interfaz React y diagnósticos HTTP propios en en/es;
 [entrega](phase/P011-T010_TRADUCCION_PRODUCTO.md). Por HITL, servicio/CLI pasan a la nueva T021 y la QA visual se
 hace tras ella.
-Nueve tareas pendientes; siguiente T021.
+T021 completada (D171): textos propios del servicio/CLI antes españoles en en/es por el visual de cada emisión;
+[entrega](phase/P011-T021_TRADUCCION_SERVICIO_CLI.md). Por HITL, los textos de servicio ya ingleses pasan a la nueva
+T022 y la QA visual conjunta se hace tras ella.
+Nueve tareas pendientes; siguiente T022.
 Planificación inicial finalizada en D156 y commit `6174f51`; ajustes D157/D158 incorporados
-en `2730f54`, sin ejecución del producto. La petición actual autoriza T010 y su commit local en inglés.
-La fase no está cerrada; se mantienen veintiuna tareas (doce completadas) y diez criterios.
+en `2730f54`, sin ejecución del producto. La petición actual autoriza T021 y su commit local en inglés.
+La fase no está cerrada; se mantienen veintidós tareas (trece completadas) y diez criterios.
 [Plan](phase/P011_PLAN_APERTURA_PUBLICA.md), [tareas](NEXT_STEPS.md) y
 [D154](DECISIONS.md#d154--p011-preparación-para-apertura-pública-en-github).
 La primera versión local P010 sigue completada en su alcance; P011 añade objetivos públicos, no reabre ese cierre.

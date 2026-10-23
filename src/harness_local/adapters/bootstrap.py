@@ -12,6 +12,7 @@ import stat
 import tempfile
 
 from harness_local.core.engine.phases import digest
+from harness_local.i18n import tr
 
 MARKER = 'harness-bootstrap.json'
 
@@ -31,8 +32,7 @@ def inspect_target(context, git):
     nested = git.code('rev-parse', '--is-inside-work-tree') == 0
     return {'identity': identity, 'entries': entries[:100], 'entries_truncated': len(entries) > 100,
             'import_required': bool(entries) or nested,
-            'diagnostic': 'La carpeta contiene datos o pertenece a un repositorio: incorpora un repositorio sin harness o registra uno ya gestionado.'
-                          if entries or nested else None}
+            'diagnostic': tr('bootstrap.import_required') if entries or nested else None}
 
 
 class DraftConflict(ValueError):
