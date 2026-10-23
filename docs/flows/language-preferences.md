@@ -18,17 +18,17 @@ sequenceDiagram
     U->>UI: elige idiomas en Preferencias
     UI->>API: PUT /preferences (expected_version, Idempotency-Key)
     alt versión vigente
-        API->>DB: lock de escritura; fila version+1 y evento encadenado
-        API-->>UI: preferencias guardadas; la UI cambia de idioma
+        API->>DB: lock de escritura, fila version+1 y evento encadenado
+        API-->>UI: preferencias guardadas, la UI cambia de idioma
     else otra ventana guardó antes
-        API-->>UI: 409 preferences_conflict; la UI relee y pide revisar
+        API-->>UI: 409 preferences_conflict, la UI relee y pide revisar
     end
     U->>API: nueva tarea, turno u operación (Idempotency-Key)
     API->>DB: misma transacción: lee preferencias e idioma de trabajo de la raíz y sella language_context
     alt raíz sin idioma de trabajo confirmado
-        API-->>U: 409 work_language_required; no se encola nada
+        API-->>U: 409 work_language_required, no se encola nada
     end
-    Note over API,DB: reanudar un run copia el valor de su primer job; nunca se recaptura
+    Note over API,DB: reanudar un run copia el valor de su primer job, nunca se recaptura
 ```
 
 - Fila inválida (editada fuera del servicio): la lectura devuelve `en` con estado `invalid`, la UI avisa y toda

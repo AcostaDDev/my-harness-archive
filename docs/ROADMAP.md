@@ -263,7 +263,9 @@ T011 completada (D173): [contrato](phase/P011-T011_CONTRATO_COMPATIBILIDAD_CLI.m
 automática, sin pin/aceptación de candidatas; mínimos nuevos Codex 0.163.0 / Claude 2.1.304 e indicación de
 actualizar para inferiores. T012 completada (D174): [entrega](phase/P011-T012_COMPATIBILIDAD_CLI.md),
 `local-config-7`/`cli-14` con detección automática, guardias e identidad por intento; posteriores con compatibilidad
-condicionada por HITL. Evidencia nueva sintética; sin CLI real. Seis tareas pendientes; siguiente T013.
+condicionada por HITL. Evidencia nueva sintética; sin CLI real. T013 completada (D175):
+[matriz](phase/P011-T013_MATRIZ_DIAGRAMAS.md) de diagramas/datos/arquitectura contra código y tests, catorce
+hallazgos documentales corregidos sin cambiar el producto. Cinco tareas pendientes; siguiente T014.
 Planificación inicial finalizada en D156 y commit `6174f51`; ajustes D157/D158 incorporados
 en `2730f54`, sin ejecución del producto. La continuación actual autoriza T012 y su commit local en inglés.
 La fase no está cerrada; se mantienen veintidós tareas (dieciséis completadas) y diez criterios.

@@ -1,7 +1,8 @@
-# Flujo — carpeta de proyectos y Django desde cero (P009)
+# Flujo — carpeta de proyectos y creación desde cero (P009, P010)
 
 **Estado: selección/retirada de carpeta y creación/registro del hijo implementados en T002 (D117).**
-Roles por proyecto implementados en T003 (D118); preparación Django implementada en T004 (D119).
+Roles por proyecto implementados en T003 (D118); preparación Django implementada en T004 (D119) y TypeScript web
+en P010-T002 (D143); idioma de trabajo al crear desde P011-T008 (D167).
 T005 verifica el recorrido con CLI falsas y herramientas Django reales en un hijo temporal ([evidencia](../archive/phase-009/P009-T005_ENSAYO_DJANGO.md), D120). D115/D116;
 [contrato/API/recuperación](../archive/phase-009/P009-T001_CONTRATO_CREACION.md), [plan](../archive/phase-009/P009_PLAN_DJANGO.md) y
 [tareas archivadas](../archive/phase-009/NEXT_STEPS.md). El flujo vigente de definición documental continúa en
@@ -12,26 +13,28 @@ y archivada (D139); [matriz y límites](../archive/phase-009/P009-T012_CIERRE_PI
 ```mermaid
 flowchart TD
     U["Usuario elige explícitamente su carpeta de proyectos"] --> R["Servicio muestra ruta canónica y guarda la autorización de creación de hijos"]
-    R --> N["Usuario indica nombre; UI muestra destino completo nuevo"]
-    N --> V{"¿Raíz vigente y destino nuevo dentro de su alcance?"}
+    R --> N["Usuario indica nombre, idioma de trabajo (inicializado con el default) y selección v5 opcional; UI muestra destino completo"]
+    N --> V{"¿Raíz vigente, destino nuevo dentro de su alcance y vista previa vigente?"}
     V -- no --> X["Diagnóstico sin escribir en destinos ajenos"]
-    V -- sí --> C["Persistir intención; crear hijo y registrar idempotentemente"]
-    C --> D["Enlace a definición documental con agentes efectivos: presets v5 o pareja heredada"]
-    D --> DC["Definición conversacional D088 y commit documental raíz"]
-    DC --> P["Mostrar receta Django: archivos, dependencias, comandos y red exactos"]
-    P --> A["Usuario acepta el plan de preparación dentro de la carpeta ya autorizada"]
-    A --> S["Preparación controlada: entorno, scaffold, configuración y commit técnico"]
-    S --> Q["Usuario revisa roles y modelo/esfuerzo del revisor por proyecto"]
-    Q --> E["Revisor planifica y decide modelo/esfuerzo del ejecutor con motivo"]
-    E --> T["Ejecutor escribe solo en el hijo; validaciones, revisión y commit del harness"]
-    T --> M{"¿Faltan tareas de la matriz?"}
-    M -- sí --> B["Con tarea COMMITTED y sin jobs pendientes, cambiar ajustes del mismo proyecto"]
-    B --> Q
-    M -- no --> F["QA final; check READY y cierre/archivo de P001 del Django"]
-    F --> I["Revisión de salida de P009 con resultados y límites"]
+    V -- sí --> C["Persistir intención; crear hijo y registrarlo con su idioma de trabajo, idempotentemente"]
+    C --> D["Definición conversacional D088 y commit documental raíz con los agentes efectivos"]
+    D --> RC{"¿Composición con receta?"}
+    RC -- "django o typescript-web" --> P["Mostrar plan de la receta: archivos, dependencias, comandos y red exactos"]
+    P --> A["Usuario confirma el plan dentro de la carpeta ya autorizada"]
+    A --> S["Preparación controlada: entorno, scaffold, validaciones y commit técnico"]
+    S --> T
+    RC -- "sin receta" --> T["Tareas de P001: el revisor planifica y fija modelo/esfuerzo del ejecutor; validación, revisión y commit"]
+    T --> Q["Sin trabajo pendiente: cambiar roles del mismo proyecto"]
+    Q --> T
+    T --> F["Check READY y cierre/archivo de la fase"]
     C -. caída .-> Z["Recuperación por intención y autoridad vigente; sin duplicar ni borrar contenido incierto"]
-    S -. caída .-> Z
+    S -. caída .-> Y["Operación de preparación enlazada desde el último prefijo acreditado"]
 ```
+
+Detalle de cada etapa: [definición](project-definition.md), [preparación](project-preparation.md),
+[agentes](project-agents.md), [idioma de trabajo](project-work-language.md), [tarea](task-run.md) y
+[fase](phase-lifecycle.md). Una composición con receta bloquea tareas, checks y cierres hasta completar la
+preparación con su recibo.
 
 La raíz padre se elige desde una acción de UI; la IA no la descubre o deduce. Guardarla concede al servicio
 crear nuevos hijos sin repetir el permiso de carpeta para cada proyecto; no concede escritura al ejecutor
@@ -39,9 +42,12 @@ en el padre/hermanos ni autorización general para red, instalación o proveedor
 se ejecutan dentro de su plan confirmado, con intención previa, idempotencia y recuperación.
 
 La configuración de roles es por proyecto, desde presets del servicio: el usuario fija proveedor/modelo/esfuerzo
-del revisor y proveedor/catálogo del ejecutor; el revisor fija modelo/esfuerzo concretos de este último.
-Matriz en el mismo id/checkout: Codex→Codex, Codex→Claude, Claude→Claude y Claude→Codex, siempre revisor→ejecutor.
-Las cuatro tareas terminan COMMITTED; no se modifican los snapshots previos al cambiar ajustes.
+del revisor y proveedor/catálogo del ejecutor; el revisor fija modelo/esfuerzo concretos de este último. Cambiar
+ajustes no modifica los snapshots previos.
+
+Piloto histórico P009 (no es una etapa del producto): la matriz Codex→Codex, Codex→Claude, Claude→Claude y
+Claude→Codex en el mismo id/checkout, con las cuatro tareas COMMITTED, QA final, cierre de P001 del hijo y revisión
+de salida de P009, quedó acreditada en su [matriz y límites](../archive/phase-009/P009-T012_CIERRE_PILOTO.md).
 
 La autoridad UI permite hijos directos nuevos, aunque el padre no figure en el TOML. Las raíces TOML mantienen
 el alta de carpetas existentes con confianza exacta; elegir el padre no amplía ese alta ni confía en hermanos.
@@ -60,6 +66,8 @@ stateDiagram-v2
     RECOVERY_REQUIRED --> CANCELLED: conservar carpeta y reserva inciertas
     BLOCKED --> CANCELLED: detener sin borrar
     BLOCKED --> DIRECTORY_CREATED: reanudación confirmada con propiedad acreditada
+    BLOCKED --> INTENDED: reanudación confirmada sin carpeta y con la misma autoridad
+    DIRECTORY_CREATED --> RECOVERY_REQUIRED: fallo de E/S antes del alta
     INTENDED --> CANCELLED: detener efectos pendientes
     DIRECTORY_CREATED --> CANCELLED: conservar carpeta
     CANCELLED --> CANCELLED: comprobar ausencia sin reabrir efectos

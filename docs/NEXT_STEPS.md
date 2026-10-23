@@ -4,7 +4,7 @@ Objetivo y criterios en [ROADMAP](ROADMAP.md#p011--preparación-para-apertura-p�
 Decisión: [D154](DECISIONS.md#d154--p011-preparación-para-apertura-pública-en-github).
 [Plan y alcance](phase/P011_PLAN_APERTURA_PUBLICA.md).
 
-**Estado:** en ejecución desde el 2026-10-22. T001/T002/T019/T003–T012/T020–T022 completadas (D159–D174); seis
+**Estado:** en ejecución desde el 2026-10-22. T001/T002/T019/T003–T013/T020–T022 completadas (D159–D175); cinco
 tareas pendientes (T010 desglosó T021 y T021 desglosó T022 por HITL). Licencia/avisos, retirada legacy/A,
 código/pruebas en inglés, preferencias globales e idioma de trabajo inmutable por proyecto con el par congelado por
 job/intento; recetas v2; directiva al agente y documentos en W; interfaz React, diagnósticos HTTP propios y todos
@@ -12,7 +12,8 @@ los textos visibles del servicio/CLI en en/es (los técnicos ingleses, listados)
 **Planificación:** base finalizada en D156 y afinada por D155/D157/D158; contrato T001 disponible.
 No equivale a fase completada.
 T011 entrega el contrato de CLI y T012 implementa detección automática y compatibilidad condicionada por capacidades.
-**Siguiente:** P011-T013. Sin autorización de publicación.
+T013 contrasta diagramas, datos y arquitectura con el código y sus pruebas.
+**Siguiente:** P011-T014. Sin autorización de publicación.
 P001–P010 siguen cerradas; la primera versión local mantiene el alcance de D151/D153.
 
 ## Restricciones compartidas
@@ -45,7 +46,7 @@ P001–P010 siguen cerradas; la primera versión local mantiene el alcance de D1
   siguiente fase` para v0.2.0 después de abrir el proyecto en GitHub, fuera de estas tareas. P011 mantiene
   cierre con READY y autorización propia, nueva fase sin tareas y confirmación del plan posterior.
   El commit D156 y los ajustes D157/D158 ya se realizaron. La petición actual autoriza ejecutar la siguiente
-  tarea (T012) y su commit local en inglés, sin encadenar tareas ni publicar.
+  tarea (T013) y su commit local en inglés, sin encadenar tareas ni publicar.
 - D157 elige instantánea pública inicial revisada, con Git/documentación de partida nuevos y sin historia privada.
   Desde la apertura, código/decisiones/fases se desarrollan en el repositorio público, fuente principal; este
   checkout conserva su historia privada. No sincronizar dos desarrollos activos ni congelar para siempre `docs/` pública.
@@ -384,7 +385,12 @@ CLI falsas. Caracterización o inferencia real requiere tarea y autorización pr
 
 ## P011-T013 — Auditoría semántica de diagramas y flujos
 
-**Estado:** pendiente. **Depende de:** T008, T009, T010, T012, T019.
+**Estado:** completada el 2026-10-23, D175. **Depende de:** T008, T009, T010, T012, T019.
+**Evidencia:** [matriz](phase/P011-T013_MATRIZ_DIAGRAMAS.md): 14 flujos (23 diagramas), 12 ER y ARCHITECTURE
+contrastados nodo/transición → código/tests; catorce hallazgos documentales corregidos sin cambiar el producto
+(estados de run/fase/creación, `/tarea`, v6/v7, CLI, idioma en B, restos A/observadores, dos fallos de sintaxis).
+Dos regresiones nuevas para transiciones sin prueba. 35 diagramas pasan el parser local, paridad ER con 51 tablas
+y 520 columnas y 727 enlaces correctos; sin render DOM ni traducción (T014). Resto: ayuda CLI «observers» → T014/T017.
 **Objetivo:** Que cada diagrama vigente refleje comportamiento final, fallos y límites del software.
 **Alcance:** inventario de flujos tras T019, nuevos flujos idioma/CLI si proceden, ARCHITECTURE y DDBB-DIAGRAM;
 código, rutas API, permisos, estados, recuperación y persistencia.

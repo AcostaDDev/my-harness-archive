@@ -16,15 +16,20 @@ flowchart TD
     B -- no --> Q["RECOVERY_REQUIRED; preserve original job and evidence"]
     B -- yes --> A["Fresh version/help observation for this attempt"]
     A --> G{"Capabilities and actual argv preserve required guards?"}
-    G -- no --> R["Record refused intent without target launch; explicit resolution"]
+    G -- no --> R["Record refused intent without target launch; job RECOVERY_REQUIRED until confirm-stopped"]
     G -- yes --> I["Durable process intent and process identity; target waits at gate"]
     I --> H{"Launch identity still matches immediately before GO?"}
-    H -- no --> K["Stop own gated group; record dead or uncertain state; no target GO"]
+    H -- no --> K["Stop own gated group; record dead or uncertain state; no target GO; job RECOVERY_REQUIRED"]
     H -- yes --> E["GO: fresh client session under existing controls"]
     E --> T{"One known terminal, valid payload and dead process group?"}
     T -- no --> O["Preserve original stream/failure; existing stop or recovery rules"]
     T -- yes --> N["Continue engine validation and review; every next attempt revalidates"]
 ```
+
+A refusal at binding or at an attempt raises a journal error: the supervisor quarantines the job without a
+result, and confirming the writer stopped marks any unfinished attempt `INTERRUPTED` without retry
+([task run](task-run.md#estados-del-run)). Admission of new work already rejects unresolved or below-minimum
+clients with `CompatibilityError`, before any run exists.
 
 Minimums are Codex 0.163.0 and Claude Code 2.1.304 for both roles. Historical configurations/evidence remain
 readable; a below-minimum client cannot start new work. Only effective provider roles are detected during normal

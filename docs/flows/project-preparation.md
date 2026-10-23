@@ -6,7 +6,7 @@ Implementado en D119 para Django y en D143 para TypeScript web;
 [contrato TypeScript](../archive/phase-010/P010-T001_CONTRATO_CONSOLIDACION.md#1-arranque-de-un-proyecto-typescript-web-nuevo-t002)
 y [entrega TypeScript](../archive/phase-010/P010-T002_ARRANQUE_TYPESCRIPT.md). Solo hijos nuevos registrados por el servicio,
 composición v5 con `recipe = "django"` (perfil empaquetado) o `recipe = "typescript-web"` (perfil integrado sin
-cambios) y commit documental raíz aceptado; desde P011-T020 (D168) las mismas claves en v6 eligen las recetas v2
+cambios) y commit documental raíz aceptado; desde P011-T020 (D168) las mismas claves en v6/v7 eligen las recetas v2
 con el idioma de trabajo del hijo ([sección](#recetas-v2-por-idioma-de-trabajo-p011-t020-d168)). No ejecuta agentes. Ambas recetas comparten contrato
 `project-preparation-1`, binding `preparation-commands-1`, tablas, locks, journal, commit técnico y recuperación;
 cada una aporta su manifiesto, pasos, reglas de fuente y recibo.
@@ -107,14 +107,14 @@ exactamente el manifiesto. El manifiesto queda fijo tras preparar; añadir depen
 
 ## Recetas v2 por idioma de trabajo (P011-T020, D168)
 
-`local-config-6` admite `[recipes.django]` y `[recipes.typescript-web]` con las claves de v5 y elige
+`local-config-6` y `local-config-7` admiten `[recipes.django]` y `[recipes.typescript-web]` con las claves de v5 y eligen
 `django-recipe-2`/`typescript-web-recipe-2`; v5 sigue eligiendo v1 con sus hashes. Mismos efectos, orden, núcleo,
 locks, journal, recuperación y commit técnico que v1; cambian la prosa técnica del scaffold, el perfil (Django v2
 con instrucciones inglesas y el formateador de D133; TypeScript con copia propia del perfil) y la identidad.
 
 ```mermaid
 flowchart TD
-    C["Composición v6 con receta: recipe_config_sha256 liga config y huella v2 de en y es"] --> P["Preview v2"]
+    C["Composición v6/v7 con receta: recipe_config_sha256 liga config y huella v2 de en y es"] --> P["Preview v2"]
     P --> L{"¿Fila de idioma de trabajo de la raíz?"}
     L -- no --> R["409 work_language_required; sin comprobar ni tocar el checkout"]
     L -- sí --> M["Manifiesto del idioma; plan sella work_language, hash de la fila y recipe_sha256"]
@@ -131,4 +131,4 @@ flowchart TD
 - La UI muestra los pasos v2 con los catálogos en/es por `id` (validaciones con el comando del perfil) y el idioma
   de trabajo del plan; el plan conserva su etiqueta inglesa. Los planes v1 muestran su etiqueta congelada.
 - El idioma funcional del hijo (`LANGUAGE_CODE = "es"`, `<html lang="es">`, textos visibles) no deriva del visual
-  ni del de trabajo. Mover a v6 un proyecto preparado con v1 no está soportado: cambiaría su composición congelada.
+  ni del de trabajo. Mover a v6/v7 un proyecto preparado con v1 no está soportado: cambiaría su composición congelada.

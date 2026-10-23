@@ -50,7 +50,8 @@ a la prosa de DECISIONS; las tareas normales no.
 - Los ejecutores pueden editar `docs/flows/**`, `docs/DDBB-DIAGRAM.md`, `docs/ARCHITECTURE.md`,
   `docs/SPECIFICATION.md` y `docs/phase/**` cuando su contrato lo incluya; los documentos de control siguen protegidos.
 - `AGENTS.md`, `CLAUDE.md` y `GEMINI.md` admiten edición confirmada; también se escriben en la creación y en
-  las importaciones A/B confirmadas (D100, D103).
+  la incorporación B confirmada (D103). La normalización A está retirada (D161); sus intenciones antiguas no se
+  ejecutan ([compatibilidad](legacy-migration.md)).
 
 ## Fuente en el código
 

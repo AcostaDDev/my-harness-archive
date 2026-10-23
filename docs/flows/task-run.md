@@ -20,11 +20,12 @@ sequenceDiagram
     API-->>U: sección literal y su hash
     U->>API: encolar tarea con hash y notas opcionales (Idempotency-Key)
     Note over API,G: 409 si la sección ya no coincide con el documento vivo
-    Note over API,DB: rechazo si cambió la composición del registro antes de admitir
-    API->>DB: run QUEUED + job QUEUED con el idioma visual sellado (D166)
+    Note over API,DB: rechazo si cambió la composición del registro, falta el idioma de trabajo<br/>o las CLI efectivas no están resueltas y compatibles (D167, D174)
+    API->>DB: run QUEUED + job QUEUED con el par de idiomas sellado (language-context-1)
     S->>DB: reclamar job (lease, lock del checkout)
     S->>E: run con contexto, perfil y versiones congelados
     Note over E,G: cada intento lee AGENTS.md con su hash y se detiene antes de invocar si falta
+    Note over E,X: cada intento revalida versión, guardias e identidad de la CLI antes de GO (cli-compatibility)
     E->>G: captura previa (checkout limpio en v2)
     alt plan determinista suficiente
         E->>E: contrato desde NEXT_STEPS
@@ -71,17 +72,30 @@ stateDiagram-v2
     REVIEWING --> REVISION_LIMIT: límite agotado
     ACTIVE --> STOPPED: parada con etapa y motivo
     ACTIVE --> REFUSED: guardia antes de efectos
-    ACTIVE --> RECOVERY_REQUIRED: lease vencido o fallo incierto
+    ACTIVE --> RECOVERY_REQUIRED: excepción, lease vencido o fallo incierto
     RECOVERY_REQUIRED --> INTERRUPTED: confirmación del escritor detenido
+    RECOVERY_REQUIRED --> COMMITTED: confirmación con commit ya registrado
     STOPPED --> QUEUED: revalidar o reintentar (acción explícita)
-    ACCEPTANCE_READY --> COMMITTING: job commit
-    COMMITTING --> COMMITTED
+    BLOCKED --> QUEUED: revalidar o reintentar
+    REVISION_LIMIT --> QUEUED: revalidar (reintentar vuelve al límite sin invocar)
+    INTERRUPTED --> QUEUED: revalidar, reintentar o conciliar la intención de commit
+    ACCEPTANCE_READY --> QUEUED: job commit confirmado
+    ACTIVE --> COMMITTING: job commit reclamado; intención sellada antes del efecto
+    COMMITTING --> COMMITTED: resultado del commit con CAS
+    COMMITTING --> STOPPED: contenido o HEAD cambiados (INVALIDATED)
+    COMMITTING --> RECOVERY_REQUIRED: caída con intención pendiente
     COMMITTED --> [*]
 ```
 
-`PREPARING` y `VALIDATING` son etapas de checkpoint; los roles `phase`, `chat`, `definition` y `planning` usan
-`CHECKING` o `ANSWERING`. El job sigue `QUEUED → ACTIVE → DONE | REFUSED | RECOVERY_REQUIRED → INTERRUPTED`; un
-intento sin resultado al confirmar la parada queda `INTERRUPTED` sin reintento automático.
+Los estados intermedios son etapas del mismo job `ACTIVE`: `PREPARING`, `VALIDATING` y `REVIEWING` llegan por
+checkpoint y `PLANNING`/`EXECUTING`/`REVIEWING` al iniciar cada intento; los roles `phase`, `chat`, `definition` y
+`planning` usan `CHECKING` o `ANSWERING`, y `bootstrap`, `DISCOVERING`. Por eso `STOPPED`, `REFUSED` y
+`RECOVERY_REQUIRED` pueden alcanzarse desde cualquiera de ellos. Revalidar exige historial `stopped`, `blocked` o
+`revision_limit` con contrato congelado; reintentar al ejecutor, además, rutas permitidas. Un rechazo previo a efectos
+conserva el estado terminal del historial (o `COMMITTED`) y solo marca `REFUSED` si no lo había. Un commit
+`INVALIDATED` no bloquea una revalidación; un commit `COMMITTED` impide reanudar y repetir el commit.
+El job sigue `QUEUED → ACTIVE → DONE | REFUSED | RECOVERY_REQUIRED → INTERRUPTED`; un intento sin resultado al
+confirmar la parada queda `INTERRUPTED` sin reintento automático.
 
 ## Fuente en el código
 

@@ -12,8 +12,8 @@ flowchart TD
     SEL --> REG{"¿Cómo llega el proyecto?"}
     REG -- "registrar checkout existente (B)" --> RP["POST /registry/preview con work_language"]
     REG -- "crear carpeta nueva" --> CP["POST /project-creations/preview con work_language"]
-    REG -- "TOML local-config-6" --> T6["[[projects]].work_language; la carga no escribe"]
-    REG -- "proyecto sin valor (TOML 1–5, v6 sin clave, registros previos)" --> NO["Sin idioma confirmado"]
+    REG -- "TOML local-config-6/7" --> T6["[[projects]].work_language; la carga no escribe"]
+    REG -- "proyecto sin valor (TOML 1–5, v6/v7 sin clave, registros previos)" --> NO["Sin idioma confirmado"]
     RP --> H["Vista previa: valor elegido + default y versión (procedencia, fuera del hash)"]
     CP --> H
     H --> X{"¿La raíz ya tiene otro valor?"}
@@ -36,7 +36,7 @@ flowchart TD
 
 - Inmutabilidad: actualizar o dar de baja un registro con `work_language` en el cuerpo devuelve 409
   `work_language_immutable`; la reapertura (baja y nuevo registro de la misma raíz) solo admite el valor original y
-  conserva la fila original. Un TOML v6 con otro valor detiene el arranque; sin la clave, el proyecto lee el valor ya
+  conserva la fila original. Un TOML v6/v7 con otro valor detiene el arranque; sin la clave, el proyecto lee el valor ya
   confirmado. Los ajustes del proyecto solo lo muestran.
 - Cambiar el default de trabajo entre vista previa y confirmación no altera el valor confirmado: el hash sella el
   valor elegido y la asociación existente; el default y su versión quedan como procedencia en `confirmation`.
@@ -46,7 +46,7 @@ flowchart TD
   del run, también `ui-language-1` o null de jobs anteriores; no reciben trabajo inventado.
 - Un contexto de proyecto obsoleto con otro `work_language` (no debería ocurrir: la fila no cambia) se rechaza.
 - Downgrade de `0025` rechazado si hay alguna asociación. Backup y restauración de consulta la conservan.
-- Recetas: en `local-config-6`, `[recipes]` elige las recetas v2, que preparan con el idioma de la fila y lo sellan
+- Recetas: en `local-config-6` y `local-config-7`, `[recipes]` elige las recetas v2, que preparan con el idioma de la fila y lo sellan
   en plan y recibo; sin fila, la preparación se rechaza antes de efectos ([flujo](project-preparation.md#recetas-v2-por-idioma-de-trabajo-p011-t020-d168), D168).
 
 ## Directiva y documentos generados (P011-T009, D169)
@@ -78,6 +78,6 @@ flowchart TD
   `storage/managed.py::_language`/`agent_started`.
 - `services/project_registry.py` (vista previa/sello), `services/project_creation.py` (`project-creation-2`),
   `services/work_language.py` (confirmación explícita), `services/managed_runtime.py` (arranque TOML y contexto),
-  `services/local_config.py` (`local-config-6`).
+  `services/local_config.py` (`local-config-6/7`).
 - `api/managed.py` (`/projects/{id}/work-language`, códigos 409), `api/schemas.py`.
 - `frontend/src/WorkLanguage.tsx`, `pages/Registry.tsx`, `pages/Settings.tsx`.

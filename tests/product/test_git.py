@@ -590,6 +590,31 @@ def test_crash_around_the_git_effect_recovers_without_duplicate_commit(task, rep
     assert not (context.root.parent.parent / "hook-ran").exists()
 
 
+def test_crash_after_the_recorded_commit_recovers_as_committed_without_another_commit(task, repository, monkeypatch):
+    """P011-T013: RECOVERY_REQUIRED → COMMITTED in flows/task-run.md; the recorded commit decides the run status."""
+    context, info = task
+    job, _ = accept(repository, context)
+    queued, worker = run_commit(repository, job)
+
+    def finish(*args, **kwargs):
+        raise SyntheticCrash()
+
+    monkeypatch.setattr(repository, "finish", finish)
+    with pytest.raises(SyntheticCrash):
+        worker.run_once()
+    monkeypatch.undo()
+    record = repository.commit_record(job.run_id)
+    assert record.status == "COMMITTED" and repository.get_job(queued.id).status == "ACTIVE"
+    recover(repository, job, queued)
+    run = repository.get_run(job.run_id)
+    assert run.status == "COMMITTED" and repository.get_job(queued.id).status == "INTERRUPTED"
+    assert commits_after(context.root, info.base_revision) == "1"
+    with pytest.raises(Conflict):
+        repository.submit_commit(job.run_id, key="again", expected_version=run.version, mechanical=())
+    with pytest.raises(Conflict):
+        repository.resume(job.run_id, key="revalidate", expected_version=run.version)
+
+
 def test_reconciliation_does_not_rewrite_history_after_later_commits_or_edits(task, repository, monkeypatch):
     context, info = task
     job, _ = accept(repository, context)

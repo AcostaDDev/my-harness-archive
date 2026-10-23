@@ -63,7 +63,7 @@ llaman a los mismos casos de uso. El supervisor es el único que lanza procesos 
 | `storage/run_projection.py`, `managed_views.py` | Proyección derivada `run-projection-1` escrita con el historial y vistas de runs que solo la leen (D144) |
 | `services/managed.py`, `managed_runtime.py` | Supervisor (`run_once`, lease, cuarentena) y composición del runtime |
 | `services/local_config.py`, `project_registry.py`, `project_creation.py` | TOML `local-config-7` (lectura de 1–6), CLI automática sin pin en v7 (D174); registro/creación con 3–7, presets desde v5, recetas v1 en v5 y v2 en v6/v7 (D168); trabajo sellado al alta (D167) |
-| `recipes/`, `services/project_preparation.py`, `storage/preparation.py`, `adapters/preparation.py` | Recetas empaquetadas `django-recipe-1` y `typescript-web-recipe-1` y su preparación confirmada y recuperable (D119, D143); sucesoras v2 por idioma de trabajo en `local-config-6`, con despacho por `id` (D163, D168) |
+| `recipes/`, `services/project_preparation.py`, `storage/preparation.py`, `adapters/preparation.py` | Recetas empaquetadas `django-recipe-1` y `typescript-web-recipe-1` y su preparación confirmada y recuperable (D119, D143); sucesoras v2 por idioma de trabajo en `local-config-6/7`, con despacho por `id` (D163, D168) |
 | `api/app.py`, `managed.py`, `schemas.py`, `session.py`, `security.py` | Aplicación, rutas, contratos Pydantic, sesión y guardia |
 | `profiles/typescript_web.py`, `profiles/reference_project.py` | Perfiles integrados (`typescript-web` componible; `reference_project` solo biblioteca); los perfiles del TOML v4/v5 se componen en `services/local_config.py` |
 | `cli.py`, `launcher.py` | `harness-local` (backup, retención, diagnóstico, `check-config`, `metrics-backfill`, `init-db`, `serve`); `--ui-language` por invocación |
@@ -265,7 +265,7 @@ de cada rol debe incluir el cliente, o se declara su ruta opcional. Mínimos y c
 [README](../README.md#requisitos), contrastados con `cli_compatibility.MINIMUM` y la política incluida. Las listas
 `cli_agents.SUPPORTED`/`WRITE_SUPPORTED` conservan evidencia histórica y ya no son allowlists de admisión.
 
-Actualización (D150): detener servicio, observadores y escritores, instalar el nuevo wheel y ejecutar
+Actualización (D150): detener el servicio y los escritores, instalar el nuevo wheel y ejecutar
 `harness-local migrate --database /ruta/state/harness.sqlite3 --snapshots /ruta/copias-previas --writers-stopped`.
 Reutiliza `storage/migrate.py`: revisión conocida, instantánea SQLite verificada (`premigration-1`, integridad,
 revisión, SHA-256 y fsync) y después `upgrade head`, con comprobación del esquema final. Solo bases existentes;
@@ -402,7 +402,8 @@ efectos internos por flags ni exigir una caracterización a cada usuario/patch.
 No equivale a garantizar cualquier versión futura ni a pasar a App Server/SDK. Versiones observadas y política
 quedarán ligadas a los intentos sin reescribir evidencia previa o realizar downgrade/retry silencioso.
 
-T013 contrasta semánticamente diagramas con fuentes/tests. T014–T017 preparan documentación inglesa, paquete
+T013 contrastó semánticamente diagramas, datos y esta arquitectura con fuentes/tests (D175,
+[matriz](phase/P011-T013_MATRIZ_DIAGRAMAS.md)). T014–T017 preparan documentación inglesa, paquete
 candidato con recursos en/es, CI sintética y primer uso aislado con dictamen. Requisitos build/servicio/hijo y
 plataformas se acreditan por separado; no se cambia el límite de contención cooperativa ni se publica por efecto
 de preparar workflows. [Plan](phase/P011_PLAN_APERTURA_PUBLICA.md) y [tareas](NEXT_STEPS.md).

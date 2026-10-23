@@ -10,15 +10,18 @@ stateDiagram-v2
     ACTIVE --> CHECKING: check bajo el lock
     NEEDS_RECONCILIATION --> CHECKING
     READY_TO_CLOSE --> CHECKING
-    BLOCKED --> CHECKING
+    BLOCKED --> CHECKING: sin preguntas abiertas
     CHECKING --> READY_TO_CLOSE: READY
-    CHECKING --> NEEDS_RECONCILIATION: REVISE, STATE mayor de 24 KiB o base mayor de 12 KiB
+    CHECKING --> NEEDS_RECONCILIATION: REVISE, deriva documental, STATE mayor de 24 KiB o base mayor de 12 KiB
     CHECKING --> BLOCKED: BLOCKED o preguntas abiertas
-    CHECKING --> ACTIVE: NOT_READY o fallo (estado previo)
+    CHECKING --> ACTIVE: NOT_READY
     ACTIVE --> BLOCKED: pregunta bloqueante
+    NEEDS_RECONCILIATION --> BLOCKED: pregunta bloqueante
+    READY_TO_CLOSE --> BLOCKED: pregunta bloqueante
     BLOCKED --> ACTIVE: preguntas respondidas
     NEEDS_RECONCILIATION --> ACTIVE: documentos adoptados por hash
-    READY_TO_CLOSE --> CLOSING: autorización sobre el READY mostrado
+    READY_TO_CLOSE --> ACTIVE: documentos adoptados o enmienda
+    READY_TO_CLOSE --> CLOSING: autorización sobre el READY mostrado o abandono confirmado
     ACTIVE --> CLOSING: abandono confirmado
     BLOCKED --> CLOSING: abandono confirmado
     NEEDS_RECONCILIATION --> CLOSING: abandono confirmado
@@ -28,6 +31,12 @@ stateDiagram-v2
     CLOSED --> [*]
     ABANDONED --> [*]
 ```
+
+Un check o cierre que falla, se rechaza antes de efectos o cuyo escritor se confirma detenido devuelve la fase a su
+estado previo (`BLOCKED` si hay preguntas abiertas); en un cierre invalida además su autorización y deja la intención
+de tag sellada como efecto incierto para la conciliación. Reanudar un cierre exige la misma terminal y, para
+`CLOSED`, el mismo vínculo READY. Las preguntas se rechazan en `CLOSING`, `CLOSED` y `ABANDONED`; las enmiendas,
+también durante `CHECKING`.
 
 Una enmienda conserva la definición anterior e invalida READY y lotes. El lote desatendido encadena
 `tarea → commit → siguiente tarea`, pero nunca comprueba ni cierra. Un cierre interrumpido mantiene la intención

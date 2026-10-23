@@ -9,23 +9,23 @@ sequenceDiagram
     participant CLI as harness-local migrate
     participant DB as SQLite existente
     participant C as Directorio de copias
-    U->>U: Detener servicio, observadores y escritores; instalar wheel
+    U->>U: Detener el servicio y los escritores, instalar el wheel
     U->>CLI: --database absoluta --snapshots absoluto --writers-stopped
     CLI->>DB: Lecturas: revisión, restauración, propietarios y grupos
     Note over CLI,DB: Rechazo sin migrar ante ruta enlazada, base ausente/sin Alembic,<br/>revisión desconocida o propietario/grupo registrado vivo
     CLI->>CLI: Comprobar copias fuera de checkouts Git y raíces persistidas
     alt Revisión actual
-        CLI-->>U: current; sin cambios ni copia
+        CLI-->>U: current, sin cambios ni copia
     else Revisión anterior conocida
         CLI->>C: SQLite backup exclusivo, integridad y revisión
         CLI->>C: Manifiesto premigration-1 con SHA-256 y fsync
         CLI->>DB: Alembic upgrade head y require_schema
         alt Éxito
-            CLI-->>U: migrated; revisión previa, final y ruta de copia
+            CLI-->>U: migrated, revisión previa, final y ruta de copia
             U->>U: Arrancar serve explícitamente
         else Fallo
-            CLI-->>U: Diagnóstico; base y copia conservadas
-            Note over U,C: Inspección manual; sin restauración, borrado ni reintento automático
+            CLI-->>U: Diagnóstico, base y copia conservadas
+            Note over U,C: Inspección manual, sin restauración, borrado ni reintento automático
         end
     end
 ```

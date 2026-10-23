@@ -539,6 +539,21 @@ def test_heartbeat_failure_prevents_later_calls_and_retains_lock(repository, con
     assert rows(repository, CheckoutLockRow) == 1
 
 
+def test_mode_change_after_admission_refuses_the_claim_before_any_effect(repository, context):
+    """P011-T013: ACTIVE → REFUSED in flows/task-run.md; a foreign marker after queueing closes job and lock."""
+    job = submit(repository, context)
+    marker = context.root / ".harness/managed-mode.json"
+    marker.parent.mkdir()
+    marker.write_text("{}", encoding="utf-8")
+    supervisor, agents, runner, _ = worker(repository, context, [edit(), review()])
+    assert supervisor.run_once().status == "REFUSED"
+    run = repository.get_run(job.run_id)
+    assert run.status == "REFUSED" and run.stage == "mode_guard"
+    assert repository.get_job(job.id).status == "REFUSED"
+    assert not agents.requests and not runner.calls and rows(repository, CheckoutLockRow) == 0
+    assert attempts(repository, job.run_id) == []
+
+
 def test_conflicts_and_frozen_history_are_rejected(repository, context):
     job = submit(repository, context)
     with pytest.raises(Conflict):

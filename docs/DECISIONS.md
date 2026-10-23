@@ -185,6 +185,7 @@ tarea se leen solo las decisiones que cita; este índice sirve para buscar prece
 | [D172](#d172--p011-t022-textos-de-servicio-ya-ingleses-en-enes-y-rechazos-por-código) | P011-T022: textos de servicio ya ingleses en en/es y rechazos por código | P011 |
 | [D173](#d173--p011-t011-detección-automática-de-cli-mínimos-y-contrato-por-capacidades) | P011-T011: detección automática de CLI, mínimos y contrato por capacidades | P011 |
 | [D174](#d174--p011-t012-clientes-automáticos-y-compatibilidad-condicionada) | P011-T012: clientes automáticos y compatibilidad condicionada | P011 |
+| [D175](#d175--p011-t013-diagramas-contrastados-con-el-código-sin-cambiar-el-producto) | P011-T013: diagramas contrastados con el código sin cambiar el producto | P011 |
 
 ## D001 — Alcance local y arquitectura base
 
@@ -5214,3 +5215,23 @@ de confianza antes de admitir cada nuevo escritor: la evidencia de D068/D122 con
 - Sin CLI/proveedores reales, auth/configuración global, nuevos smokes, servicios en puertos, navegador, red,
   instalaciones o publicación. La evidencia nueva es sintética/offline y sus checks quedan en la entrega.
   No acredita uso real nuevo ni cambia los aplazamientos B/D095 o consentimientos agotados. Siguiente: T013.
+
+## D175 — P011-T013: diagramas contrastados con el código sin cambiar el producto
+
+Estado: aplicada el 2026-10-23 en T013 por la continuación y commit local en inglés pedidos por el usuario.
+Fase: P011. Cumple el criterio 5 del contrato T001 (D159) para los flujos vigentes, el modelo de datos y la
+arquitectura textual. [Matriz, hallazgos, checks y límites](phase/P011-T013_MATRIZ_DIAGRAMAS.md).
+
+- La autoridad es el código con sus pruebas: cada discrepancia se resolvió corrigiendo el dibujo o su prosa, sin
+  alterar comportamiento para que encaje. Catorce hallazgos documentales (F01–F14), ninguno de diseño pendiente:
+  estados de run y fase, ramas de chat, máquina de creación, `local-config-6/7`, resolución CLI separada,
+  idioma de trabajo en B y restos de A/observadores. Dos transiciones dibujadas sin prueba a nivel de run
+  reciben regresión (`RECOVERY_REQUIRED → COMMITTED` y rechazo en el reclamo); ambas pasan con el código intacto.
+- Un diagrama que no puede expresar una regla en una flecha (vuelta al estado previo de una fase) la declara en la
+  prosa contigua. El piloto P009 se separa del flujo de producto como evidencia histórica enlazada; el archivo no se
+  edita. Los flujos conservan su idioma actual: la línea base pública inglesa sigue en T014.
+- Comprobación reproducible en `docs/phase/`: paridad ER ↔ metadata (tablas, columnas, tipos, PK/FK/UK, nulos,
+  relaciones y unicidades listadas), parser Mermaid local 11.17.2 con DOMPurify inerte (solo sintaxis, sin DOM ni
+  render) y enlaces/anclas. Pasar el parser no acredita paridad semántica; la acredita la matriz.
+- Resto fuera de rutas permitidas y sin efecto: la ayuda `cli.help.writers_stopped` aún menciona «observers»;
+  queda para T014/T017. Sin proveedores, CLI reales, servicios, navegador ni red. Siguiente: T014.

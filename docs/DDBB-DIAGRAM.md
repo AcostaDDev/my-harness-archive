@@ -371,7 +371,7 @@ erDiagram
         integer version
         string created_at
         string updated_at
-        string idempotency_key "null"
+        string idempotency_key UK "null"
         string request_sha256 "null"
     }
     chat_turns {
@@ -415,7 +415,7 @@ erDiagram
         integer version
         string created_at
         string updated_at
-        string idempotency_key "null"
+        string idempotency_key UK "null"
         string request_sha256 "null"
         json source "null"
     }

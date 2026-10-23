@@ -8,8 +8,10 @@ Codex 0.163.0 / Claude 2.1.304. [Detección, congelación, guardias y cuarentena
 
 ```mermaid
 flowchart TD
-    O["Operador declara presets en TOML v5: proveedor, roles, CLI y capacidades"] --> C["Carga local sin procesos; valida proveedor, esfuerzos, USER y CLI por rol"]
-    C --> U["Usuario elige presets por proyecto y modelo/esfuerzo explícitos del revisor"]
+    O["Operador declara presets en TOML v5–v7: proveedor, roles, entorno y CLI (opcional en v7)"] --> C["Carga local sin procesos; valida proveedor, esfuerzos, USER y entorno por rol"]
+    C --> CL["Resolución separada de las CLI efectivas: mínimos, interfaz e identidad (cli-compatibility)"]
+    CL --> U
+    U["Usuario elige presets por proyecto y modelo/esfuerzo explícitos del revisor"]
     U --> P["Usuario define catálogo/modo del ejecutor y revisa cambio por versión/hash"]
     P --> G{"¿Sin jobs, locks ni trabajo utilizable pendiente?"}
     G -- no --> B["Diagnóstico: finalizar o resolver el trabajo antes de cambiar"]
@@ -40,7 +42,8 @@ Cambiar capacidades del TOML mantiene la cuarentena de jobs por composición ant
 
 La transacción se serializa con la admisión. Rechaza jobs QUEUED/ACTIVE/RECOVERY_REQUIRED, locks, aceptación
 pendiente, commit con intención, propuestas de chat sin resolver y definición/importación con turnos todavía
-utilizables u operaciones documentales incompletas. Definiciones/importaciones ya adoptadas no bloquean.
+utilizables u operaciones documentales incompletas (definición, incorporación B o importaciones antiguas conservadas
+como datos). Las ya adoptadas no bloquean.
 T004 añade la reserva de preparación a esa exclusión ([flujo](project-preparation.md)); una preparación
 pendiente o incierta bloquea cambios de roles incluso después de liberar su lock.
 

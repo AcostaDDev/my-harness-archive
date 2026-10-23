@@ -182,5 +182,10 @@ exige conversación `onboarding`, inventario del formato B y `preview.flow = onb
 A, fuente ausente o clasificación contradictoria quedan en cuarentena antes de construir puertos o escritores;
 no se interpretan como B. Una operación B válida mantiene su recuperación/conciliación normal.
 
+Idioma (D167, D169): el registro B confirma el idioma de trabajo de la raíz antes de conversar; sin él, los turnos y
+la confirmación responden 409 `work_language_required` sin encolar. La conversación responde en el idioma visual
+congelado de cada turno y los borradores, bloques y `SUMMARY.md` de `phase-000` siguen el idioma de trabajo
+([flujo](project-work-language.md)).
+
 Fuentes compartidas vigentes: `adapters/import_git.py`, `core/tree.py`, `storage/private_drafts.py`,
 `core/engine/import_commit.py`, `storage/project_import.py`, `storage/retired_work.py`.
