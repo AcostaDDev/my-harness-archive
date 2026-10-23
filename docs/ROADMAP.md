@@ -270,10 +270,12 @@ hallazgos documentales corregidos sin cambiar el producto. T014 completada (D176
 uso y entrada española; por HITL, especificación/arquitectura/datos/flujos públicos pasan a la nueva T023.
 T023 completada (D177): [entrega](phase/P011-T023_DOCUMENTACION_TECNICA_PUBLICA.md) con esos documentos ingleses
 autocontenidos en `docs/public/docs/`. T015 completada (D178): [entrega](phase/P011-T015_PAQUETE_PUBLICO.md) con
-paquete candidato `0.1.0`, CI sintética e instantánea pública sin Git. Tres tareas pendientes; siguiente T016.
+paquete candidato `0.1.0`, CI sintética e instantánea pública sin Git. T016 completada (D179):
+[entrega](phase/P011-T016_PRIMER_USO_QA.md) con primer uso ensayado desde clon limpio y CLI falsas; por HITL, QA de
+navegador → nueva T024. Tres tareas pendientes; siguiente T024.
 Planificación inicial finalizada en D156 y commit `6174f51`; ajustes D157/D158 incorporados
-en `2730f54`, sin ejecución del producto. La continuación actual autoriza T015 y su commit local en inglés.
-La fase no está cerrada; se mantienen veintitrés tareas (veinte completadas) y diez criterios.
+en `2730f54`, sin ejecución del producto. La continuación actual autoriza T016 y su commit local en inglés.
+La fase no está cerrada; se mantienen veinticuatro tareas (veintiuna completadas) y diez criterios.
 [Plan](phase/P011_PLAN_APERTURA_PUBLICA.md), [tareas](NEXT_STEPS.md) y
 [D154](DECISIONS.md#d154--p011-preparación-para-apertura-pública-en-github).
 La primera versión local P010 sigue completada en su alcance; P011 añade objetivos públicos, no reabre ese cierre.

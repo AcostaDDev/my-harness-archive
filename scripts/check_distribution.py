@@ -38,7 +38,7 @@ def check_artifacts(distribution, project):
     name, version = project['name'].replace('-', '_'), project['version']
     sums = dict(reversed(line.split('  ', 1)) for line in (distribution / 'SHA256SUMS').read_text().splitlines())
     assert sorted(sums) == sorted([f'{name}-{version}-py3-none-any.whl', f'{name}-{version}.tar.gz',
-                                   'requirements.txt']), sums
+                                   'pylock.toml']), sums
     for file, digest in sums.items():
         assert hashlib.sha256((distribution / file).read_bytes()).hexdigest() == digest, file
     package = {str(path): (ROOT / 'src' / path).read_bytes() for path in package_sources()}
@@ -78,9 +78,11 @@ def check_artifacts(distribution, project):
     ui, lock = (json.loads((ROOT / 'frontend' / file).read_text()) for file in ('package.json', 'package-lock.json'))
     api = re.search(r'FastAPI\(title="Harness Local", version="([^"]+)"', package['harness_local/api/app.py'].decode())
     assert ui['version'] == lock['version'] == lock['packages']['']['version'] == api[1] == version
-    requirements = (distribution / 'requirements.txt').read_text()
-    assert ' --hash=sha256:' in requirements and str(distribution) not in requirements
-    assert not any(line.startswith(('harness-local', '-e', '#')) for line in requirements.splitlines())
+    pins = (distribution / 'pylock.toml').read_text()
+    assert str(distribution) not in pins and str(ROOT) not in pins and not pins.startswith('#')
+    packages = tomllib.loads(pins)['packages']
+    assert packages and all(wheel['hashes']['sha256'] for package in packages for wheel in package['wheels'])
+    assert project['name'] not in {package['name'] for package in packages}
 
 
 def main():
@@ -97,8 +99,8 @@ def main():
         subprocess.run(['uv', 'venv', '--offline', '--no-python-downloads', '--python', str(ROOT / '.venv/bin/python'),
                         str(venv)], check=True)
         python = venv / 'bin/python'
-        subprocess.run(['uv', 'pip', 'sync', '--offline', '--require-hashes', '--python', str(python),
-                        str(distribution / 'requirements.txt')], check=True)
+        subprocess.run(['uv', 'pip', 'sync', '--offline', '--python', str(python), str(distribution / 'pylock.toml')],
+                       check=True)
         subprocess.run(['uv', 'pip', 'install', '--offline', '--no-deps', '--python', str(python),
                         str(wheel_file)], check=True)
         cli = venv / 'bin/harness-local'

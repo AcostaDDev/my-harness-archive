@@ -151,7 +151,8 @@ trusted.
 Status: accepted; existing databases are upgraded through D150.
 
 `scripts/build_distribution.py` builds the UI from the npm lock offline and stages an sdist and a wheel with the UI
-assets, templates and migrations, plus production requirements with hashes exported from `uv.lock`.
+assets, templates, migrations and license files, plus the production dependencies exported from `uv.lock` as a
+`pylock.toml` (PEP 751: URL and hash of every wheel, installable offline from the cache) and `SHA256SUMS`.
 `harness-local init-db` creates a new SQLite database at an absolute path and refuses existing targets.
 `harness-local serve` requires a prepared schema and assets, and serves UI and API through Uvicorn on `127.0.0.1` with
 one worker; it never creates or migrates a database on startup and needs neither Node nor the checkout.

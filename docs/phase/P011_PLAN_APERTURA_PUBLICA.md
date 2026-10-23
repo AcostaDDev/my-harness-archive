@@ -175,12 +175,13 @@ actual hasta implementarse T019; no se exigen mantener como capacidades pública
 | T023 | Especificación/arquitectura/datos/flujos públicos en inglés (desglose HITL de T014, D176) | T013, T014 |
 | T015 | Metadatos/paquete candidato/CI/materiales de release | T002, T010, T012, T014, T019, T023 |
 | T016 | Primer uso desde clon limpio, paquete instalado y QA cero/B | T013, T014, T015, T019, T023 |
-| T017 | Matriz final, dictamen y expediente público | T001–T016, T019, T023 |
+| T024 | QA de navegador del candidato instalado (desglose HITL de T016, D179) | T016 |
+| T017 | Matriz final, dictamen y expediente público | T001–T016, T019, T023, T024 |
 | T018 | Cierre/archivo documental tras dictamen favorable | T017 |
 | T019 | Retirada legacy/A con infraestructura compartida B conservada | T001, T002; antes de T003 |
 | T020 | Recetas v2 cableadas en `local-config-6` y preparación por `id` (desglosada de T008 por HITL, D167) | T004, T008; antes de T009 |
 
-Orden: T001 → T002 → T019 → T003–T008 → T020 → T009–T014 → T023 → T015–T018, una tarea cada vez. Las dependencias no autorizan ejecución paralela ni
+Orden: T001 → T002 → T019 → T003–T008 → T020 → T009–T014 → T023 → T015 → T016 → T024 → T017 → T018, una tarea cada vez. Las dependencias no autorizan ejecución paralela ni
 lanzamiento de agentes. Si el inventario revela una tarea demasiado extensa, se divide antes de ejecutarla conservando
 trazabilidad; defectos de producto encontrados en auditoría tienen tarea acotada y revisión antes de cerrar.
 

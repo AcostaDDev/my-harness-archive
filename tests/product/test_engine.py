@@ -403,6 +403,19 @@ def test_validation_argv_order_dedup_errors_empty_and_missing_duration(context):
     assert empty.entries == () and empty.all_passed
 
 
+def test_task_command_equal_to_profile_validation_reuses_its_authorized_timeout(context):
+    # The profile authorizes its validation with a non-default timeout; the task names the same argv.
+    profile = replace(context.profile, validations=(Command(("test-runner", "check"), timeout_seconds=600),))
+    context = replace(context, profile=profile)
+    _, _, runner, workspace = harness(context, [])
+    task = json.loads(deterministic_task(context, TASK_ID, PHASE_ID, PLAN))
+    task["validation_commands"] = ["test-runner check", "test-runner focused"]
+    report = run_validations(context, task, workspace.capture(context), runner)
+    assert [entry.requested for entry in report.entries] == ["test-runner check", "test-runner focused"]
+    assert [command for _, command in runner.calls] == [profile.validations[0], Command(("test-runner", "focused"))]
+    assert report.all_passed
+
+
 def test_preparation_failure_is_operational_and_preserves_result_without_agents(context):
     profile = replace(context.profile, preparation=(Command(("prepare", "first")), Command(("prepare", "second"))))
     context = replace(context, profile=profile)

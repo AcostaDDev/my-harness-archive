@@ -1,0 +1,88 @@
+{
+  "check_config_preflight_en": true,
+  "check_config_preflight_es": true,
+  "later_client_admitted": {
+    "ok": true,
+    "detail": "e,\n        \"not_verified\": [\n          \"effective_tool_permissions\",\n          \"startup_persistence\",\n          \"automatic_memory_effects\",\n          \"transitive_executable_dependencies\",\n          \"authentication\",\n          \"inference\"\n        ]\n      },\n      \"unsupported_values\": {}\n    }\n  }\n}\n"
+  },
+  "older_client_refused": {
+    "ok": true,
+    "detail": "m 2.1.304. Update that client and try new work again.\"\n        }\n      ],\n      \"minimum_version\": \"2.1.304\",\n      \"launch_sha256\": \"1ac71970d76426d87a4ebb42ea6c0d21c4d37eb1f6845c3c71c6e25fd1c8ed96\",\n      \"discovery\": \"PATH\",\n      \"compatibility\": null,\n      \"unsupported_values\": {}\n    }\n  }\n}\n"
+  },
+  "no_model_called_by_preflight": true,
+  "retired_cli_legacy-import": true,
+  "retired_cli_legacy-summary": true,
+  "ui_served": true,
+  "retired_routes_404": true,
+  "preferences_default_en": true,
+  "pair_en_es_definition": true,
+  "alpha_template_in_spanish": {
+    "ok": true,
+    "detail": "# Synthetic — instrucciones para agentes"
+  },
+  "pair_es_es_task": true,
+  "alpha_committed": true,
+  "alpha_closed": {
+    "ok": true,
+    "detail": [
+      "CLOSED",
+      "p001"
+    ]
+  },
+  "pair_es_en_onboarding": true,
+  "beta_onboarded": true,
+  "beta_committed": true,
+  "pair_en_en_definition": true,
+  "defaults_do_not_change_projects": {
+    "ok": true,
+    "detail": {
+      "alpha": "es",
+      "beta": "en",
+      "gamma": "en"
+    }
+  },
+  "work_language_immutable": {
+    "ok": true,
+    "detail": [
+      409,
+      "{'detail': {'code': 'work_language_immutable', 'diagnostic': 'El idioma de trabajo de este proyecto ya está confirmado; no cambia.'}}"
+    ]
+  },
+  "frozen_pair_unchanged": {
+    "ok": true,
+    "detail": {
+      "format": "language-context-1",
+      "ui_language": "es",
+      "preferences_version": 3,
+      "work_language": "es",
+      "work_language_source": "creation",
+      "work_language_sha256": "d9aa8887cf34cda59af5a2c2f7acb06cdc8020339fb3d4cc8aa636d38ba81f22"
+    }
+  },
+  "restart_same_run": true,
+  "restart_replay_idempotent": true,
+  "restart_no_new_calls": true,
+  "migrate_current": {
+    "ok": true,
+    "detail": {
+      "action": "current",
+      "previous": "0025_project_work_languages",
+      "revision": "0025_project_work_languages",
+      "snapshot": null
+    }
+  },
+  "restored_read_only_same_run": true,
+  "restored_refuses_mutation": {
+    "ok": true,
+    "detail": 409
+  },
+  "calls_by_prompt": 10,
+  "frozen_language_context": {
+    "format": "language-context-1",
+    "ui_language": "es",
+    "preferences_version": 3,
+    "work_language": "es",
+    "work_language_source": "creation",
+    "work_language_sha256": "d9aa8887cf34cda59af5a2c2f7acb06cdc8020339fb3d4cc8aa636d38ba81f22"
+  }
+}

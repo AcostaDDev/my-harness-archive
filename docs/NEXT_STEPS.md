@@ -4,8 +4,8 @@ Objetivo y criterios en [ROADMAP](ROADMAP.md#p011--preparación-para-apertura-p�
 Decisión: [D154](DECISIONS.md#d154--p011-preparación-para-apertura-pública-en-github).
 [Plan y alcance](phase/P011_PLAN_APERTURA_PUBLICA.md).
 
-**Estado:** en ejecución desde el 2026-10-22. T001/T002/T019/T003–T015/T020–T023 completadas (D159–D178); tres
-tareas pendientes (T010 desglosó T021, T021 desglosó T022 y T014 desglosó T023 por HITL). Licencia/avisos, retirada legacy/A,
+**Estado:** en ejecución desde el 2026-10-22. T001/T002/T019/T003–T016/T020–T023 completadas (D159–D179); tres
+tareas pendientes (T010 desglosó T021, T021 desglosó T022, T014 desglosó T023 y T016 desglosó T024 por HITL). Licencia/avisos, retirada legacy/A,
 código/pruebas en inglés, preferencias globales e idioma de trabajo inmutable por proyecto con el par congelado por
 job/intento; recetas v2; directiva al agente y documentos en W; interfaz React, diagnósticos HTTP propios y todos
 los textos visibles del servicio/CLI en en/es (los técnicos ingleses, listados); QA visual conjunta sin autorizar.
@@ -14,8 +14,9 @@ No equivale a fase completada.
 T011 entrega el contrato de CLI y T012 implementa detección automática y compatibilidad condicionada por capacidades.
 T013 contrasta diagramas, datos y arquitectura con el código y sus pruebas. T014 prepara la baseline pública
 en `docs/public/` y el README inglés de primer uso; T023 completa allí especificación, arquitectura, datos y flujos.
-T015 prepara paquete `0.1.0`, CI sintética e instantánea pública en `.local/` sin Git.
-**Siguiente:** P011-T016. Sin autorización de publicación.
+T015 prepara paquete `0.1.0`, CI sintética e instantánea pública en `.local/` sin Git. T016 ensaya el primer uso
+desde un clon limpio con CLI falsas; la QA de navegador pasa a T024.
+**Siguiente:** P011-T024. Sin autorización de publicación.
 P001–P010 siguen cerradas; la primera versión local mantiene el alcance de D151/D153.
 
 ## Restricciones compartidas
@@ -48,7 +49,7 @@ P001–P010 siguen cerradas; la primera versión local mantiene el alcance de D1
   siguiente fase` para v0.2.0 después de abrir el proyecto en GitHub, fuera de estas tareas. P011 mantiene
   cierre con READY y autorización propia, nueva fase sin tareas y confirmación del plan posterior.
   El commit D156 y los ajustes D157/D158 ya se realizaron. La petición actual autoriza ejecutar la siguiente
-  tarea (T015) y su commit local en inglés, sin encadenar tareas ni publicar.
+  tarea (T016) y su commit local en inglés, sin encadenar tareas ni publicar.
 - D157 elige instantánea pública inicial revisada, con Git/documentación de partida nuevos y sin historia privada.
   Desde la apertura, código/decisiones/fases se desarrollan en el repositorio público, fuente principal; este
   checkout conserva su historia privada. No sincronizar dos desarrollos activos ni congelar para siempre `docs/` pública.
@@ -486,7 +487,13 @@ autorizado. CI remota pendiente si no se ejecutó, sin equivaler validación loc
 
 ## P011-T016 — Primer uso reproducible y QA del paquete candidato
 
-**Estado:** pendiente. **Depende de:** T013, T014, T015, T019, T023.
+**Estado:** completada el 2026-10-23, D179. **Depende de:** T013, T014, T015, T019, T023.
+**Evidencia:** [entrega](phase/P011-T016_PRIMER_USO_QA.md): por HITL, cachés vacías con red y repetición offline desde
+`git clone` de la instantánea; suites/build/check en el clon (build idéntico al del checkout), instalación del README y
+primer uso instalado con CLI falsas: creación → COMMITTED → cierre y incorporación → COMMITTED, cuatro pares de idioma,
+inmutabilidad, reinicio, `migrate` y backup (30/30). Hallazgos corregidos: `pylock.toml` sustituye a `requirements.txt`
+(HITL), validación de tarea igual a la del perfil (producto, HITL), test dependiente de la caché privada. QA de
+navegador → T024. Sin CLI reales, inferencia, CI remota ni publicación.
 **Objetivo:** Acreditar instrucciones y paquete exacto sin las cachés ni configuración privadas del autor.
 **Alcance:** propuesta de ensayo, clon/cachés/venv/estado sintéticos, wheel instalado, configuración mínima,
 recorridos bilingües y recuperación/migración/backup.
@@ -514,7 +521,7 @@ reales necesarias exigen tarea/consentimiento propios antes del dictamen. No amp
 
 ## P011-T017 — Revisión de salida y expediente para apertura pública
 
-**Estado:** pendiente. **Depende de:** T001–T016, T019, T023.
+**Estado:** pendiente. **Depende de:** T001–T016, T019, T023, T024.
 **Objetivo:** Dictaminar preparación pública con evidencia trazable del candidato final.
 **Alcance:** diez criterios P011, trece globales ajustados por la retirada D155, inventario/excepciones lingüísticas,
 licencia/privacidad, compatibilidad/soporte, diagramas/docs, artefactos y CI.
@@ -702,3 +709,21 @@ desde los documentos vivos y contrastados con el código y la matriz T013; enlac
 **Validación:** comprobador T014, paridad ER y parser Mermaid de T013 sobre el árbol público y revisión inglesa;
 sin suites salvo cambio de código.
 **Entregables:** `docs/phase/P011-T023_DOCUMENTACION_TECNICA_PUBLICA.md` y documentos públicos.
+
+## P011-T024 — QA de navegador del candidato instalado
+
+**Estado:** pendiente. **Depende de:** T016. **Orden:** desglosada de T016 por HITL (D179); antes de T017.
+**Objetivo:** Acreditar visualmente la interfaz del paquete candidato y cerrar la QA conjunta pendiente de T010/T021/T022.
+**Alcance:** servicio instalado desde el candidato exacto con datos y CLI falsos (driver de T016), UI en/es, claro/oscuro
+y escritorio/móvil en los recorridos de creación, incorporación, fase/tarea/run, chat, preferencias y diagnósticos.
+**Rutas permitidas:** `frontend/**`, `tests/**`, `frontend/tests/**`, `docs/**`.
+**Criterios de aceptación:**
+
+- Propuesta previa de servicio, puerto, navegador y datos; ejecución solo tras autorización explícita. Sin credenciales,
+  proveedores ni datos privados; capturas saneadas.
+- Matriz por pantalla/estado en las ocho combinaciones idioma/tema/tamaño: textos traducidos sin claves crudas,
+  accesibilidad básica (foco, etiquetas, contraste), sin desbordes ni errores de consola relevantes.
+- Hallazgos de UI corregidos con pruebas Node/tipos/build y nuevo paquete verificado, o tarea acotada antes de T017.
+
+**Validación:** QA de navegador autorizada, Node/tipos/build si cambia el cliente y `check_distribution` del paquete.
+**Entregables:** `docs/phase/P011-T024_QA_NAVEGADOR.md`, matriz y capturas saneadas.

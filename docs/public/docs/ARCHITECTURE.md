@@ -148,7 +148,8 @@ copies SQLite through its API together with the referenced artifacts; a restore 
   instructions. The profile content enters the frozen hash of the composition. Example `python-django` in
   `examples/local_config.example.toml`.
 - **Native validations** (`commands-1`): absolute executables, authorization per complete command, bounded capture in
-  SQLite, POSIX groups. The profile formatter is authorized separately (`formatter-paths`): its argv followed only by
+  SQLite, POSIX groups. A task command with the argv of a profile validation run at the root without extra
+  environment is that validation (its timeout) and runs once. The profile formatter is authorized separately (`formatter-paths`): its argv followed only by
   existing checkout files; the engine runs it after each executor turn
   ([D133](DECISIONS.md#d133--the-harness-runs-the-profile-formatter-after-each-executor-turn)).
 - **Prompts** (`templates/`): `plan-task`, `execute-task`, `revise-task`, `review-task`, `executor-routing`,
@@ -230,10 +231,10 @@ is for development only and creates or migrates its own database (`.local/harnes
 `init-db` and `serve` keep creating a new database and starting without migrating
 ([D043](DECISIONS.md#d043--local-distribution-with-assets-and-migrations-explicit-start-on-loopback)).
 `build_distribution.py` writes into a new or empty folder: the UI built from the npm lock, the sdist and the wheel
-(sources, UI assets and the `LICENSE`/`NOTICE*` files), a hashed `requirements.txt` without a header and
-`SHA256SUMS`. `check_distribution.py` verifies the exact members, metadata, license files, checksums, absence of
-retired components and one version for package, API and UI, then installs the wheel in an isolated venv and runs
-a synthetic journey. `.github/workflows/ci.yml` runs the same suites and package checks on macOS without secrets.
+(sources, UI assets and the `LICENSE`/`NOTICE*` files), `pylock.toml` (the service dependencies with the URL and
+hash of every wheel, installable offline) and `SHA256SUMS`. `check_distribution.py` verifies the exact members,
+metadata, license files, checksums, absence of retired components and one version for package, API and UI, then
+installs the wheel in an isolated venv and runs a synthetic journey. `.github/workflows/ci.yml` runs the same suites and package checks on macOS without secrets.
 
 `serve` writes the session key (`harness-session-*/login-key`, 0700/0600, deleted on exit) and temporary Git indexes
 and seals (`harness-git-*`, `harness-bootstrap-*`) under the process `TMPDIR`. Without it, Python uses the system

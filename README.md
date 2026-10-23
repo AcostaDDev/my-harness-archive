@@ -17,8 +17,10 @@ models are reached through the official Codex and Claude Code CLIs with your own
 - **Platform.** Only macOS on Apple silicon (ARM64) has been tested. Other platforms are not characterized.
 - **Evidence.** The offline test suites use temporary Git repositories, SQLite and fake agents. Real runs with
   providers exist only for the capabilities marked as such in [Supported scope](#supported-scope-and-limits).
-- **First use.** The steps below were checked against the scripts and the CLI, but have not yet been rehearsed end
-  to end from a clean clone. Please report anything that does not work as written.
+- **First use.** The steps below were rehearsed on macOS ARM64 from a clean clone with empty caches: installation,
+  offline repetition, package build and check, the minimal configuration and both entries up to COMMITTED and a
+  closed phase. Agents were fake CLIs, so sign-in and real model calls were not part of it. Please report anything
+  that does not work as written.
 - **Next.** An optional continuous mode (tasks → commits → check → closure → next phase) is planned for v0.2.0;
   see the [roadmap](docs/ROADMAP.md).
 
@@ -98,14 +100,16 @@ checkout. Build and verify the package, then install it (replace `/path/...` wit
 ```sh
 UV_CACHE_DIR=.local/uv-cache uv run --frozen --offline python scripts/build_distribution.py --out-dir /path/package
 UV_CACHE_DIR=.local/uv-cache uv run --frozen --offline python scripts/check_distribution.py --dist /path/package
-uv venv --python 3.14.4 --no-python-downloads /path/venv
-uv pip sync --python /path/venv/bin/python --require-hashes /path/package/requirements.txt
-uv pip install --python /path/venv/bin/python --no-deps /path/package/harness_local-0.1.0-py3-none-any.whl
+UV_CACHE_DIR=.local/uv-cache uv venv --offline --python 3.14.4 --no-python-downloads /path/venv
+UV_CACHE_DIR=.local/uv-cache uv pip sync --offline --python /path/venv/bin/python /path/package/pylock.toml
+UV_CACHE_DIR=.local/uv-cache uv pip install --offline --python /path/venv/bin/python --no-deps \
+  /path/package/harness_local-0.1.0-py3-none-any.whl
 ```
 
-`build_distribution.py` builds the UI from the npm lock and writes the sdist, the wheel and a hashed
-`requirements.txt`. `check_distribution.py` installs that wheel in a temporary environment and exercises it with
-synthetic agents, without providers or network. The `dist/` folder of a checkout is not authoritative.
+`build_distribution.py` builds the UI from the npm lock and writes the sdist, the wheel, `pylock.toml` (the
+service dependencies with the URL and hash of every wheel) and `SHA256SUMS`; the output folder must be new or
+empty. `check_distribution.py` verifies the artifacts, installs the wheel in a temporary environment and exercises
+it with synthetic agents, without providers or network. The `dist/` folder of a checkout is not authoritative.
 
 ## Configure
 

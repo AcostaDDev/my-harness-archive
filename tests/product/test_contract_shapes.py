@@ -133,6 +133,7 @@ def test_claude_planner_returning_argv_arrays_reaches_acceptance_through_the_rea
     assert record.status == "ACCEPTANCE_READY", record.history.stop
     assert json.loads(record.history.task_json)["validation_commands"] == ["npm run test"]
     entries = record.history.cycles[0].validation.entries
-    planned = [entry for entry in entries if entry.requested == "npm run test" and entry.command.timeout_seconds == 1800]
-    assert len(planned) == 1 and planned[0].result.exit_code == 0
+    # The planned command is the profile validation with the same argv: it runs once, with the profile timeout.
+    planned = [entry for entry in entries if entry.command.argv == ("npm", "run", "test")]
+    assert len(planned) == 1 and planned[0].requested == "npm run test" and planned[0].result.exit_code == 0
     assert [json.loads(line)["provider"] for line in launches(tmp_path)] == ["claude", "codex", "claude"]

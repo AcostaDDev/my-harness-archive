@@ -13,9 +13,10 @@ primer uso y la operación paso a paso. Esta página resume lo esencial y enlaza
 ## Estado
 
 Versión previa a la primera publicación: la primera versión local está completa en el alcance declarado, el
-paquete declara `0.1.0`, candidata a primera versión pública, y no está en PyPI ([changelog](CHANGELOG.md)). Solo se ha probado en macOS sobre Apple silicon (ARM64). Los pasos de
-primer uso se han contrastado con los scripts y la CLI, pero aún no se han ensayado de principio a fin desde un
-clon limpio. Licencia [MIT](LICENSE). Detalle en [Status](README.md#status) y
+paquete declara `0.1.0`, candidata a primera versión pública, y no está en PyPI ([changelog](CHANGELOG.md)).
+Solo se ha probado en macOS sobre Apple silicon (ARM64). Los pasos de primer uso se han ensayado desde un clon limpio
+con cachés vacías hasta COMMITTED y una fase cerrada, con CLI falsas: sin inicio de sesión ni llamadas reales a
+modelos. Licencia [MIT](LICENSE). Detalle en [Status](README.md#status) y
 [Supported scope and limits](README.md#supported-scope-and-limits).
 
 ## Dos formas de empezar un proyecto

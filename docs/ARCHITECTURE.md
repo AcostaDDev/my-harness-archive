@@ -143,7 +143,8 @@ por su API y los artefactos referenciados; la restauración es de consulta (`que
   contenido del perfil entra en el hash congelado de la composición. Ejemplo `python-django` en
   `examples/local_config.example.toml`.
 - **Validaciones nativas** (`commands-1`): ejecutables absolutos, autorización por comando completo, captura acotada en
-  SQLite, grupos POSIX. El formateador del perfil se autoriza aparte (`formatter-paths`): su argv seguido solo de
+  SQLite, grupos POSIX. Un comando de la tarea con el argv de una validación del perfil en la raíz y sin entorno
+  propio es esa validación (su timeout) y se ejecuta una vez (P011-T016). El formateador del perfil se autoriza aparte (`formatter-paths`): su argv seguido solo de
   archivos existentes del checkout. El motor lo ejecuta tras cada turno del ejecutor (D133).
 - **Prompts** (`templates/`): `plan-task`, `execute-task`, `revise-task`, `review-task`, `executor-routing`,
   `close-phase`, `reconcile-phase`, `chat-turn`, `define-project`, `plan-phase`, `onboard-project` (D102; rol de
@@ -257,7 +258,7 @@ npm --prefix frontend run generate:types
 ```
 
 Uso real (D051): construir y verificar el wheel (`scripts/build_distribution.py --out-dir`, carpeta nueva o vacía, con
-LICENSE/NOTICE, `requirements.txt` sin cabecera y `SHA256SUMS`; `scripts/check_distribution.py --dist`, que además
+LICENSE/NOTICE, `pylock.toml` instalable offline y `SHA256SUMS`; `scripts/check_distribution.py --dist`, que además
 comprueba miembros exactos, metadatos, versión única y ausencia de componentes retirados; P011-T015), instalarlo en un venv propio y operar con `harness-local check-config RUTA [--preflight]`,
 `harness-local init-db --database RUTA` y `harness-local serve --database RUTA --config RUTA`. Nunca desde este checkout.
 La plantilla del TOML es `local-config-7`: sin pin obligatorio de CLI, con presets, `work_language` por proyecto

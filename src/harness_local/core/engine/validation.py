@@ -123,12 +123,17 @@ def run_validations(context: ProjectContext, task: dict, evidence: ContentEviden
     # The profile baseline is trusted configuration; the contract does not authorize a shell.
     commands: list[tuple[str, Command | None, str | None]] = []
     seen: set[Command] = set()
+    # A task command differs from a profile validation run at the root without extra environment only by the
+    # default timeout: it is that authorized validation and runs once, instead of being refused as another command.
+    # A validation with its own cwd or environment is never adopted silently.
+    profile = {command.argv: command for command in context.profile.validations
+               if command.cwd == '.' and not command.environment}
     for text in task["validation_commands"]:
         try:
             argv = tuple(shlex.split(text))
             if not any(argv[:len(prefix)] == prefix for prefix in context.profile.allowed_command_prefixes if prefix):
                 raise ValueError("Validation argv outside profile command policy")
-            command = Command(argv)
+            command = profile.get(argv) or Command(argv)
         except ValueError as exc:
             commands.append((text, None, str(exc)))
             continue

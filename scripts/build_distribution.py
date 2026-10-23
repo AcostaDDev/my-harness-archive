@@ -1,4 +1,4 @@
-"""Offline local build: UI from the lock, sdist/wheel, installation pins and SHA256SUMS."""
+"""Offline local build: UI from the lock, sdist/wheel, `pylock.toml` installation pins and SHA256SUMS."""
 import argparse
 import hashlib
 from pathlib import Path
@@ -55,9 +55,10 @@ def main():
         shutil.copytree(ROOT / 'frontend/dist', stage / 'src/harness_local/web')
         subprocess.run(['uv', 'build', '--offline', '--no-python-downloads', '--out-dir', str(output), str(stage)],
                        cwd=ROOT, check=True)
-    # Without the header, which would record the absolute output path.
+    # PEP 751 lock with the URL and hash of every wheel: it installs offline from the cache filled by `uv sync`, which
+    # a requirements file cannot (it needs the index metadata). Without the header, which would record the output path.
     subprocess.run(['uv', 'export', '--frozen', '--offline', '--no-dev', '--no-emit-project', '--no-header',
-                    '--format', 'requirements-txt', '--output-file', str(output / 'requirements.txt')],
+                    '--format', 'pylock.toml', '--output-file', str(output / 'pylock.toml')],
                    cwd=ROOT, check=True, stdout=subprocess.DEVNULL)
     sums = [f'{hashlib.sha256(path.read_bytes()).hexdigest()}  {path.name}\n'
             for path in sorted(output.iterdir()) if path.is_file() and not path.name.startswith('.')]

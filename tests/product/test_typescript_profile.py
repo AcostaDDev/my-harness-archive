@@ -252,8 +252,11 @@ def test_cache_miss_stops_preparation_without_agents_or_network(web, repository,
     assert all("--offline" in c.argv for c in runner.calls if "ci" in c.argv)
 
 
-@pytest.mark.parametrize("mode,error", [("lock-mismatch", "EUSAGE"), ("engine-mismatch", "EBADENGINE")])
-def test_incompatible_lock_or_runtime_stops_preparation(web, repository, mode, error):
+# A lock mismatch needs the registry metadata of the package to be reported as EUSAGE; a cache filled only by
+# `npm ci` holds tarballs, so npm stops with ENOTCACHED instead. Both refuse before any effect or agent.
+@pytest.mark.parametrize("mode,errors", [("lock-mismatch", ("EUSAGE", "ENOTCACHED")),
+                                         ("engine-mismatch", ("EBADENGINE",))])
+def test_incompatible_lock_or_runtime_stops_preparation(web, repository, mode, errors):
     context, runner = web
     manifest = json.loads(context.path("package.json").read_text())
     if mode == "lock-mismatch":
@@ -267,7 +270,7 @@ def test_incompatible_lock_or_runtime_stops_preparation(web, repository, mode, e
     supervisor.run_once()
     record = repository.get_run(job.run_id)
     assert record.history.stop.stage == "preparation" and not agents.requests
-    assert error in json.loads(record.history.preparation_json[-1])["result"]["stderr"]
+    assert any(error in json.loads(record.history.preparation_json[-1])["result"]["stderr"] for error in errors)
     assert (context.path("package.json").read_bytes(), context.path("package-lock.json").read_bytes()) == before
 
 

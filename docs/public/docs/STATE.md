@@ -51,7 +51,8 @@ of [D151](DECISIONS.md#d151--real-validation-of-onboarding-and-declared-profiles
   first phase on macOS ARM64 with Python 3.13. Onboarding, declared profiles, the TypeScript recipe, chat and backup
   have offline evidence only (D151).
 - **Limits.** Cooperative containment without operating-system isolation (D064); validations without timestamps;
-  recipe manifests fixed after preparation; only macOS ARM64 tested; first use from a clean clone not yet rehearsed.
+  recipe manifests fixed after preparation; only macOS ARM64 tested; first use from a clean clone rehearsed
+  with fake CLIs only (no sign-in or real model calls).
 
 ## Active phase — P001 Optional continuous mode between phases
 

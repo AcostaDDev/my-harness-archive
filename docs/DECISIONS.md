@@ -189,6 +189,7 @@ tarea se leen solo las decisiones que cita; este índice sirve para buscar prece
 | [D176](#d176--p011-t014-baseline-pública-en-docspublic-y-readme-inglés-de-primer-uso) | P011-T014: baseline pública en `docs/public/` y README inglés de primer uso | P011 |
 | [D177](#d177--p011-t023-documentación-técnica-pública-autocontenida-en-inglés) | P011-T023: documentación técnica pública autocontenida en inglés | P011 |
 | [D178](#d178--p011-t015-paquete-candidato-010-ci-sintética-e-instantánea-pública) | P011-T015: paquete candidato 0.1.0, CI sintética e instantánea pública | P011 |
+| [D179](#d179--p011-t016-primer-uso-ensayado-pylock-y-validación-de-tarea-igual-al-perfil) | P011-T016: primer uso ensayado, pylock y validación de tarea igual al perfil | P011 |
 
 ## D001 — Alcance local y arquitectura base
 
@@ -5302,3 +5303,24 @@ Fase: P011. Concreta D156/D157/D160 y el contrato T001 §8 para el paquete y el 
   `.local/public-candidate/` sin Git, con manifiesto privado origen → candidato y otro publicable; código idéntico al
   origen. Crear el repositorio, activar el reporte privado, commit, push, tag o Release siguen pendientes de
   autorización propia (procedimiento en la entrega). Siguiente: T016.
+
+## D179 — P011-T016: primer uso ensayado, pylock y validación de tarea igual al perfil
+
+Estado: aplicada el 2026-10-23 en T016 por la continuación y commit local en inglés pedidos por el usuario.
+Fase: P011. Sustituye el punto de `requirements.txt` de D178. Concreta D157/D178 para el ensayo del candidato.
+[Entrega, matriz, hallazgos y hashes](phase/P011-T016_PRIMER_USO_QA.md).
+
+- HITL de alcance: red solo para el primer llenado de cachés vacías (PyPI, registry de npm) y repetición offline;
+  ensayo en el scratchpad de la sesión desde la instantánea con un `git clone` local sin remoto; servicio instalado en
+  loopback recorrido por HTTP con CLI falsas. La QA de navegador pasa a la nueva **T024**, con autorización propia.
+- HITL de formato: el paquete publica `pylock.toml` (PEP 751, exportado por uv del lock, URL y hash de cada wheel) en
+  lugar de `requirements.txt`, porque este no se instala offline desde la caché que deja el primer paso documentado.
+  README, `check_distribution.py`, CHANGELOG, ARCHITECTURE y la D043 pública lo reflejan; uv verifica los hashes.
+- HITL de producto: un comando de validación de la tarea con el argv de una validación del perfil que se ejecuta en la
+  raíz sin entorno propio es esa validación (su timeout) y se ejecuta una vez; antes la autorización exacta lo rechazaba
+  por el timeout por defecto y paraba la primera tarea del ejemplo mínimo. Validaciones con `cwd` o entorno propios no
+  se adoptan. Regresión nueva; la autorización sigue siendo por comando completo.
+- Un test de TypeScript dependía de metadatos npm de la caché privada y ahora admite `ENOTCACHED`; la sonda falsa crea
+  directorios. Resultado: suites, build y check desde el clon limpio, build idéntico byte a byte al del checkout y
+  primer uso instalado con ambos accesos hasta COMMITTED, cierre de fase, cuatro pares de idioma, reinicio, `migrate` y
+  backup en verde. Sin CLI reales, inferencia, navegador, CI remota ni publicación. Siguiente: T024.

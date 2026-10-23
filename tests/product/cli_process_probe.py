@@ -193,6 +193,7 @@ if mode == 'recipe':
         for path, content in script['edits'].items():
             target = Path(path)
             assert not target.is_absolute() and '..' not in target.parts
+            target.parent.mkdir(parents=True, exist_ok=True)
             target.write_text(content)
     elif 'drafts' in required:
         role = 'definition'
