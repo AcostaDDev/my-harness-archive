@@ -76,7 +76,7 @@ run y, cuando procede, al intento exacto.
 | F21 | Agentes configurables por proyecto | Elegir proveedores y modelo/esfuerzo del revisor en UI; selección concreta del ejecutor a cargo del revisor | Implementado (P009-T003, D118): presets v5, selección por checkout y cambios confirmados entre tareas |
 | F22 | Preparar Django desde cero | Hijo nuevo, documentos D088, scaffold, entorno/dependencias y validaciones mediante receta confirmada | Implementado (P009-T004, D119); ensayo real T005 (D120) y piloto T007–T012 con P001 cerrada/archivada (D139) |
 | F23 | Idioma visual y de trabajo | Defaults globales en/es: visual global mutable para UI/conversación y trabajo inmutable por proyecto para documentación/código, con ambos congelados por job/turno | Parcial (P011, D158; §13): preferencias globales y visual congelado por job (T007, D166); trabajo inmutable por proyecto y par por job/intento (T008, D167); recetas v2 preparadas con el idioma de trabajo (T020, D168); directiva tipada al agente y documentos generados en el idioma de trabajo (T009, D169). Traducción completa de UI/mensajes (T010) pendiente |
-| F24 | Compatibilidad CLI ampliable | Mínimos/capacidades por proveedor/rol, diagnóstico y versiones verificadas/candidatas sin allowlist por patch | Planificado, no implementado (P011, D154; §13); siguen vigentes las listas exactas de `cli-13` |
+| F24 | Compatibilidad CLI ampliable | Detección automática sin pin; mínimos/capacidades por proveedor/rol, diagnóstico y versiones verificadas/candidatas sin allowlist por patch | Contrato T011/D173 definido, implementación T012 pendiente (P011; §13); siguen vigentes las listas exactas de `cli-13` |
 
 Modo de proyecto: **gestionado**. Solo se crean proyectos nuevos o se incorpora código sin harness (B);
 registrar/reabrir uno ya gestionado conserva su autoridad. Nunca escriben dos motores sobre el mismo checkout.
@@ -287,6 +287,9 @@ no cambian el alcance entregado de P010 ni sus límites D151/D153.
 - Política CLI ampliable por mínimos/capacidades y rol, con procedencia verificada/candidata y diagnóstico;
   versión posterior compatible no rechazada solo por una lista exacta. Permisos, confianza, memoria y recuperación
   se mantienen; una guardia esencial no acreditada bloquea. No prometer todas las versiones futuras.
+  T011/D173 concreta por HITL la detección automática de cliente/versión, sin pedir pin, aceptación de candidatas
+  o evidencia al usuario. Mínimos nuevos comunes: Codex 0.163.0 / Claude 2.1.304; inferiores → actualizar,
+  historia/configuraciones anteriores legibles. Implementación pendiente en T012.
 - Paridad semántica diagramas/código/tests, documentación pública inglesa con entrada española y README completo,
   licencia/contenido publicable, metadatos/CI y ensayo del paquete final desde clon sin cachés privadas.
 

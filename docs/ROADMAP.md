@@ -259,10 +259,12 @@ T021 completada (D171): textos propios del servicio/CLI antes españoles en en/e
 T022 y la QA visual conjunta se hace tras ella.
 T022 completada (D172): diagnósticos visibles del servicio antes ingleses en en/es y rechazos de la UI por código;
 [entrega](phase/P011-T022_TRADUCCION_SERVICIO_INGLES.md). QA visual conjunta no autorizada (no realizada).
-Ocho tareas pendientes; siguiente T011.
+T011 completada (D173): [contrato](phase/P011-T011_CONTRATO_COMPATIBILIDAD_CLI.md) por capacidades y detección
+automática, sin pin/aceptación de candidatas; mínimos nuevos Codex 0.163.0 / Claude 2.1.304 e indicación de
+actualizar para inferiores. Solo diseño; implementación pendiente en T012. Siete tareas pendientes; siguiente T012.
 Planificación inicial finalizada en D156 y commit `6174f51`; ajustes D157/D158 incorporados
-en `2730f54`, sin ejecución del producto. La petición actual autoriza T022 y su commit local en inglés.
-La fase no está cerrada; se mantienen veintidós tareas (trece completadas) y diez criterios.
+en `2730f54`, sin ejecución del producto. La petición actual autoriza T011 y su commit local en inglés.
+La fase no está cerrada; se mantienen veintidós tareas (quince completadas) y diez criterios.
 [Plan](phase/P011_PLAN_APERTURA_PUBLICA.md), [tareas](NEXT_STEPS.md) y
 [D154](DECISIONS.md#d154--p011-preparación-para-apertura-pública-en-github).
 La primera versión local P010 sigue completada en su alcance; P011 añade objetivos públicos, no reabre ese cierre.

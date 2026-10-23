@@ -183,6 +183,7 @@ tarea se leen solo las decisiones que cita; este índice sirve para buscar prece
 | [D170](#d170--p011-t010-interfaz-enes-por-catálogos-tipados-y-diagnósticos-http-propios-en-el-visual-guardado) | P011-T010: interfaz en/es por catálogos tipados y diagnósticos HTTP propios en el visual guardado | P011 |
 | [D171](#d171--p011-t021-textos-propios-del-servicio-y-la-cli-en-el-visual-de-cada-emisión) | P011-T021: textos propios del servicio y la CLI en el visual de cada emisión | P011 |
 | [D172](#d172--p011-t022-textos-de-servicio-ya-ingleses-en-enes-y-rechazos-por-código) | P011-T022: textos de servicio ya ingleses en en/es y rechazos por código | P011 |
+| [D173](#d173--p011-t011-detección-automática-de-cli-mínimos-y-contrato-por-capacidades) | P011-T011: detección automática de CLI, mínimos y contrato por capacidades | P011 |
 
 ## D001 — Alcance local y arquitectura base
 
@@ -5122,3 +5123,45 @@ Fase: P011. Concreta D159 (contrato T001 §3) sobre D166/D170/D171.
 - Validación: pytest 1619 passed, 2 skipped, 29 subtests; unittest 8 OK; Node 93/93; `check`/`build` del cliente
   (aviso >500 kB previo). Sin esquema nuevo (sin Alembic), regeneración OpenAPI, servicios, navegador, agentes,
   proveedores, red ni scripts de distribución. T011 es la siguiente.
+
+## D173 — P011-T011: detección automática de CLI, mínimos y contrato por capacidades
+
+Estado: diseño completado el 2026-10-23 por petición del usuario, con commit local en inglés; implementación
+pendiente en T012. Fase: P011. Concreta D154/D159 y sustituye para el trabajo nuevo la política de admisión por
+listas exactas de D052/D122; no reescribe sus evidencias ni cambia todavía `cli-13`.
+[Contrato, fuentes, matriz y validación](phase/P011-T011_CONTRATO_COMPATIBILIDAD_CLI.md).
+
+- HITL: el usuario quiere que quien descargue el proyecto de GitHub no especifique la versión de Codex o Claude
+  Code: el sistema reconoce los clientes/versiones y funciona desde un mínimo estable; si es inferior, indica
+  actualizar. Resuelve las dos preguntas de la sesión: sin aceptación explícita de candidatas y sin excepción de
+  nueva admisión para un lector antiguo bajo mínimos. Tampoco se exige importar evidencia o mantener una lista
+  por binario al usuario final.
+- Mínimos nuevos comunes a lectura/escritura: Codex **0.163.0**, Claude Code **2.1.304**, por ser la pareja más
+  reciente caracterizada en D122 y usada por el piloto, con la corrección de transporte D124. No se afirman
+  mínimos de introducción de funciones ni estabilidad semántica pre-1.0. Versiones anteriores, incluida 0.161.0
+  con memoria solo probada sintéticamente (D066), conservan lectura de historia/configuración/hashes; nuevos
+  intentos bajo mínimos se bloquean con indicación de actualizar.
+- Descubrimiento de los proveedores elegidos por PATH explícito del servicio, ruta opcional para instalaciones
+  no estándar, observación acotada de `--version`/help y perfiles de capacidades incluidos en la aplicación.
+  Sin shell, búsqueda general del disco, auth/login/status, autoactualización ni cambiar proveedor/modelo.
+  Parsear TOML no ejecuta CLI; resolución controlada antes de admitir trabajo congela la versión real, nunca
+  `auto`. Formato automático nuevo versionado en T012; formatos/pins anteriores legibles con sus hashes y
+  mismatch explícito, ejemplos públicos nuevos sin pins.
+- Una release posterior estable numéricamente elegible, incluso de otro minor/major, se admite automáticamente
+  si cumple el perfil aplicable; no existe techo numérico ni allowlist exclusiva por patch. Candidata conserva su
+  procedencia técnica, sin confirmación humana adicional. Matriz por proveedor/rol de flags/valores, sandbox,
+  confianza, memoria, instrucciones, permisos/grants, esquema/streams y cancelación. Guardias esenciales sin
+  acreditar bloquean antes de invocar; help/exit 0 por sí solos no prueban semántica. La aplicación mantiene
+  perfiles/justificación y diagnostica incompatibilidades; no traslada la investigación al usuario.
+- Contrato de interfaz aplicado a candidatas es compatibilidad condicionada, no observación real de sus efectos
+  ocultos. La supresión de confianza Codex requiere una justificación semántica aplicable, conservando D068/D122;
+  no se infiere de flags o número superior. Sin evidencia nueva de binarios posteriores en T011; si hace falta
+  para ampliar soporte acreditado, propuesta operativa separada y autorización propia antes de ejecutarla.
+- Versión observada, identidad local del lanzamiento, capacidades/procedencia y hash de política/perfil quedan
+  ligados al job/intento. Revalidación por intento y antes de GO; cambio de binario/versión/composición no reutiliza
+  observaciones ni cambia trabajos ya encolados: cuarentena conservadora, sin retry/fallback ni mutar congelados.
+  Nuevo trabajo puede redetectar el cliente actualizado sin pedir al usuario su versión.
+- D160 sigue excluyendo ayudas reales del corte público: T012 sustituye su dependencia en tests por fixtures
+  sintéticos y conserva originales privados. T011 solo diseña: sin código, esquema, flujo implementado, paquete,
+  CLI/proveedores reales, suites, servicios, smoke, instalación o publicación. Checks documentales y fuentes
+  oficiales; exceso previo del presupuesto de NEXT_STEPS registrado. Siguiente tarea: T012.

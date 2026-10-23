@@ -81,22 +81,23 @@ salvo donde se indica. Detalle por fase en `docs/archive/phase-NNN/SUMMARY.md`; 
 
 **P011 — Preparación para apertura pública en GitHub**, iniciada documentalmente el 2026-10-22 por encargo del usuario
 ([D154](DECISIONS.md#d154--p011-preparación-para-apertura-pública-en-github),
-[plan](phase/P011_PLAN_APERTURA_PUBLICA.md), [tareas](NEXT_STEPS.md)). T001/T002/T019/T003–T010/T020–T022
-completadas (D159–D172), ocho tareas pendientes (T021 desglosada de T010 y T022 de T021); retirada legacy/A
+[plan](phase/P011_PLAN_APERTURA_PUBLICA.md), [tareas](NEXT_STEPS.md)). T001/T002/T019/T003–T011/T020–T022
+completadas (D159–D173), siete tareas pendientes (T021 desglosada de T010 y T022 de T021); retirada legacy/A
 implementada, código y pruebas en inglés, preferencias globales, idioma de trabajo inmutable por proyecto, recetas v2
 cableadas, directiva de idioma al agente con documentos en el idioma de trabajo, interfaz en/es y todos los textos
-visibles del servicio/CLI en en/es; sin QA visual conjunta (no autorizada) ni nueva compatibilidad CLI.
+visibles del servicio/CLI en en/es; contrato de detección automática de CLI definido, implementación pendiente
+en T012. Sin QA visual conjunta (no autorizada) ni nueva compatibilidad CLI implementada.
 
 **Planificación finalizada para comenzar su ejecución** por petición del usuario
 ([D156](DECISIONS.md#d156--planificación-de-p011-finalizada-y-modo-continuo-aplazado-a-v020)).
 P011 no está completada: T001 entrega diseño/inventario, T002 licencia/revisión estática, T019 retirada funcional y
 T003–T006 comentarios en inglés, T007 infraestructura de idiomas, T008 idioma de trabajo, T020 recetas v2, T009
 directiva y documentos por idioma, T010 interfaz en/es, T021 servicio/CLI en/es y T022 textos de servicio ya
-ingleses en en/es; siguiente T011.
+ingleses en en/es, T011 contrato de compatibilidad/detección automática; siguiente T012.
 El modo continuo entre fases queda reservado para **v0.2.0, después de abrir el proyecto en GitHub**;
 no forma parte de P011 ni modifica el cierre confirmado actual. Commit documental D156 realizado en `6174f51`;
-las ampliaciones D157/D158 se incorporaron en `2730f54`. La petición actual autoriza T022 y su commit local
-en inglés, con checks sintéticos offline, sin ejecución del producto ni publicación.
+las ampliaciones D157/D158 se incorporaron en `2730f54`. La petición actual autoriza T011 y su commit local
+en inglés, con checks documentales y consulta de fuentes oficiales, sin ejecución del producto ni publicación.
 
 **P011-T001 completada** ([contrato](phase/P011-T001_CONTRATO_APERTURA.md),
 [inventario](phase/P011-T001_INVENTARIO.md), D159): 688 archivos de base, con tratamiento/propietaria y
@@ -203,6 +204,14 @@ nuevas en/es con el inglés idéntico; 161 textos técnicos ingleses listados co
 distingue `managed_blocks_generated`/`draft_changed` por código; las métricas agrupan paradas por texto emitido
 (aceptado). QA visual conjunta no autorizada, registrada como no realizada; sin servicios, navegador ni proveedores.
 
+**P011-T011 completada** ([contrato](phase/P011-T011_CONTRATO_COMPATIBILIDAD_CLI.md), D173): solo diseño.
+HITL: detectar clientes/versiones automáticamente, sin pin ni aceptación de candidatas; mínimos comunes nuevos
+Codex 0.163.0 / Claude 2.1.304 por D122/D124, inferiores → actualizar y lectura histórica preservada. Matriz
+por proveedor/rol, perfiles semánticos mantenidos por la aplicación, guardias esenciales y procedencia congelada
+por job/intento con revalidación/cuarentena al cambiar el cliente. Sin evidencia aportada por el usuario ni
+allowlist exclusiva por patch; no garantiza cualquier release futura. Fuentes oficiales/parsers/enlaces/diff
+revisados, aviso previo de tamaño de NEXT_STEPS; sin suites ni CLI/proveedores reales. T012 implementará.
+
 **P010 cerrada y archivada documentalmente el 2026-10-22**
 ([D153](DECISIONS.md#d153--cierre-documental-de-p010-y-de-la-primera-versión-local),
 [resumen](archive/phase-010/SUMMARY.md), [registro de cierre](archive/phase-010/P010_CIERRE.md)).
@@ -214,8 +223,8 @@ P009 conserva su cierre documental (D140) y el Django hijo su P001 CLOSED, cuatr
 tag `p001` sobre `47a0557` y archivo en `3d105c6`. No se repite ninguna operación ni comprobación de su estado.
 Este repositorio sigue sin registrarse ni ejecutarse con el harness; cierre manual sin check READY ni tag propio.
 
-**Siguiente:** P011-T011, contrato de compatibilidad de CLI por capacidades. La QA visual conjunta T010+T021+T022
-sigue pendiente de autorización propia.
+**Siguiente:** P011-T012, implementar detección automática, compatibilidad y diagnósticos de CLI.
+La QA visual conjunta T010+T021+T022 sigue pendiente de autorización propia.
 Otras candidatas permanecen en [ROADMAP](ROADMAP.md#candidatas-sin-fase-asignada).
 Los límites de la base acumulada siguen vigentes. B y D095 mantienen la validación real aplazada por D151;
 A queda retirado del producto por D155/D161, sin acreditarlo como validado con proveedores reales.

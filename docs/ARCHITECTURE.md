@@ -380,8 +380,12 @@ huella con versión e idioma. T020 (D168) las cablea: `recipes.GENERATIONS` elig
 idioma de la fila de la raíz (sin fila, 409 antes de efectos); comprobaciones por `id` y etiquetas visuales por
 catálogo. Prompts, catálogos y snapshots anteriores permanecen congelados; no se renombran claves/revisiones/rutas.
 
-T011 define mínimos/familias/capacidades de CLI por proveedor/rol y qué semántica no puede acreditarse con help;
-T012 implementará admisión de versiones posteriores compatibles, procedencia y diagnósticos conservando guardias.
+T011 completa el [contrato](phase/P011-T011_CONTRATO_COMPATIBILIDAD_CLI.md) (D173): por HITL, detección automática
+del cliente y su versión, sin pin ni aceptación de candidatas; mínimos comunes de nuevo trabajo Codex 0.163.0 y
+Claude 2.1.304, con indicación de actualizar si son inferiores. Las versiones previas conservan lectura histórica,
+sin nueva admisión bajo mínimos. Perfiles de capacidades por proveedor/rol mantienen guardias y procedencia;
+el usuario final no importa evidencia. T012 implementará descubrimiento por PATH explícito/ruta opcional,
+composición con versión observada congelada y revalidación por intento. §6 sigue describiendo `cli-13` vigente.
 No equivale a garantizar cualquier versión futura ni a pasar a App Server/SDK. Versiones observadas y política
 quedarán ligadas a los intentos sin reescribir evidencia previa o realizar downgrade/retry silencioso.
 
