@@ -22,7 +22,8 @@ ROOT = Path(__file__).resolve().parents[2]
 PUBLIC = ROOT / 'docs/public'
 # Root paths the candidate takes from this checkout (T001 §8); everything under docs/ comes from docs/public.
 ROOT_SOURCED = ('README.md', 'README.es.md', 'LICENSE', 'NOTICE.md', 'NOTICE-THIRD-PARTY.md', 'CONTRIBUTING.md',
-                'SECURITY.md', 'pyproject.toml', 'examples/', 'scripts/', 'src/', 'frontend/', 'tests/')
+                'SECURITY.md', 'CHANGELOG.md', 'pyproject.toml', 'examples/', 'scripts/', 'src/', 'frontend/', 'tests/',
+                '.github/')
 EXCLUDED_EXAMPLES = ('examples/first_use/', 'examples/provider_matrix/')
 # Synthetic decision ids used as parser sample data in tests, not references (see the DECISIONS preamble).
 SYNTHETIC_IDS = {'D002', 'D007', 'D010', 'D098'}
@@ -51,7 +52,7 @@ def candidate(path: str) -> Path | None:
 def public_documents() -> dict[str, Path]:
     docs = {str(p.relative_to(PUBLIC)): p for p in PUBLIC.rglob('*.md')}
     docs.update({name: ROOT / name for name in ('README.md', 'README.es.md', 'CONTRIBUTING.md', 'SECURITY.md',
-                                                 'NOTICE.md')})
+                                                 'NOTICE.md', 'CHANGELOG.md')})
     return docs
 
 

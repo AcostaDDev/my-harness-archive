@@ -1,6 +1,6 @@
 """H2 exit, part 1: local managed API with TestClient, temporary Git/SQLite and fakes.
 
-No provider, agent CLI, network, private run or ReferenceProject. The opt-in
+No provider, agent CLI, network or private run. The opt-in
 supervisor runs in the service thread just as under Uvicorn.
 """
 

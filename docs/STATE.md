@@ -20,7 +20,7 @@ salvo donde se indica. Detalle por fase en `docs/archive/phase-NNN/SUMMARY.md`; 
 - **Agentes** ([P007](archive/phase-007/SUMMARY.md)): revisor y ejecutor Codex o Claude en cualquier combinación
   (`cli-14`, configuración hasta `local-config-7`, lectura de 1–6), revisor en solo lectura con esquema tipado, memoria automática desactivada,
   supresión de confianza del escritor Codex. Validaciones nativas `commands-1` con JUnit. Perfiles: `typescript-web`
-  (componible desde el TOML), `reference_project` (solo biblioteca) y perfiles declarados en `[profiles.*]` de
+  (componible desde el TOML) y perfiles declarados en `[profiles.*]` de
   `local-config-4`, con el ejemplo `python-django` (P008, D095).
   Detección automática por PATH explícito/ruta opcional en v7, sin pin obligatorio; mínimos Codex 0.163.0 /
   Claude 2.1.304, posteriores con compatibilidad condicionada al contrato conocido (P011-T012, D174).
@@ -84,8 +84,8 @@ salvo donde se indica. Detalle por fase en `docs/archive/phase-NNN/SUMMARY.md`; 
 
 **P011 — Preparación para apertura pública en GitHub**, iniciada documentalmente el 2026-10-22 por encargo del usuario
 ([D154](DECISIONS.md#d154--p011-preparación-para-apertura-pública-en-github),
-[plan](phase/P011_PLAN_APERTURA_PUBLICA.md), [tareas](NEXT_STEPS.md)). T001/T002/T019/T003–T014/T020–T023
-completadas (D159–D177), cuatro pendientes (T015–T018); retirada legacy/A
+[plan](phase/P011_PLAN_APERTURA_PUBLICA.md), [tareas](NEXT_STEPS.md)). T001/T002/T019/T003–T015/T020–T023
+completadas (D159–D178), tres pendientes (T016–T018); retirada legacy/A
 implementada, código y pruebas en inglés, preferencias globales, idioma de trabajo inmutable por proyecto, recetas v2
 cableadas, directiva de idioma al agente con documentos en el idioma de trabajo, interfaz en/es y todos los textos
 visibles del servicio/CLI en en/es; detección automática y compatibilidad CLI implementadas con evidencia nueva
@@ -97,11 +97,11 @@ arquitectura, datos y flujos). Sin QA visual conjunta (no autorizada) ni uso nue
 P011 no está completada: T001 entrega diseño/inventario, T002 licencia/revisión estática, T019 retirada funcional y
 T003–T006 comentarios en inglés, T007 infraestructura de idiomas, T008 idioma de trabajo, T020 recetas v2, T009
 directiva y documentos por idioma, T010 interfaz en/es, T021 servicio/CLI en/es y T022 textos de servicio ya
-ingleses en en/es, T011 contrato, T012 compatibilidad/detección automática, T013 auditoría de diagramas y T014/T023
-baseline pública; siguiente T015.
+ingleses en en/es, T011 contrato, T012 compatibilidad/detección automática, T013 auditoría de diagramas, T014/T023
+baseline pública y T015 paquete/CI/instantánea; siguiente T016.
 El modo continuo entre fases queda reservado para **v0.2.0, después de abrir el proyecto en GitHub**;
 no forma parte de P011 ni modifica el cierre confirmado actual. Commit documental D156 realizado en `6174f51`;
-las ampliaciones D157/D158 se incorporaron en `2730f54`. La continuación actual autoriza T023 y su commit local
+las ampliaciones D157/D158 se incorporaron en `2730f54`. La continuación actual autoriza T015 y su commit local
 en inglés, sin proveedores reales ni publicación.
 
 **P011-T001 completada** ([contrato](phase/P011-T001_CONTRATO_APERTURA.md),
@@ -125,7 +125,7 @@ No se declara este historial ni los paquetes antiguos publicables; sigue pendien
 Objetivo: código/comentarios/docstrings y prompts originales ingleses; idiomas visual/trabajo separados (D158);
 CLI por capacidades/mínimos; diagramas contrastados con comportamiento; documentación inglesa y README de primer
 uso; licencia/contenido publicable, paquete/CI y QA del candidato antes del dictamen. Sin publicar ni abrir
-visibilidad por efecto de esta fase. Licencia/titularidad resueltas en T002; versión candidata pendiente de T015.
+visibilidad por efecto de esta fase. Licencia/titularidad resueltas en T002; versión candidata `0.1.0` en T015.
 
 [D157](DECISIONS.md#d157--repositorio-público-nuevo-y-continuidad-del-desarrollo) prevé instantánea inicial
 revisada sin historia/docs privados y con docs públicas nuevas útiles; después, código/decisiones/fases evolucionan
@@ -198,10 +198,8 @@ Los diagnósticos HTTP de `api/*` usan el visual guardado; la línea de la clave
 HITL: servicio/CLI → T021 y QA visual conjunta tras T021. Node, tipos/build y suites offline en verde; sin navegador.
 
 **P011-T021 completada** ([entrega](phase/P011-T021_TRADUCCION_SERVICIO_CLI.md), D171): 471 claves del servicio
-en/es; `tr()` emite en el visual de cada emisión (petición HTTP: guardado; job: el congelado; CLI: `--ui-language`,
-base o `en`, también la ayuda). Hash de retención sellado en inglés; registro de confianza con la declaración
-confirmada; scripts al texto inglés. HITL: textos ya ingleses → T022, núcleo admite la hoja `harness_local.i18n` y QA
-visual no autorizada. Suites offline en verde; sin servicios, navegador ni proveedores.
+en/es; `tr()` emite en el visual de cada emisión (petición: guardado; job: congelado; CLI: `--ui-language`, base o
+`en`). HITL: textos ya ingleses → T022, núcleo admite la hoja `harness_local.i18n`, QA visual no autorizada.
 
 **P011-T022 completada** ([entrega](phase/P011-T022_TRADUCCION_SERVICIO_INGLES.md), D172): por HITL, los diagnósticos
 visibles por naturaleza de `core/adapters/storage/services` (695 `raise` y ~90 razones/diagnósticos) pasan a 724 claves
@@ -239,6 +237,11 @@ especificación/arquitectura/datos/flujos → T023. Comprobador estático en ver
 ARCHITECTURE, DDBB-DIAGRAM y 14 flujos ingleses en `docs/public/docs/`, autocontenidos y solo con DNNN públicos.
 Paridad ER, parser Mermaid y comprobador T014 ampliado en verde; sin suites (no cambia código).
 
+**P011-T015 completada** ([entrega](phase/P011-T015_PAQUETE_PUBLICO.md), D178): por HITL, candidato `0.1.0` con
+CHANGELOG; wheel/sdist con licencias y `SHA256SUMS` verificados miembro a miembro y build reproducible; CI
+`macos-15` sin secretos (no ejecutada en remoto); perfil privado eliminado del código; instantánea pública de 387
+archivos en `.local/public-candidate/` sin Git, con manifiestos. Suites, build y check en verde; nada remoto.
+
 **P010 cerrada y archivada documentalmente el 2026-10-22**
 ([D153](DECISIONS.md#d153--cierre-documental-de-p010-y-de-la-primera-versión-local),
 [resumen](archive/phase-010/SUMMARY.md), [registro de cierre](archive/phase-010/P010_CIERRE.md)).
@@ -250,7 +253,7 @@ P009 conserva su cierre documental (D140) y el Django hijo su P001 CLOSED, cuatr
 tag `p001` sobre `47a0557` y archivo en `3d105c6`. No se repite ninguna operación ni comprobación de su estado.
 Este repositorio sigue sin registrarse ni ejecutarse con el harness; cierre manual sin check READY ni tag propio.
 
-**Siguiente:** P011-T015, paquete público, metadatos y checks reproducibles en GitHub.
+**Siguiente:** P011-T016, primer uso reproducible y QA del paquete candidato.
 La QA visual conjunta T010+T021+T022 sigue pendiente de autorización propia.
 Otras candidatas permanecen en [ROADMAP](ROADMAP.md#candidatas-sin-fase-asignada).
 Los límites de la base acumulada siguen vigentes. B y D095 mantienen la validación real aplazada por D151;

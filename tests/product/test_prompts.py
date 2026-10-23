@@ -44,7 +44,7 @@ def test_external_templates_keep_roles_and_interpolate_once(name):
     assert all(value in result for value in variables.values())
     assert '{{UNTRUSTED_DATA}}' in result  # data, never recursive interpolation
     assert template.sha256 == digest(template.template)
-    assert not any(stack in template.template for stack in ('Django', 'Docker', 'ReferenceProject', 'claude-sonnet-5-5'))
+    assert not any(stack in template.template for stack in ('Django', 'Docker', 'claude-sonnet-5-5'))
     assert load_catalog(dump_catalog(builtin_catalog())) == builtin_catalog()
 
 

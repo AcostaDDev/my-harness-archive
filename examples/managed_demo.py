@@ -1,6 +1,6 @@
 """Opt-in synthetic UI fixture. Never imports or launches provider adapters.
 
-Prepare a NEW directory: python -m examples.managed_demo /private/tmp/my-demo
+Prepare a NEW directory: python -m examples.managed_demo /path/to/new-demo
 Then set HARNESS_DEMO_ROOT to it and HARNESS_MANAGED_CONFIG=examples.managed_demo:build.
 """
 import json

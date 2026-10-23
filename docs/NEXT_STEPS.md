@@ -4,7 +4,7 @@ Objetivo y criterios en [ROADMAP](ROADMAP.md#p011--preparación-para-apertura-p�
 Decisión: [D154](DECISIONS.md#d154--p011-preparación-para-apertura-pública-en-github).
 [Plan y alcance](phase/P011_PLAN_APERTURA_PUBLICA.md).
 
-**Estado:** en ejecución desde el 2026-10-22. T001/T002/T019/T003–T014/T020–T023 completadas (D159–D177); cuatro
+**Estado:** en ejecución desde el 2026-10-22. T001/T002/T019/T003–T015/T020–T023 completadas (D159–D178); tres
 tareas pendientes (T010 desglosó T021, T021 desglosó T022 y T014 desglosó T023 por HITL). Licencia/avisos, retirada legacy/A,
 código/pruebas en inglés, preferencias globales e idioma de trabajo inmutable por proyecto con el par congelado por
 job/intento; recetas v2; directiva al agente y documentos en W; interfaz React, diagnósticos HTTP propios y todos
@@ -14,7 +14,8 @@ No equivale a fase completada.
 T011 entrega el contrato de CLI y T012 implementa detección automática y compatibilidad condicionada por capacidades.
 T013 contrasta diagramas, datos y arquitectura con el código y sus pruebas. T014 prepara la baseline pública
 en `docs/public/` y el README inglés de primer uso; T023 completa allí especificación, arquitectura, datos y flujos.
-**Siguiente:** P011-T015. Sin autorización de publicación.
+T015 prepara paquete `0.1.0`, CI sintética e instantánea pública en `.local/` sin Git.
+**Siguiente:** P011-T016. Sin autorización de publicación.
 P001–P010 siguen cerradas; la primera versión local mantiene el alcance de D151/D153.
 
 ## Restricciones compartidas
@@ -47,7 +48,7 @@ P001–P010 siguen cerradas; la primera versión local mantiene el alcance de D1
   siguiente fase` para v0.2.0 después de abrir el proyecto en GitHub, fuera de estas tareas. P011 mantiene
   cierre con READY y autorización propia, nueva fase sin tareas y confirmación del plan posterior.
   El commit D156 y los ajustes D157/D158 ya se realizaron. La petición actual autoriza ejecutar la siguiente
-  tarea (T023) y su commit local en inglés, sin encadenar tareas ni publicar.
+  tarea (T015) y su commit local en inglés, sin encadenar tareas ni publicar.
 - D157 elige instantánea pública inicial revisada, con Git/documentación de partida nuevos y sin historia privada.
   Desde la apertura, código/decisiones/fases se desarrollan en el repositorio público, fuente principal; este
   checkout conserva su historia privada. No sincronizar dos desarrollos activos ni congelar para siempre `docs/` pública.
@@ -447,7 +448,13 @@ sin procesos; revisión inglesa/española. No anunciar aún un primer uso ensaya
 
 ## P011-T015 — Paquete público, metadatos y checks reproducibles en GitHub
 
-**Estado:** pendiente. **Depende de:** T002, T010, T012, T014, T019, T023.
+**Estado:** completada el 2026-10-23, D178. **Depende de:** T002, T010, T012, T014, T019, T023.
+**Evidencia:** [entrega](phase/P011-T015_PAQUETE_PUBLICO.md): por HITL, versión candidata `0.1.0` con CHANGELOG y
+política; wheel/sdist con README/licencias, salida vacía, `requirements.txt` sin cabecera y `SHA256SUMS`, verificados
+miembro a miembro (build reproducible); journey instalado reparado (idioma de trabajo del fixture). 58 paquetes del
+bundle con aviso; 19 externas no redistribuidas. CI `macos-15` sin secretos, no ejecutada en remoto. Por HITL se
+elimina el perfil privado de código/tests (rutas ampliadas) y se materializa la instantánea (387 archivos) con
+manifiestos privado/público, sin Git. Suites, Alembic temporal, build y check en verde; sin acciones remotas.
 **Objetivo:** Preparar wheel/sdist y automatización de validación distribuibles sin secretos ni proveedores.
 **Alcance:** licencia/metadatos/versión candidata, UI/migraciones/catálogos/prompts, build y CI/materiales de release.
 **Rutas permitidas:** `pyproject.toml`, `uv.lock`, `frontend/**`, `scripts/**`, `tests/**`, `.github/**`,

@@ -1,0 +1,669 @@
+# Private: working tree on f25baf528fb6954a48d0c28eaf40ead94a5f495e. source	candidate	sha256	mode	disposition
+.gitattributes	.gitattributes	7e3c6263db777ff16cb19fbe8bf3b5e44fa74485343f8e244a3a53371e526be3	100644	copied
+.github/workflows/ci.yml	.github/workflows/ci.yml	b8e846f190289fc093a179dc42ce56539768e637f67cc2e4783d3cfed026ea12	100644	copied
+.gitignore	.gitignore	df5406866b777ad9bf191e3a4cd1252e6bfbac2652ee92bf4d7974f2ea722ee7	100644	copied
+.python-version	.python-version	bb90877c5ee8c4703cfd03421e92ef2a17a10b67ecc822524baeea4c8da3dc9f	100644	copied
+AGENTS.md	-	6062e7e023c12cff27d69343aedb6223a20d2f018c493e3eeb710b2238f8dcf4	100644	replaced by docs/public/AGENTS.md
+CHANGELOG.md	CHANGELOG.md	a22111c8955429f04c5def2f1e13e90471d541c04f4f77240b406b8f3b6bea3c	100644	copied
+CLAUDE.md	-	d508ac3158a06ecf84c683a318b6926238b761969b6aa62a8450a2456c91bafa	100644	replaced by docs/public/CLAUDE.md
+CONTRIBUTING.md	CONTRIBUTING.md	fb973a6317dc45fac233add73a15840f39b50ed52af0bedafcb3a51c1d323f13	100644	copied
+GEMINI.md	-	a922f5ae0cc9e29cbe01b26ebea965bdd3489c6980746eba272295e4e8d72a09	100644	replaced by docs/public/GEMINI.md
+LICENSE	LICENSE	fe203862f2fc888d91b62851b280306c1a0486311416622efc6ac3362a27cf3e	100644	copied
+NOTICE-THIRD-PARTY.md	NOTICE-THIRD-PARTY.md	0f0852001b18bc659026430bac3acd24749adfb9df439350218cc5381de3f193	100644	copied
+NOTICE.md	NOTICE.md	bd6b569affeb31547e4a2294eaae16f582368bc958a69cf45c6c8b91c5c52880	100644	copied
+README.es.md	README.es.md	28e02b0241fa5392e66fdcd0186f93d84b7b5144664d3c65db2079568d047718	100644	copied
+README.md	README.md	2aa387d62d580c272e22461dc51a6ef84694a8770bfb5cf2462edaadabe3ae6f	100644	copied
+SECURITY.md	SECURITY.md	afeffb0fce0f092236a698f4f6202f7d5c140620ebe378579385f2c4efbd8a3d	100644	copied
+alembic.ini	alembic.ini	a8715f79e1bb82d8e1ddccbe1d7a3a684b193b01c38c297ed92ec14a44dd8e7c	100644	copied
+docs/ARCHITECTURE.md	-	3815ed98f5e0886b69bcf5bcb0e4b52928b49230ab65ce16f4638b3b39ae9baa	100644	private documentation, phases, decisions and evidence (D157)
+docs/DDBB-DIAGRAM.md	-	21bb7609641672b5f8bdee1bc1f56847aac835937bc64dad7dae5668140e16e0	100644	private documentation, phases, decisions and evidence (D157)
+docs/DECISIONS.md	-	71d301ac1a6e7b944b630e41dd9dd0ef2b98ff6696ca6ba1478c06f6cc360519	100644	private documentation, phases, decisions and evidence (D157)
+docs/NEXT_STEPS.md	-	66b430537e75cd85a5c6b14adebe3871a34a94393267b792d5acfc251e1263ed	100644	private documentation, phases, decisions and evidence (D157)
+docs/ROADMAP.md	-	e64d2c1970b73c741cd5fc4937829a1cd550512978582208f4ee4c12b78f85e8	100644	private documentation, phases, decisions and evidence (D157)
+docs/SPECIFICATION.md	-	a69e1cc2e74159a8efd8337191015f2bfab2cd2fa76a1efc84629d352831d9a5	100644	private documentation, phases, decisions and evidence (D157)
+docs/STATE.md	-	a31f2e45b7918d2e02cd239fabcff9d56f33e1525ede5cf08c444d457be49ef2	100644	private documentation, phases, decisions and evidence (D157)
+docs/archive/phase-000/01-especificacion-harness-local.md	-	b6c42d015e6ef121f8fc6e6536c6e5b5e5434d9769a1db97bbffbf694a2a5bb1	100644	private documentation, phases, decisions and evidence (D157)
+docs/archive/phase-000/02-backlog-y-plan-de-desarrollo.md	-	42d54c32b1a4c8aaea3cf81a4366e5256d67c40d9248f14ba91a6168a90b9883	100644	private documentation, phases, decisions and evidence (D157)
+docs/archive/phase-000/03-instruccion-inicial-para-codex-y-claude.md	-	4abd0c7f22bd9e10f40b0e79b8f026ea634ad230ec0cd85eba195fdf26235e15	100644	private documentation, phases, decisions and evidence (D157)
+docs/archive/phase-000/START_HERE.md	-	254357aa052a94dce63c296dbbbc36314d332d99678f4067c1a0833fdc004717	100644	private documentation, phases, decisions and evidence (D157)
+docs/archive/phase-000/SUMMARY.md	-	e2b3ac25742180960b5505a6db34b01e995a544d355e0b94696e371878e4032e	100644	private documentation, phases, decisions and evidence (D157)
+docs/archive/phase-001/BASELINE.md	-	705799074123dfedeb001a95e7171c3f27a8ea2996e1422e4a615b1c574e3579	100644	private documentation, phases, decisions and evidence (D157)
+docs/archive/phase-001/H0.2_COMPATIBILITY.md	-	edf07c1fc01a16b2fd3110a616ed3d665b42ed9fdde108fccb0f8289bd83760f	100644	private documentation, phases, decisions and evidence (D157)
+docs/archive/phase-001/H0.3_SKELETON.md	-	34143e771a0ba6133bf73eba68eb28c6948ffa1a00b8b4924e844091641f7e65	100644	private documentation, phases, decisions and evidence (D157)
+docs/archive/phase-001/LEGACY_FORMATS.md	-	2e288d6ed9df8efee2850a067c4b98b97420ff119fb2880579a1e483848f9d97	100644	private documentation, phases, decisions and evidence (D157)
+docs/archive/phase-001/NEXT_STEPS.md	-	84e0133fe13a90a484e1b552377107dea6b950954a61eeca195e10848b3b7150	100644	private documentation, phases, decisions and evidence (D157)
+docs/archive/phase-001/STATE.md	-	0ecf1a254f7508616398cde4512d6894f7bb47041ca76de36f563f5d3524d290	100644	private documentation, phases, decisions and evidence (D157)
+docs/archive/phase-001/SUMMARY.md	-	d7b3a4b0449ce2db4b9740e5714626108bfc4cd3d3271f86a258a6c6a6289992	100644	private documentation, phases, decisions and evidence (D157)
+docs/archive/phase-001/h0.2-version-metadata.json	-	5da4fbed3fe82e22c1e342cea003c57432ab0cc046c770b4ef2b05840876462d	100644	private documentation, phases, decisions and evidence (D157)
+docs/archive/phase-002/H1.1_IMPORT.md	-	a9ef0779d5408f78690b532fbcce33127b41ec8e0ce69f4a34b5624fb3f018c6	100644	private documentation, phases, decisions and evidence (D157)
+docs/archive/phase-002/H1.2_NAVIGATION.md	-	6395e9688d1622a7349bf64a26a047ff0e8cfd46ff0b3bd41af26e65249fe665	100644	private documentation, phases, decisions and evidence (D157)
+docs/archive/phase-002/H1.3_OBSERVATION.md	-	2c89757e96d92bc2704d7ab678e3c19e5f1af02860cd072d5c04ebd51bacd8a9	100644	private documentation, phases, decisions and evidence (D157)
+docs/archive/phase-002/NEXT_STEPS.md	-	57aa73be799e6c1320bed5cac4c6adbb44864c54317b108b8421f46dd9bbcb9a	100644	private documentation, phases, decisions and evidence (D157)
+docs/archive/phase-002/STATE.md	-	7402f8e7536ae04ba117f9e8e940da063d3aaeee5467245cb658185953ee48e9	100644	private documentation, phases, decisions and evidence (D157)
+docs/archive/phase-002/SUMMARY.md	-	534eb551921646f2435359700b06fefabe60e1cdeb05a901031ae2f1520402a0	100644	private documentation, phases, decisions and evidence (D157)
+docs/archive/phase-003/H2.1_ENGINE.md	-	976876d2904364022286a528a7ef422c219941d1b93a30c86b0d1db6bea34c25	100644	private documentation, phases, decisions and evidence (D157)
+docs/archive/phase-003/H2.2_PERSISTENCE.md	-	849360bfe5be8cd03b98a96595af5f168e92d60bc5e2ccbb9a91555abbe49d0f	100644	private documentation, phases, decisions and evidence (D157)
+docs/archive/phase-003/H2.3_AUTH_DIAGNOSIS.md	-	4fa6c4c14636137049c0eff88b8e0c94e4dd26d6c1a9f94359525665c93775c7	100644	private documentation, phases, decisions and evidence (D157)
+docs/archive/phase-003/H2.3_CLI.md	-	64e9fbbf0f80331212e7b4b7834153b09052f9904452c415a0a5bdfcbf29930d	100644	private documentation, phases, decisions and evidence (D157)
+docs/archive/phase-003/H2.3_CONFIG_FIX.md	-	29318177003f4cf0e585add65fcdb0cc4ac9e671bb45cb66666697e79075e0eb	100644	private documentation, phases, decisions and evidence (D157)
+docs/archive/phase-003/H2.3_ENV_FIX.md	-	46dd848b3ccc1e4d53b4cbf81e1960494304c7360e6efce470abdefbd85fe453	100644	private documentation, phases, decisions and evidence (D157)
+docs/archive/phase-003/H2.3_ENV_SMOKE.md	-	059140386ed2a9c9fdd330a7ec69f00683d71fe4ec182ea455733147bc729fbb	100644	private documentation, phases, decisions and evidence (D157)
+docs/archive/phase-003/H2.3_MCP_FIX.md	-	805d6a4b1570e0c5c07969bf056854970dacd740d799ac7384c4e3c6d9e0da98	100644	private documentation, phases, decisions and evidence (D157)
+docs/archive/phase-003/H2.3_SMOKE.md	-	ef80a7e88968ca27723cba90110f821b32abc1b5a41a3eac8d864d88a8e55a6b	100644	private documentation, phases, decisions and evidence (D157)
+docs/archive/phase-003/H2.3_SMOKE_CLI3.md	-	d8eb777f43aa21e52c0fd3ea3a478c9acd9ede29257492b88142362f3e2fce61	100644	private documentation, phases, decisions and evidence (D157)
+docs/archive/phase-003/H2.3_SMOKE_RETRY.md	-	8b6dbfd75c9cbee5fa99c9aa1bbb363ac38d6077e2289dc37d1bb158c9c9c753	100644	private documentation, phases, decisions and evidence (D157)
+docs/archive/phase-003/H2.4_GIT.md	-	e6031f5af2d071032a673b957d78ea79b4b7c35e68e914b2c1f232892d9831cd	100644	private documentation, phases, decisions and evidence (D157)
+docs/archive/phase-003/H2.5_MIGRATION.md	-	6a17b7ebbaf502e6743c12c1fa9f7eb3183d95d7bff67e77dacd1d526335674a	100644	private documentation, phases, decisions and evidence (D157)
+docs/archive/phase-003/H2_EXIT_API.md	-	68e461b8c369255a29f591da85de70d969091c49b73e71643da03cdbc5b46f6a	100644	private documentation, phases, decisions and evidence (D157)
+docs/archive/phase-003/H2_EXIT_UI.md	-	70e1f9da6cfc7fac878401f6b73fe15b963dd90971427b17e30099d14ffeb5ef	100644	private documentation, phases, decisions and evidence (D157)
+docs/archive/phase-003/NEXT_STEPS.md	-	c3b4386393f175764e2e7bbc90693e0be529047923d6a45ebcdf79d0089a8989	100644	private documentation, phases, decisions and evidence (D157)
+docs/archive/phase-003/STATE.md	-	6b6e98e7af74a2546f9ea87702aaad42f45b34abf076d8adef8f7071d2e12507	100644	private documentation, phases, decisions and evidence (D157)
+docs/archive/phase-003/SUMMARY.md	-	2342c0b429c9ee005104b7ac2d0fab4d7e63a29b580edad04df62aea9d190c60	100644	private documentation, phases, decisions and evidence (D157)
+docs/archive/phase-004/H3.1_PROMPTS.md	-	b61b237d33b0061250795039948ac913fa887fc46b1247fc918866d489529990	100644	private documentation, phases, decisions and evidence (D157)
+docs/archive/phase-004/H3.2_PERMISSIONS.md	-	f9f9ab1c8f6b6a737c5277b88757613cad521ed323787e288b9f20679277e66c	100644	private documentation, phases, decisions and evidence (D157)
+docs/archive/phase-004/H3.3_PHASES.md	-	f70bc5a17662164bf986771aba83b0e3a6769800868fa0d6dc9ca0a87e3df855	100644	private documentation, phases, decisions and evidence (D157)
+docs/archive/phase-004/H3.4_PHASE_ADJUSTMENTS.md	-	7d70f5502ee07b3cded7e6114765bb4377ca05b389640faee6249569d37b154f	100644	private documentation, phases, decisions and evidence (D157)
+docs/archive/phase-004/NEXT_STEPS.md	-	e5683d770b3f8be0440e75fe4da5018689ea5045a9154aab4d73576d056414ad	100644	private documentation, phases, decisions and evidence (D157)
+docs/archive/phase-004/STATE.md	-	3493ed8a57409d2c25203aca38e17b20cfc1d257fa0404128f695c5613cec50d	100644	private documentation, phases, decisions and evidence (D157)
+docs/archive/phase-004/SUMMARY.md	-	30eb5f165b9e14d43ec29430757a777ecf808d77a2c410762f52af8823cd6310	100644	private documentation, phases, decisions and evidence (D157)
+docs/archive/phase-005/H4.1_CHAT.md	-	3b3e5151bbea0139f35a365de11d6a4fbcf91c13868b4ed50fccbe9043c08930	100644	private documentation, phases, decisions and evidence (D157)
+docs/archive/phase-005/H4.2_BOOTSTRAP.md	-	090a63b0ff8512696f5959b376cf59cd52b314958441dced752fbe3f30b4ef1a	100644	private documentation, phases, decisions and evidence (D157)
+docs/archive/phase-005/H4.3_TYPESCRIPT_PROFILE.md	-	dc188c12f718ed4792f7e8fef97c618cb1d052e5ed05b82cdf969f6e7f9e776d	100644	private documentation, phases, decisions and evidence (D157)
+docs/archive/phase-005/NEXT_STEPS.md	-	76a97c6f2cc6ea58b2c511e32fbd8d01f0dc82abb84eac1115106e742c5ef690	100644	private documentation, phases, decisions and evidence (D157)
+docs/archive/phase-005/STATE.md	-	5dda9252d75ba89ce24596401cb82ec4b80a2ba3d848ac90fe7403710c67525c	100644	private documentation, phases, decisions and evidence (D157)
+docs/archive/phase-005/STATE_EXPORT.md	-	96ae63dcf0b1061d2fa0a50d25f9089635782b6f669974e39cf2bf60284d6cc6	100644	private documentation, phases, decisions and evidence (D157)
+docs/archive/phase-005/SUMMARY.md	-	4573bb1521967d95e5f9960de1d8c73ecf4252cf3fa4392890384a1ea277f061	100644	private documentation, phases, decisions and evidence (D157)
+docs/archive/phase-006/COMMAND_RUNNER.md	-	b31268d543dd456ab6e6616e94356370e742ba87dff182c742fff5dedcb17198	100644	private documentation, phases, decisions and evidence (D157)
+docs/archive/phase-006/COMMAND_RUNNER_REVIEW.md	-	ca6d96df01abef382a75e1a769ae3d48fc07ef30cc4b4549a2a507d0d159d9cb	100644	private documentation, phases, decisions and evidence (D157)
+docs/archive/phase-006/DEV_COMMAND.md	-	bb7935cf080429537526afd8b7346c14f4a2250269af834ae42a12d775d8cf9c	100644	private documentation, phases, decisions and evidence (D157)
+docs/archive/phase-006/FIRST_USE_RUN.md	-	e6f37603fbdbac0724c9caca1a52e710cf48e82f55ca71fae3db85869efcaf7b	100644	private documentation, phases, decisions and evidence (D157)
+docs/archive/phase-006/H5.1_JUNIT.md	-	be60ba7c5b8719b701b6e7947021c19e927b442f38957a67c2deab45b9608c59	100644	private documentation, phases, decisions and evidence (D157)
+docs/archive/phase-006/H5.2_BACKUP.md	-	7d16a3a672b395e43548f09d50cb362444bdac109f792620eda53f263d63b5ed	100644	private documentation, phases, decisions and evidence (D157)
+docs/archive/phase-006/H5.3_RETENTION.md	-	20671cc6f6ad04a0fef1c3169e98e102607033d26edacfab0f94a2902a8e3a53	100644	private documentation, phases, decisions and evidence (D157)
+docs/archive/phase-006/H5.4_DIAGNOSTICS.md	-	630618a5997ac42edef19589e8b7f495da8851a8d5795341359b55f42f14bfec	100644	private documentation, phases, decisions and evidence (D157)
+docs/archive/phase-006/H5.5_DISTRIBUTION.md	-	cac7a2a98df97448f1bb4ea0c0df754b64e38cdb77c1a4c05e2d409fc7d44c27	100644	private documentation, phases, decisions and evidence (D157)
+docs/archive/phase-006/H5.6_SESSION.md	-	394dcb8a4468990010d98fb1071bc8692925374129050a014f9fbdf5b7ca53c5	100644	private documentation, phases, decisions and evidence (D157)
+docs/archive/phase-006/H5.7_E2E.md	-	9e49f8d27e0a4459a98401b3198cb16985bde6227e25659aea0f191b33f2d6d8	100644	private documentation, phases, decisions and evidence (D157)
+docs/archive/phase-006/LOCAL_CONFIG.md	-	9f6bdda02f685b5e560d8ad5f98a1f8bacae70246ba5c98fa4fd2753a1e26874	100644	private documentation, phases, decisions and evidence (D157)
+docs/archive/phase-006/NEXT_STEPS.md	-	ebe71ba29967ea12480ca2f3cee89e99c8f3924a70b87df44044ed4a716e00db	100644	private documentation, phases, decisions and evidence (D157)
+docs/archive/phase-006/REVIEW.md	-	17802123fdfecb933cfa3c897d727ae89d83018c3de81de2f0c42ba0a1d4a511	100644	private documentation, phases, decisions and evidence (D157)
+docs/archive/phase-006/STATE.md	-	f74e466d52a6940a0c8de079456b43a987bab40dd613bcb26a4f8384a17a5a94	100644	private documentation, phases, decisions and evidence (D157)
+docs/archive/phase-006/SUMMARY.md	-	e6d5d546e2a32fb7a13f5e52192b5ba4b3dfcd0f4add8127ee1aa4192ae8d97f	100644	private documentation, phases, decisions and evidence (D157)
+docs/archive/phase-007/AGENT_PERSISTENCE.json	-	1f182199a8150780dd2129e58477522f217992826b73644cc19be81e0a53cf1f	100644	private documentation, phases, decisions and evidence (D157)
+docs/archive/phase-007/AGENT_PERSISTENCE.md	-	2caa3df43866b599aab18d0ed65da6346cd691fdf5bb233773357b08130ee96c	100644	private documentation, phases, decisions and evidence (D157)
+docs/archive/phase-007/AGENT_PERSISTENCE_INVENTORY.py	-	f9f3dd9ea7f1abc1e27d6e377f112bc168bf653e7c697f63e4454ad4591838f1	100644	private documentation, phases, decisions and evidence (D157)
+docs/archive/phase-007/AGENT_ROLES.md	-	becbf43c0dec8d64c181159b03205399b9d9941988bcd9aab9ac3afde3aaee90	100644	private documentation, phases, decisions and evidence (D157)
+docs/archive/phase-007/CODEX_CONTAINMENT_QUALIFICATION.json	-	99668b7ef5d93e4e8e5a038080b1db7ddef715fb9514d79794a3d0c71cf1742e	100644	private documentation, phases, decisions and evidence (D157)
+docs/archive/phase-007/CODEX_CONTAINMENT_QUALIFICATION.md	-	a1dad2f7fbc72ede58d991c8bef5c52b38174ace25f1cd4cec70577cbf3bd162	100644	private documentation, phases, decisions and evidence (D157)
+docs/archive/phase-007/CODEX_CONTAINMENT_QUALIFICATION.py	-	ccc637c5ef5d2c3aad11c686077207569d230782b3ea457d6653ed33621bba0c	100644	private documentation, phases, decisions and evidence (D157)
+docs/archive/phase-007/CODEX_CONTAINMENT_REVISION.json	-	ddaae71ed5780823db87a9b944672d2fb0a49321041e4a97019c312024dfcbcc	100644	private documentation, phases, decisions and evidence (D157)
+docs/archive/phase-007/CODEX_CONTAINMENT_REVISION.md	-	c803b542d1799ad21dc2c245120a9c2c922b0c22ab207ad2d2b89aebf8061118	100644	private documentation, phases, decisions and evidence (D157)
+docs/archive/phase-007/CODEX_CONTAINMENT_REVISION.py	-	46028a322dede27a82a04a777f49501feba904a42ebad3d0922c4df5da24be29	100644	private documentation, phases, decisions and evidence (D157)
+docs/archive/phase-007/CODEX_GLOBAL_CONFIG_DIAGNOSIS.json	-	9f454ab1171d4331452f87d93c5a2c9f9d72237fa21735e0045e9b0fc6b15f03	100644	private documentation, phases, decisions and evidence (D157)
+docs/archive/phase-007/CODEX_GLOBAL_CONFIG_DIAGNOSIS.md	-	efdd81919d6e71cb101ec1365e9d83a5dd4c461162fffe53a274834928d9b257	100644	private documentation, phases, decisions and evidence (D157)
+docs/archive/phase-007/CODEX_PROCESS_CONTAINMENT_EVIDENCE.json	-	114f4196bb024996c5fea6b0d0877561437bf991e3d32b7061f608522c10b309	100644	private documentation, phases, decisions and evidence (D157)
+docs/archive/phase-007/CODEX_PROCESS_CONTAINMENT_PROBE.py	-	2d0f64ffa0d162432252cc1cbeaad5175fc43d9c007652fb1d2a5b60f9e4660c	100644	private documentation, phases, decisions and evidence (D157)
+docs/archive/phase-007/CODEX_PROCESS_CONTAINMENT_PROPOSAL.md	-	4743868b894d2d8a6af87a1f1accf6c7e53fbfc460b8df41c5f710bf75881638	100644	private documentation, phases, decisions and evidence (D157)
+docs/archive/phase-007/CODEX_STARTUP_PREPARATION.json	-	fd198340c32e67db7e14256b916996a3d8ff63e5816eb21b8c4899c1a3b2b5fe	100644	private documentation, phases, decisions and evidence (D157)
+docs/archive/phase-007/CODEX_STARTUP_PREPARATION.md	-	9eef8ff88d3ff1c2df2265e2097d7c60e93a229436e770cf22c4114bde836e14	100644	private documentation, phases, decisions and evidence (D157)
+docs/archive/phase-007/CODEX_STARTUP_PREPARATION.py	-	715d09510cf641fca20fe593174d2d7da72e52123fcc89aacbcd111b957a5ca7	100644	private documentation, phases, decisions and evidence (D157)
+docs/archive/phase-007/CODEX_TRUST_SUPPRESSION.json	-	410a5a1d0a792d4dbf3f338dc823012a52a25258e708ab3272d1af6a34c7e95d	100644	private documentation, phases, decisions and evidence (D157)
+docs/archive/phase-007/CODEX_TRUST_SUPPRESSION.md	-	a95b97d02c906ce44b2df4a968301d96cccdb828a8610acbd1bdb76e66bbe2c2	100644	private documentation, phases, decisions and evidence (D157)
+docs/archive/phase-007/CODEX_WRITER_ROOTS.md	-	36dd2d177a42e0f129945a5f6bd84ae978b8a67d3152cb7faeff2586e7ca027f	100644	private documentation, phases, decisions and evidence (D157)
+docs/archive/phase-007/CONTRACT_SHAPES.md	-	0acfb6538c509300c42afda1370b4a6d8811112585b361e94715d1f38a6fd00f	100644	private documentation, phases, decisions and evidence (D157)
+docs/archive/phase-007/DOCUMENT_ORGANIZATION.md	-	3e8c24d217d9dfb56989afb4d0e692e0f326651242401682828bf25489ef8dbe	100644	private documentation, phases, decisions and evidence (D157)
+docs/archive/phase-007/H6.2_DIFF_PAGINATION.md	-	c577fb18b70cf42d05d3d9b35110246bd0511d501ff1010cc51a4424df05b413	100644	private documentation, phases, decisions and evidence (D157)
+docs/archive/phase-007/H6.2_E1_SHELL.md	-	6120ba548eb6570dc4575493f4e72284b4d9f49663d267e0b259cdc555f3b4ce	100644	private documentation, phases, decisions and evidence (D157)
+docs/archive/phase-007/H6.2_E2_REGISTRY.md	-	aa26ab417ba43d9bf314205ef9a9f068ff8464263ec337f969e23b50eaa79493	100644	private documentation, phases, decisions and evidence (D157)
+docs/archive/phase-007/H6.2_E3_DOCS.md	-	9ab7f7555677afa786119a5f86f2616e11f09422ce96803cc1ae0e051f019bd8	100644	private documentation, phases, decisions and evidence (D157)
+docs/archive/phase-007/H6.2_E4_SETUP.md	-	a27564e931b497027f11fb684216804c44e8fc4e9d54f98e2f5f9c16baab1f91	100644	private documentation, phases, decisions and evidence (D157)
+docs/archive/phase-007/H6.2_E5_CHAT.md	-	518e86d072444f4f398f6fbc28ddf7100d2841c497e6a477f8a1dfd74993a368	100644	private documentation, phases, decisions and evidence (D157)
+docs/archive/phase-007/H6.2_E6_STATS.md	-	25d939d1c9b140bc8e8534a2567ee92181a400606e9f1af236ca1d9b05d6cbcb	100644	private documentation, phases, decisions and evidence (D157)
+docs/archive/phase-007/H6.3_DOCUMENT_CONTRACT.md	-	22796543583cb15fb3a6adae0f105f0b896575064422684658bb1f17c0ca002a	100644	private documentation, phases, decisions and evidence (D157)
+docs/archive/phase-007/H6.4_METRICS.md	-	1629cfd284e97faccd210fb33fe5f2502ed17435e765098bb2ecc688eb973e21	100644	private documentation, phases, decisions and evidence (D157)
+docs/archive/phase-007/H6.4_STREAM_CATALOG.json	-	ef9a7d8b2e3e10099f666cfc912c674f6b4469f7ebe2862b2c4e27218322ceee	100644	private documentation, phases, decisions and evidence (D157)
+docs/archive/phase-007/H6.4_STREAM_CATALOG.py	-	f0ba6db183c88c7befa21a982dd20a2aef22e5e99bb83dcf6d00317b3376f3de	100644	private documentation, phases, decisions and evidence (D157)
+docs/archive/phase-007/H6.5_CONVERSATIONAL_CREATION.md	-	ac33f6fe86c7ca57a15fc2c2d6d8b8194dbc4d8bf09a7a04675535774b042b95	100644	private documentation, phases, decisions and evidence (D157)
+docs/archive/phase-007/NEXT_STEPS.md	-	575d2500b7faa38d09222c7871b3b4770076d0cb8ead0d2606a209371bf226c1	100644	private documentation, phases, decisions and evidence (D157)
+docs/archive/phase-007/PROVIDER_MATRIX_CLI7_PREPARATION.json	-	2a65bc7e0a76906f1da2549cba2ff92f313009aba3a7689b449328c8c78875ce	100644	private documentation, phases, decisions and evidence (D157)
+docs/archive/phase-007/PROVIDER_MATRIX_CLI7_RESULT.json	-	fab9dbcbf8e3dbcacb55dff4d3664bffbc10b1937794aa59a9f9ec69ca4e074d	100644	private documentation, phases, decisions and evidence (D157)
+docs/archive/phase-007/PROVIDER_MATRIX_CLI7_RUN.md	-	86dcefc8cda17b4cd74728e55de01aeb037645b4f7e08b67714b7e802e9ec8da	100644	private documentation, phases, decisions and evidence (D157)
+docs/archive/phase-007/PROVIDER_MATRIX_CLI9_RESULT.json	-	9b16fea1a60f385b09b032ffa25ec745d269057750bf3a0a8b62e04e9a06e9ea	100644	private documentation, phases, decisions and evidence (D157)
+docs/archive/phase-007/PROVIDER_MATRIX_CLI9_RUN.md	-	47d5cfc060a0fb919e760557eeded7633b3f4a4fdc29bc6ba377a310e5efe169	100644	private documentation, phases, decisions and evidence (D157)
+docs/archive/phase-007/PROVIDER_MATRIX_CLI9_STOPS.json	-	942e749573da921fc5f9d6780f5bdfed0d4aa984fb186f402392286cec72fd96	100644	private documentation, phases, decisions and evidence (D157)
+docs/archive/phase-007/PROVIDER_MATRIX_CLI9_STOPS.md	-	e405894034d5f5c00e3adc41395605510e58b2f4e04c30aa50585b41d90a9879	100644	private documentation, phases, decisions and evidence (D157)
+docs/archive/phase-007/PROVIDER_MATRIX_RERUN.md	-	c55d7adbc33b84bda532430702b933b10759d2769a329392e3979f8cb5553e70	100644	private documentation, phases, decisions and evidence (D157)
+docs/archive/phase-007/PROVIDER_MATRIX_RUN.md	-	fcbda3d9e51ffc2133a26a10b7e843aa135d31b4ad9eb5fd650078b1c1ebe62b	100644	private documentation, phases, decisions and evidence (D157)
+docs/archive/phase-007/REVIEW.md	-	199d9b77dd51f3aef3f33868168258d697844ca17077c7a6b462aa20964b8d10	100644	private documentation, phases, decisions and evidence (D157)
+docs/archive/phase-007/STATE.md	-	81f7ab45e295c557049a04dc6e95507304f7d971a8a90072d63a8a2cccee2d85	100644	private documentation, phases, decisions and evidence (D157)
+docs/archive/phase-007/SUMMARY.md	-	01322214e04d19b3e2b086a934976c768cb5559aa492b503e94fea8591259420	100644	private documentation, phases, decisions and evidence (D157)
+docs/archive/phase-007/TYPED_JSON_SCHEMA.md	-	35d2912b4fb9c6306d72323632ee75b41e48d220cfe543e2b4ded06923c47203	100644	private documentation, phases, decisions and evidence (D157)
+docs/archive/phase-008/MANIFEST.json	-	b7118ea9140dfba54330e6f7a7136d236787e28dc5c40521922903c0c09123cd	100644	private documentation, phases, decisions and evidence (D157)
+docs/archive/phase-008/NEXT_STEPS.md	-	8143396beda77469cbb7d737d1b2ba633208e37544ec55a10cc2f4ed415e1f26	100644	private documentation, phases, decisions and evidence (D157)
+docs/archive/phase-008/P008-T001_MIGRACION_DOCUMENTAL.md	-	1645904c197cc7b6cb6a762f1792258a08cbb8ae64cf7a1df9fe6644a1172c64	100644	private documentation, phases, decisions and evidence (D157)
+docs/archive/phase-008/P008-T004_CIERRE_UNIFICADO.md	-	df38ac2a34aab012de96112a298301c89d9aa68bb11e1b1aff91c84546c0cced	100644	private documentation, phases, decisions and evidence (D157)
+docs/archive/phase-008/P008-T005_PROMPTS_DEFINICION.md	-	caea891d8c3ca56ecdb2414a098899758b6c6cad4c628cd90716c219a38cf8ea	100644	private documentation, phases, decisions and evidence (D157)
+docs/archive/phase-008/P008-T006_API_UI.md	-	dfb8addede823f94335a97299887620e1fbb14025a0852d2565619bce3170695	100644	private documentation, phases, decisions and evidence (D157)
+docs/archive/phase-008/P008-T007_INSTRUCCIONES_CONTEXTO.md	-	2fffdc16ad8e05cf3a4f5fe4168fe94dec647318f689aba7ecc6e74a88d4256d	100644	private documentation, phases, decisions and evidence (D157)
+docs/archive/phase-008/P008-T008_PERFILES_DECLARATIVOS.md	-	4191c7d75c6ee96b3b9c478878827a8bad423dfadcff370ee91a242daa22d358	100644	private documentation, phases, decisions and evidence (D157)
+docs/archive/phase-008/P008-T009_INVENTARIO_FLUJO_A.md	-	4584964a681f1f0a55f60f3f2f4a784a925e6387543710e288d32c07489c54c9	100644	private documentation, phases, decisions and evidence (D157)
+docs/archive/phase-008/P008-T010_MAPA_NORMALIZACION.md	-	1622de5164a0d39739bcd7212f28c3d1d9554d3d2f05bdfe653b190d37f7cd1e	100644	private documentation, phases, decisions and evidence (D157)
+docs/archive/phase-008/P008-T011_PROPUESTA_REVISOR.md	-	511bade01831c10944f3a02242b9fcd20eaf06b8682cb1398ef76fa4116c6396	100644	private documentation, phases, decisions and evidence (D157)
+docs/archive/phase-008/P008-T012_COMMIT_CONTINUIDAD.md	-	6de56d8f07b73a11a31abb512e482d9f95bb2cff77eb3389660552650f23182a	100644	private documentation, phases, decisions and evidence (D157)
+docs/archive/phase-008/P008-T013_INVENTARIO_FLUJO_B.md	-	492040869422a723085bd80228e9f7e359bb44f0670c2ca1b7ed3f3aa37ef2ac	100644	private documentation, phases, decisions and evidence (D157)
+docs/archive/phase-008/P008-T014_INGENIERIA_INVERSA.md	-	0a6a55921f8f1d22f407a119512830b471943379bb0c3a97fe36f461c338677a	100644	private documentation, phases, decisions and evidence (D157)
+docs/archive/phase-008/P008-T015_INCORPORACION_CONFIRMADA.md	-	2ed18d25106499d41f50c499881c60799d414e5f6a88071bd13b8c8e973d28c2	100644	private documentation, phases, decisions and evidence (D157)
+docs/archive/phase-008/P008-T016_FRONTERA_GIT.md	-	2b2b08c7488459438b2f0c789d78619618132601307eb7e26ce35770965fb29c	100644	private documentation, phases, decisions and evidence (D157)
+docs/archive/phase-008/P008-T017_REFERENCIAS_VIGENTES.md	-	84e24289786a60bb63ef6914389ac9f09251287c24865d496c1bf2741568c8aa	100644	private documentation, phases, decisions and evidence (D157)
+docs/archive/phase-008/P008-T018_OBJETOS_LOCALES.md	-	9416ae78c39e6d6037fdec23d55f8ae8aa81a789bff9ad5940b370de0947d340	100644	private documentation, phases, decisions and evidence (D157)
+docs/archive/phase-008/P008-T019_SUBMODULOS.md	-	fcc248c54cf10094c9a28cb4ffd7553fb4728c6884db05b1ca94ac1ef5bac0f5	100644	private documentation, phases, decisions and evidence (D157)
+docs/archive/phase-008/P008-T020_ESCRITOR_LOCAL.md	-	b8c2d9ac493369e3660b2e16e3917afbf3caf892b278af5308dc2a08dca9ad9a	100644	private documentation, phases, decisions and evidence (D157)
+docs/archive/phase-008/P008_CIERRE.md	-	6b3e5cab45c520743bd2753920c0c57cda7258dae401de843fa74ce1f5ca102e	100644	private documentation, phases, decisions and evidence (D157)
+docs/archive/phase-008/P008_REVISION_SALIDA.md	-	5fc5b5be29e5c3d678612af3f61cfed82c8cdcce04a7e873cbf8ed230ab6f9b1	100644	private documentation, phases, decisions and evidence (D157)
+docs/archive/phase-008/P008_REVISION_SALIDA_2.md	-	a0f83195b8befa6f232eebd9a0bef5f7b6600f41a3d0b3d2304a4e5ef403e9bc	100644	private documentation, phases, decisions and evidence (D157)
+docs/archive/phase-008/P008_REVISION_SALIDA_2_EVIDENCE.json	-	e15e34ab042457f99140d23283ebb38a0956cd40b72725a8ef60669c94ea4f31	100644	private documentation, phases, decisions and evidence (D157)
+docs/archive/phase-008/P008_REVISION_SALIDA_2_REPRO.py	-	fd0585cb997f7dd477083ef99c3160d1037118c8fef3de29ab74fb85ff71bb43	100644	private documentation, phases, decisions and evidence (D157)
+docs/archive/phase-008/P008_REVISION_SALIDA_3.md	-	c5a24333fa70b30bb25afbf222fce21e90c801b5b3e65e86c652dfc26aef6ec6	100644	private documentation, phases, decisions and evidence (D157)
+docs/archive/phase-008/P008_REVISION_SALIDA_3_EVIDENCE.json	-	0c9f049c90f0b9cbfa102a7e0d41494c791e8575b8a57e0da035a41dec81d1bb	100644	private documentation, phases, decisions and evidence (D157)
+docs/archive/phase-008/P008_REVISION_SALIDA_3_REPRO.py	-	392e81a94cd898b159ea126633437785911c1aab44c0f5712d067d4d1582b7b4	100644	private documentation, phases, decisions and evidence (D157)
+docs/archive/phase-008/P008_REVISION_SALIDA_4.md	-	a0062d172f6fa436f4b93f153c83077ec01c3cd86292a17a3b7325ed5f7f8396	100644	private documentation, phases, decisions and evidence (D157)
+docs/archive/phase-008/P008_REVISION_SALIDA_4_EVIDENCE.json	-	7574c19d9bf8814962befb9136c4c818c60fef7bed8e834ff11d63d1c40eb06b	100644	private documentation, phases, decisions and evidence (D157)
+docs/archive/phase-008/P008_REVISION_SALIDA_4_REPRO.py	-	2a17db372a6c959a11118b04501d846589a52dcd8ab6e4388ea9557e40551e37	100644	private documentation, phases, decisions and evidence (D157)
+docs/archive/phase-008/P008_REVISION_SALIDA_5.md	-	99aa033344fa5866a5de964671a581dbb65c78eba2220fe265228df706d18b2b	100644	private documentation, phases, decisions and evidence (D157)
+docs/archive/phase-008/P008_REVISION_SALIDA_5_EVIDENCE.json	-	1559c6b1244a6720c1c1a51268791057d27a11fd625aa30bf4bed89c59c8445a	100644	private documentation, phases, decisions and evidence (D157)
+docs/archive/phase-008/P008_REVISION_SALIDA_5_REPRO.py	-	5cee96bad04c8586c761bdf9bcae516d013704616f97bffed206c3a5eda6576b	100644	private documentation, phases, decisions and evidence (D157)
+docs/archive/phase-008/P008_REVISION_SALIDA_EVIDENCE.json	-	8ddb0b76fa7035290d56275dacccf7d4a1d6d16b7a4a84567de7d4aa27f4e0a9	100644	private documentation, phases, decisions and evidence (D157)
+docs/archive/phase-008/P008_REVISION_SALIDA_REPRO.py	-	fa3508d611a98330b773fb1ecca3ff903c3f46dbccaded2096fd47e6d2a8f3a3	100644	private documentation, phases, decisions and evidence (D157)
+docs/archive/phase-008/REVIEW.md	-	42ece79de63d4db5ef0e4400ae1be8ea23475500b43ccb61f944b2db9ed75e9b	100644	private documentation, phases, decisions and evidence (D157)
+docs/archive/phase-008/STATE.md	-	a6cb5fedaa2bc96d133bfc41c8be340a8731a24e4899995fb76442f6d77df91a	100644	private documentation, phases, decisions and evidence (D157)
+docs/archive/phase-008/SUMMARY.md	-	2962c164ceca289b8243a42b6a3f8c4153080a460356c2c209a222ce136afbf7	100644	private documentation, phases, decisions and evidence (D157)
+docs/archive/phase-009/MANIFEST.json	-	5c7c6393ef97a3d1a5de0fa9b4e4e32442763f1a5f817b080e89fb601f757fc1	100644	private documentation, phases, decisions and evidence (D157)
+docs/archive/phase-009/NEXT_STEPS.md	-	c7112c85bf8872280cba549d8c43703c4983405734cd828ac413919202c09684	100644	private documentation, phases, decisions and evidence (D157)
+docs/archive/phase-009/P009-T001_CONTRATO_CREACION.md	-	99c8da451fea0c444f733743ee39219fdab02ac8a6f6e1584b3dd1330970f24b	100644	private documentation, phases, decisions and evidence (D157)
+docs/archive/phase-009/P009-T002_CARPETA_PROYECTOS.md	-	1eb4048186bc92d615b6e62587d77f0531d7816890fb2da828c5efa7fb3469b4	100644	private documentation, phases, decisions and evidence (D157)
+docs/archive/phase-009/P009-T002_QA.png	-	cf59ce818c581471a344f1d0d5b400a425aaaf7cdfbd8f935ac7bfce0df7bcbd	100644	private documentation, phases, decisions and evidence (D157)
+docs/archive/phase-009/P009-T003_AGENTES_PROYECTO.md	-	ffc5087d7c4cfbb51a4a73e2c93191f773ea1164c5529845847f78a6c708c65c	100644	private documentation, phases, decisions and evidence (D157)
+docs/archive/phase-009/P009-T003_QA.jpg	-	787d705d23527f464d0d5bf39cfba59d2c13520f7953a990cc11a1bb34e57f44	100644	private documentation, phases, decisions and evidence (D157)
+docs/archive/phase-009/P009-T004_QA.jpg	-	09c060333d9f460e315c30d5763e90e291ef81c70d2c5accc682dd8ce8858eca	100644	private documentation, phases, decisions and evidence (D157)
+docs/archive/phase-009/P009-T004_RECETA_DJANGO.md	-	6fe2f9b20195fb9d95cdab887859b0bf16f7b7d7b64dcf515997a8786d3e1da6	100644	private documentation, phases, decisions and evidence (D157)
+docs/archive/phase-009/P009-T005_ENSAYO_DJANGO.md	-	77074d6696749bba8802bb37e0c08bd5ce60342b2c46c5b849e1099f89d1e1c1	100644	private documentation, phases, decisions and evidence (D157)
+docs/archive/phase-009/P009-T005_WHEELS.json	-	57e2d2f62cb5c32b1246824cd65df787ffb798c194b7b4bcfb6dc14f30467b58	100644	private documentation, phases, decisions and evidence (D157)
+docs/archive/phase-009/P009-T006_PROPUESTA_PILOTO.md	-	61632bd9252b52e366846bd149af0ef8c572e361d58d65297744e1326e152f91	100644	private documentation, phases, decisions and evidence (D157)
+docs/archive/phase-009/P009-T007_CREACION_DJANGO.md	-	b86197fa34d4a40014d7934ade463de8cdecb19aed10a92b7b5f21787d882bad	100644	private documentation, phases, decisions and evidence (D157)
+docs/archive/phase-009/P009-T008_PILOTO_CODEX_CODEX.md	-	743e6bb9322e12f7f6a51be04463d40d3fd8f44704048f6e2b489d1b0f1a9cba	100644	private documentation, phases, decisions and evidence (D157)
+docs/archive/phase-009/P009-T009_PILOTO_CODEX_CLAUDE.md	-	9649293adff9ab8895f535d0ff3096a8555aaf01b12db2ae3134fe43ef809676	100644	private documentation, phases, decisions and evidence (D157)
+docs/archive/phase-009/P009-T010_PILOTO_CLAUDE_CLAUDE.md	-	18f267211d149e07974eb300c3ff5ba00e8aa772d8dcb2517c7028752b52612e	100644	private documentation, phases, decisions and evidence (D157)
+docs/archive/phase-009/P009-T011_PILOTO_CLAUDE_CODEX.md	-	76c94955172b2692d40450632f8bc4320eaf3a03407ba26ae3e0bd070212ce14	100644	private documentation, phases, decisions and evidence (D157)
+docs/archive/phase-009/P009-T012_CIERRE_PILOTO.md	-	12b03651c5158e7cc080485b786c6a3a49a4f35cef55d0a8b0309c5b42c77bd1	100644	private documentation, phases, decisions and evidence (D157)
+docs/archive/phase-009/P009-T012_CORRECCION_DOCUMENTAL.md	-	12f0f49a21c0e46d4b4382a69490af7065f1c900cd8d5239bf3916793b30a2c7	100644	private documentation, phases, decisions and evidence (D157)
+docs/archive/phase-009/P009-T013_CARACTERIZACION_CLI.md	-	d5c9faefd8afa2d9da3e0479d328689656188f632fb2925cc1f3ab900d4e7b77	100644	private documentation, phases, decisions and evidence (D157)
+docs/archive/phase-009/P009-T014_DEFINICION_SIN_GIT.md	-	0e8685068a3bda90e23f588cfc6904e9d43cc989a6b956daea0dfd5dbbd9c9a4	100644	private documentation, phases, decisions and evidence (D157)
+docs/archive/phase-009/P009-T015_VERIFICACION_WHEEL.md	-	d132629b81ee0b65c582c4b3a25606b7cff41e67b43dce5f96416ef25f1d0a6f	100644	private documentation, phases, decisions and evidence (D157)
+docs/archive/phase-009/P009-T016_SUITE_RAPIDA.md	-	61b9607f35c2f2ca632245c9bbbd9b7647ce19123c90806f7b52ac7c2d45e0db	100644	private documentation, phases, decisions and evidence (D157)
+docs/archive/phase-009/P009-T017_RUTAS_DIRECTORIO.md	-	e57582b1ef24d0ac55f2833c1b4a681519328b14ae1e6dc036bcad13b964d698	100644	private documentation, phases, decisions and evidence (D157)
+docs/archive/phase-009/P009-T018_RECIBO_TRAS_REINICIO.md	-	0823b237a0960342ab84665e082c4c26b39d302f2a8f764b20b052d0d23d2099	100644	private documentation, phases, decisions and evidence (D157)
+docs/archive/phase-009/P009-T019_FORMATEO_PERFIL.md	-	09b8457b2f463eeece82ea1979ccc35e6c015104443d46fc322900d354c54587	100644	private documentation, phases, decisions and evidence (D157)
+docs/archive/phase-009/P009-T020_ENCOLAR_DESDE_DOCUMENTOS.md	-	11fa0b42a2eed2a9645dd185a49c167cbbf6122a9a12d8215ec76ecb0ab6fa1a	100644	private documentation, phases, decisions and evidence (D157)
+docs/archive/phase-009/P009_CIERRE.md	-	270e8a3a2df44934325224dc57e99b59b720914e739fe194895784b7c3fcc362	100644	private documentation, phases, decisions and evidence (D157)
+docs/archive/phase-009/P009_PLAN_DJANGO.md	-	1dca6ba6c896e468755b75b7c364bf843e3277be78e2ffcae8257a5f09496aca	100644	private documentation, phases, decisions and evidence (D157)
+docs/archive/phase-009/REVIEW.md	-	343e68b37e1a849f2ae3112a3dad23a323b0aeb64125e75edd0699aaa80bc44d	100644	private documentation, phases, decisions and evidence (D157)
+docs/archive/phase-009/STATE.md	-	59f4d33c8609e4621df7678e58bd70bd2c17b63fbbb7e7b76d96b9c00cefeaed	100644	private documentation, phases, decisions and evidence (D157)
+docs/archive/phase-009/SUMMARY.md	-	12fcf8f9e6c9bf216617f2a33360b00b92d09531ee7ae2900c4e32e2961b785a	100644	private documentation, phases, decisions and evidence (D157)
+docs/archive/phase-010/MANIFEST.json	-	eac60ef4cda384064b2503c154a2896f0702706c49729f94d8cfd52f478d82a5	100644	private documentation, phases, decisions and evidence (D157)
+docs/archive/phase-010/NEXT_STEPS.md	-	778086a0297765f085aa93fe237fd67450bd0c84ac044e1699235148e9f9a832	100644	private documentation, phases, decisions and evidence (D157)
+docs/archive/phase-010/P010-T001_CONTRATO_CONSOLIDACION.md	-	406680afe63523af2f8bf90aec7f2ed126c14b44eec121c380849968a937fb7e	100644	private documentation, phases, decisions and evidence (D157)
+docs/archive/phase-010/P010-T002_ARRANQUE_TYPESCRIPT.md	-	38cb6d52019c694f8d22c269a07a24eb13a671127ef53d57982d7d762d119a0b	100644	private documentation, phases, decisions and evidence (D157)
+docs/archive/phase-010/P010-T003_LECTURAS_RUNS.md	-	54c6d381f68c79bced5cf719eec53a1826f80427bd9bcc7d91f840d3e17f5123	100644	private documentation, phases, decisions and evidence (D157)
+docs/archive/phase-010/P010-T004_MARCADORES_DEFINICION.md	-	b743cddad36fcfacb15c1a6276a2314f55d8a36059563984b7c6890c6f8675a5	100644	private documentation, phases, decisions and evidence (D157)
+docs/archive/phase-010/P010-T005_FASES_CERRADAS.md	-	58b83bd63b7c237e8b487165e1f722679d3c3c41565101241339f01cfd41ff15	100644	private documentation, phases, decisions and evidence (D157)
+docs/archive/phase-010/P010-T006_DOCUMENTACION_VERSION.md	-	c34e337439019b41ed6a275ffcedd136dcbe8c0f810dbd847a42ade358741359	100644	private documentation, phases, decisions and evidence (D157)
+docs/archive/phase-010/P010-T008_PROPUESTA_VALIDACION_REAL.md	-	ffdcfbf898c1c32214707d4f8f0d4742697765545de78bb7295c1b99a659ed76	100644	private documentation, phases, decisions and evidence (D157)
+docs/archive/phase-010/P010-T009_EVIDENCE.json	-	d59c1871e8ca9cdd541d04eda0bef1c131ea6538ae4cd16671f3b6988d5dd378	100644	private documentation, phases, decisions and evidence (D157)
+docs/archive/phase-010/P010-T009_QA/definition-draft.jpg	-	39fa94b8679062364692bae73413e5d75100e16b7e7c13c1b424f7eccaa3109e	100644	private documentation, phases, decisions and evidence (D157)
+docs/archive/phase-010/P010-T009_QA/definition-empty.jpg	-	1c690ee5cb8aedd59c4045e33ee91db843eb1b8ee3293ffe2ac5f8815c50b548	100644	private documentation, phases, decisions and evidence (D157)
+docs/archive/phase-010/P010-T009_QA/docs-closed.jpg	-	d7b7cad733fba7a630fef1b5ba88123d17bffbef05e4e2bfb431d083a08abcfc	100644	private documentation, phases, decisions and evidence (D157)
+docs/archive/phase-010/P010-T009_QA/docs-drift.jpg	-	828c35f89eddd6c7bfbe8b1186e5bfbb82641866b1c5ef57f5bc9872c3a5bfbc	100644	private documentation, phases, decisions and evidence (D157)
+docs/archive/phase-010/P010-T009_QA/metrics.jpg	-	093e07f76cfa8c5737708b2acb30a775bc15ee7c4767f7742ef13edf8cb15b0a	100644	private documentation, phases, decisions and evidence (D157)
+docs/archive/phase-010/P010-T009_QA/phase-closed.jpg	-	4ebb1f3377c0a5e19552731c5888f74ec04e388d2905008d2eb3f6d120b8099e	100644	private documentation, phases, decisions and evidence (D157)
+docs/archive/phase-010/P010-T009_QA/phase-drift.jpg	-	54dd116971f8239e23ee84a7e6d0741eb19f5d497c85c4ed4ac5e63e37d2869f	100644	private documentation, phases, decisions and evidence (D157)
+docs/archive/phase-010/P010-T009_QA/phase-open.jpg	-	8d16a31f68c53c350ead02befe9412505db83c4c0b7bb37a5c36a07346092dde	100644	private documentation, phases, decisions and evidence (D157)
+docs/archive/phase-010/P010-T009_QA/phase-successor.jpg	-	d061fe659190a72c90e3f85096aee33647d1a4d082ee06247c33a37ab23fee0d	100644	private documentation, phases, decisions and evidence (D157)
+docs/archive/phase-010/P010-T009_QA/run-diff.jpg	-	34c7ec2accec27069bcb1dd561fb45b321bb4b3ac66864aae8ed7bb53c449c82	100644	private documentation, phases, decisions and evidence (D157)
+docs/archive/phase-010/P010-T009_QA/run-junit.jpg	-	6eae6a2c9daee499b6a7bf8dcc978cbd2af674a9426a0e44cecb839b61f4e440	100644	private documentation, phases, decisions and evidence (D157)
+docs/archive/phase-010/P010-T009_QA/typescript-preparation.jpg	-	2a8e98f1ff4ca629af50db9b8268ec692a1c896e1b05748abdf0c1b86debfef9	100644	private documentation, phases, decisions and evidence (D157)
+docs/archive/phase-010/P010-T009_VERIFICACION_FINAL.md	-	3fd132f22be034094faf7ea204aaaf804323ab925ab53c3ac2dfc8caf39d6475	100644	private documentation, phases, decisions and evidence (D157)
+docs/archive/phase-010/P010-T011_METRICAS_SIN_HISTORIAL.md	-	1b1bcd9aeb63e0bc7760c7b3e6f102ab95d89295bb511925fecf72689504a4df	100644	private documentation, phases, decisions and evidence (D157)
+docs/archive/phase-010/P010-T012_MIGRACION_INSTALADA.md	-	50956a25c0a2d45c1ff77415a87138d2328f99720892cf370de4b253223356c8	100644	private documentation, phases, decisions and evidence (D157)
+docs/archive/phase-010/P010_CIERRE.md	-	11e5180aeb1ec03274bbedfbf2eaaef089d3ded6a8889e9a8f13fcae6a2ab705	100644	private documentation, phases, decisions and evidence (D157)
+docs/archive/phase-010/P010_MATRIZ_ACEPTACION.md	-	9f04f063000891f904b346a6d16399f8b9394109453bb0041b458814a8f2713f	100644	private documentation, phases, decisions and evidence (D157)
+docs/archive/phase-010/P010_PLAN_CONSOLIDACION.md	-	974821559e441f0dd4b8c548cb1ceb1b7dec073ed2c6bfd9d856ea694a3cb112	100644	private documentation, phases, decisions and evidence (D157)
+docs/archive/phase-010/P010_REVIEW.md	-	e77d866f4aa08459d3327b74d7363e495ec55d058bddeb8daf82810aa08fdcf5	100644	private documentation, phases, decisions and evidence (D157)
+docs/archive/phase-010/REVIEW.md	-	e82d21c22e1bf6645f7f30ec9b7419d0c3dd4b9178b837df3990171bb0e815b1	100644	private documentation, phases, decisions and evidence (D157)
+docs/archive/phase-010/STATE.md	-	3f8d7102a49aeccddbd9300833ad14c8414da01b02612f49e163be0c172b95ac	100644	private documentation, phases, decisions and evidence (D157)
+docs/archive/phase-010/SUMMARY.md	-	9fc801692ba02724f324ccf6044e5b18b0725bdece64eab69ddc94059e843ff4	100644	private documentation, phases, decisions and evidence (D157)
+docs/flows/chat.md	-	db35bb6efd3a9a5ec60956a55b503c1a5f152cd6910a348f7960d42ec093d169	100644	private documentation, phases, decisions and evidence (D157)
+docs/flows/cli-compatibility.md	-	91c514425a31c9d2c604e7d124c932637d77bb0ced8f9533c005f2b7e69c73f5	100644	private documentation, phases, decisions and evidence (D157)
+docs/flows/database-migration.md	-	1ab2d7ae5d5de0e745140c85a8a9889ea1cff782b0ca1715452eb474e02055fa	100644	private documentation, phases, decisions and evidence (D157)
+docs/flows/documents.md	-	a4b1952fddddc19879eed5ba9ba00cbe0ea01eddff1fe0d0d1717992e530d063	100644	private documentation, phases, decisions and evidence (D157)
+docs/flows/language-preferences.md	-	d125e9498558203f27dd80d9badb07eb0e17e140ae4c3917ee30e2c1cb4cb6fb	100644	private documentation, phases, decisions and evidence (D157)
+docs/flows/legacy-migration.md	-	5da9de27f7a85819eade1ca9f6007b43d014d7883560a6dc123ed85d4f388c6e	100644	private documentation, phases, decisions and evidence (D157)
+docs/flows/phase-lifecycle.md	-	fdef5918ceddefe07b959025196f5627b8da4b8bbdc99fbfbf3a0a47bb308347	100644	private documentation, phases, decisions and evidence (D157)
+docs/flows/project-agents.md	-	77717a28ae9088a4b52330df805e0540322adfbf253b8c9ed9f8e9cc943ce9f5	100644	private documentation, phases, decisions and evidence (D157)
+docs/flows/project-creation.md	-	b0fbf67b15718851b2793bcdc2b6648f7b5be8f21b74dfad108c70866d84db47	100644	private documentation, phases, decisions and evidence (D157)
+docs/flows/project-definition.md	-	65b8ca82980b8c81cffa39897a101af85e6f3da34cfc35d54decc04da7a9cd5c	100644	private documentation, phases, decisions and evidence (D157)
+docs/flows/project-onboarding.md	-	f70e496681ba1cda549d5dedf160db89797ccbcefd7a704d422fe9c4a19e9866	100644	private documentation, phases, decisions and evidence (D157)
+docs/flows/project-preparation.md	-	a4ebcf668fa1214f9498389fccb9dabe090ec03985661d5be448a90fbe07bdaf	100644	private documentation, phases, decisions and evidence (D157)
+docs/flows/project-work-language.md	-	f43726e903883410a83515fb9b12bb338f7e5ca745a14d9d14814db62933530e	100644	private documentation, phases, decisions and evidence (D157)
+docs/flows/task-run.md	-	71ac4c5b8b4c342a00f0faba5c3d07998f9f47e1a510531ca39b3960e2de4050	100644	private documentation, phases, decisions and evidence (D157)
+docs/phase/P011-T001_CONTRATO_APERTURA.md	-	cab202cb8f85dfa20d7da52e67ad061977770115e6637a7aff03a06a98b4c1e1	100644	private documentation, phases, decisions and evidence (D157)
+docs/phase/P011-T001_INVENTARIO.md	-	03e55cd1d83968d3498298646dc0fd74ae7ac14fad66c86ae0cf54196c57ea19	100644	private documentation, phases, decisions and evidence (D157)
+docs/phase/P011-T002_CONTENIDO_PUBLICABLE.md	-	b2315a09754e556b30e6b80fdcf4c153f6dfef9ef2de120f253971a76f72339e	100644	private documentation, phases, decisions and evidence (D157)
+docs/phase/P011-T002_DEPENDENCIAS.tsv	-	5d6704e07baa554f9125725bd66a4190a25fbdf8a3d27b1bc27b4186cd7dc0e9	100644	private documentation, phases, decisions and evidence (D157)
+docs/phase/P011-T002_INVENTARIO.tsv	-	a88838e909ce2ef2cba08ba6fae556086fa2a0025f2c366deaa97e494ac49e6f	100644	private documentation, phases, decisions and evidence (D157)
+docs/phase/P011-T002_audit.py	-	a7990dfa02d4800eb9eb6b650444568f2053616cce656a64bdefceadb49ca9ea	100644	private documentation, phases, decisions and evidence (D157)
+docs/phase/P011-T003_INGLES_NUCLEO.md	-	b897132ec7b3b952ba81978840c98714aa6e89276b6dfdb5cb24dcb93bf1da32	100644	private documentation, phases, decisions and evidence (D157)
+docs/phase/P011-T004_INGLES_BACKEND.md	-	385828a29d17ee86bbd73e09497fc05d2d17fda16d2d626051586a7404c8fcd4	100644	private documentation, phases, decisions and evidence (D157)
+docs/phase/P011-T005_INGLES_CLIENTE_HERRAMIENTAS.md	-	2af87711251cf9c9e0330aab79349979b24394bfffeb16840606ac22c9a87104	100644	private documentation, phases, decisions and evidence (D157)
+docs/phase/P011-T006_INGLES_PRUEBAS.md	-	f4f8e542119a0e5ae2ac5ef1d2c4a3864c703c739c5fe8026a07b59bdbfddb0d	100644	private documentation, phases, decisions and evidence (D157)
+docs/phase/P011-T007_INFRAESTRUCTURA_IDIOMAS.md	-	0601ffce635324c2b4c9c79fd7aac9cb601230797649c1d697989ed9edd1bd59	100644	private documentation, phases, decisions and evidence (D157)
+docs/phase/P011-T008_IDIOMA_PROYECTO.md	-	6ca00cb227321a6874e096daccf598b484259be6f875b7ce306b7613e8a27c60	100644	private documentation, phases, decisions and evidence (D157)
+docs/phase/P011-T009_PROMPTS_DOCUMENTOS_BILINGUES.md	-	f0bc490514784f49c2fa31db6a2ae7c85620cf7677f351d5d64d6eb4808912b4	100644	private documentation, phases, decisions and evidence (D157)
+docs/phase/P011-T010_TRADUCCION_PRODUCTO.md	-	ed6e21b034bcacfe1031b8c873ea98bb9f06fcac6ede0aaef5a1ca2410bb6fe2	100644	private documentation, phases, decisions and evidence (D157)
+docs/phase/P011-T011_CONTRATO_COMPATIBILIDAD_CLI.md	-	25107d4cc36c3ed885a1fa9e3e961ba2d6eaee11919e411bc7b447ac19eb2e90	100644	private documentation, phases, decisions and evidence (D157)
+docs/phase/P011-T012_COMPATIBILIDAD_CLI.md	-	2928925ef03b3a9f212a2454d03b65e2428679315ac1e7e17f2c7ce90d18ace6	100644	private documentation, phases, decisions and evidence (D157)
+docs/phase/P011-T013_MATRIZ_DIAGRAMAS.md	-	53decebbecccf4eface46088f8c1a44b3e0db2559d9a1712fea6f9d64b813805	100644	private documentation, phases, decisions and evidence (D157)
+docs/phase/P011-T013_er_parity.py	-	712a49a07190eb51bc9fb17d8e17e069dc23580d33d7ab1260bf6fcf12826178	100644	private documentation, phases, decisions and evidence (D157)
+docs/phase/P011-T013_links.py	-	221881650da178f8ac870ed342d85044daa4184a34710243cc55fb3bf50f6dea	100644	private documentation, phases, decisions and evidence (D157)
+docs/phase/P011-T013_mermaid_check.mjs	-	439f53117dce43cc8bba84140ed12ac3a57cd0be788cc3567763de9343883634	100644	private documentation, phases, decisions and evidence (D157)
+docs/phase/P011-T014_DOCUMENTACION_PUBLICA.md	-	65c83b84a0e0d3949c5143c9e541bb076a262255d31d2c86731f194ab8ca8f33	100644	private documentation, phases, decisions and evidence (D157)
+docs/phase/P011-T014_public_docs_check.py	-	15db3b6936a9893f94db863d142b70224d57320ad0df8fd62da3964a4f3bc9a1	100644	private documentation, phases, decisions and evidence (D157)
+docs/phase/P011-T015_PAQUETE_PUBLICO.md	-	7b770faca408b7afa636baaf9798534dbf50e5a059747c2fc6543f7c774aaffb	100644	private documentation, phases, decisions and evidence (D157)
+docs/phase/P011-T015_bundle_notices.py	-	de9a4d614cf28f8ae6b2db71e803daa3772cd2abe55e55b51b7ff1019fb0ad7d	100644	private documentation, phases, decisions and evidence (D157)
+docs/phase/P011-T015_public_candidate.py	-	c6588210287353ac6c8bc4f40838470edabd3abebb90aac6f844f7555a2773a7	100644	private documentation, phases, decisions and evidence (D157)
+docs/phase/P011-T019_RETIRADA_LEGACY.md	-	ea85c764da77a1d7a76df154fb161615e285fc4a3e4f5af4da3d6d4a7eaefe00	100644	private documentation, phases, decisions and evidence (D157)
+docs/phase/P011-T020_RECETAS_V2.md	-	09e6f916dbfd536b5f21bb695da75333a856dda8e4074f4fff084b6967e26059	100644	private documentation, phases, decisions and evidence (D157)
+docs/phase/P011-T021_TRADUCCION_SERVICIO_CLI.md	-	2f42b9f931ee300d1e59d9d9cde3ef73471535dc62ef589c104587e3d9fd5fa2	100644	private documentation, phases, decisions and evidence (D157)
+docs/phase/P011-T022_TRADUCCION_SERVICIO_INGLES.md	-	8377f788ee58f301fed4b2801c30b7ec02f70f8654f8fad6eb9b5479168d8f48	100644	private documentation, phases, decisions and evidence (D157)
+docs/phase/P011-T023_DOCUMENTACION_TECNICA_PUBLICA.md	-	45e463e61d1f7ae1586954e3dd37b46524fe6c2084348b5a6b94160671b2f593	100644	private documentation, phases, decisions and evidence (D157)
+docs/phase/P011_PLAN_APERTURA_PUBLICA.md	-	39eb63678f720aebc08060bbf669a3fa7055a66ea144c33fa6551a0cc659606c	100644	private documentation, phases, decisions and evidence (D157)
+docs/public/AGENTS.md	AGENTS.md	087df335ca13523bb3cd69c79a616be2d000d287d08a0acddb858d794850d84d	100644	public baseline
+docs/public/CLAUDE.md	CLAUDE.md	c8ff91153bec8d8d55e8478dd28b4362332d34182a42e89b5ad68a16e5499147	100644	public baseline
+docs/public/GEMINI.md	GEMINI.md	7d5b46a3b02cc8934c52730b7d9e20e9a9033ad904ecf169492dc9b1bc93d5c7	100644	public baseline
+docs/public/docs/ARCHITECTURE.md	docs/ARCHITECTURE.md	e91b1caa971031834c3abe0bd3cc0174cf686177ca535db39ec7b810b395ab4e	100644	public baseline
+docs/public/docs/DDBB-DIAGRAM.md	docs/DDBB-DIAGRAM.md	25ce52d3a3c5817113edbcc6ad42b8f96e641503f411f9fe7bf58fb3d80d2911	100644	public baseline
+docs/public/docs/DECISIONS.md	docs/DECISIONS.md	9bb2e6cfda86dbb11d76b8479db07e25315441f766ffdded463a2636ae6b6380	100644	public baseline
+docs/public/docs/NEXT_STEPS.md	docs/NEXT_STEPS.md	321a7e3c67165edd2a08d8a0b38aedb68713ba20bec99f19c99781c23dd58a49	100644	public baseline
+docs/public/docs/ROADMAP.md	docs/ROADMAP.md	24548752c8b1c26cee3706a8e06c2974fa3051af20441c05c24f1153507e1d59	100644	public baseline
+docs/public/docs/SPECIFICATION.md	docs/SPECIFICATION.md	62ba43fc95e6b525e18ba167cebe5abe6808c14c6e425b41115724d7d050c0ac	100644	public baseline
+docs/public/docs/STATE.md	docs/STATE.md	51ddc4f87ab67e771b2cd24a32a3f6685814efe633d21e61cc8303b681a68a26	100644	public baseline
+docs/public/docs/flows/chat.md	docs/flows/chat.md	26d3667166ecb9d58f7b6c70318ba6b2647d279d4ca6e9d36f48db27d1ab5719	100644	public baseline
+docs/public/docs/flows/cli-compatibility.md	docs/flows/cli-compatibility.md	c512cfadb986e910bd32f0a0599145f4989ba8d10be052e04ad25c4365ec9dad	100644	public baseline
+docs/public/docs/flows/database-migration.md	docs/flows/database-migration.md	bfc5df433561dc17de66132fb8dc265a22a741b9de0cb549efeaecc47888e351	100644	public baseline
+docs/public/docs/flows/documents.md	docs/flows/documents.md	4cf2a1b08572023e127952eb73d8c1825f19d18b4eca2c096e81fde0b82f52d7	100644	public baseline
+docs/public/docs/flows/language-preferences.md	docs/flows/language-preferences.md	5525bdc190553f328116dbbcedcabea46fb37840f9188b9073b65552b175f86b	100644	public baseline
+docs/public/docs/flows/legacy-compatibility.md	docs/flows/legacy-compatibility.md	fcd18cc4b1f45759eca05bbc119473a4c87d08cff90bcb163867c4f7fe3e610f	100644	public baseline
+docs/public/docs/flows/phase-lifecycle.md	docs/flows/phase-lifecycle.md	a8ece7391fbfb2ce61389e0a0a1a5a59fcc5dd3ccb8faa8715c872bfde8b9a9c	100644	public baseline
+docs/public/docs/flows/project-agents.md	docs/flows/project-agents.md	17d5d47d86cc0e89e6aaef1525a96f988c1e5a491885e084b089994b4d821e7d	100644	public baseline
+docs/public/docs/flows/project-creation.md	docs/flows/project-creation.md	a498b0fe54bd0d34d54c0eae0d8ac9d7dbc48f92f05c75e73dbc03dae9cd49e2	100644	public baseline
+docs/public/docs/flows/project-definition.md	docs/flows/project-definition.md	34bd9ef8e7fff792ae0a8d951e0599e6dd7fa1238a7eb12aa93f1af625fe683a	100644	public baseline
+docs/public/docs/flows/project-onboarding.md	docs/flows/project-onboarding.md	1e4e2f7d01bb0bcffe60a7d33081954cad6fac78255932305d0d49a44e9297cb	100644	public baseline
+docs/public/docs/flows/project-preparation.md	docs/flows/project-preparation.md	327581cfdf0e7e3a9aece0306743326ab047473ade176d7df1e947137139eab0	100644	public baseline
+docs/public/docs/flows/project-work-language.md	docs/flows/project-work-language.md	304a34b78327f56b28dab7cb13d787e53a7ae1a266e49d1ed032a849007b2cb1	100644	public baseline
+docs/public/docs/flows/task-run.md	docs/flows/task-run.md	2a675f4d8c53674b53b8e02eec6599f3c0d2cf41130fa46f9a9c33534acba3cf	100644	public baseline
+examples/django-recipe.example.toml	examples/django-recipe.example.toml	e476d4ba6f0a9d0e9d85ad3dcc5f1745fd94f5ba7e298df5d94504b538e4baf6	100644	copied
+examples/first_use/prepare.sh	-	3ef3210a4276f59540538d68d53542b1668d2cd0f4189e5092dba57c8daf2c95	100644	historical script, not current instructions
+examples/local_config.example.toml	examples/local_config.example.toml	921e715368cbf4903f7a5fa1eae41e454dd1cf0585723a3a306a9c3e73c171c4	100644	copied
+examples/local_config.minimal.example.toml	examples/local_config.minimal.example.toml	06b8872aed78f2130b6fee0fada2dc189945ff636f7e6aca6a3b0cb7b3ddae2d	100644	copied
+examples/managed_demo.py	examples/managed_demo.py	dc5b606f58b35b60d7411e61a90f049164e53fc277bf73597b0d21ae02bb6518	100644	copied
+examples/provider_matrix/drive.py	-	f91420c02c4d01759b2ff7710ad89d6aedf0637be4527cb6ce981a2095c336a4	100644	historical script, not current instructions
+examples/provider_matrix/prepare.sh	-	923bee40dcd4c65b9326085b037a0992c09fc822cde9f0c868896cd4120c4763	100644	historical script, not current instructions
+examples/provider_matrix/run_pairing.sh	-	b38bed4bf5f7a60ff2e3aa098738206d84af905dd03cec52bb198a11492abca3	100644	historical script, not current instructions
+examples/typescript-web-recipe.example.toml	examples/typescript-web-recipe.example.toml	67a5c826f8f561b7085ef246b040d02170bdcb1e6ca7108e6d6e080e91f2acdf	100644	copied
+frontend/.npmrc	frontend/.npmrc	1fc81edb3e86e38ec958bd48315ef414a06e1b7b6d67dfafb7e5d9cd539f75b8	100644	copied
+frontend/index.html	frontend/index.html	dfa4cbac803e66dfc6b3c7a37d092a6306b18d5e718915f3026d3a57bc225244	100644	copied
+frontend/openapi.json	frontend/openapi.json	48c35c31d16a0351708df98ce9aa607f2603e30a0cb8dcab991ddb715730afac	100644	copied
+frontend/package-lock.json	frontend/package-lock.json	f7ce4d6eb4e9d97adb644782d83c82e4c99b8263012f749d1154c8e9866aec0f	100644	copied
+frontend/package.json	frontend/package.json	a35234c8a44ea40fb643c24e78a1bcafed80d2c28a1c720ca47327e671801715	100644	copied
+frontend/src/Chat.tsx	frontend/src/Chat.tsx	8deb5ff3036d516fcff41b57b8f7d35649408ad70dfcfa6d9ed5dd18c606f5e9	100644	copied
+frontend/src/ChatCommand.tsx	frontend/src/ChatCommand.tsx	e33fef541798c26af0abf4d112b1a7b68565f10035d2172832fc5b980c8e9768	100644	copied
+frontend/src/Language.tsx	frontend/src/Language.tsx	43565ff064cc122d64fa38e4623caca315b0fc052bf101b8163ea323d39b6dbd	100644	copied
+frontend/src/Logs.tsx	frontend/src/Logs.tsx	3279b1511f024f6f7c5287842ab944d1e2079baf14567dc6abd11158cdb0f63b	100644	copied
+frontend/src/Permissions.tsx	frontend/src/Permissions.tsx	dc2a887b195d893bf366746665e2d451383faf92e793e1c2e6102307040b0873	100644	copied
+frontend/src/Phases.tsx	frontend/src/Phases.tsx	820393db27737cbc5f4b1f0a3294f86e378ae7979ef96adee75968b5bec00fb2	100644	copied
+frontend/src/Prompts.tsx	frontend/src/Prompts.tsx	e6d3ff37853cd6f889a0f77727a25dfe779ec7041c9b705eb12ddac5379d9911	100644	copied
+frontend/src/SessionGate.tsx	frontend/src/SessionGate.tsx	e123e625d490a01a4cc8c2fa744dfcbe2849c82f05c22f0f02515d5cb0bd97fd	100644	copied
+frontend/src/Shell.tsx	frontend/src/Shell.tsx	8fbe1409ffdb29a2911ecee475e0a597d35499a1f6ad7a6f44181fdfa01ef04d	100644	copied
+frontend/src/Tests.tsx	frontend/src/Tests.tsx	41418b02dd3e214fde79776b6e34eb4a4ef32492d3548282e25f267a3fa1a60c	100644	copied
+frontend/src/WorkLanguage.tsx	frontend/src/WorkLanguage.tsx	a9c5f399119dc044df5639b141fd88b640f8cc707f34fa64d4cdcdf603d29d5e	100644	copied
+frontend/src/api.generated.ts	frontend/src/api.generated.ts	e8677207faa1546fb49cdf97b87c1a40cc42c7cf743f9a3d956e04c619a5c163	100644	copied
+frontend/src/api.ts	frontend/src/api.ts	abca65f423a191eabb60bdde06765b22476c8fde959bbb9d2376907ad287529f	100644	copied
+frontend/src/charts.tsx	frontend/src/charts.tsx	60fcfb266bba583065e52277ffa82c4e80bfda6d4fe46d65224500bd22d3c985	100644	copied
+frontend/src/chat-commands.ts	frontend/src/chat-commands.ts	0ff2069465640eda116507175050cd2b605d0764cee51252aa899609307dd151	100644	copied
+frontend/src/diff.ts	frontend/src/diff.ts	c5a246fc9db794463524d27c1cdce888102f1d770d8616b94d996079f53e24cd	100644	copied
+frontend/src/i18n.ts	frontend/src/i18n.ts	e715387529b5025d0fcb290013e2ff672b830800153cfbb14e323a9c1f8b81f3	100644	copied
+frontend/src/i18n/en.json	frontend/src/i18n/en.json	6834bd169d5b04c9d66c95c27d29b4de0ff4aecab8b9a86a9aff6104adb4534f	100644	copied
+frontend/src/i18n/es.json	frontend/src/i18n/es.json	23bf88531bb3e2621092f2f280ceaa34e895e6976458fa26c4b1b4c5a0d12a30	100644	copied
+frontend/src/main.tsx	frontend/src/main.tsx	0bfc1b24a6fac8033918f074615f588dbb79d218e556024267a871f27c041df6	100644	copied
+frontend/src/managed-api.ts	frontend/src/managed-api.ts	d818c3f9118ec4084b1870d17a3d7fc5293826960d62fe81029609aff053b907	100644	copied
+frontend/src/markdown.ts	frontend/src/markdown.ts	01e1afef75a1978f59bd3a70188bb37d6b03ae98e6a1a5a02f099e39a51d4473	100644	copied
+frontend/src/mermaid-view.ts	frontend/src/mermaid-view.ts	7d3bef472a4343cad0b204c1bd8044cde96096c637eefbfd73b92ef0d89b886f	100644	copied
+frontend/src/metrics.ts	frontend/src/metrics.ts	99c8208d9c2f214ea500f2dc616bfbf2430cea1c67d32848848d1e500072ecb7	100644	copied
+frontend/src/navigation.tsx	frontend/src/navigation.tsx	4106c7c803d5a0b36a222cf7ecf94656542b05134e3a9ca0f21451909788af8d	100644	copied
+frontend/src/pages/Docs.tsx	frontend/src/pages/Docs.tsx	b350e31c98bef8c1528119f5b1f89cbaf615ac63d3bfab1fdb1f1c0262b9ff97	100644	copied
+frontend/src/pages/Home.tsx	frontend/src/pages/Home.tsx	92936f2a8ea48688dfc389c46c4da4409f8801630376fd6ad89fc03d15a38aec	100644	copied
+frontend/src/pages/Phases.tsx	frontend/src/pages/Phases.tsx	fec727c5583bc935e632e78c30cfa7bc773458dd25251221aa131746c1395338	100644	copied
+frontend/src/pages/Planning.tsx	frontend/src/pages/Planning.tsx	3a427059af027fb0d1c9f2b13059a725ed4ff6e054fcbcef2e8cd72ee597c969	100644	copied
+frontend/src/pages/Preferences.tsx	frontend/src/pages/Preferences.tsx	7e298331b9815e7d303dff1eec8eda6124e103f94612d54730f79e43e278cb51	100644	copied
+frontend/src/pages/Preparation.tsx	frontend/src/pages/Preparation.tsx	d8ea38a7288e25a06b24c2c43729a4781e4751d9098a8625132d78698548e935	100644	copied
+frontend/src/pages/Project.tsx	frontend/src/pages/Project.tsx	91c7e3accc1d96fc57435acd85338b23d1d8639ee30a00db13c3c8e34f17c2be	100644	copied
+frontend/src/pages/Registry.tsx	frontend/src/pages/Registry.tsx	457e40a2ec9d3aa900a26d15d3261828b145761dc39d14a6678eeb4b7e9d88cf	100644	copied
+frontend/src/pages/Run.tsx	frontend/src/pages/Run.tsx	7f335c69f094fa379153b4b0b6020348eaa2622e59b254feab9bfb45ee909369	100644	copied
+frontend/src/pages/Settings.tsx	frontend/src/pages/Settings.tsx	c6476aaef872b051b0769c71f423c2239eae8058e4c68ce39018f208f117d8d3	100644	copied
+frontend/src/pages/Stats.tsx	frontend/src/pages/Stats.tsx	e20e3037363a42674e21e8fbe7637fab4eb6574172d8a304d59db8e5da62fb4e	100644	copied
+frontend/src/pages/Task.tsx	frontend/src/pages/Task.tsx	4269b24cfda6243d9a341c6892e801cbed2f2d1f72550c5d172860d8c6eba599	100644	copied
+frontend/src/pages/shared.tsx	frontend/src/pages/shared.tsx	005504fe116ef6bf8037545b2728d63ee5ce5d993e77fe0d1eddf7a6e5c6ccf9	100644	copied
+frontend/src/preparation.ts	frontend/src/preparation.ts	4908e2824e316a4ec8cfdca95f5d38facb6fc56c88ce5ce3bd75bc7cd7233616	100644	copied
+frontend/src/router.ts	frontend/src/router.ts	705002b21ed13b3f542057027d2b8baf42061d5681264075da4984d0f0ccde64	100644	copied
+frontend/src/session.ts	frontend/src/session.ts	e5c7e93c566039a90c56bc92d727c86647bf5fed3aaa66c5edee01a81043ae7b	100644	copied
+frontend/src/styles.css	frontend/src/styles.css	26b0bcceb4a86e92b96ccc86b72999f214e1a897211d8c58f3c081e5609f74d2	100644	copied
+frontend/src/task-sources.ts	frontend/src/task-sources.ts	2d4ad49d4c21eff711121dc7eae1e16028c127a7022c950861922d74ee0b5145	100644	copied
+frontend/src/ui.tsx	frontend/src/ui.tsx	12f8ee66d2cf8e2a2cef3f1892e74b5fd17d831269fd0d05749d791e78f663a8	100644	copied
+frontend/src/workspace.tsx	frontend/src/workspace.tsx	e2ce5cd523716fff50d81a0a0945ae024ad777a92a73358315384d507f98832e	100644	copied
+frontend/tests/chat-commands.test.mjs	frontend/tests/chat-commands.test.mjs	3bfc2236b986c193ec8bb4220359e95b108b0c67e1b9528e175eb49dc7282f2b	100644	copied
+frontend/tests/diff.test.mjs	frontend/tests/diff.test.mjs	3fbd1980eb3e7489b1f7359f7ab9a60a154505ccb5d1b06b20c085f24815fc08	100644	copied
+frontend/tests/i18n.test.mjs	frontend/tests/i18n.test.mjs	adf29e9b67a0761c3dbf9fc0b898c99754928a78d481256553dda6545924695e	100644	copied
+frontend/tests/managed-api.test.mjs	frontend/tests/managed-api.test.mjs	6b7c466b67bc764f7b3127527761e124a8d4fbd5247a7385547238f2f47d2015	100644	copied
+frontend/tests/markdown.test.mjs	frontend/tests/markdown.test.mjs	e3e10c3495b4e8b198f2393b708c189b0bdc39035af56014ce32628475ea5a9c	100644	copied
+frontend/tests/metrics.test.mjs	frontend/tests/metrics.test.mjs	c754f21fa8d23071ede195c8c48381bdaf972f257d6e457978b557dfaf794a34	100644	copied
+frontend/tests/preparation.test.mjs	frontend/tests/preparation.test.mjs	0432d41459b47ce8dddaaea6666161b2bc622af6bf4a075e6f7894577dfe6f88	100644	copied
+frontend/tests/router.test.mjs	frontend/tests/router.test.mjs	63c00accb408febfe059cdf5ca4df6525bfde3a38f9723d08e799a72df70c9d5	100644	copied
+frontend/tests/task-sources.test.mjs	frontend/tests/task-sources.test.mjs	2b8ef7ce572aff3f98f5efdd89b0a8a639022e2a155bd506dcca71e56f8826d5	100644	copied
+frontend/tsconfig.json	frontend/tsconfig.json	c16c083174cae117fac04a8f8913224123eb330fbb5016c0b4bf12ab668ff89b	100644	copied
+frontend/vite.config.ts	frontend/vite.config.ts	4c036ac639f8f2c9406ee5044f9c31237c30528099674a921dfcb3402773604b	100644	copied
+pyproject.toml	pyproject.toml	4dd6cb7ffba67daea905c4ec614520cf411f62d808b95a73dfe79b6dd8482716	100644	copied
+scripts/build_distribution.py	scripts/build_distribution.py	ea09887cbdeaf5f1c07aff89e8c6f6b15586357e150adfb623bae315f4142a7e	100644	copied
+scripts/check_distribution.py	scripts/check_distribution.py	ec8fbe853616da8ccbae5915e1c2133673e656499ac7e87675705967033d794c	100644	copied
+scripts/dev	scripts/dev	af7aed0f37b0dc4cea3b84baa12897b81735abd41a72d1e272902893aad452ca	100755	copied
+scripts/dev.py	scripts/dev.py	0c2775b12cb873763527448e4a0345bacf1ecf3318721320852d587fa9cf88a7	100644	copied
+scripts/export_openapi.py	scripts/export_openapi.py	4ae8ccf50f12e5cb1ba7a8a43d22ae500e8daa26a3e65ca28ad9ab0a0de6288a	100644	copied
+scripts/smoke_cli.py	scripts/smoke_cli.py	0b2da656372e0735926948713addaa33829f43a6789ca552a0d7f422903d0d20	100644	copied
+scripts/toolchain.py	scripts/toolchain.py	b062149f5c4b0309302de720b35940446f98d6a042e639eca53211ed2298e6c9	100644	copied
+src/harness_local/__init__.py	src/harness_local/__init__.py	7f1401d2b5de77ef892a7b956f601b9ed5322147e3d57f2ff606b8d585e87482	100644	copied
+src/harness_local/adapters/__init__.py	src/harness_local/adapters/__init__.py	d110e714645aac2ef5095bd4def1348cbc682b9f192fd27da19442bbd338fad8	100644	copied
+src/harness_local/adapters/bootstrap.py	src/harness_local/adapters/bootstrap.py	21f4ab3a797b7a4c284da4b9912a9ebb8f06fcf8f7ccc332314336b379968eeb	100644	copied
+src/harness_local/adapters/chat_snapshot.py	src/harness_local/adapters/chat_snapshot.py	1309478fd76ce8df07b1a2e6afe46197c83fa8826f3ec64820d59dd23f247933	100644	copied
+src/harness_local/adapters/cli_agents.py	src/harness_local/adapters/cli_agents.py	42618f597c146e3dedac0508255226b2c32749d58a36700e5b5385e024546eef	100644	copied
+src/harness_local/adapters/cli_compatibility.py	src/harness_local/adapters/cli_compatibility.py	ead331649920a28535ddc7b86ceae81f182b880da9b20837ad357b6c2ba9cf64	100644	copied
+src/harness_local/adapters/cli_diagnostics.py	src/harness_local/adapters/cli_diagnostics.py	70f572e4c1a20b008bb5c968e0b92afda09e43d4c84db6b24d80cd04c2b45229	100644	copied
+src/harness_local/adapters/commands.py	src/harness_local/adapters/commands.py	7743fc9a009377dc9bb29015596583f5babe136f0940ebc7cd328455eaacab20	100644	copied
+src/harness_local/adapters/engine_fake.py	src/harness_local/adapters/engine_fake.py	9fa16db16528ebacc74381efcc5e719f4ad986734c279cf7d2710d16083b7e96	100644	copied
+src/harness_local/adapters/fake.py	src/harness_local/adapters/fake.py	3c16229b457a35b84c7df4ee33776634d1697c20681fc3a6c8ada14acfbf2166	100644	copied
+src/harness_local/adapters/git.py	src/harness_local/adapters/git.py	28ee04af49bbec837de957a55a174bd0cc2a9bcd2054ba5cd5e24289eac8325d	100644	copied
+src/harness_local/adapters/import_git.py	src/harness_local/adapters/import_git.py	07abf7139c75730e8a7d8413919ba352b72039de6f81885d2ee18e6e81aeece7	100644	copied
+src/harness_local/adapters/local_git.py	src/harness_local/adapters/local_git.py	4652da213d7951f373e3d4a17f092020e5e421fc1d001c60e5861fbe644e93b6	100644	copied
+src/harness_local/adapters/managed_mode.py	src/harness_local/adapters/managed_mode.py	78eb4b3afcb3b0762b34140d1a0113d3bd0c391a2c01d4d7413a18fcc870f2bc	100644	copied
+src/harness_local/adapters/preparation.py	src/harness_local/adapters/preparation.py	7cdf2cf1f3c31c9dfcf1614f24ac8022f80e39d0724953960e60e2f79fc6658e	100644	copied
+src/harness_local/adapters/process_gate.py	src/harness_local/adapters/process_gate.py	a4514f940a6032c7e94649730b63bf779a96b8a623fd9d37088517a3e681f00a	100644	copied
+src/harness_local/adapters/processes.py	src/harness_local/adapters/processes.py	68a12a2beb62734bde30cfbd3e037e6b7efb365d23d91b1bc8b94da4e4ac70c1	100644	copied
+src/harness_local/adapters/project_onboarding.py	src/harness_local/adapters/project_onboarding.py	7a722f2bb166a4c2202f9d537e9d63dceba64bd21bbb386b5e92cf3c4070c6f5	100644	copied
+src/harness_local/adapters/safe_files.py	src/harness_local/adapters/safe_files.py	c074156d0f8380446736410f43e18b9e5fb6ca5e2744042b3226e03bbaf16fde	100644	copied
+src/harness_local/adapters/streams.py	src/harness_local/adapters/streams.py	0d41ab1183563217a855ef1c66a2443ff9484ccd55711dcb8967d4459c12984f	100644	copied
+src/harness_local/api/__init__.py	src/harness_local/api/__init__.py	cb3eca04124a1cdf3470fa037253f99fe958a6eae4777a3b1a59ac421869e9a4	100644	copied
+src/harness_local/api/app.py	src/harness_local/api/app.py	2b6fdf7506a848848fb127109af0b48de8a0dd60f17b88712d898754e4ab8eb3	100644	copied
+src/harness_local/api/documents.py	src/harness_local/api/documents.py	f946b9b91204635d4a50a2aff3b90682773211b2277f3fb2e7ebe597181cfda6	100644	copied
+src/harness_local/api/managed.py	src/harness_local/api/managed.py	077b35e5bb2163afe95b87b7518b8baa0666294723356e87ed9e236699e19508	100644	copied
+src/harness_local/api/schemas.py	src/harness_local/api/schemas.py	ba64d22b653202a8b37867231ba391e762dbc96c3f70667ab66d5d9815b15e36	100644	copied
+src/harness_local/api/security.py	src/harness_local/api/security.py	e8117c0ab1cac813420893f62eb604a2fb4c963d5011b202422d5fe04640dc35	100644	copied
+src/harness_local/api/session.py	src/harness_local/api/session.py	d1a4f4c6a55f940ba65766af9789a13ac9e9bf394ca0d102fd46fb54fdf9afca	100644	copied
+src/harness_local/cli.py	src/harness_local/cli.py	be413921fdc13dcdc7ed17728d07d3ba2ebbdab2f46ba591a096143ba203a364	100644	copied
+src/harness_local/core/__init__.py	src/harness_local/core/__init__.py	5f3cc2a3c23c1ab331a3c14a00b099446537d2ddb7921f8934724232a9afb8a9	100644	copied
+src/harness_local/core/engine/__init__.py	src/harness_local/core/engine/__init__.py	91f7e37e35ad63898b741d49dc0fe935c052946fe86c7e5fec72699e6407a00a	100644	copied
+src/harness_local/core/engine/acceptance.py	src/harness_local/core/engine/acceptance.py	68d4ff283170034e0d01bc021a258cf1253038c232d760fdc411789660dc7539	100644	copied
+src/harness_local/core/engine/bootstrap.py	src/harness_local/core/engine/bootstrap.py	87aa20e60fb3818dc95a31424a943742329dd8195f426d76b4cca1fe07256143	100644	copied
+src/harness_local/core/engine/bootstrap_discovery.py	src/harness_local/core/engine/bootstrap_discovery.py	1ce281d248a024b51bb2e6a535c132026a518fdff4815664c98cecc32fbe24c9	100644	copied
+src/harness_local/core/engine/chat.py	src/harness_local/core/engine/chat.py	53d5f926e43a47f06f2043360f4e119279af76fcadb91b179c9adfbfddf6d3be	100644	copied
+src/harness_local/core/engine/chat_commands.py	src/harness_local/core/engine/chat_commands.py	8d82d9e2d209caaff21119fe09d64fed3d600da4d7a42488917a68ca8d3f66c9	100644	copied
+src/harness_local/core/engine/commit.py	src/harness_local/core/engine/commit.py	62156a91245de2f5937abb26b57bd490fc63ccea26ec2b590810c023fe94e1d8	100644	copied
+src/harness_local/core/engine/context.py	src/harness_local/core/engine/context.py	2016725510289b177afc8af644787e02b49f42b878c465de685be680857a37f2	100644	copied
+src/harness_local/core/engine/contracts.py	src/harness_local/core/engine/contracts.py	163b3a018da9fd02664eadc1aba74545ec3228b6bcf683cd59a48fa691e6a8e8	100644	copied
+src/harness_local/core/engine/definition.py	src/harness_local/core/engine/definition.py	7dd5b4cf6b6bff8d17e227d5ccb78c1a2ee90c8175902d7ef384e11c2679cee4	100644	copied
+src/harness_local/core/engine/document_export.py	src/harness_local/core/engine/document_export.py	17a20453e44b7c9ffdfcba33526a5a10dd7bf1299484042078535c060dc0920f	100644	copied
+src/harness_local/core/engine/document_ops.py	src/harness_local/core/engine/document_ops.py	ebf5e9c22e6139b227e5d053dcdc22e91df09dc5688418344cabc2f63cc5fa25	100644	copied
+src/harness_local/core/engine/document_text.py	src/harness_local/core/engine/document_text.py	7a77376e9f5b0d05507cc3394653059ff409ff07eda290139fe94de0f829fa22	100644	copied
+src/harness_local/core/engine/documents.py	src/harness_local/core/engine/documents.py	f48e4d61fecceee9231a100c7d6c8d31d69ad337d4a3a5b3af103a66f06ed537	100644	copied
+src/harness_local/core/engine/evidence.py	src/harness_local/core/engine/evidence.py	79c7347f48ddf2dce0dc295aac02b11e363fc3aaf48d97aa232045284117f7e6	100644	copied
+src/harness_local/core/engine/import_commit.py	src/harness_local/core/engine/import_commit.py	ab921429aed17c83720ca42b54ab6fab2951ef37830d4b8f088aca05227ce053	100644	copied
+src/harness_local/core/engine/journal.py	src/harness_local/core/engine/journal.py	5252b3ac5c07dd168149a10d32d89690a3d4d1ef64fc899c87ff16a449c6a8a6	100644	copied
+src/harness_local/core/engine/junit.py	src/harness_local/core/engine/junit.py	4960bdbd9869d4543f867b077ba15067ee06ff8f2845d3738929bedc198017f1	100644	copied
+src/harness_local/core/engine/language.py	src/harness_local/core/engine/language.py	3df92279f5734d231537ad5e14e3e1d42dfb5e9c96c4c380162c21f5c4bf9788	100644	copied
+src/harness_local/core/engine/metrics.py	src/harness_local/core/engine/metrics.py	6b359e356ccfab53a07427b031d25c403ee10522ae4b3be345fb84972a276c30	100644	copied
+src/harness_local/core/engine/onboarding_commit.py	src/harness_local/core/engine/onboarding_commit.py	b29fda1bcd5fd7b566aa5616b68fd29258c6f7eb124a7687d1e40e8b469bfdc3	100644	copied
+src/harness_local/core/engine/permissions.py	src/harness_local/core/engine/permissions.py	a3faa527c15e0167f656f98d833f1584f536e52bdeb90602f5687970d422df9a	100644	copied
+src/harness_local/core/engine/phases.py	src/harness_local/core/engine/phases.py	27ff1e3c2b00fbf0d36b2384646f3ed9e18964bfec58ee242396710aa6605ed6	100644	copied
+src/harness_local/core/engine/planning.py	src/harness_local/core/engine/planning.py	c1fb2f605f1e6a905c56b26ba5fb6f22a62c52a1298b5c7cb317eb594b03611d	100644	copied
+src/harness_local/core/engine/prompts.py	src/harness_local/core/engine/prompts.py	f10c15d1dce9d79c0bf1820a1226c5c5472aad666e18c015f8f824ea8af58751	100644	copied
+src/harness_local/core/engine/review.py	src/harness_local/core/engine/review.py	4fdeb7365591348529391d4154dd27f2ba474f209353b0854ae80d6b54d44402	100644	copied
+src/harness_local/core/engine/serialization.py	src/harness_local/core/engine/serialization.py	a8bbec720d185d3a578f721eebf97bddb4c303003b13a3808e739d1d1a7110b2	100644	copied
+src/harness_local/core/engine/templates/bootstrap-project.md	src/harness_local/core/engine/templates/bootstrap-project.md	dbdbfbde0ee39b20caee5f8e44348263f23fa7b786c101d06c258301e25a23a8	100644	copied
+src/harness_local/core/engine/templates/chat-turn.md	src/harness_local/core/engine/templates/chat-turn.md	db2e41fe016372cecff5bf93285766a99b22bf4a2967c86a23ca492e1b2731a9	100644	copied
+src/harness_local/core/engine/templates/close-phase.md	src/harness_local/core/engine/templates/close-phase.md	36f3722a79b173d8f0cb7caa4e49eda2626f2be7b32596ddaa53f8d384337d2c	100644	copied
+src/harness_local/core/engine/templates/define-project.md	src/harness_local/core/engine/templates/define-project.md	c1128c00f098eb12b503951ee870637e258460ee73c558261b22bc94629d5d9d	100644	copied
+src/harness_local/core/engine/templates/execute-task.md	src/harness_local/core/engine/templates/execute-task.md	b82a2ce0c063d68ed1bf6c177ee2922d0dc471ea28f98639e0be10e43626d1a7	100644	copied
+src/harness_local/core/engine/templates/executor-routing.md	src/harness_local/core/engine/templates/executor-routing.md	12aaf020fb0d5c0b78157a2c021cc5c332b91a2d248fcb8532850257ed65900f	100644	copied
+src/harness_local/core/engine/templates/onboard-project.md	src/harness_local/core/engine/templates/onboard-project.md	958247572fe0f91070179e3944d90feee8763a7f8179e267bd185aef3176fc55	100644	copied
+src/harness_local/core/engine/templates/plan-phase.md	src/harness_local/core/engine/templates/plan-phase.md	a9fcc8f65acce02af91699e1f2e39022198ed9e27ff76a8874ef67e9c3ef22fa	100644	copied
+src/harness_local/core/engine/templates/plan-task.md	src/harness_local/core/engine/templates/plan-task.md	ced237514b3ca661a37e37e548ac20c3d87d2156caf5ee7bd6a1367aab6eee33	100644	copied
+src/harness_local/core/engine/templates/reconcile-phase.md	src/harness_local/core/engine/templates/reconcile-phase.md	bf235a96bef935d124d8b36c9d5e1a6754cac95500c5717e4b39a529a254381e	100644	copied
+src/harness_local/core/engine/templates/review-task.md	src/harness_local/core/engine/templates/review-task.md	c2cdfac96a552941737872d5054b1805edffbad3a4992e8e360950be2dd2e18d	100644	copied
+src/harness_local/core/engine/templates/revise-task.md	src/harness_local/core/engine/templates/revise-task.md	fd11e3bd2468d444becdebf636adbdcd82fe1d7fe8ea0b60ef3513deab2757f4	100644	copied
+src/harness_local/core/engine/validation.py	src/harness_local/core/engine/validation.py	e311b01f41daa32ec563e147e60493e3eac38765df4a791e6d0d9c0c5894381f	100644	copied
+src/harness_local/core/engine/workflow.py	src/harness_local/core/engine/workflow.py	42997aff6eefc1cb5822384e664fd4a86cb72ecee0a84c35b8ade5f79b6eb276	100644	copied
+src/harness_local/core/managed_mode.py	src/harness_local/core/managed_mode.py	1d6d7c36e5cb857ddc9ecad2b2de7249075d1e8c3fd2a6cc50732e75b9c5d5dc	100644	copied
+src/harness_local/core/project_onboarding.py	src/harness_local/core/project_onboarding.py	976acd306302f20b60711c47df7250b2aea2070fb2e7a27d21bb8b40384976e7	100644	copied
+src/harness_local/core/simulation.py	src/harness_local/core/simulation.py	6687cc909d2e486b65db9d7aa602595d665e8b2308e5751df5df5636e274e4ec	100644	copied
+src/harness_local/core/tree.py	src/harness_local/core/tree.py	b6742e3cbf995cf346cb50062f2761dc678d7c2cd7eaf26226227c7002baf966	100644	copied
+src/harness_local/i18n/__init__.py	src/harness_local/i18n/__init__.py	e9725eb27c2b7ac01356d7a990856c8805b8f63fa11469c4c0e2045bee2fc65d	100644	copied
+src/harness_local/i18n/en.json	src/harness_local/i18n/en.json	dedf530f691eade12fafe6fab1064fa2d6a5b1a7dfc6a75d08321d6d5fb6cee2	100644	copied
+src/harness_local/i18n/es.json	src/harness_local/i18n/es.json	21eba13c4b867065c0232d1ddf973cf2002a34356e984760bfb88ccdf04b71b8	100644	copied
+src/harness_local/launcher.py	src/harness_local/launcher.py	77fc2ce8aaaf9c4c989bfa18a84d5d6ce2336e0a95e134c20a6e2a423609c017	100644	copied
+src/harness_local/migrations/env.py	src/harness_local/migrations/env.py	c2548cd1e5339cb09f1778f6ef03c3b616cc36bafbb4dd3eb7c720ca5b020fc2	100644	copied
+src/harness_local/migrations/script.py.mako	src/harness_local/migrations/script.py.mako	849e6d4b05fe0dff5cada78d2fc27a8e3ba38dd4fc241af999af725b1c885f96	100644	copied
+src/harness_local/migrations/versions/0001_simulations.py	src/harness_local/migrations/versions/0001_simulations.py	d42e9deeb25652aebd3e5b313dc516c46ddd91d8e79669422a3dff14d0ccbfce	100644	copied
+src/harness_local/migrations/versions/0002_legacy_index.py	src/harness_local/migrations/versions/0002_legacy_index.py	0810be24d06653fbd8c28b58031bc53bc930f10eec3afaaf91d84d2f173fbe82	100644	copied
+src/harness_local/migrations/versions/0003_legacy_observation.py	src/harness_local/migrations/versions/0003_legacy_observation.py	d08a725ac413d353311504967c49ce66c27619100a2dd6945b3bddb6f041d4e7	100644	copied
+src/harness_local/migrations/versions/0004_managed_queue.py	src/harness_local/migrations/versions/0004_managed_queue.py	33a5751cf9bcc7867565603c0bb67b07c2ea5268fe696fd9ab8137cf6a1cdf74	100644	copied
+src/harness_local/migrations/versions/0005_cli_processes.py	src/harness_local/migrations/versions/0005_cli_processes.py	d368c7dae7379fc5db332c6c7fc7603b82b5a687e08be10877f28c47fec7f979	100644	copied
+src/harness_local/migrations/versions/0006_git_commits.py	src/harness_local/migrations/versions/0006_git_commits.py	d305f3d7e4b560550007fde6d6c5b19750208096fa1259b0d55f9b205971580f	100644	copied
+src/harness_local/migrations/versions/0007_managed_activation.py	src/harness_local/migrations/versions/0007_managed_activation.py	575cf87ae6e6c9126187117ff3d15bd069a65d431bb4c34a3d97158a3531b48f	100644	copied
+src/harness_local/migrations/versions/0008_prompt_versions.py	src/harness_local/migrations/versions/0008_prompt_versions.py	6bb4f6ba3e68fb76207261bacb6a9f1d695bb2b892d0294b76957f6d3993bb6f	100644	copied
+src/harness_local/migrations/versions/0009_permissions.py	src/harness_local/migrations/versions/0009_permissions.py	9bdc629c895b48d0a29fe29456cef391daeb088aa32bf1b571404c1158137848	100644	copied
+src/harness_local/migrations/versions/0010_phases.py	src/harness_local/migrations/versions/0010_phases.py	358a33c616d30635708407e44878573d0978cd47d09c92b836f792845c4d1dad	100644	copied
+src/harness_local/migrations/versions/0011_phase_amendments.py	src/harness_local/migrations/versions/0011_phase_amendments.py	ad4db12feeea927cff80e5cad13b9536c52e4fa5b3330ecc880055f191da05cf	100644	copied
+src/harness_local/migrations/versions/0012_chat.py	src/harness_local/migrations/versions/0012_chat.py	40b6782fb5bdc99aa631a614862849a3c31334c176b6f535d6479d1139bb1610	100644	copied
+src/harness_local/migrations/versions/0013_bootstrap.py	src/harness_local/migrations/versions/0013_bootstrap.py	0920d15c54bbacab2d4cc3ed2e4d484daa95e124a4109f396ea4981d1d9159c9	100644	copied
+src/harness_local/migrations/versions/0014_attempt_metrics.py	src/harness_local/migrations/versions/0014_attempt_metrics.py	3963b1bb9c96437c3e99222a107957a2c57c5970b0f4b9f0887e235358946988	100644	copied
+src/harness_local/migrations/versions/0015_planning.py	src/harness_local/migrations/versions/0015_planning.py	20dbae754fcba88283a23d4bded974e5e0244c3a0ab68c6beb646aeb0bcd24bf	100644	copied
+src/harness_local/migrations/versions/0016_project_registry.py	src/harness_local/migrations/versions/0016_project_registry.py	1bc28cc93ae7aaaedd2963f927796b52709865d3af6f3dcb7f2f013b9c7f21be	100644	copied
+src/harness_local/migrations/versions/0017_chat_context.py	src/harness_local/migrations/versions/0017_chat_context.py	22ecff62bae567b9506e7bc3ca5375bcefea06c46f7334f298d5ef80947e2955	100644	copied
+src/harness_local/migrations/versions/0018_conversation_keys.py	src/harness_local/migrations/versions/0018_conversation_keys.py	7f6db393fd87ef3c79ad1f9b03f1d0fc08dc9d694ee6c2d329d0f7db89f78cba	100644	copied
+src/harness_local/migrations/versions/0019_import_conversations.py	src/harness_local/migrations/versions/0019_import_conversations.py	2e531bc480eaf0325567de4633d45e7e16567a0f380b68d6e00e7b8b92bd2bbe	100644	copied
+src/harness_local/migrations/versions/0020_project_imports.py	src/harness_local/migrations/versions/0020_project_imports.py	8b5b7173cf0bc4857dbf238977f412c0340baabdee6fc77c43fdb3d946253ed6	100644	copied
+src/harness_local/migrations/versions/0021_project_creation.py	src/harness_local/migrations/versions/0021_project_creation.py	ef01ad7283aef66fb5473f7fa5c0870fb5d4afd3aec8db23ee85f9d057c46d1c	100644	copied
+src/harness_local/migrations/versions/0022_project_preparation.py	src/harness_local/migrations/versions/0022_project_preparation.py	3465885af0075a03a0be812a12de02a9c7da5b9e4553b3ae58576dfc28c32a1e	100644	copied
+src/harness_local/migrations/versions/0023_run_projection.py	src/harness_local/migrations/versions/0023_run_projection.py	8d79db62fcaf3a20b48d3cb92f189dd90a8028c2b7e7348ae12715809f0f6b01	100644	copied
+src/harness_local/migrations/versions/0024_product_preferences.py	src/harness_local/migrations/versions/0024_product_preferences.py	2925aa3d162756dfe00133a612b82487fb123cd467c7c9ea02023bcd5db1a4e3	100644	copied
+src/harness_local/migrations/versions/0025_project_work_languages.py	src/harness_local/migrations/versions/0025_project_work_languages.py	1721bdedee55bb85a2db44d32314fb8be9310d7163eec2c4a0af7a9a9b1b2049	100644	copied
+src/harness_local/profiles/__init__.py	src/harness_local/profiles/__init__.py	6e617034f1ab21522bef123dbd1aa5f27a63068e58743542879824d06488b82b	100644	copied
+src/harness_local/profiles/typescript_web.py	src/harness_local/profiles/typescript_web.py	3fee488663ceb8fa3cde1718adce7b1ff165bd8dd713d4772cee496775b7cbfb	100644	copied
+src/harness_local/recipes/__init__.py	src/harness_local/recipes/__init__.py	8e1077bb5d6f165987640592517f20f0a2442ce9c8d4587f1813ad3543f46ced	100644	copied
+src/harness_local/recipes/django-packages.json	src/harness_local/recipes/django-packages.json	4c73e05b05cd14ac38284341e42ff3e39938ec4055e9c91f0baf4c6b3942d9e8	100644	copied
+src/harness_local/recipes/django-requirements.lock	src/harness_local/recipes/django-requirements.lock	0f2ce9afc90274a6da1b6c1d8b10cc62d6f530dd0b1f1c8c95609fd27d313c1b	100644	copied
+src/harness_local/recipes/django.py	src/harness_local/recipes/django.py	95b7e804503e7bfa2535a26ec0aff95d55c9b57ef75a256d65742838b4251dad	100644	copied
+src/harness_local/recipes/django_2.py	src/harness_local/recipes/django_2.py	ce1ab79c4638ae734e59ab99db7a52a3883ef602aab91b6ab892a0989e640ac3	100644	copied
+src/harness_local/recipes/typescript_web.py	src/harness_local/recipes/typescript_web.py	3ca5c7d15fcdb9fc0b209c4d35aa15c2e0b57af2bd7f3fd3316f4c80d83f8571	100644	copied
+src/harness_local/recipes/typescript_web_2.py	src/harness_local/recipes/typescript_web_2.py	1ef984ec1f541c26385d517aeb9516e9493b18632b41db6fb1dff5b44c136483	100644	copied
+src/harness_local/services/__init__.py	src/harness_local/services/__init__.py	049e14ac6ef901c1f2866de36ff72d9e3f26c19eafef3b45600bebbf11eca025	100644	copied
+src/harness_local/services/local_config.py	src/harness_local/services/local_config.py	947ba825481a85eeca0f7c015f02fbd12122fb363318713948d0919e19a2b7ab	100644	copied
+src/harness_local/services/managed.py	src/harness_local/services/managed.py	5cfded989753892ae4f3e22eb09c43d4a40ed8d0c07d0b80a5d58d7c8cb2a911	100644	copied
+src/harness_local/services/managed_runtime.py	src/harness_local/services/managed_runtime.py	1cca78bd5004e7cb56005f6eff57e2b9569314d3dbbb6a1d999ba2a3593a9342	100644	copied
+src/harness_local/services/project_creation.py	src/harness_local/services/project_creation.py	fb11ba6140f59e36a5905a93e7df4b84308dfdb16b6af5f5098efec5c4f80530	100644	copied
+src/harness_local/services/project_preparation.py	src/harness_local/services/project_preparation.py	554c0f078055ae0db464fcf56699d803b17bb5085c0fc91377b88b200c568ac5	100644	copied
+src/harness_local/services/project_registry.py	src/harness_local/services/project_registry.py	4f5a7c292e2cd39e6d2bdedcdbd94661bade0086f8dbc6fa38a431caac51869b	100644	copied
+src/harness_local/services/work_language.py	src/harness_local/services/work_language.py	f262f70dd101d5a57dd9d0b3496c54072726de622d09ec1085869ed005445f46	100644	copied
+src/harness_local/storage/__init__.py	src/harness_local/storage/__init__.py	8f4e96c494035b7c3e0941e3f3f7b5b3244a24a7cea26c4ca7e79ee665e4c059	100644	copied
+src/harness_local/storage/backup.py	src/harness_local/storage/backup.py	02229edf8d1cd3d859cd1e310e206d77509988bae7bd882d0b07d7dffa59071d	100644	copied
+src/harness_local/storage/bootstrap.py	src/harness_local/storage/bootstrap.py	ef0eb12356653a0260155dc6b81a6e22356a058bb312fa3ce27238fecf0d5c0d	100644	copied
+src/harness_local/storage/bootstrap_discovery.py	src/harness_local/storage/bootstrap_discovery.py	7809387600e43bfa5b868626b8c93e7f328468fa0fc7dedf646cb179feede4c2	100644	copied
+src/harness_local/storage/chat.py	src/harness_local/storage/chat.py	558081583cfbdd43888251d170eaeab2fc0770703706a80fc8fa333a747ea67e	100644	copied
+src/harness_local/storage/closure.py	src/harness_local/storage/closure.py	36efec524c4c9ffa71032c379937ed8db1f087d733c796bd6c7b3b329ead3697	100644	copied
+src/harness_local/storage/command_processes.py	src/harness_local/storage/command_processes.py	5a9a5e93ca03add295a5a0ea3cd1ed1cdec3c049fe75d2c90225edc745fd3a30	100644	copied
+src/harness_local/storage/database.py	src/harness_local/storage/database.py	2e1bfd200717e1b4505020733126a388f97c7896c2309cc9b1337104f482bb50	100644	copied
+src/harness_local/storage/document_export.py	src/harness_local/storage/document_export.py	31b0ee434802c894df90b7b701928da7a16866dc2a1d1955c0f58839f817f4b3	100644	copied
+src/harness_local/storage/documents.py	src/harness_local/storage/documents.py	a609b20c56da3247b7f377f14ad52d65881939ff1fbc059189c0a88b0cf63363	100644	copied
+src/harness_local/storage/managed.py	src/harness_local/storage/managed.py	6a495b8fc517f49d14aa20009190a63131a88a0f2ffdfa8853105ab35da541f7	100644	copied
+src/harness_local/storage/managed_mode.py	src/harness_local/storage/managed_mode.py	1ddc368ae683ba893d11b33150871a586ac9dd48d74f3157fa1a557b3030a688	100644	copied
+src/harness_local/storage/managed_views.py	src/harness_local/storage/managed_views.py	5279d050a36522b50d8e8fde44af80e8f5acb794468c1c3b12cbac95f42498c4	100644	copied
+src/harness_local/storage/metrics.py	src/harness_local/storage/metrics.py	697ba4519959aea07d8c07926983fb724e872f13954a378b554fd9c2bb90dadd	100644	copied
+src/harness_local/storage/migrate.py	src/harness_local/storage/migrate.py	146530d2da92f4f967ace8cd0a8605f0b0ccf255569a817270a82730ebc5c332	100644	copied
+src/harness_local/storage/models.py	src/harness_local/storage/models.py	fb8862aaca3e6e3017adc3549064eb303ab8bc3c7ee763409a1b29fb2e2d6a3b	100644	copied
+src/harness_local/storage/onboarding.py	src/harness_local/storage/onboarding.py	513e34e18e634d090c41f8e06d898086372be675842030669776c0e7aaa89d06	100644	copied
+src/harness_local/storage/onboarding_commit.py	src/harness_local/storage/onboarding_commit.py	d2c67acda9a826c96cf19a84f725da01a5cf9cc3d594ae5e97775512797307b0	100644	copied
+src/harness_local/storage/permissions.py	src/harness_local/storage/permissions.py	0c2a3cfb1e5e9d2def863b70295ffd7c563f61610ab7fd440dd9002c1b28655a	100644	copied
+src/harness_local/storage/phase_plan.py	src/harness_local/storage/phase_plan.py	2df461cc7c5ba7219d4e7aa68a662750501c0813375941995f332cdd9a49114d	100644	copied
+src/harness_local/storage/phases.py	src/harness_local/storage/phases.py	b8b0a6457268d3cd1a1707e0a8b45b9efedd6be418acd0c385671436b7257c0d	100644	copied
+src/harness_local/storage/planning.py	src/harness_local/storage/planning.py	f1b332e753132fb46e3210b59d8af8bc1464a7085cf651b996e022c8cc867e3e	100644	copied
+src/harness_local/storage/preferences.py	src/harness_local/storage/preferences.py	0fbce635126c6ce2a85e9cb09a186cccf4cfe0c6c9f784f4ff6210f57ca5d465	100644	copied
+src/harness_local/storage/preparation.py	src/harness_local/storage/preparation.py	6843f2a64bdd8b1c550e846b4f4bb759988ade811790d578ca9ae3c44bd9aa7d	100644	copied
+src/harness_local/storage/private_drafts.py	src/harness_local/storage/private_drafts.py	869c3aa9e978458cb8fd1fc3dc1553030b11379f983c7975aba1a83ab0c91d34	100644	copied
+src/harness_local/storage/project_creation.py	src/harness_local/storage/project_creation.py	fbaafefe294c6be0afd6eafe4e6bd215ca25562d4995e3f7ad07e3f1b62c6038	100644	copied
+src/harness_local/storage/project_import.py	src/harness_local/storage/project_import.py	0d824abff7c4e8854e06b26070e84da5ad4858f2a1b86dae175a04fe984c8434	100644	copied
+src/harness_local/storage/prompts.py	src/harness_local/storage/prompts.py	0c19da7dddcd0f017e323371762fba15421ed87ae7d4d9f087a58e6fb050cff6	100644	copied
+src/harness_local/storage/registry.py	src/harness_local/storage/registry.py	f2a7e5136e267a27f73c0f45c7d7f5a0e784d756669af115d80d43b3bf695164	100644	copied
+src/harness_local/storage/repository.py	src/harness_local/storage/repository.py	18a3bdcea69494e7469c38b040253c06ba974d9f65cb151abe4a88dc82e58668	100644	copied
+src/harness_local/storage/retention.py	src/harness_local/storage/retention.py	5736bb28be93905e132edf85e1502ec95470634c6f9ced944f167668dd96989d	100644	copied
+src/harness_local/storage/retired_work.py	src/harness_local/storage/retired_work.py	1c2ce2076ee16d09b3dc53a030f7c02ba45da8b86e9ff7da6518e0b99955e9c4	100644	copied
+src/harness_local/storage/run_projection.py	src/harness_local/storage/run_projection.py	eb0a64d0b768851fcdc8148447bd2a9fd8e9fec5d1908d69c0c70b36dbbd0ba6	100644	copied
+src/harness_local/storage/schema.py	src/harness_local/storage/schema.py	eb126e71fc2cd963ac957794d4935492c0174b1bddcc75d39a33a3acbb602eed	100644	copied
+src/harness_local/storage/transition.py	src/harness_local/storage/transition.py	760e8d998c10322b6cb669df154b02dd8a04ac66570fcd53c17146ca8a924de7	100644	copied
+src/harness_local/storage/work_language.py	src/harness_local/storage/work_language.py	1283ed01ad7643cbbf0acb4c30a0d610ed0d10d4501f43e7dcff631fd20de330	100644	copied
+tests/conftest.py	tests/conftest.py	60e7af38b69ebaa4bfe71d2b35c6841eb2df876df9c2d9bc323ad36ff50895dd	100644	copied
+tests/fixtures/cli_capabilities/README.md	tests/fixtures/cli_capabilities/README.md	6b85f84e8724634002eb19bfc19fbe7ed9aee480154cbd1b291dc0aa45af5118	100644	copied
+tests/fixtures/cli_capabilities/claude-help.txt	tests/fixtures/cli_capabilities/claude-help.txt	a0ba5af3a8568135348f35cbba6b89a4bdef59e646ab2212fc8910bc493bb48a	100644	copied
+tests/fixtures/cli_capabilities/codex-help.txt	tests/fixtures/cli_capabilities/codex-help.txt	5754b6396f282080f15c783f8d20344cd9059f12950b23d291c5a18c3e3e9a23	100644	copied
+tests/fixtures/cli_help/README.md	-	01e83b87c5e09829afb4e347bc8264cfdfebda39298d77a69d756604b5756db5	100644	real CLI help originals stay private (D160)
+tests/fixtures/cli_help/claude-2.1.304-help.txt	-	b10f5c36adfe3285f6c5a0d18284f466e6c4486499de56ef62745e13312a7fbc	100644	real CLI help originals stay private (D160)
+tests/fixtures/cli_help/codex-0.163.0-exec-help.txt	-	df0d864ca2076f7654288c6a1e3394e3eaa2ea8f15021df2524efdd90c70986c	100644	real CLI help originals stay private (D160)
+tests/fixtures/e2e/installed_config.py	tests/fixtures/e2e/installed_config.py	e8f6e4dc1afa12faa9a6999b7116241f12a151d7bd73f48c3cf869a3c25d9485	100644	copied
+tests/fixtures/junit/complete.xml	tests/fixtures/junit/complete.xml	a4ebfc2b963c8c6d965fe0f411ae532562c4f4e9d8134f25a0b8824db593a00c	100644	copied
+tests/fixtures/junit/invalid.xml	tests/fixtures/junit/invalid.xml	a779c56b0c5a917987d26febc04435afa2a6268e5040e430151f780a4994208c	100644	copied
+tests/fixtures/junit/partial.xml	tests/fixtures/junit/partial.xml	062ee493fa55c2a0cf508624ef21360b3ba5a94746b475a64cbf189d33a970eb	100644	copied
+tests/fixtures/service_texts/english.json	tests/fixtures/service_texts/english.json	95cba80438dc05906179a4d4ef97756174b16a31c5149aea51cdf5c0afb308ad	100644	copied
+tests/fixtures/streams/README.md	tests/fixtures/streams/README.md	1f83d97a69b494aca9b1f4fbcd1185f9dcd2caf09cf42c25cf05ffdb77ca6a67	100644	copied
+tests/fixtures/streams/claude-error.jsonl	tests/fixtures/streams/claude-error.jsonl	b689c3fd31020f02d24eb35e7673ba9c5f19d0d81427f7c9a367ce7334672da2	100644	copied
+tests/fixtures/streams/claude-no-terminal.jsonl	tests/fixtures/streams/claude-no-terminal.jsonl	7b8fbd4ea1e2a49861f09ac9291825897680356c48dc3eec47681d428981b13b	100644	copied
+tests/fixtures/streams/claude-success.jsonl	tests/fixtures/streams/claude-success.jsonl	e713e7e40096781988b90374bf655c1190f99a76c2cbd71dfda9e5c83fb43491	100644	copied
+tests/fixtures/streams/claude-truncated.jsonl	tests/fixtures/streams/claude-truncated.jsonl	aee300e96e8662ff0ac6ac612b81d51651b3fcdc39d4c9ab7165027e68e857d7	100644	copied
+tests/fixtures/streams/codex-error.jsonl	tests/fixtures/streams/codex-error.jsonl	dbb43139a1784fcada1cbe3b260623aa97afaba1938f76d9c7a217d119d7e6d0	100644	copied
+tests/fixtures/streams/codex-no-terminal.jsonl	tests/fixtures/streams/codex-no-terminal.jsonl	3c0a18c794a545153322931c2eba52758ad916f905c9f2547513dace36b98990	100644	copied
+tests/fixtures/streams/codex-success.jsonl	tests/fixtures/streams/codex-success.jsonl	4e3faf31486e196d3dc77c9ee4b028b5c0dfb8f4bd1cd5edae9da9ceed545c3d	100644	copied
+tests/fixtures/streams/codex-truncated.jsonl	tests/fixtures/streams/codex-truncated.jsonl	98cbc87589d782603330e8a5c7bbbee444a7917f95d2799d636c7d44a493fe60	100644	copied
+tests/fixtures/streams/manifest.json	tests/fixtures/streams/manifest.json	da22fe293affda7216099a77575cb894395a5842d0494b5e054eb8eccad8b132	100644	copied
+tests/fixtures/typescript_web/.gitignore	tests/fixtures/typescript_web/.gitignore	889d18a75e01a5a569f39dabb6af7c2b8b9e87a942f51e6dedef5bc5e2de3218	100644	copied
+tests/fixtures/typescript_web/README.md	tests/fixtures/typescript_web/README.md	972250ac2107edea8f63f43ba84d2faf5f254074319ab5db2dcf7c6dcb927e00	100644	copied
+tests/fixtures/typescript_web/index.html	tests/fixtures/typescript_web/index.html	57ebbedb8ccea5a61bae2160ab399960b804e19f64bbba56d9af1f64fbda87a7	100644	copied
+tests/fixtures/typescript_web/package-lock.json	tests/fixtures/typescript_web/package-lock.json	6e619e12dc1f6a136fea0b8143055deaa8e44f553e2e324bf6dd5619e8311baa	100644	copied
+tests/fixtures/typescript_web/package.json	tests/fixtures/typescript_web/package.json	35b1a8a451a72d6e48db7f64b005537f221a6d77adbe4bba95223d748e2f25e2	100644	copied
+tests/fixtures/typescript_web/scripts/build.mjs	tests/fixtures/typescript_web/scripts/build.mjs	b858421504d6d4a632f39d0bdab977816c18b0a8fb7e5ccaa5425e379f74aa02	100644	copied
+tests/fixtures/typescript_web/scripts/test.mjs	tests/fixtures/typescript_web/scripts/test.mjs	c1929a76f6afd487cba0d91c1b4b803d0f64ad89f7c924b6d1d9c70b84a1a778	100644	copied
+tests/fixtures/typescript_web/src/estimate.ts	tests/fixtures/typescript_web/src/estimate.ts	c8151efafceda08f1831bb3550076880d686c7f115e3d2dfe0996a49157c748e	100644	copied
+tests/fixtures/typescript_web/src/main.ts	tests/fixtures/typescript_web/src/main.ts	901286c8bc99ad33be531f55e9125eb4e32d71b1a2c02b8cf13f52ad3a3f2319	100644	copied
+tests/fixtures/typescript_web/tests/estimate.test.mjs	tests/fixtures/typescript_web/tests/estimate.test.mjs	517b54bdbfbc3136f0a75ee5a518b5f03fc1bed106a12cdb5a327910d370f7b7	100644	copied
+tests/fixtures/typescript_web/tests/main.test.mjs	tests/fixtures/typescript_web/tests/main.test.mjs	cd1b4e80f26349aea20c39f62cf7631dbc551b19e454fec9e44ed73703e174e4	100644	copied
+tests/fixtures/typescript_web/tsconfig.json	tests/fixtures/typescript_web/tsconfig.json	49a5e475b74b1bfe28c6c6fa2e5b7107e94df913163520fe41a6f7951dc363d4	100644	copied
+tests/product/cli_owner_probe.py	tests/product/cli_owner_probe.py	a8b05f4e5fb2e4e9a5b4681e08e89a05c67585583a98641e0682114f82e01deb	100644	copied
+tests/product/cli_process_probe.py	tests/product/cli_process_probe.py	02bfdd19dc45167ae41d5ff83ab39cb8c4341dcf16b589be8f5eb3d4ca2f528a	100644	copied
+tests/product/command_supervisor_probe.py	tests/product/command_supervisor_probe.py	18240c6cc21e253a2cb6c33374ad2b9dbac443709a54232be95b9f598953f435	100644	copied
+tests/product/conftest.py	tests/product/conftest.py	d5cd88d99c8aea7bebb3ffad7a24dae5e937a0391b2900cd2e91f1dd12f6a61a	100644	copied
+tests/product/managed_process_probe.py	tests/product/managed_process_probe.py	009fe9c1c7861bf23be26efef1f4c583ebec400223438e52b275f2ed3ee7d943	100644	copied
+tests/product/onboarding_helpers.py	tests/product/onboarding_helpers.py	c92e85c8ff2074df92dfdc83551727f5a22802b3b448f0dfa5e18a05609d9cea	100644	copied
+tests/product/preparation_probe.py	tests/product/preparation_probe.py	90bdce224c377991b1a9009dfb06a6d4335bba8cc643b1381182526559c627c9	100644	copied
+tests/product/session_client.py	tests/product/session_client.py	87b237fef79fc353841dfee7b9e01d3886227023b593bf89feb30bee7aa262eb	100644	copied
+tests/product/smoke_environment_probe.py	tests/product/smoke_environment_probe.py	fd9b3e742e457bb5454ec5fb96b7f0a7c7112d2ed451a50d09f7da7cf74e4086	100644	copied
+tests/product/test_acceptance_matrix.py	tests/product/test_acceptance_matrix.py	f4a1d10a6ba63826be173f64c6ac0c36ff5eeb1c996eac570d352189ec9e3f6e	100644	copied
+tests/product/test_agent_roles.py	tests/product/test_agent_roles.py	0abaed91081c1bd88df2189091d9082cc3ee4a52379c6532ba6ff9db8fde037b	100644	copied
+tests/product/test_api_diagnostics.py	tests/product/test_api_diagnostics.py	e8c44bf37ebc7f3cf2a949b15d29f1321d2db457887b122665bfcacb6419b269	100644	copied
+tests/product/test_backup.py	tests/product/test_backup.py	c7d6c036156b8f172418609683be8bc2d7359345a2ce6c801d10b0f0182fdf78	100644	copied
+tests/product/test_bootstrap.py	tests/product/test_bootstrap.py	5b05d932777e35ca33b9222eb2562a9d88694a0267e74e0ea6bb6f25db268c82	100644	copied
+tests/product/test_chat.py	tests/product/test_chat.py	fd1e99ef13c9c0dfe7ee62f3397a2e9d59ca288b1c4ac8a3dd1bf8bf9f3a2409	100644	copied
+tests/product/test_chat_global.py	tests/product/test_chat_global.py	f98c229b4aca43242ec2cbbe8c12f96c8ddef869a361f36c2e66f9e56d2f4df0	100644	copied
+tests/product/test_cli_agents.py	tests/product/test_cli_agents.py	b829bb92e6bd2e273445dc7b8fbbbf13a951dc63ff6968ba5f327782b2357006	100644	copied
+tests/product/test_cli_baseline.py	tests/product/test_cli_baseline.py	8b02b7a03962bd2157b85271e3db2fa0293a896c50382f7a70f5f122b01c0ff9	100644	copied
+tests/product/test_cli_diagnostics.py	tests/product/test_cli_diagnostics.py	8fe7dc6e275bf7c3c01259e2fdf066848659639b8cb61a372727ca676d119f45	100644	copied
+tests/product/test_cli_discovery.py	tests/product/test_cli_discovery.py	0deb9030264857e9fbc8eca411b0c88d61691c929ab7d5ea1a2a70b2d4c1f398	100644	copied
+tests/product/test_cli_memory.py	tests/product/test_cli_memory.py	bd3cb06f910cb7eeaacb93e4a6b1a8d0b5d1e550fa4764e797f3b7f991e13f14	100644	copied
+tests/product/test_codex_workspace_write.py	tests/product/test_codex_workspace_write.py	372b9cc853c8ec5cc7b23b5a5c95dc51307030c4dead1d7a060d12988b89534d	100644	copied
+tests/product/test_commands.py	tests/product/test_commands.py	f6e70919ede60fb0512819de6d270a29bfe87e762cfb0ae2e8390697d6843e39	100644	copied
+tests/product/test_contract_shapes.py	tests/product/test_contract_shapes.py	5cf88f36ce23da01518c51aea9483631b63f921857504f57c321678cbec32a3d	100644	copied
+tests/product/test_core.py	tests/product/test_core.py	e98fb1b009d0cb62f870ffdb57b8f6dac69b5e6cc0f1ccbf51277739e56d7cce	100644	copied
+tests/product/test_cycle_diff.py	tests/product/test_cycle_diff.py	2c928bc55b9dc88d9bfd7fc217d6a38ee9fa0372eaba37e3f9b29f8467b2d23e	100644	copied
+tests/product/test_declared_profiles.py	tests/product/test_declared_profiles.py	abea13463b92f1bf9bfa8b2716fd56537fb1f93b7d4274881c79f565e909af56	100644	copied
+tests/product/test_definition.py	tests/product/test_definition.py	bd2af2217edcff6fb2c6d35555838598ffd19f08ff235516da763ff6fed2a6d7	100644	copied
+tests/product/test_definition_git_check.py	tests/product/test_definition_git_check.py	ee7df0d913263b2473d3bb402fa4c54bc8cd6d4e07492a05ff807b4481720338	100644	copied
+tests/product/test_dev_command.py	tests/product/test_dev_command.py	f16e27dfa93a8fcb45d6464d232063abc1b8e206255b6919ffc7305b8f892bfe	100644	copied
+tests/product/test_directory_paths.py	tests/product/test_directory_paths.py	d1172cdd417890f719dccbe46f986012c91dc3a8ba020fc3fb444ab46c9a612e	100644	copied
+tests/product/test_django_journey.py	tests/product/test_django_journey.py	e75404ac87061bd88807f5db6afaea5bee30debd047424253ac11a4fbf0e354a	100644	copied
+tests/product/test_document_export.py	tests/product/test_document_export.py	4236f81e4e1b4d5118b76fbf552e9b0a83d1266e0dbdf2565685832ebda3c056	100644	copied
+tests/product/test_document_viewer.py	tests/product/test_document_viewer.py	0f44a382641a7f03da60100b7f5ceda47da3de5a764602de735cd8d8764e946b	100644	copied
+tests/product/test_documentation_parity.py	tests/product/test_documentation_parity.py	62a3809c0a4d66f0962ce78cdd87e4014bdac457c221a6fd78aed09ac4ad04b6	100644	copied
+tests/product/test_documents.py	tests/product/test_documents.py	ff6840c497091c09c7bc5104b90561630a7d74c6b997c87373b5463c2f575ef3	100644	copied
+tests/product/test_e2e_offline.py	tests/product/test_e2e_offline.py	cb12e8b09825773d95803ee62a4ab6784781cafb97c8a32270a9f287ae3ee44a	100644	copied
+tests/product/test_engine.py	tests/product/test_engine.py	b677d8d3b9ee55c3563542b9b6ff15de711d29420ded34a14260c79b0048202d	100644	copied
+tests/product/test_git.py	tests/product/test_git.py	7f01bba8a31095e739da551bc65395f1bf65fc275d8b674f8e79e686bb17fd67	100644	copied
+tests/product/test_import_git_boundary.py	tests/product/test_import_git_boundary.py	75dd03e148a2f667f45a995d3d22064119bf68b601b52f7213ee381e84b64ed3	100644	copied
+tests/product/test_import_local_objects.py	tests/product/test_import_local_objects.py	e8e20eafcdbcfa0d6ac51e291684c88148dcb16e3064959a88c92f3db3a95ff3	100644	copied
+tests/product/test_import_submodules.py	tests/product/test_import_submodules.py	e2ef9e0936fde441e2681f0771818902681f9397e753cb14ec2137b5fee7fd76	100644	copied
+tests/product/test_import_writer_local_objects.py	tests/product/test_import_writer_local_objects.py	229a915b95c4b4c794c77bd2d091e943eb4ce7f6f82a4f3b526d362f737981c9	100644	copied
+tests/product/test_installed_migration.py	tests/product/test_installed_migration.py	f740d8818b142d1c1e765740eb650d60f038ba5a467ab0293a0fc8eef07c0fb1	100644	copied
+tests/product/test_junit.py	tests/product/test_junit.py	af6b4675a41480f640816b2220952a4ee66996bfd3fd14d3eec81e65db0e831a	100644	copied
+tests/product/test_language_directive.py	tests/product/test_language_directive.py	6470ba501f6dde5d53ec811a2368861a426d00bb20afe3fed61bc3fc9c242e3e	100644	copied
+tests/product/test_launcher.py	tests/product/test_launcher.py	4e60dac4738828bd3315555e13899f4360dba37fc82bb3ce349a85f3be5d8410	100644	copied
+tests/product/test_legacy_retirement.py	tests/product/test_legacy_retirement.py	b3d174d8af36df931e932b646c15f441172c2b7da7071b47ff3cfb5b5da2d6b3	100644	copied
+tests/product/test_local_config.py	tests/product/test_local_config.py	906f2a3861bb7ecdb5b79b91ec2ebd74fe0ed90361f6308af86a9f288d334e57	100644	copied
+tests/product/test_managed.py	tests/product/test_managed.py	48e6a24dc915d6c1e062fdb10baf7031fb543ff7546e9d6a11c18c04bad0f6fc	100644	copied
+tests/product/test_managed_api.py	tests/product/test_managed_api.py	c6e053f9680e6aa372ef2b5cc0017baa5435da33decd61516655c043886d6ab9	100644	copied
+tests/product/test_metrics.py	tests/product/test_metrics.py	678a39b636ec417290259b3c4f04c668c7c0584d15fed5d7f473b3d63ffdf9c3	100644	copied
+tests/product/test_metrics_projection.py	tests/product/test_metrics_projection.py	6c4b08d43a2efdfd9d41b097fbfdd586f37b88343eb2af9c502ad8c24e184c0b	100644	copied
+tests/product/test_onboarding_commit.py	tests/product/test_onboarding_commit.py	5e11002cabb16a551bb51c056aaf917decf2affc645dcba5c53d64222d168244	100644	copied
+tests/product/test_onboarding_conversation.py	tests/product/test_onboarding_conversation.py	cef25904556aad6c207427a82a92f581403801c75ad1b6f477e8b16136512dd8	100644	copied
+tests/product/test_permissions.py	tests/product/test_permissions.py	e75129ee2e55055125cc13beca8d525a8d0a177854861356131def2f40200c17	100644	copied
+tests/product/test_phase_adjustments.py	tests/product/test_phase_adjustments.py	09e7018c9905247d6f9c743d5c5d8f49d5983629cf88ae0937a4fa33cc589bd9	100644	copied
+tests/product/test_phase_closure.py	tests/product/test_phase_closure.py	e2c08e072d3859926f9293e25c757b7bd324047779196c75f3adc0993218595b	100644	copied
+tests/product/test_phases.py	tests/product/test_phases.py	ebcf70d4b6e1e2ba15fa7b3ffec65f3b48fcc06a04fd23cddb0d905415b650e5	100644	copied
+tests/product/test_preferences.py	tests/product/test_preferences.py	0ed32e8002b67105811646a05128fa154309f9f5ab60ac289da6b1954c9b4315	100644	copied
+tests/product/test_profile_formatter.py	tests/product/test_profile_formatter.py	dd178b1827a142b0f45926e3f6e370ef60d67f003d7ed0d2d12d9e665b059b52	100644	copied
+tests/product/test_project_agents.py	tests/product/test_project_agents.py	5df1b861642aa7ff7ca5b6383d0c538ee94472f495e014d5e32c8deafd618194	100644	copied
+tests/product/test_project_creation.py	tests/product/test_project_creation.py	8bd40aefc2878f554920995c023b82c1e5845647273f90c2d14b52ab77026aa1	100644	copied
+tests/product/test_project_instructions.py	tests/product/test_project_instructions.py	12f1186a98389cbfb47a09fc78b15460a549cf9b785475e74652792521969319	100644	copied
+tests/product/test_project_onboarding.py	tests/product/test_project_onboarding.py	b6eccc8a59ad16bd0c9cb67059c091ddaf89aae61eb2c6da2f7cfb268419523d	100644	copied
+tests/product/test_project_preparation.py	tests/product/test_project_preparation.py	73a6fa86a4874c9faecb0c73014daac612a28a5c9b1a779b0f0af3e6eaf72c74	100644	copied
+tests/product/test_project_registry.py	tests/product/test_project_registry.py	99e36fa864d46fa057914f328cdbc40a86c295363c4a2d74bb43ace07ec20a95	100644	copied
+tests/product/test_prompts.py	tests/product/test_prompts.py	5a2b3ea5bad7ef4af35518b64de94d3c6be5a9c40b9bd4ac82aad173666d45d1	100644	copied
+tests/product/test_recipe_v2_preparation.py	tests/product/test_recipe_v2_preparation.py	2928b90a16155474e5e522cc57ef41b761a33bfe4a40563c11e0d074c31c68d4	100644	copied
+tests/product/test_recipe_versions.py	tests/product/test_recipe_versions.py	051006ebb5e3d3d50dfb01ff76485911b435805606e727cbe087eb8f8a0ad6ee	100644	copied
+tests/product/test_retention.py	tests/product/test_retention.py	e42504ebb27c96483d15f8ecce578a2e66fe7421873cb08fac8008581faaabbc	100644	copied
+tests/product/test_run_projection.py	tests/product/test_run_projection.py	2a6dacca40f9c292c7c65cf4ea080e4cc3726c7b30e9b1086781dcbb959d01dd	100644	copied
+tests/product/test_service_diagnostics.py	tests/product/test_service_diagnostics.py	3f46ff384a6b21f8d390f4f594075004e098a1d6b215045bf90bf6b07c279131	100644	copied
+tests/product/test_service_texts_catalog.py	tests/product/test_service_texts_catalog.py	2c109030b6849583edb79af34267527f635186e61163c929efad961beef561d1	100644	copied
+tests/product/test_session.py	tests/product/test_session.py	3f3d667cdc843a1ef15c3b11d2c3cb989cfb8b7cb429d34ab8d8984738e8d8dc	100644	copied
+tests/product/test_smoke_environment.py	tests/product/test_smoke_environment.py	eb0800e12ca9957e43a50d80372262aa732b60bed302580b6d37a8a4e38ddf46	100644	copied
+tests/product/test_storage_api.py	tests/product/test_storage_api.py	238518fa523399380dd2298a4489f64230a29b50c20fefda612aeb45cfbde0c4	100644	copied
+tests/product/test_task_sources.py	tests/product/test_task_sources.py	2346bb183f520bd9b8fa097a13ddb88089dd8625e33d260c61b80a973e50d631	100644	copied
+tests/product/test_typed_json_schema.py	tests/product/test_typed_json_schema.py	e09c5e422a8096a8df4dc23af8dc1d61edf22282aa4416ba7211e93b7a3da98c	100644	copied
+tests/product/test_typescript_preparation.py	tests/product/test_typescript_preparation.py	22706126de2c89242fbc994d893e77bca9bc6bdbeeef6e513720ccb4725fa826	100644	copied
+tests/product/test_typescript_profile.py	tests/product/test_typescript_profile.py	5ef416b3f7fa19833ccb524e4538b9170c9e5d7639689904f6a23a74d74a89c5	100644	copied
+tests/product/test_ui_routes.py	tests/product/test_ui_routes.py	a4a67a032cb8b309528e9d2513e9ac56fa27377c05517e43b2f111db4e6d0e9a	100644	copied
+tests/product/test_work_language.py	tests/product/test_work_language.py	554c09d1c67e1102e40b769684e84bbbf6884c8c1ae8f258b44ecbc379f983c3	100644	copied
+tests/product/typescript_preparation_probe.py	tests/product/typescript_preparation_probe.py	0fb72f968316133fc4dc8694bb63b8c0d7c599b8f1531800734d948e1652d4be	100644	copied
+tests/stream_probe.py	tests/stream_probe.py	0f738eef24d192ec4db08ac623d0c1c9a59d3b10d29d1936d931a020643dce47	100644	copied
+tests/test_stream_contracts.py	tests/test_stream_contracts.py	3011528122a8b315ceff9da14eb19cc7e97c4d172d28bac53815e9a702ec22e3	100644	copied
+uv.lock	uv.lock	69091b66855c9765eedd53b35356f419149fdb1bc9ba2fc1402ff2002f48fbc3	100644	copied

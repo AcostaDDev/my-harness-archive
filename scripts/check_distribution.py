@@ -1,6 +1,8 @@
-"""Verify the wheel installed in a new venv, with no checkout, cwd or Node at runtime."""
+"""Verify the built artifacts' exact contents, then the wheel installed in a new venv with no checkout, cwd or
+Node at runtime."""
 import argparse
 from contextlib import closing, contextmanager
+import email.parser
 import hashlib
 import json
 from http.cookiejar import CookieJar
@@ -10,13 +12,75 @@ import socket
 import shutil
 import sqlite3
 import subprocess
+import tarfile
 import tempfile
 import time
+import tomllib
 import zipfile
 from urllib.error import HTTPError, URLError
 from urllib.request import Request, build_opener, HTTPCookieProcessor
 
+from build_distribution import PROJECT_FILES, package_sources
+
 ROOT = Path(__file__).resolve().parents[1]
+LICENSE_FILES = ('LICENSE', 'NOTICE.md', 'NOTICE-THIRD-PARTY.md')
+# Components removed with the previous harness: never shipped again.
+RETIRED = ('api/legacy.py', 'api/events.py', 'services/observation.py', 'storage/legacy.py', 'storage/observation.py',
+           'storage/navigation.py', 'adapters/legacy.py', 'adapters/evidence.py', 'adapters/project_import.py',
+           'adapters/migration.py', 'core/legacy.py', 'core/evidence.py', 'core/project_import.py',
+           'core/project_normalization.py', 'core/migration.py', 'core/engine/import_conversation.py',
+           'core/engine/templates/import-project.md', 'storage/import_drafts.py', 'storage/migration.py',
+           'services/migration.py')
+
+
+def check_artifacts(distribution, project):
+    """Exact member sets, metadata, license files and checksums of the sdist/wheel pair."""
+    name, version = project['name'].replace('-', '_'), project['version']
+    sums = dict(reversed(line.split('  ', 1)) for line in (distribution / 'SHA256SUMS').read_text().splitlines())
+    assert sorted(sums) == sorted([f'{name}-{version}-py3-none-any.whl', f'{name}-{version}.tar.gz',
+                                   'requirements.txt']), sums
+    for file, digest in sums.items():
+        assert hashlib.sha256((distribution / file).read_bytes()).hexdigest() == digest, file
+    package = {str(path): (ROOT / 'src' / path).read_bytes() for path in package_sources()}
+    package |= {'harness_local/web/' + str(asset.relative_to(ROOT / 'frontend/dist')): asset.read_bytes()
+                for asset in (ROOT / 'frontend/dist').rglob('*') if asset.is_file()}
+    assert not any(member.startswith('harness_local/' + retired) for member in package for retired in RETIRED)
+    info = f'{name}-{version}.dist-info/'
+    with zipfile.ZipFile(distribution / f'{name}-{version}-py3-none-any.whl') as wheel:
+        files = {member for member in wheel.namelist() if not member.endswith('/')}
+        expected = set(package) | {info + item for item in ('METADATA', 'WHEEL', 'RECORD', 'entry_points.txt')}
+        expected |= {info + 'licenses/' + license for license in LICENSE_FILES}
+        assert files == expected, sorted(files ^ expected)
+        for member, content in package.items():
+            assert wheel.read(member) == content, member
+        for license in LICENSE_FILES:
+            assert wheel.read(info + 'licenses/' + license) == (ROOT / license).read_bytes(), license
+        metadata = email.parser.BytesParser().parsebytes(wheel.read(info + 'METADATA'))
+    assert (metadata['Name'], metadata['Version'], metadata['License-Expression']) == (project['name'], version,
+                                                                                         project['license'])
+    assert sorted(metadata.get_all('License-File')) == sorted(LICENSE_FILES)
+    assert metadata.get_all('Requires-Dist') == project['dependencies']
+    assert metadata['Requires-Python'].replace(' ', '') == project['requires-python']
+    assert metadata.get_payload(decode=True) == (ROOT / 'README.md').read_bytes()
+    prefix = f'{name}-{version}/'
+    with tarfile.open(distribution / f'{name}-{version}.tar.gz') as sdist:
+        members = {member.name: member for member in sdist.getmembers()}
+        assert all(member.isfile() or member.isdir() for member in members.values())
+        files = {item.removeprefix(prefix) for item, member in members.items() if member.isfile()}
+        # uv_build normalizes pyproject.toml and keeps the original bytes as pyproject.toml.orig.
+        expected = {'PKG-INFO', 'pyproject.toml.orig', *PROJECT_FILES} | {'src/' + member for member in package}
+        assert files == expected, sorted(files ^ expected)
+        for member, content in package.items():
+            assert sdist.extractfile(prefix + 'src/' + member).read() == content, member
+        for item in ('pyproject.toml.orig', *LICENSE_FILES, 'README.md'):
+            assert sdist.extractfile(prefix + item).read() == (ROOT / item.removesuffix('.orig')).read_bytes(), item
+    # One version for package, API and UI (CHANGELOG versioning policy).
+    ui, lock = (json.loads((ROOT / 'frontend' / file).read_text()) for file in ('package.json', 'package-lock.json'))
+    api = re.search(r'FastAPI\(title="Harness Local", version="([^"]+)"', package['harness_local/api/app.py'].decode())
+    assert ui['version'] == lock['version'] == lock['packages']['']['version'] == api[1] == version
+    requirements = (distribution / 'requirements.txt').read_text()
+    assert ' --hash=sha256:' in requirements and str(distribution) not in requirements
+    assert not any(line.startswith(('harness-local', '-e', '#')) for line in requirements.splitlines())
 
 
 def main():
@@ -24,13 +88,9 @@ def main():
     parser.add_argument('--dist', type=Path, default=ROOT / 'dist')
     args = parser.parse_args()
     distribution = args.dist.resolve()
-    with zipfile.ZipFile(distribution / 'harness_local-0.1.0-py3-none-any.whl') as wheel:
-        for source in (ROOT / 'src/harness_local').rglob('*'):
-            if source.is_file() and '__pycache__' not in source.parts and source.suffix != '.pyc':
-                assert wheel.read(str(source.relative_to(ROOT / 'src'))) == source.read_bytes()
-        for asset in (ROOT / 'frontend/dist').rglob('*'):
-            if asset.is_file():
-                assert wheel.read('harness_local/web/' + str(asset.relative_to(ROOT / 'frontend/dist'))) == asset.read_bytes()
+    project = tomllib.loads((ROOT / 'pyproject.toml').read_text())['project']
+    check_artifacts(distribution, project)
+    wheel_file = distribution / f"{project['name'].replace('-', '_')}-{project['version']}-py3-none-any.whl"
     with tempfile.TemporaryDirectory(prefix='harness-installed-') as temporary:
         work = Path(temporary).resolve()
         venv = work / 'venv'
@@ -40,7 +100,7 @@ def main():
         subprocess.run(['uv', 'pip', 'sync', '--offline', '--require-hashes', '--python', str(python),
                         str(distribution / 'requirements.txt')], check=True)
         subprocess.run(['uv', 'pip', 'install', '--offline', '--no-deps', '--python', str(python),
-                        str(distribution / 'harness_local-0.1.0-py3-none-any.whl')], check=True)
+                        str(wheel_file)], check=True)
         cli = venv / 'bin/harness-local'
         # Git is the only extra executable exposed to the managed synthetic journey.
         (venv / 'bin/git').symlink_to(shutil.which('git'))
@@ -272,7 +332,7 @@ def main():
             assert read(base, '/api/managed/supervisor')['enabled'] is False
             assert request(base, action_path, action_body, headers | {'Idempotency-Key': 'archive-refused'})[0] == 409
             assert (area / 'calls.jsonl').read_bytes() == calls
-        print('Isolated wheel: UI/assets/API, session, D088 definition/task/commit/restart, errors and restored evidence OK.')
+        print('Artifacts: exact members, metadata, licenses and SHA256SUMS. Isolated wheel: UI/assets/API, session, D088 definition/task/commit/restart, errors and restored evidence OK.')
 
 
 if __name__ == '__main__':

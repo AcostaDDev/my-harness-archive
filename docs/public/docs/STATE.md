@@ -42,8 +42,10 @@ of [D151](DECISIONS.md#d151--real-validation-of-onboarding-and-declared-profiles
 - **API and UI.** `/api/managed` behind a local session, Host/Origin checks and a CSRF header; React UI with URLs for
   projects, registry, creation, onboarding, documentation, phases, tasks, runs with paginated diffs, chat,
   statistics, settings and preferences; per-attempt metrics with provenance (D074).
-- **Distribution and operation.** Wheel with UI, migrations and catalogs; `init-db`, `serve`, `migrate`,
-  `check-config`, backup, retention, `metrics-backfill` and `diagnose-cli`; `scripts/dev` for development (D043, D051).
+- **Distribution and operation.** Wheel and sdist with UI, migrations, catalogs and license/notice files, checked
+  member by member with `SHA256SUMS`; `init-db`, `serve`, `migrate`, `check-config`, backup, retention,
+  `metrics-backfill` and `diagnose-cli`; `scripts/dev` for development (D043, D051). Synthetic GitHub Actions CI on
+  macOS, not yet run remotely; versioning policy in the [changelog](../CHANGELOG.md).
 - **Real-provider evidence.** Before the snapshot: first real use to a closed phase, the four reviewer/executor
   combinations COMMITTED (D071) and a Django project created from the UI through four tasks and the closure of its
   first phase on macOS ARM64 with Python 3.13. Onboarding, declared profiles, the TypeScript recipe, chat and backup

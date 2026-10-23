@@ -67,7 +67,7 @@ queue; closing the browser does not cancel work.
 | `services/local_config.py`, `project_registry.py`, `project_creation.py` | `local-config-7` TOML (reads 1–6), automatic CLIs; registration and creation, presets, recipe generations, work language sealed at registration |
 | `recipes/`, `services/project_preparation.py`, `storage/preparation.py`, `adapters/preparation.py` | Packaged recipes (`django-recipe-1/2`, `typescript-web-recipe-1/2`) and their confirmed, recoverable preparation |
 | `api/app.py`, `managed.py`, `schemas.py`, `session.py`, `security.py` | Application, routes, Pydantic contracts, session and guard |
-| `profiles/` | Built-in profiles: `typescript-web` (composable) and one library-only profile; TOML profiles are composed in `services/local_config.py` |
+| `profiles/` | Built-in profile `typescript-web` (composable); TOML profiles are composed in `services/local_config.py` |
 | `cli.py`, `launcher.py` | `harness-local` (`init-db`, `serve`, `migrate`, `check-config`, backup, retention, `metrics-backfill`, `diagnose-cli`); `--ui-language` per invocation |
 | `storage/preferences.py`, `i18n/` | Global language preferences with CAS, capture of the interface language when admitting each job, en/es catalogs of own messages; `tr()` emits in the language of each emission |
 | `storage/work_language.py`, `services/work_language.py` | Immutable work language per root, `language-context-1` pair per job and attempt, explicit confirmation from absent to a value |
@@ -229,6 +229,11 @@ always runs from the installed wheel, never from the development checkout
 is for development only and creates or migrates its own database (`.local/harness.sqlite3`) after a snapshot.
 `init-db` and `serve` keep creating a new database and starting without migrating
 ([D043](DECISIONS.md#d043--local-distribution-with-assets-and-migrations-explicit-start-on-loopback)).
+`build_distribution.py` writes into a new or empty folder: the UI built from the npm lock, the sdist and the wheel
+(sources, UI assets and the `LICENSE`/`NOTICE*` files), a hashed `requirements.txt` without a header and
+`SHA256SUMS`. `check_distribution.py` verifies the exact members, metadata, license files, checksums, absence of
+retired components and one version for package, API and UI, then installs the wheel in an isolated venv and runs
+a synthetic journey. `.github/workflows/ci.yml` runs the same suites and package checks on macOS without secrets.
 
 `serve` writes the session key (`harness-session-*/login-key`, 0700/0600, deleted on exit) and temporary Git indexes
 and seals (`harness-git-*`, `harness-bootstrap-*`) under the process `TMPDIR`. Without it, Python uses the system

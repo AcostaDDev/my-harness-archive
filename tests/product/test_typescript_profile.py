@@ -22,7 +22,6 @@ from harness_local.core.engine.contracts import AgentResult, context_snapshot
 from harness_local.core.engine.permissions import snapshot_entries, snapshot_payload
 from harness_local.core.engine.serialization import dump_history, load_history, restore_context
 from harness_local.core.engine.validation import CommandResult, run_command, run_validations
-from harness_local.profiles.reference_project import reference_project_profile
 from harness_local.profiles.typescript_web import typescript_web_profile
 from harness_local.services.managed import LocalSupervisor
 from harness_local.storage.database import make_engine
@@ -317,7 +316,7 @@ def test_profile_import_is_declarative_and_core_has_no_new_stack_conditions(monk
     def forbidden(*args, **kwargs):
         pytest.fail("A profile must not launch a process")
     monkeypatch.setattr(subprocess, "Popen", forbidden)
-    assert typescript_web_profile().name != reference_project_profile().name
+    assert typescript_web_profile().name == 'typescript-web'
     for path in (ROOT / "src/harness_local/core").rglob("*.py"):
         assert not any(word in path.read_text() for word in ("typescript-web", "typescript_web", '"npm"', '"tsc"'))
 

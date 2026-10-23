@@ -151,7 +151,7 @@ def mutate(data, change):
     elif change == 'trust-not-bool':
         project['repository_trusted'] = 'yes'
     elif change == 'profile':
-        project['profile'] = 'reference_project'
+        project['profile'] = 'undeclared'
     elif change == 'models':
         del project['policy']['reviewer_model']
     elif change == 'user':

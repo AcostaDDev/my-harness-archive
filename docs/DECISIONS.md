@@ -188,6 +188,7 @@ tarea se leen solo las decisiones que cita; este índice sirve para buscar prece
 | [D175](#d175--p011-t013-diagramas-contrastados-con-el-código-sin-cambiar-el-producto) | P011-T013: diagramas contrastados con el código sin cambiar el producto | P011 |
 | [D176](#d176--p011-t014-baseline-pública-en-docspublic-y-readme-inglés-de-primer-uso) | P011-T014: baseline pública en `docs/public/` y README inglés de primer uso | P011 |
 | [D177](#d177--p011-t023-documentación-técnica-pública-autocontenida-en-inglés) | P011-T023: documentación técnica pública autocontenida en inglés | P011 |
+| [D178](#d178--p011-t015-paquete-candidato-010-ci-sintética-e-instantánea-pública) | P011-T015: paquete candidato 0.1.0, CI sintética e instantánea pública | P011 |
 
 ## D001 — Alcance local y arquitectura base
 
@@ -5276,3 +5277,28 @@ Fase: P011. Completa el desglose HITL de D176 sin cambiar el producto.
   patrón de archivo privado a enlaces y fases privadas. README y README.es enlazan los documentos nuevos.
 - Nota para T015/T017: el módulo `profiles/reference_project.py` del candidato lleva un nombre privado; la arquitectura
   pública no lo nombra. Siguiente: T015.
+
+## D178 — P011-T015: paquete candidato 0.1.0, CI sintética e instantánea pública
+
+Estado: aplicada el 2026-10-23 en T015 por la continuación y commit local en inglés pedidos por el usuario.
+Fase: P011. Concreta D156/D157/D160 y el contrato T001 §8 para el paquete y el corte inicial.
+[Entrega, hashes, procedimiento manual y checks](phase/P011-T015_PAQUETE_PUBLICO.md).
+
+- HITL de versión: el candidato de la primera apertura pública es `0.1.0` (el `0.1.0` local de P010 no se publicó y
+  su `dist/` queda excluido); `0.2.0` sigue reservada (D156). CHANGELOG fija la política: una versión para paquete,
+  API y UI; 0.x con notas de cambio; datos legibles entre versiones y esquema solo con `migrate`; Release manual en
+  GitHub con wheel, sdist, `requirements.txt` y `SHA256SUMS`, sin PyPI.
+- Paquete: README y licencias en staging (`license-files`), carpeta de salida nueva o vacía, `requirements.txt` sin
+  cabecera (registraba la ruta absoluta) y `SHA256SUMS`. `check_distribution.py` verifica miembros exactos,
+  metadatos, licencias, versión única, ausencia de componentes retirados y el `pyproject.toml.orig` de uv_build.
+  El journey instalado se repara declarando el idioma de trabajo del fixture (roto desde D167). Avisos: los 58
+  paquetes del bundle tienen aviso; las 19 entradas externas sin términos locales no se redistribuyen.
+- CI sintética en GitHub Actions (`macos-15`, `contents: read`, acciones fijadas por commit, sin secretos,
+  proveedores ni publicación); escrita y no ejecutada en remoto.
+- HITL de nombre privado: ReferenceProject es un proyecto privado que se incorporará con el flujo de repositorio existente;
+  se elimina `profiles/reference_project.py` y toda referencia en código y tests, ampliando las rutas de la tarea. Los
+  documentos y archivos históricos privados no se reescriben.
+- HITL de instantánea: herramienta privada por lista positiva que materializa el candidato en
+  `.local/public-candidate/` sin Git, con manifiesto privado origen → candidato y otro publicable; código idéntico al
+  origen. Crear el repositorio, activar el reporte privado, commit, push, tag o Release siguen pendientes de
+  autorización propia (procedimiento en la entrega). Siguiente: T016.

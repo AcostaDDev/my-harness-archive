@@ -19,7 +19,6 @@ from harness_local.core.engine.evidence import check_paths
 from harness_local.core.engine.planning import deterministic_task, next_task_id
 from harness_local.core.engine.validation import CommandResult, run_validations
 from harness_local.core.engine.workflow import OfflineEngine
-from harness_local.profiles.reference_project import reference_project_profile
 
 
 TASK_ID = "P001-T001"
@@ -444,25 +443,40 @@ def test_read_only_task_can_revalidate_but_cannot_retry_execution(context):
     assert len(agents.requests) == 3
 
 
-def test_reference_project_rules_are_in_declarative_profile_not_core(context, monkeypatch):
+def stack_profile():
+    """Synthetic Django/Docker stack profile: its rules live in data, never in the core."""
+    web = ("docker", "compose", "exec", "-T", "web", "python")
+    return ProjectProfile(
+        "synthetic-stack",
+        preparation=(Command(("docker", "info", "--format", "{{.ServerVersion}}")),),
+        validations=(Command(("python", "-m", "ruff", "check", "src")),
+                     Command((*web, "manage.py", "check")),
+                     Command((*web, "manage.py", "test", "--noinput"))),
+        allowed_command_prefixes=(("python",), ("docker", "compose")),
+        formatter_argv=("python", "-m", "ruff", "format", "--"),
+        formatter_paths=("src/**/*.py",),
+        executor_instructions="Run the Django tests on PostgreSQL via Docker.",
+    )
+
+
+def test_stack_rules_are_in_declarative_profile_not_core(context, monkeypatch):
     def forbidden(*args, **kwargs):
         raise AssertionError("Profiles must not launch processes")
     monkeypatch.setattr(subprocess, "Popen", forbidden)
-    profile = reference_project_profile()
+    profile = stack_profile()
     assert any("docker" in command.argv for command in profile.preparation)
     assert any("manage.py" in command.argv for command in profile.validations)
-    assert any("config.celery_smoke" in command.argv for command in profile.validations)
     assert "PostgreSQL" in profile.executor_instructions
     assert profile.formatter_argv == ("python", "-m", "ruff", "format", "--")
     core = Path(__file__).resolve().parents[2] / "src/harness_local/core/engine"
     assert not any(word in path.read_text() for path in core.glob("*.py")
-                   for word in ("Django", "docker", "PostgreSQL", "manage.py", "ruff", "reference_project"))
+                   for word in ("Django", "docker", "PostgreSQL", "manage.py", "ruff"))
     # The generic profile already walks the same flow without stack exceptions.
     engine, _, _, _ = harness(context, [edit(), review()])
     assert start(engine, context).status == "acceptance_ready"
-    reference_project = replace(context, profile=profile)
-    engine, agents, runner, _ = harness(reference_project, [edit(), review()])
-    result = engine.start(reference_project, TASK_ID, PHASE_ID, PLAN.replace("`test-runner check`", ""))
+    stack = replace(context, profile=profile)
+    engine, agents, runner, _ = harness(stack, [edit(), review()])
+    result = engine.start(stack, TASK_ID, PHASE_ID, PLAN.replace("`test-runner check`", ""))
     assert result.status == "acceptance_ready"
     assert tuple(command for _, command in runner.calls) == profile.preparation + profile.validations
     assert len(agents.requests) == 2

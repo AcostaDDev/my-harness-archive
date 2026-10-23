@@ -12,7 +12,8 @@ models are reached through the official Codex and Claude Code CLIs with your own
 ## Status
 
 - **Pre-release.** The first local version is complete within the scope described below; the package declares
-  version `0.1.0` and is not published on PyPI. The version of the first public release is set when it is published.
+  version `0.1.0`, the first public release candidate, and is not published on PyPI. See the
+  [changelog](CHANGELOG.md) for the versioning policy.
 - **Platform.** Only macOS on Apple silicon (ARM64) has been tested. Other platforms are not characterized.
 - **Evidence.** The offline test suites use temporary Git repositories, SQLite and fake agents. Real runs with
   providers exist only for the capabilities marked as such in [Supported scope](#supported-scope-and-limits).
@@ -302,3 +303,5 @@ anything. Project documents:
 - [Flows](docs/flows/task-run.md): task runs, phases, creation, onboarding, preparation, agents, CLI compatibility,
   languages, documents, chat and migration, one Mermaid document each in `docs/flows/`.
 - [Decisions](docs/DECISIONS.md): the technical decisions of the starting baseline, cited by the code as `DNNN`.
+- [Changelog](CHANGELOG.md): released versions and the versioning policy. CI runs the offline suites and the
+  package checks on every push and pull request (`.github/workflows/ci.yml`), without secrets or providers.

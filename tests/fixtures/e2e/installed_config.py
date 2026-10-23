@@ -66,7 +66,7 @@ def build():
                              allowed_command_prefixes=(('test-runner',),))
     context = ProjectContext(area / 'project', profile,
         EnginePolicy(('synthetic-executor',), ('medium',), 'synthetic-planner', 'medium', 'synthetic-reviewer', 'high'),
-        documents='v2')
+        documents='v2', work_language='en')  # recorded once at startup, as a `local-config-6` project (D167)
     versions = {'engine': 'e2e-1', 'agent_adapter': 'synthetic-1', 'commands': 'synthetic-1',
                 'evidence': 'git-1', 'provider_cli': None}
     agent = Agent(area)

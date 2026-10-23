@@ -65,7 +65,7 @@ llaman a los mismos casos de uso. El supervisor es el único que lanza procesos 
 | `services/local_config.py`, `project_registry.py`, `project_creation.py` | TOML `local-config-7` (lectura de 1–6), CLI automática sin pin en v7 (D174); registro/creación con 3–7, presets desde v5, recetas v1 en v5 y v2 en v6/v7 (D168); trabajo sellado al alta (D167) |
 | `recipes/`, `services/project_preparation.py`, `storage/preparation.py`, `adapters/preparation.py` | Recetas empaquetadas `django-recipe-1` y `typescript-web-recipe-1` y su preparación confirmada y recuperable (D119, D143); sucesoras v2 por idioma de trabajo en `local-config-6/7`, con despacho por `id` (D163, D168) |
 | `api/app.py`, `managed.py`, `schemas.py`, `session.py`, `security.py` | Aplicación, rutas, contratos Pydantic, sesión y guardia |
-| `profiles/typescript_web.py`, `profiles/reference_project.py` | Perfiles integrados (`typescript-web` componible; `reference_project` solo biblioteca); los perfiles del TOML v4/v5 se componen en `services/local_config.py` |
+| `profiles/typescript_web.py` | Perfil integrado `typescript-web` componible (el perfil privado solo biblioteca se retiró en P011-T015); los perfiles del TOML v4/v5 se componen en `services/local_config.py` |
 | `cli.py`, `launcher.py` | `harness-local` (backup, retención, diagnóstico, `check-config`, `metrics-backfill`, `init-db`, `serve`); `--ui-language` por invocación |
 | `storage/preferences.py`, `i18n/` | Preferencias globales de idioma con CAS, captura del visual al admitir cada job y catálogos en/es de mensajes propios (D166); `tr()` emite en el visual de cada emisión: petición HTTP, job o invocación CLI (D171) |
 | `storage/work_language.py`, `services/work_language.py` | Idioma de trabajo inmutable por raíz, par `language-context-1` por job/intento y confirmación explícita ausente → valor (D167) |
@@ -137,7 +137,7 @@ por su API y los artefactos referenciados; la restauración es de consulta (`que
   Cambios confirmados serializan registro y admisión en SQLite; bloquean aceptación/commit, propuestas de chat
   y definición/incorporación utilizable. Planes no aceptados pasan a SUPERSEDED sin alterar sus snapshots;
   nueva planificación antes de confirmar otro plan. [Flujo de agentes](flows/project-agents.md) (D118).
-- **Perfiles**: integrados en `profiles/` (`typescript-web` componible; `reference_project` solo biblioteca) o declarados en
+- **Perfiles**: integrado en `profiles/` (`typescript-web` componible) o declarados en
   `[profiles.<nombre>]` (D095): preparación y validaciones como argv sin shell, JUnit junto a su validación,
   prefijos, rutas protegidas y sensibles, `data_model_paths` e instrucciones del ejecutor. En `local-config-4` el
   contenido del perfil entra en el hash congelado de la composición. Ejemplo `python-django` en
@@ -256,8 +256,9 @@ UV_CACHE_DIR=.local/uv-cache uv run --frozen --offline python scripts/export_ope
 npm --prefix frontend run generate:types
 ```
 
-Uso real (D051): construir y verificar el wheel (`scripts/build_distribution.py --out-dir`, `scripts/check_distribution.py
---dist`), instalarlo en un venv propio y operar con `harness-local check-config RUTA [--preflight]`,
+Uso real (D051): construir y verificar el wheel (`scripts/build_distribution.py --out-dir`, carpeta nueva o vacía, con
+LICENSE/NOTICE, `requirements.txt` sin cabecera y `SHA256SUMS`; `scripts/check_distribution.py --dist`, que además
+comprueba miembros exactos, metadatos, versión única y ausencia de componentes retirados; P011-T015), instalarlo en un venv propio y operar con `harness-local check-config RUTA [--preflight]`,
 `harness-local init-db --database RUTA` y `harness-local serve --database RUTA --config RUTA`. Nunca desde este checkout.
 La plantilla del TOML es `local-config-7`: sin pin obligatorio de CLI, con presets, `work_language` por proyecto
 y fragmentos de receta v2 de `examples/` (una composición ya existente se añade con otro nombre). El PATH explícito
