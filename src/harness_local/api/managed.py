@@ -21,7 +21,8 @@ from harness_local.api.schemas import (
     ConfirmStoppedCreate, ManagedAttemptRead,
     ManagedEventsRead, ManagedJobRead, ManagedProjectRead, ManagedRunRead, ManagedRunSummaryRead,
     ModeRead, Page, PhaseTaskRead, PreferencesRead, PreferencesUpdate, PreferencesUpdateRead, ProblemResponse,
-    RunActionCreate, RunCreate, SupervisorRead, TaskSourcesRead,
+    RunActionCreate, RunCreate, SupervisorRead, TaskSourcesRead, WorkLanguageMigrationApplyCreate,
+    WorkLanguageMigrationApplyRead, WorkLanguageMigrationInput, WorkLanguageMigrationPreviewRead,
 )
 from harness_local.api.security import local_request, problem
 from harness_local.core.engine.document_ops import BaseChanged
@@ -33,6 +34,7 @@ from harness_local.storage.documents import IMAGE_TYPES
 from harness_local.storage.managed import Conflict, OwnershipLost
 from harness_local.storage.managed_mode import ModeConflict
 from harness_local.storage.preferences import PreferencesChanged, PreferencesInvalid, PreferencesKeyReused
+from harness_local.storage.work_language import WorkLanguageImmutable, WorkLanguageRequired
 
 Offset = Annotated[int, Query(ge=0, le=2**53 - 1)]
 Limit = Annotated[int, Query(ge=1, le=100)]
@@ -50,6 +52,10 @@ def call(operation, /, *args, **kwargs):
         raise problem(404, "not_found", str(error)) from error
     except PreferencesInvalid as error:  # the stored language is unusable: English diagnostic
         raise problem(409, "preferences_invalid", message("preferences.invalid", "en")) from error
+    except WorkLanguageRequired as error:  # D167: new work waits for an explicit work language
+        raise problem(409, "work_language_required", str(error)) from error
+    except WorkLanguageImmutable as error:
+        raise problem(409, "work_language_immutable", str(error)) from error
     except Conflict as error:
         code = ("mode_refused" if isinstance(error.__cause__, ModeConflict)
                 else "document_changed" if isinstance(error.__cause__, BaseChanged)
@@ -71,7 +77,9 @@ def managed_router(runtime: ManagedRuntime):
     router = APIRouter(prefix="/api/managed", dependencies=[Depends(local_request)], responses=ERRORS)
 
     def project_read(project):
+        from harness_local.storage.work_language import read
         return {"id": project.id, "root": str(project.context.root), "profile": project.context.profile.name,
+                "work_language": read(runtime.engine, project.context.root),
                 "versions": dict(project.versions), "tag_kind": project.tag_kind, "agents": agents_view(project),
                 "documents": project.context.documents, "bootstrap_enabled": project.bootstrap_enabled,
                 "source": "registry" if "project_registry" in project.versions else "operator",
@@ -180,6 +188,22 @@ def managed_router(runtime: ManagedRuntime):
         runtime.ready()
         return registry(runtime.registry.apply, change(body.change), preview_sha256=body.preview_sha256,
                         trust_root=body.trust_root, reason=body.reason)
+
+    @router.post("/projects/{project_id}/work-language/preview", response_model=WorkLanguageMigrationPreviewRead,
+                 operation_id="managed_work_language_preview")
+    def work_language_preview(project_id: str, body: WorkLanguageMigrationInput):
+        """No effects: for a project without a work language, the value to confirm and what blocks it (D167)."""
+        runtime.ready()
+        return registry(runtime.work_language.preview, project_id, body.model_dump())
+
+    @router.post("/projects/{project_id}/work-language", response_model=WorkLanguageMigrationApplyRead,
+                 operation_id="managed_work_language_apply")
+    def work_language_apply(project_id: str, body: WorkLanguageMigrationApplyCreate):
+        """Absent → en/es once, with the preview hash and a reason; afterwards it never changes."""
+        runtime.ready()
+        project, replayed = registry(runtime.work_language.apply, project_id, body.change.model_dump(),
+                                     preview_sha256=body.preview_sha256, reason=body.reason)
+        return {"project": project_read(project), "replayed": replayed}
 
     @router.get("/projects/{project_id}/mode", response_model=ModeRead, operation_id="managed_mode")
     def mode(project_id: str):

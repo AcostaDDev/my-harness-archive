@@ -164,7 +164,7 @@ actual hasta implementarse T019; no se exigen mantener como capacidades pública
 | T006 | Inglés comentarios de tests/fixtures y excepciones | T001, T005 |
 | T007 | Defaults globales, catálogos, visual y conversación | T001, T006 |
 | T008 | Trabajo inmutable por proyecto cero/B y snapshots del par | T001, T007 |
-| T009 | Prompts ingleses: prosa visual y documentos/código en trabajo | T003, T004, T008 |
+| T009 | Prompts ingleses: prosa visual y documentos/código en trabajo | T003, T004, T008, T020 |
 | T010 | Traducción UI/API/CLI completa y QA | T007, T008, T009 |
 | T011 | Contrato CLI: capacidades, mínimos y procedencia | T001, T004 |
 | T012 | Compatibilidad/diagnósticos implementados | T007, T011 |
@@ -175,8 +175,9 @@ actual hasta implementarse T019; no se exigen mantener como capacidades pública
 | T017 | Matriz final, dictamen y expediente público | T001–T016, T019 |
 | T018 | Cierre/archivo documental tras dictamen favorable | T017 |
 | T019 | Retirada legacy/A con infraestructura compartida B conservada | T001, T002; antes de T003 |
+| T020 | Recetas v2 cableadas en `local-config-6` y preparación por `id` (desglosada de T008 por HITL, D167) | T004, T008; antes de T009 |
 
-Orden: T001 → T002 → T019 → T003–T018, una tarea cada vez. Las dependencias no autorizan ejecución paralela ni
+Orden: T001 → T002 → T019 → T003–T008 → T020 → T009–T018, una tarea cada vez. Las dependencias no autorizan ejecución paralela ni
 lanzamiento de agentes. Si el inventario revela una tarea demasiado extensa, se divide antes de ejecutarla conservando
 trazabilidad; defectos de producto encontrados en auditoría tienen tarea acotada y revisión antes de cerrar.
 

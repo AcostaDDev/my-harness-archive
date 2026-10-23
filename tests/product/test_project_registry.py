@@ -41,7 +41,7 @@ def v3(data, roots, *, bootstrap=False, toml_project=False):
 
 def register(root, project_id='web', **changes):
     return {'action': 'register', 'project_id': project_id, 'expected_version': 0, 'root': str(root),
-            'composition': 'web', 'policy': POLICY, **changes}
+            'composition': 'web', 'policy': POLICY, 'work_language': 'en', **changes}
 
 
 def confirm(http, body, trust=True, **extra):

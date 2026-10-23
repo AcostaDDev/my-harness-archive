@@ -1,10 +1,11 @@
-"""Registration, change and retirement of projects from the UI over `local-config-3/4/5` (D078/D095).
+"""Registration, change and retirement of projects from the UI over `local-config-3/4/5/6` (D078/D095).
 
 The TOML remains the authority for what runs; the registry only stores
 non-executable data (canonical root, trust, named composition, policy,
 documents, bootstrap, tag and permission ceiling). Each change goes through a
 preview whose hash binds the action, the expected version, the resulting row and the
-frozen composition; trust in the root is a separate confirmation. The
+frozen composition; trust in the root is a separate confirmation. Registering also
+fixes the root's work language (D167), sealed in the same preview and never changed. The
 project joins the runtime without restarting: the registry version enters
 the frozen hash, and a job admitted with another composition is quarantined.
 """
@@ -15,13 +16,17 @@ import stat
 from threading import RLock
 
 from harness_local.core.engine.contracts import freeze
+from harness_local.i18n import LANGUAGES, message
 from harness_local.services.managed_runtime import PROJECT_ID, ManagedConfig, validate_projects
+from harness_local.storage import work_language
 from harness_local.storage.permissions import actor
 from harness_local.storage.registry import ProjectRegistryRepository, RegistryConflict
 
 # `/projects/new` is the registration page; the other ids follow the `PROJECT_ID` form.
 RESERVED_IDS = frozenset({'new'})
 ACTIONS = ('register', 'update', 'retire')
+# Formats with per-project agent selections (v5) and their successor that adds the work language (v6).
+AGENT_FORMATS = ('local-config-5', 'local-config-6')
 TRUST = ('Confío en el contenido de este checkout: los agentes y los comandos de la composición elegida '
          'se ejecutarán dentro de él con la configuración del operador.')
 
@@ -97,8 +102,31 @@ class ProjectRegistry:
     def __init__(self, runtime):
         self.runtime = runtime
         self.repository = ProjectRegistryRepository(runtime.repository)
+        self.engine = runtime.repository.engine
         self.unavailable: dict[str, str] = {}
         self._lock = RLock()
+
+    def _language(self):
+        return self.runtime.preferences.read()['ui_language'] if self.runtime.preferences else 'en'
+
+    def work_language_preview(self, value, root, source):
+        """The chosen value and its provenance; an already associated root admits only its own value."""
+        if value not in LANGUAGES:
+            raise RegistryError(422, 'work_language_required', message('work_language.required', self._language()))
+        existing = work_language.read(self.engine, root)
+        if existing is not None and existing['work_language'] != value:
+            raise RegistryError(409, 'work_language_immutable', message(
+                'work_language.immutable', self._language(), root=root, language=existing['work_language']))
+        preferences = self.runtime.preferences.read()
+        return {'work_language': value, 'source': source, 'default_work_language': preferences['default_work_language'],
+                'preferences_version': preferences['version'], 'existing': existing}
+
+    @staticmethod
+    def work_language_seal(preview):
+        """Only the chosen value and the existing association enter the hash: a default changed after the
+        preview never replaces the value that is confirmed (D159 §2)."""
+        existing = preview['existing']
+        return {'work_language': preview['work_language'], 'existing_sha256': existing['sha256'] if existing else None}
 
     @property
     def registrar(self):
@@ -109,7 +137,7 @@ class ProjectRegistry:
         if self.registrar is None:
             raise RegistryError(409, 'registry_unavailable',
                                 'La configuración del servicio no admite registrar proyectos '
-                                '(requiere local-config-3/4/5 con [registration] y al menos una composición).')
+                                '(requiere local-config-3/4/5/6 con [registration] y al menos una composición).')
         return self.registrar
 
     # --- composition ------------------------------------------------------------------
@@ -169,6 +197,7 @@ class ProjectRegistry:
     def options(self):
         registrar = self.registrar
         rows = self.repository.rows()
+        languages = work_language.rows(self.engine)
         return {'available': registrar is not None,
                 'format': self.runtime.config.registrar.format if self.runtime.config.registrar else None,
                 'creation_available': registrar is not None and registrar.bootstrap_enabled,
@@ -178,13 +207,15 @@ class ProjectRegistry:
                 'reserved_ids': sorted(RESERVED_IDS),
                 'operator_projects': sorted(p.id for p in self.runtime.projects.values()
                                             if 'project_registry' not in p.versions),
-                'projects': [self._summary(item) for item in rows], 'trust_statement': TRUST}
+                'projects': [self._summary(item, languages) for item in rows], 'trust_statement': TRUST}
 
-    def _summary(self, item):
+    def _summary(self, item, languages=None):
+        work = (languages.get(item['root']) if languages is not None
+                else work_language.read(self.engine, item['root']))
         return {**{key: item[key] for key in ('id', 'version', 'status', 'root', 'composition', 'profile',
                                               'row_sha256', 'created_at', 'updated_at', 'creation_id')},
                 'available': item['status'] == 'ACTIVE' and item['id'] not in self.unavailable,
-                'diagnostic': self.unavailable.get(item['id'])}
+                'diagnostic': self.unavailable.get(item['id']), 'work_language': work}
 
     def read(self, project_id):
         item = self.repository.get(project_id)
@@ -193,7 +224,7 @@ class ProjectRegistry:
         return {**self._summary(item), 'row': item['row'], 'trust': item['trust'],
                 'unfinished_jobs': self.repository.unfinished(item['root']) if item['status'] == 'ACTIVE' else [],
                 'configuration_blockers': self.repository.configuration_blockers(item['root'])
-                if self.registrar and self.registrar.format == 'local-config-5' else [],
+                if self.registrar and self.registrar.format in AGENT_FORMATS else [],
                 'history': self.repository.history(project_id)}
 
     # --- preview and confirmation -----------------------------------------------------
@@ -246,7 +277,11 @@ class ProjectRegistry:
             raise RegistryError(409, 'retired', 'El proyecto está dado de baja; su historial se conserva.')
         if (current['version'] if current else 0) != expected:
             raise RegistryError(409, 'stale_version', 'El registro cambió; vuelve a cargar antes de revisar.')
+        if action != 'register' and body.get('work_language') is not None:
+            raise RegistryError(409, 'work_language_immutable', message('work_language.confirmed', self._language()))
         row = self._target(body, current)
+        language = (self.work_language_preview(body.get('work_language'), row['root'], 'registration')
+                    if action == 'register' else None)
         version = expected + 1
         if action == 'retire':
             versions = None
@@ -263,15 +298,17 @@ class ProjectRegistry:
             changes = [{'field': 'status', 'before': 'ACTIVE', 'after': 'RETIRED'}]
         unfinished = self.repository.unfinished(row['root']) if action != 'register' else []
         blockers = self.repository.configuration_blockers(row['root']) if (
-            action != 'register' and registrar.format == 'local-config-5') else []
+            action != 'register' and registrar.format in AGENT_FORMATS) else []
         preview_sha256 = digest({'action': action, 'project_id': project_id, 'expected_version': expected,
                                  'current_sha256': current['row_sha256'] if current else None, 'status': status,
-                                 'row_sha256': row_sha256, 'versions': versions})
+                                 'row_sha256': row_sha256, 'versions': versions,
+                                 **({'work_language': self.work_language_seal(language)} if language else {})})
         return {'action': action, 'project_id': project_id, 'expected_version': expected, 'version': version,
                 'status': status, 'row': row, 'row_sha256': row_sha256, 'changes': changes, 'versions': versions,
                 'profile': current['profile'] if action == 'retire' else registrar.compositions[row['composition']][0],
                 'trust_required': action == 'register', 'trust_statement': TRUST if action == 'register' else None,
-                'unfinished_jobs': unfinished, 'configuration_blockers': blockers, 'preview_sha256': preview_sha256}
+                'unfinished_jobs': unfinished, 'configuration_blockers': blockers, 'work_language': language,
+                'preview_sha256': preview_sha256}
 
     def apply(self, body, *, preview_sha256, trust_root=None, reason=None):
         with self._lock:
@@ -297,7 +334,8 @@ class ProjectRegistry:
                                               expected_version=shown['expected_version'], row=shown['row'],
                                               row_sha256=shown['row_sha256'], profile=shown['profile'],
                                               preview_sha256=preview_sha256, trust=trust, reason=reason,
-                                              protect_agents=self.registrar.format == 'local-config-5')
+                                              protect_agents=self.registrar.format in AGENT_FORMATS,
+                                              work_language=shown['work_language'])
             except RegistryConflict as exc:
                 raise RegistryError(409, exc.code, str(exc)) from None
             self.unavailable.pop(saved['id'], None)

@@ -1,5 +1,8 @@
-"""Operator TOML outside managed checkouts → explicit ManagedConfig (`local-config-5`).
+"""Operator TOML outside managed checkouts → explicit ManagedConfig (`local-config-6`).
 
+`local-config-6` (P011-T008, D167) is `local-config-5` plus an optional `[[projects]].work_language` (en/es):
+the service records it once for the project's root at startup and SQLite rules afterwards; another value for an
+associated root stops the service. Packaged recipes are not admitted in v6 until their v2 is wired.
 `local-config-5` (P009-T003) adds private role presets and optional project selections, and
 optional packaged recipes: `[recipes.django]` (D119) and `[recipes.typescript-web]` (D142).
 Effective agents are composed per checkout; older formats keep their frozen identity.
@@ -43,15 +46,19 @@ from harness_local.core.engine.context import (Command, EnginePolicy, JUnitDecla
 from harness_local.core.engine.contracts import MODEL_FORM, freeze
 from harness_local.core.engine.documents import DOCUMENT_LAYOUT
 from harness_local.core.engine.journal import JournalError
+from harness_local.i18n import LANGUAGES
 from harness_local.profiles.typescript_web import typescript_web_profile
 from harness_local.recipes import RECIPES, by_version as recipe_version, module as recipe_module
 from harness_local.services.managed_runtime import (PROJECT_ID, ManagedConfig, ManagedProject, agents_view,
                                                     validate_projects)
 
-VERSION = 'local-config-5'
-FORMATS = ('local-config-1', 'local-config-2', 'local-config-3', 'local-config-4', VERSION)
-REGISTRABLE = ('local-config-3', 'local-config-4', VERSION)
-PROFILE_FORMATS = ('local-config-4', VERSION)
+VERSION = 'local-config-6'
+V5 = 'local-config-5'
+FORMATS = ('local-config-1', 'local-config-2', 'local-config-3', 'local-config-4', V5, VERSION)
+REGISTRABLE = ('local-config-3', 'local-config-4', V5, VERSION)
+PROFILE_FORMATS = ('local-config-4', V5, VERSION)
+# v5 adds presets/selections and recipes; v6 keeps the presets/selections and adds the work language.
+AGENT_FORMATS = (V5, VERSION)
 CLI_KEYS = ('executable', 'cli_version', 'timeout_seconds', 'environment')
 TOOL_KEYS = ('tools', 'allowed_tools', 'grantable_tools')
 CONFIG_ENV = 'HARNESS_LOCAL_CONFIG'
@@ -491,9 +498,14 @@ class LocalComposer:
             required, optional = (*self.PROJECT_KEYS, 'composition'), (*self.OPTIONAL_KEYS, 'bootstrap_enabled')
         else:
             required, optional = (*self.PROJECT_KEYS, 'profile', 'commands'), self.OPTIONAL_KEYS
-        if self.format == VERSION:
+        if self.format in AGENT_FORMATS:
             optional = (*optional, 'agent_selection')
+        if self.format == VERSION and registry is None and not new_directory:
+            optional = (*optional, 'work_language')  # TOML projects only: the UI confirms it in SQLite
         item = _fields(item, where, required, optional)
+        work_language = item.get('work_language')
+        if work_language is not None and work_language not in LANGUAGES:
+            raise LocalConfigError(f'{where}.work_language: one of {list(LANGUAGES)} required')
         if item.get('documents', 'v2') != 'v2':
             raise LocalConfigError(f'{where}.documents: solo se admite "v2" (contrato documental unificado D088; '
                                    'omitirlo equivale a "v2")')
@@ -572,7 +584,7 @@ class LocalComposer:
                     'document_layout': DOCUMENT_LAYOUT,
                     **({'project_registry': str(registry[0])} if registry is not None else {}),
                     **({'project_registry_id': identifier, 'project_registry_sha256': registry[1]}
-                       if registry is not None and self.format == VERSION else {}),
+                       if registry is not None and self.format in AGENT_FORMATS else {}),
                     **cli.frozen_versions(), **runner.frozen_versions(),
                     **({'project_recipe': recipe_module(recipe).VERSION,
                         'recipe_config_sha256': hashlib.sha256(freeze(authority['recipe']).encode()).hexdigest()}
@@ -587,7 +599,7 @@ class LocalComposer:
             return {'versions': versions, 'profile': profile.name, 'profile_details': _profile_view(profile),
                     'agents': agents_view(preview),
                     'composition': next(c for c in self.options()['compositions'] if c['name'] == name)}
-        context = ProjectContext(root, profile, engine_policy, documents='v2')
+        context = ProjectContext(root, profile, engine_policy, documents='v2', work_language=work_language)
         project = ManagedProject(identifier, context, versions, item.get('permission_authority'),
                                  item.get('tag_kind', 'lightweight'), bootstrap)
         return project, (identifier, versions, commands, artifacts, agents)
@@ -675,10 +687,13 @@ def _build(data, source):
     agents_key = 'providers' if fmt == 'local-config-1' else 'agents'
     if fmt in REGISTRABLE:
         data = _fields(data, 'raíz', ('format', 'service', 'git', 'agents', 'registration', 'compositions'),
-                       ('projects', 'profiles', 'agent_presets', 'recipes') if fmt == VERSION else
+                       ('projects', 'profiles', 'agent_presets', 'recipes') if fmt in AGENT_FORMATS else
                        ('projects', 'profiles') if fmt in PROFILE_FORMATS else ('projects',))
     else:
         data = _fields(data, 'raíz', ('format', 'service', 'git', agents_key, 'projects'))
+    if fmt == VERSION and 'recipes' in data:
+        raise LocalConfigError('recipes: local-config-6 admits the packaged recipes once their v2 is wired; '
+                               'keep local-config-5 for projects prepared with a recipe')
     service = _fields(data['service'], 'service', ('state_dir', 'supervisor'), ('lease_seconds', 'poll_seconds'))
     state = _path(service['state_dir'], 'service.state_dir', kind='directory')
     git = _fields(data['git'], 'git', ('executable', 'author_name', 'author_email'))
@@ -848,5 +863,6 @@ def summary(config: ManagedConfig) -> dict:
             'projects': [{'id': p.id, 'root': str(p.context.root), 'profile': p.context.profile.name,
                           'policy': asdict(p.context.policy), 'agents': agents_view(p), 'versions': dict(p.versions),
                           'tag_kind': p.tag_kind, 'permission_authority': p.permission_authority is not None,
-                          'documents': p.context.documents, 'bootstrap_enabled': p.bootstrap_enabled}
+                          'documents': p.context.documents, 'bootstrap_enabled': p.bootstrap_enabled,
+                          'work_language': p.context.work_language}
                          for p in config.projects]}

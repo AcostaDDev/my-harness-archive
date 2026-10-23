@@ -4,6 +4,9 @@ import { managed, confirmOnce, readConfirmation } from "../managed-api";
 import type { S } from "../managed-api";
 import { Link, navigate } from "../navigation";
 import { Alert, Empty, Evidence, Fields, Hash, Loading, PageHeader, Stale, message, usePoll, when } from "../ui";
+import { useI18n } from "../Language";
+import type { Language } from "../i18n.ts";
+import { WorkLanguageChoice, WorkLanguagePreview } from "../WorkLanguage";
 
 // Project registry (H6.2 E2, D054/D076). The operator TOML sets what runs; here only root, composition and
 // policy are chosen. Every change goes through a preview bound to its hash and version, and trust in the
@@ -17,7 +20,12 @@ type Draft = {
   executor_mode: "catalog" | "open"; executor_models: string; executor_efforts: string[]; max_revision_cycles: string;
   tag_kind: "lightweight" | "annotated"; bootstrap_enabled: boolean; permission_authority: string;
   agent_mode: "inherited" | "project"; reviewer_preset: string; reviewer_model: string; reviewer_effort: string; executor_preset: string;
+  // D167: chosen once on registration/creation; undefined shows (and sends) the global default.
+  work_language?: Language;
 };
+
+/** Formats with per-project agent presets: v5 and v6 (which adds the work language). */
+const PRESET_FORMATS = ["local-config-5", "local-config-6"];
 
 const PLANNING = { agent: "La hace el revisor", deterministic: "Determinista, desde NEXT_STEPS" } as const;
 const SELECTION = { catalog: "Solo el catálogo", open: "Libre (catálogo como referencia)" } as const;
@@ -54,7 +62,7 @@ function draftOf(row: Record<string, unknown>): Draft {
 }
 
 /** Exact change to submit; a permission ceiling that is not JSON is rejected here, without calling the server. */
-function changeOf(draft: Draft, action: Change["action"], expected: number): Change {
+function changeOf(draft: Draft, action: Change["action"], expected: number, work?: Language): Change {
   if (action === "retire") return { action, project_id: draft.project_id, expected_version: expected };
   let authority: Change["permission_authority"] = null;
   if (draft.permission_authority.trim()) {
@@ -74,6 +82,7 @@ function changeOf(draft: Draft, action: Change["action"], expected: number): Cha
       executor_efforts: draft.executor_efforts, ...(cycles ? { max_revision_cycles: Number(cycles) } : {}) },
     tag_kind: draft.tag_kind, documents: "v2", bootstrap_enabled: draft.bootstrap_enabled,
     permission_authority: authority,
+    ...(action === "register" && work ? { work_language: work } : {}),
   };
 }
 
@@ -111,6 +120,7 @@ function Confirmation({ preview, busy, danger, onConfirm }: {
       ["Perfil", preview.profile],
       ["Vista previa", <Hash value={preview.preview_sha256} />],
     ]} />
+    {preview.work_language && <WorkLanguagePreview preview={preview.work_language} />}
     <div className="table-scroll" role="region" aria-label="Cambios" tabIndex={0}>
       <table className="table">
         {/* A registration has no previous value: only the row that will be registered. */}
@@ -142,6 +152,7 @@ function DraftFields({ draft, options, action, onChange }: {
   draft: Draft; options: S["RegistryRead"]; action: "register" | "update" | "create"; onChange: (d: Draft) => void;
 }) {
   const set = <K extends keyof Draft>(key: K, value: Draft[K]) => onChange({ ...draft, [key]: value });
+  const { preferences } = useI18n();
   const composition = options.compositions.find(c => c.name === draft.composition);
   const reviewer = (options.agent_presets ?? []).find(p => p.id === draft.reviewer_preset && p.roles.includes("reviewer"));
   const executor = (options.agent_presets ?? []).find(p => p.id === draft.executor_preset && p.roles.includes("executor"));
@@ -156,6 +167,8 @@ function DraftFields({ draft, options, action, onChange }: {
     </div>}
     {action === "register" && <p className="hint" id="id-hint">Minúsculas, números, punto, guion y guion bajo. No puede coincidir con un proyecto del TOML ni con uno dado de baja.</p>}
     {action === "register" && <p className="hint" id="root-hint">Ruta absoluta real, sin enlaces simbólicos, dentro de {options.roots.length === 1 ? "la raíz autorizada" : "una de las raíces autorizadas"}: {options.roots.map(r => <code key={r} className="chip path">{r}</code>)}</p>}
+    {action !== "update" && <WorkLanguageChoice value={draft.work_language ?? preferences?.default_work_language}
+      onChange={value => set("work_language", value)} />}
     <fieldset>
       <legend>Composición del operador</legend>
       <label>Composición<select value={draft.composition} onChange={e => set("composition", e.target.value)}>
@@ -172,7 +185,7 @@ function DraftFields({ draft, options, action, onChange }: {
     </fieldset>
     <fieldset>
       <legend>Política de agentes</legend>
-      {options.format === "local-config-5" ? <>
+      {PRESET_FORMATS.includes(options.format ?? "") ? <>
         <label>Agentes<select value={draft.agent_mode} onChange={e => onChange({ ...draft,
           agent_mode: e.target.value as Draft["agent_mode"], reviewer_preset: "", reviewer_model: "", reviewer_effort: "",
           executor_preset: "", executor_models: "", executor_efforts: [], executor_mode: "catalog" })}>
@@ -203,7 +216,7 @@ function DraftFields({ draft, options, action, onChange }: {
           {executor && <p className="hint">Modelos admisibles como catálogo: {executor.models.join(", ")}. {executor.allow_open_executor ? "Admite modo libre." : "Solo admite catálogo."}</p>}
           <p className="hint">El revisor decidirá el modelo y esfuerzo concretos del ejecutor, con motivo, en cada tarea y revisión. Al guardar se invalidan los planes aún no aceptados.</p>
         </>}
-      </> : <p className="hint">Cambiar proveedores por proyecto requiere local-config-5 y presets del operador. Esta configuración conserva la pareja del servicio.</p>}
+      </> : <p className="hint">Cambiar proveedores por proyecto requiere local-config-5/6 y presets del operador. Esta configuración conserva la pareja del servicio.</p>}
       <div className="form-row">
         <label>Planificación<select value={draft.planning_mode} onChange={e => set("planning_mode", e.target.value as Draft["planning_mode"])}>
           {Object.entries(PLANNING).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select></label>
@@ -246,14 +259,16 @@ function RegistryForm({ options, action, initial, expected, onApplied }: {
   const [preview, setPreview] = useState<{ change: Change; data: S["RegistryPreviewRead"] }>();
   const generation = useRef(0);
   const op = useOperation();
+  const { preferences } = useI18n();
+  const work = draft.work_language ?? preferences?.default_work_language;
   function edit(next: Draft) { generation.current += 1; setDraft(next); setPreview(undefined); op.clear(); }
   const ready = draft.composition && draft.executor_efforts.length && draft.executor_models.trim()
-    && (action === "update" || (draft.project_id.trim() && draft.root.trim()));
+    && (action === "update" || (draft.project_id.trim() && draft.root.trim() && work));
   return <form onSubmit={e => {
     e.preventDefault();
     void op.run(async () => {
       const current = generation.current;
-      const change = changeOf(draft, action, expected);
+      const change = changeOf(draft, action, expected, work);
       const data = await managed<S["RegistryPreviewRead"]>("/registry/preview", change);
       if (current === generation.current) setPreview({ change, data });
     });
@@ -363,15 +378,17 @@ function NewDirectoryForm({ options, root, refresh }: {
   const [trusted, setTrusted] = useState(false);
   const generation = useRef(0);
   const op = useOperation();
+  const { preferences } = useI18n();
+  const work = draft.work_language ?? preferences?.default_work_language;
   function invalidate() { generation.current++; setPreview(undefined); setTrusted(false); }
-  const ready = draft.project_id.trim() && name && draft.composition && draft.executor_models.trim() && draft.executor_efforts.length;
+  const ready = draft.project_id.trim() && name && draft.composition && draft.executor_models.trim() && draft.executor_efforts.length && work;
   return <section className="panel" aria-labelledby="new-directory"><h2 id="new-directory">Crear carpeta nueva</h2>
     <form onSubmit={e => { e.preventDefault(); void op.run(async () => {
       const current = generation.current;
       const fields = changeOf(draft, "register", 0);
       const change: S["CreationInput"] = { project_id: fields.project_id, directory_name: name, root_version: root.version,
         composition: fields.composition!, policy: fields.policy!, tag_kind: draft.tag_kind, documents: "v2",
-        permission_authority: fields.permission_authority, agent_selection: fields.agent_selection };
+        permission_authority: fields.permission_authority, agent_selection: fields.agent_selection, work_language: work! };
       const data = await managed<S["CreationPreviewRead"]>("/project-creations/preview", change);
       if (current === generation.current) setPreview({ change, data });
     }); }}>
@@ -389,6 +406,7 @@ function NewDirectoryForm({ options, root, refresh }: {
         <h3>Crear <code>{preview.change.project_id}</code></h3>
         <p><code className="path">{preview.data.target}</code></p>
         <Fields items={[["Perfil", preview.data.profile], ["Revisión de carpeta", root.version]]} />
+        <WorkLanguagePreview preview={preview.data.work_language} />
         <Fields items={[["Revisor", `${preview.data.agents.reviewer.provider} · ${preview.data.agents.reviewer.model} · ${preview.data.agents.reviewer.effort}`],
           ["Ejecutor", `${preview.data.agents.executor.provider} · selección del revisor`]]} />
         <p>Se creará y registrará la carpeta. Después podrás iniciar la definición documental con su revisor.</p>
@@ -436,7 +454,7 @@ export function RegisterPage() {
         onClick={() => setMode("register")}>Registrar carpeta existente</button>
     </div>
     {!options ? read.error ? <Alert>{read.error}</Alert> : <Loading />
-      : !options.available ? <Empty title="Este servicio no admite registrar proyectos"><p>Requiere local-config-3/4/5 con registro y composiciones.</p></Empty>
+      : !options.available ? <Empty title="Este servicio no admite registrar proyectos"><p>Requiere local-config-3/4/5/6 con registro y composiciones.</p></Empty>
       : mode === "create" ? !options.creation_available ? <Empty title="Creación deshabilitada por el operador"><p>La configuración debe permitir bootstrap.</p></Empty>
         : folder.data?.status !== "ACTIVE" ? <Empty title="Elige una carpeta de proyectos"><p>Guarda primero la carpeta padre donde crear los hijos.</p></Empty>
         : <NewDirectoryForm key={folder.data.version} options={options} root={folder.data} refresh={refresh} />

@@ -10,7 +10,7 @@ decisiones vigentes y la información técnica que antes estaba en README y AGEN
 |---|---|
 | Núcleo | Python 3.14.4, biblioteca estándar, paquete `harness-local` 0.1.0 (`uv_build==0.12.19`) |
 | API local | FastAPI 0.143.0, Pydantic 2.14.0, Uvicorn 0.54.0; HTTP para acciones y observación gestionada por cursor |
-| Persistencia | SQLite con SQLAlchemy 2.1.4 y Alembic 1.20.0 (esquema `0024_product_preferences`) |
+| Persistencia | SQLite con SQLAlchemy 2.1.4 y Alembic 1.20.0 (esquema `0025_project_work_languages`) |
 | UI | React 19.3.0, TypeScript 5.9.3, Vite 8.3.4; `markdown-it` 15.0.2 (`html: false`) y `mermaid` 11.17.2 (`strict`) |
 | Tipos del cliente | `openapi-typescript` 7.13.0 desde el OpenAPI exportado |
 | Herramientas | uv 0.12.19 y `uv.lock`; Node 24.15.0, npm 11.12.1 y `frontend/package-lock.json` |
@@ -61,13 +61,14 @@ casos de uso. El supervisor es el único que lanza procesos y consume la cola; c
 | `storage/*.py` | Repositorios SQLAlchemy por área (`managed`, `phases`, `documents`, `transition`, `planning`, `chat`, `metrics`, `registry`, `backup`, `retention`, `migrate`…) |
 | `storage/run_projection.py`, `managed_views.py` | Proyección derivada `run-projection-1` escrita con el historial y vistas de runs que solo la leen (D144) |
 | `services/managed.py`, `managed_runtime.py` | Supervisor (`run_once`, lease, cuarentena) y composición del runtime |
-| `services/local_config.py`, `project_registry.py`, `project_creation.py` | TOML `local-config-5` (lectura de 1–4) y registro/creación de hijos desde la UI con 3/4/5; presets y recetas solo en v5 |
+| `services/local_config.py`, `project_registry.py`, `project_creation.py` | TOML `local-config-6` (lectura de 1–5) y registro/creación de hijos desde la UI con 3/4/5/6; presets en v5/v6, recetas solo en v5; idioma de trabajo sellado en el alta (D167) |
 | `recipes/`, `services/project_preparation.py`, `storage/preparation.py`, `adapters/preparation.py` | Recetas empaquetadas `django-recipe-1` y `typescript-web-recipe-1` y su preparación confirmada y recuperable (D119, D143); sucesoras v2 sin cablear (D163) |
 | `api/app.py`, `managed.py`, `schemas.py`, `session.py`, `security.py` | Aplicación, rutas, contratos Pydantic, sesión y guardia |
 | `profiles/typescript_web.py`, `profiles/reference_project.py` | Perfiles integrados (`typescript-web` componible; `reference_project` solo biblioteca); los perfiles del TOML v4/v5 se componen en `services/local_config.py` |
 | `cli.py`, `launcher.py` | `harness-local` (backup, retención, diagnóstico, `check-config`, `metrics-backfill`, `init-db`, `serve`); `--ui-language` por invocación |
 | `storage/preferences.py`, `i18n/` | Preferencias globales de idioma con CAS, captura del visual al admitir cada job y catálogos en/es de mensajes propios (D166) |
-| `migrations/versions/0001…0024` | Esquema Alembic |
+| `storage/work_language.py`, `services/work_language.py` | Idioma de trabajo inmutable por raíz, par `language-context-1` por job/intento y confirmación explícita ausente → valor (D167) |
+| `migrations/versions/0001…0025` | Esquema Alembic |
 
 `frontend/src`: `router.ts`, `pages/` (Home, Registry, Project, Phases, Task, Run, Docs, Planning, Stats, Settings,
 Preferences), `i18n.ts`, `i18n/{en,es}.json` y `Language.tsx` (catálogos y proveedor del idioma visual, D166),
@@ -112,13 +113,15 @@ por su API y los artefactos referenciados; la restauración es de consulta (`que
   Ninguna CLI carga por sí misma las instrucciones del checkout: Claude se lanza con `--setting-sources ""` y Codex
   con presupuesto de project docs 0 (D094). El motor inyecta `AGENTS.md` en el prompt de los roles sobre proyectos
   existentes; el rol `definition` (definición e incorporación) lo redacta o lo analiza como evidencia.
-- **TOML local del operador** (`local-config-5`; 1–4 se siguen leyendo), fuera de todo checkout y `chmod 600`:
+- **TOML local del operador** (`local-config-6`; 1–5 se siguen leyendo), fuera de todo checkout y `chmod 600`:
   `[service]`, `[git]`, `[agents.reviewer]`, `[agents.executor]`, `[registration]` (raíces y techo de bootstrap),
   `[profiles.*]` opcionales, `[compositions.*]` (perfil integrado o declarado y comandos autorizados) y
   `[[projects]]` opcional con su política. V5 añade `[agent_presets.*]` y `agent_selection` opcional por
   proyecto: ids de presets, modelo/esfuerzo del revisor; catálogo/modo del ejecutor en `policy`. Sin secretos.
   El catálogo público omite ejecutables/entornos; `ports` conserva ambos agentes por checkout. El preflight
   explícito cubre la pareja heredada y cada rol de los presets; cargar no invoca CLI. V1–v4 conservan sus hashes.
+  V6 (D167) es v5 con `work_language` opcional en `[[projects]]`, que el servicio asocia una vez al arrancar
+  (otro valor ya confirmado detiene el arranque); aún no admite `[recipes]`, cuyo cableado v2 es tarea propia.
   Cambios confirmados serializan registro y admisión en SQLite; bloquean aceptación/commit, propuestas de chat
   y definición/incorporación utilizable. Planes no aceptados pasan a SUPERSEDED sin alterar sus snapshots;
   nueva planificación antes de confirmar otro plan. [Flujo de agentes](flows/project-agents.md) (D118).
@@ -172,6 +175,11 @@ por su API y los artefactos referenciados; la restauración es de consulta (`que
   y versión esperada; 409 con `{code, diagnostic}`; 422 ante contrato inválido.
 - `GET/PUT /api/managed/preferences`: idiomas globales con versión esperada e `Idempotency-Key`; cada job expone
   el `language_context` sellado al admitirlo ([flujo](flows/language-preferences.md), D166).
+- Idioma de trabajo (D167, [flujo](flows/project-work-language.md)): `work_language` obligatorio en el registro
+  (`/registry/preview|apply`, acción `register`) y en la creación (`/project-creations/*`), rechazado con 409
+  `work_language_immutable` en cambios/bajas; `POST …/projects/{p}/work-language/preview` y `…/work-language`
+  (hash y motivo) para proyectos sin valor. Sin él, toda admisión nueva responde 409 `work_language_required`.
+  Proyectos, registros, jobs e intentos exponen el valor/par congelado.
 - Rutas de UI: `/`, `/stats`, `/preferences`, `/projects/new`, `/projects/:p` con `setup`, `onboarding[/:c/*borrador]`,
   `chat[/:c]`, `docs[/*ruta]`, `phases`, `phases/:code`, `phases/:code/plan[/:c]`,
   `phases/:code/tasks/:task[/runs/:run]`, `stats`, `settings`; `/runs/:id` como enlace corto.
@@ -232,7 +240,8 @@ Uso real (D051): construir y verificar el wheel (`scripts/build_distribution.py 
 --dist`), instalarlo en un venv propio y operar con `harness-local check-config RUTA [--preflight]`,
 `harness-local init-db --database RUTA` y `harness-local serve --database RUTA --config RUTA`. Nunca desde este checkout.
 La plantilla del TOML es `local-config-4`; con `format = "local-config-5"` admite además presets y los fragmentos de
-receta de `examples/` (un fragmento cuya composición ya exista en el TOML se añade con otro nombre). Versiones CLI
+receta de `examples/` (un fragmento cuya composición ya exista en el TOML se añade con otro nombre); con
+`format = "local-config-6"`, presets y `work_language` por proyecto, sin recetas. Versiones CLI
 admitidas por rol en el [README](../README.md#requisitos), contrastadas con `cli_agents.SUPPORTED`/`WRITE_SUPPORTED`.
 
 Actualización (D150): detener servicio, observadores y escritores, instalar el nuevo wheel y ejecutar
@@ -356,8 +365,8 @@ Las recetas Django y TypeScript incorporan el texto de su módulo en la huella; 
 puede invalidar recibos. T004 (D163) conserva por bytes y huella `django.py`/`typescript_web.py`, sus datos y el
 perfil `typescript-web`, y añade `django_2.py`/`typescript_web_2.py` (`django-recipe-2`, `typescript-web-recipe-2`):
 fuente inglesa, scaffold con prosa técnica según idioma de trabajo en/es, perfil propio, pasos con `id` estable y
-huella con versión e idioma. No se registran en `recipes/__init__.py` ni en la preparación hasta `local-config-6`
-(T008). Prompts, catálogos y snapshots anteriores permanecen congelados; no se renombran claves/revisiones/rutas.
+huella con versión e idioma. No se registran en `recipes/__init__.py` ni en la preparación: T008 (D167) entrega
+`local-config-6` sin `[recipes]` y su cableado por `id` pasa a la tarea propia T020. Prompts, catálogos y snapshots anteriores permanecen congelados; no se renombran claves/revisiones/rutas.
 
 T011 define mínimos/familias/capacidades de CLI por proveedor/rol y qué semántica no puede acreditarse con help;
 T012 implementará admisión de versiones posteriores compatibles, procedencia y diagnósticos conservando guardias.

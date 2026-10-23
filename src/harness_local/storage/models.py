@@ -141,7 +141,8 @@ class ManagedJobRow(Base):
     owner_closed: Mapped[bool] = mapped_column(Boolean, server_default="0")
     # H2.5 activation under which the job was admitted; null in checkouts without legacy state.
     activation_id: Mapped[str | None] = mapped_column(ForeignKey("managed_activations.id"), nullable=True)
-    # 0024: visual language frozen at admission (`ui-language-1`); null in earlier jobs, never inferred.
+    # 0024: language frozen at admission: `ui-language-1` (visual only, 0024) or `language-context-1` (visual and
+    # work, 0025); null in earlier jobs, never inferred.
     language_context: Mapped[dict | None] = mapped_column(JSON, nullable=True)
 
 
@@ -169,6 +170,8 @@ class ManagedAttemptRow(Base):
     result_json: Mapped[str | None] = mapped_column(Text, nullable=True)
     started_at: Mapped[str] = mapped_column(String(40))
     finished_at: Mapped[str | None] = mapped_column(String(40), nullable=True)
+    # 0025: language pair of the job copied when the attempt starts (`language-context-1`); null before.
+    language_context: Mapped[dict | None] = mapped_column(JSON, nullable=True)
 
 
 class ManagedEventRow(Base):
@@ -859,3 +862,19 @@ class ProductPreferenceEventRow(Base):
     idempotency_key: Mapped[str] = mapped_column(String(200), unique=True)
     request_sha256: Mapped[str] = mapped_column(String(64))
     payload: Mapped[dict] = mapped_column(JSON)
+
+
+class ProjectWorkLanguageRow(Base):
+    """P011-T008: work language confirmed once per canonical root; written once, never updated or deleted."""
+    __tablename__ = 'project_work_languages'
+    __table_args__ = (CheckConstraint("work_language IN ('en', 'es')", name='ck_project_work_languages_language'),
+                      CheckConstraint("source IN ('registration', 'creation', 'toml', 'migration')",
+                                      name='ck_project_work_languages_source'))
+    root: Mapped[str] = mapped_column(String, primary_key=True)
+    format: Mapped[str] = mapped_column(String(40))
+    project_id: Mapped[str] = mapped_column(String(64))
+    work_language: Mapped[str] = mapped_column(String(2))
+    source: Mapped[str] = mapped_column(String(20))
+    confirmation: Mapped[dict] = mapped_column(JSON)
+    sha256: Mapped[str] = mapped_column(String(64))
+    confirmed_at: Mapped[str] = mapped_column(String(40))

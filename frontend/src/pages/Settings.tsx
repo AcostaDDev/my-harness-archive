@@ -3,6 +3,7 @@ import type { S } from "../managed-api";
 import { Prompts } from "../Prompts";
 import { Fields, Loading, PageHeader, Stale, usePoll } from "../ui";
 import { RegistrySettings } from "./Registry";
+import { WorkLanguageSettings } from "../WorkLanguage";
 import { useWorkspace } from "../workspace";
 
 const SELECTION = { catalog: "Solo el catálogo", open: "Libre (catálogo como referencia)" } as const;
@@ -46,6 +47,7 @@ export function SettingsPage() {
         <h3>Versiones congeladas en cada trabajo</h3>
         <Fields items={Object.entries(p.versions).map(([k, v]) => [k, v === null ? <span className="muted">no registrada</span> : <code>{v}</code>])} />
       </section>
+      <WorkLanguageSettings project={project} work={p.work_language} onChanged={() => setRevision(n => n + 1)} />
       {p.source === "registry" && <RegistrySettings project={project} onChanged={() => setRevision(n => n + 1)} />}
       <Prompts project={project} />
     </>}

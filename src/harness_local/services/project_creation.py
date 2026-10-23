@@ -1,4 +1,8 @@
-"""P009-T002 / D116: a UI authority for new direct children; no agents or Git."""
+"""P009-T002 / D116: a UI authority for new direct children; no agents or Git.
+
+`project-creation-2` (P011-T008, D167) seals the chosen work language in the intent; registering the child
+associates it with the new root in the same transaction. `project-creation-1` intents still register, without one.
+"""
 from contextlib import contextmanager
 from dataclasses import asdict
 import os
@@ -18,9 +22,11 @@ from harness_local.storage.models import (
 )
 from harness_local.storage.permissions import actor
 from harness_local.storage.project_creation import CreationRepository, root_view
+from harness_local.storage.registry import RegistryConflict, confirm_work_language
 
 PERMISSION = 'El servicio podrá crear carpetas hijas nuevas en esta ubicación.'
-CONTRACT = 'project-creation-1'
+CONTRACT = 'project-creation-2'
+CONTRACTS = ('project-creation-1', CONTRACT)
 
 
 def identity(info):
@@ -212,12 +218,16 @@ class ProjectCreation:
                 raise RegistryError(409, 'target_identity_changed', 'La identidad del padre cambió.')
             if exists(fd, name):
                 raise RegistryError(409, 'target_exists', 'El destino ya existe; no se adopta ni sobrescribe.')
-        row = {k: v for k, v in body.items() if k not in ('directory_name', 'root_version', 'project_id') and v is not None}
+        language = self.registry.work_language_preview(body.get('work_language'), target, 'creation')
+        row = {k: v for k, v in body.items()
+               if k not in ('directory_name', 'root_version', 'project_id', 'work_language') and v is not None}
         row.update(id=project_id, root=target, repository_trusted=True, bootstrap_enabled=True)
         composed = self.registry._compose(row, (1, digest(row)), new_directory=True)
         intent = {'contract': CONTRACT, 'authority': authority, 'row': row, 'target': target,
-                  'directory_name': name, **composed, 'trust_statement': TRUST, 'permission_statement': PERMISSION}
-        return {**intent, 'preview_sha256': digest(intent)}
+                  'directory_name': name, **composed, 'trust_statement': TRUST, 'permission_statement': PERMISSION,
+                  'work_language_seal': self.registry.work_language_seal(language)}
+        # The provenance shown (default and its version) stays outside the hash: see `work_language_seal`.
+        return {**intent, 'work_language': language, 'preview_sha256': digest(intent)}
 
     def confirm(self, body, key):
         with self.lock:
@@ -244,7 +254,7 @@ class ProjectCreation:
 
     def check_intent(self, session, row):
         authority = self.authority(row.authority['version'], session=session)
-        if authority != row.authority or digest(row.intent) != row.intent_sha256 or row.intent['contract'] != CONTRACT:
+        if authority != row.authority or digest(row.intent) != row.intent_sha256 or row.intent['contract'] not in CONTRACTS:
             raise RegistryError(409, 'recovery_required', 'Autoridad o intención incompatible; requiere revisión.')
         self.conflicts(session, row.project_id, row.target, operation_id=row.id)
         composed = self.registry._compose(row.intent['row'], (1, digest(row.intent['row'])),
@@ -317,6 +327,12 @@ class ProjectCreation:
                                              row_sha256=project.row_sha256, previous_sha256=None,
                                              preview_sha256=intent['preview_sha256'], actor=actor(),
                                              reason='Creación confirmada ' + row.id, recorded_at=now))
+                    if 'work_language_seal' in intent:
+                        try:
+                            confirm_work_language(session, project.id, row.target, intent['work_language_seal'],
+                                                  'creation', intent['preview_sha256'], 'Creation ' + row.id, now)
+                        except RegistryConflict as exc:
+                            raise RegistryError(409, exc.code, str(exc)) from None
                     row.status, row.reserved = 'REGISTERED', False
                     row.result = {'project_id': project.id, 'root': project.root, 'creation_id': row.id}
                     self.repository.event(session, row, 'registered')

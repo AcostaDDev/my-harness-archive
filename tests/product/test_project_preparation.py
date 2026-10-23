@@ -360,6 +360,8 @@ def test_migration_preserves_prior_job_process_and_exclusive_owner_constraints(p
         job=session.execute(text('SELECT id FROM managed_jobs WHERE run_id=:run'),{'run':attempt.run_id}).scalar()
         session.add(Process(attempt_id=attempt.id,job_id=job,spec={'synthetic':True},status='STOPPED'))
         session.add(Lock(root='/synthetic-prior-lock',job_id=job))
+        # 0025 refuses to drop a confirmed work language (D167); this test is about the 0021 constraints.
+        session.execute(text('DELETE FROM project_work_languages'))
     command.downgrade(database[1],'0021_project_creation')
     command.upgrade(database[1],'head')
     with Session(service.runtime.engine) as session:

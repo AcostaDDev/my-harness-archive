@@ -196,6 +196,8 @@ def context_snapshot(context: ProjectContext) -> str:
             "state_file": context.state_file}
     if context.documents is not None:
         data["documents"] = context.documents  # D072: absent preserves earlier snapshots.
+    if context.work_language is not None:
+        data["work_language"] = context.work_language  # D167: absent preserves earlier snapshots.
     return freeze(data)
 
 

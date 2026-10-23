@@ -172,6 +172,46 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/managed/projects/{project_id}/work-language/preview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Work Language Preview
+         * @description No effects: for a project without a work language, the value to confirm and what blocks it (D167).
+         */
+        post: operations["managed_work_language_preview"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/managed/projects/{project_id}/work-language": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Work Language Apply
+         * @description Absent → en/es once, with the preview hash and a reason; afterwards it never changes.
+         */
+        post: operations["managed_work_language_apply"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/managed/projects/{project_id}/mode": {
         parameters: {
             query?: never;
@@ -2354,6 +2394,12 @@ export interface components {
                     [key: string]: string[];
                 };
             } | null;
+            /**
+             * Work Language
+             * @description Work language of the new project, immutable once it is registered.
+             * @enum {string}
+             */
+            work_language: "en" | "es";
         };
         /** CreationOperationRead */
         CreationOperationRead: {
@@ -2435,6 +2481,7 @@ export interface components {
             trust_statement: string;
             /** Permission Statement */
             permission_statement: string;
+            work_language: components["schemas"]["WorkLanguagePreviewRead"];
             /** Preview Sha256 */
             preview_sha256: string;
         };
@@ -3323,6 +3370,36 @@ export interface components {
             /** Original Available */
             original_available: boolean;
         };
+        /**
+         * LanguageContextRead
+         * @description P011-T008: language pair frozen when the job was admitted (D167); continuations keep the first job's value.
+         */
+        LanguageContextRead: {
+            /**
+             * Format
+             * @constant
+             */
+            format: "language-context-1";
+            /**
+             * Ui Language
+             * @enum {string}
+             */
+            ui_language: "en" | "es";
+            /** Preferences Version */
+            preferences_version: number;
+            /**
+             * Work Language
+             * @enum {string}
+             */
+            work_language: "en" | "es";
+            /**
+             * Work Language Source
+             * @enum {string}
+             */
+            work_language_source: "registration" | "creation" | "toml" | "migration";
+            /** Work Language Sha256 */
+            work_language_sha256: string;
+        };
         /** ManagedAttemptRead */
         ManagedAttemptRead: {
             /** Prompt */
@@ -3361,6 +3438,11 @@ export interface components {
             started_at: string;
             /** Finished At */
             finished_at: string | null;
+            /**
+             * Language Context
+             * @description Language pair of the job, copied when the attempt started; null before 0025.
+             */
+            language_context?: components["schemas"]["LanguageContextRead"] | components["schemas"]["UiLanguageContextRead"] | null;
         };
         /** ManagedCommitRead */
         ManagedCommitRead: {
@@ -3464,7 +3546,11 @@ export interface components {
             activation_id: string | null;
             /** Owner Closed */
             owner_closed: boolean;
-            language_context: components["schemas"]["UiLanguageContextRead"] | null;
+            /**
+             * Language Context
+             * @description `ui-language-1` in jobs admitted under 0024, `language-context-1` afterwards; null before.
+             */
+            language_context: components["schemas"]["LanguageContextRead"] | components["schemas"]["UiLanguageContextRead"] | null;
         };
         /** ManagedLogRead */
         ManagedLogRead: {
@@ -3528,6 +3614,8 @@ export interface components {
              * @default false
              */
             bootstrap_enabled: boolean;
+            /** @description Null until confirmed: new work is refused with 409 `work_language_required`. */
+            work_language?: components["schemas"]["WorkLanguageRead"] | null;
         };
         /** ManagedRunRead */
         ManagedRunRead: {
@@ -5183,6 +5271,7 @@ export interface components {
              * @description Why an active row does not compose with the current TOML.
              */
             diagnostic: string | null;
+            work_language?: components["schemas"]["WorkLanguageRead"] | null;
             /** Row */
             row: {
                 [key: string]: unknown;
@@ -5230,6 +5319,7 @@ export interface components {
              * @description Why an active row does not compose with the current TOML.
              */
             diagnostic: string | null;
+            work_language?: components["schemas"]["WorkLanguageRead"] | null;
         };
         /** RegistryApplyCreate */
         RegistryApplyCreate: {
@@ -5304,6 +5394,11 @@ export interface components {
                     [key: string]: string[];
                 };
             } | null;
+            /**
+             * Work Language
+             * @description Required to register; immutable afterwards, so update/retire refuse it (409).
+             */
+            work_language?: ("en" | "es") | null;
         };
         /** RegistryCompositionRead */
         RegistryCompositionRead: {
@@ -5431,6 +5526,8 @@ export interface components {
             unfinished_jobs: number[];
             /** Configuration Blockers */
             configuration_blockers?: string[];
+            /** @description Registration only: the chosen value, sealed in the preview hash. */
+            work_language?: components["schemas"]["WorkLanguagePreviewRead"] | null;
             /** Preview Sha256 */
             preview_sha256: string;
         };
@@ -5834,6 +5931,113 @@ export interface components {
             cases: {
                 [key: string]: number;
             } | null;
+        };
+        /** WorkLanguageMigrationApplyCreate */
+        WorkLanguageMigrationApplyCreate: {
+            change: components["schemas"]["WorkLanguageMigrationInput"];
+            /** Preview Sha256 */
+            preview_sha256: string;
+            /** Reason */
+            reason: string;
+        };
+        /** WorkLanguageMigrationApplyRead */
+        WorkLanguageMigrationApplyRead: {
+            project: components["schemas"]["ManagedProjectRead"];
+            /** Replayed */
+            replayed: boolean;
+        };
+        /**
+         * WorkLanguageMigrationInput
+         * @description Explicit confirmation for a project without a work language (absent → en/es); nothing is inferred.
+         */
+        WorkLanguageMigrationInput: {
+            /**
+             * Work Language
+             * @enum {string}
+             */
+            work_language: "en" | "es";
+        };
+        /** WorkLanguageMigrationPreviewRead */
+        WorkLanguageMigrationPreviewRead: {
+            /** Project Id */
+            project_id: string;
+            /** Root */
+            root: string;
+            work_language: components["schemas"]["WorkLanguagePreviewRead"];
+            /**
+             * Files Preserved
+             * @description Existing files are kept as they are: nothing is translated or renamed.
+             */
+            files_preserved: boolean;
+            /**
+             * Unfinished Jobs
+             * @description Unfinished jobs of the checkout: they block the confirmation.
+             */
+            unfinished_jobs: number[];
+            /** Configuration Blockers */
+            configuration_blockers: string[];
+            /** Preview Sha256 */
+            preview_sha256: string;
+        };
+        /**
+         * WorkLanguagePreviewRead
+         * @description The work language a confirmation will associate with the root; the default is shown, never applied silently.
+         */
+        WorkLanguagePreviewRead: {
+            /**
+             * Work Language
+             * @enum {string}
+             */
+            work_language: "en" | "es";
+            /**
+             * Source
+             * @enum {string}
+             */
+            source: "registration" | "creation" | "migration";
+            /**
+             * Default Work Language
+             * @description Global default read for this preview (provenance only).
+             * @enum {string}
+             */
+            default_work_language: "en" | "es";
+            /** Preferences Version */
+            preferences_version: number;
+            /** @description Association the root already has (same value required); null when the confirmation creates it. */
+            existing: components["schemas"]["WorkLanguageRead"] | null;
+        };
+        /**
+         * WorkLanguageRead
+         * @description P011-T008: work language confirmed once for the project's canonical root; it never changes (D167).
+         */
+        WorkLanguageRead: {
+            /**
+             * Format
+             * @constant
+             */
+            format: "work-language-1";
+            /**
+             * Work Language
+             * @enum {string}
+             */
+            work_language: "en" | "es";
+            /**
+             * Source
+             * @enum {string}
+             */
+            source: "registration" | "creation" | "toml" | "migration";
+            /**
+             * Project Id
+             * @description Project that confirmed it; a later registration of the same root keeps it.
+             */
+            project_id: string;
+            /** Confirmation */
+            confirmation: {
+                [key: string]: unknown;
+            };
+            /** Sha256 */
+            sha256: string;
+            /** Confirmed At */
+            confirmed_at: string;
         };
     };
     responses: never;
@@ -6421,6 +6625,136 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["RegistryApplyRead"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+        };
+    };
+    managed_work_language_preview: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Required with value 1 on mutations (CSRF protection). */
+                "x-harness-local"?: string | null;
+            };
+            path: {
+                project_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["WorkLanguageMigrationInput"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WorkLanguageMigrationPreviewRead"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+        };
+    };
+    managed_work_language_apply: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Required with value 1 on mutations (CSRF protection). */
+                "x-harness-local"?: string | null;
+            };
+            path: {
+                project_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["WorkLanguageMigrationApplyCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WorkLanguageMigrationApplyRead"];
                 };
             };
             /** @description Forbidden */

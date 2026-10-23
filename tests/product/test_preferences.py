@@ -33,9 +33,15 @@ def change(preferences, ui, work='en', key=None):
 
 
 def languages(engine, run_id):
+    """Frozen pairs without the hash of the (synthetic) work language association."""
     with Session(engine) as session:
-        return [row.language_context for row in session.scalars(
-            select(ManagedJobRow).where(ManagedJobRow.run_id == run_id).order_by(ManagedJobRow.id))]
+        return [{k: v for k, v in row.language_context.items() if k != 'work_language_sha256'}
+                for row in session.scalars(
+                    select(ManagedJobRow).where(ManagedJobRow.run_id == run_id).order_by(ManagedJobRow.id))]
+
+
+# Synthetic `en` work language of tests/product/conftest.py; T008 adds it to the T007 visual capture.
+WORK = {'work_language': 'en', 'work_language_source': 'migration'}
 
 
 def corrupt(engine):
@@ -101,7 +107,7 @@ def test_jobs_freeze_the_visual_language_and_continuations_keep_it(repository, c
     preferences = PreferencesRepository(repository)
     change(preferences, 'es')
     job = submit(repository, context)
-    frozen = {'format': 'ui-language-1', 'ui_language': 'es', 'preferences_version': 2}
+    frozen = {'format': 'language-context-1', 'ui_language': 'es', 'preferences_version': 2, **WORK}
     assert languages(repository.engine, job.run_id) == [frozen]
     change(preferences, 'en', 'es')  # pending job and default work language do not touch it
     assert languages(repository.engine, job.run_id) == [frozen]
@@ -178,8 +184,8 @@ def test_http_preferences_contract(url, tmp_path, task):  # noqa: F811
                         json={'task_id': 'P001-T001', 'phase_id': 'P001', 'text': '# Plan\n'},
                         headers={'Idempotency-Key': 'run-1'})
         assert job.status_code == 202, job.text
-        assert job.json()['language_context'] == {'format': 'ui-language-1', 'ui_language': 'es',
-                                                  'preferences_version': 2}
+        frozen = {k: v for k, v in job.json()['language_context'].items() if k != 'work_language_sha256'}
+        assert frozen == {'format': 'language-context-1', 'ui_language': 'es', 'preferences_version': 2, **WORK}
         anonymous = TestClient(http.app, base_url=LOCAL)  # same service, no session cookie
         refused = anonymous.get(PREFERENCES)
         assert refused.status_code == 401

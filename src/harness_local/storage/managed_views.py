@@ -287,7 +287,7 @@ class SQLiteManagedViews:
                               "prompt": request["prompt"], "permission_snapshot": _loads(request.get("permission_snapshot_json")), "prompt_snapshot": _loads(request.get("prompt_snapshot_json")),
                               "status": row.status, "versions": json.loads(row.versions_json),
                               "result": _loads(row.result_json), "started_at": row.started_at,
-                              "finished_at": row.finished_at})
+                              "finished_at": row.finished_at, "language_context": row.language_context})
             return {"items": items, "offset": offset, "next_offset": offset + limit if len(rows) > limit else None}
 
     def events(self, run_id: str, after: int, limit: int) -> dict:

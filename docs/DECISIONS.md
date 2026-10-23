@@ -177,6 +177,7 @@ tarea se leen solo las decisiones que cita; este índice sirve para buscar prece
 | [D164](#d164--p011-t005-cliente-scripts-y-ejemplos-en-inglés) | P011-T005: cliente, scripts y ejemplos en inglés | P011 |
 | [D165](#d165--p011-t006-pruebas-y-fixtures-en-inglés-sin-tocar-datos) | P011-T006: pruebas y fixtures en inglés sin tocar datos | P011 |
 | [D166](#d166--p011-t007-preferencias-globales-de-idioma-catálogos-y-visual-congelado-por-job) | P011-T007: preferencias globales de idioma, catálogos y visual congelado por job | P011 |
+| [D167](#d167--p011-t008-idioma-de-trabajo-inmutable-por-raíz-y-par-congelado-por-job-e-intento) | P011-T008: idioma de trabajo inmutable por raíz y par congelado por job e intento | P011 |
 
 ## D001 — Alcance local y arquitectura base
 
@@ -4925,3 +4926,40 @@ Fase: P011. Concreta D158/D159 (§2–§4 del [contrato T001](phase/P011-T001_CO
   en español por su acoplamiento con los scripts (nota D164 para T010).
 - Paridad: DDBB-DIAGRAM (50 tablas), flujo nuevo y notas en chat/tarea, ARCHITECTURE. Suites offline en verde; sin
   servicios, QA de navegador, agentes, proveedores ni red. T008 es la siguiente.
+
+## D167 — P011-T008: idioma de trabajo inmutable por raíz y par congelado por job e intento
+
+Estado: implementada el 2026-10-23 por la continuación y commit local en inglés pedidos por el usuario.
+Fase: P011. Concreta D158/D159 (§2 y §4 del [contrato T001](phase/P011-T001_CONTRATO_APERTURA.md)) sobre D166.
+[Entrega, alcance y validación](phase/P011-T008_IDIOMA_PROYECTO.md), [flujo](flows/project-work-language.md).
+
+- HITL del usuario sobre el alcance: el cableado de las recetas v2 (`django-recipe-2`, `typescript-web-recipe-2`,
+  despacho por `id`) sale de T008 a una tarea nueva, **T020**, antes de T009. Mientras tanto `local-config-6` no
+  admite `[recipes]`: quien prepare con receta sigue en `local-config-5`, sin cambiar la semántica futura de v6.
+- Migración `0025_project_work_languages`: tabla `project_work_languages` con una fila por raíz canónica
+  (`work-language-1`: valor en/es, `project_id`, origen `registration|creation|toml|migration`, confirmación y hash),
+  escrita una vez y nunca actualizada ni borrada; `managed_attempts.language_context` copia el par del job.
+  Downgrade rechazado si hay alguna fila. Sin FK: la raíz sobrevive a bajas, cambios de id y proyectos TOML.
+- Alta: `work_language` obligatorio en registro (B) y creación (`project-creation-2`), inicializado en la UI desde el
+  default global. El hash de la vista previa sella solo el valor elegido y la asociación existente; el default y su
+  versión son procedencia en `confirmation`, así que cambiarlo entre vista previa y confirmación no altera el valor.
+  La fila se escribe en la misma transacción que registra el proyecto. Una raíz ya asociada solo admite su valor
+  (la reapertura conserva la fila original). Cambios/bajas con `work_language` → 409 `work_language_immutable`.
+- HITL del usuario: un TOML `local-config-6` con `[[projects]].work_language` se asocia **al arrancar el servicio**
+  (`toml`, con el hash del TOML); la carga sigue sin efectos. Otro valor para una raíz ya asociada detiene el
+  arranque. v6 sin la clave, v1–v5 y registros previos quedan sin valor hasta una confirmación explícita.
+- Confirmación explícita (ausente → valor), por HITL con API y UI mínima en Ajustes: `POST …/work-language/preview`
+  y `…/work-language` con hash, motivo obligatorio y sin trabajo sin terminar ni bloqueos de configuración. No
+  traduce, renombra ni inspecciona archivos. El usuario indica que no existen proyectos previos (paquete sin uso real).
+- Admisión: cada job nuevo sella `language-context-1` (visual actual, versión de preferencias, trabajo, origen y hash
+  de la fila) en su transacción; sin fila → 409 `work_language_required` sin encolar nada. Las continuaciones copian
+  el contexto del primer job del run (también `ui-language-1` o null), y cada intento copia el de su job.
+  `ProjectContext.work_language` entra en `context_json` solo si existe (snapshots anteriores intactos); un
+  contexto con otro valor se rechaza. El visual sigue fuera de hashes de composición.
+- Pruebas: un fixture autouse de `tests/product/conftest.py` confirma `en` sintético (fila real) al instalar un
+  proyecto o admitir el primer job, y retira solo esas filas antes de un downgrade de Alembic; las pruebas de la
+  guardia lo desactivan con `@pytest.mark.unconfirmed_work_language`. Así las ~720 pruebas ajenas a idiomas no se
+  reescriben y la guardia real se prueba aparte.
+- Paridad: DDBB-DIAGRAM (51 tablas), flujo nuevo y nota en preferencias, ARCHITECTURE, SPECIFICATION (F23 parcial),
+  OpenAPI/tipos regenerados, catálogos en/es de los mensajes y bloques nuevos. Sin directiva al agente (T009), sin
+  traducción del resto de la UI (T010), sin servicios, QA de navegador, agentes, proveedores ni red. T020 es la siguiente.

@@ -14,5 +14,11 @@
   "session.invalid_login": "Invalid sign-in request.",
   "session.limit": "Close a session or restart the service.",
   "session.rate_limited": "Wait a minute before trying to sign in again.",
-  "session.required": "Session missing, closed or expired. Sign in; no action will be repeated automatically."
+  "session.required": "Session missing, closed or expired. Sign in; no action will be repeated automatically.",
+  "work_language.confirmed": "The work language of this project is already confirmed; it never changes.",
+  "work_language.immutable": "The work language of {root} is already {language} and never changes.",
+  "work_language.pending": "The checkout has unfinished or pending work ({items}); resolve it before confirming the work language.",
+  "work_language.preview_changed": "The preview no longer matches; review it again.",
+  "work_language.required": "Choose the project's work language (en or es); it is fixed when the project is registered or created.",
+  "work_language.unconfirmed": "This project has no confirmed work language; confirm it in the project settings before starting new work."
 }

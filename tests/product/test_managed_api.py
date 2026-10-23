@@ -213,7 +213,11 @@ def test_http_flow_executes_reviews_and_commits_once_across_double_submit_and_re
     before_main = main_snapshot(repo)
     ports = Ports([edit, review()])
     with client(url, tmp_path, config(task, ports)) as http:
-        assert http.get("/api/managed/projects").json() == [{
+        [listed] = http.get("/api/managed/projects").json()
+        # D167: the synthetic `en` confirmation of tests/product/conftest.py, written when the project is installed.
+        work = listed.pop("work_language")
+        assert (work["work_language"], work["source"], work["format"]) == ("en", "migration", "work-language-1")
+        assert [listed] == [{
             "id": "synthetic", "root": str(task.root), "profile": "synthetic", "versions": VERSIONS,
             "tag_kind": "lightweight", "documents": None, "bootstrap_enabled": False,
             # D076: declared by the server composition, not registered from the UI.

@@ -17,6 +17,24 @@ from harness_local.storage.permissions import actor
 UNFINISHED = ('QUEUED', 'ACTIVE', 'RECOVERY_REQUIRED')
 
 
+def confirm_work_language(session, project_id, root, preview, source, preview_sha256, reason, now):
+    """P011-T008: the root's work language, in the transaction of the confirmation that fixes it (D167).
+
+    The provenance records the default current at confirmation; it never replaces the chosen value."""
+    from harness_local.storage import work_language
+    from harness_local.storage.models import ProductPreferencesRow
+    from harness_local.storage.preferences import view as preferences_view
+    current = preferences_view(session.get(ProductPreferencesRow, 1))
+    confirmation = {'preview_sha256': preview_sha256, 'actor': actor(), 'reason': reason,
+                    'default_work_language': current['default_work_language'],
+                    'preferences_version': current['version']}
+    try:
+        return work_language.associate(session, root=root, project_id=project_id, work_language=preview['work_language'],
+                                       source=source, confirmation=confirmation, now=now)
+    except work_language.WorkLanguageImmutable as exc:
+        raise RegistryConflict('work_language_immutable', str(exc)) from None
+
+
 class RegistryConflict(Conflict):
     def __init__(self, code, diagnostic):
         super().__init__(diagnostic)
@@ -131,7 +149,7 @@ class ProjectRegistryRepository:
             return view(row) if event is not None and event.preview_sha256 == preview_sha256 else None
 
     def apply(self, action, project_id, *, expected_version, row, row_sha256, profile, preview_sha256,
-              trust=None, reason=None, protect_agents=False):
+              trust=None, reason=None, protect_agents=False, work_language=None):
         with self.managed._write() as session:
             current = session.get(Row, project_id)
             if (current.version if current else 0) != expected_version:
@@ -149,6 +167,9 @@ class ProjectRegistryRepository:
                               trust=trust, created_at=now, updated_at=now)
                 session.add(current)
                 previous = None
+                if work_language is not None:
+                    confirm_work_language(session, project_id, row['root'], work_language, 'registration',
+                                          preview_sha256, reason, now)
             else:
                 if current is None:
                     raise LookupError('Proyecto registrado desconocido.')

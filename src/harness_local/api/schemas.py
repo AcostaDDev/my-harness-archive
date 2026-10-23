@@ -78,6 +78,17 @@ class ProjectAgentsRead(BaseModel):
     executor: ExecutorAgentRead
 
 
+class WorkLanguageRead(BaseModel):
+    """P011-T008: work language confirmed once for the project's canonical root; it never changes (D167)."""
+    format: Literal["work-language-1"]
+    work_language: Literal["en", "es"]
+    source: Literal["registration", "creation", "toml", "migration"]
+    project_id: str = Field(description="Project that confirmed it; a later registration of the same root keeps it.")
+    confirmation: dict[str, Any]
+    sha256: str
+    confirmed_at: str
+
+
 class ManagedProjectRead(BaseModel):
     id: str
     root: str
@@ -90,6 +101,8 @@ class ManagedProjectRead(BaseModel):
         default="operator", description="D076: declared in the operator TOML or registered from the UI.")
     registry_version: int | None = Field(default=None, description="Registry version frozen in its jobs.")
     bootstrap_enabled: bool = False
+    work_language: WorkLanguageRead | None = Field(
+        default=None, description="Null until confirmed: new work is refused with 409 `work_language_required`.")
 
 
 class ModeRead(BaseModel):
@@ -149,6 +162,16 @@ class UiLanguageContextRead(BaseModel):
     preferences_version: int
 
 
+class LanguageContextRead(BaseModel):
+    """P011-T008: language pair frozen when the job was admitted (D167); continuations keep the first job's value."""
+    format: Literal["language-context-1"]
+    ui_language: Language
+    preferences_version: int
+    work_language: Language
+    work_language_source: Literal["registration", "creation", "toml", "migration"]
+    work_language_sha256: str
+
+
 class PreferencesRead(BaseModel):
     """Global preferences of this installation; `invalid` reads as English and blocks new admissions."""
     format: Literal["product-preferences-1"]
@@ -183,7 +206,8 @@ class ManagedJobRead(BaseModel):
     diagnostic: str | None
     activation_id: str | None
     owner_closed: bool
-    language_context: UiLanguageContextRead | None
+    language_context: LanguageContextRead | UiLanguageContextRead | None = Field(
+        description="`ui-language-1` in jobs admitted under 0024, `language-context-1` afterwards; null before.")
 
 
 class ManagedRunSummaryRead(BaseModel):
@@ -352,6 +376,8 @@ class ManagedAttemptRead(BaseModel):
     result: dict[str, Any] | None
     started_at: str
     finished_at: str | None
+    language_context: LanguageContextRead | UiLanguageContextRead | None = Field(
+        default=None, description="Language pair of the job, copied when the attempt started; null before 0025.")
 
 
 class ManagedEventRead(BaseModel):
@@ -1553,6 +1579,8 @@ class RegistryChangeInput(BaseModel):
     bootstrap_enabled: bool = False
     permission_authority: dict[PermissionLayer, dict[PermissionKind, list[ShortText]]] | None = Field(
         default=None, description='Permission ceiling per layer; null: no explicit ceiling.')
+    work_language: Language | None = Field(
+        default=None, description='Required to register; immutable afterwards, so update/retire refuse it (409).')
 
 
 class RegistryApplyCreate(BaseModel):
@@ -1586,6 +1614,7 @@ class RegisteredProjectSummaryRead(BaseModel):
     updated_at: str
     available: bool
     diagnostic: str | None = Field(description='Why an active row does not compose with the current TOML.')
+    work_language: WorkLanguageRead | None = None
 
 
 class RegistryRead(BaseModel):
@@ -1631,6 +1660,16 @@ class RegistryFieldChangeRead(BaseModel):
     after: Any
 
 
+class WorkLanguagePreviewRead(BaseModel):
+    """The work language a confirmation will associate with the root; the default is shown, never applied silently."""
+    work_language: Language
+    source: Literal['registration', 'creation', 'migration']
+    default_work_language: Language = Field(description='Global default read for this preview (provenance only).')
+    preferences_version: int
+    existing: WorkLanguageRead | None = Field(
+        description='Association the root already has (same value required); null when the confirmation creates it.')
+
+
 class RegistryPreviewRead(BaseModel):
     action: Literal['register', 'update', 'retire']
     project_id: str
@@ -1646,6 +1685,8 @@ class RegistryPreviewRead(BaseModel):
     trust_statement: str | None
     unfinished_jobs: list[int] = Field(description='Unfinished jobs of the checkout: they block the confirmation.')
     configuration_blockers: list[str] = Field(default_factory=list)
+    work_language: WorkLanguagePreviewRead | None = Field(
+        default=None, description='Registration only: the chosen value, sealed in the preview hash.')
     preview_sha256: str
 
 
@@ -1738,6 +1779,7 @@ class CreationInput(BaseModel):
     tag_kind: Literal['lightweight', 'annotated'] = 'lightweight'
     documents: Literal['v2'] = 'v2'
     permission_authority: dict[PermissionLayer, dict[PermissionKind, list[ShortText]]] | None = None
+    work_language: Language = Field(description='Work language of the new project, immutable once it is registered.')
 
 
 class CreationConfirmInput(BaseModel):
@@ -1807,6 +1849,7 @@ class CreationPreviewRead(BaseModel):
     composition: RegistryCompositionRead
     trust_statement: str
     permission_statement: str
+    work_language: WorkLanguagePreviewRead
     preview_sha256: str
 
 
@@ -1898,3 +1941,31 @@ class PreparationRead(BaseModel):
     recipe: str | None
     project_version: int
     operation: PreparationOperationRead | None
+
+
+class WorkLanguageMigrationInput(BaseModel):
+    """Explicit confirmation for a project without a work language (absent → en/es); nothing is inferred."""
+    model_config = ConfigDict(extra='forbid', strict=True)
+    work_language: Language
+
+
+class WorkLanguageMigrationPreviewRead(BaseModel):
+    project_id: str
+    root: str
+    work_language: WorkLanguagePreviewRead
+    files_preserved: bool = Field(description='Existing files are kept as they are: nothing is translated or renamed.')
+    unfinished_jobs: list[int] = Field(description='Unfinished jobs of the checkout: they block the confirmation.')
+    configuration_blockers: list[str]
+    preview_sha256: str
+
+
+class WorkLanguageMigrationApplyCreate(BaseModel):
+    model_config = ConfigDict(extra='forbid', strict=True)
+    change: WorkLanguageMigrationInput
+    preview_sha256: str = Field(pattern=SHA256)
+    reason: str = Field(min_length=1, max_length=2000)
+
+
+class WorkLanguageMigrationApplyRead(BaseModel):
+    project: ManagedProjectRead
+    replayed: bool

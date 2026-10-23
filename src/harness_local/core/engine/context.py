@@ -119,6 +119,9 @@ class ProjectContext:
     # D072/H6.3 and D088: per-phase document contract. Local configuration always composes "v2" (mandatory
     # unified layout); None only describes earlier frozen contexts, which are still read.
     documents: str | None = None
+    # P011-T008 (D167): confirmed work language of the checkout (documentation and code). None in earlier frozen
+    # contexts and in projects whose work language is not confirmed yet; it is never inferred.
+    work_language: str | None = None
 
     def __post_init__(self):
         object.__setattr__(self, "root", self.root.resolve(strict=True))
@@ -128,6 +131,8 @@ class ProjectContext:
         relative_path(self.state_file)
         if self.documents not in (None, "v2"):
             raise ValueError("Unknown document layout")
+        if self.work_language not in (None, "en", "es"):
+            raise ValueError("Unknown work language")
         if self.documents and (PurePosixPath(self.state_file).parent != PurePosixPath(self.next_steps_file).parent
                                or PurePosixPath(self.state_file).parent == PurePosixPath(".")):
             raise ValueError("Document layout v2 keeps STATE and NEXT_STEPS in one documentation directory")

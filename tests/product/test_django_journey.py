@@ -118,7 +118,8 @@ def test_new_child_definition_recipe_four_pairs_restart_and_phase_closure(journe
                 root_body = {'change': selected, 'preview_sha256': preview['preview_sha256'], 'confirm_path': str(parent)}
                 post(http, ROOT + '/apply', root_body, 'root')
                 change = {'project_id': 'child', 'directory_name': 'child', 'root_version': 1,
-                          'composition': 'django', 'policy': POLICY, 'agent_selection': selection(*PAIRS[0])}
+                          'composition': 'django', 'policy': POLICY, 'agent_selection': selection(*PAIRS[0]),
+                          'work_language': 'en'}
                 preview = post(http, CREATE + '/preview', change)
                 creation_body = {'change': change, 'preview_sha256': preview['preview_sha256'], 'trust_root': str(root)}
                 created = post(http, CREATE + '/confirm', creation_body, 'child')

@@ -3,7 +3,7 @@ from sqlalchemy.engine import Engine
 from sqlalchemy.exc import SQLAlchemyError
 
 
-SCHEMA_REVISION = "0024_product_preferences"
+SCHEMA_REVISION = "0025_project_work_languages"
 
 
 def require_schema(engine: Engine) -> None:

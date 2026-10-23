@@ -36,7 +36,8 @@ def restore_context(snapshot: str) -> ProjectContext:
         if key in policy:
             policy[key] = tuple(policy[key])
     return ProjectContext(Path(data["root"]), ProjectProfile(**profile), EnginePolicy(**policy),
-                          data["next_steps_file"], data["state_file"], data.get("documents"))
+                          data["next_steps_file"], data["state_file"], data.get("documents"),
+                          data.get("work_language"))
 
 
 def restore_request(data: dict) -> AgentRequest:

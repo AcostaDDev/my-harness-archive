@@ -13,7 +13,7 @@ salvo donde se indica. Detalle por fase en `docs/archive/phase-NNN/SUMMARY.md`; 
   commit determinista conciliable. Formateo del perfil tras cada turno del ejecutor (D133). Codec de historial
   en formato 8 (lee 1–7).
 - **Persistencia y recuperación** ([P003](archive/phase-003/SUMMARY.md), [P006](archive/phase-006/SUMMARY.md)): SQLite
-  `0024_product_preferences` (50 tablas, [diagrama](DDBB-DIAGRAM.md)); cola idempotente, lease, lock por checkout,
+  `0025_project_work_languages` (51 tablas, [diagrama](DDBB-DIAGRAM.md)); cola idempotente, lease, lock por checkout,
   cuarentena por versión y confirmación explícita del escritor detenido; backup y restauración de consulta; retención
   explícita de streams. Proyección derivada `run-projection-1` escrita con el historial y comprobada en el backup
   (P010-T003, D144).
@@ -74,17 +74,18 @@ salvo donde se indica. Detalle por fase en `docs/archive/phase-NNN/SUMMARY.md`; 
 
 **P011 — Preparación para apertura pública en GitHub**, iniciada documentalmente el 2026-10-22 por encargo del usuario
 ([D154](DECISIONS.md#d154--p011-preparación-para-apertura-pública-en-github),
-[plan](phase/P011_PLAN_APERTURA_PUBLICA.md), [tareas](NEXT_STEPS.md)). T001/T002/T019/T003–T007
-completadas (D159–D166), once tareas pendientes; retirada legacy/A implementada, núcleo/backend/cliente/pruebas
-en inglés y preferencias globales de idioma; sin trabajo por proyecto, directiva al agente ni nueva compatibilidad CLI.
+[plan](phase/P011_PLAN_APERTURA_PUBLICA.md), [tareas](NEXT_STEPS.md)). T001/T002/T019/T003–T008
+completadas (D159–D167), once tareas pendientes (T020 desglosada de T008); retirada legacy/A implementada, código y
+pruebas en inglés, preferencias globales e idioma de trabajo inmutable por proyecto; sin recetas v2 cableadas,
+directiva al agente ni nueva compatibilidad CLI.
 
 **Planificación finalizada para comenzar su ejecución** por petición del usuario
 ([D156](DECISIONS.md#d156--planificación-de-p011-finalizada-y-modo-continuo-aplazado-a-v020)).
 P011 no está completada: T001 entrega diseño/inventario, T002 licencia/revisión estática, T019 retirada funcional y
-T003–T006 comentarios en inglés y T007 infraestructura de idiomas; siguiente T008.
+T003–T006 comentarios en inglés, T007 infraestructura de idiomas y T008 idioma de trabajo; siguiente T020.
 El modo continuo entre fases queda reservado para **v0.2.0, después de abrir el proyecto en GitHub**;
 no forma parte de P011 ni modifica el cierre confirmado actual. Commit documental D156 realizado en `6174f51`;
-las ampliaciones D157/D158 se incorporaron en `2730f54`. La petición actual autoriza T007 y su commit local
+las ampliaciones D157/D158 se incorporaron en `2730f54`. La petición actual autoriza T008 y su commit local
 en inglés, con checks sintéticos offline, sin ejecución del producto ni publicación.
 
 **P011-T001 completada** ([contrato](phase/P011-T001_CONTRATO_APERTURA.md),
@@ -152,6 +153,13 @@ el del primer job. Por HITL, el par completo y su paso a intentos/prompts son de
 agentes aún no cambian de idioma. Catálogos JSON en/es sin dependencias; shell, sesión y preferencias traducidos (HITL),
 diagnósticos propios de sesión/preferencias/lanzador localizados y `--ui-language`. Sin QA de navegador (T010).
 
+**P011-T008 completada** ([entrega](phase/P011-T008_IDIOMA_PROYECTO.md), D167): migración `0025` con una fila
+inmutable de idioma de trabajo por raíz canónica. Registro B y creación lo exigen (inicializado desde el default,
+sellado en el hash); cambios/bajas/reaperturas con otro valor → 409 `work_language_immutable`. `local-config-6`
+lo declara por proyecto TOML y el servicio lo asocia al arrancar (HITL); sin valor, toda admisión nueva → 409
+`work_language_required` hasta una confirmación explícita con hash y motivo (API/UI mínima, HITL). Cada job sella
+`language-context-1` y cada intento lo copia. Por HITL, recetas v2 → T020; sin directiva al agente (T009).
+
 **P010 cerrada y archivada documentalmente el 2026-10-22**
 ([D153](DECISIONS.md#d153--cierre-documental-de-p010-y-de-la-primera-versión-local),
 [resumen](archive/phase-010/SUMMARY.md), [registro de cierre](archive/phase-010/P010_CIERRE.md)).
@@ -163,7 +171,7 @@ P009 conserva su cierre documental (D140) y el Django hijo su P001 CLOSED, cuatr
 tag `p001` sobre `47a0557` y archivo en `3d105c6`. No se repite ninguna operación ni comprobación de su estado.
 Este repositorio sigue sin registrarse ni ejecutarse con el harness; cierre manual sin check READY ni tag propio.
 
-**Siguiente:** P011-T008, idioma de trabajo inmutable por proyecto y contexto congelado.
+**Siguiente:** P011-T020, recetas v2 cableadas por idioma de trabajo (desglosada de T008), antes de T009.
 Otras candidatas permanecen en [ROADMAP](ROADMAP.md#candidatas-sin-fase-asignada).
 Los límites de la base acumulada siguen vigentes. B y D095 mantienen la validación real aplazada por D151;
 A queda retirado del producto por D155/D161, sin acreditarlo como validado con proveedores reales.

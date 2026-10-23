@@ -4,12 +4,12 @@ Objetivo y criterios en [ROADMAP](ROADMAP.md#p011--preparación-para-apertura-p�
 Decisión: [D154](DECISIONS.md#d154--p011-preparación-para-apertura-pública-en-github).
 [Plan y alcance](phase/P011_PLAN_APERTURA_PUBLICA.md).
 
-**Estado:** en ejecución desde el 2026-10-22. T001/T002/T019/T003–T007 completadas (D159–D166); once tareas
-pendientes. Licencia/avisos entregados, retirada legacy/A implementada, núcleo/backend/cliente/scripts/ejemplos/
-pruebas con comentarios en inglés y preferencias globales de idioma con visual congelado por job; recetas v2 sin cablear.
+**Estado:** en ejecución desde el 2026-10-22. T001/T002/T019/T003–T008 completadas (D159–D167); once tareas
+pendientes (T020 desglosada de T008). Licencia/avisos, retirada legacy/A, código/pruebas en inglés, preferencias
+globales e idioma de trabajo inmutable por proyecto con el par congelado por job/intento; recetas v2 sin cablear.
 **Planificación:** base finalizada en D156 y afinada por D155/D157/D158; contrato T001 disponible.
 No equivale a fase completada.
-**Siguiente:** P011-T008. Sin autorización de publicación.
+**Siguiente:** P011-T020. Sin autorización de publicación.
 P001–P010 siguen cerradas; la primera versión local mantiene el alcance de D151/D153.
 
 ## Restricciones compartidas
@@ -42,7 +42,7 @@ P001–P010 siguen cerradas; la primera versión local mantiene el alcance de D1
   siguiente fase` para v0.2.0 después de abrir el proyecto en GitHub, fuera de estas tareas. P011 mantiene
   cierre con READY y autorización propia, nueva fase sin tareas y confirmación del plan posterior.
   El commit D156 y los ajustes D157/D158 ya se realizaron. La petición actual autoriza ejecutar la siguiente
-  tarea (T007) y su commit local en inglés, sin encadenar tareas ni publicar.
+  tarea (T008) y su commit local en inglés, sin encadenar tareas ni publicar.
 - D157 elige instantánea pública inicial revisada, con Git/documentación de partida nuevos y sin historia privada.
   Desde la apertura, código/decisiones/fases se desarrollan en el repositorio público, fuente principal; este
   checkout conserva su historia privada. No sincronizar dos desarrollos activos ni congelar para siempre `docs/` pública.
@@ -236,7 +236,11 @@ Node/tipos/build, pytest pertinente, Alembic temporal y OpenAPI regenerado si ca
 
 ## P011-T008 — Idioma de trabajo inmutable por proyecto y contexto congelado
 
-**Estado:** pendiente. **Depende de:** T001, T007.
+**Estado:** completada el 2026-10-23, D167. **Depende de:** T001, T007.
+**Evidencia:** [entrega](phase/P011-T008_IDIOMA_PROYECTO.md): `0025` con una fila inmutable por raíz, alta B/creación
+con valor sellado en el hash (default como procedencia), 409 `work_language_immutable`/`work_language_required`,
+`local-config-6` asociado al arrancar (HITL), confirmación explícita con API/UI mínima (HITL) y `language-context-1`
+por job/intento. Recetas v2 → T020 (HITL). Suites offline en verde; sin servicios, QA de navegador ni proveedores.
 **Objetivo:** Fijar en/es al crear/incorporar para documentación/código del proyecto, separado de la conversación.
 **Alcance:** default global, registro/creación/incorporación B, lectura de ajustes, persistencia/API y contexto
 de jobs/intentos. No se añade un selector visual por proyecto ni se permite cambiar trabajo en sus ajustes.
@@ -259,12 +263,10 @@ de jobs/intentos. No se añade un selector visual por proyecto ni se permite cam
 concurrencia y reinicio/snapshots; pytest, Alembic temporal,
 OpenAPI/tipos y pruebas del cliente pertinentes.
 **Entregables:** `docs/phase/P011-T008_IDIOMA_PROYECTO.md` y contratos/documentación actualizados.
-**Nota (D166):** partir de `managed_jobs.language_context` (`ui-language-1`, versionado por `format`) y de
-`default_work_language` ya persistido; los jobs con `ui-language-1` o null no reciben trabajo inventado.
 
 ## P011-T009 — Prompts ingleses y documentos generados en la lengua elegida
 
-**Estado:** pendiente. **Depende de:** T003, T004, T008.
+**Estado:** pendiente. **Depende de:** T003, T004, T008, T020.
 **Objetivo:** Prompts originales ingleses con prosa humana en idioma visual y documentación/código en trabajo fijo.
 **Alcance:** plantillas/catálogos/esquemas, esqueletos y bloques D088, chat, planificación, revisión, definición,
 incorporación B, resúmenes, check/cierre/archivo e instrucciones de proyecto; sin prompts para el Flujo A retirado.
@@ -543,3 +545,23 @@ un repositorio existente sin harness (B), además de su seguimiento normal dentr
 tipos/build; Alembic temporal si procede. Fixtures sintéticos de cero/B e instalación anterior, sin operar el
 harness sobre este checkout ni tocar datos reales. Ensayo del paquete exacto se acredita después en T016.
 **Entregables:** `docs/phase/P011-T019_RETIRADA_LEGACY.md`, inventario de dependencias y decisiones de compatibilidad.
+
+## P011-T020 — Recetas v2 cableadas por idioma de trabajo
+
+**Estado:** pendiente. **Depende de:** T004, T008. **Orden:** antes de T009; desglosada de T008 por HITL (D167).
+**Objetivo:** Que las altas nuevas con receta usen `django-recipe-2`/`typescript-web-recipe-2` con el trabajo congelado.
+**Alcance:** `[recipes]` en `local-config-6`, registro de las v2 en `recipes`, preparación y comprobaciones por `id`
+de paso, plan/recibo/huella con trabajo y lectura/conciliación de planes y recibos v1 intactas.
+**Rutas permitidas:** `src/harness_local/**`, `frontend/**`, `tests/**`, `examples/**`, `docs/**`.
+**Criterios de aceptación:**
+
+- v6 admite `[recipes]` ligadas a v2; v5 sigue con v1 por bytes/huella. Una alta nueva desde v6 prepara con el
+  trabajo de su fila; sin trabajo confirmado la preparación se rechaza antes de efectos. Ninguna inferencia.
+- Pasos despachados por `id` estable, no por etiqueta; etiquetas humanas en visual sin mutar el manifiesto W.
+  El idioma funcional del hijo (`LANGUAGE_CODE`, `<html lang>`) no deriva del visual ni del trabajo.
+- Planes/recibos v1 legibles y conciliables con su intención sellada; sin recalcular con v2 ni reinstalar.
+  Paridad de DDBB-DIAGRAM/flujos/API/tipos si cambian; ejemplos de fragmentos v6.
+
+**Validación:** regresiones de recetas/huellas/recibos y preparación sintética en/es; pytest, Node/tipos/build si
+cambia el cliente. Sin red ni instalaciones reales salvo autorización propia.
+**Entregables:** `docs/phase/P011-T020_RECETAS_V2.md` y documentación actualizada.

@@ -81,7 +81,7 @@ def main(argv: list[str] | None = None) -> int:
         command.add_argument('--database', required=True, help='Ruta absoluta SQLite; no usa HARNESS_DATABASE_URL')
         if name == 'serve':
             command.add_argument('--port', type=int, default=8013)
-            command.add_argument('--config', help='TOML local de uso real (local-config-5; también 1–4); por defecto, sin proyectos')
+            command.add_argument('--config', help='TOML local de uso real (local-config-6; también 1–5); por defecto, sin proyectos')
     args = parser.parse_args(argv)
     language = cli_language(args.ui_language, getattr(args, 'database', None))
     engine = None

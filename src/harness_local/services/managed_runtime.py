@@ -225,11 +225,13 @@ class ManagedRuntime:
         self.phases = PhaseRepository(self.repository)
         from harness_local.storage.chat import ChatRepository
         self.chat = ChatRepository(self.repository)
-        self.projects = {project.id: project for project in config.projects}
+        self.projects = {project.id: self._toml_work_language(project) for project in config.projects}
         self.database = database
         from harness_local.services.project_registry import ProjectRegistry
         self.registry = ProjectRegistry(self)
         self.registry.load()
+        from harness_local.services.work_language import WorkLanguageMigration
+        self.work_language = WorkLanguageMigration(self)
         from harness_local.services.project_creation import ProjectCreation
         self.creation = ProjectCreation(self)
         self.creation.reconcile()
@@ -263,8 +265,43 @@ class ManagedRuntime:
 
     def install(self, project: ManagedProject) -> None:
         """D076: hot registration or change; a new copy of the map for readers on other threads."""
+        project = self.with_work_language(project)
         with self._projects_lock:
             self.projects = {**self.projects, project.id: project}
+
+    def with_work_language(self, project: ManagedProject) -> ManagedProject:
+        """P011-T008 (D167): the context carries the work language confirmed in SQLite for its root, if any."""
+        from harness_local.storage.work_language import read
+        current = read(self.engine, project.context.root)
+        if current is None:
+            return project
+        if project.context.work_language == current['work_language']:
+            return project
+        if project.context.work_language is not None:
+            raise ValueError(f"{project.id}: work_language {project.context.work_language!r} differs from the "
+                             f"{current['work_language']!r} confirmed for {project.context.root}; it never changes")
+        try:
+            return replace(project, context=replace(project.context, work_language=current['work_language']))
+        except FileNotFoundError:
+            return project  # a vanished root admits nothing anyway; the registry reports it as unavailable
+
+    def _toml_work_language(self, project: ManagedProject) -> ManagedProject:
+        """A `local-config-6` project that declares its work language records it once, at startup (D167).
+
+        Loading the TOML stays free of effects; SQLite rules afterwards and another value stops the service."""
+        from harness_local.storage.backup import is_read_only_archive
+        from harness_local.storage.work_language import WorkLanguageImmutable, associate
+        declared = project.context.work_language
+        if declared is not None and not is_read_only_archive(self.engine):
+            confirmation = {'local_config': project.versions.get('local_config'),
+                            'local_config_sha256': project.versions.get('local_config_sha256')}
+            try:
+                with self.repository._write() as session:
+                    associate(session, root=str(project.context.root), project_id=project.id, work_language=declared,
+                              source='toml', confirmation=confirmation, now=self.repository._now())
+            except WorkLanguageImmutable as exc:
+                raise ValueError(f"{project.id}: {exc}") from None
+        return self.with_work_language(project)
 
     def uninstall(self, project_id: str) -> None:
         with self._projects_lock:

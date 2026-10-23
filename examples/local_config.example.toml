@@ -6,6 +6,8 @@
 # Codex reviewer + Claude executor) are still read, but do not allow registering projects from the UI.
 # local-config-5 (P009-T003) is this same template with format = "local-config-5": it also accepts
 # [agent_presets.*] and the recipe fragments in examples/ (typescript-web-recipe, django-recipe).
+# local-config-6 (P011-T008) is local-config-5 plus an optional work_language per [[projects]] (see below);
+# it does not accept the recipe fragments yet. Projects registered from the UI choose it there.
 # Validate: harness-local check-config /path/harness-local.toml [--preflight]
 # Start:    harness-local serve --database /path/state/harness.sqlite3 --config /path/harness-local.toml
 format = "local-config-4"
@@ -108,6 +110,7 @@ composition = "web"                           # composition above; the profile c
 # tag_kind = "lightweight"                    # or "annotated"
 # documents = "v2"                           # unified documentation contract (D088), mandatory; omitted = "v2"
 # bootstrap_enabled = false                   # H4.2/H6.5: create from scratch in this empty target
+# work_language = "en"                        # local-config-6 only: "en"/"es", recorded once; never changes
 
 [projects.policy]                             # the user's explicit choice; no defaults
 planning_mode = "agent"                       # "agent": the reviewer plans; "deterministic": NEXT_STEPS contract

@@ -167,10 +167,15 @@ class SQLiteManagedRepository:
                                    "revisions": run.revisions}))
 
     @staticmethod
-    def _language(session, inherit_run: str | None = None) -> dict | None:
-        """P011-T007: visual language of a new job; continuing a run keeps its original value (D166)."""
-        from harness_local.storage.preferences import capture, inherited
-        return capture(session) if inherit_run is None else inherited(session, inherit_run)
+    def _language(session, inherit_run: str | None = None, *, root: str | None = None) -> dict | None:
+        """Language pair of a new job on `root` (D167); continuing a run keeps its original value (D166)."""
+        from harness_local.storage.preferences import inherited
+        from harness_local.storage.work_language import capture
+        if inherit_run is not None:
+            return inherited(session, inherit_run)
+        if root is None:
+            raise ValueError("A new job needs its checkout root to freeze its languages")
+        return capture(session, root)
 
     def _admit(self, session, assessment) -> str | None:
         try:
@@ -308,7 +313,9 @@ class SQLiteManagedRepository:
         session.flush()
         run_projection.create(session, run.id, run.history_json, history)
         job = Job(idempotency_key=key, run_id=run.id, request_json=request, status="QUEUED", created_at=now,
-                  activation_id=activation_id, language_context=self._language(session))
+                  activation_id=activation_id, language_context=self._language(session, root=run.root))
+        if json.loads(snapshot).get("work_language") not in (None, job.language_context["work_language"]):
+            raise Conflict("The project context does not match its confirmed work language; reload and retry")
         session.add(job)
         session.flush()
         self._event(session, run, "job_queued", {"job_id": job.id, "action": action})
@@ -508,7 +515,7 @@ class SQLiteManagedRepository:
             request = authorize(session, self, run, request)
             session.add(AttemptRow(id=request.id, run_id=run.id, number=len(attempts) + 1,
                                   request_json=freeze(asdict(request)), versions_json=run.versions_json,
-                                  status="ACTIVE", started_at=self._now()))
+                                  status="ACTIVE", started_at=self._now(), language_context=job.language_context))
             run.stage = request.role
             run.status = {"planner": "PLANNING", "executor": "EXECUTING", "reviewer": "REVIEWING",
                           "phase": "CHECKING", "chat": "ANSWERING", "bootstrap": "DISCOVERING",
@@ -660,7 +667,8 @@ class SQLiteManagedRepository:
                 raise Conflict(str(exc)) from exc
         activation_id = self._admit(session, assessment)
         job = Job(idempotency_key=key, run_id=run_id, request_json=request, status="QUEUED",
-                  created_at=self._now(), activation_id=activation_id, language_context=self._language(session))
+                  created_at=self._now(), activation_id=activation_id,
+                  language_context=self._language(session, root=run.root))
         session.add(job)
         session.flush()
         run.status, run.stage = "QUEUED", "commit"

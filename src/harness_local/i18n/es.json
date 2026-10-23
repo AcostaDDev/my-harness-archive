@@ -14,5 +14,11 @@
   "session.invalid_login": "Solicitud de acceso inválida.",
   "session.limit": "Cierra una sesión o reinicia el servicio.",
   "session.rate_limited": "Espera un minuto antes de intentar iniciar sesión.",
-  "session.required": "Sesión ausente, cerrada o caducada. Inicia sesión; ninguna acción se repetirá automáticamente."
+  "session.required": "Sesión ausente, cerrada o caducada. Inicia sesión; ninguna acción se repetirá automáticamente.",
+  "work_language.confirmed": "El idioma de trabajo de este proyecto ya está confirmado; no cambia.",
+  "work_language.immutable": "El idioma de trabajo de {root} ya es {language} y no cambia.",
+  "work_language.pending": "El checkout tiene trabajo sin terminar o pendiente ({items}); resuélvelo antes de confirmar el idioma de trabajo.",
+  "work_language.preview_changed": "La vista previa ya no coincide; revísala de nuevo.",
+  "work_language.required": "Elige el idioma de trabajo del proyecto (en o es); queda fijado al registrarlo o crearlo.",
+  "work_language.unconfirmed": "Este proyecto no tiene idioma de trabajo confirmado; confírmalo en los ajustes del proyecto antes de iniciar trabajo nuevo."
 }

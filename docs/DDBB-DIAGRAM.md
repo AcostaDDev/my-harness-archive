@@ -1,6 +1,6 @@
 # Diagrama de datos — my_harness
 
-Esquema SQLite del servicio local (Alembic `0024_product_preferences`, 50 tablas). Generado en P008-T001 desde el metadata de `src/harness_local/storage/models.py` (actualizado en P009-T004 con preparación y propietarios compartidos, en P010-T003 con la proyección de runs y en P011-T007 con las preferencias de idioma); cualquier cambio de modelos o migraciones actualiza este documento en la misma tarea (regla de paridad, D088).
+Esquema SQLite del servicio local (Alembic `0025_project_work_languages`, 51 tablas). Generado en P008-T001 desde el metadata de `src/harness_local/storage/models.py` (actualizado en P009-T004 con preparación y propietarios compartidos, en P010-T003 con la proyección de runs, en P011-T007 con las preferencias de idioma y en P011-T008 con el idioma de trabajo por proyecto); cualquier cambio de modelos o migraciones actualiza este documento en la misma tarea (regla de paridad, D088).
 
 P009-T002 implementa autoridad y creación de hijos (D117); T004 implementa preparación/pasos/journal y amplía
 locks/procesos compartidos (D119). [Diseño de partida](archive/phase-009/P009-T001_CONTRATO_CREACION.md#6-persistencia-propuesta-y-migraciones).
@@ -90,6 +90,7 @@ erDiagram
         text result_json "null"
         string started_at
         string finished_at "null"
+        json language_context "null; copia del job (0025)"
     }
     managed_events {
         integer id PK
@@ -114,7 +115,7 @@ erDiagram
         json process_owner "null"
         boolean owner_closed
         string activation_id FK "null; → managed_activations.id"
-        json language_context "null; ui-language-1 (0024)"
+        json language_context "null; ui-language-1 (0024) | language-context-1 (0025)"
     }
     checkout_locks {
         string root PK
@@ -862,3 +863,31 @@ hash; la misma clave con la misma petición devuelve el resultado registrado. `m
 (reintento, revalidación, bootstrap, importación, exportación o edición documental) copia el del primer job del
 run, también null. Jobs anteriores a `0024` quedan null («no registrado»). Downgrade: rechazado si hay eventos;
 sin ellos, todas las capturas son `en` de fábrica y se eliminan con la columna.
+
+## Idioma de trabajo por proyecto (P011-T008)
+
+Una fila por raíz canónica (D167), escrita una vez y nunca actualizada ni borrada. `0025_project_work_languages`
+crea la tabla vacía: los proyectos anteriores quedan sin idioma de trabajo confirmado, sin inferirlo. Sin FK: la
+raíz identifica el checkout aunque el registro se dé de baja, cambie de id o el proyecto venga del TOML.
+
+```mermaid
+erDiagram
+    project_work_languages {
+        string root PK "raíz canónica"
+        string format "work-language-1"
+        string project_id "proyecto que lo confirmó"
+        string work_language "CHECK en | es"
+        string source "CHECK registration | creation | toml | migration"
+        json confirmation "preview_sha256 o hash del TOML, actor, motivo, default y versión de preferencias"
+        string sha256 "hash de la fila"
+        string confirmed_at
+    }
+```
+
+Se escribe en la transacción que confirma el alta (registro, registro del hijo creado), al arrancar con un TOML
+`local-config-6` que lo declara, o en la confirmación explícita ausente → valor. Otro valor para la misma raíz se
+rechaza. Desde `0025`, `managed_jobs.language_context` sella `language-context-1` (`ui_language`,
+`preferences_version`, `work_language`, `work_language_source`, `work_language_sha256`) al admitir cada job nuevo;
+sin fila no se admite trabajo nuevo. `managed_attempts.language_context` copia el del job al iniciar cada intento
+(null antes de `0025`). Downgrade: rechazado si hay alguna fila (una confirmación explícita no se representa antes);
+sin filas elimina la tabla y la columna.

@@ -583,7 +583,7 @@ def test_new_child_definition_preparation_and_first_task_with_profile_validation
         post(http, '/api/managed/project-creation-root/apply',
              {'change': selected, 'preview_sha256': preview['preview_sha256'], 'confirm_path': str(parent)}, 'root')
         change = {'project_id': 'child', 'directory_name': 'child', 'root_version': 1, 'composition': 'typescript',
-                  'policy': POLICY, 'agent_selection': selection('codex', 'claude')}
+                  'policy': POLICY, 'agent_selection': selection('codex', 'claude'), 'work_language': 'en'}
         preview = post(http, '/api/managed/project-creations/preview', change)
         post(http, '/api/managed/project-creations/confirm',
              {'change': change, 'preview_sha256': preview['preview_sha256'], 'trust_root': str(root)}, 'child')

@@ -265,7 +265,9 @@ def test_offline_typescript_journey_through_local_configuration(setup, repositor
     runtime = ManagedRuntime(repository.engine, config)
     runtime.start()
     try:
-        assert runtime.project('web') is project and runtime.worker is None
+        # The runtime binds the work language confirmed in SQLite (synthetic `en` here, D167); nothing else changes.
+        assert runtime.project('web').context == replace(project.context, work_language='en')
+        assert replace(runtime.project('web'), context=project.context) == project and runtime.worker is None
     finally:
         runtime.stop()
     job = repository.submit(project.context, TASK, PHASE, PLAN, dict(project.versions), key='journey')

@@ -46,7 +46,8 @@ def select_root(service, parent, key='root', action='select'):
 
 def change(service, name='child', **extra):
     return {'project_id': name, 'directory_name': name, 'root_version': service.read_root()['version'],
-            'composition': 'web', 'policy': POLICY, 'documents': 'v2', 'tag_kind': 'lightweight', **extra}
+            'composition': 'web', 'policy': POLICY, 'documents': 'v2', 'tag_kind': 'lightweight',
+            'work_language': 'en', **extra}
 
 
 def request(service, name='child', **extra):
@@ -330,7 +331,7 @@ def test_api_strict_contract_and_same_result_after_lost_reply(creation):
         response = http.post(ROOT + '/apply', json=body, headers={'Idempotency-Key': 'root'})
         assert response.status_code == 200, response.text
         create = {'project_id': 'child', 'directory_name': 'child', 'root_version': 1,
-                  'composition': 'web', 'policy': POLICY}
+                  'composition': 'web', 'policy': POLICY, 'work_language': 'en'}
         assert http.post(CREATE + '/preview', json={**create, 'root': str(parent)}).status_code == 422
         preview = http.post(CREATE + '/preview', json=create)
         assert preview.status_code == 200, preview.text
