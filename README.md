@@ -297,4 +297,8 @@ Read [CONTRIBUTING.md](CONTRIBUTING.md) and the agent instructions in [AGENTS.md
 anything. Project documents:
 
 - [Roadmap](docs/ROADMAP.md), [state](docs/STATE.md) and [next steps](docs/NEXT_STEPS.md).
+- [Specification](docs/SPECIFICATION.md): requirements and business rules; [architecture](docs/ARCHITECTURE.md):
+  stack, modules, patterns and conventions; [data diagram](docs/DDBB-DIAGRAM.md): the SQLite schema.
+- [Flows](docs/flows/task-run.md): task runs, phases, creation, onboarding, preparation, agents, CLI compatibility,
+  languages, documents, chat and migration, one Mermaid document each in `docs/flows/`.
 - [Decisions](docs/DECISIONS.md): the technical decisions of the starting baseline, cited by the code as `DNNN`.

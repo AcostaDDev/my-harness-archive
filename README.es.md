@@ -62,4 +62,6 @@ tarea congela ambos idiomas al encolarse; cambiar después la interfaz solo afec
 - Reinicio, actualización con `migrate`, backups, diagnóstico y desinstalación conservando los datos:
   [Operation](README.md#operation).
 - Para contribuir: [CONTRIBUTING.md](CONTRIBUTING.md), las instrucciones para agentes en [AGENTS.md](AGENTS.md), el
-  [roadmap](docs/ROADMAP.md) y las [decisiones](docs/DECISIONS.md).
+  [roadmap](docs/ROADMAP.md) y las [decisiones](docs/DECISIONS.md). La documentación técnica, en inglés:
+  [especificación](docs/SPECIFICATION.md), [arquitectura](docs/ARCHITECTURE.md),
+  [modelo de datos](docs/DDBB-DIAGRAM.md) y [flujos](docs/flows/task-run.md).

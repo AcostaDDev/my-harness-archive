@@ -4,7 +4,7 @@ Objetivo y criterios en [ROADMAP](ROADMAP.md#p011--preparación-para-apertura-p�
 Decisión: [D154](DECISIONS.md#d154--p011-preparación-para-apertura-pública-en-github).
 [Plan y alcance](phase/P011_PLAN_APERTURA_PUBLICA.md).
 
-**Estado:** en ejecución desde el 2026-10-22. T001/T002/T019/T003–T014/T020–T022 completadas (D159–D176); cinco
+**Estado:** en ejecución desde el 2026-10-22. T001/T002/T019/T003–T014/T020–T023 completadas (D159–D177); cuatro
 tareas pendientes (T010 desglosó T021, T021 desglosó T022 y T014 desglosó T023 por HITL). Licencia/avisos, retirada legacy/A,
 código/pruebas en inglés, preferencias globales e idioma de trabajo inmutable por proyecto con el par congelado por
 job/intento; recetas v2; directiva al agente y documentos en W; interfaz React, diagnósticos HTTP propios y todos
@@ -13,8 +13,8 @@ los textos visibles del servicio/CLI en en/es (los técnicos ingleses, listados)
 No equivale a fase completada.
 T011 entrega el contrato de CLI y T012 implementa detección automática y compatibilidad condicionada por capacidades.
 T013 contrasta diagramas, datos y arquitectura con el código y sus pruebas. T014 prepara la baseline pública
-en `docs/public/` y el README inglés de primer uso.
-**Siguiente:** P011-T023. Sin autorización de publicación.
+en `docs/public/` y el README inglés de primer uso; T023 completa allí especificación, arquitectura, datos y flujos.
+**Siguiente:** P011-T015. Sin autorización de publicación.
 P001–P010 siguen cerradas; la primera versión local mantiene el alcance de D151/D153.
 
 ## Restricciones compartidas
@@ -47,7 +47,7 @@ P001–P010 siguen cerradas; la primera versión local mantiene el alcance de D1
   siguiente fase` para v0.2.0 después de abrir el proyecto en GitHub, fuera de estas tareas. P011 mantiene
   cierre con READY y autorización propia, nueva fase sin tareas y confirmación del plan posterior.
   El commit D156 y los ajustes D157/D158 ya se realizaron. La petición actual autoriza ejecutar la siguiente
-  tarea (T014) y su commit local en inglés, sin encadenar tareas ni publicar.
+  tarea (T023) y su commit local en inglés, sin encadenar tareas ni publicar.
 - D157 elige instantánea pública inicial revisada, con Git/documentación de partida nuevos y sin historia privada.
   Desde la apertura, código/decisiones/fases se desarrollan en el repositorio público, fuente principal; este
   checkout conserva su historia privada. No sincronizar dos desarrollos activos ni congelar para siempre `docs/` pública.
@@ -672,7 +672,11 @@ ver (directamente o reenviados por la API como `diagnostic`); inventario de part
 
 ## P011-T023 — Especificación, arquitectura, datos y flujos públicos en inglés
 
-**Estado:** pendiente. **Depende de:** T013, T014. **Orden:** desglosada de T014 por HITL (D176); antes de T015.
+**Estado:** completada el 2026-10-23, D177. **Depende de:** T013, T014. **Orden:** desglosada de T014 por HITL (D176); antes de T015.
+**Evidencia:** [entrega](phase/P011-T023_DOCUMENTACION_TECNICA_PUBLICA.md): SPECIFICATION, ARCHITECTURE, DDBB-DIAGRAM y
+14 flujos ingleses en `docs/public/docs/`, autocontenidos y solo con DNNN públicos; `legacy-compatibility.md` sustituye
+al nombre privado. Paridad ER 51/520, 35 diagramas Mermaid y comprobador T014 ampliado (DNNN de documentos) en verde;
+README/README.es enlazan los documentos. Sin suites (no cambia código). Nota T015/T017: `profiles/reference_project.py`.
 **Objetivo:** Completar la baseline pública con la especificación, la arquitectura, el modelo de datos y los
 flujos vigentes, en inglés y suficientes para usuarios, forks y agentes.
 **Alcance:** `docs/public/docs/SPECIFICATION.md`, `ARCHITECTURE.md`, `DDBB-DIAGRAM.md` y `flows/` nuevos, redactados

@@ -84,24 +84,24 @@ salvo donde se indica. Detalle por fase en `docs/archive/phase-NNN/SUMMARY.md`; 
 
 **P011 — Preparación para apertura pública en GitHub**, iniciada documentalmente el 2026-10-22 por encargo del usuario
 ([D154](DECISIONS.md#d154--p011-preparación-para-apertura-pública-en-github),
-[plan](phase/P011_PLAN_APERTURA_PUBLICA.md), [tareas](NEXT_STEPS.md)). T001/T002/T019/T003–T014/T020–T022
-completadas (D159–D176), cinco pendientes (T021–T023 son desgloses HITL); retirada legacy/A
+[plan](phase/P011_PLAN_APERTURA_PUBLICA.md), [tareas](NEXT_STEPS.md)). T001/T002/T019/T003–T014/T020–T023
+completadas (D159–D177), cuatro pendientes (T015–T018); retirada legacy/A
 implementada, código y pruebas en inglés, preferencias globales, idioma de trabajo inmutable por proyecto, recetas v2
 cableadas, directiva de idioma al agente con documentos en el idioma de trabajo, interfaz en/es y todos los textos
 visibles del servicio/CLI en en/es; detección automática y compatibilidad CLI implementadas con evidencia nueva
-sintética; diagramas, datos y arquitectura contrastados con el código; baseline pública inglesa y README de primer
-uso. Sin QA visual conjunta (no autorizada) ni uso nuevo de proveedores reales.
+sintética; diagramas, datos y arquitectura contrastados con el código; baseline pública inglesa (README, especificación,
+arquitectura, datos y flujos). Sin QA visual conjunta (no autorizada) ni uso nuevo de proveedores reales.
 
 **Planificación finalizada para comenzar su ejecución** por petición del usuario
 ([D156](DECISIONS.md#d156--planificación-de-p011-finalizada-y-modo-continuo-aplazado-a-v020)).
 P011 no está completada: T001 entrega diseño/inventario, T002 licencia/revisión estática, T019 retirada funcional y
 T003–T006 comentarios en inglés, T007 infraestructura de idiomas, T008 idioma de trabajo, T020 recetas v2, T009
 directiva y documentos por idioma, T010 interfaz en/es, T021 servicio/CLI en/es y T022 textos de servicio ya
-ingleses en en/es, T011 contrato, T012 compatibilidad/detección automática, T013 auditoría de diagramas y T014
-baseline pública; siguiente T023.
+ingleses en en/es, T011 contrato, T012 compatibilidad/detección automática, T013 auditoría de diagramas y T014/T023
+baseline pública; siguiente T015.
 El modo continuo entre fases queda reservado para **v0.2.0, después de abrir el proyecto en GitHub**;
 no forma parte de P011 ni modifica el cierre confirmado actual. Commit documental D156 realizado en `6174f51`;
-las ampliaciones D157/D158 se incorporaron en `2730f54`. La continuación actual autoriza T014 y su commit local
+las ampliaciones D157/D158 se incorporaron en `2730f54`. La continuación actual autoriza T023 y su commit local
 en inglés, sin proveedores reales ni publicación.
 
 **P011-T001 completada** ([contrato](phase/P011-T001_CONTRATO_APERTURA.md),
@@ -226,17 +226,18 @@ al usuario. API con lecturas pasivas y resolución por mutación; ejemplos sin p
 v1/v2 y hashes previos de configuración conservados. Sin esquema/API nueva, proveedores, servicio o navegador.
 Validación offline y omisiones en la entrega.
 
-**P011-T013 completada** ([matriz](phase/P011-T013_MATRIZ_DIAGRAMAS.md), D175): 14 flujos (23 diagramas), 12 ER y
-ARCHITECTURE contrastados nodo/transición → código/tests. Catorce hallazgos documentales corregidos sin cambiar el
-producto: estados de run, fase y creación, `/tarea`, `local-config-6/7`, resolución CLI, idioma en B, restos
-A/observadores, marcas UK y dos diagramas de secuencia que no compilaban. Piloto P009 separado del flujo vigente.
-Dos regresiones nuevas para transiciones sin prueba. 35 diagramas pasan el parser Mermaid local (sin DOM/render),
-paridad ER de 51 tablas/520 columnas y 727 enlaces; flujos aún en su idioma.
+**P011-T013 completada** ([matriz](phase/P011-T013_MATRIZ_DIAGRAMAS.md), D175): flujos, ER y ARCHITECTURE
+contrastados con código/tests; catorce hallazgos documentales corregidos sin cambiar el producto, dos regresiones
+nuevas, 35 diagramas con parser local y paridad ER 51/520.
 
 **P011-T014 completada** ([entrega](phase/P011-T014_DOCUMENTACION_PUBLICA.md), D176): por HITL, baseline pública en
 `docs/public/` (instrucciones y `docs/` del candidato), README raíz inglés de primer uso, `README.es.md` y ejemplo
 mínimo de un proveedor. DECISIONS pública conserva los DNNN citados por el código (nuevas desde D200);
 especificación/arquitectura/datos/flujos → T023. Comprobador estático en verde; primer uso sin ensayar (T016).
+
+**P011-T023 completada** ([entrega](phase/P011-T023_DOCUMENTACION_TECNICA_PUBLICA.md), D177): SPECIFICATION,
+ARCHITECTURE, DDBB-DIAGRAM y 14 flujos ingleses en `docs/public/docs/`, autocontenidos y solo con DNNN públicos.
+Paridad ER, parser Mermaid y comprobador T014 ampliado en verde; sin suites (no cambia código).
 
 **P010 cerrada y archivada documentalmente el 2026-10-22**
 ([D153](DECISIONS.md#d153--cierre-documental-de-p010-y-de-la-primera-versión-local),
@@ -249,7 +250,7 @@ P009 conserva su cierre documental (D140) y el Django hijo su P001 CLOSED, cuatr
 tag `p001` sobre `47a0557` y archivo en `3d105c6`. No se repite ninguna operación ni comprobación de su estado.
 Este repositorio sigue sin registrarse ni ejecutarse con el harness; cierre manual sin check READY ni tag propio.
 
-**Siguiente:** P011-T023, especificación, arquitectura, datos y flujos públicos en inglés.
+**Siguiente:** P011-T015, paquete público, metadatos y checks reproducibles en GitHub.
 La QA visual conjunta T010+T021+T022 sigue pendiente de autorización propia.
 Otras candidatas permanecen en [ROADMAP](ROADMAP.md#candidatas-sin-fase-asignada).
 Los límites de la base acumulada siguen vigentes. B y D095 mantienen la validación real aplazada por D151;

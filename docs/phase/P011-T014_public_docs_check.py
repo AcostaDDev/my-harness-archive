@@ -7,6 +7,7 @@ D088 parsers and budgets, every DNNN cited by candidate code against the public 
 Usage from the repository root:
 UV_CACHE_DIR=.local/uv-cache uv run --frozen --offline python docs/phase/P011-T014_public_docs_check.py
 """
+import posixpath
 import re
 import subprocess
 import sys
@@ -25,7 +26,10 @@ ROOT_SOURCED = ('README.md', 'README.es.md', 'LICENSE', 'NOTICE.md', 'NOTICE-THI
 EXCLUDED_EXAMPLES = ('examples/first_use/', 'examples/provider_matrix/')
 # Synthetic decision ids used as parser sample data in tests, not references (see the DECISIONS preamble).
 SYNTHETIC_IDS = {'D002', 'D007', 'D010', 'D098'}
-PRIVATE = [r'archive/phase-\d', r'docs/phase/P0', r'\bP0(0\d|1[01])-T\d{3}\b', r'/Users/(?!USER\b)', r'/private/tmp',
+# First number of new decisions, named by the DECISIONS preamble and AGENTS.md (P011-T023).
+RESERVED_IDS = {'D200'}
+# Links into an archive, or this repository's private phases; managed projects' archive/phase-000 is product behavior.
+PRIVATE = [r'\]\([^)]*archive/phase-\d', r'archive/phase-0(0[1-9]|10)\b', r'docs/phase/P0', r'\bP0(0\d|1[01])-T\d{3}\b', r'/Users/(?!USER\b)', r'/private/tmp',
            r'(?i)reference_project', r'gpt-6', r'claude-sonnet', r'acosta@']
 errors = []
 
@@ -79,7 +83,7 @@ def check_links(docs: dict[str, Path]) -> int:
             total += 1
             file, _, anchor = target.partition('#')
             rel = (Path(name).parent / file).as_posix() if file else name
-            rel = str(Path(rel)).replace('\\', '/')
+            rel = posixpath.normpath(rel)
             dest = candidate(rel) if file else path
             if dest is None:
                 errors.append(f'link outside the candidate: {name} -> {target}')
@@ -142,6 +146,18 @@ def check_code_references(ids: set[str]) -> int:
     return len(cited)
 
 
+def check_document_references(docs: dict[str, Path], ids: set[str]) -> int:
+    """P011-T023: every DNNN cited by a public document has a public entry (DECISIONS cites only itself)."""
+    cited = set()
+    for name, path in docs.items():
+        if name != 'docs/DECISIONS.md':
+            cited.update(re.findall(r'\bD\d{3}\b', path.read_text()))
+    missing = sorted(cited - ids - RESERVED_IDS)
+    if missing:
+        errors.append(f'public documents cite decisions without a public entry: {missing}')
+    return len(cited)
+
+
 def check_private(docs: dict[str, Path]) -> None:
     for name, path in docs.items():
         text = path.read_text()
@@ -154,9 +170,12 @@ def main() -> int:
     docs = public_documents()
     links = check_links(docs)
     layout = check_layout()
-    cited = check_code_references(layout.pop('ids'))
+    ids = layout.pop('ids')
+    cited = check_code_references(ids)
+    documented = check_document_references(docs, ids)
     check_private(docs)
-    print(f'{len(docs)} public Markdown files, {links} relative links; layout {layout}; {cited} DNNN cited by code')
+    print(f'{len(docs)} public Markdown files, {links} relative links; layout {layout}; {cited} DNNN cited by code, '
+          f'{documented} by documents')
     for error in errors:
         print('ERROR', error)
     return 1 if errors else 0

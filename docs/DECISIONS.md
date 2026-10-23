@@ -187,6 +187,7 @@ tarea se leen solo las decisiones que cita; este índice sirve para buscar prece
 | [D174](#d174--p011-t012-clientes-automáticos-y-compatibilidad-condicionada) | P011-T012: clientes automáticos y compatibilidad condicionada | P011 |
 | [D175](#d175--p011-t013-diagramas-contrastados-con-el-código-sin-cambiar-el-producto) | P011-T013: diagramas contrastados con el código sin cambiar el producto | P011 |
 | [D176](#d176--p011-t014-baseline-pública-en-docspublic-y-readme-inglés-de-primer-uso) | P011-T014: baseline pública en `docs/public/` y README inglés de primer uso | P011 |
+| [D177](#d177--p011-t023-documentación-técnica-pública-autocontenida-en-inglés) | P011-T023: documentación técnica pública autocontenida en inglés | P011 |
 
 ## D001 — Alcance local y arquitectura base
 
@@ -5259,3 +5260,19 @@ Fase: P011. Concreta D157/D159 (contrato T001 §8) para la documentación públi
   plataforma probada y el primer uso como no ensayado hasta T016. Comprobación estática del candidato modelado,
   carga del ejemplo con rutas sintéticas y `--help` de la CLI; sin suites, builds, servicios, proveedores ni red.
   Siguiente: T023.
+
+## D177 — P011-T023: documentación técnica pública autocontenida en inglés
+
+Estado: aplicada el 2026-10-23 en T023 por la continuación y commit local en inglés pedidos por el usuario.
+Fase: P011. Completa el desglose HITL de D176 sin cambiar el producto.
+[Entrega, criterios y checks](phase/P011-T023_DOCUMENTACION_TECNICA_PUBLICA.md).
+
+- `docs/public/docs/` añade SPECIFICATION, ARCHITECTURE, DDBB-DIAGRAM y los 14 flujos vigentes, reescritos en inglés
+  desde los documentos vivos y el código: comportamiento actual sin historia de fases, enlaces al archivo ni piloto.
+  El flujo privado `legacy-migration.md` se publica como `legacy-compatibility.md`.
+- Solo se citan DNNN con entrada pública; el resto se describe sin número. Requisitos públicos renumerados F01–F22
+  sin los retirados (ninguna referencia en código). Columnas ER idénticas; comentarios traducidos.
+- El comprobador de T014 exige también entrada pública para los DNNN de los documentos, normaliza `..` y limita el
+  patrón de archivo privado a enlaces y fases privadas. README y README.es enlazan los documentos nuevos.
+- Nota para T015/T017: el módulo `profiles/reference_project.py` del candidato lleva un nombre privado; la arquitectura
+  pública no lo nombra. Siguiente: T015.
