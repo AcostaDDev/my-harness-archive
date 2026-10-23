@@ -1,7 +1,8 @@
 """D119: confirmed, deterministic preparation after the documentary root commit.
 
 The core (CAS, intention, steps, lease, journal, commit and recovery) is shared; each packaged recipe
-contributes its manifest, steps, source rules and receipt: Django (D119) and TypeScript web (D142)."""
+contributes its manifest, steps, source rules and receipt: Django (D119) and TypeScript web (D142).
+Their v2 successors (P011-T020, D168) prepare with the project's work language and dispatch checks by step `id`."""
 from dataclasses import asdict, replace
 from difflib import unified_diff
 import json
@@ -26,7 +27,8 @@ from harness_local.core.engine.context import Command
 from harness_local.core.engine.contracts import freeze
 from harness_local.core.engine.evidence import matches
 from harness_local.core.engine.journal import JournalError
-from harness_local.recipes import django, typescript_web
+from harness_local.i18n import message
+from harness_local.recipes import django, django_2, typescript_web, typescript_web_2
 from harness_local.services.project_creation import directory, identity
 from harness_local.services.project_registry import RegistryError, digest
 from harness_local.storage.managed import Conflict
@@ -37,6 +39,7 @@ from harness_local.storage.models import (
 )
 from harness_local.storage.preparation import PreparationRepository, PreparationJournal
 from harness_local.storage.registry import ProjectRegistryRepository, UNFINISHED
+from harness_local.storage import work_language as work_languages
 
 CONTRACT = 'project-preparation-1'
 
@@ -86,13 +89,14 @@ def hashes(files):
 class DjangoRecipe:
     """D119: templates through startproject/startapp, a pinned venv and a local secret."""
     module, label, links = django, 'Django', staticmethod(django_link)
+    by_work_language = False
     tools = ('python_executable', 'installer_executable')
     environment = '.venv'
     reflog = 'harness: prepare Django'
     local_prefixes = ('.venv/', django.WORK + '/', 'reports/', '.pytest_cache/', '.mypy_cache/', '.ruff_cache/')
 
     @staticmethod
-    def manifest(project_id, config):
+    def manifest(project_id, config, language):
         return django.scaffold()
 
     @staticmethod
@@ -113,7 +117,7 @@ class DjangoRecipe:
         return spec['label'] == 'Crear entorno aislado'
 
     @staticmethod
-    def source_check(number):
+    def source_check(spec, number):
         """Before generation the scaffold is partial; after publishing, it is complete."""
         return None if number < 7 else number < 10
 
@@ -129,13 +133,22 @@ class DjangoRecipe:
             if os.path.lexists(generated):
                 verify_files(root, {str(generated.relative_to(root)): expected})
 
-    @staticmethod
-    def check_output(label, stdout, plan):
-        if label == 'Verificar intérprete base' and stdout.strip() != 'Python ' + plan['config']['python_version']:
+    # v1 plans froze Spanish labels without ids; their checks stay keyed on those labels.
+    CHECKS = {'Verificar intérprete base': 'python-version', 'Verificar instalador uv': 'installer-version',
+              'Acreditar versiones instaladas': 'installed-versions'}
+
+    @classmethod
+    def step(cls, spec):
+        return cls.CHECKS.get(spec['label'])
+
+    @classmethod
+    def check_output(cls, spec, stdout, plan):
+        step = cls.step(spec)
+        if step == 'python-version' and stdout.strip() != 'Python ' + plan['config']['python_version']:
             raise ValueError('Base Python version differs from confirmed plan')
-        if label == 'Verificar instalador uv' and stdout.strip().split()[:2] != ['uv', plan['config']['installer_version']]:
+        if step == 'installer-version' and stdout.strip().split()[:2] != ['uv', plan['config']['installer_version']]:
             raise ValueError('uv version differs from confirmed plan')
-        if label == 'Acreditar versiones instaladas':
+        if step == 'installed-versions':
             actual = json.loads(stdout)
             normalize = lambda name: name.lower().replace('_', '-')
             installed = {normalize(k): v for k, v in actual['packages'].items()}
@@ -156,13 +169,14 @@ class DjangoRecipe:
 class TypeScriptRecipe:
     """D142: the packaged manifest, `npm ci` from the declared cache and the profile validations."""
     module, label, links = typescript_web, 'TypeScript web', staticmethod(typescript_link)
+    by_work_language = False
     tools = ('node_executable', 'npm_executable')
     environment = 'node_modules'
     reflog = 'harness: prepare TypeScript web'
     local_prefixes = typescript_web.LOCAL
 
     @staticmethod
-    def manifest(project_id, config):
+    def manifest(project_id, config, language):
         return typescript_web.manifest(project_id, config)
 
     @staticmethod
@@ -183,7 +197,7 @@ class TypeScriptRecipe:
         return False
 
     @staticmethod
-    def source_check(number):
+    def source_check(spec, number):
         return False  # The whole manifest exists from the first step on.
 
     @staticmethod
@@ -194,11 +208,18 @@ class TypeScriptRecipe:
     def verify_staging(root, plan, files):
         pass
 
-    @staticmethod
-    def check_output(label, stdout, plan):
-        if label == 'Verificar Node' and stdout.strip() != 'v' + plan['config']['node_version']:
+    CHECKS = {'Verificar Node': 'node-version', 'Verificar npm': 'npm-version'}
+
+    @classmethod
+    def step(cls, spec):
+        return cls.CHECKS.get(spec['label'])
+
+    @classmethod
+    def check_output(cls, spec, stdout, plan):
+        step = cls.step(spec)
+        if step == 'node-version' and stdout.strip() != 'v' + plan['config']['node_version']:
             raise ValueError('Node version differs from confirmed plan')
-        if label == 'Verificar npm' and stdout.strip() != plan['config']['npm_version']:
+        if step == 'npm-version' and stdout.strip() != plan['config']['npm_version']:
             raise ValueError('npm version differs from confirmed plan')
 
     @staticmethod
@@ -211,7 +232,61 @@ class TypeScriptRecipe:
         return {}
 
 
-RECIPES = {django.VERSION: DjangoRecipe, typescript_web.VERSION: TypeScriptRecipe}
+class DjangoRecipe2(DjangoRecipe):
+    """P011-T020 (D168): `django-recipe-2`, same effects as v1; scaffold prose follows the work language."""
+    module, by_work_language = django_2, True
+    # Steps from generation until publishing see a partial scaffold; local commands after it, a complete one.
+    PARTIAL, COMPLETE = ('generate-project', 'generate-app'), ('migrate',)
+
+    @staticmethod
+    def manifest(project_id, config, language):
+        return django_2.scaffold(language)
+
+    @staticmethod
+    def plan(files, config, mode):
+        return {**DjangoRecipe.plan(files, config, mode), 'templates': django_2.templates(files),
+                'packages': django_2.PACKAGES, 'lock_sha256': sha(django_2.LOCK.encode()),
+                'message': 'harness: prepare Django (django-recipe-2)'}
+
+    @staticmethod
+    def step(spec):
+        return spec['id']
+
+    @staticmethod
+    def uncertain(spec):
+        return spec['id'] == 'create-environment'
+
+    @classmethod
+    def source_check(cls, spec, number):
+        if spec['id'] in cls.PARTIAL:
+            return True
+        return False if spec['id'] in cls.COMPLETE or spec['id'].startswith('validate-') else None
+
+
+class TypeScriptRecipe2(TypeScriptRecipe):
+    """P011-T020 (D168): `typescript-web-recipe-2`, same effects as v1; test prose follows the work language."""
+    module, by_work_language = typescript_web_2, True
+
+    @staticmethod
+    def manifest(project_id, config, language):
+        return typescript_web_2.manifest(project_id, config, language)
+
+    @staticmethod
+    def plan(files, config, mode):
+        return {**TypeScriptRecipe.plan(files, config, mode),
+                'network': {'enabled': mode == 'network', 'registry': typescript_web_2.REGISTRY,
+                            'cache': config['npm_cache'], 'automatic_retry': False,
+                            'notice': 'With network, npm downloads from the registry and writes to the operator '
+                                      'cache.'},
+                'message': 'harness: prepare TypeScript web (typescript-web-recipe-2)'}
+
+    @staticmethod
+    def step(spec):
+        return spec['id']
+
+
+RECIPES = {django.VERSION: DjangoRecipe, typescript_web.VERSION: TypeScriptRecipe,
+           django_2.VERSION: DjangoRecipe2, typescript_web_2.VERSION: TypeScriptRecipe2}
 
 
 class ProjectPreparation:
@@ -225,7 +300,7 @@ class ProjectPreparation:
         project = self.runtime.project(project_id)
         registrar = self.runtime.registry.registrar
         if not registrar or project.versions.get('project_recipe') not in RECIPES:
-            raise RegistryError(409, 'recipe_unavailable', 'Este proyecto no tiene una receta v5 configurada.')
+            raise RegistryError(409, 'recipe_unavailable', 'Este proyecto no tiene una receta configurada.')
         config = registrar._recipe_roots.get(project.context.root)
         if not config or 'project_registry' not in project.versions:
             raise RegistryError(409, 'recipe_unavailable', 'La receta requiere un hijo nuevo registrado por el servicio.')
@@ -244,6 +319,18 @@ class ProjectPreparation:
         if assessment.refusal or assessment.activation is not None:
             raise RegistryError(409, 'mode_refused', 'La preparación solo admite el hijo nuevo sin estado legacy.')
         return writer, git
+
+    def work_language(self, session, project, recipe):
+        """D168: a v2 recipe prepares with the root's confirmed work language (D167), never an inferred one."""
+        if not recipe.by_work_language:
+            return {}
+        row = work_languages.get(session, str(project.context.root))
+        if row is None:
+            raise RegistryError(409, 'work_language_required',
+                                message('work_language.unconfirmed', self.runtime.registry._language()))
+        language = row['work_language']
+        return {'work_language': language, 'work_language_sha256': row['sha256'],
+                'recipe_sha256': recipe.module.fingerprint(language)}
 
     def latest(self, project_id, session):
         return session.scalar(select(Operation).where(Operation.project_id == project_id)
@@ -311,6 +398,7 @@ class ProjectPreparation:
             raise RegistryError(409, 'stale_version', 'El proyecto cambió; vuelve a cargarlo.')
         previous_id = body.get('previous_id')
         self._idle(session, str(root), previous=previous_id)
+        language = self.work_language(session, project, recipe)
         if body['mode'] == 'network' and not config['allow_network']:
             raise RegistryError(409, 'network_not_allowed', 'El operador solo permite preparación offline.')
         writer, git = self.writer(project)
@@ -322,7 +410,8 @@ class ProjectPreparation:
                     or previous.status != 'CANCELLED' and not previous.reserved):
                 raise RegistryError(409, 'recovery_required', 'La preparación previa no admite una nueva intención.')
             self.repository.stopped(session, previous)
-            if previous.plan['versions'] != dict(project.versions) or previous.plan['identity'] != info:
+            if (previous.plan['versions'] != dict(project.versions) or previous.plan['identity'] != info
+                    or any(previous.plan.get(key) != value for key, value in language.items())):
                 raise RegistryError(409, 'preview_changed', 'La composición o identidad original cambió.')
             steps = list(session.scalars(select(Step).where(Step.operation_id == previous.id).order_by(Step.number)))
             first = next((s.number for s in steps if s.status != 'DONE'), len(steps) - 1)
@@ -378,7 +467,7 @@ class ProjectPreparation:
             workspace = snapshot(root, recipe.links)
             if any('sha256' in v and p not in tracked for p, v in workspace.items()):
                 raise RegistryError(409, 'target_exists', 'Hay archivos ajenos o ignorados; no se adoptan.')
-            files = recipe.manifest(project_id, config)
+            files = recipe.manifest(project_id, config, language.get('work_language'))
             for path in recipe.targets(files):
                 if os.path.lexists(root / path):
                     raise RegistryError(409, 'target_exists', f'El destino {path} ya existe.')
@@ -390,7 +479,8 @@ class ProjectPreparation:
             message = specific.pop('message')
             plan = {'contract': CONTRACT, 'recipe': recipe.module.VERSION, 'preparation_commands': 'preparation-commands-1',
                     'project_id': project_id, 'root': str(root), 'identity': info,
-                    'expected_version': current.version, 'versions': dict(project.versions), 'config': config,
+                    'expected_version': current.version, 'versions': dict(project.versions), **language,
+                    'config': config,
                     'tool_files': {key: {'resolved': str(Path(config[key]).resolve(strict=True)),
                                          'sha256': file_hash(Path(config[key]).resolve(strict=True))}
                                    for key in recipe.tools},
@@ -471,6 +561,11 @@ class ProjectPreparation:
             raise ValueError('Preparation step/argv differs from the confirmed plan')
         if dict(project.versions) != row['plan']['versions']:
             raise ValueError('Frozen project composition changed')
+        if 'work_language' in row['plan']:
+            current = work_languages.read(self.runtime.engine, root)
+            if not current or (current['work_language'], current['sha256']) != (
+                    row['plan']['work_language'], row['plan']['work_language_sha256']):
+                raise ValueError('Work language differs from the confirmed plan')
         with directory(root) as fd:
             if identity(os.fstat(fd)) != row['plan']['identity']:
                 raise ValueError('Checkout identity changed')
@@ -490,7 +585,7 @@ class ProjectPreparation:
 
     def _files(self, root, plan):
         # All targets were absent. Any interrupted write is left for conservative recovery.
-        if plan['recipe'] == typescript_web.VERSION:
+        if RECIPES[plan['recipe']].environment == 'node_modules':
             return self._typescript_files(root, plan)
         for path in (django.WORK, django.WORK + '/home', django.WORK + '/tmp', django.WORK + '/cache',
                      django.WORK + '/output', django.WORK + '/output/core'):
@@ -516,7 +611,8 @@ class ProjectPreparation:
             write_new(root, item['path'], item['content'].encode(), expected_identity=plan['identity'])
 
     def _publish(self, root, plan):
-        generated = {p: c for p, c in django.scaffold().items() if p.endswith('.py')}
+        # The confirmed manifest: v1 froze `django.scaffold()`; v2 the scaffold of the work language.
+        generated = {f['path']: f['content'] for f in plan['files'] if f['path'].endswith('.py')}
         # The generator's complete file set must match, including empty package/migration markers.
         output = root / django.WORK / 'output'
         observed = {str(p.relative_to(output)) for p in output.rglob('*') if p.is_file()}
@@ -555,7 +651,7 @@ class ProjectPreparation:
         if result.error or result.timed_out or result.exit_code != 0:
             raise ValueError(f'Paso fallido ({spec["label"]}); consulta la captura, sin reintento automático.')
         recipe = RECIPES[plan['recipe']]
-        recipe.check_output(spec['label'], result.stdout, plan)
+        recipe.check_output(spec, result.stdout, plan)
         evidence = {'result': asdict(result)}
         # The profile's JUnit command, by its arguments: the recipe runs it through its own executable path.
         declaration = next((item for item in recipe.module.profile().junit_reports
@@ -628,6 +724,8 @@ class ProjectPreparation:
                    'recipe_config_sha256': plan['versions']['recipe_config_sha256'], 'config': plan['config'],
                    'lock_sha256': plan['lock_sha256'],
                    'commit': pending['expected_commit'], 'operation_id': operation_id,
+                   **{key: plan[key] for key in ('work_language', 'work_language_sha256', 'recipe_sha256')
+                      if key in plan},
                    **recipe.receipt(root, plan),
                    # Same glob semantics as the profile (`scripts/**`); Django's literal paths match themselves.
                    'protected_files': {f['path']: f['sha256'] for f in plan['files']
@@ -675,7 +773,7 @@ class ProjectPreparation:
                 elif kind == 'publish':
                     self._publish(root, plan)
                 elif kind == 'command':
-                    partial = RECIPES[plan['recipe']].source_check(step['number'])
+                    partial = RECIPES[plan['recipe']].source_check(step['spec'], step['number'])
                     if partial is not None:
                         self._verify_source(root, plan, allow_partial=partial)
                     evidence = self._command(root, plan, step, PreparationJournal(self.repository, operation_id, token))

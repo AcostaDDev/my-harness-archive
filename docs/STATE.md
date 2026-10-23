@@ -38,6 +38,8 @@ salvo donde se indica. Detalle por fase en `docs/archive/phase-NNN/SUMMARY.md`; 
   tareas del NEXT_STEPS con CAS y notas congeladas (D135). Wheel verificado con definición D088 (D126).
   Segunda receta `typescript-web-recipe-1` (P010-T002, D143): manifiesto inicial con `typescript@5.9.3`, `npm ci`
   desde la caché del operador y validaciones del perfil antes del commit técnico, para hijos TypeScript web nuevos.
+  Recetas v2 (`django-recipe-2`, `typescript-web-recipe-2`) en `local-config-6` con el idioma de trabajo del hijo
+  sellado en plan/recibo y comprobaciones por `id` (P011-T020, D168); v5 conserva v1.
 - **Incorporación de proyectos** ([P008](archive/phase-008/SUMMARY.md), D161): inventario estático sobre HEAD,
   conversación de solo lectura y borradores privados de B, perfil/documentos confirmados y commit conciliable.
   Objetos locales, blobs por hash, filtros/gitlinks y destinos ignorados comprobados antes de escribir y recuperar.
@@ -74,10 +76,10 @@ salvo donde se indica. Detalle por fase en `docs/archive/phase-NNN/SUMMARY.md`; 
 
 **P011 — Preparación para apertura pública en GitHub**, iniciada documentalmente el 2026-10-22 por encargo del usuario
 ([D154](DECISIONS.md#d154--p011-preparación-para-apertura-pública-en-github),
-[plan](phase/P011_PLAN_APERTURA_PUBLICA.md), [tareas](NEXT_STEPS.md)). T001/T002/T019/T003–T008
-completadas (D159–D167), once tareas pendientes (T020 desglosada de T008); retirada legacy/A implementada, código y
-pruebas en inglés, preferencias globales e idioma de trabajo inmutable por proyecto; sin recetas v2 cableadas,
-directiva al agente ni nueva compatibilidad CLI.
+[plan](phase/P011_PLAN_APERTURA_PUBLICA.md), [tareas](NEXT_STEPS.md)). T001/T002/T019/T003–T008/T020
+completadas (D159–D168), diez tareas pendientes; retirada legacy/A implementada, código y pruebas en inglés,
+preferencias globales, idioma de trabajo inmutable por proyecto y recetas v2 cableadas; sin directiva al agente
+ni nueva compatibilidad CLI.
 
 **Planificación finalizada para comenzar su ejecución** por petición del usuario
 ([D156](DECISIONS.md#d156--planificación-de-p011-finalizada-y-modo-continuo-aplazado-a-v020)).
@@ -160,6 +162,13 @@ lo declara por proyecto TOML y el servicio lo asocia al arrancar (HITL); sin val
 `work_language_required` hasta una confirmación explícita con hash y motivo (API/UI mínima, HITL). Cada job sella
 `language-context-1` y cada intento lo copia. Por HITL, recetas v2 → T020; sin directiva al agente (T009).
 
+**P011-T020 completada** ([entrega](phase/P011-T020_RECETAS_V2.md), D168): `local-config-6` admite `[recipes]` con
+las claves de v5 y elige `django-recipe-2`/`typescript-web-recipe-2` (v5 sigue con v1 y sus hashes). La composición
+liga la huella v2 de ambos idiomas; el plan sella el idioma de la fila de la raíz, su hash y `recipe_sha256`, y el
+recibo los copia; sin fila, 409 `work_language_required` antes de efectos y comprobación antes de cada paso.
+Perfiles v2 propios, despacho por `id`, etiquetas de pasos en idioma visual por catálogo y `work_language`/
+`recipe_sha256` tipados en el plan. Idioma funcional del hijo intacto. Sin herramientas reales, red ni QA de navegador.
+
 **P010 cerrada y archivada documentalmente el 2026-10-22**
 ([D153](DECISIONS.md#d153--cierre-documental-de-p010-y-de-la-primera-versión-local),
 [resumen](archive/phase-010/SUMMARY.md), [registro de cierre](archive/phase-010/P010_CIERRE.md)).
@@ -171,7 +180,7 @@ P009 conserva su cierre documental (D140) y el Django hijo su P001 CLOSED, cuatr
 tag `p001` sobre `47a0557` y archivo en `3d105c6`. No se repite ninguna operación ni comprobación de su estado.
 Este repositorio sigue sin registrarse ni ejecutarse con el harness; cierre manual sin check READY ni tag propio.
 
-**Siguiente:** P011-T020, recetas v2 cableadas por idioma de trabajo (desglosada de T008), antes de T009.
+**Siguiente:** P011-T009, prompts ingleses y documentos generados en la lengua elegida.
 Otras candidatas permanecen en [ROADMAP](ROADMAP.md#candidatas-sin-fase-asignada).
 Los límites de la base acumulada siguen vigentes. B y D095 mantienen la validación real aplazada por D151;
 A queda retirado del producto por D155/D161, sin acreditarlo como validado con proveedores reales.

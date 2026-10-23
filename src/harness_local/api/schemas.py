@@ -1914,6 +1914,10 @@ class PreparationPlanRead(BaseModel):
     files: list[dict[str, Any]]
     steps: list[dict[str, Any]]
     mode: Literal['offline', 'network']
+    work_language: Language | None = Field(
+        default=None, description="v2 recipes: the project's confirmed work language this plan prepares with.")
+    recipe_sha256: str | None = Field(
+        default=None, pattern=SHA256, description='v2 recipes: fingerprint of the recipe for that work language.')
 
 
 class PreparationOperationRead(BaseModel):

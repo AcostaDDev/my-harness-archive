@@ -7,7 +7,7 @@
 # local-config-5 (P009-T003) is this same template with format = "local-config-5": it also accepts
 # [agent_presets.*] and the recipe fragments in examples/ (typescript-web-recipe, django-recipe).
 # local-config-6 (P011-T008) is local-config-5 plus an optional work_language per [[projects]] (see below);
-# it does not accept the recipe fragments yet. Projects registered from the UI choose it there.
+# its recipe fragments select the v2 recipes (P011-T020). Projects registered from the UI choose it there.
 # Validate: harness-local check-config /path/harness-local.toml [--preflight]
 # Start:    harness-local serve --database /path/state/harness.sqlite3 --config /path/harness-local.toml
 format = "local-config-4"

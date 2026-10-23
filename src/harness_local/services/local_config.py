@@ -2,7 +2,8 @@
 
 `local-config-6` (P011-T008, D167) is `local-config-5` plus an optional `[[projects]].work_language` (en/es):
 the service records it once for the project's root at startup and SQLite rules afterwards; another value for an
-associated root stops the service. Packaged recipes are not admitted in v6 until their v2 is wired.
+associated root stops the service. Its `[recipes]` select the packaged v2 recipes (P011-T020, D168), which
+prepare with the project's work language; the same keys in `local-config-5` keep selecting v1.
 `local-config-5` (P009-T003) adds private role presets and optional project selections, and
 optional packaged recipes: `[recipes.django]` (D119) and `[recipes.typescript-web]` (D142).
 Effective agents are composed per checkout; older formats keep their frozen identity.
@@ -48,7 +49,7 @@ from harness_local.core.engine.documents import DOCUMENT_LAYOUT
 from harness_local.core.engine.journal import JournalError
 from harness_local.i18n import LANGUAGES
 from harness_local.profiles.typescript_web import typescript_web_profile
-from harness_local.recipes import RECIPES, by_version as recipe_version, module as recipe_module
+from harness_local.recipes import RECIPES, by_version as recipe_version, implementation, module as recipe_module
 from harness_local.services.managed_runtime import (PROJECT_ID, ManagedConfig, ManagedProject, agents_view,
                                                     validate_projects)
 
@@ -472,6 +473,9 @@ class LocalComposer:
         self._authority = {self.agents_key: data[self.agents_key], 'git': data['git'], 'state_dir': str(state)}
         self.agents, self.reviewer = agents, reviewer
         self.presets, self.recipes = presets, recipes
+        # Recipe generation of this format (D168): v5 selects v1 and v6 selects v2; older formats declare none.
+        self._recipe_format = fmt if fmt in AGENT_FORMATS else V5
+        self.recipe_profiles = {}  # v6 only: recipe name → profile of its v2 module
         self._recipe_roots, self._receipts = {}, {}
         self.identity, self.git_executable, self.engine = identity, git_executable, engine
         self.compositions = compositions  # name → (profile, raw command table); empty before v3
@@ -525,13 +529,14 @@ class LocalComposer:
             recipe = self._recipes_by_composition.get(name)
             if recipe:
                 authority['recipe'] = {'config': self.recipes[recipe],
-                                       'implementation_sha256': recipe_module(recipe).fingerprint()}
+                                       **implementation(recipe_module(recipe, self._recipe_format))}
         else:
             profile_name, table = _text(item['profile'], f'{where}.profile'), item['commands']
             if profile_name not in self.profiles:
                 raise LocalConfigError(f'{where}.profile: perfiles admitidos {sorted(self.profiles)}')
         recipe = self._recipes_by_composition.get(item.get('composition'))
-        profile = self.profiles[profile_name]
+        # v6: a recipe composition runs with its v2 module's own profile (D163/D168), not the built-in one.
+        profile = self.recipe_profiles.get(recipe) or self.profiles[profile_name]
         if self.format in PROFILE_FORMATS:
             # P008-T008: the complete profile content (declared or built-in) enters the frozen hash, so
             # changing it quarantines the jobs admitted before. v1–v3 keep their hashes.
@@ -586,7 +591,7 @@ class LocalComposer:
                     **({'project_registry_id': identifier, 'project_registry_sha256': registry[1]}
                        if registry is not None and self.format in AGENT_FORMATS else {}),
                     **cli.frozen_versions(), **runner.frozen_versions(),
-                    **({'project_recipe': recipe_module(recipe).VERSION,
+                    **({'project_recipe': recipe_module(recipe, self._recipe_format).VERSION,
                         'recipe_config_sha256': hashlib.sha256(freeze(authority['recipe']).encode()).hexdigest()}
                        if recipe else {})}
         if new_directory:
@@ -691,9 +696,6 @@ def _build(data, source):
                        ('projects', 'profiles') if fmt in PROFILE_FORMATS else ('projects',))
     else:
         data = _fields(data, 'raíz', ('format', 'service', 'git', agents_key, 'projects'))
-    if fmt == VERSION and 'recipes' in data:
-        raise LocalConfigError('recipes: local-config-6 admits the packaged recipes once their v2 is wired; '
-                               'keep local-config-5 for projects prepared with a recipe')
     service = _fields(data['service'], 'service', ('state_dir', 'supervisor'), ('lease_seconds', 'poll_seconds'))
     state = _path(service['state_dir'], 'service.state_dir', kind='directory')
     git = _fields(data['git'], 'git', ('executable', 'author_name', 'author_email'))
@@ -738,12 +740,20 @@ def _build(data, source):
         if 'typescript-web' in raw:
             recipes['typescript-web'] = _typescript_recipe(raw['typescript-web'], state)
     profiles = {name: factory() for name, factory in PROFILES.items()}
+    recipe_profiles = {}
+    if fmt == VERSION:
+        # D168: the v2 profiles are part of each v2 fingerprint; the built-in `typescript-web` stays for compositions
+        # without a recipe.
+        recipe_profiles = {name: recipe_module(name, fmt).profile() for name in recipes}
     if 'django' in recipes:
         from harness_local.recipes.django import profile
         # P009-T019 (D133): the formatter is declared here and not in recipes/django.py, whose text is part of the
-        # recipe fingerprint that binds the preparation receipts already issued.
-        profiles['python-django-recipe'] = replace(profile(), formatter_argv=('ruff', 'format', '--'),
+        # recipe fingerprint that binds the preparation receipts already issued. v2 keeps the same formatter.
+        base = recipe_profiles.get('django') or profile()
+        profiles['python-django-recipe'] = replace(base, formatter_argv=('ruff', 'format', '--'),
                                                    formatter_paths=('*.py',))
+        if fmt == VERSION:
+            recipe_profiles['django'] = profiles['python-django-recipe']
     declared = data.get('profiles', {})
     if not isinstance(declared, dict):
         raise LocalConfigError('profiles: se esperaba una tabla [profiles.NOMBRE]')
@@ -777,6 +787,7 @@ def _build(data, source):
                              compositions, registration, profiles, presets, recipes)
     composer._recipes_by_composition = {name: value['recipe'] for name, value in data.get('compositions', {}).items()
                                        if value.get('recipe')}
+    composer.recipe_profiles = recipe_profiles
     projects = []
     for index, item in enumerate(items):
         project, composition = composer.compose(item, f'projects[{index}]')
@@ -797,7 +808,8 @@ def _build(data, source):
 
 
 def _typescript_recipe(value, state):
-    """P010-T002 (D142): `[recipes.typescript-web]`, operator authority for `typescript-web-recipe-1`."""
+    """P010-T002 (D142): `[recipes.typescript-web]`, operator authority for `typescript-web-recipe-1` (v5) or
+    `typescript-web-recipe-2` (v6, D168): the same keys."""
     where = 'recipes.typescript-web'
     entry = dict(_fields(value, where, ('node_executable', 'node_version', 'npm_executable', 'npm_version', 'npm_cache',
                                         'timeout_seconds', 'max_output_bytes', 'allow_network')))

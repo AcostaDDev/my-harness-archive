@@ -111,6 +111,7 @@ métricas; `diagnose-cli` completa la CLI. Cada orden documenta sus argumentos c
 | Revisor/ejecutor Codex o Claude en las cuatro combinaciones | Sí | Sí (D071; piloto P009) |
 | Proyecto Django nuevo con receta `django-recipe-1` | Sí | Sí, macOS arm64 y Python 3.13 (D139) |
 | Proyecto TypeScript web nuevo con receta `typescript-web-recipe-1` | Sí, también con node/npm reales y caché local | No |
+| Recetas v2 (`django-recipe-2`, `typescript-web-recipe-2`) con el idioma de trabajo del hijo, en `local-config-6` (D168) | Sí, con herramientas sintéticas | No |
 | Perfil declarado (`[profiles.*]`, ejemplo `python-django`) | Sí | No; validación real aplazada en P010-T008 (D095, D151) |
 | Incorporación B (código sin harness) | Sí | No; validación real aplazada en P010-T008 (D151) |
 | Chat ligado a tareas, backup y restauración | Sí | Sin evidencia real localizada (matriz de T001) |

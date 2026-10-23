@@ -4,7 +4,7 @@ Maintained successor of the frozen `typescript-web-recipe-1`, which keeps its by
 `typescript-web` profile for issued receipts. The profile is declared here, so later edits to the built-in one never
 change this identity. Test descriptions follow the work language; the application's functional defaults
 (`<html lang>` and visible text) keep the v1 values (P011-T001 §5). Steps carry a stable `id`; their `label` is
-human prose. Not selectable until `local-config-6` (T008).
+human prose. Selected by `local-config-6` (P011-T020, D168).
 """
 import json
 from dataclasses import asdict

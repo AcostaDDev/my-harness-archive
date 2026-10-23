@@ -232,8 +232,8 @@ def test_local_config_6_declares_the_work_language_and_sqlite_rules(operator, mi
     previous['format'] = 'local-config-5'
     with pytest.raises(LocalConfigError, match='work_language'):
         load_local_config(write(folder, previous))
-    with pytest.raises(LocalConfigError, match='recipes'):
-        load_local_config(write(folder, {**v6(data), 'recipes': {}}))
+    # P011-T020 (D168): v6 admits `[recipes]` (the v2 recipes; covered in test_recipe_v2_preparation).
+    assert load_local_config(write(folder, {**v6(data), 'recipes': {}})).registrar.recipes == {}
 
 
 # --- creation ------------------------------------------------------------------------------------------

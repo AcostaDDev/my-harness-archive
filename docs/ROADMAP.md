@@ -247,9 +247,11 @@ T007 completada (D166): preferencias globales de idioma, catálogos en/es y visu
 [entrega](phase/P011-T007_INFRAESTRUCTURA_IDIOMAS.md).
 T008 completada (D167): idioma de trabajo inmutable por raíz, `local-config-6` y par congelado por job/intento;
 [entrega](phase/P011-T008_IDIOMA_PROYECTO.md). Por HITL, el cableado de recetas v2 pasa a la nueva T020.
-Once tareas pendientes; siguiente T020.
+T020 completada (D168): recetas v2 en `local-config-6` con el idioma de trabajo sellado en plan y recibo;
+[entrega](phase/P011-T020_RECETAS_V2.md).
+Diez tareas pendientes; siguiente T009.
 Planificación inicial finalizada en D156 y commit `6174f51`; ajustes D157/D158 incorporados
-en `2730f54`, sin ejecución del producto. La petición actual autoriza T008 y su commit local en inglés.
+en `2730f54`, sin ejecución del producto. La petición actual autoriza T020 y su commit local en inglés.
 La fase no está cerrada; se mantienen diecinueve tareas (ocho completadas) y diez criterios.
 [Plan](phase/P011_PLAN_APERTURA_PUBLICA.md), [tareas](NEXT_STEPS.md) y
 [D154](DECISIONS.md#d154--p011-preparación-para-apertura-pública-en-github).

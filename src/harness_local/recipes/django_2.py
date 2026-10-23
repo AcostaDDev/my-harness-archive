@@ -3,7 +3,7 @@
 Maintained successor of the frozen `django-recipe-1`, which stays byte-identical for issued receipts. The scaffold
 is parametrized by the project's work language: comments and docstrings follow it, while the child application's
 functional defaults (`LANGUAGE_CODE`, `<html lang>` and visible text) keep the v1 values (P011-T001 §5).
-Steps carry a stable `id`; their `label` is human prose. Not selectable until `local-config-6` (T008).
+Steps carry a stable `id`; their `label` is human prose. Selected by `local-config-6` (P011-T020, D168).
 """
 import json
 from dataclasses import asdict

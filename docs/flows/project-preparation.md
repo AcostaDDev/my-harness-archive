@@ -1,4 +1,4 @@
-# Flujo — preparación confirmada por receta (P009-T004, P010-T002)
+# Flujo — preparación confirmada por receta (P009-T004, P010-T002, P011-T020)
 
 Implementado en D119 para Django y en D143 para TypeScript web;
 [contrato Django](../archive/phase-009/P009-T001_CONTRATO_CREACION.md#5-receta-posterior-al-bootstrap-t004),
@@ -6,7 +6,8 @@ Implementado en D119 para Django y en D143 para TypeScript web;
 [contrato TypeScript](../archive/phase-010/P010-T001_CONTRATO_CONSOLIDACION.md#1-arranque-de-un-proyecto-typescript-web-nuevo-t002)
 y [entrega TypeScript](../archive/phase-010/P010-T002_ARRANQUE_TYPESCRIPT.md). Solo hijos nuevos registrados por el servicio,
 composición v5 con `recipe = "django"` (perfil empaquetado) o `recipe = "typescript-web"` (perfil integrado sin
-cambios) y commit documental raíz aceptado. No ejecuta agentes. Ambas recetas comparten contrato
+cambios) y commit documental raíz aceptado; desde P011-T020 (D168) las mismas claves en v6 eligen las recetas v2
+con el idioma de trabajo del hijo ([sección](#recetas-v2-por-idioma-de-trabajo-p011-t020-d168)). No ejecuta agentes. Ambas recetas comparten contrato
 `project-preparation-1`, binding `preparation-commands-1`, tablas, locks, journal, commit técnico y recuperación;
 cada una aporta su manifiesto, pasos, reglas de fuente y recibo.
 
@@ -18,11 +19,11 @@ flowchart TD
     I --> W["Worker reclama propietario y lease; journal registra grupo antes de GO"]
     W --> V["Verificar identidad, herramientas, HEAD y snapshot antes de cada efecto"]
     V --> RC{"Receta"}
-    RC -- django-recipe-1 --> E["Plantillas propias, secreto local ignorado, venv y wheels fijados con hashes"]
+    RC -- "django-recipe-1/2" --> E["Plantillas propias, secreto local ignorado, venv y wheels fijados con hashes"]
     E --> G["startproject y startapp sobre plantillas propias en staging del hijo"]
     G --> M["Comparar salida exacta y publicar solo archivos nuevos"]
     M --> T["migrate local; pytest/JUnit, ruff, mypy, check y ausencia de migraciones nuevas"]
-    RC -- typescript-web-recipe-1 --> F["Manifiesto empaquetado y HOME/TMPDIR/npmrc vacíos en .harness-preparation"]
+    RC -- "typescript-web-recipe-1/2" --> F["Manifiesto empaquetado y HOME/TMPDIR/npmrc vacíos en .harness-preparation"]
     F --> N["node y npm con versión exacta; npm ci --ignore-scripts desde la caché declarada"]
     N --> U["npm run check, test (JUnit) y build"]
     T --> K["Sellar y persistir intención de commit; árbol exacto y CAS de HEAD"]
@@ -103,3 +104,31 @@ Recibo: identidad, archivos del manifiesto que casan con `protected_paths` del p
 falla sin crearlo (comprobado con npm 11.12.1), y bytes parciales o un `npm ci` sin checkpoint bloquean con
 diagnóstico, sin borrar. El commit técnico «harness: prepare TypeScript web (typescript-web-recipe-1)» contiene
 exactamente el manifiesto. El manifiesto queda fijo tras preparar; añadir dependencias requiere un flujo futuro.
+
+## Recetas v2 por idioma de trabajo (P011-T020, D168)
+
+`local-config-6` admite `[recipes.django]` y `[recipes.typescript-web]` con las claves de v5 y elige
+`django-recipe-2`/`typescript-web-recipe-2`; v5 sigue eligiendo v1 con sus hashes. Mismos efectos, orden, núcleo,
+locks, journal, recuperación y commit técnico que v1; cambian la prosa técnica del scaffold, el perfil (Django v2
+con instrucciones inglesas y el formateador de D133; TypeScript con copia propia del perfil) y la identidad.
+
+```mermaid
+flowchart TD
+    C["Composición v6 con receta: recipe_config_sha256 liga config y huella v2 de en y es"] --> P["Preview v2"]
+    P --> L{"¿Fila de idioma de trabajo de la raíz?"}
+    L -- no --> R["409 work_language_required; sin comprobar ni tocar el checkout"]
+    L -- sí --> M["Manifiesto del idioma; plan sella work_language, hash de la fila y recipe_sha256"]
+    M --> K["Antes de cada paso: fila igual al plan (valor y hash) o se detiene sin efectos nuevos"]
+    K --> D["Comprobaciones por id estable; etiquetas en idioma visual desde catálogos por id"]
+    D --> T["Recibo copia work_language, hash y recipe_sha256; jobs posteriores lo ligan por project_environment_sha256"]
+```
+
+- El idioma sale de la fila de la raíz (D167), nunca del default, del visual ni del contenido. Una operación sucesora
+  conserva los valores del plan original y se rechaza si la fila ya no coincide.
+- Comprobaciones por `id`: versiones (`python-version`, `installer-version`, `installed-versions`, `node-version`,
+  `npm-version`), entorno incierto (`create-environment`) y fuente parcial/completa (`generate-*`; `migrate`,
+  `validate-*`). Los planes v1, sin `id`, se comprueban por sus etiquetas congeladas con el mismo resultado.
+- La UI muestra los pasos v2 con los catálogos en/es por `id` (validaciones con el comando del perfil) y el idioma
+  de trabajo del plan; el plan conserva su etiqueta inglesa. Los planes v1 muestran su etiqueta congelada.
+- El idioma funcional del hijo (`LANGUAGE_CODE = "es"`, `<html lang="es">`, textos visibles) no deriva del visual
+  ni del de trabajo. Mover a v6 un proyecto preparado con v1 no está soportado: cambiaría su composición congelada.

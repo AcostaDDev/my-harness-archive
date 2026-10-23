@@ -5097,6 +5097,16 @@ export interface components {
              * @enum {string}
              */
             mode: "offline" | "network";
+            /**
+             * Work Language
+             * @description v2 recipes: the project's confirmed work language this plan prepares with.
+             */
+            work_language?: ("en" | "es") | null;
+            /**
+             * Recipe Sha256
+             * @description v2 recipes: fingerprint of the recipe for that work language.
+             */
+            recipe_sha256?: string | null;
         } & {
             [key: string]: unknown;
         };

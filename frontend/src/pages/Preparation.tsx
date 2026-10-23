@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { createOnce, managed } from "../managed-api";
 import type { S } from "../managed-api";
-import { pendingPreparationStep, preparationStatus, recipeLabel, recipeModes } from "../preparation.ts";
+import { useI18n } from "../Language";
+import { isTypeScriptRecipe, pendingPreparationStep, preparationStatus, preparationStepLabel, recipeLabel, recipeModes } from "../preparation.ts";
 import { DiffBlock, Evidence, Hash, Stale, usePoll } from "../ui";
 import { useWorkspace } from "../workspace";
 
@@ -10,6 +11,7 @@ type Change = S["PreparationChangeInput"];
 
 export function Preparation() {
   const { project, refresh, busy, operate } = useWorkspace();
+  const { t } = useI18n();
   const read = usePoll<S["PreparationRead"]>(`/projects/${project}/preparation`, 1500, refresh);
   const [mode, setMode] = useState<"offline" | "network">("offline");
   const [preview, setPreview] = useState<{ plan: Plan; change: Change }>();
@@ -19,7 +21,7 @@ export function Preparation() {
   if (!data?.available) return null;
   const label = recipeLabel(data.recipe);
   const modes = recipeModes(data.recipe);
-  const typescript = data.recipe === "typescript-web-recipe-1";
+  const typescript = isTypeScriptRecipe(data.recipe);
   const op = data.operation;
   const working = op?.status === "QUEUED" || op?.status === "ACTIVE";
   const retry = op && ["FAILED", "RECOVERY_REQUIRED", "CANCELLED"].includes(op.status);
@@ -47,7 +49,7 @@ export function Preparation() {
     {op && <>
       <p role="status"><strong>{preparationStatus(op.status, data.recipe)}</strong> · operación <code>{op.id}</code></p>
       <progress max={op.steps.length} value={op.steps.filter(s => s.status === "DONE").length} aria-label="Pasos de preparación completados" />
-      <ol>{op.steps.map(s => <li key={String(s.id)}>{String(s.spec && (s.spec as Record<string, unknown>).label)} · {({ DONE: "Completado", STARTED: working ? "En curso" : "Sin resultado acreditado", PENDING: "Pendiente" } as Record<string, string>)[String(s.status)] ?? String(s.status)}</li>)}</ol>
+      <ol>{op.steps.map(s => <li key={String(s.id)}>{preparationStepLabel(data.recipe, (s.spec ?? {}) as Record<string, unknown>, t)} · {({ DONE: "Completado", STARTED: working ? "En curso" : "Sin resultado acreditado", PENDING: "Pendiente" } as Record<string, string>)[String(s.status)] ?? String(s.status)}</li>)}</ol>
       {op.diagnostic && <p className="state state-attention">{op.diagnostic}</p>}
       <button className="button-quiet" disabled={busy} onClick={() => void operate(async () => {
         setJournal(await managed<S["PreparationOperationRead"]>(`/preparations/${op.id}`));
@@ -65,11 +67,11 @@ export function Preparation() {
       <button disabled={busy || !!op && !retry} onClick={() => void operate(show)}>{retry ? `Revisar nueva intención desde el paso ${next ?? "pendiente"}` : "Revisar plan de preparación"}</button>
     </>}
     {preview && <div className="decision">
-      <p>Destino: <code>{preview.plan.root}</code> · modo {preview.plan.mode} · hash <Hash value={preview.plan.preview_sha256} /></p>
+      <p>Destino: <code>{preview.plan.root}</code> · modo {preview.plan.mode}{preview.plan.work_language && ` · ${t("preparation.work_language", { language: preview.plan.work_language })}`} · hash <Hash value={preview.plan.preview_sha256} /></p>
       <h3>Archivos del commit técnico</h3>
       {preview.plan.files.map(file => <details key={String(file.path)}><summary><code>{String(file.path)}</code> · <Hash value={String(file.sha256)} /></summary><DiffBlock diff={String(file.diff ?? "")} label={`Archivo nuevo: ${String(file.path)}`} /><details><summary>Contenido completo</summary><pre>{String(file.content)}</pre></details></details>)}
       <h3>Comandos y efectos confirmables</h3>
-      <ol>{preview.plan.steps.map((step, n) => <li key={n}><strong>{String(step.label)}</strong>{Array.isArray(step.argv) && <pre>{JSON.stringify(step.argv)}</pre>}</li>)}</ol>
+      <ol>{preview.plan.steps.map((step, n) => <li key={n}><strong>{preparationStepLabel(preview.plan.recipe, step, t)}</strong>{Array.isArray(step.argv) && <pre>{JSON.stringify(step.argv)}</pre>}</li>)}</ol>
       <Evidence title="Versiones, lock, entorno público, red, límites y commit" value={preview.plan} />
       <label className="check"><input type="checkbox" checked={confirmed} onChange={e => setConfirmed(e.target.checked)} />Autorizo estos archivos, comandos, instalación, modo de red y commit dentro del hijo.</label>
       <button disabled={busy || !confirmed} onClick={() => void operate(async () => {

@@ -130,7 +130,7 @@ def verify_receipt(root, receipt):
             if not same_directory(identity(os.fstat(fd)), receipt['identity']):
                 raise ValueError('Checkout identity changed')
         verify_files(root, receipt['protected_files'])
-        if receipt['recipe'] == 'typescript-web-recipe-1':
+        if receipt['recipe'] in ('typescript-web-recipe-1', 'typescript-web-recipe-2'):
             # node_modules is reinstalled from the protected lock before every task; it is not frozen.
             verify_tools(receipt['tools'])
             return

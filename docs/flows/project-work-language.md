@@ -46,7 +46,8 @@ flowchart TD
   del run, también `ui-language-1` o null de jobs anteriores; no reciben trabajo inventado.
 - Un contexto de proyecto obsoleto con otro `work_language` (no debería ocurrir: la fila no cambia) se rechaza.
 - Downgrade de `0025` rechazado si hay alguna asociación. Backup y restauración de consulta la conservan.
-- Recetas: `local-config-6` aún no admite `[recipes]`; el cableado de las recetas v2 es una tarea propia.
+- Recetas: en `local-config-6`, `[recipes]` elige las recetas v2, que preparan con el idioma de la fila y lo sellan
+  en plan y recibo; sin fila, la preparación se rechaza antes de efectos ([flujo](project-preparation.md#recetas-v2-por-idioma-de-trabajo-p011-t020-d168), D168).
 
 ## Fuente en el código
 

@@ -1,4 +1,4 @@
-"""P011-T004 (D163): frozen v1 recipe identities and the unwired, maintained v2 successors.
+"""P011-T004 (D163): frozen v1 recipe identities and the maintained v2 successors (wired by T020, D168).
 
 Data-only: no preparation, process, Git or SQLite. The v1 hashes are the T001 §5 baseline; a change to any of them
 would invalidate issued receipts and composition hashes.
@@ -38,9 +38,18 @@ def test_v1_sources_and_fingerprints_keep_their_issued_identity():
     assert {module: module.fingerprint() for module in V1_FINGERPRINTS} == V1_FINGERPRINTS
 
 
-def test_v2_successors_are_not_selectable_before_local_config_6():
-    assert recipes.by_version(django_2.VERSION) is recipes.by_version(typescript_web_2.VERSION) is None
-    assert set(project_preparation.RECIPES) == {django.VERSION, typescript_web.VERSION}
+def test_each_format_selects_its_recipe_generation_and_frozen_versions_stay_readable():
+    # P011-T020 (D168): v5 keeps v1, v6 selects v2; issued plans/receipts of both resolve by their version.
+    generations = {'local-config-5': (django, typescript_web), 'local-config-6': (django_2, typescript_web_2)}
+    for fmt, modules in generations.items():
+        assert (recipes.module('django', fmt), recipes.module('typescript-web', fmt)) == modules
+        for name, module in zip(('django', 'typescript-web'), modules):
+            assert recipes.by_version(module.VERSION) == (name, module)
+    assert recipes.by_version('django-recipe-3') is None
+    assert set(project_preparation.RECIPES) == {m.VERSION for m in (django, typescript_web, django_2, typescript_web_2)}
+    assert recipes.implementation(django) == {'implementation_sha256': V1_FINGERPRINTS[django]}
+    assert recipes.implementation(django_2) == {'implementation_sha256_by_work_language': {
+        language: django_2.fingerprint(language) for language in ('en', 'es')}}
 
 
 def test_django_v2_changes_only_technical_prose_by_work_language():

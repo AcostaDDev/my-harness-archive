@@ -178,6 +178,7 @@ tarea se leen solo las decisiones que cita; este índice sirve para buscar prece
 | [D165](#d165--p011-t006-pruebas-y-fixtures-en-inglés-sin-tocar-datos) | P011-T006: pruebas y fixtures en inglés sin tocar datos | P011 |
 | [D166](#d166--p011-t007-preferencias-globales-de-idioma-catálogos-y-visual-congelado-por-job) | P011-T007: preferencias globales de idioma, catálogos y visual congelado por job | P011 |
 | [D167](#d167--p011-t008-idioma-de-trabajo-inmutable-por-raíz-y-par-congelado-por-job-e-intento) | P011-T008: idioma de trabajo inmutable por raíz y par congelado por job e intento | P011 |
+| [D168](#d168--p011-t020-recetas-v2-en-local-config-6-con-el-idioma-de-trabajo-sellado-en-plan-y-recibo) | P011-T020: recetas v2 en local-config-6 con el idioma de trabajo sellado en plan y recibo | P011 |
 
 ## D001 — Alcance local y arquitectura base
 
@@ -4963,3 +4964,33 @@ Fase: P011. Concreta D158/D159 (§2 y §4 del [contrato T001](phase/P011-T001_CO
 - Paridad: DDBB-DIAGRAM (51 tablas), flujo nuevo y nota en preferencias, ARCHITECTURE, SPECIFICATION (F23 parcial),
   OpenAPI/tipos regenerados, catálogos en/es de los mensajes y bloques nuevos. Sin directiva al agente (T009), sin
   traducción del resto de la UI (T010), sin servicios, QA de navegador, agentes, proveedores ni red. T020 es la siguiente.
+
+## D168 — P011-T020: recetas v2 en local-config-6 con el idioma de trabajo sellado en plan y recibo
+
+Estado: implementada el 2026-10-23 por la continuación y commit local en inglés pedidos por el usuario.
+Fase: P011. Concreta D163 (módulos v2) y D167 (idioma de trabajo por raíz; T020 desglosada por HITL).
+[Entrega, alcance y validación](phase/P011-T020_RECETAS_V2.md), [flujo](flows/project-preparation.md#recetas-v2-por-idioma-de-trabajo-p011-t020-d168).
+
+- Generaciones por formato: `[recipes.django]`/`[recipes.typescript-web]` con las mismas claves y validaciones
+  seleccionan v1 en `local-config-5` y v2 en `local-config-6` (`recipes.GENERATIONS`); sin elección de versión en el
+  TOML ni migración de v1 a v2. `by_version` resuelve ambas, de modo que planes/recibos v1 y v2 se leen y concilian
+  con la clase de su versión sellada, sin recalcular ni reinstalar.
+- Identidades: la composición no conoce el idioma de trabajo (en proyectos registrados lo fija SQLite, D167), así que
+  `recipe_config_sha256` liga la configuración del operador y la huella v2 de **ambos** idiomas
+  (`implementation_sha256_by_work_language`). El idioma concreto se sella donde se prepara: el plan lleva
+  `work_language`, el hash de la fila y `recipe_sha256 = fingerprint(work_language)`, y el recibo los copia, así que
+  `project_environment_sha256` de los jobs posteriores también los liga. v1 conserva `implementation_sha256`.
+- Guardia: la vista previa v2 lee la fila de la raíz en su sesión y, sin ella, responde 409
+  `work_language_required` antes de comprobar el checkout; antes de cada paso se compara de nuevo valor y hash con
+  el plan. Un sucesor conserva los valores del plan original. Nada se infiere del contenido ni del default.
+- Perfiles: una composición v6 con receta usa el perfil de su módulo v2 (Django con el formateador de D133;
+  TypeScript con su copia propia), y el `typescript-web` integrado sigue para composiciones sin receta.
+- Despacho por `id` estable (`python-version`, `installer-version`, `installed-versions`, `node-version`,
+  `npm-version`, `create-environment`, `generate-*`, `migrate`, `validate-*`); v1 sigue por sus etiquetas
+  congeladas mediante un mapa equivalente. La UI nombra los pasos v2 desde los catálogos en/es por `id` (visual)
+  sin mutar el plan; los planes v1 muestran su etiqueta congelada. `PreparationPlanRead` añade `work_language` y
+  `recipe_sha256` opcionales (OpenAPI/tipos regenerados).
+- El idioma funcional del hijo (`LANGUAGE_CODE`, `<html lang>`, textos visibles) no deriva del visual ni del de
+  trabajo (contrato T001 §5). Sin cambios de modelos/migraciones (DDBB-DIAGRAM intacto); flujo de preparación,
+  ejemplos, ARCHITECTURE y catálogos actualizados. Sin servicios, QA de navegador, herramientas reales ni red.
+  T009 es la siguiente.

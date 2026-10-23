@@ -1,4 +1,6 @@
-# Fragment for an existing local-config-5 TOML, OUTSIDE the checkouts and chmod 600.
+# Fragment for an existing local-config-6 TOML, OUTSIDE the checkouts and chmod 600 (P011-T020, D168).
+# In local-config-6 it selects django-recipe-2: the child is prepared with its own work language (en/es), chosen
+# when it is created. The same keys in local-config-5 keep selecting the frozen django-recipe-1.
 # Template NOT valid as is. Keep the operator's service/git/agents/agent_presets/registration.
 # In the environment of BOTH effective roles/presets declare PYTHONDONTWRITEBYTECODE = "1".
 # It keeps their Python commands from writing bytecode inside the accredited environment. The UI never edits the TOML.
@@ -21,7 +23,7 @@ timeout_seconds = 120                     # ceiling per command, 120..1800 s; no
 max_output_bytes = 65536                   # per stream and command
 
 [compositions.django]
-profile = "python-django-recipe"           # packaged profile; do not duplicate it in [profiles]
+profile = "python-django-recipe"           # packaged profile of the recipe; do not duplicate it in [profiles]
 recipe = "django"
 authorize_profile_commands = true
 environment = {}                          # closed preparation environment and HOME/cache/tmp inside the child

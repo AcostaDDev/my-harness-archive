@@ -20964,6 +20964,35 @@
               "network"
             ],
             "title": "Mode"
+          },
+          "work_language": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "en",
+                  "es"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Work Language",
+            "description": "v2 recipes: the project's confirmed work language this plan prepares with."
+          },
+          "recipe_sha256": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^[0-9a-f]{64}$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Recipe Sha256",
+            "description": "v2 recipes: fingerprint of the recipe for that work language."
           }
         },
         "additionalProperties": true,

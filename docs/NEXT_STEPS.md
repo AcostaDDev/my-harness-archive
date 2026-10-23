@@ -4,12 +4,12 @@ Objetivo y criterios en [ROADMAP](ROADMAP.md#p011--preparación-para-apertura-p�
 Decisión: [D154](DECISIONS.md#d154--p011-preparación-para-apertura-pública-en-github).
 [Plan y alcance](phase/P011_PLAN_APERTURA_PUBLICA.md).
 
-**Estado:** en ejecución desde el 2026-10-22. T001/T002/T019/T003–T008 completadas (D159–D167); once tareas
-pendientes (T020 desglosada de T008). Licencia/avisos, retirada legacy/A, código/pruebas en inglés, preferencias
-globales e idioma de trabajo inmutable por proyecto con el par congelado por job/intento; recetas v2 sin cablear.
+**Estado:** en ejecución desde el 2026-10-22. T001/T002/T019/T003–T008/T020 completadas (D159–D168); diez tareas
+pendientes. Licencia/avisos, retirada legacy/A, código/pruebas en inglés, preferencias globales e idioma de trabajo
+inmutable por proyecto con el par congelado por job/intento; recetas v2 cableadas en `local-config-6`.
 **Planificación:** base finalizada en D156 y afinada por D155/D157/D158; contrato T001 disponible.
 No equivale a fase completada.
-**Siguiente:** P011-T020. Sin autorización de publicación.
+**Siguiente:** P011-T009. Sin autorización de publicación.
 P001–P010 siguen cerradas; la primera versión local mantiene el alcance de D151/D153.
 
 ## Restricciones compartidas
@@ -42,7 +42,7 @@ P001–P010 siguen cerradas; la primera versión local mantiene el alcance de D1
   siguiente fase` para v0.2.0 después de abrir el proyecto en GitHub, fuera de estas tareas. P011 mantiene
   cierre con READY y autorización propia, nueva fase sin tareas y confirmación del plan posterior.
   El commit D156 y los ajustes D157/D158 ya se realizaron. La petición actual autoriza ejecutar la siguiente
-  tarea (T008) y su commit local en inglés, sin encadenar tareas ni publicar.
+  tarea (T020) y su commit local en inglés, sin encadenar tareas ni publicar.
 - D157 elige instantánea pública inicial revisada, con Git/documentación de partida nuevos y sin historia privada.
   Desde la apertura, código/decisiones/fases se desarrollan en el repositorio público, fuente principal; este
   checkout conserva su historia privada. No sincronizar dos desarrollos activos ni congelar para siempre `docs/` pública.
@@ -548,7 +548,13 @@ harness sobre este checkout ni tocar datos reales. Ensayo del paquete exacto se 
 
 ## P011-T020 — Recetas v2 cableadas por idioma de trabajo
 
-**Estado:** pendiente. **Depende de:** T004, T008. **Orden:** antes de T009; desglosada de T008 por HITL (D167).
+**Estado:** completada el 2026-10-23, D168. **Depende de:** T004, T008. **Orden:** antes de T009; desglosada de T008
+por HITL (D167).
+**Evidencia:** [entrega](phase/P011-T020_RECETAS_V2.md): `[recipes]` en v6 → v2 (v5 → v1 intacto), composición con
+la huella v2 de ambos idiomas, plan/recibo con idioma de la fila, su hash y `recipe_sha256`; 409
+`work_language_required` sin fila y comprobación antes de cada paso; despacho por `id`, etiquetas visuales por
+catálogo, plan tipado y ejemplos v6. Suites offline en verde (un timeout ajeno en paralelo que pasa en serie);
+sin herramientas reales, red, servicios ni QA de navegador.
 **Objetivo:** Que las altas nuevas con receta usen `django-recipe-2`/`typescript-web-recipe-2` con el trabajo congelado.
 **Alcance:** `[recipes]` en `local-config-6`, registro de las v2 en `recipes`, preparación y comprobaciones por `id`
 de paso, plan/recibo/huella con trabajo y lectura/conciliación de planes y recibos v1 intactas.

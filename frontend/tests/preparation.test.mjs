@@ -1,6 +1,9 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { pendingPreparationStep, preparationStatus, recipeLabel, recipeModes } from '../src/preparation.ts';
+import { isTypeScriptRecipe, pendingPreparationStep, preparationStatus, preparationStepLabel, recipeLabel, recipeModes } from '../src/preparation.ts';
+import { translate } from '../src/i18n.ts';
+import en from '../src/i18n/en.json' with { type: 'json' };
+import es from '../src/i18n/es.json' with { type: 'json' };
 import { createOnce } from '../src/managed-api.ts';
 
 test('recovery starts at the first unaccredited step, including an uncertain spawn', () => {
@@ -19,6 +22,25 @@ test('texts follow the frozen recipe: Django keeps its wording, TypeScript web n
   assert.equal(recipeModes('django-recipe-1').offline, 'Offline: usar wheels locales y caché del hijo');
   assert.match(recipeModes('typescript-web-recipe-1').offline, /caché npm declarada por el operador/);
   assert.match(recipeModes('typescript-web-recipe-1').hint, /con red también se escribe/);
+});
+
+test('v2 recipes keep their texts and name their steps by stable id in the visual language', () => {
+  assert.equal(preparationStatus('COMPLETED', 'django-recipe-2'), 'Django preparado');
+  assert.equal(recipeLabel('typescript-web-recipe-2'), 'TypeScript web');
+  assert.ok(isTypeScriptRecipe('typescript-web-recipe-2') && !isTypeScriptRecipe('django-recipe-2'));
+  assert.deepEqual(recipeModes('typescript-web-recipe-2'), recipeModes('typescript-web-recipe-1'));
+  const t = language => (key, params) => translate({ en, es }, language, key, params);
+  const install = { kind: 'command', id: 'install', label: 'Install pinned wheels (no builds or transitive resolution)' };
+  assert.equal(preparationStepLabel('django-recipe-2', install, t('es')), 'Instalar wheels fijados (sin builds ni resolución transitiva)');
+  assert.equal(preparationStepLabel('django-recipe-2', install, t('en')), install.label);
+  assert.equal(preparationStepLabel('typescript-web-recipe-2', { id: 'install' }, t('es')), 'Instalar dependencias fijadas del lock (sin scripts)');
+  assert.equal(preparationStepLabel('typescript-web-recipe-2', { id: 'files' }, t('es')), 'Manifiesto empaquetado y entorno local de procesos');
+  const validate = { id: 'validate-2', label: 'Validate: ruff check .', argv: ['/child/.venv/bin/ruff', 'check', '.'] };
+  assert.equal(preparationStepLabel('django-recipe-2', validate, t('es')), 'Validar: ruff check .');
+  assert.equal(preparationStepLabel('django-recipe-2', { id: 'commit' }, t('es')), 'Commit técnico y recibo de preparación');
+  // v1 plans have no id: their frozen label is shown as confirmed; an unknown id falls back to its label.
+  assert.equal(preparationStepLabel('django-recipe-1', { label: 'Crear entorno aislado' }, t('en')), 'Crear entorno aislado');
+  assert.equal(preparationStepLabel('django-recipe-2', { id: 'future', label: 'Future step' }, t('es')), 'Future step');
 });
 
 test('lost preparation confirmation retains exact consent and key until acknowledged', async () => {

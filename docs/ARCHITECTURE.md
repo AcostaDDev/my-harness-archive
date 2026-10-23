@@ -61,8 +61,8 @@ casos de uso. El supervisor es el único que lanza procesos y consume la cola; c
 | `storage/*.py` | Repositorios SQLAlchemy por área (`managed`, `phases`, `documents`, `transition`, `planning`, `chat`, `metrics`, `registry`, `backup`, `retention`, `migrate`…) |
 | `storage/run_projection.py`, `managed_views.py` | Proyección derivada `run-projection-1` escrita con el historial y vistas de runs que solo la leen (D144) |
 | `services/managed.py`, `managed_runtime.py` | Supervisor (`run_once`, lease, cuarentena) y composición del runtime |
-| `services/local_config.py`, `project_registry.py`, `project_creation.py` | TOML `local-config-6` (lectura de 1–5) y registro/creación de hijos desde la UI con 3/4/5/6; presets en v5/v6, recetas solo en v5; idioma de trabajo sellado en el alta (D167) |
-| `recipes/`, `services/project_preparation.py`, `storage/preparation.py`, `adapters/preparation.py` | Recetas empaquetadas `django-recipe-1` y `typescript-web-recipe-1` y su preparación confirmada y recuperable (D119, D143); sucesoras v2 sin cablear (D163) |
+| `services/local_config.py`, `project_registry.py`, `project_creation.py` | TOML `local-config-6` (lectura de 1–5) y registro/creación de hijos desde la UI con 3/4/5/6; presets en v5/v6, recetas v1 en v5 y v2 en v6 (D168); idioma de trabajo sellado en el alta (D167) |
+| `recipes/`, `services/project_preparation.py`, `storage/preparation.py`, `adapters/preparation.py` | Recetas empaquetadas `django-recipe-1` y `typescript-web-recipe-1` y su preparación confirmada y recuperable (D119, D143); sucesoras v2 por idioma de trabajo en `local-config-6`, con despacho por `id` (D163, D168) |
 | `api/app.py`, `managed.py`, `schemas.py`, `session.py`, `security.py` | Aplicación, rutas, contratos Pydantic, sesión y guardia |
 | `profiles/typescript_web.py`, `profiles/reference_project.py` | Perfiles integrados (`typescript-web` componible; `reference_project` solo biblioteca); los perfiles del TOML v4/v5 se componen en `services/local_config.py` |
 | `cli.py`, `launcher.py` | `harness-local` (backup, retención, diagnóstico, `check-config`, `metrics-backfill`, `init-db`, `serve`); `--ui-language` por invocación |
@@ -121,7 +121,7 @@ por su API y los artefactos referenciados; la restauración es de consulta (`que
   El catálogo público omite ejecutables/entornos; `ports` conserva ambos agentes por checkout. El preflight
   explícito cubre la pareja heredada y cada rol de los presets; cargar no invoca CLI. V1–v4 conservan sus hashes.
   V6 (D167) es v5 con `work_language` opcional en `[[projects]]`, que el servicio asocia una vez al arrancar
-  (otro valor ya confirmado detiene el arranque); aún no admite `[recipes]`, cuyo cableado v2 es tarea propia.
+  (otro valor ya confirmado detiene el arranque); sus `[recipes]` eligen las recetas v2 (D168).
   Cambios confirmados serializan registro y admisión en SQLite; bloquean aceptación/commit, propuestas de chat
   y definición/incorporación utilizable. Planes no aceptados pasan a SUPERSEDED sin alterar sus snapshots;
   nueva planificación antes de confirmar otro plan. [Flujo de agentes](flows/project-agents.md) (D118).
@@ -241,8 +241,9 @@ Uso real (D051): construir y verificar el wheel (`scripts/build_distribution.py 
 `harness-local init-db --database RUTA` y `harness-local serve --database RUTA --config RUTA`. Nunca desde este checkout.
 La plantilla del TOML es `local-config-4`; con `format = "local-config-5"` admite además presets y los fragmentos de
 receta de `examples/` (un fragmento cuya composición ya exista en el TOML se añade con otro nombre); con
-`format = "local-config-6"`, presets y `work_language` por proyecto, sin recetas. Versiones CLI
-admitidas por rol en el [README](../README.md#requisitos), contrastadas con `cli_agents.SUPPORTED`/`WRITE_SUPPORTED`.
+`format = "local-config-6"`, presets, `work_language` por proyecto y los mismos fragmentos, que eligen las recetas
+v2. Versiones CLI admitidas por rol en el [README](../README.md#requisitos), contrastadas con
+`cli_agents.SUPPORTED`/`WRITE_SUPPORTED`.
 
 Actualización (D150): detener servicio, observadores y escritores, instalar el nuevo wheel y ejecutar
 `harness-local migrate --database /ruta/state/harness.sqlite3 --snapshots /ruta/copias-previas --writers-stopped`.
@@ -365,8 +366,10 @@ Las recetas Django y TypeScript incorporan el texto de su módulo en la huella; 
 puede invalidar recibos. T004 (D163) conserva por bytes y huella `django.py`/`typescript_web.py`, sus datos y el
 perfil `typescript-web`, y añade `django_2.py`/`typescript_web_2.py` (`django-recipe-2`, `typescript-web-recipe-2`):
 fuente inglesa, scaffold con prosa técnica según idioma de trabajo en/es, perfil propio, pasos con `id` estable y
-huella con versión e idioma. No se registran en `recipes/__init__.py` ni en la preparación: T008 (D167) entrega
-`local-config-6` sin `[recipes]` y su cableado por `id` pasa a la tarea propia T020. Prompts, catálogos y snapshots anteriores permanecen congelados; no se renombran claves/revisiones/rutas.
+huella con versión e idioma. T020 (D168) las cablea: `recipes.GENERATIONS` elige v1 en `local-config-5` y v2 en
+`local-config-6` con las mismas claves; la composición liga la huella v2 de ambos idiomas y el plan/recibo sellan el
+idioma de la fila de la raíz (sin fila, 409 antes de efectos); comprobaciones por `id` y etiquetas visuales por
+catálogo. Prompts, catálogos y snapshots anteriores permanecen congelados; no se renombran claves/revisiones/rutas.
 
 T011 define mínimos/familias/capacidades de CLI por proveedor/rol y qué semántica no puede acreditarse con help;
 T012 implementará admisión de versiones posteriores compatibles, procedencia y diagnósticos conservando guardias.
