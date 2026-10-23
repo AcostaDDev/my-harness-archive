@@ -15,6 +15,11 @@ and any omissions. Read the repository's agent instructions and current project
 documentation before editing. Keep model/schema documentation and flow diagrams
 consistent with changes. Preserve frozen histories, snapshots and fixtures.
 
+The development setup and the checks are in the README's
+[Development](README.md#development) section. Record durable decisions in
+`docs/DECISIONS.md` and keep `docs/STATE.md` and `docs/NEXT_STEPS.md` current
+with the change.
+
 Use synthetic projects and fake agents for tests. Real providers, paid calls,
 network access and operations on someone else's projects require their explicit
 authorization. Include only content you have the right to contribute, preserve

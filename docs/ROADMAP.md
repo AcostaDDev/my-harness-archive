@@ -265,10 +265,13 @@ actualizar para inferiores. T012 completada (D174): [entrega](phase/P011-T012_CO
 `local-config-7`/`cli-14` con detección automática, guardias e identidad por intento; posteriores con compatibilidad
 condicionada por HITL. Evidencia nueva sintética; sin CLI real. T013 completada (D175):
 [matriz](phase/P011-T013_MATRIZ_DIAGRAMAS.md) de diagramas/datos/arquitectura contra código y tests, catorce
-hallazgos documentales corregidos sin cambiar el producto. Cinco tareas pendientes; siguiente T014.
+hallazgos documentales corregidos sin cambiar el producto. T014 completada (D176):
+[entrega](phase/P011-T014_DOCUMENTACION_PUBLICA.md) con baseline pública en `docs/public/`, README inglés de primer
+uso y entrada española; por HITL, especificación/arquitectura/datos/flujos públicos pasan a la nueva T023.
+Cinco tareas pendientes; siguiente T023.
 Planificación inicial finalizada en D156 y commit `6174f51`; ajustes D157/D158 incorporados
-en `2730f54`, sin ejecución del producto. La continuación actual autoriza T012 y su commit local en inglés.
-La fase no está cerrada; se mantienen veintidós tareas (dieciséis completadas) y diez criterios.
+en `2730f54`, sin ejecución del producto. La continuación actual autoriza T014 y su commit local en inglés.
+La fase no está cerrada; se mantienen veintitrés tareas (dieciocho completadas) y diez criterios.
 [Plan](phase/P011_PLAN_APERTURA_PUBLICA.md), [tareas](NEXT_STEPS.md) y
 [D154](DECISIONS.md#d154--p011-preparación-para-apertura-pública-en-github).
 La primera versión local P010 sigue completada en su alcance; P011 añade objetivos públicos, no reabre ese cierre.

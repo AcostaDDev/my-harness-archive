@@ -186,6 +186,7 @@ tarea se leen solo las decisiones que cita; este índice sirve para buscar prece
 | [D173](#d173--p011-t011-detección-automática-de-cli-mínimos-y-contrato-por-capacidades) | P011-T011: detección automática de CLI, mínimos y contrato por capacidades | P011 |
 | [D174](#d174--p011-t012-clientes-automáticos-y-compatibilidad-condicionada) | P011-T012: clientes automáticos y compatibilidad condicionada | P011 |
 | [D175](#d175--p011-t013-diagramas-contrastados-con-el-código-sin-cambiar-el-producto) | P011-T013: diagramas contrastados con el código sin cambiar el producto | P011 |
+| [D176](#d176--p011-t014-baseline-pública-en-docspublic-y-readme-inglés-de-primer-uso) | P011-T014: baseline pública en `docs/public/` y README inglés de primer uso | P011 |
 
 ## D001 — Alcance local y arquitectura base
 
@@ -5235,3 +5236,26 @@ arquitectura textual. [Matriz, hallazgos, checks y límites](phase/P011-T013_MAT
   render) y enlaces/anclas. Pasar el parser no acredita paridad semántica; la acredita la matriz.
 - Resto fuera de rutas permitidas y sin efecto: la ayuda `cli.help.writers_stopped` aún menciona «observers»;
   queda para T014/T017. Sin proveedores, CLI reales, servicios, navegador ni red. Siguiente: T014.
+
+## D176 — P011-T014: baseline pública en `docs/public/` y README inglés de primer uso
+
+Estado: aplicada el 2026-10-23 en T014 por la continuación y commit local en inglés pedidos por el usuario.
+Fase: P011. Concreta D157/D159 (contrato T001 §8) para la documentación pública inicial.
+[Entrega, mapa del candidato, checks y pendientes](phase/P011-T014_DOCUMENTACION_PUBLICA.md).
+
+- HITL de ubicación: la baseline pública se prepara en el árbol autocontenido `docs/public/`, que replica la raíz del
+  candidato (instrucciones de agentes y `docs/`); T015 lo copia sustituyendo AGENTS/CLAUDE/GEMINI y todo `docs/`.
+  Los documentos privados en español siguen vivos. `README.md` raíz pasa a ser el README inglés público y
+  `README.es.md` la entrada española, solo en la raíz.
+- HITL de alcance: especificación, arquitectura, modelo de datos y flujos públicos en inglés pasan a la nueva
+  **T023**, antes de T015. T014 entrega README de primer uso, entrada española, instrucciones públicas, ejemplo
+  mínimo `local-config-7` de un proveedor, DECISIONS de partida y ROADMAP/STATE/NEXT_STEPS públicos (P001 = modo
+  continuo opcional de D156, sin tareas).
+- HITL de numeración: DECISIONS pública conserva los números que cita el código, reescritos en inglés de forma
+  autocontenida y en su estado vigente, sin contenido privado; huecos esperados, baseline < D200 y nuevas decisiones
+  públicas desde D200. No se cambia código para renumerar. El comprobador exige entrada pública para todo DNNN
+  citado por el código del candidato.
+- El README describe solo capacidades entregadas, separa desarrollo y uso instalado, declara macOS ARM64 como única
+  plataforma probada y el primer uso como no ensayado hasta T016. Comprobación estática del candidato modelado,
+  carga del ejemplo con rutas sintéticas y `--help` de la CLI; sin suites, builds, servicios, proveedores ni red.
+  Siguiente: T023.

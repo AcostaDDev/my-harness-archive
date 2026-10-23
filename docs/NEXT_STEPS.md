@@ -4,16 +4,17 @@ Objetivo y criterios en [ROADMAP](ROADMAP.md#p011--preparación-para-apertura-p�
 Decisión: [D154](DECISIONS.md#d154--p011-preparación-para-apertura-pública-en-github).
 [Plan y alcance](phase/P011_PLAN_APERTURA_PUBLICA.md).
 
-**Estado:** en ejecución desde el 2026-10-22. T001/T002/T019/T003–T013/T020–T022 completadas (D159–D175); cinco
-tareas pendientes (T010 desglosó T021 y T021 desglosó T022 por HITL). Licencia/avisos, retirada legacy/A,
+**Estado:** en ejecución desde el 2026-10-22. T001/T002/T019/T003–T014/T020–T022 completadas (D159–D176); cinco
+tareas pendientes (T010 desglosó T021, T021 desglosó T022 y T014 desglosó T023 por HITL). Licencia/avisos, retirada legacy/A,
 código/pruebas en inglés, preferencias globales e idioma de trabajo inmutable por proyecto con el par congelado por
 job/intento; recetas v2; directiva al agente y documentos en W; interfaz React, diagnósticos HTTP propios y todos
 los textos visibles del servicio/CLI en en/es (los técnicos ingleses, listados); QA visual conjunta sin autorizar.
 **Planificación:** base finalizada en D156 y afinada por D155/D157/D158; contrato T001 disponible.
 No equivale a fase completada.
 T011 entrega el contrato de CLI y T012 implementa detección automática y compatibilidad condicionada por capacidades.
-T013 contrasta diagramas, datos y arquitectura con el código y sus pruebas.
-**Siguiente:** P011-T014. Sin autorización de publicación.
+T013 contrasta diagramas, datos y arquitectura con el código y sus pruebas. T014 prepara la baseline pública
+en `docs/public/` y el README inglés de primer uso.
+**Siguiente:** P011-T023. Sin autorización de publicación.
 P001–P010 siguen cerradas; la primera versión local mantiene el alcance de D151/D153.
 
 ## Restricciones compartidas
@@ -46,7 +47,7 @@ P001–P010 siguen cerradas; la primera versión local mantiene el alcance de D1
   siguiente fase` para v0.2.0 después de abrir el proyecto en GitHub, fuera de estas tareas. P011 mantiene
   cierre con READY y autorización propia, nueva fase sin tareas y confirmación del plan posterior.
   El commit D156 y los ajustes D157/D158 ya se realizaron. La petición actual autoriza ejecutar la siguiente
-  tarea (T013) y su commit local en inglés, sin encadenar tareas ni publicar.
+  tarea (T014) y su commit local en inglés, sin encadenar tareas ni publicar.
 - D157 elige instantánea pública inicial revisada, con Git/documentación de partida nuevos y sin historia privada.
   Desde la apertura, código/decisiones/fases se desarrollan en el repositorio público, fuente principal; este
   checkout conserva su historia privada. No sincronizar dos desarrollos activos ni congelar para siempre `docs/` pública.
@@ -412,7 +413,12 @@ no ejecutar el harness sobre este checkout.
 
 ## P011-T014 — Documentación inglesa y README completo de primer uso
 
-**Estado:** pendiente. **Depende de:** T002–T006, T010, T012, T013.
+**Estado:** completada el 2026-10-23, D176. **Depende de:** T002–T006, T010, T012, T013.
+**Evidencia:** [entrega](phase/P011-T014_DOCUMENTACION_PUBLICA.md): por HITL, baseline pública en el árbol
+`docs/public/` (instrucciones y `docs/` del candidato), README raíz inglés de primer uso y `README.es.md`; ejemplo
+mínimo `local-config-7` de un proveedor; DECISIONS pública con los 61 DNNN que cita el código (79 entradas, nuevas
+desde D200) y ROADMAP/STATE/NEXT_STEPS públicos con P001 = modo continuo de D156. Especificación, arquitectura,
+datos y flujos ingleses → nueva T023. Comprobador estático del candidato en verde; primer uso sin ensayar (T016).
 **Objetivo:** Instalar y probar desde GitHub sin conocimiento previo ni entorno privado del autor.
 **Alcance:** README inglés y entrada española, documentación viva/instrucciones/ejemplos, requisitos, operación,
 soporte, idiomas, compatibilidad y límites; excluye originales históricos congelados.
@@ -441,7 +447,7 @@ sin procesos; revisión inglesa/española. No anunciar aún un primer uso ensaya
 
 ## P011-T015 — Paquete público, metadatos y checks reproducibles en GitHub
 
-**Estado:** pendiente. **Depende de:** T002, T010, T012, T014, T019.
+**Estado:** pendiente. **Depende de:** T002, T010, T012, T014, T019, T023.
 **Objetivo:** Preparar wheel/sdist y automatización de validación distribuibles sin secretos ni proveedores.
 **Alcance:** licencia/metadatos/versión candidata, UI/migraciones/catálogos/prompts, build y CI/materiales de release.
 **Rutas permitidas:** `pyproject.toml`, `uv.lock`, `frontend/**`, `scripts/**`, `tests/**`, `.github/**`,
@@ -473,7 +479,7 @@ autorizado. CI remota pendiente si no se ejecutó, sin equivaler validación loc
 
 ## P011-T016 — Primer uso reproducible y QA del paquete candidato
 
-**Estado:** pendiente. **Depende de:** T013, T014, T015, T019.
+**Estado:** pendiente. **Depende de:** T013, T014, T015, T019, T023.
 **Objetivo:** Acreditar instrucciones y paquete exacto sin las cachés ni configuración privadas del autor.
 **Alcance:** propuesta de ensayo, clon/cachés/venv/estado sintéticos, wheel instalado, configuración mínima,
 recorridos bilingües y recuperación/migración/backup.
@@ -501,7 +507,7 @@ reales necesarias exigen tarea/consentimiento propios antes del dictamen. No amp
 
 ## P011-T017 — Revisión de salida y expediente para apertura pública
 
-**Estado:** pendiente. **Depende de:** T001–T016, T019.
+**Estado:** pendiente. **Depende de:** T001–T016, T019, T023.
 **Objetivo:** Dictaminar preparación pública con evidencia trazable del candidato final.
 **Alcance:** diez criterios P011, trece globales ajustados por la retirada D155, inventario/excepciones lingüísticas,
 licencia/privacidad, compatibilidad/soporte, diagramas/docs, artefactos y CI.
@@ -664,3 +670,24 @@ ver (directamente o reenviados por la API como `diagnostic`); inventario de part
 **Validación:** cobertura de catálogos Python, pytest/unittest pertinentes, Node/tipos/build si cambia el cliente.
 **Entregables:** `docs/phase/P011-T022_TRADUCCION_SERVICIO_INGLES.md`, catálogos y matriz QA.
 
+## P011-T023 — Especificación, arquitectura, datos y flujos públicos en inglés
+
+**Estado:** pendiente. **Depende de:** T013, T014. **Orden:** desglosada de T014 por HITL (D176); antes de T015.
+**Objetivo:** Completar la baseline pública con la especificación, la arquitectura, el modelo de datos y los
+flujos vigentes, en inglés y suficientes para usuarios, forks y agentes.
+**Alcance:** `docs/public/docs/SPECIFICATION.md`, `ARCHITECTURE.md`, `DDBB-DIAGRAM.md` y `flows/` nuevos, redactados
+desde los documentos vivos y contrastados con el código y la matriz T013; enlaces desde README y documentos públicos.
+**Rutas permitidas:** `README*`, `docs/**`.
+**Criterios de aceptación:**
+
+- Documentos ingleses autocontenidos del comportamiento vigente (dos accesos, idiomas, CLI, recuperación, límites),
+  sin historia de fases privadas, enlaces a `docs/archive`/`docs/phase` ni dependencias de ADR ausentes de la
+  DECISIONS pública; cada DNNN citado tiene entrada pública (D200+ para decisiones nuevas, si las hubiera).
+- DDBB-DIAGRAM con paridad ER frente al metadata y flujos Mermaid que pasan el parser local (comprobadores T013);
+  sin cambios de producto ni de los documentos privados más allá del seguimiento.
+- README («Contributing and documentation») enlaza los documentos nuevos; el comprobador de T014 sigue en verde con
+  ellos, sin enlaces fuera del candidato ni patrones privados.
+
+**Validación:** comprobador T014, paridad ER y parser Mermaid de T013 sobre el árbol público y revisión inglesa;
+sin suites salvo cambio de código.
+**Entregables:** `docs/phase/P011-T023_DOCUMENTACION_TECNICA_PUBLICA.md` y documentos públicos.

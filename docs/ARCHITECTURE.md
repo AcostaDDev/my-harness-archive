@@ -262,7 +262,7 @@ Uso real (D051): construir y verificar el wheel (`scripts/build_distribution.py 
 La plantilla del TOML es `local-config-7`: sin pin obligatorio de CLI, con presets, `work_language` por proyecto
 y fragmentos de receta v2 de `examples/` (una composición ya existente se añade con otro nombre). El PATH explícito
 de cada rol debe incluir el cliente, o se declara su ruta opcional. Mínimos y compatibilidad en el
-[README](../README.md#requisitos), contrastados con `cli_compatibility.MINIMUM` y la política incluida. Las listas
+[README](../README.md#requirements), contrastados con `cli_compatibility.MINIMUM` y la política incluida. Las listas
 `cli_agents.SUPPORTED`/`WRITE_SUPPORTED` conservan evidencia histórica y ya no son allowlists de admisión.
 
 Actualización (D150): detener el servicio y los escritores, instalar el nuevo wheel y ejecutar
@@ -297,7 +297,7 @@ de las recetas Django y TypeScript web no heredan ese valor: reciben `HOME`/`TMP
   frente al ejecutor normal: el ejecutor no crea ni modifica archivos bajo `tests/`.
 - Tras un reinicio que renumere el dispositivo, crear otro proyecto exige volver a elegir la carpeta (D130).
 - Evidencia real limitada a macOS arm64 y a las CLI y recorridos registrados; incorporación B, perfil declarado,
-  receta TypeScript, chat y backup sin uso real ([alcance](../README.md#alcance-soportado)).
+  receta TypeScript, chat y backup sin uso real ([alcance](../README.md#supported-scope-and-limits)).
 - Dos avisos *low* de KaTeX en Mermaid 11.
 - La estructura de D088 es obligatoria desde P008-T002; rutas y paridad en T003, cierre y archivo unificados en
   T004, prompts/definición en T005, API/UI en T006 e inyección de AGENTS en T007 (D089–D094).
