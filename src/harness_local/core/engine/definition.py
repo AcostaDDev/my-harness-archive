@@ -19,6 +19,7 @@ from harness_local.core.engine.context import policy_payload
 from harness_local.core.engine.contracts import (
     ContractError, IncompleteContract, Selection, context_snapshot, freeze, invoke_agent, stop_history,
 )
+from harness_local.core.engine.document_text import HISTORICAL, work_language, words
 from harness_local.core.engine.documents import (
     ANY_MARKER, MAX_DOCUMENT_BYTES, MAX_AGENTS_LINES, MAX_WRAPPER_LINES, Layout,
     _fields, _first, blocks, budget_warnings, decision_index, inline,
@@ -193,7 +194,7 @@ def validate_planning_result(data, following: str | None) -> dict:
 # --- turn --------------------------------------------------------------------------------------
 
 
-def planning_turn(context, history, snapshot: dict, agents, observe, journal, catalog):
+def planning_turn(context, history, snapshot: dict, agents, observe, journal, catalog, language=None):
     """One invocation with the frozen request; what was observed (drafts or checkout) cannot change."""
 
     def done(history, status, reasons, *, result=None, observed=None):
@@ -219,7 +220,7 @@ def planning_turn(context, history, snapshot: dict, agents, observe, journal, ca
     try:
         catalog_json = dump_catalog(catalog)
         prompt, prompt_snapshot = render_attempt(catalog, template, {
-            'CONTEXT_JSON': freeze(snapshot['context']), 'MESSAGE': snapshot['message']}, context)
+            'CONTEXT_JSON': freeze(snapshot['context']), 'MESSAGE': snapshot['message']}, context, language)
     except (ValueError, KeyError, TypeError) as exc:
         return done(stop_history(history, 'prompts', str(exc)), 'FAILED', [str(exc)])
     history = replace(history, prompt_catalog_json=catalog_json)
@@ -259,50 +260,49 @@ def _task_fields(text: str, task_id: str) -> dict:
     return {key: _first(raw, names) for key, names in FIELD_NAMES.items()}
 
 
-def template_identity(target: Layout) -> dict:
-    sha = hashlib.sha256(freeze({'skeleton': skeleton(target, '{title}'), 'allowed': allowed_drafts_view(target)})
-                         .encode('utf-8')).hexdigest()
+def template_identity(target: Layout, language: str = HISTORICAL) -> dict:
+    sha = hashlib.sha256(freeze({'skeleton': skeleton(target, '{title}', language=language),
+                                 'allowed': allowed_drafts_view(target)}).encode('utf-8')).hexdigest()
     return {**TEMPLATE, 'sha256': sha, 'id': f"{TEMPLATE['name']}:{TEMPLATE['version']}:{sha}"}
 
 
-def render_definition(conversation: dict, documents: list[dict]) -> str:
+def render_definition(conversation: dict, documents: list[dict], language: str = HISTORICAL) -> str:
     """Mechanical summary of the conversation from SQLite; free text escaped inline."""
-    lines = ['# Definición del proyecto', '',
-             'Generado por Harness Local desde SQLite al aceptar la definición (D072). Instantánea inmutable: '
-             'la conversación completa sigue en SQLite.', '',
-             f"**Conversación:** `{conversation['id']}` · **Título:** {inline(conversation['title'])}",
+    w = words(language)
+    lines = [w['definition_title'], '', w['definition_note'], '',
+             w['definition_conversation'].format(id=conversation['id'], title=inline(conversation['title'])),
              f"**Brief:** [BRIEF.md](BRIEF.md) · `{conversation['brief']['sha256'][:12]}` "
-             f"({conversation['brief']['size']} bytes)", '', '## Turnos', '',
-             '| Turno | Estado | Mensaje | Respuesta | Borradores propuestos |', '|---|---|---|---|---|']
+             f"({conversation['brief']['size']} bytes)", '', w['definition_turns'], '',
+             w['turns_table'], '|---|---|---|---|---|']
     for turn in conversation['turns']:
-        lines.append(f"| {turn['number']} | {inline(turn['status'])} | {inline(turn['message'], 200)} "
-                     f"| {inline(turn.get('answer'), 300)} | {len(turn.get('drafts') or [])} |")
+        lines.append(f"| {turn['number']} | {inline(turn['status'])} | {inline(turn['message'], 200, language)} "
+                     f"| {inline(turn.get('answer'), 300, language)} | {len(turn.get('drafts') or [])} |")
     if not conversation['turns']:
-        lines.append('| — | sin turnos | — | — | — |')
-    lines += ['', '## Borradores aplicados y ediciones', '']
+        lines.append(f"| — | {w['no_turns']} | — | — | — |")
+    lines += ['', w['drafts_heading'], '']
     lines += [f"- {inline(entry['path'])}: "
-              + (f"propuesta {entry['proposal_number']} del turno {entry['turn_number']}"
-                 if entry['source'] == 'proposal' else 'edición del usuario por API')
-              + f" ({_short(entry.get('before'))} → {_short(entry.get('after'))})"
-              for entry in conversation['log']] or ['- ninguno (borradores escritos solo por el usuario)']
-    lines += ['', '## Preguntas del último turno', '']
-    lines += [f"- {inline(q['text'])} — " + ('aplazada: ' + inline(q['deferred']['reason']) if q.get('deferred')
-                                              else 'bloqueante' if q['blocking'] else 'no bloqueante')
-              for q in conversation['questions']] or ['- ninguna']
-    lines += ['', '## Pendientes declarados en el último turno', '']
-    lines += [f'- {inline(item)}' for item in conversation['pending']] or ['- ninguno']
-    lines += ['', '## Documentos aceptados', '', '| Documento | SHA-256 | Origen |', '|---|---|---|']
-    lines += [f"| {inline(doc['path'])} | `{doc['sha256'][:12]}` | {inline(ORIGINS[doc['origin']])} |"
+              + (w['draft_proposal'].format(proposal=entry['proposal_number'], turn=entry['turn_number'])
+                 if entry['source'] == 'proposal' else w['draft_edit'])
+              + f" ({_short(entry.get('before'), language)} → {_short(entry.get('after'), language)})"
+              for entry in conversation['log']] or [w['no_drafts']]
+    lines += ['', w['last_questions'], '']
+    lines += [f"- {inline(q['text'])} — " + (w['deferred'] + inline(q['deferred']['reason']) if q.get('deferred')
+                                              else w['blocking'] if q['blocking'] else w['non_blocking'])
+              for q in conversation['questions']] or [w['none_f']]
+    lines += ['', w['last_pending'], '']
+    lines += [f'- {inline(item)}' for item in conversation['pending']] or [w['none_m']]
+    lines += ['', w['accepted_documents'], '', w['documents_table'], '|---|---|---|']
+    lines += [f"| {inline(doc['path'])} | `{doc['sha256'][:12]}` | {inline(w[ORIGINS[doc['origin']]])} |"
               for doc in documents]
     return '\n'.join(lines) + '\n'
 
 
-ORIGINS = {'draft': 'borrador', 'draft+blocks': 'borrador con bloques regenerados',
-           'template': 'plantilla v2', 'archive': 'archivo de la definición'}
+ORIGINS = {'draft': 'origin_draft', 'draft+blocks': 'origin_draft_blocks', 'template': 'origin_template',
+           'archive': 'origin_archive'}
 
 
-def _short(value) -> str:
-    return 'ausente' if value is None else f'`{value[:12]}`'
+def _short(value, language) -> str:
+    return words(language)['absent'] if value is None else f'`{value[:12]}`'
 
 
 def acceptance(context, conversation: dict, inspection: dict, texts: dict[str, str]) -> dict:
@@ -312,6 +312,7 @@ def acceptance(context, conversation: dict, inspection: dict, texts: dict[str, s
     draft register). `inspection`: drafts, foreign and invalid files of the destination.
     `texts`: content of each draft, with the inspection hash."""
     target = definition_layout(context)
+    language = work_language(context)
     blockers, warnings = [], []
     if inspection['import_required']:
         blockers.append('The target belongs to a Git repository or contains .git: use onboarding for a repository without harness')
@@ -389,7 +390,7 @@ def acceptance(context, conversation: dict, inspection: dict, texts: dict[str, s
     if protected:
         blockers.append('Paths protected by the project profile: ' + ', '.join(protected))
     warnings += [f'Pendiente declarado por el revisor: {item}' for item in conversation['pending']]
-    base = {'template': template_identity(target), 'input': {'conversation_id': conversation['id']},
+    base = {'template': template_identity(target, language), 'input': {'conversation_id': conversation['id']},
             'definition': {'conversation_id': conversation['id'], 'conversation_version': conversation['version'],
                            'brief_sha256': conversation['brief']['sha256'], 'turns': len(conversation['turns']),
                            'drafts': dict(sorted(inspection['drafts'].items())),
@@ -410,17 +411,19 @@ def acceptance(context, conversation: dict, inspection: dict, texts: dict[str, s
              **({'status': 'ACTIVE', 'tag': item['tag']} if item['code'] == 'P001' else {})}
             for item in parse_roadmap(texts[target.roadmap])]
     regenerated = {
-        target.state: replace_block(texts[target.state], render_state(fresh)),
-        target.next_steps: replace_block(texts[target.next_steps], render_next_steps(fresh)),
-        target.roadmap: replace_block(texts[target.roadmap], render_roadmap(rows), 'roadmap'),
-        target.decisions: replace_block(texts[target.decisions], render_decisions(decision_index(texts[target.decisions])),
+        target.state: replace_block(texts[target.state], render_state(fresh, language)),
+        target.next_steps: replace_block(texts[target.next_steps], render_next_steps(fresh, language)),
+        target.roadmap: replace_block(texts[target.roadmap], render_roadmap(rows, language), 'roadmap'),
+        target.decisions: replace_block(texts[target.decisions],
+                                        render_decisions(decision_index(texts[target.decisions]), language),
                                         'decisions'),
     }
     # D088: AGENTS, CLAUDE, GEMINI and DDBB-DIAGRAM that were not drafted come from the template with the title and
     # commands of the frozen profile.
     template = skeleton(target, conversation['title'],
                         preparation=[command.argv for command in context.profile.preparation],
-                        validations=[command.argv for command in context.profile.validations])
+                        validations=[command.argv for command in context.profile.validations],
+                        language=language)
     documents = []
     for path in sorted({*texts, *default_documents(target)}):
         if path in texts:
@@ -433,7 +436,7 @@ def acceptance(context, conversation: dict, inspection: dict, texts: dict[str, s
                           'origin': origin})
     archive = target.archive('P000')
     brief_doc = conversation['brief']['content']
-    record = render_definition(conversation, documents)
+    record = render_definition(conversation, documents, language)
     documents += [{'path': f'{archive}/BRIEF.md', 'content': brief_doc, 'sha256': text_hash(brief_doc),
                    'before_sha256': None, 'origin': 'archive'},
                   {'path': f'{archive}/DEFINITION.md', 'content': record, 'sha256': text_hash(record),

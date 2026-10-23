@@ -3,6 +3,7 @@
 from sqlalchemy.orm import Session
 
 from harness_local.core.engine.document_ops import read_text, _clean_capture, _sealed_preview
+from harness_local.core.engine.document_text import work_language
 from harness_local.core.engine.documents import plan_tasks, render_next_steps, render_state, replace_block, require_layout
 from harness_local.core.engine.phases import digest, phase_definition, document_hashes
 from harness_local.storage.documents import DocumentsRepository, _edit_phase
@@ -45,12 +46,13 @@ class PhasePlanRepository(DocumentsRepository):
         fresh = {'phase': {'code': definition['code'], 'status': 'ACTIVE', 'objective': definition['objective']},
                  'tasks': [{'task_id': task, 'status': None, 'planned': True} for task, _ in plan_tasks(plan)],
                  'open_questions': [], 'latest_check': None}
-        content = replace_block(plan, render_next_steps(fresh))
+        language = work_language(context)
+        content = replace_block(plan, render_next_steps(fresh, language))
         evidence, provenance = _clean_capture(context, git)
         old_state = read_text(context, target.state)
         shown = _sealed_preview(context, evidence, provenance, provenance.worktree_tree, [
             (target.next_steps, read_text(context, target.next_steps), content),
-            (target.state, old_state, replace_block(old_state, render_state(fresh)))], 'Confirmed phase plan (D088)',
+            (target.state, old_state, replace_block(old_state, render_state(fresh, language)))], 'Confirmed phase plan (D088)',
             {'operation': 'document_edit', 'source': 'content', 'phase_plan': data})
         return {**shown, 'resume_operation_id': None}
 

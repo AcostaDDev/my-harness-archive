@@ -166,7 +166,7 @@ def validate_phase_result(definition: dict, data: dict) -> dict:
 
 
 def check_phase(context: ProjectContext, history: RunHistory, snapshot: dict, agents, commands, git: PhaseGit,
-                journal, catalog) -> tuple[RunHistory, dict]:
+                journal, catalog, language=None) -> tuple[RunHistory, dict]:
     """Deterministic gates before spending a call; the agent only evaluates."""
     definition = snapshot["definition"]
 
@@ -216,7 +216,7 @@ def check_phase(context: ProjectContext, history: RunHistory, snapshot: dict, ag
                    "documents": documents, "tasks": snapshot["task_evidence"], "validation": validation,
                    "answered_questions": snapshot["answered_questions"]}
         prompt, prompt_snapshot = render_attempt(catalog, "close-phase", {
-            "PHASE_ID": definition["code"], "EVIDENCE_JSON": freeze(payload)}, context)
+            "PHASE_ID": definition["code"], "EVIDENCE_JSON": freeze(payload)}, context, language)
     except (ValueError, KeyError, TypeError) as exc:
         return done(stop_history(history, "prompts", str(exc)), outcome("FAILED", [str(exc)], validation=validation))
     history = replace(history, prompt_catalog_json=catalog_json)

@@ -27,6 +27,9 @@ flowchart TD
     end
 ```
 
+Idioma (D169): las tres vías generan los bloques en el idioma de trabajo del contexto congelado; un contexto
+anterior a D167 conserva los bytes españoles. Los parsers leen etiquetas en/es.
+
 Reglas comunes: solo el harness escribe los bloques `harness-local:managed-*`; `docs/archive/**` es de solo lectura;
 con documentos sin confirmar no arranca ninguna tarea, check, exportación ni transición; un cambio externo después de
 la vista previa invalida el job sin sobrescribir.

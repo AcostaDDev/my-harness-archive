@@ -54,7 +54,7 @@ casos de uso. El supervisor es el único que lanza procesos y consume la cola; c
 | `core/engine/documents.py`, `document_ops.py`, `document_export.py` | Contrato documental unificado (D088), plantilla, bloques gestionados, archivo, edición, exportación y conciliación de transiciones antiguas |
 | `core/engine/definition.py`, `bootstrap.py`, `bootstrap_discovery.py` | Definición conversacional (v2) y ejecución del bootstrap D037; el descubrimiento v1 solo concilia runs registrados |
 | `core/engine/chat.py`, `chat_commands.py` | Turnos de chat y gramática de comandos |
-| `core/engine/prompts.py`, `templates/*.md` | Catálogo de prompts versionados y variables |
+| `core/engine/prompts.py`, `templates/*.md`, `language.py` | Catálogo de prompts versionados y variables; directiva de idioma sellada fuera de las plantillas (D169) |
 | `core/engine/permissions.py`, `metrics.py` | Permisos por categoría y capa; catálogo de métricas `metrics-1` |
 | `adapters/cli_agents.py`, `cli_diagnostics.py`, `streams.py`, `processes.py`, `process_gate.py` | Lanzamiento de CLI, preflight, captura incremental, grupos de procesos |
 | `adapters/commands.py`, `git.py`, `bootstrap.py`, `chat_snapshot.py` | Validaciones nativas (`commands-1`), Git, commit raíz, instantánea de HEAD |
@@ -138,7 +138,9 @@ por su API y los artefactos referenciados; la restauración es de consulta (`que
   solo lectura `definition`, sin `AGENTS.md` inyectado porque es parte del origen), `bootstrap-project`. Jerarquía base →
   perfil → proyecto; snapshot por intento. Prompts unificados y definición versión 4 (D092). `AGENTS.md` (≤32 KiB)
   entra por `{{PROJECT_INSTRUCTIONS}}` en todos los roles salvo la definición, con ruta, hash y tamaño en el snapshot;
-  sin él, el intento se detiene antes de invocar (D094). `document_layout = "d088-12"` (T020, D112) congela las reglas nuevas y
+  sin él, el intento se detiene antes de invocar (D094). Con el par `language-context-1` del job, `render_attempt`
+  añade antes del esquema la directiva `language-directive-1` (visual/trabajo y mapa V/W/T por rol) y la sella en el
+  snapshot; jobs sin par se renderizan como antes (D169). `document_layout = "d088-12"` (T020, D112) congela las reglas nuevas y
   detiene jobs anteriores antes de efectos. D099 excluye de Git solo el marcador local validado por la guardia
   de esta instalación; B confirma originales archivados y un commit conciliable. El catálogo retirado de A se lee
   como dato histórico, pero no se edita, activa ni renderiza para invocarlo (D161). Las transiciones ya selladas conservan su
@@ -193,6 +195,8 @@ por su API y los artefactos referenciados; la restauración es de consulta (`que
 ## 8. Convenciones
 
 - Documentación en español con nombres de archivo canónicos en inglés; parsers con alias en ambos idiomas.
+  Los documentos que genera el harness en un proyecto (bloques, plantilla D088, archivo y registros) siguen su
+  idioma de trabajo (`core/engine/document_text.py`, D169); un contexto sin él conserva los bytes españoles.
 - Comentarios, docstrings y descripciones OpenAPI de `src/harness_local` en inglés (P011-T003/T004); las fuentes v1
   de recetas conservan sus bytes (D163). Mensajes visibles nuevos por clave en los catálogos JSON en/es (D166): un
   mensaje completo por clave, parámetros `{nombre}` como texto, fallback inglés; el resto pasa a catálogos en T010.

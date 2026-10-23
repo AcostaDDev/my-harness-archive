@@ -175,8 +175,11 @@ def output_schema(role: str) -> dict:
     return {**schema, 'additionalProperties': True}
 
 
-def render_attempt(catalog, name, values, context):
+def render_attempt(catalog, name, values, context, language=None):
+    """`language`: the job's frozen pair (D167); its directive (D169) is engine text, outside the template."""
+    from harness_local.core.engine.language import DIRECTIVE, directive, frozen_pair
     template = catalog[name]
+    pair = frozen_pair(language, context)
     instructions = None
     if PROJECT_INSTRUCTIONS in VARIABLES[name]:
         # P008-T007: the engine supplies AGENTS.md; the caller never replaces it. No valid file, no attempt.
@@ -196,10 +199,17 @@ def render_attempt(catalog, name, values, context):
         text += '\n' + render(catalog['executor-routing'], routing)
         parts.append({'version': asdict(catalog['executor-routing']), 'variables': routing})
     schema = output_schema(role)  # Fixed motor contract; the editor cannot weaken it.
+    sealed = None
+    if pair is not None:
+        rule = directive(role, *pair)
+        text += '\n' + rule
+        sealed = {'directive': DIRECTIVE, 'ui_language': pair[0], 'work_language': pair[1], 'sha256': digest(rule)}
     text += '\nReturn exactly one JSON object, without Markdown fences. JSON Schema:\n' + freeze(schema)
     snapshot = {'parts': parts, 'output_schema': schema, 'schema_sha256': digest(freeze(schema)),
                 'document_references': [context.next_steps_file, context.state_file],
                 'rendered': text, 'rendered_sha256': digest(text)}
     if instructions is not None:
         snapshot['project_instructions'] = instructions  # P008-T007: path, hash and size of AGENTS.md
+    if sealed is not None:
+        snapshot['language'] = sealed  # D169: absent for jobs without a frozen pair, as in earlier snapshots
     return text, freeze(snapshot)

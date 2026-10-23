@@ -82,11 +82,13 @@ class OfflineEngine:
     """Injected ports; no CLI is activated from the core."""
 
     def __init__(self, agents: AgentAdapter, commands: CommandRunner, evidence: EvidenceCapture,
-                 journal: EngineJournal | None = None, prompts=None):
+                 journal: EngineJournal | None = None, prompts=None, language: dict | None = None):
+        """`language`: the pair frozen when the job was admitted (D167), rendered as the D169 directive."""
         self.agents = agents
         self.commands = commands
         self.evidence = evidence
         self.journal = journal
+        self.language = language
         self.prompts = prompts or (lambda context: builtin_catalog())
         self.resuming = False
 
@@ -103,7 +105,7 @@ class OfflineEngine:
         try:
             catalog = self._catalog(context, history)
             history = replace(history, prompt_catalog_json=dump_catalog(catalog))
-            prompt, snapshot = render_attempt(catalog, name, values, context)
+            prompt, snapshot = render_attempt(catalog, name, values, context, self.language)
         except (ValueError, KeyError, TypeError) as exc:
             return stopped(history, "prompts", str(exc)), None
         return invoke_agent(context, history, self.agents, role, selection, prompt, self.journal,

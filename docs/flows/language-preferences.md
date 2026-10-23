@@ -34,7 +34,8 @@ sequenceDiagram
 - Fila inválida (editada fuera del servicio): la lectura devuelve `en` con estado `invalid`, la UI avisa y toda
   admisión nueva responde 409 `preferences_invalid` hasta guardar de nuevo. Ningún GET la repara.
 - `default_work_language` inicializa la selección de trabajo al registrar o crear (T008); nunca cambia proyectos
-  existentes. La directiva de idioma al agente llega con T009; hoy el par congelado es procedencia.
+  existentes. El par congelado del job se entrega al agente como directiva sellada en su prompt (T009, D169,
+  [flujo](project-work-language.md#directiva-y-documentos-generados-p011-t009-d169)).
 - CLI: `--ui-language en|es` solo para esa invocación; sin él, preferencias de la base existente (lectura en solo
   lectura) o `en`. No guarda nada.
 - Restauración de consulta: lee preferencias; el middleware rechaza el PUT como cualquier escritura.

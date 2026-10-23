@@ -80,7 +80,7 @@ def test_django_reverse_engineering_is_pinned_read_only_and_private(world):
         assert stat.S_IMODE((context.root / 'library/models.py').stat().st_mode) == 0o444
         assert 'AbstractRecord' in (context.root / 'library/models.py').read_text()
         assert head in request.prompt and 'library.Author' in request.prompt
-        assert 'Estado: inferida del código' in request.prompt
+        assert 'inferred from code' in request.prompt
         assert 'ask a blocking question' in request.prompt
         return answer(DRAFTS, questions=[{'text': '¿Qué trabajo debe cubrir P001?', 'blocking': True}])
 

@@ -4,6 +4,7 @@ import json
 
 from harness_local.core.engine.contracts import context_snapshot, freeze
 from harness_local.core.engine.definition import _block_names, allowed_draft, definition_layout, required_documents
+from harness_local.core.engine.document_text import work_language, words
 from harness_local.core.engine.documents import MAX_AGENTS_LINES, MAX_WRAPPER_LINES, blocks
 from harness_local.core.engine.import_commit import adopt_documents, check_destinations, preview_tree
 from harness_local.core.engine.phases import digest
@@ -51,9 +52,8 @@ def preview(context, source, contents, paths, drafts, record, inspection, writer
     tree[archive + '/INVENTORY.json'] = (freeze(source['inventory']) + '\n').encode()
     summary = {'source': source['inventory']['head'], 'tree': source['inventory']['tree'],
                'conversation': record, 'profile': profile, 'preserved': preserved}
-    tree[archive + '/SUMMARY.md'] = ('# Incorporación al harness\n\nBase existente documentada; P001 ACTIVE.\n'
-        'Perfil de la composición y documentos sujetos a la confirmación de esta vista previa.\n\n'
-        '```json\n' + json.dumps(summary, ensure_ascii=False, indent=2) + '\n```\n').encode()
+    tree[archive + '/SUMMARY.md'] = (words(work_language(context))['onboarding_summary'] + '```json\n'
+        + json.dumps(summary, ensure_ascii=False, indent=2) + '\n```\n').encode()
     # Check all HEAD paths, including code outside the documentary preview. Never replace an existing archive.
     new = set(tree) - set(contents)
     check_destinations([*paths, *new])

@@ -183,6 +183,7 @@ class LocalSupervisor:
             journal = _Journal(self.repository, claim, heartbeat_failed)
             request = json.loads(claim.request_json)
             versions = json.loads(record.versions_json)
+            language = self.repository.job_language(claim)  # D169: only the pair sealed at admission
             outcome = None
             if request["action"] == "bootstrap_discovery":
                 from harness_local.core.engine.bootstrap_discovery import execute
@@ -275,7 +276,8 @@ class LocalSupervisor:
                     reader = HeadSnapshot(context.root, executable=getattr(evidence, 'executable', 'git'))
                     evidence = reader.export(frozen['context']['head'], destination)
                     context = replace(context, root=destination)
-                history, outcome = chat_turn(context, record.history, frozen, agents, evidence, journal, catalog)
+                history, outcome = chat_turn(context, record.history, frozen, agents, evidence, journal, catalog,
+                                             language)
             elif request["action"] == "planning_turn":
                 # H6.5: definition or phase planning turn, read-only and with a frozen request.
                 from harness_local.core.engine.definition import planning_turn
@@ -313,7 +315,7 @@ class LocalSupervisor:
                         captured = evidence.capture(context)
                         return {"base_revision": captured.base_revision, "fingerprint": captured.fingerprint}
                 history, outcome = planning_turn(context, record.history, snapshot, agents, observe, journal,
-                                                 catalog)
+                                                 catalog, language)
             elif request["action"] in ("phase_check", "phase_close"):
                 # D088: check and closure under the lock; the closure includes the documentary archive.
                 if self.commit_factory is None:
@@ -332,7 +334,8 @@ class LocalSupervisor:
                         agents.bind_process_journal(journal)
                     from harness_local.storage.prompts import PromptRepository
                     history, outcome = check_phase(context, record.history, snapshot, agents, commands, git, journal,
-                                                   PromptRepository(self.repository.engine).catalog(context))
+                                                   PromptRepository(self.repository.engine).catalog(context),
+                                                   language)
             elif request["action"] == "commit":
                 if self.commit_factory is None:
                     raise RuntimeError("No commit writer configured for a commit job")
@@ -360,7 +363,7 @@ class LocalSupervisor:
                     agents.bind_process_journal(journal)
                 from harness_local.storage.prompts import PromptRepository
                 engine = OfflineEngine(agents, commands, evidence, journal,
-                                       prompts=PromptRepository(self.repository.engine).catalog)
+                                       prompts=PromptRepository(self.repository.engine).catalog, language=language)
                 if request["action"] == "start":
                     history = engine.start(context, request["task_id"], request["phase_id"], request["text"],
                                            history=record.history, contract=request.get("contract_json"),

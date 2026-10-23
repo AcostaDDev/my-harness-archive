@@ -3,8 +3,8 @@
 P011-T008 (D167; contrato [T001 §2/§4](../phase/P011-T001_CONTRATO_APERTURA.md#2-autoridad-persistencia-y-controles-de-idioma)).
 El idioma de trabajo (`en`/`es`) rige documentación, planes y código que escriben los agentes en un proyecto. Se elige
 una vez por raíz canónica y no cambia; el idioma visual es una preferencia global aparte
-([preferencias](language-preferences.md)). La directiva al agente y la generación en ese idioma llegan con T009:
-hoy el par congelado es procedencia.
+([preferencias](language-preferences.md)). Desde T009 (D169) el par del job llega al agente como directiva y los
+documentos que genera el harness usan el idioma de trabajo ([abajo](#directiva-y-documentos-generados-p011-t009-d169)).
 
 ```mermaid
 flowchart TD
@@ -49,8 +49,31 @@ flowchart TD
 - Recetas: en `local-config-6`, `[recipes]` elige las recetas v2, que preparan con el idioma de la fila y lo sellan
   en plan y recibo; sin fila, la preparación se rechaza antes de efectos ([flujo](project-preparation.md#recetas-v2-por-idioma-de-trabajo-p011-t020-d168), D168).
 
+## Directiva y documentos generados (P011-T009, D169)
+
+```mermaid
+flowchart TD
+    J["Job admitido: language-context-1 (visual + trabajo)"] --> S["Supervisor: lee solo el par sellado del job"]
+    S --> R["render_attempt: plantilla editable (inglés) + directiva language-directive-1 + esquema del motor"]
+    R --> V{"¿Par válido y trabajo igual al del contexto congelado?"}
+    V -- no --> X["Parada en prompts antes de invocar"]
+    V -- sí --> P["Prompt por stdin (Codex exec / Claude --print); snapshot con language y su hash"]
+    S --> N["Job sin par (anterior a D167 o ui-language-1): prompt sin directiva, como antes"]
+    W["Idioma de trabajo del contexto congelado"] --> D["Bloques, plantilla D088, REVIEW/SUMMARY, DEFINITION, transición, SUMMARY de B"]
+    W --> T["Texto de tarea desde chat y etiquetas de la reconciliación"]
+    C["Contexto sin trabajo (anterior a D167)"] --> E["Bytes españoles históricos; texto de chat en inglés histórico"]
+```
+
+- La directiva incluye «Respond to the user in {visual}. Write project documentation and code in {trabajo}.», los
+  campos V (al usuario) y W (documentos/código) de cada rol según T001 §4, los valores T literales y las etiquetas
+  D088 del idioma de trabajo. Precede a cualquier instrucción lingüística de las plantillas, que siguen editables.
+- Cambiar el visual rige solo jobs nuevos: reintentos y revalidaciones heredan el par del primer job.
+- Mensajes de commit y trailers siguen técnicos en inglés (HITL); los parsers leen etiquetas en/es.
+
 ## Fuente en el código
 
+- `core/engine/language.py` (directiva), `core/engine/prompts.py::render_attempt`, `services/managed.py`
+  (`job_language`), `core/engine/document_text.py` y `documents.py` (vocabulario en/es).
 - `storage/work_language.py` (fila, captura del par), `storage/registry.py::confirm_work_language`,
   `storage/managed.py::_language`/`agent_started`.
 - `services/project_registry.py` (vista previa/sello), `services/project_creation.py` (`project-creation-2`),

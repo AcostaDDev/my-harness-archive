@@ -75,7 +75,7 @@ run y, cuando procede, al intento exacto.
 | F20 | Elegir carpeta de proyectos | Raíz elegida explícitamente en UI y persistida; concede al servicio crear nuevos hijos sin que la IA decida su ubicación | Implementado (P009-T002, D117); carpeta elegida y creación real en T007, piloto cerrado en T012 (D139) |
 | F21 | Agentes configurables por proyecto | Elegir proveedores y modelo/esfuerzo del revisor en UI; selección concreta del ejecutor a cargo del revisor | Implementado (P009-T003, D118): presets v5, selección por checkout y cambios confirmados entre tareas |
 | F22 | Preparar Django desde cero | Hijo nuevo, documentos D088, scaffold, entorno/dependencias y validaciones mediante receta confirmada | Implementado (P009-T004, D119); ensayo real T005 (D120) y piloto T007–T012 con P001 cerrada/archivada (D139) |
-| F23 | Idioma visual y de trabajo | Defaults globales en/es: visual global mutable para UI/conversación y trabajo inmutable por proyecto para documentación/código, con ambos congelados por job/turno | Parcial (P011, D158; §13): preferencias globales y visual congelado por job (T007, D166); trabajo inmutable por proyecto y par por job/intento (T008, D167); recetas v2 preparadas con el idioma de trabajo (T020, D168). Directiva al agente y generación en el idioma de trabajo (T009) y traducción completa (T010) pendientes |
+| F23 | Idioma visual y de trabajo | Defaults globales en/es: visual global mutable para UI/conversación y trabajo inmutable por proyecto para documentación/código, con ambos congelados por job/turno | Parcial (P011, D158; §13): preferencias globales y visual congelado por job (T007, D166); trabajo inmutable por proyecto y par por job/intento (T008, D167); recetas v2 preparadas con el idioma de trabajo (T020, D168); directiva tipada al agente y documentos generados en el idioma de trabajo (T009, D169). Traducción completa de UI/mensajes (T010) pendiente |
 | F24 | Compatibilidad CLI ampliable | Mínimos/capacidades por proveedor/rol, diagnóstico y versiones verificadas/candidatas sin allowlist por patch | Planificado, no implementado (P011, D154; §13); siguen vigentes las listas exactas de `cli-13` |
 
 Modo de proyecto: **gestionado**. Solo se crean proyectos nuevos o se incorpora código sin harness (B);
@@ -268,7 +268,8 @@ documentalmente en una tarea posterior (D140), con [revisión y límites](archiv
 
 [D154](DECISIONS.md#d154--p011-preparación-para-apertura-pública-en-github) encarga preparar el repositorio/paquete
 para apertura pública en GitHub. F24 y el resto de esta sección son **planificados, no implementados**, salvo lo
-indicado en F23 (preferencias T007 e idioma de trabajo T008) y las retiradas/traducciones de T019/T003–T006;
+indicado en F23 (preferencias T007, idioma de trabajo T008/T020 y directiva/documentos T009) y las
+retiradas/traducciones de T019/T003–T006;
 no cambian el alcance entregado de P010 ni sus límites D151/D153.
 
 - Inglés como base del código mantenido, comentarios/docstrings/descripciones y prompts originales; inventario

@@ -6,7 +6,7 @@ Follow AGENTS.md discovery: STATE, NEXT_STEPS, the active ROADMAP section, relev
 only cited DECISIONS.md sections or its index, DDBB-DIAGRAM.md and docs/flows/ when relevant; archives only if cited.
 Keep model diagrams in DDBB-DIAGRAM.md, business flow diagrams in docs/flows/ and current work artifacts in docs/phase/.
 Check diagram parity against accepted changes. Consolidate supported decision_proposals in the single DECISIONS.md,
-only within this reconciliation contract, as new «## DNNN — título» sections with a first «Estado:» line and a free number.
+only within this reconciliation contract, as new "## DNNN — <title>" sections with a first status line and a free number.
 Never delete or renumber prior decisions, edit managed blocks or instructions, or adopt rejected proposals.
 Latest phase review and evidence:
 {{REVIEW_JSON}}

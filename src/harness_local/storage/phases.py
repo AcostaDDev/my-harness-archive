@@ -21,6 +21,7 @@ from sqlalchemy import and_, or_, select
 from sqlalchemy.orm import Session
 
 from harness_local.core.engine.contracts import context_snapshot, freeze
+from harness_local.core.engine.document_text import work_language, words
 from harness_local.core.engine.phases import CHECK_STATUS, TAG_KINDS, digest, document_hashes, phase_definition
 from harness_local.core.engine.serialization import load_history, restore_context
 from harness_local.storage.managed import Conflict, _job
@@ -980,14 +981,16 @@ class PhaseRepository:
             if target is not None:
                 # D072: reconciliation compacts STATE and updates the product and decision documents;
                 # the managed blocks (also the DECISIONS index, D088) and the archive still belong to the harness.
+                # D169: the headings and the status label follow the project's work language.
+                w = words(work_language(context))
                 constraints += [
                     'Never edit inside harness-local managed blocks; Harness Local regenerates them at commit.',
-                    f'Rewrite the "## Base acumulada" section of {target.state} as a compact description of what '
+                    f'Rewrite the "{w["baseline_label"]}" section of {target.state} as a compact description of what '
                     f'exists and works, by area, within {BUDGETS["base"]} bytes, linking archived summaries.',
-                    f'Summarize the phase in the "## Fase activa" section of {target.state} and note what the next '
+                    f'Summarize the phase in the "{w["active_label"]}" section of {target.state} and note what the next '
                     'session must know.',
                     f'Record durable decisions as new "## DNNN — title" sections of {target.decisions}, each with '
-                    'a first "Estado:" line and the next free number; supersede, never delete or renumber.']
+                    f'a first "{w["status_label"]}" line and the next free number; supersede, never delete or renumber.']
                 if proposals:
                     constraints.append('Consolidate the reviewer decision_proposals of the evidence into '
                                        f'{target.decisions} when they describe accepted reality; never invent or '

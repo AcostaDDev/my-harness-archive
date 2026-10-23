@@ -177,6 +177,11 @@ class SQLiteManagedRepository:
             raise ValueError("A new job needs its checkout root to freeze its languages")
         return capture(session, root)
 
+    def job_language(self, claim: JobRecord) -> dict | None:
+        """The language pair sealed when the claimed job was admitted (D167); prompts read only this (D169)."""
+        with Session(self.engine) as session:
+            return session.scalar(select(Job.language_context).where(Job.id == claim.id))
+
     def _admit(self, session, assessment) -> str | None:
         try:
             return ModeGuard.enforce(session, assessment)

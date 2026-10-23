@@ -9,15 +9,16 @@ Propose complete initial documents only at the allowed paths in the context:
 - ARCHITECTURE from actual modules and their interactions; cite source paths and distinguish observed facts from inference.
 - DDBB-DIAGRAM with Mermaid erDiagram from real model declarations: exactly the concrete entities and relationships
   evidenced in source, including cardinality. Abstract classes are not entities. Describe dynamic/unresolved relations
-  and missing evidence explicitly; ask instead of inventing a schema. Use «Sin persistencia» only if justified by source.
+  and missing evidence explicitly; ask instead of inventing a schema. State no persistence only if justified by source.
 - SPECIFICATION describing behavior already implemented, with evidence and unknown requirements called out.
 - flows/*.md for the principal observed modules and business flows, with diagrams grounded in code.
-- ROADMAP with P001 («## P001 — título», objective and exit criteria). Ask what future work should be planned when the
+- ROADMAP with P001 ("## P001 — <title>", objective and exit criteria). Ask what future work should be planned when the
   source does not say; never invent product direction, tasks or acceptance criteria.
-- STATE with the accumulated existing implementation and «## Fase activa — P001 título», and NEXT_STEPS synchronized
-  with P001; use tasks «## P001-TNNN — título» only for work requested by the user or evidenced by the repository.
-- DECISIONS as a single indexed document, sections «## DNNN — título» with «Estado: inferida del código», cited evidence
-  and uncertainty. Observed design choices are inferred decisions, never approvals by the user.
+- STATE with the accumulated existing implementation and the active phase heading of P001, and NEXT_STEPS synchronized
+  with P001; use tasks "## P001-TNNN — <title>" only for work requested by the user or evidenced by the repository.
+- DECISIONS as a single indexed document, sections "## DNNN — <title>" whose first status line says the decision is
+  inferred from code, with cited evidence and uncertainty. Observed design choices are inferred decisions, never
+  approvals by the user. Write headings and field labels as the language directive lists them.
 - AGENTS.md as canonical instructions, at most 60 lines: discovery order, existing project rules and observed validation
   commands. CLAUDE.md and GEMINI.md are wrappers importing @AGENTS.md, at most 15 lines each.
 - README.md only when needed. If it already exists, keep it unless the user explicitly requests a replacement; otherwise

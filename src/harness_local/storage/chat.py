@@ -369,7 +369,7 @@ class ChatRepository:
             turn = session.get(Turn, proposal.turn_id)
             text = task_text(proposal.proposal, task_id, {
                 'conversation_id': conversation.id, 'turn_number': turn.number, 'proposal_id': proposal.id,
-                'proposal_sha256': proposal.proposal_sha256})
+                'proposal_sha256': proposal.proposal_sha256}, context.work_language or 'en')
             request = freeze({'action': 'start', 'context_json': context_snapshot(context),
                               'versions_json': freeze(versions), 'task_id': task_id, 'phase_id': phase_id,
                               'text': text, 'chat_proposal': marker})

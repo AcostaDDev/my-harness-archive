@@ -5,8 +5,8 @@ Work from the frozen target ROADMAP section, accumulated STATE baseline, documen
 Follow AGENTS.md discovery: STATE, NEXT_STEPS, active ROADMAP section, relevant SPECIFICATION/ARCHITECTURE sections,
 only cited DECISIONS.md sections or the index, then DDBB-DIAGRAM.md and docs/flows/ when relevant; archives only if cited.
 When asked, propose the complete NEXT_STEPS plan of the target phase: a level-one heading, a reference to ROADMAP,
-optionally «## Restricciones compartidas», and one section «## PNNN-TNNN — título» per task with objective, allowed
-paths, acceptance criteria, validation commands and executor. Every task must belong to the target phase in the context.
+optionally the shared constraints section, and one section "## PNNN-TNNN — <title>" per task with objective, allowed
+paths, acceptance criteria, validation commands and executor, labelled as the language directive lists them. Every task must belong to the target phase in the context.
 Use DDBB-DIAGRAM.md for model diagrams, docs/flows/ for flow diagrams and docs/phase/ for current work artifacts.
 Task criteria require diagram parity for data model and business flow changes. Normal executors propose ADRs only
 via decision_proposals; accepted decisions are consolidated in the single DECISIONS.md by reconciliation.

@@ -7,6 +7,7 @@ import json
 from harness_local.core.engine.commit import (
     CommitIntent, CommitPlan, MechanicalUpdate, git_provenance, validate_mechanical_updates,
 )
+from harness_local.core.engine.document_text import work_language
 from harness_local.core.engine.phases import digest, document_hashes
 from harness_local.core.engine import documents as layout_v2
 
@@ -48,7 +49,7 @@ def _targets(context, snapshot, baseline):
                 (context.next_steps_file, 'state', render(snapshot, next_steps=True))]
     from harness_local.core.engine.document_ops import read_text
     texts = {path: read_text(context, path) for path in target.phase_documents if path in baseline}
-    bodies = layout_v2.managed_bodies(target, snapshot['state'], snapshot['phases'], texts)
+    bodies = layout_v2.managed_bodies(target, snapshot['state'], snapshot['phases'], texts, work_language(context))
     return [(path, *bodies[path]) for path in target.phase_documents if path in bodies and path in baseline]
 
 

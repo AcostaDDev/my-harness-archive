@@ -28,6 +28,7 @@ from harness_local.core.engine.definition import (
     default_documents, definition_layout, text_hash,
 )
 from harness_local.core.engine.document_ops import read_text
+from harness_local.core.engine.document_text import work_language
 from harness_local.core.engine.documents import base_section, parse_roadmap, require_layout, skeleton
 from harness_local.core.engine.serialization import load_history
 from harness_local.storage.chat import MAX_MESSAGE, MAX_PREVIOUS_TURNS, read_documents
@@ -490,7 +491,8 @@ class PlanningRepository:
                 known, drafts = conversation.known, observed['drafts']
                 defaults = skeleton(target, conversation.title,
                                     preparation=[command.argv for command in context.profile.preparation],
-                                    validations=[command.argv for command in context.profile.validations])
+                                    validations=[command.argv for command in context.profile.validations],
+                                    language=work_language(context))
                 frozen.update(prepared, user_edits=[
                     {'path': path, 'before_sha256': known.get(path), 'after_sha256': drafts.get(path)}
                     for path in sorted(set(known) | set(drafts)) if known.get(path) != drafts.get(path)],

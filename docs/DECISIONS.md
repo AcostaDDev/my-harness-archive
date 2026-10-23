@@ -179,6 +179,7 @@ tarea se leen solo las decisiones que cita; este índice sirve para buscar prece
 | [D166](#d166--p011-t007-preferencias-globales-de-idioma-catálogos-y-visual-congelado-por-job) | P011-T007: preferencias globales de idioma, catálogos y visual congelado por job | P011 |
 | [D167](#d167--p011-t008-idioma-de-trabajo-inmutable-por-raíz-y-par-congelado-por-job-e-intento) | P011-T008: idioma de trabajo inmutable por raíz y par congelado por job e intento | P011 |
 | [D168](#d168--p011-t020-recetas-v2-en-local-config-6-con-el-idioma-de-trabajo-sellado-en-plan-y-recibo) | P011-T020: recetas v2 en local-config-6 con el idioma de trabajo sellado en plan y recibo | P011 |
+| [D169](#d169--p011-t009-directiva-de-idioma-sellada-y-documentos-generados-en-el-idioma-de-trabajo) | P011-T009: directiva de idioma sellada y documentos generados en el idioma de trabajo | P011 |
 
 ## D001 — Alcance local y arquitectura base
 
@@ -4994,3 +4995,34 @@ Fase: P011. Concreta D163 (módulos v2) y D167 (idioma de trabajo por raíz; T02
   trabajo (contrato T001 §5). Sin cambios de modelos/migraciones (DDBB-DIAGRAM intacto); flujo de preparación,
   ejemplos, ARCHITECTURE y catálogos actualizados. Sin servicios, QA de navegador, herramientas reales ni red.
   T009 es la siguiente.
+
+## D169 — P011-T009: directiva de idioma sellada y documentos generados en el idioma de trabajo
+
+Estado: implementada el 2026-10-23 por la continuación y commit local en inglés pedidos por el usuario.
+Fase: P011. Concreta D158/D159 (contrato T001 §4/§5), D166 y D167 (par congelado por job/intento).
+[Entrega, alcance y validación](phase/P011-T009_PROMPTS_DOCUMENTOS_BILINGUES.md),
+[flujo](flows/project-work-language.md#directiva-y-documentos-generados-p011-t009-d169).
+
+- HITL: toda la generación documental entra en T009 (sin desglose) y los mensajes de commit y trailers son técnicos
+  (T), sin cambios para ambos idiomas; solo el título de la tarea, escrito por el planificador, sigue W.
+- Directiva `language-directive-1`: texto del motor (`core/engine/language.py`) que `render_attempt` añade tras la
+  plantilla editable y antes del esquema, con la frase del criterio, el mapa V/W/T del rol (T001 §4), lectura de
+  fuentes mixtas sin traducir y las etiquetas D088 del idioma de trabajo; declara su precedencia. El par sale solo del
+  `language_context` del job reclamado; ninguna variable de plantilla lo sustituye. Ambos proveedores la reciben en el
+  prompt de stdin ya usado, sin flags, system prompt ni cambios de permisos.
+- Identidad: el snapshot del intento añade `language` (`directive`, par y SHA-256 del texto); `rendered_sha256`
+  la cubre. Un formato desconocido, valores fuera de en/es o un trabajo distinto del contexto congelado detienen el
+  intento en `prompts` antes de invocar. Jobs sin par (null o `ui-language-1`) se renderizan como antes, sin clave
+  nueva; no se inventa un par. No se versiona `language-context-1`: el texto de la directiva es del motor, como el
+  esquema, y cambiarlo exige un identificador nuevo.
+- Plantillas inglesas sin ejemplos de marcadores españoles; ids nuevos por contenido y catálogos congelados o
+  personalizados legibles. Las respuestas siguen el mapa por campo: una misma salida combina V y W.
+- Documentos: el vocabulario en/es (`core/engine/document_text.py`) cubre bloques, plantilla D088 con AGENTS y
+  envoltorios, REVIEW/SUMMARY, transición, DEFINITION.md, SUMMARY de B, texto de tarea desde chat y etiquetas del
+  contrato de reconciliación, con el `work_language` del contexto congelado. Sin él (contextos previos a D167) se
+  conservan los bytes españoles (y el inglés histórico del texto de chat): la salida española es idéntica byte a byte.
+  Sin cambiar `document_layout`: el idioma ya forma parte del contexto congelado y solo cambia la salida inglesa,
+  inexistente antes de D167; intenciones de commit selladas no regeneran prosa.
+- Sin cambios de esquema, API, rutas, marcadores, códigos, parsers, presupuestos ni del idioma funcional del hijo.
+  Mensajes visibles y avisos de vista previa → T010. Pruebas con agentes falsos: no acreditan calidad lingüística
+  de proveedores reales ni ahorro de tokens. T010 es la siguiente.

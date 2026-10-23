@@ -5,6 +5,7 @@ import re
 
 from harness_local.core.engine.definition import definition_layout, _block_names
 from harness_local.core.engine.document_ops import _sealed_preview
+from harness_local.core.engine.document_text import work_language
 from harness_local.core.engine.documents import (blocks, decision_index, parse_roadmap, phase_data, plan_tasks, render_decisions, render_next_steps, render_roadmap, render_state, replace_block)
 from harness_local.core.engine.phases import phase_definition
 from harness_local.core.engine.planning import TASK_RE
@@ -37,6 +38,7 @@ def _next_steps(text: str) -> dict:
 def adopt_documents(context, tree):
     """Validates the declared phase and regenerates its blocks over the proposed document tree."""
     target = definition_layout(context)
+    language = work_language(context)
     texts = {path: tree[path].decode('utf-8') for path in target.phase_documents}
     for path, text in texts.items():
         if set(blocks(text)) - _block_names(target, path):
@@ -57,12 +59,13 @@ def adopt_documents(context, tree):
              'tasks': [{'task_id': task, 'status': None, 'planned': True} for task, _ in tasks],
              'open_questions': [], 'latest_check': None}
     generated = {
-        target.state: replace_block(texts[target.state], render_state(fresh)),
-        target.next_steps: replace_block(texts[target.next_steps], render_next_steps(fresh)),
+        target.state: replace_block(texts[target.state], render_state(fresh, language)),
+        target.next_steps: replace_block(texts[target.next_steps], render_next_steps(fresh, language)),
         target.roadmap: replace_block(texts[target.roadmap], render_roadmap([
-            {**item, **({'status': 'ACTIVE'} if item['code'] == active else {})} for item in entries]), 'roadmap'),
+            {**item, **({'status': 'ACTIVE'} if item['code'] == active else {})} for item in entries], language),
+            'roadmap'),
         target.decisions: replace_block(texts[target.decisions],
-            render_decisions(decision_index(texts[target.decisions])), 'decisions'),
+            render_decisions(decision_index(texts[target.decisions]), language), 'decisions'),
     }
     tree.update({path: text.encode() for path, text in generated.items()})
     return definition

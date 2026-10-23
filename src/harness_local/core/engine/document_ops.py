@@ -14,6 +14,7 @@ import hashlib
 from harness_local.core.engine.commit import (
     CommitIntent, CommitPlan, MechanicalUpdate, git_provenance, validate_mechanical_updates,
 )
+from harness_local.core.engine.document_text import work_language, words
 from harness_local.core.engine.documents import (
     MAX_DOCUMENT_BYTES, Layout, base_section, blocks, budget_warnings, decision_index, inline, markers,
     parse_roadmap, phase_data, plan_tasks, render_decisions, render_next_steps, render_review, render_roadmap,
@@ -97,9 +98,9 @@ def _protected(context, paths):
 # --- transition ------------------------------------------------------------------------------
 
 
-def _state_title(text: str) -> str:
+def _state_title(text: str, language: str) -> str:
     first = text.splitlines()[0] if text else ''
-    return first if first.startswith('# ') and 'harness-local:managed-' not in first else '# Estado'
+    return first if first.startswith('# ') and 'harness-local:managed-' not in first else words(language)['state_title']
 
 
 def preview_transition(context, snapshot: dict, git, next_steps: str | None, plan_origin: dict | None = None,
@@ -109,6 +110,8 @@ def preview_transition(context, snapshot: dict, git, next_steps: str | None, pla
     `plan_origin` (H6.5): proposal of the `phase_planning` conversation the plan comes from; it enters the
     reviewed hash. Without it, the preview keeps exactly its previous shape."""
     target = require_layout(context)
+    language = work_language(context)
+    w = words(language)
     closed = snapshot['phase']
     code, status = closed['code'], closed['status']
     if status not in TERMINAL:
@@ -136,9 +139,9 @@ def preview_transition(context, snapshot: dict, git, next_steps: str | None, pla
             raise ValueError(f"Phase {following['code']} already exists in this checkout")
         if unified:
             next_steps = (f"# {following['code']} — {inline(following['title'])}\n\n"
-                          f"**Objetivo:** {following['objective']}\n\n**Criterios de salida:**\n"
+                          f"{w['objective']} {following['objective']}\n\n{w['exit_criteria']}\n"
                           + ''.join(f'- {item}\n' for item in following['exit_criteria'])
-                          + '\nPendiente de planificación confirmada.\n')
+                          + w['next_plan_pending'])
         if not isinstance(next_steps, str) or not next_steps.strip():
             raise ValueError(f"Provide the NEXT_STEPS plan of {following['code']}")
         if '\0' in next_steps:
@@ -154,34 +157,33 @@ def preview_transition(context, snapshot: dict, git, next_steps: str | None, pla
         if next_steps is not None:
             raise ValueError('ROADMAP has no further phase; the transition only archives')
         tasks = []
-        plan = (f'# Sin fase activa\n\nEl roadmap no tiene más fases después de {inline(code)}. Añade una fase '
-                'en ROADMAP y su plan aquí mediante una edición confirmada.\n')
+        plan = w['roadmap_finished'].format(code=inline(code))
     titles = {entry['code']: entry['title'] for entry in entries}
     upcoming = None if following is None else {'code': following['code'], 'status': 'ACTIVE',
                                                'objective': following['objective']}
     fresh = {'phase': upcoming, 'tasks': [{'task_id': task, 'status': None, 'planned': True} for task, _ in tasks],
              'open_questions': [], 'latest_check': None}
-    base = (base_section(texts[target.state]) or '## Base acumulada\n\nTodavía no hay trabajo aceptado.\n').rstrip()
+    base = (base_section(texts[target.state]) or w['empty_baseline']).rstrip()
     begin, end = markers('state')
-    active = (f"## Fase activa — {following['code']} {inline(following['title'])}\n\nSin notas todavía.\n"
-              if following else '## Fase activa\n\nSin fase activa: roadmap completado.\n')
-    state = replace_block(f'{_state_title(texts[target.state])}\n\n{begin}\n{end}\n\n{base}\n\n{active}',
-                          render_state(fresh))
-    plan = replace_block(plan, render_next_steps(fresh))
+    active = (w['active_heading'].format(code=following['code'], title=inline(following['title']))
+              if following else w['no_active_heading'])
+    state = replace_block(f'{_state_title(texts[target.state], language)}\n\n{begin}\n{end}\n\n{base}\n\n{active}',
+                          render_state(fresh, language))
+    plan = replace_block(plan, render_next_steps(fresh, language))
     phases = {**snapshot['phases'], code: {'status': status, 'tag': closed['definition'].get('tag')}}
     if unified:
         phases[code]['archive'] = archive.removeprefix(target.docs + '/') + '/'
     if following is not None:
         phases[following['code']] = {'status': 'ACTIVE', 'tag': following['tag']}
     rows = [{'code': entry['code'], 'title': entry['title'], **phases.get(entry['code'], {})} for entry in entries]
-    roadmap = replace_block(texts[target.roadmap], render_roadmap(rows), 'roadmap')
-    decisions = replace_block(texts[target.decisions], render_decisions(decision_index(texts[target.decisions])),
-                              'decisions')
+    roadmap = replace_block(texts[target.roadmap], render_roadmap(rows, language), 'roadmap')
+    decisions = replace_block(texts[target.decisions],
+                              render_decisions(decision_index(texts[target.decisions]), language), 'decisions')
     summary = {**snapshot['summary'], 'phase': {**snapshot['summary']['phase'], 'title': titles[code]}}
     changes = [(f'{archive}/STATE.md', None, texts[target.state]),
                (f'{archive}/NEXT_STEPS.md', None, texts[target.next_steps]),
-               (f'{archive}/REVIEW.md', None, render_review(code, snapshot['check'], status)),
-               (f'{archive}/SUMMARY.md', None, render_summary(summary)),
+               (f'{archive}/REVIEW.md', None, render_review(code, snapshot['check'], status, language)),
+               (f'{archive}/SUMMARY.md', None, render_summary(summary, language)),
                (target.state, texts[target.state], state), (target.next_steps, texts[target.next_steps], plan),
                (target.roadmap, texts[target.roadmap], roadmap), (target.decisions, texts[target.decisions], decisions)]
     for _, _, text in changes[4:]:
@@ -306,7 +308,7 @@ def preview_edit(context, git, *, source: str, changes: list[dict] | None, regen
     # D088: editing DECISIONS regenerates its managed index, from its headings, in the same commit.
     if target.decisions in proposed:
         try:
-            index = render_decisions(decision_index(proposed[target.decisions]))
+            index = render_decisions(decision_index(proposed[target.decisions]), work_language(context))
         except ValueError as exc:
             raise ValueError(f'{target.decisions}: {exc}') from exc
         regenerated = replace_block(proposed[target.decisions], index, 'decisions')

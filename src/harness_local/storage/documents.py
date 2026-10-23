@@ -20,6 +20,7 @@ from harness_local.core.engine.commit import CommitIntent, MechanicalUpdate
 from harness_local.core.engine.context import relative_path
 from harness_local.core.engine.contracts import context_snapshot, freeze
 from harness_local.core.engine.document_ops import preview_edit, read_text, text_hash
+from harness_local.core.engine.document_text import work_language
 from harness_local.core.engine.documents import (
     BLOCK_REASON, blocks, budget_warnings, decision_index, layout, managed_bodies, replace_block, require_layout,
     validation_counts,
@@ -234,7 +235,7 @@ def task_commit_updates(managed, context, run_id, history):
         snap = state_snapshot(session, phase, committing_run_id=run_id)
         phases = phases_snapshot(session, run.root)
     texts = {path: read_text(context, path) for path in target.phase_documents}
-    bodies = managed_bodies(target, snap, phases, texts)
+    bodies = managed_bodies(target, snap, phases, texts, work_language(context))
     updates = []
     for path, (name, body) in bodies.items():
         if texts.get(path) is None:

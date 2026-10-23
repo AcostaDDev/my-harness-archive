@@ -145,3 +145,6 @@ intento sin resultado al confirmar la parada queda `INTERRUPTED` sin reintento a
 - Un `AGENTS.md` ausente, enlazado, no regular, vacío, no UTF-8 o mayor de 32 KiB detiene el run en `prompts`
   antes de invocar al agente. Una versión de plantilla activa sin `{{PROJECT_INSTRUCTIONS}}` también.
 - Las CLI no cargan otra copia: Claude con `--setting-sources ""` y Codex con `project_doc_max_bytes=0` (desde `cli-11`, D094).
+- Idioma (D169): cada intento recibe, tras las plantillas y antes del esquema, la directiva del par congelado de su
+  job, sellada en el snapshot; un par inválido o distinto del trabajo del contexto detiene el run en `prompts`. El
+  commit regenera los bloques en el idioma de trabajo ([flujo](project-work-language.md#directiva-y-documentos-generados-p011-t009-d169)).

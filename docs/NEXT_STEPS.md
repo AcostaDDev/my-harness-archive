@@ -4,12 +4,12 @@ Objetivo y criterios en [ROADMAP](ROADMAP.md#p011--preparación-para-apertura-p�
 Decisión: [D154](DECISIONS.md#d154--p011-preparación-para-apertura-pública-en-github).
 [Plan y alcance](phase/P011_PLAN_APERTURA_PUBLICA.md).
 
-**Estado:** en ejecución desde el 2026-10-22. T001/T002/T019/T003–T008/T020 completadas (D159–D168); diez tareas
+**Estado:** en ejecución desde el 2026-10-22. T001/T002/T019/T003–T009/T020 completadas (D159–D169); nueve tareas
 pendientes. Licencia/avisos, retirada legacy/A, código/pruebas en inglés, preferencias globales e idioma de trabajo
-inmutable por proyecto con el par congelado por job/intento; recetas v2 cableadas en `local-config-6`.
+inmutable por proyecto con el par congelado por job/intento; recetas v2; directiva al agente y documentos en W.
 **Planificación:** base finalizada en D156 y afinada por D155/D157/D158; contrato T001 disponible.
 No equivale a fase completada.
-**Siguiente:** P011-T009. Sin autorización de publicación.
+**Siguiente:** P011-T010. Sin autorización de publicación.
 P001–P010 siguen cerradas; la primera versión local mantiene el alcance de D151/D153.
 
 ## Restricciones compartidas
@@ -42,7 +42,7 @@ P001–P010 siguen cerradas; la primera versión local mantiene el alcance de D1
   siguiente fase` para v0.2.0 después de abrir el proyecto en GitHub, fuera de estas tareas. P011 mantiene
   cierre con READY y autorización propia, nueva fase sin tareas y confirmación del plan posterior.
   El commit D156 y los ajustes D157/D158 ya se realizaron. La petición actual autoriza ejecutar la siguiente
-  tarea (T020) y su commit local en inglés, sin encadenar tareas ni publicar.
+  tarea (T009) y su commit local en inglés, sin encadenar tareas ni publicar.
 - D157 elige instantánea pública inicial revisada, con Git/documentación de partida nuevos y sin historia privada.
   Desde la apertura, código/decisiones/fases se desarrollan en el repositorio público, fuente principal; este
   checkout conserva su historia privada. No sincronizar dos desarrollos activos ni congelar para siempre `docs/` pública.
@@ -266,7 +266,11 @@ OpenAPI/tipos y pruebas del cliente pertinentes.
 
 ## P011-T009 — Prompts ingleses y documentos generados en la lengua elegida
 
-**Estado:** pendiente. **Depende de:** T003, T004, T008, T020.
+**Estado:** completada el 2026-10-23, D169. **Depende de:** T003, T004, T008, T020.
+**Evidencia:** [entrega](phase/P011-T009_PROMPTS_DOCUMENTOS_BILINGUES.md): `language-directive-1` sellada en el snapshot
+desde el par del job (V/W/T por rol, ambos proveedores por stdin; par inválido → parada antes de invocar); plantillas
+inglesas sin marcadores españoles; documentos generados en el idioma de trabajo (español histórico byte a byte).
+HITL: todo en T009 y commits técnicos sin cambios. Suites offline en verde; sin proveedores ni QA de navegador.
 **Objetivo:** Prompts originales ingleses con prosa humana en idioma visual y documentación/código en trabajo fijo.
 **Alcance:** plantillas/catálogos/esquemas, esqueletos y bloques D088, chat, planificación, revisión, definición,
 incorporación B, resúmenes, check/cierre/archivo e instrucciones de proyecto; sin prompts para el Flujo A retirado.

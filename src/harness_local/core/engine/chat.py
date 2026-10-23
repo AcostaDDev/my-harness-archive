@@ -13,6 +13,7 @@ import hashlib
 import re
 
 from harness_local.core.engine.contracts import ContractError, RunHistory, Selection, freeze, invoke_agent, stop_history
+from harness_local.core.engine.document_text import CHAT_TASK
 from harness_local.core.engine.prompts import dump_catalog, render_attempt
 
 TASK_ID = re.compile(r"[A-Za-z0-9][A-Za-z0-9._-]{0,119}")
@@ -58,26 +59,28 @@ def validate_chat_result(data: dict) -> dict:
             "proposals": result}
 
 
-def task_text(proposal: dict, task_id: str, origin: dict) -> str:
+def task_text(proposal: dict, task_id: str, origin: dict, language: str = 'en') -> str:
     """Plan section for the normal flow. No machine-readable allowed paths or executor:
-    the planner sets the contract under the project policy, never the chat."""
+    the planner sets the contract under the project policy, never the chat. `language`: the project's work
+    language (D169); contexts without one keep the historical English labels."""
     if not TASK_ID.fullmatch(task_id):
         raise ValueError("Task id must be 1–120 letters, digits, '.', '_' or '-'")
-    lines = [f"## {task_id} — {proposal['title']}", f"**Objective:** {proposal['objective']}"]
+    labels = CHAT_TASK[language]
+    lines = [f"## {task_id} — {proposal['title']}", f"{labels['objective']} {proposal['objective']}"]
     if proposal["scope"]:
-        lines.append(f"**Scope:** {proposal['scope']}")
-    lines += ["**Acceptance criteria:**", *[f"- {item}" for item in proposal["acceptance_criteria"]]]
+        lines.append(f"{labels['scope']} {proposal['scope']}")
+    lines += [labels["acceptance"], *[f"- {item}" for item in proposal["acceptance_criteria"]]]
     if proposal["validation"]:
-        lines += ["**Validation:**", *[f"- {item}" for item in proposal["validation"]]]
+        lines += [labels["validation"], *[f"- {item}" for item in proposal["validation"]]]
     if proposal["rationale"]:
-        lines.append(f"**Business context:** {proposal['rationale']}")
-    lines.append(f"**References:** chat conversation {origin['conversation_id']}, turn {origin['turn_number']}, "
-                 f"proposal {origin['proposal_id']} (sha256 {origin['proposal_sha256']})")
+        lines.append(f"{labels['context']} {proposal['rationale']}")
+    lines.append(labels["references"].format(conversation=origin['conversation_id'], turn=origin['turn_number'],
+                                             proposal=origin['proposal_id'], sha256=origin['proposal_sha256']))
     return "\n".join(lines) + "\n"
 
 
 def chat_turn(context, history: RunHistory, snapshot: dict, agents, evidence, journal,
-              catalog) -> tuple[RunHistory, dict]:
+              catalog, language=None) -> tuple[RunHistory, dict]:
     """A single invocation with the frozen request; the checkout evidence cannot change."""
 
     def done(history, status, reasons, *, result=None, checkout=None):
@@ -101,7 +104,7 @@ def chat_turn(context, history: RunHistory, snapshot: dict, agents, evidence, jo
                         + ". The current directory is the snapshot; project.root identifies its source only. "
                         "Do not read the live source checkout. Uncommitted changes are not part of this snapshot.")
         prompt, prompt_snapshot = render_attempt(catalog, "chat-turn", {
-            "CONTEXT_JSON": freeze(snapshot["context"]), "MESSAGE": message}, context)
+            "CONTEXT_JSON": freeze(snapshot["context"]), "MESSAGE": message}, context, language)
     except (ValueError, KeyError, TypeError) as exc:
         return done(stop_history(history, "prompts", str(exc)), "FAILED", [str(exc)], checkout={"before": observed})
     history = replace(history, prompt_catalog_json=catalog_json)
