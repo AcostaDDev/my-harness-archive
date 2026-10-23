@@ -15,6 +15,7 @@ import re
 from harness_local.core.engine.contracts import ContractError, RunHistory, Selection, freeze, invoke_agent, stop_history
 from harness_local.core.engine.document_text import CHAT_TASK
 from harness_local.core.engine.prompts import dump_catalog, render_attempt
+from harness_local.i18n import tr
 
 TASK_ID = re.compile(r"[A-Za-z0-9][A-Za-z0-9._-]{0,119}")
 PROPOSAL_FIELDS = ("title", "objective", "scope", "acceptance_criteria", "validation", "rationale")
@@ -27,28 +28,28 @@ def digest(value) -> str:
 
 def _text(value, name, *, empty=False, limit=20_000) -> str:
     if not isinstance(value, str) or (not empty and not value.strip()) or len(value) > limit:
-        raise ContractError(f"Chat {name} must be a {'' if empty else 'non-empty '}text of at most {limit} characters")
+        raise ContractError(tr('chat.text_limit' if empty else 'chat.text_required_limit', name=name, limit=limit))
     return value.strip()
 
 
 def _texts(value, name, *, empty=True, limit=50) -> list[str]:
     if (not isinstance(value, list) or len(value) > limit or (not empty and not value)
             or not all(isinstance(item, str) and item.strip() and len(item) <= 4000 for item in value)):
-        raise ContractError(f"Chat {name} must be a list of at most {limit} non-empty texts")
+        raise ContractError(tr('chat.chat_list_most_non', name=name, limit=limit))
     return [item.strip() for item in value]
 
 
 def validate_chat_result(data: dict) -> dict:
     """Fixed schema: answer, references and structured proposals; nothing else."""
     if not isinstance(data, dict) or set(data) != {"answer", "references", "proposals"}:
-        raise ContractError("Chat result must contain exactly answer, references and proposals")
+        raise ContractError(tr('chat.chat_result_contain_exactly'))
     proposals = data["proposals"]
     if not isinstance(proposals, list) or len(proposals) > MAX_PROPOSALS:
-        raise ContractError(f"Chat proposals must be a list of at most {MAX_PROPOSALS} items")
+        raise ContractError(tr('chat.chat_proposals_list_most', max_proposals=MAX_PROPOSALS))
     result = []
     for item in proposals:
         if not isinstance(item, dict) or set(item) != set(PROPOSAL_FIELDS):
-            raise ContractError("Each proposal must contain exactly " + ", ".join(PROPOSAL_FIELDS))
+            raise ContractError(tr('chat.proposal_fields', fields=", ".join(PROPOSAL_FIELDS)))
         result.append({"title": _text(item["title"], "proposal title", limit=200),
                        "objective": _text(item["objective"], "proposal objective", limit=4000),
                        "scope": _text(item["scope"], "proposal scope", empty=True, limit=4000),
@@ -64,7 +65,7 @@ def task_text(proposal: dict, task_id: str, origin: dict, language: str = 'en') 
     the planner sets the contract under the project policy, never the chat. `language`: the project's work
     language (D169); contexts without one keep the historical English labels."""
     if not TASK_ID.fullmatch(task_id):
-        raise ValueError("Task id must be 1–120 letters, digits, '.', '_' or '-'")
+        raise ValueError(tr('chat.task_id_1_120'))
     labels = CHAT_TASK[language]
     lines = [f"## {task_id} — {proposal['title']}", f"{labels['objective']} {proposal['objective']}"]
     if proposal["scope"]:
@@ -93,7 +94,7 @@ def chat_turn(context, history: RunHistory, snapshot: dict, agents, evidence, jo
     try:
         before = evidence.capture(context)
     except Exception as exc:
-        reason = f"Checkout evidence could not be captured before the turn: {type(exc).__name__}: {exc}"
+        reason = tr('chat.evidence_before', error=f"{type(exc).__name__}: {exc}")
         return done(stop_history(history, "evidence", reason), "FAILED", [reason])
     observed = {"base_revision": before.base_revision, "fingerprint": before.fingerprint}
     try:
@@ -115,13 +116,13 @@ def chat_turn(context, history: RunHistory, snapshot: dict, agents, evidence, jo
     try:
         after = evidence.capture(context)
     except Exception as exc:
-        reason = f"Checkout evidence could not be re-captured after the turn: {type(exc).__name__}: {exc}"
+        reason = tr('chat.evidence_after', error=f"{type(exc).__name__}: {exc}")
         return done(stop_history(history, "evidence", reason) if history.stop is None else history, "FAILED",
                     [reason], result=data, checkout={"before": observed, "after": None})
     checkout = {"before": observed, "after": {"base_revision": after.base_revision, "fingerprint": after.fingerprint},
                 "unchanged": after == before}
     if after != before:
-        reason = "The checkout changed during a read-only chat turn; the answer and its proposals are discarded"
+        reason = tr('chat.checkout_changed_turn')
         return done(stop_history(history, "chat", reason) if history.stop is None else history, "FAILED", [reason],
                     result=data, checkout=checkout)
     if data is None:

@@ -18,6 +18,7 @@ from harness_local.core.engine.acceptance import assess_acceptance
 from harness_local.core.engine.context import ProjectContext, relative_path
 from harness_local.core.engine.contracts import RunHistory, freeze, stop_history
 from harness_local.core.engine.evidence import ContentEvidence, matches
+from harness_local.i18n import tr
 
 GIT_FORMAT = "git-v1"
 _OBJECT_ID = re.compile(r"[0-9a-f]{40}(?:[0-9a-f]{24})?")
@@ -40,7 +41,7 @@ class GitIdentity:
         for value in (self.name, self.email):
             if (not isinstance(value, str) or not value.strip() or value != value.strip()
                     or any(char in value for char in "<>\n\r\0")):
-                raise ValueError("Explicit commit identity required without markup or newlines")
+                raise ValueError(tr('commit.explicit_commit_identity_required'))
 
 
 @dataclass(frozen=True)
@@ -55,14 +56,14 @@ class MechanicalUpdate:
     def __post_init__(self):
         relative_path(self.path)
         if self.path.startswith(".git/") or self.path == ".git":
-            raise ValueError("Mechanical updates cannot target Git metadata")
+            raise ValueError(tr('commit.mechanical_updates_cannot_target'))
         if self.encoding not in ('utf-8', 'base64'):
             raise ValueError('Unknown mechanical content encoding')
         if self.content is not None and (not isinstance(self.content, str) or "\0" in self.content):
-            raise ValueError("Mechanical content must be NUL-free UTF-8 text")
+            raise ValueError(tr('commit.mechanical_content_nul_free'))
         self.bytes()  # also validates the base64 before sealing the intent
         if not isinstance(self.reason, str) or not self.reason.strip():
-            raise ValueError("Mechanical updates require an explicit reason")
+            raise ValueError(tr('commit.mechanical_updates_require_explicit'))
 
     def bytes(self) -> bytes | None:
         """None deletes the file; base64 keeps binary phase artifacts byte for byte."""
@@ -82,7 +83,7 @@ class GitProvenance:
 
 def git_provenance(evidence: ContentEvidence) -> GitProvenance:
     if evidence.provenance_json is None:
-        raise CommitError("Evidence has no Git provenance and cannot support a commit")
+        raise CommitError(tr('commit.evidence_has_no_git'))
     try:
         data = json.loads(evidence.provenance_json)
         if not isinstance(data, dict) or data.get("format") != GIT_FORMAT:
@@ -188,23 +189,23 @@ def validate_mechanical_updates(context: ProjectContext, reviewed_paths: tuple[s
         if not isinstance(update, MechanicalUpdate):
             raise CommitError("Mechanical updates must be explicit MechanicalUpdate values")
         if update.path in seen:
-            raise CommitError("Duplicate mechanical update path")
+            raise CommitError(tr('commit.duplicate_mechanical_update_path'))
         seen.add(update.path)
         if update.path in reviewed_paths and update.path not in block_paths:
-            raise CommitError("Mechanical update overlaps reviewed content; revalidate instead")
+            raise CommitError(tr('commit.mechanical_update_overlaps_reviewed'))
         profile = context.profile
         if matches(update.path, profile.sensitive_paths) and not matches(update.path, profile.sensitive_allowlist):
-            raise CommitError("Mechanical update targets a sensitive path")
+            raise CommitError(tr('commit.mechanical_update_targets_sensitive'))
         try:
             context.path(update.path)
         except ValueError as exc:
-            raise CommitError(f"Mechanical update path is unsafe: {exc}") from exc
+            raise CommitError(tr('commit.mechanical_update_path_unsafe', exc=exc)) from exc
 
 
 def commit_message(prefix: str, task: dict, run_id: str, operation_id: str, fingerprint: str,
                    reviewed_tree: str, updates: tuple[MechanicalUpdate, ...]) -> str:
     if not re.fullmatch(r"[A-Za-z0-9._-]{1,40}", prefix):
-        raise CommitError("Invalid commit message prefix")
+        raise CommitError(tr('commit.invalid_commit_message_prefix'))
     title = " ".join(str(task["title"]).split())
     lines = [f"{prefix}: accept {task['task_id']} - {title}", "",
              f"Harness-Operation: {operation_id}", f"Harness-Run: {run_id}",
@@ -216,7 +217,8 @@ def commit_message(prefix: str, task: dict, run_id: str, operation_id: str, fing
 def _invalidated(reason: str, observed: ContentEvidence, expected_fingerprint: str) -> CommitOutcome:
     return CommitOutcome(
         "invalidated", None, head=observed.base_revision, observed_fingerprint=observed.fingerprint,
-        diagnostic=f"{reason}; reviewed fingerprint {expected_fingerprint}, observed {observed.fingerprint}")
+        diagnostic=tr('commit.invalidated_fingerprint', reason=reason, reviewed=expected_fingerprint,
+                      observed=observed.fingerprint))
 
 
 def prepare_commit(context: ProjectContext, history: RunHistory, writer: CommitWriter, *,
@@ -227,11 +229,11 @@ def prepare_commit(context: ProjectContext, history: RunHistory, writer: CommitW
     """Checks current acceptance and fixes the intent; no effects on refs or files."""
     if (history.status != "acceptance_ready" or history.acceptance is None or not history.acceptance.eligible
             or not history.cycles or history.task_json is None):
-        raise CommitError("Only an eligible acceptance_ready run can be committed")
+        raise CommitError(tr('managed.eligible_acceptance_ready_run'))
     cycle = history.cycles[-1]
     reviewed = history.acceptance.evidence
     if cycle.evidence != reviewed:
-        raise CommitError("Acceptance evidence does not match the last reviewed cycle")
+        raise CommitError(tr('commit.acceptance_evidence_does_not'))
     provenance = git_provenance(reviewed)
     current = writer.capture(context)
     decision = assess_acceptance(cycle, current, context)
@@ -274,11 +276,11 @@ def commit_accepted(context: ProjectContext, history: RunHistory, writer: Commit
         if isinstance(prepared, CommitOutcome):
             # No intent and no effect: the fact is kept and revalidation is required.
             journal.commit_invalidated(prepared)
-            return stop_history(history, "commit", prepared.diagnostic or "Acceptance invalidated"), prepared
+            return stop_history(history, "commit", prepared.diagnostic or tr('commit.acceptance_invalidated')), prepared
         intent = prepared
         journal.commit_intent(intent)
     outcome = writer.execute(context, intent)
     journal.commit_result(outcome)
     if outcome.status == "invalidated":
-        history = stop_history(history, "commit", outcome.diagnostic or "Acceptance invalidated")
+        history = stop_history(history, "commit", outcome.diagnostic or tr('commit.acceptance_invalidated'))
     return history, outcome

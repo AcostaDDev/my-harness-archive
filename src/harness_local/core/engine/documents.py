@@ -97,7 +97,7 @@ class Layout:
 
     def archive(self, code: str) -> str:
         if not PHASE_CODE.fullmatch(code):
-            raise ValueError('Layout v2 phases use codes PNNN')
+            raise ValueError(tr('documents.layout_v2_phases_use'))
         return f'{self.archive_dir}/phase-{code[1:]}'
 
     @property
@@ -177,7 +177,7 @@ def executor_protected(context, task_id: str, path: str) -> bool:
 def require_layout(context) -> Layout:
     value = layout(context)
     if value is None:
-        raise ValueError('This operation requires the D072 document layout (documents = "v2")')
+        raise ValueError(tr('documents.operation_requires_d072_document'))
     return value
 
 
@@ -191,27 +191,28 @@ def project_instructions(context) -> tuple[str, dict]:
     target = layout(context)
     if target is None:
         return LEGACY_INSTRUCTIONS, {'path': None, 'sha256': None, 'bytes': 0}
-    missing = f'D088: {target.agents} is required before invoking agents; restore the project instructions'
+    missing = tr('documents.instructions_required', path=target.agents)
     try:
         path = context.path(target.agents)
         descriptor = os.open(path, os.O_RDONLY | os.O_NOFOLLOW)
     except FileNotFoundError:
         raise ContractError(missing) from None
     except (OSError, ValueError) as exc:
-        raise ContractError(f'{target.agents} cannot be read as a regular file: {exc}') from None
+        raise ContractError(tr('documents.cannot_read_regular_file', agents=target.agents, exc=exc)) from None
     if not stat.S_ISREG(os.fstat(descriptor).st_mode):
         os.close(descriptor)
-        raise ContractError(f'{target.agents} must be a regular file')
+        raise ContractError(tr('documents.regular_file_3', agents=target.agents))
     with os.fdopen(descriptor, 'rb') as file:
         data = file.read(MAX_INSTRUCTIONS_BYTES + 1)
     if len(data) > MAX_INSTRUCTIONS_BYTES:
-        raise ContractError(f'{target.agents} exceeds {MAX_INSTRUCTIONS_BYTES} bytes; keep it within 60 lines')
+        raise ContractError(tr('documents.exceeds_bytes_keep_within', agents=target.agents,
+                               max_instructions_bytes=MAX_INSTRUCTIONS_BYTES))
     try:
         text = data.decode('utf-8')
     except UnicodeDecodeError:
-        raise ContractError(f'{target.agents} must be UTF-8 text') from None
+        raise ContractError(tr('documents.utf_8_text', agents=target.agents)) from None
     if not text.strip() or '\0' in text:
-        raise ContractError(f'{target.agents} must contain NUL-free project instructions')
+        raise ContractError(tr('documents.contain_nul_free_project', agents=target.agents))
     return text, {'path': target.agents, 'sha256': hashlib.sha256(data).hexdigest(), 'bytes': len(data)}
 
 
@@ -227,16 +228,16 @@ def _span(text: str, name: str):
     if begin not in text and end not in text:
         return None
     if text.count(begin) != 1 or text.count(end) != 1:
-        raise ValueError('Mechanical markers must occur exactly once as a pair')
+        raise ValueError(tr('documents.mechanical_markers_occur_exactly'))
     start, stop = text.index(begin), text.index(end)
     if stop < start or (start and text[start - 1] != '\n') or (
             stop + len(end) < len(text) and text[stop + len(end)] not in '\r\n'):
-        raise ValueError('Mechanical markers must be ordered and occupy their own lines')
+        raise ValueError(tr('documents.mechanical_markers_ordered_occupy'))
     if not text[start + len(begin):].startswith(('\r\n', '\n')) or (stop and text[stop - 1] != '\n'):
-        raise ValueError('Mechanical markers must occupy their own lines')
+        raise ValueError(tr('documents.mechanical_markers_occupy_own'))
     suffix = text[stop + len(end):]
     if suffix and not suffix.startswith(('\r\n', '\n')):
-        raise ValueError('Mechanical markers must occupy their own lines')
+        raise ValueError(tr('documents.mechanical_markers_occupy_own'))
     return start, stop + len(end)
 
 
@@ -258,7 +259,7 @@ def blocks(text: str) -> dict[str, str]:
         if span is not None:
             found[name] = text[span[0]:span[1]]
     if len(ANY_MARKER.findall(text)) != 2 * len(found):
-        raise ValueError('Unknown or partial harness-local managed markers')
+        raise ValueError(tr('documents.unknown_partial_harness_local'))
     return found
 
 
@@ -445,7 +446,7 @@ def parse_roadmap(text: str) -> list[dict]:
     for match in PHASE_RE.finditer(text):
         code = match.group(1)
         if code in seen:
-            raise ValueError(f'Duplicate roadmap phase {code}')
+            raise ValueError(tr('documents.duplicate_roadmap_phase', code=code))
         seen.add(code)
         raw = _fields(_section_after(text, match.end()))
         criteria = bullet_items(_first(raw, ROADMAP_FIELDS['exit_criteria']))
@@ -463,9 +464,9 @@ def plan_tasks(text: str, code: str | None = None) -> list[tuple[str, str]]:
     tasks = [(match.group(1), collapse(match.group(2))) for match in TASK_RE.finditer(text)]
     ids = [task for task, _ in tasks]
     if len(ids) != len(set(ids)):
-        raise ValueError('Duplicate task headings in NEXT_STEPS')
+        raise ValueError(tr('documents.duplicate_task_headings_next'))
     if code is not None and any(not task.startswith(code + '-T') for task in ids):
-        raise ValueError(f'Every NEXT_STEPS task must belong to phase {code}')
+        raise ValueError(tr('documents.every_next_steps_task', code=code))
     return tasks
 
 
@@ -479,7 +480,7 @@ def decision_index(text: str | None) -> list[dict]:
         number = int(match.group(1))
         identity = 'D' + match.group(1)
         if number in seen:
-            raise ValueError(f'Duplicate decision number in DECISIONS: {seen[number]} and {identity}')
+            raise ValueError(tr('documents.duplicate_decision_number_decisions', seen=seen[number], identity=identity))
         seen[number] = identity
         status = None
         for line in _section_after(source, match.end()).splitlines():

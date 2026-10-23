@@ -25,6 +25,7 @@ from harness_local.core.engine.contracts import AgentResult, freeze
 from harness_local.core.engine.journal import JournalError
 from harness_local.core.engine.metrics import CAPTURE as METRICS_CAPTURE
 from harness_local.core.engine.prompts import digest, output_schema
+from harness_local.i18n import tr
 
 
 # cli-13 (P009-T014): Codex skips its Git check also for a D088 definition of a new folder.
@@ -104,27 +105,27 @@ class CLIConfig:
 
     def __post_init__(self):
         if self.provider not in SUPPORTED or self.cli_version not in SUPPORTED[self.provider]:
-            raise ValueError("Unsupported CLI baseline; re-characterize before changing it")
+            raise ValueError(tr('agents.unsupported_cli_baseline_re'))
         if (not self.executable or not Path(self.executable[0]).is_absolute()
                 or not all(isinstance(v, str) and v and "\0" not in v for v in self.executable)):
-            raise ValueError("Explicit absolute executable argv required")
+            raise ValueError(tr('agents.explicit_absolute_executable_argv'))
         if not math.isfinite(self.timeout_seconds) or self.timeout_seconds <= 0:
-            raise ValueError("Positive finite timeout required")
+            raise ValueError(tr('agents.positive_finite_timeout_required'))
         if len(dict(self.environment)) != len(self.environment):
-            raise ValueError("Duplicate environment keys")
+            raise ValueError(tr('agents.duplicate_environment_keys'))
         for key, value in self.environment:
             if not key or "=" in key or "\0" in key or "\0" in value:
-                raise ValueError("Invalid environment")
+                raise ValueError(tr('agents.invalid_environment'))
         # This environment switch can force memory on despite the inline setting.
         # Refuse conflicting operator input; never inherit or rewrite auth/env.
         if (self.provider == "claude"
                 and dict(self.environment).get("CLAUDE_CODE_DISABLE_AUTO_MEMORY", "1") != "1"):
-            raise ValueError("Claude automatic memory must remain disabled")
+            raise ValueError(tr('agents.claude_automatic_memory_remain'))
         for tool in self.tools + self.allowed_tools + self.grantable_tools:
             if not tool or tool.startswith("-") or "\0" in tool:
-                raise ValueError("Invalid explicit tool permission")
+                raise ValueError(tr('agents.invalid_explicit_tool_permission'))
         if self.provider == "codex" and (self.tools or self.allowed_tools or self.grantable_tools):
-            raise ValueError("Codex has no explicit tool inventory; tool lists are Claude-only")
+            raise ValueError(tr('agents.codex_has_no_explicit'))
 
 
 def access_for(role):
@@ -159,32 +160,31 @@ def argv_for(config, context, request):
     from harness_local.core.engine.permissions import snapshot_payload
     permissions = snapshot_payload(request)
     if permissions.get('denials'):
-        raise ValueError('Explicit permission denial; CLI launch refused')
+        raise ValueError(tr('agents.explicit_permission_denial_cli'))
     grants = permissions['grants']
     if any(grant['expires_at'] <= datetime.now(timezone.utc).isoformat(timespec='microseconds') for grant in grants):
-        raise ValueError('Permission expired before CLI launch')
+        raise ValueError(tr('agents.permission_expired_before_cli'))
     extra_tools = []
     for grant in grants:
         scope = grant['request']
         if scope['kind'] == 'network':
-            raise ValueError('This CLI cannot enforce scoped network grants')
+            raise ValueError(tr('agents.cli_cannot_enforce_scoped'))
         if scope['kind'] == 'tools':
             rule = scope['target']
             if 'tools' not in GRANTS[config.provider]:
-                raise ValueError(f'{config.provider} cannot enforce scoped tool grants; launch refused')
+                raise ValueError(tr('agents.cannot_enforce_scoped_tool', provider=config.provider))
             if (access != 'write' or rule not in config.grantable_tools
                     or rule.split('(', 1)[0] not in config.tools):
-                raise ValueError('Tool grant exceeds explicit CLI capabilities/configuration')
+                raise ValueError(tr('agents.tool_grant_exceeds_explicit'))
             extra_tools.append(rule)
     model, effort = request.selection.model, request.selection.effort
     if not model or model.startswith("-") or not effort or effort.startswith("-"):
-        raise ValueError("Explicit model/effort required")
+        raise ValueError(tr('agents.explicit_model_effort_required'))
     if effort not in EFFORTS[config.provider]:
-        raise ValueError(f"Effort outside the {config.provider} CLI vocabulary")
+        raise ValueError(tr('agents.effort_outside_cli_vocabulary', provider=config.provider))
     if config.provider == "codex":
         if access == "write" and config.cli_version not in WRITE_SUPPORTED["codex"]:
-            raise ValueError("Codex workspace-write is characterized on "
-                             + ", ".join(WRITE_SUPPORTED["codex"]) + " only")
+            raise ValueError(tr('agents.codex_write_versions', versions=", ".join(WRITE_SUPPORTED["codex"])))
         # D059: name the canonical checkout and omit the broad /tmp grant. On
         # macOS /tmp aliases /private/tmp and can obscure a checkout beneath it
         # in the permissions description. The explicitly configured TMPDIR
@@ -249,15 +249,15 @@ class CLIProcessAdapter:
             agents = tuple(agents)
             configs = {config.provider: config for config in agents}
             if len(configs) != len(agents) or set(configs) != {"codex", "claude"}:
-                raise ValueError("Both providers must be explicitly configured")
+                raise ValueError(tr('agents.both_providers_explicitly_configured'))
             agents = {"reviewer": configs["codex"], "executor": configs["claude"]}
         if set(agents) != set(AGENTS) or not all(isinstance(item, CLIConfig) for item in agents.values()):
-            raise ValueError("Reviewer and executor agents must be explicitly configured")
+            raise ValueError(tr('agents.reviewer_executor_agents_explicitly'))
         if agents["reviewer"].tools or agents["reviewer"].allowed_tools or agents["reviewer"].grantable_tools:
-            raise ValueError("The read-only reviewer has a fixed tool inventory")
+            raise ValueError(tr('agents.read_reviewer_has_fixed'))
         executor = agents["executor"]
         if executor.cli_version not in WRITE_SUPPORTED[executor.provider]:
-            raise ValueError("Executor CLI write access is not characterized for this version")
+            raise ValueError(tr('agents.executor_cli_write_access'))
         self.agents = dict(agents)
         self.artifact_root = Path(artifact_root).absolute()
         self.journal = None
@@ -293,10 +293,10 @@ class CLIProcessAdapter:
             raise ValueError("Use a new adapter per claimed job")
         versions = json.loads(journal.repository.get_run(journal.claim.run_id).versions_json)
         if any(versions.get(key) != value for key, value in self.frozen_versions().items()):
-            raise JournalError("CLI configuration differs from frozen job versions")
+            raise JournalError(tr('agents.cli_configuration_differs_frozen'))
         self.availability = self.preflight()
         if not all(item["available"] for item in self.availability.values()):
-            raise JournalError("Installed CLI does not match frozen version/help baseline")
+            raise JournalError(tr('agents.installed_cli_does_not'))
         self.journal = journal
 
     def cancel(self, attempt_id):
@@ -322,7 +322,7 @@ class CLIProcessAdapter:
         config = self.agents[agent]
         argv = argv_for(config, context, request)
         if self.artifact_root.is_relative_to(context.root) or self.artifact_root.resolve() != self.artifact_root:
-            raise ValueError("Artifacts must be outside checkout without symlinks")
+            raise ValueError(tr('agents.artifacts_outside_checkout_without'))
         self.artifact_root.mkdir(parents=True, exist_ok=True, mode=0o700)
         directory = self.artifact_root / request.id
         # Request IDs originate from engine UUIDs. Never overwrite previous evidence.
@@ -460,7 +460,7 @@ class CLIProcessAdapter:
                         "exit_code": process.returncode, "group_state": group_state}
             self.journal.process_update(request.id, "process_finished", metadata)
             if group_state != "dead":
-                raise JournalError("Process group may still be alive; quarantine required")
+                raise JournalError(tr('agents.process_group_may_still'))
             return AgentResult(payload if status == "complete" else None, len(parser.terminals) == 1,
                                process.returncode, error=None if status == "complete" else f"CLI {status}",
                                status=status, metadata_json=freeze(metadata))

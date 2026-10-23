@@ -42,6 +42,7 @@ from harness_local.storage.onboarding import (
     OnboardingDrafts, identity as onboarding_identity, observation as onboarding_observation,
     read_inventory, turn_context as onboarding_context,
 )
+from harness_local.i18n import tr
 
 KINDS = ('definition', 'phase_planning', 'onboarding')
 
@@ -140,23 +141,23 @@ def lock_for_bootstrap(session, shown):
     definition = shown['definition']
     conversation = session.get(Conversation, definition['conversation_id'])
     if conversation is None or conversation.version != definition['conversation_version']:
-        raise Conflict('The definition conversation changed since the preview; review it again')
+        raise Conflict(tr('planning.definition_conversation_changed_since'))
     if session.scalar(select(Turn.id).where(Turn.conversation_id == conversation.id, Turn.status == 'QUEUED')):
-        raise Conflict('A definition turn is pending; accept after it settles')
+        raise Conflict(tr('planning.definition_turn_pending_accept'))
 
 
 def definition_acceptance(managed, context, data, writer) -> dict:
     """Preview of the v2 acceptance: SQLite snapshot + target drafts, without effects."""
     if not isinstance(data, dict) or set(data) != {'conversation_id'}:
-        raise ValueError('Projects with documents = "v2" are created through the definition conversation (H6.5)')
+        raise ValueError(tr('planning.projects_documents_v2_created'))
     inspection = writer.inspect_definition(context, texts=True)
     texts = inspection.pop('texts')
     with Session(managed.engine) as session:
         conversation = session.get(Conversation, data['conversation_id'])
         if conversation is None or conversation.root != str(context.root) or conversation.kind != 'definition':
-            raise LookupError('Unknown definition conversation of this project')
+            raise LookupError(tr('planning.unknown_definition_conversation_project'))
         if session.scalar(select(Turn.id).where(Turn.conversation_id == conversation.id, Turn.status == 'QUEUED')):
-            raise Conflict('A definition turn is pending; accept after it settles')
+            raise Conflict(tr('planning.definition_turn_pending_accept'))
         snapshot = PlanningRepository._record(session, conversation)
     shown = acceptance(context, snapshot, inspection, texts)
     return {**shown, 'target': inspection, 'ready': not shown['blockers']}
@@ -169,13 +170,13 @@ class PlanningRepository:
     def _conversation(self, session, conversation_id, expected=None, context=None):
         row = session.get(Conversation, conversation_id)
         if row is None:
-            raise LookupError('Unknown planning conversation')
+            raise LookupError(tr('planning.unknown_planning_conversation'))
         if context is not None and row.root != str(context.root):
-            raise LookupError('Conversation belongs to another checkout')
+            raise LookupError(tr('planning.conversation_belongs_another_checkout'))
         if row.kind not in KINDS:
-            raise Conflict('Legacy/A support has been removed; this conversation is retained as data only')
+            raise Conflict(tr('planning.legacy_support_has_been'))
         if expected is not None and (type(expected) is not int or row.version != expected):
-            raise Conflict('Conversation changed; reload before acting')
+            raise Conflict(tr('planning.conversation_changed_reload_before'))
         return row
 
     def _port(self, conversation, writer):
@@ -188,7 +189,7 @@ class PlanningRepository:
     def _drafts_created(session, conversation):
         """Only definition and import have drafts; True if the definition already created the project."""
         if conversation.kind not in DRAFT_KINDS:
-            raise Conflict('Only definition and import conversations have drafts')
+            raise Conflict(tr('planning.definition_import_conversations_have'))
         if conversation.kind == 'onboarding':
             from harness_local.storage.documents import latest_phase
             from harness_local.storage.models import ProjectImportRow
@@ -281,7 +282,7 @@ class PlanningRepository:
         with Session(self.managed.engine) as session:
             row = self._conversation(session, conversation_id)
             if row.brief is None:
-                raise LookupError('This conversation has no brief')
+                raise LookupError(tr('planning.conversation_has_no_brief'))
             return dict(row.brief)
 
     def drafts(self, context, conversation_id, writer):
@@ -306,18 +307,18 @@ class PlanningRepository:
         """H6.2 E4: content of a draft through the same inspection the turn and the CAS use."""
         target = definition_layout(context)
         if not allowed_draft(target, path):
-            raise LookupError(f'{path} is not an allowed definition draft')
+            raise LookupError(tr('planning.not_allowed_definition_draft', path=path))
         with Session(self.managed.engine) as session:
             row = self._conversation(session, conversation_id, context=context)
             if self._drafts_created(session, row):
-                raise Conflict('The project was already created; read its documents instead')
+                raise Conflict(tr('planning.project_already_created_read'))
             known = row.known.get(path)
             writer = self._port(row, writer)
         inspection = writer.inspect_definition(context, texts=True)
         if path in inspection['invalid']:
-            raise Conflict(f'{path} is not a valid draft (UTF-8 without NUL, not executable, at most 512 KiB)')
+            raise Conflict(tr('planning.not_valid_draft_utf', path=path))
         if path not in inspection['texts']:
-            raise LookupError(f'{path} does not exist in the target folder')
+            raise LookupError(tr('planning.does_not_exist_target', path=path))
         return {'path': path, 'content': inspection['texts'][path], 'sha256': inspection['drafts'][path],
                 'known_sha256': known}
 
@@ -326,7 +327,7 @@ class PlanningRepository:
         with Session(self.managed.engine) as session:
             run = session.get(Run, run_id)
             if run is None:
-                raise LookupError('Unknown managed run')
+                raise LookupError(tr('managed.unknown_managed_run'))
             turn, conversation = _turn(session, run)
             return {'kind': conversation.kind, 'conversation_id': conversation.id, 'turn_id': turn.id,
                     'message': turn.message,
@@ -339,7 +340,7 @@ class PlanningRepository:
         """`key` (API): a retry with the same request returns the same conversation before reevaluating the
         target, which the original registration may have changed (project already created, phase transitioned)."""
         if kind not in KINDS:
-            raise ValueError('Conversation kind must be definition, phase_planning or onboarding')
+            raise ValueError(tr('planning.conversation_kind_definition_phase'))
         request = digest({'action': 'planning_conversation', 'root': str(context.root), 'kind': kind, 'title': title,
                           'brief': brief, 'phase_id': phase_id})
         if key is not None:
@@ -347,25 +348,25 @@ class PlanningRepository:
                 if found := existing_creation(session, Conversation, key, request):
                     return found
         if not isinstance(title, str) or not title.strip() or len(title) > 200:
-            raise ValueError('Conversation title must contain 1–200 characters')
+            raise ValueError(tr('planning.conversation_title_contain_1'))
         source = None
         if kind == 'definition':
             definition_layout(context)
             frozen = brief_payload(brief)
             if phase_id is not None:
-                raise ValueError('A definition conversation has no phase')
+                raise ValueError(tr('planning.definition_conversation_has_no'))
             if writer.inspect_definition(context)['import_required']:
-                raise Conflict('The target belongs to a Git repository or contains .git: use onboarding for a repository without harness')
+                raise Conflict(tr('planning.target_belongs_git_repository'))
         elif kind == 'onboarding':
             definition_layout(context)
             if brief is not None or phase_id is not None:
-                raise ValueError('An onboarding conversation has no brief or phase')
+                raise ValueError(tr('planning.onboarding_conversation_has_no'))
             inventory = read_inventory(context, _executable(writer))
             source, frozen = {'inventory': inventory}, None
         else:
             require_layout(context)
             if brief is not None:
-                raise ValueError('A phase planning conversation has no brief')
+                raise ValueError(tr('planning.phase_planning_conversation_has'))
             frozen = None
         try:
             with self.managed._write() as session:
@@ -374,17 +375,17 @@ class PlanningRepository:
                 if kind == 'definition':
                     from harness_local.storage.bootstrap import BootstrapRepository
                     if _bootstrapped(session, str(context.root)):
-                        raise Conflict('The project was already created; plan its phases instead')
+                        raise Conflict(tr('planning.project_already_created_plan'))
                     BootstrapRepository._empty_authority(session, str(context.root))
                 elif kind == 'onboarding':
                     self._importable(session, str(context.root))
                 else:
                     phase = session.get(Phase, phase_id) if isinstance(phase_id, str) else None
                     if phase is None or phase.root != str(context.root):
-                        raise LookupError('Unknown phase of this checkout')
+                        raise LookupError(tr('planning.unknown_phase_checkout'))
                     from harness_local.storage.documents import latest_phase
                     if latest_phase(session, phase.root).id != phase.id:
-                        raise Conflict('Plan from the latest phase of the checkout')
+                        raise Conflict(tr('planning.plan_latest_phase_checkout'))
                 now = self.managed._now()
                 row = Conversation(id=str(uuid4()), root=str(context.root), kind=kind, phase_id=phase_id,
                                    title=title.strip(), brief=frozen, known={}, deferred={}, log=[], actor=actor(),
@@ -394,26 +395,26 @@ class PlanningRepository:
                 session.flush()
                 return row.id
         except IntegrityError as exc:
-            raise Conflict('This project already has a definition conversation') from exc
+            raise Conflict(tr('planning.project_already_has_definition')) from exc
 
     @staticmethod
     def _importable(session, root):
         """Onboarding admits projects the harness does not manage yet: no creation or own phases."""
         from harness_local.storage.documents import latest_phase
         if _bootstrapped(session, root):
-            raise Conflict('The project was created by the harness; there is nothing to import')
+            raise Conflict(tr('planning.project_created_harness_nothing'))
         if latest_phase(session, root) is not None:
-            raise Conflict('The project already has managed phases; the import flow is for projects not yet managed')
+            raise Conflict(tr('planning.project_already_has_managed'))
         from harness_local.storage.models import ProjectImportRow
         if session.scalar(select(ProjectImportRow.id).where(ProjectImportRow.root == root)):
-            raise Conflict('Import already confirmed; complete or reconcile its sealed intent')
+            raise Conflict(tr('planning.import_already_confirmed_complete'))
 
     # --- turns -------------------------------------------------------------------------
 
     def submit_message(self, context, conversation_id, expected, *, key, versions, text, writer=None):
         """Freezes message and context in the transaction that queues the turn."""
         if not isinstance(text, str) or not text.strip() or len(text) > MAX_MESSAGE:
-            raise ValueError(f'Planning message must contain 1–{MAX_MESSAGE} characters')
+            raise ValueError(tr('planning.planning_message_contain_1', max_message=MAX_MESSAGE))
         request = freeze({'action': 'planning_turn', 'conversation_id': conversation_id, 'expected_version': expected,
                           'text': text})
         with Session(self.managed.engine) as session:
@@ -423,7 +424,7 @@ class PlanningRepository:
             conversation = self._conversation(session, conversation_id, context=context)
             kind, source = conversation.kind, conversation.source
             if kind == 'definition' and _bootstrapped(session, conversation.root):
-                raise Conflict('The project was already created from this definition')
+                raise Conflict(tr('planning.project_already_created_definition'))
             port = self._port(conversation, writer)
         observed, prepared = None, {}
         if kind == 'onboarding':
@@ -437,9 +438,9 @@ class PlanningRepository:
             inspection = writer.inspect_definition(context, texts=True)
             texts = inspection.pop('texts')
             if inspection['import_required']:
-                raise Conflict('The target belongs to a Git repository or contains .git: use onboarding for a repository without harness')
+                raise Conflict(tr('planning.target_belongs_git_repository'))
             if sum(len(value.encode('utf-8')) for value in texts.values()) > MAX_CONTEXT_DRAFT_BYTES:
-                raise ValueError('Drafts exceed the 2 MiB a turn can freeze; shorten or remove some drafts')
+                raise ValueError(tr('planning.drafts_exceed_2_mib'))
             observed = inspection
             prepared = {'drafts': [{'path': path, 'sha256': inspection['drafts'][path],
                                     'size': len(texts[path].encode('utf-8')), 'content': texts[path]}
@@ -461,7 +462,7 @@ class PlanningRepository:
                 return _job(existing)
             conversation = self._conversation(session, conversation_id, expected, context)
             if session.scalar(select(Turn.id).where(Turn.conversation_id == conversation.id, Turn.status == 'QUEUED')):
-                raise Conflict('The previous turn of this conversation is still pending')
+                raise Conflict(tr('planning.previous_turn_conversation_still'))
             previous = session.scalars(select(Turn).where(Turn.conversation_id == conversation.id)
                                        .order_by(Turn.number.desc()).limit(MAX_PREVIOUS_TURNS)).all()
             history = []
@@ -485,7 +486,7 @@ class PlanningRepository:
                       'questions': questions, 'pending': pending, 'previous_turns': history}
             if conversation.kind in DRAFT_KINDS:
                 if conversation.kind == 'definition' and _bootstrapped(session, conversation.root):
-                    raise Conflict('The project was already created from this definition')
+                    raise Conflict(tr('planning.project_already_created_definition'))
                 if conversation.kind == 'onboarding':
                     self._importable(session, conversation.root)
                 known, drafts = conversation.known, observed['drafts']
@@ -509,7 +510,7 @@ class PlanningRepository:
                 from harness_local.storage.documents import latest_phase, summary_snapshot
                 phase = session.get(Phase, conversation.phase_id)
                 if latest_phase(session, phase.root).id != phase.id:
-                    raise Conflict('A newer phase exists; plan from the latest phase')
+                    raise Conflict(tr('planning.newer_phase_exists_plan'))
                 codes = [entry['code'] for entry in prepared['entries']]
                 following = (prepared['entries'][codes.index(phase.code) + 1]
                              if phase.code in codes and codes.index(phase.code) + 1 < len(codes) else None)
@@ -534,32 +535,32 @@ class PlanningRepository:
 
     def _definition_open(self, session, conversation):
         if self._drafts_created(session, conversation):
-            raise Conflict('The project was already created; edit its documents with a confirmed edit')
+            raise Conflict(tr('planning.project_already_created_edit'))
         if conversation.kind == 'onboarding':
             self._importable(session, conversation.root)
         if session.scalar(select(Turn.id).where(Turn.conversation_id == conversation.id, Turn.status == 'QUEUED')):
-            raise Conflict('A turn of this conversation is pending; act after it settles')
+            raise Conflict(tr('planning.turn_conversation_pending_act'))
 
     def apply(self, context, conversation_id, proposal_id, expected, *, proposal_sha256, confirmed, writer):
         """Explicit confirmation → the harness writes the draft if it is still the one the turn read."""
         from harness_local.adapters.bootstrap import DraftConflict
         if confirmed is not True:
-            raise ValueError('Applying a draft requires explicit confirmation; nothing was written')
+            raise ValueError(tr('planning.applying_draft_requires_explicit'))
         with self.managed._write() as session:
             conversation = self._conversation(session, conversation_id, expected, context)
             self._definition_open(session, conversation)
             proposal = session.get(Proposal, proposal_id)
             if proposal is None or proposal.conversation_id != conversation.id or proposal.kind != 'draft':
-                raise LookupError('Unknown draft proposal of this conversation')
+                raise LookupError(tr('planning.unknown_draft_proposal_conversation'))
             if proposal.status != 'PROPOSED':
-                raise Conflict(f'The proposal is already {proposal.status.lower()}')
+                raise Conflict(tr('planning.proposal_already', status=proposal.status.lower()))
             if proposal.proposal_sha256 != proposal_sha256:
-                raise Conflict('Apply the exact proposal that was shown; reload it')
+                raise Conflict(tr('planning.apply_exact_proposal_shown'))
             try:
                 written = self._port(conversation, writer).write_draft(context, proposal.path, proposal.content,
                                                                        proposal.base_sha256)
             except DraftConflict as exc:
-                raise Conflict(f'{exc}. The user edit is preserved; ask a new turn or edit the draft yourself') from exc
+                raise Conflict(tr('planning.user_edit_preserved_ask', exc=exc)) from exc
             turn = session.get(Turn, proposal.turn_id)
             now = self.managed._now()
             proposal.status, proposal.version = 'APPLIED', proposal.version + 1
@@ -577,17 +578,17 @@ class PlanningRepository:
         from harness_local.adapters.bootstrap import DraftConflict
         target = definition_layout(context)
         if not allowed_draft(target, path):
-            raise ValueError(f'{path} is not an allowed definition draft')
+            raise ValueError(tr('planning.not_allowed_definition_draft', path=path))
         if content is not None and (not isinstance(content, str) or '\0' in content
                                     or len(content.encode('utf-8')) > 512 * 1024):
-            raise ValueError('Draft content must be NUL-free text of at most 512 KiB')
+            raise ValueError(tr('planning.draft_content_nul_free'))
         with self.managed._write() as session:
             conversation = self._conversation(session, conversation_id, expected, context)
             self._definition_open(session, conversation)
             try:
                 written = self._port(conversation, writer).write_draft(context, path, content, base_sha256)
             except DraftConflict as exc:
-                raise Conflict(f'{exc}; nothing was overwritten') from exc
+                raise Conflict(tr('planning.nothing_overwritten', exc=exc)) from exc
             conversation.log = [*conversation.log, {'source': 'api', 'path': path, 'before': written['before'],
                                                     'after': written['after'], 'actor': actor(),
                                                     'at': self.managed._now()}]
@@ -596,32 +597,32 @@ class PlanningRepository:
 
     def defer(self, conversation_id, expected, *, question_id, reason):
         if not isinstance(reason, str) or not reason.strip():
-            raise ValueError('Explicit deferral reason required')
+            raise ValueError(tr('planning.explicit_deferral_reason_required'))
         with self.managed._write() as session:
             conversation = self._conversation(session, conversation_id, expected)
             self._definition_open(session, conversation)
             questions, _ = current_questions(session, conversation)
             question = next((q for q in questions if q['id'] == question_id), None)
             if question is None:
-                raise LookupError('Unknown open question of the latest turn')
+                raise LookupError(tr('planning.unknown_open_question_latest'))
             if not question['blocking'] or question['deferred']:
-                raise Conflict('Only an open blocking question can be deferred')
+                raise Conflict(tr('planning.open_blocking_question_deferred'))
             conversation.deferred = {**conversation.deferred, question_id: {
                 'text': question['text'], 'reason': reason.strip(), 'actor': actor(), 'at': self.managed._now()}}
             _touch(self.managed, conversation)
 
     def dismiss(self, conversation_id, proposal_id, expected, *, reason):
         if not isinstance(reason, str) or not reason.strip():
-            raise ValueError('Explicit dismissal reason required')
+            raise ValueError(tr('planning.explicit_dismissal_reason_required'))
         with self.managed._write() as session:
             conversation = self._conversation(session, conversation_id, expected)
             if conversation.kind == 'onboarding':
                 self._definition_open(session, conversation)
             proposal = session.get(Proposal, proposal_id)
             if proposal is None or proposal.conversation_id != conversation.id:
-                raise LookupError('Unknown proposal of this conversation')
+                raise LookupError(tr('planning.unknown_proposal_conversation'))
             if proposal.status != 'PROPOSED':
-                raise Conflict(f'The proposal is already {proposal.status.lower()}')
+                raise Conflict(tr('planning.proposal_already', status=proposal.status.lower()))
             proposal.status, proposal.version = 'DISMISSED', proposal.version + 1
             proposal.decision = {'decision': 'dismiss', 'actor': actor(), 'at': self.managed._now(),
                                  'reason': reason.strip()}
@@ -632,23 +633,23 @@ class PlanningRepository:
     def plan(self, session, context, phase_id, reference) -> tuple[str, dict]:
         """Proposed and confirmed plan for a transition: exact content and its origin."""
         if not isinstance(reference, dict) or set(reference) != {'conversation_id', 'proposal_id', 'proposal_sha256'}:
-            raise ValueError('A plan proposal reference needs conversation_id, proposal_id and proposal_sha256')
+            raise ValueError(tr('planning.plan_proposal_reference_needs'))
         conversation = self._conversation(session, reference['conversation_id'], context=context)
         proposal = session.get(Proposal, reference['proposal_id'])
         if (conversation.kind != 'phase_planning' or conversation.phase_id != phase_id or proposal is None
                 or proposal.conversation_id != conversation.id or proposal.kind != 'plan'):
-            raise LookupError('Unknown plan proposal for this phase')
+            raise LookupError(tr('planning.unknown_plan_proposal_phase'))
         if proposal.status != 'PROPOSED':
-            raise Conflict(f'The plan proposal is already {proposal.status.lower()}')
+            raise Conflict(tr('planning.plan_proposal_already', status=proposal.status.lower()))
         if proposal.proposal_sha256 != reference['proposal_sha256']:
-            raise Conflict('Use the exact plan proposal that was shown; reload it')
+            raise Conflict(tr('planning.use_exact_plan_proposal'))
         turn = session.get(Turn, proposal.turn_id)
         return proposal.content, {**reference, 'turn_number': turn.number, 'content_sha256': proposal.content_sha256}
 
     def mark_plan(self, session, origin, run_id, job_id, *, decision='transition'):
         proposal = session.get(Proposal, origin['proposal_id'])
         if proposal.status != 'PROPOSED' or proposal.proposal_sha256 != origin['proposal_sha256']:
-            raise Conflict('The plan proposal changed since the preview; review it again')
+            raise Conflict(tr('planning.plan_proposal_changed_since'))
         proposal.status, proposal.version = 'ACCEPTED', proposal.version + 1
         proposal.decision = {'decision': decision, 'actor': actor(), 'at': self.managed._now(),
                              'run_id': run_id, 'job_id': job_id}

@@ -103,9 +103,9 @@ def preflight_config(config, *, timeout=TIMEOUT, access=None):
     `access` ('read' | 'write') adds the flags that agent access mode needs.
     """
     if not math.isfinite(timeout) or not 0 < timeout <= TIMEOUT:
-        raise ValueError('Probe timeout must be positive and at most ten seconds')
+        raise ValueError(tr('cli_diagnostics.probe_timeout_positive_most'))
     if access not in (None, 'read', 'write'):
-        raise ValueError('Unknown agent access mode')
+        raise ValueError(tr('cli_diagnostics.unknown_agent_access_mode'))
     required = REQUIRED[config.provider] + ACCESS_REQUIRED.get((config.provider, access), ())
     report = {'available': False, 'status': 'unknown', 'requested_version': config.cli_version,
               'observed_version': None, 'version_output': None, 'help_sha256': None,

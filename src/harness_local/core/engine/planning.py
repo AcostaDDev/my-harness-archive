@@ -4,6 +4,7 @@ import re
 
 from harness_local.core.engine.context import ProjectContext
 from harness_local.core.engine.contracts import IncompleteContract, ContractError, task_contract
+from harness_local.i18n import tr
 
 
 # D072: «Restricciones compartidas» is the Spanish alias of the shared section.
@@ -30,11 +31,11 @@ FIELD_NAMES = {
 def next_task_id(text: str, last_accepted_task: str | None) -> str | None:
     ids = [match.group(1) for match in TASK_RE.finditer(text)]
     if not ids or len(ids) != len(set(ids)):
-        raise ContractError("Missing or duplicate task headings")
+        raise ContractError(tr('planning.missing_duplicate_task_headings'))
     if last_accepted_task is None:
         return ids[0]
     if last_accepted_task not in ids:
-        raise ContractError("Last accepted task is absent from active plan")
+        raise ContractError(tr('planning.last_accepted_task_absent'))
     index = ids.index(last_accepted_task) + 1
     return ids[index] if index < len(ids) else None
 
@@ -60,7 +61,7 @@ def task_sources(context: ProjectContext) -> dict:
     text = read_text(context, context.next_steps_file)
     result = {"path": context.next_steps_file, "sha256": None, "items": [], "diagnostics": []}
     if text is None:
-        return {**result, "diagnostics": [f"{context.next_steps_file} does not exist"]}
+        return {**result, "diagnostics": [tr('planning.next_steps_missing', path=context.next_steps_file)]}
     shared = section(text, SHARED_HEADING)
     ids = [match.group(1) for match in TASK_RE.finditer(text)]
     for match in TASK_RE.finditer(text):
@@ -102,10 +103,10 @@ def backticked(text: str) -> list[str]:
 def deterministic_task(context: ProjectContext, task_id: str, phase_id: str, text: str) -> str:
     task_section = section(text, task_heading(task_id))
     if not task_section:
-        raise IncompleteContract("Task section absent")
+        raise IncompleteContract(tr('planning.task_section_absent'))
     heading = TASK_RE.search(task_section)
     if heading is None:
-        raise IncompleteContract("Task heading invalid")
+        raise IncompleteContract(tr('planning.task_heading_invalid'))
     raw: dict[str, str] = {}
     current = None
     for line in task_section.splitlines()[1:]:
@@ -119,13 +120,13 @@ def deterministic_task(context: ProjectContext, task_id: str, phase_id: str, tex
               for key, names in FIELD_NAMES.items()}
     criteria = bullet_items(fields["acceptance_criteria"])
     if not all((fields["objective"], criteria, fields["allowed_paths"], fields["executor"])):
-        raise IncompleteContract("Task lacks machine-readable objective, criteria, paths or executor")
+        raise IncompleteContract(tr('planning.task_lacks_machine_readable'))
     allowed = backticked(fields["allowed_paths"])
     if not allowed and collapse(fields["allowed_paths"]).lower().rstrip(".") != "none":
-        raise IncompleteContract("Allowed paths require backticked globs or none")
+        raise IncompleteContract(tr('planning.allowed_paths_require_backticked'))
     match = EXECUTOR_RE.match(collapse(fields["executor"]))
     if not match:
-        raise IncompleteContract("Executor requires model / effort — reason")
+        raise IncompleteContract(tr('planning.executor_requires_model_effort'))
     shared = section(text, SHARED_HEADING)
     constraints = ["Shared constraints: " + shared] if shared else []
     for label, key in (("Scope", "scope"), ("Out of scope", "forbidden_scope"), ("Validation expectations", "validation")):

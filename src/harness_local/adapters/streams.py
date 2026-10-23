@@ -4,6 +4,7 @@ import hashlib
 
 from harness_local.core.engine.contracts import freeze
 from harness_local.core.engine.metrics import TERMINAL_FIELDS, TERMINAL_FIELDS_2, StreamMetrics
+from harness_local.i18n import tr
 
 
 def strict_json(value):
@@ -30,7 +31,7 @@ class AgentStream:
         self.tail += chunk
         # Bounded JSONL record; bytes already preserved even if envelope too large.
         if len(self.tail) > 4 * 1024 * 1024:
-            raise ValueError("JSONL record exceeds 4 MiB")
+            raise ValueError(tr('agents.jsonl_record_exceeds_4'))
         while b"\n" in self.tail:
             record, self.tail = self.tail.split(b"\n", 1)
             self.record(record, newline=True)
@@ -117,7 +118,7 @@ class AgentStream:
             try:
                 data = strict_json(self.payload or "")
                 if not isinstance(data, dict):
-                    raise ValueError("Structured agent result must be an object")
+                    raise ValueError(tr('agents.structured_agent_result_object'))
                 payload = freeze(data)
             except (ValueError, TypeError):
                 status = "invalid"

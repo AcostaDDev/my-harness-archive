@@ -30,6 +30,7 @@ from harness_local.storage.models import (
     ManagedCommitRow as Commit, ManagedJobRow as Job, ManagedRunRow as Run, PhaseRow as Phase,
 )
 from harness_local.storage.permissions import actor
+from harness_local.i18n import tr
 
 MAX_DOCUMENTS = 8
 MAX_DOCUMENT_BYTES = 64 * 1024
@@ -44,7 +45,7 @@ def read_documents(context, paths) -> list[dict]:
     for path in paths:
         item = context.path(path)
         if item.is_symlink() or (item.exists() and not item.is_file()):
-            raise ValueError(f'Chat document {path} must be a regular file')
+            raise ValueError(tr('chat.chat_document_regular_file', path=path))
         if not item.exists():
             result.append({'path': path, 'sha256': None, 'size': None, 'content': None, 'truncated': False})
             continue
@@ -58,14 +59,14 @@ def read_documents(context, paths) -> list[dict]:
 def _distinct(values, name, limit):
     if (not isinstance(values, list) or len(values) > limit or len(set(values)) != len(values)
             or not all(isinstance(v, str) and v.strip() for v in values)):
-        raise ValueError(f'Chat {name} must be a list of at most {limit} distinct, non-empty texts')
+        raise ValueError(tr('chat.chat_list_most_distinct', name=name, limit=limit))
     return values
 
 
 def _run_evidence(session, root, run_id):
     run = session.get(Run, run_id)
     if run is None or run.root != root:
-        raise LookupError('A selected run does not belong to this checkout')
+        raise LookupError(tr('chat.selected_run_does_not'))
     history = load_history(run.history_json)
     task = json.loads(history.task_json) if history.task_json else None
     review = history.cycles[-1].review_json if history.cycles else None
@@ -138,11 +139,11 @@ class ChatRepository:
     def _conversation(self, session, conversation_id, expected=None, context=None):
         row = session.get(Conversation, conversation_id)
         if row is None:
-            raise LookupError('Unknown chat conversation')
+            raise LookupError(tr('chat.unknown_chat_conversation'))
         if context is not None and row.root != str(context.root):
-            raise LookupError('Conversation belongs to another checkout')
+            raise LookupError(tr('planning.conversation_belongs_another_checkout'))
         if expected is not None and (type(expected) is not int or row.version != expected):
-            raise Conflict('Conversation changed; reload before acting')
+            raise Conflict(tr('planning.conversation_changed_reload_before'))
         return row
 
     # --- reads ------------------------------------------------------------------------
@@ -212,7 +213,7 @@ class ChatRepository:
         with Session(self.managed.engine) as session:
             run = session.get(Run, run_id)
             if run is None:
-                raise LookupError('Unknown managed run')
+                raise LookupError(tr('managed.unknown_managed_run'))
             turn, _ = _turn(session, run)
             return {'turn_id': turn.id, 'message': turn.message, 'context': turn.request['context'],
                     'context_sha256': turn.request['context_sha256']}
@@ -228,20 +229,20 @@ class ChatRepository:
                 if found := existing_creation(session, Conversation, key, request):
                     return found
         if not isinstance(title, str) or not title.strip() or len(title) > 200:
-            raise ValueError('Conversation title must contain 1–200 characters')
+            raise ValueError(tr('planning.conversation_title_contain_1'))
         with self.managed._write() as session:
             if key is not None and (found := existing_creation(session, Conversation, key, request)):
                 return found
             if phase_id is not None:
                 phase = session.get(Phase, phase_id)
                 if phase is None or phase.root != str(context.root):
-                    raise LookupError('Unknown phase of this checkout')
+                    raise LookupError(tr('planning.unknown_phase_checkout'))
             if task_run_id is not None:
                 task = session.get(Run, task_run_id)
                 if task is None or task.root != str(context.root) or task.purpose != 'task':
-                    raise LookupError('Unknown task run of this checkout')
+                    raise LookupError(tr('chat.unknown_task_run_checkout'))
                 if phase_id and phase.code != task.phase_id:
-                    raise ValueError('Task context must belong to the selected phase')
+                    raise ValueError(tr('chat.task_context_belong_selected'))
                 if phase_id is None:
                     phase_id = session.scalar(select(Phase.id).where(
                         Phase.root == str(context.root), Phase.code == task.phase_id))
@@ -255,10 +256,10 @@ class ChatRepository:
     def submit_message(self, context, conversation_id, expected, *, key, versions, text, documents=None, run_ids=None, reader=None):
         """Freezes message and explicit context in the transaction that queues the turn."""
         if not isinstance(text, str) or not text.strip() or len(text) > MAX_MESSAGE:
-            raise ValueError(f'Chat message must contain 1–{MAX_MESSAGE} characters')
+            raise ValueError(tr('chat.chat_message_contain_1', max_message=MAX_MESSAGE))
         command = parse(text)
         if command and command['name'] != 'tarea':
-            raise ValueError('Use the deterministic command preview; no model was invoked')
+            raise ValueError(tr('chat.use_deterministic_command_preview'))
         run_ids = _distinct([] if run_ids is None else run_ids, 'runs', MAX_RUNS)
         request = freeze({'action': 'chat_command' if command else 'chat_snapshot', 'conversation_id': conversation_id, 'expected_version': expected,
                           'text': text, 'documents': documents, 'run_ids': run_ids})
@@ -282,7 +283,7 @@ class ChatRepository:
                 return _job(existing)
             conversation = self._conversation(session, conversation_id, expected, context)
             if session.scalar(select(Turn.id).where(Turn.conversation_id == conversation.id, Turn.status == 'QUEUED')):
-                raise Conflict('The previous turn of this conversation is still pending')
+                raise Conflict(tr('planning.previous_turn_conversation_still'))
             phase = session.get(Phase, conversation.phase_id) if conversation.phase_id else None
             previous = session.scalars(select(Turn).where(Turn.conversation_id == conversation.id)
                                        .order_by(Turn.number.desc()).limit(MAX_PREVIOUS_TURNS)).all()
@@ -318,7 +319,7 @@ class ChatRepository:
     def command_preview(self, context, conversation_id, expected, text):
         command = parse(text)
         if command is None:
-            raise ValueError('Expected a slash command')
+            raise ValueError(tr('chat.expected_slash_command'))
         with Session(self.managed.engine) as session:
             row = self._conversation(session, conversation_id, expected, context)
             phase = session.get(Phase, row.phase_id) if row.phase_id else None
@@ -343,11 +344,11 @@ class ChatRepository:
                phase_id, confirmed):
         """Explicit confirmation → linked normal task; without confirmation nothing is queued."""
         if confirmed is not True:
-            raise ValueError('Accepting a proposal requires explicit confirmation; nothing was queued')
+            raise ValueError(tr('chat.accepting_proposal_requires_explicit'))
         if not isinstance(task_id, str) or not TASK_ID.fullmatch(task_id):
-            raise ValueError("Task id must be 1–120 letters, digits, '.', '_' or '-'")
+            raise ValueError(tr('chat.task_id_1_120'))
         if not isinstance(phase_id, str) or not TASK_ID.fullmatch(phase_id):
-            raise ValueError("Phase id must be 1–120 letters, digits, '.', '_' or '-'")
+            raise ValueError(tr('chat.phase_id_1_120'))
         marker = {'kind': 'chat_proposal', 'conversation_id': conversation_id, 'proposal_id': proposal_id,
                   'proposal_sha256': proposal_sha256, 'expected_version': expected, 'task_id': task_id,
                   'phase_id': phase_id}
@@ -356,16 +357,16 @@ class ChatRepository:
             prior = session.scalar(select(Job).where(Job.idempotency_key == key))
             if prior is not None:
                 if json.loads(prior.request_json).get('chat_proposal') != marker:
-                    raise Conflict('Idempotency key already names a different action')
+                    raise Conflict(tr('managed.idempotency_key_already_names_2'))
                 return _job(prior)
             conversation = self._conversation(session, conversation_id, expected, context)
             proposal = session.get(Proposal, proposal_id)
             if proposal is None or proposal.conversation_id != conversation.id:
-                raise LookupError('Unknown proposal of this conversation')
+                raise LookupError(tr('planning.unknown_proposal_conversation'))
             if proposal.status != 'PROPOSED':
-                raise Conflict(f'The proposal is already {proposal.status.lower()}')
+                raise Conflict(tr('planning.proposal_already', status=proposal.status.lower()))
             if proposal.proposal_sha256 != proposal_sha256:
-                raise Conflict('Accept the exact proposal that was shown; reload it')
+                raise Conflict(tr('chat.accept_exact_proposal_shown'))
             turn = session.get(Turn, proposal.turn_id)
             text = task_text(proposal.proposal, task_id, {
                 'conversation_id': conversation.id, 'turn_number': turn.number, 'proposal_id': proposal.id,
@@ -382,14 +383,14 @@ class ChatRepository:
 
     def dismiss(self, conversation_id, proposal_id, expected, *, reason):
         if not isinstance(reason, str) or not reason.strip():
-            raise ValueError('Explicit dismissal reason required')
+            raise ValueError(tr('planning.explicit_dismissal_reason_required'))
         with self.managed._write() as session:
             conversation = self._conversation(session, conversation_id, expected)
             proposal = session.get(Proposal, proposal_id)
             if proposal is None or proposal.conversation_id != conversation.id:
-                raise LookupError('Unknown proposal of this conversation')
+                raise LookupError(tr('planning.unknown_proposal_conversation'))
             if proposal.status != 'PROPOSED':
-                raise Conflict(f'The proposal is already {proposal.status.lower()}')
+                raise Conflict(tr('planning.proposal_already', status=proposal.status.lower()))
             proposal.status, proposal.version = 'DISMISSED', proposal.version + 1
             proposal.decision = {'decision': 'dismiss', 'actor': actor(), 'at': self.managed._now(),
                                  'reason': reason.strip()}

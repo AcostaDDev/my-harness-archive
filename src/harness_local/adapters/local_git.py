@@ -1,6 +1,7 @@
 """Git with local objects: a missing promised object never authorizes a transport."""
 
 from harness_local.adapters.git import Git, GitError
+from harness_local.i18n import tr
 
 
 class LocalGit(Git):
@@ -23,8 +24,7 @@ class LocalGit(Git):
             tree = self.text('rev-parse', '--verify', f'{revision}^{{tree}}')
             entries = self.run('ls-tree', '-r', '-t', '-z', '--full-tree', tree)
         except GitError as exc:
-            raise GitError(f'Cannot inspect required local tree {revision}: missing or unavailable '
-                           f'(lazy-fetch is disabled): {exc}') from exc
+            raise GitError(tr('git.cannot_inspect_required_local', revision=revision, exc=exc)) from exc
         objects = {tree}
         for entry in entries.split(b'\0'):
             if entry:
@@ -37,8 +37,7 @@ class LocalGit(Git):
             row = rows[index].decode('ascii').split() if index < len(rows) else []
             if (len(row) != 3 or row[0] != obj or row[1] not in ('blob', 'tree')
                     or not row[2].isascii() or not row[2].isdecimal()):
-                raise GitError(f'Git object {obj} required by tree {tree} is missing or unavailable; '
-                               'import requires complete local objects (lazy-fetch is disabled).')
+                raise GitError(tr('git.git_object_required_tree', obj=obj, tree=tree))
 
 
 def object_size(size: str, kind: str, obj: str, path: str) -> int | None:
@@ -46,6 +45,5 @@ def object_size(size: str, kind: str, obj: str, path: str) -> int | None:
     if size == '-' and kind != 'blob':
         return None
     if not size.isascii() or not size.isdecimal():
-        raise GitError(f'Git object {obj} at {path!r} is missing or has an unavailable size; '
-                       'reading requires complete local objects.')
+        raise GitError(tr('git.git_object_missing_has', obj=obj, path=repr(path)))
     return int(size)

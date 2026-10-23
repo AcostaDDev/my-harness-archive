@@ -10,6 +10,7 @@ from harness_local.core.engine.commit import (
 from harness_local.core.engine.document_text import work_language
 from harness_local.core.engine.phases import digest, document_hashes
 from harness_local.core.engine import documents as layout_v2
+from harness_local.i18n import tr
 
 BEGIN, END = layout_v2.markers('state')
 MAX_DOCUMENT_BYTES = 512 * 1024
@@ -56,25 +57,25 @@ def _targets(context, snapshot, baseline):
 def preview(context, snapshot, baseline, git):
     paths = (context.state_file, context.next_steps_file)
     if len(set(paths)) != 2 or not set(paths) <= baseline.keys():
-        raise ValueError('STATE and NEXT_STEPS must be distinct adopted phase documents')
+        raise ValueError(tr('export.state_next_steps_distinct'))
     targets = _targets(context, snapshot, baseline)
     if document_hashes(context, baseline) != baseline:
-        raise ValueError('Phase documents changed externally; review and reconcile the document hashes first')
+        raise ValueError(tr('export.phase_documents_changed_externally'))
     evidence = git.capture(context)
     provenance = git_provenance(evidence)
     if evidence.changed_paths or provenance.index_tree != provenance.base_tree:
-        raise ValueError('Document export requires a clean checkout and index')
+        raise ValueError(tr('export.document_export_requires_clean'))
     documents, updates, diffs = [], [], []
     for path, name, body in targets:
         target = context.path(path)
         if not target.is_file() or target.is_symlink() or target.stat().st_size > MAX_DOCUMENT_BYTES:
-            raise ValueError('Export requires adopted regular UTF-8 documents of at most 512 KiB')
+            raise ValueError(tr('export.export_requires_adopted_regular'))
         old = target.read_bytes().decode('utf-8')
         if text_hash(old) != baseline[path]:
-            raise ValueError(f'{path} changed externally; review and reconcile the document hashes first')
+            raise ValueError(tr('export.changed_externally_review_reconcile', path=path))
         new = layout_v2.replace_block(old, body, name)
         if len(new.encode('utf-8')) > MAX_DOCUMENT_BYTES:
-            raise ValueError('Exported document exceeds 512 KiB')
+            raise ValueError(tr('export.exported_document_exceeds_512'))
         documents.append({'path': path, 'before_sha256': text_hash(old), 'after_sha256': text_hash(new),
                           'content': new})
         if old != new:
@@ -86,7 +87,7 @@ def preview(context, snapshot, baseline, git):
     validate_mechanical_updates(context, (), tuple(updates))
     for path, _, _ in targets:
         if layout_v2.protected_write(context, path):
-            raise ValueError('Document export targets a protected profile path')
+            raise ValueError(tr('export.document_export_targets_protected'))
     data = {'snapshot': snapshot, 'baseline': baseline, 'head': evidence.base_revision,
             'fingerprint': evidence.fingerprint, 'tree': provenance.worktree_tree, 'index_tree': provenance.index_tree,
             'documents': documents, 'mechanical': [asdict(u) for u in updates], 'diff': ''.join(diffs)}
@@ -100,10 +101,10 @@ def execute(context, history, request, git, journal, now):
     exported = {document['path'] for document in shown['documents']}
     unchanged = {p: sha for p, sha in shown['baseline'].items() if p not in exported}
     if document_hashes(context, unchanged) != unchanged:
-        return replace(history, status='stopped'), {'status': 'INVALIDATED', 'diagnostic': 'Phase documents changed after preview'}
+        return replace(history, status='stopped'), {'status': 'INVALIDATED', 'diagnostic': tr('export.documents_changed_preview')}
     if raw is None:
         if git.capture(context).fingerprint != shown['fingerprint']:
-            return replace(history, status='stopped'), {'status': 'INVALIDATED', 'diagnostic': 'Checkout changed after preview'}
+            return replace(history, status='stopped'), {'status': 'INVALIDATED', 'diagnostic': tr('export.checkout_changed_preview')}
         updates = tuple(MechanicalUpdate(**u) for u in shown['mechanical'])
         frozen = shown['snapshot'].get('state') if shown['snapshot'].get('layout') == 'v2' else shown['snapshot']
         message = (f"harness: export phase {frozen['phase']['code']} documents\n\n"

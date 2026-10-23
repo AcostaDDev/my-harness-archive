@@ -11,6 +11,7 @@ from sqlalchemy.orm import Session
 from harness_local.core.engine.prompts import VARIABLES, Template, builtin_catalog, digest, dump_catalog, validate
 from harness_local.storage.managed import Conflict
 from harness_local.storage.models import PromptHeadRow as Head, PromptVersionRow as Version, PromptActivationRow as Activation
+from harness_local.i18n import tr
 
 
 def now():
@@ -27,12 +28,12 @@ class PromptRepository:
 
     def owner(self, context, scope):
         if scope not in {'core', 'profile', 'project'}:
-            raise ValueError('Unknown prompt scope')
+            raise ValueError(tr('prompts.unknown_prompt_scope'))
         return {'core': 'core', 'profile': context.profile.name, 'project': str(context.root)}[scope]
 
     def key(self, context, scope, name):
         if name not in VARIABLES:
-            raise LookupError('Unknown prompt')
+            raise LookupError(tr('prompts.unknown_prompt'))
         return {'scope': scope, 'owner': self.owner(context, scope), 'name': name}
 
     def _catalog(self, session, context):
@@ -61,7 +62,7 @@ class PromptRepository:
             return base
         row = session.get(Version, version_id)
         if row is None or row.name != name or row.owner != self.owner(context, row.scope):
-            raise LookupError('Version not available to this project/prompt')
+            raise LookupError(tr('prompts.version_not_available_project'))
         value = template(row)
         value.check()
         return value
@@ -88,13 +89,13 @@ class PromptRepository:
         session.execute(insert(Head).values(**key, generation=0, active_id=None).on_conflict_do_nothing())
         changed = session.execute(update(Head).filter_by(**key, generation=expected).values(generation=Head.generation + 1))
         if changed.rowcount != 1:
-            raise Conflict('Prompt generation changed; reload before editing or activating')
+            raise Conflict(tr('prompts.prompt_generation_changed_reload'))
         return session.get(Head, tuple(key.values()))
 
     def draft(self, context, scope, name, expected, *, text=None, from_version=None):
         key = self.key(context, scope, name)
         if (text is None) == (from_version is None):
-            raise ValueError('Provide template or rollback source, exclusively')
+            raise ValueError(tr('prompts.provide_template_rollback_source'))
         with Session(self.engine) as session, session.begin():
             self._advance(session, key, expected)
             source = 'editor'
@@ -109,12 +110,12 @@ class PromptRepository:
     def activate(self, context, scope, name, expected, version_id, reason):
         key = self.key(context, scope, name)
         if not reason.strip():
-            raise ValueError('Activation requires a reason')
+            raise ValueError(tr('prompts.activation_requires_reason'))
         with Session(self.engine) as session, session.begin():
             head = self._advance(session, key, expected)
             version = self._version(session, context, name, version_id)
             if (version.scope, version.owner) != (scope, key['owner']) or version.id.startswith('builtin-'):
-                raise ValueError('Activate a saved draft in the selected scope')
+                raise ValueError(tr('prompts.activate_saved_draft_selected'))
             version.check()
             session.add(Activation(**key, id=str(uuid4()), previous_id=head.active_id, version_id=version.id,
                                    generation=head.generation, reason=reason, created_at=now()))

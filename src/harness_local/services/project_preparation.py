@@ -69,7 +69,7 @@ def snapshot(root, links=django_link):
                 key, info = str(path.relative_to(root)), path.lstat()
                 if stat.S_ISLNK(info.st_mode):
                     if not links(root, key, path):
-                        raise ValueError(f'Unexpected symlink: {key}')
+                        raise ValueError(tr('preparation.unexpected_symlink', key=key))
                     result[key] = {'link': os.readlink(path)}
                 elif stat.S_ISDIR(info.st_mode):
                     result[key] = {'directory': identity(info)}
@@ -77,9 +77,9 @@ def snapshot(root, links=django_link):
                     size += info.st_size
                     result[key] = {'sha256': file_hash(path), 'executable': bool(info.st_mode & 0o111)}
                 else:
-                    raise ValueError(f'Unexpected file: {key}')
+                    raise ValueError(tr('preparation.unexpected_file', key=key))
                 if len(result) > 40000 or size > 1024 * 1024 * 1024:
-                    raise ValueError('Preparation workspace evidence limit exceeded')
+                    raise ValueError(tr('preparation.preparation_workspace_evidence_limit'))
     return result
 
 
@@ -146,17 +146,17 @@ class DjangoRecipe:
     def check_output(cls, spec, stdout, plan):
         step = cls.step(spec)
         if step == 'python-version' and stdout.strip() != 'Python ' + plan['config']['python_version']:
-            raise ValueError('Base Python version differs from confirmed plan')
+            raise ValueError(tr('preparation.base_python_version_differs'))
         if step == 'installer-version' and stdout.strip().split()[:2] != ['uv', plan['config']['installer_version']]:
-            raise ValueError('uv version differs from confirmed plan')
+            raise ValueError(tr('preparation.uv_version_differs_confirmed'))
         if step == 'installed-versions':
             actual = json.loads(stdout)
             normalize = lambda name: name.lower().replace('_', '-')
             installed = {normalize(k): v for k, v in actual['packages'].items()}
             if installed != {normalize(k): v for k, v in plan['packages'].items()}:
-                raise ValueError('Installed distributions differ from the pinned dependency closure')
+                raise ValueError(tr('preparation.installed_distributions_differ_pinned'))
             if '.'.join(map(str, actual['python'])) != plan['config']['python_version']:
-                raise ValueError('Environment Python version differs from authorized interpreter')
+                raise ValueError(tr('preparation.environment_python_version_differs'))
 
     @staticmethod
     def receipt(root, plan):
@@ -219,9 +219,9 @@ class TypeScriptRecipe:
     def check_output(cls, spec, stdout, plan):
         step = cls.step(spec)
         if step == 'node-version' and stdout.strip() != 'v' + plan['config']['node_version']:
-            raise ValueError('Node version differs from confirmed plan')
+            raise ValueError(tr('preparation.node_version_differs_confirmed'))
         if step == 'npm-version' and stdout.strip() != plan['config']['npm_version']:
-            raise ValueError('npm version differs from confirmed plan')
+            raise ValueError(tr('preparation.npm_version_differs_confirmed'))
 
     @staticmethod
     def receipt(root, plan):
@@ -544,11 +544,11 @@ class ProjectPreparation:
             if os.path.lexists(root / path):
                 verify_files(root, {path: expected})
             elif not allow_partial:
-                raise ValueError(f'Scaffold missing: {path}')
+                raise ValueError(tr('preparation.scaffold_missing', path=path))
         allowed = set(files) | set(plan['base_files']) | recipe.extra_allowed(plan)
         for path, value in snapshot(root, recipe.links).items():
             if 'sha256' in value and path not in allowed and not path.startswith(recipe.local_prefixes):
-                raise ValueError(f'Foreign code or file: {path}')
+                raise ValueError(tr('preparation.foreign_code_file', path=path))
         recipe.verify_staging(root, plan, files)
         verify_files(root, plan['base_files'])
 
@@ -559,30 +559,30 @@ class ProjectPreparation:
         if (len(row['steps']) != len(row['plan']['steps']) or any(
                 step['number'] != number or step['spec'] != row['plan']['steps'][number]
                 for number, step in enumerate(row['steps']))):
-            raise ValueError('Preparation step/argv differs from the confirmed plan')
+            raise ValueError(tr('preparation.preparation_step_argv_differs'))
         if dict(project.versions) != row['plan']['versions']:
-            raise ValueError('Frozen project composition changed')
+            raise ValueError(tr('preparation.frozen_project_composition_changed'))
         if 'work_language' in row['plan']:
             current = work_languages.read(self.runtime.engine, root)
             if not current or (current['work_language'], current['sha256']) != (
                     row['plan']['work_language'], row['plan']['work_language_sha256']):
-                raise ValueError('Work language differs from the confirmed plan')
+                raise ValueError(tr('preparation.work_language_differs_confirmed'))
         with directory(root) as fd:
             if identity(os.fstat(fd)) != row['plan']['identity']:
-                raise ValueError('Checkout identity changed')
+                raise ValueError(tr('preparation.checkout_identity_changed'))
         _, git = self.writer(project)
         inherited = row['plan'].get('inherited_commit')
         heads = {row['plan']['base_head']}
         if inherited:
             heads.add(inherited['expected_commit'])
         if git.text('rev-parse', 'HEAD') not in heads:
-            raise ValueError('HEAD changed since preparation consent')
+            raise ValueError(tr('preparation.head_changed_since_preparation'))
         for key, evidence in row['plan']['tool_files'].items():
             path = Path(row['plan']['config'][key]).resolve(strict=True)
             if str(path) != evidence['resolved'] or file_hash(path) != evidence['sha256']:
-                raise ValueError('Authorized service executable changed')
+                raise ValueError(tr('preparation.authorized_service_executable_changed'))
         if snapshot(root, RECIPES[row['plan']['recipe']].links) != expected_workspace:
-            raise ValueError('Checkout bytes/identity changed since the previous accredited step')
+            raise ValueError(tr('preparation.checkout_bytes_identity_changed'))
 
     def _files(self, root, plan):
         # All targets were absent. Any interrupted write is left for conservative recovery.
@@ -618,7 +618,7 @@ class ProjectPreparation:
         output = root / django.WORK / 'output'
         observed = {str(p.relative_to(output)) for p in output.rglob('*') if p.is_file()}
         if observed != set(generated):
-            raise ValueError('Generated scaffold differs from the confirmed manifest')
+            raise ValueError(tr('preparation.generated_scaffold_differs_confirmed'))
         verify_files(root, {f'{django.WORK}/output/{p}': sha(c.encode()) for p, c in generated.items()})
         for item in plan['files']:
             if item['path'] not in ('.gitignore', 'requirements.lock', 'pyproject.toml'):
@@ -661,11 +661,11 @@ class ProjectPreparation:
             from harness_local.core.engine.junit import parse_junit
             report = root / declaration.path
             if report.is_symlink() or not report.is_file() or report.stat().st_size > 1048576:
-                raise ValueError('JUnit evidence missing or unsafe')
+                raise ValueError(tr('preparation.junit_evidence_missing_unsafe'))
             parsed = parse_junit(report.read_bytes(), declaration)
             if parsed.status != 'complete' or not any(c.result == 'passed' for c in parsed.cases) or any(
                     c.result not in ('passed', 'skipped') for c in parsed.cases):
-                raise ValueError('JUnit evidence must contain successful tests with consistent counters')
+                raise ValueError(tr('preparation.junit_evidence_contain_successful'))
             evidence['junit'] = asdict(parsed)
         return evidence
 
@@ -681,11 +681,11 @@ class ProjectPreparation:
             expected_files = {f['path']: f['sha256'] for f in plan['files']}
             if (captured.base_revision != plan['base_head'] or trees['index_tree'] != plan['base_tree']
                     or set(captured.changed_paths) != set(expected_files)):
-                raise ValueError('Commit contains paths outside the confirmed manifest or HEAD/index changed')
+                raise ValueError(tr('preparation.commit_contains_paths_outside'))
             verify_files(root, expected_files)
             for path, expected in expected_files.items():
                 if sha(git.run('cat-file', 'blob', f'{trees["worktree_tree"]}:{path}')) != expected:
-                    raise ValueError('Git normalization changed a confirmed manifest blob')
+                    raise ValueError(tr('preparation.git_normalization_changed_confirmed'))
             timestamp = int(self.managed.clock().timestamp())
             message = plan['commit']['message'] + '\n\nHarness-Preparation: ' + operation_id + '\n'
             raw = writer._commit_text(trees['worktree_tree'], plan['base_head'], message,
@@ -708,18 +708,18 @@ class ProjectPreparation:
             captured = writer.capture(project.context)
             tree = json.loads(captured.provenance_json)
             if tree['worktree_tree'] != pending['tree'] or index != pending['base_tree']:
-                raise ValueError('Content/index changed before commit')
+                raise ValueError(tr('preparation.content_index_changed_before'))
             git.run('hash-object', '-t', 'commit', '-w', '--stdin', input=raw)
             git.run('update-ref', '-m', RECIPES[plan['recipe']].reflog, 'HEAD', pending['expected_commit'], pending['base_head'])
         elif head != pending['expected_commit'] or git.run('cat-file', 'commit', head) != raw:
-            raise ValueError('Sealed commit cannot be reconciled with HEAD')
+            raise ValueError(tr('preparation.sealed_commit_cannot_reconciled'))
         if index == pending['base_tree']:
             git.run('read-tree', '--reset', pending['tree'])
         elif index != pending['tree']:
-            raise ValueError('Index changed; leave it untouched')
+            raise ValueError(tr('preparation.index_changed_leave_untouched'))
         captured = writer.capture(project.context)
         if captured.changed_paths:
-            raise ValueError('Checkout drift after technical commit')
+            raise ValueError(tr('preparation.checkout_drift_after_technical'))
         recipe = RECIPES[plan['recipe']]
         receipt = {'contract': CONTRACT, 'recipe': plan['recipe'], 'identity': plan['identity'],
                    'recipe_config_sha256': plan['versions']['recipe_config_sha256'], 'config': plan['config'],

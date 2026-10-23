@@ -114,9 +114,9 @@ def validate_projects(config: ManagedConfig) -> None:
         ids.add(project.id)
         roots.add(project.context.root)
         if type(project.bootstrap_enabled) is not bool:
-            raise ValueError('bootstrap_enabled must be an explicit boolean')
+            raise ValueError(tr('runtime.bootstrap_enabled_explicit_boolean'))
         if project.bootstrap_enabled and config.commit_factory is None:
-            raise ValueError('Bootstrap requires an explicit Git writer')
+            raise ValueError(tr('runtime.bootstrap_requires_explicit_git'))
         if project.tag_kind not in ("lightweight", "annotated"):
             raise ValueError(tr('runtime.tag_kind', id=project.id, kind=repr(project.tag_kind)))
         if not isinstance(project.versions, Mapping) or not REQUIRED_VERSIONS <= project.versions.keys():
@@ -128,7 +128,7 @@ def validate_projects(config: ManagedConfig) -> None:
                 not isinstance(values, Mapping) or not set(values) <= set(KINDS)
                 or any(not isinstance(targets, (list, tuple)) or not all(isinstance(t, str) and t.strip() for t in targets)
                        for targets in values.values()) for values in authority.values()):
-                raise ValueError('Explicit global/project/contract/provider permission ceilings required')
+                raise ValueError(tr('runtime.explicit_global_project_contract'))
     if config.supervisor and config.ports_factory is None:
         raise ValueError(tr('runtime.ports_factory'))
 
@@ -279,8 +279,9 @@ class ManagedRuntime:
         if project.context.work_language == current['work_language']:
             return project
         if project.context.work_language is not None:
-            raise ValueError(f"{project.id}: work_language {project.context.work_language!r} differs from the "
-                             f"{current['work_language']!r} confirmed for {project.context.root}; it never changes")
+            raise ValueError(tr('runtime.work_language_differs_confirmed', id=project.id,
+                                work_language=repr(project.context.work_language),
+                                confirmed=repr(current['work_language']), root=project.context.root))
         try:
             return replace(project, context=replace(project.context, work_language=current['work_language']))
         except FileNotFoundError:

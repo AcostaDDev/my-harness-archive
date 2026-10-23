@@ -52,10 +52,10 @@ def text_hash(text: str) -> str:
 def brief(text) -> dict:
     """User Markdown frozen with its hash. Commands, paths and selections are not interpreted."""
     if not isinstance(text, str) or not text.strip() or '\0' in text:
-        raise ValueError('The brief must be non-empty, NUL-free Markdown text')
+        raise ValueError(tr('definition.brief_non_empty_nul'))
     size = len(text.encode('utf-8'))
     if size > MAX_BRIEF_BYTES:
-        raise ValueError(f'The brief exceeds {MAX_BRIEF_BYTES // 1024} KiB')
+        raise ValueError(tr('definition.brief_exceeds_kib', limit=MAX_BRIEF_BYTES // 1024))
     return {'content': text, 'sha256': text_hash(text), 'size': size}
 
 
@@ -69,9 +69,9 @@ def question_id(text: str) -> str:
 def definition_layout(context) -> Layout:
     target = require_layout(context)
     if target.docs in ('', '.') or target.docs.startswith('/'):
-        raise ValueError('The definition requires STATE and NEXT_STEPS inside a documentation folder')
+        raise ValueError(tr('definition.definition_requires_state_next'))
     if '.git' in PurePosixPath(target.docs).parts:
-        raise ValueError('The documentation folder cannot be Git metadata')
+        raise ValueError(tr('definition.documentation_folder_cannot_git'))
     return target
 
 
@@ -120,14 +120,14 @@ def _block_names(target: Layout, path: str) -> set[str]:
 
 def _questions(value) -> list[dict]:
     if not isinstance(value, list) or len(value) > MAX_QUESTIONS:
-        raise ContractError(f'Questions must be a list of at most {MAX_QUESTIONS} items')
+        raise ContractError(tr('definition.questions_list_most_items', max_questions=MAX_QUESTIONS))
     result, seen = [], set()
     for item in value:
         if not isinstance(item, dict) or set(item) != {'text', 'blocking'} or type(item['blocking']) is not bool:
-            raise ContractError('Each question must contain exactly text and a boolean blocking flag')
+            raise ContractError(tr('definition.each_question_contain_exactly'))
         text = _text(item['text'], 'question', limit=4000)
         if question_id(text) in seen:
-            raise ContractError('Duplicate question')
+            raise ContractError(tr('definition.duplicate_question'))
         seen.add(question_id(text))
         result.append({'id': question_id(text), 'text': text, 'blocking': item['blocking']})
     return result
@@ -135,27 +135,27 @@ def _questions(value) -> list[dict]:
 
 def _content(value, name) -> str:
     if not isinstance(value, str) or not value.strip() or '\0' in value:
-        raise ContractError(f'{name} must be non-empty, NUL-free text')
+        raise ContractError(tr('definition.non_empty_nul_free', name=name))
     if len(value.encode('utf-8')) > MAX_DOCUMENT_BYTES:
-        raise ContractError(f'{name} exceeds 512 KiB')
+        raise ContractError(tr('definition.exceeds_512_kib', name=name))
     return value
 
 
 def validate_definition_result(data, target: Layout) -> dict:
     """Fixed schema: answer, questions, complete drafts per document and open items; nothing else."""
     if not isinstance(data, dict) or set(data) != {'answer', 'questions', 'drafts', 'pending'}:
-        raise ContractError('Definition result must contain exactly answer, questions, drafts and pending')
+        raise ContractError(tr('definition.definition_result_contain_exactly'))
     drafts = data['drafts']
     if not isinstance(drafts, list) or len(drafts) > MAX_DRAFTS:
-        raise ContractError(f'Drafts must be a list of at most {MAX_DRAFTS} items')
+        raise ContractError(tr('definition.drafts_list_most_items', max_drafts=MAX_DRAFTS))
     result, paths = [], set()
     for item in drafts:
         if not isinstance(item, dict) or set(item) != {'path', 'content', 'reason'}:
-            raise ContractError('Each draft must contain exactly path, content and reason')
+            raise ContractError(tr('definition.each_draft_contain_exactly'))
         if not allowed_draft(target, item['path']):
-            raise ContractError(f"Draft path {item['path']!r} is outside the D088 template and flows/*.md")
+            raise ContractError(tr('definition.draft_path_outside_d088', path=repr(item['path'])))
         if item['path'] in paths:
-            raise ContractError('Each document may be proposed once per turn')
+            raise ContractError(tr('definition.each_document_may_proposed'))
         paths.add(item['path'])
         result.append({'path': item['path'], 'content': _content(item['content'], 'Draft content'),
                        'reason': _text(item['reason'], 'draft reason', limit=4000)})
@@ -166,22 +166,22 @@ def validate_definition_result(data, target: Layout) -> dict:
 def validate_plan(content: str, code: str) -> list[tuple[str, str]]:
     """NEXT_STEPS plan of the next phase: tasks with their prefix and only the `managed-state` block."""
     if set(blocks(content)) - {'state'}:
-        raise ValueError('The plan may contain only the managed-state block of NEXT_STEPS')
+        raise ValueError(tr('definition.plan_may_contain_managed'))
     tasks = plan_tasks(content, code)
     if not tasks:
-        raise ValueError(f'The plan of {code} needs at least one task heading')
+        raise ValueError(tr('definition.plan_needs_least_one', code=code))
     return tasks
 
 
 def validate_planning_result(data, following: str | None) -> dict:
     if not isinstance(data, dict) or set(data) != {'answer', 'questions', 'plan', 'pending'}:
-        raise ContractError('Planning result must contain exactly answer, questions, plan and pending')
+        raise ContractError(tr('definition.planning_result_contain_exactly'))
     plan = data['plan']
     if plan is not None:
         if following is None:
-            raise ContractError('ROADMAP has no further phase; the plan must be null')
+            raise ContractError(tr('definition.roadmap_has_no_further'))
         if not isinstance(plan, dict) or set(plan) != {'content', 'reason'}:
-            raise ContractError('The plan must contain exactly content and reason')
+            raise ContractError(tr('definition.plan_contain_exactly_content'))
         content = _content(plan['content'], 'Plan content')
         try:
             validate_plan(content, following)
@@ -210,13 +210,13 @@ def planning_turn(context, history, snapshot: dict, agents, observe, journal, ca
     try:
         before = observe()
     except Exception as exc:
-        reason = f'Target could not be observed before the turn: {type(exc).__name__}: {exc}'
+        reason = tr('definition.observe_before', error=f'{type(exc).__name__}: {exc}')
         return done(stop_history(history, kind, reason), 'FAILED', [reason])
     queued_observation = ({k: v for k, v in before.items() if k != 'snapshot'}
                           if kind == 'onboarding' else before)
     if snapshot.get('observed') is not None and queued_observation != snapshot['observed']:
         # The proposals' CAS uses the frozen hashes: if they no longer match, the agent is not even invoked.
-        reason = 'Drafts changed after the message was queued; send the message again'
+        reason = tr('definition.drafts_changed_queued')
         return done(stop_history(history, kind, reason), 'FAILED', [reason], observed={'before': before})
     try:
         catalog_json = dump_catalog(catalog)
@@ -232,12 +232,12 @@ def planning_turn(context, history, snapshot: dict, agents, observe, journal, ca
     try:
         after = observe()
     except Exception as exc:
-        reason = f'Target could not be re-observed after the turn: {type(exc).__name__}: {exc}'
+        reason = tr('definition.observe_after', error=f'{type(exc).__name__}: {exc}')
         return done(stop_history(history, kind, reason) if history.stop is None else history, 'FAILED', [reason],
                     observed={'before': before, 'after': None})
     observed = {'before': before, 'after': after, 'unchanged': after == before}
     if after != before:
-        reason = 'The target changed during a read-only turn; the answer and its proposals are discarded'
+        reason = tr('definition.target_changed_turn')
         return done(stop_history(history, kind, reason) if history.stop is None else history, 'FAILED', [reason],
                     result=data, observed=observed)
     if data is None:
@@ -316,20 +316,19 @@ def acceptance(context, conversation: dict, inspection: dict, texts: dict[str, s
     language = work_language(context)
     blockers, warnings = [], []
     if inspection['import_required']:
-        blockers.append('The target belongs to a Git repository or contains .git: use onboarding for a repository without harness')
+        blockers.append(tr('planning.target_belongs_git_repository'))
     if inspection['foreign']:
-        blockers.append('Files outside the definition drafts block the acceptance (onboarding requires a repository without harness): '
-                        + ', '.join(inspection['foreign']) + (' …' if inspection.get('foreign_truncated') else ''))
+        blockers.append(tr('definition.foreign_files', paths=', '.join(inspection['foreign'])
+                           + (' …' if inspection.get('foreign_truncated') else '')))
     if inspection['invalid']:
-        blockers.append('Drafts must be UTF-8, NUL-free, not executable and at most 512 KiB: '
-                        + ', '.join(inspection['invalid']))
+        blockers.append(tr('definition.invalid_drafts', paths=', '.join(inspection['invalid'])))
     missing = [path for path in required_documents(target) if path not in texts and path not in default_documents(target)]
     if missing:
-        blockers.append('Required documents are missing: ' + ', '.join(missing))
+        blockers.append(tr('definition.required_missing', paths=', '.join(missing)))
     for path, limit in ((target.agents, MAX_AGENTS_LINES), (target.claude, MAX_WRAPPER_LINES),
                         (target.gemini, MAX_WRAPPER_LINES)):
         if path in texts and len(texts[path].splitlines()) > limit:
-            blockers.append(f'{path} must contain at most {limit} lines (D088)')
+            blockers.append(tr('definition.contain_most_lines_d088', path=path, limit=limit))
     for path, text in sorted(texts.items()):
         try:
             names = set(blocks(text))
@@ -337,7 +336,7 @@ def acceptance(context, conversation: dict, inspection: dict, texts: dict[str, s
             blockers.append(f'{path}: {exc}')
             continue
         if names - _block_names(target, path):
-            blockers.append(f'{path} contains managed blocks that belong to another document')
+            blockers.append(tr('definition.contains_managed_blocks_belong', path=path))
     if target.decisions in texts:
         try:
             decision_index(texts[target.decisions])
@@ -353,11 +352,11 @@ def acceptance(context, conversation: dict, inspection: dict, texts: dict[str, s
         if not entries:
             blockers.append('ROADMAP needs at least one phase section «## PNNN — título»')
         elif entries[0]['code'] != 'P001':
-            blockers.append('The first ROADMAP phase must be P001')
+            blockers.append(tr('definition.first_roadmap_phase_p001'))
         else:
             entry = entries[0]
             if not entry['objective'] or not entry['exit_criteria']:
-                blockers.append('P001 needs an objective and at least one exit criterion in ROADMAP')
+                blockers.append(tr('definition.p001_needs_objective_least'))
                 entry = None
     if target.next_steps in texts:
         try:
@@ -366,30 +365,29 @@ def acceptance(context, conversation: dict, inspection: dict, texts: dict[str, s
             blockers.append(f'NEXT_STEPS: {exc}')
         else:
             if not tasks:
-                blockers.append('NEXT_STEPS needs at least one P001-TNNN task')
+                blockers.append(tr('definition.next_steps_needs_least'))
     first_task = None
     if tasks:
         task_id = tasks[0][0]
         fields = _task_fields(texts[target.next_steps], task_id)
         if not fields['objective'] or not bullet_items(fields['acceptance_criteria']):
-            blockers.append(f'{task_id} needs an objective and acceptance criteria')
+            blockers.append(tr('definition.needs_objective_acceptance_criteria', task_id=task_id))
         elif context.policy.planning_mode != 'agent':
             try:
                 first_task = json.loads(deterministic_task(context, task_id, 'P001', texts[target.next_steps]))
             except (IncompleteContract, ContractError) as exc:
                 if context.policy.planning_mode == 'deterministic':
-                    blockers.append(f'{task_id} does not satisfy the deterministic planning mode: {exc}')
+                    blockers.append(tr('definition.does_not_satisfy_deterministic', task_id=task_id, exc=exc))
         if first_task is None:
             first_task = {'task_id': task_id, 'title': tasks[0][1], 'planner': 'agent'}
     open_blocking = [q for q in conversation['questions'] if q['blocking'] and not q.get('deferred')]
     if open_blocking:
-        blockers.append('Blocking questions remain open; answer them in a turn or defer them explicitly: '
-                        + '; '.join(q['text'] for q in open_blocking))
+        blockers.append(tr('definition.blocking_open', questions='; '.join(q['text'] for q in open_blocking)))
     paths = sorted({*texts, *fixed_drafts(target)} | {f'{target.archive("P000")}/{name}'
                                                       for name in ('BRIEF.md', 'DEFINITION.md')})
     protected = [path for path in paths if protected_write(context, path)]
     if protected:
-        blockers.append('Paths protected by the project profile: ' + ', '.join(protected))
+        blockers.append(tr('definition.protected_paths', paths=', '.join(protected)))
     warnings += [tr('definition.pending', item=item) for item in conversation['pending']]
     base = {'template': template_identity(target, language), 'input': {'conversation_id': conversation['id']},
             'definition': {'conversation_id': conversation['id'], 'conversation_version': conversation['version'],
@@ -403,7 +401,7 @@ def acceptance(context, conversation: dict, inspection: dict, texts: dict[str, s
             'policy': policy_payload(context.policy), 'profile': context.profile.name}
     if blockers or entry is None:
         return {**base, 'documents': [], 'phase': None, 'first_task': None, 'task_text': None,
-                'blockers': blockers or ['ROADMAP is missing'], 'warnings': warnings}
+                'blockers': blockers or [tr('definition.roadmap_missing')], 'warnings': warnings}
     definition = phase_definition(context, phase_data(target, entry, tasks))
     fresh = {'phase': {'code': 'P001', 'status': 'ACTIVE', 'objective': entry['objective']},
              'tasks': [{'task_id': task, 'status': None, 'planned': True} for task, _ in tasks],
@@ -445,9 +443,9 @@ def acceptance(context, conversation: dict, inspection: dict, texts: dict[str, s
     documents.sort(key=lambda doc: doc['path'])
     for doc in documents:
         if len(doc['content'].encode('utf-8')) > MAX_DOCUMENT_BYTES:
-            raise ValueError(f"{doc['path']} would exceed 512 KiB")
+            raise ValueError(tr('definition.would_exceed_512_kib', path=doc['path']))
         if doc['origin'] in ('template', 'archive') and ANY_MARKER.search(doc['content']) and doc['path'] != f'{archive}/BRIEF.md':
-            raise ValueError(f"{doc['path']} unexpectedly contains managed markers")
+            raise ValueError(tr('definition.unexpectedly_contains_managed_markers', path=doc['path']))
     warnings += budget_warnings(target, {doc['path']: doc['content'] for doc in documents})
     return {**base, 'documents': documents, 'phase': definition, 'first_task': first_task,
             'task_text': regenerated[target.next_steps], 'blockers': [], 'warnings': warnings}

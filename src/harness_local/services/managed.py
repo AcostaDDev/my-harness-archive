@@ -15,7 +15,7 @@ from harness_local.core.engine.contracts import stop_history
 from harness_local.core.engine.journal import JournalError
 from harness_local.core.engine.serialization import restore_context
 from harness_local.core.engine.workflow import OfflineEngine
-from harness_local.i18n import emission
+from harness_local.i18n import emission, tr
 
 
 class _Journal:
@@ -26,11 +26,11 @@ class _Journal:
 
     def _call(self, operation, *args):
         if self.heartbeat_failed.is_set():
-            raise JournalError("Heartbeat failed; stop before the next effect")
+            raise JournalError(tr('supervisor.heartbeat_failed_stop_before'))
         try:
             return operation(self.claim, *args)
         except Exception as exc:
-            raise JournalError(f"Managed persistence failed: {exc}") from exc
+            raise JournalError(tr('supervisor.managed_persistence_failed', exc=exc)) from exc
 
     def checkpoint(self, history, stage):
         self._call(self.repository.checkpoint, history, stage)
@@ -195,7 +195,7 @@ class LocalSupervisor:
                 from harness_local.core.engine.bootstrap_discovery import execute
                 from harness_local.storage.bootstrap_discovery import DiscoveryRepository
                 if self.commit_factory is None:
-                    raise RuntimeError('Bootstrap discovery requires the configured Git reader')
+                    raise RuntimeError(tr('supervisor.bootstrap_discovery_requires_configured'))
                 writer = self.commit_factory(context, versions)
                 agents, _, _ = self.ports_factory(context, versions)
                 if hasattr(agents, 'bind_process_journal'):
@@ -206,7 +206,7 @@ class LocalSupervisor:
                 from harness_local.core.engine.import_commit import execute
                 from harness_local.storage.project_import import ImportRepository, check_git
                 if self.commit_factory is None:
-                    raise RuntimeError('Import requires the configured Git writer')
+                    raise RuntimeError(tr('supervisor.import_requires_configured_git'))
                 writer = self.commit_factory(context, versions)
                 saved = ImportRepository(self.repository).request(claim.run_id)
                 check_git(context, writer, saved['preview'], json.loads(saved['intent'])['expected_tree'])
@@ -215,7 +215,7 @@ class LocalSupervisor:
                 from harness_local.core.engine.bootstrap import execute
                 from harness_local.storage.bootstrap import BootstrapRepository
                 if self.commit_factory is None:
-                    raise RuntimeError('Bootstrap requires the configured Git writer')
+                    raise RuntimeError(tr('supervisor.bootstrap_requires_configured_git'))
                 writer = self.commit_factory(context, versions)
                 self.repository._require_mode(claim)
                 history, outcome = execute(context, record.history,
@@ -224,7 +224,7 @@ class LocalSupervisor:
                 from harness_local.core.engine.document_export import execute
                 from harness_local.storage.document_export import DocumentExportRepository
                 if self.commit_factory is None:
-                    raise RuntimeError('Document export requires the configured Git writer')
+                    raise RuntimeError(tr('supervisor.document_export_requires_configured'))
                 writer = self.commit_factory(context, versions)
                 frozen = DocumentExportRepository(self.repository).request(claim.run_id)
                 # On resume the intent already exists; the guard is checked again before the effect.
@@ -234,7 +234,7 @@ class LocalSupervisor:
                 # D072: confirmed edit or phase transition; no agents, intent before writing.
                 from harness_local.core.engine.document_ops import execute
                 if self.commit_factory is None:
-                    raise RuntimeError('Document operations require the configured Git writer')
+                    raise RuntimeError(tr('supervisor.document_operations_require_configured'))
                 if request["action"] == "document_edit":
                     writer = self.commit_factory(context, versions)
                     from harness_local.storage.documents import DocumentsRepository
@@ -296,7 +296,7 @@ class LocalSupervisor:
                     agents.bind_process_journal(journal)
                 if snapshot["kind"] == "definition":
                     if self.commit_factory is None:
-                        raise RuntimeError("Definition turns require the configured Git reader")
+                        raise RuntimeError(tr('supervisor.definition_turns_require_configured'))
                     reader = self.commit_factory(context, versions)
 
                     def observe():
@@ -325,7 +325,7 @@ class LocalSupervisor:
             elif request["action"] in ("phase_check", "phase_close"):
                 # D088: check and closure under the lock; the closure includes the documentary archive.
                 if self.commit_factory is None:
-                    raise RuntimeError("Phase operations require the configured Git writer")
+                    raise RuntimeError(tr('supervisor.phase_operations_require_configured'))
                 from harness_local.core.engine.phases import check_phase, close_phase
                 from harness_local.storage.phases import PhaseRepository
                 git = self.commit_factory(context, versions)
@@ -344,7 +344,7 @@ class LocalSupervisor:
                                                    language)
             elif request["action"] == "commit":
                 if self.commit_factory is None:
-                    raise RuntimeError("No commit writer configured for a commit job")
+                    raise RuntimeError(tr('supervisor.no_commit_writer_configured'))
                 writer = self.commit_factory(context, versions)
                 updates = tuple(MechanicalUpdate(**item) for item in request["mechanical"])
                 history, blocks, committer = None, frozenset(), journal
@@ -358,7 +358,7 @@ class LocalSupervisor:
                             updates += extra
                         except (ValueError, OSError, UnicodeError) as exc:
                             history = stop_history(record.history, "commit",
-                                                   f"Managed documentation blocks could not be regenerated: {exc}")
+                                                   tr('supervisor.managed_documentation_blocks_could', exc=exc))
                 if history is None:
                     history, _ = commit_accepted(context, record.history, writer, committer, mechanical=updates,
                                                  now=self.repository.clock, block_paths=blocks)

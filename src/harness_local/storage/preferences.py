@@ -10,7 +10,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from harness_local.core.engine.contracts import freeze
-from harness_local.i18n import DEFAULT_LANGUAGE, LANGUAGES
+from harness_local.i18n import DEFAULT_LANGUAGE, LANGUAGES, tr
 from harness_local.storage.managed import Conflict
 from harness_local.storage.models import (
     ManagedJobRow as Job, ProductPreferenceEventRow as Event, ProductPreferencesRow as Row,
@@ -53,7 +53,7 @@ def capture(session: Session) -> dict:
     """Visual language for a new job, read in the transaction that admits it."""
     current = view(session.get(Row, 1))
     if current['status'] == 'invalid':
-        raise PreferencesInvalid('Stored language preferences are invalid; save them again before admitting work')
+        raise PreferencesInvalid(tr('preferences.stored_language_preferences_invalid'))
     return {'format': CONTEXT_FORMAT, 'ui_language': current['ui_language'], 'preferences_version': current['version']}
 
 
@@ -86,23 +86,23 @@ class PreferencesRepository:
     def update(self, *, expected_version: int, ui_language: str, default_work_language: str, key: str) -> dict:
         """CAS on the version; the same key and the same change return the recorded result without another version."""
         if type(expected_version) is not int or expected_version < 0:
-            raise ValueError('Explicit non-negative preferences version required')
+            raise ValueError(tr('preferences.explicit_non_negative_preferences'))
         if ui_language not in LANGUAGES or default_work_language not in LANGUAGES:
-            raise ValueError(f'Languages must be one of {", ".join(LANGUAGES)}')
+            raise ValueError(tr('preferences.languages_one', languages=', '.join(LANGUAGES)))
         if not isinstance(key, str) or not key.strip() or len(key) > 200:
-            raise ValueError('Idempotency key requires 1–200 characters')
+            raise ValueError(tr('preferences.idempotency_key_requires_1'))
         request_sha256 = _digest({'expected_version': expected_version, 'ui_language': ui_language,
                                   'default_work_language': default_work_language})
         with self.managed._write() as session:
             previous = session.scalar(select(Event).where(Event.idempotency_key == key))
             if previous is not None:
                 if previous.request_sha256 != request_sha256:
-                    raise PreferencesKeyReused('Idempotency key already names a different preferences change')
+                    raise PreferencesKeyReused(tr('preferences.idempotency_key_already_names'))
                 return {**previous.payload['after'], 'replayed': True}
             row = session.get(Row, 1)
             before = view(row)
             if before['version'] != expected_version:
-                raise PreferencesChanged('Preferences changed; reload them before saving')
+                raise PreferencesChanged(tr('preferences.preferences_changed_reload_them'))
             if row is None:
                 row = Row(id=1)
                 session.add(row)

@@ -83,17 +83,17 @@ def _job(row: Job) -> JobRecord:
 
 def _nonempty(value: str, name: str) -> None:
     if not isinstance(value, str) or not value.strip():
-        raise ValueError(f"Explicit {name} required")
+        raise ValueError(tr('managed.explicit_required', name=name))
 
 
 def existing_creation(session, row_type, key, request_sha256):
     """Registration without a job (conversations, 0018): the same key and the same request return the same id."""
     _nonempty(key, "idempotency key")
     if len(key) > 200:
-        raise ValueError("Idempotency key exceeds 200 characters")
+        raise ValueError(tr('managed.idempotency_key_exceeds_200'))
     row = session.scalar(select(row_type).where(row_type.idempotency_key == key))
     if row is not None and row.request_sha256 != request_sha256:
-        raise Conflict("Idempotency key already names a different conversation")
+        raise Conflict(tr('managed.idempotency_key_already_names'))
     return None if row is None else row.id
 
 
@@ -207,7 +207,7 @@ class SQLiteManagedRepository:
                 or ('project_registry_id' in versions and current.id != versions['project_registry_id'])
                 or ('project_registry_sha256' in versions
                     and current.row_sha256 != versions['project_registry_sha256'])):
-            raise Conflict('Project configuration changed; reload and plan again before submitting work')
+            raise Conflict(tr('managed.project_configuration_changed_reload'))
 
     def _run_root(self, run_id: str) -> str | None:
         with Session(self.engine) as session:
@@ -217,14 +217,14 @@ class SQLiteManagedRepository:
         from harness_local.storage.retired_work import reason
         with Session(self.engine) as session:
             run = session.get(Run, run_id)
-            return reason(session, run, request_json) if run else 'Unknown persisted run; explicit recovery required'
+            return reason(session, run, request_json) if run else tr('managed.unknown_persisted_run')
 
     def mode_refusal(self, claim: JobRecord) -> str | None:
         """Disk read outside a transaction: the checkout mode still admits this job."""
         with Session(self.engine) as session:
             job = session.get(Job, claim.id)
             if job is None:
-                raise LookupError("Unknown managed job")
+                raise LookupError(tr('managed.unknown_managed_job'))
             root, admitted = session.get(Run, job.run_id).root, job.activation_id
         retired = self.retired_reason(claim.run_id, claim.request_json)
         if retired is not None:
@@ -248,7 +248,7 @@ class SQLiteManagedRepository:
         with self._write() as session:
             job, run = self._owned(session, claim)
             if job.process_owner is not None:
-                raise Conflict("The job already registered a process owner; quarantine instead")
+                raise Conflict(tr('managed.job_already_registered_process'))
             history = load_history(run.history_json)
             job.status, job.finished_at, job.diagnostic = "REFUSED", self._now(), diagnostic
             run.status = (history.status.upper()
@@ -265,10 +265,10 @@ class SQLiteManagedRepository:
     def _existing(self, session, key, request):
         _nonempty(key, "idempotency key")
         if len(key) > 200:
-            raise ValueError("Idempotency key exceeds 200 characters")
+            raise ValueError(tr('managed.idempotency_key_exceeds_200'))
         row = session.scalar(select(Job).where(Job.idempotency_key == key))
         if row and row.request_json != request:
-            raise Conflict("Idempotency key already names a different action")
+            raise Conflict(tr('managed.idempotency_key_already_names_2'))
         return row
 
     def submit(self, context: ProjectContext, task_id: str, phase_id: str, text: str,
@@ -283,7 +283,7 @@ class SQLiteManagedRepository:
                            for k, v in versions.items())):
             raise ValueError("Explicit component versions required; unknown values use null")
         if Path(self.engine.url.database).resolve().is_relative_to(context.root):
-            raise ValueError("Managed SQLite must be outside the agent checkout")
+            raise ValueError(tr('managed.managed_sqlite_outside_agent'))
         request = {"action": "start", "context_json": context_snapshot(context),
                    "versions_json": freeze(versions), "task_id": task_id, "phase_id": phase_id, "text": text}
         if notes is not None:
@@ -305,11 +305,11 @@ class SQLiteManagedRepository:
         if purpose != "import_commit":
             from harness_local.storage.project_import import unresolved as import_unresolved
             if import_unresolved(session, str(context.root)):
-                raise Conflict('Import awaits completion or explicit recovery')
+                raise Conflict(tr('managed.import_awaits_completion_explicit'))
         if purpose != "bootstrap":
             from harness_local.storage.bootstrap import unresolved
             if unresolved(session, str(context.root)):
-                raise Conflict('Bootstrap awaits completion or explicit recovery')
+                raise Conflict(tr('managed.bootstrap_awaits_completion_explicit'))
         if purpose == "task":
             self._phase_open(session, str(context.root), phase_id)
         activation_id = self._admit(session, assessment)
@@ -327,7 +327,7 @@ class SQLiteManagedRepository:
         job = Job(idempotency_key=key, run_id=run.id, request_json=request, status="QUEUED", created_at=now,
                   activation_id=activation_id, language_context=self._language(session, root=run.root))
         if json.loads(snapshot).get("work_language") not in (None, job.language_context["work_language"]):
-            raise Conflict("The project context does not match its confirmed work language; reload and retry")
+            raise Conflict(tr('managed.project_context_does_not'))
         session.add(job)
         session.flush()
         self._event(session, run, "job_queued", {"job_id": job.id, "action": action})
@@ -339,14 +339,14 @@ class SQLiteManagedRepository:
         from harness_local.storage.models import PhaseRow
         from harness_local.storage.documents import unresolved
         if unresolved(session, root):
-            raise Conflict('A document intent awaits reconciliation; recover it first')
+            raise Conflict(tr('managed.document_intent_awaits_reconciliation'))
         if session.scalar(select(PhaseRow.id).where(PhaseRow.root == root, PhaseRow.code == code,
                                                     PhaseRow.status.in_(("CLOSED", "CLOSING", "ABANDONED")))):
-            raise Conflict("The phase is closed, closing or abandoned in this checkout; it does not advance")
+            raise Conflict(tr('managed.phase_closed_closing_abandoned'))
 
     def resume(self, run_id: str, *, key: str, expected_version: int, retry_executor=False) -> JobRecord:
         if type(expected_version) is not int or type(retry_executor) is not bool:
-            raise ValueError("Explicit resource version and boolean retry required")
+            raise ValueError(tr('managed.explicit_resource_version_boolean'))
         request = freeze({"action": "retry" if retry_executor else "revalidate", "run_id": run_id,
                           "expected_version": expected_version})
         root = self._run_root(run_id)
@@ -357,23 +357,23 @@ class SQLiteManagedRepository:
                 return _job(existing)
             run = session.get(Run, run_id)
             if run is None:
-                raise LookupError("Unknown managed run")
+                raise LookupError(tr('managed.unknown_managed_run'))
             from harness_local.storage.retired_work import reason
             if diagnostic := reason(session, run):
                 raise Conflict(diagnostic)
             history = load_history(run.history_json)
             if run.version != expected_version:
-                raise Conflict("Run changed; reload before resuming")
+                raise Conflict(tr('managed.run_changed_reload_before'))
             if session.scalar(select(Job.id).where(Job.run_id == run_id,
                     Job.status.in_(("QUEUED", "ACTIVE", "RECOVERY_REQUIRED")))) is not None:
-                raise Conflict("Run already has unfinished work")
+                raise Conflict(tr('managed.run_already_has_unfinished'))
             if session.scalar(select(Commit.operation_id).where(
                     Commit.run_id == run_id, Commit.status.in_(("INTENT", "COMMITTED")))) is not None:
-                raise Conflict("Run has a recorded or pending commit operation; reconcile it instead")
+                raise Conflict(tr('managed.run_has_recorded_pending'))
             if history.status not in {"stopped", "blocked", "revision_limit"} or history.task_json is None:
-                raise Conflict("Only a stopped run with a frozen contract can resume")
+                raise Conflict(tr('managed.stopped_run_frozen_contract'))
             if retry_executor and not json.loads(history.task_json)["allowed_paths"]:
-                raise Conflict("Read-only tasks cannot retry implementation")
+                raise Conflict(tr('managed.read_tasks_cannot_retry'))
             self._phase_open(session, run.root, run.phase_id)
             self._registry_current(session, run.root, json.loads(run.versions_json))
             from harness_local.storage.preparation import admit
@@ -391,7 +391,7 @@ class SQLiteManagedRepository:
         with Session(self.engine) as session:
             row = session.get(Run, run_id)
             if row is None:
-                raise LookupError("Unknown managed run")
+                raise LookupError(tr('managed.unknown_managed_run'))
             return RunRecord(load_history(row.history_json), row.versions_json, row.status,
                              row.stage, row.version, row.revisions)
 
@@ -399,12 +399,12 @@ class SQLiteManagedRepository:
         with Session(self.engine) as session:
             row = session.get(Job, job_id)
             if row is None:
-                raise LookupError("Unknown managed job")
+                raise LookupError(tr('managed.unknown_managed_job'))
             return _job(row)
 
     def events(self, run_id: str, *, after=0, limit=100):
         if type(after) is not int or after < 0 or type(limit) is not int or not 1 <= limit <= 1000:
-            raise ValueError("Invalid managed event page")
+            raise ValueError(tr('managed.invalid_managed_event_page'))
         with Session(self.engine) as session:
             rows = session.scalars(select(Event).where(Event.run_id == run_id, Event.sequence > after)
                                    .order_by(Event.sequence).limit(limit)).all()
@@ -438,11 +438,11 @@ class SQLiteManagedRepository:
         job = session.get(Job, claim.id)
         if (job is None or not claim.owner_token or job.owner_token != claim.owner_token
                 or job.status != "ACTIVE" or job.lease_until <= self._now()):
-            raise OwnershipLost("Job lease/ownership lost; reconciliation required")
+            raise OwnershipLost(tr('managed.job_lease_ownership_lost'))
         run = session.get(Run, job.run_id)
         lock = session.get(Lock, run.root)
         if not independent_chat(job) and (lock is None or lock.job_id != job.id):
-            raise OwnershipLost("Checkout writer lock lost")
+            raise OwnershipLost(tr('managed.checkout_writer_lock_lost'))
         return job, run
 
     def _release(self, session, job, run):
@@ -517,7 +517,7 @@ class SQLiteManagedRepository:
             attempts = session.scalars(select(AttemptRow).where(AttemptRow.run_id == run.id)
                                       .order_by(AttemptRow.number)).all()
             if any(row.result_json is None for row in attempts):
-                raise Conflict("An earlier invocation still has an unknown outcome")
+                raise Conflict(tr('managed.earlier_invocation_still_has'))
             executions = sum(json.loads(row.request_json)["role"] == "executor" for row in attempts)
             if request.role == "executor":
                 run.revisions = max(0, executions)
@@ -585,7 +585,7 @@ class SQLiteManagedRepository:
             rows = session.scalars(select(Job).where(Job.status == "ACTIVE", Job.lease_until <= self._now())
                                    .order_by(Job.id)).all()
             for job in rows:
-                job.status, job.diagnostic = "RECOVERY_REQUIRED", "Lease expired; previous executor may still be alive"
+                job.status, job.diagnostic = "RECOVERY_REQUIRED", tr('managed.lease_expired')
                 run = session.get(Run, job.run_id)
                 run.status = "RECOVERY_REQUIRED"
                 self._event(session, run, "recovery_required", {"job_id": job.id, "reason": job.diagnostic})
@@ -597,10 +597,10 @@ class SQLiteManagedRepository:
         with self._write() as session:
             job = session.get(Job, job_id)
             if job is None or job.owner_token != owner_token or job.status != "RECOVERY_REQUIRED":
-                raise Conflict("Confirm the exact quarantined owner before unlocking")
+                raise Conflict(tr('managed.confirm_exact_quarantined_owner'))
             run = session.get(Run, job.run_id)
             if run.version != expected_version:
-                raise Conflict("Run changed; reload before reconciling")
+                raise Conflict(tr('managed.run_changed_reload_before_2'))
             self._processes_stopped(session, job, recovering=True)
             history = load_history(run.history_json)
             pending = session.scalars(select(AttemptRow).where(AttemptRow.run_id == run.id,
@@ -633,7 +633,7 @@ class SQLiteManagedRepository:
                       mechanical: tuple[MechanicalUpdate, ...] = ()) -> JobRecord:
         """Queues the commit as a writing action; a pending intent is reconciled, not repeated."""
         if type(expected_version) is not int:
-            raise ValueError("Explicit resource version required")
+            raise ValueError(tr('managed.explicit_resource_version_required'))
         updates = tuple(mechanical)
         request = freeze({"action": "commit", "run_id": run_id, "expected_version": expected_version,
                           "mechanical": [asdict(item) for item in updates]})
@@ -645,9 +645,9 @@ class SQLiteManagedRepository:
                 return _job(existing)
             run = session.get(Run, run_id)
             if run is None:
-                raise LookupError("Unknown managed run")
+                raise LookupError(tr('managed.unknown_managed_run'))
             if run.version != expected_version:
-                raise Conflict("Run changed; reload before committing")
+                raise Conflict(tr('managed.run_changed_reload_before_3'))
             return self._queue_commit(session, run, key, request, updates, assessment)
 
     def _queue_commit(self, session, run, key, request, updates, assessment) -> JobRecord:
@@ -658,10 +658,10 @@ class SQLiteManagedRepository:
         run_id = run.id
         if session.scalar(select(Job.id).where(Job.run_id == run_id,
                 Job.status.in_(("QUEUED", "ACTIVE", "RECOVERY_REQUIRED")))) is not None:
-            raise Conflict("Run already has unfinished work")
+            raise Conflict(tr('managed.run_already_has_unfinished'))
         live = self._live_commit(session, run_id)
         if live is not None and live.status == "COMMITTED":
-            raise Conflict("Run already has a recorded commit")
+            raise Conflict(tr('managed.run_already_has_recorded'))
         self._phase_open(session, run.root, run.phase_id)
         history = load_history(run.history_json)
         if live is not None:
@@ -670,7 +670,7 @@ class SQLiteManagedRepository:
         else:
             if (history.status != "acceptance_ready" or history.acceptance is None
                     or not history.acceptance.eligible):
-                raise Conflict("Only an eligible acceptance_ready run can be committed")
+                raise Conflict(tr('managed.eligible_acceptance_ready_run'))
             try:
                 git_provenance(history.acceptance.evidence)
                 validate_mechanical_updates(restore_context(run.context_json),
@@ -697,7 +697,7 @@ class SQLiteManagedRepository:
         with Session(self.engine) as session:
             job = session.get(Job, claim.id)
             if job is None or not claim.owner_token or job.owner_token != claim.owner_token:
-                raise OwnershipLost("Job ownership lost; reconciliation required")
+                raise OwnershipLost(tr('managed.job_ownership_lost_reconciliation'))
             row = self._live_commit(session, job.run_id, ("INTENT",))
             return CommitIntent.from_json(row.intent_json) if row else None
 
@@ -712,7 +712,7 @@ class SQLiteManagedRepository:
                     or history.acceptance.evidence.base_revision != intent.base_revision):
                 raise Conflict("Commit intent must name this run's reviewed acceptance evidence")
             if self._live_commit(session, run.id) is not None:
-                raise Conflict("Run already has a live commit operation")
+                raise Conflict(tr('managed.run_already_has_live'))
             self._phase_open(session, run.root, run.phase_id)
             session.add(Commit(operation_id=intent.operation_id, run_id=run.id, job_id=job.id, status="INTENT",
                                base_revision=intent.base_revision, reviewed_fingerprint=intent.reviewed_fingerprint,
@@ -877,20 +877,20 @@ class SQLiteManagedRepository:
         from harness_local.adapters.processes import liveness
         if recovering and job.process_owner and not job.owner_closed:
             if liveness(job.process_owner) != "dead":
-                raise Conflict("Previous owner may still launch effects; cannot unlock")
+                raise Conflict(tr('managed.previous_owner_may_still'))
         from harness_local.storage.command_processes import for_job
         for command in for_job(session, job):
             if command['identity'] is None:
                 if command['status'] == 'STOPPED':
                     continue  # Observed failure before spawn, no target executed.
                 if not recovering or (not job.owner_closed and liveness(job.process_owner) != 'dead'):
-                    raise Conflict("Pending command spawn requires stopped owner")
+                    raise Conflict(tr('managed.pending_command_spawn_requires'))
             elif liveness(command['identity'], group=True) != 'dead':
-                raise Conflict("Previous command group is alive or uncertain; cannot unlock")
+                raise Conflict(tr('managed.previous_command_group_alive'))
         for row in session.scalars(select(Process).where(Process.job_id == job.id)):
             if row.identity is None:
                 # Gate cannot execute without a durable identity. Owner must first stop.
                 if not recovering or (not job.owner_closed and liveness(job.process_owner) != "dead"):
-                    raise Conflict("Pending spawn requires stopped owner")
+                    raise Conflict(tr('managed.pending_spawn_requires_stopped'))
             elif liveness(row.identity, group=True) != "dead":
-                raise Conflict("Previous process group is alive or uncertain; cannot unlock")
+                raise Conflict(tr('managed.previous_process_group_alive'))

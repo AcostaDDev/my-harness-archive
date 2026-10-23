@@ -43,6 +43,8 @@ salvo donde se indica. Detalle por fase en `docs/archive/phase-NNN/SUMMARY.md`; 
   del par congelado y documentos generados en el idioma de trabajo (P011-T009, D169). Interfaz React completa en
   en/es por catálogos tipados y diagnósticos HTTP propios en el visual guardado (P011-T010, D170). Textos propios
   del servicio/CLI antes españoles en en/es con el visual de cada emisión: petición, job congelado o CLI (P011-T021, D171).
+  Diagnósticos visibles del servicio antes ingleses (razones de parada/aceptación incluidas) también en en/es; los
+  técnicos ingleses quedan listados por categoría y la UI distingue rechazos por código (P011-T022, D172).
 - **Incorporación de proyectos** ([P008](archive/phase-008/SUMMARY.md), D161): inventario estático sobre HEAD,
   conversación de solo lectura y borradores privados de B, perfil/documentos confirmados y commit conciliable.
   Objetos locales, blobs por hash, filtros/gitlinks y destinos ignorados comprobados antes de escribir y recuperar.
@@ -79,21 +81,21 @@ salvo donde se indica. Detalle por fase en `docs/archive/phase-NNN/SUMMARY.md`; 
 
 **P011 — Preparación para apertura pública en GitHub**, iniciada documentalmente el 2026-10-22 por encargo del usuario
 ([D154](DECISIONS.md#d154--p011-preparación-para-apertura-pública-en-github),
-[plan](phase/P011_PLAN_APERTURA_PUBLICA.md), [tareas](NEXT_STEPS.md)). T001/T002/T019/T003–T010/T020/T021
-completadas (D159–D171), nueve tareas pendientes (T021 desglosada de T010 y T022 de T021); retirada legacy/A
+[plan](phase/P011_PLAN_APERTURA_PUBLICA.md), [tareas](NEXT_STEPS.md)). T001/T002/T019/T003–T010/T020–T022
+completadas (D159–D172), ocho tareas pendientes (T021 desglosada de T010 y T022 de T021); retirada legacy/A
 implementada, código y pruebas en inglés, preferencias globales, idioma de trabajo inmutable por proyecto, recetas v2
-cableadas, directiva de idioma al agente con documentos en el idioma de trabajo, interfaz en/es y textos del
-servicio/CLI antes españoles en en/es; sin catalogar aún los textos de servicio ya ingleses (T022), sin QA visual ni
-nueva compatibilidad CLI.
+cableadas, directiva de idioma al agente con documentos en el idioma de trabajo, interfaz en/es y todos los textos
+visibles del servicio/CLI en en/es; sin QA visual conjunta (no autorizada) ni nueva compatibilidad CLI.
 
 **Planificación finalizada para comenzar su ejecución** por petición del usuario
 ([D156](DECISIONS.md#d156--planificación-de-p011-finalizada-y-modo-continuo-aplazado-a-v020)).
 P011 no está completada: T001 entrega diseño/inventario, T002 licencia/revisión estática, T019 retirada funcional y
 T003–T006 comentarios en inglés, T007 infraestructura de idiomas, T008 idioma de trabajo, T020 recetas v2, T009
-directiva y documentos por idioma, T010 interfaz en/es y T021 servicio/CLI en/es; siguiente T022.
+directiva y documentos por idioma, T010 interfaz en/es, T021 servicio/CLI en/es y T022 textos de servicio ya
+ingleses en en/es; siguiente T011.
 El modo continuo entre fases queda reservado para **v0.2.0, después de abrir el proyecto en GitHub**;
 no forma parte de P011 ni modifica el cierre confirmado actual. Commit documental D156 realizado en `6174f51`;
-las ampliaciones D157/D158 se incorporaron en `2730f54`. La petición actual autoriza T021 y su commit local
+las ampliaciones D157/D158 se incorporaron en `2730f54`. La petición actual autoriza T022 y su commit local
 en inglés, con checks sintéticos offline, sin ejecución del producto ni publicación.
 
 **P011-T001 completada** ([contrato](phase/P011-T001_CONTRATO_APERTURA.md),
@@ -195,6 +197,12 @@ base o `en`, también la ayuda). Hash de retención sellado en inglés; registro
 confirmada; scripts al texto inglés. HITL: textos ya ingleses → T022, núcleo admite la hoja `harness_local.i18n` y QA
 visual no autorizada. Suites offline en verde; sin servicios, navegador ni proveedores.
 
+**P011-T022 completada** ([entrega](phase/P011-T022_TRADUCCION_SERVICIO_INGLES.md), D172): por HITL, los diagnósticos
+visibles por naturaleza de `core/adapters/storage/services` (695 `raise` y ~90 razones/diagnósticos) pasan a 724 claves
+nuevas en/es con el inglés idéntico; 161 textos técnicos ingleses listados con categoría y verificados por test. La UI
+distingue `managed_blocks_generated`/`draft_changed` por código; las métricas agrupan paradas por texto emitido
+(aceptado). QA visual conjunta no autorizada, registrada como no realizada; sin servicios, navegador ni proveedores.
+
 **P010 cerrada y archivada documentalmente el 2026-10-22**
 ([D153](DECISIONS.md#d153--cierre-documental-de-p010-y-de-la-primera-versión-local),
 [resumen](archive/phase-010/SUMMARY.md), [registro de cierre](archive/phase-010/P010_CIERRE.md)).
@@ -206,7 +214,8 @@ P009 conserva su cierre documental (D140) y el Django hijo su P001 CLOSED, cuatr
 tag `p001` sobre `47a0557` y archivo en `3d105c6`. No se repite ninguna operación ni comprobación de su estado.
 Este repositorio sigue sin registrarse ni ejecutarse con el harness; cierre manual sin check READY ni tag propio.
 
-**Siguiente:** P011-T022, catálogo en/es de los textos de servicio ya ingleses, y después QA visual conjunta.
+**Siguiente:** P011-T011, contrato de compatibilidad de CLI por capacidades. La QA visual conjunta T010+T021+T022
+sigue pendiente de autorización propia.
 Otras candidatas permanecen en [ROADMAP](ROADMAP.md#candidatas-sin-fase-asignada).
 Los límites de la base acumulada siguen vigentes. B y D095 mantienen la validación real aplazada por D151;
 A queda retirado del producto por D155/D161, sin acreditarlo como validado con proveedores reales.

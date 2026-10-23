@@ -247,16 +247,19 @@ function LocalChanges({ status, onQueued }: { status: DocsStatus; onQueued: (run
   const { t } = useI18n();
   const { project, busy, operate } = useWorkspace();
   const [review, setReview] = useState<{ body: S["DocumentEditInput"]; preview: Preview }>();
-  const [refused, setRefused] = useState<string>();
+  const [refused, setRefused] = useState<{ text: string; blocks: boolean }>();
   const changes = status.uncommitted ?? [];
   const outside = changes.filter(c => !c.editable);
   async function load(regenerate: boolean) {
     const body: S["DocumentEditInput"] = { source: "worktree", regenerate_blocks: regenerate };
     setRefused(undefined); setReview(undefined);
     try { setReview({ body, preview: await managed<Preview>(`/projects/${project}/documents/edit/preview`, body) }); }
-    catch (e) { if (e instanceof ManagedError && e.status === 409) setRefused(message(e)); else throw e; }
+    catch (e) {
+      if (e instanceof ManagedError && e.status === 409) setRefused({ text: message(e), blocks: e.code === "managed_blocks_generated" });
+      else throw e;
+    }
   }
-  const blockRefusal = refused?.includes("managed blocks are generated");
+  const blockRefusal = refused?.blocks;
   return <section className="decision decision-attention" id="local-changes" aria-labelledby="local-changes-title">
     <h2 id="local-changes-title">{t("docs.local.title")}</h2>
     <ul className="docs-changes">{changes.map(c => <li key={c.path}>
@@ -270,7 +273,7 @@ function LocalChanges({ status, onQueued }: { status: DocsStatus; onQueued: (run
         {blockRefusal && <button type="button" className="button-quiet" disabled={busy} onClick={() => void operate(() => load(true))}>{t("docs.local.regenerate")}</button>}
       </div>
     </>}
-    {refused && <p role="alert" className="state state-error">{blockRefusal ? t("docs.local.block_refusal") : refused}</p>}
+    {refused && <p role="alert" className="state state-error">{blockRefusal ? t("docs.local.block_refusal") : refused.text}</p>}
     {review && <EditReview body={review.body} preview={review.preview} onCancel={() => setReview(undefined)} onQueued={onQueued} />}
   </section>;
 }

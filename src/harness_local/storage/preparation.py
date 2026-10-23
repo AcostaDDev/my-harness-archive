@@ -24,7 +24,7 @@ class PreparationRepository:
     def require(session, operation_id):
         row = session.get(Operation, operation_id)
         if row is None:
-            raise LookupError('Unknown preparation')
+            raise LookupError(tr('preparation.unknown_preparation'))
         return row
 
     def event(self, session, row, kind, payload=None):
@@ -53,7 +53,7 @@ class PreparationRepository:
         lock = session.get(Lock, row.root)
         if (row.status != 'ACTIVE' or row.owner_token != token or row.lease_until <= self.managed._now()
                 or lock is None or lock.preparation_id != operation_id):
-            raise OwnershipLost('Preparation ownership/lease lost; reconcile explicitly')
+            raise OwnershipLost(tr('preparation.preparation_ownership_lease_lost'))
         return row
 
     def recover_expired(self):
@@ -95,13 +95,13 @@ class PreparationRepository:
     @staticmethod
     def stopped(session, row):
         if row.process_owner and not row.owner_closed and liveness(row.process_owner) != 'dead':
-            raise Conflict('Previous preparation owner is alive or uncertain')
+            raise Conflict(tr('preparation.previous_preparation_owner_alive'))
         for process in session.scalars(select(Process).where(Process.preparation_id == row.id)):
             if process.identity is not None:
                 if liveness(process.identity, group=True) != 'dead':
-                    raise Conflict('Previous preparation process group is alive or uncertain')
+                    raise Conflict(tr('preparation.previous_preparation_process_group'))
             elif not row.owner_closed and row.process_owner and liveness(row.process_owner) != 'dead':
-                raise Conflict('Pending spawn requires stopped owner')
+                raise Conflict(tr('managed.pending_spawn_requires_stopped'))
 
     def process_event(self, operation_id, token, command_id, kind, payload):
         with self.managed._write() as session:

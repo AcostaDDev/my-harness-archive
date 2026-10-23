@@ -2,6 +2,7 @@
 
 from dataclasses import asdict, dataclass
 from pathlib import Path, PurePosixPath
+from harness_local.i18n import tr
 
 
 @dataclass(frozen=True)
@@ -13,9 +14,9 @@ class Command:
 
     def __post_init__(self):
         if not self.argv or not all(isinstance(arg, str) and arg for arg in self.argv):
-            raise ValueError("Empty or invalid command argv")
+            raise ValueError(tr('context.empty_invalid_command_argv'))
         if self.timeout_seconds <= 0:
-            raise ValueError("Command timeout must be positive")
+            raise ValueError(tr('context.command_timeout_positive'))
         relative_path(self.cwd)
 
 
@@ -28,7 +29,7 @@ class JUnitDeclaration:
     def __post_init__(self):
         path = relative_path(self.path)
         if path == PurePosixPath('.') or '.git' in path.parts or not self.coverage.strip():
-            raise ValueError('JUnit requires a report file and declared test coverage')
+            raise ValueError(tr('context.junit_requires_report_file'))
 
 
 def relative_path(value: str) -> PurePosixPath:
@@ -59,12 +60,12 @@ class ProjectProfile:
 
     def __post_init__(self):
         if len(self.junit_reports) > 8:
-            raise ValueError('At most eight JUnit reports per profile')
+            raise ValueError(tr('context.most_eight_junit_reports'))
         if len({item.path for item in self.junit_reports}) != len(self.junit_reports):
-            raise ValueError('JUnit report paths must be unique per profile')
+            raise ValueError(tr('context.junit_report_paths_unique'))
         if self.formatter_argv and (self.formatter_argv[-1] != '--' or len(self.formatter_argv) < 2
                                     or not self.formatter_paths):
-            raise ValueError('A formatter needs an argv ending in -- and the paths it formats')
+            raise ValueError(tr('context.formatter_needs_argv_ending'))
 
 
 @dataclass(frozen=True)
@@ -87,16 +88,16 @@ class EnginePolicy:
         if self.max_revision_cycles < 0 or self.planning_mode not in {"auto", "deterministic", "agent"}:
             raise ValueError("Invalid engine policy")
         if not self.executor_models or not self.executor_efforts:
-            raise ValueError("Explicit executor selections required")
+            raise ValueError(tr('context.explicit_executor_selections_required'))
         if not all((self.planner_model, self.planner_effort, self.reviewer_model, self.reviewer_effort)):
-            raise ValueError("Explicit planner/reviewer selections required")
+            raise ValueError(tr('context.explicit_planner_reviewer_selections'))
         if self.executor_mode not in {"catalog", "open"}:
-            raise ValueError("Executor selection mode must be catalog or open")
+            raise ValueError(tr('context.executor_selection_mode_catalog'))
         if self.executor_mode == "open" and not self.executor_effort_vocabulary:
-            raise ValueError("Open executor selection requires the provider effort vocabulary")
+            raise ValueError(tr('context.open_executor_selection_requires'))
         vocabulary = self.executor_effort_vocabulary
         if vocabulary and not set(self.executor_efforts) <= set(vocabulary):
-            raise ValueError("Executor efforts outside the provider vocabulary")
+            raise ValueError(tr('context.executor_efforts_outside_provider'))
 
 
 def policy_payload(policy: EnginePolicy) -> dict:
@@ -126,20 +127,20 @@ class ProjectContext:
     def __post_init__(self):
         object.__setattr__(self, "root", self.root.resolve(strict=True))
         if not self.root.is_dir():
-            raise ValueError("Project root must be a directory")
+            raise ValueError(tr('context.project_root_directory'))
         relative_path(self.next_steps_file)
         relative_path(self.state_file)
         if self.documents not in (None, "v2"):
             raise ValueError("Unknown document layout")
         if self.work_language not in (None, "en", "es"):
-            raise ValueError("Unknown work language")
+            raise ValueError(tr('context.unknown_work_language'))
         if self.documents and (PurePosixPath(self.state_file).parent != PurePosixPath(self.next_steps_file).parent
                                or PurePosixPath(self.state_file).parent == PurePosixPath(".")):
-            raise ValueError("Document layout v2 keeps STATE and NEXT_STEPS in one documentation directory")
+            raise ValueError(tr('context.document_layout_v2_keeps'))
 
     def path(self, relative: str) -> Path:
         candidate = self.root / relative_path(relative)
         # Also rejects inner links even when they point inside the checkout.
         if candidate.resolve() != candidate or not candidate.is_relative_to(self.root):
-            raise ValueError("Checkout path contains a symlink or escapes root")
+            raise ValueError(tr('context.checkout_path_contains_symlink'))
         return candidate

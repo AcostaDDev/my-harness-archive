@@ -21,6 +21,7 @@ from harness_local.storage.managed import Conflict, _job
 from harness_local.storage.models import ManagedRunRow as Run, PhaseOperationRow as Operation, PhaseRow as Phase
 from harness_local.storage.permissions import actor
 from harness_local.storage.phases import PhaseRepository, _event, _latest, _operation, insert_phase
+from harness_local.i18n import tr
 
 
 def snapshot(session, phase) -> dict:
@@ -50,15 +51,15 @@ def reviewed(session, phase, stored) -> bool:
 def _phase(session, context, phase_id, expected=None):
     phase = session.get(Phase, phase_id)
     if phase is None or phase.root != str(context.root):
-        raise LookupError('Unknown phase in this checkout')
+        raise LookupError(tr('export.unknown_phase_checkout'))
     if expected is not None and (type(expected) is not int or phase.version != expected):
-        raise Conflict('Phase changed; reload before the transition')
+        raise Conflict(tr('transition.phase_changed_reload_before'))
     if latest_phase(session, phase.root).id != phase.id:
-        raise Conflict('Only the latest phase of the checkout can be archived')
+        raise Conflict(tr('transition.latest_phase_checkout_archived'))
     if phase.status not in TERMINAL:
-        raise Conflict('Close or abandon the phase before archiving it')
+        raise Conflict(tr('transition.close_abandon_phase_before'))
     if PhaseRepository._root_pending(session, phase.root):
-        raise Conflict('Checkout has unfinished jobs; archive at a stopped boundary')
+        raise Conflict(tr('transition.checkout_has_unfinished_jobs'))
     return phase
 
 
@@ -67,7 +68,7 @@ class TransitionRepository:
         self.managed = managed
 
     def _retired(self):
-        raise Conflict('Separate phase transitions are retired (D088); only a pending intent can resume')
+        raise Conflict(tr('transition.separate_phase_transitions_retired'))
 
     def preview(self, context, phase_id, git, next_steps=None, plan_proposal=None):
         """`plan_proposal` (H6.5): exact reference to a plan proposed in `phase_planning`, instead of the text."""
@@ -80,10 +81,10 @@ class TransitionRepository:
                         'resume_operation_id': stored.id}
             self._retired()
             if unresolved(session, phase.root):
-                raise Conflict('A document intent awaits reconciliation; recover it first')
+                raise Conflict(tr('managed.document_intent_awaits_reconciliation'))
             if plan_proposal is not None:
                 if next_steps is not None:
-                    raise ValueError('Provide either the plan text or a plan proposal, not both')
+                    raise ValueError(tr('transition.provide_either_plan_text'))
                 from harness_local.storage.planning import PlanningRepository
                 next_steps, origin = PlanningRepository(self.managed).plan(session, context, phase.id, plan_proposal)
             state, version = snapshot(session, phase), phase.version
@@ -96,7 +97,7 @@ class TransitionRepository:
     def submit(self, context, phase_id, expected, *, key, versions, preview_sha256, reason, confirmed, git,
                next_steps=None, resume_operation_id=None, plan_proposal=None):
         if confirmed is not True or not isinstance(reason, str) or not reason.strip():
-            raise ValueError('Explicit confirmation of the exact diff and reason required')
+            raise ValueError(tr('export.explicit_confirmation_exact_diff'))
         marker = freeze({'action': 'phase_transition', 'phase_id': phase_id, 'expected_version': expected,
                          'preview_sha256': preview_sha256, 'reason': reason, 'confirmed': confirmed,
                          'resume_operation_id': resume_operation_id,
@@ -114,7 +115,7 @@ class TransitionRepository:
                     return _job(existing)
             raise
         if shown['preview_sha256'] != preview_sha256 or shown['resume_operation_id'] != resume_operation_id:
-            raise Conflict('Preview changed; review the exact diff again')
+            raise Conflict(tr('export.preview_changed_review_exact'))
         assessment = self.managed.guard.assess(context.root)
         with self.managed._write() as session:
             existing = self.managed._existing(session, key, marker)
@@ -122,18 +123,18 @@ class TransitionRepository:
                 return _job(existing)
             phase = _phase(session, context, phase_id, expected)
             if shown['expected_version'] != expected:
-                raise Conflict('Phase changed since preview')
+                raise Conflict(tr('export.phase_changed_since_preview'))
             if resume_operation_id is not None:
                 op = pending(session, phase, 'transition')
                 if op is None or op.id != resume_operation_id:
-                    raise Conflict('Only the exact interrupted transition intent can resume')
+                    raise Conflict(tr('transition.exact_interrupted_transition_intent'))
                 job = _resume_job(self.managed, session, op, context, versions, key, marker, assessment,
                                   'phase_transition')
             else:
                 if unresolved(session, phase.root):
-                    raise Conflict('A document intent awaits reconciliation; recover it first')
+                    raise Conflict(tr('managed.document_intent_awaits_reconciliation'))
                 if snapshot(session, phase) != shown['snapshot']:
-                    raise Conflict('SQLite authority changed after preview')
+                    raise Conflict(tr('export.sqlite_authority_changed_after_2'))
                 job = self.managed._queue_new_run(session, assessment, context, versions, f'{phase.code}-TRANSITION',
                                                   phase.code, key, marker, purpose='phase_transition')
                 saved = {k: v for k, v in shown.items() if k not in ('expected_version', 'resume_operation_id')}
@@ -156,7 +157,7 @@ class TransitionRepository:
             if op.kind != 'transition' or op.status != 'QUEUED':
                 raise Conflict('Transition requires its queued operation')
             if not op.request.get('commit_intent') and not reviewed(session, phase, op.request['preview']['snapshot']):
-                raise Conflict('SQLite authority changed after the transition was reviewed')
+                raise Conflict(tr('transition.sqlite_authority_changed_after'))
             return {**op.request, 'operation_id': op.id}
 
 
@@ -179,9 +180,9 @@ def settle(managed, session, run, outcome):
         following = shown['next']
         if following is not None:
             if session.scalar(select(Phase.id).where(Phase.root == phase.root, Phase.code == following['code'])):
-                raise Conflict(f"Phase {following['code']} already exists; recover manually with the recorded evidence")
+                raise Conflict(tr('transition.phase_already_exists_recover', code=following['code']))
             if session.scalar(select(Phase.id).where(Phase.root == phase.root, Phase.status.notin_(TERMINAL))):
-                raise Conflict('Another phase is open; recover manually with the recorded evidence')
+                raise Conflict(tr('transition.another_phase_open_recover'))
             documents = document_hashes(context, following['documents'])
             outcome = {**outcome, 'next_phase_id': insert_phase(
                 managed, session, phase.root, following, documents,

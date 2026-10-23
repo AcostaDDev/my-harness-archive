@@ -31,6 +31,7 @@ from harness_local.storage.models import (
     PhaseQuestionRow as Question, PhaseRow as Phase,
 )
 from harness_local.storage.permissions import actor
+from harness_local.i18n import tr
 
 PENDING = ('QUEUED', 'ACTIVE', 'RECOVERY_REQUIRED')
 CHECKABLE = ('ACTIVE', 'NEEDS_RECONCILIATION', 'READY_TO_CLOSE', 'BLOCKED')
@@ -94,7 +95,7 @@ def authority(session, phase):
 
 
 def stale_reasons(parts, bound):
-    return [f'{key} changed since READY' for key in sorted(parts) if parts[key] != bound.get(key)]
+    return [tr('phases.part_changed_ready', part=key) for key in sorted(parts) if parts[key] != bound.get(key)]
 
 
 def _latest(session, phase_id, kind):
@@ -259,8 +260,8 @@ def settle(managed, session, run, outcome):
         outcome = dict(outcome)
         if outcome['verdict'] == 'READY' and stale_reasons(parts, outcome['binding']):
             outcome.update(verdict='NOT_READY', binding=None, binding_sha256=None,
-                           reasons=['Phase authority changed during the check: '
-                                    + ', '.join(stale_reasons(parts, outcome['binding']))])
+                           reasons=[tr('phases.authority_changed_check',
+                                       reasons=', '.join(stale_reasons(parts, outcome['binding'])))])
         attempt = load_history(run.history_json).attempts
         for text in outcome['questions']:
             session.add(Question(id=str(uuid4()), phase_id=phase.id, text=text.strip(), status='OPEN', answer=None,
@@ -281,10 +282,10 @@ def settle(managed, session, run, outcome):
         # Questions and commits are excluded during CLOSING; a change here requires manual recovery.
         changed = stale_reasons(parts, op.request['binding'])
         if changed or (outcome['status'] == 'CLOSED' and _open(rows)):
-            raise Conflict('Phase authority changed during close; recover manually with the recorded evidence')
+            raise Conflict(tr('phases.phase_authority_changed_during'))
         auth = session.get(Authorization, op.request['authorization_id'])
         auth.status, auth.version = 'CONSUMED', auth.version + 1
-        auth.closed = {'at': now, 'operation_id': op.id, 'reason': 'Phase closed'}
+        auth.closed = {'at': now, 'operation_id': op.id, 'reason': tr('phases.closed_reason')}
         terminal = outcome['status']
         if op.request.get('preview'):
             from harness_local.storage.closure import adopt
@@ -296,7 +297,7 @@ def settle(managed, session, run, outcome):
                'tag': outcome['tag'], 'binding_sha256': outcome['binding_sha256'],
                **({'archive': outcome['archive'], 'commit': outcome['commit']} if outcome.get('archive') else {})})
     elif outcome['status'] == 'STALE':
-        _invalidate(managed, session, phase, op, 'INVALIDATED', 'READY evidence is stale')
+        _invalidate(managed, session, phase, op, 'INVALIDATED', tr('phases.ready_evidence_stale'))
         op.status, phase.status = 'STALE', 'NEEDS_RECONCILIATION'
         _event(managed, session, phase, 'ready_invalidated', {'operation_id': op.id, 'reasons': outcome['reasons']})
     else:
@@ -315,7 +316,8 @@ def abort(managed, session, run, status, reason):
     op.result = {'reason': reason, **({'tag_effect': 'uncertain', 'tag_intent': intent} if intent else {})}
     op.status, op.finished_at = status, managed._now()
     if op.kind == 'close':
-        _invalidate(managed, session, phase, op, 'INVALIDATED', f'Close {status.lower()}: {reason}')
+        _invalidate(managed, session, phase, op, 'INVALIDATED',
+                    tr('phases.close_ended', status=status.lower(), reason=reason))
     phase.status = 'BLOCKED' if _open(_questions(session, phase.id)) else op.previous_status
     _event(managed, session, phase, 'phase_operation_aborted', {
         'operation_id': op.id, 'kind': op.kind, 'status': status, 'reason': reason, 'tag_intent': intent})
@@ -359,14 +361,14 @@ class PhaseRepository:
     def _phase(self, session, phase_id, expected, context=None, *, resume_close=False):
         phase = session.get(Phase, phase_id)
         if phase is None:
-            raise LookupError('Unknown managed phase')
+            raise LookupError(tr('phases.unknown_managed_phase'))
         if context is not None and str(context.root) != phase.root:
-            raise LookupError('Phase belongs to another checkout')
+            raise LookupError(tr('phases.phase_belongs_another_checkout'))
         if type(expected) is not int or phase.version != expected:
-            raise Conflict('Phase changed; reload before acting')
+            raise Conflict(tr('phases.phase_changed_reload_before'))
         from harness_local.storage.documents import unresolved
         if unresolved(session, phase.root) and not resume_close:
-            raise Conflict('A document intent awaits reconciliation; recover it first')
+            raise Conflict(tr('managed.document_intent_awaits_reconciliation'))
         return phase
 
     @staticmethod
@@ -392,14 +394,14 @@ class PhaseRepository:
         with Session(self.managed.engine) as session:
             phase_id = session.scalar(select(Phase.id).where(Phase.root == root, Phase.code == code))
         if phase_id is None:
-            raise LookupError('Unknown managed phase')
+            raise LookupError(tr('phases.unknown_managed_phase'))
         return phase_id
 
     def definition(self, phase_id):
         with Session(self.managed.engine) as session:
             phase = session.get(Phase, phase_id)
             if phase is None:
-                raise LookupError('Unknown managed phase')
+                raise LookupError(tr('phases.unknown_managed_phase'))
             return phase.root, phase.definition
 
     def closure_files(self, phase_id):
@@ -407,7 +409,7 @@ class PhaseRepository:
         with Session(self.managed.engine) as session:
             phase = session.get(Phase, phase_id)
             if phase is None:
-                raise LookupError('Unknown managed phase')
+                raise LookupError(tr('phases.unknown_managed_phase'))
             return sorted(closure_files(session, phase))
 
     def get(self, phase_id, current_documents=None, archive_documents=None):
@@ -417,7 +419,7 @@ class PhaseRepository:
         with Session(self.managed.engine) as session:
             phase = session.get(Phase, phase_id)
             if phase is None:
-                raise LookupError('Unknown managed phase')
+                raise LookupError(tr('phases.unknown_managed_phase'))
             parts, rows = authority(session, phase)
             open_questions = _open(rows)
             auths = session.scalars(select(Authorization).where(Authorization.phase_id == phase.id)
@@ -442,7 +444,7 @@ class PhaseRepository:
             if current_documents is not None:
                 drift = sorted(path for path, value in current_documents.items() if phase.documents.get(path) != value)
                 if ready_view is not None and current_documents != ready.result['binding']['documents']:
-                    ready_view['stale_reasons'].append('documents changed since READY')
+                    ready_view['stale_reasons'].append(tr('phases.documents_changed_ready_view'))
             pending = self._root_pending(session, phase.root)
             active_batch = [a for a in auth_views if a['kind'] == 'batch' and a['effective_status'] == 'ACTIVE']
             reconcile_task = _open_reconcile_task(session, phase)
@@ -491,10 +493,10 @@ class PhaseRepository:
 
     def events(self, phase_id, after=0, limit=100):
         if type(after) is not int or after < 0 or type(limit) is not int or not 1 <= limit <= 1000:
-            raise ValueError('Invalid phase event page')
+            raise ValueError(tr('phases.invalid_phase_event_page'))
         with Session(self.managed.engine) as session:
             if session.get(Phase, phase_id) is None:
-                raise LookupError('Unknown managed phase')
+                raise LookupError(tr('phases.unknown_managed_phase'))
             rows = session.scalars(select(PhaseEvent).where(PhaseEvent.phase_id == phase_id, PhaseEvent.sequence > after)
                                    .order_by(PhaseEvent.sequence).limit(limit + 1)).all()
             items = [{'id': r.id, 'sequence': r.sequence, 'kind': r.kind, 'recorded_at': r.recorded_at,
@@ -550,29 +552,29 @@ class PhaseRepository:
             from harness_local.storage.project_import import unresolved as import_unresolved
             if (self._root_pending(session, root) or unresolved(session, root)
                     or bootstrap_unresolved(session, root) or import_unresolved(session, root)):
-                raise Conflict('Checkout has unfinished work; finish or reconcile it before creating a phase')
+                raise Conflict(tr('phases.checkout_has_unfinished_work'))
             if session.scalar(select(Phase.id).where(Phase.root == root, Phase.code == definition['code'])):
-                raise Conflict('Phase code already exists in this checkout')
+                raise Conflict(tr('phases.phase_code_already_exists'))
             if session.scalar(select(Phase.id).where(Phase.root == root, Phase.status.notin_(TERMINAL))):
-                raise Conflict('Close or abandon the open phase of this checkout before creating another')
+                raise Conflict(tr('phases.close_abandon_open_phase'))
             return insert_phase(self.managed, session, root, definition, documents)
 
     def reconcile(self, context, phase_id, expected, *, documents_sha256, reason):
         """Explicit adoption of changed documents (proposal by hash), never a silent merge."""
         if not isinstance(reason, str) or not reason.strip():
-            raise ValueError('Explicit reconciliation reason required')
+            raise ValueError(tr('phases.explicit_reconciliation_reason_required'))
         root, definition = self.definition(phase_id)
         if root != str(context.root):
-            raise LookupError('Phase belongs to another checkout')
+            raise LookupError(tr('phases.phase_belongs_another_checkout'))
         current = document_hashes(context, definition['documents'])
         if digest(current) != documents_sha256:
-            raise Conflict('Documents changed since they were reviewed; reload before reconciling')
+            raise Conflict(tr('phases.documents_changed_since_they'))
         with self.managed._write() as session:
             phase = self._phase(session, phase_id, expected, context)
             if phase.status not in RECONCILABLE:
-                raise Conflict('Reconciliation requires a phase without operations in progress')
+                raise Conflict(tr('phases.reconciliation_requires_phase_without'))
             if self._root_pending(session, phase.root):
-                raise Conflict('Checkout has unfinished jobs; reconcile at a stopped boundary')
+                raise Conflict(tr('phases.checkout_has_unfinished_jobs'))
             before = phase.documents
             now = self.managed._now()
             source = None
@@ -582,7 +584,7 @@ class PhaseRepository:
                 commit = session.scalar(select(Commit).where(Commit.run_id == task_op.run_id,
                                                              Commit.status == 'COMMITTED'))
                 if commit is None:
-                    raise Conflict('The reconciliation task must be reviewed and committed before adopting documents')
+                    raise Conflict(tr('phases.reconciliation_task_reviewed_committed'))
                 source = {'operation_id': task_op.id, 'run_id': task_op.run_id, 'commit': commit.commit_sha}
             op = Operation(id=str(uuid4()), phase_id=phase.id, kind='reconcile', run_id=None, status='RECORDED',
                            previous_status=phase.status, created_at=now, finished_at=now,
@@ -603,11 +605,11 @@ class PhaseRepository:
 
     def raise_question(self, phase_id, expected, *, text):
         if not isinstance(text, str) or not text.strip():
-            raise ValueError('Explicit question text required')
+            raise ValueError(tr('phases.explicit_question_text_required'))
         with self.managed._write() as session:
             phase = self._phase(session, phase_id, expected)
             if phase.status in ('CLOSED', 'CLOSING', 'ABANDONED'):
-                raise Conflict('A closed, closing or abandoned phase does not accept new questions')
+                raise Conflict(tr('phases.closed_closing_abandoned_phase'))
             row = Question(id=str(uuid4()), phase_id=phase.id, text=text.strip(), status='OPEN', answer=None,
                            version=1, created_at=self.managed._now(), source={'kind': 'human', 'actor': actor()})
             session.add(row)
@@ -617,16 +619,16 @@ class PhaseRepository:
 
     def answer(self, phase_id, question_id, expected, *, expected_question_version, answer):
         if not isinstance(answer, str) or not answer.strip():
-            raise ValueError('Explicit answer required')
+            raise ValueError(tr('phases.explicit_answer_required'))
         with self.managed._write() as session:
             phase = self._phase(session, phase_id, expected)
             row = session.get(Question, question_id)
             if row is None or row.phase_id != phase.id:
-                raise LookupError('Unknown phase question')
+                raise LookupError(tr('phases.unknown_phase_question'))
             if phase.status in ('CLOSED', 'CLOSING', 'ABANDONED'):
-                raise Conflict('A closed, closing or abandoned phase does not change its questions')
+                raise Conflict(tr('phases.closed_closing_abandoned_phase_2'))
             if row.status != 'OPEN' or row.version != expected_question_version:
-                raise Conflict('Question changed or was already answered')
+                raise Conflict(tr('phases.question_changed_already_answered'))
             row.status, row.version = 'ANSWERED', row.version + 1
             row.answer = {'text': answer.strip(), 'actor': actor(), 'answered_at': self.managed._now()}
             session.flush()
@@ -645,9 +647,9 @@ class PhaseRepository:
                 return _job(existing)
             phase = self._phase(session, phase_id, expected, context)
             if phase.status not in CHECKABLE:
-                raise Conflict('Phase check requires a phase without operations in progress')
+                raise Conflict(tr('phases.phase_check_requires_phase'))
             if _open(_questions(session, phase.id)):
-                raise Conflict('Pending blocking questions must be answered before checking the phase')
+                raise Conflict(tr('phases.pending_blocking_questions_answered'))
             job = self.managed._queue_new_run(session, assessment, context, versions, f'{phase.code}-CHECK',
                                               phase.code, key, request, purpose='phase_check')
             op = Operation(id=str(uuid4()), phase_id=phase.id, kind='check', run_id=job.run_id, status='QUEUED',
@@ -665,13 +667,13 @@ class PhaseRepository:
 
         `tag_kind` is fixed by the project on the server (H3.4) and stays frozen in the authorization."""
         if not isinstance(reason, str) or not reason.strip():
-            raise ValueError('Explicit close reason required')
+            raise ValueError(tr('phases.explicit_close_reason_required'))
         if tag_kind not in TAG_KINDS:
-            raise ValueError('Unknown tag kind')
+            raise ValueError(tr('phases.unknown_tag_kind'))
         if terminal not in TERMINAL:
-            raise ValueError('Closure must be CLOSED or ABANDONED')
+            raise ValueError(tr('phases.closure_closed_abandoned'))
         if type(ttl_seconds) is not int or not 1 <= ttl_seconds <= 86400:
-            raise ValueError('Validity must be between 1 second and 24 hours')
+            raise ValueError(tr('phases.validity_between_1_second'))
         request = freeze({'action': 'phase_close', 'phase_id': phase_id, 'expected_version': expected,
                           'binding_sha256': binding_sha256, 'reason': reason, 'ttl_seconds': ttl_seconds,
                           **({'terminal': terminal} if terminal != 'CLOSED' else {})})
@@ -687,11 +689,11 @@ class PhaseRepository:
             frozen = None
             if interrupted is None:
                 if terminal == 'CLOSED' and (phase.status != 'READY_TO_CLOSE' or _ready(session, phase) is None):
-                    raise Conflict('Only a READY_TO_CLOSE phase with a current READY check can be closed')
+                    raise Conflict(tr('phases.ready_close_phase_current'))
                 if terminal == 'ABANDONED' and phase.status not in AMENDABLE:
-                    raise Conflict('Only a phase without operations in progress that is not closed can be abandoned')
+                    raise Conflict(tr('phases.phase_without_operations_progress'))
                 if self._closure_pending(session, phase.root) or unresolved(session, phase.root):
-                    raise Conflict('Checkout has unfinished work; finish or reconcile it before closing')
+                    raise Conflict(tr('phases.checkout_has_unfinished_work_2'))
                 frozen = archive_snapshot(session, phase)
                 frozen['phase'] = {**frozen['phase'], 'status': terminal}
                 frozen['summary']['phase'] = {**frozen['summary']['phase'], 'status': terminal}
@@ -706,9 +708,9 @@ class PhaseRepository:
             if interrupted is not None:
                 if (interrupted.request.get('terminal', 'CLOSED') != terminal
                         or (terminal == 'CLOSED' and interrupted.request['binding_sha256'] != binding_sha256)):
-                    raise Conflict('Resume requires the original READY binding')
+                    raise Conflict(tr('phases.resume_requires_original_ready'))
                 if self._root_pending(session, phase.root):
-                    raise Conflict('Checkout has unfinished jobs; recover at a stopped boundary')
+                    raise Conflict(tr('phases.checkout_has_unfinished_jobs_4'))
                 job = _resume_job(self.managed, session, interrupted, context, versions, key, request, assessment,
                                   'phase_close')
                 phase.status = 'CLOSING'
@@ -716,19 +718,19 @@ class PhaseRepository:
                 return job
             ready = _ready(session, phase)
             if terminal == 'ABANDONED' and phase.status not in AMENDABLE:
-                raise Conflict('Only a phase without operations in progress that is not closed can be abandoned')
+                raise Conflict(tr('phases.phase_without_operations_progress'))
             if terminal == 'CLOSED' and (phase.status != 'READY_TO_CLOSE' or ready is None):
-                raise Conflict('Only a READY_TO_CLOSE phase with a current READY check can be closed')
+                raise Conflict(tr('phases.ready_close_phase_current'))
             if terminal == 'CLOSED' and ready.result['binding_sha256'] != binding_sha256:
-                raise Conflict('Close authorization must name the current READY evidence')
+                raise Conflict(tr('phases.close_authorization_name_current'))
             parts, rows = authority(session, phase)
             if terminal == 'CLOSED' and _open(rows):
-                raise Conflict('Pending blocking questions prevent closing the phase')
+                raise Conflict(tr('phases.pending_blocking_questions_prevent'))
             if session.scalar(select(Commit.operation_id).join(Run, Run.id == Commit.run_id).where(
                     Run.root == phase.root, Commit.status == 'INTENT')) is not None:
-                raise Conflict('A commit operation of this checkout awaits reconciliation; reconcile it first')
+                raise Conflict(tr('phases.commit_operation_checkout_awaits'))
             if self._closure_pending(session, phase.root) or unresolved(session, phase.root):
-                raise Conflict('Checkout has unfinished work; finish or reconcile it before closing')
+                raise Conflict(tr('phases.checkout_has_unfinished_work_2'))
             if terminal == 'ABANDONED':
                 bound = {**parts, 'head': shown['head'], 'fingerprint': shown['fingerprint'],
                          'documents': phase.documents}
@@ -736,12 +738,12 @@ class PhaseRepository:
                 ready = SimpleNamespace(id=None, result={'binding': bound, 'binding_sha256': binding_sha256})
             stale = stale_reasons(parts, ready.result['binding'])
             if terminal == 'CLOSED' and shown is not None:
-                stale += [f'{name} changed since READY' for name in ('head', 'fingerprint')
+                stale += [tr('phases.part_changed_ready', part=name) for name in ('head', 'fingerprint')
                           if shown[name] != ready.result['binding'][name]]
             if stale:
-                raise Conflict('READY review is stale: ' + ', '.join(stale) + '; check the phase again')
+                raise Conflict(tr('phases.ready_review_stale', reasons=', '.join(stale)))
             if terminal == 'ABANDONED':
-                _invalidate_batches(self.managed, session, phase, 'Phase abandoned')
+                _invalidate_batches(self.managed, session, phase, tr('phases.abandoned_reason'))
             now = self.managed._now()
             expires = (datetime.fromisoformat(now) + timedelta(seconds=ttl_seconds)).isoformat(timespec='microseconds')
             scope = {'check_operation_id': ready.id, 'binding_sha256': binding_sha256, 'tag': phase.definition['tag'],
@@ -772,30 +774,30 @@ class PhaseRepository:
         """`chain_commits` (H3.4, D033): explicit scope «chain tasks and confirm commits», with frozen plan
         text, context and versions; without it, a manual H3.3 batch that only queues via `batch_next`."""
         if not isinstance(reason, str) or not reason.strip():
-            raise ValueError('Explicit batch reason required')
+            raise ValueError(tr('phases.explicit_batch_reason_required'))
         if type(chain_commits) is not bool:
-            raise ValueError('Explicit boolean chain_commits required')
+            raise ValueError(tr('phases.explicit_boolean_chain_commits'))
         if chain_commits and (not isinstance(text, str) or not text.strip() or context is None
                               or not isinstance(versions, dict)):
-            raise ValueError('An unattended batch freezes its plan text, context and versions')
+            raise ValueError(tr('phases.unattended_batch_freezes_plan'))
         if not chain_commits and text is not None:
-            raise ValueError('Only an unattended batch freezes a plan text')
+            raise ValueError(tr('phases.unattended_batch_freezes_plan_2'))
         if type(ttl_seconds) is not int or not 1 <= ttl_seconds <= 86400:
-            raise ValueError('Validity must be between 1 second and 24 hours')
+            raise ValueError(tr('phases.validity_between_1_second'))
         if (not isinstance(tasks, list) or not tasks or len(set(tasks)) != len(tasks)
                 or not all(isinstance(t, str) for t in tasks)):
-            raise ValueError('Explicit, distinct batch tasks required')
+            raise ValueError(tr('phases.explicit_distinct_batch_tasks'))
         with self.managed._write() as session:
             phase = self._phase(session, phase_id, expected, context)
             if not set(tasks) <= set(phase.definition['tasks']):
-                raise ValueError('Batch tasks must belong to the frozen phase definition')
+                raise ValueError(tr('phases.batch_tasks_belong_frozen'))
             if phase.status != 'ACTIVE' or _open(_questions(session, phase.id)):
-                raise Conflict('Batch authorization requires an ACTIVE phase without pending questions')
+                raise Conflict(tr('phases.batch_authorization_requires_active'))
             now = self.managed._now()
             live = session.scalars(select(Authorization).where(Authorization.phase_id == phase.id,
                                    Authorization.kind == 'batch', Authorization.status == 'ACTIVE')).all()
             if any(row.expires_at > now for row in live):
-                raise Conflict('Revoke the active batch authorization before replacing it')
+                raise Conflict(tr('phases.revoke_active_batch_authorization'))
             expires = (datetime.fromisoformat(now) + timedelta(seconds=ttl_seconds)).isoformat(timespec='microseconds')
             scope = {'tasks': tasks}
             if chain_commits:
@@ -812,14 +814,14 @@ class PhaseRepository:
 
     def revoke(self, phase_id, authorization_id, expected, *, reason):
         if not isinstance(reason, str) or not reason.strip():
-            raise ValueError('Explicit revocation reason required')
+            raise ValueError(tr('phases.explicit_revocation_reason_required'))
         with self.managed._write() as session:
             phase = self._phase(session, phase_id, expected)
             row = session.get(Authorization, authorization_id)
             if row is None or row.phase_id != phase.id:
-                raise LookupError('Unknown phase authorization')
+                raise LookupError(tr('phases.unknown_phase_authorization'))
             if row.kind != 'batch' or row.status != 'ACTIVE':
-                raise Conflict('Only an active batch authorization can be revoked; close runs as its own job')
+                raise Conflict(tr('phases.active_batch_authorization_revoked'))
             row.status, row.version = 'REVOKED', row.version + 1
             row.closed = {'at': self.managed._now(), 'actor': actor(), 'reason': reason.strip()}
             _event(self.managed, session, phase, 'batch_revoked', authorization_view(row, self.managed._now()))
@@ -827,7 +829,7 @@ class PhaseRepository:
     def batch_next(self, context, phase_id, expected, *, key, versions, authorization_id, text):
         """Queues the next authorized task; does not check or close the phase and does not confirm commits."""
         if not isinstance(text, str) or not text.strip():
-            raise ValueError('Explicit plan text required')
+            raise ValueError(tr('phases.explicit_plan_text_required'))
         assessment = self.managed.guard.assess(context.root)
         with self.managed._write() as session:
             prior = session.scalar(select(Job).where(Job.idempotency_key == key))
@@ -837,20 +839,20 @@ class PhaseRepository:
                 stored = json.loads(prior.request_json)
                 if (phase is None or run.root != phase.root or run.phase_id != phase.code
                         or stored.get('text') != text or stored.get('versions_json') != freeze(versions)):
-                    raise Conflict('Idempotency key already names a different action')
+                    raise Conflict(tr('managed.idempotency_key_already_names_2'))
                 return _job(prior)
             phase = self._phase(session, phase_id, expected, context)
             auth = session.get(Authorization, authorization_id)
             now = self.managed._now()
             if (auth is None or auth.phase_id != phase.id or auth.kind != 'batch' or auth.status != 'ACTIVE'
                     or auth.expires_at <= now):
-                raise Conflict('A current batch authorization of this phase is required')
+                raise Conflict(tr('phases.current_batch_authorization_phase'))
             if auth.scope.get('chain_commits'):
-                raise Conflict('An unattended batch is advanced by the supervisor, not by hand')
+                raise Conflict(tr('phases.unattended_batch_advanced_supervisor'))
             if phase.status != 'ACTIVE' or _open(_questions(session, phase.id)):
-                raise Conflict('The batch only advances an ACTIVE phase without pending questions')
+                raise Conflict(tr('phases.batch_advances_active_phase'))
             if self._root_pending(session, phase.root):
-                raise Conflict('Checkout has unfinished jobs; the batch advances one task at a time')
+                raise Conflict(tr('phases.checkout_has_unfinished_jobs_2'))
             done = committed_tasks(session, phase)
             task = None
             for candidate in auth.scope['tasks']:
@@ -858,11 +860,11 @@ class PhaseRepository:
                     continue
                 if session.scalar(select(Run.id).where(Run.root == phase.root, Run.phase_id == phase.code,
                                                        Run.task_id == candidate, Run.purpose == 'task')):
-                    raise Conflict(f'Task {candidate} has a run without committed acceptance; resolve it explicitly')
+                    raise Conflict(tr('phases.task_has_run_without', candidate=candidate))
                 task = candidate
                 break
             if task is None:
-                raise Conflict('Every authorized task already has a committed acceptance')
+                raise Conflict(tr('phases.every_authorized_task_already'))
             request = freeze({'action': 'start', 'context_json': context_snapshot(context),
                               'versions_json': freeze(versions), 'task_id': task, 'phase_id': phase.code, 'text': text})
             job = self.managed._queue_new_run(session, assessment, context, versions, task, phase.code, key, request)
@@ -878,23 +880,23 @@ class PhaseRepository:
         The code does not change (it identifies the runs). New documents are adopted with their current hash,
         recorded in the amendment audit; existing ones keep their adopted base."""
         if not isinstance(reason, str) or not reason.strip():
-            raise ValueError('Explicit amendment reason required')
+            raise ValueError(tr('phases.explicit_amendment_reason_required'))
         root, current = self.definition(phase_id)
         if root != str(context.root):
-            raise LookupError('Phase belongs to another checkout')
+            raise LookupError(tr('phases.phase_belongs_another_checkout'))
         if not isinstance(data, dict) or 'code' in data:
-            raise ValueError('An amendment keeps the phase code; send the other definition fields')
+            raise ValueError(tr('phases.amendment_keeps_phase_code'))
         definition = phase_definition(context, {**data, 'code': current['code']})
         observed = document_hashes(context, definition['documents'])
         sha = digest(definition)
         with self.managed._write() as session:
             phase = self._phase(session, phase_id, expected, context)
             if phase.status not in AMENDABLE:
-                raise Conflict('Amendment requires a phase without operations in progress that is not closed')
+                raise Conflict(tr('phases.amendment_requires_phase_without'))
             if self._root_pending(session, phase.root):
-                raise Conflict('Checkout has unfinished jobs; amend at a stopped boundary')
+                raise Conflict(tr('phases.checkout_has_unfinished_jobs_3'))
             if sha == phase.definition_sha256:
-                raise Conflict('The amendment does not change the definition')
+                raise Conflict(tr('phases.amendment_does_not_change'))
             now = self.managed._now()
             added = [path for path in definition['documents'] if path not in phase.documents]
             documents = {path: phase.documents[path] if path in phase.documents else observed[path]
@@ -903,7 +905,7 @@ class PhaseRepository:
             session.add(Definition(id=str(uuid4()), phase_id=phase.id, number=number, definition=definition,
                                    definition_sha256=sha, documents=documents, origin='amended',
                                    reason=reason.strip(), actor=actor(), created_at=now))
-            invalidated = _invalidate_batches(self.managed, session, phase, f'Phase definition amended to version {number}')
+            invalidated = _invalidate_batches(self.managed, session, phase, tr('phases.amended_reason', number=number))
             op = Operation(id=str(uuid4()), phase_id=phase.id, kind='amend', run_id=None, status='RECORDED',
                            previous_status=phase.status, created_at=now, finished_at=now,
                            request={'actor': actor(), 'reason': reason.strip(), 'definition_sha256': sha,
@@ -941,15 +943,15 @@ class PhaseRepository:
             prior = session.scalar(select(Job).where(Job.idempotency_key == key))
             if prior is not None:
                 if json.loads(prior.request_json).get('phase_operation') != marker:
-                    raise Conflict('Idempotency key already names a different action')
+                    raise Conflict(tr('managed.idempotency_key_already_names_2'))
                 return _job(prior)
             phase = self._phase(session, phase_id, expected, context)
             if phase.status not in RECONCILABLE:
-                raise Conflict('Reconciliation requires a phase without operations in progress')
+                raise Conflict(tr('phases.reconciliation_requires_phase_without'))
             if self._root_pending(session, phase.root):
-                raise Conflict('Checkout has unfinished jobs; reconcile at a stopped boundary')
+                raise Conflict(tr('phases.checkout_has_unfinished_jobs'))
             if _open_reconcile_task(session, phase) is not None:
-                raise Conflict('A reconciliation task of this phase is in progress or awaits commit/adoption')
+                raise Conflict(tr('phases.reconciliation_task_phase_progress'))
             documents = phase.definition['documents']
             protected = context.profile.protected_paths
             number = 1 + len(session.scalars(select(Operation.id).where(
@@ -963,7 +965,7 @@ class PhaseRepository:
                                              + [f'{folder}/**' for folder in target.folders]))
             # P008-T003: in v2 the harness documents are governed by the documentary contract, not the profile.
             if any(executor_protected(context, task_id, path) for path in allowed):
-                raise Conflict('A phase document is protected by the profile; reconcile it by hand')
+                raise Conflict(tr('phases.phase_document_protected_profile'))
             tasks = committed_tasks(session, phase)
             check = _latest(session, phase.id, 'check')
             evidence = {'phase': phase.definition, 'definition_sha256': phase.definition_sha256,
@@ -1048,17 +1050,17 @@ def _batch_step(managed, session, auth_id, context, assessment):
     def stop(status, reason):
         _batch_stop(managed, session, phase, auth, status, reason)
     if auth.expires_at <= managed._now():
-        return stop('EXPIRED', 'Batch authorization expired; nothing further is queued')
+        return stop('EXPIRED', tr('phases.batch_authorization_expired_nothing'))
     if phase.definition_sha256 != scope['definition_sha256']:
-        return stop('INVALIDATED', 'Phase definition changed since the batch was authorized')
+        return stop('INVALIDATED', tr('phases.phase_definition_changed_since'))
     if _open(_questions(session, phase.id)):
-        return stop('STOPPED', 'Pending blocking questions')
+        return stop('STOPPED', tr('phases.pending_blocking_questions'))
     if phase.status != 'ACTIVE':
-        return stop('STOPPED', f'Phase is {phase.status}; the batch never checks or closes it')
+        return stop('STOPPED', tr('phases.phase_batch_never_checks', status=phase.status))
     states = session.scalars(select(Job.status).join(Run, Run.id == Job.run_id).where(
         Run.root == phase.root, Job.status.in_(PENDING))).all()
     if 'RECOVERY_REQUIRED' in states:
-        return stop('STOPPED', 'A job of this checkout requires explicit recovery; uncertain effects are not repeated')
+        return stop('STOPPED', tr('phases.job_checkout_requires_explicit'))
     if states:
         return  # one writing action at a time: wait for it to finish
     done = committed_tasks(session, phase)
@@ -1070,7 +1072,7 @@ def _batch_step(managed, session, auth_id, context, assessment):
         if start is None:
             if session.scalar(select(Run.id).where(Run.root == phase.root, Run.phase_id == phase.code,
                                                    Run.task_id == task, Run.purpose == 'task')):
-                return stop('STOPPED', f'Task {task} has a run outside this batch without committed acceptance')
+                return stop('STOPPED', tr('phases.task_has_run_outside', task=task))
             request = freeze({'action': 'start', 'context_json': scope['context_json'],
                               'versions_json': scope['versions_json'], 'task_id': task, 'phase_id': phase.code,
                               'text': scope['text']})
@@ -1092,11 +1094,11 @@ def _batch_step(managed, session, auth_id, context, assessment):
                     'authorization_id': auth.id, 'task_id': task, 'run_id': run.id, 'job_id': job.id})
                 return
             detail = history.stop.reason if history.stop else history.status
-            return stop('STOPPED', f'Task {task} stopped without an eligible acceptance ({run.status}): {detail}')
-        return stop('STOPPED', f'The commit of task {task} did not complete ({run.status}); '
-                               'evidence invalidated or uncertain, reconcile it explicitly')
+            return stop('STOPPED', tr('phases.task_stopped_without_eligible', task=task, status=run.status,
+                                      detail=detail))
+        return stop('STOPPED', tr('phases.commit_task_did_not', task=task, status=run.status))
     auth.status, auth.version = 'COMPLETED', auth.version + 1
-    auth.closed = {'at': managed._now(), 'reason': 'Every authorized task has a committed acceptance',
+    auth.closed = {'at': managed._now(), 'reason': tr('phases.batch_completed_reason'),
                    'by': 'batch_driver'}
     _event(managed, session, phase, 'batch_completed', {'authorization_id': auth.id})
 

@@ -40,6 +40,7 @@ from harness_local.storage.permissions import actor
 from harness_local.storage.phases import (
     PhaseRepository, _event, _latest, _open, _operation, _questions, expected_documents,
 )
+from harness_local.i18n import tr
 
 DOCUMENT_KINDS = ('document_export', 'transition', 'document_edit', 'close')
 
@@ -209,7 +210,7 @@ def observed_documents(run, shown):
     context = restore_context(run.context_json)
     expected = {doc['path']: doc['after_sha256'] for doc in shown['documents']}
     if document_hashes(context, list(expected)) != expected:
-        raise Conflict('Documents changed after the commit; recover with the recorded intent before adoption')
+        raise Conflict(tr('documents.documents_changed_after_commit'))
     return context
 
 
@@ -289,17 +290,17 @@ def _edit_phase(session, context, *, resume=False):
     root = str(context.root)
     phase = latest_phase(session, root)
     if phase is None:
-        raise Conflict('Create or bootstrap a phase before editing documents through the harness')
+        raise Conflict(tr('documents.create_bootstrap_phase_before'))
     if PhaseRepository._root_pending(session, root) or phase.status in ('CHECKING', 'CLOSING'):
-        raise Conflict('Checkout has unfinished work; edit documents at a stopped boundary')
+        raise Conflict(tr('documents.checkout_has_unfinished_work'))
     if not resume and unresolved(session, root):
-        raise Conflict('A document intent awaits reconciliation; recover it first')
+        raise Conflict(tr('managed.document_intent_awaits_reconciliation'))
     from harness_local.storage.bootstrap import unresolved as bootstrap_unresolved
     if bootstrap_unresolved(session, root):
-        raise Conflict('Bootstrap awaits completion or explicit recovery')
+        raise Conflict(tr('managed.bootstrap_awaits_completion_explicit'))
     if session.scalar(select(Authorization.id).where(Authorization.phase_id == phase.id,
                       Authorization.kind == 'batch', Authorization.status == 'ACTIVE')):
-        raise Conflict('Revoke the active batch before editing documents')
+        raise Conflict(tr('documents.revoke_active_batch_before'))
     return phase
 
 
@@ -361,10 +362,10 @@ class DocumentsRepository:
         target = require_layout(context)
         archived = target.archived(path) and path.endswith('.md')
         if not (target.editable(path) or archived):
-            raise LookupError('Unknown project document')
+            raise LookupError(tr('documents.unknown_project_document'))
         text = read_text(context, path)
         if text is None:
-            raise LookupError('Document does not exist in the checkout')
+            raise LookupError(tr('documents.document_does_not_exist'))
         return {'path': path, 'content': text, 'sha256': text_hash(text), 'editable': target.editable(path),
                 'archived': archived, 'blocks': sorted(blocks(text))}
 
@@ -419,7 +420,7 @@ class DocumentsRepository:
         kind = IMAGE_TYPES.get(PurePosixPath(path).suffix.lower())
         if (not parts or kind is None or any(part.startswith('.') for part in parts)
                 or matches('/'.join(parts), context.profile.sensitive_paths)):
-            raise LookupError('Unknown repository image')
+            raise LookupError(tr('documents.unknown_repository_image'))
         descriptors = []
         try:
             directory = os.open(context.root, os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW)
@@ -431,22 +432,22 @@ class DocumentsRepository:
             descriptors.append(descriptor)
             info = os.fstat(descriptor)
             if not stat.S_ISREG(info.st_mode) or info.st_nlink != 1:
-                raise LookupError('Repository images must be regular, unshared files')
+                raise LookupError(tr('documents.repository_images_regular_unshared'))
             if info.st_size > MAX_IMAGE_BYTES:
-                raise ValueError(f'Image exceeds {MAX_IMAGE_BYTES // (1024 * 1024)} MiB')
+                raise ValueError(tr('documents.image_exceeds_mib', limit=MAX_IMAGE_BYTES // (1024 * 1024)))
             with os.fdopen(os.dup(descriptor), 'rb') as stream:
                 data = stream.read(MAX_IMAGE_BYTES + 1)
         except FileNotFoundError as exc:
-            raise LookupError('Image does not exist in the checkout') from exc
+            raise LookupError(tr('documents.image_does_not_exist')) from exc
         except (NotADirectoryError, IsADirectoryError) as exc:
-            raise LookupError('Unknown repository image') from exc
+            raise LookupError(tr('documents.unknown_repository_image')) from exc
         except OSError as exc:  # ELOOP: a component is a link
-            raise LookupError(f'Image is not readable without following links: {exc.strerror}') from exc
+            raise LookupError(tr('documents.image_not_readable_without', strerror=exc.strerror)) from exc
         finally:
             for item in reversed(descriptors):
                 os.close(item)
         if len(data) > MAX_IMAGE_BYTES:
-            raise ValueError(f'Image exceeds {MAX_IMAGE_BYTES // (1024 * 1024)} MiB')
+            raise ValueError(tr('documents.image_exceeds_mib', limit=MAX_IMAGE_BYTES // (1024 * 1024)))
         return data, kind
 
     def preview(self, context, git, *, source, changes, regenerate_blocks=False):
@@ -464,7 +465,7 @@ class DocumentsRepository:
     def submit(self, context, *, key, versions, preview_sha256, reason, confirmed, git, source, changes,
                resume_operation_id=None, regenerate_blocks=False):
         if confirmed is not True or not isinstance(reason, str) or not reason.strip():
-            raise ValueError('Explicit confirmation of the exact diff and reason required')
+            raise ValueError(tr('export.explicit_confirmation_exact_diff'))
         marker = freeze({'action': 'document_edit', 'root': str(context.root), 'preview_sha256': preview_sha256,
                          'reason': reason, 'confirmed': confirmed, 'resume_operation_id': resume_operation_id})
         with Session(self.managed.engine) as session:
@@ -480,7 +481,7 @@ class DocumentsRepository:
                     return _job(existing)
             raise
         if shown['preview_sha256'] != preview_sha256 or shown['resume_operation_id'] != resume_operation_id:
-            raise Conflict('Preview changed; review the exact diff again')
+            raise Conflict(tr('export.preview_changed_review_exact'))
         assessment = self.managed.guard.assess(context.root)
         with self.managed._write() as session:
             existing = self.managed._existing(session, key, marker)
@@ -490,7 +491,7 @@ class DocumentsRepository:
             if resume_operation_id is not None:
                 op = pending(session, phase, 'document_edit')
                 if op is None or op.id != resume_operation_id:
-                    raise Conflict('Only the exact interrupted edit intent can resume')
+                    raise Conflict(tr('documents.exact_interrupted_edit_intent'))
                 job = _resume_job(self.managed, session, op, context, versions, key, marker, assessment, 'document_edit')
             else:
                 job = self.managed._queue_new_run(session, assessment, context, versions, f'{phase.code}-DOCS',
@@ -529,7 +530,7 @@ def _resume_job(managed, session, op, context, versions, key, marker, assessment
             and versions.get('document_layout') == DOCUMENT_LAYOUT):
         comparable['document_layout'] = DOCUMENT_LAYOUT  # only the already sealed writer, never agents or new bytes
     if run.context_json != context_snapshot(context) or comparable != versions:
-        raise Conflict('Frozen context/versions changed; restore the configured writer first')
+        raise Conflict(tr('documents.frozen_context_versions_changed'))
     job = Job(idempotency_key=key, run_id=run.id, request_json=marker, status='QUEUED',
               created_at=managed._now(), activation_id=managed._admit(session, assessment),
               language_context=managed._language(session, run.id))

@@ -50,6 +50,12 @@ sequenceDiagram
   Las huellas no dependen del idioma: la vista previa de retención sella cada diagnóstico propio en inglés; las de
   registro/creación sellan la declaración mostrada, así que cambiar de idioma entre vista previa y confirmación
   obliga a revisarla de nuevo.
+- Textos de servicio antes ingleses (T022, D172): los diagnósticos visibles de núcleo, adaptadores, almacenamiento y
+  servicios (rechazos, razones de parada y aceptación, bloqueos, cierres de autorizaciones y resultados del escritor
+  Git) siguen la misma emisión. Las invariantes internas y lo que entra en la entrada de un agente siguen en inglés
+  técnico. Las métricas agrupan las paradas por el texto emitido, así que una causa en en y en es son dos grupos.
+  El cliente distingue dos rechazos por código, nunca por el texto: `managed_blocks_generated` (edición que toca
+  bloques gestionados) y `draft_changed` (borrador cambiado desde que se leyó).
 
 ## Fuente en el código
 
@@ -59,3 +65,6 @@ sequenceDiagram
 - `api/security.py::_say`, `api/managed.py::say` (diagnósticos HTTP propios, T010).
 - `i18n/__init__.py::{emission,tr,Localized}`, `api/app.py::emission_language`, `services/managed.py::run_once`,
   `storage/managed.py::job_visual`, `services/project_preparation.py::run_once`, `cli.py::build_parser` (T021).
+- `api/managed.py::call` (códigos por causa), `core/engine/document_ops.py::ManagedBlocksEdited`,
+  `adapters/bootstrap.py::DraftChanged`, `frontend/src/pages/{Docs,Planning}.tsx`;
+  `tests/fixtures/service_texts/english.json` (textos técnicos ingleses, T022).

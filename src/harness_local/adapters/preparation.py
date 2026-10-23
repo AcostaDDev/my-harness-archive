@@ -40,7 +40,7 @@ def parent(root, path, *, create=False, expected_identity=None):
         raise ValueError('Safe relative file required')
     with directory(root) as fd:
         if expected_identity is not None and identity(os.fstat(fd)) != expected_identity:
-            raise ValueError('Checkout identity changed before file effect')
+            raise ValueError(tr('preparation.checkout_identity_changed_before'))
         owned = []
         try:
             for part in parts[:-1]:
@@ -74,7 +74,7 @@ def verify_files(root, files):
         with parent(root, path) as (fd, name):
             info = os.stat(name, dir_fd=fd, follow_symlinks=False)
             if not stat.S_ISREG(info.st_mode) or info.st_nlink != 1 or file_hash(root / path) != expected:
-                raise ValueError(f'File changed: {path}')
+                raise ValueError(tr('preparation.file_changed', path=path))
 
 
 def environment_snapshot(root, config):
@@ -84,7 +84,7 @@ def environment_snapshot(root, config):
         result = {'identity': identity(os.fstat(fd)), 'files': {}}
     base = Path(config['python_executable']).resolve(strict=True)
     if (venv / 'bin/python').resolve(strict=True) != base:
-        raise ValueError('Environment does not use the authorized interpreter')
+        raise ValueError(tr('preparation.environment_does_not_use'))
     for folder, dirs, files in os.walk(venv, followlinks=False):
         dirs[:] = sorted(dirs)
         for name in sorted(dirs + files):
@@ -95,16 +95,16 @@ def environment_snapshot(root, config):
                 resolved = path.resolve(strict=True)
                 if not (resolved == base and relative in ('bin/python', 'bin/python3', 'bin/python3.11', 'bin/python3.12', 'bin/python3.13')
                         or relative == 'lib64' and resolved == venv / 'lib'):
-                    raise ValueError('Unexpected environment symlink')
+                    raise ValueError(tr('preparation.unexpected_environment_symlink'))
                 result['files'][relative] = {'link': os.readlink(path), 'resolved': str(resolved)}
             elif stat.S_ISREG(info.st_mode):
                 result['files'][relative] = {'sha256': file_hash(path), 'executable': bool(info.st_mode & 0o111)}
             elif not stat.S_ISDIR(info.st_mode):
-                raise ValueError('Unexpected environment entry')
+                raise ValueError(tr('preparation.unexpected_environment_entry'))
     result['base_python_sha256'] = file_hash(base)
     for name in ('python', 'pytest', 'ruff', 'mypy'):
         if not os.access(venv / 'bin' / name, os.X_OK):
-            raise ValueError('Environment executable missing')
+            raise ValueError(tr('preparation.environment_executable_missing'))
     return result
 
 
@@ -120,7 +120,7 @@ def verify_tools(tools):
     for evidence in tools.values():
         path = Path(evidence['resolved'])
         if path.resolve(strict=True) != path or file_hash(path) != evidence['sha256']:
-            raise ValueError('Prepared executable changed')
+            raise ValueError(tr('preparation.prepared_executable_changed'))
 
 
 def verify_receipt(root, receipt):
@@ -129,7 +129,7 @@ def verify_receipt(root, receipt):
     try:
         with directory(root) as fd:
             if not same_directory(identity(os.fstat(fd)), receipt['identity']):
-                raise ValueError('Checkout identity changed')
+                raise ValueError(tr('preparation.checkout_identity_changed'))
         verify_files(root, receipt['protected_files'])
         if receipt['recipe'] in ('typescript-web-recipe-1', 'typescript-web-recipe-2'):
             # node_modules is reinstalled from the protected lock before every task; it is not frozen.
@@ -138,7 +138,7 @@ def verify_receipt(root, receipt):
         current, recorded = environment_snapshot(root, receipt['config']), receipt['environment']
         if (not same_directory(current['identity'], recorded['identity'])
                 or {**current, 'identity': None} != {**recorded, 'identity': None}):
-            raise ValueError('Prepared environment changed')
+            raise ValueError(tr('preparation.prepared_environment_changed'))
     except (OSError, ValueError, KeyError) as exc:
         raise JournalError(tr('preparation.required_changed')) from exc
 
@@ -152,7 +152,7 @@ class PreparedCommandRunner(ManagedCommandRunner):
         verify_receipt(context.root, self.receipt)
         expected = sha(freeze(self.receipt).encode())
         if self.versions.get('project_environment_sha256') != expected:
-            raise JournalError('Prepared environment differs from the frozen job')
+            raise JournalError(tr('preparation.prepared_environment_differs_frozen'))
         return super().run_managed(context, command, command_id)
 
 
@@ -166,7 +166,7 @@ class PreparationCommandRunner(ManagedCommandRunner):
 
     def bind_preparation(self, journal, expected):
         if self.journal is not None or self.frozen_versions() != expected:
-            raise JournalError('Preparation command configuration changed')
+            raise JournalError(tr('preparation.preparation_command_configuration_changed'))
         self.journal = journal
 
     def cancel_requested(self):

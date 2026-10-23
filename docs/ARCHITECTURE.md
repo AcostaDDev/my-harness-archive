@@ -201,8 +201,10 @@ por su API y los artefactos referenciados; la restauración es de consulta (`que
 - Comentarios, docstrings y descripciones OpenAPI de `src/harness_local` en inglés (P011-T003/T004); las fuentes v1
   de recetas conservan sus bytes (D163). Mensajes visibles nuevos por clave en los catálogos JSON en/es (D166): un
   mensaje completo por clave, parámetros `{nombre}` como texto, fallback inglés. Desde T021 (D171) todo texto propio
-  del servicio/CLI que estaba en español sale de `i18n.tr()` en el visual de la emisión; los textos de servicio ya
-  ingleses siguen como texto técnico inglés hasta T022.
+  del servicio/CLI que estaba en español sale de `i18n.tr()` en el visual de la emisión, y desde T022 (D172) también
+  los diagnósticos visibles antes ingleses; solo quedan en inglés técnico las invariantes internas y lo que entra en
+  la entrada de un agente, listados en `tests/fixtures/service_texts/english.json`. El cliente distingue rechazos
+  por `code`, nunca por el texto del diagnóstico.
 - Versiones exactas; ninguna dependencia nueva sin decisión registrada. No documentar scripts inexistentes.
 - Tipos del cliente siempre regenerados desde OpenAPI tras cambiar un contrato; nunca a mano.
 - Pruebas offline con Git/SQLite temporales, procesos y agentes falsos y datos sintéticos; nunca runs ni datos privados.

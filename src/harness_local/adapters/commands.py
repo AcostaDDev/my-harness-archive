@@ -21,6 +21,7 @@ from harness_local.core.engine.context import Command
 from harness_local.core.engine.contracts import freeze
 from harness_local.core.engine.journal import JournalError
 from harness_local.core.engine.validation import CommandResult
+from harness_local.i18n import tr
 
 VERSION = 'commands-1'
 
@@ -29,9 +30,9 @@ def _environment(entries):
     if not isinstance(entries, tuple) or any(not isinstance(pair, tuple) or len(pair) != 2
             or not all(isinstance(v, str) and '\0' not in v for v in pair)
             or not pair[0] or '=' in pair[0] for pair in entries):
-        raise ValueError('Explicit immutable environment pairs required')
+        raise ValueError(tr('commands.explicit_immutable_environment_pairs'))
     if len(dict(entries)) != len(entries):
-        raise ValueError('Duplicate environment keys')
+        raise ValueError(tr('agents.duplicate_environment_keys'))
     return dict(entries)
 
 
@@ -51,36 +52,36 @@ class CommandConfig:
 
     def __post_init__(self):
         if os.name != 'posix':
-            raise ValueError('Native command runner requires POSIX process groups')
+            raise ValueError(tr('commands.native_command_runner_requires'))
         root = Path(self.checkout)
         if not root.is_absolute() or root.resolve() != root or not root.is_dir():
-            raise ValueError('Canonical existing checkout required')
+            raise ValueError(tr('commands.canonical_existing_checkout_required'))
         if type(self.repository_trusted) is not bool:
-            raise ValueError('Repository trust must be explicit')
+            raise ValueError(tr('commands.repository_trust_explicit'))
         if not isinstance(self.authorized_commands, tuple) or not all(
                 isinstance(c, Command) and isinstance(c.argv, tuple) for c in self.authorized_commands):
-            raise ValueError('Immutable exact command authorizations required')
+            raise ValueError(tr('commands.immutable_exact_command_authorizations'))
         executables = _environment(self.executables)
         if not executables or any(not Path(path).is_absolute() for path in executables.values()):
-            raise ValueError('Absolute executable paths required; no PATH lookup')
+            raise ValueError(tr('commands.absolute_executable_paths_required'))
         _environment(self.environment)
         for command in self.authorized_commands:
             _environment(command.environment)
             if command.argv[0] not in executables or any('\0' in a for a in command.argv):
-                raise ValueError('Authorized command requires an explicit executable')
+                raise ValueError(tr('commands.authorized_command_requires_explicit'))
             if type(command.timeout_seconds) not in (int, float) or not math.isfinite(command.timeout_seconds):
-                raise ValueError('Finite command timeout required')
+                raise ValueError(tr('commands.finite_command_timeout_required'))
         if self.formatter_argv and (not isinstance(self.formatter_argv, tuple) or self.formatter_argv[-1] != '--'
                                     or self.formatter_argv[0] not in executables
                                     or any(not isinstance(a, str) or not a or '\0' in a for a in self.formatter_argv)):
-            raise ValueError('Formatter requires an explicit executable and an argv ending in --')
+            raise ValueError(tr('commands.formatter_requires_explicit_executable'))
         for value in (self.max_timeout_seconds, self.terminate_grace_seconds, self.drain_seconds):
             if type(value) not in (int, float) or not math.isfinite(value) or not 0 < value <= 86400:
-                raise ValueError('Finite positive time limits required')
+                raise ValueError(tr('commands.finite_positive_time_limits'))
         if self.terminate_grace_seconds > 2 or self.drain_seconds > 2:
-            raise ValueError('Cleanup limits must be at most two seconds')
+            raise ValueError(tr('commands.cleanup_limits_most_two'))
         if type(self.max_output_bytes) is not int or not 1 <= self.max_output_bytes <= 1048576:
-            raise ValueError('Capture limit must be 1..1048576 bytes per stream')
+            raise ValueError(tr('commands.capture_limit_1_1048576'))
 
 
 def config_payload(config: CommandConfig) -> dict:
@@ -115,7 +116,7 @@ class ManagedCommandRunner:
             raise JournalError('Use a fresh command runner for each job')
         versions = json.loads(journal.repository.get_run(journal.claim.run_id).versions_json)
         if any(versions.get(k) != v for k, v in self.frozen_versions().items()):
-            raise JournalError('Command configuration differs from frozen job versions')
+            raise JournalError(tr('commands.configuration_differs_frozen'))
         self.journal = journal
 
     def cancel_requested(self):
@@ -234,7 +235,7 @@ class ManagedCommandRunner:
         except Exception as exc:
             if process is not None:
                 stop_group(process, grace=config.terminate_grace_seconds)
-            raise JournalError(f'Command execution interrupted: {exc}') from exc
+            raise JournalError(tr('commands.execution_interrupted', error=exc)) from exc
         except BaseException:
             if process is not None:
                 stop_group(process, grace=config.terminate_grace_seconds)
@@ -257,5 +258,5 @@ class ManagedCommandRunner:
             time.monotonic() - started, error, timed_out, freeze(capture))
         emit('finished', {'capture': {**capture, 'result': asdict(result)}})
         if group_state != 'dead':
-            raise JournalError('Command group alive or uncertain; quarantine required')
+            raise JournalError(tr('commands.group_alive_quarantine'))
         return result

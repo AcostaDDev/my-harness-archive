@@ -20,9 +20,10 @@ from harness_local.storage.models import (
     PhaseRow as Phase, ManagedActivationRow as Activation,
 )
 from harness_local.storage.permissions import actor
+from harness_local.i18n import tr
 
-V1_RETIRED = ('D088: v1 project creation (H4.2 form, project-foundation template and one-turn discovery) is retired; '
-              'new projects use the unified document layout (documents = "v2") and the definition conversation')
+# D088 (P011-T022: catalog key, rendered when raised).
+V1_RETIRED = 'bootstrap.v1_retired'
 
 
 def unresolved(session, root):
@@ -84,7 +85,7 @@ class BootstrapRepository:
     def _empty_authority(session, root):
         if session.scalar(select(Job.id).join(Run, Run.id == Job.run_id).where(
                 Run.root == root, Run.purpose == 'definition', Job.status.in_(('QUEUED', 'ACTIVE', 'RECOVERY_REQUIRED')))):
-            raise Conflict('A definition turn is pending; accept after it settles')
+            raise Conflict(tr('planning.definition_turn_pending_accept'))
         if (session.scalar(select(Run.id).where(Run.root == root,
                                                 Run.purpose.notin_(('bootstrap_discovery', 'definition'))))
                 or session.scalar(select(Job.id).join(Run, Run.id == Job.run_id).where(Run.root == root,
@@ -92,17 +93,17 @@ class BootstrapRepository:
                 or session.scalar(select(Phase.id).where(Phase.root == root))
                 or session.scalar(select(Activation.id).where(Activation.root == root,
                                       Activation.status.in_(('PREPARING', 'ACTIVE', 'REVERTING'))))):
-            raise Conflict('Target has managed history; use import or recovery instead of bootstrap')
+            raise Conflict(tr('bootstrap.target_has_managed_history'))
 
     def preview(self, context, data, versions, writer):
         if layout(context) is None:
-            raise ValueError(V1_RETIRED)
+            raise ValueError(tr(V1_RETIRED))
         saved = self.get(context.root)
         if saved is not None:
             if saved['status'] == 'INTERRUPTED':
                 return {**saved['preview'], 'resume_operation_id': saved['id'],
                         'expected_version': saved['expected_version']}
-            raise Conflict('Bootstrap already exists; inspect its operation')
+            raise Conflict(tr('bootstrap.bootstrap_already_exists_inspect'))
         with Session(self.managed.engine) as session:
             self._empty_authority(session, str(context.root))
         from harness_local.storage.planning import definition_acceptance
@@ -117,7 +118,7 @@ class BootstrapRepository:
     def submit(self, context, data, versions, writer, *, key, preview_sha256, confirmed, reason,
                resume_operation_id=None, expected_version=None):
         if confirmed is not True or not isinstance(reason, str) or not reason.strip():
-            raise ValueError('Explicit confirmation of brief, decisions and exact preview required')
+            raise ValueError(tr('bootstrap.explicit_confirmation_brief_decisions'))
         marker = freeze({'action': 'bootstrap', 'root': str(context.root), 'input': data,
                          'preview_sha256': preview_sha256, 'confirmed': confirmed, 'reason': reason,
                          'resume_operation_id': resume_operation_id, 'expected_version': expected_version})
@@ -137,7 +138,7 @@ class BootstrapRepository:
                 or shown['resume_operation_id'] != resume_operation_id
                 or shown['expected_version'] != expected_version
                 or data != shown['input']):
-            raise Conflict('Preview changed or import required; review the exact result again')
+            raise Conflict(tr('bootstrap.preview_changed_import_required'))
         operation_id = resume_operation_id or str(uuid4())
         intent = None if resume_operation_id else writer.seal_bootstrap(
             shown, operation_id, int(self.managed.clock().timestamp()))
@@ -149,15 +150,15 @@ class BootstrapRepository:
             if resume_operation_id:
                 op = session.get(Bootstrap, resume_operation_id)
                 if op is None or op.root != str(context.root) or op.status != 'INTERRUPTED':
-                    raise Conflict('Only the exact interrupted bootstrap can resume')
+                    raise Conflict(tr('bootstrap.exact_interrupted_bootstrap_resume'))
                 run = session.get(Run, op.run_id)
                 if (run.version != expected_version or run.context_json != context_snapshot(context)
                         or run.versions_json != freeze(versions) or op.preview['author'] != {
                             'name': writer.identity.name, 'email': writer.identity.email}):
-                    raise Conflict('Frozen bootstrap version/context/writer changed; restore before resuming')
+                    raise Conflict(tr('bootstrap.frozen_bootstrap_version_context'))
                 if session.scalar(select(Job.id).where(Job.run_id == run.id,
                                     Job.status.in_(('QUEUED', 'ACTIVE', 'RECOVERY_REQUIRED')))):
-                    raise Conflict('Confirm the stopped bootstrap writer before resuming')
+                    raise Conflict(tr('bootstrap.confirm_stopped_bootstrap_writer'))
                 job = Job(idempotency_key=key, run_id=run.id, request_json=marker, status='QUEUED',
                           created_at=self.managed._now(), activation_id=self.managed._admit(session, assessment),
                           language_context=self.managed._language(session, run.id))

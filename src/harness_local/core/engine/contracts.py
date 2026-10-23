@@ -10,6 +10,7 @@ from typing import Protocol, TYPE_CHECKING
 from uuid import uuid4
 
 from harness_local.core.engine.context import ProjectContext, policy_payload, relative_path
+from harness_local.i18n import tr
 
 if TYPE_CHECKING:
     from harness_local.core.engine.journal import EngineJournal
@@ -41,7 +42,7 @@ class Selection:
 
 def executor_selection(context: ProjectContext, data: object) -> Selection:
     if not isinstance(data, dict) or set(data) != {"model", "effort", "reason"}:
-        raise ContractError("Executor selection requires model, effort and reason")
+        raise ContractError(tr('contracts.executor_selection_requires_model'))
     policy = context.policy
     if policy.executor_mode == "open":
         # Open mode (D052): only the model shape and the executor provider's vocabulary.
@@ -50,7 +51,7 @@ def executor_selection(context: ProjectContext, data: object) -> Selection:
     else:
         allowed = data["model"] in policy.executor_models and data["effort"] in policy.executor_efforts
     if not allowed or not isinstance(data["reason"], str) or not data["reason"].strip():
-        raise ContractError("Executor selection outside explicit policy")
+        raise ContractError(tr('contracts.executor_selection_outside_explicit'))
     return Selection(**data)
 
 
@@ -63,26 +64,26 @@ def command_text(item: object) -> object:
 
 def task_contract(context: ProjectContext, data: object, task_id: str, phase_id: str) -> str:
     if not isinstance(data, dict) or data.get("task_id") != task_id or data.get("phase_id") != phase_id:
-        raise ContractError("Task/phase identity mismatch")
+        raise ContractError(tr('contracts.task_phase_identity_mismatch'))
     if isinstance(data.get("validation_commands"), list):
         # The frozen contract keeps strings; the agent's original output stays in its attempt.
         data = {**data, "validation_commands": [command_text(item) for item in data["validation_commands"]]}
     for field in ("title", "objective", "executor_prompt"):
         if not isinstance(data.get(field), str) or not data[field].strip():
-            raise ContractError(f"Missing task {field}")
+            raise ContractError(tr('contracts.missing_task', field=field))
     for field in ("allowed_paths", "forbidden_paths", "acceptance_criteria", "validation_commands"):
         items = data.get(field)
         if not isinstance(items, list) or not all(isinstance(item, str) and item.strip() for item in items):
-            raise ContractError(f"Invalid task {field}")
+            raise ContractError(tr('contracts.invalid_task', field=field))
     if not data["acceptance_criteria"]:
-        raise ContractError("Task requires acceptance criteria")
+        raise ContractError(tr('contracts.task_requires_acceptance_criteria'))
     data = {**data, **{field: directory_patterns(data[field]) for field in ("allowed_paths", "forbidden_paths")}}
     data = harness_owned_paths(context, data, task_id)
     for path in data["allowed_paths"] + data["forbidden_paths"]:
         try:
             relative_path(path)
         except ValueError as exc:
-            raise ContractError("Task file scope must stay inside checkout") from exc
+            raise ContractError(tr('contracts.task_file_scope_stay')) from exc
     # Denials take precedence in check_paths. Catch a contradictory concrete
     # allowlist before invoking a writer; never silently remove a prohibition.
     # Broad allow patterns may legitimately have narrower forbidden exceptions.
@@ -90,7 +91,7 @@ def task_contract(context: ProjectContext, data: object, task_id: str, phase_id:
         if any(allowed == forbidden or forbidden in {"*", "**"}
                or (not has_magic(allowed) and fnmatchcase(allowed, forbidden))
                for forbidden in data["forbidden_paths"]):
-            raise ContractError(f"Task allowed path is also forbidden: {allowed}")
+            raise ContractError(tr('contracts.task_allowed_path_also', allowed=allowed))
     executor_selection(context, data.get("executor_selection"))
     return freeze(data)
 
@@ -216,7 +217,7 @@ def invoke_agent(context: ProjectContext, history: RunHistory, adapter: AgentAda
     try:
         from harness_local.core.engine.permissions import snapshot_payload
         if snapshot_payload(request).get('denials'):
-            raise ContractError('An explicit permission denial blocks this executor attempt; replace the request or wait for expiry')
+            raise ContractError(tr('contracts.explicit_permission_denial_blocks'))
         result = adapter.invoke(context, request)
     except Exception as exc:
         from harness_local.core.engine.journal import JournalError
@@ -229,10 +230,10 @@ def invoke_agent(context: ProjectContext, history: RunHistory, adapter: AgentAda
     try:
         if (result.error or result.terminal_observed is not True
                 or type(result.exit_code) is not int or result.exit_code != 0):
-            raise ContractError(result.error or "Agent stream failed or lacks terminal/zero exit")
+            raise ContractError(result.error or tr('contracts.agent_stream_failed'))
         data = json.loads(result.payload_json or "")
         if not isinstance(data, dict) or data.get("is_error"):
-            raise ContractError("Agent result is invalid or reports an error")
+            raise ContractError(tr('contracts.agent_result_invalid_reports'))
         freeze(data)  # Non-finite JSON is not a valid structured result either.
     except (ValueError, TypeError) as exc:
         return stop_history(history, role, str(exc)), None

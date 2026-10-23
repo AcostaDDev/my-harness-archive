@@ -10,6 +10,7 @@ from harness_local.core.engine.documents import (blocks, decision_index, parse_r
 from harness_local.core.engine.phases import phase_definition
 from harness_local.core.engine.planning import TASK_RE
 from harness_local.core.engine.commit import CommitIntent, CommitPlan, MechanicalUpdate, git_provenance
+from harness_local.i18n import tr
 
 STATE_HEADING = re.compile(r"^##\s+(?:Fase activa|Active phase)\s*[—–:-]\s*(P\d{3})\b", re.MULTILINE)
 NEXT_STEPS_TITLE = re.compile(r"^#\s+(P\d{3})\b", re.MULTILINE)
@@ -42,17 +43,17 @@ def adopt_documents(context, tree):
     texts = {path: tree[path].decode('utf-8') for path in target.phase_documents}
     for path, text in texts.items():
         if set(blocks(text)) - _block_names(target, path):
-            raise ValueError(f'{path} contains managed blocks for another document')
+            raise ValueError(tr('onboarding.contains_managed_blocks_another', path=path))
     state_codes = {item['code'] for item in _state(texts[target.state])}
     plan = _next_steps(texts[target.next_steps])
     plan_codes = set(plan['task_phases']) | ({plan['title_code']} if plan['title_code'] else set())
     if len(state_codes) != 1 or len(plan_codes) != 1 or state_codes != plan_codes:
-        raise ValueError('STATE and NEXT_STEPS must explicitly agree on one active phase; review the drafts')
+        raise ValueError(tr('onboarding.state_next_steps_explicitly'))
     active = next(iter(state_codes))
     entries = parse_roadmap(texts[target.roadmap])
     entry = next((item for item in entries if item['code'] == active), None)
     if entry is None or not entry['objective'] or not entry['exit_criteria']:
-        raise ValueError(f'ROADMAP needs {active} with its objective and exit criteria')
+        raise ValueError(tr('onboarding.roadmap_needs_objective_exit', active=active))
     tasks = plan_tasks(texts[target.next_steps], active)
     definition = phase_definition(context, phase_data(target, entry, tasks))
     fresh = {'phase': {'code': active, 'status': 'ACTIVE', 'objective': entry['objective']},
@@ -75,19 +76,19 @@ def check_destinations(tree):
     # Includes file/directory and case collisions, including destinations introduced by drafts.
     paths = {path.lower() for path in tree}
     if len(paths) != len(tree):
-        raise ValueError('Import destinations conflict by case')
+        raise ValueError(tr('onboarding.import_destinations_conflict_case'))
     for path in paths:
         if any('/'.join(path.split('/')[:n]) in paths for n in range(1, path.count('/') + 1)):
-            raise ValueError(f'Import destinations conflict as file and directory: {path}')
+            raise ValueError(tr('onboarding.import_destinations_conflict_file', path=path))
 
 
 def preview_tree(context, source, contents, tree, phase, writer, extra, message):
     evidence = writer.capture(context)
     provenance = git_provenance(evidence)
     if evidence.base_revision != source['inventory']['head'] or evidence.changed_paths:
-        raise ValueError('The checkout changed since the import conversation started')
+        raise ValueError(tr('onboarding.checkout_changed_since_import'))
     if provenance.index_tree != provenance.base_tree:
-        raise ValueError('Import requires a clean index')
+        raise ValueError(tr('onboarding.import_requires_clean_index'))
     def content(data):
         if data is None or b'\0' in data:
             return data
@@ -122,7 +123,7 @@ def seal(context, shown, writer, operation_id, run_id, timestamp):
                       writer.identity.email, timestamp)
     tree, commit = writer.seal(context, plan)
     if tree != shown['proposed_tree']:
-        raise ValueError('Git attributes or checkout changed after the import preview; review it again')
+        raise ValueError(tr('onboarding.git_attributes_checkout_changed'))
     return CommitIntent(operation_id, run_id, 'IMPORT', shown['head'], shown['fingerprint'], shown['tree'],
                         shown['index_tree'], (), updates, tree, commit, message, plan.author_name,
                         plan.author_email, timestamp)

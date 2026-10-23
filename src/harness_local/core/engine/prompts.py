@@ -6,6 +6,7 @@ import json
 import re
 
 from harness_local.core.engine.contracts import ContractError, freeze
+from harness_local.i18n import tr
 
 # P008-T007 (D088 point 8): the project's AGENTS.md, read and hashed on every attempt by `render_attempt`. It is
 # declared by the templates of the roles working on an existing project; definition drafts it (its draft is
@@ -42,20 +43,21 @@ def digest(text: str) -> str:
 
 def validate(name: str, template: str, *, historical=False) -> tuple[str, ...]:
     if name in RETIRED and not historical:
-        raise ContractError('Legacy/A support has been removed; this prompt is data only')
+        raise ContractError(tr('prompts.legacy_support_has_been'))
     if name not in VARIABLES and name not in RETIRED:
-        raise ContractError('Unknown prompt name')
+        raise ContractError(tr('prompts.unknown_prompt_name'))
     if not isinstance(template, str) or not template.strip() or len(template) > 100_000:
-        raise ContractError('Template must contain 1–100000 characters')
+        raise ContractError(tr('prompts.template_contain_1_100000'))
     used = set(TOKEN.findall(template))
     rest = TOKEN.sub('', template)
     if '{{' in rest or '}}' in rest:
-        raise ContractError('Malformed variable; use {{UPPERCASE_NAME}}')
+        raise ContractError(tr('prompts.malformed_variable', example='{{UPPERCASE_NAME}}'))
     allowed = set(VARIABLES[name] if name in VARIABLES else RETIRED[name])
     # Versions predating P008-T007 (frozen catalogs and saved versions) remain readable without the
     # instructions variable; `render_attempt` refuses to invoke with them on a project with a layout.
     if used - allowed or allowed - used - {PROJECT_INSTRUCTIONS}:
-        raise ContractError(f'Invalid variables: unknown={sorted(used - allowed)}, missing={sorted(allowed - used)}')
+        raise ContractError(tr('prompts.invalid_variables_unknown_missing', unknown=sorted(used - allowed),
+                               missing=sorted(allowed - used)))
     return tuple(sorted(used))
 
 
@@ -103,7 +105,7 @@ def load_catalog(value: str) -> dict[str, Template]:
 def render(template: Template, values: dict[str, str]) -> str:
     template.check()
     if template.name in RETIRED:
-        raise ContractError('Legacy/A support has been removed; this prompt is data only')
+        raise ContractError(tr('prompts.legacy_support_has_been'))
     if set(values) != set(VARIABLES[template.name]) or not all(isinstance(v, str) for v in values.values()):
         raise ContractError('Missing or unknown render variables')
     # Values are data: inserted braces are never evaluated again.
@@ -187,8 +189,8 @@ def render_attempt(catalog, name, values, context, language=None):
         if PROJECT_INSTRUCTIONS in values:
             raise ContractError('Project instructions are supplied by the engine, never by the caller')
         if layout(context) is not None and PROJECT_INSTRUCTIONS not in TOKEN.findall(template.template):
-            raise ContractError(f'Prompt {name} {template.id} lacks {{{{{PROJECT_INSTRUCTIONS}}}}}; activate a version '
-                                'that includes the project instructions')
+            raise ContractError(tr('prompts.instructions_missing', name=name, id=template.id,
+                                   variable='{{' + PROJECT_INSTRUCTIONS + '}}'))
         content, instructions = project_instructions(context)
         values = {**values, PROJECT_INSTRUCTIONS: content}
     parts = [{'version': asdict(template), 'variables': values}]

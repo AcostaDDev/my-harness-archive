@@ -16,32 +16,32 @@ MESSAGE = 'docs: incorporar al control del harness'
 def preview(context, source, contents, paths, drafts, record, inspection, writer):
     target = definition_layout(context)
     if record['pending_turn']:
-        raise ValueError('An onboarding turn is pending; wait until it settles')
+        raise ValueError(tr('onboarding.onboarding_turn_pending_wait'))
     if inspection['invalid'] or inspection['foreign']:
-        raise ValueError('Invalid or foreign entries in the private onboarding drafts')
+        raise ValueError(tr('onboarding.invalid_foreign_entries_private'))
     if any(q['blocking'] and not q.get('deferred') for q in record['questions']):
-        raise ValueError('Blocking questions remain open; answer or defer them explicitly')
+        raise ValueError(tr('onboarding.blocking_questions_remain_open'))
     if any(not allowed_draft(target, path) for path in drafts):
-        raise ValueError('Only documentation drafts are allowed')
+        raise ValueError(tr('onboarding.documentation_drafts_allowed'))
     if not context.profile.validations:
-        raise ValueError('The operator composition needs a profile with explicit validations')
+        raise ValueError(tr('onboarding.operator_composition_needs_profile'))
     tree = dict(contents)
     tree.update({path: text.encode('utf-8') for path, text in drafts.items()})
     if missing := [path for path in required_documents(target) if not tree.get(path, b'').strip()]:
-        raise ValueError('Required documents are missing: ' + ', '.join(missing))
+        raise ValueError(tr('definition.required_missing', paths=', '.join(missing)))
     # An existing README is retained by bytes unless the user explicitly drafts its replacement.
     for path in (set(required_documents(target)) - {target.readme}) | set(drafts):
         data = tree[path]
         text = data.decode('utf-8')
         if set(blocks(text)) - _block_names(target, path):
-            raise ValueError(f'{path} contains managed blocks for another document')
+            raise ValueError(tr('onboarding.contains_managed_blocks_another', path=path))
     for path, limit in ((target.agents, MAX_AGENTS_LINES), (target.claude, MAX_WRAPPER_LINES),
                         (target.gemini, MAX_WRAPPER_LINES)):
         if len(tree[path].decode('utf-8').splitlines()) > limit:
-            raise ValueError(f'{path} must contain at most {limit} lines (D088)')
+            raise ValueError(tr('definition.contain_most_lines_d088', path=path, limit=limit))
     phase = adopt_documents(context, tree)
     if phase['code'] != 'P001':
-        raise ValueError('Onboarding must adopt P001 as its active phase')
+        raise ValueError(tr('onboarding.onboarding_adopt_p001_active'))
     profile = json.loads(context_snapshot(context))['profile']
     preserved = []
     for path, original in sorted(contents.items()):

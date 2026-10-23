@@ -16,6 +16,7 @@ from harness_local.storage.models import (
     PlanningConversationRow as Conversation, PlanningTurnRow as Turn,
 )
 from harness_local.storage.permissions import actor
+from harness_local.i18n import tr
 
 
 def unresolved(session, root):
@@ -58,7 +59,7 @@ def settle(managed, session, run, outcome):
             raise Conflict('Import result differs from its sealed intent')
         baseline = op.preview['baseline']
         if document_hashes(restore_context(run.context_json), baseline) != baseline:
-            raise Conflict('Import documents changed before adoption; reconcile the recorded intent')
+            raise Conflict(tr('onboarding.import_documents_changed_before'))
         pid = insert_phase(managed, session, op.root, op.preview['phase'], baseline,
                            source={'import_id': op.id, 'run_id': run.id, 'commit': outcome['commit']})
         op.phase_id, op.status = pid, 'COMPLETED'
@@ -91,7 +92,7 @@ class ImportRepository:
             run = session.get(Run, op.run_id)
             from harness_local.storage.retired_work import reason
             if reason(session, run):
-                raise Conflict('Legacy/A or ambiguous operation is retained as data only; it cannot be onboarded')
+                raise Conflict(tr('onboarding.legacy_ambiguous_operation_retained'))
             return {**{key: getattr(op, key) for key in ('id', 'root', 'conversation_id', 'run_id', 'phase_id',
                 'status', 'preview', 'decision', 'result', 'created_at', 'finished_at')},
                 'expected_version': run.version, 'run_status': run.status}
@@ -100,19 +101,19 @@ class ImportRepository:
     def _idle(session, root):
         if session.scalar(select(Job.id).join(Run, Run.id == Job.run_id).where(Run.root == root,
                           Job.status.in_(('QUEUED', 'ACTIVE', 'RECOVERY_REQUIRED')))):
-            raise Conflict('Checkout has unfinished jobs; confirm stopped writers before importing')
+            raise Conflict(tr('onboarding.checkout_has_unfinished_jobs'))
 
     def preview(self, context, conversation_id, versions, writer):
         with Session(self.managed.engine) as session:
             row = session.get(Conversation, conversation_id)
             if row is None or row.root != str(context.root):
-                raise LookupError('Unknown conversation of this checkout')
+                raise LookupError(tr('onboarding.unknown_conversation_checkout'))
             if row.kind != self.kind:
-                raise Conflict('The conversation belongs to another import flow')
+                raise Conflict(tr('onboarding.conversation_belongs_another_import'))
         saved = self.get(context.root)
         if saved is not None:
             if saved['conversation_id'] != conversation_id:
-                raise Conflict('Import already exists; inspect the confirmed conversation')
+                raise Conflict(tr('onboarding.import_already_exists_inspect'))
             if saved['status'] == 'INTERRUPTED':
                 try:
                     check_git(context, writer, saved['preview'])
@@ -123,13 +124,13 @@ class ImportRepository:
             if saved['status'] == 'COMPLETED':
                 return {**saved['preview'], 'already_imported': True, 'documents': [], 'mechanical': [],
                         'diff': '', 'resume_operation_id': None, 'expected_version': saved['expected_version']}
-            raise Conflict('Import is already queued')
+            raise Conflict(tr('onboarding.import_already_queued'))
         from harness_local.storage.planning import PlanningRepository
         planning = PlanningRepository(self.managed)
         with Session(self.managed.engine) as session:
             row = planning._conversation(session, conversation_id, context=context)
             if row.kind != self.kind:
-                raise Conflict('Only an import conversation can normalize the project')
+                raise Conflict(tr('onboarding.import_conversation_normalize_project'))
             planning._importable(session, str(context.root))
             self._idle(session, str(context.root))
             record, source = planning._record(session, row), row.source
@@ -155,7 +156,7 @@ class ImportRepository:
     def submit(self, context, conversation_id, versions, writer, *, key, preview_sha256, reason, confirmed,
                resume_operation_id=None, expected_version=None, profile_sha256=None):
         if confirmed is not True or not isinstance(reason, str) or not reason.strip():
-            raise ValueError('Explicit confirmation of the exact import and a reason required')
+            raise ValueError(tr('onboarding.explicit_confirmation_exact_import'))
         confirmation = {'profile_sha256': profile_sha256} if self.kind == 'onboarding' else {}
         marker = freeze({'action': 'import_commit', 'root': str(context.root), 'conversation_id': conversation_id,
             'preview_sha256': preview_sha256, 'reason': reason, 'confirmed': confirmed,
@@ -165,10 +166,10 @@ class ImportRepository:
                 return _job(existing)
         shown = self.preview(context, conversation_id, versions, writer)
         if self.kind == 'onboarding' and (not profile_sha256 or profile_sha256 != shown['profile_sha256']):
-            raise Conflict('Explicit confirmation of the composition profile hash required')
+            raise Conflict(tr('onboarding.explicit_confirmation_composition_profile'))
         if (shown.get('already_imported') or not shown['mechanical'] or shown['preview_sha256'] != preview_sha256
                 or shown['resume_operation_id'] != resume_operation_id or shown['expected_version'] != expected_version):
-            raise Conflict('Import preview changed or has no changes; review it again')
+            raise Conflict(tr('onboarding.import_preview_changed_has'))
         assessment = self.managed.guard.assess(context.root)
         with self.managed._write() as session:
             if existing := self.managed._existing(session, key, marker):
@@ -178,12 +179,12 @@ class ImportRepository:
                 op = session.get(Import, resume_operation_id)
                 if (op is None or op.root != str(context.root) or op.status != 'INTERRUPTED'
                         or op.conversation_id != conversation_id):
-                    raise Conflict('Only the exact interrupted import can resume')
+                    raise Conflict(tr('onboarding.exact_interrupted_import_resume'))
                 run = session.get(Run, op.run_id)
                 if (run.version != expected_version or run.context_json != context_snapshot(context)
                         or run.versions_json != freeze(versions) or shown['author'] != {
                             'name': writer.identity.name, 'email': writer.identity.email}):
-                    raise Conflict('Frozen import context/versions/writer changed; restore before resuming')
+                    raise Conflict(tr('onboarding.frozen_import_context_versions'))
                 job = Job(idempotency_key=key, run_id=run.id, request_json=marker, status='QUEUED',
                     created_at=self.managed._now(), activation_id=self.managed._admit(session, assessment),
                     language_context=self.managed._language(session, run.id))
@@ -197,10 +198,10 @@ class ImportRepository:
                 origin = shown['origin']
                 conversation = session.get(Conversation, conversation_id)
                 if conversation.version != origin['conversation_version']:
-                    raise Conflict('Import conversation changed since preview')
+                    raise Conflict(tr('onboarding.import_conversation_changed_since'))
                 area = self.drafts_class.of(self.managed.engine, conversation_id).inspect_definition(context)
                 if area['drafts'] != origin['drafts'] or area['invalid']:
-                    raise Conflict('Import drafts changed since preview')
+                    raise Conflict(tr('onboarding.import_drafts_changed_since'))
                 job = self.managed._queue_new_run(session, assessment, context, versions, 'IMPORT',
                     shown['phase']['code'], key, marker, purpose='import_commit')
                 operation_id = str(uuid4())

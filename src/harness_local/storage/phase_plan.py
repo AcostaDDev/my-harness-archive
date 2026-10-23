@@ -9,6 +9,7 @@ from harness_local.core.engine.phases import digest, phase_definition, document_
 from harness_local.storage.documents import DocumentsRepository, _edit_phase
 from harness_local.storage.managed import Conflict
 from harness_local.storage.planning import PlanningRepository
+from harness_local.i18n import tr
 
 
 class PhasePlanRepository(DocumentsRepository):
@@ -27,14 +28,14 @@ class PhasePlanRepository(DocumentsRepository):
                 return {**stored.request['preview'], 'resume_operation_id': stored.id}
             _edit_phase(session, context)
             if phase.id != self.phase_id or phase.status != 'ACTIVE' or phase.definition['tasks']:
-                raise Conflict('Plan only the latest ACTIVE phase without tasks')
+                raise Conflict(tr('planning.plan_latest_active_phase'))
             plan = self.next_steps
             if self.plan_proposal is not None:
                 if plan is not None:
-                    raise ValueError('Provide the plan text or its proposal, not both')
+                    raise ValueError(tr('planning.provide_plan_text_proposal'))
                 plan, origin = PlanningRepository(self.managed).plan(session, context, phase.id, self.plan_proposal)
             if not isinstance(plan, str) or not plan.strip():
-                raise ValueError('Provide the NEXT_STEPS plan of the active phase')
+                raise ValueError(tr('planning.provide_next_steps_plan'))
             from harness_local.core.engine.definition import validate_plan
             tasks = validate_plan(plan, phase.code)
             definition = phase_definition(context, {**phase.definition, 'tasks': [task for task, _ in tasks]})
@@ -42,7 +43,7 @@ class PhasePlanRepository(DocumentsRepository):
                     'definition': definition, 'origin': origin}
             baseline = phase.documents
         if document_hashes(context, baseline) != baseline:
-            raise Conflict('Phase documents changed externally; reconcile them before planning')
+            raise Conflict(tr('planning.phase_documents_changed_externally'))
         fresh = {'phase': {'code': definition['code'], 'status': 'ACTIVE', 'objective': definition['objective']},
                  'tasks': [{'task_id': task, 'status': None, 'planned': True} for task, _ in plan_tasks(plan)],
                  'open_questions': [], 'latest_check': None}
@@ -69,7 +70,7 @@ def adopt(managed, session, phase, op, shown, documents, outcome):
     from harness_local.storage.phases import _event, _invalidate_batches
     data = shown['phase_plan']
     if not verify(session, phase, data):
-        raise Conflict('The phase changed after its plan was confirmed')
+        raise Conflict(tr('planning.phase_changed_after_plan'))
     definition = data['definition']
     phase.definition_number += 1
     phase.definition, phase.definition_sha256, phase.documents = definition, digest(definition), documents
@@ -77,6 +78,6 @@ def adopt(managed, session, phase, op, shown, documents, outcome):
                            definition=definition, definition_sha256=phase.definition_sha256,
                            documents=documents, origin='amended', reason=op.request['reason'], actor=actor(),
                            created_at=managed._now()))
-    _invalidate_batches(managed, session, phase, 'Phase plan confirmed')
+    _invalidate_batches(managed, session, phase, tr('planning.plan_confirmed_reason'))
     _event(managed, session, phase, 'phase_plan_confirmed', {
         'operation_id': op.id, 'definition_number': phase.definition_number, 'commit': outcome['commit']})

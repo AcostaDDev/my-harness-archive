@@ -22,16 +22,17 @@ from harness_local.core.engine.review import ReviewCycle, decision_proposals, re
 from harness_local.core.engine.validation import (
     CommandRunner, command_result_payload, run_command, run_identified_command, run_validations, validation_payload,
 )
+from harness_local.i18n import tr
 
 
 def _executor_output(payload: dict) -> str | None:
     """Stop reason when the executor output brings denials or malformed ADR proposals."""
     if not isinstance(payload.get("permission_denials", []), list):
-        return "Malformed permission denials"
+        return tr('workflow.malformed_denials')
     try:
         decision_proposals(payload.get("decision_proposals", []))
     except ContractError as exc:
-        return f"Malformed decision proposals: {exc}"
+        return tr('workflow.malformed_proposals', error=exc)
     return None
 
 
@@ -123,7 +124,7 @@ class OfflineEngine:
             history = replace(history, preparation_json=history.preparation_json + (entry,))
             self._checkpoint(history, "preparation")
             if not result.passed:
-                return stopped(history, "preparation", result.error or "Environment preparation failed")
+                return stopped(history, "preparation", result.error or tr('workflow.environment_preparation_failed'))
         return history
 
     def start(self, context: ProjectContext, task_id: str, phase_id: str, text: str,
@@ -132,7 +133,7 @@ class OfflineEngine:
         """`contract`: deterministic contract already frozen by the server (H3.4); the planner is not called.
         `notes`: additional user notes (P009-T020); frozen in the contract and never widening its scope."""
         if notes is not None and (not isinstance(notes, str) or not notes.strip() or contract is not None):
-            raise ContractError("Additional notes must be non-empty text for a planned task")
+            raise ContractError(tr('workflow.additional_notes_non_empty'))
         planned = contract is None  # the deterministic planner reuses `contract` further below
         self.resuming = False
         history = history or RunHistory(str(uuid4()), context_snapshot(context))
@@ -147,9 +148,8 @@ class OfflineEngine:
             except Exception as exc:
                 return stopped(history, "evidence", str(exc))
             if current.changed_paths:
-                return stopped(history, "start", "Uncommitted changes in the checkout ("
-                               + ", ".join(current.changed_paths[:20]) + "); confirm them as a document edit "
-                               "or remove them before starting a task")
+                return stopped(history, "start", tr('workflow.uncommitted_changes',
+                                                    paths=", ".join(current.changed_paths[:20])))
         history = self._prepare(context, history)
         if history.stop:
             return history
@@ -195,16 +195,16 @@ class OfflineEngine:
         if context_snapshot(context) != history.context_json:
             raise ContractError("Resume requires the original frozen context/policy")
         if history.status not in {"stopped", "blocked", "revision_limit"} or history.task_json is None:
-            raise ContractError("Only a stopped task with a contract can be resumed")
+            raise ContractError(tr('workflow.stopped_task_contract_resumed'))
         task = json.loads(history.task_json)
         try:
             current = self.evidence.capture(context)
         except Exception as exc:
             return stopped(history, "evidence", str(exc))
         if check_paths(context, task, current).hard_failure:
-            return stopped(history, "resume", "Out-of-scope changes must be resolved without discarding edits")
+            return stopped(history, "resume", tr('workflow.out_scope_changes_resolved'))
         if retry_executor and not task["allowed_paths"]:
-            raise ContractError("Read-only tasks cannot retry implementation")
+            raise ContractError(tr('managed.read_tasks_cannot_retry'))
         has_execution = any(item.request.role == "executor" for item in history.attempts)
         if retry_executor and has_execution and history.revisions >= context.policy.max_revision_cycles:
             return replace(history, status="revision_limit", stop=None)
@@ -283,7 +283,7 @@ class OfflineEngine:
                                     formatting)
                 history = replace(history, cycles=history.cycles + (cycle,))
                 if self.evidence.capture(context) != evidence:
-                    return stopped(history, "validation", "Content changed during validation; revalidate")
+                    return stopped(history, "validation", tr('workflow.content_changed_during_validation'))
             except JournalError:
                 raise
             except Exception as exc:
@@ -329,18 +329,18 @@ class OfflineEngine:
             if verdict == "BLOCKED":
                 return replace(history, status="blocked", stop=None)
             if data.get("blocking_questions") or data.get("scope_grants"):
-                return stopped(history, "permissions", "Human decision required; task scope is frozen")
+                return stopped(history, "permissions", tr('workflow.human_decision_required_task'))
             no_changes = before is not None and before == evidence
             previous = next((item for item in reversed(history.cycles[:-1]) if item.verdict == "REVISE"), None)
             signature = stalled_review_signature(data, validation)
             if no_changes and previous and signature == stalled_review_signature(json.loads(previous.review_json), previous.validation):
-                return stopped(history, "revision", "Revision made no changes and the same findings/validation remain")
+                return stopped(history, "revision", tr('workflow.revision_made_no_changes'))
             if denials and no_changes:
-                return stopped(history, "permissions", "Required operations denied; no automatic retry")
+                return stopped(history, "permissions", tr('workflow.required_operations_denied_no'))
             if history.revisions >= context.policy.max_revision_cycles:
                 return replace(history, status="revision_limit", stop=None)
             if not allow_revision:
-                return stopped(history, 'revision', 'Review requests changes; retry executor explicitly')
+                return stopped(history, 'revision', tr('workflow.review_requests_changes_retry'))
             selection = executor_selection(context, data["executor_selection"])
             prompt = data["next_prompt"]
             try:

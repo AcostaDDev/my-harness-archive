@@ -11,6 +11,7 @@ from harness_local.core.engine.documents import MAX_AGENTS_LINES, MAX_WRAPPER_LI
 from harness_local.core.project_onboarding import OnboardingInventoryError
 from harness_local.storage.private_drafts import PrivateDrafts
 from harness_local.storage.managed import Conflict
+from harness_local.i18n import tr
 
 
 class OnboardingDrafts(PrivateDrafts):
@@ -25,12 +26,12 @@ def read_inventory(context, executable='git'):
         reader.git = _InventoryGit(context.root, executable=executable)
         entries = reader.entries(inventory['head'])
         if any(path in entries for path in target) or any(path.startswith('.harness/') for path in entries):
-            raise Conflict('The repository already has harness documents or history; legacy/A support has been removed; register an already managed project instead')
+            raise Conflict(tr('onboarding.repository_already_has_harness'))
         if len(freeze(inventory).encode('utf-8')) > MAX_CONTEXT_DRAFT_BYTES:
-            raise ValueError('Onboarding inventory exceeds the 2 MiB a turn can freeze')
+            raise ValueError(tr('onboarding.onboarding_inventory_exceeds_2'))
         return inventory
     except OnboardingInventoryError as exc:
-        raise Conflict(f'The project cannot be onboarded: {exc}') from exc
+        raise Conflict(tr('onboarding.project_cannot_onboarded', exc=exc)) from exc
 
 
 def identity(source):
@@ -51,7 +52,7 @@ def turn_context(target, source, texts, inspection):
               'limits': {target.agents: MAX_AGENTS_LINES, target.claude: MAX_WRAPPER_LINES,
                          target.gemini: MAX_WRAPPER_LINES}}
     if len(freeze(result).encode('utf-8')) > MAX_CONTEXT_DRAFT_BYTES:
-        raise ValueError('Onboarding inventory and drafts exceed the 2 MiB a turn can freeze')
+        raise ValueError(tr('onboarding.onboarding_inventory_drafts_exceed'))
     return result
 
 

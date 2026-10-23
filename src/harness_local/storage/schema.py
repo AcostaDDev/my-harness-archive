@@ -29,4 +29,4 @@ def require_schema(engine: Engine) -> None:
                           "product_preference_events"):
                 connection.execute(text(f"SELECT * FROM {table} LIMIT 0"))
     except SQLAlchemyError as error:
-        raise RuntimeError("Base SQLite no preparada; ejecutar uv run --frozen alembic upgrade head.") from error
+        raise RuntimeError(tr('database.not_prepared')) from error

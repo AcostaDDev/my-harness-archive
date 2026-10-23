@@ -182,6 +182,7 @@ tarea se leen solo las decisiones que cita; este índice sirve para buscar prece
 | [D169](#d169--p011-t009-directiva-de-idioma-sellada-y-documentos-generados-en-el-idioma-de-trabajo) | P011-T009: directiva de idioma sellada y documentos generados en el idioma de trabajo | P011 |
 | [D170](#d170--p011-t010-interfaz-enes-por-catálogos-tipados-y-diagnósticos-http-propios-en-el-visual-guardado) | P011-T010: interfaz en/es por catálogos tipados y diagnósticos HTTP propios en el visual guardado | P011 |
 | [D171](#d171--p011-t021-textos-propios-del-servicio-y-la-cli-en-el-visual-de-cada-emisión) | P011-T021: textos propios del servicio y la CLI en el visual de cada emisión | P011 |
+| [D172](#d172--p011-t022-textos-de-servicio-ya-ingleses-en-enes-y-rechazos-por-código) | P011-T022: textos de servicio ya ingleses en en/es y rechazos por código | P011 |
 
 ## D001 — Alcance local y arquitectura base
 
@@ -5088,3 +5089,36 @@ Fase: P011. Concreta D159 (contrato T001 §3) sobre D166/D170.
 - Validación: pytest 1615 passed, 2 skipped, 29 subtests; unittest 8 OK; Node 93/93. QA visual conjunta no
   autorizada (HITL), registrada como no realizada; sin servicios, navegador, agentes, proveedores, red ni scripts
   de distribución. T022 es la siguiente.
+
+## D172 — P011-T022: textos de servicio ya ingleses en en/es y rechazos por código
+
+Estado: implementada el 2026-10-23 por la continuación y commit local en inglés pedidos por el usuario.
+Fase: P011. Concreta D159 (contrato T001 §3) sobre D166/D170/D171.
+[Entrega, alcance y validación](phase/P011-T022_TRADUCCION_SERVICIO_INGLES.md),
+[flujo](flows/language-preferences.md).
+
+- HITL sobre el criterio: casi todo `raise` llega a la API como `diagnostic`, así que lo visible se decide por
+  naturaleza. Pasa a `tr()` lo que el operador causa o resuelve (entradas, conflictos de estado, ids desconocidos,
+  checkout/Git/entorno, resultados de agentes, razones de parada/aceptación/bloqueo y diagnósticos registrados).
+  Queda como texto técnico inglés lo que solo falla por un error de programación o datos persistidos corruptos y lo
+  que entra en la entrada de un agente (validación, JUnit, rechazos por comando del runner, inventario de
+  incorporación), por D169. La lista, con categoría (`invariant`, `agent-input`, `technical`), vive en
+  `tests/fixtures/service_texts/english.json` y un test exige que todo texto propio en posición de diagnóstico sea
+  `tr()` o figure en ella.
+- 724 claves nuevas en/es (1195 en total) en 56 módulos de `core/`, `adapters/`, `storage/` y `services/`. El inglés
+  de cada mensaje convertido es idéntico al literal que sustituye; una frase condicional son dos claves y nunca se
+  insertan fragmentos. El literal español del chequeo de esquema que T021 no detectó es ahora `database.not_prepared`.
+- HITL sobre la UI: los dos textos que comparaba pasan a códigos. `ManagedBlocksEdited` y `DraftChanged` (subclases
+  de `ValueError`/`DraftConflict`) son la causa del `Conflict` y `call()` emite `managed_blocks_generated` y
+  `draft_changed`; `Docs.tsx` y `Planning.tsx` comparan `ManagedError.code`. `code` es texto libre: sin cambio de
+  OpenAPI ni tipos.
+- HITL sobre métricas: las razones de parada se persisten en la lengua emitida (D171) y las métricas siguen
+  agrupando por etapa y texto, así que una misma causa en en y es son dos grupos; aceptado y documentado.
+- Huellas: ninguna cubre un texto nuevo salvo vistas previas que ya llevaban avisos localizados (precedente D171);
+  los bloqueos de una vista previa de definición impiden confirmarla. READY, intenciones de commit y proyecciones no
+  guardan razones. Nada persistido se retraduce.
+- HITL: QA visual conjunta T010+T021+T022 no autorizada; registrada como no realizada. Sin cambios de esquema,
+  API/OpenAPI, rutas ni dependencias.
+- Validación: pytest 1619 passed, 2 skipped, 29 subtests; unittest 8 OK; Node 93/93; `check`/`build` del cliente
+  (aviso >500 kB previo). Sin esquema nuevo (sin Alembic), regeneración OpenAPI, servicios, navegador, agentes,
+  proveedores, red ni scripts de distribución. T011 es la siguiente.

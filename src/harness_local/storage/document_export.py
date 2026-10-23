@@ -18,6 +18,7 @@ from harness_local.storage.phases import (
     PhaseRepository, _event, _latest, _open, _operation, _questions, committed_tasks,
 )
 from harness_local.core.engine.serialization import load_history
+from harness_local.i18n import tr
 
 
 def _acceptance(session, run_id, projected):
@@ -64,19 +65,19 @@ def snapshot(session, phase, context=None, *, projected=False):
 def _phase(session, context, phase_id, expected=None):
     phase = session.get(Phase, phase_id)
     if phase is None or phase.root != str(context.root):
-        raise LookupError('Unknown phase in this checkout')
+        raise LookupError(tr('export.unknown_phase_checkout'))
     if expected is not None and (type(expected) is not int or phase.version != expected):
-        raise Conflict('Phase changed; reload before exporting')
+        raise Conflict(tr('export.phase_changed_reload_before'))
     latest = session.scalar(select(Phase.id).where(Phase.root == phase.root)
                             .order_by(Phase.created_at.desc(), Phase.id.desc()).limit(1))
     if latest != phase.id:
-        raise Conflict('Only the latest phase of the checkout can export its state')
+        raise Conflict(tr('export.latest_phase_checkout_export'))
     if PhaseRepository._root_pending(session, phase.root) or phase.status in ('CHECKING', 'CLOSING'):
-        raise Conflict('Checkout has unfinished jobs; export at a stopped boundary')
+        raise Conflict(tr('export.checkout_has_unfinished_jobs'))
     from harness_local.storage.models import PhaseAuthorizationRow as Authorization
     if session.scalar(select(Authorization.id).where(Authorization.phase_id == phase.id,
                       Authorization.kind == 'batch', Authorization.status == 'ACTIVE')):
-        raise Conflict('Revoke the active batch before exporting documents')
+        raise Conflict(tr('export.revoke_active_batch_before'))
     return phase
 
 
@@ -114,7 +115,7 @@ class DocumentExportRepository:
     def submit(self, context, phase_id, expected, *, key, versions, preview_sha256, reason, confirmed, git,
                resume_operation_id=None):
         if confirmed is not True or not isinstance(reason, str) or not reason.strip():
-            raise ValueError('Explicit confirmation of the exact diff and reason required')
+            raise ValueError(tr('export.explicit_confirmation_exact_diff'))
         marker = freeze({'action': 'document_export', 'phase_id': phase_id, 'expected_version': expected,
                          'preview_sha256': preview_sha256, 'reason': reason, 'confirmed': confirmed,
                          'resume_operation_id': resume_operation_id})
@@ -133,9 +134,9 @@ class DocumentExportRepository:
                     return _job(existing)
             raise
         if shown['preview_sha256'] != preview_sha256 or shown['resume_operation_id'] != resume_operation_id:
-            raise Conflict('Preview changed; review the exact diff again')
+            raise Conflict(tr('export.preview_changed_review_exact'))
         if not shown['mechanical']:
-            raise Conflict('Mechanical blocks already match SQLite; there is no change to commit')
+            raise Conflict(tr('export.mechanical_blocks_already_match'))
         assessment = self.managed.guard.assess(context.root)
         with self.managed._write() as session:
             existing = self.managed._existing(session, key, marker)
@@ -143,15 +144,15 @@ class DocumentExportRepository:
                 return _job(existing)
             phase = _phase(session, context, phase_id, expected)
             if shown['expected_version'] != expected:
-                raise Conflict('Phase changed since preview')
+                raise Conflict(tr('export.phase_changed_since_preview'))
             if resume_operation_id is not None:
                 op = _pending(session, phase)
                 if op is None or op.id != resume_operation_id or not op.request.get('commit_intent'):
-                    raise Conflict('Only the exact interrupted export intent can resume')
+                    raise Conflict(tr('export.exact_interrupted_export_intent'))
                 run = session.get(Run, op.run_id)
                 from harness_local.core.engine.contracts import context_snapshot
                 if run.context_json != context_snapshot(context) or run.versions_json != freeze(versions):
-                    raise Conflict('Frozen export context/versions changed; restore the configured writer first')
+                    raise Conflict(tr('export.frozen_export_context_versions'))
                 job = Job(idempotency_key=key, run_id=run.id, request_json=marker, status='QUEUED',
                           created_at=self.managed._now(), activation_id=self.managed._admit(session, assessment),
                           language_context=self.managed._language(session, run.id))
@@ -163,7 +164,7 @@ class DocumentExportRepository:
                 op.status, op.finished_at = 'QUEUED', None
             else:
                 if snapshot(session, phase, context) != shown['snapshot'] or phase.documents != shown['baseline']:
-                    raise Conflict('SQLite authority changed after preview')
+                    raise Conflict(tr('export.sqlite_authority_changed_after_2'))
                 job = self.managed._queue_new_run(session, assessment, context, versions, f'{phase.code}-EXPORT',
                                                   phase.code, key, marker, purpose='document_export')
                 saved = {k: v for k, v in shown.items() if k not in ('expected_version', 'resume_operation_id')}
@@ -187,7 +188,7 @@ class DocumentExportRepository:
             from harness_local.core.engine.serialization import restore_context
             frozen = restore_context(run.context_json)
             if not op.request.get('commit_intent') and snapshot(session, phase, frozen) != op.request['preview']['snapshot']:
-                raise Conflict('SQLite authority changed after the export was reviewed')
+                raise Conflict(tr('export.sqlite_authority_changed_after'))
             return {**op.request, 'operation_id': op.id}
 
 
@@ -218,7 +219,7 @@ def settle(managed, session, run, outcome):
         expected = {**op.request['preview']['baseline'], **{
             d['path']: d['after_sha256'] for d in op.request['preview']['documents']}}
         if observed != expected or phase.documents != op.request['preview']['baseline']:
-            raise Conflict('Documents changed after export; recover with the recorded intent before adoption')
+            raise Conflict(tr('export.documents_changed_after_export'))
         phase.documents = observed
         # READY keeps its historical evaluation; its hashes/HEAD no longer certify the closure.
         # The next closure gate observes the drift and invalidates it, as in H3.3.

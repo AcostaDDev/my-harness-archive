@@ -3,14 +3,15 @@ from hashlib import sha256
 from pathlib import Path
 import stat
 
-from harness_local.adapters.bootstrap import DraftConflict, _current, _replace_file
+from harness_local.adapters.bootstrap import DraftChanged, _current, _replace_file
 from harness_local.core.engine.definition import allowed_draft, definition_layout, draft_directories
 from harness_local.core.engine.documents import MAX_DOCUMENT_BYTES
+from harness_local.i18n import tr
 
 def area_root(engine, area) -> Path:
     parent = Path(engine.url.database).resolve().parent / area
     if parent.is_symlink() or (parent.exists() and not parent.is_dir()):
-        raise ValueError('The import drafts area must be a private directory')
+        raise ValueError(tr('onboarding.import_drafts_area_private'))
     parent.mkdir(mode=0o700, exist_ok=True)
     return parent
 
@@ -26,12 +27,12 @@ class PrivateDrafts:
     @classmethod
     def of(cls, engine, conversation_id: str) -> 'PrivateDrafts':
         if not isinstance(conversation_id, str) or not conversation_id or '/' in conversation_id or conversation_id in ('.', '..'):
-            raise ValueError('Invalid import conversation id')
+            raise ValueError(tr('onboarding.invalid_import_conversation_id'))
         return cls(area_root(engine, cls.area) / conversation_id)
 
     def _folder(self) -> Path | None:
         if self.base.is_symlink() or (self.base.exists() and not self.base.is_dir()):
-            raise ValueError('The import drafts folder must be a directory')
+            raise ValueError(tr('onboarding.import_drafts_folder_directory'))
         return self.base if self.base.exists() else None
 
     def inspect_definition(self, context, *, texts=False):
@@ -70,21 +71,22 @@ class PrivateDrafts:
         """Writes (or deletes with `content=None`) a draft if its hash is still `base_sha256`."""
         target = definition_layout(context)
         if not allowed_draft(target, path):
-            raise ValueError(f'{path} is not an allowed import draft')
+            raise ValueError(tr('onboarding.not_allowed_import_draft', path=path))
         folders = draft_directories(target)
         self._folder()
         parts = path.split('/')
         for n in range(1, len(parts)):
             folder = self.base.joinpath(*parts[:n])
             if '/'.join(parts[:n]) not in folders or folder.is_symlink() or (folder.exists() and not folder.is_dir()):
-                raise ValueError(f'{path} is not inside an allowed draft folder')
+                raise ValueError(tr('onboarding.not_inside_allowed_draft', path=path))
         item = self.base.joinpath(*parts)
         current = _current(item)
         after = None if content is None else sha256(content.encode('utf-8')).hexdigest()
         if current == after:
             return {'before': current, 'after': after, 'written': False}
         if current != base_sha256:
-            raise DraftConflict(f'{path} changed since it was read (expected {base_sha256}, found {current})')
+            raise DraftChanged(tr('onboarding.changed_since_read_expected', path=path, base_sha256=base_sha256,
+                                   current=current))
         if content is None:
             item.unlink()
         else:

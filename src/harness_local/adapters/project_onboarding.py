@@ -14,6 +14,7 @@ from harness_local.core.tree import ImportInventoryError, TreeEntry
 from harness_local.core.project_onboarding import (
     MAX_ENTRIES, MAX_ENTRY_BYTES, MAX_TOTAL_BYTES, OnboardingInventoryError, build_inventory, in_scope,
 )
+from harness_local.i18n import tr
 
 
 def read_inventory(root: Path, *, executable: str = 'git') -> dict:
@@ -21,7 +22,7 @@ def read_inventory(root: Path, *, executable: str = 'git') -> dict:
     git = _InventoryGit(root, executable=executable)
     try:
         if Path(git.text('rev-parse', '--show-toplevel')).resolve() != root:
-            raise OnboardingInventoryError('The project root must be the top level of its Git checkout.')
+            raise OnboardingInventoryError(tr('onboarding.project_root_top_level'))
         head = git.text('rev-parse', '--verify', '--quiet', 'HEAD^{commit}')
         tree = git.text('rev-parse', '--verify', f'{head}^{{tree}}')
         # Use the sealed id, not HEAD again: a concurrent move of the reference does not mix commits.
@@ -29,9 +30,9 @@ def read_inventory(root: Path, *, executable: str = 'git') -> dict:
         rows = []
         records = [record for record in output.split(b'\0') if record]
         if not records:
-            raise OnboardingInventoryError('HEAD has no files; an empty project uses the creation flow.')
+            raise OnboardingInventoryError(tr('onboarding.head_has_no_files'))
         if len(records) > MAX_ENTRIES:
-            raise OnboardingInventoryError(f'More than {MAX_ENTRIES} tree entries; inventory refused.')
+            raise OnboardingInventoryError(tr('onboarding.more_tree_entries_inventory', max_entries=MAX_ENTRIES))
         for record in records:
             header, raw_path = record.split(b'\t', 1)
             mode, kind, obj, size = header.decode('ascii').split()
@@ -41,7 +42,8 @@ def read_inventory(root: Path, *, executable: str = 'git') -> dict:
         readable = [row for row in rows if row[0] in ('100644', '100755')
                     and row[2] is not None and row[2] <= MAX_ENTRY_BYTES]
         if sum(row[2] for row in readable) > MAX_TOTAL_BYTES:
-            raise OnboardingInventoryError(f'Sources exceed {MAX_TOTAL_BYTES} bytes; inventory refused.')
+            raise OnboardingInventoryError(tr('onboarding.sources_exceed_bytes_inventory',
+                                              max_total_bytes=MAX_TOTAL_BYTES))
         blobs = _blobs(git, sorted({row[1] for row in readable}))
         entries = []
         for mode, obj, size, path in rows:
@@ -53,5 +55,4 @@ def read_inventory(root: Path, *, executable: str = 'git') -> dict:
             entries.append(TreeEntry(path, mode, size, None if diagnostic else blobs[obj], diagnostic))
         return build_inventory(tuple(entries), head=head, tree=tree)
     except (GitError, ImportInventoryError, UnicodeError) as exc:
-        raise OnboardingInventoryError('Cannot read a non-empty Git HEAD from complete local objects '
-                                       f'(lazy-fetch is disabled): {exc}') from exc
+        raise OnboardingInventoryError(tr('onboarding.cannot_read_non_empty', exc=exc)) from exc

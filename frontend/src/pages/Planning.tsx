@@ -468,7 +468,7 @@ function DraftEditor({ conversation, path, draft, editKey, blocked, onClose }: {
     } catch (e) {
       const text = conflictText(e);
       if (!text) throw e;
-      setConflict(text.includes("changed since") ? t("planning.editor.conflict") : text);
+      setConflict(e instanceof ManagedError && e.code === "draft_changed" ? t("planning.editor.conflict") : text);
     }
   }
   const blocks = /<!-- harness-local:managed-[a-z-]+:(start|end) -->/.test(edit.text);

@@ -7,6 +7,7 @@ from harness_local.core.engine.context import Command, ProjectContext
 from harness_local.core.engine.contracts import AgentRequest, AgentResult, freeze
 from harness_local.core.engine.evidence import ContentEvidence
 from harness_local.core.engine.validation import CommandResult
+from harness_local.i18n import tr
 
 
 class ScriptedAgentAdapter:
@@ -58,12 +59,12 @@ class SyntheticWorkspace:
 
     def _read(self, context: ProjectContext) -> dict[str, str | None]:
         if context.root != self.root:
-            raise ValueError("Synthetic workspace belongs to a different project")
+            raise ValueError(tr('simulation.synthetic_workspace_belongs_different'))
         result = {}
         for path in self.paths:
             item = context.path(path)
             if item.exists() and not item.is_file():
-                raise ValueError("Synthetic evidence must be regular files")
+                raise ValueError(tr('simulation.synthetic_evidence_regular_files'))
             result[path] = hashlib.sha256(item.read_bytes()).hexdigest() if item.exists() else None
         return result
 

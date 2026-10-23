@@ -4,14 +4,14 @@ Objetivo y criterios en [ROADMAP](ROADMAP.md#p011--preparación-para-apertura-p�
 Decisión: [D154](DECISIONS.md#d154--p011-preparación-para-apertura-pública-en-github).
 [Plan y alcance](phase/P011_PLAN_APERTURA_PUBLICA.md).
 
-**Estado:** en ejecución desde el 2026-10-22. T001/T002/T019/T003–T010/T020/T021 completadas (D159–D171); nueve
+**Estado:** en ejecución desde el 2026-10-22. T001/T002/T019/T003–T010/T020–T022 completadas (D159–D172); ocho
 tareas pendientes (T010 desglosó T021 y T021 desglosó T022 por HITL). Licencia/avisos, retirada legacy/A,
 código/pruebas en inglés, preferencias globales e idioma de trabajo inmutable por proyecto con el par congelado por
-job/intento; recetas v2; directiva al agente y documentos en W; interfaz React, diagnósticos HTTP propios y textos
-del servicio/CLI antes españoles en en/es.
+job/intento; recetas v2; directiva al agente y documentos en W; interfaz React, diagnósticos HTTP propios y todos
+los textos visibles del servicio/CLI en en/es (los técnicos ingleses, listados); QA visual conjunta sin autorizar.
 **Planificación:** base finalizada en D156 y afinada por D155/D157/D158; contrato T001 disponible.
 No equivale a fase completada.
-**Siguiente:** P011-T022. Sin autorización de publicación.
+**Siguiente:** P011-T011. Sin autorización de publicación.
 P001–P010 siguen cerradas; la primera versión local mantiene el alcance de D151/D153.
 
 ## Restricciones compartidas
@@ -44,7 +44,7 @@ P001–P010 siguen cerradas; la primera versión local mantiene el alcance de D1
   siguiente fase` para v0.2.0 después de abrir el proyecto en GitHub, fuera de estas tareas. P011 mantiene
   cierre con READY y autorización propia, nueva fase sin tareas y confirmación del plan posterior.
   El commit D156 y los ajustes D157/D158 ya se realizaron. La petición actual autoriza ejecutar la siguiente
-  tarea (T021) y su commit local en inglés, sin encadenar tareas ni publicar.
+  tarea (T022) y su commit local en inglés, sin encadenar tareas ni publicar.
 - D157 elige instantánea pública inicial revisada, con Git/documentación de partida nuevos y sin historia privada.
   Desde la apertura, código/decisiones/fases se desarrollan en el repositorio público, fuente principal; este
   checkout conserva su historia privada. No sincronizar dos desarrollos activos ni congelar para siempre `docs/` pública.
@@ -615,7 +615,13 @@ build si cambia el cliente y scripts afectados sin ejecutar el producto real.
 
 ## P011-T022 — Catálogo en/es de los textos de servicio ya ingleses
 
-**Estado:** pendiente. **Depende de:** T021. **Orden:** antes de T011; desglosada de T021 por HITL (D171).
+**Estado:** completada el 2026-10-23, D172. **Depende de:** T021. **Orden:** antes de T011; desglosada de T021 por
+HITL (D171).
+**Evidencia:** [entrega](phase/P011-T022_TRADUCCION_SERVICIO_INGLES.md): por HITL, visibles por naturaleza (lo que el
+operador causa o resuelve) a catálogo y técnicos ingleses listados con categoría en
+`tests/fixtures/service_texts/english.json` (161: invariantes, entrada de agente, prefijos técnicos); 724 claves
+nuevas (1195) en 56 módulos con el inglés idéntico. La UI compara códigos (`managed_blocks_generated`,
+`draft_changed`); métricas de paradas por texto aceptadas por HITL; QA visual no autorizada (no realizada).
 **Objetivo:** Que los diagnósticos propios del servicio que hoy son texto técnico inglés también salgan en/es.
 **Alcance:** los textos ingleses de `raise`/diagnósticos de servicios, storage, adapters y core que el usuario puede
 ver (directamente o reenviados por la API como `diagnostic`); inventario de partida en la

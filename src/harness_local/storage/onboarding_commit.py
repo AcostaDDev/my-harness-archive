@@ -7,6 +7,7 @@ from harness_local.core.engine.onboarding_commit import preview as build_preview
 from harness_local.storage.managed import Conflict
 from harness_local.storage.onboarding import OnboardingDrafts
 from harness_local.storage.project_import import ImportRepository
+from harness_local.i18n import tr
 
 
 class OnboardingRepository(ImportRepository):
@@ -18,7 +19,7 @@ class OnboardingRepository(ImportRepository):
         reader.git = LocalGit(context.root, executable=writer.executable)
         head = reader.head()
         if head != source['inventory']['head']:
-            raise Conflict('The checkout changed since the onboarding conversation started')
+            raise Conflict(tr('onboarding.checkout_changed_since_onboarding'))
         entries = reader.entries(head)
         target = definition_layout(context)
         selected = {path: entry for path, entry in entries.items() if allowed_draft(target, path)}

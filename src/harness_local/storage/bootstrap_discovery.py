@@ -44,4 +44,5 @@ class DiscoveryRepository:
         """D088: the one-turn discovery only served the retired v1 creation. Runs already recorded
         are still read with `latest` and `request`; a new one is never admitted."""
         from harness_local.storage.bootstrap import V1_RETIRED
-        raise ValueError(V1_RETIRED)
+        from harness_local.i18n import tr
+        raise ValueError(tr(V1_RETIRED))

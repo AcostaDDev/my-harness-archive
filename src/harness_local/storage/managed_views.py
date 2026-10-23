@@ -58,12 +58,12 @@ def window_page(read, size: int, offset: int, limit: int) -> dict:
     `read(start, end)` returns those bytes: only `limit` + 4 are requested, just enough to complete a sequence.
     """
     if type(offset) is not int or type(limit) is not int or offset < 0 or not 1 <= limit <= MAX_DIFF_PAGE:
-        raise ValueError('Invalid diff page')
+        raise ValueError(tr('views.invalid_diff_page'))
     if offset > size:
-        raise ValueError('Diff offset must be 0 or a previous next_offset')
+        raise ValueError(tr('views.diff_offset_0_previous'))
     window = read(offset, min(offset + limit + 4, size)) if offset < size else b''
     if window and window[0] & 0xC0 == 0x80:
-        raise ValueError('Diff offset must be 0 or a previous next_offset')
+        raise ValueError(tr('views.diff_offset_0_previous'))
     end = min(limit, size - offset)
     if offset + end < size:
         newline = window.rfind(b'\n', 0, end)

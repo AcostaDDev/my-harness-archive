@@ -25,7 +25,8 @@ from harness_local.api.schemas import (
     WorkLanguageMigrationApplyRead, WorkLanguageMigrationInput, WorkLanguageMigrationPreviewRead,
 )
 from harness_local.api.security import local_request, problem
-from harness_local.core.engine.document_ops import BaseChanged
+from harness_local.adapters.bootstrap import DraftChanged
+from harness_local.core.engine.document_ops import BaseChanged, ManagedBlocksEdited
 from harness_local.core.engine.planning import task_sources
 from harness_local.core.managed_mode import MigrationError
 from harness_local.i18n import message
@@ -57,8 +58,11 @@ def call(operation, /, *args, **kwargs):
     except WorkLanguageImmutable as error:
         raise problem(409, "work_language_immutable", str(error)) from error
     except Conflict as error:
+        # P011-T022: the client tells these refusals apart by code, never by the (localized) diagnostic.
         code = ("mode_refused" if isinstance(error.__cause__, ModeConflict)
                 else "document_changed" if isinstance(error.__cause__, BaseChanged)
+                else "managed_blocks_generated" if isinstance(error.__cause__, ManagedBlocksEdited)
+                else "draft_changed" if isinstance(error.__cause__, DraftChanged)
                 else "preparation_required" if str(error).startswith("preparation_required:") else "conflict")
         raise problem(409, code, str(error)) from error
     except ModeConflict as error:

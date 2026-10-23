@@ -14,6 +14,7 @@ import tomllib
 
 from harness_local.core.engine.contracts import freeze
 from harness_local.core.tree import TreeEntry
+from harness_local.i18n import tr
 
 INVENTORY_FORMAT = 'harness-local/onboarding-inventory/1'
 MAX_ENTRIES = 50000
@@ -499,9 +500,9 @@ def _profile(result, tools, packages):
 def build_inventory(entries: tuple[TreeEntry, ...], *, head: str, tree: str) -> dict:
     selected = sorted((entry for entry in entries if in_scope(entry.path)), key=lambda item: item.path)
     if len(entries) > MAX_ENTRIES or sum(len(e.data) for e in selected if e.data is not None) > MAX_TOTAL_BYTES:
-        raise OnboardingInventoryError('Inventory limits exceeded.')
+        raise OnboardingInventoryError(tr('onboarding.inventory_limits_exceeded'))
     if len({entry.path for entry in selected}) != len(selected):
-        raise OnboardingInventoryError('Duplicate source paths.')
+        raise OnboardingInventoryError(tr('onboarding.duplicate_source_paths'))
     result = {'format': INVENTORY_FORMAT, 'head': head, 'tree': tree, 'source': 'git-head',
               'entries': [], 'stack': [], 'entities': [], 'relationships': [], 'routes': [], 'tests': [],
               'ci': [], 'packages': [], 'diagnostics': [],

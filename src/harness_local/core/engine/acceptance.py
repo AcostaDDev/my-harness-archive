@@ -6,6 +6,7 @@ import json
 from harness_local.core.engine.context import ProjectContext
 from harness_local.core.engine.evidence import ContentEvidence, matches
 from harness_local.core.engine.review import ReviewCycle
+from harness_local.i18n import tr
 
 
 @dataclass(frozen=True)
@@ -35,22 +36,22 @@ def parity_reasons(context: ProjectContext, changed_paths) -> list[str]:
     parity = documentation_parity(context, changed_paths)
     if parity is None or not parity['data_model_changes'] or parity['ddbb_diagram_changed']:
         return []
-    return [f"Data model changed without {parity['ddbb_diagram']} (D088): "
-            + ", ".join(parity['data_model_changes'][:20])]
+    return [tr('acceptance.data_model_without_diagram', diagram=parity['ddbb_diagram'],
+               paths=", ".join(parity['data_model_changes'][:20]))]
 
 
 def assess_acceptance(cycle: ReviewCycle, current: ContentEvidence, context: ProjectContext) -> AcceptanceDecision:
     review = json.loads(cycle.review_json) if cycle.review_json else {}
     reasons = []
     if review.get("verdict") != "ACCEPT":
-        reasons.append("Independent review did not ACCEPT")
+        reasons.append(tr('acceptance.independent_review_did_not'))
     if review.get("blocking_questions") or review.get("scope_grants"):
-        reasons.append("Unresolved questions or scope grants")
+        reasons.append(tr('acceptance.unresolved_questions_scope_grants'))
     if cycle.policy.hard_failure:
-        reasons.append("File policy failure")
+        reasons.append(tr('acceptance.file_policy_failure'))
     if not cycle.validation.all_passed:
-        reasons.append("Deterministic validation failed")
+        reasons.append(tr('acceptance.deterministic_validation_failed'))
     reasons += parity_reasons(context, cycle.evidence.changed_paths)
     if cycle.validation.evidence != cycle.evidence or current != cycle.evidence:
-        reasons.append("Content changed since evidence capture")
+        reasons.append(tr('acceptance.content_changed_since_evidence'))
     return AcceptanceDecision(not reasons, tuple(reasons), cycle.evidence)

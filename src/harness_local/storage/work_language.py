@@ -15,7 +15,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from harness_local.core.engine.contracts import freeze
-from harness_local.i18n import LANGUAGES, message
+from harness_local.i18n import LANGUAGES, message, tr
 from harness_local.storage.managed import Conflict
 from harness_local.storage.models import ProjectWorkLanguageRow as Row
 
@@ -60,7 +60,7 @@ def rows(engine) -> dict[str, dict]:
 
 def require_language(value) -> str:
     if value not in LANGUAGES:
-        raise ValueError(f'Work language must be one of {list(LANGUAGES)}')
+        raise ValueError(tr('work_language.work_language_one', languages=list(LANGUAGES)))
     return value
 
 
@@ -77,7 +77,8 @@ def associate(session: Session, *, root: str, project_id: str, work_language: st
     if current is not None:
         if current.work_language != work_language:
             raise WorkLanguageImmutable(
-                f'The work language of {root} is {current.work_language!r} since {current.confirmed_at}; it does not change')
+                tr('work_language.work_language_since_does', root=root, work_language=repr(current.work_language),
+                   confirmed_at=current.confirmed_at))
         return view(current), False
     record = {'format': FORMAT, 'root': str(root), 'project_id': project_id, 'work_language': work_language,
               'source': source, 'confirmation': confirmation, 'confirmed_at': now}

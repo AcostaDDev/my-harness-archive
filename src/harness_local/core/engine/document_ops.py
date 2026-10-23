@@ -21,6 +21,7 @@ from harness_local.core.engine.documents import (
     protected_write, render_state, render_summary, replace_block, require_layout, _span,
 )
 from harness_local.core.engine.phases import digest, document_hashes, phase_definition
+from harness_local.i18n import tr
 
 EDIT_REASON = 'User-confirmed document edit (D072)'
 TRANSITION_REASON = 'Phase transition: archive and fresh documents (D072)'
@@ -31,6 +32,10 @@ class BaseChanged(ValueError):
     """The document no longer has the hash it had when opened in the editor (base hash CAS)."""
 
 
+class ManagedBlocksEdited(ValueError):
+    """An edit touches the generated managed blocks; the API names it with its own code (P011-T022)."""
+
+
 def text_hash(text: str) -> str:
     return hashlib.sha256(text.encode('utf-8')).hexdigest()
 
@@ -39,12 +44,12 @@ def read_text(context, path: str) -> str | None:
     """Bounded regular UTF-8 document; None if absent. Links and other types are rejected."""
     target = context.path(path)
     if target.is_symlink() or (target.exists() and not target.is_file()):
-        raise ValueError(f'{path} must be a regular file')
+        raise ValueError(tr('documents.regular_file', path=path))
     if not target.exists():
         return None
     data = target.read_bytes()
     if len(data) > MAX_DOCUMENT_BYTES:
-        raise ValueError(f'{path} exceeds 512 KiB')
+        raise ValueError(tr('documents.exceeds_512_kib', path=path))
     return data.decode('utf-8')
 
 
@@ -58,7 +63,7 @@ def _clean_capture(context, git):
     evidence = git.capture(context)
     provenance = git_provenance(evidence)
     if evidence.changed_paths or provenance.index_tree != provenance.base_tree:
-        raise ValueError('This operation requires a clean checkout and index; confirm or remove local changes first')
+        raise ValueError(tr('documents.operation_requires_clean_checkout'))
     return evidence, provenance
 
 
@@ -73,7 +78,7 @@ def _sealed_preview(context, evidence, provenance, tree: str,
         raw = new if isinstance(new, bytes) else (new.encode('utf-8') if new is not None else None)
         before = old if isinstance(old, bytes) else (old.encode('utf-8') if old is not None else None)
         if raw is not None and len(raw) > MAX_DOCUMENT_BYTES:
-            raise ValueError(f'{path} would exceed 512 KiB')
+            raise ValueError(tr('definition.would_exceed_512_kib', path=path))
         binary = isinstance(new, bytes)
         content = base64.b64encode(new).decode('ascii') if binary else new
         documents.append({'path': path, 'before_sha256': None if before is None else hashlib.sha256(before).hexdigest(),
@@ -92,7 +97,7 @@ def _sealed_preview(context, evidence, provenance, tree: str,
 def _protected(context, paths):
     for path in paths:
         if protected_write(context, path):
-            raise ValueError(f'{path} is protected by the project profile')
+            raise ValueError(tr('documents.protected_project_profile', path=path))
 
 
 # --- transition ------------------------------------------------------------------------------
@@ -115,10 +120,10 @@ def preview_transition(context, snapshot: dict, git, next_steps: str | None, pla
     closed = snapshot['phase']
     code, status = closed['code'], closed['status']
     if status not in TERMINAL:
-        raise ValueError('Only a CLOSED or ABANDONED phase can be archived')
+        raise ValueError(tr('documents.closed_abandoned_phase_archived'))
     baseline = closed['documents']
     if document_hashes(context, baseline) != baseline:
-        raise ValueError('Phase documents changed externally; confirm or reconcile them before the transition')
+        raise ValueError(tr('documents.phase_documents_changed_externally'))
     evidence, provenance = _clean_capture(context, git)
     texts = {path: read_text(context, path) for path in target.phase_documents}
     missing = sorted(path for path, text in texts.items() if text is None)
@@ -127,35 +132,35 @@ def preview_transition(context, snapshot: dict, git, next_steps: str | None, pla
     entries = parse_roadmap(texts[target.roadmap])
     codes = [entry['code'] for entry in entries]
     if code not in codes:
-        raise ValueError(f'ROADMAP has no section for {code}; describe the phase there first')
+        raise ValueError(tr('documents.roadmap_has_no_section', code=code))
     following = entries[codes.index(code) + 1] if codes.index(code) + 1 < len(entries) else None
     archive = target.archive(code)
     folder = context.path(archive)
     if folder.exists() or folder.is_symlink():
-        raise ValueError(f'{archive} already exists; nothing is overwritten')
+        raise ValueError(tr('documents.already_exists_nothing_overwritten', archive=archive))
     definition = None
     if following is not None:
         if following['code'] in snapshot['existing_codes']:
-            raise ValueError(f"Phase {following['code']} already exists in this checkout")
+            raise ValueError(tr('documents.phase_already_exists_checkout', code=following['code']))
         if unified:
             next_steps = (f"# {following['code']} — {inline(following['title'])}\n\n"
                           f"{w['objective']} {following['objective']}\n\n{w['exit_criteria']}\n"
                           + ''.join(f'- {item}\n' for item in following['exit_criteria'])
                           + w['next_plan_pending'])
         if not isinstance(next_steps, str) or not next_steps.strip():
-            raise ValueError(f"Provide the NEXT_STEPS plan of {following['code']}")
+            raise ValueError(tr('documents.provide_next_steps_plan', code=following['code']))
         if '\0' in next_steps:
-            raise ValueError('The plan must be NUL-free text')
+            raise ValueError(tr('documents.plan_nul_free_text'))
         if set(blocks(next_steps)) - {'state'}:
-            raise ValueError('The plan may contain only the managed-state block of NEXT_STEPS')
+            raise ValueError(tr('definition.plan_may_contain_managed'))
         tasks = plan_tasks(next_steps, following['code'])
         if not tasks and not unified:
-            raise ValueError(f"The plan of {following['code']} needs at least one task heading")
+            raise ValueError(tr('definition.plan_needs_least_one', code=following['code']))
         definition = phase_definition(context, phase_data(target, following, tasks))
         plan = next_steps
     else:
         if next_steps is not None:
-            raise ValueError('ROADMAP has no further phase; the transition only archives')
+            raise ValueError(tr('documents.roadmap_has_no_further'))
         tasks = []
         plan = w['roadmap_finished'].format(code=inline(code))
     titles = {entry['code']: entry['title'] for entry in entries}
@@ -192,7 +197,7 @@ def preview_transition(context, snapshot: dict, git, next_steps: str | None, pla
         work = context.path(target.phase_dir)
         if work.exists():
             if not work.is_dir():
-                raise ValueError(f'{target.phase_dir} must be a directory')
+                raise ValueError(tr('documents.directory', phase_dir=target.phase_dir))
             reserved = {'STATE.md', 'NEXT_STEPS.md', 'REVIEW.md', 'SUMMARY.md'}
             for path in sorted(work.rglob('*')):
                 relative = path.relative_to(work).as_posix()
@@ -201,11 +206,11 @@ def preview_transition(context, snapshot: dict, git, next_steps: str | None, pla
                 if safe.is_dir():
                     continue
                 if not safe.is_file():
-                    raise ValueError(f'{source} must be a regular file')
+                    raise ValueError(tr('documents.regular_file_2', source=source))
                 if relative.split('/')[0] in reserved:
-                    raise ValueError(f'{source} conflicts with the phase archive documents')
+                    raise ValueError(tr('documents.conflicts_phase_archive_documents', source=source))
                 if safe.stat().st_size > MAX_DOCUMENT_BYTES:
-                    raise ValueError(f'{source} exceeds 512 KiB')
+                    raise ValueError(tr('documents.exceeds_512_kib_2', source=source))
                 data = safe.read_bytes()
                 changes.extend([(f'{archive}/{relative}', None, data), (source, data, None)])
     _protected(context, [path for path, _, _ in changes])
@@ -221,16 +226,16 @@ def preview_transition(context, snapshot: dict, git, next_steps: str | None, pla
 
 def _edit_checks(target: Layout, path: str, old: str | None, new: str):
     if not target.editable(path):
-        raise ValueError(f'{path} is not an editable document (README or Markdown under {target.docs}, never the archive)')
+        raise ValueError(tr('documents.not_editable_document_readme', path=path, docs=target.docs))
     if not isinstance(new, str) or '\0' in new:
-        raise ValueError(f'{path} must be NUL-free text')
+        raise ValueError(tr('documents.nul_free_text', path=path))
     try:
         before = blocks(old or '')
         after = blocks(new)
     except ValueError as exc:
         raise ValueError(f'{path}: {exc}') from exc
     if before != after:
-        raise ValueError(f'{path}: managed blocks are generated by Harness Local and cannot be edited')
+        raise ManagedBlocksEdited(tr('documents.managed_blocks_generated_harness', path=path))
 
 
 def restore_blocks(local: str, base: str | None, path: str) -> str:
@@ -238,9 +243,9 @@ def restore_blocks(local: str, base: str | None, path: str) -> str:
     try:
         theirs, ours = blocks(local), blocks(base or '')
     except ValueError as exc:
-        raise ValueError(f'{path}: {exc}; restore the markers by hand before regenerating') from exc
+        raise ValueError(tr('documents.restore_markers_hand_before', path=path, exc=exc)) from exc
     if set(theirs) != set(ours):
-        raise ValueError(f'{path}: managed markers were added or removed; restore them by hand before regenerating')
+        raise ValueError(tr('documents.managed_markers_were_added', path=path))
     for name, block in ours.items():  # exact bytes of the base block, including its line endings
         start, stop = _span(local, name)
         local = local[:start] + block + local[stop:]
@@ -255,7 +260,7 @@ def preview_edit(context, git, *, source: str, changes: list[dict] | None, regen
     with the diff of what is discarded and the writer only admits those exact local bytes."""
     target = require_layout(context)
     if regenerate_blocks and source != 'worktree':
-        raise ValueError('Only a worktree edit regenerates managed blocks')
+        raise ValueError(tr('documents.worktree_edit_regenerates_managed'))
     evidence = git.capture(context)
     provenance = git_provenance(evidence)
     proposed: dict[str, str] = {}
@@ -263,34 +268,34 @@ def preview_edit(context, git, *, source: str, changes: list[dict] | None, regen
     local: dict[str, str] = {}
     if source == 'content':
         if evidence.changed_paths or provenance.index_tree != provenance.base_tree:
-            raise ValueError('The checkout has local changes; confirm them as a worktree edit or remove them first')
+            raise ValueError(tr('documents.checkout_has_local_changes'))
         if not changes:
-            raise ValueError('Send at least one document')
+            raise ValueError(tr('documents.send_least_one_document'))
         for item in changes:
             path, content = item.get('path'), item.get('content')
             if not isinstance(path, str) or path in proposed:
-                raise ValueError('Each edited document needs a distinct path')
+                raise ValueError(tr('documents.each_edited_document_needs'))
             if not target.editable(path):
-                raise ValueError(f'{path} is not an editable document (README or Markdown under {target.docs}, never the archive)')
+                raise ValueError(tr('documents.not_editable_document_readme', path=path, docs=target.docs))
             previous[path] = read_text(context, path)
             proposed[path] = content
             if 'base_sha256' in item:
                 current = None if previous[path] is None else text_hash(previous[path])
                 if current != item['base_sha256']:
-                    raise BaseChanged(f'{path} changed since it was opened in the editor '
-                                      f'(base {str(item["base_sha256"])[:12]}, now {str(current)[:12]})')
+                    raise BaseChanged(tr('documents.changed_since_opened_editor', path=path,
+                                         base_sha256=str(item['base_sha256'])[:12], current=str(current)[:12]))
     elif source == 'worktree':
         if changes is not None:
-            raise ValueError('A worktree edit takes the documents from the checkout')
+            raise ValueError(tr('documents.worktree_edit_takes_documents'))
         if not evidence.changed_paths:
-            raise ValueError('There are no local document changes to confirm')
+            raise ValueError(tr('documents.no_local_document_changes'))
         import json
         deleted = json.loads(evidence.provenance_json).get('deleted_paths', [])
         if deleted:
-            raise ValueError('Deleted files are not confirmed as document edits: ' + ', '.join(deleted[:20]))
+            raise ValueError(tr('documents.deleted_not_confirmed', paths=', '.join(deleted[:20])))
         outside = [path for path in evidence.changed_paths if not target.editable(path)]
         if outside:
-            raise ValueError('Local changes outside editable documents: ' + ', '.join(outside[:20]))
+            raise ValueError(tr('documents.outside_editable', paths=', '.join(outside[:20])))
         for path in evidence.changed_paths:
             blob = git.read_blob(context, evidence.base_revision, path)
             previous[path] = None if blob is None else blob.decode('utf-8')
@@ -300,7 +305,7 @@ def preview_edit(context, git, *, source: str, changes: list[dict] | None, regen
                 if restored != proposed[path]:
                     local[path], proposed[path] = proposed[path], restored
         if regenerate_blocks and not local:
-            raise ValueError('No local change touches a managed block; confirm the edit without regenerating')
+            raise ValueError(tr('documents.no_local_change_touches'))
     else:
         raise ValueError('Unknown edit source')
     for path, content in proposed.items():
@@ -326,7 +331,7 @@ def preview_edit(context, git, *, source: str, changes: list[dict] | None, regen
     preview = _sealed_preview(context, evidence, provenance, provenance.base_tree, changes_list, EDIT_REASON,
                               extra, disk=local)
     if not preview['documents']:
-        raise ValueError('The documents already have this content; there is nothing to commit')
+        raise ValueError(tr('documents.documents_already_have_content'))
     if source == 'worktree':
         # The whole local change must stay within what was confirmed: the local documents, over the base,
         # reproduce the checkout tree. The index regenerated by the harness is added afterwards.
@@ -336,7 +341,7 @@ def preview_edit(context, git, *, source: str, changes: list[dict] | None, regen
                           git.identity.name, git.identity.email, 0)
         tree, _ = git.seal(context, plan)
         if tree != provenance.worktree_tree:
-            raise ValueError('Local changes are not exactly the listed documents')
+            raise ValueError(tr('documents.local_changes_not_exactly'))
     return preview
 
 
@@ -349,7 +354,7 @@ def seal_operation(context, history, request, git, journal, now, *, label):
     raw = request.get('commit_intent')
     if raw is None:
         if git.capture(context).fingerprint != shown['fingerprint']:
-            raise BaseChanged('Checkout changed after preview')
+            raise BaseChanged(tr('documents.checkout_changed_after_preview'))
         updates = tuple(MechanicalUpdate(**item) for item in shown['mechanical'])
         message = (f"harness: {label}\n\nHarness-Operation: {request['operation_id']}\n"
                    f"Harness-Preview: {shown['preview_sha256']}\n")

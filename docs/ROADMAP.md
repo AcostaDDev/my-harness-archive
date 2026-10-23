@@ -257,9 +257,11 @@ hace tras ella.
 T021 completada (D171): textos propios del servicio/CLI antes españoles en en/es por el visual de cada emisión;
 [entrega](phase/P011-T021_TRADUCCION_SERVICIO_CLI.md). Por HITL, los textos de servicio ya ingleses pasan a la nueva
 T022 y la QA visual conjunta se hace tras ella.
-Nueve tareas pendientes; siguiente T022.
+T022 completada (D172): diagnósticos visibles del servicio antes ingleses en en/es y rechazos de la UI por código;
+[entrega](phase/P011-T022_TRADUCCION_SERVICIO_INGLES.md). QA visual conjunta no autorizada (no realizada).
+Ocho tareas pendientes; siguiente T011.
 Planificación inicial finalizada en D156 y commit `6174f51`; ajustes D157/D158 incorporados
-en `2730f54`, sin ejecución del producto. La petición actual autoriza T021 y su commit local en inglés.
+en `2730f54`, sin ejecución del producto. La petición actual autoriza T022 y su commit local en inglés.
 La fase no está cerrada; se mantienen veintidós tareas (trece completadas) y diez criterios.
 [Plan](phase/P011_PLAN_APERTURA_PUBLICA.md), [tareas](NEXT_STEPS.md) y
 [D154](DECISIONS.md#d154--p011-preparación-para-apertura-pública-en-github).

@@ -43,11 +43,11 @@ class HeadSnapshot:
             path = name.decode('utf-8')
             parts = relative_path(path).parts
             if kind != 'blob' or mode not in ('100644', '100755') or '.git' in parts:
-                raise ValueError('Chat snapshots require regular files; symlinks and submodules are not supported')
+                raise ValueError(tr('chat.chat_snapshots_require_regular'))
             size = object_size(size, kind, oid, path)
             total += size
             if size > MAX_FILE_BYTES or total > MAX_BYTES or len(entries) >= MAX_FILES:
-                raise ValueError('Chat HEAD snapshot exceeds the file/byte limit')
+                raise ValueError(tr('chat.chat_head_snapshot_exceeds'))
             entries[path] = (oid, size, mode)
         return entries
 
@@ -58,7 +58,7 @@ class HeadSnapshot:
             relative_path(path)
             # Validate the caller's spelling even when the path is absent from HEAD.
             if path != str(relative_path(path)) or '.git' in relative_path(path).parts:
-                raise ValueError('Invalid chat document path')
+                raise ValueError(tr('chat.invalid_chat_document_path'))
             entry = entries.get(path)
             data = self.git.run('cat-file', 'blob', entry[0]) if entry else None
             result.append({'path': path, 'sha256': hashlib.sha256(data).hexdigest() if data is not None else None,
@@ -75,7 +75,7 @@ class HeadSnapshot:
             target.parent.mkdir(parents=True, exist_ok=True)
             data = self.git.run('cat-file', 'blob', oid)
             if len(data) != size:
-                raise ValueError('Git blob size changed')
+                raise ValueError(tr('chat.git_blob_size_changed'))
             target.write_bytes(data)
             target.chmod(0o555 if mode == '100755' else 0o444)
         for directory, _, _ in os.walk(destination, topdown=False):
@@ -91,7 +91,7 @@ class SnapshotEvidence:
         files = []
         total = 0
         if context.root.is_symlink() or not context.root.is_dir():
-            raise ValueError('Chat snapshot root is missing or no longer a regular directory')
+            raise ValueError(tr('chat.chat_snapshot_root_missing'))
         def unreadable(error):
             raise error
         for directory, dirs, names in os.walk(context.root, followlinks=False, onerror=unreadable):
@@ -100,12 +100,12 @@ class SnapshotEvidence:
                 mode = path.lstat().st_mode
                 relative = path.relative_to(context.root).as_posix()
                 if stat.S_ISLNK(mode) or not (stat.S_ISREG(mode) or stat.S_ISDIR(mode)):
-                    raise ValueError('Non-regular entry in chat snapshot')
+                    raise ValueError(tr('chat.non_regular_entry_chat'))
                 if stat.S_ISREG(mode):
                     size = path.stat().st_size
                     total += size
                     if size > MAX_FILE_BYTES or total > MAX_BYTES or len(files) >= MAX_FILES:
-                        raise ValueError('Chat snapshot evidence exceeds limits')
+                        raise ValueError(tr('chat.chat_snapshot_evidence_exceeds'))
                     files.append((relative, stat.S_IMODE(mode), hashlib.sha256(path.read_bytes()).hexdigest()))
                 else:
                     files.append((relative + '/', stat.S_IMODE(mode), None))
@@ -117,7 +117,7 @@ def snapshot_path(repository, job):
     """Derived only from the private database and persisted job identity, never HTTP paths."""
     parent = Path(repository.engine.url.database).resolve().parent / 'chat-snapshots'
     if parent.is_symlink():
-        raise ValueError('Chat snapshot directory cannot be a symlink')
+        raise ValueError(tr('chat.chat_snapshot_directory_cannot'))
     parent.mkdir(mode=0o700, exist_ok=True)
     return parent / f'{job.id}-{job.owner_token}'
 

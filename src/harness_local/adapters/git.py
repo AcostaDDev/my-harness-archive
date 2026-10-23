@@ -22,6 +22,7 @@ from harness_local.core.engine.commit import (
 from harness_local.core.engine.context import ProjectContext
 from harness_local.core.engine.contracts import freeze
 from harness_local.core.engine.evidence import ContentEvidence
+from harness_local.i18n import tr
 
 MAX_DIFF_BYTES = 4 * 1024 * 1024
 _CONFIG = ("-c", "core.hooksPath=/dev/null", "-c", "core.fsmonitor=false", "-c", "core.ignorecase=false", "-c", "core.quotePath=false",
@@ -83,7 +84,7 @@ class Git:
                 completed = subprocess.run(argv, cwd=self.cwd, input=input, capture_output=True,
                                            env=environment, timeout=self.timeout, check=False)
         except (OSError, subprocess.TimeoutExpired) as exc:
-            raise GitError(f"git {args[0] if args else ''} could not run: {exc}", argv=argv) from exc
+            raise GitError(tr('git.git_could_not_run', command=args[0] if args else '', exc=exc), argv=argv) from exc
         return argv, completed
 
     def run(self, *args: str, input: bytes | None = None, env: dict[str, str] | None = None,
@@ -91,7 +92,8 @@ class Git:
         argv, completed = self._completed(args, input, env)
         if completed.returncode not in ok:
             stderr = completed.stderr.decode("utf-8", "replace").strip()
-            raise GitError(f"git {args[0] if args else ''} failed with exit {completed.returncode}: {stderr[:500]}",
+            raise GitError(tr('git.git_failed_exit', command=args[0] if args else '', returncode=completed.returncode,
+                              stderr=stderr[:500]),
                            argv=argv, returncode=completed.returncode, stderr=stderr)
         return completed.stdout
 
@@ -103,14 +105,14 @@ class Git:
         try:
             return self.run(*args, input=input, env=env).decode("utf-8").strip()
         except UnicodeDecodeError as exc:
-            raise GitError(f"git {args[0] if args else ''} produced non-UTF-8 output") from exc
+            raise GitError(tr('git.git_produced_non_utf', command=args[0] if args else '')) from exc
 
 
 def _split0(data: bytes) -> list[str]:
     try:
         return [item.decode("utf-8") for item in data.split(b"\0") if item]
     except UnicodeDecodeError as exc:
-        raise EvidenceCaptureError("Non-UTF-8 paths cannot be recorded as evidence") from exc
+        raise EvidenceCaptureError(tr('git.non_utf_8_paths')) from exc
 
 
 def _raw_entries(data: bytes) -> list[tuple[str, str, str, str]]:
@@ -122,7 +124,7 @@ def _raw_entries(data: bytes) -> list[tuple[str, str, str, str]]:
         try:
             path = tokens[index + 1].decode("utf-8")
         except (IndexError, UnicodeDecodeError) as exc:
-            raise EvidenceCaptureError("Non-UTF-8 or malformed path in Git diff") from exc
+            raise EvidenceCaptureError(tr('git.non_utf_8_malformed')) from exc
         entries.append((meta[4][0], meta[0], meta[1], path))
         index += 2
     return entries
@@ -163,9 +165,9 @@ class GitWorkspace:
         try:
             top = Path(git.text("rev-parse", "--show-toplevel")).resolve()
         except GitError as exc:
-            raise EvidenceCaptureError(f"Not a Git checkout: {exc}") from exc
+            raise EvidenceCaptureError(tr('git.not_git_checkout', exc=exc)) from exc
         if top != root:
-            raise EvidenceCaptureError("Project root must be the top level of its Git checkout")
+            raise EvidenceCaptureError(tr('git.project_root_top_level'))
 
     def _index_path(self, git: Git) -> Path:
         return Path(git.text("rev-parse", "--path-format=absolute", "--git-path", "index"))
@@ -207,7 +209,7 @@ class GitWorkspace:
                     from harness_local.core.managed_mode import MARKER_PATH
                     if self.marker_reader(root) is not None:
                         if git.run("ls-files", "--", MARKER_PATH).strip():
-                            raise EvidenceCaptureError('The managed marker must remain untracked (D099)')
+                            raise EvidenceCaptureError(tr('git.managed_marker_remain_untracked'))
                         if MARKER_PATH in untracked:
                             paths.append(":(exclude,literal)" + MARKER_PATH)
                             untracked.remove(MARKER_PATH)
@@ -224,12 +226,11 @@ class GitWorkspace:
             staged = _raw_entries(git.run(*diff_args, "-z", "--raw", "--full-index", base_tree, index_tree))
             patch = git.run(*diff_args, "-p", "--binary", "--full-index", base_tree, worktree_tree)
         except GitError as exc:
-            raise EvidenceCaptureError(f"Git evidence could not be captured: {exc}") from exc
+            raise EvidenceCaptureError(tr('git.git_evidence_could_not', exc=exc)) from exc
         if any("160000" in (old, new) for _, old, new, _ in raw + staged):
-            raise EvidenceCaptureError("Submodule/gitlink changes are not supported as reviewable evidence")
+            raise EvidenceCaptureError(tr('git.submodule_gitlink_changes_not'))
         if len(patch) > self.max_diff_bytes:
-            raise EvidenceCaptureError(f"Diff exceeds the {self.max_diff_bytes}-byte review limit; "
-                                       "it is not truncated silently")
+            raise EvidenceCaptureError(tr('git.diff_exceeds_byte_review', max_diff_bytes=self.max_diff_bytes))
         changed = tuple(sorted({path for _, _, _, path in raw}))
         provenance = freeze({
             "format": GIT_FORMAT, "head_ref": ref, "base_tree": base_tree, "worktree_tree": worktree_tree,
@@ -260,7 +261,7 @@ class GitWorkspace:
                 modes[path.decode("utf-8", "surrogateescape")] = header.split(b" ", 1)[0].decode()
         for update in updates:
             if update.content is not None and modes.get(update.path, "100644") not in {"100644", "100755"}:
-                raise CommitError("Mechanical update target is not a regular file")
+                raise CommitError(tr('git.mechanical_update_target_not'))
         with tempfile.TemporaryDirectory(prefix="harness-git-") as scratch:
             env = {"GIT_INDEX_FILE": str(Path(scratch) / "index")}
             git.run("read-tree", tree, env=env)
@@ -292,7 +293,7 @@ class GitWorkspace:
             # Without -w: only computes the deterministic commit identifier.
             commit = git.text("hash-object", "-t", "commit", "--stdin", input=text)
         except GitError as exc:
-            raise CommitError(f"Commit could not be sealed: {exc}") from exc
+            raise CommitError(tr('git.commit_could_not_sealed', exc=exc)) from exc
         return tree, commit
 
     def check_tree_diff(self, context, before, after):
@@ -300,7 +301,7 @@ class GitWorkspace:
         patch = self._git(context.root).run('diff-tree', '-r', '-p', '--binary', '--full-index',
             '--no-ext-diff', '--no-textconv', '--no-color', before, after)
         if len(patch) > self.max_diff_bytes:
-            raise EvidenceCaptureError(f'Import diff exceeds the {self.max_diff_bytes}-byte review limit')
+            raise EvidenceCaptureError(tr('git.import_diff_exceeds_byte', max_diff_bytes=self.max_diff_bytes))
 
     def _write_mechanical(self, context: ProjectContext, intent: CommitIntent) -> None:
         # All targets are validated before writing any: no partial own state.
@@ -308,7 +309,7 @@ class GitWorkspace:
         for update in intent.mechanical:
             target = context.path(update.path)
             if target.exists() and (target.is_symlink() or not target.is_file()):
-                raise CommitError("Mechanical update target is not a regular file")
+                raise CommitError(tr('git.mechanical_update_target_not'))
             targets.append((update, target))
         for update, target in targets:
             if update.content is None:
@@ -328,7 +329,7 @@ class GitWorkspace:
             return False
         code = git.code("merge-base", "--is-ancestor", intent.expected_commit, head)
         if code not in (0, 1):
-            raise CommitUncertain("Ancestry of the expected commit could not be determined")
+            raise CommitUncertain(tr('git.ancestry_expected_commit_could'))
         return code == 0
 
     def _refresh_index(self, git: Git, intent: CommitIntent) -> str:
@@ -345,7 +346,7 @@ class GitWorkspace:
         expected = self._commit_text(intent.expected_tree, intent.base_revision, intent.message,
                                      intent.author_name, intent.author_email, intent.committed_at)
         if git.run("cat-file", "commit", intent.expected_commit) != expected:
-            raise CommitUncertain("Commit object with the expected id has unexpected content")
+            raise CommitUncertain(tr('git.commit_object_expected_id'))
         return CommitOutcome(status, intent.operation_id, commit=intent.expected_commit,
                              tree=intent.expected_tree, head=head, index=self._refresh_index(git, intent))
 
@@ -355,7 +356,7 @@ class GitWorkspace:
             self._git(context.root).text('version')  # Git environment checked on read
             return inspect_target(context, self._git(context.root))
         except GitError as exc:
-            raise ValueError(f'Bootstrap Git environment unavailable: {exc}') from exc
+            raise ValueError(tr('git.bootstrap_git_environment_unavailable', exc=exc)) from exc
 
     def inspect_definition(self, context, *, texts=False):
         """H6.5: drafts, foreign and invalid files at the target of a v2 definition."""
@@ -364,7 +365,7 @@ class GitWorkspace:
             self._git(context.root).text('version')
             return inspect_drafts(context, self._git(context.root), texts=texts)
         except GitError as exc:
-            raise ValueError(f'Bootstrap Git environment unavailable: {exc}') from exc
+            raise ValueError(tr('git.bootstrap_git_environment_unavailable', exc=exc)) from exc
 
     def write_draft(self, context, path, content, base_sha256):
         from harness_local.adapters.bootstrap import write_draft
@@ -392,12 +393,11 @@ class GitWorkspace:
             if head != intent.base_revision:
                 if git.code("cat-file", "-e", f"{intent.expected_commit}^{{commit}}") == 0:
                     raise CommitUncertain(
-                        f"HEAD moved from {intent.base_revision} to {head}; the expected commit object exists "
-                        "but is not reachable. Recover manually with the recorded evidence")
+                        tr('git.head_moved_expected_commit', base_revision=intent.base_revision, head=head))
                 return CommitOutcome(
                     "invalidated", intent.operation_id, head=head,
-                    diagnostic=f"HEAD moved from reviewed base {intent.base_revision} to {head} and no commit "
-                               f"of operation {intent.operation_id} exists; revalidate")
+                    diagnostic=tr('git.head_moved_no_commit', base=intent.base_revision, head=head,
+                                  operation=intent.operation_id))
             observed = self.capture(context)
             tree = json.loads(observed.provenance_json)
             if observed.fingerprint != intent.reviewed_fingerprint:
@@ -407,8 +407,8 @@ class GitWorkspace:
                     return CommitOutcome(
                         "invalidated", intent.operation_id, head=head,
                         observed_fingerprint=observed.fingerprint,
-                        diagnostic=f"Content changed after review; reviewed fingerprint "
-                                   f"{intent.reviewed_fingerprint}, observed {observed.fingerprint}")
+                        diagnostic=tr('git.content_changed_review', reviewed=intent.reviewed_fingerprint,
+                                      observed=observed.fingerprint))
             elif intent.mechanical:
                 self._write_mechanical(context, intent)
                 observed = self.capture(context)
@@ -416,12 +416,12 @@ class GitWorkspace:
                 if tree["worktree_tree"] != intent.expected_tree or tree["index_tree"] != intent.reviewed_index_tree:
                     return CommitOutcome(
                         "invalidated", intent.operation_id, head=head, observed_fingerprint=observed.fingerprint,
-                        diagnostic="Mechanical updates did not produce the sealed tree; content changed concurrently")
+                        diagnostic=tr('git.mechanical_not_sealed'))
             if tree["worktree_tree"] != intent.expected_tree:
-                raise CommitError("Verified content does not match the sealed tree")
+                raise CommitError(tr('git.verified_content_does_not'))
             written = git.text("hash-object", "-t", "commit", "-w", "--stdin", input=text)
             if written != intent.expected_commit:
-                raise CommitError("Written commit id differs from the sealed id")
+                raise CommitError(tr('git.written_commit_id_differs'))
             update = ("update-ref", "-m", f"harness: commit {intent.operation_id}", "HEAD",
                       intent.expected_commit, intent.base_revision)
             try:
@@ -434,11 +434,11 @@ class GitWorkspace:
                 if head != intent.base_revision:
                     return CommitOutcome(
                         "invalidated", intent.operation_id, head=head,
-                        diagnostic=f"HEAD moved to {head} before the commit could be recorded; revalidate")
+                        diagnostic=tr('git.head_moved_before_record', head=head))
                 raise
             return self._reconciled(git, intent, intent.expected_commit, status="committed")
         except GitError as exc:
-            raise CommitUncertain(f"Git state could not be reconciled: {exc}") from exc
+            raise CommitUncertain(tr('git.git_state_could_not', exc=exc)) from exc
 
     def read_blob(self, context: ProjectContext, revision: str, path: str) -> bytes | None:
         """Bytes of a file at an exact revision; None if absent there. Reads only."""
@@ -452,7 +452,7 @@ class GitWorkspace:
         if git.code("cat-file", "-e", spec) != 0:
             return None
         if git.text("cat-file", "-t", spec) != "blob":
-            raise ValueError(f"{path} is not a regular file at {revision}")
+            raise ValueError(tr('git.not_regular_file', path=path, revision=revision))
         return git.run("cat-file", "blob", spec)
 
     def execute_documents(self, context: ProjectContext, intent: CommitIntent, documents: list[dict]) -> CommitOutcome:
@@ -472,14 +472,14 @@ class GitWorkspace:
         for doc in documents:
             sha = self._document_sha(context, doc)
             if sha is False:
-                return CommitOutcome('invalidated', intent.operation_id, diagnostic='Export document is no longer regular')
+                return CommitOutcome('invalidated', intent.operation_id, diagnostic=tr('git.export_not_regular'))
             # `disk_sha256`: local bytes that the confirmed preview replaces (regenerated blocks, H6.2 E3).
             allowed = {doc['before_sha256'], doc['after_sha256']}
             if doc.get('disk_sha256') is not None:
                 allowed.add(doc['disk_sha256'])
             if sha not in allowed:
                 return CommitOutcome('invalidated', intent.operation_id,
-                                     diagnostic='Document changed externally after export preview: ' + doc['path'])
+                                     diagnostic=tr('git.export_changed_externally', path=doc['path']))
         observed = self.capture(context)
         provenance = json.loads(observed.provenance_json)
         plan = CommitPlan(intent.base_revision, provenance['worktree_tree'], intent.mechanical, intent.message,
@@ -487,7 +487,7 @@ class GitWorkspace:
         tree, commit = self.seal(context, plan)
         if (tree != intent.expected_tree or commit != intent.expected_commit
                 or provenance['index_tree'] != intent.reviewed_index_tree):
-            return CommitOutcome('invalidated', intent.operation_id, diagnostic='Checkout changed outside export blocks')
+            return CommitOutcome('invalidated', intent.operation_id, diagnostic=tr('git.export_outside_blocks'))
         # Each replacement is atomic. After a crash between documents, only original or sealed
         # hashes are accepted; no other commit intent/identity is generated.
         for update in intent.mechanical:
@@ -499,7 +499,7 @@ class GitWorkspace:
             if doc.get('disk_sha256') is not None:
                 allowed.add(doc['disk_sha256'])
             if sha is False or sha not in allowed:
-                return CommitOutcome('invalidated', intent.operation_id, diagnostic='Document changed during export')
+                return CommitOutcome('invalidated', intent.operation_id, diagnostic=tr('git.export_document_changed'))
             self._write_mechanical(context, replace(intent, mechanical=(update,)))
         return self.execute(context, intent)
 
@@ -529,7 +529,7 @@ class GitWorkspace:
             return False
         code = git.code("merge-base", "--is-ancestor", commit, "HEAD")
         if code not in (0, 1):
-            raise EvidenceCaptureError("Ancestry of an accepted task commit could not be determined")
+            raise EvidenceCaptureError(tr('git.ancestry_accepted_task_commit'))
         return code == 0
 
     @staticmethod
@@ -551,7 +551,7 @@ class GitWorkspace:
         git = self._git(context.root)
         self._require_root(git, context.root)
         if git.code("check-ref-format", ref) != 0:
-            raise ValueError("Invalid tag name")
+            raise ValueError(tr('git.invalid_tag_name'))
         return git
 
     def seal_tag(self, context: ProjectContext, intent: dict) -> str:
@@ -561,7 +561,7 @@ class GitWorkspace:
             git.run("cat-file", "-e", f"{intent['target']}^{{commit}}")
             return git.text("hash-object", "-t", "tag", "--stdin", input=self._tag_text(intent))
         except GitError as exc:
-            raise CommitError(f"Phase tag could not be sealed: {exc}") from exc
+            raise CommitError(tr('git.phase_tag_could_not', exc=exc)) from exc
 
     def tag(self, context: ProjectContext, intent: dict) -> dict:
         """Deterministic lightweight or annotated tag: create only if absent (CAS); never move or overwrite."""
@@ -584,14 +584,14 @@ class GitWorkspace:
             if existing == expected:
                 return outcome("reconciled", **({"object": expected} if annotated else {}))
             if existing is not None:
-                wanted = f"the sealed annotated tag {expected} for {target}" if annotated else f"the READY commit {target}"
                 return outcome("conflict", observed=existing, diagnostic=(
-                    f"{ref} already points to {existing}, not to {wanted}; "
-                    "it is never moved automatically. Recover manually with the recorded evidence"))
+                    tr('git.tag_points_elsewhere_annotated', ref=ref, existing=existing, expected=expected,
+                       target=target) if annotated
+                    else tr('git.tag_points_elsewhere', ref=ref, existing=existing, target=target)))
             if annotated:
                 written = git.text("hash-object", "-t", "tag", "-w", "--stdin", input=self._tag_text(intent))
                 if written != expected:
-                    raise CommitError("Annotated tag object differs from the sealed intent; nothing was referenced")
+                    raise CommitError(tr('git.annotated_tag_object_differs'))
             try:
                 git.run("update-ref", "-m", f"harness: close phase {intent['operation_id']}", ref, expected,
                         "0" * len(expected))
@@ -602,7 +602,7 @@ class GitWorkspace:
                 raise
             return outcome("created", **({"object": expected} if annotated else {}))
         except GitError as exc:
-            raise CommitUncertain(f"Phase tag state could not be reconciled: {exc}") from exc
+            raise CommitUncertain(tr('git.phase_tag_state_could', exc=exc)) from exc
 
 
 @dataclass(frozen=True)
@@ -637,26 +637,26 @@ class GitWorktrees:
         repository, destination = Path(repository).resolve(strict=True), Path(destination)
         git = Git(repository, executable=self.executable, timeout=self.timeout)
         if not destination.is_absolute() or not destination.parent.is_dir():
-            raise GitError("Worktree destination must be absolute with an existing parent")
+            raise GitError(tr('git.worktree_destination_absolute_existing'))
         destination = destination.parent.resolve() / destination.name
         if destination == repository or destination.is_relative_to(repository):
-            raise GitError("Worktree must live outside the checkout it derives from")
+            raise GitError(tr('git.worktree_live_outside_checkout'))
         if branch.startswith("-") or base.startswith("-"):
-            raise GitError("Branch and base revision must not look like options")
+            raise GitError(tr('git.branch_base_revision_not'))
         git.run("check-ref-format", "--branch", branch)
         base_sha = git.text("rev-parse", "--verify", f"{base}^{{commit}}")
         existing = self._registered(git).get(destination)
         if existing is not None:
             if existing.get("branch") != f"refs/heads/{branch}":
-                raise GitError("A different branch is already checked out at this worktree path")
+                raise GitError(tr('git.different_branch_already_checked'))
             head = existing["HEAD"]
             if git.code("merge-base", "--is-ancestor", base_sha, head) != 0:
-                raise GitError("Existing task worktree does not descend from the requested base")
+                raise GitError(tr('git.existing_task_worktree_does'))
             return WorktreeInfo(destination, branch, base_sha, head, created=False)
         if destination.exists() or destination.is_symlink():
-            raise GitError("Worktree path exists and is not a registered worktree; nothing is overwritten")
+            raise GitError(tr('git.worktree_path_exists_not'))
         if git.code("show-ref", "--verify", "--quiet", f"refs/heads/{branch}") == 0:
-            raise GitError("Task branch already exists outside this worktree; refusing to reuse silently")
+            raise GitError(tr('git.task_branch_already_exists'))
         try:
             git.run("worktree", "add", "--quiet", "-b", branch, str(destination), base_sha)
         except GitError:

@@ -20,7 +20,7 @@ MARKER = 'harness-bootstrap.json'
 def target_identity(context):
     root = context.root
     if root.is_symlink() or root.resolve(strict=True) != root or not root.is_dir():
-        raise ValueError('Bootstrap target changed or contains a symlink')
+        raise ValueError(tr('bootstrap.bootstrap_target_changed_contains'))
     info = root.stat()
     return {'device': info.st_dev, 'inode': info.st_ino}
 
@@ -37,6 +37,10 @@ def inspect_target(context, git):
 
 class DraftConflict(ValueError):
     """The draft on disk no longer has the expected hash: nothing is overwritten."""
+
+
+class DraftChanged(DraftConflict):
+    """The draft changed since it was read; the API names it with its own code (P011-T022)."""
 
 
 def inspect_drafts(context, git, *, texts=False):
@@ -82,7 +86,7 @@ def inspect_drafts(context, git, *, texts=False):
 
 def _current(path):
     if path.is_symlink() or (path.exists() and not path.is_file()):
-        raise DraftConflict('The draft must be a regular file')
+        raise DraftConflict(tr('bootstrap.draft_regular_file'))
     return sha256(path.read_bytes()).hexdigest() if path.exists() else None
 
 
@@ -94,22 +98,23 @@ def write_draft(writer, context, path, content, base_sha256):
     from harness_local.core.engine.definition import allowed_draft, definition_layout, draft_directories
     target = definition_layout(context)
     if not allowed_draft(target, path):
-        raise ValueError(f'{path} is not an allowed definition draft')
+        raise ValueError(tr('planning.not_allowed_definition_draft', path=path))
     if inspect_drafts(context, writer._git(context.root))['import_required']:
-        raise ValueError('The target belongs to a Git repository or contains .git: use onboarding for a repository without harness')
+        raise ValueError(tr('planning.target_belongs_git_repository'))
     folders = draft_directories(target)
     parts = path.split('/')
     for n in range(1, len(parts)):
         folder = context.root.joinpath(*parts[:n])
         if '/'.join(parts[:n]) not in folders or folder.is_symlink() or (folder.exists() and not folder.is_dir()):
-            raise ValueError(f'{path} is not inside an allowed draft folder')
+            raise ValueError(tr('onboarding.not_inside_allowed_draft', path=path))
     item = context.path(path)
     current = _current(item)
     after = None if content is None else sha256(content.encode('utf-8')).hexdigest()
     if current == after:
         return {'before': current, 'after': after, 'written': False}
     if current != base_sha256:
-        raise DraftConflict(f'{path} changed since it was read (expected {base_sha256}, found {current})')
+        raise DraftChanged(tr('onboarding.changed_since_read_expected', path=path, base_sha256=base_sha256,
+                               current=current))
     if content is None:
         item.unlink()
     else:
@@ -130,7 +135,7 @@ def _replace_file(path, content, token, unchanged):
     _new_file(temporary, content)
     try:
         if not unchanged():
-            raise DraftConflict(f'{path.name} changed while it was being replaced; nothing was overwritten')
+            raise DraftConflict(tr('bootstrap.changed_while_being_replaced', name=path.name))
         os.replace(temporary, path)
     finally:
         if temporary.exists():
@@ -202,7 +207,7 @@ def _directories(documents):
 
 def validate_partial(context, shown, intent):
     if target_identity(context) != shown['target']['identity']:
-        raise ValueError('Bootstrap target was replaced since preview')
+        raise ValueError(tr('bootstrap.bootstrap_target_replaced_since'))
     documents = {d['path']: d for d in shown['documents']}
     directories = _directories(shown['documents'])
     # H6.5: the own temporary file of an interrupted replacement is discarded before writing.
@@ -215,10 +220,10 @@ def validate_partial(context, shown, intent):
             mode = item.lstat().st_mode
             if path == '.git':
                 if not stat.S_ISDIR(mode):
-                    raise ValueError('Bootstrap Git directory must be owned, regular and not linked')
+                    raise ValueError(tr('bootstrap.bootstrap_git_directory_owned'))
                 marker = item / MARKER
                 if marker.is_symlink() or not marker.is_file() or marker.read_bytes() != marker_bytes(intent):
-                    raise ValueError('Unowned Git directory; import or recover manually without overwriting')
+                    raise ValueError(tr('bootstrap.unowned_git_directory_import'))
                 dirs.remove(name)
                 continue
             if stat.S_ISDIR(mode) and path in directories:
@@ -226,18 +231,18 @@ def validate_partial(context, shown, intent):
             if path in temporaries and stat.S_ISREG(mode):
                 continue
             if path not in documents or not stat.S_ISREG(mode):
-                raise ValueError(f'Unexpected bootstrap path: {path}; preserved without overwriting')
+                raise ValueError(tr('bootstrap.unexpected_bootstrap_path_preserved', path=path))
             doc = documents[path]
             if 'before_sha256' in doc:
                 # H6.5: the reviewed draft or the sealed bytes; no executable bit (Git mode 100644).
                 if (stat.S_IMODE(mode) & 0o111 or sha256(item.read_bytes()).hexdigest()
                         not in (doc['sha256'], doc['before_sha256'])):
-                    raise ValueError(f'Bootstrap draft changed: {path}; preserved without overwriting')
+                    raise ValueError(tr('bootstrap.bootstrap_draft_changed_preserved', path=path))
                 continue
             if (item.stat().st_size != len(doc['content'].encode('utf-8'))
                     or sha256(item.read_bytes()).hexdigest() != doc['sha256']
                     or stat.S_IMODE(mode) != 0o644):
-                raise ValueError(f'Bootstrap content changed: {path}; preserved without overwriting')
+                raise ValueError(tr('bootstrap.bootstrap_content_changed_preserved', path=path))
 
 
 def marker_bytes(intent):
@@ -252,35 +257,35 @@ def execute(writer, context, shown, intent):
     if not gitdir.exists():
         # Starting requires the same empty directory (or only the reviewed drafts, H6.5), also when claiming.
         if not drafts and any(context.root.iterdir()):
-            raise ValueError('Target is no longer empty; import required')
+            raise ValueError(tr('bootstrap.target_no_longer_empty'))
         if writer._git(context.root).code('rev-parse', '--is-inside-work-tree') == 0:
-            raise ValueError('Target now belongs to another Git checkout; import required')
+            raise ValueError(tr('bootstrap.target_now_belongs_another'))
         gitdir.mkdir()  # exclusive: never replaces a foreign .git
         _new_file(gitdir / MARKER, marker_bytes(intent))
     git = writer._git(context.root)
     for name in ('HEAD', 'config', 'index'):
         if (gitdir / name).is_symlink():
-            raise ValueError('Bootstrap Git metadata contains a symlink; recover manually')
+            raise ValueError(tr('bootstrap.bootstrap_git_metadata_contains'))
     if not (gitdir / 'HEAD').exists():
         # Crash between mark and init: only the own mark allows completing the init.
         if sorted(p.name for p in gitdir.iterdir()) != [MARKER]:
-            raise ValueError('Incomplete Git initialization has foreign metadata; recover manually')
+            raise ValueError(tr('bootstrap.incomplete_git_initialization_has'))
         git.run('init', '-q', '--template=', '--object-format=sha1', '-b', 'main')
     if git.text('rev-parse', '--show-toplevel') != str(context.root):
-        raise ValueError('Bootstrap repository root changed')
+        raise ValueError(tr('bootstrap.bootstrap_repository_root_changed'))
     if git.text('symbolic-ref', 'HEAD') != 'refs/heads/main':
-        raise ValueError('Bootstrap branch changed')
+        raise ValueError(tr('bootstrap.bootstrap_branch_changed'))
     head = git.run('rev-parse', '--verify', 'HEAD', ok=(0, 128)).decode().strip()
     if head and head != intent['commit']:
-        raise ValueError('Bootstrap HEAD changed; preserved without overwriting')
+        raise ValueError(tr('bootstrap.bootstrap_head_changed_preserved'))
     refs = git.text('for-each-ref', '--format=%(refname) %(objectname)')
     if refs not in ('', 'refs/heads/main ' + intent['commit']):
-        raise ValueError('Bootstrap references changed; recover manually')
+        raise ValueError(tr('bootstrap.bootstrap_references_changed_recover'))
     empty = git.text('hash-object', '-t', 'tree', '--stdin', input=b'')
     if (gitdir / 'index').exists():
         index = writer._index_tree(git)
         if index not in (empty, intent['tree']):
-            raise ValueError('Bootstrap index changed; preserved without overwriting')
+            raise ValueError(tr('bootstrap.bootstrap_index_changed_preserved'))
     for doc in shown['documents']:
         validate_partial(context, shown, intent)
         path = context.path(doc['path'])
@@ -298,25 +303,25 @@ def execute(writer, context, shown, intent):
                           lambda: sha256(path.read_bytes()).hexdigest() == before)
     validate_partial(context, shown, intent)
     if _tree(git, shown['documents']) != intent['tree']:
-        raise ValueError('Bootstrap tree differs from sealed intent')
+        raise ValueError(tr('bootstrap.bootstrap_tree_differs_sealed'))
     raw = _commit(intent)
     if git.text('hash-object', '-t', 'commit', '-w', '--stdin', input=raw) != intent['commit']:
-        raise ValueError('Bootstrap commit differs from sealed intent')
+        raise ValueError(tr('bootstrap.bootstrap_commit_differs_sealed'))
     validate_partial(context, shown, intent)
     if writer._index_tree(git) not in (empty, intent['tree']):
-        raise ValueError('Bootstrap index changed before commit; preserved without overwriting')
+        raise ValueError(tr('bootstrap.bootstrap_index_changed_before'))
     git.run('update-ref', '-m', 'harness: bootstrap ' + intent['operation_id'], 'refs/heads/main',
             intent['commit'], head or '0' * 40)
     if git.text('cat-file', 'commit', intent['commit']) != raw.decode().strip():
-        raise ValueError('Bootstrap commit content differs from intent')
+        raise ValueError(tr('bootstrap.bootstrap_commit_content_differs'))
     if writer._index_tree(git) not in (empty, intent['tree']):
-        raise ValueError('Bootstrap index changed after commit; preserved without overwriting')
+        raise ValueError(tr('bootstrap.bootstrap_index_changed_after'))
     if git.text('rev-parse', 'HEAD') != intent['commit']:
-        raise ValueError('Bootstrap HEAD changed after commit; recover manually')
+        raise ValueError(tr('bootstrap.bootstrap_head_changed_after'))
     git.run('read-tree', intent['tree'])
     evidence = writer.capture(context)
     if evidence.changed_paths or evidence.base_revision != intent['commit']:
-        raise ValueError('Bootstrap checkout differs from sealed commit; recover manually')
+        raise ValueError(tr('bootstrap.bootstrap_checkout_differs_sealed'))
     validate_partial(context, shown, intent)
     return {'commit': intent['commit'], 'tree': intent['tree'], 'documents': {
         d['path']: d['sha256'] for d in shown['documents']}}

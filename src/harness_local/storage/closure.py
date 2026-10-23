@@ -6,11 +6,12 @@ from harness_local.core.engine.document_ops import preview_transition
 from harness_local.core.engine.phases import document_hashes
 from harness_local.storage.managed import Conflict
 from harness_local.storage.models import PhaseRow as Phase
+from harness_local.i18n import tr
 
 
 def prepare(context, state, git):
     if git is None:
-        raise Conflict('Unified phase closure requires the configured Git writer')
+        raise Conflict(tr('phases.unified_phase_closure_requires'))
     try:
         return preview_transition(context, state, git, None, unified=True)
     except (ValueError, OSError, UnicodeError, RuntimeError) as exc:
@@ -28,7 +29,7 @@ def adopt(managed, session, run, op, phase, outcome):
     following = shown['next']
     if following:
         if session.scalar(select(Phase.id).where(Phase.root == phase.root, Phase.code == following['code'])):
-            raise Conflict('The successor already exists; reconcile the recorded closure')
+            raise Conflict(tr('phases.successor_already_exists_reconcile'))
         outcome = {**outcome, 'next_phase_id': insert_phase(
             managed, session, phase.root, following, document_hashes(context, following['documents']),
             source={'kind': 'closure', 'operation_id': op.id, 'from_phase': phase.code, 'commit': outcome['commit']})}
