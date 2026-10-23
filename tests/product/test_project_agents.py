@@ -107,7 +107,7 @@ def test_invalid_presets_fail_at_load_without_processes(operator, change):
     elif change == 'tools':
         value['agent_presets']['claude-executor']['roles'] += ['reviewer']
     elif change == 'write-version':
-        value['agent_presets']['codex-executor']['cli_version'] = '0.161.0'
+        value['agent_presets']['codex-executor']['cli_version'] = 'invalid'
     else:
         preset['allow_open_executor'] = 'yes'
     with pytest.raises(LocalConfigError):

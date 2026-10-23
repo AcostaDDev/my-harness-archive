@@ -1,5 +1,7 @@
-"""Operator TOML outside managed checkouts → explicit ManagedConfig (`local-config-6`).
+"""Operator TOML outside managed checkouts → explicit ManagedConfig (`local-config-7`).
 
+`local-config-7` (P011-T012, D174) makes executable and version optional: selected clients are resolved
+on the explicit PATH in a separate admission step; loading remains data-only. Formats 1–6 keep their hashes.
 `local-config-6` (P011-T008, D167) is `local-config-5` plus an optional `[[projects]].work_language` (en/es):
 the service records it once for the project's root at startup and SQLite rules afterwards; another value for an
 associated root stops the service. Its `[recipes]` select the packaged v2 recipes (P011-T020, D168), which
@@ -22,8 +24,8 @@ Claude executor with its own policy (separate planner selection). Neither of
 them can register projects from the UI.
 
 Loading never launches processes or reads managed repositories. Trust,
-executables, environment, models and command authorizations come only from
-this file; there are no implicit defaults for them. Provider authentication
+environment, models and command authorizations come only from
+this file; v7 may discover the selected executable on that explicit environment's PATH. Provider authentication
 stays with each installed CLI: the file must not contain secrets.
 """
 from dataclasses import asdict, replace
@@ -38,7 +40,9 @@ import stat
 from threading import Lock
 import tomllib
 
-from harness_local.adapters.cli_agents import EFFORTS, WRITE_SUPPORTED, CLIConfig, CLIProcessAdapter
+from harness_local.adapters.cli_agents import EFFORTS, CLIConfig, CLIProcessAdapter
+from harness_local.adapters.cli_compatibility import CompatibilityError, discover, launch_identity
+from harness_local.adapters.cli_diagnostics import preflight_config
 from harness_local.adapters.commands import CommandConfig, ManagedCommandRunner, config_payload
 from harness_local.adapters.git import GitWorkspace
 from harness_local.core.engine.commit import GitIdentity
@@ -53,13 +57,15 @@ from harness_local.recipes import RECIPES, by_version as recipe_version, impleme
 from harness_local.services.managed_runtime import (PROJECT_ID, ManagedConfig, ManagedProject, agents_view,
                                                     validate_projects)
 
-VERSION = 'local-config-6'
+VERSION = 'local-config-7'
+V6 = 'local-config-6'
 V5 = 'local-config-5'
-FORMATS = ('local-config-1', 'local-config-2', 'local-config-3', 'local-config-4', V5, VERSION)
-REGISTRABLE = ('local-config-3', 'local-config-4', V5, VERSION)
-PROFILE_FORMATS = ('local-config-4', V5, VERSION)
+FORMATS = ('local-config-1', 'local-config-2', 'local-config-3', 'local-config-4', V5, V6, VERSION)
+REGISTRABLE = ('local-config-3', 'local-config-4', V5, V6, VERSION)
+PROFILE_FORMATS = ('local-config-4', V5, V6, VERSION)
 # v5 adds presets/selections and recipes; v6 keeps the presets/selections and adds the work language.
-AGENT_FORMATS = (V5, VERSION)
+AGENT_FORMATS = (V5, V6, VERSION)
+WORK_FORMATS = (V6, VERSION)
 CLI_KEYS = ('executable', 'cli_version', 'timeout_seconds', 'environment')
 TOOL_KEYS = ('tools', 'allowed_tools', 'grantable_tools')
 CONFIG_ENV = 'HARNESS_LOCAL_CONFIG'
@@ -157,9 +163,12 @@ def _read(path):
         raise LocalConfigError(tr('config.toml_invalid', error=exc)) from None
 
 
-def _cli(where, provider, value, required=CLI_KEYS, optional=()):
+def _cli(where, provider, value, required=CLI_KEYS, optional=(), *, automatic=False):
+    if automatic:
+        required = ('timeout_seconds', 'environment')
+        optional = (*optional, 'executable', 'cli_version')
     value = _fields(value, where, required, optional)
-    argv = _texts(value['executable'], f'{where}.executable')
+    argv = _texts(value['executable'], f'{where}.executable') if 'executable' in value else ()
     environment = _environment(value['environment'], f'{where}.environment')
     user = dict(environment).get('USER')
     try:
@@ -169,8 +178,12 @@ def _cli(where, provider, value, required=CLI_KEYS, optional=()):
     if user != local:
         raise LocalConfigError(tr('config.user_account', where=where))
     try:
-        return CLIConfig(provider, (_executable(argv[0], f'{where}.executable'), *argv[1:]),
-                         _text(value['cli_version'], f'{where}.cli_version'), environment,
+        if argv and automatic and not Path(argv[0]).is_absolute():
+            raise LocalConfigError(tr('config.absolute_executable', where=f'{where}.executable'))
+        executable = ((argv[0] if automatic else _executable(argv[0], f'{where}.executable'), *argv[1:])
+                      if argv else ())
+        return CLIConfig(provider, executable,
+                         _text(value['cli_version'], f'{where}.cli_version') if 'cli_version' in value else None, environment,
                          _number(value['timeout_seconds'], f'{where}.timeout_seconds'),
                          *(_texts(value.get(key, []), f'{where}.{key}', empty=True) for key in TOOL_KEYS))
     except LocalConfigError:
@@ -179,7 +192,7 @@ def _cli(where, provider, value, required=CLI_KEYS, optional=()):
         raise LocalConfigError(f'{where}: {exc}') from None
 
 
-def _agents(data):
+def _agents(data, *, automatic=False):
     """`local-config-2`: the user fixes provider, model and effort of the reviewer."""
     data = _fields(data, 'agents', ('reviewer', 'executor'))
     agents, reviewer = {}, None
@@ -190,7 +203,9 @@ def _agents(data):
         if provider not in EFFORTS:
             raise LocalConfigError(tr('config.providers', where=where, allowed=sorted(EFFORTS)))
         if agent == 'reviewer':
-            value = _fields(value, where, ('provider', 'model', 'effort', *CLI_KEYS))
+            value = _fields(value, where, ('provider', 'model', 'effort',
+                            *(('timeout_seconds', 'environment') if automatic else CLI_KEYS)),
+                            ('executable', 'cli_version') if automatic else ())
             reviewer = (_text(value['model'], f'{where}.model'), _text(value['effort'], f'{where}.effort'))
             if reviewer[1] not in EFFORTS[provider]:
                 raise LocalConfigError(tr('config.efforts', where=where, provider=provider, allowed=list(EFFORTS[provider])))
@@ -198,11 +213,12 @@ def _agents(data):
         else:
             optional = TOOL_KEYS if provider == 'claude' else ()
         own = ('provider', 'model', 'effort') if agent == 'reviewer' else ('provider',)
-        agents[agent] = _cli(where, provider, {k: v for k, v in value.items() if k not in own}, optional=optional)
+        agents[agent] = _cli(where, provider, {k: v for k, v in value.items() if k not in own}, optional=optional,
+                             automatic=automatic)
     return agents, reviewer
 
 
-def _presets(data):
+def _presets(data, *, automatic=False):
     """V5: explicit local capabilities; loading does not query remote availability."""
     if not isinstance(data, dict):
         raise LocalConfigError(tr('config.presets_table'))
@@ -211,8 +227,9 @@ def _presets(data):
         where = f'agent_presets.{name}'
         if not PROJECT_ID.fullmatch(name):
             raise LocalConfigError(tr('config.preset_id', where=where))
-        value = _fields(value, where, ('provider', 'roles', 'models', 'efforts', 'allow_open_executor', *CLI_KEYS),
-                        TOOL_KEYS)
+        value = _fields(value, where, ('provider', 'roles', 'models', 'efforts', 'allow_open_executor',
+                        *(('timeout_seconds', 'environment') if automatic else CLI_KEYS)),
+                        (*TOOL_KEYS, 'executable', 'cli_version') if automatic else TOOL_KEYS)
         provider = value['provider']
         if not isinstance(provider, str) or provider not in EFFORTS:
             raise LocalConfigError(tr('config.providers', where=where, allowed=sorted(EFFORTS)))
@@ -226,11 +243,9 @@ def _presets(data):
             raise LocalConfigError(tr('config.models', where=where))
         _flag(value['allow_open_executor'], f'{where}.allow_open_executor')
         config = _cli(where, provider, {k: v for k, v in value.items() if k in (*CLI_KEYS, *TOOL_KEYS)},
-                      optional=TOOL_KEYS if provider == 'claude' else ())
+                      optional=TOOL_KEYS if provider == 'claude' else (), automatic=automatic)
         if 'reviewer' in roles and any((config.tools, config.allowed_tools, config.grantable_tools)):
             raise LocalConfigError(tr('config.reviewer_tools', where=where))
-        if 'executor' in roles and config.cli_version not in WRITE_SUPPORTED[provider]:
-            raise LocalConfigError(tr('config.write_version', where=where))
         presets[name] = (value, config)
     return presets
 
@@ -474,7 +489,7 @@ class LocalComposer:
         self.presets, self.recipes = presets, recipes
         # Recipe generation of this format (D168): v5 selects v1 and v6 selects v2; older formats declare none.
         self._recipe_format = fmt if fmt in AGENT_FORMATS else V5
-        self.recipe_profiles = {}  # v6 only: recipe name → profile of its v2 module
+        self.recipe_profiles = {}  # v6/v7: recipe name → profile of its v2 module
         self._recipe_roots, self._receipts = {}, {}
         self.identity, self.git_executable, self.engine = identity, git_executable, engine
         self.compositions = compositions  # name → (profile, raw command table); empty before v3
@@ -484,6 +499,7 @@ class LocalComposer:
         self.roots, self.bootstrap_enabled = registration
         self._lock = Lock()
         self._live = {}
+        self._detection_enabled = False
 
     @property
     def registrable(self):
@@ -503,7 +519,7 @@ class LocalComposer:
             required, optional = (*self.PROJECT_KEYS, 'profile', 'commands'), self.OPTIONAL_KEYS
         if self.format in AGENT_FORMATS:
             optional = (*optional, 'agent_selection')
-        if self.format == VERSION and registry is None and not new_directory:
+        if self.format in WORK_FORMATS and registry is None and not new_directory:
             optional = (*optional, 'work_language')  # TOML projects only: the UI confirms it in SQLite
         item = _fields(item, where, required, optional)
         work_language = item.get('work_language')
@@ -591,6 +607,14 @@ class LocalComposer:
                     **({'project_recipe': recipe_module(recipe, self._recipe_format).VERSION,
                         'recipe_config_sha256': hashlib.sha256(freeze(authority['recipe']).encode()).hexdigest()}
                        if recipe else {})}
+        if self.format == VERSION:
+            choice = item.get('agent_selection')
+            declarations = ({role: self.presets[preset['preset_id']][1] for role, preset in choice.items()}
+                            if choice is not None else self.agents)
+            for role, declaration in declarations.items():
+                versions[f'{role}_cli_version_source'] = ('automatic' if declaration.cli_version is None
+                                                         else 'legacy-assertion')
+                versions[f'{role}_cli_discovery'] = 'PATH' if not declaration.executable else 'explicit'
         if new_directory:
             commands_snapshot = {**config_payload(commands), 'checkout': str(root)}
             versions['command_config_sha256'] = hashlib.sha256(freeze(commands_snapshot).encode()).hexdigest()
@@ -604,12 +628,13 @@ class LocalComposer:
         context = ProjectContext(root, profile, engine_policy, documents='v2', work_language=work_language)
         project = ManagedProject(identifier, context, versions, item.get('permission_authority'),
                                  item.get('tag_kind', 'lightweight'), bootstrap)
-        return project, (identifier, versions, commands, artifacts, agents)
+        return project, (identifier, versions, commands, artifacts, agents,
+                         (dict(item), where, registry))
 
     def effective_agents(self, item, where):
         selection = item.get('agent_selection')
         if selection is None:
-            return self.agents, self.reviewer, None
+            return self._resolve_agents(self.agents), self.reviewer, None
         selection = _fields(selection, f'{where}.agent_selection', ('reviewer', 'executor'))
         agents, selected, reviewer = {}, {}, None
         for role in ('reviewer', 'executor'):
@@ -625,7 +650,52 @@ class LocalComposer:
                 reviewer = tuple(_text(choice[key], f'{label}.{key}') for key in ('model', 'effort'))
                 if reviewer[0] not in preset['models'] or reviewer[1] not in preset['efforts']:
                     raise LocalConfigError(tr('config.reviewer_choice', where=label))
-        return agents, reviewer, selected
+        return self._resolve_agents(agents), reviewer, selected
+
+    def _resolve_agents(self, agents):
+        if self.format != VERSION or not self._detection_enabled:
+            return agents
+        resolved = {}
+        for role, declaration in agents.items():
+            config = discover(declaration)
+            report = preflight_config(config, access='write' if role == 'executor' else 'read')
+            if not report['available']:
+                raise CompatibilityError(report['diagnostics'][0]['code'], **(
+                    {'provider': config.provider, 'observed': report['observed_version'],
+                     'minimum': report['minimum_version']} if report['diagnostics'][0]['code'] == 'minimum_version' else {}))
+            resolved[role] = replace(config, cli_version=report['observed_version'])
+        return resolved
+
+    def resolve_config(self, config):
+        """Explicit startup step; parsing remains data-only, only effective project roles are probed."""
+        if self.format != VERSION:
+            return config
+        self._detection_enabled = True
+        projects = tuple(self.refresh(project, force=True) for project in config.projects)
+        return replace(config, projects=projects)
+
+    def refresh(self, project, *, force=False):
+        """New work observes updates; unchanged launch files may reuse the admission observation.
+
+        Per-attempt preflight never reuses it. Stored job identities are never changed here.
+        """
+        if self.format != VERSION or not self._detection_enabled:
+            return project
+        with self._lock:
+            composition = self._live[project.context.root]
+        agents = composition[4]
+        if not force:
+            try:
+                selection = composition[5][0].get('agent_selection')
+                declarations = ({role: self.presets[choice['preset_id']][1] for role, choice in selection.items()}
+                                if selection is not None else self.agents)
+                if all(agents[role].cli_version and launch_identity(discover(config))[1]
+                       == project.versions.get(f'{role}_cli_launch_sha256') for role, config in declarations.items()):
+                    return project
+            except (OSError, ValueError):
+                pass
+        item, where, registry = composition[5]
+        return self.install(self.compose(item, where, registry=registry))
 
     def install(self, composed):
         project, composition = composed
@@ -645,7 +715,7 @@ class LocalComposer:
             current = self._live.get(context.root)
         if current is None:
             raise JournalError(tr('config.no_composition'))
-        identifier, frozen, commands, artifacts, agents = current
+        identifier, frozen, commands, artifacts, agents, _ = current
         if any(versions.get(key) != value for key, value in frozen.items()):
             raise JournalError(tr('config.composition_changed', project=identifier))
         return commands, artifacts, agents
@@ -707,8 +777,8 @@ def _build(data, source):
                   'executor': _cli('providers.claude', 'claude', providers['claude'], optional=TOOL_KEYS)}
         reviewer = None
     else:
-        agents, reviewer = _agents(data['agents'])
-    presets = _presets(data.get('agent_presets', {}))
+        agents, reviewer = _agents(data['agents'], automatic=fmt == VERSION)
+    presets = _presets(data.get('agent_presets', {}), automatic=fmt == VERSION)
     compositions, registration = {}, ((), False)
     recipes = {}
     if 'recipes' in data:
@@ -738,7 +808,7 @@ def _build(data, source):
             recipes['typescript-web'] = _typescript_recipe(raw['typescript-web'], state)
     profiles = {name: factory() for name, factory in PROFILES.items()}
     recipe_profiles = {}
-    if fmt == VERSION:
+    if fmt in WORK_FORMATS:
         # D168: the v2 profiles are part of each v2 fingerprint; the built-in `typescript-web` stays for compositions
         # without a recipe.
         recipe_profiles = {name: recipe_module(name, fmt).profile() for name in recipes}
@@ -749,7 +819,7 @@ def _build(data, source):
         base = recipe_profiles.get('django') or profile()
         profiles['python-django-recipe'] = replace(base, formatter_argv=('ruff', 'format', '--'),
                                                    formatter_paths=('*.py',))
-        if fmt == VERSION:
+        if fmt in WORK_FORMATS:
             recipe_profiles['django'] = profiles['python-django-recipe']
     declared = data.get('profiles', {})
     if not isinstance(declared, dict):

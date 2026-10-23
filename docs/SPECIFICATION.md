@@ -76,7 +76,7 @@ run y, cuando procede, al intento exacto.
 | F21 | Agentes configurables por proyecto | Elegir proveedores y modelo/esfuerzo del revisor en UI; selección concreta del ejecutor a cargo del revisor | Implementado (P009-T003, D118): presets v5, selección por checkout y cambios confirmados entre tareas |
 | F22 | Preparar Django desde cero | Hijo nuevo, documentos D088, scaffold, entorno/dependencias y validaciones mediante receta confirmada | Implementado (P009-T004, D119); ensayo real T005 (D120) y piloto T007–T012 con P001 cerrada/archivada (D139) |
 | F23 | Idioma visual y de trabajo | Defaults globales en/es: visual global mutable para UI/conversación y trabajo inmutable por proyecto para documentación/código, con ambos congelados por job/turno | Parcial (P011, D158; §13): preferencias globales y visual congelado por job (T007, D166); trabajo inmutable por proyecto y par por job/intento (T008, D167); recetas v2 preparadas con el idioma de trabajo (T020, D168); directiva tipada al agente y documentos generados en el idioma de trabajo (T009, D169). Traducción completa de UI/mensajes (T010) pendiente |
-| F24 | Compatibilidad CLI ampliable | Detección automática sin pin; mínimos/capacidades por proveedor/rol, diagnóstico y versiones verificadas/candidatas sin allowlist por patch | Contrato T011/D173 definido, implementación T012 pendiente (P011; §13); siguen vigentes las listas exactas de `cli-13` |
+| F24 | Compatibilidad CLI ampliable | Detección automática sin pin; mínimos/capacidades por proveedor/rol, diagnóstico y versiones verificadas/candidatas sin allowlist por patch | Implementado P011-T012/D174: `local-config-7`/`cli-14`, mínimos Codex 0.163.0 / Claude 2.1.304; posteriores con compatibilidad condicionada, evidencia nueva solo sintética (§13) |
 
 Modo de proyecto: **gestionado**. Solo se crean proyectos nuevos o se incorpora código sin harness (B);
 registrar/reabrir uno ya gestionado conserva su autoridad. Nunca escriben dos motores sobre el mismo checkout.
@@ -202,7 +202,8 @@ Backup lee referencias selladas y restaura solo para consulta, sin observar orí
   solo para construir la UI.
 - Logs con retención explícita que conserva contratos, permisos, veredictos y métricas.
 - Backup consistente de SQLite y artefactos verificados por hash; restauración en directorio nuevo y solo de consulta.
-- Migraciones explícitas con backup previo; un adaptador de CLI con versión no caracterizada se bloquea con diagnóstico.
+- Migraciones explícitas con backup previo; las CLI inferiores al mínimo o con capacidades incompatibles se bloquean
+  con diagnóstico. Las posteriores que cumplen el contrato conocido se admiten con compatibilidad condicionada (D174).
 - El historial es trazable a nivel de aplicación, no un registro inviolable frente al propietario del equipo.
 
 ## 10. Criterios de aceptación globales
@@ -267,8 +268,9 @@ documentalmente en una tarea posterior (D140), con [revisión y límites](archiv
 ## 13. Ampliación planificada — P011
 
 [D154](DECISIONS.md#d154--p011-preparación-para-apertura-pública-en-github) encarga preparar el repositorio/paquete
-para apertura pública en GitHub. F24 y el resto de esta sección son **planificados, no implementados**, salvo lo
-indicado en F23 (preferencias T007, idioma de trabajo T008/T020 y directiva/documentos T009) y las
+para apertura pública en GitHub. Los objetivos pendientes de esta sección siguen **planificados, no implementados**;
+F24 está implementado por T012/D174, además de lo indicado en F23 (preferencias T007, idioma de trabajo T008/T020
+y directiva/documentos T009) y las
 retiradas/traducciones de T019/T003–T006;
 no cambian el alcance entregado de P010 ni sus límites D151/D153.
 
@@ -289,7 +291,9 @@ no cambian el alcance entregado de P010 ni sus límites D151/D153.
   se mantienen; una guardia esencial no acreditada bloquea. No prometer todas las versiones futuras.
   T011/D173 concreta por HITL la detección automática de cliente/versión, sin pedir pin, aceptación de candidatas
   o evidencia al usuario. Mínimos nuevos comunes: Codex 0.163.0 / Claude 2.1.304; inferiores → actualizar,
-  historia/configuraciones anteriores legibles. Implementación pendiente en T012.
+  historia/configuraciones anteriores legibles. T012/D174 implementa v7/cli-14: perfil/política y cliente observados
+  congelados, revalidación por intento y antes de GO. HITL adicional: compatibilidad condicionada de las posteriores
+  con las guardias conocidas intactas, sin afirmar efectos internos verificados. Sin uso real nuevo.
 - Paridad semántica diagramas/código/tests, documentación pública inglesa con entrada española y README completo,
   licencia/contenido publicable, metadatos/CI y ensayo del paquete final desde clon sin cachés privadas.
 

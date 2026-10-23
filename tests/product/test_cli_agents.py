@@ -35,7 +35,7 @@ def adapter(tmp_path, mode='success', timeout=2):
     env = (('PROBE_EXPLICIT','selected'), ('PROBE_RECORD',str(tmp_path/'launches.jsonl')),
            ('PROBE_CHILD',str(tmp_path/'child.pid')))
     configs = [CLIConfig(provider, (sys.executable,PROBE,provider,mode),version,env,timeout)
-               for provider,version in (('codex','0.161.0'),('claude','2.1.295'))]
+               for provider,version in (('codex','0.163.0'),('claude','2.1.304'))]
     return CLIProcessAdapter(configs, tmp_path/'captures')
 
 
@@ -94,7 +94,7 @@ def test_explicit_fresh_argv_preflight_and_configuration(tmp_path,context,reposi
     assert repository.processes(job.id)[0]['status']=='STOPPED'
     spec=repository.processes(job.id)[0]['spec']
     assert spec['cli_internal_retries']==port.capabilities()['cli_internal_retries'][provider]
-    assert spec['adapter_version']=='cli-13' and spec['agent']==('executor' if role=='executor' else 'reviewer')
+    assert spec['adapter_version']=='cli-14' and spec['agent']==('executor' if role=='executor' else 'reviewer')
     prompt=Path(spec['prompt_path']).read_bytes()
     assert prompt.decode()==launches[0]['prompt']
     assert spec['prompt_sha256']==hashlib.sha256(prompt).hexdigest()
@@ -102,7 +102,7 @@ def test_explicit_fresh_argv_preflight_and_configuration(tmp_path,context,reposi
     repository.close_owner(claim)
 
 
-@pytest.mark.parametrize('version',['0.161.0','0.162.1'])
+@pytest.mark.parametrize('version',['0.163.0','0.164.0'])
 @pytest.mark.parametrize('retry_key',['request_max_retries','stream_max_retries'])
 def test_reserved_provider_overrides_fail_once_with_preserved_evidence(
         tmp_path,context,repository,monkeypatch,version,retry_key):
@@ -110,7 +110,7 @@ def test_reserved_provider_overrides_fail_once_with_preserved_evidence(
     # executable must reject it instead of falsely certifying a successful stream.
     from harness_local.adapters import cli_agents
     ctx=replace(context,policy=replace(context.policy,planning_mode='agent'))
-    port=adapter(tmp_path,'version_new' if version=='0.162.1' else 'success')
+    port=adapter(tmp_path,'version_new' if version=='0.164.0' else 'success')
     port=CLIProcessAdapter((replace(port.agents['reviewer'],cli_version=version),
                             port.agents['executor']),port.artifact_root)
     original=cli_agents.argv_for
@@ -178,32 +178,21 @@ def test_empty_mcp_wrapper_fails_after_planner_without_review_or_retry(
     def factory(ctx,versions):
         return port,ScriptedCommandRunner([]),SyntheticWorkspace(ctx,('app/main.txt',))
     supervisor=LocalSupervisor(repository,factory)
-    assert supervisor.run_once().status=='DONE'
-    history=repository.get_run(job.run_id).history
-    assert history.status=='stopped'
-    assert [a.request.role for a in history.attempts]==['planner','executor']
-    assert history.attempts[0].result.status=='complete'
-    result=history.attempts[1].result
-    assert result.status=='failed' and result.exit_code==1
-    assert not result.terminal_observed and result.payload_json is None
-    metadata=json.loads(result.metadata_json)
-    assert metadata['observed']=={} and metadata['group_state']=='dead'
-    assert Path(metadata['artifacts']['stdout']['path']).read_bytes()==b''
-    stderr=Path(metadata['artifacts']['stderr']['path']).read_bytes()
-    assert b'mcpServers: expected record' in stderr
-    assert metadata['artifacts']['stderr']['size']==len(stderr)
-    assert metadata['artifacts']['stderr']['sha256']==hashlib.sha256(stderr).hexdigest()
+    with pytest.raises(JournalError, match='required permissions'):
+        supervisor.run_once()
+    run = repository.get_run(job.run_id)
+    history = run.history
+    assert run.status == 'RECOVERY_REQUIRED'
     processes=repository.processes(job.id)
     assert len(processes)==2 and all(p['status']=='STOPPED' for p in processes)
-    assert processes[1]['capture']['status']=='failed'
-    assert processes[1]['spec']['adapter_version']=='cli-2'
+    assert processes[1]['capture']['status']=='refused'
+    assert processes[1]['identity'] is None and processes[1]['spec']['launch_permitted'] is False
     with Session(repository.engine) as session:
         rows=session.scalars(select(ManagedAttemptRow).where(
             ManagedAttemptRow.run_id==job.run_id).order_by(ManagedAttemptRow.number)).all()
-        assert [row.status for row in rows]==['COMPLETE','FAILED']
         results_before=[row.result_json for row in rows]
     assert supervisor.run_once() is None
-    assert len((tmp_path/'launches.jsonl').read_text().splitlines())==2
+    assert len((tmp_path/'launches.jsonl').read_text().splitlines())==1
     # Loading historical cli-2 evidence with cli-3 never rewrites it.
     monkeypatch.setattr(cli_agents,'VERSION','cli-3')
     restarted=SQLiteManagedRepository(make_engine(str(repository.engine.url)))
@@ -574,12 +563,12 @@ def test_same_version_without_required_help_capabilities_blocks_execution(tmp_pa
 def test_new_installed_codex_version_requires_explicit_frozen_selection(tmp_path,context,repository):
     port=adapter(tmp_path,'version_new')
     assert port.preflight()['reviewer']['available'] is False  # no automatic version substitution
-    updated=replace(port.agents['reviewer'],cli_version='0.162.1')
+    updated=replace(port.agents['reviewer'],cli_version='0.164.0')
     port=CLIProcessAdapter((updated,port.agents['executor']),port.artifact_root)
     job,claim,request=setup_invocation(repository,context,port,role='reviewer')
     result=port.invoke(context,request)
     assert result.status=='complete'
-    assert repository.processes(job.id)[0]['spec']['preflight_observed']['version_output']=='codex-cli 0.162.1'
+    assert repository.processes(job.id)[0]['spec']['preflight_observed']['version_output']=='codex-cli 0.164.0'
     repository.close_owner(claim)
 
 

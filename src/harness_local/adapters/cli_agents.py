@@ -21,6 +21,8 @@ import time
 
 from harness_local.adapters.processes import CancellationResult, identity, liveness, stop_group
 from harness_local.adapters.streams import AgentStream
+from harness_local.adapters.cli_compatibility import (CompatibilityError, MINIMUM, POLICY_SHA256,
+                                                      eligible, guard_contract, launch_identity, version_tuple)
 from harness_local.core.engine.contracts import AgentResult, freeze
 from harness_local.core.engine.journal import JournalError
 from harness_local.core.engine.metrics import CAPTURE as METRICS_CAPTURE
@@ -28,8 +30,9 @@ from harness_local.core.engine.prompts import digest, output_schema
 from harness_local.i18n import tr
 
 
-# cli-13 (P009-T014): Codex skips its Git check also for a D088 definition of a new folder.
-VERSION = "cli-13"
+# cli-14 (P011-T012): automatic version resolution, capability policy and fresh per-attempt observations.
+VERSION = "cli-14"
+# Historical characterization lists, retained as evidence rather than admission allowlists.
 # Version/help characterization (D052): Claude 2.1.295 and 2.1.296 share the same help.
 # D122: Codex 0.163.0 (source of its tag vs 0.162.1) and Claude 2.1.304 (help/literals) keep this argv.
 SUPPORTED = {"codex": ("0.161.0", "0.162.1", "0.163.0"), "claude": ("2.1.295", "2.1.296", "2.1.304")}
@@ -95,7 +98,7 @@ def reader_schema(request):
 class CLIConfig:
     provider: str
     executable: tuple[str, ...]
-    cli_version: str
+    cli_version: str | None
     environment: tuple[tuple[str, str], ...]
     timeout_seconds: float
     # Explicit tool permissions for the next attempt; not a file/network sandbox.
@@ -104,10 +107,10 @@ class CLIConfig:
     grantable_tools: tuple[str, ...] = ()
 
     def __post_init__(self):
-        if self.provider not in SUPPORTED or self.cli_version not in SUPPORTED[self.provider]:
+        if self.provider not in SUPPORTED or (self.cli_version is not None and version_tuple(self.cli_version) is None):
             raise ValueError(tr('agents.unsupported_cli_baseline_re'))
-        if (not self.executable or not Path(self.executable[0]).is_absolute()
-                or not all(isinstance(v, str) and v and "\0" not in v for v in self.executable)):
+        if (self.executable and (not Path(self.executable[0]).is_absolute()
+                or not all(isinstance(v, str) and v and "\0" not in v for v in self.executable))):
             raise ValueError(tr('agents.explicit_absolute_executable_argv'))
         if not math.isfinite(self.timeout_seconds) or self.timeout_seconds <= 0:
             raise ValueError(tr('agents.positive_finite_timeout_required'))
@@ -154,6 +157,9 @@ def skips_git_check(context, request):
 
 
 def argv_for(config, context, request):
+    if not eligible(config.provider, config.cli_version):
+        raise CompatibilityError('minimum_version', provider=config.provider,
+                                 observed=config.cli_version or 'unknown', minimum=MINIMUM[config.provider])
     if not request.fresh_session or request.context_json is None:
         raise ValueError("Fresh frozen request required")
     access = access_for(request.role)
@@ -183,8 +189,6 @@ def argv_for(config, context, request):
     if effort not in EFFORTS[config.provider]:
         raise ValueError(tr('agents.effort_outside_cli_vocabulary', provider=config.provider))
     if config.provider == "codex":
-        if access == "write" and config.cli_version not in WRITE_SUPPORTED["codex"]:
-            raise ValueError(tr('agents.codex_write_versions', versions=", ".join(WRITE_SUPPORTED["codex"])))
         # D059: name the canonical checkout and omit the broad /tmp grant. On
         # macOS /tmp aliases /private/tmp and can obscure a checkout beneath it
         # in the permissions description. The explicitly configured TMPDIR
@@ -255,9 +259,6 @@ class CLIProcessAdapter:
             raise ValueError(tr('agents.reviewer_executor_agents_explicitly'))
         if agents["reviewer"].tools or agents["reviewer"].allowed_tools or agents["reviewer"].grantable_tools:
             raise ValueError(tr('agents.read_reviewer_has_fixed'))
-        executor = agents["executor"]
-        if executor.cli_version not in WRITE_SUPPORTED[executor.provider]:
-            raise ValueError(tr('agents.executor_cli_write_access'))
         self.agents = dict(agents)
         self.artifact_root = Path(artifact_root).absolute()
         self.journal = None
@@ -267,7 +268,13 @@ class CLIProcessAdapter:
 
     def frozen_versions(self):
         # The agent → provider assignment is part of the frozen identity.
-        return {"agent_adapter": VERSION,
+        identities = {}
+        for agent, config in self.agents.items():
+            try:
+                identities[f'{agent}_cli_launch_sha256'] = launch_identity(config)[1]
+            except (OSError, ValueError):
+                identities[f'{agent}_cli_launch_sha256'] = None
+        return {"agent_adapter": VERSION, 'cli_compatibility_sha256': POLICY_SHA256, **identities,
                 **{f"{agent}_{key}": value for agent, config in self.agents.items()
                    for key, value in (("provider", config.provider), ("cli", config.cli_version))},
                 "cli_config_sha256": hashlib.sha256(freeze({"agents": {key: asdict(value)
@@ -296,7 +303,10 @@ class CLIProcessAdapter:
             raise JournalError(tr('agents.cli_configuration_differs_frozen'))
         self.availability = self.preflight()
         if not all(item["available"] for item in self.availability.values()):
-            raise JournalError(tr('agents.installed_cli_does_not'))
+            journal.compatibility_refused(self.availability)
+            diagnostics = [d['correction'] for report in self.availability.values() for d in report['diagnostics']]
+            raise JournalError(str(tr('agents.installed_cli_does_not')) + ': ' + '; '.join(diagnostics))
+        self.binding_versions = versions
         self.journal = journal
 
     def cancel(self, attempt_id):
@@ -320,7 +330,22 @@ class CLIProcessAdapter:
         if agent is None:
             raise ValueError("Unknown agent role")
         config = self.agents[agent]
+        from harness_local.adapters.cli_diagnostics import preflight_config
+        observed = preflight_config(config, access=access_for(request.role),
+                                    expected_identity=self.binding_versions.get(f'{agent}_cli_launch_sha256'))
+        if not observed['available']:
+            self.journal.process_intent(request.id, {'provider': config.provider, 'adapter_version': VERSION,
+                'cli_version': config.cli_version, 'preflight_observed': observed, 'launch_permitted': False})
+            metadata = {'status': 'refused', 'group_state': 'dead', 'preflight_observed': observed}
+            self.journal.process_update(request.id, 'process_finished', metadata)
+            raise JournalError('; '.join(d['correction'] for d in observed['diagnostics']))
         argv = argv_for(config, context, request)
+        if not guard_contract(config.provider, argv, context.root, access_for(request.role)):
+            self.journal.process_intent(request.id, {'provider': config.provider, 'adapter_version': VERSION,
+                'cli_version': config.cli_version, 'preflight_observed': observed, 'launch_permitted': False,
+                'diagnostic_code': 'guard_contract'})
+            self.journal.process_update(request.id, 'process_finished', {'status': 'refused', 'group_state': 'dead'})
+            raise JournalError(tr('cli_diagnostics.guard_contract'))
         if self.artifact_root.is_relative_to(context.root) or self.artifact_root.resolve() != self.artifact_root:
             raise ValueError(tr('agents.artifacts_outside_checkout_without'))
         self.artifact_root.mkdir(parents=True, exist_ok=True, mode=0o700)
@@ -361,7 +386,10 @@ class CLIProcessAdapter:
                 "timeout_seconds": config.timeout_seconds, "cli_version": config.cli_version,
                 "adapter_version": VERSION, "provider": config.provider,
                 "cli_internal_retries": self.capabilities()["cli_internal_retries"][config.provider],
-                "preflight_observed": self.availability[agent], "artifacts": str(directory), "agent": agent,
+                "preflight_observed": observed, "artifacts": str(directory), "agent": agent,
+                'guard_contract': 'validated-local-request',
+                'version_source': self.binding_versions.get(f'{agent}_cli_version_source', 'legacy-assertion'),
+                'discovery_source': self.binding_versions.get(f'{agent}_cli_discovery', 'explicit'),
                 "requested": {"model": request.selection.model, "effort": request.selection.effort,
                               "fresh_session": True}}
         self.journal.process_intent(request.id, spec)
@@ -384,6 +412,15 @@ class CLIProcessAdapter:
             self.journal.process_update(request.id, "process_spawned", value)
             with self.lock:
                 self.active[request.id] = (process, cancelled)
+            try:
+                same_launch = launch_identity(config)[1] == observed['launch_sha256']
+            except (OSError, ValueError):
+                same_launch = False
+            if not same_launch:
+                stopped = stop_group(process).group_state
+                self.journal.process_update(request.id, 'process_finished',
+                    {'status': 'refused', 'group_state': stopped, 'diagnostic_code': 'identity_changed'})
+                raise JournalError(tr('cli_diagnostics.identity_changed'))
             os.write(gate_write, b"G")
             os.close(gate_write)
             gate_write = None

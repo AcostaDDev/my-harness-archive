@@ -299,6 +299,15 @@ class SQLiteManagedRepository:
     def _queue_new_run(self, session, assessment, context, versions, task_id, phase_id, key, request,
                        purpose="task"):
         """New run and its first job in the caller's transaction (tasks and H3.3 phase operations)."""
+        if versions.get('agent_adapter') == 'cli-14':
+            from harness_local.adapters.cli_compatibility import CompatibilityError, MINIMUM, eligible
+            for role in ('reviewer', 'executor'):
+                provider, observed = versions.get(f'{role}_provider'), versions.get(f'{role}_cli')
+                if provider not in MINIMUM or observed is None or not versions.get(f'{role}_cli_launch_sha256'):
+                    raise CompatibilityError('unresolved_client')
+                if not eligible(provider, observed):
+                    raise CompatibilityError('minimum_version', provider=provider, observed=observed,
+                                             minimum=MINIMUM[provider])
         self._registry_current(session, str(context.root), versions)
         from harness_local.storage.preparation import admit
         admit(session, str(context.root), versions, purpose)

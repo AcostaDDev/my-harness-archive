@@ -19,7 +19,7 @@ from harness_local.services.managed import LocalSupervisor
 from test_local_config import PROBE, SENTINEL, launches, setup, write  # noqa: F401 (fixture)
 from test_typescript_profile import PHASE, PLAN, TASK, repository, web  # noqa: F401 (fixtures)
 
-VERSIONS = {'codex': '0.162.1', 'claude': '2.1.296'}
+VERSIONS = {'codex': '0.163.0', 'claude': '2.1.304'}
 PAIRS = [('codex', 'claude'), ('claude', 'claude'), ('codex', 'codex'), ('claude', 'codex')]
 # Each provider as reviewer and as executor: enough to wire versions or presets already covered by PAIRS.
 MIXED_PAIRS = [('codex', 'claude'), ('claude', 'codex')]
@@ -66,7 +66,7 @@ def test_matrix_of_four_provider_pairings_through_the_real_adapter(setup, reposi
     config = load_local_config(write(folder, v2(data, reviewer, executor)))
     project = config.projects[0]
     versions = project.versions
-    assert versions['agent_adapter'] == 'cli-13' and versions['local_config'] == 'local-config-2'
+    assert versions['agent_adapter'] == 'cli-14' and versions['local_config'] == 'local-config-2'
     assert (versions['reviewer_provider'], versions['executor_provider']) == (reviewer, executor)
     # The reviewer always plans, with its own user-fixed selection.
     policy = project.context.policy
@@ -187,7 +187,7 @@ def mutate(data, change):
                                                'environment': executor['environment']}, 'codex', reviewer=False),
                                       'tools': ['Bash']}
     elif change == 'codex-writer-version':
-        executor.update(provider='codex', cli_version='0.161.0')
+        executor.update(provider='codex', cli_version='invalid')
         executor.pop('tools'), executor.pop('allowed_tools')
     elif change == 'planning-auto':
         policy['planning_mode'] = 'auto'
@@ -245,14 +245,14 @@ def request(role, effort='medium', model='m'):
 
 def test_argv_by_provider_and_access_without_launch(setup):
     context = setup[0]
-    codex = CLIConfig('codex', ('/synthetic/codex',), '0.162.1', (), 1)
-    claude = CLIConfig('claude', ('/synthetic/claude',), '2.1.296', (), 1, tools=('Read', 'Edit'),
+    codex = CLIConfig('codex', ('/synthetic/codex',), '0.164.0', (), 1)
+    claude = CLIConfig('claude', ('/synthetic/claude',), '2.1.305', (), 1, tools=('Read', 'Edit'),
                        allowed_tools=('Read', 'Edit'))
     writer = argv_for(codex, context, request('executor'))
     assert writer[writer.index('--sandbox') + 1] == 'workspace-write' and 'approval_policy="never"' in writer
     assert 'sandbox_workspace_write.network_access=false' in writer and 'web_search="disabled"' in writer
-    with pytest.raises(ValueError, match='0.162.1'):
-        argv_for(replace(codex, cli_version='0.161.0'), context, request('executor'))
+    with pytest.raises(ValueError, match='0.163.0'):
+        argv_for(replace(codex, cli_version='0.162.1'), context, request('executor'))
     for role in ('planner', 'reviewer', 'phase', 'chat', 'bootstrap'):
         reader = argv_for(claude, context, request(role))
         assert reader[reader.index('--tools') + 1] == reader[reader.index('--allowedTools') + 1] == 'Read,Glob,Grep'
@@ -270,12 +270,12 @@ def test_argv_by_provider_and_access_without_launch(setup):
 
 
 def test_adapter_assignment_is_part_of_the_frozen_identity(tmp_path):
-    codex = CLIConfig('codex', ('/synthetic/codex',), '0.162.1', (), 1)
-    claude = CLIConfig('claude', ('/synthetic/claude',), '2.1.296', (), 1)
+    codex = CLIConfig('codex', ('/synthetic/codex',), '0.164.0', (), 1)
+    claude = CLIConfig('claude', ('/synthetic/claude',), '2.1.305', (), 1)
     pairs = {(r, e): CLIProcessAdapter({'reviewer': r, 'executor': e}, tmp_path).frozen_versions()
              for r in (codex, claude) for e in (codex, claude)}
     assert len({v['cli_config_sha256'] for v in pairs.values()}) == 4
-    assert pairs[(claude, codex)]['reviewer_provider'] == 'claude' and pairs[(claude, codex)]['executor_cli'] == '0.162.1'
+    assert pairs[(claude, codex)]['reviewer_provider'] == 'claude' and pairs[(claude, codex)]['executor_cli'] == '0.164.0'
     # The two-provider sequence is the local-config-1 reading.
     assert CLIProcessAdapter((codex, claude), tmp_path).frozen_versions() == pairs[(codex, claude)]
     capabilities = CLIProcessAdapter({'reviewer': claude, 'executor': codex}, tmp_path).capabilities()['agents']
@@ -283,8 +283,8 @@ def test_adapter_assignment_is_part_of_the_frozen_identity(tmp_path):
                             'executor': {'provider': 'codex', 'access': 'write', 'grants': []}}
     with pytest.raises(ValueError, match='fixed tool inventory'):
         CLIProcessAdapter({'reviewer': replace(claude, tools=('Read',)), 'executor': codex}, tmp_path)
-    with pytest.raises(ValueError, match='not characterized'):
-        CLIProcessAdapter({'reviewer': claude, 'executor': replace(codex, cli_version='0.161.0')}, tmp_path)
+    historical = CLIProcessAdapter({'reviewer': claude, 'executor': replace(codex, cli_version='0.161.0')}, tmp_path)
+    assert historical.frozen_versions()['executor_cli'] == '0.161.0'  # readable; admission/invocation enforce the floor
     with pytest.raises(ValueError):
         CLIProcessAdapter({'reviewer': claude}, tmp_path)
 

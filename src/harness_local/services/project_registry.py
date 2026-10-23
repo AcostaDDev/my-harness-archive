@@ -26,7 +26,7 @@ from harness_local.storage.registry import ProjectRegistryRepository, RegistryCo
 RESERVED_IDS = frozenset({'new'})
 ACTIONS = ('register', 'update', 'retire')
 # Formats with per-project agent selections (v5) and their successor that adds the work language (v6).
-AGENT_FORMATS = ('local-config-5', 'local-config-6')
+AGENT_FORMATS = ('local-config-5', 'local-config-6', 'local-config-7')
 def trust_statement():
     """The statement the operator confirms, in the visual language of the preview; the record keeps that text."""
     return tr('registry.trust')

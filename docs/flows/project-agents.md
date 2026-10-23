@@ -2,6 +2,9 @@
 
 Implementado en P009-T003 ([D118](../DECISIONS.md#d118--p009-t003-presets-v5-y-selección-de-agentes-por-proyecto)),
 según [D116](../archive/phase-009/P009-T001_CONTRATO_CREACION.md#4-presets-y-composición-por-proyecto-t003).
+P011-T012 (D174) añade `local-config-7`: proveedor/modelo/esfuerzo y entorno siguen explícitos, pero ejecutable
+y versión son opcionales. El servicio detecta las CLI efectivas antes de admitir trabajo; mínimos comunes
+Codex 0.163.0 / Claude 2.1.304. [Detección, congelación, guardias y cuarentena](cli-compatibility.md).
 
 ```mermaid
 flowchart TD
@@ -20,7 +23,8 @@ flowchart TD
 ```
 
 Una fila sin `agent_selection` hereda `[agents.reviewer/executor]`, sin crear un override al leer o reiniciar.
-V1–v4 conservan configuración y hashes; rechazan selección/presets nuevos. Proyectos TOML siguen en consulta
+V1–v6 conservan lectura y hashes de configuración; v1–v4 rechazan selección/presets nuevos. Los pins antiguos son
+aserciones explícitas, no bypass de los mínimos actuales. Proyectos TOML siguen en consulta
 en la UI. La creación de un hijo y el alta de un checkout existente admiten la misma selección opcional v5.
 
 El navegador solo envía ids de presets y selección del revisor. Ejecutables, herramientas y entornos quedan

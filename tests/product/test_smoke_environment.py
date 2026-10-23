@@ -90,7 +90,8 @@ def test_synthetic_smoke_environment_and_frozen_history(smoke, monkeypatch, tmp_
     ports = []
     monkeypatch.setattr(smoke.shutil, 'which', lambda provider: sys.executable)
     def synthetic_port(configs, artifact_root):
-        configs = [replace(c, executable=(sys.executable, probe, c.provider, str(record), 'synthetic-local'))
+        configs = [replace(c, cli_version={'codex': '0.164.0', 'claude': '2.1.304'}[c.provider],
+                           executable=(sys.executable, probe, c.provider, str(record), 'synthetic-local'))
                    for c in configs]
         port = CLIProcessAdapter(configs, artifact_root)
         ports.append(port)
@@ -127,7 +128,7 @@ def test_synthetic_smoke_environment_and_frozen_history(smoke, monkeypatch, tmp_
             spec = process['spec']
             assert spec['environment_keys'] == sorted(environment)
             assert spec['environment_sha256'] == hashlib.sha256(freeze(environment).encode()).hexdigest()
-            assert spec['adapter_version'] == 'cli-13' and spec['timeout_seconds'] == 60
+            assert spec['adapter_version'] == 'cli-14' and spec['timeout_seconds'] == 60
             model = 'claude-sonnet-4-6' if attempt.request.role == 'executor' else 'gpt-6-luna'
             assert attempt.request.selection.model == model and attempt.request.selection.effort == 'low'
             assert attempt.request.fresh_session and spec['requested']['fresh_session']
@@ -153,7 +154,7 @@ def test_synthetic_smoke_environment_and_frozen_history(smoke, monkeypatch, tmp_
                 assert args[args.index('--sandbox') + 1] == 'read-only'
         frozen = json.loads(run.versions_json)
         assert frozen['cli_config_sha256'] == port.frozen_versions()['cli_config_sha256']
-        assert frozen['agent_adapter'] == 'cli-13'
+        assert frozen['agent_adapter'] == 'cli-14'
         changed = CLIProcessAdapter([replace(c, environment=tuple(expected.items()) if legacy else
                                     tuple((k, v) for k, v in expected.items() if k != 'USER'))
                                     for c in port.agents.values()], port.artifact_root)

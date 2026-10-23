@@ -609,7 +609,7 @@ def test_validate_phase_result_requires_ready_consistency():
 
 def test_cli_codex_handles_phase_role_read_only(tmp_path):
     context = make_context(tmp_path)
-    config = CLIConfig('codex', ('/synthetic/codex',), '0.162.1', (), 1)
+    config = CLIConfig('codex', ('/synthetic/codex',), '0.164.0', (), 1)
     request = AgentRequest('00000000-0000-4000-8000-000000000001', 'phase', Selection('m', 'low', 'r'), 'p', None, '{}')
     argv = argv_for(config, context, request)
     assert argv[argv.index('--sandbox') + 1] == 'read-only'

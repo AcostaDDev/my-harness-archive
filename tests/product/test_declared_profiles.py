@@ -34,7 +34,7 @@ PLAN = """# Synthetic Django task
 **Validation commands:**
 **Executor:** synthetic-executor / medium — Explicit offline selection
 """
-VERSIONS = {'codex': '0.162.1', 'claude': '2.1.296'}
+VERSIONS = {'codex': '0.163.0', 'claude': '2.1.304'}
 # Fake tools: they record their argv; pytest checks the real checkout code and writes JUnit.
 PYTEST = """
 import os, pathlib, sys

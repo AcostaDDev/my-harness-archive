@@ -1,16 +1,15 @@
-# Harness Local — real-use configuration (local-config-4, P008-T008). Template, not valid as is.
+# Harness Local — real-use configuration (local-config-7, P011-T012). Template, not valid as is.
 # Keep it OUTSIDE any checkout, owned by the service user, chmod 600.
 # No secrets: authentication stays in each CLI. Canonical absolute paths.
-# local-config-3 (the same without [profiles]) keeps its behavior and its frozen hash.
-# local-config-2 (commands inside each [[projects]]) and local-config-1 ([providers.codex]/[providers.claude],
-# Codex reviewer + Claude executor) are still read, but do not allow registering projects from the UI.
-# local-config-5 (P009-T003) is this same template with format = "local-config-5": it also accepts
-# [agent_presets.*] and the recipe fragments in examples/ (typescript-web-recipe, django-recipe).
-# local-config-6 (P011-T008) is local-config-5 plus an optional work_language per [[projects]] (see below);
-# its recipe fragments select the v2 recipes (P011-T020). Projects registered from the UI choose it there.
+# Selected clients are discovered on each role's explicit PATH. No CLI version is required.
+# Stable minimums: Codex 0.163.0 and Claude Code 2.1.304. Older clients get an update instruction.
+# Compatible later releases are admitted automatically with conditional interface compatibility.
+# Parsing is data-only; service startup and admission resolve clients, and every attempt revalidates them.
+# Formats 1–6 remain readable; their explicit version assertions must match the installed client.
+# v7 keeps v6 work-language settings, v5 presets and v2 recipe fragments.
 # Validate: harness-local check-config /path/harness-local.toml [--preflight]
 # Start:    harness-local serve --database /path/state/harness.sqlite3 --config /path/harness-local.toml
-format = "local-config-4"
+format = "local-config-7"
 
 [service]
 state_dir = "/ABSOLUTE/PATH/harness-state"   # CLI artifacts and migrations; outside the checkouts
@@ -27,17 +26,15 @@ author_email = "author@example.invalid"
 provider = "codex"                            # "codex" or "claude"
 model = "REVIEWER-MODEL"                      # the user sets the reviewer model and effort
 effort = "high"                               # provider vocabulary (codex: minimal…ultra; claude: low…max)
-executable = ["/ABSOLUTE/PATH/codex"]
-cli_version = "0.163.0"                       # baseline: 0.161.0, 0.162.1 or 0.163.0; any other version is rejected
+# executable = ["/ABSOLUTE/PATH/codex"]        # optional path for a nonstandard installation
 timeout_seconds = 1800
-environment = { HOME = "/Users/USER", USER = "USER", PATH = "/usr/bin:/bin", LANG = "C.UTF-8" }
+environment = { HOME = "/Users/USER", USER = "USER", PATH = "/ABSOLUTE/PATH/client-bin:/usr/bin:/bin", LANG = "C.UTF-8" }
 
 [agents.executor]                             # single writer; the reviewer sets its model and effort
-provider = "claude"                           # "claude" or "codex" (Codex: workspace-write, offline, 0.162.1/0.163.0)
-executable = ["/ABSOLUTE/PATH/claude"]
-cli_version = "2.1.304"                       # 2.1.295, 2.1.296 or 2.1.304
+provider = "claude"                           # "claude" or "codex" (Codex: workspace-write, network disabled)
+# executable = ["/ABSOLUTE/PATH/claude"]       # optional path for a nonstandard installation
 timeout_seconds = 3600
-environment = { HOME = "/Users/USER", USER = "USER", PATH = "/usr/bin:/bin", LANG = "C.UTF-8" }
+environment = { HOME = "/Users/USER", USER = "USER", PATH = "/ABSOLUTE/PATH/client-bin:/usr/bin:/bin", LANG = "C.UTF-8" }
 tools = ["Read", "Edit", "Write", "Glob", "Grep"]            # Claude only
 allowed_tools = ["Read", "Edit", "Write", "Glob", "Grep"]    # Claude only
 # grantable_tools = []                        # Claude only: tools grantable through H3.2
@@ -110,7 +107,7 @@ composition = "web"                           # composition above; the profile c
 # tag_kind = "lightweight"                    # or "annotated"
 # documents = "v2"                           # unified documentation contract (D088), mandatory; omitted = "v2"
 # bootstrap_enabled = false                   # H4.2/H6.5: create from scratch in this empty target
-# work_language = "en"                        # local-config-6 only: "en"/"es", recorded once; never changes
+work_language = "en"                          # "en"/"es", recorded once for this root; never changes
 
 [projects.policy]                             # the user's explicit choice; no defaults
 planning_mode = "agent"                       # "agent": the reviewer plans; "deterministic": NEXT_STEPS contract

@@ -9,8 +9,9 @@ a diagnostic; the library guarantees that no partial effects remain.
 """
 
 from typing import Annotated
+from contextvars import ContextVar
 
-from fastapi import APIRouter, Depends, Header, Query
+from fastapi import APIRouter, Depends, Header, Query, Request
 from fastapi.responses import Response
 from pydantic import Field
 
@@ -26,6 +27,7 @@ from harness_local.api.schemas import (
 )
 from harness_local.api.security import local_request, problem
 from harness_local.adapters.bootstrap import DraftChanged
+from harness_local.adapters.cli_compatibility import CompatibilityError
 from harness_local.core.engine.document_ops import BaseChanged, ManagedBlocksEdited
 from harness_local.core.engine.planning import task_sources
 from harness_local.core.managed_mode import MigrationError
@@ -43,12 +45,24 @@ DiffLimit = Annotated[int, Query(ge=4096, le=512 * 1024)]
 IdempotencyKey = Annotated[str, Header(alias="Idempotency-Key", min_length=1, max_length=200,
                                        description="The same key and the same action return the same job.")]
 ERRORS = {status: {"model": ProblemResponse} for status in (403, 404, 409, 422)}
+_resolved_cli = ContextVar('managed_cli_admission', default=None)
+
+
+async def cli_admission_scope(request: Request):
+    """Only explicit mutations may refresh clients; project/history/document reads stay passive."""
+    token = _resolved_cli.set({} if request.method not in ('GET', 'HEAD', 'OPTIONS') else None)
+    try:
+        yield
+    finally:
+        _resolved_cli.reset(token)
 
 
 def call(operation, /, *args, **kwargs):
     """Translates authority errors to HTTP. Order matters: all of them derive from ValueError."""
     try:
         return operation(*args, **kwargs)
+    except CompatibilityError as error:
+        raise problem(409, error.code, str(error)) from error
     except LookupError as error:
         raise problem(404, "not_found", str(error)) from error
     except PreferencesInvalid as error:  # the stored language is unusable: English diagnostic
@@ -78,7 +92,8 @@ def call(operation, /, *args, **kwargs):
 
 
 def managed_router(runtime: ManagedRuntime):
-    router = APIRouter(prefix="/api/managed", dependencies=[Depends(local_request)], responses=ERRORS)
+    router = APIRouter(prefix="/api/managed", dependencies=[Depends(local_request), Depends(cli_admission_scope)],
+                       responses=ERRORS)
 
     def say(key: str, **params) -> str:
         """Own diagnostic in the stored visual language (P011-T010); codes and statuses never change."""
@@ -252,6 +267,11 @@ def managed_router(runtime: ManagedRuntime):
 
     def frozen_versions(item):
         from harness_local.core.engine.contracts import freeze
+        resolutions = _resolved_cli.get()
+        if resolutions is not None:
+            if item.id not in resolutions:
+                resolutions[item.id] = call(runtime.resolve_project, item.id)
+            item = resolutions[item.id]
         versions = dict(item.versions)
         if item.permission_authority is not None:
             versions['permission_authority'] = freeze(item.permission_authority)

@@ -203,7 +203,7 @@ def test_cli_scoped_tool_rule_only_changes_next_argv(setup):
     row = request(setup); decide(setup, row)
     previous = setup[0].get_run(setup[2]).history.attempts[0].request
     current = resume(setup).history.attempts[-1].request
-    config = CLIConfig('claude', ('/synthetic/claude',), '2.1.295', (), 1, tools=('Bash',),
+    config = CLIConfig('claude', ('/synthetic/claude',), '2.1.304', (), 1, tools=('Bash',),
                        grantable_tools=(TARGETS['tools'],))
     before, after = (argv_for(config, setup[-1], r) for r in (previous, current))
     assert before[before.index('--allowedTools') + 1] == ''
@@ -228,7 +228,7 @@ def test_codex_executor_refuses_tool_grant_before_launch(setup):
     row = request(setup); decide(setup, row)
     previous = setup[0].get_run(setup[2]).history.attempts[0].request
     current = resume(setup).history.attempts[-1].request
-    config = CLIConfig('codex', ('/synthetic/codex',), '0.162.1', (), 1)
+    config = CLIConfig('codex', ('/synthetic/codex',), '0.164.0', (), 1)
     argv = argv_for(config, setup[-1], previous)
     assert argv[argv.index('--sandbox') + 1] == 'workspace-write'
     with pytest.raises(ValueError, match='cannot enforce scoped tool grants'):
@@ -238,7 +238,7 @@ def test_codex_executor_refuses_tool_grant_before_launch(setup):
 def test_network_grant_refused_by_cli_before_launch(setup):
     row = request(setup, 'network'); decide(setup, row)
     current = resume(setup).history.attempts[-1].request
-    config = CLIConfig('claude', ('/synthetic/claude',), '2.1.295', (), 1)
+    config = CLIConfig('claude', ('/synthetic/claude',), '2.1.304', (), 1)
     with pytest.raises(ValueError, match='network'):
         argv_for(config, setup[-1], current)
 
@@ -422,7 +422,7 @@ def test_cli_checks_expiry_again_at_launch_boundary(setup):
     saved = json.loads(current.permission_snapshot_json)
     saved['payload']['grants'][0]['expires_at'] = '2000-01-01T00:00:00.000000+00:00'
     saved['sha256'] = digest(saved['payload'])
-    config = CLIConfig('claude', ('/synthetic/claude',), '2.1.295', (), 1,
+    config = CLIConfig('claude', ('/synthetic/claude',), '2.1.304', (), 1,
                        tools=('Bash',), grantable_tools=(TARGETS['tools'],))
     with pytest.raises(ValueError, match='expired'):
         argv_for(config, setup[-1], replace(current, permission_snapshot_json=freeze(saved)))

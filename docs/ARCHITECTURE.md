@@ -15,7 +15,7 @@ decisiones vigentes y la información técnica que antes estaba en README y AGEN
 | Tipos del cliente | `openapi-typescript` 7.13.0 desde el OpenAPI exportado |
 | Herramientas | uv 0.12.19 y `uv.lock`; Node 24.15.0, npm 11.12.1 y `frontend/package-lock.json` |
 | Pruebas | `unittest` (12 checks sin dependencias), pytest 9.1.1 + httpx 0.28.1 + pytest-xdist 3.8.0, `node --test` |
-| Agentes | CLI `codex` 0.161.0/0.162.1/0.163.0 (escritura 0.162.1/0.163.0) y `claude` 2.1.295/2.1.296/2.1.304, adaptador `cli-13` |
+| Agentes | Detección automática desde Codex 0.163.0 / Claude 2.1.304; posteriores compatibles condicionadas al contrato conocido, adaptador `cli-14` (D174) |
 
 Sin Celery, broker ni Docker para el servicio (D003, D004). Detalles de stack de cada proyecto gestionado (Django,
 Node…) pertenecen a perfiles, no al núcleo.
@@ -57,12 +57,12 @@ llaman a los mismos casos de uso. El supervisor es el único que lanza procesos 
 | `core/engine/chat.py`, `chat_commands.py` | Turnos de chat y gramática de comandos |
 | `core/engine/prompts.py`, `templates/*.md`, `language.py` | Catálogo de prompts versionados y variables; directiva de idioma sellada fuera de las plantillas (D169) |
 | `core/engine/permissions.py`, `metrics.py` | Permisos por categoría y capa; catálogo de métricas `metrics-1` |
-| `adapters/cli_agents.py`, `cli_diagnostics.py`, `streams.py`, `processes.py`, `process_gate.py` | Lanzamiento de CLI, preflight, captura incremental, grupos de procesos |
+| `adapters/cli_agents.py`, `cli_compatibility.py`, `cli_diagnostics.py`, `streams.py`, `processes.py`, `process_gate.py` | Política de capacidades, detección/identidad local, preflight por intento, captura incremental y grupos de procesos (D174) |
 | `adapters/commands.py`, `git.py`, `bootstrap.py`, `chat_snapshot.py` | Validaciones nativas (`commands-1`), Git, commit raíz, instantánea de HEAD |
 | `storage/*.py` | Repositorios SQLAlchemy por área (`managed`, `phases`, `documents`, `transition`, `planning`, `chat`, `metrics`, `registry`, `backup`, `retention`, `migrate`…) |
 | `storage/run_projection.py`, `managed_views.py` | Proyección derivada `run-projection-1` escrita con el historial y vistas de runs que solo la leen (D144) |
 | `services/managed.py`, `managed_runtime.py` | Supervisor (`run_once`, lease, cuarentena) y composición del runtime |
-| `services/local_config.py`, `project_registry.py`, `project_creation.py` | TOML `local-config-6` (lectura de 1–5) y registro/creación de hijos desde la UI con 3/4/5/6; presets en v5/v6, recetas v1 en v5 y v2 en v6 (D168); idioma de trabajo sellado en el alta (D167) |
+| `services/local_config.py`, `project_registry.py`, `project_creation.py` | TOML `local-config-7` (lectura de 1–6), CLI automática sin pin en v7 (D174); registro/creación con 3–7, presets desde v5, recetas v1 en v5 y v2 en v6/v7 (D168); trabajo sellado al alta (D167) |
 | `recipes/`, `services/project_preparation.py`, `storage/preparation.py`, `adapters/preparation.py` | Recetas empaquetadas `django-recipe-1` y `typescript-web-recipe-1` y su preparación confirmada y recuperable (D119, D143); sucesoras v2 por idioma de trabajo en `local-config-6`, con despacho por `id` (D163, D168) |
 | `api/app.py`, `managed.py`, `schemas.py`, `session.py`, `security.py` | Aplicación, rutas, contratos Pydantic, sesión y guardia |
 | `profiles/typescript_web.py`, `profiles/reference_project.py` | Perfiles integrados (`typescript-web` componible; `reference_project` solo biblioteca); los perfiles del TOML v4/v5 se componen en `services/local_config.py` |
@@ -75,8 +75,8 @@ llaman a los mismos casos de uso. El supervisor es el único que lanza procesos 
 Preferences), `i18n.ts`, `i18n/{en,es}.json` y `Language.tsx` (catálogos y proveedor del idioma visual, D166),
 `markdown.ts` y `mermaid-view.ts` (render aislado), `managed-api.ts` (envíos idempotentes), `api.generated.ts`
 (generado, no se edita). `scripts/`: `dev`, `export_openapi.py`, `build_distribution.py`, `check_distribution.py`,
-`smoke_cli.py`. `examples/`: plantilla `local_config.example.toml` (v4, válida como v5 cambiando `format`), fragmentos
-v5 de las recetas, demos sintéticas y guiones históricos (`first_use/`, `provider_matrix/`) que no se actualizan.
+`smoke_cli.py`. `examples/`: plantilla `local_config.example.toml` (v7 automática; formatos 1–6 legibles),
+fragmentos de recetas v2, demos sintéticas y guiones históricos (`first_use/`, `provider_matrix/`) sin actualizar.
 
 ## 4. Patrones
 
@@ -105,7 +105,8 @@ por su API y los artefactos referenciados; la restauración es de consulta (`que
 
 ## 6. Agentes y configuración
 
-- **Adaptador `cli-13`** (D090: propuestas de ADR en las formas de ejecutor y revisor; D094: Codex con
+- **Adaptador `cli-14`** (D174: mínimos/capacidades y preflight por intento; conserva D090: propuestas de ADR en
+  las formas de ejecutor y revisor; D094: Codex con
   `project_doc_max_bytes=0`; D102: rol `definition` sobre exportaciones de solo lectura; D124: Codex omite su
   comprobación Git también al definir una carpeta nueva, plantilla congelada `define-project`). Sesión nueva por intento;
   argv, entorno (sin herencia, `USER` comprobado contra el UID) y timeouts explícitos. Revisor en solo lectura (Codex `--sandbox read-only`; Claude `--restricted` y `--json-schema`
@@ -114,7 +115,12 @@ por su API y los artefactos referenciados; la restauración es de consulta (`que
   Ninguna CLI carga por sí misma las instrucciones del checkout: Claude se lanza con `--setting-sources ""` y Codex
   con presupuesto de project docs 0 (D094). El motor inyecta `AGENTS.md` en el prompt de los roles sobre proyectos
   existentes; el rol `definition` (definición e incorporación) lo redacta o lo analiza como evidencia.
-- **TOML local del operador** (`local-config-6`; 1–5 se siguen leyendo), fuera de todo checkout y `chmod 600`:
+  Mínimos comunes Codex 0.163.0 / Claude 2.1.304. Las versiones posteriores se admiten por el contrato conocido
+  sin allowlist por patch; por HITL, su compatibilidad es condicionada y no se declaran efectos internos observados.
+  Versión, huella de lanzamiento y política se congelan por job; observación fresca y validación del argv por intento,
+  más comprobación de identidad antes de GO. Deriva → rechazo/cuarentena, sin retry ni sustitución de proveedor.
+  [Flujo](flows/cli-compatibility.md), [entrega y límites](phase/P011-T012_COMPATIBILIDAD_CLI.md).
+- **TOML local del operador** (`local-config-7`; 1–6 se siguen leyendo), fuera de todo checkout y `chmod 600`:
   `[service]`, `[git]`, `[agents.reviewer]`, `[agents.executor]`, `[registration]` (raíces y techo de bootstrap),
   `[profiles.*]` opcionales, `[compositions.*]` (perfil integrado o declarado y comandos autorizados) y
   `[[projects]]` opcional con su política. V5 añade `[agent_presets.*]` y `agent_selection` opcional por
@@ -123,6 +129,11 @@ por su API y los artefactos referenciados; la restauración es de consulta (`que
   explícito cubre la pareja heredada y cada rol de los presets; cargar no invoca CLI. V1–v4 conservan sus hashes.
   V6 (D167) es v5 con `work_language` opcional en `[[projects]]`, que el servicio asocia una vez al arrancar
   (otro valor ya confirmado detiene el arranque); sus `[recipes]` eligen las recetas v2 (D168).
+  V7 conserva v6 y permite omitir `executable`/`cli_version` en agentes/presets: resuelve los proveedores elegidos
+  por su PATH explícito, o la ruta opcional, sin heredar entorno. Parsear sigue sin procesos; arranque/admisión
+  observan versión/help antes de congelar la versión real. Cada mutación observa de nuevo y reutiliza solo su
+  resolución dentro de esa petición; lecturas pasivas. Formatos anteriores conservan sus hashes/aserciones, pero
+  no saltan los mínimos. Configuraciones incompletas no se pueden encolar como si `auto` fuera una versión.
   Cambios confirmados serializan registro y admisión en SQLite; bloquean aceptación/commit, propuestas de chat
   y definición/incorporación utilizable. Planes no aceptados pasan a SUPERSEDED sin alterar sus snapshots;
   nueva planificación antes de confirmar otro plan. [Flujo de agentes](flows/project-agents.md) (D118).
@@ -248,11 +259,11 @@ npm --prefix frontend run generate:types
 Uso real (D051): construir y verificar el wheel (`scripts/build_distribution.py --out-dir`, `scripts/check_distribution.py
 --dist`), instalarlo en un venv propio y operar con `harness-local check-config RUTA [--preflight]`,
 `harness-local init-db --database RUTA` y `harness-local serve --database RUTA --config RUTA`. Nunca desde este checkout.
-La plantilla del TOML es `local-config-4`; con `format = "local-config-5"` admite además presets y los fragmentos de
-receta de `examples/` (un fragmento cuya composición ya exista en el TOML se añade con otro nombre); con
-`format = "local-config-6"`, presets, `work_language` por proyecto y los mismos fragmentos, que eligen las recetas
-v2. Versiones CLI admitidas por rol en el [README](../README.md#requisitos), contrastadas con
-`cli_agents.SUPPORTED`/`WRITE_SUPPORTED`.
+La plantilla del TOML es `local-config-7`: sin pin obligatorio de CLI, con presets, `work_language` por proyecto
+y fragmentos de receta v2 de `examples/` (una composición ya existente se añade con otro nombre). El PATH explícito
+de cada rol debe incluir el cliente, o se declara su ruta opcional. Mínimos y compatibilidad en el
+[README](../README.md#requisitos), contrastados con `cli_compatibility.MINIMUM` y la política incluida. Las listas
+`cli_agents.SUPPORTED`/`WRITE_SUPPORTED` conservan evidencia histórica y ya no son allowlists de admisión.
 
 Actualización (D150): detener servicio, observadores y escritores, instalar el nuevo wheel y ejecutar
 `harness-local migrate --database /ruta/state/harness.sqlite3 --snapshots /ruta/copias-previas --writers-stopped`.
@@ -384,8 +395,10 @@ T011 completa el [contrato](phase/P011-T011_CONTRATO_COMPATIBILIDAD_CLI.md) (D17
 del cliente y su versión, sin pin ni aceptación de candidatas; mínimos comunes de nuevo trabajo Codex 0.163.0 y
 Claude 2.1.304, con indicación de actualizar si son inferiores. Las versiones previas conservan lectura histórica,
 sin nueva admisión bajo mínimos. Perfiles de capacidades por proveedor/rol mantienen guardias y procedencia;
-el usuario final no importa evidencia. T012 implementará descubrimiento por PATH explícito/ruta opcional,
-composición con versión observada congelada y revalidación por intento. §6 sigue describiendo `cli-13` vigente.
+el usuario final no importa evidencia. T012 implementa descubrimiento por PATH explícito/ruta opcional en v7,
+composición con versión observada congelada y revalidación por intento (`cli-14`, D174; §6). HITL adicional:
+las posteriores conservan las guardias del contrato conocido con compatibilidad condicionada, sin acreditar
+efectos internos por flags ni exigir una caracterización a cada usuario/patch.
 No equivale a garantizar cualquier versión futura ni a pasar a App Server/SDK. Versiones observadas y política
 quedarán ligadas a los intentos sin reescribir evidencia previa o realizar downgrade/retry silencioso.
 

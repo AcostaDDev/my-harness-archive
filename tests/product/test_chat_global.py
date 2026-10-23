@@ -162,7 +162,7 @@ def test_codex_exported_chat_only_skips_git_discovery(tmp_path):
     snapshot.mkdir()
     execution = replace(origin, root=snapshot)
     request = AgentRequest('id', 'chat', Selection('m', 'low', 'reason'), 'prompt', None, context_snapshot(origin))
-    cfg = CLIConfig('codex', ('/synthetic/codex',), '0.162.1', (), 1)
+    cfg = CLIConfig('codex', ('/synthetic/codex',), '0.164.0', (), 1)
     argv = argv_for(cfg, execution, request)
     assert '--skip-git-repo-check' in argv and argv[argv.index('--sandbox') + 1] == 'read-only'
     assert '--skip-git-repo-check' not in argv_for(cfg, origin, request)

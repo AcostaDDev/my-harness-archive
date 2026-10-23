@@ -263,7 +263,7 @@ def test_codex_exported_onboarding_uses_read_only_role_without_git_metadata(tmp_
     export = tmp_path / 'export'
     export.mkdir()
     request = AgentRequest('id', 'definition', Selection('m', 'low', 'reason'), 'prompt', None, context_snapshot(origin))
-    cfg = CLIConfig('codex', ('/synthetic/codex',), '0.162.1', (), 1)
+    cfg = CLIConfig('codex', ('/synthetic/codex',), '0.164.0', (), 1)
     argv = argv_for(cfg, replace(origin, root=export), request)
     assert '--skip-git-repo-check' in argv
     assert argv[argv.index('--sandbox') + 1] == 'read-only'

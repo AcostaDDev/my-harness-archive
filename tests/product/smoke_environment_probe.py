@@ -7,10 +7,10 @@ import sys
 provider, record, expected_user = sys.argv[1:4]
 args = sys.argv[4:]
 if '--version' in args:
-    print('codex-cli 0.162.1' if provider == 'codex' else '2.1.295 (Claude Code)')
+    print('codex-cli 0.164.0' if provider == 'codex' else '2.1.304 (Claude Code)')
     sys.exit(0)
 if '--help' in args:
-    print('--json --model --sandbox --ephemeral --ignore-user-config --ignore-rules --strict-config '
+    print('--json --model --sandbox --ephemeral --ignore-user-config --ignore-rules --strict-config --color --cd --config --skip-git-repo-check '
           '--print --output-format --verbose --include-partial-messages --no-session-persistence '
           '--session-id --effort --permission-mode --permission-prompts --tools --allowedTools '
           '--strict-mcp-config --mcp-config --setting-sources --settings --disable-slash-commands --no-chrome')

@@ -25,8 +25,8 @@ type Draft = {
   work_language?: Language;
 };
 
-/** Formats with per-project agent presets: v5 and v6 (which adds the work language). */
-const PRESET_FORMATS = ["local-config-5", "local-config-6"];
+/** Presets from v5, work language from v6, automatic CLI discovery from v7. */
+const PRESET_FORMATS = ["local-config-5", "local-config-6", "local-config-7"];
 
 const PLANNING: Record<Draft["planning_mode"], MessageKey> = { agent: "settings.planning.agent", deterministic: "settings.planning.deterministic" };
 const SELECTION: Record<Draft["executor_mode"], MessageKey> = { catalog: "settings.selection.catalog", open: "settings.selection.open" };

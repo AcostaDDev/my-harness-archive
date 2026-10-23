@@ -184,6 +184,7 @@ tarea se leen solo las decisiones que cita; este índice sirve para buscar prece
 | [D171](#d171--p011-t021-textos-propios-del-servicio-y-la-cli-en-el-visual-de-cada-emisión) | P011-T021: textos propios del servicio y la CLI en el visual de cada emisión | P011 |
 | [D172](#d172--p011-t022-textos-de-servicio-ya-ingleses-en-enes-y-rechazos-por-código) | P011-T022: textos de servicio ya ingleses en en/es y rechazos por código | P011 |
 | [D173](#d173--p011-t011-detección-automática-de-cli-mínimos-y-contrato-por-capacidades) | P011-T011: detección automática de CLI, mínimos y contrato por capacidades | P011 |
+| [D174](#d174--p011-t012-clientes-automáticos-y-compatibilidad-condicionada) | P011-T012: clientes automáticos y compatibilidad condicionada | P011 |
 
 ## D001 — Alcance local y arquitectura base
 
@@ -5165,3 +5166,51 @@ listas exactas de D052/D122; no reescribe sus evidencias ni cambia todavía `cli
   sintéticos y conserva originales privados. T011 solo diseña: sin código, esquema, flujo implementado, paquete,
   CLI/proveedores reales, suites, servicios, smoke, instalación o publicación. Checks documentales y fuentes
   oficiales; exceso previo del presupuesto de NEXT_STEPS registrado. Siguiente tarea: T012.
+
+## D174 — P011-T012: clientes automáticos y compatibilidad condicionada
+
+Estado: adoptada por HITL el 2026-10-23 y aplicada en T012 por la continuación y commit local en inglés pedidos
+por el usuario. Fase: P011. Concreta D173 y sustituye su exigencia de acreditar por artefacto la supresión interna
+de confianza antes de admitir cada nuevo escritor: la evidencia de D068/D122 conserva su alcance histórico.
+[Entrega, matriz, checks y límites](phase/P011-T012_COMPATIBILIDAD_CLI.md),
+[flujo](flows/cli-compatibility.md), [datos JSON](DDBB-DIAGRAM.md#ejecución-gestionada-p003).
+
+- HITL de implementación: no hay sonda pública sin inferencia que pruebe la condición interna de Codex que
+  suprime escrituras globales de confianza para cada release posterior. El usuario elige admitir las posteriores
+  automáticamente bajo el contrato conocido, con **compatibilidad condicionada** y sin afirmar efectos internos
+  verificados. No se pide pin, aceptación de candidatas, archivo de evidencia ni investigación por patch al usuario.
+  No se relajan sandbox, memoria, confianza o permisos: controles ausentes/alterados o incompatibilidad observable
+  bloquean; help y pruebas falsas no se presentan como observación de los efectos reales.
+- `local-config-7` extiende v6: ejecutable y `cli_version` opcionales por agente/preset; entorno, timeout y selección
+  de proveedor/modelo/esfuerzo siguen explícitos. Solo los proveedores elegidos se resuelven por su PATH absoluto
+  explícito o ruta opcional. Cargar sigue sin procesos; la resolución es un paso separado de arranque/composición
+  y admisión. Cada mutación API resuelve el proyecto una vez en esa petición; lecturas GET/HEAD pasivas.
+  `check-config --preflight` sigue siendo diagnóstico explícito de defaults y todos los roles de presets.
+- Mínimos estables comunes de trabajo nuevo: Codex 0.163.0 y Claude Code 2.1.304 (D122/D124). Inferior → actualizar;
+  ausente → instalar/ruta; formato ambiguo/prerelease → diagnóstico. Posteriores compatibles, incluso otro
+  minor/major, no necesitan estar en una lista. Las listas previas quedan como evidencia; formatos 1–6/pins/hashes
+  se leen sin reinterpretarse. Un pin explícito que difiere se diagnostica y se guía al formato automático.
+  Los mínimos también se aplican al trabajo nuevo de configuraciones antiguas. V7 usa recetas v2 con las mismas
+  claves y sin tocar fuentes/recibos/huellas v1/v2.
+- `cli-14` y política empaquetada `cli-capabilities-1`, ligada por hash a su contenido y a fuentes de transporte/
+  diagnóstico. Preflight de cada intento, sin caché de veredictos del job, con versión observada, flags emitidos
+  completos, alias de config y valores requeridos cuando help declara choices. El perfil guarda procedencia de
+  referencia/candidata y `internal_effects_verified=false`; no inventa evidencia de permisos efectivos, memoria,
+  persistencia, dependencias transitivas, auth o inferencia. Validación local independiente del argv protege las
+  guardias antes del target; terminales, grants, cancelación y ausencia de fallback/retry se conservan.
+- Job congela versión real, identidad de lanzamiento y política; v7 añade procedencia de versión y descubrimiento.
+  Hashes de ejecutable/script/intérprete explícitos y resolución de enlaces, con caché de contenido validada por
+  inode/tamaño/mtime/ctime; no se confunden argumentos de datos mutables con código. Comprobación alrededor de
+  sondas y antes de GO tras journal de identidad. Cambios → parada/cuarentena del trabajo congelado, nunca adoptar
+  otro cliente; el trabajo nuevo redetecta. No se afirma aislamiento del SO o identidad de dependencias opacas.
+- Rechazos de bind conservan informes seguros en eventos; los de intento dejan intención rechazada sin ejecutar
+  target, o parada observada del grupo propio si ya esperaba GO. Se amplían JSON propios, no tablas/migraciones,
+  y no se rellenan campos históricos ausentes. API usa códigos/correcciones en/es, sin exponer ayuda cruda,
+  valores de entorno, credenciales o rutas de ejecutables. Contratos OpenAPI/tipos sin cambio de forma.
+- D160: cobertura pública sustituida por ayudas sintéticas independientes, originales reales privados intactos.
+  Fixtures dinámicos de operación se actualizan al mínimo o a candidatas sintéticas, conservando escenarios de
+  historia, rechazo y recuperación; no se reescriben streams/snapshots congelados. README/ejemplos corrigen la
+  guía de soporte y quitan pins nuevos; traducción/primer uso público completo sigue en T014.
+- Sin CLI/proveedores reales, auth/configuración global, nuevos smokes, servicios en puertos, navegador, red,
+  instalaciones o publicación. La evidencia nueva es sintética/offline y sus checks quedan en la entrega.
+  No acredita uso real nuevo ni cambia los aplazamientos B/D095 o consentimientos agotados. Siguiente: T013.

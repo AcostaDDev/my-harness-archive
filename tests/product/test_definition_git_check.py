@@ -54,7 +54,7 @@ def child(tmp_path):
     return replace(make_context(root), documents='v2')
 
 
-@pytest.mark.parametrize('version', ['0.161.0', '0.162.1', '0.163.0'])
+@pytest.mark.parametrize('version', ['0.163.0', '0.164.0', '1.0.0'])
 def test_codex_definition_of_a_new_folder_only_adds_the_git_check_skip(child, version):
     argv = argv_for(codex(version), child, request(child))
     assert argv.count('--skip-git-repo-check') == 1
@@ -114,7 +114,7 @@ def test_failed_turn_leaves_the_conversation_open_for_a_turn_that_starts(child, 
     config = codex(executable=(sys.executable, PROBE, 'codex', 'recipe'), environment=environment)
     agents = {'reviewer': config, 'executor': config}
     versions = {**VERSIONS, **CLIProcessAdapter(agents, artifacts).frozen_versions()}
-    assert versions['agent_adapter'] == 'cli-13'
+    assert versions['agent_adapter'] == 'cli-14'
     writer = GitWorkspace(IDENTITY)
 
     def ports(context, frozen):

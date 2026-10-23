@@ -350,10 +350,10 @@ def test_catalogs_frozen_before_the_chat_template_remain_loadable():
 def test_cli_reviewer_handles_chat_role_read_only_with_either_provider(tmp_path):
     context = make_context(tmp_path)
     request = AgentRequest('00000000-0000-4000-8000-000000000002', 'chat', Selection('m', 'low', 'r'), 'p', None, '{}')
-    argv = argv_for(CLIConfig('codex', ('/synthetic/codex',), '0.162.1', (), 1), context, request)
+    argv = argv_for(CLIConfig('codex', ('/synthetic/codex',), '0.164.0', (), 1), context, request)
     assert argv[argv.index('--sandbox') + 1] == 'read-only' and '--ephemeral' in argv
     # D052: a Claude reviewer chats with the fixed read-only inventory and a JSON schema.
-    argv = argv_for(CLIConfig('claude', ('/synthetic/claude',), '2.1.295', (), 1), context, request)
+    argv = argv_for(CLIConfig('claude', ('/synthetic/claude',), '2.1.304', (), 1), context, request)
     assert argv[argv.index('--tools') + 1] == 'Read,Glob,Grep' and '--restricted' in argv
     # D058 (cli-6): the typed engine schema, not only the required fields.
     assert json.loads(argv[argv.index('--json-schema') + 1]) == output_schema('chat')

@@ -44,20 +44,20 @@ if stage == os.environ.get('STAGE', 'version'):
     if mode == 'invalid_utf8': os.write(1, b'\\xff'); sys.exit(0)
     if mode == 'unexpected': print('SECRET-OUTPUT'); sys.exit(0)
     if mode == 'empty': sys.exit(0)
-    if mode == 'contaminated': print('codex-cli 0.161.0 SECRET-OUTPUT'); sys.exit(0)
+    if mode == 'contaminated': print('codex-cli 0.163.0 SECRET-OUTPUT'); sys.exit(0)
     if mode == 'future': print('codex-cli 99.1.1'); sys.exit(0)
-    if mode == 'suffix': print('codex-cli 0.161.0-beta'); sys.exit(0)
+    if mode == 'suffix': print('codex-cli 0.163.0-beta'); sys.exit(0)
 if stage == 'version':
-    print('2.1.295 (Claude Code)' if os.environ['PROVIDER'] == 'claude' else 'codex-cli 0.161.0')
+    print('2.1.304 (Claude Code)' if os.environ['PROVIDER'] == 'claude' else 'codex-cli 0.163.0')
 else:
-    flags = '--json --model --sandbox --ephemeral --ignore-user-config --ignore-rules --strict-config --print --output-format --verbose --include-partial-messages --no-session-persistence --session-id --effort --permission-mode --permission-prompts --tools --allowedTools --strict-mcp-config --mcp-config --setting-sources --settings --disable-slash-commands --no-chrome'
+    flags = '--json --model --sandbox --ephemeral --ignore-user-config --ignore-rules --strict-config --color --cd --config --skip-git-repo-check --print --output-format --verbose --include-partial-messages --no-session-persistence --session-id --effort --permission-mode --permission-prompts --tools --allowedTools --strict-mcp-config --mcp-config --setting-sources --settings --disable-slash-commands --no-chrome'
     if mode == 'missing': flags = flags.replace('--model', '--model-extra')
     print(flags)
     print('SECRET-OUTPUT', file=sys.stderr)
 ''')
     env = {'RECORD': str(tmp_path / 'record'), 'CHECKOUT': str(Path.cwd()),
            'PROVIDER': 'codex', 'CHILD': str(tmp_path / 'child')}
-    return CLIConfig('codex', (sys.executable, str(probe)), '0.161.0', tuple(env.items()), 60)
+    return CLIConfig('codex', (sys.executable, str(probe)), '0.163.0', tuple(env.items()), 60)
 
 
 def altered(config, **env):
@@ -73,7 +73,7 @@ def calls(config):
 def test_success_exact_config_and_no_inheritance(config, provider, tmp_path, monkeypatch):
     monkeypatch.setenv('H5_SECRET_INHERITED', 'DO-NOT-PASS')
     config = replace(altered(config, PROVIDER=provider), provider=provider,
-                     cli_version='0.161.0' if provider == 'codex' else '2.1.295')
+                     cli_version='0.163.0' if provider == 'codex' else '2.1.304')
     before = asdict(config)
     report = diagnose(config)
     assert report['preflight']['status'] == 'version_help_match'
@@ -127,7 +127,7 @@ def test_unrecognized_version_not_compatible(config, mode):
 def test_version_mismatch_no_help_or_substitution(config):
     report = preflight_config(altered(config, MODE='future'))
     assert report['status'] == 'incompatible'
-    assert report['requested_version'] == '0.161.0'
+    assert report['requested_version'] == '0.163.0'
     assert report['observed_version'] == '99.1.1'
     assert report['missing_flags'] is None
     assert len(calls(config)) == 1
@@ -147,7 +147,7 @@ def test_unavailable_executable_sanitized(config, tmp_path):
 
 
 def test_shared_adapter_preflight_no_mutation(config, tmp_path):
-    claude = replace(altered(config, PROVIDER='claude'), provider='claude', cli_version='2.1.295')
+    claude = replace(altered(config, PROVIDER='claude'), provider='claude', cli_version='2.1.304')
     adapter = CLIProcessAdapter([config, claude], tmp_path / 'captures')
     before = adapter.frozen_versions()
     report = adapter.preflight()
@@ -164,7 +164,7 @@ def data_for(config):
 
 
 @pytest.mark.parametrize('field,value', [
-    ('provider', 'SECRET'), ('cli_version', '99.1.1'), ('executable', ['relative']),
+    ('provider', 'SECRET'), ('cli_version', '99.1.1-beta'), ('executable', ['relative']),
     ('executable', 'SECRET'), ('environment', {'KEY': 1}), ('environment', []),
     ('timeout_seconds', 0), ('timeout_seconds', float('nan')), ('timeout_seconds', True),
     ('tools', ['--bad']), ('extra', 'SECRET'), ('cli_version', []),

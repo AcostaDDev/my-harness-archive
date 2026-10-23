@@ -16,13 +16,15 @@ import tempfile
 import time
 
 from harness_local.i18n import tr
+from harness_local.adapters.cli_compatibility import (CompatibilityError, MINIMUM, discover, eligible,
+                                                      launch_identity, profile, version_tuple)
 
 
 MAX_OUTPUT = 256 * 1024  # stdout and stderr combined, per command
 TIMEOUT = 10.0
 REQUIRED = {
     'codex': ('--json', '--model', '--sandbox', '--ephemeral', '--ignore-user-config',
-              '--ignore-rules', '--strict-config'),
+              '--ignore-rules', '--strict-config', '--color', '--cd', '--config'),
     'claude': ('--print', '--output-format', '--verbose', '--include-partial-messages',
                '--no-session-persistence', '--session-id', '--model', '--effort',
                '--permission-mode', '--permission-prompts', '--tools', '--allowedTools',
@@ -30,14 +32,43 @@ REQUIRED = {
                '--disable-slash-commands', '--no-chrome'),
 }
 # cli-5 (D052): flags needed only by one access mode of a provider.
-ACCESS_REQUIRED = {('claude', 'read'): ('--restricted', '--json-schema')}
+ACCESS_REQUIRED = {('claude', 'read'): ('--restricted', '--json-schema'),
+                   ('codex', 'read'): ('--skip-git-repo-check',)}
 PATTERNS = {
     'codex': r'codex-cli ([0-9]{1,6}\.[0-9]{1,6}\.[0-9]{1,6})',
     'claude': r'([0-9]{1,6}\.[0-9]{1,6}\.[0-9]{1,6}) \(Claude Code\)',
 }
+VALUES = {'codex': {'--color': ('never',)},
+          'claude': {'--output-format': ('stream-json',), '--permission-mode': ('dontAsk',),
+                     '--permission-prompts': ('none',)}}
+
+
+def unsupported_values(text, provider, access):
+    """Check explicitly advertised choices; an absent choices list is not a semantic observation."""
+    required = dict(VALUES[provider])
+    if provider == 'codex' and access is not None:
+        required['--sandbox'] = ('workspace-write' if access == 'write' else 'read-only',)
+    tokens = list(re.finditer(r'(?<![\w-])--[A-Za-z][A-Za-z0-9-]*(?![\w-])', text))
+    missing = {}
+    for index, token in enumerate(tokens):
+        flag = token.group()
+        if flag not in required:
+            continue
+        end = tokens[index + 1].start() if index + 1 < len(tokens) else len(text)
+        announced = re.search(r'(?:possible values|choices)\s*:\s*([^\]\)\n]+)', text[token.end():end], re.I)
+        if announced:
+            choices = set(re.findall(r'[A-Za-z][A-Za-z0-9-]*', announced[1]))
+            absent = [value for value in required[flag] if value not in choices]
+            if absent:
+                missing[flag] = absent
+    return missing
+
+
 # Correction for each diagnostic code: catalog `cli_diagnostics.<code>`, in the emission's visual language.
 FIXES = ('config_invalid', 'config_unreadable', 'spawn_error', 'timeout', 'output_limit', 'exit_error',
-         'unexpected_output', 'version_mismatch', 'missing_flags', 'probe_error', 'cleanup_error')
+         'unexpected_output', 'version_mismatch', 'missing_flags', 'probe_error', 'cleanup_error',
+         'minimum_version', 'client_missing', 'discovery_path', 'identity_changed', 'identity_unknown',
+         'unresolved_client', 'guard_contract', 'unsupported_values')
 
 
 def _probe(argv, environment, cwd, timeout):
@@ -97,7 +128,7 @@ def _probe(argv, environment, cwd, timeout):
     return result, bytes(output) if result['status'] == 'ok' else b''
 
 
-def preflight_config(config, *, timeout=TIMEOUT, access=None):
+def preflight_config(config, *, timeout=TIMEOUT, access=None, expected_identity=None):
     """Observe one validated CLIConfig, without touching its frozen values.
 
     `access` ('read' | 'write') adds the flags that agent access mode needs.
@@ -110,14 +141,29 @@ def preflight_config(config, *, timeout=TIMEOUT, access=None):
     report = {'available': False, 'status': 'unknown', 'requested_version': config.cli_version,
               'observed_version': None, 'version_output': None, 'help_sha256': None,
               'required_flags': list(required),
-              'missing_flags': None, 'probes': {}, 'diagnostics': []}
+              'missing_flags': None, 'probes': {}, 'diagnostics': [],
+              'minimum_version': MINIMUM[config.provider], 'launch_sha256': None,
+              'discovery': 'explicit' if config.executable else 'PATH', 'compatibility': None,
+              'unsupported_values': {}}
 
-    def fail(code, status='unknown'):
+    def fail(code, status='unknown', **params):
         report['status'] = status
-        report['diagnostics'].append({'code': code, 'correction': tr(f'cli_diagnostics.{code}')})
+        report['diagnostics'].append({'code': code, 'correction': tr(f'cli_diagnostics.{code}', **params)})
         return report
 
     try:
+        try:
+            config = discover(config)
+            report['launch_sha256'] = launch_identity(config)[1]
+        except CompatibilityError as exc:
+            return fail(exc.code, **exc.params)
+        except (FileNotFoundError, PermissionError, UnicodeError):
+            report['probes']['version'] = {'status': 'spawn_error', 'exit_code': None}
+            return fail('spawn_error')
+        except (OSError, ValueError):
+            return fail('identity_unknown')
+        if expected_identity is not None and report['launch_sha256'] != expected_identity:
+            return fail('identity_changed', 'incompatible')
         with tempfile.TemporaryDirectory(prefix='harness-preflight-') as cwd:
             version, raw = _probe(config.executable + ('--version',), config.environment, cwd, timeout)
             report['probes']['version'] = version
@@ -128,13 +174,16 @@ def preflight_config(config, *, timeout=TIMEOUT, access=None):
             except UnicodeDecodeError:
                 return fail('unexpected_output')
             match = re.fullmatch(PATTERNS[config.provider], text)
-            if match is None:
+            if match is None or version_tuple(match[1]) is None:
                 return fail('unexpected_output')
             report['observed_version'] = match[1]
             # Only the strict, recognized version line is safe to preserve.
             report['version_output'] = text
-            if match[1] != config.cli_version:
+            if config.cli_version is not None and match[1] != config.cli_version:
                 return fail('version_mismatch', 'incompatible')
+            if not eligible(config.provider, match[1]):
+                return fail('minimum_version', 'incompatible', provider=config.provider,
+                            observed=match[1], minimum=MINIMUM[config.provider])
             args = ('exec', '--help') if config.provider == 'codex' else ('--help',)
             help_result, raw = _probe(config.executable + args, config.environment, cwd, timeout)
             report['probes']['help'] = help_result
@@ -149,12 +198,20 @@ def preflight_config(config, *, timeout=TIMEOUT, access=None):
             report['help_sha256'] = hashlib.sha256(raw).hexdigest()
             # --model-extra must not satisfy --model.
             flags = set(re.findall(r'(?<![\w-])--[A-Za-z][A-Za-z0-9-]*(?![\w-])', text))
+            if re.search(r'(?<![\w-])-c(?![\w-])', text):
+                flags.add('--config')
             report['missing_flags'] = [flag for flag in required if flag not in flags]
             if report['missing_flags']:
                 return fail('missing_flags', 'incompatible')
-    except OSError:
+            report['unsupported_values'] = unsupported_values(text, config.provider, access)
+            if report['unsupported_values']:
+                return fail('unsupported_values', 'incompatible')
+            if launch_identity(config)[1] != report['launch_sha256']:
+                return fail('identity_changed', 'incompatible')
+    except (OSError, ValueError):
         return fail('probe_error')
-    report.update(available=True, status='version_help_match')
+    report.update(available=True, status='version_help_match',
+                  compatibility=profile(config.provider, report['observed_version'], access))
     return report
 
 
@@ -162,7 +219,7 @@ def diagnose(config):
     """CLIConfig syntax is checked by its constructor; semantic argv is untested."""
     from harness_local.adapters.cli_agents import SUPPORTED, VERSION
     return {'format': 1, 'provider': config.provider, 'adapter_version': VERSION,
-            'supported_versions': SUPPORTED,
+            'historical_versions': SUPPORTED, 'minimum_versions': MINIMUM,
             'configuration': 'valid_structure', 'preflight': preflight_config(config),
             'not_checked': ['authentication', 'quota', 'model_access', 'full_argv',
                             'tool_permissions', 'network_isolation', 'cli_internal_retries'],
@@ -175,7 +232,7 @@ def diagnose_file(path):
 
     def invalid(code):
         return {'format': 1, 'configuration': 'invalid', 'preflight': None,
-                'supported_versions': SUPPORTED,
+                'historical_versions': SUPPORTED, 'minimum_versions': MINIMUM,
                 'diagnostics': [{'code': code, 'correction': tr(f'cli_diagnostics.{code}')}]}
 
     def unique(pairs):
@@ -199,14 +256,17 @@ def diagnose_file(path):
     except (OSError, ValueError, RecursionError):
         return invalid('config_unreadable')
     try:
-        required = {'provider', 'executable', 'cli_version', 'environment', 'timeout_seconds'}
-        optional = {'tools', 'allowed_tools', 'grantable_tools'}
+        required = {'provider', 'environment', 'timeout_seconds'}
+        optional = {'tools', 'allowed_tools', 'grantable_tools', 'executable', 'cli_version'}
         if not isinstance(data, dict) or not required <= data.keys() or data.keys() - required - optional:
             return invalid('config_invalid')
-        for key in ('provider', 'cli_version'):
+        for key in ('provider',):
             if not isinstance(data[key], str):
                 return invalid('config_invalid')
-        for key in ('executable', *sorted(optional)):
+        if 'cli_version' in data and not isinstance(data['cli_version'], str):
+            return invalid('config_invalid')
+        data.setdefault('cli_version', None)
+        for key in ('executable', 'tools', 'allowed_tools', 'grantable_tools'):
             values = data.get(key, [])
             if not isinstance(values, list) or not all(isinstance(value, str) for value in values):
                 return invalid('config_invalid')

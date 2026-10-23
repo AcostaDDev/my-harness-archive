@@ -57,9 +57,9 @@ def setup(web, tmp_path):
         'git': {'executable': shutil.which('git'), 'author_name': 'Local Writer',
                 'author_email': 'local@example.invalid'},
         'providers': {
-            'codex': {'executable': [sys.executable, PROBE, 'codex', 'web'], 'cli_version': '0.161.0',
+            'codex': {'executable': [sys.executable, PROBE, 'codex', 'web'], 'cli_version': '0.163.0',
                       'timeout_seconds': 20, 'environment': provider_env},
-            'claude': {'executable': [sys.executable, PROBE, 'claude', 'web'], 'cli_version': '2.1.295',
+            'claude': {'executable': [sys.executable, PROBE, 'claude', 'web'], 'cli_version': '2.1.304',
                        'timeout_seconds': 20, 'environment': provider_env,
                        'tools': ['Read', 'Edit'], 'allowed_tools': ['Read', 'Edit']}},
         'projects': [{
@@ -95,7 +95,7 @@ def test_valid_configuration_composes_fresh_ports_without_processes(setup):
     assert not config.supervisor and config.migrations_dir == tmp_path / 'state/migrations'
     versions = project.versions
     assert versions['local_config'] == 'local-config-1' and versions['commands'] == 'commands-1'
-    assert versions['agent_adapter'] == 'cli-13' and versions['engine'].startswith('harness-local-')
+    assert versions['agent_adapter'] == 'cli-14' and versions['engine'].startswith('harness-local-')
     assert {'cli_config_sha256', 'command_config_sha256', 'local_config_sha256'} <= versions.keys()
     first, second = config.ports_factory(project.context, versions), config.ports_factory(project.context, versions)
     assert [type(port) for port in first] == [CLIProcessAdapter, ManagedCommandRunner, GitWorkspace]
@@ -159,7 +159,7 @@ def mutate(data, change):
     elif change == 'no-user':
         codex['environment'] = {k: v for k, v in codex['environment'].items() if k != 'USER'}
     elif change == 'cli-version':
-        codex['cli_version'] = '9.9.9'
+        codex['cli_version'] = 'invalid'
     elif change == 'cli-relative':
         codex['executable'] = ['codex']
     elif change == 'git-relative':

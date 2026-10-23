@@ -17,7 +17,7 @@ from test_managed import context, repository  # noqa: F401 (fixtures)
 from test_typescript_profile import PHASE, PLAN, TASK, web  # noqa: F401 (fixture)
 
 
-@pytest.mark.parametrize('provider,version', [('codex', '0.162.1'), ('claude', '2.1.296')])
+@pytest.mark.parametrize('provider,version', [('codex', '0.164.0'), ('claude', '2.1.305')])
 @pytest.mark.parametrize('role', ['planner', 'executor', 'reviewer', 'phase', 'chat', 'bootstrap'])
 def test_all_roles_request_no_automatic_memory_without_redirecting_auth(context, provider, version, role):
     environment = (('HOME', '/synthetic/original-home'), ('USER', 'synthetic-user'),
@@ -46,10 +46,10 @@ def test_all_roles_request_no_automatic_memory_without_redirecting_auth(context,
 @pytest.mark.parametrize('value', ['0', '', 'false', 'true', 'unexpected'])
 def test_conflicting_claude_memory_environment_is_refused_before_effects(tmp_path, value):
     with pytest.raises(ValueError, match='automatic memory must remain disabled'):
-        CLIConfig('claude', ('/synthetic/cli',), '2.1.296',
+        CLIConfig('claude', ('/synthetic/cli',), '2.1.305',
                   (('CLAUDE_CODE_DISABLE_AUTO_MEMORY', value),), 1)
     assert list(tmp_path.iterdir()) == []
-    assert CLIConfig('claude', ('/synthetic/cli',), '2.1.296',
+    assert CLIConfig('claude', ('/synthetic/cli',), '2.1.305',
                      (('CLAUDE_CODE_DISABLE_AUTO_MEMORY', '1'),), 1)
 
 
@@ -74,13 +74,13 @@ def test_missing_memory_control_fails_once_with_original_capture(
         return tuple(args)
 
     monkeypatch.setattr(cli_agents, 'argv_for', broken)
-    result = port.invoke(context, attempt)
-    assert result.status == 'failed' and result.exit_code == 1 and result.payload_json is None
-    rows = [json.loads(line) for line in (tmp_path/'launches.jsonl').read_text().splitlines()]
-    assert len(rows) == 1
-    metadata = json.loads(result.metadata_json)
-    assert b'automatic memory must be disabled' in Path(metadata['artifacts']['stderr']['path']).read_bytes()
-    assert not result.terminal_observed and metadata['group_state'] == 'dead'
+    with pytest.raises(JournalError, match='required permissions'):
+        port.invoke(context, attempt)
+    assert not (tmp_path / 'launches.jsonl').exists()
+    process = repository.processes(job.id)[0]
+    assert process['identity'] is None and process['status'] == 'STOPPED'
+    assert process['spec']['launch_permitted'] is False
+    assert process['spec']['diagnostic_code'] == 'guard_contract'
     repository.close_owner(claim)
 
 
@@ -103,8 +103,8 @@ def test_old_job_is_quarantined_without_launch_or_history_change(setup, reposito
 def test_missing_trust_override_refuses_synthetic_writer_before_edit(context, repository, tmp_path, monkeypatch):
     from harness_local.adapters import cli_agents
     base = adapter(tmp_path)
-    codex_writer = replace(base.agents['reviewer'], cli_version='0.162.1',
-                           environment=base.agents['reviewer'].environment + (('PROBE_VERSION', '0.162.1'),))
+    codex_writer = replace(base.agents['reviewer'], cli_version='0.164.0',
+                           environment=base.agents['reviewer'].environment + (('PROBE_VERSION', '0.164.0'),))
     agents = {**base.agents, 'executor': codex_writer}
     port = CLIProcessAdapter({agent: replace(config, environment=config.environment +
         (('PROBE_TRUST_REQUIRED', '1'),)) for agent, config in agents.items()}, base.artifact_root)
@@ -118,10 +118,10 @@ def test_missing_trust_override_refuses_synthetic_writer_before_edit(context, re
         return tuple(args)
 
     monkeypatch.setattr(cli_agents, 'argv_for', broken)
-    result = port.invoke(context, attempt)
-    rows = [json.loads(line) for line in (tmp_path/'launches.jsonl').read_text().splitlines()]
-    assert result.status == 'failed' and result.exit_code == 1 and len(rows) == 1
-    metadata = json.loads(result.metadata_json)
-    assert b'explicit untrusted checkout' in Path(metadata['artifacts']['stderr']['path']).read_bytes()
-    assert not result.terminal_observed and metadata['group_state'] == 'dead'
+    with pytest.raises(JournalError, match='required permissions'):
+        port.invoke(context, attempt)
+    assert not (tmp_path / 'launches.jsonl').exists()
+    process = repository.processes(job.id)[0]
+    assert process['identity'] is None and process['status'] == 'STOPPED'
+    assert process['spec']['diagnostic_code'] == 'guard_contract'
     repository.close_owner(claim)

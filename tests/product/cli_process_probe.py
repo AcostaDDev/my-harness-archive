@@ -14,12 +14,12 @@ if '--version' in sys.argv and os.environ.get('PROBE_VERSION'):
     print(f'codex-cli {version}' if provider == 'codex' else f'{version} (Claude Code)')
     sys.exit(0)
 if '--version' in sys.argv:
-    print(('codex-cli 0.162.1' if mode == 'version_new' else 'codex-cli 0.161.0') if provider == 'codex'
-          else ('2.1.296' if mode == 'claude_new' else '2.1.295') + ' (Claude Code)')
+    print(('codex-cli 0.164.0' if mode == 'version_new' else 'codex-cli 0.163.0') if provider == 'codex'
+          else ('2.1.305' if mode == 'claude_new' else '2.1.304') + ' (Claude Code)')
     sys.exit(0)
 if '--help' in sys.argv:
     print('synthetic help' if mode == 'incompatible_help' else
-          '--json --model --sandbox --ephemeral --ignore-user-config --ignore-rules --strict-config '
+          '--json --model --sandbox --ephemeral --ignore-user-config --ignore-rules --strict-config --color --cd --config --skip-git-repo-check '
           '--print --output-format --verbose --include-partial-messages --no-session-persistence '
           '--session-id --effort --permission-mode --permission-prompts --tools --allowedTools '
           '--strict-mcp-config --mcp-config --setting-sources --settings --disable-slash-commands --no-chrome'

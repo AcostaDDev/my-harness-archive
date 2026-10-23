@@ -144,12 +144,12 @@ def test_a_project_without_agents_md_stops_before_invoking(v2):
 
 
 def test_frozen_versions_identify_the_injection():
-    assert VERSION == 'cli-13' and DOCUMENT_LAYOUT == 'd088-12'
+    assert VERSION == 'cli-14' and DOCUMENT_LAYOUT == 'd088-12'
 
 
-@pytest.mark.parametrize('version,role', [(version, role) for version in ('0.161.0', '0.162.1')
+@pytest.mark.parametrize('version,role', [(version, role) for version in ('0.163.0', '0.164.0')
                                            for role in ('planner', 'reviewer', 'phase', 'chat', 'planning')]
-                         + [('0.162.1', 'executor')])  # Codex writer characterized only on 0.162.1.
+                         + [('0.164.0', 'executor')])  # Synthetic candidate writer keeps the same instructions guard.
 def test_codex_no_longer_loads_its_own_copy_of_the_project_docs(context, version, role):
     args = argv_for(CLIConfig('codex', ('/synthetic/cli',), version, (), 1), context, request(role))
     overrides = tomllib.loads('\n'.join(args[i + 1] for i, value in enumerate(args) if value == '-c'))
@@ -158,6 +158,6 @@ def test_codex_no_longer_loads_its_own_copy_of_the_project_docs(context, version
 
 @pytest.mark.parametrize('role', ['reviewer', 'executor'])
 def test_claude_keeps_setting_sources_empty(context, role):
-    args = argv_for(CLIConfig('claude', ('/synthetic/cli',), '2.1.296', (), 1), context, request(role))
+    args = argv_for(CLIConfig('claude', ('/synthetic/cli',), '2.1.305', (), 1), context, request(role))
     assert args[args.index('--setting-sources') + 1] == ''
     assert json.loads(args[args.index('--settings') + 1]) == {'disableAllHooks': True, 'autoMemoryEnabled': False}

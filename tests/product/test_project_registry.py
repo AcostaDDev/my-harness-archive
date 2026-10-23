@@ -97,18 +97,18 @@ def test_local_config_3_toml_projects_name_a_composition(operator):
             load_local_config(write(folder, broken))
 
 
-def test_example_template_documents_the_local_config_4_keys(operator):
-    """P008-T008: the example is `local-config-4`, the v3 keys plus `[profiles]` (tested in test_declared_profiles)."""
+def test_example_template_documents_automatic_local_config_7_keys(operator):
+    """The public template needs no executable/version pin; the project explicitly declares its work language."""
     import tomllib
     data = v3(operator[1], [], toml_project=True)
     example = tomllib.loads((Path(__file__).parents[2] / 'examples/local_config.example.toml').read_text())
-    assert example['format'] == 'local-config-4' and example.keys() == data.keys() | {'profiles'}
+    assert example['format'] == 'local-config-7' and example.keys() == data.keys() | {'profiles'}
     assert example['registration'].keys() == data['registration'].keys()
     assert example['compositions']['web'].keys() == data['compositions']['web'].keys()
-    assert example['projects'][0].keys() == data['projects'][0].keys()
+    assert example['projects'][0].keys() == data['projects'][0].keys() | {'work_language'}
     assert example['projects'][0]['policy'].keys() == data['projects'][0]['policy'].keys() - {'max_revision_cycles'}
     for name in ('reviewer', 'executor'):
-        assert example['agents'][name].keys() == data['agents'][name].keys()
+        assert example['agents'][name].keys() == data['agents'][name].keys() - {'executable', 'cli_version'}
 
 
 def test_previous_formats_keep_their_frozen_identity(operator):

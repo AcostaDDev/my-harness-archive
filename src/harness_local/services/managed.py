@@ -41,6 +41,9 @@ class _Journal:
     def process_intent(self, attempt_id, spec):
         self._call(self.repository.process_intent, attempt_id, spec)
 
+    def compatibility_refused(self, reports):
+        self._call(self.repository.effect, 'cli_preflight_refused', reports)
+
     def process_update(self, attempt_id, kind, payload):
         self._call(self.repository.process_update, attempt_id, kind, payload)
 

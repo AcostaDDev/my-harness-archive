@@ -40,7 +40,8 @@ def test_v1_sources_and_fingerprints_keep_their_issued_identity():
 
 def test_each_format_selects_its_recipe_generation_and_frozen_versions_stay_readable():
     # P011-T020 (D168): v5 keeps v1, v6 selects v2; issued plans/receipts of both resolve by their version.
-    generations = {'local-config-5': (django, typescript_web), 'local-config-6': (django_2, typescript_web_2)}
+    generations = {'local-config-5': (django, typescript_web), 'local-config-6': (django_2, typescript_web_2),
+                   'local-config-7': (django_2, typescript_web_2)}
     for fmt, modules in generations.items():
         assert (recipes.module('django', fmt), recipes.module('typescript-web', fmt)) == modules
         for name, module in zip(('django', 'typescript-web'), modules):

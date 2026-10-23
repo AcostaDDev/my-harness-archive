@@ -61,6 +61,13 @@ erDiagram
 
 Autoridad operativa de runs, intentos, cola, exclusión por checkout, procesos y commits (D015–D027). `managed_runs.root` es la raíz canónica del checkout; no hay tabla de proyecto.
 
+P011-T012 (D174) no cambia tablas ni revisiones: amplía los JSON propios. `versions_json` congela la versión CLI
+observada, `reviewer/executor_cli_launch_sha256`, hash de política y, en v7, procedencia automática/aserción y
+PATH/ruta explícita. `managed_processes.spec.preflight_observed` conserva diagnóstico, mínimo, huella de lanzamiento
+y perfil/procedencia condicional por intento. Un rechazo previo al target tiene `launch_permitted=false`, identidad
+de proceso nula y captura `refused`; si ya hay un grupo esperando GO se registra su parada observada. Campos ausentes
+en historiales anteriores siguen ausentes; no se rellenan ni se recalculan. [Flujo](flows/cli-compatibility.md).
+
 ```mermaid
 erDiagram
     managed_runs {

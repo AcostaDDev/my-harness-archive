@@ -32,7 +32,7 @@ def test_writer_root_is_canonical_and_toml_escaped(context, tmp_path, name):
     root = tmp_path / name
     root.mkdir()
     ctx = replace(context, root=root)
-    config = CLIConfig('codex', ('/synthetic/codex',), '0.162.1', (), 1)
+    config = CLIConfig('codex', ('/synthetic/codex',), '0.164.0', (), 1)
     args = argv_for(config, ctx, request('executor'))
     workspace = overrides(args)['sandbox_workspace_write']
     assert workspace == {'network_access': False, 'writable_roots': [str(root.resolve())],
@@ -88,7 +88,7 @@ def test_codex_writer_journey_freezes_requested_access_without_changing_contract
                for line in launches(tmp_path)[0::2])
     spec = repository.processes(job.id)[1]['spec']
     prompt = Path(spec['prompt_path']).read_bytes()
-    assert spec['adapter_version'] == 'cli-13' and prompt.decode() == launch['prompt']
+    assert spec['adapter_version'] == 'cli-14' and prompt.decode() == launch['prompt']
     assert spec['prompt_sha256'] == hashlib.sha256(prompt).hexdigest()
     assert 'tasks * 30' in context.path('src/estimate.ts').read_text()
 

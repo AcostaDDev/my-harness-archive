@@ -38,8 +38,8 @@ def request(role, snapshot=None):
 
 def test_reader_schema_is_the_typed_engine_schema_of_each_role(setup):
     context = setup[0]
-    claude = CLIConfig('claude', ('/synthetic/claude',), '2.1.296', (), 1)
-    codex = CLIConfig('codex', ('/synthetic/codex',), '0.162.1', (), 1)
+    claude = CLIConfig('claude', ('/synthetic/claude',), '2.1.305', (), 1)
+    codex = CLIConfig('codex', ('/synthetic/codex',), '0.164.0', (), 1)
     for role in READERS:
         schema = schema_of(argv_for(claude, context, request(role)))
         assert schema == output_schema(role) and schema['additionalProperties'] is True
@@ -51,7 +51,7 @@ def test_reader_schema_is_the_typed_engine_schema_of_each_role(setup):
     assert 'Complete allowlist' in planner['allowed_paths']['description']
     assert planner['executor_selection']['type'] == 'object'
     # The writer keeps the cli-5 argv: no schema, no restriction.
-    writer = argv_for(CLIConfig('claude', ('/synthetic/claude',), '2.1.296', (), 1, tools=('Read', 'Edit'),
+    writer = argv_for(CLIConfig('claude', ('/synthetic/claude',), '2.1.305', (), 1, tools=('Read', 'Edit'),
                                 allowed_tools=('Read', 'Edit')), context, request('executor'))
     assert '--json-schema' not in writer and '--restricted' not in writer
 
@@ -67,14 +67,14 @@ def test_reader_schema_comes_from_the_frozen_prompt_snapshot(setup):
     assert reader_schema(request('reviewer', freeze(frozen)))['description'] == 'frozen earlier'
     for broken in ({**frozen, 'schema_sha256': '0' * 64}, {k: v for k, v in frozen.items() if k != 'output_schema'}):
         with pytest.raises(ValueError, match='consistent output schema'):
-            argv_for(CLIConfig('claude', ('/synthetic/claude',), '2.1.296', (), 1), context,
+            argv_for(CLIConfig('claude', ('/synthetic/claude',), '2.1.305', (), 1), context,
                      request('reviewer', freeze(broken)))
 
 
 def test_claude_reader_journey_sends_the_attempt_schema_and_gets_typed_lists(setup, repository):
     context, data, folder, tmp_path = setup
     config = load_local_config(write(folder, v2(data, 'claude', 'claude')))
-    assert config.projects[0].versions['agent_adapter'] == 'cli-13'
+    assert config.projects[0].versions['agent_adapter'] == 'cli-14'
     job, record = journey(repository, config, 'typed')
     assert record.status == 'ACCEPTANCE_READY', record.history.stop
     readers = [json.loads(line) for line in launches(tmp_path)][0::2]

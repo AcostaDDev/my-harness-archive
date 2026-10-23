@@ -34,14 +34,19 @@ detenido, sin ejecutar sus intenciones. Activaciones incompletas bloquean para r
 - Servicio: Python 3.14.4 y uv 0.12.19. Git del sistema (verificado con 2.50.1); las importaciones de proyectos
   existentes exigen un Git con `--no-lazy-fetch`.
 - Construir el paquete o desarrollar: además Node 24.15.0 y npm 11.12.1, con las cachés `.local/` ya pobladas.
-- Uso real: CLI ya autenticadas y fijadas por versión exacta (adaptador `cli-13`, D122). Otra versión se rechaza.
+- Uso real: CLI ya autenticadas. `local-config-7` detecta los clientes y sus versiones por el PATH explícito;
+  no hay que introducir la versión. Adaptador `cli-14` (D174): mínimos estables Codex 0.163.0 y Claude 2.1.304;
+  si son inferiores, indica actualizar. Las posteriores compatibles se admiten automáticamente por capacidades.
 
 | CLI | Revisor (solo lectura) | Ejecutor (escritura) | Uso real registrado |
 |---|---|---|---|
-| `codex` | 0.161.0, 0.162.1, 0.163.0 | 0.162.1, 0.163.0 | 0.162.1 (D050, D071) y 0.163.0 (piloto P009, D139); 0.161.0 sin uso real localizado |
-| `claude` | 2.1.295, 2.1.296, 2.1.304 | 2.1.295, 2.1.296, 2.1.304 | 2.1.295 (D050), 2.1.296 (D071) y 2.1.304 (piloto P009) |
+| `codex` | ≥0.163.0 con capacidades compatibles | ≥0.163.0 con capacidades compatibles | 0.162.1 (D050, D071) y 0.163.0 (piloto P009, D139) |
+| `claude` | ≥2.1.304 con capacidades compatibles | ≥2.1.304 con capacidades compatibles | 2.1.295 (D050), 2.1.296 (D071) y 2.1.304 (piloto P009) |
 
-Los usos reales anteriores a `cli-13` son históricos: se hicieron con el adaptador vigente en su momento.
+Los usos reales anteriores son históricos: se hicieron con el adaptador vigente en su momento. Las releases
+posteriores son candidatas con compatibilidad condicionada al contrato conocido, sin afirmar efectos internos
+verificados ni garantizar cualquier versión futura. Los controles de permisos, memoria y confianza se mantienen;
+una incompatibilidad detectada bloquea. [Contrato y límites](docs/phase/P011-T012_COMPATIBILIDAD_CLI.md).
 
 ## Instalación para uso real
 
@@ -57,10 +62,12 @@ uv pip install --python /ruta/venv/bin/python --no-deps /ruta/paquete/harness_lo
 ```
 
 Configuración: copia [la plantilla TOML](examples/local_config.example.toml) fuera de todo checkout, `chmod 600`, y
-ajusta agentes, Git, composiciones y raíces de registro. La plantilla es `local-config-4`; cambiando `format` a
-`local-config-5` se admiten además presets de agentes por proyecto (`[agent_presets.*]`, D118) y las recetas de
+ajusta agentes, Git, composiciones y raíces de registro. La plantilla es `local-config-7`: incluye detección
+automática sin versión obligatoria, idioma de trabajo inmutable y presets por proyecto (`[agent_presets.*]`, D118).
+El PATH declarado debe incluir los clientes; una ruta de ejecutable explícita es opcional. Las recetas de
 proyectos nuevos: [TypeScript web](examples/typescript-web-recipe.example.toml) y
-[Django](examples/django-recipe.example.toml), que se añaden como fragmentos. Después:
+[Django](examples/django-recipe.example.toml) se añaden como fragmentos. Los formatos 1–6 se siguen leyendo;
+sus pins explícitos deben coincidir y las CLI deben cumplir los mínimos nuevos. Después:
 
 ```sh
 /ruta/venv/bin/harness-local check-config /ruta/harness-local.toml --preflight

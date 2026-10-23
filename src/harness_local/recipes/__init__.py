@@ -9,7 +9,7 @@ RECIPES = {'django': ('harness_local.recipes.django', 'python-django-recipe'),
 # names; `local-config-5` keeps v1. The v1 modules and their profiles stay frozen for issued receipts.
 RECIPES_V2 = {'django': ('harness_local.recipes.django_2', 'python-django-recipe'),
               'typescript-web': ('harness_local.recipes.typescript_web_2', 'typescript-web')}
-GENERATIONS = {'local-config-5': RECIPES, 'local-config-6': RECIPES_V2}
+GENERATIONS = {'local-config-5': RECIPES, 'local-config-6': RECIPES_V2, 'local-config-7': RECIPES_V2}
 
 
 def module(name, fmt='local-config-5'):

@@ -207,6 +207,8 @@ class ManagedRuntime:
             config = ManagedConfig()
         else:
             config = self._explicit if self._explicit is not None else load_config()
+        if config.registrar is not None and hasattr(config.registrar, 'resolve_config'):
+            config = config.registrar.resolve_config(config)
         database = Path(self.engine.url.database).resolve()
         migrations_dir = Path(config.migrations_dir or database.parent / 'migrations').resolve()
         _validate(config, database, migrations_dir)
@@ -263,6 +265,16 @@ class ManagedRuntime:
             return self.projects[project_id]
         except KeyError:
             raise LookupError(tr('runtime.unregistered')) from None
+
+    def resolve_project(self, project_id: str) -> ManagedProject:
+        """Admission resolution; read-only project views do not probe provider clients."""
+        project = self.project(project_id)
+        registrar = self.config.registrar
+        if registrar is not None and hasattr(registrar, 'refresh'):
+            project = registrar.refresh(project, force=True)
+            self.install(project)
+            project = self.project(project_id)
+        return project
 
     def install(self, project: ManagedProject) -> None:
         """D076: hot registration or change; a new copy of the map for readers on other threads."""

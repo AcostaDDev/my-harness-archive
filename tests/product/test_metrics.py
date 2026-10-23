@@ -40,7 +40,7 @@ def usage_adapter(tmp_path, mode='flow', timeout=5):
     env = (('PROBE_EXPLICIT', 'selected'), ('PROBE_RECORD', str(tmp_path / 'launches.jsonl')),
            ('PROBE_CHILD', str(tmp_path / 'child.pid')), ('PROBE_USAGE', '1'))
     return CLIProcessAdapter([CLIConfig(provider, (sys.executable, PROBE, provider, mode), version, env, timeout)
-                              for provider, version in (('codex', '0.161.0'), ('claude', '2.1.295'))],
+                              for provider, version in (('codex', '0.163.0'), ('claude', '2.1.304'))],
                              tmp_path / 'captures')
 
 
@@ -253,7 +253,7 @@ def test_cli_flow_materializes_one_row_per_attempt_from_the_sealed_capture(tmp_p
     assert [r['role'] for r in rows] == ['planner', 'executor', 'reviewer']
     assert [r['executor_round'] for r in rows] == [0, 1, 1]
     assert {r['source'] for r in rows} == {'capture'} and {r['normalization'] for r in rows} == {'terminal-2'}
-    assert (planner['provider'], planner['adapter_version'], planner['cli_version']) == ('codex', 'cli-13', '0.161.0')
+    assert (planner['provider'], planner['adapter_version'], planner['cli_version']) == ('codex', 'cli-14', '0.163.0')
     assert (planner['total_tokens'], planner['uncached_input_tokens'], planner['turns'], planner['tools']) \
         == (1050, 400, 3, {'command_execution': 1, 'file_change': 1})
     assert (executor['provider'], executor['total_tokens'], executor['output_tokens'], executor['turns']) \
