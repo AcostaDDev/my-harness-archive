@@ -25,8 +25,8 @@ type Draft = {
   work_language?: Language;
 };
 
-/** Presets from v5, work language from v6, automatic CLI discovery from v7. */
-const PRESET_FORMATS = ["local-config-5", "local-config-6", "local-config-7"];
+/** Presets from v5; v6–v8 preserve project agent selection. */
+const PRESET_FORMATS = ["local-config-5", "local-config-6", "local-config-7", "local-config-8"];
 
 const PLANNING: Record<Draft["planning_mode"], MessageKey> = { agent: "settings.planning.agent", deterministic: "settings.planning.deterministic" };
 const SELECTION: Record<Draft["executor_mode"], MessageKey> = { catalog: "settings.selection.catalog", open: "settings.selection.open" };
@@ -156,7 +156,7 @@ function Confirmation({ preview, busy, danger, onConfirm }: {
   </section>;
 }
 
-function DraftFields({ draft, options, action, onChange }: {
+export function DraftFields({ draft, options, action, onChange }: {
   draft: Draft; options: S["RegistryRead"]; action: "register" | "update" | "create"; onChange: (d: Draft) => void;
 }) {
   const set = <K extends keyof Draft>(key: K, value: Draft[K]) => onChange({ ...draft, [key]: value });

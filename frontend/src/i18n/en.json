@@ -965,7 +965,7 @@
   "registry.not_composed": "It does not compose with the current TOML: {diagnostic}",
   "registry.open_allowed": "Free mode accepted.",
   "registry.presets_missing": "Compatible presets for both roles are missing. The operator must declare them in the service configuration.",
-  "registry.presets_unsupported": "Changing providers per project needs local-config-5/6/7 and operator presets. This configuration keeps the service pair.",
+  "registry.presets_unsupported": "Changing providers per project needs local-config-5/6/7/8 and operator presets. This configuration keeps the service pair.",
   "registry.preview.register": "Registration of {project}: review before confirming",
   "registry.preview.retire": "Removal of {project}: review before confirming",
   "registry.preview.update": "Change of {project}: review before confirming",

@@ -298,8 +298,8 @@ que se corresponda con lo probado.
 - Propuesta operativa confirmada por el usuario: área privada, wheel y hashes, CLI y versiones, pareja revisor
   Claude / ejecutor Codex con modelos ligeros, techos de llamadas por proveedor, paradas y evidencia. Cada tramo
   real se ejecuta con autorización explícita propia.
-- Flujo básico con `cli-14`, `local-config-7` y las CLI instaladas (Codex 0.164.0, elegido en D184, y Claude Code
-  2.1.310, ambas posteriores a los mínimos y con compatibilidad condicionada): plan, ejecución, validación, revisión
+- Flujo básico con `cli-14`, `local-config-8` (D194; v7 conservado) y las CLI instaladas (Codex 0.164.0, elegido
+  en D184, y Claude Code 2.1.310, ambas posteriores a los mínimos y con compatibilidad condicionada): plan, ejecución, validación, revisión
   y COMMITTED con el wheel instalado fuera del checkout.
 - Incorporación B de un repositorio Django sintético existente y perfil declarado D095: documentos confirmados,
   código intacto por bytes y una tarea COMMITTED usando exclusivamente el perfil declarado.
@@ -347,8 +347,14 @@ operar; ambos fallos/diffs conservados, sin reparación ni nuevos intentos autor
 T003/T004 sin autorización. **T010 completada offline** (D194), elegida por HITL: formateador de perfiles
 declarados optativo en `local-config-8`, con motor/runner D133 y versiones anteriores conservadas. Tests sintéticos
 correctos; sin build/instalación operativa ni consumo real adicional. [Entrega y guion futuro](phase/P012-T010_FORMATEADOR_DECLARATIVO.md).
-Siguiente: concretar/revisar el tramo T002 con wheel nuevo y clon del HEAD documental B2 (sin repetir B),
-perfil v8 con formateador y cero correcciones; consentimiento operativo nuevo antes de ejecutarlo. Límites reales intactos.
+Continuación T002 [concretada y autorizada](phase/P012-T002_PROPUESTA_T010.md) (D195): base `a7d8b33`,
+wheel/venv nuevos, clon documental B2 sin repetir B, perfil v8 con formateador; máximo nuevo 2 Claude/1 Codex,
+cero correcciones. Wheel construido/verificado/instalado, clon limpio/TOML v8 preparados, modos igualados por HITL;
+preflight y ocho checks iniciales correctos. Servicio/login correctos, parada antes del alta: UI oculta presets v8.
+Sin nuevas llamadas, 13.785 filas previas idénticas, B/B2 conservados; 7 DONE/9 STOPPED/0 locks.
+**T011 corregida offline** (D196): selector compartido admite v8 y aviso en/es al día; 8 regresiones de render,
+103 tests Node y tipos/build correctos. [Entrega y siguiente propuesta](phase/P012-T011_PRESETS_UI_V8.md).
+T002 sigue parcial, sin reconstruir o relanzar después; consentimiento nuevo antes de otra continuación.
 La apertura del expediente de P011 queda aplazada hasta el cierre de P012.
 
 ## Después de la apertura en GitHub — v0.2.0

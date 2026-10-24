@@ -3,16 +3,17 @@
 Objetivo y criterios en [ROADMAP](ROADMAP.md#p012--validación-real-previa-a-la-apertura-pública).
 Decisión: [D183](DECISIONS.md#d183--p012-validación-real-previa-a-la-apertura-pública).
 
-**Estado:** T001, T008, T009 y **T010** completadas; T002 parcial (D191–D194). Dos incorporaciones B COMMITTED;
-última tarea en REVISION_LIMIT por Ruff, 13 tests y mypy/Django correctos. T010, elegida por HITL, habilita
-formateador declarativo en `local-config-8`, verificado offline; no reconstruye ni relanza. Servicio detenido,
+**Estado:** T001, T008, T009, T010 y **T011** completadas; T002 parcial (D191–D196). Dos incorporaciones B COMMITTED;
+última tarea en REVISION_LIMIT por Ruff. Continuación tras T010 autorizada: wheel/venv nuevos y clon documental
+B2/TOML v8 preparados, preflight y ocho checks aprobados; parada antes del alta al ocultar la UI los presets v8.
+T011 corrige el selector compartido offline, 8 regresiones/103 tests Node y tipos/build correctos. Servicio detenido,
 Claude **7/12**, Codex **2/3**, sin consumo nuevo, 0 locks, 7 jobs DONE y 9 procesos STOPPED. T003–T007 pendientes;
-diez tareas en total. Ningún resultado fallido se repara, formatea o revalida.
+once tareas en total; 13.785 filas previas idénticas. Ningún resultado fallido se repara, formatea o revalida.
 **Siguiente:** [P012-T002](#p012-t002--instalación-incorporación-b-y-perfil-declarado-con-proveedores-reales),
-concretar y revisar la [continuación operativa tras T010](phase/P012-T010_FORMATEADOR_DECLARATIVO.md#5-continuación-operativa-propuesta-todavía-sin-autorizar)
-y pedir consentimiento: wheel nuevo, clon limpio del commit documental B2 sin repetir B, perfil v8 con
-formateador, registro/fase y una tarea nueva. Cero correcciones, techo 12/3 y saldo 5/1 sin permiso de consumo;
-previsión 2 Claude/1 Codex. T010 no autoriza operación real, cambios de configuración privada o reparar B/B2.
+concretar/revisar la [continuación tras T011](phase/P012-T011_PRESETS_UI_V8.md#4-próximo-paso-todavía-sin-autorizar)
+y pedir consentimiento: dist-t011/venv-t011 nuevos, conservar clon/TOML preparados comprobándolos antes de usar,
+preflight/checks, servicio/UI, registro/fase, dos commits documentales y una tarea. Cero correcciones, techo 12/3,
+consumido 7/2 y previsión nueva 2 Claude/1 Codex; sin permiso de consumo. El consentimiento D195 se agotó al parar.
 P001–P011 siguen cerradas; la apertura del [expediente de P011](archive/phase-011/P011_EXPEDIENTE_APERTURA.md)
 queda aplazada hasta el cierre de P012 y su candidato se sustituye por el que prepare T005.
 
@@ -75,14 +76,18 @@ offline de T002 aceptado por el usuario, antes de proveedores; no se acredita su
 
 ## P012-T002 — Instalación, incorporación B y perfil declarado con proveedores reales
 
-**Estado:** parcial (D193): dos incorporaciones B COMMITTED; ninguna tarea COMMITTED.
-**Depende de:** T001 confirmada, T008 corregida (D187), T009 completada (D192) y ampliación T010 (D194).
+**Estado:** parcial (D195): dos incorporaciones B COMMITTED; ninguna tarea COMMITTED.
+**Depende de:** T001 confirmada, T008 corregida (D187), T009 completada (D192), ampliación T010 (D194) y T011 (D196).
 Continuación limpia T009 autorizada y ejecutada: fixture `onboarding-b-t009`, copia TOML y presets/composición
 propios, mismo wheel y base. Preflight y ocho checks correctos; un turno Claude, doce borradores CAS y B2
 COMMITTED. Codex implementa la tarea, pero fallan Ruff check/formato; pytest 13 casos y mypy/Django pasan.
 Revisión REVISE y REVISION_LIMIT, cero correcciones. Consumo acumulado **7/2 frente a 12/3**; servicio detenido.
 El primer fixture y su fallo de archivos vacíos siguen intactos. T010 habilita el formateador declarativo v8
-solo offline; próximo paso: concretar la propuesta operativa y pedir consentimiento nuevo. Sin reparación
+solo offline; [continuación concretada y autorizada](phase/P012-T002_PROPUESTA_T010.md) (D195),
+máximo nuevo 2 Claude/1 Codex, sin consumir. Wheel `a7d8b33` construido/verificado/instalado; clon/TOML v8
+preparados, modos igualados por HITL, preflight y ocho checks iniciales correctos. Servicio/login correctos;
+parada antes del alta porque la UI oculta presets v8. T011 corrige el selector offline, sin otro wheel/servicio.
+Consentimiento agotado; siguiente propuesta y autorización pendientes. Sin reparación
 manual, revalidación o nuevo intento autorizado.
 T003/T004 siguen sin autorización.
 **Objetivo:** Acreditar con la versión actual el flujo básico y la incorporación de un repositorio existente con
@@ -105,6 +110,8 @@ confirmación de documentos y perfil, y una tarea hasta COMMITTED.
 **Validación:** la propia del tramo; sin suites del producto si no cambia código.
 **Entregables:** [registro inicial](phase/P012-T002_INCORPORACION_REAL.md),
 [continuación T009 y nueva parada](phase/P012-T002_CONTINUACION_T009.md),
+[propuesta/ejecución tras T010](phase/P012-T002_PROPUESTA_T010.md),
+[transformador puro de configuración](phase/P012-T002_CONFIG_T010.py),
 [lista de la primera parada](phase/P012-T002_WHEELS_FALTANTES.lock) y
 [manifiesto de 17 wheels](phase/P012-T002_WHEELS_VERIFICADOS.sha256).
 Preparación e instalación corregidas `6efbd82`, preflight CLI y checks iniciales acreditados. Primer B
@@ -115,8 +122,9 @@ intacto, doce propuestas APPLIED. Run tarea **`f98b16d9…` REVISION_LIMIT**: vi
 **13 casos JUnit aprobados**, mypy/Django correctos; Ruff **E501** (dos líneas) y formato exit 1. Revisor REVISE,
 sin aceptación, reparación o commit de tarea. **7 jobs DONE, 9 procesos STOPPED, 0 locks**, puerto cerrado y clave
 eliminada; Claude **7/12**, Codex **2/3**. Comparación de copias de base: **8186 filas previas intactas**.
-B/B2, ambos diffs, TOML original, distribuciones e historiales conservados. Falta concretar una propuesta de
-continuidad y su consentimiento nuevo; no se asume que el saldo autorice operar.
+B/B2, ambos diffs, TOML original, distribuciones e historiales conservados. Propuesta T010 ya concretada y
+autorizada/ejecutada hasta el bloqueo de presets UI (D195), sin llamadas adicionales; servicio detenido y 13.785
+filas anteriores idénticas. T011 corregida offline; próxima continuación sujeta a propuesta y consentimiento nuevos.
 
 ## P012-T003 — Chat, backup y restauración sobre el proyecto real
 
@@ -294,3 +302,24 @@ regresiones sintéticas y documentación. No es un defecto del motor demostrado.
 Sin frontend/Alembic por no cambiar UI/API/datos; sin validación real o wheel nuevo.
 **Entregables:** [alternativas y HITL](phase/P012-T002_PROPUESTA_CONTINUIDAD_RUFF.md),
 [implementación, checks y continuación propuesta](phase/P012-T010_FORMATEADOR_DECLARATIVO.md), D194.
+
+## P012-T011 — Conservar selección de presets en la UI con local-config-8
+
+**Estado:** completada offline el 2026-10-24 (D196). **Depende de:** bloqueo UI observado en T002 (D195) y D194.
+**Objetivo:** Mostrar la selección de agentes por proyecto de v8 que el backend ya admite, sin operar la pareja
+heredada como sustitución silenciosa de los presets elegidos por el usuario.
+**Alcance:** formulario compartido de registro/creación/actualización, aviso en/es, regresiones de render y documentos.
+**Rutas permitidas:** `frontend/src/pages/Registry.tsx`, `frontend/src/i18n/{en,es}.json`,
+`frontend/tests/registry.test.mjs`, `frontend/tests/helpers/tsx.mjs`, `docs/**`.
+**Criterios de aceptación:**
+
+- V8 muestra el selector de pareja y los presets admitidos por rol como v5–v7; formatos anteriores/desconocidos
+  mantienen el fallback y la ausencia de presets mantiene su aviso. Sin cambiar API, políticas o backend.
+- Registro, creación y actualización cubiertos en en/es mediante render real de React, con presets/modelo/esfuerzo
+  seleccionados y sin ejecutar efectos o peticiones HTTP. Sin dependencias nuevas ni fixtures privados en tests.
+- Checks Node, tipos/build y documentación correctos. Sin reconstruir/instalar otro wheel, relanzar servicio,
+  registrar/operar el clon o consumir modelos; próxima continuación T002 con propuesta/consentimiento nuevos.
+
+**Validación:** 8 regresiones y 103 tests Node, TypeScript/build Vite correctos; checks documentales/diff.
+Sin suites Python/unittest/Alembic por no cambiar backend o datos, ni QA de navegador de la corrección.
+**Entregables:** [defecto, corrección y continuidad propuesta](phase/P012-T011_PRESETS_UI_V8.md), D196.

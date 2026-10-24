@@ -116,6 +116,18 @@ declarados, con autorización/rutas D133 y huellas congeladas. Sin cambio de mot
 v1–v7, detección CLI y recetas v2 conservadas. 28 regresiones nuevas y checks dirigidos correctos.
 Sin build/instalación operativos ni nuevas llamadas; ambos intentos reales y su parada permanecen intactos.
 
+**Continuación T002 tras T010 autorizada y detenida** (D195): [propuesta y ejecución](phase/P012-T002_PROPUESTA_T010.md),
+wheel `a7d8b33` construido/verificado/instalado, clon documental B2 limpio y TOML v8 de hash aprobado. Ajuste
+de trece modos del clon confirmado por HITL; 28 blobs/modos correctos. Preflight y ocho checks iniciales pasan,
+migrate no-op. Servicio/login correctos; la UI oculta presets en v8 y detiene el tramo **antes del alta**.
+Sin registro/fase/tarea o llamadas nuevas: Claude 7/12, Codex 2/3. Servicio parado, 7 DONE/9 STOPPED/0 locks,
+**13.785 filas previas idénticas**, B/B2/diffs/configuraciones/distribuciones anteriores intactos.
+
+**T011 completada offline** (D196): el selector compartido de registro/creación/actualización admite presets
+v8, como el backend; aviso en/es actualizado. **8 regresiones de render React, 103 tests Node, tipos/build
+correctos**. [Entrega y propuesta posterior](phase/P012-T011_PRESETS_UI_V8.md). Sin reconstruir/instalar/operar
+el producto corregido; T002 permanece parcial y el último consentimiento agotado con la parada.
+
 P011 sigue cerrada y archivada ([D182](DECISIONS.md#d182--cierre-documental-de-p011-y-preparación-pública-archivada),
 [resumen](archive/phase-011/SUMMARY.md)). El paso 1 de su [expediente](archive/phase-011/P011_EXPEDIENTE_APERTURA.md)
 se ejecutó el 2026-10-24: candidato regenerado en `$HOME/Documents/projects/my_harness_dist` (sin Git) con el
@@ -127,9 +139,9 @@ tag `p001` sobre `47a0557` y archivo en `3d105c6`, sin repetir operaciones ni co
 Este repositorio sigue sin registrarse ni ejecutarse con el harness.
 
 **Siguiente:** [P012-T002](NEXT_STEPS.md#p012-t002--instalación-incorporación-b-y-perfil-declarado-con-proveedores-reales),
-concretar y revisar la [continuación operativa tras T010](phase/P012-T010_FORMATEADOR_DECLARATIVO.md#5-continuación-operativa-propuesta-todavía-sin-autorizar)
-y pedir su consentimiento antes de operar: wheel nuevo, clon limpio del commit documental B2 (sin repetir B),
-perfil declarado v8 con formateador, registro/fase y una tarea. Cero correcciones y techo 12/3; consumido 7/2,
-previsión nueva 2 Claude/1 Codex, sin autorizar su consumo. Conservar B/B2, diffs, historiales y configuraciones.
+concretar/revisar la [continuación tras T011](phase/P012-T011_PRESETS_UI_V8.md#4-próximo-paso-todavía-sin-autorizar)
+y pedir consentimiento nuevo: dist/venv nuevos, conservar clon limpio/TOML v8 preparados, comprobarlos antes
+del servicio y registrar/fase/una tarea. Cero correcciones y techo 12/3; consumido 7/2,
+previsión nueva 2 Claude/1 Codex, sin permiso de consumo. Conservar B/B2, diffs, historiales y configuraciones.
 No reusar el run agotado bajo otra política ni reparar sus resultados. T003/T004 siguen sin autorización;
-sin nueva fase del Django de P009, push, tags o publicación. La elección offline de T010 no autoriza el tramo real.
+sin nueva fase del Django de P009, push, tags o publicación. El consentimiento nuevo no habilita reintentos tras parada.

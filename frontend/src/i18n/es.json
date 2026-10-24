@@ -965,7 +965,7 @@
   "registry.not_composed": "No se compone con el TOML actual: {diagnostic}",
   "registry.open_allowed": "Admite modo libre.",
   "registry.presets_missing": "Faltan presets compatibles para ambos roles. El operador debe declararlos en la configuración del servicio.",
-  "registry.presets_unsupported": "Cambiar proveedores por proyecto requiere local-config-5/6/7 y presets del operador. Esta configuración conserva la pareja del servicio.",
+  "registry.presets_unsupported": "Cambiar proveedores por proyecto requiere local-config-5/6/7/8 y presets del operador. Esta configuración conserva la pareja del servicio.",
   "registry.preview.register": "Alta de {project}: revisa antes de confirmar",
   "registry.preview.retire": "Baja de {project}: revisa antes de confirmar",
   "registry.preview.update": "Cambio de {project}: revisa antes de confirmar",

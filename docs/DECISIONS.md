@@ -205,6 +205,8 @@ tarea se leen solo las decisiones que cita; este índice sirve para buscar prece
 | [D192](#d192--p012-t009-entorno-del-escritor-y-continuidad-con-fixture-limpio) | P012-T009: entorno del escritor y continuidad con fixture limpio | P012 |
 | [D193](#d193--p012-t002-fixture-limpio-incorporado-y-rechazo-por-ruff) | P012-T002: fixture limpio incorporado y rechazo por Ruff | P012 |
 | [D194](#d194--p012-t010-formateador-declarativo-optativo-en-local-config-8) | P012-T010: formateador declarativo optativo en local-config-8 | P012 |
+| [D195](#d195--p012-t002-continuación-con-formateador-y-preparación-operativa) | P012-T002: continuación con formateador y preparación operativa | P012 |
+| [D196](#d196--p012-t011-paridad-del-selector-de-presets-ui-con-local-config-8) | P012-T011: paridad del selector de presets UI con local-config-8 | P012 |
 
 ## D001 — Alcance local y arquitectura base
 
@@ -5727,3 +5729,56 @@ Fase: P012. [Alternativas y elección](phase/P012-T002_PROPUESTA_CONTINUIDAD_RUF
 - Flujos, especificación, arquitectura y documentos vivos actualizados; sin modelos/migraciones, API, UI,
   dependencias, códec o configuración global. Sin proveedores reales, servicio, build operativo, modificación
   de fixtures/TOML/SQLite privados, smokes, tag, push o publicación; baseline pública pendiente de T005.
+
+## D195 — P012-T002: continuación con formateador y preparación operativa
+
+Estado: autorizada y ejecutada hasta parada antes del alta el 2026-10-24; T002 sigue parcial.
+Fase: P012. Concreta D194, sin reescribir D184/D191/D193.
+[Propuesta, delta exacto y registro de ejecución](phase/P012-T002_PROPUESTA_T010.md).
+
+- HITL: **«Autorizar esta continuación de T002»**. Nuevo máximo 2 Claude/1 Codex, cero correcciones; incluye
+  build/verificador/instalación offline, clon documental B2, TOML v8, preflight/checks, servicio/UI, alta/P001,
+  dos commits documentales preparatorios y una tarea. Sin repetir B ni autorizar T003/T004.
+- Se fija base `a7d8b33`, destinos dist-t010/venv-t010/managed-b-t010 y copia TOML privada. Transformador puro
+  comprueba fuente/hash, conserva tablas previas y añade perfil/presets/composición propios; propuesta y archivo
+  materializado de hash `e0e95abb…fbb6db`. Mismos modelos/esfuerzos/permisos; formateador solo en el perfil nuevo.
+- Build correcto y clon independiente de `9808fd9`, 28 blobs intactos. Una comprobación del operador confunde
+  modo Git 100644 con permisos de disco y provoca parada preventiva: 15 originales B2 en 0600, 13 documentos
+  en 0644 frente a los 28 en 0600 del clon por umask. HITL preciso **«Igualar los 13 documentos y continuar T002»**:
+  se ajustan únicamente esos trece modos y se comprueban los 28 contra commit/manifiesto, sin tocar B/B2.
+- Verificador del wheel correcto con CLI falsas, instalación aislada y hash wheel `ead1b58b…b4710`; Python
+  3.14.4 del harness y 3.13.13 del clon con 17 wheels por hash. Carga pura con procesos bloqueados acredita
+  el perfil con formateador y cero correcciones. Preflight real exit 0, CLI 2.1.310/0.164.0 y política `1156d0c9…`;
+  ocho checks iniciales verdes, pytest 2 casos/JUnit. `migrate` no-op conserva bytes SQLite.
+- Servicio/login correctos. La UI v8 **oculta el selector de presets** porque su lista termina en v7. Impide
+  seleccionar los presets autorizados; parada antes de preview/alta, sin usar defaults ni una API alternativa.
+  Es un defecto del producto, a diferencia de los fallos anteriores del ejecutor. Se acota en T011 (D196).
+- Servicio detenido normalmente, puerto sin listener/clave eliminada, **7 jobs DONE, 9 procesos STOPPED, 0 locks**.
+  **13.785 filas anteriores idénticas** en las copias de todas las tablas SQLite salvo sqlite_*; B/B2/diffs,
+  configuraciones y distribuciones previas conservan bytes/modos. No hubo registro/fase/run/commit nuevo del hijo.
+- Consumo adicional **0/0**, acumulado **Claude 7/12, Codex 2/3**. No acredita formateador real, tarea COMMITTED
+  ni T002 completa. La parada agota el consentimiento; conservar clon/TOML/wheel y evidencias, sin relanzar.
+  La corrección offline posterior requiere propuesta y consentimiento nuevos antes de construir/operar otro wheel.
+
+## D196 — P012-T011: paridad del selector de presets UI con local-config-8
+
+Estado: implementada y verificada offline el 2026-10-24; sin otra operación real.
+Fase: P012. Corrección del defecto observado en D195 conforme al contrato D194.
+[Entrega, checks y próximo paso](phase/P012-T011_PRESETS_UI_V8.md).
+
+- El formulario compartido de registro/creación/actualización reconoce `local-config-8` como formato con
+  selección de agentes por proyecto, igual que el backend. Se añade v8 a PRESET_FORMATS y al aviso en/es.
+  Formatos antiguos/desconocidos mantienen su comportamiento; no se modifica API, permisos, política o TOML.
+- Se exporta DraftFields para renderizar el componente real en tests con React/ReactDOM y el proveedor de
+  idioma. Helper de pruebas con el TypeScript existente, sin dependencias nuevas. Ocho regresiones cubren las
+  tres operaciones en en/es, presets filtrados por rol, modelo/esfuerzo seleccionados, v5–v7, fallback anterior/
+  desconocido y ausencia de presets. Render sin efectos/HTTP, sin copiar fixtures o datos privados.
+- **103 tests Node correctos**, incluidos los ocho nuevos; tipos y build Vite correctos. No se repiten suites
+  backend/Alembic al no cambiar Python/esquema. No se atribuye al wheel T010 la corrección del checkout:
+  no se construye/instala otro wheel ni se arranca servicio, navegador de QA, proveedores o modelos tras corregir.
+- T002 sigue parcial y detenida, consumo 7/2 y resultados conservados. Próximo paso: concretar/revisar propuesta
+  con dist-t011/venv-t011 nuevos y conservar clon/TOML preparados solo si coinciden sus manifiestos y no están
+  registrados. Mismos límites, máximo nuevo previsto 2 Claude/1 Codex, cero correcciones; consentimiento antes
+  de cualquier nueva preparación/operación, sin reponer llamadas, repetir B o extender a T003/T004.
+- Documentos vivos/evidencia actualizados; sin cambio de diseño, modelos/migraciones, flujo implementado,
+  baseline pública, dependencias, configuración global, tags, push o publicación. Cuerpos D001–D194 conservados.
