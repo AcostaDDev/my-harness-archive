@@ -202,6 +202,7 @@ tarea se leen solo las decisiones que cita; este índice sirve para buscar prece
 | [D189](#d189--p012-t002-rechazo-cross-site-también-desde-la-barra-de-chrome) | P012-T002: rechazo cross-site también desde la barra de Chrome | P012 |
 | [D190](#d190--p012-t002-acceso-manual-al-login-y-diagnóstico-local-sin-cabeceras) | P012-T002: acceso manual al login y diagnóstico local sin cabeceras | P012 |
 | [D191](#d191--p012-t002-incorporación-b-confirmada-y-parada-del-escritor-codex) | P012-T002: incorporación B confirmada y parada del escritor Codex | P012 |
+| [D192](#d192--p012-t009-entorno-del-escritor-y-continuidad-con-fixture-limpio) | P012-T009: entorno del escritor y continuidad con fixture limpio | P012 |
 
 ## D001 — Alcance local y arquitectura base
 
@@ -5622,3 +5623,31 @@ Fase: P012. Conserva D188–D190 y sus límites.
   resultado fallido. Si acredita defecto, acotar corrección sintética antes de relanzar. Nuevo tramo real requiere
   consentimiento; no reutilizar congelados con configuración distinta. T003/T004 siguen sin autorización.
 - Solo documentación del producto; sin suites nuevas, cambios de seguridad/configuración global o acciones remotas.
+
+## D192 — P012-T009: entorno del escritor y continuidad con fixture limpio
+
+Estado: diagnóstico offline completado el 2026-10-24; propuesta elegida por HITL, operación real sin autorizar.
+Fase: P012. [Diagnóstico, delta exacto, consentimiento posterior y comprobaciones](phase/P012-T009_DIAGNOSTICO_ENTORNO_CODEX.md).
+
+- Intención congelada y TOML coinciden: ejecutor sin TMPDIR ni Python en PATH; el validador tiene entorno y mapa
+  de ejecutables propios. El stream acredita `python` ausente y errores de caché Git/xcrun en `/tmp`; el rechazo
+  de heredoc se conoce por el reporte del ejecutor, sin comando exacto conservado. No se demuestra la causa
+  del truncamiento ni un defecto del harness; no se abre corrección de código ni se afirma eficacia de la propuesta.
+- D059/D068/D174 conservados: checkout canónico, `/tmp` excluido, red false, approval never y confianza untrusted.
+  TMPDIR explícito propuesto dentro del checkout, en `.local/codex-tmp` ignorado y 0700, sin añadir raíces externas.
+  PATH propuesto incluye el venv Django. No se atribuyen efectos internos nuevos a Codex 0.164.0 ni se cambia modelo/esfuerzo.
+- El run viejo agotó 0 correcciones: retry no invoca al ejecutor; revalidar no repara. Otro run rechaza el checkout
+  sucio; cambiar composición no habilita reutilizar jobs congelados. No se restaura el diff ni se edita SQLite,
+  TOML original, historial o presupuesto para desbloquearlo.
+- HITL: el usuario elige **«Preparar la continuación con otro fixture limpio (recomendado)»**, tras aclarar que
+  solo elige la propuesta y no inicia operaciones reales. Se propone B2 `projects/onboarding-b-t009` desde el
+  commit inicial sintético `f6a2d9d`, preservando B íntegro; repetir incorporación B y una tarea por UI en registro
+  nuevo. Copia `config/harness-local-t009.toml`, presets nuevos de la misma pareja y composición `django-t009`;
+  defaults/composición del proyecto original intactos. Mismo wheel T008 y misma base operativa mediante API,
+  sin reconstrucción, copia de resultados fallidos, reset del original o reescritura de registros previos.
+- Consumo intacto Claude 4/12, Codex 1/3; saldo 8/2. Guion nuevo previsto hasta 4 Claude + 1 Codex, cero correcciones,
+  mismos techos temporales y parada al primer fallo. La siguiente acción es pedir consentimiento explícito sobre
+  los efectos/rutas de la propuesta; no está concedido por este HITL. T002 parcial, T003/T004 sin autorización.
+- Once tests dirigidos correctos y check puro v7 sin procesos; copia SQLite/WAL/SHM para consulta, originales
+  conservados. Solo documentación y comprobador documental sintético; sin CLI/proveedores reales, servicio,
+  navegador, red, pruebas del fixture fallido, suites completas, cambios globales o acciones remotas.

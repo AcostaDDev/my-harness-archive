@@ -332,8 +332,11 @@ Reanudación real posterior autorizada (D191): login/idiomas/registro, dos conve
 por API local con HITL específico. La tarea `b94eedef…` planifica, pero Codex deja vacías las tres rutas permitidas;
 pytest sin casos, mypy/Django fallan y revisor REVISE → REVISION_LIMIT. Sin reparación, aceptación o commit de tarea.
 [Registro parcial](phase/P012-T002_INCORPORACION_REAL.md); Claude 4/12, Codex 1/3; servicio detenido y sin trabajo
-activo. T002 sigue parcial; **T009** es la siguiente tarea, diagnóstico documental/offline del entorno del escritor
-sin cambiar configuración o relanzar. No hay causa raíz o defecto del producto demostrados todavía.
+activo. T002 sigue parcial; **T009 completada offline** (D192): Python ausente del PATH del escritor y TMPDIR
+omitido, sin causa raíz del truncamiento ni defecto del producto demostrados. Once tests dirigidos y check puro
+v7 correctos. HITL elige proponer otro fixture limpio con PATH/TMPDIR acotados, presets/composición nuevos y copia
+TOML, conservando B/diff/jobs previos. [Propuesta y consentimiento posterior](phase/P012-T009_DIAGNOSTICO_ENTORNO_CODEX.md#5-consentimiento-posterior-propuesto-y-paradas).
+Siguiente paso: consentimiento explícito para esa continuación de T002; no se ejecuta en T009 ni se repone presupuesto.
 T003–T007 pendientes, T003/T004 y nuevos intentos reales sin autorización.
 Límites reales intactos.
 La apertura del expediente de P011 queda aplazada hasta el cierre de P012.

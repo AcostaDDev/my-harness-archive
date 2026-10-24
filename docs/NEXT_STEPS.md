@@ -3,12 +3,14 @@
 Objetivo y criterios en [ROADMAP](ROADMAP.md#p012--validación-real-previa-a-la-apertura-pública).
 Decisión: [D183](DECISIONS.md#d183--p012-validación-real-previa-a-la-apertura-pública).
 
-**Estado:** T001 y T008 completadas; T002 parcial (D191): incorporación B COMMITTED y reenvío idempotente
-verificado, tarea en REVISION_LIMIT con tres archivos vacíos. Servicio detenido, Claude 4/12 y Codex 1/3.
-T003–T007 pendientes; T009 diagnóstico offline pendiente, nueve tareas en total.
-**Siguiente:** [P012-T009](#p012-t009--diagnóstico-offline-del-entorno-de-escritura-codex), antes de proponer otra
-reanudación real de T002. Sin cambiar TOML/SQLite/snapshots, reparar el resultado de Codex o relanzar modelos.
-[Registro y límites](phase/P012-T002_INCORPORACION_REAL.md#21-reanudación-autorizada-sesión-y-registro).
+**Estado:** T001, T008 y T009 completadas; T002 parcial (D191/D192): incorporación B COMMITTED y reenvío
+idempotente verificado, tarea en REVISION_LIMIT con tres archivos vacíos. Servicio detenido, Claude 4/12 y Codex 1/3.
+T003–T007 pendientes; nueve tareas en total. T009 no acredita causa raíz del truncamiento ni defecto del producto.
+**Siguiente:** [P012-T002](#p012-t002--instalación-incorporación-b-y-perfil-declarado-con-proveedores-reales),
+pedir consentimiento sobre la [propuesta concreta de T009](phase/P012-T009_DIAGNOSTICO_ENTORNO_CODEX.md#5-consentimiento-posterior-propuesto-y-paradas).
+HITL elige otro fixture limpio con PATH/TMPDIR explícitos, conservando el fallido; no autoriza aún preparar el área,
+cambiar configuración operativa, arrancar servicio o relanzar modelos. No reparar el resultado ni reutilizar jobs
+con otra composición. [Registro y límites](phase/P012-T002_INCORPORACION_REAL.md#21-reanudación-autorizada-sesión-y-registro).
 P001–P011 siguen cerradas; la apertura del [expediente de P011](archive/phase-011/P011_EXPEDIENTE_APERTURA.md)
 queda aplazada hasta el cierre de P012 y su candidato se sustituye por el que prepare T005.
 
@@ -72,9 +74,10 @@ offline de T002 aceptado por el usuario, antes de proveedores; no se acredita su
 ## P012-T002 — Instalación, incorporación B y perfil declarado con proveedores reales
 
 **Estado:** parcial (D191): incorporación B COMMITTED, tarea en REVISION_LIMIT, no completada.
-**Depende de:** T001 confirmada y T008 corregida (D187); T009 debe diagnosticar el entorno antes de otra propuesta.
-La reanudación tras D190 fue autorizada hasta B/tarea. Dos turnos Claude válidos, commit documental único y P001
-ACTIVE; reenvío sin duplicados verificado por API local bajo HITL específico. Tarea planificada, pero el ejecutor
+**Depende de:** T001 confirmada, T008 corregida (D187) y diagnóstico T009 completado (D192).
+T009 completada (D192): siguiente consentimiento sobre otro fixture limpio, con copia TOML/presets y composición
+propios, mismo wheel y saldo 8 Claude/2 Codex; no ejecutar aún. La reanudación tras D190 fue autorizada hasta B/tarea.
+Dos turnos Claude válidos, commit documental único y P001 ACTIVE; reenvío sin duplicados verificado por API local bajo HITL específico. Tarea planificada, pero el ejecutor
 Codex deja vacías las tres rutas permitidas; validaciones fallidas y REVISE sin corrección. No reintentar, revalidar,
 aceptar o reparar a mano. Consumo 4/1 frente a 12/3; T003/T004 y otro relanzamiento siguen sin autorización.
 **Objetivo:** Acreditar con la versión actual el flujo básico y la incorporación de un repositorio existente con
@@ -104,7 +107,8 @@ incorporación documental **`976b1d1` COMMITTED**, P001 ACTIVE y código origina
 sin duplicados. Run de tarea **`b94eedef…` REVISION_LIMIT**: tres archivos vacíos, pytest exit 5/0 casos/JUnit partial,
 mypy y Django exit 1, Ruff pasa, revisión REVISE; no aceptación o commit de tarea. Servicio parado, 0 jobs activos/
 encolados/locks y cinco procesos de agentes STOPPED; Claude **4/12**, Codex **1/3**. Originales/diff/historial
-conservados. T009 acota diagnóstico offline de TMPDIR/PATH sin cambiar configuración o código ni relanzar.
+conservados. T009 completa el diagnóstico offline de TMPDIR/PATH y la propuesta elegida por HITL (D192), sin modificar
+configuración/código o relanzar; incorporación/tarea nuevas requieren consentimiento explícito posterior.
 
 ## P012-T003 — Chat, backup y restauración sobre el proyecto real
 
@@ -223,7 +227,8 @@ identidad/política y documentación de la corrección, sin ejecutar CLI o prove
 
 ## P012-T009 — Diagnóstico offline del entorno de escritura Codex
 
-**Estado:** pendiente. **Depende de:** parada real de T002 (D191).
+**Estado:** completada offline el 2026-10-24 (D192); continuidad elegida por HITL, sin operación autorizada.
+**Depende de:** parada real de T002 (D191).
 **Objetivo:** Acotar los prerrequisitos de temporales y herramientas del escritor, separando hechos de hipótesis,
 y dejar una propuesta concreta y revisable antes de pedir otro intento real.
 **Alcance:** intención congelada del ejecutor y errores saneados, TOML aprobado T001, fronteras D059/D068/D174,
@@ -246,4 +251,9 @@ composición de validadores y vías de continuidad admitidas por el producto. No
 
 **Validación:** contraste documental/código, comprobaciones puras/sintéticas pertinentes, parsers/enlaces/diff;
 sin suites completas si no cambia producto, ni operaciones reales.
-**Entregables:** `docs/phase/P012-T009_DIAGNOSTICO_ENTORNO_CODEX.md` y decisión con resultado/continuación.
+**Entregables:** [diagnóstico y propuesta elegida](phase/P012-T009_DIAGNOSTICO_ENTORNO_CODEX.md),
+[check sintético sin procesos](phase/P012-T009_CHECK_ENVIRONMENT.py) y D192. Once tests dirigidos correctos y
+comprobación pura de presets/composición: huellas anteriores conservadas, PATH/TMPDIR nuevos acotados. No se prueba
+causa del truncamiento ni defecto de producto. Propuesta B2 desde base sintética inicial, copia TOML con presets y
+composición propios, mismo wheel, saldo acumulado 8 Claude/2 Codex; conservar B/diff/jobs. El usuario elige ese diseño
+por HITL; falta consentimiento para sus efectos reales. Sin CLI/proveedores reales, servicio o cambios operativos.

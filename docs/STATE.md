@@ -103,8 +103,9 @@ La tarea `b94eedef…` planifica correctamente, pero Codex deja vacías las tres
 casos, mypy y Django fallan; revisión REVISE y **REVISION_LIMIT**, sin aceptar, reparar o hacer commit de tarea.
 Consumo **Claude 4/12, Codex 1/3**. CLI 2.1.310/0.164.0 con compatibilidad condicionada; sonnet/low reporta
 `claude-sonnet-5-5`, ejecutor gpt-6-luna/low. Servicio detenido, 0 jobs activos/encolados/locks y cinco procesos STOPPED.
-**T002 parcial**, T003–T007 pendientes. Nueva **T009 pendiente**, diagnóstico offline del entorno de escritura
-(TMPDIR ausente y PATH separado del validador), sin causa raíz probada ni cambio de seguridad/configuración.
+**T002 parcial**, T003–T007 pendientes. **T009 completada offline** (D192): Python ausente del PATH del escritor
+y TMPDIR omitido, sin causa raíz del truncamiento ni defecto del producto probado. HITL elige proponer otro
+fixture limpio con PATH/TMPDIR explícitos, conservando el fallido; sin ejecución o cambio operativo.
 T003/T004 y cualquier relanzamiento real siguen sin autorización; cero correcciones automáticas.
 
 P011 sigue cerrada y archivada ([D182](DECISIONS.md#d182--cierre-documental-de-p011-y-preparación-pública-archivada),
@@ -117,11 +118,12 @@ P010 conserva su cierre (D153) y P009 el suyo (D140); el Django hijo sigue con P
 tag `p001` sobre `47a0557` y archivo en `3d105c6`, sin repetir operaciones ni comprobaciones de su estado.
 Este repositorio sigue sin registrarse ni ejecutarse con el harness.
 
-**Siguiente:** [P012-T009](NEXT_STEPS.md#p012-t009--diagnóstico-offline-del-entorno-de-escritura-codex),
-diagnóstico documental/offline y propuesta concreta antes de reanudar T002 (D191). Conservar fixture/diff fallido,
-base, historial y configuración; sin CLI/proveedores reales, servicio o reparaciones manuales. La entrega de
-[la continuación](phase/P012-T002_INCORPORACION_REAL.md#26-siguiente-tarea-acotada-diagnóstico-offline-del-entorno-de-codex)
-distingue B completada de la tarea no aceptada. T003/T004 siguen sin autorización.
+**Siguiente:** [P012-T002](NEXT_STEPS.md#p012-t002--instalación-incorporación-b-y-perfil-declarado-con-proveedores-reales),
+solicitar consentimiento explícito sobre la [continuación elegida en T009](phase/P012-T009_DIAGNOSTICO_ENTORNO_CODEX.md#5-consentimiento-posterior-propuesto-y-paradas)
+(D192): otro fixture sintético `onboarding-b-t009`, copia de TOML con presets/composición propios, B y tarea nuevas
+por UI, mismo wheel y presupuesto acumulado 4/1 de 12/3. Conservar fixture/diff fallido, base y registros previos;
+sin reparación manual ni reutilizar congelados bajo otro entorno. El HITL elige la propuesta, sin autorizar su
+operación. T003/T004 y cualquier relanzamiento real siguen sin autorización.
 Los límites de la base acumulada
 siguen vigentes hasta que P012 aporte evidencia real; A queda retirado por D155/D161, sin acreditarlo como validado.
 Sin nueva fase del Django hijo ni ampliación de consentimientos anteriores.
