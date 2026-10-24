@@ -16,7 +16,7 @@ hitos H0–H6 del backlog original; la definición inicial está en [archive/pha
 | P008 | Contrato documental unificado, cierre de fase e importación de proyectos | completada (2026-10-19) | [phase-008](archive/phase-008/SUMMARY.md) |
 | P009 | Proyecto Django desde cero y piloto con cuatro combinaciones de agentes | completada (2026-10-21) | [phase-009](archive/phase-009/SUMMARY.md) |
 | P010 | Consolidación de la primera versión local | completada (2026-10-22) | [phase-010](archive/phase-010/SUMMARY.md) |
-| P011 | Preparación para apertura pública en GitHub | en ejecución (2026-10-22) | [plan](phase/P011_PLAN_APERTURA_PUBLICA.md) |
+| P011 | Preparación para apertura pública en GitHub | completada (2026-10-24) | [phase-011](archive/phase-011/SUMMARY.md) |
 
 ## P001 — Contratos y prueba de viabilidad
 
@@ -233,53 +233,57 @@ este repositorio, reescribir historia/snapshots, nube/multiusuario, aislamiento 
 general, traducción automática de contenido libre o aplicaciones hijas, y ampliación de consentimientos de P009.
 No incorporar automáticamente las otras candidatas ni prometer compatibilidad multiplataforma o CLI futura universal.
 **Estado:** en ejecución el 2026-10-22 por encargo del usuario. T001 completada (D159):
-[contrato](phase/P011-T001_CONTRATO_APERTURA.md) e [inventario](phase/P011-T001_INVENTARIO.md), sin cambios de
+[contrato](archive/phase-011/P011-T001_CONTRATO_APERTURA.md) e [inventario](archive/phase-011/P011-T001_INVENTARIO.md), sin cambios de
 producto ni ejecución operativa. T002 completada (D160): MIT, titular David Acosta, guías/avisos e inventario/
-escaneo estático del origen; [informe](phase/P011-T002_CONTENIDO_PUBLICABLE.md). No hay candidato público
+escaneo estático del origen; [informe](archive/phase-011/P011-T002_CONTENIDO_PUBLICABLE.md). No hay candidato público
 aprobado; staging/avisos/assets y activación del canal privado GitHub pendientes en sus entregas.
-T019 completada (D161): retirada legacy/A, con cero/B y datos propios conservados; [informe](phase/P011-T019_RETIRADA_LEGACY.md).
-T003 completada (D162): comentarios/docstrings de núcleo y perfiles en inglés; [inventario](phase/P011-T003_INGLES_NUCLEO.md).
-T004 completada (D163): backend en inglés y recetas v2 sin cablear; [inventario](phase/P011-T004_INGLES_BACKEND.md).
+T019 completada (D161): retirada legacy/A, con cero/B y datos propios conservados; [informe](archive/phase-011/P011-T019_RETIRADA_LEGACY.md).
+T003 completada (D162): comentarios/docstrings de núcleo y perfiles en inglés; [inventario](archive/phase-011/P011-T003_INGLES_NUCLEO.md).
+T004 completada (D163): backend en inglés y recetas v2 sin cablear; [inventario](archive/phase-011/P011-T004_INGLES_BACKEND.md).
 T005 completada (D164): frontend, scripts y ejemplos en inglés;
-[inventario](phase/P011-T005_INGLES_CLIENTE_HERRAMIENTAS.md).
-T006 completada (D165): pruebas y fixtures en inglés sin tocar datos; [inventario](phase/P011-T006_INGLES_PRUEBAS.md).
+[inventario](archive/phase-011/P011-T005_INGLES_CLIENTE_HERRAMIENTAS.md).
+T006 completada (D165): pruebas y fixtures en inglés sin tocar datos; [inventario](archive/phase-011/P011-T006_INGLES_PRUEBAS.md).
 T007 completada (D166): preferencias globales de idioma, catálogos en/es y visual congelado por job;
-[entrega](phase/P011-T007_INFRAESTRUCTURA_IDIOMAS.md).
+[entrega](archive/phase-011/P011-T007_INFRAESTRUCTURA_IDIOMAS.md).
 T008 completada (D167): idioma de trabajo inmutable por raíz, `local-config-6` y par congelado por job/intento;
-[entrega](phase/P011-T008_IDIOMA_PROYECTO.md). Por HITL, el cableado de recetas v2 pasa a la nueva T020.
+[entrega](archive/phase-011/P011-T008_IDIOMA_PROYECTO.md). Por HITL, el cableado de recetas v2 pasa a la nueva T020.
 T020 completada (D168): recetas v2 en `local-config-6` con el idioma de trabajo sellado en plan y recibo;
-[entrega](phase/P011-T020_RECETAS_V2.md).
+[entrega](archive/phase-011/P011-T020_RECETAS_V2.md).
 T009 completada (D169): directiva de idioma sellada por job y documentos generados en el idioma de trabajo;
-[entrega](phase/P011-T009_PROMPTS_DOCUMENTOS_BILINGUES.md).
+[entrega](archive/phase-011/P011-T009_PROMPTS_DOCUMENTOS_BILINGUES.md).
 T010 completada (D170): interfaz React y diagnósticos HTTP propios en en/es;
-[entrega](phase/P011-T010_TRADUCCION_PRODUCTO.md). Por HITL, servicio/CLI pasan a la nueva T021 y la QA visual se
+[entrega](archive/phase-011/P011-T010_TRADUCCION_PRODUCTO.md). Por HITL, servicio/CLI pasan a la nueva T021 y la QA visual se
 hace tras ella.
 T021 completada (D171): textos propios del servicio/CLI antes españoles en en/es por el visual de cada emisión;
-[entrega](phase/P011-T021_TRADUCCION_SERVICIO_CLI.md). Por HITL, los textos de servicio ya ingleses pasan a la nueva
+[entrega](archive/phase-011/P011-T021_TRADUCCION_SERVICIO_CLI.md). Por HITL, los textos de servicio ya ingleses pasan a la nueva
 T022 y la QA visual conjunta se hace tras ella.
 T022 completada (D172): diagnósticos visibles del servicio antes ingleses en en/es y rechazos de la UI por código;
-[entrega](phase/P011-T022_TRADUCCION_SERVICIO_INGLES.md). QA visual conjunta no autorizada (no realizada).
-T011 completada (D173): [contrato](phase/P011-T011_CONTRATO_COMPATIBILIDAD_CLI.md) por capacidades y detección
+[entrega](archive/phase-011/P011-T022_TRADUCCION_SERVICIO_INGLES.md). QA visual conjunta no autorizada (no realizada).
+T011 completada (D173): [contrato](archive/phase-011/P011-T011_CONTRATO_COMPATIBILIDAD_CLI.md) por capacidades y detección
 automática, sin pin/aceptación de candidatas; mínimos nuevos Codex 0.163.0 / Claude 2.1.304 e indicación de
-actualizar para inferiores. T012 completada (D174): [entrega](phase/P011-T012_COMPATIBILIDAD_CLI.md),
+actualizar para inferiores. T012 completada (D174): [entrega](archive/phase-011/P011-T012_COMPATIBILIDAD_CLI.md),
 `local-config-7`/`cli-14` con detección automática, guardias e identidad por intento; posteriores con compatibilidad
 condicionada por HITL. Evidencia nueva sintética; sin CLI real. T013 completada (D175):
-[matriz](phase/P011-T013_MATRIZ_DIAGRAMAS.md) de diagramas/datos/arquitectura contra código y tests, catorce
+[matriz](archive/phase-011/P011-T013_MATRIZ_DIAGRAMAS.md) de diagramas/datos/arquitectura contra código y tests, catorce
 hallazgos documentales corregidos sin cambiar el producto. T014 completada (D176):
-[entrega](phase/P011-T014_DOCUMENTACION_PUBLICA.md) con baseline pública en `docs/public/`, README inglés de primer
+[entrega](archive/phase-011/P011-T014_DOCUMENTACION_PUBLICA.md) con baseline pública en `docs/public/`, README inglés de primer
 uso y entrada española; por HITL, especificación/arquitectura/datos/flujos públicos pasan a la nueva T023.
-T023 completada (D177): [entrega](phase/P011-T023_DOCUMENTACION_TECNICA_PUBLICA.md) con esos documentos ingleses
-autocontenidos en `docs/public/docs/`. T015 completada (D178): [entrega](phase/P011-T015_PAQUETE_PUBLICO.md) con
+T023 completada (D177): [entrega](archive/phase-011/P011-T023_DOCUMENTACION_TECNICA_PUBLICA.md) con esos documentos ingleses
+autocontenidos en `docs/public/docs/`. T015 completada (D178): [entrega](archive/phase-011/P011-T015_PAQUETE_PUBLICO.md) con
 paquete candidato `0.1.0`, CI sintética e instantánea pública sin Git. T016 completada (D179):
-[entrega](phase/P011-T016_PRIMER_USO_QA.md) con primer uso ensayado desde clon limpio y CLI falsas; por HITL, QA de
-navegador → nueva T024. T024 completada (D180): [entrega](phase/P011-T024_QA_NAVEGADOR.md) con la UI del candidato
+[entrega](archive/phase-011/P011-T016_PRIMER_USO_QA.md) con primer uso ensayado desde clon limpio y CLI falsas; por HITL, QA de
+navegador → nueva T024. T024 completada (D180): [entrega](archive/phase-011/P011-T024_QA_NAVEGADOR.md) con la UI del candidato
 recorrida en Chrome en las 8 combinaciones y tres correcciones de presentación. T017 completada (D181):
-[revisión](phase/P011_REVIEW.md) con dictamen favorable de los diez criterios y trece globales y
-[expediente](phase/P011_EXPEDIENTE_APERTURA.md) de apertura sin ejecutar. Una tarea pendiente; siguiente T018.
-Planificación inicial finalizada en D156 y commit `6174f51`; ajustes D157/D158 incorporados
-en `2730f54`, sin ejecución del producto. La continuación actual autoriza T017 y su commit local en inglés.
-La fase no está cerrada; se mantienen veinticuatro tareas (veintitrés completadas) y diez criterios.
-[Plan](phase/P011_PLAN_APERTURA_PUBLICA.md), [tareas](NEXT_STEPS.md) y
+[revisión](archive/phase-011/P011_REVIEW.md) con dictamen favorable de los diez criterios y trece globales y
+[expediente](archive/phase-011/P011_EXPEDIENTE_APERTURA.md) de apertura sin ejecutar. T018 completa el cierre
+manual y archivo documental el 2026-10-24
+([D182](DECISIONS.md#d182--cierre-documental-de-p011-y-preparación-pública-archivada),
+[resumen](archive/phase-011/SUMMARY.md), [revisión de cierre](archive/phase-011/REVIEW.md)).
+Planificación inicial finalizada en D156 y commit `6174f51`; ajustes D157/D158 incorporados en `2730f54`.
+Veinticuatro tareas completadas y diez criterios cumplidos; candidato `0.1.0` con manifiesto `74cc9141…ea71`, sin
+tag, publicación ni fase sucesora. Originales conservados por bytes; sin check READY ni ejecución de este repositorio.
+La apertura remota exige instrucción explícita del usuario sobre el expediente archivado.
+[Plan](archive/phase-011/P011_PLAN_APERTURA_PUBLICA.md), [tareas archivadas](archive/phase-011/NEXT_STEPS.md) y
 [D154](DECISIONS.md#d154--p011-preparación-para-apertura-pública-en-github).
 La primera versión local P010 sigue completada en su alcance; P011 añade objetivos públicos, no reabre ese cierre.
 

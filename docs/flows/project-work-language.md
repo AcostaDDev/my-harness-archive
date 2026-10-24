@@ -1,6 +1,6 @@
 # Flujo — idioma de trabajo por proyecto
 
-P011-T008 (D167; contrato [T001 §2/§4](../phase/P011-T001_CONTRATO_APERTURA.md#2-autoridad-persistencia-y-controles-de-idioma)).
+P011-T008 (D167; contrato [T001 §2/§4](../archive/phase-011/P011-T001_CONTRATO_APERTURA.md#2-autoridad-persistencia-y-controles-de-idioma)).
 El idioma de trabajo (`en`/`es`) rige documentación, planes y código que escriben los agentes en un proyecto. Se elige
 una vez por raíz canónica y no cambia; el idioma visual es una preferencia global aparte
 ([preferencias](language-preferences.md)). Desde T009 (D169) el par del job llega al agente como directiva y los

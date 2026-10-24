@@ -192,6 +192,7 @@ tarea se leen solo las decisiones que cita; este índice sirve para buscar prece
 | [D179](#d179--p011-t016-primer-uso-ensayado-pylock-y-validación-de-tarea-igual-al-perfil) | P011-T016: primer uso ensayado, pylock y validación de tarea igual al perfil | P011 |
 | [D180](#d180--p011-t024-qa-de-navegador-del-candidato-y-tres-correcciones-de-presentación) | P011-T024: QA de navegador del candidato y tres correcciones de presentación | P011 |
 | [D181](#d181--p011-t017-dictamen-favorable-y-expediente-de-apertura-pública) | P011-T017: dictamen favorable y expediente de apertura pública | P011 |
+| [D182](#d182--cierre-documental-de-p011-y-preparación-pública-archivada) | Cierre documental de P011 y preparación pública archivada | P011 |
 
 ## D001 — Alcance local y arquitectura base
 
@@ -4574,7 +4575,7 @@ Estado: cerrada y archivada el 2026-10-22 por la continuación solicitada por el
 ## D154 — P011: preparación para apertura pública en GitHub
 
 Estado: fase planificada el 2026-10-22 por encargo explícito del usuario; dieciocho tareas pendientes.
-[Plan](phase/P011_PLAN_APERTURA_PUBLICA.md), [tareas](NEXT_STEPS.md) y
+[Plan](archive/phase-011/P011_PLAN_APERTURA_PUBLICA.md), [tareas](archive/phase-011/NEXT_STEPS.md) y
 [criterios](ROADMAP.md#p011--preparación-para-apertura-pública-en-github). Precedentes: D051, D088, D119,
 D122/D124, D143 y D151–D153.
 
@@ -4605,7 +4606,7 @@ D122/D124, D143 y D151–D153.
 ## D155 — P011: retirada del harness anterior y dos vías de alta
 
 Estado: ampliación de planificación solicitada por el usuario el 2026-10-22; retirada pendiente de P011-T019.
-[Tareas](NEXT_STEPS.md), [plan](phase/P011_PLAN_APERTURA_PUBLICA.md) y
+[Tareas](archive/phase-011/NEXT_STEPS.md), [plan](archive/phase-011/P011_PLAN_APERTURA_PUBLICA.md) y
 [criterios](ROADMAP.md#p011--preparación-para-apertura-pública-en-github). Amplía D154 y sustituye para el producto
 público futuro el soporte al harness anterior de D012–D014/D027/D088; conserva su historia y evidencia.
 
@@ -4635,7 +4636,7 @@ público futuro el soporte al harness anterior de D012–D014/D027/D088; conserv
 ## D156 — Planificación de P011 finalizada y modo continuo aplazado a v0.2.0
 
 Estado: decidido por el usuario el 2026-10-22; planificación finalizada, ejecución de P011 pendiente.
-[Plan](phase/P011_PLAN_APERTURA_PUBLICA.md), [tareas](NEXT_STEPS.md) y
+[Plan](archive/phase-011/P011_PLAN_APERTURA_PUBLICA.md), [tareas](archive/phase-011/NEXT_STEPS.md) y
 [horizonte v0.2.0](ROADMAP.md#después-de-la-apertura-en-github--v020). Precedentes: D034, D091 y D154/D155.
 
 - Tras comprobar los límites actuales, el usuario aplaza a v0.2.0, después de subir/abrir el proyecto en GitHub,
@@ -4658,7 +4659,7 @@ Estado: decidido por el usuario el 2026-10-22; planificación finalizada, ejecuc
 ## D157 — Repositorio público nuevo y continuidad del desarrollo
 
 Estado: preferencia adoptada para la planificación por el usuario el 2026-10-22; sin exportación ni publicación.
-[Plan](phase/P011_PLAN_APERTURA_PUBLICA.md), [tareas](NEXT_STEPS.md). Afina la frontera pública de D154/D156.
+[Plan](archive/phase-011/P011_PLAN_APERTURA_PUBLICA.md), [tareas](archive/phase-011/NEXT_STEPS.md). Afina la frontera pública de D154/D156.
 
 - El usuario prefiere el segundo modelo: conservar privado el historial/documentación anteriores y, desde la
   publicación, desarrollar código, documentación, decisiones y fases en el repositorio público, útiles para
@@ -4679,7 +4680,7 @@ Estado: preferencia adoptada para la planificación por el usuario el 2026-10-22
 ## D158 — Idioma visual global y trabajo inmutable por proyecto
 
 Estado: requisitos afinados por el usuario el 2026-10-22; diseño/implementación pendientes en P011.
-[Plan](phase/P011_PLAN_APERTURA_PUBLICA.md), [tareas](NEXT_STEPS.md). Sustituye el idioma mutable por proyecto
+[Plan](archive/phase-011/P011_PLAN_APERTURA_PUBLICA.md), [tareas](archive/phase-011/NEXT_STEPS.md). Sustituye el idioma mutable por proyecto
 y la asociación de conversación al trabajo propuestas en D154; conserva prompts originales ingleses y snapshots.
 
 - Dos ajustes/defaults globales del producto: `ui_language` y `default_work_language`, en/es e inicialmente en.
@@ -4709,7 +4710,7 @@ y la asociación de conversación al trabajo propuestas en D154; conserva prompt
 ## D159 — P011-T001: contrato de idiomas, fuentes y corte público
 
 Estado: diseño documentado el 2026-10-22 al ejecutar T001 por petición del usuario; sin implementación de producto.
-[Contrato](phase/P011-T001_CONTRATO_APERTURA.md), [inventario](phase/P011-T001_INVENTARIO.md).
+[Contrato](archive/phase-011/P011-T001_CONTRATO_APERTURA.md), [inventario](archive/phase-011/P011-T001_INVENTARIO.md).
 Concreta D154–D158; conserva las guardias de D027, el layout D088 y las huellas/recuperación D119/D143.
 
 - T001 inventaría los 688 archivos de `2730f54`: 469 filas individuales y 219 archivos históricos agrupados,
@@ -4754,8 +4755,8 @@ Concreta D154–D158; conserva las guardias de D027, el layout D088 y las huella
 ## D160 — P011-T002: licencia MIT y frontera del contenido publicable
 
 Estado: adoptada el 2026-10-22 al ejecutar T002 por petición del usuario; revisión estática del origen completada,
-sin candidato ni dictamen de preparación pública. [Informe](phase/P011-T002_CONTENIDO_PUBLICABLE.md),
-[inventario privado](phase/P011-T002_INVENTARIO.tsv) y [dependencias](phase/P011-T002_DEPENDENCIAS.tsv).
+sin candidato ni dictamen de preparación pública. [Informe](archive/phase-011/P011-T002_CONTENIDO_PUBLICABLE.md),
+[inventario privado](archive/phase-011/P011-T002_INVENTARIO.tsv) y [dependencias](archive/phase-011/P011-T002_DEPENDENCIAS.tsv).
 Concreta D154/D157/D159; no autoriza publicación o reescritura de historia.
 
 - El usuario delega explícitamente en esta sesión la elección de licencia/canal y confirma David Acosta como
@@ -4796,8 +4797,8 @@ Concreta D154/D157/D159; no autoriza publicación o reescritura de historia.
 ## D161 — P011-T019: retirada legacy/A y compatibilidad no destructiva
 
 Estado: implementada el 2026-10-22 por la continuación y commit local en inglés pedidos por el usuario.
-Fase: P011. Precedentes: D155/D159 y [contrato T001 §6](phase/P011-T001_CONTRATO_APERTURA.md#6-retirada-legacya-frontera-de-código-y-datos).
-[Informe, dependencias y validación](phase/P011-T019_RETIRADA_LEGACY.md).
+Fase: P011. Precedentes: D155/D159 y [contrato T001 §6](archive/phase-011/P011-T001_CONTRATO_APERTURA.md#6-retirada-legacya-frontera-de-código-y-datos).
+[Informe, dependencias y validación](archive/phase-011/P011-T019_RETIRADA_LEGACY.md).
 
 - Se retiran los módulos exclusivos del visor/índice/observación/SSE, activación/reversión y Flujo A, sus rutas,
   comandos, conversaciones, plantilla, UI, estilos y fixtures/tests exclusivos. URL UI antigua → no encontrada;
@@ -4826,8 +4827,8 @@ Fase: P011. Precedentes: D155/D159 y [contrato T001 §6](phase/P011-T001_CONTRAT
 ## D162 — P011-T003: núcleo y perfiles en inglés sin cambiar comportamiento
 
 Estado: implementada el 2026-10-22 por la continuación y commit local en inglés pedidos por el usuario.
-Fase: P011. Precedentes: D158/D159 y [contrato T001 §5](phase/P011-T001_CONTRATO_APERTURA.md#5-fuentes-congeladas-recetas-documentos-y-compatibilidad).
-[Inventario resuelto y validación](phase/P011-T003_INGLES_NUCLEO.md).
+Fase: P011. Precedentes: D158/D159 y [contrato T001 §5](archive/phase-011/P011-T001_CONTRATO_APERTURA.md#5-fuentes-congeladas-recetas-documentos-y-compatibilidad).
+[Inventario resuelto y validación](archive/phase-011/P011-T003_INGLES_NUCLEO.md).
 
 - Los 35 archivos Python de `core/**` y `profiles/**` quedan con comentarios y docstrings en inglés (123 líneas
   de comentario, 121 docstrings), incluidos `tree.py`/`managed_mode.py` de T019 y el docstring restante de
@@ -4841,8 +4842,8 @@ Fase: P011. Precedentes: D158/D159 y [contrato T001 §5](phase/P011-T001_CONTRAT
 ## D163 — P011-T004: backend en inglés y recetas v2 sin cablear
 
 Estado: implementada el 2026-10-22 por la continuación y commit local en inglés pedidos por el usuario.
-Fase: P011. Precedentes: D159/D162 y [contrato T001 §5](phase/P011-T001_CONTRATO_APERTURA.md#5-fuentes-congeladas-recetas-documentos-y-compatibilidad).
-[Inventario resuelto y validación](phase/P011-T004_INGLES_BACKEND.md).
+Fase: P011. Precedentes: D159/D162 y [contrato T001 §5](archive/phase-011/P011-T001_CONTRATO_APERTURA.md#5-fuentes-congeladas-recetas-documentos-y-compatibilidad).
+[Inventario resuelto y validación](archive/phase-011/P011-T004_INGLES_BACKEND.md).
 
 - Los 94 archivos Python de `src/harness_local/**` fuera de `core/**`/`profiles/**` quedan con comentarios y docstrings
   en inglés (223 líneas de comentario, 318 docstrings), migraciones incluidas sin tocar ids/DDL. Las 84 descripciones
@@ -4867,8 +4868,8 @@ Fase: P011. Precedentes: D159/D162 y [contrato T001 §5](phase/P011-T001_CONTRAT
 ## D164 — P011-T005: cliente, scripts y ejemplos en inglés
 
 Estado: implementada el 2026-10-23 por la continuación y commit local en inglés pedidos por el usuario.
-Fase: P011. Precedentes: D159/D162/D163 y [inventario T001](phase/P011-T001_INVENTARIO.md) (U, H, E3, E6, E8).
-[Inventario resuelto y validación](phase/P011-T005_INGLES_CLIENTE_HERRAMIENTAS.md).
+Fase: P011. Precedentes: D159/D162/D163 y [inventario T001](archive/phase-011/P011-T001_INVENTARIO.md) (U, H, E3, E6, E8).
+[Inventario resuelto y validación](archive/phase-011/P011-T005_INGLES_CLIENTE_HERRAMIENTAS.md).
 
 - Comentarios del frontend en inglés: 195 líneas en 27 archivos TS/TSX (JSDoc y `{/* */}` incluidos) y 17
   comentarios CSS. Flujo de tokens sin comentarios idéntico a `HEAD` en los 38 archivos y CSS sin comentarios
@@ -4891,8 +4892,8 @@ Fase: P011. Precedentes: D159/D162/D163 y [inventario T001](phase/P011-T001_INVE
 ## D165 — P011-T006: pruebas y fixtures en inglés sin tocar datos
 
 Estado: implementada el 2026-10-23 por la continuación y commit local en inglés pedidos por el usuario.
-Fase: P011. Precedentes: D159/D162–D164 y [inventario T001](phase/P011-T001_INVENTARIO.md) (F, E2).
-[Inventario resuelto y validación](phase/P011-T006_INGLES_PRUEBAS.md).
+Fase: P011. Precedentes: D159/D162–D164 y [inventario T001](archive/phase-011/P011-T001_INVENTARIO.md) (F, E2).
+[Inventario resuelto y validación](archive/phase-011/P011-T006_INGLES_PRUEBAS.md).
 
 - Comentarios y docstrings de las pruebas Python en inglés: 294 comentarios y 91 docstrings en 49 archivos, con
   AST idéntico (docstrings aparte). Comentarios y cinco nombres de test de `frontend/tests` en inglés. Único
@@ -4912,8 +4913,8 @@ Fase: P011. Precedentes: D159/D162–D164 y [inventario T001](phase/P011-T001_IN
 ## D166 — P011-T007: preferencias globales de idioma, catálogos y visual congelado por job
 
 Estado: implementada el 2026-10-23 por la continuación y commit local en inglés pedidos por el usuario.
-Fase: P011. Concreta D158/D159 (§2–§4 del [contrato T001](phase/P011-T001_CONTRATO_APERTURA.md)).
-[Entrega, alcance y validación](phase/P011-T007_INFRAESTRUCTURA_IDIOMAS.md), [flujo](flows/language-preferences.md).
+Fase: P011. Concreta D158/D159 (§2–§4 del [contrato T001](archive/phase-011/P011-T001_CONTRATO_APERTURA.md)).
+[Entrega, alcance y validación](archive/phase-011/P011-T007_INFRAESTRUCTURA_IDIOMAS.md), [flujo](flows/language-preferences.md).
 
 - HITL del usuario sobre el reparto T007/T008/T009: T007 congela **solo el visual** por job en
   `managed_jobs.language_context` (`ui-language-1`: idioma y versión de preferencias), en la transacción de admisión
@@ -4944,8 +4945,8 @@ Fase: P011. Concreta D158/D159 (§2–§4 del [contrato T001](phase/P011-T001_CO
 ## D167 — P011-T008: idioma de trabajo inmutable por raíz y par congelado por job e intento
 
 Estado: implementada el 2026-10-23 por la continuación y commit local en inglés pedidos por el usuario.
-Fase: P011. Concreta D158/D159 (§2 y §4 del [contrato T001](phase/P011-T001_CONTRATO_APERTURA.md)) sobre D166.
-[Entrega, alcance y validación](phase/P011-T008_IDIOMA_PROYECTO.md), [flujo](flows/project-work-language.md).
+Fase: P011. Concreta D158/D159 (§2 y §4 del [contrato T001](archive/phase-011/P011-T001_CONTRATO_APERTURA.md)) sobre D166.
+[Entrega, alcance y validación](archive/phase-011/P011-T008_IDIOMA_PROYECTO.md), [flujo](flows/project-work-language.md).
 
 - HITL del usuario sobre el alcance: el cableado de las recetas v2 (`django-recipe-2`, `typescript-web-recipe-2`,
   despacho por `id`) sale de T008 a una tarea nueva, **T020**, antes de T009. Mientras tanto `local-config-6` no
@@ -4982,7 +4983,7 @@ Fase: P011. Concreta D158/D159 (§2 y §4 del [contrato T001](phase/P011-T001_CO
 
 Estado: implementada el 2026-10-23 por la continuación y commit local en inglés pedidos por el usuario.
 Fase: P011. Concreta D163 (módulos v2) y D167 (idioma de trabajo por raíz; T020 desglosada por HITL).
-[Entrega, alcance y validación](phase/P011-T020_RECETAS_V2.md), [flujo](flows/project-preparation.md#recetas-v2-por-idioma-de-trabajo-p011-t020-d168).
+[Entrega, alcance y validación](archive/phase-011/P011-T020_RECETAS_V2.md), [flujo](flows/project-preparation.md#recetas-v2-por-idioma-de-trabajo-p011-t020-d168).
 
 - Generaciones por formato: `[recipes.django]`/`[recipes.typescript-web]` con las mismas claves y validaciones
   seleccionan v1 en `local-config-5` y v2 en `local-config-6` (`recipes.GENERATIONS`); sin elección de versión en el
@@ -5012,7 +5013,7 @@ Fase: P011. Concreta D163 (módulos v2) y D167 (idioma de trabajo por raíz; T02
 
 Estado: implementada el 2026-10-23 por la continuación y commit local en inglés pedidos por el usuario.
 Fase: P011. Concreta D158/D159 (contrato T001 §4/§5), D166 y D167 (par congelado por job/intento).
-[Entrega, alcance y validación](phase/P011-T009_PROMPTS_DOCUMENTOS_BILINGUES.md),
+[Entrega, alcance y validación](archive/phase-011/P011-T009_PROMPTS_DOCUMENTOS_BILINGUES.md),
 [flujo](flows/project-work-language.md#directiva-y-documentos-generados-p011-t009-d169).
 
 - HITL: toda la generación documental entra en T009 (sin desglose) y los mensajes de commit y trailers son técnicos
@@ -5043,7 +5044,7 @@ Fase: P011. Concreta D158/D159 (contrato T001 §4/§5), D166 y D167 (par congela
 
 Estado: implementada el 2026-10-23 por la continuación y commit local en inglés pedidos por el usuario.
 Fase: P011. Concreta D159 (contrato T001 §3) sobre la infraestructura D166.
-[Entrega, alcance y validación](phase/P011-T010_TRADUCCION_PRODUCTO.md),
+[Entrega, alcance y validación](archive/phase-011/P011-T010_TRADUCCION_PRODUCTO.md),
 [flujo](flows/language-preferences.md).
 
 - HITL: T010 se desglosa. T010 = toda la interfaz React y los diagnósticos HTTP propios de `api/*` (sesión, guardia,
@@ -5072,7 +5073,7 @@ Fase: P011. Concreta D159 (contrato T001 §3) sobre la infraestructura D166.
 
 Estado: implementada el 2026-10-23 por la continuación y commit local en inglés pedidos por el usuario.
 Fase: P011. Concreta D159 (contrato T001 §3) sobre D166/D170.
-[Entrega, alcance y validación](phase/P011-T021_TRADUCCION_SERVICIO_CLI.md),
+[Entrega, alcance y validación](archive/phase-011/P011-T021_TRADUCCION_SERVICIO_CLI.md),
 [flujo](flows/language-preferences.md).
 
 - HITL sobre el alcance: T021 lleva a catálogo todo texto propio del servicio/CLI que estaba en español y la ayuda
@@ -5103,7 +5104,7 @@ Fase: P011. Concreta D159 (contrato T001 §3) sobre D166/D170.
 
 Estado: implementada el 2026-10-23 por la continuación y commit local en inglés pedidos por el usuario.
 Fase: P011. Concreta D159 (contrato T001 §3) sobre D166/D170/D171.
-[Entrega, alcance y validación](phase/P011-T022_TRADUCCION_SERVICIO_INGLES.md),
+[Entrega, alcance y validación](archive/phase-011/P011-T022_TRADUCCION_SERVICIO_INGLES.md),
 [flujo](flows/language-preferences.md).
 
 - HITL sobre el criterio: casi todo `raise` llega a la API como `diagnostic`, así que lo visible se decide por
@@ -5137,7 +5138,7 @@ Fase: P011. Concreta D159 (contrato T001 §3) sobre D166/D170/D171.
 Estado: diseño completado el 2026-10-23 por petición del usuario, con commit local en inglés; implementación
 pendiente en T012. Fase: P011. Concreta D154/D159 y sustituye para el trabajo nuevo la política de admisión por
 listas exactas de D052/D122; no reescribe sus evidencias ni cambia todavía `cli-13`.
-[Contrato, fuentes, matriz y validación](phase/P011-T011_CONTRATO_COMPATIBILIDAD_CLI.md).
+[Contrato, fuentes, matriz y validación](archive/phase-011/P011-T011_CONTRATO_COMPATIBILIDAD_CLI.md).
 
 - HITL: el usuario quiere que quien descargue el proyecto de GitHub no especifique la versión de Codex o Claude
   Code: el sistema reconoce los clientes/versiones y funciona desde un mínimo estable; si es inferior, indica
@@ -5179,7 +5180,7 @@ listas exactas de D052/D122; no reescribe sus evidencias ni cambia todavía `cli
 Estado: adoptada por HITL el 2026-10-23 y aplicada en T012 por la continuación y commit local en inglés pedidos
 por el usuario. Fase: P011. Concreta D173 y sustituye su exigencia de acreditar por artefacto la supresión interna
 de confianza antes de admitir cada nuevo escritor: la evidencia de D068/D122 conserva su alcance histórico.
-[Entrega, matriz, checks y límites](phase/P011-T012_COMPATIBILIDAD_CLI.md),
+[Entrega, matriz, checks y límites](archive/phase-011/P011-T012_COMPATIBILIDAD_CLI.md),
 [flujo](flows/cli-compatibility.md), [datos JSON](DDBB-DIAGRAM.md#ejecución-gestionada-p003).
 
 - HITL de implementación: no hay sonda pública sin inferencia que pruebe la condición interna de Codex que
@@ -5226,7 +5227,7 @@ de confianza antes de admitir cada nuevo escritor: la evidencia de D068/D122 con
 
 Estado: aplicada el 2026-10-23 en T013 por la continuación y commit local en inglés pedidos por el usuario.
 Fase: P011. Cumple el criterio 5 del contrato T001 (D159) para los flujos vigentes, el modelo de datos y la
-arquitectura textual. [Matriz, hallazgos, checks y límites](phase/P011-T013_MATRIZ_DIAGRAMAS.md).
+arquitectura textual. [Matriz, hallazgos, checks y límites](archive/phase-011/P011-T013_MATRIZ_DIAGRAMAS.md).
 
 - La autoridad es el código con sus pruebas: cada discrepancia se resolvió corrigiendo el dibujo o su prosa, sin
   alterar comportamiento para que encaje. Catorce hallazgos documentales (F01–F14), ninguno de diseño pendiente:
@@ -5246,7 +5247,7 @@ arquitectura textual. [Matriz, hallazgos, checks y límites](phase/P011-T013_MAT
 
 Estado: aplicada el 2026-10-23 en T014 por la continuación y commit local en inglés pedidos por el usuario.
 Fase: P011. Concreta D157/D159 (contrato T001 §8) para la documentación pública inicial.
-[Entrega, mapa del candidato, checks y pendientes](phase/P011-T014_DOCUMENTACION_PUBLICA.md).
+[Entrega, mapa del candidato, checks y pendientes](archive/phase-011/P011-T014_DOCUMENTACION_PUBLICA.md).
 
 - HITL de ubicación: la baseline pública se prepara en el árbol autocontenido `docs/public/`, que replica la raíz del
   candidato (instrucciones de agentes y `docs/`); T015 lo copia sustituyendo AGENTS/CLAUDE/GEMINI y todo `docs/`.
@@ -5269,7 +5270,7 @@ Fase: P011. Concreta D157/D159 (contrato T001 §8) para la documentación públi
 
 Estado: aplicada el 2026-10-23 en T023 por la continuación y commit local en inglés pedidos por el usuario.
 Fase: P011. Completa el desglose HITL de D176 sin cambiar el producto.
-[Entrega, criterios y checks](phase/P011-T023_DOCUMENTACION_TECNICA_PUBLICA.md).
+[Entrega, criterios y checks](archive/phase-011/P011-T023_DOCUMENTACION_TECNICA_PUBLICA.md).
 
 - `docs/public/docs/` añade SPECIFICATION, ARCHITECTURE, DDBB-DIAGRAM y los 14 flujos vigentes, reescritos en inglés
   desde los documentos vivos y el código: comportamiento actual sin historia de fases, enlaces al archivo ni piloto.
@@ -5285,7 +5286,7 @@ Fase: P011. Completa el desglose HITL de D176 sin cambiar el producto.
 
 Estado: aplicada el 2026-10-23 en T015 por la continuación y commit local en inglés pedidos por el usuario.
 Fase: P011. Concreta D156/D157/D160 y el contrato T001 §8 para el paquete y el corte inicial.
-[Entrega, hashes, procedimiento manual y checks](phase/P011-T015_PAQUETE_PUBLICO.md).
+[Entrega, hashes, procedimiento manual y checks](archive/phase-011/P011-T015_PAQUETE_PUBLICO.md).
 
 - HITL de versión: el candidato de la primera apertura pública es `0.1.0` (el `0.1.0` local de P010 no se publicó y
   su `dist/` queda excluido); `0.2.0` sigue reservada (D156). CHANGELOG fija la política: una versión para paquete,
@@ -5310,7 +5311,7 @@ Fase: P011. Concreta D156/D157/D160 y el contrato T001 §8 para el paquete y el 
 
 Estado: aplicada el 2026-10-23 en T016 por la continuación y commit local en inglés pedidos por el usuario.
 Fase: P011. Sustituye el punto de `requirements.txt` de D178. Concreta D157/D178 para el ensayo del candidato.
-[Entrega, matriz, hallazgos y hashes](phase/P011-T016_PRIMER_USO_QA.md).
+[Entrega, matriz, hallazgos y hashes](archive/phase-011/P011-T016_PRIMER_USO_QA.md).
 
 - HITL de alcance: red solo para el primer llenado de cachés vacías (PyPI, registry de npm) y repetición offline;
   ensayo en el scratchpad de la sesión desde la instantánea con un `git clone` local sin remoto; servicio instalado en
@@ -5331,7 +5332,7 @@ Fase: P011. Sustituye el punto de `requirements.txt` de D178. Concreta D157/D178
 
 Estado: aplicada el 2026-10-24 en T024 por la continuación y commit local en inglés pedidos por el usuario.
 Fase: P011. Concreta D179 (QA de navegador desglosada de T016) y cierra la QA visual conjunta de T010/T021/T022.
-[Entrega, matriz, capturas y hashes](phase/P011-T024_QA_NAVEGADOR.md).
+[Entrega, matriz, capturas y hashes](archive/phase-011/P011-T024_QA_NAVEGADOR.md).
 
 - HITL de alcance: build/instalación offline del candidato en el scratchpad, datos sintéticos con la CLI falsa del
   driver T016, servicio en loopback y Claude in Chrome en una pestaña nueva solo sobre esa URL; matriz completa
@@ -5352,7 +5353,7 @@ Fase: P011. Concreta D179 (QA de navegador desglosada de T016) y cierra la QA vi
 
 Estado: aplicada el 2026-10-24 en T017 por la continuación y commit local en inglés pedidos por el usuario.
 Fase: P011. Concreta D154/D155/D157/D158 y el procedimiento de D178.
-[Revisión de salida](phase/P011_REVIEW.md) y [expediente](phase/P011_EXPEDIENTE_APERTURA.md).
+[Revisión de salida](archive/phase-011/P011_REVIEW.md) y [expediente](archive/phase-011/P011_EXPEDIENTE_APERTURA.md).
 
 - Dictamen favorable en el alcance declarado: los diez criterios de ROADMAP y los trece globales de SPECIFICATION
   §10 (1/11/13 en su redacción de D161) cumplen con evidencia trazable; la matriz histórica de P010 no se reescribe.
@@ -5368,3 +5369,25 @@ Fase: P011. Concreta D154/D155/D157/D158 y el procedimiento de D178.
   de vulnerabilidades antes de anunciar y Release opcional sin PyPI. Ninguna se ha ejecutado; cada una requiere
   autorización propia. Límites conservados: solo macOS ARM64, CI remota sin ejecutar, CLI y proveedores reales sin
   uso en P011, B/D095 aplazados (D151) y QA solo en Chrome.
+
+## D182 — Cierre documental de P011 y preparación pública archivada
+
+Estado: cerrada y archivada el 2026-10-24 por la continuación solicitada por el usuario, tras D181. Fase: P011.
+[Resumen](archive/phase-011/SUMMARY.md), [revisión](archive/phase-011/REVIEW.md) y
+[registro de cierre](archive/phase-011/P011_CIERRE.md). Precedentes: D002/D088/D114/D140/D153.
+
+- La petición de continuar la siguiente tarea y finalizar con un commit en inglés autoriza T018, identificada en
+  STATE/NEXT_STEPS. T017 emite dictamen favorable de los diez criterios y los trece globales (D181); las veinticuatro
+  tareas quedan completadas, sin tareas obligatorias, licencia ni hallazgos de privacidad o paridad pendientes.
+- STATE, NEXT_STEPS y los 61 artefactos originales de `docs/phase/` se conservan por bytes respecto de `4eeda84`;
+  MANIFEST registra origen/destino, tamaño y SHA-256. SUMMARY/REVIEW/P011_CIERRE nuevos sintetizan entregas,
+  candidato y límites. Los snapshots conservan estados, enlaces y comandos en su contexto original.
+- El cierre solo cambia `docs/` privada, excluida del candidato: manifiesto público `74cc9141…ea71`, wheel, sdist y
+  `pylock.toml` de T017 siguen vigentes. El paso 1 del expediente, que cita el script en `docs/phase/`, se reproduce
+  desde un worktree temporal del commit de T017 sin adaptar los originales; comprobado con el mismo manifiesto.
+- STATE compacta la base, NEXT_STEPS queda sin tareas y ROADMAP enlaza P011 completada. Las referencias vigentes se
+  reubican, sin reescribir P001–P010 ni el contenido de decisiones históricas. Sin sucesora definida: el usuario
+  elige entre autorizar la apertura sobre el expediente o una candidata de ROADMAP; v0.2.0 sigue tras la apertura.
+- Cierre manual del repositorio, separado del check READY del producto: sin registrarlo ni ejecutarlo con el harness,
+  agentes, proveedores, servicios o smokes. Sin cambios de producto, esquema, API, flujos, dependencias, paquete o
+  configuración global; sin tag, push, creación de repositorio, cambio de visibilidad, Release ni publicación.

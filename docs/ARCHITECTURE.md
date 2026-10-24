@@ -119,7 +119,7 @@ por su API y los artefactos referenciados; la restauración es de consulta (`que
   sin allowlist por patch; por HITL, su compatibilidad es condicionada y no se declaran efectos internos observados.
   Versión, huella de lanzamiento y política se congelan por job; observación fresca y validación del argv por intento,
   más comprobación de identidad antes de GO. Deriva → rechazo/cuarentena, sin retry ni sustitución de proveedor.
-  [Flujo](flows/cli-compatibility.md), [entrega y límites](phase/P011-T012_COMPATIBILIDAD_CLI.md).
+  [Flujo](flows/cli-compatibility.md), [entrega y límites](archive/phase-011/P011-T012_COMPATIBILIDAD_CLI.md).
 - **TOML local del operador** (`local-config-7`; 1–6 se siguen leyendo), fuera de todo checkout y `chmod 600`:
   `[service]`, `[git]`, `[agents.reviewer]`, `[agents.executor]`, `[registration]` (raíces y techo de bootstrap),
   `[profiles.*]` opcionales, `[compositions.*]` (perfil integrado o declarado y comandos autorizados) y
@@ -393,7 +393,7 @@ huella con versión e idioma. T020 (D168) las cablea: `recipes.GENERATIONS` elig
 idioma de la fila de la raíz (sin fila, 409 antes de efectos); comprobaciones por `id` y etiquetas visuales por
 catálogo. Prompts, catálogos y snapshots anteriores permanecen congelados; no se renombran claves/revisiones/rutas.
 
-T011 completa el [contrato](phase/P011-T011_CONTRATO_COMPATIBILIDAD_CLI.md) (D173): por HITL, detección automática
+T011 completa el [contrato](archive/phase-011/P011-T011_CONTRATO_COMPATIBILIDAD_CLI.md) (D173): por HITL, detección automática
 del cliente y su versión, sin pin ni aceptación de candidatas; mínimos comunes de nuevo trabajo Codex 0.163.0 y
 Claude 2.1.304, con indicación de actualizar si son inferiores. Las versiones previas conservan lectura histórica,
 sin nueva admisión bajo mínimos. Perfiles de capacidades por proveedor/rol mantienen guardias y procedencia;
@@ -405,10 +405,10 @@ No equivale a garantizar cualquier versión futura ni a pasar a App Server/SDK. 
 quedarán ligadas a los intentos sin reescribir evidencia previa o realizar downgrade/retry silencioso.
 
 T013 contrastó semánticamente diagramas, datos y esta arquitectura con fuentes/tests (D175,
-[matriz](phase/P011-T013_MATRIZ_DIAGRAMAS.md)). T014–T017 preparan documentación inglesa, paquete
+[matriz](archive/phase-011/P011-T013_MATRIZ_DIAGRAMAS.md)). T014–T017 preparan documentación inglesa, paquete
 candidato con recursos en/es, CI sintética y primer uso aislado con dictamen. Requisitos build/servicio/hijo y
 plataformas se acreditan por separado; no se cambia el límite de contención cooperativa ni se publica por efecto
-de preparar workflows. [Plan](phase/P011_PLAN_APERTURA_PUBLICA.md) y [tareas](NEXT_STEPS.md).
+de preparar workflows. [Plan](archive/phase-011/P011_PLAN_APERTURA_PUBLICA.md) y [tareas](archive/phase-011/NEXT_STEPS.md).
 
 [D155](DECISIONS.md#d155--p011-retirada-del-harness-anterior-y-dos-vías-de-alta) añade T019, tras T002 y antes de
 traducir: retirar visor/rutas `/legacy`, API/comandos/observadores/SSE legacy, activación desde el harness anterior

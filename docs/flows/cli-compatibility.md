@@ -1,6 +1,6 @@
 # Flow — automatic CLI discovery and compatibility
 
-Implemented in P011-T012 (D174), following the [contract](../phase/P011-T011_CONTRATO_COMPATIBILIDAD_CLI.md)
+Implemented in P011-T012 (D174), following the [contract](../archive/phase-011/P011-T011_CONTRATO_COMPATIBILIDAD_CLI.md)
 and its HITL clarification. No version pin, candidate acceptance or operator evidence file is required in v7.
 
 ```mermaid

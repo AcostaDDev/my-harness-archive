@@ -313,7 +313,7 @@ globales ajustados por la retirada se dictaminan antes de cerrar. Licencia/titul
 deciden en sus tareas; no se presuponen. Se prepara expediente de apertura, manteniendo fuera de esta entrega la publicación
 remota/PyPI, cambio de visibilidad, tag/push/commit y operación del harness sobre este repositorio.
 Caracterización/inferencia real y ensayos operativos conservan sus autorizaciones propias; D151 sigue vigente.
-Detalle en [plan](phase/P011_PLAN_APERTURA_PUBLICA.md) y [tareas](NEXT_STEPS.md).
+Detalle en [plan](archive/phase-011/P011_PLAN_APERTURA_PUBLICA.md) y [tareas](archive/phase-011/NEXT_STEPS.md).
 
 [D157](DECISIONS.md#d157--repositorio-público-nuevo-y-continuidad-del-desarrollo) prevé una instantánea pública
 inicial revisada, con historia Git y documentación de partida nuevas, sin exportar las ADR/fases/historia privadas.
