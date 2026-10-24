@@ -28,7 +28,8 @@ export function Tests({ runId, cycle, validation }: { runId: string; cycle: numb
     {validation.entries.map((entry, index) => <div className="entry" key={entry.command_id ?? index}>
       <strong><code>{entry.requested}</code></strong>
       <p>{t('tests.command', { exit: observed(entry.result.exit_code), duration: entry.result.duration_seconds == null
-        ? t('tests.duration_not_observed') : t('tests.seconds', { seconds: String(entry.result.duration_seconds) }) })}</p>
+        ? t('tests.duration_not_observed') : t('tests.seconds', { seconds: typeof entry.result.duration_seconds === 'number'
+          ? entry.result.duration_seconds : String(entry.result.duration_seconds) }) })}</p>
       {entry.result.error != null && <p className="state state-error">{String(entry.result.error)}</p>}
       {entry.result.timed_out === true && <p className="state state-error">{t('tests.timed_out')}</p>}
       {!entry.reports.length && <p>{t('tests.no_report')}</p>}
@@ -39,8 +40,9 @@ export function Tests({ runId, cycle, validation }: { runId: string; cycle: numb
 }
 
 function Report({ report, path }: { report: S['JUnitReportRead']; path: string }) {
-  const { t, n } = useI18n();
+  const { t, n, language } = useI18n();
   const observed = observer(t);
+  const seconds = new Intl.NumberFormat(language);
   const [open, setOpen] = useState(false);
   const [offset, setOffset] = useState(0);
   const [page, setPage] = useState<S['JUnitCasesRead']>();
@@ -72,7 +74,7 @@ function Report({ report, path }: { report: S['JUnitReportRead']; path: string }
           <tbody>{page.items.map(test => <tr key={test.id}>
             <td>{test.suite.length ? test.suite.map(observed).join(' / ') : t('tests.not_observed')}<br />{observed(test.classname)} · {observed(test.name)}
               <details className="evidence"><summary>{t('tests.identifier')}</summary><p>{t('tests.reported_id', { id: observed(test.reported_id) })}</p><code>{test.id}</code></details></td>
-            <td>{t(results[test.result])}</td><td>{observed(test.duration_seconds)}</td>
+            <td>{t(results[test.result])}</td><td>{test.duration_seconds == null ? t('tests.not_observed') : seconds.format(test.duration_seconds)}</td>
             <td>{test.message != null && <p>{test.message}</p>}{test.error_type != null && <p>{test.error_type}</p>}
               {test.error === null ? t('tests.not_observed') : <pre>{test.error}</pre>}</td>
           </tr>)}</tbody></table></div>

@@ -190,6 +190,7 @@ tarea se leen solo las decisiones que cita; este índice sirve para buscar prece
 | [D177](#d177--p011-t023-documentación-técnica-pública-autocontenida-en-inglés) | P011-T023: documentación técnica pública autocontenida en inglés | P011 |
 | [D178](#d178--p011-t015-paquete-candidato-010-ci-sintética-e-instantánea-pública) | P011-T015: paquete candidato 0.1.0, CI sintética e instantánea pública | P011 |
 | [D179](#d179--p011-t016-primer-uso-ensayado-pylock-y-validación-de-tarea-igual-al-perfil) | P011-T016: primer uso ensayado, pylock y validación de tarea igual al perfil | P011 |
+| [D180](#d180--p011-t024-qa-de-navegador-del-candidato-y-tres-correcciones-de-presentación) | P011-T024: QA de navegador del candidato y tres correcciones de presentación | P011 |
 
 ## D001 — Alcance local y arquitectura base
 
@@ -5324,3 +5325,24 @@ Fase: P011. Sustituye el punto de `requirements.txt` de D178. Concreta D157/D178
   directorios. Resultado: suites, build y check desde el clon limpio, build idéntico byte a byte al del checkout y
   primer uso instalado con ambos accesos hasta COMMITTED, cierre de fase, cuatro pares de idioma, reinicio, `migrate` y
   backup en verde. Sin CLI reales, inferencia, navegador, CI remota ni publicación. Siguiente: T024.
+
+## D180 — P011-T024: QA de navegador del candidato y tres correcciones de presentación
+
+Estado: aplicada el 2026-10-24 en T024 por la continuación y commit local en inglés pedidos por el usuario.
+Fase: P011. Concreta D179 (QA de navegador desglosada de T016) y cierra la QA visual conjunta de T010/T021/T022.
+[Entrega, matriz, capturas y hashes](phase/P011-T024_QA_NAVEGADOR.md).
+
+- HITL de alcance: build/instalación offline del candidato en el scratchpad, datos sintéticos con la CLI falsa del
+  driver T016, servicio en loopback y Claude in Chrome en una pestaña nueva solo sobre esa URL; matriz completa
+  (14 pantallas × en/es × claro/oscuro × escritorio/móvil) con capturas representativas saneadas.
+- Móvil: ventana mínima de Chrome (500 px) más maquetación de 390 px emulada con `zoom`; el embebido en iframe queda
+  descartado porque el servicio lo prohíbe. La navegación de la extensión llega como `cross-site` y la guardia anti-CSRF
+  la rechaza, como debe; la QA recarga desde la propia página.
+- Correcciones de cliente (todas las combinaciones): duración de validación con formato `Intl` del idioma, fecha de
+  cierre de fase con `when()` y rol/estado de los intentos traducidos (`ROLES` y cinco estados de intento nuevos en
+  `Status`, claves en/es). Dos regresiones Node; tipos/build y `check_distribution` del candidato corregido en verde.
+- HITL de producto: acciones de job, etapas del motor, veredictos y campos de huella se mantienen como códigos técnicos
+  visibles y se documentan como excepción; los motivos persistidos siguen en su idioma de emisión (T022).
+- Resultado: sin claves crudas, desbordes de página, controles sin nombre, textos bajo AA ni errores de consola; foco
+  visible en ambos temas. Sin otros navegadores, lectores de pantalla, CLI reales, proveedores, red ni publicación.
+  Siguiente: T017.

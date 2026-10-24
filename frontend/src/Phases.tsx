@@ -3,7 +3,7 @@ import { useI18n } from "./Language";
 import { managed, jobRequest } from "./managed-api";
 import type { S } from "./managed-api";
 import { Link, navigate } from "./navigation";
-import { Evidence, Fields, Hash } from "./ui";
+import { Evidence, Fields, Hash, when } from "./ui";
 import { useWorkspace } from "./workspace";
 
 const lines = (value: string) => value.split("\n").map(item => item.trim()).filter(Boolean);
@@ -276,12 +276,12 @@ function ClosureDocuments({ phase, closure }: { phase: S["PhaseRead"]; closure: 
 
 /** Result and base of the check that authorized the closure: history, never recomputed from today's documents. */
 function ClosureCheck({ closure }: { closure: S["PhaseClosureRead"] }) {
-  const { t } = useI18n();
+  const { t, rich } = useI18n();
   const check = closure.check;
   const abandoned = closure.status === "ABANDONED";
   return <>
     <p className="hint">{closure.finished_at
-      ? t(abandoned ? "phase.closure.abandoned_at" : "phase.closure.closed_at", { date: closure.finished_at })
+      ? rich(abandoned ? "phase.closure.abandoned_at" : "phase.closure.closed_at", { date: when(closure.finished_at) })
       : t(abandoned ? "phase.closure.abandoned" : "phase.closure.closed")}{closure.reason ? ` ${t("phase.closure.reason", { reason: closure.reason })}` : ""}</p>
     <Fields items={[
       ...(check ? [[t("stats.column.result"), check.verdict] as [string, string]] : []),

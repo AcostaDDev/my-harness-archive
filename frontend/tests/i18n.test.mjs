@@ -59,6 +59,20 @@ test('own errors outside React carry a catalog key, translated when shown', () =
   assert.equal(translate({ en, es }, 'en', error.key, error.params), 'The request failed (503). Check that the service is available.');
 });
 
+test('a command duration is a localized number, not the raw float', () => {
+  const seconds = 0.03816141700008302;
+  assert.equal(translate({ en, es }, 'en', 'tests.seconds', { seconds }), '0.038 s');
+  assert.equal(translate({ en, es }, 'es', 'tests.seconds', { seconds }), '0,038 s');
+});
+
+test('every attempt outcome stored by the adapters has its own label in both languages', () => {
+  // Stream statuses upper-cased by the queue when the attempt is stored (TIMED_OUT shares the TIMEOUT label).
+  for (const status of ['COMPLETE', 'PARTIAL', 'INVALID', 'CANCELLED', 'TIMEOUT', 'FAILED', 'INTERRUPTED', 'COMPLETED']) {
+    const key = `status.run.${status}`;
+    assert.ok(en[key] && es[key] && en[key] !== es[key], key);
+  }
+});
+
 test('the Spanish catalog keeps protocol literals untranslated', () => {
   // Chat command names and technical markers are protocol, identical in both catalogs.
   assert.match(en['chat_command.no_phase.body'], /\/abrir-fase/);

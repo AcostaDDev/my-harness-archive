@@ -272,10 +272,11 @@ T023 completada (D177): [entrega](phase/P011-T023_DOCUMENTACION_TECNICA_PUBLICA.
 autocontenidos en `docs/public/docs/`. T015 completada (D178): [entrega](phase/P011-T015_PAQUETE_PUBLICO.md) con
 paquete candidato `0.1.0`, CI sintética e instantánea pública sin Git. T016 completada (D179):
 [entrega](phase/P011-T016_PRIMER_USO_QA.md) con primer uso ensayado desde clon limpio y CLI falsas; por HITL, QA de
-navegador → nueva T024. Tres tareas pendientes; siguiente T024.
+navegador → nueva T024. T024 completada (D180): [entrega](phase/P011-T024_QA_NAVEGADOR.md) con la UI del candidato
+recorrida en Chrome en las 8 combinaciones y tres correcciones de presentación. Dos tareas pendientes; siguiente T017.
 Planificación inicial finalizada en D156 y commit `6174f51`; ajustes D157/D158 incorporados
-en `2730f54`, sin ejecución del producto. La continuación actual autoriza T016 y su commit local en inglés.
-La fase no está cerrada; se mantienen veinticuatro tareas (veintiuna completadas) y diez criterios.
+en `2730f54`, sin ejecución del producto. La continuación actual autoriza T024 y su commit local en inglés.
+La fase no está cerrada; se mantienen veinticuatro tareas (veintidós completadas) y diez criterios.
 [Plan](phase/P011_PLAN_APERTURA_PUBLICA.md), [tareas](NEXT_STEPS.md) y
 [D154](DECISIONS.md#d154--p011-preparación-para-apertura-pública-en-github).
 La primera versión local P010 sigue completada en su alcance; P011 añade objetivos públicos, no reabre ese cierre.

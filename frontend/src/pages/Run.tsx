@@ -3,6 +3,7 @@ import { appendDiffPage, byteSize } from "../diff.ts";
 import { useI18n } from "../Language";
 import type { LoadedDiff } from "../diff.ts";
 import { Logs } from "../Logs";
+import { ROLES } from "../metrics.ts";
 import { managed, managedApi, jobRequest, ManagedError } from "../managed-api";
 import type { S } from "../managed-api";
 import { Link, navigate } from "../navigation";
@@ -155,7 +156,7 @@ export function RunPage({ phase, task, run: id }: { phase: string; task: string;
       <h2 id="run-attempts">{t("stats.attempts.title")}</h2>
       {!attempts?.items.length && <p className="hint">{t("run.attempts.empty")}</p>}
       {attempts?.items.map(a => <div className="entry" key={a.id}>
-        <p><strong>{t("run.attempt", { number: a.number })}</strong> {a.role} <Status value={a.status} /></p>
+        <p><strong>{t("run.attempt", { number: a.number })}</strong> {ROLES[a.role] ? t(ROLES[a.role]) : a.role} <Status value={a.status} /></p>
         <Logs runId={run.id} attemptId={a.id} />
         <Evidence title={t("run.attempt.evidence")} value={a} /></div>)}
       <Pagination offset={offset} next={attempts?.next_offset} onChange={setOffset} label={t("stats.pages.attempts")} />

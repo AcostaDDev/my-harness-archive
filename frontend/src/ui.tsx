@@ -119,6 +119,9 @@ const RUN: Record<string, [MessageKey, Tone]> = {
   STOPPED: ["status.run.STOPPED", "neutral"], INTERRUPTED: ["status.run.INTERRUPTED", "danger"],
   COMMITTED: ["status.run.COMMITTED", "ok"], COMPLETED: ["status.run.COMPLETED", "ok"], DONE: ["status.run.DONE", "ok"],
   FAILED: ["status.run.FAILED", "danger"], ABORTED: ["status.run.ABORTED", "danger"], INTENT: ["status.run.INTENT", "active"],
+  // Attempt outcomes: the adapter's stream status, upper-cased when the attempt is stored.
+  COMPLETE: ["status.run.COMPLETE", "ok"], PARTIAL: ["status.run.PARTIAL", "attention"], INVALID: ["status.run.INVALID", "danger"],
+  CANCELLED: ["status.run.CANCELLED", "neutral"], TIMEOUT: ["status.run.TIMEOUT", "danger"], TIMED_OUT: ["status.run.TIMEOUT", "danger"],
 };
 
 export const PHASE: Record<S["PhaseRead"]["status"], [MessageKey, Tone]> = {

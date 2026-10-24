@@ -4,19 +4,19 @@ Objetivo y criterios en [ROADMAP](ROADMAP.md#p011--preparación-para-apertura-p�
 Decisión: [D154](DECISIONS.md#d154--p011-preparación-para-apertura-pública-en-github).
 [Plan y alcance](phase/P011_PLAN_APERTURA_PUBLICA.md).
 
-**Estado:** en ejecución desde el 2026-10-22. T001/T002/T019/T003–T016/T020–T023 completadas (D159–D179); tres
+**Estado:** en ejecución desde el 2026-10-22. T001/T002/T019/T003–T016/T020–T024 completadas (D159–D180); dos
 tareas pendientes (T010 desglosó T021, T021 desglosó T022, T014 desglosó T023 y T016 desglosó T024 por HITL). Licencia/avisos, retirada legacy/A,
 código/pruebas en inglés, preferencias globales e idioma de trabajo inmutable por proyecto con el par congelado por
 job/intento; recetas v2; directiva al agente y documentos en W; interfaz React, diagnósticos HTTP propios y todos
-los textos visibles del servicio/CLI en en/es (los técnicos ingleses, listados); QA visual conjunta sin autorizar.
+los textos visibles del servicio/CLI en en/es (los técnicos ingleses, listados); QA de navegador del candidato (T024).
 **Planificación:** base finalizada en D156 y afinada por D155/D157/D158; contrato T001 disponible.
 No equivale a fase completada.
 T011 entrega el contrato de CLI y T012 implementa detección automática y compatibilidad condicionada por capacidades.
 T013 contrasta diagramas, datos y arquitectura con el código y sus pruebas. T014 prepara la baseline pública
 en `docs/public/` y el README inglés de primer uso; T023 completa allí especificación, arquitectura, datos y flujos.
 T015 prepara paquete `0.1.0`, CI sintética e instantánea pública en `.local/` sin Git. T016 ensaya el primer uso
-desde un clon limpio con CLI falsas; la QA de navegador pasa a T024.
-**Siguiente:** P011-T024. Sin autorización de publicación.
+desde un clon limpio con CLI falsas; T024 recorre la UI del candidato instalado en Chrome (8 combinaciones).
+**Siguiente:** P011-T017. Sin autorización de publicación.
 P001–P010 siguen cerradas; la primera versión local mantiene el alcance de D151/D153.
 
 ## Restricciones compartidas
@@ -49,7 +49,7 @@ P001–P010 siguen cerradas; la primera versión local mantiene el alcance de D1
   siguiente fase` para v0.2.0 después de abrir el proyecto en GitHub, fuera de estas tareas. P011 mantiene
   cierre con READY y autorización propia, nueva fase sin tareas y confirmación del plan posterior.
   El commit D156 y los ajustes D157/D158 ya se realizaron. La petición actual autoriza ejecutar la siguiente
-  tarea (T016) y su commit local en inglés, sin encadenar tareas ni publicar.
+  tarea (T024) y su commit local en inglés, sin encadenar tareas ni publicar.
 - D157 elige instantánea pública inicial revisada, con Git/documentación de partida nuevos y sin historia privada.
   Desde la apertura, código/decisiones/fases se desarrollan en el repositorio público, fuente principal; este
   checkout conserva su historia privada. No sincronizar dos desarrollos activos ni congelar para siempre `docs/` pública.
@@ -712,7 +712,12 @@ sin suites salvo cambio de código.
 
 ## P011-T024 — QA de navegador del candidato instalado
 
-**Estado:** pendiente. **Depende de:** T016. **Orden:** desglosada de T016 por HITL (D179); antes de T017.
+**Estado:** completada el 2026-10-24, D180. **Depende de:** T016. **Orden:** desglosada de T016 por HITL (D179); antes de T017.
+**Evidencia:** [entrega](phase/P011-T024_QA_NAVEGADOR.md): por HITL, candidato offline en el scratchpad, datos sintéticos
+del driver T016 y Claude in Chrome sobre loopback; 14 pantallas en las 8 combinaciones con auditoría automática
+(claves, desbordes, nombres accesibles, contraste AA, consola) y 18 capturas saneadas. Corregidos duración y fecha de
+cierre sin formato local y rol/estado de intentos sin traducir; nuevo candidato verificado. Por HITL, acciones de job,
+etapas y veredictos quedan como códigos técnicos documentados. Móvil a 500 px + 390 emulado; sin otros navegadores.
 **Objetivo:** Acreditar visualmente la interfaz del paquete candidato y cerrar la QA conjunta pendiente de T010/T021/T022.
 **Alcance:** servicio instalado desde el candidato exacto con datos y CLI falsos (driver de T016), UI en/es, claro/oscuro
 y escritorio/móvil en los recorridos de creación, incorporación, fase/tarea/run, chat, preferencias y diagnósticos.
