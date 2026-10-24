@@ -3,12 +3,13 @@
 Objetivo y criterios en [ROADMAP](ROADMAP.md#p012--validación-real-previa-a-la-apertura-pública).
 Decisión: [D183](DECISIONS.md#d183--p012-validación-real-previa-a-la-apertura-pública).
 
-**Estado:** T001 y T008 completadas; T002 parcial, paquete corregido y preflight real aprobados, parada en Chrome (D188).
+**Estado:** T001 y T008 completadas; T002 parcial, paquete corregido y preflight real aprobados, rechazo también desde la barra de Chrome (D189).
 T003–T007 pendientes; ocho tareas en total. Ninguna llamada a modelos.
 **Siguiente:** P012-T002, pendiente de consentimiento nuevo sobre la
-[continuación tras el rechazo cross-site](phase/P012-T002_INCORPORACION_REAL.md#13-propuesta-de-continuación-para-hitl-sin-ejecutar):
-usar `dist-t008`/`venv-t008` verificados y misma SQLite, reiniciar en 8024 y navegar mediante la barra de direcciones
-de Chrome, con guardias intactas; sin build/init-db/descargas nuevos. Originales conservados, 0/0 llamadas;
+[diagnóstico local de navegación](phase/P012-T002_INCORPORACION_REAL.md#17-siguiente-punto-hitl-diagnóstico-local-antes-de-continuar-b):
+mismos artefactos/SQLite, reinicio en 8024 y apertura manual del usuario con cabeceras relevantes observadas en
+Network, sin login/registro/modelos, cookies/credenciales ni cambios de guardias; detener tras recoger evidencia.
+Sin build/init-db/descargas nuevos; originales conservados, 0/0 llamadas;
 [registro T002](phase/P012-T002_INCORPORACION_REAL.md).
 P001–P011 siguen cerradas; la apertura del [expediente de P011](archive/phase-011/P011_EXPEDIENTE_APERTURA.md)
 queda aplazada hasta el cierre de P012 y su candidato se sustituye por el que prepare T005.
@@ -72,10 +73,11 @@ offline de T002 aceptado por el usuario, antes de proveedores; no se acredita su
 
 ## P012-T002 — Instalación, incorporación B y perfil declarado con proveedores reales
 
-**Estado:** parcial, preflight corregido aprobado; detenida al abrir Chrome por rechazo cross-site (D188); no completada.
-**Depende de:** T001 confirmada y T008 corregida (D187), más consentimiento nuevo tras la parada D188.
-Esta continuación autorizó base/rutas corregidas, build/verificador/instalación, preflight y servicio; la regla de
-parada impide repetir la navegación sin consentimiento nuevo. T003/T004 siguen sin autorización.
+**Estado:** parcial, preflight corregido aprobado; detenida por rechazo cross-site también desde la barra de Chrome (D189); no completada.
+**Depende de:** T001 confirmada y T008 corregida (D187), más consentimiento nuevo tras la parada D189.
+La continuación D188 acreditó base/rutas corregidas, build/verificador/instalación, preflight y servicio. El HITL
+posterior autorizó la barra de Chrome, también rechazada (D189); no repetir sin consentimiento nuevo. T003/T004
+siguen sin autorización.
 **Objetivo:** Acreditar con la versión actual el flujo básico y la incorporación de un repositorio existente con
 el perfil declarado D095.
 **Alcance:** wheel construido e instalado en el área, servicio, fixture B, conversación de incorporación,
@@ -99,7 +101,7 @@ confirmación de documentos y perfil, y una tarea hasta COMMITTED.
 [manifiesto de 17 wheels verificados](phase/P012-T002_WHEELS_VERIFICADOS.sha256). Build/verificador/instalación y
 fixture (dos preparaciones y seis validaciones) correctos en la base corregida `6efbd82`; preflight real **exit 0**
 para ambas CLI, 0/0 llamadas Claude/Codex. SQLite inicializada y servicio arrancado/detenido, 0 jobs/runs/locks;
-apertura automatizada en Chrome rechazada por guardia cross-site, sin acreditar defecto del producto (D188).
+apertura automatizada y desde la barra de Chrome rechazadas por guardia cross-site, sin defecto demostrado (D188/D189).
 UI autenticada/registro/incorporación/tarea sin ejecutar. Originales conservados junto a `dist-t008`/`venv-t008`.
 
 ## P012-T003 — Chat, backup y restauración sobre el proyecto real

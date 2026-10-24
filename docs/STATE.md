@@ -98,7 +98,8 @@ preflight en T008 (D187, 25 regresiones y 229 tests dirigidos). Nueva continuaci
 y `dist-t008`/`venv-t008`: build/verificador/instalación offline, preflight real de ambas CLI y ocho checks Django
 correctos (D188). Codex 0.164.0 y Claude 2.1.310 pasan con compatibilidad condicionada, sin acreditar inferencia.
 SQLite inicializada y servicio arrancado/detenido; primera apertura automatizada en Chrome rechazada por la
-guardia cross-site, sin demostrar defecto del producto. Sin repetir navegación ni cambiar protecciones.
+guardia cross-site (D188). Reanudación autorizada desde la barra de Chrome: mismo rechazo y nueva parada (D189),
+sin demostrar defecto del producto ni cambiar protecciones.
 Ninguna llamada a modelos, registro, incorporación o tarea real; servicio parado y 0 jobs/runs/locks.
 Revisor Claude Code y ejecutor Codex con modelos ligeros; cada tramo real (T002–T004) exige autorización propia:
 T002 pendiente de consentimiento nuevo tras esta parada; T003/T004 sin autorización. T003–T007 pendientes.
@@ -114,10 +115,10 @@ tag `p001` sobre `47a0557` y archivo en `3d105c6`, sin repetir operaciones ni co
 Este repositorio sigue sin registrarse ni ejecutarse con el harness.
 
 **Siguiente:** P012-T002, pendiente de consentimiento nuevo sobre la
-[continuación tras el rechazo de Chrome](phase/P012-T002_INCORPORACION_REAL.md#13-propuesta-de-continuación-para-hitl-sin-ejecutar)
-(D188): reutilizar artefactos corregidos/SQLite, reiniciar en 8024 y abrir mediante la barra de direcciones,
-sin cambiar guardias ni cabeceras; continuar desde UI solo si abre. Originales y fixture conservados por bytes/modos,
-sin limpieza, nuevas descargas o llamadas (0/0). El registro conserva las tres paradas; el preflight ya pasa.
+[propuesta de diagnóstico local](phase/P012-T002_INCORPORACION_REAL.md#17-siguiente-punto-hitl-diagnóstico-local-antes-de-continuar-b)
+(D189): reiniciar el mismo servicio y observar cabeceras de navegación en Network durante una apertura manual
+del usuario, sin login/registro/modelos ni cambios de protección; detener tras recoger evidencia. Originales y
+fixture conservados por bytes/modos, sin limpieza o descargas. El registro conserva cuatro paradas; preflight aprobado.
 T003/T004 siguen sin autorización.
 Los límites de la base acumulada
 siguen vigentes hasta que P012 aporte evidencia real; A queda retirado por D155/D161, sin acreditarlo como validado.

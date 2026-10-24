@@ -1,14 +1,15 @@
 # P012-T002 — Instalación e incorporación real: paradas de preparación
 
-Fecha: 2026-10-24. **Estado actual: preflight corregido aprobado; detenida al abrir Chrome por rechazo cross-site; no completada.**
+Fecha: 2026-10-24. **Estado actual: preflight aprobado; rechazo cross-site también desde la barra de Chrome; detenida, no completada.**
 Decisiones: [D185](../DECISIONS.md#d185--p012-t002-autorizada-y-detenida-por-caché-django-incompleta) (primera parada),
 [D186](../DECISIONS.md#d186--p012-t002-descargas-autorizadas-y-falso-rechazo-de-choices-multilínea) (reanudación y segunda parada),
-[D188](../DECISIONS.md#d188--p012-t002-preflight-corregido-aprobado-y-parada-en-la-apertura-de-chrome) (paquete corregido y tercera parada).
+[D188](../DECISIONS.md#d188--p012-t002-preflight-corregido-aprobado-y-parada-en-la-apertura-de-chrome) (paquete corregido y tercera parada),
+[D189](../DECISIONS.md#d189--p012-t002-rechazo-cross-site-también-desde-la-barra-de-chrome) (continuación autorizada y cuarta parada).
 [Contrato](../NEXT_STEPS.md#p012-t002--instalación-incorporación-b-y-perfil-declarado-con-proveedores-reales),
 [propuesta confirmada](P012-T001_PROPUESTA_OPERATIVA.md).
 
 Los §§1–6 conservan el registro de la **primera parada por caché**, resuelta después por consentimiento expreso.
-Los §§7–9 conservan la reanudación y segunda parada; §§10–13 registran la continuación con T008 y tercera parada.
+Los §§7–9 conservan la segunda parada; §§10–14, la tercera; §§15–17, la cuarta y la siguiente propuesta HITL.
 
 ## 1. Autorización y base
 
@@ -305,3 +306,50 @@ primer fallo. T003/T004 siguen sin autorización. La continuación requiere resp
   estas secciones. T001/T008, archivos históricos y baseline pública intactos.
 - Hashes de la distribución nueva contrastados con SHA256SUMS; política instalada y manifiesto de conservación
   comprobados. Diff revisado y `git diff --check` correcto; solo `docs/**`, sin suites adicionales del producto.
+
+## 15. HITL recibido y navegación desde la barra de Chrome
+
+Tras el commit `e69d1d1` (`docs: record corrected preflight validation and browser access stop`), el usuario responde
+**«Autorizar esa continuación de T002»** a la pregunta concreta de reiniciar con wheel/venv corregidos, misma SQLite,
+URL desde la barra de direcciones y guardias intactas, continuando B/tarea solo si abre; límites 12 Claude/3 Codex,
+sin T003/T004 ni descargas. No se reconstruye, instala o inicializa la base otra vez.
+
+Se revalidan hashes del paquete/TOML/CLI, manifiesto de conservación, base sin jobs/locks y puerto libre.
+Se reinicia el servicio desde `venv-t008` con el mismo comando/entorno. En la pestaña existente de Chrome,
+las primeras operaciones de teclado no cambian el foco ni la página; se inspecciona la accesibilidad y se enfoca
+explícitamente el campo «Barra de direcciones y de búsqueda». La selección de la URL queda visible; se escribe
+`http://127.0.0.1:8024/` y se confirma con Return. La página vuelve a mostrar **`origin_rejected` / «Request from a
+foreign site.»**. No se obtiene la UI de login. No hay nuevas navegaciones tras ese resultado.
+
+La navegación se ha realizado mediante la API nativa de accesibilidad de Chrome, no mediante `goto`; el resultado
+no demuestra que una navegación manual del usuario tenga el mismo comportamiento. Sin cabeceras observadas,
+la causa de su clasificación cross-site sigue abierta. No se atribuye un defecto al producto ni al navegador.
+
+## 16. Cuarta parada y conservación
+
+Se vuelve a aplicar T001 §6, sin modificar código, configuración, cabeceras o guardias. Servicio propio detenido
+con SIGINT tras comprobar su identidad; salida normal, puerto 8024 cerrado y clave de sesión temporal eliminada.
+Lectura SQLite de consulta: **0 jobs, 0 runs, 0 conversaciones, 0 incorporaciones, 0 locks**.
+El manifiesto conserva distribución/configuración originales y fixture por bytes/modos. Presupuesto intacto:
+**Claude 0/12, Codex 0/3**. No se registran proyectos ni se invocan modelos. Los logs permanecen privados.
+
+No se repiten build/verificador/preflight/validaciones del fixture ya aprobados, ni suites del producto; solo
+guardias de conservación y parada y comprobaciones documentales. T002 sigue parcial; T003/T004 no autorizadas.
+D188 y §§10–14 conservan el resultado y la propuesta anteriores, ahora probada sin éxito.
+
+## 17. Siguiente punto HITL: diagnóstico local antes de continuar B
+
+La navegación propuesta en §13 no ha resuelto el acceso. No se propone repetirla otra vez automáticamente.
+Antes de B, autorizar un **diagnóstico local de navegación sin modelos**: reiniciar el mismo servicio en 8024,
+preparar Network de las herramientas de desarrollo de Chrome y pedir al usuario una apertura manual de la URL.
+Observar únicamente cabeceras de navegación relevantes (`Host`, `Origin`, `Sec-Fetch-Site`, `Sec-Fetch-Mode`,
+`Sec-Fetch-Dest`, `Sec-Fetch-User`) y estado/código de respuesta; no copiar Cookie/Authorization ni claves de sesión.
+No interceptar/modificar tráfico, habilitar acceso remoto o cambiar protecciones. Detener servicio tras recoger
+esa evidencia, sin login/registro/modelos ni intento B en ese diagnóstico; cualquier corrección se acotaría después
+solo si se demuestra un defecto. Guardar datos completos privados y un resumen saneado en este registro.
+
+Alternativa: mantener T002 detenida. La autorización previa no cubre otro relanzamiento tras la cuarta parada.
+
+Comprobaciones documentales finales: 12 fases, 8 tareas, **189 decisiones**, **570 enlaces/anclas** válidos;
+STATE/base/NEXT_STEPS **11.898/24.576**, **8.718/12.288** y **17.293/49.152** bytes. Cuerpos D001–D188 y §§1–14
+conservados, fuentes/archivos públicos e históricos intactos. Diff revisado y `git diff --check` correcto.

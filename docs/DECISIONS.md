@@ -199,6 +199,7 @@ tarea se leen solo las decisiones que cita; este índice sirve para buscar prece
 | [D186](#d186--p012-t002-descargas-autorizadas-y-falso-rechazo-de-choices-multilínea) | P012-T002: descargas autorizadas y falso rechazo de choices multilínea | P012 |
 | [D187](#d187--p012-t008-listas-multilínea-en-el-preflight-cli) | P012-T008: listas multilínea en el preflight CLI | P012 |
 | [D188](#d188--p012-t002-preflight-corregido-aprobado-y-parada-en-la-apertura-de-chrome) | P012-T002: preflight corregido aprobado y parada en la apertura de Chrome | P012 |
+| [D189](#d189--p012-t002-rechazo-cross-site-también-desde-la-barra-de-chrome) | P012-T002: rechazo cross-site también desde la barra de Chrome | P012 |
 
 ## D001 — Alcance local y arquitectura base
 
@@ -5546,3 +5547,25 @@ Fase: P012. Conserva D185/D186 y aplica la propuesta de D187.
   Mantener 12/3 llamadas y parámetros de T001. Sin reconstrucción, init-db, descargas ni autorización de T003/T004.
 - Solo documentación en este repositorio; sin cambios de diseño/código/esquema/flujos ni corrección nueva sin defecto
   demostrado. Sin suites del producto adicionales, configuración global, tags, push o publicación.
+
+## D189 — P012-T002: rechazo cross-site también desde la barra de Chrome
+
+Estado: continuación autorizada y detenida el 2026-10-24; T002 parcial, sin llamadas a modelos.
+[Evidencia y siguiente punto HITL](phase/P012-T002_INCORPORACION_REAL.md#15-hitl-recibido-y-navegación-desde-la-barra-de-chrome).
+Fase: P012. Conserva D188 sin alterar su resultado ni su propuesta histórica.
+
+- HITL recibido tras `e69d1d1`: «Autorizar esa continuación de T002», referido a la propuesta concreta de D188:
+  mismo wheel/venv corregidos y SQLite, reinicio en 8024, URL desde la barra de Chrome y guardias intactas,
+  B/tarea solo si abre, límites 12/3 y sin T003/T004 o descargas. No se repiten build/instalación/init-db.
+- Hashes, conservación, base sin jobs/locks y puerto revalidados; servicio reiniciado. Campo de dirección enfocado
+  explícitamente por accesibilidad nativa, URL escrita y Return; vuelve a mostrar `origin_rejected` / «Request from
+  a foreign site.». Sin capturar cabeceras ni atribuir defecto al producto/navegador. La navegación manual del
+  usuario aún no está comprobada. No se repite otra navegación ni se cambian protecciones.
+- Nueva parada conforme a T001 §6: servicio detenido normalmente, puerto cerrado, clave temporal eliminada;
+  0 jobs/runs/conversaciones/incorporaciones/locks, 0/0 llamadas. Originales y fixture conservados por bytes/modos.
+  UI autenticada, registro, B y tarea siguen pendientes; el preflight real aprobado de D188 sigue acreditado.
+- Siguiente propuesta para HITL: diagnóstico local sin modelos, con reinicio y apertura manual por el usuario,
+  observando solo cabeceras de navegación/estado en Network y excluyendo cookies/credenciales. Sin modificar ni
+  interceptar tráfico, cambios de guardias, login, registro o proveedores; detener tras recoger evidencia.
+  No hay autorización para otro relanzamiento todavía. T003/T004 siguen sin autorización.
+- Solo documentación en el checkout; sin suites adicionales, cambios del producto, configuración global o remotos.
