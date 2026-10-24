@@ -99,8 +99,10 @@ y `dist-t008`/`venv-t008`: build/verificador/instalación offline, preflight rea
 correctos (D188). Codex 0.164.0 y Claude 2.1.310 pasan con compatibilidad condicionada, sin acreditar inferencia.
 SQLite inicializada y servicio arrancado/detenido; primera apertura automatizada en Chrome rechazada por la
 guardia cross-site (D188). Reanudación autorizada desde la barra de Chrome: mismo rechazo y nueva parada (D189),
-sin demostrar defecto del producto ni cambiar protecciones.
-Ninguna llamada a modelos, registro, incorporación o tarea real; servicio parado y 0 jobs/runs/locks.
+sin demostrar defecto del producto ni cambiar protecciones. Diagnóstico local autorizado (D190): otra pestaña
+abierta manualmente muestra el login, incluso al vincularla después; la pestaña controlada sigue cargando.
+Cabeceras no obtenidas y causa sin resolver; sin cambios de seguridad. Servicio detenido, 0 jobs/runs/locks.
+Ninguna llamada a modelos, login, registro, incorporación o tarea real.
 Revisor Claude Code y ejecutor Codex con modelos ligeros; cada tramo real (T002–T004) exige autorización propia:
 T002 pendiente de consentimiento nuevo tras esta parada; T003/T004 sin autorización. T003–T007 pendientes.
 
@@ -115,10 +117,10 @@ tag `p001` sobre `47a0557` y archivo en `3d105c6`, sin repetir operaciones ni co
 Este repositorio sigue sin registrarse ni ejecutarse con el harness.
 
 **Siguiente:** P012-T002, pendiente de consentimiento nuevo sobre la
-[propuesta de diagnóstico local](phase/P012-T002_INCORPORACION_REAL.md#17-siguiente-punto-hitl-diagnóstico-local-antes-de-continuar-b)
-(D189): reiniciar el mismo servicio y observar cabeceras de navegación en Network durante una apertura manual
-del usuario, sin login/registro/modelos ni cambios de protección; detener tras recoger evidencia. Originales y
-fixture conservados por bytes/modos, sin limpieza o descargas. El registro conserva cuatro paradas; preflight aprobado.
+[continuación tras el diagnóstico](phase/P012-T002_INCORPORACION_REAL.md#20-continuación-propuesta-después-del-diagnóstico-sin-ejecutar)
+(D190): mismo servicio/artefactos/SQLite, pantalla de login cargada manualmente antes de vincular la automatización,
+autenticación y recorrido B/tarea desde UI con parámetros 12/3 intactos (0/0). Parada al primer fallo, sin cambio
+a API o de protecciones. Originales y fixture conservados, sin limpieza/descargas; preflight aprobado.
 T003/T004 siguen sin autorización.
 Los límites de la base acumulada
 siguen vigentes hasta que P012 aporte evidencia real; A queda retirado por D155/D161, sin acreditarlo como validado.

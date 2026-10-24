@@ -324,10 +324,12 @@ choices multilínea corregida en T008 (D187, 25 regresiones y 229 tests dirigido
 base `6efbd82` y nuevos `dist-t008`/`venv-t008`: build/verificador/instalación offline, preflight real de ambas CLI
 y ocho checks Django correctos (D188). SQLite inicializada, servicio arrancado y detenido tras rechazo cross-site
 en la primera apertura automatizada de Chrome. Reanudación autorizada desde la barra: mismo rechazo y
-cuarta parada (D189), sin acreditar defecto del producto ni cambiar guardias.
+cuarta parada (D189), sin acreditar defecto del producto ni cambiar guardias. Diagnóstico posterior autorizado
+(D190): acceso manual al login en otra pestaña confirmado por accesibilidad, pestaña controlada sigue cargando;
+sin cabeceras ni causa resuelta. Servicio detenido al acabar el diagnóstico, sin login ni registro.
 [Registro parcial](phase/P012-T002_INCORPORACION_REAL.md); 0/0 llamadas, sin registro/incorporación/tarea.
-T002 sigue como siguiente tarea, pendiente de consentimiento nuevo para diagnóstico local con apertura manual
-del usuario y observación de cabeceras relevantes, sin login/registro/modelos;
+T002 sigue como siguiente tarea, pendiente de consentimiento nuevo para usar la pantalla cargada manualmente
+antes de vincular la automatización y continuar login/B/tarea con parámetros intactos y guardias vigentes;
 T003–T007 pendientes, T003/T004 sin autorización.
 Límites reales intactos.
 La apertura del expediente de P011 queda aplazada hasta el cierre de P012.

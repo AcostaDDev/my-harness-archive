@@ -1,15 +1,16 @@
 # P012-T002 — Instalación e incorporación real: paradas de preparación
 
-Fecha: 2026-10-24. **Estado actual: preflight aprobado; rechazo cross-site también desde la barra de Chrome; detenida, no completada.**
+Fecha: 2026-10-24. **Estado actual: acceso manual al login acreditado; diagnóstico cerrado sin cabeceras; T002 parcial y servicio detenido.**
 Decisiones: [D185](../DECISIONS.md#d185--p012-t002-autorizada-y-detenida-por-caché-django-incompleta) (primera parada),
 [D186](../DECISIONS.md#d186--p012-t002-descargas-autorizadas-y-falso-rechazo-de-choices-multilínea) (reanudación y segunda parada),
 [D188](../DECISIONS.md#d188--p012-t002-preflight-corregido-aprobado-y-parada-en-la-apertura-de-chrome) (paquete corregido y tercera parada),
-[D189](../DECISIONS.md#d189--p012-t002-rechazo-cross-site-también-desde-la-barra-de-chrome) (continuación autorizada y cuarta parada).
+[D189](../DECISIONS.md#d189--p012-t002-rechazo-cross-site-también-desde-la-barra-de-chrome) (continuación autorizada y cuarta parada),
+[D190](../DECISIONS.md#d190--p012-t002-acceso-manual-al-login-y-diagnóstico-local-sin-cabeceras) (diagnóstico autorizado).
 [Contrato](../NEXT_STEPS.md#p012-t002--instalación-incorporación-b-y-perfil-declarado-con-proveedores-reales),
 [propuesta confirmada](P012-T001_PROPUESTA_OPERATIVA.md).
 
 Los §§1–6 conservan el registro de la **primera parada por caché**, resuelta después por consentimiento expreso.
-Los §§7–9 conservan la segunda parada; §§10–14, la tercera; §§15–17, la cuarta y la siguiente propuesta HITL.
+Los §§7–9 conservan la segunda parada; §§10–14, la tercera; §§15–17, la cuarta; §§18–20 registran el diagnóstico manual.
 
 ## 1. Autorización y base
 
@@ -353,3 +354,59 @@ Alternativa: mantener T002 detenida. La autorización previa no cubre otro relan
 Comprobaciones documentales finales: 12 fases, 8 tareas, **189 decisiones**, **570 enlaces/anclas** válidos;
 STATE/base/NEXT_STEPS **11.898/24.576**, **8.718/12.288** y **17.293/49.152** bytes. Cuerpos D001–D188 y §§1–14
 conservados, fuentes/archivos públicos e históricos intactos. Diff revisado y `git diff --check` correcto.
+
+## 18. Diagnóstico autorizado y acceso manual observado
+
+El usuario responde **«Continúa»** a la propuesta final de reiniciar para diagnosticar cabeceras con una apertura
+manual, sin modelos ni cambios de protección (§17/D189). Solo se autoriza ese diagnóstico, no el registro/B/tarea.
+Base documental al iniciar: `1edb409`; wheel y política de `6efbd82`, sin reconstrucción/instalación/init-db.
+
+Se revalidan área sin enlaces/ancestros Git, hashes del paquete/TOML/CLI, manifiesto de conservación, tablas sin
+trabajo y puerto libre. Se reinicia el mismo servicio en 8024 con el comando/entorno de §10, dejando su log privado.
+Se crea una pestaña `about:blank` de Chrome y se prepara Network, grabando y sin modificar cache, cabeceras,
+throttling o guardias. Se pide al usuario que escriba manualmente la URL sin iniciar sesión.
+
+El usuario informa: **«La pestaña se queda cargando, no aparece nada, sin embargo en otra pestaña que no sea la de
+Codex, sí que me aparece el acceso del harness»**. La lectura de accesibilidad confirma la diferencia:
+
+- Pestaña preparada/controlada: sigue titulada `about:blank`; Network muestra dos documentos hacia 8024, uno
+  rotulado `200 OK` con 0 B y otro pendiente. No se consigue abrir su detalle de cabeceras; esos indicadores no
+  prueban una carga completa ni permiten atribuir el problema. No se exporta HAR ni se copian cookies/credenciales.
+- Otra pestaña abierta manualmente: título **Harness Local**, URL **`http://127.0.0.1:8024/`**, encabezado
+  **Sign in**, campo **Local key** vacío y botón de acceso deshabilitado. Observada primero por accesibilidad nativa
+  y después al vincular esa pestaña ya cargada con la herramienta de navegador; no se vuelve a navegar.
+
+Se acredita el **acceso manual a la pantalla de login con las guardias intactas**. No se han observado `Host`,
+`Origin` o `Sec-Fetch-*`, ni el estado HTTP de esa otra pestaña: no se inventan cabeceras ni se da por completado
+el objetivo de capturarlas. La causa de los rechazos/carga bloqueada en la pestaña controlada sigue abierta.
+No hay defecto del producto demostrado, ni justificación para modificar su seguridad.
+
+## 19. Cierre del diagnóstico y conservación
+
+Servicio detenido tras recoger la evidencia disponible, según la autorización: SIGINT al proceso propio tras
+comprobar su comando, terminación normal, puerto 8024 cerrado y clave temporal eliminada. SQLite de consulta:
+**0 jobs, 0 runs, 0 conversaciones, 0 incorporaciones, 0 locks**. Manifiesto original cotejado por bytes/modos;
+distribución/configuración y fixture intactos. Resumen saneado privado en `AREA/tmp`, junto al log del diagnóstico.
+**Claude 0/12, Codex 0/3**; sin login, registro, B, tarea ni proveedores. T002 sigue parcial y T003/T004 no autorizadas.
+
+Sin nuevos build, instalaciones, preflight o validaciones del fixture ya aprobados; sin suites del producto,
+modificaciones de fuentes, base manual, configuración global o protecciones. Solo comprobaciones de conservación,
+parada y documentos; no se declara cerrada T002 por haber visto el login.
+
+## 20. Continuación propuesta después del diagnóstico, sin ejecutar
+
+Autorizar reanudar **T002 completa hasta B/tarea**, con el mismo wheel/venv y SQLite, pareja/modelos y techo 12/3
+(0/0 consumidos). Revalidar identidades/configuración/conservación/puerto y reiniciar en 8024. Usar la pantalla de
+login **ya cargada manualmente**; si hay que volver a abrirla, pedir apertura manual en una pestaña normal antes
+de vincularla con la automatización. No usar navegación automatizada desde una página ajena ni alterar cabeceras.
+Este método solo acredita hasta ahora la observación del login, no sus mutaciones ni el resto del recorrido.
+
+Autenticar con la clave efímera local y continuar registro, incorporación B y tarea desde UI según T001/T002,
+con los mismos límites y parada al primer fallo; sin nuevas descargas, fallback o ampliación a T003/T004.
+Si la herramienta impide interactuar, detener y declarar el bloqueo, sin saltar a API o modificar el producto.
+Esta continuación requiere autorización nueva: el diagnóstico de §18 excluía login/registro/modelos.
+
+Comprobaciones documentales del diagnóstico: 12 fases, 8 tareas, **190 decisiones**, **573 enlaces/anclas** válidos;
+STATE/base/NEXT_STEPS **12.137/24.576**, **8.718/12.288** y **17.601/49.152** bytes. Cuerpos D001–D189 y §§1–17
+conservados, solo cinco Markdown modificados; archivos históricos, baseline pública y fuentes intactos.
+Diff revisado y `git diff --check` correcto. Sin suites adicionales por tratarse de evidencia/documentación.

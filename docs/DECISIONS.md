@@ -200,6 +200,7 @@ tarea se leen solo las decisiones que cita; este índice sirve para buscar prece
 | [D187](#d187--p012-t008-listas-multilínea-en-el-preflight-cli) | P012-T008: listas multilínea en el preflight CLI | P012 |
 | [D188](#d188--p012-t002-preflight-corregido-aprobado-y-parada-en-la-apertura-de-chrome) | P012-T002: preflight corregido aprobado y parada en la apertura de Chrome | P012 |
 | [D189](#d189--p012-t002-rechazo-cross-site-también-desde-la-barra-de-chrome) | P012-T002: rechazo cross-site también desde la barra de Chrome | P012 |
+| [D190](#d190--p012-t002-acceso-manual-al-login-y-diagnóstico-local-sin-cabeceras) | P012-T002: acceso manual al login y diagnóstico local sin cabeceras | P012 |
 
 ## D001 — Alcance local y arquitectura base
 
@@ -5569,3 +5570,24 @@ Fase: P012. Conserva D188 sin alterar su resultado ni su propuesta histórica.
   interceptar tráfico, cambios de guardias, login, registro o proveedores; detener tras recoger evidencia.
   No hay autorización para otro relanzamiento todavía. T003/T004 siguen sin autorización.
 - Solo documentación en el checkout; sin suites adicionales, cambios del producto, configuración global o remotos.
+
+## D190 — P012-T002: acceso manual al login y diagnóstico local sin cabeceras
+
+Estado: diagnóstico local autorizado y terminado el 2026-10-24; T002 parcial, servicio detenido y sin modelos.
+[Evidencia y continuación propuesta](phase/P012-T002_INCORPORACION_REAL.md#18-diagnóstico-autorizado-y-acceso-manual-observado).
+Fase: P012. Conserva D188/D189; no cambia el contrato de seguridad.
+
+- «Continúa» autoriza la propuesta concreta de D189: reiniciar para diagnóstico con apertura manual y observar
+  cabeceras, sin login/registro/modelos ni cambios de protección. Mismo wheel/venv y SQLite; guardias revalidadas.
+- Network preparado en una pestaña vacía controlada por Codex. El usuario informa que esa pestaña sigue cargando,
+  pero otra pestaña normal muestra el acceso. Accesibilidad confirma **Harness Local / Sign in / Local key** vacío
+  en la URL 8024; vincular esa pestaña ya cargada permite observarla sin otra navegación.
+- La pestaña controlada sigue en `about:blank`, con indicadores Network `200`/0 B y pendiente. No se consigue leer
+  cabeceras ni se captura el HTTP de la pestaña normal. Diagnóstico parcial de causa, acceso manual al login
+  acreditado; sin defecto del producto demostrado ni motivo para debilitar Host/Origin/CSRF.
+- Servicio detenido normalmente al terminar, puerto cerrado y clave eliminada; 0 jobs/runs/conversaciones/
+  incorporaciones/locks y 0/0 modelos. Originales/fixture conservados. Sin login, registro, B o tarea.
+- Propuesta para nuevo HITL: reanudar T002 con la pantalla cargada manualmente antes de vincularla a la herramienta,
+  autenticar y continuar B/tarea desde UI con parámetros 12/3 intactos. Si requiere navegación, apertura manual;
+  si falla la interacción, parar sin cambiar a API. El diagnóstico no autoriza ese nuevo tramo. T003/T004 excluidas.
+- Solo documentación, conservación y parada; sin suites adicionales, cambios del producto o configuración global.
