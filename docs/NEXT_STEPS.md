@@ -3,11 +3,11 @@
 Objetivo y criterios en [ROADMAP](ROADMAP.md#p012--validación-real-previa-a-la-apertura-pública).
 Decisión: [D183](DECISIONS.md#d183--p012-validación-real-previa-a-la-apertura-pública).
 
-**Estado:** T001 completada documentalmente y confirmada por el usuario (D184); seis tareas pendientes.
-Ninguna operación real ejecutada.
-**Siguiente:** P012-T002, pendiente de autorización explícita del tramo sobre la
-[propuesta confirmada](phase/P012-T001_PROPUESTA_OPERATIVA.md). La confirmación de T001 no autoriza operaciones;
-hashes de artefactos, cachés/fixtures y preflight son puerta offline previa a proveedores en T002.
+**Estado:** T001 completada; T002 parcial, detenida en preflight por falso rechazo de choices multilínea (D186).
+T008 de corrección y T003–T007 pendientes; ocho tareas en total. Ninguna llamada a modelos.
+**Siguiente:** P012-T008, corregir el lector de choices con tests sintéticos. La primera parada por caché (D185)
+se resolvió con descargas y reanudación autorizadas; wheel verificado/instalado y fixture en verde. Tras corregir,
+reanudar T002 requiere consentimiento nuevo y wheel/base actualizados. [Registro](phase/P012-T002_INCORPORACION_REAL.md).
 P001–P011 siguen cerradas; la apertura del [expediente de P011](archive/phase-011/P011_EXPEDIENTE_APERTURA.md)
 queda aplazada hasta el cierre de P012 y su candidato se sustituye por el que prepare T005.
 
@@ -70,7 +70,9 @@ offline de T002 aceptado por el usuario, antes de proveedores; no se acredita su
 
 ## P012-T002 — Instalación, incorporación B y perfil declarado con proveedores reales
 
-**Estado:** pendiente. **Depende de:** T001 confirmada y autorización explícita del tramo.
+**Estado:** parcial, detenida en preflight por falso rechazo de choices multilínea (D186); no completada.
+**Depende de:** T001 confirmada, T008 corregida y consentimiento nuevo de reanudación; las autorizaciones previas
+cubrieron el inicio y la descarga/reanudación tras D185, no otro relanzamiento tras D186.
 **Objetivo:** Acreditar con la versión actual el flujo básico y la incorporación de un repositorio existente con
 el perfil declarado D095.
 **Alcance:** wheel construido e instalado en el área, servicio, fixture B, conversación de incorporación,
@@ -89,7 +91,11 @@ confirmación de documentos y perfil, y una tarea hasta COMMITTED.
 - Evidencia saneada con llamadas por proveedor frente al techo; servicio detenido o mantenido según T003.
 
 **Validación:** la propia del tramo; sin suites del producto si no cambia código.
-**Entregables:** `docs/phase/P012-T002_INCORPORACION_REAL.md` y evidencia saneada.
+**Entregables:** [registro parcial](phase/P012-T002_INCORPORACION_REAL.md) y
+[lista de la primera parada](phase/P012-T002_WHEELS_FALTANTES.lock) y
+[manifiesto de 17 wheels verificados](phase/P012-T002_WHEELS_VERIFICADOS.sha256). Build/verificador/instalación y
+fixture (dos preparaciones y seis validaciones) correctos; preflight rechazado, 0/0 llamadas Claude/Codex.
+Base/servicio/UI/registro/incorporación/tarea sin ejecutar. T008 acota la corrección sin relanzar T002.
 
 ## P012-T003 — Chat, backup y restauración sobre el proyecto real
 
@@ -177,3 +183,30 @@ cierre de P001 del hijo.
 
 **Validación:** parsers, enlaces, presupuestos y diff documental.
 **Entregables:** `docs/archive/phase-012/` con resumen, revisión, originales y registro de cierre.
+
+## P012-T008 — Corregir choices multilínea del preflight CLI
+
+**Estado:** pendiente. **Depende de:** hallazgo de T002 (D186).
+**Objetivo:** Evitar el falso rechazo de valores anunciados en continuaciones de la ayuda sin admitir valores
+realmente ausentes ni alterar los controles del transporte.
+**Alcance:** lector `unsupported_values`, regresión sintética de listas envueltas y diagnóstico integrado falso;
+identidad/política y documentación de la corrección, sin ejecutar CLI o proveedores reales.
+**Rutas permitidas:** `src/harness_local/adapters/cli_diagnostics.py`, `tests/product/test_cli_diagnostics.py`,
+`tests/product/test_cli_baseline.py`, `tests/product/test_cli_discovery.py`, `tests/fixtures/cli_capabilities/**`
+(solo sintéticos), `docs/**`.
+**Criterios de aceptación:**
+
+- Una lista explícita `choices`/`possible values` partida en varias líneas se interpreta completa; el caso
+  sintético de `dontAsk` en una continuación pasa igual que la misma lista en una línea. Casos LF/CRLF,
+  comillas y valores con guiones conservan su comportamiento.
+- La lectura queda acotada a la opción/lista correspondiente: no toma valores de otra opción ni de prosa ajena;
+  un valor requerido realmente ausente sigue dando `unsupported_values`. Ausencia de lista no inventa evidencia.
+- Regresión integrada con ejecutables y ayuda exclusivamente sintéticos: preflight/diagnóstico deja pasar la
+  lista envuelta válida y rechaza la lista que excluye el valor. Sin copiar ayuda real a fixtures públicos.
+- No se cambian valores requeridos, permisos, flags, mínimos, pareja, modelos, snapshots ni evidencias congeladas.
+  La política/identidad derivada se registra según el código vigente, sin simular compatibilidad real nueva.
+- T002 sigue parcial y parada; se concreta en la entrega cómo construir/verificar un wheel de base nueva antes
+  de pedir consentimiento para reanudar. Sin ejecutar build operativo, preflight con CLI reales, servicio o modelos.
+
+**Validación:** reproducción y tests dirigidos sintéticos de diagnóstico/capacidades; checks documentales y diff.
+**Entregables:** `docs/phase/P012-T008_CORRECCION_PREFLIGHT.md` y decisión en DECISIONS.

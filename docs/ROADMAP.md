@@ -318,9 +318,11 @@ comparativamente modelos, ejecutar el harness sobre este repositorio, operar el 
 modificar la configuración global, v0.2.0 y cualquier acción remota (repositorio, push, tag, Release, visibilidad).
 **Estado:** planificada el 2026-10-24 por encargo del usuario
 ([D183](DECISIONS.md#d183--p012-validación-real-previa-a-la-apertura-pública), [tareas](NEXT_STEPS.md)). T001 tiene
-[propuesta confirmada](phase/P012-T001_PROPUESTA_OPERATIVA.md) y cierre documental (D184); seis tareas pendientes,
-ninguna operación real ejecutada ni tramo autorizado. Parámetros elegidos, incluido Codex 0.164.0; hashes de
-artefactos, cachés/fixtures y preflight son puerta offline de T002 antes de proveedores, aceptada por el usuario.
+[propuesta confirmada](phase/P012-T001_PROPUESTA_OPERATIVA.md) y cierre documental (D184). T002 autorizada e
+iniciada; primera parada por caché (D185) resuelta con descargas/reanudación autorizadas (D186). Wheel verificado/instalado y fixture Django
+en verde; nueva parada en preflight por falso rechazo de choices multilínea (D186), sin llamadas a modelos.
+[Registro parcial](phase/P012-T002_INCORPORACION_REAL.md); T008 de corrección como siguiente tarea, T003–T007
+pendientes. Tras corregir, T002 exige consentimiento nuevo; T003/T004 sin autorización. Límites reales intactos.
 La apertura del expediente de P011 queda aplazada hasta el cierre de P012.
 
 ## Después de la apertura en GitHub — v0.2.0

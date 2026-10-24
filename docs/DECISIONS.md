@@ -195,6 +195,8 @@ tarea se leen solo las decisiones que cita; este índice sirve para buscar prece
 | [D182](#d182--cierre-documental-de-p011-y-preparación-pública-archivada) | Cierre documental de P011 y preparación pública archivada | P011 |
 | [D183](#d183--p012-validación-real-previa-a-la-apertura-pública) | P012: validación real previa a la apertura pública | P012 |
 | [D184](#d184--p012-t001-propuesta-operativa-y-codex-01640) | P012-T001: propuesta operativa y Codex 0.164.0 | P012 |
+| [D185](#d185--p012-t002-autorizada-y-detenida-por-caché-django-incompleta) | P012-T002: autorizada y detenida por caché Django incompleta | P012 |
+| [D186](#d186--p012-t002-descargas-autorizadas-y-falso-rechazo-de-choices-multilínea) | P012-T002: descargas autorizadas y falso rechazo de choices multilínea | P012 |
 
 ## D001 — Alcance local y arquitectura base
 
@@ -5445,3 +5447,48 @@ D095/D119/D143/D151/D168/D173/D174, sin ampliar autorizaciones operativas.
 - Solo cambios `docs/**`, versiones/help/hashes locales y comprobaciones documentales. Sin build, instalación,
   fixtures operativos, servicios, agentes/proveedores, smokes, configuración global, commits, push ni publicación.
   Se conservan los límites anunciados y el expediente archivado de P011.
+
+## D185 — P012-T002: autorizada y detenida por caché Django incompleta
+
+Estado: T002 iniciada y detenida el 2026-10-24 en preparación offline; no completada, sin llamadas a modelos.
+[Registro y hashes](phase/P012-T002_INCORPORACION_REAL.md),
+[doce pins y hashes faltantes](phase/P012-T002_WHEELS_FALTANTES.lock). Fase: P012. Aplica D183/D184.
+
+- El usuario pide «Haz commit y comienza con la siguiente tarea». Se hace commit de T001 (`dc5edd4`) y se inicia
+  T002 con la propuesta confirmada; la instrucción autoriza ese tramo, sin extenderse a T003/T004 ni a descargas.
+- Área privada nueva elegida en T001, TOML 0600 y toolchain revalidada. Build offline correcto de la base
+  `c5cfc9b4586dbdb64075624e268e2f187749d430`, sin cambios de fuentes; wheel SHA-256
+  `46d29c209f90a8f67c02e4295753688ec0c646c5c0f0259575fed5910117d9d6`, checksums de artefactos correctos.
+- Inventario de cachés locales: 5 de 17 wheels originales compatibles encontrados; faltan 12 del lock Django.
+  Se aplica la parada de T001 antes de verificador, instalación, preflight, fixture, servicio/UI o proveedores.
+  Consumo Claude/Codex **0/0** frente a **12/3**. Sin SQLite, jobs, locks ni procesos propios activos; área conservada.
+- No se acredita incorporación B, perfil declarado con herramientas reales, flujo básico cli-14 ni COMMITTED.
+  Es falta de prerrequisito operativo, no defecto demostrado del producto: no se abre tarea de corrección.
+- Reanudar requiere consentimiento nuevo tras la parada. Resolver con wheelhouse local permitido o consentimiento
+  separado para metadatos PyPI y hasta doce wheels de los pins/hashes adjuntos, sin ampliar dependencias, modelos,
+  permisos ni presupuesto. No hay descarga o relanzamiento implícito. T003/T004 siguen sin autorización.
+- Solo documentación del producto; sin cambios de código/datos/flujos/configuración global, suites, push o publicación.
+  T001 y archivos históricos no se reescriben. Los cambios del registro T002 quedan sin commit.
+
+## D186 — P012-T002: descargas autorizadas y falso rechazo de choices multilínea
+
+Estado: T002 reanudada y detenida de nuevo el 2026-10-24; defecto acotado, sin llamadas a modelos.
+[Registro y evidencia saneada](phase/P012-T002_INCORPORACION_REAL.md#7-reanudación-autorizada-y-wheelhouse-resuelto),
+[manifiesto wheels](phase/P012-T002_WHEELS_VERIFICADOS.sha256). Fase: P012. Conserva D185 como primera parada.
+
+- HITL: «Autorizar esas descargas y reanudar T002», sobre lista de doce pins/hashes de D185. Se consultan sus doce
+  metadatos PyPI y descargan doce wheels compatibles de files.pythonhosted.org, verificando tamaño y hash;
+  cinco originales se copian de cachés locales revalidadas. Wheelhouse propio de 17 wheels completo.
+- Verificador de distribución exit 0 con CLI falsas; harness instalado offline en Python 3.14.4 y fixture B en
+  3.13.13 con hashes/sin builds. Dos preparaciones y seis validaciones del perfil declarado correctas: pytest
+  2 passed con JUnit y mypy 10 fuentes. Fixture original con 15 archivos y commit sintético `f6a2d9d`.
+- Preflight instalado exit 1: Claude 2.1.310 rechazado por `unsupported_values` de `--permission-mode dontAsk`,
+  aunque aparece en una continuación de la lista de su ayuda. Codex 0.164.0 pasa en compatibilidad condicionada.
+  Lectura del código y reproducción pura con ayuda sintética confirman que el lector de choices excluye saltos
+  de línea: mismos valores en una sola línea pasan. Sin volver a ejecutar preflight o cambiar guardias/configuración.
+- Se aplica la parada de D184: sin init-db, servicio operativo, UI, registro/incorporación, tarea ni COMMITTED.
+  Consumo Claude/Codex 0/0; sin SQLite, jobs, locks o procesos propios activos. Área y evidencia conservadas.
+- Defecto acotado en **P012-T008**, siguiente tarea de corrección offline con tests sintéticos; T002 sigue parcial.
+  Corregir no autoriza relanzarla: hace falta propuesta/base y wheel nuevos, verificar hashes/preflight bajo
+  consentimiento de reanudación nuevo. Sin debilitar permisos, actualizar CLI, fallback o ampliar presupuesto.
+  T003/T004 siguen sin autorización. Sin suites del producto o cambios de código en T002, sin push/publicación.

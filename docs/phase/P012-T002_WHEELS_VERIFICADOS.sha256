@@ -1,0 +1,17 @@
+aef8a81283a34d0ab31630c9b7dfe70c812c95eba78171367ca8745e88124734  asgiref-3.10.0-py3-none-any.whl
+f04fb3b36ee119e1af4fa1d397d5fd6cf12700f49321e84d4f4c642c5b1973db  django-5.2.17-py3-none-any.whl
+2864e74b56ead866ff1365a051f24d852f6ed02238959664f558a6c9601c95bf  django_stubs-5.2.7-py3-none-any.whl
+0466a7132587d49c5bbe12082ac9824d117a0dedcad5d0ada75a6e0d3aca6f60  django_stubs_ext-5.2.7-py3-none-any.whl
+9deba5723312380e77435581c6bf4935c94cbfab9b1ed33ef8d238ea168eb760  iniconfig-2.1.0-py3-none-any.whl
+ed4482847168439651d3feee5833ccedbf6657e964572706a2adb1f7fa4dfe2e  mypy-1.18.2-cp313-cp313-macosx_11_0_arm64.whl
+1be4cccdb0f2482337c4743e60421de3a356cd97508abadd57d47403e94f5505  mypy_extensions-1.1.0-py3-none-any.whl
+29572ef2b1f17581046b3a2227d5c611fb25ec70ca1ba8554b24b0e69331a484  packaging-25.0-py3-none-any.whl
+a0d503e138a4c123b27490a4f7beda6a01c6f288df0e4a8b79c7eb0dc7b4cc08  pathspec-0.12.1-py3-none-any.whl
+e920276dd6813095e9377c0bc5566d94c932c33b27a3e3945d8389c374dd4746  pluggy-1.6.0-py3-none-any.whl
+81a9e26dd42fd28a23a2d169d86d7ac03b46e2f8b59ed4698fb4785f946d0176  pygments-2.20.0-py3-none-any.whl
+2c5efc453d45394fdd706ade797c0a81091eccd1d6e4bccfcd476e2b8e0ab5d9  pytest-9.0.3-py3-none-any.whl
+1b63773f648aa3d8541000c26929c1ea63934be1cfa674c76436966d73fe6a10  pytest_django-4.11.1-py3-none-any.whl
+d6191903d39ac156921398e9c86b7354d15e3c93772e7dbf26c9fcae59ceccd5  ruff-0.14.1-py3-none-macosx_11_0_arm64.whl
+b861c0288ce2fa56209a9a6412d2e066ac664b3873b89c26c9d8415e8e32996f  sqlparse-0.6.0-py3-none-any.whl
+e7d4d9e064e89a3b3cae120b4990cd370874d2bf12fa5f46c97018dd5d3c9ab6  types_pyyaml-6.0.12.20250915-py3-none-any.whl
+f0fa19c6845758ab08074a0cfa8b7aecb71c999ca73d62883bc25cc018c4e548  typing_extensions-4.15.0-py3-none-any.whl
