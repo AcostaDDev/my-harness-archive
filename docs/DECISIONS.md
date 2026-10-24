@@ -198,6 +198,7 @@ tarea se leen solo las decisiones que cita; este índice sirve para buscar prece
 | [D185](#d185--p012-t002-autorizada-y-detenida-por-caché-django-incompleta) | P012-T002: autorizada y detenida por caché Django incompleta | P012 |
 | [D186](#d186--p012-t002-descargas-autorizadas-y-falso-rechazo-de-choices-multilínea) | P012-T002: descargas autorizadas y falso rechazo de choices multilínea | P012 |
 | [D187](#d187--p012-t008-listas-multilínea-en-el-preflight-cli) | P012-T008: listas multilínea en el preflight CLI | P012 |
+| [D188](#d188--p012-t002-preflight-corregido-aprobado-y-parada-en-la-apertura-de-chrome) | P012-T002: preflight corregido aprobado y parada en la apertura de Chrome | P012 |
 
 ## D001 — Alcance local y arquitectura base
 
@@ -5518,3 +5519,30 @@ El commit solicitado conserva T002 (`2abf278`); los cambios de T008 quedan sin c
 - Sin cambios de modelos/migraciones, dependencias, UI o contrato API. Flujo actualizado en la misma tarea;
   diagrama de datos intacto. Sin build operativo, servicios, navegador, smokes, red, CLI/proveedores reales,
   área operativa, configuración global, push o publicación. T001/T002 y archivos históricos conservados.
+
+## D188 — P012-T002: preflight corregido aprobado y parada en la apertura de Chrome
+
+Estado: T002 reanudada y detenida el 2026-10-24; preparación corregida acreditada, sin llamadas a modelos.
+[Registro, hashes y continuación propuesta](phase/P012-T002_INCORPORACION_REAL.md#10-continuación-autorizada-con-el-paquete-corregido).
+Fase: P012. Conserva D185/D186 y aplica la propuesta de D187.
+
+- El usuario pide continuar la siguiente tarea y finalizar con commit. Con el precedente D185, se interpreta como
+  autorización nueva para T002 sobre T008 §5 y se comunica antes de operar: base `6efbd82`, destinos nuevos
+  `dist-t008`/`venv-t008`, mismo fixture/configuración/modelos, techo 12 Claude/3 Codex y parada al primer fallo.
+- Checkout limpio, identidades/versiones/hashes, TOML íntegro y 17 wheels revalidados. Build y verificador offline
+  correctos, instalación en Python 3.14.4 y política nueva de T008 comprobada. Wheel SHA-256
+  `5df9e000dd9f1bb9056103b519439a8352f48c4ba57c4173c2482f5ddca15e0b`.
+- Preflight real **exit 0**: Claude 2.1.310 y Codex 0.164.0, sin valores ausentes y con compatibilidad condicionada,
+  sin acreditar auth/inferencia. Dos preparaciones y seis validaciones del fixture en verde (pytest 2 tests).
+  SQLite nueva inicializada, servicio arrancado fuera del checkout en 8024.
+- Primera apertura automatizada en Chrome rechazada con `origin_rejected` / «Request from a foreign site.».
+  Ese diagnóstico corresponde a `Sec-Fetch-Site: cross-site`; no se observan los headers ni se acredita defecto
+  del producto. Se aplica la parada de permisos, sin repetir navegación ni cambiar protecciones.
+- Servicio detenido normalmente; puerto cerrado, 0 jobs/runs/conversaciones/incorporaciones/locks. Llamadas a
+  modelos 0/0. Originales `dist`, configuración y bytes/modos del fixture conservados; venv anterior intacto.
+  UI autenticada, registro, B y COMMITTED siguen pendientes; T002 no completa.
+- Continuación concreta pendiente de HITL: usar los nuevos artefactos y misma SQLite, reiniciar tras revalidar y
+  abrir mediante la barra de direcciones de Chrome, sin cambiar Host/Origin/CSRF ni cabeceras. Parar si se rechaza.
+  Mantener 12/3 llamadas y parámetros de T001. Sin reconstrucción, init-db, descargas ni autorización de T003/T004.
+- Solo documentación en este repositorio; sin cambios de diseño/código/esquema/flujos ni corrección nueva sin defecto
+  demostrado. Sin suites del producto adicionales, configuración global, tags, push o publicación.

@@ -319,11 +319,14 @@ modificar la configuración global, v0.2.0 y cualquier acción remota (repositor
 **Estado:** planificada el 2026-10-24 por encargo del usuario
 ([D183](DECISIONS.md#d183--p012-validación-real-previa-a-la-apertura-pública), [tareas](NEXT_STEPS.md)). T001 tiene
 [propuesta confirmada](phase/P012-T001_PROPUESTA_OPERATIVA.md) y cierre documental (D184). T002 autorizada e
-iniciada; primera parada por caché (D185) resuelta con descargas/reanudación autorizadas (D186). Wheel
-verificado/instalado y fixture Django en verde; nueva parada en preflight por falso rechazo de choices multilínea (D186), sin llamadas a modelos.
-[Registro parcial](phase/P012-T002_INCORPORACION_REAL.md); T008 corrige el lector con 25 regresiones nuevas y
-229 tests dirigidos correctos (D187), sin repetir operación real. T002 es la siguiente tarea, pendiente de
-consentimiento nuevo para base/wheel corregidos; T003–T007 pendientes, T003/T004 sin autorización.
+iniciada; primera parada por caché (D185) resuelta con descargas/reanudación autorizadas (D186), segunda por
+choices multilínea corregida en T008 (D187, 25 regresiones y 229 tests dirigidos). Continuación autorizada con
+base `6efbd82` y nuevos `dist-t008`/`venv-t008`: build/verificador/instalación offline, preflight real de ambas CLI
+y ocho checks Django correctos (D188). SQLite inicializada, servicio arrancado y detenido tras rechazo cross-site
+en la primera apertura automatizada de Chrome; sin acreditar defecto del producto ni repetir navegación.
+[Registro parcial](phase/P012-T002_INCORPORACION_REAL.md); 0/0 llamadas, sin registro/incorporación/tarea.
+T002 sigue como siguiente tarea, pendiente de consentimiento nuevo sobre la navegación normal propuesta;
+T003–T007 pendientes, T003/T004 sin autorización.
 Límites reales intactos.
 La apertura del expediente de P011 queda aplazada hasta el cierre de P012.
 

@@ -1,13 +1,14 @@
 # P012-T002 — Instalación e incorporación real: paradas de preparación
 
-Fecha: 2026-10-24. **Estado actual: detenida por falso rechazo del preflight Claude; no completada.**
+Fecha: 2026-10-24. **Estado actual: preflight corregido aprobado; detenida al abrir Chrome por rechazo cross-site; no completada.**
 Decisiones: [D185](../DECISIONS.md#d185--p012-t002-autorizada-y-detenida-por-caché-django-incompleta) (primera parada),
-[D186](../DECISIONS.md#d186--p012-t002-descargas-autorizadas-y-falso-rechazo-de-choices-multilínea) (reanudación y segunda parada).
+[D186](../DECISIONS.md#d186--p012-t002-descargas-autorizadas-y-falso-rechazo-de-choices-multilínea) (reanudación y segunda parada),
+[D188](../DECISIONS.md#d188--p012-t002-preflight-corregido-aprobado-y-parada-en-la-apertura-de-chrome) (paquete corregido y tercera parada).
 [Contrato](../NEXT_STEPS.md#p012-t002--instalación-incorporación-b-y-perfil-declarado-con-proveedores-reales),
 [propuesta confirmada](P012-T001_PROPUESTA_OPERATIVA.md).
 
 Los §§1–6 conservan el registro de la **primera parada por caché**, resuelta después por consentimiento expreso.
-Los §§7–9 describen la reanudación y el estado final de esta sesión. No se relanza tras el fallo de preflight.
+Los §§7–9 conservan la reanudación y segunda parada; §§10–13 registran la continuación con T008 y tercera parada.
 
 ## 1. Autorización y base
 
@@ -211,3 +212,96 @@ consentimiento nuevo de reanudación real.
   **11.539/24.576**, **8.718/12.288** y **16.461/49.152** bytes. Diff revisado y `git diff --check` correcto.
 - Manifiesto de 17 wheels cotejado de nuevo contra sus archivos; bytes del fixture inicial intactos y sin SQLite
   operativa. Cuerpos D001–D184, T001, archivos históricos, fuentes, baseline pública, diagrama y flujos conservados.
+
+## 10. Continuación autorizada con el paquete corregido
+
+El usuario pide «Continúa con la siguiente tarea a realizar. Finaliza con un commit» después del commit de T008.
+Se interpreta, con el precedente de §1/D185, como autorización nueva para T002 sobre la
+[propuesta concreta de T008 §5](P012-T008_CORRECCION_PREFLIGHT.md#5-propuesta-concreta-de-continuación-de-t002-sin-ejecutar).
+Se comunica ese alcance antes de operar: base nueva, `dist-t008`/`venv-t008`, mismo fixture, configuración y modelos,
+techo 12 Claude/3 Codex, parada al primer fallo. Sin autorizar T003/T004, descargas ni cambios globales.
+
+Base nueva: **`6efbd829dff16de58c39247358f0b5cf7d208466`** (`fix: parse wrapped CLI help choices within option bounds`).
+Checkout limpio antes de construir. Fuente `cli_diagnostics.py` y política derivada coinciden con T008 §4;
+locks, README, TOML completo (incluidos comentarios), versiones y los ocho hashes de herramientas coinciden con T001.
+Área sin enlaces ni ancestros Git, destinos nuevos ausentes, fixture limpio en `f6a2d9d` y sin remotos;
+los 17 wheels coinciden con el manifiesto previo. Se captura un manifiesto privado para comprobar conservación.
+
+| Operación | Resultado |
+|---|---|
+| Build offline en `AREA/dist-t008` | Exit 0; UI recompilada, sdist/wheel/pylock/SHA256SUMS nuevos |
+| Checksums y `check_distribution.py --dist AREA/dist-t008` | Exit 0; miembros/metadatos/licencias y recorrido del wheel instalado con CLI falsas |
+| `AREA/venv-t008`, Python 3.14.4 | Instalación offline desde pylock con hashes, luego wheel `--no-deps`; exit 0 |
+| Política del paquete instalado | `1156d0c9c8ad969c6762653eadadb5626c3d8f203d6e7ce821611d6286cc79d5`, igual a T008 |
+| `check-config TOML --preflight`, fuera del checkout | **Exit 0**; Claude 2.1.310 y Codex 0.164.0 `version_help_match`, `unsupported_values={}` |
+| Compatibilidad de ambas CLI | `candidate`, `conditional-known-interface`, `internal_effects_verified=false`; sin acreditar auth/inferencia |
+| Dos preparaciones y seis validaciones de B | Exit 0: Python 3.13.13, Django 5.2.17, pytest/JUnit **2 passed**, ruff check/format, mypy **10 fuentes**, check y makemigrations |
+| Puertos 8024/8025 antes de arrancar | Libres |
+| `init-db --database AREA/state/harness.sqlite3` | Exit 0; base nueva `0025_project_work_languages` |
+| `serve` instalado con TOML original, puerto 8024 | Arranque completo, sesión local bajo `AREA/tmp`; sin registrar proyectos |
+
+| Artefacto en `AREA/dist-t008` | SHA-256 |
+|---|---|
+| `harness_local-0.1.0-py3-none-any.whl` | `5df9e000dd9f1bb9056103b519439a8352f48c4ba57c4173c2482f5ddca15e0b` |
+| `harness_local-0.1.0.tar.gz` | `96c0a7d7971b6ad5b43f9645156755c9d4c757f3d6ce064618c3fb5e8cc7ee53` |
+| `pylock.toml` | `20a327c3a97484892280c6dec6d2176202c2a88ebd638878e0808eeadfdf2cf9` |
+| `SHA256SUMS` | `cf1d75a3078781f745f1d2ec14bc875089a5149bba6c2827efb4758c3d877a83` |
+
+Build y verificador usan los comandos de T008 §5 con caché del checkout, `TMPDIR=AREA/tmp`, npmrc privados vacíos,
+`UV_OFFLINE=true`, `UV_PYTHON_DOWNLOADS=never` y `UV_NO_CONFIG=true`. La instalación usa los comandos de T001 §3
+con destinos nuevos. Servicio/preflight desde AREA, HOME privado y entornos explícitos del TOML para los agentes.
+Sin descargas, configuración global ni importación del producto desde el checkout. Logs completos privados.
+
+## 11. Tercera parada: apertura automatizada de Chrome
+
+La primera apertura mediante la herramienta de navegador de `http://127.0.0.1:8024/` muestra:
+
+```json
+{"detail":{"code":"origin_rejected","diagnostic":"Request from a foreign site."}}
+```
+
+La lectura de `api/security.py:local_request` identifica ese diagnóstico exclusivamente con
+`Sec-Fetch-Site: cross-site`. La guardia funciona según su contrato; **no se acredita un defecto del producto**
+ni se conoce aún por qué la apertura automatizada se clasificó así. No se capturan los headers del navegador.
+El Host/puerto usados coinciden con el servicio. No se cambia la guardia, cabeceras, navegador ni configuración
+para saltarla; tampoco se repite navegación, login, registro o llamada tras el rechazo.
+
+Se aplica la parada de permisos de T001 §6. Se detiene el proceso propio con SIGINT tras comprobar su comando;
+el proceso termina normalmente y el puerto 8024 queda cerrado. SQLite conservada, con **0 jobs, 0 runs,
+0 conversaciones, 0 incorporaciones y 0 locks de checkout**. No se ha invocado ningún modelo: **Claude 0/12,
+Codex 0/3**. La sesión temporal se elimina en la limpieza normal del servicio.
+
+## 12. Evidencia acreditada, límites y conservación
+
+T008 queda acreditada además en el preflight de las CLI reales instaladas: ya no rechaza la lista multilínea.
+El paquete corregido se ha construido, verificado e instalado fuera del checkout; fixture y precondiciones en verde,
+SQLite inicializada y servicio arrancado/detenido. **UI autenticada, registro, incorporación B, perfil D095 con
+agentes y tarea COMMITTED siguen sin ejecutar**. No se declara completa T002 ni se adelantan T003/T004.
+
+Manifiesto privado cotejado tras parar: `AREA/dist` y configuración original conservados por bytes; los 15 archivos
+versionados de B conservados por bytes y modos; baseline Git intacta. `venv` anterior no se usa ni se modifica;
+los nuevos artefactos se conservan junto a los originales. El área no se limpia, SQLite no se edita manualmente.
+No hay cambios del producto, datos/modelos/migraciones, flujos, baseline pública o fases archivadas en este commit.
+No se repiten suites del producto: solo build/verificador, preflight y ocho checks del fixture necesarios en el tramo.
+
+## 13. Propuesta de continuación para HITL, sin ejecutar
+
+Reanudar T002 con `dist-t008`/`venv-t008` ya verificados y **la misma SQLite**, sin repetir init-db/build/instalación.
+Revalidar conservación, configuración/identidades y puerto libre; reiniciar el servicio en 8024 y navegar escribiendo
+la URL en la barra de direcciones de Chrome, como navegación iniciada por el usuario, en lugar de la apertura
+automatizada anterior. Mantener las guardias Host/Origin/CSRF intactas y no sobrescribir cabeceras. Este método es
+una propuesta pendiente de comprobar, no un éxito anticipado. Si vuelve a rechazarse, parar y conservar evidencia.
+
+Si abre, continuar login/registro/B/tarea exclusivamente desde UI bajo T001, con misma pareja/modelos y techos
+**12/3**, **0/0 consumidos**, sin fallback ni nuevas descargas; 4 h de techo por sesión. Detener al terminar o al
+primer fallo. T003/T004 siguen sin autorización. La continuación requiere respuesta del usuario tras esta parada.
+
+## 14. Comprobaciones del registro de la tercera parada
+
+- Parsers puros: **12 fases, 8 tareas P012, 188 decisiones**; **567 enlaces/anclas relativos** válidos en los
+  cinco Markdown modificados. Presupuestos STATE/base/NEXT_STEPS: **11.820/24.576**, **8.718/12.288** y
+  **17.121/49.152** bytes.
+- Cuerpos D001–D187 y §§1–9 anteriores de este registro conservados; solo se actualiza su cabecera y se añaden
+  estas secciones. T001/T008, archivos históricos y baseline pública intactos.
+- Hashes de la distribución nueva contrastados con SHA256SUMS; política instalada y manifiesto de conservación
+  comprobados. Diff revisado y `git diff --check` correcto; solo `docs/**`, sin suites adicionales del producto.

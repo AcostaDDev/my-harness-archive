@@ -93,15 +93,15 @@ local completada en el alcance de D151/D153 y preparación pública archivada co
 **P012 — Validación real previa a la apertura pública**, planificada el 2026-10-24
 ([D183](DECISIONS.md#d183--p012-validación-real-previa-a-la-apertura-pública),
 [criterios](ROADMAP.md#p012--validación-real-previa-a-la-apertura-pública), [tareas](NEXT_STEPS.md)). T001 con
-propuesta confirmada y cierre documental (D184); T002 parcial, detenida por falso rechazo de choices multilínea
-en preflight (D186), tras resolver la caché con consentimiento (D185). T008 corrige el lector offline (D187),
-con 25 regresiones nuevas y 229 tests dirigidos correctos; T003–T007 pendientes.
-Wheel verificado/instalado y fixture Django en verde; ninguna llamada a modelos ni recorrido real ejecutado.
-Codex 0.164.0 elegido (D184) pasa preflight en compatibilidad condicionada; Claude 2.1.310 queda bloqueado
-en el wheel operativo anterior (D186), aún sin sustituir ni volver a probar. La corrección sintética no acredita
-CLI reales. Revisor Claude Code y ejecutor Codex con modelos ligeros; cada tramo
-real (T002–T004) exige autorización propia: T002 autorizada al iniciar, reanudación pendiente tras parada;
-T003/T004 sin autorización.
+propuesta confirmada y cierre documental (D184); T002 parcial tras resolver caché (D185/D186) y corregir el
+preflight en T008 (D187, 25 regresiones y 229 tests dirigidos). Nueva continuación autorizada con base `6efbd82`
+y `dist-t008`/`venv-t008`: build/verificador/instalación offline, preflight real de ambas CLI y ocho checks Django
+correctos (D188). Codex 0.164.0 y Claude 2.1.310 pasan con compatibilidad condicionada, sin acreditar inferencia.
+SQLite inicializada y servicio arrancado/detenido; primera apertura automatizada en Chrome rechazada por la
+guardia cross-site, sin demostrar defecto del producto. Sin repetir navegación ni cambiar protecciones.
+Ninguna llamada a modelos, registro, incorporación o tarea real; servicio parado y 0 jobs/runs/locks.
+Revisor Claude Code y ejecutor Codex con modelos ligeros; cada tramo real (T002–T004) exige autorización propia:
+T002 pendiente de consentimiento nuevo tras esta parada; T003/T004 sin autorización. T003–T007 pendientes.
 
 P011 sigue cerrada y archivada ([D182](DECISIONS.md#d182--cierre-documental-de-p011-y-preparación-pública-archivada),
 [resumen](archive/phase-011/SUMMARY.md)). El paso 1 de su [expediente](archive/phase-011/P011_EXPEDIENTE_APERTURA.md)
@@ -114,11 +114,11 @@ tag `p001` sobre `47a0557` y archivo en `3d105c6`, sin repetir operaciones ni co
 Este repositorio sigue sin registrarse ni ejecutarse con el harness.
 
 **Siguiente:** P012-T002, pendiente de consentimiento nuevo sobre la
-[continuación propuesta por T008](phase/P012-T008_CORRECCION_PREFLIGHT.md#5-propuesta-concreta-de-continuación-de-t002-sin-ejecutar)
-(D187): commit/base corregidos y distribución/venv nuevos bajo el área, sin sustituir la evidencia anterior.
-El [registro parcial de T002](phase/P012-T002_INCORPORACION_REAL.md) conserva la parada del preflight; el wheel
-instalado sigue sin corregir. Sin nueva operación, SQLite operativa/servicio/UI/incorporación/tarea ni llamadas (0/0).
-El área se conserva sin tocarla en T008. T003/T004 siguen sin autorización.
+[continuación tras el rechazo de Chrome](phase/P012-T002_INCORPORACION_REAL.md#13-propuesta-de-continuación-para-hitl-sin-ejecutar)
+(D188): reutilizar artefactos corregidos/SQLite, reiniciar en 8024 y abrir mediante la barra de direcciones,
+sin cambiar guardias ni cabeceras; continuar desde UI solo si abre. Originales y fixture conservados por bytes/modos,
+sin limpieza, nuevas descargas o llamadas (0/0). El registro conserva las tres paradas; el preflight ya pasa.
+T003/T004 siguen sin autorización.
 Los límites de la base acumulada
 siguen vigentes hasta que P012 aporte evidencia real; A queda retirado por D155/D161, sin acreditarlo como validado.
 Sin nueva fase del Django hijo ni ampliación de consentimientos anteriores.
