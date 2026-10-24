@@ -94,10 +94,12 @@ local completada en el alcance de D151/D153 y preparación pública archivada co
 ([D183](DECISIONS.md#d183--p012-validación-real-previa-a-la-apertura-pública),
 [criterios](ROADMAP.md#p012--validación-real-previa-a-la-apertura-pública), [tareas](NEXT_STEPS.md)). T001 con
 propuesta confirmada y cierre documental (D184); T002 parcial, detenida por falso rechazo de choices multilínea
-en preflight (D186), tras resolver la caché con consentimiento (D185). T008 de corrección y T003–T007 pendientes.
+en preflight (D186), tras resolver la caché con consentimiento (D185). T008 corrige el lector offline (D187),
+con 25 regresiones nuevas y 229 tests dirigidos correctos; T003–T007 pendientes.
 Wheel verificado/instalado y fixture Django en verde; ninguna llamada a modelos ni recorrido real ejecutado.
 Codex 0.164.0 elegido (D184) pasa preflight en compatibilidad condicionada; Claude 2.1.310 queda bloqueado
-por el lector de ayuda (D186). Revisor Claude Code y ejecutor Codex con modelos ligeros; cada tramo
+en el wheel operativo anterior (D186), aún sin sustituir ni volver a probar. La corrección sintética no acredita
+CLI reales. Revisor Claude Code y ejecutor Codex con modelos ligeros; cada tramo
 real (T002–T004) exige autorización propia: T002 autorizada al iniciar, reanudación pendiente tras parada;
 T003/T004 sin autorización.
 
@@ -111,12 +113,12 @@ P010 conserva su cierre (D153) y P009 el suyo (D140); el Django hijo sigue con P
 tag `p001` sobre `47a0557` y archivo en `3d105c6`, sin repetir operaciones ni comprobaciones de su estado.
 Este repositorio sigue sin registrarse ni ejecutarse con el harness.
 
-**Siguiente:** P012-T008, corregir el lector de choices con tests sintéticos (D186).
-[Registro parcial de T002](phase/P012-T002_INCORPORACION_REAL.md): wheel verificado/instalado, 17 wheels propios
-con hashes y fixture (dos preparaciones y seis validaciones) en verde; preflight Claude rechaza indebidamente
-`dontAsk` en una continuación de su ayuda. Sin base/servicio/UI/registro/incorporación/tarea ni llamadas (0/0).
-Sin jobs, locks o procesos propios activos; área conservada. Reanudar T002 tras corregir exige consentimiento nuevo
-y base/wheel actualizados; T003/T004 siguen sin autorización.
+**Siguiente:** P012-T002, pendiente de consentimiento nuevo sobre la
+[continuación propuesta por T008](phase/P012-T008_CORRECCION_PREFLIGHT.md#5-propuesta-concreta-de-continuación-de-t002-sin-ejecutar)
+(D187): commit/base corregidos y distribución/venv nuevos bajo el área, sin sustituir la evidencia anterior.
+El [registro parcial de T002](phase/P012-T002_INCORPORACION_REAL.md) conserva la parada del preflight; el wheel
+instalado sigue sin corregir. Sin nueva operación, SQLite operativa/servicio/UI/incorporación/tarea ni llamadas (0/0).
+El área se conserva sin tocarla en T008. T003/T004 siguen sin autorización.
 Los límites de la base acumulada
 siguen vigentes hasta que P012 aporte evidencia real; A queda retirado por D155/D161, sin acreditarlo como validado.
 Sin nueva fase del Django hijo ni ampliación de consentimientos anteriores.

@@ -9,7 +9,7 @@ import time
 import pytest
 
 from harness_local.adapters.cli_agents import CLIConfig, CLIProcessAdapter
-from harness_local.adapters.cli_diagnostics import diagnose, diagnose_file, preflight_config
+from harness_local.adapters.cli_diagnostics import diagnose, diagnose_file, preflight_config, unsupported_values
 from harness_local.cli import main
 
 
@@ -52,6 +52,10 @@ if stage == 'version':
 else:
     flags = '--json --model --sandbox --ephemeral --ignore-user-config --ignore-rules --strict-config --color --cd --config --skip-git-repo-check --print --output-format --verbose --include-partial-messages --no-session-persistence --session-id --effort --permission-mode --permission-prompts --tools --allowedTools --strict-mcp-config --mcp-config --setting-sources --settings --disable-slash-commands --no-chrome'
     if mode == 'missing': flags = flags.replace('--model', '--model-extra')
+    if mode in ('wrapped_choices', 'excluded_choice'):
+        flags += ' --restricted --json-schema'
+        choice = 'dontAsk' if mode == 'wrapped_choices' else 'manual'
+        flags = flags.replace('--permission-mode', '--permission-mode (choices: "manual",\\n    "' + choice + '")')
     print(flags)
     print('SECRET-OUTPUT', file=sys.stderr)
 ''')
@@ -67,6 +71,62 @@ def altered(config, **env):
 def calls(config):
     path = Path(dict(config.environment)['RECORD'])
     return [json.loads(line) for line in path.read_text().splitlines()] if path.exists() else []
+
+
+@pytest.mark.parametrize('newline', ['\n', '\r\n'])
+@pytest.mark.parametrize('quote', ['', '"', "'"])
+@pytest.mark.parametrize('provider,flag,first,required,label,opening,closing', [
+    ('claude', '--permission-mode', 'manual', 'dontAsk', 'choices', '(', ')'),
+    ('codex', '--sandbox', 'read-only', 'workspace-write', 'possible values', '[', ']'),
+])
+def test_advertised_choices_preserve_values_on_continuation_lines(
+        newline, quote, provider, flag, first, required, label, opening, closing):
+    listing = f'{quote}{first}{quote},{newline}    {quote}{required}{quote}'
+    text = f'{flag} <mode> {opening}{label}: {listing}{closing}{newline}--other-option'
+    assert unsupported_values(text, provider, 'write') == {}
+    assert unsupported_values(text.replace(newline, ' '), provider, 'write') == {}
+
+
+@pytest.mark.parametrize('listing', [
+    '(choices: "manual")\n    Example: dontAsk',
+    'choices: manual\n    dontAsk appears in explanatory prose.',
+    '(choices: manual,\n    explanation mentions dontAsk)',
+    '(choices: manual) Extra text mentions dontAsk.',
+    'choices: manual. An example mentions dontAsk.',
+    '(choices: manual,\n    dontAsk-extra)',
+    '(choices: manual,\n--another-option (choices: dontAsk)',
+    '(choices: manual)\n--another-option (choices: dontAsk)',
+])
+def test_choice_lists_do_not_borrow_required_values_from_other_text(listing):
+    assert unsupported_values('--permission-mode ' + listing, 'claude', 'read') == {
+        '--permission-mode': ['dontAsk']}
+
+
+def test_unwrapped_choice_list_stops_before_explanatory_prose():
+    text = '--sandbox possible values: read-only,\n    workspace-write\n    Explanation: danger-full-access'
+    assert unsupported_values(text, 'codex', 'write') == {}
+    assert unsupported_values('--permission-mode No explicit list. Example: dontAsk', 'claude', 'read') == {}
+
+
+@pytest.mark.parametrize('operation', ['preflight', 'diagnose'])
+@pytest.mark.parametrize('mode,available', [('wrapped_choices', True), ('excluded_choice', False)])
+def test_synthetic_client_with_wrapped_choices_is_diagnosed_without_inference(config, operation, mode, available):
+    config = replace(altered(config, PROVIDER='claude', MODE=mode), provider='claude', cli_version='2.1.304')
+    before = asdict(config)
+    if operation == 'diagnose':
+        result = diagnose(config)
+        report = result['preflight']
+    else:
+        result = report = preflight_config(config, access='read')
+    assert report['available'] is available
+    assert report['status'] == ('version_help_match' if available else 'incompatible')
+    assert report['missing_flags'] == []
+    assert report['unsupported_values'] == ({} if available else {'--permission-mode': ['dontAsk']})
+    if not available:
+        assert report['diagnostics'][0]['code'] == 'unsupported_values'
+    assert calls(config) == [['--version'], ['--help']]
+    assert asdict(config) == before
+    assert 'SECRET' not in json.dumps(result)
 
 
 @pytest.mark.parametrize('provider', ['codex', 'claude'])

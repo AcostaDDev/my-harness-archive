@@ -197,6 +197,7 @@ tarea se leen solo las decisiones que cita; este índice sirve para buscar prece
 | [D184](#d184--p012-t001-propuesta-operativa-y-codex-01640) | P012-T001: propuesta operativa y Codex 0.164.0 | P012 |
 | [D185](#d185--p012-t002-autorizada-y-detenida-por-caché-django-incompleta) | P012-T002: autorizada y detenida por caché Django incompleta | P012 |
 | [D186](#d186--p012-t002-descargas-autorizadas-y-falso-rechazo-de-choices-multilínea) | P012-T002: descargas autorizadas y falso rechazo de choices multilínea | P012 |
+| [D187](#d187--p012-t008-listas-multilínea-en-el-preflight-cli) | P012-T008: listas multilínea en el preflight CLI | P012 |
 
 ## D001 — Alcance local y arquitectura base
 
@@ -5492,3 +5493,28 @@ Estado: T002 reanudada y detenida de nuevo el 2026-10-24; defecto acotado, sin l
   Corregir no autoriza relanzarla: hace falta propuesta/base y wheel nuevos, verificar hashes/preflight bajo
   consentimiento de reanudación nuevo. Sin debilitar permisos, actualizar CLI, fallback o ampliar presupuesto.
   T003/T004 siguen sin autorización. Sin suites del producto o cambios de código en T002, sin push/publicación.
+
+## D187 — P012-T008: listas multilínea en el preflight CLI
+
+Estado: implementada y verificada offline el 2026-10-24 por la continuación pedida por el usuario.
+El commit solicitado conserva T002 (`2abf278`); los cambios de T008 quedan sin commit.
+[Corrección, pruebas y propuesta de continuación](phase/P012-T008_CORRECCION_PREFLIGHT.md),
+[flujo CLI](flows/cli-compatibility.md). Fase: P012. Corrige el defecto de D186 sin reanudar T002.
+
+- `unsupported_values` lee listas de valores separados por comas dentro de la sección de su opción, incluidas
+  continuaciones LF/CRLF, valores con guiones y comillas simples/dobles. Ya no corta en el primer salto de línea
+  ni acepta menciones de prosa posterior como valores. Otra opción, un cierre o prosa ajena no aportan el valor
+  requerido. Una lista que lo excluye sigue bloqueada; no anunciar lista no inventa observaciones.
+- Sin cambiar valores/flags requeridos, mínimos, permisos, argv, modelos, API, esquema o versiones de transporte.
+  `cli-14`/`cli-capabilities-1` conservan sus nombres; huella de política derivada automáticamente nueva
+  `1156d0c9c8ad969c6762653eadadb5626c3d8f203d6e7ce821611d6286cc79d5`. Nada reescribe evidencia congelada.
+- Veinticinco regresiones nuevas, ayudas/ejecutables exclusivamente sintéticos. Antes del cambio, 15 fallos en
+  la selección de 24 casos reproducen el defecto y una falsa aceptación de prosa. Tras corregir, 25/25 y los
+  cinco módulos de diagnóstico/capacidades/descubrimiento/transporte/memoria pasan: 229 tests, sin CLI reales.
+- T002 sigue parcial y detenida; la entrega propone un commit base nuevo y `dist-t008`/`venv-t008` bajo el área
+  ya elegida, conservando los originales. Construcción/verificación/instalación y preflight real requieren
+  consentimiento nuevo de reanudación antes de ejecutarse, con 12/3 llamadas de techo y 0/0 consumidas.
+  No se confunde corrección sintética con validación real. T003/T004 siguen sin autorización.
+- Sin cambios de modelos/migraciones, dependencias, UI o contrato API. Flujo actualizado en la misma tarea;
+  diagrama de datos intacto. Sin build operativo, servicios, navegador, smokes, red, CLI/proveedores reales,
+  área operativa, configuración global, push o publicación. T001/T002 y archivos históricos conservados.

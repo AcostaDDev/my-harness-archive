@@ -36,6 +36,11 @@ readable; a below-minimum client cannot start new work. Only effective provider 
 operation; `check-config --preflight` explicitly diagnoses defaults and all preset roles. No auth/status/login,
 test prompt, network lookup, installation or global configuration change is part of discovery.
 
+Explicit `choices`/`possible values` lists are scoped to their option. Comma-separated values may wrap onto
+continuation lines (LF or CRLF, with or without quotes); another option, a closing delimiter or explanatory
+prose cannot supply a missing required value. An advertised list that omits a required value still blocks with
+`unsupported_values`. No advertised list means no additional observation of supported values (P012-T008, D187).
+
 Each mutation observes the client again and reuses that project resolution only inside the same request. Each
 attempt also observes version/help again. Content-hash caching restats inode, size, mtime and ctime; it is not a
 cached compatibility verdict. A fresh job can detect an updated client automatically; a queued job never adopts it. Source/profile hashes

@@ -41,6 +41,11 @@ PATTERNS = {
 VALUES = {'codex': {'--color': ('never',)},
           'claude': {'--output-format': ('stream-json',), '--permission-mode': ('dontAsk',),
                      '--permission-prompts': ('none',)}}
+# Only comma-separated values may continue onto another line. A bare word in a
+# description is not a choice; closing delimiters and line ends bound each value.
+_CHOICE_VALUE = (r'''(?:"[A-Za-z][A-Za-z0-9-]*"|'[A-Za-z][A-Za-z0-9-]*'|[A-Za-z][A-Za-z0-9-]*)'''
+                 r'(?=[ \t]*(?:[,\)\]]|\r?$))')
+_CHOICES = re.compile(rf'{_CHOICE_VALUE}(?:\s*,\s*{_CHOICE_VALUE})*', re.M)
 
 
 def unsupported_values(text, provider, access):
@@ -55,9 +60,11 @@ def unsupported_values(text, provider, access):
         if flag not in required:
             continue
         end = tokens[index + 1].start() if index + 1 < len(tokens) else len(text)
-        announced = re.search(r'(?:possible values|choices)\s*:\s*([^\]\)\n]+)', text[token.end():end], re.I)
+        section = text[token.end():end]
+        announced = re.search(r'(?:possible values|choices)\s*:\s*', section, re.I)
         if announced:
-            choices = set(re.findall(r'[A-Za-z][A-Za-z0-9-]*', announced[1]))
+            values = _CHOICES.match(section, announced.end())
+            choices = set(re.findall(r'[A-Za-z][A-Za-z0-9-]*', values[0])) if values else set()
             absent = [value for value in required[flag] if value not in choices]
             if absent:
                 missing[flag] = absent
