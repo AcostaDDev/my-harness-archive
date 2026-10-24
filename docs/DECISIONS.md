@@ -207,6 +207,7 @@ tarea se leen solo las decisiones que cita; este índice sirve para buscar prece
 | [D194](#d194--p012-t010-formateador-declarativo-optativo-en-local-config-8) | P012-T010: formateador declarativo optativo en local-config-8 | P012 |
 | [D195](#d195--p012-t002-continuación-con-formateador-y-preparación-operativa) | P012-T002: continuación con formateador y preparación operativa | P012 |
 | [D196](#d196--p012-t011-paridad-del-selector-de-presets-ui-con-local-config-8) | P012-T011: paridad del selector de presets UI con local-config-8 | P012 |
+| [D197](#d197--p012-t002-propuesta-de-continuación-tras-t011) | P012-T002: propuesta de continuación tras T011 | P012 |
 
 ## D001 — Alcance local y arquitectura base
 
@@ -5782,3 +5783,25 @@ Fase: P012. Corrección del defecto observado en D195 conforme al contrato D194.
   de cualquier nueva preparación/operación, sin reponer llamadas, repetir B o extender a T003/T004.
 - Documentos vivos/evidencia actualizados; sin cambio de diseño, modelos/migraciones, flujo implementado,
   baseline pública, dependencias, configuración global, tags, push o publicación. Cuerpos D001–D194 conservados.
+
+## D197 — P012-T002: propuesta de continuación tras T011
+
+Estado: propuesta concretada y revisada offline el 2026-10-24; consentimiento operativo pendiente.
+Fase: P012. Concreta el siguiente paso de D196, sin reabrir el consentimiento agotado de D195.
+[Propuesta completa, comandos futuros y petición HITL](phase/P012-T002_PROPUESTA_T011.md).
+
+- Base del producto `500a783`, con selector v8 corregido. Destinos nuevos dist-t011/venv-t011; conservar
+  managed-b-t010 y harness-local-t010.toml, sin otra B, clon o transformación de configuración. Mismos id,
+  perfil/composición/presets, puerto, modelos/esfuerzos, permisos, contrato y dos commits documentales por UI.
+- Lecturas locales: 28 archivos iguales a blobs/manifiesto, 15 originales 0600 y 13 documentos 0644, clon limpio
+  sin remoto/alternates; TOML 0600 de hash `e0e95abb…fbb6db`; destinos nuevos ausentes. SQLite íntegra en 0025,
+  13.785 filas, 7 jobs DONE, 9 procesos STOPPED, 0 locks; clon sin registro/fase/run. Repetir guardias antes de operar.
+- Propuesta: build/verificador/instalación offline, preflight/ocho checks, servicio/UI, registro/P001,
+  preparación documental y una tarea. Máximo nuevo 2 Claude/1 Codex, acumulado máximo 9/12 y 3/3, cero
+  correcciones y parada al primer fallo; cuatro horas y conservación de resultados anteriores. Hashes del
+  paquete futuro pendientes, sin atribuirle los anteriores. Sin autorización de descargas o T003/T004.
+- La petición de continuar/commitear autoriza esta preparación documental; AGENTS, T001 §7 y D196 requieren
+  consentimiento específico para sus efectos operativos. No se construye/instala, ejecutan CLI reales o
+  checks del fixture, inicia servicio, opera datos privados o consume modelos al concretarla.
+- STATE/NEXT_STEPS/ROADMAP al día. Sin cambio de producto, esquema, API, flujo, configuración global,
+  documentación pública o historia congelada; sin tag, push o publicación. T002 permanece parcial.

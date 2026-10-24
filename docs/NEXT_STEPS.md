@@ -10,8 +10,8 @@ T011 corrige el selector compartido offline, 8 regresiones/103 tests Node y tipo
 Claude **7/12**, Codex **2/3**, sin consumo nuevo, 0 locks, 7 jobs DONE y 9 procesos STOPPED. T003–T007 pendientes;
 once tareas en total; 13.785 filas previas idénticas. Ningún resultado fallido se repara, formatea o revalida.
 **Siguiente:** [P012-T002](#p012-t002--instalación-incorporación-b-y-perfil-declarado-con-proveedores-reales),
-concretar/revisar la [continuación tras T011](phase/P012-T011_PRESETS_UI_V8.md#4-próximo-paso-todavía-sin-autorizar)
-y pedir consentimiento: dist-t011/venv-t011 nuevos, conservar clon/TOML preparados comprobándolos antes de usar,
+respuesta HITL a la [propuesta revisada tras T011](phase/P012-T002_PROPUESTA_T011.md) (D197), base `500a783`:
+dist-t011/venv-t011 nuevos, conservar clon/TOML preparados comprobándolos antes de usar,
 preflight/checks, servicio/UI, registro/fase, dos commits documentales y una tarea. Cero correcciones, techo 12/3,
 consumido 7/2 y previsión nueva 2 Claude/1 Codex; sin permiso de consumo. El consentimiento D195 se agotó al parar.
 P001–P011 siguen cerradas; la apertura del [expediente de P011](archive/phase-011/P011_EXPEDIENTE_APERTURA.md)
@@ -87,7 +87,9 @@ solo offline; [continuación concretada y autorizada](phase/P012-T002_PROPUESTA_
 máximo nuevo 2 Claude/1 Codex, sin consumir. Wheel `a7d8b33` construido/verificado/instalado; clon/TOML v8
 preparados, modos igualados por HITL, preflight y ocho checks iniciales correctos. Servicio/login correctos;
 parada antes del alta porque la UI oculta presets v8. T011 corrige el selector offline, sin otro wheel/servicio.
-Consentimiento agotado; siguiente propuesta y autorización pendientes. Sin reparación
+Consentimiento agotado; [propuesta tras T011](phase/P012-T002_PROPUESTA_T011.md) concretada y revisada offline
+(D197): 28 archivos/modos y TOML correctos, clon sin alta/fase/run, 13.785 filas y estado detenido conservados;
+dist-t011/venv-t011 ausentes. Autorización operativa pendiente, sin build/servicio/llamadas nuevos. Sin reparación
 manual, revalidación o nuevo intento autorizado.
 T003/T004 siguen sin autorización.
 **Objetivo:** Acreditar con la versión actual el flujo básico y la incorporación de un repositorio existente con
@@ -125,6 +127,7 @@ eliminada; Claude **7/12**, Codex **2/3**. Comparación de copias de base: **818
 B/B2, ambos diffs, TOML original, distribuciones e historiales conservados. Propuesta T010 ya concretada y
 autorizada/ejecutada hasta el bloqueo de presets UI (D195), sin llamadas adicionales; servicio detenido y 13.785
 filas anteriores idénticas. T011 corregida offline; próxima continuación sujeta a propuesta y consentimiento nuevos.
+Propuesta nueva [lista para HITL](phase/P012-T002_PROPUESTA_T011.md) (D197), sin ejecutar efectos operativos.
 
 ## P012-T003 — Chat, backup y restauración sobre el proyecto real
 

@@ -139,9 +139,11 @@ tag `p001` sobre `47a0557` y archivo en `3d105c6`, sin repetir operaciones ni co
 Este repositorio sigue sin registrarse ni ejecutarse con el harness.
 
 **Siguiente:** [P012-T002](NEXT_STEPS.md#p012-t002--instalación-incorporación-b-y-perfil-declarado-con-proveedores-reales),
-concretar/revisar la [continuación tras T011](phase/P012-T011_PRESETS_UI_V8.md#4-próximo-paso-todavía-sin-autorizar)
-y pedir consentimiento nuevo: dist/venv nuevos, conservar clon limpio/TOML v8 preparados, comprobarlos antes
-del servicio y registrar/fase/una tarea. Cero correcciones y techo 12/3; consumido 7/2,
-previsión nueva 2 Claude/1 Codex, sin permiso de consumo. Conservar B/B2, diffs, historiales y configuraciones.
+respuesta HITL a la [propuesta concreta tras T011](phase/P012-T002_PROPUESTA_T011.md) (D197), base `500a783`:
+dist-t011/venv-t011 nuevos y clon/TOML t010 conservados. Revisión de solo lectura correcta: 28 archivos/modos,
+hash TOML, ausencia de alta/fase/run, 13.785 filas y 7 DONE/9 STOPPED/0 locks; destinos nuevos ausentes.
+Pendientes build/verificador/instalación, preflight/checks, servicio y registro/fase/una tarea. Cero correcciones,
+techo 12/3; consumido 7/2, máximo nuevo 2 Claude/1 Codex, sin permiso operativo ni de consumo.
+Conservar B/B2, diffs, historiales y configuraciones.
 No reusar el run agotado bajo otra política ni reparar sus resultados. T003/T004 siguen sin autorización;
 sin nueva fase del Django de P009, push, tags o publicación. El consentimiento nuevo no habilita reintentos tras parada.

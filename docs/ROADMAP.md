@@ -355,6 +355,9 @@ Sin nuevas llamadas, 13.785 filas previas idénticas, B/B2 conservados; 7 DONE/9
 **T011 corregida offline** (D196): selector compartido admite v8 y aviso en/es al día; 8 regresiones de render,
 103 tests Node y tipos/build correctos. [Entrega y siguiente propuesta](phase/P012-T011_PRESETS_UI_V8.md).
 T002 sigue parcial, sin reconstruir o relanzar después; consentimiento nuevo antes de otra continuación.
+Continuación tras T011 [concretada y revisada offline](phase/P012-T002_PROPUESTA_T011.md) (D197), base `500a783`,
+dist-t011/venv-t011 nuevos y clon/TOML t010 conservados. Lecturas de hashes/modos/SQLite correctas, sin alta
+del clon ni consumo nuevo; respuesta HITL pendiente antes de preparar u operar.
 La apertura del expediente de P011 queda aplazada hasta el cierre de P012.
 
 ## Después de la apertura en GitHub — v0.2.0
