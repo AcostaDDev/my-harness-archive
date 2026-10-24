@@ -90,23 +90,22 @@ local completada en el alcance de D151/D153 y preparación pública archivada co
 
 ## Fase activa
 
-Ninguna. **P011 cerrada y archivada documentalmente el 2026-10-24**
-([D182](DECISIONS.md#d182--cierre-documental-de-p011-y-preparación-pública-archivada),
-[resumen](archive/phase-011/SUMMARY.md), [registro de cierre](archive/phase-011/P011_CIERRE.md)).
-El dictamen favorable de T017 (D181) cubre los diez criterios y los trece globales; originales de STATE/NEXT_STEPS
-y artefactos de fase conservados por bytes, sin tareas obligatorias pendientes. El paquete sigue en `0.1.0`, sin
-tag ni publicación. No hay fase sucesora definida; v0.2.0 (modo continuo, D156) queda para después de la apertura.
+**P012 — Validación real previa a la apertura pública**, planificada el 2026-10-24
+([D183](DECISIONS.md#d183--p012-validación-real-previa-a-la-apertura-pública),
+[criterios](ROADMAP.md#p012--validación-real-previa-a-la-apertura-pública), [tareas](NEXT_STEPS.md)). Siete tareas
+pendientes, ninguna operación real ejecutada. Revisor Claude Code y ejecutor Codex con modelos ligeros; cada tramo
+real (T002–T004) exige confirmar la propuesta de T001 y autorización propia.
 
-La apertura pública no se ha ejecutado: cada paso del [expediente](archive/phase-011/P011_EXPEDIENTE_APERTURA.md)
-exige instrucción explícita del usuario. Su paso 1 se reproduce desde un worktree temporal del commit de T017
-([cómo](archive/phase-011/P011_CIERRE.md#reproducir-el-candidato)). Tras abrir, el repositorio público es la fuente
-principal de código, decisiones (D200+) y fases (D157); este checkout conserva su historia privada.
+P011 sigue cerrada y archivada ([D182](DECISIONS.md#d182--cierre-documental-de-p011-y-preparación-pública-archivada),
+[resumen](archive/phase-011/SUMMARY.md)). El paso 1 de su [expediente](archive/phase-011/P011_EXPEDIENTE_APERTURA.md)
+se ejecutó el 2026-10-24: candidato regenerado en `$HOME/Documents/projects/my_harness_dist` (sin Git) con el
+manifiesto aprobado `74cc9141…ea71`. Los pasos remotos quedan aplazados hasta cerrar P012, que preparará un candidato
+y un expediente nuevos. Tras abrir, el repositorio público es la fuente principal (D157).
 
 P010 conserva su cierre (D153) y P009 el suyo (D140); el Django hijo sigue con P001 CLOSED, cuatro tareas COMMITTED,
 tag `p001` sobre `47a0557` y archivo en `3d105c6`, sin repetir operaciones ni comprobaciones de su estado.
-Este repositorio sigue sin registrarse ni ejecutarse con el harness; cierre manual sin check READY ni tag propio.
+Este repositorio sigue sin registrarse ni ejecutarse con el harness.
 
-**Siguiente:** el usuario elige entre autorizar la apertura sobre el expediente o una candidata de
-[ROADMAP](ROADMAP.md#candidatas-sin-fase-asignada). Los límites de la base acumulada siguen vigentes. B y D095
-mantienen la validación real aplazada por D151; A queda retirado del producto por D155/D161, sin acreditarlo como
-validado con proveedores reales. Sin nueva fase del Django hijo ni ampliación de consentimientos.
+**Siguiente:** P012-T001, propuesta operativa y consentimiento (documental). Los límites de la base acumulada
+siguen vigentes hasta que P012 aporte evidencia real; A queda retirado por D155/D161, sin acreditarlo como validado.
+Sin nueva fase del Django hijo ni ampliación de consentimientos anteriores.

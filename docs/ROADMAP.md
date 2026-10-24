@@ -17,6 +17,7 @@ hitos H0–H6 del backlog original; la definición inicial está en [archive/pha
 | P009 | Proyecto Django desde cero y piloto con cuatro combinaciones de agentes | completada (2026-10-21) | [phase-009](archive/phase-009/SUMMARY.md) |
 | P010 | Consolidación de la primera versión local | completada (2026-10-22) | [phase-010](archive/phase-010/SUMMARY.md) |
 | P011 | Preparación para apertura pública en GitHub | completada (2026-10-24) | [phase-011](archive/phase-011/SUMMARY.md) |
+| P012 | Validación real previa a la apertura pública | planificada (2026-10-24) | — |
 
 ## P001 — Contratos y prueba de viabilidad
 
@@ -287,6 +288,37 @@ La apertura remota exige instrucción explícita del usuario sobre el expediente
 [D154](DECISIONS.md#d154--p011-preparación-para-apertura-pública-en-github).
 La primera versión local P010 sigue completada en su alcance; P011 añade objetivos públicos, no reabre ese cierre.
 
+## P012 — Validación real previa a la apertura pública
+
+**Objetivo:** Acreditar con proveedores reales y la versión actual del producto las capacidades que el candidato
+`0.1.0` anuncia sin uso real o con evidencia anterior a P011, corregir lo que falle y abrir con un alcance público
+que se corresponda con lo probado.
+**Criterios de salida:**
+
+- Propuesta operativa confirmada por el usuario: área privada, wheel y hashes, CLI y versiones, pareja revisor
+  Claude / ejecutor Codex con modelos ligeros, techos de llamadas por proveedor, paradas y evidencia. Cada tramo
+  real se ejecuta con autorización explícita propia.
+- Flujo básico con `cli-14`, `local-config-7` y las CLI instaladas (Codex 0.163.0 y Claude Code 2.1.310, posterior
+  al mínimo): plan, ejecución, validación, revisión y COMMITTED con el wheel instalado fuera del checkout.
+- Incorporación B de un repositorio Django sintético existente y perfil declarado D095: documentos confirmados,
+  código intacto por bytes y una tarea COMMITTED usando exclusivamente el perfil declarado.
+- Chat con el revisor real sobre ese proyecto, con respuesta, comando determinista y propuesta confirmada; backup
+  y restauración de consulta de una base con runs reales.
+- Proyecto TypeScript web nuevo con receta v2 y trabajo en español: definición, preparación con caché local, una
+  tarea COMMITTED y cierre de su P001 con READY.
+- Cada fallo se acota en una tarea de corrección con tests sintéticos; los resultados parciales se declaran como
+  tales y ninguna capacidad pasa a acreditada sin su evidencia real.
+- README, README.es y `docs/public/` reflejan por fila la evidencia de P012; candidato regenerado y verificado con
+  suites, paquete y manifiesto nuevos, revisión de salida y expediente de apertura actualizado sin ejecutar.
+
+**Dependencias:** P011; D095, D119, D143, D151, D155, D157, D168, D173, D174 y D181–D183.
+**Fuera de alcance:** Flujo A (retirado), repetir las cuatro combinaciones, otras plataformas o CLI, evaluar
+comparativamente modelos, ejecutar el harness sobre este repositorio, operar el Django de P009 o ReferenceProject,
+modificar la configuración global, v0.2.0 y cualquier acción remota (repositorio, push, tag, Release, visibilidad).
+**Estado:** planificada el 2026-10-24 por encargo del usuario
+([D183](DECISIONS.md#d183--p012-validación-real-previa-a-la-apertura-pública), [tareas](NEXT_STEPS.md)); siete
+tareas pendientes, ninguna operación real ejecutada. La apertura del expediente de P011 queda aplazada hasta su cierre.
+
 ## Después de la apertura en GitHub — v0.2.0
 
 [D156](DECISIONS.md#d156--planificación-de-p011-finalizada-y-modo-continuo-aplazado-a-v020) reserva para v0.2.0
@@ -300,9 +332,8 @@ Los lotes actuales siguen sin comprobar/cerrar y cada nuevo plan exige su confir
 
 - Alta Django sin POST→redirect→GET, observación sin bloqueo del piloto y propia del hijo;
   [contexto y límites](archive/phase-009/REVIEW.md). Los otros dos ajustes de interfaz se resolvieron en P010-T004/T005.
-- Validación real B y D095 aplazada por D151 ([propuesta histórica A/B](archive/phase-010/P010-T008_PROPUESTA_VALIDACION_REAL.md));
-  A sale del alcance futuro por D155, sin alterar la evidencia anterior. Esta candidata cubre B/D095
-  y pilotos adicionales; cada operación real conserva
-  propuesta y consentimiento propios. P010 no inicia otra fase del Django de P009.
+- Validación real B y D095 aplazada por D151 ([propuesta histórica A/B](archive/phase-010/P010-T008_PROPUESTA_VALIDACION_REAL.md)):
+  asignada a P012 (D183), ampliada con chat, backup/restauración y receta TypeScript v2. A sale del alcance futuro
+  por D155, sin alterar la evidencia anterior. P010 no inicia otra fase del Django de P009.
 - Hora de cada validación (cambia el formato del historial).
 - Avisos *low* de KaTeX en Mermaid 11; App Server o Agent SDK; `project.yaml` portable.

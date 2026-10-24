@@ -193,6 +193,7 @@ tarea se leen solo las decisiones que cita; este índice sirve para buscar prece
 | [D180](#d180--p011-t024-qa-de-navegador-del-candidato-y-tres-correcciones-de-presentación) | P011-T024: QA de navegador del candidato y tres correcciones de presentación | P011 |
 | [D181](#d181--p011-t017-dictamen-favorable-y-expediente-de-apertura-pública) | P011-T017: dictamen favorable y expediente de apertura pública | P011 |
 | [D182](#d182--cierre-documental-de-p011-y-preparación-pública-archivada) | Cierre documental de P011 y preparación pública archivada | P011 |
+| [D183](#d183--p012-validación-real-previa-a-la-apertura-pública) | P012: validación real previa a la apertura pública | P012 |
 
 ## D001 — Alcance local y arquitectura base
 
@@ -5391,3 +5392,25 @@ Estado: cerrada y archivada el 2026-10-24 por la continuación solicitada por el
 - Cierre manual del repositorio, separado del check READY del producto: sin registrarlo ni ejecutarlo con el harness,
   agentes, proveedores, servicios o smokes. Sin cambios de producto, esquema, API, flujos, dependencias, paquete o
   configuración global; sin tag, push, creación de repositorio, cambio de visibilidad, Release ni publicación.
+
+## D183 — P012: validación real previa a la apertura pública
+
+Estado: fase planificada el 2026-10-24 por encargo explícito del usuario; siete tareas pendientes.
+[Tareas](NEXT_STEPS.md) y [criterios](ROADMAP.md#p012--validación-real-previa-a-la-apertura-pública).
+Precedentes: D095, D139, D151, D155, D157, D173, D174, D181 y D182.
+
+- Tras regenerar el candidato de P011 en `my_harness_dist` (paso 1 del expediente, manifiesto `74cc9141…ea71`), el
+  usuario decide no abrir el repositorio sin validar con proveedores reales lo que el README anuncia sin uso real,
+  porque quiere publicar un producto que funcione y que va a usar personalmente. Se toma la candidata de D151
+  (B y D095) y se amplía a chat, backup/restauración y receta TypeScript web v2 con trabajo en español.
+- Las ejecuciones reales anteriores (D050, D071, D139) precedieron a `cli-14`, la detección por capacidades, la
+  directiva de idioma y las recetas v2. El primer tramo real acredita también el flujo básico con la versión actual
+  y con Claude Code 2.1.310, posterior al mínimo, en compatibilidad condicionada (D174).
+- Pareja elegida por el usuario: revisor Claude Code y ejecutor Codex, ambos con modelos ligeros; la cuota de
+  Claude es limitada. No se repiten las cuatro combinaciones: su fila conserva la evidencia anterior a `cli-14`.
+- La fase se desarrolla en este repositorio privado porque la apertura (D157) aún no se ha ejecutado: la evidencia
+  real queda en la historia privada y el repositorio público nace con el alcance corregido. El candidato de P011
+  deja de ser el publicable cuando cambien README o `docs/public/`; T005 prepara el sustituto y T006 el expediente.
+- Planificar no autoriza operaciones: T001 es documental y cada tramo real (T002–T004) exige confirmación de la
+  propuesta y autorización propia. Fixtures sintéticos, área privada fuera de checkouts, sin configuración global,
+  sin operar este repositorio con el harness ni el Django de P009, sin acciones remotas ni publicación.
