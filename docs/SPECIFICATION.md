@@ -196,6 +196,14 @@ Backup lee referencias selladas y restaura solo para consulta, sin observar orí
 
 ## 9. Requisitos no funcionales
 
+P012-T010 (D194) habilita explícitamente el formateador del perfil declarado en `local-config-8`: campos
+`formatter_argv` y `formatter_paths` juntos y no vacíos, argv sin shell terminado en `--`, patrones relativos
+sin duplicados, ejecutable mapeado y `authorize_profile_commands = true`. El motor usa la frontera D133
+antes de validar/revisar, solo sobre archivos existentes cambiados que el contrato permite. Aceptación y
+commit se vinculan a esos bytes formateados; revalidar no formatea. Omitir ambos campos mantiene el flujo
+anterior. V1–v7 conservan su contrato y rechazan las claves declarativas nuevas; los historiales no se adoptan
+bajo otra composición. [Evidencia offline](phase/P012-T010_FORMATEADOR_DECLARATIVO.md), sin uso real nuevo.
+
 - Navegar datos registrados no invoca modelos ni necesita red. El frontend no accede al disco ni lanza comandos.
 - Listados, logs y diffs paginados con límites explícitos; nada lee un historial completo para pintar una vista.
 - Instalación reproducible con lockfiles y versiones exactas; distribución como wheel con assets y migraciones; Node

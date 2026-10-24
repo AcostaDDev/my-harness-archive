@@ -42,12 +42,12 @@ runpy.run_path({PROBE!r}, run_name='__main__')
     return path
 
 
-def automatic(data, folder, tmp_path, *, reviewer='codex', executor='claude', presets=True, work='en'):
+def automatic(data, folder, tmp_path, *, reviewer='codex', executor='claude', presets=True, work='en', fmt='local-config-7'):
     binaries = tmp_path / 'bin'
     for provider in ('codex', 'claude'):
         fake_client(binaries, provider)
     value = v5(data, [], toml_project=True, selection=selection(reviewer, executor) if presets else None)
-    value['format'] = 'local-config-7'
+    value['format'] = fmt
     value['projects'][0]['work_language'] = work
     # These cases exercise CLI admission, not npm's descendant-process lifecycle (covered separately).
     # A direct Python validation still checks the edit through the real journal/process-group boundary.
@@ -68,9 +68,10 @@ def automatic(data, folder, tmp_path, *, reviewer='codex', executor='claude', pr
     return load_local_config(write(folder, value)), value
 
 
-def test_loading_is_data_only_and_unresolved_versions_cannot_be_queued(setup, repository):
+@pytest.mark.parametrize('fmt', ['local-config-7', 'local-config-8'])
+def test_loading_is_data_only_and_unresolved_versions_cannot_be_queued(setup, repository, fmt):
     _, data, folder, tmp_path = setup
-    config, _ = automatic(data, folder, tmp_path)
+    config, _ = automatic(data, folder, tmp_path, fmt=fmt)
     project = config.projects[0]
     assert project.versions['reviewer_cli'] is None and project.versions['executor_cli'] is None
     assert not (tmp_path / 'calls.jsonl').exists()
@@ -81,9 +82,10 @@ def test_loading_is_data_only_and_unresolved_versions_cannot_be_queued(setup, re
 
 @pytest.mark.parametrize('reviewer,executor', PAIRS)
 @pytest.mark.parametrize('ui,work', [('en', 'en'), ('en', 'es'), ('es', 'en'), ('es', 'es')])
-def test_automatic_clients_all_pairings_and_languages(setup, repository, reviewer, executor, ui, work):
+@pytest.mark.parametrize('fmt', ['local-config-7', 'local-config-8'])
+def test_automatic_clients_all_pairings_and_languages(setup, repository, reviewer, executor, ui, work, fmt):
     _, data, folder, tmp_path = setup
-    config, _ = automatic(data, folder, tmp_path, reviewer=reviewer, executor=executor, work=work)
+    config, _ = automatic(data, folder, tmp_path, reviewer=reviewer, executor=executor, work=work, fmt=fmt)
     from harness_local.storage.preferences import PreferencesRepository
     from harness_local.storage.work_language import associate
     preferences = PreferencesRepository(repository)

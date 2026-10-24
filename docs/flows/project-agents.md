@@ -2,13 +2,13 @@
 
 Implementado en P009-T003 ([D118](../DECISIONS.md#d118--p009-t003-presets-v5-y-selección-de-agentes-por-proyecto)),
 según [D116](../archive/phase-009/P009-T001_CONTRATO_CREACION.md#4-presets-y-composición-por-proyecto-t003).
-P011-T012 (D174) añade `local-config-7`: proveedor/modelo/esfuerzo y entorno siguen explícitos, pero ejecutable
-y versión son opcionales. El servicio detecta las CLI efectivas antes de admitir trabajo; mínimos comunes
+P011-T012 (D174) añade `local-config-7`, conservado en `local-config-8` (P012-T010): proveedor/modelo/esfuerzo y
+entorno siguen explícitos, pero ejecutable y versión son opcionales. El servicio detecta las CLI efectivas antes de admitir trabajo; mínimos comunes
 Codex 0.163.0 / Claude 2.1.304. [Detección, congelación, guardias y cuarentena](cli-compatibility.md).
 
 ```mermaid
 flowchart TD
-    O["Operador declara presets en TOML v5–v7: proveedor, roles, entorno y CLI (opcional en v7)"] --> C["Carga local sin procesos; valida proveedor, esfuerzos, USER y entorno por rol"]
+    O["Operador declara presets en TOML v5–v8: proveedor, roles, entorno y CLI (opcional desde v7)"] --> C["Carga local sin procesos; valida proveedor, esfuerzos, USER y entorno por rol"]
     C --> CL["Resolución separada de las CLI efectivas: mínimos, interfaz e identidad (cli-compatibility)"]
     CL --> U
     U["Usuario elige presets por proyecto y modelo/esfuerzo explícitos del revisor"]

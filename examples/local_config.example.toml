@@ -1,15 +1,15 @@
-# Harness Local — real-use configuration (local-config-7, P011-T012). Template, not valid as is.
+# Harness Local — real-use configuration (local-config-8, P012-T010). Template, not valid as is.
 # Keep it OUTSIDE any checkout, owned by the service user, chmod 600.
 # No secrets: authentication stays in each CLI. Canonical absolute paths.
 # Selected clients are discovered on each role's explicit PATH. No CLI version is required.
 # Stable minimums: Codex 0.163.0 and Claude Code 2.1.304. Older clients get an update instruction.
 # Compatible later releases are admitted automatically with conditional interface compatibility.
 # Parsing is data-only; service startup and admission resolve clients, and every attempt revalidates them.
-# Formats 1–6 remain readable; their explicit version assertions must match the installed client.
-# v7 keeps v6 work-language settings, v5 presets and v2 recipe fragments.
+# Formats 1–7 remain readable; v1–v6 explicit version assertions must match the installed client.
+# v8 keeps v7 automatic clients, v6 work-language settings, v5 presets and v2 recipe fragments.
 # Validate: harness-local check-config /path/harness-local.toml [--preflight]
 # Start:    harness-local serve --database /path/state/harness.sqlite3 --config /path/harness-local.toml
-format = "local-config-7"
+format = "local-config-8"
 
 [service]
 state_dir = "/ABSOLUTE/PATH/harness-state"   # CLI artifacts and migrations; outside the checkouts
@@ -45,8 +45,8 @@ bootstrap_enabled = false                     # true: the UI can enable bootstra
 
 # Declared profiles (local-config-4): the project stack, nothing runs on load. Review and confirm
 # every command: argv without a shell, whose first element is a name from the composition `executables`. All
-# keys are required except `sensitive_allowlist`; empty lists are only accepted in `preparation` and
-# `data_model_paths`. The content enters the frozen hash: changing it quarantines the pending jobs.
+# keys are required except `sensitive_allowlist` and the v8 formatter pair below. Empty lists are only accepted in
+# `preparation` and `data_model_paths`. The content enters the frozen hash: changing it quarantines pending jobs.
 # Built-in profile names (typescript-web) are reserved.
 [profiles.python-django]
 preparation = [
@@ -73,6 +73,11 @@ sensitive_paths = [".env", ".env.*", "**/.env", "**/.env.*", "*.pem", "*.key", "
 sensitive_allowlist = [".env.example"]
 # Parity (D090): a diff touching these paths without docs/DDBB-DIAGRAM.md is not accepted.
 data_model_paths = ["**/models.py", "**/models/**", "**/migrations/**"]
+# Optional in v8 only: uncomment BOTH nonempty fields to format changed, permitted Python files before validation.
+# No shell; argv must end in `--`; the executable must be mapped and authorize_profile_commands must be true.
+# Revalidation never formats; the review and commit bind the formatted content. Omit both to disable.
+# formatter_argv = ["ruff", "format", "--"]
+# formatter_paths = ["*.py"]
 executor_instructions = """Implement the Django change within the frozen task paths, with pytest tests next to it. \
 Keep ruff check, ruff format --check, mypy, manage.py check and makemigrations --check passing; \
 add migrations for model changes and update docs/DDBB-DIAGRAM.md in the same task. \

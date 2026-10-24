@@ -3,15 +3,16 @@
 Objetivo y criterios en [ROADMAP](ROADMAP.md#p012--validación-real-previa-a-la-apertura-pública).
 Decisión: [D183](DECISIONS.md#d183--p012-validación-real-previa-a-la-apertura-pública).
 
-**Estado:** T001, T008 y T009 completadas; T002 parcial (D191–D193). Primer B COMMITTED y tarea con archivos
-vacíos; continuación T009 autorizada: **B2 COMMITTED** (`9808fd9`) y tarea `f98b16d9…` en **REVISION_LIMIT** por
-Ruff (E501/formato), con **13 tests aprobados** y mypy/Django correctos. Servicio detenido, **Claude 7/12,
-Codex 2/3**, 0 locks, 7 jobs DONE y 9 procesos STOPPED. T003–T007 pendientes; nueve tareas en total.
+**Estado:** T001, T008, T009 y **T010** completadas; T002 parcial (D191–D194). Dos incorporaciones B COMMITTED;
+última tarea en REVISION_LIMIT por Ruff, 13 tests y mypy/Django correctos. T010, elegida por HITL, habilita
+formateador declarativo en `local-config-8`, verificado offline; no reconstruye ni relanza. Servicio detenido,
+Claude **7/12**, Codex **2/3**, sin consumo nuevo, 0 locks, 7 jobs DONE y 9 procesos STOPPED. T003–T007 pendientes;
+diez tareas en total. Ningún resultado fallido se repara, formatea o revalida.
 **Siguiente:** [P012-T002](#p012-t002--instalación-incorporación-b-y-perfil-declarado-con-proveedores-reales),
-concretar offline una propuesta de continuidad tras el rechazo de Ruff y someterla a HITL antes de operar.
-[Resultado y límites de la parada](phase/P012-T002_CONTINUACION_T009.md#5-parada-y-alcance-acreditado).
-No hay defecto del producto acreditado ni autorización para reparar/revalidar/reintentar, cambiar la política
-congelada o crear otro fixture; conservar B/B2 y ambos diffs. Saldo 5 Claude/1 Codex, sin permiso de consumo.
+concretar y revisar la [continuación operativa tras T010](phase/P012-T010_FORMATEADOR_DECLARATIVO.md#5-continuación-operativa-propuesta-todavía-sin-autorizar)
+y pedir consentimiento: wheel nuevo, clon limpio del commit documental B2 sin repetir B, perfil v8 con
+formateador, registro/fase y una tarea nueva. Cero correcciones, techo 12/3 y saldo 5/1 sin permiso de consumo;
+previsión 2 Claude/1 Codex. T010 no autoriza operación real, cambios de configuración privada o reparar B/B2.
 P001–P011 siguen cerradas; la apertura del [expediente de P011](archive/phase-011/P011_EXPEDIENTE_APERTURA.md)
 queda aplazada hasta el cierre de P012 y su candidato se sustituye por el que prepare T005.
 
@@ -75,13 +76,14 @@ offline de T002 aceptado por el usuario, antes de proveedores; no se acredita su
 ## P012-T002 — Instalación, incorporación B y perfil declarado con proveedores reales
 
 **Estado:** parcial (D193): dos incorporaciones B COMMITTED; ninguna tarea COMMITTED.
-**Depende de:** T001 confirmada, T008 corregida (D187) y diagnóstico T009 completado (D192).
+**Depende de:** T001 confirmada, T008 corregida (D187), T009 completada (D192) y ampliación T010 (D194).
 Continuación limpia T009 autorizada y ejecutada: fixture `onboarding-b-t009`, copia TOML y presets/composición
 propios, mismo wheel y base. Preflight y ocho checks correctos; un turno Claude, doce borradores CAS y B2
 COMMITTED. Codex implementa la tarea, pero fallan Ruff check/formato; pytest 13 casos y mypy/Django pasan.
 Revisión REVISE y REVISION_LIMIT, cero correcciones. Consumo acumulado **7/2 frente a 12/3**; servicio detenido.
-El primer fixture y su fallo de archivos vacíos siguen intactos. Próximo paso: propuesta offline de continuidad
-y HITL; el consentimiento se agota con la parada. Sin reparación manual, revalidación o nuevo intento autorizado.
+El primer fixture y su fallo de archivos vacíos siguen intactos. T010 habilita el formateador declarativo v8
+solo offline; próximo paso: concretar la propuesta operativa y pedir consentimiento nuevo. Sin reparación
+manual, revalidación o nuevo intento autorizado.
 T003/T004 siguen sin autorización.
 **Objetivo:** Acreditar con la versión actual el flujo básico y la incorporación de un repositorio existente con
 el perfil declarado D095.
@@ -263,3 +265,32 @@ comprobación pura de presets/composición: huellas anteriores conservadas, PATH
 causa del truncamiento ni defecto de producto. Propuesta B2 desde base sintética inicial, copia TOML con presets y
 composición propios, mismo wheel, saldo acumulado 8 Claude/2 Codex; conservar B/diff/jobs. El usuario elige ese diseño
 por HITL; falta consentimiento para sus efectos reales. Sin CLI/proveedores reales, servicio o cambios operativos.
+
+## P012-T010 — Habilitar formateador en perfiles declarados
+
+**Estado:** completada offline el 2026-10-24 (D194), tras elección HITL de la alternativa A.
+**Depende de:** rechazo Ruff de T002 (D193) y D095/D133.
+**Objetivo:** Exponer al operador del perfil declarado el formateador determinista que ya ejecuta el motor,
+sin depender de otra corrección del modelo para reproducir el estilo de la herramienta.
+**Alcance:** `local-config-8`, carga/inspección del perfil, compatibilidad de registro/CLI/recetas, ejemplo,
+regresiones sintéticas y documentación. No es un defecto del motor demostrado.
+**Rutas permitidas:** `src/harness_local/services/local_config.py`,
+`src/harness_local/services/project_registry.py`, `src/harness_local/recipes/__init__.py`,
+`examples/local_config.example.toml`, `tests/product/**` (solo sintéticos), `docs/**`.
+**Criterios de aceptación:**
+
+- Solo v8 admite `formatter_argv`/`formatter_paths`, juntos, no vacíos; argv sin shell terminado en `--`, patrones
+  relativos únicos, ejecutable mapeado y autorización del perfil obligatoria. `check-config` los muestra si existen.
+- Omitir el par conserva comportamiento/hashes efectivos; v1–v7 conservan sus reglas y huellas. V8 mantiene
+  detección CLI automática, presets, idiomas y recetas v2 sin modificar implementaciones ligadas a recibos.
+- El motor/runner D133 existentes formatean solo archivos del contrato antes de validar/revisar; evidencia y commit
+  ligados a esos bytes. Revalidar no formatea. Cambiar el perfil pone en cuarentena jobs antiguos sin efectos.
+- Tests de carga, rechazos, huellas, registro/presets y recorrido nativo con herramientas/agentes falsos hasta commit;
+  casos del motor de rutas/revalidación conservados. Sin Ruff/CLI/proveedores reales o fixtures privados en tests.
+- Ambos resultados reales intactos; sin build operativo, cambio de TOML/SQLite privados, servicios o consumo nuevo.
+  Dejar guion de continuación T002 sujeto a revisión/consentimiento, sin ampliar presupuesto o correcciones.
+
+**Validación:** 28 regresiones nuevas, 177 y 106 checks dirigidos, 8 unittest; parsers/enlaces/presupuestos y diff.
+Sin frontend/Alembic por no cambiar UI/API/datos; sin validación real o wheel nuevo.
+**Entregables:** [alternativas y HITL](phase/P012-T002_PROPUESTA_CONTINUIDAD_RUFF.md),
+[implementación, checks y continuación propuesta](phase/P012-T010_FORMATEADOR_DECLARATIVO.md), D194.

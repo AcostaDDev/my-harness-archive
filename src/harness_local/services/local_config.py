@@ -1,5 +1,7 @@
-"""Operator TOML outside managed checkouts → explicit ManagedConfig (`local-config-7`).
+"""Operator TOML outside managed checkouts → explicit ManagedConfig (`local-config-8`).
 
+`local-config-8` adds an optional formatter argv/path pair to declared profiles, using the existing engine and
+native runner authorization. Formats 1–7 retain their declaration rules and frozen hashes.
 `local-config-7` (P011-T012, D174) makes executable and version optional: selected clients are resolved
 on the explicit PATH in a separate admission step; loading remains data-only. Formats 1–6 keep their hashes.
 `local-config-6` (P011-T008, D167) is `local-config-5` plus an optional `[[projects]].work_language` (en/es):
@@ -25,7 +27,7 @@ them can register projects from the UI.
 
 Loading never launches processes or reads managed repositories. Trust,
 environment, models and command authorizations come only from
-this file; v7 may discover the selected executable on that explicit environment's PATH. Provider authentication
+this file; v7/v8 may discover the selected executable on that explicit environment's PATH. Provider authentication
 stays with each installed CLI: the file must not contain secrets.
 """
 from dataclasses import asdict, replace
@@ -57,15 +59,17 @@ from harness_local.recipes import RECIPES, by_version as recipe_version, impleme
 from harness_local.services.managed_runtime import (PROJECT_ID, ManagedConfig, ManagedProject, agents_view,
                                                     validate_projects)
 
-VERSION = 'local-config-7'
+VERSION = 'local-config-8'
+V7 = 'local-config-7'
 V6 = 'local-config-6'
 V5 = 'local-config-5'
-FORMATS = ('local-config-1', 'local-config-2', 'local-config-3', 'local-config-4', V5, V6, VERSION)
-REGISTRABLE = ('local-config-3', 'local-config-4', V5, V6, VERSION)
-PROFILE_FORMATS = ('local-config-4', V5, V6, VERSION)
+FORMATS = ('local-config-1', 'local-config-2', 'local-config-3', 'local-config-4', V5, V6, V7, VERSION)
+REGISTRABLE = ('local-config-3', 'local-config-4', V5, V6, V7, VERSION)
+PROFILE_FORMATS = ('local-config-4', V5, V6, V7, VERSION)
 # v5 adds presets/selections and recipes; v6 keeps the presets/selections and adds the work language.
-AGENT_FORMATS = (V5, V6, VERSION)
-WORK_FORMATS = (V6, VERSION)
+AGENT_FORMATS = (V5, V6, V7, VERSION)
+WORK_FORMATS = (V6, V7, VERSION)
+AUTOMATIC_FORMATS = (V7, VERSION)
 CLI_KEYS = ('executable', 'cli_version', 'timeout_seconds', 'environment')
 TOOL_KEYS = ('tools', 'allowed_tools', 'grantable_tools')
 CONFIG_ENV = 'HARNESS_LOCAL_CONFIG'
@@ -288,7 +292,7 @@ def _patterns(value, where, *, empty):
     return patterns
 
 
-def _profile(name, value):
+def _profile(name, value, *, allow_formatter=False):
     """`local-config-4`: a stack profile declared by the operator; loading it executes nothing (P008-T008).
 
     Every key that grants effects is explicit (lists may be empty where noted); unknown keys are rejected.
@@ -298,7 +302,17 @@ def _profile(name, value):
         raise LocalConfigError(tr('config.name', where=where, pattern=PROJECT_ID.pattern))
     if name in PROFILES:
         raise LocalConfigError(tr('config.name_reserved', where=where))
-    value = _fields(value, where, PROFILE_KEYS, ('sensitive_allowlist',))
+    formatter_keys = ('formatter_argv', 'formatter_paths')
+    # New effects require an explicit format opt-in and the complete, nonempty pair.
+    required = PROFILE_KEYS
+    if allow_formatter and isinstance(value, dict) and any(key in value for key in formatter_keys):
+        required = (*required, *formatter_keys)
+    value = _fields(value, where, required, ('sensitive_allowlist',))
+    formatter_argv, formatter_paths = (), ()
+    if 'formatter_argv' in value:
+        formatter_argv = _shell_free(_texts(value['formatter_argv'], f'{where}.formatter_argv'),
+                                     f'{where}.formatter_argv')
+        formatter_paths = _patterns(value['formatter_paths'], f'{where}.formatter_paths', empty=False)
     commands = {}
     for key in ('preparation', 'validations'):
         items = value[key]
@@ -337,6 +351,7 @@ def _profile(name, value):
             sensitive_allowlist=_patterns(value.get('sensitive_allowlist', []), f'{where}.sensitive_allowlist',
                                           empty=True),
             executor_instructions=_text(value['executor_instructions'], f'{where}.executor_instructions'),
+            formatter_argv=formatter_argv, formatter_paths=formatter_paths,
             junit_reports=tuple(junit for _, junit in commands['validations'] if junit is not None),
             data_model_paths=_patterns(value['data_model_paths'], f'{where}.data_model_paths', empty=True))
     except LocalConfigError:
@@ -607,7 +622,7 @@ class LocalComposer:
                     **({'project_recipe': recipe_module(recipe, self._recipe_format).VERSION,
                         'recipe_config_sha256': hashlib.sha256(freeze(authority['recipe']).encode()).hexdigest()}
                        if recipe else {})}
-        if self.format == VERSION:
+        if self.format in AUTOMATIC_FORMATS:
             choice = item.get('agent_selection')
             declarations = ({role: self.presets[preset['preset_id']][1] for role, preset in choice.items()}
                             if choice is not None else self.agents)
@@ -653,7 +668,7 @@ class LocalComposer:
         return self._resolve_agents(agents), reviewer, selected
 
     def _resolve_agents(self, agents):
-        if self.format != VERSION or not self._detection_enabled:
+        if self.format not in AUTOMATIC_FORMATS or not self._detection_enabled:
             return agents
         resolved = {}
         for role, declaration in agents.items():
@@ -668,7 +683,7 @@ class LocalComposer:
 
     def resolve_config(self, config):
         """Explicit startup step; parsing remains data-only, only effective project roles are probed."""
-        if self.format != VERSION:
+        if self.format not in AUTOMATIC_FORMATS:
             return config
         self._detection_enabled = True
         projects = tuple(self.refresh(project, force=True) for project in config.projects)
@@ -679,7 +694,7 @@ class LocalComposer:
 
         Per-attempt preflight never reuses it. Stored job identities are never changed here.
         """
-        if self.format != VERSION or not self._detection_enabled:
+        if self.format not in AUTOMATIC_FORMATS or not self._detection_enabled:
             return project
         with self._lock:
             composition = self._live[project.context.root]
@@ -777,8 +792,8 @@ def _build(data, source):
                   'executor': _cli('providers.claude', 'claude', providers['claude'], optional=TOOL_KEYS)}
         reviewer = None
     else:
-        agents, reviewer = _agents(data['agents'], automatic=fmt == VERSION)
-    presets = _presets(data.get('agent_presets', {}), automatic=fmt == VERSION)
+        agents, reviewer = _agents(data['agents'], automatic=fmt in AUTOMATIC_FORMATS)
+    presets = _presets(data.get('agent_presets', {}), automatic=fmt in AUTOMATIC_FORMATS)
     compositions, registration = {}, ((), False)
     recipes = {}
     if 'recipes' in data:
@@ -827,7 +842,7 @@ def _build(data, source):
     for name, value in declared.items():
         if name == 'python-django-recipe' and 'django' in recipes:
             raise LocalConfigError(tr('config.recipe_profile_reserved'))
-        profiles[name] = _profile(name, value)
+        profiles[name] = _profile(name, value, allow_formatter=fmt == VERSION)
     if fmt in REGISTRABLE:
         if not isinstance(data['compositions'], dict) or not data['compositions']:
             raise LocalConfigError(tr('config.compositions_required'))
@@ -926,11 +941,14 @@ def from_environment() -> ManagedConfig:
 
 def _profile_view(profile: ProjectProfile) -> dict:
     """P008-T008: a declared profile's content hash and the argv the operator confirms."""
-    return {'sha256': hashlib.sha256(freeze(asdict(profile)).encode()).hexdigest(),
+    view = {'sha256': hashlib.sha256(freeze(asdict(profile)).encode()).hexdigest(),
             'preparation': [list(command.argv) for command in profile.preparation],
             'validations': [list(command.argv) for command in profile.validations],
             'junit_reports': [item.path for item in profile.junit_reports],
             'data_model_paths': list(profile.data_model_paths)}
+    if profile.formatter_argv:
+        view.update(formatter_argv=list(profile.formatter_argv), formatter_paths=list(profile.formatter_paths))
+    return view
 
 
 def summary(config: ManagedConfig) -> dict:

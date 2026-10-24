@@ -204,6 +204,7 @@ tarea se leen solo las decisiones que cita; este índice sirve para buscar prece
 | [D191](#d191--p012-t002-incorporación-b-confirmada-y-parada-del-escritor-codex) | P012-T002: incorporación B confirmada y parada del escritor Codex | P012 |
 | [D192](#d192--p012-t009-entorno-del-escritor-y-continuidad-con-fixture-limpio) | P012-T009: entorno del escritor y continuidad con fixture limpio | P012 |
 | [D193](#d193--p012-t002-fixture-limpio-incorporado-y-rechazo-por-ruff) | P012-T002: fixture limpio incorporado y rechazo por Ruff | P012 |
+| [D194](#d194--p012-t010-formateador-declarativo-optativo-en-local-config-8) | P012-T010: formateador declarativo optativo en local-config-8 | P012 |
 
 ## D001 — Alcance local y arquitectura base
 
@@ -5688,3 +5689,41 @@ Conserva D191/D192 sin atribuir al nuevo intento la resolución de la causa del 
 - Solo documentos de este repositorio; sin cambios de producto, modelos/migraciones, flujos, baseline pública,
   configuración global, smokes adicionales, tag, push o publicación. Checks documentales y diff al cerrar;
   suites completas y pruebas de los fixtures detenidos no se repiten.
+
+## D194 — P012-T010: formateador declarativo optativo en local-config-8
+
+Estado: implementada y verificada offline el 2026-10-24, tras elección HITL explícita; sin reanudar T002.
+Fase: P012. [Alternativas y elección](phase/P012-T002_PROPUESTA_CONTINUIDAD_RUFF.md),
+[contrato, pruebas y guion posterior](phase/P012-T010_FORMATEADOR_DECLARATIVO.md). Amplía D095 apoyándose en D133.
+
+- La investigación confirma que el run agotado no admite otra política, revalidar no ejecuta/formatea y un
+  nuevo run no admite el checkout sucio. No hay defecto del motor acreditado: validaciones y revisor rechazaron
+  correctamente Ruff. Una nueva raíz desde el commit documental limpio de B2 puede registrarse como proyecto
+  ya gestionado, sin repetir B; no se crea u opera en esta tarea.
+- HITL: **«Implementar formateador declarativo offline (recomendado)»**. Se elige habilitar la capacidad D133
+  al operador del perfil declarado, con tests sintéticos. No se elige ampliar Codex a 4 llamadas ni autorizar
+  un ciclo de corrección. Tampoco se autoriza reconstruir/instalar, editar configuración privada o relanzar.
+- Se introduce **local-config-8**, conservando el contrato y las huellas de v1–v7. Solo v8 admite el par opcional
+  `formatter_argv`/`formatter_paths` en perfiles declarados: presentes van juntos y no vacíos; argv sin shell
+  terminado en `--`, patrones relativos únicos, ejecutable mapeado y `authorize_profile_commands = true`.
+  Omitir ambos conserva el perfil sin formateador. El ejemplo lo muestra comentado; `check-config` expone el
+  par únicamente cuando está declarado. Se reutilizan diagnósticos y validaciones existentes.
+- Sin cambiar motor/runner: D133 selecciona solo archivos cambiados, existentes, coincidentes y permitidos por
+  el contrato, y formatea antes de validar/revisar. Registro nativo `formatter-paths`, timeout 120 s y formato 8
+  de historial existentes. Revalidar no formatea. Aceptación y commit ligados a los bytes formateados.
+  El ejecutor no gana shell, red o rutas; se mantienen las seis validaciones y las guardias del runner.
+- V8 conserva detección CLI, presets, idiomas y recetas v2 de v7. V7 mantiene el descubrimiento automático al
+  separarlo del identificador de última versión. Registro y mapa de generaciones reconocen v8, sin modificar
+  módulos de recetas ligados a recibos. Los perfiles sin formateador conservan las huellas efectivas; cambiar
+  formato/argv/patrones no adopta jobs anteriores: cuarentena antes de efectos, snapshots intactos.
+- **28 regresiones nuevas**, además de **177 y 106 checks dirigidos**; **8 unittest correctos**. Recorrido nativo
+  con CLI/herramientas falsas hasta commit, precedencia del formateador, evidencia del revisor y bytes del commit;
+  carga sin procesos, errores, huellas/cuarentena, detección/parejas/idiomas, registro v8 y recetas v1/v2.
+  No se presenta esta evidencia sintética como solución probada del intento real ni causa del truncamiento anterior.
+- T002 conserva sus dos fallos y consumo **Claude 7/12, Codex 2/3**, servicio detenido. El guion posterior propone
+  wheel/venv nuevos, clon limpio de `9808fd9` sin otra B, perfil/composición/presets propios, cero correcciones y
+  una tarea. Previsión 2 Claude/1 Codex, sin permiso de consumo por esta elección. Falta concretar/revisar el
+  tramo operativo y pedir consentimiento nuevo. T003/T004 y acciones remotas permanecen fuera.
+- Flujos, especificación, arquitectura y documentos vivos actualizados; sin modelos/migraciones, API, UI,
+  dependencias, códec o configuración global. Sin proveedores reales, servicio, build operativo, modificación
+  de fixtures/TOML/SQLite privados, smokes, tag, push o publicación; baseline pública pendiente de T005.

@@ -144,12 +144,19 @@ confirmar la parada queda `INTERRUPTED` sin reintento automático.
 
 - Tras cada turno del ejecutor, y antes de capturar la evidencia, el motor ejecuta `formatter_argv` + rutas sobre los
   `changed_paths` que casan con `formatter_paths`, existen como archivo y el contrato permite. Revalidar no formatea.
-  Sin archivos que casen no se lanza nada. Hoy lo declara el perfil de la receta Django (`ruff format --`, `*.py`).
+  Sin archivos que casen no se lanza nada. Lo declara el perfil de la receta Django (`ruff format --`, `*.py`);
+  desde P012-T010, un perfil declarado puede activarlo explícitamente en `local-config-8` mediante
+  `formatter_argv` y `formatter_paths`. Ambos campos deben aparecer juntos, no vacíos; argv sin shell y terminado
+  en `--`, patrones relativos sin repeticiones. V1–v7 conservan su contrato y rechazan esas claves declarativas.
 - El runner nativo lo autoriza como `formatter-paths`: el argv del perfil seguido solo de archivos existentes del
   checkout. Si no llega a ejecutarse, el run se para en `formatter` antes de revisar. Un código de salida distinto
   de cero llega a la validación y al revisor.
 - El ciclo guarda `formatting_json` (formato 8 del historial). El revisor lo recibe como `formatting`, y la API y la
   página del run lo muestran. `PROFILE_INSTRUCTIONS` avisa al ejecutor de que no reformatee a mano.
+- `authorize_profile_commands = true` y ejecutable mapeado son obligatorios. Cambiar argv o patrones cambia la
+  huella del perfil/composición; argv también cambia la autorización nativa. Los jobs ya congelados se rechazan
+  antes de efectos, sin adoptar el nuevo formateador ni reponer correcciones. `check-config` muestra argv/patrones
+  solo si están declarados; omitir ambos mantiene el comportamiento sin formateo.
 
 ## Instrucciones del proyecto (D094)
 

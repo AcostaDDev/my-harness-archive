@@ -97,12 +97,12 @@ def test_local_config_3_toml_projects_name_a_composition(operator):
             load_local_config(write(folder, broken))
 
 
-def test_example_template_documents_automatic_local_config_7_keys(operator):
+def test_example_template_documents_automatic_local_config_8_keys(operator):
     """The public template needs no executable/version pin; the project explicitly declares its work language."""
     import tomllib
     data = v3(operator[1], [], toml_project=True)
     example = tomllib.loads((Path(__file__).parents[2] / 'examples/local_config.example.toml').read_text())
-    assert example['format'] == 'local-config-7' and example.keys() == data.keys() | {'profiles'}
+    assert example['format'] == 'local-config-8' and example.keys() == data.keys() | {'profiles'}
     assert example['registration'].keys() == data['registration'].keys()
     assert example['compositions']['web'].keys() == data['compositions']['web'].keys()
     assert example['projects'][0].keys() == data['projects'][0].keys() | {'work_language'}

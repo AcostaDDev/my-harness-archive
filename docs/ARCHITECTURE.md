@@ -62,8 +62,8 @@ llaman a los mismos casos de uso. El supervisor es el único que lanza procesos 
 | `storage/*.py` | Repositorios SQLAlchemy por área (`managed`, `phases`, `documents`, `transition`, `planning`, `chat`, `metrics`, `registry`, `backup`, `retention`, `migrate`…) |
 | `storage/run_projection.py`, `managed_views.py` | Proyección derivada `run-projection-1` escrita con el historial y vistas de runs que solo la leen (D144) |
 | `services/managed.py`, `managed_runtime.py` | Supervisor (`run_once`, lease, cuarentena) y composición del runtime |
-| `services/local_config.py`, `project_registry.py`, `project_creation.py` | TOML `local-config-7` (lectura de 1–6), CLI automática sin pin en v7 (D174); registro/creación con 3–7, presets desde v5, recetas v1 en v5 y v2 en v6/v7 (D168); trabajo sellado al alta (D167) |
-| `recipes/`, `services/project_preparation.py`, `storage/preparation.py`, `adapters/preparation.py` | Recetas empaquetadas `django-recipe-1` y `typescript-web-recipe-1` y su preparación confirmada y recuperable (D119, D143); sucesoras v2 por idioma de trabajo en `local-config-6/7`, con despacho por `id` (D163, D168) |
+| `services/local_config.py`, `project_registry.py`, `project_creation.py` | TOML `local-config-8` (lectura de 1–7), formateador declarativo v8 (D194), CLI automática desde v7 (D174); registro/creación 3–8, presets desde v5, recetas v1 en v5 y v2 desde v6 (D168); trabajo sellado al alta (D167) |
+| `recipes/`, `services/project_preparation.py`, `storage/preparation.py`, `adapters/preparation.py` | Recetas empaquetadas `django-recipe-1` y `typescript-web-recipe-1` y su preparación confirmada y recuperable (D119, D143); sucesoras v2 por idioma de trabajo en `local-config-6/7/8`, con despacho por `id` (D163, D168) |
 | `api/app.py`, `managed.py`, `schemas.py`, `session.py`, `security.py` | Aplicación, rutas, contratos Pydantic, sesión y guardia |
 | `profiles/typescript_web.py` | Perfil integrado `typescript-web` componible (el perfil privado solo biblioteca se retiró en P011-T015); los perfiles del TOML v4/v5 se componen en `services/local_config.py` |
 | `cli.py`, `launcher.py` | `harness-local` (backup, retención, diagnóstico, `check-config`, `metrics-backfill`, `init-db`, `serve`); `--ui-language` por invocación |
@@ -75,7 +75,7 @@ llaman a los mismos casos de uso. El supervisor es el único que lanza procesos 
 Preferences), `i18n.ts`, `i18n/{en,es}.json` y `Language.tsx` (catálogos y proveedor del idioma visual, D166),
 `markdown.ts` y `mermaid-view.ts` (render aislado), `managed-api.ts` (envíos idempotentes), `api.generated.ts`
 (generado, no se edita). `scripts/`: `dev`, `export_openapi.py`, `build_distribution.py`, `check_distribution.py`,
-`smoke_cli.py`. `examples/`: plantilla `local_config.example.toml` (v7 automática; formatos 1–6 legibles),
+`smoke_cli.py`. `examples/`: plantilla `local_config.example.toml` (v8, formateador optativo y CLI automática; formatos 1–7 legibles),
 fragmentos de recetas v2, demos sintéticas y guiones históricos (`first_use/`, `provider_matrix/`) sin actualizar.
 
 ## 4. Patrones
@@ -120,7 +120,7 @@ por su API y los artefactos referenciados; la restauración es de consulta (`que
   Versión, huella de lanzamiento y política se congelan por job; observación fresca y validación del argv por intento,
   más comprobación de identidad antes de GO. Deriva → rechazo/cuarentena, sin retry ni sustitución de proveedor.
   [Flujo](flows/cli-compatibility.md), [entrega y límites](archive/phase-011/P011-T012_COMPATIBILIDAD_CLI.md).
-- **TOML local del operador** (`local-config-7`; 1–6 se siguen leyendo), fuera de todo checkout y `chmod 600`:
+- **TOML local del operador** (`local-config-8`; 1–7 se siguen leyendo), fuera de todo checkout y `chmod 600`:
   `[service]`, `[git]`, `[agents.reviewer]`, `[agents.executor]`, `[registration]` (raíces y techo de bootstrap),
   `[profiles.*]` opcionales, `[compositions.*]` (perfil integrado o declarado y comandos autorizados) y
   `[[projects]]` opcional con su política. V5 añade `[agent_presets.*]` y `agent_selection` opcional por
@@ -146,6 +146,11 @@ por su API y los artefactos referenciados; la restauración es de consulta (`que
   SQLite, grupos POSIX. Un comando de la tarea con el argv de una validación del perfil en la raíz y sin entorno
   propio es esa validación (su timeout) y se ejecuta una vez (P011-T016). El formateador del perfil se autoriza aparte (`formatter-paths`): su argv seguido solo de
   archivos existentes del checkout. El motor lo ejecuta tras cada turno del ejecutor (D133).
+- **Formateador declarativo** (P012-T010, D194): `local-config-8` admite el par opcional no vacío
+  `formatter_argv`/`formatter_paths` en perfiles declarados, con ejecutable mapeado y autorización del perfil.
+  Motor/runner D133 y `formatting_json` existentes, sin formatear al revalidar. CLI, idiomas y recetas v2 de v7
+  conservados; v1–v7 mantienen su contrato/huellas. `check-config` muestra argv/patrones solo al declararlos.
+  [Entrega offline](phase/P012-T010_FORMATEADOR_DECLARATIVO.md), sin nueva acreditación real.
 - **Prompts** (`templates/`): `plan-task`, `execute-task`, `revise-task`, `review-task`, `executor-routing`,
   `close-phase`, `reconcile-phase`, `chat-turn`, `define-project`, `plan-phase`, `onboard-project` (D102; rol de
   solo lectura `definition`, sin `AGENTS.md` inyectado porque es parte del origen), `bootstrap-project`. Jerarquía base →
@@ -261,7 +266,8 @@ Uso real (D051): construir y verificar el wheel (`scripts/build_distribution.py 
 LICENSE/NOTICE, `pylock.toml` instalable offline y `SHA256SUMS`; `scripts/check_distribution.py --dist`, que además
 comprueba miembros exactos, metadatos, versión única y ausencia de componentes retirados; P011-T015), instalarlo en un venv propio y operar con `harness-local check-config RUTA [--preflight]`,
 `harness-local init-db --database RUTA` y `harness-local serve --database RUTA --config RUTA`. Nunca desde este checkout.
-La plantilla del TOML es `local-config-7`: sin pin obligatorio de CLI, con presets, `work_language` por proyecto
+La plantilla del TOML es `local-config-8`: formateador optativo en perfiles declarados, sin pin obligatorio de CLI,
+con presets, `work_language` por proyecto
 y fragmentos de receta v2 de `examples/` (una composición ya existente se añade con otro nombre). El PATH explícito
 de cada rol debe incluir el cliente, o se declara su ruta opcional. Mínimos y compatibilidad en el
 [README](../README.md#requirements), contrastados con `cli_compatibility.MINIMUM` y la política incluida. Las listas

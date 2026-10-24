@@ -344,7 +344,11 @@ sin aceptación, corrección o commit de tarea. Servicio detenido, 7 jobs DONE, 
 Claude **7/12**, Codex **2/3**, 8186 filas previas conservadas. [Registro](phase/P012-T002_CONTINUACION_T009.md).
 T002 sigue parcial. Siguiente paso: concretar offline una propuesta de continuidad y someterla a HITL antes de
 operar; ambos fallos/diffs conservados, sin reparación ni nuevos intentos autorizados. T003–T007 pendientes;
-T003/T004 sin autorización. Límites reales intactos.
+T003/T004 sin autorización. **T010 completada offline** (D194), elegida por HITL: formateador de perfiles
+declarados optativo en `local-config-8`, con motor/runner D133 y versiones anteriores conservadas. Tests sintéticos
+correctos; sin build/instalación operativa ni consumo real adicional. [Entrega y guion futuro](phase/P012-T010_FORMATEADOR_DECLARATIVO.md).
+Siguiente: concretar/revisar el tramo T002 con wheel nuevo y clon del HEAD documental B2 (sin repetir B),
+perfil v8 con formateador y cero correcciones; consentimiento operativo nuevo antes de ejecutarlo. Límites reales intactos.
 La apertura del expediente de P011 queda aplazada hasta el cierre de P012.
 
 ## Después de la apertura en GitHub — v0.2.0

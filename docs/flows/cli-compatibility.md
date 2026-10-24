@@ -1,11 +1,12 @@
 # Flow — automatic CLI discovery and compatibility
 
 Implemented in P011-T012 (D174), following the [contract](../archive/phase-011/P011-T011_CONTRATO_COMPATIBILIDAD_CLI.md)
-and its HITL clarification. No version pin, candidate acceptance or operator evidence file is required in v7.
+and its HITL clarification. No version pin, candidate acceptance or operator evidence file is required in v7/v8.
+P012-T010's v8 adds declared profile formatters; CLI discovery, permissions and per-attempt checks remain the same.
 
 ```mermaid
 flowchart TD
-    C["Parse local-config-7: explicit environment, provider, optional executable"] --> D["Data-only project composition: versions not yet observed"]
+    C["Parse local-config-7/8: explicit environment, provider, optional executable"] --> D["Data-only project composition: versions not yet observed"]
     D --> S["Service startup or effective project composition: resolve selected roles"]
     S --> P["Resolve command on explicit absolute PATH or optional path"]
     P --> V["Bounded version/help probes, closed stdin and temporary cwd"]

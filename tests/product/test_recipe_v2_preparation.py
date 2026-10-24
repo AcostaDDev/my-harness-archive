@@ -159,7 +159,7 @@ def test_without_a_confirmed_work_language_preparation_is_refused_before_effects
 
 
 @pytest.mark.parametrize('stack', ['django', 'typescript'])
-def test_v5_keeps_v1_and_v6_selects_v2_from_the_same_recipe_keys(operator, stack):
+def test_v5_keeps_v1_and_successors_select_v2_from_the_same_recipe_keys(operator, stack):
     context, data, folder, tmp_path = operator
     data = django_data(data, folder) if stack == 'django' else typescript_data(data, folder, synthetic_cache(tmp_path))
     target = tmp_path / 'chosen' / 'probe'
@@ -167,7 +167,7 @@ def test_v5_keeps_v1_and_v6_selects_v2_from_the_same_recipe_keys(operator, stack
     item = {'id': 'probe', 'root': str(target), 'repository_trusted': True, 'policy': POLICY, 'composition': stack,
             'bootstrap_enabled': True}
     versions, profiles = {}, {}
-    for fmt in ('local-config-5', 'local-config-6'):
+    for fmt in ('local-config-5', 'local-config-6', 'local-config-7', 'local-config-8'):
         config = load_local_config(write(folder, {**data, 'format': fmt}))
         project, _ = config.registrar.compose(item, 'probe', registry=(1, 'x' * 64))
         versions[fmt], profiles[fmt] = project.versions, project.context.profile
@@ -177,6 +177,10 @@ def test_v5_keeps_v1_and_v6_selects_v2_from_the_same_recipe_keys(operator, stack
     assert versions['local-config-5']['recipe_config_sha256'] != versions['local-config-6']['recipe_config_sha256']
     assert profiles['local-config-5'].executor_instructions == old.profile().executor_instructions
     assert profiles['local-config-6'].executor_instructions == new.profile().executor_instructions
+    for fmt in ('local-config-7', 'local-config-8'):
+        assert versions[fmt]['project_recipe'] == versions['local-config-6']['project_recipe']
+        assert versions[fmt]['recipe_config_sha256'] == versions['local-config-6']['recipe_config_sha256']
+        assert profiles[fmt] == profiles['local-config-6']
     if stack == 'typescript':
         # The built-in profile stays for compositions without a recipe, also in v6.
         assert profiles['local-config-6'].junit_reports != profiles['local-config-5'].junit_reports

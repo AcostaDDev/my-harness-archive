@@ -19,13 +19,15 @@ local completada en el alcance de D151/D153 y preparación pública archivada co
   explícita de streams. Proyección derivada `run-projection-1` escrita con el historial y comprobada en el backup
   (P010-T003, D144).
 - **Agentes** ([P007](archive/phase-007/SUMMARY.md)): revisor y ejecutor Codex o Claude en cualquier combinación
-  (`cli-14`, configuración hasta `local-config-7`, lectura de 1–6), revisor en solo lectura con esquema tipado, memoria automática desactivada,
+  (`cli-14`, configuración hasta `local-config-8`, lectura de 1–7), revisor en solo lectura con esquema tipado, memoria automática desactivada,
   supresión de confianza del escritor Codex. Validaciones nativas `commands-1` con JUnit. Perfiles: `typescript-web`
   (componible desde el TOML) y perfiles declarados en `[profiles.*]` de
   `local-config-4`, con el ejemplo `python-django` (P008, D095).
   Detección automática por PATH explícito/ruta opcional en v7, sin pin obligatorio; mínimos Codex 0.163.0 /
   Claude 2.1.304, posteriores con compatibilidad condicionada al contrato conocido (P011-T012, D174).
   Política/cliente observados congelados por job y revalidación por intento/antes de GO; sin uso real nuevo.
+  Formateador D133 optativo para perfiles declarados en v8 (P012-T010, D194), verificado offline; v1–v7 conservan
+  su contrato y huellas. [Entrega](phase/P012-T010_FORMATEADOR_DECLARATIVO.md).
 - **Fases y documentos** ([P004](archive/phase-004/SUMMARY.md), [P007](archive/phase-007/SUMMARY.md),
   [P008](archive/phase-008/SUMMARY.md)): check READY, reconciliación, preguntas, lote desatendido,
   enmiendas, abandono y cierre con tag. Contrato documental unificado y
@@ -109,6 +111,11 @@ Consumo acumulado **Claude 7/12, Codex 2/3** (nuevo 3/1). Servicio detenido, **7
 0 locks**; **8186 filas previas intactas** en contraste de copias SQLite/WAL/SHM.
 [T002 sigue parcial](phase/P012-T002_CONTINUACION_T009.md); T003–T007 pendientes, T003/T004 sin autorización.
 
+**T010 completada offline** (D194), elegida por HITL: `local-config-8` habilita el formateador en perfiles
+declarados, con autorización/rutas D133 y huellas congeladas. Sin cambio de motor, runner, datos o API;
+v1–v7, detección CLI y recetas v2 conservadas. 28 regresiones nuevas y checks dirigidos correctos.
+Sin build/instalación operativos ni nuevas llamadas; ambos intentos reales y su parada permanecen intactos.
+
 P011 sigue cerrada y archivada ([D182](DECISIONS.md#d182--cierre-documental-de-p011-y-preparación-pública-archivada),
 [resumen](archive/phase-011/SUMMARY.md)). El paso 1 de su [expediente](archive/phase-011/P011_EXPEDIENTE_APERTURA.md)
 se ejecutó el 2026-10-24: candidato regenerado en `$HOME/Documents/projects/my_harness_dist` (sin Git) con el
@@ -120,9 +127,9 @@ tag `p001` sobre `47a0557` y archivo en `3d105c6`, sin repetir operaciones ni co
 Este repositorio sigue sin registrarse ni ejecutarse con el harness.
 
 **Siguiente:** [P012-T002](NEXT_STEPS.md#p012-t002--instalación-incorporación-b-y-perfil-declarado-con-proveedores-reales),
-concretar **offline** una propuesta de continuidad tras el rechazo de Ruff y someterla a HITL antes de operar.
-El [tramo autorizado](phase/P012-T002_CONTINUACION_T009.md#5-parada-y-alcance-acreditado) se agota con esta parada:
-conservar B/B2, sus diffs e historiales, sin reparar o reutilizar el run agotado con otra política ni crear otro
-fixture automáticamente. Saldo 5 Claude/1 Codex sin permiso de consumo. T003/T004 y cualquier relanzamiento real
-requieren consentimiento nuevo. Los límites de la base acumulada siguen vigentes; A retirado por D155/D161,
-sin acreditarlo como validado. Sin nueva fase del Django hijo ni ampliación de consentimientos anteriores.
+concretar y revisar la [continuación operativa tras T010](phase/P012-T010_FORMATEADOR_DECLARATIVO.md#5-continuación-operativa-propuesta-todavía-sin-autorizar)
+y pedir su consentimiento antes de operar: wheel nuevo, clon limpio del commit documental B2 (sin repetir B),
+perfil declarado v8 con formateador, registro/fase y una tarea. Cero correcciones y techo 12/3; consumido 7/2,
+previsión nueva 2 Claude/1 Codex, sin autorizar su consumo. Conservar B/B2, diffs, historiales y configuraciones.
+No reusar el run agotado bajo otra política ni reparar sus resultados. T003/T004 siguen sin autorización;
+sin nueva fase del Django de P009, push, tags o publicación. La elección offline de T010 no autoriza el tramo real.

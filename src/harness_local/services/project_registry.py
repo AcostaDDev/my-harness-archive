@@ -1,4 +1,4 @@
-"""Registration, change and retirement of projects from the UI over `local-config-3/4/5/6` (D078/D095).
+"""Registration, change and retirement of projects from the UI over `local-config-3` through 8 (D078/D095).
 
 The TOML remains the authority for what runs; the registry only stores
 non-executable data (canonical root, trust, named composition, policy,
@@ -26,7 +26,7 @@ from harness_local.storage.registry import ProjectRegistryRepository, RegistryCo
 RESERVED_IDS = frozenset({'new'})
 ACTIONS = ('register', 'update', 'retire')
 # Formats with per-project agent selections (v5) and their successor that adds the work language (v6).
-AGENT_FORMATS = ('local-config-5', 'local-config-6', 'local-config-7')
+AGENT_FORMATS = ('local-config-5', 'local-config-6', 'local-config-7', 'local-config-8')
 def trust_statement():
     """The statement the operator confirms, in the visual language of the preview; the record keeps that text."""
     return tr('registry.trust')

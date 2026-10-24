@@ -116,9 +116,10 @@ def test_invalid_presets_fail_at_load_without_processes(operator, change):
 
 
 @pytest.mark.parametrize('reviewer,executor', MIXED_PAIRS)
-def test_selected_presets_drive_the_plan_and_execution(operator, repository, migrated_database, reviewer, executor):
+@pytest.mark.parametrize('fmt', ['local-config-5', 'local-config-8'])
+def test_selected_presets_drive_the_plan_and_execution(operator, repository, migrated_database, reviewer, executor, fmt):
     context, data, folder, tmp_path = operator
-    config = load_local_config(write(folder, v5(data, [tmp_path])))
+    config = load_local_config(write(folder, {**v5(data, [tmp_path]), 'format': fmt}))
     with client(migrated_database[0], tmp_path, config) as http:
         shown, saved = confirm(http, register(context.root, agent_selection=selection(reviewer, executor)))
         assert saved.status_code == 200, saved.text
