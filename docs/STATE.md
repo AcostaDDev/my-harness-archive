@@ -92,9 +92,11 @@ local completada en el alcance de D151/D153 y preparación pública archivada co
 
 **P012 — Validación real previa a la apertura pública**, planificada el 2026-10-24
 ([D183](DECISIONS.md#d183--p012-validación-real-previa-a-la-apertura-pública),
-[criterios](ROADMAP.md#p012--validación-real-previa-a-la-apertura-pública), [tareas](NEXT_STEPS.md)). Siete tareas
-pendientes, ninguna operación real ejecutada. Revisor Claude Code y ejecutor Codex con modelos ligeros; cada tramo
-real (T002–T004) exige confirmar la propuesta de T001 y autorización propia.
+[criterios](ROADMAP.md#p012--validación-real-previa-a-la-apertura-pública), [tareas](NEXT_STEPS.md)). T001 con
+propuesta confirmada por el usuario y cierre documental (D184); seis tareas pendientes, ninguna operación real
+ejecutada. Codex 0.164.0 instalado elegido por el usuario (D184); Claude 2.1.310,
+ambos con compatibilidad condicionada de D174. Revisor Claude Code y ejecutor Codex con modelos ligeros; cada tramo
+real (T002–T004) exige autorización propia sobre la propuesta confirmada de T001; ninguna concedida.
 
 P011 sigue cerrada y archivada ([D182](DECISIONS.md#d182--cierre-documental-de-p011-y-preparación-pública-archivada),
 [resumen](archive/phase-011/SUMMARY.md)). El paso 1 de su [expediente](archive/phase-011/P011_EXPEDIENTE_APERTURA.md)
@@ -106,6 +108,10 @@ P010 conserva su cierre (D153) y P009 el suyo (D140); el Django hijo sigue con P
 tag `p001` sobre `47a0557` y archivo en `3d105c6`, sin repetir operaciones ni comprobaciones de su estado.
 Este repositorio sigue sin registrarse ni ejecutarse con el harness.
 
-**Siguiente:** P012-T001, propuesta operativa y consentimiento (documental). Los límites de la base acumulada
+**Siguiente:** P012-T002, pendiente de autorización explícita sobre la
+[propuesta confirmada de T001](phase/P012-T001_PROPUESTA_OPERATIVA.md) (D184). Área, modelos/esfuerzos, fixtures y
+presupuestos elegidos; hashes del futuro wheel, cachés/fixtures y preflight siguen sin acreditar, como puerta offline
+previa a proveedores de T002 aceptada por el usuario. Confirmar T001 no autoriza ningún tramo real.
+Los límites de la base acumulada
 siguen vigentes hasta que P012 aporte evidencia real; A queda retirado por D155/D161, sin acreditarlo como validado.
 Sin nueva fase del Django hijo ni ampliación de consentimientos anteriores.

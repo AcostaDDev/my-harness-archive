@@ -3,9 +3,11 @@
 Objetivo y criterios en [ROADMAP](ROADMAP.md#p012--validación-real-previa-a-la-apertura-pública).
 Decisión: [D183](DECISIONS.md#d183--p012-validación-real-previa-a-la-apertura-pública).
 
-**Estado:** planificada el 2026-10-24 por encargo del usuario; siete tareas pendientes, ninguna ejecutada.
-**Siguiente:** P012-T001, propuesta operativa y consentimiento. No hay autorización para operaciones reales hasta
-que el usuario confirme la propuesta de T001 y autorice cada tramo.
+**Estado:** T001 completada documentalmente y confirmada por el usuario (D184); seis tareas pendientes.
+Ninguna operación real ejecutada.
+**Siguiente:** P012-T002, pendiente de autorización explícita del tramo sobre la
+[propuesta confirmada](phase/P012-T001_PROPUESTA_OPERATIVA.md). La confirmación de T001 no autoriza operaciones;
+hashes de artefactos, cachés/fixtures y preflight son puerta offline previa a proveedores en T002.
 P001–P011 siguen cerradas; la apertura del [expediente de P011](archive/phase-011/P011_EXPEDIENTE_APERTURA.md)
 queda aplazada hasta el cierre de P012 y su candidato se sustituye por el que prepare T005.
 
@@ -29,11 +31,12 @@ queda aplazada hasta el cierre de P012 y su candidato se sustituye por el que pr
   Streams, prompts completos, tokens de sesión y SQLite quedan en el área privada; en `docs/phase/` solo evidencia
   saneada (versiones, hashes, ids abreviados, número de llamadas, comandos y resultados).
 - El candidato `74cc9141…ea71` de P011 deja de ser el que se publica en cuanto cambie el README o `docs/public/`.
-  Sin commits salvo petición del usuario; sin tag, push, creación de repositorio, Release ni publicación.
+  Sin commits salvo petición del usuario; sin tag en este repositorio, push, creación de repositorio remoto,
+  Release ni publicación. El cierre del hijo de T004 conserva su tag propio, bajo autorización de ese tramo.
 
 ## P012-T001 — Propuesta operativa y consentimiento
 
-**Estado:** pendiente. **Depende de:** D183.
+**Estado:** completada documentalmente y confirmada por el usuario el 2026-10-24 (D184). **Depende de:** D183.
 **Objetivo:** Concretar y someter a confirmación los parámetros de los tres tramos reales, sin ejecutar ninguno.
 **Alcance:** área, fixtures, construcción e instalación, configuración, modelos, presupuesto, paradas y evidencia.
 Parte de la [propuesta de P010-T008](archive/phase-010/P010-T008_PROPUESTA_VALIDACION_REAL.md) §§2–5 sin el flujo A,
@@ -44,8 +47,9 @@ retirado por D155/D161, y la amplía con chat, backup/restauración y receta Typ
 - Área privada nueva elegida por el usuario, fuera de checkouts y sin enlaces (`dist/`, `venv/`, `config/`,
   `state/`, `tmp/`, `command-home/`, `wheels/`, raíz de proyectos); puerto libre distinto de 8013/5173.
 - Commit base del wheel, comandos de construcción/verificación/instalación offline y hashes esperados. Toolchain y
-  versiones comprobadas solo con `--version`: Codex 0.163.0, Claude Code 2.1.310 (posterior al mínimo 2.1.304, con
-  compatibilidad condicionada), Python 3.13.13, Node 24.15.0, npm 11.12.1, uv 0.12.19; rutas y hashes de las CLI.
+  versiones comprobadas solo con `--version`: Codex **0.164.0** (elección HITL D184), Claude Code 2.1.310, ambas
+  posteriores a los mínimos y con compatibilidad condicionada; Python 3.14.4 para harness/build y 3.13.13 para B,
+  Node 24.15.0, npm 11.12.1, uv 0.12.19; rutas y hashes de las CLI.
 - Revisor Claude con modelo ligero y esfuerzo concretos (propuesta inicial `sonnet`, esfuerzo bajo/medio) y
   ejecutor Codex con un único modelo ligero de su catálogo en `executor_mode = "catalog"` y esfuerzo bajo; los
   nombres se toman de la documentación o ayuda de las CLI, sin invocar modelos.
@@ -60,7 +64,9 @@ retirado por D155/D161, y la amplía con chat, backup/restauración y receta Typ
 - Decisión HITL registrada: el usuario confirma la propuesta (o la ajusta) antes de T002.
 
 **Validación:** contraste con D095/D119/D143/D151/D168/D173/D174, el ejemplo de configuración y los flujos; enlaces.
-**Entregables:** `docs/phase/P012-T001_PROPUESTA_OPERATIVA.md` y su decisión en DECISIONS.
+**Entregables:** [propuesta confirmada](phase/P012-T001_PROPUESTA_OPERATIVA.md) y D184. HITL: «Confirmar T001
+con estos parámetros; sin autorizar tramos». Wheel/cachés/fixtures/preflight aún sin ejecutar: punto de control
+offline de T002 aceptado por el usuario, antes de proveedores; no se acredita su resultado en esta tarea documental.
 
 ## P012-T002 — Instalación, incorporación B y perfil declarado con proveedores reales
 

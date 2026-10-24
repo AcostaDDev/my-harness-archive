@@ -194,6 +194,7 @@ tarea se leen solo las decisiones que cita; este índice sirve para buscar prece
 | [D181](#d181--p011-t017-dictamen-favorable-y-expediente-de-apertura-pública) | P011-T017: dictamen favorable y expediente de apertura pública | P011 |
 | [D182](#d182--cierre-documental-de-p011-y-preparación-pública-archivada) | Cierre documental de P011 y preparación pública archivada | P011 |
 | [D183](#d183--p012-validación-real-previa-a-la-apertura-pública) | P012: validación real previa a la apertura pública | P012 |
+| [D184](#d184--p012-t001-propuesta-operativa-y-codex-01640) | P012-T001: propuesta operativa y Codex 0.164.0 | P012 |
 
 ## D001 — Alcance local y arquitectura base
 
@@ -5414,3 +5415,33 @@ Precedentes: D095, D139, D151, D155, D157, D173, D174, D181 y D182.
 - Planificar no autoriza operaciones: T001 es documental y cada tramo real (T002–T004) exige confirmación de la
   propuesta y autorización propia. Fixtures sintéticos, área privada fuera de checkouts, sin configuración global,
   sin operar este repositorio con el harness ni el Django de P009, sin acciones remotas ni publicación.
+
+## D184 — P012-T001: propuesta operativa y Codex 0.164.0
+
+Estado: completada documentalmente el 2026-10-24; propuesta confirmada por el usuario, sin autorizar tramos.
+[Propuesta, parámetros y controles](phase/P012-T001_PROPUESTA_OPERATIVA.md). Fase: P012. Concreta D183 sobre
+D095/D119/D143/D151/D168/D173/D174, sin ampliar autorizaciones operativas.
+
+- La inspección `--version` encuentra Codex **0.164.0**, frente a 0.163.0 previsto en D183. El usuario responde
+  expresamente «Usar 0.164.0 instalada, con compatibilidad condicionada de D174». Se actualizan los criterios
+  vivos de P012, sin reescribir D183 ni evidencias anteriores. Claude observado 2.1.310. No se instala otra CLI.
+- Propuesta: área nueva `$HOME/Documents/harness-validation/p012-20261024`, puertos 8024/8025, autor
+  sintético, trabajo/visual es, Claude `sonnet`/low y catálogo único Codex `gpt-6-luna`/low; este nombre procede
+  del catálogo local leído sin red, y la ayuda Claude documenta el alias/esfuerzo. Parámetros confirmados por el
+  usuario; no se atribuye disponibilidad de cuenta ni inferencia a una lectura de catálogo/help.
+- Python **3.14.4** para construir/instalar el harness, exigido por sus metadatos; **3.13.13** solo para el fixture B.
+  `local-config-7` íntegro propuesto con Django declarado del ejemplo (sin receta/formateador) y TypeScript v2.
+  Política agent/catalog, cero correcciones automáticas para parar en el primer fallo, sin fallback.
+- Techos propuestos Claude/Codex: T002 12/3 (4 h), T003 3/0 (2 h), T004 12/3 (4 h), total 27/6; una ejecución
+  normal por tarea, sobrante sin permiso de relanzamiento. Cada tramo conserva su autorización separada.
+- Base de paquete `c5cfc9b4586dbdb64075624e268e2f187749d430`; hashes de CLI, intérprete y locks observados.
+  Wheel/sdist/pylock de P012 aún no construidos, cachés/fixtures sin acreditar y preflight no ejecutado:
+  son punto de control obligatorio de preparación offline de T002 antes de proveedores. Se usa pylock PEP 751,
+  no el requirements histórico. El usuario acepta este punto de control diferido en su confirmación; T001 cierra
+  documentalmente sin presentar sus comprobaciones operativas como ejecutadas o acreditadas.
+- HITL: «Confirmar T001 con estos parámetros; sin autorizar tramos». Quedan elegidos área, puertos, modelos,
+  esfuerzos, autor, fixtures, TOML, política, presupuestos, paradas y guion. Siguiente tarea T002, pendiente de su
+  autorización explícita; T003/T004 conservan las suyas. No se pide ni se presume permiso operativo adicional.
+- Solo cambios `docs/**`, versiones/help/hashes locales y comprobaciones documentales. Sin build, instalación,
+  fixtures operativos, servicios, agentes/proveedores, smokes, configuración global, commits, push ni publicación.
+  Se conservan los límites anunciados y el expediente archivado de P011.

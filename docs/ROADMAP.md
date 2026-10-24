@@ -298,8 +298,9 @@ que se corresponda con lo probado.
 - Propuesta operativa confirmada por el usuario: área privada, wheel y hashes, CLI y versiones, pareja revisor
   Claude / ejecutor Codex con modelos ligeros, techos de llamadas por proveedor, paradas y evidencia. Cada tramo
   real se ejecuta con autorización explícita propia.
-- Flujo básico con `cli-14`, `local-config-7` y las CLI instaladas (Codex 0.163.0 y Claude Code 2.1.310, posterior
-  al mínimo): plan, ejecución, validación, revisión y COMMITTED con el wheel instalado fuera del checkout.
+- Flujo básico con `cli-14`, `local-config-7` y las CLI instaladas (Codex 0.164.0, elegido en D184, y Claude Code
+  2.1.310, ambas posteriores a los mínimos y con compatibilidad condicionada): plan, ejecución, validación, revisión
+  y COMMITTED con el wheel instalado fuera del checkout.
 - Incorporación B de un repositorio Django sintético existente y perfil declarado D095: documentos confirmados,
   código intacto por bytes y una tarea COMMITTED usando exclusivamente el perfil declarado.
 - Chat con el revisor real sobre ese proyecto, con respuesta, comando determinista y propuesta confirmada; backup
@@ -316,8 +317,11 @@ que se corresponda con lo probado.
 comparativamente modelos, ejecutar el harness sobre este repositorio, operar el Django de P009 o ReferenceProject,
 modificar la configuración global, v0.2.0 y cualquier acción remota (repositorio, push, tag, Release, visibilidad).
 **Estado:** planificada el 2026-10-24 por encargo del usuario
-([D183](DECISIONS.md#d183--p012-validación-real-previa-a-la-apertura-pública), [tareas](NEXT_STEPS.md)); siete
-tareas pendientes, ninguna operación real ejecutada. La apertura del expediente de P011 queda aplazada hasta su cierre.
+([D183](DECISIONS.md#d183--p012-validación-real-previa-a-la-apertura-pública), [tareas](NEXT_STEPS.md)). T001 tiene
+[propuesta confirmada](phase/P012-T001_PROPUESTA_OPERATIVA.md) y cierre documental (D184); seis tareas pendientes,
+ninguna operación real ejecutada ni tramo autorizado. Parámetros elegidos, incluido Codex 0.164.0; hashes de
+artefactos, cachés/fixtures y preflight son puerta offline de T002 antes de proveedores, aceptada por el usuario.
+La apertura del expediente de P011 queda aplazada hasta el cierre de P012.
 
 ## Después de la apertura en GitHub — v0.2.0
 
