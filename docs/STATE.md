@@ -93,20 +93,21 @@ local completada en el alcance de D151/D153 y preparación pública archivada co
 **P012 — Validación real previa a la apertura pública**, planificada el 2026-10-24
 ([D183](DECISIONS.md#d183--p012-validación-real-previa-a-la-apertura-pública),
 [criterios](ROADMAP.md#p012--validación-real-previa-a-la-apertura-pública), [tareas](NEXT_STEPS.md)). T001 con
-propuesta confirmada y cierre documental (D184); T008 corrige el preflight (D187, 25 regresiones y 229 tests).
-Paquete corregido `6efbd82` construido/verificado/instalado y preflight real de ambas CLI aprobado (D188).
-D189/D190 conservan el diagnóstico de navegación: la pantalla cargada manualmente permite continuar desde UI.
-Reanudación autorizada (D191): login, idiomas es/es y registro `p012-b` correctos; dos turnos Claude y doce borradores
-CAS confirmados. **Incorporación B COMMITTED** en `976b1d1`, código conservado y P001 ACTIVE con una tarea;
-reenvío idempotente comprobado por API local con autorización específica, sin duplicar efectos.
-La tarea `b94eedef…` planifica correctamente, pero Codex deja vacías las tres rutas permitidas. Pytest no recoge
-casos, mypy y Django fallan; revisión REVISE y **REVISION_LIMIT**, sin aceptar, reparar o hacer commit de tarea.
-Consumo **Claude 4/12, Codex 1/3**. CLI 2.1.310/0.164.0 con compatibilidad condicionada; sonnet/low reporta
-`claude-sonnet-5-5`, ejecutor gpt-6-luna/low. Servicio detenido, 0 jobs activos/encolados/locks y cinco procesos STOPPED.
-**T002 parcial**, T003–T007 pendientes. **T009 completada offline** (D192): Python ausente del PATH del escritor
-y TMPDIR omitido, sin causa raíz del truncamiento ni defecto del producto probado. HITL elige proponer otro
-fixture limpio con PATH/TMPDIR explícitos, conservando el fallido; sin ejecución o cambio operativo.
-T003/T004 y cualquier relanzamiento real siguen sin autorización; cero correcciones automáticas.
+propuesta confirmada (D184), T008 corrige el preflight (D187) y T009 diagnostica el entorno del escritor (D192).
+Wheel corregido `6efbd82` construido/verificado/instalado y preflight real aprobado (D188); acceso UI manual
+conservado tras D189/D190. Primer B **COMMITTED** en `976b1d1`, reenvío idempotente acreditado y tarea
+`b94eedef…` en **REVISION_LIMIT** con tres rutas vacías (D191); originales y diff conservados.
+
+**Continuación T009 autorizada y ejecutada** (D193): fixture limpio `onboarding-b-t009`, venv offline,
+copia TOML/presets/composición propios, PATH/TMPDIR explícitos; mismo wheel, SQLite y CLI **2.1.310/0.164.0**.
+Preflight y ocho checks iniciales correctos. Registro/UI es/es, un turno Claude y doce borradores CAS aplicados;
+**B2 COMMITTED** en `9808fd9`, con los 15 archivos originales intactos. Tarea **`f98b16d9…` REVISION_LIMIT**:
+Codex implementa vista/tests/flujo; **13 tests pasan**, mypy y Django pasan, pero Ruff check (**E501 en dos líneas**)
+y formato fallan. Revisor REVISE; cero correcciones, sin aceptación ni commit de tarea. No demuestra defecto del
+producto ni la causa del truncamiento previo. Ambos resultados conservados sin reparar/revalidar/reintentar.
+Consumo acumulado **Claude 7/12, Codex 2/3** (nuevo 3/1). Servicio detenido, **7 jobs DONE, 9 procesos STOPPED,
+0 locks**; **8186 filas previas intactas** en contraste de copias SQLite/WAL/SHM.
+[T002 sigue parcial](phase/P012-T002_CONTINUACION_T009.md); T003–T007 pendientes, T003/T004 sin autorización.
 
 P011 sigue cerrada y archivada ([D182](DECISIONS.md#d182--cierre-documental-de-p011-y-preparación-pública-archivada),
 [resumen](archive/phase-011/SUMMARY.md)). El paso 1 de su [expediente](archive/phase-011/P011_EXPEDIENTE_APERTURA.md)
@@ -119,11 +120,9 @@ tag `p001` sobre `47a0557` y archivo en `3d105c6`, sin repetir operaciones ni co
 Este repositorio sigue sin registrarse ni ejecutarse con el harness.
 
 **Siguiente:** [P012-T002](NEXT_STEPS.md#p012-t002--instalación-incorporación-b-y-perfil-declarado-con-proveedores-reales),
-solicitar consentimiento explícito sobre la [continuación elegida en T009](phase/P012-T009_DIAGNOSTICO_ENTORNO_CODEX.md#5-consentimiento-posterior-propuesto-y-paradas)
-(D192): otro fixture sintético `onboarding-b-t009`, copia de TOML con presets/composición propios, B y tarea nuevas
-por UI, mismo wheel y presupuesto acumulado 4/1 de 12/3. Conservar fixture/diff fallido, base y registros previos;
-sin reparación manual ni reutilizar congelados bajo otro entorno. El HITL elige la propuesta, sin autorizar su
-operación. T003/T004 y cualquier relanzamiento real siguen sin autorización.
-Los límites de la base acumulada
-siguen vigentes hasta que P012 aporte evidencia real; A queda retirado por D155/D161, sin acreditarlo como validado.
-Sin nueva fase del Django hijo ni ampliación de consentimientos anteriores.
+concretar **offline** una propuesta de continuidad tras el rechazo de Ruff y someterla a HITL antes de operar.
+El [tramo autorizado](phase/P012-T002_CONTINUACION_T009.md#5-parada-y-alcance-acreditado) se agota con esta parada:
+conservar B/B2, sus diffs e historiales, sin reparar o reutilizar el run agotado con otra política ni crear otro
+fixture automáticamente. Saldo 5 Claude/1 Codex sin permiso de consumo. T003/T004 y cualquier relanzamiento real
+requieren consentimiento nuevo. Los límites de la base acumulada siguen vigentes; A retirado por D155/D161,
+sin acreditarlo como validado. Sin nueva fase del Django hijo ni ampliación de consentimientos anteriores.

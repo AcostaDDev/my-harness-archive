@@ -3,14 +3,15 @@
 Objetivo y criterios en [ROADMAP](ROADMAP.md#p012--validación-real-previa-a-la-apertura-pública).
 Decisión: [D183](DECISIONS.md#d183--p012-validación-real-previa-a-la-apertura-pública).
 
-**Estado:** T001, T008 y T009 completadas; T002 parcial (D191/D192): incorporación B COMMITTED y reenvío
-idempotente verificado, tarea en REVISION_LIMIT con tres archivos vacíos. Servicio detenido, Claude 4/12 y Codex 1/3.
-T003–T007 pendientes; nueve tareas en total. T009 no acredita causa raíz del truncamiento ni defecto del producto.
+**Estado:** T001, T008 y T009 completadas; T002 parcial (D191–D193). Primer B COMMITTED y tarea con archivos
+vacíos; continuación T009 autorizada: **B2 COMMITTED** (`9808fd9`) y tarea `f98b16d9…` en **REVISION_LIMIT** por
+Ruff (E501/formato), con **13 tests aprobados** y mypy/Django correctos. Servicio detenido, **Claude 7/12,
+Codex 2/3**, 0 locks, 7 jobs DONE y 9 procesos STOPPED. T003–T007 pendientes; nueve tareas en total.
 **Siguiente:** [P012-T002](#p012-t002--instalación-incorporación-b-y-perfil-declarado-con-proveedores-reales),
-pedir consentimiento sobre la [propuesta concreta de T009](phase/P012-T009_DIAGNOSTICO_ENTORNO_CODEX.md#5-consentimiento-posterior-propuesto-y-paradas).
-HITL elige otro fixture limpio con PATH/TMPDIR explícitos, conservando el fallido; no autoriza aún preparar el área,
-cambiar configuración operativa, arrancar servicio o relanzar modelos. No reparar el resultado ni reutilizar jobs
-con otra composición. [Registro y límites](phase/P012-T002_INCORPORACION_REAL.md#21-reanudación-autorizada-sesión-y-registro).
+concretar offline una propuesta de continuidad tras el rechazo de Ruff y someterla a HITL antes de operar.
+[Resultado y límites de la parada](phase/P012-T002_CONTINUACION_T009.md#5-parada-y-alcance-acreditado).
+No hay defecto del producto acreditado ni autorización para reparar/revalidar/reintentar, cambiar la política
+congelada o crear otro fixture; conservar B/B2 y ambos diffs. Saldo 5 Claude/1 Codex, sin permiso de consumo.
 P001–P011 siguen cerradas; la apertura del [expediente de P011](archive/phase-011/P011_EXPEDIENTE_APERTURA.md)
 queda aplazada hasta el cierre de P012 y su candidato se sustituye por el que prepare T005.
 
@@ -73,13 +74,15 @@ offline de T002 aceptado por el usuario, antes de proveedores; no se acredita su
 
 ## P012-T002 — Instalación, incorporación B y perfil declarado con proveedores reales
 
-**Estado:** parcial (D191): incorporación B COMMITTED, tarea en REVISION_LIMIT, no completada.
+**Estado:** parcial (D193): dos incorporaciones B COMMITTED; ninguna tarea COMMITTED.
 **Depende de:** T001 confirmada, T008 corregida (D187) y diagnóstico T009 completado (D192).
-T009 completada (D192): siguiente consentimiento sobre otro fixture limpio, con copia TOML/presets y composición
-propios, mismo wheel y saldo 8 Claude/2 Codex; no ejecutar aún. La reanudación tras D190 fue autorizada hasta B/tarea.
-Dos turnos Claude válidos, commit documental único y P001 ACTIVE; reenvío sin duplicados verificado por API local bajo HITL específico. Tarea planificada, pero el ejecutor
-Codex deja vacías las tres rutas permitidas; validaciones fallidas y REVISE sin corrección. No reintentar, revalidar,
-aceptar o reparar a mano. Consumo 4/1 frente a 12/3; T003/T004 y otro relanzamiento siguen sin autorización.
+Continuación limpia T009 autorizada y ejecutada: fixture `onboarding-b-t009`, copia TOML y presets/composición
+propios, mismo wheel y base. Preflight y ocho checks correctos; un turno Claude, doce borradores CAS y B2
+COMMITTED. Codex implementa la tarea, pero fallan Ruff check/formato; pytest 13 casos y mypy/Django pasan.
+Revisión REVISE y REVISION_LIMIT, cero correcciones. Consumo acumulado **7/2 frente a 12/3**; servicio detenido.
+El primer fixture y su fallo de archivos vacíos siguen intactos. Próximo paso: propuesta offline de continuidad
+y HITL; el consentimiento se agota con la parada. Sin reparación manual, revalidación o nuevo intento autorizado.
+T003/T004 siguen sin autorización.
 **Objetivo:** Acreditar con la versión actual el flujo básico y la incorporación de un repositorio existente con
 el perfil declarado D095.
 **Alcance:** wheel construido e instalado en el área, servicio, fixture B, conversación de incorporación,
@@ -98,17 +101,20 @@ confirmación de documentos y perfil, y una tarea hasta COMMITTED.
 - Evidencia saneada con llamadas por proveedor frente al techo; servicio detenido o mantenido según T003.
 
 **Validación:** la propia del tramo; sin suites del producto si no cambia código.
-**Entregables:** [registro parcial](phase/P012-T002_INCORPORACION_REAL.md) y
+**Entregables:** [registro inicial](phase/P012-T002_INCORPORACION_REAL.md),
+[continuación T009 y nueva parada](phase/P012-T002_CONTINUACION_T009.md),
 [lista de la primera parada](phase/P012-T002_WHEELS_FALTANTES.lock) y
-[manifiesto de 17 wheels verificados](phase/P012-T002_WHEELS_VERIFICADOS.sha256). Build/verificador/instalación y
-fixture inicial (dos preparaciones y seis validaciones) correctos en la base corregida `6efbd82`; preflight real
-aprobado de ambas CLI. UI autenticada, idiomas es/es, registro `p012-b`, dos conversaciones y doce borradores;
-incorporación documental **`976b1d1` COMMITTED**, P001 ACTIVE y código original conservado. Reenvío API autorizado
-sin duplicados. Run de tarea **`b94eedef…` REVISION_LIMIT**: tres archivos vacíos, pytest exit 5/0 casos/JUnit partial,
-mypy y Django exit 1, Ruff pasa, revisión REVISE; no aceptación o commit de tarea. Servicio parado, 0 jobs activos/
-encolados/locks y cinco procesos de agentes STOPPED; Claude **4/12**, Codex **1/3**. Originales/diff/historial
-conservados. T009 completa el diagnóstico offline de TMPDIR/PATH y la propuesta elegida por HITL (D192), sin modificar
-configuración/código o relanzar; incorporación/tarea nuevas requieren consentimiento explícito posterior.
+[manifiesto de 17 wheels](phase/P012-T002_WHEELS_VERIFICADOS.sha256).
+Preparación e instalación corregidas `6efbd82`, preflight CLI y checks iniciales acreditados. Primer B
+**`976b1d1` COMMITTED**, reenvío idempotente sin duplicados, tarea **`b94eedef…` REVISION_LIMIT** con tres archivos
+vacíos (D191). T009 completa el diagnóstico offline sin demostrar la causa (D192).
+Continuación autorizada (D193): registro **`p012-b-t009`**, incorporación **`9808fd9` COMMITTED**, código original
+intacto, doce propuestas APPLIED. Run tarea **`f98b16d9…` REVISION_LIMIT**: vista/tests/flujo con contenido,
+**13 casos JUnit aprobados**, mypy/Django correctos; Ruff **E501** (dos líneas) y formato exit 1. Revisor REVISE,
+sin aceptación, reparación o commit de tarea. **7 jobs DONE, 9 procesos STOPPED, 0 locks**, puerto cerrado y clave
+eliminada; Claude **7/12**, Codex **2/3**. Comparación de copias de base: **8186 filas previas intactas**.
+B/B2, ambos diffs, TOML original, distribuciones e historiales conservados. Falta concretar una propuesta de
+continuidad y su consentimiento nuevo; no se asume que el saldo autorice operar.
 
 ## P012-T003 — Chat, backup y restauración sobre el proyecto real
 

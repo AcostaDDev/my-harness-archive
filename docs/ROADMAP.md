@@ -336,9 +336,15 @@ activo. T002 sigue parcial; **T009 completada offline** (D192): Python ausente d
 omitido, sin causa raíz del truncamiento ni defecto del producto demostrados. Once tests dirigidos y check puro
 v7 correctos. HITL elige proponer otro fixture limpio con PATH/TMPDIR acotados, presets/composición nuevos y copia
 TOML, conservando B/diff/jobs previos. [Propuesta y consentimiento posterior](phase/P012-T009_DIAGNOSTICO_ENTORNO_CODEX.md#5-consentimiento-posterior-propuesto-y-paradas).
-Siguiente paso: consentimiento explícito para esa continuación de T002; no se ejecuta en T009 ni se repone presupuesto.
-T003–T007 pendientes, T003/T004 y nuevos intentos reales sin autorización.
-Límites reales intactos.
+Continuación posteriormente autorizada y ejecutada (D193): mismo wheel/SQLite, nuevo fixture con PATH/TMPDIR,
+copia TOML/presets/composición propios; preflight y ocho checks iniciales correctos. Un turno Claude y doce CAS,
+**B2 COMMITTED** (`9808fd9`), código original intacto. Tarea **`f98b16d9…` REVISION_LIMIT**: cambio funcional y
+**13 tests aprobados**, mypy/Django correctos, pero Ruff E501 en dos líneas y formato fallan; revisión REVISE,
+sin aceptación, corrección o commit de tarea. Servicio detenido, 7 jobs DONE, 9 procesos STOPPED, 0 locks;
+Claude **7/12**, Codex **2/3**, 8186 filas previas conservadas. [Registro](phase/P012-T002_CONTINUACION_T009.md).
+T002 sigue parcial. Siguiente paso: concretar offline una propuesta de continuidad y someterla a HITL antes de
+operar; ambos fallos/diffs conservados, sin reparación ni nuevos intentos autorizados. T003–T007 pendientes;
+T003/T004 sin autorización. Límites reales intactos.
 La apertura del expediente de P011 queda aplazada hasta el cierre de P012.
 
 ## Después de la apertura en GitHub — v0.2.0

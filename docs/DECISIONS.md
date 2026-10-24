@@ -203,6 +203,7 @@ tarea se leen solo las decisiones que cita; este índice sirve para buscar prece
 | [D190](#d190--p012-t002-acceso-manual-al-login-y-diagnóstico-local-sin-cabeceras) | P012-T002: acceso manual al login y diagnóstico local sin cabeceras | P012 |
 | [D191](#d191--p012-t002-incorporación-b-confirmada-y-parada-del-escritor-codex) | P012-T002: incorporación B confirmada y parada del escritor Codex | P012 |
 | [D192](#d192--p012-t009-entorno-del-escritor-y-continuidad-con-fixture-limpio) | P012-T009: entorno del escritor y continuidad con fixture limpio | P012 |
+| [D193](#d193--p012-t002-fixture-limpio-incorporado-y-rechazo-por-ruff) | P012-T002: fixture limpio incorporado y rechazo por Ruff | P012 |
 
 ## D001 — Alcance local y arquitectura base
 
@@ -5651,3 +5652,39 @@ Fase: P012. [Diagnóstico, delta exacto, consentimiento posterior y comprobacion
 - Once tests dirigidos correctos y check puro v7 sin procesos; copia SQLite/WAL/SHM para consulta, originales
   conservados. Solo documentación y comprobador documental sintético; sin CLI/proveedores reales, servicio,
   navegador, red, pruebas del fixture fallido, suites completas, cambios globales o acciones remotas.
+
+## D193 — P012-T002: fixture limpio incorporado y rechazo por Ruff
+
+Estado: continuación T009 autorizada y ejecutada el 2026-10-24; nueva parada, T002 sigue parcial.
+Fase: P012. [Autorización, comprobaciones, resultados y conservación](phase/P012-T002_CONTINUACION_T009.md).
+Conserva D191/D192 sin atribuir al nuevo intento la resolución de la causa del truncamiento anterior.
+
+- HITL: **«Autorizar esta continuación de T002»**, sobre la propuesta concreta T009 §5: B2 desde `f6a2d9d`,
+  venv offline, copia TOML/presets/composición propios, preflight, servicio/UI, incorporación y una tarea nuevas
+  en la misma SQLite; hasta 4 Claude + 1 Codex adicionales, cero correcciones. El usuario pide introducir la
+  clave local directamente; no se imprime ni se documenta. T003/T004 quedan fuera del consentimiento.
+- Mismo wheel/venv corregido `6efbd82`, distribuciones/CLI/wheels verificados por hashes, sin build o descarga.
+  `onboarding-b-t009` limpio desde el árbol inicial, sin remotos/enlaces/alternates, Python 3.13.13 y TMPDIR
+  privado 0700 dentro del checkout. `harness-local-t009.toml` 0600 añade solo los presets y composición acordados;
+  huellas del proyecto original idénticas, cambio efectivo del escritor nuevo limitado a PATH/TMPDIR.
+- Preflight real exit 0, CLI 2.1.310/0.164.0 con compatibilidad condicionada y ocho checks iniciales correctos.
+  Registro `p012-b-t009` por UI en es/es, un turno Claude, doce propuestas revisadas y APPLIED por CAS;
+  **incorporación COMMITTED `9808fd9`**, 15 originales intactos por bytes/permisos, README idéntico en su ruta.
+  P001 ACTIVE y una tarea; no se repite el reenvío idempotente ya acreditado en D191.
+- Tarea `f98b16d9…`: plan Claude, ejecución Codex gpt-6-luna/low y revisión Claude sonnet/low, procesos completos.
+  El escritor usa Python/TMPDIR explícitos y conserva contenido en las tres rutas autorizadas; implementa
+  validación de limit y once casos adicionales. Motor: **13 tests JUnit aprobados**, mypy y Django correctos;
+  **Ruff E501 en dos líneas y formato fallan**. Revisor REVISE, **REVISION_LIMIT**, sin aceptación ni commit de
+  tarea. La propuesta del revisor no se aplica: no se repara, formatea, revalida o reintenta el resultado.
+- Consumo nuevo **3 Claude/1 Codex**, acumulado **7/12 y 2/3**; las tres Claude reportan claude-sonnet-5-5.
+  Servicio detenido normalmente, puerto cerrado y clave eliminada; **7 jobs DONE, 9 procesos STOPPED, 0 locks**.
+  **8186 filas previas intactas** en contraste de copias SQLite/WAL/SHM; B/diff anterior, TOML original,
+  distribuciones e historiales conservados. B2 conserva HEAD documental y sus tres cambios sin commit.
+- El fallo acreditado pertenece a la salida del ejecutor, sin defecto del producto demostrado. T002 continúa
+  parcial y no acredita aún el flujo básico exitoso completo. Siguiente acción: concretar offline una propuesta
+  de continuidad y someterla a HITL; la parada agota este consentimiento, sin permiso implícito por el saldo 5/1.
+  Sin reutilizar el run bajo otra política, reparar manualmente, crear otro fixture o consumir modelos sin una
+  autorización nueva. Sin nuevas tareas de producto por un defecto no demostrado, ni ampliación a T003/T004.
+- Solo documentos de este repositorio; sin cambios de producto, modelos/migraciones, flujos, baseline pública,
+  configuración global, smokes adicionales, tag, push o publicación. Checks documentales y diff al cerrar;
+  suites completas y pruebas de los fixtures detenidos no se repiten.
