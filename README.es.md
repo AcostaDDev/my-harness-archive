@@ -16,8 +16,9 @@ Versión previa a la primera publicación: la primera versión local está compl
 paquete declara `0.1.0`, candidata a primera versión pública, y no está en PyPI ([changelog](CHANGELOG.md)).
 Solo se ha probado en macOS sobre Apple silicon (ARM64). Los pasos de primer uso se han ensayado desde un clon limpio
 con cachés vacías hasta COMMITTED y una fase cerrada, con CLI falsas: sin inicio de sesión ni llamadas reales a
-modelos. Licencia [MIT](LICENSE). Detalle en [Status](README.md#status) y
-[Supported scope and limits](README.md#supported-scope-and-limits).
+modelos. La interfaz instalada se revisó después en Chrome en inglés y español, temas claro y oscuro, escritorio y
+móvil; no se han probado otros navegadores ni lectores de pantalla. Licencia [MIT](LICENSE). Detalle en
+[Status](README.md#status) y [Supported scope and limits](README.md#supported-scope-and-limits).
 
 ## Dos formas de empezar un proyecto
 

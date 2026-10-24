@@ -84,13 +84,14 @@ salvo donde se indica. Detalle por fase en `docs/archive/phase-NNN/SUMMARY.md`; 
 
 **P011 — Preparación para apertura pública en GitHub**, iniciada documentalmente el 2026-10-22 por encargo del usuario
 ([D154](DECISIONS.md#d154--p011-preparación-para-apertura-pública-en-github),
-[plan](phase/P011_PLAN_APERTURA_PUBLICA.md), [tareas](NEXT_STEPS.md)). T001/T002/T019/T003–T016/T020–T024
-completadas (D159–D180), dos pendientes (T017, T018); retirada legacy/A
+[plan](phase/P011_PLAN_APERTURA_PUBLICA.md), [tareas](NEXT_STEPS.md)). T001–T017/T019–T024
+completadas (D159–D181), una pendiente (T018); retirada legacy/A
 implementada, código y pruebas en inglés, preferencias globales, idioma de trabajo inmutable por proyecto, recetas v2
 cableadas, directiva de idioma al agente con documentos en el idioma de trabajo, interfaz en/es y todos los textos
 visibles del servicio/CLI en en/es; detección automática y compatibilidad CLI implementadas con evidencia nueva
 sintética; diagramas, datos y arquitectura contrastados con el código; baseline pública inglesa (README, especificación,
-arquitectura, datos y flujos); QA de navegador del candidato en las 8 combinaciones. Sin uso nuevo de proveedores reales.
+arquitectura, datos y flujos); QA de navegador del candidato en las 8 combinaciones; dictamen favorable (T017).
+Sin uso nuevo de proveedores reales.
 
 **Planificación finalizada para comenzar su ejecución** por petición del usuario
 ([D156](DECISIONS.md#d156--planificación-de-p011-finalizada-y-modo-continuo-aplazado-a-v020)).
@@ -98,10 +99,10 @@ P011 no está completada: T001 entrega diseño/inventario, T002 licencia/revisi�
 T003–T006 comentarios en inglés, T007 infraestructura de idiomas, T008 idioma de trabajo, T020 recetas v2, T009
 directiva y documentos por idioma, T010 interfaz en/es, T021 servicio/CLI en/es y T022 textos de servicio ya
 ingleses en en/es, T011 contrato, T012 compatibilidad/detección automática, T013 auditoría de diagramas, T014/T023
-baseline pública, T015 paquete/CI/instantánea, T016 primer uso ensayado y T024 QA de navegador; siguiente T017.
+baseline pública, T015 paquete/CI/instantánea, T016 primer uso ensayado, T024 QA de navegador y T017 dictamen; siguiente T018.
 El modo continuo entre fases queda reservado para **v0.2.0, después de abrir el proyecto en GitHub**;
 no forma parte de P011 ni modifica el cierre confirmado actual. Commit documental D156 realizado en `6174f51`;
-las ampliaciones D157/D158 se incorporaron en `2730f54`. La continuación actual autoriza T024 y su commit local
+las ampliaciones D157/D158 se incorporaron en `2730f54`. La continuación actual autoriza T017 y su commit local
 en inglés, sin proveedores reales ni publicación.
 
 **P011-T001 completada** ([contrato](phase/P011-T001_CONTRATO_APERTURA.md),
@@ -113,14 +114,10 @@ Contrato listo para implementar en sus tareas; contraste estático, hashes, pars
 integridad/diff verificados. Sin suites, builds, servicios, agentes/proveedores, red ni auditoría de privacidad.
 
 **P011-T002 completada** ([informe](phase/P011-T002_CONTENIDO_PUBLICABLE.md), D160): MIT por delegación
-expresa del usuario y copyright 2026 David Acosta; LICENSE/metadatos, contribución/seguridad en inglés, avisos
-de 123 dependencias runtime frontend y exclusiones preventivas. Escaneo local de 690 archivos y 4.009 objetos
-Git alcanzables, sin credenciales reales identificadas con los patrones usados; contenido privado excluido
-mediante nueva raíz/árbol público futuro, sin reescribir el origen. Inventario por ruta/hash y 247 dependencias;
-19 términos de dependencias externas sin evidencia local declarados. Reportes privados GitHub elegidos,
-activación pendiente de apertura; staging/avisos/assets y candidato exacto a T015/T016. Fuentes oficiales
-MIT/GitHub consultadas, sin enviar contenido. Checks estáticos, sin suites/builds/servicios/proveedores.
-No se declara este historial ni los paquetes antiguos publicables; sigue pendiente el dictamen final P011.
+expresa del usuario y copyright 2026 David Acosta; LICENSE/metadatos, contribución/seguridad en inglés y avisos
+frontend. Escaneo local de 690 archivos y 4.009 objetos Git alcanzables, sin credenciales reales identificadas;
+contenido privado excluido mediante nueva raíz pública, sin reescribir el origen. Reportes privados GitHub
+elegidos, activación en la apertura. Este historial y los paquetes antiguos no son publicables.
 
 Objetivo: código/comentarios/docstrings y prompts originales ingleses; idiomas visual/trabajo separados (D158);
 CLI por capacidades/mínimos; diagramas contrastados con comportamiento; documentación inglesa y README de primer
@@ -183,13 +180,10 @@ recibo los copia; sin fila, 409 `work_language_required` antes de efectos y comp
 Perfiles v2 propios, despacho por `id`, etiquetas de pasos en idioma visual por catálogo y `work_language`/
 `recipe_sha256` tipados en el plan. Idioma funcional del hijo intacto. Sin herramientas reales, red ni QA de navegador.
 
-**P011-T009 completada** ([entrega](phase/P011-T009_PROMPTS_DOCUMENTOS_BILINGUES.md), D169): `render_attempt`
-añade a cada intento la directiva `language-directive-1` del par congelado de su job (frase visual/trabajo, mapa
-V/W/T por rol y etiquetas D088 del trabajo), sellada en el snapshot y enviada por el stdin de ambos proveedores;
-par inválido o distinto del contexto → parada en `prompts`, y jobs sin par se renderizan como antes. Plantillas
-inglesas sin marcadores españoles. Bloques, plantilla D088, archivo, definición, transición, SUMMARY de B y texto de
-tarea desde chat siguen el idioma de trabajo; sin él, bytes españoles idénticos. HITL: todo en T009 y commits
-técnicos sin cambios. Recorridos falsos con las cuatro parejas; sin proveedores reales ni QA de navegador.
+**P011-T009 completada** ([entrega](phase/P011-T009_PROMPTS_DOCUMENTOS_BILINGUES.md), D169): cada intento lleva
+la directiva `language-directive-1` del par congelado de su job, sellada en el snapshot y enviada por stdin a ambos
+proveedores; par inválido → parada en `prompts`. Plantillas inglesas; documentos D088, archivo, definición y SUMMARY
+de B en el idioma de trabajo (sin él, bytes españoles idénticos). Recorridos falsos con las cuatro parejas.
 
 **P011-T010 completada** ([entrega](phase/P011-T010_TRADUCCION_PRODUCTO.md), D170): todas las superficies React
 (textos, ARIA, tooltips, estados vacíos, confirmaciones) salen de 1417 claves en/es tipadas, con plurales, frases con
@@ -209,14 +203,10 @@ distingue rechazos por código. QA visual conjunta no realizada (→ T024).
 detección automática sin pin; mínimos Codex 0.163.0 / Claude 2.1.304, inferiores → actualizar; guardias esenciales y
 procedencia congelada por job/intento. No garantiza cualquier release futura. T012 implementará.
 
-**P011-T012 completada** ([entrega](phase/P011-T012_COMPATIBILIDAD_CLI.md), D174): `local-config-7` admite
-ejecutable/versión opcionales; carga sin procesos y resolución separada de roles efectivos por PATH explícito,
-mínimos 0.163.0 / 2.1.304 y diagnósticos en/es. `cli-14` congela identidad/política y observa por intento, valida
-guardias del argv y comprueba identidad antes de GO; cambios no reemplazan clientes de jobs congelados. HITL:
-posteriores admitidas con compatibilidad condicionada, sin afirmar efectos internos verificados ni pedir evidencia
-al usuario. API con lecturas pasivas y resolución por mutación; ejemplos sin pins, ayudas propias sintéticas,
-v1/v2 y hashes previos de configuración conservados. Sin esquema/API nueva, proveedores, servicio o navegador.
-Validación offline y omisiones en la entrega.
+**P011-T012 completada** ([entrega](phase/P011-T012_COMPATIBILIDAD_CLI.md), D174): `local-config-7` con
+ejecutable/versión opcionales, resolución por PATH explícito, mínimos 0.163.0 / 2.1.304 y diagnósticos en/es.
+`cli-14` congela identidad/política por intento, valida guardias del argv y comprueba identidad antes de GO. HITL:
+posteriores admitidas con compatibilidad condicionada, sin afirmar efectos internos verificados. Sin proveedores.
 
 **P011-T013 completada** ([matriz](phase/P011-T013_MATRIZ_DIAGRAMAS.md), D175): flujos, ER y ARCHITECTURE
 contrastados con código/tests; catorce hallazgos documentales corregidos sin cambiar el producto, dos regresiones
@@ -249,6 +239,11 @@ Corregidos en el cliente duración y fecha de cierre sin formato local y rol/est
 candidato verificado con `check_distribution`. Por HITL, acciones de job, etapas y veredictos siguen como códigos
 técnicos documentados. Móvil a 500 px con 390 emulado; sin otros navegadores, lectores de pantalla ni CLI reales.
 
+**P011-T017 completada** ([revisión](phase/P011_REVIEW.md), [expediente](phase/P011_EXPEDIENTE_APERTURA.md), D181):
+dictamen **favorable** de los diez criterios y los trece globales. HITL: residuo «observers» de la CLI corregido y QA
+de navegador citada en README/README.es. Candidato final de 387 archivos (manifiesto `74cc9141…ea71`, wheel
+`46d29c20…d9d6`) reproducible y verificado; acciones remotas sobre `<owner>/<repo>` propuestas, ninguna ejecutada.
+
 **P010 cerrada y archivada documentalmente el 2026-10-22**
 ([D153](DECISIONS.md#d153--cierre-documental-de-p010-y-de-la-primera-versión-local),
 [resumen](archive/phase-010/SUMMARY.md), [registro de cierre](archive/phase-010/P010_CIERRE.md)).
@@ -260,7 +255,7 @@ P009 conserva su cierre documental (D140) y el Django hijo su P001 CLOSED, cuatr
 tag `p001` sobre `47a0557` y archivo en `3d105c6`. No se repite ninguna operación ni comprobación de su estado.
 Este repositorio sigue sin registrarse ni ejecutarse con el harness; cierre manual sin check READY ni tag propio.
 
-**Siguiente:** P011-T017, revisión de salida y expediente para la apertura pública (sin publicar).
+**Siguiente:** P011-T018, cierre documental de P011 (sin publicar; la apertura exige autorización propia).
 Otras candidatas permanecen en [ROADMAP](ROADMAP.md#candidatas-sin-fase-asignada).
 Los límites de la base acumulada siguen vigentes. B y D095 mantienen la validación real aplazada por D151;
 A queda retirado del producto por D155/D161, sin acreditarlo como validado con proveedores reales.

@@ -19,8 +19,9 @@ models are reached through the official Codex and Claude Code CLIs with your own
   providers exist only for the capabilities marked as such in [Supported scope](#supported-scope-and-limits).
 - **First use.** The steps below were rehearsed on macOS ARM64 from a clean clone with empty caches: installation,
   offline repetition, package build and check, the minimal configuration and both entries up to COMMITTED and a
-  closed phase. Agents were fake CLIs, so sign-in and real model calls were not part of it. Please report anything
-  that does not work as written.
+  closed phase. Agents were fake CLIs, so sign-in and real model calls were not part of it. The installed UI was
+  then reviewed in Chrome in English and Spanish, light and dark themes, desktop and mobile widths; other browsers
+  and screen readers were not tested. Please report anything that does not work as written.
 - **Next.** An optional continuous mode (tasks → commits → check → closure → next phase) is planned for v0.2.0;
   see the [roadmap](docs/ROADMAP.md).
 

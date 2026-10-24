@@ -191,6 +191,7 @@ tarea se leen solo las decisiones que cita; este índice sirve para buscar prece
 | [D178](#d178--p011-t015-paquete-candidato-010-ci-sintética-e-instantánea-pública) | P011-T015: paquete candidato 0.1.0, CI sintética e instantánea pública | P011 |
 | [D179](#d179--p011-t016-primer-uso-ensayado-pylock-y-validación-de-tarea-igual-al-perfil) | P011-T016: primer uso ensayado, pylock y validación de tarea igual al perfil | P011 |
 | [D180](#d180--p011-t024-qa-de-navegador-del-candidato-y-tres-correcciones-de-presentación) | P011-T024: QA de navegador del candidato y tres correcciones de presentación | P011 |
+| [D181](#d181--p011-t017-dictamen-favorable-y-expediente-de-apertura-pública) | P011-T017: dictamen favorable y expediente de apertura pública | P011 |
 
 ## D001 — Alcance local y arquitectura base
 
@@ -5346,3 +5347,24 @@ Fase: P011. Concreta D179 (QA de navegador desglosada de T016) y cierra la QA vi
 - Resultado: sin claves crudas, desbordes de página, controles sin nombre, textos bajo AA ni errores de consola; foco
   visible en ambos temas. Sin otros navegadores, lectores de pantalla, CLI reales, proveedores, red ni publicación.
   Siguiente: T017.
+
+## D181 — P011-T017: dictamen favorable y expediente de apertura pública
+
+Estado: aplicada el 2026-10-24 en T017 por la continuación y commit local en inglés pedidos por el usuario.
+Fase: P011. Concreta D154/D155/D157/D158 y el procedimiento de D178.
+[Revisión de salida](phase/P011_REVIEW.md) y [expediente](phase/P011_EXPEDIENTE_APERTURA.md).
+
+- Dictamen favorable en el alcance declarado: los diez criterios de ROADMAP y los trece globales de SPECIFICATION
+  §10 (1/11/13 en su redacción de D161) cumplen con evidencia trazable; la matriz histórica de P010 no se reescribe.
+  Sin tareas obligatorias, licencia ni hallazgos de privacidad o paridad pendientes. Habilita T018.
+- HITL: las rutas de T017 se amplían para cerrar el residuo de la retirada legacy (ayuda de `--writers-stopped`,
+  diagnóstico de `migrate` y un docstring decían «observers»; ahora «service and writers») y para que README,
+  README.es y el STATE público citen la QA de navegador de T024. Sin cambio de flags, códigos ni comportamiento.
+- Candidato final: instantánea de 387 archivos con manifiesto `74cc9141…ea71` (13 rutas distintas de T016, todas
+  explicadas); wheel `46d29c20…d9d6`, sdist `79e256de…42c5` y `pylock.toml` sin cambios, con dos builds idénticos y
+  `check_distribution` en verde. Suites completas en verde tras el cambio de catálogos.
+- Expediente con acciones remotas exactas sobre `<owner>/<repo>` (HITL: placeholders; visibilidad al autorizar):
+  regenerar y comparar el manifiesto, repositorio vacío, commit raíz único, CI verde, visibilidad, reporte privado
+  de vulnerabilidades antes de anunciar y Release opcional sin PyPI. Ninguna se ha ejecutado; cada una requiere
+  autorización propia. Límites conservados: solo macOS ARM64, CI remota sin ejecutar, CLI y proveedores reales sin
+  uso en P011, B/D095 aplazados (D151) y QA solo en Chrome.

@@ -242,7 +242,7 @@ def _finish(destination, manifest):
 
 
 def _create_backup(database, destination, *, artifact_roots=(), writers_stopped=False, hook=None):
-    """Service/observers/writers explicitly stopped; BEGIN IMMEDIATE closes DB races."""
+    """Service/writers explicitly stopped; BEGIN IMMEDIATE closes DB races."""
     if writers_stopped is not True:
         raise BackupError(tr('backup.writers'))
     database, destination = _absolute(database), _absolute(destination)

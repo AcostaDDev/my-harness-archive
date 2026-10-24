@@ -4,11 +4,12 @@ Objetivo y criterios en [ROADMAP](ROADMAP.md#p011--preparación-para-apertura-p�
 Decisión: [D154](DECISIONS.md#d154--p011-preparación-para-apertura-pública-en-github).
 [Plan y alcance](phase/P011_PLAN_APERTURA_PUBLICA.md).
 
-**Estado:** en ejecución desde el 2026-10-22. T001/T002/T019/T003–T016/T020–T024 completadas (D159–D180); dos
-tareas pendientes (T010 desglosó T021, T021 desglosó T022, T014 desglosó T023 y T016 desglosó T024 por HITL). Licencia/avisos, retirada legacy/A,
+**Estado:** en ejecución desde el 2026-10-22. T001–T017/T019–T024 completadas (D159–D181); una
+tarea pendiente, T018 (T010 desglosó T021, T021 desglosó T022, T014 desglosó T023 y T016 desglosó T024 por HITL). Licencia/avisos, retirada legacy/A,
 código/pruebas en inglés, preferencias globales e idioma de trabajo inmutable por proyecto con el par congelado por
 job/intento; recetas v2; directiva al agente y documentos en W; interfaz React, diagnósticos HTTP propios y todos
-los textos visibles del servicio/CLI en en/es (los técnicos ingleses, listados); QA de navegador del candidato (T024).
+los textos visibles del servicio/CLI en en/es (los técnicos ingleses, listados); QA de navegador del candidato (T024);
+dictamen favorable y expediente de apertura (T017).
 **Planificación:** base finalizada en D156 y afinada por D155/D157/D158; contrato T001 disponible.
 No equivale a fase completada.
 T011 entrega el contrato de CLI y T012 implementa detección automática y compatibilidad condicionada por capacidades.
@@ -16,7 +17,8 @@ T013 contrasta diagramas, datos y arquitectura con el código y sus pruebas. T01
 en `docs/public/` y el README inglés de primer uso; T023 completa allí especificación, arquitectura, datos y flujos.
 T015 prepara paquete `0.1.0`, CI sintética e instantánea pública en `.local/` sin Git. T016 ensaya el primer uso
 desde un clon limpio con CLI falsas; T024 recorre la UI del candidato instalado en Chrome (8 combinaciones).
-**Siguiente:** P011-T017. Sin autorización de publicación.
+T017 dictamina los diez y trece criterios y prepara el expediente remoto, sin ejecutarlo.
+**Siguiente:** P011-T018, cierre documental. Sin autorización de publicación.
 P001–P010 siguen cerradas; la primera versión local mantiene el alcance de D151/D153.
 
 ## Restricciones compartidas
@@ -49,7 +51,7 @@ P001–P010 siguen cerradas; la primera versión local mantiene el alcance de D1
   siguiente fase` para v0.2.0 después de abrir el proyecto en GitHub, fuera de estas tareas. P011 mantiene
   cierre con READY y autorización propia, nueva fase sin tareas y confirmación del plan posterior.
   El commit D156 y los ajustes D157/D158 ya se realizaron. La petición actual autoriza ejecutar la siguiente
-  tarea (T024) y su commit local en inglés, sin encadenar tareas ni publicar.
+  tarea (T017) y su commit local en inglés, sin encadenar tareas ni publicar.
 - D157 elige instantánea pública inicial revisada, con Git/documentación de partida nuevos y sin historia privada.
   Desde la apertura, código/decisiones/fases se desarrollan en el repositorio público, fuente principal; este
   checkout conserva su historia privada. No sincronizar dos desarrollos activos ni congelar para siempre `docs/` pública.
@@ -521,7 +523,13 @@ reales necesarias exigen tarea/consentimiento propios antes del dictamen. No amp
 
 ## P011-T017 — Revisión de salida y expediente para apertura pública
 
-**Estado:** pendiente. **Depende de:** T001–T016, T019, T023, T024.
+**Estado:** completada el 2026-10-24, D181. **Depende de:** T001–T016, T019, T023, T024.
+**Evidencia:** [revisión](phase/P011_REVIEW.md) con dictamen **favorable** de los diez criterios y los trece globales
+(1/11/13 según D161) y [expediente](phase/P011_EXPEDIENTE_APERTURA.md) con acciones remotas exactas sobre
+`<owner>/<repo>`, sin ejecutar. Por HITL, rutas ampliadas a dos catálogos i18n, `storage/backup.py` y README/README.es:
+residuo «observers» de la CLI corregido y QA de navegador citada. Candidato final: 387 archivos, manifiesto
+`74cc9141…ea71`, wheel `46d29c20…d9d6` (dos builds idénticos), `check_distribution` y suites en verde.
+Sin CI remota, CLI reales, proveedores ni publicación.
 **Objetivo:** Dictaminar preparación pública con evidencia trazable del candidato final.
 **Alcance:** diez criterios P011, trece globales ajustados por la retirada D155, inventario/excepciones lingüísticas,
 licencia/privacidad, compatibilidad/soporte, diagramas/docs, artefactos y CI.

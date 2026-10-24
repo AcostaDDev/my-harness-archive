@@ -52,7 +52,8 @@ of [D151](DECISIONS.md#d151--real-validation-of-onboarding-and-declared-profiles
   have offline evidence only (D151).
 - **Limits.** Cooperative containment without operating-system isolation (D064); validations without timestamps;
   recipe manifests fixed after preparation; only macOS ARM64 tested; first use from a clean clone rehearsed
-  with fake CLIs only (no sign-in or real model calls).
+  with fake CLIs only (no sign-in or real model calls); installed UI reviewed in Chrome only (en/es, light/dark,
+  desktop/mobile), without other browsers or screen readers.
 
 ## Active phase — P001 Optional continuous mode between phases
 
