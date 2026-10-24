@@ -3,15 +3,12 @@
 Objetivo y criterios en [ROADMAP](ROADMAP.md#p012--validación-real-previa-a-la-apertura-pública).
 Decisión: [D183](DECISIONS.md#d183--p012-validación-real-previa-a-la-apertura-pública).
 
-**Estado:** T001 y T008 completadas; T002 parcial, paquete/preflight aprobados y acceso manual al login observado
-(D190). Diagnóstico cerrado sin cabeceras ni causa resuelta; servicio detenido.
-T003–T007 pendientes; ocho tareas en total. Ninguna llamada a modelos.
-**Siguiente:** P012-T002, pendiente de consentimiento nuevo sobre la
-[continuación después del diagnóstico](phase/P012-T002_INCORPORACION_REAL.md#20-continuación-propuesta-después-del-diagnóstico-sin-ejecutar):
-mismos artefactos/SQLite, reinicio en 8024 y pantalla de login cargada manualmente antes de vincularla a la
-automatización; login/registro/B/tarea desde UI con parámetros 12/3 intactos y parada al primer fallo.
-Sin cambio a API, guardias, build/init-db o descargas; originales conservados, 0/0 llamadas;
-[registro T002](phase/P012-T002_INCORPORACION_REAL.md).
+**Estado:** T001 y T008 completadas; T002 parcial (D191): incorporación B COMMITTED y reenvío idempotente
+verificado, tarea en REVISION_LIMIT con tres archivos vacíos. Servicio detenido, Claude 4/12 y Codex 1/3.
+T003–T007 pendientes; T009 diagnóstico offline pendiente, nueve tareas en total.
+**Siguiente:** [P012-T009](#p012-t009--diagnóstico-offline-del-entorno-de-escritura-codex), antes de proponer otra
+reanudación real de T002. Sin cambiar TOML/SQLite/snapshots, reparar el resultado de Codex o relanzar modelos.
+[Registro y límites](phase/P012-T002_INCORPORACION_REAL.md#21-reanudación-autorizada-sesión-y-registro).
 P001–P011 siguen cerradas; la apertura del [expediente de P011](archive/phase-011/P011_EXPEDIENTE_APERTURA.md)
 queda aplazada hasta el cierre de P012 y su candidato se sustituye por el que prepare T005.
 
@@ -74,12 +71,12 @@ offline de T002 aceptado por el usuario, antes de proveedores; no se acredita su
 
 ## P012-T002 — Instalación, incorporación B y perfil declarado con proveedores reales
 
-**Estado:** parcial, preflight aprobado y login manual observado (D190); diagnóstico terminado, no completada.
-**Depende de:** T001 confirmada y T008 corregida (D187), más consentimiento nuevo tras el diagnóstico D190.
-La continuación D188 acreditó base/rutas corregidas, build/verificador/instalación, preflight y servicio. El HITL
-posterior autorizó la barra de Chrome, también rechazada (D189). El diagnóstico autorizado (D190) observa el
-login en otra pestaña abierta manualmente, sin obtener cabeceras. No autoriza login/registro/modelos; reanudar
-requiere consentimiento nuevo. T003/T004 siguen sin autorización.
+**Estado:** parcial (D191): incorporación B COMMITTED, tarea en REVISION_LIMIT, no completada.
+**Depende de:** T001 confirmada y T008 corregida (D187); T009 debe diagnosticar el entorno antes de otra propuesta.
+La reanudación tras D190 fue autorizada hasta B/tarea. Dos turnos Claude válidos, commit documental único y P001
+ACTIVE; reenvío sin duplicados verificado por API local bajo HITL específico. Tarea planificada, pero el ejecutor
+Codex deja vacías las tres rutas permitidas; validaciones fallidas y REVISE sin corrección. No reintentar, revalidar,
+aceptar o reparar a mano. Consumo 4/1 frente a 12/3; T003/T004 y otro relanzamiento siguen sin autorización.
 **Objetivo:** Acreditar con la versión actual el flujo básico y la incorporación de un repositorio existente con
 el perfil declarado D095.
 **Alcance:** wheel construido e instalado en el área, servicio, fixture B, conversación de incorporación,
@@ -101,11 +98,13 @@ confirmación de documentos y perfil, y una tarea hasta COMMITTED.
 **Entregables:** [registro parcial](phase/P012-T002_INCORPORACION_REAL.md) y
 [lista de la primera parada](phase/P012-T002_WHEELS_FALTANTES.lock) y
 [manifiesto de 17 wheels verificados](phase/P012-T002_WHEELS_VERIFICADOS.sha256). Build/verificador/instalación y
-fixture (dos preparaciones y seis validaciones) correctos en la base corregida `6efbd82`; preflight real **exit 0**
-para ambas CLI, 0/0 llamadas Claude/Codex. SQLite inicializada y servicio arrancado/detenido, 0 jobs/runs/locks;
-apertura automatizada y desde la barra de Chrome rechazadas por guardia cross-site, sin defecto demostrado (D188/D189).
-Diagnóstico D190: acceso manual a la pantalla de login acreditado; cabeceras/causa sin resolver, servicio detenido.
-UI autenticada/registro/incorporación/tarea sin ejecutar. Originales conservados junto a `dist-t008`/`venv-t008`.
+fixture inicial (dos preparaciones y seis validaciones) correctos en la base corregida `6efbd82`; preflight real
+aprobado de ambas CLI. UI autenticada, idiomas es/es, registro `p012-b`, dos conversaciones y doce borradores;
+incorporación documental **`976b1d1` COMMITTED**, P001 ACTIVE y código original conservado. Reenvío API autorizado
+sin duplicados. Run de tarea **`b94eedef…` REVISION_LIMIT**: tres archivos vacíos, pytest exit 5/0 casos/JUnit partial,
+mypy y Django exit 1, Ruff pasa, revisión REVISE; no aceptación o commit de tarea. Servicio parado, 0 jobs activos/
+encolados/locks y cinco procesos de agentes STOPPED; Claude **4/12**, Codex **1/3**. Originales/diff/historial
+conservados. T009 acota diagnóstico offline de TMPDIR/PATH sin cambiar configuración o código ni relanzar.
 
 ## P012-T003 — Chat, backup y restauración sobre el proyecto real
 
@@ -221,3 +220,30 @@ identidad/política y documentación de la corrección, sin ejecutar CLI o prove
 **Validación:** reproducción y tests dirigidos sintéticos de diagnóstico/capacidades; checks documentales y diff.
 **Entregables:** [corrección y continuación propuesta](phase/P012-T008_CORRECCION_PREFLIGHT.md), D187.
 25 regresiones nuevas y 229 tests dirigidos correctos; sin CLI reales ni nueva operación de T002.
+
+## P012-T009 — Diagnóstico offline del entorno de escritura Codex
+
+**Estado:** pendiente. **Depende de:** parada real de T002 (D191).
+**Objetivo:** Acotar los prerrequisitos de temporales y herramientas del escritor, separando hechos de hipótesis,
+y dejar una propuesta concreta y revisable antes de pedir otro intento real.
+**Alcance:** intención congelada del ejecutor y errores saneados, TOML aprobado T001, fronteras D059/D068/D174,
+composición de validadores y vías de continuidad admitidas por el producto. No presupone defecto del harness.
+**Rutas permitidas:** `docs/**`; lectura de evidencia privada de T002, sin alterarla.
+**Criterios de aceptación:**
+
+- Contrastar TMPDIR ausente en el entorno congelado del ejecutor, exclusión de `/tmp`, PATH sin venv Django y
+  entorno separado de validaciones. Precisar qué demuestra el stream y qué no; no reproducir proveedores reales.
+- Propuesta exacta de entorno/temporales para el área, sin cambiar permisos, confianza, red, modelo/esfuerzo,
+  configuración global o TOML operativo. Justificarla con documentación/código y comprobaciones puras/sintéticas;
+  no atribuir semántica nueva a Codex 0.164.0 sin evidencia.
+- Determinar la continuación soportada que conserva el checkout/diff fallido y los jobs congelados, sin reparar
+  resultados a mano, editar SQLite o reutilizar un job con configuración distinta. Si exige ampliar alcance o
+  elegir entre diseños no resueltos, pasar por HITL antes de decidir.
+- Si se acredita un defecto del producto, acotar su corrección con regresiones sintéticas en otra tarea antes de
+  reconstruir o relanzar. Si solo falta un prerrequisito operativo, declararlo sin inventar una corrección de código.
+- Registrar propuesta de consentimiento posterior con efectos, rutas, presupuesto ya consumido 4 Claude/1 Codex
+  y límites de parada; sin iniciar servicio, CLI reales, modelos, revalidaciones o tests del fixture fallido.
+
+**Validación:** contraste documental/código, comprobaciones puras/sintéticas pertinentes, parsers/enlaces/diff;
+sin suites completas si no cambia producto, ni operaciones reales.
+**Entregables:** `docs/phase/P012-T009_DIAGNOSTICO_ENTORNO_CODEX.md` y decisión con resultado/continuación.

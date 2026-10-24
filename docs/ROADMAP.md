@@ -327,10 +327,14 @@ en la primera apertura automatizada de Chrome. Reanudación autorizada desde la 
 cuarta parada (D189), sin acreditar defecto del producto ni cambiar guardias. Diagnóstico posterior autorizado
 (D190): acceso manual al login en otra pestaña confirmado por accesibilidad, pestaña controlada sigue cargando;
 sin cabeceras ni causa resuelta. Servicio detenido al acabar el diagnóstico, sin login ni registro.
-[Registro parcial](phase/P012-T002_INCORPORACION_REAL.md); 0/0 llamadas, sin registro/incorporación/tarea.
-T002 sigue como siguiente tarea, pendiente de consentimiento nuevo para usar la pantalla cargada manualmente
-antes de vincular la automatización y continuar login/B/tarea con parámetros intactos y guardias vigentes;
-T003–T007 pendientes, T003/T004 sin autorización.
+Reanudación real posterior autorizada (D191): login/idiomas/registro, dos conversaciones y borradores CAS,
+**incorporación B COMMITTED** (`976b1d1`) y P001 ACTIVE, con código conservado. Reenvío idempotente verificado
+por API local con HITL específico. La tarea `b94eedef…` planifica, pero Codex deja vacías las tres rutas permitidas;
+pytest sin casos, mypy/Django fallan y revisor REVISE → REVISION_LIMIT. Sin reparación, aceptación o commit de tarea.
+[Registro parcial](phase/P012-T002_INCORPORACION_REAL.md); Claude 4/12, Codex 1/3; servicio detenido y sin trabajo
+activo. T002 sigue parcial; **T009** es la siguiente tarea, diagnóstico documental/offline del entorno del escritor
+sin cambiar configuración o relanzar. No hay causa raíz o defecto del producto demostrados todavía.
+T003–T007 pendientes, T003/T004 y nuevos intentos reales sin autorización.
 Límites reales intactos.
 La apertura del expediente de P011 queda aplazada hasta el cierre de P012.
 

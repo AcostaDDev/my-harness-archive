@@ -1,16 +1,18 @@
 # P012-T002 — Instalación e incorporación real: paradas de preparación
 
-Fecha: 2026-10-24. **Estado actual: acceso manual al login acreditado; diagnóstico cerrado sin cabeceras; T002 parcial y servicio detenido.**
+Fecha: 2026-10-24. **Estado actual: incorporación B COMMITTED; tarea detenida en REVISION_LIMIT, tres archivos vacíos sin aceptar; servicio detenido. T002 parcial.**
 Decisiones: [D185](../DECISIONS.md#d185--p012-t002-autorizada-y-detenida-por-caché-django-incompleta) (primera parada),
 [D186](../DECISIONS.md#d186--p012-t002-descargas-autorizadas-y-falso-rechazo-de-choices-multilínea) (reanudación y segunda parada),
 [D188](../DECISIONS.md#d188--p012-t002-preflight-corregido-aprobado-y-parada-en-la-apertura-de-chrome) (paquete corregido y tercera parada),
 [D189](../DECISIONS.md#d189--p012-t002-rechazo-cross-site-también-desde-la-barra-de-chrome) (continuación autorizada y cuarta parada),
-[D190](../DECISIONS.md#d190--p012-t002-acceso-manual-al-login-y-diagnóstico-local-sin-cabeceras) (diagnóstico autorizado).
+[D190](../DECISIONS.md#d190--p012-t002-acceso-manual-al-login-y-diagnóstico-local-sin-cabeceras) (diagnóstico autorizado),
+[D191](../DECISIONS.md#d191--p012-t002-incorporación-b-confirmada-y-parada-del-escritor-codex) (incorporación y fallo de tarea).
 [Contrato](../NEXT_STEPS.md#p012-t002--instalación-incorporación-b-y-perfil-declarado-con-proveedores-reales),
 [propuesta confirmada](P012-T001_PROPUESTA_OPERATIVA.md).
 
 Los §§1–6 conservan el registro de la **primera parada por caché**, resuelta después por consentimiento expreso.
-Los §§7–9 conservan la segunda parada; §§10–14, la tercera; §§15–17, la cuarta; §§18–20 registran el diagnóstico manual.
+Los §§7–9 conservan la segunda parada; §§10–14, la tercera; §§15–17, la cuarta; §§18–20, el diagnóstico manual;
+§§21–26 registran la incorporación B y la parada de la primera tarea real.
 
 ## 1. Autorización y base
 
@@ -410,3 +412,153 @@ Comprobaciones documentales del diagnóstico: 12 fases, 8 tareas, **190 decision
 STATE/base/NEXT_STEPS **12.137/24.576**, **8.718/12.288** y **17.601/49.152** bytes. Cuerpos D001–D189 y §§1–17
 conservados, solo cinco Markdown modificados; archivos históricos, baseline pública y fuentes intactos.
 Diff revisado y `git diff --check` correcto. Sin suites adicionales por tratarse de evidencia/documentación.
+
+## 21. Reanudación autorizada, sesión y registro
+
+El usuario responde **«Autorizo»** a reanudar T002 desde la pantalla cargada manualmente hasta B/tarea, con
+12 llamadas Claude y 3 Codex, conforme a §20. Base documental **`496340e`**; fuentes/wheel corregidos de
+**`6efbd829dff16de58c39247358f0b5cf7d208466`**, sin otro build/instalación/init-db. Se revalidan hashes, área,
+fixture limpio, conservación, identidades, base sin trabajos y puerto libre; mismo TOML, wheel, venv y SQLite.
+
+Servicio en 8024; la pestaña de login cargada manualmente se vincula sin recargarla. Autenticación correcta con
+la clave efímera local, sin conservarla en documentación. Preferencias visual/trabajo por defecto **es/es** guardadas
+desde UI, versión 2. Registro **`p012-b`**, raíz B original, composición **django / python-django**, trabajo **es**,
+bootstrap desactivado, pareja heredada Claude/Codex, política **agent/catalog, gpt-6-luna/low, 0 correcciones**.
+Vista previa del registro `f59442ab1d77…`, confianza sintética y motivo confirmados desde UI. Sin modelos al registrar.
+
+Conversación B `de5cf239…` creada por UI sobre HEAD **`f6a2d9dc054725b2cd1f9e323bf387ce092925c2`**, árbol
+`fd1bd4754a5bf7109702f8570fc4853d0fbca467`, inventario
+`370c964f3bf5e9c88a4535d72245cd19d678dc3bc81bc14ea5537c770dc2e27e`. Identifica `Item` en `catalog/models.py:4`,
+migración, ruta local/include y tests con procedencia. El perfil detectado `onboarding-django` permanece propuesta;
+el perfil confirmado es el declarado **python-django**, sin cambiar TOML ni activar receta/formateador.
+
+## 22. Dos turnos del revisor y decisión HITL
+
+| Turno | Run / intento abreviados | Resultado |
+|---|---|---|
+| 1 | `ecb91202…` / `e818504b…` | ANSWERED; once documentos D088 y `docs/flows/items-listado.md`, preguntas informativas |
+| 2 | `cf11e863…` / `98cd5b24…` | ANSWERED; doce propuestas completas actualizadas, sin preguntas abiertas |
+
+El primer turno contrasta modelo/migración, ruta/vista, tests y configuración con las fuentes; diferencia lo observado
+del cambio planificado. Las dudas sobre dos preparaciones, JUnit y conservación de README se resuelven con T001 y
+el flujo B existentes: se explican al revisor los comandos exactos del TOML y el archivo de originales, sin editar
+manualmente su salida. Solo pytest emite JUnit; las otras cinco validaciones no declaran reporte.
+
+HITL sobre la ambigüedad que T001 no fijaba: el usuario elige **«Conversión habitual a entero: aceptar espacios, +5
+y 05; rechazar 5.0»**, sobre la propuesta que además establece error HTTP 400 con JSON de clave `error` descriptiva,
+sin exigir su texto exacto; ausente conserva 5. El segundo turno refleja esta decisión como D005 del hijo, separada
+de D001–D004 inferidas del código. Una sola tarea, tres rutas permitidas, sin ampliar dependencias o modelos.
+
+Se revisan las doce propuestas y se aplican desde UI por sus hashes al área privada, sin modificar contenido:
+**12 APPLIED**, las primeras **12 SUPERSEDED**. AGENTS 36 líneas y wrappers 3, dentro de sus límites. El checkout
+sigue limpio antes de confirmar el commit documental; no se han escrito fuentes ni reparado resultados de agentes.
+
+## 23. Incorporación COMMITTED y reenvío idempotente autorizado
+
+Vista previa B y perfil confirmados desde UI:
+
+| Evidencia | Valor |
+|---|---|
+| Preview SHA-256 | `5da9f1d81682ef3411245869ab16414dd511b4afab642ded17ba568b952c10a9` |
+| Perfil SHA-256 | `8585911d18924c35ae2211a7725e1870fc3bce504409e7d749ed66908fd3e4e1` |
+| Run documental | `a04ea39f…`, COMMITTED, sin modelo |
+| Commit documental único | **`976b1d1fb9fad40da73aef19e0d6896578999cff`** |
+| Fase adoptada | **P001 ACTIVE**, definición 1, solo P001-T001, sin tag |
+| README original | `docs/archive/phase-000/onboarding-originals/README.md`, mismo blob y modo Git `100644` |
+
+Antes de la tarea, todos los archivos originales del código conservan bytes y permisos; README conserva su blob
+`eb0b30c6…` y SHA-256 `df5f15c1…` en el archivo. El original tenía permiso de disco 0600 y la copia documental 0644;
+el modo Git permanece `100644` (sin bit ejecutable). No se confunde permiso de disco con modo Git. Manifiesto
+privado del árbol incorporado guardado para comprobar después las únicas rutas cambiadas. Checkout limpio.
+
+La UI oculta la confirmación cuando termina, sin botón de reenvío. Se plantea HITL específico; el usuario responde
+**«Autorizar solo la comprobación de idempotencia por API local»**. Excepción acotada a reenviar los mismos datos,
+hashes y clave de idempotencia del job documental, sin sustituir el recorrido UI ni ampliar permisos/modelos.
+Se autentica una sesión HTTP local temporal, se envía **un** POST a la ruta de confirmación B y se cierra esa sesión
+(DELETE 204), sin imprimir cookies o claves. Respuesta **202 con el mismo job 3** ya terminado. Conteos antes/después:
+**3 jobs, 3 runs, 2 intentos, 1 incorporación, 1 fase**; HEAD y checkout intactos. Sin efecto ni invocación duplicados.
+Evidencia completa privada en `AREA/tmp/t002-idempotency-replay.json`.
+
+## 24. Primera tarea real: planificación válida, escritura fallida y REVISE
+
+Desde P001 se elige P001-T001 del NEXT_STEPS por CAS (fuente `bbe04dd80f99…`) y se encola con notas que reiteran
+los tests acordados y las restricciones. Run **`b94eedef-4c63-47be-b4f0-1fae01c4af11`**, job 4, base **`976b1d1…`**.
+
+| Intento | Proveedor/modelo/esfuerzo | Resultado |
+|---|---|---|
+| Planificador `61b2ab93…` | Claude `sonnet` / low | COMPLETE; contrato con las tres rutas y criterios acordados |
+| Ejecutor `723ac4fc…` | Codex `gpt-6-luna` / low | Proceso exit 0, resultado estructurado válido que declara que **no completó la tarea** |
+| Revisor `9a6b835f…` | Claude `sonnet` / low | COMPLETE, **REVISE**; no aceptación ni commit de tarea |
+
+Las cuatro invocaciones Claude reportan **`claude-sonnet-5-5`** en el stream; alias/esfuerzo solicitados sin cambios.
+Codex conserva selección `gpt-6-luna`/low; no reporta otro id de modelo. Todas las versiones congeladas son
+**Claude 2.1.310 / Codex 0.164.0 / cli-14**, política corregida `1156d0c9…`, compatibilidad condicionada D174.
+No se interpreta exit 0 del transporte como implementación correcta: validaciones y revisión detectan el fallo.
+
+La primera lectura del ejecutor muestra las tres fuentes con contenido. Después informa de rechazo al escribir
+heredocs y de fallo de verificación de un parche porque ya no encuentra el contenido esperado. La lectura posterior
+no devuelve contenido y el diff conserva **tres archivos de 0 bytes**, **60 líneas eliminadas**:
+`catalog/views.py`, `catalog/tests/test_views.py` y `docs/flows/items-listado.md`. También observa `python` no
+encontrado y avisos Git de denegación al crear caché bajo `/tmp`. No se conserva en el stream el comando exacto
+rechazado de heredocs: no se afirma una reconstrucción completa de su secuencia ni una causa raíz probada.
+
+| Validación del perfil por el motor | Exit | Resultado |
+|---|---|---|
+| pytest con JUnit | **5** | 0 casos; se han borrado los tests, sin éxito inferido |
+| ruff check | 0 | Pasa sobre los archivos vacíos |
+| ruff format --check | 0 | Pasa sobre los archivos vacíos |
+| mypy | **1** | No se encuentra `items` importado desde la vista vacía |
+| manage.py check | **1** | ImportError de `items` |
+| makemigrations --check | **1** | Mismo ImportError, sin migraciones nuevas |
+
+JUnit **partial**, 252 bytes, SHA-256 `7825c21ffacb323ef13196bd3237bb7083da1ee181fcdf375a2cf75ecc7ebb4d`.
+Diff de revisión 2545 bytes, SHA-256 `1651c973dd3913b938e317029a30f72102c880559500ff3fc66b4aff8806be1e`;
+fingerprint `9853daa091f6cae9941079483df9c7a647a40828a773b0876dfe34f56afeabf2`.
+REVISE por corrección, tests borrados, flujo perdido y validaciones fallidas. Cero correcciones da estado
+**REVISION_LIMIT**; no se pulsa revalidar/reintentar/commit ni se aplica el `next_prompt` del revisor.
+
+## 25. Parada, conservación y alcance acreditado
+
+Se detiene el servicio con SIGINT tras comprobar identidad y ausencia de trabajo propio activo. Terminación normal,
+puerto 8024 cerrado, clave efímera eliminada. **0 jobs activos/encolados, 0 locks, cinco procesos de agentes STOPPED**.
+Quedan **4 jobs DONE, 4 runs y 5 intentos**; el run de tarea no está COMMITTED. Claude **4/12**, Codex **1/3**.
+Servicio y resultados conservados, sin limpieza persistente. P001 sigue ACTIVE y HEAD en el commit documental.
+
+Manifiesto previo a la tarea: solo cambian las tres rutas permitidas, ahora vacías; el resto del árbol incorporado
+conserva bytes/modos. Configuración, distribución vieja/nueva, historial y archivo phase-000 del hijo intactos.
+No se restaura ni repara la salida del ejecutor, no se edita SQLite/TOML ni se alteran snapshots. No hay aceptación,
+commit de tarea, cierre de P001, T003/T004, nuevos builds/descargas o cambios de seguridad/globales.
+
+**Acreditado:** acceso UI autenticado, idiomas es/es, registro, dos conversaciones con revisor real, borradores CAS,
+commit B con código conservado, adopción de P001 y reenvío sin duplicados; plan y transporte de ambos proveedores,
+validación/revisión que rechazan el resultado incorrecto. **Pendiente:** implementación válida y tarea COMMITTED
+con el perfil declarado. T002 sigue parcial; no acredita todavía el flujo básico exitoso completo ni todos los
+criterios reales D095. No se ejecutan suites del producto al no cambiar código del producto.
+
+## 26. Siguiente tarea acotada: diagnóstico offline del entorno de Codex
+
+La intención congelada del ejecutor enumera solo **HOME, LANG, PATH, PYTHONDONTWRITEBYTECODE y USER**;
+**no incluye TMPDIR**. El TOML aprobado omite TMPDIR para Codex y su PATH no incluye el venv Django, mientras
+el entorno separado de validaciones sí lo incluye. `exclude_slash_tmp=true` está en el argv congelado. D059
+conserva el comportamiento de la CLI para un TMPDIR explícito, sin otorgar `/tmp` en general; no procede debilitarlo.
+Estos son indicios operativos, no prueba de un defecto del harness ni explicación suficiente de todos los efectos.
+
+Se acota **P012-T009**, documental/offline: contrastar las fronteras de entorno y temporales, separar hechos e
+hipótesis y preparar una propuesta concreta de configuración/continuación conservando el fallo. Sin ejecutar CLI
+reales, proveedores, servicio, revalidaciones o correcciones del fixture. No cambiar modelo/esfuerzo, permisos,
+confianza, política de red o configuración global. Si se demuestra defecto del producto, abrir su corrección con
+pruebas sintéticas antes de reconstruir o relanzar. Un nuevo intento real requiere propuesta y consentimiento nuevos,
+sin reutilizar un job congelado bajo una configuración distinta ni reparar a mano su resultado.
+
+## 27. Comprobaciones documentales y de cierre de esta continuación
+
+- Parsers puros: **12 fases, 9 tareas P012, 191 decisiones**; **577 enlaces/anclas relativos** válidos en los
+  cinco Markdown modificados. STATE/base/NEXT_STEPS: **12.235/24.576**, **8.718/12.288**, **19.891/49.152** bytes.
+- Cuerpos D001–D190 y §§1–20 de este registro conservados; base acumulada, T001/T008, fases archivadas, baseline
+  pública, fuentes del producto, diagrama de datos y flujos del producto intactos. Sin nuevo defecto de código probado.
+- Capturas del producto registran los cinco grupos de agentes como `dead`; no hay jobs activos/encolados, locks,
+  listener 8024 ni clave temporal. Hashes de distribuciones/configuración originales coinciden; diff del fixture
+  conservado sin tocarlo tras la parada. Comprobación del reenvío: mismo job 3 y mismos conteos/HEAD.
+- Diff revisado y `git diff --check` correcto; solo documentación del producto. Sin suites nuevas del producto,
+  CLI adicionales, proveedor después de la parada, cambios globales o remotos. Las seis validaciones fallidas/parciales
+  de §24 son evidencia del fixture, no resultados de las suites del repositorio.

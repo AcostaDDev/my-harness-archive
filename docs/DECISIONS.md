@@ -201,6 +201,7 @@ tarea se leen solo las decisiones que cita; este índice sirve para buscar prece
 | [D188](#d188--p012-t002-preflight-corregido-aprobado-y-parada-en-la-apertura-de-chrome) | P012-T002: preflight corregido aprobado y parada en la apertura de Chrome | P012 |
 | [D189](#d189--p012-t002-rechazo-cross-site-también-desde-la-barra-de-chrome) | P012-T002: rechazo cross-site también desde la barra de Chrome | P012 |
 | [D190](#d190--p012-t002-acceso-manual-al-login-y-diagnóstico-local-sin-cabeceras) | P012-T002: acceso manual al login y diagnóstico local sin cabeceras | P012 |
+| [D191](#d191--p012-t002-incorporación-b-confirmada-y-parada-del-escritor-codex) | P012-T002: incorporación B confirmada y parada del escritor Codex | P012 |
 
 ## D001 — Alcance local y arquitectura base
 
@@ -5591,3 +5592,33 @@ Fase: P012. Conserva D188/D189; no cambia el contrato de seguridad.
   autenticar y continuar B/tarea desde UI con parámetros 12/3 intactos. Si requiere navegación, apertura manual;
   si falla la interacción, parar sin cambiar a API. El diagnóstico no autoriza ese nuevo tramo. T003/T004 excluidas.
 - Solo documentación, conservación y parada; sin suites adicionales, cambios del producto o configuración global.
+
+## D191 — P012-T002: incorporación B confirmada y parada del escritor Codex
+
+Estado: reanudación autorizada el 2026-10-24; B COMMITTED, tarea en REVISION_LIMIT; T002 parcial y servicio detenido.
+[Registro, evidencia y siguiente diagnóstico](phase/P012-T002_INCORPORACION_REAL.md#21-reanudación-autorizada-sesión-y-registro).
+Fase: P012. Conserva D188–D190 y sus límites.
+
+- «Autorizo» cubre la propuesta D190/§20: mismo wheel/venv/SQLite, login cargado manualmente, B/tarea desde UI,
+  modelos/esfuerzos y 12/3 llamadas, cero correcciones. Login y preferencias es/es correctos; registro `p012-b`
+  con composición django, perfil declarado python-django y política confirmada, sin modificar TOML.
+- Dos turnos Claude válidos con doce borradores revisados y aplicados por hash. HITL adicional: conversión habitual
+  `int` para `limit` (espacios, +5, 05 aceptados; 5.0 rechazado); 400 JSON con clave `error`, sin texto exacto, ausencia
+  conserva 5. D005 del hijo distingue la decisión del usuario de las cuatro decisiones inferidas del código.
+- Incorporación documental COMMITTED en `976b1d1fb9fad40da73aef19e0d6896578999cff`, P001 ACTIVE con una tarea;
+  código original conservado por bytes/modos, README archivado con mismo blob/modo Git. Perfil SHA `8585911d…`.
+  El usuario autoriza aparte solo comprobar idempotencia por API local (UI sin botón tras completar): una repetición
+  con mismos hashes/datos/clave devuelve 202 y el mismo job, sin duplicar efectos ni llamadas. B/tarea siguen por UI.
+- Tarea `b94eedef…`: plan Claude correcto, ejecución Codex con resultado que declara no haber completado el trabajo.
+  Tres rutas permitidas quedan vacías (60 líneas borradas); errores reportados de heredocs, parche y `python`
+  ausente. Pytest exit 5/0 casos/JUnit partial, mypy y comandos Django exit 1; Ruff pasa. Revisor REVISE; cero
+  correcciones → REVISION_LIMIT, sin reintento, aceptación o commit de tarea. No se repara el resultado a mano.
+- Consumo Claude 4/12, Codex 1/3. Claude reporta `claude-sonnet-5-5` bajo alias sonnet/low; Codex gpt-6-luna/low.
+  CLI 2.1.310/0.164.0 y política corregida congeladas, compatibilidad condicionada. El transporte exit 0 no acredita
+  éxito funcional. Servicio detenido, 0 jobs activos/encolados/locks, cinco procesos de agentes STOPPED.
+- Intención del ejecutor sin TMPDIR, `/tmp` excluido por D059 y PATH sin venv del fixture, distinto del validador.
+  Son indicios de un prerrequisito operativo, sin causa raíz o defecto del producto demostrados. Siguiente tarea
+  **P012-T009**, diagnóstico documental/offline y propuesta concreta sin cambiar el TOML operativo, fuentes o
+  resultado fallido. Si acredita defecto, acotar corrección sintética antes de relanzar. Nuevo tramo real requiere
+  consentimiento; no reutilizar congelados con configuración distinta. T003/T004 siguen sin autorización.
+- Solo documentación del producto; sin suites nuevas, cambios de seguridad/configuración global o acciones remotas.
