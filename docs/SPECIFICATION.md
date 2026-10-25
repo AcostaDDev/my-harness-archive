@@ -58,7 +58,7 @@ run y, cuando procede, al intento exacto.
 | F03 | Importar un harness anterior (Flujo A) | Sin entrada operativa; datos anteriores conservados | Retirado en P011-T019 (D155, D161); implementación histórica P008 conservada en el archivo |
 | F04 | Incorporar un repositorio sin harness (Flujo B) | Discovery por ingeniería inversa, documentos iniciales y archivos raíz mínimos | Inventario estático y propuesta de perfil implementados (P008-T013, D101); conversación de ingeniería inversa sobre HEAD con borradores privados (P008-T014, D102); vista previa, perfil y commit confirmados con P001 adoptada (P008-T015, D103) |
 | F05 | Observar un harness anterior | Sin visor, API, CLI, SSE ni observadores; datos anteriores inertes | Retirado en P011-T019 (D155, D161) |
-| F06 | Navegar proyectos, fases, tareas y runs | URL propia por recurso, carga limitada y paginada | Implementado (P007, D077) |
+| F06 | Navegar proyectos, fases, tareas y runs | URL propia por recurso, carga limitada y paginada; `/runs/:id` independiente en copias de consulta | Implementado (P007, D077; P012-T012, D202) |
 | F07 | Ejecutar una tarea | Planificación → ejecución → validación → revisión → aceptación o corrección → commit del harness | Implementado (P003) |
 | F08 | Gestionar prompts | Versiones, diff, variables validadas, activación y rollback; snapshot por intento | Implementado (P004) |
 | F09 | Resolver bloqueos y permisos | Motivo y evidencia; conceder o denegar una petición exacta; revalidar o reintentar | Implementado (P004) |
@@ -68,7 +68,7 @@ run y, cuando procede, al intento exacto.
 | F13 | Conversar con el revisor | Chat sobre HEAD sin esperar al ejecutor; propuestas → tareas confirmadas; comandos deterministas | Implementado (P005, P007) |
 | F14 | Inspeccionar tests | Suites y casos JUnit, OK/KO por tarea y evolución por fase | Implementado (P006, P007) |
 | F15 | Métricas y estadísticas | Tokens, turnos, modelos, esfuerzos, duraciones y coste equivalente con procedencia | Implementado (P007, D074, D084) |
-| F16 | Recuperar y conservar | Backup y restauración de consulta, retención explícita de logs, recuperación tras caída | Implementado (P003, P006) |
+| F16 | Recuperar y conservar | Backup y restauración de consulta, UI de evidencia por id sin checkout, retención explícita de logs, recuperación tras caída | Implementado (P003, P006; P012-T012, D202) |
 | F17 | Distribución local | Wheel con UI y migraciones, `init-db`, `serve`, sesión local | Implementado (P006) |
 | F18 | Perfiles declarativos | Perfil de stack (preparación, tests, lint, tipos) declarado en el TOML local y confirmado por el usuario, incluido Python/Django (`pytest`, `ruff`, `mypy`) | Implementado (P008-T008, D095); ejemplo Python/Django pendiente de confirmación sobre el proyecto del usuario |
 | F19 | Instrucciones del proyecto para los agentes | `AGENTS.md` incluido en el contexto congelado de cada intento | Implementada (P008-T007, D094) |
@@ -80,6 +80,12 @@ run y, cuando procede, al intento exacto.
 
 Modo de proyecto: **gestionado**. Solo se crean proyectos nuevos o se incorpora código sin harness (B);
 registrar/reabrir uno ya gestionado conserva su autoridad. Nunca escriben dos motores sobre el mismo checkout.
+
+Las copias marcadas D040 ofrecen [consulta UI](flows/backup-consultation.md) por id, con evidencia, diff,
+JUnit, jobs/intentos/eventos y métricas por run. Conservan estados históricos sin sondeo de ejecución, acciones,
+recuperación o configuración; no leen checkouts ni montan el workspace operativo. Sin marca se conserva la
+resolución canónica habitual, incluso si faltan agentes o el supervisor está desactivado. Verificación sintética
+P012-T012; la consulta UI real de T003 sigue pendiente de consentimiento y evidencia posteriores.
 
 ## 5. Reglas de negocio
 

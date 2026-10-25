@@ -1,5 +1,6 @@
 import { memo, useEffect, useRef, useState } from "react";
 import type { ReactNode } from "react";
+import { useArchive } from "./ServiceMode";
 import { errorText, translateNow, useI18n } from "./Language";
 import type { MessageKey } from "./i18n.ts";
 import { managed, ManagedError } from "./managed-api";
@@ -23,6 +24,8 @@ export type Poll<T> = { data?: T; error?: string; missing: boolean; loading: boo
  * a 404 marks the resource as absent. A null `path` queries nothing.
  */
 export function usePoll<T>(path: string | null, interval = 1500, refresh = 0): Poll<T> {
+  const archive = useArchive();
+  const effectiveInterval = archive ? 0 : interval;
   const [state, setState] = useState<Poll<T>>({ missing: false, loading: path !== null });
   const current = useRef(path);
   useEffect(() => {
@@ -42,11 +45,11 @@ export function usePoll<T>(path: string | null, interval = 1500, refresh = 0): P
         const missing = e instanceof ManagedError && e.status === 404;
         setState(previous => ({ data: missing ? undefined : previous.data, error: message(e), missing, loading: false }));
       }
-      if (active && interval > 0) timer = setTimeout(() => void poll(), interval);
+      if (active && effectiveInterval > 0) timer = setTimeout(() => void poll(), effectiveInterval);
     }
     void poll();
     return () => { active = false; clearTimeout(timer); };
-  }, [path, interval, refresh]);
+  }, [path, effectiveInterval, refresh]);
   return state;
 }
 

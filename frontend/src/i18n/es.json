@@ -1,4 +1,13 @@
 {
+  "archive.back": "Volver al archivo",
+  "archive.blocked": "Esta página no está disponible en una copia de consulta.",
+  "archive.id_hint": "Usa un id de run del manifiesto del bundle.",
+  "archive.lede": "Abre la evidencia guardada de un run sin el checkout del proyecto.",
+  "archive.notice": "Copia de solo consulta. Los estados guardados son históricos; consultarlos no reanuda el trabajo ni confirma la parada de escritores.",
+  "archive.open": "Abrir run",
+  "archive.reload": "Recargar evidencia",
+  "archive.run_id": "Id de run",
+  "archive.title": "Archivo de consulta",
   "chat.choose.body": "O crea una nueva con una fase o tarea como contexto por defecto.",
   "chat.choose.title": "Elige una conversación",
   "chat.command.close": "Cerrar comando",

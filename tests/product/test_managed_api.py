@@ -232,7 +232,7 @@ def test_http_flow_executes_reviews_and_commits_once_across_double_submit_and_re
                              "models": list(task.policy.executor_models),
                              "efforts": list(task.policy.executor_efforts), "effort_vocabulary": []}}}]
         assert http.get("/api/managed/supervisor").json() == {
-            "enabled": True, "alive": True, "last_error": None, "ports_configured": True,
+            "read_only_archive": False, "enabled": True, "alive": True, "last_error": None, "ports_configured": True,
             "commit_writer_configured": True}
         first = submit(http, "start-1")
         assert first.status_code == 202, first.text
@@ -299,7 +299,7 @@ def test_http_flow_executes_reviews_and_commits_once_across_double_submit_and_re
 def test_queued_job_survives_restart_and_runs_once_when_the_supervisor_is_enabled(tmp_path, url, engine, plain):
     with client(url, tmp_path, config(plain)) as http:
         assert http.get("/api/managed/supervisor").json() == {
-            "enabled": False, "alive": False, "last_error": None, "ports_configured": False,
+            "read_only_archive": False, "enabled": False, "alive": False, "last_error": None, "ports_configured": False,
             "commit_writer_configured": False}
         job = submit(http, "queued").json()
         assert submit(http, "queued").json() == job
@@ -477,7 +477,7 @@ def test_default_service_registers_nothing_and_never_launches_processes(tmp_path
     with TestClient(create_app(url, tmp_path / "ui"), base_url=LOCAL, headers={"X-Harness-Local": "1"}) as http:
         assert http.get("/api/managed/projects").json() == []
         assert http.get("/api/managed/supervisor").json() == {
-            "enabled": False, "alive": False, "last_error": None, "ports_configured": False,
+            "read_only_archive": False, "enabled": False, "alive": False, "last_error": None, "ports_configured": False,
             "commit_writer_configured": False}
         assert submit(http).status_code == 404
         assert http.get("/api/legacy/projects").status_code == 404
@@ -565,3 +565,12 @@ def test_ui_demo_recovers_after_service_restart_without_repeating_executor(tmp_p
     assert [item["role"] for item in calls] == ["executor", "reviewer", "reviewer"]
     assert git(area / "recovery", "rev-list", "--count", "HEAD") == "2"
     assert git(area / "source", "status", "--porcelain") == ""
+
+
+def test_ordinary_service_without_supervisor_is_not_an_archive(tmp_path, url):
+    managed = ManagedConfig(ports_factory=lambda *_: pytest.fail('No invocation'), supervisor=False)
+    with client(url, tmp_path, managed) as http:
+        status = http.get('/api/managed/supervisor').json()
+        assert status['read_only_archive'] is False
+        assert status['enabled'] is False
+        assert status['ports_configured'] is True

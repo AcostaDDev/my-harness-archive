@@ -2,12 +2,11 @@ import { useEffect, useRef, useState } from "react";
 import type { ReactNode } from "react";
 import { useI18n } from "./Language";
 import type { MessageKey } from "./i18n.ts";
-import type { S } from "./managed-api";
 import { Link } from "./navigation";
 import { href, trail } from "./router.ts";
 import type { Route } from "./router.ts";
 import { useSession } from "./SessionGate";
-import { usePoll } from "./ui";
+import { useArchive, useServiceMode, useServiceError } from "./ServiceMode";
 
 type Theme = "system" | "light" | "dark";
 const THEMES: Record<Theme, MessageKey> = { system: "shell.theme.system", light: "shell.theme.light", dark: "shell.theme.dark" };
@@ -31,14 +30,14 @@ function useTheme(): [Theme, () => void] {
 
 function Supervisor() {
   const { t } = useI18n();
-  const read = usePoll<S["SupervisorRead"]>("/supervisor", 5000);
-  const s = read.data;
-  const [label, tone]: [MessageKey, string] = read.error && !s ? ["shell.supervisor.unreachable", "danger"]
-    : !s ? ["shell.supervisor.connecting", "neutral"]
+  const s = useServiceMode();
+  const error = useServiceError();
+  const [label, tone]: [MessageKey, string] = error && !s ? ["shell.supervisor.unreachable", "danger"] : !s ? ["shell.supervisor.connecting", "neutral"]
+    : s.read_only_archive ? ["archive.title", "neutral"]
       : !s.ports_configured ? ["shell.supervisor.read_only", "neutral"]
         : s.alive ? ["shell.supervisor.active", "ok"] : ["shell.supervisor.stopped", "attention"];
-  return <span className={`status status-${tone}`} title={s?.last_error ?? read.error ?? undefined}>
-    <span className="status-mark" aria-hidden="true" />{read.error && s ? t("shell.supervisor.stale", { status: t(label) }) : t(label)}</span>;
+  return <span className={`status status-${tone}`} title={s?.last_error ?? error}>
+    <span className="status-mark" aria-hidden="true" />{error && s ? t("shell.supervisor.stale", { status: t(label) }) : t(label)}</span>;
 }
 
 function SessionControls() {
@@ -70,8 +69,10 @@ function ProjectNav({ route, project }: { route: Route; project: string }) {
 
 export function Shell({ route, children }: { route: Route; children: ReactNode }) {
   const { t, unavailable, preferences } = useI18n();
+  const archive = useArchive();
+  const mode = useServiceMode();
   const [theme, cycle] = useTheme();
-  const items = trail(route, t);
+  const items = archive ? [{ label: t("archive.title"), to: { name: "home" } as Route }, ...(route.name === "run-short" ? [{ label: route.run, to: route }] : [])] : trail(route, t);
   const project = "project" in route ? route.project : undefined;
   const path = href(route);
   const first = useRef(true);
@@ -104,16 +105,16 @@ export function Shell({ route, children }: { route: Route; children: ReactNode }
     <nav className="sidebar" aria-label={t("shell.sections")}>
       <div className="nav-group">
         <ul>
-          <li><Link to={{ name: "home" }} current={route.name === "home"}>{t("nav.projects")}</Link></li>
-          <li><Link to={{ name: "project-new" }} current={route.name === "project-new"}>{t("nav.new_project")}</Link></li>
+          <li><Link to={{ name: "home" }} current={route.name === "home"}>{archive ? t("archive.title") : t("nav.projects")}</Link></li>
+          {mode && !archive && <li><Link to={{ name: "project-new" }} current={route.name === "project-new"}>{t("nav.new_project")}</Link></li>}
           <li><Link to={{ name: "stats" }} current={route.name === "stats"}>{t("nav.stats")}</Link></li>
-          <li><Link to={{ name: "preferences" }} current={route.name === "preferences"}>{t("nav.preferences")}</Link></li>
+          {mode && !archive && <li><Link to={{ name: "preferences" }} current={route.name === "preferences"}>{t("nav.preferences")}</Link></li>}
         </ul>
       </div>
-      {project && <ProjectNav route={route} project={project} />}
+      {mode && !archive && project && <ProjectNav route={route} project={project} />}
     </nav>
     <main id="main" className="content">
-      {preferences?.status === "invalid" && route.name !== "preferences" && <p role="alert" className="state state-error">{t("preferences.invalid")}</p>}
+      {!archive && preferences?.status === "invalid" && route.name !== "preferences" && <p role="alert" className="state state-error">{t("preferences.invalid")}</p>}
       {unavailable && <p role="status" className="state state-stale">{t("preferences.unavailable")}</p>}
       {children}
     </main>

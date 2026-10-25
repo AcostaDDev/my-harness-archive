@@ -3,8 +3,8 @@
 Objetivo y criterios en [ROADMAP](ROADMAP.md#p012--validación-real-previa-a-la-apertura-pública).
 Decisión: [D183](DECISIONS.md#d183--p012-validación-real-previa-a-la-apertura-pública).
 
-**Estado:** T001, **T002**, T008, T009, T010 y T011 completadas (D198); T003–T007 y T012 pendientes,
-doce tareas en total. T003 parcial; T012 planificada por HITL D201, sin implementar.
+**Estado:** T001, **T002**, T008, T009, T010, T011 y T012 completadas (D198/D202); T003–T007 pendientes,
+doce tareas en total. T003 parcial; T012 implementada y verificada offline según D201/D202.
 T002 completada con evidencia acumulada: dos B COMMITTED e idempotencia anteriores, y continuación tras T011
 autorizada/ejecutada hasta tarea **`e3fa4ae6…` COMMITTED `6f021211b307`** con perfil/formateador v8, seis
 validaciones y **13 casos JUnit** correctos. Cero correcciones; nuevo 2 Claude/1 Codex, acumulado T002
@@ -17,9 +17,9 @@ sin intentos/lock; backup/restauración y consulta HTTP iguales, mutación recha
 sin proyecto compuesto; D040 define API y el guion había añadido UI. Consumo 2/3 Claude y 0/0 Codex; 13 DONE/
 1 QUEUED/14 STOPPED/0 locks, puertos cerrados/claves retiradas, 14.921 filas previas intactas y 16.798 finales.
 HITL **«Planificar vista UI Aparte»** (D201): mantener T003 parcial y añadir
-[T012](#p012-t012--vista-ui-de-runs-en-copias-de-consulta). **Siguiente:** implementar T012 offline según
-su [plan](phase/P012-T012_PLAN_VISTA_CONSULTA.md), antes de preparar una continuación T003 de consulta UI
-con consentimiento nuevo y cero llamadas. Sin repetir chat/aceptación/backup o consumir saldo. T004 sin
+[T012](#p012-t012--vista-ui-de-runs-en-copias-de-consulta), completada offline (D202). **Siguiente:**
+consentimiento para la [continuación T003 solo UI](phase/P012-T012_VISTA_CONSULTA.md#4-propuesta-de-continuación-t003-solo-ui-sin-autorizar),
+con wheel corregido en destinos nuevos y cero llamadas. Sin repetir chat/aceptación/backup o consumir saldo. T004 sin
 autorización y con propuesta de arranque pendiente que respete el job QUEUED; no reactivar esa base (D199).
 El resultado T002 y los saldos no habilitan otro tramo, corrección o reintento.
 P001–P011 siguen cerradas; la apertura del [expediente de P011](archive/phase-011/P011_EXPEDIENTE_APERTURA.md)
@@ -358,7 +358,8 @@ Sin suites Python/unittest/Alembic por no cambiar backend o datos, ni QA de nave
 
 ## P012-T012 — Vista UI de runs en copias de consulta
 
-**Estado:** planificada el 2026-10-25 por elección HITL **«Planificar vista UI Aparte»** (D201); sin implementar.
+**Estado:** completada offline el 2026-10-25 (D202), según el plan elegido por HITL D201.
+[Entrega y propuesta posterior](phase/P012-T012_VISTA_CONSULTA.md). T003 conserva su estado parcial.
 **Depende de:** evidencia parcial de T003 (D200), D040/D144/D145; no requiere cerrar T003 antes de implementar.
 **Objetivo:** Consultar en la UI una copia marcada por D040 sin configurar proyectos, acceder al checkout o
 habilitar el carril operativo, para poder completar después la verificación UI de T003.
@@ -387,6 +388,9 @@ diff/JUnit/métricas por run; navegación y componentes de solo consulta en en/e
   y cero llamadas de modelos; consentimiento nuevo antes de build/instalación/servicio. T003 sigue parcial hasta
   verificar su UI real; T004 conserva la guardia del job QUEUED de D199 y su autorización separada.
 
-**Validación:** pruebas offline y checks según [plan, contrato y secuencia](phase/P012-T012_PLAN_VISTA_CONSULTA.md).
-**Entregables:** planificación en ese documento; `docs/phase/P012-T012_VISTA_CONSULTA.md` al implementar,
-flujo `docs/flows/backup-consultation.md`, OpenAPI/tipos y propuesta de verificación T003 posterior.
+**Validación:** 102 tests Python dirigidos, 16 regresiones React/router, 119 tests Node y tipos/build correctos;
+misma evidencia en backup/restauración sin checkout, señal explícita y lecturas sin historial, guardias intactas.
+Pruebas React con render real y host determinista de hooks; sin QA de navegador o servicios privados.
+**Entregables:** [plan conservado](phase/P012-T012_PLAN_VISTA_CONSULTA.md),
+[implementación y continuación T003 propuesta](phase/P012-T012_VISTA_CONSULTA.md),
+[flujo](flows/backup-consultation.md), OpenAPI/tipos y manifiesto de fuentes. Sin wheel operativo ni llamadas nuevas.

@@ -1,75 +1,19 @@
-import { lazy, StrictMode, Suspense } from "react";
+import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
-import { Chat } from "./Chat";
-import { I18nProvider, useI18n } from "./Language";
-import { Link, usePath } from "./navigation";
-import { Home } from "./pages/Home";
-import { PhaseListPage, PhasePage } from "./pages/Phases";
-import { PreferencesPage } from "./pages/Preferences";
-import { ProjectPage } from "./pages/Project";
-import { RegisterPage } from "./pages/Registry";
-import { RunPage, RunRedirect } from "./pages/Run";
-import { SettingsPage } from "./pages/Settings";
-import { TaskPage } from "./pages/Task";
+import { I18nProvider } from "./Language";
+import { usePath } from "./navigation";
+import { Page } from "./Page";
+import { ArchiveNotice } from "./pages/Archive";
 import { parse } from "./router.ts";
-import type { Route } from "./router.ts";
 import { SessionGate } from "./SessionGate";
+import { ServiceModeProvider, useServiceMode } from "./ServiceMode";
 import { Shell } from "./Shell";
-import { Empty, Loading, PageHeader } from "./ui";
-import { ProjectWorkspace, useWorkspace } from "./workspace";
 import "./styles.css";
-
-// Documentation (markdown-it and, when drawing, Mermaid) is only downloaded when opened (H6.2 E3).
-const DocsPage = lazy(() => import("./pages/Docs").then(module => ({ default: module.DocsPage })));
-// Creation and planning (H6.2 E4) share the Markdown viewer: same lazy-loading rule.
-const ImportPage = lazy(() => import("./pages/Planning").then(module => ({ default: module.ImportPage })));
-const SetupPage = lazy(() => import("./pages/Planning").then(module => ({ default: module.SetupPage })));
-const PlanPage = lazy(() => import("./pages/Planning").then(module => ({ default: module.PlanPage })));
-// Statistics (H6.2 E6): charts and tables in their own chunk.
-const StatsPage = lazy(() => import("./pages/Stats").then(module => ({ default: module.StatsPage })));
-
-function Page({ route }: { route: Route }) {
-  const { t } = useI18n();
-  switch (route.name) {
-    case "home": return <Home />;
-    case "preferences": return <PreferencesPage />;
-    case "stats": return <Suspense fallback={<Loading />}><StatsPage /></Suspense>;
-    case "project-new": return <RegisterPage />;
-    case "run-short": return <RunRedirect run={route.run} />;
-    case "not-found": return <>
-      <PageHeader title={t("not_found.title")} />
-      <Empty title={t("not_found.empty", { path: route.path })}><p>{t("not_found.hint")} <Link to={{ name: "home" }}>{t("not_found.back")}</Link></p></Empty>
-    </>;
-  }
-  // Each project has its own action workspace; switching projects resets it.
-  return <ProjectWorkspace key={route.project} project={route.project}><ProjectPageFor route={route} /></ProjectWorkspace>;
-}
-
-function ProjectPageFor({ route }: { route: Exclude<Route, { name: "home" | "stats" | "preferences" | "project-new" | "run-short" | "not-found" }> }) {
-  switch (route.name) {
-    case "project": return <ProjectPage />;
-    case "phases": return <PhaseListPage />;
-    case "phase": return <PhasePage key={route.phase} code={route.phase} />;
-    case "task": return <TaskPage key={`${route.phase}/${route.task}`} phase={route.phase} task={route.task} />;
-    case "run": return <RunPage key={route.run} phase={route.phase} task={route.task} run={route.run} />;
-    case "chat": return <Chat conversation={route.conversation} />;
-    case "settings": return <SettingsPage />;
-    case "project-stats": return <Suspense fallback={<Loading />}><ProjectStats /></Suspense>;
-    case "docs": return <Suspense fallback={<Loading />}><DocsPage path={route.path} /></Suspense>;
-    case "onboarding": return <Suspense fallback={<Loading />}><ImportPage conversation={route.conversation} path={route.path} /></Suspense>;
-    case "setup": return <Suspense fallback={<Loading />}><SetupPage path={route.path} /></Suspense>;
-    case "plan": return <Suspense fallback={<Loading />}><PlanPage key={route.phase} phase={route.phase} conversation={route.conversation} /></Suspense>;
-  }
-}
-
-function ProjectStats() {
-  const { project, refresh } = useWorkspace();
-  return <StatsPage project={project} refresh={refresh} />;
-}
 
 function App() {
   const route = parse(usePath());
-  return <Shell route={route}><Page route={route} /></Shell>;
+  const mode = useServiceMode();
+  return <Shell route={route}>{mode?.read_only_archive && <ArchiveNotice />}<Page route={route} /></Shell>;
 }
 
-createRoot(document.getElementById("root")!).render(<StrictMode><I18nProvider><SessionGate><App /></SessionGate></I18nProvider></StrictMode>);
+createRoot(document.getElementById("root")!).render(<StrictMode><I18nProvider><SessionGate><ServiceModeProvider><App /></ServiceModeProvider></SessionGate></I18nProvider></StrictMode>);

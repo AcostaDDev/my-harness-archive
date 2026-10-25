@@ -1,4 +1,13 @@
 {
+  "archive.back": "Back to archive",
+  "archive.blocked": "This page is unavailable in a read-only copy.",
+  "archive.id_hint": "Use a run id from the bundle manifest.",
+  "archive.lede": "Open saved run evidence without a project checkout.",
+  "archive.notice": "Read-only copy. Saved states are historical; viewing them does not resume work or confirm that writers have stopped.",
+  "archive.open": "Open run",
+  "archive.reload": "Reload evidence",
+  "archive.run_id": "Run id",
+  "archive.title": "Read-only archive",
   "chat.choose.body": "Or create a new one with a phase or a task as its default context.",
   "chat.choose.title": "Choose a conversation",
   "chat.command.close": "Close command",

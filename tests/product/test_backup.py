@@ -455,3 +455,59 @@ def test_source_sqlite_sidecars_are_validated_before_connecting(migrated_databas
         backup(migrated_database, tmp_path)
     assert not (tmp_path / 'backup').exists()
     assert external.read_bytes() == b'conservar original externo'
+
+
+@pytest.mark.parametrize('kind', ['backup', 'restored'])
+def test_archive_signal_and_run_evidence_without_checkout(git_repo, migrated_database, tmp_path, monkeypatch, kind):
+    """T012: identical bounded reads, no original checkout/configuration or history decoding."""
+    import shutil
+    from test_managed import submit
+    from test_run_projection import Probe
+
+    ctx, repo, supervisor, job, _ = managed_run(git_repo, migrated_database, data=simple_xml(3))
+    repo.submit_commit(job.run_id, expected_version=repo.get_run(job.run_id).version,
+                             key='archive-commit')
+    assert supervisor.run_once().status == 'DONE'
+    queued = submit(repo, ctx, key='archive-queued')
+    prefix = f'/api/managed/runs/{job.run_id}'
+    report = prefix + '/cycles/0/validations/0/reports/0'
+    paths = [prefix, prefix + '/jobs?limit=1', prefix + '/attempts?limit=1', prefix + '/events?limit=1',
+             prefix + '/cycles?limit=1', prefix + '/cycles/0/diff?offset=0', report + '?limit=1',
+             report + '/original', f'/api/managed/metrics/attempts?run_id={job.run_id}&limit=1',
+             f'/api/managed/runs/{queued.run_id}']
+    with TestClient(create_app(migrated_database[0], tmp_path, managed=ManagedConfig()), **LOCAL) as http:
+        assert http.get('/api/managed/supervisor').json()['read_only_archive'] is False
+        responses = {path: http.get(path) for path in paths}
+        assert all(response.status_code == 200 for response in responses.values())
+        expected = {path: response.content for path, response in responses.items()}
+        assert responses[prefix].json()['status'] == 'COMMITTED'
+        assert responses[paths[-1]].json()['status'] == 'QUEUED'
+    bundle = backup(migrated_database, tmp_path)
+    destination = bundle
+    if kind == 'restored':
+        destination = tmp_path / 'restored'
+        restore_backup(bundle, destination)
+    before = dump_rows(destination / 'state.sqlite3')
+    shutil.rmtree(ctx.root)
+    monkeypatch.setenv('HARNESS_MANAGED_CONFIG', 'must_not_import:build')
+    archive_engine = make_engine(f'sqlite:///{destination / "state.sqlite3"}')
+    monkeypatch.setattr('harness_local.api.app.make_engine', lambda *_: archive_engine)
+    app = create_app(f'sqlite:///{destination / "state.sqlite3"}', tmp_path,
+                     managed=ManagedConfig(supervisor=True, ports_factory=lambda *_: pytest.fail('No ports')))
+    with TestClient(app, **LOCAL) as http:
+        status = http.get('/api/managed/supervisor').json()
+        assert status == {'read_only_archive': True, 'enabled': False, 'alive': False, 'last_error': None,
+                          'ports_configured': False, 'commit_writer_configured': False}
+        assert http.get('/api/managed/projects').json() == []
+        probe = Probe(archive_engine, monkeypatch)
+        for path in paths:
+            assert http.get(path).content == expected[path], path
+        assert probe.clean()
+        assert http.get('/api/managed/runs/unknown').status_code == 404
+        for path in [prefix + '/actions', '/api/managed/runs', '/api/managed/registry/apply']:
+            response = http.post(path, json={})
+            assert response.status_code == 409
+        with archive_engine.connect() as db:
+            assert db.scalar(text('PRAGMA query_only')) == 1
+    assert dump_rows(destination / 'state.sqlite3') == before
+    repo.engine.dispose()

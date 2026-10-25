@@ -108,6 +108,10 @@ confirmar la parada queda `INTERRUPTED` sin reintento automático.
 
 ## Lectura del run (D144)
 
+Las copias marcadas añaden una [vista de consulta independiente](backup-consultation.md) en `/runs/:id`
+(P012-T012, D202), sin workspace operativo ni sondeo de ejecución.
+
+
 - `GET /runs/{id}` devuelve el resumen, las paradas, `history.cycle_count` y `history.latest_cycle`; los ciclos se
   leen con `GET /runs/{id}/cycles?offset&limit` (por número, 10 por defecto, hasta 100). El diff de un ciclo se pide
   por páginas de bytes con su hash; los casos JUnit, por ordinal. Ninguna de estas lecturas selecciona

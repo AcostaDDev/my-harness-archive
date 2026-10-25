@@ -202,13 +202,20 @@ por su API y los artefactos referenciados; la restauración es de consulta (`que
   Proyectos, registros, jobs e intentos exponen el valor/par congelado.
 - Rutas de UI: `/`, `/stats`, `/preferences`, `/projects/new`, `/projects/:p` con `setup`, `onboarding[/:c/*borrador]`,
   `chat[/:c]`, `docs[/*ruta]`, `phases`, `phases/:code`, `phases/:code/plan[/:c]`,
-  `phases/:code/tasks/:task[/runs/:run]`, `stats`, `settings`; `/runs/:id` como enlace corto.
+  `phases/:code/tasks/:task[/runs/:run]`, `stats`, `settings`; `/runs/:id` como enlace corto (o vista directa en copias de consulta).
   `/legacy` y `/projects/:p/import` muestran ruta no encontrada; API antigua 404 tras sesión/Host/Origin/CSRF,
   comandos antiguos error de argumentos sin SQLite. No hay observador/SSE ni activación/reversión ejecutables.
   La compatibilidad de datos y trabajos anteriores se detalla en [su flujo](flows/legacy-migration.md) (D161).
 - Seguridad: solo loopback; clave de sesión efímera en un archivo privado, cookie HttpOnly de ocho horas; Host y Origin
   exactos; cabecera CSRF `X-Harness-Local: 1` en mutaciones; `Sec-Fetch-Site: cross-site` rechazado (D079). Markdown
   sin HTML, Mermaid dibujado como imagen, imágenes del checkout con CSP `sandbox`.
+
+- Copias de consulta (P012-T012, D202): `SupervisorRead.read_only_archive` expone la marca persistente D040.
+  La UI resuelve ese modo antes de montar rutas: inicio por id y `/runs/:id` independiente de proyectos,
+  evidencia compartida con `RunPage`, consumo por `run_id` y estadísticas sin sondeo de ejecución ni sugerir
+  backfill. Rutas operativas bloqueadas sin `ProjectWorkspace`, permisos, recuperación o solicitudes pendientes.
+  Lecturas existentes D144/D145, sin checkout/historial completo; guardias query_only/409 intactas.
+  [Flujo](flows/backup-consultation.md), [entrega y límites](phase/P012-T012_VISTA_CONSULTA.md).
 
 ## 8. Convenciones
 

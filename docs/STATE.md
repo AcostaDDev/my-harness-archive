@@ -164,13 +164,15 @@ Consumo **2/3 Claude, 0/0 Codex**, dentro de dos horas; servicios detenidos, pue
 **13 DONE/1 QUEUED/14 STOPPED/0 locks**. **14.921 filas previas intactas**, 1.877 nuevas, 16.798 finales iguales
 en bundle/restauración; B/B2/clon/diffs/configuraciones/distribuciones intactos. No reactivar esa base antes de revisar T004.
 
-**T012 planificada, sin implementar** (D201): [contrato y secuencia](phase/P012-T012_PLAN_VISTA_CONSULTA.md).
-Vista independiente en `/runs/:id` para copias marcadas, entrada por id desde inicio, señal explícita del
-servicio, evidencia/diff/JUnit/métricas por run y navegación de solo consulta, sin workspace de acciones.
-Sin migración, proyectos ficticios, carga de checkouts ni cambios de guardias; pruebas exclusivamente sintéticas.
+**T012 completada offline** (D202): [entrega y propuesta de consulta UI](phase/P012-T012_VISTA_CONSULTA.md),
+[plan conservado](phase/P012-T012_PLAN_VISTA_CONSULTA.md). Señal `read_only_archive` desde la marca D040,
+entrada por id y `/runs/:id` independiente; evidencia/diff/JUnit/jobs/intentos/eventos/métricas por run,
+componentes compartidos, navegación de consulta en en/es sin workspace/acciones, pendientes o polling de ejecución.
+Sin migración, checkout o cambios de guardias. **102 tests Python dirigidos**, regresiones React/router,
+Node/tipos/build correctos; solo fixtures sintéticos, sin wheel operativo, servicio o llamadas nuevas.
 
-**Siguiente:** [P012-T012](NEXT_STEPS.md#p012-t012--vista-ui-de-runs-en-copias-de-consulta), implementar offline.
-Después, propuesta y consentimiento nuevos para verificar solo la UI de T003, con cero llamadas de modelos;
+**Siguiente:** consentimiento nuevo para la [continuación solo UI de T003](phase/P012-T012_VISTA_CONSULTA.md#4-propuesta-de-continuación-t003-solo-ui-sin-autorizar),
+con código corregido, destinos nuevos y cero llamadas de modelos;
 no repetir chat/aceptación/backup o consumir saldo. Informes anteriores conservados por bytes.
 T004 sigue sin autorización y necesita propuesta de arranque que respete el job QUEUED (D199).
 T002 finalizada, sin reparación/revalidación de sus dos fallos. Conservar todos los fixtures, diffs, historiales,

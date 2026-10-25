@@ -212,6 +212,7 @@ tarea se leen solo las decisiones que cita; este índice sirve para buscar prece
 | [D199](#d199--p012-t003-confirmación-en-cola-con-supervisor-detenido) | P012-T003: confirmación en cola con supervisor detenido | P012 |
 | [D200](#d200--p012-t003-chat-real-y-backup-restaurado-con-límite-de-ui) | P012-T003: chat real y backup restaurado con límite de UI | P012 |
 | [D201](#d201--p012-t012-vista-ui-de-consulta-planificada) | P012-T012: vista UI de consulta planificada | P012 |
+| [D202](#d202--p012-t012-vista-ui-de-consulta-implementada) | P012-T012: vista UI de consulta implementada | P012 |
 
 ## D001 — Alcance local y arquitectura base
 
@@ -5936,3 +5937,25 @@ Precedentes: D040/D144/D145/D199/D200. Los informes T003 y D001–D200 se conser
   corregido, cero llamadas de modelos y sin repetir chat/aceptación/backup o cambiar resultados anteriores.
   T003 solo cerrará al observar su evidencia por UI y verificar conservación/parada. T004 no se autoriza y
   conserva la guardia D199 del job QUEUED; T005 depende también de T012 y de completar T003. Sin tags/push/publicación.
+
+## D202 — P012-T012: vista UI de consulta implementada
+
+Estado: implementado y verificado offline el 2026-10-25. Fase: P012. Implementa el contrato D201.
+[Entrega, pruebas y propuesta posterior](phase/P012-T012_VISTA_CONSULTA.md),
+[flujo](flows/backup-consultation.md). D001–D201 e informes reales anteriores conservados por bytes.
+
+- `SupervisorRead.read_only_archive` procede de la marca D040; OpenAPI/tipos regenerados. No cambia esquema,
+  migraciones, bundle, codec, puertos, guardias query_only/409 o composición de proyectos en copias.
+- La UI espera la señal antes de montar páginas operativas. Copia: inicio por id, `/runs/:id` independiente,
+  contexto permanente, navegación de consulta y bloqueo de rutas operativas directas sin `ProjectWorkspace`.
+  No accede ni reenvía solicitudes pendientes, ni monta permisos/recuperación/ejecución/commit aunque se anuncien.
+- Presentación de evidencia extraída y compartida con el modo normal: estado/commit, ciclos/diff con hash,
+  validaciones/JUnit, jobs/intentos/eventos y logs bajo demanda. Consumo paginado por `run_id` con procedencia,
+  ausencias distintas de cero y modelos solicitados/reportados conservados. Eventos por cursores exactos.
+- Lecturas iniciales, páginas y recarga explícita, sin polling de ejecución de estados históricos. Estadísticas
+  globales de copia también sin polling ni sugerencias de backfill. Sesión/autenticación conserva su contrato.
+  Sin marca se conservan la redirección canónica, ausencia de proyecto, controles y CAS operativos.
+- Regresiones sintéticas backend y React/router en en/es, sin checkout y con acciones/peticiones guardadas;
+  mismas lecturas/hash sin decodificar historial. No hay operación privada, proveedores o wheel operativo nuevo.
+  T012 completa offline; T003 sigue parcial hasta QA UI real con consentimiento nuevo, cero llamadas de modelos
+  y sin repetir chat/aceptación/backup. T004 conserva D199 y su autorización separada; T005 sigue pendiente.

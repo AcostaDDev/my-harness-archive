@@ -22648,6 +22648,10 @@
       },
       "SupervisorRead": {
         "properties": {
+          "read_only_archive": {
+            "type": "boolean",
+            "title": "Read Only Archive"
+          },
           "enabled": {
             "type": "boolean",
             "title": "Enabled"
@@ -22678,6 +22682,7 @@
         },
         "type": "object",
         "required": [
+          "read_only_archive",
           "enabled",
           "alive",
           "last_error",

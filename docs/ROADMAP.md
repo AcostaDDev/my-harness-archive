@@ -369,10 +369,12 @@ Operación T002 del 24 de octubre y cierre documental del 25. **T003 ejecutada y
 confirmada con supervisor=false; P001-T002 QUEUED sin intentos/lock. Backup/restauración verificados, HTTP
 de runs/diff/JUnit/métricas iguales y mutación rechazada 409. UI sin página de run sin proyecto compuesto;
 D040 define API y el guion había añadido UI. HITL **«Planificar vista UI Aparte»** (D201): T003 queda parcial
-y se añade **T012**, sin implementar, para vista independiente en `/runs/:id`, señal de copia explícita,
+y se añade **T012**, completada offline (D202), con vista independiente en `/runs/:id`, señal de copia explícita,
 entrada por id, evidencia/diff/JUnit/métricas por run y navegación de solo consulta. [Plan y pruebas previstas](phase/P012-T012_PLAN_VISTA_CONSULTA.md).
-Siguiente: T012 offline; después, propuesta/consentimiento nuevos para verificar solo la UI de T003 con cero
-llamadas, sin repetir chat/aceptación/backup. P012 pasa a doce tareas; T005 depende también de T012 y de cerrar T003.
+[Entrega T012 y propuesta](phase/P012-T012_VISTA_CONSULTA.md): señal desde la marca D040, lecturas compartidas
+sin workspace/acciones/pendientes ni polling de ejecución; 102 tests Python dirigidos, 119 Node y tipos/build
+correctos. Siguiente: consentimiento nuevo para verificar solo la UI de T003 con cero llamadas, sin repetir
+chat/aceptación/backup. P012 pasa a doce tareas; T005 depende también de T012 y de cerrar T003.
 Consumo 2/3 Claude y 0/0 Codex, dentro de dos horas; servicios parados, 13 DONE/1 QUEUED/14 STOPPED/0 locks,
 14.921 filas previas intactas y 16.798 finales iguales en copia/restauración. T004 sigue sin autorización;
 no reactivar esa base antes de revisar su propuesta de arranque (D199).

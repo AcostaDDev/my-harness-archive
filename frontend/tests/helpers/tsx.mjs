@@ -8,6 +8,10 @@ import ts from 'typescript';
 const sourceRoot = new URL('../../src/', import.meta.url).href;
 registerHooks({
   resolve(specifier, context, nextResolve) {
+    if (globalThis.__tsxHookHarness && context.parentURL?.startsWith(sourceRoot)) {
+      if (specifier === 'react') return nextResolve(new URL('./react-hooks.mjs', import.meta.url).href, context);
+      if (specifier === 'react/jsx-runtime') return nextResolve(new URL('./jsx-hooks.mjs', import.meta.url).href, context);
+    }
     if (specifier.startsWith('.') && context.parentURL?.startsWith(sourceRoot)) {
       const target = new URL(specifier, context.parentURL);
       for (const extension of ['.ts', '.tsx']) {

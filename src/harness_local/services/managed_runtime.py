@@ -329,8 +329,11 @@ class ManagedRuntime:
             self.worker.notify()
 
     def supervisor_status(self) -> dict:
+        from harness_local.storage.backup import is_read_only_archive
+
         self.ready()
-        return {"enabled": self.worker is not None, "alive": bool(self.worker and self.worker.alive()),
+        return {"read_only_archive": is_read_only_archive(self.engine),
+                "enabled": self.worker is not None, "alive": bool(self.worker and self.worker.alive()),
                 "last_error": self.worker.error() if self.worker else None,
                 "ports_configured": self.config.ports_factory is not None,
                 "commit_writer_configured": self.config.commit_factory is not None}

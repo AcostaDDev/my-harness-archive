@@ -43,6 +43,7 @@ class ProblemResponse(BaseModel):
 
 
 class SupervisorRead(BaseModel):
+    read_only_archive: bool
     enabled: bool
     alive: bool
     last_error: str | None

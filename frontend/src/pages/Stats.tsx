@@ -2,31 +2,23 @@ import { useState } from "react";
 import type { ReactNode } from "react";
 import { BarChart, ColumnChart, StackedColumns, useFormats } from "../charts";
 import type { Datum, Stacked } from "../charts";
+import { useArchive } from "../ServiceMode";
 import { useI18n } from "../Language";
 import type { MessageKey } from "../i18n.ts";
 import type { S } from "../managed-api";
-import { coverage, PROVENANCE } from "../metrics.ts";
+import { coverage } from "../metrics.ts";
 import type { Sum } from "../metrics.ts";
 import { Link } from "../navigation";
-import { Empty, Loading, PageHeader, Pagination, Stale, Status, usePoll, when } from "../ui";
+import { Empty, Loading, PageHeader, Pagination, Stale, Status, usePoll } from "../ui";
+import { Attempts } from "./AttemptMetrics";
+import { query } from "../metrics-query";
+import type { Scope, Projects } from "../metrics-query";
 import { PURPOSES } from "./shared";
 
 // Statistics (H6.2 E6) over /api/managed/metrics/* (D074): each panel reads its resource, lists are paginated
 // and null is shown as "no data", never as zero. The cost is the API equivalent the provider reports.
 
 const INTERVAL = 15000;
-type Scope = { project?: string; phase?: string; task?: string };
-type Projects = { id: string; root: string }[];
-
-function query(scope: Scope, extra: Record<string, string | number> = {}) {
-  const params = new URLSearchParams();
-  if (scope.project) params.set("project_id", scope.project);
-  if (scope.phase) params.set("phase", scope.phase);
-  if (scope.task) params.set("task", scope.task);
-  for (const [key, value] of Object.entries(extra)) params.set(key, String(value));
-  const text = params.toString();
-  return text ? `?${text}` : "";
-}
 
 /** Purpose of a run in the visual language; an unknown purpose is shown as is. */
 function usePurpose() {
@@ -46,13 +38,6 @@ function Amount({ value, attempts, format }: { value: Sum; attempts: number; for
   return <span title={f.coverageText(value, attempts)}>{(format ?? f.count)(value.sum)}{state === "partial" && <sup className="partial"> {t("stats.partial")}</sup>}</span>;
 }
 
-function Provenance({ of, row }: { of: string; row: S["AttemptMetricRead"] }) {
-  const { t } = useI18n();
-  const value = row.provenance[of] ?? "absent";
-  const known = PROVENANCE[value];
-  return <abbr className={`provenance provenance-${value}`} title={known ? t(known[1]) : value}>{known ? t(known[0]) : value}</abbr>;
-}
-
 function Tile({ label, value, children }: { label: string; value: ReactNode; children?: ReactNode }) {
   return <div className="tile"><p className="tile-label">{label}</p><p className="tile-value">{value}</p>{children && <p className="tile-note">{children}</p>}</div>;
 }
@@ -65,6 +50,7 @@ function TableView({ title, children }: { title: string; children: ReactNode }) 
 
 export function StatsPage({ project, refresh = 0 }: { project?: string; refresh?: number }) {
   const { t, n, rich } = useI18n();
+  const archive = useArchive();
   const scope: Scope = { project };
   const summary = usePoll<S["MetricsSummaryRead"]>(`/metrics/summary${query(scope)}`, INTERVAL, refresh);
   const projects = usePoll<S["ManagedProjectRead"][]>(project ? null : "/projects", 0);
@@ -79,7 +65,7 @@ export function StatsPage({ project, refresh = 0 }: { project?: string; refresh?
       : !s ? summary.error ? <p role="alert" className="state state-error">{t("stats.read_failed", { error: summary.error })}</p> : <Loading />
         : <Headline summary={s} />}
     {s && s.attempts_without_metrics > 0 && <p className="state state-attention" role="status">
-      {n("stats.without_metrics", s.attempts_without_metrics)} {rich("stats.backfill", { command: <code>harness-local metrics-backfill --database PATH</code> })}</p>}
+      {n("stats.without_metrics", s.attempts_without_metrics)} {!archive && rich("stats.backfill", { command: <code>harness-local metrics-backfill --database PATH</code> })}</p>}
     {s && <>
       <Consumption scope={scope} projects={list} refresh={refresh} />
       <Favorites scope={scope} refresh={refresh} />
@@ -382,64 +368,6 @@ function Stops({ summary }: { summary: S["MetricsSummaryRead"] }) {
         </table>
       </div>
     </>}
-  </section>;
-}
-
-// --- attempts ----------------------------------------------------------------------------------
-
-// Attempt outcome (D074): `COMPLETE`/`FAILED`/`INVALID`/`PARTIAL` come from the CLI adapter stream,
-// `COMPLETED` from adapters without a stream and `INTERRUPTED` from confirming a stopped writer.
-const ATTEMPT: Record<string, [MessageKey, string]> = {
-  COMPLETE: ["stats.attempt.complete", "ok"], COMPLETED: ["stats.attempt.complete", "ok"], FAILED: ["stats.attempt.failed", "danger"],
-  INVALID: ["stats.attempt.invalid", "danger"], PARTIAL: ["stats.attempt.partial", "attention"], INTERRUPTED: ["stats.attempt.interrupted", "danger"],
-};
-
-function AttemptStatus({ value }: { value: string }) {
-  const { t } = useI18n();
-  const known = ATTEMPT[value];
-  const [label, tone] = known ? [t(known[0]), known[1]] : [value, "neutral"];
-  return <span className={`status status-${tone}`} title={value}><span className="status-mark" aria-hidden="true" />{label}</span>;
-}
-
-export function Attempts({ scope, projects = [], refresh, title }: { scope: Scope; projects?: Projects; refresh: number; title?: string }) {
-  const { t, rich } = useI18n();
-  const f = useFormats();
-  const purpose = usePurpose();
-  const [offset, setOffset] = useState(0);
-  const read = usePoll<S["Page_AttemptMetricRead_"]>(`/metrics/attempts${query(scope, { offset, limit: PAGE })}`, INTERVAL, refresh);
-  const projectOf = (root: string) => scope.project ?? projects.find(p => p.root === root)?.id;
-  const heading = title ?? t("stats.attempts.title");
-  return <section className="panel" aria-labelledby="attempts">
-    <h2 id="attempts">{heading}</h2>
-    <p className="hint">{t("stats.attempts.hint")}
-      {Object.entries(PROVENANCE).map(([key, [mark, text, name]]) => <span key={key}> {rich("stats.attempts.provenance", { mark: <abbr className={`provenance provenance-${key}`} title={t(text)}>{t(mark)}</abbr>, name: t(name) })}</span>)}</p>
-    {!read.data ? <Loading /> : !read.data.items.length && !offset ? <Empty title={t("stats.no_attempts")} />
-      : <div className="table-scroll" tabIndex={0} role="region" aria-label={heading}>
-        <table className="table">
-          <thead><tr><th scope="col">{t("stats.column.start")}</th>{!scope.project && <th scope="col">{t("stats.dimension.root")}</th>}{!scope.task && <th scope="col">{t("runs.column.task")}</th>}<th scope="col">{t("stats.column.role")}</th><th scope="col">{t("stats.column.provider_model")}</th>
-            <th scope="col">{t("stats.column.result")}</th><th scope="col" className="numeric">{t("stats.column.tokens")}</th><th scope="col" className="numeric">{t("stats.column.turns")}</th>
-            <th scope="col" className="numeric">{t("stats.api_equivalent")}</th><th scope="col" className="numeric">{t("stats.column.duration")}</th></tr></thead>
-          <tbody>{read.data.items.map(a => {
-            const project = projectOf(a.root);
-            return <tr key={a.attempt_id}>
-              <td className="nowrap">{project && a.purpose === "task"
-                ? <Link to={{ name: "run", project, phase: a.phase_code, task: a.task_id, run: a.run_id }}>{when(a.started_at)}</Link> : when(a.started_at)}</td>
-              {!scope.project && <td className="nowrap">{f.rootLabel(a.root, projects)}</td>}
-              {!scope.task && <td className="mono nowrap">{a.task_id}{a.purpose !== "task" && <span className="muted"> · {purpose(a.purpose)}</span>}</td>}
-              <td>{f.role(a.role)}<span className="muted"> #{a.number}</span></td>
-              <td><span className="nowrap">{a.provider ?? <span className="muted">{t("stats.no_process")}</span>}{" "}
-                <span className="mono" title={t("stats.requested")}>{a.requested_model ?? "—"}</span>{a.requested_effort && <span className="muted"> / {a.requested_effort}</span>}</span>
-                {a.reported_models && <span className="cell-note" title={t("metrics.provenance.reported.title")}>{t("stats.used", { models: a.reported_models.join(", ") })}</span>}</td>
-              <td><AttemptStatus value={a.status} />{a.verdict && <span className="cell-note">{a.verdict}</span>}{a.error && <p className="cell-error" title={a.error}>{a.error}</p>}</td>
-              <td className="numeric nowrap">{f.count(a.total_tokens)} <Provenance of="total_tokens" row={a} /></td>
-              <td className="numeric nowrap">{f.count(a.turns)} <Provenance of="turns" row={a} /></td>
-              <td className="numeric nowrap">{f.usd(a.cost_usd)} <Provenance of="cost_usd" row={a} /></td>
-              <td className="numeric nowrap">{f.duration(a.wall_ms, "ms")} <Provenance of="wall_ms" row={a} /></td>
-            </tr>;
-          })}</tbody>
-        </table>
-      </div>}
-    <Pagination offset={offset} next={read.data?.next_offset} onChange={setOffset} size={PAGE} label={t("stats.pages.attempts")} />
   </section>;
 }
 

@@ -5695,6 +5695,8 @@ export interface components {
         };
         /** SupervisorRead */
         SupervisorRead: {
+            /** Read Only Archive */
+            read_only_archive: boolean;
             /** Enabled */
             enabled: boolean;
             /** Alive */
