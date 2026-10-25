@@ -211,6 +211,7 @@ tarea se leen solo las decisiones que cita; este índice sirve para buscar prece
 | [D198](#d198--p012-t002-tarea-real-committed-con-perfil-declarado-v8) | P012-T002: tarea real COMMITTED con perfil declarado v8 | P012 |
 | [D199](#d199--p012-t003-confirmación-en-cola-con-supervisor-detenido) | P012-T003: confirmación en cola con supervisor detenido | P012 |
 | [D200](#d200--p012-t003-chat-real-y-backup-restaurado-con-límite-de-ui) | P012-T003: chat real y backup restaurado con límite de UI | P012 |
+| [D201](#d201--p012-t012-vista-ui-de-consulta-planificada) | P012-T012: vista UI de consulta planificada | P012 |
 
 ## D001 — Alcance local y arquitectura base
 
@@ -5907,3 +5908,31 @@ Fase: P012. [Propuesta y consentimientos](phase/P012-T003_PROPUESTA_CHAT_BACKUP.
   suites válidas ni validaciones del fixture. Evidencia completa privada, resultados anteriores conservados.
   Siguiente: resolver HITL de alcance. T004 sin autorización ni arranque sobre esa base, sin relanzar T003,
   nuevas llamadas, cambios globales, tags, push o publicación. P012 sigue abierta.
+
+## D201 — P012-T012: vista UI de consulta planificada
+
+Estado: alcance elegido por HITL y tarea planificada el 2026-10-25; implementación pendiente.
+Fase: P012. [Plan, criterios y secuencia](phase/P012-T012_PLAN_VISTA_CONSULTA.md).
+Precedentes: D040/D144/D145/D199/D200. Los informes T003 y D001–D200 se conservan sin reescribirlos.
+
+- Ante las alternativas de cerrar T003 solo con evidencia API o mantenerla parcial y planificar UI independiente,
+  el usuario elige **«Planificar vista UI Aparte»**. T003 permanece parcial con chat/confirmación/backup/API
+  acreditados; se añade T012 a P012 (doce tareas). Su implementación offline será el siguiente trabajo.
+- El contrato planificado añade `read_only_archive` a SupervisorRead desde la marca D040, sin inferir copia de
+  project_id=null, ausencia de agentes o supervisor=false. OpenAPI/tipos regenerados, sin migración, codec,
+  formato de bundle o retirada de guardias. Modo ordinario conserva sus rutas y comportamiento.
+- UI de copia en `/runs/:id`, entrada por id desde inicio y contexto permanente de consulta; sin proyecto
+  ficticio o ProjectWorkspace. Evidencia/diff/JUnit/jobs/intentos/eventos existentes por id; consumo por run_id
+  con procedencia y páginas. Reutilizar presentación y endpoints; sin inventario global, búsqueda o métricas
+  nuevas, checkout/historial completo, backfill o reinterpretación de estados guardados.
+- En copia no se montan controles de permisos/recuperación/ejecución/commit, formularios operativos o reenvíos
+  pendientes; rutas directas operativas muestran contexto de consulta. La autoridad sigue siendo query_only,
+  supervisor/puertos ausentes y rechazo 409. Pruebas sintéticas backend/router/React en en/es, incluso sin
+  checkout, con estados incompletos/pendientes, acciones anunciadas y solicitudes guardadas sin producir efectos.
+- Al implementar, paridad de flujo/arquitectura/especificación y Node/tipos/build/pytest dirigidos. Esta sesión
+  solo planifica y verifica documentos: ninguna capacidad nueva implementada, fuentes de producto o baseline
+  pública modificadas, operación privada, servicios, agentes/proveedores o llamadas nuevas.
+- Tras T012, propuesta concreta y consentimiento nuevos para continuar T003 **solo con consulta UI** del wheel
+  corregido, cero llamadas de modelos y sin repetir chat/aceptación/backup o cambiar resultados anteriores.
+  T003 solo cerrará al observar su evidencia por UI y verificar conservación/parada. T004 no se autoriza y
+  conserva la guardia D199 del job QUEUED; T005 depende también de T012 y de completar T003. Sin tags/push/publicación.

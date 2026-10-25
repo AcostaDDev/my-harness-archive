@@ -368,7 +368,11 @@ Operación T002 del 24 de octubre y cierre documental del 25. **T003 ejecutada y
 [resultado](phase/P012-T003_CHAT_BACKUP_REAL.md), dos turnos reales ANSWERED, `/estado` sin modelo y propuesta
 confirmada con supervisor=false; P001-T002 QUEUED sin intentos/lock. Backup/restauración verificados, HTTP
 de runs/diff/JUnit/métricas iguales y mutación rechazada 409. UI sin página de run sin proyecto compuesto;
-D040 define API y el guion había añadido UI. Pendiente HITL de alcance para su dictamen, sin cambio de código.
+D040 define API y el guion había añadido UI. HITL **«Planificar vista UI Aparte»** (D201): T003 queda parcial
+y se añade **T012**, sin implementar, para vista independiente en `/runs/:id`, señal de copia explícita,
+entrada por id, evidencia/diff/JUnit/métricas por run y navegación de solo consulta. [Plan y pruebas previstas](phase/P012-T012_PLAN_VISTA_CONSULTA.md).
+Siguiente: T012 offline; después, propuesta/consentimiento nuevos para verificar solo la UI de T003 con cero
+llamadas, sin repetir chat/aceptación/backup. P012 pasa a doce tareas; T005 depende también de T012 y de cerrar T003.
 Consumo 2/3 Claude y 0/0 Codex, dentro de dos horas; servicios parados, 13 DONE/1 QUEUED/14 STOPPED/0 locks,
 14.921 filas previas intactas y 16.798 finales iguales en copia/restauración. T004 sigue sin autorización;
 no reactivar esa base antes de revisar su propuesta de arranque (D199).

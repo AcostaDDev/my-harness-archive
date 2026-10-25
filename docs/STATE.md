@@ -151,20 +151,27 @@ P010 conserva su cierre (D153) y P009 el suyo (D140); el Django hijo sigue con P
 tag `p001` sobre `47a0557` y archivo en `3d105c6`, sin repetir operaciones ni comprobaciones de su estado.
 Este repositorio sigue sin registrarse ni ejecutarse con el harness.
 
-**T003 ejecutada y detenida; dictamen de alcance UI pendiente** (D200):
+**T003 parcial, ejecutada y detenida** (D200/D201):
 [resultado](phase/P012-T003_CHAT_BACKUP_REAL.md), instalación T011 conservada, dos turnos Claude ANSWERED
 sobre HEAD 6f02121 y `/estado` sin modelo. Propuesta confirmada por UI/hash/versión con copia TOML
 `supervisor=false`: P001-T002/run `d235e9d5…` QUEUED, cero intentos/preparaciones/locks y checkout intacto.
 Backup/verificación/restauración/verificación correctos, 42 artefactos/13 runs; HTTP recupera run/diff/JUnit/
 métricas idénticos y rechaza mutaciones con 409. La UI no ofrece página del run sin proyecto compuesto;
-D040 define consulta API, y el guion había añadido UI. Pendiente HITL para cerrar con ese límite o planificar
-una vista UI aparte. Parada origin inicial y reanudación nativa autorizada conservadas, sin cambiar guardias.
+D040 define consulta API, y el guion había añadido UI. HITL **«Planificar vista UI Aparte»**: se mantiene T003
+parcial y se añade T012 para implementar la vista offline antes de verificar la UI con consentimiento nuevo.
+Parada origin inicial y reanudación nativa autorizada conservadas, sin cambiar guardias.
 Consumo **2/3 Claude, 0/0 Codex**, dentro de dos horas; servicios detenidos, puertos cerrados/claves retiradas,
 **13 DONE/1 QUEUED/14 STOPPED/0 locks**. **14.921 filas previas intactas**, 1.877 nuevas, 16.798 finales iguales
 en bundle/restauración; B/B2/clon/diffs/configuraciones/distribuciones intactos. No reactivar esa base antes de revisar T004.
 
-**Siguiente:** [P012-T003](NEXT_STEPS.md#p012-t003--chat-backup-y-restauración-sobre-el-proyecto-real), resolver
-el HITL de alcance UI y cerrar su dictamen; no relanzar la operación detenida ni consumir el saldo restante.
+**T012 planificada, sin implementar** (D201): [contrato y secuencia](phase/P012-T012_PLAN_VISTA_CONSULTA.md).
+Vista independiente en `/runs/:id` para copias marcadas, entrada por id desde inicio, señal explícita del
+servicio, evidencia/diff/JUnit/métricas por run y navegación de solo consulta, sin workspace de acciones.
+Sin migración, proyectos ficticios, carga de checkouts ni cambios de guardias; pruebas exclusivamente sintéticas.
+
+**Siguiente:** [P012-T012](NEXT_STEPS.md#p012-t012--vista-ui-de-runs-en-copias-de-consulta), implementar offline.
+Después, propuesta y consentimiento nuevos para verificar solo la UI de T003, con cero llamadas de modelos;
+no repetir chat/aceptación/backup o consumir saldo. Informes anteriores conservados por bytes.
 T004 sigue sin autorización y necesita propuesta de arranque que respete el job QUEUED (D199).
 T002 finalizada, sin reparación/revalidación de sus dos fallos. Conservar todos los fixtures, diffs, historiales,
 configuraciones y distribuciones. Sin nueva fase del Django de P009, tags, push o publicación. P012 sigue

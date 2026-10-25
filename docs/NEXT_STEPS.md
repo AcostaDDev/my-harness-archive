@@ -3,7 +3,8 @@
 Objetivo y criterios en [ROADMAP](ROADMAP.md#p012--validación-real-previa-a-la-apertura-pública).
 Decisión: [D183](DECISIONS.md#d183--p012-validación-real-previa-a-la-apertura-pública).
 
-**Estado:** T001, **T002**, T008, T009, T010 y T011 completadas (D198); T003–T007 pendientes, once tareas en total.
+**Estado:** T001, **T002**, T008, T009, T010 y T011 completadas (D198); T003–T007 y T012 pendientes,
+doce tareas en total. T003 parcial; T012 planificada por HITL D201, sin implementar.
 T002 completada con evidencia acumulada: dos B COMMITTED e idempotencia anteriores, y continuación tras T011
 autorizada/ejecutada hasta tarea **`e3fa4ae6…` COMMITTED `6f021211b307`** con perfil/formateador v8, seis
 validaciones y **13 casos JUnit** correctos. Cero correcciones; nuevo 2 Claude/1 Codex, acumulado T002
@@ -15,9 +16,11 @@ Operación del 2026-10-24; cierre documental del 25. Ningún resultado fallido s
 sin intentos/lock; backup/restauración y consulta HTTP iguales, mutación rechazada 409. UI sin página para run
 sin proyecto compuesto; D040 define API y el guion había añadido UI. Consumo 2/3 Claude y 0/0 Codex; 13 DONE/
 1 QUEUED/14 STOPPED/0 locks, puertos cerrados/claves retiradas, 14.921 filas previas intactas y 16.798 finales.
-**Siguiente:** resolver el HITL de alcance UI de [T003](#p012-t003--chat-backup-y-restauración-sobre-el-proyecto-real)
-y cerrar su dictamen. Sin relanzar ni consumir saldo. T004 sin autorización y con propuesta de arranque pendiente
-que respete el job QUEUED conservado; no reactivar esa base (D199).
+HITL **«Planificar vista UI Aparte»** (D201): mantener T003 parcial y añadir
+[T012](#p012-t012--vista-ui-de-runs-en-copias-de-consulta). **Siguiente:** implementar T012 offline según
+su [plan](phase/P012-T012_PLAN_VISTA_CONSULTA.md), antes de preparar una continuación T003 de consulta UI
+con consentimiento nuevo y cero llamadas. Sin repetir chat/aceptación/backup o consumir saldo. T004 sin
+autorización y con propuesta de arranque pendiente que respete el job QUEUED; no reactivar esa base (D199).
 El resultado T002 y los saldos no habilitan otro tramo, corrección o reintento.
 P001–P011 siguen cerradas; la apertura del [expediente de P011](archive/phase-011/P011_EXPEDIENTE_APERTURA.md)
 queda aplazada hasta el cierre de P012 y su candidato se sustituye por el que prepare T005.
@@ -136,8 +139,9 @@ con la procedencia acumulada de la matriz, sin declarar una tercera B ni reparar
 
 ## P012-T003 — Chat, backup y restauración sobre el proyecto real
 
-**Estado:** autorizada, ejecutada y detenida el 2026-10-25; chat y backup/consulta HTTP acreditados, dictamen
-de alcance UI pendiente de HITL (D200). **Depende de:** T002 y autorización explícita del tramo.
+**Estado:** parcial, autorizada/ejecutada/detenida el 2026-10-25; chat y backup/consulta HTTP acreditados (D200).
+HITL D201 elige planificar vista UI aparte, sin cerrar con solo API. **Depende de:** T002; T012 para completar
+consulta UI y consentimiento explícito nuevo antes de su continuación.
 **Objetivo:** Acreditar el chat con el revisor real y el backup/restauración de consulta de una base con runs reales.
 **Alcance:** proyecto B de T002 y la base del área.
 **Rutas permitidas:** `docs/**` en este repositorio; el área privada según T001.
@@ -149,6 +153,8 @@ de alcance UI pendiente de HITL (D200). **Depende de:** T002 y autorización exp
   la tarea queda QUEUED, cero intentos/preparaciones/comandos y sin lock. No reactivar esa base antes de revisar T004.
 - Backup de la base con el producto, integridad comprobada y restauración de consulta que muestra los runs, el diff
   y las métricas de T002 sin volver a ejecutar nada; base operativa intacta.
+  D201 mantiene pendiente observar por UI detalle/commit, diff, JUnit y métricas tras T012. Verificación posterior
+  de consulta únicamente con consentimiento nuevo, cero llamadas y sin repetir evidencia ya acreditada.
 - Llamadas por proveedor frente al techo y servicio detenido al terminar, sin locks ni jobs activos.
   Distinguir el job QUEUED conservado de los ACTIVE: no presentarlo como terminado o inexistente.
 
@@ -160,7 +166,8 @@ autorizada por HITL, sin cambiar guardias o techos. Dos turnos ANSWERED, HEAD 6f
 sin modelo; propuesta ACCEPTED por hash/versión y P001-T002 QUEUED con supervisor=false, cero intentos/preparaciones.
 Cuatro comandos de backup/restauración correctos; 42 artefactos/13 runs, lecturas HTTP de runs/diff/13 JUnit/
 métricas iguales y POST inerte rechazado 409. Consulta UI sin página por ausencia de proyecto compuesto:
-D040 define API, el guion pedía UI adicional. HITL pendiente: cerrar con límite API o planificar vista UI aparte.
+D040 define API, el guion pedía UI adicional. HITL D201: **«Planificar vista UI Aparte»**; T003 permanece parcial
+y T012 queda como siguiente trabajo offline. [Plan y continuación posterior](phase/P012-T012_PLAN_VISTA_CONSULTA.md).
 Consumo **2/3 Claude, 0/0 Codex**, dentro de dos horas; servicio detenido, **13 DONE/1 QUEUED/14 STOPPED/0 locks**,
 puertos cerrados y claves retiradas. **14.921 filas previas idénticas**, 1.877 nuevas, **16.798 finales** iguales
 en fuente/bundle/restauración; SHA-256 de la base intacto tras backup/consulta, fixtures y evidencias conservados.
@@ -190,7 +197,7 @@ cierre de P001 del hijo.
 
 ## P012-T005 — Alcance público y candidato actualizados
 
-**Estado:** pendiente. **Depende de:** T002–T004 y las correcciones que hayan generado.
+**Estado:** pendiente. **Depende de:** T002–T004, T012 y las correcciones que hayan generado.
 **Objetivo:** Reflejar en la documentación pública lo acreditado y preparar el candidato que sustituye al de P011.
 **Alcance:** README/README.es, `docs/public/`, ROADMAP/STATE privados, candidato, paquete y suites.
 **Rutas permitidas:** `README.md`, `README.es.md`, `CHANGELOG.md`, `docs/**`.
@@ -348,3 +355,38 @@ heredada como sustitución silenciosa de los presets elegidos por el usuario.
 **Validación:** 8 regresiones y 103 tests Node, TypeScript/build Vite correctos; checks documentales/diff.
 Sin suites Python/unittest/Alembic por no cambiar backend o datos, ni QA de navegador de la corrección.
 **Entregables:** [defecto, corrección y continuidad propuesta](phase/P012-T011_PRESETS_UI_V8.md), D196.
+
+## P012-T012 — Vista UI de runs en copias de consulta
+
+**Estado:** planificada el 2026-10-25 por elección HITL **«Planificar vista UI Aparte»** (D201); sin implementar.
+**Depende de:** evidencia parcial de T003 (D200), D040/D144/D145; no requiere cerrar T003 antes de implementar.
+**Objetivo:** Consultar en la UI una copia marcada por D040 sin configurar proyectos, acceder al checkout o
+habilitar el carril operativo, para poder completar después la verificación UI de T003.
+**Alcance:** señal explícita de copia en SupervisorRead; inicio con entrada por id; `/runs/:id` con evidencia,
+diff/JUnit/métricas por run; navegación y componentes de solo consulta en en/es; regresiones sintéticas.
+**Rutas permitidas:** `src/harness_local/api/schemas.py`, `src/harness_local/services/managed_runtime.py`,
+`frontend/src/**` (solo esta vista y extracción compartida necesaria), `frontend/openapi.json`,
+`frontend/tests/**`, `tests/product/**` (solo sintéticos), `docs/**`. Sin dependencias o locks nuevos.
+**Criterios de aceptación:**
+
+- `SupervisorRead.read_only_archive` procede de la marca persistente; distinguir copias de servicios ordinarios
+  sin agentes o con supervisor=false. Tipos/OpenAPI regenerados, sin migración, codec o formato de bundle nuevos.
+- Inicio de copia permite abrir por id y `/runs/:id` ofrece página directa/recargable sin proyecto/workspace.
+  Conservar resolución canónica y comportamiento sin proyecto del modo normal; no crear registros ficticios.
+- Estado/commit, ciclos/diff con hash y páginas, validaciones/casos/original JUnit, jobs/intentos/eventos y
+  métricas por `run_id` con procedencia, ausencia distinta de cero y datos incompletos sin inventar resultados.
+- Copia claramente identificada, sin montar acciones/permisos/recuperación/ProjectWorkspace o reenvíos pendientes;
+  tampoco en rutas operativas directas. Estados históricos conservados y sin polling de ejecución. Guardias
+  query_only/409 y ausencia de supervisor/puertos intactas; sin lectura de checkout o historial completo.
+- Pruebas backend/React/router en en/es con copias sintéticas incluso sin checkout, estados diversos, respuestas
+  con acciones anunciadas y petición pendiente guardada; mismas lecturas/hash y cero efectos. Modo normal conservado.
+- Node, tipos/build, pytest dirigido y paridad documental correctos: flujo nuevo de consulta, arquitectura y
+  especificación al implementar. No modificar evidencias reales, construir/instalar wheel operativo o arrancar
+  servicios/agentes/proveedores en esta tarea offline.
+- Entrega deja propuesta concreta de continuación **solo UI** de T003, con código corregido, rutas/hashes/tiempo
+  y cero llamadas de modelos; consentimiento nuevo antes de build/instalación/servicio. T003 sigue parcial hasta
+  verificar su UI real; T004 conserva la guardia del job QUEUED de D199 y su autorización separada.
+
+**Validación:** pruebas offline y checks según [plan, contrato y secuencia](phase/P012-T012_PLAN_VISTA_CONSULTA.md).
+**Entregables:** planificación en ese documento; `docs/phase/P012-T012_VISTA_CONSULTA.md` al implementar,
+flujo `docs/flows/backup-consultation.md`, OpenAPI/tipos y propuesta de verificación T003 posterior.
