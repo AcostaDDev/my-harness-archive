@@ -3,17 +3,17 @@
 Objetivo y criterios en [ROADMAP](ROADMAP.md#p012--validación-real-previa-a-la-apertura-pública).
 Decisión: [D183](DECISIONS.md#d183--p012-validación-real-previa-a-la-apertura-pública).
 
-**Estado:** T001, T008, T009, T010 y **T011** completadas; T002 parcial (D191–D196). Dos incorporaciones B COMMITTED;
-última tarea en REVISION_LIMIT por Ruff. Continuación tras T010 autorizada: wheel/venv nuevos y clon documental
-B2/TOML v8 preparados, preflight y ocho checks aprobados; parada antes del alta al ocultar la UI los presets v8.
-T011 corrige el selector compartido offline, 8 regresiones/103 tests Node y tipos/build correctos. Servicio detenido,
-Claude **7/12**, Codex **2/3**, sin consumo nuevo, 0 locks, 7 jobs DONE y 9 procesos STOPPED. T003–T007 pendientes;
-once tareas en total; 13.785 filas previas idénticas. Ningún resultado fallido se repara, formatea o revalida.
-**Siguiente:** [P012-T002](#p012-t002--instalación-incorporación-b-y-perfil-declarado-con-proveedores-reales),
-respuesta HITL a la [propuesta revisada tras T011](phase/P012-T002_PROPUESTA_T011.md) (D197), base `500a783`:
-dist-t011/venv-t011 nuevos, conservar clon/TOML preparados comprobándolos antes de usar,
-preflight/checks, servicio/UI, registro/fase, dos commits documentales y una tarea. Cero correcciones, techo 12/3,
-consumido 7/2 y previsión nueva 2 Claude/1 Codex; sin permiso de consumo. El consentimiento D195 se agotó al parar.
+**Estado:** T001, **T002**, T008, T009, T010 y T011 completadas (D198); T003–T007 pendientes, once tareas en total.
+T002 completada con evidencia acumulada: dos B COMMITTED e idempotencia anteriores, y continuación tras T011
+autorizada/ejecutada hasta tarea **`e3fa4ae6…` COMMITTED `6f021211b307`** con perfil/formateador v8, seis
+validaciones y **13 casos JUnit** correctos. Cero correcciones; nuevo 2 Claude/1 Codex, acumulado T002
+**Claude 9/12, Codex 3/3**. Servicio detenido, **11 DONE/12 STOPPED/0 locks**, puerto cerrado/clave retirada;
+**13.785 filas previas idénticas**, 1.136 filas normales nuevas. B/B2/diffs/TOML/distribuciones conservados.
+Operación del 2026-10-24; cierre documental del 25. Ningún resultado fallido se repara, formatea o revalida.
+**Siguiente:** [P012-T003](#p012-t003--chat-backup-y-restauración-sobre-el-proyecto-real), concretar/revisar una
+propuesta de chat y backup/restauración de consulta sobre p012-b-t010 y la base del área, con instalación T011
+conservada y techo propio de T001. Pedir consentimiento antes del servicio o modelos; T003/T004 sin autorización.
+El resultado T002 y los saldos no habilitan otro tramo, corrección o reintento.
 P001–P011 siguen cerradas; la apertura del [expediente de P011](archive/phase-011/P011_EXPEDIENTE_APERTURA.md)
 queda aplazada hasta el cierre de P012 y su candidato se sustituye por el que prepare T005.
 
@@ -76,22 +76,16 @@ offline de T002 aceptado por el usuario, antes de proveedores; no se acredita su
 
 ## P012-T002 — Instalación, incorporación B y perfil declarado con proveedores reales
 
-**Estado:** parcial (D195): dos incorporaciones B COMMITTED; ninguna tarea COMMITTED.
+**Estado:** completada con evidencia acumulada (D198); operación 2026-10-24, cierre documental 2026-10-25.
 **Depende de:** T001 confirmada, T008 corregida (D187), T009 completada (D192), ampliación T010 (D194) y T011 (D196).
-Continuación limpia T009 autorizada y ejecutada: fixture `onboarding-b-t009`, copia TOML y presets/composición
-propios, mismo wheel y base. Preflight y ocho checks correctos; un turno Claude, doce borradores CAS y B2
-COMMITTED. Codex implementa la tarea, pero fallan Ruff check/formato; pytest 13 casos y mypy/Django pasan.
-Revisión REVISE y REVISION_LIMIT, cero correcciones. Consumo acumulado **7/2 frente a 12/3**; servicio detenido.
-El primer fixture y su fallo de archivos vacíos siguen intactos. T010 habilita el formateador declarativo v8
-solo offline; [continuación concretada y autorizada](phase/P012-T002_PROPUESTA_T010.md) (D195),
-máximo nuevo 2 Claude/1 Codex, sin consumir. Wheel `a7d8b33` construido/verificado/instalado; clon/TOML v8
-preparados, modos igualados por HITL, preflight y ocho checks iniciales correctos. Servicio/login correctos;
-parada antes del alta porque la UI oculta presets v8. T011 corrige el selector offline, sin otro wheel/servicio.
-Consentimiento agotado; [propuesta tras T011](phase/P012-T002_PROPUESTA_T011.md) concretada y revisada offline
-(D197): 28 archivos/modos y TOML correctos, clon sin alta/fase/run, 13.785 filas y estado detenido conservados;
-dist-t011/venv-t011 ausentes. Autorización operativa pendiente, sin build/servicio/llamadas nuevos. Sin reparación
-manual, revalidación o nuevo intento autorizado.
-T003/T004 siguen sin autorización.
+[Continuación tras T011](phase/P012-T002_PROPUESTA_T011.md) autorizada por HITL **«Autorizo.»** (D198): base
+`500a783`, wheel/venv nuevos y clon/TOML t010 conservados. Build/verificador/instalación, preflight/ocho checks,
+migrate no-op y UI v8 correctos; registro/P001 y dos commits documentales por UI. Run `e3fa4ae6…` COMMITTED:
+plan Claude, ejecución Codex, formateador nativo sobre dos archivos (exit 0, sin cambios), seis validaciones/
+13 casos JUnit y ACCEPT, con un hallazgo low de referencia de línea conservado. Cero correcciones; total
+Claude 9/12, Codex 3/3. Servicio detenido, 11 DONE/12 STOPPED/0 locks; evidencias anteriores intactas.
+Los dos B y la idempotencia conservan procedencia D191/D193; no se repiten ni reparan los dos runs REVISION_LIMIT.
+T003/T004 pendientes y sin autorización. [Resultado y matriz](phase/P012-T002_RESULTADO_T011.md).
 **Objetivo:** Acreditar con la versión actual el flujo básico y la incorporación de un repositorio existente con
 el perfil declarado D095.
 **Alcance:** wheel construido e instalado en el área, servicio, fixture B, conversación de incorporación,
@@ -109,10 +103,14 @@ confirmación de documentos y perfil, y una tarea hasta COMMITTED.
   usando exclusivamente el perfil declarado. Diff aceptado, commit único y CLI identificadas por intento.
 - Evidencia saneada con llamadas por proveedor frente al techo; servicio detenido o mantenido según T003.
 
-**Validación:** la propia del tramo; sin suites del producto si no cambia código.
+**Validación:** build/verificador/instalación del wheel, preflight real, ocho checks iniciales, seis validaciones
+del run/13 JUnit, contraste diff/commit, conservación SQLite/manifiestos y checks documentales. Sin repetir suites
+completas del producto al no cambiar código en esta tarea.
 **Entregables:** [registro inicial](phase/P012-T002_INCORPORACION_REAL.md),
 [continuación T009 y nueva parada](phase/P012-T002_CONTINUACION_T009.md),
 [propuesta/ejecución tras T010](phase/P012-T002_PROPUESTA_T010.md),
+[propuesta/ejecución tras T011](phase/P012-T002_PROPUESTA_T011.md),
+[resultado final y matriz](phase/P012-T002_RESULTADO_T011.md),
 [transformador puro de configuración](phase/P012-T002_CONFIG_T010.py),
 [lista de la primera parada](phase/P012-T002_WHEELS_FALTANTES.lock) y
 [manifiesto de 17 wheels](phase/P012-T002_WHEELS_VERIFICADOS.sha256).
@@ -126,8 +124,10 @@ sin aceptación, reparación o commit de tarea. **7 jobs DONE, 9 procesos STOPPE
 eliminada; Claude **7/12**, Codex **2/3**. Comparación de copias de base: **8186 filas previas intactas**.
 B/B2, ambos diffs, TOML original, distribuciones e historiales conservados. Propuesta T010 ya concretada y
 autorizada/ejecutada hasta el bloqueo de presets UI (D195), sin llamadas adicionales; servicio detenido y 13.785
-filas anteriores idénticas. T011 corregida offline; próxima continuación sujeta a propuesta y consentimiento nuevos.
-Propuesta nueva [lista para HITL](phase/P012-T002_PROPUESTA_T011.md) (D197), sin ejecutar efectos operativos.
+filas anteriores idénticas. Tras T011, continuación autorizada D198 hasta `6f02121` COMMITTED, con perfil
+declarado/formateador v8 y selector UI acreditados. Nuevo 2/1, acumulado 9/3, cero correcciones; servicio detenido,
+11 DONE/12 STOPPED/0 locks, 13.785 filas anteriores idénticas y B/B2 intactos. Los cuatro criterios T002 cumplen
+con la procedencia acumulada de la matriz, sin declarar una tercera B ni reparar los resultados fallidos.
 
 ## P012-T003 — Chat, backup y restauración sobre el proyecto real
 

@@ -208,6 +208,7 @@ tarea se leen solo las decisiones que cita; este índice sirve para buscar prece
 | [D195](#d195--p012-t002-continuación-con-formateador-y-preparación-operativa) | P012-T002: continuación con formateador y preparación operativa | P012 |
 | [D196](#d196--p012-t011-paridad-del-selector-de-presets-ui-con-local-config-8) | P012-T011: paridad del selector de presets UI con local-config-8 | P012 |
 | [D197](#d197--p012-t002-propuesta-de-continuación-tras-t011) | P012-T002: propuesta de continuación tras T011 | P012 |
+| [D198](#d198--p012-t002-tarea-real-committed-con-perfil-declarado-v8) | P012-T002: tarea real COMMITTED con perfil declarado v8 | P012 |
 
 ## D001 — Alcance local y arquitectura base
 
@@ -5805,3 +5806,37 @@ Fase: P012. Concreta el siguiente paso de D196, sin reabrir el consentimiento ag
   checks del fixture, inicia servicio, opera datos privados o consume modelos al concretarla.
 - STATE/NEXT_STEPS/ROADMAP al día. Sin cambio de producto, esquema, API, flujo, configuración global,
   documentación pública o historia congelada; sin tag, push o publicación. T002 permanece parcial.
+
+## D198 — P012-T002: tarea real COMMITTED con perfil declarado v8
+
+Estado: T002 completada con evidencia acumulada; operación 2026-10-24 y cierre documental 2026-10-25.
+Fase: P012. [Propuesta/consentimiento](phase/P012-T002_PROPUESTA_T011.md) y
+[resultado, matriz y límites](phase/P012-T002_RESULTADO_T011.md). Concreta D197, sin reescribir D184–D197.
+
+- HITL **«Autorizo.»** a la propuesta del commit `cc2ef5d`: producto `500a783`, dist-t011/venv-t011 nuevos,
+  clon/TOML t010 conservados, máximo nuevo 2 Claude/1 Codex y cero correcciones. Sin repetir B, reparar resultados
+  o autorizar T003/T004. Guardias de fuentes, ocho hashes, 17 wheels/lock, checkout/configuración y base correctas.
+- Wheel `f22521ff…acd3201` construido/verificado/instalado offline fuera del checkout. Preflight CLI
+  2.1.310/0.164.0 y ocho checks del clon correctos; migrate no-op en 0025, SQLite idéntica antes del servicio.
+  Selector UI v8 permite claude-t010/codex-t010, perfil declarado python-django-t010 y composición django-t010.
+  Registro p012-b-t010 es/es, bootstrap false, P001 ACTIVE desde los siete criterios literales del ROADMAP.
+- Dos commits documentales UI/CAS `60246d5` y `f4a35ba` confirman AGENTS y D006 del operador, sin aprobar
+  retroactivamente D001–D005. Originales intactos, checkout limpio y hashes adoptados antes de encolar por CAS.
+  Run **`e3fa4ae6…` COMMITTED `6f021211b307`**: plan Claude, única ejecución Codex, formateador D133 sobre
+  dos rutas Python permitidas (exit 0, sin cambios), seis validaciones/13 casos JUnit correctos y revisión ACCEPT.
+- Diff de tres rutas idéntico al aceptado, ligado al commit sellado; regeneración mecánica de STATE/NEXT_STEPS
+  del hijo. Hallazgo low de una referencia de línea en el flujo conservado; sin corrección manual/revalidación.
+  Claude informa claude-sonnet-5-5 para el alias sonnet; Codex no informa modelo en los metadatos observados,
+  selección gpt-6-luna/low congelada. Compatibilidad condicionada cli-14, sin extrapolar efectos internos.
+- Evidencia acumulada satisface los cuatro criterios T002: B/idempotencia conservan procedencia D191/D193;
+  esta continuación acredita el perfil/formateador v8 y la tarea actual, sin declarar una tercera incorporación.
+  Los dos resultados REVISION_LIMIT siguen intactos; el éxito no demuestra la causa del truncamiento inicial.
+- Nuevo **2 Claude/1 Codex**, total T002 **9/12 y 3/3**, cero correcciones; operación dentro de cuatro horas.
+  Servicio detenido normalmente, puerto cerrado/clave eliminada, **11 jobs DONE, 12 procesos STOPPED, 0 locks**.
+  **13.785 filas previas idénticas** por todas sus columnas; 1.136 filas nuevas normales y 14.921 finales.
+  B/B2, diffs, TOML/distribuciones anteriores conservan hashes/modos; evidencia completa solo en el área privada.
+- Siguiente T003: concretar/revisar propuesta propia de chat y backup/restauración sobre p012-b-t010 y pedir
+  consentimiento antes del servicio/proveedores; T003/T004 sin autorización. Sin cerrar P001 del clon ni P012,
+  operar este repositorio con el harness, cambios globales, tags, push o publicación. Baseline pública en T005.
+- Documentos vivos al día, sin cambio de producto, modelos/migraciones, API o flujo implementado. Comprobaciones
+  del tramo y documentales pertinentes; sin repetir suites completas. Historial y D001–D197 conservados.

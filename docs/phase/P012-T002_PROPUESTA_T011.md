@@ -1,6 +1,6 @@
 # P012-T002 — Continuación propuesta tras corregir los presets UI v8
 
-Fecha: 2026-10-24. **Estado: propuesta revisada offline; consentimiento operativo pendiente.**
+Fecha: 2026-10-24. Cierre documental: 2026-10-25. **Estado: continuación autorizada y completada; T002 completada.**
 Base del producto: **`500a783c90e2f3ae581ba3c0fd483d1e7a2b1808`**, corrección T011 incluida.
 Decisión: [D197](../DECISIONS.md#d197--p012-t002-propuesta-de-continuación-tras-t011).
 Precedentes: [T011 §4](P012-T011_PRESETS_UI_V8.md#4-próximo-paso-todavía-sin-autorizar),
@@ -154,3 +154,47 @@ enlaces/anclas relativos** en los cinco Markdown de esta entrega y presupuestos 
 diff revisado y `git diff --check` correcto. Sin cambios en archivo histórico, baseline pública o código.
 No se repiten suites Python/Node, tipos/build o Alembic: entrega documental sin cambio de producto/datos.
 Los ocho checks del clon y la verificación del wheel nuevo siguen pendientes del consentimiento operativo.
+
+## 7. Consentimiento y preparación ejecutada
+
+El usuario responde **«Autorizo.»** a la propuesta completa en el HITL del commit `cc2ef5d`. Se inicia el tramo
+el 2026-10-24 a las 18:51 UTC, con máximo nuevo 2 Claude/1 Codex y las mismas paradas; no habilita T003/T004.
+Las secciones 1–6 conservan el guion revisado y sus comprobaciones anteriores al consentimiento.
+
+Guardias repetidas correctas: fuentes de producto iguales a `500a783`, ocho hashes de herramientas, 17 wheels
+y lock Django, clon/TOML sin deriva, B/B2/diffs/configuraciones/distribuciones intactos, puerto libre, SQLite
+íntegra sin trabajos activos ni locks. Manifiesto privado `t011-preserved.json` y copia previa SQLite/WAL/SHM.
+
+Build/verificador e instalación offline correctos en dist-t011/venv-t011. El verificador acredita miembros,
+metadatos, licencias, checksums y recorrido instalado con CLI falsas. Hashes completos:
+
+| Artefacto | SHA-256 |
+|---|---|
+| wheel | `f22521ff721e79fed2671abfceaf3f035695f3762f7d2765e170b152eacd3201` |
+| sdist | `0bb72fba417a2c1d941da9d09d262c0068a1455b0c4208acb5827707521c1ad2` |
+| pylock.toml | `20a327c3a97484892280c6dec6d2176202c2a88ebd638878e0808eeadfdf2cf9` |
+| SHA256SUMS | `c8bc3aed58977028ba351e1f981c9d7e65051a76ebe0cf78962a90a9887adafc` |
+
+Preflight real y ocho checks iniciales correctos; 28 archivos versionados intactos por bytes/modos. `migrate`
+no-op en 0025, sin instantánea ni cambio de bytes SQLite. Servicio instalado en 8024 y login normal por clave
+privada, sin rechazo cross-site. Selector UI v8 visible: registro **p012-b-t010** con perfil/composición/presets
+t010, trabajo/visual es/es, bootstrap false y política exacta. P001 ACTIVE desde ROADMAP, siete criterios
+literales, P001-T001 y documentos por defecto, sin tag ni llamada de incorporación.
+
+Dos ediciones por UI/CAS confirmadas: **`60246d5`** (AGENTS.md) y **`f4a35ba`** (DECISIONS/D006), ambas
+`harness: confirm document edit`. Hashes adoptados por la fase; únicamente esos dos archivos cambian frente
+al commit documental B2, D001–D005 y originales intactos. Checkout limpio antes de seleccionar P001-T001
+del NEXT_STEPS por CAS, sin notas ni edición manual.
+
+Run **`e3fa4ae6…`** completado: plan/ejecución/formateador/seis validaciones/revisión ACCEPT y confirmación UI
+→ **COMMITTED `6f021211b307`**. Trece casos JUnit correctos; formateador exit 0 sobre las dos rutas Python,
+sin modificar sus bytes. Nuevo 2 Claude/1 Codex, acumulado 9/12 y 3/3, cero correcciones.
+
+## 8. Resultado, conservación y cierre
+
+[Entrega y matriz de criterios](P012-T002_RESULTADO_T011.md), D198: diff aceptado/commit exactos, hallazgo
+low documental conservado y T002 completada con evidencia acumulada. Servicio detenido normalmente, salida 0;
+puerto cerrado/clave retirada, 11 DONE/12 STOPPED/0 locks. Las 13.785 filas previas idénticas por todas sus
+columnas; 1.136 filas operativas nuevas, 14.921 finales. B/B2/diffs/configuraciones/distribuciones intactos.
+P001 del clon ACTIVE; sin chat, backup/restauración de producto, T003/T004, cierre de fase o nuevas llamadas.
+La operación termina el 24 de octubre dentro del techo temporal; el 25 solo se cierra su documentación.

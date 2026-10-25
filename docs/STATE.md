@@ -1,6 +1,6 @@
 # Estado — my_harness
 
-Actualizado: 2026-10-24. Sin bloques gestionados mientras el repositorio no esté registrado en el harness (D088).
+Actualizado: 2026-10-25. Sin bloques gestionados mientras el repositorio no esté registrado en el harness (D088).
 
 ## Base acumulada
 
@@ -25,9 +25,10 @@ local completada en el alcance de D151/D153 y preparación pública archivada co
   `local-config-4`, con el ejemplo `python-django` (P008, D095).
   Detección automática por PATH explícito/ruta opcional en v7, sin pin obligatorio; mínimos Codex 0.163.0 /
   Claude 2.1.304, posteriores con compatibilidad condicionada al contrato conocido (P011-T012, D174).
-  Política/cliente observados congelados por job y revalidación por intento/antes de GO; sin uso real nuevo.
+  Política/cliente observados congelados por job y revalidación por intento/antes de GO.
   Formateador D133 optativo para perfiles declarados en v8 (P012-T010, D194), verificado offline; v1–v7 conservan
-  su contrato y huellas. [Entrega](phase/P012-T010_FORMATEADOR_DECLARATIVO.md).
+  su contrato y huellas. [Entrega](phase/P012-T010_FORMATEADOR_DECLARATIVO.md). Recorrido real posterior con
+  perfil declarado/formateador v8 y pareja Claude 2.1.310/Codex 0.164.0 hasta COMMITTED (P012-T002, D198).
 - **Fases y documentos** ([P004](archive/phase-004/SUMMARY.md), [P007](archive/phase-007/SUMMARY.md),
   [P008](archive/phase-008/SUMMARY.md)): check READY, reconciliación, preguntas, lote desatendido,
   enmiendas, abandono y cierre con tag. Contrato documental unificado y
@@ -67,12 +68,13 @@ local completada en el alcance de D151/D153 y preparación pública archivada co
 - **Evidencia con proveedores reales** (consentimientos agotados): transporte de las tres CLI (D025), primer uso real
   COMMITTED con fase cerrada (D050), cuatro combinaciones revisor/ejecutor COMMITTED (D071) y recorrido Django
   desde creación UI hasta cuatro tareas, QA conjunto y cierre/archivo de P001 (P009-T012, D139);
-  26 invocaciones de 60 previstas, sin autorización para operaciones nuevas.
+  26 invocaciones de 60 previstas. P012-T002 añade dos B COMMITTED, idempotencia y una tarea COMMITTED con
+  perfil declarado v8/CLI actuales (D191/D193/D198): Claude 9/12 y Codex 3/3, fixtures sintéticos, sin permisos nuevos.
 - **Límites**: contención cooperativa sin aislamiento del sistema operativo; validaciones sin hora; manifiestos de
   receta fijos tras preparar; dos avisos *low* de KaTeX.
-  Piloto de receta Django limitado a macOS arm64/Python 3.13; el perfil Python/Django declarativo sigue pendiente
-  de confirmar sobre un proyecto real. B y ese perfil conservan su validación solo offline: el usuario aplaza
-  la comprobación real complementaria en T008 (D151). El piloto no evalúa comparativamente la calidad de modelos.
+  Piloto de receta Django limitado a macOS arm64/Python 3.13. La validación real de B y del perfil Python/Django
+  declarado aplazada en D151 queda acreditada en T002 sobre fixtures sintéticos; sin extrapolar a proyectos
+  de producción, otras plataformas o parejas. El piloto no evalúa comparativamente la calidad de modelos.
   Observación de P009 pendiente: alta sin redirección (aplazada en ROADMAP). El texto de marcadores de
   define-project y la deriva tras cerrar están corregidos en P010-T004 (D146) y T005 (D147). Candidato público
   verificado solo en macOS ARM64 y Chrome; CI remota, otras plataformas y CLI reales sin ejecutar en P011.
@@ -109,7 +111,7 @@ y formato fallan. Revisor REVISE; cero correcciones, sin aceptación ni commit d
 producto ni la causa del truncamiento previo. Ambos resultados conservados sin reparar/revalidar/reintentar.
 Consumo acumulado **Claude 7/12, Codex 2/3** (nuevo 3/1). Servicio detenido, **7 jobs DONE, 9 procesos STOPPED,
 0 locks**; **8186 filas previas intactas** en contraste de copias SQLite/WAL/SHM.
-[T002 sigue parcial](phase/P012-T002_CONTINUACION_T009.md); T003–T007 pendientes, T003/T004 sin autorización.
+[Resultado entonces parcial](phase/P012-T002_CONTINUACION_T009.md); T003–T007 pendientes, T003/T004 sin autorización.
 
 **T010 completada offline** (D194), elegida por HITL: `local-config-8` habilita el formateador en perfiles
 declarados, con autorización/rutas D133 y huellas congeladas. Sin cambio de motor, runner, datos o API;
@@ -125,8 +127,19 @@ Sin registro/fase/tarea o llamadas nuevas: Claude 7/12, Codex 2/3. Servicio para
 
 **T011 completada offline** (D196): el selector compartido de registro/creación/actualización admite presets
 v8, como el backend; aviso en/es actualizado. **8 regresiones de render React, 103 tests Node, tipos/build
-correctos**. [Entrega y propuesta posterior](phase/P012-T011_PRESETS_UI_V8.md). Sin reconstruir/instalar/operar
-el producto corregido; T002 permanece parcial y el último consentimiento agotado con la parada.
+correctos**. [Entrega y propuesta posterior](phase/P012-T011_PRESETS_UI_V8.md). Esa entrega no opera el producto;
+la continuación real posterior se autoriza por separado conforme a D197/D198.
+
+**T002 completada con evidencia acumulada** (D198; operación 2026-10-24, cierre documental 2026-10-25):
+[propuesta autorizada](phase/P012-T002_PROPUESTA_T011.md) y [resultado/matriz](phase/P012-T002_RESULTADO_T011.md).
+Wheel `500a783` construido/verificado/instalado en dist-t011/venv-t011; hash `f22521ff…acd3201`. Preflight,
+ocho checks iniciales y migrate no-op correctos. UI v8 permite presets; p012-b-t010/P001 registrados,
+dos commits documentales por UI y única tarea **`e3fa4ae6…` COMMITTED en `6f021211b307`**: plan Claude,
+ejecución Codex, formateador sobre dos archivos (sin cambios), seis validaciones/**13 casos JUnit** y ACCEPT.
+Un hallazgo low de referencia de línea conservado, cero correcciones. Claude **9/12**, Codex **3/3**;
+servicio detenido, **11 DONE/12 STOPPED/0 locks**, puerto cerrado/clave eliminada. **13.785 filas previas idénticas**,
+1.136 filas operativas nuevas; B/B2/diffs/TOML/distribuciones anteriores intactos. P001 del clon sigue ACTIVE.
+La evidencia B/idempotencia conserva su procedencia D191/D193; no se repite ni repara ningún resultado anterior.
 
 P011 sigue cerrada y archivada ([D182](DECISIONS.md#d182--cierre-documental-de-p011-y-preparación-pública-archivada),
 [resumen](archive/phase-011/SUMMARY.md)). El paso 1 de su [expediente](archive/phase-011/P011_EXPEDIENTE_APERTURA.md)
@@ -138,12 +151,9 @@ P010 conserva su cierre (D153) y P009 el suyo (D140); el Django hijo sigue con P
 tag `p001` sobre `47a0557` y archivo en `3d105c6`, sin repetir operaciones ni comprobaciones de su estado.
 Este repositorio sigue sin registrarse ni ejecutarse con el harness.
 
-**Siguiente:** [P012-T002](NEXT_STEPS.md#p012-t002--instalación-incorporación-b-y-perfil-declarado-con-proveedores-reales),
-respuesta HITL a la [propuesta concreta tras T011](phase/P012-T002_PROPUESTA_T011.md) (D197), base `500a783`:
-dist-t011/venv-t011 nuevos y clon/TOML t010 conservados. Revisión de solo lectura correcta: 28 archivos/modos,
-hash TOML, ausencia de alta/fase/run, 13.785 filas y 7 DONE/9 STOPPED/0 locks; destinos nuevos ausentes.
-Pendientes build/verificador/instalación, preflight/checks, servicio y registro/fase/una tarea. Cero correcciones,
-techo 12/3; consumido 7/2, máximo nuevo 2 Claude/1 Codex, sin permiso operativo ni de consumo.
-Conservar B/B2, diffs, historiales y configuraciones.
-No reusar el run agotado bajo otra política ni reparar sus resultados. T003/T004 siguen sin autorización;
-sin nueva fase del Django de P009, push, tags o publicación. El consentimiento nuevo no habilita reintentos tras parada.
+**Siguiente:** [P012-T003](NEXT_STEPS.md#p012-t003--chat-backup-y-restauración-sobre-el-proyecto-real), concretar
+propuesta de chat y backup/restauración de consulta sobre p012-b-t010 y la base del área, con la instalación
+T011 conservada. Revisar rutas/efectos/techo propio de T001 y pedir consentimiento antes de operar; T003/T004
+siguen sin autorización. T002 finalizada, sin llamadas sobrantes habilitadas ni reparación/revalidación de sus
+dos fallos. Conservar todos los fixtures, diffs, historiales, configuraciones y distribuciones. Sin nueva fase
+del Django de P009, tags, push o publicación. P012 sigue abierta; baseline pública/candidato pendientes de T005.

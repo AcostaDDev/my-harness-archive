@@ -342,8 +342,8 @@ copia TOML/presets/composición propios; preflight y ocho checks iniciales corre
 **13 tests aprobados**, mypy/Django correctos, pero Ruff E501 en dos líneas y formato fallan; revisión REVISE,
 sin aceptación, corrección o commit de tarea. Servicio detenido, 7 jobs DONE, 9 procesos STOPPED, 0 locks;
 Claude **7/12**, Codex **2/3**, 8186 filas previas conservadas. [Registro](phase/P012-T002_CONTINUACION_T009.md).
-T002 sigue parcial. Siguiente paso: concretar offline una propuesta de continuidad y someterla a HITL antes de
-operar; ambos fallos/diffs conservados, sin reparación ni nuevos intentos autorizados. T003–T007 pendientes;
+T002 queda entonces parcial; se concreta una propuesta de continuidad por HITL antes de operar,
+con ambos fallos/diffs conservados, sin reparación. T003–T007 pendientes;
 T003/T004 sin autorización. **T010 completada offline** (D194), elegida por HITL: formateador de perfiles
 declarados optativo en `local-config-8`, con motor/runner D133 y versiones anteriores conservadas. Tests sintéticos
 correctos; sin build/instalación operativa ni consumo real adicional. [Entrega y guion futuro](phase/P012-T010_FORMATEADOR_DECLARATIVO.md).
@@ -354,10 +354,18 @@ preflight y ocho checks iniciales correctos. Servicio/login correctos, parada an
 Sin nuevas llamadas, 13.785 filas previas idénticas, B/B2 conservados; 7 DONE/9 STOPPED/0 locks.
 **T011 corregida offline** (D196): selector compartido admite v8 y aviso en/es al día; 8 regresiones de render,
 103 tests Node y tipos/build correctos. [Entrega y siguiente propuesta](phase/P012-T011_PRESETS_UI_V8.md).
-T002 sigue parcial, sin reconstruir o relanzar después; consentimiento nuevo antes de otra continuación.
+T002 queda entonces parcial; la entrega offline no reconstruye ni relanza y exige otro consentimiento.
 Continuación tras T011 [concretada y revisada offline](phase/P012-T002_PROPUESTA_T011.md) (D197), base `500a783`,
 dist-t011/venv-t011 nuevos y clon/TOML t010 conservados. Lecturas de hashes/modos/SQLite correctas, sin alta
-del clon ni consumo nuevo; respuesta HITL pendiente antes de preparar u operar.
+del clon ni consumo nuevo al proponerla. El usuario autoriza después **«Autorizo.»** (D198): build/verificador/
+instalación en dist-t011/venv-t011, preflight/ocho checks y migrate no-op correctos; UI v8 permite presets,
+registro/P001 y dos commits documentales por UI. **T002 completada con evidencia acumulada**: run
+**`e3fa4ae6…` COMMITTED en `6f021211b307`**, formateador nativo exit 0 (dos archivos sin cambios), seis
+validaciones/**13 casos JUnit** y ACCEPT con un hallazgo low documental conservado. Cero correcciones;
+Claude **9/12**, Codex **3/3**, servicio detenido, **11 DONE/12 STOPPED/0 locks** y 13.785 filas previas idénticas.
+[Resultado y matriz](phase/P012-T002_RESULTADO_T011.md); B/B2/diffs/configuraciones/distribuciones intactos.
+Operación del 24 de octubre y cierre documental del 25. Siguiente T003: propuesta/consentimiento propios antes
+del chat y backup/restauración; T003/T004 siguen sin autorización.
 La apertura del expediente de P011 queda aplazada hasta el cierre de P012.
 
 ## Después de la apertura en GitHub — v0.2.0
