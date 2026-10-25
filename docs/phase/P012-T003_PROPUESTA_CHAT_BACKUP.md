@@ -1,6 +1,6 @@
 # P012-T003 — Propuesta de chat y backup con consulta restaurada
 
-Fecha: **2026-10-25**. **Estado: diseño operativo elegido por HITL; ejecución pendiente de consentimiento.**
+Fecha: **2026-10-25**. **Estado: operación autorizada, ejecutada y detenida; dictamen de alcance UI pendiente de HITL.**
 Base del producto conservada: **`500a783c90e2f3ae581ba3c0fd483d1e7a2b1808`**, instalada en T002.
 Precedentes: [T001 §§5–7](P012-T001_PROPUESTA_OPERATIVA.md#5-fixtures-y-recorridos-observables),
 [resultado T002](P012-T002_RESULTADO_T011.md), D035/D040/D083/D174/D198 y
@@ -204,3 +204,25 @@ Checks documentales correctos: parsers del producto con **12 fases, 7 criterios 
 **15.861/24.576**, **9.171/12.288** y **28.121/49.152 bytes**. Cuerpos D001–D198 conservados;
 diff revisado y `git diff --check` correcto. Sin cambios en producto, archivo histórico o baseline pública.
 El resultado real, aún pendiente, se documentará en `P012-T003_CHAT_BACKUP_REAL.md` solo tras consentimiento.
+
+## 8. Consentimiento y ejecución posterior
+
+El usuario responde **«Continúa.»** tras el commit `bcbf977` y la solicitud específica de consentimiento:
+autoriza este guion T003 con máximo 3 Claude/0 Codex y dos horas desde la preparación, sin autorizar T004.
+Guardias, instalación conservada y preflight correctos. Primer arranque detenido tras `origin_rejected` en
+una navegación automatizada, sin chats/llamadas o escrituras en las 14.921 filas previas. Reanudación por
+barra nativa autorizada por HITL **«Autorizo esa reanudación por la barra nativa, con los mismos límites.»**
+No se cambian Host/Origin/CSRF ni se repone tiempo/presupuesto; se conservan la parada y su evidencia.
+
+[Resultado real y límites](P012-T003_CHAT_BACKUP_REAL.md): dos turnos ANSWERED sobre HEAD 6f02121, `/estado`
+sin modelo, propuesta confirmada por UI/hash/versión tras detener chat y arrancar con copia TOML supervisor=false.
+P001-T002/run `d235e9d5…` QUEUED sin intentos/preparaciones/locks, sin cambios del checkout ni llamadas Codex.
+Backup/verificación/restauración/verificación correctos; 42 artefactos y 13 runs, copia marcada de consulta.
+Lecturas HTTP de run/diff/JUnit/métricas idénticas y mutación rechazada 409; base operativa intacta.
+
+La UI restaurada no ofrece página de run sin proyecto compuesto. D040 y la entrega original definen consulta
+API por id: la exigencia adicional UI de §5 no se acredita y pasa por HITL de alcance, sin modificar diseño
+o declarar completa la tarea todavía. Cero cambios de producto, 2 Claude/0 Codex; servicios detenidos,
+13 DONE/1 QUEUED/14 STOPPED/0 locks, puertos cerrados y claves retiradas. Las 14.921 filas previas y los
+fixtures/evidencias anteriores intactos; 1.877 filas nuevas normales, 16.798 finales iguales en copia/restauración.
+La guardia D199 de T004 y el resto de restricciones siguen vigentes.

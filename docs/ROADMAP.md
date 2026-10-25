@@ -364,12 +364,14 @@ registro/P001 y dos commits documentales por UI. **T002 completada con evidencia
 validaciones/**13 casos JUnit** y ACCEPT con un hallazgo low documental conservado. Cero correcciones;
 Claude **9/12**, Codex **3/3**, servicio detenido, **11 DONE/12 STOPPED/0 locks** y 13.785 filas previas idénticas.
 [Resultado y matriz](phase/P012-T002_RESULTADO_T011.md); B/B2/diffs/configuraciones/distribuciones intactos.
-Operación del 24 de octubre y cierre documental del 25. **T003 preparada documentalmente** (D199):
-[propuesta](phase/P012-T003_PROPUESTA_CHAT_BACKUP.md) con instalación T011, máximo 3 Claude/0 Codex y dos horas.
-HITL resuelve la aceptación que encola ejecución: detener chat y aceptar con copia TOML supervisor=false;
-tarea QUEUED sin intentos/lock y sin reactivar la base antes de revisar T004. Lecturas de conservación,
-comparación pura y tres pruebas sintéticas correctas, sin operación ni llamadas nuevas.
-Siguiente: consentimiento operativo propio sobre el guion; T003/T004 siguen sin autorización.
+Operación T002 del 24 de octubre y cierre documental del 25. **T003 ejecutada y detenida el 25** (D200):
+[resultado](phase/P012-T003_CHAT_BACKUP_REAL.md), dos turnos reales ANSWERED, `/estado` sin modelo y propuesta
+confirmada con supervisor=false; P001-T002 QUEUED sin intentos/lock. Backup/restauración verificados, HTTP
+de runs/diff/JUnit/métricas iguales y mutación rechazada 409. UI sin página de run sin proyecto compuesto;
+D040 define API y el guion había añadido UI. Pendiente HITL de alcance para su dictamen, sin cambio de código.
+Consumo 2/3 Claude y 0/0 Codex, dentro de dos horas; servicios parados, 13 DONE/1 QUEUED/14 STOPPED/0 locks,
+14.921 filas previas intactas y 16.798 finales iguales en copia/restauración. T004 sigue sin autorización;
+no reactivar esa base antes de revisar su propuesta de arranque (D199).
 La apertura del expediente de P011 queda aplazada hasta el cierre de P012.
 
 ## Después de la apertura en GitHub — v0.2.0

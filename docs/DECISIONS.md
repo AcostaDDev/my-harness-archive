@@ -210,6 +210,7 @@ tarea se leen solo las decisiones que cita; este índice sirve para buscar prece
 | [D197](#d197--p012-t002-propuesta-de-continuación-tras-t011) | P012-T002: propuesta de continuación tras T011 | P012 |
 | [D198](#d198--p012-t002-tarea-real-committed-con-perfil-declarado-v8) | P012-T002: tarea real COMMITTED con perfil declarado v8 | P012 |
 | [D199](#d199--p012-t003-confirmación-en-cola-con-supervisor-detenido) | P012-T003: confirmación en cola con supervisor detenido | P012 |
+| [D200](#d200--p012-t003-chat-real-y-backup-restaurado-con-límite-de-ui) | P012-T003: chat real y backup restaurado con límite de UI | P012 |
 
 ## D001 — Alcance local y arquitectura base
 
@@ -5870,3 +5871,39 @@ Precedentes: D035/D040/D083/D174/D184/D198. Sin cambio de producto ni reescritur
 - La elección del diseño no es consentimiento para servicio/proveedores, copia TOML o backup. Solicitar autorización
   específica sobre el guion revisado conforme a T001 §7. T003 sigue pendiente y T004 sin autorización; sin build,
   instalación, migración, cambios globales, ejecución del fixture, tags, push o publicación. Documentos vivos al día.
+
+## D200 — P012-T003: chat real y backup restaurado con límite de UI
+
+Estado: operación autorizada, ejecutada y detenida el 2026-10-25; dictamen de alcance UI pendiente de HITL.
+Fase: P012. [Propuesta y consentimientos](phase/P012-T003_PROPUESTA_CHAT_BACKUP.md) y
+[resultado, evidencia y límites](phase/P012-T003_CHAT_BACKUP_REAL.md). Concreta D199/D040/D083/D198.
+
+- El usuario responde «Continúa.» tras el commit bcbf977 y la solicitud específica de consentimiento T003:
+  guion 8024/8025, instalación T011 conservada, máximo 3 Claude/0 Codex y dos horas, sin T004. Guardias y
+  preflight correctos; primer arranque detenido por origin_rejected de navegación automatizada, cero llamadas.
+  HITL «Autorizo esa reanudación por la barra nativa, con los mismos límites.» Mismo producto/base/configuración,
+  sin cambiar Host/Origin/CSRF o reponer presupuesto; incidencia y parada conservadas sin causa inventada.
+- Dos turnos Claude sonnet/low, CLI 2.1.310/cli-14, modelo reportado claude-sonnet-5-5: ANSWERED sobre HEAD
+  6f02121, evidencia antes/después intacta, siete documentos y run T002, cero locks. Respuesta coherente con
+  comportamiento/tests; algunas referencias imprecisas y corrección espontánea en el segundo turno conservadas.
+  `/estado` muestra P001 ACTIVE y tarea COMMITTED sin modelo; una única propuesta documental del revisor.
+- Servicio del chat detenido antes de confirmar. Copia TOML 0600 supervisor=false, único delta semántico y
+  huellas/política iguales; original intacto. UI verifica Supervisor detenido y acepta propuesta e294ae30…
+  por hash/versión: P001-T002/run d235e9d5… QUEUED, job 14 sin owner ni intentos/preparaciones/ciclos/locks.
+  Checkout, 28 archivos y HEAD intactos; no hay ejecución/commit de esa tarea. Guardia de T004 D199 conservada.
+- Backup/verificación/restauración/verificación del producto correctos: 42 artefactos/13 runs, destinos nuevos,
+  raíz state, marca query_only y execution_authorized=false. HTTP de run/diff/JUnit/métricas coincide, incluidos
+  ambos REVISION_LIMIT de T002; POST inerte rechazado 409 restored_read_only. Sin reconstruir o reparar evidencia.
+- UI restaurada /runs/id no ofrece página con project_id=null. RunRedirect lo declara explícitamente; el
+  registro persistido se conserva, pero en consulta no se componen proyectos operativos. D040/entrega H5.2
+  definen consulta API por id; el guion T003 añadió UI. Se consulta si cerrar T003 con evidencia API y límite UI,
+  o mantenerla parcial y planificar una vista de consulta aparte. Dictamen pendiente, sin decidir diseño o
+  cambiar criterios unilateralmente; no se atribuye a la UI lo solo comprobado por HTTP.
+- Consumo T003 2/3 Claude y 0/0 Codex, dentro de dos horas originales. Servicios detenidos normalmente, ambos
+  puertos cerrados/claves retiradas, 13 DONE/1 QUEUED/14 STOPPED/0 locks y grupos muertos. Las 14.921 filas
+  anteriores idénticas; 1.877 nuevas normales, 16.798 finales iguales en fuente/bundle/restauración. Base operativa
+  con SHA-256 idéntico tras backup/consulta; fixtures/diffs/configuraciones/distribuciones/herramientas intactos.
+- Documentos vivos al día, producto/API/modelos/migraciones/flujos implementados sin cambios. No se repiten
+  suites válidas ni validaciones del fixture. Evidencia completa privada, resultados anteriores conservados.
+  Siguiente: resolver HITL de alcance. T004 sin autorización ni arranque sobre esa base, sin relanzar T003,
+  nuevas llamadas, cambios globales, tags, push o publicación. P012 sigue abierta.

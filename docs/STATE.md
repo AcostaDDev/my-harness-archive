@@ -151,16 +151,21 @@ P010 conserva su cierre (D153) y P009 el suyo (D140); el Django hijo sigue con P
 tag `p001` sobre `47a0557` y archivo en `3d105c6`, sin repetir operaciones ni comprobaciones de su estado.
 Este repositorio sigue sin registrarse ni ejecutarse con el harness.
 
-**T003 preparada documentalmente** (D199): [propuesta concreta](phase/P012-T003_PROPUESTA_CHAT_BACKUP.md),
-instalación T011 conservada, chat sobre p012-b-t010 y backup/consulta 8024/8025, techo propio 3 Claude/0 Codex
-y dos horas. La aceptación encola un job ejecutable: HITL elige detener el servicio tras chat y aceptar con una
-copia TOML `supervisor=false`. Quedará QUEUED sin intentos ni lock; no reactivar esa base antes de revisar T004.
-Lecturas de conservación correctas (14.921 filas, 11 DONE/12 STOPPED/0 locks, clon limpio), comparación pura
-de composiciones y tres pruebas sintéticas correctas. Ninguna operación real o llamada nueva.
+**T003 ejecutada y detenida; dictamen de alcance UI pendiente** (D200):
+[resultado](phase/P012-T003_CHAT_BACKUP_REAL.md), instalación T011 conservada, dos turnos Claude ANSWERED
+sobre HEAD 6f02121 y `/estado` sin modelo. Propuesta confirmada por UI/hash/versión con copia TOML
+`supervisor=false`: P001-T002/run `d235e9d5…` QUEUED, cero intentos/preparaciones/locks y checkout intacto.
+Backup/verificación/restauración/verificación correctos, 42 artefactos/13 runs; HTTP recupera run/diff/JUnit/
+métricas idénticos y rechaza mutaciones con 409. La UI no ofrece página del run sin proyecto compuesto;
+D040 define consulta API, y el guion había añadido UI. Pendiente HITL para cerrar con ese límite o planificar
+una vista UI aparte. Parada origin inicial y reanudación nativa autorizada conservadas, sin cambiar guardias.
+Consumo **2/3 Claude, 0/0 Codex**, dentro de dos horas; servicios detenidos, puertos cerrados/claves retiradas,
+**13 DONE/1 QUEUED/14 STOPPED/0 locks**. **14.921 filas previas intactas**, 1.877 nuevas, 16.798 finales iguales
+en bundle/restauración; B/B2/clon/diffs/configuraciones/distribuciones intactos. No reactivar esa base antes de revisar T004.
 
-**Siguiente:** [P012-T003](NEXT_STEPS.md#p012-t003--chat-backup-y-restauración-sobre-el-proyecto-real), obtener
-consentimiento operativo sobre la propuesta revisada antes de servicio, copia TOML, modelos o backup.
-La elección HITL del diseño no lo concede; T003/T004 siguen sin autorización. T002 finalizada, sin llamadas
-sobrantes habilitadas ni reparación/revalidación de sus dos fallos. Conservar todos los fixtures, diffs,
-historiales, configuraciones y distribuciones. Sin nueva fase
-del Django de P009, tags, push o publicación. P012 sigue abierta; baseline pública/candidato pendientes de T005.
+**Siguiente:** [P012-T003](NEXT_STEPS.md#p012-t003--chat-backup-y-restauración-sobre-el-proyecto-real), resolver
+el HITL de alcance UI y cerrar su dictamen; no relanzar la operación detenida ni consumir el saldo restante.
+T004 sigue sin autorización y necesita propuesta de arranque que respete el job QUEUED (D199).
+T002 finalizada, sin reparación/revalidación de sus dos fallos. Conservar todos los fixtures, diffs, historiales,
+configuraciones y distribuciones. Sin nueva fase del Django de P009, tags, push o publicación. P012 sigue
+abierta; baseline pública/candidato pendientes de T005.

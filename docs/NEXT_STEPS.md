@@ -10,11 +10,14 @@ validaciones y **13 casos JUnit** correctos. Cero correcciones; nuevo 2 Claude/1
 **Claude 9/12, Codex 3/3**. Servicio detenido, **11 DONE/12 STOPPED/0 locks**, puerto cerrado/clave retirada;
 **13.785 filas previas idénticas**, 1.136 filas normales nuevas. B/B2/diffs/TOML/distribuciones conservados.
 Operación del 2026-10-24; cierre documental del 25. Ningún resultado fallido se repara, formatea o revalida.
-**Siguiente:** [P012-T003](#p012-t003--chat-backup-y-restauración-sobre-el-proyecto-real), obtener consentimiento
-sobre la [propuesta revisada](phase/P012-T003_PROPUESTA_CHAT_BACKUP.md) (D199): instalación T011 conservada,
-3 Claude/0 Codex, dos horas. HITL elige aceptar la propuesta con copia TOML supervisor=false tras detener el chat;
-tarea QUEUED sin intentos/lock y sin reactivar esa base antes de revisar T004. Diseño elegido, operación todavía
-sin autorizar; T003/T004 sin autorización.
+**T003 ejecutada y detenida** (D200): [resultado real](phase/P012-T003_CHAT_BACKUP_REAL.md), dos turnos ANSWERED,
+`/estado` sin modelo y propuesta confirmada con copia TOML supervisor=false. P001-T002/run `d235e9d5…` QUEUED
+sin intentos/lock; backup/restauración y consulta HTTP iguales, mutación rechazada 409. UI sin página para run
+sin proyecto compuesto; D040 define API y el guion había añadido UI. Consumo 2/3 Claude y 0/0 Codex; 13 DONE/
+1 QUEUED/14 STOPPED/0 locks, puertos cerrados/claves retiradas, 14.921 filas previas intactas y 16.798 finales.
+**Siguiente:** resolver el HITL de alcance UI de [T003](#p012-t003--chat-backup-y-restauración-sobre-el-proyecto-real)
+y cerrar su dictamen. Sin relanzar ni consumir saldo. T004 sin autorización y con propuesta de arranque pendiente
+que respete el job QUEUED conservado; no reactivar esa base (D199).
 El resultado T002 y los saldos no habilitan otro tramo, corrección o reintento.
 P001–P011 siguen cerradas; la apertura del [expediente de P011](archive/phase-011/P011_EXPEDIENTE_APERTURA.md)
 queda aplazada hasta el cierre de P012 y su candidato se sustituye por el que prepare T005.
@@ -133,8 +136,8 @@ con la procedencia acumulada de la matriz, sin declarar una tercera B ni reparar
 
 ## P012-T003 — Chat, backup y restauración sobre el proyecto real
 
-**Estado:** propuesta preparada y diseño elegido por HITL el 2026-10-25 (D199); operación pendiente de
-consentimiento explícito. **Depende de:** T002 y autorización explícita del tramo.
+**Estado:** autorizada, ejecutada y detenida el 2026-10-25; chat y backup/consulta HTTP acreditados, dictamen
+de alcance UI pendiente de HITL (D200). **Depende de:** T002 y autorización explícita del tramo.
 **Objetivo:** Acreditar el chat con el revisor real y el backup/restauración de consulta de una base con runs reales.
 **Alcance:** proyecto B de T002 y la base del área.
 **Rutas permitidas:** `docs/**` en este repositorio; el área privada según T001.
@@ -151,10 +154,17 @@ consentimiento explícito. **Depende de:** T002 y autorización explícita del t
 
 **Validación:** la propia del tramo.
 **Entregables:** [propuesta y comprobaciones previas](phase/P012-T003_PROPUESTA_CHAT_BACKUP.md);
-`docs/phase/P012-T003_CHAT_BACKUP_REAL.md` tras la operación autorizada.
-Lecturas: 14.921 filas, 11 DONE/12 STOPPED/0 locks, clon limpio `6f02121`, wheel/hashes conservados;
-comparación pura de ambas composiciones y tres pruebas sintéticas correctas. Sin servicio, CLI/proveedores,
-copia TOML, backup o restauración operativos; presupuesto T003 consumido 0 Claude/0 Codex.
+[resultado real, conservación y límite UI](phase/P012-T003_CHAT_BACKUP_REAL.md).
+Consentimiento «Continúa.» al guion del commit bcbf977; parada por origin_rejected y reanudación nativa
+autorizada por HITL, sin cambiar guardias o techos. Dos turnos ANSWERED, HEAD 6f02121 sin cambios, `/estado`
+sin modelo; propuesta ACCEPTED por hash/versión y P001-T002 QUEUED con supervisor=false, cero intentos/preparaciones.
+Cuatro comandos de backup/restauración correctos; 42 artefactos/13 runs, lecturas HTTP de runs/diff/13 JUnit/
+métricas iguales y POST inerte rechazado 409. Consulta UI sin página por ausencia de proyecto compuesto:
+D040 define API, el guion pedía UI adicional. HITL pendiente: cerrar con límite API o planificar vista UI aparte.
+Consumo **2/3 Claude, 0/0 Codex**, dentro de dos horas; servicio detenido, **13 DONE/1 QUEUED/14 STOPPED/0 locks**,
+puertos cerrados y claves retiradas. **14.921 filas previas idénticas**, 1.877 nuevas, **16.798 finales** iguales
+en fuente/bundle/restauración; SHA-256 de la base intacto tras backup/consulta, fixtures y evidencias conservados.
+Sin cambio de producto ni ejecución de la tarea vinculada; no se repiten suites válidas o validaciones del fixture.
 
 ## P012-T004 — Proyecto TypeScript web nuevo con receta v2 en español
 
