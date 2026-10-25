@@ -151,9 +151,16 @@ P010 conserva su cierre (D153) y P009 el suyo (D140); el Django hijo sigue con P
 tag `p001` sobre `47a0557` y archivo en `3d105c6`, sin repetir operaciones ni comprobaciones de su estado.
 Este repositorio sigue sin registrarse ni ejecutarse con el harness.
 
-**Siguiente:** [P012-T003](NEXT_STEPS.md#p012-t003--chat-backup-y-restauración-sobre-el-proyecto-real), concretar
-propuesta de chat y backup/restauración de consulta sobre p012-b-t010 y la base del área, con la instalación
-T011 conservada. Revisar rutas/efectos/techo propio de T001 y pedir consentimiento antes de operar; T003/T004
-siguen sin autorización. T002 finalizada, sin llamadas sobrantes habilitadas ni reparación/revalidación de sus
-dos fallos. Conservar todos los fixtures, diffs, historiales, configuraciones y distribuciones. Sin nueva fase
+**T003 preparada documentalmente** (D199): [propuesta concreta](phase/P012-T003_PROPUESTA_CHAT_BACKUP.md),
+instalación T011 conservada, chat sobre p012-b-t010 y backup/consulta 8024/8025, techo propio 3 Claude/0 Codex
+y dos horas. La aceptación encola un job ejecutable: HITL elige detener el servicio tras chat y aceptar con una
+copia TOML `supervisor=false`. Quedará QUEUED sin intentos ni lock; no reactivar esa base antes de revisar T004.
+Lecturas de conservación correctas (14.921 filas, 11 DONE/12 STOPPED/0 locks, clon limpio), comparación pura
+de composiciones y tres pruebas sintéticas correctas. Ninguna operación real o llamada nueva.
+
+**Siguiente:** [P012-T003](NEXT_STEPS.md#p012-t003--chat-backup-y-restauración-sobre-el-proyecto-real), obtener
+consentimiento operativo sobre la propuesta revisada antes de servicio, copia TOML, modelos o backup.
+La elección HITL del diseño no lo concede; T003/T004 siguen sin autorización. T002 finalizada, sin llamadas
+sobrantes habilitadas ni reparación/revalidación de sus dos fallos. Conservar todos los fixtures, diffs,
+historiales, configuraciones y distribuciones. Sin nueva fase
 del Django de P009, tags, push o publicación. P012 sigue abierta; baseline pública/candidato pendientes de T005.

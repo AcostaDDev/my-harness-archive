@@ -209,6 +209,7 @@ tarea se leen solo las decisiones que cita; este índice sirve para buscar prece
 | [D196](#d196--p012-t011-paridad-del-selector-de-presets-ui-con-local-config-8) | P012-T011: paridad del selector de presets UI con local-config-8 | P012 |
 | [D197](#d197--p012-t002-propuesta-de-continuación-tras-t011) | P012-T002: propuesta de continuación tras T011 | P012 |
 | [D198](#d198--p012-t002-tarea-real-committed-con-perfil-declarado-v8) | P012-T002: tarea real COMMITTED con perfil declarado v8 | P012 |
+| [D199](#d199--p012-t003-confirmación-en-cola-con-supervisor-detenido) | P012-T003: confirmación en cola con supervisor detenido | P012 |
 
 ## D001 — Alcance local y arquitectura base
 
@@ -5840,3 +5841,32 @@ Fase: P012. [Propuesta/consentimiento](phase/P012-T002_PROPUESTA_T011.md) y
   operar este repositorio con el harness, cambios globales, tags, push o publicación. Baseline pública en T005.
 - Documentos vivos al día, sin cambio de producto, modelos/migraciones, API o flujo implementado. Comprobaciones
   del tramo y documentales pertinentes; sin repetir suites completas. Historial y D001–D197 conservados.
+
+## D199 — P012-T003: confirmación en cola con supervisor detenido
+
+Estado: diseño operativo elegido por HITL el 2026-10-25; propuesta preparada, sin consentimiento de ejecución.
+Fase: P012. [Propuesta, comprobaciones y consentimiento pendiente](phase/P012-T003_PROPUESTA_CHAT_BACKUP.md).
+Precedentes: D035/D040/D083/D174/D184/D198. Sin cambio de producto ni reescritura de T001.
+
+- Al concretar T003 se contrasta una discrepancia del guion: aceptar la propuesta por hash/versión crea un run/job
+  QUEUED `action=start`; el TOML conservado tiene supervisor=true. La aceptación notifica al supervisor y puede
+  iniciar preparación/plan/ejecución, incompatible con «sin ejecutarla». Código y pruebas acreditan que es el
+  comportamiento existente, no un defecto demostrado. No hay pausa HTTP ni aceptación diferida sin cola.
+- Se consultan dos vías: supervisor desactivado y cola conservada, o definir una mejora de aceptación diferida.
+  HITL: **«Usar supervisor=false y conservar la tarea en cola; revisar T004 antes de reactivar esa base.»**
+  Detener el servicio tras el chat, crear una copia TOML nueva 0600 con único delta semántico supervisor=false,
+  comprobar huellas/política y arrancar para aceptar por UI. Original intacto, sin editar SQLite ni jobs congelados.
+- Tarea confirmada P001-T002 prevista QUEUED, cero intentos/preparaciones/comandos/locks; no describirla como
+  terminada o inexistente. Conservarla y no reactivar el supervisor sobre esa base. T004 debe revisar su arranque
+  explícitamente antes de operar; su futuro consentimiento no autoriza ejecutar la tarea de chat.
+- Se conserva la instalación T011/base 500a783, proyecto p012-b-t010/HEAD 6f02121 y puertos 8024/8025.
+  Techo propio T003 3 Claude/0 Codex y dos horas, sin saldo transferido de T002. Backup del producto con escritores
+  detenidos y raíz state; restauración nueva marcada de consulta, sin configuración/supervisor, con lecturas y
+  rechazo 409 de mutaciones. Resultados fallidos y resto de evidencias previas intactos.
+- Comprobaciones preparatorias de solo lectura: 14.921 filas, 11 jobs DONE, 12 procesos STOPPED, cero locks/chat;
+  clon limpio de 28 archivos; hashes wheel/toolchain conservados y referencias actuales bajo state. Comparación
+  pura de ambos TOML en memoria: mismo proyecto, composición, política, agentes y versiones. Tres pruebas
+  sintéticas de aceptación, comandos y backup/consulta correctas. Sin operación real ni llamadas nuevas.
+- La elección del diseño no es consentimiento para servicio/proveedores, copia TOML o backup. Solicitar autorización
+  específica sobre el guion revisado conforme a T001 §7. T003 sigue pendiente y T004 sin autorización; sin build,
+  instalación, migración, cambios globales, ejecución del fixture, tags, push o publicación. Documentos vivos al día.

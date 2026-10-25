@@ -10,9 +10,11 @@ validaciones y **13 casos JUnit** correctos. Cero correcciones; nuevo 2 Claude/1
 **Claude 9/12, Codex 3/3**. Servicio detenido, **11 DONE/12 STOPPED/0 locks**, puerto cerrado/clave retirada;
 **13.785 filas previas idénticas**, 1.136 filas normales nuevas. B/B2/diffs/TOML/distribuciones conservados.
 Operación del 2026-10-24; cierre documental del 25. Ningún resultado fallido se repara, formatea o revalida.
-**Siguiente:** [P012-T003](#p012-t003--chat-backup-y-restauración-sobre-el-proyecto-real), concretar/revisar una
-propuesta de chat y backup/restauración de consulta sobre p012-b-t010 y la base del área, con instalación T011
-conservada y techo propio de T001. Pedir consentimiento antes del servicio o modelos; T003/T004 sin autorización.
+**Siguiente:** [P012-T003](#p012-t003--chat-backup-y-restauración-sobre-el-proyecto-real), obtener consentimiento
+sobre la [propuesta revisada](phase/P012-T003_PROPUESTA_CHAT_BACKUP.md) (D199): instalación T011 conservada,
+3 Claude/0 Codex, dos horas. HITL elige aceptar la propuesta con copia TOML supervisor=false tras detener el chat;
+tarea QUEUED sin intentos/lock y sin reactivar esa base antes de revisar T004. Diseño elegido, operación todavía
+sin autorizar; T003/T004 sin autorización.
 El resultado T002 y los saldos no habilitan otro tramo, corrección o reintento.
 P001–P011 siguen cerradas; la apertura del [expediente de P011](archive/phase-011/P011_EXPEDIENTE_APERTURA.md)
 queda aplazada hasta el cierre de P012 y su candidato se sustituye por el que prepare T005.
@@ -131,7 +133,8 @@ con la procedencia acumulada de la matriz, sin declarar una tercera B ni reparar
 
 ## P012-T003 — Chat, backup y restauración sobre el proyecto real
 
-**Estado:** pendiente. **Depende de:** T002 y autorización explícita del tramo.
+**Estado:** propuesta preparada y diseño elegido por HITL el 2026-10-25 (D199); operación pendiente de
+consentimiento explícito. **Depende de:** T002 y autorización explícita del tramo.
 **Objetivo:** Acreditar el chat con el revisor real y el backup/restauración de consulta de una base con runs reales.
 **Alcance:** proyecto B de T002 y la base del área.
 **Rutas permitidas:** `docs/**` en este repositorio; el área privada según T001.
@@ -139,16 +142,25 @@ con la procedencia acumulada de la matriz, sin declarar una tercera B ni reparar
 
 - Chat sobre la instantánea de HEAD: al menos una respuesta del revisor coherente con el código y los documentos,
   un comando determinista y una propuesta convertida en tarea confirmada, sin ejecutarla ni tomar el lock.
+  Según HITL D199, aceptar solo tras detener el servicio del chat y arrancar con una copia TOML supervisor=false:
+  la tarea queda QUEUED, cero intentos/preparaciones/comandos y sin lock. No reactivar esa base antes de revisar T004.
 - Backup de la base con el producto, integridad comprobada y restauración de consulta que muestra los runs, el diff
   y las métricas de T002 sin volver a ejecutar nada; base operativa intacta.
 - Llamadas por proveedor frente al techo y servicio detenido al terminar, sin locks ni jobs activos.
+  Distinguir el job QUEUED conservado de los ACTIVE: no presentarlo como terminado o inexistente.
 
 **Validación:** la propia del tramo.
-**Entregables:** `docs/phase/P012-T003_CHAT_BACKUP_REAL.md`.
+**Entregables:** [propuesta y comprobaciones previas](phase/P012-T003_PROPUESTA_CHAT_BACKUP.md);
+`docs/phase/P012-T003_CHAT_BACKUP_REAL.md` tras la operación autorizada.
+Lecturas: 14.921 filas, 11 DONE/12 STOPPED/0 locks, clon limpio `6f02121`, wheel/hashes conservados;
+comparación pura de ambas composiciones y tres pruebas sintéticas correctas. Sin servicio, CLI/proveedores,
+copia TOML, backup o restauración operativos; presupuesto T003 consumido 0 Claude/0 Codex.
 
 ## P012-T004 — Proyecto TypeScript web nuevo con receta v2 en español
 
 **Estado:** pendiente. **Depende de:** T002 y autorización explícita del tramo.
+**Guardia D199:** revisar su propuesta de arranque antes de operar: T003 prevé conservar una tarea QUEUED.
+No arrancar el supervisor sobre esa base ni ejecutar la tarea pendiente con el consentimiento de T004.
 **Objetivo:** Acreditar con proveedores reales la creación desde cero con la receta TypeScript web v2, el idioma
 de trabajo español y el cierre de una fase.
 **Alcance:** carpeta padre del área, definición conversacional, preparación con la caché npm, una tarea, READY y

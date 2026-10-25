@@ -364,8 +364,12 @@ registro/P001 y dos commits documentales por UI. **T002 completada con evidencia
 validaciones/**13 casos JUnit** y ACCEPT con un hallazgo low documental conservado. Cero correcciones;
 Claude **9/12**, Codex **3/3**, servicio detenido, **11 DONE/12 STOPPED/0 locks** y 13.785 filas previas idénticas.
 [Resultado y matriz](phase/P012-T002_RESULTADO_T011.md); B/B2/diffs/configuraciones/distribuciones intactos.
-Operación del 24 de octubre y cierre documental del 25. Siguiente T003: propuesta/consentimiento propios antes
-del chat y backup/restauración; T003/T004 siguen sin autorización.
+Operación del 24 de octubre y cierre documental del 25. **T003 preparada documentalmente** (D199):
+[propuesta](phase/P012-T003_PROPUESTA_CHAT_BACKUP.md) con instalación T011, máximo 3 Claude/0 Codex y dos horas.
+HITL resuelve la aceptación que encola ejecución: detener chat y aceptar con copia TOML supervisor=false;
+tarea QUEUED sin intentos/lock y sin reactivar la base antes de revisar T004. Lecturas de conservación,
+comparación pura y tres pruebas sintéticas correctas, sin operación ni llamadas nuevas.
+Siguiente: consentimiento operativo propio sobre el guion; T003/T004 siguen sin autorización.
 La apertura del expediente de P011 queda aplazada hasta el cierre de P012.
 
 ## Después de la apertura en GitHub — v0.2.0
