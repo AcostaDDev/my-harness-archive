@@ -7,6 +7,7 @@ import { useWorkspace } from "../workspace";
 import { DiffBlock, Evidence, Hash, Stale, usePoll } from "../ui";
 import { configurationChange } from "../project-profile";
 import type { Form } from "../project-profile";
+import { ConfigurationAssistance } from "./ConfigurationAssistance";
 import { Preparation } from "./Preparation";
 
 type Candidate = S["ConfigurationCandidate"];
@@ -134,11 +135,22 @@ function ProjectProfileEditor({ state, error }: { state: S["ProjectConfiguration
   const tools = form.commands.executables as Record<string, string>;
   return <section className="panel">
     <h2>{t("profile.configuration")}</h2><p role="status">{t("profile.stage")} <strong>{STAGES[state.configuration_state] ? t(STAGES[state.configuration_state]) : state.configuration_state}</strong> · {state.status}</p>
+    {state.candidate_state && state.candidate_state !== state.configuration_state && <p role="status">{t("configuration.candidate")} · {STAGES[state.candidate_state] ? t(STAGES[state.candidate_state]) : state.candidate_state}</p>}
     <Stale error={error} /><ProfileReplay />
     <p>{t("profile.order")}</p>
     {state.version !== cas.version && <p role="alert" className="state state-attention">{t("profile.conflict")}</p>}
-    {state.configuration_state !== "ACTIVE" && <>
+    <>
+      {state.active && <><p>{t("assistance.profile_hint")}</p>
+        <button disabled={busy} onClick={() => void operate(async () => {
+          const current = await managed<S["ConfigurationFormRead"]>(`${base}/edit-base`, {});
+          edit(current.form); setText(current.text); setCas(state); setMode("form");
+        })}>{t("assistance.edit_base")}</button>
+        <ConfigurationAssistance scope={`project:${project}`} state={cas} candidate={mode === "toml" ? { text, validated: false } : { form, validated: false }}
+          disabled={busy} run={operate} contextPaths={state.assistance_documents}
+          apply={next => { setText(next); setMode("toml"); setPreview(undefined); setConfirmed(false); }} />
+      </>}
       <label>{t("profile.name")}<input readOnly value={String(form.profile_name)} /></label>
+      <label>{t("profile.instructions")}<textarea rows={4} value={form.profile.executor_instructions} disabled={mode === "toml"} onChange={e => edit({ ...form, profile: { ...form.profile, executor_instructions: e.target.value } })} /></label>
       {Object.entries(tools).map(([name, path]) => <label key={name}>{t("profile.tool", { name })}<input value={path} disabled={mode === "toml"} spellCheck={false} onChange={e => edit({ ...form, commands: { ...form.commands, executables: { ...tools, [name]: e.target.value } } })} /></label>)}
       {Object.entries(form.commands.environment as Record<string, string>).map(([name, value]) => <label key={name}>{name}<input value={value} disabled={mode === "toml"} spellCheck={false} onChange={e => edit({ ...form, commands: { ...form.commands, environment: { ...form.commands.environment, [name]: e.target.value } } })} /></label>)}
       <button disabled={busy} onClick={() => void operate(async () => {
@@ -154,10 +166,10 @@ function ProjectProfileEditor({ state, error }: { state: S["ProjectConfiguration
         setPreview({ kind: "save", body, shown }); setConfirmed(false);
       })}>{t("profile.review_save")}</button>
       <button className="button-quiet" disabled={busy} onClick={() => { edit(state.form); setText(state.text ?? ""); setCas(state); }}>{t("profile.reload_base")}</button></div>
-    </>}
+    </>
     <Evidence title={t("profile.references")} value={{ saved: state.saved, active: state.active, profile: state.profile }} />
     <Preparation configuration={state} />
-    {state.saved && state.configuration_state !== "ACTIVE" && <button disabled={busy || !reason.trim()} onClick={() => void operate(async () => {
+    {state.saved && state.saved.sha256 !== state.active?.sha256 && <button disabled={busy || !reason.trim()} onClick={() => void operate(async () => {
       const shown = await managed<S["ConfigurationPreviewRead"]>(`${base}/activation/preview`, activation);
       setPreview({ kind: "activate", body: activation, shown }); setConfirmed(false);
     })}>{t("profile.review_activation")}</button>}

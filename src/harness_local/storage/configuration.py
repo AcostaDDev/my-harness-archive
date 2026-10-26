@@ -48,8 +48,14 @@ def scope_name(value):
 
 
 def operation_view(row):
+    result = row.result
+    if row.kind == 'ASSIST':
+        process = row.payload.get('process')
+        result = {**(result or {}), 'journal': {
+            'owner': row.payload['owner'], 'owner_closed': row.payload.get('owner_closed', False),
+            'process': ({key: process.get(key) for key in ('identity', 'status', 'capture')} if process else None)}}
     return {'id': row.id, 'format': row.format, 'kind': row.kind, 'status': row.status,
-            'result': row.result, 'created_at': row.created_at, 'updated_at': row.updated_at}
+            'result': result, 'created_at': row.created_at, 'updated_at': row.updated_at}
 
 
 class ConfigurationRepository:
@@ -59,6 +65,7 @@ class ConfigurationRepository:
         # The verifier belongs to the service, never to a request or an AI candidate.
         # T008/T009 will provide preparation/HEAD binding and runtime recomposition.
         self.project_verifier = project_verifier
+        self.derive_projects = False
         self.checkpoint = checkpoint or (lambda stage: None)
 
     def _writable(self):
@@ -110,7 +117,8 @@ class ConfigurationRepository:
                 result['status'] = 'INVALID'
         if any(ref and ref['status'] != 'VALIDATED' for ref in (result['active'], result['pending'])):
             result['status'] = 'INVALID'
-        if session.scalar(select(Operation.id).where(Operation.status.in_(UNRESOLVED)).limit(1)):
+        if session.scalar(select(Operation.id).where(Operation.status.in_(UNRESOLVED),
+                (Operation.kind != 'ASSIST') | (Operation.status == 'RECOVERY_REQUIRED')).limit(1)):
             result['status'] = 'RECOVERY_REQUIRED'
         return result
 
@@ -176,6 +184,9 @@ class ConfigurationRepository:
 
     def _preview(self, session, files, changes, reason):
         self._clear(session)
+        if self.derive_projects and len(changes) == 1 and changes[0]['scope'] == 'global':
+            from harness_local.services.configuration_editing import derive_global
+            changes = derive_global(self, changes[0])
         if not isinstance(reason, str) or not reason.strip() or len(reason) > 1000:
             raise ValueError(tr('configuration.reason'))
         if not isinstance(changes, list) or not 1 <= len(changes) <= 100:
@@ -204,6 +215,9 @@ class ConfigurationRepository:
                            'status': 'VALIDATED' if change['validated'] else 'DRAFT', 'diff': diff})
         preview = {'format': FORMAT, 'kind': 'SAVE', 'changes': result, 'reason': reason,
                    'impact': sorted(seen), 'directory': str(files.root), 'state_dir': str(self.state_dir)}
+        if self.derive_projects or any(item['scope'].startswith('project:') for item in changes):
+            from harness_local.services.configuration_editing import impact
+            preview['effects'] = impact(session, self, changes)
         return {**preview, 'sha256': seal(preview)}
 
     def preview(self, changes, *, reason):

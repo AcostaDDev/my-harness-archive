@@ -238,6 +238,7 @@ tarea se leen solo las decisiones que cita; este índice sirve para buscar prece
 | [D224](#d224--p013-t007-contexto-documental-sin-stack-y-propuesta-de-perfil) | P013-T007: contexto documental sin stack y propuesta de perfil | P013 |
 | [D225](#d225--p013-t008-preparación-genérica-confirmada-y-recibo-propio) | P013-T008: preparación genérica confirmada y recibo propio | P013 |
 | [D226](#d226--p013-t009-alta-documental-y-activación-del-perfil-propio) | P013-T009: alta documental y activación del perfil propio | P013 |
+| [D227](#d227--p013-t010-edición-posterior-asistencia-congelada-e-impacto-conjunto) | P013-T010: edición posterior, asistencia congelada e impacto conjunto | P013 |
 
 ## D001 — Alcance local y arquitectura base
 
@@ -6694,3 +6695,46 @@ Concreta D218/D221/D224/D225; edición posterior T010 y compatibilidad/backup T0
   conflictos no rebasan ni reenvían automáticamente. Sin modelos/migraciones/tablas nuevos, proveedores reales,
   servicios instalados, smokes, operación sobre este checkout, configuración global del equipo o acciones remotas.
   QA visual instalada y paquete/candidato nuevos siguen en T012/T013. No hubo ambigüedades pendientes de HITL.
+
+
+## D227 — P013-T010: edición posterior, asistencia congelada e impacto conjunto
+
+Estado: implementada y verificada con API/UI, herramientas y procesos sintéticos el 2026-10-26. Fase: P013.
+Concreta D215/D217/D218/D221–D226; importación/compatibilidad/backup pendientes T011 y QA instalada T012.
+[Entrega](phase/P013-T010_EDICION_ASISTIDA.md), [flujo](flows/configuration-setup.md#edición-y-asistencia-entregadas-en-t010),
+[datos](DDBB-DIAGRAM.md#edición-y-asistencia-p013-t010).
+
+- Perfil activo conserva editor manual/formulario/TOML. Preparar edición toma HEAD limpio, hashes de
+  AGENTS/especificación/arquitectura/decisiones y plan anterior en `project-config-1.edit` opcional. Cambiar
+  perfil exige actualización documental previa; guardar confirma candidato/diff por CAS sin reescribir
+  propuesta/aceptación/commit documental anteriores. Cambiar perfil/comandos/herramientas/plan exige nueva
+  preparación T008 y recibo antes de activar. Pareja/política candidatas no sustituyen las admitidas para prepararlo.
+- Agentes/política/global sin cambio técnico pueden conservar un recibo original, con verificación actual de
+  archivos/herramientas/entorno/plan. Selección por referencia exacta o `ACTIVATE.payload.evidence`, nunca por
+  el último recibo semejante. Activación registra esa evidencia para la nueva referencia, sin alterar bytes del
+  recibo previo; trabajos admitidos conservan versiones/historiales. Proyecto activa entre tareas y precompone
+  antes de publicar; barrera D118 conserva el bloqueo por pendientes/activos/propietarios inciertos.
+- Guardado global deriva copias privadas de todos los perfiles activos con nueva referencia global exacta,
+  en la misma intención recuperable T004. No sigue catálogos por nombre ni modifica perfiles por referencia
+  mutable compartida. Borrador propio ajeno bloquea; derivadas del anterior borrador global pueden revisarse.
+  Preview sella diff/impacto/herramientas/recibos/jobs y reinicio. Activación/promoción y cancelación CAS abarcan
+  el conjunto pendiente aunque se guarde otro borrador global. Disponibilidad activa y del candidato se
+  exponen separadas para conservar tareas al guardar. Verificador antes de componer el runtime; sin reinicio HTTP.
+- Asistencia opcional `configuration-assistance-1`: preview congela clientes activos/identidad D174, selección,
+  candidato y contexto documental permitido antes de confirmación idempotente. Revisor de lectura devuelve
+  TOML/motivo/preguntas; ejecutor inspecciona en área privada nueva, sin comandos/red/instalación ni escritura
+  de TOML/ajustes del equipo. Modelo/esfuerzo global explícitos, selección local dentro de la política activa.
+  Preparación real del proyecto sigue el plan/confirmación T008. Aplicar propuesta solo cambia borrador;
+  validar/guardar/activar siguen siendo acciones independientes del servicio.
+- `configuration_operations.kind=ASSIST` usa journal JSON propio con snapshot, propietario, intención,
+  identidad del grupo antes de GO y captura/cierre. No crea run ni propietario ficticio en `managed_processes`.
+  INTENDED no cambia autoridad ni impide checkpoints de jobs congelados; bloquea otras mutaciones de
+  configuración. Respuesta perdida consulta la operación original; nunca se relanza por GET/arranque/reenvío.
+  Incertidumbre → recuperación explícita con comprobación de liveness y escritores detenidos, sin replay.
+- UI/errores propios en/es; contexto/base/borrador/sobre conservados, confirmaciones separadas y consulta
+  restaurada sin asistencia ni rutas operativas. OpenAPI/tipos/datos/flujos en paridad. Esquema 0027 y 54 tablas,
+  sin modelos, migración, dependencias ni cambios de formatos/hashes 1–8 o snapshots anteriores.
+- Evidencia sintética en ambas altas, jobs congelados, derivación/reinicio/cancelación conjuntos, recuperación,
+  separación de propuestas/autoridad y transportes CLI falsos. Sin proveedores reales, servicios instalados,
+  smokes, harness sobre este checkout, configuración global del equipo ni acciones remotas. No se detectaron
+  contradicciones de diseño pendientes de HITL; se concretó el contrato acordado dentro del alcance T010.

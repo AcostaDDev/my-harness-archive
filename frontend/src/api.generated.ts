@@ -2079,6 +2079,57 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/managed/configuration/assistance/preview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Preview */
+        post: operations["configuration_assistance_preview"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/managed/configuration/assistance/confirm": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Confirm */
+        post: operations["configuration_assistance_confirm"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/managed/configuration/assistance/{operation_id}/recover": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Recover */
+        post: operations["configuration_assistance_recover"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/managed/projects/{project_id}/configuration": {
         parameters: {
             query?: never;
@@ -2090,6 +2141,23 @@ export interface paths {
         get: operations["project_configuration_read"];
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/managed/projects/{project_id}/configuration/edit-base": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Edit Base */
+        post: operations["project_configuration_edit_base"];
         delete?: never;
         options?: never;
         head?: never;
@@ -2330,6 +2398,77 @@ export interface components {
             path: string;
             /** Files */
             files: string[];
+        };
+        /** AssistanceConfirm */
+        AssistanceConfirm: {
+            /**
+             * Scope
+             * @default global
+             */
+            scope: string;
+            candidate: components["schemas"]["ConfigurationCandidate"];
+            /** Expected Version */
+            expected_version: number;
+            /** Active Sha256 */
+            active_sha256: string;
+            /** Base Sha256 */
+            base_sha256: string;
+            /**
+             * Role
+             * @default reviewer
+             * @enum {string}
+             */
+            role: "reviewer" | "executor";
+            selection?: components["schemas"]["AssistanceSelection"] | null;
+            /** Message */
+            message: string;
+            /** Documents */
+            documents?: string[];
+            /** Preview Sha256 */
+            preview_sha256: string;
+            /**
+             * Confirmed
+             * @constant
+             */
+            confirmed: true;
+        };
+        /** AssistanceRecovery */
+        AssistanceRecovery: {
+            /** Writers Stopped */
+            writers_stopped: boolean;
+        };
+        /** AssistanceRequest */
+        AssistanceRequest: {
+            /**
+             * Scope
+             * @default global
+             */
+            scope: string;
+            candidate: components["schemas"]["ConfigurationCandidate"];
+            /** Expected Version */
+            expected_version: number;
+            /** Active Sha256 */
+            active_sha256: string;
+            /** Base Sha256 */
+            base_sha256: string;
+            /**
+             * Role
+             * @default reviewer
+             * @enum {string}
+             */
+            role: "reviewer" | "executor";
+            selection?: components["schemas"]["AssistanceSelection"] | null;
+            /** Message */
+            message: string;
+            /** Documents */
+            documents?: string[];
+        };
+        /** AssistanceSelection */
+        AssistanceSelection: {
+            /** Model */
+            model: string;
+            /** Effort */
+            effort: string;
         };
         /** AttemptMetricRead */
         AttemptMetricRead: {
@@ -2720,6 +2859,10 @@ export interface components {
             expected_version: number;
             /** Reason */
             reason: string;
+            /** Expected Versions */
+            expected_versions?: {
+                [key: string]: number;
+            } | null;
         };
         /** ConfigurationCandidate */
         ConfigurationCandidate: {
@@ -2871,6 +3014,10 @@ export interface components {
             directory?: string | null;
             /** State Dir */
             state_dir?: string | null;
+            /** Effects */
+            effects?: {
+                [key: string]: unknown;
+            } | null;
         };
         /** ConfigurationRead */
         ConfigurationRead: {
@@ -2904,6 +3051,18 @@ export interface components {
             form?: {
                 [key: string]: unknown;
             } | null;
+            /**
+             * Activation References
+             * @default []
+             */
+            activation_references: components["schemas"]["ConfigurationReference"][];
+            /**
+             * Pending Versions
+             * @default {}
+             */
+            pending_versions: {
+                [key: string]: number;
+            };
         };
         /** ConfigurationRecovery */
         ConfigurationRecovery: {
@@ -2936,9 +3095,8 @@ export interface components {
             /**
              * Scope
              * @default global
-             * @constant
              */
-            scope: "global";
+            scope: string;
             /** Revision */
             revision: number;
             /** Sha256 */
@@ -6011,6 +6169,8 @@ export interface components {
             actual_sha256?: string | null;
             /** Configuration State */
             configuration_state: string;
+            /** Candidate State */
+            candidate_state: string;
             /** Text */
             text: string | null;
             /** Form */
@@ -6029,6 +6189,8 @@ export interface components {
             preparation: {
                 [key: string]: unknown;
             };
+            /** Assistance Documents */
+            assistance_documents: string[];
         };
         /** PromptActivateCreate */
         PromptActivateCreate: {
@@ -14780,6 +14942,200 @@ export interface operations {
             };
         };
     };
+    configuration_assistance_preview: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Required with value 1 on mutations (CSRF protection). */
+                "x-harness-local"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AssistanceRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+        };
+    };
+    configuration_assistance_confirm: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": string;
+                /** @description Required with value 1 on mutations (CSRF protection). */
+                "x-harness-local"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AssistanceConfirm"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ConfigurationOperationRead"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+        };
+    };
+    configuration_assistance_recover: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Required with value 1 on mutations (CSRF protection). */
+                "x-harness-local"?: string | null;
+            };
+            path: {
+                operation_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AssistanceRecovery"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ConfigurationOperationRead"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+        };
+    };
     project_configuration_read: {
         parameters: {
             query?: never;
@@ -14801,6 +15157,67 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ProjectConfigurationRead"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+        };
+    };
+    project_configuration_edit_base: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Required with value 1 on mutations (CSRF protection). */
+                "x-harness-local"?: string | null;
+            };
+            path: {
+                project_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ConfigurationFormRead"];
                 };
             };
             /** @description Forbidden */

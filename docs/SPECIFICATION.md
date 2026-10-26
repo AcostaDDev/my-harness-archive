@@ -353,7 +353,7 @@ con autorización inicial y parada por error/HITL/límites. No está implementad
 ## 14. Ampliación planificada — P013
 
 [D215](DECISIONS.md#d215--p013-instalación-guiada-y-configuración-desde-la-ui) abre P013 antes de publicar.
-**T001 completa el diseño; T002–T009 implementan instalación/arranque/empaquetado, persistencia, asistente API/UI, propuestas y preparación de perfil; pendiente edición/compatibilidad T010–T011.**
+**T001 completa el diseño; T002–T010 implementan instalación/arranque/empaquetado, persistencia, asistente API/UI, perfil, preparación y edición/asistencia; compatibilidad/backup pendientes T011.**
 Las reglas vigentes de §4/§5/§8 se mantienen hasta sus entregas. [Contrato](phase/P013-T001_CONTRATO.md), [flujo](flows/configuration-setup.md),
 [plan](phase/P013_PLAN.md) y [tareas](NEXT_STEPS.md). D216–D218 concretan:
 
@@ -412,5 +412,17 @@ HEAD limpio, diff/confirmación independiente y barrera D118. Primera tarea bloq
 duplica versiones, alta, preparación ni commits. Edición previa versiona otro candidato con evidencia/documentos
 vigentes; ejemplos copiables opcionales. Formulario/TOML, estado y evidencia en/es, con borrador/base/sobre
 conservados ante conflicto y sin reenvío automático. Recorrido sintético; QA visual instalada pendiente T012.
+T010 entrega edición posterior y asistencia opcional ([D227](DECISIONS.md#d227--p013-t010-edición-posterior-asistencia-congelada-e-impacto-conjunto),
+[entrega](phase/P013-T010_EDICION_ASISTIDA.md)). Perfil activo mantiene formulario/TOML; edición técnica parte
+de HEAD/documentos confirmados y plan explícito. Cambiar perfil exige actualizar documentación primero;
+cambiar perfil/comandos/herramientas/plan exige nueva preparación. Agentes/política/global pueden reutilizar
+solo evidencia técnica idéntica, verificada y seleccionada por la activación; no se reescribe el recibo.
+Guardar global deriva copias privadas de todos los perfiles activos y muestra diff/impacto/jobs; confirma el
+conjunto para reinicio, con cancelación CAS conjunta. Un borrador propio ajeno bloquea sobrescribirlo.
+Asistencia congela clientes activos, selección, contenido autorizado y ámbito antes de confirmar; revisor lee,
+ejecutor solo inspecciona en área privada. Propuestas y comprobaciones no guardan ni activan; preparar el
+proyecto sigue T008. Reenvío consulta el mismo turno, sin otra invocación. Recuperación de escritor incierto
+exige parada acreditada. Pruebas sintéticas; integración instalada y compatibilidad/backup siguen T011–T012.
+
 README/docs públicas, QA, candidato/paquete y expediente nuevos se entregan en T012–T015. Publicación aplazada
 hasta cerrar P013; su cierre no ejecuta acciones remotas ni renueva permisos P012.

@@ -42,7 +42,8 @@ GLOBAL_SHAPE = {
 }
 PROJECT_SHAPE = {'format': None, 'project': fields('id', 'root'), 'global': fields('revision', 'sha256'),
                  'profile_name': None, 'profile': PROFILE, 'commands': COMMANDS, 'policy': POLICY,
-                 'agents': AGENTS, 'provenance': fields('source', 'sha256')}
+                 'agents': AGENTS, 'provenance': fields('source', 'sha256'),
+                 'edit': {'head': None, 'documents': {'*': None}, 'preparation_plan': None}}
 
 
 def shape(value, schema):
@@ -95,7 +96,7 @@ def parse(text, scope, *, validated=True):
         fmt = GLOBAL
     else:
         required = ('format', 'project', 'global', 'profile_name', 'profile', 'commands', 'policy', 'agents')
-        optional = ('provenance',)
+        optional = ('provenance', 'edit')
         fmt = PROJECT
     legacy._fields(data, 'configuration', required if validated else ('format',),
                    optional if validated else (*required[1:], *optional))
@@ -122,6 +123,16 @@ def parse(text, scope, *, validated=True):
         agents, reviewer = legacy._agents(data['agents'], automatic=True)
         legacy._policy(data['policy'], 'policy', reviewer, agents['executor'].provider)
         legacy._commands(data['commands'], 'commands', project['root'], profile, strict=True)
+        if 'edit' in data:
+            edit = legacy._fields(data['edit'], 'edit', ('head', 'documents', 'preparation_plan'))
+            if (not isinstance(edit['head'], str) or not re.fullmatch(r'[a-f0-9]{40,64}', edit['head'])
+                    or not isinstance(edit['documents'], dict) or not 1 <= len(edit['documents']) <= 8
+                    or any(not isinstance(v, str) or not re.fullmatch(r'[a-f0-9]{64}', v)
+                           for v in edit['documents'].values())):
+                raise ValueError(tr('configuration.invalid_edit'))
+            from harness_local.core.engine.context import relative_path
+            for path in edit['documents']:
+                relative_path(path)
         if 'provenance' in data:
             legacy._fields(data['provenance'], 'provenance', ('source', 'sha256'))
             legacy._text(data['provenance']['source'], 'provenance.source')

@@ -38,14 +38,14 @@ class ConfigurationSave(ConfigurationChange):
 
 
 class ConfigurationReference(Input):
-    scope: Literal['global'] = 'global'
+    scope: str = Field(default='global', pattern=r'^(global|project:[a-zA-Z0-9_-]+)$')
     revision: int = Field(ge=1)
     sha256: Hash
     expected_version: int = Field(ge=0)
 
 
 class ConfigurationActivation(Input):
-    references: list[ConfigurationReference] = Field(min_length=1, max_length=1)
+    references: list[ConfigurationReference] = Field(min_length=1, max_length=100)
     reason: str = Field(min_length=1, max_length=1000)
 
 
@@ -57,6 +57,7 @@ class ConfigurationCancel(Input):
     activation_id: str = Field(min_length=1, max_length=100)
     expected_version: int = Field(ge=0)
     reason: str = Field(min_length=1, max_length=1000)
+    expected_versions: dict[str, int] | None = None
 
 
 class ConfigurationRecovery(Input):
@@ -97,6 +98,8 @@ class ConfigurationRead(BaseModel):
     recovery_operations: list[str]
     text: str | None = None
     form: dict[str, Any] | None = None
+    activation_references: list[ConfigurationReference] = []
+    pending_versions: dict[str, int] = {}
 
 
 class ConfigurationFormRead(BaseModel):
@@ -117,6 +120,7 @@ class ConfigurationPreviewRead(BaseModel):
     evidence: dict[str, Any] | None = None
     directory: str | None = None
     state_dir: str | None = None
+    effects: dict[str, Any] | None = None
 
 
 class ConfigurationOperationRead(BaseModel):
@@ -203,13 +207,17 @@ def configuration_router(runtime):
     def activation_preview(body: ConfigurationActivation):
         def apply(setup):
             setup.editable()
-            return setup.repository.activation_preview([ref.model_dump() for ref in body.references], reason=body.reason)
+            if not any(ref.scope == 'global' for ref in body.references):
+                raise ValueError(tr('setup.invalid'))
+            return runtime.project_configuration.activation_preview([ref.model_dump() for ref in body.references], reason=body.reason)
         return call(apply)
 
     @router.post('/activate', response_model=ConfigurationOperationRead, operation_id='configuration_activate')
     def activate(body: ConfigurationActivate, idempotency_key: Key):
         def apply(setup):
             setup.editable()
+            if not any(ref.scope == 'global' for ref in body.references):
+                raise ValueError(tr('setup.invalid'))
             return setup.repository.activate([ref.model_dump() for ref in body.references], reason=body.reason,
                                               preview_sha256=body.preview_sha256, key=idempotency_key)
         return call(apply)
@@ -219,7 +227,7 @@ def configuration_router(runtime):
         def apply(setup):
             setup.editable()
             return setup.repository.cancel_pending(activation_id=body.activation_id,
-                expected_versions={'global': body.expected_version}, reason=body.reason, key=idempotency_key)
+                expected_versions=body.expected_versions or {'global': body.expected_version}, reason=body.reason, key=idempotency_key)
         return call(apply)
 
     @router.get('/operations/{operation_id}', response_model=ConfigurationOperationRead, operation_id='configuration_operation')

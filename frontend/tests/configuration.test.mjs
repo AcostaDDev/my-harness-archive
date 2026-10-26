@@ -46,6 +46,16 @@ function environment(language = 'en', initial = base(), savedDraft = draft(initi
     const body = options?.body ? JSON.parse(options.body) : undefined;
     requests.push({ path, body, options });
     if (path === '/api/managed/configuration') return env.failRead ? Response.json({ detail: { code: 'unavailable' } }, { status: 503 }) : Response.json(env.state);
+    if (path.endsWith('/assistance/preview')) return Response.json({ sha256: sha('f'), selection: { model: 'explicit-model', effort: 'medium' }, configuration_write: false });
+    if (path.endsWith('/assistance/confirm')) {
+      const key = options.headers['Idempotency-Key'];
+      if (completed.has(key)) return Response.json(completed.get(key));
+      const result = { id: 'assistance', status: 'APPLIED', result: { authority_changed: false,
+        proposal: { text: JSON.stringify({ ...form(), git: { ...form().git, author_name: 'Proposed synthetic name' } }), rationale: 'Synthetic explanation', questions: [] } } };
+      completed.set(key, result);
+      if (env.failAssistance) { env.failAssistance = false; throw new TypeError('Synthetic lost response'); }
+      return Response.json(result);
+    }
     if (path.endsWith('/detect')) return Response.json({ candidates: { git: '/detected/git', codex: '/detected/codex', claude: '/detected/claude' },
       user: 'detected-user', state_dir: '/synthetic/state', configuration_dir: '/synthetic/configuration', providers: {} });
     if (path.endsWith('/check-clients')) return Response.json({ reports: { reviewer: { available: true }, executor: { available: true } }, inference_performed: false, internal_effects_verified: false });
@@ -54,6 +64,7 @@ function environment(language = 'en', initial = base(), savedDraft = draft(initi
       const parsed = body.form ?? JSON.parse(body.text);
       return Response.json({ text: body.text ?? JSON.stringify(parsed), form: parsed });
     }
+    if (path === '/api/managed/configuration/operations/interrupted') return Response.json({ id: 'interrupted', kind: 'SAVE' });
     if (path.endsWith('/recovery/preview')) return Response.json({ operation_id: 'interrupted', sha256: sha('e'), observed: [{ path: 'global.toml', sha256: sha('a') }] });
     if (path.endsWith('/activation/preview')) return Response.json({ kind: 'ACTIVATE', sha256: sha('d'), references: body.references, impact: ['global'], restart_required: true });
     if (path.endsWith('/preview')) {
@@ -314,4 +325,45 @@ test('draft validation, permission preservation and positive/path field errors',
   value.validated = false; assert.deepEqual(errors(value), {});
   const request = change(value); assert.equal(request.form.agents.executor.tools[0], 'Read');
   assert.equal(request.validated, false); assert.equal(request.active_sha256, null);
+});
+
+
+for (const language of ['en', 'es']) test(`configuration assistance requires an exact turn and only applies a draft (${language})`, async () => {
+  const state = { ...base(), mode: 'READY', status: 'READY', version: 2, form: form(),
+    active: { scope: 'global', revision: 1, sha256: sha('a'), status: 'VALIDATED' }, working_sha256: sha('a'), actual_sha256: sha('a') };
+  const env = environment(language, state), tree = env.tree();
+  try {
+    await env.render(tree);
+    assert.ok(env.requests.every(r => r.body === undefined));
+    env.input('configuration-assistance-message', 'Explain a useful later configuration'); await env.render(tree);
+    env.click('assistance.preview'); await env.render(tree);
+    assert.equal(env.button('assistance.confirm').disabled, true);
+    env.tick('assistance.authorize'); await env.render(tree); env.click('assistance.confirm'); await env.render(tree);
+    assert.equal(env.requests.filter(r => r.path.endsWith('/assistance/confirm')).length, 1);
+    assert.deepEqual(env.state.active, state.active);
+    env.click('assistance.apply'); const html = await env.render(tree);
+    assert.match(html, /Proposed synthetic name/);
+    assert.equal(env.requests.filter(r => r.path.endsWith('/save') || r.path.endsWith('/activate')).length, 0);
+    assert.equal(JSON.parse(env.storage.get('harness-configuration-draft-v1')).source, 'text');
+  } finally { env.close(); }
+});
+
+test('an unacknowledged assistance turn is repeated only by explicit action with the same key', async () => {
+  const state = { ...base(), mode: 'READY', status: 'READY', version: 2, form: form(),
+    active: { scope: 'global', revision: 1, sha256: sha('a'), status: 'VALIDATED' }, working_sha256: sha('a'), actual_sha256: sha('a') };
+  const env = environment('en', state), tree = env.tree();
+  try {
+    await env.render(tree); env.input('configuration-assistance-message', 'Review a synthetic change'); await env.render(tree);
+    env.click('assistance.preview'); await env.render(tree); env.tick('assistance.authorize'); await env.render(tree);
+    env.failAssistance = true; env.click('assistance.confirm'); await env.render(tree);
+    const before = env.requests.filter(r => r.path.endsWith('/assistance/confirm'));
+    assert.equal(before.length, 1);
+    await env.render(tree); assert.equal(env.requests.filter(r => r.path.endsWith('/assistance/confirm')).length, 1);
+    env.click('workspace.pending.repeat'); await env.render(tree);
+    const calls = env.requests.filter(r => r.path.endsWith('/assistance/confirm'));
+    assert.equal(calls.length, 2);
+    assert.equal(calls[0].options.headers['Idempotency-Key'], calls[1].options.headers['Idempotency-Key']);
+    assert.deepEqual(calls[0].body, calls[1].body);
+    assert.equal(env.storage.get('harness-configuration-assistance:global'), undefined);
+  } finally { env.close(); }
 });

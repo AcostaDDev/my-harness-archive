@@ -1030,3 +1030,21 @@ Backup con configuración sigue bloqueado hasta T011; no se afirma recuperación
 - `managed_runs.versions_json` nuevos añaden `project_configuration`, `project_configuration_revision`,
   `project_configuration_sha256` y `project_environment_sha256`. Revisión/hash/recibo se verifican en admisión y
   autoridad inmutable del job antes de efectos. No se fabrica otro formato de historial ni un run de preparación.
+
+
+## Edición y asistencia (P013-T010)
+
+[D227](DECISIONS.md#d227--p013-t010-edición-posterior-asistencia-congelada-e-impacto-conjunto),
+[entrega](phase/P013-T010_EDICION_ASISTIDA.md). Esquema **0027 / 54 tablas** sin modelos ni migración nuevos.
+
+- `configuration_operations` admite `kind=ASSIST`: `payload` congela `configuration-assistance-1`, contenido,
+  pareja/versiones, selección, ámbito, prompt/esquema, propietario e intento UUID. El mismo journal JSON añade
+  intención del proceso, identidad antes de GO, estado/captura y cierre/recuperación con actor. No crea un run,
+  preparación ni referencia activa. Estados existentes INTENDED → APPLIED o RECOVERY_REQUIRED; reenvío por
+  clave/request hash devuelve la operación, sin ejecutar. No reutiliza `managed_processes` con propietario ficticio.
+- SAVE global incluye sus copias derivadas en `payload.changes`, con CAS/hash por ámbito y `effects` sellado.
+  ACTIVATE conserva recibo elegido por proyecto en `payload.evidence`; una referencia derivada no cambia los
+  bytes del recibo original ni se resuelve por el último parecido. Cancelación/promoción conserva el conjunto.
+- `project-config-1.edit` opcional vive en TOML versionado, con HEAD/documentos/plan. Las operaciones de
+  preparación posteriores reutilizan tablas T008 y sellan ese candidato, sin reescribir propuesta ni commit
+  documental inicial. Jobs antiguos, referencias y formatos de historial se conservan.

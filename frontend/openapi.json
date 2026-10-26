@@ -12718,6 +12718,292 @@
         }
       }
     },
+    "/api/managed/configuration/assistance/preview": {
+      "post": {
+        "summary": "Preview",
+        "operationId": "configuration_assistance_preview",
+        "parameters": [
+          {
+            "name": "x-harness-local",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Required with value 1 on mutations (CSRF protection).",
+              "title": "X-Harness-Local"
+            },
+            "description": "Required with value 1 on mutations (CSRF protection)."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AssistanceRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response Configuration Assistance Preview"
+                }
+              }
+            }
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          }
+        }
+      }
+    },
+    "/api/managed/configuration/assistance/confirm": {
+      "post": {
+        "summary": "Confirm",
+        "operationId": "configuration_assistance_confirm",
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200,
+              "title": "Idempotency-Key"
+            }
+          },
+          {
+            "name": "x-harness-local",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Required with value 1 on mutations (CSRF protection).",
+              "title": "X-Harness-Local"
+            },
+            "description": "Required with value 1 on mutations (CSRF protection)."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AssistanceConfirm"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConfigurationOperationRead"
+                }
+              }
+            }
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          }
+        }
+      }
+    },
+    "/api/managed/configuration/assistance/{operation_id}/recover": {
+      "post": {
+        "summary": "Recover",
+        "operationId": "configuration_assistance_recover",
+        "parameters": [
+          {
+            "name": "operation_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Operation Id"
+            }
+          },
+          {
+            "name": "x-harness-local",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Required with value 1 on mutations (CSRF protection).",
+              "title": "X-Harness-Local"
+            },
+            "description": "Required with value 1 on mutations (CSRF protection)."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AssistanceRecovery"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConfigurationOperationRead"
+                }
+              }
+            }
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          }
+        }
+      }
+    },
     "/api/managed/projects/{project_id}/configuration": {
       "get": {
         "summary": "Read",
@@ -12758,6 +13044,93 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ProjectConfigurationRead"
+                }
+              }
+            }
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          }
+        }
+      }
+    },
+    "/api/managed/projects/{project_id}/configuration/edit-base": {
+      "post": {
+        "summary": "Edit Base",
+        "operationId": "project_configuration_edit_base",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          },
+          {
+            "name": "x-harness-local",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Required with value 1 on mutations (CSRF protection).",
+              "title": "X-Harness-Local"
+            },
+            "description": "Required with value 1 on mutations (CSRF protection)."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConfigurationFormRead"
                 }
               }
             }
@@ -13915,6 +14288,196 @@
           "files"
         ],
         "title": "ArchivedPhaseRead"
+      },
+      "AssistanceConfirm": {
+        "properties": {
+          "scope": {
+            "type": "string",
+            "title": "Scope",
+            "default": "global"
+          },
+          "candidate": {
+            "$ref": "#/components/schemas/ConfigurationCandidate"
+          },
+          "expected_version": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Expected Version"
+          },
+          "active_sha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$",
+            "title": "Active Sha256"
+          },
+          "base_sha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$",
+            "title": "Base Sha256"
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "reviewer",
+              "executor"
+            ],
+            "title": "Role",
+            "default": "reviewer"
+          },
+          "selection": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AssistanceSelection"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "message": {
+            "type": "string",
+            "maxLength": 8000,
+            "minLength": 1,
+            "title": "Message"
+          },
+          "documents": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "maxItems": 4,
+            "title": "Documents"
+          },
+          "preview_sha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$",
+            "title": "Preview Sha256"
+          },
+          "confirmed": {
+            "type": "boolean",
+            "const": true,
+            "title": "Confirmed"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "candidate",
+          "expected_version",
+          "active_sha256",
+          "base_sha256",
+          "message",
+          "preview_sha256",
+          "confirmed"
+        ],
+        "title": "AssistanceConfirm"
+      },
+      "AssistanceRecovery": {
+        "properties": {
+          "writers_stopped": {
+            "type": "boolean",
+            "title": "Writers Stopped"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "writers_stopped"
+        ],
+        "title": "AssistanceRecovery"
+      },
+      "AssistanceRequest": {
+        "properties": {
+          "scope": {
+            "type": "string",
+            "title": "Scope",
+            "default": "global"
+          },
+          "candidate": {
+            "$ref": "#/components/schemas/ConfigurationCandidate"
+          },
+          "expected_version": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Expected Version"
+          },
+          "active_sha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$",
+            "title": "Active Sha256"
+          },
+          "base_sha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$",
+            "title": "Base Sha256"
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "reviewer",
+              "executor"
+            ],
+            "title": "Role",
+            "default": "reviewer"
+          },
+          "selection": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AssistanceSelection"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "message": {
+            "type": "string",
+            "maxLength": 8000,
+            "minLength": 1,
+            "title": "Message"
+          },
+          "documents": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "maxItems": 4,
+            "title": "Documents"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "candidate",
+          "expected_version",
+          "active_sha256",
+          "base_sha256",
+          "message"
+        ],
+        "title": "AssistanceRequest"
+      },
+      "AssistanceSelection": {
+        "properties": {
+          "model": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 1,
+            "pattern": "^[^-].*$",
+            "title": "Model"
+          },
+          "effort": {
+            "type": "string",
+            "maxLength": 20,
+            "minLength": 1,
+            "title": "Effort"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "model",
+          "effort"
+        ],
+        "title": "AssistanceSelection"
       },
       "AttemptMetricRead": {
         "properties": {
@@ -15223,7 +15786,7 @@
               "$ref": "#/components/schemas/ConfigurationReference"
             },
             "type": "array",
-            "maxItems": 1,
+            "maxItems": 100,
             "minItems": 1,
             "title": "References"
           },
@@ -15255,7 +15818,7 @@
               "$ref": "#/components/schemas/ConfigurationReference"
             },
             "type": "array",
-            "maxItems": 1,
+            "maxItems": 100,
             "minItems": 1,
             "title": "References"
           },
@@ -15292,6 +15855,20 @@
             "maxLength": 1000,
             "minLength": 1,
             "title": "Reason"
+          },
+          "expected_versions": {
+            "anyOf": [
+              {
+                "additionalProperties": {
+                  "type": "integer"
+                },
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Expected Versions"
           }
         },
         "additionalProperties": false,
@@ -15700,6 +16277,18 @@
               }
             ],
             "title": "State Dir"
+          },
+          "effects": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Effects"
           }
         },
         "type": "object",
@@ -15837,6 +16426,22 @@
               }
             ],
             "title": "Form"
+          },
+          "activation_references": {
+            "items": {
+              "$ref": "#/components/schemas/ConfigurationReference"
+            },
+            "type": "array",
+            "title": "Activation References",
+            "default": []
+          },
+          "pending_versions": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "type": "object",
+            "title": "Pending Versions",
+            "default": {}
           }
         },
         "type": "object",
@@ -15920,7 +16525,7 @@
         "properties": {
           "scope": {
             "type": "string",
-            "const": "global",
+            "pattern": "^(global|project:[a-zA-Z0-9_-]+)$",
             "title": "Scope",
             "default": "global"
           },
@@ -24766,6 +25371,10 @@
             "type": "string",
             "title": "Configuration State"
           },
+          "candidate_state": {
+            "type": "string",
+            "title": "Candidate State"
+          },
           "text": {
             "anyOf": [
               {
@@ -24800,6 +25409,13 @@
             "additionalProperties": true,
             "type": "object",
             "title": "Preparation"
+          },
+          "assistance_documents": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Assistance Documents"
           }
         },
         "additionalProperties": false,
@@ -24812,12 +25428,14 @@
           "active",
           "pending",
           "configuration_state",
+          "candidate_state",
           "text",
           "form",
           "proposal_id",
           "proposal_sha256",
           "profile",
-          "preparation"
+          "preparation",
+          "assistance_documents"
         ],
         "title": "ProjectConfigurationRead"
       },

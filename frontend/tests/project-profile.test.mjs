@@ -164,3 +164,16 @@ for (const stage of ['READY_TO_ACTIVATE', 'ACTIVE']) test(`task page admission f
     assert.ok(env.requests.every(r => r.body === undefined));
   } finally { env.close(); }
 });
+
+
+for (const language of ['en', 'es']) test(`an active own profile retains its manual editor and optional assistance (${language})`, async () => {
+  const env = environment(language);
+  env.state = { ...env.state, version: 2, configuration_state: 'ACTIVE', active: { revision: 1, sha256: hash('a') }, saved: { revision: 1, sha256: hash('a') } };
+  try {
+    const html = await env.render(env.tree());
+    assert.ok(html.includes(env.catalog['profile.toml']));
+    assert.ok(html.includes(env.catalog['assistance.edit_base']));
+    assert.ok(html.includes(env.catalog['assistance.title']));
+    assert.ok(env.requests.every(r => r.body === undefined));
+  } finally { env.close(); }
+});

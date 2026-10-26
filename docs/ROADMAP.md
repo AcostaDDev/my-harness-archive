@@ -363,13 +363,14 @@ documentación o código, antes de publicar en GitHub.
 credenciales, modificar configuración global del equipo, operar este repositorio con el harness, reactivar
 bases/fixtures/consentimientos anteriores y cualquier acción remota de publicación. Las pruebas operativas
 restringidas por AGENTS requieren su autorización propia; planificar no las ejecuta.
-**Estado:** activa; T001 diseñada (D216–D218) y T002–T009 implementadas (D219–D226) el 2026-10-26; seis tareas pendientes.
+**Estado:** activa; T001 diseñada (D216–D218) y T002–T010 implementadas (D219–D227) el 2026-10-26; cinco tareas pendientes.
 [Contrato](phase/P013-T001_CONTRATO.md), [instalador](phase/P013-T002_INSTALACION.md) y
 [arranque](phase/P013-T003_ARRANQUE.md), [persistencia](phase/P013-T004_CONFIGURACION.md),
 [API inicial](phase/P013-T005_ASISTENTE_API.md), [asistente UI](phase/P013-T006_ASISTENTE_UI.md) y
 [propuesta de perfil](phase/P013-T007_PROPUESTA_PERFIL.md) y
 [preparación genérica](phase/P013-T008_PREPARACION.md) y
-[alta/activación](phase/P013-T009_ALTA_UI.md); siguiente P013-T010.
+[alta/activación](phase/P013-T009_ALTA_UI.md) y
+[edición/asistencia](phase/P013-T010_EDICION_ASISTIDA.md); siguiente P013-T011.
 [Plan](phase/P013_PLAN.md), [tareas](NEXT_STEPS.md) y
 [flujo propuesto](flows/configuration-setup.md). Publicación aplazada hasta cerrar esta fase con candidato
 nuevo y dictamen favorable; el cierre no concede autorización para acciones remotas.

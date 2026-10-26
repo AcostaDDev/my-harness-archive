@@ -1,7 +1,7 @@
 # P013 — Instalación guiada y configuración desde la UI
 
-**Estado:** fase activa; T001 diseñada y T002–T009 implementadas el 2026-10-26, seis tareas pendientes.
-**Siguiente: P013-T010**, edición posterior manual y asistida de configuración.
+**Estado:** fase activa; T001 diseñada y T002–T010 implementadas el 2026-10-26, cinco tareas pendientes.
+**Siguiente: P013-T011**, compatibilidad, recuperación y backup de configuración.
 [Objetivo y criterios](ROADMAP.md#p013--instalación-guiada-y-configuración-desde-la-ui),
 [D215](DECISIONS.md#d215--p013-instalación-guiada-y-configuración-desde-la-ui) y
 [plan de fase](phase/P013_PLAN.md).
@@ -204,7 +204,8 @@ proveedores o descargas reales necesitan autorización propia.
 
 ## P013-T010 — Edición posterior manual y asistida de configuración
 
-**Estado:** pendiente. **Depende de:** T006 y T009.
+**Estado:** completada (2026-10-26); API/UI y procesos sintéticos, sin proveedores ni recorrido instalado.
+[Entrega y checks](phase/P013-T010_EDICION_ASISTIDA.md), D227. **Depende de:** T006 y T009.
 **Objetivo:** mantener ajustes globales/perfiles desde la UI con ayuda IA opcional.
 **Rutas permitidas:** configuración/planificación/agentes, API/frontend/storage, pruebas y docs de paridad.
 **Criterios de aceptación:**

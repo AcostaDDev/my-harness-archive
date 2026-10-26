@@ -1263,5 +1263,6 @@
   "profile_preparation.network": "The requested network mode differs from the exact confirmed destinations.",
   "profile_preparation.recovery": "Review a linked preparation after confirming the writer stopped and the exact completed prefix.",
   "profile_preparation.executor": "The preparation executor did not complete successfully.",
-  "profile_preparation.command": "A preparation command or its JUnit evidence failed."
+  "profile_preparation.command": "A preparation command or its JUnit evidence failed.",
+  "configuration.invalid_edit": "The documentary binding of the configuration edit is invalid."
 }

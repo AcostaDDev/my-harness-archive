@@ -39,6 +39,31 @@ class ProjectConfiguration:
 
     def check_candidate(self, project_id, data):
         project = self.runtime.project(project_id)
+        state = self.repository.read('project:' + project_id)
+        if state['active']:
+            from harness_local.services.configuration_editing import documentary
+            from harness_local.services.profile_preparation import validate_plan
+            from harness_local.services.local_config import _profile
+            before = parse(self.repository.document(state['scope'], state['active']['revision']), state['scope'])
+            if data['project'] != before['project'] or data.get('provenance') != before.get('provenance'):
+                raise ConfigurationConflict('project_identity_changed')
+            # A later technical edit is bound to the current committed documentary context. Agent-only
+            # edits retain the original receipt; the admitted pair still performs any new preparation.
+            if data.get('edit'):
+                _, git = self.runtime.preparation.writer(project)
+                binding = documentary(project.context, git)
+                if {k: data['edit'][k] for k in ('head', 'documents')} != binding:
+                    raise ConfigurationConflict('documentary_profile_changed')
+                validate_plan(data['edit']['preparation_plan'],
+                    _profile(data['profile_name'], data['profile'], allow_formatter=True), project.context)
+            if data['profile'] != before['profile'] or data['profile_name'] != before['profile_name']:
+                from harness_local.services.configuration_editing import prepared
+                with Session(self.runtime.engine) as session:
+                    prior = prepared(session, state['scope'], before, reference=state['active'], verify=False)
+                    baseline = before.get('edit', {}).get('documents', prior.plan['base_files'])
+                if (not data.get('edit') or all(baseline.get(p) == h for p, h in data['edit']['documents'].items())):
+                    raise ConfigurationConflict('profile_documentary_update_required')
+            return data
         with Session(self.runtime.engine) as session:
             proposal = self.proposal(session, project_id)
             candidate = json.loads(proposal.content)['candidate']
@@ -104,6 +129,8 @@ class ProjectConfiguration:
         else:
             commands = data.get('commands', {})
             if (not isinstance(data.get('profile_name'), str)
+                    or not isinstance(data.get('profile'), dict)
+                    or not isinstance(data['profile'].get('executor_instructions'), str)
                     or not isinstance(commands.get('executables'), dict)
                     or not isinstance(commands.get('environment'), dict)
                     or any(not isinstance(value, str) for value in (
@@ -128,6 +155,7 @@ class ProjectConfiguration:
         prepared = self.runtime.preparation.read(project_id)
         if prepared['prepared']:
             stage = 'READY_TO_ACTIVATE'
+        candidate_stage = stage
         if state['active'] and not isinstance(project.context, IntakeContext):
             try:
                 receipt = self.active_receipt(project_id, state['active'])
@@ -137,12 +165,56 @@ class ProjectConfiguration:
                 stage = 'ACTIVE'
             except (ValueError, OSError, JournalError):
                 stage = 'PREPARATION_REQUIRED'
-        return {**state, 'configuration_state': stage, 'text': text,
+            if state['saved'] == state['active']:
+                candidate_stage = stage
+        proposal_id, proposal_sha256 = proposal.id, proposal.proposal_sha256
+        if state['active'] and state['saved'] and parse(text, scope, validated=False).get('edit'):
+            from harness_local.storage.models import ConfigurationRevisionRow as Revision
+            with Session(self.runtime.engine) as session:
+                proposal_id = session.get(Revision, (scope, state['saved']['revision'])).operation_id
+            proposal_sha256 = state['saved']['sha256']
+        return {**state, 'configuration_state': stage, 'candidate_state': candidate_stage, 'text': text,
                 'form': parse(text, scope, validated=False) if text else self.initial(project_id),
-                'proposal_id': proposal.id, 'proposal_sha256': proposal.proposal_sha256,
-                'profile': payload, 'preparation': prepared}
+                'proposal_id': proposal_id, 'proposal_sha256': proposal_sha256,
+                'profile': payload, 'preparation': prepared,
+                'assistance_documents': self.assistance_documents(project)}
+
+    @staticmethod
+    def assistance_documents(project):
+        from harness_local.core.engine.documents import layout
+        target = layout(project.context)
+        return [target.agents, target.specification, target.architecture, target.decisions]
+
+    def edit_base(self, project_id):
+        from harness_local.services.configuration_editing import documentary, prepared
+        project = self.runtime.project(project_id)
+        state = self.repository.read('project:' + project_id)
+        if not state['active'] or state['status'] != 'READY':
+            raise ConfigurationConflict('active_project_configuration_required')
+        data = parse(self.repository.document(state['scope'], state['saved']['revision']), state['scope'])
+        active = parse(self.repository.document(state['scope'], state['active']['revision']), state['scope'])
+        with Session(self.runtime.engine) as session:
+            row = prepared(session, state['scope'], active, reference=state['active'], verify=False)
+            plan = data.get('edit', {}).get('preparation_plan', row.plan['technical'])
+        _, git = self.runtime.preparation.writer(project)
+        if git.run('status', '--porcelain=v1', '--untracked-files=all').strip():
+            raise ConfigurationConflict('prepared_head_changed')
+        data['edit'] = {**documentary(project.context, git), 'preparation_plan': plan}
+        return {'text': toml_document(data), 'form': data}
 
     def verify(self, session, scope, data):
+        from harness_local.storage.models import ConfigurationScopeRow as Scope
+        head = session.get(Scope, scope)
+        if not head or not head.active_revision:
+            return self._verify_initial(session, scope, data)
+        from harness_local.services.configuration_editing import verify_revision
+        evidence = verify_revision(session, scope, data, self.repository)
+        row = session.get(Preparation, evidence['operation_id'])
+        reference = self.repository._ref(session, scope, head.saved_revision)
+        self.runtime.registry.registrar.compose_profile(self.runtime.project(scope[8:]), data, row.receipt, reference)
+        return evidence
+
+    def _verify_initial(self, session, scope, data):
         project = self.runtime.project(scope[8:])
         row = session.scalar(select(Preparation).where(Preparation.project_id == project.id,
             Preparation.status == 'COMPLETED').order_by(Preparation.created_at.desc(), Preparation.id.desc()).limit(1))
@@ -177,11 +249,10 @@ class ProjectConfiguration:
         return {**preview, 'changes': changes}
 
     def active_receipt(self, project_id, reference):
+        from harness_local.services.configuration_editing import prepared
         with Session(self.runtime.engine) as session:
-            return session.scalar(select(Preparation.receipt).where(Preparation.project_id == project_id,
-                Preparation.status == 'COMPLETED',
-                Preparation.receipt['configuration']['sha256'].as_string() == reference['sha256'])
-                .order_by(Preparation.created_at.desc(), Preparation.id.desc()).limit(1))
+            data = parse(self.repository.document('project:' + project_id, reference['revision']), 'project:' + project_id)
+            return prepared(session, 'project:' + project_id, data, reference=reference).receipt
 
     def install_active(self, project):
         state = self.repository.read('project:' + project.id)
@@ -191,7 +262,7 @@ class ProjectConfiguration:
             raise ConfigurationConflict('project_configuration_changed')
         data = parse(self.repository.document(state['scope'], state['active']['revision']), state['scope'])
         receipt = self.active_receipt(project.id, state['active'])
-        if not receipt or receipt['configuration'] != state['active']:
+        if not receipt:
             raise ConfigurationConflict('project_preparation_required')
         try:
             self.runtime.preparation.generic().verify_configuration(project, receipt, active=True)

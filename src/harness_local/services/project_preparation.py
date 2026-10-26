@@ -340,15 +340,24 @@ class ProjectPreparation:
     def read(self, project_id):
         project = self.runtime.project(project_id)
         from harness_local.core.engine.context import IntakeContext
-        available = bool(project.versions.get('project_recipe')) or isinstance(project.context, IntakeContext)
+        available = bool(project.versions.get('project_recipe') or project.versions.get('project_configuration')) or isinstance(project.context, IntakeContext)
         with Session(self.runtime.engine) as session:
             row = self.latest(project_id, session)
             receipt = session.scalar(select(Operation.receipt).where(Operation.project_id == project_id,
-                                                                     Operation.status == 'COMPLETED'))
+                                                                     Operation.status == 'COMPLETED').order_by(Operation.created_at.desc(), Operation.id.desc()).limit(1))
         diagnostic = None
         if receipt:
             try:
                 if receipt.get('contract') == 'project-profile-preparation-1':
+                    from harness_local.services.configuration import parse
+                    from harness_local.services.configuration_editing import prepared
+                    config = self.generic().configuration()
+                    state = config.read('project:' + project_id)
+                    reference = state['saved']
+                    if reference:
+                        data = parse(config.document(state['scope'], reference['revision']), state['scope'])
+                        with Session(self.runtime.engine) as session:
+                            receipt = prepared(session, state['scope'], data, reference=reference, verify=False).receipt
                     self.generic().verify_configuration(project, receipt)
                     available = True
                 else:
@@ -365,7 +374,7 @@ class ProjectPreparation:
             return project
         with Session(self.runtime.engine) as session:
             row = session.scalar(select(Operation).where(Operation.project_id == project.id,
-                                                          Operation.status == 'COMPLETED'))
+                                                          Operation.status == 'COMPLETED').order_by(Operation.created_at.desc(), Operation.id.desc()).limit(1))
             receipt = row.receipt if row else None
         registrar = self.runtime.registry.registrar
         if receipt and receipt['recipe_config_sha256'] == project.versions['recipe_config_sha256']:

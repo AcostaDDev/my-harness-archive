@@ -488,7 +488,7 @@ no cambia hoy `render_attempt`, adaptadores, variables, snapshots, API o esquema
 
 ## 14. Ampliación planificada — P013
 
-**T001 diseñada y T002–T009 implementadas; pendiente edición/compatibilidad T010–T011.** §6/§9 describen lo implementado.
+**T001 diseñada y T002–T010 implementadas; compatibilidad/backup pendientes T011.** §6/§9 describen lo implementado.
 [D216](DECISIONS.md#d216--p013-t001-instalación-aislada-y-arranque-sin-configuración),
 [D217](DECISIONS.md#d217--p013-t001-archivos-versionados-y-activación-de-configuración) y
 [D218](DECISIONS.md#d218--p013-t001-perfil-tras-contexto-y-preparación-antes-de-activar).
@@ -617,3 +617,37 @@ copias guardadas no sustituyen la activa. `PreparedCommandRunner` también verif
 `ProjectProfile`/`ProfileProposal` comparten ambos accesos: edición versionada, copia de catálogo, adopción,
 guardado, preparación/journal y activación separados; formularios/TOML/base/sobre conservados en la pestaña,
 en/es. Contratos OpenAPI regenerados; sin tablas/migraciones/dependencias nuevas. QA visual/instalada en T012.
+
+
+### Edición posterior y asistencia entregadas en T010
+
+[D227](DECISIONS.md#d227--p013-t010-edición-posterior-asistencia-congelada-e-impacto-conjunto),
+[entrega](phase/P013-T010_EDICION_ASISTIDA.md). `configuration_editing.py` deriva el conjunto global y resuelve
+recibos por referencia exacta o evidencia seleccionada en ACTIVATE; nunca por semejanza con el último recibo.
+Reutilizar exige igualdad de perfil, comandos/herramientas/entorno y plan técnico, además de verificar sus
+archivos/identidades. Referencia nueva conserva el recibo original. `project-config-1.edit` opcional contiene
+HEAD, hashes documentales y plan; la aplicación sella la base del editor, valida antes de guardar y reutiliza
+journal/locks/runner T008 para una nueva preparación. La selección del ejecutor de preparación sigue siendo
+la admitida, aunque el candidato proponga otros clientes. Cambio de perfil requiere cambio documental previo;
+no se edita la propuesta aceptada ni se repite el alta. Barrera y precomposición antes de activar el proyecto.
+
+`ConfigurationRepository` expande el guardado global en la misma intención T004: nuevo global y copias de
+proyectos activos con referencia exacta, sin seguir presets por nombre. Otro borrador local bloquea; una copia
+derivada del global anterior puede revisarse en otra preview. Diffs, herramientas, necesidad de preparación,
+reinicio y jobs aparecen en `effects`, sellados con el candidato. API admite referencias global/proyectos
+conjuntas; cancelación CAS abarca todos. Verificador de arranque funciona antes de componer el runtime y
+promueve el conjunto bajo la barrera. Cancelación toma versiones del conjunto pendiente aunque exista un borrador
+global posterior. Disponibilidad activa y del candidato se exponen separadas para no ocultar tareas al guardar.
+El servicio no se reinicia por HTTP.
+
+`configuration_assistance.py` y su router protegido implementan `configuration-assistance-1`: preview congela
+pareja activa/identidad D174, selección, texto/contexto permitido y ámbito; confirmación idempotente registra
+ASSIST en `configuration_operations` antes de invocar. No usa runs ni prepara el checkout: directorio privado
+nuevo, revisor con esquema tipado/solo lectura, ejecutor con escritura únicamente en esa área. El ejecutor
+usa selección explícita global o la política activa del proyecto. Journal JSON del mismo registro conserva
+intención, identidad de grupo antes de GO, resultado/captura y propietario. Sin replay automático, lease ni
+inferencia de muerte por tiempo. INTENDED de asistencia no sustituye autoridad ni impide checkpoints de jobs
+admitidos; bloquea otras mutaciones de configuración. Incertidumbre requiere recuperación con liveness y
+confirmación de parada, sin relanzar. Candidato, base y sobre se conservan en pestaña; aplicar propuesta solo
+edita borrador. UI en/es y OpenAPI/tipos en paridad. Sin tablas, migraciones, dependencias ni formatos históricos
+nuevos. Contención cooperativa existente; QA instalada pendiente T012 y backup integrado en T011.

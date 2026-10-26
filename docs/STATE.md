@@ -128,10 +128,10 @@ Sustitución verificada por rutas, hashes y modos; checksums de los artefactos o
 
 ## Fase activa — P013 Instalación guiada y configuración desde la UI
 
-**P013 activa; T001 diseñada y T002–T009 implementadas el 2026-10-26.**
+**P013 activa; T001 diseñada y T002–T010 implementadas el 2026-10-26.**
 [D215](DECISIONS.md#d215--p013-instalación-guiada-y-configuración-desde-la-ui),
 [plan](phase/P013_PLAN.md), [tareas](NEXT_STEPS.md) y [flujo propuesto](flows/configuration-setup.md).
-Seis tareas pendientes. **Siguiente: P013-T010**, edición posterior manual y asistida de configuración.
+Cinco tareas pendientes. **Siguiente: P013-T011**, compatibilidad, recuperación y backup de configuración.
 
 T001 concreta el [contrato](phase/P013-T001_CONTRATO.md) con D216–D218: instalación aislada desde clon/paquete,
 arranque sin TOML con sesión protegida, contenido en TOML versionado y activación por referencia SQLite, CAS/
@@ -218,14 +218,25 @@ Recompone perfil sin reinicio, congela referencias y restaura autoridad al arran
 Registro documental conserva null y sus auditorías; datos y flujos en paridad, sin migración.
 [D226](DECISIONS.md#d226--p013-t009-alta-documental-y-activación-del-perfil-propio),
 [entrega y checks](phase/P013-T009_ALTA_UI.md). Recorridos Go sintéticos en ambas entradas y UI en/es;
-sin proveedores/servicios reales. Edición posterior y compatibilidad/backup pendientes T010–T011.
+sin proveedores/servicios reales. Edición posterior entregada en T010; compatibilidad/backup en T011.
 Validación: 1982 pytest/29 subtests correctos y dos opt-in omitidas; 85 y 26 regresiones posteriores correctas.
 146 Node, 8 unittest, tipos/build, Alembic temporal y checks documentales correctos; límites en la entrega.
+
+T010 entrega edición del perfil activo y asistencia global/local con pareja/contexto congelados, revisor de
+lectura, ejecutor en área privada y journal antes de GO. Propuesta solo cambia borrador; guardado/preparación/
+activación separados. Cambios técnicos ligan documentos/HEAD/plan y recibo nuevo; cambios globales derivan copias
+propias y activan/cancelan el conjunto para reinicio. Recibos reutilizados solo con igual contrato técnico y
+evidencia seleccionada, sin reescribir históricos. Guardar conserva disponibilidad activa y cancelar
+conserva el conjunto pendiente aunque haya otro borrador. Sin migración ni modelos nuevos.
+[D227](DECISIONS.md#d227--p013-t010-edición-posterior-asistencia-congelada-e-impacto-conjunto),
+[entrega/checks](phase/P013-T010_EDICION_ASISTIDA.md): 2000 pytest/29 subtests, dos opt-in omitidas;
+regresiones posteriores y 69 finales correctas; 151 Node, 8 unittest, tipos/build, Alembic temporal y docs correctos.
+Pruebas sintéticas; compatibilidad/backup T011 y QA instalada T012 pendientes.
 
 Alcance acordado: scripts de instalación/arranque con venv y cachés configurables, asistente inicial sin TOML
 manual ni modelos, configuración global y perfiles propios por proyecto desde UI, propuestas del revisor tras
 concretar documentación/arquitectura o inventario, preparación/comprobación acotadas con ejecutor y activación
-confirmada. Edición manual/asistida posterior, compatibilidad y recuperación/backup, UI en/es, QA y candidato
+confirmada. Edición manual/asistida posterior entregada; compatibilidad y recuperación/backup, QA y candidato
 nuevo antes del cierre. Ejemplos Django/TypeScript opcionales; el producto sigue con su contrato actual hasta
 implementar los cambios. T001 define autoridad de archivos/SQLite, versiones, reinicios y trabajos congelados.
 
@@ -239,5 +250,5 @@ no se renuevan ni transfieren.
 Tras el cierre seguirán faltando owner/repo, visibilidad, identidad pública y autorización de acciones remotas.
 D157 conserva la fuente principal pública tras el primer push; modo continuo D156 para v0.2.0 después de abrir,
 fuera de P013. Este repositorio sigue sin registrarse ni ejecutarse con el harness. Apertura y T001 fueron
-documentales; T002–T009 añaden instalación/arranque/empaquetado, persistencia versionada, asistente API/UI, contexto de alta/propuestas, preparación genérica y alta/activación de perfil con pruebas sintéticas. Sin operación del harness sobre este checkout, instalaciones reales, agentes/proveedores,
-smokes, configuración global del equipo, push o publicación. Commits locales T002–T009 pedidos por el usuario.
+documentales; T002–T010 añaden instalación/arranque/empaquetado, persistencia versionada, asistente API/UI, contexto de alta/propuestas, preparación genérica, alta/activación y edición/asistencia con pruebas sintéticas. Sin operación del harness sobre este checkout, instalaciones reales, agentes/proveedores,
+smokes, configuración global del equipo, push o publicación. Commits locales T002–T010 pedidos por el usuario.

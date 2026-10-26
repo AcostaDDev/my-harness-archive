@@ -1,6 +1,6 @@
 # Flujo — instalación y configuración guiadas (P013)
 
-**Instalación T002, arranque T003, persistencia T004, API/arranque global T005, UI T006, propuesta de perfil T007 y preparación genérica T008 y alta/activación T009 implementados; edición/compatibilidad pendientes T010–T011.**
+**Instalación T002, arranque T003, persistencia T004, API/arranque global T005, UI T006, propuesta de perfil T007 y preparación genérica T008 y alta/activación T009 y edición/asistencia T010 implementados; compatibilidad/backup pendientes T011.**
 [Entrega T002](../phase/P013-T002_INSTALACION.md), D219; validación con herramientas falsas, sin recorrido instalado nuevo.
 [Entrega T003](../phase/P013-T003_ARRANQUE.md), D220; procesos/señales sintéticos, sin servicio instalado real.
 [Contrato](../phase/P013-T001_CONTRATO.md), D216–D218 en [DECISIONS](../DECISIONS.md),
@@ -284,5 +284,34 @@ no un sandbox nuevo; offline nunca cambia automáticamente a red.
    preparación/activación conservan sobre y clave ante respuesta perdida; reenvío solo explícito, nunca al sondear.
    Estado/documentos/preparación/recibo visibles en/es. P001 ACTIVE por sí sola no habilita la primera tarea.
 
-Edición posterior asistida T010, importación/backup/recuperación integrada T011 y QA visual instalada T012 siguen
+Importación/backup/recuperación integrada T011 y QA visual instalada T012 siguen
 pendientes. Consulta D040 no edita/prepara/activa. Formatos 1–8 y sus hashes/recetas conservados.
+
+
+## Edición y asistencia entregadas en T010
+
+[D227](../DECISIONS.md#d227--p013-t010-edición-posterior-asistencia-congelada-e-impacto-conjunto),
+[entrega](../phase/P013-T010_EDICION_ASISTIDA.md). Perfil ACTIVE mantiene editor. Preparar edición toma HEAD
+limpio/documentos confirmados y plan anterior; cambios de perfil requieren actualización documental previa.
+Guardar conserva activa y jobs; candidato técnico distinto → nueva preparación T008 → recibo exacto → preview
+con diff/evidencia → activación sin reinicio y recomposición. Clientes candidatos no sustituyen la pareja que
+comprueba/prepara. Agentes/política/global sin cambio técnico pueden conservar el recibo original verificado;
+la activación registra su referencia, sin reconstruirlo ni elegir un recibo posterior por semejanza.
+
+Global: editar → preview con global y copias propias derivadas → guardar el conjunto T004 → confirmar todas
+las referencias → RESTART_REQUIRED → reiniciar/promover conjunto verificado. Cancelar por versiones de todos
+los ámbitos de la operación pendiente conserva activas incluso con otro borrador global posterior. Revisar otra vez el borrador global puede regenerar sus propias derivadas, nunca
+sobrescribir un borrador independiente. Impacto muestra comandos/herramientas/recibos/reinicio/jobs congelados.
+
+Asistencia opcional: texto y contexto documental explícito → preview con clientes activos/selección/ámbito →
+confirmación exacta → ASSIST con intención persistida → directorio privado nuevo → revisor de lectura o ejecutor
+acotado → resultado/propuesta. Aplicar solo cambia el borrador local; guardar/preparar/activar son acciones
+posteriores independientes. El revisor devuelve TOML/motivo/preguntas; el ejecutor devuelve observaciones y no
+instala ni ejecuta comandos/red. Preparar el proyecto usa después T008 y su ámbito/plan propios. Global solo
+con clientes ya configurados; documentos del proyecto se eligen de AGENTS/especificación/arquitectura/decisiones.
+
+ASSIST conserva snapshot, pareja/identidad, propietario e intención/spawn/captura del grupo antes de GO. Respuesta
+perdida → repetir mismo sobre consulta resultado original; ningún GET/montaje/arranque relanza el turno.
+Caída/incertidumbre → consulta de operación → confirmar escritores detenidos con comprobación de liveness →
+cerrar sin replay. Una asistencia viva no cambia la autoridad ni los checkpoints de jobs congelados. Consulta
+restaurada rechaza este carril antes de leer rutas o descubrir clientes. Sin migración ni permiso general nuevo.

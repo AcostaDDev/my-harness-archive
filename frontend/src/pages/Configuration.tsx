@@ -8,6 +8,8 @@ import { baseChanged, candidate, change, changeField, efforts, errors, field, in
   readAction, readDraft, sendAction, storeDraft } from "../configuration.ts";
 import type { Action, Draft, Review } from "../configuration.ts";
 
+import { ConfigurationAssistance } from "./ConfigurationAssistance";
+
 const ROOT = "/configuration";
 const idFor = (path: string) => `configuration-${path.replaceAll(".", "-")}`;
 
@@ -97,6 +99,7 @@ export function ConfigurationPage() {
   const [review, setReview] = useState<Review>();
   const [activation, setActivation] = useState<{ body: S["ConfigurationActivation"]; preview: S["ConfigurationPreviewRead"] }>();
   const [recovery, setRecovery] = useState<S["ConfigurationRecoveryRead"]>();
+  const [assistanceRecovery, setAssistanceRecovery] = useState<S["ConfigurationOperationRead"]>();
   const [check, setCheck] = useState<S["ConfigurationClientsRead"]>();
   const [issues, setIssues] = useState<Record<string, MessageKey>>({});
   const [error, setError] = useState<string>();
@@ -176,6 +179,8 @@ export function ConfigurationPage() {
       <button type="button" disabled={busy || blocked} onClick={() => void run(() => submit(action.path, action.body, action))}>{t("configuration.retry")}</button>
     </section>}
     {!blocked && <>
+      {state.mode === "READY" && <ConfigurationAssistance scope="global" state={draft.base} candidate={candidate(draft)}
+        disabled={frozen} run={run} apply={text => edit({ ...draft, source: "text", text })} />}
       <section className="panel"><h2>{t("configuration.detect")}</h2><p>{t("configuration.detect_hint")}</p>
         <label htmlFor="configuration-detect-path">{t("configuration.path")}</label>
         <input id="configuration-detect-path" value={path} disabled={frozen} onChange={event => { setPath(event.target.value); setDetection(undefined); }} />
@@ -245,7 +250,7 @@ export function ConfigurationPage() {
           <p>{t("configuration.save_hint")}</p><code className="configuration-hash">{review.preview.sha256}</code>
           {review.preview.changes?.map((item, index) => <div key={index}><DiffBlock diff={String(item.diff)} label={t("configuration.diff")} />
             <details><summary>{t("configuration.toml")}</summary><pre>{String(item.text)}</pre></details></div>)}
-          <p>{t("configuration.impact")}</p>
+          <p>{t("configuration.impact")}</p><Evidence title={t("configuration.activation_review")} value={review.preview} />
           <label className="check"><input type="checkbox" checked={confirmed} disabled={frozen || stale} onChange={event => setConfirmed(event.target.checked)} />{t("configuration.confirm_save")}</label>
           <button type="button" disabled={frozen || stale || !confirmed} onClick={() => void run(() => submit(`${ROOT}/save`, { ...review.body, preview_sha256: review.preview.sha256 }))}>{t("configuration.save")}</button>
         </section>}
@@ -253,7 +258,7 @@ export function ConfigurationPage() {
       <section className="panel"><h2>{t("configuration.activation")}</h2><p>{t("configuration.activation_hint")}</p>
         <button type="button" disabled={frozen || !saved || saved.status !== "VALIDATED" || !!state.pending || state.status === "RECOVERY_REQUIRED" || state.status === "INVALID" || !draft.reason.trim()}
           onClick={() => void run(async () => {
-            const body: S["ConfigurationActivation"] = { references: [{ scope: "global", revision: saved!.revision, sha256: saved!.sha256, expected_version: state.version }], reason: draft.reason };
+            const body: S["ConfigurationActivation"] = { references: state.activation_references?.length ? state.activation_references : [{ scope: "global", revision: saved!.revision, sha256: saved!.sha256, expected_version: state.version }], reason: draft.reason };
             setActivation({ body, preview: await managed<S["ConfigurationPreviewRead"]>(`${ROOT}/activation/preview`, body) }); setActivateConfirmed(false);
           })}>{t("configuration.activation_preview")}</button>
         {activation && <div className="decision"><code className="configuration-hash">{activation.preview.sha256}</code>
@@ -269,13 +274,24 @@ export function ConfigurationPage() {
           }} />{t("configuration.confirm_cancel")}</label>
           <button type="button" disabled={frozen || !cancelConfirmed || cancelStale || !draft.reason.trim()} onClick={() => void run(() => submit(`${ROOT}/cancel`, {
             activation_id: cancelReference!.id, expected_version: cancelReference!.version, reason: draft.reason,
+            expected_versions: state.pending_versions ?? Object.fromEntries((state.activation_references ?? []).map(ref => [ref.scope, ref.expected_version])),
           }))}>{t("configuration.cancel")}</button>
         </div>}
       </section>
       {!!state.recovery_operations.length && <section className="panel"><h2>{t("configuration.recovery")}</h2><p>{t("configuration.recovery_hint")}</p>
         {state.recovery_operations.map(id => <button type="button" key={id} disabled={frozen} onClick={() => void run(async () => {
+          const operation = await managed<S["ConfigurationOperationRead"]>(`${ROOT}/operations/${encodeURIComponent(id)}`);
+          if (operation.kind === "ASSIST") { setAssistanceRecovery(operation); setRecovery(undefined); setWritersStopped(false); return; }
+          setAssistanceRecovery(undefined);
           setRecovery(await managed<S["ConfigurationRecoveryRead"]>(`${ROOT}/operations/${encodeURIComponent(id)}/recovery/preview`, {})); setWritersStopped(false);
         })}>{t("configuration.recovery_preview")} · {id}</button>)}
+        {assistanceRecovery && <div className="decision"><Evidence title={t("assistance.result")} value={assistanceRecovery} />
+          <label className="check"><input type="checkbox" checked={writersStopped} disabled={frozen} onChange={e => setWritersStopped(e.target.checked)} />{t("configuration.writers_stopped")}</label>
+          <button disabled={frozen || !writersStopped} onClick={() => void run(async () => {
+            await managed(`${ROOT}/assistance/${assistanceRecovery.id}/recover`, { writers_stopped: true });
+            setAssistanceRecovery(undefined); refresh(n => n + 1);
+          })}>{t("configuration.recover")}</button>
+        </div>}
         {recovery && <div className="decision"><Evidence title={t("configuration.recovery_review")} value={recovery} />
           <label className="check"><input type="checkbox" checked={writersStopped} disabled={frozen} onChange={event => setWritersStopped(event.target.checked)} />{t("configuration.writers_stopped")}</label>
           <button type="button" disabled={frozen || !writersStopped} onClick={() => void run(() => submit(`${ROOT}/operations/${encodeURIComponent(recovery.operation_id)}/recovery/confirm`, {

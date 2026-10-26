@@ -37,12 +37,14 @@ class ProjectConfigurationRead(Input):
     working_sha256: str | None = None
     actual_sha256: str | None = None
     configuration_state: str
+    candidate_state: str
     text: str | None
     form: dict[str, Any]
     proposal_id: str
     proposal_sha256: Hash
     profile: dict[str, Any]
     preparation: dict[str, Any]
+    assistance_documents: list[str]
 
 
 class ProfileEdit(Input):
@@ -80,6 +82,10 @@ def project_configuration_router(runtime):
     @router.get('/configuration', response_model=ProjectConfigurationRead, operation_id='project_configuration_read')
     def read(project_id: str):
         return call(project_id, lambda service: service.read(project_id))
+
+    @router.post('/configuration/edit-base', response_model=ConfigurationFormRead, operation_id='project_configuration_edit_base')
+    def edit_base(project_id: str):
+        return call(project_id, lambda service: service.edit_base(project_id))
 
     @router.post('/configuration/form', response_model=ConfigurationFormRead, operation_id='project_configuration_form')
     def form(project_id: str, body: ConfigurationCandidate):

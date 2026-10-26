@@ -161,6 +161,19 @@ class ProfilePreparation(ProjectPreparation):
         if global_state['status'] != 'READY' or data['global'] != {
                 k: global_state['active'][k] for k in ('revision', 'sha256')}:
             raise refuse('configuration')
+        if state['active'] and data.get('edit'):
+            from harness_local.storage.models import ConfigurationRevisionRow as Revision
+            revision = session.get(Revision, (scope, ref['revision']))
+            if body['proposal_id'] != revision.operation_id or body['proposal_sha256'] != ref['sha256']:
+                raise refuse('stale')
+            profile = local_config._profile(data['profile_name'], data['profile'], allow_formatter=True)
+            technical = validate_plan(data['edit']['preparation_plan'], profile, project.context)
+            documents = data['edit']['documents']
+            verify_files(project.context.root, documents)
+            payload = {'candidate': {'name': data['profile_name'], 'profile': data['profile'],
+                'tools': [{'name': name, 'requirement': 'Confirmed project tool'}
+                          for name in data['commands']['executables']]}}
+            return data, profile, technical, {'scope': scope, **ref}, data['edit']['head'], documents, payload
         proposal = session.get(Proposal, body['proposal_id'])
         conversation = session.get(Conversation, proposal.conversation_id) if proposal else None
         from harness_local.core.engine.definition import text_hash
@@ -318,7 +331,9 @@ class ProfilePreparation(ProjectPreparation):
                                       'retry_step': first, 'workspace': workspace}, 'inherited_commit': pending}
             plan.pop('preview_sha256', None)
         else:
-            if self.latest(project_id, session) or body.get('retry_step') is not None:
+            latest = self.latest(project_id, session)
+            if (latest and (latest.status != 'COMPLETED' or latest.plan.get('configuration') == ref)
+                    or body.get('retry_step') is not None):
                 raise refuse('recovery')
             if captured.changed_paths or trees['base_tree'] != trees['index_tree'] or captured.base_revision != documentary_commit:
                 raise refuse('documents')
@@ -542,9 +557,17 @@ class ProfilePreparation(ProjectPreparation):
         config = self.configuration()
         state = config.read('project:' + project.id)
         ref = state['active'] if active else state['saved']
-        if state['status'] not in ('READY', 'UNCONFIGURED') or ref != receipt['configuration']:
+        if state['status'] not in ('READY', 'UNCONFIGURED') or not ref:
             raise refuse('configuration')
         data = parse(config.document(state['scope'], ref['revision']), state['scope'])
+        from harness_local.services.configuration_editing import prepared
+        from harness_local.storage.configuration import ConfigurationConflict
+        try:
+            with Session(self.runtime.engine) as session:
+                if prepared(session, state['scope'], data, reference=ref).receipt != receipt:
+                    raise refuse('configuration')
+        except ConfigurationConflict:
+            raise refuse('configuration') from None
         global_state = config.read('global')
         if global_state['status'] != 'READY' or data['global'] != {
                 k: global_state['active'][k] for k in ('revision', 'sha256')}:

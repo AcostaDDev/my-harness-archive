@@ -1263,5 +1263,6 @@
   "profile_preparation.network": "El modo de red solicitado difiere de los destinos exactos confirmados.",
   "profile_preparation.recovery": "Revisa una preparación enlazada tras confirmar el escritor detenido y el prefijo completado exacto.",
   "profile_preparation.executor": "El ejecutor de preparación no finalizó correctamente.",
-  "profile_preparation.command": "Ha fallado un comando de preparación o su evidencia JUnit."
+  "profile_preparation.command": "Ha fallado un comando de preparación o su evidencia JUnit.",
+  "configuration.invalid_edit": "El vínculo documental de la edición de configuración no es válido."
 }

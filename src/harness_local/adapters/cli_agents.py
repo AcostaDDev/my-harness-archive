@@ -45,9 +45,11 @@ EFFORTS = {"codex": ("minimal", "low", "medium", "high", "xhigh", "max", "ultra"
 GRANTS = {"codex": (), "claude": ("tools",)}
 AGENTS = ("reviewer", "executor")
 ROLES = {"executor": "executor", "planner": "reviewer", "reviewer": "reviewer", "phase": "reviewer",
-         "chat": "reviewer", "bootstrap": "reviewer", "definition": "reviewer", "planning": "reviewer"}
+         "chat": "reviewer", "bootstrap": "reviewer", "definition": "reviewer", "planning": "reviewer",
+         "configuration": "reviewer"}
 READ_TOOLS = ("Read", "Glob", "Grep")
 SHAPES = {
+    "configuration": {"text": "complete candidate TOML", "rationale": "reasoned explanation", "questions": []},
     "bootstrap": {"summary": "proposal summary", "requirements": ["proposed requirement"],
         "alternatives": ["architecture alternative and tradeoffs"], "pending_decisions": ["user decision needed"]},
     "planner": {"task_id": "requested task id", "phase_id": "requested phase id",
@@ -146,6 +148,9 @@ def skips_git_check(context, request):
     repository with the root commit. Queueing refuses a target inside Git, and the turn fails before
     launch if `.git` appears afterwards. Live checkouts, imports and the executor keep the check.
     """
+    if (request.role == 'configuration' and request.prompt_snapshot_json
+            and json.loads(request.prompt_snapshot_json).get('configuration_assistance') is True):
+        return True  # Private scratch-only assistance has no checkout or Git authority.
     if request.role not in ("chat", "definition"):
         return False
     if json.loads(request.context_json).get("root", str(context.root)) != str(context.root):

@@ -46,6 +46,9 @@ class ConfigurationSetup:
         self.source = Path(source) if source else None
         self.repository = ConfigurationRepository(SQLiteManagedRepository(engine), self.directory,
                                                    state_dir=self.state_dir)
+        self.repository.derive_projects = True
+        from harness_local.services.configuration_editing import verify_revision
+        self.repository.project_verifier = lambda session, scope, data: verify_revision(session, scope, data, self.repository)
         self.legacy = False
         self.startup_error = None
         self.loaded = None
@@ -143,7 +146,22 @@ class ConfigurationSetup:
             head = session.get(Scope, 'global')
             operations = list(session.scalars(select(Operation.id).where(Operation.status.in_(UNRESOLVED))))
             pending_id = head.pending_operation_id if head else None
-        return {**state, 'mode': mode, 'legacy': self.legacy,
+        references = []
+        pending_versions = {}
+        with Session(self.engine) as session:
+            from harness_local.storage.models import ConfigurationRevisionRow as Revision
+            revision = session.get(Revision, ('global', state['saved']['revision'])) if state['saved'] else None
+            operation = session.get(Operation, revision.operation_id) if revision else None
+            for change in operation.payload.get('changes', []) if operation else []:
+                current = session.get(Scope, change['scope'])
+                references.append({'scope': change['scope'], 'revision': change['revision'],
+                    'sha256': change['sha256'], 'expected_version': current.version})
+            pending = session.get(Operation, pending_id) if pending_id else None
+            if pending:
+                pending_versions = {ref['scope']: session.get(Scope, ref['scope']).version
+                                    for ref in pending.payload['references']}
+        return {**state, 'mode': mode, 'legacy': self.legacy, 'activation_references': references,
+                'pending_versions': pending_versions,
                 'pending_activation_id': pending_id, 'recovery_operations': operations,
                 'blockers': [] if mode == 'READY' else [self.startup_error or mode.lower()]}
 
