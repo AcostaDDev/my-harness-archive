@@ -107,6 +107,17 @@ local completada en el alcance de D151/D153 y preparación pública archivada co
   la consulta no certifica muerte de escritores ni autoriza reactivar la base. Consumo 19 Claude/4 Codex;
   consentimientos agotados, sin transferir saldos.
 
+## Mantenimiento posterior al cierre
+
+El 2026-10-26 se corrige la fila resumen de P012 en ROADMAP para reflejar su cierre ya documentado y se
+desactiva el mantenimiento automático en el helper Git de los fixtures de incorporación. Resuelve la carrera
+con `maintenance.lock` indicada por el usuario en la CI de `my-harness-archive`, conservando la comparación
+completa de `.git` y sin cambiar el producto ([D213](DECISIONS.md#d213--mantenimiento-git-desactivado-en-fixtures-de-incorporación),
+[informe](phase/2026-10-26_CORRECCION_CI_ARCHIVO.md)). El candidato público y los artefactos archivados de P012
+conservan su identidad; este mantenimiento no abre una fase ni publica el candidato.
+Verificación local: 1761 pytest y 29 subtests pasados, 2 opt-in omitidas; 8 unittest, parsers y enlaces
+documentales correctos. Regresión Trace2 roja antes del arreglo y verde después; CI remota pendiente.
+
 ## Fase activa
 
 **Sin fase activa ni sucesora definida.** P012 cerrada y archivada documentalmente el 2026-10-26

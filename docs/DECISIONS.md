@@ -224,6 +224,7 @@ tarea se leen solo las decisiones que cita; este índice sirve para buscar prece
 | [D210](#d210--p012-t005-alcance-público-y-candidato-verificados) | P012-T005: alcance público y candidato verificados | P012 |
 | [D211](#d211--p012-t006-dictamen-favorable-y-expediente-actualizado) | P012-T006: dictamen favorable y expediente actualizado | P012 |
 | [D212](#d212--cierre-documental-de-p012-y-validación-real-archivada) | Cierre documental de P012 y validación real archivada | P012 |
+| [D213](#d213--mantenimiento-git-desactivado-en-fixtures-de-incorporación) | Mantenimiento Git desactivado en fixtures de incorporación | Sin fase |
 
 ## D001 — Alcance local y arquitectura base
 
@@ -6273,3 +6274,24 @@ Estado: cerrada y archivada el 2026-10-26 por la continuación solicitada por el
   flujos, dependencias, instalaciones o configuración global; sin tag, push, CI remota o publicación.
   La apertura requiere instrucciones explícitas sobre el expediente y sus parámetros. Tras el primer push,
   repositorio público como fuente principal (D157); modo continuo v0.2.0 posterior, sin tareas (D156).
+
+## D213 — Mantenimiento Git desactivado en fixtures de incorporación
+
+Estado: aplicado el 2026-10-26 por petición de corrección y commit del usuario, sin fase nueva.
+[Informe](phase/2026-10-26_CORRECCION_CI_ARCHIVO.md). Precedentes: D105/D110/D112, D125 y D212.
+
+- El fallo de CI comunicado en `my-harness-archive` compara todo el checkout y `.git` antes/después de rechazar
+  Git sin `--no-lazy-fetch`. El único delta es la desaparición de `.git/objects/maintenance.lock`; el método
+  Git del inventario está sustituido desde su primera llamada y no llega a ejecutar un proceso.
+- El helper de `tests/product/test_project_onboarding.py` invocaba Git real para crear/commitear los fixtures
+  sin desactivar su mantenimiento automático. Trace2 reproduce de forma determinista el lanzamiento de
+  `git maintenance run --auto --quiet --detach` durante ese commit en el entorno local.
+- Las llamadas de ese helper pasan `-c gc.auto=0 -c maintenance.auto=false`, igual que el adaptador de
+  producción ya hacía. Solo afectan al proceso de Git del fixture; no se cambia configuración global ni local
+  persistente. Se mantienen las comprobaciones de bytes completas, sin ignorar locks ni añadir esperas/reintentos.
+- Una regresión observa los procesos hijos reales de Git con Trace2: falla antes de la corrección y pasa
+  después. El informe registra las comprobaciones locales y sus límites; CI remota sin ejecutar en esta tarea.
+- La tabla vigente de ROADMAP marca P012 completada el 2026-10-26 y enlaza su resumen archivado, conforme a
+  D212. No se reescriben snapshots/expedientes congelados ni se regenera el candidato público.
+- La subida del archivo a GitHub comunicada por el usuario no se confunde con la apertura independiente de
+  P012. Sin push, acciones remotas, proveedores, smokes ni ejecución del harness sobre este repositorio.

@@ -7,6 +7,12 @@ P012 cierra el 2026-10-26 tras el dictamen favorable de sus siete criterios, con
 El [plan original](archive/phase-012/NEXT_STEPS.md) conserva sus bytes y estados al terminar T006;
 T007 queda completada en el [registro de cierre](archive/phase-012/P012_CIERRE.md).
 
+Mantenimiento posterior al cierre: fila resumen de ROADMAP corregida y carrera de mantenimiento Git en
+fixtures de incorporación resuelta localmente (D213; [informe](phase/2026-10-26_CORRECCION_CI_ARCHIVO.md)).
+El usuario comunica un fallo de CI al subir este archivo a `my-harness-archive`; la comprobación remota del
+arreglo queda pendiente de su próximo push. Esa subida del archivo no acredita la apertura del candidato
+independiente de P012 ni cambia su expediente.
+
 El siguiente paso corresponde al usuario: autorizar los pasos concretos del
 [expediente de apertura P012](archive/phase-012/P012_EXPEDIENTE_APERTURA.md), precisando owner/repo,
 visibilidad e identidad pública. Candidato y paquete de T005 conservados; expediente P011 sustituido.

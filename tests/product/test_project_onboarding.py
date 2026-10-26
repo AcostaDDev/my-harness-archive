@@ -117,7 +117,9 @@ model Book {
 
 
 def git(root, *args):
-    return subprocess.run(['git', '-c', 'core.hooksPath=/dev/null', *args], cwd=root, env=GIT_ENV,
+    # Fixture commits must finish without a detached writer changing subsequent byte snapshots.
+    return subprocess.run(['git', '-c', 'core.hooksPath=/dev/null', '-c', 'gc.auto=0',
+                           '-c', 'maintenance.auto=false', *args], cwd=root, env=GIT_ENV,
                           check=True, capture_output=True).stdout.decode().strip()
 
 
@@ -138,6 +140,17 @@ def pure(files):
     entries = tuple(TreeEntry(path, '100644', len(data), data) for path, value in files.items()
                     for data in [value.encode() if isinstance(value, str) else value])
     return build_inventory(entries, head='a' * 40, tree='b' * 40)
+
+
+def test_checkout_fixture_does_not_start_automatic_git_maintenance(tmp_path, monkeypatch):
+    trace = tmp_path / 'git-trace.jsonl'
+    monkeypatch.setitem(GIT_ENV, 'GIT_TRACE2_EVENT', str(trace))
+    checkout(tmp_path / 'repo', {'README.md': '# Synthetic fixture\n'})
+    events = [json.loads(line) for line in trace.read_text().splitlines()]
+    # Check the real child processes, rather than racing a transient maintenance.lock.
+    assert any(event['event'] == 'start' and 'commit' in event['argv'] for event in events)
+    children = [event['argv'] for event in events if event['event'] == 'child_start']
+    assert not any('maintenance' in argv or 'gc' in argv for argv in children), children
 
 
 def snapshot(root):

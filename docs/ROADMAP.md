@@ -17,7 +17,7 @@ hitos H0–H6 del backlog original; la definición inicial está en [archive/pha
 | P009 | Proyecto Django desde cero y piloto con cuatro combinaciones de agentes | completada (2026-10-21) | [phase-009](archive/phase-009/SUMMARY.md) |
 | P010 | Consolidación de la primera versión local | completada (2026-10-22) | [phase-010](archive/phase-010/SUMMARY.md) |
 | P011 | Preparación para apertura pública en GitHub | completada (2026-10-24) | [phase-011](archive/phase-011/SUMMARY.md) |
-| P012 | Validación real previa a la apertura pública | planificada (2026-10-24) | — |
+| P012 | Validación real previa a la apertura pública | completada (2026-10-26) | [phase-012](archive/phase-012/SUMMARY.md) |
 
 ## P001 — Contratos y prueba de viabilidad
 
