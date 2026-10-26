@@ -394,15 +394,15 @@ pese al recibo/UI preparados; cero runs de tarea o Codex. Parada normal, puertos
 T013 completada offline (D207), conforme a «continúa.»: [entrega y continuación propuesta](phase/P012-T013_VINCULO_RECIBO.md).
 Reproducción HTTP roja, bind del recibo tras resolver CLI, 14 variantes nuevas/250 tests Python/8 unittest
 correctos y un opt-in omitido. Guardias/huellas de recetas intactas; sin nuevas llamadas o reintento real.
-Continuación T004 tras T013 autorizada/ejecutada (D208): [resultado y HITL](phase/P012-T004_CONTINUACION_T013.md).
-Wheel 70ee6883…6cc1bb instalado/verificado; preflight correcto/migrate no-op. Primera parada origin_rejected;
-reanudación por barra nativa autorizada. Única tarea d1e35d32… COMMITTED ae86967, digest del recibo exacto,
+T004 completada con evidencia acumulada (D209): [continuación/HITL/matriz](phase/P012-T004_CONTINUACION_T013.md).
+Wheel 70ee6883…6cc1bb instalado/verificado, preflight correcto/migrate no-op. Parada origin_rejected y
+reanudación nativa autorizada; única tarea d1e35d32… COMMITTED ae86967, digest del recibo exacto,
 ACCEPT sin hallazgos y tres validaciones/un JUnit passed; sin cobertura nueva de espacios interiores.
-Check c3a99262… FAILED por READY con required_action sobre prosa STATE obsoleta; sin READY/tag/cierre.
-P001 ACTIVE, servicio parado, 7 DONE/13 STOPPED/0 locks; conservación de bases/fixtures correcta.
-Nuevo 3 Claude/1 Codex, acumulado T004 6/12 y 1/3. Siguiente HITL: diff STATE por UI y un Claude adicional
-para check nuevo/cierre condicionado; máximo nuevo revisado 4/1, acumulado máximo 7/12 y 1/3, deadline
-original 12:00:10 UTC, sin consentimiento adicional todavía ni reejecución de tarea. T004 sigue parcial.
+Dos checks fallidos conservados: READY con acción requerida de prosa STATE y paráfrasis de un criterio.
+HITL autoriza edición documental UI c58712e y dos checks nuevos, uno por consentimiento; tercero
+**dd0d3be3… READY** válido. Cierre/archivo **ecbc47f**, tag **p001 del hijo sobre c58712e**, P001 CLOSED y
+P002 ACTIVE sin tareas/plan posterior. Parada 09:19:04 UTC, 11 DONE/15 STOPPED/0 locks, bases/fixtures
+intactos; nuevo 5 Claude/1 Codex, acumulado T004 8/12 y 1/3, ventana original respetada. Siguiente: T005.
 P012 tiene trece tareas; T005 depende también de T012, T013 y T003, las tres completadas.
 Consumo 2/3 Claude y 0/0 Codex, dentro de dos horas; servicios parados, 13 DONE/1 QUEUED/14 STOPPED/0 locks,
 14.921 filas previas intactas y 16.798 finales iguales en copia/restauración. T004 seguía sin autorización en ese punto;

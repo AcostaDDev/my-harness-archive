@@ -219,6 +219,7 @@ tarea se leen solo las decisiones que cita; este índice sirve para buscar prece
 | [D206](#d206--p012-t004-receta-completada-y-parada-por-preparation_required) | P012-T004: receta completada y parada por preparation_required | P012 |
 | [D207](#d207--p012-t013-vínculo-del-recibo-tras-resolución-cli) | P012-T013: vínculo del recibo tras resolución CLI | P012 |
 | [D208](#d208--p012-t004-tarea-committed-y-check-sin-ready) | P012-T004: tarea COMMITTED y check sin READY | P012 |
+| [D209](#d209--p012-t004-estado-documental-confirmado-y-cierre-real-del-hijo) | P012-T004: estado documental confirmado y cierre real del hijo | P012 |
 
 ## D001 — Alcance local y arquitectura base
 
@@ -6149,3 +6150,42 @@ Precedentes: D091/D168/D174/D199/D205–D207; informes anteriores conservados po
   documental por UI/CAS/hash/commit, un Claude adicional para check nuevo y cierre solo si READY. Máximo
   nuevo revisado 4/1, acumulado máximo 7/12 y 1/3; deadline original, sin reejecución de tarea. No se usa
   el saldo global como consentimiento. Sin cambios de producto/guardias/esquema, tags en my_harness o remotos.
+
+
+## D209 — P012-T004: estado documental confirmado y cierre real del hijo
+
+Estado: T004 completada con evidencia acumulada el 2026-10-26, tras HITL sucesivos.
+Fase: P012. [Resultado, matriz, checks y conservación](phase/P012-T004_CONTINUACION_T013.md).
+Precedentes: D091/D168/D174/D199/D205–D208; D208 y los resultados fallidos se conservan.
+
+- HITL **«Autorizar edición documental y 1 Claude adicional»**: actualizar exclusivamente prosa STATE
+  mediante el editor del producto, conservando bloque gestionado, tarea COMMITTED y check fallido. Preview
+  CAS a7396c355b6e… y diff concreto confirmados; document_edit e83c08fd… COMMITTED en
+  **c58712eed9ff1bc57bc0521ada957ab7fce73222**, solo docs/STATE.md. Archivo igual a propuesta, bloque
+  gestionado igual por bytes y hashes adoptados. Sin agentes en la edición ni otra ejecución Codex.
+- Segundo check 4357e769… FAILED: exit 0, READY con cinco criterios passed y acciones/preguntas vacías,
+  pero parafrasea el segundo criterion. La directiva existente exige copia literal y la guardia rechaza
+  correctamente. No normalizar payload, redefinir criterio o debilitar contrato. Parada 09:13:45 UTC;
+  6.757 filas T004/9 DONE/14 STOPPED/0 locks, recibo válido y HEAD limpio, sin tag/cierre.
+- HITL **«Autorizar un check más con 1 Claude»**: un nuevo check sin cambios de producto/documentos/modelo/
+  guardias/respuestas. Techo final nuevo **5 Claude/1 Codex**, acumulado T004 **8/12 y 1/3**, deadline
+  original 12:00:10 UTC. Consentimientos individuales conservados; saldo global no autoriza otros efectos.
+- Tercer check dd0d3be3…/b4189e44… **READY** válido sobre c58712e, evidencia 9b0e4f67fedf…: criterios
+  exactos/passed, sin acciones/preguntas. Payload persistido comprobado con validate_phase_result; UI lista
+  para cerrar, sin jobs pendientes o locks. Confirmación de motivo/checkbox autoriza solo el cierre previsto.
+- **P001 CLOSED**, tag ligero **p001 del hijo sobre c58712e**, commit de archivo
+  **ecbc47f1ea9142e8e141a90eaa2d963857dbd39a**. STATE/NEXT_STEPS archivados por bytes, SUMMARY/REVIEW
+  generados; cuatro archivos íntegros. docs/phase no tenía artefactos: no atribuirle un traslado adicional.
+  ROADMAP/documentos vivos renovados y **P002 ACTIVE sin tareas/runs/plan posterior**, conforme a D205.
+- Parada final **09:19:04 UTC**, conservación **09:20:23 UTC**: 11 DONE/15 STOPPED/0 locks, 36 identidades
+  propias de procesos/comandos dead, puertos cerrados y claves de las cuatro aperturas retiradas. T004 íntegra
+  en 0025: **7.460 filas**, 2.837 nuevas frente a 4.623; 4.622 originales intactas, una fila de fase
+  actualizada normalmente con definición conservada. Nueve intentos COMPLETE, una única ejecución/tarea.
+- **16.798 filas anteriores iguales por todas sus columnas**, 254 archivos/42 artefactos/tres fixtures/diffs/
+  ocho herramientas intactos; job anterior QUEUED y salvedad unknown de T003 conservados. Instalaciones T012
+  y T013 verificadas contra sus wheels, TOML/recibo/archivos protegidos iguales, hijo limpio. Sin operar
+  la base anterior o certificar sus escritores históricos.
+- T004 cumple con la evidencia D206/D208/D209: creación/receta es, tarea/flujo/validaciones y cierre real.
+  Un único JUnit existente passed; espacios interiores acreditados por inspección, sin ampliar cobertura.
+  Dos checks inválidos y tres paradas conservados, sin reparar respuestas ni reejecutar tarea. Siguiente T005;
+  P012 abierta. Sin cambios de producto/datos/flujos en my_harness, tag propio, push, publicación o configuración global.

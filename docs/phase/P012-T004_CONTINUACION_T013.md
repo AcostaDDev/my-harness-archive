@@ -1,6 +1,6 @@
 # P012-T004 — Continuación con el vínculo del recibo corregido
 
-Fecha: **2026-10-26**. Estado: **tarea COMMITTED; check fallido sin READY y servicio detenido**.
+Fecha: **2026-10-26**. Estado: **T004 completada con evidencia acumulada; P001 del hijo CLOSED y servicio detenido**.
 Base exacta: **9a9fa5d938236d6dd72d72561647c006c73e42f6**.
 Guion: [continuación T013](P012-T013_VINCULO_RECIBO.md#propuesta-de-continuación-t004-sin-autorizar);
 [primera parada T004](P012-T004_TYPESCRIPT_REAL.md) conservada por bytes.
@@ -140,10 +140,11 @@ La UI ofrece edición documental humana con preview CAS/hash, motivo y commit co
 esa operación, no una nueva ejecución Codex ni edición manual de SQLite/checkout. Después, **un Claude
 adicional** para un check nuevo y, solo si READY, cierre/tag p001/archivo del hijo y P002 ACTIVE vacía.
 Máximo nuevo revisado **4 Claude/1 Codex**, acumulado máximo T004 **7/12 y 1/3**, sin reejecución de tarea
-y con deadline original **12:00:10 UTC**. Primer fallo vuelve a parar. Consentimiento solicitado, pendiente.
+y con deadline original **12:00:10 UTC**. Primer fallo vuelve a parar. Consentimiento solicitado y
+respondido con la autorización registrada más abajo.
 
 
-## Checks de la entrega
+## Checks del registro inicial de esta continuación
 
 Sin cambios de producto, frontend, API o datos en my_harness. No se repiten suites completas, Node/tipos,
 Alembic o pruebas del hijo fuera de las validaciones del propio run/check. El build incluye el build frontend;
@@ -154,3 +155,99 @@ los cinco Markdown de esta entrega; presupuestos STATE/base/NEXT_STEPS **22.284/
 **40.790/49.152 bytes**. Cuerpos D001–D207 conservados. Diff sin errores de whitespace; fuentes T013,
 informes/propuestas anteriores y baseline pública intactos. Evidencia saneada; sin push, publicación,
 tag en my_harness, cambios globales o operación sobre la base anterior.
+
+## HITL documental ejecutado y segunda parada
+
+HITL recibido: **«Autorizar edición documental y 1 Claude adicional»**. Techo nuevo 4 Claude/1 Codex,
+acumulado máximo 7/12 y 1/3, deadline original conservado. Servicio reabierto **09:09:06 UTC**, misma
+instalación/base/configuración. Login privado y navegación por enlaces Enter, sin cambiar guardias.
+
+Editor de STATE muestra la prosa editable y el bloque gestionado separado/protegido. Se aplica únicamente
+el prefijo de la propuesta; preview **a7396c355b6e…**, base ae86967, STATE **c761b64c… → 0b979f0f…**.
+Diff exacto revisado, motivo y checkbox confirmados por UI. Operación/run **e83c08fd… COMMITTED**,
+commit documental **c58712eed9ff1bc57bc0521ada957ab7fce73222**, hashes adoptados por la fase. La lectura
+posterior compara archivo completo con propuesta y bloque gestionado original por bytes: iguales.
+Única ruta del commit docs/STATE.md, checkout limpio; sin llamada de agente en esta edición.
+
+Check nuevo **4357e769-fb11-40c1-94e2-312e8e1c7774**, una llamada Claude sonnet/low, termina exit 0 con
+READY, cinco resultados passed, acciones/preguntas vacías. Pero el segundo criterion se parafrasea:
+
+- Congelado: «Firma, trim, defecto y sufijo conservados; actualización del h1 conservada.»
+- Devuelto: «Firma, trim, defecto, sufijo y actualización del h1 conservados.»
+
+La directiva language-directive-1 ya exige copiar criterion exactamente; no falta en el prompt. La guardia
+validate_phase_result rechaza correctamente la discrepancia: operación **FAILED**, sin READY vigente.
+No se corrige/normaliza el payload ni se cambia el contrato o la definición para admitirlo. No acredita un
+defecto funcional nuevo del hijo. Segundo resultado y primer check fallido conservados.
+
+Parada normal **09:13:45 UTC**, servicio/grupo propios detenidos, clave retirada y puertos cerrados.
+Conservación **09:15:13 UTC**: **6.757 filas T004**, 745 nuevas desde el primer check; de las 6.012
+anteriores solo cambia la fila de fase por adopción/versión/fechas. **9 DONE/14 STOPPED/0 locks**,
+ocho intentos COMPLETE, un solo run de tarea COMMITTED, recibo válido y HEAD c58712e limpio, sin tag p001.
+**16.798 filas anteriores/254 archivos/42 artefactos/tres fixtures/diffs/ocho herramientas intactos**.
+Consumo nuevo **4 Claude/1 Codex**, acumulado T004 **7/12 y 1/3**. P001 sigue ACTIVE.
+
+## Tercer check autorizado sin cambios
+
+Nuevo HITL: **«Autorizar un check más con 1 Claude»**. Solo un check adicional, sin cambiar producto,
+documentos, modelo, guardias o respuestas anteriores; cierre únicamente con READY válido. Máximo nuevo
+**5 Claude/1 Codex**, acumulado máximo T004 **8/12 y 1/3**, mismo deadline **12:00:10 UTC**.
+Servicio reabierto **09:15:44 UTC** tras verificar puertos/plazo, recibo válido y grupos propios dead.
+Sin nueva edición, receta, build o Codex; HEAD c58712e y ocho intentos previos contrastados antes del envío.
+
+## READY válido, cierre y conservación final
+
+Tercer check **dd0d3be3-606a-4494-a3d7-712836733e61**, operación **b4189e44… READY**, sobre
+**c58712eed9ff1bc57bc0521ada957ab7fce73222**, vínculo **9b0e4f67fedf…**. Cinco criterios literales
+correctos/passed, sin acciones o preguntas; validate_phase_result comprueba también el payload persistido.
+UI «Lista para cerrar», checkout limpio, diez jobs DONE y cero locks antes de confirmar.
+
+Confirmación UI del motivo/checkbox sobre ese READY: cierre **CLOSED**, commit de archivo
+**ecbc47f1ea9142e8e141a90eaa2d963857dbd39a**, mensaje inglés `harness: archive P001`.
+**Tag ligero p001** exclusivamente del hijo sobre **c58712e**, el HEAD evaluado; no sobre el commit posterior
+de archivo. Se archivan **cuatro archivos**: STATE y NEXT_STEPS iguales por bytes a los originales previos
+al cierre, SUMMARY/REVIEW generados. No existían artefactos en docs/phase/: esta ejecución no acredita un
+movimiento de contenido adicional de esa carpeta. ROADMAP y documentos vivos renovados; checkout limpio,
+recibo intacto y válido, sin cambio funcional posterior a la tarea.
+
+UI y SQLite acreditan **P001 CLOSED** y **P002 ACTIVE con cero tareas/runs**, definición número 1, sin tag.
+No se pulsa planificación, lote, tarea o check de P002. Objetivo/criterio conservan la procedencia HITL D205.
+
+Parada normal final **09:19:04 UTC**: servicio/grupo propios detenidos, puerto 8024 y 8025 cerrados,
+claves de las cuatro aperturas retiradas y shutdown completo. Conservación **09:20:23 UTC**:
+
+- Base T004 íntegra/FK correctas en **0025**, **7.460 filas**, **2.837 nuevas** frente a 4.623 iniciales.
+  **4.622 filas originales intactas** y una fila de fase actualizada normalmente; definición original intacta.
+  Las 6.757 filas de la segunda parada se conservan, salvo la evolución normal de esa misma fila de fase.
+- **11 jobs DONE/15 procesos STOPPED/0 locks**, nueve intentos COMPLETE: tres de definición anteriores,
+  plan/ejecución/revisión y tres checks. **36 identidades propias de procesos/comandos dead**.
+- **16.798 filas de la base anterior iguales por todas sus columnas**, job de chat QUEUED intacto;
+  **254 archivos/42 artefactos/tres fixtures/diffs/ocho herramientas** iguales. Incertidumbre histórica de
+  T003 conservada; no se opera su base ni se certifica muerte de esos escritores.
+- venv-t012 y venv-t013: sus **259 archivos del paquete** más metadatos/licencias coinciden con sus respectivos
+  wheels. TOML, recibo y archivos protegidos iguales; p001 y los commits reales conservados.
+- Consumo final nuevo **5 Claude/1 Codex**, dentro de los consentimientos sucesivos; acumulado T004
+  **8/12 Claude y 1/3 Codex**, sin correcciones/reintentos de ejecución. Los dos checks rechazados se
+  conservan, seguidos de un check nuevo autorizado; no se reparan sus resultados ni se cambian guardias/modelo.
+
+| Criterio T004 | Dictamen y procedencia |
+|---|---|
+| Creación/definición UI en es y receta TypeScript v2/es offline | Acreditado en D206; no repetido |
+| Tarea COMMITTED y paridad de flujo | Acreditado en ae86967, esta continuación; tres comandos/un JUnit passed |
+| READY y cierre/tag/archivo, P002 ACTIVE vacía | Acreditado tras HITL: READY dd0d3be3, tag c58712e y archivo ecbc47f |
+| Consumo, parada y conservación | Acreditado en ambos informes; nuevo 5/1 y acumulado 8/1, dentro de ventana |
+
+**T004 completada con evidencia acumulada**, conservando las tres paradas y ambos checks fallidos.
+P012 sigue abierta; siguiente tarea **T005**, actualización del alcance público/candidato con esta evidencia.
+No se inicia esa tarea en esta entrega ni se extiende el consentimiento a proveedores, reejecuciones,
+publicación, push, tags de my_harness o fases posteriores del hijo.
+
+
+## Checks finales de esta entrega
+
+Parsers correctos: **12 fases, 13 tareas y 209 decisiones**; **672 enlaces/anclas relativos**
+en los cinco Markdown. Presupuestos STATE/base/NEXT_STEPS **22.339/24.576**,
+**9.171/12.288** y **40.516/49.152 bytes**. D001–D208 conservadas por cuerpos;
+fuentes de producto/T013, informes congelados y baseline pública intactos. Diff revisado y sin errores de
+whitespace. No suites completas nuevas: esta entrega cambia documentación y opera el wheel ya corregido;
+el verificador de paquete y las validaciones reales aportan las comprobaciones pertinentes.

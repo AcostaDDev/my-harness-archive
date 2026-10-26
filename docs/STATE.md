@@ -209,22 +209,23 @@ Regresión HTTP reproduce el 409; resolve_project vuelve a ligar el recibo compa
 admit/verify_receipt o huellas de receta. 14 variantes nuevas, **250 tests Python/8 unittest correctos**, un
 opt-in omitido; tareas/checks/cierres conservan rechazo por recibo ausente, config incompatible y deriva.
 Sin wheel/instalación operativos o nuevas llamadas; parada T004 e hijo en bcf59d8 intactos.
-**Continuación T004 autorizada y ejecutada tras T013** (D208):
-[resultado, dos paradas y propuesta documental](phase/P012-T004_CONTINUACION_T013.md). Base **9a9fa5d**,
-wheel **70ee6883…6cc1bb** construido/verificado/instalado en dist-t013/venv-t013; 259 archivos correctos,
-preflight 2.1.310/0.164.0 y migrate no-op/0025, SQLite intacta. Primera parada por origin_rejected antes de
-encolar; reanudación HITL **«Autorizar reanudación por barra nativa»**, sin cambiar guardias o repetir receta.
-Única tarea **d1e35d32… COMMITTED en ae86967**: digest del recibo exacto congelado, plan Claude/ejecución
-Codex/revisión ACCEPT sin hallazgos, tres validaciones y un caso JUnit passed. Diff solo main.ts/flujo;
-la suite existente no cubre espacios interiores. Check **c3a99262… FAILED**: Claude devuelve READY/cinco
-criterios passed con una required_action por prosa STATE obsoleta; el motor rechaza correctamente esa
-combinación. Sin READY/tag/cierre, P001 ACTIVE. Parada 09:00:45 UTC, 7 DONE/13 STOPPED/0 locks,
-puertos cerrados/clave retirada. **16.798 filas previas/254 archivos/42 artefactos/tres fixtures intactos**;
-6.012 filas T004, recibo/HEAD válidos. Nuevo **3 Claude/1 Codex**, acumulado **6/12 y 1/3**.
-**Siguiente HITL pendiente:** [diff documental concreto](phase/P012-T004_PROPUESTA_ACTUALIZAR_STATE.diff)
-para la prosa de STATE por edición confirmada UI, un check nuevo con **1 Claude adicional** y cierre solo
-con READY. Máximo nuevo revisado 4/1, acumulado máximo 7/12 y 1/3; deadline original **12:00:10 UTC**,
-sin reejecución de tarea o nuevas llamadas mientras no se autorice. Informes anteriores congelados conservados.
+**T004 completada con evidencia acumulada** (D208/D209):
+[resultados, HITL, paradas y matriz](phase/P012-T004_CONTINUACION_T013.md). Base **9a9fa5d**, wheel
+**70ee6883…6cc1bb** construido/verificado/instalado en dist-t013/venv-t013; 259 archivos correctos,
+preflight 2.1.310/0.164.0 y migrate no-op/0025. Primera parada origin_rejected, reanudación por barra
+nativa autorizada. Única tarea **d1e35d32… COMMITTED ae86967**: digest exacto del recibo congelado,
+plan Claude/ejecución gpt-6-luna/low/revisión ACCEPT sin hallazgos, tres validaciones/un JUnit passed;
+regex U+0020 y flujo español inspeccionados, sin cobertura nueva de espacios interiores en la suite.
+Primer check FAILED por READY con required_action de prosa STATE obsoleta; HITL autoriza edición
+confirmada UI **c58712e** y un Claude adicional. Segundo check FAILED por parafrasear un criterio;
+HITL autoriza un check más sin cambios. Tercero **dd0d3be3… READY** válido sobre c58712e; cierre
+**ecbc47f**, tag ligero **p001 del hijo sobre c58712e**, cuatro archivos íntegros y **P001 CLOSED/P002
+ACTIVE con cero tareas/runs**, sin planificación posterior. Ambos checks fallidos e informes previos
+conservados. Parada final **09:19:04 UTC**, 11 DONE/15 STOPPED/0 locks, 36 identidades propias dead,
+puertos cerrados/claves retiradas. **16.798 filas previas/254 archivos/42 artefactos/tres fixtures intactos**;
+7.460 filas T004 (2.837 nuevas, una fila de fase actualizada normalmente), recibo válido/checkout limpio.
+Nuevo **5 Claude/1 Codex** con consentimientos sucesivos; acumulado T004 **8/12 y 1/3**, sin reejecutar
+la tarea ni reponer tiempo. **Siguiente: T005**, alcance público/candidato; P012 sigue abierta.
 T002 finalizada, sin reparación/revalidación de sus dos fallos. Conservar todos los fixtures, diffs, historiales,
-configuraciones y distribuciones. Sin nueva fase del Django de P009, tags, push o publicación. P012 sigue
+configuraciones y distribuciones. Sin nueva fase del Django de P009, tags en my_harness, push o publicación. P012 sigue
 abierta; baseline pública/candidato pendientes de T005.
