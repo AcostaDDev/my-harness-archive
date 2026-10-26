@@ -10,8 +10,8 @@ Convenciones: `PK` clave primaria, `FK` clave ajena declarada, `UK` unicidad de 
 P013-T004 implementa el [contrato de configuración versionada](phase/P013-T001_CONTRATO.md#4-archivos-formatos-y-autoridad)
 y su [flujo](flows/configuration-setup.md) en `0026_configuration`: **54 tablas** de producto, más `alembic_version`.
 Tres tablas aditivas, sin modificar columnas/datos previos; referencias de contenido en archivos TOML privados.
-API/runtime global entregados en T005, propuestas de alta en T007; preparación/activación y backup nuevo
-siguen pendientes T008–T011.
+API/runtime global entregados en T005, propuestas de alta en T007 y preparación genérica en T008;
+alta/activación integradas y backup nuevo siguen pendientes T009–T011.
 
 ## Altas documentales y propuestas de perfil (P013-T007)
 
@@ -987,3 +987,24 @@ rechaza. Desde `0025`, `managed_jobs.language_context` sella `language-context-1
 sin fila no se admite trabajo nuevo. `managed_attempts.language_context` copia el del job al iniciar cada intento
 (null antes de `0025`). Downgrade: rechazado si hay alguna fila (una confirmación explícita no se representa antes);
 sin filas elimina la tabla y la columna.
+
+## Preparación genérica (P013-T008)
+
+[D225](DECISIONS.md#d225--p013-t008-preparación-genérica-confirmada-y-recibo-propio),
+[entrega](phase/P013-T008_PREPARACION.md). Sin migración/modelos nuevos: `0027_profile_proposals`, 54 tablas.
+`planning_proposals.content` de kind `profile` puede incluir `candidate.preparation_plan`; propuestas antiguas
+sin ese bloque conservan sus bytes y lectura. El commit documental futuro de T009 sella en su preview
+`profile_proposal_sha256`; preparación exige ese hash y resultado/documentos/P001 de una operación COMPLETED.
+
+`project_preparation_operations.plan.contract` discrimina `project-profile-preparation-1` de las recetas;
+`recipe` es null en el genérico. Plan JSON contiene referencia de configuración, propuesta/contexto, identidad,
+HEAD/árbol/documentos, herramientas, alcance/red/dependencias/scripts, pasos/argv/entorno/límites, selección
+congelada del ejecutor y plan de commit. Receipt JSON sella operación/plan/configuración, huella técnica,
+resultados/JUnit, herramientas, conjunto protegido, entorno estable e idioma/HEAD/commit. Estados, CAS, claves,
+reserva única, leases, intención de commit y sucesores `previous_id` reutilizan las restricciones existentes.
+
+`project_preparation_steps` incorpora los kinds genéricos `directories` y `executor`, además de `command` y
+`commit`. `managed_processes.id` es el id de paso también para la CLI: solo `preparation_id`, sin run/job/attempt;
+intent antes de spawn y grupo antes de GO, captura y estado STOPPED/UNCERTAIN. Eventos del ejecutor se añaden a
+`project_preparation_events` con la misma versión/actor. Sin alterar los eventos/capturas de recetas anteriores.
+Backup con configuración sigue bloqueado hasta T011; no se afirma recuperación operativa de una copia D040.

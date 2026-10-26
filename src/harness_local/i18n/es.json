@@ -1254,5 +1254,14 @@
   "profile_proposal.validation": "El perfil requiere comandos significativos de pruebas, construcción o comprobación; ayuda, versión y operaciones vacías no bastan.",
   "profile_proposal.stale": "La propuesta de perfil o su base han cambiado. Revisa los documentos, HEAD, preguntas y conversación actuales antes de confirmar.",
   "profile_proposal.questions": "Resuelve las preguntas bloqueantes y los asuntos pendientes antes de adoptar el perfil.",
-  "profile_proposal.key_reused": "Esta clave idempotente pertenece a otra confirmación de perfil."
+  "profile_proposal.key_reused": "Esta clave idempotente pertenece a otra confirmación de perfil.",
+  "profile_preparation.invalid": "Plan de preparación genérica inválido.",
+  "profile_preparation.scope": "La preparación excede o no puede garantizar el ámbito de escritura confirmado.",
+  "profile_preparation.configuration": "La preparación requiere la configuración de proyecto guardada exacta y una global activa compatible.",
+  "profile_preparation.stale": "Han cambiado el contexto, configuración, herramientas o contenido de preparación.",
+  "profile_preparation.documents": "La preparación requiere el commit documental completado ligado a este perfil y su fase adoptada.",
+  "profile_preparation.network": "El modo de red solicitado difiere de los destinos exactos confirmados.",
+  "profile_preparation.recovery": "Revisa una preparación enlazada tras confirmar el escritor detenido y el prefijo completado exacto.",
+  "profile_preparation.executor": "El ejecutor de preparación no finalizó correctamente.",
+  "profile_preparation.command": "Ha fallado un comando de preparación o su evidencia JUnit."
 }

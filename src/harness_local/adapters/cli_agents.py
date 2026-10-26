@@ -262,6 +262,7 @@ class CLIProcessAdapter:
         self.agents = dict(agents)
         self.artifact_root = Path(artifact_root).absolute()
         self.journal = None
+        self.preparation_journal = None
         self.availability = None
         self.active = {}
         self.lock = Lock()
@@ -317,6 +318,13 @@ class CLIProcessAdapter:
             item[1].set()
             # Invocation loop owns signals/reaping to avoid concurrent PID races.
             return CancellationResult(True, "pending")
+
+    def bind_preparation(self, journal, versions):
+        """Separate D218 lane; the confirmed plan owns CLI identity instead of a managed run."""
+        if self.journal is not None or self.frozen_versions() != versions:
+            raise JournalError(tr('agents.cli_configuration_differs_frozen'))
+        self.binding_versions = versions
+        self.journal = self.preparation_journal = journal
 
     def close(self):
         with self.lock:
@@ -444,8 +452,9 @@ class CLIProcessAdapter:
                     os.set_blocking(pipe.fileno(), False)
                     selector.register(pipe, selectors.EVENT_READ, name)
                 while selector.get_map() or process.poll() is None:
-                    if status_override is None and (cancelled.is_set() or time.monotonic() >= deadline):
-                        status_override = "cancelled" if cancelled.is_set() else "timeout"
+                    preparation_cancelled = self.preparation_journal is not None and self.preparation_journal.cancel_requested()
+                    if status_override is None and (cancelled.is_set() or preparation_cancelled or time.monotonic() >= deadline):
+                        status_override = "cancelled" if cancelled.is_set() or preparation_cancelled else "timeout"
                         stop_group(process)
                         # Bounded drain after cancellation, even if escaped child holds a pipe.
                         drain_deadline = time.monotonic() + 0.3

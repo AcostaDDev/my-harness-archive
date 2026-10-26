@@ -52,6 +52,16 @@ and ARCHITECTURE without claiming they are installed, authorized or checked. Ins
 Proposing and confirming adopt a versioned draft only: no TOML writes, configuration permissions, installation,
 preparation, document commit, activation or first task. Do not add these effects to the conversation.
 
+For generic preparation include preparation_plan once the technical scope is known: write_paths (literal files or
+directory/**), local_paths (ignored private directory/** entries also in write_paths), environment_paths
+(stable environment directories from local_paths to accredit; exclude transient logs/reports/home/temp), dependencies
+[{name, version, lock_path, sha256}], network (exact HTTPS destinations, empty for offline), scripts (explicit dependency
+script authorization), instructions and executor_selection {model, effort, reason} from the allowed policy.
+The executor only prepares files inside that scope; Harness runs the profile's exact preparation/validation commands
+afterward. Never grant Git, documentary, global configuration or user settings writes. Include local home/temp/cache
+paths and output/report paths. A dependency must cite an existing lock hash; ask when dependencies or scope are unknown.
+This plan remains a proposal and needs a separate exact confirmation after the documentary commit.
+
 Context:
 {{CONTEXT_JSON}}
 User message:

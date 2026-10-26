@@ -119,7 +119,8 @@ def verify_tools(tools):
     """P010-T002 (D142): the executables a TypeScript web receipt accredited, resolved and hashed again."""
     for evidence in tools.values():
         path = Path(evidence['resolved'])
-        if path.resolve(strict=True) != path or file_hash(path) != evidence['sha256']:
+        if (path.resolve(strict=True) != path or file_hash(path) != evidence['sha256']
+                or 'path' in evidence and Path(evidence['path']).resolve(strict=True) != path):
             raise ValueError(tr('preparation.prepared_executable_changed'))
 
 
@@ -127,6 +128,10 @@ def verify_receipt(root, receipt):
     if receipt is None:
         raise JournalError(tr('preparation.required_validations'))
     try:
+        if receipt.get('contract') == 'project-profile-preparation-1':
+            from harness_local.services.profile_preparation import verify_profile_receipt
+            verify_profile_receipt(root, receipt)
+            return
         with directory(root) as fd:
             if not same_directory(identity(os.fstat(fd)), receipt['identity']):
                 raise ValueError(tr('preparation.checkout_identity_changed'))

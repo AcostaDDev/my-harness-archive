@@ -1174,6 +1174,7 @@ def managed_router(runtime: ManagedRuntime):
 
     from harness_local.api.schemas import (
         PreparationChangeInput, PreparationConfirmInput, PreparationControlInput,
+        ProfilePreparationChangeInput, ProfilePreparationConfirmInput,
         PreparationRead, PreparationPlanRead, PreparationOperationRead,
     )
 
@@ -1184,12 +1185,12 @@ def managed_router(runtime: ManagedRuntime):
 
     @router.post('/projects/{project_id}/preparation/preview', response_model=PreparationPlanRead,
                  operation_id='managed_preparation_preview')
-    def preparation_preview(project_id: str, body: PreparationChangeInput):
+    def preparation_preview(project_id: str, body: PreparationChangeInput | ProfilePreparationChangeInput):
         return registry(runtime.preparation.preview, project_id, body.model_dump(exclude_none=True))
 
     @router.post('/projects/{project_id}/preparation/confirm', response_model=PreparationOperationRead,
                  operation_id='managed_preparation_confirm')
-    def preparation_confirm(project_id: str, body: PreparationConfirmInput, idempotency_key: IdempotencyKey):
+    def preparation_confirm(project_id: str, body: PreparationConfirmInput | ProfilePreparationConfirmInput, idempotency_key: IdempotencyKey):
         return registry(runtime.preparation.confirm, project_id, body.model_dump(exclude_none=True), idempotency_key)
 
     @router.get('/preparations/{operation_id}', response_model=PreparationOperationRead,

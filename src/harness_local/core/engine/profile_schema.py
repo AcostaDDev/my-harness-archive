@@ -16,7 +16,13 @@ def profile_schema():
                        'formatter_argv': TEXTS, 'formatter_paths': TEXTS},
                       ['preparation', 'validations', 'allowed_command_prefixes', 'protected_paths',
                        'sensitive_paths', 'data_model_paths', 'executor_instructions'])
-    return {**_object({'name': 'string', 'profile': profile, 'rationale': 'string',
+    preparation = _object({'write_paths': TEXTS, 'local_paths': TEXTS, 'environment_paths': TEXTS,
+        'network': TEXTS, 'scripts': 'boolean',
+        'instructions': 'string',
+        'executor_selection': _object({'model': 'string', 'effort': 'string', 'reason': 'string'}),
+        'dependencies': {'type': 'array', 'items': _object({
+            'name': 'string', 'version': 'string', 'lock_path': 'string', 'sha256': 'string'})}})
+    return {**_object({'name': 'string', 'profile': profile, 'rationale': 'string', 'preparation_plan': preparation,
              'tools': {'type': 'array', 'minItems': 1, 'maxItems': 32,
                        'items': _object({'name': 'string', 'requirement': 'string'})},
              'evidence': {'type': 'array', 'maxItems': 64, 'items': _object({
@@ -24,5 +30,6 @@ def profile_schema():
                  'index': {'type': 'integer', 'minimum': 0},
                  'purpose': {'type': 'string', 'enum': ['test', 'build', 'check', 'prepare', 'format', 'execute']},
                  'sources': {'type': 'array', 'minItems': 1, 'maxItems': 16,
-                             'items': _object({'path': 'string', 'sha256': 'string'})}, 'reason': 'string'})}}),
+                             'items': _object({'path': 'string', 'sha256': 'string'})}, 'reason': 'string'})}},
+            ['name', 'profile', 'rationale', 'tools', 'evidence']),
             'type': ['object', 'null']}

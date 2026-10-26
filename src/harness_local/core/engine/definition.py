@@ -255,7 +255,7 @@ def planning_turn(context, history, snapshot: dict, agents, observe, journal, ca
                                                     definition_layout(context))
                 if profile_validator is None:
                     raise ContractError(tr('profile_proposal.invalid'))
-                result['profile'] = profile_validator(data['profile'], snapshot['context'], result['drafts'])
+                result['profile'] = profile_validator(data['profile'], snapshot['context'], result['drafts'], context=context)
             else:
                 result = validate_definition_result(data, definition_layout(context))
         else:

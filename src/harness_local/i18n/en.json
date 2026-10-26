@@ -1254,5 +1254,14 @@
   "profile_proposal.validation": "The profile needs meaningful test, build or check commands; help, version and no-ops do not qualify.",
   "profile_proposal.stale": "The profile proposal or its base changed. Review the current documents, HEAD, questions and conversation before confirming.",
   "profile_proposal.questions": "Resolve the blocking questions and pending items before adopting the profile.",
-  "profile_proposal.key_reused": "This idempotency key belongs to a different profile confirmation."
+  "profile_proposal.key_reused": "This idempotency key belongs to a different profile confirmation.",
+  "profile_preparation.invalid": "Invalid generic preparation plan.",
+  "profile_preparation.scope": "Preparation exceeded or cannot guarantee the confirmed write scope.",
+  "profile_preparation.configuration": "Preparation requires the exact saved project configuration and compatible active global configuration.",
+  "profile_preparation.stale": "Preparation context, configuration, tools or content changed.",
+  "profile_preparation.documents": "Preparation requires the completed documentary commit bound to this profile and its adopted phase.",
+  "profile_preparation.network": "The requested network mode differs from the exact confirmed destinations.",
+  "profile_preparation.recovery": "Review a linked preparation after confirming the writer stopped and the exact completed prefix.",
+  "profile_preparation.executor": "The preparation executor did not complete successfully.",
+  "profile_preparation.command": "A preparation command or its JUnit evidence failed."
 }

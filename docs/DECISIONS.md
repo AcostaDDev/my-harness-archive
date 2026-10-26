@@ -236,6 +236,7 @@ tarea se leen solo las decisiones que cita; este índice sirve para buscar prece
 | [D222](#d222--p013-t005-asistente-api-y-arranque-con-autoridad-global-versionada) | P013-T005: asistente API y arranque con autoridad global versionada | P013 |
 | [D223](#d223--p013-t006-asistente-y-editor-global-con-confirmaciones-exactas) | P013-T006: asistente y editor global con confirmaciones exactas | P013 |
 | [D224](#d224--p013-t007-contexto-documental-sin-stack-y-propuesta-de-perfil) | P013-T007: contexto documental sin stack y propuesta de perfil | P013 |
+| [D225](#d225--p013-t008-preparación-genérica-confirmada-y-recibo-propio) | P013-T008: preparación genérica confirmada y recibo propio | P013 |
 
 ## D001 — Alcance local y arquitectura base
 
@@ -6620,3 +6621,39 @@ Concreta D218 con las primitivas D221 y autoridad global D222; preparación T008
 - API/OpenAPI/tipos, diagnósticos en/es, diagrama y flujos en paridad. Sin proveedores reales, servicios,
   operación sobre este checkout, red, configuración global del equipo, candidatos/snapshots anteriores ni
   acciones remotas. No se requiere HITL adicional: detalles de representación concretan D218 dentro de T007.
+
+## D225 — P013-T008: preparación genérica confirmada y recibo propio
+
+Estado: implementada y verificada con ejecutores/herramientas falsos el 2026-10-26. Fase: P013.
+Concreta D218/D221/D224; integración documental/alta/activación/UI pendiente T009.
+[Entrega y checks](phase/P013-T008_PREPARACION.md), [flujo](flows/configuration-setup.md#preparación-genérica-entregada-en-t008)
+y [datos](DDBB-DIAGRAM.md#preparación-genérica-p013-t008).
+
+- `preparation_plan` opcional en el candidato del revisor: archivos/prefijos concretos, área local ignorada,
+  entorno estable separado de informes/home/temp, dependencias con locks/hashes, destinos HTTPS/scripts,
+  instrucciones y modelo/esfuerzo/motivo. Política de selección visible en el contexto congelado; candidatos
+  anteriores sin ese bloque se siguen leyendo/adoptando y necesitan un plan nuevo antes de preparar.
+- Preview genérica exige propuesta ACCEPTED, configuración guardada VALIDATED exacta/global activa compatible,
+  commit documental completado que selle `profile_proposal_sha256`, documentos finales y P001 adoptada.
+  Primera preparación exige HEAD documental/índice limpio; ninguna petición sustituye esa evidencia por un
+  booleano. T009 implementará el handoff real de alta/guardado; la prueba T008 lo siembra expresamente.
+- `project-profile-preparation-1` usa las tablas/locks/journal/leases de D119 con discriminador; no cambia
+  recetas, formatos/hashes anteriores ni crea runs/attempts ficticios. API de preparación admite DTO genérico
+  estricto separado, confirmación literal/hash/motivo y replay por clave. OpenAPI/tipos en paridad.
+- Ejecutor de la pareja activa congelada prepara archivos del ámbito confirmado; harness ejecuta comandos
+  exactos del perfil, sin shell y con entorno/límites explícitos. CLI/nativos registran identidad/grupo antes
+  de GO; cancelación/timeout detienen solo el grupo propio. HOME/TMPDIR/cachés nativos dentro del área local
+  confirmada; sin escritura documental/Git/configuración global concedida. Contención nativa cooperativa
+  vigente: destinos/red/scripts declarados y argv exacto no son aislamiento del sistema operativo.
+- Guardias antes/después por bytes/identidad, configuración/herramientas/enlaces/HEAD/índice/documentos;
+  JUnit fresco y seguro, con casos correctos. Fallo/interrupción no acredita preparación. Recuperación por
+  confirmación nueva enlazada, escritor detenido y prefijo acreditado exacto; efectos parciales no se adoptan
+  ni se limpian/reenvían automáticamente. Commit técnico CAS conciliable; sin cambio versionado no se crea
+  commit vacío. Cambios de modelos no eluden la paridad documental.
+- Recibo liga plan/operación/configuración/perfil/comandos, herramientas por ruta resuelta/hash, entorno estable,
+  archivos protegidos (con conjunto completo), HEAD/commit, idioma y resultados/JUnit. Código ordinario y logs
+  transitorios no invalidan por sí solos esa evidencia; cambiar entorno/protegidos/configuración sí bloquea.
+  Verificador de binding del servicio disponible para T009; emitir recibo no activa ni habilita tareas.
+- Sin migración ni cambio de modelos; representación JSON y flujo documentados. Pruebas sintéticas y offline;
+  sin proveedores/descargas, servicio instalado, QA visual, operación de este checkout, publicación o cambios
+  globales del equipo. Suites y límites exactos en la entrega; commit local solicitado en inglés.

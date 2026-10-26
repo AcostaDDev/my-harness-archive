@@ -229,7 +229,9 @@
   "Preparation process requires its started step": "invariant",
   "Process identity cannot change": "invariant",
   "Unknown preparation process": "invariant",
-  "Unknown preparation process event": "invariant"
+  "Unknown preparation process event": "invariant",
+  "Exact preparation executor intent required once": "invariant",
+  "Unknown preparation executor process": "invariant"
  },
  "storage/project_import.py": {
   "Import already settled": "invariant",

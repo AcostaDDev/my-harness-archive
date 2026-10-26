@@ -5614,7 +5614,7 @@ export interface components {
             /** Contract */
             contract: string;
             /** Recipe */
-            recipe: string;
+            recipe: string | null;
             /** Project Id */
             project_id: string;
             /** Root */
@@ -5671,6 +5671,46 @@ export interface components {
         /** ProblemResponse */
         ProblemResponse: {
             detail: components["schemas"]["ProblemRead"];
+        };
+        /** ProfilePreparationChangeInput */
+        ProfilePreparationChangeInput: {
+            /** Expected Version */
+            expected_version: number;
+            /**
+             * Mode
+             * @enum {string}
+             */
+            mode: "offline" | "network";
+            /** Previous Id */
+            previous_id?: string | null;
+            /** Retry Step */
+            retry_step?: number | null;
+            /**
+             * Contract
+             * @constant
+             */
+            contract: "project-profile-preparation-1";
+            /** Configuration Revision */
+            configuration_revision: number;
+            /** Configuration Sha256 */
+            configuration_sha256: string;
+            /** Proposal Id */
+            proposal_id: string;
+            /** Proposal Sha256 */
+            proposal_sha256: string;
+        };
+        /** ProfilePreparationConfirmInput */
+        ProfilePreparationConfirmInput: {
+            change: components["schemas"]["ProfilePreparationChangeInput"];
+            /** Preview Sha256 */
+            preview_sha256: string;
+            /**
+             * Confirmed
+             * @constant
+             */
+            confirmed: true;
+            /** Reason */
+            reason: string;
         };
         /** ProfileProposalAdoptedRead */
         ProfileProposalAdoptedRead: {
@@ -13436,7 +13476,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["PreparationChangeInput"];
+                "application/json": components["schemas"]["PreparationChangeInput"] | components["schemas"]["ProfilePreparationChangeInput"];
             };
         };
         responses: {
@@ -13503,7 +13543,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["PreparationConfirmInput"];
+                "application/json": components["schemas"]["PreparationConfirmInput"] | components["schemas"]["ProfilePreparationConfirmInput"];
             };
         };
         responses: {

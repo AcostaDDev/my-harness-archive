@@ -238,7 +238,11 @@ def test_legacy_context_and_history_shapes_without_reports_remain_compatible(con
                            SyntheticWorkspace(context, ('app/main.txt',)))
     history = engine.start(context, TASK_ID, PHASE_ID, PLAN)
     snapshot = dump_history(history)
-    assert json.loads(snapshot)['format'] == 4 and 'command_id' not in snapshot and 'reports' not in snapshot
+    serialized = json.loads(snapshot)
+    assert serialized['format'] == 4
+    # Prompt text is opaque: it may discuss reports without introducing JUnit fields into legacy entries.
+    assert all('command_id' not in entry and 'reports' not in entry
+               for cycle in serialized['history']['cycles'] for entry in cycle['validation']['entries'])
     assert load_history(snapshot) == history and dump_history(load_history(snapshot)) == snapshot
 
 

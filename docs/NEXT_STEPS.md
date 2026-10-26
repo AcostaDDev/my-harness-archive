@@ -1,7 +1,7 @@
 # P013 — Instalación guiada y configuración desde la UI
 
-**Estado:** fase activa; T001 diseñada y T002–T007 implementadas el 2026-10-26, ocho tareas pendientes.
-**Siguiente: P013-T008**, preparación y comprobación acotadas con el ejecutor.
+**Estado:** fase activa; T001 diseñada y T002–T008 implementadas el 2026-10-26, siete tareas pendientes.
+**Siguiente: P013-T009**, activación del perfil y alta completa desde la UI.
 [Objetivo y criterios](ROADMAP.md#p013--instalación-guiada-y-configuración-desde-la-ui),
 [D215](DECISIONS.md#d215--p013-instalación-guiada-y-configuración-desde-la-ui) y
 [plan de fase](phase/P013_PLAN.md).
@@ -166,7 +166,8 @@ forma inválida, ausencia de herramientas y base obsoleta. Sin llamadas reales.
 
 ## P013-T008 — Preparación y comprobación acotadas con el ejecutor
 
-**Estado:** pendiente. **Depende de:** T007.
+**Estado:** completada (2026-10-26); primitivas/API con ejecutor y herramientas falsos; handoff y UI en T009.
+[Entrega y checks](phase/P013-T008_PREPARACION.md), D225. **Depende de:** T007.
 **Objetivo:** comprobar que el perfil corresponde a un entorno utilizable antes de activarlo.
 **Rutas permitidas:** preparación/runner/agentes, perfiles/recetas, storage/API, pruebas y docs de paridad.
 **Criterios de aceptación:**

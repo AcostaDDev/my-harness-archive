@@ -140,6 +140,38 @@ class PreparationJournal:
         return self.repository.cancelled(self.operation_id, self.token)
 
 
+class PreparationAgentJournal(PreparationJournal):
+    """CLI evidence belongs to the preparation step, without synthetic runs/attempts."""
+
+    def process_intent(self, step_id, spec):
+        from harness_local.adapters.cli_agents import VERSION
+        with self.repository.managed._write() as session:
+            row = self.repository.owned(session, self.operation_id, self.token)
+            step = session.get(Step, step_id)
+            if (step is None or step.operation_id != row.id or step.status != 'STARTED'
+                    or step.spec['kind'] != 'executor' or session.get(Process, step_id)
+                    or spec.get('adapter_version') != VERSION
+                    or row.plan['contract'] != 'project-profile-preparation-1'):
+                raise Conflict('Exact preparation executor intent required once')
+            session.add(Process(id=step_id, preparation_id=row.id, spec=spec, status='PENDING'))
+            self.repository.event(session, row, 'executor_intended', {'step_id': step_id, 'spec': spec})
+
+    def process_update(self, step_id, kind, payload):
+        with self.repository.managed._write() as session:
+            row = self.repository.owned(session, self.operation_id, self.token)
+            process = session.get(Process, step_id)
+            if process is None or process.preparation_id != row.id:
+                raise Conflict('Unknown preparation executor process')
+            if kind == 'process_spawned':
+                if process.status != 'PENDING' or process.identity is not None:
+                    raise Conflict('Process identity cannot change')
+                process.identity, process.status = payload, 'RUNNING'
+            elif kind == 'process_finished':
+                process.capture = payload
+                process.status = 'STOPPED' if payload.get('group_state') == 'dead' else 'UNCERTAIN'
+            self.repository.event(session, row, 'executor_' + kind, {'step_id': step_id, **payload})
+
+
 def admit(session, root, versions, purpose):
     """Same SQLite write admission as registry changes and preparation confirmation."""
     if session.scalar(select(Operation.id).where(Operation.root == root, Operation.reserved.is_(True))):

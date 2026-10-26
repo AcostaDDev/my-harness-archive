@@ -128,10 +128,10 @@ Sustitución verificada por rutas, hashes y modos; checksums de los artefactos o
 
 ## Fase activa — P013 Instalación guiada y configuración desde la UI
 
-**P013 activa; T001 diseñada y T002–T007 implementadas el 2026-10-26.**
+**P013 activa; T001 diseñada y T002–T008 implementadas el 2026-10-26.**
 [D215](DECISIONS.md#d215--p013-instalación-guiada-y-configuración-desde-la-ui),
 [plan](phase/P013_PLAN.md), [tareas](NEXT_STEPS.md) y [flujo propuesto](flows/configuration-setup.md).
-Ocho tareas pendientes. **Siguiente: P013-T008**, preparación y comprobación acotadas con el ejecutor.
+Siete tareas pendientes. **Siguiente: P013-T009**, activación del perfil y alta completa desde la UI.
 
 T001 concreta el [contrato](phase/P013-T001_CONTRATO.md) con D216–D218: instalación aislada desde clon/paquete,
 arranque sin TOML con sesión protegida, contenido en TOML versionado y activación por referencia SQLite, CAS/
@@ -197,6 +197,20 @@ Validación: 1917 pytest y 29 subtests, dos opt-in omitidas; 18 pruebas posterio
 136 Node y 8 unittest correctos. Tipos/build, Alembic temporal, parsers/enlaces/presupuestos y Mermaid correctos.
 Pruebas con agentes falsos y proyectos Go sintéticos; sin proveedores ni servicios reales.
 
+T008 entrega `project-profile-preparation-1`, separado de recetas: plan técnico opcional en la propuesta del
+revisor, selección del ejecutor congelada, configuración guardada exacta y commit documental/P001 ligados al
+perfil antes de confirmar. API estricta con CAS/replay; journal, lock, lease, procesos antes de GO, cancelación y
+recuperación enlazada reutilizados. Ejecutor prepara archivos del ámbito confirmado; harness ejecuta argv exactos
+y valida JUnit fresco. Commit técnico conciliable solo si cambia contenido; recibo liga herramientas, configuración,
+archivos protegidos y entorno estable, sin congelar informes transitorios ni activar el perfil.
+[D225](DECISIONS.md#d225--p013-t008-preparación-genérica-confirmada-y-recibo-propio),
+[entrega y checks](phase/P013-T008_PREPARACION.md). Sin tablas/migraciones nuevas; datos y flujo en paridad.
+La entrega comprueba primitivas/API sobre fixtures Go y proveedores falsos. El handoff documental/TOML y la
+activación/UI siguen pendientes T009; no hay alta completa ni proveedores/descargas reales acreditados.
+Validación: 1951 pytest y 29 subtests correctos con cuatro workers, dos opt-in omitidas; 38 focalizados sobre
+los últimos ajustes, 8 unittest y 136 Node correctos. Tipos/build, Alembic temporal, parsers/enlaces/presupuestos
+y Mermaid correctos; resultados parciales y límites en la entrega.
+
 Alcance acordado: scripts de instalación/arranque con venv y cachés configurables, asistente inicial sin TOML
 manual ni modelos, configuración global y perfiles propios por proyecto desde UI, propuestas del revisor tras
 concretar documentación/arquitectura o inventario, preparación/comprobación acotadas con ejecutor y activación
@@ -214,6 +228,6 @@ no se renuevan ni transfieren.
 Tras el cierre seguirán faltando owner/repo, visibilidad, identidad pública y autorización de acciones remotas.
 D157 conserva la fuente principal pública tras el primer push; modo continuo D156 para v0.2.0 después de abrir,
 fuera de P013. Este repositorio sigue sin registrarse ni ejecutarse con el harness. Apertura y T001 fueron
-documentales; T002–T007 añaden instalación/arranque/empaquetado, persistencia versionada, asistente API/UI, contexto de alta/propuestas de perfil y
+documentales; T002–T008 añaden instalación/arranque/empaquetado, persistencia versionada, asistente API/UI, contexto de alta/propuestas y preparación genérica de perfil y
 pruebas sintéticas. Sin operación del harness sobre este checkout, instalaciones reales, agentes/proveedores,
-smokes, configuración global del equipo, push o publicación. Commits locales T002–T007 pedidos por el usuario.
+smokes, configuración global del equipo, push o publicación. Commits locales T002–T008 pedidos por el usuario.

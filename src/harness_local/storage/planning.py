@@ -503,6 +503,11 @@ class PlanningRepository:
                       'questions': questions, 'pending': pending, 'previous_turns': history}
             if isinstance(context, IntakeContext):
                 frozen['capabilities'] = 'project-intake-1'
+                frozen['executor_policy'] = {
+                    'mode': context.policy.executor_mode,
+                    'models': list(context.policy.executor_models),
+                    'efforts': list(context.policy.executor_efforts),
+                    'effort_vocabulary': list(context.policy.executor_effort_vocabulary)}
                 profile = session.scalar(select(Proposal).where(
                     Proposal.conversation_id == conversation.id, Proposal.kind == 'profile',
                     Proposal.status.in_(('PROPOSED', 'ACCEPTED'))).order_by(Proposal.number.desc()).limit(1))
@@ -614,7 +619,7 @@ class PlanningRepository:
         frozen = {**turn.request['context'], 'drafts': [
             {'path': path, 'sha256': text_hash(content)} for path, content in sorted(texts.items())]}
         try:
-            checked = validate(payload['candidate'], frozen, [])
+            checked = validate(payload['candidate'], frozen, [], context=context)
             if checked != payload:
                 blockers.append(tr('profile_proposal.stale'))
         except ValueError:

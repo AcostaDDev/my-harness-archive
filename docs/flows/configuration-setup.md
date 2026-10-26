@@ -1,11 +1,11 @@
 # Flujo — instalación y configuración guiadas (P013)
 
-**Instalación T002, arranque T003, persistencia T004, API/arranque global T005, UI T006 y propuesta de perfil T007 implementados; pendiente T008–T011.**
+**Instalación T002, arranque T003, persistencia T004, API/arranque global T005, UI T006, propuesta de perfil T007 y preparación genérica T008 implementados; integración pendiente T009–T011.**
 [Entrega T002](../phase/P013-T002_INSTALACION.md), D219; validación con herramientas falsas, sin recorrido instalado nuevo.
 [Entrega T003](../phase/P013-T003_ARRANQUE.md), D220; procesos/señales sintéticos, sin servicio instalado real.
 [Contrato](../phase/P013-T001_CONTRATO.md), D216–D218 en [DECISIONS](../DECISIONS.md),
 [plan](../phase/P013_PLAN.md) y [tareas](../NEXT_STEPS.md).
-TOML 1–8 conserva su entrada. T005 consume global v9 por referencia activa; T007 añade altas documentales/propuestas; preparación/activación pendientes T008/T009.
+TOML 1–8 conserva su entrada. T005 consume global v9 por referencia activa; T007 añade altas documentales/propuestas; preparación genérica entregada en T008; alta/activación integradas pendientes T009.
 
 ## Instalación y primer arranque
 
@@ -166,7 +166,7 @@ GET publica `PROFILE_REQUIRED`/`PROFILE_PROPOSED` sin sondear herramientas; la s
 adoptado, cuya vigencia se revisa en preview. Formatos 1–8 mantienen su ruta; v9 no admite activar una
 composición con nombre a través del registro para eludir T008/T009. Restore D040 conserva sus guardias.
 
-### Recorrido restante diseñado para T008–T010
+### Recorrido general: preparación T008 entregada; integración T009–T010 pendiente
 
 ```mermaid
 flowchart TD
@@ -224,3 +224,33 @@ Guardado/lectura no comprueban clientes implícitamente. Cambio externo no hace 
 bloquea antes de escritura. Global READY solo acredita autoridad global: el registro/admisión con perfiles
 propios se conecta en T007–T009. Editor inicial rechaza autoridad legacy/registro previo hasta la importación
 explícita T011, conservando originales. Asistente UI T006 entregado; sin QA visual/servicio instalado nuevo.
+
+### Preparación genérica entregada en T008
+
+[D225](../DECISIONS.md#d225--p013-t008-preparación-genérica-confirmada-y-recibo-propio),
+[entrega y checks](../phase/P013-T008_PREPARACION.md). Se entrega el carril de servicio/API; T009 aún debe
+producir el handoff documental/configuración y conectar UI/activación. Las pruebas siembran esas precondiciones,
+sin atribuirles un alta completa ya implementada. Recetas y recibos anteriores mantienen su carril propio.
+
+1. Revisor puede añadir `preparation_plan` a la propuesta: archivos/prefijos concretos, local ignorado, entorno
+   estable, dependencias/lock/hashes, red HTTPS/scripts e instrucciones/selección del ejecutor. Confirmar perfil
+   sigue adoptando solo borrador; sin plan técnico no se prepara.
+2. Preview con `contract = project-profile-preparation-1`, referencia/hash del TOML guardado VALIDATED y
+   propuesta/hash exactos. Exige global compatible, registro actual, commit documental COMPLETED ligado al
+   perfil y P001 adoptada; primera preparación sobre HEAD documental limpio. No invoca CLI ni comandos de stack.
+3. Confirmar literal/hash/motivo/clave, revalidar bajo barrera y reservar checkout con intención/pasos. Reenvío
+   exacto devuelve operación; cambios de petición/base dan conflicto, sin sobrescritura/rebase.
+4. Worker reclama lease, comprueba guardias y crea directorios privados confirmados. Ejecutor prepara solo
+   archivos permitidos; aplicación ejecuta preparación y validaciones exactas, con argv sin shell, cwd/entorno/
+   límites explícitos. CLI y nativos registran grupo antes de GO. Alcance/Git/documentos se revisan tras cada paso;
+   JUnit debe ser fresco y contener éxito sin fallos. Modelo/entorno/configuración no cambian por la propuesta.
+5. Commit técnico CAS si cambia contenido versionado; intención permite conciliar el mismo hash. Emitir recibo
+   compatible y liberar lock solo con detención acreditada. Recibo verifica configuración, herramientas/enlaces,
+   archivos protegidos y entorno estable; código ordinario y reportes transitorios pueden evolucionar.
+6. Error/cancelación/timeout/lease conserva journal/bytes y puerta cerrada. No hay replay al reiniciar. Sucesor
+   confirmado exige escritor/grupos detenidos y bytes exactos del último prefijo DONE; efectos parciales ajenos
+   bloquean recuperación. Cancelación solo señala el handle propio vivo.
+
+El recibo no activa ni instala un contexto de tareas; T009 hará esa confirmación separada. No se concede escritura
+de TOML global, documentos o ajustes del equipo. Rutas/destinos/scripts y argv son autoridad cooperativa revisable,
+no un sandbox nuevo; offline nunca cambia automáticamente a red.

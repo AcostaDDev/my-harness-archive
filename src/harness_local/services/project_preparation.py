@@ -339,7 +339,8 @@ class ProjectPreparation:
 
     def read(self, project_id):
         project = self.runtime.project(project_id)
-        available = bool(project.versions.get('project_recipe'))
+        from harness_local.core.engine.context import IntakeContext
+        available = bool(project.versions.get('project_recipe')) or isinstance(project.context, IntakeContext)
         with Session(self.runtime.engine) as session:
             row = self.latest(project_id, session)
             receipt = session.scalar(select(Operation.receipt).where(Operation.project_id == project_id,
@@ -347,11 +348,15 @@ class ProjectPreparation:
         diagnostic = None
         if receipt:
             try:
-                verify_receipt(project.context.root, receipt)
-            except JournalError as exc:
+                if receipt.get('contract') == 'project-profile-preparation-1':
+                    self.generic().verify_configuration(project, receipt)
+                    available = True
+                else:
+                    verify_receipt(project.context.root, receipt)
+            except (JournalError, ValueError) as exc:
                 diagnostic = str(exc)
         return {'available': available, 'prepared': bool(receipt and not diagnostic), 'diagnostic': diagnostic,
-                'recipe': project.versions['project_recipe'] if available else None,
+                'recipe': project.versions.get('project_recipe'),
                 'operation': self.repository.read(row.id, summary=True) if row else None,
                 'project_version': int(project.versions.get('project_registry', 0))}
 
@@ -388,6 +393,8 @@ class ProjectPreparation:
             raise RegistryError(409, 'pending_jobs', '; '.join(blockers))
 
     def preview(self, project_id, body, *, session=None):
+        if body.get('contract') == 'project-profile-preparation-1':
+            return self.generic().preview(project_id, body, session=session)
         if session is None:
             with Session(self.runtime.engine) as read:
                 return self.preview(project_id, body, session=read)
@@ -498,6 +505,10 @@ class ProjectPreparation:
         return {**plan, 'preview_sha256': digest(plan)}
 
     def confirm(self, project_id, body, key):
+        if body['change'].get('contract') == 'project-profile-preparation-1' and (
+                body.get('confirmed') is not True or not isinstance(body.get('reason'), str) or not body['reason'].strip()):
+            from harness_local.services.profile_preparation import refuse
+            raise refuse()
         request_sha = digest({'project_id': project_id, **body})
         with self.lock, self.managed._write() as session:
             old = session.scalar(select(Operation).where(Operation.idempotency_key == key))
@@ -740,7 +751,33 @@ class ProjectPreparation:
             return None
         # P011-T021: a preparation freezes no visual language; its texts use the stored one when emitted.
         with emission(lambda: stored_language(self.managed.engine)):
-            return self._run_claimed(claim)
+            operation = self.repository.read(claim[0])
+            service = self.generic() if operation['plan']['contract'] == 'project-profile-preparation-1' else self
+            return service._run_claimed(claim)
+
+    def generic(self):
+        from harness_local.services.profile_preparation import ProfilePreparation
+        return ProfilePreparation(self)
+
+    def _links(self, plan):
+        return RECIPES[plan['recipe']].links
+
+    def _execute_step(self, operation_id, token, project, plan, step):
+        root, kind = project.context.root, step['spec']['kind']
+        if kind == 'files':
+            self._files(root, plan)
+        elif kind == 'publish':
+            self._publish(root, plan)
+        elif kind == 'command':
+            partial = RECIPES[plan['recipe']].source_check(step['spec'], step['number'])
+            if partial is not None:
+                self._verify_source(root, plan, allow_partial=partial)
+            return self._command(root, plan, step, PreparationJournal(self.repository, operation_id, token)), None
+        elif kind == 'commit':
+            return {}, self._commit(operation_id, token, project, plan)
+        else:
+            raise ValueError('Unknown preparation step')
+        return {}, None
 
     def _run_claimed(self, claim):
         operation_id, token = claim
@@ -772,22 +809,10 @@ class ProjectPreparation:
                     row = self.repository.owned(session, operation_id, token)
                     session.get(Step, step['id']).status = 'STARTED'
                     self.repository.event(session, row, 'step_started', {'number': step['number'], 'spec': step['spec']})
-                kind = step['spec']['kind']
-                evidence = {}
-                if kind == 'files':
-                    self._files(root, plan)
-                elif kind == 'publish':
-                    self._publish(root, plan)
-                elif kind == 'command':
-                    partial = RECIPES[plan['recipe']].source_check(step['spec'], step['number'])
-                    if partial is not None:
-                        self._verify_source(root, plan, allow_partial=partial)
-                    evidence = self._command(root, plan, step, PreparationJournal(self.repository, operation_id, token))
-                elif kind == 'commit':
-                    receipt = self._commit(operation_id, token, project, plan)
-                else:
-                    raise ValueError('Unknown preparation step')
-                expected = snapshot(root, RECIPES[plan['recipe']].links)
+                evidence, completed_receipt = self._execute_step(operation_id, token, project, plan, step)
+                if completed_receipt is not None:
+                    receipt = completed_receipt
+                expected = snapshot(root, self._links(plan))
                 with self.managed._write() as session:
                     row = self.repository.owned(session, operation_id, token)
                     saved = session.get(Step, step['id'])

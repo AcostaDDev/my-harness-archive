@@ -27,13 +27,14 @@ def documents(frozen, drafts):
             **{item['path']: text_hash(item['content']) for item in drafts}}
 
 
-def validate(candidate, frozen, drafts):
+def validate(candidate, frozen, drafts, *, context=None):
     """The normal profile parser is reused, with deferred tools and exact source evidence per argv."""
     if candidate is None:
         return None
     try:
         if (not isinstance(candidate, dict)
-                or set(candidate) != {'name', 'profile', 'tools', 'evidence', 'rationale'}):
+                or set(candidate) - {'name', 'profile', 'tools', 'evidence', 'rationale', 'preparation_plan'}
+                or not {'name', 'profile', 'tools', 'evidence', 'rationale'} <= set(candidate)):
             raise invalid()
         if len(freeze(candidate).encode('utf-8')) > local_config.MAX_BYTES:
             raise invalid()
@@ -41,6 +42,11 @@ def validate(candidate, frozen, drafts):
         shape(candidate['profile'], PROFILE)
         text(candidate['rationale'])
         profile = local_config._profile(candidate['name'], candidate['profile'], allow_formatter=True)
+        if 'preparation_plan' in candidate:
+            from harness_local.services.profile_preparation import validate_plan
+            if context is None:
+                raise invalid()
+            validate_plan(candidate['preparation_plan'], profile, context)
         docs = documents(frozen, drafts)
         layout = frozen['project']['layout']
         target = Layout(layout['docs'], layout['state'], layout['next_steps'])

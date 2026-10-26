@@ -11140,7 +11140,15 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/PreparationChangeInput"
+                "anyOf": [
+                  {
+                    "$ref": "#/components/schemas/PreparationChangeInput"
+                  },
+                  {
+                    "$ref": "#/components/schemas/ProfilePreparationChangeInput"
+                  }
+                ],
+                "title": "Body"
               }
             }
           }
@@ -11250,7 +11258,15 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/PreparationConfirmInput"
+                "anyOf": [
+                  {
+                    "$ref": "#/components/schemas/PreparationConfirmInput"
+                  },
+                  {
+                    "$ref": "#/components/schemas/ProfilePreparationConfirmInput"
+                  }
+                ],
+                "title": "Body"
               }
             }
           }
@@ -23108,7 +23124,14 @@
             "title": "Contract"
           },
           "recipe": {
-            "type": "string",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
             "title": "Recipe"
           },
           "project_id": {
@@ -23278,6 +23301,119 @@
           "detail"
         ],
         "title": "ProblemResponse"
+      },
+      "ProfilePreparationChangeInput": {
+        "properties": {
+          "expected_version": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Expected Version"
+          },
+          "mode": {
+            "type": "string",
+            "enum": [
+              "offline",
+              "network"
+            ],
+            "title": "Mode"
+          },
+          "previous_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 36,
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Previous Id"
+          },
+          "retry_step": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "maximum": 100.0,
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Retry Step"
+          },
+          "contract": {
+            "type": "string",
+            "const": "project-profile-preparation-1",
+            "title": "Contract"
+          },
+          "configuration_revision": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Configuration Revision"
+          },
+          "configuration_sha256": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$",
+            "title": "Configuration Sha256"
+          },
+          "proposal_id": {
+            "type": "string",
+            "maxLength": 36,
+            "minLength": 1,
+            "title": "Proposal Id"
+          },
+          "proposal_sha256": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$",
+            "title": "Proposal Sha256"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "expected_version",
+          "mode",
+          "contract",
+          "configuration_revision",
+          "configuration_sha256",
+          "proposal_id",
+          "proposal_sha256"
+        ],
+        "title": "ProfilePreparationChangeInput"
+      },
+      "ProfilePreparationConfirmInput": {
+        "properties": {
+          "change": {
+            "$ref": "#/components/schemas/ProfilePreparationChangeInput"
+          },
+          "preview_sha256": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$",
+            "title": "Preview Sha256"
+          },
+          "confirmed": {
+            "type": "boolean",
+            "const": true,
+            "title": "Confirmed"
+          },
+          "reason": {
+            "type": "string",
+            "maxLength": 2000,
+            "minLength": 1,
+            "title": "Reason"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "change",
+          "preview_sha256",
+          "confirmed",
+          "reason"
+        ],
+        "title": "ProfilePreparationConfirmInput"
       },
       "ProfileProposalAdoptedRead": {
         "properties": {

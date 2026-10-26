@@ -353,7 +353,7 @@ con autorización inicial y parada por error/HITL/límites. No está implementad
 ## 14. Ampliación planificada — P013
 
 [D215](DECISIONS.md#d215--p013-instalación-guiada-y-configuración-desde-la-ui) abre P013 antes de publicar.
-**T001 completa el diseño; T002–T007 implementan instalación/arranque/empaquetado, persistencia, asistente API/UI y propuestas de perfil; pendiente T008–T011.**
+**T001 completa el diseño; T002–T008 implementan instalación/arranque/empaquetado, persistencia, asistente API/UI, propuestas y preparación de perfil; pendiente integración T009–T011.**
 Las reglas vigentes de §4/§5/§8 se mantienen hasta sus entregas. [Contrato](phase/P013-T001_CONTRATO.md), [flujo](flows/configuration-setup.md),
 [plan](phase/P013_PLAN.md) y [tareas](NEXT_STEPS.md). D216–D218 concretan:
 
@@ -375,7 +375,7 @@ Las reglas vigentes de §4/§5/§8 se mantienen hasta sus entregas. [Contrato](p
   recuperable y confirmación exacta. Edición externa no recarga autoridad ni cambia contratos congelados.
   Primitivas T004 implementadas ([entrega](phase/P013-T004_CONFIGURACION.md), D221); API y arranque global
   T005 entregados ([contrato efectivo y checks](phase/P013-T005_ASISTENTE_API.md), D222). T007 entrega registro
-  documental sin perfil y propuestas; preparación/activación y sus consumidores pendientes T008–T009;
+  documental sin perfil y propuestas; T008 entrega preparación genérica; alta/activación integradas pendientes T009;
   legacy se importa expresamente en T011.
   El backup actual bloquea bases con operaciones nuevas hasta el bundle con TOML de T011.
 - Global requiere reinicio confirmado; proyecto puede activarse entre tareas sin reinicio. Trabajo pendiente
@@ -389,10 +389,15 @@ Las reglas vigentes de §4/§5/§8 se mantienen hasta sus entregas. [Contrato](p
   evidencia por comando; preview/confirmación adoptan borrador, sin TOML ni comandos. Registro v9 de raíz
   existente confiada; `PROFILE_REQUIRED`/`PROFILE_PROPOSED` no habilitan tareas. HEAD/documentos/preguntas/
   contexto obsoletos bloquean confirmar. [Entrega](phase/P013-T007_PROPUESTA_PERFIL.md), D224. Commit
-  documental, creación de carpeta propia, preparación y activación integrados siguen pendientes T008/T009.
+  documental, creación de carpeta propia y activación integrados siguen pendientes T009; preparación genérica entregada en T008.
 - Ejemplos/recetas Django/TypeScript opcionales. Preparación genérica con ejecutor acotado y validaciones
   significativas del harness; agentes sin escritura general de TOML global ni ajustes del equipo. Aplicación
   guarda versiones validadas. Perfil propuesto no acredita entorno listo ni permite ejecutar código al inventariar.
+  T008 entrega plan técnico separado del revisor y confirmación exacta de configuración, herramientas, archivos,
+  dependencias/red/scripts, selección del ejecutor y argv/límites. Primitivas/API con journal/locks/leases,
+  cancelación y recuperación enlazada, JUnit fresco, commit técnico conciliable y recibo propio. Sin activación
+  por efecto de preparar; T009 integra el handoff de commit documental/TOML y el alta/UI. Contención nativa
+  cooperativa, sin sandbox nuevo. [Entrega y límites](phase/P013-T008_PREPARACION.md), D225.
 - Edición posterior manual/formulario/TOML o asistida, reutilizando guardado/preparación/activación. Ayuda IA
   solo con pareja activa congelada; no adopta los clientes propuestos en la propia sesión. UI/diagnósticos en/es.
 - V1–v8 siguen leyendo/operando con sus hashes; importación al editor explícita y originales intactos. Backup

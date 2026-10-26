@@ -37,6 +37,10 @@ flowchart TD
     B -- no --> Q["RECOVERY_REQUIRED / diagnóstico; resolución externa, sin borrar ni sobrescribir"]
 ```
 
+El carril genérico de perfil propio entregado en P013-T008 usa `project-profile-preparation-1` y ejecutor
+acotado; se documenta en [configuración guiada](configuration-setup.md#preparación-genérica-entregada-en-t008).
+Este flujo de recetas conserva sus planes, pasos, recibos y ausencia de invocaciones de agentes.
+
 ## Núcleo común y receta Django (D119)
 
 El padre ya autorizado no se vuelve a confirmar: esta confirmación cubre efectos técnicos nuevos dentro del

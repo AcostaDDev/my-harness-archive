@@ -1900,6 +1900,22 @@ class PreparationConfirmInput(BaseModel):
     reason: str | None = Field(default=None, max_length=2000)
 
 
+class ProfilePreparationChangeInput(PreparationChangeInput):
+    contract: Literal['project-profile-preparation-1']
+    configuration_revision: int = Field(ge=1)
+    configuration_sha256: str = Field(pattern=SHA256)
+    proposal_id: str = Field(min_length=1, max_length=36)
+    proposal_sha256: str = Field(pattern=SHA256)
+
+
+class ProfilePreparationConfirmInput(BaseModel):
+    model_config = ConfigDict(extra='forbid', strict=True)
+    change: ProfilePreparationChangeInput
+    preview_sha256: str = Field(pattern=SHA256)
+    confirmed: Literal[True]
+    reason: str = Field(min_length=1, max_length=2000)
+
+
 class PreparationControlInput(BaseModel):
     model_config = ConfigDict(extra='forbid', strict=True)
     expected_version: int = Field(ge=1)
@@ -1910,7 +1926,7 @@ class PreparationControlInput(BaseModel):
 class PreparationPlanRead(BaseModel):
     model_config = ConfigDict(extra='allow')
     contract: str
-    recipe: str
+    recipe: str | None
     project_id: str
     root: str
     preview_sha256: str

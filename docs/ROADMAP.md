@@ -18,7 +18,7 @@ hitos H0–H6 del backlog original; la definición inicial está en [archive/pha
 | P010 | Consolidación de la primera versión local | completada (2026-10-22) | [phase-010](archive/phase-010/SUMMARY.md) |
 | P011 | Preparación para apertura pública en GitHub | completada (2026-10-24) | [phase-011](archive/phase-011/SUMMARY.md) |
 | P012 | Validación real previa a la apertura pública | completada (2026-10-26) | [phase-012](archive/phase-012/SUMMARY.md) |
-| P013 | Instalación guiada y configuración desde la UI | activa, T001 diseñada/T002–T007 implementadas (2026-10-26) | [plan](phase/P013_PLAN.md) |
+| P013 | Instalación guiada y configuración desde la UI | activa, T001 diseñada/T002–T008 implementadas (2026-10-26) | [plan](phase/P013_PLAN.md) |
 
 ## P001 — Contratos y prueba de viabilidad
 
@@ -363,11 +363,12 @@ documentación o código, antes de publicar en GitHub.
 credenciales, modificar configuración global del equipo, operar este repositorio con el harness, reactivar
 bases/fixtures/consentimientos anteriores y cualquier acción remota de publicación. Las pruebas operativas
 restringidas por AGENTS requieren su autorización propia; planificar no las ejecuta.
-**Estado:** activa; T001 diseñada (D216–D218) y T002–T007 implementadas (D219–D224) el 2026-10-26; ocho tareas pendientes.
+**Estado:** activa; T001 diseñada (D216–D218) y T002–T008 implementadas (D219–D225) el 2026-10-26; siete tareas pendientes.
 [Contrato](phase/P013-T001_CONTRATO.md), [instalador](phase/P013-T002_INSTALACION.md) y
 [arranque](phase/P013-T003_ARRANQUE.md), [persistencia](phase/P013-T004_CONFIGURACION.md),
 [API inicial](phase/P013-T005_ASISTENTE_API.md), [asistente UI](phase/P013-T006_ASISTENTE_UI.md) y
-[propuesta de perfil](phase/P013-T007_PROPUESTA_PERFIL.md); siguiente P013-T008.
+[propuesta de perfil](phase/P013-T007_PROPUESTA_PERFIL.md) y
+[preparación genérica](phase/P013-T008_PREPARACION.md); siguiente P013-T009.
 [Plan](phase/P013_PLAN.md), [tareas](NEXT_STEPS.md) y
 [flujo propuesto](flows/configuration-setup.md). Publicación aplazada hasta cerrar esta fase con candidato
 nuevo y dictamen favorable; el cierre no concede autorización para acciones remotas.
