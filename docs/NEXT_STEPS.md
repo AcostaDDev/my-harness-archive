@@ -27,8 +27,10 @@ Reanudación autorizada **«Autorizo»** manteniendo `unknown` (D204): **T003 co
 ambos fallos y QUEUED, con ruta operativa bloqueada. Parada normal, puertos cerrados/clave retirada, cinco hashes
 y 16.798 filas iguales, 254 archivos previos/42 artefactos/tres fixtures intactos. Cero llamadas nuevas,
 acumulado T003 2/3 Claude y 0/0 Codex; identidad histórica incierta conservada, sin certificar muerte de escritores.
-**Siguiente:** propuesta de arranque T004 que respete el job QUEUED y consentimiento separado; no reactivar
-esa base (D199). Sin repetir chat/aceptación/backup o consumir saldo.
+**Siguiente:** consentimiento separado para el [guion T004](phase/P012-T004_PROPUESTA_TYPESCRIPT.md),
+preparado offline (D205): base/state/TOML/caché nuevos, instalación T012 conservada y job QUEUED anterior
+intacto (D199). HITL confirma sucesora P002 en ROADMAP inicial y final ACTIVE vacía, sin plan posterior.
+Cinco tests sintéticos correctos; cero efectos operativos/llamadas nuevas. Sin repetir chat/aceptación/backup.
 El resultado T002 y los saldos no habilitan otro tramo, corrección o reintento.
 P001–P011 siguen cerradas; la apertura del [expediente de P011](archive/phase-011/P011_EXPEDIENTE_APERTURA.md)
 queda aplazada hasta el cierre de P012 y su candidato se sustituye por el que prepare T005.
@@ -192,6 +194,10 @@ fixtures/evidencias anteriores conservados. T003 completa; `unknown` histórico 
 **Estado:** pendiente. **Depende de:** T002 y autorización explícita del tramo.
 **Guardia D199:** revisar su propuesta de arranque antes de operar: T003 prevé conservar una tarea QUEUED.
 No arrancar el supervisor sobre esa base ni ejecutar la tarea pendiente con el consentimiento de T004.
+[Propuesta revisada](phase/P012-T004_PROPUESTA_TYPESCRIPT.md) (D205): base independiente state-t004,
+TOML/entornos/caché nuevos, instalación T012 íntegra y objeto npm local acreditado; aún sin materializar.
+Cinco tests sintéticos correctos. Autorización operativa pendiente: 12 Claude/3 Codex, una ejecución normal,
+cero correcciones, cuatro horas y parada al primer fallo.
 **Objetivo:** Acreditar con proveedores reales la creación desde cero con la receta TypeScript web v2, el idioma
 de trabajo español y el cierre de una fase.
 **Alcance:** carpeta padre del área, definición conversacional, preparación con la caché npm, una tarea, READY y
@@ -203,11 +209,13 @@ cierre de P001 del hijo.
   revisor real, borradores en disco, documentos D088 generados en español y receta `typescript-web-recipe-2` con
   el idioma sellado en plan y recibo; `npm ci` desde la caché propia y validaciones del perfil antes del commit técnico.
 - Una tarea acotada del hijo hasta COMMITTED con la pareja elegida; código y documentos de la tarea en español.
-- READY check y cierre autorizado de P001 del hijo con archivo y apertura de la siguiente fase sin tareas.
+- READY check y cierre autorizado de P001 del hijo con archivo y apertura de P002 ACTIVE sin tareas;
+  objetivo/criterios de P002 confirmados en ROADMAP durante la definición, sin plan posterior (HITL D205).
 - Llamadas por proveedor frente al techo, servicio detenido y área conservada para revisión.
 
 **Validación:** la propia del tramo.
-**Entregables:** `docs/phase/P012-T004_TYPESCRIPT_REAL.md`.
+**Entregables:** [propuesta](phase/P012-T004_PROPUESTA_TYPESCRIPT.md); resultado real pendiente en
+`docs/phase/P012-T004_TYPESCRIPT_REAL.md` solo tras consentimiento y ejecución.
 
 ## P012-T005 — Alcance público y candidato actualizados
 

@@ -382,7 +382,12 @@ histórica conservada y límites originales (D204): **T003 completada con eviden
 offline en destinos nuevos, 259 archivos correctos; UI Chrome es muestra COMMITTED/6f02121, diff, 13 JUnit,
 original/métricas, ambos fallos y QUEUED; ruta operativa bloqueada. Cero llamadas nuevas, servicio parado,
 cinco hashes/16.798 filas y fixtures/evidencias previos intactos; `unknown` no certifica muerte de escritores.
-Siguiente: propuesta T004 respetando D199 y consentimiento separado; sin repetir chat/aceptación/backup.
+Propuesta T004 preparada offline (D205): [guion](phase/P012-T004_PROPUESTA_TYPESCRIPT.md) con base/state/TOML/
+caché nuevos e instalación T012 conservada, sin reactivar la base con el job QUEUED (D199). HITL confirma
+P002 en ROADMAP durante definición y final ACTIVE vacía tras cerrar P001, sin plan posterior. Cinco tests
+sintéticos correctos; objeto npm local íntegro, sin copiar, operar servicios o llamadas nuevas.
+Siguiente: consentimiento específico T004 (12 Claude/3 Codex, una ejecución normal, cero correcciones,
+cuatro horas); sin repetir chat/aceptación/backup.
 P012 conserva doce tareas; T005 depende también de T012 y T003, completadas.
 Consumo 2/3 Claude y 0/0 Codex, dentro de dos horas; servicios parados, 13 DONE/1 QUEUED/14 STOPPED/0 locks,
 14.921 filas previas intactas y 16.798 finales iguales en copia/restauración. T004 sigue sin autorización;

@@ -189,8 +189,14 @@ retirada, cinco hashes y **16.798 filas** iguales, **254 archivos previos/42 art
 13 DONE/1 QUEUED/14 STOPPED/0 locks. **Cero llamadas nuevas**, acumulado T003 2/3 Claude y 0/0 Codex.
 La consulta no certifica muerte de escritores históricos; chat/confirmación/backup/API conservan procedencia D200.
 
-**Siguiente:** preparar la propuesta de arranque T004 que respete el job QUEUED (D199), con autorización
-separada antes de operar. Sin repetir chat/aceptación/backup o consumir saldo. Informes anteriores conservados.
+**Propuesta T004 preparada offline** (D205): [guion revisable](phase/P012-T004_PROPUESTA_TYPESCRIPT.md),
+base/state/TOML/caché nuevos para conservar el job QUEUED sin reactivar la base anterior (D199). Instalación T012
+íntegra (259 archivos); objeto TypeScript 5.9.3 disponible localmente con integridad exacta, aún sin copiar.
+HITL confirma P002 en ROADMAP durante la definición y final P002 ACTIVE vacía tras el cierre de P001,
+sin plan posterior. Cinco tests sintéticos correctos; sin efectos operativos o llamadas nuevas.
+**Siguiente:** consentimiento específico para ejecutar el guion T004 (12 Claude/3 Codex, una ejecución normal,
+cero correcciones, cuatro horas). T004 pendiente; sin repetir chat/aceptación/backup o consumir su saldo.
+Informes anteriores conservados.
 T002 finalizada, sin reparación/revalidación de sus dos fallos. Conservar todos los fixtures, diffs, historiales,
 configuraciones y distribuciones. Sin nueva fase del Django de P009, tags, push o publicación. P012 sigue
 abierta; baseline pública/candidato pendientes de T005.

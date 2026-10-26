@@ -215,6 +215,7 @@ tarea se leen solo las decisiones que cita; este índice sirve para buscar prece
 | [D202](#d202--p012-t012-vista-ui-de-consulta-implementada) | P012-T012: vista UI de consulta implementada | P012 |
 | [D203](#d203--p012-t003-parada-previa-al-build-por-identidad-histórica-del-host) | P012-T003: parada previa al build por identidad histórica del host | P012 |
 | [D204](#d204--p012-t003-consulta-ui-restaurada-verificada-con-salvedad-autorizada) | P012-T003: consulta UI restaurada verificada con salvedad autorizada | P012 |
+| [D205](#d205--p012-t004-propuesta-con-base-independiente-y-sucesora-vacía) | P012-T004: propuesta con base independiente y sucesora vacía | P012 |
 
 ## D001 — Alcance local y arquitectura base
 
@@ -6015,3 +6016,38 @@ Precedentes: D040/D199–D203. La parada D203, su informe y los resultados anter
 - Sin cambio de producto/API/modelos/migraciones/flujos o baseline pública; sin repetir suites de producto
   válidas. T004 necesita propuesta que respete D199 y consentimiento separado antes de efectos; P012 sigue
   abierta, P001 del clon ACTIVE. Sin tags en este repositorio, push, publicación o operación del Django P009.
+
+## D205 — P012-T004: propuesta con base independiente y sucesora vacía
+
+Estado: alcance de sucesora elegido por HITL el 2026-10-26; propuesta preparada offline, operación sin autorizar.
+Fase: P012. [Guion, TOML completo, hashes, comprobaciones y consentimiento](phase/P012-T004_PROPUESTA_TYPESCRIPT.md).
+Precedentes: D059/D091/D143/D168/D184/D192/D199/D204. Sin cambio de producto ni reescritura de T001.
+
+- D199 conserva P001-T002/run d235e9d5… QUEUED y prohíbe reactivar su base. Se propone init-db exclusivo
+  en state-t004/harness.sqlite3, state_dir propio y TOML nuevo, sin copiar filas ni registros. El supervisor
+  solo consume la cola nueva. Omitir proyectos en TOML no se usa como aislamiento de la cola anterior.
+- T004/T001 hablaban de planificación confirmada posterior «sin tareas». El cierre D091 crea la sucesora
+  vacía desde ROADMAP; el plan posterior exige tareas. HITL: **«Confirmar P002 en ROADMAP durante la
+  definición y terminar con P002 ACTIVE vacía tras el cierre (recomendado).»** Se aclara el criterio vivo T004;
+  objetivo/criterios de P002 se confirman en bootstrap, sin conversación/plan P002 posterior al archivo.
+- Conservar venv-t012/wheel 730891f8…f41520: 259 archivos instalados iguales y fuentes coincidentes. Siete
+  hashes de herramientas pertinentes iguales a T001; versiones previstas 2.1.310/0.164.0, sin ejecutar CLI.
+  Base anterior íntegra en 0025, 16.798 filas, 13 DONE/1 QUEUED/0 locks; hashes de tres bases y dos TOML
+  coincidentes. Identidades históricas unknown/14 STOPPED conservan procedencia D204, sin certificar muerte
+  ni extender la salvedad de consulta a ejecutar en esa base. Puertos 8024/8025 sin listener.
+- Caché privada original vacía; objeto typescript@5.9.3 de 4.377.468 bytes en la caché local del checkout,
+  integridad SHA-512 del lock exacta y SHA-256 10e108c9…87a1d3. Proponer copia exclusiva del objeto por digest
+  a npm-cache-t004 nueva, sin red/credenciales/índices ni poblar otras cachés. npm ci real aún no acreditado.
+- TOML/entornos nuevos acotados a TypeScript: defaults Claude sonnet/low y Codex gpt-6-luna/low por catálogo,
+  TMPDIR del escritor dentro del hijo ignorado tras preparar, perfil/receta v2 sin cambios, es/es y cero
+  correcciones. Creación por UI de p012-typescript-es, definición CAS, receta offline, una tarea sobre main.ts
+  y flujo, READY/cierre/tag p001 solo del hijo y P002 vacía. Sin modelos, migraciones o dependencias nuevos.
+- Techo propio 12 Claude/3 Codex, una ejecución normal, cero reintentos, cuatro horas desde preparación;
+  parada al primer fallo y conservación final. Sin transferir saldos T002/T003 o ejecutar el job de chat.
+  La elección HITL solo aclara alcance: T001 §7 y AGENTS exigen consentimiento específico antes de efectos.
+- Cinco tests existentes sintéticos correctos: instalaciones independientes, receta v2 es, selección v1/v2
+  v5–v8 y cierre con sucesora vacía. TOML contrastado sintáctica/semánticamente con rutas sintéticas;
+  parsers/enlaces/presupuestos/historia/diff verificados. Sin build/instalación, npm, CLI/proveedores reales,
+  servicio o escritura operativa. STATE/NEXT_STEPS/ROADMAP actualizados; T004 pendiente y P012 abierta.
+  Sin cambios de producto/API/datos/flujos, baseline pública, archivos congelados, configuración global,
+  tags en my_harness, push o publicación.
