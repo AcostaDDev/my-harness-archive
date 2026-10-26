@@ -241,3 +241,10 @@ verificador instalado y docs/enlaces/Mermaid correctos. HITL **«Sí, sustituir 
 `my_harness_dist` con 401 hashes/modos correctos; P011 íntegro en `my_harness_dist_p011_74cc9141` (387 hashes).
 Sin CLI/proveedores reales, red, nueva QA visual, Git público, push o publicación. **Siguiente: T006**;
 P012 continúa abierta y todos los fixtures/evidencias/instalaciones reales anteriores se conservan.
+
+**T006 completada** (D211): [revisión de salida](phase/P012_REVIEW.md) favorable de los siete criterios,
+con procedencia y límites explícitos; sin correcciones obligatorias pendientes. [Expediente nuevo](phase/P012_EXPEDIENTE_APERTURA.md)
+con candidato/hashes de T005 y pasos GitHub propuestos, ninguno ejecutado. Contraste estático de manifiesto,
+401 hashes/modos y 387 hashes P011, paquete y documentos correcto; suites T005 no repetidas. Solo lectura web
+oficial para el procedimiento, sin cuentas/remotos o proveedores. **Siguiente: T007**, cierre documental manual;
+P012 sigue abierta y la publicación pendiente de aprobación explícita posterior.

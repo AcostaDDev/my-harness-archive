@@ -406,8 +406,11 @@ intactos; nuevo 5 Claude/1 Codex, acumulado T004 8/12 y 1/3, ventana original re
 P012 tiene trece tareas. **T005 completada** (D210): [candidato y comprobaciones](phase/P012-T005_CANDIDATO.md),
 alcance en/es y baseline pública actualizados, 401 archivos/manifiesto cf191a40…9362a; suites completas,
 paquete y docs correctos. Sustitución de `my_harness_dist` autorizada por HITL y verificada, conservando P011
-íntegro en `my_harness_dist_p011_74cc9141`. Sin llamadas nuevas ni publicación. Siguiente: T006, revisión y
-expediente; T007/cierre pendientes. T012, T013 y T003 completadas con su procedencia conservada.
+íntegro en `my_harness_dist_p011_74cc9141`. Sin llamadas nuevas ni publicación. **T006 completada** (D211):
+[revisión](phase/P012_REVIEW.md) favorable de los siete criterios y [expediente](phase/P012_EXPEDIENTE_APERTURA.md)
+nuevo con hashes/pasos remotos sin ejecutar. Candidato/paquete y documentos contrastados, sin repetir suites.
+**Siguiente T007**, cierre documental; P012 sigue abierta y publicación pendiente de aprobación explícita.
+T012, T013 y T003 completadas con su procedencia conservada.
 Consumo 2/3 Claude y 0/0 Codex, dentro de dos horas; servicios parados, 13 DONE/1 QUEUED/14 STOPPED/0 locks,
 14.921 filas previas intactas y 16.798 finales iguales en copia/restauración. T004 seguía sin autorización en ese punto;
 no reactivar esa base antes de revisar su propuesta de arranque (D199).

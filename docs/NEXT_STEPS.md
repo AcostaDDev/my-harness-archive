@@ -4,7 +4,7 @@ Objetivo y criterios en [ROADMAP](ROADMAP.md#p012--validación-real-previa-a-la-
 Decisión: [D183](DECISIONS.md#d183--p012-validación-real-previa-a-la-apertura-pública).
 
 **Estado:** T001–T004, T008–T013 completadas con la procedencia de D198/D202/D204/D207–D209;
-T005 completada (D210); T006–T007 pendientes, trece tareas en total. T004 cierra con evidencia acumulada y HITL sucesivos.
+T005 y T006 completadas (D210/D211); T007 pendiente, trece tareas en total. T004 cierra con evidencia acumulada y HITL sucesivos.
 T003 cierra con evidencia acumulada y salvedad de identidad autorizada.
 T002 completada con evidencia acumulada: dos B COMMITTED e idempotencia anteriores, y continuación tras T011
 autorizada/ejecutada hasta tarea **`e3fa4ae6…` COMMITTED `6f021211b307`** con perfil/formateador v8, seis
@@ -28,7 +28,11 @@ Reanudación autorizada **«Autorizo»** manteniendo `unknown` (D204): **T003 co
 ambos fallos y QUEUED, con ruta operativa bloqueada. Parada normal, puertos cerrados/clave retirada, cinco hashes
 y 16.798 filas iguales, 254 archivos previos/42 artefactos/tres fixtures intactos. Cero llamadas nuevas,
 acumulado T003 2/3 Claude y 0/0 Codex; identidad histórica incierta conservada, sin certificar muerte de escritores.
-**Siguiente: P012-T006**, revisión de salida y expediente de apertura con el candidato nuevo.
+**Siguiente: P012-T007**, cierre documental manual tras el dictamen favorable de T006.
+**T006 completada** (D211): [revisión](phase/P012_REVIEW.md) favorable de los siete criterios y
+[expediente nuevo](phase/P012_EXPEDIENTE_APERTURA.md) preparado sin ejecutar. Contraste estático de candidato,
+paquete, parsers/enlaces/presupuestos y originales correcto; suites válidas de T005 no repetidas.
+P012 sigue abierta y la publicación exige aprobación explícita posterior al cierre.
 **T005 completada** (D210): tablas en/es y baseline pública al día; candidato de 401 archivos, manifiesto
 `cf191a40…9362a`, 14 añadidos/38 modificados frente a P011. Suites completas, paquete y documentación correctos.
 HITL **«Sí, sustituir y conservar P011»**: `my_harness_dist` sustituido, P011 íntegro en
@@ -259,7 +263,8 @@ comprobadores y registro de sustitución autorizada; sin proveedores reales, red
 
 ## P012-T006 — Revisión de salida y expediente de apertura actualizado
 
-**Estado:** pendiente. **Depende de:** T001–T005 y correcciones.
+**Estado:** completada el 2026-10-26 (D211), con dictamen favorable en el alcance declarado.
+**Depende de:** T001–T005 y correcciones.
 **Objetivo:** Dictaminar los criterios de P012 y dejar listo el expediente de apertura con el candidato nuevo.
 **Alcance:** matriz por criterio con evidencia, límites y omisiones; expediente nuevo que sustituye al archivado.
 **Rutas permitidas:** `docs/**`.
@@ -270,8 +275,13 @@ comprobadores y registro de sustitución autorizada; sin proveedores reales, red
 - Expediente nuevo con manifiesto y hashes del candidato de T005 y los pasos remotos de P011 ajustados, sin
   ejecutar ninguno; el expediente archivado de P011 no se reescribe.
 
-**Validación:** contraste documental y de hashes; sin repetir suites válidas ni operaciones reales.
-**Entregables:** `docs/phase/P012_REVIEW.md` y `docs/phase/P012_EXPEDIENTE_APERTURA.md`.
+**Validación:** siete criterios contrastados por evidencia/procedencia; manifiesto reproducido desde el commit T005,
+401 hashes/modos del candidato y 387 hashes P011, wheel/sdist/pylock/checksums, parsers/enlaces/presupuestos y
+conservación de originales correctos. Sin repetir suites válidas ni operaciones reales; solo consulta web oficial
+para el procedimiento GitHub, sin autenticar cuentas u operar repositorios remotos.
+**Entregables:** [revisión](phase/P012_REVIEW.md), [expediente](phase/P012_EXPEDIENTE_APERTURA.md),
+[comprobador estático](phase/P012-T006_check.py) y [resultado](phase/P012-T006_COMPROBACION.json).
+No quedan correcciones obligatorias pendientes; siguiente T007. Cierre y aprobación de publicación aún pendientes.
 
 ## P012-T007 — Cierre documental de P012
 

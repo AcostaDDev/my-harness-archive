@@ -222,6 +222,7 @@ tarea se leen solo las decisiones que cita; este índice sirve para buscar prece
 | [D209](#d209--p012-t004-estado-documental-confirmado-y-cierre-real-del-hijo) | P012-T004: estado documental confirmado y cierre real del hijo | P012 |
 
 | [D210](#d210--p012-t005-alcance-público-y-candidato-verificados) | P012-T005: alcance público y candidato verificados | P012 |
+| [D211](#d211--p012-t006-dictamen-favorable-y-expediente-actualizado) | P012-T006: dictamen favorable y expediente actualizado | P012 |
 
 ## D001 — Alcance local y arquitectura base
 
@@ -6219,3 +6220,27 @@ D198/D200/D202/D204/D207/D209; no modifica los resultados o consentimientos real
   y 387 hashes de P011 verificados. Conservación autorizada, sin borrar el árbol anterior ni inicializar Git.
 - T005 completada; siguiente T006 (revisión/expediente), P012 abierta. Sin proveedores/CLI reales, fixtures o bases
   operativos, red, CI remota, QA visual nueva, tag, push o publicación; este repositorio no se opera con el harness.
+
+## D211 — P012-T006: dictamen favorable y expediente actualizado
+
+Estado: completada el 2026-10-26 por la petición del usuario de continuar la siguiente tarea. Fase: P012.
+[Revisión de salida](phase/P012_REVIEW.md), [expediente nuevo](phase/P012_EXPEDIENTE_APERTURA.md) y
+[contraste estático](phase/P012-T006_COMPROBACION.json). Concreta D183/D210 y conserva D157/D181/D182.
+
+- Dictamen favorable de los siete criterios de salida en el alcance declarado, con evidencia acumulada y
+  procedencia de cada tramo; no quedan correcciones obligatorias pendientes. Habilita T007, que no se ejecuta
+  en T006. P012 sigue abierta; cierre documental y posterior aprobación explícita de publicación pendientes.
+- B/idempotencia originales, tarea con perfil/formateador v8, chat/propuesta QUEUED, consulta API/UI restaurada
+  y TypeScript v2/es hasta cierre acreditados en sus respectivos informes. Dos REVISION_LIMIT, dos checks
+  rechazados e identidad histórica unknown conservados, sin reparar resultados o certificar muerte de escritores.
+  T004 usa base aislada; saldos y consentimientos anteriores no habilitan nuevas operaciones.
+- Candidato T005 conservado: 401 archivos/5.480.755 bytes, manifiesto cf191a40…9362a, wheel eef56a29…4504ab.
+  Reproducción del manifiesto desde 99b1b995, fuentes públicas actuales, hashes/modos del destino, 387 hashes P011
+  y paquete/checksums contrastados. No se regenera/sustituye el destino o paquete ni se repiten suites válidas.
+- Expediente nuevo con fuente reproducible exacta, manifiesto y hashes completos; sustituye para operar al de
+  P011 sin reescribirlo. Pasos remotos propuestos con owner/repo, identidad pública y visibilidad por concretar
+  al autorizar: repositorio vacío, Git independiente/push, CI del commit exacto, visibilidad, reporte privado de
+  vulnerabilidades y Release opcional. Referencias oficiales GitHub/CLI leídas sin operar cuentas o remotos.
+- Solo documentación privada: parsers/enlaces/presupuestos, cuerpos D001–D210 y originales phase/archive
+  conservados. Sin cambios de producto, datos, API o flujos; sin servicios, builds, instalaciones, CLI/proveedores
+  reales, fixtures, smokes, commits/tags, push o publicación. Tras abrir, fuente principal pública según D157.
