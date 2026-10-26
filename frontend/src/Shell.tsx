@@ -7,6 +7,7 @@ import { href, trail } from "./router.ts";
 import type { Route } from "./router.ts";
 import { useSession } from "./SessionGate";
 import { useArchive, useServiceMode, useServiceError } from "./ServiceMode";
+import { modeLabels } from "./configuration.ts";
 
 type Theme = "system" | "light" | "dark";
 const THEMES: Record<Theme, MessageKey> = { system: "shell.theme.system", light: "shell.theme.light", dark: "shell.theme.dark" };
@@ -34,6 +35,7 @@ function Supervisor() {
   const error = useServiceError();
   const [label, tone]: [MessageKey, string] = error && !s ? ["shell.supervisor.unreachable", "danger"] : !s ? ["shell.supervisor.connecting", "neutral"]
     : s.read_only_archive ? ["archive.title", "neutral"]
+      : s.configuration_mode && s.configuration_mode !== "READY" ? [modeLabels[s.configuration_mode as keyof typeof modeLabels] ?? "configuration.status", "attention"]
       : !s.ports_configured ? ["shell.supervisor.read_only", "neutral"]
         : s.alive ? ["shell.supervisor.active", "ok"] : ["shell.supervisor.stopped", "attention"];
   return <span className={`status status-${tone}`} title={s?.last_error ?? error}>
@@ -71,6 +73,7 @@ export function Shell({ route, children }: { route: Route; children: ReactNode }
   const { t, unavailable, preferences } = useI18n();
   const archive = useArchive();
   const mode = useServiceMode();
+  const configuring = !!mode?.configuration_mode && mode.configuration_mode !== "READY";
   const [theme, cycle] = useTheme();
   const items = archive ? [{ label: t("archive.title"), to: { name: "home" } as Route }, ...(route.name === "run-short" ? [{ label: route.run, to: route }] : [])] : trail(route, t);
   const project = "project" in route ? route.project : undefined;
@@ -106,12 +109,13 @@ export function Shell({ route, children }: { route: Route; children: ReactNode }
       <div className="nav-group">
         <ul>
           <li><Link to={{ name: "home" }} current={route.name === "home"}>{archive ? t("archive.title") : t("nav.projects")}</Link></li>
-          {mode && !archive && <li><Link to={{ name: "project-new" }} current={route.name === "project-new"}>{t("nav.new_project")}</Link></li>}
+          {mode && !archive && !configuring && <li><Link to={{ name: "project-new" }} current={route.name === "project-new"}>{t("nav.new_project")}</Link></li>}
           <li><Link to={{ name: "stats" }} current={route.name === "stats"}>{t("nav.stats")}</Link></li>
           {mode && !archive && <li><Link to={{ name: "preferences" }} current={route.name === "preferences"}>{t("nav.preferences")}</Link></li>}
+          {mode?.configuration_mode && !archive && <li><Link to={{ name: configuring ? "initial-setup" : "configuration" }} current={route.name === "configuration" || route.name === "initial-setup"}>{t("configuration.title")}</Link></li>}
         </ul>
       </div>
-      {mode && !archive && project && <ProjectNav route={route} project={project} />}
+      {mode && !archive && !configuring && project && <ProjectNav route={route} project={project} />}
     </nav>
     <main id="main" className="content">
       {!archive && preferences?.status === "invalid" && route.name !== "preferences" && <p role="alert" className="state state-error">{t("preferences.invalid")}</p>}

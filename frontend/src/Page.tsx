@@ -1,7 +1,8 @@
-import { lazy, Suspense } from "react";
+import { lazy, Suspense, useEffect } from "react";
 import { Chat } from "./Chat";
 import { useI18n } from "./Language";
-import { Link } from "./navigation";
+import { Link, navigate } from "./navigation";
+import { ConfigurationPage } from "./pages/Configuration";
 import { Home } from "./pages/Home";
 import { PhaseListPage, PhasePage } from "./pages/Phases";
 import { PreferencesPage } from "./pages/Preferences";
@@ -25,7 +26,7 @@ const PlanPage = lazy(() => import("./pages/Planning").then(module => ({ default
 // Statistics (H6.2 E6): charts and tables in their own chunk.
 const StatsPage = lazy(() => import("./pages/Stats").then(module => ({ default: module.StatsPage })));
 
-function ProjectPageFor({ route }: { route: Exclude<Route, { name: "home" | "stats" | "preferences" | "project-new" | "run-short" | "not-found" }> }) {
+function ProjectPageFor({ route }: { route: Exclude<Route, { name: "home" | "stats" | "preferences" | "initial-setup" | "configuration" | "project-new" | "run-short" | "not-found" }> }) {
   switch (route.name) {
     case "project": return <ProjectPage />;
     case "phases": return <PhaseListPage />;
@@ -60,7 +61,14 @@ export function Page({ route }: { route: Route }) {
       default: return <ArchiveBlocked />;
     }
   }
+  if (mode.configuration_mode && mode.configuration_mode !== "READY") {
+    // Consultation remains available without a project action workspace while setup closes admission.
+    if (route.name === "run-short" || route.name === "run") return <ArchiveRun key={route.run} run={route.run} />;
+    if (!["preferences", "initial-setup", "configuration", "stats"].includes(route.name)) return <ConfigurationRedirect />;
+  }
   switch (route.name) {
+    case "initial-setup":
+    case "configuration": return <ConfigurationPage />;
     case "home": return <Home />;
     case "preferences": return <PreferencesPage />;
     case "stats": return <Suspense fallback={<Loading />}><StatsPage /></Suspense>;
@@ -73,4 +81,9 @@ export function Page({ route }: { route: Route }) {
   }
   // Each project has its own action workspace; switching projects resets it.
   return <ProjectWorkspace key={route.project} project={route.project}><ProjectPageFor route={route} /></ProjectWorkspace>;
+}
+
+function ConfigurationRedirect() {
+  useEffect(() => { navigate({ name: "initial-setup" }, { replace: true }); }, []);
+  return <Loading />;
 }

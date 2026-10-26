@@ -10,6 +10,8 @@ const translator = language => (key, params) => translate({ en, es }, language, 
 const trail = route => trailIn(route, translator('es'));
 
 const valid = [
+  ['/setup', { name: 'initial-setup' }],
+  ['/settings/configuration', { name: 'configuration' }],
   ['/projects/library/onboarding', { name: 'onboarding', project: 'library' }],
   ['/projects/library/onboarding/c-1', { name: 'onboarding', project: 'library', conversation: 'c-1' }],
   ['/projects/library/onboarding/c-1/AGENTS.md', { name: 'onboarding', project: 'library', conversation: 'c-1', path: 'AGENTS.md' }],

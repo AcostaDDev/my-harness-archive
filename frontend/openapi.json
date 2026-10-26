@@ -11469,6 +11469,94 @@
         }
       }
     },
+    "/api/managed/configuration/form": {
+      "post": {
+        "summary": "Form",
+        "operationId": "configuration_form",
+        "parameters": [
+          {
+            "name": "x-harness-local",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Required with value 1 on mutations (CSRF protection).",
+              "title": "X-Harness-Local"
+            },
+            "description": "Required with value 1 on mutations (CSRF protection)."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ConfigurationCandidate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConfigurationFormRead"
+                }
+              }
+            }
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          }
+        }
+      }
+    },
     "/api/managed/configuration/detect": {
       "post": {
         "summary": "Detect",
@@ -14269,6 +14357,25 @@
         ],
         "title": "ConfigurationDetectionRead"
       },
+      "ConfigurationFormRead": {
+        "properties": {
+          "text": {
+            "type": "string",
+            "title": "Text"
+          },
+          "form": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Form"
+          }
+        },
+        "type": "object",
+        "required": [
+          "text",
+          "form"
+        ],
+        "title": "ConfigurationFormRead"
+      },
       "ConfigurationOperationRead": {
         "properties": {
           "id": {
@@ -14560,6 +14667,18 @@
               }
             ],
             "title": "Text"
+          },
+          "form": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Form"
           }
         },
         "type": "object",
@@ -24498,6 +24617,17 @@
           "commit_writer_configured": {
             "type": "boolean",
             "title": "Commit Writer Configured"
+          },
+          "configuration_mode": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Configuration Mode"
           }
         },
         "type": "object",

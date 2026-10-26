@@ -488,7 +488,7 @@ no cambia hoy `render_attempt`, adaptadores, variables, snapshots, API o esquema
 
 ## 14. Ampliación planificada — P013
 
-**T001 diseñada y T002–T005 implementadas; pendiente T006–T011.** §6/§9 describen lo implementado.
+**T001 diseñada y T002–T006 implementadas; pendiente T007–T011.** §6/§9 describen lo implementado.
 [D216](DECISIONS.md#d216--p013-t001-instalación-aislada-y-arranque-sin-configuración),
 [D217](DECISIONS.md#d217--p013-t001-archivos-versionados-y-activación-de-configuración) y
 [D218](DECISIONS.md#d218--p013-t001-perfil-tras-contexto-y-preparación-antes-de-activar).
@@ -544,7 +544,18 @@ No invocar CLI en GET/parse/preview; comprobación explícita version/help conse
 runtime; promueve pendientes T004 y revalida activa/hashes en la barrera `_write` compartida con admisión.
 Preferencias y configuración tienen repositorios propios; no abren trabajo mientras se resuelve setup.
 El cargador 1–8 conserva formas/hashes; solo el editor activo compone v9. El registro por composiciones legacy
-no admite la global v9: altas/perfiles propios pendientes T007–T009, importación legacy T011 y UI T006.
+no admite la global v9: altas/perfiles propios pendientes T007–T009 e importación legacy T011.
+
+T006 entrega `ConfigurationPage` en `/setup` y `/settings/configuration`, acceso en la navegación y puerta
+previa al workspace cuando el supervisor informa configuración bloqueada. `SupervisorRead.configuration_mode`
+solo publica el modo; el contenido privado queda en `GET /configuration` (`text`/`form`) y el editor protegido.
+`POST /configuration/form` convierte formulario/TOML con el parser del servidor, sin procesos ni guardado.
+El cliente conserva campos avanzados, borrador/base CAS y sobre exacto en `sessionStorage`; no rebasa ni
+reenvía al sondear/recargar. Nueva base o candidato invalida previews; guardar/activar/cancelar/recuperar son
+confirmaciones independientes y el reinicio sigue siendo explícito por el operador. Errores locales por campo
+y textos en/es; servidor conserva validación y guardias T004/T005. Consulta se resuelve antes del editor;
+legacy solo muestra el límite de importación. [D223](DECISIONS.md#d223--p013-t006-asistente-y-editor-global-con-confirmaciones-exactas),
+[pruebas y límites](phase/P013-T006_ASISTENTE_UI.md). No cambia datos, migraciones ni formatos históricos.
 
 T007 separa contexto de alta documental (agentes/Git/raíz/idiomas) del contexto ejecutable actual. Sin perfil
 ficticio para sortear composición: definición/inventario → propuesta validada → commit documental raíz/B y

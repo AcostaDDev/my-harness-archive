@@ -62,15 +62,20 @@ def test_first_setup_separates_save_activation_and_restart(setup, monkeypatch):
     first = app_for(repo)
     with TestClient(first) as http:
         assert http.get(BASE).json()['mode'] == 'UNCONFIGURED'
+        public = http.get('/api/managed/supervisor').json()
+        assert public['configuration_mode'] == 'UNCONFIGURED'
+        assert not any(key in public for key in ('text', 'form', 'environment', 'state_dir'))
         refused = http.post('/api/managed/registry/preview', json={}, headers=LOCAL)
         assert refused.status_code == 409 and refused.json()['detail']['code'] == 'configuration_not_ready'
         saved, body, sha = store(http, data)
         assert saved['status'] == 'SAVED' and http.get(BASE).json()['active'] is None
         assert http.get(BASE).json()['text'] == dumps(data)
+        assert http.get(BASE).json()['form'] == data
         assert http.post(BASE + '/save', json={**body, 'preview_sha256': sha},
                          headers={**LOCAL, 'Idempotency-Key': 'save'}).json() == saved
         operation = schedule(http)
         assert http.get(BASE).json()['mode'] == 'RESTART_REQUIRED'
+        assert http.get('/api/managed/supervisor').json()['configuration_mode'] == 'RESTART_REQUIRED'
         assert first.state.runtime.worker is None
         assert http.post('/api/managed/registry/preview', json={}, headers=LOCAL).status_code == 409
         assert http.get(BASE + '/operations/' + operation['id']).json() == operation
@@ -78,6 +83,7 @@ def test_first_setup_separates_save_activation_and_restart(setup, monkeypatch):
     with TestClient(second) as http:
         state = http.get(BASE).json()
         assert state['mode'] == 'READY' and state['active']['revision'] == 1 and state['pending'] is None
+        assert http.get('/api/managed/supervisor').json()['configuration_mode'] == 'READY'
         assert second.state.runtime.config.registrar.format == 'local-config-9'
         assert second.state.runtime.registry.registrar is None  # Own-profile onboarding is T007–T009.
         assert second.state.runtime.projects == {} and second.state.runtime.worker is None
@@ -204,8 +210,36 @@ def test_read_only_archive_never_reads_source_or_detects(setup, monkeypatch):
                         lambda *a: pytest.fail('Archive read original TOML'))
     with TestClient(app_for(repo, config_source=Path('/missing/private/config.toml'))) as http:
         assert http.get(BASE).json()['mode'] == 'READ_ONLY_ARCHIVE'
-        for suffix in ('/detect', '/preview', '/save', '/activate', '/check-clients', '/cancel'):
+        for suffix in ('/detect', '/form', '/preview', '/save', '/activate', '/check-clients', '/cancel'):
             assert http.post(BASE + suffix, json={}, headers=LOCAL).status_code == 409
+
+
+def test_editor_form_toml_roundtrip_preserves_advanced_fields_without_processes(setup, monkeypatch):
+    repo, data, _ = setup
+    monkeypatch.setattr(subprocess, 'Popen', lambda *a, **k: pytest.fail('Form conversion launched a process'))
+    data['agents']['executor'].update(provider='claude', tools=['Read'], allowed_tools=['Read'])
+    data['agents']['executor']['environment']['CUSTOM'] = 'value with "quotes" and \nnewlines'
+    data['service'].update(lease_seconds=17, poll_seconds=0.7)
+    data['git']['author_name'] = 'Synthetic "quoted" name'
+    with TestClient(app_for(repo)) as http:
+        converted = http.post(BASE + '/form', json={'form': data}, headers=LOCAL)
+        assert converted.status_code == 200, converted.text
+        assert converted.json()['form'] == data
+        text = converted.json()['text']
+        back = http.post(BASE + '/form', json={'text': text}, headers=LOCAL)
+        assert back.json() == converted.json()
+        state = http.get(BASE).json()
+        assert state['version'] == 0 and state['saved'] is None
+        draft = http.post(BASE + '/form', json={'form': {'git': {'author_name': 'Draft'}}, 'validated': False}, headers=LOCAL)
+        assert draft.status_code == 200
+        assert draft.json()['form']['format'] == 'local-config-9'
+        assert draft.json()['form']['service']['state_dir'] == str(repo.state_dir)
+        for candidate in ({'text': 'invalid = ['}, {'text': 'format = "local-config-8"'},
+                          {'form': {'credentials': 'must-not-appear'}}, {'form': data, 'text': text}):
+            rejected = http.post(BASE + '/form', json={**candidate, 'validated': False}, headers=LOCAL)
+            assert rejected.status_code == 422
+            assert 'must-not-appear' not in rejected.text
+        assert http.post(BASE + '/form', json={'form': data}, headers={}).status_code == 403
 
 
 def test_recovery_requires_exact_preview_and_stopped_declaration(setup):

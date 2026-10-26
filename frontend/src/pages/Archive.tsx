@@ -5,6 +5,7 @@ import { Link, navigate } from "../navigation";
 import { Empty, Loading, PageHeader, Pagination, Stale, usePoll } from "../ui";
 import { RunEvidence } from "./RunEvidence";
 import { Attempts } from "./AttemptMetrics";
+import { useArchive } from "../ServiceMode";
 
 export function ArchiveNotice() {
   const { t } = useI18n();
@@ -34,6 +35,7 @@ export function ArchiveBlocked() {
 /** Every request is a bounded read by run id. Historical ACTIVE/QUEUED never starts polling. */
 export function ArchiveRun({ run: id }: { run: string }) {
   const { t } = useI18n();
+  const archive = useArchive();
   const [refresh, setRefresh] = useState(0);
   const [jobOffset, setJobOffset] = useState(0);
   const [offset, setOffset] = useState(0);
@@ -48,7 +50,7 @@ export function ArchiveRun({ run: id }: { run: string }) {
   const attempts = usePoll<S["Page_ManagedAttemptRead_"]>(found ? `${path}/attempts?offset=${offset}` : null, 0, refresh);
   const cycles = usePoll<S["Page_CycleRead_"]>(found ? `${path}/cycles?offset=${cycleOffset}` : null, 0, refresh);
   const events = usePoll<S["ManagedEventsRead"]>(found ? `${path}/events?after=${after}&limit=50` : null, 0, refresh);
-  if (read.missing) return <Empty title={t("run.missing")}><Link to={{ name: "home" }}>{t("archive.back")}</Link></Empty>;
+  if (read.missing) return <Empty title={t("run.missing")}><Link to={{ name: archive ? "home" : "configuration" }}>{t(archive ? "archive.back" : "configuration.title")}</Link></Empty>;
   if (!read.data) return read.error ? <p role="alert" className="state state-error">{read.error}</p> : <Loading>{t("run.loading")}</Loading>;
   const errors = [read.error, jobs.error, attempts.error, cycles.error, events.error].filter(Boolean).join(" · ");
   return <>
@@ -61,6 +63,6 @@ export function ArchiveRun({ run: id }: { run: string }) {
       if (page > eventPage && events.data) setCursors(previous => [...previous.slice(0, page), events.data!.cursor]);
       setEventPage(page);
     }} size={1} label={t("run.events")} />
-    <Attempts key={id} scope={{ run: id }} refresh={refresh} title={t("stats.metrics")} />
+    <Attempts key={id} scope={{ run: id }} refresh={refresh} title={t("stats.metrics")} interval={0} />
   </>;
 }

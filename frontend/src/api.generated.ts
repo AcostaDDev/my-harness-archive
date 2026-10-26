@@ -1858,6 +1858,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/managed/configuration/form": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Form */
+        post: operations["configuration_form"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/managed/configuration/detect": {
         parameters: {
             query?: never;
@@ -2601,6 +2618,15 @@ export interface components {
                 [key: string]: string[];
             };
         };
+        /** ConfigurationFormRead */
+        ConfigurationFormRead: {
+            /** Text */
+            text: string;
+            /** Form */
+            form: {
+                [key: string]: unknown;
+            };
+        };
         /** ConfigurationOperationRead */
         ConfigurationOperationRead: {
             /** Id */
@@ -2687,6 +2713,10 @@ export interface components {
             recovery_operations: string[];
             /** Text */
             text?: string | null;
+            /** Form */
+            form?: {
+                [key: string]: unknown;
+            } | null;
         };
         /** ConfigurationRecovery */
         ConfigurationRecovery: {
@@ -6174,6 +6204,8 @@ export interface components {
             ports_configured: boolean;
             /** Commit Writer Configured */
             commit_writer_configured: boolean;
+            /** Configuration Mode */
+            configuration_mode?: string | null;
         };
         /** TaskAgentRead */
         TaskAgentRead: {
@@ -13493,6 +13525,69 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ConfigurationRead"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+        };
+    };
+    configuration_form: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Required with value 1 on mutations (CSRF protection). */
+                "x-harness-local"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ConfigurationCandidate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ConfigurationFormRead"];
                 };
             };
             /** @description Forbidden */

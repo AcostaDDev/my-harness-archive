@@ -233,7 +233,7 @@ def test_http_flow_executes_reviews_and_commits_once_across_double_submit_and_re
                              "efforts": list(task.policy.executor_efforts), "effort_vocabulary": []}}}]
         assert http.get("/api/managed/supervisor").json() == {
             "read_only_archive": False, "enabled": True, "alive": True, "last_error": None, "ports_configured": True,
-            "commit_writer_configured": True}
+            "commit_writer_configured": True, "configuration_mode": None}
         first = submit(http, "start-1")
         assert first.status_code == 202, first.text
         job = first.json()
@@ -300,7 +300,7 @@ def test_queued_job_survives_restart_and_runs_once_when_the_supervisor_is_enable
     with client(url, tmp_path, config(plain)) as http:
         assert http.get("/api/managed/supervisor").json() == {
             "read_only_archive": False, "enabled": False, "alive": False, "last_error": None, "ports_configured": False,
-            "commit_writer_configured": False}
+            "commit_writer_configured": False, "configuration_mode": None}
         job = submit(http, "queued").json()
         assert submit(http, "queued").json() == job
         time.sleep(0.1)
@@ -478,7 +478,7 @@ def test_default_service_registers_nothing_and_never_launches_processes(tmp_path
         assert http.get("/api/managed/projects").json() == []
         assert http.get("/api/managed/supervisor").json() == {
             "read_only_archive": False, "enabled": False, "alive": False, "last_error": None, "ports_configured": False,
-            "commit_writer_configured": False}
+            "commit_writer_configured": False, "configuration_mode": None}
         assert submit(http).status_code == 404
         assert http.get("/api/legacy/projects").status_code == 404
 

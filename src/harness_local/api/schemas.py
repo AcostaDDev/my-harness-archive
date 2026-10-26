@@ -49,6 +49,7 @@ class SupervisorRead(BaseModel):
     last_error: str | None
     ports_configured: bool
     commit_writer_configured: bool
+    configuration_mode: str | None = None
 
 
 class ReviewerAgentRead(BaseModel):

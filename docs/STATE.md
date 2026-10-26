@@ -128,10 +128,10 @@ Sustitución verificada por rutas, hashes y modos; checksums de los artefactos o
 
 ## Fase activa — P013 Instalación guiada y configuración desde la UI
 
-**P013 activa; T001 diseñada y T002–T005 implementadas el 2026-10-26.**
+**P013 activa; T001 diseñada y T002–T006 implementadas el 2026-10-26.**
 [D215](DECISIONS.md#d215--p013-instalación-guiada-y-configuración-desde-la-ui),
 [plan](phase/P013_PLAN.md), [tareas](NEXT_STEPS.md) y [flujo propuesto](flows/configuration-setup.md).
-Diez tareas pendientes. **Siguiente: P013-T006**, asistente inicial y ajustes globales en la UI.
+Nueve tareas pendientes. **Siguiente: P013-T007**, propuesta de perfil propio a partir del contexto del proyecto.
 
 T001 concreta el [contrato](phase/P013-T001_CONTRATO.md) con D216–D218: instalación aislada desde clon/paquete,
 arranque sin TOML con sesión protegida, contenido en TOML versionado y activación por referencia SQLite, CAS/
@@ -155,7 +155,7 @@ checkout y fija DB/configuración/puerto/temporal privado. Crea solo DB ausente 
 en consulta antes de arrancar, con migración D150 aparte. Exclusión de servicio/actualización heredada por
 el hijo, señales y códigos de salida conservados; reiniciar no reinstala ni sobrescribe TOML/datos.
 T003 abrió sin TOML la UI protegida de consulta; T005 añade después el asistente API, sin consumidores
-antes de configurar. UI T006 pendiente. Consulta D040 omite el TOML operativo. [D220](DECISIONS.md#d220--p013-t003-arranque-instalado-y-exclusión-de-instancia),
+antes de configurar. UI entregada después en T006. Consulta D040 omite el TOML operativo. [D220](DECISIONS.md#d220--p013-t003-arranque-instalado-y-exclusión-de-instancia),
 [entrega y checks](phase/P013-T003_ARRANQUE.md); pruebas sintéticas, sin servicio instalado real.
 
 T004 entrega las primitivas de configuración versionada: parser de editor global v9/proyecto v1, preview/diff,
@@ -164,16 +164,26 @@ Guardar no activa; global queda pendiente de reinicio y proyecto exige verificad
 con barrera de trabajo pendiente. Migración aditiva `0026_configuration`, tres tablas nuevas; formatos/hashes
 operativos 1–8 intactos. [D221](DECISIONS.md#d221--p013-t004-journal-y-referencias-de-configuración),
 [entrega y checks](phase/P013-T004_CONFIGURACION.md). Integración de perfiles/recibos y compatibilidad pendientes
-T006–T011; T004 se entregó sin consumidores y T005 conecta la global. Backup actual rechaza bases con
+T007–T011; T004 se entregó sin consumidores y T005 conecta la global. Backup actual rechaza bases con
 operaciones de configuración hasta T011.
 
 T005 conecta el asistente API protegido: formulario JSON o TOML, detección por PATH explícito y comprobación
 version/help D174, preview/diff, guardado CAS, activación para reinicio, cancelación y recuperación. Arranque
 sin TOML/inválido conserva sesión y bloquea trabajo; promoción del conjunto antes de componer global v9,
 sin hot reload. Puerta HTTP y transaccional; preferencias siguen editables. Consulta D040 sin originales ni
-sondas. Legacy exige importación T011; registro/admisión v9 por perfiles queda para T007–T009. UI T006 pendiente.
+sondas. Legacy exige importación T011; registro/admisión v9 por perfiles queda para T007–T009. UI entregada en T006.
 [D222](DECISIONS.md#d222--p013-t005-asistente-api-y-arranque-con-autoridad-global-versionada),
 [entrega y checks](phase/P013-T005_ASISTENTE_API.md). API verificada con TestClient/clientes falsos; sin servicio real.
+
+T006 entrega el asistente `/setup` y ajustes `/settings/configuration`: formulario/TOML con conversión
+validada en servidor, detección y preflight explícitos, diff y confirmaciones separadas de guardado/activación,
+cancelación y recuperación. Borrador y sobre idempotente conservados en la pestaña ante conflicto/recarga;
+reenvío solo por acción explícita. Consulta D040 se resuelve antes de montar el editor; legacy muestra el
+límite T011. UI/errores por campo en/es y controles nativos de teclado; OpenAPI/tipos en paridad, sin tablas
+nuevas. [D223](DECISIONS.md#d223--p013-t006-asistente-y-editor-global-con-confirmaciones-exactas),
+[entrega y checks](phase/P013-T006_ASISTENTE_UI.md). Pruebas de UI con transporte sintético y API con TestClient;
+Checks finales: 1878 pytest y 29 subtests, 136 Node, 8 unittest; tipos/build y Alembic temporal correctos.
+QA visual/recorrido instalado pendientes T012/T013. Sin proveedores ni servicio real.
 
 Alcance acordado: scripts de instalación/arranque con venv y cachés configurables, asistente inicial sin TOML
 manual ni modelos, configuración global y perfiles propios por proyecto desde UI, propuestas del revisor tras
@@ -192,6 +202,6 @@ no se renuevan ni transfieren.
 Tras el cierre seguirán faltando owner/repo, visibilidad, identidad pública y autorización de acciones remotas.
 D157 conserva la fuente principal pública tras el primer push; modo continuo D156 para v0.2.0 después de abrir,
 fuera de P013. Este repositorio sigue sin registrarse ni ejecutarse con el harness. Apertura y T001 fueron
-documentales; T002–T005 añaden instalación/arranque/empaquetado, persistencia versionada, asistente API y
+documentales; T002–T006 añaden instalación/arranque/empaquetado, persistencia versionada, asistente API/UI y
 pruebas sintéticas. Sin operación del harness sobre este checkout, instalaciones reales, agentes/proveedores,
-smokes, configuración global del equipo, push o publicación. Commits locales T002–T005 pedidos por el usuario.
+smokes, configuración global del equipo, push o publicación. Commits locales T002–T006 pedidos por el usuario.

@@ -8,6 +8,7 @@ from pydantic import BaseModel, ConfigDict, Field
 from harness_local.api.security import local_request, problem
 from harness_local.api.schemas import ProblemResponse
 from harness_local.i18n import tr
+from harness_local.services.configuration import parse
 from harness_local.storage.configuration import ConfigurationConflict
 
 Key = Annotated[str, Header(alias='Idempotency-Key', min_length=1, max_length=200)]
@@ -95,6 +96,12 @@ class ConfigurationRead(BaseModel):
     pending_activation_id: str | None
     recovery_operations: list[str]
     text: str | None = None
+    form: dict[str, Any] | None = None
+
+
+class ConfigurationFormRead(BaseModel):
+    text: str
+    form: dict[str, Any]
 
 
 class ConfigurationPreviewRead(BaseModel):
@@ -164,8 +171,16 @@ def configuration_router(runtime):
             # Complete content is confined to this authenticated editor, never general listings.
             if state['mode'] not in ('READ_ONLY_ARCHIVE', 'INVALID') and state['saved']:
                 state['text'] = setup.repository.document('global', state['saved']['revision'])
+                state['form'] = parse(state['text'], 'global', validated=False)
             return state
         return call(view)
+
+    @router.post('/form', response_model=ConfigurationFormRead, operation_id='configuration_form')
+    def form(body: ConfigurationCandidate):
+        def convert(setup):
+            text = setup.candidate(**body.model_dump())
+            return {'text': text, 'form': parse(text, 'global', validated=False)}
+        return call(convert)
 
     @router.post('/detect', response_model=ConfigurationDetectionRead, operation_id='configuration_detect')
     def detect(body: ConfigurationDetection):

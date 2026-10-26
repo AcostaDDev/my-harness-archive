@@ -95,6 +95,12 @@ label { display: block; font-size: 13px; font-weight: 600; margin-top: 14px; }
 form > button, .panel > button, .decision > button { margin-top: 14px; }
 .actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 14px; align-items: center; }
 fieldset { border: 1px solid var(--line); border-radius: var(--radius); padding: 4px 16px 16px; margin: 14px 0; }
+.configuration-editor { max-width: 1080px; min-width: 0; }
+.configuration-editor fieldset, .configuration-editor .form-row > * { min-width: 0; }
+.configuration-editor textarea { width: 100%; }
+.configuration-editor .configuration-hash { overflow-wrap: anywhere; white-space: normal; }
+.configuration-editor .field-error { color: var(--danger); font-size: 13px; margin: 6px 0; }
+.configuration-editor [aria-invalid="true"] { border-color: var(--danger); }
 legend, .legend { font-weight: 650; font-size: 13px; padding: 0 6px; margin: 14px 0 0; }
 
 /* Shell */

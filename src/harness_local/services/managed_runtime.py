@@ -354,4 +354,5 @@ class ManagedRuntime:
                 "enabled": self.worker is not None, "alive": bool(self.worker and self.worker.alive()),
                 "last_error": self.worker.error() if self.worker else None,
                 "ports_configured": self.config.ports_factory is not None,
-                "commit_writer_configured": self.config.commit_factory is not None}
+                "commit_writer_configured": self.config.commit_factory is not None,
+                "configuration_mode": self.setup.state()['mode'] if self.setup else None}

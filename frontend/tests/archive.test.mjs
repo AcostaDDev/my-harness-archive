@@ -214,6 +214,22 @@ test('ordinary project run retains decisions, recovery, permissions and polling 
   } finally { env.close(); }
 });
 
+test('blocked configuration retains run consultation without project actions, pending requests or polling', async () => {
+  for (const configuration_mode of ['UNCONFIGURED', 'INVALID', 'RESTART_REQUIRED', 'RECOVERY_REQUIRED']) {
+    for (const path of ['/runs/saved-run', '/projects/registered/phases/P001/tasks/T001/runs/saved-run']) {
+      const env = environment();
+      try {
+        const tree = el(I18nProvider, null, el(ServiceModeContext.Provider, { value: { ...mode(false), configuration_mode } }, el(Page, { route: parse(path) })));
+        const html = await env.render(tree);
+        assert.match(html, /123456789abc/);
+        assert.doesNotMatch(html, /run-decision|decision-pending|type="checkbox"/);
+        assert.deepEqual(env.pendingReads, []); assert.deepEqual(env.navigation, []); assert.deepEqual(env.timers, []);
+        assert.ok(env.requests.every(request => !request.includes('/projects')));
+      } finally { env.close(); }
+    }
+  }
+});
+
 test('archive home submits an encoded run link without making a request', async () => {
   const env = environment();
   try {

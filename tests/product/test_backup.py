@@ -497,7 +497,7 @@ def test_archive_signal_and_run_evidence_without_checkout(git_repo, migrated_dat
     with TestClient(app, **LOCAL) as http:
         status = http.get('/api/managed/supervisor').json()
         assert status == {'read_only_archive': True, 'enabled': False, 'alive': False, 'last_error': None,
-                          'ports_configured': False, 'commit_writer_configured': False}
+                          'ports_configured': False, 'commit_writer_configured': False, 'configuration_mode': None}
         assert http.get('/api/managed/projects').json() == []
         probe = Probe(archive_engine, monkeypatch)
         for path in paths:

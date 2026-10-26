@@ -6,6 +6,8 @@ export type Route =
   | { name: "home" }
   | { name: "stats" }
   | { name: "preferences" }
+  | { name: "initial-setup" }
+  | { name: "configuration" }
   | { name: "project-new" }
   | { name: "project"; project: string }
   | { name: "phases"; project: string }
@@ -41,6 +43,8 @@ export function parse(pathname: string): Route {
   if (n === 0) return { name: "home" };
   if (a === "stats" && n === 1) return { name: "stats" };
   if (a === "preferences" && n === 1) return { name: "preferences" };
+  if (a === "setup" && n === 1) return { name: "initial-setup" };
+  if (a === "settings" && b === "configuration" && n === 2) return { name: "configuration" };
   if (a === "runs" && n === 2) return { name: "run-short", run: b };
   if (a !== "projects" || n < 2) return { name: "not-found", path: pathname };
   const project = b;
@@ -81,6 +85,8 @@ export function href(route: Route): string {
     case "home": return "/";
     case "stats": return "/stats";
     case "preferences": return "/preferences";
+    case "initial-setup": return "/setup";
+    case "configuration": return "/settings/configuration";
     case "project-new": return "/projects/new";
     case "project": return `/projects/${e(route.project)}`;
     case "phases": return `/projects/${e(route.project)}/phases`;
@@ -114,6 +120,7 @@ export function trail(route: Route, t: Translate): { label: string; to: Route }[
   const items: { label: string; to: Route }[] = [{ label: t("nav.projects"), to: { name: "home" } }];
   if (route.name === "stats") items.push({ label: t("nav.stats"), to: route });
   if (route.name === "preferences") items.push({ label: t("nav.preferences"), to: route });
+  if (route.name === "initial-setup" || route.name === "configuration") items.push({ label: t("configuration.title"), to: route });
   if (route.name === "project-new") items.push({ label: t("nav.new_project"), to: route });
   if (route.name === "run-short") items.push({ label: route.run, to: route });
   if (route.name === "not-found") items.push({ label: t("trail.not_found"), to: route });

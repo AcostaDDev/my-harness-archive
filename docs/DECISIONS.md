@@ -234,6 +234,7 @@ tarea se leen solo las decisiones que cita; este índice sirve para buscar prece
 | [D220](#d220--p013-t003-arranque-instalado-y-exclusión-de-instancia) | P013-T003: arranque instalado y exclusión de instancia | P013 |
 | [D221](#d221--p013-t004-journal-y-referencias-de-configuración) | P013-T004: journal y referencias de configuración | P013 |
 | [D222](#d222--p013-t005-asistente-api-y-arranque-con-autoridad-global-versionada) | P013-T005: asistente API y arranque con autoridad global versionada | P013 |
+| [D223](#d223--p013-t006-asistente-y-editor-global-con-confirmaciones-exactas) | P013-T006: asistente y editor global con confirmaciones exactas | P013 |
 
 ## D001 — Alcance local y arquitectura base
 
@@ -6557,3 +6558,27 @@ Concreta D216/D217/D221 y conserva D040/D150/D174.
 - Sin modelos/migraciones nuevos, instalaciones/servicios reales, agentes/proveedores/smokes, configuración
   global del equipo ni acciones remotas. Pruebas TestClient y herramientas falsas; no uso real nuevo.
   Commit local en inglés solicitado. Candidatos/artefactos y snapshots P001–P012/D214 intactos.
+
+## D223 — P013-T006: asistente y editor global con confirmaciones exactas
+
+Estado: implementada y verificada con UI/HTTP sintéticos el 2026-10-26; QA visual integrada pendiente T012. Fase: P013.
+[Entrega](phase/P013-T006_ASISTENTE_UI.md), [flujo](flows/configuration-setup.md).
+Concreta D216/D217/D222 sin anticipar importación T011 ni perfiles/asistencia T007–T010.
+
+- `/setup` y `/settings/configuration` comparten editor determinista en/es. Resolver consulta antes de
+  montar editor/workspace; modo global bloqueado conduce al asistente, preferencias conservadas. Supervisor
+  solo publica el modo adicional; TOML/formulario/entornos completos quedan en el editor autenticado.
+- Formulario mínimo sin stack ni TOML manual. Detección sugiere rutas/cuenta por PATH explícito y se aplica
+  por acción separada; preflight version/help solo al comprobar. Modelo/esfuerzo del revisor explícitos;
+  modelos del ejecutor se seleccionan por proyecto. Almacenamiento fijado al arrancar, sin traslado en UI.
+- Conversión formulario/TOML por parser servidor en `/configuration/form`, sin dependencias TOML de navegador,
+  procesos, guardado ni activación. Campos avanzados conservados; parser/guardias finales T004/T005 intactos.
+  Diff/TOML/hash revisados antes de guardar; activación de la guardada validada exige otro preview/confirmación.
+- Borrador con base CAS y sobre idempotente en almacenamiento de sesión de la pestaña. Sondeo/conflicto
+  no reemplaza candidato ni actualiza base; adoptar base actual es explícito y exige nueva preview. Recarga
+  no reenvía confirmaciones: usuario revisa/reintenta exactamente el mismo contenido/clave tras perder respuesta.
+- Activa/guardada/pendiente y reinicio visibles; no endpoint de reinicio. Cancelación fija id/versión vistos;
+  recuperación inspecciona hashes y exige declarar escritores detenidos. Ningún timeout acredita esa parada.
+  Legacy informa que requiere importación explícita T011; originales y contratos 1–8 conservados.
+- Sin esquema/migraciones nuevos. Pruebas de componentes/contrato con transporte falso y TestClient; sin
+  servicio instalado, navegador, proveedores, smokes ni publicación. T012/T013 acreditarán lo visual/instalado.

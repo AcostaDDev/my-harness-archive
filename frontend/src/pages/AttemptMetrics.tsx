@@ -37,7 +37,7 @@ function AttemptStatus({ value }: { value: string }) {
   return <span className={`status status-${tone}`} title={value}><span className="status-mark" aria-hidden="true" />{label}</span>;
 }
 
-export function Attempts({ scope, projects = [], refresh, title }: { scope: Scope; projects?: Projects; refresh: number; title?: string }) {
+export function Attempts({ scope, projects = [], refresh, title, interval = INTERVAL }: { scope: Scope; projects?: Projects; refresh: number; title?: string; interval?: number }) {
   const { t, rich } = useI18n();
   const archive = useArchive();
   const f = useFormats();
@@ -46,7 +46,7 @@ export function Attempts({ scope, projects = [], refresh, title }: { scope: Scop
     return key ? t(key) : value;
   };
   const [offset, setOffset] = useState(0);
-  const read = usePoll<S["Page_AttemptMetricRead_"]>(`/metrics/attempts${query(scope, { offset, limit: PAGE })}`, INTERVAL, refresh);
+  const read = usePoll<S["Page_AttemptMetricRead_"]>(`/metrics/attempts${query(scope, { offset, limit: PAGE })}`, interval, refresh);
   const projectOf = (root: string) => scope.project ?? projects.find(p => p.root === root)?.id;
   const heading = title ?? t("stats.attempts.title");
   return <section className="panel" aria-labelledby="attempts">

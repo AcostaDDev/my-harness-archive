@@ -1,7 +1,7 @@
 # P013 — Instalación guiada y configuración desde la UI
 
-**Estado:** fase activa; T001 diseñada y T002–T005 implementadas el 2026-10-26, diez tareas pendientes.
-**Siguiente: P013-T006**, asistente inicial y ajustes globales en la UI.
+**Estado:** fase activa; T001 diseñada y T002–T006 implementadas el 2026-10-26, nueve tareas pendientes.
+**Siguiente: P013-T007**, propuesta de perfil propio a partir del contexto del proyecto.
 [Objetivo y criterios](ROADMAP.md#p013--instalación-guiada-y-configuración-desde-la-ui),
 [D215](DECISIONS.md#d215--p013-instalación-guiada-y-configuración-desde-la-ui) y
 [plan de fase](phase/P013_PLAN.md).
@@ -110,7 +110,7 @@ API/arranque global conectados en T005; perfiles/recibos/importación pendientes
 
 ## P013-T005 — API de configuración inicial sin TOML completo
 
-**Estado:** completada (2026-10-26); API/TestClient y clientes sintéticos, UI pendiente T006.
+**Estado:** completada (2026-10-26); API/TestClient y clientes sintéticos, UI entregada en T006.
 [Entrega y checks](phase/P013-T005_ASISTENTE_API.md), D222. **Depende de:** T003–T004.
 **Objetivo:** configurar el producto antes de disponer de agentes o composiciones.
 **Rutas permitidas:** CLI/API, servicios de configuración/runtime, pruebas y docs de paridad.
@@ -129,7 +129,8 @@ OpenAPI y tipos regenerados cuando cambie contrato.
 
 ## P013-T006 — Asistente inicial y ajustes globales en la UI
 
-**Estado:** pendiente. **Depende de:** T005.
+**Estado:** completada (2026-10-26); UI/contrato sintéticos, QA visual integrada pendiente T012.
+[Entrega y checks](phase/P013-T006_ASISTENTE_UI.md), D223. **Depende de:** T005.
 **Objetivo:** completar/editar configuración global sin copiar una plantilla ni escribir TOML a mano.
 **Rutas permitidas:** frontend, API para completar T005, pruebas y docs de paridad.
 **Criterios de aceptación:**

@@ -1,6 +1,6 @@
 # Flujo — instalación y configuración guiadas (P013)
 
-**Instalación T002, arranque T003, persistencia T004 y API/arranque global T005 implementados; pendiente T006–T011.**
+**Instalación T002, arranque T003, persistencia T004, API/arranque global T005 y UI T006 implementados; pendiente T007–T011.**
 [Entrega T002](../phase/P013-T002_INSTALACION.md), D219; validación con herramientas falsas, sin recorrido instalado nuevo.
 [Entrega T003](../phase/P013-T003_ARRANQUE.md), D220; procesos/señales sintéticos, sin servicio instalado real.
 [Contrato](../phase/P013-T001_CONTRATO.md), D216–D218 en [DECISIONS](../DECISIONS.md),
@@ -43,9 +43,9 @@ privado y puerto loopback elegibles. Rechaza puerto ocupado/rutas inseguras; pre
 en solo lectura y `init-db` exclusivo solo si no hay DB ni auxiliares. No reinstala ni migra al reiniciar.
 Locks de instancia/instalación heredados por el hijo impiden segundo servicio/actualización incluso si
 muere el wrapper; señales se reenvían y se espera al hijo. No libera guardias de jobs ni declara escritores
-muertos. Consulta D040 omite TOML operativo; TOML inválido bloquea antes de servir. Sin TOML arranca hoy
-la UI protegida de consulta vigente, sin consumidores gestionados; la transición al asistente del diagrama
-siguiente sigue pendiente T005/T006. T004 entrega la persistencia separada; aún no se conecta con este wrapper ni con consumidores del servicio.
+muertos. Consulta D040 omite TOML operativo. T005 entrega al servicio la configuración ausente/inválida:
+conserva sesión y bloquea trabajo; T006 conduce al asistente protegido siguiente. Persistencia T004 conectada
+a autoridad global/arranque por T005; perfiles propios pendientes T007–T009.
 
 ## Asistente y activación global
 
@@ -71,12 +71,24 @@ explícita version/help D174. Ayuda IA solo con pareja activa congelada. Archivo
 un ejemplo ni habilita colas; fallo al promover conserva activa anterior y bloqueo, sin fallback silencioso.
 Cancelar una activación pendiente también exige versión/confirmación; guardar no tiene ese efecto.
 
+T006: tras resolver consulta, el modo bloqueado conduce a `/setup` antes de montar un workspace operativo;
+preferencias, estadísticas y evidencias por id siguen consultables sin acciones de proyecto. Con READY, navegación a `/settings/configuration`. Formulario ↔ TOML usa
+`POST /configuration/form`, sin efectos; detección/preflight requieren sus botones propios. Validación local
+por campo y parser del servidor; preview muestra TOML/diff y hash antes de guardar. Candidato, base CAS y
+solicitud pendiente se conservan en la pestaña; sondeo/conflicto no los reemplazan y recarga no reenvía POST.
+Cambiar candidato/base exige preview y confirmación nuevas. Tras respuesta perdida, usuario revisa/reenvía
+el mismo sobre/clave; recuperación inspecciona hashes y exige declaración de escritores detenidos.
+Activación usa solo la guardada validada con su preview y confirmación separados; muestra activa/guardada/
+pendiente y orden de reinicio explícita, sin arrancarlo desde UI. Cancelar fija id/versión revisados. Legacy
+muestra importación pendiente T011; consulta restaurada nunca monta el editor. [Entrega](../phase/P013-T006_ASISTENTE_UI.md), D223.
+
 ## Persistencia y recuperación
 
 Primitivas T004 implementadas ([D221](../DECISIONS.md#d221--p013-t004-journal-y-referencias-de-configuración),
 [entrega](../phase/P013-T004_CONFIGURACION.md)): `preview/save`, `activation_preview/activate`,
 `promote_pending/cancel_pending`, `recovery_preview/recover` y descarte/importación explícitos de cambios externos.
-Endpoints globales y consumo global v9 en T005; UI y consumo de perfiles propios pendientes. Guardado con barrera SQLite y flock de instalación; intención ligada
+Endpoints globales y consumo global v9 en T005, UI global en T006; consumo/UI de perfiles propios pendientes.
+Guardado con barrera SQLite y flock de instalación; intención ligada
 a directorios de configuración/estado. Revisiones DRAFT o VALIDATED, copias privadas y fsync por publicación.
 Recuperación exige declaración de escritores detenidos y exclusión efectiva; se audita como otra operación,
 sin inferir parada por lease. Global sella el conjunto pendiente por id de activación y promueve en transacción;
