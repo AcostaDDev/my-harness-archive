@@ -17,9 +17,12 @@ sin intentos/lock; backup/restauración y consulta HTTP iguales, mutación recha
 sin proyecto compuesto; D040 define API y el guion había añadido UI. Consumo 2/3 Claude y 0/0 Codex; 13 DONE/
 1 QUEUED/14 STOPPED/0 locks, puertos cerrados/claves retiradas, 14.921 filas previas intactas y 16.798 finales.
 HITL **«Planificar vista UI Aparte»** (D201): mantener T003 parcial y añadir
-[T012](#p012-t012--vista-ui-de-runs-en-copias-de-consulta), completada offline (D202). **Siguiente:**
-consentimiento para la [continuación T003 solo UI](phase/P012-T012_VISTA_CONSULTA.md#4-propuesta-de-continuación-t003-solo-ui-sin-autorizar),
-con wheel corregido en destinos nuevos y cero llamadas. Sin repetir chat/aceptación/backup o consumir saldo. T004 sin
+[T012](#p012-t012--vista-ui-de-runs-en-copias-de-consulta), completada offline (D202). Continuación solo UI
+autorizada el 2026-10-26 y detenida antes del build (D203): hashes y 16.798 filas iguales, puertos cerrados,
+13 DONE/1 QUEUED/14 STOPPED/0 locks. Identificador `uuid.getnode()` distinto del host persistido; liveness
+**unknown**, con los 14 grupos locales ausentes. Cero builds/instalaciones/servicios/llamadas nuevos.
+**Siguiente:** [HITL de la parada](phase/P012-T003_UI_T012.md#3-hitl-pendiente) antes de reanudar exclusivamente
+la copia de consulta con esa incertidumbre explícita. Sin repetir chat/aceptación/backup o consumir saldo. T004 sin
 autorización y con propuesta de arranque pendiente que respete el job QUEUED; no reactivar esa base (D199).
 El resultado T002 y los saldos no habilitan otro tramo, corrección o reintento.
 P001–P011 siguen cerradas; la apertura del [expediente de P011](archive/phase-011/P011_EXPEDIENTE_APERTURA.md)
@@ -139,7 +142,8 @@ con la procedencia acumulada de la matriz, sin declarar una tercera B ni reparar
 
 ## P012-T003 — Chat, backup y restauración sobre el proyecto real
 
-**Estado:** parcial, autorizada/ejecutada/detenida el 2026-10-25; chat y backup/consulta HTTP acreditados (D200).
+**Estado:** parcial; chat y backup/consulta HTTP acreditados el 2026-10-25 (D200). Continuación UI autorizada
+el 2026-10-26 y detenida antes del build por identidad histórica del host `unknown` (D203); HITL pendiente.
 HITL D201 elige planificar vista UI aparte, sin cerrar con solo API. **Depende de:** T002; T012 para completar
 consulta UI y consentimiento explícito nuevo antes de su continuación.
 **Objetivo:** Acreditar el chat con el revisor real y el backup/restauración de consulta de una base con runs reales.
@@ -160,7 +164,8 @@ consulta UI y consentimiento explícito nuevo antes de su continuación.
 
 **Validación:** la propia del tramo.
 **Entregables:** [propuesta y comprobaciones previas](phase/P012-T003_PROPUESTA_CHAT_BACKUP.md);
-[resultado real, conservación y límite UI](phase/P012-T003_CHAT_BACKUP_REAL.md).
+[resultado real, conservación y límite UI](phase/P012-T003_CHAT_BACKUP_REAL.md);
+[continuación UI tras T012 y parada previa al build](phase/P012-T003_UI_T012.md).
 Consentimiento «Continúa.» al guion del commit bcbf977; parada por origin_rejected y reanudación nativa
 autorizada por HITL, sin cambiar guardias o techos. Dos turnos ANSWERED, HEAD 6f02121 sin cambios, `/estado`
 sin modelo; propuesta ACCEPTED por hash/versión y P001-T002 QUEUED con supervisor=false, cero intentos/preparaciones.

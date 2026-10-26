@@ -213,6 +213,7 @@ tarea se leen solo las decisiones que cita; este índice sirve para buscar prece
 | [D200](#d200--p012-t003-chat-real-y-backup-restaurado-con-límite-de-ui) | P012-T003: chat real y backup restaurado con límite de UI | P012 |
 | [D201](#d201--p012-t012-vista-ui-de-consulta-planificada) | P012-T012: vista UI de consulta planificada | P012 |
 | [D202](#d202--p012-t012-vista-ui-de-consulta-implementada) | P012-T012: vista UI de consulta implementada | P012 |
+| [D203](#d203--p012-t003-parada-previa-al-build-por-identidad-histórica-del-host) | P012-T003: parada previa al build por identidad histórica del host | P012 |
 
 ## D001 — Alcance local y arquitectura base
 
@@ -5959,3 +5960,25 @@ Estado: implementado y verificado offline el 2026-10-25. Fase: P012. Implementa 
   mismas lecturas/hash sin decodificar historial. No hay operación privada, proveedores o wheel operativo nuevo.
   T012 completa offline; T003 sigue parcial hasta QA UI real con consentimiento nuevo, cero llamadas de modelos
   y sin repetir chat/aceptación/backup. T004 conserva D199 y su autorización separada; T005 sigue pendiente.
+
+## D203 — P012-T003: parada previa al build por identidad histórica del host
+
+Estado: continuación UI autorizada y detenida antes del build el 2026-10-26; HITL pendiente.
+Fase: P012. [Evidencia saneada y propuesta de reanudación](phase/P012-T003_UI_T012.md).
+Precedentes: D040/D199–D202; guion §4 de la entrega T012. Registros anteriores conservados.
+
+- El usuario responde **«Autorizo.»** a la petición específica: build/instalación offline en destinos nuevos,
+  consulta de restored/t003 en 8025, una hora y cero modelos. No autoriza T004 ni la base operativa.
+- Antes del build coinciden los cinco hashes previstos de bases/manifiestos, las 16.798 filas en fuente/bundle/
+  restauración, integridad/FK/esquema/marcas, hashes de herramientas y artefactos comprobados. Puertos cerrados,
+  13 DONE/1 QUEUED/14 STOPPED/0 locks, destinos previstos ausentes. WAL existentes vacíos, sin immutable=1.
+- La guardia `liveness(identity, group=True) == dead` falla con **unknown** en los 14 procesos históricos.
+  Nombre de equipo y plataforma coinciden, pero difiere el componente uuid.getnode() de la identidad del host.
+  Los 14 grupos locales están ausentes; esto no acredita muerte de identidades del host anterior. Sin causa
+  atribuida al cambio de identificador, defecto de producto demostrado o modificación de identidades/guardias.
+- Parada conforme al guion, sin construir/instalar/servir ni llamadas nuevas. No se completan comprobaciones
+  posteriores de fixtures/preparaciones, QA UI o conservación final como si se hubiera recorrido todo el tramo.
+  T003 sigue parcial, evidencia privada nueva y registro saneado; producto/API/modelos/flujos sin cambios.
+- HITL: continuar solo la copia de consulta aceptando explícitamente la incertidumbre histórica, con límites
+  originales y sin alterar SQLite/código, o conservar la parada. Pendiente respuesta; sin reanudar por inferencia.
+  La evidencia de consulta nunca certifica muerte de escritores. T004 conserva D199 y su consentimiento separado.

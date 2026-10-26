@@ -1,6 +1,6 @@
 # Estado — my_harness
 
-Actualizado: 2026-10-25. Sin bloques gestionados mientras el repositorio no esté registrado en el harness (D088).
+Actualizado: 2026-10-26. Sin bloques gestionados mientras el repositorio no esté registrado en el harness (D088).
 
 ## Base acumulada
 
@@ -171,9 +171,16 @@ componentes compartidos, navegación de consulta en en/es sin workspace/acciones
 Sin migración, checkout o cambios de guardias. **102 tests Python dirigidos**, regresiones React/router,
 Node/tipos/build correctos; solo fixtures sintéticos, sin wheel operativo, servicio o llamadas nuevas.
 
-**Siguiente:** consentimiento nuevo para la [continuación solo UI de T003](phase/P012-T012_VISTA_CONSULTA.md#4-propuesta-de-continuación-t003-solo-ui-sin-autorizar),
-con código corregido, destinos nuevos y cero llamadas de modelos;
-no repetir chat/aceptación/backup o consumir saldo. Informes anteriores conservados por bytes.
+**Continuación UI T003 autorizada y detenida antes del build** (D203, 2026-10-26):
+[comprobaciones y HITL pendiente](phase/P012-T003_UI_T012.md). Base f948429 y 24 hashes T012 correctos;
+cinco hashes de bases/manifiestos coinciden, integridad/FK/esquema y **16.798 filas** iguales, puertos cerrados,
+13 DONE/1 QUEUED/14 STOPPED/0 locks. El componente `uuid.getnode()` del host difiere del persistido:
+`liveness` devuelve **unknown** para los 14 procesos. Grupos locales ausentes, sin certificar sus identidades
+históricas. Cero builds/instalaciones/servicios/llamadas; sin cambiar identidades, SQLite o guardias.
+
+**Siguiente:** resolver HITL sobre continuar exclusivamente la copia de consulta aceptando esa incertidumbre,
+o conservar la parada. T003 sigue parcial; el consentimiento inicial no autoriza la excepción.
+No repetir chat/aceptación/backup o consumir saldo. Informes anteriores conservados por bytes.
 T004 sigue sin autorización y necesita propuesta de arranque que respete el job QUEUED (D199).
 T002 finalizada, sin reparación/revalidación de sus dos fallos. Conservar todos los fixtures, diffs, historiales,
 configuraciones y distribuciones. Sin nueva fase del Django de P009, tags, push o publicación. P012 sigue
