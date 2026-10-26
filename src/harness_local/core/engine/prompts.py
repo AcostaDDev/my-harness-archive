@@ -26,13 +26,17 @@ VARIABLES = {
     'plan-phase': ('CONTEXT_JSON', 'MESSAGE', PROJECT_INSTRUCTIONS),
     # Onboarding reads the original instructions as evidence in the frozen source tree.
     'onboard-project': ('CONTEXT_JSON', 'MESSAGE'),
+    'define-project-profile': ('CONTEXT_JSON', 'MESSAGE'),
+    'onboard-project-profile': ('CONTEXT_JSON', 'MESSAGE'),
 }
 ROLES = {'bootstrap-project': 'bootstrap', 'plan-task': 'planner', 'review-task': 'reviewer', 'execute-task': 'executor', 'revise-task': 'executor',
          'close-phase': 'phase', 'chat-turn': 'chat', 'define-project': 'definition', 'plan-phase': 'planning',
-         'onboard-project': 'definition'}
+         'onboard-project': 'definition', 'define-project-profile': 'definition',
+         'onboard-project-profile': 'definition'}
 # H4.1/H6.5/P008-T011: templates added after H3.1. Catalogs frozen in earlier runs do not contain them and
 # remain valid on resume; new catalogs always include them.
-ADDED_LATER = frozenset({'chat-turn', 'define-project', 'plan-phase', 'onboard-project'})
+ADDED_LATER = frozenset({'chat-turn', 'define-project', 'plan-phase', 'onboard-project',
+                         'define-project-profile', 'onboard-project-profile'})
 RETIRED = {'import-project': ('CONTEXT_JSON', 'MESSAGE')}
 TOKEN = re.compile(r'{{([A-Z][A-Z0-9_]*)}}')
 
@@ -201,6 +205,10 @@ def render_attempt(catalog, name, values, context, language=None):
         text += '\n' + render(catalog['executor-routing'], routing)
         parts.append({'version': asdict(catalog['executor-routing']), 'variables': routing})
     schema = output_schema(role)  # Fixed motor contract; the editor cannot weaken it.
+    if name in {'define-project-profile', 'onboard-project-profile'}:
+        from harness_local.core.engine.profile_schema import profile_schema
+        schema['properties']['profile'] = profile_schema()
+        schema['required'].append('profile')
     sealed = None
     if pair is not None:
         rule = directive(role, *pair)

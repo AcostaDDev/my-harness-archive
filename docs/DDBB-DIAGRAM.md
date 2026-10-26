@@ -1,6 +1,6 @@
 # Diagrama de datos — my_harness
 
-Esquema SQLite del servicio local (Alembic `0026_configuration`, 54 tablas). Generado en P008-T001 desde el metadata de `src/harness_local/storage/models.py` (actualizado en P009-T004 con preparación y propietarios compartidos, en P010-T003 con la proyección de runs, en P011-T007 con las preferencias de idioma y en P011-T008 con el idioma de trabajo por proyecto y en P013-T004 con configuración versionada); cualquier cambio de modelos o migraciones actualiza este documento en la misma tarea (regla de paridad, D088).
+Esquema SQLite del servicio local (Alembic `0027_profile_proposals`, 54 tablas). Generado en P008-T001 desde el metadata de `src/harness_local/storage/models.py` (actualizado en P009-T004 con preparación y propietarios compartidos, en P010-T003 con la proyección de runs, en P011-T007 con las preferencias de idioma y en P011-T008 con el idioma de trabajo por proyecto y en P013-T004 con configuración versionada y P013-T007 con altas sin perfil); cualquier cambio de modelos o migraciones actualiza este documento en la misma tarea (regla de paridad, D088).
 
 P009-T002 implementa autoridad y creación de hijos (D117); T004 implementa preparación/pasos/journal y amplía
 locks/procesos compartidos (D119). [Diseño de partida](archive/phase-009/P009-T001_CONTRATO_CREACION.md#6-persistencia-propuesta-y-migraciones).
@@ -10,7 +10,27 @@ Convenciones: `PK` clave primaria, `FK` clave ajena declarada, `UK` unicidad de 
 P013-T004 implementa el [contrato de configuración versionada](phase/P013-T001_CONTRATO.md#4-archivos-formatos-y-autoridad)
 y su [flujo](flows/configuration-setup.md) en `0026_configuration`: **54 tablas** de producto, más `alembic_version`.
 Tres tablas aditivas, sin modificar columnas/datos previos; referencias de contenido en archivos TOML privados.
-API/runtime, alta/preparación y backup nuevo siguen pendientes T005–T011.
+API/runtime global entregados en T005, propuestas de alta en T007; preparación/activación y backup nuevo
+siguen pendientes T008–T011.
+
+## Altas documentales y propuestas de perfil (P013-T007)
+
+[D224](DECISIONS.md#d224--p013-t007-contexto-documental-sin-stack-y-propuesta-de-perfil),
+[entrega](phase/P013-T007_PROPUESTA_PERFIL.md). `0027_profile_proposals` conserva 54 tablas y permite
+`registered_projects.composition/profile` null para altas v9 sin stack. `status=ACTIVE` sigue describiendo
+el registro; no acredita perfil ni tareas. Fila/huella/confianza/idioma/eventos conservan D078/D167.
+Reconstrucción SQLite transaccional con comprobación de claves ajenas; auditorías y filas existentes intactas.
+El downgrade rechaza cualquier alta null, run con contexto `project-intake-1` o propuesta de perfil.
+La retirada de `creation_id` en el downgrade de 0021 usa ahora batch para tolerar la FK reconstruida.
+
+Sin tabla nueva: `planning_proposals.kind` añade `profile` con `path/base_sha256=null`; `content` es JSON
+canónico `project-profile-proposal-1`: candidato, herramientas diferidas, evidencia por comando, documentos y
+HEAD/tree/inventario ligados por hash. Números/hashes/versiones/turnos existentes conservan la procedencia.
+`PROPOSED → ACCEPTED` adopta solo borrador, con CAS de conversación, preview, motivo/actor/clave y resultado de
+replay en `decision`; otro turno válido marca `SUPERSEDED` conservando confirmación y replay anteriores.
+`planning_turns.request.context` sella capacidad documental y el borrador de perfil anterior; el contexto del
+run usa discriminador `project-intake-1` sin perfil. Formatos y bytes de historiales anteriores intactos.
+No se crean operaciones de configuración, recibos ni permisos por proponer/confirmar.
 
 ## Configuración versionada (P013-T004)
 
@@ -507,7 +527,7 @@ erDiagram
         string conversation_id FK "→ planning_conversations.id"
         string turn_id FK "→ planning_turns.id"
         integer number
-        string kind
+        string kind "draft | plan | profile"
         string path "null"
         text content
         text reason
@@ -646,8 +666,8 @@ erDiagram
         integer version
         string status
         string root
-        string composition
-        string profile
+        string composition "null: alta sin stack"
+        string profile "null: sin perfil ejecutable"
         json row
         string row_sha256
         json trust

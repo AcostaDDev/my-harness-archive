@@ -488,7 +488,7 @@ no cambia hoy `render_attempt`, adaptadores, variables, snapshots, API o esquema
 
 ## 14. Ampliación planificada — P013
 
-**T001 diseñada y T002–T006 implementadas; pendiente T007–T011.** §6/§9 describen lo implementado.
+**T001 diseñada y T002–T007 implementadas; pendiente T008–T011.** §6/§9 describen lo implementado.
 [D216](DECISIONS.md#d216--p013-t001-instalación-aislada-y-arranque-sin-configuración),
 [D217](DECISIONS.md#d217--p013-t001-archivos-versionados-y-activación-de-configuración) y
 [D218](DECISIONS.md#d218--p013-t001-perfil-tras-contexto-y-preparación-antes-de-activar).
@@ -543,8 +543,11 @@ No invocar CLI en GET/parse/preview; comprobación explícita version/help conse
 [API efectiva](phase/P013-T005_ASISTENTE_API.md). `ConfigurationSetup` selecciona autoridad antes de componer
 runtime; promueve pendientes T004 y revalida activa/hashes en la barrera `_write` compartida con admisión.
 Preferencias y configuración tienen repositorios propios; no abren trabajo mientras se resuelve setup.
-El cargador 1–8 conserva formas/hashes; solo el editor activo compone v9. El registro por composiciones legacy
-no admite la global v9: altas/perfiles propios pendientes T007–T009 e importación legacy T011.
+El cargador 1–8 conserva formas/hashes; solo el editor activo compone v9. T007 habilita registro v9 sin
+composición sobre raíz existente confiada para `IntakeContext`, que sella
+política/idioma y no contiene perfil ni runner. Jobs de ese contexto solo admiten definición/incorporación;
+commit documental y activación integrados pendientes T009, preparación T008 e importación legacy T011.
+Las composiciones con nombre no eluden esta puerta v9; formatos 1–8 mantienen su ruta anterior.
 
 T006 entrega `ConfigurationPage` en `/setup` y `/settings/configuration`, acceso en la navegación y puerta
 previa al workspace cuando el supervisor informa configuración bloqueada. `SupervisorRead.configuration_mode`
@@ -571,3 +574,14 @@ originales/CLI y sin autoridad de ejecución o reparación. No convierte copias 
 
 T012–T015 verifican experiencia, actualizan docs públicas y preparan candidato/expediente nuevos antes de
 cerrar. P011/P012/D214 conservan bytes/procedencia. D157 y modo continuo posterior D156 se mantienen.
+
+T007 ([D224](DECISIONS.md#d224--p013-t007-contexto-documental-sin-stack-y-propuesta-de-perfil),
+[entrega](phase/P013-T007_PROPUESTA_PERFIL.md)): contexto `project-intake-1`, serializado aparte sin cambiar
+snapshots ejecutables. Plantillas nuevas `define-project-profile`/`onboard-project-profile` conservan rol de
+lectura `definition` con esquema tipado congelado. `services/profile_proposal.py` reutiliza el parser declarativo
+sin descubrir herramientas; cada argv necesita evidencia con hashes y las validaciones deben ser funcionales.
+Propuestas `project-profile-proposal-1` en `planning_proposals.kind=profile`, separadas de los documentos D088;
+aceptación versiona solo el borrador. `profile/preview` y `profile/confirm` comprueban CAS, HEAD/inventario,
+documentos aplicados, contexto/versiones y preguntas. GET muestra estado sin sondear herramientas; confirmar
+no ejecuta procesos, guarda TOML ni activa. `0027_profile_proposals` permite composición/perfil null en registro,
+conserva filas/auditoría y rechaza downgrade con altas/historiales nuevos; [paridad](DDBB-DIAGRAM.md).

@@ -96,6 +96,9 @@ class BootstrapRepository:
             raise Conflict(tr('bootstrap.target_has_managed_history'))
 
     def preview(self, context, data, versions, writer):
+        from harness_local.core.engine.context import IntakeContext
+        if isinstance(context, IntakeContext):
+            raise Conflict(tr('profile_proposal.activation_pending'))
         if layout(context) is None:
             raise ValueError(tr(V1_RETIRED))
         saved = self.get(context.root)

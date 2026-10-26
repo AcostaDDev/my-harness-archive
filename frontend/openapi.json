@@ -8763,6 +8763,231 @@
         }
       }
     },
+    "/api/managed/projects/{project_id}/planning/{conversation_id}/profile/preview": {
+      "post": {
+        "summary": "Profile Proposal Preview",
+        "operationId": "managed_profile_proposal_preview",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          },
+          {
+            "name": "conversation_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Conversation Id"
+            }
+          },
+          {
+            "name": "x-harness-local",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Required with value 1 on mutations (CSRF protection).",
+              "title": "X-Harness-Local"
+            },
+            "description": "Required with value 1 on mutations (CSRF protection)."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProfileProposalPreviewCreate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProfileProposalPreviewRead"
+                }
+              }
+            }
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          }
+        }
+      }
+    },
+    "/api/managed/projects/{project_id}/planning/{conversation_id}/profile/confirm": {
+      "post": {
+        "summary": "Profile Proposal Confirm",
+        "operationId": "managed_profile_proposal_confirm",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          },
+          {
+            "name": "conversation_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Conversation Id"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200,
+              "description": "The same key and the same action return the same job.",
+              "title": "Idempotency-Key"
+            },
+            "description": "The same key and the same action return the same job."
+          },
+          {
+            "name": "x-harness-local",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Required with value 1 on mutations (CSRF protection).",
+              "title": "X-Harness-Local"
+            },
+            "description": "Required with value 1 on mutations (CSRF protection)."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProfileProposalConfirmCreate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProfileProposalAdoptedRead"
+                }
+              }
+            }
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          }
+        }
+      }
+    },
     "/api/managed/projects/{project_id}/planning/{conversation_id}/drafts": {
       "get": {
         "summary": "Planning Drafts",
@@ -18545,8 +18770,25 @@
             "title": "Root"
           },
           "profile": {
-            "type": "string",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
             "title": "Profile"
+          },
+          "configuration_state": {
+            "type": "string",
+            "enum": [
+              "PROFILE_REQUIRED",
+              "PROFILE_PROPOSED",
+              "ACTIVE"
+            ],
+            "title": "Configuration State",
+            "default": "ACTIVE"
           },
           "versions": {
             "additionalProperties": {
@@ -22201,7 +22443,8 @@
             "type": "string",
             "enum": [
               "draft",
-              "plan"
+              "plan",
+              "profile"
             ],
             "title": "Kind"
           },
@@ -23036,6 +23279,176 @@
         ],
         "title": "ProblemResponse"
       },
+      "ProfileProposalAdoptedRead": {
+        "properties": {
+          "conversation_id": {
+            "type": "string",
+            "title": "Conversation Id"
+          },
+          "proposal_id": {
+            "type": "string",
+            "title": "Proposal Id"
+          },
+          "configuration_state": {
+            "type": "string",
+            "const": "PROFILE_PROPOSED",
+            "title": "Configuration State"
+          },
+          "version": {
+            "type": "integer",
+            "title": "Version"
+          },
+          "proposal_sha256": {
+            "type": "string",
+            "title": "Proposal Sha256"
+          }
+        },
+        "type": "object",
+        "required": [
+          "conversation_id",
+          "proposal_id",
+          "configuration_state",
+          "version",
+          "proposal_sha256"
+        ],
+        "title": "ProfileProposalAdoptedRead"
+      },
+      "ProfileProposalConfirmCreate": {
+        "properties": {
+          "proposal_id": {
+            "type": "string",
+            "maxLength": 36,
+            "minLength": 1,
+            "title": "Proposal Id"
+          },
+          "expected_version": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Expected Version"
+          },
+          "proposal_sha256": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$",
+            "title": "Proposal Sha256"
+          },
+          "preview_sha256": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$",
+            "title": "Preview Sha256"
+          },
+          "confirmed": {
+            "type": "boolean",
+            "const": true,
+            "title": "Confirmed"
+          },
+          "reason": {
+            "type": "string",
+            "maxLength": 2000,
+            "minLength": 1,
+            "title": "Reason"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "proposal_id",
+          "expected_version",
+          "proposal_sha256",
+          "preview_sha256",
+          "confirmed",
+          "reason"
+        ],
+        "title": "ProfileProposalConfirmCreate"
+      },
+      "ProfileProposalPreviewCreate": {
+        "properties": {
+          "proposal_id": {
+            "type": "string",
+            "maxLength": 36,
+            "minLength": 1,
+            "title": "Proposal Id"
+          },
+          "expected_version": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Expected Version"
+          },
+          "proposal_sha256": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$",
+            "title": "Proposal Sha256"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "proposal_id",
+          "expected_version",
+          "proposal_sha256"
+        ],
+        "title": "ProfileProposalPreviewCreate"
+      },
+      "ProfileProposalPreviewRead": {
+        "properties": {
+          "conversation_id": {
+            "type": "string",
+            "title": "Conversation Id"
+          },
+          "proposal_id": {
+            "type": "string",
+            "title": "Proposal Id"
+          },
+          "expected_version": {
+            "type": "integer",
+            "title": "Expected Version"
+          },
+          "proposal_sha256": {
+            "type": "string",
+            "title": "Proposal Sha256"
+          },
+          "profile": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Profile"
+          },
+          "blockers": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Blockers"
+          },
+          "ready": {
+            "type": "boolean",
+            "title": "Ready"
+          },
+          "configuration_state": {
+            "type": "string",
+            "enum": [
+              "PROFILE_REQUIRED",
+              "PROFILE_PROPOSED"
+            ],
+            "title": "Configuration State"
+          },
+          "preview_sha256": {
+            "type": "string",
+            "title": "Preview Sha256"
+          }
+        },
+        "type": "object",
+        "required": [
+          "conversation_id",
+          "proposal_id",
+          "expected_version",
+          "proposal_sha256",
+          "profile",
+          "blockers",
+          "ready",
+          "configuration_state",
+          "preview_sha256"
+        ],
+        "title": "ProfileProposalPreviewRead"
+      },
       "ProjectAgentsRead": {
         "properties": {
           "planning_mode": {
@@ -23398,11 +23811,25 @@
             "title": "Root"
           },
           "composition": {
-            "type": "string",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
             "title": "Composition"
           },
           "profile": {
-            "type": "string",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
             "title": "Profile"
           },
           "row_sha256": {
@@ -23529,11 +23956,25 @@
             "title": "Root"
           },
           "composition": {
-            "type": "string",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
             "title": "Composition"
           },
           "profile": {
-            "type": "string",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
             "title": "Profile"
           },
           "row_sha256": {
@@ -24098,7 +24539,14 @@
             "description": "Versions its jobs will freeze; null on retirement."
           },
           "profile": {
-            "type": "string",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
             "title": "Profile"
           },
           "trust_required": {

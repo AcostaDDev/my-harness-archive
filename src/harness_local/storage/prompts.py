@@ -9,6 +9,7 @@ from sqlalchemy.dialects.sqlite import insert
 from sqlalchemy.orm import Session
 
 from harness_local.core.engine.prompts import VARIABLES, Template, builtin_catalog, digest, dump_catalog, validate
+from harness_local.core.engine.context import IntakeContext, profile_name
 from harness_local.storage.managed import Conflict
 from harness_local.storage.models import PromptHeadRow as Head, PromptVersionRow as Version, PromptActivationRow as Activation
 from harness_local.i18n import tr
@@ -29,7 +30,9 @@ class PromptRepository:
     def owner(self, context, scope):
         if scope not in {'core', 'profile', 'project'}:
             raise ValueError(tr('prompts.unknown_prompt_scope'))
-        return {'core': 'core', 'profile': context.profile.name, 'project': str(context.root)}[scope]
+        if scope == 'profile' and profile_name(context) is None:
+            raise ValueError(tr('profile_proposal.required'))
+        return {'core': 'core', 'profile': profile_name(context), 'project': str(context.root)}[scope]
 
     def key(self, context, scope, name):
         if name not in VARIABLES:
@@ -39,6 +42,8 @@ class PromptRepository:
     def _catalog(self, session, context):
         catalog = builtin_catalog()
         for scope in ('core', 'profile', 'project'):
+            if scope == 'profile' and isinstance(context, IntakeContext):
+                continue
             heads = session.scalars(select(Head).where(Head.scope == scope, Head.owner == self.owner(context, scope))).all()
             for head in heads:
                 if head.name not in VARIABLES:
@@ -74,7 +79,7 @@ class PromptRepository:
             versions = session.scalars(select(Version).where(
                 Version.name == name,
                 ((Version.scope == 'core') & (Version.owner == 'core')) |
-                ((Version.scope == 'profile') & (Version.owner == context.profile.name)) |
+                ((Version.scope == 'profile') & (Version.owner == profile_name(context))) |
                 ((Version.scope == 'project') & (Version.owner == str(context.root))))
                 .order_by(Version.created_at, Version.id)).all()
             activations = session.scalars(select(Activation).filter_by(**key).order_by(Activation.generation)).all()

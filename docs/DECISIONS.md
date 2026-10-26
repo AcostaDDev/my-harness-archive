@@ -235,6 +235,7 @@ tarea se leen solo las decisiones que cita; este índice sirve para buscar prece
 | [D221](#d221--p013-t004-journal-y-referencias-de-configuración) | P013-T004: journal y referencias de configuración | P013 |
 | [D222](#d222--p013-t005-asistente-api-y-arranque-con-autoridad-global-versionada) | P013-T005: asistente API y arranque con autoridad global versionada | P013 |
 | [D223](#d223--p013-t006-asistente-y-editor-global-con-confirmaciones-exactas) | P013-T006: asistente y editor global con confirmaciones exactas | P013 |
+| [D224](#d224--p013-t007-contexto-documental-sin-stack-y-propuesta-de-perfil) | P013-T007: contexto documental sin stack y propuesta de perfil | P013 |
 
 ## D001 — Alcance local y arquitectura base
 
@@ -6582,3 +6583,40 @@ Concreta D216/D217/D222 sin anticipar importación T011 ni perfiles/asistencia T
   Legacy informa que requiere importación explícita T011; originales y contratos 1–8 conservados.
 - Sin esquema/migraciones nuevos. Pruebas de componentes/contrato con transporte falso y TestClient; sin
   servicio instalado, navegador, proveedores, smokes ni publicación. T012/T013 acreditarán lo visual/instalado.
+
+
+## D224 — P013-T007: contexto documental sin stack y propuesta de perfil
+
+Estado: implementada y verificada con agentes falsos y fixtures Go el 2026-10-26. Fase: P013.
+Concreta D218 con las primitivas D221 y autoridad global D222; preparación T008 y alta/UI/activación T009 pendientes.
+[Entrega](phase/P013-T007_PROPUESTA_PERFIL.md), [flujo](flows/configuration-setup.md#propuesta-entregada-en-t007),
+[datos](DDBB-DIAGRAM.md#altas-documentales-y-propuestas-de-perfil-p013-t007).
+
+- `IntakeContext` declara solo capacidades documentales (`project-intake-1`), con raíz/layout/política/idioma
+  congelados; no fabrica perfil ni runner. Registro v9 sobre raíz existente confiada admite composición/perfil
+  null. Las guardias de confianza/raíces/idioma/replay continúan; solo definición/incorporación admiten jobs.
+  El arranque v9 permite estas filas sin exigir importación legacy; los registros con composición conservan
+  el bloqueo T011. La creación de carpeta sin perfil y los commits se unen en T009. Formatos 1–8 intactos.
+- Plantillas nuevas del rol lector `definition`, con esquema estructurado sellado por intento; originales
+  conservadas para las conversaciones anteriores. Brief/documentos/arquitectura o inventario de HEAD preceden
+  al candidato. Preguntas cuando falta contexto; herramientas por nombre/requisito diferidas, sin buscar ni
+  ejecutar comandos para inferir el stack. Ejemplos opcionales, sin requisito Django/TypeScript.
+- `project-profile-proposal-1` contiene perfil declarativo, herramientas, evidencia/motivo por comando, fuentes
+  y binding de documentos/HEAD/tree/inventario. Parser común de perfiles y rechazo saneado de claves/secretos,
+  shell/rutas/formateador/validaciones insuficientes. Cada validación funcional tiene propósito test/build/check;
+  ayuda/versión/no-op no basta. Evidencia de entorno sigue NOT_CHECKED, sin atribuir ejecución a la propuesta.
+- Propuestas versionadas `kind=profile` separadas de los documentos D088, en las tablas de planificación.
+  Preview y confirmación protegidos por CAS/hash/clave verifican documentos aplicados, último turno,
+  contexto/versiones y preguntas/pendientes. B verifica HEAD/inventario antes de encolar, GO y adoptar;
+  exportación de lectura y fuentes del checkout intactas. No amplía lectura a código ejecutado o ignorados.
+- Confirmar adopta solo borrador `PROFILE_PROPOSED`; no escribe TOML, prepara, hace commit ni activa. Reenvío
+  exacto conserva resultado; otro payload con misma clave rechaza. Otro turno válido sustituye perfil
+  anterior conservando su confirmación y replay. GET solo describe borrador, sin sondear herramientas;
+  su vigencia se comprueba en preview. Las composiciones nombradas no eluden esta puerta v9 en el registro.
+- Migración `0027_profile_proposals`: 54 tablas; solo nullabilidad de composición/perfil en registro, sin
+  reescribir filas/auditorías existentes. Reconstrucción transaccional con comprobación completa de FK antes
+  de liberar diferimiento SQLite. Downgrade rechaza altas/historiales/propuestas nuevos. Ajuste del downgrade
+  0021 para retirar conjuntamente columna/FK reconstruida; recorridos con auditoría existente verificados.
+- API/OpenAPI/tipos, diagnósticos en/es, diagrama y flujos en paridad. Sin proveedores reales, servicios,
+  operación sobre este checkout, red, configuración global del equipo, candidatos/snapshots anteriores ni
+  acciones remotas. No se requiere HITL adicional: detalles de representación concretan D218 dentro de T007.

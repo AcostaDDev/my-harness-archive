@@ -313,8 +313,16 @@ class LocalSupervisor:
                     journal._call(self.repository.effect, 'onboarding_snapshot_intent', {
                         'head': head, 'format': 'head-export-1', 'path': str(destination)})
                     reader = self.commit_factory(context, versions) if self.commit_factory is not None else None
-                    evidence = export_snapshot(context.root, head, destination, getattr(reader, 'executable', 'git'))
-                    context = replace(context, root=destination)
+                    from harness_local.core.engine.context import IntakeContext
+                    if isinstance(context, IntakeContext):
+                        from harness_local.storage.onboarding import read_inventory
+                        if read_inventory(context, getattr(reader, 'executable', 'git')) != snapshot['context']['inventory']:
+                            reason = tr('profile_proposal.stale')
+                            history = stop_history(record.history, 'onboarding', reason)
+                            outcome = {'status': 'FAILED', 'reasons': [reason], 'result': None, 'observed': None}
+                    if outcome is None:
+                        evidence = export_snapshot(context.root, head, destination, getattr(reader, 'executable', 'git'))
+                        context = replace(context, root=destination)
 
                     def observe():
                         return {**observation(area.inspect_definition(context)),
@@ -323,8 +331,10 @@ class LocalSupervisor:
                     def observe():
                         captured = evidence.capture(context)
                         return {"base_revision": captured.base_revision, "fingerprint": captured.fingerprint}
-                history, outcome = planning_turn(context, record.history, snapshot, agents, observe, journal,
-                                                 catalog, language)
+                if outcome is None:
+                    from harness_local.services.profile_proposal import validate as validate_profile
+                    history, outcome = planning_turn(context, record.history, snapshot, agents, observe, journal,
+                                                     catalog, language, profile_validator=validate_profile)
             elif request["action"] in ("phase_check", "phase_close"):
                 # D088: check and closure under the lock; the closure includes the documentary archive.
                 if self.commit_factory is None:

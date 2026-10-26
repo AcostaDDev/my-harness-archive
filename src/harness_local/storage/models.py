@@ -571,7 +571,7 @@ class PlanningProposalRow(Base):
     conversation_id: Mapped[str] = mapped_column(ForeignKey('planning_conversations.id'))
     turn_id: Mapped[str] = mapped_column(ForeignKey('planning_turns.id'))
     number: Mapped[int] = mapped_column(Integer)
-    # draft | plan
+    # draft | plan | profile (canonical JSON; documentary intake only)
     kind: Mapped[str] = mapped_column(String(20))
     path: Mapped[str | None] = mapped_column(String, nullable=True)
     content: Mapped[str] = mapped_column(Text)
@@ -693,7 +693,7 @@ class AttemptModelMetricRow(Base):
 class RegisteredProjectRow(Base):
     """H6.2 E2 (D054/D076): project registered from the UI; optimistic version and logical retirement.
 
-    Non-executable data only: the composition is named and the operator's TOML resolves it."""
+    Non-executable data only: named composition, or null for a documentary intake (D224)."""
     __tablename__ = 'registered_projects'
     __table_args__ = (Index('uq_registered_projects_active_root', 'root', unique=True,
                             sqlite_where=text("status = 'ACTIVE'")),
@@ -703,8 +703,8 @@ class RegisteredProjectRow(Base):
     version: Mapped[int] = mapped_column(Integer)
     status: Mapped[str] = mapped_column(String(20))
     root: Mapped[str] = mapped_column(String)
-    composition: Mapped[str] = mapped_column(String(64))
-    profile: Mapped[str] = mapped_column(String(64))
+    composition: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    profile: Mapped[str | None] = mapped_column(String(64), nullable=True)
     # Complete canonical row (what is composed) and its hash; trust is confirmed separately.
     row: Mapped[dict] = mapped_column(JSON)
     row_sha256: Mapped[str] = mapped_column(String(64))

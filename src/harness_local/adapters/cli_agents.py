@@ -153,7 +153,7 @@ def skips_git_check(context, request):
     if request.role != "definition" or request.prompt_snapshot_json is None:
         return False
     parts = json.loads(request.prompt_snapshot_json).get("parts") or ({},)
-    return parts[0].get("version", {}).get("name") == "define-project"
+    return parts[0].get("version", {}).get("name") in {"define-project", "define-project-profile"}
 
 
 def argv_for(config, context, request):

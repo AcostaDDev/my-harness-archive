@@ -5,7 +5,7 @@ from sqlalchemy.exc import SQLAlchemyError
 from harness_local.i18n import tr
 
 
-SCHEMA_REVISION = "0026_configuration"
+SCHEMA_REVISION = "0027_profile_proposals"
 
 
 def require_schema(engine: Engine) -> None:

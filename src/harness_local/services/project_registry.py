@@ -26,7 +26,7 @@ from harness_local.storage.registry import ProjectRegistryRepository, RegistryCo
 RESERVED_IDS = frozenset({'new'})
 ACTIONS = ('register', 'update', 'retire')
 # Formats with per-project agent selections (v5) and their successor that adds the work language (v6).
-AGENT_FORMATS = ('local-config-5', 'local-config-6', 'local-config-7', 'local-config-8')
+AGENT_FORMATS = ('local-config-5', 'local-config-6', 'local-config-7', 'local-config-8', 'local-config-9')
 def trust_statement():
     """The statement the operator confirms, in the visual language of the preview; the record keeps that text."""
     return tr('registry.trust')
@@ -303,7 +303,8 @@ class ProjectRegistry:
                                  **({'work_language': self.work_language_seal(language)} if language else {})})
         return {'action': action, 'project_id': project_id, 'expected_version': expected, 'version': version,
                 'status': status, 'row': row, 'row_sha256': row_sha256, 'changes': changes, 'versions': versions,
-                'profile': current['profile'] if action == 'retire' else registrar.compositions[row['composition']][0],
+                'profile': (current['profile'] if action == 'retire' else
+                            registrar.compositions[row['composition']][0] if row['composition'] else None),
                 'trust_required': action == 'register', 'trust_statement': trust_statement() if action == 'register' else None,
                 'unfinished_jobs': unfinished, 'configuration_blockers': blockers, 'work_language': language,
                 'preview_sha256': preview_sha256}

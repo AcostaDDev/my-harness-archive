@@ -53,7 +53,9 @@ class ConfigurationSetup:
     def _new_installation(self):
         # Importing an existing authority and deriving its project revisions belongs to T011.
         with Session(self.engine) as session:
-            if session.scalar(select(Project.id).limit(1)):
+            # T007 registrations without an executable profile belong to this v9 authority already.
+            if session.scalar(select(Project.id).where(
+                    (Project.composition.is_not(None)) | (Project.profile.is_not(None))).limit(1)):
                 raise ConfigurationConflict('configuration_import_required')
         if self.legacy:
             raise ConfigurationConflict('configuration_import_required')

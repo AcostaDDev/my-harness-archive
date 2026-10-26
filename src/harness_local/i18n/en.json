@@ -1243,5 +1243,16 @@
   "setup.invalid": "Invalid configuration or inaccessible private files. Review the candidate and selected directories.",
   "setup.not_ready": "Managed changes require valid active configuration. Complete setup, recovery or the pending restart.",
   "cli.help.configuration_dir": "Private versioned configuration directory, fixed before reading TOML.",
-  "cli.help.state_dir": "State directory fixed at startup; defaults to the database directory."
+  "cli.help.state_dir": "State directory fixed at startup; defaults to the database directory.",
+  "profile_proposal.required": "A prepared and activated project profile is required; this intake only admits documentary conversations.",
+  "profile_proposal.creation_pending": "Creating a new directory for a profile intake is pending the integrated onboarding flow.",
+  "profile_proposal.activation_pending": "The profile draft cannot commit documents or activate the project yet; preparation and activation are separate steps.",
+  "profile_proposal.invalid": "Invalid project profile proposal. Check its fields, commands and paths.",
+  "profile_proposal.context_required": "Concretize the specification and architecture before proposing a profile.",
+  "profile_proposal.tools": "Declare each command tool exactly once with its deferred environment requirement.",
+  "profile_proposal.evidence": "Each proposed command needs exact evidence from the frozen documents or inventory.",
+  "profile_proposal.validation": "The profile needs meaningful test, build or check commands; help, version and no-ops do not qualify.",
+  "profile_proposal.stale": "The profile proposal or its base changed. Review the current documents, HEAD, questions and conversation before confirming.",
+  "profile_proposal.questions": "Resolve the blocking questions and pending items before adopting the profile.",
+  "profile_proposal.key_reused": "This idempotency key belongs to a different profile confirmation."
 }

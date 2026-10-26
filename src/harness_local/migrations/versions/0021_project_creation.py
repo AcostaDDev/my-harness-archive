@@ -65,7 +65,14 @@ def downgrade():
         if bind.execute(sa.text('SELECT count(*) FROM ' + table)).scalar():
             raise RuntimeError('Creation authority/history cannot be represented before 0021; keep this revision')
     op.drop_index('uq_registered_creation', table_name='registered_projects')
-    op.drop_column('registered_projects', 'creation_id')
+    # Later SQLite table rebuilds turn the inline reference into a table foreign key.
+    # Batch removal drops that reference together with its column on either representation.
+    op.execute('PRAGMA defer_foreign_keys=ON')
+    with op.batch_alter_table('registered_projects') as batch:
+        batch.drop_column('creation_id')
+    if bind.exec_driver_sql('PRAGMA foreign_key_check').first() is not None:
+        raise RuntimeError('Creation downgrade found invalid foreign keys')
+    op.execute('PRAGMA defer_foreign_keys=OFF')
     op.drop_table('project_creation_operation_events')
     op.drop_table('project_creation_operations')
     op.drop_table('project_creation_root_events')

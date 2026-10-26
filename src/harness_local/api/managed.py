@@ -101,7 +101,10 @@ def managed_router(runtime: ManagedRuntime):
 
     def project_read(project):
         from harness_local.storage.work_language import read
-        return {"id": project.id, "root": str(project.context.root), "profile": project.context.profile.name,
+        from harness_local.core.engine.context import profile_name
+        return {"id": project.id, "root": str(project.context.root), "profile": profile_name(project.context),
+                'configuration_state': (planning_repository().profile_state(project.context.root)
+                                        if profile_name(project.context) is None else 'ACTIVE'),
                 "work_language": read(runtime.engine, project.context.root),
                 "versions": dict(project.versions), "tag_kind": project.tag_kind, "agents": agents_view(project),
                 "documents": project.context.documents, "bootstrap_enabled": project.bootstrap_enabled,
@@ -898,6 +901,7 @@ def managed_router(runtime: ManagedRuntime):
         DefinitionAcceptCreate, DefinitionPreviewRead, ImportPreviewRead, ImportEntryRead, PlanningApplyCreate, PlanningBriefRead,
         PlanningConversationCreate, PlanningConversationRead, PlanningConversationSummaryRead, PlanningDeferCreate,
         PlanningDismissCreate, PlanningDraftContentRead, PlanningDraftEdit, PlanningDraftsRead, PlanningMessageCreate,
+        ProfileProposalPreviewCreate, ProfileProposalConfirmCreate, ProfileProposalPreviewRead, ProfileProposalAdoptedRead,
     )
     from harness_local.storage.planning import PlanningRepository
 
@@ -987,6 +991,34 @@ def managed_router(runtime: ManagedRuntime):
                    key=idempotency_key, versions=frozen_versions(item), text=body.text,
                    writer=conversation_port(item, kind))
         return queued(job)
+
+    @router.post('/projects/{project_id}/planning/{conversation_id}/profile/preview',
+                 response_model=ProfileProposalPreviewRead, operation_id='managed_profile_proposal_preview')
+    def profile_proposal_preview(project_id: str, conversation_id: str, body: ProfileProposalPreviewCreate):
+        item = planning_project(project_id)
+        conversation_of(item, conversation_id)
+        kind = call(planning_repository().get, conversation_id)['kind']
+        writer = profile_proposal_port(item, kind)
+        return call(planning_repository().profile_preview, item.context, conversation_id, body.proposal_id,
+                    body.expected_version, body.proposal_sha256, writer, versions=dict(item.versions))
+
+    @router.post('/projects/{project_id}/planning/{conversation_id}/profile/confirm',
+                 response_model=ProfileProposalAdoptedRead, operation_id='managed_profile_proposal_confirm')
+    def profile_proposal_confirm(project_id: str, conversation_id: str, body: ProfileProposalConfirmCreate,
+                                 idempotency_key: IdempotencyKey):
+        item = planning_project(project_id)
+        conversation_of(item, conversation_id)
+        kind = call(planning_repository().get, conversation_id)['kind']
+        return call(planning_repository().confirm_profile, item.context, conversation_id, body.proposal_id,
+                    body.expected_version, proposal_sha256=body.proposal_sha256,
+                    preview_sha256=body.preview_sha256, reason=body.reason, key=idempotency_key,
+                    writer=profile_proposal_port(item, kind), versions=dict(item.versions))
+
+    def profile_proposal_port(item, kind):
+        # Reviewing/adopting a data-only draft never resolves clients or probes their versions.
+        if runtime.config.commit_factory is None or (kind == 'definition' and not item.bootstrap_enabled):
+            raise problem(409, 'profile_required', say('profile_proposal.required'))
+        return call(runtime.config.commit_factory, item.context, dict(item.versions))
 
     @router.get('/projects/{project_id}/planning/{conversation_id}/drafts', response_model=PlanningDraftsRead,
                 operation_id='managed_planning_drafts')

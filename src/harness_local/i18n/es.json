@@ -1243,5 +1243,16 @@
   "setup.invalid": "Configuración no válida o archivos privados inaccesibles. Revisa el candidato y los directorios elegidos.",
   "setup.not_ready": "Los cambios gestionados requieren configuración activa válida. Completa el asistente, la recuperación o el reinicio pendiente.",
   "cli.help.configuration_dir": "Directorio privado de configuración versionada, fijado antes de leer TOML.",
-  "cli.help.state_dir": "Directorio de estado fijado al arrancar; por defecto, el de la base de datos."
+  "cli.help.state_dir": "Directorio de estado fijado al arrancar; por defecto, el de la base de datos.",
+  "profile_proposal.required": "Se requiere un perfil de proyecto preparado y activado; este contexto de alta solo admite conversaciones documentales.",
+  "profile_proposal.creation_pending": "La creación de una carpeta nueva para un alta sin perfil queda pendiente del flujo de alta integrado.",
+  "profile_proposal.activation_pending": "El borrador de perfil todavía no permite el commit documental ni activar el proyecto; preparación y activación son pasos separados.",
+  "profile_proposal.invalid": "Propuesta de perfil de proyecto inválida. Revisa sus campos, comandos y rutas.",
+  "profile_proposal.context_required": "Concreta la especificación y la arquitectura antes de proponer un perfil.",
+  "profile_proposal.tools": "Declara una sola vez cada herramienta de los comandos con su requisito de entorno diferido.",
+  "profile_proposal.evidence": "Cada comando propuesto requiere evidencia exacta de los documentos o del inventario congelados.",
+  "profile_proposal.validation": "El perfil requiere comandos significativos de pruebas, construcción o comprobación; ayuda, versión y operaciones vacías no bastan.",
+  "profile_proposal.stale": "La propuesta de perfil o su base han cambiado. Revisa los documentos, HEAD, preguntas y conversación actuales antes de confirmar.",
+  "profile_proposal.questions": "Resuelve las preguntas bloqueantes y los asuntos pendientes antes de adoptar el perfil.",
+  "profile_proposal.key_reused": "Esta clave idempotente pertenece a otra confirmación de perfil."
 }

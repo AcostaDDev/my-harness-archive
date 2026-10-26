@@ -1394,6 +1394,40 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/managed/projects/{project_id}/planning/{conversation_id}/profile/preview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Profile Proposal Preview */
+        post: operations["managed_profile_proposal_preview"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/managed/projects/{project_id}/planning/{conversation_id}/profile/confirm": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Profile Proposal Confirm */
+        post: operations["managed_profile_proposal_confirm"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/managed/projects/{project_id}/planning/{conversation_id}/drafts": {
         parameters: {
             query?: never;
@@ -4078,7 +4112,13 @@ export interface components {
             /** Root */
             root: string;
             /** Profile */
-            profile: string;
+            profile: string | null;
+            /**
+             * Configuration State
+             * @default ACTIVE
+             * @enum {string}
+             */
+            configuration_state: "PROFILE_REQUIRED" | "PROFILE_PROPOSED" | "ACTIVE";
             /** Versions */
             versions: {
                 [key: string]: string | null;
@@ -5320,7 +5360,7 @@ export interface components {
              * Kind
              * @enum {string}
              */
-            kind: "draft" | "plan";
+            kind: "draft" | "plan" | "profile";
             /** Path */
             path: string | null;
             /** Content */
@@ -5632,6 +5672,75 @@ export interface components {
         ProblemResponse: {
             detail: components["schemas"]["ProblemRead"];
         };
+        /** ProfileProposalAdoptedRead */
+        ProfileProposalAdoptedRead: {
+            /** Conversation Id */
+            conversation_id: string;
+            /** Proposal Id */
+            proposal_id: string;
+            /**
+             * Configuration State
+             * @constant
+             */
+            configuration_state: "PROFILE_PROPOSED";
+            /** Version */
+            version: number;
+            /** Proposal Sha256 */
+            proposal_sha256: string;
+        };
+        /** ProfileProposalConfirmCreate */
+        ProfileProposalConfirmCreate: {
+            /** Proposal Id */
+            proposal_id: string;
+            /** Expected Version */
+            expected_version: number;
+            /** Proposal Sha256 */
+            proposal_sha256: string;
+            /** Preview Sha256 */
+            preview_sha256: string;
+            /**
+             * Confirmed
+             * @constant
+             */
+            confirmed: true;
+            /** Reason */
+            reason: string;
+        };
+        /** ProfileProposalPreviewCreate */
+        ProfileProposalPreviewCreate: {
+            /** Proposal Id */
+            proposal_id: string;
+            /** Expected Version */
+            expected_version: number;
+            /** Proposal Sha256 */
+            proposal_sha256: string;
+        };
+        /** ProfileProposalPreviewRead */
+        ProfileProposalPreviewRead: {
+            /** Conversation Id */
+            conversation_id: string;
+            /** Proposal Id */
+            proposal_id: string;
+            /** Expected Version */
+            expected_version: number;
+            /** Proposal Sha256 */
+            proposal_sha256: string;
+            /** Profile */
+            profile: {
+                [key: string]: unknown;
+            };
+            /** Blockers */
+            blockers: string[];
+            /** Ready */
+            ready: boolean;
+            /**
+             * Configuration State
+             * @enum {string}
+             */
+            configuration_state: "PROFILE_REQUIRED" | "PROFILE_PROPOSED";
+            /** Preview Sha256 */
+            preview_sha256: string;
+        };
         /** ProjectAgentsRead */
         ProjectAgentsRead: {
             /**
@@ -5762,9 +5871,9 @@ export interface components {
             /** Root */
             root: string;
             /** Composition */
-            composition: string;
+            composition: string | null;
             /** Profile */
-            profile: string;
+            profile: string | null;
             /** Row Sha256 */
             row_sha256: string;
             /** Created At */
@@ -5810,9 +5919,9 @@ export interface components {
             /** Root */
             root: string;
             /** Composition */
-            composition: string;
+            composition: string | null;
             /** Profile */
-            profile: string;
+            profile: string | null;
             /** Row Sha256 */
             row_sha256: string;
             /** Created At */
@@ -6021,7 +6130,7 @@ export interface components {
                 [key: string]: string | null;
             } | null;
             /** Profile */
-            profile: string;
+            profile: string | null;
             /** Trust Required */
             trust_required: boolean;
             /** Trust Statement */
@@ -11790,6 +11899,140 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ManagedJobRead"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+        };
+    };
+    managed_profile_proposal_preview: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Required with value 1 on mutations (CSRF protection). */
+                "x-harness-local"?: string | null;
+            };
+            path: {
+                project_id: string;
+                conversation_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ProfileProposalPreviewCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProfileProposalPreviewRead"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+        };
+    };
+    managed_profile_proposal_confirm: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description The same key and the same action return the same job. */
+                "Idempotency-Key": string;
+                /** @description Required with value 1 on mutations (CSRF protection). */
+                "x-harness-local"?: string | null;
+            };
+            path: {
+                project_id: string;
+                conversation_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ProfileProposalConfirmCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProfileProposalAdoptedRead"];
                 };
             };
             /** @description Forbidden */

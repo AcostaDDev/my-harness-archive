@@ -1,11 +1,11 @@
 # Flujo — instalación y configuración guiadas (P013)
 
-**Instalación T002, arranque T003, persistencia T004, API/arranque global T005 y UI T006 implementados; pendiente T007–T011.**
+**Instalación T002, arranque T003, persistencia T004, API/arranque global T005, UI T006 y propuesta de perfil T007 implementados; pendiente T008–T011.**
 [Entrega T002](../phase/P013-T002_INSTALACION.md), D219; validación con herramientas falsas, sin recorrido instalado nuevo.
 [Entrega T003](../phase/P013-T003_ARRANQUE.md), D220; procesos/señales sintéticos, sin servicio instalado real.
 [Contrato](../phase/P013-T001_CONTRATO.md), D216–D218 en [DECISIONS](../DECISIONS.md),
 [plan](../phase/P013_PLAN.md) y [tareas](../NEXT_STEPS.md).
-TOML 1–8 conserva su entrada. T005 consume global v9 por referencia activa; altas/perfiles propios pendientes T007–T009.
+TOML 1–8 conserva su entrada. T005 consume global v9 por referencia activa; T007 añade altas documentales/propuestas; preparación/activación pendientes T008/T009.
 
 ## Instalación y primer arranque
 
@@ -124,6 +124,50 @@ bytes/hashes, no solo rutas; restore conserva consulta sin repararlos ni activar
 
 ## Perfil por proyecto y dos entradas
 
+### Propuesta entregada en T007
+
+[D224](../DECISIONS.md#d224--p013-t007-contexto-documental-sin-stack-y-propuesta-de-perfil),
+[entrega](../phase/P013-T007_PROPUESTA_PERFIL.md). API de registro v9 admite una raíz existente confiada
+sin composición ni perfil. `IntakeContext` solo lleva raíz, política/pareja/idioma y layout; no hay runner
+ni comandos de stack. El registro sigue ACTIVE a efectos de identidad, pero la disponibilidad operativa
+es `PROFILE_REQUIRED`. Definición nueva admite carpeta vacía ya elegida; B usa inventario estático/HEAD y
+borradores privados. Creación automática de carpeta sin perfil y UI integrada quedan para T009.
+
+```mermaid
+sequenceDiagram
+    actor U as Usuario
+    participant S as API protegida
+    participant DB as SQLite
+    participant R as Revisor de lectura
+    U->>S: Registrar raíz confiada v9 sin composición
+    S->>DB: Identidad/idioma, sin perfil ejecutable
+    U->>S: Brief o incorporación, mensaje con CAS
+    S->>DB: Contexto/borradores/inventario/idiomas/versiones congelados
+    DB->>R: define-project-profile u onboard-project-profile
+    R-->>DB: Preguntas, documentos y perfil separado o null
+    Note over S,R: Sin instalación, descubrimiento por ejecución ni escritura del agente
+    U->>S: Aplicar documentos propuestos con CAS
+    U->>S: profile/preview de la propuesta exacta
+    S-->>U: Evidencia, herramientas diferidas y bloqueos actuales
+    U->>S: profile/confirm con hash, CAS, motivo y clave
+    S->>DB: Adoptar borrador PROFILE_PROPOSED, sin TOML ni activación
+```
+
+Nuevo/B conversan antes de tener comandos; especificación/arquitectura concretas preceden al candidato.
+Cada comando de preparación/validación/formateador/prefijo cita fuentes con hash y motivo. Herramientas
+requieren nombre y requisito de entorno, diferidos; ayuda/versión/no-op no acreditan validación funcional.
+Preview/confirmación comprueban documentos aplicados, HEAD/inventario, último turno, preguntas/pendientes,
+contexto e identidades de composición; bloquean ante deriva. B comprueba HEAD también antes de encolar y GO,
+sin cambiar el comportamiento de conversaciones históricas. Solo se ejecutan lecturas Git estáticas.
+
+Reenvío exacto devuelve la adopción previa incluso tras ser sustituida por otro turno; misma clave con
+otro payload da conflicto. Confirmar no escribe configuración, prepara, comitea documentos ni habilita tareas.
+GET publica `PROFILE_REQUIRED`/`PROFILE_PROPOSED` sin sondear herramientas; la segunda solo indica borrador
+adoptado, cuya vigencia se revisa en preview. Formatos 1–8 mantienen su ruta; v9 no admite activar una
+composición con nombre a través del registro para eludir T008/T009. Restore D040 conserva sus guardias.
+
+### Recorrido restante diseñado para T008–T010
+
 ```mermaid
 flowchart TD
     A["Nuevo: raíz y brief; contexto documental sin stack"] --> C["Revisor de lectura: preguntas, arquitectura y borradores"]
@@ -179,4 +223,4 @@ inicia consumidor; preferencias y editor siguen accesibles con sesión/Host/Orig
 Guardado/lectura no comprueban clientes implícitamente. Cambio externo no hace hot reload; deriva inmutable
 bloquea antes de escritura. Global READY solo acredita autoridad global: el registro/admisión con perfiles
 propios se conecta en T007–T009. Editor inicial rechaza autoridad legacy/registro previo hasta la importación
-explícita T011, conservando originales. Asistente UI T006 pendiente; sin QA visual/servicio instalado nuevo.
+explícita T011, conservando originales. Asistente UI T006 entregado; sin QA visual/servicio instalado nuevo.

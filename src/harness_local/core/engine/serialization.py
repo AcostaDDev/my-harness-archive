@@ -22,6 +22,14 @@ def restore_command(data: dict) -> Command:
 
 def restore_context(snapshot: str) -> ProjectContext:
     data = json.loads(snapshot)
+    if data.get('capabilities') == 'project-intake-1':
+        from harness_local.core.engine.context import IntakeContext
+        policy = data['policy']
+        for key in ('executor_models', 'executor_efforts', 'executor_effort_vocabulary'):
+            if key in policy:
+                policy[key] = tuple(policy[key])
+        return IntakeContext(Path(data['root']), EnginePolicy(**policy), data['next_steps_file'],
+                             data['state_file'], data['documents'], data.get('work_language'))
     profile = data["profile"]
     for key in ("preparation", "validations"):
         profile[key] = tuple(restore_command(item) for item in profile[key])

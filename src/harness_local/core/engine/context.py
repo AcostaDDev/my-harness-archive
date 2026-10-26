@@ -144,3 +144,22 @@ class ProjectContext:
         if candidate.resolve() != candidate or not candidate.is_relative_to(self.root):
             raise ValueError(tr('context.checkout_path_contains_symlink'))
         return candidate
+
+
+@dataclass(frozen=True)
+class IntakeContext:
+    """Documentary capabilities only (D218); deliberately has no executable profile."""
+
+    root: Path
+    policy: EnginePolicy
+    next_steps_file: str = "docs/NEXT_STEPS.md"
+    state_file: str = "docs/STATE.md"
+    documents: str = "v2"
+    work_language: str | None = None
+
+    __post_init__ = ProjectContext.__post_init__
+    path = ProjectContext.path
+
+
+def profile_name(context):
+    return context.profile.name if isinstance(context, ProjectContext) else None

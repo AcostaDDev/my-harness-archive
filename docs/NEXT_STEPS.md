@@ -1,7 +1,7 @@
 # P013 — Instalación guiada y configuración desde la UI
 
-**Estado:** fase activa; T001 diseñada y T002–T006 implementadas el 2026-10-26, nueve tareas pendientes.
-**Siguiente: P013-T007**, propuesta de perfil propio a partir del contexto del proyecto.
+**Estado:** fase activa; T001 diseñada y T002–T007 implementadas el 2026-10-26, ocho tareas pendientes.
+**Siguiente: P013-T008**, preparación y comprobación acotadas con el ejecutor.
 [Objetivo y criterios](ROADMAP.md#p013--instalación-guiada-y-configuración-desde-la-ui),
 [D215](DECISIONS.md#d215--p013-instalación-guiada-y-configuración-desde-la-ui) y
 [plan de fase](phase/P013_PLAN.md).
@@ -147,7 +147,8 @@ OpenAPI y tipos regenerados cuando cambie contrato.
 
 ## P013-T007 — Propuesta de perfil propio a partir del contexto del proyecto
 
-**Estado:** pendiente. **Depende de:** T004–T006.
+**Estado:** completada (2026-10-26); agentes falsos y fixtures Go, sin preparación/activación ni proveedores reales.
+[Entrega y checks](phase/P013-T007_PROPUESTA_PERFIL.md), D224. **Depende de:** T004–T006.
 **Objetivo:** proponer el perfil tras disponer de documentación/arquitectura o inventario del repositorio.
 **Rutas permitidas:** planificación/definición/incorporación, perfiles/prompts, API/storage, pruebas y docs de paridad.
 **Criterios de aceptación:**

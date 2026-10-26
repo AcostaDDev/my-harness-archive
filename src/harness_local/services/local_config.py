@@ -519,8 +519,7 @@ class LocalComposer:
 
     @property
     def registrable(self):
-        # T005 consumes only the global authority. Own-profile onboarding/admission arrives in T007–T009.
-        return self.format in REGISTRABLE and self.format != EDITOR_VERSION
+        return self.format in REGISTRABLE
 
     def compose(self, item, where, *, registry=None, new_directory=False):
         """Validated `ManagedProject` and its composition, without installing it.
@@ -530,6 +529,10 @@ class LocalComposer:
         `new_directory` is a data-only creation preview: validates on the existing parent,
         freezes the future child's hashes and returns versions/profile, never installable ports.
         """
+        if self.format == EDITOR_VERSION:
+            if item.get('composition') is not None:
+                raise LocalConfigError(tr('profile_proposal.activation_pending'))
+            return self._intake(item, where, registry=registry, new_directory=new_directory)
         if self.registrable:
             required, optional = (*self.PROJECT_KEYS, 'composition'), (*self.OPTIONAL_KEYS, 'bootstrap_enabled')
         else:
@@ -648,6 +651,54 @@ class LocalComposer:
         return project, (identifier, versions, commands, artifacts, agents,
                          (dict(item), where, registry))
 
+    def _intake(self, item, where, *, registry, new_directory):
+        """No stack, runner or invented composition. Directory creation/activation is joined in T009."""
+        from harness_local.core.engine.context import IntakeContext
+        if new_directory:
+            raise LocalConfigError(tr('profile_proposal.creation_pending'))
+        item = _fields(item, where, (*self.PROJECT_KEYS, 'composition'),
+                       (*self.OPTIONAL_KEYS, 'bootstrap_enabled', 'agent_selection'))
+        root = _path(item['root'], f'{where}.root', kind='directory')
+        if not (_outside(self.state, root) and _outside(self.source, root)):
+            raise LocalConfigError(tr('config.state_outside', where=where))
+        if _flag(item['repository_trusted'], f'{where}.repository_trusted') is not True:
+            raise LocalConfigError(tr('config.trust', where=where))
+        if item.get('documents', 'v2') != 'v2' or item.get('permission_authority') is not None:
+            raise LocalConfigError(tr('profile_proposal.required'))
+        identifier = _text(item['id'], f'{where}.id')
+        if not PROJECT_ID.fullmatch(identifier):
+            raise LocalConfigError(tr('config.project_id', where=where, pattern=PROJECT_ID.pattern))
+        agents, reviewer, selected = self.effective_agents(item, where)
+        policy = _policy(item['policy'], f'{where}.policy', reviewer, agents['executor'].provider)
+        if selected:
+            executor = selected['executor']
+            if ((policy.executor_mode == 'catalog' and not set(policy.executor_models) <= set(executor['models']))
+                    or not set(policy.executor_efforts) <= set(executor['efforts'])
+                    or (policy.executor_mode == 'open' and not executor['allow_open_executor'])):
+                raise LocalConfigError(tr('config.executor_catalog', where=where))
+            policy = replace(policy, executor_effort_vocabulary=tuple(executor['efforts']))
+        artifacts = self.state / 'artifacts' / identifier
+        cli = CLIProcessAdapter(agents, artifacts)
+        frozen = {'project': item, **self._authority, 'agent_presets': selected,
+                  'registry': registry, 'capabilities': 'project-intake-1'}
+        versions = {'engine': f'harness-local-{self.engine}', 'evidence': 'git-1',
+                    'commands': 'intake-none-1', 'local_config': self.format,
+                    'local_config_sha256': hashlib.sha256(freeze(frozen).encode()).hexdigest(),
+                    'document_layout': DOCUMENT_LAYOUT, **cli.frozen_versions()}
+        if registry is not None:
+            versions.update(project_registry=str(registry[0]), project_registry_id=identifier,
+                            project_registry_sha256=registry[1])
+        selection = item.get('agent_selection')
+        declarations = ({role: self.presets[choice['preset_id']][1] for role, choice in selection.items()}
+                        if selection is not None else self.agents)
+        for role, declaration in declarations.items():
+            versions[f'{role}_cli_version_source'] = 'automatic' if declaration.cli_version is None else 'legacy-assertion'
+            versions[f'{role}_cli_discovery'] = 'PATH' if not declaration.executable else 'explicit'
+        project = ManagedProject(identifier, IntakeContext(root, policy), versions, None,
+                                 item.get('tag_kind', 'lightweight'),
+                                 _flag(item.get('bootstrap_enabled', False), f'{where}.bootstrap_enabled'))
+        return project, (identifier, versions, None, artifacts, agents, (dict(item), where, registry))
+
     def effective_agents(self, item, where):
         selection = item.get('agent_selection')
         if selection is None:
@@ -739,6 +790,8 @@ class LocalComposer:
 
     def ports(self, context, versions):
         commands, artifacts, agents = self._composed(context, versions)
+        if commands is None:
+            return CLIProcessAdapter(agents, artifacts), None, GitWorkspace(self.identity, executable=self.git_executable)
         if versions.get('project_recipe'):
             from harness_local.adapters.preparation import PreparedCommandRunner
             runner = PreparedCommandRunner(commands, self._receipts.get(context.root), versions)

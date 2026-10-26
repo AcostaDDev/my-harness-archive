@@ -94,7 +94,8 @@ class WorkLanguageRead(BaseModel):
 class ManagedProjectRead(BaseModel):
     id: str
     root: str
-    profile: str
+    profile: str | None
+    configuration_state: Literal['PROFILE_REQUIRED', 'PROFILE_PROPOSED', 'ACTIVE'] = 'ACTIVE'
     versions: dict[str, str | None]
     tag_kind: Literal["lightweight", "annotated"]
     agents: ProjectAgentsRead
@@ -1151,7 +1152,7 @@ class PlanningProposalRead(BaseModel):
     number: int
     turn_id: str
     turn_number: int
-    kind: Literal['draft', 'plan']
+    kind: Literal['draft', 'plan', 'profile']
     path: str | None
     content: str
     reason: str
@@ -1609,8 +1610,8 @@ class RegisteredProjectSummaryRead(BaseModel):
     version: int
     status: Literal['ACTIVE', 'RETIRED']
     root: str
-    composition: str
-    profile: str
+    composition: str | None
+    profile: str | None
     row_sha256: str
     created_at: str
     updated_at: str
@@ -1682,7 +1683,7 @@ class RegistryPreviewRead(BaseModel):
     row_sha256: str
     changes: list[RegistryFieldChangeRead]
     versions: dict[str, str | None] | None = Field(description='Versions its jobs will freeze; null on retirement.')
-    profile: str
+    profile: str | None
     trust_required: bool
     trust_statement: str | None
     unfinished_jobs: list[int] = Field(description='Unfinished jobs of the checkout: they block the confirmation.')
@@ -1975,3 +1976,36 @@ class WorkLanguageMigrationApplyCreate(BaseModel):
 class WorkLanguageMigrationApplyRead(BaseModel):
     project: ManagedProjectRead
     replayed: bool
+
+
+class ProfileProposalPreviewCreate(BaseModel):
+    model_config = ConfigDict(extra='forbid', strict=True)
+    proposal_id: str = Field(min_length=1, max_length=36)
+    expected_version: int = Field(ge=0)
+    proposal_sha256: str = Field(pattern=SHA256)
+
+
+class ProfileProposalConfirmCreate(ProfileProposalPreviewCreate):
+    preview_sha256: str = Field(pattern=SHA256)
+    confirmed: Literal[True]
+    reason: str = Field(min_length=1, max_length=2000)
+
+
+class ProfileProposalPreviewRead(BaseModel):
+    conversation_id: str
+    proposal_id: str
+    expected_version: int
+    proposal_sha256: str
+    profile: dict[str, Any]
+    blockers: list[str]
+    ready: bool
+    configuration_state: Literal['PROFILE_REQUIRED', 'PROFILE_PROPOSED']
+    preview_sha256: str
+
+
+class ProfileProposalAdoptedRead(BaseModel):
+    conversation_id: str
+    proposal_id: str
+    configuration_state: Literal['PROFILE_PROPOSED']
+    version: int
+    proposal_sha256: str

@@ -16,13 +16,16 @@ Confirming the plan writes the documents and versions the definition; the agent 
 
 """
 
+import json
+
 from sqlalchemy import func, select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 from uuid import uuid4
 
 from harness_local.core.engine.chat import digest
-from harness_local.core.engine.contracts import freeze
+from harness_local.core.engine.context import IntakeContext, profile_name
+from harness_local.core.engine.contracts import context_snapshot, freeze
 from harness_local.core.engine.definition import (
     DRAFT_KINDS, MAX_CONTEXT_DRAFT_BYTES, acceptance, allowed_draft, allowed_drafts_view, brief as brief_payload,
     default_documents, definition_layout, text_hash,
@@ -97,11 +100,21 @@ def settle(managed, session, run, outcome):
                                      'content_sha256': text_hash(result['plan']['content'])}}
     turn.result = {**outcome, 'result': stored, 'attempt_id': attempts[-1].request.id if attempts else None}
     if outcome['status'] == 'ANSWERED':
+        if turn.request['context'].get('capabilities') == 'project-intake-1':
+            for older in session.scalars(select(Proposal).where(
+                    Proposal.conversation_id == conversation.id, Proposal.kind == 'profile',
+                    Proposal.status.in_(('PROPOSED', 'ACCEPTED')))):
+                older.status, older.version = 'SUPERSEDED', older.version + 1
+                older.decision = {**(older.decision or {}), 'superseded_by_turn': turn.number,
+                                  'superseded_at': turn.finished_at}
         if conversation.kind in DRAFT_KINDS:
             bases = {item['path']: item['sha256'] for item in turn.request['context']['drafts']}
             # Only an answered turn «sees» the drafts: a failed one shows the edits again to the next one.
             conversation.known = dict(bases)
             items = [('draft', d['path'], d['content'], d['reason'], bases.get(d['path'])) for d in result['drafts']]
+            if result.get('profile') is not None:
+                items.append(('profile', None, freeze(result['profile']),
+                              result['profile']['candidate']['rationale'], None))
         else:
             plan = result['plan']
             items = [] if plan is None else [('plan', None, plan['content'], plan['reason'], None)]
@@ -341,6 +354,8 @@ class PlanningRepository:
         target, which the original registration may have changed (project already created, phase transitioned)."""
         if kind not in KINDS:
             raise ValueError(tr('planning.conversation_kind_definition_phase'))
+        if isinstance(context, IntakeContext) and kind not in DRAFT_KINDS:
+            raise Conflict(tr('profile_proposal.required'))
         request = digest({'action': 'planning_conversation', 'root': str(context.root), 'kind': kind, 'title': title,
                           'brief': brief, 'phase_id': phase_id})
         if key is not None:
@@ -428,6 +443,8 @@ class PlanningRepository:
             port = self._port(conversation, writer)
         observed, prepared = None, {}
         if kind == 'onboarding':
+            if isinstance(context, IntakeContext) and read_inventory(context, _executable(writer)) != source['inventory']:
+                raise Conflict(tr('profile_proposal.stale'))
             target = definition_layout(context)
             inspection = port.inspect_definition(context, texts=True)
             texts = inspection.pop('texts')
@@ -477,13 +494,21 @@ class PlanningRepository:
                 Turn.conversation_id == conversation.id)) or 0)
             questions, pending = current_questions(session, conversation)
             frozen = {'kind': conversation.kind,
-                      'project': {'root': str(context.root), 'profile': context.profile.name,
+                      'project': {'root': str(context.root), 'profile': profile_name(context),
                                   'layout': {'docs': target.docs, 'state': target.state,
                                              'next_steps': target.next_steps, 'decisions': target.decisions,
                                              'ddbb_diagram': target.ddbb_diagram, 'flows': target.flows_dir,
                                              'phase': target.phase_dir}},
                       'conversation': {'id': conversation.id, 'title': conversation.title, 'turn': number},
                       'questions': questions, 'pending': pending, 'previous_turns': history}
+            if isinstance(context, IntakeContext):
+                frozen['capabilities'] = 'project-intake-1'
+                profile = session.scalar(select(Proposal).where(
+                    Proposal.conversation_id == conversation.id, Proposal.kind == 'profile',
+                    Proposal.status.in_(('PROPOSED', 'ACCEPTED'))).order_by(Proposal.number.desc()).limit(1))
+                frozen['profile_draft'] = (None if profile is None else {
+                    'id': profile.id, 'proposal_sha256': profile.proposal_sha256,
+                    'status': profile.status, 'content': json.loads(profile.content)})
             if conversation.kind in DRAFT_KINDS:
                 if conversation.kind == 'definition' and _bootstrapped(session, conversation.root):
                     raise Conflict(tr('planning.project_already_created_definition'))
@@ -491,8 +516,10 @@ class PlanningRepository:
                     self._importable(session, conversation.root)
                 known, drafts = conversation.known, observed['drafts']
                 defaults = skeleton(target, conversation.title,
-                                    preparation=[command.argv for command in context.profile.preparation],
-                                    validations=[command.argv for command in context.profile.validations],
+                                    preparation=([command.argv for command in context.profile.preparation]
+                                                 if not isinstance(context, IntakeContext) else []),
+                                    validations=([command.argv for command in context.profile.validations]
+                                                 if not isinstance(context, IntakeContext) else []),
                                     language=work_language(context))
                 frozen.update(prepared, user_edits=[
                     {'path': path, 'before_sha256': known.get(path), 'after_sha256': drafts.get(path)}
@@ -532,6 +559,102 @@ class PlanningRepository:
             return job
 
     # --- drafts --------------------------------------------------------------------------
+
+    def profile_state(self, root):
+        """Describes an adopted draft, never preparation readiness; GET performs no filesystem probes."""
+        with Session(self.managed.engine) as session:
+            adopted = session.scalar(select(Proposal.id).join(Conversation,
+                Conversation.id == Proposal.conversation_id).where(
+                    Conversation.root == str(root), Proposal.kind == 'profile', Proposal.status == 'ACCEPTED').limit(1))
+            return 'PROFILE_PROPOSED' if adopted else 'PROFILE_REQUIRED'
+
+    def profile_preview(self, context, conversation_id, proposal_id, expected, proposal_sha256, writer=None,
+                        *, session=None, versions=None):
+        """Adoption preview only. Current drafts, HEAD, questions and frozen agent context are checked again."""
+        if session is None:
+            with Session(self.managed.engine) as read:
+                return self.profile_preview(context, conversation_id, proposal_id, expected, proposal_sha256,
+                                            writer, session=read, versions=versions)
+        if not isinstance(context, IntakeContext):
+            raise Conflict(tr('profile_proposal.required'))
+        conversation = self._conversation(session, conversation_id, expected, context)
+        self._definition_open(session, conversation)
+        proposal = session.get(Proposal, proposal_id)
+        if (proposal is None or proposal.conversation_id != conversation.id or proposal.kind != 'profile'
+                or proposal.status not in ('PROPOSED', 'ACCEPTED') or proposal.proposal_sha256 != proposal_sha256
+                or text_hash(proposal.content) != proposal.content_sha256):
+            raise Conflict(tr('profile_proposal.stale'))
+        payload = json.loads(proposal.content)
+        turn = session.get(Turn, proposal.turn_id)
+        latest = session.scalar(select(Turn).where(Turn.conversation_id == conversation.id)
+                                .order_by(Turn.number.desc()).limit(1))
+        run = session.get(Run, turn.run_id)
+        blockers = []
+        if (latest.id != turn.id or turn.status != 'ANSWERED'
+                or run.context_json != context_snapshot(context)
+                or (versions is not None and run.versions_json != freeze(versions))
+                or digest(turn.request['context']) != turn.request['context_sha256']):
+            blockers.append(tr('profile_proposal.stale'))
+        port = self._port(conversation, writer)
+        inspection = port.inspect_definition(context, texts=True)
+        texts = inspection.pop('texts')
+        if (inspection['invalid'] or inspection['foreign']
+                or inspection['drafts'] != payload['binding']['documents']):
+            blockers.append(tr('profile_proposal.stale'))
+        if conversation.kind == 'onboarding':
+            if read_inventory(context, _executable(writer)) != conversation.source['inventory']:
+                blockers.append(tr('profile_proposal.stale'))
+        elif inspection['import_required']:
+            blockers.append(tr('profile_proposal.stale'))
+        questions, pending = current_questions(session, conversation)
+        if any(question['blocking'] for question in questions) or pending:
+            blockers.append(tr('profile_proposal.questions'))
+        # The immutable proposal is re-parsed against the exact applied document bytes and source hashes.
+        from harness_local.services.profile_proposal import validate
+        frozen = {**turn.request['context'], 'drafts': [
+            {'path': path, 'sha256': text_hash(content)} for path, content in sorted(texts.items())]}
+        try:
+            checked = validate(payload['candidate'], frozen, [])
+            if checked != payload:
+                blockers.append(tr('profile_proposal.stale'))
+        except ValueError:
+            blockers.append(tr('profile_proposal.invalid'))
+        shown = {'conversation_id': conversation.id, 'proposal_id': proposal.id,
+                 'expected_version': conversation.version, 'proposal_sha256': proposal.proposal_sha256,
+                 'profile': payload, 'blockers': blockers, 'ready': not blockers,
+                 'configuration_state': 'PROFILE_PROPOSED' if proposal.status == 'ACCEPTED' else 'PROFILE_REQUIRED'}
+        return {**shown, 'preview_sha256': digest(shown)}
+
+    def confirm_profile(self, context, conversation_id, proposal_id, expected, *, proposal_sha256,
+                        preview_sha256, reason, key, writer=None, versions=None):
+        if not isinstance(reason, str) or not reason.strip() or len(reason) > 2000:
+            raise ValueError(tr('profile_proposal.invalid'))
+        request = digest({'conversation_id': conversation_id, 'proposal_id': proposal_id, 'expected': expected,
+                          'proposal_sha256': proposal_sha256, 'preview_sha256': preview_sha256, 'reason': reason})
+        with self.managed._write() as session:
+            # Replay precedes the CAS check and never re-applies files or starts a preparation.
+            for row in session.scalars(select(Proposal).where(
+                    Proposal.kind == 'profile', Proposal.decision['key'].as_string() == key)):
+                if row.decision and row.decision.get('key') == key:
+                    if row.decision.get('request_sha256') != request:
+                        raise Conflict(tr('profile_proposal.key_reused'))
+                    return row.decision['result']
+            shown = self.profile_preview(context, conversation_id, proposal_id, expected, proposal_sha256,
+                                         writer, session=session, versions=versions)
+            if not shown['ready'] or shown['preview_sha256'] != preview_sha256:
+                raise Conflict(tr('profile_proposal.stale'))
+            proposal = session.get(Proposal, proposal_id)
+            if proposal.status != 'PROPOSED':
+                raise Conflict(tr('profile_proposal.stale'))
+            result = {'conversation_id': conversation_id, 'proposal_id': proposal_id,
+                      'configuration_state': 'PROFILE_PROPOSED', 'version': expected + 1,
+                      'proposal_sha256': proposal_sha256}
+            proposal.status, proposal.version = 'ACCEPTED', proposal.version + 1
+            proposal.decision = {'decision': 'profile_draft_adopted', 'key': key, 'request_sha256': request,
+                                 'preview_sha256': preview_sha256, 'reason': reason, 'actor': actor(),
+                                 'at': self.managed._now(), 'result': result}
+            _touch(self.managed, session.get(Conversation, conversation_id))
+            return result
 
     def _definition_open(self, session, conversation):
         if self._drafts_created(session, conversation):

@@ -72,7 +72,11 @@ Registrar o reabrir un proyecto ya gestionado conserva su autoridad y no repite 
 
 El [contrato P013](../phase/P013-T001_CONTRATO.md) y el [flujo de configuración](configuration-setup.md)
 concretan el recorrido futuro sin composición previa, guardado/activación versionados, preparación y backup.
-**Diseñado, no implementado:** este documento conserva el flujo vigente hasta las entregas T004–T011.
+**T007 entrega el contexto de alta sin stack y la propuesta de perfil separada**, con validación por fuentes,
+CAS y adopción de borrador sin TOML ni activación ([D224](../DECISIONS.md#d224--p013-t007-contexto-documental-sin-stack-y-propuesta-de-perfil)).
+Los diagramas anteriores conservan la ruta 1–8. El carril v9 sobre raíz existente usa el
+[flujo entregado](configuration-setup.md#propuesta-entregada-en-t007); creación de carpeta sin perfil,
+commit documental, preparación y activación integrados siguen pendientes T008/T009.
 Commit documental previo al técnico; perfil/recibo confirmado antes de tareas en el carril nuevo; formatos,
 jobs, snapshots y recibos existentes intactos. La aplicación guarda TOML privado fuera de checkouts;
 ningún agente obtiene escritura general de configuración global. Consulta D040 no adquiere mutaciones.

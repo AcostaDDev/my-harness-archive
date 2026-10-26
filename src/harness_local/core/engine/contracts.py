@@ -9,7 +9,7 @@ import shlex
 from typing import Protocol, TYPE_CHECKING
 from uuid import uuid4
 
-from harness_local.core.engine.context import ProjectContext, policy_payload, relative_path
+from harness_local.core.engine.context import IntakeContext, ProjectContext, policy_payload, relative_path
 from harness_local.i18n import tr
 
 if TYPE_CHECKING:
@@ -187,6 +187,11 @@ class RunHistory:
 
 
 def context_snapshot(context: ProjectContext) -> str:
+    if isinstance(context, IntakeContext):
+        return freeze({'capabilities': 'project-intake-1', 'root': str(context.root),
+                       'policy': policy_payload(context.policy), 'next_steps_file': context.next_steps_file,
+                       'state_file': context.state_file, 'documents': context.documents,
+                       'work_language': context.work_language})
     profile = asdict(context.profile)
     if not profile['junit_reports']:
         profile.pop('junit_reports')  # Preserves earlier snapshots without reports.
@@ -210,6 +215,8 @@ def stop_history(history: RunHistory, stage: str, reason: str) -> RunHistory:
 def invoke_agent(context: ProjectContext, history: RunHistory, adapter: AgentAdapter,
                  role: str, selection: Selection, prompt: str,
                  journal: "EngineJournal | None" = None, *, prompt_snapshot_json: str | None = None) -> tuple[RunHistory, dict | None]:
+    if isinstance(context, IntakeContext) and role != 'definition':
+        raise ContractError(tr('profile_proposal.required'))
     request = AgentRequest(str(uuid4()), role, selection, prompt, history.task_json, history.context_json,
                            prompt_snapshot_json=prompt_snapshot_json)
     if journal:

@@ -195,7 +195,8 @@ def validate_planning_result(data, following: str | None) -> dict:
 # --- turn --------------------------------------------------------------------------------------
 
 
-def planning_turn(context, history, snapshot: dict, agents, observe, journal, catalog, language=None):
+def planning_turn(context, history, snapshot: dict, agents, observe, journal, catalog, language=None,
+                  profile_validator=None):
     """One invocation with the frozen request; what was observed (drafts or checkout) cannot change."""
 
     def done(history, status, reasons, *, result=None, observed=None):
@@ -204,6 +205,9 @@ def planning_turn(context, history, snapshot: dict, agents, observe, journal, ca
 
     kind = snapshot['kind']
     template, role = KINDS[kind]
+    intake = snapshot['context'].get('capabilities') == 'project-intake-1'
+    if intake:
+        template += '-profile'
     if digest(snapshot['context']) != snapshot['context_sha256']:
         raise ContractError('Frozen planning context changed after it was queued')
     journal.checkpoint(history, kind)
@@ -244,7 +248,16 @@ def planning_turn(context, history, snapshot: dict, agents, observe, journal, ca
         return done(history, 'FAILED', [history.stop.reason], observed=observed)
     try:
         if kind in DRAFT_KINDS:
-            result = validate_definition_result(data, definition_layout(context))
+            if intake:
+                if not isinstance(data, dict) or set(data) != {'answer', 'questions', 'drafts', 'pending', 'profile'}:
+                    raise ContractError(tr('profile_proposal.invalid'))
+                result = validate_definition_result({k: v for k, v in data.items() if k != 'profile'},
+                                                    definition_layout(context))
+                if profile_validator is None:
+                    raise ContractError(tr('profile_proposal.invalid'))
+                result['profile'] = profile_validator(data['profile'], snapshot['context'], result['drafts'])
+            else:
+                result = validate_definition_result(data, definition_layout(context))
         else:
             following = snapshot['context']['next']
             result = validate_planning_result(data, following['code'] if following else None)

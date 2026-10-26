@@ -85,7 +85,7 @@ def test_first_setup_separates_save_activation_and_restart(setup, monkeypatch):
         assert state['mode'] == 'READY' and state['active']['revision'] == 1 and state['pending'] is None
         assert http.get('/api/managed/supervisor').json()['configuration_mode'] == 'READY'
         assert second.state.runtime.config.registrar.format == 'local-config-9'
-        assert second.state.runtime.registry.registrar is None  # Own-profile onboarding is T007–T009.
+        assert second.state.runtime.registry.registrar is not None  # T007 admits documentary intakes.
         assert second.state.runtime.projects == {} and second.state.runtime.worker is None
         # Valid global authority permits requests to reach their existing domain validation.
         assert http.post('/api/managed/registry/preview', json={}, headers=LOCAL).status_code == 422

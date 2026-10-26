@@ -302,6 +302,9 @@ class SQLiteManagedRepository:
     def _queue_new_run(self, session, assessment, context, versions, task_id, phase_id, key, request,
                        purpose="task"):
         """New run and its first job in the caller's transaction (tasks and H3.3 phase operations)."""
+        from harness_local.core.engine.context import IntakeContext
+        if isinstance(context, IntakeContext) and purpose not in ('definition', 'onboarding'):
+            raise Conflict(tr('profile_proposal.required'))
         if versions.get('agent_adapter') == 'cli-14':
             from harness_local.adapters.cli_compatibility import CompatibilityError, MINIMUM, eligible
             for role in ('reviewer', 'executor'):

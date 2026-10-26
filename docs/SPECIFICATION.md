@@ -353,7 +353,7 @@ con autorización inicial y parada por error/HITL/límites. No está implementad
 ## 14. Ampliación planificada — P013
 
 [D215](DECISIONS.md#d215--p013-instalación-guiada-y-configuración-desde-la-ui) abre P013 antes de publicar.
-**T001 completa el diseño; T002–T006 implementan instalación/arranque/empaquetado, persistencia y asistente API/UI; pendiente T007–T011.**
+**T001 completa el diseño; T002–T007 implementan instalación/arranque/empaquetado, persistencia, asistente API/UI y propuestas de perfil; pendiente T008–T011.**
 Las reglas vigentes de §4/§5/§8 se mantienen hasta sus entregas. [Contrato](phase/P013-T001_CONTRATO.md), [flujo](flows/configuration-setup.md),
 [plan](phase/P013_PLAN.md) y [tareas](NEXT_STEPS.md). D216–D218 concretan:
 
@@ -374,8 +374,9 @@ Las reglas vigentes de §4/§5/§8 se mantienen hasta sus entregas. [Contrato](p
   versionado y activación por referencia/hash en SQLite. Guardar es distinto de activar; diff, CAS, intención
   recuperable y confirmación exacta. Edición externa no recarga autoridad ni cambia contratos congelados.
   Primitivas T004 implementadas ([entrega](phase/P013-T004_CONFIGURACION.md), D221); API y arranque global
-  T005 entregados ([contrato efectivo y checks](phase/P013-T005_ASISTENTE_API.md), D222). Registro/perfiles propios
-  y sus consumidores pendientes T007–T009; legacy se importa expresamente en T011.
+  T005 entregados ([contrato efectivo y checks](phase/P013-T005_ASISTENTE_API.md), D222). T007 entrega registro
+  documental sin perfil y propuestas; preparación/activación y sus consumidores pendientes T008–T009;
+  legacy se importa expresamente en T011.
   El backup actual bloquea bases con operaciones nuevas hasta el bundle con TOML de T011.
 - Global requiere reinicio confirmado; proyecto puede activarse entre tareas sin reinicio. Trabajo pendiente
   bloquea activar según D118; no se cancelan jobs ni reescriben historiales/recibos para aplicar cambios.
@@ -384,6 +385,11 @@ Las reglas vigentes de §4/§5/§8 se mantienen hasta sus entregas. [Contrato](p
   confirmar documentos y perfil compatible precede al commit documental raíz/B y adopción P001. Preparación
   técnica separada después, con plan de archivos/comandos/dependencias/red/ámbito y recibo; activar perfil
   confirmado habilita primera tarea. P001 ACTIVE por sí sola no abre esa puerta.
+  T007 implementa contexto de alta sin perfil ejecutable, propuesta estructurada con herramientas diferidas y
+  evidencia por comando; preview/confirmación adoptan borrador, sin TOML ni comandos. Registro v9 de raíz
+  existente confiada; `PROFILE_REQUIRED`/`PROFILE_PROPOSED` no habilitan tareas. HEAD/documentos/preguntas/
+  contexto obsoletos bloquean confirmar. [Entrega](phase/P013-T007_PROPUESTA_PERFIL.md), D224. Commit
+  documental, creación de carpeta propia, preparación y activación integrados siguen pendientes T008/T009.
 - Ejemplos/recetas Django/TypeScript opcionales. Preparación genérica con ejecutor acotado y validaciones
   significativas del harness; agentes sin escritura general de TOML global ni ajustes del equipo. Aplicación
   guarda versiones validadas. Perfil propuesto no acredita entorno listo ni permite ejecutar código al inventariar.

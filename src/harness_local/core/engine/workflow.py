@@ -132,6 +132,9 @@ class OfflineEngine:
               notes: str | None = None) -> RunHistory:
         """`contract`: deterministic contract already frozen by the server (H3.4); the planner is not called.
         `notes`: additional user notes (P009-T020); frozen in the contract and never widening its scope."""
+        from harness_local.core.engine.context import IntakeContext
+        if isinstance(context, IntakeContext):
+            raise ContractError(tr('profile_proposal.required'))
         if notes is not None and (not isinstance(notes, str) or not notes.strip() or contract is not None):
             raise ContractError(tr('workflow.additional_notes_non_empty'))
         planned = contract is None  # the deterministic planner reuses `contract` further below

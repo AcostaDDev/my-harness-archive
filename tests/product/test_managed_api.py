@@ -219,7 +219,8 @@ def test_http_flow_executes_reviews_and_commits_once_across_double_submit_and_re
         work = listed.pop("work_language")
         assert (work["work_language"], work["source"], work["format"]) == ("en", "migration", "work-language-1")
         assert [listed] == [{
-            "id": "synthetic", "root": str(task.root), "profile": "synthetic", "versions": VERSIONS,
+            "id": "synthetic", "root": str(task.root), "profile": "synthetic", "configuration_state": "ACTIVE",
+            "versions": VERSIONS,
             "tag_kind": "lightweight", "documents": None, "bootstrap_enabled": False,
             # D076: declared by the server composition, not registered from the UI.
             "source": "operator", "registry_version": None, "agents": {
