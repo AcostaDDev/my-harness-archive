@@ -4,7 +4,7 @@ Objetivo y criterios en [ROADMAP](ROADMAP.md#p012--validación-real-previa-a-la-
 Decisión: [D183](DECISIONS.md#d183--p012-validación-real-previa-a-la-apertura-pública).
 
 **Estado:** T001–T004, T008–T013 completadas con la procedencia de D198/D202/D204/D207–D209;
-T005–T007 pendientes, trece tareas en total. T004 cierra con evidencia acumulada y HITL sucesivos.
+T005 completada (D210); T006–T007 pendientes, trece tareas en total. T004 cierra con evidencia acumulada y HITL sucesivos.
 T003 cierra con evidencia acumulada y salvedad de identidad autorizada.
 T002 completada con evidencia acumulada: dos B COMMITTED e idempotencia anteriores, y continuación tras T011
 autorizada/ejecutada hasta tarea **`e3fa4ae6…` COMMITTED `6f021211b307`** con perfil/formateador v8, seis
@@ -28,7 +28,12 @@ Reanudación autorizada **«Autorizo»** manteniendo `unknown` (D204): **T003 co
 ambos fallos y QUEUED, con ruta operativa bloqueada. Parada normal, puertos cerrados/clave retirada, cinco hashes
 y 16.798 filas iguales, 254 archivos previos/42 artefactos/tres fixtures intactos. Cero llamadas nuevas,
 acumulado T003 2/3 Claude y 0/0 Codex; identidad histórica incierta conservada, sin certificar muerte de escritores.
-**Siguiente: P012-T005**, actualización del alcance público y del candidato con la evidencia acumulada.
+**Siguiente: P012-T006**, revisión de salida y expediente de apertura con el candidato nuevo.
+**T005 completada** (D210): tablas en/es y baseline pública al día; candidato de 401 archivos, manifiesto
+`cf191a40…9362a`, 14 añadidos/38 modificados frente a P011. Suites completas, paquete y documentación correctos.
+HITL **«Sí, sustituir y conservar P011»**: `my_harness_dist` sustituido, P011 íntegro en
+`my_harness_dist_p011_74cc9141`; hashes/modos verificados, sin Git/push/publicación ni llamadas nuevas.
+[Entrega y evidencia](phase/P012-T005_CANDIDATO.md).
 **T004 completada** (D209): [continuación y matriz](phase/P012-T004_CONTINUACION_T013.md), wheel corregido
 instalado/verificado, tarea **d1e35d32… COMMITTED ae86967** con digest exacto del recibo, tres validaciones
 correctas/un JUnit passed. Ambos checks fallidos conservados: READY con acción de prosa obsoleta y
@@ -232,7 +237,7 @@ suites completas ni atribuir cobertura nueva de espacios interiores; sin planifi
 
 ## P012-T005 — Alcance público y candidato actualizados
 
-**Estado:** pendiente. **Depende de:** T002–T004, T012, T013 y las correcciones que hayan generado.
+**Estado:** completada el 2026-10-26 (D210). **Depende de:** T002–T004, T012, T013 y las correcciones que hayan generado.
 **Objetivo:** Reflejar en la documentación pública lo acreditado y preparar el candidato que sustituye al de P011.
 **Alcance:** README/README.es, `docs/public/`, ROADMAP/STATE privados, candidato, paquete y suites.
 **Rutas permitidas:** `README.md`, `README.es.md`, `CHANGELOG.md`, `docs/**`.
@@ -247,8 +252,10 @@ suites completas ni atribuir cobertura nueva de espacios interiores; sin planifi
   frente al de P011; `my_harness_dist` se sustituye solo con autorización del usuario.
 - Suites de AGENTS, `check_distribution` y comprobador de la documentación pública en verde sobre el candidato.
 
-**Validación:** suites completas de AGENTS, build y verificación del paquete, enlaces.
-**Entregables:** `docs/phase/P012-T005_CANDIDATO.md` y manifiestos.
+**Validación:** 1760 pytest/29 subtests, 2 opt-in omitidas; 8 unittest, 119 Node, tipos/build, Alembic temporal,
+verificador del wheel instalado y documentación pública (31 Markdown/260 enlaces/36 diagramas) correctos.
+**Entregables:** [informe](phase/P012-T005_CANDIDATO.md), manifiestos público/privado/paquete, diff de lista,
+comprobadores y registro de sustitución autorizada; sin proveedores reales, red, QA visual nueva o publicación.
 
 ## P012-T006 — Revisión de salida y expediente de apertura actualizado
 

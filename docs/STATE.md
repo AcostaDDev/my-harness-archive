@@ -225,7 +225,19 @@ conservados. Parada final **09:19:04 UTC**, 11 DONE/15 STOPPED/0 locks, 36 ident
 puertos cerrados/claves retiradas. **16.798 filas previas/254 archivos/42 artefactos/tres fixtures intactos**;
 7.460 filas T004 (2.837 nuevas, una fila de fase actualizada normalmente), recibo válido/checkout limpio.
 Nuevo **5 Claude/1 Codex** con consentimientos sucesivos; acumulado T004 **8/12 y 1/3**, sin reejecutar
-la tarea ni reponer tiempo. **Siguiente: T005**, alcance público/candidato; P012 sigue abierta.
+la tarea ni reponer tiempo. **T004 completada**; actualización pública posterior en T005 (bloque siguiente). P012 sigue abierta.
 T002 finalizada, sin reparación/revalidación de sus dos fallos. Conservar todos los fixtures, diffs, historiales,
 configuraciones y distribuciones. Sin nueva fase del Django de P009, tags en my_harness, push o publicación. P012 sigue
-abierta; baseline pública/candidato pendientes de T005.
+abierta; baseline pública/candidato actualizados en T005, con revisión/expediente pendientes de T006.
+
+
+**T005 completada offline** (D210): [candidato y matriz de procedencia](phase/P012-T005_CANDIDATO.md).
+README/README.es/CHANGELOG y baseline pública al día, sin extrapolar las cuatro parejas históricas a cli-14,
+ni afirmar creación Django v2 o cobertura de producción. Formato v8/consulta/recibo documentados en paridad;
+D194 pública técnica, P001 pública sin tareas y v0.2.0 reservada. Candidato **401 archivos/5.480.755 bytes**,
+manifiesto **cf191a40…9362a**, 14 añadidos/38 modificados/0 eliminados frente a P011; wheel **eef56a29…4504ab**.
+**1760 pytest/29 subtests** y dos opt-in omitidas, **8 unittest/119 Node**, tipos/build, Alembic temporal,
+verificador instalado y docs/enlaces/Mermaid correctos. HITL **«Sí, sustituir y conservar P011»**: nuevo
+`my_harness_dist` con 401 hashes/modos correctos; P011 íntegro en `my_harness_dist_p011_74cc9141` (387 hashes).
+Sin CLI/proveedores reales, red, nueva QA visual, Git público, push o publicación. **Siguiente: T006**;
+P012 continúa abierta y todos los fixtures/evidencias/instalaciones reales anteriores se conservan.

@@ -403,7 +403,11 @@ HITL autoriza edición documental UI c58712e y dos checks nuevos, uno por consen
 **dd0d3be3… READY** válido. Cierre/archivo **ecbc47f**, tag **p001 del hijo sobre c58712e**, P001 CLOSED y
 P002 ACTIVE sin tareas/plan posterior. Parada 09:19:04 UTC, 11 DONE/15 STOPPED/0 locks, bases/fixtures
 intactos; nuevo 5 Claude/1 Codex, acumulado T004 8/12 y 1/3, ventana original respetada. Siguiente: T005.
-P012 tiene trece tareas; T005 depende también de T012, T013 y T003, las tres completadas.
+P012 tiene trece tareas. **T005 completada** (D210): [candidato y comprobaciones](phase/P012-T005_CANDIDATO.md),
+alcance en/es y baseline pública actualizados, 401 archivos/manifiesto cf191a40…9362a; suites completas,
+paquete y docs correctos. Sustitución de `my_harness_dist` autorizada por HITL y verificada, conservando P011
+íntegro en `my_harness_dist_p011_74cc9141`. Sin llamadas nuevas ni publicación. Siguiente: T006, revisión y
+expediente; T007/cierre pendientes. T012, T013 y T003 completadas con su procedencia conservada.
 Consumo 2/3 Claude y 0/0 Codex, dentro de dos horas; servicios parados, 13 DONE/1 QUEUED/14 STOPPED/0 locks,
 14.921 filas previas intactas y 16.798 finales iguales en copia/restauración. T004 seguía sin autorización en ese punto;
 no reactivar esa base antes de revisar su propuesta de arranque (D199).
@@ -422,8 +426,9 @@ Los lotes actuales siguen sin comprobar/cerrar y cada nuevo plan exige su confir
 
 - Alta Django sin POST→redirect→GET, observación sin bloqueo del piloto y propia del hijo;
   [contexto y límites](archive/phase-009/REVIEW.md). Los otros dos ajustes de interfaz se resolvieron en P010-T004/T005.
-- Validación real B y D095 aplazada por D151 ([propuesta histórica A/B](archive/phase-010/P010-T008_PROPUESTA_VALIDACION_REAL.md)):
-  asignada a P012 (D183), ampliada con chat, backup/restauración y receta TypeScript v2. A sale del alcance futuro
-  por D155, sin alterar la evidencia anterior. P010 no inicia otra fase del Django de P009.
+- Cobertura real más amplia que la acreditada en P012: otras parejas con cli-14, creación Django v2, matriz
+  completa de idiomas y proyectos de producción. El aplazamiento B/D095 de D151 se acredita en el alcance
+  sintético de D198, con chat/consulta D200/D204 y TypeScript v2/es D209; no queda pendiente ese recorrido.
+  A sale del alcance futuro por D155; evidencia histórica y Django de P009 conservados.
 - Hora de cada validación (cambia el formato del historial).
 - Avisos *low* de KaTeX en Mermaid 11; App Server o Agent SDK; `project.yaml` portable.

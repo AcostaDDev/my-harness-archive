@@ -818,3 +818,18 @@ provider/model/effort selection stay explicit. Adapter `cli-14` uses the package
 attempt runs a fresh preflight and checks the launch identity before starting, and drift rejects or quarantines
 without retry or provider substitution. Formats 1–6 and their pins keep their hashes; an explicit pin that differs
 from the installed client is diagnosed.
+
+## D194 — Optional formatter for declared profiles
+
+Status: accepted.
+
+`local-config-8` extends v7 with optional `formatter_argv` and `formatter_paths` in `[profiles.*]`. The pair must be
+present together and non-empty: argv without a shell, mapped executable and final `--`, unique relative patterns,
+and `authorize_profile_commands = true`. Omitting it preserves the effective profile hash; v1–v7 keep their rules
+and fingerprints. v8 retains automatic CLI discovery, per-project presets, work languages and v2 recipes.
+The existing D133 engine/runner formats only contract-allowed changed files before validation and review, never
+on revalidation. Evidence and acceptance bind the resulting bytes. Configuration changes quarantine frozen jobs.
+A real task on a documented synthetic Django clone exercised the declared formatter (two files unchanged), six
+validations and 13 JUnit cases through COMMITTED; this supplies the bounded declared-profile evidence deferred in
+D151, superseding that deferral only within this fixture scope, without extending it to production projects or
+proving automatic repair of a formatting failure.

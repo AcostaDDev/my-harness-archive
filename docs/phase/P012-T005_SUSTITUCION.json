@@ -1,0 +1,12 @@
+{
+  "authorized": true,
+  "previous_tree": "my_harness_dist_p011_74cc9141",
+  "previous_files": 387,
+  "previous_manifest_sha256": "74cc9141da0295a0a658dc10673a454c93eae3fd3cfe86e3df5aa7b9a172ea71",
+  "new_tree": "my_harness_dist",
+  "new_files": 401,
+  "new_manifest_sha256": "cf191a40914095aeb3fbbeea0e6485878cc3218754361fa78d314b87dc19362a",
+  "hashes_and_modes_verified": true,
+  "git_initialized": false,
+  "published": false
+}

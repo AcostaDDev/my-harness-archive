@@ -21,8 +21,11 @@ are pending.
 
 ## Known gaps without a phase
 
-- Real-provider validation of onboarding existing repositories and of declared profiles
-  ([D151](DECISIONS.md#d151--real-validation-of-onboarding-and-declared-profiles-deferred)).
+- Broader real-provider coverage: current `cli-14` evidence covers Claude Code 2.1.310 reviewer → Codex 0.164.0
+  executor on synthetic Django onboarding/declared profiles and Spanish TypeScript v2, plus chat and restored
+  consultation. Other pairs on the current adapter, Django v2 creation, a full language matrix and production
+  projects remain unqualified ([scope](../README.md#supported-scope-and-limits)). The narrow onboarding/profile
+  gap originally deferred by D151 has been exercised; it is no longer pending.
 - Platforms other than macOS ARM64 are not characterized.
 - Operating-system isolation of the agents is not provided
   ([D064](DECISIONS.md#d064--cooperative-containment-without-operating-system-isolation)).

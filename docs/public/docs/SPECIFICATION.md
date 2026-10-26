@@ -51,7 +51,10 @@ the run and, when relevant, to the exact attempt.
 ## 4. Functional requirements
 
 All the requirements below are implemented. Evidence with real providers is limited as described in the README's
-[supported scope](../README.md#supported-scope-and-limits).
+[supported scope](../README.md#supported-scope-and-limits): the current adapter has been exercised on synthetic
+Django onboarding/declared-profile work, Spanish TypeScript v2 through phase closure, chat and backup/restore
+consultation with a Claude Code 2.1.310 reviewer and Codex 0.164.0 executor. Four-combination evidence predates the
+current adapter; Django v2 creation and a full language matrix have offline evidence only.
 
 | ID | Capability | Observable result |
 |---|---|---|
@@ -68,7 +71,7 @@ All the requirements below are implemented. Evidence with real providers is limi
 | F11 | Talk to the reviewer | Chat over HEAD without waiting for the executor; proposals → confirmed tasks; deterministic commands ([flow](flows/chat.md)) |
 | F12 | Inspect tests | JUnit suites and cases, pass/fail per task and evolution per phase |
 | F13 | Metrics and statistics | Tokens, turns, models, efforts, durations and equivalent cost with provenance |
-| F14 | Recover and preserve | Backup and query-only restore, explicit log retention, recovery after a crash |
+| F14 | Recover and preserve | Backup and query-only restore with standalone run evidence UI without a checkout, explicit log retention, recovery after a crash |
 | F15 | Local distribution | Wheel with UI and migrations, `init-db`, `serve`, explicit `migrate`, local session |
 | F16 | Declared profiles | Stack profile (preparation, tests, lint, types) declared in the local TOML and confirmed by the user ([D095](DECISIONS.md#d095--declared-profiles-in-local-config-4)) |
 | F17 | Project instructions for the agents | `AGENTS.md` included in the frozen context of every attempt ([D094](DECISIONS.md#d094--agentsmd-in-every-frozen-prompt)) |
@@ -208,7 +211,16 @@ quarantined before any invocation or write ([compatibility](flows/legacy-compati
 - Reproducible installation with lockfiles and exact versions; distribution as a wheel with assets and migrations;
   Node only to build the UI.
 - Logs with explicit retention that keeps contracts, permissions, verdicts and metrics.
-- Consistent backup of SQLite and artifacts verified by hash; restore into a new folder, query-only.
+- Consistent backup of SQLite and artifacts verified by hash; restore into a new folder, query-only. The persistent
+  restore mark enables a standalone `/runs/:id` view (evidence, diff, JUnit, jobs, attempts, events and metrics),
+  without project configuration, checkout reads, supervisor, pending submission replay, execution polling or mutation
+  controls. API mutations still return 409; consultation never confirms stopped writers or resumes historical jobs
+  ([flow](flows/backup-consultation.md)).
+- Declared-profile formatting is optional in `local-config-8`, uses authorized commands and contract-allowed files
+  before validation/review, and does not run on revalidation; older formats retain their rules (D194).
+- Resolving agent clients for a prepared project rebinds the compatible receipt from its existing authority before
+  admission. It preserves the exact environment digest and work language; missing receipts, changed recipe config
+  or protected/tool drift still block before queuing ([preparation](flows/project-preparation.md)).
 - Explicit migrations with a prior snapshot; CLIs below the minimum or with incompatible capabilities are blocked with
   a diagnostic, and later releases that meet the known contract are admitted with conditional compatibility
   ([D174](DECISIONS.md#d174--automatic-clients-and-conditional-compatibility)).

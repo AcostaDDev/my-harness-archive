@@ -36,8 +36,21 @@ of the public history, so there is no earlier public version to upgrade from.
   when it is created or onboarded.
 - Automatic discovery of agent CLIs with minimum versions (Codex 0.163.0, Claude Code 2.1.304) and conditional
   compatibility for later releases, checked by capabilities before each attempt.
+- Optional native formatter for declared profiles in `local-config-8`, with existing formats 1–7 preserved.
+- Query-only archive UI: direct run links, evidence, paginated diffs, JUnit and metrics without a configured project
+  or checkout, backed by the persistent restore mark and mutation guards.
+
+### Fixed
+
+- CLI capability diagnostics read explicit choices wrapped over multiple help lines.
+- Project preset selection remains available with `local-config-8` in registration, creation and settings.
+- Resolving agent CLIs rebinds a compatible completed preparation receipt before admitting new work, preserving the
+  exact environment digest and the existing drift checks.
 
 ### Known limits
 
 - Tested only on macOS on Apple silicon. Real-provider evidence covers only the capabilities marked as such in the
-  README.
+  README: current adapter with Claude Code 2.1.310 reviewer and Codex 0.164.0 executor; four-combination evidence is
+  historical. The scope includes synthetic Django onboarding/declared-profile work, Spanish TypeScript v2 creation
+  through closure, chat and query-only backup consultation. Other pairs, Django v2 creation and production projects
+  are not qualified by these runs.

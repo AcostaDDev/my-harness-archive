@@ -221,6 +221,8 @@ tarea se leen solo las decisiones que cita; este índice sirve para buscar prece
 | [D208](#d208--p012-t004-tarea-committed-y-check-sin-ready) | P012-T004: tarea COMMITTED y check sin READY | P012 |
 | [D209](#d209--p012-t004-estado-documental-confirmado-y-cierre-real-del-hijo) | P012-T004: estado documental confirmado y cierre real del hijo | P012 |
 
+| [D210](#d210--p012-t005-alcance-público-y-candidato-verificados) | P012-T005: alcance público y candidato verificados | P012 |
+
 ## D001 — Alcance local y arquitectura base
 
 Estado: base aceptada por el usuario el 2026-10-11.
@@ -6189,3 +6191,31 @@ Precedentes: D091/D168/D174/D199/D205–D208; D208 y los resultados fallidos se 
   Un único JUnit existente passed; espacios interiores acreditados por inspección, sin ampliar cobertura.
   Dos checks inválidos y tres paradas conservados, sin reparar respuestas ni reejecutar tarea. Siguiente T005;
   P012 abierta. Sin cambios de producto/datos/flujos en my_harness, tag propio, push, publicación o configuración global.
+
+
+## D210 — P012-T005: alcance público y candidato verificados
+
+Estado: completada el 2026-10-26 por la continuación y commit local en inglés pedidos por el usuario. Fase: P012.
+[Entrega, matriz, hashes, checks y sustitución](phase/P012-T005_CANDIDATO.md). Concreta D157/D176/D183 sobre
+D198/D200/D202/D204/D207/D209; no modifica los resultados o consentimientos reales anteriores.
+
+- README/README.es por fila, CHANGELOG y baseline pública reflejan la pareja Claude 2.1.310 revisor/Codex 0.164.0
+  ejecutor con cli-14; cuatro parejas y receta Django previas conservan su procedencia. B/perfil declarado v8,
+  TypeScript v2/es hasta cierre, chat y consulta de backup acreditados solo en su alcance sintético/macOS ARM64.
+  No se atribuye creación Django v2, matriz completa de idiomas, producción o reparación automática de formato.
+- Docs públicas autocontenidas en inglés: v8, consulta independiente sin checkout/autoridad de ejecución y vínculo
+  del recibo tras resolver CLI; flujos y prosa del diagrama de datos en paridad, sin cambios de ER/esquema o API.
+  D194 pública equivale al contrato técnico (< D200); las decisiones operativas privadas no se publican.
+  D151 histórica se conserva, superada solo en ese alcance por la nueva entrada. P001 pública sigue sin tareas.
+- Candidato por lista positiva copiada de T015, **401 archivos/5.480.755 bytes**, manifiesto
+  **cf191a40914095aeb3fbbeea0e6485878cc3218754361fa78d314b87dc19362a**. Diff contra P011: 14 añadidos,
+  38 modificados, cero eliminados y 349 idénticos; sin Git/historia privada, datos operativos, cachés o symlinks.
+  Wheel nuevo **eef56a29…4504ab**, sdist/pylock/checksums registrados; versión candidata 0.1.0 conservada.
+- Validación offline sobre copia pública: **1760 pytest/29 subtests**, dos opt-in omitidas, **8 unittest/119 Node**,
+  tipos/build, Alembic en SQLite nueva, check_distribution con agentes falsos, 31 Markdown/260 enlaces y 36
+  diagramas sin fallos. Logs y error de los primeros envoltorios zsh documentados, sin fallo de suite o producto.
+- Sustitución separada por HITL tras preparar candidato/checks: **«Sí, sustituir y conservar P011»**. Renombrado
+  `my_harness_dist` a `my_harness_dist_p011_74cc9141` y copia nueva al destino original; 401 hashes/modos nuevos
+  y 387 hashes de P011 verificados. Conservación autorizada, sin borrar el árbol anterior ni inicializar Git.
+- T005 completada; siguiente T006 (revisión/expediente), P012 abierta. Sin proveedores/CLI reales, fixtures o bases
+  operativos, red, CI remota, QA visual nueva, tag, push o publicación; este repositorio no se opera con el harness.

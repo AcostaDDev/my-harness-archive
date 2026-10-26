@@ -76,8 +76,8 @@ declare a version. Each version is checked against a minimum and against the cap
 
 | CLI | Minimum | Status |
 |---|---|---|
-| Codex | 0.163.0 | Verified at 0.163.0; later releases are candidates |
-| Claude Code | 2.1.304 | Verified at 2.1.304; later releases are candidates |
+| Codex | 0.163.0 | Real executor runs at 0.164.0 with adapter `cli-14`; conditional compatibility |
+| Claude Code | 2.1.304 | Real reviewer runs at 2.1.310 with adapter `cli-14`; conditional compatibility |
 
 A candidate is a later release admitted automatically when its observed interface matches the known contract.
 Its compatibility is conditional: help output and probes do not prove every internal effect, and no future version
@@ -117,8 +117,11 @@ it with synthetic agents, without providers or network. The `dist/` folder of a 
 Copy [`examples/local_config.minimal.example.toml`](examples/local_config.minimal.example.toml) outside every
 checkout, make it private (`chmod 600`) and replace its placeholders. It uses one provider (Claude Code) for both
 roles and a declared profile for a small Python project tested with `unittest`; its comments explain the switch to
-Codex. The [complete template](examples/local_config.example.toml) shows every option of the `local-config-7`
+Codex. The [complete template](examples/local_config.example.toml) shows the `local-config-8`
 format: per-project presets, a Django declared profile, compositions and TOML-declared projects.
+v8 adds an optional declared-profile formatter (`formatter_argv` and `formatter_paths`, authorized together);
+formats 1–7 keep their existing rules. Each role's explicit `PATH` must also include the project tools it needs;
+give a Codex writer an explicit private `TMPDIR` when its commands need temporary files.
 [Django](examples/django-recipe.example.toml) and [TypeScript web](examples/typescript-web-recipe.example.toml)
 recipe fragments are added to it to create new projects with a prepared stack.
 
@@ -227,7 +230,11 @@ automatically. `serve` never migrates on startup.
 ```
 
 `--artifact-root` (repeatable) authorizes artifact roots such as the TOML `state_dir`. A restore creates a new,
-query-only database with the same schema revision.
+query-only database with the same schema revision. To browse it, start `serve --database
+/path/restored/state.sqlite3` from the installed venv and open the local UI. The archive home accepts a run id;
+`/runs/:id` opens its recorded evidence, diff, JUnit and metrics without a configured project or checkout.
+No supervisor or agents run; mutations return 409. Historical pending jobs stay pending, and consultation does not
+certify that a historical writer stopped. See the [consultation flow](docs/flows/backup-consultation.md).
 
 **Other commands.** `logs-preview`, `logs-apply` and `logs-inspect` apply an explicit retention to agent streams;
 `metrics-backfill` completes metrics; `diagnose-cli` checks one agent configuration. Every command documents its
@@ -245,17 +252,23 @@ Git history and documents. Delete them only if you no longer need that history.
 
 | Capability | Offline (synthetic data and fake agents) | With real providers |
 |---|---|---|
-| Plan → execute → validate → review → commit, phases, closure and archive | Yes | Yes |
-| Reviewer and executor, Codex or Claude Code, in the four combinations | Yes | Yes |
-| New Django project with the Django recipe | Yes | Yes, macOS ARM64 with Python 3.13 |
-| New TypeScript web project with its recipe | Yes, also with real node/npm and a local cache | No |
-| Recipes v2 that follow the project's work language | Yes, with synthetic tools | No |
-| Declared profiles (`[profiles.*]`) and onboarding of existing repositories | Yes | No |
-| Chat, backup and restore | Yes | No |
-| Run views, metrics and export preview over large synthetic histories | Yes | Not applicable |
+| Plan → execute → validate → review → commit, phases, closure and archive | Yes | Current adapter: Django and TypeScript tasks COMMITTED; TypeScript phase READY, closed and archived |
+| Reviewer and executor, Codex or Claude Code, in the four combinations | Yes | Four combinations before `cli-14`; current adapter validated with Claude reviewer → Codex executor only |
+| New Django project with the Django recipe | Yes | Historical creation, four tasks and closure on macOS ARM64/Python 3.13; v2 creation has offline evidence only |
+| New TypeScript web project with its recipe | Yes, also with real node/npm and a local cache | v2, Spanish work language: definition, offline preparation, one task COMMITTED and phase closure |
+| Recipes v2 that follow the project's work language | Yes, with synthetic tools | Spanish TypeScript v2 only; no real Django v2 creation or full language matrix |
+| Declared profiles (`[profiles.*]`) and onboarding of existing repositories | Yes | Two synthetic Django repositories onboarded with originals intact; a documented clone reached COMMITTED using a v8 declared profile, six validations/13 JUnit cases and the native formatter (two files unchanged) |
+| Chat, backup and restore | Yes | Two real reviewer answers, deterministic command without a model and proposal confirmed QUEUED without execution; backup/restored API and Chrome UI preserve real runs, diffs, JUnit and metrics |
+| Run views, metrics and export preview over large synthetic histories | Yes | Restored real-run views/metrics verified; large histories and export preview have synthetic evidence only |
 
-The real runs were made before the current CLI adapter with Codex 0.162.1/0.163.0 and Claude Code
-2.1.295–2.1.304; they are historical evidence, not a guarantee for later releases.
+The current-adapter evidence was collected in October 2026 on macOS ARM64 with Claude Code **2.1.310** as
+reviewer and Codex **0.164.0** as executor, using installed wheels, disposable synthetic projects and explicit
+authorizations. Earlier four-combination and Django-recipe evidence used Codex 0.162.1/0.163.0 and Claude Code
+2.1.295–2.1.304 before `cli-14`. These results do not qualify other pairs, versions, platforms or production
+projects, compare model quality, or prove undocumented CLI effects; conditional compatibility still applies.
+Two task attempts ended at REVISION_LIMIT and two TypeScript phase checks failed before a separately authorized
+document edit and a valid READY check; their original results were preserved. The restored chat proposal remains
+QUEUED, and historical process identity remains uncertain. See the [baseline](docs/STATE.md).
 
 Known limits: no operating-system isolation; a recipe-pinned manifest does not accept new dependencies after
 preparation; the `typescript-web` profile protects `package.json`, `scripts/**` and `tests/**` from the executor;

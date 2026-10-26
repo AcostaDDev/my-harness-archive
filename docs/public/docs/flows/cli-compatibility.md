@@ -3,11 +3,11 @@
 Agent CLIs are discovered automatically and admitted by minimum version and capabilities
 ([D173](../DECISIONS.md#d173--automatic-cli-discovery-minimums-and-capability-contract),
 [D174](../DECISIONS.md#d174--automatic-clients-and-conditional-compatibility)). No version pin, candidate acceptance
-or operator evidence file is required in `local-config-7`.
+or operator evidence file is required in `local-config-7`/`8`.
 
 ```mermaid
 flowchart TD
-    C["Parse local-config-7: explicit environment, provider, optional executable"] --> D["Data-only project composition: versions not yet observed"]
+    C["Parse local-config-7/8: explicit environment, provider, optional executable"] --> D["Data-only project composition: versions not yet observed"]
     D --> S["Service startup or effective project composition: resolve selected roles"]
     S --> P["Resolve command on explicit absolute PATH or optional path"]
     P --> V["Bounded version/help probes, closed stdin and temporary cwd"]
@@ -41,8 +41,9 @@ login command, test prompt, network lookup, installation or global configuration
 Each mutation observes the client again and reuses that project resolution only inside the same request. Each
 attempt also observes version and help again. Content-hash caching restats inode, size, mtime and ctime; it is not a
 cached compatibility verdict. A fresh job can detect an updated client automatically; a queued job never adopts it.
-Source and profile hashes bind the packaged policy, and symlink, script and interpreter hashes bind explicit local
-launch files. Hashing does not certify transitive runtime dependencies or prevent adversarial concurrent
+Explicit capability lists wrapped across help lines stay scoped to their own option; a missing required value
+still blocks. Source and profile hashes bind the packaged policy; symlink, script and interpreter hashes bind
+explicit local launch files. Hashing does not certify transitive runtime dependencies or prevent adversarial concurrent
 replacement. Public reports expose hashes and structured diagnostics, not raw help, environment values or executable
 paths.
 
@@ -56,5 +57,5 @@ no fallback or retry. Read-only project and history views do not trigger discove
 
 - `adapters/cli_compatibility.py` (minimums, policy, discovery and identity), `adapters/cli_agents.py` (adapter
   `cli-14`, argv and preflight), `adapters/cli_diagnostics.py`, `adapters/process_gate.py`.
-- `services/local_config.py` (`local-config-7`), `services/managed_runtime.py`, `cli.py` (`check-config`,
+- `services/local_config.py` (`local-config-7`/`8`), `services/managed_runtime.py`, `cli.py` (`check-config`,
   `diagnose-cli`).

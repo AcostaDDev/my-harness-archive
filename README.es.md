@@ -57,6 +57,34 @@ español, mientras que todo lo técnico del proyecto se escribe en inglés, tant
 tarea congela ambos idiomas al encolarse; cambiar después la interfaz solo afecta a las interacciones nuevas.
 [Más detalle](README.md#languages).
 
+## Alcance soportado y límites
+
+| Capacidad | Offline (datos sintéticos y agentes falsos) | Con proveedores reales |
+|---|---|---|
+| Plan → ejecución → validación → revisión → commit, fases, cierre y archivo | Sí | Adaptador actual: tareas Django y TypeScript COMMITTED; fase TypeScript READY, cerrada y archivada |
+| Revisor y ejecutor Codex o Claude Code, en las cuatro combinaciones | Sí | Las cuatro antes de `cli-14`; con el actual solo revisor Claude → ejecutor Codex |
+| Proyecto Django nuevo con receta | Sí | Creación, cuatro tareas y cierre históricos en macOS ARM64/Python 3.13; creación v2 solo offline |
+| Proyecto TypeScript web nuevo con receta | Sí, también con node/npm reales y caché local | v2 e idioma de trabajo español: definición, preparación offline, una tarea COMMITTED y cierre |
+| Recetas v2 según el idioma de trabajo | Sí, con herramientas sintéticas | Solo TypeScript v2 en español; sin creación Django v2 real ni matriz completa de idiomas |
+| Perfiles declarados e incorporación de repositorios existentes | Sí | Dos Django sintéticos incorporados con originales intactos; clon documental COMMITTED con perfil v8, seis validaciones/13 casos JUnit y formateador nativo (dos archivos sin cambios) |
+| Chat, backup y restauración | Sí | Dos respuestas reales, comando determinista sin modelo y propuesta confirmada QUEUED sin ejecutar; consulta API/UI Chrome de runs, diff, JUnit y métricas restaurados |
+| Vistas de runs, métricas y vista previa de exportación con historiales grandes | Sí | Vistas/métricas reales restauradas comprobadas; historiales grandes y vista previa de exportación solo sintéticos |
+
+Evidencia del adaptador actual: octubre de 2026, macOS ARM64, revisor Claude Code **2.1.310** y ejecutor Codex
+**0.164.0**, wheels instalados y proyectos sintéticos desechables. Las cuatro combinaciones y la receta Django
+históricas usaron Codex 0.162.1/0.163.0 y Claude Code 2.1.295–2.1.304 antes de `cli-14`. No acredita otras
+parejas, versiones, plataformas o proyectos de producción, ni compara modelos o prueba efectos internos de las CLI.
+Se mantienen los mínimos y la compatibilidad condicionada. Dos tareas acabaron en REVISION_LIMIT y dos checks
+TypeScript fallaron antes de una edición documental autorizada y un READY válido; sus resultados se conservaron.
+La propuesta del chat sigue QUEUED y la identidad de procesos históricos sigue siendo incierta.
+
+`local-config-8` permite formateador optativo en perfiles declarados y conserva presets/recetas v2; v1–v7 mantienen
+sus reglas. La restauración ofrece consulta por id en `/runs/:id` sin proyecto ni checkout, con diff/JUnit/métricas,
+sin supervisor ni agentes y con mutaciones rechazadas (409). Consultar no certifica la parada de escritores históricos.
+Persisten la contención cooperativa sin aislamiento del sistema operativo, los manifiestos de receta fijos tras
+preparar y las validaciones sin hora. Detalle y límites restantes en
+[Supported scope and limits](README.md#supported-scope-and-limits) y [STATE](docs/STATE.md).
+
 ## Seguridad, operación y contribución
 
 - La contención es cooperativa, no un aislamiento del sistema operativo: registra solo repositorios y herramientas de

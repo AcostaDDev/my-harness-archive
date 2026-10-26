@@ -4,7 +4,7 @@ Recipes prepare the technical stack of a newly created project after its root do
 Django ([D119](../DECISIONS.md#d119--django-recipe-preparation)) and TypeScript web
 ([D143](../DECISIONS.md#d143--typescript-web-recipe-1)). They apply only to new children registered by the service,
 with a composition that sets `recipe = "django"` (packaged profile) or `recipe = "typescript-web"` (built-in profile)
-and an accepted root documentation commit. `local-config-5` selects the v1 recipes; `local-config-6` and `7` select
+and an accepted root documentation commit. `local-config-5` selects the v1 recipes; `local-config-6`–`8` select
 the v2 recipes, which follow the child's work language ([below](#v2-recipes-by-work-language)). No agent runs. Both
 recipes share the `project-preparation-1` contract, the `preparation-commands-1` binding, tables, locks, journal,
 technical commit and recovery; each provides its manifest, steps, source rules and receipt.
@@ -27,7 +27,8 @@ flowchart TD
     T --> K["Seal and persist the commit intent; exact tree and CAS on HEAD"]
     U --> K
     K --> R["Adopt the receipt and COMPLETED; release reservation and lock in one transaction"]
-    R --> J["Later jobs freeze project_environment_sha256; receipt guard before commands"]
+    R --> BIND["Resolve agent clients and rebind the compatible receipt from existing authority"]
+    BIND --> J["Later jobs freeze exact project_environment_sha256; receipt guard before commands"]
     W -. "failure / cancel / lease" .-> X["Stop the own group; keep bytes and journal; no replay"]
     X --> A["Prove the writer stopped and review a new linked intent"]
     A --> B{"Prefix, source and environment proven?"}
@@ -67,8 +68,11 @@ An uncertain reservation blocks new tasks, role changes and unregistration even 
 Job admission and confirmation share the SQLite transaction; there is no second lock per root. After `COMPLETED`,
 the receipt pins the interpreter and executables, every distribution, the environment hashes, the lock, the local
 secret by hash and the protected files. Changing roles keeps that receipt if the recipe does not drift. It is
-validated before tasks and checks and before each native command; earlier document snapshots are not rewritten. The
-identity of the checkout and of `.venv` is compared by inode, because macOS renumbers the device when the volume is
+validated before tasks and checks and before each native command; earlier document snapshots are not rewritten.
+Client resolution recomposes the project and rebinds its compatible completed receipt from the existing preparation
+service before admission. It preserves work language, observed CLI versions and the exact environment digest, rather
+than copying an obsolete composition hash. Missing receipts, a changed recipe configuration or protected/tool drift
+still block work. The identity of the checkout and of `.venv` is compared by inode, because macOS renumbers the device when the volume is
 remounted after a reboot; bytes are still verified in full
 ([D130](../DECISIONS.md#d130--preparation-receipts-compare-the-inode-not-the-device)).
 
@@ -101,7 +105,7 @@ needs a future flow.
 
 ## v2 recipes by work language
 
-`local-config-6` and `local-config-7` accept `[recipes.django]` and `[recipes.typescript-web]` with the v5 keys and
+`local-config-6`–`8` accept `[recipes.django]` and `[recipes.typescript-web]` with the v5 keys and
 select `django-recipe-2`/`typescript-web-recipe-2`; v5 keeps selecting v1 with its hashes
 ([D168](../DECISIONS.md#d168--v2-recipes-in-local-config-6)). Effects, order, core, locks, journal, recovery and
 technical commit are those of v1; the technical prose of the scaffold, the profile (Django v2 with English
@@ -109,7 +113,7 @@ instructions and the profile formatter; TypeScript with its own copy of the prof
 
 ```mermaid
 flowchart TD
-    C["v6/v7 composition with a recipe: recipe_config_sha256 binds the config and the v2 fingerprint of en and es"] --> P["v2 preview"]
+    C["v6–v8 composition with a recipe: recipe_config_sha256 binds the config and the v2 fingerprint of en and es"] --> P["v2 preview"]
     P --> L{"Work language row for the root?"}
     L -- no --> R["409 work_language_required; the checkout is neither checked nor touched"]
     L -- yes --> M["Manifest in that language; the plan seals work_language, the row hash and recipe_sha256"]
@@ -127,7 +131,7 @@ flowchart TD
 - The UI shows v2 steps with the en/es catalogs by `id` (validations with the profile command) and the plan's work
   language; the plan keeps its English label. v1 plans show their frozen label.
 - The child's functional language (`LANGUAGE_CODE`, `<html lang>`, visible texts) is never derived from the interface
-  or work language. Moving a project prepared with v1 to v6/v7 is not supported: it would change its frozen
+  or work language. Moving a project prepared with v1 to v6–v8 is not supported: it would change its frozen
   composition.
 
 ## Source

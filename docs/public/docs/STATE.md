@@ -7,7 +7,8 @@ first public snapshot is summarized below as the starting baseline; its decision
 
 What exists and works at the first public snapshot, verified offline with temporary Git repositories, SQLite and
 processes, fake agents and synthetic data unless stated otherwise. First local version complete within the scope
-of [D151](DECISIONS.md#d151--real-validation-of-onboarding-and-declared-profiles-deferred); package `0.1.0`.
+described in the [supported scope](../README.md#supported-scope-and-limits); package `0.1.0`, not yet released.
+The real validation originally deferred in D151 now has the bounded evidence below.
 
 - **Engine.** Package `harness_local` with an explicit context per project, frozen task contracts, planning by the
   reviewer or deterministic from `NEXT_STEPS`, the execute → format → validate → review loop with a correction limit,
@@ -20,7 +21,9 @@ of [D151](DECISIONS.md#d151--real-validation-of-onboarding-and-declared-profiles
   reviewer with a typed output schema; automatic memory disabled; Codex writer limited to the checkout. Clients are
   discovered on an explicit `PATH`, checked against minimums (Codex 0.163.0, Claude Code 2.1.304) and a packaged
   capability policy, frozen per job and revalidated before every attempt (adapter `cli-14`, D173, D174). Native
-  validations with JUnit reports; declared profiles in the operator TOML (D095).
+  validations with JUnit reports; declared profiles in the operator TOML (D095), including the optional native
+  formatter in `local-config-8` (D194). Formats 1–7 retain their rules. Explicit capability lists wrapped across
+  help lines are read within their option; missing required values still block admission.
 - **Phases and documents.** Unified documentation layout (D088): `AGENTS.md`, single `DECISIONS.md` with an index,
   managed blocks regenerated on every task commit, confirmed edits, READY check, unattended task batches,
   amendments, abandonment and a unified closure that archives the phase in `docs/archive/phase-NNN/` and opens the
@@ -31,7 +34,9 @@ of [D151](DECISIONS.md#d151--real-validation-of-onboarding-and-declared-profiles
   proposals that become confirmed tasks (D083). Projects folder chosen in the UI and creation intents with recovery
   (D116).
 - **Recipes.** Confirmed, recoverable preparation of new Django (D119) and TypeScript web (D143) projects with a
-  separate technical commit; v2 recipes follow the project's work language (`local-config-6`/`7`, D168).
+  separate technical commit; v2 recipes follow the project's work language (`local-config-6`–`8`, D168).
+  Resolving agent clients rebinds compatible completed receipts before admission, preserving the exact
+  `project_environment_sha256`; missing or drifting receipts still block work.
 - **Onboarding.** Static inventory of a committed tree, read-only conversation with private drafts, confirmed
   profile and documents, and a reconcilable documentation commit that adopts `P001` (D102). Support for the
   previous harness format is retired; earlier data stays readable and old jobs are quarantined (D161).
@@ -41,15 +46,29 @@ of [D151](DECISIONS.md#d151--real-validation-of-onboarding-and-declared-profiles
   (D170–D172).
 - **API and UI.** `/api/managed` behind a local session, Host/Origin checks and a CSRF header; React UI with URLs for
   projects, registry, creation, onboarding, documentation, phases, tasks, runs with paginated diffs, chat,
-  statistics, settings and preferences; per-attempt metrics with provenance (D074).
+  statistics, settings and preferences; per-attempt metrics with provenance (D074). Query-only copies expose
+  `read_only_archive` from their persistent mark and a standalone `/runs/:id` view with evidence, diff, JUnit and
+  metrics, without project configuration, a checkout, execution polling or mutation controls
+  ([flow](flows/backup-consultation.md)).
 - **Distribution and operation.** Wheel and sdist with UI, migrations, catalogs and license/notice files, checked
   member by member with `SHA256SUMS`; `init-db`, `serve`, `migrate`, `check-config`, backup, retention,
   `metrics-backfill` and `diagnose-cli`; `scripts/dev` for development (D043, D051). Synthetic GitHub Actions CI on
   macOS, not yet run remotely; versioning policy in the [changelog](../CHANGELOG.md).
-- **Real-provider evidence.** Before the snapshot: first real use to a closed phase, the four reviewer/executor
-  combinations COMMITTED (D071) and a Django project created from the UI through four tasks and the closure of its
-  first phase on macOS ARM64 with Python 3.13. Onboarding, declared profiles, the TypeScript recipe, chat and backup
-  have offline evidence only (D151).
+- **Real-provider evidence.** Historical evidence before `cli-14`: first real use to a closed phase, four
+  reviewer/executor combinations COMMITTED (D071), and Django recipe creation through four tasks and phase closure
+  on macOS ARM64/Python 3.13. Current-adapter evidence (October 2026, same platform): Claude Code 2.1.310 reviewer
+  and Codex 0.164.0 executor, installed wheels and disposable synthetic projects. Two existing Django repositories
+  were onboarded with originals intact and idempotent confirmation; a documented clone reached COMMITTED using a
+  v8 declared profile, six validations/13 JUnit cases and native formatting (two files unchanged). Spanish
+  TypeScript v2 creation, offline preparation, one task COMMITTED, a valid READY check, closure/tag/archive and an
+  empty active successor were verified. Two chat answers, a deterministic command without a model and a confirmed
+  proposal left QUEUED without execution were verified. Backup/restored API and Chrome UI preserved run/diff/JUnit/
+  metrics evidence. No real Django v2 creation, other current-adapter pair or full language matrix is claimed.
+- **Preserved failures and limits of that evidence.** Two Django task attempts ended at REVISION_LIMIT; no failed
+  result was repaired or relabelled as success. Two TypeScript phase checks failed before a separately authorized
+  document edit and a valid check. The chat proposal remains QUEUED. Restored consultation leaves historical
+  process identity uncertain and does not certify stopped writers. These runs do not qualify production projects,
+  compare model quality or prove undocumented CLI effects; conditional compatibility is unchanged.
 - **Limits.** Cooperative containment without operating-system isolation (D064); validations without timestamps;
   recipe manifests fixed after preparation; only macOS ARM64 tested; first use from a clean clone rehearsed
   with fake CLIs only (no sign-in or real model calls); installed UI reviewed in Chrome only (en/es, light/dark,

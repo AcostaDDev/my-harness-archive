@@ -67,7 +67,7 @@ Operational authority for runs, attempts, the job queue, exclusion per checkout,
 
 CLI compatibility ([D174](DECISIONS.md#d174--automatic-clients-and-conditional-compatibility)) uses no extra
 tables, only the JSON columns: `versions_json` freezes the observed CLI version, `reviewer_cli_launch_sha256` and
-`executor_cli_launch_sha256`, the policy hash and, with `local-config-7`, the automatic provenance or explicit
+`executor_cli_launch_sha256`, the policy hash and, with `local-config-7`/`8`, the automatic provenance or explicit
 assertion and the explicit PATH or executable path. `managed_processes.spec.preflight_observed` keeps the diagnostic,
 minimum, launch fingerprint and conditional profile of each attempt. A refusal before the target starts has
 `launch_permitted=false`, a null process identity and a `refused` capture; if a group was already waiting for GO, its
@@ -910,7 +910,7 @@ erDiagram
 ```
 
 It is written in the transaction that confirms a registration (including the registration of a newly created
-project), at startup from a `local-config-6`/`7` TOML that declares it, or by the explicit confirmation from absent to
+project), at startup from a `local-config-6`–`8` TOML that declares it, or by the explicit confirmation from absent to
 a value. Another value for the same root is refused. Since `0025`, `managed_jobs.language_context` seals
 `language-context-1` (`ui_language`, `preferences_version`, `work_language`, `work_language_source`,
 `work_language_sha256`) when admitting each new job; without a row no new work is admitted.

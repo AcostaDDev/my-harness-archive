@@ -13,8 +13,8 @@ flowchart TD
     SEL --> REG{"How does the project arrive?"}
     REG -- "register an existing checkout (onboarding)" --> RP["POST /registry/preview with work_language"]
     REG -- "create a new folder" --> CP["POST /project-creations/preview with work_language"]
-    REG -- "TOML local-config-6/7" --> T6["[[projects]].work_language; loading writes nothing"]
-    REG -- "project without a value (TOML 1–5, v6/v7 without the key, earlier registrations)" --> NO["No confirmed work language"]
+    REG -- "TOML local-config-6/7/8" --> T6["[[projects]].work_language; loading writes nothing"]
+    REG -- "project without a value (TOML 1–5, v6–v8 without the key, earlier registrations)" --> NO["No confirmed work language"]
     RP --> H["Preview: chosen value + default and its version (provenance, outside the hash)"]
     CP --> H
     H --> X{"Does the root already have another value?"}
@@ -37,7 +37,7 @@ flowchart TD
 
 - Immutability: updating or unregistering a registry row with `work_language` in the body answers 409
   `work_language_immutable`; reopening (unregister and register the same root again) only accepts the original value
-  and keeps the original row. A v6/v7 TOML with another value stops the startup; without the key, the project reads
+  and keeps the original row. A v6–v8 TOML with another value stops the startup; without the key, the project reads
   the value already confirmed. Project settings only display it.
 - Changing the default work language between preview and confirmation does not alter the confirmed value: the hash
   seals the chosen value and the existing association; the default and its version are provenance in
@@ -48,7 +48,7 @@ flowchart TD
   including an older `ui-language-1` value or null; they never receive an invented work language.
 - A stale project context with another `work_language` (it should not happen: the row never changes) is refused.
 - Downgrading `0025` is refused when any association exists. Backup and query-only restore keep it.
-- Recipes: with `local-config-6` and `local-config-7`, `[recipes]` selects the v2 recipes, which prepare with the
+- Recipes: with `local-config-6`–`8`, `[recipes]` selects the v2 recipes, which prepare with the
   row's language and seal it in the plan and the receipt; without a row, the preparation is refused before effects
   ([flow](project-preparation.md#v2-recipes-by-work-language)).
 
@@ -84,6 +84,6 @@ flowchart TD
   `storage/managed.py::_language`/`agent_started`.
 - `services/project_registry.py` (preview and seal), `services/project_creation.py` (`project-creation-2`),
   `services/work_language.py` (explicit confirmation), `services/managed_runtime.py` (TOML startup and context),
-  `services/local_config.py` (`local-config-6/7`).
+  `services/local_config.py` (`local-config-6/7/8`).
 - `api/managed.py` (`/projects/{id}/work-language`, 409 codes), `api/schemas.py`.
 - `frontend/src/WorkLanguage.tsx`, `pages/Registry.tsx`, `pages/Settings.tsx`.

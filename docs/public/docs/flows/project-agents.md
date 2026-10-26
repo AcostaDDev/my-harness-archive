@@ -1,14 +1,14 @@
 # Flow — agent selection per project
 
 Per-project roles come from presets declared by the operator in the TOML
-([D116](../DECISIONS.md#d116--creation-authority-per-project-presets-and-separate-preparation)). `local-config-7` keeps
+([D116](../DECISIONS.md#d116--creation-authority-per-project-presets-and-separate-preparation)). `local-config-7`/`8` keep
 provider, model, effort and environment explicit, while the executable and version are optional: the service detects
 the effective CLIs before admitting work, with common minimums Codex 0.163.0 and Claude Code 2.1.304
 ([discovery, freezing, guards and quarantine](cli-compatibility.md)).
 
 ```mermaid
 flowchart TD
-    O["Operator declares presets in TOML v5–v7: provider, roles, environment and CLI (optional in v7)"] --> C["Local load without processes; validates provider, efforts, USER and environment per role"]
+    O["Operator declares presets in TOML v5–v8: provider, roles, environment and CLI (optional in v7/v8)"] --> C["Local load without processes; validates provider, efforts, USER and environment per role"]
     C --> CL["Separate resolution of the effective CLIs: minimums, interface and identity (cli-compatibility)"]
     CL --> U
     U["User chooses presets per project and the reviewer's explicit model and effort"]

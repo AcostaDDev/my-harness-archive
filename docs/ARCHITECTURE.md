@@ -314,8 +314,12 @@ de las recetas Django y TypeScript web no heredan ese valor: reciben `HOME`/`TMP
 - El perfil `typescript-web` protege `package.json`, `package-lock.json`, `tsconfig.json`, `scripts/**` y `tests/**`
   frente al ejecutor normal: el ejecutor no crea ni modifica archivos bajo `tests/`.
 - Tras un reinicio que renumere el dispositivo, crear otro proyecto exige volver a elegir la carpeta (D130).
-- Evidencia real limitada a macOS arm64 y a las CLI y recorridos registrados; incorporación B, perfil declarado,
-  receta TypeScript, chat y backup sin uso real ([alcance](../README.md#supported-scope-and-limits)).
+- Evidencia real limitada a macOS arm64 y a las CLI/recorridos registrados. P012 acredita incorporación B y tarea
+  con perfil/formateador declarado v8 (D198), chat y backup/restauración con consulta API/UI (D200/D204), receta
+  TypeScript v2/es hasta tarea/cierre (D206/D209), con Claude 2.1.310 revisor/Codex 0.164.0 ejecutor. Las cuatro
+  parejas y receta Django anteriores a cli-14 conservan su procedencia; sin creación Django v2, matriz de idiomas,
+  otras parejas actuales o proyectos de producción. Fallos e identidad histórica incierta conservados
+  ([alcance](../README.md#supported-scope-and-limits)).
 - Dos avisos *low* de KaTeX en Mermaid 11.
 - La estructura de D088 es obligatoria desde P008-T002; rutas y paridad en T003, cierre y archivo unificados en
   T004, prompts/definición en T005, API/UI en T006 e inyección de AGENTS en T007 (D089–D094).

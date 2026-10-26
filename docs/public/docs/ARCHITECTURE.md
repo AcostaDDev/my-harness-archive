@@ -64,7 +64,7 @@ queue; closing the browser does not cancel work.
 | `storage/*.py` | SQLAlchemy repositories by area (`managed`, `phases`, `documents`, `transition`, `planning`, `chat`, `metrics`, `registry`, `backup`, `retention`, `migrate`…) |
 | `storage/run_projection.py`, `managed_views.py` | Derived `run-projection-1` projection written with the history, and run views that only read it |
 | `services/managed.py`, `managed_runtime.py` | Supervisor (`run_once`, lease, quarantine) and runtime composition |
-| `services/local_config.py`, `project_registry.py`, `project_creation.py` | `local-config-7` TOML (reads 1–6), automatic CLIs; registration and creation, presets, recipe generations, work language sealed at registration |
+| `services/local_config.py`, `project_registry.py`, `project_creation.py` | `local-config-8` TOML (reads 1–7), automatic CLIs; registration and creation, presets, recipe generations, work language sealed at registration |
 | `recipes/`, `services/project_preparation.py`, `storage/preparation.py`, `adapters/preparation.py` | Packaged recipes (`django-recipe-1/2`, `typescript-web-recipe-1/2`) and their confirmed, recoverable preparation |
 | `api/app.py`, `managed.py`, `schemas.py`, `session.py`, `security.py` | Application, routes, Pydantic contracts, session and guard |
 | `profiles/` | Built-in profile `typescript-web` (composable); TOML profiles are composed in `services/local_config.py` |
@@ -106,6 +106,9 @@ preferences). Git keeps code and documents. Markdown keeps the intent (requireme
 decisions). Schema and relations in [DDBB-DIAGRAM](DDBB-DIAGRAM.md). Streams and captures live outside SQLite,
 written with fsync and hash; retention purges them only with authorization and keeps metrics and verdicts. Backup
 copies SQLite through its API together with the referenced artifacts; a restore is query-only (`query_only`).
+The persistent restore mark, exposed as `SupervisorRead.read_only_archive`, enables standalone archive views without
+configured projects, a checkout or supervisor. All mutations retain their 409 guard
+([flow](flows/backup-consultation.md)).
 `migrate` upgrades an existing database after a verified snapshot ([flow](flows/database-migration.md)).
 
 ## 6. Agents and configuration
@@ -131,7 +134,7 @@ copies SQLite through its API together with the referenced artifacts; a restore 
   attempt, plus an identity check before GO. Drift leads to refusal or quarantine, without retry or provider
   substitution ([flow](flows/cli-compatibility.md)). The `cli_agents.SUPPORTED`/`WRITE_SUPPORTED` lists keep historical
   evidence and are no longer admission allowlists.
-- **Operator TOML** (`local-config-7`; 1–6 still readable), outside every checkout and `chmod 600`: `[service]`,
+- **Operator TOML** (`local-config-8`; 1–7 still readable), outside every checkout and `chmod 600`: `[service]`,
   `[git]`, `[agents.reviewer]`, `[agents.executor]`, `[registration]` (roots and bootstrap ceiling), optional
   `[profiles.*]`, `[compositions.*]` (built-in or declared profile and authorized commands), optional `[[projects]]`
   with its policy, `[agent_presets.*]` with an optional `agent_selection` per project, `work_language` per project and
@@ -141,12 +144,16 @@ copies SQLite through its API together with the referenced artifacts; a restore 
   again and reuses its resolution only within that request; passive reads do not. Earlier formats keep their hashes
   and assertions but do not bypass the minimums. Confirmed changes serialize registration and admission in SQLite;
   proposed plans become `SUPERSEDED` without altering their snapshots ([flow](flows/project-agents.md)). The public
-  catalog omits executables and environments.
+  catalog omits executables and environments. v8 adds optional declared-profile formatting; per-project preset
+  selection is available in registration, creation and settings in v5–v8.
 - **Profiles**: built-in in `profiles/` or declared in `[profiles.<name>]`
   ([D095](DECISIONS.md#d095--declared-profiles-in-local-config-4)): preparation and validations as argv without a shell,
   JUnit next to its validation, prefixes, protected and sensitive paths, `data_model_paths` and executor
   instructions. The profile content enters the frozen hash of the composition. Example `python-django` in
-  `examples/local_config.example.toml`.
+  `examples/local_config.example.toml`. v8 optionally accepts `formatter_argv` and `formatter_paths` together:
+  non-empty argv ending in `--`, mapped executable, unique relative patterns and profile-command authorization.
+  Omission retains the effective profile hash; v1–v7 keep their rules
+  ([D194](DECISIONS.md#d194--optional-formatter-for-declared-profiles)).
 - **Native validations** (`commands-1`): absolute executables, authorization per complete command, bounded capture in
   SQLite, POSIX groups. A task command with the argv of a profile validation run at the root without extra
   environment is that validation (its timeout) and runs once. The profile formatter is authorized separately (`formatter-paths`): its argv followed only by
@@ -193,7 +200,10 @@ copies SQLite through its API together with the referenced artifacts; a restore 
   `work_language_required`. Projects, registrations, jobs and attempts expose the value or frozen pair.
 - UI routes: `/`, `/stats`, `/preferences`, `/projects/new`, `/projects/:p` with `setup`,
   `onboarding[/:c/*draft]`, `chat[/:c]`, `docs[/*path]`, `phases`, `phases/:code`, `phases/:code/plan[/:c]`,
-  `phases/:code/tasks/:task[/runs/:run]`, `stats`, `settings`; `/runs/:id` as a short link. Routes of the retired
+  `phases/:code/tasks/:task[/runs/:run]`, `stats`, `settings`; `/runs/:id` redirects to the canonical project route
+  in ordinary mode and opens a standalone evidence view in marked query-only copies. The archive home accepts a
+  run id; operational routes and pending submissions are not mounted, and recorded active states do not trigger
+  execution polling. Routes of the retired
   support show not found ([compatibility](flows/legacy-compatibility.md)).
 - Security: loopback only; an ephemeral session key in a private file and an eight-hour HttpOnly cookie; exact Host
   and Origin; CSRF header `X-Harness-Local: 1` on mutations; `Sec-Fetch-Site: cross-site` refused
@@ -255,8 +265,10 @@ inherit that value: they receive their own `HOME`/`TMPDIR` inside the child.
 - The `typescript-web` profile protects `package.json`, `package-lock.json`, `tsconfig.json`, `scripts/**` and
   `tests/**` from the normal executor: the executor does not create or modify files under `tests/`.
 - After a reboot that renumbers the disk device, creating another project requires choosing the projects folder again.
-- Real-provider evidence is limited to macOS ARM64 and the recorded CLIs and paths; onboarding, declared profiles, the
-  TypeScript recipe, chat and backup have offline evidence only
-  ([D151](DECISIONS.md#d151--real-validation-of-onboarding-and-declared-profiles-deferred),
-  [scope](../README.md#supported-scope-and-limits)).
+- Real-provider evidence is limited to macOS ARM64 and the recorded versions and journeys. With `cli-14`, Claude
+  Code 2.1.310 reviewer → Codex 0.164.0 executor covers synthetic Django onboarding/declared-profile work, Spanish
+  TypeScript v2 through closure, chat and backup/restore consultation. Four-combination and Django-recipe evidence
+  predates this adapter; Django v2 creation, other current pairs, full language coverage and production projects
+  remain unqualified ([scope](../README.md#supported-scope-and-limits)). Failed attempts/checks and uncertain
+  historical process identity are preserved; consultation does not authorize resumption or certify stopped writers.
 - Two *low* KaTeX advisories in Mermaid 11.
