@@ -50,9 +50,9 @@ for (const action of ['register', 'create', 'update']) {
   }
 }
 
-test('v5–v7 keep preset selection; older and unknown formats retain the fallback', () => {
-  for (const version of [5, 6, 7]) assert.match(render(`local-config-${version}`, 'register'), /value="reader"/);
-  for (const format of ['local-config-1', 'local-config-2', 'local-config-3', 'local-config-4', 'local-config-9', undefined]) {
+test('v5–v9 keep preset selection; older and unknown formats retain the fallback', () => {
+  for (const version of [5, 6, 7, 8, 9]) assert.match(render(`local-config-${version}`, 'register'), /value="reader"/);
+  for (const format of ['local-config-1', 'local-config-2', 'local-config-3', 'local-config-4', 'local-config-10', undefined]) {
     const html = render(format, 'register');
     assert.doesNotMatch(html, /value="reader"|value="writer"/);
     assert.match(html, /local-config-5\/6\/7\/8/);
@@ -62,4 +62,13 @@ test('v5–v7 keep preset selection; older and unknown formats retain the fallba
 test('v8 without operator presets keeps the missing-preset warning visible', () => {
   assert.match(render('local-config-8', 'register', 'en', false), /role="alert"/);
   assert.match(render('local-config-8', 'register', 'es', false), /role="alert"/);
+});
+
+
+test('v9 creation and registration offer context-first profiles without a required stack', () => {
+  for (const action of ['register', 'create']) {
+    const html = render('local-config-9', action);
+    assert.match(html, /Define profile from project context/);
+    assert.match(html, /value="reader"/);
+  }
 });

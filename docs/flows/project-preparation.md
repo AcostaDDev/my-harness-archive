@@ -39,6 +39,7 @@ flowchart TD
 
 El carril genérico de perfil propio entregado en P013-T008 usa `project-profile-preparation-1` y ejecutor
 acotado; se documenta en [configuración guiada](configuration-setup.md#preparación-genérica-entregada-en-t008).
+T009 une el handoff documental/TOML, la UI y la [activación confirmada](configuration-setup.md#alta-y-activación-entregadas-en-t009).
 Este flujo de recetas conserva sus planes, pasos, recibos y ausencia de invocaciones de agentes.
 
 ## Núcleo común y receta Django (D119)

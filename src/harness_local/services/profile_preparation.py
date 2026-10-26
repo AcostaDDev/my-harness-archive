@@ -186,7 +186,11 @@ class ProfilePreparation(ProjectPreparation):
             raise refuse('documents')
         # Document hashes may include managed blocks added by the documentary commit; the accepted operation
         # owns these final bytes. No draft or caller-provided boolean can stand in for that commit.
-        documents = documentary.result['documents']
+        documents = documentary.result.get('documents')
+        if documents is None and isinstance(documentary, Import):
+            documents = {entry['path']: entry['sha256'] for entry in documentary.preview['result_tree']}
+        if not documents:
+            raise refuse('documents')
         verify_files(project.context.root, documents)
         return data, profile, technical, {'scope': scope, **ref}, documentary.result['commit'], documents, payload
 
@@ -531,15 +535,16 @@ class ProfilePreparation(ProjectPreparation):
         # T009 owns activation and executable runtime composition. A receipt alone grants neither.
         return project
 
-    def verify_configuration(self, project, receipt):
+    def verify_configuration(self, project, receipt, *, active=False):
         """Service-side activation/admission building block; never trusts a caller's ready flag."""
         if receipt.get('contract') != CONTRACT:
             raise refuse('configuration')
         config = self.configuration()
         state = config.read('project:' + project.id)
-        if state['status'] not in ('READY', 'UNCONFIGURED') or state['saved'] != receipt['configuration']:
+        ref = state['active'] if active else state['saved']
+        if state['status'] not in ('READY', 'UNCONFIGURED') or ref != receipt['configuration']:
             raise refuse('configuration')
-        data = parse(config.document(state['scope'], state['saved']['revision']), state['scope'])
+        data = parse(config.document(state['scope'], ref['revision']), state['scope'])
         global_state = config.read('global')
         if global_state['status'] != 'READY' or data['global'] != {
                 k: global_state['active'][k] for k in ('revision', 'sha256')}:

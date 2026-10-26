@@ -2079,6 +2079,159 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/managed/projects/{project_id}/configuration": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Read */
+        get: operations["project_configuration_read"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/managed/projects/{project_id}/configuration/form": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Form */
+        post: operations["project_configuration_form"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/managed/projects/{project_id}/configuration/preview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Preview */
+        post: operations["project_configuration_preview"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/managed/projects/{project_id}/configuration/save": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Save */
+        post: operations["project_configuration_save"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/managed/projects/{project_id}/configuration/activation/preview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Activation Preview */
+        post: operations["project_configuration_activation_preview"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/managed/projects/{project_id}/configuration/activate": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Activate */
+        post: operations["project_configuration_activate"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/managed/projects/{project_id}/planning/{conversation_id}/profile/form": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Profile Form */
+        post: operations["project_profile_form"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/managed/projects/{project_id}/planning/{conversation_id}/profile/edit": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Edit */
+        post: operations["project_profile_edit"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/managed/projects/{project_id}/profile-templates/{name}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Template */
+        get: operations["project_profile_template"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/health": {
         parameters: {
             query?: never;
@@ -2904,7 +3057,7 @@ export interface components {
             /** Root Version */
             root_version: number;
             /** Composition */
-            composition: string;
+            composition?: string | null;
             policy: components["schemas"]["RegistryPolicyInput"];
             agent_selection?: components["schemas"]["AgentSelectionInput"] | null;
             /**
@@ -3001,13 +3154,13 @@ export interface components {
                 [key: string]: string | null;
             };
             /** Profile */
-            profile: string;
+            profile: string | null;
             /** Profile Details */
             profile_details: {
                 [key: string]: unknown;
             };
             agents: components["schemas"]["ProjectAgentsRead"];
-            composition: components["schemas"]["RegistryCompositionRead"];
+            composition: components["schemas"]["RegistryCompositionRead"] | null;
             /** Trust Statement */
             trust_statement: string;
             /** Permission Statement */
@@ -3305,6 +3458,8 @@ export interface components {
             };
             /** Context Sha256 */
             context_sha256: string;
+            /** Profile Proposal Sha256 */
+            profile_proposal_sha256?: string | null;
             /** Documents */
             documents: components["schemas"]["DefinitionDocumentRead"][];
             /** Phase */
@@ -3827,6 +3982,8 @@ export interface components {
             profile_proposal?: {
                 [key: string]: unknown;
             } | null;
+            /** Profile Proposal Sha256 */
+            profile_proposal_sha256?: string | null;
         };
         /** JUnitCaseRead */
         JUnitCaseRead: {
@@ -4118,7 +4275,7 @@ export interface components {
              * @default ACTIVE
              * @enum {string}
              */
-            configuration_state: "PROFILE_REQUIRED" | "PROFILE_PROPOSED" | "ACTIVE";
+            configuration_state: "PROFILE_REQUIRED" | "PROFILE_PROPOSED" | "DOCUMENTS_COMMITTED" | "PREPARATION_REQUIRED" | "READY_TO_ACTIVATE" | "ACTIVE";
             /** Versions */
             versions: {
                 [key: string]: string | null;
@@ -5672,6 +5829,18 @@ export interface components {
         ProblemResponse: {
             detail: components["schemas"]["ProblemRead"];
         };
+        /** ProfileEdit */
+        ProfileEdit: {
+            /** Proposal Id */
+            proposal_id: string;
+            /** Proposal Sha256 */
+            proposal_sha256: string;
+            /** Expected Version */
+            expected_version: number;
+            candidate: components["schemas"]["ConfigurationCandidate"];
+            /** Reason */
+            reason: string;
+        };
         /** ProfilePreparationChangeInput */
         ProfilePreparationChangeInput: {
             /** Expected Version */
@@ -5781,6 +5950,30 @@ export interface components {
             /** Preview Sha256 */
             preview_sha256: string;
         };
+        /** ProjectActivate */
+        ProjectActivate: {
+            /** Revision */
+            revision: number;
+            /** Sha256 */
+            sha256: string;
+            /** Expected Version */
+            expected_version: number;
+            /** Reason */
+            reason: string;
+            /** Preview Sha256 */
+            preview_sha256: string;
+        };
+        /** ProjectActivation */
+        ProjectActivation: {
+            /** Revision */
+            revision: number;
+            /** Sha256 */
+            sha256: string;
+            /** Expected Version */
+            expected_version: number;
+            /** Reason */
+            reason: string;
+        };
         /** ProjectAgentsRead */
         ProjectAgentsRead: {
             /**
@@ -5791,6 +5984,51 @@ export interface components {
             reviewer: components["schemas"]["ReviewerAgentRead"];
             planner: components["schemas"]["SelectionRead"];
             executor: components["schemas"]["ExecutorAgentRead"];
+        };
+        /** ProjectConfigurationRead */
+        ProjectConfigurationRead: {
+            /** Scope */
+            scope: string;
+            /** Version */
+            version: number;
+            /** Status */
+            status: string;
+            /** Saved */
+            saved: {
+                [key: string]: unknown;
+            } | null;
+            /** Active */
+            active: {
+                [key: string]: unknown;
+            } | null;
+            /** Pending */
+            pending: {
+                [key: string]: unknown;
+            } | null;
+            /** Working Sha256 */
+            working_sha256?: string | null;
+            /** Actual Sha256 */
+            actual_sha256?: string | null;
+            /** Configuration State */
+            configuration_state: string;
+            /** Text */
+            text: string | null;
+            /** Form */
+            form: {
+                [key: string]: unknown;
+            };
+            /** Proposal Id */
+            proposal_id: string;
+            /** Proposal Sha256 */
+            proposal_sha256: string;
+            /** Profile */
+            profile: {
+                [key: string]: unknown;
+            };
+            /** Preparation */
+            preparation: {
+                [key: string]: unknown;
+            };
         };
         /** PromptActivateCreate */
         PromptActivateCreate: {
@@ -14502,6 +14740,593 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ConfigurationOperationRead"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+        };
+    };
+    project_configuration_read: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Required with value 1 on mutations (CSRF protection). */
+                "x-harness-local"?: string | null;
+            };
+            path: {
+                project_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProjectConfigurationRead"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+        };
+    };
+    project_configuration_form: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Required with value 1 on mutations (CSRF protection). */
+                "x-harness-local"?: string | null;
+            };
+            path: {
+                project_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ConfigurationCandidate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ConfigurationFormRead"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+        };
+    };
+    project_configuration_preview: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Required with value 1 on mutations (CSRF protection). */
+                "x-harness-local"?: string | null;
+            };
+            path: {
+                project_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ConfigurationChange"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ConfigurationPreviewRead"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+        };
+    };
+    project_configuration_save: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": string;
+                /** @description Required with value 1 on mutations (CSRF protection). */
+                "x-harness-local"?: string | null;
+            };
+            path: {
+                project_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ConfigurationSave"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ConfigurationOperationRead"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+        };
+    };
+    project_configuration_activation_preview: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Required with value 1 on mutations (CSRF protection). */
+                "x-harness-local"?: string | null;
+            };
+            path: {
+                project_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ProjectActivation"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ConfigurationPreviewRead"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+        };
+    };
+    project_configuration_activate: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": string;
+                /** @description Required with value 1 on mutations (CSRF protection). */
+                "x-harness-local"?: string | null;
+            };
+            path: {
+                project_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ProjectActivate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ConfigurationOperationRead"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+        };
+    };
+    project_profile_form: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Required with value 1 on mutations (CSRF protection). */
+                "x-harness-local"?: string | null;
+            };
+            path: {
+                project_id: string;
+                conversation_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ConfigurationCandidate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ConfigurationFormRead"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+        };
+    };
+    project_profile_edit: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": string;
+                /** @description Required with value 1 on mutations (CSRF protection). */
+                "x-harness-local"?: string | null;
+            };
+            path: {
+                project_id: string;
+                conversation_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ProfileEdit"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemResponse"];
+                };
+            };
+        };
+    };
+    project_profile_template: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Required with value 1 on mutations (CSRF protection). */
+                "x-harness-local"?: string | null;
+            };
+            path: {
+                project_id: string;
+                name: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
                 };
             };
             /** @description Forbidden */

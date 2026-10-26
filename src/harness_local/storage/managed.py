@@ -199,7 +199,7 @@ class SQLiteManagedRepository:
             raise Conflict(str(exc)) from exc
 
     @staticmethod
-    def _registry_current(session, root, versions):
+    def _registry_current(session, root, versions, *, working=True):
         """Serializes admission with D078: never queue with an already replaced row."""
         if 'project_registry' not in versions:
             return
@@ -210,6 +210,22 @@ class SQLiteManagedRepository:
                 or ('project_registry_id' in versions and current.id != versions['project_registry_id'])
                 or ('project_registry_sha256' in versions
                     and current.row_sha256 != versions['project_registry_sha256'])):
+            raise Conflict(tr('managed.project_configuration_changed_reload'))
+        from harness_local.storage.models import ConfigurationScopeRow as Scope, ConfigurationRevisionRow as Revision
+        head = session.get(Scope, 'project:' + current.id)
+        if head and head.active_revision:
+            reference = session.get(Revision, (head.scope, head.active_revision))
+            if (not reference or versions.get('project_configuration_revision') != str(reference.revision)
+                    or versions.get('project_configuration_sha256') != reference.sha256):
+                raise Conflict(tr('managed.project_configuration_changed_reload'))
+            from harness_local.storage.configuration_files import ConfigurationFiles
+            from harness_local.services.configuration import digest
+            files = ConfigurationFiles(Path(head.directory))
+            raw = files.read(files.immutable(head.scope, reference.revision, reference.sha256))
+            if (raw is None or digest(raw) != reference.sha256
+                    or working and files.hash(files.working(head.scope)) != head.working_sha256):
+                raise Conflict(tr('managed.project_configuration_changed_reload'))
+        elif versions.get('project_configuration'):
             raise Conflict(tr('managed.project_configuration_changed_reload'))
 
     def _run_root(self, run_id: str) -> str | None:
@@ -303,7 +319,7 @@ class SQLiteManagedRepository:
                        purpose="task"):
         """New run and its first job in the caller's transaction (tasks and H3.3 phase operations)."""
         from harness_local.core.engine.context import IntakeContext
-        if isinstance(context, IntakeContext) and purpose not in ('definition', 'onboarding'):
+        if isinstance(context, IntakeContext) and purpose not in ('definition', 'onboarding', 'bootstrap', 'import_commit'):
             raise Conflict(tr('profile_proposal.required'))
         if versions.get('agent_adapter') == 'cli-14':
             from harness_local.adapters.cli_compatibility import CompatibilityError, MINIMUM, eligible
@@ -455,6 +471,10 @@ class SQLiteManagedRepository:
                 or job.status != "ACTIVE" or job.lease_until <= self._now()):
             raise OwnershipLost(tr('managed.job_lease_ownership_lost'))
         run = session.get(Run, job.run_id)
+        versions = json.loads(run.versions_json)
+        if versions.get('project_configuration'):
+            # Working-copy edits block admissions; an owned job checks only its immutable authority.
+            self._registry_current(session, run.root, versions, working=False)
         lock = session.get(Lock, run.root)
         if not independent_chat(job) and (lock is None or lock.job_id != job.id):
             raise OwnershipLost(tr('managed.checkout_writer_lock_lost'))

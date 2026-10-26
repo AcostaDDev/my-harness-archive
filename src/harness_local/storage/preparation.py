@@ -176,12 +176,14 @@ def admit(session, root, versions, purpose):
     """Same SQLite write admission as registry changes and preparation confirmation."""
     if session.scalar(select(Operation.id).where(Operation.root == root, Operation.reserved.is_(True))):
         raise Conflict(tr('preparation.required_unresolved'))
-    if versions.get('project_recipe') and purpose in ('task', 'phase_check', 'phase_close'):
+    if (versions.get('project_recipe') or versions.get('project_configuration')) and purpose in ('task', 'phase_check', 'phase_close'):
         from pathlib import Path
         from harness_local.adapters.preparation import verify_receipt
         from harness_local.services.project_registry import digest
         receipt = session.scalar(select(Operation.receipt).where(Operation.root == root, Operation.status == 'COMPLETED'))
         if (not receipt or versions.get('project_environment_sha256') != digest(receipt)
-                or versions.get('recipe_config_sha256') != receipt['recipe_config_sha256']):
+                or (versions.get('project_recipe') and versions.get('recipe_config_sha256') != receipt['recipe_config_sha256'])
+                or (versions.get('project_configuration') and versions.get('project_configuration_sha256')
+                    != receipt.get('configuration', {}).get('sha256'))):
             raise Conflict(tr('preparation.required_tasks'))
         verify_receipt(Path(root), receipt)

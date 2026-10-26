@@ -52,7 +52,9 @@ export function TaskForm({ phase, task, title }: { phase?: string; task?: string
   const { t, rich } = useI18n();
   const { project, busy, operate, send } = useWorkspace();
   const preparation = usePoll<S["PreparationRead"]>(`/projects/${project}/preparation`, 2000);
-  const preparationRequired = preparation.data?.available && !preparation.data.prepared;
+  const info = usePoll<S["ManagedProjectRead"]>(`/projects/${project}`, 2000);
+  const configurationRequired = info.data?.versions.local_config === "local-config-9" && info.data.configuration_state !== "ACTIVE";
+  const preparationRequired = !info.data || configurationRequired || !info.data.versions.project_configuration && preparation.data?.available && !preparation.data.prepared;
   const sources = usePoll<S["TaskSourcesRead"]>(`/projects/${project}/task-sources`, 5000);
   const items = sources.data?.items ?? [];
   const phases = sourcePhases(items, phase);
@@ -73,7 +75,8 @@ export function TaskForm({ phase, task, title }: { phase?: string; task?: string
   return <section className="panel" aria-labelledby="task-form">
     <h2 id="task-form">{title ?? t("task_form.title")}</h2>
     <p className="hint">{t("task_form.hint")}</p>
-    {preparationRequired && <p className="state state-attention">{recipeText(preparation.data?.recipe, t, "task_form.preparation_required", "task_form.preparation_required_generic")}</p>}
+    {configurationRequired && <p className="state state-attention">{t("profile.order")}</p>}
+    {!configurationRequired && preparationRequired && <p className="state state-attention">{recipeText(preparation.data?.recipe, t, "task_form.preparation_required", "task_form.preparation_required_generic")}</p>}
     <form onSubmit={e => { e.preventDefault(); if (!busy && !preparationRequired && ready) void operate(() => send(jobRequest(`/projects/${project}/runs`, body))); }}>
       {fromDocuments ? <>
         <div className="form-row">

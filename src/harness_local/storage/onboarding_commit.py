@@ -15,9 +15,6 @@ class OnboardingRepository(ImportRepository):
     drafts_class = OnboardingDrafts
 
     def _build_preview(self, context, conversation_id, source, record, writer):
-        from harness_local.core.engine.context import IntakeContext
-        if isinstance(context, IntakeContext):
-            raise Conflict(tr('profile_proposal.activation_pending'))
         reader = HeadSnapshot(context.root, executable=writer.executable)
         reader.git = LocalGit(context.root, executable=writer.executable)
         head = reader.head()

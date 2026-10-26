@@ -488,7 +488,7 @@ no cambia hoy `render_attempt`, adaptadores, variables, snapshots, API o esquema
 
 ## 14. Ampliación planificada — P013
 
-**T001 diseñada y T002–T008 implementadas; pendiente integración T009–T011.** §6/§9 describen lo implementado.
+**T001 diseñada y T002–T009 implementadas; pendiente edición/compatibilidad T010–T011.** §6/§9 describen lo implementado.
 [D216](DECISIONS.md#d216--p013-t001-instalación-aislada-y-arranque-sin-configuración),
 [D217](DECISIONS.md#d217--p013-t001-archivos-versionados-y-activación-de-configuración) y
 [D218](DECISIONS.md#d218--p013-t001-perfil-tras-contexto-y-preparación-antes-de-activar).
@@ -523,8 +523,8 @@ ficticia entre SQLite y archivos; intenciones permiten conciliación por bytes b
 bloquea nuevas operaciones del ámbito hasta importar/descartar por CAS; nunca hot reload. Esquema aditivo
 `0026_configuration`: ámbitos/revisiones/operaciones en [DDBB-DIAGRAM](DDBB-DIAGRAM.md#configuración-versionada-p013-t004).
 Parser de editor separado del loader 1–8, formatos históricos y hashes intactos. La verificación de preparación
-por proyecto es obligatoria y no tiene implementación permisiva por defecto; T008/T009 conectarán recibos/HEAD
-y recomposición (primitivas de recibo T008 entregadas; activación T009 pendiente). T005 conecta arranque/reinicio y puerta de escritura global; perfiles/recibos/importación
+por proyecto es obligatoria y no tiene implementación permisiva por defecto; T008/T009 conectan recibos/HEAD
+y recomposición (primitivas de recibo T008 entregadas; activación T009 entregada). T005 conecta arranque/reinicio y puerta de escritura global; perfiles/recibos/importación
 quedan para T009/T011. Backup actual rechaza
 bases con operaciones de configuración hasta disponer del bundle nuevo de T011.
 
@@ -546,7 +546,7 @@ Preferencias y configuración tienen repositorios propios; no abren trabajo mien
 El cargador 1–8 conserva formas/hashes; solo el editor activo compone v9. T007 habilita registro v9 sin
 composición sobre raíz existente confiada para `IntakeContext`, que sella
 política/idioma y no contiene perfil ni runner. Jobs de ese contexto solo admiten definición/incorporación;
-commit documental y activación integrados pendientes T009, preparación genérica T008 entregada e importación legacy T011.
+commit documental y activación integrados entregados en T009, preparación genérica T008 entregada e importación legacy T011.
 Las composiciones con nombre no eluden esta puerta v9; formatos 1–8 mantienen su ruta anterior.
 
 T006 entrega `ConfigurationPage` en `/setup` y `/settings/configuration`, acceso en la navegación y puerta
@@ -598,5 +598,22 @@ JUnit usa el capturador seguro y comprueba frescura; fallos conservan efectos si
 conciliable, omitido si no hay cambio versionado; recuperación hereda solo prefijo acreditado y nunca reenvía al
 reiniciar. Recibo incluye configuración, perfil, resultados, herramientas, archivos protegidos y directorios estables
 de entorno; logs/home/temp/informes transitorios no se acreditan como dependencias. `verify_configuration` aporta
-la primitiva de binding al activador futuro. Preparar no compone un runtime ejecutable ni activa; el handoff desde
-alta/guardado y la UI siguen en T009. Recetas/formats 1–8 y sus recibos conservados, sin migración nueva.
+la primitiva de binding al activador T009. Preparar no compone un runtime ejecutable ni activa; el handoff desde
+alta/guardado y la UI se entregan en T009. Recetas/formats 1–8 y sus recibos conservados, sin migración nueva.
+
+
+T009 ([D226](DECISIONS.md#d226--p013-t009-alta-documental-y-activación-del-perfil-propio),
+[entrega](phase/P013-T009_ALTA_UI.md)) añade `services/project_configuration.py` y el router protegido por
+proyecto: formulario/TOML, preview/save y activation/preview/activate. Editor deriva autoridad global y perfil
+aceptado, valida identidad/procedencia/política/pareja; no configura clientes distintos en el alta.
+`storage/profile_intake.py` comprueba propuesta vigente y presta su perfil real solo al render documental:
+commit raíz/B sella hash de propuesta y sus runs conservan `IntakeContext`. Creación sin perfil reutiliza
+reservas/identidad/recuperación; B deriva hashes de su `result_tree` sellado sin reescribir resultados históricos.
+Activador verifica recibo T008/configuración/entorno/HEAD limpio y precompone con el parser/runner actuales antes
+de publicar. Referencia activa y composición verificadas permiten tareas sin reinicio; fallo de instalación
+mantiene puerta cerrada. Arranque/resolución restauran por referencia exacta y guardias antes de efectos,
+sin replay de preparación. Versiones congeladas añaden revisión/hash de proyecto y hash del recibo; nuevas
+copias guardadas no sustituyen la activa. `PreparedCommandRunner` también verifica el recibo genérico.
+`ProjectProfile`/`ProfileProposal` comparten ambos accesos: edición versionada, copia de catálogo, adopción,
+guardado, preparación/journal y activación separados; formularios/TOML/base/sobre conservados en la pestaña,
+en/es. Contratos OpenAPI regenerados; sin tablas/migraciones/dependencias nuevas. QA visual/instalada en T012.

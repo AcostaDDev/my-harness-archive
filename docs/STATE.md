@@ -128,10 +128,10 @@ Sustitución verificada por rutas, hashes y modos; checksums de los artefactos o
 
 ## Fase activa — P013 Instalación guiada y configuración desde la UI
 
-**P013 activa; T001 diseñada y T002–T008 implementadas el 2026-10-26.**
+**P013 activa; T001 diseñada y T002–T009 implementadas el 2026-10-26.**
 [D215](DECISIONS.md#d215--p013-instalación-guiada-y-configuración-desde-la-ui),
 [plan](phase/P013_PLAN.md), [tareas](NEXT_STEPS.md) y [flujo propuesto](flows/configuration-setup.md).
-Siete tareas pendientes. **Siguiente: P013-T009**, activación del perfil y alta completa desde la UI.
+Seis tareas pendientes. **Siguiente: P013-T010**, edición posterior manual y asistida de configuración.
 
 T001 concreta el [contrato](phase/P013-T001_CONTRATO.md) con D216–D218: instalación aislada desde clon/paquete,
 arranque sin TOML con sesión protegida, contenido en TOML versionado y activación por referencia SQLite, CAS/
@@ -171,7 +171,7 @@ T005 conecta el asistente API protegido: formulario JSON o TOML, detección por 
 version/help D174, preview/diff, guardado CAS, activación para reinicio, cancelación y recuperación. Arranque
 sin TOML/inválido conserva sesión y bloquea trabajo; promoción del conjunto antes de componer global v9,
 sin hot reload. Puerta HTTP y transaccional; preferencias siguen editables. Consulta D040 sin originales ni
-sondas. Legacy exige importación T011; registro/admisión v9 por perfiles queda para T007–T009. UI entregada en T006.
+sondas. Legacy exige importación T011; registro/admisión v9 por perfiles entregados después en T007–T009. UI entregada en T006.
 [D222](DECISIONS.md#d222--p013-t005-asistente-api-y-arranque-con-autoridad-global-versionada),
 [entrega y checks](phase/P013-T005_ASISTENTE_API.md). API verificada con TestClient/clientes falsos; sin servicio real.
 
@@ -192,7 +192,7 @@ validación funcional. B conserva inventario/HEAD y exportación de lectura sin 
 CAS/idempotente solo adoptan borrador `PROFILE_PROPOSED`, sin guardar TOML, preparar, commitear documentos ni activar.
 Migración `0027_profile_proposals`: composición/perfil nullable en registro, 54 tablas; propuestas versionadas en
 planificación existente. [D224](DECISIONS.md#d224--p013-t007-contexto-documental-sin-stack-y-propuesta-de-perfil),
-[entrega y checks](phase/P013-T007_PROPUESTA_PERFIL.md). Preparación T008 y alta/UI/activación T009 pendientes.
+[entrega y checks](phase/P013-T007_PROPUESTA_PERFIL.md). Preparación T008 y alta/UI/activación T009 entregadas después con evidencia propia.
 Validación: 1917 pytest y 29 subtests, dos opt-in omitidas; 18 pruebas posteriores de arranque/global,
 136 Node y 8 unittest correctos. Tipos/build, Alembic temporal, parsers/enlaces/presupuestos y Mermaid correctos.
 Pruebas con agentes falsos y proyectos Go sintéticos; sin proveedores ni servicios reales.
@@ -205,11 +205,22 @@ y valida JUnit fresco. Commit técnico conciliable solo si cambia contenido; rec
 archivos protegidos y entorno estable, sin congelar informes transitorios ni activar el perfil.
 [D225](DECISIONS.md#d225--p013-t008-preparación-genérica-confirmada-y-recibo-propio),
 [entrega y checks](phase/P013-T008_PREPARACION.md). Sin tablas/migraciones nuevas; datos y flujo en paridad.
-La entrega comprueba primitivas/API sobre fixtures Go y proveedores falsos. El handoff documental/TOML y la
-activación/UI siguen pendientes T009; no hay alta completa ni proveedores/descargas reales acreditados.
+La entrega comprueba primitivas/API sobre fixtures Go y proveedores falsos. El handoff documental/TOML y la activación/UI entregados después en T009 se verifican por separado;
+T008 no acreditó un alta completa ni proveedores/descargas reales.
 Validación: 1951 pytest y 29 subtests correctos con cuatro workers, dos opt-in omitidas; 38 focalizados sobre
 los últimos ajustes, 8 unittest y 136 Node correctos. Tipos/build, Alembic temporal, parsers/enlaces/presupuestos
 y Mermaid correctos; resultados parciales y límites en la entrega.
+
+T009 une ambas altas desde UI/API: creación de hijo sin stack, propuesta editable/formulario/TOML con copias
+opcionales de catálogo, adopción y commit documental raíz/B ligado al hash aceptado. Guardado privado CAS,
+plan/preparación T008 y activación separada con recibo, HEAD limpio y barrera D118; primera tarea solo después.
+Recompone perfil sin reinicio, congela referencias y restaura autoridad al arrancar; reenvíos no repiten efectos.
+Registro documental conserva null y sus auditorías; datos y flujos en paridad, sin migración.
+[D226](DECISIONS.md#d226--p013-t009-alta-documental-y-activación-del-perfil-propio),
+[entrega y checks](phase/P013-T009_ALTA_UI.md). Recorridos Go sintéticos en ambas entradas y UI en/es;
+sin proveedores/servicios reales. Edición posterior y compatibilidad/backup pendientes T010–T011.
+Validación: 1982 pytest/29 subtests correctos y dos opt-in omitidas; 85 y 26 regresiones posteriores correctas.
+146 Node, 8 unittest, tipos/build, Alembic temporal y checks documentales correctos; límites en la entrega.
 
 Alcance acordado: scripts de instalación/arranque con venv y cachés configurables, asistente inicial sin TOML
 manual ni modelos, configuración global y perfiles propios por proyecto desde UI, propuestas del revisor tras
@@ -228,6 +239,5 @@ no se renuevan ni transfieren.
 Tras el cierre seguirán faltando owner/repo, visibilidad, identidad pública y autorización de acciones remotas.
 D157 conserva la fuente principal pública tras el primer push; modo continuo D156 para v0.2.0 después de abrir,
 fuera de P013. Este repositorio sigue sin registrarse ni ejecutarse con el harness. Apertura y T001 fueron
-documentales; T002–T008 añaden instalación/arranque/empaquetado, persistencia versionada, asistente API/UI, contexto de alta/propuestas y preparación genérica de perfil y
-pruebas sintéticas. Sin operación del harness sobre este checkout, instalaciones reales, agentes/proveedores,
-smokes, configuración global del equipo, push o publicación. Commits locales T002–T008 pedidos por el usuario.
+documentales; T002–T009 añaden instalación/arranque/empaquetado, persistencia versionada, asistente API/UI, contexto de alta/propuestas, preparación genérica y alta/activación de perfil con pruebas sintéticas. Sin operación del harness sobre este checkout, instalaciones reales, agentes/proveedores,
+smokes, configuración global del equipo, push o publicación. Commits locales T002–T009 pedidos por el usuario.

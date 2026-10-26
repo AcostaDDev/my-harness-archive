@@ -237,6 +237,7 @@ tarea se leen solo las decisiones que cita; este índice sirve para buscar prece
 | [D223](#d223--p013-t006-asistente-y-editor-global-con-confirmaciones-exactas) | P013-T006: asistente y editor global con confirmaciones exactas | P013 |
 | [D224](#d224--p013-t007-contexto-documental-sin-stack-y-propuesta-de-perfil) | P013-T007: contexto documental sin stack y propuesta de perfil | P013 |
 | [D225](#d225--p013-t008-preparación-genérica-confirmada-y-recibo-propio) | P013-T008: preparación genérica confirmada y recibo propio | P013 |
+| [D226](#d226--p013-t009-alta-documental-y-activación-del-perfil-propio) | P013-T009: alta documental y activación del perfil propio | P013 |
 
 ## D001 — Alcance local y arquitectura base
 
@@ -6657,3 +6658,39 @@ y [datos](DDBB-DIAGRAM.md#preparación-genérica-p013-t008).
 - Sin migración ni cambio de modelos; representación JSON y flujo documentados. Pruebas sintéticas y offline;
   sin proveedores/descargas, servicio instalado, QA visual, operación de este checkout, publicación o cambios
   globales del equipo. Suites y límites exactos en la entrega; commit local solicitado en inglés.
+
+
+## D226 — P013-T009: alta documental y activación del perfil propio
+
+Estado: implementada y verificada con HTTP/UI, agentes/herramientas falsos y Git/SQLite temporales el 2026-10-26. Fase: P013.
+Concreta D218/D221/D224/D225; edición posterior T010 y compatibilidad/backup T011 pendientes.
+[Entrega](phase/P013-T009_ALTA_UI.md), [flujo](flows/configuration-setup.md#alta-y-activación-entregadas-en-t009),
+[datos](DDBB-DIAGRAM.md#alta-y-activación-de-perfil-p013-t009).
+
+- Creación v9 acepta hijo sin composición/perfil bajo la autoridad de padre/reserva/identidad/idioma existente.
+  Registro null identifica el checkout y conserva auditorías; la referencia SQLite de configuración activa
+  determina la autoridad ejecutable. No se inventa perfil para conversar ni se convierten filas/hashes legacy.
+- UI de definición/B comparte edición de candidato por formulario/TOML, copia optativa de catálogo, evidencia
+  por comando y nueva adopción exacta. Edición versiona una propuesta ligada al mismo contexto/documentos/turno,
+  conserva bytes del revisor y replay previo; no concede permisos. Contradicciones documentales requieren
+  documentos y turno confirmados. Una pregunta/pendiente/base obsoleta sigue bloqueando.
+- Commit raíz/B exige propuesta ACCEPTED vigente y sella su hash. El perfil aceptado se usa solo para renderizar
+  documentos; run/autoridad mantienen IntakeContext hasta activar. Conserva commit documental → P001 →
+  preparación técnica. B mantiene código/originales/phase-000 y guardias Git; el handoff lee hashes de su
+  result_tree sellado, sin cambiar resultados antiguos de importación para añadir campos inexistentes.
+- Aplicación genera/guarda project-config-1 privado por T004 con perfil exacto, herramientas/autorizaciones,
+  referencia global y procedencia. Pareja/política admitidas no se cambian por el formulario de alta; asistencia
+  y edición posterior quedan en T010. Guardar no prepara ni activa. Preparación T008 confirma otro plan exacto
+  y emite recibo separado; fallos/interruptores no acreditan entorno ni repiten efectos al reenviar.
+- Activación exige saved VALIDATED, recibo/configuración/global compatibles, documentos/herramientas/entorno
+  íntegros, HEAD técnico limpio y barrera D118. Precompone antes de publicar; publica referencia SQLite y
+  recompone sin reinicio. Un fallo al instalar deja admisión cerrada hasta resolución/reinicio verificados;
+  replay reinstala la misma autoridad sin repetir alta, comandos o commits. Primera tarea solo tras activar.
+- Composición y jobs nuevos sellan revisión/hash de proyecto y hash de recibo con los contratos ya existentes.
+  Admisión comprueba copia/inmutable; el escritor propio comprueba la inmutable antes de efectos. Una edición
+  de copia no inyecta valores al job. Otra versión guardada conserva activa anterior y su recibo por referencia,
+  sin adoptar el candidato más reciente. Snapshots, formatos/hashes 1–8 y recetas existentes intactos.
+- API protegida, OpenAPI/tipos y UI en/es en paridad. Borrador/base/sobre idempotente conservados en la pestaña;
+  conflictos no rebasan ni reenvían automáticamente. Sin modelos/migraciones/tablas nuevos, proveedores reales,
+  servicios instalados, smokes, operación sobre este checkout, configuración global del equipo o acciones remotas.
+  QA visual instalada y paquete/candidato nuevos siguen en T012/T013. No hubo ambigüedades pendientes de HITL.

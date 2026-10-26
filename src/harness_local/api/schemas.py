@@ -95,7 +95,7 @@ class ManagedProjectRead(BaseModel):
     id: str
     root: str
     profile: str | None
-    configuration_state: Literal['PROFILE_REQUIRED', 'PROFILE_PROPOSED', 'ACTIVE'] = 'ACTIVE'
+    configuration_state: Literal['PROFILE_REQUIRED', 'PROFILE_PROPOSED', 'DOCUMENTS_COMMITTED', 'PREPARATION_REQUIRED', 'READY_TO_ACTIVATE', 'ACTIVE'] = 'ACTIVE'
     versions: dict[str, str | None]
     tag_kind: Literal["lightweight", "annotated"]
     agents: ProjectAgentsRead
@@ -1061,6 +1061,7 @@ class DefinitionPreviewRead(BaseModel):
     input: dict[str, str]
     definition: dict[str, Any]
     context_sha256: str
+    profile_proposal_sha256: str | None = None
     documents: list[DefinitionDocumentRead]
     phase: dict[str, Any] | None
     first_task: dict[str, Any] | None
@@ -1729,6 +1730,7 @@ class ImportPreviewRead(BaseModel):
     profile: dict[str, Any] | None = None
     profile_sha256: str | None = None
     profile_proposal: dict[str, Any] | None = None
+    profile_proposal_sha256: str | None = None
 
 
 class OnboardingConfirmCreate(DefinitionAcceptCreate):
@@ -1776,7 +1778,7 @@ class CreationInput(BaseModel):
     project_id: str = Field(min_length=1, max_length=64)
     directory_name: str = Field(min_length=1, max_length=64)
     root_version: int = Field(ge=1)
-    composition: str = Field(min_length=1, max_length=64)
+    composition: str | None = Field(default=None, min_length=1, max_length=64)
     policy: RegistryPolicyInput
     agent_selection: AgentSelectionInput | None = None
     tag_kind: Literal['lightweight', 'annotated'] = 'lightweight'
@@ -1846,10 +1848,10 @@ class CreationPreviewRead(BaseModel):
     target: str
     directory_name: str
     versions: dict[str, str | None]
-    profile: str
+    profile: str | None
     profile_details: dict[str, Any]
     agents: ProjectAgentsRead
-    composition: RegistryCompositionRead
+    composition: RegistryCompositionRead | None
     trust_statement: str
     permission_statement: str
     work_language: WorkLanguagePreviewRead

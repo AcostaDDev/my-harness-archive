@@ -11,7 +11,7 @@ P013-T004 implementa el [contrato de configuración versionada](phase/P013-T001_
 y su [flujo](flows/configuration-setup.md) en `0026_configuration`: **54 tablas** de producto, más `alembic_version`.
 Tres tablas aditivas, sin modificar columnas/datos previos; referencias de contenido en archivos TOML privados.
 API/runtime global entregados en T005, propuestas de alta en T007 y preparación genérica en T008;
-alta/activación integradas y backup nuevo siguen pendientes T009–T011.
+alta/activación integradas entregadas en T009; edición/backup nuevo pendientes T010–T011.
 
 ## Altas documentales y propuestas de perfil (P013-T007)
 
@@ -1008,3 +1008,25 @@ reserva única, leases, intención de commit y sucesores `previous_id` reutiliza
 intent antes de spawn y grupo antes de GO, captura y estado STOPPED/UNCERTAIN. Eventos del ejecutor se añaden a
 `project_preparation_events` con la misma versión/actor. Sin alterar los eventos/capturas de recetas anteriores.
 Backup con configuración sigue bloqueado hasta T011; no se afirma recuperación operativa de una copia D040.
+
+
+## Alta y activación de perfil (P013-T009)
+
+[D226](DECISIONS.md#d226--p013-t009-alta-documental-y-activación-del-perfil-propio),
+[entrega](phase/P013-T009_ALTA_UI.md). Sin migración ni modelos nuevos: `0027_profile_proposals`, **54 tablas**.
+
+- `project_creation_operations.intent` admite `profile/composition=null` en v9; identidad/reserva/idioma y
+  `registered_projects`/eventos conservan su contrato. Registro null sigue documental aun tras activar: la
+  autoridad ejecutable proviene de `configuration_scopes.active_revision` y sus bytes inmutables.
+- Edición manual crea otra `planning_proposals(kind=profile)` con nuevo número/hash y `decision.edit_key`,
+  `edit_request_sha256`, `edit_result` y actor. Anterior SUPERSEDED conserva contenido/decisión/replay; turno
+  y resultado del revisor intactos. Adopción posterior conserva también el replay de edición.
+- `project_bootstraps.preview`/`project_imports.preview` nuevos sellan `profile_proposal_sha256`; sus runs usan
+  contexto `project-intake-1`. Preparación B lee documentos de `preview.result_tree` y commit de `result`, sin
+  añadir un campo `documents` a resultados anteriores ni modificar snapshots congelados.
+- TOML `project-config-1` usa las tres tablas de T004; procedencia `profile-proposal`/hash aceptado y referencia
+  global exacta. Activación `configuration-operation-1` separada del guardado y del recibo T008; barrera D118,
+  precomposición y referencia activa transaccional. Operaciones/revisiones anteriores se conservan.
+- `managed_runs.versions_json` nuevos añaden `project_configuration`, `project_configuration_revision`,
+  `project_configuration_sha256` y `project_environment_sha256`. Revisión/hash/recibo se verifican en admisión y
+  autoridad inmutable del job antes de efectos. No se fabrica otro formato de historial ni un run de preparación.

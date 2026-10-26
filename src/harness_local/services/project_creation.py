@@ -269,7 +269,7 @@ class ProjectCreation:
                                           new_directory=row.status == 'INTENDED')
         versions = composed['versions'] if row.status == 'INTENDED' else dict(composed[0].versions)
         profile_sha256 = (composed['profile_details']['sha256'] if row.status == 'INTENDED'
-                          else digest(asdict(composed[0].context.profile)))
+                          else digest(asdict(composed[0].context.profile)) if hasattr(composed[0].context, 'profile') else None)
         if versions != row.intent['versions'] or profile_sha256 != row.intent['profile_details']['sha256']:
             raise RegistryError(409, 'preview_changed', tr('creation.composition_changed'))
 
@@ -325,7 +325,7 @@ class ProjectCreation:
                     intent = row.intent
                     now = self.runtime.repository._now()
                     project = Project(id=row.project_id, version=1, status='ACTIVE', root=row.target,
-                                      composition=intent['row']['composition'], profile=intent['profile'], row=intent['row'],
+                                      composition=intent['row'].get('composition'), profile=intent['profile'], row=intent['row'],
                                       row_sha256=digest(intent['row']), creation_id=row.id,
                                       trust={'confirmed': True, 'root': row.target, 'statement': intent['trust_statement'], 'actor': actor()},
                                       created_at=now, updated_at=now)
@@ -377,7 +377,7 @@ class ProjectCreation:
                                           new_directory=row.child_identity is None)
         versions = composed['versions'] if row.child_identity is None else dict(composed[0].versions)
         profile_sha256 = (composed['profile_details']['sha256'] if row.child_identity is None
-                          else digest(asdict(composed[0].context.profile)))
+                          else digest(asdict(composed[0].context.profile)) if hasattr(composed[0].context, 'profile') else None)
         if versions != row.intent['versions'] or profile_sha256 != row.intent['profile_details']['sha256']:
             raise RegistryError(409, 'preview_changed', tr('creation.original_changed'))
         preview = {'operation_id': row.id, 'expected_version': row.version, 'authority': authority,

@@ -6,6 +6,7 @@ import type { MessageKey } from "../i18n.ts";
 import { createOnce, jobRequest, managed, ManagedError } from "../managed-api";
 import type { S } from "../managed-api";
 import type { Route } from "../router";
+import { ProfileProposal, ProfileReplay, ProjectProfile } from "./ProjectProfile";
 import { Preparation } from "./Preparation";
 import { Link, navigate } from "../navigation";
 import { Alert, DiffBlock, Empty, Evidence, Fields, Hash, Loading, PageHeader, Stale, Status, message, usePoll, when } from "../ui";
@@ -202,7 +203,7 @@ function Definition({ id, path, status }: { id: string; path?: string; status: S
   const drafts = usePoll<Drafts>(c && !c.created ? `${base}/drafts` : null, 3000, refresh);
   if (!c) return read.error ? <Alert>{read.error}</Alert> : <Loading />;
   const op = c.operation ?? status.definition_operation ?? null;
-  const proposed = c.proposals.filter(p => p.status === "PROPOSED");
+  const proposed = c.proposals.filter(p => p.status === "PROPOSED" || !c.created && p.kind === "profile" && p.status === "ACCEPTED");
   const step = op?.status === "COMPLETED" ? 3 : op ? 2 : 1;
   return <div className="docs-layout">
     <DraftTree conversation={c} drafts={drafts.data} current={path} error={drafts.error} />
@@ -214,7 +215,8 @@ function Definition({ id, path, status }: { id: string; path?: string; status: S
           </PageHeader>
           <Stale error={read.error} />
           <Steps current={step} />
-          {op?.status === "COMPLETED" && <Preparation />}
+          {op?.status !== "COMPLETED" && <ProfileReplay />}
+          {op?.status === "COMPLETED" && <><ProjectProfile /><LegacyPreparation /></>}
           {op && <OperationPanel conversation={c} op={op} />}
           <BriefPanel base={base} brief={c.brief} />
           <section className="panel" aria-labelledby="def-turns">
@@ -293,6 +295,7 @@ function ProposalEntry({ conversation, proposal, base, drafts }: { conversation:
   const { t } = useI18n();
   const { project } = useWorkspace();
   const [open, setOpen] = useState(false);
+  if (proposal.kind === "profile") return <ProfileProposal conversation={conversation} proposal={proposal} base={base} />;
   const disk = drafts?.drafts.find(d => d.path === proposal.path);
   const moved = disk && disk.sha256 !== proposal.base_sha256 && disk.sha256 !== proposal.content_sha256;
   return <div className="entry entry-open">
@@ -591,7 +594,8 @@ function OperationPanel({ conversation, op }: { conversation: Conversation; op: 
   const task = preview.first_task as { task_id?: string } | null;
   const phase = preview.phase as { code?: string } | null;
   const preparation = usePoll<S["PreparationRead"]>(`/projects/${project}/preparation`, 2000);
-  const preparationRequired = preparation.data?.available && !preparation.data.prepared;
+  const info = usePoll<S["ManagedProjectRead"]>(`/projects/${project}`, 2000);
+  const preparationRequired = info.data?.configuration_state !== "ACTIVE" || !info.data.versions.project_configuration && preparation.data?.available && !preparation.data.prepared;
   const commit = op.result?.commit ? String(op.result.commit) : undefined;
   return <section className={op.status === "COMPLETED" ? "decision" : "decision decision-attention"} aria-labelledby="def-operation">
     <h2 id="def-operation">{op.status === "COMPLETED" ? t("planning.created") : op.status === "INTERRUPTED" ? t("planning.operation.interrupted") : t("planning.operation.creating")}</h2>
@@ -818,13 +822,15 @@ function ImportConversation({ id, path, operation, kind }: { id: string; path?: 
     <DraftTree conversation={c} drafts={drafts.data} current={path} error={drafts.error} />
     <div className="docs-main"><Stale error={read.error} />
       {path && !c.created ? <DraftPage key={path} conversation={c} path={path} drafts={drafts.data} /> : <>
+        {operation?.status !== "COMPLETED" && <ProfileReplay />}
         <h2>{c.title}</h2><Evidence title={t("onboarding.source")} value={c.source} />
         <section className="panel"><h3>{t("planning.conversation")}</h3><TurnList conversation={c} />
           {!c.created && <MessageForm conversation={c} path={`${base}/messages`} hint={t("onboarding.message_hint")} />}
         </section>
         <Questions conversation={c} base={base} />
-        {c.proposals.filter(p => p.status === "PROPOSED").map(p => <ProposalEntry key={p.id} conversation={c} proposal={p} base={base} drafts={drafts.data} />)}
+        {c.proposals.filter(p => p.status === "PROPOSED" || !c.created && p.kind === "profile" && p.status === "ACCEPTED").map(p => <ProposalEntry key={p.id} conversation={c} proposal={p} base={base} drafts={drafts.data} />)}
         <ProposalHistory proposals={c.proposals.filter(p => p.status !== "PROPOSED")} />
+        {operation?.status === "COMPLETED" && <ProjectProfile />}
         <ImportConfirmation base={base} conversation={c} operation={operation} />
       </>}
     </div>
@@ -858,7 +864,7 @@ function ImportConfirmation({ base, conversation, operation }: { base: string; c
       <Evidence title={t("onboarding.tree_evidence")} value={{ tree: shown.result_tree, moves: shown.moves, preserved: shown.preserved, foreign: shown.foreign, phase: shown.phase }} />
       {shown.warnings.length > 0 && <ul>{shown.warnings.map((warning, i) => <li key={i}>{warning}</li>)}</ul>}
       {<>
-        <Evidence title={t("onboarding.profile_proposal")} value={shown.profile_proposal} />
+        <Evidence title={t("onboarding.profile_proposal")} value={{ proposal: shown.profile_proposal, accepted_sha256: shown.profile_proposal_sha256 }} />
         <Evidence title={t("onboarding.profile")} value={shown.profile} />
         <p>{t("onboarding.profile_hint")}</p>
         <Fields items={[[t("onboarding.profile_hash"), <Hash value={shown.profile_sha256 ?? ""} />]]} />
@@ -875,4 +881,10 @@ function ImportConfirmation({ base, conversation, operation }: { base: string; c
       })}>{operation ? t("onboarding.reconcile") : t("onboarding.submit")}</button>
     </div>}
   </section>;
+}
+
+function LegacyPreparation() {
+  const { project } = useWorkspace();
+  const read = usePoll<S["ManagedProjectRead"]>(`/projects/${project}`, 0);
+  return read.data?.versions.project_recipe ? <Preparation /> : null;
 }

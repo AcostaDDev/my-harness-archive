@@ -141,7 +141,9 @@ class ImportRepository:
             raise Conflict(assessment.refusal)
         try:
             check_git(context, writer)
-            shown = self._build_preview(context, conversation_id, source, record, writer)
+            from harness_local.storage.profile_intake import documentary_profile
+            rendered, binding = documentary_profile(self.managed, context, conversation_id, writer, versions)
+            shown = {**self._build_preview(rendered, conversation_id, source, record, writer), **binding}
             check_git(context, writer, shown)
         except (ValueError, OSError, RuntimeError) as exc:
             raise Conflict(str(exc)) from exc

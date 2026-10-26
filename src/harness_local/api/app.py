@@ -64,6 +64,8 @@ def create_app(url: str | None = None, ui_dir: Path | None = None,
     app.include_router(managed_router(runtime))
     from harness_local.api.configuration import configuration_router
     app.include_router(configuration_router(runtime))
+    from harness_local.api.project_configuration import project_configuration_router
+    app.include_router(project_configuration_router(runtime))
     app.state.runtime = runtime
 
     @app.middleware('http')

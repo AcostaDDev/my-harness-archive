@@ -1,14 +1,15 @@
 import { useState } from "react";
-import { createOnce, managed } from "../managed-api";
+import { confirmOnce, createOnce, managed } from "../managed-api";
 import type { S } from "../managed-api";
 import { useI18n } from "../Language";
 import type { MessageKey } from "../i18n.ts";
 import { isTypeScriptRecipe, pendingPreparationStep, preparationStatus, preparationStepLabel, recipeModes, recipeText } from "../preparation.ts";
 import { DiffBlock, Evidence, Hash, Stale, usePoll } from "../ui";
+import { preparationChange } from "../project-profile";
 import { useWorkspace } from "../workspace";
 
 type Plan = S["PreparationPlanRead"];
-type Change = S["PreparationChangeInput"];
+type Change = S["PreparationChangeInput"] | S["ProfilePreparationChangeInput"];
 
 const STEP_STATUS: Record<string, MessageKey> = { DONE: "preparation.step_status.done", PENDING: "preparation.step_status.pending" };
 
@@ -18,13 +19,14 @@ function stepStatus(status: string, working: boolean, t: (key: MessageKey) => st
   return STEP_STATUS[status] ? t(STEP_STATUS[status]) : status;
 }
 
-export function Preparation() {
+export function Preparation({ configuration }: { configuration?: S["ProjectConfigurationRead"] } = {}) {
   const { project, refresh, busy, operate } = useWorkspace();
   const { t, rich } = useI18n();
   const read = usePoll<S["PreparationRead"]>(`/projects/${project}/preparation`, 1500, refresh);
   const [mode, setMode] = useState<"offline" | "network">("offline");
   const [preview, setPreview] = useState<{ plan: Plan; change: Change }>();
   const [journal, setJournal] = useState<S["PreparationOperationRead"]>();
+  const [reason, setReason] = useState("");
   const [confirmed, setConfirmed] = useState(false);
   const data = read.data;
   if (!data?.available) return null;
@@ -36,7 +38,8 @@ export function Preparation() {
   const retry = op && ["FAILED", "RECOVERY_REQUIRED", "CANCELLED"].includes(op.status);
   const next = op ? pendingPreparationStep(op.steps as { number: number; status: string }[]) : undefined;
   async function show() {
-    const change: Change = { expected_version: data!.project_version, mode,
+    const change: Change = configuration ? preparationChange(configuration, data!.project_version, mode,
+      retry ? { id: op!.id, step: next } : undefined) : { expected_version: data!.project_version, mode,
       ...(retry ? { previous_id: op!.id, retry_step: next } : {}) };
     const plan = await managed<Plan>(`/projects/${project}/preparation/preview`, change);
     setPreview({ plan, change }); setConfirmed(false);
@@ -50,7 +53,7 @@ export function Preparation() {
   return <section className="panel" aria-labelledby="recipe-preparation">
     <h2 id="recipe-preparation">{text("preparation.title", "preparation.title_generic")}</h2>
     <Stale error={read.error} />
-    <p>{typescript ? t("preparation.lede.typescript") : t("preparation.lede.django")}</p>
+    <p>{configuration ? t("profile.prepare_hint") : typescript ? t("preparation.lede.typescript") : t("preparation.lede.django")}</p>
     {data.prepared && <p className="state state-ok" role="status">{text("preparation.prepared", "preparation.prepared_generic")}</p>}
     {data.diagnostic && <p className="state state-attention">{data.diagnostic}</p>}
     {op && <>
@@ -80,11 +83,13 @@ export function Preparation() {
       <h3>{t("preparation.commands")}</h3>
       <ol>{preview.plan.steps.map((step, n) => <li key={n}><strong>{preparationStepLabel(preview.plan.recipe, step, t)}</strong>{Array.isArray(step.argv) && <pre>{JSON.stringify(step.argv)}</pre>}</li>)}</ol>
       <Evidence title={t("preparation.plan_evidence")} value={preview.plan} />
+      {configuration && <label>{t("docs.review.reason")}<input value={reason} onChange={e => setReason(e.target.value)} maxLength={1000} /></label>}
       <label className="check"><input type="checkbox" checked={confirmed} onChange={e => setConfirmed(e.target.checked)} />{t("preparation.authorize")}</label>
-      <button disabled={busy || !confirmed} onClick={() => void operate(async () => {
-        await createOnce(`/projects/${project}/preparation/confirm`, {
+      <button disabled={busy || !confirmed || !!configuration && !reason.trim()} onClick={() => void operate(async () => {
+        await (configuration ? confirmOnce : createOnce)(`/projects/${project}/preparation/confirm`, {
           change: preview.change, preview_sha256: preview.plan.preview_sha256,
-        } satisfies S["PreparationConfirmInput"]);
+          ...(configuration ? { confirmed: true, reason } : {}),
+        });
         setPreview(undefined); setConfirmed(false);
       })}>{text("preparation.confirm", "preparation.confirm_generic")}</button>
     </div>}

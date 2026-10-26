@@ -102,9 +102,15 @@ def managed_router(runtime: ManagedRuntime):
     def project_read(project):
         from harness_local.storage.work_language import read
         from harness_local.core.engine.context import profile_name
+        state = planning_repository().profile_state(project.context.root) if profile_name(project.context) is None else 'ACTIVE'
+        if (runtime.setup is not None and not runtime.setup.legacy
+                and project.versions.get('local_config') == 'local-config-9' and state != 'PROFILE_REQUIRED'):
+            try:
+                state = runtime.project_configuration.read(project.id)['configuration_state']
+            except (ValueError, OSError):
+                state = 'PREPARATION_REQUIRED'
         return {"id": project.id, "root": str(project.context.root), "profile": profile_name(project.context),
-                'configuration_state': (planning_repository().profile_state(project.context.root)
-                                        if profile_name(project.context) is None else 'ACTIVE'),
+                'configuration_state': state,
                 "work_language": read(runtime.engine, project.context.root),
                 "versions": dict(project.versions), "tag_kind": project.tag_kind, "agents": agents_view(project),
                 "documents": project.context.documents, "bootstrap_enabled": project.bootstrap_enabled,

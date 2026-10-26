@@ -130,8 +130,8 @@ def test_profileless_intake_proposes_and_adopts_without_configuration_or_command
         assert not (world.context.root / '.git').exists()
     with pytest.raises(Conflict):
         world.repo.submit(world.context, 'P001-T001', 'P001', 'Forbidden', VERSIONS, key='task')
-    with pytest.raises(Conflict):
-        world.bootstrap.preview(world.context, {'conversation_id': cid}, VERSIONS, world.writer)
+    if kind == 'definition':
+        assert not world.bootstrap.preview(world.context, {'conversation_id': cid}, VERSIONS, world.writer)['ready']
 
 
 @pytest.mark.parametrize('fault', ['extra', 'tools', 'validation', 'shell', 'cwd', 'formatter', 'evidence',

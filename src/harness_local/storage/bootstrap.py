@@ -96,9 +96,6 @@ class BootstrapRepository:
             raise Conflict(tr('bootstrap.target_has_managed_history'))
 
     def preview(self, context, data, versions, writer):
-        from harness_local.core.engine.context import IntakeContext
-        if isinstance(context, IntakeContext):
-            raise Conflict(tr('profile_proposal.activation_pending'))
         if layout(context) is None:
             raise ValueError(tr(V1_RETIRED))
         saved = self.get(context.root)
@@ -110,7 +107,11 @@ class BootstrapRepository:
         with Session(self.managed.engine) as session:
             self._empty_authority(session, str(context.root))
         from harness_local.storage.planning import definition_acceptance
-        content = definition_acceptance(self.managed, context, data, writer)
+        if not isinstance(data, dict) or set(data) != {'conversation_id'}:
+            raise ValueError(tr('planning.projects_documents_v2_created'))
+        from harness_local.storage.profile_intake import documentary_profile
+        rendered, binding = documentary_profile(self.managed, context, data['conversation_id'], writer, versions)
+        content = {**definition_acceptance(self.managed, rendered, data, writer), **binding}
         shown = {**content, 'versions': versions,
                  'author': {'name': writer.identity.name, 'email': writer.identity.email},
                  'git': {'branch': 'main', 'message': 'Initialize project from confirmed bootstrap',

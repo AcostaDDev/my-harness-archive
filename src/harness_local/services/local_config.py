@@ -654,11 +654,10 @@ class LocalComposer:
     def _intake(self, item, where, *, registry, new_directory):
         """No stack, runner or invented composition. Directory creation/activation is joined in T009."""
         from harness_local.core.engine.context import IntakeContext
-        if new_directory:
-            raise LocalConfigError(tr('profile_proposal.creation_pending'))
+        item = {'composition': None, **item}
         item = _fields(item, where, (*self.PROJECT_KEYS, 'composition'),
                        (*self.OPTIONAL_KEYS, 'bootstrap_enabled', 'agent_selection'))
-        root = _path(item['root'], f'{where}.root', kind='directory')
+        root = _path(item['root'], f'{where}.root', kind='new_directory' if new_directory else 'directory')
         if not (_outside(self.state, root) and _outside(self.source, root)):
             raise LocalConfigError(tr('config.state_outside', where=where))
         if _flag(item['repository_trusted'], f'{where}.repository_trusted') is not True:
@@ -694,10 +693,38 @@ class LocalComposer:
         for role, declaration in declarations.items():
             versions[f'{role}_cli_version_source'] = 'automatic' if declaration.cli_version is None else 'legacy-assertion'
             versions[f'{role}_cli_discovery'] = 'PATH' if not declaration.executable else 'explicit'
+        if new_directory:
+            return {'versions': versions, 'profile': None, 'profile_details': {'sha256': None},
+                    'agents': agents_view(ManagedProject(identifier, IntakeContext(root.parent, policy), versions)),
+                    'composition': None}
         project = ManagedProject(identifier, IntakeContext(root, policy), versions, None,
                                  item.get('tag_kind', 'lightweight'),
                                  _flag(item.get('bootstrap_enabled', False), f'{where}.bootstrap_enabled'))
         return project, (identifier, versions, None, artifacts, agents, (dict(item), where, registry))
+
+    def compose_profile(self, intake, data, receipt, reference):
+        """Compose the verified own profile using the existing command/CLI contracts, without installing it."""
+        from copy import copy
+        shadow = copy(self)
+        shadow.format = VERSION
+        shadow.profiles = {data['profile_name']: _profile(data['profile_name'], data['profile'], allow_formatter=True)}
+        shadow.compositions = {'owned': (data['profile_name'], data['commands'])}
+        shadow._recipes_by_composition = {}
+        shadow.agents, shadow.reviewer = _agents(data['agents'], automatic=True)
+        original = self._live[intake.context.root][5]
+        item = {**original[0], 'composition': 'owned', 'policy': data['policy']}
+        item.pop('agent_selection', None)
+        project, composition = shadow.compose(item, original[1], registry=original[2])
+        versions = {**project.versions, 'local_config': EDITOR_VERSION,
+                    'project_configuration': 'project-config-1',
+                    'project_configuration_revision': str(reference['revision']),
+                    'project_configuration_sha256': reference['sha256'],
+                    'project_environment_sha256': hashlib.sha256(freeze(receipt).encode()).hexdigest()}
+        versions['local_config_sha256'] = hashlib.sha256(freeze({
+            'base': intake.versions['local_config_sha256'], 'configuration': reference, 'data': data}).encode()).hexdigest()
+        project = replace(project, versions=versions, context=replace(project.context,
+                          work_language=intake.context.work_language))
+        return project, (composition[0], versions, *composition[2:5], original)
 
     def effective_agents(self, item, where):
         selection = item.get('agent_selection')
@@ -792,7 +819,7 @@ class LocalComposer:
         commands, artifacts, agents = self._composed(context, versions)
         if commands is None:
             return CLIProcessAdapter(agents, artifacts), None, GitWorkspace(self.identity, executable=self.git_executable)
-        if versions.get('project_recipe'):
+        if versions.get('project_recipe') or versions.get('project_configuration'):
             from harness_local.adapters.preparation import PreparedCommandRunner
             runner = PreparedCommandRunner(commands, self._receipts.get(context.root), versions)
         else:

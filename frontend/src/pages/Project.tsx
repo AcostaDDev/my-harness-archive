@@ -4,6 +4,7 @@ import type { S } from "../managed-api";
 import { Link } from "../navigation";
 import { Empty, Loading, PageHeader, Pagination, PhaseRail, Stale, Status, usePoll } from "../ui";
 import { useWorkspace } from "../workspace";
+import { ProjectProfile } from "./ProjectProfile";
 import { Preparation } from "./Preparation";
 import { RunTable, TaskForm } from "./shared";
 
@@ -27,6 +28,8 @@ export function ProjectPage() {
 
     {detail.data?.versions.project_recipe && !!phases.data?.length && <Preparation />}
 
+    {detail.data?.versions.local_config === "local-config-9" && detail.data.configuration_state !== "PROFILE_REQUIRED" && <ProjectProfile />}
+
     <section className="panel" aria-labelledby="active-phase">
       <h2 id="active-phase">{t("project.open_phase")}</h2>
       {!phases.data ? <Loading /> : open ? <>
@@ -48,7 +51,7 @@ export function ProjectPage() {
     </section>
 
     {detail.data?.documents === "v2" && !phases.data?.length && <p><Link to={{ name: "onboarding", project }}>{t("project.onboard")}</Link></p>}
-    {detail.data?.documents === "v2" && !phases.data?.length ? <Creation /> : <TaskForm />}
+    {detail.data?.documents === "v2" && !phases.data?.length ? <Creation /> : detail.data?.configuration_state === "ACTIVE" ? <TaskForm /> : null}
   </>;
 }
 

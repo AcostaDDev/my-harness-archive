@@ -166,6 +166,8 @@ class ProjectRegistry:
                 installed = self.registrar.install(composed)
                 if hasattr(self.runtime, 'preparation'):
                     installed = self.runtime.preparation.bind(installed)
+                    if self.runtime.setup is not None and not self.runtime.setup.legacy:
+                        installed = self.runtime.project_configuration.install_active(installed)
                 self.runtime.install(installed)
             except RegistryError as exc:
                 self.unavailable[item['id']] = str(exc)
@@ -341,6 +343,8 @@ class ProjectRegistry:
                 installed = self.registrar.install(composed)
                 if hasattr(self.runtime, 'preparation'):
                     installed = self.runtime.preparation.bind(installed)
+                    if self.runtime.setup is not None and not self.runtime.setup.legacy:
+                        installed = self.runtime.project_configuration.install_active(installed)
                 self.runtime.install(installed)
             else:
                 self.runtime.uninstall(saved['id'])

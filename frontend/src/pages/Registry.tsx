@@ -26,7 +26,7 @@ type Draft = {
 };
 
 /** Presets from v5; v6–v8 preserve project agent selection. */
-const PRESET_FORMATS = ["local-config-5", "local-config-6", "local-config-7", "local-config-8"];
+const PRESET_FORMATS = ["local-config-5", "local-config-6", "local-config-7", "local-config-8", "local-config-9"];
 
 const PLANNING: Record<Draft["planning_mode"], MessageKey> = { agent: "settings.planning.agent", deterministic: "settings.planning.deterministic" };
 const SELECTION: Record<Draft["executor_mode"], MessageKey> = { catalog: "settings.selection.catalog", open: "settings.selection.open" };
@@ -42,7 +42,7 @@ const FIELDS: Record<string, MessageKey> = {
 };
 
 function emptyDraft(options: S["RegistryRead"]): Draft {
-  return { project_id: "", root: options.roots.length === 1 ? `${options.roots[0]}/` : "", composition: options.compositions[0]?.name ?? "",
+  return { project_id: "", root: options.roots.length === 1 ? `${options.roots[0]}/` : "", composition: options.format === "local-config-9" ? "" : options.compositions[0]?.name ?? "",
     planning_mode: "agent", executor_mode: "catalog", executor_models: "", executor_efforts: [], max_revision_cycles: "",
     tag_kind: "lightweight", bootstrap_enabled: false, permission_authority: "",
     agent_mode: "inherited", reviewer_preset: "", reviewer_model: "", reviewer_effort: "", executor_preset: "" };
@@ -51,7 +51,7 @@ function emptyDraft(options: S["RegistryRead"]): Draft {
 function draftOf(row: Record<string, unknown>): Draft {
   const policy = (row.policy ?? {}) as Record<string, unknown>;
   const selection = row.agent_selection as S["AgentSelectionInput"] | undefined;
-  return { project_id: String(row.id), root: String(row.root), composition: String(row.composition),
+  return { project_id: String(row.id), root: String(row.root), composition: row.composition == null ? "" : String(row.composition),
     planning_mode: policy.planning_mode === "deterministic" ? "deterministic" : "agent",
     executor_mode: policy.executor_mode === "open" ? "open" : "catalog",
     executor_models: ((policy.executor_models ?? []) as string[]).join("\n"),
@@ -77,7 +77,7 @@ function changeOf(draft: Draft, action: Change["action"], expected: number, work
   return {
     action, project_id: draft.project_id.trim(), expected_version: expected,
     ...(action === "register" ? { root: draft.root.trim() } : {}),
-    composition: draft.composition,
+    composition: draft.composition || null,
     ...(draft.agent_mode === "project" ? { agent_selection: {
       reviewer: { preset_id: draft.reviewer_preset, model: draft.reviewer_model, effort: draft.reviewer_effort },
       executor: { preset_id: draft.executor_preset } } } : {}),
@@ -180,7 +180,8 @@ export function DraftFields({ draft, options, action, onChange }: {
     <fieldset>
       <legend>{t("registry.composition_legend")}</legend>
       <label>{t("registry.field.composition")}<select value={draft.composition} onChange={e => set("composition", e.target.value)}>
-        {options.compositions.map(c => <option key={c.name} value={c.name}>{c.name} · {c.profile}</option>)}
+        {options.format === "local-config-9" && <option value="">{t("profile.from_context")}</option>}
+        {options.format !== "local-config-9" && options.compositions.map(c => <option key={c.name} value={c.name}>{c.name} · {c.profile}</option>)}
       </select></label>
       {composition && <Fields items={[
         [t("settings.profile"), composition.profile],
@@ -270,7 +271,7 @@ function RegistryForm({ options, action, initial, expected, onApplied }: {
   const { t, preferences } = useI18n();
   const work = draft.work_language ?? preferences?.default_work_language;
   function edit(next: Draft) { generation.current += 1; setDraft(next); setPreview(undefined); op.clear(); }
-  const ready = draft.composition && draft.executor_efforts.length && draft.executor_models.trim()
+  const ready = (options.format === "local-config-9" || draft.composition) && draft.executor_efforts.length && draft.executor_models.trim()
     && (action === "update" || (draft.project_id.trim() && draft.root.trim() && work));
   return <form onSubmit={e => {
     e.preventDefault();
@@ -391,7 +392,7 @@ function NewDirectoryForm({ options, root, refresh }: {
   const { t, rich, preferences } = useI18n();
   const work = draft.work_language ?? preferences?.default_work_language;
   function invalidate() { generation.current++; setPreview(undefined); setTrusted(false); }
-  const ready = draft.project_id.trim() && name && draft.composition && draft.executor_models.trim() && draft.executor_efforts.length && work;
+  const ready = draft.project_id.trim() && name && (options.format === "local-config-9" || draft.composition) && draft.executor_models.trim() && draft.executor_efforts.length && work;
   return <section className="panel" aria-labelledby="new-directory"><h2 id="new-directory">{t("creation.new")}</h2>
     <form onSubmit={e => { e.preventDefault(); void op.run(async () => {
       const current = generation.current;

@@ -1,6 +1,6 @@
 # P013 — Instalación guiada y configuración desde la UI
 
-Estado: fase activa el 2026-10-26; T001 diseñada, T002–T008 implementadas; integración/edición/compatibilidad pendientes T009–T011.
+Estado: fase activa el 2026-10-26; T001 diseñada, T002–T009 implementadas; edición/compatibilidad pendientes T010–T011.
 Decisión: [D215](../DECISIONS.md#d215--p013-instalación-guiada-y-configuración-desde-la-ui).
 Objetivo y salida en [ROADMAP](../ROADMAP.md#p013--instalación-guiada-y-configuración-desde-la-ui);
 tareas ejecutables en [NEXT_STEPS](../NEXT_STEPS.md).
@@ -18,8 +18,8 @@ comprobar, editar y activar un perfil propio por proyecto con ayuda del revisor 
 TypeScript siguen disponibles como ejemplos/recetas opcionales, sin convertirse en requisito para otros stacks.
 El TOML persiste como archivo local editable; conocer su sintaxis no será requisito para el recorrido guiado.
 
-Esta apertura define trabajo, no acredita funcionalidades nuevas. El producto actual sigue usando
-`local-config-8` y composiciones del TOML hasta que las tareas correspondientes cambien esos contratos.
+La apertura definió trabajo sin acreditar funcionalidades nuevas. T002–T009 entregan los carriles indicados
+en el estado de este plan; `local-config-8` y sus composiciones conservan su entrada y contratos anteriores.
 
 ## 2. Alcance acordado
 

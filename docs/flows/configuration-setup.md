@@ -1,11 +1,11 @@
 # Flujo — instalación y configuración guiadas (P013)
 
-**Instalación T002, arranque T003, persistencia T004, API/arranque global T005, UI T006, propuesta de perfil T007 y preparación genérica T008 implementados; integración pendiente T009–T011.**
+**Instalación T002, arranque T003, persistencia T004, API/arranque global T005, UI T006, propuesta de perfil T007 y preparación genérica T008 y alta/activación T009 implementados; edición/compatibilidad pendientes T010–T011.**
 [Entrega T002](../phase/P013-T002_INSTALACION.md), D219; validación con herramientas falsas, sin recorrido instalado nuevo.
 [Entrega T003](../phase/P013-T003_ARRANQUE.md), D220; procesos/señales sintéticos, sin servicio instalado real.
 [Contrato](../phase/P013-T001_CONTRATO.md), D216–D218 en [DECISIONS](../DECISIONS.md),
 [plan](../phase/P013_PLAN.md) y [tareas](../NEXT_STEPS.md).
-TOML 1–8 conserva su entrada. T005 consume global v9 por referencia activa; T007 añade altas documentales/propuestas; preparación genérica entregada en T008; alta/activación integradas pendientes T009.
+TOML 1–8 conserva su entrada. T005 consume global v9 por referencia activa; T007 añade altas documentales/propuestas; preparación genérica entregada en T008; alta/activación integradas entregadas en T009.
 
 ## Instalación y primer arranque
 
@@ -45,7 +45,7 @@ Locks de instancia/instalación heredados por el hijo impiden segundo servicio/a
 muere el wrapper; señales se reenvían y se espera al hijo. No libera guardias de jobs ni declara escritores
 muertos. Consulta D040 omite TOML operativo. T005 entrega al servicio la configuración ausente/inválida:
 conserva sesión y bloquea trabajo; T006 conduce al asistente protegido siguiente. Persistencia T004 conectada
-a autoridad global/arranque por T005; perfiles propios pendientes T007–T009.
+a autoridad global/arranque por T005; perfiles propios entregados en T007–T009.
 
 ## Asistente y activación global
 
@@ -87,13 +87,13 @@ muestra importación pendiente T011; consulta restaurada nunca monta el editor. 
 Primitivas T004 implementadas ([D221](../DECISIONS.md#d221--p013-t004-journal-y-referencias-de-configuración),
 [entrega](../phase/P013-T004_CONFIGURACION.md)): `preview/save`, `activation_preview/activate`,
 `promote_pending/cancel_pending`, `recovery_preview/recover` y descarte/importación explícitos de cambios externos.
-Endpoints globales y consumo global v9 en T005, UI global en T006; consumo/UI de perfiles propios pendientes.
+Endpoints globales y consumo global v9 en T005, UI global en T006; consumo/UI de perfiles propios entregados en T009.
 Guardado con barrera SQLite y flock de instalación; intención ligada
 a directorios de configuración/estado. Revisiones DRAFT o VALIDATED, copias privadas y fsync por publicación.
 Recuperación exige declaración de escritores detenidos y exclusión efectiva; se audita como otra operación,
 sin inferir parada por lease. Global sella el conjunto pendiente por id de activación y promueve en transacción;
 permite guardar borradores mientras espera reinicio. Proyecto requiere verificador de preparación del servicio
-(sin fallback permisivo); T008/T009 conectarán recibos/HEAD/runtime. Trabajo pendiente bloquea activación,
+(sin fallback permisivo); T008/T009 conectan recibos/HEAD/runtime. Trabajo pendiente bloquea activación,
 no guardado. Bundle actual rechaza operaciones de configuración: soporte autocontenido pendiente T011.
 
 ```mermaid
@@ -131,7 +131,7 @@ bytes/hashes, no solo rutas; restore conserva consulta sin repararlos ni activar
 sin composición ni perfil. `IntakeContext` solo lleva raíz, política/pareja/idioma y layout; no hay runner
 ni comandos de stack. El registro sigue ACTIVE a efectos de identidad, pero la disponibilidad operativa
 es `PROFILE_REQUIRED`. Definición nueva admite carpeta vacía ya elegida; B usa inventario estático/HEAD y
-borradores privados. Creación automática de carpeta sin perfil y UI integrada quedan para T009.
+borradores privados. T009 entrega creación automática de carpeta sin perfil, handoff documental y UI integrada.
 
 ```mermaid
 sequenceDiagram
@@ -166,7 +166,7 @@ GET publica `PROFILE_REQUIRED`/`PROFILE_PROPOSED` sin sondear herramientas; la s
 adoptado, cuya vigencia se revisa en preview. Formatos 1–8 mantienen su ruta; v9 no admite activar una
 composición con nombre a través del registro para eludir T008/T009. Restore D040 conserva sus guardias.
 
-### Recorrido general: preparación T008 entregada; integración T009–T010 pendiente
+### Recorrido general: preparación T008 y alta/activación T009 entregadas
 
 ```mermaid
 flowchart TD
@@ -222,14 +222,13 @@ inicia consumidor; preferencias y editor siguen accesibles con sesión/Host/Orig
 
 Guardado/lectura no comprueban clientes implícitamente. Cambio externo no hace hot reload; deriva inmutable
 bloquea antes de escritura. Global READY solo acredita autoridad global: el registro/admisión con perfiles
-propios se conecta en T007–T009. Editor inicial rechaza autoridad legacy/registro previo hasta la importación
+propios se entrega en T007–T009. Editor inicial rechaza autoridad legacy/registro previo hasta la importación
 explícita T011, conservando originales. Asistente UI T006 entregado; sin QA visual/servicio instalado nuevo.
 
 ### Preparación genérica entregada en T008
 
 [D225](../DECISIONS.md#d225--p013-t008-preparación-genérica-confirmada-y-recibo-propio),
-[entrega y checks](../phase/P013-T008_PREPARACION.md). Se entrega el carril de servicio/API; T009 aún debe
-producir el handoff documental/configuración y conectar UI/activación. Las pruebas siembran esas precondiciones,
+[entrega y checks](../phase/P013-T008_PREPARACION.md). T008 entregó el carril de servicio/API; T009 añade el handoff documental/configuración y la UI/activación. Las pruebas siembran esas precondiciones,
 sin atribuirles un alta completa ya implementada. Recetas y recibos anteriores mantienen su carril propio.
 
 1. Revisor puede añadir `preparation_plan` a la propuesta: archivos/prefijos concretos, local ignorado, entorno
@@ -251,6 +250,39 @@ sin atribuirles un alta completa ya implementada. Recetas y recibos anteriores m
    confirmado exige escritor/grupos detenidos y bytes exactos del último prefijo DONE; efectos parciales ajenos
    bloquean recuperación. Cancelación solo señala el handle propio vivo.
 
-El recibo no activa ni instala un contexto de tareas; T009 hará esa confirmación separada. No se concede escritura
+El recibo no activa ni instala un contexto de tareas; T009 entrega esa confirmación separada. No se concede escritura
 de TOML global, documentos o ajustes del equipo. Rutas/destinos/scripts y argv son autoridad cooperativa revisable,
 no un sandbox nuevo; offline nunca cambia automáticamente a red.
+
+
+### Alta y activación entregadas en T009
+
+[D226](../DECISIONS.md#d226--p013-t009-alta-documental-y-activación-del-perfil-propio),
+[entrega](../phase/P013-T009_ALTA_UI.md). Probado con HTTP/UI sintéticos y Git/SQLite temporales; sin proveedores.
+
+1. Creación conserva padre/reserva/identidad/idioma y permite hijo sin composición; B registra raíz confiada.
+   Conversación, preguntas y borradores siguen el contexto documental T007, sin runner de stack.
+2. UI revisa candidato, comandos/evidencia/ámbito por formulario o TOML. Copiar un catálogo es optativo y crea
+   contenido propio; editar versiona otra propuesta, conserva el turno del revisor y exige evidencia y nueva
+   adopción CAS. Contradicciones documentales requieren otro turno/edición confirmados, nunca parchear snapshots.
+3. Commit raíz/B exige propuesta ACCEPTED vigente y sella `profile_proposal_sha256`. Usa el perfil real solo
+   para renderizar documentos; el run y la autoridad conservan `IntakeContext`. B mantiene código/originales,
+   phase-000, objetos locales y guardias Git. Commit terminado y P001 adoptada cierran su conversación.
+4. Editor de proyecto deriva `project-config-1` con referencia global, pareja/política admitidas y procedencia
+   de la propuesta. Usuario completa rutas/herramientas y entorno acotado. Aplicación valida, muestra diff y
+   guarda por T004 fuera del checkout; guardar no instala ni activa. Perfil distinto exige otro ciclo documental.
+5. UI confirma plan T008 exacto con motivo y conserva pasos, journal, cancelación/confirm-stopped/reintento
+   enlazado y recibo. B toma hashes de su `result_tree` sellado; no se reescribe el resultado histórico de importación.
+6. Preview/activación independientes exigen configuración VALIDATED guardada, global compatible, recibo exacto,
+   documentos/entorno/herramientas íntegros, HEAD técnico limpio y barrera D118. Precompone antes de publicar;
+   referencia activa SQLite y nueva composición habilitan tareas sin reinicio. Fallo al instalar conserva puerta
+   cerrada; resolución/reinicio solo reinstalan autoridad verificada, sin repetir alta, comandos o commits.
+7. Jobs congelan revisión/hash/configuración/recibo. Nuevas admisiones revisan copia e inmutable; jobs propios
+   revisan la inmutable antes de efectos. Una copia editable no cambia el contrato admitido. Guardar otra versión
+   conserva activa anterior; recibo activo se busca por referencia exacta, sin adoptar el candidato más reciente.
+8. Formularios/TOML y base CAS permanecen en la pestaña; conflicto no rebasa. Confirmaciones de perfil/guardado/
+   preparación/activación conservan sobre y clave ante respuesta perdida; reenvío solo explícito, nunca al sondear.
+   Estado/documentos/preparación/recibo visibles en/es. P001 ACTIVE por sí sola no habilita la primera tarea.
+
+Edición posterior asistida T010, importación/backup/recuperación integrada T011 y QA visual instalada T012 siguen
+pendientes. Consulta D040 no edita/prepara/activa. Formatos 1–8 y sus hashes/recetas conservados.

@@ -244,6 +244,8 @@ class ManagedRuntime:
         self.database = database
         from harness_local.services.project_registry import ProjectRegistry
         self.registry = ProjectRegistry(self)
+        from harness_local.services.project_configuration import ProjectConfiguration
+        self.project_configuration = ProjectConfiguration(self)
         self.registry.load()
         from harness_local.services.work_language import WorkLanguageMigration
         self.work_language = WorkLanguageMigration(self)
@@ -256,8 +258,16 @@ class ManagedRuntime:
         self.preparation = ProjectPreparation(self)
         if setup_ready and not is_read_only_archive(self.engine):
             self.preparation.repository.recover_expired()
+        if self.setup is not None and not self.setup.legacy:
+            self.setup.repository.project_verifier = self.project_configuration.verify
         for project in list(self.projects.values()):
-            self.preparation.bind(project)
+            bound = self.preparation.bind(project)
+            if self.setup is not None and not self.setup.legacy:
+                try:
+                    self.install(self.project_configuration.install_active(bound))
+                except (ValueError, OSError):
+                    # Keep documentary capabilities; admission must revalidate the active reference.
+                    self.install(bound)
         if self.setup is not None:
             self.repository.write_guard = self.setup.require_ready
         if config.supervisor:
@@ -290,6 +300,8 @@ class ManagedRuntime:
             project = registrar.refresh(project, force=True)
             # CLI recomposition returns base versions; derive the environment binding again from its receipt.
             project = self.preparation.bind(project)
+            if self.setup is not None and not self.setup.legacy:
+                project = self.project_configuration.install_active(project)
             self.install(project)
             project = self.project(project_id)
         return project

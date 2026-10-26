@@ -126,7 +126,7 @@ def settle(managed, session, run, outcome):
             older = older.where(Proposal.path == path) if path is not None else older.where(Proposal.path.is_(None))
             for row in session.scalars(older):
                 row.status, row.version = 'SUPERSEDED', row.version + 1
-                row.decision = {'decision': 'superseded', 'by_turn': turn.number, 'at': turn.finished_at}
+                row.decision = {**(row.decision or {}), 'decision': 'superseded', 'by_turn': turn.number, 'at': turn.finished_at}
             number += 1
             content_sha256 = text_hash(content)
             session.add(Proposal(
@@ -630,6 +630,46 @@ class PlanningRepository:
                  'configuration_state': 'PROFILE_PROPOSED' if proposal.status == 'ACCEPTED' else 'PROFILE_REQUIRED'}
         return {**shown, 'preview_sha256': digest(shown)}
 
+    def edit_profile(self, context, conversation_id, proposal_id, expected, proposal_sha256,
+                     candidate, reason, key, writer=None, versions=None):
+        """Version a user edit, keeping the reviewer result and every previous confirmation immutable."""
+        request = digest({'root': str(context.root), 'conversation_id': conversation_id, 'proposal_id': proposal_id, 'expected': expected,
+                          'proposal_sha256': proposal_sha256, 'candidate': candidate, 'reason': reason})
+        if not isinstance(reason, str) or not reason.strip() or len(reason) > 2000:
+            raise ValueError(tr('profile_proposal.invalid'))
+        with self.managed._write() as session:
+            for row in session.scalars(select(Proposal).where(Proposal.kind == 'profile')):
+                if (row.decision or {}).get('edit_key') == key:
+                    if row.decision['edit_request_sha256'] != request:
+                        raise Conflict(tr('profile_proposal.key_reused'))
+                    return row.decision['edit_result']
+            shown = self.profile_preview(context, conversation_id, proposal_id, expected, proposal_sha256,
+                                         writer, session=session, versions=versions)
+            if not shown['ready']:
+                raise Conflict(tr('profile_proposal.stale'))
+            old = session.get(Proposal, proposal_id)
+            turn = session.get(Turn, old.turn_id)
+            from harness_local.services.profile_proposal import validate
+            frozen = {**turn.request['context'], 'drafts': [
+                {'path': path, 'sha256': value} for path, value in shown['profile']['binding']['documents'].items()]}
+            payload = validate(candidate, frozen, [], context=context)
+            if payload is None:
+                raise ValueError(tr('profile_proposal.invalid'))
+            content = freeze(payload)
+            number = session.scalar(select(func.max(Proposal.number)).where(Proposal.conversation_id == conversation_id)) + 1
+            identifier = str(uuid4())
+            result = {'proposal_id': identifier, 'version': expected + 1}
+            session.add(Proposal(id=identifier, conversation_id=conversation_id, turn_id=old.turn_id,
+                number=number, kind='profile', path=None, content=content, reason=reason,
+                content_sha256=text_hash(content), base_sha256=None,
+                proposal_sha256=digest({'content': content, 'previous': old.id, 'reason': reason}),
+                status='PROPOSED', version=1, created_at=self.managed._now(),
+                decision={'edit_key': key, 'edit_request_sha256': request, 'actor': actor(), 'edit_result': result}))
+            old.status, old.version = 'SUPERSEDED', old.version + 1
+            old.decision = {**(old.decision or {}), 'superseded_by_edit': identifier}
+            _touch(self.managed, session.get(Conversation, conversation_id))
+            return result
+
     def confirm_profile(self, context, conversation_id, proposal_id, expected, *, proposal_sha256,
                         preview_sha256, reason, key, writer=None, versions=None):
         if not isinstance(reason, str) or not reason.strip() or len(reason) > 2000:
@@ -655,7 +695,7 @@ class PlanningRepository:
                       'configuration_state': 'PROFILE_PROPOSED', 'version': expected + 1,
                       'proposal_sha256': proposal_sha256}
             proposal.status, proposal.version = 'ACCEPTED', proposal.version + 1
-            proposal.decision = {'decision': 'profile_draft_adopted', 'key': key, 'request_sha256': request,
+            proposal.decision = {**(proposal.decision or {}), 'decision': 'profile_draft_adopted', 'key': key, 'request_sha256': request,
                                  'preview_sha256': preview_sha256, 'reason': reason, 'actor': actor(),
                                  'at': self.managed._now(), 'result': result}
             _touch(self.managed, session.get(Conversation, conversation_id))

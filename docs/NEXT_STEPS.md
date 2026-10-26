@@ -1,7 +1,7 @@
 # P013 — Instalación guiada y configuración desde la UI
 
-**Estado:** fase activa; T001 diseñada y T002–T008 implementadas el 2026-10-26, siete tareas pendientes.
-**Siguiente: P013-T009**, activación del perfil y alta completa desde la UI.
+**Estado:** fase activa; T001 diseñada y T002–T009 implementadas el 2026-10-26, seis tareas pendientes.
+**Siguiente: P013-T010**, edición posterior manual y asistida de configuración.
 [Objetivo y criterios](ROADMAP.md#p013--instalación-guiada-y-configuración-desde-la-ui),
 [D215](DECISIONS.md#d215--p013-instalación-guiada-y-configuración-desde-la-ui) y
 [plan de fase](phase/P013_PLAN.md).
@@ -186,7 +186,8 @@ proveedores o descargas reales necesitan autorización propia.
 
 ## P013-T009 — Activación del perfil y alta completa desde la UI
 
-**Estado:** pendiente. **Depende de:** T007–T008.
+**Estado:** completada (2026-10-26); integración API/UI con agentes y herramientas falsos; QA visual instalada pendiente T012.
+[Entrega y checks](phase/P013-T009_ALTA_UI.md), D226. **Depende de:** T007–T008.
 **Objetivo:** unir conversación, perfil y preparación en las dos entradas del producto.
 **Rutas permitidas:** frontend, API/servicios de alta/activación, pruebas y docs de paridad.
 **Criterios de aceptación:**
