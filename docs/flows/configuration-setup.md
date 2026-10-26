@@ -1,11 +1,11 @@
 # Flujo — instalación y configuración guiadas (P013)
 
-**Instalación T002, arranque T003 y persistencia T004 implementados; integración pendiente T005–T011.**
+**Instalación T002, arranque T003, persistencia T004 y API/arranque global T005 implementados; pendiente T006–T011.**
 [Entrega T002](../phase/P013-T002_INSTALACION.md), D219; validación con herramientas falsas, sin recorrido instalado nuevo.
 [Entrega T003](../phase/P013-T003_ARRANQUE.md), D220; procesos/señales sintéticos, sin servicio instalado real.
 [Contrato](../phase/P013-T001_CONTRATO.md), D216–D218 en [DECISIONS](../DECISIONS.md),
 [plan](../phase/P013_PLAN.md) y [tareas](../NEXT_STEPS.md).
-El flujo vigente aún usa TOML 1–8 y composición según ARCHITECTURE §6/§9.
+TOML 1–8 conserva su entrada. T005 consume global v9 por referencia activa; altas/perfiles propios pendientes T007–T009.
 
 ## Instalación y primer arranque
 
@@ -76,7 +76,7 @@ Cancelar una activación pendiente también exige versión/confirmación; guarda
 Primitivas T004 implementadas ([D221](../DECISIONS.md#d221--p013-t004-journal-y-referencias-de-configuración),
 [entrega](../phase/P013-T004_CONFIGURACION.md)): `preview/save`, `activation_preview/activate`,
 `promote_pending/cancel_pending`, `recovery_preview/recover` y descarte/importación explícitos de cambios externos.
-Sin endpoints/UI ni ejecución v9 todavía. Guardado con barrera SQLite y flock de instalación; intención ligada
+Endpoints globales y consumo global v9 en T005; UI y consumo de perfiles propios pendientes. Guardado con barrera SQLite y flock de instalación; intención ligada
 a directorios de configuración/estado. Revisiones DRAFT o VALIDATED, copias privadas y fsync por publicación.
 Recuperación exige declaración de escritores detenidos y exclusión efectiva; se audita como otra operación,
 sin inferir parada por lease. Global sella el conjunto pendiente por id de activación y promueve en transacción;
@@ -145,3 +145,26 @@ sin comprobar no acredita entorno listo. Caída exige recuperación enlazada, nu
 V1–v8 conservan operación/hashes; edición guiada requiere importación explícita al conjunto v9/proyecto v1,
 originales intactos. Jobs/snapshots/recibos históricos no se actualizan a posteriori. El detalle de estados,
 API/UI, reinicios y matriz de fallos está en el contrato; diagrama de datos se ampliará con la migración real.
+
+## API global inicial entregada en T005
+
+[D222](../DECISIONS.md#d222--p013-t005-asistente-api-y-arranque-con-autoridad-global-versionada),
+[API efectiva y checks](../phase/P013-T005_ASISTENTE_API.md). `start` fija directorios del recibo; preflight valida
+esquema/consulta y deja TOML ausente/inválido al servicio protegido. `serve` pasa directorios/entrada explícita a
+`ConfigurationSetup`, sin leer TOML antes de resolver D040. Sin autoridad no reconcilia altas/preparaciones ni
+inicia consumidor; preferencias y editor siguen accesibles con sesión/Host/Origin/CSRF.
+
+1. GET devuelve modo, referencias guardada/activa/pendiente, CAS y operaciones que requieren conciliación.
+2. Detectar por PATH aportado devuelve candidatos/usuario/rutas; no ejecuta procesos ni hereda entorno.
+3. Formulario JSON o TOML → preview/diff → save exacto/idempotente T004; activa intacta.
+4. `/check-clients` separado ejecuta solo version/help D174 con clientes/entorno explícitos; sin inferencia.
+5. Preview/confirmación de activación → `RESTART_REQUIRED`; HTTP y barrera SQLite cierran mutaciones gestionadas.
+6. Próximo arranque promueve el conjunto por T004 antes de componer global; fallo conserva bloqueo/referencias.
+   Cancelar pendiente exige CAS y no habilita un proceso que no cargó la activa.
+7. Caída de guardado → operación visible → preview de recuperación por bytes → declaración explícita de parada
+   y confirmación exacta; sin replay de clientes. Consulta restaurada nunca detecta/guarda/activa/repara.
+
+Guardado/lectura no comprueban clientes implícitamente. Cambio externo no hace hot reload; deriva inmutable
+bloquea antes de escritura. Global READY solo acredita autoridad global: el registro/admisión con perfiles
+propios se conecta en T007–T009. Editor inicial rechaza autoridad legacy/registro previo hasta la importación
+explícita T011, conservando originales. Asistente UI T006 pendiente; sin QA visual/servicio instalado nuevo.

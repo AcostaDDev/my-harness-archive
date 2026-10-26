@@ -38,7 +38,8 @@ def initialize(value: str, language: str | None = None) -> None:
     command.upgrade(config, 'head')
 
 
-def serve(value: str, port: int, config: str | None = None, language: str | None = None) -> None:
+def serve(value: str, port: int, config: str | None = None, language: str | None = None, *,
+          configuration_dir: str | None = None, state_dir: str | None = None) -> None:
     language = language or current()
     import uvicorn
     from harness_local.api.app import create_app
@@ -61,11 +62,8 @@ def serve(value: str, port: int, config: str | None = None, language: str | None
         raise RuntimeError(message('cli.schema_incompatible', language)) from error
     finally:
         engine.dispose()
-    managed = None
-    if config is not None:
-        from harness_local.services.local_config import load_local_config
-        # TOML read only: no provider process, command or Git before serving.
-        managed = load_local_config(config)
-    # The lifespan keeps configuration validation, restorations and opt-in.
-    uvicorn.run(create_app(url=url, managed=managed), host='127.0.0.1', port=port, workers=1,
-                proxy_headers=False, access_log=False)
+    directory = Path(configuration_dir) if configuration_dir else path.parent / 'configuration'
+    # Restored query mode takes priority in the runtime, before loading any external file.
+    uvicorn.run(create_app(url=url, configuration_dir=directory, state_dir=Path(state_dir) if state_dir else path.parent,
+                          config_source=Path(config) if config else None),
+                host='127.0.0.1', port=port, workers=1, proxy_headers=False, access_log=False)

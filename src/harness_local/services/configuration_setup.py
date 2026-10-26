@@ -1,0 +1,199 @@
+"""Initial global configuration, with passive reads and explicit CLI preflight (D222)."""
+import copy
+import json
+import os
+from pathlib import Path
+import pwd
+import shutil
+
+from sqlalchemy import select
+from sqlalchemy.orm import Session
+
+from harness_local.adapters.cli_agents import EFFORTS
+from harness_local.adapters.cli_diagnostics import preflight_config
+from harness_local.i18n import tr
+from harness_local.services import local_config as legacy
+from harness_local.services.configuration import GLOBAL, parse
+from harness_local.services.managed_runtime import CONFIG_ENV, ManagedConfig, load_config
+from harness_local.storage.backup import is_read_only_archive, RESTORED_USER_VERSION
+from harness_local.storage.configuration import ConfigurationConflict, ConfigurationRepository, UNRESOLVED
+from harness_local.storage.managed import SQLiteManagedRepository
+from harness_local.storage.models import (ConfigurationScopeRow as Scope, ConfigurationOperationRow as Operation,
+                                          RegisteredProjectRow as Project)
+
+
+def toml_document(data):
+    """Serialize the editor's JSON form without interpreting strings as TOML syntax."""
+    def value(item):
+        if isinstance(item, bool):
+            return 'true' if item else 'false'
+        if isinstance(item, (int, float)):
+            return repr(item)
+        if isinstance(item, str):
+            return json.dumps(item, ensure_ascii=False)
+        if isinstance(item, list):
+            return '[' + ', '.join(value(x) for x in item) + ']'
+        if isinstance(item, dict):
+            return '{' + ', '.join(f'{json.dumps(k)} = {value(v)}' for k, v in item.items()) + '}'
+        raise ValueError(tr('setup.form_value'))
+    return ''.join(f'{json.dumps(k)} = {value(v)}\n' for k, v in data.items())
+
+
+class ConfigurationSetup:
+    def __init__(self, engine, directory, state_dir, source=None):
+        self.engine = engine
+        self.directory, self.state_dir = Path(directory), Path(state_dir)
+        self.source = Path(source) if source else None
+        self.repository = ConfigurationRepository(SQLiteManagedRepository(engine), self.directory,
+                                                   state_dir=self.state_dir)
+        self.legacy = False
+        self.startup_error = None
+        self.loaded = None
+
+    def _new_installation(self):
+        # Importing an existing authority and deriving its project revisions belongs to T011.
+        with Session(self.engine) as session:
+            if session.scalar(select(Project.id).limit(1)):
+                raise ConfigurationConflict('configuration_import_required')
+        if self.legacy:
+            raise ConfigurationConflict('configuration_import_required')
+
+    def start(self, explicit=None):
+        if is_read_only_archive(self.engine):
+            return ManagedConfig()
+        try:
+            # Creating the selected product directory never changes preexisting permissions.
+            for path in (self.directory, self.state_dir):
+                if not path.is_absolute() or '..' in path.parts or path.resolve() != path:
+                    raise ValueError(tr('setup.invalid'))
+            if any(os.path.lexists(parent / '.git') for parent in (self.directory, *self.directory.parents)):
+                raise ValueError(tr('setup.invalid'))
+            if not self.directory.exists():
+                self.directory.mkdir(mode=0o700)
+            state = self.repository.read()
+            if state['version'] and (explicit is not None or (self.source is not None
+                    and self.source != self.directory / 'global.toml')):
+                raise ConfigurationConflict('configuration_source_conflict')
+            if state['pending']:
+                self._new_installation()
+                with Session(self.engine) as session:
+                    activation_id = session.get(Scope, 'global').pending_operation_id
+                self.repository.promote_pending(activation_id=activation_id, key=f'startup:{activation_id}', restarted=True)
+                state = self.repository.read()
+            if state['active']:
+                if state['status'] != 'READY':
+                    return ManagedConfig()
+                self._new_installation()
+                text = self.repository.document('global', state['active']['revision'])
+                data = parse(text, 'global')
+                self.loaded = state['active']
+                candidate = copy.deepcopy(data)
+                candidate.setdefault('compositions', {})
+                return legacy._build(candidate, self.directory / 'global.toml',
+                                     allow_empty_compositions=True, editor=True)[0]
+            if state['version'] or state['status'] == 'RECOVERY_REQUIRED':
+                return ManagedConfig()
+            if explicit is not None:
+                self.legacy = True
+                return explicit
+            if self.source:
+                if not self.source.exists():
+                    raise ValueError(tr('setup.invalid'))
+                # A v9 working copy alone is not authorized. Legacy remains a separate explicit input.
+                data = legacy._read(self.source)
+                if data.get('format') == GLOBAL:
+                    return ManagedConfig()
+                config = legacy.build(data, self.source)
+                self.legacy = True
+                return config
+            if os.environ.get(CONFIG_ENV):
+                config = load_config()
+                self.legacy = True
+                return config
+        except (ValueError, OSError):
+            # No raw candidate, environment, path, or exception text enters public diagnostics.
+            self.startup_error = 'configuration_invalid'
+        return ManagedConfig()
+
+    def state(self):
+        try:
+            state = self.repository.read()
+        except (ValueError, OSError):
+            # Keep durable references visible even when private files cannot be inspected.
+            with Session(self.engine) as session:
+                head = session.get(Scope, 'global')
+                state = {'scope': 'global', 'version': head.version if head else 0, 'status': 'INVALID',
+                         **{key: self.repository._ref(session, 'global', getattr(head, column)) if head else None
+                            for key, column in (('saved', 'saved_revision'), ('active', 'active_revision'),
+                                                ('pending', 'pending_revision'))}}
+        mode = state['status']
+        if mode == 'EXTERNAL_CHANGE':
+            mode = 'INVALID'
+        if self.startup_error:
+            mode = 'INVALID'
+        if (self.legacy and not self.startup_error and not state['version']
+                and mode not in ('RECOVERY_REQUIRED', 'READ_ONLY_ARCHIVE')):
+            mode = 'READY'
+        # Cancelling pending activation must never enable a process that did not load the active version.
+        if mode == 'READY' and not self.legacy and self.loaded != state['active']:
+            mode = 'RESTART_REQUIRED'
+        with Session(self.engine) as session:
+            head = session.get(Scope, 'global')
+            operations = list(session.scalars(select(Operation.id).where(Operation.status.in_(UNRESOLVED))))
+            pending_id = head.pending_operation_id if head else None
+        return {**state, 'mode': mode, 'legacy': self.legacy,
+                'pending_activation_id': pending_id, 'recovery_operations': operations,
+                'blockers': [] if mode == 'READY' else [self.startup_error or mode.lower()]}
+
+    def require_ready(self, session=None):
+        if session is None:
+            state = self.state()
+            if state['mode'] != 'READY':
+                raise ConfigurationConflict('configuration_' + state['mode'].lower())
+            return
+        # The write barrier uses its existing connection: no nested pool checkout or stale snapshot.
+        if session.connection().exec_driver_sql('PRAGMA user_version').scalar_one() == RESTORED_USER_VERSION:
+            raise ConfigurationConflict('configuration_read_only_archive')
+        if self.legacy and not self.startup_error:
+            return  # The initial editor cannot replace legacy authority; import is explicit in T011.
+        state = self.repository._state(session, self.repository._files(session), 'global')
+        if self.startup_error or state['status'] != 'READY' or state['active'] != self.loaded:
+            raise ConfigurationConflict('configuration_not_ready')
+
+    def editable(self):
+        self.repository._writable()
+        self._new_installation()
+        # Validation/preview may diagnose an invalid working copy; storage still enforces its CAS.
+
+    def candidate(self, *, text=None, form=None, validated=True):
+        self.editable()
+        if (text is None) == (form is None):
+            raise ValueError(tr('setup.candidate'))
+        if form is not None:
+            data = copy.deepcopy(form)
+            data.setdefault('format', GLOBAL)
+            service = data.setdefault('service', {})
+            if not isinstance(service, dict):
+                raise ValueError(tr('setup.invalid'))
+            service.setdefault('state_dir', str(self.state_dir))
+            text = toml_document(data)
+        parse(text, 'global', validated=validated)
+        return text
+
+    def detect(self, path):
+        self.repository._writable()
+        folders = path.split(os.pathsep)
+        if not path or any(not item or not Path(item).is_absolute() for item in folders):
+            raise ValueError(tr('setup.path'))
+        # No inherited PATH/environment, home scan, Git config, credentials or process execution.
+        return {'candidates': {name: shutil.which(name, path=path) for name in ('git', 'codex', 'claude')},
+                'user': pwd.getpwuid(os.getuid()).pw_name, 'state_dir': str(self.state_dir),
+                'configuration_dir': str(self.directory),
+                'providers': {key: list(value) for key, value in EFFORTS.items()}}
+
+    def check_clients(self, **candidate):
+        text = self.candidate(**candidate)
+        data = parse(text, 'global')
+        agents, _ = legacy._agents(data['agents'], automatic=True)
+        return {role: preflight_config(cli, access='write' if role == 'executor' else 'read')
+                for role, cli in agents.items()}

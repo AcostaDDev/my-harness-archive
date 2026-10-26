@@ -26,13 +26,18 @@ from harness_local.services.managed_runtime import ManagedConfig, ManagedRuntime
 
 
 def create_app(url: str | None = None, ui_dir: Path | None = None,
-               managed: ManagedConfig | None = None) -> FastAPI:
+               managed: ManagedConfig | None = None, *, configuration_dir: Path | None = None,
+               state_dir: Path | None = None, config_source: Path | None = None) -> FastAPI:
     """Explicit `managed` or HARNESS_MANAGED_CONFIG at startup; with neither, the managed API only reads."""
     engine = make_engine(url or database_url())
     service = SimulationService(SQLiteSimulationRepository(engine), FakeSimulationAdapter())
 
     sessions = LocalSessions(lambda: language(engine))
     runtime = ManagedRuntime(engine, managed)
+    if configuration_dir is not None:
+        from harness_local.services.configuration_setup import ConfigurationSetup
+        runtime.setup = ConfigurationSetup(engine, configuration_dir,
+            state_dir or Path(engine.url.database).absolute().parent, config_source)
 
     @asynccontextmanager
     async def lifespan(app: FastAPI):
@@ -57,6 +62,9 @@ def create_app(url: str | None = None, ui_dir: Path | None = None,
     app.state.language = sessions.language
     app.include_router(session_router(sessions))
     app.include_router(managed_router(runtime))
+    from harness_local.api.configuration import configuration_router
+    app.include_router(configuration_router(runtime))
+    app.state.runtime = runtime
 
     @app.middleware('http')
     async def restored_read_only(request, call_next):
@@ -74,6 +82,18 @@ def create_app(url: str | None = None, ui_dir: Path | None = None,
             if (request.url.path.startswith('/api') or request.url.path == '/openapi.json') and not (
                     request.url.path == '/api/session' and request.method == 'POST'):
                 sessions.require(request)
+            if (runtime.setup is not None and request.url.path.startswith('/api/managed/')
+                    and request.method not in ('GET', 'HEAD', 'OPTIONS')
+                    and not (request.url.path == '/api/managed/configuration'
+                             or request.url.path.startswith('/api/managed/configuration/')
+                             or request.url.path == '/api/managed/preferences')):
+                from harness_local.storage.configuration import ConfigurationConflict
+                try:
+                    runtime.setup.require_ready()
+                except (ConfigurationConflict, ValueError, OSError):
+                    from harness_local.api.security import problem
+                    from harness_local.i18n import tr
+                    raise problem(409, 'configuration_not_ready', tr('setup.not_ready')) from None
             response = await call_next(request)
         except HTTPException as error:
             response = JSONResponse(status_code=error.status_code, content={'detail': error.detail})

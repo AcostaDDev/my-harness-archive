@@ -59,17 +59,18 @@ from harness_local.recipes import RECIPES, by_version as recipe_version, impleme
 from harness_local.services.managed_runtime import (PROJECT_ID, ManagedConfig, ManagedProject, agents_view,
                                                     validate_projects)
 
+EDITOR_VERSION = 'local-config-9'
 VERSION = 'local-config-8'
 V7 = 'local-config-7'
 V6 = 'local-config-6'
 V5 = 'local-config-5'
 FORMATS = ('local-config-1', 'local-config-2', 'local-config-3', 'local-config-4', V5, V6, V7, VERSION)
-REGISTRABLE = ('local-config-3', 'local-config-4', V5, V6, V7, VERSION)
-PROFILE_FORMATS = ('local-config-4', V5, V6, V7, VERSION)
+REGISTRABLE = ('local-config-3', 'local-config-4', V5, V6, V7, VERSION, EDITOR_VERSION)
+PROFILE_FORMATS = ('local-config-4', V5, V6, V7, VERSION, EDITOR_VERSION)
 # v5 adds presets/selections and recipes; v6 keeps the presets/selections and adds the work language.
-AGENT_FORMATS = (V5, V6, V7, VERSION)
-WORK_FORMATS = (V6, V7, VERSION)
-AUTOMATIC_FORMATS = (V7, VERSION)
+AGENT_FORMATS = (V5, V6, V7, VERSION, EDITOR_VERSION)
+WORK_FORMATS = (V6, V7, VERSION, EDITOR_VERSION)
+AUTOMATIC_FORMATS = (V7, VERSION, EDITOR_VERSION)
 CLI_KEYS = ('executable', 'cli_version', 'timeout_seconds', 'environment')
 TOOL_KEYS = ('tools', 'allowed_tools', 'grantable_tools')
 CONFIG_ENV = 'HARNESS_LOCAL_CONFIG'
@@ -518,7 +519,8 @@ class LocalComposer:
 
     @property
     def registrable(self):
-        return self.format in REGISTRABLE
+        # T005 consumes only the global authority. Own-profile onboarding/admission arrives in T007–T009.
+        return self.format in REGISTRABLE and self.format != EDITOR_VERSION
 
     def compose(self, item, where, *, registry=None, new_directory=False):
         """Validated `ManagedProject` and its composition, without installing it.
@@ -767,8 +769,8 @@ class LocalComposer:
                                  for name, (profile, table) in sorted(self.compositions.items())]}
 
 
-def _build(data, source, *, allow_empty_compositions=False):
-    if not isinstance(data, dict) or data.get('format') not in FORMATS:
+def _build(data, source, *, allow_empty_compositions=False, editor=False):
+    if not isinstance(data, dict) or data.get('format') not in ((*FORMATS, EDITOR_VERSION) if editor else FORMATS):
         raise LocalConfigError(tr('config.format', allowed=list(FORMATS)))
     fmt = data['format']
     agents_key = 'providers' if fmt == 'local-config-1' else 'agents'
@@ -842,7 +844,7 @@ def _build(data, source, *, allow_empty_compositions=False):
     for name, value in declared.items():
         if name == 'python-django-recipe' and 'django' in recipes:
             raise LocalConfigError(tr('config.recipe_profile_reserved'))
-        profiles[name] = _profile(name, value, allow_formatter=fmt == VERSION)
+        profiles[name] = _profile(name, value, allow_formatter=fmt in (VERSION, EDITOR_VERSION))
     if fmt in REGISTRABLE:
         if not isinstance(data['compositions'], dict) or (not data['compositions'] and not allow_empty_compositions):
             raise LocalConfigError(tr('config.compositions_required'))

@@ -83,6 +83,8 @@ def build_parser(language: str = DEFAULT_LANGUAGE) -> argparse.ArgumentParser:
         if name == 'serve':
             command.add_argument('--port', type=int, default=8013)
             command.add_argument('--config', help=say('serve_config'))
+            command.add_argument('--configuration-dir', help=say('configuration_dir'))
+            command.add_argument('--state-dir', help=say('state_dir'))
     return parser
 
 
@@ -112,7 +114,8 @@ def _run(args, language: str) -> int:
             if args.operation == 'init-db':
                 initialize(args.database, language)
             else:
-                serve(args.database, args.port, args.config, language)
+                serve(args.database, args.port, args.config, language,
+                      configuration_dir=args.configuration_dir, state_dir=args.state_dir)
             return 0
         if args.operation == 'metrics-backfill':
             from harness_local.launcher import local_database

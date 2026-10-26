@@ -39,9 +39,6 @@ try:
                                '(D150, verified backup before migration). ' + str(error)) from None
         finally:
             engine.dispose()
-    if not archived and sys.argv[2]:
-        from harness_local.services.local_config import load_local_config
-        load_local_config(Path(sys.argv[2]))
 except Exception as error:
     print('Startup preflight failed: ' + str(error), file=sys.stderr)
     sys.exit(1)
@@ -195,11 +192,10 @@ def start(args):
                 if not database.is_file():
                     raise StartRefused('init-db did not produce a database; no service was started')
             if not selected_config and not archived:
-                print('No global TOML: starting the protected managed read-only UI. '
-                      'Initial configuration through the UI is not available in this version; '
-                      'select --config to enable managed operation.', flush=True)
+                print('No global TOML: starting the protected configuration API; guided UI is pending.', flush=True)
             print(f'Starting installed Harness Local at http://127.0.0.1:{args.port}; database: {database}.', flush=True)
-            serve = [*command, 'serve', '--database', database, '--port', str(args.port)]
+            serve = [*command, 'serve', '--database', database, '--port', str(args.port),
+                     '--configuration-dir', configuration, '--state-dir', data]
             if selected_config and not archived:
                 serve += ['--config', selected_config]
             return children.run(serve, cwd=data, env=env)

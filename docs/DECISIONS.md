@@ -233,6 +233,7 @@ tarea se leen solo las decisiones que cita; este índice sirve para buscar prece
 | [D219](#d219--p013-t002-instalador-por-generaciones-y-paquete-autocontenido) | P013-T002: instalador por generaciones y paquete autocontenido | P013 |
 | [D220](#d220--p013-t003-arranque-instalado-y-exclusión-de-instancia) | P013-T003: arranque instalado y exclusión de instancia | P013 |
 | [D221](#d221--p013-t004-journal-y-referencias-de-configuración) | P013-T004: journal y referencias de configuración | P013 |
+| [D222](#d222--p013-t005-asistente-api-y-arranque-con-autoridad-global-versionada) | P013-T005: asistente API y arranque con autoridad global versionada | P013 |
 
 ## D001 — Alcance local y arquitectura base
 
@@ -6525,3 +6526,34 @@ recibos pendiente T005–T011. Fase: P013. Concreta D217, sin alterar parsers/ha
 - Sin instalaciones/servicios reales, harness sobre este checkout, agentes/proveedores/smokes, configuración
   global del equipo, CI remota, tag, push o publicación. Commit local solicitado por el usuario; P011/P012/D214
   y sus candidatos/artefactos conservados.
+
+## D222 — P013-T005: asistente API y arranque con autoridad global versionada
+
+Estado: implementada y verificada con API/archivos/SQLite y clientes sintéticos el 2026-10-26. Fase: P013.
+Concreta D216/D217/D221 y conserva D040/D150/D174.
+[Entrega y checks](phase/P013-T005_ASISTENTE_API.md), [flujo](flows/configuration-setup.md).
+
+- `serve` selecciona directorios de configuración/estado antes de leer TOML; `scripts/start` transmite los
+  del recibo. El preflight conserva esquema/consulta, pero deja el TOML ausente/inválido al asistente protegido.
+  No hay migración silenciosa ni sustitución de archivos. Consulta D040 prevalece sin leer rutas originales.
+- API autenticada `/api/managed/configuration`: estado/referencias, detección determinista por PATH explícito,
+  formulario JSON o TOML, preview/diff, guardado CAS idempotente, activación separada para reinicio, cancelación
+  y consulta/conciliación de intenciones. Directorio de estado fijado por arranque; no se trasladan datos desde UI.
+  Comprobación explícita version/help reutiliza D174, sin inferencia/login ni credenciales automatizadas.
+- Parsear, GET, preview, guardar y activar no lanzan clientes. Solo `/check-clients` ejecuta preflight con entorno
+  explícito. Detectar no hereda PATH, no recorre home ni lee identidad Git/configuración global; los valores
+  manuales siguen sujetos a los validadores existentes. Diagnósticos propios en/es sin contenido crudo.
+- Guardar no activa; arranque promueve el conjunto pendiente por la primitiva T004 antes de componer consumidores.
+  Error conserva referencias y bloqueo. Solo bytes inmutables autorizados componen la global v9; copia editable
+  y cambios externos no recargan configuración. La promoción no certifica muerte de escritores ajenos.
+- HTTP cierra mutaciones gestionadas cuando falta autoridad válida; la misma puerta se revalida dentro de la
+  barrera SQLite de escritura para cubrir carreras con activación. Configuración y preferencias usan carriles
+  propios: permiten resolver setup/idioma sin habilitar trabajo. No se reconcilian altas/preparaciones al arrancar
+  sin autoridad ni se inicia supervisor en ese estado.
+- Loader/formas/hashes 1–8 intactos. Consumo v9 exclusivo desde referencia activa del editor; global READY no
+  concede todavía registro/admisión por el carril legacy de composiciones. Altas/perfiles/recibos propios se
+  conectarán en T007–T009. Editar/importar autoridad legacy o una base con registro previo queda bloqueado hasta
+  T011; no se adopta silenciosamente. La UI del asistente y ajustes se entrega en T006.
+- Sin modelos/migraciones nuevos, instalaciones/servicios reales, agentes/proveedores/smokes, configuración
+  global del equipo ni acciones remotas. Pruebas TestClient y herramientas falsas; no uso real nuevo.
+  Commit local en inglés solicitado. Candidatos/artefactos y snapshots P001–P012/D214 intactos.

@@ -193,6 +193,7 @@ class ManagedRuntime:
     def __init__(self, engine, config: ManagedConfig | None = None):
         self.engine = engine
         self._explicit = config
+        self.setup = None
         self.config: ManagedConfig | None = None
         self.repository = self.views = self.worker = self.registry = self.preferences = None
         self.database: Path | None = None
@@ -205,18 +206,29 @@ class ManagedRuntime:
         # Not even importing user configuration: a factory may have effects when loaded.
         if is_read_only_archive(self.engine):
             config = ManagedConfig()
+        elif self.setup is not None:
+            config = self.setup.start(self._explicit)
         else:
             config = self._explicit if self._explicit is not None else load_config()
-        if config.registrar is not None and hasattr(config.registrar, 'resolve_config'):
-            config = config.registrar.resolve_config(config)
         database = Path(self.engine.url.database).resolve()
-        migrations_dir = Path(config.migrations_dir or database.parent / 'migrations').resolve()
-        _validate(config, database, migrations_dir)
+        try:
+            migrations_dir = Path(config.migrations_dir or database.parent / 'migrations').resolve()
+            _validate(config, database, migrations_dir)
+            if config.registrar is not None and hasattr(config.registrar, 'resolve_config'):
+                config = config.registrar.resolve_config(config)
+        except (ValueError, OSError):
+            if self.setup is None:
+                raise
+            # Invalid legacy composition or CLI preflight also leaves the protected editor available.
+            self.setup.startup_error = 'configuration_invalid'
+            self.setup.legacy = False
+            config = ManagedConfig()
+            migrations_dir = database.parent / 'migrations'
         self.migrations_dir = migrations_dir
         self.config = config
         self.repository = SQLiteManagedRepository(self.engine)
         from harness_local.storage.preferences import PreferencesRepository
-        self.preferences = PreferencesRepository(self.repository)
+        self.preferences = PreferencesRepository(SQLiteManagedRepository(self.engine))
         from harness_local.services.managed import guarded_writer
         config = replace(config, commit_factory=guarded_writer(config.commit_factory, self.repository.guard))
         self.config = config
@@ -237,13 +249,17 @@ class ManagedRuntime:
         self.work_language = WorkLanguageMigration(self)
         from harness_local.services.project_creation import ProjectCreation
         self.creation = ProjectCreation(self)
-        self.creation.reconcile()
+        setup_ready = self.setup is None or self.setup.state()['mode'] == 'READY'
+        if setup_ready:
+            self.creation.reconcile()
         from harness_local.services.project_preparation import ProjectPreparation
         self.preparation = ProjectPreparation(self)
-        if not is_read_only_archive(self.engine):
+        if setup_ready and not is_read_only_archive(self.engine):
             self.preparation.repository.recover_expired()
         for project in list(self.projects.values()):
             self.preparation.bind(project)
+        if self.setup is not None:
+            self.repository.write_guard = self.setup.require_ready
         if config.supervisor:
             supervisor = LocalSupervisor(self.repository, config.ports_factory, lease_seconds=config.lease_seconds,
                                          commit_factory=config.commit_factory)

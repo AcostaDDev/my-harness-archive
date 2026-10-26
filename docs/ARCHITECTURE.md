@@ -301,11 +301,11 @@ ejecuta `venv/bin/python -I -B -m harness_local.cli` con cwd en los datos del re
 no adopta rutas de otra instalación. Defaults: `data/harness.sqlite3`, `configuration/global.toml`
 si existe, puerto 8013 y `data/tmp` privado 0700 (`--port`/`--temp-dir` elegibles).
 Solo DB ausente sin auxiliares usa `init-db`; preflight de esquema en solo lectura, sin migración.
-Puerto ocupado, configuración explícita ausente/inválida o rutas inseguras bloquean; consulta D040 omite
-TOML operativo. Sin TOML abre la UI protegida de consulta vigente, sin supervisor consumidor; asistente
-pendiente T005/T006. Locks de instancia/instalación retenidos por wrapper e hijo excluyen otro arranque y
-actualización incluso si muere el wrapper. SIGINT/SIGTERM se reenvían y se espera al hijo; sin borrar datos,
-limpiar locks de jobs ni acreditar muerte de escritores. Reinicio no instala ni modifica configuración.
+Puerto ocupado o rutas inseguras bloquean; consulta D040 omite TOML operativo. T005 deja configuración
+ausente/inválida al asistente API protegido, sin supervisor consumidor; UI pendiente T006. El wrapper transmite
+`--configuration-dir` y `--state-dir` desde el recibo; `serve --config` conserva la entrada legacy explícita.
+Locks de instancia/instalación retenidos por wrapper e hijo excluyen otro arranque y actualización incluso si muere el wrapper. SIGINT/SIGTERM se reenvían y se espera al hijo; sin borrar datos,
+limpiar locks de jobs ni acreditar muerte de escritores. Reinicio no instala ni sobrescribe TOML; puede promover la activación pendiente confirmada.
 [Opciones, comprobaciones y límites](phase/P013-T003_ARRANQUE.md). Pruebas sintéticas de orquestación y
 señales; primer uso instalado pendiente T012/T013. `scripts/dev` conserva su flujo de desarrollo.
 Los paquetes P011/P012 previos no contienen este material y no se adaptan ni reescriben.
@@ -488,7 +488,7 @@ no cambia hoy `render_attempt`, adaptadores, variables, snapshots, API o esquema
 
 ## 14. Ampliación planificada — P013
 
-**T001 diseñada y T002–T004 implementadas; pendiente T005–T011.** §6/§9 describen lo implementado.
+**T001 diseñada y T002–T005 implementadas; pendiente T006–T011.** §6/§9 describen lo implementado.
 [D216](DECISIONS.md#d216--p013-t001-instalación-aislada-y-arranque-sin-configuración),
 [D217](DECISIONS.md#d217--p013-t001-archivos-versionados-y-activación-de-configuración) y
 [D218](DECISIONS.md#d218--p013-t001-perfil-tras-contexto-y-preparación-antes-de-activar).
@@ -516,14 +516,16 @@ no una segunda configuración editable. Ausencia/discrepancia de versión activa
 0700/0600 nuevos, propietario UID y sin enlaces/hardlinks/secretos; guardias 1–8 conservadas al importar.
 
 T004 entrega las primitivas de almacenamiento ([D221](DECISIONS.md#d221--p013-t004-journal-y-referencias-de-configuración),
-[validación](phase/P013-T004_CONFIGURACION.md)), todavía sin API ni consumidores runtime. `configuration-operation-1`: CAS/base/candidato/clave → intención persistida → publicación
+[validación](phase/P013-T004_CONFIGURACION.md)), con API y consumidor global de arranque en T005 (D222).
+`configuration-operation-1`: CAS/base/candidato/clave → intención persistida → publicación
 atómica/fsync por archivo → finalización del conjunto → activación separada. Sin transacción distribuida
 ficticia entre SQLite y archivos; intenciones permiten conciliación por bytes base/candidatos. Edición externa
 bloquea nuevas operaciones del ámbito hasta importar/descartar por CAS; nunca hot reload. Esquema aditivo
 `0026_configuration`: ámbitos/revisiones/operaciones en [DDBB-DIAGRAM](DDBB-DIAGRAM.md#configuración-versionada-p013-t004).
 Parser de editor separado del loader 1–8, formatos históricos y hashes intactos. La verificación de preparación
 por proyecto es obligatoria y no tiene implementación permisiva por defecto; T008/T009 conectarán recibos/HEAD
-y recomposición. La integración con arranque/admisión/reinicio queda para T005/T009/T011. Backup actual rechaza
+y recomposición. T005 conecta arranque/reinicio y puerta de escritura global; perfiles/recibos/importación
+quedan para T009/T011. Backup actual rechaza
 bases con operaciones de configuración hasta disponer del bundle nuevo de T011.
 
 Global activa al reiniciar tras confirmación, con admisión cerrada en `RESTART_REQUIRED`; proyecto activa
@@ -535,10 +537,14 @@ D166 siguen sin reinicio; idioma de raíz D167 inmutable.
 
 ### Contexto de alta y puertas
 
-T005/T006 introducen modo `UNCONFIGURED`/`INVALID` con sesión y asistente sin consumidores/modelos;
+T005 entrega modo `UNCONFIGURED`/`INVALID` con sesión y asistente API sin consumidores/modelos;
 `READY`, `RESTART_REQUIRED`, `RECOVERY_REQUIRED` y consulta D040 definen las capacidades restantes.
-No invocar CLI en GET/parse/preview; comprobación explícita version/help conserva D174. OpenAPI/tipos al
-implementar [API diseñada](phase/P013-T001_CONTRATO.md#9-api-y-ui-propuestas).
+No invocar CLI en GET/parse/preview; comprobación explícita version/help conserva D174. OpenAPI/tipos regenerados con la
+[API efectiva](phase/P013-T005_ASISTENTE_API.md). `ConfigurationSetup` selecciona autoridad antes de componer
+runtime; promueve pendientes T004 y revalida activa/hashes en la barrera `_write` compartida con admisión.
+Preferencias y configuración tienen repositorios propios; no abren trabajo mientras se resuelve setup.
+El cargador 1–8 conserva formas/hashes; solo el editor activo compone v9. El registro por composiciones legacy
+no admite la global v9: altas/perfiles propios pendientes T007–T009, importación legacy T011 y UI T006.
 
 T007 separa contexto de alta documental (agentes/Git/raíz/idiomas) del contexto ejecutable actual. Sin perfil
 ficticio para sortear composición: definición/inventario → propuesta validada → commit documental raíz/B y

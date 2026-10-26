@@ -1234,5 +1234,14 @@
   "workflow.review_requests_changes_retry": "La revisión pide cambios; reintenta el ejecutor explícitamente",
   "workflow.revision_made_no_changes": "La revisión no hizo cambios y siguen los mismos hallazgos o validaciones",
   "workflow.stopped_task_contract_resumed": "Solo puede reanudarse una tarea detenida con contrato",
-  "workflow.uncommitted_changes": "Cambios sin confirmar en el checkout ({paths}); confírmalos como edición de documentos o elimínalos antes de empezar una tarea"
+  "workflow.uncommitted_changes": "Cambios sin confirmar en el checkout ({paths}); confírmalos como edición de documentos o elimínalos antes de empezar una tarea",
+  "setup.form_value": "Los valores del formulario deben ser JSON compatible con TOML.",
+  "setup.candidate": "Indica un texto TOML o un formulario de configuración, solo uno.",
+  "setup.path": "Indica un PATH explícito que solo contenga directorios absolutos.",
+  "setup.conflict": "La configuración ha cambiado o la operación está bloqueada. Recarga su estado y repite la vista previa.",
+  "setup.not_found": "No se ha encontrado la operación de configuración.",
+  "setup.invalid": "Configuración no válida o archivos privados inaccesibles. Revisa el candidato y los directorios elegidos.",
+  "setup.not_ready": "Los cambios gestionados requieren configuración activa válida. Completa el asistente, la recuperación o el reinicio pendiente.",
+  "cli.help.configuration_dir": "Directorio privado de configuración versionada, fijado antes de leer TOML.",
+  "cli.help.state_dir": "Directorio de estado fijado al arrancar; por defecto, el de la base de datos."
 }

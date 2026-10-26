@@ -45,8 +45,6 @@ if '-c' in args:
         print('Separate D150 migration required', file=sys.stderr); sys.exit(1)
     if database.is_file() and database.read_text() == 'archive':
         sys.exit(20)
-    if args[-1] and (not config.is_file() or config.read_text() == 'invalid'):
-        print('Invalid configuration', file=sys.stderr); sys.exit(1)
 elif 'init-db' in args:
     path = pathlib.Path(args[args.index('--database') + 1])
     with path.open('x') as stream: stream.write('synthetic-db')
@@ -115,6 +113,8 @@ def test_explicit_paths_and_existing_toml_are_preserved(installed):
     assert starter.start(args) == 0
     serve = calls(log)[-1]['args']
     assert serve[-2:] == ['--config', str(args.config)]
+    assert serve[serve.index('--configuration-dir') + 1] == str(config)
+    assert serve[serve.index('--state-dir') + 1] == str(data)
     assert serve[serve.index('--database') + 1] == str(args.database)
     assert serve[serve.index('--port') + 1] == str(args.port)
     assert calls(log)[-1]['env']['TMPDIR'] == str(args.temp_dir)
@@ -122,15 +122,17 @@ def test_explicit_paths_and_existing_toml_are_preserved(installed):
 
 
 @pytest.mark.parametrize('explicit', [False, True])
-def test_invalid_or_explicitly_missing_config_blocks_before_initialization(installed, explicit):
+def test_invalid_or_explicitly_missing_config_reaches_protected_setup(installed, explicit):
     args, data, config, log, _ = installed
     if explicit:
         args.config = config / 'missing.toml'
     else:
         (config / 'global.toml').write_text('invalid')
-    assert starter.start(args) == 1
-    assert not (data / 'harness.sqlite3').exists()
-    assert len(calls(log)) == 1
+    assert starter.start(args) == 0
+    assert (data / 'harness.sqlite3').read_text() == 'synthetic-db'
+    assert len(calls(log)) == 3
+    if not explicit:
+        assert (config / 'global.toml').read_text() == 'invalid'
 
 
 def test_old_schema_never_migrates_or_serves(installed):
@@ -259,7 +261,7 @@ def test_detached_wrapper_forwards_signals_and_holds_lock_until_child_exits(inst
             process.communicate(timeout=10)
 
 
-def test_preflight_uses_actual_schema_and_parser_without_starting_service(migrated_database, tmp_path):
+def test_preflight_checks_schema_but_leaves_invalid_toml_for_protected_setup(migrated_database, tmp_path):
     # Direct installed-runtime boundary check on synthetic SQLite; no serve/init/provider invocation.
     from sqlalchemy import text
     from harness_local.storage.database import make_engine
@@ -277,7 +279,8 @@ def test_preflight_uses_actual_schema_and_parser_without_starting_service(migrat
     assert result.returncode == 0, result.stderr
     assert database.read_bytes() == original
     result = probe()
-    assert result.returncode == 1 and 'Startup preflight failed' in result.stderr
+    assert result.returncode == 0, result.stderr
+    assert config.read_text() == 'not a TOML document'
     assert database.read_bytes() == original
     engine = make_engine(url)
     try:

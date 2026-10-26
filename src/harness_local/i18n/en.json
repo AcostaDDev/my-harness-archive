@@ -1234,5 +1234,14 @@
   "workflow.review_requests_changes_retry": "Review requests changes; retry executor explicitly",
   "workflow.revision_made_no_changes": "Revision made no changes and the same findings/validation remain",
   "workflow.stopped_task_contract_resumed": "Only a stopped task with a contract can be resumed",
-  "workflow.uncommitted_changes": "Uncommitted changes in the checkout ({paths}); confirm them as a document edit or remove them before starting a task"
+  "workflow.uncommitted_changes": "Uncommitted changes in the checkout ({paths}); confirm them as a document edit or remove them before starting a task",
+  "setup.form_value": "Form values must be TOML-compatible JSON values.",
+  "setup.candidate": "Supply exactly one TOML text or configuration form.",
+  "setup.path": "Supply an explicit PATH containing only absolute directories.",
+  "setup.conflict": "Configuration changed or the operation is blocked. Reload its state and preview again.",
+  "setup.not_found": "Configuration operation was not found.",
+  "setup.invalid": "Invalid configuration or inaccessible private files. Review the candidate and selected directories.",
+  "setup.not_ready": "Managed changes require valid active configuration. Complete setup, recovery or the pending restart.",
+  "cli.help.configuration_dir": "Private versioned configuration directory, fixed before reading TOML.",
+  "cli.help.state_dir": "State directory fixed at startup; defaults to the database directory."
 }

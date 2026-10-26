@@ -143,6 +143,7 @@ class SQLiteManagedRepository:
     def __init__(self, engine, *, clock=None, mode_probe=None):
         require_schema(engine)
         self.engine = engine
+        self.write_guard = None  # Optional service admission gate, checked under the SQLite barrier.
         self.clock = clock or (lambda: datetime.now(timezone.utc))
         # H2.5: legacy/managed exclusion. Checkouts without legacy state do not change behavior.
         self.guard = ModeGuard(engine, mode_probe)
@@ -158,6 +159,8 @@ class SQLiteManagedRepository:
         with Session(self.engine) as session, session.begin():
             # First DML operation: acquires the SQLite lock before querying.
             session.execute(text("UPDATE managed_runs SET version = version WHERE 0"))
+            if self.write_guard is not None:
+                self.write_guard(session)
             yield session
 
     def _event(self, session, run, kind, payload):
