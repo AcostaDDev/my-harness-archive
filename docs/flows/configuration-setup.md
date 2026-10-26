@@ -1,6 +1,7 @@
-# Flujo diseñado — instalación y configuración guiadas (P013-T001)
+# Flujo — instalación y configuración guiadas (P013)
 
-**Diseño concretado; sin implementación de producto en T001.**
+**Instalación T002 implementada; arranque/configuración siguen diseñados, pendientes T003–T011.**
+[Entrega T002](../phase/P013-T002_INSTALACION.md), D219; validación con herramientas falsas, sin recorrido instalado nuevo.
 [Contrato](../phase/P013-T001_CONTRATO.md), D216–D218 en [DECISIONS](../DECISIONS.md),
 [plan](../phase/P013_PLAN.md) y [tareas](../NEXT_STEPS.md).
 El flujo vigente aún usa TOML 1–8 y composición según ARCHITECTURE §6/§9.
@@ -26,8 +27,14 @@ flowchart TD
 
 Fallos de caché/requisitos no abren red ni publican instalación parcial. Actualizar usa generación nueva y
 parada explícita, sin borrar datos ni hacer downgrade de esquema. Reiniciar no reinstala, migra, limpia locks
-inciertos o acredita muerte de escritores. El verificador actual necesita fuentes/fixtures: T002 debe extraer
-su verificación para paquete autocontenido, conservando hashes, miembros y pruebas instaladas D051.
+inciertos o acredita muerte de escritores. T002 conserva la comparación contra fuentes al construir y
+entrega manifiesto `distribution-1`,
+wrappers/verificador/fixture con checksums para paquete autocontenido. Comprueba miembros/metadatos/hashes
+y el recorrido sintético instalado D051; las pruebas de T002 no ejecutan ese servicio.
+`installation-1` vive en cada generación; `current.json` referencia generación/hash tras fsync. Un lock
+excluye instaladores, replay comprueba paquete/venv y `--upgrade --writers-stopped` conserva anteriores.
+Fallos/interrupciones retienen intención FAILED o PREPARING sin anunciar una generación lista.
+Datos/configuración se crean privados y vacíos en instalación nueva, sin DB/TOML ni migraciones.
 
 ## Asistente y activación global
 

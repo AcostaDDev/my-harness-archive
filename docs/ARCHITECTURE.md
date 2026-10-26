@@ -283,6 +283,21 @@ de cada rol debe incluir el cliente, o se declara su ruta opcional. Mínimos y c
 [README](../README.md#requirements), contrastados con `cli_compatibility.MINIMUM` y la política incluida. Las listas
 `cli_agents.SUPPORTED`/`WRITE_SUPPORTED` conservan evidencia histórica y ya no son allowlists de admisión.
 
+Instalación automatizada (P013-T002, D219): `scripts/install --help`. Desde clon compone construcción,
+comparación con fuentes, verificación aislada e instalación; `--dist /ruta/paquete` consume un paquete nuevo
+`distribution-1` con manifiesto, scripts y fixture, sin Node/npm ni checkout. Las opciones `--install-dir`,
+`--data-dir`, `--config-dir`, `--cache-dir`, `--python` y `--uv` prevalecen sobre las sugerencias de macOS.
+Offline por defecto; `--allow-network` autoriza dependencias fijadas. Caché elegida: `uv/` y `npm/`;
+el build independiente sin esa opción conserva `UV_CACHE_DIR`/`.local/uv-cache` y `.local/npm-cache`.
+Venv en `generations/gen-<id>/venv`, paquete copiado/construido en `distribution/` y recibo privado
+`installation.json` (`installation-1`). `current.json` referencia generación/hash solo tras checks y fsync.
+Repetición verifica recibo, paquete y árbol del venv; otro contenido requiere `--upgrade --writers-stopped`.
+Conserva anteriores/datos; no inicializa ni migra DB ni escribe TOML. Destinos ocupados/incompletos requieren
+inspección, sin borrado/reintento automático. [Uso, formato y límites](phase/P013-T002_INSTALACION.md).
+Pruebas de orquestación falsas; primer uso instalado pendiente T012/T013. `scripts/start` y el asistente
+sin TOML aún pendientes T003/T005; el arranque actual sigue requiriendo la configuración descrita arriba.
+Los paquetes P011/P012 previos no contienen este material y no se adaptan ni reescriben.
+
 Actualización (D150): detener el servicio y los escritores, instalar el nuevo wheel y ejecutar
 `harness-local migrate --database /ruta/state/harness.sqlite3 --snapshots /ruta/copias-previas --writers-stopped`.
 Reutiliza `storage/migrate.py`: revisión conocida, instantánea SQLite verificada (`premigration-1`, integridad,
@@ -461,7 +476,7 @@ no cambia hoy `render_attempt`, adaptadores, variables, snapshots, API o esquema
 
 ## 14. Ampliación planificada — P013
 
-**T001: diseño terminado, producto pendiente T002–T011.** §6/§9 describen aún lo implementado.
+**T001 diseñada y T002 implementada; pendiente T003–T011.** §6/§9 describen lo implementado.
 [D216](DECISIONS.md#d216--p013-t001-instalación-aislada-y-arranque-sin-configuración),
 [D217](DECISIONS.md#d217--p013-t001-archivos-versionados-y-activación-de-configuración) y
 [D218](DECISIONS.md#d218--p013-t001-perfil-tras-contexto-y-preparación-antes-de-activar).
@@ -469,11 +484,10 @@ no cambia hoy `render_attempt`, adaptadores, variables, snapshots, API o esquema
 
 ### Instalación y proceso
 
-T002 compone build/verificación/instalación desde clon o paquete local: Python/uv explícitos o compatibles,
-Node/npm solo para construir, cachés configurables, generación/venv propios y recibo `installation-1`.
-Los helpers actuales usan `.local/`, `.venv` y fuentes para verificar: la entrada desde paquete exige extraer
-verificación común autocontenida con manifiesto, hashes, UI/migraciones y pruebas instaladas. No basta verificar
-checksums. Offline por defecto; red explícita sin descargas implícitas de herramientas ni configuración global.
+T002 implementa build/verificación/instalación desde clon o paquete local, según §9 y
+[D219](DECISIONS.md#d219--p013-t002-instalador-por-generaciones-y-paquete-autocontenido). La verificación
+común de miembros/metadatos/hashes y el recorrido sintético instalado se entregan con el paquete.
+Offline por defecto; red explícita sin descargas implícitas de herramientas ni configuración global.
 T003 arranca el binario instalado fuera del checkout, con DB/config/puerto/temporal privados; instala solo
 T002, migra solo D150 por acción separada. Base nueva por creación exclusiva, existente por validación.
 

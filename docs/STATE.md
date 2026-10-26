@@ -128,17 +128,27 @@ Sustitución verificada por rutas, hashes y modos; checksums de los artefactos o
 
 ## Fase activa — P013 Instalación guiada y configuración desde la UI
 
-**P013 activa; T001 completada como diseño el 2026-10-26; implementación de producto pendiente.**
+**P013 activa; T001 diseñada y T002 implementada el 2026-10-26.**
 [D215](DECISIONS.md#d215--p013-instalación-guiada-y-configuración-desde-la-ui),
 [plan](phase/P013_PLAN.md), [tareas](NEXT_STEPS.md) y [flujo propuesto](flows/configuration-setup.md).
-Catorce tareas pendientes. **Siguiente: P013-T002**, instalación automatizada y cachés configurables.
+Trece tareas pendientes. **Siguiente: P013-T003**, arranque automatizado del paquete instalado.
 
 T001 concreta el [contrato](phase/P013-T001_CONTRATO.md) con D216–D218: instalación aislada desde clon/paquete,
 arranque sin TOML con sesión protegida, contenido en TOML versionado y activación por referencia SQLite, CAS/
 recuperación, global con reinicio y perfil por proyecto entre tareas. Contexto sin stack previo → propuesta →
 commit documental → preparación/recibo → activación; formatos 1–8 e históricos intactos. Especificación,
-arquitectura y flujos reflejan diseño pendiente, sin scripts/modelos/migraciones/API nuevos.
+arquitectura y flujos reflejan el diseño; T001 no añadió scripts/modelos/migraciones/API.
 [Checks y límites](phase/P013-T001_VALIDACION.md): parsers/enlaces/presupuestos y Mermaid; sin operación de producto.
+
+T002 entrega `scripts/install`: clon o paquete autocontenido, rutas/Python/uv/cachés elegibles, offline por
+defecto y red explícita, venv en generación definitiva y publicación atómica de `current.json` tras verificar.
+Recibo `installation-1`, repetición íntegra, exclusión de instaladores y actualización declarada con conservación
+de generaciones/datos; fallos conservan diagnóstico sin publicar parcial. Build conserva comparación contra
+fuentes y añade manifiesto de miembros, wrappers y fixture; verificador de paquete sin Node/checkout.
+[D219](DECISIONS.md#d219--p013-t002-instalador-por-generaciones-y-paquete-autocontenido),
+[entrega y checks](phase/P013-T002_INSTALACION.md). Orquestación probada con herramientas falsas y archivos
+sintéticos; recorridos instalados/servicios no ejecutados (T012/T013). Arranque/asistente/configuración nuevos
+siguen pendientes; no cambia esquema, API, UI ni formato TOML.
 
 Alcance acordado: scripts de instalación/arranque con venv y cachés configurables, asistente inicial sin TOML
 manual ni modelos, configuración global y perfiles propios por proyecto desde UI, propuestas del revisor tras
@@ -156,6 +166,7 @@ no se renuevan ni transfieren.
 
 Tras el cierre seguirán faltando owner/repo, visibilidad, identidad pública y autorización de acciones remotas.
 D157 conserva la fuente principal pública tras el primer push; modo continuo D156 para v0.2.0 después de abrir,
-fuera de P013. Este repositorio sigue sin registrarse ni ejecutarse con el harness. Apertura y T001 solo cambian
-documentación de planificación/diseño: sin producto, modelos, migraciones, API, instalaciones, agentes, proveedores,
-smokes, configuración global del equipo, push o publicación. Commit local de T001 pedido expresamente por el usuario.
+fuera de P013. Este repositorio sigue sin registrarse ni ejecutarse con el harness. Apertura y T001 fueron
+documentales; T002 añade instalación/empaquetado y pruebas sintéticas. Sin operación del harness sobre este
+checkout, instalaciones reales, modelos/migraciones/API nuevos, agentes/proveedores,
+smokes, configuración global del equipo, push o publicación. Commit local de T002 pedido por el usuario.

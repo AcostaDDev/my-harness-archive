@@ -230,6 +230,7 @@ tarea se leen solo las decisiones que cita; este índice sirve para buscar prece
 | [D216](#d216--p013-t001-instalación-aislada-y-arranque-sin-configuración) | P013-T001: instalación aislada y arranque sin configuración | P013 |
 | [D217](#d217--p013-t001-archivos-versionados-y-activación-de-configuración) | P013-T001: archivos versionados y activación de configuración | P013 |
 | [D218](#d218--p013-t001-perfil-tras-contexto-y-preparación-antes-de-activar) | P013-T001: perfil tras contexto y preparación antes de activar | P013 |
+| [D219](#d219--p013-t002-instalador-por-generaciones-y-paquete-autocontenido) | P013-T002: instalador por generaciones y paquete autocontenido | P013 |
 
 ## D001 — Alcance local y arquitectura base
 
@@ -6427,3 +6428,32 @@ Estado: diseño concretado el 2026-10-26; implementación pendiente T007–T011.
   Proyectos 1–8 sin receta conservan admisión hasta importación explícita. Activar no repite alta ni commits.
 - UI/API separan propuesta, guardado, preparación y activación, en/es y con CAS/replay. Detalles de tablas/DTO
   quedan para sus entregas con paridad de diagrama/OpenAPI/tipos; no son funcionalidades existentes en T001.
+
+## D219 — P013-T002: instalador por generaciones y paquete autocontenido
+
+Estado: implementado el 2026-10-26; validación de orquestación sintética, recorrido instalado pendiente
+T012/T013. Fase: P013. Concreta D216 sin alterar D051/D150.
+[Entrega](phase/P013-T002_INSTALACION.md), [flujo](flows/configuration-setup.md).
+
+- `scripts/install` selecciona clon o paquete local `--dist`, Python/uv locales y destinos/cachés explícitos.
+  Offline por defecto, red solo con `--allow-network` y plan visible; no descarga herramientas, modifica
+  ajustes globales ni requiere `.local/` o venv de desarrollo. Desde paquete no exige Node/npm ni fuentes/tests.
+- Nuevo material `distribution-1`: manifiesto de miembros/hash de wheel/sdist, metadatos esperados, wrappers,
+  verificador y fixture sintético, todos incluidos en SHA256SUMS. Build conserva primero la comparación exacta
+  contra las fuentes/UI/locks y componentes retirados; verificación común sin checkout rechaza miembros
+  ambiguos/enlaces, hashes alterados y dependencias sin pins/hashes. Conserva el recorrido instalado D051.
+  Los hashes detectan alteración respecto al material entregado; no son una firma del distribuidor.
+- Generaciones definitivas sin mover venv; intención/recibo privado `installation-1`, checks y hashes de
+  paquete/locks/herramientas/venv. Exclusión de instaladores, fsync y referencia atómica `current.json` solo
+  tras éxito. Repetición verifica bytes/recibo, sin reinstalar; otro contenido requiere actualización explícita
+  y declaración `--writers-stopped`. Fallo conserva generación/diagnóstico y referencia anterior.
+- Destinos privados fuera de checkouts y no solapados; ocupados sin recibo válido bloquean. Nueva instalación
+  exige datos/configuración vacíos; actualización conserva sus rutas/contenido y generaciones previas.
+  No crea DB/TOML, migra/restaura, borra ni cambia permisos ajenos. D150 sigue siendo una acción separada;
+  declarar parada no descubre procesos ni acredita muerte de escritores.
+- Caché elegida con subdirectorios uv/npm; build/verificador reciben ejecutables/cachés sin activar entorno.
+  Build independiente conserva cachés históricas por defecto. Dependencias se sincronizan por pylock/hashes,
+  solo wheels y copia en venv; verificación instalada siempre offline con ámbito sintético aislado.
+- T002 prueba orquestación con ejecutables falsos y archivos temporales. Sin instalación/servicio/smoke real,
+  proveedor, harness sobre este repositorio, cambio de esquema/API/UI/TOML, candidato anterior o acción remota.
+  T003 implementará arranque; T012/T013 acreditarán primer uso/paquete nuevo bajo autorización correspondiente.

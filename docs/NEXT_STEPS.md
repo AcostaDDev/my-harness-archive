@@ -1,7 +1,7 @@
 # P013 — Instalación guiada y configuración desde la UI
 
-**Estado:** fase activa; T001 completada como diseño el 2026-10-26, catorce tareas pendientes. Producto sin cambios.
-**Siguiente: P013-T002**, instalación automatizada y cachés configurables.
+**Estado:** fase activa; T001 diseñada y T002 implementada el 2026-10-26, trece tareas pendientes.
+**Siguiente: P013-T003**, arranque automatizado del paquete instalado.
 [Objetivo y criterios](ROADMAP.md#p013--instalación-guiada-y-configuración-desde-la-ui),
 [D215](DECISIONS.md#d215--p013-instalación-guiada-y-configuración-desde-la-ui) y
 [plan de fase](phase/P013_PLAN.md).
@@ -52,7 +52,8 @@ parsers, enlaces y dependencias. Sin migraciones ni proveedores.
 
 ## P013-T002 — Instalación automatizada y cachés configurables
 
-**Estado:** pendiente. **Depende de:** T001.
+**Estado:** completada (2026-10-26); orquestación sintética, recorrido instalado pendiente T012/T013.
+[Entrega y validación](phase/P013-T002_INSTALACION.md), D219. **Depende de:** T001.
 **Objetivo:** instalar sin copiar la secuencia de construcción/venv/pip del README.
 **Rutas permitidas:** `scripts/**`, empaquetado si lo exige T001, pruebas específicas y documentación vigente.
 **Criterios de aceptación:**

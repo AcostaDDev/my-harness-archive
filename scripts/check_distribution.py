@@ -5,6 +5,8 @@ from contextlib import closing, contextmanager
 import email.parser
 import hashlib
 import json
+import os
+import sys
 from http.cookiejar import CookieJar
 from pathlib import Path
 import re
@@ -20,7 +22,7 @@ import zipfile
 from urllib.error import HTTPError, URLError
 from urllib.request import Request, build_opener, HTTPCookieProcessor
 
-from build_distribution import PROJECT_FILES, package_sources
+from distribution_artifacts import check_artifacts
 
 ROOT = Path(__file__).resolve().parents[1]
 LICENSE_FILES = ('LICENSE', 'NOTICE.md', 'NOTICE-THIRD-PARTY.md')
@@ -33,8 +35,10 @@ RETIRED = ('api/legacy.py', 'api/events.py', 'services/observation.py', 'storage
            'services/migration.py')
 
 
-def check_artifacts(distribution, project):
+def check_checkout_artifacts(distribution, project):
     """Exact member sets, metadata, license files and checksums of the sdist/wheel pair."""
+    from build_distribution import PROJECT_FILES, package_sources
+
     name, version = project['name'].replace('-', '_'), project['version']
     sums = dict(reversed(line.split('  ', 1)) for line in (distribution / 'SHA256SUMS').read_text().splitlines())
     assert sorted(sums) == sorted([f'{name}-{version}-py3-none-any.whl', f'{name}-{version}.tar.gz',
@@ -88,20 +92,24 @@ def check_artifacts(distribution, project):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--dist', type=Path, default=ROOT / 'dist')
+    parser.add_argument('--python', default=sys.executable)
+    parser.add_argument('--uv', default='uv')
+    parser.add_argument('--cache-dir', type=Path)
     args = parser.parse_args()
+    if args.cache_dir:
+        os.environ['UV_CACHE_DIR'] = str(args.cache_dir.resolve())
     distribution = args.dist.resolve()
-    project = tomllib.loads((ROOT / 'pyproject.toml').read_text())['project']
-    check_artifacts(distribution, project)
+    project = check_artifacts(distribution)['project']
     wheel_file = distribution / f"{project['name'].replace('-', '_')}-{project['version']}-py3-none-any.whl"
     with tempfile.TemporaryDirectory(prefix='harness-installed-') as temporary:
         work = Path(temporary).resolve()
         venv = work / 'venv'
-        subprocess.run(['uv', 'venv', '--offline', '--no-python-downloads', '--python', str(ROOT / '.venv/bin/python'),
+        subprocess.run([args.uv, 'venv', '--offline', '--no-python-downloads', '--python', args.python,
                         str(venv)], check=True)
         python = venv / 'bin/python'
-        subprocess.run(['uv', 'pip', 'sync', '--offline', '--python', str(python), str(distribution / 'pylock.toml')],
+        subprocess.run([args.uv, 'pip', 'sync', '--offline', '--link-mode', 'copy', '--require-hashes', '--only-binary', ':all:', '--python', str(python), str(distribution / 'pylock.toml')],
                        check=True)
-        subprocess.run(['uv', 'pip', 'install', '--offline', '--no-deps', '--python', str(python),
+        subprocess.run([args.uv, 'pip', 'install', '--offline', '--link-mode', 'copy', '--no-deps', '--python', str(python),
                         str(wheel_file)], check=True)
         cli = venv / 'bin/harness-local'
         # Git is the only extra executable exposed to the managed synthetic journey.
@@ -230,7 +238,10 @@ def main():
         # H5.7: actual managed bootstrap -> task -> exact-content commit, all via HTTP.
         # Only the standalone synthetic port module is copied; installed code has no
         # development checkout on sys.path, and no provider executable is on PATH.
-        shutil.copy2(ROOT / 'tests/fixtures/e2e/installed_config.py', work / 'installed_config.py')
+        fixture = Path(__file__).with_name('installed_config.py')
+        if not fixture.exists():
+            fixture = ROOT / 'tests/fixtures/e2e/installed_config.py'
+        shutil.copy2(fixture, work / 'installed_config.py')
         area = work / 'offline'
         area.mkdir()
         (area / 'project').mkdir()

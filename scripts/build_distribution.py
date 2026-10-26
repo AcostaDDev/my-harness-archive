@@ -1,12 +1,16 @@
 """Offline local build: UI from the lock, sdist/wheel, `pylock.toml` installation pins and SHA256SUMS."""
 import argparse
 import hashlib
+import os
+import sys
+import tomllib
 from pathlib import Path
 import shutil
 import subprocess
 import tempfile
 
 from toolchain import check_tools
+from distribution_artifacts import BUNDLE_SCRIPTS, write_manifest
 
 ROOT = Path(__file__).resolve().parents[1]
 # Files besides `src/` that enter the sdist; the license files also enter the wheel (`license-files`).
@@ -31,18 +35,36 @@ def package_sources():
     return sources
 
 
+def write_checksums(output):
+    sums = [f'{hashlib.sha256(path.read_bytes()).hexdigest()}  {path.relative_to(output).as_posix()}\n'
+            for path in sorted(output.rglob('*')) if path.is_file() and path.name != 'SHA256SUMS']
+    (output / 'SHA256SUMS').write_text(''.join(sums))
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--out-dir', type=Path, default=ROOT / 'dist')
+    parser.add_argument('--cache-dir', type=Path, help='Cache root with uv/ and npm/; default preserves development caches')
+    parser.add_argument('--python', default=sys.executable)
+    parser.add_argument('--uv', default='uv')
+    network = parser.add_mutually_exclusive_group()
+    network.add_argument('--offline', action='store_true', help='Default: never access the network')
+    network.add_argument('--allow-network', action='store_true', help='Allow locked npm/Python dependency downloads')
     args = parser.parse_args()
+    cache = args.cache_dir.resolve() if args.cache_dir else None
+    os.environ['UV_CACHE_DIR'] = str(cache / 'uv') if cache else os.environ.get('UV_CACHE_DIR', str(ROOT / '.local/uv-cache'))
+    npm_cache = cache / 'npm' if cache else ROOT / '.local/npm-cache'
+    os.environ['UV_PYTHON'] = args.python
+    os.environ['UV_PYTHON_DOWNLOADS'] = 'never'
+    mode = [] if args.allow_network else ['--offline']
     output = args.out_dir.resolve()
     # Old artifacts are never mixed with a new build.
     if output.exists() and any(output.iterdir()):
         raise SystemExit(f'{output} is not empty; choose a new or empty output directory')
     output.mkdir(parents=True, exist_ok=True)
-    check_tools()
+    check_tools(args.uv)
     sources = package_sources()
-    subprocess.run(['npm', 'ci', '--offline', '--ignore-scripts', '--cache', str(ROOT / '.local/npm-cache')],
+    subprocess.run(['npm', 'ci', *mode, '--ignore-scripts', '--no-audit', '--no-fund', '--cache', str(npm_cache)],
                    cwd=ROOT / 'frontend', check=True)
     subprocess.run(['npm', 'run', 'build'], cwd=ROOT / 'frontend', check=True)
     with tempfile.TemporaryDirectory(prefix='harness-package-') as temporary:
@@ -53,16 +75,23 @@ def main():
             (stage / 'src' / relative).parent.mkdir(parents=True, exist_ok=True)
             shutil.copy2(ROOT / 'src' / relative, stage / 'src' / relative)
         shutil.copytree(ROOT / 'frontend/dist', stage / 'src/harness_local/web')
-        subprocess.run(['uv', 'build', '--offline', '--no-python-downloads', '--out-dir', str(output), str(stage)],
+        subprocess.run([args.uv, 'build', *mode, '--no-python-downloads', '--python', args.python, '--out-dir', str(output), str(stage)],
                        cwd=ROOT, check=True)
     # PEP 751 lock with the URL and hash of every wheel: it installs offline from the cache filled by `uv sync`, which
     # a requirements file cannot (it needs the index metadata). Without the header, which would record the output path.
-    subprocess.run(['uv', 'export', '--frozen', '--offline', '--no-dev', '--no-emit-project', '--no-header',
+    subprocess.run([args.uv, 'export', '--frozen', '--offline', '--no-dev', '--no-emit-project', '--no-header',
                     '--format', 'pylock.toml', '--output-file', str(output / 'pylock.toml')],
                    cwd=ROOT, check=True, stdout=subprocess.DEVNULL)
-    sums = [f'{hashlib.sha256(path.read_bytes()).hexdigest()}  {path.name}\n'
-            for path in sorted(output.iterdir()) if path.is_file() and not path.name.startswith('.')]
-    (output / 'SHA256SUMS').write_text(''.join(sums))
+    write_checksums(output)
+    from check_distribution import check_checkout_artifacts
+    project = tomllib.loads((ROOT / 'pyproject.toml').read_text())['project']
+    check_checkout_artifacts(output, project)
+    (output / 'scripts').mkdir()
+    for name in BUNDLE_SCRIPTS:
+        source = ROOT / ('tests/fixtures/e2e' if name == 'installed_config.py' else 'scripts') / name
+        shutil.copy2(source, output / 'scripts' / name)
+    write_manifest(output, project)
+    write_checksums(output)
 
 
 if __name__ == '__main__':

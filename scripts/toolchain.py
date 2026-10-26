@@ -4,8 +4,11 @@ import subprocess
 EXPECTED = (('node', 'v24.15.0'), ('npm', '11.12.1'), ('uv', 'uv 0.12.19'))
 
 
-def check_tools():
-    for executable, expected in EXPECTED:
+def check_tools(uv='uv', build=True):
+    for name, expected in EXPECTED:
+        if not build and name != 'uv':
+            continue
+        executable = uv if name == 'uv' else name
         try:
             observed = subprocess.check_output([executable, '--version'], text=True).strip()
         except (OSError, subprocess.CalledProcessError) as exc:

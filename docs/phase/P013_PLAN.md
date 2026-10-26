@@ -1,6 +1,6 @@
 # P013 — Instalación guiada y configuración desde la UI
 
-Estado: fase activa el 2026-10-26; T001 completada como diseño, producto pendiente T002–T011.
+Estado: fase activa el 2026-10-26; T001 diseñada, T002 implementada; producto restante pendiente T003–T011.
 Decisión: [D215](../DECISIONS.md#d215--p013-instalación-guiada-y-configuración-desde-la-ui).
 Objetivo y salida en [ROADMAP](../ROADMAP.md#p013--instalación-guiada-y-configuración-desde-la-ui);
 tareas ejecutables en [NEXT_STEPS](../NEXT_STEPS.md).
@@ -75,7 +75,9 @@ seguirán fuera de los checkouts; cualquier exportación portable debe excluir d
 
 Una tarea cada vez, según dependencias de NEXT_STEPS. T001 entrega el [contrato](P013-T001_CONTRATO.md)
 y D216–D218, con especificación/arquitectura/flujos en paridad como diseño pendiente de implementación.
-Siguiente: **P013-T002**. Si una entrega revela contradicción no resuelta, se consulta al usuario antes de cambiar el diseño.
+T002 entrega el [instalador y verificación autocontenida](P013-T002_INSTALACION.md) (D219), con pruebas de
+orquestación sintética; recorrido instalado pendiente T012/T013. Siguiente: **P013-T003**. Si una entrega
+revela contradicción no resuelta, se consulta al usuario antes de cambiar el diseño.
 
 ## 5. Verificación de la fase
 
