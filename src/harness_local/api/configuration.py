@@ -72,6 +72,15 @@ class ConfigurationRecoveryRead(BaseModel):
     sha256: str
 
 
+class ConfigurationImportInput(Input):
+    source: str = Field(min_length=1, max_length=4096)
+    reason: str = Field(min_length=1, max_length=1000)
+
+
+class ConfigurationImportSave(ConfigurationImportInput):
+    preview_sha256: Hash
+
+
 class ConfigurationDetection(Input):
     path: str = Field(min_length=1, max_length=8192)
 
@@ -88,6 +97,8 @@ class ConfigurationRead(BaseModel):
     status: str
     version: int
     legacy: bool
+    legacy_source: str | None = None
+    imported_projects: list[str] = []
     saved: ConfigurationRevisionRead | None
     active: ConfigurationRevisionRead | None
     pending: ConfigurationRevisionRead | None
@@ -121,6 +132,7 @@ class ConfigurationPreviewRead(BaseModel):
     directory: str | None = None
     state_dir: str | None = None
     effects: dict[str, Any] | None = None
+    legacy_import: dict[str, Any] | None = None
 
 
 class ConfigurationOperationRead(BaseModel):
@@ -173,11 +185,29 @@ def configuration_router(runtime):
         def view(setup):
             state = setup.state()
             # Complete content is confined to this authenticated editor, never general listings.
-            if state['mode'] not in ('READ_ONLY_ARCHIVE', 'INVALID') and state['saved']:
+            if state['mode'] != 'INVALID' and state['saved']:
                 state['text'] = setup.repository.document('global', state['saved']['revision'])
                 state['form'] = parse(state['text'], 'global', validated=False)
             return state
         return call(view)
+
+    @router.get('/revisions/{scope}/{revision}', response_model=ConfigurationFormRead,
+                operation_id='configuration_revision')
+    def revision(scope: str, revision: int):
+        def view(setup):
+            text = setup.repository.document(scope, revision)
+            return {'text': text, 'form': parse(text, scope, validated=False)}
+        return call(view)
+
+    @router.post('/import/preview', response_model=ConfigurationPreviewRead, operation_id='configuration_import_preview')
+    def import_preview(body: ConfigurationImportInput):
+        from harness_local.services.configuration_import import ConfigurationImport
+        return call(lambda setup: ConfigurationImport(runtime).preview(body.source, body.reason))
+
+    @router.post('/import/save', response_model=ConfigurationOperationRead, operation_id='configuration_import_save')
+    def import_save(body: ConfigurationImportSave, idempotency_key: Key):
+        from harness_local.services.configuration_import import ConfigurationImport
+        return call(lambda setup: ConfigurationImport(runtime).save(**body.model_dump(), key=idempotency_key))
 
     @router.post('/form', response_model=ConfigurationFormRead, operation_id='configuration_form')
     def form(body: ConfigurationCandidate):

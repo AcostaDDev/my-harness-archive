@@ -41,3 +41,17 @@ concretan el recorrido futuro sin composición previa, guardado/activación vers
 Commit documental previo al técnico; perfil/recibo confirmado antes de tareas en el carril nuevo; formatos,
 jobs, snapshots y recibos existentes intactos. La aplicación guarda TOML privado fuera de checkouts;
 ningún agente obtiene escritura general de configuración global. Consulta D040 no adquiere mutaciones.
+
+
+## Configuración entregada en P013-T011
+
+[D228](../DECISIONS.md#d228--p013-t011-conversión-explícita-y-backup-de-configuración),
+[validación](../phase/P013-T011_COMPATIBILIDAD.md). El formato 2 añade inventario de ámbitos/revisiones/operaciones,
+TOML inmutables/copias de trabajo y publicaciones parciales referenciadas, además de evidencia CLI de asistencia/
+preparación. Originales bajo roots explícitos y permisos privados; conjunto revalidado antes de COMPLETE.
+Intenciones/estados inciertos se conservan, sin repararlos. Formato 1 anterior sigue permitido sin configuración nueva.
+
+La marca y UI de consulta descritas arriba permanecen. La API autenticada permite consultar global guardada y
+`GET /api/managed/configuration/revisions/{scope}/{revision}` desde el bundle; no lee ni valida herramientas,
+configuración original o checkout. Guardado, detección, asistencia, preparación, recuperación y activación siguen
+rechazados. No hay promoción a base operativa ni publicación en las rutas locales históricas.

@@ -353,7 +353,7 @@ con autorización inicial y parada por error/HITL/límites. No está implementad
 ## 14. Ampliación planificada — P013
 
 [D215](DECISIONS.md#d215--p013-instalación-guiada-y-configuración-desde-la-ui) abre P013 antes de publicar.
-**T001 completa el diseño; T002–T010 implementan instalación/arranque/empaquetado, persistencia, asistente API/UI, perfil, preparación y edición/asistencia; compatibilidad/backup pendientes T011.**
+**T001 completa el diseño; T002–T010 implementan instalación/arranque/empaquetado, persistencia, asistente API/UI, perfil, preparación y edición/asistencia; compatibilidad/backup entregados en T011; primer uso/QA pendientes T012.**
 Las reglas vigentes de §4/§5/§8 se mantienen hasta sus entregas. [Contrato](phase/P013-T001_CONTRATO.md), [flujo](flows/configuration-setup.md),
 [plan](phase/P013_PLAN.md) y [tareas](NEXT_STEPS.md). D216–D218 concretan:
 
@@ -377,7 +377,8 @@ Las reglas vigentes de §4/§5/§8 se mantienen hasta sus entregas. [Contrato](p
   T005 entregados ([contrato efectivo y checks](phase/P013-T005_ASISTENTE_API.md), D222). T007 entrega registro
   documental sin perfil y propuestas; T008 entrega preparación genérica; alta/activación integradas entregadas en T009;
   legacy se importa expresamente en T011.
-  El backup actual bloquea bases con operaciones nuevas hasta el bundle con TOML de T011.
+  T011 entrega el backup formato 2 con TOML/versiones/intenciones e inventario verificable; formato 1
+  sin configuración nueva sigue consultable.
 - Global requiere reinicio confirmado; proyecto puede activarse entre tareas sin reinicio. Trabajo pendiente
   bloquea activar según D118; no se cancelan jobs ni reescriben historiales/recibos para aplicar cambios.
   Impacto global y proyectos afectados visible; preferencias/idioma de trabajo conservan D166/D167.
@@ -426,3 +427,12 @@ exige parada acreditada. Pruebas sintéticas; integración instalada y compatibi
 
 README/docs públicas, QA, candidato/paquete y expediente nuevos se entregan en T012–T015. Publicación aplazada
 hasta cerrar P013; su cierre no ejecuta acciones remotas ni renueva permisos P012.
+
+
+T011 entrega [compatibilidad/backup](phase/P013-T011_COMPATIBILIDAD.md), D228: conversión explícita de la
+configuración TOML 1–8 del producto con preview/hash y perfiles propios DRAFT. El usuario confirmó preparación
+nueva antes de activar. Configuración antigua conserva autoridad hasta validar/preparar todos los perfiles,
+confirmar conjunto y reiniciar seleccionando solo almacén gestionado; originales/snapshots/recibos intactos.
+No modifica la incorporación B de repositorios con código. Backup formato 2 conserva contenido versionado,
+intenciones parciales e inventario consistente; restore de consulta lee evidencia sin originales ni agentes y
+rechaza mutaciones. Fuentes/registro ambiguos o permisos sin resolver bloquean, sin elegir autoridad por fecha.

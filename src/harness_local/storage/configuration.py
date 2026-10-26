@@ -138,14 +138,20 @@ class ConfigurationRepository:
     def document(self, scope, revision):
         """Authenticated-editor primitive. Never substitute the journal or working copy."""
         scope_name(scope)
-        if is_read_only_archive(self.managed.engine):
-            raise ConfigurationConflict('archive_content_requires_bundle')
+        archive = is_read_only_archive(self.managed.engine)
         with Session(self.managed.engine) as session:
-            files = self._files(session)
+            files = None if archive else self._files(session)
             ref = self._ref(session, scope, revision)
             if ref is None:
                 raise LookupError(tr('configuration.revision_unknown'))
-            raw = files.read(files.immutable(scope, revision, ref['sha256']))
+            if archive:
+                from harness_local.storage.backup import restored_artifact, _read
+                head = session.get(Scope, scope)
+                source = Path(head.directory).joinpath(*ConfigurationFiles.immutable(scope, revision, ref['sha256']))
+                path = restored_artifact(self.managed.engine, source)
+                raw = _read(path, 65536) if path else None
+            else:
+                raw = files.read(files.immutable(scope, revision, ref['sha256']))
             if raw is None or digest(raw) != ref['sha256']:
                 raise ConfigurationConflict('immutable_configuration_changed')
             return raw.decode('utf-8')
@@ -248,7 +254,7 @@ class ConfigurationRepository:
         request = {'kind': 'SAVE', 'changes': changes, 'reason': reason, 'preview_sha256': preview_sha256}
         return self._save(changes, reason=reason, preview_sha256=preview_sha256, key=key, request=request)
 
-    def _save(self, changes, *, reason, preview_sha256, key, request):
+    def _save(self, changes, *, reason, preview_sha256, key, request, preview_factory=None):
         with Session(self.managed.engine) as session:
             replay = self._replay(session, key, request)
             if replay:
@@ -259,7 +265,8 @@ class ConfigurationRepository:
                 replay = self._replay(session, key, request)
                 if replay:
                     return replay
-                preview = self._preview(session, self._files(session), changes, reason)
+                preview = (preview_factory(session, self._files(session)) if preview_factory else
+                           self._preview(session, self._files(session), changes, reason))
                 if preview['sha256'] != preview_sha256:
                     raise ConfigurationConflict('stale_configuration_preview')
                 row = self._operation(session, key, request, preview, kind='SAVE', status='INTENDED')
@@ -306,6 +313,8 @@ class ConfigurationRepository:
                                          status=change['status'], operation_id=row.id, created_at=head.updated_at))
                     refs.append({'scope': scope, 'revision': change['revision'], 'sha256': change['sha256'],
                                  'version': head.version})
+                from harness_local.services.configuration_import import materialize
+                materialize(session, row, self.managed._now())
                 row.status, row.updated_at, row.result = 'SAVED', self.managed._now(), {'references': refs}
                 self.checkpoint('before_final_commit')
                 return operation_view(row)
@@ -424,6 +433,14 @@ class ConfigurationRepository:
             data_by_scope[scope] = data
             refs.append({**ref, 'previous': state['active']})
         if 'global' in seen:
+            from harness_local.services.configuration_import import imported
+            legacy_import = imported(session)
+            if legacy_import and not session.get(Scope, 'global').active_revision:
+                required = {'project:' + item['id'] for item in legacy_import['projects']}
+                if not required <= seen:
+                    raise ConfigurationConflict('configuration_import_requires_all_projects')
+                from harness_local.services.configuration_import import verify_registry
+                verify_registry(session, legacy_import)
             affected = set(session.scalars(select(Scope.scope).where(Scope.scope != 'global',
                                                                     Scope.active_revision.is_not(None))))
             if not affected <= seen:
@@ -522,6 +539,8 @@ class ConfigurationRepository:
             preview = self._activation_preview(session, files, candidate_refs, activation.payload['reason'], promoting=True)
             if preview['evidence'] != activation.payload['evidence']:
                 raise ConfigurationConflict('configuration_preparation_changed')
+            from harness_local.services.configuration_import import promote_registry
+            promote_registry(session, self, references, self.managed._now())
             for ref in references:
                 head = session.get(Scope, ref['scope'])
                 head.active_revision, head.version = ref['revision'], head.version + 1

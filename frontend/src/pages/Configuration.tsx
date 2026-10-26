@@ -8,6 +8,7 @@ import { baseChanged, candidate, change, changeField, efforts, errors, field, in
   readAction, readDraft, sendAction, storeDraft } from "../configuration.ts";
 import type { Action, Draft, Review } from "../configuration.ts";
 
+import { Link } from "../navigation";
 import { ConfigurationAssistance } from "./ConfigurationAssistance";
 
 const ROOT = "/configuration";
@@ -96,6 +97,7 @@ export function ConfigurationPage() {
   const state = read.data;
   const [draft, setDraft] = useState<Draft | undefined>(readDraft);
   const [action, setAction] = useState<Action | undefined>(readAction);
+  const [importReview, setImportReview] = useState<S["ConfigurationPreviewRead"]>();
   const [review, setReview] = useState<Review>();
   const [activation, setActivation] = useState<{ body: S["ConfigurationActivation"]; preview: S["ConfigurationPreviewRead"] }>();
   const [recovery, setRecovery] = useState<S["ConfigurationRecoveryRead"]>();
@@ -141,7 +143,8 @@ export function ConfigurationPage() {
     setReview(undefined); setActivation(undefined); setRecovery(undefined); setConfirmed(false);
     setActivateConfirmed(false); setCancelConfirmed(false); setWritersStopped(false);
     const latest = await managed<S["ConfigurationRead"]>(ROOT);
-    setDraft(current => current ? { ...current, base: latest } : initialDraft(latest));
+    setDraft(current => path.endsWith("/import/save") ? initialDraft(latest) : current ? { ...current, base: latest } : initialDraft(latest));
+    setImportReview(undefined);
     refresh(n => n + 1);
   }
   function valid() {
@@ -154,7 +157,7 @@ export function ConfigurationPage() {
 
   if (!state) return <><PageHeader title={t("configuration.title")} />{read.error ? <Alert>{read.error}</Alert> : <Loading />}</>;
   if (!draft) return <Loading />;
-  const blocked = state.legacy || state.mode === "READ_ONLY_ARCHIVE";
+  const blocked = state.legacy && !state.saved || state.mode === "READ_ONLY_ARCHIVE";
   const stale = baseChanged(draft.base, state);
   const frozen = busy || !!action || blocked;
   const saved = state.saved;
@@ -171,15 +174,34 @@ export function ConfigurationPage() {
       <Fields items={(["active", "saved", "pending"] as const).map(key => [t(`configuration.ref.${key}`), state[key]
         ? <span>{t("configuration.revision", { revision: state[key]!.revision })} · <code className="configuration-hash">{state[key]!.sha256}</code> · {t(state[key]!.status === "DRAFT" ? "configuration.draft" : "configuration.validated")}</span>
         : t("common.not_recorded")])} />
-      {blocked && <p role="status">{t(state.legacy ? "configuration.legacy" : "configuration.archive")}</p>}
+      {(blocked || state.legacy) && <p role="status">{t(state.legacy ? "configuration.legacy" : "configuration.archive")}</p>}
     </section>
+    {state.legacy && !state.saved && state.legacy_source && <section className="panel">
+      <h2>{t("configuration.import")}</h2><p className="path">{state.legacy_source}</p>
+      <label>{t("docs.review.reason")}<input value={draft.reason} disabled={busy} onChange={e => {
+        edit({ ...draft, reason: e.target.value }); setImportReview(undefined);
+      }} /></label>
+      <button disabled={busy || !!action || !draft.reason.trim()} onClick={() => void run(async () => {
+        setImportReview(await managed<S["ConfigurationPreviewRead"]>(`${ROOT}/import/preview`, {
+          source: state.legacy_source, reason: draft.reason })); setConfirmed(false);
+      })}>{t("configuration.import_review")}</button>
+      {importReview && <><Evidence title={t("configuration.exact_request")} value={importReview} />
+        {importReview.changes?.map((item, index) => <DiffBlock key={index} diff={String(item.diff ?? "")} label={String(item.scope)} />)}
+        <label className="check"><input type="checkbox" checked={confirmed} onChange={e => setConfirmed(e.target.checked)} />{t("profile.confirm_exact")}</label>
+        <button disabled={busy || !!action || !confirmed} onClick={() => void run(() => submit(`${ROOT}/import/save`, {
+          source: state.legacy_source, reason: draft.reason, preview_sha256: importReview.sha256,
+        }))}>{t("configuration.import")}</button></>}
+    </section>}
+    {!!state.imported_projects?.length && <section className="panel"><p>{t("configuration.import_prepare")}</p>
+      {state.imported_projects.map(project => <p key={project}><Link to={{ name: "project", project }}>{project}</Link></p>)}
+    </section>}
     {error && <Alert>{error}</Alert>}
     {action && <section className="panel"><h2>{t("configuration.unacknowledged")}</h2>
       <p>{t("configuration.retry_hint")}</p><Evidence title={t("configuration.exact_request")} value={action} />
-      <button type="button" disabled={busy || blocked} onClick={() => void run(() => submit(action.path, action.body, action))}>{t("configuration.retry")}</button>
+      <button type="button" disabled={busy || state.mode === "READ_ONLY_ARCHIVE"} onClick={() => void run(() => submit(action.path, action.body, action))}>{t("configuration.retry")}</button>
     </section>}
     {!blocked && <>
-      {state.mode === "READY" && <ConfigurationAssistance scope="global" state={draft.base} candidate={candidate(draft)}
+      {state.mode === "READY" && state.active && <ConfigurationAssistance scope="global" state={draft.base} candidate={candidate(draft)}
         disabled={frozen} run={run} apply={text => edit({ ...draft, source: "text", text })} />}
       <section className="panel"><h2>{t("configuration.detect")}</h2><p>{t("configuration.detect_hint")}</p>
         <label htmlFor="configuration-detect-path">{t("configuration.path")}</label>

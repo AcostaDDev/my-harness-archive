@@ -1048,3 +1048,20 @@ Backup con configuración sigue bloqueado hasta T011; no se afirma recuperación
 - `project-config-1.edit` opcional vive en TOML versionado, con HEAD/documentos/plan. Las operaciones de
   preparación posteriores reutilizan tablas T008 y sellan ese candidato, sin reescribir propuesta ni commit
   documental inicial. Jobs antiguos, referencias y formatos de historial se conservan.
+
+
+## Compatibilidad y backup (P013-T011)
+
+[D228](DECISIONS.md#d228--p013-t011-conversión-explícita-y-backup-de-configuración),
+[entrega](phase/P013-T011_COMPATIBILIDAD.md). **0027/54 tablas**, sin modelos ni migración nuevos.
+
+- SAVE de conversión añade `payload.legacy_import`: fuente/hash/formato, snapshot del registro y proyectos TOML/
+  versiones efectivas anteriores. Perfiles v1 DRAFT comparten la intención con global v9. Finalizar SAVE añade
+  filas TOML ausentes y eventos `configuration_import`; no cambia registros existentes ni trabajos históricos.
+- PROMOTE del conjunto verificado adapta las filas del registro a composición/perfil null y política normalizada,
+  incrementa versión y añade evento `configuration_activate`. El evento anterior y la procedencia sellada se
+  conservan. La autoridad ejecutable sigue en `configuration_scopes.active_revision`, nunca en un flag de importación.
+- Preparación de perfiles convertidos usa tablas/recibo genéricos T008, con HEAD/documentos/plan de `project-config-1.edit`;
+  recetas/recibos previos no se convierten. El snapshot de conversión y el recibo nuevo quedan separados.
+- Bundle formato 2 añade inventario de las tres tablas de configuración y archivos referenciados por hash, sin
+  cambiar SQLite. Restore mantiene `user_version=0x483532` y query_only; rutas originales son datos de procedencia.

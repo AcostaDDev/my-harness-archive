@@ -66,7 +66,7 @@
   "backup.bundle_invalid": "Invalid/incompatible bundle: {error}",
   "backup.changed_copy": "Artifacts changed during the copy.",
   "backup.changed_reading": "File changed while reading: {path}",
-  "backup.configuration_bundle_required": "Versioned configuration requires a configuration-aware backup bundle, which is not available yet.",
+  "backup.configuration_bundle_required": "Configuration inventory is missing or differs from the backup database.",
   "backup.destination_new": "The destination must be new; it is neither overwritten nor reused.",
   "backup.duplicate_references": "Duplicate/incompatible artifact references.",
   "backup.historical_absolute": "Incompatible historical absolute reference.",

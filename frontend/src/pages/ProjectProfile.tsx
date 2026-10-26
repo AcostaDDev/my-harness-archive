@@ -110,7 +110,7 @@ export function ProfileProposal({ conversation, proposal, base }: {
 export function ProjectProfile() {
   const { project, refresh } = useWorkspace();
   const info = usePoll<S["ManagedProjectRead"]>(`/projects/${project}`, 2000, refresh);
-  const eligible = info.data?.versions.local_config === "local-config-9";
+  const eligible = info.data?.versions.local_config === "local-config-9" || info.data?.configuration_state === "PREPARATION_REQUIRED" || info.data?.configuration_state === "READY_TO_ACTIVATE";
   const read = usePoll<S["ProjectConfigurationRead"]>(eligible ? `/projects/${project}/configuration` : null, 2000, refresh);
   if (!eligible || !read.data) return <Stale error={eligible ? read.error : undefined} />;
   return <ProjectProfileEditor key={project} state={read.data} error={read.error} />;
@@ -140,14 +140,14 @@ function ProjectProfileEditor({ state, error }: { state: S["ProjectConfiguration
     <p>{t("profile.order")}</p>
     {state.version !== cas.version && <p role="alert" className="state state-attention">{t("profile.conflict")}</p>}
     <>
-      {state.active && <><p>{t("assistance.profile_hint")}</p>
+      {(state.active || form.provenance?.source === "legacy-configuration") && <><p>{t("assistance.profile_hint")}</p>
         <button disabled={busy} onClick={() => void operate(async () => {
           const current = await managed<S["ConfigurationFormRead"]>(`${base}/edit-base`, {});
           edit(current.form); setText(current.text); setCas(state); setMode("form");
         })}>{t("assistance.edit_base")}</button>
-        <ConfigurationAssistance scope={`project:${project}`} state={cas} candidate={mode === "toml" ? { text, validated: false } : { form, validated: false }}
+        {state.active && <ConfigurationAssistance scope={`project:${project}`} state={cas} candidate={mode === "toml" ? { text, validated: false } : { form, validated: false }}
           disabled={busy} run={operate} contextPaths={state.assistance_documents}
-          apply={next => { setText(next); setMode("toml"); setPreview(undefined); setConfirmed(false); }} />
+          apply={next => { setText(next); setMode("toml"); setPreview(undefined); setConfirmed(false); }} />}
       </>}
       <label>{t("profile.name")}<input readOnly value={String(form.profile_name)} /></label>
       <label>{t("profile.instructions")}<textarea rows={4} value={form.profile.executor_instructions} disabled={mode === "toml"} onChange={e => edit({ ...form, profile: { ...form.profile, executor_instructions: e.target.value } })} /></label>
@@ -169,7 +169,8 @@ function ProjectProfileEditor({ state, error }: { state: S["ProjectConfiguration
     </>
     <Evidence title={t("profile.references")} value={{ saved: state.saved, active: state.active, profile: state.profile }} />
     <Preparation configuration={state} />
-    {state.saved && state.saved.sha256 !== state.active?.sha256 && <button disabled={busy || !reason.trim()} onClick={() => void operate(async () => {
+    {form.provenance?.source === "legacy-configuration" && !state.active && <p>{t("configuration.import_prepare")}</p>}
+    {state.saved && (form.provenance?.source !== "legacy-configuration" || state.active) && state.saved.sha256 !== state.active?.sha256 && <button disabled={busy || !reason.trim()} onClick={() => void operate(async () => {
       const shown = await managed<S["ConfigurationPreviewRead"]>(`${base}/activation/preview`, activation);
       setPreview({ kind: "activate", body: activation, shown }); setConfirmed(false);
     })}>{t("profile.review_activation")}</button>}

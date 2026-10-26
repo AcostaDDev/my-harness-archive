@@ -626,3 +626,42 @@ def test_previous_declared_profile_name_remains_valid_without_recipe_opt_in(oper
                                        'composition':'web','policy':POLICY},'synthetic legacy')
     assert project.context.profile.executor_instructions=='Synthetic legacy profile'
     assert 'project_recipe' not in project.versions
+
+
+def test_later_profile_preparation_does_not_replace_legacy_recipe_authority(preparation, tmp_path):
+    """A staged T011 profile receipt cannot displace a still-active packaged recipe receipt."""
+    from uuid import uuid4
+    service, *_ = preparation
+    completed = complete(service)
+    project = service.runtime.project('child')
+    with service.managed._write() as session:
+        original = session.get(Operation, completed['id'])
+        values = {column.name: getattr(original, column.name) for column in Operation.__table__.columns}
+        values.update(id=str(uuid4()), idempotency_key='later-profile-receipt', reserved=False,
+            created_at='2099-01-01T00:00:00+00:00', updated_at='2099-01-01T00:00:00+00:00',
+            receipt={'contract': 'project-profile-preparation-1', 'operation_id': 'synthetic-new-profile'})
+        session.add(Operation(**values))
+    bound = service.bind(project)
+    assert bound.versions['project_environment_sha256'] == digest(completed['receipt'])
+    assert service.runtime.registry.registrar._receipts[project.context.root] == completed['receipt']
+    # Preparation CLI evidence is included without turning either receipt into execution authority.
+    from harness_local.storage.backup import create_backup, verify_bundle
+    import hashlib
+    import shutil
+    artifacts = tmp_path / 'synthetic-preparation-cli'
+    artifacts.mkdir()
+    files = {'prompt.txt': b'Synthetic prompt', 'stdout.bin': b'Synthetic output', 'stderr.bin': b''}
+    for name, raw in files.items():
+        (artifacts / name).write_bytes(raw)
+    with service.managed._write() as session:
+        session.add(Process(id='synthetic-preparation-cli', preparation_id=completed['id'], status='STOPPED',
+            spec={'artifacts': str(artifacts), 'prompt_path': str(artifacts / 'prompt.txt'),
+                  'prompt_sha256': hashlib.sha256(files['prompt.txt']).hexdigest()},
+            capture={'artifacts': {stream: {'path': str(artifacts / (stream + '.bin')),
+                'sha256': hashlib.sha256(files[stream + '.bin']).hexdigest(), 'size': len(files[stream + '.bin'])}
+                for stream in ('stdout', 'stderr')}}))
+    destination = tmp_path / 'bundle-with-preparation'
+    manifest = create_backup(service.runtime.database, destination, artifact_roots=[artifacts], writers_stopped=True)
+    assert len(manifest['files']) == 3
+    shutil.rmtree(artifacts)
+    assert verify_bundle(destination) == manifest

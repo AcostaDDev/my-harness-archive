@@ -128,35 +128,28 @@ Sustitución verificada por rutas, hashes y modos; checksums de los artefactos o
 
 ## Fase activa — P013 Instalación guiada y configuración desde la UI
 
-**P013 activa; T001 diseñada y T002–T010 implementadas el 2026-10-26.**
+**P013 activa; T001 diseñada y T002–T011 implementadas el 2026-10-26.**
 [D215](DECISIONS.md#d215--p013-instalación-guiada-y-configuración-desde-la-ui),
 [plan](phase/P013_PLAN.md), [tareas](NEXT_STEPS.md) y [flujo propuesto](flows/configuration-setup.md).
-Cinco tareas pendientes. **Siguiente: P013-T011**, compatibilidad, recuperación y backup de configuración.
+Cuatro tareas pendientes. **Siguiente: P013-T012**, primer uso integrado, QA y documentación de usuario.
 
-T001 concreta el [contrato](phase/P013-T001_CONTRATO.md) con D216–D218: instalación aislada desde clon/paquete,
-arranque sin TOML con sesión protegida, contenido en TOML versionado y activación por referencia SQLite, CAS/
-recuperación, global con reinicio y perfil por proyecto entre tareas. Contexto sin stack previo → propuesta →
-commit documental → preparación/recibo → activación; formatos 1–8 e históricos intactos. Especificación,
-arquitectura y flujos reflejan el diseño; T001 no añadió scripts/modelos/migraciones/API.
-[Checks y límites](phase/P013-T001_VALIDACION.md): parsers/enlaces/presupuestos y Mermaid; sin operación de producto.
+T001 concreta el [contrato](phase/P013-T001_CONTRATO.md) con D216–D218: instalación aislada, sesión sin
+TOML, versiones privadas y activación SQLite/CAS, global con reinicio y perfil entre tareas. Contexto →
+propuesta → commit documental → preparación → activación; formatos/históricos 1–8 intactos. Solo diseño,
+[checks documentales](phase/P013-T001_VALIDACION.md), sin operación ni modelos/API/scripts.
 
-T002 entrega `scripts/install`: clon o paquete autocontenido, rutas/Python/uv/cachés elegibles, offline por
-defecto y red explícita, venv en generación definitiva y publicación atómica de `current.json` tras verificar.
-Recibo `installation-1`, repetición íntegra, exclusión de instaladores y actualización declarada con conservación
-de generaciones/datos; fallos conservan diagnóstico sin publicar parcial. Build conserva comparación contra
-fuentes y añade manifiesto de miembros, wrappers y fixture; verificador de paquete sin Node/checkout.
-[D219](DECISIONS.md#d219--p013-t002-instalador-por-generaciones-y-paquete-autocontenido),
-[entrega y checks](phase/P013-T002_INSTALACION.md). Orquestación probada con herramientas falsas y archivos
-sintéticos; recorridos instalados/servicios no ejecutados (T012/T013). T002 no añadió arranque ni
-asistente/configuración nuevos; no cambia esquema, API, UI ni formato TOML.
+T002 entrega `scripts/install`: clon/paquete autocontenido, rutas/Python/uv/cachés elegibles, offline por
+defecto y red explícita; venv por generación, `current.json` atómico y recibo `installation-1`, replay/exclusión
+y actualización conservadora. Paquete con manifiesto de miembros/verificador sin Node ni checkout. Fallos
+conservan diagnóstico, sin publicar parciales. [D219](DECISIONS.md#d219--p013-t002-instalador-por-generaciones-y-paquete-autocontenido),
+[entrega y checks sintéticos](phase/P013-T002_INSTALACION.md). Sin cambios de esquema/API/TOML.
 
-T003 entrega `scripts/start`, también en el paquete: verifica `installation-1`, usa su Python/venv fuera del
-checkout y fija DB/configuración/puerto/temporal privado. Crea solo DB ausente sin auxiliares; valida esquema
-en consulta antes de arrancar, con migración D150 aparte. Exclusión de servicio/actualización heredada por
-el hijo, señales y códigos de salida conservados; reiniciar no reinstala ni sobrescribe TOML/datos.
-T003 abrió sin TOML la UI protegida de consulta; T005 añade después el asistente API, sin consumidores
-antes de configurar. UI entregada después en T006. Consulta D040 omite el TOML operativo. [D220](DECISIONS.md#d220--p013-t003-arranque-instalado-y-exclusión-de-instancia),
-[entrega y checks](phase/P013-T003_ARRANQUE.md); pruebas sintéticas, sin servicio instalado real.
+T003 entrega `scripts/start`: verifica recibo y usa Python instalado fuera del checkout con DB/config/puerto/
+temporal explícitos. Solo inicializa DB ausente sin auxiliares; esquema existente en consulta y migración D150
+aparte. Exclusión heredada por hijo, señales/salidas conservadas. Reiniciar no reinstala ni sobrescribe datos.
+[D220](DECISIONS.md#d220--p013-t003-arranque-instalado-y-exclusión-de-instancia),
+[entrega y checks](phase/P013-T003_ARRANQUE.md). Sin TOML abre sesión protegida; T005/T006 conectan asistentes.
+Pruebas de instalación/arranque sintéticas; recorrido instalado pendiente T012/T013.
 
 T004 entrega las primitivas de configuración versionada: parser de editor global v9/proyecto v1, preview/diff,
 CAS, intención `configuration-operation-1`, TOML privados inmutables, replay y conciliación explícita por bytes.
@@ -164,8 +157,7 @@ Guardar no activa; global queda pendiente de reinicio y proyecto exige verificad
 con barrera de trabajo pendiente. Migración aditiva `0026_configuration`, tres tablas nuevas; formatos/hashes
 operativos 1–8 intactos. [D221](DECISIONS.md#d221--p013-t004-journal-y-referencias-de-configuración),
 [entrega y checks](phase/P013-T004_CONFIGURACION.md). Integración de perfiles/recibos y compatibilidad pendientes
-T007–T011; T004 se entregó sin consumidores y T005 conecta la global. Backup actual rechaza bases con
-operaciones de configuración hasta T011.
+T007–T011; T004 se entregó sin consumidores y T005 conecta la global. T011 entrega después el backup con TOML/versiones/intenciones.
 
 T005 conecta el asistente API protegido: formulario JSON o TOML, detección por PATH explícito y comprobación
 version/help D174, preview/diff, guardado CAS, activación para reinicio, cancelación y recuperación. Arranque
@@ -252,3 +244,12 @@ D157 conserva la fuente principal pública tras el primer push; modo continuo D1
 fuera de P013. Este repositorio sigue sin registrarse ni ejecutarse con el harness. Apertura y T001 fueron
 documentales; T002–T010 añaden instalación/arranque/empaquetado, persistencia versionada, asistente API/UI, contexto de alta/propuestas, preparación genérica, alta/activación y edición/asistencia con pruebas sintéticas. Sin operación del harness sobre este checkout, instalaciones reales, agentes/proveedores,
 smokes, configuración global del equipo, push o publicación. Commits locales T002–T010 pedidos por el usuario.
+
+
+T011 entrega conversión explícita de TOML 1–8 a global v9/perfiles DRAFT propios, con fuente/hash/registro
+sellados. HITL confirmó preparación nueva antes de activar el conjunto y reiniciar sin fuente externa;
+originales, huellas, jobs y recibos intactos. Backup formato 2 incluye inventario/TOML/intenciones/evidencias;
+formato 1 sin configuración nueva sigue legible. Restore conserva consulta y lee revisiones desde el bundle
+sin originales/agentes/checkout. [D228](DECISIONS.md#d228--p013-t011-conversión-explícita-y-backup-de-configuración),
+[entrega y resultados](phase/P013-T011_COMPATIBILIDAD.md). Sin migración: 0027/54 tablas; API/UI en/es en paridad.
+Pruebas sintéticas, sin proveedores, servicio instalado ni QA visual nuevos.

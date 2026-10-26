@@ -15,7 +15,7 @@ from harness_local.storage.models import Base
 from harness_local.storage.schema import SCHEMA_REVISION
 from harness_local.i18n import tr
 
-FORMAT = 1
+FORMAT = 2
 RESTORED_USER_VERSION = 0x483532
 MAX_FILE_BYTES = 256 * 1024 * 1024
 MAX_TOTAL_BYTES = 2 * 1024 * 1024 * 1024
@@ -205,10 +205,14 @@ def _references(db):
     for row in db.execute('SELECT * FROM legacy_artifacts ORDER BY root,path'):
         if row['root'] in snapshots and row['sha256']:
             add(Path(row['root']) / _relative(row['path']), f"migration-snapshot:{row['root']}:{row['path']}", row['sha256'], row['size_bytes'])
+    from harness_local.storage.configuration_backup import references
+    references(db, add)
     return refs
 
 
 def _check_bytes(data, ref):
+    if any(label.startswith('configuration:') for label in ref['labels']) and len(data) > 65536:
+        raise BackupError(tr('backup.reference_hash'))
     for sha, size in ref['expected']:
         if _hash(data) != sha or (size is not None and len(data) != size):
             raise BackupError(tr('backup.reference_hash'))
@@ -261,10 +265,6 @@ def _create_backup(database, destination, *, artifact_roots=(), writers_stopped=
         lock.execute('BEGIN IMMEDIATE')
         try:
             _integrity(lock)
-            if lock.execute('SELECT 1 FROM configuration_operations LIMIT 1').fetchone():
-                # T011 will introduce a bundle carrying these external TOML versions.
-                # The current format must not certify a references-only configuration backup.
-                raise BackupError(tr('backup.configuration_bundle_required'))
             from harness_local.adapters.processes import liveness
             for row in lock.execute('SELECT process_owner, owner_closed FROM managed_jobs WHERE process_owner IS NOT NULL'):
                 if not row['owner_closed'] and liveness(json.loads(row['process_owner'])) == 'alive':
@@ -278,6 +278,12 @@ def _create_backup(database, destination, *, artifact_roots=(), writers_stopped=
             from harness_local.storage.command_processes import persisted_identities
             if any(liveness(value, group=True) == 'alive' for value in persisted_identities(lock)):
                 raise BackupError(tr('backup.validation_group'))
+            for row in lock.execute("SELECT payload FROM configuration_operations WHERE kind='ASSIST'"):
+                payload = json.loads(row[0])
+                if (not payload.get('owner_closed') and liveness(payload['owner']) == 'alive'
+                        or payload.get('process', {}).get('identity')
+                        and liveness(payload['process']['identity'], group=True) == 'alive'):
+                    raise BackupError(tr('backup.service_owner'))
             checkouts = {Path(r[0]) for r in lock.execute('SELECT root FROM managed_runs UNION SELECT root FROM managed_activations UNION SELECT root FROM managed_phases UNION SELECT root FROM registered_projects UNION SELECT root FROM project_preparation_operations')}
             if any(destination.is_relative_to(r) or any(root.is_relative_to(r) or r.is_relative_to(root) for root in roots) for r in checkouts):
                 raise BackupError(tr('backup.outside_checkouts'))
@@ -295,6 +301,8 @@ def _create_backup(database, destination, *, artifact_roots=(), writers_stopped=
             if hook:
                 hook('database_copied')
             refs = _references(lock)
+            from harness_local.storage.configuration_backup import inventory, read_private
+            configuration = inventory(lock)[0]
             from harness_local.storage.retention import authorized_absences
             purged = authorized_absences(lock, refs)
             files, absent, total = [], [], 0
@@ -309,7 +317,9 @@ def _create_backup(database, destination, *, artifact_roots=(), writers_stopped=
                         raise BackupError(tr('backup.purged_back'))
                     continue
                 try:
-                    raw = _read(path)
+                    raw = read_private(source, ref) if any(label.startswith('configuration:') for label in ref['labels']) else _read(path)
+                    if raw is None:
+                        raise FileNotFoundError(source)
                 except FileNotFoundError:
                     if not ref['optional']:
                         raise BackupError(tr('backup.artifact_missing', source=source))
@@ -326,7 +336,11 @@ def _create_backup(database, destination, *, artifact_roots=(), writers_stopped=
                     hook('artifact_copied')
             # Rereading the set at the end detects changes between files, optional ones included.
             for item in files:
-                raw = _read(item['source'])
+                ref = refs[item['source']]
+                raw = (read_private(item['source'], ref) if any(label.startswith('configuration:') for label in ref['labels'])
+                       else _read(item['source']))
+                if raw is None:
+                    raise BackupError(tr('backup.changed_copy'))
                 if _hash(raw) != item['sha256'] or len(raw) != item['size_bytes']:
                     raise BackupError(tr('backup.changed_copy'))
             if any(os.path.lexists(path) for path in absent):
@@ -340,7 +354,7 @@ def _create_backup(database, destination, *, artifact_roots=(), writers_stopped=
             manifest = {'format': FORMAT, 'kind': 'backup', 'schema': SCHEMA_REVISION,
                         'consistency': 'service-and-writers-stopped/sqlite-backup/write-lock',
                         'database': {'path': 'state.sqlite3', 'sha256': _hash(raw_db), 'size_bytes': len(raw_db)},
-                        'files': files, 'absent_optional': absent, 'absent_purged': purged,
+                        'configuration': configuration, 'files': files, 'absent_optional': absent, 'absent_purged': purged,
                         'external_legacy_sources': [r[0] for r in lock.execute('SELECT root FROM legacy_sources ORDER BY root') if r[0] not in {r[0] for r in lock.execute('SELECT snapshot_root FROM managed_activations')}],
                         'runs': [dict(r) for r in lock.execute('SELECT id,root,status,purpose FROM managed_runs ORDER BY id')],
                         'execution_authorized': False}
@@ -368,7 +382,7 @@ def verify_bundle(bundle):
         if _read(bundle / 'COMPLETE', 64) != _hash(raw).encode():
             raise BackupError(tr('backup.bundle_incomplete'))
         manifest = json.loads(raw)
-        if (type(manifest['format']) is not int or manifest['format'] != FORMAT or manifest['schema'] != SCHEMA_REVISION or
+        if (type(manifest['format']) is not int or manifest['format'] not in (1, FORMAT) or manifest['schema'] != SCHEMA_REVISION or
                 manifest['kind'] not in ('backup', 'restored') or manifest['execution_authorized'] is not False):
             raise BackupError(tr('backup.bundle_format'))
         database = manifest['database']
@@ -385,6 +399,11 @@ def verify_bundle(bundle):
             raise BackupError(tr('backup.too_many_artifacts'))
         with closing(_connect(bundle / 'state.sqlite3')) as db:
             _integrity(db, restored=True)
+            from harness_local.storage.configuration_backup import inventory
+            configuration = inventory(db)[0]
+            if (manifest['format'] == 1 and any(configuration.values())
+                    or manifest['format'] == FORMAT and manifest.get('configuration') != configuration):
+                raise BackupError(tr('backup.configuration_bundle_required'))
             refs = _references(db)
             from harness_local.storage.retention import authorized_absences
             purged = authorized_absences(db, refs)

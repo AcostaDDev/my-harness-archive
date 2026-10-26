@@ -308,7 +308,7 @@ class ProjectPreparation:
         return project, config
 
     def writer(self, project):
-        registrar = self.runtime.registry.registrar
+        registrar = self.runtime.config.registrar
         writer = GitWorkspace(registrar.identity, executable=registrar.git_executable)
         writer.local_objects_only = True
         git = writer._git(project.context.root)
@@ -374,10 +374,13 @@ class ProjectPreparation:
             return project
         with Session(self.runtime.engine) as session:
             row = session.scalar(select(Operation).where(Operation.project_id == project.id,
-                                                          Operation.status == 'COMPLETED').order_by(Operation.created_at.desc(), Operation.id.desc()).limit(1))
+                Operation.status == 'COMPLETED',
+                Operation.receipt['recipe'].as_string() == project.versions['project_recipe'],
+                Operation.receipt['recipe_config_sha256'].as_string() == project.versions['recipe_config_sha256'])
+                .order_by(Operation.created_at.desc(), Operation.id.desc()).limit(1))
             receipt = row.receipt if row else None
         registrar = self.runtime.registry.registrar
-        if receipt and receipt['recipe_config_sha256'] == project.versions['recipe_config_sha256']:
+        if receipt and receipt.get('recipe_config_sha256') == project.versions['recipe_config_sha256']:
             registrar._receipts[project.context.root] = receipt
             project = replace(project, versions={**project.versions, 'project_environment_sha256': digest(receipt)})
         else:

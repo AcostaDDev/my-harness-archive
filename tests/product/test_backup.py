@@ -283,7 +283,7 @@ def test_cli_backup_round_trip_and_errors_are_explicit(migrated_database, tmp_pa
     assert main(['backup-create', str(db_path(migrated_database)), str(bundle)]) == 1
     assert 'writers-stopped' in capsys.readouterr().err
     assert main(['backup-create', str(db_path(migrated_database)), str(bundle), '--writers-stopped']) == 0
-    assert json.loads(capsys.readouterr().out)['format'] == 1
+    assert json.loads(capsys.readouterr().out)['format'] == 2
     assert main(['backup-verify', str(bundle)]) == 0
     capsys.readouterr()
     assert main(['backup-restore', str(bundle), str(dest)]) == 0
@@ -314,7 +314,7 @@ def test_artifact_bundle_integrity_and_manifest_paths(context, repository, migra
     elif tamper == 'duplicate':
         seal(bundle, lambda m: m['files'].append(m['files'][0]))
     else:
-        seal(bundle, lambda m: m.update(format=2))
+        seal(bundle, lambda m: m.update(format=99))
     with pytest.raises(BackupError):
         restore_backup(bundle, tmp_path / 'restored')
     assert not (tmp_path / 'restored').exists()

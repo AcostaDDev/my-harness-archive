@@ -28,7 +28,7 @@ export function ProjectPage() {
 
     {detail.data?.versions.project_recipe && !!phases.data?.length && <Preparation />}
 
-    {detail.data?.versions.local_config === "local-config-9" && detail.data.configuration_state !== "PROFILE_REQUIRED" && <ProjectProfile />}
+    {(detail.data?.versions.local_config === "local-config-9" || detail.data?.configuration_state === "PREPARATION_REQUIRED" || detail.data?.configuration_state === "READY_TO_ACTIVATE") && detail.data.configuration_state !== "PROFILE_REQUIRED" && <ProjectProfile />}
 
     <section className="panel" aria-labelledby="active-phase">
       <h2 id="active-phase">{t("project.open_phase")}</h2>

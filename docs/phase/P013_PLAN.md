@@ -1,6 +1,6 @@
 # P013 — Instalación guiada y configuración desde la UI
 
-Estado: fase activa el 2026-10-26; T001 diseñada, T002–T010 implementadas; compatibilidad/backup pendientes T011.
+Estado: fase activa el 2026-10-26; T001 diseñada, T002–T011 implementadas; primer uso/QA pendientes T012.
 Decisión: [D215](../DECISIONS.md#d215--p013-instalación-guiada-y-configuración-desde-la-ui).
 Objetivo y salida en [ROADMAP](../ROADMAP.md#p013--instalación-guiada-y-configuración-desde-la-ui);
 tareas ejecutables en [NEXT_STEPS](../NEXT_STEPS.md).
@@ -18,7 +18,7 @@ comprobar, editar y activar un perfil propio por proyecto con ayuda del revisor 
 TypeScript siguen disponibles como ejemplos/recetas opcionales, sin convertirse en requisito para otros stacks.
 El TOML persiste como archivo local editable; conocer su sintaxis no será requisito para el recorrido guiado.
 
-La apertura definió trabajo sin acreditar funcionalidades nuevas. T002–T009 entregan los carriles indicados
+La apertura definió trabajo sin acreditar funcionalidades nuevas. T002–T011 entregan los carriles indicados
 en el estado de este plan; `local-config-8` y sus composiciones conservan su entrada y contratos anteriores.
 
 ## 2. Alcance acordado
@@ -78,7 +78,7 @@ y D216–D218, con especificación/arquitectura/flujos en paridad como diseño p
 T002 entrega el [instalador y verificación autocontenida](P013-T002_INSTALACION.md) (D219), con pruebas de
 orquestación sintética; T003 entrega el [arranque instalado](P013-T003_ARRANQUE.md) (D220), con procesos
 sintéticos y señales. Recorrido instalado pendiente T012/T013. T004–T010 entregan autoridad, asistentes, alta/preparación/activación
-y edición/asistencia con evidencia sintética propia. Siguiente: **P013-T011**. Si una entrega
+y edición/asistencia con evidencia sintética propia. T011 entrega [compatibilidad/backup](P013-T011_COMPATIBILIDAD.md) (D228). Siguiente: **P013-T012**. Si una entrega
 revela contradicción no resuelta, se consulta al usuario antes de cambiar el diseño.
 
 ## 5. Verificación de la fase

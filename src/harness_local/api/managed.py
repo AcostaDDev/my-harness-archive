@@ -103,8 +103,11 @@ def managed_router(runtime: ManagedRuntime):
         from harness_local.storage.work_language import read
         from harness_local.core.engine.context import profile_name
         state = planning_repository().profile_state(project.context.root) if profile_name(project.context) is None else 'ACTIVE'
-        if (runtime.setup is not None and not runtime.setup.legacy
-                and project.versions.get('local_config') == 'local-config-9' and state != 'PROFILE_REQUIRED'):
+        imported_profile = False
+        if runtime.setup is not None and runtime.setup.legacy:
+            imported_profile = bool(runtime.setup.repository.read('project:' + project.id)['saved'])
+        if (runtime.setup is not None and (imported_profile or not runtime.setup.legacy
+                and project.versions.get('local_config') == 'local-config-9') and state != 'PROFILE_REQUIRED'):
             try:
                 state = runtime.project_configuration.read(project.id)['configuration_state']
             except (ValueError, OSError):

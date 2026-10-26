@@ -79,7 +79,9 @@ def test_removed_api_and_conversation_kind_cannot_execute(world, tmp_path):
         assert response.status_code == 422
         schema = http.app.openapi()
         assert not any('/legacy' in path or '/migration' in path or path.endswith('/import')
-                       or '/import/' in path or '/activations' in path for path in schema['paths'])
+                       or '/import/' in path or '/activations' in path for path in schema['paths']
+                       if not path.startswith('/api/managed/configuration/'))
+        assert '/api/managed/configuration/import/preview' in schema['paths']
         assert not any(name.startswith(('Legacy', 'Activation', 'Migration', 'Observation'))
                        for name in schema['components']['schemas'])
     assert builtin_catalog().keys().isdisjoint({'import-project'})

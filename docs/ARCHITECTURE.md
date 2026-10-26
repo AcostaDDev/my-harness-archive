@@ -525,8 +525,8 @@ bloquea nuevas operaciones del ámbito hasta importar/descartar por CAS; nunca h
 Parser de editor separado del loader 1–8, formatos históricos y hashes intactos. La verificación de preparación
 por proyecto es obligatoria y no tiene implementación permisiva por defecto; T008/T009 conectan recibos/HEAD
 y recomposición (primitivas de recibo T008 entregadas; activación T009 entregada). T005 conecta arranque/reinicio y puerta de escritura global; perfiles/recibos/importación
-quedan para T009/T011. Backup actual rechaza
-bases con operaciones de configuración hasta disponer del bundle nuevo de T011.
+quedan para T009/T011. T011 entrega el bundle formato 2 con contenido versionado, inventario y verificación; formato 1 sin
+configuración nueva sigue consultable.
 
 Global activa al reiniciar tras confirmación, con admisión cerrada en `RESTART_REQUIRED`; proyecto activa
 sin reinicio bajo barrera compartida de admisión/commit y recomposición verificada. Rechazar activar con
@@ -651,3 +651,21 @@ admitidos; bloquea otras mutaciones de configuración. Incertidumbre requiere re
 confirmación de parada, sin relanzar. Candidato, base y sobre se conservan en pestaña; aplicar propuesta solo
 edita borrador. UI en/es y OpenAPI/tipos en paridad. Sin tablas, migraciones, dependencias ni formatos históricos
 nuevos. Contención cooperativa existente; QA instalada pendiente T012 y backup integrado en T011.
+
+
+### Compatibilidad y backup entregados en T011
+
+[D228](DECISIONS.md#d228--p013-t011-conversión-explícita-y-backup-de-configuración),
+[entrega](phase/P013-T011_COMPATIBILIDAD.md). `configuration_import.py` convierte explícitamente fuente TOML 1–8
+seleccionada y registro efectivo a global v9/perfiles propios DRAFT. Loader/huellas legacy intactos. SAVE añade
+snapshot `legacy_import`; su finalización materializa filas TOML ausentes con evento. La configuración anterior
+sigue operativa hasta validar/preparar perfiles nuevos con T008, confirmar todas las referencias y reiniciar sin
+fuente externa. Promoción adapta registro con eventos en la misma transacción; no transforma recibos anteriores.
+Conflictos, permisos sin resolver, registro obsoleto o preparación/documentos inválidos bloquean la transición.
+
+`configuration_backup.py` reconstruye inventario/referencias desde SQLite. Backup formato 2 copia todos los
+TOML versionados/copia/intención referenciados y evidencia CLI de asistencia/preparación bajo roots explícitos,
+con guardias privadas, hashes, límites y relectura antes de COMPLETE. Formato 1 sin configuración nueva sigue
+legible. Restore mantiene query_only/marca D040; `ConfigurationRepository.document` resuelve revisiones contra
+el bundle y verifica hash sin originales, clientes, checkout ni publicación en destinos históricos. Sin modelos,
+migración ni contrato de historial nuevos; 0027/54 tablas. OpenAPI/tipos y UI en/es incluyen conversión explícita.

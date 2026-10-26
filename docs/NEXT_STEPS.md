@@ -1,7 +1,7 @@
 # P013 — Instalación guiada y configuración desde la UI
 
-**Estado:** fase activa; T001 diseñada y T002–T010 implementadas el 2026-10-26, cinco tareas pendientes.
-**Siguiente: P013-T011**, compatibilidad, recuperación y backup de configuración.
+**Estado:** fase activa; T001 diseñada y T002–T011 implementadas el 2026-10-26, cuatro tareas pendientes.
+**Siguiente: P013-T012**, primer uso integrado, QA y documentación de usuario.
 [Objetivo y criterios](ROADMAP.md#p013--instalación-guiada-y-configuración-desde-la-ui),
 [D215](DECISIONS.md#d215--p013-instalación-guiada-y-configuración-desde-la-ui) y
 [plan de fase](phase/P013_PLAN.md).
@@ -223,7 +223,8 @@ proveedores o descargas reales necesitan autorización propia.
 
 ## P013-T011 — Compatibilidad, recuperación y backup de configuración
 
-**Estado:** pendiente. **Depende de:** T004–T010.
+**Estado:** completada (2026-10-26); archivos/Git/SQLite, API/UI y ejecutor sintéticos; sin recorrido instalado.
+[Entrega y checks](phase/P013-T011_COMPATIBILIDAD.md), D228. **Depende de:** T004–T010.
 **Objetivo:** verificar la transición desde el TOML actual y la recuperación de las nuevas operaciones.
 **Rutas permitidas:** runtime/configuración/backup/storage, API/frontend para defectos acotados, pruebas y docs.
 **Criterios de aceptación:**

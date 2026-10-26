@@ -1,6 +1,6 @@
 # Flujo — instalación y configuración guiadas (P013)
 
-**Instalación T002, arranque T003, persistencia T004, API/arranque global T005, UI T006, propuesta de perfil T007 y preparación genérica T008 y alta/activación T009 y edición/asistencia T010 implementados; compatibilidad/backup pendientes T011.**
+**Instalación T002, arranque T003, persistencia T004, API/arranque global T005, UI T006, propuesta de perfil T007 y preparación genérica T008 y alta/activación T009 y edición/asistencia T010 y compatibilidad/backup T011 implementados; QA instalada pendiente T012.**
 [Entrega T002](../phase/P013-T002_INSTALACION.md), D219; validación con herramientas falsas, sin recorrido instalado nuevo.
 [Entrega T003](../phase/P013-T003_ARRANQUE.md), D220; procesos/señales sintéticos, sin servicio instalado real.
 [Contrato](../phase/P013-T001_CONTRATO.md), D216–D218 en [DECISIONS](../DECISIONS.md),
@@ -315,3 +315,36 @@ perdida → repetir mismo sobre consulta resultado original; ningún GET/montaje
 Caída/incertidumbre → consulta de operación → confirmar escritores detenidos con comprobación de liveness →
 cerrar sin replay. Una asistencia viva no cambia la autoridad ni los checkpoints de jobs congelados. Consulta
 restaurada rechaza este carril antes de leer rutas o descubrir clientes. Sin migración ni permiso general nuevo.
+
+
+## Compatibilidad y backup entregados en T011
+
+[D228](../DECISIONS.md#d228--p013-t011-conversión-explícita-y-backup-de-configuración),
+[entrega](../phase/P013-T011_COMPATIBILIDAD.md). Conversión de TOML del producto, distinta de incorporar B.
+
+```mermaid
+flowchart TD
+    L["TOML 1–8 seleccionado; autoridad legacy"] --> P["Preview explícita: fuente/hash/registro efectivo"]
+    P --> S["Confirmar SAVE conjunto; perfiles DRAFT; originales intactos"]
+    S --> V["Documentos/HEAD actuales; plan y herramientas; guardar VALIDATED"]
+    V --> R["Confirmar preparación T008 con pareja activa; recibo nuevo"]
+    R --> A["Revisar/confirmar todas las referencias; barrera D118"]
+    A --> N["RESTART_REQUIRED; admisión cerrada"]
+    N --> G["Reiniciar sin fuente externa; verificar y promover conjunto"]
+    G --> C["Registro auditado y perfiles activos v9"]
+    P --> X["Conflicto/permiso sin resolver: conservar autoridad anterior"]
+    V --> X
+    R --> X
+```
+
+El mismo journal permite recuperar publicaciones parciales por bytes y con escritores detenidos; ninguna
+lectura reintenta preparación ni importa. Nuevos recibos no reescriben recetas/recibos/jobs previos. Edición
+externa, nuevas filas/versiones de registro o referencias obsoletas exigen revisión, sin última escritura gana.
+B conserva su flujo anterior de inventario/conversación/commit documental; no se usa para convertir TOML.
+
+Backup: parada explícita → lock SQLite → copia de DB marcada de consulta → inventario/bytes privados de
+configuración y evidencias con roots explícitos → relectura de todos los originales → manifiesto formato 2
+→ COMPLETE. Restore verifica inventario/referencias/hashes antes de crear destino nuevo; copia evidencias
+sin interpretar rutas históricas como destinos y conserva consulta. Formato 1 sin configuración nueva sigue
+válido; GET de revisiones autenticado lee bytes del bundle. Mutaciones/preparación/activación/proveedores
+permanecen bloqueados. No se acredita parada de escritores por consultar un archivo.

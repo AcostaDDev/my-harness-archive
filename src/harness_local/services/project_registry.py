@@ -160,6 +160,10 @@ class ProjectRegistry:
         for item in self.repository.rows():
             if item['status'] != 'ACTIVE':
                 continue
+            if (self.runtime.setup is not None and self.runtime.setup.legacy
+                    and item['trust'].get('source') == 'configuration-import'
+                    and item['id'] in self.runtime.projects):
+                continue
             try:
                 self._conflicts(item['id'], Path(item['root']), registered=True)
                 composed = self._compose(item['row'], (item['version'], item['row_sha256']))

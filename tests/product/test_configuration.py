@@ -460,14 +460,14 @@ def test_draft_rejects_unknown_nested_permissions(setup):
         save(repo, [change(repo, 'format = "local-config-9"\n[service]\nimplicit_network = true', validated=False)])
 
 
-def test_backup_cannot_certify_configuration_without_versioned_files(setup, tmp_path):
+def test_backup_requires_explicit_root_for_versioned_files(setup, tmp_path):
     repo, data, _ = setup
     save(repo, [change(repo, dumps(data))])
     from harness_local.storage.backup import BackupError, create_backup
     target = tmp_path / 'unsupported-backup'
-    with pytest.raises(BackupError, match='configuration-aware|configuración'):
+    with pytest.raises(BackupError, match='root|raíz'):
         create_backup(Path(repo.managed.engine.url.database), target, writers_stopped=True)
-    assert not target.exists()
+    assert not (target / 'COMPLETE').exists()
 
 
 def test_fsync_failure_retains_intent_and_recovers(setup, monkeypatch):

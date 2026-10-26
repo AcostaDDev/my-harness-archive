@@ -712,7 +712,8 @@ class LocalComposer:
         shadow._recipes_by_composition = {}
         shadow.agents, shadow.reviewer = _agents(data['agents'], automatic=True)
         original = self._live[intake.context.root][5]
-        item = {**original[0], 'composition': 'owned', 'policy': data['policy']}
+        item = {key: value for key, value in original[0].items() if key not in ('profile', 'commands')}
+        item.update(composition='owned', policy=data['policy'])
         item.pop('agent_selection', None)
         project, composition = shadow.compose(item, original[1], registry=original[2])
         versions = {**project.versions, 'local_config': EDITOR_VERSION,

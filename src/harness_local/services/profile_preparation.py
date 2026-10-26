@@ -138,8 +138,13 @@ class ProfilePreparation(ProjectPreparation):
 
     def configuration(self):
         setup = self.runtime.setup
-        if setup is None or setup.legacy:
+        if setup is None:
             raise refuse('configuration')
+        if setup.legacy:
+            from harness_local.services.configuration_import import imported
+            with Session(self.runtime.engine) as session:
+                if not imported(session):
+                    raise refuse('configuration')
         return setup.repository
 
     def _source(self, session, project, body):
@@ -158,10 +163,11 @@ class ProfilePreparation(ProjectPreparation):
         if data['project'] != {'id': project.id, 'root': str(project.context.root)}:
             raise refuse('stale')
         global_state = config.read('global')
-        if global_state['status'] != 'READY' or data['global'] != {
-                k: global_state['active'][k] for k in ('revision', 'sha256')}:
+        global_ref = global_state['saved'] if self.runtime.setup.legacy else global_state['active']
+        if (global_state['status'] not in ('READY', 'UNCONFIGURED') or not global_ref
+                or data['global'] != {k: global_ref[k] for k in ('revision', 'sha256')}):
             raise refuse('configuration')
-        if state['active'] and data.get('edit'):
+        if data.get('edit') and (state['active'] or data.get('provenance', {}).get('source') == 'legacy-configuration'):
             from harness_local.storage.models import ConfigurationRevisionRow as Revision
             revision = session.get(Revision, (scope, ref['revision']))
             if body['proposal_id'] != revision.operation_id or body['proposal_sha256'] != ref['sha256']:
@@ -569,8 +575,9 @@ class ProfilePreparation(ProjectPreparation):
         except ConfigurationConflict:
             raise refuse('configuration') from None
         global_state = config.read('global')
-        if global_state['status'] != 'READY' or data['global'] != {
-                k: global_state['active'][k] for k in ('revision', 'sha256')}:
+        global_ref = global_state['saved'] if self.runtime.setup.legacy else global_state['active']
+        if (global_state['status'] not in ('READY', 'UNCONFIGURED') or not global_ref
+                or data['global'] != {k: global_ref[k] for k in ('revision', 'sha256')}):
             raise refuse('configuration')
         verify_profile_receipt(project.context.root, receipt)
 

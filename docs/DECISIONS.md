@@ -239,6 +239,7 @@ tarea se leen solo las decisiones que cita; este índice sirve para buscar prece
 | [D225](#d225--p013-t008-preparación-genérica-confirmada-y-recibo-propio) | P013-T008: preparación genérica confirmada y recibo propio | P013 |
 | [D226](#d226--p013-t009-alta-documental-y-activación-del-perfil-propio) | P013-T009: alta documental y activación del perfil propio | P013 |
 | [D227](#d227--p013-t010-edición-posterior-asistencia-congelada-e-impacto-conjunto) | P013-T010: edición posterior, asistencia congelada e impacto conjunto | P013 |
+| [D228](#d228--p013-t011-conversión-explícita-y-backup-de-configuración) | P013-T011: conversión explícita y backup de configuración | P013 |
 
 ## D001 — Alcance local y arquitectura base
 
@@ -6738,3 +6739,29 @@ Concreta D215/D217/D218/D221–D226; importación/compatibilidad/backup pendient
   separación de propuestas/autoridad y transportes CLI falsos. Sin proveedores reales, servicios instalados,
   smokes, harness sobre este checkout, configuración global del equipo ni acciones remotas. No se detectaron
   contradicciones de diseño pendientes de HITL; se concretó el contrato acordado dentro del alcance T010.
+
+
+## D228 — P013-T011: conversión explícita y backup de configuración
+
+Estado: implementada y verificada con archivos/Git/SQLite, HTTP/UI y ejecutor sintéticos el 2026-10-26. Fase: P013.
+Concreta D217/D221–D227, conservando D040/D049/D118/D150/D174 y formatos/históricos anteriores.
+[Entrega y límites](phase/P013-T011_COMPATIBILIDAD.md), [flujo](flows/configuration-setup.md#compatibilidad-y-backup-entregados-en-t011).
+
+- HITL: el usuario confirmó validar/preparar antes de activar perfiles convertidos. «Importar configuración»
+  convierte TOML 1–8 del producto; no redefine la incorporación B de repositorios con código y su documentación.
+  Preview explícita con fuente seleccionada/hash/registro efectivo; originales y hashes legacy intactos.
+- Global v9 y copias propias de perfiles v1 se guardan por la misma intención SAVE; perfiles DRAFT inicialmente.
+  El journal añade `legacy_import` con procedencia y snapshot. Las filas TOML se registran con evento al finalizar
+  el guardado; registro existente no se sobrescribe. Conflictos de identidad/raíces o permisos sin resolver bloquean.
+- Configuración previa sigue operativa mientras se revisa/prepara; convertir no convierte recibos anteriores.
+  Plan/HEAD/documentos actuales y preparación genérica explícitos producen evidencia nueva. Activación exige
+  todos los proyectos, registro vigente, recibos exactos y barreras existentes. Reinicio elige solo almacén
+  gestionado; promoción y adaptación auditada del registro son transaccionales, sin actualizar históricos.
+- Backup formato 2 incorpora inventario/verificación SQLite y bytes de TOML/versiones/copias/intenciones y
+  evidencias referenciadas. Roots explícitos, guardias privadas y parada declarada; copia consistente, sin
+  reparación. Formato 1 sin configuración nueva sigue consultable, nunca se inventan TOML ausentes.
+- Restore mantiene marca/query_only y execution_authorized=false. Leer revisiones se resuelve desde el bundle,
+  sin originales/proveedores/checkout; ninguna ruta almacenada se ejecuta ni se usa para publicar archivos.
+  Sin modelos/migración/dependencias nuevos (0027/54 tablas); OpenAPI/tipos e interfaz en/es en paridad.
+- Evidencia sintética exclusivamente; primer uso/QA instalada pendientes T012. Originales archivados y
+  candidatos P011/P012/D214 intactos, sin autorización remota nueva.

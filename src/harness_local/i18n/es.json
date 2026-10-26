@@ -66,7 +66,7 @@
   "backup.bundle_invalid": "Bundle inválido/incompatible: {error}",
   "backup.changed_copy": "Artefactos cambiaron durante la copia.",
   "backup.changed_reading": "Archivo cambió durante la lectura: {path}",
-  "backup.configuration_bundle_required": "La configuración versionada requiere un bundle que incluya su configuración; todavía no está disponible.",
+  "backup.configuration_bundle_required": "El inventario de configuración falta o difiere de la base del backup.",
   "backup.destination_new": "El destino debe ser nuevo; no se sobrescribe ni reutiliza.",
   "backup.duplicate_references": "Referencias de artefactos duplicadas/incompatibles.",
   "backup.historical_absolute": "Referencia absoluta histórica incompatible.",

@@ -67,6 +67,9 @@ function environment(language = 'en', initial = base(), savedDraft = draft(initi
     if (path === '/api/managed/configuration/operations/interrupted') return Response.json({ id: 'interrupted', kind: 'SAVE' });
     if (path.endsWith('/recovery/preview')) return Response.json({ operation_id: 'interrupted', sha256: sha('e'), observed: [{ path: 'global.toml', sha256: sha('a') }] });
     if (path.endsWith('/activation/preview')) return Response.json({ kind: 'ACTIVATE', sha256: sha('d'), references: body.references, impact: ['global'], restart_required: true });
+    if (path.endsWith('/import/preview')) return Response.json({ kind: 'SAVE', sha256: sha('b'), impact: ['global', 'project:own'],
+      changes: [{ scope: 'global', text: JSON.stringify(form()), diff: '+converted global', status: 'VALIDATED' },
+        { scope: 'project:own', diff: '+draft project', status: 'DRAFT' }], legacy_import: { format: 'local-config-8' } });
     if (path.endsWith('/preview')) {
       if (env.conflict) return Response.json({ detail: { code: 'stale_configuration_preview' } }, { status: 409 });
       return Response.json({ kind: 'SAVE', sha256: sha('b'), impact: ['global'], changes: [{ text: body.text ?? JSON.stringify(body.form), diff: '+synthetic candidate', status: body.validated ? 'VALIDATED' : 'DRAFT' }] });
@@ -74,6 +77,13 @@ function environment(language = 'en', initial = base(), savedDraft = draft(initi
     const key = options?.headers?.['Idempotency-Key'];
     assert.ok(key, 'Every durable mutation keeps an idempotency key');
     if (completed.has(key)) return Response.json(completed.get(key));
+    if (path.endsWith('/import/save')) {
+      env.state.version = 1; env.state.saved = { scope: 'global', revision: 1, sha256: sha('c'), status: 'VALIDATED' };
+      env.state.form = form(); env.state.text = JSON.stringify(form()); env.state.actual_sha256 = sha('c');
+      env.state.imported_projects = ['own'];
+      const result = { id: 'imported', status: 'SAVED' }; completed.set(key, result);
+      return Response.json(result);
+    }
     if (path.endsWith('/save')) {
       if (env.conflict) return Response.json({ detail: { code: 'stale_configuration_preview' } }, { status: 409 });
       env.state.version++;
@@ -294,7 +304,7 @@ test('legacy is explained without detection or editable controls; read failures 
   const state = { ...base(), mode: 'READY', legacy: true };
   const env = environment('en', state), tree = env.tree();
   try {
-    const html = await env.render(tree); assert.match(html, /P013-T011/); assert.doesNotMatch(html, /<form|<input|<textarea/);
+    const html = await env.render(tree); assert.ok(html.includes(env.catalog["configuration.legacy"])); assert.doesNotMatch(html, /<form|<input|<textarea/);
     assert.ok(env.requests.every(request => request.body === undefined));
   } finally { env.close(); }
   const failed = environment(); failed.failRead = true;
@@ -367,3 +377,27 @@ test('an unacknowledged assistance turn is repeated only by explicit action with
     assert.equal(env.storage.get('harness-configuration-assistance:global'), undefined);
   } finally { env.close(); }
 });
+
+for (const language of ['en', 'es']) {
+  test(`legacy conversion is explicit, reviewed and leaves preparation visible (${language})`, async () => {
+    const state = { ...base(), mode: 'READY', legacy: true, legacy_source: '/synthetic/original.toml' };
+    const env = environment(language, state), tree = env.tree();
+    try {
+      await env.render(tree);
+      assert.ok(env.requests.every(request => request.body === undefined));
+      env.click('configuration.import_review'); let html = await env.render(tree);
+      assert.match(html, /draft project/);
+      assert.equal(env.button('configuration.import').disabled, true);
+      env.tick('profile.confirm_exact'); await env.render(tree);
+      env.click('configuration.import'); html = await env.render(tree);
+      const request = env.requests.find(request => request.path.endsWith('/import/save'));
+      assert.equal(request.body.source, '/synthetic/original.toml');
+      assert.equal(request.body.preview_sha256, sha('b'));
+      assert.ok(request.options.headers['Idempotency-Key']);
+      assert.equal(env.state.active, null); assert.equal(env.state.legacy, true);
+      assert.ok(html.includes(env.catalog['configuration.import_prepare']));
+      assert.match(html, /projects\/own/);
+      assert.equal(env.requests.filter(request => /detect|check-clients|activate/.test(request.path)).length, 0);
+    } finally { env.close(); }
+  });
+}

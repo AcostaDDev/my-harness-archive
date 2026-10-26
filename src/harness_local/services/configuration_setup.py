@@ -54,8 +54,10 @@ class ConfigurationSetup:
         self.loaded = None
 
     def _new_installation(self):
-        # Importing an existing authority and deriving its project revisions belongs to T011.
+        from harness_local.services.configuration_import import imported
         with Session(self.engine) as session:
+            if imported(session):
+                return
             # T007 registrations without an executable profile belong to this v9 authority already.
             if session.scalar(select(Project.id).where(
                     (Project.composition.is_not(None)) | (Project.profile.is_not(None))).limit(1)):
@@ -76,7 +78,10 @@ class ConfigurationSetup:
             if not self.directory.exists():
                 self.directory.mkdir(mode=0o700)
             state = self.repository.read()
-            if state['version'] and (explicit is not None or (self.source is not None
+            from harness_local.services.configuration_import import imported
+            with Session(self.engine) as session:
+                importing = imported(session)
+            if state['version'] and (state['active'] or state['pending'] or not importing) and (explicit is not None or (self.source is not None
                     and self.source != self.directory / 'global.toml')):
                 raise ConfigurationConflict('configuration_source_conflict')
             if state['pending']:
@@ -96,7 +101,7 @@ class ConfigurationSetup:
                 candidate.setdefault('compositions', {})
                 return legacy._build(candidate, self.directory / 'global.toml',
                                      allow_empty_compositions=True, editor=True)[0]
-            if state['version'] or state['status'] == 'RECOVERY_REQUIRED':
+            if state['status'] == 'RECOVERY_REQUIRED' or state['version'] and not importing:
                 return ManagedConfig()
             if explicit is not None:
                 self.legacy = True
@@ -113,6 +118,8 @@ class ConfigurationSetup:
                 return config
             if os.environ.get(CONFIG_ENV):
                 config = load_config()
+                if config.registrar is not None:
+                    self.source = config.registrar.source
                 self.legacy = True
                 return config
         except (ValueError, OSError):
@@ -136,8 +143,8 @@ class ConfigurationSetup:
             mode = 'INVALID'
         if self.startup_error:
             mode = 'INVALID'
-        if (self.legacy and not self.startup_error and not state['version']
-                and mode not in ('RECOVERY_REQUIRED', 'READ_ONLY_ARCHIVE')):
+        if (self.legacy and not self.startup_error and not state['pending']
+                and mode in ('UNCONFIGURED', 'READY')):
             mode = 'READY'
         # Cancelling pending activation must never enable a process that did not load the active version.
         if mode == 'READY' and not self.legacy and self.loaded != state['active']:
@@ -146,6 +153,9 @@ class ConfigurationSetup:
             head = session.get(Scope, 'global')
             operations = list(session.scalars(select(Operation.id).where(Operation.status.in_(UNRESOLVED))))
             pending_id = head.pending_operation_id if head else None
+        from harness_local.services.configuration_import import imported
+        with Session(self.engine) as session:
+            importing = imported(session)
         references = []
         pending_versions = {}
         with Session(self.engine) as session:
@@ -160,7 +170,17 @@ class ConfigurationSetup:
             if pending:
                 pending_versions = {ref['scope']: session.get(Scope, ref['scope']).version
                                     for ref in pending.payload['references']}
-        return {**state, 'mode': mode, 'legacy': self.legacy, 'activation_references': references,
+        if importing and not state['active']:
+            with Session(self.engine) as session:
+                references = []
+                for scope in ['global', *['project:' + p['id'] for p in importing['projects']]]:
+                    head = session.get(Scope, scope)
+                    if head and head.saved_revision:
+                        ref = self.repository._ref(session, scope, head.saved_revision)
+                        references.append({k: ref[k] for k in ('scope', 'revision', 'sha256')} | {'expected_version': head.version})
+        return {**state, 'mode': mode, 'legacy': self.legacy, 'legacy_source': str(self.source) if self.legacy and self.source else None,
+                'imported_projects': [p['id'] for p in importing['projects']] if importing else [],
+                'activation_references': references,
                 'pending_versions': pending_versions,
                 'pending_activation_id': pending_id, 'recovery_operations': operations,
                 'blockers': [] if mode == 'READY' else [self.startup_error or mode.lower()]}
@@ -175,7 +195,10 @@ class ConfigurationSetup:
         if session.connection().exec_driver_sql('PRAGMA user_version').scalar_one() == RESTORED_USER_VERSION:
             raise ConfigurationConflict('configuration_read_only_archive')
         if self.legacy and not self.startup_error:
-            return  # The initial editor cannot replace legacy authority; import is explicit in T011.
+            state = self.repository._state(session, self.repository._files(session), 'global')
+            if state['status'] not in ('UNCONFIGURED', 'READY'):
+                raise ConfigurationConflict('configuration_not_ready')
+            return
         state = self.repository._state(session, self.repository._files(session), 'global')
         if self.startup_error or state['status'] != 'READY' or state['active'] != self.loaded:
             raise ConfigurationConflict('configuration_not_ready')
@@ -183,6 +206,14 @@ class ConfigurationSetup:
     def editable(self):
         self.repository._writable()
         self._new_installation()
+        if self.legacy and self.source:
+            from harness_local.services.configuration_import import imported
+            from harness_local.storage.backup import _read
+            from harness_local.services.configuration import digest
+            with Session(self.engine) as session:
+                snapshot = imported(session)
+            if snapshot and digest(_read(self.source, legacy.MAX_BYTES)) != snapshot['sha256']:
+                raise ConfigurationConflict('configuration_import_source_changed')
         # Validation/preview may diagnose an invalid working copy; storage still enforces its CAS.
 
     def candidate(self, *, text=None, form=None, validated=True):
