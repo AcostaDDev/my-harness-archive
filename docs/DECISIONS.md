@@ -226,6 +226,7 @@ tarea se leen solo las decisiones que cita; este índice sirve para buscar prece
 | [D212](#d212--cierre-documental-de-p012-y-validación-real-archivada) | Cierre documental de P012 y validación real archivada | P012 |
 | [D213](#d213--mantenimiento-git-desactivado-en-fixtures-de-incorporación) | Mantenimiento Git desactivado en fixtures de incorporación | Sin fase |
 | [D214](#d214--candidato-público-actualizado-tras-la-corrección-de-ci) | Candidato público actualizado tras la corrección de CI | Sin fase |
+| [D215](#d215--p013-instalación-guiada-y-configuración-desde-la-ui) | P013: instalación guiada y configuración desde la UI | P013 |
 
 ## D001 — Alcance local y arquitectura base
 
@@ -6317,3 +6318,39 @@ Estado: actualización local autorizada y completada el 2026-10-26, sin fase nue
   publicación, servicios, smokes o configuración global en esta tarea.
 - El usuario solicita después un commit: se registran en inglés la actualización documental, el adaptador
   reproducible y sus manifiestos/evidencias, sin volver a modificar el candidato ni hacer push.
+
+
+## D215 — P013: instalación guiada y configuración desde la UI
+
+Estado: fase abierta y planificada el 2026-10-26 por petición explícita del usuario; implementación pendiente.
+[Plan](phase/P013_PLAN.md), [tareas](NEXT_STEPS.md) y [flujo planificado](flows/configuration-setup.md).
+Precedentes: D049/D051/D078/D095/D118/D150/D156/D157/D161/D174/D194/D212–D214.
+
+- El usuario aprueba las propuestas de simplificación discutidas antes de publicar y pide una fase nueva.
+  P013 recoge instalación/arranque automatizados, asistente inicial y gestión de configuración global y por
+  proyecto desde UI. Quince tareas pendientes; siguiente T001, contrato previo a implementación.
+- Entradas propuestas `scripts/install` y `scripts/start`: venv/directorios creados por herramientas, opciones
+  de rutas/caché, primera preparación con red y repetición offline. `.local/` no es requisito del equipo.
+  Mantener locks, comprobación del paquete y uso real del wheel fuera del checkout; `scripts/dev` para desarrollo.
+- Asistente global determinista antes de configurar agentes; detección y formularios para datos mecánicos,
+  elección de proveedor/modelo, identidad Git, almacenamiento y raíces. No invocar modelos para configurarlos.
+  Archivo TOML generado/editable desde UI, validación y confirmación de la versión exacta antes de activar.
+- Perfil propio por proyecto tras concretar documentación y arquitectura; incorporar usa también inventario
+  del HEAD sellado. Conversar no exige composición de stack previa. Revisor propone, ejecutor prepara/comprueba
+  lo autorizado y harness recoge validaciones/evidencia; usuario confirma activación. Ejemplos Django/TypeScript
+  y recetas actuales quedan como ayudas opcionales, sin limitar stacks a sus plantillas.
+- Edición manual o asistida global/por proyecto desde UI, con diff e impacto visibles. Ayuda IA global solo
+  tras configurar clientes. Revisor conserva solo lectura; ejecutor sin escritura general del TOML global;
+  aplicación valida y guarda archivos. No equivale a modificar configuración global de Git/CLI/uv/npm/shell.
+- T001 fija autoridad y localización fuera de checkouts de archivos globales/por proyecto, vínculo con SQLite,
+  versiones, activación/reinicio, guardado atómico/CAS, recuperación, backup y compatibilidad de formatos 1–8.
+  No se inventan ahora tablas, revisiones o un número de formato nuevo. Jobs, recibos e historiales congelados
+  conservan su procedencia; una propuesta de perfil no acredita herramientas instaladas ni validaciones pasadas.
+- Publicación aplazada hasta el cierre satisfactorio de P013, con candidato/paquete, evidencia y expediente
+  nuevos. Sustituye la ausencia de sucesora y apertura como siguiente paso que reflejaban D212/D214, sin reabrir P012 ni
+  reescribir sus snapshots, dictámenes, expedientes o candidatos originales. D157 sigue rigiendo tras el primer push;
+  modo continuo D156 continúa reservado para después de la apertura en v0.2.0.
+- Abrir la fase solo autoriza esta planificación documental. No ejecuta sus tareas de producto ni autoriza
+  harness sobre este repositorio, agentes/proveedores/smokes, configuración global del equipo, reactivación de
+  bases/fixtures anteriores, commits no solicitados ni acciones remotas. Cerrar P013 dejará pendiente la
+  autorización concreta de apertura con owner/repo, identidad pública y visibilidad.

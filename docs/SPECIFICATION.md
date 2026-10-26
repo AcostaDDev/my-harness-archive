@@ -348,3 +348,28 @@ planificación y aplaza el modo continuo entre fases a v0.2.0 después de la ape
 La cadena futura incluiría tareas/commits, check, cierre/archivo, planificación y ejecución de la siguiente fase,
 con autorización inicial y parada por error/HITL/límites. No está implementada ni cambia las reglas vigentes
 §5.9/§7: el lote no comprueba/cierra, el cierre se autoriza sobre READY y el plan posterior se confirma por hash.
+
+
+## 14. Ampliación planificada — P013
+
+[D215](DECISIONS.md#d215--p013-instalación-guiada-y-configuración-desde-la-ui) abre P013 antes de publicar:
+[plan](phase/P013_PLAN.md), [tareas](NEXT_STEPS.md) y [flujo propuesto](flows/configuration-setup.md).
+**Planificado, no implementado.** Las capacidades y reglas vigentes de §4/§5/§8 permanecen hasta sus entregas.
+
+- Instalar/arrancar mediante scripts que creen venv/directorios y gestionen rutas/cachés configurables; primera
+  instalación con red, modo offline posterior y uso del paquete aislado, con desarrollo separado.
+- Asistente inicial sin TOML completo ni modelos; detección local y elección de clientes, identidad Git,
+  almacenamiento y raíces. Guardar configuración global mediante formulario/TOML validado en la UI.
+- Crear/incorporar sin composición de stack previa obligatoria. Tras concretar documentación/arquitectura o
+  inventario del código, revisor propone perfil propio; ejecutor prepara/comprueba lo autorizado y harness
+  registra evidencia. Activación confirmada antes de ejecutar la primera tarea, con ejemplos/recetas opcionales.
+- Edición global/por proyecto manual o asistida desde UI, con contexto, diff e impacto; asistencia IA global
+  solo tras configurar agentes. Revisor en lectura, ejecutor sin escritura general del TOML global;
+  aplicación guarda los archivos validados. No modificar ajustes globales del equipo ni almacenar credenciales.
+- Versiones, guardado recuperable/CAS, compatibilidad del TOML actual, jobs congelados y backup/consulta según
+  contrato T001. UI y diagnósticos en/es; README/candidato/evidencia nuevos antes de cerrar y proponer apertura.
+
+La prohibición vigente de §8 de escribir TOML durante incorporación cambia solo cuando T004/T007–T009
+implementen el carril confirmado de configuración. No se añade hoy una excepción operativa: T001 resolverá
+su autoridad y relación con alta, commit documental, preparación y activación sin reescribir historiales.
+La publicación queda aplazada hasta cerrar P013; el cierre no ejecuta acciones remotas ni renueva permisos P012.

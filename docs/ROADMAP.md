@@ -18,6 +18,7 @@ hitos H0–H6 del backlog original; la definición inicial está en [archive/pha
 | P010 | Consolidación de la primera versión local | completada (2026-10-22) | [phase-010](archive/phase-010/SUMMARY.md) |
 | P011 | Preparación para apertura pública en GitHub | completada (2026-10-24) | [phase-011](archive/phase-011/SUMMARY.md) |
 | P012 | Validación real previa a la apertura pública | completada (2026-10-26) | [phase-012](archive/phase-012/SUMMARY.md) |
+| P013 | Instalación guiada y configuración desde la UI | activa, planificada (2026-10-26) | [plan](phase/P013_PLAN.md) |
 
 ## P001 — Contratos y prueba de viabilidad
 
@@ -328,9 +329,44 @@ histórica `unknown` conservados. Correcciones offline T008–T013 incluidas en 
 Candidato de 401 archivos/5.480.755 bytes, manifiesto `cf191a40…9362a`, wheel `eef56a29…4504ab`;
 1760 pytest/29 subtests, 8 unittest, 119 Node, tipos/build, Alembic temporal, paquete y documentación correctos
 (D210). Sustitución local autorizada, P011 conservada. [Revisión detallada](archive/phase-012/P012_REVIEW.md),
-[plan original](archive/phase-012/NEXT_STEPS.md) y [expediente vigente](archive/phase-012/P012_EXPEDIENTE_APERTURA.md).
-Sin fase sucesora definida ni acciones remotas ejecutadas; la apertura queda como siguiente paso del usuario.
+[plan original](archive/phase-012/NEXT_STEPS.md) y [expediente de P012](archive/phase-012/P012_EXPEDIENTE_APERTURA.md).
+Al cerrar P012 no se definió sucesora ni se ejecutaron acciones remotas. D215 abre después P013 y aplaza
+la apertura hasta su cierre, conservando el expediente y los artefactos de P012.
 Cierre manual sin registrar/ejecutar este repositorio con el harness, tag, push o publicación.
+
+## P013 — Instalación guiada y configuración desde la UI
+
+**Objetivo:** Simplificar instalación y arranque, permitir configurar Harness Local desde su UI sin redactar
+un TOML inicial y generar/editar perfiles propios por proyecto con el revisor y el ejecutor a partir de su
+documentación o código, antes de publicar en GitHub.
+**Criterios de salida:**
+
+- Contrato explícito de configuración global/por proyecto, archivos y SQLite, versiones, activación,
+  compatibilidad, jobs congelados, preparación, recuperación y backup antes de implementar sus cambios.
+- Instalación y arranque automatizados, con venv creado por el instalador, rutas/cachés configurables sin
+  exigir `.local/` previo, primer uso con red y repetición offline; paquete aislado y entrada de desarrollo separada.
+- Asistente inicial determinista y autenticado sin TOML completo ni llamadas a modelos; ajustes globales
+  accesibles en la UI, con formularios, TOML editable, validación, diff y confirmación de la versión exacta.
+- Creación desde documentación e incorporación desde HEAD permiten proponer un perfil propio tras concretar
+  contexto/arquitectura, sin composición de stack previa obligatoria; Django/TypeScript son ayudas opcionales.
+- Preparación/comprobación acotadas con el ejecutor y validaciones del harness, evidencia vinculada al perfil
+  y activación confirmada antes de la primera tarea; agentes sin escritura general del TOML global.
+- Edición posterior global y por proyecto manual o asistida desde UI, con impacto visible, cambios recuperables
+  y trabajos/historiales/recibos anteriores conservados; asistencia IA tras configurar los clientes.
+- Compatibilidad con TOML existentes y backup/restauración de consulta verificada; pruebas sintéticas de
+  conflictos/caídas, ambos accesos y un stack ajeno a los ejemplos; UI/diagnósticos en/es y QA documentada.
+- README y docs públicas al día, candidato/paquete nuevos con manifiesto y checks propios, revisión favorable
+  y expediente actualizado; originales P011/P012/D214 conservados, cierre documental antes de publicar.
+
+**Dependencias:** P012 cerrada y D214; D049/D051/D078/D095/D118/D150/D157/D161/D174/D194/D215.
+**Fuera de alcance:** modo continuo v0.2.0, ampliar plataformas/proveedores, login o almacenamiento de
+credenciales, modificar configuración global del equipo, operar este repositorio con el harness, reactivar
+bases/fixtures/consentimientos anteriores y cualquier acción remota de publicación. Las pruebas operativas
+restringidas por AGENTS requieren su autorización propia; planificar no las ejecuta.
+**Estado:** abierta y planificada el 2026-10-26 por petición del usuario (D215); quince tareas pendientes,
+sin implementación iniciada. Siguiente P013-T001. [Plan](phase/P013_PLAN.md), [tareas](NEXT_STEPS.md) y
+[flujo propuesto](flows/configuration-setup.md). Publicación aplazada hasta cerrar esta fase con candidato
+nuevo y dictamen favorable; el cierre no concede autorización para acciones remotas.
 
 ## Después de la apertura en GitHub — v0.2.0
 

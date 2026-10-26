@@ -457,3 +457,31 @@ Cada job/turno congela trabajo y lengua visual de respuesta; cambios globales no
 reintentos. Directivas tipadas y versionadas separarán prosa humana de borradores/código en respuestas estructuradas.
 Se usará el canal de instrucciones realmente disponible en cada CLI, sin asumir un system prompt nativo común;
 no cambia hoy `render_attempt`, adaptadores, variables, snapshots, API o esquema. T007–T010 tendrán su paridad.
+
+
+## 14. Ampliación planificada — P013
+
+[D215](DECISIONS.md#d215--p013-instalación-guiada-y-configuración-desde-la-ui) planifica instalación y
+configuración guiadas antes de abrir en GitHub. [Plan](phase/P013_PLAN.md), [tareas](NEXT_STEPS.md) y
+[flujo propuesto](flows/configuration-setup.md). **Sin implementación nueva en esta apertura.** §6/§9 siguen
+describiendo la autoridad del TOML local y la operación actuales.
+
+T001 fijará ubicación/autoridad de archivos globales y por proyecto fuera de checkouts, su vínculo con SQLite,
+versiones, validación, activación/reinicio, escrituras atómicas/CAS, recuperación, compatibilidad 1–8 y
+backup/restauración de consulta. No se decide aquí una tabla, revisión Alembic, endpoint, versión `local-config`
+o formato de recibo nuevos. Las tareas que cambien modelos/migraciones o API actualizarán diagrama/tipos.
+
+T002/T003 compondrán construcción/verificación/instalación y arranque con venv/rutas/cachés gestionados,
+conservando wheel aislado, locks/hashes y `scripts/dev`. El asistente T005/T006 debe funcionar sin TOML completo,
+con sesión/Host/Origin/CSRF y sin modelos hasta configurar clientes. Configuración inválida o restauración de
+consulta no adquieren autoridad para ejecutar proyectos.
+
+T007–T009 introducirán propuesta de perfil tras contexto documental/inventario, preparación acotada y activación
+confirmada en creación/incorporación, sin composición de stack previa obligatoria. T010 añade edición posterior
+manual/asistida y T011 verifica compatibilidad/recuperación/backup. Revisor de lectura, ejecutor limitado al
+proyecto o área autorizada y aplicación como escritora de TOML; sin acceso general de agentes a configuración
+global. Cambios no mutan snapshots/jobs ni acreditan recibos de preparación de otra versión.
+
+T012–T015 documentarán/verificarán la experiencia, prepararán candidato y expediente nuevos y cerrarán P013.
+Los archivos de P011/P012/D214 conservan bytes/procedencia; no representan evidencia de los cambios futuros.
+La transición de fuente principal D157 y el modo continuo posterior D156 se mantienen, con apertura aplazada.
