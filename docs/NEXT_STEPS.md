@@ -1,7 +1,7 @@
 # P013 — Instalación guiada y configuración desde la UI
 
-**Estado:** fase activa; T001 diseñada y T002 implementada el 2026-10-26, trece tareas pendientes.
-**Siguiente: P013-T003**, arranque automatizado del paquete instalado.
+**Estado:** fase activa; T001 diseñada y T002–T003 implementadas el 2026-10-26, doce tareas pendientes.
+**Siguiente: P013-T004**, persistencia y activación versionada de configuración.
 [Objetivo y criterios](ROADMAP.md#p013--instalación-guiada-y-configuración-desde-la-ui),
 [D215](DECISIONS.md#d215--p013-instalación-guiada-y-configuración-desde-la-ui) y
 [plan de fase](phase/P013_PLAN.md).
@@ -72,7 +72,8 @@ parsers, enlaces y dependencias. Sin migraciones ni proveedores.
 
 ## P013-T003 — Arranque automatizado del paquete instalado
 
-**Estado:** pendiente. **Depende de:** T001–T002.
+**Estado:** completada (2026-10-26); orquestación/señales sintéticas, recorrido instalado pendiente T012/T013.
+[Entrega y validación](phase/P013-T003_ARRANQUE.md), D220. **Depende de:** T001–T002.
 **Objetivo:** arrancar con una entrada corta y opciones editables/documentadas.
 **Rutas permitidas:** `scripts/**`, pruebas específicas y documentación vigente.
 **Criterios de aceptación:**

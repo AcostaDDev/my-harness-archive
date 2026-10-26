@@ -231,6 +231,7 @@ tarea se leen solo las decisiones que cita; este índice sirve para buscar prece
 | [D217](#d217--p013-t001-archivos-versionados-y-activación-de-configuración) | P013-T001: archivos versionados y activación de configuración | P013 |
 | [D218](#d218--p013-t001-perfil-tras-contexto-y-preparación-antes-de-activar) | P013-T001: perfil tras contexto y preparación antes de activar | P013 |
 | [D219](#d219--p013-t002-instalador-por-generaciones-y-paquete-autocontenido) | P013-T002: instalador por generaciones y paquete autocontenido | P013 |
+| [D220](#d220--p013-t003-arranque-instalado-y-exclusión-de-instancia) | P013-T003: arranque instalado y exclusión de instancia | P013 |
 
 ## D001 — Alcance local y arquitectura base
 
@@ -6457,3 +6458,32 @@ T012/T013. Fase: P013. Concreta D216 sin alterar D051/D150.
 - T002 prueba orquestación con ejecutables falsos y archivos temporales. Sin instalación/servicio/smoke real,
   proveedor, harness sobre este repositorio, cambio de esquema/API/UI/TOML, candidato anterior o acción remota.
   T003 implementará arranque; T012/T013 acreditarán primer uso/paquete nuevo bajo autorización correspondiente.
+
+## D220 — P013-T003: arranque instalado y exclusión de instancia
+
+Estado: implementado el 2026-10-26; validación sintética de orquestación/señales, recorrido instalado
+pendiente T012/T013. Fase: P013. Concreta D216 conservando D051/D150/D219.
+[Entrega](phase/P013-T003_ARRANQUE.md), [flujo](flows/configuration-setup.md).
+
+- `scripts/start` resuelve/verifica `current.json`, recibo `installation-1`, paquete y venv. Ejecuta su Python
+  con `-I -B`, módulo CLI instalado y cwd en datos, sin uv/Node/Vite/checkout como runtime. Los wrappers se
+  entregan con `distribution-1` y SHA256SUMS en los paquetes nuevos; candidatos anteriores intactos.
+- Rutas fijadas antes de leer TOML: DB bajo datos del recibo y configuración bajo su directorio propio,
+  sin adoptar otra instalación por nombres coincidentes. Defaults `harness.sqlite3`, `global.toml` si existe,
+  puerto 8013 y temporal `data/tmp`; opciones absolutas, sin enlaces/checkouts, temporal privado 0700.
+  No recrea raíces ausentes ni cambia permisos ajenos; variables de runtime/configuración/Git del operador
+  filtradas. Usa intérprete ya instalado: no instala, descarga ni toca ajustes globales del equipo.
+- Preflight en el paquete instalado valida esquema por SQLite de solo lectura antes de servir, sin cambiar
+  WAL de bases antiguas. Solo DB ausente y sin auxiliares pasa por `init-db` exclusivo. Puerto ocupado,
+  TOML explícito ausente/inválido, referencia alterada o esquema incompatible bloquean; D150 exige acción
+  separada con parada declarada, instantánea y migración, nunca dentro de `serve`/reinicio.
+- Consulta D040 tiene prioridad y omite TOML operativo. Sin TOML, T003 usa la UI protegida de consulta ya
+  existente, sin consumidor gestionado: no anuncia implementado el asistente T005/T006 ni la autoridad T004.
+  No modifica contratos TOML 1–8, API/UI/modelos/migraciones ni jobs/snapshots/recibos históricos.
+- Locks de instancia y de instalación retenidos por wrapper e hijo excluyen otro servicio y la actualización
+  cooperativa aun tras SIGKILL del wrapper. SIGINT/SIGTERM se reenvían al grupo del hijo y se espera su salida;
+  conserva códigos, datos y archivos de diagnóstico. No limpia guardias persistidas de jobs ni interpreta
+  un lock liberado como prueba de que hayan muerto escritores o proveedores.
+- Pruebas con intérprete/procesos sintéticos y DB temporal, incluido wrapper separado del checkout, señales,
+  caída del wrapper, exclusión, reinicio y errores. Sin instalación/servicio/smoke/proveedor real, harness sobre
+  este repositorio, cambios globales o acciones remotas. Siguiente tarea T004.

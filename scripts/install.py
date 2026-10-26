@@ -96,7 +96,7 @@ def installation_lock(root):
             fcntl.flock(descriptor, fcntl.LOCK_EX | fcntl.LOCK_NB)
         except BlockingIOError:
             raise InstallRefused('Another installation is in progress') from None
-        yield
+        yield descriptor
     finally:
         os.close(descriptor)
 

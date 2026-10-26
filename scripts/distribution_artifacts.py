@@ -9,7 +9,7 @@ import tarfile
 import tomllib
 import zipfile
 
-BUNDLE_SCRIPTS = ('install', 'install.py', 'toolchain.py', 'distribution_artifacts.py',
+BUNDLE_SCRIPTS = ('install', 'install.py', 'start', 'start.py', 'toolchain.py', 'distribution_artifacts.py',
                   'check_distribution.py', 'installed_config.py')
 MANIFEST = 'distribution-1.json'
 

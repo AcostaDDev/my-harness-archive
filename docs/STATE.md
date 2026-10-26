@@ -128,10 +128,10 @@ Sustitución verificada por rutas, hashes y modos; checksums de los artefactos o
 
 ## Fase activa — P013 Instalación guiada y configuración desde la UI
 
-**P013 activa; T001 diseñada y T002 implementada el 2026-10-26.**
+**P013 activa; T001 diseñada y T002–T003 implementadas el 2026-10-26.**
 [D215](DECISIONS.md#d215--p013-instalación-guiada-y-configuración-desde-la-ui),
 [plan](phase/P013_PLAN.md), [tareas](NEXT_STEPS.md) y [flujo propuesto](flows/configuration-setup.md).
-Trece tareas pendientes. **Siguiente: P013-T003**, arranque automatizado del paquete instalado.
+Doce tareas pendientes. **Siguiente: P013-T004**, persistencia y activación versionada de configuración.
 
 T001 concreta el [contrato](phase/P013-T001_CONTRATO.md) con D216–D218: instalación aislada desde clon/paquete,
 arranque sin TOML con sesión protegida, contenido en TOML versionado y activación por referencia SQLite, CAS/
@@ -147,8 +147,16 @@ de generaciones/datos; fallos conservan diagnóstico sin publicar parcial. Build
 fuentes y añade manifiesto de miembros, wrappers y fixture; verificador de paquete sin Node/checkout.
 [D219](DECISIONS.md#d219--p013-t002-instalador-por-generaciones-y-paquete-autocontenido),
 [entrega y checks](phase/P013-T002_INSTALACION.md). Orquestación probada con herramientas falsas y archivos
-sintéticos; recorridos instalados/servicios no ejecutados (T012/T013). Arranque/asistente/configuración nuevos
-siguen pendientes; no cambia esquema, API, UI ni formato TOML.
+sintéticos; recorridos instalados/servicios no ejecutados (T012/T013). T002 no añadió arranque ni
+asistente/configuración nuevos; no cambia esquema, API, UI ni formato TOML.
+
+T003 entrega `scripts/start`, también en el paquete: verifica `installation-1`, usa su Python/venv fuera del
+checkout y fija DB/configuración/puerto/temporal privado. Crea solo DB ausente sin auxiliares; valida esquema
+en consulta antes de arrancar, con migración D150 aparte. Exclusión de servicio/actualización heredada por
+el hijo, señales y códigos de salida conservados; reiniciar no reinstala ni sobrescribe TOML/datos.
+Sin TOML usa la UI protegida de consulta existente, sin consumidores gestionados; asistente T005/T006
+pendiente. Consulta D040 omite el TOML operativo. [D220](DECISIONS.md#d220--p013-t003-arranque-instalado-y-exclusión-de-instancia),
+[entrega y checks](phase/P013-T003_ARRANQUE.md); pruebas sintéticas, sin servicio instalado real.
 
 Alcance acordado: scripts de instalación/arranque con venv y cachés configurables, asistente inicial sin TOML
 manual ni modelos, configuración global y perfiles propios por proyecto desde UI, propuestas del revisor tras
@@ -167,6 +175,6 @@ no se renuevan ni transfieren.
 Tras el cierre seguirán faltando owner/repo, visibilidad, identidad pública y autorización de acciones remotas.
 D157 conserva la fuente principal pública tras el primer push; modo continuo D156 para v0.2.0 después de abrir,
 fuera de P013. Este repositorio sigue sin registrarse ni ejecutarse con el harness. Apertura y T001 fueron
-documentales; T002 añade instalación/empaquetado y pruebas sintéticas. Sin operación del harness sobre este
+documentales; T002–T003 añaden instalación/arranque/empaquetado y pruebas sintéticas. Sin operación del harness sobre este
 checkout, instalaciones reales, modelos/migraciones/API nuevos, agentes/proveedores,
-smokes, configuración global del equipo, push o publicación. Commit local de T002 pedido por el usuario.
+smokes, configuración global del equipo, push o publicación. Commits locales T002/T003 pedidos por el usuario.

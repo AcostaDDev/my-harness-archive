@@ -294,8 +294,20 @@ Venv en `generations/gen-<id>/venv`, paquete copiado/construido en `distribution
 Repetición verifica recibo, paquete y árbol del venv; otro contenido requiere `--upgrade --writers-stopped`.
 Conserva anteriores/datos; no inicializa ni migra DB ni escribe TOML. Destinos ocupados/incompletos requieren
 inspección, sin borrado/reintento automático. [Uso, formato y límites](phase/P013-T002_INSTALACION.md).
-Pruebas de orquestación falsas; primer uso instalado pendiente T012/T013. `scripts/start` y el asistente
-sin TOML aún pendientes T003/T005; el arranque actual sigue requiriendo la configuración descrita arriba.
+Arranque automatizado (P013-T003, D220): `scripts/start --install-dir /ruta/installation` o el wrapper
+entregado en `generations/gen-<id>/distribution/scripts/start`. Revalida referencia/recibo/paquete/venv;
+ejecuta `venv/bin/python -I -B -m harness_local.cli` con cwd en los datos del recibo, sin uv/Node/Vite.
+`--database` debe estar dentro de esos datos; `--config`, dentro de la configuración del recibo;
+no adopta rutas de otra instalación. Defaults: `data/harness.sqlite3`, `configuration/global.toml`
+si existe, puerto 8013 y `data/tmp` privado 0700 (`--port`/`--temp-dir` elegibles).
+Solo DB ausente sin auxiliares usa `init-db`; preflight de esquema en solo lectura, sin migración.
+Puerto ocupado, configuración explícita ausente/inválida o rutas inseguras bloquean; consulta D040 omite
+TOML operativo. Sin TOML abre la UI protegida de consulta vigente, sin supervisor consumidor; asistente
+pendiente T005/T006. Locks de instancia/instalación retenidos por wrapper e hijo excluyen otro arranque y
+actualización incluso si muere el wrapper. SIGINT/SIGTERM se reenvían y se espera al hijo; sin borrar datos,
+limpiar locks de jobs ni acreditar muerte de escritores. Reinicio no instala ni modifica configuración.
+[Opciones, comprobaciones y límites](phase/P013-T003_ARRANQUE.md). Pruebas sintéticas de orquestación y
+señales; primer uso instalado pendiente T012/T013. `scripts/dev` conserva su flujo de desarrollo.
 Los paquetes P011/P012 previos no contienen este material y no se adaptan ni reescriben.
 
 Actualización (D150): detener el servicio y los escritores, instalar el nuevo wheel y ejecutar
@@ -476,7 +488,7 @@ no cambia hoy `render_attempt`, adaptadores, variables, snapshots, API o esquema
 
 ## 14. Ampliación planificada — P013
 
-**T001 diseñada y T002 implementada; pendiente T003–T011.** §6/§9 describen lo implementado.
+**T001 diseñada y T002–T003 implementadas; pendiente T004–T011.** §6/§9 describen lo implementado.
 [D216](DECISIONS.md#d216--p013-t001-instalación-aislada-y-arranque-sin-configuración),
 [D217](DECISIONS.md#d217--p013-t001-archivos-versionados-y-activación-de-configuración) y
 [D218](DECISIONS.md#d218--p013-t001-perfil-tras-contexto-y-preparación-antes-de-activar).
@@ -488,7 +500,7 @@ T002 implementa build/verificación/instalación desde clon o paquete local, seg
 [D219](DECISIONS.md#d219--p013-t002-instalador-por-generaciones-y-paquete-autocontenido). La verificación
 común de miembros/metadatos/hashes y el recorrido sintético instalado se entregan con el paquete.
 Offline por defecto; red explícita sin descargas implícitas de herramientas ni configuración global.
-T003 arranca el binario instalado fuera del checkout, con DB/config/puerto/temporal privados; instala solo
+T003 entrega el arranque instalado (§9, D220), con DB/config/puerto/temporal privados; instala solo
 T002, migra solo D150 por acción separada. Base nueva por creación exclusiva, existente por validación.
 
 ### Autoridad y persistencia propuestas

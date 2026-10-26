@@ -353,14 +353,16 @@ con autorización inicial y parada por error/HITL/límites. No está implementad
 ## 14. Ampliación planificada — P013
 
 [D215](DECISIONS.md#d215--p013-instalación-guiada-y-configuración-desde-la-ui) abre P013 antes de publicar.
-**T001 completa el diseño; T002 implementa instalación/empaquetado; pendiente T003–T011.**
+**T001 completa el diseño; T002–T003 implementan instalación/arranque/empaquetado; pendiente T004–T011.**
 Las reglas vigentes de §4/§5/§8 se mantienen hasta sus entregas. [Contrato](phase/P013-T001_CONTRATO.md), [flujo](flows/configuration-setup.md),
 [plan](phase/P013_PLAN.md) y [tareas](NEXT_STEPS.md). D216–D218 concretan:
 
 - Instalador T002 entregado ([D219](DECISIONS.md#d219--p013-t002-instalador-por-generaciones-y-paquete-autocontenido),
   [validación sintética](phase/P013-T002_INSTALACION.md)): clon o paquete verificado, con venv/generaciones
   aisladas y rutas/cachés elegibles. Offline por defecto y red explícita, sin instalar herramientas globales;
-  paquete sin Node/checkout. Arranque corto pendiente T003: inicializará solo base ausente; migración de existente por D150 aparte, con parada y copia previa.
+  paquete sin Node/checkout. Arranque corto T003 entregado ([validación sintética](phase/P013-T003_ARRANQUE.md),
+  D220): inicializa solo base ausente; migración de existente por D150 aparte, con parada y copia previa.
+  Sin TOML abre por ahora la UI protegida de consulta vigente; asistente pendiente T005/T006.
 - Asistente inicial autenticado sin TOML completo, composición ni modelos. Detectar clientes no otorga permisos;
   preflight explícito D174 no acredita inferencia real. Configuración inválida/ausente no consume trabajos.
   Consulta restaurada nunca habilita este asistente operativo.

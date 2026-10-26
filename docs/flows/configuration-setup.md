@@ -1,7 +1,8 @@
 # Flujo — instalación y configuración guiadas (P013)
 
-**Instalación T002 implementada; arranque/configuración siguen diseñados, pendientes T003–T011.**
+**Instalación T002 y arranque T003 implementados; configuración pendiente T004–T011.**
 [Entrega T002](../phase/P013-T002_INSTALACION.md), D219; validación con herramientas falsas, sin recorrido instalado nuevo.
+[Entrega T003](../phase/P013-T003_ARRANQUE.md), D220; procesos/señales sintéticos, sin servicio instalado real.
 [Contrato](../phase/P013-T001_CONTRATO.md), D216–D218 en [DECISIONS](../DECISIONS.md),
 [plan](../phase/P013_PLAN.md) y [tareas](../NEXT_STEPS.md).
 El flujo vigente aún usa TOML 1–8 y composición según ARCHITECTURE §6/§9.
@@ -35,6 +36,16 @@ y el recorrido sintético instalado D051; las pruebas de T002 no ejecutan ese se
 excluye instaladores, replay comprueba paquete/venv y `--upgrade --writers-stopped` conserva anteriores.
 Fallos/interrupciones retienen intención FAILED o PREPARING sin anunciar una generación lista.
 Datos/configuración se crean privados y vacíos en instalación nueva, sin DB/TOML ni migraciones.
+
+T003 resuelve `current.json`/`installation-1` y verifica paquete/venv antes de ejecutar su Python aislado,
+con cwd en los datos del recibo. DB/configuración elegibles dentro de sus respectivas raíces; temporal
+privado y puerto loopback elegibles. Rechaza puerto ocupado/rutas inseguras; preflight de esquema SQLite
+en solo lectura y `init-db` exclusivo solo si no hay DB ni auxiliares. No reinstala ni migra al reiniciar.
+Locks de instancia/instalación heredados por el hijo impiden segundo servicio/actualización incluso si
+muere el wrapper; señales se reenvían y se espera al hijo. No libera guardias de jobs ni declara escritores
+muertos. Consulta D040 omite TOML operativo; TOML inválido bloquea antes de servir. Sin TOML arranca hoy
+la UI protegida de consulta vigente, sin consumidores gestionados; la transición al asistente del diagrama
+siguiente sigue pendiente T005/T006. No se ha implementado aún la autoridad de configuración de T004.
 
 ## Asistente y activación global
 
