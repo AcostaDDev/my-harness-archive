@@ -1,0 +1,261 @@
+{
+  "phase": "P012",
+  "closed_at": "2026-10-26",
+  "source_commit": "ce4b5d2f8ed1a1ac1af9cec00316b10b1d95a814",
+  "mode": "manual_documentary_closure",
+  "snapshot_policy": "exact_bytes_original_paths",
+  "files": [
+    {
+      "source": "docs/STATE.md",
+      "target": "docs/archive/phase-012/STATE.md",
+      "size_bytes": 24174,
+      "sha256": "0028e8e980f339d2bcd2819103bd5d97630326d1b514224d0bab2a91012e4061"
+    },
+    {
+      "source": "docs/NEXT_STEPS.md",
+      "target": "docs/archive/phase-012/NEXT_STEPS.md",
+      "size_bytes": 42336,
+      "sha256": "73acc3260892ec6fbf78b703306b029f58d5e8852a9d8e358e35034331cb24e6"
+    },
+    {
+      "source": "docs/phase/P012-T001_PROPUESTA_OPERATIVA.md",
+      "target": "docs/archive/phase-012/P012-T001_PROPUESTA_OPERATIVA.md",
+      "size_bytes": 29676,
+      "sha256": "418d340a602c0e0e0ef3d6b3d68ae08d1f65eee2cda8a0a5c629a72932092906"
+    },
+    {
+      "source": "docs/phase/P012-T002_CONFIG_T010.py",
+      "target": "docs/archive/phase-012/P012-T002_CONFIG_T010.py",
+      "size_bytes": 3223,
+      "sha256": "70fd74affcf190ac052ba3d3266680515f5560c228c50f9de70a1129552d131e"
+    },
+    {
+      "source": "docs/phase/P012-T002_CONTINUACION_T009.md",
+      "target": "docs/archive/phase-012/P012-T002_CONTINUACION_T009.md",
+      "size_bytes": 11917,
+      "sha256": "8efa01e9ad9e2aefed299996fd2ce88d5472603b0887af41ab8e7ba2d5034076"
+    },
+    {
+      "source": "docs/phase/P012-T002_INCORPORACION_REAL.md",
+      "target": "docs/archive/phase-012/P012-T002_INCORPORACION_REAL.md",
+      "size_bytes": 44471,
+      "sha256": "9e4825d71ef60a4eb45adfad2fd17dd139f79bb9e93298d04113219f5b820aec"
+    },
+    {
+      "source": "docs/phase/P012-T002_PROPUESTA_CONTINUIDAD_RUFF.md",
+      "target": "docs/archive/phase-012/P012-T002_PROPUESTA_CONTINUIDAD_RUFF.md",
+      "size_bytes": 7552,
+      "sha256": "32b7d8a7b3b85a6037437ae4b6ed45c829cc1d75db6e1fc7272f91990a43b0af"
+    },
+    {
+      "source": "docs/phase/P012-T002_PROPUESTA_T010.md",
+      "target": "docs/archive/phase-012/P012-T002_PROPUESTA_T010.md",
+      "size_bytes": 20733,
+      "sha256": "107ef2c17c609b14d1383d7baf935ab28064e1c11777d134ee143308930221a4"
+    },
+    {
+      "source": "docs/phase/P012-T002_PROPUESTA_T011.md",
+      "target": "docs/archive/phase-012/P012-T002_PROPUESTA_T011.md",
+      "size_bytes": 15407,
+      "sha256": "d556be3616efa57ad3cfc819097476e79ff4b738054389b566b5da159936d7d3"
+    },
+    {
+      "source": "docs/phase/P012-T002_RESULTADO_T011.md",
+      "target": "docs/archive/phase-012/P012-T002_RESULTADO_T011.md",
+      "size_bytes": 10746,
+      "sha256": "729062a746a02cbd1fe11d4064d57e2da6280895c4910d847c72588b5073ae90"
+    },
+    {
+      "source": "docs/phase/P012-T002_WHEELS_FALTANTES.lock",
+      "target": "docs/archive/phase-012/P012-T002_WHEELS_FALTANTES.lock",
+      "size_bytes": 5912,
+      "sha256": "ee5a8a8a404e9e19e347ac960b803fe1615fc96e6b56b21f7a983bc0bb913947"
+    },
+    {
+      "source": "docs/phase/P012-T002_WHEELS_VERIFICADOS.sha256",
+      "target": "docs/archive/phase-012/P012-T002_WHEELS_VERIFICADOS.sha256",
+      "size_bytes": 1738,
+      "sha256": "d4cee2453093a3746ec3a15abe4709b222fa11ddb68646d35be672bc6d1b4e7a"
+    },
+    {
+      "source": "docs/phase/P012-T003_CHAT_BACKUP_REAL.md",
+      "target": "docs/archive/phase-012/P012-T003_CHAT_BACKUP_REAL.md",
+      "size_bytes": 14257,
+      "sha256": "9f0fc354c4abf0418488948cf8087a07ff80ff0a946fea2ff48fda777bbcbe53"
+    },
+    {
+      "source": "docs/phase/P012-T003_PROPUESTA_CHAT_BACKUP.md",
+      "target": "docs/archive/phase-012/P012-T003_PROPUESTA_CHAT_BACKUP.md",
+      "size_bytes": 17693,
+      "sha256": "38ff7a847bb3e9a634d9407c2244b8f55837ce9105931699f306d13e0b52e51a"
+    },
+    {
+      "source": "docs/phase/P012-T003_UI_RESULTADO_T012.md",
+      "target": "docs/archive/phase-012/P012-T003_UI_RESULTADO_T012.md",
+      "size_bytes": 10347,
+      "sha256": "8544fcaf5b2bc5f8dbcea18de08d39d978f05b50c21eec6293a255c8a52f34bd"
+    },
+    {
+      "source": "docs/phase/P012-T003_UI_T012.md",
+      "target": "docs/archive/phase-012/P012-T003_UI_T012.md",
+      "size_bytes": 4501,
+      "sha256": "d335e52ed0916ee0fa1487ddd1b19a9d64990ae55fd454f13ff30656cf401b62"
+    },
+    {
+      "source": "docs/phase/P012-T004_CONTINUACION_T013.md",
+      "target": "docs/archive/phase-012/P012-T004_CONTINUACION_T013.md",
+      "size_bytes": 19352,
+      "sha256": "59f501df87fd3e0192b4fd40a60baa819297e76565f06f962c5daa57fe1ecb05"
+    },
+    {
+      "source": "docs/phase/P012-T004_PROPUESTA_ACTUALIZAR_STATE.diff",
+      "target": "docs/archive/phase-012/P012-T004_PROPUESTA_ACTUALIZAR_STATE.diff",
+      "size_bytes": 1183,
+      "sha256": "fa18d0e38b51ec74793e038c53973dcc5c8d4cb7b11f47876a9aaafb72856571"
+    },
+    {
+      "source": "docs/phase/P012-T004_PROPUESTA_TYPESCRIPT.md",
+      "target": "docs/archive/phase-012/P012-T004_PROPUESTA_TYPESCRIPT.md",
+      "size_bytes": 20372,
+      "sha256": "18a4f2f5421d1c491e7030a20be60d51b3656255e9a58b056e47d93611793433"
+    },
+    {
+      "source": "docs/phase/P012-T004_TYPESCRIPT_REAL.md",
+      "target": "docs/archive/phase-012/P012-T004_TYPESCRIPT_REAL.md",
+      "size_bytes": 10366,
+      "sha256": "a1a28a35300a9d5e6c862abd60f8fece63bc50f3028b8d3fea1f3d7b0035331e"
+    },
+    {
+      "source": "docs/phase/P012-T005_CANDIDATO.md",
+      "target": "docs/archive/phase-012/P012-T005_CANDIDATO.md",
+      "size_bytes": 9882,
+      "sha256": "babdc88a49f5486d1edc22ff23e66f8d99fe413c6b67dd67a4bb7c2d59d56341"
+    },
+    {
+      "source": "docs/phase/P012-T005_DIFF_PUBLICO.json",
+      "target": "docs/archive/phase-012/P012-T005_DIFF_PUBLICO.json",
+      "size_bytes": 2280,
+      "sha256": "445f61d431b83a93c94f0305e36d708ca6c947728d766e0088cffd13fdc3379c"
+    },
+    {
+      "source": "docs/phase/P012-T005_MANIFIESTO_PRIVADO.tsv",
+      "target": "docs/archive/phase-012/P012-T005_MANIFIESTO_PRIVADO.tsv",
+      "size_bytes": 125067,
+      "sha256": "a7e1295ebc06c543bc34624ed500e30616c585e2696757c20de246cdeb237b83"
+    },
+    {
+      "source": "docs/phase/P012-T005_MANIFIESTO_PUBLICO.sha256",
+      "target": "docs/archive/phase-012/P012-T005_MANIFIESTO_PUBLICO.sha256",
+      "size_bytes": 41293,
+      "sha256": "cf191a40914095aeb3fbbeea0e6485878cc3218754361fa78d314b87dc19362a"
+    },
+    {
+      "source": "docs/phase/P012-T005_PAQUETE.sha256",
+      "target": "docs/archive/phase-012/P012-T005_PAQUETE.sha256",
+      "size_bytes": 274,
+      "sha256": "e169012c5a31938b068a2af008dcbb43e2eaf48d047b3e4b089c6902c5ff9e7b"
+    },
+    {
+      "source": "docs/phase/P012-T005_SUSTITUCION.json",
+      "target": "docs/archive/phase-012/P012-T005_SUSTITUCION.json",
+      "size_bytes": 433,
+      "sha256": "7e7ada20989c722525ab5c73508b460b08dd1d40d7454408576320371386c035"
+    },
+    {
+      "source": "docs/phase/P012-T005_public_candidate.py",
+      "target": "docs/archive/phase-012/P012-T005_public_candidate.py",
+      "size_bytes": 7670,
+      "sha256": "175780c70f129603849e29635a757e8174f6aa245647c31558b0df50f0670f48"
+    },
+    {
+      "source": "docs/phase/P012-T005_public_docs_check.py",
+      "target": "docs/archive/phase-012/P012-T005_public_docs_check.py",
+      "size_bytes": 9680,
+      "sha256": "ace5920d2a32697e112fa3feac1aa2ce63a9fb09807e422589a86a69e37e7e67"
+    },
+    {
+      "source": "docs/phase/P012-T006_COMPROBACION.json",
+      "target": "docs/archive/phase-012/P012-T006_COMPROBACION.json",
+      "size_bytes": 1218,
+      "sha256": "7dfd277b38fde3cfbf7d265df10f1465062aa9a87415d5192a3fb27038787e95"
+    },
+    {
+      "source": "docs/phase/P012-T006_check.py",
+      "target": "docs/archive/phase-012/P012-T006_check.py",
+      "size_bytes": 6570,
+      "sha256": "353671087746d8937536fc1ed048be7fa5d465f96a66f5b374e4ce5644ea2098"
+    },
+    {
+      "source": "docs/phase/P012-T008_CORRECCION_PREFLIGHT.md",
+      "target": "docs/archive/phase-012/P012-T008_CORRECCION_PREFLIGHT.md",
+      "size_bytes": 9295,
+      "sha256": "4231782d80a1737df281d4b4086e2b29b1b026ce9ce8839a6e3ce78f9cf2ffde"
+    },
+    {
+      "source": "docs/phase/P012-T009_CHECK_ENVIRONMENT.py",
+      "target": "docs/archive/phase-012/P012-T009_CHECK_ENVIRONMENT.py",
+      "size_bytes": 6179,
+      "sha256": "0546fe935ed7eb3d7e1d38df94a5b93cec1ee898cd5bb572933a4b8aa5587fb2"
+    },
+    {
+      "source": "docs/phase/P012-T009_DIAGNOSTICO_ENTORNO_CODEX.md",
+      "target": "docs/archive/phase-012/P012-T009_DIAGNOSTICO_ENTORNO_CODEX.md",
+      "size_bytes": 16815,
+      "sha256": "740d614b5301db5dd0bd27ec8801c4523c79a73e4031ec0bb82c53b32e6feb91"
+    },
+    {
+      "source": "docs/phase/P012-T010_FORMATEADOR_DECLARATIVO.md",
+      "target": "docs/archive/phase-012/P012-T010_FORMATEADOR_DECLARATIVO.md",
+      "size_bytes": 10716,
+      "sha256": "bd0a622750cbbf056d4e94cae6dcc594372afecd9b4078a33f7525102cd14824"
+    },
+    {
+      "source": "docs/phase/P012-T011_PRESETS_UI_V8.md",
+      "target": "docs/archive/phase-012/P012-T011_PRESETS_UI_V8.md",
+      "size_bytes": 5663,
+      "sha256": "845c3f78fd7384932703eb7e2501ae99d0390352ccd2678f6ff77f0812a9d073"
+    },
+    {
+      "source": "docs/phase/P012-T012_CODE.sha256",
+      "target": "docs/archive/phase-012/P012-T012_CODE.sha256",
+      "size_bytes": 2315,
+      "sha256": "c89f85cc4b49b0045ab0bdb979e6a17f6862d10304da676bb8ac48c09f60784c"
+    },
+    {
+      "source": "docs/phase/P012-T012_PLAN_VISTA_CONSULTA.md",
+      "target": "docs/archive/phase-012/P012-T012_PLAN_VISTA_CONSULTA.md",
+      "size_bytes": 13160,
+      "sha256": "72930f7d9b39f60b69b94bf72c2b277416fbb4c5cc32915da2b1d637fd54667a"
+    },
+    {
+      "source": "docs/phase/P012-T012_VISTA_CONSULTA.md",
+      "target": "docs/archive/phase-012/P012-T012_VISTA_CONSULTA.md",
+      "size_bytes": 13273,
+      "sha256": "7c042b0b8bc6ded0e00c8f99a29dbbc7fe2f618c25f17feae5f820260f89b082"
+    },
+    {
+      "source": "docs/phase/P012-T013_CODE.sha256",
+      "target": "docs/archive/phase-012/P012-T013_CODE.sha256",
+      "size_bytes": 222,
+      "sha256": "6dd038f9bd2b4d03737da63dd85bd78cf3f246524002ab56c6f730a4732a12c1"
+    },
+    {
+      "source": "docs/phase/P012-T013_VINCULO_RECIBO.md",
+      "target": "docs/archive/phase-012/P012-T013_VINCULO_RECIBO.md",
+      "size_bytes": 10615,
+      "sha256": "3bca3b09e1e0c86dd0d2d491ed2d5bb045b0dc6ce425bde69d18124008ad24f4"
+    },
+    {
+      "source": "docs/phase/P012_EXPEDIENTE_APERTURA.md",
+      "target": "docs/archive/phase-012/P012_EXPEDIENTE_APERTURA.md",
+      "size_bytes": 11083,
+      "sha256": "ad0ae1dfbe18b71200171c62312fd06523f6e61dd946e943046a79f6695c4f8b"
+    },
+    {
+      "source": "docs/phase/P012_REVIEW.md",
+      "target": "docs/archive/phase-012/P012_REVIEW.md",
+      "size_bytes": 12633,
+      "sha256": "c4e0fcf7ab6a8b4390515d73de2078c71d0e19c137a7c003110e85e5ec3246e7"
+    }
+  ]
+}

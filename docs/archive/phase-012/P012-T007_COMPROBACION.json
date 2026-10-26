@@ -1,0 +1,47 @@
+{
+  "base": "ce4b5d2f8ed1a1ac1af9cec00316b10b1d95a814",
+  "phase": "P012",
+  "originals_preserved": 42,
+  "previous_archive_files_preserved": 286,
+  "phase_directory_empty": true,
+  "phase_contracts_preserved": 12,
+  "p012_exit_criteria": 7,
+  "active_tasks": 0,
+  "archived_tasks": 13,
+  "decisions": 212,
+  "previous_decision_bodies_preserved_except_navigation": 211,
+  "sizes": {
+    "state": 12147,
+    "base": 10577,
+    "next_steps": 1346
+  },
+  "live_documents": 35,
+  "live_relative_links": 957,
+  "snapshot_documents": 26,
+  "snapshot_links_in_original_context": 269,
+  "live_mermaid_blocks_preserved": 35,
+  "private_docs_only": true,
+  "public_manifest_sha256": "cf191a40914095aeb3fbbeea0e6485878cc3218754361fa78d314b87dc19362a",
+  "public_sources_unchanged": true,
+  "candidate": {
+    "files": 401,
+    "bytes": 5480755,
+    "hashes": true,
+    "modes_checked": true,
+    "no_git_or_symlinks": true
+  },
+  "previous_candidate": {
+    "files": 387,
+    "bytes": 5402952,
+    "hashes": true,
+    "modes_checked": false,
+    "no_git_or_symlinks": true
+  },
+  "package_sha256": {
+    "harness_local-0.1.0-py3-none-any.whl": "eef56a29c268839487f23e53493fd728361e31589ce0535a1f3f01e50b4504ab",
+    "harness_local-0.1.0.tar.gz": "0f290f05d1a93f5117d0eac01f1b6b175bad61ad1e88613580441cce3072a384",
+    "pylock.toml": "20a327c3a97484892280c6dec6d2176202c2a88ebd638878e0808eeadfdf2cf9"
+  },
+  "sha256sums_sha256": "e169012c5a31938b068a2af008dcbb43e2eaf48d047b3e4b089c6902c5ff9e7b",
+  "public_documentation_check": "31 public Markdown files, 260 relative links; layout {'phases': ['P001'], 'tasks': 0, 'decisions': 80, 'sizes': {'state': 7398, 'base': 6969, 'next_steps': 615}}; 61 DNNN cited by code, 63 by documents"
+}

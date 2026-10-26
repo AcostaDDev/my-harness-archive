@@ -85,7 +85,7 @@ Las copias marcadas D040 ofrecen [consulta UI](flows/backup-consultation.md) por
 JUnit, jobs/intentos/eventos y métricas por run. Conservan estados históricos sin sondeo de ejecución, acciones,
 recuperación o configuración; no leen checkouts ni montan el workspace operativo. Sin marca se conserva la
 resolución canónica habitual, incluso si faltan agentes o el supervisor está desactivado. Verificación sintética
-P012-T012; [consulta UI real de T003](phase/P012-T003_UI_RESULTADO_T012.md) acreditada en Chrome/macOS con
+P012-T012; [consulta UI real de T003](archive/phase-012/P012-T003_UI_RESULTADO_T012.md) acreditada en Chrome/macOS con
 el wheel T012 y salvedad autorizada de identidad histórica del host (D204), sin certificar muerte de escritores.
 
 ## 5. Reglas de negocio
@@ -209,7 +209,7 @@ sin duplicados, ejecutable mapeado y `authorize_profile_commands = true`. El mot
 antes de validar/revisar, solo sobre archivos existentes cambiados que el contrato permite. Aceptación y
 commit se vinculan a esos bytes formateados; revalidar no formatea. Omitir ambos campos mantiene el flujo
 anterior. V1–v7 conservan su contrato y rechazan las claves declarativas nuevas; los historiales no se adoptan
-bajo otra composición. [Evidencia offline](phase/P012-T010_FORMATEADOR_DECLARATIVO.md), sin uso real nuevo.
+bajo otra composición. [Evidencia offline](archive/phase-012/P012-T010_FORMATEADOR_DECLARATIVO.md), sin uso real nuevo.
 
 - Navegar datos registrados no invoca modelos ni necesita red. El frontend no accede al disco ni lanza comandos.
 - Listados, logs y diffs paginados con límites explícitos; nada lee un historial completo para pintar una vista.

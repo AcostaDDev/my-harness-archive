@@ -223,6 +223,7 @@ tarea se leen solo las decisiones que cita; este índice sirve para buscar prece
 
 | [D210](#d210--p012-t005-alcance-público-y-candidato-verificados) | P012-T005: alcance público y candidato verificados | P012 |
 | [D211](#d211--p012-t006-dictamen-favorable-y-expediente-actualizado) | P012-T006: dictamen favorable y expediente actualizado | P012 |
+| [D212](#d212--cierre-documental-de-p012-y-validación-real-archivada) | Cierre documental de P012 y validación real archivada | P012 |
 
 ## D001 — Alcance local y arquitectura base
 
@@ -5425,7 +5426,7 @@ Estado: cerrada y archivada el 2026-10-24 por la continuación solicitada por el
 ## D183 — P012: validación real previa a la apertura pública
 
 Estado: fase planificada el 2026-10-24 por encargo explícito del usuario; siete tareas pendientes.
-[Tareas](NEXT_STEPS.md) y [criterios](ROADMAP.md#p012--validación-real-previa-a-la-apertura-pública).
+[Tareas](archive/phase-012/NEXT_STEPS.md) y [criterios](ROADMAP.md#p012--validación-real-previa-a-la-apertura-pública).
 Precedentes: D095, D139, D151, D155, D157, D173, D174, D181 y D182.
 
 - Tras regenerar el candidato de P011 en `my_harness_dist` (paso 1 del expediente, manifiesto `74cc9141…ea71`), el
@@ -5447,7 +5448,7 @@ Precedentes: D095, D139, D151, D155, D157, D173, D174, D181 y D182.
 ## D184 — P012-T001: propuesta operativa y Codex 0.164.0
 
 Estado: completada documentalmente el 2026-10-24; propuesta confirmada por el usuario, sin autorizar tramos.
-[Propuesta, parámetros y controles](phase/P012-T001_PROPUESTA_OPERATIVA.md). Fase: P012. Concreta D183 sobre
+[Propuesta, parámetros y controles](archive/phase-012/P012-T001_PROPUESTA_OPERATIVA.md). Fase: P012. Concreta D183 sobre
 D095/D119/D143/D151/D168/D173/D174, sin ampliar autorizaciones operativas.
 
 - La inspección `--version` encuentra Codex **0.164.0**, frente a 0.163.0 previsto en D183. El usuario responde
@@ -5477,8 +5478,8 @@ D095/D119/D143/D151/D168/D173/D174, sin ampliar autorizaciones operativas.
 ## D185 — P012-T002: autorizada y detenida por caché Django incompleta
 
 Estado: T002 iniciada y detenida el 2026-10-24 en preparación offline; no completada, sin llamadas a modelos.
-[Registro y hashes](phase/P012-T002_INCORPORACION_REAL.md),
-[doce pins y hashes faltantes](phase/P012-T002_WHEELS_FALTANTES.lock). Fase: P012. Aplica D183/D184.
+[Registro y hashes](archive/phase-012/P012-T002_INCORPORACION_REAL.md),
+[doce pins y hashes faltantes](archive/phase-012/P012-T002_WHEELS_FALTANTES.lock). Fase: P012. Aplica D183/D184.
 
 - El usuario pide «Haz commit y comienza con la siguiente tarea». Se hace commit de T001 (`dc5edd4`) y se inicia
   T002 con la propuesta confirmada; la instrucción autoriza ese tramo, sin extenderse a T003/T004 ni a descargas.
@@ -5499,8 +5500,8 @@ Estado: T002 iniciada y detenida el 2026-10-24 en preparación offline; no compl
 ## D186 — P012-T002: descargas autorizadas y falso rechazo de choices multilínea
 
 Estado: T002 reanudada y detenida de nuevo el 2026-10-24; defecto acotado, sin llamadas a modelos.
-[Registro y evidencia saneada](phase/P012-T002_INCORPORACION_REAL.md#7-reanudación-autorizada-y-wheelhouse-resuelto),
-[manifiesto wheels](phase/P012-T002_WHEELS_VERIFICADOS.sha256). Fase: P012. Conserva D185 como primera parada.
+[Registro y evidencia saneada](archive/phase-012/P012-T002_INCORPORACION_REAL.md#7-reanudación-autorizada-y-wheelhouse-resuelto),
+[manifiesto wheels](archive/phase-012/P012-T002_WHEELS_VERIFICADOS.sha256). Fase: P012. Conserva D185 como primera parada.
 
 - HITL: «Autorizar esas descargas y reanudar T002», sobre lista de doce pins/hashes de D185. Se consultan sus doce
   metadatos PyPI y descargan doce wheels compatibles de files.pythonhosted.org, verificando tamaño y hash;
@@ -5523,7 +5524,7 @@ Estado: T002 reanudada y detenida de nuevo el 2026-10-24; defecto acotado, sin l
 
 Estado: implementada y verificada offline el 2026-10-24 por la continuación pedida por el usuario.
 El commit solicitado conserva T002 (`2abf278`); los cambios de T008 quedan sin commit.
-[Corrección, pruebas y propuesta de continuación](phase/P012-T008_CORRECCION_PREFLIGHT.md),
+[Corrección, pruebas y propuesta de continuación](archive/phase-012/P012-T008_CORRECCION_PREFLIGHT.md),
 [flujo CLI](flows/cli-compatibility.md). Fase: P012. Corrige el defecto de D186 sin reanudar T002.
 
 - `unsupported_values` lee listas de valores separados por comas dentro de la sección de su opción, incluidas
@@ -5547,7 +5548,7 @@ El commit solicitado conserva T002 (`2abf278`); los cambios de T008 quedan sin c
 ## D188 — P012-T002: preflight corregido aprobado y parada en la apertura de Chrome
 
 Estado: T002 reanudada y detenida el 2026-10-24; preparación corregida acreditada, sin llamadas a modelos.
-[Registro, hashes y continuación propuesta](phase/P012-T002_INCORPORACION_REAL.md#10-continuación-autorizada-con-el-paquete-corregido).
+[Registro, hashes y continuación propuesta](archive/phase-012/P012-T002_INCORPORACION_REAL.md#10-continuación-autorizada-con-el-paquete-corregido).
 Fase: P012. Conserva D185/D186 y aplica la propuesta de D187.
 
 - El usuario pide continuar la siguiente tarea y finalizar con commit. Con el precedente D185, se interpreta como
@@ -5574,7 +5575,7 @@ Fase: P012. Conserva D185/D186 y aplica la propuesta de D187.
 ## D189 — P012-T002: rechazo cross-site también desde la barra de Chrome
 
 Estado: continuación autorizada y detenida el 2026-10-24; T002 parcial, sin llamadas a modelos.
-[Evidencia y siguiente punto HITL](phase/P012-T002_INCORPORACION_REAL.md#15-hitl-recibido-y-navegación-desde-la-barra-de-chrome).
+[Evidencia y siguiente punto HITL](archive/phase-012/P012-T002_INCORPORACION_REAL.md#15-hitl-recibido-y-navegación-desde-la-barra-de-chrome).
 Fase: P012. Conserva D188 sin alterar su resultado ni su propuesta histórica.
 
 - HITL recibido tras `e69d1d1`: «Autorizar esa continuación de T002», referido a la propuesta concreta de D188:
@@ -5596,7 +5597,7 @@ Fase: P012. Conserva D188 sin alterar su resultado ni su propuesta histórica.
 ## D190 — P012-T002: acceso manual al login y diagnóstico local sin cabeceras
 
 Estado: diagnóstico local autorizado y terminado el 2026-10-24; T002 parcial, servicio detenido y sin modelos.
-[Evidencia y continuación propuesta](phase/P012-T002_INCORPORACION_REAL.md#18-diagnóstico-autorizado-y-acceso-manual-observado).
+[Evidencia y continuación propuesta](archive/phase-012/P012-T002_INCORPORACION_REAL.md#18-diagnóstico-autorizado-y-acceso-manual-observado).
 Fase: P012. Conserva D188/D189; no cambia el contrato de seguridad.
 
 - «Continúa» autoriza la propuesta concreta de D189: reiniciar para diagnóstico con apertura manual y observar
@@ -5617,7 +5618,7 @@ Fase: P012. Conserva D188/D189; no cambia el contrato de seguridad.
 ## D191 — P012-T002: incorporación B confirmada y parada del escritor Codex
 
 Estado: reanudación autorizada el 2026-10-24; B COMMITTED, tarea en REVISION_LIMIT; T002 parcial y servicio detenido.
-[Registro, evidencia y siguiente diagnóstico](phase/P012-T002_INCORPORACION_REAL.md#21-reanudación-autorizada-sesión-y-registro).
+[Registro, evidencia y siguiente diagnóstico](archive/phase-012/P012-T002_INCORPORACION_REAL.md#21-reanudación-autorizada-sesión-y-registro).
 Fase: P012. Conserva D188–D190 y sus límites.
 
 - «Autorizo» cubre la propuesta D190/§20: mismo wheel/venv/SQLite, login cargado manualmente, B/tarea desde UI,
@@ -5647,7 +5648,7 @@ Fase: P012. Conserva D188–D190 y sus límites.
 ## D192 — P012-T009: entorno del escritor y continuidad con fixture limpio
 
 Estado: diagnóstico offline completado el 2026-10-24; propuesta elegida por HITL, operación real sin autorizar.
-Fase: P012. [Diagnóstico, delta exacto, consentimiento posterior y comprobaciones](phase/P012-T009_DIAGNOSTICO_ENTORNO_CODEX.md).
+Fase: P012. [Diagnóstico, delta exacto, consentimiento posterior y comprobaciones](archive/phase-012/P012-T009_DIAGNOSTICO_ENTORNO_CODEX.md).
 
 - Intención congelada y TOML coinciden: ejecutor sin TMPDIR ni Python en PATH; el validador tiene entorno y mapa
   de ejecutables propios. El stream acredita `python` ausente y errores de caché Git/xcrun en `/tmp`; el rechazo
@@ -5675,7 +5676,7 @@ Fase: P012. [Diagnóstico, delta exacto, consentimiento posterior y comprobacion
 ## D193 — P012-T002: fixture limpio incorporado y rechazo por Ruff
 
 Estado: continuación T009 autorizada y ejecutada el 2026-10-24; nueva parada, T002 sigue parcial.
-Fase: P012. [Autorización, comprobaciones, resultados y conservación](phase/P012-T002_CONTINUACION_T009.md).
+Fase: P012. [Autorización, comprobaciones, resultados y conservación](archive/phase-012/P012-T002_CONTINUACION_T009.md).
 Conserva D191/D192 sin atribuir al nuevo intento la resolución de la causa del truncamiento anterior.
 
 - HITL: **«Autorizar esta continuación de T002»**, sobre la propuesta concreta T009 §5: B2 desde `f6a2d9d`,
@@ -5711,8 +5712,8 @@ Conserva D191/D192 sin atribuir al nuevo intento la resolución de la causa del 
 ## D194 — P012-T010: formateador declarativo optativo en local-config-8
 
 Estado: implementada y verificada offline el 2026-10-24, tras elección HITL explícita; sin reanudar T002.
-Fase: P012. [Alternativas y elección](phase/P012-T002_PROPUESTA_CONTINUIDAD_RUFF.md),
-[contrato, pruebas y guion posterior](phase/P012-T010_FORMATEADOR_DECLARATIVO.md). Amplía D095 apoyándose en D133.
+Fase: P012. [Alternativas y elección](archive/phase-012/P012-T002_PROPUESTA_CONTINUIDAD_RUFF.md),
+[contrato, pruebas y guion posterior](archive/phase-012/P012-T010_FORMATEADOR_DECLARATIVO.md). Amplía D095 apoyándose en D133.
 
 - La investigación confirma que el run agotado no admite otra política, revalidar no ejecuta/formatea y un
   nuevo run no admite el checkout sucio. No hay defecto del motor acreditado: validaciones y revisor rechazaron
@@ -5750,7 +5751,7 @@ Fase: P012. [Alternativas y elección](phase/P012-T002_PROPUESTA_CONTINUIDAD_RUF
 
 Estado: autorizada y ejecutada hasta parada antes del alta el 2026-10-24; T002 sigue parcial.
 Fase: P012. Concreta D194, sin reescribir D184/D191/D193.
-[Propuesta, delta exacto y registro de ejecución](phase/P012-T002_PROPUESTA_T010.md).
+[Propuesta, delta exacto y registro de ejecución](archive/phase-012/P012-T002_PROPUESTA_T010.md).
 
 - HITL: **«Autorizar esta continuación de T002»**. Nuevo máximo 2 Claude/1 Codex, cero correcciones; incluye
   build/verificador/instalación offline, clon documental B2, TOML v8, preflight/checks, servicio/UI, alta/P001,
@@ -5780,7 +5781,7 @@ Fase: P012. Concreta D194, sin reescribir D184/D191/D193.
 
 Estado: implementada y verificada offline el 2026-10-24; sin otra operación real.
 Fase: P012. Corrección del defecto observado en D195 conforme al contrato D194.
-[Entrega, checks y próximo paso](phase/P012-T011_PRESETS_UI_V8.md).
+[Entrega, checks y próximo paso](archive/phase-012/P012-T011_PRESETS_UI_V8.md).
 
 - El formulario compartido de registro/creación/actualización reconoce `local-config-8` como formato con
   selección de agentes por proyecto, igual que el backend. Se añade v8 a PRESET_FORMATS y al aviso en/es.
@@ -5803,7 +5804,7 @@ Fase: P012. Corrección del defecto observado en D195 conforme al contrato D194.
 
 Estado: propuesta concretada y revisada offline el 2026-10-24; consentimiento operativo pendiente.
 Fase: P012. Concreta el siguiente paso de D196, sin reabrir el consentimiento agotado de D195.
-[Propuesta completa, comandos futuros y petición HITL](phase/P012-T002_PROPUESTA_T011.md).
+[Propuesta completa, comandos futuros y petición HITL](archive/phase-012/P012-T002_PROPUESTA_T011.md).
 
 - Base del producto `500a783`, con selector v8 corregido. Destinos nuevos dist-t011/venv-t011; conservar
   managed-b-t010 y harness-local-t010.toml, sin otra B, clon o transformación de configuración. Mismos id,
@@ -5824,8 +5825,8 @@ Fase: P012. Concreta el siguiente paso de D196, sin reabrir el consentimiento ag
 ## D198 — P012-T002: tarea real COMMITTED con perfil declarado v8
 
 Estado: T002 completada con evidencia acumulada; operación 2026-10-24 y cierre documental 2026-10-25.
-Fase: P012. [Propuesta/consentimiento](phase/P012-T002_PROPUESTA_T011.md) y
-[resultado, matriz y límites](phase/P012-T002_RESULTADO_T011.md). Concreta D197, sin reescribir D184–D197.
+Fase: P012. [Propuesta/consentimiento](archive/phase-012/P012-T002_PROPUESTA_T011.md) y
+[resultado, matriz y límites](archive/phase-012/P012-T002_RESULTADO_T011.md). Concreta D197, sin reescribir D184–D197.
 
 - HITL **«Autorizo.»** a la propuesta del commit `cc2ef5d`: producto `500a783`, dist-t011/venv-t011 nuevos,
   clon/TOML t010 conservados, máximo nuevo 2 Claude/1 Codex y cero correcciones. Sin repetir B, reparar resultados
@@ -5858,7 +5859,7 @@ Fase: P012. [Propuesta/consentimiento](phase/P012-T002_PROPUESTA_T011.md) y
 ## D199 — P012-T003: confirmación en cola con supervisor detenido
 
 Estado: diseño operativo elegido por HITL el 2026-10-25; propuesta preparada, sin consentimiento de ejecución.
-Fase: P012. [Propuesta, comprobaciones y consentimiento pendiente](phase/P012-T003_PROPUESTA_CHAT_BACKUP.md).
+Fase: P012. [Propuesta, comprobaciones y consentimiento pendiente](archive/phase-012/P012-T003_PROPUESTA_CHAT_BACKUP.md).
 Precedentes: D035/D040/D083/D174/D184/D198. Sin cambio de producto ni reescritura de T001.
 
 - Al concretar T003 se contrasta una discrepancia del guion: aceptar la propuesta por hash/versión crea un run/job
@@ -5887,8 +5888,8 @@ Precedentes: D035/D040/D083/D174/D184/D198. Sin cambio de producto ni reescritur
 ## D200 — P012-T003: chat real y backup restaurado con límite de UI
 
 Estado: operación autorizada, ejecutada y detenida el 2026-10-25; dictamen de alcance UI pendiente de HITL.
-Fase: P012. [Propuesta y consentimientos](phase/P012-T003_PROPUESTA_CHAT_BACKUP.md) y
-[resultado, evidencia y límites](phase/P012-T003_CHAT_BACKUP_REAL.md). Concreta D199/D040/D083/D198.
+Fase: P012. [Propuesta y consentimientos](archive/phase-012/P012-T003_PROPUESTA_CHAT_BACKUP.md) y
+[resultado, evidencia y límites](archive/phase-012/P012-T003_CHAT_BACKUP_REAL.md). Concreta D199/D040/D083/D198.
 
 - El usuario responde «Continúa.» tras el commit bcbf977 y la solicitud específica de consentimiento T003:
   guion 8024/8025, instalación T011 conservada, máximo 3 Claude/0 Codex y dos horas, sin T004. Guardias y
@@ -5923,7 +5924,7 @@ Fase: P012. [Propuesta y consentimientos](phase/P012-T003_PROPUESTA_CHAT_BACKUP.
 ## D201 — P012-T012: vista UI de consulta planificada
 
 Estado: alcance elegido por HITL y tarea planificada el 2026-10-25; implementación pendiente.
-Fase: P012. [Plan, criterios y secuencia](phase/P012-T012_PLAN_VISTA_CONSULTA.md).
+Fase: P012. [Plan, criterios y secuencia](archive/phase-012/P012-T012_PLAN_VISTA_CONSULTA.md).
 Precedentes: D040/D144/D145/D199/D200. Los informes T003 y D001–D200 se conservan sin reescribirlos.
 
 - Ante las alternativas de cerrar T003 solo con evidencia API o mantenerla parcial y planificar UI independiente,
@@ -5951,7 +5952,7 @@ Precedentes: D040/D144/D145/D199/D200. Los informes T003 y D001–D200 se conser
 ## D202 — P012-T012: vista UI de consulta implementada
 
 Estado: implementado y verificado offline el 2026-10-25. Fase: P012. Implementa el contrato D201.
-[Entrega, pruebas y propuesta posterior](phase/P012-T012_VISTA_CONSULTA.md),
+[Entrega, pruebas y propuesta posterior](archive/phase-012/P012-T012_VISTA_CONSULTA.md),
 [flujo](flows/backup-consultation.md). D001–D201 e informes reales anteriores conservados por bytes.
 
 - `SupervisorRead.read_only_archive` procede de la marca D040; OpenAPI/tipos regenerados. No cambia esquema,
@@ -5973,7 +5974,7 @@ Estado: implementado y verificado offline el 2026-10-25. Fase: P012. Implementa 
 ## D203 — P012-T003: parada previa al build por identidad histórica del host
 
 Estado: continuación UI autorizada y detenida antes del build el 2026-10-26; HITL pendiente.
-Fase: P012. [Evidencia saneada y propuesta de reanudación](phase/P012-T003_UI_T012.md).
+Fase: P012. [Evidencia saneada y propuesta de reanudación](archive/phase-012/P012-T003_UI_T012.md).
 Precedentes: D040/D199–D202; guion §4 de la entrega T012. Registros anteriores conservados.
 
 - El usuario responde **«Autorizo.»** a la petición específica: build/instalación offline en destinos nuevos,
@@ -5995,7 +5996,7 @@ Precedentes: D040/D199–D202; guion §4 de la entrega T012. Registros anteriore
 ## D204 — P012-T003: consulta UI restaurada verificada con salvedad autorizada
 
 Estado: ejecutada, detenida y T003 completada con evidencia acumulada el 2026-10-26.
-Fase: P012. [Resultado saneado, pruebas y límites](phase/P012-T003_UI_RESULTADO_T012.md).
+Fase: P012. [Resultado saneado, pruebas y límites](archive/phase-012/P012-T003_UI_RESULTADO_T012.md).
 Precedentes: D040/D199–D203. La parada D203, su informe y los resultados anteriores se conservan por bytes.
 
 - El usuario responde **«Autorizo»** tras el commit 92e800d y la pregunta específica: reanudar solo la copia
@@ -6027,7 +6028,7 @@ Precedentes: D040/D199–D203. La parada D203, su informe y los resultados anter
 ## D205 — P012-T004: propuesta con base independiente y sucesora vacía
 
 Estado: alcance de sucesora elegido por HITL el 2026-10-26; propuesta preparada offline, operación sin autorizar.
-Fase: P012. [Guion, TOML completo, hashes, comprobaciones y consentimiento](phase/P012-T004_PROPUESTA_TYPESCRIPT.md).
+Fase: P012. [Guion, TOML completo, hashes, comprobaciones y consentimiento](archive/phase-012/P012-T004_PROPUESTA_TYPESCRIPT.md).
 Precedentes: D059/D091/D143/D168/D184/D192/D199/D204. Sin cambio de producto ni reescritura de T001.
 
 - D199 conserva P001-T002/run d235e9d5… QUEUED y prohíbe reactivar su base. Se propone init-db exclusivo
@@ -6062,7 +6063,7 @@ Precedentes: D059/D091/D143/D168/D184/D192/D199/D204. Sin cambio de producto ni 
 ## D206 — P012-T004: receta completada y parada por preparation_required
 
 Estado: ejecutada y detenida el 2026-10-26; T004 parcial, T013 offline añadida.
-Fase: P012. [Resultado, matriz, parada y conservación](phase/P012-T004_TYPESCRIPT_REAL.md).
+Fase: P012. [Resultado, matriz, parada y conservación](archive/phase-012/P012-T004_TYPESCRIPT_REAL.md).
 Precedentes: D119/D168/D174/D199/D204/D205; propuesta e informes previos conservados por bytes.
 
 - Consentimiento **«autorizo»** al guion 9aefae3: base/state/TOML/caché propios, instalación T012 conservada,
@@ -6095,7 +6096,7 @@ Precedentes: D119/D168/D174/D199/D204/D205; propuesta e informes previos conserv
 ## D207 — P012-T013: vínculo del recibo tras resolución CLI
 
 Estado: implementado y verificado offline el 2026-10-26. Fase: P012.
-[Entrega, reproducción, pruebas y continuación propuesta](phase/P012-T013_VINCULO_RECIBO.md).
+[Entrega, reproducción, pruebas y continuación propuesta](archive/phase-012/P012-T013_VINCULO_RECIBO.md).
 Precedentes: D119/D168/D174/D206; el resultado real T004 se conserva por bytes.
 
 - Regresión HTTP sintética reproduce el rechazo de T004: antes de preparar, 409 legítimo; después de receta
@@ -6123,7 +6124,7 @@ Precedentes: D119/D168/D174/D206; el resultado real T004 se conserva por bytes.
 ## D208 — P012-T004: tarea COMMITTED y check sin READY
 
 Estado: continuación autorizada/ejecutada y detenida el 2026-10-26; T004 parcial.
-Fase: P012. [Resultado, consentimientos y propuesta documental](phase/P012-T004_CONTINUACION_T013.md).
+Fase: P012. [Resultado, consentimientos y propuesta documental](archive/phase-012/P012-T004_CONTINUACION_T013.md).
 Precedentes: D091/D168/D174/D199/D205–D207; informes anteriores conservados por bytes.
 
 - Usuario autoriza build/instalación T013, única tarea y cierre del hijo, máximo nuevo 3 Claude/1 Codex.
@@ -6148,7 +6149,7 @@ Precedentes: D091/D168/D174/D199/D205–D207; informes anteriores conservados po
   filas intactas, 254 archivos/42 artefactos/tres fixtures/diffs/ocho herramientas conservados. T004: 6.012
   filas (1.389 nuevas; una fila de fase actualizada normalmente), recibo y checkout limpio en ae86967.
   Nuevo 3 Claude/1 Codex; acumulado T004 6/12 y 1/3. P001 ACTIVE, sin p001 o P002 activa.
-- [Diff propuesto](phase/P012-T004_PROPUESTA_ACTUALIZAR_STATE.diff) preparado sin editar el hijo: prosa STATE
+- [Diff propuesto](archive/phase-012/P012-T004_PROPUESTA_ACTUALIZAR_STATE.diff) preparado sin editar el hijo: prosa STATE
   con hechos/commits actuales y check fallido, bloque gestionado conservado. HITL pendiente para edición
   documental por UI/CAS/hash/commit, un Claude adicional para check nuevo y cierre solo si READY. Máximo
   nuevo revisado 4/1, acumulado máximo 7/12 y 1/3; deadline original, sin reejecución de tarea. No se usa
@@ -6158,7 +6159,7 @@ Precedentes: D091/D168/D174/D199/D205–D207; informes anteriores conservados po
 ## D209 — P012-T004: estado documental confirmado y cierre real del hijo
 
 Estado: T004 completada con evidencia acumulada el 2026-10-26, tras HITL sucesivos.
-Fase: P012. [Resultado, matriz, checks y conservación](phase/P012-T004_CONTINUACION_T013.md).
+Fase: P012. [Resultado, matriz, checks y conservación](archive/phase-012/P012-T004_CONTINUACION_T013.md).
 Precedentes: D091/D168/D174/D199/D205–D208; D208 y los resultados fallidos se conservan.
 
 - HITL **«Autorizar edición documental y 1 Claude adicional»**: actualizar exclusivamente prosa STATE
@@ -6197,7 +6198,7 @@ Precedentes: D091/D168/D174/D199/D205–D208; D208 y los resultados fallidos se 
 ## D210 — P012-T005: alcance público y candidato verificados
 
 Estado: completada el 2026-10-26 por la continuación y commit local en inglés pedidos por el usuario. Fase: P012.
-[Entrega, matriz, hashes, checks y sustitución](phase/P012-T005_CANDIDATO.md). Concreta D157/D176/D183 sobre
+[Entrega, matriz, hashes, checks y sustitución](archive/phase-012/P012-T005_CANDIDATO.md). Concreta D157/D176/D183 sobre
 D198/D200/D202/D204/D207/D209; no modifica los resultados o consentimientos reales anteriores.
 
 - README/README.es por fila, CHANGELOG y baseline pública reflejan la pareja Claude 2.1.310 revisor/Codex 0.164.0
@@ -6224,8 +6225,8 @@ D198/D200/D202/D204/D207/D209; no modifica los resultados o consentimientos real
 ## D211 — P012-T006: dictamen favorable y expediente actualizado
 
 Estado: completada el 2026-10-26 por la petición del usuario de continuar la siguiente tarea. Fase: P012.
-[Revisión de salida](phase/P012_REVIEW.md), [expediente nuevo](phase/P012_EXPEDIENTE_APERTURA.md) y
-[contraste estático](phase/P012-T006_COMPROBACION.json). Concreta D183/D210 y conserva D157/D181/D182.
+[Revisión de salida](archive/phase-012/P012_REVIEW.md), [expediente nuevo](archive/phase-012/P012_EXPEDIENTE_APERTURA.md) y
+[contraste estático](archive/phase-012/P012-T006_COMPROBACION.json). Concreta D183/D210 y conserva D157/D181/D182.
 
 - Dictamen favorable de los siete criterios de salida en el alcance declarado, con evidencia acumulada y
   procedencia de cada tramo; no quedan correcciones obligatorias pendientes. Habilita T007, que no se ejecuta
@@ -6244,3 +6245,31 @@ Estado: completada el 2026-10-26 por la petición del usuario de continuar la si
 - Solo documentación privada: parsers/enlaces/presupuestos, cuerpos D001–D210 y originales phase/archive
   conservados. Sin cambios de producto, datos, API o flujos; sin servicios, builds, instalaciones, CLI/proveedores
   reales, fixtures, smokes, commits/tags, push o publicación. Tras abrir, fuente principal pública según D157.
+
+## D212 — Cierre documental de P012 y validación real archivada
+
+Estado: cerrada y archivada el 2026-10-26 por la continuación solicitada por el usuario, tras D211. Fase: P012.
+[Resumen](archive/phase-012/SUMMARY.md), [revisión](archive/phase-012/REVIEW.md) y
+[registro de cierre](archive/phase-012/P012_CIERRE.md). Precedentes: D002/D088/D114/D140/D153/D182.
+
+- La petición de commitear la tarea anterior, continuar la siguiente y finalizar con commit en inglés autoriza
+  T007, señalada en STATE/NEXT_STEPS tras el dictamen favorable de T006. Trece tareas y siete criterios
+  completados en el alcance declarado; no quedan correcciones obligatorias pendientes. Sin sucesora definida.
+- STATE/NEXT_STEPS y todos los artefactos originales de docs/phase se conservan por bytes respecto del commit
+  T006 ce4b5d2. MANIFEST registra origen/destino, tamaño y SHA-256. SUMMARY/REVIEW/P012_CIERRE y comprobación
+  nuevos explican el cierre; los snapshots mantienen sus estados, enlaces y comandos en el contexto original.
+  Archivo previo P000–P011 intacto; decisiones D001–D211 solo cambian enlaces de navegación al nuevo archivo.
+- STATE compacta la base, NEXT_STEPS queda sin tareas y ROADMAP enlaza el cierre. Referencias vigentes de
+  arquitectura, especificación y flujo de consulta reubicadas sin cambiar contratos, diagramas o comportamiento.
+  README, README.es y docs/public permanecen iguales; candidato/paquete T005 y P011 conservados sin regenerar.
+- El candidato mantiene 401 archivos/5.480.755 bytes y manifiesto cf191a40…9362a; wheel eef56a29…4504ab.
+  Expediente P012 vigente, P011 histórico. Scripts con raíz derivada se reproducen desde los commits de origen
+  o se inspeccionan con su ruta original simulada, sin modificar snapshots ni moverlos de vuelta.
+- Evidencia real acumulada y límites de D211 conservados: pareja actual única, fixtures sintéticos/macOS ARM64/
+  Chrome, dos REVISION_LIMIT, dos checks rechazados, propuesta QUEUED e identidad histórica unknown. No se
+  certifica muerte de escritores ni se autoriza reactivar bases, ejecutar colas o consumir saldos anteriores.
+- Cierre manual, separado del READY del producto y del cierre del hijo T004; sin registrar/ejecutar este
+  repositorio con el harness, servicios, agentes, proveedores o smokes. Sin cambios de producto, datos, API,
+  flujos, dependencias, instalaciones o configuración global; sin tag, push, CI remota o publicación.
+  La apertura requiere instrucciones explícitas sobre el expediente y sus parámetros. Tras el primer push,
+  repositorio público como fuente principal (D157); modo continuo v0.2.0 posterior, sin tareas (D156).

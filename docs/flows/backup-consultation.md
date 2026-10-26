@@ -1,7 +1,7 @@
 # Consulta de backups y restauraciones (D040, D202)
 
 P012-T012 añade UI a las lecturas por id que ya ofrecía D040. No cambia el bundle, la marca persistente,
-las tablas o las guardias. [Contrato y pruebas](../phase/P012-T012_VISTA_CONSULTA.md).
+las tablas o las guardias. [Contrato y pruebas](../archive/phase-012/P012-T012_VISTA_CONSULTA.md).
 
 1. Con escritores detenidos, el operador crea/verifica el backup o restaura en un destino nuevo con el
    procedimiento D040. La continuación UI de T003 reutiliza su restauración conservada; no repite ese paso.

@@ -153,7 +153,7 @@ por su API y los artefactos referenciados; la restauración es de consulta (`que
   `formatter_argv`/`formatter_paths` en perfiles declarados, con ejecutable mapeado y autorización del perfil.
   Motor/runner D133 y `formatting_json` existentes, sin formatear al revalidar. CLI, idiomas y recetas v2 de v7
   conservados; v1–v7 mantienen su contrato/huellas. `check-config` muestra argv/patrones solo al declararlos.
-  [Entrega offline](phase/P012-T010_FORMATEADOR_DECLARATIVO.md), sin nueva acreditación real.
+  [Entrega offline](archive/phase-012/P012-T010_FORMATEADOR_DECLARATIVO.md), sin nueva acreditación real.
 - **Prompts** (`templates/`): `plan-task`, `execute-task`, `revise-task`, `review-task`, `executor-routing`,
   `close-phase`, `reconcile-phase`, `chat-turn`, `define-project`, `plan-phase`, `onboard-project` (D102; rol de
   solo lectura `definition`, sin `AGENTS.md` inyectado porque es parte del origen), `bootstrap-project`. Jerarquía base →
@@ -218,7 +218,7 @@ por su API y los artefactos referenciados; la restauración es de consulta (`que
   evidencia compartida con `RunPage`, consumo por `run_id` y estadísticas sin sondeo de ejecución ni sugerir
   backfill. Rutas operativas bloqueadas sin `ProjectWorkspace`, permisos, recuperación o solicitudes pendientes.
   Lecturas existentes D144/D145, sin checkout/historial completo; guardias query_only/409 intactas.
-  [Flujo](flows/backup-consultation.md), [entrega y límites](phase/P012-T012_VISTA_CONSULTA.md).
+  [Flujo](flows/backup-consultation.md), [entrega y límites](archive/phase-012/P012-T012_VISTA_CONSULTA.md).
 
 ## 8. Convenciones
 

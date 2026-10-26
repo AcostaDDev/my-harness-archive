@@ -316,105 +316,21 @@ que se corresponda con lo probado.
 **Fuera de alcance:** Flujo A (retirado), repetir las cuatro combinaciones, otras plataformas o CLI, evaluar
 comparativamente modelos, ejecutar el harness sobre este repositorio, operar el Django de P009 o ReferenceProject,
 modificar la configuración global, v0.2.0 y cualquier acción remota (repositorio, push, tag, Release, visibilidad).
-**Estado:** planificada el 2026-10-24 por encargo del usuario
-([D183](DECISIONS.md#d183--p012-validación-real-previa-a-la-apertura-pública), [tareas](NEXT_STEPS.md)). T001 tiene
-[propuesta confirmada](phase/P012-T001_PROPUESTA_OPERATIVA.md) y cierre documental (D184). T002 autorizada e
-iniciada; primera parada por caché (D185) resuelta con descargas/reanudación autorizadas (D186), segunda por
-choices multilínea corregida en T008 (D187, 25 regresiones y 229 tests dirigidos). Continuación autorizada con
-base `6efbd82` y nuevos `dist-t008`/`venv-t008`: build/verificador/instalación offline, preflight real de ambas CLI
-y ocho checks Django correctos (D188). SQLite inicializada, servicio arrancado y detenido tras rechazo cross-site
-en la primera apertura automatizada de Chrome. Reanudación autorizada desde la barra: mismo rechazo y
-cuarta parada (D189), sin acreditar defecto del producto ni cambiar guardias. Diagnóstico posterior autorizado
-(D190): acceso manual al login en otra pestaña confirmado por accesibilidad, pestaña controlada sigue cargando;
-sin cabeceras ni causa resuelta. Servicio detenido al acabar el diagnóstico, sin login ni registro.
-Reanudación real posterior autorizada (D191): login/idiomas/registro, dos conversaciones y borradores CAS,
-**incorporación B COMMITTED** (`976b1d1`) y P001 ACTIVE, con código conservado. Reenvío idempotente verificado
-por API local con HITL específico. La tarea `b94eedef…` planifica, pero Codex deja vacías las tres rutas permitidas;
-pytest sin casos, mypy/Django fallan y revisor REVISE → REVISION_LIMIT. Sin reparación, aceptación o commit de tarea.
-[Registro parcial](phase/P012-T002_INCORPORACION_REAL.md); Claude 4/12, Codex 1/3; servicio detenido y sin trabajo
-activo. T002 sigue parcial; **T009 completada offline** (D192): Python ausente del PATH del escritor y TMPDIR
-omitido, sin causa raíz del truncamiento ni defecto del producto demostrados. Once tests dirigidos y check puro
-v7 correctos. HITL elige proponer otro fixture limpio con PATH/TMPDIR acotados, presets/composición nuevos y copia
-TOML, conservando B/diff/jobs previos. [Propuesta y consentimiento posterior](phase/P012-T009_DIAGNOSTICO_ENTORNO_CODEX.md#5-consentimiento-posterior-propuesto-y-paradas).
-Continuación posteriormente autorizada y ejecutada (D193): mismo wheel/SQLite, nuevo fixture con PATH/TMPDIR,
-copia TOML/presets/composición propios; preflight y ocho checks iniciales correctos. Un turno Claude y doce CAS,
-**B2 COMMITTED** (`9808fd9`), código original intacto. Tarea **`f98b16d9…` REVISION_LIMIT**: cambio funcional y
-**13 tests aprobados**, mypy/Django correctos, pero Ruff E501 en dos líneas y formato fallan; revisión REVISE,
-sin aceptación, corrección o commit de tarea. Servicio detenido, 7 jobs DONE, 9 procesos STOPPED, 0 locks;
-Claude **7/12**, Codex **2/3**, 8186 filas previas conservadas. [Registro](phase/P012-T002_CONTINUACION_T009.md).
-T002 queda entonces parcial; se concreta una propuesta de continuidad por HITL antes de operar,
-con ambos fallos/diffs conservados, sin reparación. T003–T007 pendientes;
-T003/T004 sin autorización. **T010 completada offline** (D194), elegida por HITL: formateador de perfiles
-declarados optativo en `local-config-8`, con motor/runner D133 y versiones anteriores conservadas. Tests sintéticos
-correctos; sin build/instalación operativa ni consumo real adicional. [Entrega y guion futuro](phase/P012-T010_FORMATEADOR_DECLARATIVO.md).
-Continuación T002 [concretada y autorizada](phase/P012-T002_PROPUESTA_T010.md) (D195): base `a7d8b33`,
-wheel/venv nuevos, clon documental B2 sin repetir B, perfil v8 con formateador; máximo nuevo 2 Claude/1 Codex,
-cero correcciones. Wheel construido/verificado/instalado, clon limpio/TOML v8 preparados, modos igualados por HITL;
-preflight y ocho checks iniciales correctos. Servicio/login correctos, parada antes del alta: UI oculta presets v8.
-Sin nuevas llamadas, 13.785 filas previas idénticas, B/B2 conservados; 7 DONE/9 STOPPED/0 locks.
-**T011 corregida offline** (D196): selector compartido admite v8 y aviso en/es al día; 8 regresiones de render,
-103 tests Node y tipos/build correctos. [Entrega y siguiente propuesta](phase/P012-T011_PRESETS_UI_V8.md).
-T002 queda entonces parcial; la entrega offline no reconstruye ni relanza y exige otro consentimiento.
-Continuación tras T011 [concretada y revisada offline](phase/P012-T002_PROPUESTA_T011.md) (D197), base `500a783`,
-dist-t011/venv-t011 nuevos y clon/TOML t010 conservados. Lecturas de hashes/modos/SQLite correctas, sin alta
-del clon ni consumo nuevo al proponerla. El usuario autoriza después **«Autorizo.»** (D198): build/verificador/
-instalación en dist-t011/venv-t011, preflight/ocho checks y migrate no-op correctos; UI v8 permite presets,
-registro/P001 y dos commits documentales por UI. **T002 completada con evidencia acumulada**: run
-**`e3fa4ae6…` COMMITTED en `6f021211b307`**, formateador nativo exit 0 (dos archivos sin cambios), seis
-validaciones/**13 casos JUnit** y ACCEPT con un hallazgo low documental conservado. Cero correcciones;
-Claude **9/12**, Codex **3/3**, servicio detenido, **11 DONE/12 STOPPED/0 locks** y 13.785 filas previas idénticas.
-[Resultado y matriz](phase/P012-T002_RESULTADO_T011.md); B/B2/diffs/configuraciones/distribuciones intactos.
-Operación T002 del 24 de octubre y cierre documental del 25. **T003 ejecutada y detenida el 25** (D200):
-[resultado](phase/P012-T003_CHAT_BACKUP_REAL.md), dos turnos reales ANSWERED, `/estado` sin modelo y propuesta
-confirmada con supervisor=false; P001-T002 QUEUED sin intentos/lock. Backup/restauración verificados, HTTP
-de runs/diff/JUnit/métricas iguales y mutación rechazada 409. UI sin página de run sin proyecto compuesto;
-D040 define API y el guion había añadido UI. HITL **«Planificar vista UI Aparte»** (D201): T003 queda parcial
-y se añade **T012**, completada offline (D202), con vista independiente en `/runs/:id`, señal de copia explícita,
-entrada por id, evidencia/diff/JUnit/métricas por run y navegación de solo consulta. [Plan y pruebas previstas](phase/P012-T012_PLAN_VISTA_CONSULTA.md).
-[Entrega T012 y propuesta](phase/P012-T012_VISTA_CONSULTA.md): señal desde la marca D040, lecturas compartidas
-sin workspace/acciones/pendientes ni polling de ejecución; 102 tests Python dirigidos, 119 Node y tipos/build
-correctos. Continuación solo UI autorizada el 2026-10-26 y detenida antes del build (D203): cinco hashes
-y 16.798 filas conservados; identidad histórica del host `unknown` por componente `uuid.getnode()` distinto,
-14 grupos locales ausentes. Cero builds/instalaciones/servicios/llamadas en esa
-[parada conservada](phase/P012-T003_UI_T012.md). Reanudación posterior **«Autorizo»** con incertidumbre
-histórica conservada y límites originales (D204): **T003 completada con evidencia acumulada**.
-[Resultado UI](phase/P012-T003_UI_RESULTADO_T012.md): wheel 730891f8…f41520 construido/verificado/instalado
-offline en destinos nuevos, 259 archivos correctos; UI Chrome es muestra COMMITTED/6f02121, diff, 13 JUnit,
-original/métricas, ambos fallos y QUEUED; ruta operativa bloqueada. Cero llamadas nuevas, servicio parado,
-cinco hashes/16.798 filas y fixtures/evidencias previos intactos; `unknown` no certifica muerte de escritores.
-Propuesta T004 preparada offline (D205): [guion](phase/P012-T004_PROPUESTA_TYPESCRIPT.md) con base/state/TOML/
-caché nuevos e instalación T012 conservada, sin reactivar la base con el job QUEUED (D199). HITL confirma
-P002 en ROADMAP durante definición y final ACTIVE vacía tras cerrar P001, sin plan posterior. Cinco tests
-sintéticos correctos; objeto npm local íntegro, sin copiar, operar servicios o llamadas nuevas.
-T004 autorizada por «autorizo», ejecutada y detenida (D206): [resultado parcial](phase/P012-T004_TYPESCRIPT_REAL.md).
-Base/state propios, UI es/es, tres turnos/16 propuestas CAS, bootstrap dbc2d74; receta v2/es COMPLETED,
-npm offline y check/test/build con un JUnit passed, commit técnico bcf59d8. Al encolar, 409 preparation_required
-pese al recibo/UI preparados; cero runs de tarea o Codex. Parada normal, puertos cerrados/clave retirada,
-4 DONE/9 STOPPED/0 locks, evidencias/16.798 filas anteriores intactas; consumo 3/12 Claude y 0/3 Codex.
-T013 completada offline (D207), conforme a «continúa.»: [entrega y continuación propuesta](phase/P012-T013_VINCULO_RECIBO.md).
-Reproducción HTTP roja, bind del recibo tras resolver CLI, 14 variantes nuevas/250 tests Python/8 unittest
-correctos y un opt-in omitido. Guardias/huellas de recetas intactas; sin nuevas llamadas o reintento real.
-T004 completada con evidencia acumulada (D209): [continuación/HITL/matriz](phase/P012-T004_CONTINUACION_T013.md).
-Wheel 70ee6883…6cc1bb instalado/verificado, preflight correcto/migrate no-op. Parada origin_rejected y
-reanudación nativa autorizada; única tarea d1e35d32… COMMITTED ae86967, digest del recibo exacto,
-ACCEPT sin hallazgos y tres validaciones/un JUnit passed; sin cobertura nueva de espacios interiores.
-Dos checks fallidos conservados: READY con acción requerida de prosa STATE y paráfrasis de un criterio.
-HITL autoriza edición documental UI c58712e y dos checks nuevos, uno por consentimiento; tercero
-**dd0d3be3… READY** válido. Cierre/archivo **ecbc47f**, tag **p001 del hijo sobre c58712e**, P001 CLOSED y
-P002 ACTIVE sin tareas/plan posterior. Parada 09:19:04 UTC, 11 DONE/15 STOPPED/0 locks, bases/fixtures
-intactos; nuevo 5 Claude/1 Codex, acumulado T004 8/12 y 1/3, ventana original respetada. Siguiente: T005.
-P012 tiene trece tareas. **T005 completada** (D210): [candidato y comprobaciones](phase/P012-T005_CANDIDATO.md),
-alcance en/es y baseline pública actualizados, 401 archivos/manifiesto cf191a40…9362a; suites completas,
-paquete y docs correctos. Sustitución de `my_harness_dist` autorizada por HITL y verificada, conservando P011
-íntegro en `my_harness_dist_p011_74cc9141`. Sin llamadas nuevas ni publicación. **T006 completada** (D211):
-[revisión](phase/P012_REVIEW.md) favorable de los siete criterios y [expediente](phase/P012_EXPEDIENTE_APERTURA.md)
-nuevo con hashes/pasos remotos sin ejecutar. Candidato/paquete y documentos contrastados, sin repetir suites.
-**Siguiente T007**, cierre documental; P012 sigue abierta y publicación pendiente de aprobación explícita.
-T012, T013 y T003 completadas con su procedencia conservada.
-Consumo 2/3 Claude y 0/0 Codex, dentro de dos horas; servicios parados, 13 DONE/1 QUEUED/14 STOPPED/0 locks,
-14.921 filas previas intactas y 16.798 finales iguales en copia/restauración. T004 seguía sin autorización en ese punto;
-no reactivar esa base antes de revisar su propuesta de arranque (D199).
-La apertura del expediente de P011 queda aplazada hasta el cierre de P012.
+**Estado:** completada y archivada documentalmente el 2026-10-26, tras el dictamen favorable de T006
+([D211](DECISIONS.md#d211--p012-t006-dictamen-favorable-y-expediente-actualizado)) y el cierre T007
+([D212](DECISIONS.md#d212--cierre-documental-de-p012-y-validación-real-archivada),
+[resumen](archive/phase-012/SUMMARY.md), [revisión de cierre](archive/phase-012/REVIEW.md)).
+Trece tareas completadas; siete criterios cumplidos en el alcance declarado con evidencia acumulada:
+B/idempotencia y tarea Python/Django v8 COMMITTED (D191/D193/D198), chat/propuesta QUEUED y backup/API/UI
+(D200/D202/D204), TypeScript v2/es hasta tarea y cierre del hijo (D206–D209). Fallos originales y salvedad
+histórica `unknown` conservados. Correcciones offline T008–T013 incluidas en la suite final de T005.
+
+Candidato de 401 archivos/5.480.755 bytes, manifiesto `cf191a40…9362a`, wheel `eef56a29…4504ab`;
+1760 pytest/29 subtests, 8 unittest, 119 Node, tipos/build, Alembic temporal, paquete y documentación correctos
+(D210). Sustitución local autorizada, P011 conservada. [Revisión detallada](archive/phase-012/P012_REVIEW.md),
+[plan original](archive/phase-012/NEXT_STEPS.md) y [expediente vigente](archive/phase-012/P012_EXPEDIENTE_APERTURA.md).
+Sin fase sucesora definida ni acciones remotas ejecutadas; la apertura queda como siguiente paso del usuario.
+Cierre manual sin registrar/ejecutar este repositorio con el harness, tag, push o publicación.
 
 ## Después de la apertura en GitHub — v0.2.0
 
