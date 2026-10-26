@@ -32,3 +32,12 @@ las tablas o las guardias. [Contrato y pruebas](../archive/phase-012/P012-T012_V
 Las lecturas reutilizan D144/D145: proyección acotada, sin seleccionar/decodificar `history_json`, reconstruir
 proyección o acceder al checkout. Sin marca, `/runs/:id` conserva la redirección canónica al proyecto y el
 estado vacío anterior si no hay proyecto. [Flujo operativo de run](task-run.md#lectura-del-run-d144).
+
+## Ampliación diseñada en P013-T001
+
+El [contrato P013](../phase/P013-T001_CONTRATO.md) y el [flujo de configuración](configuration-setup.md)
+concretan el recorrido futuro sin composición previa, guardado/activación versionados, preparación y backup.
+**Diseñado, no implementado:** este documento conserva el flujo vigente hasta las entregas T004–T011.
+Commit documental previo al técnico; perfil/recibo confirmado antes de tareas en el carril nuevo; formatos,
+jobs, snapshots y recibos existentes intactos. La aplicación guarda TOML privado fuera de checkouts;
+ningún agente obtiene escritura general de configuración global. Consulta D040 no adquiere mutaciones.

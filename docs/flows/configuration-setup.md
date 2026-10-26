@@ -1,59 +1,118 @@
-# Flujo planificado — instalación y configuración guiadas (P013)
+# Flujo diseñado — instalación y configuración guiadas (P013-T001)
 
-**Estado: diseñado a nivel de fase, no implementado.**
-[D215](../DECISIONS.md#d215--p013-instalación-guiada-y-configuración-desde-la-ui),
+**Diseño concretado; sin implementación de producto en T001.**
+[Contrato](../phase/P013-T001_CONTRATO.md), D216–D218 en [DECISIONS](../DECISIONS.md),
 [plan](../phase/P013_PLAN.md) y [tareas](../NEXT_STEPS.md).
-T001 concretará estados persistidos, contratos y recuperación antes de implementar.
-El flujo vigente aún usa el TOML del operador descrito en ARCHITECTURE §6/§9 y la composición del
-[flujo de incorporación](project-onboarding.md).
+El flujo vigente aún usa TOML 1–8 y composición según ARCHITECTURE §6/§9.
 
-## Primer uso y ajustes globales
+## Instalación y primer arranque
 
 ```mermaid
 flowchart TD
-    A["Instalar: comprobar requisitos y crear entorno aislado"] --> B["Arrancar el paquete instalado"]
-    B --> C{"¿Configuración global válida?"}
-    C -- no --> D["UI autenticada: asistente determinista sin modelos"]
-    D --> E["Proponer rutas y clientes; elegir proveedor/modelo e identidad"]
-    E --> F["Validar y mostrar TOML y efectos"]
-    F --> G["Confirmación exacta: aplicación guarda configuración"]
-    G --> H["Habilitar creación e incorporación"]
-    C -- sí --> H
-    H --> I["Ajustes globales: formulario o TOML; ayuda IA opcional"]
-    I --> F
+    A["Elegir clon o paquete; rutas, Python, uv y caché"] --> B{"¿Requisitos y destinos válidos?"}
+    B -- no --> X["Diagnóstico; conservar instalación y datos previos"]
+    B -- sí --> C["Preparar caché: offline o red explícitamente autorizada"]
+    C --> D["Clon: construir; paquete: verificar sin Node ni checkout"]
+    D --> E["Verificar artefactos y wheel aislado; instalar generación nueva"]
+    E --> F["Publicar referencia y recibo installation-1 solo tras éxito"]
+    F --> G["start: binario instalado, DB y temporal privados"]
+    G --> H{"¿Base existente?"}
+    H -- no --> I["Inicialización exclusiva; sin auxiliares previos"]
+    H -- sí --> J{"¿Esquema compatible?"}
+    J -- no --> K["Detener: migración D150 aparte con parada y backup"]
+    I --> L["Resolver consulta, configuración y recuperación"]
+    J -- sí --> L
 ```
 
-La clave de sesión, Host/Origin y CSRF se mantienen antes de permitir escribir configuración. Detectar clientes
-no invoca modelos ni inicia sesión. Configuración inválida muestra diagnósticos y conserva el archivo previo.
-Si el cambio requiere reinicio, el asistente lo explica y no lo presenta como activo antes de aplicarlo.
-La restauración de consulta no habilita este carril de escritura.
+Fallos de caché/requisitos no abren red ni publican instalación parcial. Actualizar usa generación nueva y
+parada explícita, sin borrar datos ni hacer downgrade de esquema. Reiniciar no reinstala, migra, limpia locks
+inciertos o acredita muerte de escritores. El verificador actual necesita fuentes/fixtures: T002 debe extraer
+su verificación para paquete autocontenido, conservando hashes, miembros y pruebas instaladas D051.
 
-## Perfil específico del proyecto
+## Asistente y activación global
 
 ```mermaid
 flowchart TD
-    A["Nuevo proyecto: brief y documentos"] --> C["Conversación con revisor de solo lectura"]
-    B["Repositorio existente: inventario y HEAD sellado"] --> C
-    C --> D["Concretar arquitectura y proponer perfil propio"]
-    D --> E["UI: editar propuesta, TOML, herramientas y restricciones"]
-    E --> F["Confirmar plan acotado de preparación y comprobación"]
-    F --> G["Ejecutor en ámbito autorizado; validaciones del harness"]
-    G --> H{"¿Evidencia válida y propuesta vigente?"}
-    H -- no --> I["Mostrar fallo o bloqueo; conservar evidencia"]
-    I --> E
-    H -- sí --> J["Mostrar diff y efectos; confirmar activación exacta"]
-    J --> K["Aplicación guarda y activa versión; habilitar primera tarea"]
-    K --> L["Edición posterior manual o asistida"]
-    L --> E
+    A["Resolver modo antes de consumidores"] --> B{"¿Consulta D040?"}
+    B -- sí --> C["Solo evidencia; sin TOML operativo, CLI o mutaciones"]
+    B -- no --> D{"¿Autoridad íntegra y válida?"}
+    D -- no --> E["UNCONFIGURED, INVALID o RECOVERY_REQUIRED; sesión local protegida"]
+    E --> F["Asistente determinista: rutas, clientes, identidad y límites"]
+    D -- sí --> G["READY; ajustes globales disponibles"]
+    G --> F
+    F --> H["Formulario o TOML; validar y mostrar diff e impacto"]
+    H --> I["Guardar por CAS e intención; versión privada sin activar"]
+    I --> J["Preview de activación: mismo contenido y ausencia de trabajo pendiente"]
+    J --> K["Confirmar versión exacta: RESTART_REQUIRED y cerrar admisión"]
+    K --> L["Reinicio explícito; comprobar archivos y promover activa en SQLite"]
+    L --> G
 ```
 
-La definición no requiere una composición de stack elegida antes de disponer del contexto. La colocación
-exacta del commit documental y la preparación en las dos entradas se resolverá en T001, conservando sus
-guardias Git y la recuperación. Los ejemplos/recetas existentes son opcionales; un perfil propuesto no
-acredita que sus herramientas estén instaladas o que sus comandos pasen.
+Sesión/Host/Origin/cross-site/CSRF también sin TOML. Detectar no invoca modelos; comprobar clientes es acción
+explícita version/help D174. Ayuda IA solo con pareja activa congelada. Archivo inválido no se reemplaza por
+un ejemplo ni habilita colas; fallo al promover conserva activa anterior y bloqueo, sin fallback silencioso.
+Cancelar una activación pendiente también exige versión/confirmación; guardar no tiene ese efecto.
 
-El revisor propone; el ejecutor prepara/comprueba dentro del proyecto o área acotada; la aplicación escribe
-los archivos de configuración validados. No se entrega a los agentes escritura general del TOML global.
-La asistencia global usa el mismo principio, una vez configurados los agentes, con comprobaciones limitadas
-al ámbito autorizado. CAS, hashes e intenciones recuperables evitan sobrescribir otra edición o duplicar
-efectos. Las versiones de jobs, historiales y recibos anteriores no se reescriben al activar cambios.
+## Persistencia y recuperación
+
+```mermaid
+sequenceDiagram
+    actor U as Usuario
+    participant S as Servicio
+    participant DB as SQLite
+    participant F as Archivos privados
+    U->>S: preview con candidato, versión y hashes base
+    S-->>U: diff, validación, impacto y hash exacto
+    U->>S: save con CAS, confirmación y clave idempotente
+    S->>DB: intención configuration-operation-1 y bytes sellados
+    S->>F: temporales exclusivos, fsync y publicación atómica por archivo
+    S->>F: verificar conjunto y hashes y fsync de directorios
+    S->>DB: finalizar versión guardada por CAS, sin activar
+    S-->>U: misma operación y referencia tras replay
+    Note over DB,F: Caída parcial sin activa nueva, conciliar bytes base o candidatos, nunca sobrescribir terceros
+    U->>S: preview y confirmación de activación separada
+    S->>DB: barrera con admisión/commit y referencia exacta o reinicio pendiente
+```
+
+TOML inmutable manda en contenido; SQLite manda en qué referencia está activa. Las copias editables
+`global.toml`/`projects/<id>/project.toml` no son hot reload. Edición externa bloquea nuevas operaciones del
+ámbito hasta importar/descartar por CAS. Deriva de versión inmutable detiene/cuarentena antes de efectos.
+Una caída o lease vencido no permite asumir escritor detenido. Repetir clave/payload devuelve resultado;
+otro payload con la misma clave da conflicto. Backup futuro incluye archivos/versiones/intenciones por
+bytes/hashes, no solo rutas; restore conserva consulta sin repararlos ni activar procesos.
+
+## Perfil por proyecto y dos entradas
+
+```mermaid
+flowchart TD
+    A["Nuevo: raíz y brief; contexto documental sin stack"] --> C["Revisor de lectura: preguntas, arquitectura y borradores"]
+    B["B: raíz confiada, inventario y HEAD sellado; sin ejecutar código"] --> C
+    C --> D["Propuesta estructurada de perfil; herramientas diferidas y validaciones significativas"]
+    D --> E["Usuario revisa formulario o TOML; ejemplos opcionales"]
+    E --> F["Confirmar documentos y propuesta compatible; commit raíz o B; adoptar P001"]
+    F --> G["PREPARATION_REQUIRED: tareas bloqueadas"]
+    G --> H["Confirmar plan técnico de archivos, comandos, red y ámbito"]
+    H --> I["Ejecutor acotado o receta; harness valida y recoge evidencia"]
+    I --> J{"¿Resultado y contenido acreditados?"}
+    J -- no --> K["Fallo o recuperación: conservar journal y puerta cerrada"]
+    J -- sí --> L["Conciliar commit técnico si procede y emitir recibo"]
+    L --> M["READY_TO_ACTIVATE; diff, impacto y confirmación exacta"]
+    M --> N["Aplicación activa perfil; primera tarea habilitada"]
+    N --> O["Edición posterior manual o asistida: guardar, comprobar y activar"]
+    O --> E
+```
+
+P001 ACTIVE no equivale a perfil operativo. El TOML vive fuera del checkout y el commit documental precede
+al técnico. En B se conservan guardias Git, originales/phase-000 y bytes del código; en nuevo, solo D088 antes
+del commit raíz. Cambiar el perfil contradiciendo documentos exige edición documental confirmada y evidencia
+nueva. Activación no repite alta/commits/preparación. Perfil propio se activa sin reiniciar, con barrera de
+admisión; trabajo pendiente ajeno a su evidencia de alta ya terminada lo bloquea según D118.
+
+`project-profile-preparation-1` es preparación genérica nueva, no conversión de recetas/recibos v1/v2.
+Ejecutor sin escritura general de configuración global ni ajustes del equipo. Guardar/activar son escrituras
+del servicio confirmadas por el usuario. Recibo liga perfil/comandos/herramientas/entorno/contenido; propuesta
+sin comprobar no acredita entorno listo. Caída exige recuperación enlazada, nunca replay implícito de red.
+
+V1–v8 conservan operación/hashes; edición guiada requiere importación explícita al conjunto v9/proyecto v1,
+originales intactos. Jobs/snapshots/recibos históricos no se actualizan a posteriori. El detalle de estados,
+API/UI, reinicios y matriz de fallos está en el contrato; diagrama de datos se ampliará con la migración real.

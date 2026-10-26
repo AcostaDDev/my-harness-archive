@@ -227,6 +227,9 @@ tarea se leen solo las decisiones que cita; este índice sirve para buscar prece
 | [D213](#d213--mantenimiento-git-desactivado-en-fixtures-de-incorporación) | Mantenimiento Git desactivado en fixtures de incorporación | Sin fase |
 | [D214](#d214--candidato-público-actualizado-tras-la-corrección-de-ci) | Candidato público actualizado tras la corrección de CI | Sin fase |
 | [D215](#d215--p013-instalación-guiada-y-configuración-desde-la-ui) | P013: instalación guiada y configuración desde la UI | P013 |
+| [D216](#d216--p013-t001-instalación-aislada-y-arranque-sin-configuración) | P013-T001: instalación aislada y arranque sin configuración | P013 |
+| [D217](#d217--p013-t001-archivos-versionados-y-activación-de-configuración) | P013-T001: archivos versionados y activación de configuración | P013 |
+| [D218](#d218--p013-t001-perfil-tras-contexto-y-preparación-antes-de-activar) | P013-T001: perfil tras contexto y preparación antes de activar | P013 |
 
 ## D001 — Alcance local y arquitectura base
 
@@ -6354,3 +6357,73 @@ Precedentes: D049/D051/D078/D095/D118/D150/D156/D157/D161/D174/D194/D212–D214.
   harness sobre este repositorio, agentes/proveedores/smokes, configuración global del equipo, reactivación de
   bases/fixtures anteriores, commits no solicitados ni acciones remotas. Cerrar P013 dejará pendiente la
   autorización concreta de apertura con owner/repo, identidad pública y visibilidad.
+
+## D216 — P013-T001: instalación aislada y arranque sin configuración
+
+Estado: diseño concretado el 2026-10-26; implementación pendiente T002–T006. Fase: P013.
+[Contrato §2–§3](phase/P013-T001_CONTRATO.md#2-instalación-y-actualización),
+[flujo](flows/configuration-setup.md). Concreta D215 conservando D051/D150/D157.
+
+- Instalación desde clon construye/verifica con locks; desde paquete recibe material de verificación
+  autocontenido, sin Node ni checkout como requisito. Venv y generación propios fuera de checkouts,
+  cachés/rutas/Python/uv elegibles; offline por defecto y red explícita, sin descargar herramientas ni cambiar
+  ajustes globales. Repetición verifica recibo `installation-1`; actualización explícita conserva generaciones/datos.
+- `scripts/start` usa el venv instalado y parámetros explícitos de DB/configuración/puerto/temporal privado,
+  no instala ni migra al arrancar. Solo base ausente se inicializa exclusivamente. Base existente pasa por
+  validación; esquema antiguo exige parada/instantánea/migración D150 aparte, sin rollback automático.
+- Arranque sin configuración admite asistente autenticado y determinista sin supervisor consumidor/modelos;
+  archivo inválido bloquea ejecución y conserva evidencia. Sesión/Host/Origin/CSRF también en primer uso.
+  Consulta D040 tiene prioridad y no carga agentes/configuración operativa. Configuración no decide su propia
+  ruta de arranque ni traslada datos desde la UI.
+- El verificador actual depende de fuentes/frontend y fixtures del checkout: T002 debe extraer/reutilizar su
+  verificación para la entrada desde paquete; checksums solos no sustituyen D051. T012/T013 acreditarán los
+  recorridos, sin atribuirles evidencia previa. No se ejecutan instalaciones, servicios ni smokes en T001.
+
+## D217 — P013-T001: archivos versionados y activación de configuración
+
+Estado: diseño concretado el 2026-10-26; implementación pendiente T004–T006/T010–T011. Fase: P013.
+[Contrato §4–§6](phase/P013-T001_CONTRATO.md#4-archivos-formatos-y-autoridad),
+[backup §10](phase/P013-T001_CONTRATO.md#10-backup-y-fallos-de-frontera).
+Concreta D215; conserva D049/D078/D118/D174/D194 y formatos históricos.
+
+- Reservar `local-config-9`, `project-config-1` y `configuration-operation-1`. Global sin composición obligatoria;
+  registro/idiomas/confianza siguen en SQLite. Perfil/composición propios en archivo por proyecto, con referencias
+  selladas a global. Ejemplos copiados con procedencia, sin referencia mutable compartida. Sin secretos ni nuevos
+  permisos implícitos; límites TOML 64 KiB, directorios/archivos nuevos 0700/0600 fuera de checkouts.
+- TOML inmutable por versión es autoridad del contenido; referencia activa en SQLite es autoridad de activación.
+  Copias `global.toml` y `projects/<id>/project.toml` son editables, no hot reload. Intención previa, CAS de
+  versiones/hashes, publicación atómica por archivo y fsync; ninguna activación parcial entre archivos/SQLite.
+  Conflicto/caída conserva base/candidato y exige conciliación verificable, sin última escritura gana.
+- Guardar no activa. Toda global confirmada requiere reinicio con admisión cerrada hasta promoción validada;
+  perfil de proyecto se activa sin reinicio bajo barrera transaccional de admisión/commit. Rechazar activación
+  con trabajo pendiente según D118, sin cancelarlo ni reescribirlo; planes PROPOSED pasan a SUPERSEDED.
+  Cambios globales muestran impacto y revisiones derivadas exactas de proyectos afectados.
+- Cambio externo de copia editable bloquea nuevas operaciones del ámbito hasta importación/descarte por CAS;
+  no inyecta valores en jobs activos. Deriva de versión inmutable bloquea efectos/cuarentena. Jobs/snapshots/
+  recibos previos intactos. Asistencia usa pareja activa congelada, nunca la candidata en la misma sesión.
+- Lectura/operación 1–8 conserva hashes y reglas; conversión al editor explícita por conjunto, originales intactos.
+  Backup nuevo incluye TOML/versiones/intenciones por bytes y hashes; restore sigue solo consulta sin originales,
+  clientes ni autoridad de reparación/ejecución. Sin modelos, migraciones, API ni formatos implementados en T001.
+
+## D218 — P013-T001: perfil tras contexto y preparación antes de activar
+
+Estado: diseño concretado el 2026-10-26; implementación pendiente T007–T011. Fase: P013.
+[Contrato §7–§9](phase/P013-T001_CONTRATO.md#7-dos-entradas-commits-y-perfil-preparado),
+[flujo](flows/configuration-setup.md). Concreta D215 y amplía el recorrido actual D095/D119/D161.
+
+- Alta nueva/B con agentes/Git/raíz/idiomas y capacidad documental, sin composición de stack ficticia ni
+  capacidad de tareas. Documentación/arquitectura o inventario/HEAD preceden a la propuesta estructurada del
+  revisor. Propuesta separada de borradores D088; preguntas/evidencia por comando, herramientas diferidas y
+  validaciones significativas antes de aceptar documentos. Ejemplos Django/TypeScript opcionales.
+- Conservar commit documental raíz/B y adopción P001 antes de preparar; TOML privado fuera del checkout.
+  Después confirmar plan técnico, preparar/comprobar y conciliar commit técnico si cambia contenido versionado.
+  Activación propia posterior exige recibo/evidencia compatible y confirmación exacta; P001 ACTIVE no equivale
+  a perfil operativo. Un fallo conserva documentos/operación y puerta de tareas cerrada.
+- Reservar `project-profile-preparation-1` para preparación genérica, sin renumerar recetas/recibos v1/v2.
+  Ejecutor acotado, harness ejecuta argv exactos y recoge evidencias; red/dependencias/archivos/límites visibles,
+  journal/locks/procesos y recuperación conservadores. Ningún agente escribe configuración global general.
+- Perfil/comandos/herramientas/locks cambiados requieren comprobación nueva; cambios solo de agentes/global
+  pueden conservar evidencia de entorno tras verificar igualdad técnica, sin modificar el recibo original.
+  Proyectos 1–8 sin receta conservan admisión hasta importación explícita. Activar no repite alta ni commits.
+- UI/API separan propuesta, guardado, preparación y activación, en/es y con CAS/replay. Detalles de tablas/DTO
+  quedan para sus entregas con paridad de diagrama/OpenAPI/tipos; no son funcionalidades existentes en T001.

@@ -67,3 +67,12 @@ Registrar o reabrir un proyecto ya gestionado conserva su autoridad y no repite 
 
 - `core/engine/definition.py`, `storage/planning.py`, `adapters/bootstrap.py`, `storage/bootstrap.py`.
 - Plantillas `define-project.md` y `plan-phase.md`; `core/engine/documents.py` (`skeleton`).
+
+## Ampliación diseñada en P013-T001
+
+El [contrato P013](../phase/P013-T001_CONTRATO.md) y el [flujo de configuración](configuration-setup.md)
+concretan el recorrido futuro sin composición previa, guardado/activación versionados, preparación y backup.
+**Diseñado, no implementado:** este documento conserva el flujo vigente hasta las entregas T004–T011.
+Commit documental previo al técnico; perfil/recibo confirmado antes de tareas en el carril nuevo; formatos,
+jobs, snapshots y recibos existentes intactos. La aplicación guarda TOML privado fuera de checkouts;
+ningún agente obtiene escritura general de configuración global. Consulta D040 no adquiere mutaciones.

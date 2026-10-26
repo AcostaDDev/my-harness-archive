@@ -128,17 +128,24 @@ Sustitución verificada por rutas, hashes y modos; checksums de los artefactos o
 
 ## Fase activa — P013 Instalación guiada y configuración desde la UI
 
-**P013 abierta y planificada el 2026-10-26 por petición del usuario; implementación pendiente.**
+**P013 activa; T001 completada como diseño el 2026-10-26; implementación de producto pendiente.**
 [D215](DECISIONS.md#d215--p013-instalación-guiada-y-configuración-desde-la-ui),
 [plan](phase/P013_PLAN.md), [tareas](NEXT_STEPS.md) y [flujo propuesto](flows/configuration-setup.md).
-Quince tareas pendientes. **Siguiente: P013-T001**, contrato de instalación y ciclo de vida de configuración.
+Catorce tareas pendientes. **Siguiente: P013-T002**, instalación automatizada y cachés configurables.
+
+T001 concreta el [contrato](phase/P013-T001_CONTRATO.md) con D216–D218: instalación aislada desde clon/paquete,
+arranque sin TOML con sesión protegida, contenido en TOML versionado y activación por referencia SQLite, CAS/
+recuperación, global con reinicio y perfil por proyecto entre tareas. Contexto sin stack previo → propuesta →
+commit documental → preparación/recibo → activación; formatos 1–8 e históricos intactos. Especificación,
+arquitectura y flujos reflejan diseño pendiente, sin scripts/modelos/migraciones/API nuevos.
+[Checks y límites](phase/P013-T001_VALIDACION.md): parsers/enlaces/presupuestos y Mermaid; sin operación de producto.
 
 Alcance acordado: scripts de instalación/arranque con venv y cachés configurables, asistente inicial sin TOML
 manual ni modelos, configuración global y perfiles propios por proyecto desde UI, propuestas del revisor tras
 concretar documentación/arquitectura o inventario, preparación/comprobación acotadas con ejecutor y activación
 confirmada. Edición manual/asistida posterior, compatibilidad y recuperación/backup, UI en/es, QA y candidato
 nuevo antes del cierre. Ejemplos Django/TypeScript opcionales; el producto sigue con su contrato actual hasta
-implementar los cambios. T001 resolverá autoridad de archivos/SQLite, versiones, reinicios y trabajos congelados.
+implementar los cambios. T001 define autoridad de archivos/SQLite, versiones, reinicios y trabajos congelados.
 
 **Publicación en GitHub aplazada hasta el cierre satisfactorio de P013.** El candidato D214 y el
 [expediente P012](archive/phase-012/P012_EXPEDIENTE_APERTURA.md) con su
@@ -149,6 +156,6 @@ no se renuevan ni transfieren.
 
 Tras el cierre seguirán faltando owner/repo, visibilidad, identidad pública y autorización de acciones remotas.
 D157 conserva la fuente principal pública tras el primer push; modo continuo D156 para v0.2.0 después de abrir,
-fuera de P013. Este repositorio sigue sin registrarse ni ejecutarse con el harness. Esta apertura solo cambia
-documentación de planificación: sin producto, modelos, migraciones, API, instalaciones, agentes, proveedores,
-smokes, configuración global del equipo, commit, push o publicación.
+fuera de P013. Este repositorio sigue sin registrarse ni ejecutarse con el harness. Apertura y T001 solo cambian
+documentación de planificación/diseño: sin producto, modelos, migraciones, API, instalaciones, agentes, proveedores,
+smokes, configuración global del equipo, push o publicación. Commit local de T001 pedido expresamente por el usuario.

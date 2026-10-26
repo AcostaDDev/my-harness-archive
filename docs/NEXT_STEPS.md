@@ -1,7 +1,7 @@
 # P013 — Instalación guiada y configuración desde la UI
 
-**Estado:** fase abierta el 2026-10-26; quince tareas pendientes, sin implementación iniciada.
-**Siguiente: P013-T001**, contrato de instalación y configuración.
+**Estado:** fase activa; T001 completada como diseño el 2026-10-26, catorce tareas pendientes. Producto sin cambios.
+**Siguiente: P013-T002**, instalación automatizada y cachés configurables.
 [Objetivo y criterios](ROADMAP.md#p013--instalación-guiada-y-configuración-desde-la-ui),
 [D215](DECISIONS.md#d215--p013-instalación-guiada-y-configuración-desde-la-ui) y
 [plan de fase](phase/P013_PLAN.md).
@@ -28,7 +28,8 @@ Modo continuo v0.2.0 fuera de esta fase (D156).
 
 ## P013-T001 — Contrato de instalación y ciclo de vida de la configuración
 
-**Estado:** pendiente. **Depende de:** apertura D215.
+**Estado:** completada como diseño (2026-10-26), sin cambios de producto. **Depende de:** apertura D215.
+[Contrato](phase/P013-T001_CONTRATO.md), [validación](phase/P013-T001_VALIDACION.md) y D216–D218.
 **Objetivo:** concretar antes de implementar el diseño acordado en el plan de fase.
 **Rutas permitidas:** `docs/**` vigentes; archivos históricos solo lectura.
 **Criterios de aceptación:**

@@ -61,3 +61,12 @@ la pareja global ni modificar otros proyectos.
 [T005](../archive/phase-009/P009-T005_ENSAYO_DJANGO.md) recorre las cuatro parejas en el mismo hijo preparado, con cambios
 confirmados entre commits y reinicios del servicio. Los procesos de agentes son falsos, pasan por los adaptadores
 CLI reales y dejan proveedor/modelo/esfuerzo y motivo verificables; los historiales anteriores permanecen intactos.
+
+## Ampliación diseñada en P013-T001
+
+El [contrato P013](../phase/P013-T001_CONTRATO.md) y el [flujo de configuración](configuration-setup.md)
+concretan el recorrido futuro sin composición previa, guardado/activación versionados, preparación y backup.
+**Diseñado, no implementado:** este documento conserva el flujo vigente hasta las entregas T004–T011.
+Commit documental previo al técnico; perfil/recibo confirmado antes de tareas en el carril nuevo; formatos,
+jobs, snapshots y recibos existentes intactos. La aplicación guarda TOML privado fuera de checkouts;
+ningún agente obtiene escritura general de configuración global. Consulta D040 no adquiere mutaciones.

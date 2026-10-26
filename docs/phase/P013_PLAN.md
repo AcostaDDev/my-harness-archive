@@ -1,6 +1,6 @@
 # P013 — Instalación guiada y configuración desde la UI
 
-Estado: fase abierta y planificada el 2026-10-26 por petición del usuario; implementación pendiente.
+Estado: fase activa el 2026-10-26; T001 completada como diseño, producto pendiente T002–T011.
 Decisión: [D215](../DECISIONS.md#d215--p013-instalación-guiada-y-configuración-desde-la-ui).
 Objetivo y salida en [ROADMAP](../ROADMAP.md#p013--instalación-guiada-y-configuración-desde-la-ui);
 tareas ejecutables en [NEXT_STEPS](../NEXT_STEPS.md).
@@ -52,14 +52,14 @@ operación explícita y recuperable. Ayudar a modificar la configuración global
 modificar la configuración global del equipo. No se copian credenciales ni se automatiza el login de proveedores.
 
 Los trabajos admitidos conservan sus snapshots y huellas. Cambiar una configuración no reemplaza su contrato,
-no reanuda jobs en cuarentena ni acredita recibos de preparación anteriores. T001 precisará por operación
+no reanuda jobs en cuarentena ni acredita recibos de preparación anteriores. El contrato T001 precisa por operación
 qué cambios requieren reinicio, nueva admisión, preparación o confirmación. Las copias restauradas de consulta
 seguirán siendo de solo lectura, también respecto de los nuevos asistentes y archivos de configuración.
 
 Las configuraciones actuales se deben poder seguir usando e importar al editor con vista previa, sin conversión
-silenciosa. T001 decidirá dónde viven los archivos globales y por proyecto, su autoridad frente a SQLite,
-versiones, referencias, permisos, límites y escrituras atómicas/CAS. No fijamos ahora tablas, nuevas versiones
-`local-config`, endpoints ni formatos de recibos sin ese contrato. Los archivos con rutas/entornos locales
+silenciosa. T001 concreta ubicación/autoridad de archivos, versiones, referencias, permisos y CAS en su contrato:
+contenido en TOML versionado y activación por referencia en SQLite; formatos reservados v9/proyecto v1,
+sin tablas/migraciones/endpoints implementados. Las entregas posteriores aplicarán ese diseño. Los archivos con rutas/entornos locales
 seguirán fuera de los checkouts; cualquier exportación portable debe excluir datos locales sensibles.
 
 ## 4. Orden y reparto del trabajo
@@ -73,9 +73,9 @@ seguirán fuera de los checkouts; cualquier exportación portable debe excluir d
 | Cambios posteriores | T010–T011 | Edición asistida, compatibilidad, recuperación y backup |
 | Calidad y apertura | T012–T015 | Recorridos verificados, candidato nuevo, dictamen y cierre |
 
-Una tarea cada vez, según dependencias de NEXT_STEPS. La siguiente es **P013-T001**. Sus decisiones duraderas
-se incorporan al registro y sus contratos a especificación/arquitectura/flujos antes de implementar. Si revela
-una contradicción no resuelta por lo acordado, se consulta al usuario antes de cambiar el diseño.
+Una tarea cada vez, según dependencias de NEXT_STEPS. T001 entrega el [contrato](P013-T001_CONTRATO.md)
+y D216–D218, con especificación/arquitectura/flujos en paridad como diseño pendiente de implementación.
+Siguiente: **P013-T002**. Si una entrega revela contradicción no resuelta, se consulta al usuario antes de cambiar el diseño.
 
 ## 5. Verificación de la fase
 

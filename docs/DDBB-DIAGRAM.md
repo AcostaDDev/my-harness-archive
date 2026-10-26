@@ -7,6 +7,11 @@ locks/procesos compartidos (D119). [Diseño de partida](archive/phase-009/P009-T
 
 Convenciones: `PK` clave primaria, `FK` clave ajena declarada, `UK` unicidad de columna; «null» marca columnas opcionales. Las unicidades compuestas y los índices únicos parciales se listan bajo cada diagrama. Las entidades de otro contexto aparecen solo con las columnas que relacionan. Los artefactos pesados (streams, capturas, copias) viven fuera de SQLite y se referencian por ruta y hash.
 
+P013-T001 concreta el [contrato de configuración versionada](phase/P013-T001_CONTRATO.md#4-archivos-formatos-y-autoridad)
+y su [flujo](flows/configuration-setup.md) como **diseño pendiente**, sin cambiar modelos ni migraciones aquí.
+T004 añadirá referencias/revisiones/intenciones/activación por CAS y T007/T008 las extensiones de alta/preparación
+que necesiten; entonces se actualizará este esquema con las restricciones reales. SQLite sigue en `0025`/51 tablas.
+
 ## Observación legacy y simulaciones (P001–P002)
 
 Tablas de compatibilidad conservadas tras P011-T019 (D161). No hay indexador, visor ni observadores activos;

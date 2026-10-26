@@ -352,24 +352,37 @@ con autorización inicial y parada por error/HITL/límites. No está implementad
 
 ## 14. Ampliación planificada — P013
 
-[D215](DECISIONS.md#d215--p013-instalación-guiada-y-configuración-desde-la-ui) abre P013 antes de publicar:
-[plan](phase/P013_PLAN.md), [tareas](NEXT_STEPS.md) y [flujo propuesto](flows/configuration-setup.md).
-**Planificado, no implementado.** Las capacidades y reglas vigentes de §4/§5/§8 permanecen hasta sus entregas.
+[D215](DECISIONS.md#d215--p013-instalación-guiada-y-configuración-desde-la-ui) abre P013 antes de publicar.
+**T001 completa el diseño; implementación pendiente de T002–T011.** Las reglas vigentes de §4/§5/§8 se
+mantienen hasta sus entregas. [Contrato](phase/P013-T001_CONTRATO.md), [flujo](flows/configuration-setup.md),
+[plan](phase/P013_PLAN.md) y [tareas](NEXT_STEPS.md). D216–D218 concretan:
 
-- Instalar/arrancar mediante scripts que creen venv/directorios y gestionen rutas/cachés configurables; primera
-  instalación con red, modo offline posterior y uso del paquete aislado, con desarrollo separado.
-- Asistente inicial sin TOML completo ni modelos; detección local y elección de clientes, identidad Git,
-  almacenamiento y raíces. Guardar configuración global mediante formulario/TOML validado en la UI.
-- Crear/incorporar sin composición de stack previa obligatoria. Tras concretar documentación/arquitectura o
-  inventario del código, revisor propone perfil propio; ejecutor prepara/comprueba lo autorizado y harness
-  registra evidencia. Activación confirmada antes de ejecutar la primera tarea, con ejemplos/recetas opcionales.
-- Edición global/por proyecto manual o asistida desde UI, con contexto, diff e impacto; asistencia IA global
-  solo tras configurar agentes. Revisor en lectura, ejecutor sin escritura general del TOML global;
-  aplicación guarda los archivos validados. No modificar ajustes globales del equipo ni almacenar credenciales.
-- Versiones, guardado recuperable/CAS, compatibilidad del TOML actual, jobs congelados y backup/consulta según
-  contrato T001. UI y diagnósticos en/es; README/candidato/evidencia nuevos antes de cerrar y proponer apertura.
+- Instalar desde clon o paquete verificado, con venv/generaciones aisladas y rutas/cachés elegibles. Offline
+  por defecto y red explícita, sin instalar herramientas globales; paquete sin Node/checkout. Arranque corto
+  inicializa solo base ausente; migración de existente por D150 aparte, con parada y copia previa.
+- Asistente inicial autenticado sin TOML completo, composición ni modelos. Detectar clientes no otorga permisos;
+  preflight explícito D174 no acredita inferencia real. Configuración inválida/ausente no consume trabajos.
+  Consulta restaurada nunca habilita este asistente operativo.
+- Global v9 y perfil/composición propios por proyecto v1, privados fuera de checkouts. Contenido en TOML
+  versionado y activación por referencia/hash en SQLite. Guardar es distinto de activar; diff, CAS, intención
+  recuperable y confirmación exacta. Edición externa no recarga autoridad ni cambia contratos congelados.
+- Global requiere reinicio confirmado; proyecto puede activarse entre tareas sin reinicio. Trabajo pendiente
+  bloquea activar según D118; no se cancelan jobs ni reescriben historiales/recibos para aplicar cambios.
+  Impacto global y proyectos afectados visible; preferencias/idioma de trabajo conservan D166/D167.
+- Crear/incorporar conversa con contexto documental/inventario antes de exigir perfil. Revisor propone;
+  confirmar documentos y perfil compatible precede al commit documental raíz/B y adopción P001. Preparación
+  técnica separada después, con plan de archivos/comandos/dependencias/red/ámbito y recibo; activar perfil
+  confirmado habilita primera tarea. P001 ACTIVE por sí sola no abre esa puerta.
+- Ejemplos/recetas Django/TypeScript opcionales. Preparación genérica con ejecutor acotado y validaciones
+  significativas del harness; agentes sin escritura general de TOML global ni ajustes del equipo. Aplicación
+  guarda versiones validadas. Perfil propuesto no acredita entorno listo ni permite ejecutar código al inventariar.
+- Edición posterior manual/formulario/TOML o asistida, reutilizando guardado/preparación/activación. Ayuda IA
+  solo con pareja activa congelada; no adopta los clientes propuestos en la propia sesión. UI/diagnósticos en/es.
+- V1–v8 siguen leyendo/operando con sus hashes; importación al editor explícita y originales intactos. Backup
+  nuevo incluye versiones/archivos/intenciones verificables; restore de consulta sin originales ni agentes
+  rechaza guardar, preparar, activar y reparar. Snapshots congelados y recetas/recibos anteriores intactos.
 
-La prohibición vigente de §8 de escribir TOML durante incorporación cambia solo cuando T004/T007–T009
-implementen el carril confirmado de configuración. No se añade hoy una excepción operativa: T001 resolverá
-su autoridad y relación con alta, commit documental, preparación y activación sin reescribir historiales.
-La publicación queda aplazada hasta cerrar P013; el cierre no ejecuta acciones remotas ni renueva permisos P012.
+La prohibición vigente de §8 de escribir TOML en incorporación cambia solo al implementar el carril de
+configuración confirmado de T004/T007–T009, con la aplicación como escritora. No hay excepción operativa hoy.
+README/docs públicas, QA, candidato/paquete y expediente nuevos se entregan en T012–T015. Publicación aplazada
+hasta cerrar P013; su cierre no ejecuta acciones remotas ni renueva permisos P012.

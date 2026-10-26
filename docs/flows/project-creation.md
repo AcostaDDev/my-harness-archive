@@ -101,3 +101,12 @@ comprobación versionada puede liberar una reserva de cancelación sin reabrir e
 Cuatro tablas nuevas y procedencia del registro en [DDBB-DIAGRAM](../DDBB-DIAGRAM.md);
 detalles y verificación en [entrega T002](../archive/phase-009/P009-T002_CARPETA_PROYECTOS.md). D118 implementa roles con el JSON existente del registro. D116 sigue fijando
 el contrato de receta implementado por D119; [flujo de preparación](project-preparation.md) y [entrega T004](../archive/phase-009/P009-T004_RECETA_DJANGO.md).
+
+## Ampliación diseñada en P013-T001
+
+El [contrato P013](../phase/P013-T001_CONTRATO.md) y el [flujo de configuración](configuration-setup.md)
+concretan el recorrido futuro sin composición previa, guardado/activación versionados, preparación y backup.
+**Diseñado, no implementado:** este documento conserva el flujo vigente hasta las entregas T004–T011.
+Commit documental previo al técnico; perfil/recibo confirmado antes de tareas en el carril nuevo; formatos,
+jobs, snapshots y recibos existentes intactos. La aplicación guarda TOML privado fuera de checkouts;
+ningún agente obtiene escritura general de configuración global. Consulta D040 no adquiere mutaciones.

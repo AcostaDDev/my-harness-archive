@@ -137,3 +137,12 @@ flowchart TD
   de trabajo del plan; el plan conserva su etiqueta inglesa. Los planes v1 muestran su etiqueta congelada.
 - El idioma funcional del hijo (`LANGUAGE_CODE = "es"`, `<html lang="es">`, textos visibles) no deriva del visual
   ni del de trabajo. Mover a v6/v7 un proyecto preparado con v1 no está soportado: cambiaría su composición congelada.
+
+## Ampliación diseñada en P013-T001
+
+El [contrato P013](../phase/P013-T001_CONTRATO.md) y el [flujo de configuración](configuration-setup.md)
+concretan el recorrido futuro sin composición previa, guardado/activación versionados, preparación y backup.
+**Diseñado, no implementado:** este documento conserva el flujo vigente hasta las entregas T004–T011.
+Commit documental previo al técnico; perfil/recibo confirmado antes de tareas en el carril nuevo; formatos,
+jobs, snapshots y recibos existentes intactos. La aplicación guarda TOML privado fuera de checkouts;
+ningún agente obtiene escritura general de configuración global. Consulta D040 no adquiere mutaciones.

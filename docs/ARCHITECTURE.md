@@ -461,27 +461,65 @@ no cambia hoy `render_attempt`, adaptadores, variables, snapshots, API o esquema
 
 ## 14. Ampliación planificada — P013
 
-[D215](DECISIONS.md#d215--p013-instalación-guiada-y-configuración-desde-la-ui) planifica instalación y
-configuración guiadas antes de abrir en GitHub. [Plan](phase/P013_PLAN.md), [tareas](NEXT_STEPS.md) y
-[flujo propuesto](flows/configuration-setup.md). **Sin implementación nueva en esta apertura.** §6/§9 siguen
-describiendo la autoridad del TOML local y la operación actuales.
+**T001: diseño terminado, producto pendiente T002–T011.** §6/§9 describen aún lo implementado.
+[D216](DECISIONS.md#d216--p013-t001-instalación-aislada-y-arranque-sin-configuración),
+[D217](DECISIONS.md#d217--p013-t001-archivos-versionados-y-activación-de-configuración) y
+[D218](DECISIONS.md#d218--p013-t001-perfil-tras-contexto-y-preparación-antes-de-activar).
+[Contrato detallado](phase/P013-T001_CONTRATO.md), [flujo](flows/configuration-setup.md).
 
-T001 fijará ubicación/autoridad de archivos globales y por proyecto fuera de checkouts, su vínculo con SQLite,
-versiones, validación, activación/reinicio, escrituras atómicas/CAS, recuperación, compatibilidad 1–8 y
-backup/restauración de consulta. No se decide aquí una tabla, revisión Alembic, endpoint, versión `local-config`
-o formato de recibo nuevos. Las tareas que cambien modelos/migraciones o API actualizarán diagrama/tipos.
+### Instalación y proceso
 
-T002/T003 compondrán construcción/verificación/instalación y arranque con venv/rutas/cachés gestionados,
-conservando wheel aislado, locks/hashes y `scripts/dev`. El asistente T005/T006 debe funcionar sin TOML completo,
-con sesión/Host/Origin/CSRF y sin modelos hasta configurar clientes. Configuración inválida o restauración de
-consulta no adquieren autoridad para ejecutar proyectos.
+T002 compone build/verificación/instalación desde clon o paquete local: Python/uv explícitos o compatibles,
+Node/npm solo para construir, cachés configurables, generación/venv propios y recibo `installation-1`.
+Los helpers actuales usan `.local/`, `.venv` y fuentes para verificar: la entrada desde paquete exige extraer
+verificación común autocontenida con manifiesto, hashes, UI/migraciones y pruebas instaladas. No basta verificar
+checksums. Offline por defecto; red explícita sin descargas implícitas de herramientas ni configuración global.
+T003 arranca el binario instalado fuera del checkout, con DB/config/puerto/temporal privados; instala solo
+T002, migra solo D150 por acción separada. Base nueva por creación exclusiva, existente por validación.
 
-T007–T009 introducirán propuesta de perfil tras contexto documental/inventario, preparación acotada y activación
-confirmada en creación/incorporación, sin composición de stack previa obligatoria. T010 añade edición posterior
-manual/asistida y T011 verifica compatibilidad/recuperación/backup. Revisor de lectura, ejecutor limitado al
-proyecto o área autorizada y aplicación como escritora de TOML; sin acceso general de agentes a configuración
-global. Cambios no mutan snapshots/jobs ni acreditan recibos de preparación de otra versión.
+### Autoridad y persistencia propuestas
 
-T012–T015 documentarán/verificarán la experiencia, prepararán candidato y expediente nuevos y cerrarán P013.
-Los archivos de P011/P012/D214 conservan bytes/procedencia; no representan evidencia de los cambios futuros.
-La transición de fuente principal D157 y el modo continuo posterior D156 se mantienen, con apertura aplazada.
+`local-config-9`: global con campos de servicio/Git/agentes/registration/presets/catálogos de v8; composiciones
+opcionales y sin `[[projects]]`. `project-config-1`: perfil/composición efectivos, política, herramientas/
+autorizaciones/entorno y selección de agentes, con referencia global sellada. Registro/confianza/raíz/idioma y
+preferencias siguen siendo autoridad SQLite, sin duplicarse en TOML. Ejemplos se copian al perfil propio.
+
+Bajo `--config-dir`, `global.toml` y `projects/<id>/project.toml` son copias editables; versiones inmutables
+privadas contienen el TOML autorizado. SQLite guarda referencias/revisiones/hashes/intenciones/activaciones,
+no una segunda configuración editable. Ausencia/discrepancia de versión activa bloquea. 64 KiB por TOML,
+0700/0600 nuevos, propietario UID y sin enlaces/hardlinks/secretos; guardias 1–8 conservadas al importar.
+
+T004 implementa `configuration-operation-1`: CAS/base/candidato/clave → intención persistida → publicación
+atómica/fsync por archivo → finalización del conjunto → activación separada. Sin transacción distribuida
+ficticia entre SQLite y archivos; intenciones permiten conciliación por bytes base/candidatos. Edición externa
+bloquea nuevas operaciones del ámbito hasta importar/descartar por CAS; nunca hot reload. Nuevo esquema
+aditivo e índices/restricciones concretos se documentarán con la migración real en DDBB-DIAGRAM.
+
+Global activa al reiniciar tras confirmación, con admisión cerrada en `RESTART_REQUIRED`; proyecto activa
+sin reinicio bajo barrera compartida de admisión/commit y recomposición verificada. Rechazar activar con
+jobs/locks/preparación/aceptación/commit/borradores utilizables pendientes (D118); planes PROPOSED pasan a
+SUPERSEDED, snapshots intactos. Cambios globales muestran y sellan revisiones derivadas compatibles de todos
+los afectados. DB/config-dir/temporal/puerto son parámetros del arranque; UI no traslada datos. Preferencias
+D166 siguen sin reinicio; idioma de raíz D167 inmutable.
+
+### Contexto de alta y puertas
+
+T005/T006 introducen modo `UNCONFIGURED`/`INVALID` con sesión y asistente sin consumidores/modelos;
+`READY`, `RESTART_REQUIRED`, `RECOVERY_REQUIRED` y consulta D040 definen las capacidades restantes.
+No invocar CLI en GET/parse/preview; comprobación explícita version/help conserva D174. OpenAPI/tipos al
+implementar [API diseñada](phase/P013-T001_CONTRATO.md#9-api-y-ui-propuestas).
+
+T007 separa contexto de alta documental (agentes/Git/raíz/idiomas) del contexto ejecutable actual. Sin perfil
+ficticio para sortear composición: definición/inventario → propuesta validada → commit documental raíz/B y
+P001 → preparación técnica → recibo → activación de perfil → tareas. T008 reutiliza journal/locks/procesos y
+commit conciliable con contrato nuevo `project-profile-preparation-1`; recetas/recibos existentes conservan
+versiones/guardias. Un cambio de perfil/entorno exige evidencia nueva; solo cambios no técnicos pueden
+conservar evidencia tras comprobar compatibilidad, sin reescribir recibos (D207).
+
+T010 reutiliza ese carril para edición asistida sin escritura general de agentes en TOML global. T011 verifica
+lectura/hashes 1–8 e importación explícita del conjunto al editor; jobs/snapshots históricos intactos. Backup
+nuevo incluye archivos/versiones/intenciones por bytes/hashes; restore conserva consulta sin archivos
+originales/CLI y sin autoridad de ejecución o reparación. No convierte copias restauradas en operativas.
+
+T012–T015 verifican experiencia, actualizan docs públicas y preparan candidato/expediente nuevos antes de
+cerrar. P011/P012/D214 conservan bytes/procedencia. D157 y modo continuo posterior D156 se mantienen.

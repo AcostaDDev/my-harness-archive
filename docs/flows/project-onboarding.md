@@ -189,3 +189,12 @@ congelado de cada turno y los borradores, bloques y `SUMMARY.md` de `phase-000` 
 
 Fuentes compartidas vigentes: `adapters/import_git.py`, `core/tree.py`, `storage/private_drafts.py`,
 `core/engine/import_commit.py`, `storage/project_import.py`, `storage/retired_work.py`.
+
+## Ampliación diseñada en P013-T001
+
+El [contrato P013](../phase/P013-T001_CONTRATO.md) y el [flujo de configuración](configuration-setup.md)
+concretan el recorrido futuro sin composición previa, guardado/activación versionados, preparación y backup.
+**Diseñado, no implementado:** este documento conserva el flujo vigente hasta las entregas T004–T011.
+Commit documental previo al técnico; perfil/recibo confirmado antes de tareas en el carril nuevo; formatos,
+jobs, snapshots y recibos existentes intactos. La aplicación guarda TOML privado fuera de checkouts;
+ningún agente obtiene escritura general de configuración global. Consulta D040 no adquiere mutaciones.
