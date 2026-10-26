@@ -240,6 +240,7 @@ tarea se leen solo las decisiones que cita; este índice sirve para buscar prece
 | [D226](#d226--p013-t009-alta-documental-y-activación-del-perfil-propio) | P013-T009: alta documental y activación del perfil propio | P013 |
 | [D227](#d227--p013-t010-edición-posterior-asistencia-congelada-e-impacto-conjunto) | P013-T010: edición posterior, asistencia congelada e impacto conjunto | P013 |
 | [D228](#d228--p013-t011-conversión-explícita-y-backup-de-configuración) | P013-T011: conversión explícita y backup de configuración | P013 |
+| [D229](#d229--p013-t012-primer-uso-instalado-y-documentación-pública) | P013-T012: primer uso instalado y documentación pública | P013 |
 
 ## D001 — Alcance local y arquitectura base
 
@@ -6765,3 +6766,30 @@ Concreta D217/D221–D227, conservando D040/D049/D118/D150/D174 y formatos/hist�
   Sin modelos/migración/dependencias nuevos (0027/54 tablas); OpenAPI/tipos e interfaz en/es en paridad.
 - Evidencia sintética exclusivamente; primer uso/QA instalada pendientes T012. Originales archivados y
   candidatos P011/P012/D214 intactos, sin autorización remota nueva.
+
+
+## D229 — P013-T012: primer uso instalado y documentación pública
+
+Estado: implementada y verificada el 2026-10-26; evidencia sintética instalada/Chrome, sin proveedores. Fase: P013.
+[Entrega](phase/P013-T012_PRIMER_USO.md), [matriz](phase/P013_MATRIZ_ACEPTACION.md),
+[flujo](flows/configuration-setup.md#primer-uso-instalado-verificado-en-t012). Concreta D215–D228 sin cambiar diseño.
+
+- Encargo de siguiente tarea/commit y autorización general del usuario se acotan a instalación/red de dependencias,
+  servicios/CLI/herramientas falsos, Git/SQLite sintéticos y QA fuera del checkout. Sin operar este repositorio,
+  proveedores reales/credenciales, configuración global del equipo, bases/candidatos/snapshots P011/P012/D214 ni
+  acciones remotas. Fallos originales y generaciones conservados, sin calificarlos retrospectivamente como READY.
+- Primer uso del wheel instalado: global desde formulario en navegador, guardado y activación separados/reinicio;
+  creación y B con perfil Go propuesto desde documentos/inventario, commit documental/P001, herramientas privadas,
+  preparación/recibo, activación y primera tarea COMMITTED. B conserva original. Edición y consulta de backup
+  sin originales verificadas; scripts de ensayo reproducibles y matriz distinguen API, navegador y pruebas unitarias.
+- Defectos concretos del ensayo corregidos: pin uv con sufijo independiente de ruta; configuración npm global y
+  usuario distintas, sin overrides heredados; build sin .gitignore extra de uv; checker espera asistente INVALID
+  protegido, supervisor deshabilitado y cero trabajo; start permite TIME_WAIT con SO_REUSEADDR, conserva rechazo
+  de listeners; claves React distintas para padre/hijo al alternar altas. Probe falso admite preparación sin
+  esquema de lector; no cambia adaptador ni relaja permisos/validaciones.
+- README en/es separa usuario/desarrollo y explica uv/venv/cachés, clon/paquete, red/offline, setup/perfiles,
+  edición/importación, actualización y consulta. Baseline pública se pone al día de forma autocontenida en inglés
+  con D216–D228, esquema/diagrama y flujo nuevos; reserva decisiones desde D230, sin alterar archivos archivados.
+- QA en/es, claro/oscuro, escritorio/móvil y Tab/Enter muestreados con límites explícitos; no certifica accesibilidad
+  completa ni proveedores/plataformas adicionales. Suites, hashes propios y omisiones en entrega. T013–T015
+  siguen pendientes: paquete de ensayo no es candidato público final, y la versión sigue en 0.1.0.

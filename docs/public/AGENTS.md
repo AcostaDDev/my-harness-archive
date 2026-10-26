@@ -30,7 +30,7 @@ agents; its work language is English.
 - Never present as implemented what is only designed. Frozen histories, snapshots, catalogs and fingerprinted
   recipe sources are not rewritten.
 - When finishing: relevant checks, reviewed diff, `docs/STATE.md` and `docs/NEXT_STEPS.md` up to date, durable
-  decisions in `docs/DECISIONS.md` (`## DNNN — title`, new numbers from D200) and work artifacts in `docs/phase/`.
+  decisions in `docs/DECISIONS.md` (`## DNNN — title`, new numbers from D230) and work artifacts in `docs/phase/`.
   Say what was tested and what was not.
 
 ## Commands (from the root; offline after the first installation)

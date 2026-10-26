@@ -14,10 +14,10 @@ primer uso y la operación paso a paso. Esta página resume lo esencial y enlaza
 
 Versión previa a la primera publicación: la primera versión local está completa en el alcance declarado, el
 paquete declara `0.1.0`, candidata a primera versión pública, y no está en PyPI ([changelog](CHANGELOG.md)).
-Solo se ha probado en macOS sobre Apple silicon (ARM64). Los pasos de primer uso se han ensayado desde un clon limpio
-con cachés vacías hasta COMMITTED y una fase cerrada, con CLI falsas: sin inicio de sesión ni llamadas reales a
-modelos. La interfaz instalada se revisó después en Chrome en inglés y español, temas claro y oscuro, escritorio y
-móvil; no se han probado otros navegadores ni lectores de pantalla. Licencia [MIT](LICENSE). Detalle en
+Solo se ha probado en macOS ARM64. El recorrido guiado se comprueba desde el wheel instalado con clientes y
+herramientas falsos, Git/SQLite temporales, configuración inicial en navegador y operaciones de proyecto por HTTP
+protegido. La QA visual en/es se registra con límites propios; no acredita proveedores nuevos ni el candidato público
+final de P013, todavía pendiente. Licencia [MIT](LICENSE). Detalle en
 [Status](README.md#status) y [Supported scope and limits](README.md#supported-scope-and-limits).
 
 ## Dos formas de empezar un proyecto
@@ -33,15 +33,50 @@ móvil; no se han probado otros navegadores ni lectores de pantalla. Licencia [M
 
 ## Instalación y primer uso, en resumen
 
-1. Requisitos ([Requirements](README.md#requirements)): Python 3.14 para el servicio; uv 0.12.19, Node 24.15.0 y npm
-   11.12.1 exactos para construir; Codex ≥ 0.163.0 o Claude Code ≥ 2.1.304 con tu sesión iniciada.
-2. Primera descarga de dependencias (necesita red) y construcción del paquete, sin red
-   ([Install from a clone](README.md#install-from-a-clone)). El uso real se hace siempre desde el paquete instalado
-   en su propio entorno virtual, nunca desde el checkout de desarrollo.
-3. Configuración: copia [el ejemplo mínimo de un proveedor](examples/local_config.minimal.example.toml) fuera de todo
-   checkout, con `chmod 600`, y sustituye sus marcadores ([Configure](README.md#configure)).
-4. `init-db`, `serve` y el navegador en `http://127.0.0.1:8013` con la clave de acceso que anuncia el arranque
-   ([First run](README.md#first-run)). Con `supervisor = true` cada intento de un agente usa tu cuenta del proveedor.
+1. Instala Python 3.14 y uv 0.12.19. Para construir desde clon, también Node 24.15.0 y npm 11.12.1.
+   uv crea el entorno virtual aislado e instala las dependencias fijadas; no hay que crear ni activar un venv a mano.
+2. Desde el clon, elige rutas absolutas fuera de todo checkout y una caché propia. La primera preparación permite
+   red explícitamente; `.local/` no es un requisito:
+
+```sh
+scripts/install --clone /ruta/my_harness --python /ruta/python3.14 --uv /ruta/uv \
+  --install-dir '/ruta/Harness Local/installation' --data-dir '/ruta/Harness Local/data' \
+  --config-dir '/ruta/Harness Local/configuration' --cache-dir '/ruta/Harness Cache' --allow-network
+scripts/start --install-dir '/ruta/Harness Local/installation' --port 8013
+```
+
+El instalador construye/verifica el paquete y publica una generación solo tras pasar la comprobación aislada con
+agentes falsos. Repetir con `--offline` verifica/reutiliza la instalación; una instalación nueva offline necesita
+caché completa. Caché incompleta deja diagnóstico y generación fallida para inspección, sin publicar parciales.
+Desde un paquete nuevo autocontenido: `/ruta/paquete/scripts/install --dist /ruta/paquete` con las mismas opciones;
+no necesita Node/npm ni checkout. [Opciones y fallos](README.md#install-from-a-clone).
+
+3. Abre `http://127.0.0.1:8013` directamente y pega la clave del archivo privado anunciado al arrancar.
+   Sin TOML, la UI abre `/setup`: identidad Git, clientes/PATH/USER, modelo/esfuerzo del revisor, raíces autorizadas
+   y supervisor. Buscar clientes sugiere rutas; comprobar versión/ayuda no llama modelos. No pegues credenciales.
+4. Valida/revisa el diff y confirma **guardar**; después revisa/confirma **activar** y reinicia con el mismo
+   `scripts/start`. Guardar no activa; el reinicio promueve el conjunto verificado. La instalación conserva
+   datos/configuración separados y privados. [Primer arranque](README.md#first-run), [configuración](README.md#configure).
+5. Crea o registra sin composición de stack obligatoria. Conversa sobre documentos/arquitectura o inventario HEAD;
+   revisa/aplica borradores y adopta el perfil propio propuesto. Confirma el commit documental/P001, completa las
+   herramientas y guarda el perfil. Confirma preparación acotada (archivos, dependencias, comandos/red), revisa
+   el recibo y activa por separado. Solo entonces se habilita la primera tarea. Django/TypeScript son opcionales.
+   [Recorrido completo](README.md#start-a-project).
+
+**Edición posterior:** configuración global desde la navegación y perfil desde el proyecto, por formulario/TOML.
+La ayuda IA es opcional y usa clientes activos; aplicar una propuesta cambia el borrador. Diff, guardado,
+preparación y activación siguen separados. Global requiere reinicio; cambios técnicos de perfil, preparación nueva.
+Los conflictos conservan el candidato de la pestaña; recargar no reenvía confirmaciones. Jobs pendientes o un
+escritor incierto pueden bloquear activación. [Edición](README.md#edit-configuration-later).
+
+**TOML anteriores:** formatos 1–8 conservan entrada/hashes. Importarlos al editor es explícito; los perfiles
+convertidos necesitan documentación comprometida, plan y preparación nuevos antes de activar todo y reiniciar sin
+la fuente externa. Esta conversión de configuración es distinta de incorporar un repositorio con código.
+Los [ejemplos manuales](examples/local_config.minimal.example.toml) siguen siendo opcionales.
+
+Con el supervisor habilitado, cada intento encolado usa tu cuenta/cuota del proveedor. El login de clientes se hace
+fuera del harness. El arranque crea solo una DB ausente y nunca migra silenciosamente. Actualizar conserva
+las generaciones/datos con `--upgrade --writers-stopped`; la migración de esquema sigue siendo separada.
 
 ## Idiomas
 
@@ -78,6 +113,7 @@ Se mantienen los mínimos y la compatibilidad condicionada. Dos tareas acabaron 
 TypeScript fallaron antes de una edición documental autorizada y un READY válido; sus resultados se conservaron.
 La propuesta del chat sigue QUEUED y la identidad de procesos históricos sigue siendo incierta.
 
+`local-config-9` añade autoridad global y `project-config-1` por proyecto. Los formatos 1–8 conservan su entrada;
 `local-config-8` permite formateador optativo en perfiles declarados y conserva presets/recetas v2; v1–v7 mantienen
 sus reglas. La restauración ofrece consulta por id en `/runs/:id` sin proyecto ni checkout, con diff/JUnit/métricas,
 sin supervisor ni agentes y con mutaciones rechazadas (409). Consultar no certifica la parada de escritores históricos.

@@ -21,7 +21,7 @@ permissions and results.
 
 | Concept | Meaning |
 |---|---|
-| Project | Registered Git checkout with its profile, policy, composition, work language and documentation contract |
+| Project | Registered Git checkout with policy, work language and documents; executable profile after confirmed activation |
 | Phase | ROADMAP milestone (`PNNN`) with objective, exit criteria and tasks; a SQLite record |
 | Task | Bounded unit (`PNNN-TNNN`) with a frozen contract: objective, paths, criteria and validations |
 | Run | Tracking of a task or operation (check, closure, transition, chat, definition, document edit) |
@@ -58,7 +58,7 @@ current adapter; Django v2 creation and a full language matrix have offline evid
 
 | ID | Capability | Observable result |
 |---|---|---|
-| F01 | Register a project | From the UI with a canonical root, explicit trust, profile, composition and work language from the TOML; or in `[[projects]]` of the TOML |
+| F01 | Register a project | From UI with canonical root, trust and work language; v9 can begin without profile/composition; legacy `[[projects]]` remains supported |
 | F02 | Create a project from scratch | Projects folder chosen in the UI, brief, conversation with the reviewer, drafts on disk with CAS, acceptance and root commit with P001 ([flow](flows/project-creation.md)) |
 | F03 | Onboard a repository without a harness | Static inventory of HEAD, reverse-engineering conversation with private drafts, confirmed documents and profile, documentation commit that adopts P001 ([flow](flows/project-onboarding.md)) |
 | F04 | Navigate projects, phases, tasks and runs | Own URL per resource, bounded and paginated loading |
@@ -73,7 +73,7 @@ current adapter; Django v2 creation and a full language matrix have offline evid
 | F13 | Metrics and statistics | Tokens, turns, models, efforts, durations and equivalent cost with provenance |
 | F14 | Recover and preserve | Backup and query-only restore with standalone run evidence UI without a checkout, explicit log retention, recovery after a crash |
 | F15 | Local distribution | Wheel with UI and migrations, `init-db`, `serve`, explicit `migrate`, local session |
-| F16 | Declared profiles | Stack profile (preparation, tests, lint, types) declared in the local TOML and confirmed by the user ([D095](DECISIONS.md#d095--declared-profiles-in-local-config-4)) |
+| F16 | Declared profiles | Own profile proposed after context, edited/saved/prepared/activated through UI; legacy declared TOML profiles remain supported ([D095](DECISIONS.md#d095--declared-profiles-in-local-config-4)) |
 | F17 | Project instructions for the agents | `AGENTS.md` included in the frozen context of every attempt ([D094](DECISIONS.md#d094--agentsmd-in-every-frozen-prompt)) |
 | F18 | Choose a projects folder | Root chosen explicitly in the UI and persisted; lets the service create new children without the AI deciding their location |
 | F19 | Agents configurable per project | Providers and the reviewer's model and effort in the UI; the concrete executor selection is made by the reviewer ([flow](flows/project-agents.md)) |
@@ -182,7 +182,7 @@ or reopening a project already managed is a normal operation on its existing aut
 or history of another harness is refused; it is never silently converted.
 
 Onboarding inventories a non-empty HEAD (stack, entities, routes, tests and CI) and proposes a declared profile that
-the operator confirms in their composition. The reviewer reads a read-only export of the frozen HEAD and proposes the
+the operator adopts after reviewing documents and command evidence. The reviewer reads a read-only export of the frozen HEAD and proposes the
 eleven contract documents and flows, citing facts and inferred decisions, and asks about what cannot be deduced. Its
 proposals are applied with CAS to private drafts next to SQLite, without writing the checkout or running code or
 commands ([D102](DECISIONS.md#d102--onboarding-by-reverse-engineering-over-head-with-private-drafts)).
@@ -192,7 +192,9 @@ checkout and index on the original HEAD. It confirms documents and profile by ha
 keeps the inventory, the summary and the replaced originals byte for byte in `archive/phase-000/`. It seals an intent
 before writing and creates a single reconcilable documentation commit, adopting P001 ACTIVE atomically. Repeating the
 confirmation does not duplicate operations; a crash requires confirming that the writer stopped and reconfirming the
-exact intent. It does not write the TOML or install or run project tools.
+exact intent. The documentary commit does not install or run project tools. In v9, the application then saves
+private project TOML through a separate confirmed operation, prepares the exact plan and activates only after
+a verified receipt. Legacy composition configuration remains operator-owned. See [§12](#12-guided-configuration).
 
 The Git boundary requires complete local objects and `--no-lazy-fetch` from the first command; it refuses clean or
 process filters (includes too) before capturing and sealing, refuses gitlinks in HEAD or the index before querying
@@ -255,10 +257,34 @@ prove a shorter time to market.
 ## 11. Out of scope
 
 Multiple users, cloud, parallel writers in one project, App Server or Agent SDK integration until compatibility and
-authentication are verified, a portable `project.yaml`, editing the TOML from the UI, physical operating-system
+authentication are verified, a portable `project.yaml`, physical operating-system
 isolation, and providers other than Codex and Claude Code (Gemini CLI only gets the `GEMINI.md` wrapper). Any real use
 of providers by the harness on a project requires the user's own configuration and confirmations.
 
 The optional continuous mode between phases (tasks → commits → check → closure → planning and execution of the next
 phase under one bounded authorization) is planned for v0.2.0 and is not implemented
 ([D156](DECISIONS.md#d156--continuous-mode-between-phases-reserved-for-v020), [ROADMAP](ROADMAP.md)).
+
+## 12. Guided configuration
+
+The installed application offers deterministic authenticated setup before any client or stack composition exists.
+Users choose clients, Git identity and allowed roots in forms or validated TOML; version/help checks are explicit
+and never prove inference or undocumented client effects. Local credentials stay with their provider clients.
+
+Global `local-config-9` and own `project-config-1` are private versioned files outside checkouts. Save, prepare and
+activate are separate exact-preview confirmations. SQLite owns revision references; CAS and durable intentions
+support reconciliation without replacing earlier snapshots. Global changes cover derived project copies and
+require restart; project changes activate between tasks with current evidence and no pending/uncertain writers.
+
+Definition and onboarding can converse without a stack profile. Documentary context/static HEAD inventory precedes
+proposals with meaningful validations and evidence per command. Proposal adoption, documentary commit/P001,
+completed private tool configuration, bounded technical preparation and independent activation precede task admission.
+The reviewer stays read-only; the executor has only the confirmed preparation scope and no general global writes.
+A receipt binds configuration, tools, commands, protected content and stable environment; failures do not qualify it.
+
+Later editing preserves active authority until confirmed activation. Technical changes require committed current
+documents and new preparation; optional assistance uses frozen active clients and only authorized context. Applying
+a suggestion changes the draft. Legacy formats 1–8 retain original entry/hashes; explicit conversion requires newly
+prepared converted profiles before activation. Configuration backup includes bytes/intents/evidence; query-only
+restore reads its bundle without original paths or clients and rejects editing, preparation, assistance and activation.
+See the [configuration flow](flows/configuration-setup.md) and [README](../README.md#configure).

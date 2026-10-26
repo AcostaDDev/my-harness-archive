@@ -1,6 +1,6 @@
 # Data diagram — my_harness
 
-SQLite schema of the local service: Alembic head `0025_project_work_languages`, 51 tables, defined in
+SQLite schema of the local service: Alembic head `0027_profile_proposals`, 54 tables, defined in
 `src/harness_local/storage/models.py`. Any change to the models or migrations updates this document in the same task
 (parity rule, [D088](DECISIONS.md#d088--unified-documentation-contract)).
 
@@ -917,3 +917,60 @@ a value. Another value for the same root is refused. Since `0025`, `managed_jobs
 `managed_attempts.language_context` copies the job's value when each attempt starts (null before `0025`). Downgrade
 is refused when any row exists (an explicit confirmation cannot be represented earlier); without rows it drops the
 table and the column ([flow](flows/project-work-language.md)).
+
+## Versioned configuration
+
+Alembic `0026_configuration` adds the three tables below; `0027_profile_proposals` makes registered-project
+`composition` and `profile` nullable for documentary intake. Current head: `0027_profile_proposals`, **54 tables**.
+References to saved/active/pending revisions are checked transactionally by the service; revision numbers are
+scoped composite keys. The content authority is immutable private TOML, while SQLite owns executable references.
+
+```mermaid
+erDiagram
+    configuration_scopes ||--o{ configuration_revisions : versions
+    configuration_operations ||--o{ configuration_revisions : saves
+    configuration_scopes {
+        string scope PK
+        string directory
+        int version
+        int saved_revision "nullable"
+        int active_revision "nullable"
+        int pending_revision "nullable"
+        string pending_operation_id "nullable"
+        string working_sha256 "nullable"
+        string updated_at
+    }
+    configuration_revisions {
+        string scope PK,FK
+        int revision PK
+        string sha256
+        string status "DRAFT or VALIDATED"
+        string operation_id FK
+        string created_at
+    }
+    configuration_operations {
+        string id PK
+        string format
+        string kind
+        string status
+        string idempotency_key UK
+        string request_sha256
+        json payload
+        json result "nullable"
+        string created_at
+        string updated_at
+    }
+```
+
+Operation states: INTENDED, FILES_WRITTEN, SAVED, RECOVERY_REQUIRED, CONFLICT, APPLIED. Kinds include SAVE,
+ACTIVATE, PROMOTE, CANCEL, RECOVER and ASSIST. Intent records and exact request hashes precede file effects;
+idempotent replay does not repeat commands or model calls. Assistance has its own process journal without a
+fictitious managed run. Global SAVE can include derived project copies or a legacy-import provenance snapshot.
+Activation records exact receipt evidence; it never rebuilds historical receipts.
+
+Profile proposals reuse planning proposals (`kind=profile`) with frozen binding/document evidence. Generic
+preparation reuses project preparation operations/steps/receipts with a contract discriminator, not a task run.
+Own configuration authority is in scope references, while nullable registry composition/profile marks intake.
+Jobs seal project revision/hash and environment receipt in `versions_json`; earlier snapshots retain their bytes.
+A backup inventory covers all three tables plus referenced configuration/evidence. Restore keeps the existing
+query-only mark and execution disabled, without interpreting original paths as writable destinations.

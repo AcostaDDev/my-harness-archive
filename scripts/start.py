@@ -165,6 +165,7 @@ def start(args):
             regular_file(config)
         # Reject a busy port before initialization; uvicorn remains authoritative if another process races us.
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as probe:
+            probe.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
             try:
                 probe.bind(('127.0.0.1', args.port))
             except OSError as error:
@@ -192,7 +193,7 @@ def start(args):
                 if not database.is_file():
                     raise StartRefused('init-db did not produce a database; no service was started')
             if not selected_config and not archived:
-                print('No global TOML: starting the protected configuration API; guided UI is pending.', flush=True)
+                print('No global TOML: starting the protected configuration assistant at /setup.', flush=True)
             print(f'Starting installed Harness Local at http://127.0.0.1:{args.port}; database: {database}.', flush=True)
             serve = [*command, 'serve', '--database', database, '--port', str(args.port),
                      '--configuration-dir', configuration, '--state-dir', data]

@@ -6,7 +6,7 @@ Pending a confirmed plan.
 
 ## Shared constraints
 
-- One bounded task at a time; durable decisions in [DECISIONS](DECISIONS.md) from D200 and task artifacts in
+- One bounded task at a time; durable decisions in [DECISIONS](DECISIONS.md) from D230 and task artifacts in
   `docs/phase/`.
 - Real providers, paid calls, network installs, pushes and publication need explicit authorization of their own.
 - Tests and fixtures are synthetic: no runs, credentials or private data.

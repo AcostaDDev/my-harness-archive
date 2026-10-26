@@ -353,7 +353,7 @@ con autorización inicial y parada por error/HITL/límites. No está implementad
 ## 14. Ampliación planificada — P013
 
 [D215](DECISIONS.md#d215--p013-instalación-guiada-y-configuración-desde-la-ui) abre P013 antes de publicar.
-**T001 completa el diseño; T002–T010 implementan instalación/arranque/empaquetado, persistencia, asistente API/UI, perfil, preparación y edición/asistencia; compatibilidad/backup entregados en T011; primer uso/QA pendientes T012.**
+**T001 completa el diseño; T002–T010 implementan instalación/arranque/empaquetado, persistencia, asistente API/UI, perfil, preparación y edición/asistencia; compatibilidad/backup entregados en T011; primer uso/QA verificados en T012 con wheel instalado, herramientas/CLI falsas y Chrome; candidato pendiente T013.**
 Las reglas vigentes de §4/§5/§8 se mantienen hasta sus entregas. [Contrato](phase/P013-T001_CONTRATO.md), [flujo](flows/configuration-setup.md),
 [plan](phase/P013_PLAN.md) y [tareas](NEXT_STEPS.md). D216–D218 concretan:
 
@@ -369,7 +369,7 @@ Las reglas vigentes de §4/§5/§8 se mantienen hasta sus entregas. [Contrato](p
   `/settings/configuration`, formularios y TOML con campos avanzados conservados, errores por campo en/es,
   diff y confirmaciones exactas separadas. Candidato y solicitud idempotente permanecen en la pestaña ante
   conflicto/recarga; reenvío solo explícito. Activar no reinicia desde HTTP; cancelar no recarga configuración.
-  [Entrega y límites](phase/P013-T006_ASISTENTE_UI.md), D223; QA visual integrada pendiente T012.
+  [Entrega y límites](phase/P013-T006_ASISTENTE_UI.md), D223; QA visual Chrome integrada verificada en T012, con sus límites.
 - Global v9 y perfil/composición propios por proyecto v1, privados fuera de checkouts. Contenido en TOML
   versionado y activación por referencia/hash en SQLite. Guardar es distinto de activar; diff, CAS, intención
   recuperable y confirmación exacta. Edición externa no recarga autoridad ni cambia contratos congelados.
@@ -412,7 +412,7 @@ Alta nueva/B sella propuesta aceptada en el commit documental, guarda perfil exa
 HEAD limpio, diff/confirmación independiente y barrera D118. Primera tarea bloqueada hasta activar; reenvío no
 duplica versiones, alta, preparación ni commits. Edición previa versiona otro candidato con evidencia/documentos
 vigentes; ejemplos copiables opcionales. Formulario/TOML, estado y evidencia en/es, con borrador/base/sobre
-conservados ante conflicto y sin reenvío automático. Recorrido sintético; QA visual instalada pendiente T012.
+conservados ante conflicto y sin reenvío automático. Recorrido sintético; QA visual instalada verificada en T012, con sus límites.
 T010 entrega edición posterior y asistencia opcional ([D227](DECISIONS.md#d227--p013-t010-edición-posterior-asistencia-congelada-e-impacto-conjunto),
 [entrega](phase/P013-T010_EDICION_ASISTIDA.md)). Perfil activo mantiene formulario/TOML; edición técnica parte
 de HEAD/documentos confirmados y plan explícito. Cambiar perfil exige actualizar documentación primero;
@@ -436,3 +436,8 @@ confirmar conjunto y reiniciar seleccionando solo almacén gestionado; originale
 No modifica la incorporación B de repositorios con código. Backup formato 2 conserva contenido versionado,
 intenciones parciales e inventario consistente; restore de consulta lee evidencia sin originales ni agentes y
 rechaza mutaciones. Fuentes/registro ambiguos o permisos sin resolver bloquean, sin elegir autoridad por fecha.
+
+
+T012 verifica el [primer uso instalado y QA](phase/P013-T012_PRIMER_USO.md) y actualiza README/baseline pública.
+La [matriz](phase/P013_MATRIZ_ACEPTACION.md) conserva alcance y pendientes de candidato/revisión/cierre.
+No amplía evidencia con proveedores ni cambia los contratos de configuración, datos o permisos.

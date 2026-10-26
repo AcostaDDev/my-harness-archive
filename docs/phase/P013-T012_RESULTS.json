@@ -1,0 +1,41 @@
+{
+  "base": "4e420738fc8b2e97b89651089a63761ad8ffa726",
+  "version": "0.1.0",
+  "platform": "macOS ARM64",
+  "package_role": "rehearsal only; final candidate is T013",
+  "package_hashes": {
+    "distribution-1.json": "7e26cbe16344e53851eefcabff03b36cdf8f75de4d434da57082dd21d56ee45e",
+    "pylock.toml": "20a327c3a97484892280c6dec6d2176202c2a88ebd638878e0808eeadfdf2cf9",
+    "harness_local-0.1.0.tar.gz": "746cb6d18227bb6ffbe877b1f6b3aecfec8ab6adb8b8366bbbd340ca4368080e",
+    "harness_local-0.1.0-py3-none-any.whl": "a4c483afb1d4f76b87ec626f01b664150403fafdd39edbf84973a98232171bfb",
+    "SHA256SUMS": "54e3985465da6a50204310e245c35fa148c707f9fcb8b7f6f31ab9e3d1f3f258"
+  },
+  "journeys": [
+    {
+      "entry": "definition",
+      "project": "created-final",
+      "run_id": "79116457-81f7-40af-b362-44e4e5986659",
+      "status": "COMMITTED",
+      "preparation_id": "90a836a8-7972-4bab-bed8-b69ce0d0b9a5"
+    },
+    {
+      "entry": "onboarding",
+      "project": "existing-final",
+      "run_id": "f5ffaa05-f531-42e7-8a29-6ad68815797a",
+      "status": "COMMITTED",
+      "preparation_id": "53aeede5-1c9b-44c3-a11e-1046466a46df"
+    }
+  ],
+  "consultation_without_originals": true,
+  "isolated_services_stopped": true,
+  "run_status_counts": {
+    "COMMITTED": 4,
+    "COMPLETED": 10,
+    "STOPPED": 2
+  },
+  "preparation_status_counts": {
+    "COMPLETED": 4,
+    "FAILED": 1
+  },
+  "pending_jobs": 0
+}

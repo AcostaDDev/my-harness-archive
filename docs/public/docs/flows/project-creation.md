@@ -1,5 +1,9 @@
 # Flow — projects folder and creation from scratch
 
+For v9 own profiles, the [guided configuration flow](configuration-setup.md) adds profile adoption after context,
+private TOML save after the documentary commit, generic confirmed preparation and separate activation before tasks.
+The composition/recipe diagrams below describe the retained legacy lane; they do not bypass those v9 gates.
+
 The user chooses a projects folder in the UI; the service creates and registers new children inside it, and the
 project then goes through definition, an optional recipe preparation and its first tasks
 ([D116](../DECISIONS.md#d116--creation-authority-per-project-presets-and-separate-preparation)). Details of each

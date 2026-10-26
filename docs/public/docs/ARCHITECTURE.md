@@ -10,7 +10,7 @@ Stack, modules, patterns and conventions in force. Requirements: [SPECIFICATION]
 |---|---|
 | Core | Python 3.14.4, standard library, package `harness-local` 0.1.0 (`uv_build==0.12.19`) |
 | Local API | FastAPI 0.143.0, Pydantic 2.14.0, Uvicorn 0.54.0; HTTP for actions and cursor-based observation of managed runs |
-| Persistence | SQLite with SQLAlchemy 2.1.4 and Alembic 1.20.0 (schema `0025_project_work_languages`) |
+| Persistence | SQLite with SQLAlchemy 2.1.4 and Alembic 1.20.0 (schema `0027_profile_proposals`) |
 | UI | React 19.3.0, TypeScript 5.9.3, Vite 8.3.4; `markdown-it` 15.0.2 (`html: false`) and `mermaid` 11.17.2 (`strict`) |
 | Client types | `openapi-typescript` 7.13.0 from the exported OpenAPI |
 | Tooling | uv 0.12.19 and `uv.lock`; Node 24.15.0, npm 11.12.1 and `frontend/package-lock.json` |
@@ -71,7 +71,7 @@ queue; closing the browser does not cancel work.
 | `cli.py`, `launcher.py` | `harness-local` (`init-db`, `serve`, `migrate`, `check-config`, backup, retention, `metrics-backfill`, `diagnose-cli`); `--ui-language` per invocation |
 | `storage/preferences.py`, `i18n/` | Global language preferences with CAS, capture of the interface language when admitting each job, en/es catalogs of own messages; `tr()` emits in the language of each emission |
 | `storage/work_language.py`, `services/work_language.py` | Immutable work language per root, `language-context-1` pair per job and attempt, explicit confirmation from absent to a value |
-| `migrations/versions/0001…0025` | Alembic schema |
+| `migrations/versions/0001…0027` | Alembic schema |
 
 `frontend/src`: `router.ts`, `pages/` (Home, Registry, Project, Phases, Task, Run, Docs, Planning, Preparation, Stats,
 Settings, Preferences), `i18n.ts`, `i18n/{en,es}.json` and `Language.tsx` (catalogs and interface language
@@ -134,7 +134,7 @@ configured projects, a checkout or supervisor. All mutations retain their 409 gu
   attempt, plus an identity check before GO. Drift leads to refusal or quarantine, without retry or provider
   substitution ([flow](flows/cli-compatibility.md)). The `cli_agents.SUPPORTED`/`WRITE_SUPPORTED` lists keep historical
   evidence and are no longer admission allowlists.
-- **Operator TOML** (`local-config-8`; 1–7 still readable), outside every checkout and `chmod 600`: `[service]`,
+- **Legacy operator TOML** (`local-config-8`; 1–7 still readable; v9 authority is described in §11), outside every checkout and `chmod 600`: `[service]`,
   `[git]`, `[agents.reviewer]`, `[agents.executor]`, `[registration]` (roots and bootstrap ceiling), optional
   `[profiles.*]`, `[compositions.*]` (built-in or declared profile and authorized commands), optional `[[projects]]`
   with its policy, `[agent_presets.*]` with an optional `agent_selection` per project, `work_language` per project and
@@ -272,3 +272,30 @@ inherit that value: they receive their own `HOME`/`TMPDIR` inside the child.
   remain unqualified ([scope](../README.md#supported-scope-and-limits)). Failed attempts/checks and uncertain
   historical process identity are preserved; consultation does not authorize resumption or certify stopped writers.
 - Two *low* KaTeX advisories in Mermaid 11.
+
+## 11. Versioned configuration and profile lifecycle
+
+`services/configuration_setup.py` chooses authority before composing clients. `configuration.py` and
+`storage/configuration.py` validate immutable TOML and journal CAS save/activation; `configuration_files.py`
+publishes private files with atomic replacement. `configuration_editing.py` derives private project copies and
+impact previews; `configuration_assistance.py` freezes active clients, context, process ownership and result.
+`configuration_import.py` explicitly converts legacy sources without replacing legacy authority before preparation.
+
+`IntakeContext` carries documentary capabilities without an executable profile. `profile_proposal.py` validates
+structured commands/tool evidence against frozen documents/inventory; planning tables retain proposal versions.
+`project_configuration.py` binds accepted proposals to confirmed documentary commits and private profile versions.
+`profile_preparation.py` reuses preparation operations, locks, leases and process identities for the generic
+`project-profile-preparation-1` contract, exact argv, JUnit, reconcilable technical commits and receipts. Activation
+precomposes and verifies exact saved references before exposing a runnable `ProjectContext`.
+
+Alembic 0026 adds three configuration tables (scope references, revisions and operations); 0027 makes registered
+composition/profile nullable for documentary intake. There are 54 tables. JSON journals extend existing operations
+without changing legacy histories. Format-2 backups inventory immutable/working configuration, partial intents and
+referenced evidence; restore reads its bundle and never executes stored paths. See [data](DDBB-DIAGRAM.md#versioned-configuration)
+and [flow](flows/configuration-setup.md). Formats 1–8 and their frozen hashes remain unchanged.
+
+The installer/checker use only packaged materials for the package entry. Generation receipts and `current.json`
+verify distribution and venv identity; instance/install locks survive in the child. The start port precheck uses
+SO_REUSEADDR for recently closed connections, while a listener still blocks. Npm user/global configuration paths
+are distinct and isolated from inherited overrides; uv's optional vendor suffix is accepted for the same pinned
+version regardless of executable path. Builds disable uv's output `.gitignore` to retain the exact artifact set.

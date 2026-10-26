@@ -101,14 +101,14 @@ def installation_lock(root):
         os.close(descriptor)
 
 
-def clean_environment(cache, python, network):
+def clean_environment(cache, python, network, temporary):
     # Operator resolver/configuration/environment switches cannot defeat hashes, offline mode or venv isolation.
-    env = {k: v for k, v in os.environ.items() if not k.startswith(('UV_', 'PIP_', 'PYTHON', 'HARNESS_', 'npm_config_'))
+    env = {k: v for k, v in os.environ.items() if not k.startswith(('UV_', 'PIP_', 'PYTHON', 'HARNESS_', 'npm_config_', 'NPM_CONFIG_'))
            and k not in ('VIRTUAL_ENV', 'CONDA_PREFIX', 'NODE_OPTIONS', 'NPM_CONFIG_USERCONFIG')}
     env.update(UV_CACHE_DIR=str(cache / 'uv'), UV_PYTHON=str(python), UV_PYTHON_DOWNLOADS='never',
                UV_NO_CONFIG='1', UV_OFFLINE='0' if network else '1', PYTHONNOUSERSITE='1',
                PYTHONDONTWRITEBYTECODE='1', npm_config_cache=str(cache / 'npm'),
-               npm_config_userconfig=os.devnull, npm_config_globalconfig=os.devnull)
+               npm_config_userconfig=os.devnull, npm_config_globalconfig=str(temporary / 'empty.npmrc'))
     return env
 
 
@@ -277,9 +277,13 @@ def install(args):
         receipt = {'format': 'installation-1', 'status': 'PREPARING', 'request': request,
                    'network': bool(args.allow_network), 'previous': (root / 'current.json').read_text() if previous else None, 'checks': []}
         write_json(receipt_path, receipt)
-        env = clean_environment(cache, python, args.allow_network)
-        env['TMPDIR'] = str(generation / 'tmp')
-        private_directory(generation / 'tmp')
+        temporary = generation / 'tmp'
+        private_directory(temporary)
+        # npm rejects loading one path as both user and global config, including /dev/null.
+        with (temporary / 'empty.npmrc').open('x') as stream:
+            os.chmod(stream.name, 0o600)
+        env = clean_environment(cache, python, args.allow_network, temporary)
+        env['TMPDIR'] = str(temporary)
         distribution = generation / 'distribution'
         try:
             if clone:

@@ -1,7 +1,7 @@
 # P013 — Instalación guiada y configuración desde la UI
 
-**Estado:** fase activa; T001 diseñada y T002–T011 implementadas el 2026-10-26, cuatro tareas pendientes.
-**Siguiente: P013-T012**, primer uso integrado, QA y documentación de usuario.
+**Estado:** fase activa; T001 diseñada y T002–T012 completadas el 2026-10-26, tres tareas pendientes.
+**Siguiente: P013-T013**, candidato público nuevo y paquete verificado.
 [Objetivo y criterios](ROADMAP.md#p013--instalación-guiada-y-configuración-desde-la-ui),
 [D215](DECISIONS.md#d215--p013-instalación-guiada-y-configuración-desde-la-ui) y
 [plan de fase](phase/P013_PLAN.md).
@@ -52,7 +52,7 @@ parsers, enlaces y dependencias. Sin migraciones ni proveedores.
 
 ## P013-T002 — Instalación automatizada y cachés configurables
 
-**Estado:** completada (2026-10-26); orquestación sintética, recorrido instalado pendiente T012/T013.
+**Estado:** completada (2026-10-26); orquestación sintética, recorrido instalado sintético verificado en T012; candidato final pendiente T013.
 [Entrega y validación](phase/P013-T002_INSTALACION.md), D219. **Depende de:** T001.
 **Objetivo:** instalar sin copiar la secuencia de construcción/venv/pip del README.
 **Rutas permitidas:** `scripts/**`, empaquetado si lo exige T001, pruebas específicas y documentación vigente.
@@ -72,7 +72,7 @@ parsers, enlaces y dependencias. Sin migraciones ni proveedores.
 
 ## P013-T003 — Arranque automatizado del paquete instalado
 
-**Estado:** completada (2026-10-26); orquestación/señales sintéticas, recorrido instalado pendiente T012/T013.
+**Estado:** completada (2026-10-26); orquestación/señales sintéticas, recorrido instalado sintético verificado en T012; candidato final pendiente T013.
 [Entrega y validación](phase/P013-T003_ARRANQUE.md), D220. **Depende de:** T001–T002.
 **Objetivo:** arrancar con una entrada corta y opciones editables/documentadas.
 **Rutas permitidas:** `scripts/**`, pruebas específicas y documentación vigente.
@@ -129,7 +129,7 @@ OpenAPI y tipos regenerados cuando cambie contrato.
 
 ## P013-T006 — Asistente inicial y ajustes globales en la UI
 
-**Estado:** completada (2026-10-26); UI/contrato sintéticos, QA visual integrada pendiente T012.
+**Estado:** completada (2026-10-26); UI/contrato sintéticos, QA visual Chrome integrada verificada en T012, con sus límites.
 [Entrega y checks](phase/P013-T006_ASISTENTE_UI.md), D223. **Depende de:** T005.
 **Objetivo:** completar/editar configuración global sin copiar una plantilla ni escribir TOML a mano.
 **Rutas permitidas:** frontend, API para completar T005, pruebas y docs de paridad.
@@ -186,7 +186,7 @@ proveedores o descargas reales necesitan autorización propia.
 
 ## P013-T009 — Activación del perfil y alta completa desde la UI
 
-**Estado:** completada (2026-10-26); integración API/UI con agentes y herramientas falsos; QA visual instalada pendiente T012.
+**Estado:** completada (2026-10-26); integración API/UI con agentes y herramientas falsos; QA visual instalada verificada en T012, con sus límites.
 [Entrega y checks](phase/P013-T009_ALTA_UI.md), D226. **Depende de:** T007–T008.
 **Objetivo:** unir conversación, perfil y preparación en las dos entradas del producto.
 **Rutas permitidas:** frontend, API/servicios de alta/activación, pruebas y docs de paridad.
@@ -242,7 +242,8 @@ proveedores o descargas reales necesitan autorización propia.
 
 ## P013-T012 — Primer uso integrado, QA y documentación de usuario
 
-**Estado:** pendiente. **Depende de:** T002–T011.
+**Estado:** completada (2026-10-26); primer uso instalado con CLI/Go falsos, QA Chrome y documentación.
+[Entrega](phase/P013-T012_PRIMER_USO.md), [matriz](phase/P013_MATRIZ_ACEPTACION.md), D229. **Depende de:** T002–T011.
 **Objetivo:** acreditar el recorrido completo y explicar uso/desarrollo sin pasos implícitos.
 **Rutas permitidas:** README/README.es, docs vigentes/públicas, ejemplos y tests de integración;
 correcciones de producto se acotan antes de ampliar rutas.

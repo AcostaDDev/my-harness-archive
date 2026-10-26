@@ -1,6 +1,6 @@
 # Flujo — instalación y configuración guiadas (P013)
 
-**Instalación T002, arranque T003, persistencia T004, API/arranque global T005, UI T006, propuesta de perfil T007 y preparación genérica T008 y alta/activación T009 y edición/asistencia T010 y compatibilidad/backup T011 implementados; QA instalada pendiente T012.**
+**Instalación T002, arranque T003, persistencia T004, API/arranque global T005, UI T006, propuesta de perfil T007 y preparación genérica T008 y alta/activación T009 y edición/asistencia T010 y compatibilidad/backup T011 implementados; primer uso/QA instalada T012 verificados con CLI/herramientas falsas.**
 [Entrega T002](../phase/P013-T002_INSTALACION.md), D219; validación con herramientas falsas, sin recorrido instalado nuevo.
 [Entrega T003](../phase/P013-T003_ARRANQUE.md), D220; procesos/señales sintéticos, sin servicio instalado real.
 [Contrato](../phase/P013-T001_CONTRATO.md), D216–D218 en [DECISIONS](../DECISIONS.md),
@@ -348,3 +348,15 @@ configuración y evidencias con roots explícitos → relectura de todos los ori
 sin interpretar rutas históricas como destinos y conserva consulta. Formato 1 sin configuración nueva sigue
 válido; GET de revisiones autenticado lee bytes del bundle. Mutaciones/preparación/activación/proveedores
 permanecen bloqueados. No se acredita parada de escritores por consultar un archivo.
+
+
+## Primer uso instalado verificado en T012
+
+[Entrega](../phase/P013-T012_PRIMER_USO.md), D229. El recorrido usa paquete instalado fuera del checkout,
+formulario real para la global y HTTP protegido para las altas/perfiles Go sintéticos, hasta COMMITTED.
+No acredita proveedores reales ni el futuro candidato T013. El verificador conserva un asistente INVALID
+protegido, con supervisor cerrado y sin consumir trabajo. Npm usa archivos de configuración global/usuario
+distintos; uv acepta su sufijo de distribuidor manteniendo pin exacto y no crea .gitignore en el paquete.
+El precheck de puerto permite TIME_WAIT con SO_REUSEADDR, pero rechaza listeners activos; el bind de uvicorn
+sigue siendo autoritativo. Las claves del selector de padre y formulario de hijo son distintas al alternar
+creación/registro: no se duplican selectores ni se mezcla estado. Sin cambios de esquema o contratos.

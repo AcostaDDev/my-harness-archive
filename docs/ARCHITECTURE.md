@@ -302,12 +302,12 @@ no adopta rutas de otra instalación. Defaults: `data/harness.sqlite3`, `configu
 si existe, puerto 8013 y `data/tmp` privado 0700 (`--port`/`--temp-dir` elegibles).
 Solo DB ausente sin auxiliares usa `init-db`; preflight de esquema en solo lectura, sin migración.
 Puerto ocupado o rutas inseguras bloquean; consulta D040 omite TOML operativo. T005 deja configuración
-ausente/inválida al asistente API protegido, sin supervisor consumidor; UI pendiente T006. El wrapper transmite
+ausente/inválida al asistente API protegido, sin supervisor consumidor; UI entregada en T006. El wrapper transmite
 `--configuration-dir` y `--state-dir` desde el recibo; `serve --config` conserva la entrada legacy explícita.
 Locks de instancia/instalación retenidos por wrapper e hijo excluyen otro arranque y actualización incluso si muere el wrapper. SIGINT/SIGTERM se reenvían y se espera al hijo; sin borrar datos,
 limpiar locks de jobs ni acreditar muerte de escritores. Reinicio no instala ni sobrescribe TOML; puede promover la activación pendiente confirmada.
 [Opciones, comprobaciones y límites](phase/P013-T003_ARRANQUE.md). Pruebas sintéticas de orquestación y
-señales; primer uso instalado pendiente T012/T013. `scripts/dev` conserva su flujo de desarrollo.
+señales; primer uso instalado sintético verificado en T012; candidato final pendiente T013. `scripts/dev` conserva su flujo de desarrollo.
 Los paquetes P011/P012 previos no contienen este material y no se adaptan ni reescriben.
 
 Actualización (D150): detener el servicio y los escritores, instalar el nuevo wheel y ejecutar
@@ -650,7 +650,7 @@ inferencia de muerte por tiempo. INTENDED de asistencia no sustituye autoridad n
 admitidos; bloquea otras mutaciones de configuración. Incertidumbre requiere recuperación con liveness y
 confirmación de parada, sin relanzar. Candidato, base y sobre se conservan en pestaña; aplicar propuesta solo
 edita borrador. UI en/es y OpenAPI/tipos en paridad. Sin tablas, migraciones, dependencias ni formatos históricos
-nuevos. Contención cooperativa existente; QA instalada pendiente T012 y backup integrado en T011.
+nuevos. Contención cooperativa existente; QA instalada verificada en T012 y backup integrado en T011.
 
 
 ### Compatibilidad y backup entregados en T011
@@ -669,3 +669,11 @@ con guardias privadas, hashes, límites y relectura antes de COMPLETE. Formato 1
 legible. Restore mantiene query_only/marca D040; `ConfigurationRepository.document` resuelve revisiones contra
 el bundle y verifica hash sin originales, clientes, checkout ni publicación en destinos históricos. Sin modelos,
 migración ni contrato de historial nuevos; 0027/54 tablas. OpenAPI/tipos y UI en/es incluyen conversión explícita.
+
+
+T012 verifica [instalación/primer uso y QA](phase/P013-T012_PRIMER_USO.md) sobre wheel fuera del checkout.
+Ajustes operativos: checker reconoce asistente INVALID en vez de esperar salida; npm usa configuración
+usuario/global distinta sin heredar overrides, uv mantiene pin admitiendo sufijo con ruta absoluta y build
+usa --no-create-gitignore. Start usa SO_REUSEADDR solo en precheck para admitir reinicio tras conexiones
+cerradas, rechazando listeners activos. UI usa claves distintas en selector de padre y formulario de hijo
+para conservar reconciliación al alternar altas. Esquema 0027/54 tablas, API/OpenAPI/tipos y formatos sin cambio.

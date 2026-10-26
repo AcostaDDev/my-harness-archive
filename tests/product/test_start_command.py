@@ -331,3 +331,19 @@ def test_wrapper_crash_keeps_exclusion_while_synthetic_service_lives(installed):
             while not (data.parent / 'signal').exists() and time.monotonic() < deadline:
                 time.sleep(0.01)
             assert (data.parent / 'signal').exists()
+
+
+def test_restart_accepts_recently_closed_connections_but_still_rejects_listeners(installed):
+    args, *_ = installed
+    with socket.socket() as listener:
+        listener.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        listener.bind(('127.0.0.1', 0))
+        args.port = listener.getsockname()[1]
+        listener.listen()
+        with pytest.raises(starter.StartRefused, match='unavailable'):
+            starter.start(args)
+        with socket.create_connection(('127.0.0.1', args.port)) as client:
+            connection, _ = listener.accept()
+            connection.close()  # server performs active close, leaving its port in TIME_WAIT
+            assert client.recv(1) == b''
+    assert starter.start(args) == 0

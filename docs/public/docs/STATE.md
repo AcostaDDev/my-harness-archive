@@ -13,7 +13,7 @@ The real validation originally deferred in D151 now has the bounded evidence bel
 - **Engine.** Package `harness_local` with an explicit context per project, frozen task contracts, planning by the
   reviewer or deterministic from `NEXT_STEPS`, the execute → format → validate → review loop with a correction limit,
   acceptance bound to the exact content and a reconcilable commit made by the harness (D052, D056, D129, D133).
-- **Persistence and recovery.** SQLite schema `0025_project_work_languages` managed by Alembic; idempotent job queue
+- **Persistence and recovery.** SQLite schema `0027_profile_proposals` managed by Alembic; idempotent job queue
   with leases, a lock per checkout, quarantine when frozen versions change and explicit confirmation of a stopped
   writer. Backup and query-only restore, explicit stream retention, explicit migration of existing databases with
   a verified snapshot (D150). Derived run projection written with each history (D144).
@@ -73,6 +73,29 @@ The real validation originally deferred in D151 now has the bounded evidence bel
   recipe manifests fixed after preparation; only macOS ARM64 tested; first use from a clean clone rehearsed
   with fake CLIs only (no sign-in or real model calls); installed UI reviewed in Chrome only (en/es, light/dark,
   desktop/mobile), without other browsers or screen readers.
+
+## Guided installation and configuration baseline
+
+- `scripts/install` builds from a clone or consumes a self-contained package, creates a venv per generation and
+  verifies the isolated installed wheel before publishing READY. Paths/caches are chosen explicitly, with spaces
+  supported; offline is default and network downloads require `--allow-network`. `scripts/start` verifies the
+  receipt, initializes only an absent database, keeps instance locks/signals and serves the packaged UI without Node.
+- Authenticated `/setup` works without TOML or inference. Global v9/project v1 private TOML versions live outside
+  checkouts; SQLite owns saved/active/pending references and recoverable CAS intentions. Form/TOML editors show
+  exact diffs; saving and activating are separate. Global activation requires restart; project activation happens
+  between tasks after preparation/receipt checks and the work barrier.
+- Creation from documents and onboarding from a static committed inventory can start without a stack composition.
+  The reviewer proposes a profile after context; confirmed documentary commit/P001, saved tool paths, bounded
+  preparation, fresh validation receipt and separate activation precede the first task. Other stacks are supported;
+  Django/TypeScript recipes remain optional. Later manual editing and optional assistance retain those gates and
+  freeze active clients/context; they cannot change machine-wide settings or earlier job snapshots.
+- Formats 1–8 preserve entry and hashes. Explicit conversion keeps legacy authority until converted profiles are
+  newly prepared and the complete set is confirmed/promoted. Backup format 2 includes configuration versions,
+  working copies, intents and referenced evidence. Query-only restore uses bundle bytes without original roots,
+  clients or execution authority. Schema 0027 has 54 tables; data/flows are documented alongside the implementation.
+- Installed first-use checks use fake Claude and Go tools, disposable projects and temporary Git/SQLite on macOS
+  ARM64. Browser setup, protected HTTP journeys and visual checks are synthetic evidence; the real-provider scope
+  above is unchanged. Final export/package qualification and release remain separate; no new publication is implied.
 
 ## Active phase — P001 Optional continuous mode between phases
 

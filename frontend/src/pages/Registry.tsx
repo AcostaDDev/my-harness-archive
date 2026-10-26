@@ -457,7 +457,7 @@ export function RegisterPage() {
       })}>{t("register.pending.resend")}</button>
       {retry.error && <Alert>{retry.error}</Alert>}
     </section>}
-    {folder.data ? <CreationRootPanel key={folder.data.version} root={folder.data} refresh={refresh} />
+    {folder.data ? <CreationRootPanel key={`root-${folder.data.version}`} root={folder.data} refresh={refresh} />
       : folder.error ? <Alert>{folder.error}</Alert> : <Loading />}
     <div className="actions" role="group" aria-label={t("register.mode")}>
       <button type="button" className={mode === "create" ? undefined : "button-quiet"} aria-pressed={mode === "create"}
@@ -469,7 +469,7 @@ export function RegisterPage() {
       : !options.available ? <Empty title={t("register.unavailable.title")}><p>{t("register.unavailable.body")}</p></Empty>
       : mode === "create" ? !options.creation_available ? <Empty title={t("register.creation_disabled.title")}><p>{t("register.creation_disabled.body")}</p></Empty>
         : folder.data?.status !== "ACTIVE" ? <Empty title={t("register.no_root.title")}><p>{t("register.no_root.body")}</p></Empty>
-        : <NewDirectoryForm key={folder.data.version} options={options} root={folder.data} refresh={refresh} />
+        : <NewDirectoryForm key={`new-${folder.data.version}`} options={options} root={folder.data} refresh={refresh} />
       : !options.roots.length ? <Empty title={t("register.no_toml_roots.title")}><p>{t("register.no_toml_roots.body")}</p></Empty>
       : <section className="panel"><h2>{t("register.existing")}</h2>
         <RegistryForm options={options} action="register" initial={emptyDraft(options)} expected={0}

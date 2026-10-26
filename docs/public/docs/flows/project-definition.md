@@ -1,5 +1,9 @@
 # Flow — project definition (new project)
 
+For v9 own profiles, the [guided configuration flow](configuration-setup.md) adds profile adoption after context,
+private TOML save after the documentary commit, generic confirmed preparation and separate activation before tasks.
+The composition/recipe diagrams below describe the retained legacy lane; they do not bypass those v9 gates.
+
 A new project in an empty folder with the unified documentation contract
 ([D075](../DECISIONS.md#d075--conversational-creation-and-planning-with-drafts-on-disk),
 [D088](../DECISIONS.md#d088--unified-documentation-contract)). This conversational definition is the only way to

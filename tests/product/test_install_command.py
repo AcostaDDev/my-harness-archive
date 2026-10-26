@@ -377,3 +377,34 @@ def test_manifest_special_files_are_rejected_before_reading(tmp_path, kind):
         os.mkfifo(manifest)
     with pytest.raises(AssertionError, match='Symlink|Special file'):
         check_artifacts(distribution)
+
+
+@pytest.mark.parametrize('uv_path', ['uv', '/synthetic tools/uv'])
+@pytest.mark.parametrize('version,accepted', [('0.12.19', True), ('0.12.18', False)])
+def test_uv_pin_accepts_vendor_suffix_independently_of_executable_path(monkeypatch, uv_path, version, accepted):
+    from toolchain import check_tools
+    monkeypatch.setattr(subprocess, 'check_output', lambda argv, **kw: f'uv {version} (Homebrew synthetic)\n')
+    if accepted:
+        check_tools(uv_path, build=False)
+    else:
+        with pytest.raises(SystemExit, match='0.12.19 required'):
+            check_tools(uv_path, build=False)
+
+
+def test_installer_npm_environment_uses_distinct_configs_without_operator_overrides(tmp_path, monkeypatch):
+    npm = shutil.which('npm')
+    if npm is None:
+        pytest.skip('npm unavailable; installed clone rehearsal also verifies this boundary')
+    temporary = tmp_path / 'private temporary'
+    temporary.mkdir()
+    (temporary / 'empty.npmrc').write_text('')
+    foreign = tmp_path / 'operator.npmrc'
+    foreign.write_text('registry=https://example.invalid/\n')
+    monkeypatch.setenv('NPM_CONFIG_GLOBALCONFIG', str(foreign))
+    monkeypatch.setenv('NPM_CONFIG_REGISTRY', 'https://example.invalid/')
+    monkeypatch.setenv('npm_config_registry', 'https://example.invalid/')
+    env = installer.clean_environment(tmp_path / 'cache', Path(sys.executable), False, temporary)
+    result = subprocess.run([npm, 'config', 'get', 'registry'], env=env, capture_output=True, text=True, timeout=10)
+    assert result.returncode == 0, result.stderr
+    assert result.stdout.strip() == 'https://registry.npmjs.org/'
+    assert foreign.read_text() == 'registry=https://example.invalid/\n'

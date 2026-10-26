@@ -13,5 +13,5 @@ def check_tools(uv='uv', build=True):
             observed = subprocess.check_output([executable, '--version'], text=True).strip()
         except (OSError, subprocess.CalledProcessError) as exc:
             raise SystemExit(f'{executable}: {expected} required; not available ({exc})') from None
-        if (observed.split(' (', 1)[0] if executable == 'uv' else observed) != expected:
+        if (observed.split(' (', 1)[0] if name == 'uv' else observed) != expected:
             raise SystemExit(f'{executable}: {expected} required; found {observed}')

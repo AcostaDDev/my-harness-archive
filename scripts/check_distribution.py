@@ -317,11 +317,14 @@ def main():
             time.sleep(.1)
             assert (area / 'calls.jsonl').read_bytes() == calls
 
-        # Incompatible configuration: visible failure, nothing corrected or activated. The expected texts are the
-        # product's own English diagnostics (catalog keys runtime.config_reference, cli.schema_incompatible).
-        result = run('--ui-language', 'en', 'serve', '--database', db, ok=False,
-                     extra={'HARNESS_MANAGED_CONFIG': 'invalid'})
-        assert 'module:attribute' in result.stderr
+        # P013 keeps a protected repair assistant alive for invalid configuration, without consuming work.
+        with server(db, {'HARNESS_MANAGED_CONFIG': 'invalid'}) as base:
+            configuration = read(base, '/api/managed/configuration')
+            assert configuration['mode'] == 'INVALID', configuration
+            assert configuration['active'] is None
+            assert read(base, '/api/managed/supervisor')['enabled'] is False
+            assert request(base, project + '/runs', task_body, headers)[0] == 409
+            assert (area / 'calls.jsonl').read_bytes() == calls
         empty = work / 'empty.sqlite3'
         empty.touch()
         result = run('--ui-language', 'en', 'serve', '--database', empty, ok=False)

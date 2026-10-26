@@ -187,7 +187,7 @@ if mode == 'recipe':
     # T005: explicitly scripted, synthetic responses through both real CLI transports.
     # The script lives outside the child and is supplied by the test's operator config.
     script = json.loads(Path(os.environ['PROBE_SCRIPT']).read_text())
-    required = set(json.JSONDecoder().raw_decode(prompt.rsplit('JSON Schema:\n', 1)[1])[0]['required'])
+    required = set() if writer else set(json.JSONDecoder().raw_decode(prompt.rsplit('JSON Schema:\n', 1)[1])[0]['required'])
     if writer:
         role = 'executor'
         for path, content in script['edits'].items():

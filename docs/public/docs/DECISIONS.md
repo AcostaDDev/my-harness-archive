@@ -9,8 +9,7 @@ The decisions below were taken before this repository's first public snapshot, w
 privately. They are restated here in English, self-contained and in their current form; the original records,
 phases and evidence are not part of this repository and are not needed to work on it. Their numbers are kept because
 the code cites them (`D088`, `D167`…), so gaps are expected: the missing numbers were superseded, internal to the
-private process or not relevant to the public code. **Numbers below D200 belong to that baseline; new decisions start
-at D200.**
+private process or not relevant to the public code. **The preserved baseline also includes D216–D228. New decisions start at D230; gaps remain reserved.**
 
 Other identifiers that appear in code comments and tests:
 
@@ -833,3 +832,123 @@ A real task on a documented synthetic Django clone exercised the declared format
 validations and 13 JUnit cases through COMMITTED; this supplies the bounded declared-profile evidence deferred in
 D151, superseding that deferral only within this fixture scope, without extending it to production projects or
 proving automatic repair of a formatting failure.
+
+## D216 — Isolated installation and setup session
+
+Status: accepted.
+
+Install into private generations with separate data, configuration and selectable caches; verify before publishing
+READY. Run the installed wheel, without Node at runtime. A missing/invalid configuration opens authenticated setup
+with task admission closed. Global changes require a restart; migration remains explicit with a prior snapshot.
+
+## D217 — Versioned files and configuration activation
+
+Status: accepted.
+
+Private immutable global v9/project v1 TOML outside checkouts holds content; SQLite owns saved/active/pending
+references. CAS, exact preview hashes, idempotency keys and intentions guard atomic publication/recovery. Save
+never activates. Global activation promotes the verified set on restart; project activation requires the work
+barrier and exact preparation evidence. Earlier snapshots and formats 1–8 keep their bytes/hashes.
+
+## D218 — Profile after context and preparation before activation
+
+Status: accepted.
+
+A documentary intake can converse before having a stack profile. The reviewer proposes tools, validations and
+technical scope from documentation/architecture or static inventory. Proposal adoption, confirmed documentary
+commit/P001, completed private configuration, bounded preparation and independent activation precede task work.
+Recipes are optional. Agents receive no general authority to write global settings.
+
+## D219 — Generation installer and self-contained package
+
+Status: accepted.
+
+`scripts/install` accepts a clone or self-contained distribution, validates exact artifacts and creates a venv per
+generation. READY receipt and atomic `current.json` follow installed synthetic verification. Offline is default;
+network is explicit. Matching replay verifies existing bytes; updates preserve prior generations and require
+stopped writers. Failures keep diagnostics and never publish partial installation or migrate data.
+
+## D220 — Installed startup and instance exclusion
+
+Status: accepted.
+
+`scripts/start` verifies receipt/distribution/venv and uses installed Python in isolation, with explicit data,
+configuration, port and private temporary paths. Only an absent database without auxiliary files is initialized;
+existing schemas require a separate migration. OS locks are inherited by the child; signals and exit codes are
+preserved. Restart does not reinstall, overwrite TOML or certify that an uncertain writer stopped.
+
+## D221 — Configuration journal and references
+
+Status: accepted.
+
+Three additive tables store scopes, immutable revision metadata and operation intentions. Private files use
+atomic publication, strict path/owner/permission checks, CAS and explicit byte reconciliation. Recovery cannot
+invent missing content or overwrite conflicting external edits. Drafts cannot activate; pending work is a barrier.
+
+## D222 — Setup API and global authority at startup
+
+Status: accepted.
+
+Protected deterministic form/TOML endpoints validate, preview, save, activate for restart, cancel and recover.
+Client discovery uses explicit PATH; version/help probes do not invoke inference. Authority is selected and
+verified before composing runtime clients; setup/invalid states reject managed work. Query-only restore disables
+this operating lane before any original path or client is used.
+
+## D223 — Guided UI with exact confirmations
+
+Status: accepted.
+
+`/setup` and `/settings/configuration` share the en/es editor. Server-validated form/TOML conversion preserves
+advanced fields. Saving and activation have separate exact previews and confirmations. Browser-tab draft/base and
+idempotent request survive conflicts/reload; polling never rebases or resends. There is no HTTP restart endpoint.
+Storage is fixed by startup; credentials remain outside the product.
+
+## D224 — Documentary context and own profile proposals
+
+Status: accepted.
+
+`IntakeContext` has no runnable profile; registry composition/profile can be null (migration 0027). Planning stores
+structured profile proposals with command/tool evidence bound to frozen documents/inventory/HEAD. Functional
+validations must be meaningful. Adoption only records PROFILE_PROPOSED: no TOML writes, preparation or activation.
+Stale context or open questions block adoption. Formats 1–8 retain their contract.
+
+## D225 — Confirmed generic preparation and own receipt
+
+Status: accepted.
+
+`project-profile-preparation-1` reuses preparation locks/leases/journals with exact saved configuration and confirmed
+documentary handoff. The frozen executor writes only the technical scope; the harness runs exact argv, validates
+fresh JUnit, checks guards and makes a reconcilable technical commit if content changes. A receipt binds tools,
+configuration, protected content and stable environment. Failure does not qualify a receipt or activate a profile.
+Recovery needs verified stopped writers and an exact accredited prefix, with no automatic replay.
+
+## D226 — Documentary intake and profile activation
+
+Status: accepted.
+
+Both UI entries preserve trust, immutable work language and Git guards without requiring a composition. The
+confirmed documentary commit seals the accepted profile; the application then saves private project TOML.
+Preparation and activation remain separate. Activation verifies the saved version, exact compatible receipt,
+clean technical HEAD and work barrier, precomposes and publishes the SQLite reference between tasks. Jobs seal
+configuration revision/hash and receipt; replay cannot duplicate intake, preparation or commits.
+
+## D227 — Later editing, frozen assistance and joint impact
+
+Status: accepted.
+
+Global SAVE derives private copies of active project profiles bound to its exact global version, with joint
+activation/cancellation on restart. Technical project edits need current committed documents and a new receipt;
+nontechnical edits can retain exact verified evidence. Assistance freezes currently active clients and authorized
+context. Applying its result changes only the draft; it grants no write access to machine-wide settings. Its own
+process journal supports stopped-writer recovery without inventing managed runs or replaying model calls.
+
+## D228 — Explicit conversion and configuration backup
+
+Status: accepted.
+
+Importing product TOML 1–8 is separate from onboarding a code repository. Explicit preview/save preserves source
+bytes/hashes and legacy authority; converted project drafts require current documents, a plan and new preparation
+before confirming/promoting the whole set on restart. Historical recipes/receipts are not converted. Format-2
+backup inventories TOML versions, working copies, partial intents and referenced evidence. Query-only restore
+reads bundle bytes without original roots/clients and rejects all configuration effects. Format 1 without the new
+configuration remains readable.

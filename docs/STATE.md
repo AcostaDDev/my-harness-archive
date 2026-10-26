@@ -128,128 +128,45 @@ Sustitución verificada por rutas, hashes y modos; checksums de los artefactos o
 
 ## Fase activa — P013 Instalación guiada y configuración desde la UI
 
-**P013 activa; T001 diseñada y T002–T011 implementadas el 2026-10-26.**
+**P013 activa; T001 diseñada y T002–T012 completadas el 2026-10-26.**
 [D215](DECISIONS.md#d215--p013-instalación-guiada-y-configuración-desde-la-ui),
-[plan](phase/P013_PLAN.md), [tareas](NEXT_STEPS.md) y [flujo propuesto](flows/configuration-setup.md).
-Cuatro tareas pendientes. **Siguiente: P013-T012**, primer uso integrado, QA y documentación de usuario.
+[plan](phase/P013_PLAN.md), [tareas](NEXT_STEPS.md) y [flujo](flows/configuration-setup.md).
+Tres tareas pendientes. **Siguiente: P013-T013**, candidato público y paquete nuevos.
 
-T001 concreta el [contrato](phase/P013-T001_CONTRATO.md) con D216–D218: instalación aislada, sesión sin
-TOML, versiones privadas y activación SQLite/CAS, global con reinicio y perfil entre tareas. Contexto →
-propuesta → commit documental → preparación → activación; formatos/históricos 1–8 intactos. Solo diseño,
-[checks documentales](phase/P013-T001_VALIDACION.md), sin operación ni modelos/API/scripts.
+| Entrega | Resultado y procedencia |
+|---|---|
+| [T001](phase/P013-T001_CONTRATO.md), D216–D218 | Contrato previo: instalación aislada, sesión sin TOML, autoridad privada/versionada y activación SQLite/CAS; global con reinicio, proyecto entre tareas. Contexto → propuesta → commit documental → preparación → activación. Diseño y checks documentales. |
+| [T002](phase/P013-T002_INSTALACION.md), D219 | `scripts/install`: clon/paquete autocontenido, Python/uv/rutas/cachés elegibles, offline por defecto y red explícita. Venv/generaciones, recibo installation-1 y current.json atómico; replay/exclusión/actualización conservadora, fallos sin publicación parcial. Pruebas iniciales sintéticas. |
+| [T003](phase/P013-T003_ARRANQUE.md), D220 | `scripts/start` verifica instalación y usa Python instalado fuera del checkout, DB/config/puerto/temporal explícitos. Solo inicializa DB ausente; migración D150 aparte. Locks heredados, señales/salidas y datos conservados. Pruebas iniciales de orquestación/señales. |
+| [T004](phase/P013-T004_CONFIGURACION.md), D221 | Global v9/proyecto v1, preview/diff, CAS, TOML privados inmutables, journal recuperable por bytes. Guardar no activa. Migración aditiva 0026, tres tablas; hashes operativos 1–8 intactos. |
+| [T005](phase/P013-T005_ASISTENTE_API.md), D222 | Asistente API protegido sin configuración/válida/inválida, detección por PATH y preflight D174 explícitos; guardado/activación/cancelación/recuperación. Promoción antes de componer runtime, sin hot reload; trabajo bloqueado sin autoridad. Consulta D040 sin sondas/originales. |
+| [T006](phase/P013-T006_ASISTENTE_UI.md), D223 | `/setup` y `/settings/configuration` comparten formulario/TOML validados en servidor, diff y confirmaciones separadas. Candidato/base/sobre idempotente conservados en pestaña, conflicto sin rebase ni reenvío implícitos. UI/errores en/es y OpenAPI/tipos. |
+| [T007](phase/P013-T007_PROPUESTA_PERFIL.md), D224 | IntakeContext sin runner/stack previo; conversación y propuesta estructurada con herramientas diferidas y evidencia funcional por comando. B inventaría HEAD sin ejecutar fuentes. Adopción CAS solo PROFILE_PROPOSED. Migración 0027: registro composición/perfil nullable, 54 tablas; planning versiona propuestas. |
+| [T008](phase/P013-T008_PREPARACION.md), D225 | project-profile-preparation-1 separado de recetas: selección/plan/configuración/documentos sellados, confirmación exacta, journal/lock/lease/procesos antes de GO, argv/JUnit fresco, commit técnico conciliable y recibo propio. No activa; recuperación requiere escritores detenidos y prefijo acreditado, sin replay automático. |
+| [T009](phase/P013-T009_ALTA_UI.md), D226 | Une creación/B, edición de propuesta, commit documental/P001, guardado privado, preparación y activación independiente con recibo/HEAD/barrera D118. Precompone y congela referencias; reenvíos no duplican efectos. Pruebas API/UI Go con agentes falsos; sin nueva migración. |
+| [T010](phase/P013-T010_EDICION_ASISTIDA.md), D227 | Edición manual/asistida global/local con pareja/contexto activos congelados. Propuesta solo cambia borrador; cambios técnicos requieren documentos/plan/recibo nuevos. Global deriva copias privadas y activa/cancela conjunto con reinicio; recibo reutilizable solo por referencia exacta compatible. ASSIST con journal propio sin run ficticio. |
+| [T011](phase/P013-T011_COMPATIBILIDAD.md), D228 | HITL confirmó preparación nueva para perfiles convertidos antes de activar conjunto/reiniciar sin fuente externa. TOML 1–8/hashes/snapshots/recibos originales intactos. Backup formato 2 con inventario/configuración/intenciones/evidencia; v1 sin configuración nueva legible. Restore de consulta lee bundle sin originales ni agentes. |
 
-T002 entrega `scripts/install`: clon/paquete autocontenido, rutas/Python/uv/cachés elegibles, offline por
-defecto y red explícita; venv por generación, `current.json` atómico y recibo `installation-1`, replay/exclusión
-y actualización conservadora. Paquete con manifiesto de miembros/verificador sin Node ni checkout. Fallos
-conservan diagnóstico, sin publicar parciales. [D219](DECISIONS.md#d219--p013-t002-instalador-por-generaciones-y-paquete-autocontenido),
-[entrega y checks sintéticos](phase/P013-T002_INSTALACION.md). Sin cambios de esquema/API/TOML.
+Las entregas T002–T011 detallan sus suites sintéticas y límites originales; T011: 2042 pytest/29 subtests,
+153 Node, 8 unittest, tipos/build y Alembic temporal correctos; dos opt-in omitidas. No se reescribe esa evidencia.
 
-T003 entrega `scripts/start`: verifica recibo y usa Python instalado fuera del checkout con DB/config/puerto/
-temporal explícitos. Solo inicializa DB ausente sin auxiliares; esquema existente en consulta y migración D150
-aparte. Exclusión heredada por hijo, señales/salidas conservadas. Reiniciar no reinstala ni sobrescribe datos.
-[D220](DECISIONS.md#d220--p013-t003-arranque-instalado-y-exclusión-de-instancia),
-[entrega y checks](phase/P013-T003_ARRANQUE.md). Sin TOML abre sesión protegida; T005/T006 conectan asistentes.
-Pruebas de instalación/arranque sintéticas; recorrido instalado pendiente T012/T013.
+[T012](phase/P013-T012_PRIMER_USO.md), [matriz](phase/P013_MATRIZ_ACEPTACION.md),
+[D229](DECISIONS.md#d229--p013-t012-primer-uso-instalado-y-documentación-pública): instalación desde copia de
+clon/caché inicialmente vacía con red de dependencias autorizada, recorrido completado offline tras corregir
+scripts, actualización desde paquete/replay sin Node, rutas con espacios y caché incompleta rechazada.
+Configuración global mediante formulario real en Chrome; reinicio; ambas altas con Go/CLI falsos hasta tarea
+COMMITTED, original B conservado; edición formulario/TOML, backup/restauración de consulta sin originales.
+QA en/es, claro/oscuro, escritorio y móvil con Tab/Enter muestreados, capturas y límites propios. Corrige sufijo
+uv con ruta absoluta, configuración npm duplicada, .gitignore inesperado de uv, verificador desactualizado,
+precheck de puerto en TIME_WAIT y claves React duplicadas al alternar altas. Sin cambiar modelos/API/TOML.
+**2048 pytest y 29 subtests, 155 Node, 8 unittest correctos; dos opt-in omitidas**; build/tipos y documentación
+verificados. El wheel de ensayo y sus hashes son propios; no acredita el candidato final pendiente T013.
+No usa proveedores reales, credenciales, bases P012 ni ejecuta este checkout con el harness. Servicios sintéticos
+parados al terminar; originales/ensayos fallidos conservados, sin modificar configuración global del equipo.
 
-T004 entrega las primitivas de configuración versionada: parser de editor global v9/proyecto v1, preview/diff,
-CAS, intención `configuration-operation-1`, TOML privados inmutables, replay y conciliación explícita por bytes.
-Guardar no activa; global queda pendiente de reinicio y proyecto exige verificador de preparación del servicio,
-con barrera de trabajo pendiente. Migración aditiva `0026_configuration`, tres tablas nuevas; formatos/hashes
-operativos 1–8 intactos. [D221](DECISIONS.md#d221--p013-t004-journal-y-referencias-de-configuración),
-[entrega y checks](phase/P013-T004_CONFIGURACION.md). Integración de perfiles/recibos y compatibilidad pendientes
-T007–T011; T004 se entregó sin consumidores y T005 conecta la global. T011 entrega después el backup con TOML/versiones/intenciones.
-
-T005 conecta el asistente API protegido: formulario JSON o TOML, detección por PATH explícito y comprobación
-version/help D174, preview/diff, guardado CAS, activación para reinicio, cancelación y recuperación. Arranque
-sin TOML/inválido conserva sesión y bloquea trabajo; promoción del conjunto antes de componer global v9,
-sin hot reload. Puerta HTTP y transaccional; preferencias siguen editables. Consulta D040 sin originales ni
-sondas. Legacy exige importación T011; registro/admisión v9 por perfiles entregados después en T007–T009. UI entregada en T006.
-[D222](DECISIONS.md#d222--p013-t005-asistente-api-y-arranque-con-autoridad-global-versionada),
-[entrega y checks](phase/P013-T005_ASISTENTE_API.md). API verificada con TestClient/clientes falsos; sin servicio real.
-
-T006 entrega el asistente `/setup` y ajustes `/settings/configuration`: formulario/TOML con conversión
-validada en servidor, detección y preflight explícitos, diff y confirmaciones separadas de guardado/activación,
-cancelación y recuperación. Borrador y sobre idempotente conservados en la pestaña ante conflicto/recarga;
-reenvío solo por acción explícita. Consulta D040 se resuelve antes de montar el editor; legacy muestra el
-límite T011. UI/errores por campo en/es y controles nativos de teclado; OpenAPI/tipos en paridad, sin tablas
-nuevas. [D223](DECISIONS.md#d223--p013-t006-asistente-y-editor-global-con-confirmaciones-exactas),
-[entrega y checks](phase/P013-T006_ASISTENTE_UI.md). Pruebas de UI con transporte sintético y API con TestClient;
-Checks finales: 1878 pytest y 29 subtests, 136 Node, 8 unittest; tipos/build y Alembic temporal correctos.
-QA visual/recorrido instalado pendientes T012/T013. Sin proveedores ni servicio real.
-
-T007 entrega `IntakeContext` sin perfil ni runner de stack: registro v9 de raíz existente confiada (vacía o B),
-con política/agentes/Git/idioma congelados y puerta de tareas cerrada. Conversación primero, propuesta estructurada
-separada después de especificación/arquitectura; herramientas diferidas y evidencia por comando, con al menos una
-validación funcional. B conserva inventario/HEAD y exportación de lectura sin ejecutar fuentes. Preview y confirmación
-CAS/idempotente solo adoptan borrador `PROFILE_PROPOSED`, sin guardar TOML, preparar, commitear documentos ni activar.
-Migración `0027_profile_proposals`: composición/perfil nullable en registro, 54 tablas; propuestas versionadas en
-planificación existente. [D224](DECISIONS.md#d224--p013-t007-contexto-documental-sin-stack-y-propuesta-de-perfil),
-[entrega y checks](phase/P013-T007_PROPUESTA_PERFIL.md). Preparación T008 y alta/UI/activación T009 entregadas después con evidencia propia.
-Validación: 1917 pytest y 29 subtests, dos opt-in omitidas; 18 pruebas posteriores de arranque/global,
-136 Node y 8 unittest correctos. Tipos/build, Alembic temporal, parsers/enlaces/presupuestos y Mermaid correctos.
-Pruebas con agentes falsos y proyectos Go sintéticos; sin proveedores ni servicios reales.
-
-T008 entrega `project-profile-preparation-1`, separado de recetas: plan técnico opcional en la propuesta del
-revisor, selección del ejecutor congelada, configuración guardada exacta y commit documental/P001 ligados al
-perfil antes de confirmar. API estricta con CAS/replay; journal, lock, lease, procesos antes de GO, cancelación y
-recuperación enlazada reutilizados. Ejecutor prepara archivos del ámbito confirmado; harness ejecuta argv exactos
-y valida JUnit fresco. Commit técnico conciliable solo si cambia contenido; recibo liga herramientas, configuración,
-archivos protegidos y entorno estable, sin congelar informes transitorios ni activar el perfil.
-[D225](DECISIONS.md#d225--p013-t008-preparación-genérica-confirmada-y-recibo-propio),
-[entrega y checks](phase/P013-T008_PREPARACION.md). Sin tablas/migraciones nuevas; datos y flujo en paridad.
-La entrega comprueba primitivas/API sobre fixtures Go y proveedores falsos. El handoff documental/TOML y la activación/UI entregados después en T009 se verifican por separado;
-T008 no acreditó un alta completa ni proveedores/descargas reales.
-Validación: 1951 pytest y 29 subtests correctos con cuatro workers, dos opt-in omitidas; 38 focalizados sobre
-los últimos ajustes, 8 unittest y 136 Node correctos. Tipos/build, Alembic temporal, parsers/enlaces/presupuestos
-y Mermaid correctos; resultados parciales y límites en la entrega.
-
-T009 une ambas altas desde UI/API: creación de hijo sin stack, propuesta editable/formulario/TOML con copias
-opcionales de catálogo, adopción y commit documental raíz/B ligado al hash aceptado. Guardado privado CAS,
-plan/preparación T008 y activación separada con recibo, HEAD limpio y barrera D118; primera tarea solo después.
-Recompone perfil sin reinicio, congela referencias y restaura autoridad al arrancar; reenvíos no repiten efectos.
-Registro documental conserva null y sus auditorías; datos y flujos en paridad, sin migración.
-[D226](DECISIONS.md#d226--p013-t009-alta-documental-y-activación-del-perfil-propio),
-[entrega y checks](phase/P013-T009_ALTA_UI.md). Recorridos Go sintéticos en ambas entradas y UI en/es;
-sin proveedores/servicios reales. Edición posterior entregada en T010; compatibilidad/backup en T011.
-Validación: 1982 pytest/29 subtests correctos y dos opt-in omitidas; 85 y 26 regresiones posteriores correctas.
-146 Node, 8 unittest, tipos/build, Alembic temporal y checks documentales correctos; límites en la entrega.
-
-T010 entrega edición del perfil activo y asistencia global/local con pareja/contexto congelados, revisor de
-lectura, ejecutor en área privada y journal antes de GO. Propuesta solo cambia borrador; guardado/preparación/
-activación separados. Cambios técnicos ligan documentos/HEAD/plan y recibo nuevo; cambios globales derivan copias
-propias y activan/cancelan el conjunto para reinicio. Recibos reutilizados solo con igual contrato técnico y
-evidencia seleccionada, sin reescribir históricos. Guardar conserva disponibilidad activa y cancelar
-conserva el conjunto pendiente aunque haya otro borrador. Sin migración ni modelos nuevos.
-[D227](DECISIONS.md#d227--p013-t010-edición-posterior-asistencia-congelada-e-impacto-conjunto),
-[entrega/checks](phase/P013-T010_EDICION_ASISTIDA.md): 2000 pytest/29 subtests, dos opt-in omitidas;
-regresiones posteriores y 69 finales correctas; 151 Node, 8 unittest, tipos/build, Alembic temporal y docs correctos.
-Pruebas sintéticas; compatibilidad/backup T011 y QA instalada T012 pendientes.
-
-Alcance acordado: scripts de instalación/arranque con venv y cachés configurables, asistente inicial sin TOML
-manual ni modelos, configuración global y perfiles propios por proyecto desde UI, propuestas del revisor tras
-concretar documentación/arquitectura o inventario, preparación/comprobación acotadas con ejecutor y activación
-confirmada. Edición manual/asistida posterior entregada; compatibilidad y recuperación/backup, QA y candidato
-nuevo antes del cierre. Ejemplos Django/TypeScript opcionales; el producto sigue con su contrato actual hasta
-implementar los cambios. T001 define autoridad de archivos/SQLite, versiones, reinicios y trabajos congelados.
-
-**Publicación en GitHub aplazada hasta el cierre satisfactorio de P013.** El candidato D214 y el
-[expediente P012](archive/phase-012/P012_EXPEDIENTE_APERTURA.md) con su
-[suplemento](phase/2026-10-26_ACTUALIZACION_CANDIDATO.md) quedan como base anterior, sin modificarlos en esta
-apertura. T013 preparará candidato/paquete y manifiestos nuevos; T014 emitirá el expediente actualizado; T015
-cerrará/archivará. P001–P012 y sus snapshots siguen cerrados e intactos. Los saldos/consentimientos anteriores
-no se renuevan ni transfieren.
-
-Tras el cierre seguirán faltando owner/repo, visibilidad, identidad pública y autorización de acciones remotas.
-D157 conserva la fuente principal pública tras el primer push; modo continuo D156 para v0.2.0 después de abrir,
-fuera de P013. Este repositorio sigue sin registrarse ni ejecutarse con el harness. Apertura y T001 fueron
-documentales; T002–T010 añaden instalación/arranque/empaquetado, persistencia versionada, asistente API/UI, contexto de alta/propuestas, preparación genérica, alta/activación y edición/asistencia con pruebas sintéticas. Sin operación del harness sobre este checkout, instalaciones reales, agentes/proveedores,
-smokes, configuración global del equipo, push o publicación. Commits locales T002–T010 pedidos por el usuario.
-
-
-T011 entrega conversión explícita de TOML 1–8 a global v9/perfiles DRAFT propios, con fuente/hash/registro
-sellados. HITL confirmó preparación nueva antes de activar el conjunto y reiniciar sin fuente externa;
-originales, huellas, jobs y recibos intactos. Backup formato 2 incluye inventario/TOML/intenciones/evidencias;
-formato 1 sin configuración nueva sigue legible. Restore conserva consulta y lee revisiones desde el bundle
-sin originales/agentes/checkout. [D228](DECISIONS.md#d228--p013-t011-conversión-explícita-y-backup-de-configuración),
-[entrega y resultados](phase/P013-T011_COMPATIBILIDAD.md). Sin migración: 0027/54 tablas; API/UI en/es en paridad.
-Pruebas sintéticas, sin proveedores, servicio instalado ni QA visual nuevos.
+**Publicación aplazada hasta cerrar P013.** Candidato D214, expedientes/paquetes/snapshots P011/P012 intactos;
+[suplemento](phase/2026-10-26_ACTUALIZACION_CANDIDATO.md) conserva su procedencia. T013 preparará nuevo
+candidato/paquete/manifiestos, T014 dictamen/expediente y T015 archivo/cierre. No se transfieren consentimientos
+anteriores. D157 conserva la fuente principal pública tras el primer push; modo continuo D156 para v0.2.0,
+fuera de P013. Owner/repo, visibilidad, identidad pública y acciones remotas siguen sin acordarse en esta fase;
+ningún ensayo ni commit local autoriza push, CI remota, tag o publicación.

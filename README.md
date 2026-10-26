@@ -17,11 +17,15 @@ models are reached through the official Codex and Claude Code CLIs with your own
 - **Platform.** Only macOS on Apple silicon (ARM64) has been tested. Other platforms are not characterized.
 - **Evidence.** The offline test suites use temporary Git repositories, SQLite and fake agents. Real runs with
   providers exist only for the capabilities marked as such in [Supported scope](#supported-scope-and-limits).
-- **First use.** The steps below were rehearsed on macOS ARM64 from a clean clone with empty caches: installation,
-  offline repetition, package build and check, the minimal configuration and both entries up to COMMITTED and a
-  closed phase. Agents were fake CLIs, so sign-in and real model calls were not part of it. The installed UI was
-  then reviewed in Chrome in English and Spanish, light and dark themes, desktop and mobile widths; other browsers
-  and screen readers were not tested. Please report anything that does not work as written.
+- **First use.** The guided installation and both project entries are rehearsed with an installed wheel,
+  fake clients/tools and temporary Git/SQLite on macOS ARM64. Setup uses the browser form; project operations use
+  protected HTTP. Chrome was checked in English/Spanish, light/dark themes, desktop (1280/1470 px) and mobile
+  (390 px; setup also 320 px), with sampled Tab/Enter navigation. Other browsers, screen readers, a complete
+  keyboard audit and every size/theme/language combination are untested. These checks do not qualify real
+  provider calls, other platforms or the next public candidate.
+- **Guided configuration.** Installation/start scripts, global setup, own project profiles, confirmed preparation,
+  editing and configuration backup are implemented. Installed synthetic evidence is separate from the historical
+  provider evidence below; the final public candidate is still pending.
 - **Next.** An optional continuous mode (tasks → commits → check → closure → next phase) is planned for v0.2.0;
   see the [roadmap](docs/ROADMAP.md).
 
@@ -49,14 +53,14 @@ confirm that its writer stopped.
 
 - **Create a new project from scratch.** Choose a projects folder in the UI, name the project and start a
   definition conversation with the reviewer from a brief. You review and accept the generated documents; the
-  harness makes the root commit. With a recipe (Django or TypeScript web), a confirmed preparation then creates the
-  environment and the technical scaffold.
+  harness makes the root commit after profile adoption. Complete the private tool configuration, confirm the
+  preparation and activate the verified profile before tasks. Django/TypeScript recipes are optional helpers.
 - **Onboard an existing repository without a harness.** Register a Git checkout that has at least one commit and
   no harness documents. The harness inventories its committed tree without running project code, the reviewer drafts
   the documentation and a profile proposal, and you confirm the documentation commit that adopts phase `P001`.
 
 Registering again a project that this harness already manages is a normal registration, not a third entry. Older
-harness formats are not imported.
+harness formats are not imported as projects; importing legacy product TOML is a separate explicit operation.
 
 ## Requirements
 
@@ -86,89 +90,136 @@ before the provider is invoked. Permission, sandbox, memory and trust controls a
 
 ## Install from a clone
 
-The first step needs network access to fill the local caches; everything after it runs offline. Run from the
-repository root:
+Install Python 3.14 and uv 0.12.19 first. **uv** creates isolated Python virtual environments and installs the
+locked dependencies. Building from a clone also needs the Node/npm versions
+above. The installer does not install these tools or change your shell, Git or provider settings.
+
+From a clone, choose absolute, separate paths outside every Git checkout. Quote paths containing spaces:
 
 ```sh
-git clone <repository-url> my_harness && cd my_harness
-UV_CACHE_DIR=.local/uv-cache uv sync --frozen --no-python-downloads
-npm --prefix frontend ci --ignore-scripts --cache .local/npm-cache
+scripts/install --clone /path/my_harness --python /path/python3.14 --uv /path/uv \
+  --install-dir '/path/Harness Local/installation' --data-dir '/path/Harness Local/data' \
+  --config-dir '/path/Harness Local/configuration' --cache-dir '/path/Harness Cache' --allow-network
 ```
 
-Real use runs from the built package installed in its own virtual environment, never from the development
-checkout. Build and verify the package, then install it (replace `/path/...` with your own absolute paths):
+`--allow-network` permits locked npm/Python dependency downloads. The script builds and checks the package,
+creates its own venv and publishes a READY generation only after an isolated verification with fake agents.
+You do not create or activate a venv yourself. Cache directories are created as needed; `.local/` is not required.
+Omitting the paths uses suggestions under `~/Library/Application Support/Harness Local/` and
+`~/Library/Caches/Harness Local/`. Select them explicitly to keep installation and data in your chosen location.
+
+Repeat the same command with `--offline` instead of `--allow-network`. Offline is the default; a matching READY
+installation is checked and reused. A fresh offline installation needs a complete cache. An incomplete cache
+leaves a FAILED generation and a diagnostic, without publishing it: preserve it for inspection and select a new
+installation/data/configuration destination for a new attempt. Do not delete locks or incomplete data blindly.
+
+## Install from a built package
+
+Use a new self-contained distribution folder supplied by your trusted distributor:
 
 ```sh
-UV_CACHE_DIR=.local/uv-cache uv run --frozen --offline python scripts/build_distribution.py --out-dir /path/package
-UV_CACHE_DIR=.local/uv-cache uv run --frozen --offline python scripts/check_distribution.py --dist /path/package
-UV_CACHE_DIR=.local/uv-cache uv venv --offline --python 3.14.4 --no-python-downloads /path/venv
-UV_CACHE_DIR=.local/uv-cache uv pip sync --offline --python /path/venv/bin/python /path/package/pylock.toml
-UV_CACHE_DIR=.local/uv-cache uv pip install --offline --python /path/venv/bin/python --no-deps \
-  /path/package/harness_local-0.1.0-py3-none-any.whl
+/path/package/scripts/install --dist /path/package --python /path/python3.14 --uv /path/uv \
+  --install-dir '/path/Harness Local/installation' --data-dir '/path/Harness Local/data' \
+  --config-dir '/path/Harness Local/configuration' --cache-dir '/path/Harness Cache' --allow-network
 ```
 
-`build_distribution.py` builds the UI from the npm lock and writes the sdist, the wheel, `pylock.toml` (the
-service dependencies with the URL and hash of every wheel) and `SHA256SUMS`; the output folder must be new or
-empty. `check_distribution.py` verifies the artifacts, installs the wheel in a temporary environment and exercises
-it with synthetic agents, without providers or network. The `dist/` folder of a checkout is not authoritative.
-
-## Configure
-
-Copy [`examples/local_config.minimal.example.toml`](examples/local_config.minimal.example.toml) outside every
-checkout, make it private (`chmod 600`) and replace its placeholders. It uses one provider (Claude Code) for both
-roles and a declared profile for a small Python project tested with `unittest`; its comments explain the switch to
-Codex. The [complete template](examples/local_config.example.toml) shows the `local-config-8`
-format: per-project presets, a Django declared profile, compositions and TOML-declared projects.
-v8 adds an optional declared-profile formatter (`formatter_argv` and `formatter_paths`, authorized together);
-formats 1–7 keep their existing rules. Each role's explicit `PATH` must also include the project tools it needs;
-give a Codex writer an explicit private `TMPDIR` when its commands need temporary files.
-[Django](examples/django-recipe.example.toml) and [TypeScript web](examples/typescript-web-recipe.example.toml)
-recipe fragments are added to it to create new projects with a prepared stack.
-
-Then check it:
-
-```sh
-/path/venv/bin/harness-local check-config /path/harness-local.toml --preflight
-```
-
-`check-config` parses the file and prints identifiers, profiles and frozen versions without environment values.
-`--preflight` additionally runs only `--version` and `--help` of each configured CLI; no model is called.
+This entry needs Python, uv and Git for verification, with no Node/npm or source checkout. It verifies wheel,
+sdist, `pylock.toml`, member manifest, scripts and `SHA256SUMS`. Older packages without the installer material
+cannot use this entry. Checksums verify consistency; obtain the package from a source you trust.
 
 ## First run
 
+From a clone use `scripts/start`; from a package use `/path/package/scripts/start`:
+
 ```sh
-/path/venv/bin/harness-local init-db --database /path/state/harness.sqlite3
-mkdir -m 700 /path/private-tmp
-TMPDIR=/path/private-tmp /path/venv/bin/harness-local serve --database /path/state/harness.sqlite3 --config /path/harness-local.toml
+scripts/start --install-dir '/path/Harness Local/installation' --port 8013
 ```
 
-`init-db` creates a new database only. `serve` prints `Harness Local: access key at <path>`: open
-`http://127.0.0.1:8013` (or the `--port` you chose) and paste the key from that file. The key file lives under
-`TMPDIR`, is deleted when the service stops and the session lasts eight hours. Keeping `TMPDIR` in a private
-directory of your operating area also keeps the temporary Git indexes there. Stop the service with Ctrl-C.
+The script verifies the installed generation, creates a database only if absent and starts its packaged UI/API.
+It never reinstalls or silently migrates an existing database. Defaults: `data/harness.sqlite3`, `data/tmp` and
+`configuration/global.toml` under the roots chosen at installation. `--database`, `--temp-dir` and `--config`
+select paths within the permitted scope. Missing/invalid TOML keeps work blocked and opens setup; a missing
+file is not created just by selecting it. See `--help` for all
+options. No Node/Vite is used at runtime.
 
-With `supervisor = true` the service consumes the queue: **every agent attempt invokes the provider CLI with your
-account and uses your plan or API quota**. The interface shows tokens and turns as reported or derived per attempt;
-it does not know your quota.
+Open `http://127.0.0.1:8013` directly in the address bar (use your chosen port), then paste the key from the
+private file named by the service. Cross-site links are rejected. The key is deleted on stop; the session lasts
+eight hours and ends on restart. Without a TOML the authenticated UI takes you to `/setup`.
 
-From the browser:
+## Configure
 
-1. **Preferences.** Choose the interface language and the default work language for new projects.
-2. **New project** (creation) or **Register project** (onboarding), as described in
-   [Two ways to start a project](#two-ways-to-start-a-project). Both ask for the project id, the composition from
-   your TOML, the agents and the work language, and show a preview whose exact hash you confirm.
-3. **Definition or onboarding conversation.** Answer the reviewer's questions, review the drafts and accept them.
-   The harness writes the documents with the layout below and makes its commit. With a recipe, review and confirm
-   the preparation plan (files, packages, commands and network mode) before it runs.
-4. **Phases → P001 → a task.** Queue the task; follow planning, execution, validation and review on the run page.
-5. **Commit.** When the run is *accepted, commit pending*, review the evidence and confirm the commit. The run is
-   now **COMMITTED**.
-6. **Check and close.** When the phase is complete, run the READY check and authorize the closure.
+1. In **Global configuration**, enter Git executable/commit identity, reviewer provider/model/effort, executor
+   provider, and each client's explicit PATH, service account (`USER`) and optional HOME/executable. Choose existing
+   allowed project roots and whether to allow confirmed creation and enable the job supervisor.
+2. **Find local clients** only suggests paths. **Check client version/help** explicitly invokes those probes,
+   without inference or authentication. Sign in to each provider separately; never paste credentials here.
+3. **Validate and preview diff**, review the exact candidate and confirm **Save reviewed version**. Saving creates
+   private TOML versions outside checkouts; it does not activate them.
+4. **Review activation of saved version**, confirm the exact versions, stop with Ctrl-C, and repeat `scripts/start`
+   with the same installation path/port. The application verifies and activates the pending set on restart.
 
-Each managed project gets this layout: `AGENTS.md` (agent instructions) with `CLAUDE.md`/`GEMINI.md` wrappers,
-`README.md`, and in `docs/` `SPECIFICATION.md`, `ARCHITECTURE.md`, `ROADMAP.md`, `STATE.md`, `NEXT_STEPS.md`,
-`DECISIONS.md`, `DDBB-DIAGRAM.md`, `flows/`, `phase/` (work files of the current phase) and `archive/phase-NNN/`.
-STATE, NEXT_STEPS, ROADMAP, DECISIONS and the archive are maintained by the harness; a normal task does not edit them.
+The form needs no Django/TypeScript composition or hand-written TOML. **TOML** exposes advanced settings;
+conversion is validated on the server. Storage is chosen at startup and cannot be moved by this editor.
+With the supervisor enabled, **each queued agent attempt uses your provider account and quota**. Detection,
+preview and ordinary reading do not invoke a model.
+
+**Existing configuration.** Formats 1–8 retain their original entry and hashes. Start with `--config` inside the
+installation's configuration root, or use the installed CLI `serve --database … --config …` for an existing
+operating area. The UI offers explicit import with source/hash/diff. Saving the conversion keeps legacy authority;
+review each converted project, supply its current committed D088 documents and preparation plan, validate and
+prepare it anew, then activate the entire set and restart using the managed store without the external source.
+Old recipe receipts alone do not authorize converted profiles. This imports product configuration; onboarding an
+existing code repository is the separate flow below.
+
+Optional manual examples remain in [`examples/local_config.minimal.example.toml`](examples/local_config.minimal.example.toml)
+and [the full v8 template](examples/local_config.example.toml), with [Django](examples/django-recipe.example.toml)
+and [TypeScript](examples/typescript-web-recipe.example.toml) recipe fragments. Keep local paths/environments
+outside checkouts, use private files (0600), and inspect a legacy file with the installed CLI:
+
+```sh
+/path/installation/generations/gen-ID/venv/bin/harness-local check-config /path/local.toml --preflight
+```
+
+## Start a project
+
+1. **Preferences:** choose interface language and default work language.
+2. **New project** or **Register project:** review the target/trust preview, agents, policy and immutable work
+   language. A project can start without a stack composition. An existing composition is optional.
+3. **Definition or onboarding conversation:** describe the project or let the reviewer inspect its static HEAD
+   inventory. Answer questions, review/apply document drafts, then review and adopt the proposed profile. Check
+   tools, functional validations, command permissions, protected paths and the technical preparation plan.
+4. Confirm the documentation commit that adopts `P001`. In the project's configuration editor, complete executable
+   paths and the private environment, validate, review the diff and save the exact profile.
+5. Review and confirm **preparation**: files, dependencies, argv, network and write scope. The executor prepares
+   the permitted files; the harness runs the exact validations and records a receipt. A failure keeps tasks blocked.
+   After success, review and separately confirm profile activation. This takes effect between tasks without restart.
+6. **Phases → P001 → a task:** queue it and follow planning, execution, validation and review. At *accepted, commit
+   pending*, review the evidence and confirm the commit to reach **COMMITTED**. A READY check and confirmed
+   closure archive a completed phase.
+
+Both entries use the same profile/preparation/activation gates; `P001 ACTIVE` alone does not enable a task.
+Django/TypeScript recipes are optional helpers. A profile for another stack supplies its own tools and meaningful
+validations. Onboarding inventories committed code without executing it and preserves existing sources.
+
+Each managed project gets `AGENTS.md` with `CLAUDE.md`/`GEMINI.md` wrappers, `README.md`, and in `docs/`
+`SPECIFICATION.md`, `ARCHITECTURE.md`, `ROADMAP.md`, `STATE.md`, `NEXT_STEPS.md`, `DECISIONS.md`, `DDBB-DIAGRAM.md`,
+`flows/`, `phase/` and `archive/phase-NNN/`. Managed blocks, task state and archive are maintained by the harness.
+
+## Edit configuration later
+
+Open **Global configuration** from navigation or the project's **Configuration** editor. Form/TOML editing uses
+validation, diff and separate save/activation confirmations. Preview shows affected projects, tools, receipts,
+commands and pending jobs. A global change derives private project copies and requires activation of the set and
+restart. A technical project change needs current committed documentation and a new preparation receipt before
+activation. A nontechnical change may reuse an exact compatible receipt after verification.
+
+Optional AI assistance uses the currently active clients and only the context you authorize. Applying its suggestion
+changes the draft; saving, preparing and activating still need their own confirmations. It cannot edit your machine's
+global settings. Pending/active work or an uncertain writer can block activation. Stop and resolve that work explicitly.
+
+Conflicts retain your browser-tab candidate and exact request; review the current base before retrying. Reloading or
+polling never resends a confirmation. External file edits do not reload authority. Recovery inspects recorded bytes
+and requires an explicit stopped-writer declaration where appropriate; a timeout does not prove that a writer stopped.
 
 ## Languages
 
@@ -208,28 +259,30 @@ See [SECURITY.md](SECURITY.md) to report a vulnerability.
 
 ## Operation
 
-**Restart.** Stop `serve` and start it with the same command. Queued work resumes; a job interrupted mid-attempt
+**Restart.** Stop with Ctrl-C and repeat `scripts/start` with the same installation path and port. Queued work resumes; a job interrupted mid-attempt
 shows *Recovery required* until you confirm that its writer stopped.
 
-**Update.** Stop the service and every writer, install the new wheel in the venv and migrate:
+**Update.** Stop the service and every writer. Run `scripts/install` with the new clone/package, the same
+paths and `--upgrade --writers-stopped`; it preserves previous generations and data. If the database needs a
+schema upgrade, use the new generation's CLI separately before starting:
 
 ```sh
-/path/venv/bin/harness-local migrate --database /path/state/harness.sqlite3 --snapshots /path/pre-migration --writers-stopped
+/path/installation/generations/gen-ID/venv/bin/harness-local migrate --database /path/data/harness.sqlite3 --snapshots /path/pre-migration --writers-stopped
 ```
 
-`migrate` takes a verified SQLite snapshot (outside any checkout) before upgrading and leaves an up-to-date
-database untouched. On failure it keeps the database and the snapshot for inspection, without restoring
-automatically. `serve` never migrates on startup.
+`migrate` takes a verified snapshot outside every checkout and leaves a current database untouched. Failure
+preserves database/snapshot for inspection; no automatic restore. `serve` never migrates.
 
 **Backup.** With the service and writers stopped:
 
 ```sh
-/path/venv/bin/harness-local backup-create /path/state/harness.sqlite3 /path/new-backup --artifact-root /path/harness-state --writers-stopped
+/path/venv/bin/harness-local backup-create /path/state/harness.sqlite3 /path/new-backup --artifact-root /path/data --artifact-root /path/configuration --writers-stopped
 /path/venv/bin/harness-local backup-verify /path/new-backup
 /path/venv/bin/harness-local backup-restore /path/new-backup /path/restored
 ```
 
-`--artifact-root` (repeatable) authorizes artifact roots such as the TOML `state_dir`. A restore creates a new,
+`--artifact-root` (repeatable) authorizes state and configuration roots. Format 2 includes versioned TOML,
+working copies, operation intents and referenced evidence; format 1 without new configuration remains readable. A restore creates a new,
 query-only database with the same schema revision. To browse it, start `serve --database
 /path/restored/state.sqlite3` from the installed venv and open the local UI. The archive home accepts a run id;
 `/runs/:id` opens its recorded evidence, diff, JUnit and metrics without a configured project or checkout.
@@ -240,11 +293,14 @@ certify that a historical writer stopped. See the [consultation flow](docs/flows
 `metrics-backfill` completes metrics; `diagnose-cli` checks one agent configuration. Every command documents its
 arguments with `--help`.
 
-**Diagnosis.** Start with `check-config --preflight`. Common blockers are explained in the UI: a CLI below its
+**Diagnosis.** Start with the authenticated configuration status and explicit **Check client version/help**;
+for a legacy TOML, use `check-config --preflight`. An occupied port requires stopping its owner or choosing `--port`.
+An old schema needs the separate migration above; incomplete cache/installation needs inspection before retrying. Common blockers are explained in the UI: a CLI below its
 minimum or missing from the role's `PATH`, a project without a confirmed work language, a configuration change
 that quarantined pending jobs, or a recipe that still needs its preparation.
 
-**Uninstall and keep your data.** Stop the service and delete the virtual environment and the package folder.
+**Uninstall and keep your data.** Stop the service and all writers, then remove the installation directory
+(including its generations) and any separately downloaded package folder.
 The SQLite database, the `state_dir`, backups and the TOML stay where you put them, and each project keeps its
 Git history and documents. Delete them only if you no longer need that history.
 

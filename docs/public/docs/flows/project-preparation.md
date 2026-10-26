@@ -1,5 +1,9 @@
 # Flow — confirmed preparation by recipe
 
+For v9 own profiles, the [guided configuration flow](configuration-setup.md) adds profile adoption after context,
+private TOML save after the documentary commit, generic confirmed preparation and separate activation before tasks.
+The composition/recipe diagrams below describe the retained legacy lane; they do not bypass those v9 gates.
+
 Recipes prepare the technical stack of a newly created project after its root documentation commit:
 Django ([D119](../DECISIONS.md#d119--django-recipe-preparation)) and TypeScript web
 ([D143](../DECISIONS.md#d143--typescript-web-recipe-1)). They apply only to new children registered by the service,

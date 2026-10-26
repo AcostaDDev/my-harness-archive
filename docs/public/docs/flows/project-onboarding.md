@@ -1,5 +1,9 @@
 # Flow — onboarding a repository without a harness
 
+For v9 own profiles, the [guided configuration flow](configuration-setup.md) adds profile adoption after context,
+private TOML save after the documentary commit, generic confirmed preparation and separate activation before tasks.
+The composition/recipe diagrams below describe the retained legacy lane; they do not bypass those v9 gates.
+
 Onboarding describes existing code before proposing its documentation and placing it under the harness: a static
 inventory with a profile proposal, a read-only reverse-engineering conversation over HEAD with private drafts, and a
 confirmed documentation commit that adopts `P001`
