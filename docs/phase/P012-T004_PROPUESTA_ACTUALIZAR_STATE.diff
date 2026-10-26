@@ -1,0 +1,14 @@
+--- a/docs/STATE.md
++++ b/docs/STATE.md
+@@ -5,3 +5,4 @@
+-- Solo existe la documentación de la definición (una vez aplicada y aceptada).
+-- **Scaffold pendiente**: la receta `typescript-web-recipe-2` aún no lo ha creado; no existen `package.json`, `src/main.ts`, tests ni scripts.
+-- Nada está implementado, preparado ni validado.
++- Documentación de la definición aceptada y creada en el commit raíz `dbc2d74`.
++- Scaffold preparado por `typescript-web-recipe-2` en español, con recibo COMPLETED y commit técnico `bcf59d8`.
++- `npm run check`, `npm run test` y `npm run build` correctos; JUnit real de la suite existente con un caso passed. La suite no cubre espacios interiores.
++- P001-T001 implementada, revisada con ACCEPT y COMMITTED en `ae86967`: `heading` colapsa espacios U+0020 interiores y su flujo está actualizado en español.
+@@ -11 +12,2 @@
+-- P001-T001: **no implementada**; depende de que la receta cree el scaffold.
++- P001-T001: completada en `ae86967`, con cambios limitados a `src/main.ts` y `docs/flows/titulo.md`.
++- Check de fase fallido por respuesta READY con una acción requerida de actualización de esta prosa; sin READY vigente, tag o cierre.

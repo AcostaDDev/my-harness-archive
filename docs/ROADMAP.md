@@ -394,12 +394,18 @@ pese al recibo/UI preparados; cero runs de tarea o Codex. Parada normal, puertos
 T013 completada offline (D207), conforme a «continúa.»: [entrega y continuación propuesta](phase/P012-T013_VINCULO_RECIBO.md).
 Reproducción HTTP roja, bind del recibo tras resolver CLI, 14 variantes nuevas/250 tests Python/8 unittest
 correctos y un opt-in omitido. Guardias/huellas de recetas intactas; sin nuevas llamadas o reintento real.
-Siguiente: consentimiento de continuación T004 con instalación nueva, misma base aislada/hijo, máximo nuevo
-3 Claude/1 Codex y deadline original 2026-10-26 12:00:10 UTC, sin repetir definición/receta o reponer saldo.
-Si vence, revisar ventana antes de operar. T004 sigue parcial con su parada conservada.
+Continuación T004 tras T013 autorizada/ejecutada (D208): [resultado y HITL](phase/P012-T004_CONTINUACION_T013.md).
+Wheel 70ee6883…6cc1bb instalado/verificado; preflight correcto/migrate no-op. Primera parada origin_rejected;
+reanudación por barra nativa autorizada. Única tarea d1e35d32… COMMITTED ae86967, digest del recibo exacto,
+ACCEPT sin hallazgos y tres validaciones/un JUnit passed; sin cobertura nueva de espacios interiores.
+Check c3a99262… FAILED por READY con required_action sobre prosa STATE obsoleta; sin READY/tag/cierre.
+P001 ACTIVE, servicio parado, 7 DONE/13 STOPPED/0 locks; conservación de bases/fixtures correcta.
+Nuevo 3 Claude/1 Codex, acumulado T004 6/12 y 1/3. Siguiente HITL: diff STATE por UI y un Claude adicional
+para check nuevo/cierre condicionado; máximo nuevo revisado 4/1, acumulado máximo 7/12 y 1/3, deadline
+original 12:00:10 UTC, sin consentimiento adicional todavía ni reejecución de tarea. T004 sigue parcial.
 P012 tiene trece tareas; T005 depende también de T012, T013 y T003, las tres completadas.
 Consumo 2/3 Claude y 0/0 Codex, dentro de dos horas; servicios parados, 13 DONE/1 QUEUED/14 STOPPED/0 locks,
-14.921 filas previas intactas y 16.798 finales iguales en copia/restauración. T004 sigue sin autorización;
+14.921 filas previas intactas y 16.798 finales iguales en copia/restauración. T004 seguía sin autorización en ese punto;
 no reactivar esa base antes de revisar su propuesta de arranque (D199).
 La apertura del expediente de P011 queda aplazada hasta el cierre de P012.
 

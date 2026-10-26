@@ -218,6 +218,7 @@ tarea se leen solo las decisiones que cita; este índice sirve para buscar prece
 | [D205](#d205--p012-t004-propuesta-con-base-independiente-y-sucesora-vacía) | P012-T004: propuesta con base independiente y sucesora vacía | P012 |
 | [D206](#d206--p012-t004-receta-completada-y-parada-por-preparation_required) | P012-T004: receta completada y parada por preparation_required | P012 |
 | [D207](#d207--p012-t013-vínculo-del-recibo-tras-resolución-cli) | P012-T013: vínculo del recibo tras resolución CLI | P012 |
+| [D208](#d208--p012-t004-tarea-committed-y-check-sin-ready) | P012-T004: tarea COMMITTED y check sin READY | P012 |
 
 ## D001 — Alcance local y arquitectura base
 
@@ -6113,3 +6114,38 @@ Precedentes: D119/D168/D174/D206; el resultado real T004 se conserva por bytes.
   2026-10-26 12:00:10 UTC; si venció, revisar ventana explícitamente. Sin repetir definición/receta o usar otra
   base para sortear el resultado. T001 §7/parada exigen consentimiento nuevo antes de esos efectos reales.
 - T013 completa y P012 abierta con trece tareas; T005 pendiente de T004. Sin tags en my_harness, push o publicación.
+
+
+## D208 — P012-T004: tarea COMMITTED y check sin READY
+
+Estado: continuación autorizada/ejecutada y detenida el 2026-10-26; T004 parcial.
+Fase: P012. [Resultado, consentimientos y propuesta documental](phase/P012-T004_CONTINUACION_T013.md).
+Precedentes: D091/D168/D174/D199/D205–D207; informes anteriores conservados por bytes.
+
+- Usuario autoriza build/instalación T013, única tarea y cierre del hijo, máximo nuevo 3 Claude/1 Codex.
+  Ventana original vigente hasta 12:00:10 UTC. Base exacta 9a9fa5d938236d6dd72d72561647c006c73e42f6;
+  fuentes y guardias de bases/fixtures/recibo/23 archivos/herramientas correctas antes de operar.
+- dist-t013/venv-t013 nuevos: build/verificador aislado/instalación offline y 259 archivos del paquete correctos;
+  wheel 70ee6883…6cc1bb. Preflight CLI 2.1.310/0.164.0 correcto, migrate current/0025 sin snapshot ni cambio
+  SQLite. Misma base state-t004/TOML/recibo/hijo; sin repetir creación, receta o validaciones iniciales.
+- Primera parada origin_rejected al navegar con extensión desde el login correcto; cero llamadas nuevas.
+  Parada/conservación 08:53 UTC, 16.798 filas anteriores y 4.623 T004 iguales. HITL explícito autoriza
+  reanudar por barra nativa; mismo wheel/base y límites, sin debilitar guardias. Acceso/login y enlaces Enter
+  correctos. Una sola petición de tarea desde creación, con NEXT_STEPS contrastado.
+- d1e35d32… COMMITTED en ae86967ba54a2e881ec876e1db6f6b332abfd770: versiones congeladas contienen el
+  digest exacto del recibo, receta v2 y contexto es. Plan Claude, única ejecución gpt-6-luna/low y revisión
+  ACCEPT sin hallazgos/permisos/correcciones; Claude sonnet/low reporta claude-sonnet-5-5. Tres validaciones
+  correctas y XML original/un caso passed; la suite no acredita espacios interiores. Diff inspeccionado
+  limitado a main.ts y flujo español, API/defecto/sufijo/h1 conservados; documentos mecánicos adoptados.
+- Check c3a99262…/operación 8deeaafd… FAILED: proveedor termina exit 0, cinco criterios passed y verdict
+  READY con required_action de refrescar prosa STATE obsoleta. El contrato exige acciones/preguntas vacías;
+  se rechaza correctamente. Conservar payload/check/commit, sin convertirlo en READY o cerrar/taggear P001.
+- Parada normal 09:00:45 UTC, puertos cerrados/clave retirada; 7 DONE/13 STOPPED/0 locks. Base previa 16.798
+  filas intactas, 254 archivos/42 artefactos/tres fixtures/diffs/ocho herramientas conservados. T004: 6.012
+  filas (1.389 nuevas; una fila de fase actualizada normalmente), recibo y checkout limpio en ae86967.
+  Nuevo 3 Claude/1 Codex; acumulado T004 6/12 y 1/3. P001 ACTIVE, sin p001 o P002 activa.
+- [Diff propuesto](phase/P012-T004_PROPUESTA_ACTUALIZAR_STATE.diff) preparado sin editar el hijo: prosa STATE
+  con hechos/commits actuales y check fallido, bloque gestionado conservado. HITL pendiente para edición
+  documental por UI/CAS/hash/commit, un Claude adicional para check nuevo y cierre solo si READY. Máximo
+  nuevo revisado 4/1, acumulado máximo 7/12 y 1/3; deadline original, sin reejecución de tarea. No se usa
+  el saldo global como consentimiento. Sin cambios de producto/guardias/esquema, tags en my_harness o remotos.

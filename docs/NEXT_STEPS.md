@@ -4,7 +4,7 @@ Objetivo y criterios en [ROADMAP](ROADMAP.md#p012--validación-real-previa-a-la-
 Decisión: [D183](DECISIONS.md#d183--p012-validación-real-previa-a-la-apertura-pública).
 
 **Estado:** T001, **T002**, **T003**, T008, T009, T010, T011, T012 y T013 completadas (D198/D202/D204/D207);
-T004 parcial/detenida y T005–T007 pendientes, trece tareas en total (D206/D207).
+T004 parcial/detenida y T005–T007 pendientes, trece tareas en total (D206–D208).
 T003 cierra con evidencia acumulada y salvedad de identidad autorizada.
 T002 completada con evidencia acumulada: dos B COMMITTED e idempotencia anteriores, y continuación tras T011
 autorizada/ejecutada hasta tarea **`e3fa4ae6…` COMMITTED `6f021211b307`** con perfil/formateador v8, seis
@@ -28,12 +28,16 @@ Reanudación autorizada **«Autorizo»** manteniendo `unknown` (D204): **T003 co
 ambos fallos y QUEUED, con ruta operativa bloqueada. Parada normal, puertos cerrados/clave retirada, cinco hashes
 y 16.798 filas iguales, 254 archivos previos/42 artefactos/tres fixtures intactos. Cero llamadas nuevas,
 acumulado T003 2/3 Claude y 0/0 Codex; identidad histórica incierta conservada, sin certificar muerte de escritores.
-**Siguiente:** consentimiento específico para [continuar T004 tras T013](phase/P012-T013_VINCULO_RECIBO.md#propuesta-de-continuación-t004-sin-autorizar),
-corregida offline (D207): 14 variantes nuevas, 250 tests Python/8 unittest correctos, un opt-in omitido.
-Build/verificador/instalación nuevos, misma base aislada state-t004/TOML/hijo bcf59d8, sin repetir definición
-o receta. Máximo nuevo 3 Claude/1 Codex, acumulado máximo 6/12 y 1/3, cero correcciones y deadline original
-2026-10-26 12:00:10 UTC (si vence, revisar ventana antes de empezar). [Parada T004](phase/P012-T004_TYPESCRIPT_REAL.md)
-intacta: 3/12 Claude y 0/3 Codex, cero runs de tarea. HITL D205 de P002 vacía conservado; sin reactivar la base anterior.
+**Siguiente:** HITL de [continuación documental T004](phase/P012-T004_CONTINUACION_T013.md#propuesta-de-actualización-documental-y-check-nuevo)
+tras D208: corrección T013 construida/verificada/instalada, preflight correcto/migrate no-op y tarea
+**d1e35d32… COMMITTED ae86967**, digest del recibo conservado y tres validaciones/un JUnit passed.
+Primera parada origin_rejected, reanudación por barra nativa autorizada; luego check FAILED por payload
+READY con required_action de prosa STATE obsoleta. Sin READY/tag/cierre, P001 ACTIVE. Servicio detenido,
+7 DONE/13 STOPPED/0 locks; nuevo **3 Claude/1 Codex**, acumulado T004 **6/12 y 1/3**. Bases/fixtures intactos.
+Propuesta concreta: [diff de prosa STATE](phase/P012-T004_PROPUESTA_ACTUALIZAR_STATE.diff) por UI confirmada,
+un Claude adicional para check nuevo y cierre solo si READY. Máximo nuevo revisado 4/1, acumulado máximo
+7/12 y 1/3; deadline original **2026-10-26 12:00:10 UTC**. Sin consentimiento adicional aún; no reejecutar
+tarea, repetir receta o reponer tiempo. [Parada inicial T004](phase/P012-T004_TYPESCRIPT_REAL.md) conservada.
 El resultado T002 y los saldos no habilitan otro tramo, corrección o reintento.
 P001–P011 siguen cerradas; la apertura del [expediente de P011](archive/phase-011/P011_EXPEDIENTE_APERTURA.md)
 queda aplazada hasta el cierre de P012 y su candidato se sustituye por el que prepare T005.
@@ -194,8 +198,9 @@ fixtures/evidencias anteriores conservados. T003 completa; `unknown` histórico 
 
 ## P012-T004 — Proyecto TypeScript web nuevo con receta v2 en español
 
-**Estado:** parcial, ejecutada y detenida el 2026-10-26 (D206). **Depende de:** T002, T013 y nuevo consentimiento
-para continuar. [Resultado real](phase/P012-T004_TYPESCRIPT_REAL.md): base nueva, UI es/es, tres turnos Claude
+**Estado:** parcial, tarea COMMITTED y check fallido el 2026-10-26 (D208); sin cierre. **Depende de:** T002,
+T013 y nuevo consentimiento documental para continuar.
+[Resultado inicial](phase/P012-T004_TYPESCRIPT_REAL.md): base nueva, UI es/es, tres turnos Claude
 ANSWERED/16 propuestas CAS, bootstrap dbc2d74 y receta TypeScript v2/es COMPLETED en bcf59d8, offline y con
 un caso JUnit passed. Primera petición de tarea rechazada 409 preparation_required pese al recibo preparado;
 cero runs P001-T001/llamadas Codex, sin reintento, READY, tag o cierre. Servicio parado, puertos cerrados/clave
@@ -204,7 +209,7 @@ Consumo 3/12 Claude y 0/3 Codex; guion original agotado por parada, sin transfer
 **Guardia D199:** revisar su propuesta de arranque antes de operar: T003 prevé conservar una tarea QUEUED.
 No arrancar el supervisor sobre esa base ni ejecutar la tarea pendiente con el consentimiento de T004.
 [Propuesta revisada](phase/P012-T004_PROPUESTA_TYPESCRIPT.md) (D205): base independiente state-t004,
-TOML/entornos/caché nuevos, instalación T012 íntegra y objeto npm local acreditado; aún sin materializar.
+TOML/entornos/caché nuevos, instalación T012 íntegra y objeto npm local acreditado; materializados en D206.
 Cinco tests sintéticos preparatorios correctos. Guion autorizado por «autorizo», ejecutado y detenido según D206;
 su informe/propuesta se conservan, sin autorización de reanudación. «continúa.» da paso al diagnóstico/corrección
 offline T013, sin relanzar el tramo real.
@@ -225,7 +230,9 @@ cierre de P001 del hijo.
 
 **Validación:** la propia del tramo.
 **Entregables:** [propuesta](phase/P012-T004_PROPUESTA_TYPESCRIPT.md);
-[resultado parcial](phase/P012-T004_TYPESCRIPT_REAL.md); continuación pendiente con propuesta/consentimiento nuevos.
+[resultado parcial inicial](phase/P012-T004_TYPESCRIPT_REAL.md);
+[continuación tras T013 y check fallido](phase/P012-T004_CONTINUACION_T013.md);
+[diff de STATE propuesto](phase/P012-T004_PROPUESTA_ACTUALIZAR_STATE.diff), pendiente de consentimiento nuevo.
 
 ## P012-T005 — Alcance público y candidato actualizados
 
@@ -431,7 +438,8 @@ Pruebas React con render real y host determinista de hooks; sin QA de navegador 
 ## P012-T013 — Conservar el vínculo del recibo al resolver las CLI
 
 **Estado:** completada offline el 2026-10-26 (D207), tras la parada T004 (D206) y «continúa.» del usuario.
-[Entrega y continuación real propuesta](phase/P012-T013_VINCULO_RECIBO.md), aún sin consentimiento operativo.
+[Entrega y continuación real propuesta](phase/P012-T013_VINCULO_RECIBO.md); continuación autorizada/ejecutada
+en D208, con tarea COMMITTED y check fallido conservado.
 **Depende de:** recibo real válido/409 de T004, D119/D168/D174; no requiere reactivar el servicio real.
 **Objetivo:** Que la resolución obligatoria de clientes para trabajo nuevo mantenga el vínculo validado con la
 preparación completada, sin copiar huellas obsoletas ni relajar la admisión de tareas/checks/cierres.
