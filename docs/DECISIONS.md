@@ -216,6 +216,7 @@ tarea se leen solo las decisiones que cita; este índice sirve para buscar prece
 | [D203](#d203--p012-t003-parada-previa-al-build-por-identidad-histórica-del-host) | P012-T003: parada previa al build por identidad histórica del host | P012 |
 | [D204](#d204--p012-t003-consulta-ui-restaurada-verificada-con-salvedad-autorizada) | P012-T003: consulta UI restaurada verificada con salvedad autorizada | P012 |
 | [D205](#d205--p012-t004-propuesta-con-base-independiente-y-sucesora-vacía) | P012-T004: propuesta con base independiente y sucesora vacía | P012 |
+| [D206](#d206--p012-t004-receta-completada-y-parada-por-preparation_required) | P012-T004: receta completada y parada por preparation_required | P012 |
 
 ## D001 — Alcance local y arquitectura base
 
@@ -6051,3 +6052,36 @@ Precedentes: D059/D091/D143/D168/D184/D192/D199/D204. Sin cambio de producto ni 
   servicio o escritura operativa. STATE/NEXT_STEPS/ROADMAP actualizados; T004 pendiente y P012 abierta.
   Sin cambios de producto/API/datos/flujos, baseline pública, archivos congelados, configuración global,
   tags en my_harness, push o publicación.
+
+## D206 — P012-T004: receta completada y parada por preparation_required
+
+Estado: ejecutada y detenida el 2026-10-26; T004 parcial, T013 offline añadida.
+Fase: P012. [Resultado, matriz, parada y conservación](phase/P012-T004_TYPESCRIPT_REAL.md).
+Precedentes: D119/D168/D174/D199/D204/D205; propuesta e informes previos conservados por bytes.
+
+- Consentimiento **«autorizo»** al guion 9aefae3: base/state/TOML/caché propios, instalación T012 conservada,
+  máximo 12 Claude/3 Codex, una ejecución normal, cero correcciones/reintentos y cuatro horas desde 08:00:10 UTC.
+  Guardias de fuentes/259 archivos, ocho herramientas, hashes y 16.798 filas previas correctas; sin build nuevo.
+- Copia exclusiva del objeto TypeScript 5.9.3, preflight cli-14 2.1.310/0.164.0 e init-db 0025 correctos;
+  nueva base sin proyectos/jobs anteriores. UI Chrome es/es crea p012-typescript-es bajo el padre confirmado.
+  Tres turnos Claude ANSWERED y 16 propuestas CAS: documentos iniciales, aclaración de campos/criterios y tag.
+  Bootstrap COMPLETED, commit raíz dbc2d74; única tarea P001-T001, P001 ACTIVE y tag previsto p001.
+- Receta typescript-web-recipe-2/es COMPLETED, ocho pasos DONE: npm ci offline y tres validaciones exit 0,
+  un caso JUnit passed de título normal/vacío y commit técnico bcf59d8. Idioma/hash/receta sellados e iguales
+  en plan/recibo. TMPDIR ignorado del escritor creado tras preparar; checkout/recibo intactos y verificados.
+- Una petición UI para encolar devuelve **409 preparation_required** pese a prepared=true/recibo válido.
+  Cero runs de tarea o llamadas Codex; sin plan de tarea, reintento, READY, tag o cierre/P002 activa. Se conserva
+  el rechazo y se para, sin otra API o reinicio para sortearlo. Consumo real T004 **3/12 Claude, 0/3 Codex**.
+- Parada normal 08:15:59 UTC, puertos 8024/8025 cerrados/clave retirada. Conservación 08:25:50 UTC:
+  base nueva íntegra con 4.623 filas, 4 DONE/9 STOPPED/0 locks; grupos propios muertos. 23 archivos/HEAD técnico
+  iguales; 16.798 filas previas por todas sus columnas, 254 archivos/42 artefactos/tres fixtures/ocho herramientas
+  intactos. Job de chat anterior QUEUED conservado; unknown histórico no se interpreta como dead.
+- La traza estática localiza que frozen_versions fuerza resolve_project; refresh v7/v8 recompone sin
+  project_environment_sha256 y resolve_project lo instala sin bind. La guardia admit exige el vínculo del recibo,
+  correctamente; read de preparación consulta SQLite/archivos y puede mostrar prepared=true. Añadir **T013**
+  para reproducir/corregir offline la pérdida con regresiones sintéticas, sin debilitar guardias o recetas.
+- **«continúa.»** tras el rechazo conduce a conservación y corrección offline, no a reanudar el tramo real.
+  T004 parcial, P012 abierta con trece tareas; T005 depende de T013 y del cierre real pendiente T004.
+  Reanudación con propuesta/consentimiento nuevos, sin volver a definir/preparar o reparar el hijo a mano.
+  En esta entrega no cambia producto, API, datos o flujo; sin suites completas repetidas, servicio nuevo,
+  CLI/proveedores nuevos, instalación/build, cambios globales, tag en my_harness, push o publicación.

@@ -4,7 +4,8 @@ Objetivo y criterios en [ROADMAP](ROADMAP.md#p012--validación-real-previa-a-la-
 Decisión: [D183](DECISIONS.md#d183--p012-validación-real-previa-a-la-apertura-pública).
 
 **Estado:** T001, **T002**, **T003**, T008, T009, T010, T011 y T012 completadas (D198/D202/D204);
-T004–T007 pendientes, doce tareas en total. T003 cierra con evidencia acumulada y salvedad de identidad autorizada.
+T004 parcial/detenida, T005–T007 y T013 pendientes, trece tareas en total (D206).
+T003 cierra con evidencia acumulada y salvedad de identidad autorizada.
 T002 completada con evidencia acumulada: dos B COMMITTED e idempotencia anteriores, y continuación tras T011
 autorizada/ejecutada hasta tarea **`e3fa4ae6…` COMMITTED `6f021211b307`** con perfil/formateador v8, seis
 validaciones y **13 casos JUnit** correctos. Cero correcciones; nuevo 2 Claude/1 Codex, acumulado T002
@@ -27,10 +28,11 @@ Reanudación autorizada **«Autorizo»** manteniendo `unknown` (D204): **T003 co
 ambos fallos y QUEUED, con ruta operativa bloqueada. Parada normal, puertos cerrados/clave retirada, cinco hashes
 y 16.798 filas iguales, 254 archivos previos/42 artefactos/tres fixtures intactos. Cero llamadas nuevas,
 acumulado T003 2/3 Claude y 0/0 Codex; identidad histórica incierta conservada, sin certificar muerte de escritores.
-**Siguiente:** consentimiento separado para el [guion T004](phase/P012-T004_PROPUESTA_TYPESCRIPT.md),
-preparado offline (D205): base/state/TOML/caché nuevos, instalación T012 conservada y job QUEUED anterior
-intacto (D199). HITL confirma sucesora P002 en ROADMAP inicial y final ACTIVE vacía, sin plan posterior.
-Cinco tests sintéticos correctos; cero efectos operativos/llamadas nuevas. Sin repetir chat/aceptación/backup.
+**Siguiente:** T013 offline (D206), tras [la parada T004](phase/P012-T004_TYPESCRIPT_REAL.md): receta v2/es
+COMPLETED y commit técnico bcf59d8, pero primera petición de tarea rechazada 409 preparation_required.
+Cero runs de tarea/llamadas Codex, consumo T004 3/12 Claude y 0/3 Codex; servicio detenido y evidencia intacta.
+Corregir la pérdida del vínculo del recibo al resolver CLI, sin reactivar ninguna base o repetir operaciones.
+Reanudación real T004 con propuesta/consentimiento nuevos; HITL D205 de P002 vacía conservado.
 El resultado T002 y los saldos no habilitan otro tramo, corrección o reintento.
 P001–P011 siguen cerradas; la apertura del [expediente de P011](archive/phase-011/P011_EXPEDIENTE_APERTURA.md)
 queda aplazada hasta el cierre de P012 y su candidato se sustituye por el que prepare T005.
@@ -191,13 +193,20 @@ fixtures/evidencias anteriores conservados. T003 completa; `unknown` histórico 
 
 ## P012-T004 — Proyecto TypeScript web nuevo con receta v2 en español
 
-**Estado:** pendiente. **Depende de:** T002 y autorización explícita del tramo.
+**Estado:** parcial, ejecutada y detenida el 2026-10-26 (D206). **Depende de:** T002, T013 y nuevo consentimiento
+para continuar. [Resultado real](phase/P012-T004_TYPESCRIPT_REAL.md): base nueva, UI es/es, tres turnos Claude
+ANSWERED/16 propuestas CAS, bootstrap dbc2d74 y receta TypeScript v2/es COMPLETED en bcf59d8, offline y con
+un caso JUnit passed. Primera petición de tarea rechazada 409 preparation_required pese al recibo preparado;
+cero runs P001-T001/llamadas Codex, sin reintento, READY, tag o cierre. Servicio parado, puertos cerrados/clave
+retirada, 4 DONE/9 STOPPED/0 locks y 4.623 filas aisladas. Las 16.798 filas previas/fixtures/evidencias intactas.
+Consumo 3/12 Claude y 0/3 Codex; guion original agotado por parada, sin transferencia o reposición de saldo.
 **Guardia D199:** revisar su propuesta de arranque antes de operar: T003 prevé conservar una tarea QUEUED.
 No arrancar el supervisor sobre esa base ni ejecutar la tarea pendiente con el consentimiento de T004.
 [Propuesta revisada](phase/P012-T004_PROPUESTA_TYPESCRIPT.md) (D205): base independiente state-t004,
 TOML/entornos/caché nuevos, instalación T012 íntegra y objeto npm local acreditado; aún sin materializar.
-Cinco tests sintéticos correctos. Autorización operativa pendiente: 12 Claude/3 Codex, una ejecución normal,
-cero correcciones, cuatro horas y parada al primer fallo.
+Cinco tests sintéticos preparatorios correctos. Guion autorizado por «autorizo», ejecutado y detenido según D206;
+su informe/propuesta se conservan, sin autorización de reanudación. «continúa.» da paso al diagnóstico/corrección
+offline T013, sin relanzar el tramo real.
 **Objetivo:** Acreditar con proveedores reales la creación desde cero con la receta TypeScript web v2, el idioma
 de trabajo español y el cierre de una fase.
 **Alcance:** carpeta padre del área, definición conversacional, preparación con la caché npm, una tarea, READY y
@@ -214,12 +223,12 @@ cierre de P001 del hijo.
 - Llamadas por proveedor frente al techo, servicio detenido y área conservada para revisión.
 
 **Validación:** la propia del tramo.
-**Entregables:** [propuesta](phase/P012-T004_PROPUESTA_TYPESCRIPT.md); resultado real pendiente en
-`docs/phase/P012-T004_TYPESCRIPT_REAL.md` solo tras consentimiento y ejecución.
+**Entregables:** [propuesta](phase/P012-T004_PROPUESTA_TYPESCRIPT.md);
+[resultado parcial](phase/P012-T004_TYPESCRIPT_REAL.md); continuación pendiente con propuesta/consentimiento nuevos.
 
 ## P012-T005 — Alcance público y candidato actualizados
 
-**Estado:** pendiente. **Depende de:** T002–T004, T012 y las correcciones que hayan generado.
+**Estado:** pendiente. **Depende de:** T002–T004, T012, T013 y las correcciones que hayan generado.
 **Objetivo:** Reflejar en la documentación pública lo acreditado y preparar el candidato que sustituye al de P011.
 **Alcance:** README/README.es, `docs/public/`, ROADMAP/STATE privados, candidato, paquete y suites.
 **Rutas permitidas:** `README.md`, `README.es.md`, `CHANGELOG.md`, `docs/**`.
@@ -417,3 +426,29 @@ Pruebas React con render real y host determinista de hooks; sin QA de navegador 
 **Entregables:** [plan conservado](phase/P012-T012_PLAN_VISTA_CONSULTA.md),
 [implementación y continuación T003 propuesta](phase/P012-T012_VISTA_CONSULTA.md),
 [flujo](flows/backup-consultation.md), OpenAPI/tipos y manifiesto de fuentes. Sin wheel operativo ni llamadas nuevas.
+
+## P012-T013 — Conservar el vínculo del recibo al resolver las CLI
+
+**Estado:** pendiente, siguiente tarea offline tras la parada T004 (D206) y «continúa.» del usuario.
+**Depende de:** recibo real válido/409 de T004, D119/D168/D174; no requiere reactivar el servicio real.
+**Objetivo:** Que la resolución obligatoria de clientes para trabajo nuevo mantenga el vínculo validado con la
+preparación completada, sin copiar huellas obsoletas ni relajar la admisión de tareas/checks/cierres.
+**Alcance:** resolución/recomposición de proyecto y bind del recibo, regresiones HTTP/sintéticas y paridad documental.
+**Rutas permitidas:** `src/harness_local/services/managed_runtime.py`, `tests/product/test_recipe_v2_preparation.py`,
+`tests/product/test_cli_discovery.py`, `tests/product/test_managed_api.py`, `docs/**`. Sin dependencias nuevas.
+**Criterios de aceptación:**
+
+- Reproducir con configuración v7/v8 y receta v2: preparación COMPLETED/recibo válido, resolución CLI forzada
+  y admisión HTTP de tarea. Solo herramientas/agentes/datos sintéticos; ningún fixture privado en tests.
+- Resolver las CLI recompone y vuelve a ligar el recibo compatible desde la autoridad existente; conservar
+  idioma de trabajo, versiones CLI observadas y project_environment_sha256 exacto. Sin copiar la huella anterior
+  a una composición distinta, cambiar recetas/perfiles congelados o editar recibos/jobs/SQLite para desbloquear.
+- Sin recibo, con recipe_config distinto o deriva protegida/de herramientas, rechazar antes de encolar/ejecutar;
+  proyectos sin receta y formatos anteriores conservan su comportamiento. Cubrir tareas y guardias compartidas.
+- Tests dirigidos de API/recetas/resolución, checks documentales y diff correctos. Sin cambio de esquema/API,
+  validaciones reales, wheel/instalación operativos, servicio, llamadas, revalidación o reparación del hijo real.
+- Entrega acota la continuación T004 con producto corregido/instalación nueva y consentimiento separado;
+  conservar bootstrap, recibo, commit técnico, parada, bases anteriores y presupuesto consumido 3 Claude/0 Codex.
+
+**Validación:** reproducción que falle antes del cambio y regresiones dirigidas offline, parsers/enlaces/presupuestos.
+**Entregables:** `docs/phase/P012-T013_VINCULO_RECIBO.md`, corrección/regresiones y flujo actualizado.

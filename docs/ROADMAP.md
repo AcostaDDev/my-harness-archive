@@ -386,9 +386,14 @@ Propuesta T004 preparada offline (D205): [guion](phase/P012-T004_PROPUESTA_TYPES
 caché nuevos e instalación T012 conservada, sin reactivar la base con el job QUEUED (D199). HITL confirma
 P002 en ROADMAP durante definición y final ACTIVE vacía tras cerrar P001, sin plan posterior. Cinco tests
 sintéticos correctos; objeto npm local íntegro, sin copiar, operar servicios o llamadas nuevas.
-Siguiente: consentimiento específico T004 (12 Claude/3 Codex, una ejecución normal, cero correcciones,
-cuatro horas); sin repetir chat/aceptación/backup.
-P012 conserva doce tareas; T005 depende también de T012 y T003, completadas.
+T004 autorizada por «autorizo», ejecutada y detenida (D206): [resultado parcial](phase/P012-T004_TYPESCRIPT_REAL.md).
+Base/state propios, UI es/es, tres turnos/16 propuestas CAS, bootstrap dbc2d74; receta v2/es COMPLETED,
+npm offline y check/test/build con un JUnit passed, commit técnico bcf59d8. Al encolar, 409 preparation_required
+pese al recibo/UI preparados; cero runs de tarea o Codex. Parada normal, puertos cerrados/clave retirada,
+4 DONE/9 STOPPED/0 locks, evidencias/16.798 filas anteriores intactas; consumo 3/12 Claude y 0/3 Codex.
+Siguiente T013 offline: reproducir/corregir la pérdida del vínculo del recibo en la resolución CLI, conforme a
+«continúa.», sin reintentar el tramo. Reanudación real con propuesta/consentimiento nuevos, sin repetir receta.
+P012 tiene trece tareas; T005 depende también de T012, T013 y T003, completadas T012/T003.
 Consumo 2/3 Claude y 0/0 Codex, dentro de dos horas; servicios parados, 13 DONE/1 QUEUED/14 STOPPED/0 locks,
 14.921 filas previas intactas y 16.798 finales iguales en copia/restauración. T004 sigue sin autorización;
 no reactivar esa base antes de revisar su propuesta de arranque (D199).

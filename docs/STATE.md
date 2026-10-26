@@ -194,9 +194,19 @@ base/state/TOML/caché nuevos para conservar el job QUEUED sin reactivar la base
 íntegra (259 archivos); objeto TypeScript 5.9.3 disponible localmente con integridad exacta, aún sin copiar.
 HITL confirma P002 en ROADMAP durante la definición y final P002 ACTIVE vacía tras el cierre de P001,
 sin plan posterior. Cinco tests sintéticos correctos; sin efectos operativos o llamadas nuevas.
-**Siguiente:** consentimiento específico para ejecutar el guion T004 (12 Claude/3 Codex, una ejecución normal,
-cero correcciones, cuatro horas). T004 pendiente; sin repetir chat/aceptación/backup o consumir su saldo.
-Informes anteriores conservados.
+**T004 parcial, ejecutada y detenida** (D206): [resultado](phase/P012-T004_TYPESCRIPT_REAL.md).
+«autorizo» al guion 9aefae3; base/state/TOML/caché propios, instalación T012 conservada, preflight e init-db
+correctos. UI es/es crea p012-typescript-es; tres turnos Claude ANSWERED y 16 propuestas CAS, bootstrap
+COMPLETED en **dbc2d74**. Receta **typescript-web-recipe-2/es COMPLETED**, npm offline y check/test/build
+correctos, **un caso JUnit passed**, recibo sellado y commit técnico **bcf59d8**. Al encolar una única vez,
+**409 preparation_required** pese al recibo/UI preparados: cero runs de tarea o llamadas Codex. Parada normal
+08:15:59 UTC; conservación final 08:25:50 UTC, puertos cerrados/clave retirada, **4 DONE/9 STOPPED/0 locks**,
+4.623 filas nuevas aisladas. **16.798 filas previas/254 archivos/42 artefactos/tres fixtures intactos**;
+job anterior QUEUED conservado. Consumo propio **3/12 Claude, 0/3 Codex**; sin reintento, READY, tag o cierre.
+Traza estática: la resolución forzada de CLI recompone sin volver a ligar project_environment_sha256 del recibo.
+**Siguiente:** T013 offline para reproducir/corregir esa pérdida sin debilitar la guardia, conforme a «continúa.».
+Reanudación real T004 exige propuesta/consentimiento nuevos; sin repetir definición, receta o tramos anteriores.
+Informes congelados conservados.
 T002 finalizada, sin reparación/revalidación de sus dos fallos. Conservar todos los fixtures, diffs, historiales,
 configuraciones y distribuciones. Sin nueva fase del Django de P009, tags, push o publicación. P012 sigue
 abierta; baseline pública/candidato pendientes de T005.
