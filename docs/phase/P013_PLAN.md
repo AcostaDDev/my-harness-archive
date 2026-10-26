@@ -1,6 +1,6 @@
 # P013 — Instalación guiada y configuración desde la UI
 
-Estado: fase activa el 2026-10-26; T001 diseñada, T002–T003 implementadas; producto restante pendiente T004–T011.
+Estado: fase activa el 2026-10-26; T001 diseñada, T002–T004 implementadas; producto restante pendiente T005–T011.
 Decisión: [D215](../DECISIONS.md#d215--p013-instalación-guiada-y-configuración-desde-la-ui).
 Objetivo y salida en [ROADMAP](../ROADMAP.md#p013--instalación-guiada-y-configuración-desde-la-ui);
 tareas ejecutables en [NEXT_STEPS](../NEXT_STEPS.md).

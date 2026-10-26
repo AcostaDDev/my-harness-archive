@@ -261,6 +261,10 @@ def _create_backup(database, destination, *, artifact_roots=(), writers_stopped=
         lock.execute('BEGIN IMMEDIATE')
         try:
             _integrity(lock)
+            if lock.execute('SELECT 1 FROM configuration_operations LIMIT 1').fetchone():
+                # T011 will introduce a bundle carrying these external TOML versions.
+                # The current format must not certify a references-only configuration backup.
+                raise BackupError(tr('backup.configuration_bundle_required'))
             from harness_local.adapters.processes import liveness
             for row in lock.execute('SELECT process_owner, owner_closed FROM managed_jobs WHERE process_owner IS NOT NULL'):
                 if not row['owner_closed'] and liveness(json.loads(row['process_owner'])) == 'alive':

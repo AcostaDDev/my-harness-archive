@@ -1,6 +1,6 @@
 # Flujo — instalación y configuración guiadas (P013)
 
-**Instalación T002 y arranque T003 implementados; configuración pendiente T004–T011.**
+**Instalación T002, arranque T003 y persistencia T004 implementados; integración pendiente T005–T011.**
 [Entrega T002](../phase/P013-T002_INSTALACION.md), D219; validación con herramientas falsas, sin recorrido instalado nuevo.
 [Entrega T003](../phase/P013-T003_ARRANQUE.md), D220; procesos/señales sintéticos, sin servicio instalado real.
 [Contrato](../phase/P013-T001_CONTRATO.md), D216–D218 en [DECISIONS](../DECISIONS.md),
@@ -45,7 +45,7 @@ Locks de instancia/instalación heredados por el hijo impiden segundo servicio/a
 muere el wrapper; señales se reenvían y se espera al hijo. No libera guardias de jobs ni declara escritores
 muertos. Consulta D040 omite TOML operativo; TOML inválido bloquea antes de servir. Sin TOML arranca hoy
 la UI protegida de consulta vigente, sin consumidores gestionados; la transición al asistente del diagrama
-siguiente sigue pendiente T005/T006. No se ha implementado aún la autoridad de configuración de T004.
+siguiente sigue pendiente T005/T006. T004 entrega la persistencia separada; aún no se conecta con este wrapper ni con consumidores del servicio.
 
 ## Asistente y activación global
 
@@ -72,6 +72,17 @@ un ejemplo ni habilita colas; fallo al promover conserva activa anterior y bloqu
 Cancelar una activación pendiente también exige versión/confirmación; guardar no tiene ese efecto.
 
 ## Persistencia y recuperación
+
+Primitivas T004 implementadas ([D221](../DECISIONS.md#d221--p013-t004-journal-y-referencias-de-configuración),
+[entrega](../phase/P013-T004_CONFIGURACION.md)): `preview/save`, `activation_preview/activate`,
+`promote_pending/cancel_pending`, `recovery_preview/recover` y descarte/importación explícitos de cambios externos.
+Sin endpoints/UI ni ejecución v9 todavía. Guardado con barrera SQLite y flock de instalación; intención ligada
+a directorios de configuración/estado. Revisiones DRAFT o VALIDATED, copias privadas y fsync por publicación.
+Recuperación exige declaración de escritores detenidos y exclusión efectiva; se audita como otra operación,
+sin inferir parada por lease. Global sella el conjunto pendiente por id de activación y promueve en transacción;
+permite guardar borradores mientras espera reinicio. Proyecto requiere verificador de preparación del servicio
+(sin fallback permisivo); T008/T009 conectarán recibos/HEAD/runtime. Trabajo pendiente bloquea activación,
+no guardado. Bundle actual rechaza operaciones de configuración: soporte autocontenido pendiente T011.
 
 ```mermaid
 sequenceDiagram

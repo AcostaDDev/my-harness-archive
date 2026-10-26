@@ -767,7 +767,7 @@ class LocalComposer:
                                  for name, (profile, table) in sorted(self.compositions.items())]}
 
 
-def _build(data, source):
+def _build(data, source, *, allow_empty_compositions=False):
     if not isinstance(data, dict) or data.get('format') not in FORMATS:
         raise LocalConfigError(tr('config.format', allowed=list(FORMATS)))
     fmt = data['format']
@@ -844,7 +844,7 @@ def _build(data, source):
             raise LocalConfigError(tr('config.recipe_profile_reserved'))
         profiles[name] = _profile(name, value, allow_formatter=fmt == VERSION)
     if fmt in REGISTRABLE:
-        if not isinstance(data['compositions'], dict) or not data['compositions']:
+        if not isinstance(data['compositions'], dict) or (not data['compositions'] and not allow_empty_compositions):
             raise LocalConfigError(tr('config.compositions_required'))
         for name, value in data['compositions'].items():
             if not PROJECT_ID.fullmatch(name):

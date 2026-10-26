@@ -10,7 +10,7 @@ decisiones vigentes y la información técnica que antes estaba en README y AGEN
 |---|---|
 | Núcleo | Python 3.14.4, biblioteca estándar, paquete `harness-local` 0.1.0 (`uv_build==0.12.19`) |
 | API local | FastAPI 0.143.0, Pydantic 2.14.0, Uvicorn 0.54.0; HTTP para acciones y observación gestionada por cursor |
-| Persistencia | SQLite con SQLAlchemy 2.1.4 y Alembic 1.20.0 (esquema `0025_project_work_languages`) |
+| Persistencia | SQLite con SQLAlchemy 2.1.4 y Alembic 1.20.0 (esquema `0026_configuration`) |
 | UI | React 19.3.0, TypeScript 5.9.3, Vite 8.3.4; `markdown-it` 15.0.2 (`html: false`) y `mermaid` 11.17.2 (`strict`) |
 | Tipos del cliente | `openapi-typescript` 7.13.0 desde el OpenAPI exportado |
 | Herramientas | uv 0.12.19 y `uv.lock`; Node 24.15.0, npm 11.12.1 y `frontend/package-lock.json` |
@@ -69,7 +69,7 @@ llaman a los mismos casos de uso. El supervisor es el único que lanza procesos 
 | `cli.py`, `launcher.py` | `harness-local` (backup, retención, diagnóstico, `check-config`, `metrics-backfill`, `init-db`, `serve`); `--ui-language` por invocación |
 | `storage/preferences.py`, `i18n/` | Preferencias globales de idioma con CAS, captura del visual al admitir cada job y catálogos en/es de mensajes propios (D166); `tr()` emite en el visual de cada emisión: petición HTTP, job o invocación CLI (D171) |
 | `storage/work_language.py`, `services/work_language.py` | Idioma de trabajo inmutable por raíz, par `language-context-1` por job/intento y confirmación explícita ausente → valor (D167) |
-| `migrations/versions/0001…0025` | Esquema Alembic |
+| `migrations/versions/0001…0026` | Esquema Alembic |
 
 `frontend/src`: `router.ts`, `pages/` (Home, Registry, Project, Phases, Task, Run, Docs, Planning, Stats, Settings,
 Preferences), `i18n.ts`, `i18n/{en,es}.json` y `Language.tsx` (catálogos y proveedor del idioma visual, D166),
@@ -488,7 +488,7 @@ no cambia hoy `render_attempt`, adaptadores, variables, snapshots, API o esquema
 
 ## 14. Ampliación planificada — P013
 
-**T001 diseñada y T002–T003 implementadas; pendiente T004–T011.** §6/§9 describen lo implementado.
+**T001 diseñada y T002–T004 implementadas; pendiente T005–T011.** §6/§9 describen lo implementado.
 [D216](DECISIONS.md#d216--p013-t001-instalación-aislada-y-arranque-sin-configuración),
 [D217](DECISIONS.md#d217--p013-t001-archivos-versionados-y-activación-de-configuración) y
 [D218](DECISIONS.md#d218--p013-t001-perfil-tras-contexto-y-preparación-antes-de-activar).
@@ -503,7 +503,7 @@ Offline por defecto; red explícita sin descargas implícitas de herramientas ni
 T003 entrega el arranque instalado (§9, D220), con DB/config/puerto/temporal privados; instala solo
 T002, migra solo D150 por acción separada. Base nueva por creación exclusiva, existente por validación.
 
-### Autoridad y persistencia propuestas
+### Autoridad y persistencia
 
 `local-config-9`: global con campos de servicio/Git/agentes/registration/presets/catálogos de v8; composiciones
 opcionales y sin `[[projects]]`. `project-config-1`: perfil/composición efectivos, política, herramientas/
@@ -515,11 +515,16 @@ privadas contienen el TOML autorizado. SQLite guarda referencias/revisiones/hash
 no una segunda configuración editable. Ausencia/discrepancia de versión activa bloquea. 64 KiB por TOML,
 0700/0600 nuevos, propietario UID y sin enlaces/hardlinks/secretos; guardias 1–8 conservadas al importar.
 
-T004 implementa `configuration-operation-1`: CAS/base/candidato/clave → intención persistida → publicación
+T004 entrega las primitivas de almacenamiento ([D221](DECISIONS.md#d221--p013-t004-journal-y-referencias-de-configuración),
+[validación](phase/P013-T004_CONFIGURACION.md)), todavía sin API ni consumidores runtime. `configuration-operation-1`: CAS/base/candidato/clave → intención persistida → publicación
 atómica/fsync por archivo → finalización del conjunto → activación separada. Sin transacción distribuida
 ficticia entre SQLite y archivos; intenciones permiten conciliación por bytes base/candidatos. Edición externa
-bloquea nuevas operaciones del ámbito hasta importar/descartar por CAS; nunca hot reload. Nuevo esquema
-aditivo e índices/restricciones concretos se documentarán con la migración real en DDBB-DIAGRAM.
+bloquea nuevas operaciones del ámbito hasta importar/descartar por CAS; nunca hot reload. Esquema aditivo
+`0026_configuration`: ámbitos/revisiones/operaciones en [DDBB-DIAGRAM](DDBB-DIAGRAM.md#configuración-versionada-p013-t004).
+Parser de editor separado del loader 1–8, formatos históricos y hashes intactos. La verificación de preparación
+por proyecto es obligatoria y no tiene implementación permisiva por defecto; T008/T009 conectarán recibos/HEAD
+y recomposición. La integración con arranque/admisión/reinicio queda para T005/T009/T011. Backup actual rechaza
+bases con operaciones de configuración hasta disponer del bundle nuevo de T011.
 
 Global activa al reiniciar tras confirmación, con admisión cerrada en `RESTART_REQUIRED`; proyecto activa
 sin reinicio bajo barrera compartida de admisión/commit y recomposición verificada. Rechazar activar con

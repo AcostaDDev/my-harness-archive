@@ -1,7 +1,7 @@
 # P013 — Instalación guiada y configuración desde la UI
 
-**Estado:** fase activa; T001 diseñada y T002–T003 implementadas el 2026-10-26, doce tareas pendientes.
-**Siguiente: P013-T004**, persistencia y activación versionada de configuración.
+**Estado:** fase activa; T001 diseñada y T002–T004 implementadas el 2026-10-26, once tareas pendientes.
+**Siguiente: P013-T005**, API de configuración inicial sin TOML completo.
 [Objetivo y criterios](ROADMAP.md#p013--instalación-guiada-y-configuración-desde-la-ui),
 [D215](DECISIONS.md#d215--p013-instalación-guiada-y-configuración-desde-la-ui) y
 [plan de fase](phase/P013_PLAN.md).
@@ -90,7 +90,8 @@ parsers, enlaces y dependencias. Sin migraciones ni proveedores.
 
 ## P013-T004 — Persistencia y activación versionada de configuración
 
-**Estado:** pendiente. **Depende de:** T001.
+**Estado:** completada (2026-10-26), primitivas verificadas con archivos/SQLite sintéticos;
+API/runtime y recibos pendientes T005–T011. [Entrega y validación](phase/P013-T004_CONFIGURACION.md), D221. **Depende de:** T001.
 **Objetivo:** implementar la autoridad de archivos y versiones compartida por asistentes y edición.
 **Rutas permitidas:** configuración/servicios/storage, migraciones según T001, pruebas y docs de paridad.
 **Criterios de aceptación:**

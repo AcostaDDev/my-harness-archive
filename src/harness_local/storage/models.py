@@ -878,3 +878,45 @@ class ProjectWorkLanguageRow(Base):
     confirmation: Mapped[dict] = mapped_column(JSON)
     sha256: Mapped[str] = mapped_column(String(64))
     confirmed_at: Mapped[str] = mapped_column(String(40))
+
+
+class ConfigurationScopeRow(Base):
+    """Mutable references only; content authority lives in immutable TOML files (D217)."""
+    __tablename__ = 'configuration_scopes'
+    scope: Mapped[str] = mapped_column(String(80), primary_key=True)
+    directory: Mapped[str] = mapped_column(String)
+    version: Mapped[int] = mapped_column(Integer)
+    saved_revision: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    active_revision: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    pending_revision: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    pending_operation_id: Mapped[str | None] = mapped_column(String(36), nullable=True)
+    working_sha256: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    updated_at: Mapped[str] = mapped_column(String(40))
+
+
+class ConfigurationRevisionRow(Base):
+    __tablename__ = 'configuration_revisions'
+    __table_args__ = (CheckConstraint("status IN ('DRAFT', 'VALIDATED')", name='ck_configuration_revision_status'),)
+    scope: Mapped[str] = mapped_column(ForeignKey('configuration_scopes.scope'), primary_key=True)
+    revision: Mapped[int] = mapped_column(Integer, primary_key=True)
+    sha256: Mapped[str] = mapped_column(String(64))
+    status: Mapped[str] = mapped_column(String(16))
+    operation_id: Mapped[str] = mapped_column(ForeignKey('configuration_operations.id'))
+    created_at: Mapped[str] = mapped_column(String(40))
+
+
+class ConfigurationOperationRow(Base):
+    """Intent/candidates are a recovery journal, never a second executable configuration."""
+    __tablename__ = 'configuration_operations'
+    __table_args__ = (CheckConstraint("status IN ('INTENDED', 'FILES_WRITTEN', 'SAVED', 'RECOVERY_REQUIRED', 'CONFLICT', 'APPLIED')",
+                                      name='ck_configuration_operation_status'),)
+    id: Mapped[str] = mapped_column(String(36), primary_key=True)
+    format: Mapped[str] = mapped_column(String(40))
+    kind: Mapped[str] = mapped_column(String(24))
+    status: Mapped[str] = mapped_column(String(24))
+    idempotency_key: Mapped[str] = mapped_column(String(200), unique=True)
+    request_sha256: Mapped[str] = mapped_column(String(64))
+    payload: Mapped[dict] = mapped_column(JSON)
+    result: Mapped[dict | None] = mapped_column(JSON, nullable=True)
+    created_at: Mapped[str] = mapped_column(String(40))
+    updated_at: Mapped[str] = mapped_column(String(40))

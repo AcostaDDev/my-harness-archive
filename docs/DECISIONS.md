@@ -232,6 +232,7 @@ tarea se leen solo las decisiones que cita; este índice sirve para buscar prece
 | [D218](#d218--p013-t001-perfil-tras-contexto-y-preparación-antes-de-activar) | P013-T001: perfil tras contexto y preparación antes de activar | P013 |
 | [D219](#d219--p013-t002-instalador-por-generaciones-y-paquete-autocontenido) | P013-T002: instalador por generaciones y paquete autocontenido | P013 |
 | [D220](#d220--p013-t003-arranque-instalado-y-exclusión-de-instancia) | P013-T003: arranque instalado y exclusión de instancia | P013 |
+| [D221](#d221--p013-t004-journal-y-referencias-de-configuración) | P013-T004: journal y referencias de configuración | P013 |
 
 ## D001 — Alcance local y arquitectura base
 
@@ -6487,3 +6488,40 @@ pendiente T012/T013. Fase: P013. Concreta D216 conservando D051/D150/D219.
 - Pruebas con intérprete/procesos sintéticos y DB temporal, incluido wrapper separado del checkout, señales,
   caída del wrapper, exclusión, reinicio y errores. Sin instalación/servicio/smoke/proveedor real, harness sobre
   este repositorio, cambios globales o acciones remotas. Siguiente tarea T004.
+
+
+## D221 — P013-T004: journal y referencias de configuración
+
+Estado: implementada y verificada con archivos/SQLite sintéticos el 2026-10-26; integración API/runtime y
+recibos pendiente T005–T011. Fase: P013. Concreta D217, sin alterar parsers/hashes 1–8, D118 ni snapshots.
+[Entrega](phase/P013-T004_CONFIGURACION.md), [datos](DDBB-DIAGRAM.md#configuración-versionada-p013-t004),
+[flujo](flows/configuration-setup.md).
+
+- Parser de editor separado: global `local-config-9` sin proyectos ni composición obligatoria reutiliza
+  validaciones v8; proyecto `project-config-1` declara perfil completo, comandos/entorno/política/agentes
+  efectivos e identidad/referencia global exactas. Borrador incompleto no activa; claves desconocidas,
+  credenciales reconocibles y tamaños inválidos se rechazan. No se detectan/invocan clientes al parsear.
+- Tres tablas aditivas en `0026_configuration`: ámbitos con CAS y referencias guardada/activa/pendiente,
+  revisiones inmutables y operaciones `configuration-operation-1` con clave única/request hash/journal/actor.
+  Contenido autorizado solo en TOML inmutable; SQLite no es otra configuración editable. El downgrade con
+  operaciones existentes bloquea para no perder historia.
+- Preview liga candidato/diff, validación, base/hash activo, motivo y directorios. Intención comprometida antes
+  de publicar; exclusión flock más barrera SQLite, temporales exclusivos, replace/fsync y finalización del
+  conjunto verificado. Caída conserva intención; recuperación requiere declaración de parada, lock efectivo y
+  preview exacta de bytes base/candidatos. RECOVER audita la confirmación; replay no repite publicaciones.
+  Rutas privadas 0700/0600, UID, límite 64 KiB, sin enlaces/hardlinks/especiales ni solapamiento con checkouts.
+- Guardar no activa. Global agenda un conjunto por id de activación y promueve tras reinicio declarado y
+  revalidación; fallo conserva anterior y pendiente. Borradores pueden guardarse mientras espera. Proyecto
+  activa sin reinicio solo con verificador de preparación del servicio, obligatorio y sin fallback. T008/T009
+  aportarán binding de recibos/HEAD y recomposición, no un booleano de una petición o de IA.
+- Activación revalida bajo barrera de admisión/commit: trabajos, locks, preparación, aceptación/commit,
+  propuestas/borradores y operaciones documentales pendientes bloquean; planes PROPOSED se superseden.
+  Global exige revisiones exactas compatibles de todos los perfiles activos afectados; editar uno no cambia otro.
+  Cambios externos se importan o descartan por CAS, sin hot reload ni reparación silenciosa de inmutables.
+- El almacenamiento se entrega sin endpoints/UI, consumidor v9 ni promoción automática en arranque; quedan
+  para sus tareas. Importación/conversión integral de legacy y bundle con los TOML en T011. Hasta entonces
+  backup actual rechaza bases con operaciones nuevas, en/es, para no acreditar una copia sin sus archivos;
+  consulta restaurada conserva prioridad y no toca originales.
+- Sin instalaciones/servicios reales, harness sobre este checkout, agentes/proveedores/smokes, configuración
+  global del equipo, CI remota, tag, push o publicación. Commit local solicitado por el usuario; P011/P012/D214
+  y sus candidatos/artefactos conservados.

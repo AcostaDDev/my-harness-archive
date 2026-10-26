@@ -353,7 +353,7 @@ con autorización inicial y parada por error/HITL/límites. No está implementad
 ## 14. Ampliación planificada — P013
 
 [D215](DECISIONS.md#d215--p013-instalación-guiada-y-configuración-desde-la-ui) abre P013 antes de publicar.
-**T001 completa el diseño; T002–T003 implementan instalación/arranque/empaquetado; pendiente T004–T011.**
+**T001 completa el diseño; T002–T004 implementan instalación/arranque/empaquetado y persistencia; pendiente T005–T011.**
 Las reglas vigentes de §4/§5/§8 se mantienen hasta sus entregas. [Contrato](phase/P013-T001_CONTRATO.md), [flujo](flows/configuration-setup.md),
 [plan](phase/P013_PLAN.md) y [tareas](NEXT_STEPS.md). D216–D218 concretan:
 
@@ -369,6 +369,8 @@ Las reglas vigentes de §4/§5/§8 se mantienen hasta sus entregas. [Contrato](p
 - Global v9 y perfil/composición propios por proyecto v1, privados fuera de checkouts. Contenido en TOML
   versionado y activación por referencia/hash en SQLite. Guardar es distinto de activar; diff, CAS, intención
   recuperable y confirmación exacta. Edición externa no recarga autoridad ni cambia contratos congelados.
+  Primitivas T004 implementadas ([entrega](phase/P013-T004_CONFIGURACION.md), D221); API/runtime pendientes.
+  El backup actual bloquea bases con operaciones nuevas hasta el bundle con TOML de T011.
 - Global requiere reinicio confirmado; proyecto puede activarse entre tareas sin reinicio. Trabajo pendiente
   bloquea activar según D118; no se cancelan jobs ni reescriben historiales/recibos para aplicar cambios.
   Impacto global y proyectos afectados visible; preferencias/idioma de trabajo conservan D166/D167.

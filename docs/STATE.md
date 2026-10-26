@@ -14,7 +14,7 @@ local completada en el alcance de D151/D153 y preparación pública archivada co
   commit determinista conciliable. Formateo del perfil tras cada turno del ejecutor (D133). Codec de historial
   en formato 8 (lee 1–7).
 - **Persistencia y recuperación** ([P003](archive/phase-003/SUMMARY.md), [P006](archive/phase-006/SUMMARY.md)): SQLite
-  `0025_project_work_languages` (51 tablas, [diagrama](DDBB-DIAGRAM.md)); cola idempotente, lease, lock por checkout,
+  `0026_configuration` (54 tablas, [diagrama](DDBB-DIAGRAM.md)); cola idempotente, lease, lock por checkout,
   cuarentena por versión y confirmación explícita del escritor detenido; backup y restauración de consulta; retención
   explícita de streams. Proyección derivada `run-projection-1` escrita con el historial y comprobada en el backup
   (P010-T003, D144).
@@ -128,10 +128,10 @@ Sustitución verificada por rutas, hashes y modos; checksums de los artefactos o
 
 ## Fase activa — P013 Instalación guiada y configuración desde la UI
 
-**P013 activa; T001 diseñada y T002–T003 implementadas el 2026-10-26.**
+**P013 activa; T001 diseñada y T002–T004 implementadas el 2026-10-26.**
 [D215](DECISIONS.md#d215--p013-instalación-guiada-y-configuración-desde-la-ui),
 [plan](phase/P013_PLAN.md), [tareas](NEXT_STEPS.md) y [flujo propuesto](flows/configuration-setup.md).
-Doce tareas pendientes. **Siguiente: P013-T004**, persistencia y activación versionada de configuración.
+Once tareas pendientes. **Siguiente: P013-T005**, API de configuración inicial sin TOML completo.
 
 T001 concreta el [contrato](phase/P013-T001_CONTRATO.md) con D216–D218: instalación aislada desde clon/paquete,
 arranque sin TOML con sesión protegida, contenido en TOML versionado y activación por referencia SQLite, CAS/
@@ -158,6 +158,14 @@ Sin TOML usa la UI protegida de consulta existente, sin consumidores gestionados
 pendiente. Consulta D040 omite el TOML operativo. [D220](DECISIONS.md#d220--p013-t003-arranque-instalado-y-exclusión-de-instancia),
 [entrega y checks](phase/P013-T003_ARRANQUE.md); pruebas sintéticas, sin servicio instalado real.
 
+T004 entrega las primitivas de configuración versionada: parser de editor global v9/proyecto v1, preview/diff,
+CAS, intención `configuration-operation-1`, TOML privados inmutables, replay y conciliación explícita por bytes.
+Guardar no activa; global queda pendiente de reinicio y proyecto exige verificador de preparación del servicio,
+con barrera de trabajo pendiente. Migración aditiva `0026_configuration`, tres tablas nuevas; formatos/hashes
+operativos 1–8 intactos. [D221](DECISIONS.md#d221--p013-t004-journal-y-referencias-de-configuración),
+[entrega y checks](phase/P013-T004_CONFIGURACION.md). API/runtime/asistente e integración de recibos pendientes
+T005–T011; sin consumidores nuevos. Backup actual rechaza bases con operaciones de configuración hasta T011.
+
 Alcance acordado: scripts de instalación/arranque con venv y cachés configurables, asistente inicial sin TOML
 manual ni modelos, configuración global y perfiles propios por proyecto desde UI, propuestas del revisor tras
 concretar documentación/arquitectura o inventario, preparación/comprobación acotadas con ejecutor y activación
@@ -175,6 +183,6 @@ no se renuevan ni transfieren.
 Tras el cierre seguirán faltando owner/repo, visibilidad, identidad pública y autorización de acciones remotas.
 D157 conserva la fuente principal pública tras el primer push; modo continuo D156 para v0.2.0 después de abrir,
 fuera de P013. Este repositorio sigue sin registrarse ni ejecutarse con el harness. Apertura y T001 fueron
-documentales; T002–T003 añaden instalación/arranque/empaquetado y pruebas sintéticas. Sin operación del harness sobre este
-checkout, instalaciones reales, modelos/migraciones/API nuevos, agentes/proveedores,
-smokes, configuración global del equipo, push o publicación. Commits locales T002/T003 pedidos por el usuario.
+documentales; T002–T004 añaden instalación/arranque/empaquetado, persistencia versionada y pruebas sintéticas. Sin operación del harness sobre este
+checkout, instalaciones reales, API nueva, agentes/proveedores,
+smokes, configuración global del equipo, push o publicación. Commits locales T002/T003/T004 pedidos por el usuario.

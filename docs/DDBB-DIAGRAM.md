@@ -1,16 +1,80 @@
 # Diagrama de datos — my_harness
 
-Esquema SQLite del servicio local (Alembic `0025_project_work_languages`, 51 tablas). Generado en P008-T001 desde el metadata de `src/harness_local/storage/models.py` (actualizado en P009-T004 con preparación y propietarios compartidos, en P010-T003 con la proyección de runs, en P011-T007 con las preferencias de idioma y en P011-T008 con el idioma de trabajo por proyecto); cualquier cambio de modelos o migraciones actualiza este documento en la misma tarea (regla de paridad, D088).
+Esquema SQLite del servicio local (Alembic `0026_configuration`, 54 tablas). Generado en P008-T001 desde el metadata de `src/harness_local/storage/models.py` (actualizado en P009-T004 con preparación y propietarios compartidos, en P010-T003 con la proyección de runs, en P011-T007 con las preferencias de idioma y en P011-T008 con el idioma de trabajo por proyecto y en P013-T004 con configuración versionada); cualquier cambio de modelos o migraciones actualiza este documento en la misma tarea (regla de paridad, D088).
 
 P009-T002 implementa autoridad y creación de hijos (D117); T004 implementa preparación/pasos/journal y amplía
 locks/procesos compartidos (D119). [Diseño de partida](archive/phase-009/P009-T001_CONTRATO_CREACION.md#6-persistencia-propuesta-y-migraciones).
 
 Convenciones: `PK` clave primaria, `FK` clave ajena declarada, `UK` unicidad de columna; «null» marca columnas opcionales. Las unicidades compuestas y los índices únicos parciales se listan bajo cada diagrama. Las entidades de otro contexto aparecen solo con las columnas que relacionan. Los artefactos pesados (streams, capturas, copias) viven fuera de SQLite y se referencian por ruta y hash.
 
-P013-T001 concreta el [contrato de configuración versionada](phase/P013-T001_CONTRATO.md#4-archivos-formatos-y-autoridad)
-y su [flujo](flows/configuration-setup.md) como **diseño pendiente**, sin cambiar modelos ni migraciones aquí.
-T004 añadirá referencias/revisiones/intenciones/activación por CAS y T007/T008 las extensiones de alta/preparación
-que necesiten; entonces se actualizará este esquema con las restricciones reales. SQLite sigue en `0025`/51 tablas.
+P013-T004 implementa el [contrato de configuración versionada](phase/P013-T001_CONTRATO.md#4-archivos-formatos-y-autoridad)
+y su [flujo](flows/configuration-setup.md) en `0026_configuration`: **54 tablas** de producto, más `alembic_version`.
+Tres tablas aditivas, sin modificar columnas/datos previos; referencias de contenido en archivos TOML privados.
+API/runtime, alta/preparación y backup nuevo siguen pendientes T005–T011.
+
+## Configuración versionada (P013-T004)
+
+[D221](DECISIONS.md#d221--p013-t004-journal-y-referencias-de-configuración),
+[entrega](phase/P013-T004_CONFIGURACION.md). `scope` es `global` o `project:<id>` validado por el servicio.
+`directory` liga todos los ámbitos a una instalación; también se sella en la intención antes de crear el primer
+ámbito. `version` es CAS de referencias/guardados; `revision` numera contenido conservado, DRAFT o VALIDATED.
+Heads `saved_revision/active_revision/pending_revision` referencian lógicamente la PK compuesta de revisiones
+del mismo ámbito; no hay FK circular. `pending_operation_id` identifica lógicamente la activación exacta que
+puede promover/cancelar ese conjunto, incluso después de guardar otros borradores.
+
+```mermaid
+erDiagram
+    configuration_scopes {
+        string scope PK
+        string directory
+        integer version
+        integer saved_revision "null; referencia lógica local"
+        integer active_revision "null; referencia lógica local"
+        integer pending_revision "null; referencia lógica local"
+        string pending_operation_id "null; referencia lógica a operaciones"
+        string working_sha256 "null"
+        string updated_at
+    }
+    configuration_revisions {
+        string scope PK, FK
+        integer revision PK
+        string sha256
+        string status "DRAFT o VALIDATED"
+        string operation_id FK
+        string created_at
+    }
+    configuration_operations {
+        string id PK
+        string format "configuration-operation-1"
+        string kind "SAVE, ACTIVATE, PROMOTE, CANCEL, RECOVER"
+        string status
+        string idempotency_key UK
+        string request_sha256
+        json payload
+        json result "null"
+        string created_at
+        string updated_at
+    }
+    configuration_scopes ||--o{ configuration_revisions : scope
+    configuration_operations ||--o{ configuration_revisions : operation_id
+```
+
+Restricciones SQL: PK por ámbito y por `(scope, revision)`; FK de revisión a ámbito e intención; clave
+idempotente global única; CHECK de revisión en DRAFT/VALIDATED y de operación en INTENDED/FILES_WRITTEN/
+SAVED/RECOVERY_REQUIRED/CONFLICT/APPLIED. Downgrade rechaza perder cualquier operación existente.
+Guardas de servicio bajo la barrera SQLite compartida: versión/hashes base exactos, identidad/raíz del registro,
+conjunto global/proyectos y referencias compatibles, archivos íntegros y ausencia de trabajo pendiente al activar.
+Guardar no requiere detener jobs y nunca cambia activa. Proyecto sin verificador de preparación bloquea.
+Activación global queda pendiente; promoción valida otra vez todo el conjunto y falla sin cambiar la anterior.
+
+`payload` de SAVE conserva candidatos/diff, estado de validación, hashes/rutas derivadas y bases/versiones,
+directorios fijados, motivo y actor. Es journal para conciliación explícita, nunca fuente de ejecución.
+Otras operaciones conservan confirmación, impacto/referencias, evidencia del verificador y resultado. RECOVER
+registra declaración de parada/hash observado antes de reanudar la misma intención. Las revisiones previas,
+activaciones y snapshots no se actualizan con un nuevo guardado. Los TOML inmutables viven en
+`versions/<scope-seguro>/<revision>-<sha256>.toml`; copias en `global.toml` o `projects/<id>/project.toml`.
+Backup actual rechaza bases con estas operaciones hasta el bundle autocontenido T011; consulta restaurada
+no accede a esas rutas originales ni permite reparar/activar.
 
 ## Observación legacy y simulaciones (P001–P002)
 
