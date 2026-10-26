@@ -3,8 +3,8 @@
 Objetivo y criterios en [ROADMAP](ROADMAP.md#p012--validación-real-previa-a-la-apertura-pública).
 Decisión: [D183](DECISIONS.md#d183--p012-validación-real-previa-a-la-apertura-pública).
 
-**Estado:** T001, **T002**, T008, T009, T010, T011 y T012 completadas (D198/D202); T003–T007 pendientes,
-doce tareas en total. T003 parcial; T012 implementada y verificada offline según D201/D202.
+**Estado:** T001, **T002**, **T003**, T008, T009, T010, T011 y T012 completadas (D198/D202/D204);
+T004–T007 pendientes, doce tareas en total. T003 cierra con evidencia acumulada y salvedad de identidad autorizada.
 T002 completada con evidencia acumulada: dos B COMMITTED e idempotencia anteriores, y continuación tras T011
 autorizada/ejecutada hasta tarea **`e3fa4ae6…` COMMITTED `6f021211b307`** con perfil/formateador v8, seis
 validaciones y **13 casos JUnit** correctos. Cero correcciones; nuevo 2 Claude/1 Codex, acumulado T002
@@ -20,10 +20,15 @@ HITL **«Planificar vista UI Aparte»** (D201): mantener T003 parcial y añadir
 [T012](#p012-t012--vista-ui-de-runs-en-copias-de-consulta), completada offline (D202). Continuación solo UI
 autorizada el 2026-10-26 y detenida antes del build (D203): hashes y 16.798 filas iguales, puertos cerrados,
 13 DONE/1 QUEUED/14 STOPPED/0 locks. Identificador `uuid.getnode()` distinto del host persistido; liveness
-**unknown**, con los 14 grupos locales ausentes. Cero builds/instalaciones/servicios/llamadas nuevos.
-**Siguiente:** [HITL de la parada](phase/P012-T003_UI_T012.md#3-hitl-pendiente) antes de reanudar exclusivamente
-la copia de consulta con esa incertidumbre explícita. Sin repetir chat/aceptación/backup o consumir saldo. T004 sin
-autorización y con propuesta de arranque pendiente que respete el job QUEUED; no reactivar esa base (D199).
+**unknown**, con los 14 grupos locales ausentes. Cero builds/instalaciones/servicios/llamadas en esa parada.
+Reanudación autorizada **«Autorizo»** manteniendo `unknown` (D204): **T003 completada con evidencia acumulada**.
+[Resultado UI](phase/P012-T003_UI_RESULTADO_T012.md): build/verificador/instalación offline en dist-t012/venv-t012,
+259 archivos instalados verificados; UI Chrome es muestra COMMITTED/6f02121, diff, 13 JUnit/original/métricas,
+ambos fallos y QUEUED, con ruta operativa bloqueada. Parada normal, puertos cerrados/clave retirada, cinco hashes
+y 16.798 filas iguales, 254 archivos previos/42 artefactos/tres fixtures intactos. Cero llamadas nuevas,
+acumulado T003 2/3 Claude y 0/0 Codex; identidad histórica incierta conservada, sin certificar muerte de escritores.
+**Siguiente:** propuesta de arranque T004 que respete el job QUEUED y consentimiento separado; no reactivar
+esa base (D199). Sin repetir chat/aceptación/backup o consumir saldo.
 El resultado T002 y los saldos no habilitan otro tramo, corrección o reintento.
 P001–P011 siguen cerradas; la apertura del [expediente de P011](archive/phase-011/P011_EXPEDIENTE_APERTURA.md)
 queda aplazada hasta el cierre de P012 y su candidato se sustituye por el que prepare T005.
@@ -142,10 +147,9 @@ con la procedencia acumulada de la matriz, sin declarar una tercera B ni reparar
 
 ## P012-T003 — Chat, backup y restauración sobre el proyecto real
 
-**Estado:** parcial; chat y backup/consulta HTTP acreditados el 2026-10-25 (D200). Continuación UI autorizada
-el 2026-10-26 y detenida antes del build por identidad histórica del host `unknown` (D203); HITL pendiente.
-HITL D201 elige planificar vista UI aparte, sin cerrar con solo API. **Depende de:** T002; T012 para completar
-consulta UI y consentimiento explícito nuevo antes de su continuación.
+**Estado:** completada con evidencia acumulada el 2026-10-26 (D204): chat/confirmación/backup/API de D200 y
+consulta UI tras T012. Parada inicial D203 por identidad histórica `unknown`; reanudación explícita autorizada
+con esa salvedad y límites originales, sin alterar identidades/guardias. **Depende de:** T002 y T012, completadas.
 **Objetivo:** Acreditar el chat con el revisor real y el backup/restauración de consulta de una base con runs reales.
 **Alcance:** proyecto B de T002 y la base del área.
 **Rutas permitidas:** `docs/**` en este repositorio; el área privada según T001.
@@ -157,26 +161,31 @@ consulta UI y consentimiento explícito nuevo antes de su continuación.
   la tarea queda QUEUED, cero intentos/preparaciones/comandos y sin lock. No reactivar esa base antes de revisar T004.
 - Backup de la base con el producto, integridad comprobada y restauración de consulta que muestra los runs, el diff
   y las métricas de T002 sin volver a ejecutar nada; base operativa intacta.
-  D201 mantiene pendiente observar por UI detalle/commit, diff, JUnit y métricas tras T012. Verificación posterior
-  de consulta únicamente con consentimiento nuevo, cero llamadas y sin repetir evidencia ya acreditada.
+  Detalle/commit, diff, JUnit y métricas observados por UI tras T012 con consentimiento nuevo (D204), cero
+  llamadas adicionales y sin repetir chat/confirmación/backup o la matriz HTTP ya acreditados.
 - Llamadas por proveedor frente al techo y servicio detenido al terminar, sin locks ni jobs activos.
   Distinguir el job QUEUED conservado de los ACTIVE: no presentarlo como terminado o inexistente.
 
 **Validación:** la propia del tramo.
 **Entregables:** [propuesta y comprobaciones previas](phase/P012-T003_PROPUESTA_CHAT_BACKUP.md);
 [resultado real, conservación y límite UI](phase/P012-T003_CHAT_BACKUP_REAL.md);
-[continuación UI tras T012 y parada previa al build](phase/P012-T003_UI_T012.md).
+[continuación UI tras T012 y parada previa al build](phase/P012-T003_UI_T012.md);
+[resultado UI y cierre acumulado](phase/P012-T003_UI_RESULTADO_T012.md).
 Consentimiento «Continúa.» al guion del commit bcbf977; parada por origin_rejected y reanudación nativa
 autorizada por HITL, sin cambiar guardias o techos. Dos turnos ANSWERED, HEAD 6f02121 sin cambios, `/estado`
 sin modelo; propuesta ACCEPTED por hash/versión y P001-T002 QUEUED con supervisor=false, cero intentos/preparaciones.
 Cuatro comandos de backup/restauración correctos; 42 artefactos/13 runs, lecturas HTTP de runs/diff/13 JUnit/
 métricas iguales y POST inerte rechazado 409. Consulta UI sin página por ausencia de proyecto compuesto:
-D040 define API, el guion pedía UI adicional. HITL D201: **«Planificar vista UI Aparte»**; T003 permanece parcial
-y T012 queda como siguiente trabajo offline. [Plan y continuación posterior](phase/P012-T012_PLAN_VISTA_CONSULTA.md).
+D040 define API, el guion pedía UI adicional. HITL D201: **«Planificar vista UI Aparte»**; T003 se mantuvo parcial
+hasta la implementación T012 y la consulta autorizada D204. [Plan conservado](phase/P012-T012_PLAN_VISTA_CONSULTA.md).
 Consumo **2/3 Claude, 0/0 Codex**, dentro de dos horas; servicio detenido, **13 DONE/1 QUEUED/14 STOPPED/0 locks**,
 puertos cerrados y claves retiradas. **14.921 filas previas idénticas**, 1.877 nuevas, **16.798 finales** iguales
 en fuente/bundle/restauración; SHA-256 de la base intacto tras backup/consulta, fixtures y evidencias conservados.
 Sin cambio de producto ni ejecución de la tarea vinculada; no se repiten suites válidas o validaciones del fixture.
+Continuación D204: wheel 730891f8…f41520 en destinos nuevos, 259 archivos instalados correctos y QA UI Chrome es
+de COMMITTED/diff/13 JUnit/original/métricas, ambos REVISION_LIMIT, QUEUED y ruta operativa bloqueada. Consumo
+nuevo 0/0, cierre dentro de la hora original, puertos cerrados/clave retirada, cinco hashes/16.798 filas y
+fixtures/evidencias anteriores conservados. T003 completa; `unknown` histórico no se interpreta como `dead`.
 
 ## P012-T004 — Proyecto TypeScript web nuevo con receta v2 en español
 
@@ -364,7 +373,8 @@ Sin suites Python/unittest/Alembic por no cambiar backend o datos, ni QA de nave
 ## P012-T012 — Vista UI de runs en copias de consulta
 
 **Estado:** completada offline el 2026-10-25 (D202), según el plan elegido por HITL D201.
-[Entrega y propuesta posterior](phase/P012-T012_VISTA_CONSULTA.md). T003 conserva su estado parcial.
+[Entrega y propuesta posterior conservadas](phase/P012-T012_VISTA_CONSULTA.md).
+La consulta UI real posterior completa T003 con evidencia acumulada (D204), sin modificar la entrega offline.
 **Depende de:** evidencia parcial de T003 (D200), D040/D144/D145; no requiere cerrar T003 antes de implementar.
 **Objetivo:** Consultar en la UI una copia marcada por D040 sin configurar proyectos, acceder al checkout o
 habilitar el carril operativo, para poder completar después la verificación UI de T003.

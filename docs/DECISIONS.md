@@ -214,6 +214,7 @@ tarea se leen solo las decisiones que cita; este índice sirve para buscar prece
 | [D201](#d201--p012-t012-vista-ui-de-consulta-planificada) | P012-T012: vista UI de consulta planificada | P012 |
 | [D202](#d202--p012-t012-vista-ui-de-consulta-implementada) | P012-T012: vista UI de consulta implementada | P012 |
 | [D203](#d203--p012-t003-parada-previa-al-build-por-identidad-histórica-del-host) | P012-T003: parada previa al build por identidad histórica del host | P012 |
+| [D204](#d204--p012-t003-consulta-ui-restaurada-verificada-con-salvedad-autorizada) | P012-T003: consulta UI restaurada verificada con salvedad autorizada | P012 |
 
 ## D001 — Alcance local y arquitectura base
 
@@ -5982,3 +5983,35 @@ Precedentes: D040/D199–D202; guion §4 de la entrega T012. Registros anteriore
 - HITL: continuar solo la copia de consulta aceptando explícitamente la incertidumbre histórica, con límites
   originales y sin alterar SQLite/código, o conservar la parada. Pendiente respuesta; sin reanudar por inferencia.
   La evidencia de consulta nunca certifica muerte de escritores. T004 conserva D199 y su consentimiento separado.
+
+## D204 — P012-T003: consulta UI restaurada verificada con salvedad autorizada
+
+Estado: ejecutada, detenida y T003 completada con evidencia acumulada el 2026-10-26.
+Fase: P012. [Resultado saneado, pruebas y límites](phase/P012-T003_UI_RESULTADO_T012.md).
+Precedentes: D040/D199–D203. La parada D203, su informe y los resultados anteriores se conservan por bytes.
+
+- El usuario responde **«Autorizo»** tras el commit 92e800d y la pregunta específica: reanudar solo la copia
+  de consulta aceptando `unknown` histórico, sin modificar identidades, SQLite, código o guardias. Se conservan
+  hora original desde 07:23 UTC, cero modelos y base operativa detenida. No autoriza T004.
+- Fuentes de producto f948429 y 24 hashes T012 correctos, checkout limpio en 92e800d, guardias de conservación
+  repetidas. Build/verificador/instalación offline en dist-t012/venv-t012 nuevos: wheel **730891f8…f41520**,
+  miembros exactos/recorrido sintético del verificador correctos y 259 archivos instalados iguales al wheel.
+  Sin migración, inicialización real, preflight CLI o validaciones/formateador del fixture.
+- Única consulta real de restored/t003 en 8025, sin agentes/supervisor/escritor de commits. Señal
+  read_only_archive=true; UI Chrome es con contexto permanente, entrada por id/recarga, COMMITTED/6f02121,
+  diff, seis validaciones/13 casos JUnit, enlace al original y métricas con procedencia. Dos REVISION_LIMIT
+  sin commit y QUEUED sin intentos conservados; ruta operativa directa bloqueada sin workspace o acciones.
+  Original/diff contrastados puntualmente por HTTP; no se repite la matriz API, mutación 409 o chat/backup.
+- Recuperación del control nativo de Chrome y descarte del autocompletado Bitwarden, sin guardar credenciales
+  o cambiar ajustes/guardias. QA UI observado y capturas/AX privadas; sin atribuir al producto los bloqueos
+  de automatización. No se usa evidencia HTTP como sustituto del QA UI.
+- Parada normal 07:42:13 UTC y conservación 07:43:02 UTC, dentro de la hora original: puertos cerrados/clave
+  retirada; cinco hashes esperados y 16.798 filas por todas sus columnas iguales. 254 archivos privados previos,
+  42 artefactos, tres fixtures/HEAD/diffs/modos y ocho herramientas intactos. 13 DONE/1 QUEUED/14 STOPPED/0 locks;
+  tarea pendiente sin owner/intentos/preparaciones/ciclos. Cero llamadas nuevas, acumulado T003 2/3 Claude y 0/0 Codex.
+- Las 39 referencias de identidad histórica siguen unknown y sus grupos locales ausentes; consulta no certifica
+  muerte de escritores ni reinterpreta esas identidades. El nuevo servicio se detiene por su identidad viva.
+  T003 cumple con chat/confirmación/backup/API de D200 más UI/conservación/parada de este tramo y esa salvedad.
+- Sin cambio de producto/API/modelos/migraciones/flujos o baseline pública; sin repetir suites de producto
+  válidas. T004 necesita propuesta que respete D199 y consentimiento separado antes de efectos; P012 sigue
+  abierta, P001 del clon ACTIVE. Sin tags en este repositorio, push, publicación o operación del Django P009.

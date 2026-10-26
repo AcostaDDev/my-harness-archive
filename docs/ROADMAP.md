@@ -375,9 +375,15 @@ entrada por id, evidencia/diff/JUnit/métricas por run y navegación de solo con
 sin workspace/acciones/pendientes ni polling de ejecución; 102 tests Python dirigidos, 119 Node y tipos/build
 correctos. Continuación solo UI autorizada el 2026-10-26 y detenida antes del build (D203): cinco hashes
 y 16.798 filas conservados; identidad histórica del host `unknown` por componente `uuid.getnode()` distinto,
-14 grupos locales ausentes. Cero builds/instalaciones/servicios/llamadas. [HITL pendiente](phase/P012-T003_UI_T012.md)
-antes de reanudar la consulta con esa incertidumbre; sin repetir chat/aceptación/backup. P012 conserva doce
-tareas; T005 depende también de T012 y de cerrar T003.
+14 grupos locales ausentes. Cero builds/instalaciones/servicios/llamadas en esa
+[parada conservada](phase/P012-T003_UI_T012.md). Reanudación posterior **«Autorizo»** con incertidumbre
+histórica conservada y límites originales (D204): **T003 completada con evidencia acumulada**.
+[Resultado UI](phase/P012-T003_UI_RESULTADO_T012.md): wheel 730891f8…f41520 construido/verificado/instalado
+offline en destinos nuevos, 259 archivos correctos; UI Chrome es muestra COMMITTED/6f02121, diff, 13 JUnit,
+original/métricas, ambos fallos y QUEUED; ruta operativa bloqueada. Cero llamadas nuevas, servicio parado,
+cinco hashes/16.798 filas y fixtures/evidencias previos intactos; `unknown` no certifica muerte de escritores.
+Siguiente: propuesta T004 respetando D199 y consentimiento separado; sin repetir chat/aceptación/backup.
+P012 conserva doce tareas; T005 depende también de T012 y T003, completadas.
 Consumo 2/3 Claude y 0/0 Codex, dentro de dos horas; servicios parados, 13 DONE/1 QUEUED/14 STOPPED/0 locks,
 14.921 filas previas intactas y 16.798 finales iguales en copia/restauración. T004 sigue sin autorización;
 no reactivar esa base antes de revisar su propuesta de arranque (D199).

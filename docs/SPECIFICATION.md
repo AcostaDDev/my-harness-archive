@@ -85,7 +85,8 @@ Las copias marcadas D040 ofrecen [consulta UI](flows/backup-consultation.md) por
 JUnit, jobs/intentos/eventos y métricas por run. Conservan estados históricos sin sondeo de ejecución, acciones,
 recuperación o configuración; no leen checkouts ni montan el workspace operativo. Sin marca se conserva la
 resolución canónica habitual, incluso si faltan agentes o el supervisor está desactivado. Verificación sintética
-P012-T012; la consulta UI real de T003 sigue pendiente de consentimiento y evidencia posteriores.
+P012-T012; [consulta UI real de T003](phase/P012-T003_UI_RESULTADO_T012.md) acreditada en Chrome/macOS con
+el wheel T012 y salvedad autorizada de identidad histórica del host (D204), sin certificar muerte de escritores.
 
 ## 5. Reglas de negocio
 

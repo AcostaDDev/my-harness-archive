@@ -171,17 +171,26 @@ componentes compartidos, navegación de consulta en en/es sin workspace/acciones
 Sin migración, checkout o cambios de guardias. **102 tests Python dirigidos**, regresiones React/router,
 Node/tipos/build correctos; solo fixtures sintéticos, sin wheel operativo, servicio o llamadas nuevas.
 
-**Continuación UI T003 autorizada y detenida antes del build** (D203, 2026-10-26):
-[comprobaciones y HITL pendiente](phase/P012-T003_UI_T012.md). Base f948429 y 24 hashes T012 correctos;
+**Primera parada de la continuación UI T003** (D203, 2026-10-26):
+[comprobaciones y parada conservadas](phase/P012-T003_UI_T012.md). Base f948429 y 24 hashes T012 correctos;
 cinco hashes de bases/manifiestos coinciden, integridad/FK/esquema y **16.798 filas** iguales, puertos cerrados,
 13 DONE/1 QUEUED/14 STOPPED/0 locks. El componente `uuid.getnode()` del host difiere del persistido:
 `liveness` devuelve **unknown** para los 14 procesos. Grupos locales ausentes, sin certificar sus identidades
 históricas. Cero builds/instalaciones/servicios/llamadas; sin cambiar identidades, SQLite o guardias.
 
-**Siguiente:** resolver HITL sobre continuar exclusivamente la copia de consulta aceptando esa incertidumbre,
-o conservar la parada. T003 sigue parcial; el consentimiento inicial no autoriza la excepción.
-No repetir chat/aceptación/backup o consumir saldo. Informes anteriores conservados por bytes.
-T004 sigue sin autorización y necesita propuesta de arranque que respete el job QUEUED (D199).
+**T003 completada con evidencia acumulada** (D204, 2026-10-26):
+[resultado UI tras T012](phase/P012-T003_UI_RESULTADO_T012.md). Reanudación autorizada **«Autorizo»** con
+identidad histórica `unknown` conservada, grupos locales ausentes y límite original de una hora/cero modelos.
+Wheel **730891f8…f41520**, dist-t012/venv-t012 nuevos: build/verificador/instalación offline y **259 archivos**
+instalados correctos. UI Chrome en es: entrada por id/recarga, COMMITTED/6f02121, diff, **13 casos JUnit**,
+original contrastado, métricas con procedencia, ambos REVISION_LIMIT y QUEUED intactos; ruta operativa bloqueada.
+Consulta sin supervisor/agentes/escritor. Parada normal 07:42 UTC, conservación 07:43 UTC: puertos cerrados/clave
+retirada, cinco hashes y **16.798 filas** iguales, **254 archivos previos/42 artefactos/tres fixtures** intactos,
+13 DONE/1 QUEUED/14 STOPPED/0 locks. **Cero llamadas nuevas**, acumulado T003 2/3 Claude y 0/0 Codex.
+La consulta no certifica muerte de escritores históricos; chat/confirmación/backup/API conservan procedencia D200.
+
+**Siguiente:** preparar la propuesta de arranque T004 que respete el job QUEUED (D199), con autorización
+separada antes de operar. Sin repetir chat/aceptación/backup o consumir saldo. Informes anteriores conservados.
 T002 finalizada, sin reparación/revalidación de sus dos fallos. Conservar todos los fixtures, diffs, historiales,
 configuraciones y distribuciones. Sin nueva fase del Django de P009, tags, push o publicación. P012 sigue
 abierta; baseline pública/candidato pendientes de T005.
