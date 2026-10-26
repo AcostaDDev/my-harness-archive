@@ -1,0 +1,31 @@
+{
+  "status": "substituted_and_verified",
+  "source_revision": "08f27bcdaae3d2b2b9c197a071976f8ee6a46def",
+  "destination": "$HOME/Documents/projects/my_harness_dist",
+  "preserved_original": "$HOME/Documents/projects/my_harness_dist_p012_cf191a40",
+  "before": {
+    "files": 401,
+    "bytes": 5480755,
+    "manifest_sha256": "cf191a40914095aeb3fbbeea0e6485878cc3218754361fa78d314b87dc19362a",
+    "exact_paths_hashes_modes_verified": true,
+    "symlinks": 0,
+    "git": false
+  },
+  "after": {
+    "files": 401,
+    "bytes": 5481629,
+    "manifest_sha256": "5ef17ff3043d1b5842608528fb272e5b9184ef71a5e5382d5fd781a9954d4c55",
+    "exact_paths_hashes_modes_verified": true,
+    "symlinks": 0,
+    "git": false
+  },
+  "isolated_verification": {
+    "pytest_passed": 1761,
+    "subtests_passed": 29,
+    "opt_in_skipped": 2,
+    "pytest_seconds": 167.29,
+    "unittest_passed": 8
+  },
+  "product_package_rebuilt": false,
+  "remote_actions": false
+}

@@ -1,0 +1,24 @@
+{
+  "source_revision": "08f27bcdaae3d2b2b9c197a071976f8ee6a46def",
+  "candidate_files": 401,
+  "candidate_bytes": 5481629,
+  "public_manifest_sha256": "5ef17ff3043d1b5842608528fb272e5b9184ef71a5e5382d5fd781a9954d4c55",
+  "added": [],
+  "removed": [],
+  "modified": {
+    "tests/product/test_project_onboarding.py": {
+      "before": {
+        "sha256": "b6eccc8a59ad16bd0c9cb67059c091ddaf89aae61eb2c6da2f7cfb268419523d",
+        "mode": "0o644",
+        "bytes": 20910
+      },
+      "after": {
+        "sha256": "ccd529dfb1eaab94a41408c91c50a3d292a814ed7ab60ac9be9d2a40641439b1",
+        "mode": "0o644",
+        "bytes": 21784
+      }
+    }
+  },
+  "unchanged": 400,
+  "verification_copy": "$HOME/Documents/projects/my_harness/.local/public-candidate-20261026-ci-verify"
+}

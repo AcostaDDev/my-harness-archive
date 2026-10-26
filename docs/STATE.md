@@ -100,7 +100,7 @@ local completada en el alcance de D151/D153 y preparación pública archivada co
   dos opt-in omitidas; tipos/build, Alembic temporal, distribución y documentación correctos (T005).
   Candidato `0.1.0`: **401 archivos/5.480.755 bytes**, manifiesto `cf191a40…9362a`, wheel `eef56a29…4504ab`;
   P011 conservada aparte. [Revisión](archive/phase-012/P012_REVIEW.md) y
-  [expediente vigente](archive/phase-012/P012_EXPEDIENTE_APERTURA.md), sin acciones remotas ejecutadas.
+  [expediente original](archive/phase-012/P012_EXPEDIENTE_APERTURA.md), sin acciones remotas ejecutadas.
   Evidencia real acumulada de sus wheels/tramos, fixtures sintéticos/macOS ARM64/Chrome; no acredita una
   ejecución real nueva del paquete final, otras parejas actuales, creación Django v2 ni producción.
   Dos REVISION_LIMIT, dos checks rechazados, propuesta QUEUED e identidad histórica `unknown` conservados;
@@ -113,10 +113,18 @@ El 2026-10-26 se corrige la fila resumen de P012 en ROADMAP para reflejar su cie
 desactiva el mantenimiento automático en el helper Git de los fixtures de incorporación. Resuelve la carrera
 con `maintenance.lock` indicada por el usuario en la CI de `my-harness-archive`, conservando la comparación
 completa de `.git` y sin cambiar el producto ([D213](DECISIONS.md#d213--mantenimiento-git-desactivado-en-fixtures-de-incorporación),
-[informe](phase/2026-10-26_CORRECCION_CI_ARCHIVO.md)). El candidato público y los artefactos archivados de P012
-conservan su identidad; este mantenimiento no abre una fase ni publica el candidato.
+[informe](phase/2026-10-26_CORRECCION_CI_ARCHIVO.md)). Ese primer arreglo conserva el candidato público y los
+artefactos archivados de P012; este mantenimiento no abre una fase ni publica el candidato.
 Verificación local: 1761 pytest y 29 subtests pasados, 2 opt-in omitidas; 8 unittest, parsers y enlaces
 documentales correctos. Regresión Trace2 roja antes del arreglo y verde después; CI remota pendiente.
+
+Por encargo posterior del usuario, `my_harness_dist` incorpora esa corrección desde `08f27bc`: **401 archivos /
+5.481.629 bytes**, manifiesto `5ef17ff3…4d4c55`, con un único archivo de pruebas modificado. Original P012
+conservado en `my_harness_dist_p012_cf191a40`; P011, paquetes y snapshots intactos. El
+[suplemento vigente](phase/2026-10-26_ACTUALIZACION_CANDIDATO.md) actualiza la identidad del árbol para abrirlo
+sin reescribir el expediente archivado (D214). Pruebas en copia aislada; sin Git ni cachés en el candidato.
+Verificación del árbol exportado: 1761 pytest y 29 subtests pasados, 2 opt-in omitidas; 8 unittest correctos.
+Sustitución verificada por rutas, hashes y modos; checksums de los artefactos originales intactos.
 
 ## Fase activa
 
@@ -127,8 +135,9 @@ documentales correctos. Regresión Trace2 roja antes del arreglo y verde despué
 los estados parciales de esos snapshots conservan su procedencia.
 
 El siguiente paso es la apertura que autorice el usuario sobre el
-[expediente de P012](archive/phase-012/P012_EXPEDIENTE_APERTURA.md): faltan owner/repo, visibilidad e identidad
-pública. Candidato local `my_harness_dist` verificado, sin Git; ninguna creación remota, push, CI remota,
+[expediente de P012](archive/phase-012/P012_EXPEDIENTE_APERTURA.md) y su
+[suplemento de actualización](phase/2026-10-26_ACTUALIZACION_CANDIDATO.md): faltan owner/repo, visibilidad e identidad
+pública. Candidato local `my_harness_dist` actualizado, sin Git; ninguna creación remota del candidato, push, CI remota,
 visibilidad pública, tag o Release ejecutados. El expediente P011 permanece histórico y sustituido.
 Después del primer push el repositorio público será la fuente principal (D157); este conserva la historia privada.
 Modo continuo v0.2.0 posterior a la apertura, sin tareas definidas (D156);

@@ -225,6 +225,7 @@ tarea se leen solo las decisiones que cita; este índice sirve para buscar prece
 | [D211](#d211--p012-t006-dictamen-favorable-y-expediente-actualizado) | P012-T006: dictamen favorable y expediente actualizado | P012 |
 | [D212](#d212--cierre-documental-de-p012-y-validación-real-archivada) | Cierre documental de P012 y validación real archivada | P012 |
 | [D213](#d213--mantenimiento-git-desactivado-en-fixtures-de-incorporación) | Mantenimiento Git desactivado en fixtures de incorporación | Sin fase |
+| [D214](#d214--candidato-público-actualizado-tras-la-corrección-de-ci) | Candidato público actualizado tras la corrección de CI | Sin fase |
 
 ## D001 — Alcance local y arquitectura base
 
@@ -6295,3 +6296,24 @@ Estado: aplicado el 2026-10-26 por petición de corrección y commit del usuario
   D212. No se reescriben snapshots/expedientes congelados ni se regenera el candidato público.
 - La subida del archivo a GitHub comunicada por el usuario no se confunde con la apertura independiente de
   P012. Sin push, acciones remotas, proveedores, smokes ni ejecución del harness sobre este repositorio.
+
+## D214 — Candidato público actualizado tras la corrección de CI
+
+Estado: actualización local autorizada y completada el 2026-10-26, sin fase nueva.
+[Suplemento de apertura](phase/2026-10-26_ACTUALIZACION_CANDIDATO.md). Precedentes: D157, D210–D213.
+
+- El usuario pide actualizar `my_harness_dist` tras comprobar que conservaba el helper anterior a D213.
+  Se exporta la revisión exacta `08f27bc` con la lista positiva congelada de P012, sin modificar el exportador
+  archivado ni mezclar documentación/historia privadas con el árbol público.
+- Se conserva el original P012 íntegro como `my_harness_dist_p012_cf191a40`; P011 y los snapshots/evidencias
+  archivados permanecen intactos. El árbol corregido conserva 401 archivos, con 400 idénticos y solo
+  `tests/product/test_project_onboarding.py` modificado; sin añadidos/eliminados ni cambios de modos.
+- Nuevo árbol de 5.481.629 bytes, manifiesto `5ef17ff3…4d4c55`. El suplemento y sus manifiestos actualizan la
+  referencia operativa de apertura; no se presenta la identidad nueva como la que verificó T005/T006.
+- Pruebas sobre una copia aislada del árbol exportado, con dependencias desde caché offline. Sin entornos,
+  cachés o resultados en el candidato final. El suplemento registra resultados y sustitución verificada.
+- La corrección solo afecta a pruebas, fuera de las entradas de construcción del wheel/sdist; se conservan
+  los artefactos originales, sin reconstrucción ni nueva evidencia de proveedores. Sin acciones remotas,
+  publicación, servicios, smokes o configuración global en esta tarea.
+- El usuario solicita después un commit: se registran en inglés la actualización documental, el adaptador
+  reproducible y sus manifiestos/evidencias, sin volver a modificar el candidato ni hacer push.
