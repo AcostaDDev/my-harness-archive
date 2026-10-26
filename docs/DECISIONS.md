@@ -217,6 +217,7 @@ tarea se leen solo las decisiones que cita; este índice sirve para buscar prece
 | [D204](#d204--p012-t003-consulta-ui-restaurada-verificada-con-salvedad-autorizada) | P012-T003: consulta UI restaurada verificada con salvedad autorizada | P012 |
 | [D205](#d205--p012-t004-propuesta-con-base-independiente-y-sucesora-vacía) | P012-T004: propuesta con base independiente y sucesora vacía | P012 |
 | [D206](#d206--p012-t004-receta-completada-y-parada-por-preparation_required) | P012-T004: receta completada y parada por preparation_required | P012 |
+| [D207](#d207--p012-t013-vínculo-del-recibo-tras-resolución-cli) | P012-T013: vínculo del recibo tras resolución CLI | P012 |
 
 ## D001 — Alcance local y arquitectura base
 
@@ -6085,3 +6086,30 @@ Precedentes: D119/D168/D174/D199/D204/D205; propuesta e informes previos conserv
   Reanudación con propuesta/consentimiento nuevos, sin volver a definir/preparar o reparar el hijo a mano.
   En esta entrega no cambia producto, API, datos o flujo; sin suites completas repetidas, servicio nuevo,
   CLI/proveedores nuevos, instalación/build, cambios globales, tag en my_harness, push o publicación.
+
+## D207 — P012-T013: vínculo del recibo tras resolución CLI
+
+Estado: implementado y verificado offline el 2026-10-26. Fase: P012.
+[Entrega, reproducción, pruebas y continuación propuesta](phase/P012-T013_VINCULO_RECIBO.md).
+Precedentes: D119/D168/D174/D206; el resultado real T004 se conserva por bytes.
+
+- Regresión HTTP sintética reproduce el rechazo de T004: antes de preparar, 409 legítimo; después de receta
+  COMPLETED/prepared=true, 409 preparation_required en vez de 202. Causa: refresh forzado v7/v8 recompone
+  versiones base y resolve_project instalaba sin volver a ligar la huella derivada del recibo persistido.
+- Tras refresh se llama al bind existente de preparación, antes de instalar/congelar versiones. Solo el recibo
+  COMPLETED con recipe_config compatible aporta project_environment_sha256 exacto; el idioma se liga en la
+  instalación normal. Sin copiar una huella anterior a una composición distinta o tocar snapshots/recibos/jobs.
+- admit/verify_receipt no cambian: tareas/checks/cierres verifican vínculo/configuración/archivos/herramientas.
+  Proyectos sin receta y formatos anteriores conservados. Sin cambios de receta/perfil/runner/motor, esquema,
+  API, configuración global, dependencias o huellas de implementación congeladas.
+- Catorce variantes nuevas: ocho HTTP para Django/TypeScript en/es v7/v8 y seis de config/archivo/herramienta
+  alterados en ambas recetas v8/es. 24 tests del módulo y 226 relacionados correctos, un opt-in real omitido,
+  ocho unittest correctos; aviso existente de Starlette/httpx. Arquitectura/flujo y documentos vivos actualizados.
+- Sin build/wheel/instalación, servicio, CLI/proveedores reales o validaciones del fixture nuevos. Hijo/recibo/
+  HEAD técnico bcf59d8 y parada D206 intactos, nuevo consumo 0/0; T004 sigue parcial en 3/12 Claude y 0/3 Codex.
+- Propuesta posterior: dist-t013/venv-t013 nuevos con esta corrección, conservar state-t004/TOML/hijo, preflight,
+  migrate no-op y servicio/UI 8024; una tarea, READY y cierre/tag p001 solo del hijo, P002 ACTIVE vacía.
+  Máximo nuevo 3 Claude/1 Codex, acumulado máximo 6/12 y 1/3, cero correcciones y deadline original
+  2026-10-26 12:00:10 UTC; si venció, revisar ventana explícitamente. Sin repetir definición/receta o usar otra
+  base para sortear el resultado. T001 §7/parada exigen consentimiento nuevo antes de esos efectos reales.
+- T013 completa y P012 abierta con trece tareas; T005 pendiente de T004. Sin tags en my_harness, push o publicación.

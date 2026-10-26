@@ -125,6 +125,11 @@ flowchart TD
 
 - El idioma sale de la fila de la raíz (D167), nunca del default, del visual ni del contenido. Una operación sucesora
   conserva los valores del plan original y se rechaza si la fila ya no coincide.
+- Antes de admitir trabajo, la resolución forzada de CLI v7/v8 recompone el proyecto y vuelve a ligar el recibo
+  compatible por `ProjectPreparation.bind` (P012-T013, D207). El digest derivado entra en las versiones del job;
+  `admit` sigue verificando configuración, identidad, archivos y herramientas para tareas/checks/cierres. Una
+  lectura `prepared=true` no sustituye ese vínculo. Sin recibo compatible no se copia una huella anterior ni se
+  admite trabajo; el idioma se liga desde SQLite y los snapshots ya congelados se conservan.
 - Comprobaciones por `id`: versiones (`python-version`, `installer-version`, `installed-versions`, `node-version`,
   `npm-version`), entorno incierto (`create-environment`) y fuente parcial/completa (`generate-*`; `migrate`,
   `validate-*`). Los planes v1, sin `id`, se comprueban por sus etiquetas congeladas con el mismo resultado.

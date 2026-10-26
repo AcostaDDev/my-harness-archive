@@ -5,16 +5,21 @@ The v1 suites (`test_project_preparation`, `test_typescript_preparation`) keep c
 """
 import json
 from dataclasses import replace
+from pathlib import Path
 
 import pytest
 from sqlalchemy import text
+from sqlalchemy.orm import Session
 
+from harness_local.core.engine.journal import JournalError
 from harness_local.recipes import django, django_2, typescript_web, typescript_web_2
 from harness_local.services.local_config import load_local_config
 from harness_local.services.managed_runtime import ManagedRuntime
 from harness_local.services.project_preparation import DjangoRecipe, DjangoRecipe2, TypeScriptRecipe2
-from harness_local.services.project_registry import RegistryError
+from harness_local.services.project_registry import RegistryError, digest
 from harness_local.storage.database import make_engine
+from harness_local.storage.managed import Conflict
+from harness_local.storage.preparation import admit
 from test_project_creation import select_root, request
 from test_project_registry import POLICY, v3, operator  # noqa: F401
 from test_local_config import setup, web, write, launches  # noqa: F401
@@ -30,11 +35,18 @@ def v6(data):
     return {**data, 'format': 'local-config-6'}
 
 
-def start(operator, migrated_database, stack):
+def start(operator, migrated_database, stack, fmt='local-config-6'):
     context, data, folder, tmp_path = operator
     cache = synthetic_cache(tmp_path)
     data = django_data(data, folder) if stack == 'django' else typescript_data(data, folder, cache)
-    config = load_local_config(write(folder, v6(data)))
+    data = {**v6(data), 'format': fmt}
+    if fmt in ('local-config-7', 'local-config-8'):
+        from test_cli_discovery import fake_client
+        for agent in data['agents'].values():
+            agent['executable'] = [str(fake_client(tmp_path / 'clients', agent['provider']))]
+            agent.pop('cli_version', None)
+            agent['environment'].pop('PROBE_VERSION', None)
+    config = load_local_config(write(folder, data))
     engine = make_engine(migrated_database[0])
     runtime = ManagedRuntime(engine, config)
     runtime.start()
@@ -51,9 +63,9 @@ def create(runtime, tmp_path, stack, language):
 
 @pytest.fixture
 def child(operator, migrated_database, monkeypatch, request):
-    """A v6 child created with `request.param` = (stack, work language) and its D088 root commit accepted."""
-    stack, language = request.param
-    runtime, engine, config, tmp_path = start(operator, migrated_database, stack)
+    """A child from (stack, work language[, config format]), with its D088 root commit accepted."""
+    stack, language, *formats = request.param
+    runtime, engine, config, tmp_path = start(operator, migrated_database, stack, *formats)
     project = create(runtime, tmp_path, stack, language)
     define(runtime, config, project, monkeypatch)
     service = runtime.preparation
@@ -124,6 +136,83 @@ def test_v6_child_prepares_with_its_work_language_and_commits_the_v2_manifest(ch
     assert git(root(service), 'show', f'HEAD:{probe}') + '\n' == manifest[probe]
     prepared = service.runtime.project('child')
     assert 'project_environment_sha256' in prepared.versions and service.read('child')['prepared']
+
+
+AUTOMATIC_CHILDREN = [(stack, language, fmt) for stack, language in PAIRS
+                      for fmt in ('local-config-7', 'local-config-8')]
+
+
+@pytest.mark.parametrize('child', AUTOMATIC_CHILDREN, indirect=True,
+                         ids=['-'.join(values) for values in AUTOMATIC_CHILDREN])
+def test_http_task_admission_rebinds_the_receipt_after_automatic_cli_resolution(child):
+    """A prepared child must be usable by HTTP, whose admission forcibly recomposes the CLI clients."""
+    service, config, database, _, language = child
+    base = '/api/managed/projects/child'
+    task = {'task_id': 'P001-T001', 'phase_id': 'P001',
+            'text': (root(service) / 'docs/NEXT_STEPS.md').read_text()}
+    with client(database[0], service.runtime.database.parent, config) as http:
+        early = http.post(base + '/runs', json=task, headers={'Idempotency-Key': 'before-preparation'})
+        assert early.status_code == 409 and early.json()['detail']['code'] == 'preparation_required'
+        unprepared = service.runtime.resolve_project('child')
+        with Session(service.runtime.engine) as session:
+            for purpose in ('task', 'phase_check', 'phase_close'):
+                with pytest.raises(Conflict, match='preparation_required'):
+                    admit(session, str(unprepared.context.root), unprepared.versions, purpose)
+        queued = confirm(service)
+        assert service.run_once() == queued['id']
+        completed = service.repository.read(queued['id'])
+        assert completed['status'] == 'COMPLETED', completed['diagnostic']
+        receipt = completed['receipt']
+        assert http.get(base + '/preparation').json()['prepared']
+        resolved = service.runtime.resolve_project('child')
+        assert resolved.context.work_language == language
+        with Session(service.runtime.engine) as session:
+            for purpose in ('task', 'phase_check', 'phase_close'):
+                admit(session, str(resolved.context.root), resolved.versions, purpose)
+        response = http.post(base + '/runs', json=task, headers={'Idempotency-Key': 'after-preparation'})
+        assert response.status_code == 202, response.text
+        result = response.json()
+        run = service.managed.get_run(result['run_id'])
+        versions = json.loads(run.versions_json)
+        assert versions['project_environment_sha256'] == digest(receipt)
+        assert versions['recipe_config_sha256'] == receipt['recipe_config_sha256']
+        assert versions['reviewer_cli_launch_sha256'] and versions['executor_cli_launch_sha256']
+        assert versions['reviewer_cli'] == '0.163.0' and versions['executor_cli'] == '2.1.304'
+        assert service.managed.job_language(service.managed.get_job(result['id']))['work_language'] == language
+        assert run.status == 'QUEUED' and not run.history.attempts
+
+
+@pytest.mark.parametrize('child', [('typescript', 'es', 'local-config-8'), ('django', 'es', 'local-config-8')],
+                         indirect=True, ids=['typescript-es-v8', 'django-es-v8'])
+@pytest.mark.parametrize('drift', ['recipe-config', 'protected-file', 'tool'])
+def test_cli_resolution_never_admits_a_changed_preparation(child, drift):
+    service, config, _, stack, _ = child
+    queued = confirm(service)
+    assert service.run_once() == queued['id']
+    receipt = service.repository.read(queued['id'])['receipt']
+    original = service.runtime.project('child')
+    assert original.versions['project_environment_sha256'] == digest(receipt)
+    recipe = 'typescript-web' if stack == 'typescript' else 'django'
+    if drift == 'recipe-config':
+        config.registrar.recipes[recipe]['timeout_seconds'] += 1
+    elif drift == 'protected-file':
+        path = root(service) / ('package.json' if stack == 'typescript' else 'pyproject.toml')
+        path.write_text(path.read_text() + '\n')
+    else:
+        tool = 'node_executable' if stack == 'typescript' else 'python_executable'
+        path = Path(receipt['tools'][tool]['resolved']) if stack == 'typescript' else root(service) / '.venv/bin/python'
+        path.write_text(path.read_text() + '\n# Synthetic tool drift\n')
+    resolved = service.runtime.resolve_project('child')
+    assert resolved.context.work_language == 'es'
+    if drift == 'recipe-config':
+        assert 'project_environment_sha256' not in resolved.versions
+        assert root(service) not in config.registrar._receipts
+    with Session(service.runtime.engine) as session:
+        for purpose in ('task', 'phase_check', 'phase_close'):
+            with pytest.raises((Conflict, JournalError), match='preparation_required'):
+                admit(session, str(resolved.context.root), resolved.versions, purpose)
+    assert service.repository.read(queued['id'])['receipt'] == receipt
+    assert service.runtime.project('child').versions == resolved.versions
 
 
 @pytest.mark.parametrize('child', [('django', 'es')], indirect=True, ids=['django-es'])

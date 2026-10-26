@@ -391,9 +391,13 @@ Base/state propios, UI es/es, tres turnos/16 propuestas CAS, bootstrap dbc2d74; 
 npm offline y check/test/build con un JUnit passed, commit técnico bcf59d8. Al encolar, 409 preparation_required
 pese al recibo/UI preparados; cero runs de tarea o Codex. Parada normal, puertos cerrados/clave retirada,
 4 DONE/9 STOPPED/0 locks, evidencias/16.798 filas anteriores intactas; consumo 3/12 Claude y 0/3 Codex.
-Siguiente T013 offline: reproducir/corregir la pérdida del vínculo del recibo en la resolución CLI, conforme a
-«continúa.», sin reintentar el tramo. Reanudación real con propuesta/consentimiento nuevos, sin repetir receta.
-P012 tiene trece tareas; T005 depende también de T012, T013 y T003, completadas T012/T003.
+T013 completada offline (D207), conforme a «continúa.»: [entrega y continuación propuesta](phase/P012-T013_VINCULO_RECIBO.md).
+Reproducción HTTP roja, bind del recibo tras resolver CLI, 14 variantes nuevas/250 tests Python/8 unittest
+correctos y un opt-in omitido. Guardias/huellas de recetas intactas; sin nuevas llamadas o reintento real.
+Siguiente: consentimiento de continuación T004 con instalación nueva, misma base aislada/hijo, máximo nuevo
+3 Claude/1 Codex y deadline original 2026-10-26 12:00:10 UTC, sin repetir definición/receta o reponer saldo.
+Si vence, revisar ventana antes de operar. T004 sigue parcial con su parada conservada.
+P012 tiene trece tareas; T005 depende también de T012, T013 y T003, las tres completadas.
 Consumo 2/3 Claude y 0/0 Codex, dentro de dos horas; servicios parados, 13 DONE/1 QUEUED/14 STOPPED/0 locks,
 14.921 filas previas intactas y 16.798 finales iguales en copia/restauración. T004 sigue sin autorización;
 no reactivar esa base antes de revisar su propuesta de arranque (D199).

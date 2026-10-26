@@ -272,6 +272,8 @@ class ManagedRuntime:
         registrar = self.config.registrar
         if registrar is not None and hasattr(registrar, 'refresh'):
             project = registrar.refresh(project, force=True)
+            # CLI recomposition returns base versions; derive the environment binding again from its receipt.
+            project = self.preparation.bind(project)
             self.install(project)
             project = self.project(project_id)
         return project

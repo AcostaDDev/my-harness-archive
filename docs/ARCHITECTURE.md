@@ -134,6 +134,9 @@ por su API y los artefactos referenciados; la restauración es de consulta (`que
   observan versión/help antes de congelar la versión real. Cada mutación observa de nuevo y reutiliza solo su
   resolución dentro de esa petición; lecturas pasivas. Formatos anteriores conservan sus hashes/aserciones, pero
   no saltan los mínimos. Configuraciones incompletas no se pueden encolar como si `auto` fuera una versión.
+  Tras recomponer para resolver las CLI, el runtime vuelve a ligar el recibo compatible de preparación antes
+  de congelar versiones (P012-T013, D207): conserva project_environment_sha256 e idioma sin copiar un vínculo
+  obsoleto; las guardias de archivos/herramientas y configuración siguen comprobándose en la admisión.
   Cambios confirmados serializan registro y admisión en SQLite; bloquean aceptación/commit, propuestas de chat
   y definición/incorporación utilizable. Planes no aceptados pasan a SUPERSEDED sin alterar sus snapshots;
   nueva planificación antes de confirmar otro plan. [Flujo de agentes](flows/project-agents.md) (D118).

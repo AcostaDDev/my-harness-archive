@@ -204,8 +204,15 @@ correctos, **un caso JUnit passed**, recibo sellado y commit técnico **bcf59d8*
 4.623 filas nuevas aisladas. **16.798 filas previas/254 archivos/42 artefactos/tres fixtures intactos**;
 job anterior QUEUED conservado. Consumo propio **3/12 Claude, 0/3 Codex**; sin reintento, READY, tag o cierre.
 Traza estática: la resolución forzada de CLI recompone sin volver a ligar project_environment_sha256 del recibo.
-**Siguiente:** T013 offline para reproducir/corregir esa pérdida sin debilitar la guardia, conforme a «continúa.».
-Reanudación real T004 exige propuesta/consentimiento nuevos; sin repetir definición, receta o tramos anteriores.
+**T013 completada offline** (D207), conforme a «continúa.»: [entrega y continuación propuesta](phase/P012-T013_VINCULO_RECIBO.md).
+Regresión HTTP reproduce el 409; resolve_project vuelve a ligar el recibo compatible tras refresh, sin cambiar
+admit/verify_receipt o huellas de receta. 14 variantes nuevas, **250 tests Python/8 unittest correctos**, un
+opt-in omitido; tareas/checks/cierres conservan rechazo por recibo ausente, config incompatible y deriva.
+Sin wheel/instalación operativos o nuevas llamadas; parada T004 e hijo en bcf59d8 intactos.
+**Siguiente:** consentimiento de continuación T004 para build/verificador/instalación nuevos en dist-t013/venv-t013,
+misma base state-t004/TOML/hijo, una petición nueva de tarea y READY/cierre. Máximo nuevo **3 Claude/1 Codex**,
+acumulado máximo **6/12 y 1/3**, cero correcciones y deadline original **2026-10-26 12:00:10 UTC**; si vence,
+revisar ventana explícitamente antes de empezar. Sin repetir definición, receta o tramos anteriores.
 Informes congelados conservados.
 T002 finalizada, sin reparación/revalidación de sus dos fallos. Conservar todos los fixtures, diffs, historiales,
 configuraciones y distribuciones. Sin nueva fase del Django de P009, tags, push o publicación. P012 sigue
