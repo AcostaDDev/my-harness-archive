@@ -16,8 +16,8 @@ Versión previa a la primera publicación: la primera versión local está compl
 paquete declara `0.1.0`, candidata a primera versión pública, y no está en PyPI ([changelog](CHANGELOG.md)).
 Solo se ha probado en macOS ARM64. El recorrido guiado se comprueba desde el wheel instalado con clientes y
 herramientas falsos, Git/SQLite temporales, configuración inicial en navegador y operaciones de proyecto por HTTP
-protegido. La QA visual en/es se registra con límites propios; no acredita proveedores nuevos ni el candidato público
-final de P013, todavía pendiente. Licencia [MIT](LICENSE). Detalle en
+protegido. La QA visual en/es se registra con límites propios; no acredita proveedores nuevos.
+Licencia [MIT](LICENSE). Detalle en
 [Status](README.md#status) y [Supported scope and limits](README.md#supported-scope-and-limits).
 
 ## Dos formas de empezar un proyecto
@@ -31,32 +31,94 @@ final de P013, todavía pendiente. Licencia [MIT](LICENSE). Detalle en
 
 [Más detalle](README.md#two-ways-to-start-a-project).
 
-## Instalación y primer uso, en resumen
+## Instalación
 
-1. Instala Python 3.14 y uv 0.12.19. Para construir desde clon, también Node 24.15.0 y npm 11.12.1.
-   uv crea el entorno virtual aislado e instala las dependencias fijadas; no hay que crear ni activar un venv a mano.
-2. Desde el clon, elige rutas absolutas fuera de todo checkout y una caché propia. La primera preparación permite
-   red explícitamente; `.local/` no es un requisito:
+Elige **una** de las dos vías. Las dos dejan el mismo servicio instalado. El instalador crea su propio entorno
+virtual (nunca tienes que crear ni activar uno), lo guarda todo fuera de tus checkouts Git y no cambia la
+configuración de tu shell, de Git ni de los proveedores.
+
+| | Desde el código fuente (clon Git) | Desde un paquete publicado |
+|---|---|---|
+| Qué descargas | Este repositorio | `harness-local-<versión>-distribution.tar.gz` de la página **Releases** del repositorio en GitHub |
+| Herramientas | Python 3.14, uv 0.12.19, Git, Node 24.15.0 y npm 11.12.1 | Python 3.14, uv 0.12.19 y Git |
+| Qué hace el instalador | Construye el paquete (un wheel con la UI compilada), lo verifica y lo instala | Comprueba los checksums del paquete ya construido y lo instala |
+
+### 1. Comprueba las herramientas
 
 ```sh
-scripts/install --clone /ruta/my_harness --python /ruta/python3.14 --uv /ruta/uv \
-  --install-dir '/ruta/Harness Local/installation' --data-dir '/ruta/Harness Local/data' \
-  --config-dir '/ruta/Harness Local/configuration' --cache-dir '/ruta/Harness Cache' --allow-network
-scripts/start --install-dir '/ruta/Harness Local/installation' --port 8013
+python3.14 --version   # Python 3.14.x
+uv --version           # uv 0.12.19
+git --version
+node --version         # v24.15.0  (solo para instalar desde el código fuente)
+npm --version          # 11.12.1   (solo para instalar desde el código fuente)
 ```
 
-El instalador construye/verifica el paquete y publica una generación solo tras pasar la comprobación aislada con
-agentes falsos. Repetir con `--offline` verifica/reutiliza la instalación; una instalación nueva offline necesita
-caché completa. Caché incompleta deja diagnóstico y generación fallida para inspección, sin publicar parciales.
-Desde un paquete nuevo autocontenido: `/ruta/paquete/scripts/install --dist /ruta/paquete` con las mismas opciones;
-no necesita Node/npm ni checkout. [Opciones y fallos](README.md#install-from-a-clone).
+El instalador nunca descarga estas herramientas. **uv** crea el entorno aislado e instala las dependencias Python
+fijadas. Si `python3.14` o `uv` no están en tu `PATH`, añade `--python /ruta/absoluta/python3.14` o
+`--uv /ruta/absoluta/uv` al comando de instalación.
 
-3. Abre `http://127.0.0.1:8013` directamente y pega la clave del archivo privado anunciado al arrancar.
-   Sin TOML, la UI abre `/setup`: identidad Git, clientes/PATH/USER, modelo/esfuerzo del revisor, raíces autorizadas
-   y supervisor. Buscar clientes sugiere rutas; comprobar versión/ayuda no llama modelos. No pegues credenciales.
-4. Valida/revisa el diff y confirma **guardar**; después revisa/confirma **activar** y reinicia con el mismo
-   `scripts/start`. Guardar no activa; el reinicio promueve el conjunto verificado. La instalación conserva
-   datos/configuración separados y privados. [Primer arranque](README.md#first-run), [configuración](README.md#configure).
+### 2a. Instalar desde el código fuente
+
+```sh
+git clone <url-del-repositorio> harness-local
+cd harness-local
+scripts/install --allow-network
+```
+
+### 2b. Instalar desde un paquete publicado
+
+En la página **Releases** del repositorio, descarga `harness-local-0.1.0-distribution.tar.gz` y
+`harness-local-0.1.0-distribution.tar.gz.sha256` en la misma carpeta y ejecuta:
+
+```sh
+shasum -a 256 -c harness-local-0.1.0-distribution.tar.gz.sha256
+tar -xzf harness-local-0.1.0-distribution.tar.gz
+cd harness-local-0.1.0
+scripts/install --dist "$PWD" --allow-network
+```
+
+El archivo contiene el wheel (con la UI compilada), el sdist, `pylock.toml`, `distribution-1.json`, `SHA256SUMS`
+y `scripts/`. El instalador comprueba cada archivo; no necesita Node/npm ni el código fuente. El checksum prueba
+que la descarga está íntegra, no quién la hizo: descárgalo solo del repositorio oficial.
+
+### Qué hace el instalador
+
+La primera instalación necesita **`--allow-network`** para descargar las dependencias fijadas en la caché.
+Después, `scripts/install` sin opciones funciona sin red: verifica y reutiliza la instalación. Sin
+`--allow-network`, una primera instalación falla porque la caché todavía está vacía.
+
+Publica la instalación solo tras una comprobación aislada con agentes falsos (no llama a ningún modelo). Por
+defecto usa `~/Library/Application Support/Harness Local/` (`installation`, `data` y `configuration`) y la caché
+`~/Library/Caches/Harness Local`. Para elegir otras ubicaciones usa `--install-dir`, `--data-dir`, `--config-dir`
+y `--cache-dir` con rutas absolutas fuera de todo checkout (entre comillas si tienen espacios), y el mismo
+`--install-dir` después en `scripts/start`. Si una instalación falla queda como FAILED con su diagnóstico y no se
+publica: consérvala y reintenta con directorios nuevos, sin borrar locks ni datos a mano.
+[Tabla de directorios y opciones](README.md#what-the-installer-does).
+
+## Primer uso
+
+1. **Arranca el servicio** desde la carpeta donde ejecutaste el instalador (el clon o el paquete extraído):
+
+   ```sh
+   scripts/start
+   ```
+
+   Añade `--install-dir` si elegiste otro directorio de instalación, o `--port` para usar un puerto distinto de 8013.
+   Verifica la instalación, crea la base de datos solo si no existe y sirve la UI/API, sin Node/Vite.
+2. **Copia la clave de acceso.** El servicio muestra `Harness Local: access key at <ruta>`. En otra terminal:
+
+   ```sh
+   pbcopy < '<ruta mostrada por el servicio>'
+   ```
+
+3. **Abre la UI.** Escribe `http://127.0.0.1:8013` en la barra de direcciones y pega la clave. La sesión dura
+   ocho horas; cada arranque crea una clave nueva que se borra al parar.
+4. **Configura.** Sin configuración la UI abre `/setup`: identidad Git, clientes/PATH/USER, modelo/esfuerzo del
+   revisor, raíces autorizadas y supervisor. Buscar clientes sugiere rutas; comprobar versión/ayuda no llama a
+   modelos. Inicia sesión en `codex`/`claude` fuera del harness y no pegues credenciales. Valida, revisa el diff
+   y confirma **guardar**; después revisa y confirma **activar**, para con Ctrl-C y vuelve a ejecutar
+   `scripts/start` (con la clave nueva). Guardar no activa: el reinicio promueve el conjunto verificado.
+   [Primer arranque](README.md#first-run), [configuración](README.md#configure).
 5. Crea o registra sin composición de stack obligatoria. Conversa sobre documentos/arquitectura o inventario HEAD;
    revisa/aplica borradores y adopta el perfil propio propuesto. Confirma el commit documental/P001, completa las
    herramientas y guarda el perfil. Confirma preparación acotada (archivos, dependencias, comandos/red), revisa

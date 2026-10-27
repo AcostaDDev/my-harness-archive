@@ -25,7 +25,7 @@ models are reached through the official Codex and Claude Code CLIs with your own
   provider calls, other platforms or the next public candidate.
 - **Guided configuration.** Installation/start scripts, global setup, own project profiles, confirmed preparation,
   editing and configuration backup are implemented. Installed synthetic evidence is separate from the historical
-  provider evidence below; the final public candidate is still pending.
+  provider evidence below.
 - **Next.** An optional continuous mode (tasks → commits → check → closure → next phase) is planned for v0.2.0;
   see the [roadmap](docs/ROADMAP.md).
 
@@ -88,63 +88,111 @@ Its compatibility is conditional: help output and probes do not prove every inte
 is guaranteed. An older client gets an instruction to update; an observable incompatibility blocks the attempt
 before the provider is invoked. Permission, sandbox, memory and trust controls are never relaxed.
 
-## Install from a clone
+## Install
 
-Install Python 3.14 and uv 0.12.19 first. **uv** creates isolated Python virtual environments and installs the
-locked dependencies. Building from a clone also needs the Node/npm versions
-above. The installer does not install these tools or change your shell, Git or provider settings.
+Choose **one** of the two ways below. Both end in the same installed service. The installer creates its own
+virtual environment (you never create or activate one), keeps everything outside your Git checkouts and does not
+change your shell, Git or provider settings.
 
-From a clone, choose absolute, separate paths outside every Git checkout. Quote paths containing spaces:
+| | From the source code (Git clone) | From a release package |
+|---|---|---|
+| What you download | This repository | `harness-local-<version>-distribution.tar.gz` from the repository's GitHub **Releases** page |
+| Tools you need | Python 3.14, uv 0.12.19, Git, Node 24.15.0 and npm 11.12.1 | Python 3.14, uv 0.12.19 and Git |
+| What the installer does | Builds the package (a wheel that contains the compiled UI), verifies it and installs it | Verifies the checksums of the prebuilt package and installs it |
 
-```sh
-scripts/install --clone /path/my_harness --python /path/python3.14 --uv /path/uv \
-  --install-dir '/path/Harness Local/installation' --data-dir '/path/Harness Local/data' \
-  --config-dir '/path/Harness Local/configuration' --cache-dir '/path/Harness Cache' --allow-network
-```
-
-`--allow-network` permits locked npm/Python dependency downloads. The script builds and checks the package,
-creates its own venv and publishes a READY generation only after an isolated verification with fake agents.
-You do not create or activate a venv yourself. Cache directories are created as needed; `.local/` is not required.
-Omitting the paths uses suggestions under `~/Library/Application Support/Harness Local/` and
-`~/Library/Caches/Harness Local/`. Select them explicitly to keep installation and data in your chosen location.
-
-Repeat the same command with `--offline` instead of `--allow-network`. Offline is the default; a matching READY
-installation is checked and reused. A fresh offline installation needs a complete cache. An incomplete cache
-leaves a FAILED generation and a diagnostic, without publishing it: preserve it for inspection and select a new
-installation/data/configuration destination for a new attempt. Do not delete locks or incomplete data blindly.
-
-## Install from a built package
-
-Use a new self-contained distribution folder supplied by your trusted distributor:
+### 1. Check your tools
 
 ```sh
-/path/package/scripts/install --dist /path/package --python /path/python3.14 --uv /path/uv \
-  --install-dir '/path/Harness Local/installation' --data-dir '/path/Harness Local/data' \
-  --config-dir '/path/Harness Local/configuration' --cache-dir '/path/Harness Cache' --allow-network
+python3.14 --version   # Python 3.14.x
+uv --version           # uv 0.12.19
+git --version
+node --version         # v24.15.0  (only to install from source)
+npm --version          # 11.12.1   (only to install from source)
 ```
 
-This entry needs Python, uv and Git for verification, with no Node/npm or source checkout. It verifies wheel,
-sdist, `pylock.toml`, member manifest, scripts and `SHA256SUMS`. Older packages without the installer material
-cannot use this entry. Checksums verify consistency; obtain the package from a source you trust.
+The installer never downloads these tools. **uv** creates the isolated environment and installs the locked Python
+dependencies. If `python3.14` or `uv` is not on your `PATH`, add `--python /absolute/path/python3.14` or
+`--uv /absolute/path/uv` to the install command.
+
+### 2a. Install from the source code
+
+```sh
+git clone <repository-url> harness-local
+cd harness-local
+scripts/install --allow-network
+```
+
+### 2b. Install from a release package
+
+From the repository's **Releases** page, download `harness-local-0.1.0-distribution.tar.gz` and
+`harness-local-0.1.0-distribution.tar.gz.sha256` into the same folder, then:
+
+```sh
+shasum -a 256 -c harness-local-0.1.0-distribution.tar.gz.sha256
+tar -xzf harness-local-0.1.0-distribution.tar.gz
+cd harness-local-0.1.0
+scripts/install --dist "$PWD" --allow-network
+```
+
+The archive holds the wheel (with the compiled UI), sdist, `pylock.toml`, `distribution-1.json`, `SHA256SUMS`
+and `scripts/`. The installer checks every file against them; no Node/npm or source code is needed. A checksum
+proves the download is intact, not who made it: download it only from the official repository.
+
+### What the installer does
+
+The first installation needs **`--allow-network`**: it downloads the locked dependencies into the cache.
+Afterwards, `scripts/install` without options works offline: it verifies and reuses the installation. Without
+`--allow-network`, a first installation fails because the cache is still empty.
+
+The installer builds or checks the package, creates its own venv and publishes the installation only after an
+isolated check with fake agents (no model is called). By default it uses these directories:
+
+| Directory | Default | Option |
+|---|---|---|
+| Installation (versions and their venv) | `~/Library/Application Support/Harness Local/installation` | `--install-dir` |
+| Data (SQLite database and temporary files) | `~/Library/Application Support/Harness Local/data` | `--data-dir` |
+| Configuration (private TOML versions) | `~/Library/Application Support/Harness Local/configuration` | `--config-dir` |
+| Download cache | `~/Library/Caches/Harness Local` | `--cache-dir` |
+
+To choose other locations, pass absolute paths outside every Git checkout (quote paths with spaces) and use the
+same `--install-dir` later with `scripts/start`:
+
+```sh
+scripts/install --allow-network --install-dir '/path/Harness Local/installation' \
+  --data-dir '/path/Harness Local/data' --config-dir '/path/Harness Local/configuration' --cache-dir '/path/Harness Cache'
+```
+
+If an installation fails, it is kept as FAILED with a diagnostic and nothing is published. Keep it for inspection
+and retry with new installation/data/configuration directories; do not delete locks or data by hand.
+`scripts/install --help` lists every option, including `--upgrade` (see [Operation](#operation)).
 
 ## First run
 
-From a clone use `scripts/start`; from a package use `/path/package/scripts/start`:
+1. **Start the service** from the same folder where you ran the installer (the clone or the extracted package):
 
-```sh
-scripts/start --install-dir '/path/Harness Local/installation' --port 8013
-```
+   ```sh
+   scripts/start
+   ```
 
-The script verifies the installed generation, creates a database only if absent and starts its packaged UI/API.
-It never reinstalls or silently migrates an existing database. Defaults: `data/harness.sqlite3`, `data/tmp` and
-`configuration/global.toml` under the roots chosen at installation. `--database`, `--temp-dir` and `--config`
-select paths within the permitted scope. Missing/invalid TOML keeps work blocked and opens setup; a missing
-file is not created just by selecting it. See `--help` for all
-options. No Node/Vite is used at runtime.
+   Add `--install-dir` if you chose another installation directory, or `--port` to use a port other than 8013.
+   The script verifies the installation, creates the database only if it does not exist and serves the UI/API.
+   It never reinstalls or silently migrates an existing database, and no Node/Vite is used at runtime.
 
-Open `http://127.0.0.1:8013` directly in the address bar (use your chosen port), then paste the key from the
-private file named by the service. Cross-site links are rejected. The key is deleted on stop; the session lasts
-eight hours and ends on restart. Without a TOML the authenticated UI takes you to `/setup`.
+2. **Copy the access key.** The service prints `Harness Local: access key at <path>`. In another terminal:
+
+   ```sh
+   pbcopy < '<path printed by the service>'
+   ```
+
+3. **Open the UI.** Type `http://127.0.0.1:8013` in the browser's address bar and paste the key. Links from
+   other sites are rejected. The session lasts eight hours; each start creates a new key, deleted when it stops.
+4. **Configure.** Without a configuration the UI opens `/setup`; follow [Configure](#configure). Saving does not
+   activate it: after confirming the activation, stop the service with Ctrl-C and run `scripts/start` again
+   (then copy the new key and sign in again).
+
+Defaults: `data/harness.sqlite3`, `data/tmp` and `configuration/global.toml` under the directories chosen at
+installation. `--database`, `--temp-dir` and `--config` select other paths inside them. A missing or invalid TOML
+keeps work blocked and opens setup; selecting a missing file does not create it. See `scripts/start --help`.
 
 ## Configure
 
@@ -262,8 +310,9 @@ See [SECURITY.md](SECURITY.md) to report a vulnerability.
 **Restart.** Stop with Ctrl-C and repeat `scripts/start` with the same installation path and port. Queued work resumes; a job interrupted mid-attempt
 shows *Recovery required* until you confirm that its writer stopped.
 
-**Update.** Stop the service and every writer. Run `scripts/install` with the new clone/package, the same
-paths and `--upgrade --writers-stopped`; it preserves previous generations and data. If the database needs a
+**Update.** Stop the service and every writer. Run `scripts/install` from the new clone or extracted package with
+the same options as the first installation plus `--upgrade --writers-stopped` (and `--allow-network` if new
+dependencies must be downloaded); it preserves previous generations and data. If the database needs a
 schema upgrade, use the new generation's CLI separately before starting:
 
 ```sh
@@ -300,7 +349,7 @@ minimum or missing from the role's `PATH`, a project without a confirmed work la
 that quarantined pending jobs, or a recipe that still needs its preparation.
 
 **Uninstall and keep your data.** Stop the service and all writers, then remove the installation directory
-(including its generations) and any separately downloaded package folder.
+(including its generations), the download cache and any extracted package folder.
 The SQLite database, the `state_dir`, backups and the TOML stay where you put them, and each project keeps its
 Git history and documents. Delete them only if you no longer need that history.
 

@@ -12,8 +12,11 @@ All notable changes to Harness Local are recorded here. The format follows
   number: every release keeps reading older databases and histories, and the SQLite schema is upgraded only by
   `harness-local migrate`, which takes a verified snapshot first.
 - `0.2.0` is reserved for the optional continuous mode described in the [roadmap](docs/ROADMAP.md).
-- A version is released by tagging its commit and attaching the built sdist, wheel, `pylock.toml` and
-  `SHA256SUMS` to a GitHub Release. Nothing is published to PyPI.
+- A version is released by tagging its commit and attaching to a GitHub Release the self-contained package
+  `harness-local-<version>-distribution.tar.gz` (a `harness-local-<version>/` folder with the wheel, sdist,
+  `pylock.toml`, `distribution-1.json`, `SHA256SUMS` and `scripts/` for `scripts/install --dist`) and its `.sha256`
+  file; the wheel, sdist, `pylock.toml` and `SHA256SUMS` may also be attached individually. Nothing is published
+  to PyPI, and built artifacts are never committed to the repository.
 
 ## [Unreleased]
 

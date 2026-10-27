@@ -1,7 +1,7 @@
 # Guided installation and configuration
 
 Implemented in the starting baseline ([D216–D228](../DECISIONS.md#d216--isolated-installation-and-setup-session)).
-User commands and options are in the [README](../../README.md#install-from-a-clone).
+User commands and options are in the [README](../../README.md#install).
 
 ```mermaid
 flowchart TD
